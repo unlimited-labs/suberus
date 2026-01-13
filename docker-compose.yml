@@ -1,0 +1,86 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: suberus-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: suberus
+      POSTGRES_PASSWORD: suberus_dev_password
+      POSTGRES_DB: suberus
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+      - "-c"
+      - "max_replication_slots=10"
+      - "-c"
+      - "max_wal_senders=10"
+    volumes:
+      - ./dev-volumes/postgres_data:/var/lib/postgresql
+    networks:
+      - suberus-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U suberus"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Electric SQL for real-time sync
+  electric:
+    image: electricsql/electric:latest
+    container_name: suberus-electric
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://suberus:suberus_dev_password@postgres:5432/suberus?sslmode=disable
+      ELECTRIC_INSECURE: "true"
+      ELECTRIC_PORT: "3000"
+      ELECTRIC_STORAGE_DIR: /app/storage
+    volumes:
+      - ./dev-volumes/electric_storage:/app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - suberus-network
+      
+  # Garage S3-compatible storage
+  garage:
+    image: dxflrs/garage:v2.1.0
+    container_name: suberus-garage
+    restart: unless-stopped
+    ports:
+      - "3900:3900"  # Admin API
+      - "3901:3901"  # K2V API
+      - "3902:3902"  # S3 API
+      - "3903:3903"  # Web interface
+    environment:
+      RUST_LOG: garage=info
+    volumes:
+      - ./dev-volumes/garage_meta:/var/lib/garage/meta
+      - ./dev-volumes/garage_data:/var/lib/garage/data
+      - ./garage/garage.toml:/etc/garage.toml:ro
+    networks:
+      - suberus-network
+
+  # Mailpit for email testing
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: suberus-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    networks:
+      - suberus-network
+
+networks:
+  suberus-network:
+    driver: bridge
