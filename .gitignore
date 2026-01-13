@@ -1,0 +1,21 @@
+node_modules
+.DS_Store
+dist
+dist-ssr
+*.local
+count.txt
+.env
+.nitro
+.tanstack
+.wrangler
+.output
+.vinxi
+todos.json
+/src/routeTree.gen.ts
+
+# Docker development volumes
+dev-volumes/
+
+/src/generated/prisma
+
+/garage/rclone.conf
