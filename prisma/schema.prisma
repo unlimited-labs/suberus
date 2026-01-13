@@ -1,0 +1,669 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum UserRole {
+  AUTHOR
+  REVIEWER
+  EDITOR
+  ADMIN
+}
+
+enum SubmissionType {
+  ABSTRACT
+  FULL_PAPER
+  POSTER
+}
+
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  REVIEWS_COMPLETE
+  AWAITING_DECISION
+  REVISE_REQUIRED
+  RESUBMITTED
+  ACCEPTED
+  CONDITIONALLY_ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum AssignmentStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  OVERDUE
+}
+
+enum ReviewDecision {
+  ACCEPT
+  ACCEPT_WITH_MINOR_REVISIONS
+  REVISE_AND_RESUBMIT
+  REJECT
+}
+
+enum EditorDecisionType {
+  ACCEPT
+  CONDITIONALLY_ACCEPT
+  REVISE_AND_RESUBMIT
+  REJECT
+}
+
+enum ReviewMode {
+  OPEN
+  SINGLE_BLIND
+  DOUBLE_BLIND
+}
+
+enum FeeType {
+  FULL
+  STUDENT
+  INVITED
+  STAFF
+  CASH
+}
+
+enum FileType {
+  SUBMISSION_MAIN
+  SUBMISSION_SUPPLEMENTARY
+  REVIEW_ATTACHMENT
+  OTHER
+}
+
+enum FileEntityType {
+  SUBMISSION
+  SUBMISSION_VERSION
+  REVIEW
+}
+
+enum EmailEventType {
+  // Submission lifecycle
+  SUBMISSION_RECEIVED
+  SUBMISSION_WITHDRAWN
+
+  // Review process
+  REVIEWER_ASSIGNED
+  REVIEWER_REMINDER
+  REVIEW_SUBMITTED
+  ALL_REVIEWS_COMPLETE
+
+  // Decisions
+  DECISION_ACCEPTED
+  DECISION_CONDITIONALLY_ACCEPTED
+  DECISION_REVISE_REQUIRED
+  DECISION_REJECTED
+
+  // Revisions
+  REVISION_REMINDER
+  REVISION_RECEIVED
+
+  // System
+  DEADLINE_APPROACHING
+  ACCOUNT_CREATED
+  PASSWORD_RESET
+}
+
+enum ConferenceSettingKey {
+  CONFERENCE_NAME
+  CONFERENCE_DATE_START
+  CONFERENCE_DATE_END
+  SUBMISSION_DEADLINE
+  REVIEW_DEADLINE
+  NOTIFICATION_DATE
+  MAX_ABSTRACT_LENGTH
+  MAX_FILE_SIZE_MB
+  ALLOWED_FILE_TYPES
+  MAX_AUTHORS_PER_ABSTRACT
+  REQUIRE_ORCID
+  ENABLE_KEYWORDS
+  MAX_KEYWORDS_PER_ABSTRACT
+  CONTACT_EMAIL
+  CONFERENCE_LOCATION
+  CONFERENCE_WEBSITE
+}
+
+// ============================================================================
+// USER MANAGEMENT
+// ============================================================================
+
+model User {
+  id    String  @id @default(uuid()) @db.Uuid
+  image String?
+
+  sessions Session[]
+  accounts Account[]
+
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Profile fields
+  title       String? // Dr, Prof, etc.
+  firstName   String?
+  lastName    String?
+  affiliation String? // University/Institution
+  orcid       String?
+  address     String?
+  country     String?
+
+  // System fields
+  role          UserRole  @default(AUTHOR)
+  emailVerified Boolean   @default(false)
+  isActive      Boolean   @default(true)
+  lastLoginAt   DateTime?
+
+  // Relations
+  submissions          Submission[]              @relation("SubmissionOwner")
+  submissionAuthors    SubmissionAuthor[]
+  reviews              Review[]
+  reviewAssignments    ReviewAssignment[]
+  assignedReviews      ReviewAssignment[]        @relation("AssignedReviews")
+  editorDecisions      EditorDecision[]
+  statusHistoryChanges SubmissionStatusHistory[]
+  fee                  Fee?
+  uploadedFiles        File[]
+
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+  @@index([emailVerified])
+  @@map("users")
+}
+
+// ============================================================================
+// CONFERENCE SETTINGS
+// ============================================================================
+
+model ConferenceSetting {
+  id    String               @id @default(uuid()) @db.Uuid
+  key   ConferenceSettingKey @unique
+  value String               @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+  @@map("conference_settings")
+}
+
+// ============================================================================
+// EMAIL TEMPLATES
+// ============================================================================
+
+model EmailTemplate {
+  id        String         @id @default(uuid()) @db.Uuid
+  eventType EmailEventType @unique
+
+  // Template content
+  subject String        @db.Text
+  body    String        @db.Text // Supports {{variable}} placeholders
+  isHtml  Boolean       @default(false)
+
+  // Optional CC/BCC
+  ccEmails  String[] // Array of CC emails
+  bccEmails String[] // Array of BCC emails
+
+  // Control
+  isEnabled Boolean @default(true)
+
+  // Metadata
+  availablePlaceholders String[] // ["{{authorName}}", "{{submissionTitle}}", ...]
+  description           String?  @db.Text // Human-readable description of when this is sent
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventType])
+  @@index([isEnabled])
+  @@map("email_templates")
+}
+
+// ============================================================================
+// SUBMISSION TYPE CONFIGURATION
+// ============================================================================
+
+model SubmissionTypeConfig {
+  id   String         @id @default(uuid()) @db.Uuid
+  type SubmissionType @unique
+
+  // Review configuration
+  minReviewers Int @default(1)
+  maxReviewers Int @default(1)
+
+  // Decision configuration
+  requiresEditorDecision Boolean @default(false)
+
+  // Review round settings
+  allowRevisions Boolean @default(true)
+  maxRevisions   Int     @default(2)
+  reviewDeadline Int? // Days from assignment
+
+  // Workflow settings
+  requireAllReviews           Boolean @default(true)
+  autoTransitionAfterReviews  Boolean @default(true) // Auto-transition to next status when all reviews complete
+
+  // Review scoring configuration
+  enableScoring   Boolean @default(false)
+  scoringCriteria Json? // {novelty: true, methodology: true, clarity: true, relevance: true}
+
+  // Review anonymity configuration
+  reviewMode ReviewMode @default(SINGLE_BLIND)
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([isActive])
+  @@map("submission_type_configs")
+}
+
+// ============================================================================
+// CONFERENCE SESSION
+// ============================================================================
+
+model ConferenceSession {
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String
+  submissions Submission[]
+
+  @@map("conference_sessions")
+}
+
+// ============================================================================
+// KEYWORDS
+// ============================================================================
+
+model Keyword {
+  id          String              @id @default(uuid()) @db.Uuid
+  name        String              @unique
+  submissions SubmissionKeyword[]
+  createdAt   DateTime            @default(now())
+
+  @@index([name])
+  @@map("keywords")
+}
+
+// ============================================================================
+// SUBMISSIONS
+// ============================================================================
+
+model Submission {
+  id      String           @id @default(uuid()) @db.Uuid
+  type    SubmissionType
+  title   String
+  content String           @db.Text
+  status  SubmissionStatus @default(SUBMITTED)
+
+  // Current round tracking
+  currentRound Int @default(1)
+
+  // Relations
+  userId String @db.Uuid
+  user   User   @relation("SubmissionOwner", fields: [userId], references: [id], onDelete: Restrict)
+
+  sessionId String?            @db.Uuid
+  session   ConferenceSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  presenterId     String?           @db.Uuid
+  presenterAuthor SubmissionAuthor? @relation("PresenterAuthor", fields: [presenterId], references: [id], onDelete: SetNull)
+
+  // Current version tracking
+  currentVersionId String?            @unique @db.Uuid
+  currentVersion   SubmissionVersion? @relation("CurrentVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
+
+  versions          SubmissionVersion[]       @relation("SubmissionVersions")
+  authors           SubmissionAuthor[]        @relation("SubmissionAuthors")
+  keywords          SubmissionKeyword[]
+  reviewAssignments ReviewAssignment[]
+  reviews           Review[]
+  editorDecisions   EditorDecision[]
+  statusHistory     SubmissionStatusHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+  @@index([sessionId])
+  @@index([presenterId])
+  @@index([currentVersionId])
+  @@index([createdAt])
+  @@index([status, createdAt])
+  @@index([status, type, createdAt])
+  @@index([status, userId, createdAt])
+  @@map("submissions")
+}
+
+// Submission versioning
+
+model SubmissionVersion {
+  id           String     @id @default(uuid()) @db.Uuid
+  submissionId String     @db.Uuid
+  submission   Submission @relation("SubmissionVersions", fields: [submissionId], references: [id], onDelete: Cascade)
+
+  version Int    @default(1)
+  title   String
+  content String @db.Text
+
+  comment String? @db.Text
+
+  reviews              Review[]
+  currentForSubmission Submission? @relation("CurrentVersion")
+
+  createdAt DateTime @default(now())
+
+  @@unique([submissionId, version])
+  @@index([submissionId])
+  @@map("submission_versions")
+}
+
+// Authors of submission
+
+model SubmissionAuthor {
+  id           String     @id @default(uuid()) @db.Uuid
+  submissionId String     @db.Uuid
+  submission   Submission @relation("SubmissionAuthors", fields: [submissionId], references: [id], onDelete: Cascade)
+
+  userId String? @db.Uuid
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Author details (can be non-users)
+  firstName   String
+  lastName    String
+  email       String
+  affiliation String?
+
+  orderIndex  Int     @default(0)
+  isPresenter Boolean @default(false)
+
+  // Relation for presenter tracking
+  presenterForSubmissions Submission[] @relation("PresenterAuthor")
+
+  createdAt DateTime @default(now())
+
+  @@index([submissionId])
+  @@index([userId])
+  @@index([email])
+  @@index([submissionId, orderIndex])
+  @@map("submission_authors")
+}
+
+// Keywords assigned to submissions
+
+model SubmissionKeyword {
+  id           String     @id @default(uuid()) @db.Uuid
+  submissionId String     @db.Uuid
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  keywordId String  @db.Uuid
+  keyword   Keyword @relation(fields: [keywordId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([submissionId, keywordId])
+  @@index([submissionId])
+  @@index([keywordId])
+  @@map("submission_keywords")
+}
+
+// ============================================================================
+// REVIEW ASSIGNMENTS
+// ============================================================================
+
+model ReviewAssignment {
+  id           String     @id @default(uuid()) @db.Uuid
+  submissionId String     @db.Uuid
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  reviewerId String @db.Uuid
+  reviewer   User   @relation(fields: [reviewerId], references: [id], onDelete: Restrict)
+
+  round  Int              @default(1)
+  status AssignmentStatus @default(PENDING)
+
+  assignedAt  DateTime  @default(now())
+  deadline    DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
+  cancelledAt DateTime?
+
+  assignedBy     String? @db.Uuid
+  assignedByUser User?   @relation("AssignedReviews", fields: [assignedBy], references: [id], onDelete: SetNull)
+
+  // Optional: Reviewer order/role
+  orderIndex Int     @default(0)
+  role       String? // "primary", "secondary", "expert"
+
+  review Review?
+
+  @@unique([submissionId, reviewerId, round])
+  @@index([submissionId, round, status])
+  @@index([reviewerId, status])
+  @@index([status, deadline])
+  @@index([submissionId, round])
+  @@map("review_assignments")
+}
+
+// ============================================================================
+// REVIEWS
+// ============================================================================
+
+model Review {
+  id String @id @default(uuid()) @db.Uuid
+
+  assignmentId String           @unique @db.Uuid
+  assignment   ReviewAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  submissionId String     @db.Uuid
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  reviewerId String @db.Uuid
+  reviewer   User   @relation(fields: [reviewerId], references: [id], onDelete: Restrict)
+
+  versionId String?            @db.Uuid
+  version   SubmissionVersion? @relation(fields: [versionId], references: [id], onDelete: SetNull)
+
+  round    Int
+  decision ReviewDecision
+
+  // Review content
+  comments     String? @db.Text
+  privateNotes String? @db.Text // Only visible to editors/admins
+
+  // Scores (optional, configurable per submission type)
+  scoreNovelty     Int? // 1-5
+  scoreMethodology Int? // 1-5
+  scoreClarity     Int? // 1-5
+  scoreRelevance   Int? // 1-5
+
+  confidenceLevel Int? // 1-5, reviewer's confidence
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([submissionId, round])
+  @@index([reviewerId])
+  @@index([assignmentId])
+  @@map("reviews")
+}
+
+// ============================================================================
+// EDITOR DECISIONS
+// ============================================================================
+
+model EditorDecision {
+  id           String     @id @default(uuid()) @db.Uuid
+  submissionId String     @db.Uuid
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  editorId String @db.Uuid
+  editor   User   @relation(fields: [editorId], references: [id], onDelete: Restrict)
+
+  round    Int
+  decision EditorDecisionType
+
+  reasoning      String? @db.Text
+  letterToAuthor String? @db.Text
+
+  // Track which reviews influenced decision
+  basedOnReviews String[] // Array of review IDs
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([submissionId, round])
+  @@index([editorId])
+  @@map("editor_decisions")
+}
+
+// ============================================================================
+// SUBMISSION STATUS HISTORY
+// ============================================================================
+
+model SubmissionStatusHistory {
+  id           String     @id @default(uuid()) @db.Uuid
+  submissionId String     @db.Uuid
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  fromStatus SubmissionStatus?
+  toStatus   SubmissionStatus
+
+  round  Int? // Which review round
+  event  String? // Event that triggered change
+  reason String? @db.Text
+
+  triggeredBy     String? @db.Uuid
+  triggeredByUser User?   @relation(fields: [triggeredBy], references: [id], onDelete: SetNull)
+
+  metadata Json? // Flexible data
+
+  createdAt DateTime @default(now())
+
+  @@index([submissionId, createdAt])
+  @@index([toStatus])
+  @@map("submission_status_history")
+}
+
+// ============================================================================
+// FEES
+// ============================================================================
+
+model Fee {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @unique @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  paid     Boolean  @default(false)
+  type     FeeType  @default(FULL)
+  amount   Decimal? @db.Decimal(10, 2)
+  currency String?  @default("USD")
+
+  paidAt DateTime?
+  notes  String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([paid])
+  @@map("fees")
+}
+
+// ============================================================================
+// FILE MANAGEMENT
+// ============================================================================
+
+model File {
+  id String @id @default(uuid()) @db.Uuid
+
+  // Polymorphic relation
+  entityType FileEntityType
+  entityId   String         @db.Uuid
+
+  // File metadata
+  type         FileType
+  storageKey   String   @unique
+  fileName     String
+  originalName String
+  mimeType     String
+  size         Int
+
+  // Uploader tracking
+  uploadedById String? @db.Uuid
+  uploadedBy   User?   @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([entityType, entityId])
+  @@index([uploadedById])
+  @@index([type])
+  @@index([storageKey])
+  @@index([entityType, entityId, createdAt])
+  @@map("files")
+}
+
+// ============================================================================
+// BETTER AUTH
+// ============================================================================
+
+model Session {
+  id        String   @id @db.Uuid
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("user_sessions")
+}
+
+model Account {
+  id                    String    @id @db.Uuid
+  accountId             String    @db.Uuid
+  providerId            String
+  userId                String    @db.Uuid
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id @db.Uuid
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("user_verifications")
+}
