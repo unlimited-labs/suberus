@@ -3,6 +3,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import {
 	createRootRouteWithContext,
 	HeadContent,
+	Outlet,
 	Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
@@ -12,6 +13,18 @@ import appCss from "../styles.css?url";
 interface MyRouterContext {
 	queryClient: QueryClient;
 }
+
+const themeScript = `
+(function() {
+  var mql = window.matchMedia('(prefers-color-scheme: dark)');
+  function apply() {
+    var t = localStorage.getItem('suberus-theme') || 'system';
+    document.documentElement.classList.toggle('dark', t === 'dark' || (t === 'system' && mql.matches));
+  }
+  apply();
+  mql.addEventListener('change', apply);
+})();
+`;
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
 	head: () => ({
@@ -24,7 +37,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 				content: "width=device-width, initial-scale=1",
 			},
 			{
-				title: "TanStack Start Starter",
+				title: "Suberus",
+			},
+			{
+				name: "color-scheme",
+				content: "light dark",
 			},
 		],
 		links: [
@@ -33,8 +50,14 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 				href: appCss,
 			},
 		],
+		scripts: [
+			{
+				children: themeScript,
+			},
+		],
 	}),
 
+	component: () => <Outlet />,
 	shellComponent: RootDocument,
 });
 
