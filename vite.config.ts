@@ -7,6 +7,9 @@ import tailwindcss from '@tailwindcss/vite'
 import { nitro } from 'nitro/vite'
 
 const config = defineConfig({
+  optimizeDeps: {
+    include: ['@tabler/icons-react', 'countries-list'],
+  },
   plugins: [
     devtools(),
     nitro(),
