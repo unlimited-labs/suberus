@@ -1,4 +1,14 @@
 @import "tailwindcss";
+@import "@fontsource-variable/crimson-pro";
+@import "@fontsource/spectral/700.css";
+@import "@fontsource/spectral/800.css";
+@import "@fontsource/bebas-neue";
+@import "@fontsource/rajdhani/500.css";
+@import "@fontsource/rajdhani/600.css";
+@import "@fontsource/rajdhani/700.css";
+@import "@fontsource/dm-sans/400.css";
+@import "@fontsource/dm-sans/500.css";
+@import "@fontsource/dm-sans/600.css";
 
 @custom-variant dark (&:is(.dark *));
 :root {
@@ -37,6 +47,11 @@
   --font-sans: Inter, sans-serif;
   --font-serif: Source Serif 4, serif;
   --font-mono: JetBrains Mono, monospace;
+  --font-editorial-display: "Spectral", serif;
+  --font-editorial-body: "Crimson Pro Variable", serif;
+  --font-editorial-accent: "Bebas Neue", sans-serif;
+  --font-futuristic: "Rajdhani", sans-serif;
+  --font-futuristic-body: "DM Sans", sans-serif;
   --radius: 0.375rem;
   --shadow-x: 0px;
   --shadow-y: 4px;
@@ -95,6 +110,11 @@
   --font-sans: Inter, sans-serif;
   --font-serif: Source Serif 4, serif;
   --font-mono: JetBrains Mono, monospace;
+  --font-editorial-display: "Spectral", serif;
+  --font-editorial-body: "Crimson Pro Variable", serif;
+  --font-editorial-accent: "Bebas Neue", sans-serif;
+  --font-futuristic: "Rajdhani", sans-serif;
+  --font-futuristic-body: "DM Sans", sans-serif;
   --radius: 0.375rem;
   --shadow-x: 0px;
   --shadow-y: 4px;
@@ -153,6 +173,11 @@
   --font-sans: Inter, sans-serif;
   --font-mono: JetBrains Mono, monospace;
   --font-serif: Source Serif 4, serif;
+  --font-editorial-display: "Spectral", serif;
+  --font-editorial-body: "Crimson Pro Variable", serif;
+  --font-editorial-accent: "Bebas Neue", sans-serif;
+  --font-futuristic: "Rajdhani", sans-serif;
+  --font-futuristic-body: "DM Sans", sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

@@ -22,6 +22,12 @@ https://ui.shadcn.com/llms.txt
 **UI Icons:** Tabler Icons
 https://tabler.io/icons
 
+**Animations:** tw-animate-css
+https://github.com/Wombosvideo/tw-animate-css
+
+**Drag and Drop:** dnd-kit
+https://dndkit.com/
+
 **Data Tables:** TanStack Table
 https://tanstack.com/table
 

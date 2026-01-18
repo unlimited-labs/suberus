@@ -19,3 +19,8 @@ dev-volumes/
 /src/generated/prisma
 
 /garage/rclone.conf
+
+# IDE and tools
+.claude
+.idea
+.cursorrules
