@@ -1,0 +1,60 @@
+import { IconVersions, IconAlertCircle } from "@tabler/icons-react";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import type { MockVersion } from "@/lib/mock-data/submissions";
+
+interface VersionSelectorProps {
+	versions: MockVersion[];
+	currentVersion: number;
+	selectedVersion: number;
+	onVersionChange: (version: number) => void;
+}
+
+export function VersionSelector({
+	versions,
+	currentVersion,
+	selectedVersion,
+	onVersionChange,
+}: VersionSelectorProps) {
+	const isViewingOlderVersion = selectedVersion < currentVersion;
+
+	if (versions.length <= 1) {
+		return null;
+	}
+
+	return (
+		<div className="space-y-2">
+			<div className="flex items-center gap-2">
+				<IconVersions className="size-4 text-muted-foreground" />
+				<span className="text-xs text-muted-foreground">Wersja</span>
+			</div>
+			<Select
+				value={selectedVersion.toString()}
+				onValueChange={(value) => onVersionChange(Number(value))}
+			>
+				<SelectTrigger className="w-full">
+					<SelectValue />
+				</SelectTrigger>
+				<SelectContent>
+					{versions.map((v) => (
+						<SelectItem key={v.id} value={v.version.toString()}>
+							Wersja {v.version}
+							{v.version === currentVersion && " (aktualna)"}
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
+			{isViewingOlderVersion && (
+				<div className="flex items-center gap-2 p-2 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400">
+					<IconAlertCircle className="size-4 flex-shrink-0" />
+					<span className="text-xs">Przeglądasz starszą wersję</span>
+				</div>
+			)}
+		</div>
+	);
+}

@@ -1,0 +1,66 @@
+import { useNavigate } from "@tanstack/react-router";
+import { IconEdit, IconSend, IconX } from "@tabler/icons-react";
+import { Button } from "@/components/ui/button";
+import type { SubmissionStatus } from "@/lib/mock-data/submissions";
+
+interface ActionsCardProps {
+	submissionId: string;
+	status: SubmissionStatus;
+	showTitle?: boolean;
+}
+
+export function ActionsCard({ submissionId, status, showTitle = true }: ActionsCardProps) {
+	const navigate = useNavigate();
+
+	const handleEdit = () => navigate({ to: "/submissions/new" });
+	const handleSubmit = () => console.log("Submit:", submissionId);
+	const handleWithdraw = () => console.log("Withdraw:", submissionId);
+
+	const renderActions = () => {
+		switch (status) {
+			case "DRAFT":
+				return (
+					<>
+						<Button variant="outline" className="gap-2 w-full" onClick={handleEdit}>
+							<IconEdit className="size-4" />
+							Kontynuuj edycję
+						</Button>
+						<Button className="gap-2 w-full" onClick={handleSubmit}>
+							<IconSend className="size-4" />
+							Wyślij
+						</Button>
+					</>
+				);
+			case "REVISE_REQUIRED":
+				return (
+					<Button className="gap-2 w-full" onClick={handleEdit}>
+						<IconEdit className="size-4" />
+						Wprowadź poprawki
+					</Button>
+				);
+			case "SUBMITTED":
+			case "UNDER_REVIEW":
+			case "REVIEWS_COMPLETE":
+			case "AWAITING_DECISION":
+			case "RESUBMITTED":
+				return (
+					<Button variant="destructive" className="gap-2 w-full" onClick={handleWithdraw}>
+						<IconX className="size-4" />
+						Wycofaj zgłoszenie
+					</Button>
+				);
+			default:
+				return null;
+		}
+	};
+
+	const actions = renderActions();
+	if (!actions) return null;
+
+	return (
+		<div className="rounded-2xl bg-card shadow-xl p-6 border">
+			{showTitle && <h3 className="font-semibold text-foreground mb-4">Akcje</h3>}
+			<div className="space-y-2">{actions}</div>
+		</div>
+	);
+}
