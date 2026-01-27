@@ -1,9 +1,8 @@
 import { useState, useCallback } from "react"
-import { createFileRoute, Link } from "@tanstack/react-router"
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { useForm } from "@tanstack/react-form"
 import {
 	IconMail,
-	IconBuilding,
 	IconWorld,
 	IconMapPin,
 	IconArrowRight,
@@ -13,6 +12,7 @@ import {
 } from "@tabler/icons-react"
 import { z } from "zod"
 import { countries } from "countries-list"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -43,8 +43,10 @@ import { AuthSidebar } from "@/components/forms/auth-sidebar"
 import { IconInput } from "@/components/forms/icon-input"
 import { PasswordInput } from "@/components/forms/password-input"
 import { FieldError } from "@/components/forms/field-error"
+import { AffiliationSelect } from "@/components/forms/affiliation-select"
 import { useMultiStep } from "@/hooks/use-multi-step"
 import { useZodFormFieldOnChange } from "@/hooks/use-zod-form-field"
+import { signUp } from "@/lib/auth-client"
 
 export const Route = createFileRoute("/_auth/register")({
 	component: RegisterPage,
@@ -82,7 +84,8 @@ type FormData = {
 	title: string
 	firstName: string
 	lastName: string
-	affiliation: string
+	affiliationId: string
+	affiliationName: string
 	address: string
 	country: string
 	needsVisaLetter: boolean
@@ -91,6 +94,7 @@ type FormData = {
 }
 
 function RegisterPage() {
+	const navigate = useNavigate()
 	const [countryOpen, setCountryOpen] = useState(false)
 
 	const form = useForm<FormData>({
@@ -101,7 +105,8 @@ function RegisterPage() {
 			title: "",
 			firstName: "",
 			lastName: "",
-			affiliation: "",
+			affiliationId: "",
+			affiliationName: "",
 			address: "",
 			country: "",
 			needsVisaLetter: false,
@@ -109,7 +114,24 @@ function RegisterPage() {
 			acceptTerms: false,
 		},
 		onSubmit: async ({ value }) => {
-			console.log("Register form submitted:", value)
+			const result = await signUp.email({
+				email: value.email,
+				password: value.password,
+				name: value.lastName,
+				firstName: value.firstName,
+				title: value.title || undefined,
+				affiliationId: value.affiliationId || undefined,
+				address: value.address || undefined,
+				country: value.country || undefined,
+			})
+
+			if (result.error) {
+				toast.error(result.error.message ?? "Registration failed")
+				return
+			}
+
+			toast.success("Account created successfully")
+			navigate({ to: "/" })
 		},
 	})
 
@@ -117,7 +139,7 @@ function RegisterPage() {
 		async (step: number): Promise<boolean> => {
 			const fieldsToValidate: (keyof FormData)[] =
 				step === 1
-					? ["email", "password", "confirmPassword", "firstName", "lastName", "affiliation"]
+					? ["email", "password", "confirmPassword", "firstName", "lastName", "affiliationId"]
 					: step === 2
 						? ["country"]
 						: ["acceptTerms"]
@@ -150,7 +172,7 @@ function RegisterPage() {
 		requiredString("Last name"),
 		isValidationAttempted
 	)
-	const affiliationValidators = useZodFormFieldOnChange(
+	const affiliationIdValidators = useZodFormFieldOnChange(
 		requiredString("Affiliation"),
 		isValidationAttempted
 	)
@@ -346,18 +368,18 @@ function RegisterPage() {
 										)}
 									</form.Field>
 
-									<form.Field name="affiliation" validators={affiliationValidators}>
+									<form.Field name="affiliationId" validators={affiliationIdValidators}>
 										{(field) => (
 											<div className="space-y-1">
-												<Label htmlFor={field.name}>Affiliation *</Label>
-												<IconInput
-													id={field.name}
-													type="text"
-													icon={<IconBuilding className="size-4" />}
+												<Label>Affiliation *</Label>
+												<AffiliationSelect
+													value={field.state.value || null}
+													displayValue={form.state.values.affiliationName}
+													onChange={(id, name) => {
+														field.handleChange(id ?? "")
+														form.setFieldValue("affiliationName", name)
+													}}
 													hasError={field.state.meta.errors.length > 0}
-													value={field.state.value}
-													onBlur={field.handleBlur}
-													onChange={(e) => field.handleChange(e.target.value)}
 												/>
 												<FieldError errors={field.state.meta.errors} />
 											</div>

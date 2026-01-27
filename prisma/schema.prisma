@@ -134,6 +134,22 @@ enum ConferenceSettingKey {
 }
 
 // ============================================================================
+// AFFILIATIONS
+// ============================================================================
+
+model Affiliation {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  users             User[]
+  submissionAuthors SubmissionAuthor[]
+
+  @@index([name])
+  @@map("affiliations")
+}
+
+// ============================================================================
 // USER MANAGEMENT
 // ============================================================================
 
@@ -152,10 +168,12 @@ model User {
   title       String? // Dr, Prof, etc.
   firstName   String?
   lastName    String?
-  affiliation String? // University/Institution
   orcid       String?
   address     String?
   country     String?
+
+  affiliationId String?      @db.Uuid
+  affiliation   Affiliation? @relation(fields: [affiliationId], references: [id], onDelete: SetNull)
 
   // System fields
   role          UserRole  @default(AUTHOR)
@@ -381,10 +399,12 @@ model SubmissionAuthor {
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   // Author details (can be non-users)
-  firstName   String
-  lastName    String
-  email       String
-  affiliation String?
+  firstName String
+  lastName  String
+  email     String
+
+  affiliationId String?      @db.Uuid
+  affiliation   Affiliation? @relation(fields: [affiliationId], references: [id], onDelete: SetNull)
 
   orderIndex  Int     @default(0)
   isPresenter Boolean @default(false)
@@ -621,7 +641,7 @@ model File {
 // ============================================================================
 
 model Session {
-  id        String   @id @db.Uuid
+  id        String   @id @default(uuid()) @db.Uuid
   expiresAt DateTime
   token     String
   createdAt DateTime @default(now())
@@ -637,7 +657,7 @@ model Session {
 }
 
 model Account {
-  id                    String    @id @db.Uuid
+  id                    String    @id @default(uuid()) @db.Uuid
   accountId             String    @db.Uuid
   providerId            String
   userId                String    @db.Uuid
@@ -657,7 +677,7 @@ model Account {
 }
 
 model Verification {
-  id         String   @id @db.Uuid
+  id         String   @id @default(uuid()) @db.Uuid
   identifier String
   value      String
   expiresAt  DateTime

@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import { AffiliationSelect } from "@/components/forms/affiliation-select"
 import {
 	DndContext,
 	closestCenter,
@@ -34,7 +35,8 @@ export interface Author {
 	firstName: string
 	lastName: string
 	email: string
-	affiliation: string
+	affiliationId: string | null
+	affiliationName: string
 	isPresenter: boolean
 }
 
@@ -48,7 +50,7 @@ interface AuthorsInputProps {
 interface SortableAuthorItemProps {
 	author: Author
 	index: number
-	updateAuthor: (index: number, field: keyof Author, value: string | boolean) => void
+	updateAuthor: (index: number, updates: Partial<Author>) => void
 	removeAuthor: (index: number) => void
 	setPresenter: (index: number) => void
 	canRemove: boolean
@@ -169,7 +171,7 @@ function SortableAuthorItem({
 							id={`author-${index}-firstName`}
 							type="text"
 							value={author.firstName}
-							onChange={(e) => updateAuthor(index, "firstName", e.target.value)}
+							onChange={(e) => updateAuthor(index, { firstName: e.target.value })}
 							required
 							className="h-9 text-sm text-foreground"
 							disabled={isDragOverlay}
@@ -187,7 +189,7 @@ function SortableAuthorItem({
 							id={`author-${index}-lastName`}
 							type="text"
 							value={author.lastName}
-							onChange={(e) => updateAuthor(index, "lastName", e.target.value)}
+							onChange={(e) => updateAuthor(index, { lastName: e.target.value })}
 							required
 							className="h-9 text-sm text-foreground"
 							disabled={isDragOverlay}
@@ -207,7 +209,7 @@ function SortableAuthorItem({
 							id={`author-${index}-email`}
 							type="email"
 							value={author.email}
-							onChange={(e) => updateAuthor(index, "email", e.target.value)}
+							onChange={(e) => updateAuthor(index, { email: e.target.value })}
 							required
 							className="h-9 text-sm text-foreground"
 							disabled={isDragOverlay}
@@ -215,21 +217,22 @@ function SortableAuthorItem({
 					</div>
 
 					<div className="space-y-1.5">
-						<Label
-							htmlFor={`author-${index}-affiliation`}
-							className="text-xs text-muted-foreground"
-						>
+						<Label className="text-xs text-muted-foreground">
 							Affiliation
 						</Label>
-						<Input
-							id={`author-${index}-affiliation`}
-							type="text"
-							value={author.affiliation}
-							onChange={(e) => updateAuthor(index, "affiliation", e.target.value)}
-							required
-							className="h-9 text-sm text-foreground"
-							disabled={isDragOverlay}
-						/>
+						{isDragOverlay ? (
+							<div className="h-9 flex items-center px-3 rounded-md border bg-background text-sm text-foreground">
+								{author.affiliationName || "—"}
+							</div>
+						) : (
+							<AffiliationSelect
+								value={author.affiliationId}
+								displayValue={author.affiliationName}
+								onChange={(id, name) =>
+									updateAuthor(index, { affiliationId: id, affiliationName: name })
+								}
+							/>
+						)}
 					</div>
 				</div>
 			</div>
@@ -242,7 +245,7 @@ function SortableAuthorItem({
 export function AuthorsInput({
 	value,
 	onChange,
-	maxAuthors = 10,
+	maxAuthors: _maxAuthors = 10,
 	className,
 }: AuthorsInputProps) {
 	const [activeId, setActiveId] = useState<string | null>(null)
@@ -258,7 +261,8 @@ export function AuthorsInput({
 			firstName: "",
 			lastName: "",
 			email: "",
-			affiliation: "",
+			affiliationId: null,
+			affiliationName: "",
 			isPresenter: value.length === 0,
 		}
 
@@ -279,9 +283,9 @@ export function AuthorsInput({
 	)
 
 	const updateAuthor = useCallback(
-		(index: number, field: keyof Author, fieldValue: string | boolean) => {
+		(index: number, updates: Partial<Author>) => {
 			const newAuthors = [...value]
-			newAuthors[index] = { ...newAuthors[index], [field]: fieldValue }
+			newAuthors[index] = { ...newAuthors[index], ...updates }
 			onChange(newAuthors)
 		},
 		[value, onChange]
