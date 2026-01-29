@@ -1,6 +1,6 @@
 import { PrismaClient } from "../../src/generated/prisma/client"
 import { PrismaPg } from "@prisma/adapter-pg"
-import { hashPassword } from "better-auth/crypto"
+import { auth } from "../../auth"
 import { config } from "dotenv"
 import { dirname, resolve } from "path"
 import { fileURLToPath } from "url"
@@ -32,55 +32,18 @@ async function globalSetup() {
 	const prisma = new PrismaClient({ adapter })
 
 	try {
-		// Clean up e2e test data before seeding
-		const e2eUsers = await prisma.user.findMany({
-			where: { email: { endsWith: "@e2e.local" } },
-			select: { id: true },
-		})
-		const e2eUserIds = e2eUsers.map((u) => u.id)
+		// Clean up all test data
+		await prisma.session.deleteMany()
+		await prisma.account.deleteMany()
+		await prisma.fee.deleteMany()
+		await prisma.user.deleteMany()
 
-		if (e2eUserIds.length > 0) {
-			// Delete in correct order (respecting foreign keys)
-			await prisma.session.deleteMany({ where: { userId: { in: e2eUserIds } } })
-			await prisma.account.deleteMany({ where: { userId: { in: e2eUserIds } } })
-			await prisma.fee.deleteMany({ where: { userId: { in: e2eUserIds } } })
-			await prisma.user.deleteMany({ where: { id: { in: e2eUserIds } } })
-			console.log(`🧹 Cleaned up ${e2eUserIds.length} e2e test users`)
-		}
-
-		// Create test user
-		const testHashedPassword = await hashPassword(TEST_USER.password)
-
+		// Create affiliations first
 		const testAffiliation = await prisma.affiliation.upsert({
 			where: { name: TEST_USER.affiliationName },
 			update: {},
 			create: { name: TEST_USER.affiliationName },
 		})
-
-		const testUser = await prisma.user.create({
-			data: {
-				email: TEST_USER.email,
-				firstName: TEST_USER.firstName,
-				lastName: TEST_USER.lastName,
-				affiliationId: testAffiliation.id,
-				emailVerified: true,
-				isActive: true,
-			},
-		})
-
-		await prisma.account.create({
-			data: {
-				userId: testUser.id,
-				accountId: testUser.id,
-				providerId: "credential",
-				password: testHashedPassword,
-			},
-		})
-
-		console.log(`✅ Test user created: ${TEST_USER.email}`)
-
-		// Create admin user for admin panel tests
-		const adminHashedPassword = await hashPassword(ADMIN_USER.password)
 
 		const adminAffiliation = await prisma.affiliation.upsert({
 			where: { name: ADMIN_USER.affiliationName },
@@ -88,25 +51,48 @@ async function globalSetup() {
 			create: { name: ADMIN_USER.affiliationName },
 		})
 
-		const adminUser = await prisma.user.create({
-			data: {
-				email: ADMIN_USER.email,
-				firstName: ADMIN_USER.firstName,
-				lastName: ADMIN_USER.lastName,
-				affiliationId: adminAffiliation.id,
-				emailVerified: true,
-				isActive: true,
-				role: "ADMIN",
+		// Create test user via better-auth API
+		const testResult = await auth.api.signUpEmail({
+			body: {
+				email: TEST_USER.email,
+				password: TEST_USER.password,
+				name: TEST_USER.lastName,
+				firstName: TEST_USER.firstName,
+				affiliationId: testAffiliation.id,
 			},
 		})
 
-		await prisma.account.create({
-			data: {
-				userId: adminUser.id,
-				accountId: adminUser.id,
-				providerId: "credential",
-				password: adminHashedPassword,
+		if (!testResult?.user) {
+			throw new Error("Failed to create test user")
+		}
+
+		// Update test user with additional fields
+		await prisma.user.update({
+			where: { id: testResult.user.id },
+			data: { emailVerified: true, isActive: true },
+		})
+
+		console.log(`✅ Test user created: ${TEST_USER.email}`)
+
+		// Create admin user via better-auth API
+		const adminResult = await auth.api.signUpEmail({
+			body: {
+				email: ADMIN_USER.email,
+				password: ADMIN_USER.password,
+				name: ADMIN_USER.lastName,
+				firstName: ADMIN_USER.firstName,
+				affiliationId: adminAffiliation.id,
 			},
+		})
+
+		if (!adminResult?.user) {
+			throw new Error("Failed to create admin user")
+		}
+
+		// Update admin user with role and additional fields
+		await prisma.user.update({
+			where: { id: adminResult.user.id },
+			data: { emailVerified: true, isActive: true, role: "ADMIN" },
 		})
 
 		console.log(`✅ Admin user created: ${ADMIN_USER.email}`)
