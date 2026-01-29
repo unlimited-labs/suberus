@@ -12,7 +12,7 @@ config({ path: resolve(__dirname, "../../.env.local") })
 
 const TEST_USER = {
 	email: "test@e2e.local",
-	password: "TestPassword123!",
+	password: "testpass123",
 	firstName: "Test",
 	lastName: "User",
 	affiliationName: "Test University",
@@ -20,7 +20,7 @@ const TEST_USER = {
 
 const ADMIN_USER = {
 	email: "admin@e2e.local",
-	password: "AdminPassword123!",
+	password: "testpass123",
 	firstName: "Admin",
 	lastName: "User",
 	affiliationName: "Admin University",
@@ -32,88 +32,84 @@ async function globalSetup() {
 	const prisma = new PrismaClient({ adapter })
 
 	try {
-		// Check if test user already exists
-		const existingUser = await prisma.user.findUnique({
-			where: { email: TEST_USER.email },
+		// Clean up e2e test data before seeding
+		const e2eUsers = await prisma.user.findMany({
+			where: { email: { endsWith: "@e2e.local" } },
+			select: { id: true },
+		})
+		const e2eUserIds = e2eUsers.map((u) => u.id)
+
+		if (e2eUserIds.length > 0) {
+			// Delete in correct order (respecting foreign keys)
+			await prisma.session.deleteMany({ where: { userId: { in: e2eUserIds } } })
+			await prisma.account.deleteMany({ where: { userId: { in: e2eUserIds } } })
+			await prisma.fee.deleteMany({ where: { userId: { in: e2eUserIds } } })
+			await prisma.user.deleteMany({ where: { id: { in: e2eUserIds } } })
+			console.log(`🧹 Cleaned up ${e2eUserIds.length} e2e test users`)
+		}
+
+		// Create test user
+		const testHashedPassword = await hashPassword(TEST_USER.password)
+
+		const testAffiliation = await prisma.affiliation.upsert({
+			where: { name: TEST_USER.affiliationName },
+			update: {},
+			create: { name: TEST_USER.affiliationName },
 		})
 
-		if (!existingUser) {
-			// Hash password using Better Auth's internal hashing
-			const hashedPassword = await hashPassword(TEST_USER.password)
+		const testUser = await prisma.user.create({
+			data: {
+				email: TEST_USER.email,
+				firstName: TEST_USER.firstName,
+				lastName: TEST_USER.lastName,
+				affiliationId: testAffiliation.id,
+				emailVerified: true,
+				isActive: true,
+			},
+		})
 
-			// Create or find affiliation
-			const affiliation = await prisma.affiliation.upsert({
-				where: { name: TEST_USER.affiliationName },
-				update: {},
-				create: { name: TEST_USER.affiliationName },
-			})
+		await prisma.account.create({
+			data: {
+				userId: testUser.id,
+				accountId: testUser.id,
+				providerId: "credential",
+				password: testHashedPassword,
+			},
+		})
 
-			// Create user
-			const user = await prisma.user.create({
-				data: {
-					email: TEST_USER.email,
-					firstName: TEST_USER.firstName,
-					lastName: TEST_USER.lastName,
-					affiliationId: affiliation.id,
-					emailVerified: true,
-					isActive: true,
-				},
-			})
-
-			// Create account with password (Better Auth credential provider)
-			await prisma.account.create({
-				data: {
-					userId: user.id,
-					accountId: user.id,
-					providerId: "credential",
-					password: hashedPassword,
-				},
-			})
-
-			console.log(`✅ Test user created: ${TEST_USER.email}`)
-		} else {
-			console.log(`ℹ️ Test user already exists: ${TEST_USER.email}`)
-		}
+		console.log(`✅ Test user created: ${TEST_USER.email}`)
 
 		// Create admin user for admin panel tests
-		const existingAdmin = await prisma.user.findUnique({
-			where: { email: ADMIN_USER.email },
+		const adminHashedPassword = await hashPassword(ADMIN_USER.password)
+
+		const adminAffiliation = await prisma.affiliation.upsert({
+			where: { name: ADMIN_USER.affiliationName },
+			update: {},
+			create: { name: ADMIN_USER.affiliationName },
 		})
 
-		if (!existingAdmin) {
-			const hashedPassword = await hashPassword(ADMIN_USER.password)
+		const adminUser = await prisma.user.create({
+			data: {
+				email: ADMIN_USER.email,
+				firstName: ADMIN_USER.firstName,
+				lastName: ADMIN_USER.lastName,
+				affiliationId: adminAffiliation.id,
+				emailVerified: true,
+				isActive: true,
+				role: "ADMIN",
+			},
+		})
 
-			const affiliation = await prisma.affiliation.upsert({
-				where: { name: ADMIN_USER.affiliationName },
-				update: {},
-				create: { name: ADMIN_USER.affiliationName },
-			})
+		await prisma.account.create({
+			data: {
+				userId: adminUser.id,
+				accountId: adminUser.id,
+				providerId: "credential",
+				password: adminHashedPassword,
+			},
+		})
 
-			const adminUser = await prisma.user.create({
-				data: {
-					email: ADMIN_USER.email,
-					firstName: ADMIN_USER.firstName,
-					lastName: ADMIN_USER.lastName,
-					affiliationId: affiliation.id,
-					emailVerified: true,
-					isActive: true,
-					role: "ADMIN",
-				},
-			})
-
-			await prisma.account.create({
-				data: {
-					userId: adminUser.id,
-					accountId: adminUser.id,
-					providerId: "credential",
-					password: hashedPassword,
-				},
-			})
-
-			console.log(`✅ Admin user created: ${ADMIN_USER.email}`)
-		} else {
-			console.log(`ℹ️ Admin user already exists: ${ADMIN_USER.email}`)
-		}
+		console.log(`✅ Admin user created: ${ADMIN_USER.email}`)
 	} catch (error) {
 		console.error("❌ Failed to seed test user:", error)
 		throw error

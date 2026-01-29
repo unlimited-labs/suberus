@@ -3,7 +3,7 @@ import type { Page } from "@playwright/test"
 // Test data
 export const TEST_USER = {
 	email: "test@e2e.local",
-	password: "TestPassword123!",
+	password: "testpass123",
 	firstName: "Test",
 	lastName: "User",
 	affiliation: "Test University",

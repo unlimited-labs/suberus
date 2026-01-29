@@ -3,7 +3,7 @@ import type { Page, Locator } from "@playwright/test"
 // Test data
 export const ADMIN_USER = {
 	email: "admin@e2e.local",
-	password: "AdminPassword123!",
+	password: "testpass123",
 	firstName: "Admin",
 	lastName: "User",
 }
