@@ -1,15 +1,16 @@
 import {
+	IconCheck,
+	IconDeviceDesktop,
 	IconDotsVertical,
 	IconLogout,
 	IconMoon,
 	IconSettings,
 	IconSun,
-	IconDeviceDesktop,
 	IconUser,
-	IconCheck,
-} from "@tabler/icons-react"
-import { Link } from "@tanstack/react-router"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+} from "@tabler/icons-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -19,32 +20,50 @@ import {
 	DropdownMenuSubContent,
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { mockUser } from "@/lib/navigation"
-import { useTheme } from "@/hooks/use-theme"
+} from "@/components/ui/dropdown-menu";
+import { useSession } from "@/hooks/use-session";
+import { useTheme } from "@/hooks/use-theme";
+import { signOut } from "@/lib/auth-client";
 
-function getInitials(name: string): string {
-	return name
-		.split(" ")
-		.map((n) => n[0])
-		.join("")
-		.toUpperCase()
-		.slice(0, 2)
+function getInitials(
+	firstName: string | null,
+	lastName: string | null,
+): string {
+	const first = firstName?.[0] ?? "";
+	const last = lastName?.[0] ?? "";
+	return (first + last).toUpperCase() || "?";
 }
 
 export function UserMenu() {
-	const { theme, setTheme } = useTheme()
+	const navigate = useNavigate();
+	const { theme, setTheme } = useTheme();
+	const { user } = useSession();
+
+	const handleSignOut = async () => {
+		await signOut();
+		toast.success("Signed out successfully");
+		navigate({ to: "/login" });
+	};
+
+	if (!user) return null;
+
+	const displayName =
+		[user.firstName, user.lastName].filter(Boolean).join(" ") || user.email;
 
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger className="flex w-full items-center gap-3 rounded-lg p-2 hover:bg-sidebar-accent/50 focus:outline-none">
 				<Avatar size="sm">
-					{mockUser.avatarUrl && <AvatarImage src={mockUser.avatarUrl} alt={mockUser.name} />}
-					<AvatarFallback>{getInitials(mockUser.name)}</AvatarFallback>
+					{user.image && <AvatarImage src={user.image} alt={displayName} />}
+					<AvatarFallback>
+						{getInitials(user.firstName, user.lastName)}
+					</AvatarFallback>
 				</Avatar>
 				<div className="flex-1 text-left">
-					<p className="text-sm font-medium text-sidebar-foreground">{mockUser.name}</p>
-					<p className="text-xs text-muted-foreground">{mockUser.email}</p>
+					<p className="text-sm font-medium text-sidebar-foreground">
+						{displayName}
+					</p>
+					<p className="text-xs text-muted-foreground">{user.email}</p>
 				</div>
 				<IconDotsVertical className="size-4 text-muted-foreground" />
 			</DropdownMenuTrigger>
@@ -63,7 +82,11 @@ export function UserMenu() {
 				</DropdownMenuItem>
 				<DropdownMenuSub>
 					<DropdownMenuSubTrigger>
-						{theme === "dark" ? <IconMoon className="mr-2" /> : <IconSun className="mr-2" />}
+						{theme === "dark" ? (
+							<IconMoon className="mr-2" />
+						) : (
+							<IconSun className="mr-2" />
+						)}
 						Theme
 					</DropdownMenuSubTrigger>
 					<DropdownMenuSubContent>
@@ -85,11 +108,11 @@ export function UserMenu() {
 					</DropdownMenuSubContent>
 				</DropdownMenuSub>
 				<DropdownMenuSeparator />
-				<DropdownMenuItem variant="destructive">
+				<DropdownMenuItem variant="destructive" onClick={handleSignOut}>
 					<IconLogout className="mr-2" />
 					Sign out
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
-	)
+	);
 }

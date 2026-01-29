@@ -1,43 +1,43 @@
-import { useState, useEffect } from "react"
-import type { Column } from "@tanstack/react-table"
-import { IconFilter, IconFilterFilled, IconX } from "@tabler/icons-react"
-import { Button } from "@/components/ui/button"
+import { IconFilter, IconFilterFilled, IconX } from "@tabler/icons-react";
+import type { Column } from "@tanstack/react-table";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-} from "@/components/ui/popover"
-import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface DataTableTextFilterProps<TData, TValue> {
-	column: Column<TData, TValue>
-	placeholder?: string
+	column: Column<TData, TValue>;
+	placeholder?: string;
 }
 
 export function DataTableTextFilter<TData, TValue>({
 	column,
 	placeholder = "Search...",
 }: DataTableTextFilterProps<TData, TValue>) {
-	const columnFilterValue = column?.getFilterValue() as string | undefined
-	const [value, setValue] = useState(columnFilterValue ?? "")
+	const columnFilterValue = column?.getFilterValue() as string | undefined;
+	const [value, setValue] = useState(columnFilterValue ?? "");
 
 	// Sync with external filter changes
 	useEffect(() => {
-		setValue(columnFilterValue ?? "")
-	}, [columnFilterValue])
+		setValue(columnFilterValue ?? "");
+	}, [columnFilterValue]);
 
-	const hasFilter = !!value
+	const hasFilter = !!value;
 
 	const handleChange = (newValue: string) => {
-		setValue(newValue)
-		column?.setFilterValue(newValue || undefined)
-	}
+		setValue(newValue);
+		column?.setFilterValue(newValue || undefined);
+	};
 
 	const handleClear = () => {
-		setValue("")
-		column?.setFilterValue(undefined)
-	}
+		setValue("");
+		column?.setFilterValue(undefined);
+	};
 
 	return (
 		<Popover>
@@ -45,10 +45,7 @@ export function DataTableTextFilter<TData, TValue>({
 				<Button
 					variant="ghost"
 					size="icon-sm"
-					className={cn(
-						"size-6 shrink-0",
-						hasFilter && "text-primary"
-					)}
+					className={cn("size-6 shrink-0", hasFilter && "text-primary")}
 				>
 					{hasFilter ? (
 						<IconFilterFilled className="size-3.5" />
@@ -80,5 +77,5 @@ export function DataTableTextFilter<TData, TValue>({
 				</div>
 			</PopoverContent>
 		</Popover>
-	)
+	);
 }

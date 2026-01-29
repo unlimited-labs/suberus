@@ -1,5 +1,6 @@
-import type { ReactNode } from "react"
-import { Button } from "@/components/ui/button"
+import type { ReactNode } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -7,21 +8,20 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+} from "@/components/ui/dialog";
 
 interface BulkActionDialogProps {
-	open: boolean
-	onOpenChange: (open: boolean) => void
-	title: string
-	description: string
-	onConfirm: () => void
-	isLoading: boolean
-	errors?: string[]
-	confirmLabel?: string
-	loadingLabel?: string
-	confirmDisabled?: boolean
-	children: ReactNode
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	title: string;
+	description: string;
+	onConfirm: () => void;
+	isLoading: boolean;
+	errors?: string[];
+	confirmLabel?: string;
+	loadingLabel?: string;
+	confirmDisabled?: boolean;
+	children: ReactNode;
 }
 
 export function BulkActionDialog({
@@ -62,14 +62,11 @@ export function BulkActionDialog({
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
 						Cancel
 					</Button>
-					<Button
-						onClick={onConfirm}
-						disabled={isLoading || confirmDisabled}
-					>
+					<Button onClick={onConfirm} disabled={isLoading || confirmDisabled}>
 						{isLoading ? loadingLabel : confirmLabel}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
-	)
+	);
 }

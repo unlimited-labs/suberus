@@ -1,6 +1,6 @@
-import type { AdminUser } from "@/lib/server/admin/users"
-import { roleLabels } from "@/lib/labels/user"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card";
+import { roleLabels } from "@/lib/labels/user";
+import type { AdminUser } from "@/lib/server/admin/users";
 
 export function UserMobileCard(user: AdminUser) {
 	return (
@@ -31,5 +31,5 @@ export function UserMobileCard(user: AdminUser) {
 				</div>
 			</CardContent>
 		</Card>
-	)
+	);
 }

@@ -1,22 +1,19 @@
-import { useState } from "react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import {
-	IconMail,
 	IconBuilding,
-	IconId,
 	IconCalendar,
-	IconClock,
 	IconCash,
+	IconClock,
+	IconId,
+	IconMail,
+	IconUserCheck,
 	IconUserCog,
 	IconUserX,
-	IconUserCheck,
-} from "@tabler/icons-react"
-import type { AdminUser } from "@/lib/server/admin/users"
-import type { FeeType, UserRole } from "@/generated/prisma"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
+} from "@tabler/icons-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Dialog,
 	DialogContent,
@@ -24,18 +21,21 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select"
-import { useAdminAuth } from "@/hooks/use-admin-auth"
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import type { FeeType, UserRole } from "@/generated/prisma";
+import { useAdminAuth } from "@/hooks/use-admin-auth";
+import type { AdminUser } from "@/lib/server/admin/users";
 
 interface UserDetailCardProps {
-	user: AdminUser
+	user: AdminUser;
 }
 
 const roleLabels: Record<string, string> = {
@@ -43,7 +43,7 @@ const roleLabels: Record<string, string> = {
 	EDITOR: "Editor",
 	REVIEWER: "Reviewer",
 	AUTHOR: "Author",
-}
+};
 
 const feeTypes: { value: FeeType; label: string }[] = [
 	{ value: "FULL", label: "Full" },
@@ -51,28 +51,28 @@ const feeTypes: { value: FeeType; label: string }[] = [
 	{ value: "INVITED", label: "Invited" },
 	{ value: "STAFF", label: "Staff" },
 	{ value: "CASH", label: "Cash" },
-]
+];
 
 const userRoles: { value: UserRole; label: string }[] = [
 	{ value: "AUTHOR", label: "Author" },
 	{ value: "REVIEWER", label: "Reviewer" },
 	{ value: "EDITOR", label: "Editor" },
 	{ value: "ADMIN", label: "Administrator" },
-]
+];
 
 function formatDate(date: Date | null): string {
-	if (!date) return "—"
+	if (!date) return "—";
 	return new Intl.DateTimeFormat("en-US", {
 		dateStyle: "medium",
 		timeStyle: "short",
-	}).format(new Date(date))
+	}).format(new Date(date));
 }
 
 interface PatchPayload {
-	role?: UserRole
-	isActive?: boolean
-	markFeePaid?: boolean
-	feeType?: FeeType
+	role?: UserRole;
+	isActive?: boolean;
+	markFeePaid?: boolean;
+	feeType?: FeeType;
 }
 
 async function patchUser(userId: string, payload: PatchPayload) {
@@ -80,44 +80,44 @@ async function patchUser(userId: string, payload: PatchPayload) {
 		method: "PATCH",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(payload),
-	})
+	});
 	if (!response.ok) {
-		throw new Error("Failed to update user")
+		throw new Error("Failed to update user");
 	}
-	return response.json()
+	return response.json();
 }
 
 export function UserDetailCard({ user }: UserDetailCardProps) {
-	const queryClient = useQueryClient()
-	const { canChangeRoles } = useAdminAuth()
-	const [feeDialogOpen, setFeeDialogOpen] = useState(false)
-	const [roleDialogOpen, setRoleDialogOpen] = useState(false)
+	const queryClient = useQueryClient();
+	const { canChangeRoles } = useAdminAuth();
+	const [feeDialogOpen, setFeeDialogOpen] = useState(false);
+	const [roleDialogOpen, setRoleDialogOpen] = useState(false);
 	const [selectedFeeType, setSelectedFeeType] = useState<FeeType>(
-		user.fee?.type ?? "FULL"
-	)
-	const [selectedRole, setSelectedRole] = useState<UserRole>(user.role)
+		user.fee?.type ?? "FULL",
+	);
+	const [selectedRole, setSelectedRole] = useState<UserRole>(user.role);
 
 	const mutation = useMutation({
 		mutationFn: (payload: PatchPayload) => patchUser(user.id, payload),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["admin-users"] })
-			queryClient.invalidateQueries({ queryKey: ["admin-user", user.id] })
-			setFeeDialogOpen(false)
-			setRoleDialogOpen(false)
+			queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+			queryClient.invalidateQueries({ queryKey: ["admin-user", user.id] });
+			setFeeDialogOpen(false);
+			setRoleDialogOpen(false);
 		},
-	})
+	});
 
 	const handleMarkFeePaid = () => {
-		mutation.mutate({ markFeePaid: true, feeType: selectedFeeType })
-	}
+		mutation.mutate({ markFeePaid: true, feeType: selectedFeeType });
+	};
 
 	const handleChangeRole = () => {
-		mutation.mutate({ role: selectedRole })
-	}
+		mutation.mutate({ role: selectedRole });
+	};
 
 	const handleToggleActive = () => {
-		mutation.mutate({ isActive: !user.isActive })
-	}
+		mutation.mutate({ isActive: !user.isActive });
+	};
 
 	return (
 		<>
@@ -130,7 +130,9 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 								{user.firstName} {user.lastName}
 							</CardTitle>
 							<div className="mt-1 flex items-center gap-2">
-								<Badge variant={user.role === "ADMIN" ? "default" : "secondary"}>
+								<Badge
+									variant={user.role === "ADMIN" ? "default" : "secondary"}
+								>
 									{roleLabels[user.role]}
 								</Badge>
 								{!user.isActive && (
@@ -208,9 +210,7 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 							</div>
 							<div className="flex items-center gap-2">
 								<IconClock className="size-4 text-muted-foreground" />
-								<span>
-									Last login: {formatDate(user.lastLoginAt)}
-								</span>
+								<span>Last login: {formatDate(user.lastLoginAt)}</span>
 							</div>
 						</div>
 					</div>
@@ -338,5 +338,5 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 				</DialogContent>
 			</Dialog>
 		</>
-	)
+	);
 }

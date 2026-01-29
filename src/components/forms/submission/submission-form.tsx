@@ -1,49 +1,49 @@
-import { useState } from "react"
-import { useForm } from "@tanstack/react-form"
 import {
+	IconCategory,
+	IconCircle,
+	IconCircleCheck,
 	IconFileText,
+	IconInfoCircle,
 	IconSend,
 	IconSparkles,
-	IconWriting,
-	IconUsers,
 	IconTags,
-	IconCategory,
-	IconCircleCheck,
-	IconCircle,
-	IconInfoCircle,
-} from "@tabler/icons-react"
-import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { AuthorsInput, type Author } from "./authors-input"
-import { FileDropzone } from "./file-dropzone"
-import { KeywordsInput } from "./keywords-input"
+	IconUsers,
+	IconWriting,
+} from "@tabler/icons-react";
+import { useForm } from "@tanstack/react-form";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import { type Author, AuthorsInput } from "./authors-input";
+import { FileDropzone } from "./file-dropzone";
+import { KeywordsInput } from "./keywords-input";
 
 const submissionTypeOptions = [
 	{ value: "ABSTRACT", label: "Abstract", icon: IconFileText },
 	{ value: "POSTER", label: "Poster", icon: IconSparkles },
-] as const
+] as const;
 
 interface SubmissionFormProps {
-	onSubmit: (data: SubmissionFormData) => Promise<void>
-	initialData?: Partial<SubmissionFormData>
+	onSubmit: (data: SubmissionFormData) => Promise<void>;
+	initialData?: Partial<SubmissionFormData>;
 }
 
 export interface SubmissionFormData {
-	type: "ABSTRACT" | "POSTER"
-	title: string
-	content: string
-	authors: Author[]
-	keywords: string[]
-	file: File | null
+	type: "ABSTRACT" | "POSTER";
+	title: string;
+	content: string;
+	authors: Author[];
+	keywords: string[];
+	file: File | null;
 }
 
 export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
-	const [isSubmitting, setIsSubmitting] = useState(false)
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const form = useForm<SubmissionFormData>({
+	const form = useForm({
 		defaultValues: {
 			type: initialData?.type || "ABSTRACT",
 			title: initialData?.title || "",
@@ -53,34 +53,35 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 					firstName: "",
 					lastName: "",
 					email: "",
-					affiliation: "",
+					affiliationId: null,
+					affiliationName: "",
 					isPresenter: true,
 				},
 			],
 			keywords: initialData?.keywords || [],
 			file: initialData?.file || null,
-		},
+		} satisfies SubmissionFormData,
 		onSubmit: async ({ value }) => {
-			setIsSubmitting(true)
+			setIsSubmitting(true);
 			try {
-				await onSubmit(value)
+				await onSubmit(value);
 			} finally {
-				setIsSubmitting(false)
+				setIsSubmitting(false);
 			}
 		},
-	})
+	});
 
-	const values = form.state.values
+	const values = form.state.values;
 
 	// Progress indicators
-	const hasType = !!values.type
-	const hasContent = values.title.length >= 5 && values.content.length >= 100
+	const hasType = !!values.type;
+	const hasContent = values.title.length >= 5 && values.content.length >= 100;
 	const hasAuthors =
 		values.authors.length > 0 &&
 		values.authors.every(
-			(a) => a.firstName && a.lastName && a.email && a.affiliation
-		)
-	const hasKeywords = values.keywords.length > 0
+			(a) => a.firstName && a.lastName && a.email && a.affiliationName,
+		);
+	const hasKeywords = values.keywords.length > 0;
 
 	return (
 		<div className="mx-auto w-full max-w-7xl">
@@ -100,9 +101,9 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 
 						<form
 							onSubmit={(e) => {
-								e.preventDefault()
-								e.stopPropagation()
-								form.handleSubmit()
+								e.preventDefault();
+								e.stopPropagation();
+								form.handleSubmit();
 							}}
 							className="space-y-6"
 						>
@@ -118,8 +119,8 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 									{(field) => (
 										<div className="grid grid-cols-2 gap-3">
 											{submissionTypeOptions.map((option) => {
-												const Icon = option.icon
-												const isSelected = field.state.value === option.value
+												const Icon = option.icon;
+												const isSelected = field.state.value === option.value;
 												return (
 													<button
 														key={option.value}
@@ -129,13 +130,13 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 															"flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
 															isSelected
 																? "border-primary bg-primary/5"
-																: "border-border hover:border-primary/50"
+																: "border-border hover:border-primary/50",
 														)}
 													>
 														<div
 															className={cn(
 																"flex-shrink-0 p-2 rounded-md",
-																isSelected ? "bg-primary/10" : "bg-muted"
+																isSelected ? "bg-primary/10" : "bg-muted",
 															)}
 														>
 															<Icon
@@ -143,7 +144,7 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 																	"size-5",
 																	isSelected
 																		? "text-primary"
-																		: "text-muted-foreground"
+																		: "text-muted-foreground",
 																)}
 															/>
 														</div>
@@ -152,13 +153,13 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 																"font-medium",
 																isSelected
 																	? "text-foreground"
-																	: "text-muted-foreground"
+																	: "text-muted-foreground",
 															)}
 														>
 															{option.label}
 														</span>
 													</button>
-												)
+												);
 											})}
 										</div>
 									)}
@@ -180,7 +181,9 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 									<form.Field name="title">
 										{(field) => (
 											<div className="space-y-2">
-												<Label htmlFor="title" className="text-foreground">Title</Label>
+												<Label htmlFor="title" className="text-foreground">
+													Title
+												</Label>
 												<Input
 													id="title"
 													name="title"
@@ -202,7 +205,9 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 										{(field) => (
 											<div className="space-y-2">
 												<div className="flex items-center justify-between">
-													<Label htmlFor="content" className="text-foreground">Abstract</Label>
+													<Label htmlFor="content" className="text-foreground">
+														Abstract
+													</Label>
 													<span className="text-xs text-muted-foreground">
 														{field.state.value.length} characters
 													</span>
@@ -330,7 +335,7 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 
 				{/* Sidebar */}
 				<div className="hidden lg:block">
-					<div className="sticky top-4 space-y-4">
+					<div className="sticky space-y-4">
 						{/* Progress Card */}
 						<div className="rounded-2xl bg-card shadow-xl p-6 border">
 							<h3 className="font-semibold text-foreground mb-4">Progress</h3>
@@ -344,7 +349,7 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 									<span
 										className={cn(
 											"text-sm",
-											hasType ? "text-foreground" : "text-muted-foreground"
+											hasType ? "text-foreground" : "text-muted-foreground",
 										)}
 									>
 										Submission Type
@@ -359,7 +364,7 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 									<span
 										className={cn(
 											"text-sm",
-											hasContent ? "text-foreground" : "text-muted-foreground"
+											hasContent ? "text-foreground" : "text-muted-foreground",
 										)}
 									>
 										Content
@@ -374,7 +379,7 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 									<span
 										className={cn(
 											"text-sm",
-											hasAuthors ? "text-foreground" : "text-muted-foreground"
+											hasAuthors ? "text-foreground" : "text-muted-foreground",
 										)}
 									>
 										Authors
@@ -389,7 +394,7 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 									<span
 										className={cn(
 											"text-sm",
-											hasKeywords ? "text-foreground" : "text-muted-foreground"
+											hasKeywords ? "text-foreground" : "text-muted-foreground",
 										)}
 									>
 										Keywords
@@ -416,5 +421,5 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 				</div>
 			</div>
 		</div>
-	)
+	);
 }

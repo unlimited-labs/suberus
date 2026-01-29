@@ -1,6 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
-import type { MockSubmission, SubmissionStatus } from "@/lib/mock-data/submissions";
+import type {
+	MockSubmission,
+	SubmissionStatus,
+} from "@/lib/mock-data/submissions";
 
 interface SubmissionsTableProps {
 	submissions: MockSubmission[];
@@ -24,22 +27,22 @@ const statusColors: Record<
 };
 
 const statusLabels: Record<SubmissionStatus, string> = {
-	DRAFT: "Szkic",
-	SUBMITTED: "Zgłoszono",
-	UNDER_REVIEW: "W recenzji",
-	REVIEWS_COMPLETE: "Recenzje zakończone",
-	AWAITING_DECISION: "Oczekuje na decyzję",
-	REVISE_REQUIRED: "Wymagane poprawki",
-	RESUBMITTED: "Ponownie zgłoszono",
-	ACCEPTED: "Zaakceptowano",
-	CONDITIONALLY_ACCEPTED: "Warunkowo zaakceptowano",
-	REJECTED: "Odrzucono",
-	WITHDRAWN: "Wycofano",
+	DRAFT: "Draft",
+	SUBMITTED: "Submitted",
+	UNDER_REVIEW: "Under Review",
+	REVIEWS_COMPLETE: "Reviews Complete",
+	AWAITING_DECISION: "Awaiting Decision",
+	REVISE_REQUIRED: "Revisions Required",
+	RESUBMITTED: "Resubmitted",
+	ACCEPTED: "Accepted",
+	CONDITIONALLY_ACCEPTED: "Conditionally Accepted",
+	REJECTED: "Rejected",
+	WITHDRAWN: "Withdrawn",
 };
 
 const typeLabels = {
 	ABSTRACT: "Abstract",
-	FULL_PAPER: "Artykuł",
+	FULL_PAPER: "Full Paper",
 	POSTER: "Poster",
 };
 
@@ -56,25 +59,25 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 									ID
 								</th>
 								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-									Tytuł
+									Title
 								</th>
 								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-									Typ
+									Type
 								</th>
 								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
 									Status
 								</th>
 								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-									Runda
+									Round
 								</th>
 								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-									Wersja
+									Version
 								</th>
 								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-									Data zgłoszenia
+									Submitted
 								</th>
 								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-									Ostatnia modyfikacja
+									Last Modified
 								</th>
 							</tr>
 						</thead>
@@ -124,7 +127,7 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap">
 										<span className="text-sm text-muted-foreground">
-											{submission.createdAt.toLocaleDateString("pl-PL", {
+											{submission.createdAt.toLocaleDateString("en-US", {
 												day: "2-digit",
 												month: "2-digit",
 												year: "numeric",
@@ -133,7 +136,7 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap">
 										<span className="text-sm text-muted-foreground">
-											{submission.updatedAt.toLocaleDateString("pl-PL", {
+											{submission.updatedAt.toLocaleDateString("en-US", {
 												day: "2-digit",
 												month: "2-digit",
 												year: "numeric",
@@ -180,16 +183,16 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 										<span className="font-mono text-xs">{submission.id}</span>
 									</div>
 									<div>
-										<span className="text-muted-foreground">Runda:</span>{" "}
+										<span className="text-muted-foreground">Round:</span>{" "}
 										{submission.currentRound}
 									</div>
 									<div>
-										<span className="text-muted-foreground">Wersja:</span>{" "}
+										<span className="text-muted-foreground">Version:</span>{" "}
 										{submission.currentVersion}
 									</div>
 									<div>
-										<span className="text-muted-foreground">Zgłoszono:</span>{" "}
-										{submission.createdAt.toLocaleDateString("pl-PL", {
+										<span className="text-muted-foreground">Submitted:</span>{" "}
+										{submission.createdAt.toLocaleDateString("en-US", {
 											day: "2-digit",
 											month: "2-digit",
 										})}
@@ -198,8 +201,8 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 
 								{/* Last Modified */}
 								<div className="text-xs text-muted-foreground pt-2 border-t">
-									Ostatnia modyfikacja:{" "}
-									{submission.updatedAt.toLocaleDateString("pl-PL", {
+									Last modified:{" "}
+									{submission.updatedAt.toLocaleDateString("en-US", {
 										day: "2-digit",
 										month: "2-digit",
 										year: "numeric",

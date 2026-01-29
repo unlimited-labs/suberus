@@ -1,35 +1,25 @@
-import { useState, useCallback } from "react"
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
-import { useForm } from "@tanstack/react-form"
 import {
-	IconMail,
-	IconWorld,
-	IconMapPin,
-	IconArrowRight,
 	IconArrowLeft,
+	IconArrowRight,
 	IconCheck,
+	IconMail,
+	IconMapPin,
 	IconSelector,
-} from "@tabler/icons-react"
-import { z } from "zod"
-import { countries } from "countries-list"
-import { toast } from "sonner"
-
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select"
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover"
+	IconWorld,
+} from "@tabler/icons-react";
+import { useForm } from "@tanstack/react-form";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { countries } from "countries-list";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
+import { z } from "zod";
+import { AffiliationSelect } from "@/components/forms/affiliation-select";
+import { AuthSidebar } from "@/components/forms/auth-sidebar";
+import { FieldError } from "@/components/forms/field-error";
+import { IconInput } from "@/components/forms/icon-input";
+import { PasswordInput } from "@/components/forms/password-input";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Command,
 	CommandEmpty,
@@ -37,27 +27,40 @@ import {
 	CommandInput,
 	CommandItem,
 	CommandList,
-} from "@/components/ui/command"
-import { cn } from "@/lib/utils"
-import { AuthSidebar } from "@/components/forms/auth-sidebar"
-import { IconInput } from "@/components/forms/icon-input"
-import { PasswordInput } from "@/components/forms/password-input"
-import { FieldError } from "@/components/forms/field-error"
-import { AffiliationSelect } from "@/components/forms/affiliation-select"
-import { useMultiStep } from "@/hooks/use-multi-step"
-import { useZodFormFieldOnChange } from "@/hooks/use-zod-form-field"
-import { signUp } from "@/lib/auth-client"
+} from "@/components/ui/command";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { useMultiStep } from "@/hooks/use-multi-step";
+import { useZodFormFieldOnChange } from "@/hooks/use-zod-form-field";
+import { signUp } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_auth/register")({
 	component: RegisterPage,
-})
+});
 
-const emailSchema = z.string().min(1, "Email is required").email("Invalid email address")
+const emailSchema = z
+	.string()
+	.min(1, "Email is required")
+	.email("Invalid email address");
 const passwordSchema = z
 	.string()
 	.min(1, "Password is required")
-	.min(10, "Password must be at least 10 characters")
-const requiredString = (field: string) => z.string().min(1, `${field} is required`)
+	.min(10, "Password must be at least 10 characters");
+const requiredString = (field: string) =>
+	z.string().min(1, `${field} is required`);
 
 const TITLE_OPTIONS = [
 	{ value: "mr", label: "Mr." },
@@ -65,39 +68,39 @@ const TITLE_OPTIONS = [
 	{ value: "msc", label: "M.Sc." },
 	{ value: "dr", label: "Dr." },
 	{ value: "prof", label: "Prof." },
-] as const
+] as const;
 
 const STEPS = [
 	{ id: 1, title: "Author Information" },
 	{ id: 2, title: "Invoice Information" },
 	{ id: 3, title: "Survey" },
-] as const
+] as const;
 
 const COUNTRIES = Object.values(countries)
 	.map((c) => c.name)
-	.toSorted((a, b) => a.localeCompare(b))
+	.toSorted((a, b) => a.localeCompare(b));
 
 type FormData = {
-	email: string
-	password: string
-	confirmPassword: string
-	title: string
-	firstName: string
-	lastName: string
-	affiliationId: string
-	affiliationName: string
-	address: string
-	country: string
-	needsVisaLetter: boolean
-	needsCertificate: boolean
-	acceptTerms: boolean
-}
+	email: string;
+	password: string;
+	confirmPassword: string;
+	title: string;
+	firstName: string;
+	lastName: string;
+	affiliationId: string;
+	affiliationName: string;
+	address: string;
+	country: string;
+	needsVisaLetter: boolean;
+	needsCertificate: boolean;
+	acceptTerms: boolean;
+};
 
 function RegisterPage() {
-	const navigate = useNavigate()
-	const [countryOpen, setCountryOpen] = useState(false)
+	const navigate = useNavigate();
+	const [countryOpen, setCountryOpen] = useState(false);
 
-	const form = useForm<FormData>({
+	const form = useForm({
 		defaultValues: {
 			email: "",
 			password: "",
@@ -118,73 +121,97 @@ function RegisterPage() {
 				email: value.email,
 				password: value.password,
 				name: value.lastName,
+				// Additional fields defined in auth config with input: true
 				firstName: value.firstName,
 				title: value.title || undefined,
 				affiliationId: value.affiliationId || undefined,
 				address: value.address || undefined,
 				country: value.country || undefined,
-			})
+			} as Parameters<typeof signUp.email>[0]);
 
 			if (result.error) {
-				toast.error(result.error.message ?? "Registration failed")
-				return
+				toast.error(result.error.message ?? "Registration failed");
+				return;
 			}
 
-			toast.success("Account created successfully")
-			navigate({ to: "/" })
+			toast.success("Account created successfully");
+			navigate({ to: "/" });
 		},
-	})
+	});
 
 	const validateStep = useCallback(
 		async (step: number): Promise<boolean> => {
 			const fieldsToValidate: (keyof FormData)[] =
 				step === 1
-					? ["email", "password", "confirmPassword", "firstName", "lastName", "affiliationId"]
+					? [
+							"email",
+							"password",
+							"confirmPassword",
+							"firstName",
+							"lastName",
+							"affiliationId",
+						]
 					: step === 2
 						? ["country"]
-						: ["acceptTerms"]
+						: ["acceptTerms"];
 
 			for (const fieldName of fieldsToValidate) {
-				await form.validateField(fieldName, "submit")
+				await form.validateField(fieldName, "submit");
 			}
 
 			return !fieldsToValidate.some((fieldName) => {
-				const field = form.getFieldMeta(fieldName)
-				return field?.errors && field.errors.length > 0
-			})
+				const field = form.getFieldMeta(fieldName);
+				return field?.errors && field.errors.length > 0;
+			});
 		},
-		[form]
-	)
+		[form],
+	);
 
-	const { currentStep, next, prev, isFirst, isLast, isValidationAttempted, markValidationAttempted } =
-		useMultiStep({
-			totalSteps: 3,
-			validateStep,
-		})
+	const {
+		currentStep,
+		next,
+		prev,
+		isFirst,
+		isLast,
+		isValidationAttempted,
+		markValidationAttempted,
+	} = useMultiStep({
+		totalSteps: 3,
+		validateStep,
+	});
 
-	const emailValidators = useZodFormFieldOnChange(emailSchema, isValidationAttempted)
-	const passwordValidators = useZodFormFieldOnChange(passwordSchema, isValidationAttempted)
+	const emailValidators = useZodFormFieldOnChange(
+		emailSchema,
+		isValidationAttempted,
+	);
+	const passwordValidators = useZodFormFieldOnChange(
+		passwordSchema,
+		isValidationAttempted,
+	);
 	const firstNameValidators = useZodFormFieldOnChange(
 		requiredString("First name"),
-		isValidationAttempted
-	)
+		isValidationAttempted,
+	);
 	const lastNameValidators = useZodFormFieldOnChange(
 		requiredString("Last name"),
-		isValidationAttempted
-	)
+		isValidationAttempted,
+	);
 	const affiliationIdValidators = useZodFormFieldOnChange(
 		requiredString("Affiliation"),
-		isValidationAttempted
-	)
-	const countryValidators = useZodFormFieldOnChange(requiredString("Country"), isValidationAttempted)
+		isValidationAttempted,
+	);
+	const countryValidators = useZodFormFieldOnChange(
+		requiredString("Country"),
+		isValidationAttempted,
+	);
 
 	const handleSubmit = async () => {
-		markValidationAttempted(3)
-		const isValid = await validateStep(3)
+		markValidationAttempted(3);
+		const isValid = await validateStep(3);
 		if (isValid) {
-			await form.handleSubmit()
+			await form.handleSubmit();
 		}
-	}
+	};
 
 	return (
 		<div className="mx-auto flex w-full max-w-4xl overflow-hidden rounded-2xl bg-card shadow-2xl">
@@ -211,7 +238,7 @@ function RegisterPage() {
 							key={step.id}
 							className={cn(
 								"h-1.5 flex-1 rounded-full transition-colors",
-								step.id <= currentStep ? "bg-primary" : "bg-muted"
+								step.id <= currentStep ? "bg-primary" : "bg-muted",
 							)}
 						/>
 					))}
@@ -219,8 +246,8 @@ function RegisterPage() {
 
 				<form
 					onSubmit={(e) => {
-						e.preventDefault()
-						e.stopPropagation()
+						e.preventDefault();
+						e.stopPropagation();
 					}}
 					className="flex flex-1 flex-col"
 				>
@@ -270,17 +297,19 @@ function RegisterPage() {
 										name="confirmPassword"
 										validators={{
 											onSubmit: ({ value, fieldApi }) => {
-												if (!value) return "Confirm password"
-												const password = fieldApi.form.getFieldValue("password")
-												if (value !== password) return "Passwords do not match"
-												return undefined
+												if (!value) return "Confirm password";
+												const password =
+													fieldApi.form.getFieldValue("password");
+												if (value !== password) return "Passwords do not match";
+												return undefined;
 											},
 											onChange: ({ value, fieldApi }) => {
-												if (!isValidationAttempted) return undefined
-												if (!value) return "Confirm password"
-												const password = fieldApi.form.getFieldValue("password")
-												if (value !== password) return "Passwords do not match"
-												return undefined
+												if (!isValidationAttempted) return undefined;
+												if (!value) return "Confirm password";
+												const password =
+													fieldApi.form.getFieldValue("password");
+												if (value !== password) return "Passwords do not match";
+												return undefined;
 											},
 										}}
 									>
@@ -311,7 +340,8 @@ function RegisterPage() {
 													type="text"
 													className={cn(
 														"h-9",
-														field.state.meta.errors.length > 0 && "border-destructive"
+														field.state.meta.errors.length > 0 &&
+															"border-destructive",
 													)}
 													value={field.state.value}
 													onBlur={field.handleBlur}
@@ -331,7 +361,8 @@ function RegisterPage() {
 													type="text"
 													className={cn(
 														"h-9",
-														field.state.meta.errors.length > 0 && "border-destructive"
+														field.state.meta.errors.length > 0 &&
+															"border-destructive",
 													)}
 													value={field.state.value}
 													onBlur={field.handleBlur}
@@ -358,7 +389,10 @@ function RegisterPage() {
 													</SelectTrigger>
 													<SelectContent>
 														{TITLE_OPTIONS.map((option) => (
-															<SelectItem key={option.value} value={option.value}>
+															<SelectItem
+																key={option.value}
+																value={option.value}
+															>
 																{option.label}
 															</SelectItem>
 														))}
@@ -368,7 +402,10 @@ function RegisterPage() {
 										)}
 									</form.Field>
 
-									<form.Field name="affiliationId" validators={affiliationIdValidators}>
+									<form.Field
+										name="affiliationId"
+										validators={affiliationIdValidators}
+									>
 										{(field) => (
 											<div className="space-y-1">
 												<Label>Affiliation *</Label>
@@ -376,8 +413,8 @@ function RegisterPage() {
 													value={field.state.value || null}
 													displayValue={form.state.values.affiliationName}
 													onChange={(id, name) => {
-														field.handleChange(id ?? "")
-														form.setFieldValue("affiliationName", name)
+														field.handleChange(id ?? "");
+														form.setFieldValue("affiliationName", name);
 													}}
 													hasError={field.state.meta.errors.length > 0}
 												/>
@@ -409,7 +446,7 @@ function RegisterPage() {
 													className={cn(
 														"flex w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 pl-9 text-sm transition-colors",
 														"placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
-														"disabled:cursor-not-allowed disabled:opacity-50"
+														"disabled:cursor-not-allowed disabled:opacity-50",
 													)}
 													value={field.state.value}
 													onChange={(e) => field.handleChange(e.target.value)}
@@ -433,7 +470,8 @@ function RegisterPage() {
 														className={cn(
 															"h-9 w-full justify-between pl-3 font-normal",
 															!field.state.value && "text-muted-foreground",
-															field.state.meta.errors.length > 0 && "border-destructive"
+															field.state.meta.errors.length > 0 &&
+																"border-destructive",
 														)}
 													>
 														<span className="flex items-center gap-2">
@@ -457,8 +495,8 @@ function RegisterPage() {
 																		key={country}
 																		value={country}
 																		onSelect={() => {
-																			field.handleChange(country)
-																			setCountryOpen(false)
+																			field.handleChange(country);
+																			setCountryOpen(false);
 																		}}
 																	>
 																		<IconCheck
@@ -466,7 +504,7 @@ function RegisterPage() {
 																				"mr-2 size-4",
 																				field.state.value === country
 																					? "opacity-100"
-																					: "opacity-0"
+																					: "opacity-0",
 																			)}
 																		/>
 																		{country}
@@ -499,14 +537,17 @@ function RegisterPage() {
 												<Checkbox
 													id={field.name}
 													checked={field.state.value}
-													onCheckedChange={(checked) => field.handleChange(checked === true)}
+													onCheckedChange={(checked) =>
+														field.handleChange(checked === true)
+													}
 													className="mt-0.5"
 												/>
 												<Label
 													htmlFor={field.name}
 													className="cursor-pointer text-sm font-normal leading-snug"
 												>
-													Please send me an Invitation Letter for a Visa Application.
+													Please send me an Invitation Letter for a Visa
+													Application.
 												</Label>
 											</div>
 										)}
@@ -518,7 +559,9 @@ function RegisterPage() {
 												<Checkbox
 													id={field.name}
 													checked={field.state.value}
-													onCheckedChange={(checked) => field.handleChange(checked === true)}
+													onCheckedChange={(checked) =>
+														field.handleChange(checked === true)
+													}
 													className="mt-0.5"
 												/>
 												<Label
@@ -537,13 +580,15 @@ function RegisterPage() {
 									name="acceptTerms"
 									validators={{
 										onSubmit: ({ value }) => {
-											if (!value) return "You must accept the terms and conditions"
-											return undefined
+											if (!value)
+												return "You must accept the terms and conditions";
+											return undefined;
 										},
 										onChange: ({ value }) => {
-											if (!isValidationAttempted) return undefined
-											if (!value) return "You must accept the terms and conditions"
-											return undefined
+											if (!isValidationAttempted) return undefined;
+											if (!value)
+												return "You must accept the terms and conditions";
+											return undefined;
 										},
 									}}
 								>
@@ -553,7 +598,9 @@ function RegisterPage() {
 												<Checkbox
 													id={field.name}
 													checked={field.state.value}
-													onCheckedChange={(checked) => field.handleChange(checked === true)}
+													onCheckedChange={(checked) =>
+														field.handleChange(checked === true)
+													}
 													className="mt-0.5"
 												/>
 												<Label
@@ -582,7 +629,12 @@ function RegisterPage() {
 					{/* Navigation buttons */}
 					<div className="mt-4 flex gap-2">
 						{!isFirst && (
-							<Button type="button" variant="outline" onClick={prev} className="h-9 flex-1">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={prev}
+								className="h-9 flex-1"
+							>
 								<IconArrowLeft className="mr-2 size-4" />
 								Back
 							</Button>
@@ -600,7 +652,9 @@ function RegisterPage() {
 								disabled={form.state.isSubmitting}
 								className="h-9 flex-1"
 							>
-								{form.state.isSubmitting ? "Creating account..." : "Create account"}
+								{form.state.isSubmitting
+									? "Creating account..."
+									: "Create account"}
 							</Button>
 						)}
 					</div>
@@ -609,11 +663,14 @@ function RegisterPage() {
 				{/* Login link */}
 				<p className="mt-3 text-center text-sm text-muted-foreground">
 					Already have an account?{" "}
-					<Link to="/login" className="font-medium text-primary hover:underline">
+					<Link
+						to="/login"
+						className="font-medium text-primary hover:underline"
+					>
 						Sign in
 					</Link>
 				</p>
 			</div>
 		</div>
-	)
+	);
 }

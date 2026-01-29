@@ -1,17 +1,17 @@
-import { createFileRoute, Link } from "@tanstack/react-router"
-import { useQuery } from "@tanstack/react-query"
-import { IconUsers, IconDownload } from "@tabler/icons-react"
-import { PageHeader } from "@/components/layout/page-header"
-import { DataTable, DataTableToolbar } from "@/components/admin/data-table"
-import { userColumns } from "@/components/admin/users/columns"
-import { UserBulkActions } from "@/components/admin/users/user-bulk-actions"
-import { UserMobileCard } from "@/components/admin/users/user-mobile-card"
-import { Button } from "@/components/ui/button"
-import type { AdminUser, GetUsersResponse } from "@/lib/server/admin/users"
+import { IconDownload, IconUsers } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { DataTable, DataTableToolbar } from "@/components/admin/data-table";
+import { userColumns } from "@/components/admin/users/columns";
+import { UserBulkActions } from "@/components/admin/users/user-bulk-actions";
+import { UserMobileCard } from "@/components/admin/users/user-mobile-card";
+import { PageHeader } from "@/components/layout/page-header";
+import { Button } from "@/components/ui/button";
+import type { AdminUser, GetUsersResponse } from "@/lib/server/admin/users";
 
 export const Route = createFileRoute("/_app/admin/_layout/users/")({
 	component: UsersPage,
-})
+});
 
 const columnLabels: Record<string, string> = {
 	name: "Name",
@@ -19,22 +19,26 @@ const columnLabels: Record<string, string> = {
 	affiliation: "Affiliation",
 	feePaid: "Fee",
 	isActive: "Status",
-}
+};
 
 async function fetchUsers(): Promise<AdminUser[]> {
-	const response = await fetch("/api/admin/users")
+	const response = await fetch("/api/admin/users");
 	if (!response.ok) {
-		throw new Error("Failed to fetch users")
+		throw new Error("Failed to fetch users");
 	}
-	const data: GetUsersResponse = await response.json()
-	return data.users
+	const data: GetUsersResponse = await response.json();
+	return data.users;
 }
 
 function UsersPage() {
-	const { data: users = [], isLoading, error } = useQuery({
+	const {
+		data: users = [],
+		isLoading,
+		error,
+	} = useQuery({
 		queryKey: ["admin-users"],
 		queryFn: fetchUsers,
-	})
+	});
 
 	if (error) {
 		return (
@@ -44,7 +48,7 @@ function UsersPage() {
 					<p className="text-destructive">Error loading users</p>
 				</div>
 			</div>
-		)
+		);
 	}
 
 	return (
@@ -81,5 +85,5 @@ function UsersPage() {
 				)}
 			</div>
 		</div>
-	)
+	);
 }

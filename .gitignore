@@ -20,6 +20,11 @@ dev-volumes/
 
 /garage/rclone.conf
 
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
 # IDE and tools
 .claude
 .idea

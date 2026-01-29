@@ -1,18 +1,18 @@
-import type { ColumnDef } from "@tanstack/react-table"
-import type { AdminUser } from "@/lib/server/admin/users"
-import { Badge } from "@/components/ui/badge"
+import type { ColumnDef } from "@tanstack/react-table";
 import {
-	DataTableColumnHeader,
-	createSelectColumn,
 	createActionsColumn,
+	createSelectColumn,
+	DataTableColumnHeader,
 	facetedFilterFn,
-} from "@/components/admin/data-table"
+} from "@/components/admin/data-table";
+import { Badge } from "@/components/ui/badge";
 import {
-	roleLabels,
-	roleFilterOptions,
-	feeTypeLabels,
 	feeFilterOptions,
-} from "@/lib/labels/user"
+	feeTypeLabels,
+	roleFilterOptions,
+	roleLabels,
+} from "@/lib/labels/user";
+import type { AdminUser } from "@/lib/server/admin/users";
 
 export const userColumns: ColumnDef<AdminUser>[] = [
 	createSelectColumn<AdminUser>(),
@@ -28,38 +28,44 @@ export const userColumns: ColumnDef<AdminUser>[] = [
 			/>
 		),
 		cell: ({ row }) => {
-			const firstName = row.original.firstName
-			const lastName = row.original.lastName
+			const firstName = row.original.firstName;
+			const lastName = row.original.lastName;
 			const name =
 				firstName || lastName
 					? `${firstName ?? ""} ${lastName ?? ""}`.trim()
-					: null
+					: null;
 
 			return (
 				<div className="flex flex-col">
-					<span className="font-medium text-foreground">{name ?? row.original.email}</span>
+					<span className="font-medium text-foreground">
+						{name ?? row.original.email}
+					</span>
 					{name && (
 						<span className="text-xs text-muted-foreground">
 							{row.original.email}
 						</span>
 					)}
 				</div>
-			)
+			);
 		},
 		filterFn: "includesString",
 	},
 	{
 		accessorKey: "role",
 		header: ({ column }) => (
-			<DataTableColumnHeader column={column} title="Role" filterOptions={[...roleFilterOptions]} />
+			<DataTableColumnHeader
+				column={column}
+				title="Role"
+				filterOptions={[...roleFilterOptions]}
+			/>
 		),
 		cell: ({ row }) => {
-			const role = row.getValue("role") as string
+			const role = row.getValue("role") as string;
 			return (
 				<Badge variant={role === "ADMIN" ? "default" : "secondary"}>
 					{roleLabels[role as keyof typeof roleLabels] ?? role}
 				</Badge>
-			)
+			);
 		},
 		filterFn: facetedFilterFn,
 	},
@@ -83,18 +89,22 @@ export const userColumns: ColumnDef<AdminUser>[] = [
 		accessorKey: "feePaid",
 		accessorFn: (row) => (row.fee?.paid ? "paid" : "unpaid"),
 		header: ({ column }) => (
-			<DataTableColumnHeader column={column} title="Fee" filterOptions={[...feeFilterOptions]} />
+			<DataTableColumnHeader
+				column={column}
+				title="Fee"
+				filterOptions={[...feeFilterOptions]}
+			/>
 		),
 		cell: ({ row }) => {
-			const fee = row.original.fee
+			const fee = row.original.fee;
 			if (!fee?.paid) {
-				return <Badge variant="destructive">Unpaid</Badge>
+				return <Badge variant="destructive">Unpaid</Badge>;
 			}
 			return (
 				<Badge variant="outline" className="text-green-600 border-green-600">
 					{feeTypeLabels[fee.type] ?? fee.type}
 				</Badge>
-			)
+			);
 		},
 		filterFn: facetedFilterFn,
 	},
@@ -104,16 +114,22 @@ export const userColumns: ColumnDef<AdminUser>[] = [
 			<DataTableColumnHeader column={column} title="Status" />
 		),
 		cell: ({ row }) => {
-			const isActive = row.getValue("isActive") as boolean
+			const isActive = row.getValue("isActive") as boolean;
 			return isActive ? (
 				<Badge variant="outline">Active</Badge>
 			) : (
 				<Badge variant="destructive">Inactive</Badge>
-			)
+			);
 		},
 	},
 	createActionsColumn<AdminUser>({
-		getViewLink: (user) => ({ to: "/admin/users/$id", params: { id: user.id } }),
-		getEditLink: (user) => ({ to: "/admin/users/$id", params: { id: user.id } }),
+		getViewLink: (user) => ({
+			to: "/admin/users/$id",
+			params: { id: user.id },
+		}),
+		getEditLink: (user) => ({
+			to: "/admin/users/$id",
+			params: { id: user.id },
+		}),
 	}),
-]
+];

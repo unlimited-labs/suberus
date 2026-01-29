@@ -1,17 +1,18 @@
-import { IconLock } from "@tabler/icons-react"
+import { IconLock } from "@tabler/icons-react";
 
-import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
-import { usePasswordVisibility } from "@/hooks/use-password-visibility"
+import { Input } from "@/components/ui/input";
+import { usePasswordVisibility } from "@/hooks/use-password-visibility";
+import { cn } from "@/lib/utils";
 
 interface PasswordInputProps {
-	id?: string
-	value: string
-	onChange: (value: string) => void
-	onBlur?: () => void
-	placeholder?: string
-	hasError?: boolean
-	className?: string
+	id?: string;
+	value: string;
+	onChange: (value: string) => void;
+	onBlur?: () => void;
+	placeholder?: string;
+	hasError?: boolean;
+	className?: string;
+	disabled?: boolean;
 }
 
 export function PasswordInput({
@@ -22,8 +23,9 @@ export function PasswordInput({
 	placeholder,
 	hasError,
 	className,
+	disabled,
 }: PasswordInputProps) {
-	const { type, toggle, Icon } = usePasswordVisibility()
+	const { type, toggle, Icon } = usePasswordVisibility();
 
 	return (
 		<div className="relative">
@@ -32,10 +34,15 @@ export function PasswordInput({
 				id={id}
 				type={type}
 				placeholder={placeholder}
-				className={cn("h-9 pl-9 pr-10", hasError && "border-destructive", className)}
+				className={cn(
+					"h-9 pl-9 pr-10",
+					hasError && "border-destructive",
+					className,
+				)}
 				value={value}
 				onBlur={onBlur}
 				onChange={(e) => onChange(e.target.value)}
+				disabled={disabled}
 			/>
 			<button
 				type="button"
@@ -45,5 +52,5 @@ export function PasswordInput({
 				<Icon className="size-4" />
 			</button>
 		</div>
-	)
+	);
 }

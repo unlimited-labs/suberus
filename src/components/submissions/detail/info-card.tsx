@@ -1,8 +1,8 @@
 import {
-	IconHash,
-	IconCategory,
-	IconRefresh,
 	IconCalendar,
+	IconCategory,
+	IconHash,
+	IconRefresh,
 } from "@tabler/icons-react";
 import { VersionSelector } from "@/components/submissions/version-selector";
 import type { MockSubmission, MockVersion } from "@/lib/mock-data/submissions";
@@ -21,7 +21,9 @@ function InfoItem({ icon, label, value, mono }: InfoItemProps) {
 			{icon ?? <div className="size-4" />}
 			<div>
 				<p className="text-xs text-muted-foreground">{label}</p>
-				<p className={`text-sm font-medium text-foreground ${mono ? "font-mono" : ""}`}>
+				<p
+					className={`text-sm font-medium text-foreground ${mono ? "font-mono" : ""}`}
+				>
 					{value}
 				</p>
 			</div>
@@ -43,7 +45,7 @@ export function InfoCard({
 	onVersionChange,
 }: InfoCardProps) {
 	const formatDate = (date: Date) =>
-		date.toLocaleDateString("pl-PL", {
+		date.toLocaleDateString("en-US", {
 			day: "2-digit",
 			month: "2-digit",
 			year: "numeric",
@@ -51,22 +53,22 @@ export function InfoCard({
 
 	return (
 		<div className="rounded-2xl bg-card shadow-xl p-6 border">
-			<h3 className="font-semibold text-foreground mb-4">Informacje</h3>
+			<h3 className="font-semibold text-foreground mb-4">Information</h3>
 			<div className="space-y-4">
 				<InfoItem
 					icon={<IconHash className="size-4 text-muted-foreground" />}
-					label="ID zgłoszenia"
+					label="Submission ID"
 					value={submission.id}
 					mono
 				/>
 				<InfoItem
 					icon={<IconCategory className="size-4 text-muted-foreground" />}
-					label="Typ"
+					label="Type"
 					value={TYPE_LABELS[submission.type]}
 				/>
 				<InfoItem
 					icon={<IconRefresh className="size-4 text-muted-foreground" />}
-					label="Runda recenzji"
+					label="Review Round"
 					value={submission.currentRound}
 				/>
 
@@ -80,19 +82,19 @@ export function InfoCard({
 						/>
 					</div>
 				) : (
-					<InfoItem label="Wersja" value={submission.currentVersion} />
+					<InfoItem label="Version" value={submission.currentVersion} />
 				)}
 
 				<div className="border-t pt-4">
 					<InfoItem
 						icon={<IconCalendar className="size-4 text-muted-foreground" />}
-						label="Data zgłoszenia"
+						label="Submitted"
 						value={formatDate(submission.createdAt)}
 					/>
 				</div>
 				<InfoItem
 					icon={<IconCalendar className="size-4 text-muted-foreground" />}
-					label="Ostatnia modyfikacja"
+					label="Last Modified"
 					value={formatDate(submission.updatedAt)}
 				/>
 			</div>

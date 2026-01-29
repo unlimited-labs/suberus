@@ -1,9 +1,17 @@
-import { IconWriting, IconUsers, IconHistory, IconTags } from "@tabler/icons-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+import {
+	IconHistory,
+	IconTags,
+	IconUsers,
+	IconWriting,
+} from "@tabler/icons-react";
 import { SubmissionTimeline } from "@/components/submissions/submission-timeline";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type {
+	MockAuthor,
+	MockStatusHistory,
+} from "@/lib/mock-data/submissions";
 import { AuthorCard } from "./author-card";
-import type { MockAuthor, MockStatusHistory } from "@/lib/mock-data/submissions";
 
 interface ContentTabsProps {
 	title: string;
@@ -26,15 +34,15 @@ export function ContentTabs({
 				<TabsList variant="line" className="mb-6">
 					<TabsTrigger value="overview" className="gap-2">
 						<IconWriting className="size-4" />
-						<span className="hidden sm:inline">Przegląd</span>
+						<span className="hidden sm:inline">Overview</span>
 					</TabsTrigger>
 					<TabsTrigger value="authors" className="gap-2">
 						<IconUsers className="size-4" />
-						<span className="hidden sm:inline">Autorzy ({authors.length})</span>
+						<span className="hidden sm:inline">Authors ({authors.length})</span>
 					</TabsTrigger>
 					<TabsTrigger value="history" className="gap-2">
 						<IconHistory className="size-4" />
-						<span className="hidden sm:inline">Historia</span>
+						<span className="hidden sm:inline">History</span>
 					</TabsTrigger>
 				</TabsList>
 
@@ -44,7 +52,9 @@ export function ContentTabs({
 					</h1>
 
 					<div className="space-y-2">
-						<p className="text-sm font-medium text-muted-foreground">Abstrakt</p>
+						<p className="text-sm font-medium text-muted-foreground">
+							Abstract
+						</p>
 						<div className="text-sm text-foreground leading-relaxed whitespace-pre-line bg-muted/30 p-4 rounded-lg border">
 							{content}
 						</div>
@@ -54,12 +64,16 @@ export function ContentTabs({
 						<div className="flex items-center gap-2">
 							<IconTags className="size-4 text-muted-foreground" />
 							<p className="text-sm font-medium text-muted-foreground">
-								Słowa kluczowe
+								Keywords
 							</p>
 						</div>
 						<div className="flex flex-wrap gap-2">
 							{keywords.map((keyword) => (
-								<Badge key={keyword} variant="secondary" className="text-sm px-3 py-1">
+								<Badge
+									key={keyword}
+									variant="secondary"
+									className="text-sm px-3 py-1"
+								>
 									{keyword}
 								</Badge>
 							))}

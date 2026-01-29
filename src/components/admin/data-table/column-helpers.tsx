@@ -1,14 +1,14 @@
-import type { ColumnDef, Row } from "@tanstack/react-table"
-import { Link } from "@tanstack/react-router"
-import { IconDotsVertical, IconEye, IconEdit } from "@tabler/icons-react"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Button } from "@/components/ui/button"
+import { IconDotsVertical, IconEdit, IconEye } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
+import type { ColumnDef, Row } from "@tanstack/react-table";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 
 export function createSelectColumn<T>(): ColumnDef<T> {
 	return {
@@ -32,25 +32,27 @@ export function createSelectColumn<T>(): ColumnDef<T> {
 		),
 		enableSorting: false,
 		enableHiding: false,
-	}
+	};
 }
 
 interface ActionLink {
-	to: string
-	params: Record<string, string>
+	to: string;
+	params: Record<string, string>;
 }
 
 interface ActionsColumnConfig<T> {
-	getViewLink: (row: T) => ActionLink
-	getEditLink?: (row: T) => ActionLink
+	getViewLink: (row: T) => ActionLink;
+	getEditLink?: (row: T) => ActionLink;
 }
 
-export function createActionsColumn<T>(config: ActionsColumnConfig<T>): ColumnDef<T> {
+export function createActionsColumn<T>(
+	config: ActionsColumnConfig<T>,
+): ColumnDef<T> {
 	return {
 		id: "actions",
 		cell: ({ row }) => {
-			const viewLink = config.getViewLink(row.original)
-			const editLink = config.getEditLink?.(row.original)
+			const viewLink = config.getViewLink(row.original);
+			const editLink = config.getEditLink?.(row.original);
 
 			return (
 				<DropdownMenu>
@@ -77,15 +79,15 @@ export function createActionsColumn<T>(config: ActionsColumnConfig<T>): ColumnDe
 						)}
 					</DropdownMenuContent>
 				</DropdownMenu>
-			)
+			);
 		},
-	}
+	};
 }
 
 export const facetedFilterFn = <T,>(
 	row: Row<T>,
 	columnId: string,
-	filterValue: string[]
+	filterValue: string[],
 ) => {
-	return filterValue.includes(row.getValue(columnId))
-}
+	return filterValue.includes(row.getValue(columnId));
+};

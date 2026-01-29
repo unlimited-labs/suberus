@@ -1,18 +1,18 @@
-import { useState, useEffect } from "react"
-import type { Table } from "@tanstack/react-table"
-import { IconX, IconSearch } from "@tabler/icons-react"
+import { IconSearch, IconX } from "@tabler/icons-react";
+import type { Table } from "@tanstack/react-table";
+import { useEffect, useState } from "react";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { DataTableViewOptions } from "./data-table-view-options"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { DataTableViewOptions } from "./data-table-view-options";
 
 interface DataTableToolbarProps<TData> {
-	table: Table<TData>
-	searchKey?: string
-	searchPlaceholder?: string
-	filters?: React.ReactNode
-	actions?: React.ReactNode
-	columnLabels?: Record<string, string>
+	table: Table<TData>;
+	searchKey?: string;
+	searchPlaceholder?: string;
+	filters?: React.ReactNode;
+	actions?: React.ReactNode;
+	columnLabels?: Record<string, string>;
 }
 
 export function DataTableToolbar<TData>({
@@ -23,16 +23,16 @@ export function DataTableToolbar<TData>({
 	actions,
 	columnLabels,
 }: DataTableToolbarProps<TData>) {
-	const isFiltered = table.getState().columnFilters.length > 0
+	const isFiltered = table.getState().columnFilters.length > 0;
 	const columnFilterValue = searchKey
-		? (table.getColumn(searchKey)?.getFilterValue() as string) ?? ""
-		: ""
-	const [searchValue, setSearchValue] = useState(columnFilterValue)
+		? ((table.getColumn(searchKey)?.getFilterValue() as string) ?? "")
+		: "";
+	const [searchValue, setSearchValue] = useState(columnFilterValue);
 
 	// Sync local state with external filter changes (e.g., reset)
 	useEffect(() => {
-		setSearchValue(columnFilterValue)
-	}, [columnFilterValue])
+		setSearchValue(columnFilterValue);
+	}, [columnFilterValue]);
 
 	return (
 		<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -44,9 +44,9 @@ export function DataTableToolbar<TData>({
 							placeholder={searchPlaceholder}
 							value={searchValue}
 							onChange={(event) => {
-								const value = event.target.value
-								setSearchValue(value)
-								table.getColumn(searchKey)?.setFilterValue(value || undefined)
+								const value = event.target.value;
+								setSearchValue(value);
+								table.getColumn(searchKey)?.setFilterValue(value || undefined);
 							}}
 							className="h-8 w-[150px] pl-8 pr-8 lg:w-[250px]"
 						/>
@@ -54,8 +54,8 @@ export function DataTableToolbar<TData>({
 							<button
 								type="button"
 								onClick={() => {
-									setSearchValue("")
-									table.getColumn(searchKey)?.setFilterValue(undefined)
+									setSearchValue("");
+									table.getColumn(searchKey)?.setFilterValue(undefined);
 								}}
 								className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
 							>
@@ -86,5 +86,5 @@ export function DataTableToolbar<TData>({
 				/>
 			</div>
 		</div>
-	)
+	);
 }

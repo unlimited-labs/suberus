@@ -28,7 +28,7 @@ export const auth = betterAuth({
 	},
 	emailAndPassword: {
 		enabled: true,
-		requireEmailVerification: false, // TODO: enable in production
+		requireEmailVerification: false,
 		minPasswordLength: 10,
 	},
 	user: {

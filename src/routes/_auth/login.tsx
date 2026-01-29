@@ -1,27 +1,32 @@
-import { createFileRoute, Link } from "@tanstack/react-router"
-import { useForm } from "@tanstack/react-form"
-import { IconMail } from "@tabler/icons-react"
-import { z } from "zod"
-
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { AuthSidebar } from "@/components/forms/auth-sidebar"
-import { IconInput } from "@/components/forms/icon-input"
-import { PasswordInput } from "@/components/forms/password-input"
-import { FieldError } from "@/components/forms/field-error"
-import { useZodFormField } from "@/hooks/use-zod-form-field"
+import { IconMail } from "@tabler/icons-react";
+import { useForm } from "@tanstack/react-form";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { z } from "zod";
+import { AuthSidebar } from "@/components/forms/auth-sidebar";
+import { FieldError } from "@/components/forms/field-error";
+import { IconInput } from "@/components/forms/icon-input";
+import { PasswordInput } from "@/components/forms/password-input";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { useZodFormField } from "@/hooks/use-zod-form-field";
+import { signIn } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/_auth/login")({
 	component: LoginPage,
-})
+});
 
-const emailSchema = z.string().min(1, "Email is required").email("Invalid email address")
-const passwordSchema = z.string().min(1, "Password is required")
+const emailSchema = z
+	.string()
+	.min(1, "Email is required")
+	.email("Invalid email address");
+const passwordSchema = z.string().min(1, "Password is required");
 
 function LoginPage() {
-	const emailValidators = useZodFormField(emailSchema)
-	const passwordValidators = useZodFormField(passwordSchema)
+	const navigate = useNavigate();
+	const emailValidators = useZodFormField(emailSchema);
+	const passwordValidators = useZodFormField(passwordSchema);
 
 	const form = useForm({
 		defaultValues: {
@@ -30,9 +35,21 @@ function LoginPage() {
 			rememberMe: false,
 		},
 		onSubmit: async ({ value }) => {
-			console.log("Login form submitted:", value)
+			const result = await signIn.email({
+				email: value.email,
+				password: value.password,
+				rememberMe: value.rememberMe,
+			});
+
+			if (result.error) {
+				toast.error(result.error.message ?? "Invalid credentials");
+				return;
+			}
+
+			toast.success("Logged in successfully");
+			navigate({ to: "/" });
 		},
-	})
+	});
 
 	return (
 		<div className="mx-auto flex w-full max-w-3xl overflow-hidden rounded-2xl bg-card shadow-2xl">
@@ -51,9 +68,9 @@ function LoginPage() {
 
 				<form
 					onSubmit={(e) => {
-						e.preventDefault()
-						e.stopPropagation()
-						void form.handleSubmit()
+						e.preventDefault();
+						e.stopPropagation();
+						void form.handleSubmit();
 					}}
 					className="flex flex-1 flex-col"
 				>
@@ -102,7 +119,9 @@ function LoginPage() {
 										<Checkbox
 											id={field.name}
 											checked={field.state.value}
-											onCheckedChange={(checked) => field.handleChange(checked === true)}
+											onCheckedChange={(checked) =>
+												field.handleChange(checked === true)
+											}
 										/>
 										<Label
 											htmlFor={field.name}
@@ -114,7 +133,10 @@ function LoginPage() {
 								)}
 							</form.Field>
 
-							<Link to="/forgot-password" className="text-sm text-primary hover:underline">
+							<Link
+								to="/forgot-password"
+								className="text-sm text-primary hover:underline"
+							>
 								Forgot password?
 							</Link>
 						</div>
@@ -122,7 +144,11 @@ function LoginPage() {
 
 					{/* Submit button */}
 					<div className="mt-4">
-						<Button type="submit" className="h-9 w-full" disabled={form.state.isSubmitting}>
+						<Button
+							type="submit"
+							className="h-9 w-full"
+							disabled={form.state.isSubmitting}
+						>
 							{form.state.isSubmitting ? "Signing in..." : "Sign in"}
 						</Button>
 					</div>
@@ -131,11 +157,14 @@ function LoginPage() {
 				{/* Register link */}
 				<p className="mt-3 text-center text-sm text-muted-foreground">
 					Don't have an account?{" "}
-					<Link to="/register" className="font-medium text-primary hover:underline">
+					<Link
+						to="/register"
+						className="font-medium text-primary hover:underline"
+					>
 						Create one
 					</Link>
 				</p>
 			</div>
 		</div>
-	)
+	);
 }

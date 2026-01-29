@@ -1,32 +1,31 @@
-import type { Column } from "@tanstack/react-table"
 import {
 	IconArrowDown,
 	IconArrowUp,
-	IconSelector,
 	IconEyeOff,
-} from "@tabler/icons-react"
-
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+	IconSelector,
+} from "@tabler/icons-react";
+import type { Column } from "@tanstack/react-table";
+import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 import {
 	DataTableColumnFilter,
 	type FilterOption,
-} from "./data-table-column-filter"
-import { DataTableTextFilter } from "./data-table-text-filter"
+} from "./data-table-column-filter";
+import { DataTableTextFilter } from "./data-table-text-filter";
 
 interface DataTableColumnHeaderProps<TData, TValue>
 	extends React.HTMLAttributes<HTMLDivElement> {
-	column: Column<TData, TValue>
-	title: string
-	filterOptions?: FilterOption[]
-	textFilter?: boolean | { placeholder?: string }
+	column: Column<TData, TValue>;
+	title: string;
+	filterOptions?: FilterOption[];
+	textFilter?: boolean | { placeholder?: string };
 }
 
 export function DataTableColumnHeader<TData, TValue>({
@@ -37,11 +36,11 @@ export function DataTableColumnHeader<TData, TValue>({
 	textFilter,
 }: DataTableColumnHeaderProps<TData, TValue>) {
 	const textFilterPlaceholder =
-		typeof textFilter === "object" ? textFilter.placeholder : undefined
+		typeof textFilter === "object" ? textFilter.placeholder : undefined;
 
 	const renderFilter = () => {
 		if (filterOptions) {
-			return <DataTableColumnFilter column={column} options={filterOptions} />
+			return <DataTableColumnFilter column={column} options={filterOptions} />;
 		}
 		if (textFilter) {
 			return (
@@ -49,10 +48,10 @@ export function DataTableColumnHeader<TData, TValue>({
 					column={column}
 					placeholder={textFilterPlaceholder}
 				/>
-			)
+			);
 		}
-		return null
-	}
+		return null;
+	};
 
 	if (!column.getCanSort()) {
 		return (
@@ -60,7 +59,7 @@ export function DataTableColumnHeader<TData, TValue>({
 				<span>{title}</span>
 				{renderFilter()}
 			</div>
-		)
+		);
 	}
 
 	return (
@@ -104,5 +103,5 @@ export function DataTableColumnHeader<TData, TValue>({
 			</DropdownMenu>
 			{renderFilter()}
 		</div>
-	)
+	);
 }

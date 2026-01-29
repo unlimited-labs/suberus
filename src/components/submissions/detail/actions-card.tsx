@@ -1,5 +1,5 @@
-import { useNavigate } from "@tanstack/react-router";
 import { IconEdit, IconSend, IconX } from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import type { SubmissionStatus } from "@/lib/mock-data/submissions";
 
@@ -9,7 +9,11 @@ interface ActionsCardProps {
 	showTitle?: boolean;
 }
 
-export function ActionsCard({ submissionId, status, showTitle = true }: ActionsCardProps) {
+export function ActionsCard({
+	submissionId,
+	status,
+	showTitle = true,
+}: ActionsCardProps) {
 	const navigate = useNavigate();
 
 	const handleEdit = () => navigate({ to: "/submissions/new" });
@@ -21,13 +25,17 @@ export function ActionsCard({ submissionId, status, showTitle = true }: ActionsC
 			case "DRAFT":
 				return (
 					<>
-						<Button variant="outline" className="gap-2 w-full" onClick={handleEdit}>
+						<Button
+							variant="outline"
+							className="gap-2 w-full"
+							onClick={handleEdit}
+						>
 							<IconEdit className="size-4" />
-							Kontynuuj edycję
+							Continue Editing
 						</Button>
 						<Button className="gap-2 w-full" onClick={handleSubmit}>
 							<IconSend className="size-4" />
-							Wyślij
+							Submit
 						</Button>
 					</>
 				);
@@ -35,7 +43,7 @@ export function ActionsCard({ submissionId, status, showTitle = true }: ActionsC
 				return (
 					<Button className="gap-2 w-full" onClick={handleEdit}>
 						<IconEdit className="size-4" />
-						Wprowadź poprawki
+						Make Revisions
 					</Button>
 				);
 			case "SUBMITTED":
@@ -44,9 +52,13 @@ export function ActionsCard({ submissionId, status, showTitle = true }: ActionsC
 			case "AWAITING_DECISION":
 			case "RESUBMITTED":
 				return (
-					<Button variant="destructive" className="gap-2 w-full" onClick={handleWithdraw}>
+					<Button
+						variant="destructive"
+						className="gap-2 w-full"
+						onClick={handleWithdraw}
+					>
 						<IconX className="size-4" />
-						Wycofaj zgłoszenie
+						Withdraw Submission
 					</Button>
 				);
 			default:
@@ -59,7 +71,9 @@ export function ActionsCard({ submissionId, status, showTitle = true }: ActionsC
 
 	return (
 		<div className="rounded-2xl bg-card shadow-xl p-6 border">
-			{showTitle && <h3 className="font-semibold text-foreground mb-4">Akcje</h3>}
+			{showTitle && (
+				<h3 className="font-semibold text-foreground mb-4">Actions</h3>
+			)}
 			<div className="space-y-2">{actions}</div>
 		</div>
 	);

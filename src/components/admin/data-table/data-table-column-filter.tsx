@@ -1,66 +1,66 @@
-import { useState, useEffect } from "react"
-import type { Column } from "@tanstack/react-table"
-import { IconFilter, IconFilterFilled } from "@tabler/icons-react"
-import { Button } from "@/components/ui/button"
+import { IconFilter, IconFilterFilled } from "@tabler/icons-react";
+import type { Column } from "@tanstack/react-table";
+import { useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-} from "@/components/ui/popover"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Separator } from "@/components/ui/separator"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 export interface FilterOption {
-	label: string
-	value: string
+	label: string;
+	value: string;
 }
 
 interface DataTableColumnFilterProps<TData, TValue> {
-	column: Column<TData, TValue>
-	options: FilterOption[]
+	column: Column<TData, TValue>;
+	options: FilterOption[];
 }
 
 export function DataTableColumnFilter<TData, TValue>({
 	column,
 	options,
 }: DataTableColumnFilterProps<TData, TValue>) {
-	const facets = column?.getFacetedUniqueValues()
-	const columnFilterValue = column?.getFilterValue() as string[] | undefined
+	const facets = column?.getFacetedUniqueValues();
+	const columnFilterValue = column?.getFilterValue() as string[] | undefined;
 	const [selectedValues, setSelectedValues] = useState<Set<string>>(
-		new Set(columnFilterValue)
-	)
+		new Set(columnFilterValue),
+	);
 
 	// Sync with external filter changes
 	useEffect(() => {
-		setSelectedValues(new Set(columnFilterValue))
-	}, [columnFilterValue])
+		setSelectedValues(new Set(columnFilterValue));
+	}, [columnFilterValue]);
 
-	const hasFilters = selectedValues.size > 0
+	const hasFilters = selectedValues.size > 0;
 
 	const handleSelect = (value: string) => {
-		const newSelectedValues = new Set(selectedValues)
+		const newSelectedValues = new Set(selectedValues);
 		if (newSelectedValues.has(value)) {
-			newSelectedValues.delete(value)
+			newSelectedValues.delete(value);
 		} else {
-			newSelectedValues.add(value)
+			newSelectedValues.add(value);
 		}
-		setSelectedValues(newSelectedValues)
-		const filterValues = Array.from(newSelectedValues)
-		column?.setFilterValue(filterValues.length ? filterValues : undefined)
-	}
+		setSelectedValues(newSelectedValues);
+		const filterValues = Array.from(newSelectedValues);
+		column?.setFilterValue(filterValues.length ? filterValues : undefined);
+	};
 
 	const handleClear = () => {
-		setSelectedValues(new Set())
-		column?.setFilterValue(undefined)
-	}
+		setSelectedValues(new Set());
+		column?.setFilterValue(undefined);
+	};
 
 	const handleSelectAll = () => {
-		const allValues = new Set(options.map((o) => o.value))
-		setSelectedValues(allValues)
-		column?.setFilterValue(options.map((o) => o.value))
-	}
+		const allValues = new Set(options.map((o) => o.value));
+		setSelectedValues(allValues);
+		column?.setFilterValue(options.map((o) => o.value));
+	};
 
 	return (
 		<Popover>
@@ -68,10 +68,7 @@ export function DataTableColumnFilter<TData, TValue>({
 				<Button
 					variant="ghost"
 					size="icon-sm"
-					className={cn(
-						"size-6 shrink-0",
-						hasFilters && "text-primary"
-					)}
+					className={cn("size-6 shrink-0", hasFilters && "text-primary")}
 				>
 					{hasFilters ? (
 						<IconFilterFilled className="size-3.5" />
@@ -96,8 +93,8 @@ export function DataTableColumnFilter<TData, TValue>({
 				<div className="max-h-64 overflow-auto p-2">
 					<div className="space-y-2">
 						{options.map((option) => {
-							const isSelected = selectedValues.has(option.value)
-							const count = facets?.get(option.value) ?? 0
+							const isSelected = selectedValues.has(option.value);
+							const count = facets?.get(option.value) ?? 0;
 
 							return (
 								<button
@@ -117,7 +114,7 @@ export function DataTableColumnFilter<TData, TValue>({
 										{count}
 									</span>
 								</button>
-							)
+							);
 						})}
 					</div>
 				</div>
@@ -143,5 +140,5 @@ export function DataTableColumnFilter<TData, TValue>({
 				</div>
 			</PopoverContent>
 		</Popover>
-	)
+	);
 }

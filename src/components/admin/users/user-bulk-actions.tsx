@@ -1,29 +1,29 @@
-import { useState } from "react"
-import type { Table } from "@tanstack/react-table"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import type { AdminUser } from "@/lib/server/admin/users"
-import type { FeeType, UserRole } from "@/generated/prisma"
-import { Button } from "@/components/ui/button"
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { Table } from "@tanstack/react-table";
+import { useState } from "react";
+import { BulkActionDialog } from "@/components/admin/data-table";
+import { Button } from "@/components/ui/button";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select"
-import { BulkActionDialog } from "@/components/admin/data-table"
-import { useAdminAuth } from "@/hooks/use-admin-auth"
-import { feeTypeOptions, userRoleOptions } from "@/lib/labels/user"
+} from "@/components/ui/select";
+import type { FeeType, UserRole } from "@/generated/prisma";
+import { useAdminAuth } from "@/hooks/use-admin-auth";
+import { feeTypeOptions, userRoleOptions } from "@/lib/labels/user";
+import type { AdminUser } from "@/lib/server/admin/users";
 
 interface UserBulkActionsProps {
-	table: Table<AdminUser>
+	table: Table<AdminUser>;
 }
 
 interface BulkActionPayload {
-	action: "mark_fee" | "change_role"
-	userIds: string[]
-	feeType?: FeeType
-	role?: UserRole
+	action: "mark_fee" | "change_role";
+	userIds: string[];
+	feeType?: FeeType;
+	role?: UserRole;
 }
 
 async function bulkAction(payload: BulkActionPayload) {
@@ -31,68 +31,68 @@ async function bulkAction(payload: BulkActionPayload) {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(payload),
-	})
+	});
 	if (!response.ok) {
-		throw new Error("Bulk action failed")
+		throw new Error("Bulk action failed");
 	}
-	return response.json()
+	return response.json();
 }
 
 export function UserBulkActions({ table }: UserBulkActionsProps) {
-	const queryClient = useQueryClient()
-	const { canChangeRoles } = useAdminAuth()
-	const selectedRows = table.getFilteredSelectedRowModel().rows
-	const selectedCount = selectedRows.length
+	const queryClient = useQueryClient();
+	const { canChangeRoles } = useAdminAuth();
+	const selectedRows = table.getFilteredSelectedRowModel().rows;
+	const selectedCount = selectedRows.length;
 
-	const [selectedAction, setSelectedAction] = useState<string>("")
-	const [feeDialogOpen, setFeeDialogOpen] = useState(false)
-	const [roleDialogOpen, setRoleDialogOpen] = useState(false)
-	const [selectedFeeType, setSelectedFeeType] = useState<FeeType>("FULL")
-	const [selectedRole, setSelectedRole] = useState<UserRole>("AUTHOR")
+	const [selectedAction, setSelectedAction] = useState<string>("");
+	const [feeDialogOpen, setFeeDialogOpen] = useState(false);
+	const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+	const [selectedFeeType, setSelectedFeeType] = useState<FeeType>("FULL");
+	const [selectedRole, setSelectedRole] = useState<UserRole>("AUTHOR");
 
 	const mutation = useMutation({
 		mutationFn: bulkAction,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["admin-users"] })
-			table.resetRowSelection()
-			setFeeDialogOpen(false)
-			setRoleDialogOpen(false)
-			setSelectedAction("")
+			queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+			table.resetRowSelection();
+			setFeeDialogOpen(false);
+			setRoleDialogOpen(false);
+			setSelectedAction("");
 		},
-	})
+	});
 
-	if (selectedCount === 0) return null
+	if (selectedCount === 0) return null;
 
 	const handleApply = () => {
 		if (selectedAction === "mark_fee") {
-			setFeeDialogOpen(true)
+			setFeeDialogOpen(true);
 		} else if (selectedAction === "change_role") {
-			setRoleDialogOpen(true)
+			setRoleDialogOpen(true);
 		}
-	}
+	};
 
 	const handleMarkFeesPaid = () => {
-		const userIds = selectedRows.map((row) => row.original.id)
+		const userIds = selectedRows.map((row) => row.original.id);
 		mutation.mutate({
 			action: "mark_fee",
 			userIds,
 			feeType: selectedFeeType,
-		})
-	}
+		});
+	};
 
 	const handleChangeRole = () => {
-		const userIds = selectedRows.map((row) => row.original.id)
+		const userIds = selectedRows.map((row) => row.original.id);
 		mutation.mutate({
 			action: "change_role",
 			userIds,
 			role: selectedRole,
-		})
-	}
+		});
+	};
 
 	const actions = [
 		{ value: "mark_fee", label: "Mark fee paid" },
 		...(canChangeRoles ? [{ value: "change_role", label: "Change role" }] : []),
-	]
+	];
 
 	return (
 		<>
@@ -112,11 +112,7 @@ export function UserBulkActions({ table }: UserBulkActionsProps) {
 						))}
 					</SelectContent>
 				</Select>
-				<Button
-					size="sm"
-					onClick={handleApply}
-					disabled={!selectedAction}
-				>
+				<Button size="sm" onClick={handleApply} disabled={!selectedAction}>
 					Apply
 				</Button>
 			</div>
@@ -171,5 +167,5 @@ export function UserBulkActions({ table }: UserBulkActionsProps) {
 				</Select>
 			</BulkActionDialog>
 		</>
-	)
+	);
 }

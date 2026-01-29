@@ -1,30 +1,30 @@
-import type { Table } from "@tanstack/react-table"
 import {
 	IconChevronLeft,
 	IconChevronRight,
 	IconChevronsLeft,
 	IconChevronsRight,
-} from "@tabler/icons-react"
+} from "@tabler/icons-react";
+import type { Table } from "@tanstack/react-table";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 
 interface DataTablePaginationProps<TData> {
-	table: Table<TData>
+	table: Table<TData>;
 }
 
 export function DataTablePagination<TData>({
 	table,
 }: DataTablePaginationProps<TData>) {
-	const totalRows = table.getFilteredRowModel().rows.length
-	const pageSize = table.getState().pagination.pageSize
-	const pageCount = table.getPageCount()
+	const totalRows = table.getFilteredRowModel().rows.length;
+	const pageSize = table.getState().pagination.pageSize;
+	const pageCount = table.getPageCount();
 
 	return (
 		<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-2">
@@ -44,7 +44,7 @@ export function DataTablePagination<TData>({
 					<Select
 						value={`${pageSize}`}
 						onValueChange={(value) => {
-							table.setPageSize(Number(value))
+							table.setPageSize(Number(value));
 						}}
 					>
 						<SelectTrigger className="h-8 w-[70px]">
@@ -102,5 +102,5 @@ export function DataTablePagination<TData>({
 				</div>
 			</div>
 		</div>
-	)
+	);
 }

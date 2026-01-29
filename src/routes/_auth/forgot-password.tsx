@@ -1,38 +1,51 @@
-import { useState } from "react"
-import { createFileRoute, Link } from "@tanstack/react-router"
-import { useForm } from "@tanstack/react-form"
-import { IconMail, IconArrowLeft, IconMailCheck } from "@tabler/icons-react"
-import { z } from "zod"
-
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { AuthSidebar } from "@/components/forms/auth-sidebar"
-import { IconInput } from "@/components/forms/icon-input"
-import { FieldError } from "@/components/forms/field-error"
-import { useZodFormField } from "@/hooks/use-zod-form-field"
+import { IconArrowLeft, IconMail, IconMailCheck } from "@tabler/icons-react";
+import { useForm } from "@tanstack/react-form";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { toast } from "sonner";
+import { z } from "zod";
+import { AuthSidebar } from "@/components/forms/auth-sidebar";
+import { FieldError } from "@/components/forms/field-error";
+import { IconInput } from "@/components/forms/icon-input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { useZodFormField } from "@/hooks/use-zod-form-field";
+import { forgetPassword } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/_auth/forgot-password")({
 	component: ForgotPasswordPage,
-})
+});
 
-const emailSchema = z.string().min(1, "Email is required").email("Invalid email address")
+const emailSchema = z
+	.string()
+	.min(1, "Email is required")
+	.email("Invalid email address");
 
 function ForgotPasswordPage() {
-	const [isSubmitted, setIsSubmitted] = useState(false)
-	const [submittedEmail, setSubmittedEmail] = useState("")
+	const [isSubmitted, setIsSubmitted] = useState(false);
+	const [submittedEmail, setSubmittedEmail] = useState("");
 
-	const emailValidators = useZodFormField(emailSchema)
+	const emailValidators = useZodFormField(emailSchema);
 
 	const form = useForm({
 		defaultValues: {
 			email: "",
 		},
 		onSubmit: async ({ value }) => {
-			console.log("Forgot password form submitted:", value)
-			setSubmittedEmail(value.email)
-			setIsSubmitted(true)
+			const result = await forgetPassword({
+				email: value.email,
+				redirectTo: "/reset-password",
+			});
+
+			if (result.error) {
+				toast.error(result.error.message ?? "Failed to send reset email");
+				return;
+			}
+
+			setSubmittedEmail(value.email);
+			setIsSubmitted(true);
 		},
-	})
+	});
 
 	if (isSubmitted) {
 		return (
@@ -44,10 +57,14 @@ function ForgotPasswordPage() {
 							<IconMailCheck className="size-7 text-primary" />
 						</div>
 						<div>
-							<h1 className="text-xl font-semibold tracking-tight">Check your email</h1>
+							<h1 className="text-xl font-semibold tracking-tight">
+								Check your email
+							</h1>
 							<p className="mt-1 text-sm text-muted-foreground">
 								We've sent a password reset link to{" "}
-								<span className="font-medium text-foreground">{submittedEmail}</span>
+								<span className="font-medium text-foreground">
+									{submittedEmail}
+								</span>
 							</p>
 						</div>
 						<p className="text-sm text-muted-foreground">
@@ -70,7 +87,7 @@ function ForgotPasswordPage() {
 					</div>
 				</div>
 			</div>
-		)
+		);
 	}
 
 	return (
@@ -84,7 +101,9 @@ function ForgotPasswordPage() {
 
 				{/* Desktop header */}
 				<div className="mb-4 hidden lg:block">
-					<h1 className="text-xl font-semibold tracking-tight">Forgot password?</h1>
+					<h1 className="text-xl font-semibold tracking-tight">
+						Forgot password?
+					</h1>
 					<p className="text-sm text-muted-foreground">
 						Enter your email and we'll send you a reset link
 					</p>
@@ -92,9 +111,9 @@ function ForgotPasswordPage() {
 
 				<form
 					onSubmit={(e) => {
-						e.preventDefault()
-						e.stopPropagation()
-						void form.handleSubmit()
+						e.preventDefault();
+						e.stopPropagation();
+						void form.handleSubmit();
 					}}
 					className="flex flex-1 flex-col"
 				>
@@ -119,7 +138,11 @@ function ForgotPasswordPage() {
 					</div>
 
 					<div className="mt-4">
-						<Button type="submit" className="h-9 w-full" disabled={form.state.isSubmitting}>
+						<Button
+							type="submit"
+							className="h-9 w-full"
+							disabled={form.state.isSubmitting}
+						>
 							{form.state.isSubmitting ? "Sending..." : "Send reset link"}
 						</Button>
 					</div>
@@ -136,5 +159,5 @@ function ForgotPasswordPage() {
 				</p>
 			</div>
 		</div>
-	)
+	);
 }

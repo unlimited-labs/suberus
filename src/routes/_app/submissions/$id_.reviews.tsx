@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
 import {
 	IconArrowLeft,
-	IconMessageCircle,
 	IconFilter,
+	IconMessageCircle,
 } from "@tabler/icons-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { PageHeader } from "@/components/layout/page-header";
+import { ReviewsCard } from "@/components/submissions/reviews-card";
 import { Button } from "@/components/ui/button";
 import {
 	Select,
@@ -14,10 +15,9 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { ReviewsCard } from "@/components/submissions/reviews-card";
 import {
-	getSubmissionById,
 	getReviewsForSubmission,
+	getSubmissionById,
 } from "@/lib/mock-data/submissions";
 
 export const Route = createFileRoute("/_app/submissions/$id_/reviews")({
@@ -31,28 +31,28 @@ function SubmissionReviewsPage() {
 
 	const rounds = [...new Set(reviews.map((r) => r.round))].sort(
 		(a, b) => b - a,
-	)
+	);
 	const [selectedRound, setSelectedRound] = useState<string>("all");
 
 	if (!submission) {
 		return (
 			<div className="flex h-full flex-col">
-				<PageHeader icon={IconMessageCircle} title="Recenzje" />
+				<PageHeader icon={IconMessageCircle} title="Reviews" />
 				<div className="flex-1 p-6 flex items-center justify-center">
 					<div className="text-center">
 						<p className="text-muted-foreground mb-4">
-							Nie znaleziono zgłoszenia o ID: {id}
+							Submission with ID: {id} not found
 						</p>
 						<Link to="/submissions">
 							<Button variant="outline" className="gap-2">
 								<IconArrowLeft className="size-4" />
-								Powrót do listy
+								Back to List
 							</Button>
 						</Link>
 					</div>
 				</div>
 			</div>
-		)
+		);
 	}
 
 	const filteredReviews =
@@ -67,15 +67,15 @@ function SubmissionReviewsPage() {
 		.map((round) => ({
 			round,
 			reviews: filteredReviews.filter((r) => r.round === round),
-		}))
+		}));
 
 	return (
 		<div className="flex h-full flex-col">
-			<PageHeader icon={IconMessageCircle} title="Recenzje">
+			<PageHeader icon={IconMessageCircle} title="Reviews">
 				<Link to="/submissions/$id" params={{ id }}>
 					<Button variant="outline" className="gap-2">
 						<IconArrowLeft className="size-4" />
-						Powrót do zgłoszenia
+						Back to Submission
 					</Button>
 				</Link>
 			</PageHeader>
@@ -88,31 +88,22 @@ function SubmissionReviewsPage() {
 								{submission.title}
 							</h1>
 							<p className="text-sm text-muted-foreground">
-								{reviews.length}{" "}
-								{reviews.length === 1
-									? "recenzja"
-									: reviews.length < 5
-										? "recenzje"
-										: "recenzji"}{" "}
-								w {rounds.length}{" "}
-								{rounds.length === 1 ? "rundzie" : "rundach"}
+								{reviews.length} {reviews.length === 1 ? "review" : "reviews"}{" "}
+								in {rounds.length} {rounds.length === 1 ? "round" : "rounds"}
 							</p>
 						</div>
 						{rounds.length > 1 && (
 							<div className="flex items-center gap-2">
 								<IconFilter className="size-4 text-muted-foreground" />
-								<Select
-									value={selectedRound}
-									onValueChange={setSelectedRound}
-								>
+								<Select value={selectedRound} onValueChange={setSelectedRound}>
 									<SelectTrigger className="w-[140px]">
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="all">Wszystkie rundy</SelectItem>
+										<SelectItem value="all">All rounds</SelectItem>
 										{rounds.map((round) => (
 											<SelectItem key={round} value={round.toString()}>
-												Runda {round}
+												Round {round}
 											</SelectItem>
 										))}
 									</SelectContent>
@@ -125,20 +116,16 @@ function SubmissionReviewsPage() {
 					{reviews.length === 0 ? (
 						<div className="rounded-2xl bg-card shadow-2xl border p-8 text-center">
 							<p className="text-muted-foreground">
-								Brak recenzji dla tego zgłoszenia.
+								No reviews for this submission.
 							</p>
 						</div>
 					) : (
 						groupedByRound.map(({ round, reviews: roundReviews }) => (
-							<ReviewsCard
-								key={round}
-								reviews={roundReviews}
-								round={round}
-							/>
+							<ReviewsCard key={round} reviews={roundReviews} round={round} />
 						))
 					)}
 				</div>
 			</div>
 		</div>
-	)
+	);
 }

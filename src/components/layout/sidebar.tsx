@@ -1,17 +1,16 @@
-import { Link, useLocation } from "@tanstack/react-router"
-import { IconMenu2 } from "@tabler/icons-react"
-import { cn } from "@/lib/utils"
-import { navigation } from "@/lib/navigation"
-import { Button } from "@/components/ui/button"
-import {
-	Sheet,
-	SheetContent,
-	SheetTrigger,
-} from "@/components/ui/sheet"
-import { UserMenu } from "./user-menu"
+import { IconMenu2 } from "@tabler/icons-react";
+import { Link, useLocation } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useSession } from "@/hooks/use-session";
+import { getNavigationForRole } from "@/lib/navigation";
+import { cn } from "@/lib/utils";
+import { UserMenu } from "./user-menu";
 
 function SidebarContent() {
-	const location = useLocation()
+	const location = useLocation();
+	const { user } = useSession();
+	const sections = getNavigationForRole(user?.role ?? "AUTHOR");
 
 	return (
 		<div className="flex h-full flex-col">
@@ -29,26 +28,38 @@ function SidebarContent() {
 
 			{/* Navigation */}
 			<nav className="flex-1 overflow-auto p-3">
-				<div className="flex flex-col gap-1">
-					{navigation.map((item) => {
-						const isActive = location.pathname === item.href
-						return (
-							<Link
-								key={item.href}
-								to={item.href}
-								className={cn(
-									"flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-									isActive
-										? "bg-sidebar-primary text-sidebar-primary-foreground"
-										: "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-								)}
-							>
-								<item.icon className="size-5" />
-								{item.name}
-							</Link>
-						)
-					})}
-				</div>
+				{sections.map((section, sectionIndex) => (
+					<div key={sectionIndex} className={cn(sectionIndex > 0 && "mt-4")}>
+						{section.title && (
+							<p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/60">
+								{section.title}
+							</p>
+						)}
+						<div className="flex flex-col gap-1">
+							{section.items.map((item) => {
+								const isActive =
+									location.pathname === item.href ||
+									(item.href !== "/" &&
+										location.pathname.startsWith(item.href));
+								return (
+									<Link
+										key={item.href}
+										to={item.href}
+										className={cn(
+											"flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+											isActive
+												? "bg-sidebar-primary text-sidebar-primary-foreground"
+												: "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+										)}
+									>
+										<item.icon className="size-5" />
+										{item.name}
+									</Link>
+								);
+							})}
+						</div>
+					</div>
+				))}
 			</nav>
 
 			{/* User at bottom */}
@@ -56,7 +67,7 @@ function SidebarContent() {
 				<UserMenu />
 			</div>
 		</div>
-	)
+	);
 }
 
 export function Sidebar() {
@@ -64,7 +75,7 @@ export function Sidebar() {
 		<aside className="hidden w-56 shrink-0 bg-sidebar md:flex md:flex-col">
 			<SidebarContent />
 		</aside>
-	)
+	);
 }
 
 export function MobileSidebar() {
@@ -80,5 +91,5 @@ export function MobileSidebar() {
 				<SidebarContent />
 			</SheetContent>
 		</Sheet>
-	)
+	);
 }

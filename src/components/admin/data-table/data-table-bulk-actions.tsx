@@ -1,24 +1,24 @@
-import { useState } from "react"
-import type { Table } from "@tanstack/react-table"
-import { Button } from "@/components/ui/button"
+import type { Table } from "@tanstack/react-table";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 
 export interface BulkAction<TData> {
-	value: string
-	label: string
-	onExecute: (selectedRows: TData[]) => void | Promise<void>
+	value: string;
+	label: string;
+	onExecute: (selectedRows: TData[]) => void | Promise<void>;
 }
 
 interface DataTableBulkActionsProps<TData> {
-	table: Table<TData>
-	actions: BulkAction<TData>[]
-	onActionComplete?: () => void
+	table: Table<TData>;
+	actions: BulkAction<TData>[];
+	onActionComplete?: () => void;
 }
 
 export function DataTableBulkActions<TData>({
@@ -26,31 +26,31 @@ export function DataTableBulkActions<TData>({
 	actions,
 	onActionComplete,
 }: DataTableBulkActionsProps<TData>) {
-	const [selectedAction, setSelectedAction] = useState<string>("")
-	const [isLoading, setIsLoading] = useState(false)
+	const [selectedAction, setSelectedAction] = useState<string>("");
+	const [isLoading, setIsLoading] = useState(false);
 
-	const selectedRows = table.getFilteredSelectedRowModel().rows
-	const selectedCount = selectedRows.length
+	const selectedRows = table.getFilteredSelectedRowModel().rows;
+	const selectedCount = selectedRows.length;
 
-	if (selectedCount === 0) return null
+	if (selectedCount === 0) return null;
 
 	const handleApply = async () => {
-		if (!selectedAction) return
+		if (!selectedAction) return;
 
-		const action = actions.find((a) => a.value === selectedAction)
-		if (!action) return
+		const action = actions.find((a) => a.value === selectedAction);
+		if (!action) return;
 
-		setIsLoading(true)
+		setIsLoading(true);
 		try {
-			const data = selectedRows.map((row) => row.original)
-			await action.onExecute(data)
-			table.resetRowSelection()
-			setSelectedAction("")
-			onActionComplete?.()
+			const data = selectedRows.map((row) => row.original);
+			await action.onExecute(data);
+			table.resetRowSelection();
+			setSelectedAction("");
+			onActionComplete?.();
 		} finally {
-			setIsLoading(false)
+			setIsLoading(false);
 		}
-	}
+	};
 
 	return (
 		<div className="flex items-center gap-2">
@@ -77,5 +77,5 @@ export function DataTableBulkActions<TData>({
 				{isLoading ? "Applying..." : "Apply"}
 			</Button>
 		</div>
-	)
+	);
 }

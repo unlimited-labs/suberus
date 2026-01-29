@@ -1,24 +1,24 @@
-import { useState } from "react";
+import { IconArrowLeft, IconFileText } from "@tabler/icons-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { IconFileText, IconArrowLeft } from "@tabler/icons-react";
+import { useState } from "react";
 import { PageHeader } from "@/components/layout/page-header";
-import { Button } from "@/components/ui/button";
-import { ReviewsSummaryCard } from "@/components/submissions/reviews-summary-card";
-import { EditorDecisionCard } from "@/components/submissions/editor-decision-card";
 import {
-	ContentTabs,
-	StatusCard,
-	InfoCard,
 	ActionsCard,
+	ContentTabs,
+	InfoCard,
 	MobileSidebar,
+	StatusCard,
 } from "@/components/submissions/detail";
+import { EditorDecisionCard } from "@/components/submissions/editor-decision-card";
+import { ReviewsSummaryCard } from "@/components/submissions/reviews-summary-card";
+import { Button } from "@/components/ui/button";
 import {
-	getSubmissionById,
-	getStatusHistoryForSubmission,
-	getReviewsForSubmission,
 	getEditorDecisionForSubmission,
-	getVersionsForSubmission,
+	getReviewsForSubmission,
+	getStatusHistoryForSubmission,
+	getSubmissionById,
 	getVersionByNumber,
+	getVersionsForSubmission,
 } from "@/lib/mock-data/submissions";
 
 export const Route = createFileRoute("/_app/submissions/$id")({
@@ -53,11 +53,11 @@ function SubmissionDetailPage() {
 
 	return (
 		<div className="flex h-full flex-col">
-			<PageHeader icon={IconFileText} title="Szczegóły zgłoszenia">
+			<PageHeader icon={IconFileText} title="Submission Details">
 				<Link to="/submissions">
 					<Button variant="outline" className="gap-2">
 						<IconArrowLeft className="size-4" />
-						Powrót do listy
+						Back to List
 					</Button>
 				</Link>
 			</PageHeader>
@@ -118,16 +118,16 @@ function SubmissionDetailPage() {
 function NotFoundState({ id }: { id: string }) {
 	return (
 		<div className="flex h-full flex-col">
-			<PageHeader icon={IconFileText} title="Zgłoszenie nie znalezione" />
+			<PageHeader icon={IconFileText} title="Submission Not Found" />
 			<div className="flex-1 p-6 flex items-center justify-center">
 				<div className="text-center">
 					<p className="text-muted-foreground mb-4">
-						Nie znaleziono zgłoszenia o ID: {id}
+						Submission with ID: {id} not found
 					</p>
 					<Link to="/submissions">
 						<Button variant="outline" className="gap-2">
 							<IconArrowLeft className="size-4" />
-							Powrót do listy
+							Back to List
 						</Button>
 					</Link>
 				</div>

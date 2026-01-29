@@ -1,7 +1,7 @@
-import type { Table } from "@tanstack/react-table"
-import { IconColumns3 } from "@tabler/icons-react"
+import { IconColumns3 } from "@tabler/icons-react";
+import type { Table } from "@tanstack/react-table";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
@@ -9,25 +9,23 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 
 interface DataTableViewOptionsProps<TData> {
-	table: Table<TData>
-	columnLabels?: Record<string, string>
+	table: Table<TData>;
+	columnLabels?: Record<string, string>;
 }
 
 export function DataTableViewOptions<TData>({
 	table,
 	columnLabels = {},
 }: DataTableViewOptionsProps<TData>) {
-	const columns = table
-		.getAllColumns()
-		.filter((column) => column.getCanHide())
+	const columns = table.getAllColumns().filter((column) => column.getCanHide());
 
 	// Get visibility state to trigger re-renders
-	const columnVisibility = table.getState().columnVisibility
+	const columnVisibility = table.getState().columnVisibility;
 
-	if (columns.length === 0) return null
+	if (columns.length === 0) return null;
 
 	return (
 		<DropdownMenu>
@@ -41,8 +39,8 @@ export function DataTableViewOptions<TData>({
 				<DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
 				<DropdownMenuSeparator />
 				{columns.map((column) => {
-					const label = columnLabels[column.id] ?? column.id
-					const isVisible = columnVisibility[column.id] !== false
+					const label = columnLabels[column.id] ?? column.id;
+					const isVisible = columnVisibility[column.id] !== false;
 					return (
 						<DropdownMenuCheckboxItem
 							key={column.id}
@@ -51,9 +49,9 @@ export function DataTableViewOptions<TData>({
 						>
 							{label}
 						</DropdownMenuCheckboxItem>
-					)
+					);
 				})}
 			</DropdownMenuContent>
 		</DropdownMenu>
-	)
+	);
 }

@@ -1,8 +1,8 @@
 import {
 	Accordion,
+	AccordionContent,
 	AccordionItem,
 	AccordionTrigger,
-	AccordionContent,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import type {
@@ -34,17 +34,17 @@ const statusColors: Record<
 };
 
 const statusLabels: Record<SubmissionStatus, string> = {
-	DRAFT: "Szkic",
-	SUBMITTED: "Zgłoszono",
-	UNDER_REVIEW: "W recenzji",
-	REVIEWS_COMPLETE: "Recenzje zakończone",
-	AWAITING_DECISION: "Oczekuje na decyzję",
-	REVISE_REQUIRED: "Wymagane poprawki",
-	RESUBMITTED: "Ponownie zgłoszono",
-	ACCEPTED: "Zaakceptowano",
-	CONDITIONALLY_ACCEPTED: "Warunkowo zaakceptowano",
-	REJECTED: "Odrzucono",
-	WITHDRAWN: "Wycofano",
+	DRAFT: "Draft",
+	SUBMITTED: "Submitted",
+	UNDER_REVIEW: "Under Review",
+	REVIEWS_COMPLETE: "Reviews Complete",
+	AWAITING_DECISION: "Awaiting Decision",
+	REVISE_REQUIRED: "Revisions Required",
+	RESUBMITTED: "Resubmitted",
+	ACCEPTED: "Accepted",
+	CONDITIONALLY_ACCEPTED: "Conditionally Accepted",
+	REJECTED: "Rejected",
+	WITHDRAWN: "Withdrawn",
 };
 
 function DecisionContent({ decision }: { decision: MockEditorDecision }) {
@@ -53,7 +53,7 @@ function DecisionContent({ decision }: { decision: MockEditorDecision }) {
 			{/* Reasoning */}
 			<div>
 				<p className="text-sm font-medium text-muted-foreground mb-2">
-					Uzasadnienie:
+					Reasoning:
 				</p>
 				<p className="text-sm text-foreground leading-relaxed">
 					{decision.reasoning}
@@ -63,7 +63,7 @@ function DecisionContent({ decision }: { decision: MockEditorDecision }) {
 			{/* Letter to Author */}
 			<div className="pt-3 border-t">
 				<p className="text-sm font-medium text-muted-foreground mb-2">
-					List do autora:
+					Letter to Author:
 				</p>
 				<div className="text-sm text-foreground whitespace-pre-line bg-background/50 p-4 rounded-lg border leading-relaxed max-h-64 overflow-y-auto">
 					{decision.letterToAuthor}
@@ -74,7 +74,7 @@ function DecisionContent({ decision }: { decision: MockEditorDecision }) {
 			{decision.revisionsRequired && decision.revisionsRequired.length > 0 && (
 				<div className="pt-2 border-t">
 					<p className="text-sm font-medium text-muted-foreground mb-3">
-						Wymagane poprawki:
+						Required Revisions:
 					</p>
 					<ul className="space-y-2">
 						{decision.revisionsRequired.map((revision, index) => (
@@ -96,7 +96,7 @@ function DecisionContent({ decision }: { decision: MockEditorDecision }) {
 			{decision.conditions && decision.conditions.length > 0 && (
 				<div className="pt-2 border-t">
 					<p className="text-sm font-medium text-muted-foreground mb-3">
-						Warunki akceptacji:
+						Acceptance Conditions:
 					</p>
 					<ul className="space-y-2">
 						{decision.conditions.map((condition, index) => (
@@ -116,8 +116,8 @@ function DecisionContent({ decision }: { decision: MockEditorDecision }) {
 
 			{/* Decision Date */}
 			<div className="text-xs text-muted-foreground pt-2 border-t">
-				Data decyzji:{" "}
-				{decision.createdAt.toLocaleDateString("pl-PL", {
+				Decision date:{" "}
+				{decision.createdAt.toLocaleDateString("en-US", {
 					day: "2-digit",
 					month: "2-digit",
 					year: "numeric",
@@ -149,7 +149,7 @@ export function EditorDecisionCard({
 						<AccordionTrigger className="px-8 py-6 hover:no-underline">
 							<div className="flex items-center gap-3 flex-wrap">
 								<h2 className="text-xl font-semibold text-foreground">
-									Decyzja redakcji
+									Editorial Decision
 								</h2>
 								<Badge variant={statusColors[decision.decision]}>
 									{statusLabels[decision.decision]}
@@ -174,7 +174,7 @@ export function EditorDecisionCard({
 				{/* Header */}
 				<div className="flex items-center justify-between flex-wrap gap-3">
 					<h2 className="text-xl font-semibold text-foreground">
-						Decyzja redakcji
+						Editorial Decision
 					</h2>
 					<Badge variant={statusColors[decision.decision]}>
 						{statusLabels[decision.decision]}

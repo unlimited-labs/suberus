@@ -1,4 +1,7 @@
-import type { SubmissionStatus, SubmissionType } from "@/lib/mock-data/submissions";
+import type {
+	SubmissionStatus,
+	SubmissionType,
+} from "@/lib/mock-data/submissions";
 
 export const STATUS_GRADIENTS: Record<SubmissionStatus, string> = {
 	DRAFT: "from-slate-400 to-slate-500",
@@ -15,21 +18,21 @@ export const STATUS_GRADIENTS: Record<SubmissionStatus, string> = {
 };
 
 export const STATUS_LABELS: Record<SubmissionStatus, string> = {
-	DRAFT: "Szkic",
-	SUBMITTED: "Zgłoszono",
-	UNDER_REVIEW: "W recenzji",
-	REVIEWS_COMPLETE: "Recenzje zakończone",
-	AWAITING_DECISION: "Oczekuje na decyzję",
-	REVISE_REQUIRED: "Wymagane poprawki",
-	RESUBMITTED: "Ponownie zgłoszono",
-	ACCEPTED: "Zaakceptowano",
-	CONDITIONALLY_ACCEPTED: "Warunkowo zaakceptowano",
-	REJECTED: "Odrzucono",
-	WITHDRAWN: "Wycofano",
+	DRAFT: "Draft",
+	SUBMITTED: "Submitted",
+	UNDER_REVIEW: "Under Review",
+	REVIEWS_COMPLETE: "Reviews Complete",
+	AWAITING_DECISION: "Awaiting Decision",
+	REVISE_REQUIRED: "Revisions Required",
+	RESUBMITTED: "Resubmitted",
+	ACCEPTED: "Accepted",
+	CONDITIONALLY_ACCEPTED: "Conditionally Accepted",
+	REJECTED: "Rejected",
+	WITHDRAWN: "Withdrawn",
 };
 
 export const TYPE_LABELS: Record<SubmissionType, string> = {
 	ABSTRACT: "Abstract",
-	FULL_PAPER: "Artykuł",
+	FULL_PAPER: "Full Paper",
 	POSTER: "Poster",
 };

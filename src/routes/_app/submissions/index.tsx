@@ -1,8 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
 import { IconFileText, IconPlus } from "@tabler/icons-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/layout/page-header";
-import { Button } from "@/components/ui/button";
 import { SubmissionsTable } from "@/components/submissions/submissions-table";
+import { Button } from "@/components/ui/button";
 import { mockSubmissions } from "@/lib/mock-data/submissions";
 
 export const Route = createFileRoute("/_app/submissions/")({
@@ -17,11 +17,11 @@ function SubmissionsPage() {
 
 	return (
 		<div className="flex h-full flex-col">
-			<PageHeader icon={IconFileText} title="Zgłoszenia">
+			<PageHeader icon={IconFileText} title="Submissions">
 				<Link to="/submissions/new">
 					<Button className="gap-2">
 						<IconPlus className="size-4" />
-						Nowe zgłoszenie
+						New Submission
 					</Button>
 				</Link>
 			</PageHeader>

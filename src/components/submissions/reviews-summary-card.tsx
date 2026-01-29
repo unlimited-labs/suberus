@@ -1,8 +1,8 @@
+import { IconArrowRight, IconMessageCircle } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import { IconMessageCircle, IconArrowRight } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import type { MockReview } from "@/lib/mock-data/submissions";
+import { cn } from "@/lib/utils";
 
 interface ReviewsSummaryCardProps {
 	reviews: MockReview[];
@@ -58,11 +58,11 @@ export function ReviewsSummaryCard({
 			<div className="flex items-center justify-between gap-4 flex-wrap">
 				<div className="flex items-center gap-3">
 					<IconMessageCircle className="size-5 text-muted-foreground" />
-					<h2 className="text-lg font-semibold text-foreground">Recenzje</h2>
+					<h2 className="text-lg font-semibold text-foreground">Reviews</h2>
 				</div>
 				<Link to="/submissions/$id/reviews" params={{ id: submissionId }}>
 					<Button variant="outline" size="sm" className="gap-2">
-						Zobacz wszystkie
+						View All
 						<IconArrowRight className="size-4" />
 					</Button>
 				</Link>
@@ -71,29 +71,29 @@ export function ReviewsSummaryCard({
 			<div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
 				{/* Total reviews */}
 				<div className="p-3 rounded-xl bg-muted/50 border">
-					<p className="text-xs text-muted-foreground">Łącznie</p>
+					<p className="text-xs text-muted-foreground">Total</p>
 					<p className="text-xl font-bold text-foreground">{reviews.length}</p>
 					<p className="text-xs text-muted-foreground">
-						{reviews.length === 1 ? "recenzja" : reviews.length < 5 ? "recenzje" : "recenzji"}
+						{reviews.length === 1 ? "review" : "reviews"}
 					</p>
 				</div>
 
 				{/* Average score */}
 				<div className={cn("p-3 rounded-xl border", avgColorConfig.bg)}>
-					<p className="text-xs text-muted-foreground">Średnia ocena</p>
+					<p className="text-xs text-muted-foreground">Average Score</p>
 					<p className={cn("text-xl font-bold", avgColorConfig.text)}>
 						{avgScore.toFixed(2)}/5
 					</p>
-					<p className="text-xs text-muted-foreground">wszystkie rundy</p>
+					<p className="text-xs text-muted-foreground">all rounds</p>
 				</div>
 
 				{/* Latest round */}
 				<div className="p-3 rounded-xl bg-muted/50 border">
-					<p className="text-xs text-muted-foreground">Ostatnia runda</p>
+					<p className="text-xs text-muted-foreground">Latest Round</p>
 					<p className="text-xl font-bold text-foreground">{latestRound}</p>
 					<p className="text-xs text-muted-foreground">
 						{latestRoundReviews.length}{" "}
-						{latestRoundReviews.length === 1 ? "recenzja" : "recenzje"}
+						{latestRoundReviews.length === 1 ? "review" : "reviews"}
 					</p>
 				</div>
 			</div>

@@ -1,33 +1,37 @@
-import { createFileRoute, Link } from "@tanstack/react-router"
-import { useQuery } from "@tanstack/react-query"
-import { IconUsers, IconArrowLeft } from "@tabler/icons-react"
-import { PageHeader } from "@/components/layout/page-header"
-import { Button } from "@/components/ui/button"
-import { UserDetailCard } from "@/components/admin/users/user-detail-card"
-import type { AdminUser } from "@/lib/server/admin/users"
+import { IconArrowLeft, IconUsers } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { UserDetailCard } from "@/components/admin/users/user-detail-card";
+import { PageHeader } from "@/components/layout/page-header";
+import { Button } from "@/components/ui/button";
+import type { AdminUser } from "@/lib/server/admin/users";
 
 export const Route = createFileRoute("/_app/admin/_layout/users/$id")({
 	component: UserDetailPage,
-})
+});
 
 async function fetchUser(id: string): Promise<AdminUser | null> {
-	const response = await fetch(`/api/admin/users/${id}`)
+	const response = await fetch(`/api/admin/users/${id}`);
 	if (response.status === 404) {
-		return null
+		return null;
 	}
 	if (!response.ok) {
-		throw new Error("Failed to fetch user")
+		throw new Error("Failed to fetch user");
 	}
-	return response.json()
+	return response.json();
 }
 
 function UserDetailPage() {
-	const { id } = Route.useParams()
+	const { id } = Route.useParams();
 
-	const { data: user, isLoading, error } = useQuery({
+	const {
+		data: user,
+		isLoading,
+		error,
+	} = useQuery({
 		queryKey: ["admin-user", id],
 		queryFn: () => fetchUser(id),
-	})
+	});
 
 	if (isLoading) {
 		return (
@@ -44,7 +48,7 @@ function UserDetailPage() {
 					<p className="text-muted-foreground">Loading...</p>
 				</div>
 			</div>
-		)
+		);
 	}
 
 	if (error) {
@@ -62,7 +66,7 @@ function UserDetailPage() {
 					<p className="text-destructive">Error loading user</p>
 				</div>
 			</div>
-		)
+		);
 	}
 
 	if (!user) {
@@ -80,7 +84,7 @@ function UserDetailPage() {
 					<p className="text-muted-foreground">User not found</p>
 				</div>
 			</div>
-		)
+		);
 	}
 
 	return (
@@ -99,5 +103,5 @@ function UserDetailPage() {
 				</div>
 			</div>
 		</div>
-	)
+	);
 }

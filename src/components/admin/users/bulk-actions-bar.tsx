@@ -1,12 +1,7 @@
-import { useState } from "react"
-import type { Table } from "@tanstack/react-table"
-import {
-	IconCash,
-	IconUserCog,
-} from "@tabler/icons-react"
-import type { MockUser } from "@/lib/mock-data/users"
-import type { FeeType, UserRole } from "@/generated/prisma"
-import { Button } from "@/components/ui/button"
+import { IconCash, IconUserCog } from "@tabler/icons-react";
+import type { Table } from "@tanstack/react-table";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -14,19 +9,21 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select"
-import { useAdminAuth } from "@/hooks/use-admin-auth"
-import { bulkMarkFeesPaid, changeUserRole } from "@/lib/server/admin/users"
+} from "@/components/ui/select";
+import type { FeeType, UserRole } from "@/generated/prisma";
+import { useAdminAuth } from "@/hooks/use-admin-auth";
+import type { MockUser } from "@/lib/mock-data/users";
+import { bulkMarkFeesPaid, changeUserRole } from "@/lib/server/admin/users";
 
 interface BulkActionsBarProps {
-	table: Table<MockUser>
+	table: Table<MockUser>;
 }
 
 const feeTypes: { value: FeeType; label: string }[] = [
@@ -35,62 +32,60 @@ const feeTypes: { value: FeeType; label: string }[] = [
 	{ value: "INVITED", label: "Invited" },
 	{ value: "STAFF", label: "Staff" },
 	{ value: "CASH", label: "Cash" },
-]
+];
 
 const userRoles: { value: UserRole; label: string }[] = [
 	{ value: "AUTHOR", label: "Author" },
 	{ value: "REVIEWER", label: "Reviewer" },
 	{ value: "EDITOR", label: "Editor" },
 	{ value: "ADMIN", label: "Administrator" },
-]
+];
 
 export function BulkActionsBar({ table }: BulkActionsBarProps) {
-	const { canChangeRoles } = useAdminAuth()
-	const selectedRows = table.getFilteredSelectedRowModel().rows
-	const selectedCount = selectedRows.length
+	const { canChangeRoles } = useAdminAuth();
+	const selectedRows = table.getFilteredSelectedRowModel().rows;
+	const selectedCount = selectedRows.length;
 
-	const [feeDialogOpen, setFeeDialogOpen] = useState(false)
-	const [roleDialogOpen, setRoleDialogOpen] = useState(false)
-	const [selectedFeeType, setSelectedFeeType] = useState<FeeType>("FULL")
-	const [selectedRole, setSelectedRole] = useState<UserRole>("AUTHOR")
-	const [isLoading, setIsLoading] = useState(false)
+	const [feeDialogOpen, setFeeDialogOpen] = useState(false);
+	const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+	const [selectedFeeType, setSelectedFeeType] = useState<FeeType>("FULL");
+	const [selectedRole, setSelectedRole] = useState<UserRole>("AUTHOR");
+	const [isLoading, setIsLoading] = useState(false);
 
-	if (selectedCount === 0) return null
+	if (selectedCount === 0) return null;
 
 	const handleMarkFeesPaid = () => {
-		setIsLoading(true)
+		setIsLoading(true);
 		try {
-			const userIds = selectedRows.map((row) => row.original.id)
-			bulkMarkFeesPaid({ userIds, feeType: selectedFeeType })
-			table.resetRowSelection()
-			setFeeDialogOpen(false)
+			const userIds = selectedRows.map((row) => row.original.id);
+			bulkMarkFeesPaid({ userIds, feeType: selectedFeeType });
+			table.resetRowSelection();
+			setFeeDialogOpen(false);
 			// TODO: Refresh data / invalidate query
 		} finally {
-			setIsLoading(false)
+			setIsLoading(false);
 		}
-	}
+	};
 
 	const handleChangeRole = () => {
-		setIsLoading(true)
+		setIsLoading(true);
 		try {
 			// Change role for each selected user
 			for (const row of selectedRows) {
-				changeUserRole({ userId: row.original.id, role: selectedRole })
+				changeUserRole({ userId: row.original.id, role: selectedRole });
 			}
-			table.resetRowSelection()
-			setRoleDialogOpen(false)
+			table.resetRowSelection();
+			setRoleDialogOpen(false);
 			// TODO: Refresh data / invalidate query
 		} finally {
-			setIsLoading(false)
+			setIsLoading(false);
 		}
-	}
+	};
 
 	return (
 		<>
 			<div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-4 py-2">
-				<span className="text-sm font-medium">
-					{selectedCount} selected
-				</span>
+				<span className="text-sm font-medium">{selectedCount} selected</span>
 				<div className="h-4 w-px bg-border" />
 				<Button
 					variant="outline"
@@ -186,5 +181,5 @@ export function BulkActionsBar({ table }: BulkActionsBarProps) {
 				</DialogContent>
 			</Dialog>
 		</>
-	)
+	);
 }

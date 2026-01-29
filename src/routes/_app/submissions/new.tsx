@@ -1,10 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { IconFileText } from "@tabler/icons-react";
-import { PageHeader } from "@/components/layout/page-header";
+import { createFileRoute } from "@tanstack/react-router";
 import {
 	SubmissionForm,
 	type SubmissionFormData,
 } from "@/components/forms/submission/submission-form";
+import { PageHeader } from "@/components/layout/page-header";
 
 export const Route = createFileRoute("/_app/submissions/new")({
 	component: NewSubmissionPage,
@@ -19,7 +19,7 @@ function NewSubmissionPage() {
 
 	return (
 		<div className="flex h-full flex-col">
-			<PageHeader icon={IconFileText} title="Nowe zgłoszenie" />
+			<PageHeader icon={IconFileText} title="New Submission" />
 			<div className="flex-1 p-6 overflow-auto">
 				<SubmissionForm onSubmit={handleSubmit} />
 			</div>
