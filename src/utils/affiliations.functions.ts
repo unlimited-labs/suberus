@@ -1,6 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { findAffiliations, upsertAffiliation } from "./affiliations.server";
+import {
+	findAffiliations,
+	upsertAffiliation,
+	getAffiliationById as getAffiliationByIdServer,
+} from "./affiliations.server";
 
 const getAffiliationsSchema = z.object({
 	q: z.string().optional(),
@@ -10,6 +14,16 @@ export const getAffiliations = createServerFn({ method: "GET" })
 	.inputValidator(getAffiliationsSchema)
 	.handler(async ({ data }) => {
 		return findAffiliations(data.q ?? "");
+	});
+
+const getAffiliationByIdSchema = z.object({
+	id: z.string().uuid(),
+});
+
+export const getAffiliationById = createServerFn({ method: "GET" })
+	.inputValidator(getAffiliationByIdSchema)
+	.handler(async ({ data }) => {
+		return getAffiliationByIdServer(data.id);
 	});
 
 const createAffiliationSchema = z.object({

@@ -142,14 +142,14 @@ export class SubmissionPage {
 	}
 
 	async addKeyword(keyword: string) {
-		// Keywords input is in the Keywords section - find input in that section
+		// Keywords input is inside the Keywords section
 		const keywordsSection = this.page
 			.locator("text=Keywords")
 			.locator("xpath=ancestor::div[contains(@class, 'space-y')]")
 		const keywordInput = keywordsSection.locator("input[type='text']")
 		await keywordInput.fill(keyword)
-		// Click add button
-		await keywordsSection.getByLabel("Add keyword").click()
+		// Press Enter to add keyword (or comma for tokenization)
+		await keywordInput.press("Enter")
 	}
 
 	async submit() {

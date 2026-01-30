@@ -41,3 +41,15 @@ export async function upsertAffiliation(
 		},
 	});
 }
+
+export async function getAffiliationById(
+	id: string,
+): Promise<AffiliationResult | null> {
+	return prisma.affiliation.findUnique({
+		where: { id },
+		select: {
+			id: true,
+			name: true,
+		},
+	});
+}

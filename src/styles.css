@@ -216,4 +216,11 @@
   body {
     letter-spacing: var(--tracking-normal);
   }
+
+  /* Ensure form inputs use foreground color by default */
+  input,
+  textarea,
+  select {
+    color: var(--foreground);
+  }
 }

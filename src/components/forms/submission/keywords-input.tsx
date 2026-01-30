@@ -1,8 +1,6 @@
-import { useState, useCallback, type KeyboardEvent } from "react"
-import { IconX, IconPlus } from "@tabler/icons-react"
+import { useState, useCallback, useRef, type KeyboardEvent, type ChangeEvent } from "react"
+import { IconX } from "@tabler/icons-react"
 import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 
 interface KeywordsInputProps {
 	value: string[]
@@ -21,6 +19,8 @@ export function KeywordsInput({
 }: KeywordsInputProps) {
 	const [inputValue, setInputValue] = useState("")
 	const [error, setError] = useState<string | null>(null)
+	const [isFocused, setIsFocused] = useState(false)
+	const inputRef = useRef<HTMLInputElement>(null)
 
 	const addKeyword = useCallback(
 		(keyword: string) => {
@@ -67,58 +67,74 @@ export function KeywordsInput({
 		[inputValue, value, addKeyword, removeKeyword]
 	)
 
+	const handleInputChange = useCallback(
+		(e: ChangeEvent<HTMLInputElement>) => {
+			const val = e.target.value
+			if (val.includes(",")) {
+				const tokens = val.split(",")
+				const lastToken = tokens.pop() ?? ""
+				for (const t of tokens) {
+					addKeyword(t)
+				}
+				setInputValue(lastToken)
+			} else {
+				setInputValue(val)
+			}
+			setError(null)
+		},
+		[addKeyword]
+	)
+
+	const handleContainerClick = () => {
+		inputRef.current?.focus()
+	}
+
 	return (
-		<div className={cn("space-y-3", className)}>
-			<div className="flex items-center gap-2">
-				<Input
+		<div className={cn("space-y-2", className)}>
+			{/* biome-ignore lint/a11y/useKeyWithClickEvents: click focuses inner input */}
+			{/* biome-ignore lint/a11y/noStaticElementInteractions: visual wrapper for input */}
+			<div
+				onClick={handleContainerClick}
+				className={cn(
+					"flex flex-wrap items-center gap-1.5 min-h-10 px-3 py-2 rounded-md border bg-background transition-colors cursor-text",
+					isFocused
+						? "border-ring ring-1 ring-ring"
+						: "border-input hover:border-ring/50",
+					value.length >= maxKeywords && "opacity-60"
+				)}
+			>
+				{value.map((keyword) => (
+					<span
+						key={keyword}
+						className="inline-flex items-center gap-1 px-2 py-0.5 text-sm bg-secondary text-secondary-foreground rounded"
+					>
+						{keyword}
+						<button
+							type="button"
+							onClick={(e) => {
+								e.stopPropagation()
+								removeKeyword(keyword)
+							}}
+							className="rounded hover:bg-foreground/20 p-0.5 transition-colors"
+							aria-label={`Remove ${keyword}`}
+						>
+							<IconX className="size-3" />
+						</button>
+					</span>
+				))}
+				<input
+					ref={inputRef}
 					type="text"
 					value={inputValue}
-					onChange={(e) => {
-						setInputValue(e.target.value)
-						setError(null)
-					}}
+					onChange={handleInputChange}
 					onKeyDown={handleKeyDown}
-					placeholder={placeholder}
+					onFocus={() => setIsFocused(true)}
+					onBlur={() => setIsFocused(false)}
+					placeholder={value.length === 0 ? placeholder : ""}
 					disabled={value.length >= maxKeywords}
-					className="flex-1 text-foreground"
+					className="flex-1 min-w-[120px] bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed"
 				/>
-				<button
-					type="button"
-					onClick={() => addKeyword(inputValue)}
-					disabled={!inputValue.trim() || value.length >= maxKeywords}
-					className={cn(
-						"flex-shrink-0 p-2 rounded-lg border transition-colors",
-						"disabled:opacity-50 disabled:cursor-not-allowed",
-						"hover:bg-primary hover:text-primary-foreground hover:border-primary",
-						"border-border bg-background"
-					)}
-					aria-label="Add keyword"
-				>
-					<IconPlus className="size-4" />
-				</button>
 			</div>
-
-			{value.length > 0 && (
-				<div className="flex flex-wrap gap-2">
-					{value.map((keyword) => (
-						<Badge
-							key={keyword}
-							variant="secondary"
-							className="pl-2.5 pr-1.5 py-1 gap-1.5 font-normal"
-						>
-							<span>{keyword}</span>
-							<button
-								type="button"
-								onClick={() => removeKeyword(keyword)}
-								className="rounded hover:bg-foreground/20 p-0.5 transition-colors"
-								aria-label={`Remove ${keyword}`}
-							>
-								<IconX className="size-3" />
-							</button>
-						</Badge>
-					))}
-				</div>
-			)}
 
 			{error && (
 				<p className="text-xs text-destructive" role="alert">

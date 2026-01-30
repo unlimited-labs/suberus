@@ -87,7 +87,7 @@ function SettingsPage() {
 								title: user.title ?? "",
 								firstName: user.firstName ?? "",
 								lastName: user.lastName ?? "",
-								affiliation: user.affiliation ?? "",
+								affiliation: "", // TODO: Fetch from affiliationId
 								orcid: "", // TODO: Add orcid to user model
 							}}
 							onSave={handlePersonalInfoSave}

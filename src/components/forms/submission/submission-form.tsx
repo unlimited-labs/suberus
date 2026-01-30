@@ -11,7 +11,7 @@ import {
 	IconWriting,
 } from "@tabler/icons-react";
 import { useForm } from "@tanstack/react-form";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { type Author, AuthorsInput } from "./authors-input";
 import { FileDropzone } from "./file-dropzone";
 import { KeywordsInput } from "./keywords-input";
+import { useSession } from "@/hooks/use-session";
 
 const submissionTypeOptions = [
 	{ value: "ABSTRACT", label: "Abstract", icon: IconFileText },
@@ -42,6 +43,8 @@ export interface SubmissionFormData {
 
 export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const { user } = useSession();
+	const hasAutoFilledRef = useRef(false);
 
 	const form = useForm({
 		defaultValues: {
@@ -70,6 +73,34 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 			}
 		},
 	});
+
+	// Auto-fill first author with user data (only for new submissions)
+	useEffect(() => {
+		if (hasAutoFilledRef.current || initialData?.authors) return;
+		if (!user) return;
+
+		const authors = form.state.values.authors;
+		const firstAuthor = authors[0];
+		const isEmpty =
+			!firstAuthor?.firstName &&
+			!firstAuthor?.lastName &&
+			!firstAuthor?.email;
+
+		if (isEmpty) {
+			form.setFieldValue("authors", [
+				{
+					firstName: user.firstName ?? "",
+					lastName: user.lastName ?? "",
+					email: user.email ?? "",
+					affiliationId: user.affiliationId ?? null,
+					affiliationName: "", // AffiliationSelect will fetch name via initValueId
+					isPresenter: true,
+				},
+				...authors.slice(1),
+			]);
+			hasAutoFilledRef.current = true;
+		}
+	}, [user, initialData?.authors, form]);
 
 	const values = form.state.values;
 

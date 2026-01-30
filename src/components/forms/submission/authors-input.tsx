@@ -228,6 +228,7 @@ function SortableAuthorItem({
 							<AffiliationSelect
 								value={author.affiliationId}
 								displayValue={author.affiliationName}
+								initValueId={author.affiliationId}
 								onChange={(id, name) =>
 									updateAuthor(index, { affiliationId: id, affiliationName: name })
 								}

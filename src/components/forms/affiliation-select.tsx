@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import {
 	createAffiliation,
 	getAffiliations,
+	getAffiliationById,
 } from "@/utils/affiliations.functions";
 
 interface Affiliation {
@@ -15,6 +16,8 @@ interface Affiliation {
 interface AffiliationSelectProps {
 	value: string | null;
 	displayValue?: string;
+	/** If provided, fetches affiliation name on mount when displayValue is empty */
+	initValueId?: string | null;
 	onChange: (affiliationId: string | null, affiliationName: string) => void;
 	hasError?: boolean;
 	className?: string;
@@ -24,6 +27,7 @@ interface AffiliationSelectProps {
 export function AffiliationSelect({
 	value,
 	displayValue = "",
+	initValueId,
 	onChange,
 	hasError,
 	className,
@@ -45,6 +49,30 @@ export function AffiliationSelect({
 	useEffect(() => {
 		setInputValue(displayValue);
 	}, [displayValue]);
+
+	// Fetch affiliation by ID if provided and no displayValue/inputValue yet
+	const onChangeRef = useRef(onChange);
+	onChangeRef.current = onChange;
+	const isFetchingRef = useRef(false);
+
+	useEffect(() => {
+		if (displayValue || inputValue || !initValueId || isFetchingRef.current) return;
+		isFetchingRef.current = true;
+
+		getAffiliationById({ data: { id: initValueId } })
+			.then((affiliation) => {
+				if (affiliation) {
+					setInputValue(affiliation.name);
+					onChangeRef.current(affiliation.id, affiliation.name);
+				}
+			})
+			.catch(() => {
+				// Silently fail
+			})
+			.finally(() => {
+				isFetchingRef.current = false;
+			});
+	}, [initValueId, displayValue, inputValue]);
 
 	const fetchAffiliations = useCallback(async (query: string) => {
 		if (!query.trim()) {
@@ -201,7 +229,7 @@ export function AffiliationSelect({
 					onKeyDown={handleKeyDown}
 					placeholder={placeholder}
 					className={cn(
-						"flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 pl-9 text-sm transition-colors",
+						"flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 pl-9 text-sm text-foreground transition-colors",
 						"placeholder:text-muted-foreground",
 						"focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
 						"disabled:cursor-not-allowed disabled:opacity-50",
