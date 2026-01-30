@@ -7,7 +7,8 @@ import { UserBulkActions } from "@/components/admin/users/user-bulk-actions";
 import { UserMobileCard } from "@/components/admin/users/user-mobile-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
-import type { AdminUser, GetUsersResponse } from "@/lib/server/admin/users";
+import type { AdminUser } from "@/lib/server/admin/users";
+import { getAdminUsers } from "@/utils/admin-users.functions";
 
 export const Route = createFileRoute("/_app/admin/_layout/users/")({
 	component: UsersPage,
@@ -22,12 +23,8 @@ const columnLabels: Record<string, string> = {
 };
 
 async function fetchUsers(): Promise<AdminUser[]> {
-	const response = await fetch("/api/admin/users");
-	if (!response.ok) {
-		throw new Error("Failed to fetch users");
-	}
-	const data: GetUsersResponse = await response.json();
-	return data.users;
+	const result = await getAdminUsers({ data: {} });
+	return result.users;
 }
 
 function UsersPage() {

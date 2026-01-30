@@ -5,20 +5,21 @@ import { UserDetailCard } from "@/components/admin/users/user-detail-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import type { AdminUser } from "@/lib/server/admin/users";
+import { getAdminUserById } from "@/utils/admin-users.functions";
 
 export const Route = createFileRoute("/_app/admin/_layout/users/$id")({
 	component: UserDetailPage,
 });
 
 async function fetchUser(id: string): Promise<AdminUser | null> {
-	const response = await fetch(`/api/admin/users/${id}`);
-	if (response.status === 404) {
-		return null;
+	try {
+		return await getAdminUserById({ data: { id } });
+	} catch (error) {
+		if (error instanceof Response && error.status === 404) {
+			return null;
+		}
+		throw error;
 	}
-	if (!response.ok) {
-		throw new Error("Failed to fetch user");
-	}
-	return response.json();
 }
 
 function UserDetailPage() {

@@ -33,6 +33,7 @@ import { Separator } from "@/components/ui/separator";
 import type { FeeType, UserRole } from "@/generated/prisma";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import type { AdminUser } from "@/lib/server/admin/users";
+import { patchAdminUser } from "@/utils/admin-users.functions";
 
 interface UserDetailCardProps {
 	user: AdminUser;
@@ -75,18 +76,6 @@ interface PatchPayload {
 	feeType?: FeeType;
 }
 
-async function patchUser(userId: string, payload: PatchPayload) {
-	const response = await fetch(`/api/admin/users/${userId}`, {
-		method: "PATCH",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(payload),
-	});
-	if (!response.ok) {
-		throw new Error("Failed to update user");
-	}
-	return response.json();
-}
-
 export function UserDetailCard({ user }: UserDetailCardProps) {
 	const queryClient = useQueryClient();
 	const { canChangeRoles } = useAdminAuth();
@@ -98,7 +87,8 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 	const [selectedRole, setSelectedRole] = useState<UserRole>(user.role);
 
 	const mutation = useMutation({
-		mutationFn: (payload: PatchPayload) => patchUser(user.id, payload),
+		mutationFn: (payload: PatchPayload) =>
+			patchAdminUser({ data: { id: user.id, ...payload } }),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["admin-users"] });
 			queryClient.invalidateQueries({ queryKey: ["admin-user", user.id] });

@@ -14,6 +14,7 @@ import type { FeeType, UserRole } from "@/generated/prisma";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { feeTypeOptions, userRoleOptions } from "@/lib/labels/user";
 import type { AdminUser } from "@/lib/server/admin/users";
+import { bulkAdminAction } from "@/utils/admin-users.functions";
 
 interface UserBulkActionsProps {
 	table: Table<AdminUser>;
@@ -24,18 +25,6 @@ interface BulkActionPayload {
 	userIds: string[];
 	feeType?: FeeType;
 	role?: UserRole;
-}
-
-async function bulkAction(payload: BulkActionPayload) {
-	const response = await fetch("/api/admin/users/bulk", {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(payload),
-	});
-	if (!response.ok) {
-		throw new Error("Bulk action failed");
-	}
-	return response.json();
 }
 
 export function UserBulkActions({ table }: UserBulkActionsProps) {
@@ -51,7 +40,8 @@ export function UserBulkActions({ table }: UserBulkActionsProps) {
 	const [selectedRole, setSelectedRole] = useState<UserRole>("AUTHOR");
 
 	const mutation = useMutation({
-		mutationFn: bulkAction,
+		mutationFn: (payload: BulkActionPayload) =>
+			bulkAdminAction({ data: payload }),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["admin-users"] });
 			table.resetRowSelection();
