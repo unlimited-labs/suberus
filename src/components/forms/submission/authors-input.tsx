@@ -1,60 +1,60 @@
-import { useCallback, useState } from "react"
 import {
-	IconPlus,
-	IconTrash,
-	IconStar,
-	IconStarFilled,
-	IconGripVertical,
-} from "@tabler/icons-react"
-import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { AffiliationSelect } from "@/components/forms/affiliation-select"
-import {
-	DndContext,
 	closestCenter,
+	DndContext,
+	type DragEndEvent,
+	DragOverlay,
+	type DragStartEvent,
 	KeyboardSensor,
 	PointerSensor,
 	useSensor,
 	useSensors,
-	DragOverlay,
-	type DragEndEvent,
-	type DragStartEvent,
-} from "@dnd-kit/core"
+} from "@dnd-kit/core";
 import {
 	arrayMove,
 	SortableContext,
 	sortableKeyboardCoordinates,
 	useSortable,
 	verticalListSortingStrategy,
-} from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
+	IconGripVertical,
+	IconPlus,
+	IconStar,
+	IconStarFilled,
+	IconTrash,
+} from "@tabler/icons-react";
+import { useCallback, useState } from "react";
+import { AffiliationSelect } from "@/components/forms/affiliation-select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 export interface Author {
-	firstName: string
-	lastName: string
-	email: string
-	affiliationId: string | null
-	affiliationName: string
-	isPresenter: boolean
+	firstName: string;
+	lastName: string;
+	email: string;
+	affiliationId: string | null;
+	affiliationName: string;
+	isPresenter: boolean;
 }
 
 interface AuthorsInputProps {
-	value: Author[]
-	onChange: (authors: Author[]) => void
-	maxAuthors?: number
-	className?: string
+	value: Author[];
+	onChange: (authors: Author[]) => void;
+	maxAuthors?: number;
+	className?: string;
 }
 
 interface SortableAuthorItemProps {
-	author: Author
-	index: number
-	updateAuthor: (index: number, updates: Partial<Author>) => void
-	removeAuthor: (index: number) => void
-	setPresenter: (index: number) => void
-	canRemove: boolean
-	isDragOverlay?: boolean
+	author: Author;
+	index: number;
+	updateAuthor: (index: number, updates: Partial<Author>) => void;
+	removeAuthor: (index: number) => void;
+	setPresenter: (index: number) => void;
+	canRemove: boolean;
+	isDragOverlay?: boolean;
 }
 
 function SortableAuthorItem({
@@ -76,14 +76,14 @@ function SortableAuthorItem({
 	} = useSortable({
 		id: index.toString(),
 		animateLayoutChanges: () => false, // Disable animation after drop
-	})
+	});
 
 	const style = isDragOverlay
 		? undefined
 		: {
 				transform: CSS.Transform.toString(transform),
 				transition,
-		  }
+			};
 
 	const content = (
 		<div
@@ -95,7 +95,7 @@ function SortableAuthorItem({
 					? "border-primary/30 bg-primary/5"
 					: "border-border/50",
 				isDragging && !isDragOverlay && "opacity-0",
-				isDragOverlay && "shadow-2xl rotate-2"
+				isDragOverlay && "shadow-2xl rotate-2",
 			)}
 		>
 			{/* Compact Header */}
@@ -116,7 +116,7 @@ function SortableAuthorItem({
 							"w-6 h-6 rounded-md flex items-center justify-center text-xs font-semibold",
 							author.isPresenter
 								? "bg-primary/10 text-primary"
-								: "bg-muted/50 text-muted-foreground"
+								: "bg-muted/50 text-muted-foreground",
 						)}
 					>
 						{index + 1}
@@ -128,7 +128,7 @@ function SortableAuthorItem({
 							"flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition-all",
 							author.isPresenter
 								? "text-primary"
-								: "text-muted-foreground hover:text-foreground"
+								: "text-muted-foreground hover:text-foreground",
 						)}
 						aria-label={
 							author.isPresenter ? "Presenting author" : "Set as presenter"
@@ -171,7 +171,9 @@ function SortableAuthorItem({
 							id={`author-${index}-firstName`}
 							type="text"
 							value={author.firstName}
-							onChange={(e) => updateAuthor(index, { firstName: e.target.value })}
+							onChange={(e) =>
+								updateAuthor(index, { firstName: e.target.value })
+							}
 							required
 							className="h-9 text-sm text-foreground"
 							disabled={isDragOverlay}
@@ -189,7 +191,9 @@ function SortableAuthorItem({
 							id={`author-${index}-lastName`}
 							type="text"
 							value={author.lastName}
-							onChange={(e) => updateAuthor(index, { lastName: e.target.value })}
+							onChange={(e) =>
+								updateAuthor(index, { lastName: e.target.value })
+							}
 							required
 							className="h-9 text-sm text-foreground"
 							disabled={isDragOverlay}
@@ -217,9 +221,7 @@ function SortableAuthorItem({
 					</div>
 
 					<div className="space-y-1.5">
-						<Label className="text-xs text-muted-foreground">
-							Affiliation
-						</Label>
+						<Label className="text-xs text-muted-foreground">Affiliation</Label>
 						{isDragOverlay ? (
 							<div className="h-9 flex items-center px-3 rounded-md border bg-background text-sm text-foreground">
 								{author.affiliationName || "—"}
@@ -230,7 +232,10 @@ function SortableAuthorItem({
 								displayValue={author.affiliationName}
 								initValueId={author.affiliationId}
 								onChange={(id, name) =>
-									updateAuthor(index, { affiliationId: id, affiliationName: name })
+									updateAuthor(index, {
+										affiliationId: id,
+										affiliationName: name,
+									})
 								}
 							/>
 						)}
@@ -238,9 +243,9 @@ function SortableAuthorItem({
 				</div>
 			</div>
 		</div>
-	)
+	);
 
-	return content
+	return content;
 }
 
 export function AuthorsInput({
@@ -249,13 +254,13 @@ export function AuthorsInput({
 	maxAuthors: _maxAuthors = 10,
 	className,
 }: AuthorsInputProps) {
-	const [activeId, setActiveId] = useState<string | null>(null)
+	const [activeId, setActiveId] = useState<string | null>(null);
 	const sensors = useSensors(
 		useSensor(PointerSensor),
 		useSensor(KeyboardSensor, {
 			coordinateGetter: sortableKeyboardCoordinates,
-		})
-	)
+		}),
+	);
 
 	const addAuthor = useCallback(() => {
 		const newAuthor: Author = {
@@ -265,69 +270,69 @@ export function AuthorsInput({
 			affiliationId: null,
 			affiliationName: "",
 			isPresenter: value.length === 0,
-		}
+		};
 
-		onChange([...value, newAuthor])
-	}, [value, onChange])
+		onChange([...value, newAuthor]);
+	}, [value, onChange]);
 
 	const removeAuthor = useCallback(
 		(index: number) => {
-			const newAuthors = value.filter((_, i) => i !== index)
+			const newAuthors = value.filter((_, i) => i !== index);
 
 			if (value[index].isPresenter && newAuthors.length > 0) {
-				newAuthors[0].isPresenter = true
+				newAuthors[0].isPresenter = true;
 			}
 
-			onChange(newAuthors)
+			onChange(newAuthors);
 		},
-		[value, onChange]
-	)
+		[value, onChange],
+	);
 
 	const updateAuthor = useCallback(
 		(index: number, updates: Partial<Author>) => {
-			const newAuthors = [...value]
-			newAuthors[index] = { ...newAuthors[index], ...updates }
-			onChange(newAuthors)
+			const newAuthors = [...value];
+			newAuthors[index] = { ...newAuthors[index], ...updates };
+			onChange(newAuthors);
 		},
-		[value, onChange]
-	)
+		[value, onChange],
+	);
 
 	const setPresenter = useCallback(
 		(index: number) => {
 			const newAuthors = value.map((author, i) => ({
 				...author,
 				isPresenter: i === index,
-			}))
-			onChange(newAuthors)
+			}));
+			onChange(newAuthors);
 		},
-		[value, onChange]
-	)
+		[value, onChange],
+	);
 
 	const handleDragStart = useCallback((event: DragStartEvent) => {
-		setActiveId(event.active.id.toString())
-	}, [])
+		setActiveId(event.active.id.toString());
+	}, []);
 
 	const handleDragEnd = useCallback(
 		(event: DragEndEvent) => {
-			const { active, over } = event
+			const { active, over } = event;
 
 			if (over && active.id !== over.id) {
-				const oldIndex = Number(active.id)
-				const newIndex = Number(over.id)
-				onChange(arrayMove(value, oldIndex, newIndex))
+				const oldIndex = Number(active.id);
+				const newIndex = Number(over.id);
+				onChange(arrayMove(value, oldIndex, newIndex));
 			}
 
-			setActiveId(null)
+			setActiveId(null);
 		},
-		[value, onChange]
-	)
+		[value, onChange],
+	);
 
 	const handleDragCancel = useCallback(() => {
-		setActiveId(null)
-	}, [])
+		setActiveId(null);
+	}, []);
 
-	const activeIndex = activeId !== null ? Number(activeId) : -1
-	const activeAuthor = activeIndex >= 0 ? value[activeIndex] : null
+	const activeIndex = activeId !== null ? Number(activeId) : -1;
+	const activeAuthor = activeIndex >= 0 ? value[activeIndex] : null;
 
 	return (
 		<div className={cn("space-y-3", className)}>
@@ -377,12 +382,12 @@ export function AuthorsInput({
 					"border border-dashed border-border/50",
 					"text-xs font-medium text-muted-foreground",
 					"hover:border-primary hover:text-primary hover:bg-primary/5",
-					"transition-all"
+					"transition-all",
 				)}
 			>
 				<IconPlus className="size-3.5" />
 				Add Author
 			</button>
 		</div>
-	)
+	);
 }

@@ -11,16 +11,16 @@ import {
 	IconWriting,
 } from "@tabler/icons-react";
 import { useForm } from "@tanstack/react-form";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useSession } from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { type Author, AuthorsInput } from "./authors-input";
 import { FileDropzone } from "./file-dropzone";
 import { KeywordsInput } from "./keywords-input";
-import { useSession } from "@/hooks/use-session";
 
 const submissionTypeOptions = [
 	{ value: "ABSTRACT", label: "Abstract", icon: IconFileText },
@@ -82,9 +82,7 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 		const authors = form.state.values.authors;
 		const firstAuthor = authors[0];
 		const isEmpty =
-			!firstAuthor?.firstName &&
-			!firstAuthor?.lastName &&
-			!firstAuthor?.email;
+			!firstAuthor?.firstName && !firstAuthor?.lastName && !firstAuthor?.email;
 
 		if (isEmpty) {
 			form.setFieldValue("authors", [

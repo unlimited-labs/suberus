@@ -1,13 +1,19 @@
-import { useState, useCallback, useRef, type KeyboardEvent, type ChangeEvent } from "react"
-import { IconX } from "@tabler/icons-react"
-import { cn } from "@/lib/utils"
+import { IconX } from "@tabler/icons-react";
+import {
+	type ChangeEvent,
+	type KeyboardEvent,
+	useCallback,
+	useRef,
+	useState,
+} from "react";
+import { cn } from "@/lib/utils";
 
 interface KeywordsInputProps {
-	value: string[]
-	onChange: (keywords: string[]) => void
-	maxKeywords?: number
-	placeholder?: string
-	className?: string
+	value: string[];
+	onChange: (keywords: string[]) => void;
+	maxKeywords?: number;
+	placeholder?: string;
+	className?: string;
 }
 
 export function KeywordsInput({
@@ -17,77 +23,77 @@ export function KeywordsInput({
 	placeholder = "",
 	className,
 }: KeywordsInputProps) {
-	const [inputValue, setInputValue] = useState("")
-	const [error, setError] = useState<string | null>(null)
-	const [isFocused, setIsFocused] = useState(false)
-	const inputRef = useRef<HTMLInputElement>(null)
+	const [inputValue, setInputValue] = useState("");
+	const [error, setError] = useState<string | null>(null);
+	const [isFocused, setIsFocused] = useState(false);
+	const inputRef = useRef<HTMLInputElement>(null);
 
 	const addKeyword = useCallback(
 		(keyword: string) => {
-			const trimmed = keyword.trim().toLowerCase()
+			const trimmed = keyword.trim().toLowerCase();
 
 			if (!trimmed) {
-				return
+				return;
 			}
 
 			if (value.length >= maxKeywords) {
-				setError(`Maximum ${maxKeywords} keywords allowed`)
-				return
+				setError(`Maximum ${maxKeywords} keywords allowed`);
+				return;
 			}
 
 			if (value.includes(trimmed)) {
-				setError("Keyword already added")
-				return
+				setError("Keyword already added");
+				return;
 			}
 
-			onChange([...value, trimmed])
-			setInputValue("")
-			setError(null)
+			onChange([...value, trimmed]);
+			setInputValue("");
+			setError(null);
 		},
-		[value, onChange, maxKeywords]
-	)
+		[value, onChange, maxKeywords],
+	);
 
 	const removeKeyword = useCallback(
 		(keyword: string) => {
-			onChange(value.filter((k) => k !== keyword))
-			setError(null)
+			onChange(value.filter((k) => k !== keyword));
+			setError(null);
 		},
-		[value, onChange]
-	)
+		[value, onChange],
+	);
 
 	const handleKeyDown = useCallback(
 		(e: KeyboardEvent<HTMLInputElement>) => {
 			if (e.key === "Enter") {
-				e.preventDefault()
-				addKeyword(inputValue)
+				e.preventDefault();
+				addKeyword(inputValue);
 			} else if (e.key === "Backspace" && !inputValue && value.length > 0) {
-				removeKeyword(value[value.length - 1])
+				removeKeyword(value[value.length - 1]);
 			}
 		},
-		[inputValue, value, addKeyword, removeKeyword]
-	)
+		[inputValue, value, addKeyword, removeKeyword],
+	);
 
 	const handleInputChange = useCallback(
 		(e: ChangeEvent<HTMLInputElement>) => {
-			const val = e.target.value
+			const val = e.target.value;
 			if (val.includes(",")) {
-				const tokens = val.split(",")
-				const lastToken = tokens.pop() ?? ""
+				const tokens = val.split(",");
+				const lastToken = tokens.pop() ?? "";
 				for (const t of tokens) {
-					addKeyword(t)
+					addKeyword(t);
 				}
-				setInputValue(lastToken)
+				setInputValue(lastToken);
 			} else {
-				setInputValue(val)
+				setInputValue(val);
 			}
-			setError(null)
+			setError(null);
 		},
-		[addKeyword]
-	)
+		[addKeyword],
+	);
 
 	const handleContainerClick = () => {
-		inputRef.current?.focus()
-	}
+		inputRef.current?.focus();
+	};
 
 	return (
 		<div className={cn("space-y-2", className)}>
@@ -100,7 +106,7 @@ export function KeywordsInput({
 					isFocused
 						? "border-ring ring-1 ring-ring"
 						: "border-input hover:border-ring/50",
-					value.length >= maxKeywords && "opacity-60"
+					value.length >= maxKeywords && "opacity-60",
 				)}
 			>
 				{value.map((keyword) => (
@@ -112,8 +118,8 @@ export function KeywordsInput({
 						<button
 							type="button"
 							onClick={(e) => {
-								e.stopPropagation()
-								removeKeyword(keyword)
+								e.stopPropagation();
+								removeKeyword(keyword);
 							}}
 							className="rounded hover:bg-foreground/20 p-0.5 transition-colors"
 							aria-label={`Remove ${keyword}`}
@@ -146,5 +152,5 @@ export function KeywordsInput({
 				{value.length} / {maxKeywords} keywords
 			</p>
 		</div>
-	)
+	);
 }

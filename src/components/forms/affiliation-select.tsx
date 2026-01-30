@@ -4,8 +4,8 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import {
 	createAffiliation,
-	getAffiliations,
 	getAffiliationById,
+	getAffiliations,
 } from "@/utils/affiliations.functions";
 
 interface Affiliation {
@@ -56,7 +56,8 @@ export function AffiliationSelect({
 	const isFetchingRef = useRef(false);
 
 	useEffect(() => {
-		if (displayValue || inputValue || !initValueId || isFetchingRef.current) return;
+		if (displayValue || inputValue || !initValueId || isFetchingRef.current)
+			return;
 		isFetchingRef.current = true;
 
 		getAffiliationById({ data: { id: initValueId } })

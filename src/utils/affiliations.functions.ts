@@ -2,8 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
 	findAffiliations,
-	upsertAffiliation,
 	getAffiliationById as getAffiliationByIdServer,
+	upsertAffiliation,
 } from "./affiliations.server";
 
 const getAffiliationsSchema = z.object({
