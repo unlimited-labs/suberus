@@ -32,7 +32,16 @@ async function globalSetup() {
 	const prisma = new PrismaClient({ adapter })
 
 	try {
-		// Clean up all test data
+		// Clean up all test data (order matters due to FK constraints)
+		await prisma.submissionStatusHistory.deleteMany()
+		await prisma.submissionKeyword.deleteMany()
+		// Clear FK references before deleting related tables
+		await prisma.submission.updateMany({
+			data: { presenterId: null, currentVersionId: null },
+		})
+		await prisma.submissionAuthor.deleteMany()
+		await prisma.submissionVersion.deleteMany()
+		await prisma.submission.deleteMany()
 		await prisma.session.deleteMany()
 		await prisma.account.deleteMany()
 		await prisma.fee.deleteMany()
@@ -96,6 +105,25 @@ async function globalSetup() {
 		})
 
 		console.log(`✅ Admin user created: ${ADMIN_USER.email}`)
+
+		// Seed email template for submission received
+		await prisma.emailTemplate.upsert({
+			where: { eventType: "SUBMISSION_RECEIVED" },
+			update: {},
+			create: {
+				eventType: "SUBMISSION_RECEIVED",
+				subject: "Submission Received: {{submissionTitle}}",
+				body: "Dear {{authorName}},\n\nYour submission \"{{submissionTitle}}\" has been received.\n\nSubmission ID: {{submissionId}}\n\nThank you for your submission.",
+				isEnabled: true,
+				isHtml: false,
+				ccEmails: [],
+				bccEmails: [],
+				availablePlaceholders: ["authorName", "submissionTitle", "submissionId"],
+				description: "Sent when a new submission is created",
+			},
+		})
+
+		console.log("✅ Email template seeded: SUBMISSION_RECEIVED")
 	} catch (error) {
 		console.error("❌ Failed to seed test user:", error)
 		throw error

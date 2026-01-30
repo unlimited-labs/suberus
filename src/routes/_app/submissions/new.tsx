@@ -1,5 +1,6 @@
 import { IconFileText } from "@tabler/icons-react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
 import {
 	SubmissionForm,
 	type SubmissionFormData,
@@ -10,11 +11,40 @@ export const Route = createFileRoute("/_app/submissions/new")({
 	component: NewSubmissionPage,
 });
 
+interface SubmissionApiError {
+	error: string;
+	issues?: Array<{ path: (string | number)[]; message: string }>;
+}
+
 function NewSubmissionPage() {
+	const navigate = useNavigate();
+
 	const handleSubmit = async (data: SubmissionFormData) => {
-		console.log("Submission data:", data);
-		// TODO: Implement API call to save submission
-		await new Promise((resolve) => setTimeout(resolve, 1000));
+		const response = await fetch("/api/submissions", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				type: data.type,
+				title: data.title,
+				content: data.content,
+				authors: data.authors,
+				keywords: data.keywords,
+			}),
+		});
+
+		if (!response.ok) {
+			const error = (await response.json()) as SubmissionApiError;
+			if (error.issues && error.issues.length > 0) {
+				toast.error(error.issues[0].message);
+			} else {
+				toast.error(error.error ?? "Failed to create submission");
+			}
+			throw new Error(error.error ?? "Failed to create submission");
+		}
+
+		const result = (await response.json()) as { id: string; success: boolean };
+		toast.success("Submission created successfully");
+		navigate({ to: "/submissions/$id", params: { id: result.id } });
 	};
 
 	return (
