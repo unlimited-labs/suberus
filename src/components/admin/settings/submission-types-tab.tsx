@@ -2,18 +2,33 @@ import { IconFileStack } from "@tabler/icons-react";
 import { useState } from "react";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { Accordion } from "@/components/ui/accordion";
-import type { SubmissionTypeSettings } from "@/lib/mock-data/admin-settings";
+import type {
+	SubmissionTypeConfig,
+	SubmissionTypeKey,
+} from "@/lib/settings/types";
+import { SUBMISSION_TYPE_KEYS } from "@/lib/settings/types";
 import { SubmissionTypeAccordion } from "./submission-type-accordion";
 
 interface SubmissionTypesTabProps {
-	initialData: SubmissionTypeSettings[];
+	initialData: {
+		ORAL_PRESENTATION: SubmissionTypeConfig;
+		POSTER: SubmissionTypeConfig;
+		FULL_PAPER: SubmissionTypeConfig;
+	};
 }
 
 export function SubmissionTypesTab({ initialData }: SubmissionTypesTabProps) {
-	const [types, setTypes] = useState(initialData);
+	const [configs, setConfigs] = useState({
+		SUBMISSION_TYPE_ORAL_PRESENTATION: initialData.ORAL_PRESENTATION,
+		SUBMISSION_TYPE_POSTER: initialData.POSTER,
+		SUBMISSION_TYPE_FULL_PAPER: initialData.FULL_PAPER,
+	});
 
-	const handleTypeChange = (updated: SubmissionTypeSettings) => {
-		setTypes((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+	const handleConfigChange = (
+		key: SubmissionTypeKey,
+		updated: SubmissionTypeConfig,
+	) => {
+		setConfigs((prev) => ({ ...prev, [key]: updated }));
 	};
 
 	return (
@@ -23,11 +38,12 @@ export function SubmissionTypesTab({ initialData }: SubmissionTypesTabProps) {
 			description="Configure individual submission types"
 		>
 			<Accordion type="single" collapsible className="space-y-3">
-				{types.map((type) => (
+				{SUBMISSION_TYPE_KEYS.map((key) => (
 					<SubmissionTypeAccordion
-						key={type.id}
-						type={type}
-						onChange={handleTypeChange}
+						key={key}
+						typeKey={key}
+						config={configs[key]}
+						onChange={(updated) => handleConfigChange(key, updated)}
 					/>
 				))}
 			</Accordion>

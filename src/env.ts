@@ -4,6 +4,11 @@ import { z } from 'zod'
 export const env = createEnv({
   server: {
     SERVER_URL: z.string().url().optional(),
+    // Garage S3 storage (optional - only needed for FILE-based submissions)
+    GARAGE_ENDPOINT: z.string().url().optional(),
+    GARAGE_ACCESS_KEY_ID: z.string().optional(),
+    GARAGE_SECRET_ACCESS_KEY: z.string().optional(),
+    GARAGE_BUCKET: z.string().optional(),
   },
 
   /**

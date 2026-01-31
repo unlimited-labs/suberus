@@ -1,86 +1,131 @@
-import { IconLoader2, IconTags } from "@tabler/icons-react"
-import { useState } from "react"
-import { toast } from "sonner"
+import { IconLoader2, IconTags } from "@tabler/icons-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 import {
 	AccordionContent,
 	AccordionItem,
 	AccordionTrigger,
-} from "@/components/ui/accordion"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import type {
-	ReviewMode,
-	SubmissionTypeSettings,
-} from "@/lib/mock-data/admin-settings"
-import { reviewModeLabels } from "@/lib/mock-data/admin-settings"
+	ContentFormat,
+	SubmissionTypeConfig,
+	SubmissionTypeKey,
+} from "@/lib/settings/types";
+import { SUBMISSION_TYPE_DISPLAY_NAMES } from "@/lib/settings/types";
+import { updateSubmissionTypeConfigFn } from "@/utils/settings.functions";
+
+const reviewModeLabels = {
+	OPEN: "Open",
+	SINGLE_BLIND: "Single-blind",
+	DOUBLE_BLIND: "Double-blind",
+} as const;
+
+const FILE_EXTENSIONS = ["pdf", "doc", "docx"] as const;
 
 interface SubmissionTypeAccordionProps {
-	type: SubmissionTypeSettings
-	onChange: (updated: SubmissionTypeSettings) => void
+	typeKey: SubmissionTypeKey;
+	config: SubmissionTypeConfig;
+	onChange: (updated: SubmissionTypeConfig) => void;
 }
 
 export function SubmissionTypeAccordion({
-	type,
+	typeKey,
+	config,
 	onChange,
 }: SubmissionTypeAccordionProps) {
-	const [isSaving, setIsSaving] = useState(false)
-	const [newCriterion, setNewCriterion] = useState("")
+	const [isSaving, setIsSaving] = useState(false);
+	const [newCriterion, setNewCriterion] = useState("");
 
-	const handleChange = <K extends keyof SubmissionTypeSettings>(
+	const displayName = SUBMISSION_TYPE_DISPLAY_NAMES[typeKey];
+
+	const handleChange = <K extends keyof SubmissionTypeConfig>(
 		field: K,
-		value: SubmissionTypeSettings[K]
+		value: SubmissionTypeConfig[K],
 	) => {
-		onChange({ ...type, [field]: value })
-	}
+		onChange({ ...config, [field]: value });
+	};
+
+	const toggleExtension = (ext: string) => {
+		const current = config.allowedExtensions;
+		if (current.includes(ext)) {
+			handleChange(
+				"allowedExtensions",
+				current.filter((e) => e !== ext),
+			);
+		} else {
+			handleChange("allowedExtensions", [...current, ext]);
+		}
+	};
 
 	const addCriterion = () => {
 		if (newCriterion.trim()) {
 			handleChange("scoringCriteria", [
-				...type.scoringCriteria,
+				...config.scoringCriteria,
 				newCriterion.trim(),
-			])
-			setNewCriterion("")
+			]);
+			setNewCriterion("");
 		}
-	}
+	};
 
 	const removeCriterion = (index: number) => {
 		handleChange(
 			"scoringCriteria",
-			type.scoringCriteria.filter((_, i) => i !== index)
-		)
-	}
+			config.scoringCriteria.filter((_, i) => i !== index),
+		);
+	};
 
 	const handleSave = async () => {
-		setIsSaving(true)
-		try {
-			await new Promise((resolve) => setTimeout(resolve, 800))
-			toast.success(`"${type.name}" settings saved`)
-		} finally {
-			setIsSaving(false)
+		// Validate FILE format has extensions
+		if (
+			config.contentFormat === "FILE" &&
+			config.allowedExtensions.length === 0
+		) {
+			toast.error("FILE format requires at least one allowed extension");
+			return;
 		}
-	}
+
+		setIsSaving(true);
+		try {
+			await updateSubmissionTypeConfigFn({
+				data: { type: typeKey, config },
+			});
+			toast.success(`"${displayName}" settings saved`);
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Failed to save settings",
+			);
+		} finally {
+			setIsSaving(false);
+		}
+	};
 
 	return (
 		<AccordionItem
-			value={type.id}
+			value={typeKey}
 			className="rounded-lg border border-border/50 bg-card px-4"
 		>
 			<AccordionTrigger className="py-4 hover:no-underline">
 				<div className="flex items-center gap-3">
-					<span className="font-medium">{type.name}</span>
-					<Badge variant={type.enabled ? "default" : "secondary"}>
-						{type.enabled ? "Active" : "Inactive"}
+					<span className="font-medium">{displayName}</span>
+					<Badge variant={config.isActive ? "default" : "secondary"}>
+						{config.isActive ? "Active" : "Inactive"}
+					</Badge>
+					<Badge variant="outline" className="text-xs">
+						{config.contentFormat}
 					</Badge>
 				</div>
 			</AccordionTrigger>
@@ -95,9 +140,65 @@ export function SubmissionTypeAccordion({
 							</p>
 						</div>
 						<Switch
-							checked={type.enabled}
-							onCheckedChange={(checked) => handleChange("enabled", checked)}
+							checked={config.isActive}
+							onCheckedChange={(checked) => handleChange("isActive", checked)}
 						/>
+					</div>
+
+					{/* Content Format */}
+					<div className="space-y-3">
+						<div className="space-y-0.5">
+							<Label>Content Format</Label>
+							<p className="text-sm text-muted-foreground">
+								How authors provide their submission content
+							</p>
+						</div>
+						<Select
+							value={config.contentFormat}
+							onValueChange={(value) =>
+								handleChange("contentFormat", value as ContentFormat)
+							}
+						>
+							<SelectTrigger className="max-w-64">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="TEXT">Text (Abstract)</SelectItem>
+								<SelectItem value="FILE">File Upload</SelectItem>
+							</SelectContent>
+						</Select>
+
+						{/* File extensions (only for FILE format) */}
+						{config.contentFormat === "FILE" && (
+							<div className="space-y-2 pl-0 sm:pl-4 pt-2">
+								<Label className="text-sm">Allowed file extensions</Label>
+								<div className="flex flex-wrap gap-3">
+									{FILE_EXTENSIONS.map((ext) => (
+										<div
+											key={ext}
+											className="flex items-center gap-2 cursor-pointer"
+										>
+											<Checkbox
+												id={`ext-${ext}`}
+												checked={config.allowedExtensions.includes(ext)}
+												onCheckedChange={() => toggleExtension(ext)}
+											/>
+											<Label
+												htmlFor={`ext-${ext}`}
+												className="text-sm uppercase cursor-pointer"
+											>
+												{ext}
+											</Label>
+										</div>
+									))}
+								</div>
+								{config.allowedExtensions.length === 0 && (
+									<p className="text-xs text-destructive">
+										At least one extension is required
+									</p>
+								)}
+							</div>
+						)}
 					</div>
 
 					{/* Reviewers */}
@@ -108,9 +209,12 @@ export function SubmissionTypeAccordion({
 								type="number"
 								min={1}
 								max={10}
-								value={type.minReviewers}
+								value={config.minReviewers}
 								onChange={(e) =>
-									handleChange("minReviewers", parseInt(e.target.value, 10) || 1)
+									handleChange(
+										"minReviewers",
+										parseInt(e.target.value, 10) || 1,
+									)
 								}
 							/>
 						</div>
@@ -120,9 +224,12 @@ export function SubmissionTypeAccordion({
 								type="number"
 								min={1}
 								max={10}
-								value={type.maxReviewers}
+								value={config.maxReviewers}
 								onChange={(e) =>
-									handleChange("maxReviewers", parseInt(e.target.value, 10) || 1)
+									handleChange(
+										"maxReviewers",
+										parseInt(e.target.value, 10) || 1,
+									)
 								}
 							/>
 						</div>
@@ -133,9 +240,12 @@ export function SubmissionTypeAccordion({
 						<div className="space-y-2">
 							<Label>Review mode</Label>
 							<Select
-								value={type.reviewMode}
+								value={config.reviewMode}
 								onValueChange={(value) =>
-									handleChange("reviewMode", value as ReviewMode)
+									handleChange(
+										"reviewMode",
+										value as SubmissionTypeConfig["reviewMode"],
+									)
 								}
 							>
 								<SelectTrigger>
@@ -156,11 +266,11 @@ export function SubmissionTypeAccordion({
 								type="number"
 								min={1}
 								max={90}
-								value={type.reviewDeadlineDays}
+								value={config.reviewDeadlineDays}
 								onChange={(e) =>
 									handleChange(
 										"reviewDeadlineDays",
-										parseInt(e.target.value, 10) || 7
+										parseInt(e.target.value, 10) || 7,
 									)
 								}
 							/>
@@ -177,23 +287,9 @@ export function SubmissionTypeAccordion({
 								</p>
 							</div>
 							<Switch
-								checked={type.requiresEditorDecision}
+								checked={config.requiresEditorDecision}
 								onCheckedChange={(checked) =>
 									handleChange("requiresEditorDecision", checked)
-								}
-							/>
-						</div>
-						<div className="flex items-center justify-between">
-							<div className="space-y-0.5">
-								<Label>Auto-transition after reviews</Label>
-								<p className="text-sm text-muted-foreground">
-									Automatic status change after all reviews complete
-								</p>
-							</div>
-							<Switch
-								checked={type.autoTransition}
-								onCheckedChange={(checked) =>
-									handleChange("autoTransition", checked)
 								}
 							/>
 						</div>
@@ -209,22 +305,25 @@ export function SubmissionTypeAccordion({
 								</p>
 							</div>
 							<Switch
-								checked={type.allowRevisions}
+								checked={config.allowRevisions}
 								onCheckedChange={(checked) =>
 									handleChange("allowRevisions", checked)
 								}
 							/>
 						</div>
-						{type.allowRevisions && (
+						{config.allowRevisions && (
 							<div className="space-y-2 pl-0 sm:pl-4">
 								<Label>Max revisions</Label>
 								<Input
 									type="number"
 									min={1}
 									max={10}
-									value={type.maxRevisions}
+									value={config.maxRevisions}
 									onChange={(e) =>
-										handleChange("maxRevisions", parseInt(e.target.value, 10) || 1)
+										handleChange(
+											"maxRevisions",
+											parseInt(e.target.value, 10) || 1,
+										)
 									}
 									className="max-w-32"
 								/>
@@ -242,17 +341,17 @@ export function SubmissionTypeAccordion({
 								</p>
 							</div>
 							<Switch
-								checked={type.enableScoring}
+								checked={config.enableScoring}
 								onCheckedChange={(checked) =>
 									handleChange("enableScoring", checked)
 								}
 							/>
 						</div>
-						{type.enableScoring && (
+						{config.enableScoring && (
 							<div className="space-y-3 pl-0 sm:pl-4">
 								<Label>Scoring criteria</Label>
 								<div className="flex flex-wrap gap-2">
-									{type.scoringCriteria.map((criterion, index) => (
+									{config.scoringCriteria.map((criterion, index) => (
 										<Badge
 											key={index}
 											variant="secondary"
@@ -297,5 +396,5 @@ export function SubmissionTypeAccordion({
 				</div>
 			</AccordionContent>
 		</AccordionItem>
-	)
+	);
 }

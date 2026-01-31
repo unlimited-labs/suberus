@@ -2,6 +2,7 @@ import {
 	IconCategory,
 	IconCircle,
 	IconCircleCheck,
+	IconFile,
 	IconFileText,
 	IconInfoCircle,
 	IconSend,
@@ -17,38 +18,74 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "@/hooks/use-session";
+import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import { cn } from "@/lib/utils";
 import { type Author, AuthorsInput } from "./authors-input";
 import { FileDropzone } from "./file-dropzone";
 import { KeywordsInput } from "./keywords-input";
 
-const submissionTypeOptions = [
-	{ value: "ABSTRACT", label: "Abstract", icon: IconFileText },
-	{ value: "POSTER", label: "Poster", icon: IconSparkles },
-] as const;
+/** Active submission type from settings */
+export interface ActiveSubmissionType {
+	type: "ABSTRACT" | "POSTER" | "FULL_PAPER";
+	label: string;
+	config: SubmissionTypeConfig;
+}
+
+const typeIcons = {
+	ABSTRACT: IconFileText,
+	POSTER: IconSparkles,
+	FULL_PAPER: IconFile,
+} as const;
+
+/** Validation settings from admin panel */
+export interface ValidationSettings {
+	minTitleLength: number;
+	maxTitleLength: number;
+	minAbstractLength: number;
+	maxAbstractLength: number;
+	minKeywords: number;
+	maxKeywords: number;
+}
 
 interface SubmissionFormProps {
 	onSubmit: (data: SubmissionFormData) => Promise<void>;
 	initialData?: Partial<SubmissionFormData>;
+	typeConfigs: ActiveSubmissionType[];
+	validationSettings: ValidationSettings;
 }
 
 export interface SubmissionFormData {
-	type: "ABSTRACT" | "POSTER";
+	type: "ABSTRACT" | "POSTER" | "FULL_PAPER";
 	title: string;
 	content: string;
 	authors: Author[];
 	keywords: string[];
 	file: File | null;
+	contentFormat: "TEXT" | "FILE";
 }
 
-export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
+export function SubmissionForm({
+	onSubmit,
+	initialData,
+	typeConfigs,
+	validationSettings,
+}: SubmissionFormProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const { user } = useSession();
 	const hasAutoFilledRef = useRef(false);
 
+	// Default to first active type
+	const defaultType = typeConfigs[0]?.type || "ABSTRACT";
+	const defaultConfig = typeConfigs[0]?.config;
+
+	// Local state for selected type (triggers re-render when changed)
+	const [selectedType, setSelectedType] = useState<
+		"ABSTRACT" | "POSTER" | "FULL_PAPER"
+	>(initialData?.type || defaultType);
+
 	const form = useForm({
 		defaultValues: {
-			type: initialData?.type || "ABSTRACT",
+			type: initialData?.type || defaultType,
 			title: initialData?.title || "",
 			content: initialData?.content || "",
 			authors: initialData?.authors || [
@@ -63,6 +100,7 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 			],
 			keywords: initialData?.keywords || [],
 			file: initialData?.file || null,
+			contentFormat: defaultConfig?.contentFormat || "TEXT",
 		} satisfies SubmissionFormData,
 		onSubmit: async ({ value }) => {
 			setIsSubmitting(true);
@@ -102,15 +140,44 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 
 	const values = form.state.values;
 
-	// Progress indicators
+	// Get current type config (use selectedType for reactive updates)
+	const currentTypeConfig = typeConfigs.find((t) => t.type === selectedType);
+	const isFileFormat = currentTypeConfig?.config.contentFormat === "FILE";
+
+	// Update contentFormat when type changes
+	const handleTypeChange = (newType: "ABSTRACT" | "POSTER" | "FULL_PAPER") => {
+		setSelectedType(newType); // Trigger re-render
+		form.setFieldValue("type", newType);
+		const newConfig = typeConfigs.find((t) => t.type === newType);
+		if (newConfig) {
+			form.setFieldValue("contentFormat", newConfig.config.contentFormat);
+			// Clear file if switching to TEXT format
+			if (newConfig.config.contentFormat === "TEXT") {
+				form.setFieldValue("file", null);
+			}
+			// Clear content if switching to FILE format
+			if (newConfig.config.contentFormat === "FILE") {
+				form.setFieldValue("content", "");
+			}
+		}
+	};
+
+	// Progress indicators (use validation settings)
 	const hasType = !!values.type;
-	const hasContent = values.title.length >= 5 && values.content.length >= 100;
+	const hasContent = isFileFormat
+		? values.file !== null
+		: values.title.length >= validationSettings.minTitleLength &&
+			values.content.length >= validationSettings.minAbstractLength;
 	const hasAuthors =
 		values.authors.length > 0 &&
 		values.authors.every(
 			(a) => a.firstName && a.lastName && a.email && a.affiliationName,
 		);
-	const hasKeywords = values.keywords.length > 0;
+	const hasKeywords = values.keywords.length >= validationSettings.minKeywords;
+
+	// Get allowed extensions for file dropzone
+	const allowedExtensions = currentTypeConfig?.config.allowedExtensions || [];
+	const acceptString = allowedExtensions.map((ext) => `.${ext}`).join(",");
 
 	return (
 		<div className="mx-auto w-full max-w-7xl">
@@ -124,7 +191,7 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 								New Submission
 							</h1>
 							<p className="text-sm text-muted-foreground mt-1">
-								Submit your work for ICSE 2025
+								Submit your work for the conference
 							</p>
 						</div>
 
@@ -145,16 +212,22 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 									</h2>
 								</div>
 								<form.Field name="type">
-									{(field) => (
-										<div className="grid grid-cols-2 gap-3">
-											{submissionTypeOptions.map((option) => {
-												const Icon = option.icon;
-												const isSelected = field.state.value === option.value;
+									{() => (
+										<div
+											className={cn(
+												"grid gap-3",
+												typeConfigs.length === 2 && "grid-cols-2",
+												typeConfigs.length >= 3 && "grid-cols-2 sm:grid-cols-3",
+											)}
+										>
+											{typeConfigs.map((option) => {
+												const Icon = typeIcons[option.type];
+												const isSelected = selectedType === option.type;
 												return (
 													<button
-														key={option.value}
+														key={option.type}
 														type="button"
-														onClick={() => field.handleChange(option.value)}
+														onClick={() => handleTypeChange(option.type)}
 														className={cn(
 															"flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
 															isSelected
@@ -177,16 +250,23 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 																)}
 															/>
 														</div>
-														<span
-															className={cn(
-																"font-medium",
-																isSelected
-																	? "text-foreground"
-																	: "text-muted-foreground",
-															)}
-														>
-															{option.label}
-														</span>
+														<div className="flex flex-col">
+															<span
+																className={cn(
+																	"font-medium",
+																	isSelected
+																		? "text-foreground"
+																		: "text-muted-foreground",
+																)}
+															>
+																{option.label}
+															</span>
+															<span className="text-xs text-muted-foreground">
+																{option.config.contentFormat === "FILE"
+																	? "File upload"
+																	: "Text"}
+															</span>
+														</div>
 													</button>
 												);
 											})}
@@ -208,70 +288,129 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 
 								<div className="space-y-4">
 									<form.Field name="title">
-										{(field) => (
-											<div className="space-y-2">
-												<Label htmlFor="title" className="text-foreground">
-													Title
-												</Label>
-												<Input
-													id="title"
-													name="title"
-													value={field.state.value}
-													onChange={(e) => field.handleChange(e.target.value)}
-													onBlur={field.handleBlur}
-													className="text-foreground"
-												/>
-												{field.state.meta.errors.length > 0 && (
-													<p className="text-xs text-destructive">
-														{field.state.meta.errors[0]}
-													</p>
-												)}
-											</div>
-										)}
-									</form.Field>
-
-									<form.Field name="content">
-										{(field) => (
-											<div className="space-y-2">
-												<div className="flex items-center justify-between">
-													<Label htmlFor="content" className="text-foreground">
-														Abstract
-													</Label>
-													<span className="text-xs text-muted-foreground">
-														{field.state.value.length} characters
-													</span>
+										{(field) => {
+											const len = field.state.value.length;
+											const isValid =
+												len >= validationSettings.minTitleLength &&
+												len <= validationSettings.maxTitleLength;
+											return (
+												<div className="space-y-2">
+													<div className="flex items-center justify-between">
+														<Label htmlFor="title" className="text-foreground">
+															Title
+														</Label>
+														<span
+															className={cn(
+																"text-xs",
+																!isValid && len > 0
+																	? "text-destructive"
+																	: "text-muted-foreground",
+															)}
+														>
+															{len} / {validationSettings.minTitleLength}-
+															{validationSettings.maxTitleLength} characters
+														</span>
+													</div>
+													<Input
+														id="title"
+														name="title"
+														value={field.state.value}
+														onChange={(e) => field.handleChange(e.target.value)}
+														onBlur={field.handleBlur}
+														className="text-foreground"
+													/>
+													{field.state.meta.errors.length > 0 && (
+														<p className="text-xs text-destructive">
+															{field.state.meta.errors[0]}
+														</p>
+													)}
 												</div>
-												<Textarea
-													id="content"
-													name="content"
-													value={field.state.value}
-													onChange={(e) => field.handleChange(e.target.value)}
-													onBlur={field.handleBlur}
-													rows={8}
-													className="resize-none text-foreground"
-												/>
-												{field.state.meta.errors.length > 0 && (
-													<p className="text-xs text-destructive">
-														{field.state.meta.errors[0]}
-													</p>
-												)}
-											</div>
-										)}
+											);
+										}}
 									</form.Field>
 
+									{/* Show text area for TEXT format */}
+									{!isFileFormat && (
+										<form.Field name="content">
+											{(field) => {
+												const len = field.state.value.length;
+												const isValid =
+													len >= validationSettings.minAbstractLength &&
+													len <= validationSettings.maxAbstractLength;
+												return (
+													<div className="space-y-2">
+														<div className="flex items-center justify-between">
+															<Label
+																htmlFor="content"
+																className="text-foreground"
+															>
+																Abstract
+															</Label>
+															<span
+																className={cn(
+																	"text-xs",
+																	!isValid && len > 0
+																		? "text-destructive"
+																		: "text-muted-foreground",
+																)}
+															>
+																{len} / {validationSettings.minAbstractLength}-
+																{validationSettings.maxAbstractLength} characters
+															</span>
+														</div>
+														<Textarea
+															id="content"
+															name="content"
+															value={field.state.value}
+															onChange={(e) =>
+																field.handleChange(e.target.value)
+															}
+															onBlur={field.handleBlur}
+															rows={8}
+															className="resize-none text-foreground"
+														/>
+														{field.state.meta.errors.length > 0 && (
+															<p className="text-xs text-destructive">
+																{field.state.meta.errors[0]}
+															</p>
+														)}
+													</div>
+												);
+											}}
+										</form.Field>
+									)}
+
+									{/* Show file dropzone for FILE format or as optional for TEXT */}
 									<form.Field name="file">
 										{(field) => (
 											<div className="space-y-2">
 												<Label className="text-foreground">
 													Document{" "}
-													<span className="text-muted-foreground text-xs font-normal">
-														(Optional)
-													</span>
+													{!isFileFormat && (
+														<span className="text-muted-foreground text-xs font-normal">
+															(Optional)
+														</span>
+													)}
+													{isFileFormat && (
+														<span className="text-destructive text-xs font-normal">
+															*
+														</span>
+													)}
 												</Label>
 												<FileDropzone
 													value={field.state.value}
 													onChange={field.handleChange}
+													accept={isFileFormat ? acceptString : ".pdf,.doc,.docx"}
+													maxSize={10}
 												/>
+												{isFileFormat && !field.state.value && (
+													<p className="text-xs text-muted-foreground">
+														Accepted formats:{" "}
+														{allowedExtensions
+															.map((e) => e.toUpperCase())
+															.join(", ")}
+													</p>
+												)}
 											</div>
 										)}
 									</form.Field>
@@ -323,6 +462,8 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 												<KeywordsInput
 													value={field.state.value}
 													onChange={field.handleChange}
+													minKeywords={validationSettings.minKeywords}
+													maxKeywords={validationSettings.maxKeywords}
 												/>
 											</div>
 											{field.state.meta.errors.length > 0 && (
@@ -440,10 +581,14 @@ export function SubmissionForm({ onSubmit, initialData }: SubmissionFormProps) {
 							</div>
 							<div className="space-y-3 text-sm text-muted-foreground">
 								<p>• Title should be concise and descriptive</p>
-								<p>• Abstract minimum 100 characters</p>
+								{isFileFormat ? (
+									<p>• Upload your document as PDF, DOC, or DOCX</p>
+								) : (
+									<p>• Abstract minimum 100 characters</p>
+								)}
 								<p>• At least one author required</p>
 								<p>• Add 1-5 relevant keywords</p>
-								<p>• Document upload is optional</p>
+								{!isFileFormat && <p>• Document upload is optional</p>}
 							</div>
 						</div>
 					</div>

@@ -1,5 +1,5 @@
-import type { AppSettingKey } from "@/generated/prisma/enums";
 import { prisma } from "@/db";
+import type { AppSettingKey } from "@/generated/prisma/enums";
 import { getDefaultSetting } from "@/lib/settings/defaults";
 import type {
 	AppSettingsMap,

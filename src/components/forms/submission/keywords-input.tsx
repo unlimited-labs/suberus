@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 interface KeywordsInputProps {
 	value: string[];
 	onChange: (keywords: string[]) => void;
+	minKeywords?: number;
 	maxKeywords?: number;
 	placeholder?: string;
 	className?: string;
@@ -19,6 +20,7 @@ interface KeywordsInputProps {
 export function KeywordsInput({
 	value,
 	onChange,
+	minKeywords = 0,
 	maxKeywords = 5,
 	placeholder = "",
 	className,
@@ -95,6 +97,14 @@ export function KeywordsInput({
 		inputRef.current?.focus();
 	};
 
+	const handleBlur = useCallback(() => {
+		setIsFocused(false);
+		// Convert remaining text to keyword on blur
+		if (inputValue.trim()) {
+			addKeyword(inputValue);
+		}
+	}, [inputValue, addKeyword]);
+
 	return (
 		<div className={cn("space-y-2", className)}>
 			{/* biome-ignore lint/a11y/useKeyWithClickEvents: click focuses inner input */}
@@ -135,7 +145,7 @@ export function KeywordsInput({
 					onChange={handleInputChange}
 					onKeyDown={handleKeyDown}
 					onFocus={() => setIsFocused(true)}
-					onBlur={() => setIsFocused(false)}
+					onBlur={handleBlur}
 					placeholder={value.length === 0 ? placeholder : ""}
 					disabled={value.length >= maxKeywords}
 					className="flex-1 min-w-[120px] bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed"
@@ -148,8 +158,17 @@ export function KeywordsInput({
 				</p>
 			)}
 
-			<p className="text-xs text-muted-foreground">
-				{value.length} / {maxKeywords} keywords
+			<p
+				className={cn(
+					"text-xs",
+					value.length < minKeywords
+						? "text-destructive"
+						: "text-muted-foreground",
+				)}
+			>
+				{value.length} /{" "}
+				{minKeywords > 0 ? `${minKeywords}-${maxKeywords}` : maxKeywords} keywords
+				{value.length < minKeywords && ` (minimum ${minKeywords} required)`}
 			</p>
 		</div>
 	);

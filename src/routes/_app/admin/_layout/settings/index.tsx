@@ -21,11 +21,20 @@ import {
 	defaultBrandingSettings,
 	defaultConferenceSettings,
 	defaultEmailTemplates,
-	defaultSubmissionSettings,
-	defaultSubmissionTypes,
 } from "@/lib/mock-data/admin-settings";
+import {
+	getSubmissionTypeConfigsFn,
+	getSubmissionValidationSettingsFn,
+} from "@/utils/settings.functions";
 
 export const Route = createFileRoute("/_app/admin/_layout/settings/")({
+	loader: async () => {
+		const [submissionTypes, submissionSettings] = await Promise.all([
+			getSubmissionTypeConfigsFn(),
+			getSubmissionValidationSettingsFn(),
+		]);
+		return { submissionTypes, submissionSettings };
+	},
 	component: AdminSettingsPage,
 });
 
@@ -38,6 +47,7 @@ const tabs = [
 ];
 
 function AdminSettingsPage() {
+	const { submissionTypes, submissionSettings } = Route.useLoaderData();
 	const [activeTab, setActiveTab] = useState("conference");
 
 	return (
@@ -64,11 +74,11 @@ function AdminSettingsPage() {
 						</TabsContent>
 
 						<TabsContent value="submissions">
-							<SubmissionSettingsTab initialData={defaultSubmissionSettings} />
+							<SubmissionSettingsTab initialData={submissionSettings} />
 						</TabsContent>
 
 						<TabsContent value="types">
-							<SubmissionTypesTab initialData={defaultSubmissionTypes} />
+							<SubmissionTypesTab initialData={submissionTypes} />
 						</TabsContent>
 
 						<TabsContent value="emails">
