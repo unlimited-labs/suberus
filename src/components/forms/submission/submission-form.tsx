@@ -355,7 +355,8 @@ export function SubmissionForm({
 																)}
 															>
 																{len} / {validationSettings.minAbstractLength}-
-																{validationSettings.maxAbstractLength} characters
+																{validationSettings.maxAbstractLength}{" "}
+																characters
 															</span>
 														</div>
 														<Textarea
@@ -400,7 +401,9 @@ export function SubmissionForm({
 												<FileDropzone
 													value={field.state.value}
 													onChange={field.handleChange}
-													accept={isFileFormat ? acceptString : ".pdf,.doc,.docx"}
+													accept={
+														isFileFormat ? acceptString : ".pdf,.doc,.docx"
+													}
 													maxSize={10}
 												/>
 												{isFileFormat && !field.state.value && (

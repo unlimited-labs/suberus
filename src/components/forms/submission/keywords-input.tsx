@@ -167,7 +167,8 @@ export function KeywordsInput({
 				)}
 			>
 				{value.length} /{" "}
-				{minKeywords > 0 ? `${minKeywords}-${maxKeywords}` : maxKeywords} keywords
+				{minKeywords > 0 ? `${minKeywords}-${maxKeywords}` : maxKeywords}{" "}
+				keywords
 				{value.length < minKeywords && ` (minimum ${minKeywords} required)`}
 			</p>
 		</div>

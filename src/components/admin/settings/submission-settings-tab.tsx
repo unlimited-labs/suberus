@@ -7,13 +7,12 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
-
+import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { SettingsSection } from "@/components/settings/settings-section";
 import type { SubmissionValidationSettings } from "@/utils/settings.functions";
 import { updateSubmissionValidationSettingsFn } from "@/utils/settings.functions";
 
@@ -298,7 +297,9 @@ export function SubmissionSettingsTab({
 						<Switch
 							id="requireOrcid"
 							checked={data.requireOrcid}
-							onCheckedChange={(checked) => handleChange("requireOrcid", checked)}
+							onCheckedChange={(checked) =>
+								handleChange("requireOrcid", checked)
+							}
 						/>
 					</div>
 				</div>

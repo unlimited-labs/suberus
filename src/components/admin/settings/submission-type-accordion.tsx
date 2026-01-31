@@ -387,9 +387,7 @@ export function SubmissionTypeAccordion({
 					{/* Save button */}
 					<div className="flex justify-end border-t pt-4">
 						<Button onClick={handleSave} disabled={isSaving}>
-							{isSaving && (
-								<IconLoader2 className="mr-2 size-4 animate-spin" />
-							)}
+							{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 							Save
 						</Button>
 					</div>

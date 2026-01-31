@@ -52,16 +52,28 @@ export function createDynamicSubmissionSchema(limits: ValidationLimits) {
 	const keywordsArraySchema = limits.enableKeywords
 		? z
 				.array(keywordSchema)
-				.min(limits.minKeywords, `At least ${limits.minKeywords} keyword${limits.minKeywords === 1 ? " is" : "s are"} required`)
-				.max(limits.maxKeywords, `Maximum ${limits.maxKeywords} keywords allowed`)
+				.min(
+					limits.minKeywords,
+					`At least ${limits.minKeywords} keyword${limits.minKeywords === 1 ? " is" : "s are"} required`,
+				)
+				.max(
+					limits.maxKeywords,
+					`Maximum ${limits.maxKeywords} keywords allowed`,
+				)
 		: z.array(keywordSchema).max(limits.maxKeywords);
 
 	const baseSchema = z.object({
 		type: z.enum(["ABSTRACT", "POSTER", "FULL_PAPER"]),
 		title: z
 			.string()
-			.min(limits.minTitleLength, `Title must be at least ${limits.minTitleLength} characters`)
-			.max(limits.maxTitleLength, `Title must be at most ${limits.maxTitleLength} characters`),
+			.min(
+				limits.minTitleLength,
+				`Title must be at least ${limits.minTitleLength} characters`,
+			)
+			.max(
+				limits.maxTitleLength,
+				`Title must be at most ${limits.maxTitleLength} characters`,
+			),
 		content: z.string(),
 		authors: z
 			.array(authorSchema)
@@ -76,29 +88,31 @@ export function createDynamicSubmissionSchema(limits: ValidationLimits) {
 	});
 
 	// Add content length validation for TEXT format
-	return baseSchema.refine(
-		(data) => {
-			if (data.contentFormat === "TEXT") {
-				return data.content.length >= limits.minAbstractLength;
-			}
-			return true;
-		},
-		{
-			message: `Content must be at least ${limits.minAbstractLength} characters`,
-			path: ["content"],
-		},
-	).refine(
-		(data) => {
-			if (data.contentFormat === "TEXT") {
-				return data.content.length <= limits.maxAbstractLength;
-			}
-			return true;
-		},
-		{
-			message: `Content must be at most ${limits.maxAbstractLength} characters`,
-			path: ["content"],
-		},
-	);
+	return baseSchema
+		.refine(
+			(data) => {
+				if (data.contentFormat === "TEXT") {
+					return data.content.length >= limits.minAbstractLength;
+				}
+				return true;
+			},
+			{
+				message: `Content must be at least ${limits.minAbstractLength} characters`,
+				path: ["content"],
+			},
+		)
+		.refine(
+			(data) => {
+				if (data.contentFormat === "TEXT") {
+					return data.content.length <= limits.maxAbstractLength;
+				}
+				return true;
+			},
+			{
+				message: `Content must be at most ${limits.maxAbstractLength} characters`,
+				path: ["content"],
+			},
+		);
 }
 
 // Legacy static schemas (kept for backwards compatibility)
@@ -108,9 +122,7 @@ export const createSubmissionSchema = z.object({
 		.string()
 		.min(5, "Title must be at least 5 characters")
 		.max(300, "Title must be at most 300 characters"),
-	content: z
-		.string()
-		.max(10000, "Content must be at most 10000 characters"),
+	content: z.string().max(10000, "Content must be at most 10000 characters"),
 	authors: z
 		.array(authorSchema)
 		.min(1, "At least one author is required")

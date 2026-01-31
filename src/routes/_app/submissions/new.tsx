@@ -75,7 +75,9 @@ function NewSubmissionPage() {
 				});
 
 				if (!uploadResult.success) {
-					toast.error(`Submission created but file upload failed: ${uploadResult.error}`);
+					toast.error(
+						`Submission created but file upload failed: ${uploadResult.error}`,
+					);
 					// Still navigate - submission exists
 				}
 			} catch {
