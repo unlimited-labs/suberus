@@ -53,10 +53,10 @@ export default defineConfig({
 				storageState: "e2e/.auth/admin.json",
 			},
 		},
-		// Submission tests - use user auth
+		// Submission tests - use user auth (exclude integration tests)
 		{
 			name: "chromium-user",
-			testMatch: /e2e\/submissions\/.*\.spec\.ts/,
+			testMatch: /e2e\/submissions\/(?!settings-integration).*\.spec\.ts/,
 			dependencies: ["auth-setup"],
 			use: {
 				...devices["Desktop Chrome"],
@@ -65,7 +65,35 @@ export default defineConfig({
 		},
 		{
 			name: "mobile-user",
-			testMatch: /e2e\/submissions\/.*\.spec\.ts/,
+			testMatch: /e2e\/submissions\/(?!settings-integration).*\.spec\.ts/,
+			dependencies: ["auth-setup"],
+			use: {
+				...devices["Pixel 5"],
+				storageState: "e2e/.auth/user.json",
+			},
+		},
+		// Settings integration tests - use multiple contexts (admin + user)
+		{
+			name: "chromium-integration",
+			testMatch: /settings-integration\.spec\.ts/,
+			dependencies: ["auth-setup"],
+			use: {
+				...devices["Desktop Chrome"],
+			},
+		},
+		// Profile tests - use user auth
+		{
+			name: "chromium-profile",
+			testMatch: /e2e\/profile\/.*\.spec\.ts/,
+			dependencies: ["auth-setup"],
+			use: {
+				...devices["Desktop Chrome"],
+				storageState: "e2e/.auth/user.json",
+			},
+		},
+		{
+			name: "mobile-profile",
+			testMatch: /e2e\/profile\/.*\.spec\.ts/,
 			dependencies: ["auth-setup"],
 			use: {
 				...devices["Pixel 5"],

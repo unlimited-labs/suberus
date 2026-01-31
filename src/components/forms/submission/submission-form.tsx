@@ -45,6 +45,9 @@ export interface ValidationSettings {
 	maxAbstractLength: number;
 	minKeywords: number;
 	maxKeywords: number;
+	maxFileSize: number;
+	allowedFileTypes: string[];
+	enableKeywords: boolean;
 }
 
 interface SubmissionFormProps {
@@ -173,7 +176,9 @@ export function SubmissionForm({
 		values.authors.every(
 			(a) => a.firstName && a.lastName && a.email && a.affiliationName,
 		);
-	const hasKeywords = values.keywords.length >= validationSettings.minKeywords;
+	const hasKeywords =
+		!validationSettings.enableKeywords ||
+		values.keywords.length >= validationSettings.minKeywords;
 
 	// Get allowed extensions for file dropzone
 	const allowedExtensions = currentTypeConfig?.config.allowedExtensions || [];
@@ -402,9 +407,13 @@ export function SubmissionForm({
 													value={field.state.value}
 													onChange={field.handleChange}
 													accept={
-														isFileFormat ? acceptString : ".pdf,.doc,.docx"
+														isFileFormat
+															? acceptString
+															: validationSettings.allowedFileTypes
+																	.map((e) => `.${e}`)
+																	.join(",")
 													}
-													maxSize={10}
+													maxSize={validationSettings.maxFileSize}
 												/>
 												{isFileFormat && !field.state.value && (
 													<p className="text-xs text-muted-foreground">
@@ -447,37 +456,41 @@ export function SubmissionForm({
 								</form.Field>
 							</div>
 
-							<div className="border-t" />
-
 							{/* Keywords Section */}
-							<div className="space-y-4">
-								<div className="flex items-center gap-3">
-									<IconTags className="size-5 text-muted-foreground" />
-									<h2 className="text-lg font-semibold text-foreground">
-										Keywords
-									</h2>
-								</div>
+							{validationSettings.enableKeywords && (
+								<>
+									<div className="border-t" />
 
-								<form.Field name="keywords">
-									{(field) => (
-										<div className="space-y-2">
-											<div className="rounded-lg border bg-muted/30 p-3">
-												<KeywordsInput
-													value={field.state.value}
-													onChange={field.handleChange}
-													minKeywords={validationSettings.minKeywords}
-													maxKeywords={validationSettings.maxKeywords}
-												/>
-											</div>
-											{field.state.meta.errors.length > 0 && (
-												<p className="text-xs text-destructive">
-													{field.state.meta.errors[0]}
-												</p>
-											)}
+									<div className="space-y-4">
+										<div className="flex items-center gap-3">
+											<IconTags className="size-5 text-muted-foreground" />
+											<h2 className="text-lg font-semibold text-foreground">
+												Keywords
+											</h2>
 										</div>
-									)}
-								</form.Field>
-							</div>
+
+										<form.Field name="keywords">
+											{(field) => (
+												<div className="space-y-2">
+													<div className="rounded-lg border bg-muted/30 p-3">
+														<KeywordsInput
+															value={field.state.value}
+															onChange={field.handleChange}
+															minKeywords={validationSettings.minKeywords}
+															maxKeywords={validationSettings.maxKeywords}
+														/>
+													</div>
+													{field.state.meta.errors.length > 0 && (
+														<p className="text-xs text-destructive">
+															{field.state.meta.errors[0]}
+														</p>
+													)}
+												</div>
+											)}
+										</form.Field>
+									</div>
+								</>
+							)}
 
 							{/* Submit */}
 							<div className="flex items-center justify-between pt-4 border-t">
@@ -558,21 +571,25 @@ export function SubmissionForm({
 										Authors
 									</span>
 								</div>
-								<div className="flex items-center gap-3">
-									{hasKeywords ? (
-										<IconCircleCheck className="size-5 text-primary" />
-									) : (
-										<IconCircle className="size-5 text-muted-foreground" />
-									)}
-									<span
-										className={cn(
-											"text-sm",
-											hasKeywords ? "text-foreground" : "text-muted-foreground",
+								{validationSettings.enableKeywords && (
+									<div className="flex items-center gap-3">
+										{hasKeywords ? (
+											<IconCircleCheck className="size-5 text-primary" />
+										) : (
+											<IconCircle className="size-5 text-muted-foreground" />
 										)}
-									>
-										Keywords
-									</span>
-								</div>
+										<span
+											className={cn(
+												"text-sm",
+												hasKeywords
+													? "text-foreground"
+													: "text-muted-foreground",
+											)}
+										>
+											Keywords
+										</span>
+									</div>
+								)}
 							</div>
 						</div>
 
@@ -585,12 +602,23 @@ export function SubmissionForm({
 							<div className="space-y-3 text-sm text-muted-foreground">
 								<p>• Title should be concise and descriptive</p>
 								{isFileFormat ? (
-									<p>• Upload your document as PDF, DOC, or DOCX</p>
+									<p>
+										• Upload your document as{" "}
+										{allowedExtensions.map((e) => e.toUpperCase()).join(", ")}
+									</p>
 								) : (
-									<p>• Abstract minimum 100 characters</p>
+									<p>
+										• Abstract minimum {validationSettings.minAbstractLength}{" "}
+										characters
+									</p>
 								)}
 								<p>• At least one author required</p>
-								<p>• Add 1-5 relevant keywords</p>
+								{validationSettings.enableKeywords && (
+									<p>
+										• Add {validationSettings.minKeywords}-
+										{validationSettings.maxKeywords} relevant keywords
+									</p>
+								)}
 								{!isFileFormat && <p>• Document upload is optional</p>}
 							</div>
 						</div>

@@ -17,6 +17,11 @@ import type {
 	PasswordChangeFormData,
 	PersonalInfoFormData,
 } from "@/lib/validations/profile";
+import {
+	changePasswordFn,
+	updateContactInfoFn,
+	updatePersonalInfoFn,
+} from "@/utils/profile.functions";
 
 export const Route = createFileRoute("/_app/settings")({
 	component: SettingsPage,
@@ -30,9 +35,7 @@ function SettingsPage() {
 	// Personal Info handlers
 	const handlePersonalInfoSave = async (data: PersonalInfoFormData) => {
 		try {
-			// TODO: API call to update personal info
-			console.log("Saving personal info:", data);
-			await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+			await updatePersonalInfoFn({ data });
 			toast.success("Personal information updated successfully");
 		} catch (error) {
 			toast.error("Failed to update personal information");
@@ -43,15 +46,10 @@ function SettingsPage() {
 	// Contact Info handlers
 	const handleContactInfoSave = async (data: ContactInfoFormData) => {
 		try {
-			// TODO: API call to update contact info
-			console.log("Saving contact info:", data);
-			await new Promise((resolve) => setTimeout(resolve, 1000));
-
-			if (data.email !== user.email) {
-				toast.success(`Verification email sent to ${data.email}`);
-			} else {
-				toast.success("Contact information updated successfully");
-			}
+			await updateContactInfoFn({
+				data: { address: data.address, country: data.country },
+			});
+			toast.success("Contact information updated successfully");
 		} catch (error) {
 			toast.error("Failed to update contact information");
 			throw error;
@@ -59,11 +57,14 @@ function SettingsPage() {
 	};
 
 	// Password change handler
-	const handlePasswordChange = async (_data: PasswordChangeFormData) => {
+	const handlePasswordChange = async (data: PasswordChangeFormData) => {
 		try {
-			// TODO: API call to change password via better-auth
-			console.log("Changing password");
-			await new Promise((resolve) => setTimeout(resolve, 1000));
+			await changePasswordFn({
+				data: {
+					currentPassword: data.currentPassword,
+					newPassword: data.newPassword,
+				},
+			});
 			toast.success("Password changed successfully");
 		} catch (error) {
 			toast.error("Failed to change password");
@@ -88,7 +89,7 @@ function SettingsPage() {
 								firstName: user.firstName ?? "",
 								lastName: user.lastName ?? "",
 								affiliation: "", // TODO: Fetch from affiliationId
-								orcid: "", // TODO: Add orcid to user model
+								orcid: user.orcid ?? "",
 							}}
 							onSave={handlePersonalInfoSave}
 						/>

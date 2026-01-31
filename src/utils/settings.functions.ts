@@ -233,6 +233,9 @@ export const getSubmissionValidationForFormFn = createServerFn({
 			"MAX_ABSTRACT_LENGTH",
 			"MIN_KEYWORDS",
 			"MAX_KEYWORDS",
+			"MAX_FILE_SIZE_MB",
+			"ALLOWED_FILE_TYPES",
+			"ENABLE_KEYWORDS",
 		]);
 		return {
 			minTitleLength: settings.MIN_TITLE_LENGTH,
@@ -241,5 +244,8 @@ export const getSubmissionValidationForFormFn = createServerFn({
 			maxAbstractLength: settings.MAX_ABSTRACT_LENGTH,
 			minKeywords: settings.MIN_KEYWORDS,
 			maxKeywords: settings.MAX_KEYWORDS,
+			maxFileSize: settings.MAX_FILE_SIZE_MB,
+			allowedFileTypes: settings.ALLOWED_FILE_TYPES,
+			enableKeywords: settings.ENABLE_KEYWORDS,
 		};
 	});
