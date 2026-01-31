@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { ReviewDecision, SubmissionType } from "@/generated/prisma";
+import type { ReviewDecision, SubmissionType } from "@/generated/prisma/enums";
 import { typeLabels } from "@/lib/labels/submission";
 import type { MockAuthor } from "@/lib/mock-data/submissions";
 import { cn } from "@/lib/utils";

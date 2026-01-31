@@ -1,4 +1,4 @@
-import type { UserRole } from "@/generated/prisma";
+import type { UserRole } from "@/generated/prisma/enums";
 import { useSession } from "@/hooks/use-session";
 
 const ADMIN_ROLES: UserRole[] = ["ADMIN", "EDITOR"];

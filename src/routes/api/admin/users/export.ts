@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import * as XLSX from "xlsx";
-import type { UserRole } from "@/generated/prisma";
+import type { UserRole } from "@/generated/prisma/enums";
 import { getUsers } from "@/lib/server/admin/users";
 
 function formatDate(date: Date | null | undefined): string {

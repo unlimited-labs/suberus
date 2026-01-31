@@ -10,7 +10,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import type { FeeType, UserRole } from "@/generated/prisma";
+import type { FeeType, UserRole } from "@/generated/prisma/enums";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { feeTypeOptions, userRoleOptions } from "@/lib/labels/user";
 import type { AdminUser } from "@/lib/server/admin/users";

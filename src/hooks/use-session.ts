@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { UserRole } from "@/generated/prisma";
+import type { UserRole } from "@/generated/prisma/enums";
 import { useSession as useBetterAuthSession } from "@/lib/auth-client";
 
 export interface SessionUser {

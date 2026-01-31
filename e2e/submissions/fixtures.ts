@@ -12,7 +12,7 @@ export const VALID_SUBMISSION = {
 	type: "ABSTRACT" as const,
 	title: "Test Submission Title for E2E",
 	content:
-		"This is a test abstract content that needs to be at least 100 characters long. We are testing the submission form and API endpoints to ensure everything works correctly.",
+		"This is a comprehensive test abstract content for our end-to-end testing suite. The purpose of this submission is to validate that our submission form and API endpoints are working correctly. We are testing various aspects of the system including form validation, data persistence, and user interface interactions. This abstract discusses the methodology, results, and conclusions of our testing approach. The testing framework ensures that all components are functioning as expected and that the user experience is smooth and intuitive. Additional context is provided here to meet the minimum character requirements for the abstract field which is configured to require at least 500 characters.",
 	authors: [
 		{
 			firstName: "John",
@@ -23,7 +23,7 @@ export const VALID_SUBMISSION = {
 			isPresenter: true,
 		},
 	],
-	keywords: ["testing", "e2e"],
+	keywords: ["testing", "e2e", "validation"],
 }
 
 // Generate unique submission data to avoid test conflicts
@@ -32,7 +32,7 @@ export function createUniqueSubmission(suffix?: string) {
 	return {
 		type: "ABSTRACT" as const,
 		title: `Test Submission ${id}`,
-		content: `This is a test abstract content for submission ${id}. It needs to be at least 100 characters long for validation to pass. Adding more text here.`,
+		content: `This is a comprehensive test abstract content for submission ${id}. The purpose of this submission is to validate that our submission form and API endpoints are working correctly. We are testing various aspects of the system including form validation, data persistence, and user interface interactions. This abstract discusses the methodology, results, and conclusions of our testing approach. The testing framework ensures that all components are functioning as expected and that the user experience is smooth and intuitive. Additional context is provided here to meet the minimum character requirements for the abstract field.`,
 		authors: [
 			{
 				firstName: "John",
@@ -43,7 +43,7 @@ export function createUniqueSubmission(suffix?: string) {
 				isPresenter: true,
 			},
 		],
-		keywords: [`test-${id}`, "e2e"],
+		keywords: [`test-${id}`, "e2e", "validation"],
 	}
 }
 
@@ -97,8 +97,14 @@ export class SubmissionPage {
 		await this.page.goto("/submissions/new")
 	}
 
-	async selectType(type: "ABSTRACT" | "POSTER") {
-		await this.page.getByRole("button", { name: type, exact: false }).click()
+	async selectType(type: "ABSTRACT" | "POSTER" | "FULL_PAPER") {
+		// Map type to display label
+		const labels = {
+			ABSTRACT: "Oral Presentation",
+			POSTER: "Poster",
+			FULL_PAPER: "Full Paper",
+		}
+		await this.page.getByRole("button", { name: labels[type], exact: false }).click()
 	}
 
 	async fillTitle(title: string) {

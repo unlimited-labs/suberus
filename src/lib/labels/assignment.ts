@@ -1,4 +1,4 @@
-import type { AssignmentStatus } from "@/generated/prisma";
+import type { AssignmentStatus } from "@/generated/prisma/enums";
 
 export const assignmentStatusLabels: Record<AssignmentStatus, string> = {
 	PENDING: "Pending",

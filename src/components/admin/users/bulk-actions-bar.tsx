@@ -17,7 +17,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import type { FeeType, UserRole } from "@/generated/prisma";
+import type { FeeType, UserRole } from "@/generated/prisma/enums";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import type { MockUser } from "@/lib/mock-data/users";
 import { bulkMarkFeesPaid, changeUserRole } from "@/lib/server/admin/users";

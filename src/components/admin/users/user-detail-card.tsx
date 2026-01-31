@@ -30,7 +30,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import type { FeeType, UserRole } from "@/generated/prisma";
+import type { FeeType, UserRole } from "@/generated/prisma/enums";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import type { AdminUser } from "@/lib/server/admin/users";
 import { patchAdminUser } from "@/utils/admin-users.functions";

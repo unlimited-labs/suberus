@@ -8,7 +8,7 @@ import {
 	IconUsers,
 } from "@tabler/icons-react";
 import type { ComponentType } from "react";
-import type { UserRole } from "@/generated/prisma";
+import type { UserRole } from "@/generated/prisma/enums";
 
 export interface NavItem {
 	name: string;

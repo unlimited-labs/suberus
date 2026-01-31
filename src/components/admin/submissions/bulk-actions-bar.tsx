@@ -18,7 +18,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import type { SubmissionStatus } from "@/generated/prisma";
+import type { SubmissionStatus } from "@/generated/prisma/enums";
 import { getReviewers, type MockUser } from "@/lib/mock-data/users";
 import type { AdminSubmission } from "@/lib/server/admin/submissions";
 import {

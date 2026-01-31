@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 import { prisma } from "@/db";
-import type { EmailEventType } from "@/generated/prisma";
+import type { EmailEventType } from "@/generated/prisma/enums";
 
 const transporter = nodemailer.createTransport({
 	host: process.env.SMTP_HOST ?? "localhost",

@@ -1,4 +1,4 @@
-import type { AssignmentStatus, SubmissionType } from "@/generated/prisma";
+import type { AssignmentStatus, SubmissionType } from "@/generated/prisma/enums";
 
 export interface MockReviewAssignment {
 	id: string;

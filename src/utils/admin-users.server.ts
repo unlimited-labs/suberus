@@ -1,4 +1,4 @@
-import type { FeeType, UserRole } from "@/generated/prisma";
+import type { FeeType, UserRole } from "@/generated/prisma/enums";
 import {
 	type AdminUser,
 	bulkChangeRole,

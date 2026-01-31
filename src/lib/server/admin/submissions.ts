@@ -1,4 +1,4 @@
-import type { SubmissionStatus, SubmissionType } from "@/generated/prisma";
+import type { SubmissionStatus, SubmissionType } from "@/generated/prisma/enums";
 import {
 	type MockSubmission,
 	mockSubmissions,

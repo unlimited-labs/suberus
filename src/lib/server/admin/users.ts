@@ -1,5 +1,6 @@
 import { prisma } from "@/db";
-import type { FeeType, Prisma, UserRole } from "@/generated/prisma";
+import type { Prisma } from "@/generated/prisma/client";
+import type { FeeType, UserRole } from "@/generated/prisma/enums";
 
 export interface AdminUser {
 	id: string;

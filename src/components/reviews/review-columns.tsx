@@ -11,7 +11,7 @@ import {
 } from "@/components/admin/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { AssignmentStatus } from "@/generated/prisma";
+import type { AssignmentStatus } from "@/generated/prisma/enums";
 import {
 	assignmentStatusFilterOptions,
 	assignmentStatusLabels,
