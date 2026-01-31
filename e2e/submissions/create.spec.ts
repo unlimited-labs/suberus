@@ -1,15 +1,13 @@
 import {
 	test,
 	expect,
-	loginAsTestUser,
 	VALID_SUBMISSION,
 	TEST_USER,
 } from "./fixtures";
 
+// Note: Authentication is handled via storageState in playwright.config.ts
+
 test.describe("Submission Form", () => {
-	test.beforeEach(async ({ page }) => {
-		await loginAsTestUser(page);
-	});
 
 	test("displays submission form", async ({ submissionPage }) => {
 		await submissionPage.goto();
@@ -111,9 +109,9 @@ test.describe("Submission Form", () => {
 
 		// Type multiple keywords separated by commas
 		const keywordsSection = submissionPage.page
-			.locator("text=Keywords")
-			.locator("xpath=ancestor::div[contains(@class, 'space-y')]");
-		const keywordInput = keywordsSection.locator("input[type='text']");
+			.locator(".space-y-2, .space-y-3, .space-y-4")
+			.filter({ has: submissionPage.page.getByText("Keywords", { exact: true }) });
+		const keywordInput = keywordsSection.getByRole("textbox");
 
 		// Typing "first, second," adds "first" and "second", leaves empty input
 		await keywordInput.fill("first, second,");
@@ -135,9 +133,9 @@ test.describe("Submission Form", () => {
 
 		// Type keyword without comma or Enter
 		const keywordsSection = submissionPage.page
-			.locator("text=Keywords")
-			.locator("xpath=ancestor::div[contains(@class, 'space-y')]");
-		const keywordInput = keywordsSection.locator("input[type='text']");
+			.locator(".space-y-2, .space-y-3, .space-y-4")
+			.filter({ has: submissionPage.page.getByText("Keywords", { exact: true }) });
+		const keywordInput = keywordsSection.getByRole("textbox");
 
 		await keywordInput.fill("singlekeyword");
 
@@ -172,7 +170,7 @@ test.describe("Submission Form", () => {
 		testInfo,
 	) => {
 		// Skip on mobile - progress sidebar is hidden
-		if (testInfo.project.name === "mobile") {
+		if (testInfo.project.name === "mobile-user") {
 			test.skip();
 			return;
 		}
@@ -239,10 +237,7 @@ test.describe("Submission Form", () => {
 		// Select Full Paper (FILE format)
 		await submissionPage.selectType("FULL_PAPER");
 
-		// Wait for UI to update after type change
-		await submissionPage.page.waitForTimeout(300);
-
-		// Text area should be hidden
+		// Text area should be hidden after type change
 		await expect(submissionPage.contentInput).not.toBeVisible({ timeout: 5000 });
 
 		// File dropzone should be visible and required
@@ -281,7 +276,6 @@ test.describe("Submission Form", () => {
 
 		// Switch to Full Paper (FILE)
 		await submissionPage.selectType("FULL_PAPER");
-		await submissionPage.page.waitForTimeout(300);
 		await expect(submissionPage.contentInput).not.toBeVisible({ timeout: 5000 });
 		await expect(
 			submissionPage.page.getByText("Drop file or click to upload"),
@@ -289,7 +283,6 @@ test.describe("Submission Form", () => {
 
 		// Switch back to Poster (TEXT)
 		await submissionPage.selectType("POSTER");
-		await submissionPage.page.waitForTimeout(300);
 		await expect(submissionPage.contentInput).toBeVisible({ timeout: 5000 });
 	});
 });

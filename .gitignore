@@ -29,3 +29,4 @@ playwright/.cache/
 .claude
 .idea
 .cursorrules
+e2e/.auth/

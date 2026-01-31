@@ -1,4 +1,4 @@
-import type { Page, Locator } from "@playwright/test"
+import { test as base, type Page, type Locator, expect } from "@playwright/test"
 
 // Test data
 export const ADMIN_USER = {
@@ -40,7 +40,7 @@ export class AdminUsersPage {
 		this.heading = page.getByRole("heading", { name: "Users" })
 		this.exportButton = page.getByRole("link", { name: "Export XLSX" })
 		this.searchInput = page.getByPlaceholder("Search users...")
-		this.table = page.locator("table")
+		this.table = page.getByRole("table")
 		this.loadingText = page.getByText("Loading...")
 	}
 
@@ -55,14 +55,15 @@ export class AdminUsersPage {
 	async search(query: string) {
 		await this.searchInput.fill(query)
 		// Wait for table to re-filter
-		await this.page.waitForTimeout(300)
+		await this.page.waitForLoadState("networkidle")
 	}
 
 	async selectUser(email: string) {
 		const row = this.page.locator("tr").filter({ hasText: email })
-		await row.getByRole("checkbox").click()
-		// Wait for React state to update
-		await this.page.waitForTimeout(100)
+		const checkbox = row.getByRole("checkbox")
+		await checkbox.click()
+		// Wait for checkbox to be checked
+		await expect(checkbox).toBeChecked()
 	}
 
 	async selectAllUsers() {
@@ -170,3 +171,24 @@ export class BulkActionDialog {
 		await this.page.getByRole("option", { name: role }).click()
 	}
 }
+
+// Extended test with fixtures
+interface AdminFixtures {
+	adminUsersPage: AdminUsersPage
+	userDetailPage: UserDetailPage
+	bulkActionDialog: BulkActionDialog
+}
+
+export const test = base.extend<AdminFixtures>({
+	adminUsersPage: async ({ page }, use) => {
+		await use(new AdminUsersPage(page))
+	},
+	userDetailPage: async ({ page }, use) => {
+		await use(new UserDetailPage(page))
+	},
+	bulkActionDialog: async ({ page }, use) => {
+		await use(new BulkActionDialog(page))
+	},
+})
+
+export { expect } from "@playwright/test"

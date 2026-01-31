@@ -1,4 +1,4 @@
-import { test as base, type Page, type Locator } from "@playwright/test"
+import { test as base, expect as baseExpect, type Page, type Locator } from "@playwright/test"
 
 // Test data
 export const TEST_USER = {
@@ -134,13 +134,14 @@ export class SubmissionPage {
 
 		// Fill affiliation using the placeholder in the same author card
 		const authorCard = this.page
-			.locator(`#author-${index}-firstName`)
-			.locator("xpath=ancestor::div[contains(@class, 'rounded-lg')]")
+			.locator(".rounded-lg.border")
+			.filter({ has: this.page.locator(`#author-${index}-firstName`) })
 		const affiliationInput = authorCard.getByPlaceholder("Type affiliation...")
 		await affiliationInput.fill(author.affiliationName)
-		await this.page.waitForTimeout(400) // debounce
 		await affiliationInput.blur()
-		await this.page.waitForTimeout(300) // API call
+		// Wait for network to settle (API call completes)
+		await this.page.waitForLoadState("networkidle")
+		await baseExpect(affiliationInput).toHaveValue(author.affiliationName, { timeout: 5000 })
 	}
 
 	async addAuthor() {
@@ -150,9 +151,9 @@ export class SubmissionPage {
 	async addKeyword(keyword: string) {
 		// Keywords input is inside the Keywords section
 		const keywordsSection = this.page
-			.locator("text=Keywords")
-			.locator("xpath=ancestor::div[contains(@class, 'space-y')]")
-		const keywordInput = keywordsSection.locator("input[type='text']")
+			.locator(".space-y-2, .space-y-3, .space-y-4")
+			.filter({ has: this.page.getByText("Keywords", { exact: true }) })
+		const keywordInput = keywordsSection.getByRole("textbox")
 		await keywordInput.fill(keyword)
 		// Press Enter to add keyword (or comma for tokenization)
 		await keywordInput.press("Enter")

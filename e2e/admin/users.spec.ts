@@ -1,255 +1,221 @@
-import { test, expect } from "@playwright/test"
-import {
-	loginAsAdmin,
-	AdminUsersPage,
-	UserDetailPage,
-	ADMIN_USER,
-	TEST_USER,
-} from "./fixtures"
+import { test, expect, ADMIN_USER, TEST_USER } from "./fixtures"
 
 // Desktop tests - skip on mobile since mobile shows cards instead of table
+// Note: Authentication is handled via storageState in playwright.config.ts
 test.describe("Admin Users Management", () => {
-	test.beforeEach(async ({ page }, testInfo) => {
+	test.beforeEach(async ({}, testInfo) => {
 		// Skip table-based tests on mobile viewport
-		test.skip(testInfo.project.name === "mobile", "Table tests not applicable on mobile")
-		await loginAsAdmin(page)
+		test.skip(testInfo.project.name === "mobile-admin", "Table tests not applicable on mobile")
 	})
 
 	test.describe("Users List", () => {
-		test("displays users list correctly", async ({ page }) => {
-			const usersPage = new AdminUsersPage(page)
-			await usersPage.goto()
-			await usersPage.waitForLoad()
+		test("displays users list correctly", async ({ adminUsersPage }) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
 
-			await expect(usersPage.heading).toBeVisible()
-			await expect(usersPage.exportButton).toBeVisible()
-			await expect(usersPage.table).toBeVisible()
+			await expect(adminUsersPage.heading).toBeVisible()
+			await expect(adminUsersPage.exportButton).toBeVisible()
+			await expect(adminUsersPage.table).toBeVisible()
 		})
 
-		test("shows admin user in the list", async ({ page }) => {
-			const usersPage = new AdminUsersPage(page)
-			await usersPage.goto()
-			await usersPage.waitForLoad()
+		test("shows admin user in the list", async ({ adminUsersPage }) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
 
-			const adminRow = usersPage.getRowByEmail(ADMIN_USER.email)
+			const adminRow = adminUsersPage.getRowByEmail(ADMIN_USER.email)
 			await expect(adminRow).toBeVisible()
 		})
 
-		test("search filters users correctly", async ({ page }) => {
-			const usersPage = new AdminUsersPage(page)
-			await usersPage.goto()
-			await usersPage.waitForLoad()
+		test("search filters users correctly", async ({ adminUsersPage }) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
 
-			await usersPage.search("admin")
-			await page.waitForTimeout(300)
+			await adminUsersPage.search("admin")
 
-			const adminRow = usersPage.getRowByEmail(ADMIN_USER.email)
+			const adminRow = adminUsersPage.getRowByEmail(ADMIN_USER.email)
 			await expect(adminRow).toBeVisible()
 		})
 
-		test("can select users for bulk actions", async ({ page }) => {
-			const usersPage = new AdminUsersPage(page)
-			await usersPage.goto()
-			await usersPage.waitForLoad()
+		test("can select users for bulk actions", async ({ adminUsersPage }) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
 
-			await usersPage.selectUser(TEST_USER.email)
-			await expect(usersPage.getSelectedCount()).toBeVisible()
+			await adminUsersPage.selectUser(TEST_USER.email)
+			await expect(adminUsersPage.getSelectedCount()).toBeVisible()
 		})
 
-		test("export XLSX button has correct link", async ({ page }) => {
-			const usersPage = new AdminUsersPage(page)
-			await usersPage.goto()
-			await usersPage.waitForLoad()
+		test("export XLSX button has correct link", async ({ adminUsersPage }) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
 
-			const href = await usersPage.exportButton.getAttribute("href")
+			const href = await adminUsersPage.exportButton.getAttribute("href")
 			expect(href).toContain("/api/admin/users/export")
 		})
 	})
 
 	test.describe("User Detail Page", () => {
-		test("displays user details correctly", async ({ page }) => {
-			const usersPage = new AdminUsersPage(page)
-			await usersPage.goto()
-			await usersPage.waitForLoad()
+		test("displays user details correctly", async ({ adminUsersPage, userDetailPage }) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
 
-			await usersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER.email)
 
-			const detailPage = new UserDetailPage(page)
-			await expect(detailPage.backButton).toBeVisible()
-			await expect(detailPage.getUserEmail()).toContainText(TEST_USER.email)
+			await expect(userDetailPage.backButton).toBeVisible()
+			await expect(userDetailPage.getUserEmail()).toContainText(TEST_USER.email)
 		})
 
-		test("shows change role button for admin", async ({ page }) => {
-			const usersPage = new AdminUsersPage(page)
-			await usersPage.goto()
-			await usersPage.waitForLoad()
+		test("shows change role button for admin", async ({ adminUsersPage, userDetailPage }) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
 
-			await usersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER.email)
 
-			const detailPage = new UserDetailPage(page)
-			await expect(detailPage.changeRoleButton).toBeVisible()
+			await expect(userDetailPage.changeRoleButton).toBeVisible()
 		})
 
-		test("shows deactivate/activate button", async ({ page }) => {
-			const usersPage = new AdminUsersPage(page)
-			await usersPage.goto()
-			await usersPage.waitForLoad()
+		test("shows deactivate/activate button", async ({ adminUsersPage, userDetailPage }) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
 
-			await usersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER.email)
 
-			const detailPage = new UserDetailPage(page)
 			// Wait for page to load - one of these buttons should appear
 			await expect(
-				detailPage.deactivateButton.or(detailPage.activateButton)
+				userDetailPage.deactivateButton.or(userDetailPage.activateButton)
 			).toBeVisible()
 		})
 
-		test("can navigate back to users list", async ({ page }) => {
-			const usersPage = new AdminUsersPage(page)
-			await usersPage.goto()
-			await usersPage.waitForLoad()
+		test("can navigate back to users list", async ({ adminUsersPage, userDetailPage }) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
 
-			await usersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER.email)
 
-			const detailPage = new UserDetailPage(page)
-			await detailPage.backButton.click()
+			await userDetailPage.backButton.click()
 
-			await expect(page).toHaveURL(/\/admin\/users$/)
+			await expect(adminUsersPage.page).toHaveURL(/\/admin\/users$/)
 		})
 
-		test("shows fee status section", async ({ page }) => {
-			const usersPage = new AdminUsersPage(page)
-			await usersPage.goto()
-			await usersPage.waitForLoad()
+		test("shows fee status section", async ({ adminUsersPage, userDetailPage }) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
 
-			await usersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER.email)
 
-			const detailPage = new UserDetailPage(page)
 			// Wait for page to load - one of these should appear
 			await expect(
-				detailPage.feeStatusPaid.or(detailPage.feeStatusUnpaid)
+				userDetailPage.feeStatusPaid.or(userDetailPage.feeStatusUnpaid)
 			).toBeVisible()
 		})
 	})
 
 	test.describe("Bulk Actions", () => {
-		test("bulk actions dropdown appears when users selected", async ({ page }) => {
-			const usersPage = new AdminUsersPage(page)
-			await usersPage.goto()
-			await usersPage.waitForLoad()
+		test("bulk actions dropdown appears when users selected", async ({ adminUsersPage }) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
 
-			await usersPage.selectUser(TEST_USER.email)
-			await expect(page.getByText("Bulk actions")).toBeVisible()
+			await adminUsersPage.selectUser(TEST_USER.email)
+			await expect(adminUsersPage.page.getByText("Bulk actions")).toBeVisible()
 		})
 
-		test("can open mark fee paid dialog", async ({ page }) => {
-			const usersPage = new AdminUsersPage(page)
-			await usersPage.goto()
-			await usersPage.waitForLoad()
+		test("can open mark fee paid dialog", async ({ adminUsersPage }) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
 
-			await usersPage.selectUser(TEST_USER.email)
-			await usersPage.selectBulkAction("Mark fee paid")
-			await usersPage.clickApply()
+			await adminUsersPage.selectUser(TEST_USER.email)
+			await adminUsersPage.selectBulkAction("Mark fee paid")
+			await adminUsersPage.clickApply()
 
-			await expect(page.getByRole("dialog")).toBeVisible()
-			await expect(page.getByText("Mark fee as paid")).toBeVisible()
+			await expect(adminUsersPage.page.getByRole("dialog")).toBeVisible()
+			await expect(adminUsersPage.page.getByText("Mark fee as paid")).toBeVisible()
 		})
 
-		test("can open change role dialog", async ({ page }) => {
-			const usersPage = new AdminUsersPage(page)
-			await usersPage.goto()
-			await usersPage.waitForLoad()
+		test("can open change role dialog", async ({ adminUsersPage }) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
 
-			await usersPage.selectUser(TEST_USER.email)
-			await usersPage.selectBulkAction("Change role")
-			await usersPage.clickApply()
+			await adminUsersPage.selectUser(TEST_USER.email)
+			await adminUsersPage.selectBulkAction("Change role")
+			await adminUsersPage.clickApply()
 
-			await expect(page.getByRole("dialog")).toBeVisible()
-			await expect(page.getByText("Change user role")).toBeVisible()
+			await expect(adminUsersPage.page.getByRole("dialog")).toBeVisible()
+			await expect(adminUsersPage.page.getByText("Change user role")).toBeVisible()
 		})
 	})
 
 	test.describe("Role Change", () => {
-		test("change role dialog opens from detail page", async ({ page }) => {
-			const usersPage = new AdminUsersPage(page)
-			await usersPage.goto()
-			await usersPage.waitForLoad()
+		test("change role dialog opens from detail page", async ({ adminUsersPage, userDetailPage }) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
 
-			await usersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER.email)
 
-			const detailPage = new UserDetailPage(page)
-			await detailPage.changeRoleButton.click()
+			await userDetailPage.changeRoleButton.click()
 
-			await expect(page.getByRole("dialog")).toBeVisible()
-			await expect(page.getByText("Change User Role")).toBeVisible()
+			await expect(adminUsersPage.page.getByRole("dialog")).toBeVisible()
+			await expect(adminUsersPage.page.getByText("Change User Role")).toBeVisible()
 		})
 
-		test("can cancel role change", async ({ page }) => {
-			const usersPage = new AdminUsersPage(page)
-			await usersPage.goto()
-			await usersPage.waitForLoad()
+		test("can cancel role change", async ({ adminUsersPage, userDetailPage }) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
 
-			await usersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER.email)
 
-			const detailPage = new UserDetailPage(page)
-			await detailPage.changeRoleButton.click()
-			await detailPage.cancelDialog()
+			await userDetailPage.changeRoleButton.click()
+			await userDetailPage.cancelDialog()
 
-			await expect(page.getByRole("dialog")).not.toBeVisible()
+			await expect(adminUsersPage.page.getByRole("dialog")).not.toBeVisible()
 		})
 	})
 
 	test.describe("Fee Management", () => {
-		test("mark fee paid button visible for unpaid users", async ({ page }) => {
-			const usersPage = new AdminUsersPage(page)
-			await usersPage.goto()
-			await usersPage.waitForLoad()
+		test("mark fee paid button visible for unpaid users", async ({ adminUsersPage, userDetailPage }) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
 
-			await usersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER.email)
 
-			const detailPage = new UserDetailPage(page)
-			const unpaidVisible = await detailPage.feeStatusUnpaid.isVisible()
+			const unpaidVisible = await userDetailPage.feeStatusUnpaid.isVisible()
 			if (unpaidVisible) {
-				await expect(detailPage.markAsPaidButton).toBeVisible()
+				await expect(userDetailPage.markAsPaidButton).toBeVisible()
 			}
 		})
 
-		test("mark fee paid dialog opens correctly", async ({ page }) => {
-			const usersPage = new AdminUsersPage(page)
-			await usersPage.goto()
-			await usersPage.waitForLoad()
+		test("mark fee paid dialog opens correctly", async ({ adminUsersPage, userDetailPage }) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
 
-			await usersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER.email)
 
-			const detailPage = new UserDetailPage(page)
-			const unpaidVisible = await detailPage.feeStatusUnpaid.isVisible()
+			const unpaidVisible = await userDetailPage.feeStatusUnpaid.isVisible()
 			if (unpaidVisible) {
-				await detailPage.markAsPaidButton.click()
-				await expect(page.getByRole("dialog")).toBeVisible()
-				await expect(page.getByText("Mark Fee as Paid")).toBeVisible()
+				await userDetailPage.markAsPaidButton.click()
+				await expect(adminUsersPage.page.getByRole("dialog")).toBeVisible()
+				await expect(adminUsersPage.page.getByText("Mark Fee as Paid")).toBeVisible()
 			}
 		})
 	})
 
 	test.describe("User Status Toggle", () => {
-		test("can toggle user active status", async ({ page }) => {
-			const usersPage = new AdminUsersPage(page)
-			await usersPage.goto()
-			await usersPage.waitForLoad()
+		test("can toggle user active status", async ({ adminUsersPage, userDetailPage }) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
 
-			await usersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER.email)
 
-			const detailPage = new UserDetailPage(page)
-			const deactivateVisible = await detailPage.deactivateButton.isVisible()
+			const deactivateVisible = await userDetailPage.deactivateButton.isVisible()
 			if (deactivateVisible) {
-				await detailPage.deactivateButton.click()
-				await page.waitForTimeout(500)
+				await userDetailPage.deactivateButton.click()
+				// Wait for action to complete - button should toggle
+				await expect(userDetailPage.activateButton).toBeVisible({ timeout: 5000 })
 			} else {
-				await detailPage.activateButton.click()
-				await page.waitForTimeout(500)
+				await userDetailPage.activateButton.click()
+				// Wait for action to complete - button should toggle
+				await expect(userDetailPage.deactivateButton).toBeVisible({ timeout: 5000 })
 			}
 
-			const errorToast = page.locator("[data-sonner-toast][data-type='error']")
+			const errorToast = adminUsersPage.page.locator("[data-sonner-toast][data-type='error']")
 			await expect(errorToast).not.toBeVisible({ timeout: 1000 })
 		})
 	})
@@ -258,21 +224,17 @@ test.describe("Admin Users Management", () => {
 test.describe("Admin Users - Mobile", () => {
 	test.use({ viewport: { width: 375, height: 667 } })
 
-	test.beforeEach(async ({ page }) => {
-		await loginAsAdmin(page)
+	// Note: Authentication is handled via storageState in playwright.config.ts
+
+	test("displays mobile cards on small screens", async ({ adminUsersPage }) => {
+		await adminUsersPage.goto()
+		await adminUsersPage.waitForLoad()
+		await expect(adminUsersPage.heading).toBeVisible()
 	})
 
-	test("displays mobile cards on small screens", async ({ page }) => {
-		const usersPage = new AdminUsersPage(page)
-		await usersPage.goto()
-		await usersPage.waitForLoad()
-		await expect(usersPage.heading).toBeVisible()
-	})
-
-	test("export button visible on mobile", async ({ page }) => {
-		const usersPage = new AdminUsersPage(page)
-		await usersPage.goto()
-		await usersPage.waitForLoad()
-		await expect(usersPage.exportButton).toBeVisible()
+	test("export button visible on mobile", async ({ adminUsersPage }) => {
+		await adminUsersPage.goto()
+		await adminUsersPage.waitForLoad()
+		await expect(adminUsersPage.exportButton).toBeVisible()
 	})
 })

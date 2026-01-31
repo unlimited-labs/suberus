@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test"
+import { test as base, type Page, type Locator, expect } from "@playwright/test"
 
 // Test data
 export const TEST_USER = {
@@ -16,22 +16,38 @@ export const INVALID_USER = {
 
 // Page Objects
 export class LoginPage {
-	constructor(private page: Page) {}
+	readonly page: Page
+	readonly emailInput: Locator
+	readonly passwordInput: Locator
+	readonly submitButton: Locator
+	readonly heading: Locator
+	readonly registerLink: Locator
+	readonly forgotPasswordLink: Locator
+
+	constructor(page: Page) {
+		this.page = page
+		this.emailInput = page.getByLabel("E-mail")
+		this.passwordInput = page.getByLabel("Password")
+		this.submitButton = page.getByRole("button", { name: "Sign in" })
+		this.heading = page.getByRole("heading", { name: "Sign in" })
+		this.registerLink = page.getByRole("link", { name: "Create one" })
+		this.forgotPasswordLink = page.getByRole("link", { name: "Forgot password?" })
+	}
 
 	async goto() {
 		await this.page.goto("/login")
 	}
 
 	async fillEmail(email: string) {
-		await this.page.getByLabel("E-mail").fill(email)
+		await this.emailInput.fill(email)
 	}
 
 	async fillPassword(password: string) {
-		await this.page.getByLabel("Password").fill(password)
+		await this.passwordInput.fill(password)
 	}
 
 	async submit() {
-		await this.page.getByRole("button", { name: "Sign in" }).click()
+		await this.submitButton.click()
 	}
 
 	async login(email: string, password: string) {
@@ -39,34 +55,26 @@ export class LoginPage {
 		await this.fillPassword(password)
 		await this.submit()
 	}
-
-	get emailInput() {
-		return this.page.getByLabel("E-mail")
-	}
-
-	get passwordInput() {
-		return this.page.getByLabel("Password")
-	}
-
-	get submitButton() {
-		return this.page.getByRole("button", { name: "Sign in" })
-	}
-
-	get heading() {
-		return this.page.getByRole("heading", { name: "Sign in" })
-	}
-
-	get registerLink() {
-		return this.page.getByRole("link", { name: "Create one" })
-	}
-
-	get forgotPasswordLink() {
-		return this.page.getByRole("link", { name: "Forgot password?" })
-	}
 }
 
 export class RegisterPage {
-	constructor(private page: Page) {}
+	readonly page: Page
+	readonly heading: Locator
+	readonly loginLink: Locator
+	readonly continueButton: Locator
+	readonly backButton: Locator
+	readonly createAccountButton: Locator
+	readonly affiliationInput: Locator
+
+	constructor(page: Page) {
+		this.page = page
+		this.heading = page.getByRole("heading", { name: "Registration" })
+		this.loginLink = page.getByRole("link", { name: "Sign in" })
+		this.continueButton = page.getByRole("button", { name: "Continue" })
+		this.backButton = page.getByRole("button", { name: "Back" })
+		this.createAccountButton = page.getByRole("button", { name: "Create account" })
+		this.affiliationInput = page.getByPlaceholder("Type affiliation...")
+	}
 
 	async goto() {
 		await this.page.goto("/register")
@@ -89,14 +97,12 @@ export class RegisterPage {
 		await this.page.getByLabel("Last name *").fill(data.lastName)
 
 		// AffiliationSelect is an autocomplete - fill and blur to create/select
-		const affiliationInput = this.page.getByPlaceholder("Type affiliation...")
-		await affiliationInput.fill(data.affiliation)
-		// Wait for debounced search to trigger (300ms debounce)
-		await this.page.waitForTimeout(400)
+		await this.affiliationInput.fill(data.affiliation)
 		// Blur triggers selection from results or creation via API
-		await affiliationInput.blur()
-		// Wait for any async affiliation creation to complete
-		await this.page.waitForTimeout(300)
+		await this.affiliationInput.blur()
+		// Wait for network to settle (API call completes)
+		await this.page.waitForLoadState("networkidle")
+		await expect(this.affiliationInput).toHaveValue(data.affiliation, { timeout: 5000 })
 
 		if (data.title) {
 			await this.page.getByLabel("Title").click()
@@ -131,70 +137,65 @@ export class RegisterPage {
 	}
 
 	async clickContinue() {
-		await this.page.getByRole("button", { name: "Continue" }).click()
+		await this.continueButton.click()
 	}
 
 	async clickBack() {
-		await this.page.getByRole("button", { name: "Back" }).click()
+		await this.backButton.click()
 	}
 
 	async clickCreateAccount() {
-		await this.page.getByRole("button", { name: "Create account" }).click()
-	}
-
-	get heading() {
-		return this.page.getByRole("heading", { name: "Registration" })
-	}
-
-	get loginLink() {
-		return this.page.getByRole("link", { name: "Sign in" })
-	}
-
-	get continueButton() {
-		return this.page.getByRole("button", { name: "Continue" })
-	}
-
-	get backButton() {
-		return this.page.getByRole("button", { name: "Back" })
-	}
-
-	get createAccountButton() {
-		return this.page.getByRole("button", { name: "Create account" })
+		await this.createAccountButton.click()
 	}
 }
 
 export class ForgotPasswordPage {
-	constructor(private page: Page) {}
+	readonly page: Page
+	readonly heading: Locator
+	readonly emailInput: Locator
+	readonly submitButton: Locator
+	readonly backToLoginLink: Locator
+	readonly successHeading: Locator
+
+	constructor(page: Page) {
+		this.page = page
+		this.heading = page.getByRole("heading", { name: "Forgot password?" })
+		this.emailInput = page.getByLabel("E-mail")
+		this.submitButton = page.getByRole("button", { name: "Send reset link" })
+		this.backToLoginLink = page.getByRole("link", { name: "Back to login" })
+		this.successHeading = page.getByRole("heading", { name: "Check your email" })
+	}
 
 	async goto() {
 		await this.page.goto("/forgot-password")
 	}
 
 	async fillEmail(email: string) {
-		await this.page.getByLabel("E-mail").fill(email)
+		await this.emailInput.fill(email)
 	}
 
 	async submit() {
-		await this.page.getByRole("button", { name: "Send reset link" }).click()
-	}
-
-	get heading() {
-		return this.page.getByRole("heading", { name: "Forgot password?" })
-	}
-
-	get emailInput() {
-		return this.page.getByLabel("E-mail")
-	}
-
-	get submitButton() {
-		return this.page.getByRole("button", { name: "Send reset link" })
-	}
-
-	get backToLoginLink() {
-		return this.page.getByRole("link", { name: "Back to login" })
-	}
-
-	get successHeading() {
-		return this.page.getByRole("heading", { name: "Check your email" })
+		await this.submitButton.click()
 	}
 }
+
+// Extended test with fixtures
+interface AuthFixtures {
+	loginPage: LoginPage
+	registerPage: RegisterPage
+	forgotPasswordPage: ForgotPasswordPage
+}
+
+export const test = base.extend<AuthFixtures>({
+	loginPage: async ({ page }, use) => {
+		await use(new LoginPage(page))
+	},
+	registerPage: async ({ page }, use) => {
+		await use(new RegisterPage(page))
+	},
+	forgotPasswordPage: async ({ page }, use) => {
+		await use(new ForgotPasswordPage(page))
+	},
+})
+
+export { expect } from "@playwright/test"

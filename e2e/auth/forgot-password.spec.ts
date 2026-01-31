@@ -1,9 +1,7 @@
-import { test, expect } from "@playwright/test"
-import { ForgotPasswordPage } from "./fixtures"
+import { test, expect } from "./fixtures"
 
 test.describe("Forgot Password Page", () => {
-	test("displays form correctly", async ({ page }) => {
-		const forgotPasswordPage = new ForgotPasswordPage(page)
+	test("displays form correctly", async ({ forgotPasswordPage }) => {
 		await forgotPasswordPage.goto()
 
 		// Check form elements (heading is hidden on mobile)
@@ -12,27 +10,24 @@ test.describe("Forgot Password Page", () => {
 		await expect(forgotPasswordPage.backToLoginLink).toBeVisible()
 	})
 
-	test("shows error for empty email", async ({ page }) => {
-		const forgotPasswordPage = new ForgotPasswordPage(page)
+	test("shows error for empty email", async ({ forgotPasswordPage }) => {
 		await forgotPasswordPage.goto()
 
 		await forgotPasswordPage.submit()
 
-		await expect(page.getByText("Email is required")).toBeVisible()
+		await expect(forgotPasswordPage.page.getByText("Email is required")).toBeVisible()
 	})
 
-	test("shows error for invalid email format", async ({ page }) => {
-		const forgotPasswordPage = new ForgotPasswordPage(page)
+	test("shows error for invalid email format", async ({ forgotPasswordPage }) => {
 		await forgotPasswordPage.goto()
 
 		await forgotPasswordPage.fillEmail("invalid-email")
 		await forgotPasswordPage.submit()
 
-		await expect(page.getByText("Invalid email address")).toBeVisible()
+		await expect(forgotPasswordPage.page.getByText("Invalid email address")).toBeVisible()
 	})
 
-	test("shows response after submit", async ({ page }) => {
-		const forgotPasswordPage = new ForgotPasswordPage(page)
+	test("shows response after submit", async ({ forgotPasswordPage }) => {
 		await forgotPasswordPage.goto()
 
 		await forgotPasswordPage.fillEmail("test@example.com")
@@ -41,17 +36,16 @@ test.describe("Forgot Password Page", () => {
 		// Wait for response - either success state or error toast
 		// (Email transport may not be configured in test environment)
 		await expect(
-			page.getByRole("heading", { name: "Check your email" }).or(page.locator("[data-sonner-toast]"))
+			forgotPasswordPage.successHeading.or(forgotPasswordPage.page.locator("[data-sonner-toast]"))
 		).toBeVisible({ timeout: 10000 })
 	})
 
-	test("back to login link works", async ({ page }) => {
-		const forgotPasswordPage = new ForgotPasswordPage(page)
+	test("back to login link works", async ({ forgotPasswordPage }) => {
 		await forgotPasswordPage.goto()
 
 		await forgotPasswordPage.backToLoginLink.click()
 
-		await expect(page).toHaveURL(/\/login/)
+		await expect(forgotPasswordPage.page).toHaveURL(/\/login/)
 	})
 })
 

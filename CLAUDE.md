@@ -1,3 +1,7 @@
+<!-- vibe-rules Integration -->
+
+<!-- vibe-rules Integration -->
+
 # Claude Code Guidelines for Suberus
 
 ## Project Overview
@@ -38,3 +42,82 @@ Treat the [guidelines](./WORKFLOW.md) as the single source of truth. If a change
 ### After Making Changes
 - Run `pnpm lint` to check for linting errors
 - Run `pnpm build` to build production bundle
+
+### Playwright Tests
+- **ALWAYS** use `/playwright-best-practices` skill when writing or refactoring Playwright tests
+- Tests are in `e2e/` directory
+- Run tests: `pnpm exec playwright test`
+- Use web-first assertions (`expect().toBeVisible()`) instead of `waitForTimeout()`
+
+## TanStack Start Server Functions
+
+Use `createServerFn` for server-side logic that needs to be called from client components.
+
+### File Structure
+```
+src/utils/
+├── feature.server.ts    # Server-only logic (DB, secrets) - NEVER import in client
+├── feature.functions.ts # createServerFn wrappers - safe to import anywhere
+└── schemas.ts           # Shared Zod schemas (if needed)
+```
+
+### Creating Server Functions
+
+```typescript
+// feature.server.ts - server-only logic
+import { prisma } from "@/db";
+
+export async function doSomething(data: Input): Promise<Output> {
+  return prisma.model.findMany({ ... });
+}
+
+// feature.functions.ts - createServerFn wrappers
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { doSomething } from "./feature.server";
+
+const inputSchema = z.object({ ... });
+
+export const serverFn = createServerFn({ method: "POST" })  // or "GET"
+  .inputValidator(inputSchema)  // Zod schema for validation
+  .handler(async ({ data }) => {
+    return doSomething(data);
+  });
+```
+
+### Calling from Client
+```typescript
+import { serverFn } from "@/utils/feature.functions";
+
+// Call directly
+const result = await serverFn({ data: { ... } });
+```
+
+### Authentication in Server Functions
+```typescript
+// feature.functions.ts
+import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeaders } from "@tanstack/react-start/server";
+import { auth } from "../../auth";  // relative path, NOT @/auth
+
+export const protectedFn = createServerFn({ method: "POST" })
+  .inputValidator(schema)
+  .handler(async ({ data }) => {
+    const session = await auth.api.getSession({ headers: getRequestHeaders() });
+    if (!session?.user) {
+      throw new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    // ... rest of logic
+  });
+```
+
+### Key Points
+- Use `.inputValidator()` with Zod schemas (NOT `.validator()`)
+- Separate server-only code in `.server.ts` files
+- Keep `.functions.ts` files thin - just wrappers
+- Throw `Response` for HTTP errors (401, 403, 404, etc.)
+- Use `getRequestHeaders()` (NOT `getHeaders()`) for auth
+- Import `auth` with relative path from `.functions.ts` files

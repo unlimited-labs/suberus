@@ -1,33 +1,20 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 
-const ADMIN_USER = {
-	email: "admin@e2e.local",
-	password: "testpass123",
-};
-
-async function loginAsAdmin(page: Page) {
-	await page.goto("/login");
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 60000 });
-	await page.getByLabel("E-mail").fill(ADMIN_USER.email);
-	await page.getByLabel("Password").fill(ADMIN_USER.password);
-	await page.getByRole("button", { name: "Sign in" }).click();
-	await page.waitForURL("/", { timeout: 30000 });
-}
+// Note: Authentication is handled via storageState in playwright.config.ts
 
 test.describe("Admin Settings - Submission Types", () => {
 	test.beforeEach(async ({ page }, testInfo) => {
-		await loginAsAdmin(page);
 		await page.goto("/admin/settings");
 		// Navigate to Submission Types tab
 		// On mobile, tabs only show icons, so click by index (types is 3rd tab)
-		if (testInfo.project.name === "mobile") {
+		if (testInfo.project.name === "mobile-admin") {
 			const tabs = page.getByRole("tab");
 			await tabs.nth(2).click(); // 0=Conference, 1=Submissions, 2=Types
 		} else {
 			await page.getByRole("tab", { name: /Submission Types/i }).click();
 		}
 		// Wait for tab content to load
-		await page.waitForTimeout(500);
+		await expect(page.getByText("Oral Presentation")).toBeVisible();
 	});
 
 	test("displays all three submission types", async ({ page }) => {
@@ -38,15 +25,13 @@ test.describe("Admin Settings - Submission Types", () => {
 	});
 
 	test("shows content format badges", async ({ page }) => {
-		// Each type should show TEXT or FILE badge
-		const oralSection = page.locator("text=Oral Presentation").first();
-		await expect(oralSection.locator("..").locator("text=TEXT")).toBeVisible();
+		// Each type button should contain its format badge
+		const oralButton = page.getByRole("button", { name: /Oral Presentation/i }).first();
+		await expect(oralButton).toContainText("TEXT");
 
 		// Full Paper should show FILE
-		const fullPaperSection = page.locator("text=Full Paper").first();
-		await expect(
-			fullPaperSection.locator("..").locator("text=FILE"),
-		).toBeVisible();
+		const fullPaperButton = page.getByRole("button", { name: /Full Paper/i }).first();
+		await expect(fullPaperButton).toContainText("FILE");
 	});
 
 	test("can expand submission type accordion", async ({ page }) => {
@@ -114,8 +99,9 @@ test.describe("Admin Settings - Submission Types", () => {
 			.first()
 			.click();
 
-		// Change min reviewers
-		const minReviewersInput = page.locator("text=Min reviewers").locator("..").locator("input");
+		// Change min reviewers - find container with label, then get input
+		const minReviewersContainer = page.locator("div").filter({ hasText: /^Min reviewers$/ });
+		const minReviewersInput = minReviewersContainer.getByRole("spinbutton");
 		await minReviewersInput.clear();
 		await minReviewersInput.fill("3");
 
@@ -157,16 +143,16 @@ test.describe("Admin Settings - Submission Types", () => {
 
 test.describe("Admin Settings - Submission Validation", () => {
 	test.beforeEach(async ({ page }, testInfo) => {
-		await loginAsAdmin(page);
 		await page.goto("/admin/settings");
 		// Navigate to Submissions tab (index 1)
-		if (testInfo.project.name === "mobile") {
+		if (testInfo.project.name === "mobile-admin") {
 			const tabs = page.getByRole("tab");
 			await tabs.nth(1).click(); // 0=Conference, 1=Submissions
 		} else {
 			await page.getByRole("tab", { name: /Submissions$/i }).click();
 		}
-		await page.waitForTimeout(500);
+		// Wait for tab content to load
+		await expect(page.getByRole("heading", { name: "Title" })).toBeVisible();
 	});
 
 	test("displays validation settings sections", async ({ page }) => {
@@ -182,9 +168,8 @@ test.describe("Admin Settings - Submission Validation", () => {
 	});
 
 	test("shows abstract length inputs", async ({ page }) => {
-		// Abstract section has similar labels, they should be visible
-		const abstractSection = page.locator("text=Abstract").locator("..").locator("..");
-		await expect(abstractSection).toBeVisible();
+		// Abstract section heading should be visible
+		await expect(page.getByRole("heading", { name: "Abstract" })).toBeVisible();
 	});
 
 	test("shows keywords min/max inputs when enabled", async ({ page }) => {
