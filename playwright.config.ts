@@ -47,7 +47,7 @@ export default defineConfig({
 		{
 			name: "mobile-admin",
 			testMatch: /e2e\/admin\/.*\.spec\.ts/,
-			dependencies: ["auth-setup"],
+			dependencies: ["auth-setup", "chromium-admin"],
 			use: {
 				...devices["Pixel 5"],
 				storageState: "e2e/.auth/admin.json",
@@ -66,7 +66,7 @@ export default defineConfig({
 		{
 			name: "mobile-user",
 			testMatch: /e2e\/submissions\/(?!settings-integration).*\.spec\.ts/,
-			dependencies: ["auth-setup"],
+			dependencies: ["auth-setup", "chromium-user"],
 			use: {
 				...devices["Pixel 5"],
 				storageState: "e2e/.auth/user.json",
@@ -81,11 +81,11 @@ export default defineConfig({
 				...devices["Desktop Chrome"],
 			},
 		},
-		// Profile tests - use user auth
+		// Profile tests - use user auth, run AFTER user submissions tests
 		{
 			name: "chromium-profile",
 			testMatch: /e2e\/profile\/.*\.spec\.ts/,
-			dependencies: ["auth-setup"],
+			dependencies: ["auth-setup", "chromium-user"],
 			use: {
 				...devices["Desktop Chrome"],
 				storageState: "e2e/.auth/user.json",
@@ -94,10 +94,48 @@ export default defineConfig({
 		{
 			name: "mobile-profile",
 			testMatch: /e2e\/profile\/.*\.spec\.ts/,
-			dependencies: ["auth-setup"],
+			dependencies: ["auth-setup", "chromium-profile", "mobile-user"],
 			use: {
 				...devices["Pixel 5"],
 				storageState: "e2e/.auth/user.json",
+			},
+		},
+		// Review workflow tests - admin actions (use admin auth)
+		{
+			name: "chromium-reviews-admin",
+			testMatch: /e2e\/reviews\/admin-submissions\.spec\.ts/,
+			dependencies: ["auth-setup"],
+			use: {
+				...devices["Desktop Chrome"],
+				storageState: "e2e/.auth/admin.json",
+			},
+		},
+		// Review workflow tests - cross-role (no storageState, handles auth internally)
+		{
+			name: "chromium-reviews-workflow",
+			testMatch: /e2e\/reviews\/workflow\.spec\.ts/,
+			dependencies: ["auth-setup"],
+			use: {
+				...devices["Desktop Chrome"],
+			},
+		},
+		// Reviewer tests - use reviewer auth
+		{
+			name: "chromium-reviewer",
+			testMatch: /e2e\/reviews\/reviewer\.spec\.ts/,
+			dependencies: ["auth-setup"],
+			use: {
+				...devices["Desktop Chrome"],
+				storageState: "e2e/.auth/reviewer.json",
+			},
+		},
+		// Complete workflow tests - cross-role (handles auth internally)
+		{
+			name: "chromium-workflows",
+			testMatch: /e2e\/workflows\/.*\.spec\.ts/,
+			dependencies: ["auth-setup"],
+			use: {
+				...devices["Desktop Chrome"],
 			},
 		},
 	],

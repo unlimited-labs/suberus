@@ -137,7 +137,18 @@ export class RegisterPage {
 	}
 
 	async clickContinue() {
+		// Ensure button is visible and enabled
+		await expect(this.continueButton).toBeVisible()
+		await expect(this.continueButton).toBeEnabled()
+
+		// Scroll into view for mobile devices
+		await this.continueButton.scrollIntoViewIfNeeded()
+
+		// Click the button
 		await this.continueButton.click()
+
+		// Wait for any navigation/state change
+		await this.page.waitForLoadState("networkidle")
 	}
 
 	async clickBack() {

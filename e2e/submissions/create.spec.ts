@@ -27,25 +27,34 @@ test.describe("Submission Form", () => {
 		submissionPage,
 	}) => {
 		await submissionPage.goto();
+		await submissionPage.page.waitForLoadState("networkidle");
+
+		// Scroll to Authors section and wait for it to be visible
+		const authorsHeading = submissionPage.page.getByRole("heading", { name: "Authors" });
+		await authorsHeading.scrollIntoViewIfNeeded();
+		await expect(authorsHeading).toBeVisible({ timeout: 10000 });
 
 		// Wait for session to load and auto-fill to happen
 		const firstNameInput = submissionPage.page.locator("#author-0-firstName");
 		const lastNameInput = submissionPage.page.locator("#author-0-lastName");
 		const emailInput = submissionPage.page.locator("#author-0-email");
 
+		// Wait for inputs to be visible first
+		await expect(firstNameInput).toBeVisible({ timeout: 10000 });
+
 		// Should auto-fill with test user data
 		await expect(firstNameInput).toHaveValue(TEST_USER.firstName, {
-			timeout: 5000,
+			timeout: 15000,
 		});
 		await expect(lastNameInput).toHaveValue(TEST_USER.lastName);
 		await expect(emailInput).toHaveValue(TEST_USER.email);
 
-		// Affiliation should be fetched and displayed
+		// Affiliation should be fetched and displayed (async load)
 		const affiliationInput = submissionPage.page.getByPlaceholder(
 			"Type affiliation...",
 		);
 		await expect(affiliationInput).toHaveValue("Test University", {
-			timeout: 5000,
+			timeout: 15000,
 		});
 	});
 

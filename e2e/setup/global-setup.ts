@@ -26,8 +26,16 @@ const ADMIN_USER = {
 	affiliationName: "Admin University",
 };
 
-// Default submission type configs
-const DEFAULT_SUBMISSION_TYPE_CONFIGS = {
+const REVIEWER_USER = {
+	email: "reviewer@e2e.local",
+	password: "testpass123",
+	firstName: "Reviewer",
+	lastName: "User",
+	affiliationName: "Reviewer University",
+};
+
+// Submission type configs with scoring and double-blind enabled for ORAL_PRESENTATION
+const SUBMISSION_TYPE_CONFIGS = {
 	ORAL_PRESENTATION: {
 		isActive: true,
 		contentFormat: "TEXT",
@@ -37,6 +45,7 @@ const DEFAULT_SUBMISSION_TYPE_CONFIGS = {
 		reviewMode: "DOUBLE_BLIND",
 		reviewDeadlineDays: 14,
 		requiresEditorDecision: true,
+		autoTransitionAfterReviews: false,
 		allowRevisions: true,
 		maxRevisions: 2,
 		enableScoring: true,
@@ -51,6 +60,7 @@ const DEFAULT_SUBMISSION_TYPE_CONFIGS = {
 		reviewMode: "SINGLE_BLIND",
 		reviewDeadlineDays: 7,
 		requiresEditorDecision: false,
+		autoTransitionAfterReviews: true,
 		allowRevisions: false,
 		maxRevisions: 0,
 		enableScoring: false,
@@ -65,16 +75,11 @@ const DEFAULT_SUBMISSION_TYPE_CONFIGS = {
 		reviewMode: "DOUBLE_BLIND",
 		reviewDeadlineDays: 21,
 		requiresEditorDecision: true,
+		autoTransitionAfterReviews: false,
 		allowRevisions: true,
 		maxRevisions: 3,
 		enableScoring: true,
-		scoringCriteria: [
-			"Originality",
-			"Clarity",
-			"Significance",
-			"Methodology",
-			"Technical Quality",
-		],
+		scoringCriteria: ["Originality", "Clarity", "Significance", "Methodology", "Technical Quality"],
 	},
 };
 
@@ -85,9 +90,11 @@ async function globalSetup() {
 
 	try {
 		// Clean up all test data (order matters due to FK constraints)
+		await prisma.review.deleteMany();
+		await prisma.reviewAssignment.deleteMany();
+		await prisma.editorDecision.deleteMany();
 		await prisma.submissionStatusHistory.deleteMany();
 		await prisma.submissionKeyword.deleteMany();
-		// Clear FK references before deleting related tables
 		await prisma.submission.updateMany({
 			data: { presenterId: null, currentVersionId: null },
 		});
@@ -99,7 +106,11 @@ async function globalSetup() {
 		await prisma.fee.deleteMany();
 		await prisma.user.deleteMany();
 
-		// Create affiliations first
+		// ============================================================
+		// CREATE TEST USERS
+		// ============================================================
+
+		// Create affiliations
 		const testAffiliation = await prisma.affiliation.upsert({
 			where: { name: TEST_USER.affiliationName },
 			update: {},
@@ -112,7 +123,13 @@ async function globalSetup() {
 			create: { name: ADMIN_USER.affiliationName },
 		});
 
-		// Create test user via better-auth API
+		const reviewerAffiliation = await prisma.affiliation.upsert({
+			where: { name: REVIEWER_USER.affiliationName },
+			update: {},
+			create: { name: REVIEWER_USER.affiliationName },
+		});
+
+		// Create test user
 		const testResult = await auth.api.signUpEmail({
 			body: {
 				email: TEST_USER.email,
@@ -127,7 +144,6 @@ async function globalSetup() {
 			throw new Error("Failed to create test user");
 		}
 
-		// Update test user with additional fields
 		await prisma.user.update({
 			where: { id: testResult.user.id },
 			data: { emailVerified: true, isActive: true },
@@ -135,7 +151,7 @@ async function globalSetup() {
 
 		console.log(`✅ Test user created: ${TEST_USER.email}`);
 
-		// Create admin user via better-auth API
+		// Create admin user
 		const adminResult = await auth.api.signUpEmail({
 			body: {
 				email: ADMIN_USER.email,
@@ -150,7 +166,6 @@ async function globalSetup() {
 			throw new Error("Failed to create admin user");
 		}
 
-		// Update admin user with role and additional fields
 		await prisma.user.update({
 			where: { id: adminResult.user.id },
 			data: { emailVerified: true, isActive: true, role: "ADMIN" },
@@ -158,7 +173,33 @@ async function globalSetup() {
 
 		console.log(`✅ Admin user created: ${ADMIN_USER.email}`);
 
-		// Seed email template for submission received
+		// Create reviewer user
+		const reviewerResult = await auth.api.signUpEmail({
+			body: {
+				email: REVIEWER_USER.email,
+				password: REVIEWER_USER.password,
+				name: REVIEWER_USER.lastName,
+				firstName: REVIEWER_USER.firstName,
+				affiliationId: reviewerAffiliation.id,
+			},
+		});
+
+		if (!reviewerResult?.user) {
+			throw new Error("Failed to create reviewer user");
+		}
+
+		await prisma.user.update({
+			where: { id: reviewerResult.user.id },
+			data: { emailVerified: true, isActive: true, role: "REVIEWER" },
+		});
+
+		console.log(`✅ Reviewer user created: ${REVIEWER_USER.email}`);
+
+		// ============================================================
+		// SEED APP SETTINGS
+		// ============================================================
+
+		// Email template
 		await prisma.emailTemplate.upsert({
 			where: { eventType: "SUBMISSION_RECEIVED" },
 			update: {},
@@ -175,39 +216,39 @@ async function globalSetup() {
 			},
 		});
 
-		console.log("✅ Email template seeded: SUBMISSION_RECEIVED");
+		console.log("✅ Email template seeded");
 
-		// Seed app settings for submission types
+		// Submission type configs
 		await prisma.appSetting.upsert({
 			where: { key: "SUBMISSION_TYPE_ORAL_PRESENTATION" },
-			update: { value: DEFAULT_SUBMISSION_TYPE_CONFIGS.ORAL_PRESENTATION },
+			update: { value: SUBMISSION_TYPE_CONFIGS.ORAL_PRESENTATION },
 			create: {
 				key: "SUBMISSION_TYPE_ORAL_PRESENTATION",
-				value: DEFAULT_SUBMISSION_TYPE_CONFIGS.ORAL_PRESENTATION,
+				value: SUBMISSION_TYPE_CONFIGS.ORAL_PRESENTATION,
 			},
 		});
 
 		await prisma.appSetting.upsert({
 			where: { key: "SUBMISSION_TYPE_POSTER" },
-			update: { value: DEFAULT_SUBMISSION_TYPE_CONFIGS.POSTER },
+			update: { value: SUBMISSION_TYPE_CONFIGS.POSTER },
 			create: {
 				key: "SUBMISSION_TYPE_POSTER",
-				value: DEFAULT_SUBMISSION_TYPE_CONFIGS.POSTER,
+				value: SUBMISSION_TYPE_CONFIGS.POSTER,
 			},
 		});
 
 		await prisma.appSetting.upsert({
 			where: { key: "SUBMISSION_TYPE_FULL_PAPER" },
-			update: { value: DEFAULT_SUBMISSION_TYPE_CONFIGS.FULL_PAPER },
+			update: { value: SUBMISSION_TYPE_CONFIGS.FULL_PAPER },
 			create: {
 				key: "SUBMISSION_TYPE_FULL_PAPER",
-				value: DEFAULT_SUBMISSION_TYPE_CONFIGS.FULL_PAPER,
+				value: SUBMISSION_TYPE_CONFIGS.FULL_PAPER,
 			},
 		});
 
-		console.log("✅ App settings seeded: SUBMISSION_TYPE_*");
+		console.log("✅ Submission type configs seeded");
 
-		// Seed submission validation settings
+		// Validation settings
 		const validationSettings = [
 			{ key: "MIN_TITLE_LENGTH", value: 10 },
 			{ key: "MAX_TITLE_LENGTH", value: 200 },
@@ -230,9 +271,10 @@ async function globalSetup() {
 			});
 		}
 
-		console.log("✅ App settings seeded: validation settings");
+		console.log("✅ Validation settings seeded");
+
 	} catch (error) {
-		console.error("❌ Failed to seed test user:", error);
+		console.error("❌ Global setup failed:", error);
 		throw error;
 	} finally {
 		await prisma.$disconnect();

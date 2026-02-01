@@ -10,7 +10,7 @@ export const TEST_USER = {
 
 export const VALID_SUBMISSION = {
 	type: "ABSTRACT" as const,
-	title: "Test Submission Title for E2E",
+	title: "New Submission from E2E Form Test",
 	content:
 		"This is a comprehensive test abstract content for our end-to-end testing suite. The purpose of this submission is to validate that our submission form and API endpoints are working correctly. We are testing various aspects of the system including form validation, data persistence, and user interface interactions. This abstract discusses the methodology, results, and conclusions of our testing approach. The testing framework ensures that all components are functioning as expected and that the user experience is smooth and intuitive. Additional context is provided here to meet the minimum character requirements for the abstract field which is configured to require at least 500 characters.",
 	authors: [
