@@ -49,70 +49,33 @@ Treat the [guidelines](./WORKFLOW.md) as the single source of truth. If a change
 - Run tests: `pnpm exec playwright test`
 - Use web-first assertions (`expect().toBeVisible()`) instead of `waitForTimeout()`
 
-## TanStack Start Server Functions
+#### Test Data & Isolation
+- **Seeded data**: Use `e2e/setup/global-setup.ts` for test data. Constants in test fixtures must match seeded data
+- **Test isolation**: Each test suite should use unique seeded submissions. Don't share mutable data between suites
+- **NO conditional skips** based on data availability. If test needs specific data, seed it in global-setup
+- **Mobile skips**: Only skip tests where UI is genuinely different on mobile (sidebars hidden, tabs collapsed)
 
-Use `createServerFn` for server-side logic that needs to be called from client components.
+#### AAA Pattern (Arrange-Act-Assert)
+- Structure tests with clear sections: Arrange (setup), Act (action), Assert (verify)
+- Don't use conditional logic (`if` checks) inside tests - assert the expected state directly
+- Control initial state via seeded data, don't check "if data exists" and skip
 
-### File Structure
-```
-src/utils/
-├── feature.server.ts    # Server-only logic (DB, secrets) - NEVER import in client
-├── feature.functions.ts # createServerFn wrappers - safe to import anywhere
-└── schemas.ts           # Shared Zod schemas (if needed)
-```
+#### Seeded Submissions (global-setup.ts)
+| Title | Status | Purpose |
+|-------|--------|---------|
+| Test Submission Title for E2E | SUBMITTED | General tests |
+| Submission for Desk Reject Test | SUBMITTED | Desk reject in e2e/reviews |
+| Submission Under Review for E2E | UNDER_REVIEW | Reviewer tests (has assignment) |
+| Submission Awaiting Decision for E2E | AWAITING_DECISION | Decision tests (has completed review) |
+| Desk Reject Test for Workflows | SUBMITTED | Desk reject in e2e/workflows |
+| Awaiting Decision for Workflows | AWAITING_DECISION | Decision in e2e/workflows |
 
-### Creating Server Functions
+#### Submission Type Config (from seeded settings)
+- `ABSTRACT` → `ORAL_PRESENTATION` config: `enableScoring: true`, `reviewMode: DOUBLE_BLIND`
+- Tests for scoring/double-blind should assert these behaviors, not skip if missing
 
-```typescript
-// feature.server.ts - server-only logic
-import { prisma } from "@/db";
-
-export async function doSomething(data: Input): Promise<Output> {
-  return prisma.model.findMany({ ... });
-}
-
-// feature.functions.ts - createServerFn wrappers
-import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
-import { doSomething } from "./feature.server";
-
-const inputSchema = z.object({ ... });
-
-export const serverFn = createServerFn({ method: "POST" })  // or "GET"
-  .inputValidator(inputSchema)  // Zod schema for validation
-  .handler(async ({ data }) => {
-    return doSomething(data);
-  });
-```
-
-### Calling from Client
-```typescript
-import { serverFn } from "@/utils/feature.functions";
-
-// Call directly
-const result = await serverFn({ data: { ... } });
-```
-
-### Authentication in Server Functions
-```typescript
-// feature.functions.ts
-import { createServerFn } from "@tanstack/react-start";
-import { getRequestHeaders } from "@tanstack/react-start/server";
-import { auth } from "../../auth";  // relative path, NOT @/auth
-
-export const protectedFn = createServerFn({ method: "POST" })
-  .inputValidator(schema)
-  .handler(async ({ data }) => {
-    const session = await auth.api.getSession({ headers: getRequestHeaders() });
-    if (!session?.user) {
-      throw new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-    // ... rest of logic
-  });
-```
+## TanStack Start 
+When working with Tanstack Start related code **ALWAYS** read tanstack-llms\llms.md first and follow that documentation to better understand library.
 
 ### Key Points
 - Use `.inputValidator()` with Zod schemas (NOT `.validator()`)

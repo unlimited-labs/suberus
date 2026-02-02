@@ -13,13 +13,11 @@ import {
 	TimelineIndicator,
 	TimelineContent,
 } from "@/components/ui/timeline";
-import type {
-	SubmissionStatus,
-	MockStatusHistory,
-} from "@/lib/mock-data/submissions";
+import type { SubmissionStatus } from "@/generated/prisma/enums";
+import type { UserSubmissionStatusHistory } from "@/utils/submissions.functions";
 
 interface TimelineEventProps {
-	event: MockStatusHistory;
+	event: UserSubmissionStatusHistory;
 	isLast?: boolean;
 }
 
@@ -99,6 +97,7 @@ const statusConfig: Record<
 export function TimelineEvent({ event, isLast = false }: TimelineEventProps) {
 	const config = statusConfig[event.status];
 	const Icon = config.icon;
+	const timestamp = typeof event.timestamp === "string" ? new Date(event.timestamp) : event.timestamp;
 
 	return (
 		<TimelineItem isLast={isLast}>
@@ -110,7 +109,7 @@ export function TimelineEvent({ event, isLast = false }: TimelineEventProps) {
 				<div className="space-y-1">
 					<h3 className="font-medium text-foreground">{config.label}</h3>
 					<p className="text-sm text-muted-foreground">
-						{event.timestamp.toLocaleDateString("en-US", {
+						{timestamp.toLocaleDateString("en-US", {
 							day: "2-digit",
 							month: "short",
 							year: "numeric",

@@ -12,7 +12,7 @@ import {
 import type { SubmissionStatus } from "@/generated/prisma/enums";
 import { statusChangeOptions } from "@/lib/labels/submission";
 import { getReviewers, type MockUser } from "@/lib/mock-data/users";
-import type { AdminSubmission } from "@/lib/server/admin/submissions";
+import type { AdminSubmission } from "@/utils/admin-submissions.server";
 import {
 	assignReviewer,
 	bulkChangeStatus,

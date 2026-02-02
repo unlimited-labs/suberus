@@ -1,5 +1,5 @@
+import type { SubmissionStatus } from "@/generated/prisma/enums";
 import { cn } from "@/lib/utils";
-import type { SubmissionStatus } from "@/lib/mock-data/submissions";
 import { STATUS_GRADIENTS, STATUS_LABELS } from "./constants";
 
 interface StatusCardProps {

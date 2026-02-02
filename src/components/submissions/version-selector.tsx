@@ -6,10 +6,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import type { MockVersion } from "@/lib/mock-data/submissions";
+import type { UserSubmissionVersion } from "@/utils/submissions.functions";
 
 interface VersionSelectorProps {
-	versions: MockVersion[];
+	versions: UserSubmissionVersion[];
 	currentVersion: number;
 	selectedVersion: number;
 	onVersionChange: (version: number) => void;

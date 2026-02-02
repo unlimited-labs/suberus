@@ -1,7 +1,7 @@
 import type {
 	SubmissionStatus,
 	SubmissionType,
-} from "@/lib/mock-data/submissions";
+} from "@/generated/prisma/enums";
 
 export const STATUS_GRADIENTS: Record<SubmissionStatus, string> = {
 	DRAFT: "from-slate-400 to-slate-500",

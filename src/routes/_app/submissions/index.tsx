@@ -3,16 +3,22 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/layout/page-header";
 import { SubmissionsTable } from "@/components/submissions/submissions-table";
 import { Button } from "@/components/ui/button";
-import { mockSubmissions } from "@/lib/mock-data/submissions";
+import { getMySubmissionsFn } from "@/utils/submissions.functions";
 
 export const Route = createFileRoute("/_app/submissions/")({
+	loader: async () => {
+		const submissions = await getMySubmissionsFn();
+		return { submissions };
+	},
 	component: SubmissionsPage,
 });
 
 function SubmissionsPage() {
+	const { submissions } = Route.useLoaderData();
+
 	// Sort submissions by newest first (updatedAt DESC)
-	const sortedSubmissions = [...mockSubmissions].sort(
-		(a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
+	const sortedSubmissions = [...submissions].sort(
+		(a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
 	);
 
 	return (

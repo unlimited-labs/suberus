@@ -5,13 +5,11 @@ import {
 	AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
-import type {
-	MockEditorDecision,
-	SubmissionStatus,
-} from "@/lib/mock-data/submissions";
+import type { SubmissionStatus } from "@/generated/prisma/enums";
+import type { UserSubmissionDecision } from "@/utils/submissions.functions";
 
 interface EditorDecisionCardProps {
-	decision: MockEditorDecision;
+	decision: UserSubmissionDecision;
 	collapsible?: boolean;
 	defaultCollapsed?: boolean;
 }
@@ -47,7 +45,7 @@ const statusLabels: Record<SubmissionStatus, string> = {
 	WITHDRAWN: "Withdrawn",
 };
 
-function DecisionContent({ decision }: { decision: MockEditorDecision }) {
+function DecisionContent({ decision }: { decision: UserSubmissionDecision }) {
 	return (
 		<div className="space-y-4">
 			{/* Reasoning */}
@@ -117,7 +115,10 @@ function DecisionContent({ decision }: { decision: MockEditorDecision }) {
 			{/* Decision Date */}
 			<div className="text-xs text-muted-foreground pt-2 border-t">
 				Decision date:{" "}
-				{decision.createdAt.toLocaleDateString("en-US", {
+				{(typeof decision.createdAt === "string"
+					? new Date(decision.createdAt)
+					: decision.createdAt
+				).toLocaleDateString("en-US", {
 					day: "2-digit",
 					month: "2-digit",
 					year: "numeric",

@@ -1,0 +1,264 @@
+import { prisma } from "@/db";
+import type { ReviewDecision, ReviewMode } from "@/generated/prisma/enums";
+import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
+import { getSetting } from "./settings.server";
+import {
+	completeReviewAssignment,
+	startReview,
+} from "./assignments.server";
+import { checkAndTriggerReviewCompletion } from "./workflow.server";
+
+/** Review submission data */
+export interface ReviewSubmitData {
+	decision: ReviewDecision;
+	comments: string;
+	privateNotes?: string;
+	scoreNovelty?: number;
+	scoreMethodology?: number;
+	scoreClarity?: number;
+	scoreRelevance?: number;
+	confidenceLevel?: number;
+}
+
+/** Get assignment details for review form */
+export async function getAssignmentForReview(
+	assignmentId: string,
+	reviewerId: string,
+): Promise<{
+	assignment: {
+		id: string;
+		submissionId: string;
+		round: number;
+		status: string;
+		deadline: Date | null;
+	};
+	submission: {
+		id: string;
+		title: string;
+		content: string;
+		type: string;
+		authors: Array<{
+			firstName: string;
+			lastName: string;
+			affiliationName: string | null;
+			isPresenter: boolean;
+		}>;
+	};
+	config: {
+		reviewMode: ReviewMode;
+		enableScoring: boolean;
+		scoringCriteria: string[];
+	};
+	existingReview?: {
+		decision: ReviewDecision;
+		comments: string | null;
+		privateNotes: string | null;
+		scoreNovelty: number | null;
+		scoreMethodology: number | null;
+		scoreClarity: number | null;
+		scoreRelevance: number | null;
+		confidenceLevel: number | null;
+	};
+} | null> {
+	const assignment = await prisma.reviewAssignment.findUnique({
+		where: { id: assignmentId },
+		include: {
+			submission: {
+				include: {
+					authors: {
+						include: { affiliation: true },
+						orderBy: { orderIndex: "asc" },
+					},
+					currentVersion: true,
+				},
+			},
+			review: true,
+		},
+	});
+
+	if (!assignment) return null;
+
+	// Verify reviewer ownership
+	if (assignment.reviewerId !== reviewerId) return null;
+
+	// Get config for submission type
+	const configKey = SUBMISSION_TYPE_TO_KEY[assignment.submission.type];
+	const config = await getSetting(configKey);
+
+	return {
+		assignment: {
+			id: assignment.id,
+			submissionId: assignment.submissionId,
+			round: assignment.round,
+			status: assignment.status,
+			deadline: assignment.deadline,
+		},
+		submission: {
+			id: assignment.submission.id,
+			title: assignment.submission.title,
+			content:
+				assignment.submission.currentVersion?.content ??
+				assignment.submission.content,
+			type: assignment.submission.type,
+			authors: assignment.submission.authors.map((a) => ({
+				firstName: a.firstName,
+				lastName: a.lastName,
+				affiliationName: a.affiliation?.name ?? null,
+				isPresenter: a.isPresenter,
+			})),
+		},
+		config: {
+			reviewMode: config.reviewMode,
+			enableScoring: config.enableScoring,
+			scoringCriteria: config.scoringCriteria,
+		},
+		existingReview: assignment.review
+			? {
+					decision: assignment.review.decision,
+					comments: assignment.review.comments,
+					privateNotes: assignment.review.privateNotes,
+					scoreNovelty: assignment.review.scoreNovelty,
+					scoreMethodology: assignment.review.scoreMethodology,
+					scoreClarity: assignment.review.scoreClarity,
+					scoreRelevance: assignment.review.scoreRelevance,
+					confidenceLevel: assignment.review.confidenceLevel,
+				}
+			: undefined,
+	};
+}
+
+/** Submit a review */
+export async function submitReview(
+	assignmentId: string,
+	reviewerId: string,
+	data: ReviewSubmitData,
+): Promise<{ success: boolean; error?: string }> {
+	const assignment = await prisma.reviewAssignment.findUnique({
+		where: { id: assignmentId },
+		include: {
+			submission: true,
+			review: true,
+		},
+	});
+
+	if (!assignment) {
+		return { success: false, error: "Assignment not found" };
+	}
+
+	if (assignment.reviewerId !== reviewerId) {
+		return { success: false, error: "Not assigned to this reviewer" };
+	}
+
+	if (assignment.status === "CANCELLED") {
+		return { success: false, error: "Assignment has been cancelled" };
+	}
+
+	// Start review if not already started
+	if (assignment.status === "PENDING") {
+		await startReview(assignmentId, reviewerId);
+	}
+
+	// Check if review already exists (update vs create)
+	if (assignment.review) {
+		// Update existing review
+		await prisma.review.update({
+			where: { id: assignment.review.id },
+			data: {
+				decision: data.decision,
+				comments: data.comments,
+				privateNotes: data.privateNotes,
+				scoreNovelty: data.scoreNovelty,
+				scoreMethodology: data.scoreMethodology,
+				scoreClarity: data.scoreClarity,
+				scoreRelevance: data.scoreRelevance,
+				confidenceLevel: data.confidenceLevel,
+			},
+		});
+	} else {
+		// Create new review
+		await prisma.review.create({
+			data: {
+				assignmentId,
+				submissionId: assignment.submissionId,
+				reviewerId,
+				versionId: assignment.submission.currentVersionId,
+				round: assignment.round,
+				decision: data.decision,
+				comments: data.comments,
+				privateNotes: data.privateNotes,
+				scoreNovelty: data.scoreNovelty,
+				scoreMethodology: data.scoreMethodology,
+				scoreClarity: data.scoreClarity,
+				scoreRelevance: data.scoreRelevance,
+				confidenceLevel: data.confidenceLevel,
+			},
+		});
+	}
+
+	// Mark assignment as completed
+	if (assignment.status !== "COMPLETED") {
+		await completeReviewAssignment(assignmentId, reviewerId);
+	}
+
+	// Check if all reviews are complete and trigger auto-transition
+	await checkAndTriggerReviewCompletion(assignment.submissionId, reviewerId);
+
+	return { success: true };
+}
+
+/** Get reviews for a submission (editor view) */
+export async function getSubmissionReviews(
+	submissionId: string,
+	round?: number,
+): Promise<
+	Array<{
+		id: string;
+		reviewerName: string;
+		reviewerEmail: string;
+		round: number;
+		decision: ReviewDecision;
+		comments: string | null;
+		privateNotes: string | null;
+		scoreNovelty: number | null;
+		scoreMethodology: number | null;
+		scoreClarity: number | null;
+		scoreRelevance: number | null;
+		confidenceLevel: number | null;
+		createdAt: Date;
+	}>
+> {
+	const submission = await prisma.submission.findUniqueOrThrow({
+		where: { id: submissionId },
+		select: { currentRound: true },
+	});
+
+	const targetRound = round ?? submission.currentRound;
+
+	const reviews = await prisma.review.findMany({
+		where: { submissionId, round: targetRound },
+		include: {
+			reviewer: {
+				select: { firstName: true, lastName: true, email: true },
+			},
+		},
+		orderBy: { createdAt: "asc" },
+	});
+
+	return reviews.map((r) => ({
+		id: r.id,
+		reviewerName:
+			`${r.reviewer.firstName ?? ""} ${r.reviewer.lastName ?? ""}`.trim() ||
+			r.reviewer.email,
+		reviewerEmail: r.reviewer.email,
+		round: r.round,
+		decision: r.decision,
+		comments: r.comments,
+		privateNotes: r.privateNotes,
+		scoreNovelty: r.scoreNovelty,
+		scoreMethodology: r.scoreMethodology,
+		scoreClarity: r.scoreClarity,
+		scoreRelevance: r.scoreRelevance,
+		confidenceLevel: r.confidenceLevel,
+		createdAt: r.createdAt,
+	}));
+}

@@ -1,12 +1,12 @@
 import { VersionSelector } from "@/components/submissions/version-selector";
-import { StatusCard } from "./status-card";
+import type { UserSubmission, UserSubmissionVersion } from "@/utils/submissions.functions";
 import { ActionsCard } from "./actions-card";
 import { TYPE_LABELS } from "./constants";
-import type { MockSubmission, MockVersion } from "@/lib/mock-data/submissions";
+import { StatusCard } from "./status-card";
 
 interface MobileSidebarProps {
-	submission: MockSubmission;
-	versions: MockVersion[];
+	submission: UserSubmission;
+	versions: UserSubmissionVersion[];
 	selectedVersion: number;
 	onVersionChange: (version: number) => void;
 }

@@ -15,26 +15,23 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	getReviewsForSubmission,
-	getSubmissionById,
-} from "@/lib/mock-data/submissions";
+import { getSubmissionByIdFn } from "@/utils/submissions.functions";
 
 export const Route = createFileRoute("/_app/submissions/$id_/reviews")({
+	loader: async ({ params }) => {
+		const data = await getSubmissionByIdFn({ data: { submissionId: params.id } });
+		return { data };
+	},
 	component: SubmissionReviewsPage,
 });
 
 function SubmissionReviewsPage() {
 	const { id } = Route.useParams();
-	const submission = getSubmissionById(id);
-	const reviews = getReviewsForSubmission(id);
+	const { data } = Route.useLoaderData();
 
-	const rounds = [...new Set(reviews.map((r) => r.round))].sort(
-		(a, b) => b - a,
-	);
 	const [selectedRound, setSelectedRound] = useState<string>("all");
 
-	if (!submission) {
+	if (!data) {
 		return (
 			<div className="flex h-full flex-col">
 				<PageHeader icon={IconMessageCircle} title="Reviews" />
@@ -54,6 +51,9 @@ function SubmissionReviewsPage() {
 			</div>
 		);
 	}
+
+	const { submission, reviews } = data;
+	const rounds = [...new Set(reviews.map((r) => r.round))].sort((a, b) => b - a);
 
 	const filteredReviews =
 		selectedRound === "all"

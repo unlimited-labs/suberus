@@ -18,16 +18,22 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { ReviewDecision, SubmissionType } from "@/generated/prisma/enums";
 import { typeLabels } from "@/lib/labels/submission";
-import type { MockAuthor } from "@/lib/mock-data/submissions";
 import { cn } from "@/lib/utils";
+
+interface SubmissionAuthor {
+	firstName: string;
+	lastName: string;
+	affiliationName: string | null;
+	isPresenter: boolean;
+}
 
 interface ReviewFormProps {
 	onSubmit: (data: ReviewFormData) => Promise<void>;
 	initialData?: Partial<ReviewFormData>;
 	submission: {
 		title: string;
-		type: SubmissionType;
-		authors: MockAuthor[];
+		type: SubmissionType | string;
+		authors: SubmissionAuthor[];
 	};
 	reviewMode: "OPEN" | "SINGLE_BLIND" | "DOUBLE_BLIND";
 }
@@ -159,7 +165,7 @@ export function ReviewForm({
 							<div>
 								<div className="flex items-center gap-2 mb-2">
 									<Badge variant="outline" className="text-xs">
-										{typeLabels[submission.type]}
+										{typeLabels[submission.type as SubmissionType] ?? submission.type}
 									</Badge>
 								</div>
 								<h1 className="text-2xl font-semibold tracking-tight text-foreground">

@@ -5,27 +5,15 @@ import { submissionColumns } from "@/components/admin/submissions/columns";
 import { SubmissionBulkActions } from "@/components/admin/submissions/submission-bulk-actions";
 import { SubmissionMobileCard } from "@/components/admin/submissions/submission-mobile-card";
 import { PageHeader } from "@/components/layout/page-header";
-import {
-	type MockSubmission,
-	mockSubmissions,
-} from "@/lib/mock-data/submissions";
-import type { AdminSubmission } from "@/lib/server/admin/submissions";
+import { getAdminSubmissionsFn } from "@/utils/admin-submissions.functions";
 
 export const Route = createFileRoute("/_app/admin/_layout/submissions/")({
+	loader: async () => {
+		const result = await getAdminSubmissionsFn();
+		return { submissions: result.submissions };
+	},
 	component: AdminSubmissionsPage,
 });
-
-function toAdminSubmission(submission: MockSubmission): AdminSubmission {
-	const presenter =
-		submission.authors.find((a) => a.isPresenter) ?? submission.authors[0];
-	return {
-		...submission,
-		ownerName:
-			`${presenter?.firstName ?? ""} ${presenter?.lastName ?? ""}`.trim(),
-		ownerEmail: presenter?.email ?? "",
-		reviewerCount: 0,
-	};
-}
 
 const columnLabels: Record<string, string> = {
 	title: "Title",
@@ -36,7 +24,7 @@ const columnLabels: Record<string, string> = {
 };
 
 function AdminSubmissionsPage() {
-	const adminSubmissions = mockSubmissions.map(toAdminSubmission);
+	const { submissions } = Route.useLoaderData();
 
 	return (
 		<div className="flex h-full flex-col">
@@ -44,7 +32,7 @@ function AdminSubmissionsPage() {
 			<div className="flex-1 overflow-auto p-6">
 				<DataTable
 					columns={submissionColumns}
-					data={adminSubmissions}
+					data={submissions}
 					getRowId={(row) => row.id}
 					mobileCard={SubmissionMobileCard}
 					toolbar={(table) => (

@@ -1,7 +1,7 @@
 import { IconEdit, IconSend, IconX } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import type { SubmissionStatus } from "@/lib/mock-data/submissions";
+import type { SubmissionStatus } from "@/generated/prisma/enums";
 
 interface ActionsCardProps {
 	submissionId: string;

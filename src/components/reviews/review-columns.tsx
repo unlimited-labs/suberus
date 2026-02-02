@@ -18,7 +18,7 @@ import {
 	assignmentStatusVariants,
 } from "@/lib/labels/assignment";
 import { typeFilterOptions, typeLabels } from "@/lib/labels/submission";
-import type { MockReviewAssignment } from "@/lib/mock-data/review-assignments";
+import type { ReviewerAssignment } from "@/utils/assignments.functions";
 
 function DeadlineCell({
 	deadline,
@@ -95,7 +95,7 @@ function DeadlineCell({
 	);
 }
 
-export const reviewColumns: ColumnDef<MockReviewAssignment>[] = [
+export const reviewColumns: ColumnDef<ReviewerAssignment>[] = [
 	{
 		accessorKey: "submissionTitle",
 		header: ({ column }) => (

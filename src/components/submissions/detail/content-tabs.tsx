@@ -8,17 +8,17 @@ import { SubmissionTimeline } from "@/components/submissions/submission-timeline
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type {
-	MockAuthor,
-	MockStatusHistory,
-} from "@/lib/mock-data/submissions";
+	UserSubmissionAuthor,
+	UserSubmissionStatusHistory,
+} from "@/utils/submissions.functions";
 import { AuthorCard } from "./author-card";
 
 interface ContentTabsProps {
 	title: string;
 	content: string;
 	keywords: string[];
-	authors: MockAuthor[];
-	statusHistory: MockStatusHistory[];
+	authors: UserSubmissionAuthor[];
+	statusHistory: UserSubmissionStatusHistory[];
 }
 
 export function ContentTabs({

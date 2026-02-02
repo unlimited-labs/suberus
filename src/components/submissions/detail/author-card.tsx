@@ -1,10 +1,10 @@
 import { IconStarFilled } from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { MockAuthor } from "@/lib/mock-data/submissions";
+import type { UserSubmissionAuthor } from "@/utils/submissions.functions";
 
 interface AuthorCardProps {
-	author: MockAuthor;
+	author: UserSubmissionAuthor;
 	index: number;
 }
 

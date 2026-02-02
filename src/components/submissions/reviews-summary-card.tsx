@@ -1,11 +1,11 @@
 import { IconArrowRight, IconMessageCircle } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import type { MockReview } from "@/lib/mock-data/submissions";
 import { cn } from "@/lib/utils";
+import type { UserSubmissionReview } from "@/utils/submissions.functions";
 
 interface ReviewsSummaryCardProps {
-	reviews: MockReview[];
+	reviews: UserSubmissionReview[];
 	submissionId: string;
 }
 
@@ -49,8 +49,13 @@ export function ReviewsSummaryCard({
 	const latestRound = Math.max(...rounds);
 	const latestRoundReviews = reviews.filter((r) => r.round === latestRound);
 
-	const avgScore =
-		reviews.reduce((sum, r) => sum + r.scores.overall, 0) / reviews.length;
+	// Calculate average from available scores
+	const allScores = reviews.flatMap((r) =>
+		[r.scores.originality, r.scores.clarity, r.scores.significance, r.scores.overall].filter(
+			(s): s is number => s !== null,
+		),
+	);
+	const avgScore = allScores.length > 0 ? allScores.reduce((sum, s) => sum + s, 0) / allScores.length : 0;
 	const avgColorConfig = getScoreColor(avgScore);
 
 	return (

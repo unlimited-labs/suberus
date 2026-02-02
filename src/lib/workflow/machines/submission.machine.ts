@@ -1,0 +1,160 @@
+import { assign, setup } from "xstate";
+import type { SubmissionContext, SubmissionEvent } from "../types";
+
+/**
+ * Submission workflow state machine
+ *
+ * Handles all submission status transitions according to WORKFLOW.md
+ * - DRAFT → SUBMITTED → UNDER_REVIEW → REVIEWS_COMPLETE → terminal states
+ * - Supports both auto-transition (abstracts) and manual transition (papers)
+ * - Editor decision required for papers, reviewer decision for abstracts
+ */
+export const submissionMachine = setup({
+	types: {
+		context: {} as SubmissionContext,
+		events: {} as SubmissionEvent,
+	},
+	guards: {
+		hasMinReviewers: ({ context }) => {
+			return context.assignedReviewersCount >= context.minReviewers;
+		},
+		allReviewsComplete: ({ context }) => {
+			return (
+				context.completedReviewsCount >= context.assignedReviewersCount &&
+				context.assignedReviewersCount >= context.minReviewers
+			);
+		},
+		shouldAutoTransition: ({ context }) => {
+			return context.autoTransitionAfterReviews;
+		},
+		requiresEditorDecision: ({ context }) => {
+			return context.requiresEditorDecision;
+		},
+		reviewerAccepted: ({ context }) => {
+			return context.lastReviewDecision === "ACCEPT";
+		},
+		reviewerConditional: ({ context }) => {
+			return context.lastReviewDecision === "ACCEPT_WITH_MINOR_REVISIONS";
+		},
+		reviewerRevise: ({ context }) => {
+			return context.lastReviewDecision === "REVISE_AND_RESUBMIT";
+		},
+		reviewerRejected: ({ context }) => {
+			return context.lastReviewDecision === "REJECT";
+		},
+	},
+	actions: {
+		incrementRound: assign({
+			currentRound: ({ context }) => context.currentRound + 1,
+		}),
+		resetReviewCounts: assign({
+			completedReviewsCount: 0,
+			assignedReviewersCount: 0,
+		}),
+	},
+}).createMachine({
+	id: "submission",
+	initial: "DRAFT",
+	context: {
+		submissionId: "",
+		submissionType: "ABSTRACT",
+		currentRound: 1,
+		requiresEditorDecision: false,
+		autoTransitionAfterReviews: true,
+		minReviewers: 1,
+		maxReviewers: 1,
+		assignedReviewersCount: 0,
+		completedReviewsCount: 0,
+	},
+	states: {
+		DRAFT: {
+			on: {
+				SUBMIT: "SUBMITTED",
+			},
+		},
+		SUBMITTED: {
+			on: {
+				ASSIGN_REVIEWER: {
+					target: "UNDER_REVIEW",
+					guard: "hasMinReviewers",
+				},
+				DESK_REJECT: "REJECTED",
+				WITHDRAW: "WITHDRAWN",
+			},
+		},
+		UNDER_REVIEW: {
+			on: {
+				ALL_REVIEWS_COMPLETE: [
+					{
+						target: "REVIEWS_COMPLETE",
+						guard: "shouldAutoTransition",
+					},
+				],
+				MANUAL_TRANSITION_TO_REVIEWS_COMPLETE: {
+					target: "REVIEWS_COMPLETE",
+					guard: "allReviewsComplete",
+				},
+				WITHDRAW: "WITHDRAWN",
+			},
+		},
+		REVIEWS_COMPLETE: {
+			on: {
+				MANUAL_TRANSITION_TO_AWAITING_DECISION: {
+					target: "AWAITING_DECISION",
+					guard: "requiresEditorDecision",
+				},
+				// Auto-transitions based on reviewer decision (for abstracts)
+				AUTO_ACCEPT: {
+					target: "ACCEPTED",
+				},
+				AUTO_CONDITIONAL: {
+					target: "CONDITIONALLY_ACCEPTED",
+				},
+				AUTO_REVISE: {
+					target: "REVISE_REQUIRED",
+				},
+				AUTO_REJECT: {
+					target: "REJECTED",
+				},
+			},
+		},
+		AWAITING_DECISION: {
+			on: {
+				EDITOR_ACCEPT: "ACCEPTED",
+				EDITOR_CONDITIONAL: "CONDITIONALLY_ACCEPTED",
+				EDITOR_REVISE: "REVISE_REQUIRED",
+				EDITOR_REJECT: "REJECTED",
+			},
+		},
+		REVISE_REQUIRED: {
+			on: {
+				RESUBMIT: {
+					target: "RESUBMITTED",
+					actions: ["incrementRound", "resetReviewCounts"],
+				},
+				WITHDRAW: "WITHDRAWN",
+			},
+		},
+		RESUBMITTED: {
+			on: {
+				ASSIGN_REVIEWER: {
+					target: "UNDER_REVIEW",
+					guard: "hasMinReviewers",
+				},
+			},
+		},
+		// Terminal states
+		ACCEPTED: {
+			type: "final",
+		},
+		CONDITIONALLY_ACCEPTED: {
+			type: "final",
+		},
+		REJECTED: {
+			type: "final",
+		},
+		WITHDRAWN: {
+			type: "final",
+		},
+	},
+});

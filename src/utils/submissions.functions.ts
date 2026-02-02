@@ -7,7 +7,13 @@ import {
 } from "@/lib/validations/submission";
 import { authMiddleware } from "./auth.middleware";
 import { getSettings } from "./settings.server";
-import { createNewSubmission } from "./submissions.server";
+import {
+	createNewSubmission,
+	getSubmissionById,
+	getSubmissionsForUser,
+	type SubmissionDetail,
+	type UserSubmission,
+} from "./submissions.server";
 
 const inputSchema = z.object({
 	type: z.enum(["ABSTRACT", "POSTER", "FULL_PAPER"]),
@@ -150,3 +156,28 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 
 		return { success: true, id: file.id };
 	});
+
+/** Get current user's submissions */
+export const getMySubmissionsFn = createServerFn({ method: "GET" })
+	.middleware([authMiddleware])
+	.handler(async ({ context }): Promise<UserSubmission[]> => {
+		return getSubmissionsForUser(context.user.id);
+	});
+
+/** Get single submission by ID (must belong to current user) */
+export const getSubmissionByIdFn = createServerFn({ method: "GET" })
+	.middleware([authMiddleware])
+	.inputValidator(z.object({ submissionId: z.string().uuid() }))
+	.handler(async ({ data, context }): Promise<SubmissionDetail | null> => {
+		return getSubmissionById(data.submissionId, context.user.id);
+	});
+
+// Re-export types for use in components
+export type { SubmissionDetail, UserSubmission } from "./submissions.server";
+export type {
+	UserSubmissionAuthor,
+	UserSubmissionDecision,
+	UserSubmissionReview,
+	UserSubmissionStatusHistory,
+	UserSubmissionVersion,
+} from "./submissions.server";

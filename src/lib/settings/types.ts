@@ -13,6 +13,7 @@ export interface SubmissionTypeConfig {
 	reviewMode: ReviewMode;
 	reviewDeadlineDays: number;
 	requiresEditorDecision: boolean;
+	autoTransitionAfterReviews: boolean;
 	allowRevisions: boolean;
 	maxRevisions: number;
 	enableScoring: boolean;

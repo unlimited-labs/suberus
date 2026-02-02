@@ -1,14 +1,19 @@
 import { IconClipboardCheck } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
 import { DataTable, DataTableToolbar } from "@/components/admin/data-table";
 import { PageHeader } from "@/components/layout/page-header";
 import { reviewColumns } from "@/components/reviews/review-columns";
 import { ReviewMobileCard } from "@/components/reviews/review-mobile-card";
-import type { MockReviewAssignment } from "@/lib/mock-data/review-assignments";
-import { getReviewerAssignments } from "@/lib/server/reviewer/assignments";
+import {
+	getMyAssignmentsFn,
+	type ReviewerAssignment,
+} from "@/utils/assignments.functions";
 
 export const Route = createFileRoute("/_app/reviews/")({
+	loader: async () => {
+		const result = await getMyAssignmentsFn();
+		return { assignments: result.assignments };
+	},
 	component: ReviewsPage,
 });
 
@@ -21,12 +26,7 @@ const columnLabels: Record<string, string> = {
 };
 
 function ReviewsPage() {
-	// TODO: Replace with actual logged-in reviewer ID from auth
-	const reviewerId = "user-007"; // Mock: Marek Kowal (REVIEWER)
-
-	const [assignments] = useState<MockReviewAssignment[]>(
-		() => getReviewerAssignments(reviewerId).assignments,
-	);
+	const { assignments } = Route.useLoaderData();
 
 	return (
 		<div className="flex h-full flex-col">
@@ -39,7 +39,7 @@ function ReviewsPage() {
 				) : (
 					<DataTable
 						columns={reviewColumns}
-						data={assignments}
+						data={assignments as ReviewerAssignment[]}
 						getRowId={(row) => row.id}
 						mobileCard={ReviewMobileCard}
 						toolbar={(table) => (

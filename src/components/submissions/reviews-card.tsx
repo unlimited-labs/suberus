@@ -1,16 +1,16 @@
+import { IconMessageCircle } from "@tabler/icons-react";
 import {
 	Accordion,
+	AccordionContent,
 	AccordionItem,
 	AccordionTrigger,
-	AccordionContent,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
-import { IconMessageCircle } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
-import type { MockReview } from "@/lib/mock-data/submissions";
+import type { UserSubmissionReview } from "@/utils/submissions.functions";
 
 interface ReviewsCardProps {
-	reviews: MockReview[];
+	reviews: UserSubmissionReview[];
 	round?: number;
 }
 
@@ -50,11 +50,13 @@ function getScoreColor(score: number): {
 
 interface ScoreBarProps {
 	label: string;
-	score: number;
+	score: number | null;
 	maxScore?: number;
 }
 
 function ScoreBar({ label, score, maxScore = 5 }: ScoreBarProps) {
+	if (score === null) return null;
+
 	const percentage = (score / maxScore) * 100;
 	const colorConfig = getScoreColor(score);
 
@@ -84,9 +86,13 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 		return null;
 	}
 
-	// Calculate average score
-	const avgScore =
-		reviews.reduce((sum, r) => sum + r.scores.overall, 0) / reviews.length;
+	// Calculate average score from available scores
+	const allScores = reviews.flatMap((r) =>
+		[r.scores.originality, r.scores.clarity, r.scores.significance, r.scores.overall].filter(
+			(s): s is number => s !== null,
+		),
+	);
+	const avgScore = allScores.length > 0 ? allScores.reduce((sum, s) => sum + s, 0) / allScores.length : 0;
 	const avgColorConfig = getScoreColor(avgScore);
 
 	return (
@@ -118,7 +124,13 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 				{/* Reviews Accordion */}
 				<Accordion type="single" collapsible className="space-y-3">
 					{reviews.map((review) => {
-						const scoreConfig = getScoreColor(review.scores.overall);
+						const overallScore = review.scores.overall ?? 0;
+						const scoreConfig = getScoreColor(overallScore);
+						const createdAt =
+							typeof review.createdAt === "string"
+								? new Date(review.createdAt)
+								: review.createdAt;
+
 						return (
 							<AccordionItem
 								key={review.id}
@@ -130,12 +142,14 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 										<span className="font-medium text-foreground">
 											{review.reviewerName}
 										</span>
-										<Badge
-											variant="outline"
-											className={cn("font-semibold", scoreConfig.text)}
-										>
-											{review.scores.overall.toFixed(1)}/5
-										</Badge>
+										{review.scores.overall !== null && (
+											<Badge
+												variant="outline"
+												className={cn("font-semibold", scoreConfig.text)}
+											>
+												{review.scores.overall.toFixed(1)}/5
+											</Badge>
+										)}
 									</div>
 								</AccordionTrigger>
 								<AccordionContent className="px-4 pb-4 pt-1">
@@ -152,18 +166,20 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 										</div>
 
 										{/* Comments */}
-										<div className="pt-3 border-t">
-											<p className="text-sm font-medium text-muted-foreground mb-2">
-												Comments
-											</p>
-											<div className="text-sm text-foreground leading-relaxed bg-background/50 p-3 rounded-lg border">
-												{review.comments}
+										{review.comments && (
+											<div className="pt-3 border-t">
+												<p className="text-sm font-medium text-muted-foreground mb-2">
+													Comments
+												</p>
+												<div className="text-sm text-foreground leading-relaxed bg-background/50 p-3 rounded-lg border">
+													{review.comments}
+												</div>
 											</div>
-										</div>
+										)}
 
 										{/* Review Date */}
 										<div className="text-xs text-muted-foreground pt-2">
-											{review.createdAt.toLocaleDateString("en-US", {
+											{createdAt.toLocaleDateString("en-US", {
 												day: "2-digit",
 												month: "short",
 												year: "numeric",

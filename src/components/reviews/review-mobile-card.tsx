@@ -12,9 +12,9 @@ import {
 	assignmentStatusVariants,
 } from "@/lib/labels/assignment";
 import { typeLabels } from "@/lib/labels/submission";
-import type { MockReviewAssignment } from "@/lib/mock-data/review-assignments";
+import type { ReviewerAssignment } from "@/utils/assignments.functions";
 
-export function ReviewMobileCard(assignment: MockReviewAssignment) {
+export function ReviewMobileCard(assignment: ReviewerAssignment) {
 	const now = new Date();
 	const deadline = assignment.deadline;
 	const daysRemaining = deadline

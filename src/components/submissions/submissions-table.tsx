@@ -1,12 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import type {
-	MockSubmission,
 	SubmissionStatus,
-} from "@/lib/mock-data/submissions";
+	SubmissionType,
+} from "@/generated/prisma/enums";
+import type { UserSubmission } from "@/utils/submissions.functions";
 
 interface SubmissionsTableProps {
-	submissions: MockSubmission[];
+	submissions: UserSubmission[];
 }
 
 const statusColors: Record<
@@ -40,13 +41,48 @@ const statusLabels: Record<SubmissionStatus, string> = {
 	WITHDRAWN: "Withdrawn",
 };
 
-const typeLabels = {
+const typeLabels: Record<SubmissionType, string> = {
 	ABSTRACT: "Abstract",
 	FULL_PAPER: "Full Paper",
 	POSTER: "Poster",
 };
 
 export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
+	const formatDate = (date: Date | string) => {
+		const d = typeof date === "string" ? new Date(date) : date;
+		return d.toLocaleDateString("en-US", {
+			day: "2-digit",
+			month: "2-digit",
+			year: "numeric",
+		});
+	};
+
+	const formatDateWithTime = (date: Date | string) => {
+		const d = typeof date === "string" ? new Date(date) : date;
+		return d.toLocaleDateString("en-US", {
+			day: "2-digit",
+			month: "2-digit",
+			year: "numeric",
+			hour: "2-digit",
+			minute: "2-digit",
+		});
+	};
+
+	const formatShortDate = (date: Date | string) => {
+		const d = typeof date === "string" ? new Date(date) : date;
+		return d.toLocaleDateString("en-US", {
+			day: "2-digit",
+			month: "2-digit",
+		});
+	};
+
+	const truncateId = (id: string) => {
+		if (id.length > 8) {
+			return `${id.slice(0, 8)}...`;
+		}
+		return id;
+	};
+
 	return (
 		<>
 			{/* Desktop Table */}
@@ -92,8 +128,9 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 											to="/submissions/$id"
 											params={{ id: submission.id }}
 											className="text-sm font-mono text-muted-foreground hover:text-primary"
+											title={submission.id}
 										>
-											{submission.id}
+											{truncateId(submission.id)}
 										</Link>
 									</td>
 									<td className="px-6 py-4">
@@ -127,20 +164,12 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap">
 										<span className="text-sm text-muted-foreground">
-											{submission.createdAt.toLocaleDateString("en-US", {
-												day: "2-digit",
-												month: "2-digit",
-												year: "numeric",
-											})}
+											{formatDate(submission.createdAt)}
 										</span>
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap">
 										<span className="text-sm text-muted-foreground">
-											{submission.updatedAt.toLocaleDateString("en-US", {
-												day: "2-digit",
-												month: "2-digit",
-												year: "numeric",
-											})}
+											{formatDate(submission.updatedAt)}
 										</span>
 									</td>
 								</tr>
@@ -180,7 +209,9 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 								<div className="grid grid-cols-2 gap-2 text-sm text-foreground">
 									<div>
 										<span className="text-muted-foreground">ID:</span>{" "}
-										<span className="font-mono text-xs">{submission.id}</span>
+										<span className="font-mono text-xs" title={submission.id}>
+											{truncateId(submission.id)}
+										</span>
 									</div>
 									<div>
 										<span className="text-muted-foreground">Round:</span>{" "}
@@ -192,23 +223,13 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 									</div>
 									<div>
 										<span className="text-muted-foreground">Submitted:</span>{" "}
-										{submission.createdAt.toLocaleDateString("en-US", {
-											day: "2-digit",
-											month: "2-digit",
-										})}
+										{formatShortDate(submission.createdAt)}
 									</div>
 								</div>
 
 								{/* Last Modified */}
 								<div className="text-xs text-muted-foreground pt-2 border-t">
-									Last modified:{" "}
-									{submission.updatedAt.toLocaleDateString("en-US", {
-										day: "2-digit",
-										month: "2-digit",
-										year: "numeric",
-										hour: "2-digit",
-										minute: "2-digit",
-									})}
+									Last modified: {formatDateWithTime(submission.updatedAt)}
 								</div>
 							</div>
 						</div>

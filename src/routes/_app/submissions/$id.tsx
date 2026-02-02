@@ -12,38 +12,32 @@ import {
 import { EditorDecisionCard } from "@/components/submissions/editor-decision-card";
 import { ReviewsSummaryCard } from "@/components/submissions/reviews-summary-card";
 import { Button } from "@/components/ui/button";
-import {
-	getEditorDecisionForSubmission,
-	getReviewsForSubmission,
-	getStatusHistoryForSubmission,
-	getSubmissionById,
-	getVersionByNumber,
-	getVersionsForSubmission,
-} from "@/lib/mock-data/submissions";
+import { getSubmissionByIdFn } from "@/utils/submissions.functions";
 
 export const Route = createFileRoute("/_app/submissions/$id")({
+	loader: async ({ params }) => {
+		const data = await getSubmissionByIdFn({ data: { submissionId: params.id } });
+		return { data };
+	},
 	component: SubmissionDetailPage,
 });
 
 function SubmissionDetailPage() {
 	const { id } = Route.useParams();
-
-	const submission = getSubmissionById(id);
-	const statusHistory = getStatusHistoryForSubmission(id);
-	const reviews = getReviewsForSubmission(id);
-	const decision = getEditorDecisionForSubmission(id);
-	const versions = getVersionsForSubmission(id);
+	const { data } = Route.useLoaderData();
 
 	const [selectedVersion, setSelectedVersion] = useState(
-		submission?.currentVersion ?? 1,
+		data?.submission.currentVersion ?? 1,
 	);
 
-	if (!submission) {
+	if (!data) {
 		return <NotFoundState id={id} />;
 	}
 
+	const { submission, statusHistory, reviews, decision, versions } = data;
+
 	// Get version-specific data
-	const versionData = getVersionByNumber(id, selectedVersion);
+	const versionData = versions.find((v) => v.version === selectedVersion);
 	const displayData = {
 		title: versionData?.title ?? submission.title,
 		content: versionData?.content ?? submission.content,

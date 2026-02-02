@@ -6,35 +6,47 @@ import {
 } from "@/components/forms/review/review-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
-import { getAssignmentById } from "@/lib/mock-data/review-assignments";
-import { getSubmissionById } from "@/lib/mock-data/submissions";
+import { getAssignmentForReviewFn, submitReviewFn } from "@/utils/reviews.functions";
 
 export const Route = createFileRoute("/_app/reviews/$assignmentId")({
+	loader: async ({ params }) => {
+		const data = await getAssignmentForReviewFn({ data: { assignmentId: params.assignmentId } });
+		return { data };
+	},
 	component: ReviewFormPage,
 });
 
 function ReviewFormPage() {
 	const { assignmentId } = Route.useParams();
 	const router = useRouter();
+	const { data } = Route.useLoaderData();
 
-	const assignment = getAssignmentById(assignmentId);
-	const submission = assignment
-		? getSubmissionById(assignment.submissionId)
-		: null;
-
-	if (!assignment || !submission) {
+	if (!data) {
 		return <NotFoundState assignmentId={assignmentId} />;
 	}
 
-	const handleSubmit = async (data: ReviewFormData) => {
-		// TODO: Replace with actual API call
-		console.log("Review submitted:", data);
+	const { assignment, submission, config, existingReview } = data;
 
-		// Simulate API delay
-		await new Promise((resolve) => setTimeout(resolve, 1000));
+	const handleSubmit = async (formData: ReviewFormData) => {
+		const result = await submitReviewFn({
+			data: {
+				assignmentId: assignment.id,
+				decision: formData.decision,
+				comments: formData.comments,
+				privateNotes: formData.privateNotes || undefined,
+				scoreNovelty: formData.scoreNovelty,
+				scoreMethodology: formData.scoreMethodology,
+				scoreClarity: formData.scoreClarity,
+				scoreRelevance: formData.scoreRelevance,
+				confidenceLevel: formData.confidenceLevel,
+			},
+		});
 
-		// Navigate back to reviews list
-		router.navigate({ to: "/reviews" });
+		if (result.success) {
+			router.navigate({ to: "/reviews" });
+		} else {
+			console.error("Failed to submit review:", result.error);
+		}
 	};
 
 	return (
@@ -56,7 +68,21 @@ function ReviewFormPage() {
 						type: submission.type,
 						authors: submission.authors,
 					}}
-					reviewMode={assignment.reviewMode}
+					reviewMode={config.reviewMode}
+					initialData={
+						existingReview
+							? {
+									decision: existingReview.decision,
+									comments: existingReview.comments ?? "",
+									privateNotes: existingReview.privateNotes ?? "",
+									scoreNovelty: existingReview.scoreNovelty ?? undefined,
+									scoreMethodology: existingReview.scoreMethodology ?? undefined,
+									scoreClarity: existingReview.scoreClarity ?? undefined,
+									scoreRelevance: existingReview.scoreRelevance ?? undefined,
+									confidenceLevel: existingReview.confidenceLevel ?? undefined,
+								}
+							: undefined
+					}
 				/>
 			</div>
 		</div>

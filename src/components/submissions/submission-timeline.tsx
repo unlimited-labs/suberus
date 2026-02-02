@@ -1,9 +1,9 @@
 import { Timeline } from "@/components/ui/timeline";
+import type { UserSubmissionStatusHistory } from "@/utils/submissions.functions";
 import { TimelineEvent } from "./timeline-event";
-import type { MockStatusHistory } from "@/lib/mock-data/submissions";
 
 interface SubmissionTimelineProps {
-	statusHistory: MockStatusHistory[];
+	statusHistory: UserSubmissionStatusHistory[];
 	compact?: boolean;
 }
 
@@ -12,9 +12,11 @@ export function SubmissionTimeline({
 	compact = false,
 }: SubmissionTimelineProps) {
 	// Sort history chronologically (oldest first)
-	const sortedHistory = [...statusHistory].sort(
-		(a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
-	);
+	const sortedHistory = [...statusHistory].sort((a, b) => {
+		const aTime = typeof a.timestamp === "string" ? new Date(a.timestamp).getTime() : a.timestamp.getTime();
+		const bTime = typeof b.timestamp === "string" ? new Date(b.timestamp).getTime() : b.timestamp.getTime();
+		return aTime - bTime;
+	});
 
 	if (compact) {
 		return (
