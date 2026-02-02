@@ -13,7 +13,7 @@ import {
 	typeFilterOptions,
 	typeLabels,
 } from "@/lib/labels/submission";
-import type { AdminSubmission } from "@/lib/server/admin/submissions";
+import type { AdminSubmission } from "@/utils/admin-submissions.server";
 
 export const submissionColumns: ColumnDef<AdminSubmission>[] = [
 	createSelectColumn<AdminSubmission>(),
@@ -103,7 +103,7 @@ export const submissionColumns: ColumnDef<AdminSubmission>[] = [
 	},
 	createActionsColumn<AdminSubmission>({
 		getViewLink: (submission) => ({
-			to: "/submissions/$id",
+			to: "/admin/submissions/$id",
 			params: { id: submission.id },
 		}),
 	}),

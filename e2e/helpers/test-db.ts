@@ -300,3 +300,54 @@ export async function cleanupTestSubmissions(): Promise<void> {
 		await deleteSubmission(sub.id);
 	}
 }
+
+// Create assignment with custom deadline (for overdue testing)
+export interface CreateOverdueAssignmentOptions extends CreateSubmissionOptions {
+	reviewerId?: string;
+	assignmentStatus?: AssignmentStatus;
+	deadline?: Date;
+}
+
+export async function createAssignmentWithDeadline(
+	options: CreateOverdueAssignmentOptions
+): Promise<{
+	submissionId: string;
+	assignmentId: string;
+	title: string;
+}> {
+	const db = getPrisma();
+	const { adminUserId, reviewerUserId } = await getTestUserIds();
+
+	const submission = await createSubmission({
+		...options,
+		status: SubmissionStatus.UNDER_REVIEW,
+	});
+
+	const assignment = await db.reviewAssignment.create({
+		data: {
+			submissionId: submission.id,
+			reviewerId: options.reviewerId ?? reviewerUserId,
+			round: 1,
+			status: options.assignmentStatus ?? AssignmentStatus.PENDING,
+			deadline: options.deadline ?? new Date(Date.now() - 24 * 60 * 60 * 1000), // default: 1 day ago
+			assignedBy: adminUserId,
+			orderIndex: 0,
+		},
+	});
+
+	return {
+		submissionId: submission.id,
+		assignmentId: assignment.id,
+		title: submission.title,
+	};
+}
+
+// Get assignment status
+export async function getAssignmentStatus(assignmentId: string): Promise<AssignmentStatus | null> {
+	const db = getPrisma();
+	const assignment = await db.reviewAssignment.findUnique({
+		where: { id: assignmentId },
+		select: { status: true },
+	});
+	return assignment?.status ?? null;
+}

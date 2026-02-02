@@ -138,11 +138,19 @@ export default defineConfig({
 				...devices["Desktop Chrome"],
 			},
 		},
+		// API tests - no browser auth needed (uses own authorization)
+		{
+			name: "api",
+			testMatch: /e2e\/api\/.*\.spec\.ts/,
+			use: {
+				...devices["Desktop Chrome"],
+			},
+		},
 	],
 	webServer: {
-		command: "pnpm dev",
+		command: process.env.CI ? "pnpm build && pnpm preview" : "pnpm dev",
 		url: "http://localhost:3001",
 		reuseExistingServer: !process.env.CI,
-		timeout: 120_000,
+		timeout: process.env.CI ? 180_000 : 120_000,
 	},
 });
