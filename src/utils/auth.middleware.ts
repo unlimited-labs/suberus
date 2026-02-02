@@ -5,7 +5,7 @@ import { auth } from "../../auth";
 async function requireAuth() {
 	const session = await auth.api.getSession({ headers: getRequestHeaders() });
 	if (!session?.user) {
-		throw new Error("Unauthorized");
+		throw new Response("Unauthorized", { status: 401 });
 	}
 	return session.user;
 }
@@ -13,7 +13,7 @@ async function requireAuth() {
 async function requireAdmin() {
 	const user = await requireAuth();
 	if (!user.role || !["ADMIN", "EDITOR"].includes(user.role)) {
-		throw new Error("Forbidden");
+		throw new Response("Forbidden", { status: 403 });
 	}
 	return user;
 }

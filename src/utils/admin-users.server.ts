@@ -68,7 +68,7 @@ export async function executeBulkAction(
 ): Promise<{ success: boolean; updated: number }> {
 	if (data.action === "mark_fee") {
 		if (!data.feeType) {
-			throw new Error("Fee type is required");
+			throw new Response("Fee type is required", { status: 400 });
 		}
 		return bulkMarkFeesPaid({
 			userIds: data.userIds,
@@ -78,7 +78,7 @@ export async function executeBulkAction(
 
 	if (data.action === "change_role") {
 		if (!data.role) {
-			throw new Error("Role is required");
+			throw new Response("Role is required", { status: 400 });
 		}
 		return bulkChangeRole({
 			userIds: data.userIds,
@@ -86,5 +86,5 @@ export async function executeBulkAction(
 		});
 	}
 
-	throw new Error("Invalid action");
+	throw new Response("Invalid action", { status: 400 });
 }

@@ -99,7 +99,12 @@ export const updateSubmissionTypeConfigFn = createServerFn({ method: "POST" })
 			data.config.contentFormat === "FILE" &&
 			data.config.allowedExtensions.length === 0
 		) {
-			throw new Error("FILE format requires at least one allowed extension");
+			throw new Response(
+				"FILE format requires at least one allowed extension",
+				{
+					status: 400,
+				},
+			);
 		}
 
 		await setSetting(
@@ -194,13 +199,22 @@ export const updateSubmissionValidationSettingsFn = createServerFn({
 	.handler(async ({ data }) => {
 		// Validate min <= max
 		if (data.minTitleLength > data.maxTitleLength) {
-			throw new Error("Min title length cannot exceed max title length");
+			throw new Response("Min title length cannot exceed max title length", {
+				status: 400,
+			});
 		}
 		if (data.minAbstractLength > data.maxAbstractLength) {
-			throw new Error("Min abstract length cannot exceed max abstract length");
+			throw new Response(
+				"Min abstract length cannot exceed max abstract length",
+				{
+					status: 400,
+				},
+			);
 		}
 		if (data.minKeywords > data.maxKeywords) {
-			throw new Error("Min keywords cannot exceed max keywords");
+			throw new Response("Min keywords cannot exceed max keywords", {
+				status: 400,
+			});
 		}
 
 		await setSetting("MIN_TITLE_LENGTH", data.minTitleLength);
