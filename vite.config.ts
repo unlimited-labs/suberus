@@ -12,7 +12,20 @@ const config = defineConfig({
 	},
 	plugins: [
 		devtools(),
-		nitro(),
+		nitro({
+			rollupConfig: {
+				external: [/^@prisma\//, /\.wasm$/, "pg", "pg-pool"],
+				onwarn(warning, warn) {
+					if (
+						warning.code === "MODULE_LEVEL_DIRECTIVE" || // "use client" directives
+						warning.code === "EMPTY_BUNDLE" // Empty chunks from tree-shaking
+					) {
+						return;
+					}
+					warn(warning);
+				},
+			},
+		}),
 		// this is the plugin that enables path aliases
 		viteTsConfigPaths({
 			projects: ["./tsconfig.json"],
