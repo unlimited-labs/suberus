@@ -1,10 +1,10 @@
 import { IconAlertTriangle, IconRefresh, IconX } from "@tabler/icons-react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Alert, AlertDescription, AlertAction } from "@/components/ui/alert";
+import { Alert, AlertAction, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { sendVerificationEmail } from "@/lib/auth-client";
 import { useSession } from "@/hooks/use-session";
+import { sendVerificationEmail } from "@/lib/auth-client";
 
 const RESEND_COOLDOWN = 60;
 const DISMISS_KEY = "email-verification-banner-dismissed";

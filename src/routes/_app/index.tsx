@@ -1,29 +1,29 @@
-import { createFileRoute, useSearch } from "@tanstack/react-router"
-import { IconDashboard } from "@tabler/icons-react"
-import { useEffect, useRef } from "react"
-import { toast } from "sonner"
-import { z } from "zod"
-import { PageHeader } from "@/components/layout/page-header"
+import { IconDashboard } from "@tabler/icons-react";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
+import { useEffect, useRef } from "react";
+import { toast } from "sonner";
+import { z } from "zod";
+import { PageHeader } from "@/components/layout/page-header";
 
 const searchSchema = z.object({
 	verified: z.enum(["true"]).optional(),
-})
+});
 
 export const Route = createFileRoute("/_app/")({
 	validateSearch: searchSchema,
 	component: DashboardPage,
-})
+});
 
 function DashboardPage() {
-	const { verified } = useSearch({ from: "/_app/" })
-	const toastShown = useRef(false)
+	const { verified } = useSearch({ from: "/_app/" });
+	const toastShown = useRef(false);
 
 	useEffect(() => {
 		if (verified === "true" && !toastShown.current) {
-			toastShown.current = true
-			toast.success("Email verified successfully!")
+			toastShown.current = true;
+			toast.success("Email verified successfully!");
 		}
-	}, [verified])
+	}, [verified]);
 
 	return (
 		<div className="flex h-full flex-col">
@@ -37,7 +37,7 @@ function DashboardPage() {
 				</div>
 			</div>
 		</div>
-	)
+	);
 }
 
 function StatCard({ title, value }: { title: string; value: string }) {
@@ -46,5 +46,5 @@ function StatCard({ title, value }: { title: string; value: string }) {
 			<p className="text-sm text-muted-foreground">{title}</p>
 			<p className="text-2xl font-semibold">{value}</p>
 		</div>
-	)
+	);
 }

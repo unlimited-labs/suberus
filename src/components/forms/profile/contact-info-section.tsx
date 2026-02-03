@@ -11,7 +11,7 @@ import {
 } from "@tabler/icons-react";
 import { useForm } from "@tanstack/react-form";
 import { countries } from "countries-list";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { FieldError } from "@/components/forms/field-error";
@@ -150,7 +150,9 @@ export function ContactInfoSection({
 								{emailVerified ? (
 									<>
 										<IconMailCheck className="size-4 text-green-600" />
-										<span className="text-sm text-green-600">Email verified</span>
+										<span className="text-sm text-green-600">
+											Email verified
+										</span>
 									</>
 								) : (
 									<>

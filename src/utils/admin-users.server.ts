@@ -9,8 +9,8 @@ import {
 	getUsers,
 	markFeePaid,
 	toggleUserActive,
-	verifyUserEmail,
 	type UsersFilters,
+	verifyUserEmail,
 } from "@/lib/server/admin/users";
 
 export type { AdminUser, GetUsersResponse, UsersFilters };

@@ -1,6 +1,6 @@
 import { IconMail, IconRefresh } from "@tabler/icons-react";
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { AuthSidebar } from "@/components/forms/auth-sidebar";
@@ -80,9 +80,7 @@ function VerifyEmailPage() {
 						<p className="text-sm text-muted-foreground">
 							We've sent a verification link to
 						</p>
-						{email && (
-							<p className="font-medium text-foreground">{email}</p>
-						)}
+						{email && <p className="font-medium text-foreground">{email}</p>}
 					</div>
 
 					<div className="space-y-2 text-sm text-muted-foreground">
@@ -110,7 +108,10 @@ function VerifyEmailPage() {
 				</div>
 
 				<p className="mt-4 text-center text-sm text-muted-foreground">
-					<Link to="/login" className="font-medium text-primary hover:underline">
+					<Link
+						to="/login"
+						className="font-medium text-primary hover:underline"
+					>
 						Back to login
 					</Link>
 				</p>
