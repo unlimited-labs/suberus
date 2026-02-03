@@ -260,26 +260,46 @@ test.describe("Admin Settings Integration with Submission Form", () => {
 		adminPage,
 		userPage,
 	}) => {
-		// 1. Admin: Change MAX_FILE_SIZE_MB to 5
-		await goToAdminSubmissionSettings(adminPage);
+		// 1. Admin: Set ORAL_PRESENTATION to FILE format to test file size limit
+		await goToAdminSubmissionTypes(adminPage);
+		await adminPage.getByRole("button", { name: /Oral Presentation/i }).first().click();
+		await expect(adminPage.getByText("Content Format")).toBeVisible();
+
+		// Check current format and switch to FILE if needed
+		const contentFormatSelect = adminPage.locator("button").filter({ hasText: /Text \(Abstract\)|File Upload/i });
+		const currentFormat = await contentFormatSelect.textContent();
+		const wasTextFormat = currentFormat?.includes("Text");
+
+		if (wasTextFormat) {
+			await contentFormatSelect.click();
+			await adminPage.getByRole("option", { name: "File Upload" }).click();
+			// FILE format requires at least one extension - check "pdf"
+			await adminPage.getByLabel("pdf").check();
+			await adminPage.getByRole("button", { name: "Save" }).click();
+			await expect(
+				adminPage.getByText(/"Oral Presentation" settings saved/i)
+			).toBeVisible({ timeout: 5000 });
+		}
+
+		// 2. Admin: Change MAX_FILE_SIZE_MB to 5
+		await adminPage.reload();
+		await adminPage.getByRole("tab", { name: /Submissions$/i }).click();
+		await expect(
+			adminPage.getByRole("heading", { name: "Title" })
+		).toBeVisible();
 
 		const maxFileSizeInput = adminPage.getByLabel("Max file size (MB)");
-
-		// Store original value
 		const originalSize = await maxFileSizeInput.inputValue();
 
-		// Set new value
 		await maxFileSizeInput.clear();
 		await maxFileSizeInput.fill("5");
 		await saveValidationSettings(adminPage);
 
-		// 2. User: Verify file dropzone shows updated limit
+		// 3. User: Verify file dropzone shows updated limit
 		await userPage.goto("/submissions/new");
-
-		// File dropzone shows "PDF,DOC,DOCX up to {maxSize}MB"
 		await expect(userPage.getByText(/up to 5MB/i)).toBeVisible();
 
-		// 3. Cleanup: Restore original value
+		// 4. Cleanup: Restore original file size
 		await adminPage.reload();
 		await adminPage.getByRole("tab", { name: /Submissions$/i }).click();
 		await expect(
@@ -290,34 +310,103 @@ test.describe("Admin Settings Integration with Submission Form", () => {
 		await restoreInput.clear();
 		await restoreInput.fill(originalSize);
 		await saveValidationSettings(adminPage);
+
+		// 5. Cleanup: Restore TEXT format if it was changed
+		if (wasTextFormat) {
+			await adminPage.reload();
+			await adminPage.getByRole("tab", { name: /Submission Types/i }).click();
+			await expect(adminPage.getByText("Oral Presentation")).toBeVisible();
+			await adminPage.getByRole("button", { name: /Oral Presentation/i }).first().click();
+			await expect(adminPage.getByText("Content Format")).toBeVisible();
+
+			const restoreSelect = adminPage.locator("button").filter({ hasText: /Text \(Abstract\)|File Upload/i });
+			await restoreSelect.click();
+			await adminPage.getByRole("option", { name: "Text (Abstract)" }).click();
+			await adminPage.getByRole("button", { name: "Save" }).click();
+			await expect(
+				adminPage.getByText(/"Oral Presentation" settings saved/i)
+			).toBeVisible({ timeout: 5000 });
+		}
 	});
 
-	test("form uses allowed file types from settings for TEXT format", async ({
-		adminPage,
+	test("TEXT format hides file dropzone", async ({
 		userPage,
 	}) => {
-		// 1. Admin: Verify ALLOWED_FILE_TYPES has pdf
-		await goToAdminSubmissionSettings(adminPage);
-
-		// The allowed file types checkboxes should be visible
-		await expect(adminPage.getByText("Allowed file types")).toBeVisible();
-		await expect(adminPage.getByLabel("pdf")).toBeVisible();
-
-		// 2. User: Verify TEXT format uses global allowed file types
+		// User: Verify TEXT format (Oral Presentation) does NOT show file upload
 		await userPage.goto("/submissions/new");
 
-		// Select Oral Presentation (TEXT format)
+		// Select Oral Presentation (TEXT format by default)
 		await expect(
 			userPage.getByRole("button", { name: /Oral Presentation/i })
 		).toBeVisible();
 
-		// The optional file upload should accept the configured types
-		// This is verified by checking the dropzone is present
+		// For TEXT format: should show text area, NOT file dropzone
+		await expect(userPage.getByLabel("Abstract")).toBeVisible();
+		await expect(userPage.getByText("Document *")).not.toBeVisible();
 		await expect(
-			userPage.getByText("Document (Optional)")
+			userPage.getByText("Drop file or click to upload")
+		).not.toBeVisible();
+	});
+
+	test("content format strictly determines visible fields", async ({
+		adminPage,
+		userPage,
+	}) => {
+		// 1. Admin: Set ORAL_PRESENTATION to FILE format
+		await goToAdminSubmissionTypes(adminPage);
+		await adminPage.getByRole("button", { name: /Oral Presentation/i }).first().click();
+		await expect(adminPage.getByText("Content Format")).toBeVisible();
+
+		// Store original content format using Select component
+		const contentFormatSelect = adminPage.locator("button").filter({ hasText: /Text \(Abstract\)|File Upload/i });
+		const currentFormat = await contentFormatSelect.textContent();
+		const wasTextFormat = currentFormat?.includes("Text");
+
+		// Switch to FILE format
+		if (wasTextFormat) {
+			await contentFormatSelect.click();
+			await adminPage.getByRole("option", { name: "File Upload" }).click();
+			// FILE format requires at least one extension - check "pdf"
+			await adminPage.getByLabel("pdf").check();
+			await adminPage.getByRole("button", { name: "Save" }).click();
+			await expect(
+				adminPage.getByText(/"Oral Presentation" settings saved/i)
+			).toBeVisible({ timeout: 5000 });
+		}
+
+		// 2. User: Verify FILE format shows ONLY upload (no text area)
+		await userPage.goto("/submissions/new");
+		await expect(
+			userPage.getByRole("button", { name: /Oral Presentation/i })
 		).toBeVisible();
+
+		// For FILE format: should show file dropzone, NOT abstract textarea
+		await expect(userPage.getByText("Document *")).toBeVisible();
 		await expect(
 			userPage.getByText("Drop file or click to upload")
 		).toBeVisible();
+		await expect(userPage.getByLabel("Abstract")).not.toBeVisible();
+
+		// 3. Admin: Restore TEXT format
+		if (wasTextFormat) {
+			await adminPage.reload();
+			await adminPage.getByRole("tab", { name: /Submission Types/i }).click();
+			await expect(adminPage.getByText("Oral Presentation")).toBeVisible();
+			await adminPage.getByRole("button", { name: /Oral Presentation/i }).first().click();
+			await expect(adminPage.getByText("Content Format")).toBeVisible();
+
+			const restoreSelect = adminPage.locator("button").filter({ hasText: /Text \(Abstract\)|File Upload/i });
+			await restoreSelect.click();
+			await adminPage.getByRole("option", { name: "Text (Abstract)" }).click();
+			await adminPage.getByRole("button", { name: "Save" }).click();
+			await expect(
+				adminPage.getByText(/"Oral Presentation" settings saved/i)
+			).toBeVisible({ timeout: 5000 });
+		}
+
+		// 4. User: Verify TEXT format shows ONLY text area (no file dropzone)
+		await userPage.reload();
+		await expect(userPage.getByLabel("Abstract")).toBeVisible();
+		await expect(userPage.getByText("Document *")).not.toBeVisible();
 	});
 });

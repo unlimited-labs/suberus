@@ -30,3 +30,6 @@ playwright/.cache/
 .idea
 .cursorrules
 e2e/.auth/
+.playwright-cli
+.agents/
+tanstack-llms

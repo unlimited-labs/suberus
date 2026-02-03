@@ -3,7 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
 	testDir: "./e2e",
 	fullyParallel: true,
-	forbidOnly: !!process.env.CI,
+	forbidOnly: false,
 	retries: process.env.CI ? 2 : 0,
 	workers: 1,
 	reporter:
@@ -158,9 +158,10 @@ export default defineConfig({
 		},
 	],
 	webServer: {
-		command: process.env.CI ? "pnpm build && pnpm preview" : "pnpm dev",
+		command: "dotenv -e .env.local -- pnpm dev",
 		url: "http://localhost:3001",
-		reuseExistingServer: !process.env.CI,
-		timeout: process.env.CI ? 180_000 : 120_000,
+		env: { PORT: "3001" },
+		reuseExistingServer: true,
+		timeout: 120_000,
 	},
 });

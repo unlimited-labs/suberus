@@ -386,36 +386,24 @@ export function SubmissionForm({
 										</form.Field>
 									)}
 
-									{/* Show file dropzone for FILE format or as optional for TEXT */}
+									{/* Show file dropzone ONLY for FILE format */}
+								{isFileFormat && (
 									<form.Field name="file">
 										{(field) => (
 											<div className="space-y-2">
 												<Label className="text-foreground">
 													Document{" "}
-													{!isFileFormat && (
-														<span className="text-muted-foreground text-xs font-normal">
-															(Optional)
-														</span>
-													)}
-													{isFileFormat && (
-														<span className="text-destructive text-xs font-normal">
-															*
-														</span>
-													)}
+													<span className="text-destructive text-xs font-normal">
+														*
+													</span>
 												</Label>
 												<FileDropzone
 													value={field.state.value}
 													onChange={field.handleChange}
-													accept={
-														isFileFormat
-															? acceptString
-															: validationSettings.allowedFileTypes
-																	.map((e) => `.${e}`)
-																	.join(",")
-													}
+													accept={acceptString}
 													maxSize={validationSettings.maxFileSize}
 												/>
-												{isFileFormat && !field.state.value && (
+												{!field.state.value && (
 													<p className="text-xs text-muted-foreground">
 														Accepted formats:{" "}
 														{allowedExtensions
@@ -426,6 +414,7 @@ export function SubmissionForm({
 											</div>
 										)}
 									</form.Field>
+								)}
 								</div>
 							</div>
 
@@ -619,7 +608,6 @@ export function SubmissionForm({
 										{validationSettings.maxKeywords} relevant keywords
 									</p>
 								)}
-								{!isFileFormat && <p>• Document upload is optional</p>}
 							</div>
 						</div>
 					</div>

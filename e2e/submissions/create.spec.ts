@@ -261,18 +261,17 @@ test.describe("Submission Form", () => {
 		).toBeVisible();
 	});
 
-	test("hides file dropzone required marker for TEXT format", async ({
-		submissionPage,
-	}) => {
+	test("hides file dropzone for TEXT format", async ({ submissionPage }) => {
 		await submissionPage.goto();
 
 		// Oral Presentation is TEXT format (default)
 		await expect(submissionPage.contentInput).toBeVisible();
 
-		// Document should be optional
+		// Document dropzone should not be visible for TEXT format
 		await expect(
-			submissionPage.page.getByText("Document (Optional)"),
-		).toBeVisible();
+			submissionPage.page.getByText("Drop file or click to upload"),
+		).not.toBeVisible();
+		await expect(submissionPage.page.getByText(/^Document/)).not.toBeVisible();
 	});
 
 	test("switches content fields when changing type", async ({
