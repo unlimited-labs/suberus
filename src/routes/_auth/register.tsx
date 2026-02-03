@@ -134,7 +134,7 @@ function RegisterPage() {
 				return;
 			}
 
-			toast.success("Account created successfully");
+			toast.success("Account created! Check your email to verify.");
 			navigate({ to: "/" });
 		},
 	});

@@ -52,6 +52,7 @@ const patchUserSchema = z.object({
 	isActive: z.boolean().optional(),
 	markFeePaid: z.boolean().optional(),
 	feeType: z.enum(["FULL", "STUDENT", "INVITED", "STAFF", "CASH"]).optional(),
+	verifyEmail: z.boolean().optional(),
 });
 
 export const patchAdminUser = createServerFn({ method: "POST" })

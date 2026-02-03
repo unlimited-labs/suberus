@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 import { IconHexagonLetterS } from "@tabler/icons-react"
+import { EmailVerificationBanner } from "@/components/email-verification-banner"
 import { Sidebar, MobileSidebar } from "./sidebar"
 
 interface AppLayoutProps {
@@ -23,8 +24,9 @@ export function AppLayout({ children }: AppLayoutProps) {
 					</div>
 				</div>
 				{/* Content card */}
-				<main className="flex-1 overflow-auto bg-background shadow-lg md:m-2 md:rounded-2xl">
-					{children}
+				<main className="flex flex-1 flex-col overflow-auto bg-background shadow-lg md:m-2 md:rounded-2xl">
+					<EmailVerificationBanner />
+					<div className="flex-1 overflow-auto">{children}</div>
 				</main>
 			</div>
 		</div>

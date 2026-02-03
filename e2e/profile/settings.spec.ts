@@ -119,4 +119,13 @@ test.describe("User Settings", () => {
 		// Should show mismatch error
 		await expect(settingsPage.page.getByText(/passwords do not match/i)).toBeVisible()
 	})
+
+	test("shows email verified status for verified user", async ({ settingsPage }) => {
+		await settingsPage.goto()
+
+		// Test user is verified in global setup
+		await expect(settingsPage.emailVerifiedBadge).toBeVisible()
+		// Resend button should not be visible for verified user
+		await expect(settingsPage.emailResendButton).not.toBeVisible()
+	})
 })

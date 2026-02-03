@@ -5,6 +5,8 @@ import { tanstackStartCookies } from "better-auth/tanstack-start"
 import { PrismaPg } from "@prisma/adapter-pg"
 import { randomUUID } from "crypto"
 import "dotenv/config"
+import { sendEmail } from "@/lib/server/email"
+import { APP_SETTINGS_DEFAULTS } from "@/lib/settings/defaults"
 
 const connectionString = process.env.DATABASE_URL
 const adapter = new PrismaPg({ connectionString })
@@ -28,8 +30,28 @@ export const auth = betterAuth({
 	},
 	emailAndPassword: {
 		enabled: true,
-		requireEmailVerification: false,
+		requireEmailVerification: false, // Soft-block: users can login, but app restricts actions
 		minPasswordLength: 10,
+		sendResetPassword: async ({ user, url }) => {
+			const extUser = user as typeof user & { firstName?: string }
+			await sendEmail("PASSWORD_RESET", user.email, {
+				firstName: extUser.firstName ?? user.email,
+				resetUrl: url,
+				conferenceName: APP_SETTINGS_DEFAULTS.CONFERENCE_NAME,
+			})
+		},
+	},
+	emailVerification: {
+		sendOnSignUp: true,
+		autoSignInAfterVerification: true,
+		sendVerificationEmail: async ({ user, url }) => {
+			const extUser = user as typeof user & { firstName?: string }
+			await sendEmail("EMAIL_VERIFICATION", user.email, {
+				firstName: extUser.firstName ?? user.email,
+				verificationUrl: url,
+				conferenceName: APP_SETTINGS_DEFAULTS.CONFERENCE_NAME,
+			})
+		},
 	},
 	user: {
 		modelName: "user",
@@ -69,6 +91,11 @@ export const auth = betterAuth({
 				defaultValue: UserRole.AUTHOR,
 				input: false,
 			},
+		},
+	},
+	onAPIError: {
+		onError: (error, _ctx) => {
+			console.error("[Better Auth Error]", error);
 		},
 	},
 	session: {

@@ -14,6 +14,19 @@ export const TEST_USER = {
 	lastName: "User",
 }
 
+export const UNVERIFIED_USER = {
+	email: "unverified@e2e.local",
+	firstName: "Unverified",
+	lastName: "User",
+}
+
+// Separate user for destructive admin verification tests
+export const ADMIN_VERIFY_TEST_USER = {
+	email: "admin-verify-test@e2e.local",
+	firstName: "AdminVerify",
+	lastName: "Test",
+}
+
 // Login helper
 export async function loginAsAdmin(page: Page) {
 	await page.goto("/login")
@@ -49,17 +62,27 @@ export class AdminUsersPage {
 	}
 
 	async waitForLoad() {
-		await this.loadingText.waitFor({ state: "hidden", timeout: 10000 })
-	}
-
-	async search(query: string) {
-		await this.searchInput.fill(query)
-		// Wait for table to re-filter
+		// Wait for loading to finish
+		await this.loadingText.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {
+			// Loading text might never appear - that's ok
+		})
+		// Wait for network requests to settle
 		await this.page.waitForLoadState("networkidle")
 	}
 
-	async selectUser(email: string) {
-		const row = this.page.locator("tr").filter({ hasText: email })
+	async search(query: string) {
+		// Clear previous search first
+		await this.searchInput.clear()
+		await this.searchInput.fill(query)
+		// Wait a moment for the client-side filter to apply
+		await this.page.waitForTimeout(300)
+	}
+
+	async selectUser(user: { email: string; firstName: string }) {
+		// Search by firstName to filter the list (needed when many users exist)
+		await this.search(user.firstName)
+		// Find the row by the exact email text
+		const row = this.page.locator("tr").filter({ has: this.page.locator(`text="${user.email}"`) })
 		const checkbox = row.getByRole("checkbox")
 		await checkbox.click()
 		// Wait for checkbox to be checked
@@ -83,14 +106,20 @@ export class AdminUsersPage {
 		await this.page.getByRole("button", { name: "Apply" }).click()
 	}
 
-	async openUserDetail(email: string) {
-		const row = this.page.locator("tr").filter({ hasText: email })
+	async openUserDetail(user: { email: string; firstName: string }) {
+		// Search by firstName to filter the list (needed when many users exist)
+		await this.search(user.firstName)
+		// Find the row by the exact email text
+		const row = this.page.locator("tr").filter({ has: this.page.locator(`text="${user.email}"`) })
 		await row.getByRole("button", { name: "Actions menu" }).click()
 		await this.page.getByRole("menuitem", { name: "View" }).click()
 	}
 
-	getRowByEmail(email: string) {
-		return this.page.locator("tr").filter({ hasText: email })
+	async getRowByEmail(user: { email: string; firstName: string }) {
+		// Search by firstName to filter the list (needed when many users exist)
+		await this.search(user.firstName)
+		// Find the row by the exact email text
+		return this.page.locator("tr").filter({ has: this.page.locator(`text="${user.email}"`) })
 	}
 
 	getSelectedCount() {
@@ -107,6 +136,9 @@ export class UserDetailPage {
 	readonly markAsPaidButton: Locator
 	readonly feeStatusPaid: Locator
 	readonly feeStatusUnpaid: Locator
+	readonly emailVerified: Locator
+	readonly emailNotVerified: Locator
+	readonly verifyEmailButton: Locator
 
 	constructor(page: Page) {
 		this.page = page
@@ -117,6 +149,9 @@ export class UserDetailPage {
 		this.markAsPaidButton = page.getByRole("button", { name: "Mark as Paid" })
 		this.feeStatusPaid = page.getByText("Fee Paid")
 		this.feeStatusUnpaid = page.getByText("Fee Unpaid")
+		this.emailVerified = page.getByText("Email verified")
+		this.emailNotVerified = page.getByText("Email not verified")
+		this.verifyEmailButton = page.getByRole("button", { name: "Verify" })
 	}
 
 	async goto(userId: string) {

@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures"
+import { test, expect, clearMailpit, waitForEmail } from "./fixtures"
 
 test.describe("Register Page - Step 1: Author Info", () => {
 	test("displays form correctly", async ({ registerPage }) => {
@@ -179,7 +179,9 @@ test.describe("Register Page - Step 3: Survey", () => {
 		await expect(visaCheckbox).not.toBeChecked()
 	})
 
-	test("successful registration redirects to home", async ({ registerPage }) => {
+	test("successful registration redirects to dashboard with verification banner", async ({
+		registerPage,
+	}) => {
 		// Use unique email for this test
 		const uniqueEmail = `test-${Date.now()}@e2e.local`
 
@@ -193,8 +195,38 @@ test.describe("Register Page - Step 3: Survey", () => {
 		await registerPage.fillStep3({ acceptTerms: true })
 		await registerPage.clickCreateAccount()
 
-		// Should redirect to home page after successful registration
+		// Should redirect to dashboard after successful registration (soft-block)
 		await expect(registerPage.page).toHaveURL("/", { timeout: 10000 })
+
+		// Should show verification banner for unverified user
+		await expect(
+			registerPage.page.getByText(/email.*not verified/i),
+		).toBeVisible({ timeout: 5000 })
+	})
+
+	test("sends verification email on registration", async ({ registerPage }) => {
+		await clearMailpit()
+
+		// Use unique email for this test
+		const uniqueEmail = `verify-${Date.now()}@e2e.local`
+
+		// Go back and change email to unique one
+		await registerPage.clickBack()
+		await registerPage.clickBack()
+		await registerPage.page.getByLabel("E-mail *").fill(uniqueEmail)
+		await registerPage.clickContinue()
+		await registerPage.clickContinue()
+
+		await registerPage.fillStep3({ acceptTerms: true })
+		await registerPage.clickCreateAccount()
+
+		// Wait for redirect to dashboard
+		await expect(registerPage.page).toHaveURL("/", { timeout: 10000 })
+
+		// Verification email should be sent
+		const email = await waitForEmail(uniqueEmail, "verify", 15000)
+		expect(email).not.toBeNull()
+		expect(email?.Subject).toContain("Verify")
 	})
 })
 

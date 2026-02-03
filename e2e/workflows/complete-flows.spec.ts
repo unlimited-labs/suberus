@@ -34,8 +34,12 @@ async function loginAs(page: Page, user: { email: string; password: string }) {
 	await page.goto("/login");
 	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 30000 });
 	await page.getByLabel("E-mail").fill(user.email);
-	await page.getByLabel("Password").fill(user.password);
-	await page.getByRole("button", { name: "Sign in" }).click();
+	const passwordInput = page.getByLabel("Password");
+	await passwordInput.fill(user.password);
+	// Use Enter key which is more reliable than button click
+	await passwordInput.press("Enter");
+	// Wait for API response to complete before checking URL
+	await page.waitForLoadState("networkidle");
 	await page.waitForURL("/", { timeout: 30000 });
 }
 

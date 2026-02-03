@@ -81,6 +81,16 @@ export default defineConfig({
 				...devices["Desktop Chrome"],
 			},
 		},
+		// Email verification tests - use unverified user auth
+		{
+			name: "chromium-unverified",
+			testMatch: /e2e\/email-verification\/.*\.spec\.ts/,
+			dependencies: ["auth-setup"],
+			use: {
+				...devices["Desktop Chrome"],
+				storageState: "e2e/.auth/unverified.json",
+			},
+		},
 		// Profile tests - use user auth, run AFTER user submissions tests
 		{
 			name: "chromium-profile",

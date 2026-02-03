@@ -47,13 +47,20 @@ export class LoginPage {
 	}
 
 	async submit() {
+		// Ensure button is visible and enabled before clicking
+		await expect(this.submitButton).toBeVisible()
+		await expect(this.submitButton).toBeEnabled()
+		await this.submitButton.scrollIntoViewIfNeeded()
 		await this.submitButton.click()
 	}
 
 	async login(email: string, password: string) {
 		await this.fillEmail(email)
 		await this.fillPassword(password)
-		await this.submit()
+		// Use Enter key which is more reliable than button click
+		await this.passwordInput.press("Enter")
+		// Wait for API response to complete
+		await this.page.waitForLoadState("networkidle")
 	}
 }
 
@@ -160,6 +167,29 @@ export class RegisterPage {
 	}
 }
 
+export class VerifyEmailPage {
+	readonly page: Page
+	readonly heading: Locator
+	readonly resendButton: Locator
+	readonly backToLoginLink: Locator
+
+	constructor(page: Page) {
+		this.page = page
+		this.heading = page.getByRole("heading", { name: "Check your email" })
+		this.resendButton = page.getByRole("button", { name: /resend/i })
+		this.backToLoginLink = page.getByRole("link", { name: "Back to login" })
+	}
+
+	async goto(email?: string) {
+		const url = email ? `/verify-email?email=${encodeURIComponent(email)}` : "/verify-email"
+		await this.page.goto(url)
+	}
+
+	async expectEmailDisplayed(email: string) {
+		await expect(this.page.getByText(email)).toBeVisible()
+	}
+}
+
 export class ForgotPasswordPage {
 	readonly page: Page
 	readonly heading: Locator
@@ -190,11 +220,101 @@ export class ForgotPasswordPage {
 	}
 }
 
+export class ResetPasswordPage {
+	readonly page: Page
+	readonly newPasswordInput: Locator
+	readonly confirmPasswordInput: Locator
+	readonly submitButton: Locator
+	readonly successHeading: Locator
+	readonly errorHeading: Locator
+	readonly requestNewLinkButton: Locator
+	readonly backToLoginLink: Locator
+
+	constructor(page: Page) {
+		this.page = page
+		this.newPasswordInput = page.getByLabel("New Password")
+		this.confirmPasswordInput = page.getByLabel("Confirm Password")
+		this.submitButton = page.getByRole("button", { name: "Reset password" })
+		this.successHeading = page.getByRole("heading", { name: "Password reset successful" })
+		this.errorHeading = page.getByRole("heading", { name: /Invalid reset link|Link expired/ })
+		this.requestNewLinkButton = page.getByRole("link", { name: "Request new link" })
+		this.backToLoginLink = page.getByRole("link", { name: "Back to login" })
+	}
+
+	async goto(token?: string) {
+		const url = token ? `/reset-password?token=${encodeURIComponent(token)}` : "/reset-password"
+		await this.page.goto(url)
+	}
+
+	async fillPasswords(newPassword: string, confirmPassword: string) {
+		await this.newPasswordInput.fill(newPassword)
+		await this.confirmPasswordInput.fill(confirmPassword)
+	}
+
+	async submit() {
+		await this.submitButton.click()
+	}
+}
+
+// Mailpit helpers
+const MAILPIT_API = "http://localhost:8025/api/v1"
+
+export async function clearMailpit() {
+	try {
+		await fetch(`${MAILPIT_API}/messages`, { method: "DELETE" })
+	} catch {
+		// Mailpit might not be running
+	}
+}
+
+export async function getMailpitMessages() {
+	try {
+		const response = await fetch(`${MAILPIT_API}/messages`)
+		return (await response.json()) as {
+			messages: Array<{
+				ID: string
+				To: Array<{ Address: string }>
+				Subject: string
+			}>
+		}
+	} catch {
+		return { messages: [] }
+	}
+}
+
+export async function getMailpitMessage(id: string) {
+	const response = await fetch(`${MAILPIT_API}/message/${id}`)
+	return (await response.json()) as {
+		ID: string
+		To: Array<{ Address: string }>
+		Subject: string
+		Text: string
+		HTML: string
+	}
+}
+
+export async function waitForEmail(toEmail: string, subjectContains: string, timeout = 10000) {
+	const startTime = Date.now()
+	while (Date.now() - startTime < timeout) {
+		const { messages } = await getMailpitMessages()
+		const email = messages.find(
+			(m) =>
+				m.To.some((t) => t.Address === toEmail) &&
+				m.Subject.toLowerCase().includes(subjectContains.toLowerCase())
+		)
+		if (email) return email
+		await new Promise((r) => setTimeout(r, 500))
+	}
+	return null
+}
+
 // Extended test with fixtures
 interface AuthFixtures {
 	loginPage: LoginPage
 	registerPage: RegisterPage
 	forgotPasswordPage: ForgotPasswordPage
+	verifyEmailPage: VerifyEmailPage
+	resetPasswordPage: ResetPasswordPage
 }
 
 export const test = base.extend<AuthFixtures>({
@@ -206,6 +326,12 @@ export const test = base.extend<AuthFixtures>({
 	},
 	forgotPasswordPage: async ({ page }, use) => {
 		await use(new ForgotPasswordPage(page))
+	},
+	verifyEmailPage: async ({ page }, use) => {
+		await use(new VerifyEmailPage(page))
+	},
+	resetPasswordPage: async ({ page }, use) => {
+		await use(new ResetPasswordPage(page))
 	},
 })
 

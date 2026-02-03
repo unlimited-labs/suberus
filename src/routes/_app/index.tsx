@@ -1,12 +1,30 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, useSearch } from "@tanstack/react-router"
 import { IconDashboard } from "@tabler/icons-react"
+import { useEffect, useRef } from "react"
+import { toast } from "sonner"
+import { z } from "zod"
 import { PageHeader } from "@/components/layout/page-header"
 
+const searchSchema = z.object({
+	verified: z.enum(["true"]).optional(),
+})
+
 export const Route = createFileRoute("/_app/")({
+	validateSearch: searchSchema,
 	component: DashboardPage,
 })
 
 function DashboardPage() {
+	const { verified } = useSearch({ from: "/_app/" })
+	const toastShown = useRef(false)
+
+	useEffect(() => {
+		if (verified === "true" && !toastShown.current) {
+			toastShown.current = true
+			toast.success("Email verified successfully!")
+		}
+	}, [verified])
+
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconDashboard} title="Dashboard" />

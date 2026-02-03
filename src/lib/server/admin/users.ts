@@ -11,6 +11,7 @@ export interface AdminUser {
 	affiliation: string | null;
 	role: UserRole;
 	isActive: boolean;
+	emailVerified: boolean;
 	createdAt: Date;
 	lastLoginAt: Date | null;
 	fee: {
@@ -99,6 +100,7 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 		affiliation: u.affiliation?.name ?? null,
 		role: u.role,
 		isActive: u.isActive,
+		emailVerified: u.emailVerified,
 		createdAt: u.createdAt,
 		lastLoginAt: u.lastLoginAt,
 		fee: u.fee
@@ -138,6 +140,7 @@ export async function getUserById(id: string): Promise<AdminUser | null> {
 		affiliation: user.affiliation?.name ?? null,
 		role: user.role,
 		isActive: user.isActive,
+		emailVerified: user.emailVerified,
 		createdAt: user.createdAt,
 		lastLoginAt: user.lastLoginAt,
 		fee: user.fee
@@ -257,6 +260,17 @@ export async function markFeePaid(
 			type: data.feeType,
 			paidAt: now,
 		},
+	});
+
+	return { success: true };
+}
+
+export async function verifyUserEmail(
+	userId: string,
+): Promise<{ success: boolean }> {
+	await prisma.user.update({
+		where: { id: userId },
+		data: { emailVerified: true },
 	});
 
 	return { success: true };

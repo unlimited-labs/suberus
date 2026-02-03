@@ -2,13 +2,17 @@ import {
 	IconAlertCircle,
 	IconCheck,
 	IconMail,
+	IconMailCheck,
+	IconMailX,
 	IconMapPin,
+	IconRefresh,
 	IconSelector,
 	IconWorld,
 } from "@tabler/icons-react";
 import { useForm } from "@tanstack/react-form";
 import { countries } from "countries-list";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
 import { FieldError } from "@/components/forms/field-error";
 import { IconInput } from "@/components/forms/icon-input";
@@ -29,6 +33,7 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { useZodFormFieldOnChange } from "@/hooks/use-zod-form-field";
+import { sendVerificationEmail } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import type { ContactInfoFormData } from "@/lib/validations/profile";
 
@@ -41,6 +46,7 @@ interface ContactInfoSectionProps {
 	onSave: (data: ContactInfoFormData) => Promise<void>;
 	isLoading?: boolean;
 	currentEmail: string;
+	emailVerified: boolean;
 }
 
 const emailSchema = z
@@ -48,14 +54,48 @@ const emailSchema = z
 	.min(1, "Email is required")
 	.email("Invalid email address");
 
+const RESEND_COOLDOWN = 60;
+
 export function ContactInfoSection({
 	initialData,
 	onSave,
 	isLoading,
 	currentEmail,
+	emailVerified,
 }: ContactInfoSectionProps) {
 	const [isValidationAttempted, setIsValidationAttempted] = useState(false);
 	const [countryOpen, setCountryOpen] = useState(false);
+	const [cooldown, setCooldown] = useState(0);
+	const [isResending, setIsResending] = useState(false);
+
+	useEffect(() => {
+		if (cooldown <= 0) return;
+
+		const timer = setInterval(() => {
+			setCooldown((prev) => prev - 1);
+		}, 1000);
+
+		return () => clearInterval(timer);
+	}, [cooldown]);
+
+	const handleResend = async () => {
+		if (cooldown > 0 || isResending) return;
+
+		setIsResending(true);
+		try {
+			const result = await sendVerificationEmail({ email: currentEmail });
+			if (result.error) {
+				toast.error(result.error.message ?? "Failed to send email");
+			} else {
+				toast.success("Verification email sent");
+				setCooldown(RESEND_COOLDOWN);
+			}
+		} catch {
+			toast.error("Failed to send email");
+		} finally {
+			setIsResending(false);
+		}
+	};
 
 	const form = useForm({
 		defaultValues: initialData,
@@ -104,6 +144,39 @@ export function ContactInfoSection({
 							disabled={isLoading}
 						/>
 						<FieldError errors={field.state.meta.errors} />
+						{/* Email verification status */}
+						{!emailChanged && (
+							<div className="flex items-center gap-2 pt-1">
+								{emailVerified ? (
+									<>
+										<IconMailCheck className="size-4 text-green-600" />
+										<span className="text-sm text-green-600">Email verified</span>
+									</>
+								) : (
+									<>
+										<IconMailX className="size-4 text-yellow-600" />
+										<span className="text-sm text-yellow-600">
+											Email not verified
+										</span>
+										<button
+											type="button"
+											onClick={handleResend}
+											disabled={cooldown > 0 || isResending}
+											className="ml-2 inline-flex items-center gap-1 text-sm font-medium text-primary underline underline-offset-2 hover:no-underline disabled:opacity-50"
+										>
+											<IconRefresh
+												className={`size-3 ${isResending ? "animate-spin" : ""}`}
+											/>
+											{cooldown > 0
+												? `Resend in ${cooldown}s`
+												: isResending
+													? "Sending..."
+													: "Resend"}
+										</button>
+									</>
+								)}
+							</div>
+						)}
 					</div>
 				)}
 			</form.Field>

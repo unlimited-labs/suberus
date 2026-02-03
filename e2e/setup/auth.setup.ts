@@ -15,9 +15,15 @@ const REVIEWER_USER = {
 	password: "testpass123",
 }
 
+const UNVERIFIED_USER = {
+	email: "unverified@e2e.local",
+	password: "testpass123",
+}
+
 const adminAuthFile = "e2e/.auth/admin.json"
 const userAuthFile = "e2e/.auth/user.json"
 const reviewerAuthFile = "e2e/.auth/reviewer.json"
+const unverifiedAuthFile = "e2e/.auth/unverified.json"
 
 setup("authenticate as admin", async ({ page }) => {
 	await page.goto("/login")
@@ -62,4 +68,19 @@ setup("authenticate as reviewer", async ({ page }) => {
 
 	// Save signed-in state
 	await page.context().storageState({ path: reviewerAuthFile })
+})
+
+setup("authenticate as unverified user", async ({ page }) => {
+	await page.goto("/login")
+	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 60000 })
+	await page.getByLabel("E-mail").fill(UNVERIFIED_USER.email)
+	await page.getByLabel("Password").fill(UNVERIFIED_USER.password)
+	await page.getByRole("button", { name: "Sign in" }).click()
+	await page.waitForURL("/", { timeout: 30000 })
+
+	// Verify we're logged in (unverified users can still access dashboard)
+	await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible({ timeout: 10000 })
+
+	// Save signed-in state
+	await page.context().storageState({ path: unverifiedAuthFile })
 })

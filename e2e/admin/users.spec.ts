@@ -1,4 +1,4 @@
-import { test, expect, ADMIN_USER, TEST_USER } from "./fixtures"
+import { test, expect, ADMIN_USER, TEST_USER, UNVERIFIED_USER, ADMIN_VERIFY_TEST_USER } from "./fixtures"
 
 // Desktop tests - skip on mobile since mobile shows cards instead of table
 // Note: Authentication is handled via storageState in playwright.config.ts
@@ -22,7 +22,7 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			const adminRow = adminUsersPage.getRowByEmail(ADMIN_USER.email)
+			const adminRow = await adminUsersPage.getRowByEmail(ADMIN_USER)
 			await expect(adminRow).toBeVisible()
 		})
 
@@ -30,9 +30,9 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			await adminUsersPage.search("admin")
+			await adminUsersPage.search("Admin")
 
-			const adminRow = adminUsersPage.getRowByEmail(ADMIN_USER.email)
+			const adminRow = await adminUsersPage.getRowByEmail(ADMIN_USER)
 			await expect(adminRow).toBeVisible()
 		})
 
@@ -40,7 +40,7 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			await adminUsersPage.selectUser(TEST_USER.email)
+			await adminUsersPage.selectUser(TEST_USER)
 			await expect(adminUsersPage.getSelectedCount()).toBeVisible()
 		})
 
@@ -58,7 +58,7 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			await adminUsersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER)
 
 			await expect(userDetailPage.backButton).toBeVisible()
 			await expect(userDetailPage.getUserEmail()).toContainText(TEST_USER.email)
@@ -68,7 +68,7 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			await adminUsersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER)
 
 			await expect(userDetailPage.changeRoleButton).toBeVisible()
 		})
@@ -77,7 +77,7 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			await adminUsersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER)
 
 			// Wait for page to load - one of these buttons should appear
 			await expect(
@@ -89,7 +89,7 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			await adminUsersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER)
 
 			await userDetailPage.backButton.click()
 
@@ -100,7 +100,7 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			await adminUsersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER)
 
 			// Wait for page to load - one of these should appear
 			await expect(
@@ -114,7 +114,7 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			await adminUsersPage.selectUser(TEST_USER.email)
+			await adminUsersPage.selectUser(TEST_USER)
 			await expect(adminUsersPage.page.getByText("Bulk actions")).toBeVisible()
 		})
 
@@ -122,7 +122,7 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			await adminUsersPage.selectUser(TEST_USER.email)
+			await adminUsersPage.selectUser(TEST_USER)
 			await adminUsersPage.selectBulkAction("Mark fee paid")
 			await adminUsersPage.clickApply()
 
@@ -134,7 +134,7 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			await adminUsersPage.selectUser(TEST_USER.email)
+			await adminUsersPage.selectUser(TEST_USER)
 			await adminUsersPage.selectBulkAction("Change role")
 			await adminUsersPage.clickApply()
 
@@ -148,7 +148,7 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			await adminUsersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER)
 
 			await userDetailPage.changeRoleButton.click()
 
@@ -160,7 +160,7 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			await adminUsersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER)
 
 			await userDetailPage.changeRoleButton.click()
 			await userDetailPage.cancelDialog()
@@ -174,7 +174,7 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			await adminUsersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER)
 
 			const unpaidVisible = await userDetailPage.feeStatusUnpaid.isVisible()
 			if (unpaidVisible) {
@@ -186,7 +186,7 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			await adminUsersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER)
 
 			const unpaidVisible = await userDetailPage.feeStatusUnpaid.isVisible()
 			if (unpaidVisible) {
@@ -202,21 +202,73 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			await adminUsersPage.openUserDetail(TEST_USER.email)
+			await adminUsersPage.openUserDetail(TEST_USER)
 
 			const deactivateVisible = await userDetailPage.deactivateButton.isVisible()
 			if (deactivateVisible) {
+				// Toggle: Active -> Inactive
 				await userDetailPage.deactivateButton.click()
-				// Wait for action to complete - button should toggle
 				await expect(userDetailPage.activateButton).toBeVisible({ timeout: 5000 })
-			} else {
+
+				// Cleanup: Restore original state (Inactive -> Active)
 				await userDetailPage.activateButton.click()
-				// Wait for action to complete - button should toggle
 				await expect(userDetailPage.deactivateButton).toBeVisible({ timeout: 5000 })
+			} else {
+				// Toggle: Inactive -> Active
+				await userDetailPage.activateButton.click()
+				await expect(userDetailPage.deactivateButton).toBeVisible({ timeout: 5000 })
+
+				// Cleanup: Restore original state (Active -> Inactive)
+				await userDetailPage.deactivateButton.click()
+				await expect(userDetailPage.activateButton).toBeVisible({ timeout: 5000 })
 			}
 
 			const errorToast = adminUsersPage.page.locator("[data-sonner-toast][data-type='error']")
 			await expect(errorToast).not.toBeVisible({ timeout: 1000 })
+		})
+	})
+
+	test.describe("Email Verification", () => {
+		test("shows verified status for verified user", async ({ adminUsersPage, userDetailPage }) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+
+			await adminUsersPage.openUserDetail(TEST_USER)
+
+			await expect(userDetailPage.emailVerified).toBeVisible()
+			// Verify button should not be visible for verified user
+			await expect(userDetailPage.verifyEmailButton).not.toBeVisible()
+		})
+
+		test("shows not verified status for unverified user", async ({
+			adminUsersPage,
+			userDetailPage,
+		}) => {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+
+			await adminUsersPage.openUserDetail(UNVERIFIED_USER)
+
+			await expect(userDetailPage.emailNotVerified).toBeVisible()
+			await expect(userDetailPage.verifyEmailButton).toBeVisible()
+		})
+
+		test("can manually verify user email", async ({ adminUsersPage, userDetailPage }) => {
+			// Use dedicated test user for destructive test (will be verified and stay verified)
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+
+			await adminUsersPage.openUserDetail(ADMIN_VERIFY_TEST_USER)
+
+			// Should show not verified
+			await expect(userDetailPage.emailNotVerified).toBeVisible()
+
+			// Click verify button
+			await userDetailPage.verifyEmailButton.click()
+
+			// Wait for action to complete - should now show verified
+			await expect(userDetailPage.emailVerified).toBeVisible({ timeout: 5000 })
+			await expect(userDetailPage.verifyEmailButton).not.toBeVisible()
 		})
 	})
 })

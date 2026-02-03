@@ -9,6 +9,7 @@ import {
 	getUsers,
 	markFeePaid,
 	toggleUserActive,
+	verifyUserEmail,
 	type UsersFilters,
 } from "@/lib/server/admin/users";
 
@@ -30,6 +31,7 @@ export interface PatchUserData {
 	isActive?: boolean;
 	markFeePaid?: boolean;
 	feeType?: FeeType;
+	verifyEmail?: boolean;
 }
 
 export async function patchUser(
@@ -51,6 +53,11 @@ export async function patchUser(
 	// Mark fee paid
 	if (data.markFeePaid && data.feeType) {
 		await markFeePaid({ userId: data.id, feeType: data.feeType });
+	}
+
+	// Verify email
+	if (data.verifyEmail) {
+		await verifyUserEmail(data.id);
 	}
 
 	return getUserById(data.id);

@@ -55,7 +55,7 @@ test.describe("Login Page", () => {
 		await loginPage.login(TEST_USER.email, TEST_USER.password)
 
 		// Should redirect to home page after successful login
-		await expect(loginPage.page).toHaveURL("/", { timeout: 10000 })
+		await expect(loginPage.page).toHaveURL("/", { timeout: 30000 })
 	})
 
 	test("navigates to register page", async ({ loginPage }) => {

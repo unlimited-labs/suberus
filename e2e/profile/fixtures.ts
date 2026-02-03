@@ -26,6 +26,10 @@ export class SettingsPage {
 	readonly addressInput: Locator
 	readonly countryButton: Locator
 	readonly saveContactBtn: Locator
+	// Email verification status
+	readonly emailVerifiedBadge: Locator
+	readonly emailNotVerifiedBadge: Locator
+	readonly emailResendButton: Locator
 	// Password
 	readonly currentPasswordInput: Locator
 	readonly newPasswordInput: Locator
@@ -58,6 +62,11 @@ export class SettingsPage {
 			.locator("section")
 			.filter({ has: page.getByRole("heading", { name: "Contact & Invoice Information" }) })
 			.getByRole("button", { name: "Save changes" })
+
+		// Email verification status (in contact section)
+		this.emailVerifiedBadge = contactSection.getByText("Email verified")
+		this.emailNotVerifiedBadge = contactSection.getByText("Email not verified")
+		this.emailResendButton = contactSection.locator("button", { hasText: /resend/i })
 
 		// Password section - use id selectors to avoid ambiguity with similar labels
 		this.currentPasswordInput = page.locator("#currentPassword")

@@ -5,6 +5,8 @@ import {
 	IconClock,
 	IconId,
 	IconMail,
+	IconMailCheck,
+	IconMailX,
 	IconUserCheck,
 	IconUserCog,
 	IconUserX,
@@ -74,6 +76,7 @@ interface PatchPayload {
 	isActive?: boolean;
 	markFeePaid?: boolean;
 	feeType?: FeeType;
+	verifyEmail?: boolean;
 }
 
 export function UserDetailCard({ user }: UserDetailCardProps) {
@@ -107,6 +110,10 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 
 	const handleToggleActive = () => {
 		mutation.mutate({ isActive: !user.isActive });
+	};
+
+	const handleVerifyEmail = () => {
+		mutation.mutate({ verifyEmail: true });
 	};
 
 	return (
@@ -201,6 +208,28 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 							<div className="flex items-center gap-2">
 								<IconClock className="size-4 text-muted-foreground" />
 								<span>Last login: {formatDate(user.lastLoginAt)}</span>
+							</div>
+							<div className="flex items-center gap-2">
+								{user.emailVerified ? (
+									<>
+										<IconMailCheck className="size-4 text-green-600" />
+										<span className="text-green-600">Email verified</span>
+									</>
+								) : (
+									<>
+										<IconMailX className="size-4 text-yellow-600" />
+										<span className="text-yellow-600">Email not verified</span>
+										<Button
+											variant="outline"
+											size="sm"
+											className="ml-2 h-7"
+											onClick={handleVerifyEmail}
+											disabled={mutation.isPending}
+										>
+											Verify
+										</Button>
+									</>
+								)}
 							</div>
 						</div>
 					</div>

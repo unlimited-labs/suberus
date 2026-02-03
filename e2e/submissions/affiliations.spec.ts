@@ -17,12 +17,12 @@ test.describe("Affiliations", () => {
 
 		// Wait for autocomplete dropdown
 		await expect(
-			submissionPage.page.getByRole("option", { name: "Test University" }),
+			submissionPage.page.getByRole("option", { name: "Test University", exact: true }),
 		).toBeVisible({ timeout: 5000 });
 
 		// Select from dropdown
 		await submissionPage.page
-			.getByRole("option", { name: "Test University" })
+			.getByRole("option", { name: "Test University", exact: true })
 			.click();
 
 		// Verify selection

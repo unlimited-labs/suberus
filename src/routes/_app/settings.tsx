@@ -109,6 +109,7 @@ function SettingsPage() {
 							}}
 							onSave={handleContactInfoSave}
 							currentEmail={user.email}
+							emailVerified={user.emailVerified}
 						/>
 					</SettingsSection>
 

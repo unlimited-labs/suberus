@@ -1,11 +1,16 @@
-import { IconFileText } from "@tabler/icons-react";
+import { IconFileText, IconMailX, IconRefresh } from "@tabler/icons-react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import {
 	SubmissionForm,
 	type SubmissionFormData,
 } from "@/components/forms/submission/submission-form";
 import { PageHeader } from "@/components/layout/page-header";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { useSession } from "@/hooks/use-session";
+import { sendVerificationEmail } from "@/lib/auth-client";
 import {
 	getActiveSubmissionTypesFn,
 	getSubmissionValidationForFormFn,
@@ -26,9 +31,43 @@ export const Route = createFileRoute("/_app/submissions/new")({
 	component: NewSubmissionPage,
 });
 
+const RESEND_COOLDOWN = 60;
+
 function NewSubmissionPage() {
 	const { typeConfigs, validationSettings } = Route.useLoaderData();
 	const navigate = useNavigate();
+	const { user } = useSession();
+	const [cooldown, setCooldown] = useState(0);
+	const [isResending, setIsResending] = useState(false);
+
+	useEffect(() => {
+		if (cooldown <= 0) return;
+
+		const timer = setInterval(() => {
+			setCooldown((prev) => prev - 1);
+		}, 1000);
+
+		return () => clearInterval(timer);
+	}, [cooldown]);
+
+	const handleResend = async () => {
+		if (!user || cooldown > 0 || isResending) return;
+
+		setIsResending(true);
+		try {
+			const result = await sendVerificationEmail({ email: user.email });
+			if (result.error) {
+				toast.error(result.error.message ?? "Failed to send email");
+			} else {
+				toast.success("Verification email sent");
+				setCooldown(RESEND_COOLDOWN);
+			}
+		} catch {
+			toast.error("Failed to send email");
+		} finally {
+			setIsResending(false);
+		}
+	};
 
 	const handleSubmit = async (data: SubmissionFormData) => {
 		// Create submission first
@@ -90,10 +129,47 @@ function NewSubmissionPage() {
 		navigate({ to: "/submissions/$id", params: { id: result.id } });
 	};
 
+	if (user && !user.emailVerified) {
+		return (
+			<div className="flex h-full flex-col">
+				<PageHeader icon={IconFileText} title="New Submission" />
+				<div className="flex flex-1 items-center justify-center p-6">
+					<Alert className="max-w-md border-yellow-500 bg-yellow-500/10">
+						<IconMailX className="size-5 text-yellow-600" />
+						<AlertTitle className="text-yellow-700 dark:text-yellow-400">
+							Email verification required
+						</AlertTitle>
+						<AlertDescription className="text-yellow-700/80 dark:text-yellow-400/80">
+							<p className="mb-4">
+								You need to verify your email address before creating
+								submissions.
+							</p>
+							<Button
+								variant="outline"
+								onClick={handleResend}
+								disabled={cooldown > 0 || isResending}
+								className="gap-2 border-yellow-500 text-yellow-700 hover:bg-yellow-500/20"
+							>
+								<IconRefresh
+									className={`size-4 ${isResending ? "animate-spin" : ""}`}
+								/>
+								{cooldown > 0
+									? `Resend in ${cooldown}s`
+									: isResending
+										? "Sending..."
+										: "Resend verification email"}
+							</Button>
+						</AlertDescription>
+					</Alert>
+				</div>
+			</div>
+		);
+	}
+
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconFileText} title="New Submission" />
-			<div className="flex-1 p-6 overflow-auto">
+			<div className="flex-1 overflow-auto p-6">
 				<SubmissionForm
 					onSubmit={handleSubmit}
 					typeConfigs={typeConfigs}

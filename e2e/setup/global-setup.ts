@@ -34,6 +34,33 @@ const REVIEWER_USER = {
 	affiliationName: "Reviewer University",
 };
 
+// Unverified user for email verification tests
+const UNVERIFIED_USER = {
+	email: "unverified@e2e.local",
+	password: "testpass123",
+	firstName: "Unverified",
+	lastName: "User",
+	affiliationName: "Unverified University",
+};
+
+// Separate unverified user for admin panel tests (destructive test - gets verified)
+const ADMIN_VERIFY_TEST_USER = {
+	email: "admin-verify-test@e2e.local",
+	password: "testpass123",
+	firstName: "AdminVerify",
+	lastName: "Test",
+	affiliationName: "AdminVerify University",
+};
+
+// Separate user for password reset tests (destructive test - password gets changed)
+const RESET_PASSWORD_USER = {
+	email: "reset-test@e2e.local",
+	password: "testpass123",
+	firstName: "Reset",
+	lastName: "Test",
+	affiliationName: "Password Reset Institute",
+};
+
 // Submission type configs with scoring and double-blind enabled for ORAL_PRESENTATION
 const SUBMISSION_TYPE_CONFIGS = {
 	ORAL_PRESENTATION: {
@@ -129,6 +156,24 @@ async function globalSetup() {
 			create: { name: REVIEWER_USER.affiliationName },
 		});
 
+		const unverifiedAffiliation = await prisma.affiliation.upsert({
+			where: { name: UNVERIFIED_USER.affiliationName },
+			update: {},
+			create: { name: UNVERIFIED_USER.affiliationName },
+		});
+
+		const adminVerifyTestAffiliation = await prisma.affiliation.upsert({
+			where: { name: ADMIN_VERIFY_TEST_USER.affiliationName },
+			update: {},
+			create: { name: ADMIN_VERIFY_TEST_USER.affiliationName },
+		});
+
+		const resetPasswordAffiliation = await prisma.affiliation.upsert({
+			where: { name: RESET_PASSWORD_USER.affiliationName },
+			update: {},
+			create: { name: RESET_PASSWORD_USER.affiliationName },
+		});
+
 		// Create test user
 		const testResult = await auth.api.signUpEmail({
 			body: {
@@ -195,11 +240,79 @@ async function globalSetup() {
 
 		console.log(`✅ Reviewer user created: ${REVIEWER_USER.email}`);
 
+		// Create unverified user (for email verification tests)
+		const unverifiedResult = await auth.api.signUpEmail({
+			body: {
+				email: UNVERIFIED_USER.email,
+				password: UNVERIFIED_USER.password,
+				name: UNVERIFIED_USER.lastName,
+				firstName: UNVERIFIED_USER.firstName,
+				affiliationId: unverifiedAffiliation.id,
+			},
+		});
+
+		if (!unverifiedResult?.user) {
+			throw new Error("Failed to create unverified user");
+		}
+
+		// Keep emailVerified: false (default) but mark as active
+		await prisma.user.update({
+			where: { id: unverifiedResult.user.id },
+			data: { isActive: true },
+		});
+
+		console.log(`✅ Unverified user created: ${UNVERIFIED_USER.email}`);
+
+		// Create admin verify test user (for destructive admin panel tests)
+		const adminVerifyTestResult = await auth.api.signUpEmail({
+			body: {
+				email: ADMIN_VERIFY_TEST_USER.email,
+				password: ADMIN_VERIFY_TEST_USER.password,
+				name: ADMIN_VERIFY_TEST_USER.lastName,
+				firstName: ADMIN_VERIFY_TEST_USER.firstName,
+				affiliationId: adminVerifyTestAffiliation.id,
+			},
+		});
+
+		if (!adminVerifyTestResult?.user) {
+			throw new Error("Failed to create admin verify test user");
+		}
+
+		// Keep emailVerified: false (default) but mark as active
+		await prisma.user.update({
+			where: { id: adminVerifyTestResult.user.id },
+			data: { isActive: true },
+		});
+
+		console.log(`✅ Admin verify test user created: ${ADMIN_VERIFY_TEST_USER.email}`);
+
+		// Create reset password test user (for destructive password reset tests)
+		const resetPasswordResult = await auth.api.signUpEmail({
+			body: {
+				email: RESET_PASSWORD_USER.email,
+				password: RESET_PASSWORD_USER.password,
+				name: RESET_PASSWORD_USER.lastName,
+				firstName: RESET_PASSWORD_USER.firstName,
+				affiliationId: resetPasswordAffiliation.id,
+			},
+		});
+
+		if (!resetPasswordResult?.user) {
+			throw new Error("Failed to create reset password test user");
+		}
+
+		await prisma.user.update({
+			where: { id: resetPasswordResult.user.id },
+			data: { emailVerified: true, isActive: true },
+		});
+
+		console.log(`✅ Reset password test user created: ${RESET_PASSWORD_USER.email}`);
+
 		// ============================================================
 		// SEED APP SETTINGS
 		// ============================================================
 
-		// Email template
+		// Email templates
 		await prisma.emailTemplate.upsert({
 			where: { eventType: "SUBMISSION_RECEIVED" },
 			update: {},
@@ -216,7 +329,39 @@ async function globalSetup() {
 			},
 		});
 
-		console.log("✅ Email template seeded");
+		await prisma.emailTemplate.upsert({
+			where: { eventType: "EMAIL_VERIFICATION" },
+			update: {},
+			create: {
+				eventType: "EMAIL_VERIFICATION",
+				subject: "Verify your email - {{conferenceName}}",
+				body: "Hello {{firstName}},\n\nPlease click the link below to verify your email address:\n\n{{verificationUrl}}\n\nThis link expires in 24 hours.\n\nBest regards,\n{{conferenceName}}",
+				isEnabled: true,
+				isHtml: false,
+				ccEmails: [],
+				bccEmails: [],
+				availablePlaceholders: ["firstName", "verificationUrl", "conferenceName"],
+				description: "Sent when a new user registers to verify their email",
+			},
+		});
+
+		await prisma.emailTemplate.upsert({
+			where: { eventType: "PASSWORD_RESET" },
+			update: {},
+			create: {
+				eventType: "PASSWORD_RESET",
+				subject: "Reset your password - {{conferenceName}}",
+				body: "Hello {{firstName}},\n\nClick the link below to reset your password:\n\n{{resetUrl}}\n\nThis link expires in 1 hour.\n\nBest regards,\n{{conferenceName}}",
+				isEnabled: true,
+				isHtml: false,
+				ccEmails: [],
+				bccEmails: [],
+				availablePlaceholders: ["firstName", "resetUrl", "conferenceName"],
+				description: "Sent when a user requests a password reset",
+			},
+		});
+
+		console.log("✅ Email templates seeded");
 
 		// Submission type configs
 		await prisma.appSetting.upsert({
