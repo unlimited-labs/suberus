@@ -387,34 +387,34 @@ export function SubmissionForm({
 									)}
 
 									{/* Show file dropzone ONLY for FILE format */}
-								{isFileFormat && (
-									<form.Field name="file">
-										{(field) => (
-											<div className="space-y-2">
-												<Label className="text-foreground">
-													Document{" "}
-													<span className="text-destructive text-xs font-normal">
-														*
-													</span>
-												</Label>
-												<FileDropzone
-													value={field.state.value}
-													onChange={field.handleChange}
-													accept={acceptString}
-													maxSize={validationSettings.maxFileSize}
-												/>
-												{!field.state.value && (
-													<p className="text-xs text-muted-foreground">
-														Accepted formats:{" "}
-														{allowedExtensions
-															.map((e) => e.toUpperCase())
-															.join(", ")}
-													</p>
-												)}
-											</div>
-										)}
-									</form.Field>
-								)}
+									{isFileFormat && (
+										<form.Field name="file">
+											{(field) => (
+												<div className="space-y-2">
+													<Label className="text-foreground">
+														Document{" "}
+														<span className="text-destructive text-xs font-normal">
+															*
+														</span>
+													</Label>
+													<FileDropzone
+														value={field.state.value}
+														onChange={field.handleChange}
+														accept={acceptString}
+														maxSize={validationSettings.maxFileSize}
+													/>
+													{!field.state.value && (
+														<p className="text-xs text-muted-foreground">
+															Accepted formats:{" "}
+															{allowedExtensions
+																.map((e) => e.toUpperCase())
+																.join(", ")}
+														</p>
+													)}
+												</div>
+											)}
+										</form.Field>
+									)}
 								</div>
 							</div>
 
