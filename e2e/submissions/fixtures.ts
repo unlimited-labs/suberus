@@ -32,7 +32,7 @@ export function createUniqueSubmission(suffix?: string) {
 	const id = suffix ?? Date.now().toString()
 	return {
 		type: "ABSTRACT" as const,
-		title: `Test Submission ${id}`,
+		title: `${id}_Test Submission`,
 		content: `This is a comprehensive test abstract content for submission ${id}. The purpose of this submission is to validate that our submission form and API endpoints are working correctly. We are testing various aspects of the system including form validation, data persistence, and user interface interactions. This abstract discusses the methodology, results, and conclusions of our testing approach. The testing framework ensures that all components are functioning as expected and that the user experience is smooth and intuitive. Additional context is provided here to meet the minimum character requirements for the abstract field.`,
 		authors: [
 			{
@@ -141,10 +141,7 @@ export class SubmissionPage {
 		await emailInput.fill(author.email)
 
 		// Fill affiliation using the placeholder in the same author card
-		const authorCard = this.page
-			.locator(".rounded-lg.border")
-			.filter({ has: this.page.locator(`#author-${index}-firstName`) })
-		const affiliationInput = authorCard.getByPlaceholder("Type affiliation...")
+		const affiliationInput = this.getAuthorCard(index).getByPlaceholder("Type affiliation...")
 		await affiliationInput.fill(author.affiliationName)
 		await affiliationInput.blur()
 		// Wait for network to settle (API call completes)
@@ -174,7 +171,14 @@ export class SubmissionPage {
 	}
 
 	async submit() {
+		// Ensure button is visible and clickable
+		await baseExpect(this.submitButton).toBeVisible({ timeout: 5000 })
+		await baseExpect(this.submitButton).toBeEnabled({ timeout: 5000 })
 		await this.submitButton.click()
+		// Wait for form submission to complete (button text changes to "Submitting...")
+		await baseExpect(this.submitButton).toHaveText(/Submitting/i, { timeout: 5000 }).catch(() => {
+			// Button may have already navigated away, that's fine
+		})
 	}
 
 	async fillCompleteForm(data: typeof VALID_SUBMISSION) {

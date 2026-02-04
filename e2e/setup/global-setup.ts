@@ -205,7 +205,7 @@ async function globalSetup() {
 
 		await prisma.user.update({
 			where: { id: testResult.user.id },
-			data: { emailVerified: true, isActive: true },
+			data: { emailVerified: true, isActive: true, affiliationId: testAffiliation.id },
 		});
 
 		console.log(`✅ Test user created: ${TEST_USER.email}`);
@@ -227,7 +227,7 @@ async function globalSetup() {
 
 		await prisma.user.update({
 			where: { id: adminResult.user.id },
-			data: { emailVerified: true, isActive: true, role: "ADMIN" },
+			data: { emailVerified: true, isActive: true, role: "ADMIN", affiliationId: adminAffiliation.id },
 		});
 
 		console.log(`✅ Admin user created: ${ADMIN_USER.email}`);
@@ -249,7 +249,7 @@ async function globalSetup() {
 
 		await prisma.user.update({
 			where: { id: reviewerResult.user.id },
-			data: { emailVerified: true, isActive: true, role: "REVIEWER" },
+			data: { emailVerified: true, isActive: true, role: "REVIEWER", affiliationId: reviewerAffiliation.id },
 		});
 
 		console.log(`✅ Reviewer user created: ${REVIEWER_USER.email}`);
@@ -271,7 +271,7 @@ async function globalSetup() {
 
 		await prisma.user.update({
 			where: { id: editorResult.user.id },
-			data: { emailVerified: true, isActive: true, role: "EDITOR" },
+			data: { emailVerified: true, isActive: true, role: "EDITOR", affiliationId: editorAffiliation.id },
 		});
 
 		console.log(`✅ Editor user created: ${EDITOR_USER.email}`);
@@ -294,7 +294,7 @@ async function globalSetup() {
 		// Keep emailVerified: false (default) but mark as active
 		await prisma.user.update({
 			where: { id: unverifiedResult.user.id },
-			data: { isActive: true },
+			data: { isActive: true, affiliationId: unverifiedAffiliation.id },
 		});
 
 		console.log(`✅ Unverified user created: ${UNVERIFIED_USER.email}`);
@@ -317,7 +317,7 @@ async function globalSetup() {
 		// Keep emailVerified: false (default) but mark as active
 		await prisma.user.update({
 			where: { id: adminVerifyTestResult.user.id },
-			data: { isActive: true },
+			data: { isActive: true, affiliationId: adminVerifyTestAffiliation.id },
 		});
 
 		console.log(`✅ Admin verify test user created: ${ADMIN_VERIFY_TEST_USER.email}`);
@@ -339,7 +339,7 @@ async function globalSetup() {
 
 		await prisma.user.update({
 			where: { id: resetPasswordResult.user.id },
-			data: { emailVerified: true, isActive: true },
+			data: { emailVerified: true, isActive: true, affiliationId: resetPasswordAffiliation.id },
 		});
 
 		console.log(`✅ Reset password test user created: ${RESET_PASSWORD_USER.email}`);

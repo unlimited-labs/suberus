@@ -1,4 +1,5 @@
-import { test as base, type Page, type Locator, expect } from "@playwright/test"
+import { type Page, type Locator } from "@playwright/test"
+import { test as base, expect, type TestRunContext } from "../helpers/base-fixtures"
 
 // Test data
 export const TEST_USER = {
@@ -310,6 +311,7 @@ export async function waitForEmail(toEmail: string, subjectContains: string, tim
 
 // Extended test with fixtures
 interface AuthFixtures {
+	testRun: TestRunContext
 	loginPage: LoginPage
 	registerPage: RegisterPage
 	forgotPasswordPage: ForgotPasswordPage
@@ -335,4 +337,4 @@ export const test = base.extend<AuthFixtures>({
 	},
 })
 
-export { expect } from "@playwright/test"
+export { expect }

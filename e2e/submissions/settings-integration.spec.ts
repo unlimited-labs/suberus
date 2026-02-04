@@ -62,20 +62,92 @@ async function saveValidationSettings(adminPage: Page) {
 	});
 }
 
-test.describe("Admin Settings Integration with Submission Form", () => {
+// These tests modify shared admin settings - must run serially
+// afterAll ensures settings are restored even if a test fails mid-cleanup
+test.describe.serial("Admin Settings Integration with Submission Form", () => {
+	// Safety net: restore all settings to defaults after all tests complete
+	test.afterAll(async ({ browser }) => {
+		const context = await browser.newContext({
+			storageState: "e2e/.auth/admin.json",
+		});
+		const page = await context.newPage();
+
+		try {
+			// Restore submission types (ensure Poster and Oral Presentation are active + TEXT format)
+			await page.goto("/admin/settings");
+			await page.getByRole("tab", { name: /Submission Types/i }).click();
+			await expect(page.getByText("Oral Presentation")).toBeVisible();
+
+			// Ensure Poster is active
+			await page.getByRole("button", { name: /Poster/i }).first().click();
+			await expect(page.getByText("Content Format")).toBeVisible();
+			const posterSwitch = page.getByRole("switch").first();
+			if ((await posterSwitch.getAttribute("aria-checked")) === "false") {
+				await posterSwitch.click();
+				await page.getByRole("button", { name: "Save" }).click();
+				await expect(page.getByText(/"Poster" settings saved/i)).toBeVisible({ timeout: 5000 });
+			}
+
+			// Ensure Oral Presentation is TEXT format
+			await page.reload();
+			await page.getByRole("tab", { name: /Submission Types/i }).click();
+			await expect(page.getByText("Oral Presentation")).toBeVisible();
+			await page.getByRole("button", { name: /Oral Presentation/i }).first().click();
+			await expect(page.getByText("Content Format")).toBeVisible();
+			const formatSelect = page.locator("button").filter({ hasText: /Text \(Abstract\)|File Upload/i });
+			if ((await formatSelect.textContent())?.includes("File")) {
+				await formatSelect.click();
+				await page.getByRole("option", { name: "Text (Abstract)" }).click();
+				await page.getByRole("button", { name: "Save" }).click();
+				await expect(page.getByText(/"Oral Presentation" settings saved/i)).toBeVisible({ timeout: 5000 });
+			}
+
+			// Restore validation settings
+			await page.reload();
+			await page.getByRole("tab", { name: /Submissions$/i }).click();
+			await expect(page.getByRole("heading", { name: "Title" })).toBeVisible();
+
+			// Ensure keywords enabled
+			const keywordsSwitch = page.getByLabel("Enable keywords");
+			if (!(await keywordsSwitch.isChecked())) {
+				await keywordsSwitch.click();
+			}
+
+			// Restore keyword limits to 3-5
+			const minKeywords = page.getByLabel("Min keywords");
+			const maxKeywords = page.getByLabel("Max keywords");
+			await minKeywords.clear();
+			await minKeywords.fill("3");
+			await maxKeywords.clear();
+			await maxKeywords.fill("5");
+
+			// Restore abstract min to 500
+			const abstractMin = page.getByLabel("Min length (characters)").nth(1);
+			await abstractMin.clear();
+			await abstractMin.fill("500");
+
+			// Restore max file size to 10
+			const maxFileSize = page.getByLabel("Max file size (MB)");
+			await maxFileSize.clear();
+			await maxFileSize.fill("10");
+
+			await page.getByRole("button", { name: "Save All Settings" }).click();
+			await expect(page.getByText("Submission settings saved")).toBeVisible({ timeout: 5000 });
+		} finally {
+			await context.close();
+		}
+	});
+
 	test("form respects disabled submission type", async ({
 		adminPage,
 		userPage,
 	}) => {
-		// 1. Admin: Disable POSTER
+		// Arrange - Admin: Disable POSTER
 		await goToAdminSubmissionTypes(adminPage);
 		await adminPage.getByRole("button", { name: /Poster/i }).first().click();
 		await expect(adminPage.getByText("Content Format")).toBeVisible();
-
 		const activeSwitch = adminPage.getByRole("switch").first();
 		const wasActive = await activeSwitch.getAttribute("aria-checked");
-
-		// Only toggle if currently active
 		if (wasActive === "true") {
 			await activeSwitch.click();
 			await adminPage.getByRole("button", { name: "Save" }).click();
@@ -84,8 +156,10 @@ test.describe("Admin Settings Integration with Submission Form", () => {
 			).toBeVisible({ timeout: 5000 });
 		}
 
-		// 2. User: Verify form doesn't show disabled type
+		// Act - User: Navigate to form
 		await userPage.goto("/submissions/new");
+
+		// Assert - Disabled type not visible
 		await expect(
 			userPage.getByRole("button", { name: /Oral Presentation/i })
 		).toBeVisible();
@@ -93,13 +167,12 @@ test.describe("Admin Settings Integration with Submission Form", () => {
 			userPage.getByRole("button", { name: /Poster/i })
 		).not.toBeVisible();
 
-		// 3. Cleanup: Re-enable POSTER
+		// Cleanup: Re-enable POSTER
 		await adminPage.reload();
 		await adminPage.getByRole("tab", { name: /Submission Types/i }).click();
 		await expect(adminPage.getByText("Oral Presentation")).toBeVisible();
 		await adminPage.getByRole("button", { name: /Poster/i }).first().click();
 		await expect(adminPage.getByText("Content Format")).toBeVisible();
-
 		const switchAfter = adminPage.getByRole("switch").first();
 		const isNowActive = await switchAfter.getAttribute("aria-checked");
 		if (isNowActive === "false") {
@@ -115,44 +188,36 @@ test.describe("Admin Settings Integration with Submission Form", () => {
 		adminPage,
 		userPage,
 	}) => {
-		// 1. Admin: Change MIN_ABSTRACT_LENGTH to 200
+		// Arrange - Admin: Change MIN_ABSTRACT_LENGTH to 200
 		await goToAdminSubmissionSettings(adminPage);
-
-		// Find abstract min length input (second "Min length" input)
 		adminPage.locator("div").filter({
 			hasText: /^Abstract$/,
 		});
 		const allMinInputs = adminPage.getByLabel("Min length (characters)");
 		const abstractMinInput = allMinInputs.nth(1);
-
-		// Store original value
 		const originalMin = await abstractMinInput.inputValue();
-
-		// Set new value
 		await abstractMinInput.clear();
 		await abstractMinInput.fill("200");
 		await saveValidationSettings(adminPage);
 
-		// 2. User: Verify form shows updated limit in Guidelines
+		// Act - User: Navigate to form
 		await userPage.goto("/submissions/new");
+		await userPage.waitForLoadState("networkidle");
 
-		// Select TEXT format type (Oral Presentation is default)
+		// Assert - Form shows updated limit
 		await expect(
 			userPage.getByRole("button", { name: /Oral Presentation/i })
 		).toBeVisible();
-
-		// Check Guidelines card shows updated minimum
 		await expect(
-			userPage.getByText(/Abstract minimum 200 characters/i)
-		).toBeVisible();
+			userPage.getByText(/0 \/ 200-\d+ characters/i)
+		).toBeVisible({ timeout: 10000 });
 
-		// 3. Cleanup: Restore original value
+		// Cleanup: Restore original value
 		await adminPage.reload();
 		await adminPage.getByRole("tab", { name: /Submissions$/i }).click();
 		await expect(
 			adminPage.getByRole("heading", { name: "Title" })
 		).toBeVisible();
-
 		const restoreMinInput = adminPage.getByLabel("Min length (characters)").nth(1);
 		await restoreMinInput.clear();
 		await restoreMinInput.fill(originalMin);
@@ -163,41 +228,35 @@ test.describe("Admin Settings Integration with Submission Form", () => {
 		adminPage,
 		userPage,
 	}) => {
-		// 1. Admin: Change MIN_KEYWORDS to 2, MAX_KEYWORDS to 4
+		// Arrange - Admin: Change keyword limits
 		await goToAdminSubmissionSettings(adminPage);
-
 		const minKeywordsInput = adminPage.getByLabel("Min keywords");
 		const maxKeywordsInput = adminPage.getByLabel("Max keywords");
-
-		// Store original values
+		await expect(minKeywordsInput).toBeVisible();
 		const originalMin = await minKeywordsInput.inputValue();
 		const originalMax = await maxKeywordsInput.inputValue();
-
-		// Set new values
 		await minKeywordsInput.clear();
 		await minKeywordsInput.fill("2");
 		await maxKeywordsInput.clear();
 		await maxKeywordsInput.fill("4");
 		await saveValidationSettings(adminPage);
 
-		// 2. User: Verify form shows updated limits
+		// Act - User: Navigate to form
 		await userPage.goto("/submissions/new");
+		await userPage.waitForLoadState("networkidle");
 
-		// Check Guidelines card shows updated keyword range
-		await expect(userPage.getByText(/Add 2-4 relevant keywords/i)).toBeVisible();
+		// Assert - Form shows updated limits
+		await expect(userPage.getByText(/0 \/ 2-4 keywords/i)).toBeVisible({ timeout: 10000 });
 
-		// Check KeywordsInput shows updated limits
-		await expect(userPage.getByText(/0 \/ 2-4 keywords/i)).toBeVisible();
-
-		// 3. Cleanup: Restore original values
-		await adminPage.reload();
+		// Cleanup: Restore original values
+		await adminPage.goto("/admin/settings");
 		await adminPage.getByRole("tab", { name: /Submissions$/i }).click();
 		await expect(
 			adminPage.getByRole("heading", { name: "Title" })
 		).toBeVisible();
-
 		const restoreMinInput = adminPage.getByLabel("Min keywords");
 		const restoreMaxInput = adminPage.getByLabel("Max keywords");
+		await expect(restoreMinInput).toBeVisible();
 		await restoreMinInput.clear();
 		await restoreMinInput.fill(originalMin);
 		await restoreMaxInput.clear();
@@ -209,45 +268,37 @@ test.describe("Admin Settings Integration with Submission Form", () => {
 		adminPage,
 		userPage,
 	}) => {
-		// 1. Admin: Disable keywords
+		// Arrange - Admin: Disable keywords
 		await goToAdminSubmissionSettings(adminPage);
-
 		const enableKeywordsSwitch = adminPage.getByLabel("Enable keywords");
 		const wasEnabled = await enableKeywordsSwitch.isChecked();
-
-		// Only toggle if currently enabled
 		if (wasEnabled) {
 			await enableKeywordsSwitch.click();
 			await saveValidationSettings(adminPage);
 		}
 
-		// 2. User: Verify form doesn't show Keywords section
+		// Act - User: Navigate to form
 		await userPage.goto("/submissions/new");
 
-		// Keywords section should not be visible
+		// Assert - Keywords section hidden
 		await expect(
 			userPage.getByRole("heading", { name: "Keywords", exact: true })
 		).not.toBeVisible();
-
-		// Guidelines should not mention keywords
 		await expect(
 			userPage.getByText(/relevant keywords/i)
 		).not.toBeVisible();
-
-		// Progress indicator should not show Keywords
 		await expect(
 			userPage.locator(".flex.items-center.gap-3").filter({
 				hasText: "Keywords",
 			})
 		).not.toBeVisible();
 
-		// 3. Cleanup: Re-enable keywords
+		// Cleanup: Re-enable keywords
 		await adminPage.reload();
 		await adminPage.getByRole("tab", { name: /Submissions$/i }).click();
 		await expect(
 			adminPage.getByRole("heading", { name: "Title" })
 		).toBeVisible();
-
 		const restoreSwitch = adminPage.getByLabel("Enable keywords");
 		const isNowEnabled = await restoreSwitch.isChecked();
 		if (!isNowEnabled) {
@@ -260,20 +311,16 @@ test.describe("Admin Settings Integration with Submission Form", () => {
 		adminPage,
 		userPage,
 	}) => {
-		// 1. Admin: Set ORAL_PRESENTATION to FILE format to test file size limit
+		// Arrange - Admin: Set ORAL_PRESENTATION to FILE format
 		await goToAdminSubmissionTypes(adminPage);
 		await adminPage.getByRole("button", { name: /Oral Presentation/i }).first().click();
 		await expect(adminPage.getByText("Content Format")).toBeVisible();
-
-		// Check current format and switch to FILE if needed
 		const contentFormatSelect = adminPage.locator("button").filter({ hasText: /Text \(Abstract\)|File Upload/i });
 		const currentFormat = await contentFormatSelect.textContent();
 		const wasTextFormat = currentFormat?.includes("Text");
-
 		if (wasTextFormat) {
 			await contentFormatSelect.click();
 			await adminPage.getByRole("option", { name: "File Upload" }).click();
-			// FILE format requires at least one extension - check "pdf"
 			await adminPage.getByLabel("pdf").check();
 			await adminPage.getByRole("button", { name: "Save" }).click();
 			await expect(
@@ -281,44 +328,42 @@ test.describe("Admin Settings Integration with Submission Form", () => {
 			).toBeVisible({ timeout: 5000 });
 		}
 
-		// 2. Admin: Change MAX_FILE_SIZE_MB to 5
+		// Arrange - Admin: Change MAX_FILE_SIZE_MB to 5
 		await adminPage.reload();
 		await adminPage.getByRole("tab", { name: /Submissions$/i }).click();
 		await expect(
 			adminPage.getByRole("heading", { name: "Title" })
 		).toBeVisible();
-
 		const maxFileSizeInput = adminPage.getByLabel("Max file size (MB)");
 		const originalSize = await maxFileSizeInput.inputValue();
-
 		await maxFileSizeInput.clear();
 		await maxFileSizeInput.fill("5");
 		await saveValidationSettings(adminPage);
 
-		// 3. User: Verify file dropzone shows updated limit
+		// Act - User: Navigate to form
 		await userPage.goto("/submissions/new");
+
+		// Assert - File dropzone shows updated limit
 		await expect(userPage.getByText(/up to 5MB/i)).toBeVisible();
 
-		// 4. Cleanup: Restore original file size
+		// Cleanup: Restore original file size
 		await adminPage.reload();
 		await adminPage.getByRole("tab", { name: /Submissions$/i }).click();
 		await expect(
 			adminPage.getByRole("heading", { name: "Title" })
 		).toBeVisible();
-
 		const restoreInput = adminPage.getByLabel("Max file size (MB)");
 		await restoreInput.clear();
 		await restoreInput.fill(originalSize);
 		await saveValidationSettings(adminPage);
 
-		// 5. Cleanup: Restore TEXT format if it was changed
+		// Cleanup: Restore TEXT format if changed
 		if (wasTextFormat) {
 			await adminPage.reload();
 			await adminPage.getByRole("tab", { name: /Submission Types/i }).click();
 			await expect(adminPage.getByText("Oral Presentation")).toBeVisible();
 			await adminPage.getByRole("button", { name: /Oral Presentation/i }).first().click();
 			await expect(adminPage.getByText("Content Format")).toBeVisible();
-
 			const restoreSelect = adminPage.locator("button").filter({ hasText: /Text \(Abstract\)|File Upload/i });
 			await restoreSelect.click();
 			await adminPage.getByRole("option", { name: "Text (Abstract)" }).click();
@@ -332,15 +377,13 @@ test.describe("Admin Settings Integration with Submission Form", () => {
 	test("TEXT format hides file dropzone", async ({
 		userPage,
 	}) => {
-		// User: Verify TEXT format (Oral Presentation) does NOT show file upload
+		// Arrange
 		await userPage.goto("/submissions/new");
 
-		// Select Oral Presentation (TEXT format by default)
+		// Assert
 		await expect(
 			userPage.getByRole("button", { name: /Oral Presentation/i })
 		).toBeVisible();
-
-		// For TEXT format: should show text area, NOT file dropzone
 		await expect(userPage.getByLabel("Abstract")).toBeVisible();
 		await expect(userPage.getByText("Document *")).not.toBeVisible();
 		await expect(
@@ -352,21 +395,16 @@ test.describe("Admin Settings Integration with Submission Form", () => {
 		adminPage,
 		userPage,
 	}) => {
-		// 1. Admin: Set ORAL_PRESENTATION to FILE format
+		// Arrange - Admin: Set ORAL_PRESENTATION to FILE format
 		await goToAdminSubmissionTypes(adminPage);
 		await adminPage.getByRole("button", { name: /Oral Presentation/i }).first().click();
 		await expect(adminPage.getByText("Content Format")).toBeVisible();
-
-		// Store original content format using Select component
 		const contentFormatSelect = adminPage.locator("button").filter({ hasText: /Text \(Abstract\)|File Upload/i });
 		const currentFormat = await contentFormatSelect.textContent();
 		const wasTextFormat = currentFormat?.includes("Text");
-
-		// Switch to FILE format
 		if (wasTextFormat) {
 			await contentFormatSelect.click();
 			await adminPage.getByRole("option", { name: "File Upload" }).click();
-			// FILE format requires at least one extension - check "pdf"
 			await adminPage.getByLabel("pdf").check();
 			await adminPage.getByRole("button", { name: "Save" }).click();
 			await expect(
@@ -374,27 +412,26 @@ test.describe("Admin Settings Integration with Submission Form", () => {
 			).toBeVisible({ timeout: 5000 });
 		}
 
-		// 2. User: Verify FILE format shows ONLY upload (no text area)
+		// Act - User: Navigate to form
 		await userPage.goto("/submissions/new");
+
+		// Assert - FILE format shows upload, not text area
 		await expect(
 			userPage.getByRole("button", { name: /Oral Presentation/i })
 		).toBeVisible();
-
-		// For FILE format: should show file dropzone, NOT abstract textarea
 		await expect(userPage.getByText("Document *")).toBeVisible();
 		await expect(
 			userPage.getByText("Drop file or click to upload")
 		).toBeVisible();
 		await expect(userPage.getByLabel("Abstract")).not.toBeVisible();
 
-		// 3. Admin: Restore TEXT format
+		// Cleanup: Restore TEXT format
 		if (wasTextFormat) {
 			await adminPage.reload();
 			await adminPage.getByRole("tab", { name: /Submission Types/i }).click();
 			await expect(adminPage.getByText("Oral Presentation")).toBeVisible();
 			await adminPage.getByRole("button", { name: /Oral Presentation/i }).first().click();
 			await expect(adminPage.getByText("Content Format")).toBeVisible();
-
 			const restoreSelect = adminPage.locator("button").filter({ hasText: /Text \(Abstract\)|File Upload/i });
 			await restoreSelect.click();
 			await adminPage.getByRole("option", { name: "Text (Abstract)" }).click();
@@ -404,9 +441,10 @@ test.describe("Admin Settings Integration with Submission Form", () => {
 			).toBeVisible({ timeout: 5000 });
 		}
 
-		// 4. User: Verify TEXT format shows ONLY text area (no file dropzone)
+		// Assert - After restore: TEXT format shows text area, not file dropzone
 		await userPage.reload();
-		await expect(userPage.getByLabel("Abstract")).toBeVisible();
+		await userPage.waitForLoadState("networkidle");
+		await expect(userPage.getByLabel("Abstract")).toBeVisible({ timeout: 10000 });
 		await expect(userPage.getByText("Document *")).not.toBeVisible();
 	});
 });

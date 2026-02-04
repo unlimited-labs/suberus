@@ -10,59 +10,69 @@ import {
 
 test.describe("Unverified User - Email Verification Banner", () => {
 	test("shows verification banner on dashboard", async ({ page, emailBanner }) => {
+		// Arrange & Act
 		await page.goto("/")
 
+		// Assert
 		await emailBanner.expectVisible()
 	})
 
 	test("banner has resend button", async ({ page, emailBanner }) => {
+		// Arrange
 		await page.goto("/")
 
+		// Assert
 		await emailBanner.expectVisible()
 		await expect(emailBanner.resendButton).toBeVisible()
 	})
 
 	test("can dismiss banner", async ({ page, emailBanner }) => {
+		// Arrange
 		await page.goto("/")
-
 		await emailBanner.expectVisible()
+
+		// Act
 		await emailBanner.dismiss()
 
+		// Assert
 		await emailBanner.expectNotVisible()
 	})
 
 	test("banner stays dismissed during session", async ({ page, emailBanner }) => {
+		// Arrange
 		await page.goto("/")
 		await emailBanner.dismiss()
 
-		// Navigate to another page and back
+		// Act
 		await page.goto("/submissions")
 		await page.goto("/")
 
-		// Banner should still be hidden (sessionStorage)
+		// Assert
 		await emailBanner.expectNotVisible()
 	})
 
 	test("resend button sends verification email", async ({ page, emailBanner }) => {
+		// Arrange
 		await clearMailpit()
 		await page.goto("/")
 
+		// Act
 		await emailBanner.clickResend()
 
-		// Should show success toast
+		// Assert
 		await expect(page.getByText(/verification email sent/i)).toBeVisible({ timeout: 5000 })
-
-		// Email should be sent to Mailpit
 		const email = await waitForEmail(UNVERIFIED_USER.email, "verify", 10000)
 		expect(email).not.toBeNull()
 	})
 
 	test("resend button shows cooldown after click", async ({ page, emailBanner }) => {
+		// Arrange
 		await page.goto("/")
 
+		// Act
 		await emailBanner.clickResend()
 
-		// Button should show cooldown
+		// Assert
 		await expect(emailBanner.resendButton).toContainText(/resend in \d+s/i, { timeout: 5000 })
 		await expect(emailBanner.resendButton).toBeDisabled()
 	})
@@ -70,37 +80,42 @@ test.describe("Unverified User - Email Verification Banner", () => {
 
 test.describe("Unverified User - Submission Block", () => {
 	test("shows block message on new submission page", async ({ submissionBlockPage }) => {
+		// Arrange & Act
 		await submissionBlockPage.goto()
 
+		// Assert
 		await submissionBlockPage.expectBlocked()
 	})
 
 	test("block message has resend button", async ({ submissionBlockPage }) => {
+		// Arrange
 		await submissionBlockPage.goto()
 
+		// Assert
 		await expect(submissionBlockPage.resendButton).toBeVisible()
 	})
 
 	test("resend button in block sends verification email", async ({ submissionBlockPage }) => {
+		// Arrange
 		await clearMailpit()
 		await submissionBlockPage.goto()
 
+		// Act
 		await submissionBlockPage.clickResend()
 
-		// Should show success toast
+		// Assert
 		await expect(submissionBlockPage.page.getByText(/verification email sent/i)).toBeVisible({
 			timeout: 5000,
 		})
-
-		// Email should be sent
 		const email = await waitForEmail(UNVERIFIED_USER.email, "verify", 10000)
 		expect(email).not.toBeNull()
 	})
 
 	test("submission form is not visible for unverified user", async ({ submissionBlockPage }) => {
+		// Arrange
 		await submissionBlockPage.goto()
 
-		// Form should not be visible
+		// Assert
 		await expect(submissionBlockPage.page.getByLabel("Title")).not.toBeVisible()
 		await expect(submissionBlockPage.page.getByLabel("Abstract")).not.toBeVisible()
 	})
@@ -108,29 +123,33 @@ test.describe("Unverified User - Submission Block", () => {
 
 test.describe("Unverified User - Settings Page", () => {
 	test("shows not verified status in settings", async ({ settingsEmailSection }) => {
+		// Arrange & Act
 		await settingsEmailSection.goto()
 
+		// Assert
 		await settingsEmailSection.expectNotVerified()
 	})
 
 	test("shows resend button in settings", async ({ settingsEmailSection }) => {
+		// Arrange
 		await settingsEmailSection.goto()
 
+		// Assert
 		await expect(settingsEmailSection.resendButton).toBeVisible()
 	})
 
 	test("resend button in settings sends verification email", async ({ settingsEmailSection }) => {
+		// Arrange
 		await clearMailpit()
 		await settingsEmailSection.goto()
 
+		// Act
 		await settingsEmailSection.clickResend()
 
-		// Should show success toast
+		// Assert
 		await expect(settingsEmailSection.page.getByText(/verification email sent/i)).toBeVisible({
 			timeout: 5000,
 		})
-
-		// Email should be sent
 		const email = await waitForEmail(UNVERIFIED_USER.email, "verify", 10000)
 		expect(email).not.toBeNull()
 	})

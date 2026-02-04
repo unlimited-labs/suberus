@@ -15,7 +15,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 // Lazy-initialized Prisma client
 let prismaInstance: PrismaClient | null = null;
 
-function getPrisma(): PrismaClient {
+export function getPrisma(): PrismaClient {
 	if (!prismaInstance) {
 		const connectionString = process.env.DATABASE_URL;
 		const adapter = new PrismaPg({ connectionString });
@@ -58,6 +58,7 @@ export async function getTestUserIds() {
 
 // Submission creation helper
 export interface CreateSubmissionOptions {
+	testRunId?: string; // prefix for title to enable cleanup
 	title: string;
 	status?: SubmissionStatus;
 	type?: SubmissionType;
@@ -74,11 +75,14 @@ export async function createSubmission(options: CreateSubmissionOptions): Promis
 	const db = getPrisma();
 	const { testUserId } = await getTestUserIds();
 
+	// Prefix title with testRunId for cleanup isolation
+	const prefixedTitle = options.testRunId ? `${options.testRunId}_${options.title}` : options.title;
+
 	const submission = await db.submission.create({
 		data: {
 			userId: options.userId ?? testUserId,
 			type: options.type ?? SubmissionType.ABSTRACT,
-			title: options.title,
+			title: prefixedTitle,
 			content:
 				options.content ??
 				"This is test content for E2E testing. ".repeat(20) + // ~500 chars

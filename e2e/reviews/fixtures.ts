@@ -44,7 +44,7 @@ export function createTestSubmission(suffix?: string) {
 	const id = suffix ?? Date.now().toString();
 	return {
 		type: "ABSTRACT" as const,
-		title: `Review Test Submission ${id}`,
+		title: `${id}_Review Test Submission`,
 		content: `This is a comprehensive test abstract content for submission ${id}. The purpose of this submission is to test the review workflow system including reviewer assignment, review submission, and editor decisions. This abstract discusses the methodology, results, and conclusions of our testing approach. The testing framework ensures that all components are functioning as expected and that the user experience is smooth and intuitive. Additional context is provided here to meet the minimum character requirements for the abstract field.`,
 		keywords: [`test-${id}`, "review", "workflow"],
 	};

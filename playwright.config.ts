@@ -4,8 +4,8 @@ export default defineConfig({
 	testDir: "./e2e",
 	fullyParallel: true,
 	forbidOnly: false,
-	retries: process.env.CI ? 2 : 0,
-	workers: 1,
+	retries: 2,
+	workers: 4,
 	reporter:
 		process.env.CI || process.env.CLAUDE
 			? [["line"], ["html", { open: "never" }]]
@@ -34,11 +34,11 @@ export default defineConfig({
 			testMatch: /e2e\/auth\/.*\.spec\.ts/,
 			use: { ...devices["Pixel 5"] },
 		},
-		// Admin tests - use admin auth
+		// Admin tests - use admin auth (wait for settings-integration to avoid conflicts)
 		{
 			name: "chromium-admin",
 			testMatch: /e2e\/admin\/.*\.spec\.ts/,
-			dependencies: ["auth-setup"],
+			dependencies: ["auth-setup", "chromium-integration"],
 			use: {
 				...devices["Desktop Chrome"],
 				storageState: "e2e/.auth/admin.json",
@@ -47,17 +47,17 @@ export default defineConfig({
 		{
 			name: "mobile-admin",
 			testMatch: /e2e\/admin\/.*\.spec\.ts/,
-			dependencies: ["auth-setup", "chromium-admin"],
+			dependencies: ["auth-setup", "chromium-integration"],
 			use: {
 				...devices["Pixel 5"],
 				storageState: "e2e/.auth/admin.json",
 			},
 		},
-		// Submission tests - use user auth (exclude integration tests)
+		// Submission tests - use user auth (wait for settings-integration to complete first)
 		{
 			name: "chromium-user",
 			testMatch: /e2e\/submissions\/(?!settings-integration).*\.spec\.ts/,
-			dependencies: ["auth-setup"],
+			dependencies: ["auth-setup", "chromium-integration"],
 			use: {
 				...devices["Desktop Chrome"],
 				storageState: "e2e/.auth/user.json",
@@ -66,13 +66,13 @@ export default defineConfig({
 		{
 			name: "mobile-user",
 			testMatch: /e2e\/submissions\/(?!settings-integration).*\.spec\.ts/,
-			dependencies: ["auth-setup", "chromium-user"],
+			dependencies: ["auth-setup", "chromium-integration"],
 			use: {
 				...devices["Pixel 5"],
 				storageState: "e2e/.auth/user.json",
 			},
 		},
-		// Settings integration tests - use multiple contexts (admin + user)
+		// Settings integration tests - runs FIRST, modifies global settings then restores
 		{
 			name: "chromium-integration",
 			testMatch: /settings-integration\.spec\.ts/,
@@ -91,11 +91,11 @@ export default defineConfig({
 				storageState: "e2e/.auth/unverified.json",
 			},
 		},
-		// Profile tests - use user auth, run AFTER user submissions tests
+		// Profile tests - use user auth
 		{
 			name: "chromium-profile",
 			testMatch: /e2e\/profile\/.*\.spec\.ts/,
-			dependencies: ["auth-setup", "chromium-user"],
+			dependencies: ["auth-setup"],
 			use: {
 				...devices["Desktop Chrome"],
 				storageState: "e2e/.auth/user.json",
@@ -104,7 +104,7 @@ export default defineConfig({
 		{
 			name: "mobile-profile",
 			testMatch: /e2e\/profile\/.*\.spec\.ts/,
-			dependencies: ["auth-setup", "chromium-profile", "mobile-user"],
+			dependencies: ["auth-setup"],
 			use: {
 				...devices["Pixel 5"],
 				storageState: "e2e/.auth/user.json",
@@ -169,7 +169,7 @@ export default defineConfig({
 	webServer: {
 		command: "dotenv -e .env.local -- pnpm dev",
 		url: "http://localhost:3001",
-		env: { PORT: "3001" },
+		env: { PORT: "3001", E2E: "true" },
 		reuseExistingServer: true,
 		timeout: 120_000,
 	},

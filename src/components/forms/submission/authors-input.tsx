@@ -89,6 +89,7 @@ function SortableAuthorItem({
 		<div
 			ref={isDragOverlay ? undefined : setNodeRef}
 			style={style}
+			data-testid={`author-card-${index}`}
 			className={cn(
 				"group relative rounded-lg border bg-card",
 				author.isPresenter

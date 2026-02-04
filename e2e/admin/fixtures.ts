@@ -74,15 +74,14 @@ export class AdminUsersPage {
 		// Clear previous search first
 		await this.searchInput.clear()
 		await this.searchInput.fill(query)
-		// Wait a moment for the client-side filter to apply
-		await this.page.waitForTimeout(300)
 	}
 
 	async selectUser(user: { email: string; firstName: string }) {
 		// Search by firstName to filter the list (needed when many users exist)
 		await this.search(user.firstName)
-		// Find the row by the exact email text
+		// Find the row by the exact email text - wait for it to be visible after filtering
 		const row = this.page.locator("tr").filter({ has: this.page.locator(`text="${user.email}"`) })
+		await expect(row).toBeVisible({ timeout: 5000 })
 		const checkbox = row.getByRole("checkbox")
 		await checkbox.click()
 		// Wait for checkbox to be checked

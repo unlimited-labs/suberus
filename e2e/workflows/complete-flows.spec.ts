@@ -1,9 +1,9 @@
-import { test, expect, type Page } from "@playwright/test";
+import { type Page } from "@playwright/test";
+import { test, expect } from "../helpers/base-fixtures";
 import {
 	createSubmission,
 	createSubmissionWithAssignment,
 	createSubmissionWithReview,
-	deleteSubmission,
 } from "../helpers/test-db";
 import { SubmissionStatus } from "../../src/generated/prisma/enums";
 
@@ -44,12 +44,17 @@ async function loginAs(page: Page, user: { email: string; password: string }) {
 }
 
 async function addKeyword(page: Page, keyword: string) {
-	const keywordsSection = page
-		.locator(".space-y-2, .space-y-3, .space-y-4")
-		.filter({ has: page.getByText("Keywords", { exact: true }) });
-	const keywordInput = keywordsSection.getByRole("textbox");
+	// Find Keywords section by heading
+	const keywordsHeading = page.getByRole("heading", { name: "Keywords", exact: true });
+	await expect(keywordsHeading).toBeVisible({ timeout: 10000 });
+
+	// The keywords input has a specific class: min-w-[120px]
+	const keywordInput = page.locator("input.min-w-\\[120px\\]");
+	await expect(keywordInput).toBeVisible();
 	await keywordInput.fill(keyword);
 	await keywordInput.press("Enter");
+	// Wait for the keyword badge to appear (exact match)
+	await expect(page.getByText(keyword, { exact: true })).toBeVisible();
 }
 
 async function findSubmissionInAdmin(page: Page, title: string): Promise<string> {
@@ -78,17 +83,14 @@ async function findSubmissionInAdmin(page: Page, title: string): Promise<string>
 // ============================================================================
 
 test.describe("Complete Submission Workflow", () => {
-	/**
-	 * Test author submission creation
-	 */
-	test("author creates and submits a new submission", async ({ page }) => {
-		const uniqueId = Date.now().toString();
-		const submissionTitle = `E2E Workflow ${uniqueId}`;
-
+	test("author creates and submits a new submission", async ({ page, testRun }) => {
+		// Arrange
+		const submissionTitle = `${testRun.testRunId}_E2E Workflow`;
 		await loginAs(page, TEST_USER);
 		await page.goto("/submissions/new");
 		await page.getByLabel("Title").waitFor({ state: "visible", timeout: 30000 });
 
+		// Act
 		await page.getByLabel("Title").fill(submissionTitle);
 		await page.getByLabel("Abstract").fill(
 			"This is a comprehensive test submission for the complete workflow test. " +
@@ -100,271 +102,254 @@ test.describe("Complete Submission Workflow", () => {
 				"Additional context is provided here to meet the minimum character requirements."
 		);
 
-		// Fill affiliation
-		const authorCard = page.locator(".rounded-lg.border").filter({ has: page.locator("#author-0-firstName") });
+		const authorCard = page.locator('[data-testid="author-card-0"]');
 		const affiliationInput = authorCard.getByPlaceholder("Type affiliation...");
 		await affiliationInput.fill("Test University");
 		await affiliationInput.blur();
 		await page.waitForLoadState("networkidle");
 
-		// Add keywords
 		await addKeyword(page, "workflow-test");
 		await addKeyword(page, "e2e");
 		await addKeyword(page, "acceptance");
 
 		await page.getByRole("button", { name: "Submit" }).click();
 		await page.waitForURL(/\/submissions\/[a-f0-9-]+/, { timeout: 30000 });
+
+		// Assert
 		await expect(page.getByText(submissionTitle)).toBeVisible({ timeout: 10000 });
 	});
 
 	/**
 	 * Test admin assigning reviewer to a submission
 	 */
-	test("admin assigns reviewer to submission", async ({ page }) => {
+	test("admin assigns reviewer to submission", async ({ page, testRun, cleanup }) => {
 		// Arrange
 		const { id, title } = await createSubmission({
+			testRunId: testRun.testRunId,
 			title: "Assign Reviewer Workflow Test",
 			status: SubmissionStatus.SUBMITTED,
 		});
+		cleanup.track(id);
 
-		try {
-			await loginAs(page, ADMIN_USER);
-			await findSubmissionInAdmin(page, title);
-			await expect(page.getByText("Submitted").first()).toBeVisible();
+		await loginAs(page, ADMIN_USER);
+		await findSubmissionInAdmin(page, title);
+		await expect(page.getByText("Submitted").first()).toBeVisible();
 
-			// Act
-			await page.getByRole("button", { name: /Assign Reviewer/i }).click();
-			await page.getByRole("dialog").waitFor({ state: "visible" });
+		// Act
+		await page.getByRole("button", { name: /Assign Reviewer/i }).click();
+		await page.getByRole("dialog").waitFor({ state: "visible" });
 
-			// Assert
-			await expect(page.getByText(/Available Reviewers/i)).toBeVisible();
+		// Assert
+		await expect(page.getByText(/Available Reviewers/i)).toBeVisible();
 
-			// Search for reviewer
-			await page.getByPlaceholder("Search by name, email, or affiliation...").fill(REVIEWER_USER.email);
-			await page.waitForLoadState("networkidle");
-			await expect(page.getByText(REVIEWER_USER.email)).toBeVisible();
+		// Search for reviewer
+		await page.getByPlaceholder("Search by name, email, or affiliation...").fill(REVIEWER_USER.email);
+		await page.waitForLoadState("networkidle");
+		await expect(page.getByText(REVIEWER_USER.email)).toBeVisible();
 
-			// Close dialog (don't actually assign to preserve test state)
-			const dialog = page.getByRole("dialog");
-			await dialog.getByRole("button", { name: "Close" }).first().click();
-			await dialog.waitFor({ state: "hidden", timeout: 5000 });
-		} finally {
-			await deleteSubmission(id);
-		}
+		// Close dialog (don't actually assign to preserve test state)
+		const dialog = page.getByRole("dialog");
+		await dialog.getByRole("button", { name: "Close" }).first().click();
+		await dialog.waitFor({ state: "hidden", timeout: 5000 });
 	});
 
 	/**
 	 * Test admin making accept decision
 	 */
-	test("admin makes accept decision on submission", async ({ page }) => {
+	test("admin makes accept decision on submission", async ({ page, testRun, cleanup }) => {
 		// Arrange
 		const { submissionId, title } = await createSubmissionWithReview({
+			testRunId: testRun.testRunId,
 			title: "Accept Decision Workflow Test",
 		});
+		cleanup.track(submissionId);
 
-		try {
-			await loginAs(page, ADMIN_USER);
-			await findSubmissionInAdmin(page, title);
+		await loginAs(page, ADMIN_USER);
+		await findSubmissionInAdmin(page, title);
 
-			// Verify submission is awaiting decision
-			await expect(page.getByText(/Awaiting Decision/i).first()).toBeVisible();
+		// Verify submission is awaiting decision
+		await expect(page.getByText(/Awaiting Decision/i).first()).toBeVisible();
 
-			// Act
-			const makeDecisionBtn = page.getByRole("button", { name: /Make Decision/i });
-			await makeDecisionBtn.click();
-			await page.getByRole("dialog").waitFor({ state: "visible" });
+		// Act
+		const makeDecisionBtn = page.getByRole("button", { name: /Make Decision/i });
+		await makeDecisionBtn.click();
+		await page.getByRole("dialog").waitFor({ state: "visible" });
 
-			await page.getByRole("button", { name: /Accept.*publication/i }).click();
-			await page.getByLabel(/Internal Reasoning/i).fill("Excellent submission - Accept");
-			await page.getByLabel(/Letter to Author/i).fill("Congratulations, your submission has been accepted.");
-			await page.getByRole("button", { name: /Submit Decision/i }).click();
-			await page.waitForLoadState("networkidle");
+		await page.getByRole("button", { name: /Accept.*publication/i }).click();
+		await page.getByLabel(/Internal Reasoning/i).fill("Excellent submission - Accept");
+		await page.getByLabel(/Letter to Author/i).fill("Congratulations, your submission has been accepted.");
+		await page.getByRole("button", { name: /Submit Decision/i }).click();
+		await page.waitForLoadState("networkidle");
 
-			// Assert
-			await page.reload();
-			await expect(page.getByText(/Accepted/i).first()).toBeVisible({ timeout: 10000 });
-		} finally {
-			await deleteSubmission(submissionId);
-		}
+		// Assert
+		await page.reload();
+		await expect(page.getByText(/Accepted/i).first()).toBeVisible({ timeout: 10000 });
 	});
 });
 
 test.describe("Desk Rejection Workflow", () => {
-	test("admin can desk reject a submitted submission", async ({ page }) => {
+	test("admin can desk reject a submitted submission", async ({ page, testRun, cleanup }) => {
 		// Arrange
 		const { id, title } = await createSubmission({
+			testRunId: testRun.testRunId,
 			title: "Desk Reject Workflow Test",
 			status: SubmissionStatus.SUBMITTED,
 		});
+		cleanup.track(id);
 
-		try {
-			await loginAs(page, ADMIN_USER);
-			await findSubmissionInAdmin(page, title);
-			await expect(page.getByText("Submitted").first()).toBeVisible();
+		await loginAs(page, ADMIN_USER);
+		await findSubmissionInAdmin(page, title);
+		await expect(page.getByText("Submitted").first()).toBeVisible();
 
-			// Act
-			await page.getByRole("button", { name: /Desk Reject/i }).click();
-			await page.getByRole("dialog").waitFor({ state: "visible" });
+		// Act
+		await page.getByRole("button", { name: /Desk Reject/i }).click();
+		await page.getByRole("dialog").waitFor({ state: "visible" });
 
-			await page.getByLabel(/Reason/i).fill("Out of scope for this conference - E2E test");
-			await page.getByRole("button", { name: /Reject Submission/i }).click();
+		await page.getByLabel(/Reason/i).fill("Out of scope for this conference - E2E test");
+		await page.getByRole("button", { name: /Reject Submission/i }).click();
 
-			await Promise.race([
-				page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15000 }),
-				page.locator("[data-sonner-toast]").waitFor({ state: "visible", timeout: 15000 }),
-			]);
+		await Promise.race([
+			page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15000 }),
+			page.locator("[data-sonner-toast]").waitFor({ state: "visible", timeout: 15000 }),
+		]);
 
-			// Assert
-			await page.reload();
-			await expect(page.getByText(/Rejected/i).first()).toBeVisible({ timeout: 10000 });
-		} finally {
-			await deleteSubmission(id);
-		}
+		// Assert
+		await page.reload();
+		await expect(page.getByText(/Rejected/i).first()).toBeVisible({ timeout: 10000 });
 	});
 });
 
 test.describe("Reviewer Assignments", () => {
-	test("admin can view and manage reviewer assignments", async ({ page }) => {
+	test("admin can view and manage reviewer assignments", async ({ page, testRun, cleanup }) => {
 		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
+			testRunId: testRun.testRunId,
 			title: "Manage Assignments Workflow Test",
 		});
+		cleanup.track(submissionId);
 
-		try {
-			await loginAs(page, ADMIN_USER);
-			await findSubmissionInAdmin(page, title);
-			await expect(page.getByText("Under Review").first()).toBeVisible();
+		await loginAs(page, ADMIN_USER);
+		await findSubmissionInAdmin(page, title);
+		await expect(page.getByText("Under Review").first()).toBeVisible();
 
-			// Act
-			await page.getByRole("button", { name: /Assign Reviewer/i }).click();
-			const dialog = page.getByRole("dialog");
-			await dialog.waitFor({ state: "visible" });
+		// Act
+		await page.getByRole("button", { name: /Assign Reviewer/i }).click();
+		const dialog = page.getByRole("dialog");
+		await dialog.waitFor({ state: "visible" });
 
-			// Assert
-			await expect(page.getByText(/Current Reviewers \(/i)).toBeVisible();
-			await expect(page.getByText("Available Reviewers", { exact: true })).toBeVisible();
-			// Reviewer email appears in both current reviewers section and available reviewers
-			await expect(page.getByText(REVIEWER_USER.email).first()).toBeVisible();
+		// Assert
+		await expect(page.getByText(/Current Reviewers \(/i)).toBeVisible();
+		await expect(page.getByText("Available Reviewers", { exact: true })).toBeVisible();
+		// Reviewer email appears in both current reviewers section and available reviewers
+		await expect(page.getByText(REVIEWER_USER.email).first()).toBeVisible();
 
-			// Close dialog
-			await dialog.getByRole("button", { name: "Close" }).first().click();
-			await dialog.waitFor({ state: "hidden", timeout: 5000 });
-		} finally {
-			await deleteSubmission(submissionId);
-		}
+		// Close dialog
+		await dialog.getByRole("button", { name: "Close" }).first().click();
+		await dialog.waitFor({ state: "hidden", timeout: 5000 });
 	});
 
-	test("reviewer sees pending assignment", async ({ page }) => {
+	test("reviewer sees pending assignment", async ({ page, testRun, cleanup }) => {
 		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
+			testRunId: testRun.testRunId,
 			title: "Pending Assignment Workflow Test",
 		});
+		cleanup.track(submissionId);
 
-		try {
-			await loginAs(page, REVIEWER_USER);
-			await page.goto("/reviews");
-			await page.waitForLoadState("networkidle");
+		await loginAs(page, REVIEWER_USER);
+		await page.goto("/reviews");
+		await page.waitForLoadState("networkidle");
 
-			// Assert
-			await expect(page.getByText(title).first()).toBeVisible({ timeout: 10000 });
-		} finally {
-			await deleteSubmission(submissionId);
-		}
+		// Assert
+		await expect(page.getByText(title).first()).toBeVisible({ timeout: 10000 });
 	});
 });
 
 test.describe("Status History", () => {
-	test("history tab shows status transitions", async ({ page }) => {
+	test("history tab shows status transitions", async ({ page, testRun, cleanup }) => {
 		// Arrange
 		const { submissionId, title } = await createSubmissionWithReview({
+			testRunId: testRun.testRunId,
 			title: "Status History Workflow Test",
 		});
+		cleanup.track(submissionId);
 
-		try {
-			await loginAs(page, ADMIN_USER);
-			await findSubmissionInAdmin(page, title);
+		await loginAs(page, ADMIN_USER);
+		await findSubmissionInAdmin(page, title);
 
-			// Act
-			await page.getByRole("tab", { name: /History/i }).click();
+		// Act
+		await page.getByRole("tab", { name: /History/i }).click();
 
-			// Assert
-			await expect(page.getByText("Status History", { exact: true })).toBeVisible();
-			await expect(page.getByText(/AWAITING_DECISION|Awaiting Decision/i).first()).toBeVisible();
-		} finally {
-			await deleteSubmission(submissionId);
-		}
+		// Assert
+		await expect(page.getByText("Status History", { exact: true })).toBeVisible();
+		await expect(page.getByText(/AWAITING_DECISION|Awaiting Decision/i).first()).toBeVisible();
 	});
 });
 
 test.describe("Review Display", () => {
-	test("admin can view completed reviews", async ({ page }) => {
+	test("admin can view completed reviews", async ({ page, testRun, cleanup }) => {
 		// Arrange
 		const { submissionId, title } = await createSubmissionWithReview({
+			testRunId: testRun.testRunId,
 			title: "View Reviews Workflow Test",
 		});
+		cleanup.track(submissionId);
 
-		try {
-			await loginAs(page, ADMIN_USER);
-			await findSubmissionInAdmin(page, title);
+		await loginAs(page, ADMIN_USER);
+		await findSubmissionInAdmin(page, title);
 
-			// Act
-			await page.getByRole("tab", { name: /Reviews/i }).click();
+		// Act
+		await page.getByRole("tab", { name: /Reviews/i }).click();
 
-			// Assert
-			await expect(page.getByText(/Accept/i).first()).toBeVisible({ timeout: 10000 });
-		} finally {
-			await deleteSubmission(submissionId);
-		}
+		// Assert
+		await expect(page.getByText(/Accept/i).first()).toBeVisible({ timeout: 10000 });
 	});
 });
 
 test.describe("Review Form Validation", () => {
-	test("reviewer can fill review form with all required fields", async ({ page }) => {
+	test("reviewer can fill review form with all required fields", async ({ page, testRun, cleanup }) => {
 		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
+			testRunId: testRun.testRunId,
 			title: "Review Form Validation Workflow Test",
 		});
+		cleanup.track(submissionId);
 
-		try {
-			await loginAs(page, REVIEWER_USER);
-			await page.goto("/reviews");
-			await page.waitForLoadState("networkidle");
+		await loginAs(page, REVIEWER_USER);
+		await page.goto("/reviews");
+		await page.waitForLoadState("networkidle");
 
-			const assignmentRow = page.locator("tr").filter({ hasText: title });
-			await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-			await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-			await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
-			await page.waitForLoadState("networkidle");
+		const assignmentRow = page.locator("tr").filter({ hasText: title });
+		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
+		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
+		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await page.waitForLoadState("networkidle");
 
-			// Assert form loaded
-			await expect(page.getByRole("heading", { name: "Decision", exact: true })).toBeVisible({ timeout: 10000 });
+		// Assert form loaded
+		await expect(page.getByRole("heading", { name: "Decision", exact: true })).toBeVisible({ timeout: 10000 });
 
-			// Act - fill form
-			await page.getByRole("button", { name: /Accept Work meets/i }).click();
+		// Act - fill form
+		await page.getByRole("button", { name: /Accept Work meets/i }).click();
 
-			// Fill evaluation scores
-			const scoreButtons = await page.getByRole("button", { name: "4", exact: true }).all();
-			expect(scoreButtons.length).toBe(5); // 4 criteria + confidence
-			for (const btn of scoreButtons) {
-				await btn.click();
-				await page.waitForTimeout(50);
-			}
-
-			// Assert confidence shows "High"
-			await expect(page.getByText("High: Expert in this area")).toBeVisible();
-
-			// Fill comments
-			const commentsField = page.getByRole("textbox", { name: "Review Comments" });
-			await commentsField.click();
-			await commentsField.pressSequentially(
-				"This is a detailed review with sufficient content to meet minimum requirements for submission.",
-				{ delay: 5 }
-			);
-
-			// Assert character count
-			await expect(page.locator("span").filter({ hasText: /^\d{2,} characters$/ })).toBeVisible({ timeout: 5000 });
-		} finally {
-			await deleteSubmission(submissionId);
+		// Fill evaluation scores
+		const scoreButtons = await page.getByRole("button", { name: "4", exact: true }).all();
+		expect(scoreButtons.length).toBe(5); // 4 criteria + confidence
+		for (const btn of scoreButtons) {
+			await btn.click();
 		}
+
+		// Assert confidence shows "High"
+		await expect(page.getByText("High: Expert in this area")).toBeVisible();
+
+		// Fill comments
+		const commentsField = page.getByRole("textbox", { name: "Review Comments" });
+		await commentsField.click();
+		await commentsField.pressSequentially(
+			"This is a detailed review with sufficient content to meet minimum requirements for submission.",
+			{ delay: 5 }
+		);
+
+		// Assert character count
+		await expect(page.locator("span").filter({ hasText: /^\d{2,} characters$/ })).toBeVisible({ timeout: 5000 });
 	});
 });

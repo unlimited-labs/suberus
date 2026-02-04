@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "@/hooks/use-session";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import { cn } from "@/lib/utils";
+import { getAffiliationById } from "@/utils/affiliations.functions";
 import { type Author, AuthorsInput } from "./authors-input";
 import { FileDropzone } from "./file-dropzone";
 import { KeywordsInput } from "./keywords-input";
@@ -115,29 +116,97 @@ export function SubmissionForm({
 		},
 	});
 
+	// Track if we're currently fetching affiliation to prevent duplicate requests
+	const isFetchingAffiliationRef = useRef(false);
+
 	// Auto-fill first author with user data (only for new submissions)
 	useEffect(() => {
-		if (hasAutoFilledRef.current || initialData?.authors) return;
+		if (initialData?.authors) return;
 		if (!user) return;
 
 		const authors = form.state.values.authors;
 		const firstAuthor = authors[0];
 		const isEmpty =
 			!firstAuthor?.firstName && !firstAuthor?.lastName && !firstAuthor?.email;
+		const needsAffiliation =
+			firstAuthor &&
+			!firstAuthor.affiliationName &&
+			user.affiliationId &&
+			!isFetchingAffiliationRef.current;
 
-		if (isEmpty) {
-			form.setFieldValue("authors", [
-				{
-					firstName: user.firstName ?? "",
-					lastName: user.lastName ?? "",
-					email: user.email ?? "",
-					affiliationId: user.affiliationId ?? null,
-					affiliationName: "", // AffiliationSelect will fetch name via initValueId
-					isPresenter: true,
-				},
-				...authors.slice(1),
-			]);
+		// Case 1: First auto-fill - user data is available and first author is empty
+		if (isEmpty && !hasAutoFilledRef.current) {
 			hasAutoFilledRef.current = true;
+
+			if (user.affiliationId) {
+				isFetchingAffiliationRef.current = true;
+				getAffiliationById({ data: { id: user.affiliationId } })
+					.then((affiliation) => {
+						form.setFieldValue("authors", [
+							{
+								firstName: user.firstName ?? "",
+								lastName: user.lastName ?? "",
+								email: user.email ?? "",
+								affiliationId: user.affiliationId ?? null,
+								affiliationName: affiliation?.name ?? "",
+								isPresenter: true,
+							},
+							...authors.slice(1),
+						]);
+					})
+					.catch(() => {
+						form.setFieldValue("authors", [
+							{
+								firstName: user.firstName ?? "",
+								lastName: user.lastName ?? "",
+								email: user.email ?? "",
+								affiliationId: user.affiliationId ?? null,
+								affiliationName: "",
+								isPresenter: true,
+							},
+							...authors.slice(1),
+						]);
+					})
+					.finally(() => {
+						isFetchingAffiliationRef.current = false;
+					});
+			} else {
+				form.setFieldValue("authors", [
+					{
+						firstName: user.firstName ?? "",
+						lastName: user.lastName ?? "",
+						email: user.email ?? "",
+						affiliationId: null,
+						affiliationName: "",
+						isPresenter: true,
+					},
+					...authors.slice(1),
+				]);
+			}
+		}
+		// Case 2: User was already filled but affiliationId became available later
+		else if (needsAffiliation && hasAutoFilledRef.current && user.affiliationId) {
+			const affiliationId = user.affiliationId;
+			isFetchingAffiliationRef.current = true;
+			getAffiliationById({ data: { id: affiliationId } })
+				.then((affiliation) => {
+					if (affiliation) {
+						const currentAuthors = form.state.values.authors;
+						const updatedAuthors = [...currentAuthors];
+						updatedAuthors[0] = {
+							...updatedAuthors[0],
+							affiliationId: affiliationId,
+							affiliationName: affiliation.name,
+						};
+						form.setFieldValue("authors", updatedAuthors);
+					}
+				})
+				.catch(() => {
+					// Silently fail - AffiliationSelect has its own fallback
+				})
+				.finally(() => {
+					isFetchingAffiliationRef.current = false;
+				});
 		}
 	}, [user, initialData?.authors, form]);
 

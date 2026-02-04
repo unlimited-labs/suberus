@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import type {
 	SubmissionStatus,
 	SubmissionType,
@@ -57,25 +58,6 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 		});
 	};
 
-	const formatDateWithTime = (date: Date | string) => {
-		const d = typeof date === "string" ? new Date(date) : date;
-		return d.toLocaleDateString("en-US", {
-			day: "2-digit",
-			month: "2-digit",
-			year: "numeric",
-			hour: "2-digit",
-			minute: "2-digit",
-		});
-	};
-
-	const formatShortDate = (date: Date | string) => {
-		const d = typeof date === "string" ? new Date(date) : date;
-		return d.toLocaleDateString("en-US", {
-			day: "2-digit",
-			month: "2-digit",
-		});
-	};
-
 	const truncateId = (id: string) => {
 		if (id.length > 8) {
 			return `${id.slice(0, 8)}...`;
@@ -86,89 +68,89 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 	return (
 		<>
 			{/* Desktop Table */}
-			<div className="hidden md:block rounded-2xl bg-card shadow-2xl border overflow-hidden">
-				<div className="overflow-x-auto">
-					<table className="w-full">
-						<thead className="bg-muted/50 border-b">
-							<tr>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+			<div className="hidden md:block rounded-md border">
+				<div className="relative w-full overflow-auto">
+					<table className="w-full caption-bottom text-sm">
+						<thead className="[&_tr]:border-b">
+							<tr className="border-b">
+								<th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
 									ID
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+								<th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
 									Title
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+								<th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
 									Type
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+								<th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
 									Status
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+								<th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
 									Round
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+								<th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
 									Version
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+								<th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
 									Submitted
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+								<th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
 									Last Modified
 								</th>
 							</tr>
 						</thead>
-						<tbody className="divide-y divide-border">
+						<tbody className="[&_tr:last-child]:border-0">
 							{submissions.map((submission) => (
 								<tr
 									key={submission.id}
-									className="hover:bg-muted/30 transition-colors cursor-pointer"
+									className="border-b transition-colors hover:bg-muted/50"
 								>
-									<td className="px-6 py-4 whitespace-nowrap">
+									<td className="p-2 align-middle whitespace-nowrap">
 										<Link
 											to="/submissions/$id"
 											params={{ id: submission.id }}
-											className="text-sm font-mono text-muted-foreground hover:text-primary"
+											className="font-mono text-muted-foreground hover:text-primary"
 											title={submission.id}
 										>
 											{truncateId(submission.id)}
 										</Link>
 									</td>
-									<td className="px-6 py-4">
+									<td className="p-2 align-middle">
 										<Link
 											to="/submissions/$id"
 											params={{ id: submission.id }}
-											className="text-sm font-medium text-foreground hover:text-primary line-clamp-2"
+											className="font-medium text-foreground hover:text-primary line-clamp-2"
 										>
 											{submission.title}
 										</Link>
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap">
-										<span className="text-sm text-muted-foreground">
+									<td className="p-2 align-middle whitespace-nowrap">
+										<span className="text-muted-foreground">
 											{typeLabels[submission.type]}
 										</span>
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap">
+									<td className="p-2 align-middle whitespace-nowrap">
 										<Badge variant={statusColors[submission.status]}>
 											{statusLabels[submission.status]}
 										</Badge>
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-center">
-										<span className="text-sm text-muted-foreground">
+									<td className="p-2 align-middle whitespace-nowrap text-center">
+										<span className="text-muted-foreground">
 											{submission.currentRound}
 										</span>
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-center">
-										<span className="text-sm text-muted-foreground">
+									<td className="p-2 align-middle whitespace-nowrap text-center">
+										<span className="text-muted-foreground">
 											{submission.currentVersion}
 										</span>
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap">
-										<span className="text-sm text-muted-foreground">
+									<td className="p-2 align-middle whitespace-nowrap">
+										<span className="text-muted-foreground">
 											{formatDate(submission.createdAt)}
 										</span>
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap">
-										<span className="text-sm text-muted-foreground">
+									<td className="p-2 align-middle whitespace-nowrap">
+										<span className="text-muted-foreground">
 											{formatDate(submission.updatedAt)}
 										</span>
 									</td>
@@ -180,7 +162,7 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 			</div>
 
 			{/* Mobile Cards */}
-			<div className="md:hidden space-y-4">
+			<div className="md:hidden space-y-3">
 				{submissions.map((submission) => (
 					<Link
 						key={submission.id}
@@ -188,51 +170,27 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 						params={{ id: submission.id }}
 						className="block"
 					>
-						<div className="rounded-2xl bg-card shadow-xl border p-4 hover:shadow-2xl transition-shadow">
-							<div className="space-y-3">
-								{/* Title and Status */}
+						<Card>
+							<CardContent className="p-4">
 								<div className="space-y-2">
-									<h3 className="font-semibold text-foreground line-clamp-2">
-										{submission.title}
-									</h3>
+									<p className="font-medium line-clamp-2">{submission.title}</p>
 									<div className="flex items-center gap-2 flex-wrap">
 										<Badge variant={statusColors[submission.status]}>
 											{statusLabels[submission.status]}
 										</Badge>
-										<span className="text-sm text-muted-foreground">
+										<Badge variant="outline">
 											{typeLabels[submission.type]}
+										</Badge>
+										<span className="text-xs text-muted-foreground">
+											R{submission.currentRound} · v{submission.currentVersion}
 										</span>
 									</div>
+									<p className="text-sm text-muted-foreground">
+										{formatDate(submission.updatedAt)}
+									</p>
 								</div>
-
-								{/* Meta Info */}
-								<div className="grid grid-cols-2 gap-2 text-sm text-foreground">
-									<div>
-										<span className="text-muted-foreground">ID:</span>{" "}
-										<span className="font-mono text-xs" title={submission.id}>
-											{truncateId(submission.id)}
-										</span>
-									</div>
-									<div>
-										<span className="text-muted-foreground">Round:</span>{" "}
-										{submission.currentRound}
-									</div>
-									<div>
-										<span className="text-muted-foreground">Version:</span>{" "}
-										{submission.currentVersion}
-									</div>
-									<div>
-										<span className="text-muted-foreground">Submitted:</span>{" "}
-										{formatShortDate(submission.createdAt)}
-									</div>
-								</div>
-
-								{/* Last Modified */}
-								<div className="text-xs text-muted-foreground pt-2 border-t">
-									Last modified: {formatDateWithTime(submission.updatedAt)}
-								</div>
-							</div>
-						</div>
+							</CardContent>
+						</Card>
 					</Link>
 				))}
 			</div>

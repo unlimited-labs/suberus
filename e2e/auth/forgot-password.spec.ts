@@ -2,49 +2,60 @@ import { test, expect } from "./fixtures"
 
 test.describe("Forgot Password Page", () => {
 	test("displays form correctly", async ({ forgotPasswordPage }) => {
+		// Arrange
 		await forgotPasswordPage.goto()
 
-		// Check form elements (heading is hidden on mobile)
+		// Assert
 		await expect(forgotPasswordPage.emailInput).toBeVisible()
 		await expect(forgotPasswordPage.submitButton).toBeVisible()
 		await expect(forgotPasswordPage.backToLoginLink).toBeVisible()
 	})
 
 	test("shows error for empty email", async ({ forgotPasswordPage }) => {
+		// Arrange
 		await forgotPasswordPage.goto()
 
+		// Act
 		await forgotPasswordPage.submit()
 
+		// Assert
 		await expect(forgotPasswordPage.page.getByText("Email is required")).toBeVisible()
 	})
 
 	test("shows error for invalid email format", async ({ forgotPasswordPage }) => {
+		// Arrange
 		await forgotPasswordPage.goto()
 
+		// Act
 		await forgotPasswordPage.fillEmail("invalid-email")
 		await forgotPasswordPage.submit()
 
+		// Assert
 		await expect(forgotPasswordPage.page.getByText("Invalid email address")).toBeVisible()
 	})
 
 	test("shows response after submit", async ({ forgotPasswordPage }) => {
+		// Arrange
 		await forgotPasswordPage.goto()
 
+		// Act
 		await forgotPasswordPage.fillEmail("test@example.com")
 		await forgotPasswordPage.submit()
 
-		// Wait for response - either success state or error toast
-		// (Email transport may not be configured in test environment)
+		// Assert (success or error toast - depends on email config)
 		await expect(
 			forgotPasswordPage.successHeading.or(forgotPasswordPage.page.locator("[data-sonner-toast]"))
 		).toBeVisible({ timeout: 10000 })
 	})
 
 	test("back to login link works", async ({ forgotPasswordPage }) => {
+		// Arrange
 		await forgotPasswordPage.goto()
 
+		// Act
 		await forgotPasswordPage.backToLoginLink.click()
 
+		// Assert
 		await expect(forgotPasswordPage.page).toHaveURL(/\/login/)
 	})
 })

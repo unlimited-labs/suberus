@@ -2,9 +2,11 @@ import { test, expect, clearMailpit, waitForEmail } from "./fixtures"
 
 test.describe("Verify Email Page", () => {
 	test("displays page correctly with email param", async ({ verifyEmailPage }) => {
+		// Arrange
 		const testEmail = "test@example.com"
 		await verifyEmailPage.goto(testEmail)
 
+		// Assert
 		await expect(verifyEmailPage.heading).toBeVisible()
 		await verifyEmailPage.expectEmailDisplayed(testEmail)
 		await expect(verifyEmailPage.resendButton).toBeVisible()
@@ -12,32 +14,40 @@ test.describe("Verify Email Page", () => {
 	})
 
 	test("displays page without email param", async ({ verifyEmailPage }) => {
+		// Arrange
 		await verifyEmailPage.goto()
 
+		// Assert
 		await expect(verifyEmailPage.heading).toBeVisible()
-		// Resend button should not be visible without email
 		await expect(verifyEmailPage.resendButton).not.toBeVisible()
 		await expect(verifyEmailPage.backToLoginLink).toBeVisible()
 	})
 
 	test("shows verification instructions", async ({ verifyEmailPage }) => {
+		// Arrange
 		await verifyEmailPage.goto("test@example.com")
 
+		// Assert
 		await expect(verifyEmailPage.page.getByText(/click the link in your email/i)).toBeVisible()
 		await expect(verifyEmailPage.page.getByText(/expires in 24 hours/i)).toBeVisible()
 	})
 
 	test("back to login link navigates correctly", async ({ verifyEmailPage }) => {
+		// Arrange
 		await verifyEmailPage.goto("test@example.com")
 
+		// Act
 		await verifyEmailPage.backToLoginLink.click()
 
+		// Assert
 		await expect(verifyEmailPage.page).toHaveURL(/\/login/)
 	})
 
 	test("resend button is initially enabled", async ({ verifyEmailPage }) => {
+		// Arrange
 		await verifyEmailPage.goto("test@example.com")
 
+		// Assert
 		await expect(verifyEmailPage.resendButton).toBeEnabled()
 		await expect(verifyEmailPage.resendButton).toContainText(/resend email/i)
 	})
@@ -48,15 +58,16 @@ test.describe("Verify Email Page - Resend Flow", () => {
 	// since users are now auto-logged in and redirected to /
 
 	test.beforeEach(async () => {
+		// Setup: Clear mailpit before each test
 		await clearMailpit()
 	})
 
 	test("resend from banner sends verification email for registered user", async ({
 		registerPage,
+		testRun,
 	}) => {
-		// Register a new user
-		const uniqueEmail = `resend-test-${Date.now()}@e2e.local`
-
+		// Arrange
+		const uniqueEmail = `resend-${testRun.testRunId}@e2e.local`
 		await registerPage.goto()
 		await registerPage.fillStep1({
 			email: uniqueEmail,
@@ -71,31 +82,24 @@ test.describe("Verify Email Page - Resend Flow", () => {
 		await registerPage.clickContinue()
 		await registerPage.fillStep3({ acceptTerms: true })
 		await registerPage.clickCreateAccount()
-
-		// Should be on dashboard with banner
 		await expect(registerPage.page).toHaveURL("/", { timeout: 10000 })
-
-		// Clear mailpit to only catch resend email
 		await clearMailpit()
 
-		// Click resend in banner
+		// Act
 		const banner = registerPage.page.locator("[role='alert']").filter({ hasText: /email.*not verified/i })
 		await banner.getByRole("button", { name: /resend/i }).click()
 
-		// Should show success toast
+		// Assert
 		await expect(registerPage.page.getByText(/verification email sent/i)).toBeVisible({
 			timeout: 5000,
 		})
-
-		// New email should be sent
 		const email = await waitForEmail(uniqueEmail, "verify", 15000)
 		expect(email).not.toBeNull()
 	})
 
-	test("resend shows cooldown after click", async ({ registerPage }) => {
-		// Register a new user
-		const uniqueEmail = `cooldown-test-${Date.now()}@e2e.local`
-
+	test("resend shows cooldown after click", async ({ registerPage, testRun }) => {
+		// Arrange
+		const uniqueEmail = `cooldown-${testRun.testRunId}@e2e.local`
 		await registerPage.goto()
 		await registerPage.fillStep1({
 			email: uniqueEmail,
@@ -110,16 +114,14 @@ test.describe("Verify Email Page - Resend Flow", () => {
 		await registerPage.clickContinue()
 		await registerPage.fillStep3({ acceptTerms: true })
 		await registerPage.clickCreateAccount()
-
-		// Should be on dashboard with banner
 		await expect(registerPage.page).toHaveURL("/", { timeout: 10000 })
 
-		// Click resend in banner
+		// Act
 		const banner = registerPage.page.locator("[role='alert']").filter({ hasText: /email.*not verified/i })
 		const resendButton = banner.getByRole("button", { name: /resend/i })
 		await resendButton.click()
 
-		// Button should show cooldown and be disabled
+		// Assert
 		await expect(resendButton).toContainText(/resend in \d+s/i, { timeout: 5000 })
 		await expect(resendButton).toBeDisabled()
 	})

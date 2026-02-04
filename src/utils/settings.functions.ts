@@ -263,3 +263,13 @@ export const getSubmissionValidationForFormFn = createServerFn({
 			enableKeywords: settings.ENABLE_KEYWORDS,
 		};
 	});
+
+/**
+ * Get submission deadline (public - requires auth)
+ */
+export const getSubmissionDeadlineFn = createServerFn({ method: "GET" })
+	.middleware([authMiddleware])
+	.handler(async () => {
+		const deadline = await getSetting("SUBMISSION_DEADLINE");
+		return { deadline };
+	});

@@ -4,7 +4,7 @@
  * Tests authorization and overdue assignment marking logic
  */
 
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../helpers/base-fixtures";
 import {
 	createAssignmentWithDeadline,
 	deleteSubmission,
@@ -18,36 +18,38 @@ const API_URL = "/api/cron/check-overdue";
 test.describe("Cron API - Check Overdue Assignments", () => {
 	test.describe("Authorization", () => {
 		test("returns 401 without Authorization header", async ({ request }) => {
+			// Act
 			const response = await request.post(API_URL);
 
+			// Assert
 			expect(response.status()).toBe(401);
 			const body = await response.json();
 			expect(body.error).toBe("Unauthorized");
 		});
 
 		test("returns 401 with invalid token", async ({ request }) => {
+			// Act
 			const response = await request.post(API_URL, {
 				headers: {
 					Authorization: "Bearer wrong-secret",
 				},
 			});
 
+			// Assert
 			expect(response.status()).toBe(401);
 			const body = await response.json();
 			expect(body.error).toBe("Unauthorized");
 		});
 
 		test("returns 500 when CRON_SECRET not configured", async ({ request }) => {
-			// This test verifies the endpoint handles missing config gracefully
-			// In real env without CRON_SECRET set, should return 500
-			// Skip if CRON_SECRET is set (tested in other tests)
+			// Act
 			const response = await request.post(API_URL, {
 				headers: {
 					Authorization: `Bearer ${CRON_SECRET}`,
 				},
 			});
 
-			// Either 500 (no secret configured) or 200 (secret matches)
+			// Assert (either 500 if no secret configured or 200 if matches)
 			expect([200, 500]).toContain(response.status());
 		});
 	});
@@ -56,10 +58,11 @@ test.describe("Cron API - Check Overdue Assignments", () => {
 		let submissionId: string;
 		let assignmentId: string;
 
-		test.beforeEach(async () => {
-			// Create assignment with deadline in the past
+		test.beforeEach(async ({ testRun }) => {
+			// Arrange: Create assignment with deadline in the past
 			const result = await createAssignmentWithDeadline({
-				title: `Overdue Test ${Date.now()}`,
+				testRunId: testRun.testRunId,
+				title: "Overdue Test",
 				assignmentStatus: AssignmentStatus.PENDING,
 				deadline: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
 			});
@@ -104,10 +107,12 @@ test.describe("Cron API - Check Overdue Assignments", () => {
 
 		test("marks IN_PROGRESS assignment as OVERDUE when deadline passed", async ({
 			request,
+			testRun,
 		}) => {
 			// Arrange - create IN_PROGRESS assignment
 			const result = await createAssignmentWithDeadline({
-				title: `Overdue In Progress ${Date.now()}`,
+				testRunId: testRun.testRunId,
+				title: "Overdue In Progress",
 				assignmentStatus: AssignmentStatus.IN_PROGRESS,
 				deadline: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
 			});
@@ -135,10 +140,12 @@ test.describe("Cron API - Check Overdue Assignments", () => {
 
 		test("does not mark COMPLETED assignment as OVERDUE", async ({
 			request,
+			testRun,
 		}) => {
 			// Arrange - create COMPLETED assignment with past deadline
 			const result = await createAssignmentWithDeadline({
-				title: `Completed Past Deadline ${Date.now()}`,
+				testRunId: testRun.testRunId,
+				title: "Completed Past Deadline",
 				assignmentStatus: AssignmentStatus.COMPLETED,
 				deadline: new Date(Date.now() - 24 * 60 * 60 * 1000),
 			});
@@ -163,10 +170,12 @@ test.describe("Cron API - Check Overdue Assignments", () => {
 
 		test("does not mark assignment with future deadline as OVERDUE", async ({
 			request,
+			testRun,
 		}) => {
 			// Arrange - create assignment with future deadline
 			const result = await createAssignmentWithDeadline({
-				title: `Future Deadline ${Date.now()}`,
+				testRunId: testRun.testRunId,
+				title: "Future Deadline",
 				assignmentStatus: AssignmentStatus.PENDING,
 				deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
 			});

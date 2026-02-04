@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { roleLabels } from "@/lib/labels/user";
 import type { AdminUser } from "@/lib/server/admin/users";
@@ -19,9 +20,7 @@ export function UserMobileCard(user: AdminUser) {
 						)}
 					</div>
 					<div className="text-right">
-						<span className="inline-block rounded-full bg-secondary px-2 py-0.5 text-xs">
-							{roleLabels[user.role]}
-						</span>
+						<Badge variant="secondary">{roleLabels[user.role]}</Badge>
 						{user.fee?.paid ? (
 							<p className="mt-1 text-xs text-green-600">Paid</p>
 						) : (

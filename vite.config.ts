@@ -10,6 +10,12 @@ const config = defineConfig({
 	optimizeDeps: {
 		include: ["@tabler/icons-react", "countries-list"],
 	},
+	server: {
+		hmr: {
+			// Disable error overlay during E2E tests to prevent blocking page interaction
+			overlay: process.env.E2E !== "true",
+		},
+	},
 	plugins: [
 		devtools(),
 		nitro({

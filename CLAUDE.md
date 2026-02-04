@@ -50,29 +50,16 @@ Treat the [guidelines](./WORKFLOW.md) as the single source of truth. If a change
 - Use web-first assertions (`expect().toBeVisible()`) instead of `waitForTimeout()`
 
 #### Test Data & Isolation
-- **Seeded data**: Use `e2e/setup/global-setup.ts` for test data. Constants in test fixtures must match seeded data
-- **Test isolation**: Each test suite should use unique seeded submissions. Don't share mutable data between suites
-- **NO conditional skips** based on data availability. If test needs specific data, seed it in global-setup
-- **Mobile skips**: Only skip tests where UI is genuinely different on mobile (sidebars hidden, tabs collapsed)
+- **Per-test data**: Each test creates own data via Prisma helpers in Arrange phase
+- **Helpers**: `createSubmission()`, `createSubmissionWithAssignment()`, `createSubmissionWithReview()` from `e2e/helpers/test-db.ts`
+- **Isolation**: Each test uses unique `testRunId` prefix (e.g., `e2e_a1b2c3d4`)
+- **Cleanup**: Automatic in afterEach via `base-fixtures.ts`
+- **Global seeds**: ONLY config data (users, submission types, validation settings) - NO scenario submissions
 
 #### AAA Pattern (Arrange-Act-Assert)
 - Structure tests with clear sections: Arrange (setup), Act (action), Assert (verify)
+- Add `// Arrange`, `// Act`, `// Assert` comments to every test
 - Don't use conditional logic (`if` checks) inside tests - assert the expected state directly
-- Control initial state via seeded data, don't check "if data exists" and skip
-
-#### Seeded Submissions (global-setup.ts)
-| Title | Status | Purpose |
-|-------|--------|---------|
-| Test Submission Title for E2E | SUBMITTED | General tests |
-| Submission for Desk Reject Test | SUBMITTED | Desk reject in e2e/reviews |
-| Submission Under Review for E2E | UNDER_REVIEW | Reviewer tests (has assignment) |
-| Submission Awaiting Decision for E2E | AWAITING_DECISION | Decision tests (has completed review) |
-| Desk Reject Test for Workflows | SUBMITTED | Desk reject in e2e/workflows |
-| Awaiting Decision for Workflows | AWAITING_DECISION | Decision in e2e/workflows |
-
-#### Submission Type Config (from seeded settings)
-- `ABSTRACT` → `ORAL_PRESENTATION` config: `enableScoring: true`, `reviewMode: DOUBLE_BLIND`
-- Tests for scoring/double-blind should assert these behaviors, not skip if missing
 
 ## TanStack Start 
 When working with Tanstack Start related code **ALWAYS** read tanstack-llms\llms.md first and follow that documentation to better understand library.

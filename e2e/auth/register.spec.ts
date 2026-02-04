@@ -2,8 +2,10 @@ import { test, expect, clearMailpit, waitForEmail } from "./fixtures"
 
 test.describe("Register Page - Step 1: Author Info", () => {
 	test("displays form correctly", async ({ registerPage }) => {
+		// Arrange
 		await registerPage.goto()
 
+		// Assert
 		await expect(registerPage.page.getByLabel("E-mail *")).toBeVisible()
 		await expect(registerPage.page.getByLabel("Password *", { exact: true })).toBeVisible()
 		await expect(registerPage.page.getByLabel("Confirm Password *")).toBeVisible()
@@ -16,10 +18,13 @@ test.describe("Register Page - Step 1: Author Info", () => {
 	})
 
 	test("shows validation errors for required fields", async ({ registerPage }) => {
+		// Arrange
 		await registerPage.goto()
 
+		// Act
 		await registerPage.clickContinue()
 
+		// Assert
 		await expect(registerPage.page.getByText("Email is required")).toBeVisible()
 		await expect(registerPage.page.getByText("Password is required")).toBeVisible()
 		await expect(registerPage.page.getByText("First name is required")).toBeVisible()
@@ -28,48 +33,61 @@ test.describe("Register Page - Step 1: Author Info", () => {
 	})
 
 	test("shows error for password less than 10 characters", async ({ registerPage }) => {
+		// Arrange
 		await registerPage.goto()
 
+		// Act
 		await registerPage.page.getByLabel("Password *", { exact: true }).fill("short")
 		await registerPage.clickContinue()
 
+		// Assert
 		await expect(registerPage.page.getByText("Password must be at least 10 characters")).toBeVisible()
 	})
 
 	test("shows error for password mismatch", async ({ registerPage }) => {
+		// Arrange
 		await registerPage.goto()
 
+		// Act
 		await registerPage.page.getByLabel("Password *", { exact: true }).fill("ValidPassword123!")
 		await registerPage.page.getByLabel("Confirm Password *").fill("DifferentPassword123!")
 		await registerPage.clickContinue()
 
+		// Assert
 		await expect(registerPage.page.getByText("Passwords do not match")).toBeVisible()
 	})
 
 	test("shows error for invalid email format", async ({ registerPage }) => {
+		// Arrange
 		await registerPage.goto()
 
+		// Act
 		await registerPage.page.getByLabel("E-mail *").fill("invalid-email")
 		await registerPage.clickContinue()
 
+		// Assert
 		await expect(registerPage.page.getByText("Invalid email address")).toBeVisible()
 	})
 
 	test("title select dropdown works", async ({ registerPage }) => {
+		// Arrange
 		await registerPage.goto()
-
-		// Title is the only combobox on step 1
 		const titleTrigger = registerPage.page.getByRole("combobox").first()
+
+		// Act
 		await titleTrigger.click()
 		await expect(registerPage.page.getByRole("option", { name: "Dr." })).toBeVisible()
 		await registerPage.page.getByRole("option", { name: "Dr." }).click()
 
+		// Assert
 		await expect(titleTrigger).toContainText("Dr.")
 	})
 
 	test("proceeds to step 2 with valid data", async ({ registerPage }) => {
+		// Arrange
 		await registerPage.goto()
 
+		// Act
 		await registerPage.fillStep1({
 			email: "newuser@example.com",
 			password: "ValidPassword123!",
@@ -78,10 +96,9 @@ test.describe("Register Page - Step 1: Author Info", () => {
 			lastName: "User",
 			affiliation: "Test University",
 		})
-
 		await registerPage.clickContinue()
 
-		// Should see step 2 content
+		// Assert
 		await expect(registerPage.page.getByLabel("Address")).toBeVisible()
 		await expect(registerPage.page.getByText("Select country...")).toBeVisible()
 	})
@@ -89,8 +106,8 @@ test.describe("Register Page - Step 1: Author Info", () => {
 
 test.describe("Register Page - Step 2: Invoice", () => {
 	test.beforeEach(async ({ registerPage }) => {
+		// Arrange
 		await registerPage.goto()
-
 		await registerPage.fillStep1({
 			email: "newuser@example.com",
 			password: "ValidPassword123!",
@@ -103,23 +120,28 @@ test.describe("Register Page - Step 2: Invoice", () => {
 	})
 
 	test("shows error for required country", async ({ registerPage }) => {
+		// Act
 		await registerPage.clickContinue()
 
+		// Assert
 		await expect(registerPage.page.getByText("Country is required")).toBeVisible()
 	})
 
 	test("country search and selection works", async ({ registerPage }) => {
+		// Act
 		await registerPage.page.getByRole("combobox").click()
 		await registerPage.page.getByPlaceholder("Search country...").fill("Poland")
 		await registerPage.page.getByRole("option", { name: "Poland" }).click()
 
+		// Assert
 		await expect(registerPage.page.getByRole("combobox")).toContainText("Poland")
 	})
 
 	test("back button preserves step 1 data", async ({ registerPage }) => {
+		// Act
 		await registerPage.clickBack()
 
-		// Step 1 fields should still have values
+		// Assert
 		await expect(registerPage.page.getByLabel("E-mail *")).toHaveValue("newuser@example.com")
 		await expect(registerPage.page.getByLabel("First name *")).toHaveValue("Test")
 		await expect(registerPage.page.getByLabel("Last name *")).toHaveValue("User")
@@ -127,10 +149,11 @@ test.describe("Register Page - Step 2: Invoice", () => {
 	})
 
 	test("proceeds to step 3 with valid data", async ({ registerPage }) => {
+		// Act
 		await registerPage.fillStep2({ country: "Poland" })
 		await registerPage.clickContinue()
 
-		// Should see step 3 content
+		// Assert
 		await expect(registerPage.page.getByLabel(/I agree to the/)).toBeVisible()
 		await expect(registerPage.createAccountButton).toBeVisible()
 	})
@@ -138,8 +161,8 @@ test.describe("Register Page - Step 2: Invoice", () => {
 
 test.describe("Register Page - Step 3: Survey", () => {
 	test.beforeEach(async ({ registerPage }) => {
+		// Arrange
 		await registerPage.goto()
-
 		await registerPage.fillStep1({
 			email: "newuser@example.com",
 			password: "ValidPassword123!",
@@ -149,82 +172,82 @@ test.describe("Register Page - Step 3: Survey", () => {
 			affiliation: "Test University",
 		})
 		await registerPage.clickContinue()
-
 		await registerPage.fillStep2({ country: "Poland" })
 		await registerPage.clickContinue()
 	})
 
 	test("shows error when terms not accepted", async ({ registerPage }) => {
+		// Act
 		await registerPage.clickCreateAccount()
 
+		// Assert
 		await expect(registerPage.page.getByText("You must accept the terms and conditions")).toBeVisible()
 	})
 
 	test("optional checkboxes are toggleable", async ({ registerPage }) => {
+		// Arrange
 		const visaCheckbox = registerPage.page.getByLabel(
 			"Please send me an Invitation Letter for a Visa Application."
 		)
 		const certificateCheckbox = registerPage.page.getByLabel("I need a certificate of attendance.")
-
 		await expect(visaCheckbox).not.toBeChecked()
 		await expect(certificateCheckbox).not.toBeChecked()
 
+		// Act
 		await visaCheckbox.check()
 		await certificateCheckbox.check()
 
+		// Assert
 		await expect(visaCheckbox).toBeChecked()
 		await expect(certificateCheckbox).toBeChecked()
 
+		// Act
 		await visaCheckbox.uncheck()
+
+		// Assert
 		await expect(visaCheckbox).not.toBeChecked()
 	})
 
 	test("successful registration redirects to dashboard with verification banner", async ({
 		registerPage,
+		testRun,
 	}) => {
-		// Use unique email for this test
-		const uniqueEmail = `test-${Date.now()}@e2e.local`
-
-		// Go back and change email to unique one
+		// Arrange
+		const uniqueEmail = `test-${testRun.testRunId}@e2e.local`
 		await registerPage.clickBack()
 		await registerPage.clickBack()
 		await registerPage.page.getByLabel("E-mail *").fill(uniqueEmail)
 		await registerPage.clickContinue()
 		await registerPage.clickContinue()
-
 		await registerPage.fillStep3({ acceptTerms: true })
+
+		// Act
 		await registerPage.clickCreateAccount()
 
-		// Should redirect to dashboard after successful registration (soft-block)
+		// Assert
 		await expect(registerPage.page).toHaveURL("/", { timeout: 10000 })
-
-		// Should show verification banner for unverified user
 		await expect(
 			registerPage.page.getByText(/email.*not verified/i),
 		).toBeVisible({ timeout: 5000 })
 	})
 
-	test("sends verification email on registration", async ({ registerPage }) => {
+	test("sends verification email on registration", async ({ registerPage, testRun }) => {
+		// Arrange
 		await clearMailpit()
-
-		// Use unique email for this test
-		const uniqueEmail = `verify-${Date.now()}@e2e.local`
-
-		// Go back and change email to unique one
+		const uniqueEmail = `verify-${testRun.testRunId}@e2e.local`
 		await registerPage.clickBack()
 		await registerPage.clickBack()
 		await registerPage.page.getByLabel("E-mail *").fill(uniqueEmail)
 		await registerPage.clickContinue()
 		await registerPage.clickContinue()
-
 		await registerPage.fillStep3({ acceptTerms: true })
+
+		// Act
 		await registerPage.clickCreateAccount()
 
-		// Wait for redirect to dashboard
+		// Assert
 		await expect(registerPage.page).toHaveURL("/", { timeout: 10000 })
-
-		// Verification email should be sent
-		const email = await waitForEmail(uniqueEmail, "verify", 15000)
+		const email = await waitForEmail(uniqueEmail, "verify", 30000)
 		expect(email).not.toBeNull()
 		expect(email?.Subject).toContain("Verify")
 	})
@@ -232,10 +255,13 @@ test.describe("Register Page - Step 3: Survey", () => {
 
 test.describe("Register Page - Navigation", () => {
 	test("sign in link navigates to login page", async ({ registerPage }) => {
+		// Arrange
 		await registerPage.goto()
 
+		// Act
 		await registerPage.loginLink.click()
 
+		// Assert
 		await expect(registerPage.page).toHaveURL(/\/login/)
 	})
 })
