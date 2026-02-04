@@ -1,4 +1,5 @@
-import { test as base, expect as baseExpect, type Page, type Locator } from "@playwright/test"
+import { type Page, type Locator } from "@playwright/test"
+import { test as base, expect as baseExpect, type TestRunContext, type CleanupContext } from "../helpers/base-fixtures"
 
 // Test data
 export const TEST_USER = {
@@ -72,10 +73,12 @@ export async function getMailpitMessages() {
 // Login helper
 export async function loginAsTestUser(page: Page) {
 	await page.goto("/login")
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 60000 })
+	// SSR hydration + form render
+	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 })
 	await page.getByLabel("E-mail").fill(TEST_USER.email)
 	await page.getByLabel("Password").fill(TEST_USER.password)
 	await page.getByRole("button", { name: "Sign in" }).click()
+	// API auth + session + redirect
 	await page.waitForURL("/", { timeout: 30000 })
 }
 
@@ -115,6 +118,11 @@ export class SubmissionPage {
 		await this.contentInput.fill(content)
 	}
 
+	/** Get author card by index (0-based) */
+	getAuthorCard(index: number): Locator {
+		return this.page.locator(`[data-testid="author-card-${index}"]`)
+	}
+
 	async fillAuthor(
 		index: number,
 		author: {
@@ -148,12 +156,18 @@ export class SubmissionPage {
 		await this.page.getByRole("button", { name: "Add Author" }).click()
 	}
 
+	/** Get keywords section container */
+	getKeywordsSection(): Locator {
+		return this.page.locator('[data-testid="keywords-section"]')
+	}
+
+	/** Get submission type button by name (e.g., "Oral Presentation", "Poster", "Full Paper") */
+	getSubmissionTypeButton(name: string): Locator {
+		return this.page.getByRole("button", { name: new RegExp(name, "i") })
+	}
+
 	async addKeyword(keyword: string) {
-		// Keywords input is inside the Keywords section
-		const keywordsSection = this.page
-			.locator(".space-y-2, .space-y-3, .space-y-4")
-			.filter({ has: this.page.getByText("Keywords", { exact: true }) })
-		const keywordInput = keywordsSection.getByRole("textbox")
+		const keywordInput = this.getKeywordsSection().getByRole("textbox")
 		await keywordInput.fill(keyword)
 		// Press Enter to add keyword (or comma for tokenization)
 		await keywordInput.press("Enter")
@@ -180,6 +194,8 @@ export class SubmissionPage {
 
 // Extended test with fixtures
 interface SubmissionFixtures {
+	testRun: TestRunContext
+	cleanup: CleanupContext
 	submissionPage: SubmissionPage
 	uniqueSubmission: ReturnType<typeof createUniqueSubmission>
 }
@@ -189,10 +205,10 @@ export const test = base.extend<SubmissionFixtures>({
 		const submissionPage = new SubmissionPage(page)
 		await use(submissionPage)
 	},
-	uniqueSubmission: async ({}, use) => {
-		const submission = createUniqueSubmission()
+	uniqueSubmission: async ({ testRun }, use) => {
+		const submission = createUniqueSubmission(testRun.testRunId)
 		await use(submission)
 	},
 })
 
-export { expect } from "@playwright/test"
+export { baseExpect as expect }

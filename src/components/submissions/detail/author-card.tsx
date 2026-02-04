@@ -13,6 +13,7 @@ export function AuthorCard({ author, index }: AuthorCardProps) {
 
 	return (
 		<div
+			data-testid={`author-card-${index}`}
 			className={cn(
 				"flex items-start gap-3 p-3 rounded-lg border transition-colors",
 				isPresenter

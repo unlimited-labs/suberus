@@ -270,6 +270,7 @@ function SubmissionDetailPage() {
 											{typeLabels[submission.type]}
 										</Badge>
 										<Badge
+											data-testid="submission-status"
 											variant={statusVariants[submission.status] ?? "secondary"}
 										>
 											{statusLabels[submission.status] ?? submission.status}

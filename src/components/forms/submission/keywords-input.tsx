@@ -106,7 +106,7 @@ export function KeywordsInput({
 	}, [inputValue, addKeyword]);
 
 	return (
-		<div className={cn("space-y-2", className)}>
+		<div data-testid="keywords-section" className={cn("space-y-2", className)}>
 			{/* biome-ignore lint/a11y/useKeyWithClickEvents: click focuses inner input */}
 			{/* biome-ignore lint/a11y/noStaticElementInteractions: visual wrapper for input */}
 			<div

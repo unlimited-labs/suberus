@@ -30,12 +30,12 @@ export const ADMIN_VERIFY_TEST_USER = {
 // Login helper
 export async function loginAsAdmin(page: Page) {
 	await page.goto("/login")
-	// Wait for the form to appear (spinner disappears)
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 60000 })
+	// SSR hydration + form render
+	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 })
 	await page.getByLabel("E-mail").fill(ADMIN_USER.email)
 	await page.getByLabel("Password").fill(ADMIN_USER.password)
 	await page.getByRole("button", { name: "Sign in" }).click()
-	// Wait for redirect to home page
+	// API auth + session + redirect
 	await page.waitForURL("/", { timeout: 30000 })
 }
 
@@ -181,7 +181,7 @@ export class UserDetailPage {
 	}
 
 	getRoleBadge() {
-		return this.page.locator("[class*='badge']").first()
+		return this.page.locator("[data-slot='badge']").first()
 	}
 }
 
@@ -207,11 +207,121 @@ export class BulkActionDialog {
 	}
 }
 
+export class AdminSettingsPage {
+	readonly page: Page
+	readonly conferenceTab: Locator
+	readonly submissionsTab: Locator
+	readonly typesTab: Locator
+	readonly saveAllButton: Locator
+
+	constructor(page: Page) {
+		this.page = page
+		this.conferenceTab = page.getByRole("tab", { name: /Conference/i })
+		this.submissionsTab = page.getByRole("tab", { name: /Submissions$/i })
+		this.typesTab = page.getByRole("tab", { name: /Submission Types/i })
+		this.saveAllButton = page.getByRole("button", { name: "Save All Settings" })
+	}
+
+	async goto() {
+		await this.page.goto("/admin/settings")
+	}
+
+	/** Get tab by name (uses role-based selector) */
+	getTab(name: string): Locator {
+		return this.page.getByRole("tab", { name: new RegExp(name, "i") })
+	}
+
+	async switchToSubmissionsTab(testInfo?: { project: { name: string } }) {
+		if (testInfo?.project.name === "mobile-admin") {
+			// Mobile uses nth() because tab names may be truncated
+			const tabs = this.page.getByRole("tab")
+			await tabs.nth(1).click()
+		} else {
+			await this.submissionsTab.click()
+		}
+		await expect(this.page.getByRole("heading", { name: "Title" })).toBeVisible()
+	}
+
+	async switchToTypesTab(testInfo?: { project: { name: string } }) {
+		if (testInfo?.project.name === "mobile-admin") {
+			// Mobile uses nth() because tab names may be truncated
+			const tabs = this.page.getByRole("tab")
+			await tabs.nth(2).click()
+		} else {
+			await this.typesTab.click()
+		}
+		await expect(this.page.getByText("Oral Presentation")).toBeVisible()
+	}
+
+	async expandSubmissionType(name: string) {
+		await this.page.getByRole("button", { name: new RegExp(name, "i") }).first().click()
+		await expect(this.page.getByText("Content Format")).toBeVisible()
+	}
+
+	async toggleActiveSwitch() {
+		const activeSwitch = this.page.getByRole("switch").first()
+		await activeSwitch.click()
+		return activeSwitch
+	}
+
+	async saveSubmissionType() {
+		await this.page.getByRole("button", { name: "Save" }).click()
+	}
+
+	async saveValidationSettings() {
+		await this.saveAllButton.click()
+		await expect(this.page.getByText("Submission settings saved")).toBeVisible({ timeout: 5000 })
+	}
+
+	getMinLengthInput(index = 0) {
+		return this.page.getByLabel("Min length (characters)").nth(index)
+	}
+
+	getMaxLengthInput(index = 0) {
+		return this.page.getByLabel("Max length (characters)").nth(index)
+	}
+
+	getMinKeywordsInput() {
+		return this.page.getByLabel("Min keywords")
+	}
+
+	getMaxKeywordsInput() {
+		return this.page.getByLabel("Max keywords")
+	}
+
+	getEnableKeywordsSwitch() {
+		return this.page.getByLabel("Enable keywords")
+	}
+
+	getMaxFileSizeInput() {
+		return this.page.getByLabel("Max file size (MB)")
+	}
+
+	getMinReviewersInput() {
+		const container = this.page.locator("div").filter({ hasText: /^Min reviewers$/ })
+		return container.getByRole("spinbutton")
+	}
+
+	getContentFormatSelect() {
+		return this.page.getByRole("combobox").first()
+	}
+
+	async selectContentFormat(format: "Text (Abstract)" | "File Upload") {
+		await this.getContentFormatSelect().click()
+		await this.page.getByRole("option", { name: format }).click()
+	}
+
+	getFileExtensionCheckbox(ext: "pdf" | "doc" | "docx") {
+		return this.page.getByLabel(ext, { exact: ext === "doc" })
+	}
+}
+
 // Extended test with fixtures
 interface AdminFixtures {
 	adminUsersPage: AdminUsersPage
 	userDetailPage: UserDetailPage
 	bulkActionDialog: BulkActionDialog
+	adminSettingsPage: AdminSettingsPage
 }
 
 export const test = base.extend<AdminFixtures>({
@@ -223,6 +333,9 @@ export const test = base.extend<AdminFixtures>({
 	},
 	bulkActionDialog: async ({ page }, use) => {
 		await use(new BulkActionDialog(page))
+	},
+	adminSettingsPage: async ({ page }, use) => {
+		await use(new AdminSettingsPage(page))
 	},
 })
 

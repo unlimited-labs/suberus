@@ -33,7 +33,8 @@ const unverifiedAuthFile = "e2e/.auth/unverified.json"
 
 setup("authenticate as admin", async ({ page }) => {
 	await page.goto("/login")
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 60000 })
+	// SSR hydration + form render
+	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 })
 	await page.getByLabel("E-mail").fill(ADMIN_USER.email)
 	await page.getByLabel("Password").fill(ADMIN_USER.password)
 	await page.getByRole("button", { name: "Sign in" }).click()
@@ -48,7 +49,8 @@ setup("authenticate as admin", async ({ page }) => {
 
 setup("authenticate as user", async ({ page }) => {
 	await page.goto("/login")
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 60000 })
+	// SSR hydration + form render
+	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 })
 	await page.getByLabel("E-mail").fill(TEST_USER.email)
 	await page.getByLabel("Password").fill(TEST_USER.password)
 	await page.getByRole("button", { name: "Sign in" }).click()
@@ -63,7 +65,8 @@ setup("authenticate as user", async ({ page }) => {
 
 setup("authenticate as reviewer", async ({ page }) => {
 	await page.goto("/login")
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 60000 })
+	// SSR hydration + form render
+	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 })
 	await page.getByLabel("E-mail").fill(REVIEWER_USER.email)
 	await page.getByLabel("Password").fill(REVIEWER_USER.password)
 	await page.getByRole("button", { name: "Sign in" }).click()
@@ -78,7 +81,8 @@ setup("authenticate as reviewer", async ({ page }) => {
 
 setup("authenticate as editor", async ({ page }) => {
 	await page.goto("/login")
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 60000 })
+	// SSR hydration + form render
+	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 })
 	await page.getByLabel("E-mail").fill(EDITOR_USER.email)
 	await page.getByLabel("Password").fill(EDITOR_USER.password)
 	await page.getByRole("button", { name: "Sign in" }).click()
@@ -93,7 +97,8 @@ setup("authenticate as editor", async ({ page }) => {
 
 setup("authenticate as unverified user", async ({ page }) => {
 	await page.goto("/login")
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 60000 })
+	// SSR hydration + form render
+	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 })
 	await page.getByLabel("E-mail").fill(UNVERIFIED_USER.email)
 	await page.getByLabel("Password").fill(UNVERIFIED_USER.password)
 	await page.getByRole("button", { name: "Sign in" }).click()

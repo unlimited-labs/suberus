@@ -1,5 +1,8 @@
 import { VersionSelector } from "@/components/submissions/version-selector";
-import type { UserSubmission, UserSubmissionVersion } from "@/utils/submissions.functions";
+import type {
+	UserSubmission,
+	UserSubmissionVersion,
+} from "@/utils/submissions.functions";
 import { ActionsCard } from "./actions-card";
 import { TYPE_LABELS } from "./constants";
 import { StatusCard } from "./status-card";
@@ -18,7 +21,7 @@ export function MobileSidebar({
 	onVersionChange,
 }: MobileSidebarProps) {
 	return (
-		<div className="lg:hidden space-y-6">
+		<div data-testid="submission-sidebar" className="lg:hidden space-y-6">
 			{/* Mobile Status */}
 			<div className="rounded-2xl bg-card shadow-xl border p-6">
 				<div className="flex items-center justify-between flex-wrap gap-3">

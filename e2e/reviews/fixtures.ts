@@ -1,9 +1,10 @@
+import { type Page, type Locator } from "@playwright/test";
 import {
 	test as base,
-	type Page,
-	type Locator,
 	expect as baseExpect,
-} from "@playwright/test";
+	type TestRunContext,
+	type CleanupContext,
+} from "../helpers/base-fixtures";
 
 // Test data
 export const ADMIN_USER = {
@@ -32,7 +33,11 @@ export {
 	createSubmissionWithReview,
 	deleteSubmission,
 	getTestUserIds,
+	getPrisma,
 } from "../helpers/test-db";
+
+// Re-export base fixtures types
+export type { TestRunContext, CleanupContext } from "../helpers/base-fixtures";
 
 // Generate unique submission data
 export function createTestSubmission(suffix?: string) {
@@ -48,28 +53,34 @@ export function createTestSubmission(suffix?: string) {
 // Login helpers
 export async function loginAsAdmin(page: Page) {
 	await page.goto("/login");
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 60000 });
+	// SSR hydration + form render
+	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 });
 	await page.getByLabel("E-mail").fill(ADMIN_USER.email);
 	await page.getByLabel("Password").fill(ADMIN_USER.password);
 	await page.getByRole("button", { name: "Sign in" }).click();
+	// API auth + session + redirect
 	await page.waitForURL("/", { timeout: 30000 });
 }
 
 export async function loginAsReviewer(page: Page) {
 	await page.goto("/login");
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 60000 });
+	// SSR hydration + form render
+	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 });
 	await page.getByLabel("E-mail").fill(REVIEWER_USER.email);
 	await page.getByLabel("Password").fill(REVIEWER_USER.password);
 	await page.getByRole("button", { name: "Sign in" }).click();
+	// API auth + session + redirect
 	await page.waitForURL("/", { timeout: 30000 });
 }
 
 export async function loginAsTestUser(page: Page) {
 	await page.goto("/login");
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 60000 });
+	// SSR hydration + form render
+	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 });
 	await page.getByLabel("E-mail").fill(TEST_USER.email);
 	await page.getByLabel("Password").fill(TEST_USER.password);
 	await page.getByRole("button", { name: "Sign in" }).click();
+	// API auth + session + redirect
 	await page.waitForURL("/", { timeout: 30000 });
 }
 
@@ -109,9 +120,19 @@ export class AdminSubmissionsPage {
 		return this.page.locator("tr").filter({ hasText: title });
 	}
 
+	/** Get status badge for a submission row */
+	getStatusBadge(title: string): Locator {
+		return this.getRowByTitle(title).locator('[data-testid="submission-status"]').first();
+	}
+
 	async getSubmissionStatus(title: string) {
+		// Fall back to class selector for table rows (data-testid is in detail views)
 		const row = this.getRowByTitle(title);
-		return row.locator("[class*='badge']").first().textContent();
+		const testIdBadge = row.locator('[data-testid="submission-status"]');
+		if (await testIdBadge.count() > 0) {
+			return testIdBadge.first().textContent();
+		}
+		return row.locator("[data-slot='badge']").first().textContent();
 	}
 }
 
@@ -152,10 +173,13 @@ export class AdminSubmissionDetailPage {
 		await this.page.waitForLoadState("networkidle");
 	}
 
+	/** Get submission status badge */
+	getStatusBadge(): Locator {
+		return this.page.locator('[data-testid="submission-status"]');
+	}
+
 	async getStatus() {
-		// Get the status badge in the header card
-		const statusBadge = this.page.locator("[class*='badge']").nth(1);
-		return statusBadge.textContent();
+		return this.getStatusBadge().textContent();
 	}
 
 	async openAssignReviewerDialog() {
@@ -288,7 +312,7 @@ export class DeskRejectDialog {
 		// Click with force to ensure it registers even if there's an overlay
 		await this.confirmButton.click({ force: true });
 
-		// Wait for either success (dialog closes) or error (toast appears)
+		// Dialog animation + API response
 		await Promise.race([
 			this.page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15000 }),
 			this.page.locator("[data-sonner-toast]").waitFor({ state: "visible", timeout: 15000 }),
@@ -466,6 +490,8 @@ export class ReviewFormPage {
 
 // Extended test with fixtures
 interface ReviewFixtures {
+	testRun: TestRunContext;
+	cleanup: CleanupContext;
 	adminSubmissionsPage: AdminSubmissionsPage;
 	adminSubmissionDetailPage: AdminSubmissionDetailPage;
 	assignReviewerDialog: AssignReviewerDialog;
@@ -498,8 +524,8 @@ export const test = base.extend<ReviewFixtures>({
 	reviewFormPage: async ({ page }, use) => {
 		await use(new ReviewFormPage(page));
 	},
-	testSubmission: async ({}, use) => {
-		await use(createTestSubmission());
+	testSubmission: async ({ testRun }, use) => {
+		await use(createTestSubmission(testRun.testRunId));
 	},
 });
 
