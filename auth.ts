@@ -34,10 +34,15 @@ export const auth = betterAuth({
 		minPasswordLength: 10,
 		sendResetPassword: async ({ user, url }) => {
 			const extUser = user as typeof user & { firstName?: string }
+			// Extract testRunId from E2E test emails (pattern: prefix-{testRunId}@e2e.local)
+			const testRunIdMatch = user.email.match(/^[^-]+-([^@]+)@e2e\.local$/)
+			const testRunId = testRunIdMatch?.[1]
+
 			await sendEmail("PASSWORD_RESET", user.email, {
 				firstName: extUser.firstName ?? user.email,
 				resetUrl: url,
 				conferenceName: APP_SETTINGS_DEFAULTS.CONFERENCE_NAME,
+				...(testRunId && { testRunId }),
 			})
 		},
 	},
@@ -46,10 +51,15 @@ export const auth = betterAuth({
 		autoSignInAfterVerification: true,
 		sendVerificationEmail: async ({ user, url }) => {
 			const extUser = user as typeof user & { firstName?: string }
+			// Extract testRunId from E2E test emails (pattern: prefix-{testRunId}@e2e.local)
+			const testRunIdMatch = user.email.match(/^[^-]+-([^@]+)@e2e\.local$/)
+			const testRunId = testRunIdMatch?.[1]
+
 			await sendEmail("EMAIL_VERIFICATION", user.email, {
 				firstName: extUser.firstName ?? user.email,
 				verificationUrl: url,
 				conferenceName: APP_SETTINGS_DEFAULTS.CONFERENCE_NAME,
+				...(testRunId && { testRunId }),
 			})
 		},
 	},

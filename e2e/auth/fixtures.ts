@@ -260,9 +260,28 @@ export class ResetPasswordPage {
 // Mailpit helpers
 const MAILPIT_API = "http://localhost:8025/api/v1"
 
-export async function clearMailpit() {
+export async function clearMailpit(testRunId?: string) {
 	try {
-		await fetch(`${MAILPIT_API}/messages`, { method: "DELETE" })
+		if (!testRunId) {
+			// Legacy: clear all messages
+			await fetch(`${MAILPIT_API}/messages`, { method: "DELETE" })
+			return
+		}
+
+		// Get all messages and delete only those matching testRunId
+		const { messages } = await getMailpitMessages()
+		for (const message of messages) {
+			try {
+				const details = await getMailpitMessage(message.ID)
+				// Check if X-Test-Run-Id header matches
+				const testRunHeader = details.Headers?.["X-Test-Run-Id"]?.[0]
+				if (testRunHeader === testRunId) {
+					await fetch(`${MAILPIT_API}/message/${message.ID}`, { method: "DELETE" })
+				}
+			} catch {
+				// Skip if message already deleted or error fetching
+			}
+		}
 	} catch {
 		// Mailpit might not be running
 	}
@@ -291,6 +310,7 @@ export async function getMailpitMessage(id: string) {
 		Subject: string
 		Text: string
 		HTML: string
+		Headers?: Record<string, string[]>
 	}
 }
 

@@ -233,7 +233,7 @@ test.describe("Register Page - Step 3: Survey", () => {
 
 	test("sends verification email on registration", async ({ registerPage, testRun }) => {
 		// Arrange
-		await clearMailpit()
+		await clearMailpit(testRun.testRunId)
 		const uniqueEmail = `verify-${testRun.testRunId}@e2e.local`
 		await registerPage.clickBack()
 		await registerPage.clickBack()
