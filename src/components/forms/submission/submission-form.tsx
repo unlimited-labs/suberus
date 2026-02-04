@@ -185,7 +185,11 @@ export function SubmissionForm({
 			}
 		}
 		// Case 2: User was already filled but affiliationId became available later
-		else if (needsAffiliation && hasAutoFilledRef.current && user.affiliationId) {
+		else if (
+			needsAffiliation &&
+			hasAutoFilledRef.current &&
+			user.affiliationId
+		) {
 			const affiliationId = user.affiliationId;
 			isFetchingAffiliationRef.current = true;
 			getAffiliationById({ data: { id: affiliationId } })
