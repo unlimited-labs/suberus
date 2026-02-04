@@ -15,6 +15,11 @@ const REVIEWER_USER = {
 	password: "testpass123",
 }
 
+const EDITOR_USER = {
+	email: "editor@e2e.local",
+	password: "testpass123",
+}
+
 const UNVERIFIED_USER = {
 	email: "unverified@e2e.local",
 	password: "testpass123",
@@ -23,6 +28,7 @@ const UNVERIFIED_USER = {
 const adminAuthFile = "e2e/.auth/admin.json"
 const userAuthFile = "e2e/.auth/user.json"
 const reviewerAuthFile = "e2e/.auth/reviewer.json"
+const editorAuthFile = "e2e/.auth/editor.json"
 const unverifiedAuthFile = "e2e/.auth/unverified.json"
 
 setup("authenticate as admin", async ({ page }) => {
@@ -68,6 +74,21 @@ setup("authenticate as reviewer", async ({ page }) => {
 
 	// Save signed-in state
 	await page.context().storageState({ path: reviewerAuthFile })
+})
+
+setup("authenticate as editor", async ({ page }) => {
+	await page.goto("/login")
+	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 60000 })
+	await page.getByLabel("E-mail").fill(EDITOR_USER.email)
+	await page.getByLabel("Password").fill(EDITOR_USER.password)
+	await page.getByRole("button", { name: "Sign in" }).click()
+	await page.waitForURL("/", { timeout: 30000 })
+
+	// Verify we're logged in
+	await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible({ timeout: 10000 })
+
+	// Save signed-in state
+	await page.context().storageState({ path: editorAuthFile })
 })
 
 setup("authenticate as unverified user", async ({ page }) => {

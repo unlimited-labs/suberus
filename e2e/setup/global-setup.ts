@@ -34,6 +34,14 @@ const REVIEWER_USER = {
 	affiliationName: "Reviewer University",
 };
 
+const EDITOR_USER = {
+	email: "editor@e2e.local",
+	password: "testpass123",
+	firstName: "Editor",
+	lastName: "User",
+	affiliationName: "Editor University",
+};
+
 // Unverified user for email verification tests
 const UNVERIFIED_USER = {
 	email: "unverified@e2e.local",
@@ -156,6 +164,12 @@ async function globalSetup() {
 			create: { name: REVIEWER_USER.affiliationName },
 		});
 
+		const editorAffiliation = await prisma.affiliation.upsert({
+			where: { name: EDITOR_USER.affiliationName },
+			update: {},
+			create: { name: EDITOR_USER.affiliationName },
+		});
+
 		const unverifiedAffiliation = await prisma.affiliation.upsert({
 			where: { name: UNVERIFIED_USER.affiliationName },
 			update: {},
@@ -239,6 +253,28 @@ async function globalSetup() {
 		});
 
 		console.log(`✅ Reviewer user created: ${REVIEWER_USER.email}`);
+
+		// Create editor user
+		const editorResult = await auth.api.signUpEmail({
+			body: {
+				email: EDITOR_USER.email,
+				password: EDITOR_USER.password,
+				name: EDITOR_USER.lastName,
+				firstName: EDITOR_USER.firstName,
+				affiliationId: editorAffiliation.id,
+			},
+		});
+
+		if (!editorResult?.user) {
+			throw new Error("Failed to create editor user");
+		}
+
+		await prisma.user.update({
+			where: { id: editorResult.user.id },
+			data: { emailVerified: true, isActive: true, role: "EDITOR" },
+		});
+
+		console.log(`✅ Editor user created: ${EDITOR_USER.email}`);
 
 		// Create unverified user (for email verification tests)
 		const unverifiedResult = await auth.api.signUpEmail({

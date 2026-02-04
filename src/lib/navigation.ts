@@ -14,6 +14,7 @@ export interface NavItem {
 	name: string;
 	href: string;
 	icon: ComponentType<{ className?: string }>;
+	roles?: UserRole[]; // undefined = visible to all
 }
 
 export interface NavSection {
@@ -27,7 +28,12 @@ export const navigationSections: NavSection[] = [
 		items: [
 			{ name: "Dashboard", href: "/", icon: IconDashboard },
 			{ name: "Submissions", href: "/submissions", icon: IconFileText },
-			{ name: "Reviews", href: "/reviews", icon: IconClipboardCheck },
+			{
+				name: "Reviews",
+				href: "/reviews",
+				icon: IconClipboardCheck,
+				roles: ["REVIEWER", "EDITOR", "ADMIN"],
+			},
 			{ name: "Settings", href: "/settings", icon: IconSettings },
 		],
 	},
@@ -42,9 +48,15 @@ export const navigationSections: NavSection[] = [
 	},
 ];
 
-// Helper to filter sections by user role
+// Helper to filter sections and items by user role
 export function getNavigationForRole(role: UserRole): NavSection[] {
-	return navigationSections.filter(
-		(section) => !section.roles || section.roles.includes(role),
-	);
+	return navigationSections
+		.filter((section) => !section.roles || section.roles.includes(role))
+		.map((section) => ({
+			...section,
+			items: section.items.filter(
+				(item) => !item.roles || item.roles.includes(role),
+			),
+		}))
+		.filter((section) => section.items.length > 0);
 }

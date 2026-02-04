@@ -156,6 +156,15 @@ export default defineConfig({
 				...devices["Desktop Chrome"],
 			},
 		},
+		// Navigation tests - cross-role (handles auth internally)
+		{
+			name: "chromium-navigation",
+			testMatch: /e2e\/navigation\/.*\.spec\.ts/,
+			dependencies: ["auth-setup"],
+			use: {
+				...devices["Desktop Chrome"],
+			},
+		},
 	],
 	webServer: {
 		command: "dotenv -e .env.local -- pnpm dev",
