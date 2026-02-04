@@ -61,7 +61,7 @@ test.describe("Author - Submission Detail View", () => {
 		await expect(page.getByText(uniqueSubmission.title)).toBeVisible();
 	});
 
-	test("submission detail shows tabs (Overview, Authors, History)", async ({ page }, testInfo) => {
+	test("submission detail shows tabs (Overview, History)", async ({ page }, testInfo) => {
 		// Skip on mobile - tabs may be displayed differently
 		if (testInfo.project.name.includes("mobile")) {
 			test.skip();
@@ -77,9 +77,8 @@ test.describe("Author - Submission Detail View", () => {
 		await page.waitForURL(/\/submissions\/[a-f0-9-]+/, { timeout: 15000 });
 		await page.waitForLoadState("networkidle");
 
-		// Tabs should be visible
+		// Tabs should be visible (Authors moved to Overview, no separate tab)
 		await expect(page.getByRole("tab", { name: /Overview/i })).toBeVisible();
-		await expect(page.getByRole("tab", { name: /Authors/i })).toBeVisible();
 		await expect(page.getByRole("tab", { name: /History/i })).toBeVisible();
 	});
 
@@ -105,7 +104,7 @@ test.describe("Author - Submission Detail View", () => {
 		}
 	});
 
-	test("can switch to Authors tab and see author info", async ({ page }, testInfo) => {
+	test("author info is visible in Overview tab", async ({ page }, testInfo) => {
 		// Skip on mobile - tabs may be displayed differently
 		if (testInfo.project.name.includes("mobile")) {
 			test.skip();
@@ -121,10 +120,7 @@ test.describe("Author - Submission Detail View", () => {
 		await page.waitForURL(/\/submissions\/[a-f0-9-]+/, { timeout: 15000 });
 		await page.waitForLoadState("networkidle");
 
-		// Click Authors tab
-		await page.getByRole("tab", { name: /Authors/i }).click();
-		await page.waitForLoadState("networkidle");
-
+		// Authors are now displayed in Overview tab (default)
 		// Should see author name (first name and last name together)
 		const fullName = `${uniqueSubmission.authors[0].firstName} ${uniqueSubmission.authors[0].lastName}`;
 		await expect(page.getByText(fullName)).toBeVisible();

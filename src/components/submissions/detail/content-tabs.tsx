@@ -1,5 +1,6 @@
 import {
 	IconHistory,
+	IconStarFilled,
 	IconTags,
 	IconUsers,
 	IconWriting,
@@ -11,7 +12,6 @@ import type {
 	UserSubmissionAuthor,
 	UserSubmissionStatusHistory,
 } from "@/utils/submissions.functions";
-import { AuthorCard } from "./author-card";
 
 interface ContentTabsProps {
 	title: string;
@@ -36,10 +36,6 @@ export function ContentTabs({
 						<IconWriting className="size-4" />
 						<span className="hidden sm:inline">Overview</span>
 					</TabsTrigger>
-					<TabsTrigger value="authors" className="gap-2">
-						<IconUsers className="size-4" />
-						<span className="hidden sm:inline">Authors ({authors.length})</span>
-					</TabsTrigger>
 					<TabsTrigger value="history" className="gap-2">
 						<IconHistory className="size-4" />
 						<span className="hidden sm:inline">History</span>
@@ -55,7 +51,7 @@ export function ContentTabs({
 						<p className="text-sm font-medium text-muted-foreground">
 							Abstract
 						</p>
-						<div className="text-sm text-foreground leading-relaxed whitespace-pre-line bg-muted/30 p-4 rounded-lg border">
+						<div className="text-sm text-foreground leading-relaxed whitespace-pre-line break-words bg-muted/30 p-4 rounded-lg border">
 							{content}
 						</div>
 					</div>
@@ -79,17 +75,32 @@ export function ContentTabs({
 							))}
 						</div>
 					</div>
-				</TabsContent>
 
-				<TabsContent value="authors" className="space-y-4">
 					<div className="space-y-3">
-						{authors.map((author, index) => (
-							<AuthorCard
-								key={`${author.email}-${index}`}
-								author={author}
-								index={index}
-							/>
-						))}
+						<div className="flex items-center gap-2">
+							<IconUsers className="size-4 text-muted-foreground" />
+							<p className="text-sm font-medium text-muted-foreground">
+								Authors
+							</p>
+						</div>
+						<div className="space-y-1">
+							{authors.map((author, index) => (
+								<div
+									key={`${author.email}-${index}`}
+									className="text-sm flex items-center gap-2 flex-wrap"
+								>
+									<span className="font-medium">
+										{author.firstName} {author.lastName}
+									</span>
+									{author.isPresenter && (
+										<IconStarFilled className="size-3 text-primary" />
+									)}
+									<span className="text-muted-foreground">
+										• {author.affiliation}
+									</span>
+								</div>
+							))}
+						</div>
 					</div>
 				</TabsContent>
 
