@@ -43,6 +43,7 @@ export const navigationSections: NavSection[] = [
 		title: "Administration",
 		roles: ["ADMIN", "EDITOR"],
 		items: [
+			{ name: "Dashboard", href: "/admin/dashboard", icon: IconDashboard },
 			{ name: "Users", href: "/admin/users", icon: IconUsers },
 			{ name: "Submissions", href: "/admin/submissions", icon: IconFileStack },
 			{ name: "Configuration", href: "/admin/settings", icon: IconAdjustments },
