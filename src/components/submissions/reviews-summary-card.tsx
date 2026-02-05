@@ -51,11 +51,17 @@ export function ReviewsSummaryCard({
 
 	// Calculate average from available scores
 	const allScores = reviews.flatMap((r) =>
-		[r.scores.originality, r.scores.clarity, r.scores.significance, r.scores.overall].filter(
-			(s): s is number => s !== null,
-		),
+		[
+			r.scores.originality,
+			r.scores.clarity,
+			r.scores.significance,
+			r.scores.overall,
+		].filter((s): s is number => s !== null),
 	);
-	const avgScore = allScores.length > 0 ? allScores.reduce((sum, s) => sum + s, 0) / allScores.length : 0;
+	const avgScore =
+		allScores.length > 0
+			? allScores.reduce((sum, s) => sum + s, 0) / allScores.length
+			: 0;
 	const avgColorConfig = getScoreColor(avgScore);
 
 	return (

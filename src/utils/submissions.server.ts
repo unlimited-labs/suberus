@@ -274,7 +274,10 @@ export async function getSubmissionById(
 				include: {
 					submission: {
 						include: {
-							authors: { include: { affiliation: true }, orderBy: { orderIndex: "asc" } },
+							authors: {
+								include: { affiliation: true },
+								orderBy: { orderIndex: "asc" },
+							},
 							keywords: { include: { keyword: true } },
 						},
 					},
@@ -296,33 +299,36 @@ export async function getSubmissionById(
 
 	const keywords = submission.keywords.map((k) => k.keyword.name);
 
-	const statusHistory: UserSubmissionStatusHistory[] = submission.statusHistory.map((h) => ({
-		id: h.id,
-		submissionId: h.submissionId,
-		status: h.toStatus,
-		timestamp: h.createdAt,
-		triggeredBy: h.triggeredByUser
-			? `${h.triggeredByUser.firstName ?? ""} ${h.triggeredByUser.lastName ?? ""}`.trim() ||
-			  "System"
-			: "System",
-		metadata: h.metadata as { reason?: string; comment?: string } | undefined,
-	}));
+	const statusHistory: UserSubmissionStatusHistory[] =
+		submission.statusHistory.map((h) => ({
+			id: h.id,
+			submissionId: h.submissionId,
+			status: h.toStatus,
+			timestamp: h.createdAt,
+			triggeredBy: h.triggeredByUser
+				? `${h.triggeredByUser.firstName ?? ""} ${h.triggeredByUser.lastName ?? ""}`.trim() ||
+					"System"
+				: "System",
+			metadata: h.metadata as { reason?: string; comment?: string } | undefined,
+		}));
 
 	// Reviews are anonymized for authors (just "Reviewer 1", "Reviewer 2", etc.)
-	const reviews: UserSubmissionReview[] = submission.reviews.map((r, index) => ({
-		id: r.id,
-		submissionId: r.submissionId,
-		round: r.round,
-		reviewerName: `Reviewer ${index + 1}`,
-		scores: {
-			originality: r.scoreNovelty,
-			clarity: r.scoreClarity,
-			significance: r.scoreRelevance,
-			overall: r.scoreMethodology, // Map overall to methodology for now
-		},
-		comments: r.comments,
-		createdAt: r.createdAt,
-	}));
+	const reviews: UserSubmissionReview[] = submission.reviews.map(
+		(r, index) => ({
+			id: r.id,
+			submissionId: r.submissionId,
+			round: r.round,
+			reviewerName: `Reviewer ${index + 1}`,
+			scores: {
+				originality: r.scoreNovelty,
+				clarity: r.scoreClarity,
+				significance: r.scoreRelevance,
+				overall: r.scoreMethodology, // Map overall to methodology for now
+			},
+			comments: r.comments,
+			createdAt: r.createdAt,
+		}),
+	);
 
 	const latestDecision = submission.editorDecisions[0];
 	const decision: UserSubmissionDecision | null = latestDecision

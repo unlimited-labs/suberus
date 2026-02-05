@@ -33,7 +33,9 @@ export interface GetSubmissionsResponse {
 export async function getAdminSubmissions(
 	filters: GetSubmissionsFilters,
 ): Promise<GetSubmissionsResponse> {
-	const where: NonNullable<Parameters<typeof prisma.submission.findMany>[0]>["where"] = {};
+	const where: NonNullable<
+		Parameters<typeof prisma.submission.findMany>[0]
+	>["where"] = {};
 
 	// Type filter
 	if (filters.type && filters.type.length > 0) {
@@ -168,13 +170,17 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 			},
 			reviewAssignments: {
 				include: {
-					reviewer: { select: { firstName: true, lastName: true, email: true } },
+					reviewer: {
+						select: { firstName: true, lastName: true, email: true },
+					},
 				},
 				orderBy: { assignedAt: "desc" },
 			},
 			reviews: {
 				include: {
-					reviewer: { select: { firstName: true, lastName: true, email: true } },
+					reviewer: {
+						select: { firstName: true, lastName: true, email: true },
+					},
 				},
 				orderBy: { createdAt: "desc" },
 			},

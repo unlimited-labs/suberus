@@ -3,8 +3,8 @@ import { z } from "zod";
 import { authMiddleware } from "./auth.middleware";
 import {
 	getAssignmentForReview,
-	submitReview,
 	type ReviewSubmitData,
+	submitReview,
 } from "./reviews.server";
 
 const reviewDecisionEnum = z.enum([

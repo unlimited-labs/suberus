@@ -1,16 +1,16 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { adminMiddleware, authMiddleware } from "./auth.middleware";
 import {
+	type AssignmentWithReviewer,
+	type AvailableReviewer,
 	assignReviewer,
 	cancelAssignment,
 	getAvailableReviewers,
 	getReviewerAssignments,
 	getSubmissionAssignments,
-	type AssignmentWithReviewer,
-	type AvailableReviewer,
 	type ReviewerAssignment,
 } from "./assignments.server";
+import { adminMiddleware, authMiddleware } from "./auth.middleware";
 
 export type { ReviewerAssignment, AssignmentWithReviewer, AvailableReviewer };
 
@@ -49,7 +49,11 @@ export const assignReviewerFn = createServerFn({ method: "POST" })
 		async ({
 			data,
 			context,
-		}): Promise<{ success: boolean; assignmentId?: string; error?: string }> => {
+		}): Promise<{
+			success: boolean;
+			assignmentId?: string;
+			error?: string;
+		}> => {
 			return assignReviewer(
 				data.submissionId,
 				data.reviewerId,

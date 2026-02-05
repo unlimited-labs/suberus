@@ -9,6 +9,7 @@ import {
 	ReviewDecision,
 	SubmissionStatus,
 	SubmissionType,
+	UserRole,
 } from "../../src/generated/prisma/enums";
 import { PrismaPg } from "@prisma/adapter-pg";
 
@@ -354,4 +355,113 @@ export async function getAssignmentStatus(assignmentId: string): Promise<Assignm
 		select: { status: true },
 	});
 	return assignment?.status ?? null;
+}
+
+// Fee creation helper
+// NOTE: Creating a fee = payment received (admin assigns fee after payment)
+export interface CreateFeeOptions {
+	userId: string;
+	type?: "FULL" | "STUDENT" | "INVITED" | "STAFF" | "CASH";
+	amount?: number;
+	currency?: string;
+	paidAt?: Date;
+}
+
+export async function createFee(options: CreateFeeOptions): Promise<{ id: string }> {
+	const db = getPrisma();
+
+	const fee = await db.fee.create({
+		data: {
+			userId: options.userId,
+			type: options.type ?? "FULL",
+			amount: options.amount ?? 150.0,
+			currency: options.currency ?? "USD",
+			paid: true, // Fee existence = payment received
+			paidAt: options.paidAt ?? new Date(),
+		},
+	});
+
+	return { id: fee.id };
+}
+
+// Delete fee helper
+export async function deleteFee(userId: string): Promise<void> {
+	const db = getPrisma();
+	await db.fee.deleteMany({ where: { userId } });
+}
+
+// Test user creation helper for per-test isolation
+export interface CreateTestUserOptions {
+	email: string;
+	password?: string;
+	firstName?: string;
+	lastName?: string;
+	affiliationName?: string;
+	emailVerified?: boolean;
+	role?: UserRole;
+}
+
+export async function createTestUser(
+	options: CreateTestUserOptions
+): Promise<{ id: string; email: string; affiliationId: string }> {
+	const db = getPrisma();
+
+	// Create unique affiliation (avoid conflicts in parallel tests)
+	const uniqueId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+	const affiliationName = options.affiliationName || `E2E Test Affiliation ${uniqueId}`;
+	const affiliation = await db.affiliation.create({
+		data: { name: affiliationName },
+	});
+
+	// Use Better Auth signup (handles password hashing and account creation)
+	const { auth } = await import("../../auth");
+	const result = await auth.api.signUpEmail({
+		body: {
+			email: options.email,
+			password: options.password || "testpass123",
+			name: options.lastName || "User",
+			firstName: options.firstName || "Test",
+			affiliationId: affiliation.id,
+		},
+	});
+
+	if (!result?.user) {
+		throw new Error(`Failed to create test user: ${options.email}`);
+	}
+
+	// Update user with test-specific settings
+	await db.user.update({
+		where: { id: result.user.id },
+		data: {
+			emailVerified: options.emailVerified ?? true,
+			isActive: true,
+			role: options.role || UserRole.AUTHOR,
+			affiliationId: affiliation.id,
+		},
+	});
+
+	return { id: result.user.id, email: options.email, affiliationId: affiliation.id };
+}
+
+// Delete test user and all related data
+export async function deleteTestUser(userId: string): Promise<void> {
+	const db = getPrisma();
+
+	// Delete in order respecting FK constraints
+	await db.fee.deleteMany({ where: { userId } });
+	await db.session.deleteMany({ where: { userId } });
+	await db.account.deleteMany({ where: { userId } });
+
+	// Delete submissions and related data
+	const submissions = await db.submission.findMany({
+		where: { userId },
+		select: { id: true },
+	});
+
+	for (const sub of submissions) {
+		await deleteSubmission(sub.id);
+	}
+
+	// Delete user
+	await db.user.delete({ where: { id: userId } });
 }

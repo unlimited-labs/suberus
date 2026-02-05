@@ -19,7 +19,9 @@ import { getSubmissionByIdFn } from "@/utils/submissions.functions";
 
 export const Route = createFileRoute("/_app/submissions/$id_/reviews")({
 	loader: async ({ params }) => {
-		const data = await getSubmissionByIdFn({ data: { submissionId: params.id } });
+		const data = await getSubmissionByIdFn({
+			data: { submissionId: params.id },
+		});
 		return { data };
 	},
 	component: SubmissionReviewsPage,
@@ -53,7 +55,9 @@ function SubmissionReviewsPage() {
 	}
 
 	const { submission, reviews } = data;
-	const rounds = [...new Set(reviews.map((r) => r.round))].sort((a, b) => b - a);
+	const rounds = [...new Set(reviews.map((r) => r.round))].sort(
+		(a, b) => b - a,
+	);
 
 	const filteredReviews =
 		selectedRound === "all"

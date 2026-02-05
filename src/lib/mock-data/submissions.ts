@@ -651,7 +651,8 @@ const submission2Versions: MockVersion[] = [
 		id: "ver-002-1",
 		submissionId: "sub-002",
 		version: 1,
-		title: "Automated Testing Strategies for Microservices Architectures: A Systematic Review",
+		title:
+			"Automated Testing Strategies for Microservices Architectures: A Systematic Review",
 		content:
 			"Microservices architectures have gained significant popularity in modern software development, but testing these distributed systems presents unique challenges. This systematic review analyzes 87 primary studies published between 2018 and 2025 to identify and categorize automated testing strategies for microservices.\n\nWe examine testing approaches across multiple levels: unit testing of individual services, integration testing between services, contract testing for API compatibility, and end-to-end testing of complete workflows.",
 		authors: [
@@ -677,7 +678,8 @@ const submission2Versions: MockVersion[] = [
 		id: "ver-002-2",
 		submissionId: "sub-002",
 		version: 2,
-		title: "Automated Testing Strategies for Microservices Architectures: A Systematic Review",
+		title:
+			"Automated Testing Strategies for Microservices Architectures: A Systematic Review",
 		content:
 			"Microservices architectures have gained significant popularity in modern software development, but testing these distributed systems presents unique challenges. This systematic review analyzes 87 primary studies published between 2018 and 2025 to identify and categorize automated testing strategies for microservices.\n\nWe examine testing approaches across multiple levels: unit testing of individual services, integration testing between services, contract testing for API compatibility, and end-to-end testing of complete workflows. Our analysis reveals that while unit testing practices are well-established, integration and contract testing remain challenging areas with limited tool support.\n\nKey findings include: (1) service mesh technologies enable new testing patterns, (2) chaos engineering is increasingly adopted for resilience testing, and (3) observability tools play a crucial role in test debugging. We provide recommendations for practitioners and identify gaps for future research.",
 		authors: [

@@ -165,7 +165,8 @@ export function ReviewForm({
 							<div>
 								<div className="flex items-center gap-2 mb-2">
 									<Badge variant="outline" className="text-xs">
-										{typeLabels[submission.type as SubmissionType] ?? submission.type}
+										{typeLabels[submission.type as SubmissionType] ??
+											submission.type}
 									</Badge>
 								</div>
 								<h1 className="text-2xl font-semibold tracking-tight text-foreground">

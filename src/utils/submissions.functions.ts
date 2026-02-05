@@ -173,8 +173,9 @@ export const getSubmissionByIdFn = createServerFn({ method: "GET" })
 	});
 
 // Re-export types for use in components
-export type { SubmissionDetail, UserSubmission } from "./submissions.server";
 export type {
+	SubmissionDetail,
+	UserSubmission,
 	UserSubmissionAuthor,
 	UserSubmissionDecision,
 	UserSubmissionReview,

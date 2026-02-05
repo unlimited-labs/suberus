@@ -88,15 +88,24 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 
 	// Calculate average score from available scores
 	const allScores = reviews.flatMap((r) =>
-		[r.scores.originality, r.scores.clarity, r.scores.significance, r.scores.overall].filter(
-			(s): s is number => s !== null,
-		),
+		[
+			r.scores.originality,
+			r.scores.clarity,
+			r.scores.significance,
+			r.scores.overall,
+		].filter((s): s is number => s !== null),
 	);
-	const avgScore = allScores.length > 0 ? allScores.reduce((sum, s) => sum + s, 0) / allScores.length : 0;
+	const avgScore =
+		allScores.length > 0
+			? allScores.reduce((sum, s) => sum + s, 0) / allScores.length
+			: 0;
 	const avgColorConfig = getScoreColor(avgScore);
 
 	return (
-		<div id="reviews-section" className="rounded-2xl bg-card shadow-2xl border p-8">
+		<div
+			id="reviews-section"
+			className="rounded-2xl bg-card shadow-2xl border p-8"
+		>
 			<div className="space-y-4">
 				{/* Header */}
 				<div className="flex items-center gap-3">
@@ -114,7 +123,8 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 					)}
 				>
 					<span className="text-sm text-muted-foreground">
-						Average score ({reviews.length} {reviews.length === 1 ? "review" : "reviews"})
+						Average score ({reviews.length}{" "}
+						{reviews.length === 1 ? "review" : "reviews"})
 					</span>
 					<span className={cn("text-xl font-bold", avgColorConfig.text)}>
 						{avgScore.toFixed(2)}/5
@@ -161,7 +171,10 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 												score={review.scores.originality}
 											/>
 											<ScoreBar label="Clarity" score={review.scores.clarity} />
-											<ScoreBar label="Significance" score={review.scores.significance} />
+											<ScoreBar
+												label="Significance"
+												score={review.scores.significance}
+											/>
 											<ScoreBar label="Overall" score={review.scores.overall} />
 										</div>
 

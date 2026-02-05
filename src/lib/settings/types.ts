@@ -50,6 +50,9 @@ export type AppSettingsMap = {
 	SUBMISSION_TYPE_ORAL_PRESENTATION: SubmissionTypeConfig;
 	SUBMISSION_TYPE_POSTER: SubmissionTypeConfig;
 	SUBMISSION_TYPE_FULL_PAPER: SubmissionTypeConfig;
+
+	// Fee settings
+	FEE_PAYMENT_INSTRUCTIONS: string;
 };
 
 /** Keys for submission type configs */

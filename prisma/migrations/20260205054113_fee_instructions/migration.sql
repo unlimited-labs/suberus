@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "AppSettingKey" ADD VALUE 'FEE_PAYMENT_INSTRUCTIONS';

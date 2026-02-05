@@ -1,5 +1,6 @@
 import {
 	IconAdjustments,
+	IconCash,
 	IconClipboardCheck,
 	IconDashboard,
 	IconFileStack,
@@ -28,6 +29,7 @@ export const navigationSections: NavSection[] = [
 		items: [
 			{ name: "Dashboard", href: "/", icon: IconDashboard },
 			{ name: "Submissions", href: "/submissions", icon: IconFileText },
+			{ name: "Fee", href: "/fee", icon: IconCash },
 			{
 				name: "Reviews",
 				href: "/reviews",

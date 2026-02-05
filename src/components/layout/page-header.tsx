@@ -1,10 +1,10 @@
-import type { ComponentType, ReactNode } from "react"
-import { Separator } from "@/components/ui/separator"
+import type { ComponentType, ReactNode } from "react";
+import { Separator } from "@/components/ui/separator";
 
 interface PageHeaderProps {
-	icon?: ComponentType<{ className?: string }>
-	title: string
-	children?: ReactNode
+	icon?: ComponentType<{ className?: string }>;
+	title: string;
+	children?: ReactNode;
 }
 
 export function PageHeader({ icon: Icon, title, children }: PageHeaderProps) {
@@ -21,5 +21,5 @@ export function PageHeader({ icon: Icon, title, children }: PageHeaderProps) {
 			</div>
 			{children && <div className="flex items-center gap-2">{children}</div>}
 		</div>
-	)
+	);
 }

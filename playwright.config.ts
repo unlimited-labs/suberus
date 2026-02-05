@@ -165,6 +165,15 @@ export default defineConfig({
 				...devices["Desktop Chrome"],
 			},
 		},
+		// Fee tests - cross-role (handles auth internally)
+		{
+			name: "chromium-fee",
+			testMatch: /e2e\/fee\.spec\.ts/,
+			dependencies: ["auth-setup"],
+			use: {
+				...devices["Desktop Chrome"],
+			},
+		},
 	],
 	webServer: {
 		command: "dotenv -e .env.local -- pnpm dev",

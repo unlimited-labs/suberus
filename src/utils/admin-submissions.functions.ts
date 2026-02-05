@@ -1,11 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { adminMiddleware } from "./auth.middleware";
 import {
+	type GetSubmissionsResponse,
 	getAdminSubmissions,
 	getSubmissionForEditor,
-	type GetSubmissionsResponse,
 } from "./admin-submissions.server";
+import { adminMiddleware } from "./auth.middleware";
 
 const submissionTypeEnum = z.enum(["ABSTRACT", "FULL_PAPER", "POSTER"]);
 const submissionStatusEnum = z.enum([

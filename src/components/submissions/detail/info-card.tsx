@@ -5,7 +5,10 @@ import {
 	IconRefresh,
 } from "@tabler/icons-react";
 import { VersionSelector } from "@/components/submissions/version-selector";
-import type { UserSubmission, UserSubmissionVersion } from "@/utils/submissions.functions";
+import type {
+	UserSubmission,
+	UserSubmissionVersion,
+} from "@/utils/submissions.functions";
 import { TYPE_LABELS } from "./constants";
 
 interface InfoItemProps {

@@ -1,8 +1,8 @@
-import type { ReactNode } from "react"
-import { Link } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 
 interface AuthLayoutProps {
-	children: ReactNode
+	children: ReactNode;
 }
 
 export function AuthLayout({ children }: AuthLayoutProps) {
@@ -71,5 +71,5 @@ export function AuthLayout({ children }: AuthLayoutProps) {
 				</div>
 			</main>
 		</div>
-	)
+	);
 }

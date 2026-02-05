@@ -1,24 +1,28 @@
-import { IconCheck } from "@tabler/icons-react"
+import { IconCheck } from "@tabler/icons-react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 interface Step {
-	id: number
-	title: string
+	id: number;
+	title: string;
 }
 
 interface AuthSidebarProps {
-	steps?: Step[]
-	currentStep?: number
-	width?: "narrow" | "wide"
+	steps?: Step[];
+	currentStep?: number;
+	width?: "narrow" | "wide";
 }
 
-export function AuthSidebar({ steps, currentStep = 1, width = "narrow" }: AuthSidebarProps) {
+export function AuthSidebar({
+	steps,
+	currentStep = 1,
+	width = "narrow",
+}: AuthSidebarProps) {
 	return (
 		<div
 			className={cn(
 				"relative hidden shrink-0 flex-col justify-between overflow-hidden bg-primary p-6 text-primary-foreground lg:flex",
-				width === "narrow" ? "w-64" : "w-72"
+				width === "narrow" ? "w-64" : "w-72",
 			)}
 		>
 			{/* Background image with overlay */}
@@ -48,7 +52,7 @@ export function AuthSidebar({ steps, currentStep = 1, width = "narrow" }: AuthSi
 							key={step.id}
 							className={cn(
 								"flex items-center gap-2 transition-opacity duration-300",
-								step.id === currentStep ? "opacity-100" : "opacity-50"
+								step.id === currentStep ? "opacity-100" : "opacity-50",
 							)}
 						>
 							<div
@@ -56,11 +60,17 @@ export function AuthSidebar({ steps, currentStep = 1, width = "narrow" }: AuthSi
 									"flex size-6 items-center justify-center rounded-full border-2 text-xs font-medium transition-all",
 									step.id < currentStep &&
 										"border-primary-foreground bg-primary-foreground text-primary",
-									step.id === currentStep && "border-primary-foreground bg-transparent",
-									step.id > currentStep && "border-primary-foreground/50 bg-transparent"
+									step.id === currentStep &&
+										"border-primary-foreground bg-transparent",
+									step.id > currentStep &&
+										"border-primary-foreground/50 bg-transparent",
 								)}
 							>
-								{step.id < currentStep ? <IconCheck className="size-3" /> : step.id}
+								{step.id < currentStep ? (
+									<IconCheck className="size-3" />
+								) : (
+									step.id
+								)}
 							</div>
 							<span className="text-xs font-medium">{step.title}</span>
 						</div>
@@ -72,5 +82,5 @@ export function AuthSidebar({ steps, currentStep = 1, width = "narrow" }: AuthSi
 				</p>
 			)}
 		</div>
-	)
+	);
 }

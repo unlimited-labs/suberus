@@ -13,8 +13,14 @@ export function SubmissionTimeline({
 }: SubmissionTimelineProps) {
 	// Sort history chronologically (oldest first)
 	const sortedHistory = [...statusHistory].sort((a, b) => {
-		const aTime = typeof a.timestamp === "string" ? new Date(a.timestamp).getTime() : a.timestamp.getTime();
-		const bTime = typeof b.timestamp === "string" ? new Date(b.timestamp).getTime() : b.timestamp.getTime();
+		const aTime =
+			typeof a.timestamp === "string"
+				? new Date(a.timestamp).getTime()
+				: a.timestamp.getTime();
+		const bTime =
+			typeof b.timestamp === "string"
+				? new Date(b.timestamp).getTime()
+				: b.timestamp.getTime();
 		return aTime - bTime;
 	});
 
@@ -34,7 +40,9 @@ export function SubmissionTimeline({
 
 	return (
 		<div className="rounded-2xl bg-card shadow-2xl border p-8">
-			<h2 className="text-xl font-semibold text-foreground mb-6">Submission History</h2>
+			<h2 className="text-xl font-semibold text-foreground mb-6">
+				Submission History
+			</h2>
 			<Timeline>
 				{sortedHistory.map((event, index) => (
 					<TimelineEvent

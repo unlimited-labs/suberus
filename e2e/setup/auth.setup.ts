@@ -1,26 +1,26 @@
 import { test as setup, expect } from "@playwright/test"
 
-const ADMIN_USER = {
+export const ADMIN_USER = {
 	email: "admin@e2e.local",
 	password: "testpass123",
 }
 
-const TEST_USER = {
+export const TEST_USER = {
 	email: "test@e2e.local",
 	password: "testpass123",
 }
 
-const REVIEWER_USER = {
+export const REVIEWER_USER = {
 	email: "reviewer@e2e.local",
 	password: "testpass123",
 }
 
-const EDITOR_USER = {
+export const EDITOR_USER = {
 	email: "editor@e2e.local",
 	password: "testpass123",
 }
 
-const UNVERIFIED_USER = {
+export const UNVERIFIED_USER = {
 	email: "unverified@e2e.local",
 	password: "testpass123",
 }

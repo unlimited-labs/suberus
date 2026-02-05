@@ -1,5 +1,6 @@
 import {
 	IconBuilding,
+	IconCash,
 	IconFileStack,
 	IconFileText,
 	IconMail,
@@ -12,6 +13,7 @@ import {
 	BrandingSettingsTab,
 	ConferenceSettingsTab,
 	EmailTemplatesTab,
+	FeeInstructionsTab,
 	SubmissionSettingsTab,
 	SubmissionTypesTab,
 } from "@/components/admin/settings";
@@ -22,6 +24,7 @@ import {
 	defaultConferenceSettings,
 	defaultEmailTemplates,
 } from "@/lib/mock-data/admin-settings";
+import { getPaymentInstructionsFn } from "@/utils/fee.functions";
 import {
 	getSubmissionTypeConfigsFn,
 	getSubmissionValidationSettingsFn,
@@ -29,11 +32,13 @@ import {
 
 export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 	loader: async () => {
-		const [submissionTypes, submissionSettings] = await Promise.all([
-			getSubmissionTypeConfigsFn(),
-			getSubmissionValidationSettingsFn(),
-		]);
-		return { submissionTypes, submissionSettings };
+		const [submissionTypes, submissionSettings, feeInstructions] =
+			await Promise.all([
+				getSubmissionTypeConfigsFn(),
+				getSubmissionValidationSettingsFn(),
+				getPaymentInstructionsFn(),
+			]);
+		return { submissionTypes, submissionSettings, feeInstructions };
 	},
 	component: AdminSettingsPage,
 });
@@ -44,10 +49,12 @@ const tabs = [
 	{ id: "types", label: "Submission Types", icon: IconFileStack },
 	{ id: "emails", label: "Email Templates", icon: IconMail },
 	{ id: "branding", label: "Branding", icon: IconPalette },
+	{ id: "fee-instructions", label: "Fee Instructions", icon: IconCash },
 ];
 
 function AdminSettingsPage() {
-	const { submissionTypes, submissionSettings } = Route.useLoaderData();
+	const { submissionTypes, submissionSettings, feeInstructions } =
+		Route.useLoaderData();
 	const [activeTab, setActiveTab] = useState("conference");
 
 	return (
@@ -87,6 +94,10 @@ function AdminSettingsPage() {
 
 						<TabsContent value="branding">
 							<BrandingSettingsTab initialData={defaultBrandingSettings} />
+						</TabsContent>
+
+						<TabsContent value="fee-instructions">
+							<FeeInstructionsTab initialInstructions={feeInstructions} />
 						</TabsContent>
 					</Tabs>
 

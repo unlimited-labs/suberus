@@ -1,12 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import type { TransitionResult } from "@/lib/workflow";
 import { adminMiddleware } from "./auth.middleware";
 import {
 	deskRejectSubmission,
 	executeSubmissionTransition,
 	submitEditorDecision,
 } from "./workflow.server";
-import type { TransitionResult } from "@/lib/workflow";
 
 /** Desk reject submission (editor) */
 export const deskRejectFn = createServerFn({ method: "POST" })

@@ -273,3 +273,14 @@ export const getSubmissionDeadlineFn = createServerFn({ method: "GET" })
 		const deadline = await getSetting("SUBMISSION_DEADLINE");
 		return { deadline };
 	});
+
+/**
+ * Update fee payment instructions (admin only)
+ */
+export const updateFeeInstructionsFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(z.object({ content: z.string().min(1) }))
+	.handler(async ({ data }) => {
+		await setSetting("FEE_PAYMENT_INSTRUCTIONS", data.content);
+		return { success: true };
+	});

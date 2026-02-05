@@ -1,53 +1,61 @@
-import { useState, useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react";
 
 interface UseMultiStepOptions {
-	totalSteps: number
-	validateStep?: (step: number) => Promise<boolean> | boolean
+	totalSteps: number;
+	validateStep?: (step: number) => Promise<boolean> | boolean;
 }
 
-export function useMultiStep({ totalSteps, validateStep }: UseMultiStepOptions) {
-	const [currentStep, setCurrentStep] = useState(1)
-	const [validationAttempted, setValidationAttempted] = useState<Record<number, boolean>>({})
+export function useMultiStep({
+	totalSteps,
+	validateStep,
+}: UseMultiStepOptions) {
+	const [currentStep, setCurrentStep] = useState(1);
+	const [validationAttempted, setValidationAttempted] = useState<
+		Record<number, boolean>
+	>({});
 
 	const isValidationAttempted = useMemo(
 		() => validationAttempted[currentStep] ?? false,
-		[validationAttempted, currentStep]
-	)
+		[validationAttempted, currentStep],
+	);
 
 	const next = useCallback(async () => {
-		setValidationAttempted((prev) => ({ ...prev, [currentStep]: true }))
+		setValidationAttempted((prev) => ({ ...prev, [currentStep]: true }));
 
 		if (validateStep) {
-			const isValid = await validateStep(currentStep)
-			if (!isValid) return false
+			const isValid = await validateStep(currentStep);
+			if (!isValid) return false;
 		}
 
 		if (currentStep < totalSteps) {
-			setCurrentStep((s) => s + 1)
-			return true
+			setCurrentStep((s) => s + 1);
+			return true;
 		}
-		return false
-	}, [currentStep, totalSteps, validateStep])
+		return false;
+	}, [currentStep, totalSteps, validateStep]);
 
 	const prev = useCallback(() => {
 		if (currentStep > 1) {
-			setCurrentStep((s) => s - 1)
+			setCurrentStep((s) => s - 1);
 		}
-	}, [currentStep])
+	}, [currentStep]);
 
 	const goTo = useCallback(
 		(step: number) => {
 			if (step >= 1 && step <= totalSteps) {
-				setCurrentStep(step)
+				setCurrentStep(step);
 			}
 		},
-		[totalSteps]
-	)
+		[totalSteps],
+	);
 
-	const markValidationAttempted = useCallback((step?: number) => {
-		const targetStep = step ?? currentStep
-		setValidationAttempted((prev) => ({ ...prev, [targetStep]: true }))
-	}, [currentStep])
+	const markValidationAttempted = useCallback(
+		(step?: number) => {
+			const targetStep = step ?? currentStep;
+			setValidationAttempted((prev) => ({ ...prev, [targetStep]: true }));
+		},
+		[currentStep],
+	);
 
 	return {
 		currentStep,
@@ -59,5 +67,5 @@ export function useMultiStep({ totalSteps, validateStep }: UseMultiStepOptions) 
 		isValidationAttempted,
 		validationAttempted,
 		markValidationAttempted,
-	}
+	};
 }

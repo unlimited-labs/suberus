@@ -16,7 +16,9 @@ import { getSubmissionByIdFn } from "@/utils/submissions.functions";
 
 export const Route = createFileRoute("/_app/submissions/$id")({
 	loader: async ({ params }) => {
-		const data = await getSubmissionByIdFn({ data: { submissionId: params.id } });
+		const data = await getSubmissionByIdFn({
+			data: { submissionId: params.id },
+		});
 		return { data };
 	},
 	component: SubmissionDetailPage,

@@ -1,11 +1,8 @@
 import { prisma } from "@/db";
 import type { ReviewDecision, ReviewMode } from "@/generated/prisma/enums";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
+import { completeReviewAssignment, startReview } from "./assignments.server";
 import { getSetting } from "./settings.server";
-import {
-	completeReviewAssignment,
-	startReview,
-} from "./assignments.server";
 import { checkAndTriggerReviewCompletion } from "./workflow.server";
 
 /** Review submission data */

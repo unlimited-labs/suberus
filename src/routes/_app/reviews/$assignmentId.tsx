@@ -6,11 +6,16 @@ import {
 } from "@/components/forms/review/review-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
-import { getAssignmentForReviewFn, submitReviewFn } from "@/utils/reviews.functions";
+import {
+	getAssignmentForReviewFn,
+	submitReviewFn,
+} from "@/utils/reviews.functions";
 
 export const Route = createFileRoute("/_app/reviews/$assignmentId")({
 	loader: async ({ params }) => {
-		const data = await getAssignmentForReviewFn({ data: { assignmentId: params.assignmentId } });
+		const data = await getAssignmentForReviewFn({
+			data: { assignmentId: params.assignmentId },
+		});
 		return { data };
 	},
 	component: ReviewFormPage,
@@ -76,7 +81,8 @@ function ReviewFormPage() {
 									comments: existingReview.comments ?? "",
 									privateNotes: existingReview.privateNotes ?? "",
 									scoreNovelty: existingReview.scoreNovelty ?? undefined,
-									scoreMethodology: existingReview.scoreMethodology ?? undefined,
+									scoreMethodology:
+										existingReview.scoreMethodology ?? undefined,
 									scoreClarity: existingReview.scoreClarity ?? undefined,
 									scoreRelevance: existingReview.scoreRelevance ?? undefined,
 									confidenceLevel: existingReview.confidenceLevel ?? undefined,

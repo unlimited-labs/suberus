@@ -58,7 +58,8 @@ export function DeskRejectDialog({
 				toast.error(result.error || "Failed to reject submission");
 			}
 		} catch (error) {
-			const message = error instanceof Error ? error.message : "Failed to reject submission";
+			const message =
+				error instanceof Error ? error.message : "Failed to reject submission";
 			toast.error(message);
 		} finally {
 			setIsSubmitting(false);

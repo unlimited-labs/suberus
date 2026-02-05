@@ -19,7 +19,9 @@ export async function runOverdueCheck(): Promise<{
 }> {
 	try {
 		const count = await markOverdueAssignments();
-		console.log(`[check-overdue-assignments] Marked ${count} assignments as overdue`);
+		console.log(
+			`[check-overdue-assignments] Marked ${count} assignments as overdue`,
+		);
 		return { success: true, markedCount: count };
 	} catch (error) {
 		const message = error instanceof Error ? error.message : "Unknown error";
@@ -29,7 +31,8 @@ export async function runOverdueCheck(): Promise<{
 }
 
 // Run directly if executed as script (ESM compatible)
-const isMainModule = import.meta.url === `file://${process.argv[1]?.replace(/\\/g, "/")}`;
+const isMainModule =
+	import.meta.url === `file://${process.argv[1]?.replace(/\\/g, "/")}`;
 if (isMainModule) {
 	runOverdueCheck()
 		.then((result) => {

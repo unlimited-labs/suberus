@@ -1,17 +1,17 @@
 import {
+	IconAlertCircle,
 	IconCheck,
 	IconClock,
+	IconEdit,
 	IconFile,
+	IconRefresh,
 	IconSend,
 	IconX,
-	IconAlertCircle,
-	IconEdit,
-	IconRefresh,
 } from "@tabler/icons-react";
 import {
-	TimelineItem,
-	TimelineIndicator,
 	TimelineContent,
+	TimelineIndicator,
+	TimelineItem,
 } from "@/components/ui/timeline";
 import type { SubmissionStatus } from "@/generated/prisma/enums";
 import type { UserSubmissionStatusHistory } from "@/utils/submissions.functions";
@@ -97,7 +97,10 @@ const statusConfig: Record<
 export function TimelineEvent({ event, isLast = false }: TimelineEventProps) {
 	const config = statusConfig[event.status];
 	const Icon = config.icon;
-	const timestamp = typeof event.timestamp === "string" ? new Date(event.timestamp) : event.timestamp;
+	const timestamp =
+		typeof event.timestamp === "string"
+			? new Date(event.timestamp)
+			: event.timestamp;
 
 	return (
 		<TimelineItem isLast={isLast}>

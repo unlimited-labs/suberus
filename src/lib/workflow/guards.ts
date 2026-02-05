@@ -1,4 +1,7 @@
-import type { ReviewDecision, SubmissionStatus } from "@/generated/prisma/enums";
+import type {
+	ReviewDecision,
+	SubmissionStatus,
+} from "@/generated/prisma/enums";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
 
 /**

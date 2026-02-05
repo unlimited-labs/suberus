@@ -1,7 +1,4 @@
-import type {
-	ReviewDecision,
-	SubmissionType,
-} from "@/generated/prisma/enums";
+import type { ReviewDecision, SubmissionType } from "@/generated/prisma/enums";
 
 /** Events for submission state machine */
 export type SubmissionEvent =

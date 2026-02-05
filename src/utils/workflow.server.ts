@@ -158,7 +158,9 @@ export async function executeSubmissionTransition(
 				event: event.type,
 				reason: reason || description,
 				triggeredBy,
-				metadata: createSubmissionTransitionMetadata(event.type, { reason }) as object,
+				metadata: createSubmissionTransitionMetadata(event.type, {
+					reason,
+				}) as object,
 			},
 		});
 	});

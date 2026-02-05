@@ -356,7 +356,9 @@ export async function getReviewerAssignments(
 	assignments: ReviewerAssignment[];
 	total: number;
 }> {
-	const where: NonNullable<Parameters<typeof prisma.reviewAssignment.findMany>[0]>["where"] = {
+	const where: NonNullable<
+		Parameters<typeof prisma.reviewAssignment.findMany>[0]
+	>["where"] = {
 		reviewerId,
 	};
 
@@ -384,9 +386,14 @@ export async function getReviewerAssignments(
 
 	// Fetch review mode configs for all submission types
 	const configKeys = [
-		...new Set(assignments.map((a) => SUBMISSION_TYPE_TO_KEY[a.submission.type])),
+		...new Set(
+			assignments.map((a) => SUBMISSION_TYPE_TO_KEY[a.submission.type]),
+		),
 	];
-	const configs: Record<string, { reviewMode: "OPEN" | "SINGLE_BLIND" | "DOUBLE_BLIND" }> = {};
+	const configs: Record<
+		string,
+		{ reviewMode: "OPEN" | "SINGLE_BLIND" | "DOUBLE_BLIND" }
+	> = {};
 	for (const key of configKeys) {
 		const config = await getSetting(key);
 		configs[key] = { reviewMode: config.reviewMode };
@@ -407,7 +414,7 @@ export async function getReviewerAssignments(
 		const authorAffiliation =
 			reviewMode === "DOUBLE_BLIND"
 				? "Anonymous Institution"
-				: presenter?.affiliation?.name ?? "Unknown";
+				: (presenter?.affiliation?.name ?? "Unknown");
 
 		return {
 			id: a.id,

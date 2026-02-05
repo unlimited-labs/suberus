@@ -87,6 +87,10 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	SUBMISSION_TYPE_ORAL_PRESENTATION: DEFAULT_ORAL_PRESENTATION_CONFIG,
 	SUBMISSION_TYPE_POSTER: DEFAULT_POSTER_CONFIG,
 	SUBMISSION_TYPE_FULL_PAPER: DEFAULT_FULL_PAPER_CONFIG,
+
+	// Fee settings
+	FEE_PAYMENT_INSTRUCTIONS:
+		"# Payment Instructions\n\nPlease contact the conference organizer for payment details.",
 };
 
 /** Get default value for a setting key */
