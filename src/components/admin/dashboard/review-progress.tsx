@@ -1,8 +1,8 @@
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
-import type { AdminDashboardMetrics } from "@/utils/admin-dashboard.server";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import type { AdminDashboardMetrics } from "@/utils/admin-dashboard.server";
 
 interface ReviewProgressProps {
 	data: AdminDashboardMetrics["reviews"] | undefined;
@@ -32,7 +32,11 @@ export function ReviewProgress({ data }: ReviewProgressProps) {
 	const { byStatus, completionRate, totalAssignments } = data;
 
 	const chartData = [
-		{ name: "Completed", value: byStatus.COMPLETED, fill: PROGRESS_COLORS.completed },
+		{
+			name: "Completed",
+			value: byStatus.COMPLETED,
+			fill: PROGRESS_COLORS.completed,
+		},
 		{
 			name: "Remaining",
 			value: totalAssignments - byStatus.COMPLETED,
@@ -89,9 +93,7 @@ export function ReviewProgress({ data }: ReviewProgressProps) {
 
 				{byStatus.OVERDUE > 0 && (
 					<div className="flex justify-center pt-2">
-						<Badge variant="destructive">
-							{byStatus.OVERDUE} Overdue
-						</Badge>
+						<Badge variant="destructive">{byStatus.OVERDUE} Overdue</Badge>
 					</div>
 				)}
 			</CardContent>

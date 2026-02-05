@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
-import { adminMiddleware } from "./auth.middleware";
 import { getAdminDashboardMetrics } from "./admin-dashboard.server";
+import { adminMiddleware } from "./auth.middleware";
 
 export const getAdminDashboard = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])

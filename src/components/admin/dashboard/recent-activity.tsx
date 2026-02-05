@@ -5,10 +5,10 @@ import {
 	IconX,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import type { AdminDashboardMetrics } from "@/utils/admin-dashboard.server";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import type { AdminDashboardMetrics } from "@/utils/admin-dashboard.server";
 
 interface RecentActivityProps {
 	events: AdminDashboardMetrics["recentActivity"] | undefined;

@@ -5,13 +5,9 @@ import {
 	IconInfoCircle,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import type { AdminDashboardMetrics } from "@/utils/admin-dashboard.server";
-import {
-	Alert,
-	AlertDescription,
-	AlertTitle,
-} from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import type { AdminDashboardMetrics } from "@/utils/admin-dashboard.server";
 
 interface HealthAlertsProps {
 	data: AdminDashboardMetrics["health"] | undefined;
