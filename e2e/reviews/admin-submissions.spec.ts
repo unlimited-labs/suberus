@@ -223,7 +223,7 @@ test.describe("Submission Detail - Assign Reviewers", () => {
 		await assignReviewerDialog.searchReviewer("reviewer");
 
 		// Assert - search completes without error
-		await page.waitForLoadState("networkidle");
+		await expect(page.getByText("reviewer@e2e.local")).toBeVisible({ timeout: 5000 });
 	});
 
 	test("can close assign reviewer dialog", async ({

@@ -106,8 +106,8 @@ export class AdminSubmissionsPage {
 	}
 
 	async search(query: string) {
+		await baseExpect(this.searchInput).toBeVisible({ timeout: 5000 });
 		await this.searchInput.fill(query);
-		await this.page.waitForLoadState("networkidle");
 	}
 
 	async openSubmissionDetail(title: string) {
@@ -166,11 +166,11 @@ export class AdminSubmissionDetailPage {
 
 	async goto(submissionId: string) {
 		await this.page.goto(`/admin/submissions/${submissionId}`);
-		await this.page.waitForLoadState("networkidle");
+		await baseExpect(this.getStatusBadge()).toBeVisible({ timeout: 10000 });
 	}
 
 	async waitForLoad() {
-		await this.page.waitForLoadState("networkidle");
+		await baseExpect(this.getStatusBadge()).toBeVisible({ timeout: 10000 });
 	}
 
 	/** Get submission status badge */
@@ -247,7 +247,8 @@ export class AssignReviewerDialog {
 
 	async searchReviewer(query: string) {
 		await this.searchInput.fill(query);
-		await this.page.waitForLoadState("networkidle");
+		// Wait for search results to update
+		await this.page.waitForTimeout(300);
 	}
 
 	async assignReviewerByEmail(email: string) {
@@ -257,7 +258,8 @@ export class AssignReviewerDialog {
 			.filter({ hasText: email })
 			.first();
 		await reviewerRow.getByRole("button", { name: "Assign" }).click();
-		await this.page.waitForLoadState("networkidle");
+		// Wait for assignment to be reflected
+		await baseExpect(this.page.getByText(/Current Reviewers/)).toBeVisible();
 	}
 
 	async cancelAssignmentByName(name: string) {
@@ -267,7 +269,6 @@ export class AssignReviewerDialog {
 		});
 		const assignmentRow = section.locator("div").filter({ hasText: name });
 		await assignmentRow.getByRole("button").click();
-		await this.page.waitForLoadState("networkidle");
 	}
 
 	async getActiveAssignmentsCount() {
@@ -356,7 +357,11 @@ export class EditorDecisionDialog {
 
 	async submit() {
 		await this.submitButton.click();
-		await this.page.waitForLoadState("networkidle");
+		// Wait for dialog to close or toast to appear
+		await Promise.race([
+			this.page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15000 }),
+			this.page.locator("[data-sonner-toast]").waitFor({ state: "visible", timeout: 15000 }),
+		]);
 	}
 }
 
@@ -374,7 +379,7 @@ export class ReviewerAssignmentsPage {
 
 	async goto() {
 		await this.page.goto("/reviews");
-		await this.page.waitForLoadState("networkidle");
+		await baseExpect(this.heading).toBeVisible({ timeout: 10000 });
 	}
 
 	async openReview(submissionTitle: string) {
@@ -385,7 +390,6 @@ export class ReviewerAssignmentsPage {
 		// Click the row or the "Start Review" / "Continue" link
 		const reviewLink = row.getByRole("link").first();
 		await reviewLink.click();
-		await this.page.waitForLoadState("networkidle");
 	}
 
 	async getAssignmentStatus(submissionTitle: string) {
@@ -422,7 +426,7 @@ export class ReviewFormPage {
 
 	async goto(assignmentId: string) {
 		await this.page.goto(`/reviews/${assignmentId}`);
-		await this.page.waitForLoadState("networkidle");
+		await baseExpect(this.submitButton).toBeVisible({ timeout: 10000 });
 	}
 
 	async selectDecision(
@@ -463,7 +467,8 @@ export class ReviewFormPage {
 
 	async submit() {
 		await this.submitButton.click();
-		await this.page.waitForLoadState("networkidle");
+		// Wait for submission to complete (redirect or toast)
+		await this.page.waitForURL("/reviews", { timeout: 15000 });
 	}
 
 	async isSubmitEnabled() {

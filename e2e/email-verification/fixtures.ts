@@ -45,6 +45,19 @@ export async function clearMailpit(testRunId?: string) {
 	}
 }
 
+export async function clearMailpitForAddress(address: string) {
+	try {
+		const { messages } = await getMailpitMessages()
+		for (const message of messages) {
+			if (message.To.some((t) => t.Address === address)) {
+				await fetch(`${MAILPIT_API}/message/${message.ID}`, { method: "DELETE" })
+			}
+		}
+	} catch {
+		// Mailpit might not be running
+	}
+}
+
 export async function getMailpitMessages() {
 	try {
 		const response = await fetch(`${MAILPIT_API}/messages`)

@@ -128,27 +128,32 @@ test.describe("Author Management", () => {
 	});
 
 	test("can submit with multiple authors", async ({ submissionPage, uniqueSubmission }) => {
+		test.slow(); // Full form fill with 2 authors + submit + redirect under load
 		// Arrange
 		await submissionPage.goto();
-		await submissionPage.fillAuthor(0, uniqueSubmission.authors[0]);
-		await submissionPage.addAuthor();
-		await submissionPage.fillAuthor(1, {
-			firstName: "Co",
-			lastName: "Author",
-			email: "co.author@test.com",
-			affiliationName: "Partner University",
-		});
 		await submissionPage.fillTitle(uniqueSubmission.title);
 		await submissionPage.fillContent(uniqueSubmission.content);
+		await submissionPage.addAuthor();
+		// Fill author details (name/email) first, then affiliations last
+		// React re-renders when filling authors can clear affiliation state
+		await submissionPage.page.locator("#author-0-firstName").fill(uniqueSubmission.authors[0].firstName);
+		await submissionPage.page.locator("#author-0-lastName").fill(uniqueSubmission.authors[0].lastName);
+		await submissionPage.page.locator("#author-0-email").fill(uniqueSubmission.authors[0].email);
+		await submissionPage.page.locator("#author-1-firstName").fill("Co");
+		await submissionPage.page.locator("#author-1-lastName").fill("Author");
+		await submissionPage.page.locator("#author-1-email").fill("co.author@test.com");
+		await submissionPage.fillAffiliation(0, uniqueSubmission.authors[0].affiliationName);
 		for (const keyword of uniqueSubmission.keywords) {
 			await submissionPage.addKeyword(keyword);
 		}
+		// Set 2nd author affiliation last (React re-renders from other operations can clear it)
+		await submissionPage.fillAffiliation(1, "Partner University");
 
 		// Act
 		await submissionPage.submit();
 
 		// Assert
-		await submissionPage.page.waitForURL(/\/submissions\/[a-f0-9-]+/, { timeout: 30000 });
+		await submissionPage.page.waitForURL(/\/submissions\/[a-f0-9-]+/, { timeout: 60000 });
 		await expect(submissionPage.page.getByText("Submission created successfully")).toBeVisible();
 	});
 });

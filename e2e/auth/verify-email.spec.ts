@@ -1,4 +1,4 @@
-import { test, expect, clearMailpit, waitForEmail } from "./fixtures"
+import { test, expect, clearMailpitForAddress, waitForEmail } from "./fixtures"
 
 test.describe("Verify Email Page", () => {
 	test("displays page correctly with email param", async ({ verifyEmailPage }) => {
@@ -57,11 +57,6 @@ test.describe("Verify Email Page - Resend Flow", () => {
 	// Note: These tests use the banner on dashboard after registration
 	// since users are now auto-logged in and redirected to /
 
-	test.beforeEach(async () => {
-		// Setup: Clear mailpit before each test
-		await clearMailpit()
-	})
-
 	test("resend from banner sends verification email for registered user", async ({
 		registerPage,
 		testRun,
@@ -83,7 +78,8 @@ test.describe("Verify Email Page - Resend Flow", () => {
 		await registerPage.fillStep3({ acceptTerms: true })
 		await registerPage.clickCreateAccount()
 		await expect(registerPage.page).toHaveURL("/", { timeout: 10000 })
-		await clearMailpit()
+		// Clear only emails for this specific address (not all emails)
+		await clearMailpitForAddress(uniqueEmail)
 
 		// Act
 		const banner = registerPage.page.locator("[role='alert']").filter({ hasText: /email.*not verified/i })
@@ -98,6 +94,7 @@ test.describe("Verify Email Page - Resend Flow", () => {
 	})
 
 	test("resend shows cooldown after click", async ({ registerPage, testRun }) => {
+		test.slow(); // Full 3-step registration form under load
 		// Arrange
 		const uniqueEmail = `cooldown-${testRun.testRunId}@e2e.local`
 		await registerPage.goto()

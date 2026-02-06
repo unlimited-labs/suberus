@@ -3,6 +3,7 @@ import { test, expect, VALID_SUBMISSION } from "./fixtures";
 test.describe("Form Validation", () => {
 	test.describe("Content Validation", () => {
 		test("shows error for content too short", async ({ submissionPage }, testInfo) => {
+			test.slow(); // Form fill with author + keywords + submit under load
 			// Skip on mobile - toast positioning may differ
 			if (testInfo.project.name.includes("mobile")) {
 				test.skip();
@@ -24,7 +25,7 @@ test.describe("Form Validation", () => {
 			// Assert
 			await expect(
 				submissionPage.page.getByText(/at least 500 characters/i),
-			).toBeVisible({ timeout: 10000 });
+			).toBeVisible({ timeout: 15000 });
 		});
 
 		test("shows character count indicator for content", async ({

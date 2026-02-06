@@ -207,17 +207,26 @@ test.describe("Register Page - Step 3: Survey", () => {
 		// Assert
 		await expect(visaCheckbox).not.toBeChecked()
 	})
+})
 
+test.describe("Register Page - Registration Flow", () => {
 	test("successful registration redirects to dashboard with verification banner", async ({
 		registerPage,
 		testRun,
 	}) => {
 		// Arrange
 		const uniqueEmail = `test-${testRun.testRunId}@e2e.local`
-		await registerPage.clickBack()
-		await registerPage.clickBack()
-		await registerPage.page.getByLabel("E-mail *").fill(uniqueEmail)
+		await registerPage.goto()
+		await registerPage.fillStep1({
+			email: uniqueEmail,
+			password: "ValidPassword123!",
+			confirmPassword: "ValidPassword123!",
+			firstName: "Test",
+			lastName: "User",
+			affiliation: "Test University",
+		})
 		await registerPage.clickContinue()
+		await registerPage.fillStep2({ country: "Poland" })
 		await registerPage.clickContinue()
 		await registerPage.fillStep3({ acceptTerms: true })
 
@@ -232,13 +241,21 @@ test.describe("Register Page - Step 3: Survey", () => {
 	})
 
 	test("sends verification email on registration", async ({ registerPage, testRun }) => {
+		test.setTimeout(180_000); // Full 3-step registration + email wait
 		// Arrange
 		await clearMailpit(testRun.testRunId)
 		const uniqueEmail = `verify-${testRun.testRunId}@e2e.local`
-		await registerPage.clickBack()
-		await registerPage.clickBack()
-		await registerPage.page.getByLabel("E-mail *").fill(uniqueEmail)
+		await registerPage.goto()
+		await registerPage.fillStep1({
+			email: uniqueEmail,
+			password: "ValidPassword123!",
+			confirmPassword: "ValidPassword123!",
+			firstName: "Test",
+			lastName: "User",
+			affiliation: "Test University",
+		})
 		await registerPage.clickContinue()
+		await registerPage.fillStep2({ country: "Poland" })
 		await registerPage.clickContinue()
 		await registerPage.fillStep3({ acceptTerms: true })
 
@@ -246,8 +263,8 @@ test.describe("Register Page - Step 3: Survey", () => {
 		await registerPage.clickCreateAccount()
 
 		// Assert
-		await expect(registerPage.page).toHaveURL("/", { timeout: 10000 })
-		const email = await waitForEmail(uniqueEmail, "verify", 30000)
+		await expect(registerPage.page).toHaveURL("/", { timeout: 15000 })
+		const email = await waitForEmail(uniqueEmail, "verify", 60000)
 		expect(email).not.toBeNull()
 		expect(email?.Subject).toContain("Verify")
 	})

@@ -113,6 +113,17 @@ Testy:
 - **MUSZĄ** być deterministyczne.
 - **NIE MOGĄ** zależeć od losowości.
 
+## Stan globalny (ustawienia aplikacji)
+Testy modyfikujące stan globalny (np. nazwa konferencji, ustawienia walidacji):
+- **MUSZĄ** używać `test.describe.serial()`.
+- **MUSZĄ** zapisać oryginalny stan w `beforeAll` i przywrócić go w `afterAll`.
+- **NIE MOGĄ** zakładać, że żaden inny test równolegle nie modyfikuje tego samego ustawienia.
+
+## `beforeEach` i budżet czasowy
+- **NIE NALEŻY** umieszczać testów z ciężką własną logiką (rejestracja, email) w bloku z kosztownym `beforeEach`, jeśli test i tak nadpisuje dane z `beforeEach`.
+- **NALEŻY** unikać `waitForLoadState("networkidle")` w helperach wielokrotnego użytku (np. `clickContinue`). Pod obciążeniem 4 workerów każde wywołanie zjada 2-5s budżetu testowego.
+- Jeśli test wymaga innych danych niż `beforeEach` — **NALEŻY** wynieść go do osobnego `describe` z własnym setup.
+
 ## Zasady nadrzędne
 - Jeśli test przechodzi tylko czasami — jest błędny.
 - Jeśli test wymaga kolejności — jest błędny.

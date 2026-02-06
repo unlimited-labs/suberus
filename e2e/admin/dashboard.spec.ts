@@ -10,7 +10,6 @@ test.describe("Admin Dashboard", () => {
 	test("should display admin dashboard page", async ({ page }) => {
 		// Act
 		await page.goto("/admin/dashboard");
-		await page.waitForLoadState("networkidle");
 
 		// Assert
 		await expect(page.getByRole("heading", { name: "Admin Dashboard" })).toBeVisible({ timeout: 10000 });
@@ -19,7 +18,6 @@ test.describe("Admin Dashboard", () => {
 	test("should display metrics cards", async ({ page }) => {
 		// Act
 		await page.goto("/admin/dashboard");
-		await page.waitForLoadState("networkidle");
 		await page.getByRole("heading", { name: "Admin Dashboard" }).waitFor({ timeout: 10000 });
 
 		// Assert - Check all 4 metric cards are visible
@@ -32,7 +30,6 @@ test.describe("Admin Dashboard", () => {
 	test("should display charts", async ({ page }) => {
 		// Act
 		await page.goto("/admin/dashboard");
-		await page.waitForLoadState("networkidle");
 		await page.getByRole("heading", { name: "Admin Dashboard" }).waitFor({ timeout: 10000 });
 
 		// Assert
@@ -43,7 +40,6 @@ test.describe("Admin Dashboard", () => {
 	test("should display recent activity and quick actions", async ({ page }) => {
 		// Act
 		await page.goto("/admin/dashboard");
-		await page.waitForLoadState("networkidle");
 		await page.getByRole("heading", { name: "Admin Dashboard" }).waitFor({ timeout: 10000 });
 
 		// Assert - Use first() to avoid strict mode violation
@@ -54,7 +50,6 @@ test.describe("Admin Dashboard", () => {
 	test("should have working quick action links", async ({ page }) => {
 		// Act
 		await page.goto("/admin/dashboard");
-		await page.waitForLoadState("networkidle");
 		await page.getByRole("heading", { name: "Admin Dashboard" }).waitFor({ timeout: 10000 });
 
 		// Assert - Check quick action links exist in main content (not sidebar)
@@ -71,7 +66,6 @@ test.describe("Admin Dashboard", () => {
 
 		// Act
 		await page.goto("/admin/dashboard");
-		await page.waitForLoadState("networkidle");
 		await page.getByRole("heading", { name: "Admin Dashboard" }).waitFor({ timeout: 10000 });
 
 		// Assert

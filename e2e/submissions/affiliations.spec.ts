@@ -37,7 +37,6 @@ test.describe("Affiliations", () => {
 		await affiliationInput.clear();
 		await affiliationInput.fill(uniqueAffiliation);
 		await affiliationInput.blur();
-		await submissionPage.page.waitForLoadState("networkidle");
 
 		// Assert
 		await expect(affiliationInput).toHaveValue(uniqueAffiliation, {
@@ -48,31 +47,26 @@ test.describe("Affiliations", () => {
 	test("each author can have different affiliation", async ({
 		submissionPage,
 	}) => {
+		test.slow(); // Filling 2 authors with affiliations under load
 		// Arrange
 		await submissionPage.goto();
 		const firstAffiliationInput = submissionPage.getAuthorCard(0)
 			.getByPlaceholder("Type affiliation...");
 
-		// Act
-		await firstAffiliationInput.clear();
-		await firstAffiliationInput.fill("First University");
-		await firstAffiliationInput.blur();
-		await submissionPage.page.waitForLoadState("networkidle");
+		// Act - Use fillAffiliation to wait for API response before addAuthor
+		await submissionPage.fillAffiliation(0, "First University");
 
 		await submissionPage.addAuthor();
 		await submissionPage.page.locator("#author-1-firstName").fill("Jane");
 		await submissionPage.page.locator("#author-1-lastName").fill("Doe");
 		await submissionPage.page.locator("#author-1-email").fill("jane@test.com");
 
-		const secondAffiliationInput = submissionPage.getAuthorCard(1)
-			.getByPlaceholder("Type affiliation...");
-
-		await secondAffiliationInput.fill("Second University");
-		await secondAffiliationInput.blur();
-		await submissionPage.page.waitForLoadState("networkidle");
+		await submissionPage.fillAffiliation(1, "Second University");
 
 		// Assert
 		await expect(firstAffiliationInput).toHaveValue("First University");
+		const secondAffiliationInput = submissionPage.getAuthorCard(1)
+			.getByPlaceholder("Type affiliation...");
 		await expect(secondAffiliationInput).toHaveValue("Second University");
 	});
 });

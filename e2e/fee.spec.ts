@@ -114,7 +114,7 @@ test.describe("Fee - User View", () => {
 	}) => {
 		// Arrange - Create unique test user
 		const testUser = await createTestUser({
-			email: `fee-test-${Date.now()}@e2e.local`,
+			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
 			password: "testpass123",
 		});
 
@@ -150,7 +150,7 @@ test.describe("Fee - User View", () => {
 	test("user without fee sees payment not received alert", async ({ page }) => {
 		// Arrange - Create unique test user (no fee)
 		const testUser = await createTestUser({
-			email: `fee-test-${Date.now()}@e2e.local`,
+			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
 			password: "testpass123",
 		});
 
@@ -180,7 +180,7 @@ test.describe("Fee - User View", () => {
 	test("user with invited speaker fee sees correct fee type", async ({ page }) => {
 		// Arrange - Create unique test user
 		const testUser = await createTestUser({
-			email: `fee-test-${Date.now()}@e2e.local`,
+			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
 			password: "testpass123",
 		});
 
@@ -257,7 +257,7 @@ Please transfer the fee to:
 		await page.waitForURL("/login");
 
 		const testUser = await createTestUser({
-			email: `fee-test-${Date.now()}@e2e.local`,
+			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
 			password: "testpass123",
 		});
 
@@ -311,7 +311,7 @@ Please use the following details:
 		await page.waitForURL("/login");
 
 		const testUser = await createTestUser({
-			email: `fee-test-${Date.now()}@e2e.local`,
+			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
 			password: "testpass123",
 		});
 
@@ -365,7 +365,7 @@ test.describe("Fee - Edge Cases", () => {
 	}) => {
 		// Arrange - Create unique test user
 		const testUser = await createTestUser({
-			email: `fee-test-${Date.now()}@e2e.local`,
+			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
 			password: "testpass123",
 		});
 		const db = getPrisma();
@@ -394,8 +394,8 @@ test.describe("Fee - Edge Cases", () => {
 		await expect(page.getByText("Payment Received")).toBeVisible();
 		await expect(page.getByText("Full Conference Fee")).toBeVisible();
 
-		// Amount field should not be visible
-		await expect(page.getByText("Amount")).not.toBeVisible();
+		// Amount field should not be visible (exact match to avoid matching payment instructions text)
+		await expect(page.getByText("Amount", { exact: true })).not.toBeVisible();
 
 		// Cleanup
 		await deleteTestUser(testUser.id);
@@ -406,7 +406,7 @@ test.describe("Fee - Edge Cases", () => {
 	}) => {
 		// Arrange - Create unique test user
 		const testUser = await createTestUser({
-			email: `fee-test-${Date.now()}@e2e.local`,
+			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
 			password: "testpass123",
 		});
 

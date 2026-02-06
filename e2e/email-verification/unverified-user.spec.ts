@@ -2,7 +2,7 @@ import {
 	test,
 	expect,
 	UNVERIFIED_USER,
-	clearMailpit,
+	clearMailpitForAddress,
 	waitForEmail,
 } from "./fixtures"
 
@@ -53,7 +53,7 @@ test.describe("Unverified User - Email Verification Banner", () => {
 
 	test("resend button sends verification email", async ({ page, emailBanner }) => {
 		// Arrange
-		await clearMailpit()
+		await clearMailpitForAddress(UNVERIFIED_USER.email)
 		await page.goto("/")
 
 		// Act
@@ -97,7 +97,7 @@ test.describe("Unverified User - Submission Block", () => {
 
 	test("resend button in block sends verification email", async ({ submissionBlockPage }) => {
 		// Arrange
-		await clearMailpit()
+		await clearMailpitForAddress(UNVERIFIED_USER.email)
 		await submissionBlockPage.goto()
 
 		// Act
@@ -140,7 +140,7 @@ test.describe("Unverified User - Settings Page", () => {
 
 	test("resend button in settings sends verification email", async ({ settingsEmailSection }) => {
 		// Arrange
-		await clearMailpit()
+		await clearMailpitForAddress(UNVERIFIED_USER.email)
 		await settingsEmailSection.goto()
 
 		// Act

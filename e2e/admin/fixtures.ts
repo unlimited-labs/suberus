@@ -62,12 +62,8 @@ export class AdminUsersPage {
 	}
 
 	async waitForLoad() {
-		// Wait for loading to finish
-		await this.loadingText.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {
-			// Loading text might never appear - that's ok
-		})
-		// Wait for network requests to settle
-		await this.page.waitForLoadState("networkidle")
+		// Wait for heading (works on both desktop table and mobile cards)
+		await expect(this.heading).toBeVisible({ timeout: 10000 })
 	}
 
 	async search(query: string) {
@@ -312,6 +308,32 @@ export class AdminSettingsPage {
 
 	getFileExtensionCheckbox(ext: "pdf" | "doc" | "docx") {
 		return this.page.getByLabel(ext, { exact: ext === "doc" })
+	}
+
+	async switchToConferenceTab(testInfo?: { project: { name: string } }) {
+		if (testInfo?.project.name === "mobile-admin") {
+			await this.page.getByRole("tab").nth(0).click()
+		} else {
+			await this.conferenceTab.click()
+		}
+		await expect(this.page.getByRole("heading", { name: "Basic Information" })).toBeVisible()
+	}
+
+	getConferenceNameInput() {
+		return this.page.getByLabel("Conference Name")
+	}
+
+	async saveConferenceSettings() {
+		await this.page.getByRole("button", { name: "Save" }).first().click()
+	}
+
+	async loginAsAdmin(testRunId: string) {
+		await this.page.goto("/login")
+		await this.page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 })
+		await this.page.getByLabel("E-mail").fill(`admin-${testRunId}@e2e.local`)
+		await this.page.getByLabel("Password").fill("testpass123")
+		await this.page.getByRole("button", { name: "Sign in" }).click()
+		await this.page.waitForURL("/", { timeout: 30000 })
 	}
 }
 

@@ -29,7 +29,6 @@ test.describe("Submission Form", () => {
 	}) => {
 		// Arrange
 		await submissionPage.goto();
-		await submissionPage.page.waitForLoadState("networkidle");
 		const authorsHeading = submissionPage.page.getByRole("heading", { name: "Authors" });
 		await authorsHeading.scrollIntoViewIfNeeded();
 		await expect(authorsHeading).toBeVisible({ timeout: 10000 });
@@ -177,6 +176,7 @@ test.describe("Submission Form", () => {
 	});
 
 	test("submits form successfully and redirects", async ({ submissionPage, uniqueSubmission }) => {
+		test.slow(); // Full form fill + submit + redirect under load
 		// Arrange
 		await submissionPage.goto();
 		await submissionPage.fillCompleteForm(uniqueSubmission);
@@ -186,7 +186,7 @@ test.describe("Submission Form", () => {
 
 		// Assert
 		await submissionPage.page.waitForURL(/\/submissions\/[a-f0-9-]+/, {
-			timeout: 30000,
+			timeout: 60000,
 		});
 		await expect(
 			submissionPage.page.getByText("Submission created successfully"),
@@ -194,6 +194,7 @@ test.describe("Submission Form", () => {
 	});
 
 	test("shows error for short content", async ({ submissionPage }, testInfo) => {
+		test.slow(); // Form fill with author + keywords + submit under load
 		// Skip on mobile - toast positioning may differ
 		if (testInfo.project.name.includes("mobile")) {
 			test.skip();
@@ -216,7 +217,7 @@ test.describe("Submission Form", () => {
 		// Assert
 		await expect(
 			submissionPage.page.getByText(/at least 500 characters/i),
-		).toBeVisible({ timeout: 10000 });
+		).toBeVisible({ timeout: 15000 });
 	});
 
 	test("shows character count for content", async ({ submissionPage }) => {

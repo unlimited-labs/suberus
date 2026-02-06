@@ -202,7 +202,6 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 
 		// Act - User: Navigate to form
 		await userPage.goto("/submissions/new");
-		await userPage.waitForLoadState("networkidle");
 
 		// Assert - Form shows updated limit
 		await expect(
@@ -243,7 +242,6 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 
 		// Act - User: Navigate to form
 		await userPage.goto("/submissions/new");
-		await userPage.waitForLoadState("networkidle");
 
 		// Assert - Form shows updated limits
 		await expect(userPage.getByText(/0 \/ 2-4 keywords/i)).toBeVisible({ timeout: 10000 });
@@ -443,7 +441,6 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 
 		// Assert - After restore: TEXT format shows text area, not file dropzone
 		await userPage.reload();
-		await userPage.waitForLoadState("networkidle");
 		await expect(userPage.getByLabel("Abstract")).toBeVisible({ timeout: 10000 });
 		await expect(userPage.getByText("Document *")).not.toBeVisible();
 	});

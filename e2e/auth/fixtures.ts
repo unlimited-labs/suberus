@@ -60,8 +60,6 @@ export class LoginPage {
 		await this.fillPassword(password)
 		// Use Enter key which is more reliable than button click
 		await this.passwordInput.press("Enter")
-		// Wait for API response to complete
-		await this.page.waitForLoadState("networkidle")
 	}
 }
 
@@ -108,8 +106,7 @@ export class RegisterPage {
 		await this.affiliationInput.fill(data.affiliation)
 		// Blur triggers selection from results or creation via API
 		await this.affiliationInput.blur()
-		// Wait for network to settle (API call completes)
-		await this.page.waitForLoadState("networkidle")
+		// Web-first assertion waits for API call to complete
 		await expect(this.affiliationInput).toHaveValue(data.affiliation, { timeout: 5000 })
 
 		if (data.title) {
@@ -120,12 +117,25 @@ export class RegisterPage {
 
 	// Step 2: Invoice Information
 	async fillStep2(data: { country: string; address?: string }) {
+		// Wait for step 2 to be visible before interacting
+		await this.page.getByText("Select country...").waitFor({ state: "visible", timeout: 10000 })
+
 		if (data.address) {
 			await this.page.getByLabel("Address").fill(data.address)
 		}
 
-		await this.page.getByRole("combobox").click()
-		await this.page.getByPlaceholder("Search country...").fill(data.country)
+		const combobox = this.page.getByRole("combobox")
+		const searchInput = this.page.getByPlaceholder("Search country...")
+		await combobox.waitFor({ state: "visible", timeout: 10000 })
+		await combobox.click()
+		// Retry click if dropdown doesn't open (can happen under load)
+		try {
+			await searchInput.waitFor({ state: "visible", timeout: 5000 })
+		} catch {
+			await combobox.click()
+			await searchInput.waitFor({ state: "visible", timeout: 10000 })
+		}
+		await searchInput.fill(data.country)
 		await this.page.getByRole("option", { name: data.country }).click()
 	}
 
@@ -145,18 +155,12 @@ export class RegisterPage {
 	}
 
 	async clickContinue() {
-		// Ensure button is visible and enabled
+		// Dismiss any open dropdown (e.g. Title select) that may block the button
+		await this.page.keyboard.press("Escape")
 		await expect(this.continueButton).toBeVisible()
 		await expect(this.continueButton).toBeEnabled()
-
-		// Scroll into view for mobile devices
 		await this.continueButton.scrollIntoViewIfNeeded()
-
-		// Click the button
 		await this.continueButton.click()
-
-		// Wait for any navigation/state change
-		await this.page.waitForLoadState("networkidle")
 	}
 
 	async clickBack() {
@@ -280,6 +284,19 @@ export async function clearMailpit(testRunId?: string) {
 				}
 			} catch {
 				// Skip if message already deleted or error fetching
+			}
+		}
+	} catch {
+		// Mailpit might not be running
+	}
+}
+
+export async function clearMailpitForAddress(address: string) {
+	try {
+		const { messages } = await getMailpitMessages()
+		for (const message of messages) {
+			if (message.To.some((t) => t.Address === address)) {
+				await fetch(`${MAILPIT_API}/message/${message.ID}`, { method: "DELETE" })
 			}
 		}
 	} catch {

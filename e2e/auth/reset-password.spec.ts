@@ -1,7 +1,7 @@
 import {
 	test,
 	expect,
-	clearMailpit,
+	clearMailpitForAddress,
 	waitForEmail,
 	getMailpitMessage,
 } from "./fixtures"
@@ -14,7 +14,7 @@ const RESET_PASSWORD_USER = {
 
 test.describe("Reset Password Page", () => {
 	test.beforeEach(async () => {
-		await clearMailpit()
+		await clearMailpitForAddress(RESET_PASSWORD_USER.email)
 	})
 
 	test("shows error when no token provided", async ({ resetPasswordPage }) => {
@@ -83,7 +83,7 @@ test.describe("Reset Password Page", () => {
 
 test.describe("Full Password Reset Flow", () => {
 	test.beforeEach(async () => {
-		await clearMailpit()
+		await clearMailpitForAddress(RESET_PASSWORD_USER.email)
 	})
 
 	test("complete password reset flow", async ({

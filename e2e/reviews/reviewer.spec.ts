@@ -63,7 +63,6 @@ test.describe("Reviewer - Review Form", () => {
 		// Act
 		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
-		await page.waitForLoadState("networkidle");
 
 		// Assert
 		await expect(page.getByRole("heading", { name: "Decision" })).toBeVisible();
@@ -93,7 +92,6 @@ test.describe("Reviewer - Review Form", () => {
 		// Act
 		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
-		await page.waitForLoadState("networkidle");
 
 		// Assert
 		await expect(page.getByRole("heading", { name: "Review Progress", exact: true })).toBeVisible();
@@ -120,7 +118,6 @@ test.describe("Reviewer - Review Form", () => {
 		// Act
 		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
-		await page.waitForLoadState("networkidle");
 
 		// Assert - look for the sidebar heading, not the submission title
 		await expect(page.getByRole("heading", { name: "Review Guidelines", exact: true })).toBeVisible();
@@ -139,7 +136,6 @@ test.describe("Reviewer - Review Form", () => {
 		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
 		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
-		await page.waitForLoadState("networkidle");
 		await expect(page.getByRole("heading", { name: "Decision", exact: true })).toBeVisible({ timeout: 10000 });
 
 		// Act & Assert - select each decision
@@ -161,7 +157,6 @@ test.describe("Reviewer - Review Form", () => {
 		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
 		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
-		await page.waitForLoadState("networkidle");
 
 		// Assert - submit should be disabled without comments
 		await expect(reviewFormPage.submitButton).toBeDisabled();
@@ -180,7 +175,6 @@ test.describe("Reviewer - Review Form", () => {
 		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
 		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
-		await page.waitForLoadState("networkidle");
 		await expect(reviewFormPage.commentsInput).toBeVisible({ timeout: 10000 });
 
 		// Act - fill comments with minimum required characters
@@ -208,7 +202,6 @@ test.describe("Reviewer - Review Form", () => {
 		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
 		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
-		await page.waitForLoadState("networkidle");
 
 		// Act
 		const commentsField = page.getByRole("textbox", { name: "Review Comments" });
@@ -232,7 +225,6 @@ test.describe("Reviewer - Review Form", () => {
 		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
 		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
-		await page.waitForLoadState("networkidle");
 
 		// Act
 		await reviewFormPage.fillPrivateNotes("Confidential notes for editors only.");
@@ -254,7 +246,6 @@ test.describe("Reviewer - Review Form", () => {
 		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
 		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
-		await page.waitForLoadState("networkidle");
 
 		// Act
 		await reviewFormPage.backButton.click();
@@ -281,7 +272,6 @@ test.describe("Reviewer - Scoring", () => {
 		// Act
 		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
-		await page.waitForLoadState("networkidle");
 
 		// Assert
 		await expect(page.getByText("Evaluation Criteria")).toBeVisible();
@@ -304,7 +294,6 @@ test.describe("Reviewer - Scoring", () => {
 		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
 		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
-		await page.waitForLoadState("networkidle");
 		await expect(page.getByText("Evaluation Criteria")).toBeVisible();
 
 		// Act
@@ -333,7 +322,6 @@ test.describe("Reviewer - Double-blind Mode", () => {
 		// Act
 		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
-		await page.waitForLoadState("networkidle");
 
 		// Assert
 		await expect(page.getByText(/Double-blind review.*author information hidden/i)).toBeVisible();

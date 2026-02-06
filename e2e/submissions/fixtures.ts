@@ -156,6 +156,8 @@ export class SubmissionPage {
 		const lastNameInput = this.page.locator(`#author-${index}-lastName`)
 		const emailInput = this.page.locator(`#author-${index}-email`)
 
+		// Wait for element to be stable (avoids DOM detachment from React re-render after addAuthor)
+		await baseExpect(firstNameInput).toBeVisible({ timeout: 10000 })
 		await firstNameInput.fill(author.firstName)
 		await lastNameInput.fill(author.lastName)
 		await emailInput.fill(author.email)
@@ -163,14 +165,30 @@ export class SubmissionPage {
 		// Fill affiliation using the placeholder in the same author card
 		const affiliationInput = this.getAuthorCard(index).getByPlaceholder("Type affiliation...")
 		await affiliationInput.fill(author.affiliationName)
-		await affiliationInput.blur()
-		// Wait for network to settle (API call completes)
-		await this.page.waitForLoadState("networkidle")
+		// Wait for affiliation API response after blur (sets affiliationId in form state)
+		await Promise.all([
+			this.page.waitForResponse((resp) => resp.url().includes("_server") && resp.status() === 200, { timeout: 10000 }).catch(() => null),
+			affiliationInput.blur(),
+		])
 		await baseExpect(affiliationInput).toHaveValue(author.affiliationName, { timeout: 5000 })
 	}
 
+	async fillAffiliation(index: number, affiliationName: string) {
+		const affiliationInput = this.getAuthorCard(index).getByPlaceholder("Type affiliation...")
+		await affiliationInput.fill(affiliationName)
+		// Wait for affiliation API response after blur (sets affiliationId in form state)
+		await Promise.all([
+			this.page.waitForResponse((resp) => resp.url().includes("_server") && resp.status() === 200, { timeout: 10000 }).catch(() => null),
+			affiliationInput.blur(),
+		])
+		await baseExpect(affiliationInput).toHaveValue(affiliationName, { timeout: 5000 })
+	}
+
 	async addAuthor() {
+		const currentCount = await this.page.locator('[data-testid^="author-card-"]').count()
 		await this.page.getByRole("button", { name: "Add Author" }).click()
+		// Wait for the new author card to appear in DOM
+		await baseExpect(this.page.locator(`[data-testid="author-card-${currentCount}"]`)).toBeVisible({ timeout: 10000 })
 	}
 
 	/** Get keywords section container */
@@ -191,14 +209,9 @@ export class SubmissionPage {
 	}
 
 	async submit() {
-		// Ensure button is visible and clickable
-		await baseExpect(this.submitButton).toBeVisible({ timeout: 5000 })
-		await baseExpect(this.submitButton).toBeEnabled({ timeout: 5000 })
+		await baseExpect(this.submitButton).toBeVisible()
+		await baseExpect(this.submitButton).toBeEnabled()
 		await this.submitButton.click()
-		// Wait for form submission to complete (button text changes to "Submitting...")
-		await baseExpect(this.submitButton).toHaveText(/Submitting/i, { timeout: 5000 }).catch(() => {
-			// Button may have already navigated away, that's fine
-		})
 	}
 
 	async fillCompleteForm(data: typeof VALID_SUBMISSION) {

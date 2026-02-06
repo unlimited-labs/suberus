@@ -66,6 +66,23 @@ export interface CreateSubmissionOptions {
 	content?: string;
 	userId?: string; // defaults to test user
 	withAuthor?: boolean;
+	/** Custom author data (overrides default Test Author) */
+	authorData?: {
+		firstName: string;
+		lastName: string;
+		email?: string;
+		affiliationName?: string;
+	};
+	/** Additional authors to create */
+	extraAuthors?: Array<{
+		firstName: string;
+		lastName: string;
+		email?: string;
+		affiliationName?: string;
+		isPresenter?: boolean;
+	}>;
+	/** Keywords to attach to the submission */
+	keywords?: string[];
 }
 
 export async function createSubmission(options: CreateSubmissionOptions): Promise<{
@@ -95,18 +112,20 @@ export async function createSubmission(options: CreateSubmissionOptions): Promis
 
 	// Add author if requested
 	if (options.withAuthor !== false) {
+		const ad = options.authorData;
+		const affiliationName = ad?.affiliationName ?? "Test University";
 		const affiliation = await db.affiliation.upsert({
-			where: { name: "Test University" },
+			where: { name: affiliationName },
 			update: {},
-			create: { name: "Test University" },
+			create: { name: affiliationName },
 		});
 
 		const author = await db.submissionAuthor.create({
 			data: {
 				submissionId: submission.id,
-				email: `author-${submission.id.slice(0, 8)}@test.com`,
-				firstName: "Test",
-				lastName: "Author",
+				email: ad?.email ?? `author-${submission.id.slice(0, 8)}@test.com`,
+				firstName: ad?.firstName ?? "Test",
+				lastName: ad?.lastName ?? "Author",
 				affiliationId: affiliation.id,
 				orderIndex: 1,
 				isPresenter: true,
@@ -117,6 +136,47 @@ export async function createSubmission(options: CreateSubmissionOptions): Promis
 			where: { id: submission.id },
 			data: { presenterId: author.id },
 		});
+
+		// Add extra authors
+		if (options.extraAuthors) {
+			for (let i = 0; i < options.extraAuthors.length; i++) {
+				const extra = options.extraAuthors[i];
+				const extraAffName = extra.affiliationName ?? "Test University";
+				const extraAff = await db.affiliation.upsert({
+					where: { name: extraAffName },
+					update: {},
+					create: { name: extraAffName },
+				});
+				await db.submissionAuthor.create({
+					data: {
+						submissionId: submission.id,
+						email: extra.email ?? `extra-author-${i}-${submission.id.slice(0, 8)}@test.com`,
+						firstName: extra.firstName,
+						lastName: extra.lastName,
+						affiliationId: extraAff.id,
+						orderIndex: i + 2,
+						isPresenter: extra.isPresenter ?? false,
+					},
+				});
+			}
+		}
+	}
+
+	// Add keywords if provided
+	if (options.keywords?.length) {
+		for (const keyword of options.keywords) {
+			const kw = await db.keyword.upsert({
+				where: { name: keyword },
+				update: {},
+				create: { name: keyword },
+			});
+			await db.submissionKeyword.create({
+				data: {
+					submissionId: submission.id,
+					keywordId: kw.id,
+				},
+			});
+		}
 	}
 
 	// Add status history

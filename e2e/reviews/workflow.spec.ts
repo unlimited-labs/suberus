@@ -244,7 +244,6 @@ test.describe("Review Workflow - Reviewer Actions", () => {
 
 		const assignmentsPage = new ReviewerAssignmentsPage(page);
 		await assignmentsPage.goto();
-		await page.waitForLoadState("networkidle");
 
 		// Act
 		const assignmentRow = page.locator("tr").filter({ hasText: title });
@@ -276,13 +275,11 @@ test.describe("Review Workflow - Reviewer Actions", () => {
 
 		const assignmentsPage = new ReviewerAssignmentsPage(page);
 		await assignmentsPage.goto();
-		await page.waitForLoadState("networkidle");
 
 		const assignmentRow = page.locator("tr").filter({ hasText: title });
 		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
 		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+/);
-		await page.waitForLoadState("networkidle");
 
 		// Assert
 		await expect(page.getByRole("button", { name: /Accept Work meets/i })).toBeVisible();
@@ -308,13 +305,11 @@ test.describe("Review Workflow - Reviewer Actions", () => {
 
 		const assignmentsPage = new ReviewerAssignmentsPage(page);
 		await assignmentsPage.goto();
-		await page.waitForLoadState("networkidle");
 
 		const assignmentRow = page.locator("tr").filter({ hasText: title });
 		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
 		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+/);
-		await page.waitForLoadState("networkidle");
 
 		const reviewForm = new ReviewFormPage(page);
 

@@ -102,7 +102,6 @@ export class SettingsPage {
 
 	async savePersonalInfo() {
 		await this.savePersonalBtn.click()
-		await this.page.waitForLoadState("networkidle")
 	}
 
 	async fillContactInfo(data: { address?: string; country?: string }) {
@@ -119,7 +118,6 @@ export class SettingsPage {
 
 	async saveContactInfo() {
 		await this.saveContactBtn.click()
-		await this.page.waitForLoadState("networkidle")
 	}
 
 	async fillPasswordChange(data: {

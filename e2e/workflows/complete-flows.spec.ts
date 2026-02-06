@@ -39,7 +39,6 @@ async function loginAs(page: Page, user: { email: string; password: string }) {
 	// Use Enter key which is more reliable than button click
 	await passwordInput.press("Enter");
 	// Wait for API response to complete before checking URL
-	await page.waitForLoadState("networkidle");
 	await page.waitForURL("/", { timeout: 30000 });
 }
 
@@ -59,11 +58,9 @@ async function addKeyword(page: Page, keyword: string) {
 
 async function findSubmissionInAdmin(page: Page, title: string): Promise<string> {
 	await page.goto("/admin/submissions");
-	await page.waitForLoadState("networkidle");
-
 	const searchInput = page.getByPlaceholder(/Search/i);
+	await expect(searchInput).toBeVisible({ timeout: 10000 });
 	await searchInput.fill(title);
-	await page.waitForLoadState("networkidle");
 
 	const row = page.locator("tr").filter({ hasText: title }).first();
 	await expect(row).toBeVisible({ timeout: 10000 });
@@ -84,6 +81,7 @@ async function findSubmissionInAdmin(page: Page, title: string): Promise<string>
 
 test.describe("Complete Submission Workflow", () => {
 	test("author creates and submits a new submission", async ({ page, testRun }) => {
+		test.slow();
 		// Arrange
 		const submissionTitle = `${testRun.testRunId}_E2E Workflow`;
 		await loginAs(page, TEST_USER);
@@ -105,15 +103,21 @@ test.describe("Complete Submission Workflow", () => {
 		const authorCard = page.locator('[data-testid="author-card-0"]');
 		const affiliationInput = authorCard.getByPlaceholder("Type affiliation...");
 		await affiliationInput.fill("Test University");
-		await affiliationInput.blur();
-		await page.waitForLoadState("networkidle");
+		await Promise.all([
+			page.waitForResponse(
+				(resp) => resp.url().includes("_server") && resp.status() === 200,
+				{ timeout: 10000 }
+			).catch(() => null),
+			affiliationInput.blur(),
+		]);
+		await expect(affiliationInput).toHaveValue("Test University", { timeout: 5000 });
 
 		await addKeyword(page, "workflow-test");
 		await addKeyword(page, "e2e");
 		await addKeyword(page, "acceptance");
 
 		await page.getByRole("button", { name: "Submit" }).click();
-		await page.waitForURL(/\/submissions\/[a-f0-9-]+/, { timeout: 30000 });
+		await page.waitForURL(/\/submissions\/[a-f0-9-]+/, { timeout: 60000 });
 
 		// Assert
 		await expect(page.getByText(submissionTitle)).toBeVisible({ timeout: 10000 });
@@ -144,8 +148,7 @@ test.describe("Complete Submission Workflow", () => {
 
 		// Search for reviewer
 		await page.getByPlaceholder("Search by name, email, or affiliation...").fill(REVIEWER_USER.email);
-		await page.waitForLoadState("networkidle");
-		await expect(page.getByText(REVIEWER_USER.email)).toBeVisible();
+			await expect(page.getByText(REVIEWER_USER.email)).toBeVisible();
 
 		// Close dialog (don't actually assign to preserve test state)
 		const dialog = page.getByRole("dialog");
@@ -179,8 +182,7 @@ test.describe("Complete Submission Workflow", () => {
 		await page.getByLabel(/Internal Reasoning/i).fill("Excellent submission - Accept");
 		await page.getByLabel(/Letter to Author/i).fill("Congratulations, your submission has been accepted.");
 		await page.getByRole("button", { name: /Submit Decision/i }).click();
-		await page.waitForLoadState("networkidle");
-
+	
 		// Assert
 		await page.reload();
 		await expect(page.getByText(/Accepted/i).first()).toBeVisible({ timeout: 10000 });
@@ -258,8 +260,7 @@ test.describe("Reviewer Assignments", () => {
 
 		await loginAs(page, REVIEWER_USER);
 		await page.goto("/reviews");
-		await page.waitForLoadState("networkidle");
-
+	
 		// Assert
 		await expect(page.getByText(title).first()).toBeVisible({ timeout: 10000 });
 	});
@@ -317,14 +318,12 @@ test.describe("Review Form Validation", () => {
 
 		await loginAs(page, REVIEWER_USER);
 		await page.goto("/reviews");
-		await page.waitForLoadState("networkidle");
-
+	
 		const assignmentRow = page.locator("tr").filter({ hasText: title });
 		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
 		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
-		await page.waitForLoadState("networkidle");
-
+	
 		// Assert form loaded
 		await expect(page.getByRole("heading", { name: "Decision", exact: true })).toBeVisible({ timeout: 10000 });
 
