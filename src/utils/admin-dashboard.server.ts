@@ -232,9 +232,7 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 			createdAt: item.createdAt,
 		})),
 		usersByCountry: usersByCountry
-			.filter(
-				(g): g is typeof g & { country: string } => g.country !== null,
-			)
+			.filter((g): g is typeof g & { country: string } => g.country !== null)
 			.map((g) => ({ country: g.country, count: g._count })),
 	};
 }

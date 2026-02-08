@@ -10,6 +10,7 @@ import {
 } from "@tabler/icons-react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
+import { SessionsTab } from "@/components/admin/sessions/sessions-tab";
 import {
 	BrandingSettingsTab,
 	ConferenceSettingsTab,
@@ -18,15 +19,14 @@ import {
 	SubmissionSettingsTab,
 	SubmissionTypesTab,
 } from "@/components/admin/settings";
-import { SessionsTab } from "@/components/admin/sessions/sessions-tab";
-import {
-	getAllSessionsFn,
-	getReviewerUsersFn,
-} from "@/utils/sessions.functions";
 import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { defaultEmailTemplates } from "@/lib/mock-data/admin-settings";
 import { getPaymentInstructionsFn } from "@/utils/fee.functions";
+import {
+	getAllSessionsFn,
+	getReviewerUsersFn,
+} from "@/utils/sessions.functions";
 import {
 	getBrandingSettingsFn,
 	getConferenceSettingsFn,
@@ -36,17 +36,32 @@ import {
 
 export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 	loader: async () => {
-		const [conferenceSettings, submissionTypes, submissionSettings, feeInstructions, brandingSettings, sessions, reviewers] =
-			await Promise.all([
-				getConferenceSettingsFn(),
-				getSubmissionTypeConfigsFn(),
-				getSubmissionValidationSettingsFn(),
-				getPaymentInstructionsFn(),
-				getBrandingSettingsFn(),
-				getAllSessionsFn(),
-				getReviewerUsersFn(),
-			]);
-		return { conferenceSettings, submissionTypes, submissionSettings, feeInstructions, brandingSettings, sessions, reviewers };
+		const [
+			conferenceSettings,
+			submissionTypes,
+			submissionSettings,
+			feeInstructions,
+			brandingSettings,
+			sessions,
+			reviewers,
+		] = await Promise.all([
+			getConferenceSettingsFn(),
+			getSubmissionTypeConfigsFn(),
+			getSubmissionValidationSettingsFn(),
+			getPaymentInstructionsFn(),
+			getBrandingSettingsFn(),
+			getAllSessionsFn(),
+			getReviewerUsersFn(),
+		]);
+		return {
+			conferenceSettings,
+			submissionTypes,
+			submissionSettings,
+			feeInstructions,
+			brandingSettings,
+			sessions,
+			reviewers,
+		};
 	},
 	component: AdminSettingsPage,
 });
@@ -62,8 +77,15 @@ const tabs = [
 ];
 
 function AdminSettingsPage() {
-	const { conferenceSettings, submissionTypes, submissionSettings, feeInstructions, brandingSettings, sessions, reviewers } =
-		Route.useLoaderData();
+	const {
+		conferenceSettings,
+		submissionTypes,
+		submissionSettings,
+		feeInstructions,
+		brandingSettings,
+		sessions,
+		reviewers,
+	} = Route.useLoaderData();
 	const [activeTab, setActiveTab] = useState("conference");
 	const router = useRouter();
 

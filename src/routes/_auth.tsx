@@ -55,7 +55,10 @@ export const Route = createFileRoute("/_auth")({
 function buildCssVarOverrides(branding: AuthPageBranding): CSSProperties {
 	const vars: Record<string, string> = {};
 
-	if (branding.primaryColor && branding.primaryColor !== defaults.primaryColor) {
+	if (
+		branding.primaryColor &&
+		branding.primaryColor !== defaults.primaryColor
+	) {
 		vars["--primary"] = branding.primaryColor;
 		vars["--ring"] = branding.primaryColor;
 	}

@@ -17,12 +17,6 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useSession } from "@/hooks/use-session";
-import type { SubmissionTypeConfig } from "@/lib/settings/types";
-import { cn } from "@/lib/utils";
-import { getAffiliationById } from "@/utils/affiliations.functions";
-import { getActiveSessionsFn } from "@/utils/sessions.functions";
 import {
 	Select,
 	SelectContent,
@@ -30,6 +24,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useSession } from "@/hooks/use-session";
+import type { SubmissionTypeConfig } from "@/lib/settings/types";
+import { cn } from "@/lib/utils";
+import { getAffiliationById } from "@/utils/affiliations.functions";
+import { getActiveSessionsFn } from "@/utils/sessions.functions";
 import { type Author, AuthorsInput } from "./authors-input";
 import { FileDropzone } from "./file-dropzone";
 import { KeywordsInput } from "./keywords-input";
@@ -599,7 +599,9 @@ export function SubmissionForm({
 												{(field) => (
 													<Select
 														value={field.state.value || "none"}
-														onValueChange={(v) => field.handleChange(v === "none" ? null : v)}
+														onValueChange={(v) =>
+															field.handleChange(v === "none" ? null : v)
+														}
 													>
 														<SelectTrigger>
 															<SelectValue placeholder="Select session (optional)" />

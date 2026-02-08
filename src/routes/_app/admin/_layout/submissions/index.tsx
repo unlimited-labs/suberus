@@ -42,7 +42,12 @@ function AdminSubmissionsPage() {
 							searchKey="title"
 							searchPlaceholder="Search submissions..."
 							columnLabels={columnLabels}
-							actions={<SubmissionBulkActions table={table} onSuccess={() => router.invalidate()} />}
+							actions={
+								<SubmissionBulkActions
+									table={table}
+									onSuccess={() => router.invalidate()}
+								/>
+							}
 						/>
 					)}
 				/>

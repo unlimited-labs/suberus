@@ -1,4 +1,7 @@
+import { IconEdit, IconLoader2, IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -9,13 +12,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { IconEdit, IconLoader2, IconTrash } from "@tabler/icons-react";
-import { toast } from "sonner";
-import {
-	deleteSessionFn,
-	updateSessionFn,
-} from "@/utils/sessions.functions";
+import { deleteSessionFn, updateSessionFn } from "@/utils/sessions.functions";
 import type { SessionWithStats } from "@/utils/sessions.server";
 
 interface SessionsListProps {
@@ -61,10 +58,7 @@ export function SessionsList({
 		}
 	};
 
-	const handleToggleActive = async (
-		id: string,
-		currentActive: boolean,
-	) => {
+	const handleToggleActive = async (id: string, currentActive: boolean) => {
 		setTogglingId(id);
 		try {
 			await updateSessionFn({
