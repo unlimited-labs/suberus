@@ -56,7 +56,7 @@ export default defineConfig({
 		// Submission tests - use user auth (wait for settings-integration to complete first)
 		{
 			name: "chromium-user",
-			testMatch: /e2e\/submissions\/(?!settings-integration|coauthor-visibility).*\.spec\.ts/,
+			testMatch: /e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access).*\.spec\.ts/,
 			dependencies: ["auth-setup"],
 			use: {
 				...devices["Desktop Chrome"],
@@ -65,7 +65,7 @@ export default defineConfig({
 		},
 		{
 			name: "mobile-user",
-			testMatch: /e2e\/submissions\/(?!settings-integration|coauthor-visibility).*\.spec\.ts/,
+			testMatch: /e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access).*\.spec\.ts/,
 			dependencies: ["auth-setup"],
 			use: {
 				...devices["Pixel 5"],
@@ -178,6 +178,15 @@ export default defineConfig({
 		{
 			name: "chromium-coauthor",
 			testMatch: /coauthor-visibility\.spec\.ts/,
+			dependencies: ["auth-setup"],
+			use: {
+				...devices["Desktop Chrome"],
+			},
+		},
+		// File access tests - cross-role (handles auth internally)
+		{
+			name: "chromium-file-access",
+			testMatch: /file-access\.spec\.ts/,
 			dependencies: ["auth-setup"],
 			use: {
 				...devices["Desktop Chrome"],

@@ -1,4 +1,6 @@
 import {
+	IconDownload,
+	IconFile,
 	IconHistory,
 	IconStarFilled,
 	IconTags,
@@ -7,11 +9,19 @@ import {
 } from "@tabler/icons-react";
 import { SubmissionTimeline } from "@/components/submissions/submission-timeline";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type {
 	UserSubmissionAuthor,
+	UserSubmissionFile,
 	UserSubmissionStatusHistory,
 } from "@/utils/submissions.functions";
+
+function formatFileSize(bytes: number): string {
+	if (bytes < 1024) return `${bytes} B`;
+	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 interface ContentTabsProps {
 	title: string;
@@ -19,6 +29,7 @@ interface ContentTabsProps {
 	keywords: string[];
 	authors: UserSubmissionAuthor[];
 	statusHistory: UserSubmissionStatusHistory[];
+	file?: UserSubmissionFile | null;
 }
 
 export function ContentTabs({
@@ -27,6 +38,7 @@ export function ContentTabs({
 	keywords,
 	authors,
 	statusHistory,
+	file,
 }: ContentTabsProps) {
 	return (
 		<div className="rounded-2xl bg-card shadow-2xl border p-8">
@@ -47,14 +59,53 @@ export function ContentTabs({
 						{title}
 					</h1>
 
-					<div className="space-y-2">
-						<p className="text-sm font-medium text-muted-foreground">
-							Abstract
-						</p>
-						<div className="text-sm text-foreground leading-relaxed whitespace-pre-line break-words bg-muted/30 p-4 rounded-lg border">
-							{content}
+					{file ? (
+						<div className="space-y-2">
+							<p className="text-sm font-medium text-muted-foreground">
+								Document
+							</p>
+							<div className="flex items-center gap-4 p-4 rounded-lg border bg-muted/30">
+								<div className="flex-shrink-0 p-2 rounded-md bg-primary/10">
+									<IconFile className="size-6 text-primary" />
+								</div>
+								<div className="flex-1 min-w-0">
+									<p className="text-sm font-medium text-foreground truncate">
+										{file.originalName}
+									</p>
+									<p className="text-xs text-muted-foreground">
+										{formatFileSize(file.size)} &middot; {file.mimeType}
+									</p>
+								</div>
+								<Button variant="outline" size="sm" className="gap-2" asChild>
+									<a
+										href={`/api/files/${file.id}`}
+										data-testid="file-download-button"
+									>
+										<IconDownload className="size-4" />
+										Download
+									</a>
+								</Button>
+							</div>
 						</div>
-					</div>
+					) : content ? (
+						<div className="space-y-2">
+							<p className="text-sm font-medium text-muted-foreground">
+								Abstract
+							</p>
+							<div className="text-sm text-foreground leading-relaxed whitespace-pre-line break-words bg-muted/30 p-4 rounded-lg border">
+								{content}
+							</div>
+						</div>
+					) : (
+						<div className="space-y-2">
+							<p className="text-sm font-medium text-muted-foreground">
+								Content
+							</p>
+							<div className="text-sm text-muted-foreground p-4 rounded-lg border bg-muted/30">
+								No content available
+							</div>
+						</div>
+					)}
 
 					<div className="space-y-3">
 						<div className="flex items-center gap-2">

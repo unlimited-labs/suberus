@@ -40,6 +40,13 @@ export async function getAssignmentForReview(
 			affiliationName: string | null;
 			isPresenter: boolean;
 		}>;
+		file: {
+			id: string;
+			fileName: string;
+			originalName: string;
+			mimeType: string;
+			size: number;
+		} | null;
 	};
 	config: {
 		reviewMode: ReviewMode;
@@ -66,7 +73,19 @@ export async function getAssignmentForReview(
 						include: { affiliation: true },
 						orderBy: { orderIndex: "asc" },
 					},
-					currentVersion: true,
+					currentVersion: {
+						include: {
+							file: {
+								select: {
+									id: true,
+									fileName: true,
+									originalName: true,
+									mimeType: true,
+									size: true,
+								},
+							},
+						},
+					},
 				},
 			},
 			review: true,
@@ -103,6 +122,7 @@ export async function getAssignmentForReview(
 				affiliationName: a.affiliation?.name ?? null,
 				isPresenter: a.isPresenter,
 			})),
+			file: assignment.submission.currentVersion?.file ?? null,
 		},
 		config: {
 			reviewMode: config.reviewMode,

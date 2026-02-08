@@ -1,0 +1,177 @@
+import path from "path";
+import { test, expect, VALID_SUBMISSION } from "./fixtures";
+
+const FIXTURES_DIR = path.resolve("e2e/submissions/fixtures");
+
+test.describe.serial("File Upload", () => {
+	test("FileDropzone visible for Full Paper", async ({ submissionPage }) => {
+		// Arrange
+		await submissionPage.goto();
+
+		// Act
+		await submissionPage.selectType("FULL_PAPER");
+
+		// Assert
+		await expect(
+			submissionPage.page.getByText("Drop file or click to upload"),
+		).toBeVisible();
+		await expect(submissionPage.contentInput).not.toBeVisible({
+			timeout: 5000,
+		});
+	});
+
+	test("valid PDF accepted", async ({ submissionPage }) => {
+		// Arrange
+		await submissionPage.goto();
+		await submissionPage.selectType("FULL_PAPER");
+
+		// Act
+		const fileInput = submissionPage.page.locator('input[type="file"]');
+		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.pdf"));
+
+		// Assert - file name shown in dropzone
+		await expect(
+			submissionPage.page.getByText("document.pdf"),
+		).toBeVisible();
+	});
+
+	test("valid DOCX accepted", async ({ submissionPage }) => {
+		// Arrange
+		await submissionPage.goto();
+		await submissionPage.selectType("FULL_PAPER");
+
+		// Act
+		const fileInput = submissionPage.page.locator('input[type="file"]');
+		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.docx"));
+
+		// Assert
+		await expect(
+			submissionPage.page.getByText("document.docx"),
+		).toBeVisible();
+	});
+
+	test("invalid DOCM rejected", async ({ submissionPage }) => {
+		// Arrange
+		await submissionPage.goto();
+		await submissionPage.selectType("FULL_PAPER");
+
+		// Act
+		const fileInput = submissionPage.page.locator('input[type="file"]');
+		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.docm"));
+
+		// Assert
+		await expect(
+			submissionPage.page.getByText(/File type \.docm not accepted/i),
+		).toBeVisible();
+	});
+
+	test("invalid TXT rejected", async ({ submissionPage }) => {
+		// Arrange
+		await submissionPage.goto();
+		await submissionPage.selectType("FULL_PAPER");
+
+		// Act
+		const fileInput = submissionPage.page.locator('input[type="file"]');
+		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.txt"));
+
+		// Assert
+		await expect(
+			submissionPage.page.getByText(/File type \.txt not accepted/i),
+		).toBeVisible();
+	});
+
+	test("full paper submission with file completes", async ({
+		submissionPage,
+		testRun,
+	}) => {
+		test.slow();
+		// Arrange
+		await submissionPage.goto();
+		await submissionPage.selectType("FULL_PAPER");
+		await submissionPage.fillTitle(
+			`${testRun.testRunId}_File Upload Test Paper`,
+		);
+
+		// Upload PDF
+		const fileInput = submissionPage.page.locator('input[type="file"]');
+		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.pdf"));
+		await expect(
+			submissionPage.page.getByText("document.pdf"),
+		).toBeVisible();
+
+		// Fill author
+		await submissionPage.fillAuthor(0, VALID_SUBMISSION.authors[0]);
+
+		// Add keywords
+		await submissionPage.addKeyword("file-upload-test");
+		await submissionPage.addKeyword("e2e");
+		await submissionPage.addKeyword("pdf");
+
+		// Act
+		await submissionPage.submit();
+
+		// Assert - redirect to detail page
+		await submissionPage.page.waitForURL(/\/submissions\/[a-f0-9-]+/, {
+			timeout: 60000,
+		});
+		await expect(
+			submissionPage.page.getByText("Submission created successfully"),
+		).toBeVisible();
+	});
+
+	test("uploaded file visible on detail page", async ({
+		submissionPage,
+		testRun,
+	}) => {
+		test.slow();
+		// Arrange - create full paper with file
+		await submissionPage.goto();
+		await submissionPage.selectType("FULL_PAPER");
+		await submissionPage.fillTitle(
+			`${testRun.testRunId}_File Detail Visibility`,
+		);
+
+		const fileInput = submissionPage.page.locator('input[type="file"]');
+		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.pdf"));
+
+		await submissionPage.fillAuthor(0, VALID_SUBMISSION.authors[0]);
+		await submissionPage.addKeyword("file-detail");
+		await submissionPage.addKeyword("visibility");
+		await submissionPage.addKeyword("test");
+
+		// Act - submit
+		await submissionPage.submit();
+		await submissionPage.page.waitForURL(/\/submissions\/[a-f0-9-]+/, {
+			timeout: 60000,
+		});
+
+		// Assert - file info visible on detail page
+		await expect(
+			submissionPage.page.getByText("document.pdf"),
+		).toBeVisible();
+		await expect(
+			submissionPage.page.getByTestId("file-download-button"),
+		).toBeVisible();
+	});
+
+	test("text submission shows no file section", async ({
+		submissionPage,
+		uniqueSubmission,
+	}) => {
+		test.slow();
+		// Arrange - create text submission
+		await submissionPage.goto();
+		await submissionPage.fillCompleteForm(uniqueSubmission);
+
+		// Act
+		await submissionPage.submit();
+		await submissionPage.page.waitForURL(/\/submissions\/[a-f0-9-]+/, {
+			timeout: 60000,
+		});
+
+		// Assert - no download button
+		await expect(
+			submissionPage.page.getByTestId("file-download-button"),
+		).not.toBeVisible();
+	});
+});

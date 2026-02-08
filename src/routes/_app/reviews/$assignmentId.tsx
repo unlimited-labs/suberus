@@ -72,6 +72,8 @@ function ReviewFormPage() {
 						title: submission.title,
 						type: submission.type,
 						authors: submission.authors,
+						content: submission.content,
+						file: submission.file,
 					}}
 					reviewMode={config.reviewMode}
 					initialData={

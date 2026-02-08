@@ -47,6 +47,7 @@ function SubmissionDetailPage() {
 		content: versionData?.content ?? submission.content,
 		authors: versionData?.authors ?? submission.authors,
 		keywords: versionData?.keywords ?? submission.keywords,
+		file: versionData?.file ?? null,
 	};
 
 	return (
@@ -79,6 +80,7 @@ function SubmissionDetailPage() {
 								keywords={displayData.keywords}
 								authors={displayData.authors}
 								statusHistory={statusHistory}
+								file={displayData.file}
 							/>
 
 							{reviews.length > 0 && (

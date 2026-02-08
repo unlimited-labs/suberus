@@ -229,6 +229,14 @@ export interface UserSubmissionDecision {
 	createdAt: Date;
 }
 
+export interface UserSubmissionFile {
+	id: string;
+	fileName: string;
+	originalName: string;
+	mimeType: string;
+	size: number;
+}
+
 export interface UserSubmissionVersion {
 	id: string;
 	submissionId: string;
@@ -237,6 +245,7 @@ export interface UserSubmissionVersion {
 	content: string;
 	authors: UserSubmissionAuthor[];
 	keywords: string[];
+	file: UserSubmissionFile | null;
 	createdAt: Date;
 }
 
@@ -311,6 +320,15 @@ export async function getSubmissionById(
 			},
 			versions: {
 				include: {
+					file: {
+						select: {
+							id: true,
+							fileName: true,
+							originalName: true,
+							mimeType: true,
+							size: true,
+						},
+					},
 					submission: {
 						include: {
 							authors: {
@@ -389,6 +407,15 @@ export async function getSubmissionById(
 		content: v.content,
 		authors, // All versions share same author structure for simplicity
 		keywords,
+		file: v.file
+			? {
+					id: v.file.id,
+					fileName: v.file.fileName,
+					originalName: v.file.originalName,
+					mimeType: v.file.mimeType,
+					size: v.file.size,
+				}
+			: null,
 		createdAt: v.createdAt,
 	}));
 
@@ -412,4 +439,76 @@ export async function getSubmissionById(
 		decision,
 		versions,
 	};
+}
+
+export interface ResubmitSubmissionInput {
+	title: string;
+	content: string;
+	comment?: string;
+}
+
+/** Resubmit a submission (creates new version, transitions REVISE_REQUIRED → RESUBMITTED) */
+export async function resubmitSubmission(
+	submissionId: string,
+	userId: string,
+	data: ResubmitSubmissionInput,
+): Promise<{ success: boolean; versionNumber: number; error?: string }> {
+	const submission = await prisma.submission.findFirst({
+		where: { id: submissionId, userId },
+		include: { currentVersion: true },
+	});
+
+	if (!submission) {
+		return { success: false, versionNumber: 0, error: "Submission not found" };
+	}
+
+	if (submission.status !== "REVISE_REQUIRED") {
+		return {
+			success: false,
+			versionNumber: 0,
+			error: "Submission is not in REVISE_REQUIRED status",
+		};
+	}
+
+	const nextVersion = (submission.currentVersion?.version ?? 0) + 1;
+
+	const version = await prisma.$transaction(async (tx) => {
+		// Create new version
+		const version = await tx.submissionVersion.create({
+			data: {
+				submissionId,
+				version: nextVersion,
+				title: data.title,
+				content: data.content,
+				comment: data.comment,
+			},
+		});
+
+		// Update submission
+		await tx.submission.update({
+			where: { id: submissionId },
+			data: {
+				title: data.title,
+				content: data.content,
+				status: "RESUBMITTED",
+				currentVersionId: version.id,
+			},
+		});
+
+		// Status history
+		await tx.submissionStatusHistory.create({
+			data: {
+				submissionId,
+				fromStatus: "REVISE_REQUIRED",
+				toStatus: "RESUBMITTED",
+				round: submission.currentRound,
+				event: "resubmission",
+				triggeredBy: userId,
+			},
+		});
+
+		return version;
+	});
+
+	return { success: true, versionNumber: version.version };
 }

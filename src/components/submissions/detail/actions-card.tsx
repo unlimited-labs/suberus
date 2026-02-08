@@ -17,6 +17,8 @@ export function ActionsCard({
 	const navigate = useNavigate();
 
 	const handleEdit = () => navigate({ to: "/submissions/new" });
+	const handleRevise = () =>
+		navigate({ to: "/submissions/$id/revise", params: { id: submissionId } });
 	const handleSubmit = () => console.log("Submit:", submissionId);
 	const handleWithdraw = () => console.log("Withdraw:", submissionId);
 
@@ -41,7 +43,7 @@ export function ActionsCard({
 				);
 			case "REVISE_REQUIRED":
 				return (
-					<Button className="gap-2 w-full" onClick={handleEdit}>
+					<Button className="gap-2 w-full" onClick={handleRevise}>
 						<IconEdit className="size-4" />
 						Make Revisions
 					</Button>

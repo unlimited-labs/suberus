@@ -11,6 +11,7 @@ import {
 	createNewSubmission,
 	getSubmissionById,
 	getSubmissionsForUser,
+	resubmitSubmission,
 	type SubmissionDetail,
 	type UserSubmission,
 } from "./submissions.server";
@@ -173,12 +174,41 @@ export const getSubmissionByIdFn = createServerFn({ method: "GET" })
 		return getSubmissionById(data.submissionId, context.user.id);
 	});
 
+/** Resubmit a submission with revisions */
+export const resubmitSubmissionFn = createServerFn({ method: "POST" })
+	.middleware([authMiddleware])
+	.inputValidator(
+		z.object({
+			submissionId: z.string().uuid(),
+			title: z.string(),
+			content: z.string(),
+			comment: z.string().optional(),
+		}),
+	)
+	.handler(
+		async ({
+			data,
+			context,
+		}): Promise<{
+			success: boolean;
+			versionNumber: number;
+			error?: string;
+		}> => {
+			return resubmitSubmission(data.submissionId, context.user.id, {
+				title: data.title,
+				content: data.content,
+				comment: data.comment,
+			});
+		},
+	);
+
 // Re-export types for use in components
 export type {
 	SubmissionDetail,
 	UserSubmission,
 	UserSubmissionAuthor,
 	UserSubmissionDecision,
+	UserSubmissionFile,
 	UserSubmissionReview,
 	UserSubmissionStatusHistory,
 	UserSubmissionVersion,

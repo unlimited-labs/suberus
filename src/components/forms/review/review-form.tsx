@@ -1,8 +1,13 @@
 import {
 	IconAlertCircle,
 	IconCheck,
+	IconChevronDown,
+	IconChevronUp,
 	IconCircle,
 	IconCircleCheck,
+	IconDownload,
+	IconFile,
+	IconFileText,
 	IconLock,
 	IconMessageCircle,
 	IconScale,
@@ -27,6 +32,12 @@ interface SubmissionAuthor {
 	isPresenter: boolean;
 }
 
+function formatFileSize(bytes: number): string {
+	if (bytes < 1024) return `${bytes} B`;
+	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 interface ReviewFormProps {
 	onSubmit: (data: ReviewFormData) => Promise<void>;
 	initialData?: Partial<ReviewFormData>;
@@ -34,6 +45,14 @@ interface ReviewFormProps {
 		title: string;
 		type: SubmissionType | string;
 		authors: SubmissionAuthor[];
+		content?: string;
+		file?: {
+			id: string;
+			fileName: string;
+			originalName: string;
+			mimeType: string;
+			size: number;
+		} | null;
 	};
 	reviewMode: "OPEN" | "SINGLE_BLIND" | "DOUBLE_BLIND";
 }
@@ -118,6 +137,7 @@ export function ReviewForm({
 	reviewMode,
 }: ReviewFormProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [contentExpanded, setContentExpanded] = useState(false);
 
 	const form = useForm({
 		defaultValues: {
@@ -212,6 +232,61 @@ export function ReviewForm({
 								</div>
 							)}
 						</div>
+
+						{/* Submission Content Section */}
+						{(submission.content || submission.file) && (
+							<div className="border rounded-lg overflow-hidden">
+								<button
+									type="button"
+									onClick={() => setContentExpanded(!contentExpanded)}
+									className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
+								>
+									<div className="flex items-center gap-2">
+										<IconFileText className="size-5 text-muted-foreground" />
+										<span className="font-medium text-sm text-foreground">
+											Submission Content
+										</span>
+									</div>
+									{contentExpanded ? (
+										<IconChevronUp className="size-4 text-muted-foreground" />
+									) : (
+										<IconChevronDown className="size-4 text-muted-foreground" />
+									)}
+								</button>
+								{contentExpanded && (
+									<div className="px-4 pb-4 space-y-3">
+										{submission.file && (
+											<div className="flex items-center gap-4 p-3 rounded-lg border bg-muted/30">
+												<div className="flex-shrink-0 p-2 rounded-md bg-primary/10">
+													<IconFile className="size-5 text-primary" />
+												</div>
+												<div className="flex-1 min-w-0">
+													<p className="text-sm font-medium text-foreground truncate">
+														{submission.file.originalName}
+													</p>
+													<p className="text-xs text-muted-foreground">
+														{formatFileSize(submission.file.size)}
+													</p>
+												</div>
+												<a
+													href={`/api/files/${submission.file.id}`}
+													data-testid="file-download-button"
+													className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+												>
+													<IconDownload className="size-4" />
+													Download
+												</a>
+											</div>
+										)}
+										{submission.content && (
+											<div className="text-sm text-foreground leading-relaxed whitespace-pre-line break-words bg-muted/30 p-4 rounded-lg border max-h-96 overflow-auto">
+												{submission.content}
+											</div>
+										)}
+									</div>
+								)}
+							</div>
+						)}
 
 						<form
 							onSubmit={(e) => {

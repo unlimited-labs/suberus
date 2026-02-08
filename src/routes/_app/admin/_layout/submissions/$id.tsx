@@ -1,6 +1,8 @@
 import {
 	IconArrowLeft,
 	IconCalendar,
+	IconDownload,
+	IconFile,
 	IconFileText,
 	IconGavel,
 	IconHistory,
@@ -53,6 +55,12 @@ export const Route = createFileRoute("/_app/admin/_layout/submissions/$id")({
 	component: SubmissionDetailPage,
 });
 
+function formatFileSize(bytes: number): string {
+	if (bytes < 1024) return `${bytes} B`;
+	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 interface SubmissionData {
 	submission: {
 		id: string;
@@ -62,6 +70,13 @@ interface SubmissionData {
 		status: SubmissionStatus;
 		currentRound: number;
 		sessionId: string | null;
+		file: {
+			id: string;
+			fileName: string;
+			originalName: string;
+			mimeType: string;
+			size: number;
+		} | null;
 	};
 	authors: Array<{
 		firstName: string;
@@ -454,9 +469,36 @@ function SubmissionDetailPage() {
 									<CardTitle className="text-base">Content</CardTitle>
 								</CardHeader>
 								<CardContent>
-									<div className="prose prose-sm max-w-none">
-										<p className="whitespace-pre-wrap">{submission.content}</p>
-									</div>
+									{submission.file ? (
+										<div className="flex items-center gap-4 p-4 rounded-lg border bg-muted/30">
+											<div className="flex-shrink-0 p-2 rounded-md bg-primary/10">
+												<IconFile className="size-6 text-primary" />
+											</div>
+											<div className="flex-1 min-w-0">
+												<p className="text-sm font-medium text-foreground truncate">
+													{submission.file.originalName}
+												</p>
+												<p className="text-xs text-muted-foreground">
+													{formatFileSize(submission.file.size)} &middot;{" "}
+													{submission.file.mimeType}
+												</p>
+											</div>
+											<a
+												href={`/api/files/${submission.file.id}`}
+												data-testid="file-download-button"
+												className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+											>
+												<IconDownload className="size-4" />
+												Download
+											</a>
+										</div>
+									) : (
+										<div className="prose prose-sm max-w-none">
+											<p className="whitespace-pre-wrap">
+												{submission.content}
+											</p>
+										</div>
+									)}
 								</CardContent>
 							</Card>
 

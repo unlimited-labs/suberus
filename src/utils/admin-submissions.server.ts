@@ -129,6 +129,13 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 		status: SubmissionStatus;
 		currentRound: number;
 		sessionId: string | null;
+		file: {
+			id: string;
+			fileName: string;
+			originalName: string;
+			mimeType: string;
+			size: number;
+		} | null;
 	};
 	authors: Array<{
 		firstName: string;
@@ -164,7 +171,19 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 	const submission = await prisma.submission.findUnique({
 		where: { id: submissionId },
 		include: {
-			currentVersion: true,
+			currentVersion: {
+				include: {
+					file: {
+						select: {
+							id: true,
+							fileName: true,
+							originalName: true,
+							mimeType: true,
+							size: true,
+						},
+					},
+				},
+			},
 			authors: {
 				include: { affiliation: true },
 				orderBy: { orderIndex: "asc" },
@@ -205,6 +224,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 			status: submission.status,
 			currentRound: submission.currentRound,
 			sessionId: submission.sessionId,
+			file: submission.currentVersion?.file ?? null,
 		},
 		authors: submission.authors.map((a) => ({
 			firstName: a.firstName,

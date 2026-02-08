@@ -32,19 +32,20 @@ export const prisma = {
 };
 
 // Test user IDs (set by global-setup, retrieved here)
-let cachedUserIds: { testUserId: string; adminUserId: string; reviewerUserId: string } | null = null;
+let cachedUserIds: { testUserId: string; adminUserId: string; reviewerUserId: string; editorUserId: string } | null = null;
 
 export async function getTestUserIds() {
 	if (cachedUserIds) return cachedUserIds;
 
 	const db = getPrisma();
-	const [testUser, adminUser, reviewerUser] = await Promise.all([
+	const [testUser, adminUser, reviewerUser, editorUser] = await Promise.all([
 		db.user.findUnique({ where: { email: "test@e2e.local" } }),
 		db.user.findUnique({ where: { email: "admin@e2e.local" } }),
 		db.user.findUnique({ where: { email: "reviewer@e2e.local" } }),
+		db.user.findUnique({ where: { email: "editor@e2e.local" } }),
 	]);
 
-	if (!testUser || !adminUser || !reviewerUser) {
+	if (!testUser || !adminUser || !reviewerUser || !editorUser) {
 		throw new Error("Test users not found. Did global-setup run?");
 	}
 
@@ -52,6 +53,7 @@ export async function getTestUserIds() {
 		testUserId: testUser.id,
 		adminUserId: adminUser.id,
 		reviewerUserId: reviewerUser.id,
+		editorUserId: editorUser.id,
 	};
 
 	return cachedUserIds;
@@ -352,6 +354,23 @@ export async function deleteSubmission(submissionId: string): Promise<void> {
 		data: { presenterId: null, currentVersionId: null },
 	});
 	await db.submissionAuthor.deleteMany({ where: { submissionId } });
+
+	// Clean up files linked to versions
+	const versions = await db.submissionVersion.findMany({
+		where: { submissionId },
+		select: { id: true, fileId: true },
+	});
+	const fileIds = versions.map((v) => v.fileId).filter((id): id is string => id !== null);
+	if (fileIds.length > 0) {
+		// Unlink files from versions first
+		await db.submissionVersion.updateMany({
+			where: { submissionId },
+			data: { fileId: null },
+		});
+		// Delete file records (S3 cleanup skipped in tests - bucket is ephemeral)
+		await db.file.deleteMany({ where: { id: { in: fileIds } } });
+	}
+
 	await db.submissionVersion.deleteMany({ where: { submissionId } });
 	await db.submission.delete({ where: { id: submissionId } });
 }
@@ -535,6 +554,89 @@ export async function deleteTestUser(userId: string): Promise<void> {
 
 	// Delete user
 	await db.user.delete({ where: { id: userId } });
+}
+
+// Create submission with file attachment
+export interface CreateSubmissionWithFileOptions extends CreateSubmissionOptions {
+	/** Path to a fixture file to upload (relative to project root) */
+	fixturePath?: string;
+	/** File name for the uploaded file */
+	fileName?: string;
+	/** MIME type */
+	mimeType?: string;
+}
+
+export async function createSubmissionWithFile(
+	options: CreateSubmissionWithFileOptions,
+): Promise<{
+	id: string;
+	title: string;
+	fileId: string;
+	versionId: string;
+	storageKey: string;
+}> {
+	const fs = await import("fs");
+	const path = await import("path");
+	const db = getPrisma();
+	const { testUserId } = await getTestUserIds();
+
+	// Create submission (FULL_PAPER by default for file submissions)
+	const submission = await createSubmission({
+		...options,
+		type: options.type ?? SubmissionType.FULL_PAPER,
+	});
+
+	// Read fixture file
+	const fixturePath = options.fixturePath ?? "e2e/submissions/fixtures/document.pdf";
+	const absolutePath = path.resolve(fixturePath);
+	const fileBuffer = fs.readFileSync(absolutePath);
+	const fileName = options.fileName ?? path.basename(absolutePath);
+	const mimeType = options.mimeType ?? "application/pdf";
+
+	// Upload to S3
+	const { uploadFile, generateSubmissionFileKey } = await import("../../src/lib/server/storage");
+	const storageKey = generateSubmissionFileKey(submission.id, 1, fileName);
+	await uploadFile(Buffer.from(fileBuffer), storageKey, mimeType);
+
+	// Create File record
+	const file = await db.file.create({
+		data: {
+			entityType: "SUBMISSION_VERSION",
+			entityId: submission.id,
+			type: "SUBMISSION_MAIN",
+			storageKey,
+			fileName,
+			originalName: fileName,
+			mimeType,
+			size: fileBuffer.length,
+			uploadedById: options.userId ?? testUserId,
+		},
+	});
+
+	// Create SubmissionVersion and link file
+	const version = await db.submissionVersion.create({
+		data: {
+			submissionId: submission.id,
+			version: 1,
+			title: submission.title,
+			content: options.content ?? "",
+			fileId: file.id,
+		},
+	});
+
+	// Set current version
+	await db.submission.update({
+		where: { id: submission.id },
+		data: { currentVersionId: version.id },
+	});
+
+	return {
+		id: submission.id,
+		title: submission.title,
+		fileId: file.id,
+		versionId: version.id,
+		storageKey,
+	};
 }
 
 /**
