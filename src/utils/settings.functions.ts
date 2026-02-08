@@ -2,6 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import type {
 	AppSettingsMap,
+	DeadlineReminderSettings,
+	ReviewerReminderSettings,
+	RevisionReminderSettings,
 	SubmissionTypeConfig,
 	SubmissionTypeKey,
 } from "@/lib/settings/types";
@@ -490,5 +493,64 @@ export const updateFeeInstructionsFn = createServerFn({ method: "POST" })
 	.inputValidator(z.object({ content: z.string().min(1) }))
 	.handler(async ({ data }) => {
 		await setSetting("FEE_PAYMENT_INSTRUCTIONS", data.content);
+		return { success: true };
+	});
+
+/** Reminder settings shape */
+export interface ReminderSettings {
+	reviewer: ReviewerReminderSettings;
+	revision: RevisionReminderSettings;
+	deadline: DeadlineReminderSettings;
+}
+
+/**
+ * Get reminder settings (admin only)
+ */
+export const getReminderSettingsFn = createServerFn({ method: "GET" })
+	.middleware([adminMiddleware])
+	.handler(async (): Promise<ReminderSettings> => {
+		const settings = await getSettings([
+			"REMINDER_REVIEWER_SETTINGS",
+			"REMINDER_REVISION_SETTINGS",
+			"REMINDER_DEADLINE_SETTINGS",
+		]);
+		return {
+			reviewer: settings.REMINDER_REVIEWER_SETTINGS,
+			revision: settings.REMINDER_REVISION_SETTINGS,
+			deadline: settings.REMINDER_DEADLINE_SETTINGS,
+		};
+	});
+
+const daysBeforeSchema = z
+	.array(z.number().int().min(1).max(365))
+	.min(1)
+	.max(10);
+
+const reminderSettingsSchema = z.object({
+	reviewer: z.object({
+		enabled: z.boolean(),
+		daysBefore: daysBeforeSchema,
+	}),
+	revision: z.object({
+		enabled: z.boolean(),
+		intervalDays: z.number().int().min(1).max(365),
+		maxCount: z.number().int().min(1).max(50),
+	}),
+	deadline: z.object({
+		enabled: z.boolean(),
+		daysBefore: daysBeforeSchema,
+	}),
+});
+
+/**
+ * Update reminder settings (admin only)
+ */
+export const updateReminderSettingsFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(reminderSettingsSchema)
+	.handler(async ({ data }) => {
+		await setSetting("REMINDER_REVIEWER_SETTINGS", data.reviewer);
+		await setSetting("REMINDER_REVISION_SETTINGS", data.revision);
+		await setSetting("REMINDER_DEADLINE_SETTINGS", data.deadline);
 		return { success: true };
 	});

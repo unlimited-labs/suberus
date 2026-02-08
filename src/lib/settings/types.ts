@@ -20,6 +20,25 @@ export interface SubmissionTypeConfig {
 	enableSessionSelection: boolean;
 }
 
+/** Reminder settings for reviewer deadline reminders */
+export interface ReviewerReminderSettings {
+	enabled: boolean;
+	daysBefore: number[]; // e.g. [3, 1] → send 3 days and 1 day before deadline
+}
+
+/** Reminder settings for revision nudges */
+export interface RevisionReminderSettings {
+	enabled: boolean;
+	intervalDays: number; // e.g. 7 → remind every 7 days
+	maxCount: number; // max reminders per submission
+}
+
+/** Reminder settings for submission deadline approaching */
+export interface DeadlineReminderSettings {
+	enabled: boolean;
+	daysBefore: number[]; // e.g. [7, 3, 1] → send 7, 3, 1 day before deadline
+}
+
 /** Type map: AppSettingKey → value type */
 export type AppSettingsMap = {
 	// Conference settings
@@ -60,6 +79,11 @@ export type AppSettingsMap = {
 	BRANDING_PRIMARY_COLOR: string;
 	BRANDING_SECONDARY_COLOR: string;
 	BRANDING_FOOTER_TEXT: string;
+
+	// Reminder settings
+	REMINDER_REVIEWER_SETTINGS: ReviewerReminderSettings;
+	REMINDER_REVISION_SETTINGS: RevisionReminderSettings;
+	REMINDER_DEADLINE_SETTINGS: DeadlineReminderSettings;
 };
 
 /** Keys for submission type configs */

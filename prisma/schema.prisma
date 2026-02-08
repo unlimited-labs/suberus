@@ -388,6 +388,20 @@ model Verification {
   @@map("user_verifications")
 }
 
+model SentReminder {
+  id            String         @id @default(uuid()) @db.Uuid
+  userId        String         @db.Uuid
+  reminderType  EmailEventType
+  entityId      String         @db.Uuid
+  reminderIndex Int            @default(0)
+  sentAt        DateTime       @default(now())
+
+  @@unique([userId, reminderType, entityId, reminderIndex])
+  @@index([userId, reminderType])
+  @@index([entityId])
+  @@map("sent_reminders")
+}
+
 enum UserRole {
   AUTHOR
   REVIEWER
@@ -513,4 +527,7 @@ enum AppSettingKey {
   BRANDING_PRIMARY_COLOR
   BRANDING_SECONDARY_COLOR
   BRANDING_FOOTER_TEXT
+  REMINDER_REVIEWER_SETTINGS
+  REMINDER_REVISION_SETTINGS
+  REMINDER_DEADLINE_SETTINGS
 }

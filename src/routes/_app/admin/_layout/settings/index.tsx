@@ -1,4 +1,5 @@
 import {
+	IconBell,
 	IconBuilding,
 	IconCash,
 	IconFileStack,
@@ -16,6 +17,7 @@ import {
 	ConferenceSettingsTab,
 	EmailTemplatesTab,
 	FeeInstructionsTab,
+	RemindersSettingsTab,
 	SubmissionSettingsTab,
 	SubmissionTypesTab,
 } from "@/components/admin/settings";
@@ -30,6 +32,7 @@ import {
 import {
 	getBrandingSettingsFn,
 	getConferenceSettingsFn,
+	getReminderSettingsFn,
 	getSubmissionTypeConfigsFn,
 	getSubmissionValidationSettingsFn,
 } from "@/utils/settings.functions";
@@ -44,6 +47,7 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			brandingSettings,
 			sessions,
 			reviewers,
+			reminderSettings,
 		] = await Promise.all([
 			getConferenceSettingsFn(),
 			getSubmissionTypeConfigsFn(),
@@ -52,6 +56,7 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			getBrandingSettingsFn(),
 			getAllSessionsFn(),
 			getReviewerUsersFn(),
+			getReminderSettingsFn(),
 		]);
 		return {
 			conferenceSettings,
@@ -61,6 +66,7 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			brandingSettings,
 			sessions,
 			reviewers,
+			reminderSettings,
 		};
 	},
 	component: AdminSettingsPage,
@@ -74,6 +80,7 @@ const tabs = [
 	{ id: "emails", label: "Email Templates", icon: IconMail },
 	{ id: "branding", label: "Branding", icon: IconPalette },
 	{ id: "fee-instructions", label: "Fee Instructions", icon: IconCash },
+	{ id: "reminders", label: "Reminders", icon: IconBell },
 ];
 
 function AdminSettingsPage() {
@@ -85,6 +92,7 @@ function AdminSettingsPage() {
 		brandingSettings,
 		sessions,
 		reviewers,
+		reminderSettings,
 	} = Route.useLoaderData();
 	const [activeTab, setActiveTab] = useState("conference");
 	const router = useRouter();
@@ -138,6 +146,10 @@ function AdminSettingsPage() {
 
 						<TabsContent value="fee-instructions">
 							<FeeInstructionsTab initialInstructions={feeInstructions} />
+						</TabsContent>
+
+						<TabsContent value="reminders">
+							<RemindersSettingsTab initialData={reminderSettings} />
 						</TabsContent>
 					</Tabs>
 

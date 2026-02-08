@@ -5,7 +5,9 @@
 
 import { PrismaClient } from "../../src/generated/prisma/client";
 import {
+	type AppSettingKey,
 	AssignmentStatus,
+	type EmailEventType,
 	EditorDecisionType,
 	ReviewDecision,
 	SubmissionStatus,
@@ -407,6 +409,16 @@ export async function createSubmissionWithDecision(
 export async function deleteSubmission(submissionId: string): Promise<void> {
 	const db = getPrisma();
 
+	// Clean up sent reminders for assignments and submission
+	const assignments = await db.reviewAssignment.findMany({
+		where: { submissionId },
+		select: { id: true },
+	});
+	for (const a of assignments) {
+		await db.sentReminder.deleteMany({ where: { entityId: a.id } });
+	}
+	await db.sentReminder.deleteMany({ where: { entityId: submissionId } });
+
 	// Delete in order respecting FK constraints
 	await db.review.deleteMany({ where: { submissionId } });
 	await db.reviewAssignment.deleteMany({ where: { submissionId } });
@@ -729,4 +741,38 @@ export async function createSession(
 export async function deleteSession(sessionId: string): Promise<void> {
 	const db = getPrisma();
 	await db.conferenceSession.delete({ where: { id: sessionId } });
+}
+
+/** Set an app setting directly (for test arrangement) */
+export async function setAppSetting(key: AppSettingKey, value: unknown): Promise<void> {
+	const db = getPrisma();
+	await db.appSetting.upsert({
+		where: { key },
+		update: { value: value as object },
+		create: { key, value: value as object },
+	});
+}
+
+/** Clean up sent reminders for a specific entity */
+export async function cleanupSentReminders(entityId: string): Promise<void> {
+	const db = getPrisma();
+	await db.sentReminder.deleteMany({ where: { entityId } });
+}
+
+/** Create a sent reminder record (for test arrangement) */
+export async function createSentReminder(opts: {
+	userId: string;
+	reminderType: EmailEventType;
+	entityId: string;
+	reminderIndex?: number;
+}): Promise<void> {
+	const db = getPrisma();
+	await db.sentReminder.create({
+		data: {
+			userId: opts.userId,
+			reminderType: opts.reminderType,
+			entityId: opts.entityId,
+			reminderIndex: opts.reminderIndex ?? 0,
+		},
+	});
 }

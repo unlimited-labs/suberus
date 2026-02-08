@@ -192,6 +192,24 @@ export default defineConfig({
 				...devices["Desktop Chrome"],
 			},
 		},
+		// Reminder settings tests - admin auth (UI tests)
+		{
+			name: "chromium-reminder-settings",
+			testMatch: /e2e\/reminders\/reminder-settings\.spec\.ts/,
+			dependencies: ["auth-setup"],
+			use: {
+				...devices["Desktop Chrome"],
+				storageState: "e2e/.auth/admin.json",
+			},
+		},
+		// Reminder email tests - no browser auth needed (DB + Mailpit only)
+		{
+			name: "reminder-emails",
+			testMatch: /e2e\/reminders\/reminder-emails\.spec\.ts/,
+			use: {
+				...devices["Desktop Chrome"],
+			},
+		},
 	],
 	webServer: {
 		command: "dotenv -e .env.local -- pnpm dev",
