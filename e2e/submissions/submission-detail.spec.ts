@@ -56,8 +56,8 @@ test.describe("Submission Detail - Actions Card", () => {
 			// Act - click Edit
 			await page.getByRole("button", { name: "Edit Submission" }).click();
 
-			// Assert - should navigate to submission form
-			await page.waitForURL("/submissions/new", { timeout: 10000 });
+			// Assert - should navigate to edit page
+			await page.waitForURL(/\/submissions\/[a-f0-9-]+\/edit/, { timeout: 10000 });
 			await expect(page.getByLabel("Title")).toBeVisible();
 		});
 	});

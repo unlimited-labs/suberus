@@ -6,6 +6,7 @@
 import { PrismaClient } from "../../src/generated/prisma/client";
 import {
 	AssignmentStatus,
+	EditorDecisionType,
 	ReviewDecision,
 	SubmissionStatus,
 	SubmissionType,
@@ -337,6 +338,69 @@ export async function createSubmissionWithReview(
 		reviewId: review.id,
 		title: submission.title,
 	};
+}
+
+// Create submission with editor decision (terminal state)
+export interface CreateSubmissionWithDecisionOptions extends CreateSubmissionOptions {
+	reviewerId?: string;
+	editorDecision?: EditorDecisionType;
+}
+
+const decisionToStatus: Record<EditorDecisionType, SubmissionStatus> = {
+	[EditorDecisionType.ACCEPT]: SubmissionStatus.ACCEPTED,
+	[EditorDecisionType.REJECT]: SubmissionStatus.REJECTED,
+	[EditorDecisionType.CONDITIONALLY_ACCEPT]: SubmissionStatus.CONDITIONALLY_ACCEPTED,
+	[EditorDecisionType.REVISE_AND_RESUBMIT]: SubmissionStatus.REVISE_REQUIRED,
+};
+
+export async function createSubmissionWithDecision(
+	options: CreateSubmissionWithDecisionOptions
+): Promise<{
+	submissionId: string;
+	title: string;
+}> {
+	const db = getPrisma();
+	const { adminUserId } = await getTestUserIds();
+
+	const decision = options.editorDecision ?? EditorDecisionType.ACCEPT;
+	const targetStatus = decisionToStatus[decision];
+
+	// Create submission with review (AWAITING_DECISION)
+	const { submissionId, title } = await createSubmissionWithReview({
+		...options,
+	});
+
+	// Add editor decision
+	await db.editorDecision.create({
+		data: {
+			submissionId,
+			editorId: adminUserId,
+			round: 1,
+			decision,
+			reasoning: "Test decision",
+			letterToAuthor: "Test letter to author",
+		},
+	});
+
+	// Update submission status
+	await db.submission.update({
+		where: { id: submissionId },
+		data: { status: targetStatus },
+	});
+
+	// Add status history
+	await db.submissionStatusHistory.create({
+		data: {
+			submissionId,
+			fromStatus: SubmissionStatus.AWAITING_DECISION,
+			toStatus: targetStatus,
+			round: 1,
+			event: "EDITOR_DECISION",
+			reason: `Editor decision: ${decision}`,
+		},
+	});
+
+	return { submissionId, title };
 }
 
 // Cleanup helper - delete submission and related data

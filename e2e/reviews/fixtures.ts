@@ -145,6 +145,7 @@ export class AdminSubmissionDetailPage {
 	readonly makeDecisionButton: Locator;
 	readonly markReviewsCompleteButton: Locator;
 	readonly readyForDecisionButton: Locator;
+	readonly overrideDecisionButton: Locator;
 
 	constructor(page: Page) {
 		this.page = page;
@@ -161,6 +162,9 @@ export class AdminSubmissionDetailPage {
 		});
 		this.readyForDecisionButton = page.getByRole("button", {
 			name: "Ready for Decision",
+		});
+		this.overrideDecisionButton = page.getByRole("button", {
+			name: "Override Decision",
 		});
 	}
 
@@ -203,6 +207,11 @@ export class AdminSubmissionDetailPage {
 
 	async clickReadyForDecision() {
 		await this.readyForDecisionButton.click();
+	}
+
+	async openOverrideDialog() {
+		await this.overrideDecisionButton.click();
+		await this.page.getByRole("dialog").waitFor({ state: "visible" });
 	}
 
 	async switchToReviewsTab() {
@@ -365,6 +374,34 @@ export class EditorDecisionDialog {
 	}
 }
 
+/** Override Decision Dialog */
+export class OverrideDecisionDialog {
+	readonly page: Page;
+	readonly reasoningInput: Locator;
+	readonly overrideButton: Locator;
+	readonly cancelButton: Locator;
+
+	constructor(page: Page) {
+		this.page = page;
+		this.reasoningInput = page.locator("#override-reason");
+		this.overrideButton = page.getByRole("button", { name: "Override", exact: true });
+		this.cancelButton = page.getByRole("button", { name: "Cancel" });
+	}
+
+	async fillReasoning(reasoning: string) {
+		await this.reasoningInput.fill(reasoning);
+	}
+
+	async confirm() {
+		await baseExpect(this.overrideButton).toBeEnabled({ timeout: 5000 });
+		await this.overrideButton.click();
+		await Promise.race([
+			this.page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15000 }),
+			this.page.locator("[data-sonner-toast]").waitFor({ state: "visible", timeout: 15000 }),
+		]);
+	}
+}
+
 /** Reviewer Assignments Page (My Reviews) */
 export class ReviewerAssignmentsPage {
 	readonly page: Page;
@@ -502,6 +539,7 @@ interface ReviewFixtures {
 	assignReviewerDialog: AssignReviewerDialog;
 	deskRejectDialog: DeskRejectDialog;
 	editorDecisionDialog: EditorDecisionDialog;
+	overrideDecisionDialog: OverrideDecisionDialog;
 	reviewerAssignmentsPage: ReviewerAssignmentsPage;
 	reviewFormPage: ReviewFormPage;
 	testSubmission: ReturnType<typeof createTestSubmission>;
@@ -522,6 +560,9 @@ export const test = base.extend<ReviewFixtures>({
 	},
 	editorDecisionDialog: async ({ page }, use) => {
 		await use(new EditorDecisionDialog(page));
+	},
+	overrideDecisionDialog: async ({ page }, use) => {
+		await use(new OverrideDecisionDialog(page));
 	},
 	reviewerAssignmentsPage: async ({ page }, use) => {
 		await use(new ReviewerAssignmentsPage(page));

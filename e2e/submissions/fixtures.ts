@@ -106,12 +106,14 @@ export async function loginAsTestUser(page: Page) {
 export class SubmissionPage {
 	readonly page: Page
 	readonly submitButton: Locator
+	readonly saveDraftButton: Locator
 	readonly titleInput: Locator
 	readonly contentInput: Locator
 
 	constructor(page: Page) {
 		this.page = page
 		this.submitButton = page.getByRole("button", { name: "Submit" })
+		this.saveDraftButton = page.getByRole("button", { name: "Save Draft" })
 		this.titleInput = page.getByLabel("Title")
 		this.contentInput = page.getByLabel("Abstract")
 	}
