@@ -17,6 +17,7 @@ export type SubmissionEvent =
 	| { type: "EDITOR_CONDITIONAL" }
 	| { type: "EDITOR_REVISE" }
 	| { type: "EDITOR_REJECT" }
+	| { type: "EDITOR_OVERRIDE" }
 	| { type: "RESUBMIT" };
 
 /** Context for submission state machine */

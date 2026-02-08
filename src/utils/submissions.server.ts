@@ -31,6 +31,7 @@ export async function linkCoAuthorsByEmail(
 export async function createNewSubmission(
 	data: CreateSubmissionInput,
 	userId: string,
+	isDraft = false,
 ): Promise<CreateSubmissionResult> {
 	// Create submission in transaction
 	const submission = await prisma.$transaction(async (tx) => {
@@ -61,12 +62,13 @@ export async function createNewSubmission(
 		);
 
 		// Create submission
+		const initialStatus = isDraft ? "DRAFT" : "SUBMITTED";
 		const submission = await tx.submission.create({
 			data: {
 				type: data.type,
 				title: data.title,
 				content: data.content,
-				status: "SUBMITTED",
+				status: initialStatus,
 				userId,
 				sessionId: data.sessionId || null,
 			},
@@ -151,8 +153,8 @@ export async function createNewSubmission(
 			data: {
 				submissionId: submission.id,
 				fromStatus: null,
-				toStatus: "SUBMITTED",
-				event: "submission_created",
+				toStatus: initialStatus,
+				event: isDraft ? "draft_created" : "submission_created",
 				triggeredBy: userId,
 			},
 		});
@@ -160,14 +162,16 @@ export async function createNewSubmission(
 		return submission;
 	});
 
-	// Send confirmation email (non-blocking, errors handled internally)
-	const presenter = data.authors.find((a) => a.isPresenter);
-	if (presenter) {
-		void sendEmail("SUBMISSION_RECEIVED", presenter.email, {
-			authorName: `${presenter.firstName} ${presenter.lastName}`,
-			submissionTitle: data.title,
-			submissionId: submission.id,
-		});
+	// Send confirmation email only for submitted (not draft)
+	if (!isDraft) {
+		const presenter = data.authors.find((a) => a.isPresenter);
+		if (presenter) {
+			void sendEmail("SUBMISSION_RECEIVED", presenter.email, {
+				authorName: `${presenter.firstName} ${presenter.lastName}`,
+				submissionTitle: data.title,
+				submissionId: submission.id,
+			});
+		}
 	}
 
 	return { id: submission.id, success: true };
@@ -510,5 +514,216 @@ export async function resubmitSubmission(
 		return version;
 	});
 
+	// Notify editor(s) about the revision
+	const assignments = await prisma.reviewAssignment.findMany({
+		where: { submissionId },
+		select: { assignedBy: true },
+		distinct: ["assignedBy"],
+	});
+
+	const editorIds = assignments
+		.map((a) => a.assignedBy)
+		.filter((id): id is string => id !== null);
+
+	if (editorIds.length > 0) {
+		const editors = await prisma.user.findMany({
+			where: { id: { in: editorIds } },
+			select: { email: true },
+		});
+
+		const presenter = await prisma.submissionAuthor.findFirst({
+			where: { submissionId, isPresenter: true },
+		});
+
+		for (const editor of editors) {
+			void sendEmail("REVISION_RECEIVED", editor.email, {
+				submissionTitle: data.title,
+				authorName: presenter
+					? `${presenter.firstName} ${presenter.lastName}`
+					: "Author",
+				versionNumber: String(version.version),
+			});
+		}
+	}
+
 	return { success: true, versionNumber: version.version };
+}
+
+/** Update a draft submission (DRAFT or SUBMITTED status) */
+export async function updateDraftSubmission(
+	submissionId: string,
+	userId: string,
+	data: CreateSubmissionInput,
+): Promise<{ success: boolean; error?: string }> {
+	const submission = await prisma.submission.findFirst({
+		where: { id: submissionId, userId },
+		include: { currentVersion: true },
+	});
+
+	if (!submission) {
+		return { success: false, error: "Submission not found" };
+	}
+
+	if (submission.status !== "DRAFT" && submission.status !== "SUBMITTED") {
+		return {
+			success: false,
+			error: "Can only edit submissions in DRAFT or SUBMITTED status",
+		};
+	}
+
+	await prisma.$transaction(async (tx) => {
+		// Upsert affiliations
+		const authorAffiliations = await Promise.all(
+			data.authors.map(async (author) => {
+				if (author.affiliationId) return author.affiliationId;
+				const affiliation = await tx.affiliation.upsert({
+					where: { name: author.affiliationName },
+					update: {},
+					create: { name: author.affiliationName },
+				});
+				return affiliation.id;
+			}),
+		);
+
+		// Update submission core fields
+		await tx.submission.update({
+			where: { id: submissionId },
+			data: {
+				type: data.type,
+				title: data.title,
+				content: data.content,
+				sessionId: data.sessionId || null,
+			},
+		});
+
+		// Update version
+		if (submission.currentVersion) {
+			await tx.submissionVersion.update({
+				where: { id: submission.currentVersion.id },
+				data: { title: data.title, content: data.content },
+			});
+		}
+
+		// Replace authors: delete old, create new
+		await tx.submissionAuthor.deleteMany({
+			where: { submissionId },
+		});
+
+		const authors = await Promise.all(
+			data.authors.map(async (author, index) => {
+				return tx.submissionAuthor.create({
+					data: {
+						submissionId,
+						firstName: author.firstName,
+						lastName: author.lastName,
+						email: author.email,
+						affiliationId: authorAffiliations[index],
+						orderIndex: index,
+						isPresenter: author.isPresenter,
+					},
+				});
+			}),
+		);
+
+		// Update presenter reference
+		const presenter = authors.find((a) => a.isPresenter);
+		if (presenter) {
+			await tx.submission.update({
+				where: { id: submissionId },
+				data: { presenterId: presenter.id },
+			});
+		}
+
+		// Link co-authors to existing users
+		const coAuthorEmails = data.authors.map((a) => a.email);
+		const matchedUsers = await tx.user.findMany({
+			where: {
+				email: { in: coAuthorEmails, mode: "insensitive" },
+				emailVerified: true,
+			},
+			select: { id: true, email: true },
+		});
+		for (const matchedUser of matchedUsers) {
+			await tx.submissionAuthor.updateMany({
+				where: {
+					submissionId,
+					email: { equals: matchedUser.email, mode: "insensitive" },
+					userId: null,
+				},
+				data: { userId: matchedUser.id },
+			});
+		}
+
+		// Replace keywords
+		await tx.submissionKeyword.deleteMany({ where: { submissionId } });
+
+		const keywordRecords = await Promise.all(
+			data.keywords.map(async (keyword) => {
+				return tx.keyword.upsert({
+					where: { name: keyword },
+					update: {},
+					create: { name: keyword },
+				});
+			}),
+		);
+
+		await Promise.all(
+			keywordRecords.map(async (keyword) => {
+				return tx.submissionKeyword.create({
+					data: { submissionId, keywordId: keyword.id },
+				});
+			}),
+		);
+	});
+
+	return { success: true };
+}
+
+/** Submit a draft (transition DRAFT → SUBMITTED) */
+export async function submitDraft(
+	submissionId: string,
+	userId: string,
+): Promise<{ success: boolean; error?: string }> {
+	const submission = await prisma.submission.findFirst({
+		where: { id: submissionId, userId },
+	});
+
+	if (!submission) {
+		return { success: false, error: "Submission not found" };
+	}
+
+	if (submission.status !== "DRAFT") {
+		return { success: false, error: "Submission is not a draft" };
+	}
+
+	await prisma.$transaction(async (tx) => {
+		await tx.submission.update({
+			where: { id: submissionId },
+			data: { status: "SUBMITTED" },
+		});
+
+		await tx.submissionStatusHistory.create({
+			data: {
+				submissionId,
+				fromStatus: "DRAFT",
+				toStatus: "SUBMITTED",
+				event: "SUBMIT",
+				triggeredBy: userId,
+			},
+		});
+	});
+
+	// Send confirmation email
+	const presenter = await prisma.submissionAuthor.findFirst({
+		where: { submissionId, isPresenter: true },
+	});
+	if (presenter) {
+		void sendEmail("SUBMISSION_RECEIVED", presenter.email, {
+			authorName: `${presenter.firstName} ${presenter.lastName}`,
+			submissionTitle: submission.title,
+			submissionId,
+		});
+	}
+
+	return { success: true };
 }

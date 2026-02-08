@@ -12,7 +12,6 @@ export const DEFAULT_ORAL_PRESENTATION_CONFIG: SubmissionTypeConfig = {
 	requiresEditorDecision: true,
 	autoTransitionAfterReviews: true,
 	allowRevisions: true,
-	maxRevisions: 2,
 	enableScoring: true,
 	scoringCriteria: ["Originality", "Clarity", "Significance", "Methodology"],
 	enableSessionSelection: false,
@@ -30,7 +29,6 @@ export const DEFAULT_POSTER_CONFIG: SubmissionTypeConfig = {
 	requiresEditorDecision: false,
 	autoTransitionAfterReviews: true,
 	allowRevisions: false,
-	maxRevisions: 0,
 	enableScoring: false,
 	scoringCriteria: [],
 	enableSessionSelection: false,
@@ -48,7 +46,6 @@ export const DEFAULT_FULL_PAPER_CONFIG: SubmissionTypeConfig = {
 	requiresEditorDecision: true,
 	autoTransitionAfterReviews: false,
 	allowRevisions: true,
-	maxRevisions: 3,
 	enableScoring: true,
 	scoringCriteria: [
 		"Originality",

@@ -22,6 +22,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import {
 	Select,
 	SelectContent,
 	SelectItem,
@@ -29,6 +37,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import type {
 	SubmissionStatus,
@@ -47,6 +56,7 @@ import {
 import { getActiveSessionsFn } from "@/utils/sessions.functions";
 import { getSettingFn } from "@/utils/settings.functions";
 import {
+	editorOverrideFn,
 	transitionToAwaitingDecisionFn,
 	transitionToReviewsCompleteFn,
 } from "@/utils/workflow.functions";
@@ -127,6 +137,8 @@ function SubmissionDetailPage() {
 	const [showAssignDialog, setShowAssignDialog] = useState(false);
 	const [showDecisionDialog, setShowDecisionDialog] = useState(false);
 	const [showDeskRejectDialog, setShowDeskRejectDialog] = useState(false);
+	const [showOverrideDialog, setShowOverrideDialog] = useState(false);
+	const [overrideReasoning, setOverrideReasoning] = useState("");
 	const [isTransitioning, setIsTransitioning] = useState(false);
 	const [availableSessions, setAvailableSessions] = useState<
 		{ id: string; name: string }[]
@@ -180,6 +192,28 @@ function SubmissionDetailPage() {
 			}
 		} catch (_error) {
 			toast.error("Transition failed");
+		} finally {
+			setIsTransitioning(false);
+		}
+	}
+
+	async function handleEditorOverride() {
+		if (!overrideReasoning.trim()) return;
+		setIsTransitioning(true);
+		try {
+			const result = await editorOverrideFn({
+				data: { submissionId: id, reasoning: overrideReasoning.trim() },
+			});
+			if (result.success) {
+				toast.success("Decision overridden — now in Awaiting Decision");
+				setShowOverrideDialog(false);
+				setOverrideReasoning("");
+				await loadData();
+			} else {
+				toast.error(result.error || "Override failed");
+			}
+		} catch (_error) {
+			toast.error("Override failed");
 		} finally {
 			setIsTransitioning(false);
 		}
@@ -267,6 +301,12 @@ function SubmissionDetailPage() {
 		submission.status === "REVIEWS_COMPLETE" && config.requiresEditorDecision;
 
 	const canMakeDecision = submission.status === "AWAITING_DECISION";
+
+	const canOverrideDecision = [
+		"ACCEPTED",
+		"CONDITIONALLY_ACCEPTED",
+		"REJECTED",
+	].includes(submission.status);
 
 	const reviewDecisionColors: Record<string, string> = {
 		ACCEPT: "bg-green-100 text-green-800",
@@ -369,6 +409,15 @@ function SubmissionDetailPage() {
 										<Button onClick={() => setShowDecisionDialog(true)}>
 											<IconGavel className="size-4 mr-2" />
 											Make Decision
+										</Button>
+									)}
+									{canOverrideDecision && (
+										<Button
+											variant="outline"
+											onClick={() => setShowOverrideDialog(true)}
+										>
+											<IconGavel className="size-4 mr-2" />
+											Override Decision
 										</Button>
 									)}
 								</div>
@@ -672,6 +721,45 @@ function SubmissionDetailPage() {
 				onOpenChange={setShowDeskRejectDialog}
 				onRejected={loadData}
 			/>
+
+			{/* Override Decision Dialog */}
+			<Dialog open={showOverrideDialog} onOpenChange={setShowOverrideDialog}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Override Decision</DialogTitle>
+						<DialogDescription>
+							This will revert the submission to Awaiting Decision, allowing you
+							to make a new decision.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-2 py-4">
+						<label htmlFor="override-reason" className="text-sm font-medium">
+							Reasoning *
+						</label>
+						<Textarea
+							id="override-reason"
+							placeholder="Why are you overriding this decision?"
+							value={overrideReasoning}
+							onChange={(e) => setOverrideReasoning(e.target.value)}
+							rows={3}
+						/>
+					</div>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => setShowOverrideDialog(false)}
+						>
+							Cancel
+						</Button>
+						<Button
+							onClick={handleEditorOverride}
+							disabled={isTransitioning || !overrideReasoning.trim()}
+						>
+							{isTransitioning ? "Overriding..." : "Override"}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

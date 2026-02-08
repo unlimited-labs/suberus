@@ -12,6 +12,8 @@ import {
 	getSubmissionById,
 	getSubmissionsForUser,
 	resubmitSubmission,
+	submitDraft,
+	updateDraftSubmission,
 	type SubmissionDetail,
 	type UserSubmission,
 } from "./submissions.server";
@@ -24,6 +26,7 @@ const inputSchema = z.object({
 	keywords: z.array(z.string()),
 	contentFormat: z.enum(["TEXT", "FILE"]),
 	sessionId: z.string().uuid().nullish(),
+	isDraft: z.boolean().optional(),
 	// File upload handled separately via FormData
 });
 
@@ -87,7 +90,11 @@ export const createSubmission = createServerFn({ method: "POST" })
 			};
 		}
 
-		const submission = await createNewSubmission(result.data, context.user.id);
+		const submission = await createNewSubmission(
+			result.data,
+			context.user.id,
+			data.isDraft,
+		);
 		return { success: true, id: submission.id };
 	});
 
@@ -199,6 +206,60 @@ export const resubmitSubmissionFn = createServerFn({ method: "POST" })
 				content: data.content,
 				comment: data.comment,
 			});
+		},
+	);
+
+/** Update a draft/submitted submission */
+export const updateDraftSubmissionFn = createServerFn({ method: "POST" })
+	.middleware([authMiddleware])
+	.inputValidator(
+		z.object({
+			submissionId: z.string().uuid(),
+			type: z.enum(["ABSTRACT", "POSTER", "FULL_PAPER"]),
+			title: z.string(),
+			content: z.string(),
+			authors: z.array(z.any()),
+			keywords: z.array(z.string()),
+			contentFormat: z.enum(["TEXT", "FILE"]),
+			sessionId: z.string().uuid().nullish(),
+		}),
+	)
+	.handler(async ({ data, context }): Promise<SubmissionResult> => {
+		const limits = await getValidationLimits();
+		const dynamicSchema = createDynamicSubmissionSchema(limits);
+		const result = dynamicSchema.safeParse(data);
+		if (!result.success) {
+			return {
+				success: false,
+				error: "Validation failed",
+				issues: result.error.issues.map((issue) => ({
+					path: issue.path.map(String),
+					message: issue.message,
+				})),
+			};
+		}
+
+		const updateResult = await updateDraftSubmission(
+			data.submissionId,
+			context.user.id,
+			result.data,
+		);
+		if (!updateResult.success) {
+			return { success: false, error: updateResult.error ?? "Update failed" };
+		}
+		return { success: true, id: data.submissionId };
+	});
+
+/** Submit a draft (DRAFT → SUBMITTED) */
+export const submitDraftFn = createServerFn({ method: "POST" })
+	.middleware([authMiddleware])
+	.inputValidator(z.object({ submissionId: z.string().uuid() }))
+	.handler(
+		async ({
+			data,
+			context,
+		}): Promise<{ success: boolean; error?: string }> => {
+			return submitDraft(data.submissionId, context.user.id);
 		},
 	);
 

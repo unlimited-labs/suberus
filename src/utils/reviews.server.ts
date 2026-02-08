@@ -1,5 +1,6 @@
 import { prisma } from "@/db";
 import type { ReviewDecision, ReviewMode } from "@/generated/prisma/enums";
+import { sendEmail } from "@/lib/server/email";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import { completeReviewAssignment, startReview } from "./assignments.server";
 import { getSetting } from "./settings.server";
@@ -219,6 +220,28 @@ export async function submitReview(
 
 	// Check if all reviews are complete and trigger auto-transition
 	await checkAndTriggerReviewCompletion(assignment.submissionId, reviewerId);
+
+	// Notify editor(s) that a review was submitted
+	if (assignment.assignedBy) {
+		const editor = await prisma.user.findUnique({
+			where: { id: assignment.assignedBy },
+			select: { email: true },
+		});
+
+		if (editor) {
+			const reviewer = await prisma.user.findUniqueOrThrow({
+				where: { id: reviewerId },
+				select: { firstName: true, lastName: true, email: true },
+			});
+
+			void sendEmail("REVIEW_SUBMITTED", editor.email, {
+				submissionTitle: assignment.submission.title,
+				reviewerName:
+					`${reviewer.firstName ?? ""} ${reviewer.lastName ?? ""}`.trim() ||
+					reviewer.email,
+			});
+		}
+	}
 
 	return { success: true };
 }

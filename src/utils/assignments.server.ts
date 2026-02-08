@@ -5,6 +5,7 @@ import type {
 } from "@/generated/prisma/enums";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import { canAssignReviewer } from "@/lib/workflow";
+import { sendEmail } from "@/lib/server/email";
 import { getSetting } from "./settings.server";
 import {
 	checkAndTriggerReviewCompletion,
@@ -209,6 +210,24 @@ export async function assignReviewer(
 			`Assigned reviewer (${newCount}/${config.minReviewers} required)`,
 		);
 	}
+
+	// Send assignment notification to reviewer
+	const reviewer = await prisma.user.findUniqueOrThrow({
+		where: { id: reviewerId },
+		select: { email: true, firstName: true, lastName: true },
+	});
+
+	void sendEmail("REVIEWER_ASSIGNED", reviewer.email, {
+		reviewerName:
+			`${reviewer.firstName ?? ""} ${reviewer.lastName ?? ""}`.trim() ||
+			reviewer.email,
+		submissionTitle: submission.title,
+		deadline: deadline.toLocaleDateString("en-US", {
+			year: "numeric",
+			month: "long",
+			day: "numeric",
+		}),
+	});
 
 	return { success: true, assignmentId: assignment.id };
 }

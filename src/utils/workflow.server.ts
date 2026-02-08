@@ -18,6 +18,7 @@ import {
 	submissionMachine,
 	type TransitionResult,
 } from "@/lib/workflow";
+import { sendEmail } from "@/lib/server/email";
 import { getSetting } from "./settings.server";
 
 /**
@@ -209,6 +210,7 @@ export async function getValidSubmissionEvents(
 		"EDITOR_CONDITIONAL",
 		"EDITOR_REVISE",
 		"EDITOR_REJECT",
+		"EDITOR_OVERRIDE",
 		"RESUBMIT",
 	] as const;
 
@@ -349,6 +351,31 @@ export async function checkAndTriggerReviewCompletion(
 			"All reviews completed - auto-transition",
 		);
 
+		if (result.success) {
+			// Notify the editor who assigned reviewers
+			const assignerIds = [
+				...new Set(
+					submission.reviewAssignments
+						.map((a) => a.assignedBy)
+						.filter((id): id is string => id !== null),
+				),
+			];
+
+			if (assignerIds.length > 0) {
+				const editors = await prisma.user.findMany({
+					where: { id: { in: assignerIds } },
+					select: { email: true },
+				});
+
+				for (const editor of editors) {
+					void sendEmail("ALL_REVIEWS_COMPLETE", editor.email, {
+						submissionTitle: submission.title,
+						submissionId,
+					});
+				}
+			}
+		}
+
 		// For abstracts (no editor decision), also apply reviewer decision
 		if (result.success && !config.requiresEditorDecision) {
 			const lastReview = submission.reviews[0];
@@ -377,12 +404,49 @@ export async function withdrawSubmission(
 	userId: string,
 	reason?: string,
 ): Promise<TransitionResult> {
-	return executeSubmissionTransition(
+	const result = await executeSubmissionTransition(
 		submissionId,
 		{ type: "WITHDRAW" },
 		userId,
 		reason || "Author withdrew submission",
 	);
+
+	if (result.success) {
+		// Cancel all active reviewer assignments
+		const activeAssignments = await prisma.reviewAssignment.findMany({
+			where: {
+				submissionId,
+				status: { in: ["PENDING", "IN_PROGRESS", "OVERDUE"] },
+			},
+		});
+
+		for (const assignment of activeAssignments) {
+			await executeAssignmentTransition(
+				assignment.id,
+				{ type: "CANCEL" },
+				userId,
+			);
+		}
+
+		// Send withdrawal notification to author
+		const submission = await prisma.submission.findUniqueOrThrow({
+			where: { id: submissionId },
+			include: {
+				authors: { where: { isPresenter: true }, take: 1 },
+			},
+		});
+
+		const presenter = submission.authors[0];
+		if (presenter) {
+			void sendEmail("SUBMISSION_WITHDRAWN", presenter.email, {
+				authorName: `${presenter.firstName} ${presenter.lastName}`,
+				submissionTitle: submission.title,
+				submissionId,
+			});
+		}
+	}
+
+	return result;
 }
 
 /**
@@ -393,12 +457,32 @@ export async function deskRejectSubmission(
 	editorId: string,
 	reason: string,
 ): Promise<TransitionResult> {
-	return executeSubmissionTransition(
+	const result = await executeSubmissionTransition(
 		submissionId,
 		{ type: "DESK_REJECT", reason },
 		editorId,
 		reason,
 	);
+
+	if (result.success) {
+		const submission = await prisma.submission.findUniqueOrThrow({
+			where: { id: submissionId },
+			include: {
+				authors: { where: { isPresenter: true }, take: 1 },
+			},
+		});
+
+		const presenter = submission.authors[0];
+		if (presenter) {
+			void sendEmail("DECISION_REJECTED", presenter.email, {
+				authorName: `${presenter.firstName} ${presenter.lastName}`,
+				submissionTitle: submission.title,
+				letterToAuthor: reason,
+			});
+		}
+	}
+
+	return result;
 }
 
 /**
@@ -453,12 +537,37 @@ export async function submitEditorDecision(
 		},
 	});
 
-	return executeSubmissionTransition(
+	const result = await executeSubmissionTransition(
 		submissionId,
 		event,
 		editorId,
 		reasoning || `Editor decision: ${decision}`,
 	);
+
+	if (result.success) {
+		// Send decision email to author
+		const decisionEmailMap = {
+			ACCEPT: "DECISION_ACCEPTED",
+			CONDITIONALLY_ACCEPT: "DECISION_CONDITIONALLY_ACCEPTED",
+			REVISE_AND_RESUBMIT: "DECISION_REVISE_REQUIRED",
+			REJECT: "DECISION_REJECTED",
+		} as const;
+
+		const emailEvent = decisionEmailMap[decision];
+		const presenter = await prisma.submissionAuthor.findFirst({
+			where: { submissionId, isPresenter: true },
+		});
+
+		if (presenter) {
+			void sendEmail(emailEvent, presenter.email, {
+				authorName: `${presenter.firstName} ${presenter.lastName}`,
+				submissionTitle: submission.title,
+				letterToAuthor: letterToAuthor ?? reasoning ?? "",
+			});
+		}
+	}
+
+	return result;
 }
 
 /**

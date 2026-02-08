@@ -297,12 +297,12 @@ Editors (role=EDITOR) can:
 
 ### Terminal States
 
-| Status | Description |
-|--------|-------------|
-| `ACCEPTED` | Final acceptance ✅ |
-| `CONDITIONALLY_ACCEPTED` | Accepted with minor conditions ✅ |
-| `REJECTED` | Final rejection ❌ |
-| `WITHDRAWN` | Author withdrew |
+| Status | Description | Editor Override? |
+|--------|-------------|-----------------|
+| `ACCEPTED` | Final acceptance ✅ | ✅ Can reopen |
+| `CONDITIONALLY_ACCEPTED` | Accepted with minor conditions ✅ | ✅ Can reopen |
+| `REJECTED` | Final rejection ❌ | ✅ Can reopen |
+| `WITHDRAWN` | Author withdrew | ❌ Truly final |
 
 ---
 
@@ -348,8 +348,15 @@ Editor makes final decision:
 - → `UNDER_REVIEW` (assign reviewers for new round)
 - Increment `currentRound`
 
+### From ACCEPTED / CONDITIONALLY_ACCEPTED / REJECTED
+- → `AWAITING_DECISION` (editor override — reopens decision)
+- Only EDITOR/ADMIN can trigger
+- Requires reasoning (audit trail)
+
 ### Terminal States
-`ACCEPTED`, `CONDITIONALLY_ACCEPTED`, `REJECTED`, `WITHDRAWN` - No transitions out
+`WITHDRAWN` - No transitions out (truly final)
+
+`ACCEPTED`, `CONDITIONALLY_ACCEPTED`, `REJECTED` - Editor can override back to `AWAITING_DECISION`
 
 ---
 
@@ -578,17 +585,6 @@ When author resubmits after REVISE_REQUIRED:
      - status = 'UNDER_REVIEW'
 ```
 
-### Round Limits
-
-```typescript
-Config: maxRevisions = 2
-
-if (submission.currentRound > config.maxRevisions) {
-  throw new Error('Maximum revisions exceeded')
-  // Editor must choose: ACCEPT or REJECT (no more revisions)
-}
-```
-
 ---
 
 ## Deadlines
@@ -629,7 +625,7 @@ Assumption: System never auto-cancels or auto-completes reviews
 When overdue:
 - Status → OVERDUE (visual indicator only)
 - Editor must manually intervene
-- Editor can: extend deadline, cancel assignment, contact reviewer
+- Editor can: cancel assignment, contact reviewer
 ```
 
 ---
@@ -806,7 +802,7 @@ All submission status changes are logged in `SubmissionStatusHistory`:
   maxReviewers: 1,
   requiresEditorDecision: false,
   allowRevisions: true,
-  maxRevisions: 2,
+
   reviewDeadline: 14, // days
   requireAllReviews: true,
   autoTransitionAfterReviews: true, // Auto-apply reviewer decision
@@ -825,7 +821,7 @@ All submission status changes are logged in `SubmissionStatusHistory`:
   maxReviewers: 3,
   requiresEditorDecision: true,
   allowRevisions: true,
-  maxRevisions: 3,
+
   reviewDeadline: 21, // days
   requireAllReviews: true,
   autoTransitionAfterReviews: false, // Editor manually reviews before transition
@@ -851,7 +847,7 @@ POSTER uses identical workflow to ABSTRACT (single reviewer, reviewer decides).
   maxReviewers: 1,
   requiresEditorDecision: false,
   allowRevisions: true,
-  maxRevisions: 2,
+
   reviewDeadline: 14, // days
   requireAllReviews: true,
   autoTransitionAfterReviews: true, // Auto-apply reviewer decision
@@ -928,18 +924,6 @@ Scenario: Reviewer cannot complete review (any reason)
 3. Editor assigns new reviewer
 4. Original partial review archived/ignored
 5. New reviewer starts fresh
-```
-
-### Max Revisions Exceeded
-
-```
-Config: maxRevisions = 2
-
-Round 1 → REVISE_REQUIRED
-Round 2 → REVISE_REQUIRED
-Round 3 → System prevents further revisions
-
-Editor must choose: ACCEPT or REJECT (no more revisions)
 ```
 
 ### Editor Changes Mind
@@ -1121,9 +1105,9 @@ export const abstractMachine = createMachine({
         ASSIGN_REVIEWER: 'UNDER_REVIEW'
       }
     },
-    ACCEPTED: { type: 'final' },
-    REJECTED: { type: 'final' },
-    CONDITIONALLY_ACCEPTED: { type: 'final' },
+    ACCEPTED: { on: { EDITOR_OVERRIDE: 'AWAITING_DECISION' } },
+    REJECTED: { on: { EDITOR_OVERRIDE: 'AWAITING_DECISION' } },
+    CONDITIONALLY_ACCEPTED: { on: { EDITOR_OVERRIDE: 'AWAITING_DECISION' } },
     WITHDRAWN: { type: 'final' }
   }
 })

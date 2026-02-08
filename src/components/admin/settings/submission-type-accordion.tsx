@@ -311,25 +311,7 @@ export function SubmissionTypeAccordion({
 								}
 							/>
 						</div>
-						{config.allowRevisions && (
-							<div className="space-y-2 pl-0 sm:pl-4">
-								<Label>Max revisions</Label>
-								<Input
-									type="number"
-									min={1}
-									max={10}
-									value={config.maxRevisions}
-									onChange={(e) =>
-										handleChange(
-											"maxRevisions",
-											parseInt(e.target.value, 10) || 1,
-										)
-									}
-									className="max-w-32"
-								/>
-							</div>
-						)}
-					</div>
+											</div>
 
 					{/* Scoring */}
 					<div className="space-y-4">

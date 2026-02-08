@@ -33,7 +33,6 @@ export const submissionTypeSettingsSchema = z.object({
 	requiresEditorDecision: z.boolean(),
 	autoTransition: z.boolean(),
 	allowRevisions: z.boolean(),
-	maxRevisions: z.number().min(0).max(10),
 	enableScoring: z.boolean(),
 	scoringCriteria: z.array(z.string()),
 });

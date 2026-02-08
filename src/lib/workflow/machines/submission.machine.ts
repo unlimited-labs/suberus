@@ -143,15 +143,21 @@ export const submissionMachine = setup({
 				},
 			},
 		},
-		// Terminal states
+		// Terminal states (ACCEPTED/CONDITIONALLY_ACCEPTED/REJECTED allow editor override)
 		ACCEPTED: {
-			type: "final",
+			on: {
+				EDITOR_OVERRIDE: "AWAITING_DECISION",
+			},
 		},
 		CONDITIONALLY_ACCEPTED: {
-			type: "final",
+			on: {
+				EDITOR_OVERRIDE: "AWAITING_DECISION",
+			},
 		},
 		REJECTED: {
-			type: "final",
+			on: {
+				EDITOR_OVERRIDE: "AWAITING_DECISION",
+			},
 		},
 		WITHDRAWN: {
 			type: "final",

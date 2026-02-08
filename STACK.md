@@ -5,6 +5,8 @@
 **Framework:** Tanstack Start
 https://tanstack.com/start/latest
 
+Tanstack Start uses Nitro as a server. Full documentation can be found: https://v3.nitro.build/llms.txt
+
 **Database:** PostgreSQL 18+
 
 **ORM:** Prisma

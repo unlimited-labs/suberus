@@ -6,6 +6,7 @@ import {
 	IconFileText,
 	IconInfoCircle,
 	IconPresentation,
+	IconDeviceFloppy,
 	IconSend,
 	IconSparkles,
 	IconTags,
@@ -62,6 +63,7 @@ export interface ValidationSettings {
 
 interface SubmissionFormProps {
 	onSubmit: (data: SubmissionFormData) => Promise<void>;
+	onSaveDraft?: (data: SubmissionFormData) => Promise<void>;
 	initialData?: Partial<SubmissionFormData>;
 	typeConfigs: ActiveSubmissionType[];
 	validationSettings: ValidationSettings;
@@ -80,11 +82,13 @@ export interface SubmissionFormData {
 
 export function SubmissionForm({
 	onSubmit,
+	onSaveDraft,
 	initialData,
 	typeConfigs,
 	validationSettings,
 }: SubmissionFormProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [isSavingDraft, setIsSavingDraft] = useState(false);
 	const { user } = useSession();
 	const hasAutoFilledRef = useRef(false);
 
@@ -292,10 +296,12 @@ export function SubmissionForm({
 						{/* Header */}
 						<div className="mb-8">
 							<h1 className="text-2xl font-semibold tracking-tight">
-								New Submission
+								{initialData ? "Edit Submission" : "New Submission"}
 							</h1>
 							<p className="text-sm text-muted-foreground mt-1">
-								Submit your work for the conference
+								{initialData
+									? "Update your submission details"
+									: "Submit your work for the conference"}
 							</p>
 						</div>
 
@@ -622,27 +628,57 @@ export function SubmissionForm({
 								)}
 
 							{/* Submit */}
-							<div className="flex items-center justify-between pt-4 border-t">
-								<p className="text-xs text-muted-foreground">
+							<div className="flex items-center justify-between pt-4 border-t gap-3">
+								<p className="text-xs text-muted-foreground hidden sm:block">
 									By submitting, you agree to the conference guidelines
 								</p>
-								<Button
-									type="submit"
-									disabled={isSubmitting}
-									className="gap-2 px-6"
-								>
-									{isSubmitting ? (
-										<>
-											<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-											Submitting...
-										</>
-									) : (
-										<>
-											<IconSend className="size-4" />
-											Submit
-										</>
+								<div className="flex gap-2 ml-auto">
+									{onSaveDraft && (
+										<Button
+											type="button"
+											variant="outline"
+											disabled={isSavingDraft || isSubmitting}
+											className="gap-2"
+											onClick={async () => {
+												setIsSavingDraft(true);
+												try {
+													await onSaveDraft(form.state.values);
+												} finally {
+													setIsSavingDraft(false);
+												}
+											}}
+										>
+											{isSavingDraft ? (
+												<>
+													<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+													Saving...
+												</>
+											) : (
+												<>
+													<IconDeviceFloppy className="size-4" />
+													Save Draft
+												</>
+											)}
+										</Button>
 									)}
-								</Button>
+									<Button
+										type="submit"
+										disabled={isSubmitting || isSavingDraft}
+										className="gap-2 px-6"
+									>
+										{isSubmitting ? (
+											<>
+												<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+												Submitting...
+											</>
+										) : (
+											<>
+												<IconSend className="size-4" />
+												Submit
+											</>
+										)}
+									</Button>
+								</div>
 							</div>
 						</form>
 					</div>

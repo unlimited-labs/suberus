@@ -69,8 +69,10 @@ function NewSubmissionPage() {
 		}
 	};
 
-	const handleSubmit = async (data: SubmissionFormData) => {
-		// Create submission first
+	const createAndUploadFile = async (
+		data: SubmissionFormData,
+		isDraft: boolean,
+	) => {
 		const result = await createSubmission({
 			data: {
 				type: data.type,
@@ -80,6 +82,7 @@ function NewSubmissionPage() {
 				keywords: data.keywords,
 				contentFormat: data.contentFormat,
 				sessionId: data.sessionId,
+				isDraft,
 			},
 		});
 
@@ -95,11 +98,10 @@ function NewSubmissionPage() {
 		// If FILE format with file, upload it
 		if (data.contentFormat === "FILE" && data.file) {
 			try {
-				// Convert file to base64
 				const buffer = await data.file.arrayBuffer();
 				const base64 = btoa(
 					new Uint8Array(buffer).reduce(
-						(data, byte) => data + String.fromCharCode(byte),
+						(d, byte) => d + String.fromCharCode(byte),
 						"",
 					),
 				);
@@ -116,18 +118,24 @@ function NewSubmissionPage() {
 
 				if (!uploadResult.success) {
 					toast.error(
-						`Submission created but file upload failed: ${uploadResult.error}`,
+						`${isDraft ? "Draft saved" : "Submission created"} but file upload failed: ${uploadResult.error}`,
 					);
-					// Still navigate - submission exists
 				}
 			} catch {
 				toast.error("File upload failed");
-				// Still navigate - submission exists
 			}
 		}
 
-		toast.success("Submission created successfully");
+		toast.success(isDraft ? "Draft saved" : "Submission created successfully");
 		navigate({ to: "/submissions/$id", params: { id: result.id } });
+	};
+
+	const handleSubmit = async (data: SubmissionFormData) => {
+		await createAndUploadFile(data, false);
+	};
+
+	const handleSaveDraft = async (data: SubmissionFormData) => {
+		await createAndUploadFile(data, true);
 	};
 
 	if (user && !user.emailVerified) {
@@ -173,6 +181,7 @@ function NewSubmissionPage() {
 			<div className="flex-1 overflow-auto p-6">
 				<SubmissionForm
 					onSubmit={handleSubmit}
+					onSaveDraft={handleSaveDraft}
 					typeConfigs={typeConfigs}
 					validationSettings={validationSettings}
 				/>

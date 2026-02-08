@@ -62,6 +62,7 @@ export function getTransitionDescription(
 		EDITOR_CONDITIONAL: "Conditionally accepted by editor decision",
 		EDITOR_REVISE: "Revisions required by editor decision",
 		EDITOR_REJECT: "Rejected by editor decision",
+		EDITOR_OVERRIDE: "Editor overriding previous decision",
 		RESUBMIT: "Author resubmitted revised version",
 	};
 

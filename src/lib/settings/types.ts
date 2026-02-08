@@ -15,7 +15,6 @@ export interface SubmissionTypeConfig {
 	requiresEditorDecision: boolean;
 	autoTransitionAfterReviews: boolean;
 	allowRevisions: boolean;
-	maxRevisions: number;
 	enableScoring: boolean;
 	scoringCriteria: string[];
 	enableSessionSelection: boolean;

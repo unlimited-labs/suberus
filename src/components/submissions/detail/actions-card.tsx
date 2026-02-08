@@ -1,7 +1,11 @@
 import { IconEdit, IconSend, IconX } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import type { SubmissionStatus } from "@/generated/prisma/enums";
+import { submitDraftFn } from "@/utils/submissions.functions";
+import { withdrawSubmissionFn } from "@/utils/workflow.functions";
 
 interface ActionsCardProps {
 	submissionId: string;
@@ -15,12 +19,50 @@ export function ActionsCard({
 	showTitle = true,
 }: ActionsCardProps) {
 	const navigate = useNavigate();
+	const [isLoading, setIsLoading] = useState(false);
 
-	const handleEdit = () => navigate({ to: "/submissions/new" });
+	const handleEdit = () =>
+		navigate({ to: "/submissions/$id/edit", params: { id: submissionId } });
 	const handleRevise = () =>
 		navigate({ to: "/submissions/$id/revise", params: { id: submissionId } });
-	const handleSubmit = () => console.log("Submit:", submissionId);
-	const handleWithdraw = () => console.log("Withdraw:", submissionId);
+
+	const handleSubmit = async () => {
+		setIsLoading(true);
+		try {
+			const result = await submitDraftFn({
+				data: { submissionId },
+			});
+			if (result.success) {
+				toast.success("Submission submitted");
+				navigate({ to: "/submissions/$id", params: { id: submissionId } });
+			} else {
+				toast.error(result.error ?? "Submit failed");
+			}
+		} catch {
+			toast.error("Submit failed");
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const handleWithdraw = async () => {
+		setIsLoading(true);
+		try {
+			const result = await withdrawSubmissionFn({
+				data: { submissionId },
+			});
+			if (result.success) {
+				toast.success("Submission withdrawn");
+				navigate({ to: "/submissions/$id", params: { id: submissionId } });
+			} else {
+				toast.error(result.error ?? "Withdraw failed");
+			}
+		} catch {
+			toast.error("Withdraw failed");
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
 	const renderActions = () => {
 		switch (status) {
@@ -31,11 +73,16 @@ export function ActionsCard({
 							variant="outline"
 							className="gap-2 w-full"
 							onClick={handleEdit}
+							disabled={isLoading}
 						>
 							<IconEdit className="size-4" />
 							Continue Editing
 						</Button>
-						<Button className="gap-2 w-full" onClick={handleSubmit}>
+						<Button
+							className="gap-2 w-full"
+							onClick={handleSubmit}
+							disabled={isLoading}
+						>
 							<IconSend className="size-4" />
 							Submit
 						</Button>
@@ -55,6 +102,7 @@ export function ActionsCard({
 							variant="outline"
 							className="gap-2 w-full"
 							onClick={handleEdit}
+							disabled={isLoading}
 						>
 							<IconEdit className="size-4" />
 							Edit Submission
@@ -63,6 +111,7 @@ export function ActionsCard({
 							variant="destructive"
 							className="gap-2 w-full"
 							onClick={handleWithdraw}
+							disabled={isLoading}
 						>
 							<IconX className="size-4" />
 							Withdraw Submission
@@ -78,6 +127,7 @@ export function ActionsCard({
 						variant="destructive"
 						className="gap-2 w-full"
 						onClick={handleWithdraw}
+						disabled={isLoading}
 					>
 						<IconX className="size-4" />
 						Withdraw Submission

@@ -35,7 +35,6 @@ export interface SubmissionTypeSettings {
 	autoTransition: boolean;
 	// Revisions
 	allowRevisions: boolean;
-	maxRevisions: number;
 	// Scoring
 	enableScoring: boolean;
 	scoringCriteria: string[];
@@ -87,7 +86,7 @@ export const defaultSubmissionTypes: SubmissionTypeSettings[] = [
 		requiresEditorDecision: true,
 		autoTransition: false,
 		allowRevisions: true,
-		maxRevisions: 2,
+
 		enableScoring: true,
 		scoringCriteria: ["Originality", "Clarity", "Significance", "Methodology"],
 	},
@@ -102,7 +101,7 @@ export const defaultSubmissionTypes: SubmissionTypeSettings[] = [
 		requiresEditorDecision: true,
 		autoTransition: false,
 		allowRevisions: true,
-		maxRevisions: 3,
+
 		enableScoring: true,
 		scoringCriteria: [
 			"Originality",
@@ -123,7 +122,7 @@ export const defaultSubmissionTypes: SubmissionTypeSettings[] = [
 		requiresEditorDecision: false,
 		autoTransition: true,
 		allowRevisions: false,
-		maxRevisions: 0,
+
 		enableScoring: false,
 		scoringCriteria: [],
 	},

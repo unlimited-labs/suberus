@@ -82,7 +82,6 @@ const SUBMISSION_TYPE_CONFIGS = {
 		requiresEditorDecision: true,
 		autoTransitionAfterReviews: false,
 		allowRevisions: true,
-		maxRevisions: 2,
 		enableScoring: true,
 		scoringCriteria: ["Originality", "Clarity", "Significance", "Methodology"],
 	},
@@ -97,7 +96,6 @@ const SUBMISSION_TYPE_CONFIGS = {
 		requiresEditorDecision: false,
 		autoTransitionAfterReviews: true,
 		allowRevisions: false,
-		maxRevisions: 0,
 		enableScoring: false,
 		scoringCriteria: [],
 	},
@@ -112,7 +110,6 @@ const SUBMISSION_TYPE_CONFIGS = {
 		requiresEditorDecision: true,
 		autoTransitionAfterReviews: false,
 		allowRevisions: true,
-		maxRevisions: 3,
 		enableScoring: true,
 		scoringCriteria: ["Originality", "Clarity", "Significance", "Methodology", "Technical Quality"],
 	},
@@ -394,6 +391,214 @@ async function globalSetup() {
 				bccEmails: [],
 				availablePlaceholders: ["firstName", "resetUrl", "conferenceName"],
 				description: "Sent when a user requests a password reset",
+			},
+		});
+
+		await prisma.emailTemplate.upsert({
+			where: { eventType: "SUBMISSION_WITHDRAWN" },
+			update: {},
+			create: {
+				eventType: "SUBMISSION_WITHDRAWN",
+				subject: "Submission Withdrawn: {{submissionTitle}}",
+				body: 'Dear {{authorName}},\n\nYour submission "{{submissionTitle}}" (ID: {{submissionId}}) has been withdrawn.\n\nIf you did not request this, please contact us immediately.',
+				isEnabled: true,
+				isHtml: false,
+				ccEmails: [],
+				bccEmails: [],
+				availablePlaceholders: ["authorName", "submissionTitle", "submissionId"],
+				description: "Sent when an author withdraws their submission",
+			},
+		});
+
+		await prisma.emailTemplate.upsert({
+			where: { eventType: "REVIEWER_ASSIGNED" },
+			update: {},
+			create: {
+				eventType: "REVIEWER_ASSIGNED",
+				subject: "New Review Assignment: {{submissionTitle}}",
+				body: "Dear {{reviewerName}},\n\nYou have been assigned to review the submission:\n\nTitle: {{submissionTitle}}\nDeadline: {{deadline}}\n\nPlease log in to the system to begin your review.",
+				isEnabled: true,
+				isHtml: false,
+				ccEmails: [],
+				bccEmails: [],
+				availablePlaceholders: ["reviewerName", "submissionTitle", "deadline"],
+				description: "Sent when a reviewer is assigned to a submission",
+			},
+		});
+
+		await prisma.emailTemplate.upsert({
+			where: { eventType: "REVIEWER_REMINDER" },
+			update: {},
+			create: {
+				eventType: "REVIEWER_REMINDER",
+				subject: "Review Reminder: {{submissionTitle}}",
+				body: "Dear {{reviewerName}},\n\nThis is a reminder that your review for the submission:\n\nTitle: {{submissionTitle}}\nDeadline: {{deadline}}\n\nis approaching its deadline. Please submit your review as soon as possible.",
+				isEnabled: true,
+				isHtml: false,
+				ccEmails: [],
+				bccEmails: [],
+				availablePlaceholders: ["reviewerName", "submissionTitle", "deadline"],
+				description: "Sent as a reminder to reviewers about upcoming deadlines",
+			},
+		});
+
+		await prisma.emailTemplate.upsert({
+			where: { eventType: "REVIEW_SUBMITTED" },
+			update: {},
+			create: {
+				eventType: "REVIEW_SUBMITTED",
+				subject: "Review Submitted for: {{submissionTitle}}",
+				body: "Dear Editor,\n\nA review has been submitted for the submission:\n\nTitle: {{submissionTitle}}\nReviewer: {{reviewerName}}\n\nPlease log in to view the review details.",
+				isEnabled: true,
+				isHtml: false,
+				ccEmails: [],
+				bccEmails: [],
+				availablePlaceholders: ["submissionTitle", "reviewerName"],
+				description: "Sent to editors when a reviewer submits their review",
+			},
+		});
+
+		await prisma.emailTemplate.upsert({
+			where: { eventType: "ALL_REVIEWS_COMPLETE" },
+			update: {},
+			create: {
+				eventType: "ALL_REVIEWS_COMPLETE",
+				subject: "All Reviews Complete: {{submissionTitle}}",
+				body: "Dear Editor,\n\nAll reviews have been completed for the submission:\n\nTitle: {{submissionTitle}}\nSubmission ID: {{submissionId}}\n\nPlease log in to make a decision.",
+				isEnabled: true,
+				isHtml: false,
+				ccEmails: [],
+				bccEmails: [],
+				availablePlaceholders: ["submissionTitle", "submissionId"],
+				description: "Sent to editors when all reviews for a submission are complete",
+			},
+		});
+
+		await prisma.emailTemplate.upsert({
+			where: { eventType: "DECISION_ACCEPTED" },
+			update: {},
+			create: {
+				eventType: "DECISION_ACCEPTED",
+				subject: "Submission Accepted: {{submissionTitle}}",
+				body: 'Dear {{authorName}},\n\nWe are pleased to inform you that your submission "{{submissionTitle}}" has been accepted.\n\n{{letterToAuthor}}\n\nCongratulations!',
+				isEnabled: true,
+				isHtml: false,
+				ccEmails: [],
+				bccEmails: [],
+				availablePlaceholders: ["authorName", "submissionTitle", "letterToAuthor"],
+				description: "Sent when a submission is accepted",
+			},
+		});
+
+		await prisma.emailTemplate.upsert({
+			where: { eventType: "DECISION_CONDITIONALLY_ACCEPTED" },
+			update: {},
+			create: {
+				eventType: "DECISION_CONDITIONALLY_ACCEPTED",
+				subject: "Submission Conditionally Accepted: {{submissionTitle}}",
+				body: 'Dear {{authorName}},\n\nYour submission "{{submissionTitle}}" has been conditionally accepted.\n\n{{letterToAuthor}}\n\nPlease address the conditions outlined above.',
+				isEnabled: true,
+				isHtml: false,
+				ccEmails: [],
+				bccEmails: [],
+				availablePlaceholders: ["authorName", "submissionTitle", "letterToAuthor"],
+				description: "Sent when a submission is conditionally accepted",
+			},
+		});
+
+		await prisma.emailTemplate.upsert({
+			where: { eventType: "DECISION_REVISE_REQUIRED" },
+			update: {},
+			create: {
+				eventType: "DECISION_REVISE_REQUIRED",
+				subject: "Revision Required: {{submissionTitle}}",
+				body: 'Dear {{authorName}},\n\nYour submission "{{submissionTitle}}" requires revisions.\n\n{{letterToAuthor}}\n\nPlease resubmit your revised version through the system.',
+				isEnabled: true,
+				isHtml: false,
+				ccEmails: [],
+				bccEmails: [],
+				availablePlaceholders: ["authorName", "submissionTitle", "letterToAuthor"],
+				description: "Sent when a submission requires revisions",
+			},
+		});
+
+		await prisma.emailTemplate.upsert({
+			where: { eventType: "DECISION_REJECTED" },
+			update: {},
+			create: {
+				eventType: "DECISION_REJECTED",
+				subject: "Submission Decision: {{submissionTitle}}",
+				body: 'Dear {{authorName}},\n\nWe regret to inform you that your submission "{{submissionTitle}}" has not been accepted.\n\n{{letterToAuthor}}\n\nThank you for your interest.',
+				isEnabled: true,
+				isHtml: false,
+				ccEmails: [],
+				bccEmails: [],
+				availablePlaceholders: ["authorName", "submissionTitle", "letterToAuthor"],
+				description: "Sent when a submission is rejected",
+			},
+		});
+
+		await prisma.emailTemplate.upsert({
+			where: { eventType: "REVISION_RECEIVED" },
+			update: {},
+			create: {
+				eventType: "REVISION_RECEIVED",
+				subject: "Revised Submission Received: {{submissionTitle}}",
+				body: "Dear Editor,\n\nA revised version of the submission has been received:\n\nTitle: {{submissionTitle}}\nAuthor: {{authorName}}\nVersion: {{versionNumber}}\n\nPlease log in to review the changes.",
+				isEnabled: true,
+				isHtml: false,
+				ccEmails: [],
+				bccEmails: [],
+				availablePlaceholders: ["submissionTitle", "authorName", "versionNumber"],
+				description: "Sent to editors when an author resubmits a revised submission",
+			},
+		});
+
+		await prisma.emailTemplate.upsert({
+			where: { eventType: "REVISION_REMINDER" },
+			update: {},
+			create: {
+				eventType: "REVISION_REMINDER",
+				subject: "Revision Reminder: {{submissionTitle}}",
+				body: 'Dear {{authorName}},\n\nThis is a reminder that your revised submission "{{submissionTitle}}" is expected.\n\nPlease submit your revision as soon as possible.',
+				isEnabled: true,
+				isHtml: false,
+				ccEmails: [],
+				bccEmails: [],
+				availablePlaceholders: ["authorName", "submissionTitle"],
+				description: "Sent as a reminder to authors about pending revisions",
+			},
+		});
+
+		await prisma.emailTemplate.upsert({
+			where: { eventType: "DEADLINE_APPROACHING" },
+			update: {},
+			create: {
+				eventType: "DEADLINE_APPROACHING",
+				subject: "Deadline Approaching: {{submissionTitle}}",
+				body: "Dear {{recipientName}},\n\nThe deadline for {{submissionTitle}} is approaching on {{deadline}}.\n\nPlease ensure you complete your tasks on time.",
+				isEnabled: true,
+				isHtml: false,
+				ccEmails: [],
+				bccEmails: [],
+				availablePlaceholders: ["recipientName", "submissionTitle", "deadline"],
+				description: "Sent when a deadline is approaching",
+			},
+		});
+
+		await prisma.emailTemplate.upsert({
+			where: { eventType: "ACCOUNT_CREATED" },
+			update: {},
+			create: {
+				eventType: "ACCOUNT_CREATED",
+				subject: "Welcome to {{conferenceName}}",
+				body: "Dear {{firstName}},\n\nYour account has been created successfully.\n\nPlease verify your email address to get started.\n\nBest regards,\n{{conferenceName}}",
+				isEnabled: true,
+				isHtml: false,
+				ccEmails: [],
+				bccEmails: [],
+				availablePlaceholders: ["firstName", "conferenceName"],
+				description: "Sent when a new user account is created",
 			},
 		});
 

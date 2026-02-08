@@ -1,12 +1,26 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import type { TransitionResult } from "@/lib/workflow";
-import { adminMiddleware } from "./auth.middleware";
+import { adminMiddleware, authMiddleware } from "./auth.middleware";
 import {
 	deskRejectSubmission,
 	executeSubmissionTransition,
 	submitEditorDecision,
+	withdrawSubmission,
 } from "./workflow.server";
+
+/** Withdraw submission (author) */
+export const withdrawSubmissionFn = createServerFn({ method: "POST" })
+	.middleware([authMiddleware])
+	.inputValidator(
+		z.object({
+			submissionId: z.string().uuid(),
+			reason: z.string().optional(),
+		}),
+	)
+	.handler(async ({ data, context }): Promise<TransitionResult> => {
+		return withdrawSubmission(data.submissionId, context.user.id, data.reason);
+	});
 
 /** Desk reject submission (editor) */
 export const deskRejectFn = createServerFn({ method: "POST" })
@@ -74,5 +88,23 @@ export const transitionToAwaitingDecisionFn = createServerFn({ method: "POST" })
 			{ type: "MANUAL_TRANSITION_TO_AWAITING_DECISION" },
 			context.user.id,
 			"Editor transitioned to awaiting decision",
+		);
+	});
+
+/** Editor override — reopen decision from terminal state (editor) */
+export const editorOverrideFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(
+		z.object({
+			submissionId: z.string().uuid(),
+			reasoning: z.string().min(1, "Reasoning is required"),
+		}),
+	)
+	.handler(async ({ data, context }): Promise<TransitionResult> => {
+		return executeSubmissionTransition(
+			data.submissionId,
+			{ type: "EDITOR_OVERRIDE" },
+			context.user.id,
+			data.reasoning,
 		);
 	});

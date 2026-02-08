@@ -5,6 +5,7 @@ import {
 	IconUser,
 } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ContactInfoSection } from "@/components/forms/profile/contact-info-section";
 import { PasswordChangeSection } from "@/components/forms/profile/password-change-section";
@@ -17,6 +18,7 @@ import type {
 	PasswordChangeFormData,
 	PersonalInfoFormData,
 } from "@/lib/validations/profile";
+import { createAffiliation, getAffiliationById } from "@/utils/affiliations.functions";
 import {
 	changePasswordFn,
 	updateContactInfoFn,
@@ -29,13 +31,40 @@ export const Route = createFileRoute("/_app/settings")({
 
 function SettingsPage() {
 	const { user } = useSession();
+	const [affiliationName, setAffiliationName] = useState("");
+
+	useEffect(() => {
+		if (user?.affiliationId) {
+			getAffiliationById({ data: { id: user.affiliationId } }).then(
+				(result) => {
+					if (result) setAffiliationName(result.name);
+				},
+			);
+		}
+	}, [user?.affiliationId]);
 
 	if (!user) return null;
 
 	// Personal Info handlers
 	const handlePersonalInfoSave = async (data: PersonalInfoFormData) => {
 		try {
-			await updatePersonalInfoFn({ data });
+			let affiliationId: string | undefined;
+			if (data.affiliation?.trim()) {
+				const aff = await createAffiliation({
+					data: { name: data.affiliation.trim() },
+				});
+				affiliationId = aff.id;
+			}
+
+			await updatePersonalInfoFn({
+				data: {
+					firstName: data.firstName,
+					lastName: data.lastName,
+					title: data.title,
+					affiliationId: affiliationId ?? "",
+					orcid: data.orcid,
+				},
+			});
 			toast.success("Personal information updated successfully");
 		} catch (error) {
 			toast.error("Failed to update personal information");
@@ -88,7 +117,7 @@ function SettingsPage() {
 								title: user.title ?? "",
 								firstName: user.firstName ?? "",
 								lastName: user.lastName ?? "",
-								affiliation: "", // TODO: Fetch from affiliationId
+								affiliation: affiliationName,
 								orcid: user.orcid ?? "",
 							}}
 							onSave={handlePersonalInfoSave}

@@ -25,7 +25,6 @@ const submissionTypeConfigSchema = z.object({
 	reviewDeadlineDays: z.number().int().min(1).max(90),
 	requiresEditorDecision: z.boolean(),
 	allowRevisions: z.boolean(),
-	maxRevisions: z.number().int().min(0).max(10),
 	enableScoring: z.boolean(),
 	scoringCriteria: z.array(z.string()),
 	enableSessionSelection: z.boolean(),
