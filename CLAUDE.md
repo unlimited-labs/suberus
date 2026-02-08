@@ -1,7 +1,3 @@
-<!-- vibe-rules Integration -->
-
-<!-- vibe-rules Integration -->
-
 # Claude Code Guidelines for Suberus
 
 ## Project Overview

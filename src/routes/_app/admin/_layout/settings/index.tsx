@@ -5,9 +5,10 @@ import {
 	IconFileText,
 	IconMail,
 	IconPalette,
+	IconPresentation,
 	IconSettings,
 } from "@tabler/icons-react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import {
 	BrandingSettingsTab,
@@ -17,28 +18,35 @@ import {
 	SubmissionSettingsTab,
 	SubmissionTypesTab,
 } from "@/components/admin/settings";
+import { SessionsTab } from "@/components/admin/sessions/sessions-tab";
+import {
+	getAllSessionsFn,
+	getReviewerUsersFn,
+} from "@/utils/sessions.functions";
 import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-	defaultBrandingSettings,
-	defaultConferenceSettings,
-	defaultEmailTemplates,
-} from "@/lib/mock-data/admin-settings";
+import { defaultEmailTemplates } from "@/lib/mock-data/admin-settings";
 import { getPaymentInstructionsFn } from "@/utils/fee.functions";
 import {
+	getBrandingSettingsFn,
+	getConferenceSettingsFn,
 	getSubmissionTypeConfigsFn,
 	getSubmissionValidationSettingsFn,
 } from "@/utils/settings.functions";
 
 export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 	loader: async () => {
-		const [submissionTypes, submissionSettings, feeInstructions] =
+		const [conferenceSettings, submissionTypes, submissionSettings, feeInstructions, brandingSettings, sessions, reviewers] =
 			await Promise.all([
+				getConferenceSettingsFn(),
 				getSubmissionTypeConfigsFn(),
 				getSubmissionValidationSettingsFn(),
 				getPaymentInstructionsFn(),
+				getBrandingSettingsFn(),
+				getAllSessionsFn(),
+				getReviewerUsersFn(),
 			]);
-		return { submissionTypes, submissionSettings, feeInstructions };
+		return { conferenceSettings, submissionTypes, submissionSettings, feeInstructions, brandingSettings, sessions, reviewers };
 	},
 	component: AdminSettingsPage,
 });
@@ -47,15 +55,17 @@ const tabs = [
 	{ id: "conference", label: "Conference", icon: IconBuilding },
 	{ id: "submissions", label: "Submissions", icon: IconFileText },
 	{ id: "types", label: "Submission Types", icon: IconFileStack },
+	{ id: "sessions", label: "Sessions", icon: IconPresentation },
 	{ id: "emails", label: "Email Templates", icon: IconMail },
 	{ id: "branding", label: "Branding", icon: IconPalette },
 	{ id: "fee-instructions", label: "Fee Instructions", icon: IconCash },
 ];
 
 function AdminSettingsPage() {
-	const { submissionTypes, submissionSettings, feeInstructions } =
+	const { conferenceSettings, submissionTypes, submissionSettings, feeInstructions, brandingSettings, sessions, reviewers } =
 		Route.useLoaderData();
 	const [activeTab, setActiveTab] = useState("conference");
+	const router = useRouter();
 
 	return (
 		<div className="flex h-full flex-col">
@@ -77,7 +87,7 @@ function AdminSettingsPage() {
 						</TabsList>
 
 						<TabsContent value="conference">
-							<ConferenceSettingsTab initialData={defaultConferenceSettings} />
+							<ConferenceSettingsTab initialData={conferenceSettings} />
 						</TabsContent>
 
 						<TabsContent value="submissions">
@@ -88,12 +98,20 @@ function AdminSettingsPage() {
 							<SubmissionTypesTab initialData={submissionTypes} />
 						</TabsContent>
 
+						<TabsContent value="sessions">
+							<SessionsTab
+								initialSessions={sessions}
+								reviewers={reviewers}
+								onUpdate={() => router.invalidate()}
+							/>
+						</TabsContent>
+
 						<TabsContent value="emails">
 							<EmailTemplatesTab initialData={defaultEmailTemplates} />
 						</TabsContent>
 
 						<TabsContent value="branding">
-							<BrandingSettingsTab initialData={defaultBrandingSettings} />
+							<BrandingSettingsTab initialData={brandingSettings} />
 						</TabsContent>
 
 						<TabsContent value="fee-instructions">

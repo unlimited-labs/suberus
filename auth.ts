@@ -6,7 +6,7 @@ import { PrismaPg } from "@prisma/adapter-pg"
 import { randomUUID } from "crypto"
 import "dotenv/config"
 import { sendEmail } from "@/lib/server/email"
-import { APP_SETTINGS_DEFAULTS } from "@/lib/settings/defaults"
+import { getSetting } from "@/utils/settings.server"
 
 const connectionString = process.env.DATABASE_URL
 const adapter = new PrismaPg({ connectionString })
@@ -41,7 +41,7 @@ export const auth = betterAuth({
 			await sendEmail("PASSWORD_RESET", user.email, {
 				firstName: extUser.firstName ?? user.email,
 				resetUrl: url,
-				conferenceName: APP_SETTINGS_DEFAULTS.CONFERENCE_NAME,
+				conferenceName: await getSetting("CONFERENCE_NAME"),
 				...(testRunId && { testRunId }),
 			})
 		},
@@ -58,7 +58,7 @@ export const auth = betterAuth({
 			await sendEmail("EMAIL_VERIFICATION", user.email, {
 				firstName: extUser.firstName ?? user.email,
 				verificationUrl: url,
-				conferenceName: APP_SETTINGS_DEFAULTS.CONFERENCE_NAME,
+				conferenceName: await getSetting("CONFERENCE_NAME"),
 				...(testRunId && { testRunId }),
 			})
 		},

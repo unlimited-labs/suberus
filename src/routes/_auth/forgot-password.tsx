@@ -22,6 +22,8 @@ const emailSchema = z
 	.email("Invalid email address");
 
 function ForgotPasswordPage() {
+	const { conferenceName, conferenceDate, conferenceLocation } =
+		Route.useRouteContext();
 	const [isSubmitted, setIsSubmitted] = useState(false);
 	const [submittedEmail, setSubmittedEmail] = useState("");
 
@@ -50,7 +52,11 @@ function ForgotPasswordPage() {
 	if (isSubmitted) {
 		return (
 			<div className="mx-auto flex w-full max-w-3xl overflow-hidden rounded-2xl bg-card shadow-2xl">
-				<AuthSidebar />
+				<AuthSidebar
+				conferenceName={conferenceName}
+				conferenceDate={conferenceDate}
+				conferenceLocation={conferenceLocation}
+			/>
 				<div className="flex flex-1 flex-col items-center justify-center bg-card p-5 text-foreground sm:p-6 lg:p-8">
 					<div className="w-full max-w-sm space-y-4 text-center">
 						<div className="mx-auto flex size-14 items-center justify-center rounded-full bg-primary/10">
@@ -92,11 +98,15 @@ function ForgotPasswordPage() {
 
 	return (
 		<div className="mx-auto flex w-full max-w-3xl overflow-hidden rounded-2xl bg-card shadow-2xl">
-			<AuthSidebar />
+			<AuthSidebar
+				conferenceName={conferenceName}
+				conferenceDate={conferenceDate}
+				conferenceLocation={conferenceLocation}
+			/>
 			<div className="flex flex-1 flex-col bg-card p-5 text-foreground sm:p-6 lg:p-8">
 				{/* Mobile header */}
 				<div className="mb-4 lg:hidden">
-					<h1 className="text-lg font-bold">KomPlasTech 2025</h1>
+					<h1 className="text-lg font-bold">{conferenceName}</h1>
 				</div>
 
 				{/* Desktop header */}

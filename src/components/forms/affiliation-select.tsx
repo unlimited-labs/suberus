@@ -229,6 +229,7 @@ export function AffiliationSelect({
 					onBlur={handleBlur}
 					onKeyDown={handleKeyDown}
 					placeholder={placeholder}
+					data-affiliation-id={value || undefined}
 					className={cn(
 						"flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 pl-9 text-sm text-foreground transition-colors",
 						"placeholder:text-muted-foreground",

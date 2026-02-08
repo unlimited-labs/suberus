@@ -7,7 +7,12 @@ import { getNavigationForRole } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "./user-menu";
 
-function SidebarContent() {
+interface SidebarProps {
+	conferenceName: string;
+	logoUrl: string;
+}
+
+function SidebarContent({ conferenceName, logoUrl }: SidebarProps) {
 	const location = useLocation();
 	const { user } = useSession();
 	const sections = getNavigationForRole(user?.role ?? "AUTHOR");
@@ -17,11 +22,15 @@ function SidebarContent() {
 			{/* Logo & Conference */}
 			<div className="px-4 py-4">
 				<Link to="/" className="block">
-					<img src="/logo.png" alt="Suberus" className="h-16 w-auto" />
+					<img
+						src={logoUrl || "/logo.png"}
+						alt="Suberus"
+						className="h-16 w-auto"
+					/>
 				</Link>
 				<div className="mt-3 border-l-4 border-primary pl-3">
 					<p className="text-sm font-semibold uppercase tracking-widest text-sidebar-foreground">
-						ICSE 2025
+						{conferenceName}
 					</p>
 				</div>
 			</div>
@@ -70,15 +79,15 @@ function SidebarContent() {
 	);
 }
 
-export function Sidebar() {
+export function Sidebar({ conferenceName, logoUrl }: SidebarProps) {
 	return (
 		<aside className="hidden w-56 shrink-0 bg-sidebar md:flex md:flex-col">
-			<SidebarContent />
+			<SidebarContent conferenceName={conferenceName} logoUrl={logoUrl} />
 		</aside>
 	);
 }
 
-export function MobileSidebar() {
+export function MobileSidebar({ conferenceName, logoUrl }: SidebarProps) {
 	return (
 		<Sheet>
 			<SheetTrigger asChild>
@@ -88,7 +97,7 @@ export function MobileSidebar() {
 				</Button>
 			</SheetTrigger>
 			<SheetContent side="left" className="w-64 p-0" showCloseButton={false}>
-				<SidebarContent />
+				<SidebarContent conferenceName={conferenceName} logoUrl={logoUrl} />
 			</SheetContent>
 		</Sheet>
 	);

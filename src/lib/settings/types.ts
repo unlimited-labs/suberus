@@ -18,6 +18,7 @@ export interface SubmissionTypeConfig {
 	maxRevisions: number;
 	enableScoring: boolean;
 	scoringCriteria: string[];
+	enableSessionSelection: boolean;
 }
 
 /** Type map: AppSettingKey → value type */
@@ -53,6 +54,13 @@ export type AppSettingsMap = {
 
 	// Fee settings
 	FEE_PAYMENT_INSTRUCTIONS: string;
+
+	// Branding settings
+	BRANDING_LOGO_URL: string;
+	BRANDING_FAVICON_URL: string;
+	BRANDING_PRIMARY_COLOR: string;
+	BRANDING_SECONDARY_COLOR: string;
+	BRANDING_FOOTER_TEXT: string;
 };
 
 /** Keys for submission type configs */

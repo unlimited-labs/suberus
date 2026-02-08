@@ -1,5 +1,5 @@
 import { IconFileStack } from "@tabler/icons-react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { DataTable, DataTableToolbar } from "@/components/admin/data-table";
 import { submissionColumns } from "@/components/admin/submissions/columns";
 import { SubmissionBulkActions } from "@/components/admin/submissions/submission-bulk-actions";
@@ -25,6 +25,7 @@ const columnLabels: Record<string, string> = {
 
 function AdminSubmissionsPage() {
 	const { submissions } = Route.useLoaderData();
+	const router = useRouter();
 
 	return (
 		<div className="flex h-full flex-col">
@@ -41,7 +42,7 @@ function AdminSubmissionsPage() {
 							searchKey="title"
 							searchPlaceholder="Search submissions..."
 							columnLabels={columnLabels}
-							actions={<SubmissionBulkActions table={table} />}
+							actions={<SubmissionBulkActions table={table} onSuccess={() => router.invalidate()} />}
 						/>
 					)}
 				/>

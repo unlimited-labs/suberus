@@ -98,6 +98,8 @@ type FormData = {
 
 function RegisterPage() {
 	const navigate = useNavigate();
+	const { conferenceName, conferenceDate, conferenceLocation } =
+		Route.useRouteContext();
 	const [countryOpen, setCountryOpen] = useState(false);
 
 	const form = useForm({
@@ -215,12 +217,19 @@ function RegisterPage() {
 
 	return (
 		<div className="mx-auto flex w-full max-w-4xl overflow-hidden rounded-2xl bg-card shadow-2xl">
-			<AuthSidebar steps={[...STEPS]} currentStep={currentStep} width="wide" />
+			<AuthSidebar
+				steps={[...STEPS]}
+				currentStep={currentStep}
+				width="wide"
+				conferenceName={conferenceName}
+				conferenceDate={conferenceDate}
+				conferenceLocation={conferenceLocation}
+			/>
 
 			<div className="flex flex-1 flex-col bg-card p-5 text-foreground sm:p-6 lg:p-8">
 				{/* Mobile header */}
 				<div className="mb-4 lg:hidden">
-					<h1 className="text-lg font-bold">KomPlasTech 2025</h1>
+					<h1 className="text-lg font-bold">{conferenceName}</h1>
 					<p className="text-sm text-muted-foreground">
 						Step {currentStep} of 3: {STEPS[currentStep - 1].title}
 					</p>

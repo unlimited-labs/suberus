@@ -1,4 +1,6 @@
-import { test as base, type Page, type Locator, expect } from "@playwright/test"
+import { test as base, expect as baseExpect, type TestRunContext, type CleanupContext } from "../helpers/base-fixtures"
+import { expect } from "@playwright/test"
+import { type Page, type Locator } from "@playwright/test"
 
 // Test data
 export const ADMIN_USER = {
@@ -327,6 +329,42 @@ export class AdminSettingsPage {
 		await this.page.getByRole("button", { name: "Save" }).first().click()
 	}
 
+	// --- Branding tab ---
+
+	async switchToBrandingTab(testInfo?: { project: { name: string } }) {
+		if (testInfo?.project.name === "mobile-admin") {
+			await this.page.getByRole("tab").nth(5).click()
+		} else {
+			await this.page.getByRole("tab", { name: /Branding/i }).click()
+		}
+		await expect(this.page.getByRole("heading", { name: "Logo & Graphics" })).toBeVisible()
+	}
+
+	getLogoUrlInput() {
+		return this.page.getByLabel("Logo URL")
+	}
+
+	getFaviconUrlInput() {
+		return this.page.getByLabel("Favicon URL")
+	}
+
+	getPrimaryColorInput() {
+		return this.page.getByLabel("Primary color").last()
+	}
+
+	getSecondaryColorInput() {
+		return this.page.getByLabel("Secondary color").last()
+	}
+
+	getFooterTextInput() {
+		return this.page.getByLabel("Footer text")
+	}
+
+	async saveBrandingSection(sectionName: "Logo & Graphics" | "Theme Colors" | "Footer") {
+		const section = this.page.locator("section, div").filter({ hasText: sectionName })
+		await section.getByRole("button", { name: "Save" }).last().click()
+	}
+
 	async loginAsAdmin(testRunId: string) {
 		await this.page.goto("/login")
 		await this.page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 })
@@ -339,6 +377,8 @@ export class AdminSettingsPage {
 
 // Extended test with fixtures
 interface AdminFixtures {
+	testRun: TestRunContext
+	cleanup: CleanupContext
 	adminUsersPage: AdminUsersPage
 	userDetailPage: UserDetailPage
 	bulkActionDialog: BulkActionDialog
@@ -360,4 +400,4 @@ export const test = base.extend<AdminFixtures>({
 	},
 })
 
-export { expect } from "@playwright/test"
+export { baseExpect as expect }

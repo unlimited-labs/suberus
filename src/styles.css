@@ -225,6 +225,12 @@
 		letter-spacing: var(--tracking-normal);
 		color: var(--foreground);
 	}
+  .maplibregl-popup-content {
+    @apply bg-transparent! shadow-none! p-0! rounded-none!;
+	}
+  .maplibregl-popup-tip {
+    @apply hidden!;
+	}
 }
 
 /* Number input spinner styling */

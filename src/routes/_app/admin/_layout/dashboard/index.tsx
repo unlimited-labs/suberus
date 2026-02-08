@@ -7,6 +7,7 @@ import { QuickActions } from "@/components/admin/dashboard/quick-actions";
 import { RecentActivity } from "@/components/admin/dashboard/recent-activity";
 import { ReviewProgress } from "@/components/admin/dashboard/review-progress";
 import { SubmissionChart } from "@/components/admin/dashboard/submission-chart";
+import { UserCountryMap } from "@/components/admin/dashboard/user-country-map";
 import { PageHeader } from "@/components/layout/page-header";
 import { getAdminDashboard } from "@/utils/admin-dashboard.functions";
 
@@ -31,6 +32,7 @@ function AdminDashboard() {
 					<SubmissionChart data={data?.submissions} />
 					<ReviewProgress data={data?.reviews} />
 				</div>
+				<UserCountryMap data={data?.usersByCountry} />
 				<div className="grid gap-6 lg:grid-cols-2">
 					<RecentActivity events={data?.recentActivity} />
 					<QuickActions />

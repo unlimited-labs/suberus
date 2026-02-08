@@ -52,14 +52,6 @@ export interface EmailTemplate {
 	placeholders: string[];
 }
 
-export interface BrandingSettings {
-	logoUrl: string;
-	primaryColor: string;
-	secondaryColor: string;
-	footerText: string;
-	faviconUrl: string;
-}
-
 // Default mock data
 export const defaultConferenceSettings: ConferenceSettings = {
 	name: "ICSE 2026 - International Conference on Software Engineering",
@@ -266,14 +258,6 @@ Program Committee`,
 		],
 	},
 ];
-
-export const defaultBrandingSettings: BrandingSettings = {
-	logoUrl: "",
-	primaryColor: "#3b82f6",
-	secondaryColor: "#8b5cf6",
-	footerText: "© 2026 ICSE. All rights reserved.",
-	faviconUrl: "",
-};
 
 // Review mode labels
 export const reviewModeLabels: Record<ReviewMode, string> = {

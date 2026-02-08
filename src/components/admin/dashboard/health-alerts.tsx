@@ -1,7 +1,6 @@
 import {
 	IconAlertCircle,
 	IconAlertTriangle,
-	IconCheck,
 	IconInfoCircle,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
@@ -80,16 +79,5 @@ export function HealthAlerts({ data }: HealthAlertsProps) {
 		);
 	}
 
-	// Success: All good
-	return (
-		<Alert className="border-green-500 bg-green-50 dark:bg-green-950">
-			<IconCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
-			<AlertTitle className="text-green-800 dark:text-green-200">
-				System Healthy
-			</AlertTitle>
-			<AlertDescription className="text-green-700 dark:text-green-300">
-				All systems operating normally
-			</AlertDescription>
-		</Alert>
-	);
+	return null;
 }

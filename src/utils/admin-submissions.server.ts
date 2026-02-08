@@ -128,6 +128,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 		type: SubmissionType;
 		status: SubmissionStatus;
 		currentRound: number;
+		sessionId: string | null;
 	};
 	authors: Array<{
 		firstName: string;
@@ -203,6 +204,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 			type: submission.type,
 			status: submission.status,
 			currentRound: submission.currentRound,
+			sessionId: submission.sessionId,
 		},
 		authors: submission.authors.map((a) => ({
 			firstName: a.firstName,

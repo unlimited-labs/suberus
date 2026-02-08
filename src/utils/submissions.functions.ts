@@ -22,6 +22,7 @@ const inputSchema = z.object({
 	authors: z.array(z.any()),
 	keywords: z.array(z.string()),
 	contentFormat: z.enum(["TEXT", "FILE"]),
+	sessionId: z.string().uuid().nullish(),
 	// File upload handled separately via FormData
 });
 

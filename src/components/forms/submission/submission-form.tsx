@@ -5,6 +5,7 @@ import {
 	IconFile,
 	IconFileText,
 	IconInfoCircle,
+	IconPresentation,
 	IconSend,
 	IconSparkles,
 	IconTags,
@@ -21,6 +22,14 @@ import { useSession } from "@/hooks/use-session";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import { cn } from "@/lib/utils";
 import { getAffiliationById } from "@/utils/affiliations.functions";
+import { getActiveSessionsFn } from "@/utils/sessions.functions";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { type Author, AuthorsInput } from "./authors-input";
 import { FileDropzone } from "./file-dropzone";
 import { KeywordsInput } from "./keywords-input";
@@ -66,6 +75,7 @@ export interface SubmissionFormData {
 	keywords: string[];
 	file: File | null;
 	contentFormat: "TEXT" | "FILE";
+	sessionId: string | null;
 }
 
 export function SubmissionForm({
@@ -86,6 +96,9 @@ export function SubmissionForm({
 	const [selectedType, setSelectedType] = useState<
 		"ABSTRACT" | "POSTER" | "FULL_PAPER"
 	>(initialData?.type || defaultType);
+	const [activeSessions, setActiveSessions] = useState<
+		{ id: string; name: string }[]
+	>([]);
 
 	const form = useForm({
 		defaultValues: {
@@ -105,6 +118,7 @@ export function SubmissionForm({
 			keywords: initialData?.keywords || [],
 			file: initialData?.file || null,
 			contentFormat: defaultConfig?.contentFormat || "TEXT",
+			sessionId: initialData?.sessionId || null,
 		} satisfies SubmissionFormData,
 		onSubmit: async ({ value }) => {
 			setIsSubmitting(true);
@@ -218,6 +232,18 @@ export function SubmissionForm({
 
 	// Get current type config (use selectedType for reactive updates)
 	const currentTypeConfig = typeConfigs.find((t) => t.type === selectedType);
+
+	// Load active sessions when type is ABSTRACT and enableSessionSelection is true
+	useEffect(() => {
+		if (
+			selectedType === "ABSTRACT" &&
+			currentTypeConfig?.config.enableSessionSelection
+		) {
+			getActiveSessionsFn().then(setActiveSessions);
+		} else {
+			setActiveSessions([]);
+		}
+	}, [selectedType, currentTypeConfig]);
 	const isFileFormat = currentTypeConfig?.config.contentFormat === "FILE";
 
 	// Update contentFormat when type changes
@@ -553,6 +579,45 @@ export function SubmissionForm({
 									</div>
 								</>
 							)}
+
+							{/* Session Selection (Oral Presentation only) */}
+							{selectedType === "ABSTRACT" &&
+								currentTypeConfig?.config.enableSessionSelection &&
+								activeSessions.length > 0 && (
+									<>
+										<div className="border-t" />
+
+										<div className="space-y-4">
+											<div className="flex items-center gap-3">
+												<IconPresentation className="size-5 text-muted-foreground" />
+												<h2 className="text-lg font-semibold text-foreground">
+													Preferred Session
+												</h2>
+											</div>
+
+											<form.Field name="sessionId">
+												{(field) => (
+													<Select
+														value={field.state.value || "none"}
+														onValueChange={(v) => field.handleChange(v === "none" ? null : v)}
+													>
+														<SelectTrigger>
+															<SelectValue placeholder="Select session (optional)" />
+														</SelectTrigger>
+														<SelectContent>
+															<SelectItem value="none">None</SelectItem>
+															{activeSessions.map((s) => (
+																<SelectItem key={s.id} value={s.id}>
+																	{s.name}
+																</SelectItem>
+															))}
+														</SelectContent>
+													</Select>
+												)}
+											</form.Field>
+										</div>
+									</>
+								)}
 
 							{/* Submit */}
 							<div className="flex items-center justify-between pt-4 border-t">

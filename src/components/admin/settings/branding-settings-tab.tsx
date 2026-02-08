@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { BrandingSettings } from "@/lib/mock-data/admin-settings";
+import type { BrandingSettings } from "@/utils/settings.functions";
+import { updateBrandingSettingsFn } from "@/utils/settings.functions";
 
 interface BrandingSettingsTabProps {
 	initialData: BrandingSettings;
@@ -23,8 +24,10 @@ export function BrandingSettingsTab({ initialData }: BrandingSettingsTabProps) {
 	const handleSave = async () => {
 		setIsSaving(true);
 		try {
-			await new Promise((resolve) => setTimeout(resolve, 800));
+			await updateBrandingSettingsFn({ data });
 			toast.success("Branding settings saved");
+		} catch {
+			toast.error("Failed to save branding settings");
 		} finally {
 			setIsSaving(false);
 		}

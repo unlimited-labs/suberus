@@ -41,6 +41,7 @@ export interface AdminDashboardMetrics {
 		event: string;
 		createdAt: Date;
 	}>;
+	usersByCountry: Array<{ country: string; count: number }>;
 }
 
 export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics> {
@@ -64,6 +65,7 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		pendingDecisions,
 		unverifiedUsers,
 		recentActivity,
+		usersByCountry,
 	] = await Promise.all([
 		// Users by role
 		prisma.user.groupBy({
@@ -125,6 +127,12 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 					select: { id: true, title: true },
 				},
 			},
+		}),
+		// Users by country
+		prisma.user.groupBy({
+			by: ["country"],
+			_count: true,
+			where: { country: { not: null } },
 		}),
 	]);
 
@@ -223,5 +231,10 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 			event: item.event || "Status changed",
 			createdAt: item.createdAt,
 		})),
+		usersByCountry: usersByCountry
+			.filter(
+				(g): g is typeof g & { country: string } => g.country !== null,
+			)
+			.map((g) => ({ country: g.country, count: g._count })),
 	};
 }

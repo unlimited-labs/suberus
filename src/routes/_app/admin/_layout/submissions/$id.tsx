@@ -19,6 +19,13 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import type {
@@ -31,7 +38,11 @@ import {
 	typeLabels,
 } from "@/lib/labels/submission";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
-import { getSubmissionForEditorFn } from "@/utils/admin-submissions.functions";
+import {
+	getSubmissionForEditorFn,
+	updateSubmissionSessionFn,
+} from "@/utils/admin-submissions.functions";
+import { getActiveSessionsFn } from "@/utils/sessions.functions";
 import { getSettingFn } from "@/utils/settings.functions";
 import {
 	transitionToAwaitingDecisionFn,
@@ -50,6 +61,7 @@ interface SubmissionData {
 		type: SubmissionType;
 		status: SubmissionStatus;
 		currentRound: number;
+		sessionId: string | null;
 	};
 	authors: Array<{
 		firstName: string;
@@ -101,6 +113,9 @@ function SubmissionDetailPage() {
 	const [showDecisionDialog, setShowDecisionDialog] = useState(false);
 	const [showDeskRejectDialog, setShowDeskRejectDialog] = useState(false);
 	const [isTransitioning, setIsTransitioning] = useState(false);
+	const [availableSessions, setAvailableSessions] = useState<
+		{ id: string; name: string }[]
+	>([]);
 
 	async function loadData() {
 		setIsLoading(true);
@@ -116,6 +131,12 @@ function SubmissionDetailPage() {
 				const configResult = await getSettingFn({ data: { key: configKey } });
 				if (configResult) {
 					setConfig(configResult as ConfigData);
+				}
+
+				// Load active sessions if submission is ABSTRACT
+				if (result.submission.type === "ABSTRACT") {
+					const sessions = await getActiveSessionsFn();
+					setAvailableSessions(sessions);
 				}
 			}
 		} catch (error) {
@@ -384,6 +405,48 @@ function SubmissionDetailPage() {
 									</div>
 								</CardContent>
 							</Card>
+
+							{/* Session Assignment (ABSTRACT only) */}
+							{submission.type === "ABSTRACT" && (
+								<Card>
+									<CardHeader>
+										<CardTitle className="text-base">
+											Session Assignment
+										</CardTitle>
+									</CardHeader>
+									<CardContent>
+										<Select
+											value={submission.sessionId || "none"}
+											onValueChange={async (value) => {
+												try {
+													await updateSubmissionSessionFn({
+														data: {
+															submissionId: submission.id,
+															sessionId: value === "none" ? null : value,
+														},
+													});
+													toast.success("Session updated");
+													await loadData();
+												} catch {
+													toast.error("Failed to update session");
+												}
+											}}
+										>
+											<SelectTrigger>
+												<SelectValue placeholder="No session" />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="none">None</SelectItem>
+												{availableSessions.map((s) => (
+													<SelectItem key={s.id} value={s.id}>
+														{s.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</CardContent>
+								</Card>
+							)}
 
 							{/* Abstract/Content */}
 							<Card>

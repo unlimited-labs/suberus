@@ -384,6 +384,24 @@ export function SubmissionTypeAccordion({
 						)}
 					</div>
 
+					{/* Session Selection (Oral Presentation only) */}
+					{typeKey === "SUBMISSION_TYPE_ORAL_PRESENTATION" && (
+						<div className="flex items-center justify-between">
+							<div className="space-y-0.5">
+								<Label>Enable session selection</Label>
+								<p className="text-sm text-muted-foreground">
+									Authors can select preferred session when submitting
+								</p>
+							</div>
+							<Switch
+								checked={config.enableSessionSelection}
+								onCheckedChange={(checked) =>
+									handleChange("enableSessionSelection", checked)
+								}
+							/>
+						</div>
+					)}
+
 					{/* Save button */}
 					<div className="flex justify-end border-t pt-4">
 						<Button onClick={handleSave} disabled={isSaving}>

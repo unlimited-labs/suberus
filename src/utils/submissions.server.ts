@@ -57,6 +57,7 @@ export async function createNewSubmission(
 				content: data.content,
 				status: "SUBMITTED",
 				userId,
+				sessionId: data.sessionId || null,
 			},
 		});
 

@@ -1,0 +1,75 @@
+import { expect, test } from "@playwright/test";
+import { AdminSettingsPage } from "./fixtures";
+import { getPrisma } from "../helpers/test-db";
+
+test.describe.serial("Admin Conference Settings", () => {
+	let adminSettingsPage: AdminSettingsPage;
+	let originalName: string | null = null;
+
+	test.beforeAll(async () => {
+		const db = getPrisma();
+		const setting = await db.appSetting.findUnique({
+			where: { key: "CONFERENCE_NAME" },
+		});
+		originalName = (setting?.value as string) ?? null;
+	});
+
+	test.afterAll(async () => {
+		if (originalName === null) return;
+		const db = getPrisma();
+		await db.appSetting.upsert({
+			where: { key: "CONFERENCE_NAME" },
+			update: { value: originalName },
+			create: { key: "CONFERENCE_NAME", value: originalName },
+		});
+	});
+
+	test.beforeEach(async ({ page }, testInfo) => {
+		adminSettingsPage = new AdminSettingsPage(page);
+		await adminSettingsPage.goto();
+		await adminSettingsPage.switchToConferenceTab(testInfo);
+	});
+
+	test("can change and save conference name", async ({ page }, testInfo) => {
+		// Arrange
+		const testRunId = `${testInfo.testId.slice(0, 8)}`;
+		const newName = `E2E Conference ${testRunId}`;
+		const input = adminSettingsPage.getConferenceNameInput();
+
+		// Act
+		await input.fill(newName);
+		await adminSettingsPage.saveConferenceSettings();
+
+		// Assert
+		await expect(page.getByText("Conference settings saved")).toBeVisible();
+	});
+
+	test("validates conference name is required", async ({ page }) => {
+		// Arrange
+		const input = adminSettingsPage.getConferenceNameInput();
+
+		// Act
+		await input.fill("");
+		await adminSettingsPage.saveConferenceSettings();
+
+		// Assert - Zod validation error or toast
+		await expect(page.getByText(/name required|failed/i)).toBeVisible();
+	});
+
+	test("conference name persists across page reloads", async ({ page }, testInfo) => {
+		// Arrange
+		const testRunId = `${testInfo.testId.slice(0, 8)}`;
+		const newName = `Persist Test ${testRunId}`;
+		const input = adminSettingsPage.getConferenceNameInput();
+
+		// Act
+		await input.fill(newName);
+		await adminSettingsPage.saveConferenceSettings();
+		await expect(page.getByText("Conference settings saved")).toBeVisible();
+		await page.reload();
+		await adminSettingsPage.switchToConferenceTab(testInfo);
+
+		// Assert
+		await expect(input).toHaveValue(newName);
+	});
+});

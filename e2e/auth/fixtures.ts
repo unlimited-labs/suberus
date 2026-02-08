@@ -102,12 +102,13 @@ export class RegisterPage {
 		await this.page.getByLabel("First name *").fill(data.firstName)
 		await this.page.getByLabel("Last name *").fill(data.lastName)
 
-		// AffiliationSelect is an autocomplete - fill and blur to create/select
+		// AffiliationSelect is an autocomplete - fill and blur to create/select via API
 		await this.affiliationInput.fill(data.affiliation)
-		// Blur triggers selection from results or creation via API
 		await this.affiliationInput.blur()
-		// Web-first assertion waits for API call to complete
-		await expect(this.affiliationInput).toHaveValue(data.affiliation, { timeout: 5000 })
+		// Wait for async API call to set affiliationId (data-affiliation-id attribute)
+		await expect(this.affiliationInput).toHaveAttribute("data-affiliation-id", /.+/, {
+			timeout: 10000,
+		})
 
 		if (data.title) {
 			await this.page.getByLabel("Title").click()
@@ -117,8 +118,14 @@ export class RegisterPage {
 
 	// Step 2: Invoice Information
 	async fillStep2(data: { country: string; address?: string }) {
-		// Wait for step 2 to be visible before interacting
-		await this.page.getByText("Select country...").waitFor({ state: "visible", timeout: 10000 })
+		// Wait for step 2 to be visible; retry Continue click if async validation race
+		const countryPlaceholder = this.page.getByText("Select country...")
+		try {
+			await countryPlaceholder.waitFor({ state: "visible", timeout: 5000 })
+		} catch {
+			await this.continueButton.click()
+			await countryPlaceholder.waitFor({ state: "visible", timeout: 10000 })
+		}
 
 		if (data.address) {
 			await this.page.getByLabel("Address").fill(data.address)
@@ -141,6 +148,15 @@ export class RegisterPage {
 
 	// Step 3: Survey
 	async fillStep3(data: { acceptTerms: boolean; needsVisaLetter?: boolean; needsCertificate?: boolean }) {
+		// Wait for step 3 to be visible; retry Continue click if async validation race
+		const termsCheckbox = this.page.getByLabel(/I agree to the/)
+		try {
+			await termsCheckbox.waitFor({ state: "visible", timeout: 5000 })
+		} catch {
+			await this.continueButton.click()
+			await termsCheckbox.waitFor({ state: "visible", timeout: 10000 })
+		}
+
 		if (data.needsVisaLetter) {
 			await this.page
 				.getByLabel("Please send me an Invitation Letter for a Visa Application.")

@@ -46,6 +46,7 @@ model User {
   statusHistoryChanges SubmissionStatusHistory[]
   submissions          Submission[]              @relation("SubmissionOwner")
   sessions             Session[]
+  supervisedSessions   ConferenceSession[]       @relation("SessionSupervisor")
   affiliation          Affiliation?              @relation(fields: [affiliationId], references: [id])
 
   @@index([email])
@@ -86,10 +87,18 @@ model EmailTemplate {
 }
 
 model ConferenceSession {
-  id          String       @id @default(uuid()) @db.Uuid
-  name        String
-  submissions Submission[]
+  id           String       @id @default(uuid()) @db.Uuid
+  name         String       @unique
+  supervisorId String?      @db.Uuid
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
+  supervisor   User?        @relation("SessionSupervisor", fields: [supervisorId], references: [id], onDelete: SetNull)
+  submissions  Submission[]
+
+  @@index([supervisorId])
+  @@index([isActive])
   @@map("conference_sessions")
 }
 
@@ -499,4 +508,9 @@ enum AppSettingKey {
   MIN_ABSTRACT_LENGTH
   MIN_KEYWORDS
   FEE_PAYMENT_INSTRUCTIONS
+  BRANDING_LOGO_URL
+  BRANDING_FAVICON_URL
+  BRANDING_PRIMARY_COLOR
+  BRANDING_SECONDARY_COLOR
+  BRANDING_FOOTER_TEXT
 }

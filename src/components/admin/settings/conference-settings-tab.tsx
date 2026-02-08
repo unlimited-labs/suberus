@@ -11,7 +11,8 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { ConferenceSettings } from "@/lib/mock-data/admin-settings";
+import type { ConferenceSettings } from "@/utils/settings.functions";
+import { updateConferenceSettingsFn } from "@/utils/settings.functions";
 
 interface ConferenceSettingsTabProps {
 	initialData: ConferenceSettings;
@@ -30,8 +31,10 @@ export function ConferenceSettingsTab({
 	const handleSave = async () => {
 		setIsSaving(true);
 		try {
-			await new Promise((resolve) => setTimeout(resolve, 800));
+			await updateConferenceSettingsFn({ data });
 			toast.success("Conference settings saved");
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Failed to save");
 		} finally {
 			setIsSaving(false);
 		}

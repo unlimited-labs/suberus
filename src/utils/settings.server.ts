@@ -1,6 +1,11 @@
 import { prisma } from "@/db";
 import type { AppSettingKey } from "@/generated/prisma/enums";
-import { getDefaultSetting } from "@/lib/settings/defaults";
+import {
+	DEFAULT_FULL_PAPER_CONFIG,
+	DEFAULT_ORAL_PRESENTATION_CONFIG,
+	DEFAULT_POSTER_CONFIG,
+	getDefaultSetting,
+} from "@/lib/settings/defaults";
 import type {
 	AppSettingsMap,
 	SubmissionTypeConfig,
@@ -88,10 +93,20 @@ export async function getSubmissionTypeConfigs(): Promise<{
 
 	const settings = await getSettings(keys);
 
+	// Merge with defaults so newly-added fields always have a value
 	return {
-		ORAL_PRESENTATION: settings.SUBMISSION_TYPE_ORAL_PRESENTATION,
-		POSTER: settings.SUBMISSION_TYPE_POSTER,
-		FULL_PAPER: settings.SUBMISSION_TYPE_FULL_PAPER,
+		ORAL_PRESENTATION: {
+			...DEFAULT_ORAL_PRESENTATION_CONFIG,
+			...settings.SUBMISSION_TYPE_ORAL_PRESENTATION,
+		},
+		POSTER: {
+			...DEFAULT_POSTER_CONFIG,
+			...settings.SUBMISSION_TYPE_POSTER,
+		},
+		FULL_PAPER: {
+			...DEFAULT_FULL_PAPER_CONFIG,
+			...settings.SUBMISSION_TYPE_FULL_PAPER,
+		},
 	};
 }
 

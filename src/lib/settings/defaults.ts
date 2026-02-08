@@ -15,6 +15,7 @@ export const DEFAULT_ORAL_PRESENTATION_CONFIG: SubmissionTypeConfig = {
 	maxRevisions: 2,
 	enableScoring: true,
 	scoringCriteria: ["Originality", "Clarity", "Significance", "Methodology"],
+	enableSessionSelection: false,
 };
 
 /** Default config for Poster (TEXT-based) */
@@ -32,6 +33,7 @@ export const DEFAULT_POSTER_CONFIG: SubmissionTypeConfig = {
 	maxRevisions: 0,
 	enableScoring: false,
 	scoringCriteria: [],
+	enableSessionSelection: false,
 };
 
 /** Default config for Full Paper (FILE-based) */
@@ -55,6 +57,7 @@ export const DEFAULT_FULL_PAPER_CONFIG: SubmissionTypeConfig = {
 		"Methodology",
 		"Technical Quality",
 	],
+	enableSessionSelection: false,
 };
 
 /** Default values for all app settings */
@@ -91,6 +94,13 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	// Fee settings
 	FEE_PAYMENT_INSTRUCTIONS:
 		"# Payment Instructions\n\nPlease contact the conference organizer for payment details.",
+
+	// Branding settings
+	BRANDING_LOGO_URL: "",
+	BRANDING_FAVICON_URL: "",
+	BRANDING_PRIMARY_COLOR: "#3b82f6",
+	BRANDING_SECONDARY_COLOR: "#8b5cf6",
+	BRANDING_FOOTER_TEXT: "",
 };
 
 /** Get default value for a setting key */

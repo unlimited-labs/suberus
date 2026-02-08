@@ -83,6 +83,8 @@ export interface CreateSubmissionOptions {
 	}>;
 	/** Keywords to attach to the submission */
 	keywords?: string[];
+	/** Session ID to assign to the submission */
+	sessionId?: string;
 }
 
 export async function createSubmission(options: CreateSubmissionOptions): Promise<{
@@ -107,6 +109,7 @@ export async function createSubmission(options: CreateSubmissionOptions): Promis
 					"Additional padding to meet minimum requirements.",
 			status: options.status ?? SubmissionStatus.SUBMITTED,
 			currentRound: 1,
+			sessionId: options.sessionId ?? null,
 		},
 	});
 
@@ -524,4 +527,32 @@ export async function deleteTestUser(userId: string): Promise<void> {
 
 	// Delete user
 	await db.user.delete({ where: { id: userId } });
+}
+
+/**
+ * Create a conference session
+ */
+export async function createSession(
+	testRunId: string,
+	name: string,
+	supervisorId?: string,
+	isActive = true,
+): Promise<string> {
+	const db = getPrisma();
+	const session = await db.conferenceSession.create({
+		data: {
+			name: `${testRunId}_${name}`,
+			supervisorId: supervisorId || null,
+			isActive,
+		},
+	});
+	return session.id;
+}
+
+/**
+ * Delete a session
+ */
+export async function deleteSession(sessionId: string): Promise<void> {
+	const db = getPrisma();
+	await db.conferenceSession.delete({ where: { id: sessionId } });
 }

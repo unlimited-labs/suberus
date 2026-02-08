@@ -11,12 +11,18 @@ interface AuthSidebarProps {
 	steps?: Step[];
 	currentStep?: number;
 	width?: "narrow" | "wide";
+	conferenceName: string;
+	conferenceDate: string;
+	conferenceLocation: string;
 }
 
 export function AuthSidebar({
 	steps,
 	currentStep = 1,
 	width = "narrow",
+	conferenceName,
+	conferenceDate,
+	conferenceLocation,
 }: AuthSidebarProps) {
 	return (
 		<div
@@ -37,11 +43,15 @@ export function AuthSidebar({
 
 			{/* Conference info */}
 			<div className="relative z-10 space-y-3">
-				<h2 className="text-2xl font-bold tracking-tight">KomPlasTech 2025</h2>
-				<div className="space-y-1 text-sm text-primary-foreground/80">
-					<p>March 2-5, 2025</p>
-					<p>Krynica Zdrój, Poland</p>
-				</div>
+				<h2 className="text-2xl font-bold tracking-tight">
+					{conferenceName}
+				</h2>
+				{(conferenceDate || conferenceLocation) && (
+					<div className="space-y-1 text-sm text-primary-foreground/80">
+						{conferenceDate && <p>{conferenceDate}</p>}
+						{conferenceLocation && <p>{conferenceLocation}</p>}
+					</div>
+				)}
 			</div>
 
 			{/* Step indicators (optional) */}
@@ -78,7 +88,7 @@ export function AuthSidebar({
 				</div>
 			) : (
 				<p className="relative z-10 text-xs text-primary-foreground/60">
-					International Conference on Computer Methods in Materials Technology
+					{conferenceName}
 				</p>
 			)}
 		</div>

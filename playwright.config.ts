@@ -38,7 +38,7 @@ export default defineConfig({
 		{
 			name: "chromium-admin",
 			testMatch: /e2e\/admin\/.*\.spec\.ts/,
-			dependencies: ["auth-setup", "chromium-integration"],
+			dependencies: ["auth-setup"],
 			use: {
 				...devices["Desktop Chrome"],
 				storageState: "e2e/.auth/admin.json",
@@ -47,7 +47,7 @@ export default defineConfig({
 		{
 			name: "mobile-admin",
 			testMatch: /e2e\/admin\/.*\.spec\.ts/,
-			dependencies: ["auth-setup", "chromium-integration"],
+			dependencies: ["auth-setup"],
 			use: {
 				...devices["Pixel 5"],
 				storageState: "e2e/.auth/admin.json",
@@ -57,7 +57,7 @@ export default defineConfig({
 		{
 			name: "chromium-user",
 			testMatch: /e2e\/submissions\/(?!settings-integration).*\.spec\.ts/,
-			dependencies: ["auth-setup", "chromium-integration"],
+			dependencies: ["auth-setup"],
 			use: {
 				...devices["Desktop Chrome"],
 				storageState: "e2e/.auth/user.json",
@@ -66,7 +66,7 @@ export default defineConfig({
 		{
 			name: "mobile-user",
 			testMatch: /e2e\/submissions\/(?!settings-integration).*\.spec\.ts/,
-			dependencies: ["auth-setup", "chromium-integration"],
+			dependencies: ["auth-setup"],
 			use: {
 				...devices["Pixel 5"],
 				storageState: "e2e/.auth/user.json",

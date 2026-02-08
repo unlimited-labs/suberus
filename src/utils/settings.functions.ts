@@ -28,6 +28,7 @@ const submissionTypeConfigSchema = z.object({
 	maxRevisions: z.number().int().min(0).max(10),
 	enableScoring: z.boolean(),
 	scoringCriteria: z.array(z.string()),
+	enableSessionSelection: z.boolean(),
 });
 
 /**
@@ -123,6 +124,31 @@ export const getActiveSubmissionTypesFn = createServerFn({ method: "GET" })
 		return getActiveSubmissionTypes();
 	});
 
+/** Conference settings shape */
+export interface ConferenceSettings {
+	name: string;
+	location: string;
+	website: string;
+	contactEmail: string;
+	conferenceStartDate: string;
+	conferenceEndDate: string;
+	submissionDeadline: string;
+	reviewDeadline: string;
+	notificationDate: string;
+}
+
+const conferenceSettingsSchema = z.object({
+	name: z.string().min(1, "Name required").max(200),
+	location: z.string().max(200),
+	website: z.union([z.literal(""), z.string().url()]),
+	contactEmail: z.union([z.literal(""), z.string().email()]),
+	conferenceStartDate: z.string(),
+	conferenceEndDate: z.string(),
+	submissionDeadline: z.string(),
+	reviewDeadline: z.string(),
+	notificationDate: z.string(),
+});
+
 /** Submission validation settings shape */
 export interface SubmissionValidationSettings {
 	minTitleLength: number;
@@ -172,6 +198,65 @@ export const getSubmissionValidationSettingsFn = createServerFn({
 			enableKeywords: settings.ENABLE_KEYWORDS,
 			allowedFileTypes: settings.ALLOWED_FILE_TYPES,
 		};
+	});
+
+/**
+ * Get conference settings (admin only)
+ */
+export const getConferenceSettingsFn = createServerFn({ method: "GET" })
+	.middleware([adminMiddleware])
+	.handler(async (): Promise<ConferenceSettings> => {
+		const settings = await getSettings([
+			"CONFERENCE_NAME",
+			"CONFERENCE_LOCATION",
+			"CONFERENCE_WEBSITE",
+			"CONTACT_EMAIL",
+			"CONFERENCE_DATE_START",
+			"CONFERENCE_DATE_END",
+			"SUBMISSION_DEADLINE",
+			"REVIEW_DEADLINE",
+			"NOTIFICATION_DATE",
+		]);
+		return {
+			name: settings.CONFERENCE_NAME,
+			location: settings.CONFERENCE_LOCATION,
+			website: settings.CONFERENCE_WEBSITE,
+			contactEmail: settings.CONTACT_EMAIL,
+			conferenceStartDate: settings.CONFERENCE_DATE_START,
+			conferenceEndDate: settings.CONFERENCE_DATE_END,
+			submissionDeadline: settings.SUBMISSION_DEADLINE,
+			reviewDeadline: settings.REVIEW_DEADLINE,
+			notificationDate: settings.NOTIFICATION_DATE,
+		};
+	});
+
+/**
+ * Update conference settings (admin only)
+ */
+export const updateConferenceSettingsFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(conferenceSettingsSchema)
+	.handler(async ({ data }) => {
+		await setSetting("CONFERENCE_NAME", data.name);
+		await setSetting("CONFERENCE_LOCATION", data.location);
+		await setSetting("CONFERENCE_WEBSITE", data.website);
+		await setSetting("CONTACT_EMAIL", data.contactEmail);
+		await setSetting("CONFERENCE_DATE_START", data.conferenceStartDate);
+		await setSetting("CONFERENCE_DATE_END", data.conferenceEndDate);
+		await setSetting("SUBMISSION_DEADLINE", data.submissionDeadline);
+		await setSetting("REVIEW_DEADLINE", data.reviewDeadline);
+		await setSetting("NOTIFICATION_DATE", data.notificationDate);
+		return { success: true };
+	});
+
+/**
+ * Get conference name (public - requires auth)
+ */
+export const getConferenceNameFn = createServerFn({ method: "GET" })
+	.middleware([authMiddleware])
+	.handler(async () => {
+		const name = await getSetting("CONFERENCE_NAME");
+		return { conferenceName: name };
 	});
 
 /**
@@ -273,6 +358,130 @@ export const getSubmissionDeadlineFn = createServerFn({ method: "GET" })
 		const deadline = await getSetting("SUBMISSION_DEADLINE");
 		return { deadline };
 	});
+
+/** Branding settings shape */
+export interface BrandingSettings {
+	logoUrl: string;
+	faviconUrl: string;
+	primaryColor: string;
+	secondaryColor: string;
+	footerText: string;
+}
+
+/** App branding + conference name (for _app loader) */
+export interface AppBranding extends BrandingSettings {
+	conferenceName: string;
+}
+
+const hexColorRegex = /^#[0-9a-fA-F]{6}$/;
+
+const brandingSchema = z.object({
+	logoUrl: z.string().max(500),
+	faviconUrl: z.string().max(500),
+	primaryColor: z.string().regex(hexColorRegex, "Invalid hex color"),
+	secondaryColor: z.string().regex(hexColorRegex, "Invalid hex color"),
+	footerText: z.string().max(500),
+});
+
+/**
+ * Get app branding + conference name (public, no auth).
+ * Used by _app loader for SSR — no FOUC.
+ */
+export const getAppBrandingFn = createServerFn({ method: "GET" }).handler(
+	async (): Promise<AppBranding> => {
+		const settings = await getSettings([
+			"CONFERENCE_NAME",
+			"BRANDING_LOGO_URL",
+			"BRANDING_FAVICON_URL",
+			"BRANDING_PRIMARY_COLOR",
+			"BRANDING_SECONDARY_COLOR",
+			"BRANDING_FOOTER_TEXT",
+		]);
+		return {
+			conferenceName: settings.CONFERENCE_NAME,
+			logoUrl: settings.BRANDING_LOGO_URL,
+			faviconUrl: settings.BRANDING_FAVICON_URL,
+			primaryColor: settings.BRANDING_PRIMARY_COLOR,
+			secondaryColor: settings.BRANDING_SECONDARY_COLOR,
+			footerText: settings.BRANDING_FOOTER_TEXT,
+		};
+	},
+);
+
+/**
+ * Get branding settings (admin only) — for admin settings page.
+ */
+export const getBrandingSettingsFn = createServerFn({ method: "GET" })
+	.middleware([adminMiddleware])
+	.handler(async (): Promise<BrandingSettings> => {
+		const settings = await getSettings([
+			"BRANDING_LOGO_URL",
+			"BRANDING_FAVICON_URL",
+			"BRANDING_PRIMARY_COLOR",
+			"BRANDING_SECONDARY_COLOR",
+			"BRANDING_FOOTER_TEXT",
+		]);
+		return {
+			logoUrl: settings.BRANDING_LOGO_URL,
+			faviconUrl: settings.BRANDING_FAVICON_URL,
+			primaryColor: settings.BRANDING_PRIMARY_COLOR,
+			secondaryColor: settings.BRANDING_SECONDARY_COLOR,
+			footerText: settings.BRANDING_FOOTER_TEXT,
+		};
+	});
+
+/**
+ * Update branding settings (admin only)
+ */
+export const updateBrandingSettingsFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(brandingSchema)
+	.handler(async ({ data }) => {
+		await setSetting("BRANDING_LOGO_URL", data.logoUrl);
+		await setSetting("BRANDING_FAVICON_URL", data.faviconUrl);
+		await setSetting("BRANDING_PRIMARY_COLOR", data.primaryColor);
+		await setSetting("BRANDING_SECONDARY_COLOR", data.secondaryColor);
+		await setSetting("BRANDING_FOOTER_TEXT", data.footerText);
+		return { success: true };
+	});
+
+/** Auth page branding (public, no auth) */
+export interface AuthPageBranding {
+	conferenceName: string;
+	logoUrl: string;
+	primaryColor: string;
+	secondaryColor: string;
+	conferenceStartDate: string;
+	conferenceEndDate: string;
+	conferenceLocation: string;
+}
+
+/**
+ * Get auth page branding (public, no auth).
+ * Used by _auth layout for SSR — login/register pages.
+ */
+export const getAuthPageBrandingFn = createServerFn({ method: "GET" }).handler(
+	async (): Promise<AuthPageBranding> => {
+		const s = await getSettings([
+			"CONFERENCE_NAME",
+			"BRANDING_LOGO_URL",
+			"BRANDING_PRIMARY_COLOR",
+			"BRANDING_SECONDARY_COLOR",
+			"CONFERENCE_DATE_START",
+			"CONFERENCE_DATE_END",
+			"CONFERENCE_LOCATION",
+		]);
+		return {
+			conferenceName: s.CONFERENCE_NAME,
+			logoUrl: s.BRANDING_LOGO_URL,
+			primaryColor: s.BRANDING_PRIMARY_COLOR,
+			secondaryColor: s.BRANDING_SECONDARY_COLOR,
+			conferenceStartDate: s.CONFERENCE_DATE_START,
+			conferenceEndDate: s.CONFERENCE_DATE_END,
+			conferenceLocation: s.CONFERENCE_LOCATION,
+		};
+	},
+);
 
 /**
  * Update fee payment instructions (admin only)
