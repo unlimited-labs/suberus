@@ -18,7 +18,10 @@ import type {
 	PasswordChangeFormData,
 	PersonalInfoFormData,
 } from "@/lib/validations/profile";
-import { createAffiliation, getAffiliationById } from "@/utils/affiliations.functions";
+import {
+	createAffiliation,
+	getAffiliationById,
+} from "@/utils/affiliations.functions";
 import {
 	changePasswordFn,
 	updateContactInfoFn,

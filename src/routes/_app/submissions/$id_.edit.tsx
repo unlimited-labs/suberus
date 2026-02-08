@@ -146,9 +146,7 @@ function EditSubmissionPage() {
 			}
 		}
 
-		toast.success(
-			isDraft ? "Submission submitted" : "Submission updated",
-		);
+		toast.success(isDraft ? "Submission submitted" : "Submission updated");
 		navigate({ to: "/submissions/$id", params: { id } });
 	};
 

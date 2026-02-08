@@ -311,7 +311,7 @@ export function SubmissionTypeAccordion({
 								}
 							/>
 						</div>
-											</div>
+					</div>
 
 					{/* Scoring */}
 					<div className="space-y-4">

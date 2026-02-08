@@ -5,6 +5,7 @@ import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
+import { sendEmail } from "@/lib/server/email";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import {
@@ -18,7 +19,6 @@ import {
 	submissionMachine,
 	type TransitionResult,
 } from "@/lib/workflow";
-import { sendEmail } from "@/lib/server/email";
 import { getSetting } from "./settings.server";
 
 /**
