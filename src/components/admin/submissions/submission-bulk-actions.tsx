@@ -1,5 +1,6 @@
 import type { Table } from "@tanstack/react-table";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { BulkActionDialog } from "@/components/admin/data-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,26 +17,44 @@ import {
 	assignReviewer,
 	bulkChangeStatus,
 } from "@/lib/server/admin/submissions";
+import { bulkUpdateSubmissionSessionFn } from "@/utils/admin-submissions.functions";
 import type { AdminSubmission } from "@/utils/admin-submissions.server";
+import { getActiveSessionsFn } from "@/utils/sessions.functions";
 
 interface SubmissionBulkActionsProps {
 	table: Table<AdminSubmission>;
+	onSuccess?: () => void;
 }
 
-export function SubmissionBulkActions({ table }: SubmissionBulkActionsProps) {
+export function SubmissionBulkActions({
+	table,
+	onSuccess,
+}: SubmissionBulkActionsProps) {
 	const selectedRows = table.getFilteredSelectedRowModel().rows;
 	const selectedCount = selectedRows.length;
 
 	const [selectedAction, setSelectedAction] = useState<string>("");
 	const [statusDialogOpen, setStatusDialogOpen] = useState(false);
 	const [reviewerDialogOpen, setReviewerDialogOpen] = useState(false);
+	const [sessionDialogOpen, setSessionDialogOpen] = useState(false);
 	const [selectedStatus, setSelectedStatus] =
 		useState<SubmissionStatus>("UNDER_REVIEW");
 	const [selectedReviewer, setSelectedReviewer] = useState<string>("");
+	const [selectedSession, setSelectedSession] = useState<string>("");
+	const [availableSessions, setAvailableSessions] = useState<
+		{ id: string; name: string }[]
+	>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [errors, setErrors] = useState<string[]>([]);
 
 	const reviewers: MockUser[] = getReviewers();
+
+	// Load active sessions
+	useEffect(() => {
+		getActiveSessionsFn()
+			.then(setAvailableSessions)
+			.catch(() => {});
+	}, []);
 
 	if (selectedCount === 0) return null;
 
@@ -45,6 +64,8 @@ export function SubmissionBulkActions({ table }: SubmissionBulkActionsProps) {
 			setStatusDialogOpen(true);
 		} else if (selectedAction === "assign_reviewer") {
 			setReviewerDialogOpen(true);
+		} else if (selectedAction === "assign_session") {
+			setSessionDialogOpen(true);
 		}
 	};
 
@@ -90,9 +111,56 @@ export function SubmissionBulkActions({ table }: SubmissionBulkActionsProps) {
 		}
 	};
 
+	const handleAssignSession = async () => {
+		setIsLoading(true);
+		setErrors([]);
+		try {
+			const submissionIds = selectedRows.map((row) => row.original.id);
+
+			// Validate all submissions are ABSTRACT (client-side guard needed because
+			// server throws Response which is handled at router level, not caught by try/catch)
+			const nonAbstractSubmissions = selectedRows.filter(
+				(row) => row.original.type !== "ABSTRACT",
+			);
+
+			if (nonAbstractSubmissions.length > 0) {
+				const titles = nonAbstractSubmissions
+					.map((row) => row.original.title)
+					.join(", ");
+				setErrors([
+					`The following submissions are not ABSTRACT type and cannot be assigned to sessions: ${titles}`,
+				]);
+				return;
+			}
+
+			await bulkUpdateSubmissionSessionFn({
+				data: {
+					submissionIds,
+					sessionId:
+						selectedSession && selectedSession !== "none"
+							? selectedSession
+							: null,
+				},
+			});
+
+			toast.success(`Updated ${submissionIds.length} submission(s)`);
+			table.resetRowSelection();
+			setSessionDialogOpen(false);
+			setSelectedAction("");
+			onSuccess?.();
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : "Failed to assign session";
+			setErrors([message]);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
 	const actions = [
 		{ value: "change_status", label: "Change status" },
 		{ value: "assign_reviewer", label: "Assign reviewer" },
+		{ value: "assign_session", label: "Assign to session" },
 	];
 
 	return (
@@ -171,6 +239,32 @@ export function SubmissionBulkActions({ table }: SubmissionBulkActionsProps) {
 										{reviewer.affiliation}
 									</span>
 								</div>
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</BulkActionDialog>
+
+			<BulkActionDialog
+				open={sessionDialogOpen}
+				onOpenChange={setSessionDialogOpen}
+				title="Assign to session"
+				description={`Assign ${selectedCount} selected submission(s) to a conference session. Only ABSTRACT submissions can be assigned.`}
+				onConfirm={handleAssignSession}
+				isLoading={isLoading}
+				errors={errors}
+				confirmLabel="Assign"
+				loadingLabel="Assigning..."
+			>
+				<Select value={selectedSession} onValueChange={setSelectedSession}>
+					<SelectTrigger>
+						<SelectValue placeholder="Select session" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="none">None</SelectItem>
+						{availableSessions.map((session) => (
+							<SelectItem key={session.id} value={session.id}>
+								{session.name}
 							</SelectItem>
 						))}
 					</SelectContent>
