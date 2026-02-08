@@ -96,6 +96,8 @@ test.describe("Author Management", () => {
 
 		const secondAuthorCard = submissionPage.getAuthorCard(1);
 
+		// Wait for the button to be stable after React re-render from addAuthor
+		await expect(secondAuthorCard.getByRole("button", { name: "Set as presenter" })).toBeVisible();
 		await secondAuthorCard.getByRole("button", { name: "Set as presenter" }).click();
 		await expect(secondAuthorCard.getByRole("button", { name: "Presenting author" })).toBeVisible();
 

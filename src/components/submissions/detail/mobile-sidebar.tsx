@@ -12,6 +12,7 @@ interface MobileSidebarProps {
 	versions: UserSubmissionVersion[];
 	selectedVersion: number;
 	onVersionChange: (version: number) => void;
+	isReadOnly?: boolean;
 }
 
 export function MobileSidebar({
@@ -19,6 +20,7 @@ export function MobileSidebar({
 	versions,
 	selectedVersion,
 	onVersionChange,
+	isReadOnly,
 }: MobileSidebarProps) {
 	return (
 		<div data-testid="submission-sidebar" className="lg:hidden space-y-6">
@@ -51,7 +53,9 @@ export function MobileSidebar({
 			)}
 
 			{/* Mobile Actions */}
-			<ActionsCard submissionId={submission.id} status={submission.status} />
+			{!isReadOnly && (
+				<ActionsCard submissionId={submission.id} status={submission.status} />
+			)}
 		</div>
 	);
 }

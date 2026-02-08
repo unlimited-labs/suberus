@@ -17,6 +17,17 @@ export interface AuthSession {
 	user: User & { id: string };
 }
 
+/** Link co-author records to a user account by email (case-insensitive, only where userId is null) */
+export async function linkCoAuthorsByEmail(
+	email: string,
+	userId: string,
+): Promise<void> {
+	await prisma.submissionAuthor.updateMany({
+		where: { email: { equals: email, mode: "insensitive" }, userId: null },
+		data: { userId },
+	});
+}
+
 export async function createNewSubmission(
 	data: CreateSubmissionInput,
 	userId: string,
@@ -103,6 +114,26 @@ export async function createNewSubmission(
 			});
 		}
 
+		// Link co-author records to existing verified users
+		const coAuthorEmails = data.authors.map((a) => a.email);
+		const matchedUsers = await tx.user.findMany({
+			where: {
+				email: { in: coAuthorEmails, mode: "insensitive" },
+				emailVerified: true,
+			},
+			select: { id: true, email: true },
+		});
+		for (const matchedUser of matchedUsers) {
+			await tx.submissionAuthor.updateMany({
+				where: {
+					submissionId: submission.id,
+					email: { equals: matchedUser.email, mode: "insensitive" },
+					userId: null,
+				},
+				data: { userId: matchedUser.id },
+			});
+		}
+
 		// Create submission keywords
 		await Promise.all(
 			keywordRecords.map(async (keyword) => {
@@ -152,6 +183,7 @@ export interface UserSubmission {
 	currentVersion: number;
 	createdAt: Date;
 	updatedAt: Date;
+	role: "author" | "coauthor";
 }
 
 export interface UserSubmissionAuthor {
@@ -220,12 +252,17 @@ export interface SubmissionDetail {
 	versions: UserSubmissionVersion[];
 }
 
-/** Get user's submissions list */
+/** Where clause for submissions accessible by a user (owned or co-authored) */
+function userAccessFilter(userId: string) {
+	return { OR: [{ userId }, { authors: { some: { userId } } }] };
+}
+
+/** Get user's submissions list (owned + co-authored) */
 export async function getSubmissionsForUser(
 	userId: string,
 ): Promise<UserSubmission[]> {
 	const submissions = await prisma.submission.findMany({
-		where: { userId },
+		where: userAccessFilter(userId),
 		include: {
 			currentVersion: { select: { version: true } },
 		},
@@ -241,16 +278,17 @@ export async function getSubmissionsForUser(
 		currentVersion: s.currentVersion?.version ?? 1,
 		createdAt: s.createdAt,
 		updatedAt: s.updatedAt,
+		role: s.userId === userId ? ("author" as const) : ("coauthor" as const),
 	}));
 }
 
-/** Get single submission with all details for owner */
+/** Get single submission with all details for owner or co-author */
 export async function getSubmissionById(
 	submissionId: string,
 	userId: string,
 ): Promise<SubmissionDetail | null> {
 	const submission = await prisma.submission.findFirst({
-		where: { id: submissionId, userId },
+		where: { id: submissionId, ...userAccessFilter(userId) },
 		include: {
 			currentVersion: true,
 			authors: {
@@ -367,6 +405,7 @@ export async function getSubmissionById(
 			content: submission.currentVersion?.content ?? submission.content,
 			authors,
 			keywords,
+			role: submission.userId === userId ? "author" : "coauthor",
 		},
 		statusHistory,
 		reviews,

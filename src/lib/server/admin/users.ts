@@ -1,6 +1,7 @@
 import { prisma } from "@/db";
 import type { Prisma } from "@/generated/prisma/client";
 import type { FeeType, UserRole } from "@/generated/prisma/enums";
+import { linkCoAuthorsByEmail } from "@/utils/submissions.server";
 
 export interface AdminUser {
 	id: string;
@@ -268,10 +269,13 @@ export async function markFeePaid(
 export async function verifyUserEmail(
 	userId: string,
 ): Promise<{ success: boolean }> {
-	await prisma.user.update({
+	const user = await prisma.user.update({
 		where: { id: userId },
 		data: { emailVerified: true },
+		select: { email: true },
 	});
+
+	await linkCoAuthorsByEmail(user.email, userId);
 
 	return { success: true };
 }

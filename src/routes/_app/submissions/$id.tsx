@@ -1,4 +1,4 @@
-import { IconArrowLeft, IconFileText } from "@tabler/icons-react";
+import { IconArrowLeft, IconEye, IconFileText } from "@tabler/icons-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/layout/page-header";
@@ -11,6 +11,7 @@ import {
 } from "@/components/submissions/detail";
 import { EditorDecisionCard } from "@/components/submissions/editor-decision-card";
 import { ReviewsSummaryCard } from "@/components/submissions/reviews-summary-card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getSubmissionByIdFn } from "@/utils/submissions.functions";
 
@@ -37,6 +38,7 @@ function SubmissionDetailPage() {
 	}
 
 	const { submission, statusHistory, reviews, decision, versions } = data;
+	const isReadOnly = submission.role === "coauthor";
 
 	// Get version-specific data
 	const versionData = versions.find((v) => v.version === selectedVersion);
@@ -50,12 +52,20 @@ function SubmissionDetailPage() {
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconFileText} title="Submission Details">
-				<Link to="/submissions">
-					<Button variant="outline" className="gap-2">
-						<IconArrowLeft className="size-4" />
-						Back to List
-					</Button>
-				</Link>
+				<div className="flex items-center gap-2">
+					{isReadOnly && (
+						<Badge variant="secondary" className="gap-1">
+							<IconEye className="size-3" />
+							Co-author (read-only)
+						</Badge>
+					)}
+					<Link to="/submissions">
+						<Button variant="outline" className="gap-2">
+							<IconArrowLeft className="size-4" />
+							Back to List
+						</Button>
+					</Link>
+				</div>
 			</PageHeader>
 
 			<div className="flex-1 p-6 overflow-auto">
@@ -90,10 +100,12 @@ function SubmissionDetailPage() {
 									selectedVersion={selectedVersion}
 									onVersionChange={setSelectedVersion}
 								/>
-								<ActionsCard
-									submissionId={submission.id}
-									status={submission.status}
-								/>
+								{!isReadOnly && (
+									<ActionsCard
+										submissionId={submission.id}
+										status={submission.status}
+									/>
+								)}
 							</div>
 						</div>
 
@@ -103,6 +115,7 @@ function SubmissionDetailPage() {
 							versions={versions}
 							selectedVersion={selectedVersion}
 							onVersionChange={setSelectedVersion}
+							isReadOnly={isReadOnly}
 						/>
 					</div>
 				</div>

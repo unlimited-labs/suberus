@@ -48,6 +48,11 @@ const typeLabels: Record<SubmissionType, string> = {
 	POSTER: "Poster",
 };
 
+function CoAuthorBadge({ role }: { role: UserSubmission["role"] }) {
+	if (role !== "coauthor") return null;
+	return <Badge variant="outline">Co-author</Badge>;
+}
+
 export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 	const formatDate = (date: Date | string) => {
 		const d = typeof date === "string" ? new Date(date) : date;
@@ -116,13 +121,16 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 										</Link>
 									</td>
 									<td className="p-2 align-middle">
-										<Link
-											to="/submissions/$id"
-											params={{ id: submission.id }}
-											className="font-medium text-foreground hover:text-primary line-clamp-2"
-										>
-											{submission.title}
-										</Link>
+										<div className="flex items-center gap-2">
+											<Link
+												to="/submissions/$id"
+												params={{ id: submission.id }}
+												className="font-medium text-foreground hover:text-primary line-clamp-2"
+											>
+												{submission.title}
+											</Link>
+											<CoAuthorBadge role={submission.role} />
+										</div>
 									</td>
 									<td className="p-2 align-middle whitespace-nowrap">
 										<span className="text-muted-foreground">
@@ -181,6 +189,7 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 										<Badge variant="outline">
 											{typeLabels[submission.type]}
 										</Badge>
+										<CoAuthorBadge role={submission.role} />
 										<span className="text-xs text-muted-foreground">
 											R{submission.currentRound} · v{submission.currentVersion}
 										</span>

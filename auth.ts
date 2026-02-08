@@ -7,6 +7,7 @@ import { randomUUID } from "crypto"
 import "dotenv/config"
 import { sendEmail } from "@/lib/server/email"
 import { getSetting } from "@/utils/settings.server"
+import { linkCoAuthorsByEmail } from "@/utils/submissions.server"
 
 const connectionString = process.env.DATABASE_URL
 const adapter = new PrismaPg({ connectionString })
@@ -118,5 +119,15 @@ export const auth = betterAuth({
 	},
 	verification: {
 		modelName: "verification",
+	},
+	databaseHooks: {
+		user: {
+			update: {
+				after: async (user) => {
+					if (!user.emailVerified) return
+					await linkCoAuthorsByEmail(user.email, user.id)
+				},
+			},
+		},
 	},
 })

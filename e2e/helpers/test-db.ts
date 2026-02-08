@@ -80,6 +80,7 @@ export interface CreateSubmissionOptions {
 		email?: string;
 		affiliationName?: string;
 		isPresenter?: boolean;
+		userId?: string;
 	}>;
 	/** Keywords to attach to the submission */
 	keywords?: string[];
@@ -159,6 +160,7 @@ export async function createSubmission(options: CreateSubmissionOptions): Promis
 						affiliationId: extraAff.id,
 						orderIndex: i + 2,
 						isPresenter: extra.isPresenter ?? false,
+						userId: extra.userId ?? null,
 					},
 				});
 			}
@@ -509,6 +511,12 @@ export async function createTestUser(
 // Delete test user and all related data
 export async function deleteTestUser(userId: string): Promise<void> {
 	const db = getPrisma();
+
+	// Unlink co-author references before deleting user
+	await db.submissionAuthor.updateMany({
+		where: { userId },
+		data: { userId: null },
+	});
 
 	// Delete in order respecting FK constraints
 	await db.fee.deleteMany({ where: { userId } });
