@@ -1,6 +1,7 @@
 import {
 	DeleteObjectCommand,
 	GetObjectCommand,
+	HeadBucketCommand,
 	HeadObjectCommand,
 	PutObjectCommand,
 	S3Client,
@@ -145,4 +146,43 @@ export function generateSubmissionFileKey(
 	const timestamp = Date.now();
 	const sanitizedName = originalName.replace(/[^a-zA-Z0-9.-]/g, "_");
 	return `submissions/${submissionId}/v${versionNumber}/${timestamp}-${sanitizedName}`;
+}
+
+export interface S3HealthResult {
+	status: "healthy" | "error";
+	endpoint: string;
+	bucket: string;
+	message: string;
+}
+
+export async function checkS3Health(): Promise<S3HealthResult> {
+	const endpoint = GARAGE_ENDPOINT ?? "";
+	const bucket = GARAGE_BUCKET ?? "";
+
+	if (!GARAGE_ENDPOINT || !GARAGE_ACCESS_KEY_ID || !GARAGE_SECRET_ACCESS_KEY || !GARAGE_BUCKET) {
+		return {
+			status: "error",
+			endpoint,
+			bucket,
+			message: "Missing S3 environment variables",
+		};
+	}
+
+	try {
+		const client = getS3Client();
+		await client.send(new HeadBucketCommand({ Bucket: bucket }));
+		return {
+			status: "healthy",
+			endpoint,
+			bucket,
+			message: "S3 storage is reachable",
+		};
+	} catch (err) {
+		return {
+			status: "error",
+			endpoint,
+			bucket,
+			message: err instanceof Error ? err.message : "Unknown S3 error",
+		};
+	}
 }

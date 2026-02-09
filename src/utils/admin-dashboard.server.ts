@@ -5,6 +5,7 @@ import type {
 	SubmissionType,
 	UserRole,
 } from "@/generated/prisma/enums";
+import { checkS3Health, type S3HealthResult } from "@/lib/server/storage";
 
 export interface AdminDashboardMetrics {
 	users: {
@@ -42,10 +43,13 @@ export interface AdminDashboardMetrics {
 		createdAt: Date;
 	}>;
 	usersByCountry: Array<{ country: string; count: number }>;
+	s3: S3HealthResult;
 }
 
 export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics> {
 	const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+	const s3Health = await checkS3Health();
 
 	const [
 		usersGroupedByRole,
@@ -234,5 +238,6 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		usersByCountry: usersByCountry
 			.filter((g): g is typeof g & { country: string } => g.country !== null)
 			.map((g) => ({ country: g.country, count: g._count })),
+		s3: s3Health,
 	};
 }

@@ -26,7 +26,7 @@ function AdminDashboard() {
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconDashboard} title="Admin Dashboard" />
 			<div className="flex-1 overflow-auto p-6 space-y-6">
-				<HealthAlerts data={data?.health} />
+				<HealthAlerts data={data?.health} s3={data?.s3} />
 				<MetricsGrid metrics={data} isLoading={isLoading} />
 				<div className="grid gap-6 lg:grid-cols-2">
 					<SubmissionChart data={data?.submissions} />
