@@ -42,6 +42,19 @@ async function login(page: Page, email: string, password: string) {
 	await page.waitForURL("/", { timeout: 30000 });
 }
 
+test.describe("S3 Configuration", () => {
+	test("S3 is reachable and bucket exists", async () => {
+		// Arrange
+		const { checkS3Health } = await import("../../src/lib/server/storage");
+
+		// Act
+		const result = await checkS3Health();
+
+		// Assert
+		expect(result.status).toBe("healthy");
+	});
+});
+
 test.describe.serial("File Access Control", () => {
 	let testRunId: string;
 	let submissionData: Awaited<ReturnType<typeof createSubmissionWithFile>>;
@@ -463,10 +476,6 @@ test.describe.serial("File Revision Round Isolation", () => {
 
 	test.afterAll(async () => {
 		await deleteSubmission(submissionId).catch(() => {});
-		// Clean up S3 files
-		const { deleteFile } = await import("../../src/lib/server/storage");
-		await deleteFile(v1StorageKey).catch(() => {});
-		await deleteFile(v2StorageKey).catch(() => {});
 	});
 
 	test("v1 and v2 have separate storage keys", () => {

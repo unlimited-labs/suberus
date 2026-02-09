@@ -431,20 +431,23 @@ export async function deleteSubmission(submissionId: string): Promise<void> {
 	});
 	await db.submissionAuthor.deleteMany({ where: { submissionId } });
 
-	// Clean up files linked to versions
-	const versions = await db.submissionVersion.findMany({
-		where: { submissionId },
-		select: { id: true, fileId: true },
+	// Clean up ALL files for this submission (S3 + DB)
+	// Query by entityId directly — catches orphaned files not linked to any version
+	const allFiles = await db.file.findMany({
+		where: { entityId: submissionId },
+		select: { id: true, storageKey: true },
 	});
-	const fileIds = versions.map((v) => v.fileId).filter((id): id is string => id !== null);
-	if (fileIds.length > 0) {
-		// Unlink files from versions first
+	if (allFiles.length > 0) {
+		const { deleteFile } = await import("../../src/lib/server/storage");
+		for (const f of allFiles) {
+			await deleteFile(f.storageKey).catch(() => {});
+		}
+		// Unlink files from versions before deleting file records
 		await db.submissionVersion.updateMany({
 			where: { submissionId },
 			data: { fileId: null },
 		});
-		// Delete file records (S3 cleanup skipped in tests - bucket is ephemeral)
-		await db.file.deleteMany({ where: { id: { in: fileIds } } });
+		await db.file.deleteMany({ where: { id: { in: allFiles.map((f) => f.id) } } });
 	}
 
 	await db.submissionVersion.deleteMany({ where: { submissionId } });
