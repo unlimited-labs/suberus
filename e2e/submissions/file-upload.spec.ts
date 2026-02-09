@@ -20,6 +20,36 @@ test.describe.serial("File Upload", () => {
 		});
 	});
 
+	test("FileDropzone NOT visible for Poster", async ({ submissionPage }) => {
+		// Arrange
+		await submissionPage.goto();
+
+		// Act
+		await submissionPage.selectType("POSTER");
+
+		// Assert
+		await expect(
+			submissionPage.page.getByText("Drop file or click to upload"),
+		).not.toBeVisible();
+		await expect(submissionPage.contentInput).toBeVisible();
+	});
+
+	test("FileDropzone NOT visible for Oral Presentation", async ({
+		submissionPage,
+	}) => {
+		// Arrange
+		await submissionPage.goto();
+
+		// Act
+		await submissionPage.selectType("ABSTRACT");
+
+		// Assert
+		await expect(
+			submissionPage.page.getByText("Drop file or click to upload"),
+		).not.toBeVisible();
+		await expect(submissionPage.contentInput).toBeVisible();
+	});
+
 	test("valid PDF accepted", async ({ submissionPage }) => {
 		// Arrange
 		await submissionPage.goto();

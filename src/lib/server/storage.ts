@@ -1,6 +1,7 @@
 import {
 	DeleteObjectCommand,
 	GetObjectCommand,
+	HeadObjectCommand,
 	PutObjectCommand,
 	S3Client,
 } from "@aws-sdk/client-s3";
@@ -107,6 +108,26 @@ export async function deleteFile(key: string): Promise<void> {
 	});
 
 	await client.send(command);
+}
+
+/**
+ * Check if a file exists in Garage S3
+ * @param key - Storage key
+ * @returns true if the file exists
+ */
+export async function fileExists(key: string): Promise<boolean> {
+	const client = getS3Client();
+
+	try {
+		const command = new HeadObjectCommand({
+			Bucket: GARAGE_BUCKET,
+			Key: key,
+		});
+		await client.send(command);
+		return true;
+	} catch {
+		return false;
+	}
 }
 
 /**

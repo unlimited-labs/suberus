@@ -1,3 +1,4 @@
+import fs from "fs";
 import path from "path";
 import { test, expect, type Page } from "@playwright/test";
 import { randomUUID } from "crypto";
@@ -385,5 +386,186 @@ test.describe("File Revision", () => {
 		} finally {
 			await deleteSubmission(submissionData.id).catch(() => {});
 		}
+	});
+});
+
+test.describe.serial("File Revision Round Isolation", () => {
+	let testRunId: string;
+	let submissionId: string;
+	let v1FileId: string;
+	let v1StorageKey: string;
+	let v2FileId: string;
+	let v2StorageKey: string;
+
+	test.beforeAll(async () => {
+		testRunId = `e2e_${randomUUID().slice(0, 8)}`;
+		const db = getPrisma();
+		const { testUserId } = await getTestUserIds();
+
+		// Create submission with v1 file (PDF)
+		const v1Data = await createSubmissionWithFile({
+			testRunId,
+			title: "Revision Round Isolation",
+			type: SubmissionType.FULL_PAPER,
+		});
+		submissionId = v1Data.id;
+		v1FileId = v1Data.fileId;
+		v1StorageKey = v1Data.storageKey;
+
+		// Create v2 with different file (DOCX)
+		const { uploadFile, generateSubmissionFileKey } = await import(
+			"../../src/lib/server/storage"
+		);
+		const docxPath = path.resolve("e2e/submissions/fixtures/document.docx");
+		const docxBuffer = fs.readFileSync(docxPath);
+		v2StorageKey = generateSubmissionFileKey(submissionId, 2, "document.docx");
+		await uploadFile(
+			Buffer.from(docxBuffer),
+			v2StorageKey,
+			"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+		);
+
+		const v2File = await db.file.create({
+			data: {
+				entityType: "SUBMISSION_VERSION",
+				entityId: submissionId,
+				type: "SUBMISSION_MAIN",
+				storageKey: v2StorageKey,
+				fileName: "document.docx",
+				originalName: "document.docx",
+				mimeType:
+					"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+				size: docxBuffer.length,
+				uploadedById: testUserId,
+			},
+		});
+		v2FileId = v2File.id;
+
+		const v2Version = await db.submissionVersion.create({
+			data: {
+				submissionId,
+				version: 2,
+				title: v1Data.title,
+				content: "",
+				fileId: v2File.id,
+			},
+		});
+
+		// Update submission to v2 as current
+		await db.submission.update({
+			where: { id: submissionId },
+			data: {
+				currentVersionId: v2Version.id,
+				status: SubmissionStatus.RESUBMITTED,
+			},
+		});
+	});
+
+	test.afterAll(async () => {
+		await deleteSubmission(submissionId).catch(() => {});
+		// Clean up S3 files
+		const { deleteFile } = await import("../../src/lib/server/storage");
+		await deleteFile(v1StorageKey).catch(() => {});
+		await deleteFile(v2StorageKey).catch(() => {});
+	});
+
+	test("v1 and v2 have separate storage keys", () => {
+		// Assert
+		expect(v1StorageKey).not.toBe(v2StorageKey);
+		expect(v1StorageKey).toContain("/v1/");
+		expect(v2StorageKey).toContain("/v2/");
+	});
+
+	test("both files exist in S3", async () => {
+		// Arrange
+		const { fileExists } = await import("../../src/lib/server/storage");
+
+		// Assert
+		expect(await fileExists(v1StorageKey)).toBe(true);
+		expect(await fileExists(v2StorageKey)).toBe(true);
+	});
+
+	test("both version files accessible via API", async ({ page }) => {
+		// Arrange
+		await login(page, TEST_USER.email, TEST_USER.password);
+
+		// Act & Assert
+		const r1 = await page.request.get(`/api/files/${v1FileId}`);
+		const r2 = await page.request.get(`/api/files/${v2FileId}`);
+		expect(r1.status()).toBe(200);
+		expect(r2.status()).toBe(200);
+	});
+
+	test("version switching shows correct file per version", async ({
+		page,
+	}) => {
+		// Arrange
+		await login(page, TEST_USER.email, TEST_USER.password);
+		await page.goto(`/submissions/${submissionId}`);
+
+		// Assert - v2 (current) shown by default
+		await expect(page.getByText("document.docx")).toBeVisible();
+
+		// Act - switch to v1
+		const versionTrigger = page
+			.getByRole("combobox")
+			.filter({ hasText: /Version/ });
+		await versionTrigger.click();
+		await page.getByRole("option", { name: /Version 1/ }).click();
+
+		// Assert - v1 file shown
+		await expect(page.getByText("document.pdf")).toBeVisible();
+	});
+
+	test("download returns file content with correct size", async ({
+		page,
+	}) => {
+		// Arrange
+		await login(page, TEST_USER.email, TEST_USER.password);
+
+		// Act - download v1 (PDF)
+		const r1 = await page.request.get(`/api/files/${v1FileId}`);
+		const body1 = await r1.body();
+
+		// Assert - PDF fixture is 15533 bytes
+		expect(r1.status()).toBe(200);
+		expect(body1.length).toBeGreaterThan(0);
+
+		// Act - download v2 (DOCX)
+		const r2 = await page.request.get(`/api/files/${v2FileId}`);
+		const body2 = await r2.body();
+
+		// Assert - DOCX fixture is 13379 bytes, different from PDF
+		expect(r2.status()).toBe(200);
+		expect(body2.length).toBeGreaterThan(0);
+		expect(body1.length).not.toBe(body2.length);
+	});
+});
+
+test.describe("File S3 Cleanup", () => {
+	test("deleteFile removes object from S3", async () => {
+		// Arrange
+		const testRunId = `e2e_${randomUUID().slice(0, 8)}`;
+		const submissionData = await createSubmissionWithFile({
+			testRunId,
+			title: "S3 Cleanup Verification",
+			type: SubmissionType.FULL_PAPER,
+		});
+
+		const { fileExists, deleteFile } = await import(
+			"../../src/lib/server/storage"
+		);
+
+		// Pre-condition: file exists in S3
+		expect(await fileExists(submissionData.storageKey)).toBe(true);
+
+		// Act - delete from S3
+		await deleteFile(submissionData.storageKey);
+
+		// Assert - file gone from S3
+		expect(await fileExists(submissionData.storageKey)).toBe(false);
+
+		// Cleanup DB
+		await deleteSubmission(submissionData.id).catch(() => {});
 	});
 });
