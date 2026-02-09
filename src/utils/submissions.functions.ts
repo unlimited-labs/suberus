@@ -154,6 +154,22 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 
 		// Update submission version with file reference
 		if (submission.currentVersion) {
+			// Delete old file if re-uploading
+			if (submission.currentVersion.fileId) {
+				const oldFile = await prisma.file.findUnique({
+					where: { id: submission.currentVersion.fileId },
+					select: { storageKey: true },
+				});
+				if (oldFile) {
+					const { deleteFile: deleteS3File } = await import(
+						"@/lib/server/storage"
+					);
+					await deleteS3File(oldFile.storageKey).catch(() => {});
+					await prisma.file.delete({
+						where: { id: submission.currentVersion.fileId },
+					});
+				}
+			}
 			await prisma.submissionVersion.update({
 				where: { id: submission.currentVersion.id },
 				data: { fileId: file.id },
