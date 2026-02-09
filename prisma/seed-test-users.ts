@@ -1,6 +1,6 @@
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { auth } from "../auth";
+import { auth } from "../auth.server";
 import { config } from "dotenv";
 import { resolve } from "path";
 

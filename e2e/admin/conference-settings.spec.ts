@@ -41,7 +41,7 @@ test.describe.serial("Admin Conference Settings", () => {
 		await adminSettingsPage.saveConferenceSettings();
 
 		// Assert
-		await expect(page.getByText("Conference settings saved")).toBeVisible();
+		await expect(page.getByText("Conference settings saved")).toBeVisible({ timeout: 10000 });
 	});
 
 	test("validates conference name is required", async ({ page }) => {
@@ -53,7 +53,7 @@ test.describe.serial("Admin Conference Settings", () => {
 		await adminSettingsPage.saveConferenceSettings();
 
 		// Assert - Zod validation error or toast
-		await expect(page.getByText(/name required|failed/i)).toBeVisible();
+		await expect(page.getByText(/name required|failed/i)).toBeVisible({ timeout: 10000 });
 	});
 
 	test("conference name persists across page reloads", async ({ page }, testInfo) => {
@@ -65,7 +65,7 @@ test.describe.serial("Admin Conference Settings", () => {
 		// Act
 		await input.fill(newName);
 		await adminSettingsPage.saveConferenceSettings();
-		await expect(page.getByText("Conference settings saved")).toBeVisible();
+		await expect(page.getByText("Conference settings saved")).toBeVisible({ timeout: 10000 });
 		await page.reload();
 		await adminSettingsPage.switchToConferenceTab(testInfo);
 

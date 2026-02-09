@@ -1,4 +1,4 @@
-import { prisma } from "@/db";
+import { prisma } from "@/db.server";
 import type { Prisma } from "@/generated/prisma/client";
 import type { FeeType, UserRole } from "@/generated/prisma/enums";
 import { linkCoAuthorsByEmail } from "@/utils/submissions.server";

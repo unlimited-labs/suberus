@@ -1,4 +1,4 @@
-import { prisma } from "@/db";
+import { prisma } from "@/db.server";
 import { deleteFile, uploadFile } from "@/lib/server/storage";
 
 export async function updatePersonalInfo(

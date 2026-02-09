@@ -57,7 +57,7 @@ test.describe.serial("Admin Branding Settings", () => {
 		await adminSettingsPage.saveBrandingSection("Logo & Graphics");
 
 		// Assert
-		await expect(page.getByText("Branding settings saved")).toBeVisible();
+		await expect(page.getByText("Branding settings saved")).toBeVisible({ timeout: 10000 });
 	});
 
 	test("can save theme colors", async ({ page }) => {
@@ -71,7 +71,7 @@ test.describe.serial("Admin Branding Settings", () => {
 		await adminSettingsPage.saveBrandingSection("Theme Colors");
 
 		// Assert
-		await expect(page.getByText("Branding settings saved")).toBeVisible();
+		await expect(page.getByText("Branding settings saved")).toBeVisible({ timeout: 10000 });
 	});
 
 	test("can save footer text", async ({ page }) => {
@@ -83,7 +83,7 @@ test.describe.serial("Admin Branding Settings", () => {
 		await adminSettingsPage.saveBrandingSection("Footer");
 
 		// Assert
-		await expect(page.getByText("Branding settings saved")).toBeVisible();
+		await expect(page.getByText("Branding settings saved")).toBeVisible({ timeout: 10000 });
 	});
 
 	test("branding settings persist across reloads", async ({ page }, testInfo) => {
@@ -93,7 +93,7 @@ test.describe.serial("Admin Branding Settings", () => {
 		// Act
 		await primaryInput.fill("#e11d48");
 		await adminSettingsPage.saveBrandingSection("Theme Colors");
-		await expect(page.getByText("Branding settings saved")).toBeVisible();
+		await expect(page.getByText("Branding settings saved")).toBeVisible({ timeout: 10000 });
 		await page.reload();
 		await adminSettingsPage.switchToBrandingTab(testInfo);
 

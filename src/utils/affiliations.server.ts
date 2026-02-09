@@ -1,4 +1,4 @@
-import { prisma } from "@/db";
+import { prisma } from "@/db.server";
 
 export interface AffiliationResult {
 	id: string;

@@ -1,5 +1,5 @@
 import { createActor } from "xstate";
-import { prisma } from "@/db";
+import { prisma } from "@/db.server";
 import type {
 	AssignmentStatus,
 	SubmissionStatus,

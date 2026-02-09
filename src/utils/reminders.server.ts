@@ -1,4 +1,4 @@
-import { prisma } from "@/db";
+import { prisma } from "@/db.server";
 import type { EmailEventType } from "@/generated/prisma/enums";
 import { sendEmail } from "@/lib/server/email";
 import { getSetting } from "./settings.server";

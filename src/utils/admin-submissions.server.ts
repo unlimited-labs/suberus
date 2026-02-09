@@ -1,8 +1,80 @@
-import { prisma } from "@/db";
+import { prisma } from "@/db.server";
 import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
+
+export async function validateActiveSession(sessionId: string) {
+	const session = await prisma.conferenceSession.findUnique({
+		where: { id: sessionId },
+		select: { isActive: true },
+	});
+	if (!session) throw new Response("Session not found", { status: 404 });
+	if (!session.isActive)
+		throw new Response("Session is not active", { status: 400 });
+}
+
+export async function updateSubmissionSession(
+	submissionId: string,
+	sessionId: string | null,
+) {
+	const submission = await prisma.submission.findUnique({
+		where: { id: submissionId },
+		select: { type: true },
+	});
+
+	if (!submission) {
+		throw new Response("Submission not found", { status: 404 });
+	}
+
+	if (submission.type !== "ABSTRACT") {
+		throw new Response(
+			"Only ABSTRACT submissions can be assigned to sessions",
+			{ status: 400 },
+		);
+	}
+
+	if (sessionId) {
+		await validateActiveSession(sessionId);
+	}
+
+	await prisma.submission.update({
+		where: { id: submissionId },
+		data: { sessionId },
+	});
+}
+
+export async function bulkUpdateSubmissionSession(
+	submissionIds: string[],
+	sessionId: string | null,
+) {
+	const submissions = await prisma.submission.findMany({
+		where: { id: { in: submissionIds } },
+		select: { id: true, type: true },
+	});
+
+	const nonAbstractSubmissions = submissions.filter(
+		(s) => s.type !== "ABSTRACT",
+	);
+
+	if (nonAbstractSubmissions.length > 0) {
+		throw new Response(
+			`The following submissions are not ABSTRACT and cannot be assigned to sessions: ${nonAbstractSubmissions.map((s) => s.id).join(", ")}`,
+			{ status: 400 },
+		);
+	}
+
+	if (sessionId) {
+		await validateActiveSession(sessionId);
+	}
+
+	await prisma.submission.updateMany({
+		where: { id: { in: submissionIds } },
+		data: { sessionId },
+	});
+
+	return { updated: submissionIds.length };
+}
 
 export interface AdminSubmission {
 	id: string;

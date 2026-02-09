@@ -1,4 +1,4 @@
-import { prisma } from "@/db";
+import { prisma } from "@/db.server";
 import type { UserRole } from "@/generated/prisma/enums";
 import { deleteFile } from "@/lib/server/storage";
 

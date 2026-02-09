@@ -87,6 +87,9 @@ test.describe("Complete Submission Workflow", () => {
 		await loginAs(page, TEST_USER);
 		await page.goto("/submissions/new");
 		await page.getByLabel("Title").waitFor({ state: "visible", timeout: 30000 });
+		// Wait for author auto-fill from useSession()
+		const authorCard = page.locator('[data-testid="author-card-0"]');
+		await expect(authorCard.getByLabel("First name")).not.toHaveValue("", { timeout: 10000 });
 
 		// Act
 		await page.getByLabel("Title").fill(submissionTitle);
@@ -100,7 +103,6 @@ test.describe("Complete Submission Workflow", () => {
 				"Additional context is provided here to meet the minimum character requirements."
 		);
 
-		const authorCard = page.locator('[data-testid="author-card-0"]');
 		const affiliationInput = authorCard.getByPlaceholder("Type affiliation...");
 		await affiliationInput.fill("Test University");
 		await Promise.all([

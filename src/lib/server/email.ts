@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { prisma } from "@/db";
+import { prisma } from "@/db.server";
 import type { EmailEventType } from "@/generated/prisma/enums";
 
 const transporter = nodemailer.createTransport({

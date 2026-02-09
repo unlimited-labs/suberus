@@ -115,7 +115,7 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 		const { uploadFile, generateSubmissionFileKey } = await import(
 			"@/lib/server/storage"
 		);
-		const { prisma } = await import("@/db");
+		const { prisma } = await import("@/db.server");
 
 		// Verify submission belongs to user
 		const submission = await prisma.submission.findFirst({

@@ -1,5 +1,5 @@
 import type { Session, User } from "better-auth/types";
-import { prisma } from "@/db";
+import { prisma } from "@/db.server";
 import type {
 	SubmissionStatus,
 	SubmissionType,

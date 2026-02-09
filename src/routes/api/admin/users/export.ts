@@ -1,10 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createMiddleware } from "@tanstack/react-start";
-import { getRequestHeaders } from "@tanstack/react-start/server";
 import * as XLSX from "xlsx";
 import type { UserRole } from "@/generated/prisma/enums";
 import { getUsers } from "@/lib/server/admin/users";
-import { auth } from "../../../../../auth";
+import { adminRequestMiddleware } from "@/utils/auth.middleware";
 
 function formatDate(date: Date | null | undefined): string {
 	if (!date) return "";
@@ -14,22 +12,11 @@ function formatDate(date: Date | null | undefined): string {
 	}).format(date);
 }
 
-const adminRequestMiddleware = createMiddleware().server(async ({ next }) => {
-	const session = await auth.api.getSession({ headers: getRequestHeaders() });
-	if (!session?.user) {
-		throw new Response("Unauthorized", { status: 401 });
-	}
-	if (!["ADMIN", "EDITOR"].includes(session.user.role ?? "")) {
-		throw new Response("Forbidden", { status: 403 });
-	}
-	return next();
-});
-
 export const Route = createFileRoute("/api/admin/users/export")({
 	server: {
 		middleware: [adminRequestMiddleware],
 		handlers: {
-			GET: async ({ request }: { request: Request }) => {
+			GET: async ({ request }) => {
 				const url = new URL(request.url);
 				const search = url.searchParams.get("search") ?? undefined;
 				const roleParam = url.searchParams.get("role");

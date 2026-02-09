@@ -1,30 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createMiddleware } from "@tanstack/react-start";
-import { getRequestHeaders } from "@tanstack/react-start/server";
 import type { UserRole } from "@/generated/prisma/enums";
 import { getFileDownloadUrl } from "@/lib/server/storage";
+import { authRequestMiddleware } from "@/utils/auth.middleware";
 import { checkFileAccess } from "@/utils/files.server";
-import { auth } from "../../../../auth";
-
-const fileAuthMiddleware = createMiddleware().server(async ({ next }) => {
-	const session = await auth.api.getSession({ headers: getRequestHeaders() });
-	if (!session?.user) {
-		throw new Response("Unauthorized", { status: 401 });
-	}
-	return next({ context: { user: session.user } });
-});
 
 export const Route = createFileRoute("/api/files/$fileId")({
 	server: {
-		middleware: [fileAuthMiddleware],
+		middleware: [authRequestMiddleware],
 		handlers: {
-			GET: async ({
-				params,
-				context,
-			}: {
-				params: { fileId: string };
-				context: { user: { id: string; role?: string | null } };
-			}) => {
+			GET: async ({ params, context }) => {
 				const { fileId } = params;
 
 				// Validate UUID format

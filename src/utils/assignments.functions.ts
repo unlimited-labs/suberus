@@ -104,7 +104,7 @@ export const getMyAssignmentsFn = createServerFn({ method: "GET" })
 	)
 	.handler(async ({ data, context }) => {
 		// Verify user is a reviewer
-		const { prisma } = await import("@/db");
+		const { prisma } = await import("@/db.server");
 		const user = await prisma.user.findUnique({
 			where: { id: context.user.id },
 			select: { role: true },

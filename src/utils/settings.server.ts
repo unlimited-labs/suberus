@@ -1,4 +1,4 @@
-import { prisma } from "@/db";
+import { prisma } from "@/db.server";
 import type { AppSettingKey } from "@/generated/prisma/enums";
 import {
 	DEFAULT_FULL_PAPER_CONFIG,

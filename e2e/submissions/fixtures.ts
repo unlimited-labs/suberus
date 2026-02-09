@@ -120,6 +120,8 @@ export class SubmissionPage {
 
 	async goto() {
 		await this.page.goto("/submissions/new")
+		// Wait for author auto-fill from useSession() to complete
+		await baseExpect(this.page.locator('[data-testid="author-card-0"]').getByLabel("First name")).not.toHaveValue("", { timeout: 15000 })
 	}
 
 	async selectType(type: "ABSTRACT" | "POSTER" | "FULL_PAPER") {
