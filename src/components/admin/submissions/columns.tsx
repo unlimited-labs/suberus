@@ -24,11 +24,7 @@ export const submissionColumns: ColumnDef<AdminSubmission>[] = [
 		),
 		cell: ({ row }) => {
 			const num = row.getValue("sequentialNumber") as number;
-			return (
-				<span className="text-muted-foreground font-mono">
-					{num}
-				</span>
-			);
+			return <span className="text-muted-foreground font-mono">{num}</span>;
 		},
 		size: 60,
 	},
