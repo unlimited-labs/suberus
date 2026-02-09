@@ -159,7 +159,12 @@ export async function checkS3Health(): Promise<S3HealthResult> {
 	const endpoint = GARAGE_ENDPOINT ?? "";
 	const bucket = GARAGE_BUCKET ?? "";
 
-	if (!GARAGE_ENDPOINT || !GARAGE_ACCESS_KEY_ID || !GARAGE_SECRET_ACCESS_KEY || !GARAGE_BUCKET) {
+	if (
+		!GARAGE_ENDPOINT ||
+		!GARAGE_ACCESS_KEY_ID ||
+		!GARAGE_SECRET_ACCESS_KEY ||
+		!GARAGE_BUCKET
+	) {
 		return {
 			status: "error",
 			endpoint,
