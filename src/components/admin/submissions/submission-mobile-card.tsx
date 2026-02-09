@@ -8,7 +8,12 @@ export function SubmissionMobileCard(submission: AdminSubmission) {
 		<Card>
 			<CardContent className="p-4">
 				<div className="space-y-2">
-					<p className="font-medium line-clamp-2">{submission.title}</p>
+					<div className="flex items-start gap-2">
+						<span className="text-xs font-mono text-muted-foreground shrink-0 mt-0.5">
+							#{submission.sequentialNumber}
+						</span>
+						<p className="font-medium line-clamp-2">{submission.title}</p>
+					</div>
 					<div className="flex items-center gap-2 flex-wrap">
 						<Badge variant="outline">{typeLabels[submission.type]}</Badge>
 						<Badge variant="secondary">{statusLabels[submission.status]}</Badge>

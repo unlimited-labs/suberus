@@ -63,13 +63,6 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 		});
 	};
 
-	const truncateId = (id: string) => {
-		if (id.length > 8) {
-			return `${id.slice(0, 8)}...`;
-		}
-		return id;
-	};
-
 	return (
 		<>
 			{/* Desktop Table */}
@@ -78,9 +71,6 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 					<table className="w-full caption-bottom text-sm">
 						<thead className="[&_tr]:border-b">
 							<tr className="border-b">
-								<th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
-									ID
-								</th>
 								<th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
 									Title
 								</th>
@@ -110,16 +100,6 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 									key={submission.id}
 									className="border-b transition-colors hover:bg-muted/50"
 								>
-									<td className="p-2 align-middle whitespace-nowrap">
-										<Link
-											to="/submissions/$id"
-											params={{ id: submission.id }}
-											className="font-mono text-muted-foreground hover:text-primary"
-											title={submission.id}
-										>
-											{truncateId(submission.id)}
-										</Link>
-									</td>
 									<td className="p-2 align-middle">
 										<div className="flex items-center gap-2">
 											<Link

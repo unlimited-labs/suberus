@@ -18,6 +18,21 @@ import type { AdminSubmission } from "@/utils/admin-submissions.server";
 export const submissionColumns: ColumnDef<AdminSubmission>[] = [
 	createSelectColumn<AdminSubmission>(),
 	{
+		accessorKey: "sequentialNumber",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="No." />
+		),
+		cell: ({ row }) => {
+			const num = row.getValue("sequentialNumber") as number;
+			return (
+				<span className="text-muted-foreground font-mono">
+					{num}
+				</span>
+			);
+		},
+		size: 60,
+	},
+	{
 		accessorKey: "title",
 		header: ({ column }) => (
 			<DataTableColumnHeader column={column} title="Title" />

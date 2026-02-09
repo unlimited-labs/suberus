@@ -114,6 +114,7 @@ model Keyword {
 
 model Submission {
   id                String                    @id @default(uuid()) @db.Uuid
+  sequentialNumber  Int                       @unique @default(autoincrement())
   type              SubmissionType
   title             String
   content           String

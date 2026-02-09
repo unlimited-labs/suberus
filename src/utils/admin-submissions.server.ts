@@ -93,6 +93,7 @@ export async function bulkUpdateSubmissionSession(
 
 export interface AdminSubmission {
 	id: string;
+	sequentialNumber: number;
 	title: string;
 	type: SubmissionType;
 	status: SubmissionStatus;
@@ -187,6 +188,7 @@ export async function getAdminSubmissions(
 
 		return {
 			id: s.id,
+			sequentialNumber: s.sequentialNumber,
 			title: s.title,
 			type: s.type,
 			status: s.status,
