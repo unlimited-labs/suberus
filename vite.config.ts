@@ -10,7 +10,6 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 const isDev = process.env.NODE_ENV !== "production";
 
 const rollupConfig: Partial<RollupConfig> = {
-	external: [/^@prisma\//, /\.wasm$/, "pg", "pg-pool"],
 	onwarn(warning, log) {
 		if (
 			warning.code === "MODULE_LEVEL_DIRECTIVE" || // "use client" directives

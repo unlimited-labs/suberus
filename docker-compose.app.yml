@@ -1,0 +1,62 @@
+include:
+  - docker-compose.yml
+
+services:
+  migrate:
+    build:
+      context: .
+      target: migrate
+    container_name: suberus-migrate
+    restart: "no"
+    environment:
+      DATABASE_URL: postgresql://suberus:suberus_dev_password@postgres:5432/suberus?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - suberus-network
+
+  app:
+    build:
+      context: .
+      args:
+        VITE_APP_URL: http://localhost:3001
+    container_name: suberus-app
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_URL: postgresql://suberus:suberus_dev_password@postgres:5432/suberus?schema=public
+      ELECTRIC_URL: http://electric:3000
+      GARAGE_ENDPOINT: http://garage:3902
+      GARAGE_ACCESS_KEY_ID: GK3e3e0ddba78338b89bbef493
+      GARAGE_SECRET_ACCESS_KEY: cc8249828908ff35d1509377e5ed4c7eedf6592979d67eb7a3915d5480a3c15f
+      GARAGE_BUCKET: suberus-files
+      GARAGE_REGION: garage
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      SMTP_SECURE: "false"
+      SMTP_USER: ""
+      SMTP_PASSWORD: ""
+      SMTP_FROM_EMAIL: noreply@suberus.local
+      SMTP_FROM_NAME: Suberus Conference
+      AUTH_SECRET: dev-secret-key-change-in-production-please-use-at-least-32-chars
+      AUTH_URL: http://localhost:3001
+      VITE_AUTH_URL: http://localhost:3001
+      VITE_APP_URL: http://localhost:3001
+      NODE_ENV: production
+      PORT: "3001"
+      CRON_SECRET: test-cron-secret-for-e2e
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      electric:
+        condition: service_started
+      garage:
+        condition: service_started
+      mailpit:
+        condition: service_started
+    networks:
+      - suberus-network
