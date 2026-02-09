@@ -71,27 +71,24 @@ export const createSubmission = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.inputValidator(inputSchema)
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
-		// Fetch validation limits from database
-		const limits = await getValidationLimits();
-
-		// Create dynamic schema with current settings
-		const dynamicSchema = createDynamicSubmissionSchema(limits);
-
-		// Validate with dynamic schema
-		const result = dynamicSchema.safeParse(data);
-		if (!result.success) {
-			return {
-				success: false,
-				error: "Validation failed",
-				issues: result.error.issues.map((issue) => ({
-					path: issue.path.map(String),
-					message: issue.message,
-				})),
-			};
+		if (!data.isDraft) {
+			const limits = await getValidationLimits();
+			const dynamicSchema = createDynamicSubmissionSchema(limits);
+			const result = dynamicSchema.safeParse(data);
+			if (!result.success) {
+				return {
+					success: false,
+					error: "Validation failed",
+					issues: result.error.issues.map((issue) => ({
+						path: issue.path.map(String),
+						message: issue.message,
+					})),
+				};
+			}
 		}
 
 		const submission = await createNewSubmission(
-			result.data,
+			data,
 			context.user.id,
 			data.isDraft,
 		);
@@ -222,27 +219,30 @@ export const updateDraftSubmissionFn = createServerFn({ method: "POST" })
 			keywords: z.array(z.string()),
 			contentFormat: z.enum(["TEXT", "FILE"]),
 			sessionId: z.string().uuid().nullish(),
+			isDraft: z.boolean().optional(),
 		}),
 	)
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
-		const limits = await getValidationLimits();
-		const dynamicSchema = createDynamicSubmissionSchema(limits);
-		const result = dynamicSchema.safeParse(data);
-		if (!result.success) {
-			return {
-				success: false,
-				error: "Validation failed",
-				issues: result.error.issues.map((issue) => ({
-					path: issue.path.map(String),
-					message: issue.message,
-				})),
-			};
+		if (!data.isDraft) {
+			const limits = await getValidationLimits();
+			const dynamicSchema = createDynamicSubmissionSchema(limits);
+			const result = dynamicSchema.safeParse(data);
+			if (!result.success) {
+				return {
+					success: false,
+					error: "Validation failed",
+					issues: result.error.issues.map((issue) => ({
+						path: issue.path.map(String),
+						message: issue.message,
+					})),
+				};
+			}
 		}
 
 		const updateResult = await updateDraftSubmission(
 			data.submissionId,
 			context.user.id,
-			result.data,
+			data,
 		);
 		if (!updateResult.success) {
 			return { success: false, error: updateResult.error ?? "Update failed" };

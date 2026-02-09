@@ -19,7 +19,7 @@
     "db:migrate": "dotenv -e .env.local -- prisma migrate dev --create-only --name",
     "db:update": "dotenv -e .env.local -- prisma migrate deploy && prisma generate",
     "db:studio": "dotenv -e .env.local -- prisma studio",
-    "db:seed": "dotenv -e .env.local -- prisma db seed",
+    "app:setup": "tsx init.ts",
     "db:seed-users": "dotenv -e .env.local -- tsx prisma/seed-test-users.ts",
     "rand": "openssl rand -base64 32",
     "update:shadcn:win": "Get-ChildItem -Path src/components/ui/ -Filter *.tsx | ForEach-Object { $baseName = [System.IO.Path]::GetFileNameWithoutExtension($_.Name); pnpx shadcn@latest add -y -o $baseName; }"
@@ -27,6 +27,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.978.0",
     "@aws-sdk/s3-request-presigner": "^3.978.0",
+    "@clack/prompts": "^1.0.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
@@ -117,8 +118,5 @@
       "msw",
       "prisma"
     ]
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
   }
 }

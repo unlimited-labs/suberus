@@ -12,14 +12,17 @@ import {
 } from "@/components/ui/select";
 import type { SubmissionStatus } from "@/generated/prisma/enums";
 import { statusChangeOptions } from "@/lib/labels/submission";
-import { getReviewers, type MockUser } from "@/lib/mock-data/users";
 import {
-	assignReviewer,
-	bulkChangeStatus,
-} from "@/lib/server/admin/submissions";
-import { bulkUpdateSubmissionSessionFn } from "@/utils/admin-submissions.functions";
+	bulkAssignReviewerFn,
+	bulkChangeStatusFn,
+	bulkUpdateSubmissionSessionFn,
+} from "@/utils/admin-submissions.functions";
 import type { AdminSubmission } from "@/utils/admin-submissions.server";
-import { getActiveSessionsFn } from "@/utils/sessions.functions";
+import {
+	getActiveSessionsFn,
+	getReviewerUsersFn,
+} from "@/utils/sessions.functions";
+import type { ReviewerUser } from "@/utils/sessions.server";
 
 interface SubmissionBulkActionsProps {
 	table: Table<AdminSubmission>;
@@ -44,15 +47,17 @@ export function SubmissionBulkActions({
 	const [availableSessions, setAvailableSessions] = useState<
 		{ id: string; name: string }[]
 	>([]);
+	const [reviewers, setReviewers] = useState<ReviewerUser[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [errors, setErrors] = useState<string[]>([]);
 
-	const reviewers: MockUser[] = getReviewers();
-
-	// Load active sessions
+	// Load active sessions and reviewers
 	useEffect(() => {
 		getActiveSessionsFn()
 			.then(setAvailableSessions)
+			.catch(() => {});
+		getReviewerUsersFn()
+			.then(setReviewers)
 			.catch(() => {});
 	}, []);
 
@@ -69,43 +74,53 @@ export function SubmissionBulkActions({
 		}
 	};
 
-	const handleChangeStatus = () => {
+	const handleChangeStatus = async () => {
 		setIsLoading(true);
 		setErrors([]);
 		try {
 			const submissionIds = selectedRows.map((row) => row.original.id);
-			const result = bulkChangeStatus({
-				submissionIds,
-				status: selectedStatus,
+			const result = await bulkChangeStatusFn({
+				data: { submissionIds, status: selectedStatus },
 			});
 			if (result.errors.length > 0) {
 				setErrors(result.errors);
 			} else {
+				toast.success(`Updated ${result.updated} submission(s)`);
 				table.resetRowSelection();
 				setStatusDialogOpen(false);
 				setSelectedAction("");
+				onSuccess?.();
 			}
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : "Failed to change status";
+			setErrors([message]);
 		} finally {
 			setIsLoading(false);
 		}
 	};
 
-	const handleAssignReviewer = () => {
+	const handleAssignReviewer = async () => {
 		setIsLoading(true);
 		setErrors([]);
 		try {
 			const submissionIds = selectedRows.map((row) => row.original.id);
-			const result = assignReviewer({
-				submissionIds,
-				reviewerId: selectedReviewer,
+			const result = await bulkAssignReviewerFn({
+				data: { submissionIds, reviewerId: selectedReviewer },
 			});
 			if (result.errors.length > 0) {
 				setErrors(result.errors);
 			} else {
+				toast.success(`Assigned reviewer to ${result.assigned} submission(s)`);
 				table.resetRowSelection();
 				setReviewerDialogOpen(false);
 				setSelectedAction("");
+				onSuccess?.();
 			}
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : "Failed to assign reviewer";
+			setErrors([message]);
 		} finally {
 			setIsLoading(false);
 		}
@@ -232,11 +247,9 @@ export function SubmissionBulkActions({
 						{reviewers.map((reviewer) => (
 							<SelectItem key={reviewer.id} value={reviewer.id}>
 								<div className="flex flex-col">
-									<span>
-										{reviewer.firstName} {reviewer.lastName}
-									</span>
+									<span>{reviewer.name}</span>
 									<span className="text-xs text-muted-foreground">
-										{reviewer.affiliation}
+										{reviewer.email}
 									</span>
 								</div>
 							</SelectItem>

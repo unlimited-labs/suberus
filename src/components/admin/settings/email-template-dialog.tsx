@@ -15,13 +15,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import type { EmailTemplate } from "@/lib/mock-data/admin-settings";
+import type { EmailEventType } from "@/generated/prisma/enums";
+import { updateEmailTemplateFn } from "@/utils/email-templates.functions";
+import type { EmailTemplateUI } from "./email-templates-tab";
 
 interface EmailTemplateDialogProps {
-	template: EmailTemplate | null;
+	template: EmailTemplateUI | null;
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	onSave: (template: EmailTemplate) => void;
+	onSave: (template: EmailTemplateUI) => void;
 }
 
 export function EmailTemplateDialog({
@@ -30,19 +32,19 @@ export function EmailTemplateDialog({
 	onOpenChange,
 	onSave,
 }: EmailTemplateDialogProps) {
-	const [data, setData] = useState<EmailTemplate | null>(template);
+	const [data, setData] = useState<EmailTemplateUI | null>(template);
 	const [isSaving, setIsSaving] = useState(false);
 
 	// Update local state when template changes
-	if (template && data?.id !== template.id) {
+	if (template && data?.eventType !== template.eventType) {
 		setData(template);
 	}
 
 	if (!data) return null;
 
-	const handleChange = <K extends keyof EmailTemplate>(
+	const handleChange = <K extends keyof EmailTemplateUI>(
 		field: K,
-		value: EmailTemplate[K],
+		value: EmailTemplateUI[K],
 	) => {
 		setData((prev) => (prev ? { ...prev, [field]: value } : prev));
 	};
@@ -51,10 +53,27 @@ export function EmailTemplateDialog({
 		if (!data) return;
 		setIsSaving(true);
 		try {
-			await new Promise((resolve) => setTimeout(resolve, 800));
+			await updateEmailTemplateFn({
+				data: {
+					eventType: data.eventType as EmailEventType,
+					subject: data.subject,
+					body: data.body,
+					ccEmails: data.cc
+						.split(",")
+						.map((e) => e.trim())
+						.filter(Boolean),
+					bccEmails: data.bcc
+						.split(",")
+						.map((e) => e.trim())
+						.filter(Boolean),
+					isEnabled: data.isEnabled,
+				},
+			});
 			onSave(data);
 			toast.success(`Template "${data.name}" saved`);
 			onOpenChange(false);
+		} catch {
+			toast.error("Failed to save template");
 		} finally {
 			setIsSaving(false);
 		}
@@ -75,8 +94,8 @@ export function EmailTemplateDialog({
 						<Label htmlFor="enabled">Active</Label>
 						<Switch
 							id="enabled"
-							checked={data.enabled}
-							onCheckedChange={(checked) => handleChange("enabled", checked)}
+							checked={data.isEnabled}
+							onCheckedChange={(checked) => handleChange("isEnabled", checked)}
 						/>
 					</div>
 

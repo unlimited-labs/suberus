@@ -2,6 +2,7 @@ import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
+import type { SubmissionEvent } from "@/lib/workflow";
 
 export const statusLabels: Record<SubmissionStatus, string> = {
 	DRAFT: "Draft",
@@ -60,11 +61,26 @@ export const typeFilterOptions = [
 	{ label: "Poster", value: "POSTER" },
 ] as const;
 
-export const statusChangeOptions: { value: SubmissionStatus; label: string }[] =
-	[
-		{ value: "UNDER_REVIEW", label: "Under Review" },
-		{ value: "ACCEPTED", label: "Accepted" },
-		{ value: "CONDITIONALLY_ACCEPTED", label: "Conditionally Accepted" },
-		{ value: "REVISE_REQUIRED", label: "Revision Required" },
-		{ value: "REJECTED", label: "Rejected" },
-	];
+export const statusChangeOptions: {
+	value: SubmissionStatus;
+	label: string;
+	eventType: SubmissionEvent["type"];
+}[] = [
+	{
+		value: "UNDER_REVIEW",
+		label: "Under Review",
+		eventType: "ASSIGN_REVIEWER",
+	},
+	{ value: "ACCEPTED", label: "Accepted", eventType: "EDITOR_ACCEPT" },
+	{
+		value: "CONDITIONALLY_ACCEPTED",
+		label: "Conditionally Accepted",
+		eventType: "EDITOR_CONDITIONAL",
+	},
+	{
+		value: "REVISE_REQUIRED",
+		label: "Revision Required",
+		eventType: "EDITOR_REVISE",
+	},
+	{ value: "REJECTED", label: "Rejected", eventType: "EDITOR_REJECT" },
+];

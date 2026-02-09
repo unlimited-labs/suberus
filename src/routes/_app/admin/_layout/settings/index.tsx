@@ -21,9 +21,10 @@ import {
 	SubmissionSettingsTab,
 	SubmissionTypesTab,
 } from "@/components/admin/settings";
+import { toEmailTemplateUI } from "@/components/admin/settings/email-templates-tab";
 import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { defaultEmailTemplates } from "@/lib/mock-data/admin-settings";
+import { getEmailTemplatesFn } from "@/utils/email-templates.functions";
 import { getPaymentInstructionsFn } from "@/utils/fee.functions";
 import {
 	getAllSessionsFn,
@@ -48,6 +49,7 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			sessions,
 			reviewers,
 			reminderSettings,
+			emailTemplatesRaw,
 		] = await Promise.all([
 			getConferenceSettingsFn(),
 			getSubmissionTypeConfigsFn(),
@@ -57,6 +59,7 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			getAllSessionsFn(),
 			getReviewerUsersFn(),
 			getReminderSettingsFn(),
+			getEmailTemplatesFn(),
 		]);
 		return {
 			conferenceSettings,
@@ -67,6 +70,7 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			sessions,
 			reviewers,
 			reminderSettings,
+			emailTemplates: emailTemplatesRaw.map(toEmailTemplateUI),
 		};
 	},
 	component: AdminSettingsPage,
@@ -93,6 +97,7 @@ function AdminSettingsPage() {
 		sessions,
 		reviewers,
 		reminderSettings,
+		emailTemplates,
 	} = Route.useLoaderData();
 	const [activeTab, setActiveTab] = useState("conference");
 	const router = useRouter();
@@ -137,7 +142,7 @@ function AdminSettingsPage() {
 						</TabsContent>
 
 						<TabsContent value="emails">
-							<EmailTemplatesTab initialData={defaultEmailTemplates} />
+							<EmailTemplatesTab initialData={emailTemplates} />
 						</TabsContent>
 
 						<TabsContent value="branding">

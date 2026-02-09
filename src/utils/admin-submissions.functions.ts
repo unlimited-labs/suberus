@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
+	bulkAssignReviewer,
+	bulkChangeStatus,
 	bulkUpdateSubmissionSession,
 	type GetSubmissionsResponse,
 	getAdminSubmissions,
@@ -72,4 +74,34 @@ export const bulkUpdateSubmissionSessionFn = createServerFn({ method: "POST" })
 	)
 	.handler(async ({ data }) => {
 		return bulkUpdateSubmissionSession(data.submissionIds, data.sessionId);
+	});
+
+/** Bulk change submission status via workflow transitions */
+export const bulkChangeStatusFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(
+		z.object({
+			submissionIds: z.array(z.string().uuid()).min(1),
+			status: submissionStatusEnum,
+		}),
+	)
+	.handler(async ({ data, context }) => {
+		return bulkChangeStatus(data.submissionIds, data.status, context.user.id);
+	});
+
+/** Bulk assign reviewer to submissions */
+export const bulkAssignReviewerFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(
+		z.object({
+			submissionIds: z.array(z.string().uuid()).min(1),
+			reviewerId: z.string().uuid(),
+		}),
+	)
+	.handler(async ({ data, context }) => {
+		return bulkAssignReviewer(
+			data.submissionIds,
+			data.reviewerId,
+			context.user.id,
+		);
 	});

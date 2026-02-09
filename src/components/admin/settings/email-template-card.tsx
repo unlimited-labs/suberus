@@ -2,10 +2,10 @@ import { IconEdit, IconMail, IconMailOff } from "@tabler/icons-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { EmailTemplate } from "@/lib/mock-data/admin-settings";
+import type { EmailTemplateUI } from "./email-templates-tab";
 
 interface EmailTemplateCardProps {
-	template: EmailTemplate;
+	template: EmailTemplateUI;
 	onEdit: () => void;
 }
 
@@ -18,10 +18,10 @@ export function EmailTemplateCard({
 			<div className="flex items-center gap-3">
 				<div
 					className={`flex size-10 items-center justify-center rounded-lg ${
-						template.enabled ? "bg-primary/10" : "bg-muted"
+						template.isEnabled ? "bg-primary/10" : "bg-muted"
 					}`}
 				>
-					{template.enabled ? (
+					{template.isEnabled ? (
 						<IconMail className="size-5 text-primary" />
 					) : (
 						<IconMailOff className="size-5 text-muted-foreground" />
@@ -30,8 +30,8 @@ export function EmailTemplateCard({
 				<div>
 					<div className="flex items-center gap-2">
 						<span className="font-medium">{template.name}</span>
-						<Badge variant={template.enabled ? "default" : "secondary"}>
-							{template.enabled ? "Active" : "Disabled"}
+						<Badge variant={template.isEnabled ? "default" : "secondary"}>
+							{template.isEnabled ? "Active" : "Disabled"}
 						</Badge>
 					</div>
 					<p className="text-sm text-muted-foreground">{template.subject}</p>

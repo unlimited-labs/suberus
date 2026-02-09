@@ -1,8 +1,23 @@
 import { prisma } from "@/db.server";
 import type {
+	EmailEventType,
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
+import { statusChangeOptions } from "@/lib/labels/submission";
+import { sendEmail } from "@/lib/server/email";
+import type { SubmissionEvent } from "@/lib/workflow";
+import { assignReviewer } from "./assignments.server";
+import { executeSubmissionTransition } from "./workflow.server";
+
+/** Maps target status → email event type for decision notifications to authors */
+const bulkDecisionEmailMap: Partial<Record<SubmissionStatus, EmailEventType>> =
+	{
+		ACCEPTED: "DECISION_ACCEPTED",
+		CONDITIONALLY_ACCEPTED: "DECISION_CONDITIONALLY_ACCEPTED",
+		REVISE_REQUIRED: "DECISION_REVISE_REQUIRED",
+		REJECTED: "DECISION_REJECTED",
+	};
 
 export async function validateActiveSession(sessionId: string) {
 	const session = await prisma.conferenceSession.findUnique({
@@ -335,4 +350,90 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 				: null,
 		})),
 	};
+}
+
+/** Bulk change status via workflow transitions */
+export async function bulkChangeStatus(
+	submissionIds: string[],
+	targetStatus: SubmissionStatus,
+	triggeredBy: string,
+): Promise<{ updated: number; errors: string[] }> {
+	const option = statusChangeOptions.find((o) => o.value === targetStatus);
+	if (!option) {
+		return { updated: 0, errors: [`Invalid target status: ${targetStatus}`] };
+	}
+
+	const event = { type: option.eventType } as SubmissionEvent;
+	let updated = 0;
+	const errors: string[] = [];
+
+	const emailEvent = bulkDecisionEmailMap[targetStatus];
+
+	for (const id of submissionIds) {
+		const result = await executeSubmissionTransition(
+			id,
+			event,
+			triggeredBy,
+			`Bulk status change to ${targetStatus}`,
+		);
+		if (result.success) {
+			updated++;
+
+			// Send decision email to presenter (skip UNDER_REVIEW)
+			if (emailEvent) {
+				const submission = await prisma.submission.findUnique({
+					where: { id },
+					select: { title: true },
+				});
+				const presenter = await prisma.submissionAuthor.findFirst({
+					where: { submissionId: id, isPresenter: true },
+				});
+				if (presenter) {
+					void sendEmail(emailEvent, presenter.email, {
+						authorName: `${presenter.firstName} ${presenter.lastName}`,
+						submissionTitle: submission?.title ?? "",
+					});
+				}
+			}
+		} else {
+			const submission = await prisma.submission.findUnique({
+				where: { id },
+				select: { title: true },
+			});
+			errors.push(
+				result.error ??
+					`Failed to transition "${submission?.title ?? id}" to ${targetStatus}`,
+			);
+		}
+	}
+
+	return { updated, errors };
+}
+
+/** Bulk assign reviewer to submissions */
+export async function bulkAssignReviewer(
+	submissionIds: string[],
+	reviewerId: string,
+	assignedBy: string,
+): Promise<{ assigned: number; errors: string[] }> {
+	let assigned = 0;
+	const errors: string[] = [];
+
+	for (const id of submissionIds) {
+		const result = await assignReviewer(id, reviewerId, assignedBy);
+		if (result.success) {
+			assigned++;
+		} else {
+			const submission = await prisma.submission.findUnique({
+				where: { id },
+				select: { title: true },
+			});
+			errors.push(
+				result.error ??
+					`Failed to assign reviewer to "${submission?.title ?? id}"`,
+			);
+		}
+	}
+
+	return { assigned, errors };
 }

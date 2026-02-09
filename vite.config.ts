@@ -24,7 +24,7 @@ const rollupConfig: Partial<RollupConfig> = {
 
 const nitroConfig: NitroPluginConfig = {
 	rollupConfig,
-	experimental: { tasks: true } as never,
+	experimental: { tasks: true, vite: {} },
 	scheduledTasks: {
 		"*/5 * * * *": isDev ? [] : ["mails:reminder", "assignments:overdue"],
 	},
@@ -34,12 +34,6 @@ const nitroConfig: NitroPluginConfig = {
 const config = defineConfig({
 	optimizeDeps: {
 		include: ["@tabler/icons-react", "countries-list"],
-	},
-	server: {
-		hmr: {
-			// Disable error overlay during E2E tests to prevent blocking page interaction
-			overlay: process.env.E2E !== "true",
-		},
 	},
 	plugins: [
 		devtools(),

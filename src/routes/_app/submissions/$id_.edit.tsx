@@ -80,7 +80,10 @@ function EditSubmissionPage() {
 		keywords: submission.keywords,
 	};
 
-	const saveSubmission = async (formData: SubmissionFormData) => {
+	const saveSubmission = async (
+		formData: SubmissionFormData,
+		asDraft: boolean,
+	) => {
 		const result = await updateDraftSubmissionFn({
 			data: {
 				submissionId: id,
@@ -91,6 +94,7 @@ function EditSubmissionPage() {
 				keywords: formData.keywords,
 				contentFormat: formData.contentFormat,
 				sessionId: formData.sessionId,
+				isDraft: asDraft,
 			},
 		});
 
@@ -132,7 +136,7 @@ function EditSubmissionPage() {
 	};
 
 	const handleSubmit = async (formData: SubmissionFormData) => {
-		const saved = await saveSubmission(formData);
+		const saved = await saveSubmission(formData, false);
 		if (!saved) return;
 
 		// If it was a draft, also transition to SUBMITTED
@@ -152,7 +156,7 @@ function EditSubmissionPage() {
 
 	const handleSaveDraft = isDraft
 		? async (formData: SubmissionFormData) => {
-				const saved = await saveSubmission(formData);
+				const saved = await saveSubmission(formData, true);
 				if (!saved) return;
 				toast.success("Draft saved");
 				navigate({ to: "/submissions/$id", params: { id } });

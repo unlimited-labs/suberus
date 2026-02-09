@@ -62,6 +62,76 @@ test.describe("Draft Creation", () => {
 	});
 });
 
+test.describe("Draft - Skips Validation", () => {
+	test("saves draft with incomplete form (no content, no keywords)", async ({
+		page,
+		submissionPage,
+		testRun,
+	}) => {
+		test.slow();
+		// Arrange
+		await submissionPage.goto();
+
+		// Act - fill only type and short title, skip content and keywords
+		await submissionPage.selectType("ABSTRACT");
+		await submissionPage.fillTitle(`${testRun.testRunId}_Incomplete Draft`);
+		await submissionPage.fillAffiliation(0, "Test University");
+		await submissionPage.saveDraftButton.click();
+
+		// Assert - should save successfully despite missing content/keywords
+		await page.waitForURL(/\/submissions\/[a-f0-9-]+/, { timeout: 60000 });
+		await expect(
+			page.locator('[data-testid="submission-status"]').first(),
+		).toContainText("Draft");
+	});
+
+	test("save draft on edit page with invalid data succeeds", async ({
+		page,
+		testRun,
+		cleanup,
+	}) => {
+		test.slow();
+		// Arrange - create a valid draft
+		const { id } = await createSubmission({
+			testRunId: testRun.testRunId,
+			title: "Draft Validation Bypass",
+			status: SubmissionStatus.DRAFT,
+			keywords: ["kw1", "kw2", "kw3"],
+		});
+		cleanup.track(id);
+		await page.goto(`/submissions/${id}/edit`);
+		await expect(page.getByLabel("Title")).toBeVisible({ timeout: 10000 });
+
+		// Act - clear content (making it too short) and save draft
+		await page.getByLabel("Abstract").fill("Short");
+		await page.getByRole("button", { name: "Save Draft" }).click();
+
+		// Assert - should save despite invalid content length
+		await expect(page.locator("[data-sonner-toast]")).toContainText("Draft saved", { timeout: 15000 });
+		await expect(page).toHaveURL(/\/submissions\/[a-f0-9-]+$/, { timeout: 30000 });
+	});
+
+	test("submit with incomplete form shows validation error", async ({
+		page,
+		submissionPage,
+		testRun,
+	}) => {
+		test.slow();
+		// Arrange
+		await submissionPage.goto();
+
+		// Act - fill only type and short title, then submit
+		await submissionPage.selectType("ABSTRACT");
+		await submissionPage.fillTitle(`${testRun.testRunId}_Incomplete Submit`);
+		await submissionPage.fillAffiliation(0, "Test University");
+		await submissionPage.submitButton.click();
+
+		// Assert - should show validation error, NOT redirect
+		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 15000 });
+		await expect(page).toHaveURL(/\/submissions\/new/);
+	});
+});
+
 test.describe("Draft Detail View - Actions Card", () => {
 	test("shows Continue Editing and Submit buttons for DRAFT", async ({
 		page,
