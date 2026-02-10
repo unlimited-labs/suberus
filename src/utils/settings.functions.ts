@@ -459,6 +459,16 @@ export interface AuthPageBranding {
 }
 
 /**
+ * Get primary color (public, no auth).
+ * Used by root route for pre-hydration loader.
+ */
+export const getPrimaryColorFn = createServerFn({ method: "GET" }).handler(
+	async () => {
+		return await getSetting("BRANDING_PRIMARY_COLOR");
+	},
+);
+
+/**
  * Get auth page branding (public, no auth).
  * Used by _auth layout for SSR — login/register pages.
  */

@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import type { CSSProperties } from "react";
 import { useEffect } from "react";
+import { SpinnerSvg } from "@/components/spinner-svg";
 import { AuthLayout } from "@/components/layout/auth-layout";
 import { useSession } from "@/hooks/use-session";
 import { APP_SETTINGS_DEFAULTS } from "@/lib/settings/defaults";
@@ -88,10 +89,10 @@ function AuthLayoutRoute() {
 	if (isPending) {
 		return (
 			<div
-				className="flex h-screen items-center justify-center"
+				className="flex h-screen items-center justify-center text-primary"
 				style={cssVars}
 			>
-				<div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+				<SpinnerSvg size={48} />
 			</div>
 		);
 	}
