@@ -97,6 +97,32 @@ export async function getFileDownloadUrl(
 }
 
 /**
+ * Get file content from S3 as a readable stream
+ * @param key - Storage key
+ * @returns File body stream with metadata
+ */
+export async function getFileContent(key: string): Promise<{
+	body: ReadableStream;
+	contentType: string;
+	contentLength: number;
+}> {
+	const client = getS3Client();
+
+	const command = new GetObjectCommand({
+		Bucket: GARAGE_BUCKET,
+		Key: key,
+	});
+
+	const response = await client.send(command);
+
+	return {
+		body: response.Body as ReadableStream,
+		contentType: response.ContentType ?? "application/octet-stream",
+		contentLength: response.ContentLength ?? 0,
+	};
+}
+
+/**
  * Delete a file from Garage S3
  * @param key - Storage key
  */

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type { UserRole } from "@/generated/prisma/enums";
-import { getFileDownloadUrl } from "@/lib/server/storage";
+import { getFileContent } from "@/lib/server/storage";
 import { authRequestMiddleware } from "@/utils/auth.middleware";
 import { checkFileAccess } from "@/utils/files.server";
 
@@ -28,13 +28,15 @@ export const Route = createFileRoute("/api/files/$fileId")({
 					return new Response("Forbidden", { status: 403 });
 				}
 
-				// Generate pre-signed download URL and redirect
-				const downloadUrl = await getFileDownloadUrl(file.storageKey);
+				const result = await getFileContent(file.storageKey);
 
-				return new Response(null, {
-					status: 302,
+				return new Response(result.body, {
 					headers: {
-						Location: downloadUrl,
+						"Content-Type": file.mimeType,
+						"Content-Disposition": `attachment; filename="${file.originalName}"`,
+						...(result.contentLength && {
+							"Content-Length": String(result.contentLength),
+						}),
 					},
 				});
 			},

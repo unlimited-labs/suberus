@@ -93,8 +93,8 @@ test.describe.serial("File Access Control", () => {
 			`/api/files/${submissionData.fileId}`,
 		);
 
-		// Assert - 302 redirect to S3 pre-signed URL
-		expect(response.status()).toBe(200); // Playwright follows redirects
+		// Assert - file content proxied from S3
+		expect(response.status()).toBe(200);
 	});
 
 	test("admin can download any file", async ({ page }) => {
