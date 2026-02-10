@@ -25,7 +25,7 @@ test.describe("Register Page - Step 1: Author Info", () => {
 		await registerPage.clickContinue()
 
 		// Assert
-		await expect(registerPage.page.getByText("Email is required")).toBeVisible()
+		await expect(registerPage.page.getByText("Invalid email address")).toBeVisible()
 		await expect(registerPage.page.getByText("Password is required")).toBeVisible()
 		await expect(registerPage.page.getByText("First name is required")).toBeVisible()
 		await expect(registerPage.page.getByText("Last name is required")).toBeVisible()

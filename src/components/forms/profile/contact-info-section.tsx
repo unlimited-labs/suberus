@@ -49,10 +49,7 @@ interface ContactInfoSectionProps {
 	emailVerified: boolean;
 }
 
-const emailSchema = z
-	.string()
-	.min(1, "Email is required")
-	.email("Invalid email address");
+const emailSchema = z.email("Invalid email address");
 
 const RESEND_COOLDOWN = 60;
 

@@ -8,7 +8,7 @@ interface ZodFormFieldValidators {
 }
 
 export function useZodFormField<T>(
-	schema: z.ZodSchema<T>,
+	schema: z.ZodType<T>,
 ): ZodFormFieldValidators {
 	const validate: ValidatorFn = ({ value }) => {
 		const result = schema.safeParse(value);
@@ -27,7 +27,7 @@ interface OnChangeValidators {
 }
 
 export function useZodFormFieldOnChange<T>(
-	schema: z.ZodSchema<T>,
+	schema: z.ZodType<T>,
 	isValidationAttempted: boolean,
 ): OnChangeValidators {
 	return {

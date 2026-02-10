@@ -16,10 +16,7 @@ export const Route = createFileRoute("/_auth/forgot-password")({
 	component: ForgotPasswordPage,
 });
 
-const emailSchema = z
-	.string()
-	.min(1, "Email is required")
-	.email("Invalid email address");
+const emailSchema = z.email("Invalid email address");
 
 function ForgotPasswordPage() {
 	const { conferenceName, conferenceDate, conferenceLocation } =

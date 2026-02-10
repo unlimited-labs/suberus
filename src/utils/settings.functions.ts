@@ -142,8 +142,8 @@ export interface ConferenceSettings {
 const conferenceSettingsSchema = z.object({
 	name: z.string().min(1, "Name required").max(200),
 	location: z.string().max(200),
-	website: z.union([z.literal(""), z.string().url()]),
-	contactEmail: z.union([z.literal(""), z.string().email()]),
+	website: z.union([z.literal(""), z.url()]),
+	contactEmail: z.union([z.literal(""), z.email()]),
 	conferenceStartDate: z.string(),
 	conferenceEndDate: z.string(),
 	submissionDeadline: z.string(),

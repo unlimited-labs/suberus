@@ -25,7 +25,7 @@ const inputSchema = z.object({
 	authors: z.array(z.any()),
 	keywords: z.array(z.string()),
 	contentFormat: z.enum(["TEXT", "FILE"]),
-	sessionId: z.string().uuid().nullish(),
+	sessionId: z.uuid().nullish(),
 	isDraft: z.boolean().optional(),
 	// File upload handled separately via FormData
 });
@@ -100,7 +100,7 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.inputValidator(
 		z.object({
-			submissionId: z.string().uuid(),
+			submissionId: z.uuid(),
 			versionNumber: z.number().int().positive(),
 			fileName: z.string(),
 			mimeType: z.string(),
@@ -189,7 +189,7 @@ export const getMySubmissionsFn = createServerFn({ method: "GET" })
 /** Get single submission by ID (must belong to current user) */
 export const getSubmissionByIdFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
-	.inputValidator(z.object({ submissionId: z.string().uuid() }))
+	.inputValidator(z.object({ submissionId: z.uuid() }))
 	.handler(async ({ data, context }): Promise<SubmissionDetail | null> => {
 		return getSubmissionById(data.submissionId, context.user.id);
 	});
@@ -199,7 +199,7 @@ export const resubmitSubmissionFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.inputValidator(
 		z.object({
-			submissionId: z.string().uuid(),
+			submissionId: z.uuid(),
 			title: z.string(),
 			content: z.string(),
 			comment: z.string().optional(),
@@ -227,14 +227,14 @@ export const updateDraftSubmissionFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.inputValidator(
 		z.object({
-			submissionId: z.string().uuid(),
+			submissionId: z.uuid(),
 			type: z.enum(["ABSTRACT", "POSTER", "FULL_PAPER"]),
 			title: z.string(),
 			content: z.string(),
 			authors: z.array(z.any()),
 			keywords: z.array(z.string()),
 			contentFormat: z.enum(["TEXT", "FILE"]),
-			sessionId: z.string().uuid().nullish(),
+			sessionId: z.uuid().nullish(),
 			isDraft: z.boolean().optional(),
 		}),
 	)
@@ -269,7 +269,7 @@ export const updateDraftSubmissionFn = createServerFn({ method: "POST" })
 /** Submit a draft (DRAFT → SUBMITTED) */
 export const submitDraftFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.inputValidator(z.object({ submissionId: z.string().uuid() }))
+	.inputValidator(z.object({ submissionId: z.uuid() }))
 	.handler(
 		async ({
 			data,

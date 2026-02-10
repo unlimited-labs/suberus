@@ -45,7 +45,7 @@ export const getAdminSubmissionsFn = createServerFn({ method: "GET" })
 /** Get submission details for editor */
 export const getSubmissionForEditorFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ submissionId: z.string().uuid() }))
+	.inputValidator(z.object({ submissionId: z.uuid() }))
 	.handler(async ({ data }) => {
 		return getSubmissionForEditor(data.submissionId);
 	});
@@ -55,8 +55,8 @@ export const updateSubmissionSessionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
-			submissionId: z.string().uuid(),
-			sessionId: z.string().uuid().nullable(),
+			submissionId: z.uuid(),
+			sessionId: z.uuid().nullable(),
 		}),
 	)
 	.handler(async ({ data }) => {
@@ -68,8 +68,8 @@ export const bulkUpdateSubmissionSessionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
-			submissionIds: z.array(z.string().uuid()).min(1),
-			sessionId: z.string().uuid().nullable(),
+			submissionIds: z.array(z.uuid()).min(1),
+			sessionId: z.uuid().nullable(),
 		}),
 	)
 	.handler(async ({ data }) => {
@@ -81,7 +81,7 @@ export const bulkChangeStatusFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
-			submissionIds: z.array(z.string().uuid()).min(1),
+			submissionIds: z.array(z.uuid()).min(1),
 			status: submissionStatusEnum,
 		}),
 	)
@@ -94,8 +94,8 @@ export const bulkAssignReviewerFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
-			submissionIds: z.array(z.string().uuid()).min(1),
-			reviewerId: z.string().uuid(),
+			submissionIds: z.array(z.uuid()).min(1),
+			reviewerId: z.uuid(),
 		}),
 	)
 	.handler(async ({ data, context }) => {

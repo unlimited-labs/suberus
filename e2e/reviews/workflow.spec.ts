@@ -237,10 +237,11 @@ test.describe("Review Workflow - Reviewer Actions", () => {
 
 		// Login as reviewer
 		await page.goto("/login");
+		await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 });
 		await page.getByLabel("E-mail").fill(REVIEWER_USER.email);
 		await page.getByLabel("Password").fill(REVIEWER_USER.password);
 		await page.getByRole("button", { name: "Sign in" }).click();
-		await page.waitForURL("/");
+		await page.waitForURL("/", { timeout: 30000 });
 
 		const assignmentsPage = new ReviewerAssignmentsPage(page);
 		await assignmentsPage.goto();
@@ -254,7 +255,7 @@ test.describe("Review Workflow - Reviewer Actions", () => {
 		const reviewForm = new ReviewFormPage(page);
 
 		// Assert
-		await expect(reviewForm.commentsInput).toBeVisible({ timeout: 10000 });
+		await expect(reviewForm.commentsInput).toBeVisible({ timeout: 15000 });
 		await expect(reviewForm.submitButton).toBeVisible();
 	});
 

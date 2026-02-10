@@ -15,7 +15,7 @@ const reviewDecisionEnum = z.enum([
 ]);
 
 const submitReviewSchema = z.object({
-	assignmentId: z.string().uuid(),
+	assignmentId: z.uuid(),
 	decision: reviewDecisionEnum,
 	comments: z.string().min(50, "Comments must be at least 50 characters"),
 	privateNotes: z.string().optional(),
@@ -29,7 +29,7 @@ const submitReviewSchema = z.object({
 /** Get assignment details for review form (reviewer) */
 export const getAssignmentForReviewFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
-	.inputValidator(z.object({ assignmentId: z.string().uuid() }))
+	.inputValidator(z.object({ assignmentId: z.uuid() }))
 	.handler(async ({ data, context }) => {
 		return getAssignmentForReview(data.assignmentId, context.user.id);
 	});

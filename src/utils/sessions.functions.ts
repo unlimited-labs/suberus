@@ -27,7 +27,7 @@ export const createSessionFn = createServerFn({ method: "POST" })
 	.inputValidator(
 		z.object({
 			name: z.string().min(1).max(200),
-			supervisorId: z.string().uuid().optional(),
+			supervisorId: z.uuid().optional(),
 		}),
 	)
 	.handler(async ({ data }) => {
@@ -41,9 +41,9 @@ export const updateSessionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
-			id: z.string().uuid(),
+			id: z.uuid(),
 			name: z.string().min(1).max(200).optional(),
-			supervisorId: z.string().uuid().nullable().optional(),
+			supervisorId: z.uuid().nullable().optional(),
 			isActive: z.boolean().optional(),
 		}),
 	)
@@ -59,7 +59,7 @@ export const deleteSessionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
-			id: z.string().uuid(),
+			id: z.uuid(),
 		}),
 	)
 	.handler(async ({ data }) => {

@@ -22,7 +22,7 @@ test.describe("Login Page", () => {
 		await loginPage.submit()
 
 		// Assert
-		await expect(loginPage.page.getByText("Email is required")).toBeVisible()
+		await expect(loginPage.page.getByText("Invalid email address")).toBeVisible()
 	})
 
 	test("shows error for invalid email format", async ({ loginPage }) => {

@@ -27,7 +27,7 @@ export const personalInfoSchema = z.object({
 });
 
 export const contactInfoSchema = z.object({
-	email: z.string().min(1, "Email is required").email("Invalid email address"),
+	email: z.email("Invalid email address"),
 	address: z
 		.string()
 		.max(500, "Address must be at most 500 characters")

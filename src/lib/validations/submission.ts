@@ -9,8 +9,8 @@ export const authorSchema = z.object({
 		.string()
 		.min(1, "Last name is required")
 		.max(100, "Last name must be at most 100 characters"),
-	email: z.string().email("Invalid email address"),
-	affiliationId: z.string().uuid().nullable(),
+	email: z.email("Invalid email address"),
+	affiliationId: z.uuid().nullable(),
 	affiliationName: z
 		.string()
 		.min(1, "Affiliation is required")
@@ -85,7 +85,7 @@ export function createDynamicSubmissionSchema(limits: ValidationLimits) {
 			),
 		keywords: keywordsArraySchema,
 		contentFormat: z.enum(["TEXT", "FILE"]),
-		sessionId: z.string().uuid().nullish(),
+		sessionId: z.uuid().nullish(),
 	});
 
 	// Add content length validation for TEXT format
@@ -143,7 +143,7 @@ export const createSubmissionSchema = z.object({
 		.max(5, "Maximum 5 keywords allowed"),
 	// Content format determines what is required
 	contentFormat: z.enum(["TEXT", "FILE"]),
-	sessionId: z.string().uuid().nullable().optional(),
+	sessionId: z.uuid().nullable().optional(),
 });
 
 /** Schema for TEXT-based submissions (requires content) */

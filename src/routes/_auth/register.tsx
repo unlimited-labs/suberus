@@ -51,10 +51,7 @@ export const Route = createFileRoute("/_auth/register")({
 	component: RegisterPage,
 });
 
-const emailSchema = z
-	.string()
-	.min(1, "Email is required")
-	.email("Invalid email address");
+const emailSchema = z.email("Invalid email address");
 const passwordSchema = z
 	.string()
 	.min(1, "Password is required")

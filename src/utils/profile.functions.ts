@@ -15,7 +15,7 @@ export const updatePersonalInfoFn = createServerFn({ method: "POST" })
 			firstName: z.string().min(2).max(50),
 			lastName: z.string().min(2).max(50),
 			title: z.string().optional(),
-			affiliationId: z.string().uuid().optional().or(z.literal("")),
+			affiliationId: z.uuid().optional().or(z.literal("")),
 			orcid: z.string().regex(orcidRegex).optional().or(z.literal("")),
 		}),
 	)

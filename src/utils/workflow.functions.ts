@@ -14,7 +14,7 @@ export const withdrawSubmissionFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.inputValidator(
 		z.object({
-			submissionId: z.string().uuid(),
+			submissionId: z.uuid(),
 			reason: z.string().optional(),
 		}),
 	)
@@ -27,7 +27,7 @@ export const deskRejectFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
-			submissionId: z.string().uuid(),
+			submissionId: z.uuid(),
 			reason: z.string().min(1, "Reason is required"),
 		}),
 	)
@@ -44,7 +44,7 @@ export const submitEditorDecisionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
-			submissionId: z.string().uuid(),
+			submissionId: z.uuid(),
 			decision: z.enum([
 				"ACCEPT",
 				"CONDITIONALLY_ACCEPT",
@@ -68,7 +68,7 @@ export const submitEditorDecisionFn = createServerFn({ method: "POST" })
 /** Manual transition to REVIEWS_COMPLETE (editor) */
 export const transitionToReviewsCompleteFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ submissionId: z.string().uuid() }))
+	.inputValidator(z.object({ submissionId: z.uuid() }))
 	.handler(async ({ data, context }): Promise<TransitionResult> => {
 		return executeSubmissionTransition(
 			data.submissionId,
@@ -81,7 +81,7 @@ export const transitionToReviewsCompleteFn = createServerFn({ method: "POST" })
 /** Manual transition to AWAITING_DECISION (editor) */
 export const transitionToAwaitingDecisionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ submissionId: z.string().uuid() }))
+	.inputValidator(z.object({ submissionId: z.uuid() }))
 	.handler(async ({ data, context }): Promise<TransitionResult> => {
 		return executeSubmissionTransition(
 			data.submissionId,
@@ -96,7 +96,7 @@ export const editorOverrideFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
-			submissionId: z.string().uuid(),
+			submissionId: z.uuid(),
 			reasoning: z.string().min(1, "Reasoning is required"),
 		}),
 	)

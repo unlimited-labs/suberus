@@ -17,7 +17,7 @@ export type { ReviewerAssignment, AssignmentWithReviewer, AvailableReviewer };
 /** Get available reviewers for a submission (editor) */
 export const getAvailableReviewersFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ submissionId: z.string().uuid() }))
+	.inputValidator(z.object({ submissionId: z.uuid() }))
 	.handler(async ({ data }): Promise<AvailableReviewer[]> => {
 		return getAvailableReviewers(data.submissionId);
 	});
@@ -27,7 +27,7 @@ export const getSubmissionAssignmentsFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
-			submissionId: z.string().uuid(),
+			submissionId: z.uuid(),
 			round: z.number().int().positive().optional(),
 		}),
 	)
@@ -40,9 +40,9 @@ export const assignReviewerFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
-			submissionId: z.string().uuid(),
-			reviewerId: z.string().uuid(),
-			deadline: z.string().datetime().optional(),
+			submissionId: z.uuid(),
+			reviewerId: z.uuid(),
+			deadline: z.iso.datetime().optional(),
 		}),
 	)
 	.handler(
@@ -68,7 +68,7 @@ export const cancelAssignmentFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
-			assignmentId: z.string().uuid(),
+			assignmentId: z.uuid(),
 			reason: z.string().optional(),
 		}),
 	)

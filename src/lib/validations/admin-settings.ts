@@ -3,8 +3,8 @@ import { z } from "zod";
 export const conferenceSettingsSchema = z.object({
 	name: z.string().min(1, "Name is required").max(200),
 	location: z.string().max(200),
-	website: z.string().url("Invalid URL").or(z.literal("")),
-	contactEmail: z.string().email("Invalid email").or(z.literal("")),
+	website: z.url("Invalid URL").or(z.literal("")),
+	contactEmail: z.email("Invalid email").or(z.literal("")),
 	conferenceStartDate: z.string(),
 	conferenceEndDate: z.string(),
 	submissionDeadline: z.string(),

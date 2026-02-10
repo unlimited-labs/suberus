@@ -19,7 +19,7 @@ test.describe("Forgot Password Page", () => {
 		await forgotPasswordPage.submit()
 
 		// Assert
-		await expect(forgotPasswordPage.page.getByText("Email is required")).toBeVisible()
+		await expect(forgotPasswordPage.page.getByText("Invalid email address")).toBeVisible()
 	})
 
 	test("shows error for invalid email format", async ({ forgotPasswordPage }) => {
