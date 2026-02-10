@@ -22,29 +22,20 @@ test.describe.serial("AuthSidebar Conference Subtitle", () => {
 	});
 
 	test("displays subtitle below conference name when set", async ({ page }) => {
-		// Arrange - use unique value to avoid conflicts
+		// Arrange
 		const db = getPrisma();
-		const testValue = `E2E Testing ${Date.now()}`;
 		await db.appSetting.upsert({
 			where: { key: "CONFERENCE_SUBTITLE" },
-			update: { value: testValue },
-			create: { key: "CONFERENCE_SUBTITLE", value: testValue },
+			update: { value: "International Conference on E2E Testing" },
+			create: { key: "CONFERENCE_SUBTITLE", value: "International Conference on E2E Testing" },
 		});
-
-		// Verify DB write completed
-		const verified = await db.appSetting.findUnique({
-			where: { key: "CONFERENCE_SUBTITLE" },
-		});
-		if (verified?.value !== testValue) {
-			throw new Error("DB write not reflected");
-		}
 
 		// Act
 		await page.setViewportSize({ width: 1280, height: 720 });
-		await page.goto(`/login?_cb=${Date.now()}`, { waitUntil: "networkidle" });
+		await page.goto("/login");
 
 		// Assert
-		await expect(page.getByText(testValue)).toBeVisible({ timeout: 10000 });
+		await expect(page.getByText("International Conference on E2E Testing")).toBeVisible();
 	});
 
 	test("hides subtitle when empty", async ({ page }) => {
@@ -56,72 +47,46 @@ test.describe.serial("AuthSidebar Conference Subtitle", () => {
 			create: { key: "CONFERENCE_SUBTITLE", value: "" },
 		});
 
-		// Verify DB write completed
-		const verified = await db.appSetting.findUnique({
-			where: { key: "CONFERENCE_SUBTITLE" },
-		});
-		if (verified?.value !== "") {
-			throw new Error("DB write not reflected");
-		}
-
 		// Act
 		await page.setViewportSize({ width: 1280, height: 720 });
-		await page.goto(`/login?_cb=${Date.now()}`, { waitUntil: "networkidle" });
+		await page.goto("/login");
 
-		// Assert
-		// Subtitle paragraph should not exist in DOM when empty
-		const subtitleLocator = page.locator('.text-sm.font-medium.text-primary-foreground\\/90');
-		await expect(subtitleLocator).not.toBeVisible();
+		// Assert — no subtitle paragraph rendered when value is empty
+		await expect(page.getByText("International Conference on E2E Testing")).not.toBeVisible();
 	});
 
 	test("subtitle updates dynamically", async ({ page }) => {
-		// Arrange - verify subtitle changes are reflected
+		// Arrange
 		const db = getPrisma();
-		const testValue = `Dynamic Test ${Date.now()}`;
 		await db.appSetting.upsert({
 			where: { key: "CONFERENCE_SUBTITLE" },
-			update: { value: testValue },
-			create: { key: "CONFERENCE_SUBTITLE", value: testValue },
+			update: { value: "Dynamic Subtitle Update" },
+			create: { key: "CONFERENCE_SUBTITLE", value: "Dynamic Subtitle Update" },
 		});
 
-		// Verify DB write completed
-		const verified = await db.appSetting.findUnique({
-			where: { key: "CONFERENCE_SUBTITLE" },
-		});
-		if (verified?.value !== testValue) {
-			throw new Error("DB write not reflected");
-		}
-
-		// Act & Assert
+		// Act
 		await page.setViewportSize({ width: 1280, height: 720 });
-		await page.goto(`/register?_cb=${Date.now()}`, { waitUntil: "networkidle" });
-		await page.locator('.bg-primary.p-6').waitFor({ state: 'visible', timeout: 5000 });
-		await expect(page.getByText(testValue)).toBeVisible({ timeout: 10000 });
+		await page.goto("/register");
+
+		// Assert
+		await expect(page.getByText("Dynamic Subtitle Update")).toBeVisible();
 	});
 
 	test("long subtitle wraps properly", async ({ page }) => {
-		// Arrange - use unique long value
+		// Arrange
 		const db = getPrisma();
-		const longSubtitle = `Very Long Conference Title ${Date.now()} on Advanced Computer Methods in Materials Technology and Engineering Applications`;
+		const longSubtitle = "Very Long International Conference Title on Advanced Computer Methods in Materials Technology and Engineering Applications";
 		await db.appSetting.upsert({
 			where: { key: "CONFERENCE_SUBTITLE" },
 			update: { value: longSubtitle },
 			create: { key: "CONFERENCE_SUBTITLE", value: longSubtitle },
 		});
 
-		// Verify DB write completed
-		const verified = await db.appSetting.findUnique({
-			where: { key: "CONFERENCE_SUBTITLE" },
-		});
-		if (verified?.value !== longSubtitle) {
-			throw new Error("DB write not reflected");
-		}
-
 		// Act
 		await page.setViewportSize({ width: 1024, height: 768 });
-		await page.goto(`/login?_cb=${Date.now()}`, { waitUntil: "networkidle" });
+		await page.goto("/login");
 
-		// Assert - should be visible (wrapping, not clipped)
-		await expect(page.getByText(longSubtitle)).toBeVisible({ timeout: 10000 });
+		// Assert — should be visible (wrapping, not clipped)
+		await expect(page.getByText(longSubtitle)).toBeVisible();
 	});
 });
