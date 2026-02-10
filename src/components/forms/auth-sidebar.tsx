@@ -33,7 +33,7 @@ export function AuthSidebar({
 		>
 			{/* Background image with overlay */}
 			<div
-				className="absolute inset-0 bg-cover bg-center opacity-20"
+				className="absolute inset-0 bg-cover bg-center opacity-40"
 				style={{
 					backgroundImage:
 						"url('https://images.unsplash.com/photo-1639322537228-f710d846310a?auto=format&fit=crop&w=1920&q=80')",

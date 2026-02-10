@@ -1,8 +1,8 @@
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import type { CSSProperties } from "react";
 import { useEffect } from "react";
-import { SpinnerSvg } from "@/components/spinner-svg";
 import { AuthLayout } from "@/components/layout/auth-layout";
+import { SpinnerSvg } from "@/components/spinner-svg";
 import { useSession } from "@/hooks/use-session";
 import { APP_SETTINGS_DEFAULTS } from "@/lib/settings/defaults";
 import type { AuthPageBranding } from "@/utils/settings.functions";
