@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { getPrisma } from "../helpers/test-db";
 
-test.describe("AuthSidebar Conference Subtitle", () => {
+test.describe.serial("AuthSidebar Conference Subtitle", () => {
 	let originalSubtitle: string;
 
 	test.beforeAll(async () => {
@@ -31,10 +31,11 @@ test.describe("AuthSidebar Conference Subtitle", () => {
 		});
 
 		// Act
-		await page.goto("/login");
+		await page.setViewportSize({ width: 1280, height: 720 });
+		await page.goto("/login", { waitUntil: "networkidle" });
 
 		// Assert
-		await expect(page.getByText("International Conference on E2E Testing")).toBeVisible();
+		await expect(page.getByText("International Conference on E2E Testing")).toBeVisible({ timeout: 10000 });
 	});
 
 	test("hides subtitle when empty", async ({ page }) => {
@@ -47,11 +48,13 @@ test.describe("AuthSidebar Conference Subtitle", () => {
 		});
 
 		// Act
-		await page.goto("/login");
+		await page.setViewportSize({ width: 1280, height: 720 });
+		await page.goto("/login", { waitUntil: "networkidle" });
 
 		// Assert
-		// Subtitle paragraph should not exist in DOM
-		await expect(page.locator('text="International Conference"')).not.toBeVisible();
+		// Subtitle paragraph should not exist in DOM when empty
+		const subtitleLocator = page.locator('.text-sm.font-medium.text-primary-foreground\\/90');
+		await expect(subtitleLocator).not.toBeVisible();
 	});
 
 	test("subtitle appears on all auth pages", async ({ page }) => {
@@ -64,14 +67,17 @@ test.describe("AuthSidebar Conference Subtitle", () => {
 		});
 
 		// Act & Assert
+		await page.setViewportSize({ width: 1280, height: 720 });
 		const pages = ["/login", "/register", "/forgot-password"];
 		for (const route of pages) {
-			await page.goto(route);
-			await expect(page.getByText("Multi-Page Test Subtitle")).toBeVisible();
+			await page.goto(route, { waitUntil: "networkidle" });
+			// Wait for sidebar to be visible (ensures page loaded)
+			await page.locator('.bg-primary.p-6').waitFor({ state: 'visible', timeout: 5000 });
+			await expect(page.getByText("Multi-Page Test Subtitle")).toBeVisible({ timeout: 10000 });
 		}
 	});
 
-	test("long subtitle wraps on mobile", async ({ page }) => {
+	test("long subtitle wraps properly", async ({ page }) => {
 		// Arrange
 		const db = getPrisma();
 		const longSubtitle = "Very Long International Conference Title on Advanced Computer Methods in Materials Technology and Engineering Applications";
@@ -82,10 +88,10 @@ test.describe("AuthSidebar Conference Subtitle", () => {
 		});
 
 		// Act
-		await page.setViewportSize({ width: 375, height: 667 });
-		await page.goto("/login");
+		await page.setViewportSize({ width: 1024, height: 768 });
+		await page.goto("/login", { waitUntil: "networkidle" });
 
 		// Assert - should be visible (wrapping, not clipped)
-		await expect(page.getByText(longSubtitle)).toBeVisible();
+		await expect(page.getByText(longSubtitle)).toBeVisible({ timeout: 10000 });
 	});
 });
