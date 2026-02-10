@@ -39,7 +39,7 @@ export function AuthSidebar({
 						"url('https://images.unsplash.com/photo-1639322537228-f710d846310a?auto=format&fit=crop&w=1920&q=80')",
 				}}
 			/>
-			<div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/70 to-primary/90" />
+			<div className="absolute inset-0 bg-linear-to-br from-primary/90 via-primary/70 to-primary/90" />
 
 			{/* Conference info */}
 			<div className="relative z-10 space-y-3">
