@@ -10,6 +10,7 @@ export const conferenceSettingsSchema = z.object({
 	submissionDeadline: z.string(),
 	reviewDeadline: z.string(),
 	notificationDate: z.string(),
+	subtitle: z.string(),
 });
 
 export const submissionSettingsSchema = z.object({

@@ -57,6 +57,15 @@ export function ConferenceSettingsTab({
 							placeholder="e.g. ICSE 2026"
 						/>
 					</div>
+					<div className="space-y-2 sm:col-span-2">
+						<Label htmlFor="subtitle">Conference Subtitle (optional)</Label>
+						<Input
+							id="subtitle"
+							value={data.subtitle}
+							onChange={(e) => handleChange("subtitle", e.target.value)}
+							placeholder="e.g. International Conference on Computer Methods in Materials Technology"
+						/>
+					</div>
 					<div className="space-y-2">
 						<Label htmlFor="location">Location</Label>
 						<Input

@@ -61,6 +61,7 @@ export const DEFAULT_FULL_PAPER_CONFIG: SubmissionTypeConfig = {
 export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	// Conference settings
 	CONFERENCE_NAME: "Conference Name",
+	CONFERENCE_SUBTITLE: "",
 	CONFERENCE_DATE_START: "",
 	CONFERENCE_DATE_END: "",
 	SUBMISSION_DEADLINE: "",

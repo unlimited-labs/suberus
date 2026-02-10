@@ -95,8 +95,12 @@ type FormData = {
 
 function RegisterPage() {
 	const navigate = useNavigate();
-	const { conferenceName, conferenceDate, conferenceLocation } =
-		Route.useRouteContext();
+	const {
+		conferenceName,
+		conferenceDate,
+		conferenceLocation,
+		conferenceSubtitle,
+	} = Route.useRouteContext();
 	const [countryOpen, setCountryOpen] = useState(false);
 
 	const form = useForm({
@@ -221,6 +225,7 @@ function RegisterPage() {
 				conferenceName={conferenceName}
 				conferenceDate={conferenceDate}
 				conferenceLocation={conferenceLocation}
+				conferenceSubtitle={conferenceSubtitle}
 			/>
 
 			<div className="flex flex-1 flex-col bg-card p-5 text-foreground sm:p-6 lg:p-8">

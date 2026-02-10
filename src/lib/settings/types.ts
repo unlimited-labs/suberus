@@ -43,6 +43,7 @@ export interface DeadlineReminderSettings {
 export type AppSettingsMap = {
 	// Conference settings
 	CONFERENCE_NAME: string;
+	CONFERENCE_SUBTITLE: string;
 	CONFERENCE_DATE_START: string;
 	CONFERENCE_DATE_END: string;
 	SUBMISSION_DEADLINE: string;

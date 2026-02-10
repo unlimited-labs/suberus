@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "AppSettingKey" ADD VALUE 'CONFERENCE_SUBTITLE';

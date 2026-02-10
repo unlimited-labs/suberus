@@ -19,8 +19,12 @@ export const Route = createFileRoute("/_auth/forgot-password")({
 const emailSchema = z.email("Invalid email address");
 
 function ForgotPasswordPage() {
-	const { conferenceName, conferenceDate, conferenceLocation } =
-		Route.useRouteContext();
+	const {
+		conferenceName,
+		conferenceDate,
+		conferenceLocation,
+		conferenceSubtitle,
+	} = Route.useRouteContext();
 	const [isSubmitted, setIsSubmitted] = useState(false);
 	const [submittedEmail, setSubmittedEmail] = useState("");
 
@@ -53,6 +57,7 @@ function ForgotPasswordPage() {
 					conferenceName={conferenceName}
 					conferenceDate={conferenceDate}
 					conferenceLocation={conferenceLocation}
+					conferenceSubtitle={conferenceSubtitle}
 				/>
 				<div className="flex flex-1 flex-col items-center justify-center bg-card p-5 text-foreground sm:p-6 lg:p-8">
 					<div className="w-full max-w-sm space-y-4 text-center">
@@ -99,6 +104,7 @@ function ForgotPasswordPage() {
 				conferenceName={conferenceName}
 				conferenceDate={conferenceDate}
 				conferenceLocation={conferenceLocation}
+				conferenceSubtitle={conferenceSubtitle}
 			/>
 			<div className="flex flex-1 flex-col bg-card p-5 text-foreground sm:p-6 lg:p-8">
 				{/* Mobile header */}

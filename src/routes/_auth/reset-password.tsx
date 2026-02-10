@@ -35,8 +35,12 @@ const confirmPasswordSchema = z.string().min(1, "Please confirm your password");
 
 function ResetPasswordPage() {
 	const { token } = Route.useSearch();
-	const { conferenceName, conferenceDate, conferenceLocation } =
-		Route.useRouteContext();
+	const {
+		conferenceName,
+		conferenceDate,
+		conferenceLocation,
+		conferenceSubtitle,
+	} = Route.useRouteContext();
 	const [isSuccess, setIsSuccess] = useState(false);
 	const [tokenError, setTokenError] = useState(false);
 
@@ -87,6 +91,7 @@ function ResetPasswordPage() {
 					conferenceName={conferenceName}
 					conferenceDate={conferenceDate}
 					conferenceLocation={conferenceLocation}
+					conferenceSubtitle={conferenceSubtitle}
 				/>
 				<div className="flex flex-1 flex-col items-center justify-center bg-card p-5 text-foreground sm:p-6 lg:p-8">
 					<div className="w-full max-w-sm space-y-4 text-center">
@@ -122,6 +127,7 @@ function ResetPasswordPage() {
 					conferenceName={conferenceName}
 					conferenceDate={conferenceDate}
 					conferenceLocation={conferenceLocation}
+					conferenceSubtitle={conferenceSubtitle}
 				/>
 				<div className="flex flex-1 flex-col items-center justify-center bg-card p-5 text-foreground sm:p-6 lg:p-8">
 					<div className="w-full max-w-sm space-y-4 text-center">
@@ -157,6 +163,7 @@ function ResetPasswordPage() {
 					conferenceName={conferenceName}
 					conferenceDate={conferenceDate}
 					conferenceLocation={conferenceLocation}
+					conferenceSubtitle={conferenceSubtitle}
 				/>
 				<div className="flex flex-1 flex-col items-center justify-center bg-card p-5 text-foreground sm:p-6 lg:p-8">
 					<div className="w-full max-w-sm space-y-4 text-center">
@@ -191,6 +198,7 @@ function ResetPasswordPage() {
 				conferenceName={conferenceName}
 				conferenceDate={conferenceDate}
 				conferenceLocation={conferenceLocation}
+				conferenceSubtitle={conferenceSubtitle}
 			/>
 			<div className="flex flex-1 flex-col bg-card p-5 text-foreground sm:p-6 lg:p-8">
 				{/* Mobile header */}

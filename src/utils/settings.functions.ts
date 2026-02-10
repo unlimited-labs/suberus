@@ -137,6 +137,7 @@ export interface ConferenceSettings {
 	submissionDeadline: string;
 	reviewDeadline: string;
 	notificationDate: string;
+	subtitle: string;
 }
 
 const conferenceSettingsSchema = z.object({
@@ -149,6 +150,7 @@ const conferenceSettingsSchema = z.object({
 	submissionDeadline: z.string(),
 	reviewDeadline: z.string(),
 	notificationDate: z.string(),
+	subtitle: z.string(),
 });
 
 /** Submission validation settings shape */
@@ -218,6 +220,7 @@ export const getConferenceSettingsFn = createServerFn({ method: "GET" })
 			"SUBMISSION_DEADLINE",
 			"REVIEW_DEADLINE",
 			"NOTIFICATION_DATE",
+			"CONFERENCE_SUBTITLE",
 		]);
 		return {
 			name: settings.CONFERENCE_NAME,
@@ -229,6 +232,7 @@ export const getConferenceSettingsFn = createServerFn({ method: "GET" })
 			submissionDeadline: settings.SUBMISSION_DEADLINE,
 			reviewDeadline: settings.REVIEW_DEADLINE,
 			notificationDate: settings.NOTIFICATION_DATE,
+			subtitle: settings.CONFERENCE_SUBTITLE,
 		};
 	});
 
@@ -248,6 +252,7 @@ export const updateConferenceSettingsFn = createServerFn({ method: "POST" })
 		await setSetting("SUBMISSION_DEADLINE", data.submissionDeadline);
 		await setSetting("REVIEW_DEADLINE", data.reviewDeadline);
 		await setSetting("NOTIFICATION_DATE", data.notificationDate);
+		await setSetting("CONFERENCE_SUBTITLE", data.subtitle);
 		return { success: true };
 	});
 
@@ -456,6 +461,7 @@ export interface AuthPageBranding {
 	conferenceStartDate: string;
 	conferenceEndDate: string;
 	conferenceLocation: string;
+	conferenceSubtitle: string;
 }
 
 /**
@@ -482,6 +488,7 @@ export const getAuthPageBrandingFn = createServerFn({ method: "GET" }).handler(
 			"CONFERENCE_DATE_START",
 			"CONFERENCE_DATE_END",
 			"CONFERENCE_LOCATION",
+			"CONFERENCE_SUBTITLE",
 		]);
 		return {
 			conferenceName: s.CONFERENCE_NAME,
@@ -491,6 +498,7 @@ export const getAuthPageBrandingFn = createServerFn({ method: "GET" }).handler(
 			conferenceStartDate: s.CONFERENCE_DATE_START,
 			conferenceEndDate: s.CONFERENCE_DATE_END,
 			conferenceLocation: s.CONFERENCE_LOCATION,
+			conferenceSubtitle: s.CONFERENCE_SUBTITLE,
 		};
 	},
 );

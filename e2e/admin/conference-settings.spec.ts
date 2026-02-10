@@ -72,4 +72,45 @@ test.describe.serial("Admin Conference Settings", () => {
 		// Assert
 		await expect(input).toHaveValue(newName);
 	});
+
+	test("can change and save conference subtitle", async ({ page }) => {
+		// Arrange
+		const subtitleInput = page.getByLabel("Conference Subtitle (optional)");
+
+		// Act
+		await subtitleInput.fill("International Conference on Test Methods");
+		await adminSettingsPage.saveConferenceSettings();
+
+		// Assert
+		await expect(page.getByText("Conference settings saved")).toBeVisible({ timeout: 5000 });
+	});
+
+	test("subtitle persists across page reloads", async ({ page }, testInfo) => {
+		// Arrange
+		const testSubtitle = "E2E Test Subtitle Persistence";
+		const subtitleInput = page.getByLabel("Conference Subtitle (optional)");
+
+		await subtitleInput.fill(testSubtitle);
+		await adminSettingsPage.saveConferenceSettings();
+		await expect(page.getByText("Conference settings saved")).toBeVisible({ timeout: 5000 });
+
+		// Act - reload page
+		await page.reload();
+		await adminSettingsPage.switchToConferenceTab(testInfo);
+
+		// Assert
+		await expect(subtitleInput).toHaveValue(testSubtitle);
+	});
+
+	test("subtitle is optional (can be empty)", async ({ page }) => {
+		// Arrange
+		const subtitleInput = page.getByLabel("Conference Subtitle (optional)");
+
+		// Act
+		await subtitleInput.clear();
+		await adminSettingsPage.saveConferenceSettings();
+
+		// Assert
+		await expect(page.getByText("Conference settings saved")).toBeVisible({ timeout: 5000 });
+	});
 });

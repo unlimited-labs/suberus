@@ -16,6 +16,7 @@ const defaults: AuthPageBranding = {
 	conferenceStartDate: APP_SETTINGS_DEFAULTS.CONFERENCE_DATE_START,
 	conferenceEndDate: APP_SETTINGS_DEFAULTS.CONFERENCE_DATE_END,
 	conferenceLocation: APP_SETTINGS_DEFAULTS.CONFERENCE_LOCATION,
+	conferenceSubtitle: APP_SETTINGS_DEFAULTS.CONFERENCE_SUBTITLE,
 };
 
 function formatDateRange(start: string, end: string): string {

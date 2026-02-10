@@ -23,8 +23,12 @@ const passwordSchema = z.string().min(1, "Password is required");
 
 function LoginPage() {
 	const navigate = useNavigate();
-	const { conferenceName, conferenceDate, conferenceLocation } =
-		Route.useRouteContext();
+	const {
+		conferenceName,
+		conferenceDate,
+		conferenceLocation,
+		conferenceSubtitle,
+	} = Route.useRouteContext();
 	const emailValidators = useZodFormField(emailSchema);
 	const passwordValidators = useZodFormField(passwordSchema);
 
@@ -57,6 +61,7 @@ function LoginPage() {
 				conferenceName={conferenceName}
 				conferenceDate={conferenceDate}
 				conferenceLocation={conferenceLocation}
+				conferenceSubtitle={conferenceSubtitle}
 			/>
 			<div className="flex flex-1 flex-col bg-card p-5 text-foreground sm:p-6 lg:p-8">
 				{/* Mobile header */}
