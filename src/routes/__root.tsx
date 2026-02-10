@@ -10,25 +10,15 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { type CSSProperties, useEffect } from "react";
 import { Toaster } from "sonner";
 import { SpinnerSvg } from "../components/spinner-svg";
+import { ThemeProvider } from "../components/theme-provider";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
+import { getThemeFn } from "../lib/theme";
 import appCss from "../styles.css?url";
 import { getPrimaryColorFn } from "../utils/settings.functions";
 
 interface MyRouterContext {
 	queryClient: QueryClient;
 }
-
-const themeScript = `
-(function() {
-  var mql = window.matchMedia('(prefers-color-scheme: dark)');
-  function apply() {
-    var t = localStorage.getItem('suberus-theme') || 'system';
-    document.documentElement.classList.toggle('dark', t === 'dark' || (t === 'system' && mql.matches));
-  }
-  apply();
-  mql.addEventListener('change', apply);
-})();
-`;
 
 const loaderStyle: CSSProperties = {
 	position: "fixed",
@@ -43,9 +33,13 @@ const loaderStyle: CSSProperties = {
 export const Route = createRootRouteWithContext<MyRouterContext>()({
 	loader: async () => {
 		try {
-			return { primaryColor: await getPrimaryColorFn() };
+			const [primaryColor, theme] = await Promise.all([
+				getPrimaryColorFn(),
+				getThemeFn(),
+			]);
+			return { primaryColor, theme };
 		} catch {
-			return { primaryColor: "var(--primary)" };
+			return { primaryColor: "var(--primary)", theme: "system" as const };
 		}
 	},
 	head: () => ({
@@ -71,11 +65,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 				href: appCss,
 			},
 		],
-		scripts: [
-			{
-				children: themeScript,
-			},
-		],
 	}),
 
 	component: RootComponent,
@@ -91,10 +80,14 @@ function RootComponent() {
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-	const { primaryColor } = Route.useLoaderData();
+	const { primaryColor, theme } = Route.useLoaderData();
 
 	return (
-		<html lang="en">
+		<html
+			lang="en"
+			className={theme === "dark" ? "dark" : ""}
+			suppressHydrationWarning
+		>
 			<head>
 				<HeadContent />
 			</head>
@@ -102,7 +95,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<div id="__loader" style={loaderStyle}>
 					<SpinnerSvg color={primaryColor} />
 				</div>
-				{children}
+				<ThemeProvider theme={theme}>{children}</ThemeProvider>
 				<Toaster position="top-right" richColors closeButton />
 				<TanStackDevtools
 					config={{
