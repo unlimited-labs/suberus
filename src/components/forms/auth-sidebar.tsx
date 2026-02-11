@@ -46,11 +46,6 @@ export function AuthSidebar({
 			{/* Conference info */}
 			<div className="relative z-10 space-y-3">
 				<h2 className="text-2xl font-bold tracking-tight">{conferenceName}</h2>
-				{conferenceSubtitle && (
-					<p className="text-sm font-medium text-primary-foreground/90 break-words">
-						{conferenceSubtitle}
-					</p>
-				)}
 				{(conferenceDate || conferenceLocation) && (
 					<div className="space-y-1 text-sm text-primary-foreground/80">
 						{conferenceDate && <p>{conferenceDate}</p>}
@@ -92,9 +87,11 @@ export function AuthSidebar({
 					))}
 				</div>
 			) : (
-				<p className="relative z-10 text-xs text-primary-foreground/60">
-					{conferenceName}
-				</p>
+				conferenceSubtitle && (
+					<p className="relative z-10  text-sm font-medium text-primary-foreground/90 wrap-break-words">
+						{conferenceSubtitle}
+					</p>
+				)
 			)}
 		</div>
 	);
