@@ -1,15 +1,20 @@
 import { PrismaClient } from "../../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { DeleteObjectsCommand, ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
 import { auth } from "../../auth.server";
 import { config } from "dotenv";
+import { execSync } from "child_process";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 import { DEFAULT_EMAIL_TEMPLATES } from "../../prisma/default-email-templates";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const PROJECT_ROOT = resolve(__dirname, "../..");
 
 // Load .env.local
-config({ path: resolve(__dirname, "../../.env.local") });
+config({ path: resolve(PROJECT_ROOT, ".env.local") });
+
+const MAILPIT_API = "http://localhost:8025/api/v1";
 
 const TEST_USER = {
 	email: "test@e2e.local",
@@ -120,28 +125,69 @@ const SUBMISSION_TYPE_CONFIGS = {
 };
 
 async function globalSetup() {
+	// ============================================================
+	// RESET DATABASE & MAILPIT
+	// ============================================================
+
+	// Wipe database and recreate schema from prisma/schema.prisma
+	console.log("🔄 Resetting database...");
+	execSync("pnpm exec prisma db push --force-reset", {
+		cwd: PROJECT_ROOT,
+		stdio: "pipe",
+		env: { ...process.env, PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION: "yes" },
+	});
+	console.log("✅ Database reset");
+
+	// Clear all Mailpit messages
+	console.log("🔄 Clearing Mailpit...");
+	await fetch(`${MAILPIT_API}/messages`, { method: "DELETE" });
+	console.log("✅ Mailpit cleared");
+
+	// Clear Garage S3 bucket
+	if (process.env.GARAGE_ENDPOINT && process.env.GARAGE_BUCKET) {
+		console.log("🔄 Clearing Garage S3 bucket...");
+		const s3 = new S3Client({
+			endpoint: process.env.GARAGE_ENDPOINT,
+			region: "garage",
+			credentials: {
+				accessKeyId: process.env.GARAGE_ACCESS_KEY_ID as string,
+				secretAccessKey: process.env.GARAGE_SECRET_ACCESS_KEY as string,
+			},
+			forcePathStyle: true,
+		});
+		const bucket = process.env.GARAGE_BUCKET;
+
+		let continuationToken: string | undefined;
+		do {
+			const list = await s3.send(
+				new ListObjectsV2Command({ Bucket: bucket, ContinuationToken: continuationToken }),
+			);
+			if (list.Contents?.length) {
+				await s3.send(
+					new DeleteObjectsCommand({
+						Bucket: bucket,
+						Delete: { Objects: list.Contents.map((obj) => ({ Key: obj.Key })) },
+					}),
+				);
+			}
+			continuationToken = list.NextContinuationToken;
+		} while (continuationToken);
+
+		s3.destroy();
+		console.log("✅ Garage S3 bucket cleared");
+	} else {
+		console.log("⏭️ Garage S3 not configured, skipping");
+	}
+
+	// ============================================================
+	// SEED DATA
+	// ============================================================
+
 	const connectionString = process.env.DATABASE_URL;
 	const adapter = new PrismaPg({ connectionString });
 	const prisma = new PrismaClient({ adapter });
 
 	try {
-		// Clean up all test data (order matters due to FK constraints)
-		await prisma.review.deleteMany();
-		await prisma.reviewAssignment.deleteMany();
-		await prisma.editorDecision.deleteMany();
-		await prisma.submissionStatusHistory.deleteMany();
-		await prisma.submissionKeyword.deleteMany();
-		await prisma.submission.updateMany({
-			data: { presenterId: null, currentVersionId: null },
-		});
-		await prisma.submissionAuthor.deleteMany();
-		await prisma.submissionVersion.deleteMany();
-		await prisma.submission.deleteMany();
-		await prisma.session.deleteMany();
-		await prisma.account.deleteMany();
-		await prisma.fee.deleteMany();
-		await prisma.user.deleteMany();
-
 		// ============================================================
 		// CREATE TEST USERS
 		// ============================================================
