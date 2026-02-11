@@ -93,6 +93,9 @@ export type AppSettingsMap = {
 
 	// Email footer
 	EMAIL_FOOTER_TEXT: string;
+
+	// Terms of Service
+	TOS_CONTENT: string;
 };
 
 /** Keys for submission type configs */

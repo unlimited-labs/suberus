@@ -110,6 +110,16 @@ export default defineConfig({
 				storageState: "e2e/.auth/user.json",
 			},
 		},
+		// User settings tests - use user auth
+		{
+			name: "chromium-settings",
+			testMatch: /e2e\/settings\/.*\.spec\.ts/,
+			dependencies: ["auth-setup"],
+			use: {
+				...devices["Desktop Chrome"],
+				storageState: "e2e/.auth/user.json",
+			},
+		},
 		// Review workflow tests - admin actions (use admin auth)
 		{
 			name: "chromium-reviews-admin",

@@ -18,6 +18,7 @@ import { AuthSidebar } from "@/components/forms/auth-sidebar";
 import { FieldError } from "@/components/forms/field-error";
 import { IconInput } from "@/components/forms/icon-input";
 import { PasswordInput } from "@/components/forms/password-input";
+import { TosModal } from "@/components/tos-modal";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -46,8 +47,21 @@ import { useMultiStep } from "@/hooks/use-multi-step";
 import { useZodFormFieldOnChange } from "@/hooks/use-zod-form-field";
 import { signUp } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
+import {
+	acceptTosFn,
+	getSurveyQuestionsForRegistrationFn,
+	getTosContentForRegistrationFn,
+	saveUserSurveyAnswersFn,
+} from "@/utils/survey.functions";
 
 export const Route = createFileRoute("/_auth/register")({
+	loader: async () => {
+		const [surveyQuestions, tosContent] = await Promise.all([
+			getSurveyQuestionsForRegistrationFn(),
+			getTosContentForRegistrationFn(),
+		]);
+		return { surveyQuestions, tosContent };
+	},
 	component: RegisterPage,
 });
 
@@ -88,8 +102,7 @@ type FormData = {
 	affiliationName: string;
 	address: string;
 	country: string;
-	needsVisaLetter: boolean;
-	needsCertificate: boolean;
+	surveyAnswers: Record<string, boolean>;
 	acceptTerms: boolean;
 };
 
@@ -101,7 +114,14 @@ function RegisterPage() {
 		conferenceLocation,
 		conferenceSubtitle,
 	} = Route.useRouteContext();
+	const { surveyQuestions, tosContent } = Route.useLoaderData();
 	const [countryOpen, setCountryOpen] = useState(false);
+	const [tosOpen, setTosOpen] = useState(false);
+
+	const defaultSurveyAnswers: Record<string, boolean> = {};
+	for (const q of surveyQuestions) {
+		defaultSurveyAnswers[q.id] = false;
+	}
 
 	const form = useForm({
 		defaultValues: {
@@ -115,8 +135,7 @@ function RegisterPage() {
 			affiliationName: "",
 			address: "",
 			country: "",
-			needsVisaLetter: false,
-			needsCertificate: false,
+			surveyAnswers: defaultSurveyAnswers,
 			acceptTerms: false,
 		},
 		onSubmit: async ({ value }) => {
@@ -124,7 +143,6 @@ function RegisterPage() {
 				email: value.email,
 				password: value.password,
 				name: value.lastName,
-				// Additional fields defined in auth config with input: true
 				firstName: value.firstName,
 				title: value.title || undefined,
 				affiliationId: value.affiliationId || undefined,
@@ -135,6 +153,19 @@ function RegisterPage() {
 			if (result.error) {
 				toast.error(result.error.message ?? "Registration failed");
 				return;
+			}
+
+			// Save survey answers + ToS acceptance (non-blocking)
+			try {
+				const answers = Object.entries(value.surveyAnswers).map(
+					([questionId, val]) => ({ questionId, value: val }),
+				);
+				await Promise.all([
+					saveUserSurveyAnswersFn({ data: { answers } }),
+					acceptTosFn(),
+				]);
+			} catch {
+				// Account created successfully — survey/ToS can be updated in settings
 			}
 
 			toast.success("Account created! Check your email to verify.");
@@ -540,50 +571,41 @@ function RegisterPage() {
 									Please let us know if you need any additional documents.
 								</p>
 
-								{/* Survey checkboxes */}
+								{/* Dynamic survey checkboxes */}
 								<div className="space-y-2 rounded-lg border border-border/50 bg-muted/30 p-3">
-									<form.Field name="needsVisaLetter">
-										{(field) => (
-											<div className="flex items-start gap-3">
-												<Checkbox
-													id={field.name}
-													checked={field.state.value}
-													onCheckedChange={(checked) =>
-														field.handleChange(checked === true)
-													}
-													className="mt-0.5"
-												/>
-												<Label
-													htmlFor={field.name}
-													className="cursor-pointer text-sm font-normal leading-snug"
-												>
-													Please send me an Invitation Letter for a Visa
-													Application.
-												</Label>
-											</div>
-										)}
-									</form.Field>
-
-									<form.Field name="needsCertificate">
-										{(field) => (
-											<div className="flex items-start gap-3">
-												<Checkbox
-													id={field.name}
-													checked={field.state.value}
-													onCheckedChange={(checked) =>
-														field.handleChange(checked === true)
-													}
-													className="mt-0.5"
-												/>
-												<Label
-													htmlFor={field.name}
-													className="cursor-pointer text-sm font-normal leading-snug"
-												>
-													I need a certificate of attendance.
-												</Label>
-											</div>
-										)}
-									</form.Field>
+									{surveyQuestions.length > 0 ? (
+										surveyQuestions.map((question) => (
+											<form.Field
+												key={question.id}
+												name={
+													`surveyAnswers.${question.id}` as `surveyAnswers.${string}`
+												}
+											>
+												{(field) => (
+													<div className="flex items-start gap-3">
+														<Checkbox
+															id={`survey-${question.id}`}
+															checked={field.state.value as boolean}
+															onCheckedChange={(checked) =>
+																field.handleChange(checked === true)
+															}
+															className="mt-0.5"
+														/>
+														<Label
+															htmlFor={`survey-${question.id}`}
+															className="cursor-pointer text-sm font-normal leading-snug"
+														>
+															{question.label}
+														</Label>
+													</div>
+												)}
+											</form.Field>
+										))
+									) : (
+										<p className="text-sm text-muted-foreground">
+											No additional questions at this time.
+										</p>
+									)}
 								</div>
 
 								{/* Terms acceptance */}
@@ -591,14 +613,12 @@ function RegisterPage() {
 									name="acceptTerms"
 									validators={{
 										onSubmit: ({ value }) => {
-											if (!value)
-												return "You must accept the terms and conditions";
+											if (!value) return "You must accept the Terms of Service";
 											return undefined;
 										},
 										onChange: ({ value }) => {
 											if (!isValidationAttempted) return undefined;
-											if (!value)
-												return "You must accept the terms and conditions";
+											if (!value) return "You must accept the Terms of Service";
 											return undefined;
 										},
 									}}
@@ -619,13 +639,16 @@ function RegisterPage() {
 													className="cursor-pointer text-sm font-normal leading-snug"
 												>
 													I agree to the{" "}
-													<Link to="/" className="text-primary hover:underline">
+													<button
+														type="button"
+														className="text-primary hover:underline"
+														onClick={(e) => {
+															e.preventDefault();
+															setTosOpen(true);
+														}}
+													>
 														Terms of Service
-													</Link>{" "}
-													and{" "}
-													<Link to="/" className="text-primary hover:underline">
-														Privacy Policy
-													</Link>{" "}
+													</button>{" "}
 													*
 												</Label>
 											</div>
@@ -682,6 +705,8 @@ function RegisterPage() {
 					</Link>
 				</p>
 			</div>
+
+			<TosModal open={tosOpen} content={tosContent} onOpenChange={setTosOpen} />
 		</div>
 	);
 }

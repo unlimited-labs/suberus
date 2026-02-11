@@ -181,11 +181,11 @@ test.describe("Register Page - Step 3: Survey", () => {
 		await registerPage.clickCreateAccount()
 
 		// Assert
-		await expect(registerPage.page.getByText("You must accept the terms and conditions")).toBeVisible()
+		await expect(registerPage.page.getByText("You must accept the Terms of Service")).toBeVisible()
 	})
 
-	test("optional checkboxes are toggleable", async ({ registerPage }) => {
-		// Arrange
+	test("dynamic survey checkboxes are toggleable", async ({ registerPage }) => {
+		// Arrange — questions seeded in global setup
 		const visaCheckbox = registerPage.page.getByLabel(
 			"Please send me an Invitation Letter for a Visa Application."
 		)
@@ -206,6 +206,23 @@ test.describe("Register Page - Step 3: Survey", () => {
 
 		// Assert
 		await expect(visaCheckbox).not.toBeChecked()
+	})
+
+	test("ToS link opens modal with content", async ({ registerPage }) => {
+		// Act
+		await registerPage.page.getByRole("button", { name: "Terms of Service" }).click()
+
+		// Assert
+		await expect(registerPage.page.getByRole("dialog")).toBeVisible()
+		await expect(
+			registerPage.page.getByRole("dialog").getByRole("heading", { name: "Terms of Service" }).first(),
+		).toBeVisible()
+
+		// Act — close modal
+		await registerPage.page.getByRole("button", { name: "Close" }).first().click()
+
+		// Assert
+		await expect(registerPage.page.getByRole("dialog")).not.toBeVisible()
 	})
 })
 

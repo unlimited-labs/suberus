@@ -114,6 +114,10 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 
 	// Email footer
 	EMAIL_FOOTER_TEXT: "",
+
+	// Terms of Service
+	TOS_CONTENT:
+		"# Terms of Service\n\nPlease configure Terms of Service in the admin panel.",
 };
 
 /** Get default value for a setting key */

@@ -779,3 +779,33 @@ export async function createSentReminder(opts: {
 		},
 	});
 }
+
+/** Create a survey question */
+export async function createSurveyQuestion(label: string, orderIndex: number): Promise<{ id: string }> {
+	const db = getPrisma();
+	return db.surveyQuestion.create({
+		data: { label, orderIndex, isActive: true },
+	});
+}
+
+/** Delete a survey question and its answers */
+export async function deleteSurveyQuestion(questionId: string): Promise<void> {
+	const db = getPrisma();
+	await db.surveyAnswer.deleteMany({ where: { questionId } });
+	await db.surveyQuestion.delete({ where: { id: questionId } }).catch(() => {});
+}
+
+/** Get user's survey answers */
+export async function getUserSurveyAnswers(userId: string) {
+	const db = getPrisma();
+	return db.surveyAnswer.findMany({
+		where: { userId },
+		include: { question: true },
+	});
+}
+
+/** Delete all survey answers for a user */
+export async function deleteUserSurveyAnswers(userId: string): Promise<void> {
+	const db = getPrisma();
+	await db.surveyAnswer.deleteMany({ where: { userId } });
+}

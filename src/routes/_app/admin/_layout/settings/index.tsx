@@ -2,11 +2,13 @@ import {
 	IconBell,
 	IconBuilding,
 	IconCash,
+	IconClipboardList,
 	IconFileStack,
 	IconFileText,
 	IconMail,
 	IconPalette,
 	IconPresentation,
+	IconScale,
 	IconSettings,
 } from "@tabler/icons-react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
@@ -20,6 +22,8 @@ import {
 	RemindersSettingsTab,
 	SubmissionSettingsTab,
 	SubmissionTypesTab,
+	SurveyQuestionsTab,
+	TosContentTab,
 } from "@/components/admin/settings";
 import { toEmailTemplateUI } from "@/components/admin/settings/email-templates-tab";
 import { PageHeader } from "@/components/layout/page-header";
@@ -39,6 +43,7 @@ import {
 	getSubmissionTypeConfigsFn,
 	getSubmissionValidationSettingsFn,
 } from "@/utils/settings.functions";
+import { getSurveyQuestionsFn } from "@/utils/survey.functions";
 
 export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 	loader: async () => {
@@ -55,6 +60,8 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			submissionGuidelines,
 			reviewGuidelines,
 			emailFooter,
+			surveyQuestions,
+			tosContent,
 		] = await Promise.all([
 			getConferenceSettingsFn(),
 			getSubmissionTypeConfigsFn(),
@@ -68,6 +75,8 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			getSettingFn({ data: { key: "SUBMISSION_GUIDELINES" } }),
 			getSettingFn({ data: { key: "REVIEW_GUIDELINES" } }),
 			getEmailFooterFn(),
+			getSurveyQuestionsFn(),
+			getSettingFn({ data: { key: "TOS_CONTENT" } }),
 		]);
 		return {
 			conferenceSettings,
@@ -82,6 +91,8 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			submissionGuidelines: submissionGuidelines as string,
 			reviewGuidelines: reviewGuidelines as string,
 			emailFooter: emailFooter as string,
+			surveyQuestions,
+			tosContent: tosContent as string,
 		};
 	},
 	component: AdminSettingsPage,
@@ -96,6 +107,8 @@ const tabs = [
 	{ id: "branding", label: "Branding", icon: IconPalette },
 	{ id: "fee-instructions", label: "Fee Instructions", icon: IconCash },
 	{ id: "reminders", label: "Reminders", icon: IconBell },
+	{ id: "survey", label: "Survey", icon: IconClipboardList },
+	{ id: "tos", label: "Terms of Service", icon: IconScale },
 ];
 
 function AdminSettingsPage() {
@@ -112,6 +125,8 @@ function AdminSettingsPage() {
 		submissionGuidelines,
 		reviewGuidelines,
 		emailFooter,
+		surveyQuestions,
+		tosContent,
 	} = Route.useLoaderData();
 	const [activeTab, setActiveTab] = useState("conference");
 	const router = useRouter();
@@ -176,6 +191,14 @@ function AdminSettingsPage() {
 
 						<TabsContent value="reminders">
 							<RemindersSettingsTab initialData={reminderSettings} />
+						</TabsContent>
+
+						<TabsContent value="survey">
+							<SurveyQuestionsTab initialQuestions={surveyQuestions} />
+						</TabsContent>
+
+						<TabsContent value="tos">
+							<TosContentTab initialContent={tosContent} />
 						</TabsContent>
 					</Tabs>
 

@@ -8,3 +8,5 @@ export { RemindersSettingsTab } from "./reminders-settings-tab";
 export { SubmissionSettingsTab } from "./submission-settings-tab";
 export { SubmissionTypeAccordion } from "./submission-type-accordion";
 export { SubmissionTypesTab } from "./submission-types-tab";
+export { SurveyQuestionsTab } from "./survey-questions-tab";
+export { TosContentTab } from "./tos-content-tab";

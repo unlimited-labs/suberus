@@ -329,6 +329,28 @@ export class AdminSettingsPage {
 		await this.page.getByRole("button", { name: "Save" }).first().click()
 	}
 
+	// --- Survey tab ---
+
+	async switchToSurveyTab(testInfo?: { project: { name: string } }) {
+		if (testInfo?.project.name === "mobile-admin") {
+			await this.page.getByRole("tab").nth(8).click()
+		} else {
+			await this.page.getByRole("tab", { name: /Survey/i }).click()
+		}
+		await expect(this.page.getByRole("heading", { name: "Survey Questions" })).toBeVisible()
+	}
+
+	// --- Terms of Service tab ---
+
+	async switchToTosTab(testInfo?: { project: { name: string } }) {
+		if (testInfo?.project.name === "mobile-admin") {
+			await this.page.getByRole("tab").nth(9).click()
+		} else {
+			await this.page.getByRole("tab", { name: /Terms of Service/i }).click()
+		}
+		await expect(this.page.getByRole("heading", { name: "Terms of Service" })).toBeVisible()
+	}
+
 	// --- Branding tab ---
 
 	async switchToBrandingTab(testInfo?: { project: { name: string } }) {

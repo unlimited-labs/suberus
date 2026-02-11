@@ -1,4 +1,5 @@
 import {
+	IconClipboardList,
 	IconLock,
 	IconMail,
 	IconSettings,
@@ -10,6 +11,7 @@ import { toast } from "sonner";
 import { ContactInfoSection } from "@/components/forms/profile/contact-info-section";
 import { PasswordChangeSection } from "@/components/forms/profile/password-change-section";
 import { PersonalInfoSection } from "@/components/forms/profile/personal-info-section";
+import { SurveySection } from "@/components/forms/profile/survey-section";
 import { PageHeader } from "@/components/layout/page-header";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { useSession } from "@/hooks/use-session";
@@ -27,13 +29,29 @@ import {
 	updateContactInfoFn,
 	updatePersonalInfoFn,
 } from "@/utils/profile.functions";
+import {
+	getActiveSurveyQuestionsFn,
+	getUserSurveyAnswersFn,
+} from "@/utils/survey.functions";
 
 export const Route = createFileRoute("/_app/settings")({
+	loader: async () => {
+		const [surveyQuestions, surveyAnswersRaw] = await Promise.all([
+			getActiveSurveyQuestionsFn(),
+			getUserSurveyAnswersFn(),
+		]);
+		const surveyAnswers = surveyAnswersRaw.map((a) => ({
+			questionId: a.questionId,
+			value: a.value,
+		}));
+		return { surveyQuestions, surveyAnswers };
+	},
 	component: SettingsPage,
 });
 
 function SettingsPage() {
 	const { user } = useSession();
+	const { surveyQuestions, surveyAnswers } = Route.useLoaderData();
 	const [affiliationName, setAffiliationName] = useState("");
 
 	useEffect(() => {
@@ -153,6 +171,20 @@ function SettingsPage() {
 					>
 						<PasswordChangeSection onSave={handlePasswordChange} />
 					</SettingsSection>
+
+					{surveyQuestions.length > 0 && (
+						<SettingsSection
+							icon={IconClipboardList}
+							title="Survey"
+							description="Update your conference survey preferences"
+							delay={300}
+						>
+							<SurveySection
+								questions={surveyQuestions}
+								initialAnswers={surveyAnswers}
+							/>
+						</SettingsSection>
+					)}
 
 					<div className="h-12" />
 				</div>

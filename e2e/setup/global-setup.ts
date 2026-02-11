@@ -12,7 +12,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(__dirname, "../..");
 
 // Load .env.local
-config({ path: resolve(PROJECT_ROOT, ".env.local") });
+config({ quiet: true, path: resolve(PROJECT_ROOT, ".env.local") });
 
 const MAILPIT_API = "http://localhost:8025/api/v1";
 
@@ -460,6 +460,39 @@ async function globalSetup() {
 		}
 
 		console.log("✅ Validation settings seeded");
+
+		// Survey questions
+		await prisma.surveyQuestion.create({
+			data: {
+				label: "Please send me an Invitation Letter for a Visa Application.",
+				orderIndex: 0,
+				isActive: true,
+			},
+		});
+
+		await prisma.surveyQuestion.create({
+			data: {
+				label: "I need a certificate of attendance.",
+				orderIndex: 1,
+				isActive: true,
+			},
+		});
+
+		console.log("✅ Survey questions seeded");
+
+		// Terms of Service content
+		const tosKey = "TOS_CONTENT";
+		const tosValue = "# Terms of Service\n\nBy using this system, you agree to the following terms and conditions.\n\n## Usage\n\nThis system is provided for academic conference management purposes only."
+		await prisma.appSetting.upsert({
+			where: { key: tosKey },
+			update: { value: tosValue},
+			create: {
+				key:tosKey,
+				value: tosValue,
+			},
+		});
+
+		console.log("✅ ToS content seeded");
 
 	} catch (error) {
 		console.error("❌ Global setup failed:", error);

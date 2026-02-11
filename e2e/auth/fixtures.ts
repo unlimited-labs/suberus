@@ -147,7 +147,7 @@ export class RegisterPage {
 	}
 
 	// Step 3: Survey
-	async fillStep3(data: { acceptTerms: boolean; needsVisaLetter?: boolean; needsCertificate?: boolean }) {
+	async fillStep3(data: { acceptTerms: boolean; checkSurveyQuestions?: string[] }) {
 		// Wait for step 3 to be visible; retry Continue click if async validation race
 		const termsCheckbox = this.page.getByLabel(/I agree to the/)
 		try {
@@ -157,13 +157,10 @@ export class RegisterPage {
 			await termsCheckbox.waitFor({ state: "visible", timeout: 10000 })
 		}
 
-		if (data.needsVisaLetter) {
-			await this.page
-				.getByLabel("Please send me an Invitation Letter for a Visa Application.")
-				.check()
-		}
-		if (data.needsCertificate) {
-			await this.page.getByLabel("I need a certificate of attendance.").check()
+		if (data.checkSurveyQuestions) {
+			for (const label of data.checkSurveyQuestions) {
+				await this.page.getByLabel(label).check()
+			}
 		}
 		if (data.acceptTerms) {
 			await this.page.getByLabel(/I agree to the/).check()

@@ -620,6 +620,17 @@ export const updateFeeInstructionsFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
+/**
+ * Update Terms of Service content (admin only)
+ */
+export const updateTosContentFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(z.object({ content: z.string().min(1) }))
+	.handler(async ({ data }) => {
+		await setSetting("TOS_CONTENT", data.content);
+		return { success: true };
+	});
+
 /** Reminder settings shape */
 export interface ReminderSettings {
 	reviewer: ReviewerReminderSettings;
