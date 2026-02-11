@@ -126,22 +126,17 @@ test.describe("Form Validation", () => {
 		}) => {
 			// Arrange
 			await submissionPage.goto();
-			await submissionPage.page.locator("#author-0-firstName").clear();
-			await submissionPage.page.locator("#author-0-firstName").fill("Test");
-			await submissionPage.page.locator("#author-0-lastName").clear();
-			await submissionPage.page.locator("#author-0-lastName").fill("User");
-			await submissionPage.page.locator("#author-0-email").clear();
-			await submissionPage.page
-				.locator("#author-0-email")
-				.fill("test@valid.com");
-			const affiliationInput = submissionPage.getAuthorCard(0)
-				.getByPlaceholder("Type affiliation...");
-			await affiliationInput.clear();
 			await submissionPage.fillTitle(VALID_SUBMISSION.title);
 			await submissionPage.fillContent(VALID_SUBMISSION.content);
 			await submissionPage.addKeyword("test1");
 			await submissionPage.addKeyword("test2");
 			await submissionPage.addKeyword("test3");
+
+			// Add second author without affiliation
+			await submissionPage.addAuthor();
+			await submissionPage.page.locator("#author-1-firstName").fill("NoAffil");
+			await submissionPage.page.locator("#author-1-lastName").fill("Author");
+			await submissionPage.page.locator("#author-1-email").fill("noaffil@test.com");
 
 			// Act
 			await submissionPage.submit();

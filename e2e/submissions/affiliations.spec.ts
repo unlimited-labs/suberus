@@ -6,12 +6,11 @@ test.describe("Affiliations", () => {
 	}) => {
 		// Arrange
 		await submissionPage.goto();
-		const affiliationInput =
-			submissionPage.page.getByPlaceholder("Type affiliation...");
-		await affiliationInput.clear();
+		const trigger = submissionPage.getAuthorCard(0).getByRole("combobox", { name: /affiliation/i });
 
 		// Act
-		await affiliationInput.fill("Test Univ");
+		await trigger.click();
+		await submissionPage.page.getByPlaceholder("Search affiliation...").fill("Test Univ");
 		await expect(
 			submissionPage.page.getByRole("option", { name: "Test University", exact: true }),
 		).toBeVisible({ timeout: 5000 });
@@ -20,28 +19,27 @@ test.describe("Affiliations", () => {
 			.click();
 
 		// Assert
-		await expect(affiliationInput).toHaveValue("Test University");
+		await expect(trigger).toContainText("Test University");
 	});
 
-	test("creates new affiliation when typing unknown name and blurring", async ({
+	test("creates new affiliation via Create option", async ({
 		submissionPage,
 		testRun,
 	}) => {
 		// Arrange
 		await submissionPage.goto();
-		const affiliationInput =
-			submissionPage.page.getByPlaceholder("Type affiliation...");
+		const trigger = submissionPage.getAuthorCard(0).getByRole("combobox", { name: /affiliation/i });
 		const uniqueAffiliation = `New Affiliation ${testRun.testRunId}`;
 
 		// Act
-		await affiliationInput.clear();
-		await affiliationInput.fill(uniqueAffiliation);
-		await affiliationInput.blur();
+		await trigger.click();
+		await submissionPage.page.getByPlaceholder("Search affiliation...").fill(uniqueAffiliation);
+		const createOption = submissionPage.page.getByRole("option").filter({ hasText: `Create "${uniqueAffiliation}"` });
+		await expect(createOption).toBeVisible({ timeout: 5000 });
+		await createOption.click();
 
 		// Assert
-		await expect(affiliationInput).toHaveValue(uniqueAffiliation, {
-			timeout: 5000,
-		});
+		await expect(trigger).toContainText(uniqueAffiliation, { timeout: 5000 });
 	});
 
 	test("each author can have different affiliation", async ({
@@ -50,10 +48,8 @@ test.describe("Affiliations", () => {
 		test.slow(); // Filling 2 authors with affiliations under load
 		// Arrange
 		await submissionPage.goto();
-		const firstAffiliationInput = submissionPage.getAuthorCard(0)
-			.getByPlaceholder("Type affiliation...");
 
-		// Act - Use fillAffiliation to wait for API response before addAuthor
+		// Act
 		await submissionPage.fillAffiliation(0, "First University");
 
 		await submissionPage.addAuthor();
@@ -64,9 +60,9 @@ test.describe("Affiliations", () => {
 		await submissionPage.fillAffiliation(1, "Second University");
 
 		// Assert
-		await expect(firstAffiliationInput).toHaveValue("First University");
-		const secondAffiliationInput = submissionPage.getAuthorCard(1)
-			.getByPlaceholder("Type affiliation...");
-		await expect(secondAffiliationInput).toHaveValue("Second University");
+		const firstTrigger = submissionPage.getAuthorCard(0).getByRole("combobox", { name: /affiliation/i });
+		await expect(firstTrigger).toContainText("First University");
+		const secondTrigger = submissionPage.getAuthorCard(1).getByRole("combobox", { name: /affiliation/i });
+		await expect(secondTrigger).toContainText("Second University");
 	});
 });

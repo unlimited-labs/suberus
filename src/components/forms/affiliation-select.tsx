@@ -1,5 +1,19 @@
-import { IconBuilding, IconLoader2 } from "@tabler/icons-react";
+import { IconBuilding, IconLoader2, IconSelector } from "@tabler/icons-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from "@/components/ui/command";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import {
@@ -33,37 +47,34 @@ export function AffiliationSelect({
 	className,
 	placeholder = "Type affiliation...",
 }: AffiliationSelectProps) {
-	const [inputValue, setInputValue] = useState(displayValue);
 	const [open, setOpen] = useState(false);
+	const [search, setSearch] = useState("");
+	const [selectedName, setSelectedName] = useState(displayValue);
 	const [affiliations, setAffiliations] = useState<Affiliation[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
-	const [highlightedIndex, setHighlightedIndex] = useState(-1);
-	const containerRef = useRef<HTMLDivElement>(null);
-	const inputRef = useRef<HTMLInputElement>(null);
 	const isCreatingRef = useRef(false);
-	const isSelectingRef = useRef(false);
 
-	const debouncedSearch = useDebounce(inputValue, 300);
+	const debouncedSearch = useDebounce(search, 300);
 
-	// Sync displayValue with inputValue when it changes externally
+	// Sync displayValue externally
 	useEffect(() => {
-		setInputValue(displayValue);
+		setSelectedName(displayValue);
 	}, [displayValue]);
 
-	// Fetch affiliation by ID if provided and no displayValue/inputValue yet
+	// Fetch affiliation by ID on mount
 	const onChangeRef = useRef(onChange);
 	onChangeRef.current = onChange;
 	const isFetchingRef = useRef(false);
 
 	useEffect(() => {
-		if (displayValue || inputValue || !initValueId || isFetchingRef.current)
+		if (displayValue || selectedName || !initValueId || isFetchingRef.current)
 			return;
 		isFetchingRef.current = true;
 
 		getAffiliationById({ data: { id: initValueId } })
 			.then((affiliation) => {
 				if (affiliation) {
-					setInputValue(affiliation.name);
+					setSelectedName(affiliation.name);
 					onChangeRef.current(affiliation.id, affiliation.name);
 				}
 			})
@@ -73,7 +84,7 @@ export function AffiliationSelect({
 			.finally(() => {
 				isFetchingRef.current = false;
 			});
-	}, [initValueId, displayValue, inputValue]);
+	}, [initValueId, displayValue, selectedName]);
 
 	const fetchAffiliations = useCallback(async (query: string) => {
 		if (!query.trim()) {
@@ -99,55 +110,21 @@ export function AffiliationSelect({
 		}
 	}, [open, debouncedSearch, fetchAffiliations]);
 
-	// Reset highlight when results change
-	const prevAffiliationsLength = useRef(affiliations.length);
-	if (prevAffiliationsLength.current !== affiliations.length) {
-		prevAffiliationsLength.current = affiliations.length;
-		setHighlightedIndex(-1);
-	}
-
-	// Close dropdown on outside click
-	useEffect(() => {
-		const handleClickOutside = (e: MouseEvent) => {
-			if (
-				containerRef.current &&
-				!containerRef.current.contains(e.target as Node)
-			) {
-				setOpen(false);
-			}
-		};
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => document.removeEventListener("mousedown", handleClickOutside);
-	}, []);
-
-	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const newValue = e.target.value;
-		setInputValue(newValue);
-		setOpen(true);
-		// Clear selection when user modifies input
-		if (value && newValue !== displayValue) {
-			onChange(null, newValue);
-		}
-	};
-
 	const handleSelect = (affiliation: Affiliation) => {
-		isSelectingRef.current = true;
 		onChange(affiliation.id, affiliation.name);
-		setInputValue(affiliation.name);
+		setSelectedName(affiliation.name);
 		setOpen(false);
-		// Reset flag after a tick
-		setTimeout(() => {
-			isSelectingRef.current = false;
-		}, 0);
 	};
 
-	const handleCreateAffiliation = useCallback(
+	const handleCreate = useCallback(
 		async (name: string) => {
 			if (isCreatingRef.current) return;
 			isCreatingRef.current = true;
 			try {
 				const affiliation = await createAffiliation({ data: { name } });
 				onChange(affiliation.id, affiliation.name);
+				setSelectedName(affiliation.name);
+				setOpen(false);
 			} catch {
 				// Silently fail
 			} finally {
@@ -157,121 +134,93 @@ export function AffiliationSelect({
 		[onChange],
 	);
 
-	const handleBlur = useCallback(() => {
-		// Skip if we're selecting from dropdown
-		if (isSelectingRef.current) return;
-
-		const name = inputValue.trim();
-		// If there's text but no selection, create new affiliation
-		if (name && !value) {
-			// Check if exact match exists in current results
-			const exactMatch = affiliations.find(
-				(a) => a.name.toLowerCase() === name.toLowerCase(),
-			);
-			if (exactMatch) {
-				onChange(exactMatch.id, exactMatch.name);
-			} else {
-				handleCreateAffiliation(name);
-			}
-		}
-		setOpen(false);
-	}, [inputValue, value, affiliations, onChange, handleCreateAffiliation]);
-
-	const handleKeyDown = (e: React.KeyboardEvent) => {
-		if (!open) {
-			if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-				setOpen(true);
-				e.preventDefault();
-			}
-			return;
-		}
-
-		switch (e.key) {
-			case "ArrowDown":
-				e.preventDefault();
-				setHighlightedIndex((prev) =>
-					prev < affiliations.length - 1 ? prev + 1 : 0,
-				);
-				break;
-			case "ArrowUp":
-				e.preventDefault();
-				setHighlightedIndex((prev) =>
-					prev > 0 ? prev - 1 : affiliations.length - 1,
-				);
-				break;
-			case "Enter":
-				e.preventDefault();
-				if (highlightedIndex >= 0 && highlightedIndex < affiliations.length) {
-					handleSelect(affiliations[highlightedIndex]);
-				} else {
-					// Accept current input
-					handleBlur();
-				}
-				break;
-			case "Escape":
-				setOpen(false);
-				break;
-		}
-	};
-
-	const showDropdown = open && affiliations.length > 0;
+	const hasExactMatch = affiliations.some(
+		(a) => a.name.toLowerCase() === search.trim().toLowerCase(),
+	);
+	const showCreate = search.trim() && !hasExactMatch && !isLoading;
 
 	return (
-		<div ref={containerRef} className={cn("relative", className)}>
-			<div className="relative">
-				<IconBuilding className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-				<input
-					ref={inputRef}
-					type="text"
-					value={inputValue}
-					onChange={handleInputChange}
-					onFocus={() => inputValue.trim() && setOpen(true)}
-					onBlur={handleBlur}
-					onKeyDown={handleKeyDown}
-					placeholder={placeholder}
+		<Popover
+			open={open}
+			onOpenChange={(isOpen) => {
+				setOpen(isOpen);
+				if (!isOpen) {
+					setSearch("");
+					setAffiliations([]);
+				}
+			}}
+		>
+			<PopoverTrigger asChild>
+				<Button
+					variant="outline"
+					role="combobox"
+					aria-expanded={open}
+					aria-label="Select affiliation"
 					data-affiliation-id={value || undefined}
 					className={cn(
-						"flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 pl-9 text-sm text-foreground transition-colors",
-						"placeholder:text-muted-foreground",
-						"focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
-						"disabled:cursor-not-allowed disabled:opacity-50",
+						"h-9 w-full justify-between pl-3 font-normal",
+						!selectedName && "text-muted-foreground",
 						hasError && "border-destructive",
+						className,
 					)}
-				/>
-				{isLoading && (
-					<IconLoader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
-				)}
-			</div>
-
-			{showDropdown && (
-				<div
-					role="listbox"
-					className="absolute z-50 mt-1 w-full rounded-lg border bg-popover p-1 shadow-md"
 				>
-					<div className="max-h-48 overflow-auto">
-						{affiliations.map((affiliation, index) => (
-							<button
-								key={affiliation.id}
-								type="button"
-								role="option"
-								aria-selected={value === affiliation.id}
-								onMouseDown={() => {
-									isSelectingRef.current = true;
-								}}
-								onClick={() => handleSelect(affiliation)}
-								onMouseEnter={() => setHighlightedIndex(index)}
-								className={cn(
-									"w-full cursor-pointer rounded-md px-2 py-1.5 text-left text-sm",
-									highlightedIndex === index && "bg-accent",
-									value === affiliation.id && "font-medium text-primary",
-								)}
-							>
-								{affiliation.name}
-							</button>
-						))}
-					</div>
-				</div>
-			)}
-		</div>
+					<span className="flex items-center gap-2 truncate">
+						<IconBuilding className="size-4 shrink-0 text-muted-foreground" />
+						{selectedName || placeholder}
+					</span>
+					<IconSelector className="size-4 shrink-0 opacity-50" />
+				</Button>
+			</PopoverTrigger>
+			<PopoverContent
+				className="w-[--radix-popover-trigger-width] p-0"
+				align="start"
+			>
+				<Command shouldFilter={false}>
+					<CommandInput
+						placeholder="Search affiliation..."
+						value={search}
+						onValueChange={setSearch}
+					/>
+					<CommandList>
+						{isLoading && (
+							<div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
+								<IconLoader2 className="size-4 animate-spin" />
+								Loading...
+							</div>
+						)}
+						{!isLoading &&
+							!affiliations.length &&
+							!showCreate &&
+							search.trim() && (
+								<CommandEmpty>No affiliations found.</CommandEmpty>
+							)}
+						{affiliations.length > 0 && (
+							<CommandGroup>
+								{affiliations.map((affiliation) => (
+									<CommandItem
+										key={affiliation.id}
+										value={affiliation.id}
+										data-checked={value === affiliation.id || undefined}
+										onSelect={() => handleSelect(affiliation)}
+									>
+										{affiliation.name}
+									</CommandItem>
+								))}
+							</CommandGroup>
+						)}
+						{showCreate && (
+							<CommandGroup>
+								<CommandItem
+									value={`create-${search.trim()}`}
+									onSelect={() => handleCreate(search.trim())}
+								>
+									Create &quot;{search.trim()}&quot;
+								</CommandItem>
+							</CommandGroup>
+						)}
+					</CommandList>
+				</Command>
+			</PopoverContent>
+		</Popover>
 	);
 }

@@ -50,7 +50,7 @@ test.describe.serial("Submission - Session Selection", () => {
 		await expect(page.getByText("Preferred Session")).toBeVisible();
 
 		// Should contain the active session in dropdown
-		await page.getByRole("combobox").click();
+		await page.getByRole("combobox").filter({ hasText: "None" }).click();
 		await expect(
 			page.getByRole("option", {
 				name: `${testRun.testRunId}_Neural Networks`,
@@ -134,7 +134,7 @@ test.describe.serial("Submission - Session Selection", () => {
 			.getByRole("button", { name: /oral presentation/i })
 			.click();
 		await expect(page.getByText("Preferred Session")).toBeVisible();
-		await page.getByRole("combobox").click();
+		await page.getByRole("combobox").filter({ hasText: "None" }).click();
 
 		// Assert
 		await expect(

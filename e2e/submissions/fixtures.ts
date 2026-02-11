@@ -166,26 +166,18 @@ export class SubmissionPage {
 		await lastNameInput.fill(author.lastName)
 		await emailInput.fill(author.email)
 
-		// Fill affiliation using the placeholder in the same author card
-		const affiliationInput = this.getAuthorCard(index).getByPlaceholder("Type affiliation...")
-		await affiliationInput.fill(author.affiliationName)
-		// Wait for affiliation API response after blur (sets affiliationId in form state)
-		await Promise.all([
-			this.page.waitForResponse((resp) => resp.url().includes("_server") && resp.status() === 200, { timeout: 10000 }).catch(() => null),
-			affiliationInput.blur(),
-		])
-		await baseExpect(affiliationInput).toHaveValue(author.affiliationName, { timeout: 5000 })
+		// Fill affiliation using the combobox in the same author card
+		await this.fillAffiliation(index, author.affiliationName)
 	}
 
 	async fillAffiliation(index: number, affiliationName: string) {
-		const affiliationInput = this.getAuthorCard(index).getByPlaceholder("Type affiliation...")
-		await affiliationInput.fill(affiliationName)
-		// Wait for affiliation API response after blur (sets affiliationId in form state)
-		await Promise.all([
-			this.page.waitForResponse((resp) => resp.url().includes("_server") && resp.status() === 200, { timeout: 10000 }).catch(() => null),
-			affiliationInput.blur(),
-		])
-		await baseExpect(affiliationInput).toHaveValue(affiliationName, { timeout: 5000 })
+		const trigger = this.getAuthorCard(index).getByRole("combobox", { name: /affiliation/i })
+		await trigger.click()
+		await this.page.getByPlaceholder("Search affiliation...").fill(affiliationName)
+		const option = this.page.getByRole("option").filter({ hasText: affiliationName }).first()
+		await option.waitFor({ state: "visible", timeout: 10000 })
+		await option.click()
+		await baseExpect(trigger).toContainText(affiliationName, { timeout: 5000 })
 	}
 
 	async addAuthor() {

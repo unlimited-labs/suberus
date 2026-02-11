@@ -75,16 +75,13 @@ test.describe("Submission Emails", () => {
 				"The notification system is a critical part of the submission workflow pipeline."
 		);
 
-		const affiliationInput = authorCard.getByPlaceholder("Type affiliation...");
-		await affiliationInput.fill("Test University");
-		await Promise.all([
-			page.waitForResponse(
-				(resp) => resp.url().includes("_server") && resp.status() === 200,
-				{ timeout: 10000 }
-			).catch(() => null),
-			affiliationInput.blur(),
-		]);
-		await expect(affiliationInput).toHaveValue("Test University", { timeout: 5000 });
+		const affiliationTrigger = authorCard.getByRole("combobox", { name: /affiliation/i });
+		await affiliationTrigger.click();
+		await page.getByPlaceholder("Search affiliation...").fill("Test University");
+		const affiliationOption = page.getByRole("option").filter({ hasText: "Test University" }).first();
+		await affiliationOption.waitFor({ state: "visible", timeout: 10000 });
+		await affiliationOption.click();
+		await expect(affiliationTrigger).toContainText("Test University", { timeout: 5000 });
 
 		await addKeyword(page, "email-test");
 		await addKeyword(page, "notification");
@@ -128,16 +125,13 @@ test.describe("Submission Emails", () => {
 				"The draft save mechanism should silently persist without triggering notifications."
 		);
 
-		const affiliationInput = authorCard.getByPlaceholder("Type affiliation...");
-		await affiliationInput.fill("Test University");
-		await Promise.all([
-			page.waitForResponse(
-				(resp) => resp.url().includes("_server") && resp.status() === 200,
-				{ timeout: 10000 }
-			).catch(() => null),
-			affiliationInput.blur(),
-		]);
-		await expect(affiliationInput).toHaveValue("Test University", { timeout: 5000 });
+		const affiliationTrigger2 = authorCard.getByRole("combobox", { name: /affiliation/i });
+		await affiliationTrigger2.click();
+		await page.getByPlaceholder("Search affiliation...").fill("Test University");
+		const affiliationOption2 = page.getByRole("option").filter({ hasText: "Test University" }).first();
+		await affiliationOption2.waitFor({ state: "visible", timeout: 10000 });
+		await affiliationOption2.click();
+		await expect(affiliationTrigger2).toContainText("Test University", { timeout: 5000 });
 
 		await addKeyword(page, "draft-email-test");
 		await addKeyword(page, "no-notify");
