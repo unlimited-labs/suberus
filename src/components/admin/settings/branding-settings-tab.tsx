@@ -1,5 +1,12 @@
-import { IconLoader2, IconPalette, IconPhoto } from "@tabler/icons-react";
-import { useState } from "react";
+import {
+	IconLoader2,
+	IconPalette,
+	IconPhoto,
+	IconPhotoUp,
+	IconTrash,
+	IconUpload,
+} from "@tabler/icons-react";
+import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
@@ -7,15 +14,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { BrandingSettings } from "@/utils/settings.functions";
-import { updateBrandingSettingsFn } from "@/utils/settings.functions";
+import {
+	deleteAuthBackgroundFn,
+	updateBrandingSettingsFn,
+	uploadAuthBackgroundFn,
+} from "@/utils/settings.functions";
 
 interface BrandingSettingsTabProps {
 	initialData: BrandingSettings;
 }
 
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_BG_SIZE_MB = 5;
+const MAX_BG_SIZE_BYTES = MAX_BG_SIZE_MB * 1024 * 1024;
+
 export function BrandingSettingsTab({ initialData }: BrandingSettingsTabProps) {
 	const [data, setData] = useState(initialData);
 	const [isSaving, setIsSaving] = useState(false);
+	const [bgUploading, setBgUploading] = useState(false);
+	const [bgRemoving, setBgRemoving] = useState(false);
+	const bgInputRef = useRef<HTMLInputElement>(null);
 
 	const handleChange = (field: keyof BrandingSettings, value: string) => {
 		setData((prev) => ({ ...prev, [field]: value }));
@@ -32,6 +50,61 @@ export function BrandingSettingsTab({ initialData }: BrandingSettingsTabProps) {
 			setIsSaving(false);
 		}
 	};
+
+	const handleBgUpload = useCallback(
+		async (e: React.ChangeEvent<HTMLInputElement>) => {
+			const file = e.target.files?.[0];
+			if (!file) return;
+
+			if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+				toast.error("Invalid file type. Use JPG, PNG, or WebP.");
+				return;
+			}
+			if (file.size > MAX_BG_SIZE_BYTES) {
+				toast.error(`File size exceeds ${MAX_BG_SIZE_MB}MB limit.`);
+				return;
+			}
+
+			setBgUploading(true);
+			try {
+				const base64 = await new Promise<string>((resolve, reject) => {
+					const reader = new FileReader();
+					reader.onloadend = () => {
+						const result = reader.result as string;
+						// Strip data URL prefix to get raw base64
+						resolve(result.split(",")[1]);
+					};
+					reader.onerror = reject;
+					reader.readAsDataURL(file);
+				});
+
+				const { url } = await uploadAuthBackgroundFn({
+					data: { fileBase64: base64, mimeType: file.type },
+				});
+				setData((prev) => ({ ...prev, authBackgroundUrl: url }));
+				toast.success("Background image uploaded");
+			} catch {
+				toast.error("Failed to upload background image");
+			} finally {
+				setBgUploading(false);
+				if (bgInputRef.current) bgInputRef.current.value = "";
+			}
+		},
+		[],
+	);
+
+	const handleBgRemove = useCallback(async () => {
+		setBgRemoving(true);
+		try {
+			await deleteAuthBackgroundFn();
+			setData((prev) => ({ ...prev, authBackgroundUrl: "" }));
+			toast.success("Background image removed");
+		} catch {
+			toast.error("Failed to remove background image");
+		} finally {
+			setBgRemoving(false);
+		}
+	}, []);
 
 	return (
 		<div className="space-y-6">
@@ -77,6 +150,74 @@ export function BrandingSettingsTab({ initialData }: BrandingSettingsTabProps) {
 						{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 						Save
 					</Button>
+				</div>
+			</SettingsSection>
+
+			<SettingsSection
+				icon={IconPhotoUp}
+				title="Auth Background Image"
+				description="Background image for login and registration pages"
+				delay={50}
+			>
+				<div className="space-y-4">
+					{data.authBackgroundUrl && (
+						<div
+							className="overflow-hidden rounded-lg border border-border/50"
+							data-testid="auth-background-preview"
+						>
+							<img
+								src={data.authBackgroundUrl}
+								alt="Auth background preview"
+								className="h-40 w-full object-cover"
+							/>
+						</div>
+					)}
+
+					<div className="flex flex-wrap gap-2">
+						<input
+							ref={bgInputRef}
+							type="file"
+							accept={ACCEPTED_IMAGE_TYPES.join(",")}
+							onChange={handleBgUpload}
+							className="hidden"
+							aria-label="Upload auth background"
+						/>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => bgInputRef.current?.click()}
+							disabled={bgUploading || bgRemoving}
+							data-testid="auth-background-upload"
+						>
+							{bgUploading ? (
+								<IconLoader2 className="mr-2 size-4 animate-spin" />
+							) : (
+								<IconUpload className="mr-2 size-4" />
+							)}
+							{data.authBackgroundUrl ? "Replace image" : "Upload image"}
+						</Button>
+
+						{data.authBackgroundUrl && (
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={handleBgRemove}
+								disabled={bgUploading || bgRemoving}
+								data-testid="auth-background-remove"
+							>
+								{bgRemoving ? (
+									<IconLoader2 className="mr-2 size-4 animate-spin" />
+								) : (
+									<IconTrash className="mr-2 size-4" />
+								)}
+								Remove
+							</Button>
+						)}
+					</div>
+
+					<p className="text-xs text-muted-foreground">
+						Accepted formats: JPG, PNG, WebP. Max size: {MAX_BG_SIZE_MB}MB.
+					</p>
 				</div>
 			</SettingsSection>
 

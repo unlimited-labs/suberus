@@ -1,3 +1,4 @@
+import path from "node:path";
 import { expect, test } from "@playwright/test";
 import { AdminSettingsPage } from "./fixtures";
 import { getPrisma } from "../helpers/test-db";
@@ -170,5 +171,108 @@ test.describe.serial("Admin Branding Settings", () => {
 
 		// Assert
 		await expect(page).toHaveTitle(new RegExp(`${conferenceName}.*Suberus`, "i"));
+	});
+});
+
+const BG_FIXTURE_1 = path.resolve("e2e/auth/fixtures/background_1.png");
+const BG_FIXTURE_2 = path.resolve("e2e/auth/fixtures/background_2.png");
+
+test.describe.serial("Auth Background Image", () => {
+	let adminSettingsPage: AdminSettingsPage;
+	let originalBgValue: string | null;
+
+	test.beforeAll(async () => {
+		const db = getPrisma();
+		const setting = await db.appSetting.findUnique({
+			where: { key: "BRANDING_AUTH_BACKGROUND_KEY" },
+		});
+		originalBgValue = (setting?.value as string) ?? null;
+	});
+
+	test.afterAll(async () => {
+		const db = getPrisma();
+		if (originalBgValue === null) {
+			await db.appSetting.deleteMany({ where: { key: "BRANDING_AUTH_BACKGROUND_KEY" } });
+		} else {
+			await db.appSetting.upsert({
+				where: { key: "BRANDING_AUTH_BACKGROUND_KEY" },
+				update: { value: originalBgValue },
+				create: { key: "BRANDING_AUTH_BACKGROUND_KEY", value: originalBgValue },
+			});
+		}
+	});
+
+	test.beforeEach(async ({ page }, testInfo) => {
+		adminSettingsPage = new AdminSettingsPage(page);
+		await adminSettingsPage.goto();
+		await adminSettingsPage.switchToBrandingTab(testInfo);
+	});
+
+	test("can upload background image", async ({ page }) => {
+		// Arrange
+		const fileInput = adminSettingsPage.getAuthBackgroundFileInput();
+
+		// Act
+		await fileInput.setInputFiles(BG_FIXTURE_1);
+
+		// Assert
+		await expect(page.getByText("Background image uploaded")).toBeVisible({ timeout: 15000 });
+		await expect(adminSettingsPage.getAuthBackgroundPreview()).toBeVisible();
+	});
+
+	test("background image visible on login page", async ({ page }) => {
+		// Arrange — save admin cookies, then clear so /login renders auth layout
+		const savedState = await page.context().storageState();
+		await page.context().clearCookies();
+
+		// Act
+		await page.goto("/login");
+		await expect(page.getByLabel("E-mail")).toBeVisible({ timeout: 15000 });
+
+		// Assert
+		await expect(page.getByTestId("auth-background-image")).toBeVisible();
+
+		// Restore admin session for subsequent serial tests
+		await page.context().addCookies(savedState.cookies);
+	});
+
+	test("can replace background image", async ({ page }) => {
+		// Arrange
+		const fileInput = adminSettingsPage.getAuthBackgroundFileInput();
+
+		// Act
+		await fileInput.setInputFiles(BG_FIXTURE_2);
+
+		// Assert
+		await expect(page.getByText("Background image uploaded")).toBeVisible({ timeout: 15000 });
+		await expect(adminSettingsPage.getAuthBackgroundPreview()).toBeVisible();
+	});
+
+	test("can remove background image", async ({ page }) => {
+		// Arrange
+		const removeButton = adminSettingsPage.getAuthBackgroundRemoveButton();
+
+		// Act
+		await removeButton.click();
+
+		// Assert
+		await expect(page.getByText("Background image removed")).toBeVisible({ timeout: 15000 });
+		await expect(adminSettingsPage.getAuthBackgroundPreview()).not.toBeVisible();
+	});
+
+	test("login page reverts to default after removal", async ({ page }) => {
+		// Arrange — save admin cookies, then clear
+		const savedState = await page.context().storageState();
+		await page.context().clearCookies();
+
+		// Act
+		await page.goto("/login");
+		await expect(page.getByLabel("E-mail")).toBeVisible({ timeout: 15000 });
+
+		// Assert
+		await expect(page.getByTestId("auth-background-image")).not.toBeVisible();
+
+		// Restore admin session
+		await page.context().addCookies(savedState.cookies);
 	});
 });

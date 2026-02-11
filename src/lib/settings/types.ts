@@ -80,6 +80,7 @@ export type AppSettingsMap = {
 	BRANDING_PRIMARY_COLOR: string;
 	BRANDING_SECONDARY_COLOR: string;
 	BRANDING_FOOTER_TEXT: string;
+	BRANDING_AUTH_BACKGROUND_KEY: string;
 
 	// Reminder settings
 	REMINDER_REVIEWER_SETTINGS: ReviewerReminderSettings;

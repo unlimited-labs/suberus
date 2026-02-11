@@ -365,6 +365,24 @@ export class AdminSettingsPage {
 		await section.getByRole("button", { name: "Save" }).last().click()
 	}
 
+	// --- Auth Background Image ---
+
+	getAuthBackgroundUploadButton() {
+		return this.page.getByTestId("auth-background-upload")
+	}
+
+	getAuthBackgroundRemoveButton() {
+		return this.page.getByTestId("auth-background-remove")
+	}
+
+	getAuthBackgroundPreview() {
+		return this.page.getByTestId("auth-background-preview")
+	}
+
+	getAuthBackgroundFileInput() {
+		return this.page.locator("input[aria-label='Upload auth background']")
+	}
+
 	async loginAsAdmin(testRunId: string) {
 		await this.page.goto("/login")
 		await this.page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 })

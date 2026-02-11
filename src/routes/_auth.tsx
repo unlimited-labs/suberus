@@ -17,6 +17,7 @@ const defaults: AuthPageBranding = {
 	conferenceEndDate: APP_SETTINGS_DEFAULTS.CONFERENCE_DATE_END,
 	conferenceLocation: APP_SETTINGS_DEFAULTS.CONFERENCE_LOCATION,
 	conferenceSubtitle: APP_SETTINGS_DEFAULTS.CONFERENCE_SUBTITLE,
+	authBackgroundUrl: APP_SETTINGS_DEFAULTS.BRANDING_AUTH_BACKGROUND_KEY,
 };
 
 function formatDateRange(start: string, end: string): string {
@@ -107,6 +108,7 @@ function AuthLayoutRoute() {
 			<AuthLayout
 				conferenceName={branding.conferenceName}
 				logoUrl={branding.logoUrl}
+				backgroundImageUrl={branding.authBackgroundUrl || undefined}
 			>
 				<Outlet />
 			</AuthLayout>

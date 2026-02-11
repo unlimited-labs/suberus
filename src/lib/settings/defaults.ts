@@ -99,6 +99,7 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	BRANDING_PRIMARY_COLOR: "#3b82f6",
 	BRANDING_SECONDARY_COLOR: "#8b5cf6",
 	BRANDING_FOOTER_TEXT: "",
+	BRANDING_AUTH_BACKGROUND_KEY: "",
 
 	// Reminder settings
 	REMINDER_REVIEWER_SETTINGS: { enabled: false, daysBefore: [3, 1] },

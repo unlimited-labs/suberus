@@ -64,9 +64,9 @@ test.describe.serial("AuthSidebar Conference Subtitle", () => {
 			create: { key: "CONFERENCE_SUBTITLE", value: "Dynamic Subtitle Update" },
 		});
 
-		// Act
+		// Act — use /login because /register has steps that replace the subtitle
 		await page.setViewportSize({ width: 1280, height: 720 });
-		await page.goto("/register");
+		await page.goto("/login");
 
 		// Assert
 		await expect(page.getByText("Dynamic Subtitle Update")).toBeVisible();

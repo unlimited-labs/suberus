@@ -373,6 +373,7 @@ export interface BrandingSettings {
 	primaryColor: string;
 	secondaryColor: string;
 	footerText: string;
+	authBackgroundUrl: string;
 }
 
 /** App branding + conference name (for _app loader) */
@@ -411,6 +412,7 @@ export const getAppBrandingFn = createServerFn({ method: "GET" }).handler(
 			primaryColor: settings.BRANDING_PRIMARY_COLOR,
 			secondaryColor: settings.BRANDING_SECONDARY_COLOR,
 			footerText: settings.BRANDING_FOOTER_TEXT,
+			authBackgroundUrl: "",
 		};
 	},
 );
@@ -421,12 +423,16 @@ export const getAppBrandingFn = createServerFn({ method: "GET" }).handler(
 export const getBrandingSettingsFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(async (): Promise<BrandingSettings> => {
-		const settings = await getSettings([
-			"BRANDING_LOGO_URL",
-			"BRANDING_FAVICON_URL",
-			"BRANDING_PRIMARY_COLOR",
-			"BRANDING_SECONDARY_COLOR",
-			"BRANDING_FOOTER_TEXT",
+		const { getAuthBackgroundUrl } = await import("./branding.server");
+		const [settings, authBackgroundUrl] = await Promise.all([
+			getSettings([
+				"BRANDING_LOGO_URL",
+				"BRANDING_FAVICON_URL",
+				"BRANDING_PRIMARY_COLOR",
+				"BRANDING_SECONDARY_COLOR",
+				"BRANDING_FOOTER_TEXT",
+			]),
+			getAuthBackgroundUrl(),
 		]);
 		return {
 			logoUrl: settings.BRANDING_LOGO_URL,
@@ -434,6 +440,7 @@ export const getBrandingSettingsFn = createServerFn({ method: "GET" })
 			primaryColor: settings.BRANDING_PRIMARY_COLOR,
 			secondaryColor: settings.BRANDING_SECONDARY_COLOR,
 			footerText: settings.BRANDING_FOOTER_TEXT,
+			authBackgroundUrl,
 		};
 	});
 
@@ -452,6 +459,38 @@ export const updateBrandingSettingsFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
+/**
+ * Upload auth background image (admin only)
+ */
+export const uploadAuthBackgroundFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(
+		z.object({
+			fileBase64: z.string(),
+			mimeType: z.string(),
+		}),
+	)
+	.handler(async ({ data }) => {
+		const { uploadAuthBackground, getAuthBackgroundUrl } = await import(
+			"./branding.server"
+		);
+		const buffer = Buffer.from(data.fileBase64, "base64");
+		await uploadAuthBackground(buffer, data.mimeType);
+		const url = await getAuthBackgroundUrl();
+		return { url };
+	});
+
+/**
+ * Delete auth background image (admin only)
+ */
+export const deleteAuthBackgroundFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.handler(async () => {
+		const { deleteAuthBackground } = await import("./branding.server");
+		await deleteAuthBackground();
+		return { success: true };
+	});
+
 /** Auth page branding (public, no auth) */
 export interface AuthPageBranding {
 	conferenceName: string;
@@ -462,6 +501,7 @@ export interface AuthPageBranding {
 	conferenceEndDate: string;
 	conferenceLocation: string;
 	conferenceSubtitle: string;
+	authBackgroundUrl: string;
 }
 
 /**
@@ -480,15 +520,19 @@ export const getPrimaryColorFn = createServerFn({ method: "GET" }).handler(
  */
 export const getAuthPageBrandingFn = createServerFn({ method: "GET" }).handler(
 	async (): Promise<AuthPageBranding> => {
-		const s = await getSettings([
-			"CONFERENCE_NAME",
-			"BRANDING_LOGO_URL",
-			"BRANDING_PRIMARY_COLOR",
-			"BRANDING_SECONDARY_COLOR",
-			"CONFERENCE_DATE_START",
-			"CONFERENCE_DATE_END",
-			"CONFERENCE_LOCATION",
-			"CONFERENCE_SUBTITLE",
+		const { getAuthBackgroundUrl } = await import("./branding.server");
+		const [s, authBackgroundUrl] = await Promise.all([
+			getSettings([
+				"CONFERENCE_NAME",
+				"BRANDING_LOGO_URL",
+				"BRANDING_PRIMARY_COLOR",
+				"BRANDING_SECONDARY_COLOR",
+				"CONFERENCE_DATE_START",
+				"CONFERENCE_DATE_END",
+				"CONFERENCE_LOCATION",
+				"CONFERENCE_SUBTITLE",
+			]),
+			getAuthBackgroundUrl(),
 		]);
 		return {
 			conferenceName: s.CONFERENCE_NAME,
@@ -499,6 +543,7 @@ export const getAuthPageBrandingFn = createServerFn({ method: "GET" }).handler(
 			conferenceEndDate: s.CONFERENCE_DATE_END,
 			conferenceLocation: s.CONFERENCE_LOCATION,
 			conferenceSubtitle: s.CONFERENCE_SUBTITLE,
+			authBackgroundUrl,
 		};
 	},
 );

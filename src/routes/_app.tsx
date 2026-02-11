@@ -15,6 +15,7 @@ const defaults: AppBranding = {
 	primaryColor: APP_SETTINGS_DEFAULTS.BRANDING_PRIMARY_COLOR,
 	secondaryColor: APP_SETTINGS_DEFAULTS.BRANDING_SECONDARY_COLOR,
 	footerText: APP_SETTINGS_DEFAULTS.BRANDING_FOOTER_TEXT,
+	authBackgroundUrl: "",
 };
 
 export const Route = createFileRoute("/_app")({
