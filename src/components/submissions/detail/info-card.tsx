@@ -1,9 +1,4 @@
-import {
-	IconCalendar,
-	IconCategory,
-	IconHash,
-	IconRefresh,
-} from "@tabler/icons-react";
+import { IconCalendar, IconCategory, IconRefresh } from "@tabler/icons-react";
 import { VersionSelector } from "@/components/submissions/version-selector";
 import type {
 	UserSubmission,
@@ -60,12 +55,6 @@ export function InfoCard({
 		<div className="rounded-2xl bg-card shadow-xl p-6 border">
 			<h3 className="font-semibold text-foreground mb-4">Information</h3>
 			<div className="space-y-4">
-				<InfoItem
-					icon={<IconHash className="size-4 text-muted-foreground" />}
-					label="Submission ID"
-					value={submission.id}
-					mono
-				/>
 				<InfoItem
 					icon={<IconCategory className="size-4 text-muted-foreground" />}
 					label="Type"

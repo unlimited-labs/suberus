@@ -1,4 +1,5 @@
 import {
+	IconBook,
 	IconFileText,
 	IconLoader2,
 	IconSettings,
@@ -8,17 +9,34 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import type { SubmissionValidationSettings } from "@/utils/settings.functions";
-import { updateSubmissionValidationSettingsFn } from "@/utils/settings.functions";
+import {
+	updateReviewGuidelinesFn,
+	updateSubmissionGuidelinesFn,
+	updateSubmissionValidationSettingsFn,
+} from "@/utils/settings.functions";
 
 interface SubmissionSettingsTabProps {
 	initialData: SubmissionValidationSettings;
+	initialSubmissionGuidelines: string;
+	initialReviewGuidelines: string;
 }
+
+const submissionGuidelinesPlaceholders = [
+	"minTitleLength",
+	"maxTitleLength",
+	"minAbstractLength",
+	"maxAbstractLength",
+	"minKeywords",
+	"maxKeywords",
+];
 
 const fileTypeOptions = [
 	{ value: "pdf", label: "PDF" },
@@ -30,9 +48,17 @@ const fileTypeOptions = [
 
 export function SubmissionSettingsTab({
 	initialData,
+	initialSubmissionGuidelines,
+	initialReviewGuidelines,
 }: SubmissionSettingsTabProps) {
 	const [data, setData] = useState(initialData);
 	const [isSaving, setIsSaving] = useState(false);
+	const [submissionGuidelines, setSubmissionGuidelines] = useState(
+		initialSubmissionGuidelines,
+	);
+	const [reviewGuidelines, setReviewGuidelines] = useState(
+		initialReviewGuidelines,
+	);
 
 	const handleChange = <K extends keyof SubmissionValidationSettings>(
 		field: K,
@@ -53,7 +79,15 @@ export function SubmissionSettingsTab({
 	const handleSave = async () => {
 		setIsSaving(true);
 		try {
-			await updateSubmissionValidationSettingsFn({ data });
+			await Promise.all([
+				updateSubmissionValidationSettingsFn({ data }),
+				updateSubmissionGuidelinesFn({
+					data: { value: submissionGuidelines },
+				}),
+				updateReviewGuidelinesFn({
+					data: { value: reviewGuidelines },
+				}),
+			]);
 			toast.success("Submission settings saved");
 		} catch (error) {
 			toast.error(
@@ -303,6 +337,52 @@ export function SubmissionSettingsTab({
 						/>
 					</div>
 				</div>
+			</SettingsSection>
+
+			<SettingsSection
+				icon={IconBook}
+				title="Submission Guidelines"
+				description="Markdown text shown to authors in the submission form sidebar. Use {{placeholder}} for dynamic values."
+				delay={250}
+			>
+				<div className="space-y-3">
+					<div className="flex flex-wrap gap-1.5">
+						{submissionGuidelinesPlaceholders.map((p) => (
+							<Badge
+								key={p}
+								variant="secondary"
+								className="font-mono text-xs cursor-pointer"
+								onClick={() =>
+									setSubmissionGuidelines((prev) => `${prev}{{${p}}}`)
+								}
+							>
+								{`{{${p}}}`}
+							</Badge>
+						))}
+					</div>
+					<Textarea
+						value={submissionGuidelines}
+						onChange={(e) => setSubmissionGuidelines(e.target.value)}
+						rows={6}
+						className="font-mono text-sm"
+						placeholder="• Title should be concise..."
+					/>
+				</div>
+			</SettingsSection>
+
+			<SettingsSection
+				icon={IconBook}
+				title="Review Guidelines"
+				description="Markdown text shown to reviewers in the review form sidebar"
+				delay={300}
+			>
+				<Textarea
+					value={reviewGuidelines}
+					onChange={(e) => setReviewGuidelines(e.target.value)}
+					rows={6}
+					className="font-mono text-sm"
+					placeholder="• Provide constructive feedback..."
+				/>
 			</SettingsSection>
 
 			<div className="flex justify-end border-t pt-6">

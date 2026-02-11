@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import {
 	getActiveSubmissionTypesFn,
+	getSubmissionGuidelinesFn,
 	getSubmissionValidationForFormFn,
 } from "@/utils/settings.functions";
 import {
@@ -20,19 +21,22 @@ import {
 
 export const Route = createFileRoute("/_app/submissions/$id_/edit")({
 	loader: async ({ params }) => {
-		const [data, typeConfigs, validationSettings] = await Promise.all([
-			getSubmissionByIdFn({ data: { submissionId: params.id } }),
-			getActiveSubmissionTypesFn(),
-			getSubmissionValidationForFormFn(),
-		]);
-		return { data, typeConfigs, validationSettings };
+		const [data, typeConfigs, validationSettings, submissionGuidelines] =
+			await Promise.all([
+				getSubmissionByIdFn({ data: { submissionId: params.id } }),
+				getActiveSubmissionTypesFn(),
+				getSubmissionValidationForFormFn(),
+				getSubmissionGuidelinesFn(),
+			]);
+		return { data, typeConfigs, validationSettings, submissionGuidelines };
 	},
 	component: EditSubmissionPage,
 });
 
 function EditSubmissionPage() {
 	const { id } = Route.useParams();
-	const { data, typeConfigs, validationSettings } = Route.useLoaderData();
+	const { data, typeConfigs, validationSettings, submissionGuidelines } =
+		Route.useLoaderData();
 	const navigate = useNavigate();
 
 	if (
@@ -183,6 +187,7 @@ function EditSubmissionPage() {
 					initialData={initialData}
 					typeConfigs={typeConfigs}
 					validationSettings={validationSettings}
+					guidelines={submissionGuidelines}
 				/>
 			</div>
 		</div>

@@ -105,6 +105,15 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	REMINDER_REVIEWER_SETTINGS: { enabled: false, daysBefore: [3, 1] },
 	REMINDER_REVISION_SETTINGS: { enabled: false, intervalDays: 7, maxCount: 3 },
 	REMINDER_DEADLINE_SETTINGS: { enabled: false, daysBefore: [7, 3, 1] },
+
+	// Guidelines
+	SUBMISSION_GUIDELINES:
+		"• Title should be concise and descriptive\n• Abstract minimum {{minAbstractLength}} characters\n• At least one author required\n• Add {{minKeywords}}-{{maxKeywords}} relevant keywords",
+	REVIEW_GUIDELINES:
+		"• Provide constructive, specific feedback\n• Support claims with evidence from the work\n• Be respectful and professional\n• Consider the work's contribution to the field\n• Minimum 50 characters for comments",
+
+	// Email footer
+	EMAIL_FOOTER_TEXT: "",
 };
 
 /** Get default value for a setting key */

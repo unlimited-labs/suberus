@@ -13,11 +13,14 @@ import {
 	IconUsers,
 	IconWriting,
 } from "@tabler/icons-react";
-import { useForm } from "@tanstack/react-form";
-import { useEffect, useRef, useState } from "react";
+import { useForm, useStore } from "@tanstack/react-form";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { z } from "zod";
+import { FieldError } from "@/components/forms/field-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Markdown } from "@/components/ui/markdown";
 import {
 	Select,
 	SelectContent,
@@ -27,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "@/hooks/use-session";
+import { useZodFormField } from "@/hooks/use-zod-form-field";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import { cn } from "@/lib/utils";
 import { getAffiliationById } from "@/utils/affiliations.functions";
@@ -67,6 +71,7 @@ interface SubmissionFormProps {
 	initialData?: Partial<SubmissionFormData>;
 	typeConfigs: ActiveSubmissionType[];
 	validationSettings: ValidationSettings;
+	guidelines?: string;
 }
 
 export interface SubmissionFormData {
@@ -80,12 +85,27 @@ export interface SubmissionFormData {
 	sessionId: string | null;
 }
 
+/** Substitute {{placeholder}} values in guidelines text */
+function substituteGuidelines(
+	text: string,
+	settings: ValidationSettings,
+): string {
+	return text
+		.replace(/\{\{minTitleLength\}\}/g, String(settings.minTitleLength))
+		.replace(/\{\{maxTitleLength\}\}/g, String(settings.maxTitleLength))
+		.replace(/\{\{minAbstractLength\}\}/g, String(settings.minAbstractLength))
+		.replace(/\{\{maxAbstractLength\}\}/g, String(settings.maxAbstractLength))
+		.replace(/\{\{minKeywords\}\}/g, String(settings.minKeywords))
+		.replace(/\{\{maxKeywords\}\}/g, String(settings.maxKeywords));
+}
+
 export function SubmissionForm({
 	onSubmit,
 	onSaveDraft,
 	initialData,
 	typeConfigs,
 	validationSettings,
+	guidelines,
 }: SubmissionFormProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isSavingDraft, setIsSavingDraft] = useState(false);
@@ -103,6 +123,39 @@ export function SubmissionForm({
 	const [activeSessions, setActiveSessions] = useState<
 		{ id: string; name: string }[]
 	>([]);
+
+	// Zod validators for title and content
+	const titleValidators = useZodFormField(
+		z
+			.string()
+			.min(
+				validationSettings.minTitleLength,
+				`Title must be at least ${validationSettings.minTitleLength} characters`,
+			)
+			.max(
+				validationSettings.maxTitleLength,
+				`Title must be at most ${validationSettings.maxTitleLength} characters`,
+			),
+	);
+
+	const contentValidators = useZodFormField(
+		z
+			.string()
+			.min(
+				validationSettings.minAbstractLength,
+				`Abstract must be at least ${validationSettings.minAbstractLength} characters`,
+			)
+			.max(
+				validationSettings.maxAbstractLength,
+				`Abstract must be at most ${validationSettings.maxAbstractLength} characters`,
+			),
+	);
+
+	// Substitute placeholders in guidelines
+	const renderedGuidelines = useMemo(() => {
+		if (!guidelines) return null;
+		return substituteGuidelines(guidelines, validationSettings);
+	}, [guidelines, validationSettings]);
 
 	const form = useForm({
 		defaultValues: {
@@ -232,7 +285,7 @@ export function SubmissionForm({
 		}
 	}, [user, initialData?.authors, form]);
 
-	const values = form.state.values;
+	const values = useStore(form.store, (state) => state.values);
 
 	// Get current type config (use selectedType for reactive updates)
 	const currentTypeConfig = typeConfigs.find((t) => t.type === selectedType);
@@ -397,99 +450,51 @@ export function SubmissionForm({
 								</div>
 
 								<div className="space-y-4">
-									<form.Field name="title">
-										{(field) => {
-											const len = field.state.value.length;
-											const isValid =
-												len >= validationSettings.minTitleLength &&
-												len <= validationSettings.maxTitleLength;
-											return (
+									<form.Field name="title" validators={titleValidators}>
+										{(field) => (
+											<div className="space-y-2">
+												<Label htmlFor="title" className="text-foreground">
+													Title
+												</Label>
+												<Input
+													id="title"
+													name="title"
+													value={field.state.value}
+													onChange={(e) => field.handleChange(e.target.value)}
+													onBlur={field.handleBlur}
+													className="text-foreground"
+												/>
+												<FieldError errors={field.state.meta.errors} />
+											</div>
+										)}
+									</form.Field>
+
+									{/* Content field always mounted to keep TanStack Form instance alive;
+									   validators disabled for FILE format to prevent stale validation blocking submit */}
+									<form.Field
+										name="content"
+										validators={isFileFormat ? undefined : contentValidators}
+									>
+										{(field) =>
+											!isFileFormat ? (
 												<div className="space-y-2">
-													<div className="flex items-center justify-between">
-														<Label htmlFor="title" className="text-foreground">
-															Title
-														</Label>
-														<span
-															className={cn(
-																"text-xs",
-																!isValid && len > 0
-																	? "text-destructive"
-																	: "text-muted-foreground",
-															)}
-														>
-															{len} / {validationSettings.minTitleLength}-
-															{validationSettings.maxTitleLength} characters
-														</span>
-													</div>
-													<Input
-														id="title"
-														name="title"
+													<Label htmlFor="content" className="text-foreground">
+														Abstract
+													</Label>
+													<Textarea
+														id="content"
+														name="content"
 														value={field.state.value}
 														onChange={(e) => field.handleChange(e.target.value)}
 														onBlur={field.handleBlur}
-														className="text-foreground"
+														rows={8}
+														className="resize-none text-foreground"
 													/>
-													{field.state.meta.errors.length > 0 && (
-														<p className="text-xs text-destructive">
-															{field.state.meta.errors[0]}
-														</p>
-													)}
+													<FieldError errors={field.state.meta.errors} />
 												</div>
-											);
-										}}
+											) : null
+										}
 									</form.Field>
-
-									{/* Show text area for TEXT format */}
-									{!isFileFormat && (
-										<form.Field name="content">
-											{(field) => {
-												const len = field.state.value.length;
-												const isValid =
-													len >= validationSettings.minAbstractLength &&
-													len <= validationSettings.maxAbstractLength;
-												return (
-													<div className="space-y-2">
-														<div className="flex items-center justify-between">
-															<Label
-																htmlFor="content"
-																className="text-foreground"
-															>
-																Abstract
-															</Label>
-															<span
-																className={cn(
-																	"text-xs",
-																	!isValid && len > 0
-																		? "text-destructive"
-																		: "text-muted-foreground",
-																)}
-															>
-																{len} / {validationSettings.minAbstractLength}-
-																{validationSettings.maxAbstractLength}{" "}
-																characters
-															</span>
-														</div>
-														<Textarea
-															id="content"
-															name="content"
-															value={field.state.value}
-															onChange={(e) =>
-																field.handleChange(e.target.value)
-															}
-															onBlur={field.handleBlur}
-															rows={8}
-															className="resize-none text-foreground"
-														/>
-														{field.state.meta.errors.length > 0 && (
-															<p className="text-xs text-destructive">
-																{field.state.meta.errors[0]}
-															</p>
-														)}
-													</div>
-												);
-											}}
-										</form.Field>
-									)}
 
 									{/* Show file dropzone ONLY for FILE format */}
 									{isFileFormat && (
@@ -764,27 +769,33 @@ export function SubmissionForm({
 								<IconInfoCircle className="size-5 text-muted-foreground" />
 								<h3 className="font-semibold text-foreground">Guidelines</h3>
 							</div>
-							<div className="space-y-3 text-sm text-muted-foreground">
-								<p>• Title should be concise and descriptive</p>
-								{isFileFormat ? (
-									<p>
-										• Upload your document as{" "}
-										{allowedExtensions.map((e) => e.toUpperCase()).join(", ")}
-									</p>
-								) : (
-									<p>
-										• Abstract minimum {validationSettings.minAbstractLength}{" "}
-										characters
-									</p>
-								)}
-								<p>• At least one author required</p>
-								{validationSettings.enableKeywords && (
-									<p>
-										• Add {validationSettings.minKeywords}-
-										{validationSettings.maxKeywords} relevant keywords
-									</p>
-								)}
-							</div>
+							{renderedGuidelines ? (
+								<div className="text-sm text-muted-foreground">
+									<Markdown content={renderedGuidelines} />
+								</div>
+							) : (
+								<div className="space-y-3 text-sm text-muted-foreground">
+									<p>• Title should be concise and descriptive</p>
+									{isFileFormat ? (
+										<p>
+											• Upload your document as{" "}
+											{allowedExtensions.map((e) => e.toUpperCase()).join(", ")}
+										</p>
+									) : (
+										<p>
+											• Abstract minimum {validationSettings.minAbstractLength}{" "}
+											characters
+										</p>
+									)}
+									<p>• At least one author required</p>
+									{validationSettings.enableKeywords && (
+										<p>
+											• Add {validationSettings.minKeywords}-
+											{validationSettings.maxKeywords} relevant keywords
+										</p>
+									)}
+								</div>
+							)}
 						</div>
 					</div>
 				</div>

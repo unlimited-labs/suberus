@@ -154,6 +154,66 @@ const conferenceSettingsSchema = z.object({
 	subtitle: z.string(),
 });
 
+/**
+ * Get submission guidelines (public - requires auth)
+ */
+export const getSubmissionGuidelinesFn = createServerFn({ method: "GET" })
+	.middleware([authMiddleware])
+	.handler(async () => {
+		return getSetting("SUBMISSION_GUIDELINES");
+	});
+
+/**
+ * Get review guidelines (public - requires auth)
+ */
+export const getReviewGuidelinesFn = createServerFn({ method: "GET" })
+	.middleware([authMiddleware])
+	.handler(async () => {
+		return getSetting("REVIEW_GUIDELINES");
+	});
+
+/**
+ * Get email footer text (admin only)
+ */
+export const getEmailFooterFn = createServerFn({ method: "GET" })
+	.middleware([adminMiddleware])
+	.handler(async () => {
+		return getSetting("EMAIL_FOOTER_TEXT");
+	});
+
+/**
+ * Update email footer text (admin only)
+ */
+export const updateEmailFooterFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(z.object({ value: z.string() }))
+	.handler(async ({ data }) => {
+		await setSetting("EMAIL_FOOTER_TEXT", data.value);
+		return { success: true };
+	});
+
+/**
+ * Update submission guidelines (admin only)
+ */
+export const updateSubmissionGuidelinesFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(z.object({ value: z.string() }))
+	.handler(async ({ data }) => {
+		await setSetting("SUBMISSION_GUIDELINES", data.value);
+		return { success: true };
+	});
+
+/**
+ * Update review guidelines (admin only)
+ */
+export const updateReviewGuidelinesFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(z.object({ value: z.string() }))
+	.handler(async ({ data }) => {
+		await setSetting("REVIEW_GUIDELINES", data.value);
+		return { success: true };
+	});
+
 /** Submission validation settings shape */
 export interface SubmissionValidationSettings {
 	minTitleLength: number;

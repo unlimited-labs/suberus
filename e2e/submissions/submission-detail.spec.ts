@@ -63,6 +63,23 @@ test.describe("Submission Detail - Actions Card", () => {
 	});
 });
 
+test.describe("Submission Detail - Info Card", () => {
+	test("does not display Submission ID in info card", async ({ page, testRun, cleanup }) => {
+		// Arrange
+		const { id } = await createSubmission({
+			testRunId: testRun.testRunId,
+			title: "No Submission ID Test",
+			status: SubmissionStatus.SUBMITTED,
+		});
+		cleanup.track(id);
+		await page.goto(`/submissions/${id}`);
+
+		// Assert
+		await expect(page.getByText("Submission ID")).not.toBeVisible();
+		await expect(page.getByText(id)).not.toBeVisible();
+	});
+});
+
 test.describe("Submission Detail - Text Wrapping", () => {
 	test("long words in abstract wrap correctly without horizontal scroll", async ({
 		page,

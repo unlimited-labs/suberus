@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { statusLabels, typeLabels } from "@/lib/labels/submission";
@@ -12,7 +13,13 @@ export function SubmissionMobileCard(submission: AdminSubmission) {
 						<span className="text-xs font-mono text-muted-foreground shrink-0 mt-0.5">
 							#{submission.sequentialNumber}
 						</span>
-						<p className="font-medium line-clamp-2">{submission.title}</p>
+						<Link
+							to="/admin/submissions/$id"
+							params={{ id: submission.id }}
+							className="font-medium line-clamp-2 hover:underline"
+						>
+							{submission.title}
+						</Link>
 					</div>
 					<div className="flex items-center gap-2 flex-wrap">
 						<Badge variant="outline">{typeLabels[submission.type]}</Badge>

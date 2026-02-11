@@ -86,6 +86,13 @@ export type AppSettingsMap = {
 	REMINDER_REVIEWER_SETTINGS: ReviewerReminderSettings;
 	REMINDER_REVISION_SETTINGS: RevisionReminderSettings;
 	REMINDER_DEADLINE_SETTINGS: DeadlineReminderSettings;
+
+	// Guidelines
+	SUBMISSION_GUIDELINES: string;
+	REVIEW_GUIDELINES: string;
+
+	// Email footer
+	EMAIL_FOOTER_TEXT: string;
 };
 
 /** Keys for submission type configs */

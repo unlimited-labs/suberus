@@ -126,8 +126,10 @@ test.describe("Draft - Skips Validation", () => {
 		await submissionPage.fillAffiliation(0, "Test University");
 		await submissionPage.submitButton.click();
 
-		// Assert - should show validation error, NOT redirect
-		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 15000 });
+		// Assert - should show field validation error, NOT redirect
+		await expect(
+			page.getByText(/at least 500 characters/i).or(page.locator("[data-sonner-toast]")),
+		).toBeVisible({ timeout: 15000 });
 		await expect(page).toHaveURL(/\/submissions\/new/);
 	});
 });

@@ -10,13 +10,17 @@ import {
 	getAssignmentForReviewFn,
 	submitReviewFn,
 } from "@/utils/reviews.functions";
+import { getReviewGuidelinesFn } from "@/utils/settings.functions";
 
 export const Route = createFileRoute("/_app/reviews/$assignmentId")({
 	loader: async ({ params }) => {
-		const data = await getAssignmentForReviewFn({
-			data: { assignmentId: params.assignmentId },
-		});
-		return { data };
+		const [data, reviewGuidelines] = await Promise.all([
+			getAssignmentForReviewFn({
+				data: { assignmentId: params.assignmentId },
+			}),
+			getReviewGuidelinesFn(),
+		]);
+		return { data, reviewGuidelines };
 	},
 	component: ReviewFormPage,
 });
@@ -24,7 +28,7 @@ export const Route = createFileRoute("/_app/reviews/$assignmentId")({
 function ReviewFormPage() {
 	const { assignmentId } = Route.useParams();
 	const router = useRouter();
-	const { data } = Route.useLoaderData();
+	const { data, reviewGuidelines } = Route.useLoaderData();
 
 	if (!data) {
 		return <NotFoundState assignmentId={assignmentId} />;
@@ -76,6 +80,7 @@ function ReviewFormPage() {
 						file: submission.file,
 					}}
 					reviewMode={config.reviewMode}
+					guidelines={reviewGuidelines}
 					initialData={
 						existingReview
 							? {

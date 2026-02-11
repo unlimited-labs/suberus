@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { prisma } from "@/db.server";
 import type { EmailEventType } from "@/generated/prisma/enums";
+import { getSetting } from "@/utils/settings.server";
 
 const transporter = nodemailer.createTransport({
 	host: process.env.SMTP_HOST ?? "localhost",
@@ -27,6 +28,16 @@ export async function sendEmail(
 			const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
 			subject = subject.replace(regex, value);
 			body = body.replace(regex, value);
+		}
+
+		// Append global email footer if configured
+		const footer = await getSetting("EMAIL_FOOTER_TEXT");
+		if (footer) {
+			if (template.isHtml) {
+				body += `<hr><p>${footer}</p>`;
+			} else {
+				body += `\n\n---\n${footer}`;
+			}
 		}
 
 		// Add test run ID header in E2E mode for test isolation

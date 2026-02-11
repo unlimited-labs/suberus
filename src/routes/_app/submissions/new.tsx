@@ -13,6 +13,7 @@ import { useSession } from "@/hooks/use-session";
 import { sendVerificationEmail } from "@/lib/auth-client";
 import {
 	getActiveSubmissionTypesFn,
+	getSubmissionGuidelinesFn,
 	getSubmissionValidationForFormFn,
 } from "@/utils/settings.functions";
 import {
@@ -22,11 +23,13 @@ import {
 
 export const Route = createFileRoute("/_app/submissions/new")({
 	loader: async () => {
-		const [typeConfigs, validationSettings] = await Promise.all([
-			getActiveSubmissionTypesFn(),
-			getSubmissionValidationForFormFn(),
-		]);
-		return { typeConfigs, validationSettings };
+		const [typeConfigs, validationSettings, submissionGuidelines] =
+			await Promise.all([
+				getActiveSubmissionTypesFn(),
+				getSubmissionValidationForFormFn(),
+				getSubmissionGuidelinesFn(),
+			]);
+		return { typeConfigs, validationSettings, submissionGuidelines };
 	},
 	component: NewSubmissionPage,
 });
@@ -34,7 +37,8 @@ export const Route = createFileRoute("/_app/submissions/new")({
 const RESEND_COOLDOWN = 60;
 
 function NewSubmissionPage() {
-	const { typeConfigs, validationSettings } = Route.useLoaderData();
+	const { typeConfigs, validationSettings, submissionGuidelines } =
+		Route.useLoaderData();
 	const navigate = useNavigate();
 	const { user } = useSession();
 	const [cooldown, setCooldown] = useState(0);
@@ -184,6 +188,7 @@ function NewSubmissionPage() {
 					onSaveDraft={handleSaveDraft}
 					typeConfigs={typeConfigs}
 					validationSettings={validationSettings}
+					guidelines={submissionGuidelines}
 				/>
 			</div>
 		</div>

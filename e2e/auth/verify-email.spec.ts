@@ -1,4 +1,4 @@
-import { test, expect, clearMailpitForAddress, waitForEmail } from "./fixtures"
+import { test, expect, clearMailpitForAddress, waitForEmail, getMailpitMessage } from "./fixtures"
 
 test.describe("Verify Email Page", () => {
 	test("displays page correctly with email param", async ({ verifyEmailPage }) => {
@@ -50,6 +50,59 @@ test.describe("Verify Email Page", () => {
 		// Assert
 		await expect(verifyEmailPage.resendButton).toBeEnabled()
 		await expect(verifyEmailPage.resendButton).toContainText(/resend email/i)
+	})
+})
+
+test.describe("Verify Email - Verification Link", () => {
+	test("clicking verification link verifies email and removes banner", async ({
+		registerPage,
+		testRun,
+		page,
+	}) => {
+		test.slow()
+		// Arrange - register new user
+		const uniqueEmail = `verify-link-${testRun.testRunId}@e2e.local`
+		await registerPage.goto()
+		await registerPage.fillStep1({
+			email: uniqueEmail,
+			password: "ValidPassword123!",
+			confirmPassword: "ValidPassword123!",
+			firstName: "Verify",
+			lastName: "Link",
+			affiliation: "Test University",
+		})
+		await registerPage.clickContinue()
+		await registerPage.fillStep2({ country: "Poland" })
+		await registerPage.clickContinue()
+		await registerPage.fillStep3({ acceptTerms: true })
+		await registerPage.clickCreateAccount()
+		await expect(page).toHaveURL("/", { timeout: 10000 })
+
+		// Assert precondition - unverified banner is visible
+		const banner = page.locator("[role='alert']").filter({ hasText: /email.*not verified/i })
+		await expect(banner).toBeVisible({ timeout: 5000 })
+
+		// Wait for verification email
+		const email = await waitForEmail(uniqueEmail, "verify", 15000)
+		expect(email).not.toBeNull()
+
+		// Extract verification URL from email body
+		const emailDetails = await getMailpitMessage(email!.ID)
+		const urlMatch = emailDetails.Text.match(/https?:\/\/[^\s]+verify[^\s]+/)
+		expect(urlMatch).not.toBeNull()
+		const verificationUrl = urlMatch![0]
+
+		// Act - navigate to verification URL
+		await page.goto(verificationUrl)
+		// Wait for redirect to complete
+		await page.waitForURL(/\//, { timeout: 15000 })
+
+		// Navigate to dashboard fresh to verify banner is gone
+		await page.goto("/")
+		await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible({ timeout: 10000 })
+
+		// Assert - unverified banner should NOT be visible anymore
+		await expect(banner).not.toBeVisible({ timeout: 5000 })
 	})
 })
 

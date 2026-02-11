@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
 	createActionsColumn,
@@ -37,9 +38,13 @@ export const submissionColumns: ColumnDef<AdminSubmission>[] = [
 			const title = row.getValue("title") as string;
 			return (
 				<div className="max-w-[300px]">
-					<span className="line-clamp-2 font-medium text-foreground">
+					<Link
+						to="/admin/submissions/$id"
+						params={{ id: row.original.id }}
+						className="line-clamp-2 font-medium text-foreground hover:underline"
+					>
 						{title}
-					</span>
+					</Link>
 				</div>
 			);
 		},

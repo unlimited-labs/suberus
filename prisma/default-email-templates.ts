@@ -16,12 +16,12 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 	{
 		eventType: "SUBMISSION_RECEIVED",
 		subject: "Submission Received: {{submissionTitle}}",
-		body: 'Dear {{authorName}},\n\nYour submission "{{submissionTitle}}" has been received.\n\nSubmission ID: {{submissionId}}\n\nThank you for your submission.',
+		body: 'Dear {{authorName}},\n\nYour submission "{{submissionTitle}}" has been received.\n\nView your submission: {{submissionUrl}}\n\nThank you for your submission.',
 		isEnabled: true,
 		isHtml: false,
 		ccEmails: [],
 		bccEmails: [],
-		availablePlaceholders: ["authorName", "submissionTitle", "submissionId"],
+		availablePlaceholders: ["authorName", "submissionTitle", "submissionUrl"],
 		description: "Sent when a new submission is created",
 	},
 	{
@@ -49,12 +49,12 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 	{
 		eventType: "SUBMISSION_WITHDRAWN",
 		subject: "Submission Withdrawn: {{submissionTitle}}",
-		body: 'Dear {{authorName}},\n\nYour submission "{{submissionTitle}}" (ID: {{submissionId}}) has been withdrawn.\n\nIf you did not request this, please contact us immediately.',
+		body: 'Dear {{authorName}},\n\nYour submission "{{submissionTitle}}" has been withdrawn.\n\nView: {{submissionUrl}}\n\nIf you did not request this, please contact us immediately.',
 		isEnabled: true,
 		isHtml: false,
 		ccEmails: [],
 		bccEmails: [],
-		availablePlaceholders: ["authorName", "submissionTitle", "submissionId"],
+		availablePlaceholders: ["authorName", "submissionTitle", "submissionUrl"],
 		description: "Sent when an author withdraws their submission",
 	},
 	{

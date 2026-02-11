@@ -200,15 +200,18 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 		await abstractMinInput.fill("200");
 		await saveValidationSettings(adminPage);
 
-		// Act - User: Navigate to form
+		// Act - User: Navigate to form, fill short content, submit
 		await userPage.goto("/submissions/new");
-
-		// Assert - Form shows updated limit
 		await expect(
 			userPage.getByRole("button", { name: /Oral Presentation/i })
 		).toBeVisible();
+
+		// Assert - validation error reflects updated limit (200 chars)
+		await userPage.getByLabel("Abstract").fill("Short content");
+		await userPage.getByLabel("Abstract").blur();
+		await userPage.getByRole("button", { name: "Submit" }).click();
 		await expect(
-			userPage.getByText(/0 \/ 200-\d+ characters/i)
+			userPage.getByText(/at least 200 characters/i)
 		).toBeVisible({ timeout: 10000 });
 
 		// Cleanup: Restore original value

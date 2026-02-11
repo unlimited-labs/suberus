@@ -28,7 +28,7 @@ test.describe("Form Validation", () => {
 			).toBeVisible({ timeout: 15000 });
 		});
 
-		test("shows character count indicator for content", async ({
+		test("does not show character count for content", async ({
 			submissionPage,
 		}) => {
 			// Arrange
@@ -40,7 +40,7 @@ test.describe("Form Validation", () => {
 			// Assert
 			await expect(
 				submissionPage.page.getByText(/17 \/ \d+-\d+ characters/),
-			).toBeVisible();
+			).not.toBeVisible();
 		});
 	});
 

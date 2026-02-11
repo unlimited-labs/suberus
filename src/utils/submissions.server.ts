@@ -169,7 +169,7 @@ export async function createNewSubmission(
 			void sendEmail("SUBMISSION_RECEIVED", presenter.email, {
 				authorName: `${presenter.firstName} ${presenter.lastName}`,
 				submissionTitle: data.title,
-				submissionId: submission.id,
+				submissionUrl: `${process.env.AUTH_URL}/submissions/${submission.id}`,
 			});
 		}
 	}

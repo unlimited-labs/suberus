@@ -1,6 +1,6 @@
 import { expect } from "@playwright/test";
 import { test } from "./fixtures";
-import { getPrisma } from "../helpers/test-db";
+import { getPrisma, setAppSetting } from "../helpers/test-db";
 
 /** Find a template card by its description text and click its edit button */
 async function openTemplateEditor(
@@ -186,5 +186,45 @@ test.describe("Admin Settings - Email Templates", () => {
 			where: { eventType: "ACCOUNT_CREATED" },
 			data: { ccEmails: [], bccEmails: [] },
 		});
+	});
+});
+
+test.describe("Admin Settings - Email Footer", () => {
+	test.beforeEach(async ({ adminSettingsPage }, testInfo) => {
+		// Arrange
+		await adminSettingsPage.goto();
+		if (testInfo.project.name === "mobile-admin") {
+			await adminSettingsPage.page.getByRole("tab").nth(4).click();
+		} else {
+			await adminSettingsPage.page
+				.getByRole("tab", { name: /Email Templates/i })
+				.click();
+		}
+		await expect(
+			adminSettingsPage.page.getByRole("heading", {
+				name: "Email Templates",
+			}),
+		).toBeVisible();
+	});
+
+	test("admin can configure email footer", async ({ page }) => {
+		// Arrange
+		const footerText = "Best regards,\nConference Committee";
+
+		// Act
+		const footerTextarea = page.getByLabel("Footer text");
+		await expect(footerTextarea).toBeVisible();
+		await footerTextarea.clear();
+		await footerTextarea.fill(footerText);
+		await page.getByRole("button", { name: "Save Footer" }).click();
+
+		// Assert
+		await expect(page.getByText(/saved/i)).toBeVisible({ timeout: 5000 });
+
+		// Cleanup
+		await setAppSetting(
+			"EMAIL_FOOTER_TEXT" as Parameters<typeof setAppSetting>[0],
+			"",
+		);
 	});
 });

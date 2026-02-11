@@ -8,6 +8,7 @@ import { SubmissionStatus } from "../../src/generated/prisma/enums";
 import {
 	clearMailpitForAddress,
 	waitForEmail,
+	getMailpitMessage,
 } from "../auth/fixtures";
 
 const TEST_USER = {
@@ -93,6 +94,11 @@ test.describe("Submission Emails", () => {
 		// Assert
 		const email = await waitForEmail(TEST_USER.email, "Submission Received", 15000);
 		expect(email).not.toBeNull();
+
+		// Assert email contains submission URL, not "Submission ID:"
+		const emailDetails = await getMailpitMessage(email!.ID);
+		expect(emailDetails.Text).toMatch(/\/submissions\/[a-f0-9-]+/);
+		expect(emailDetails.Text).not.toContain("Submission ID:");
 	});
 
 	test("draft submission does NOT send email", async ({

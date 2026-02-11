@@ -33,7 +33,9 @@ import {
 import {
 	getBrandingSettingsFn,
 	getConferenceSettingsFn,
+	getEmailFooterFn,
 	getReminderSettingsFn,
+	getSettingFn,
 	getSubmissionTypeConfigsFn,
 	getSubmissionValidationSettingsFn,
 } from "@/utils/settings.functions";
@@ -50,6 +52,9 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			reviewers,
 			reminderSettings,
 			emailTemplatesRaw,
+			submissionGuidelines,
+			reviewGuidelines,
+			emailFooter,
 		] = await Promise.all([
 			getConferenceSettingsFn(),
 			getSubmissionTypeConfigsFn(),
@@ -60,6 +65,9 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			getReviewerUsersFn(),
 			getReminderSettingsFn(),
 			getEmailTemplatesFn(),
+			getSettingFn({ data: { key: "SUBMISSION_GUIDELINES" } }),
+			getSettingFn({ data: { key: "REVIEW_GUIDELINES" } }),
+			getEmailFooterFn(),
 		]);
 		return {
 			conferenceSettings,
@@ -71,6 +79,9 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			reviewers,
 			reminderSettings,
 			emailTemplates: emailTemplatesRaw.map(toEmailTemplateUI),
+			submissionGuidelines: submissionGuidelines as string,
+			reviewGuidelines: reviewGuidelines as string,
+			emailFooter: emailFooter as string,
 		};
 	},
 	component: AdminSettingsPage,
@@ -98,6 +109,9 @@ function AdminSettingsPage() {
 		reviewers,
 		reminderSettings,
 		emailTemplates,
+		submissionGuidelines,
+		reviewGuidelines,
+		emailFooter,
 	} = Route.useLoaderData();
 	const [activeTab, setActiveTab] = useState("conference");
 	const router = useRouter();
@@ -126,7 +140,11 @@ function AdminSettingsPage() {
 						</TabsContent>
 
 						<TabsContent value="submissions">
-							<SubmissionSettingsTab initialData={submissionSettings} />
+							<SubmissionSettingsTab
+								initialData={submissionSettings}
+								initialSubmissionGuidelines={submissionGuidelines}
+								initialReviewGuidelines={reviewGuidelines}
+							/>
 						</TabsContent>
 
 						<TabsContent value="types">
@@ -142,7 +160,10 @@ function AdminSettingsPage() {
 						</TabsContent>
 
 						<TabsContent value="emails">
-							<EmailTemplatesTab initialData={emailTemplates} />
+							<EmailTemplatesTab
+								initialData={emailTemplates}
+								initialFooter={emailFooter}
+							/>
 						</TabsContent>
 
 						<TabsContent value="branding">

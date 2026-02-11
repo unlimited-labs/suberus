@@ -115,6 +115,7 @@ test.describe.serial("File Upload", () => {
 		testRun,
 	}) => {
 		test.slow();
+
 		// Arrange
 		await submissionPage.goto();
 		await submissionPage.selectType("FULL_PAPER");

@@ -52,6 +52,34 @@ test.describe("Admin Submission Detail Page", () => {
 	});
 });
 
+test.describe("Admin Submissions - Clickable Title", () => {
+	test("clicking submission title navigates to detail page", async ({
+		adminSubmissionsPage,
+		page,
+		testRun,
+		cleanup,
+	}) => {
+		// Arrange
+		const { id, title } = await createSubmission({
+			testRunId: testRun.testRunId,
+			title: "Clickable Title Test",
+			status: SubmissionStatus.SUBMITTED,
+		});
+		cleanup.track(id);
+
+		await adminSubmissionsPage.goto();
+		await adminSubmissionsPage.search(title);
+		await expect(adminSubmissionsPage.getRowByTitle(title)).toBeVisible({ timeout: 10000 });
+
+		// Act
+		await page.getByRole("link", { name: title }).click();
+
+		// Assert
+		await page.waitForURL(/\/admin\/submissions\/[a-f0-9-]+/);
+		await expect(page.getByText("Submission Details")).toBeVisible();
+	});
+});
+
 test.describe("Submission Detail - Desk Rejection", () => {
 	test("can desk reject a submitted submission", async ({
 		page,

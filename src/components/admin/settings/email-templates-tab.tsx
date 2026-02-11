@@ -1,8 +1,13 @@
-import { IconMail } from "@tabler/icons-react";
+import { IconLoader2, IconMail, IconSignature } from "@tabler/icons-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { SettingsSection } from "@/components/settings/settings-section";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import type { EmailEventType } from "@/generated/prisma/enums";
+import { updateEmailFooterFn } from "@/utils/settings.functions";
 import { EmailTemplateCard } from "./email-template-card";
 import { EmailTemplateDialog } from "./email-template-dialog";
 
@@ -66,13 +71,19 @@ export function toEmailTemplateUI(t: {
 
 interface EmailTemplatesTabProps {
 	initialData: EmailTemplateUI[];
+	initialFooter?: string;
 }
 
-export function EmailTemplatesTab({ initialData }: EmailTemplatesTabProps) {
+export function EmailTemplatesTab({
+	initialData,
+	initialFooter,
+}: EmailTemplatesTabProps) {
 	const [templates, setTemplates] = useState(initialData);
 	const [editingTemplate, setEditingTemplate] =
 		useState<EmailTemplateUI | null>(null);
 	const [dialogOpen, setDialogOpen] = useState(false);
+	const [footer, setFooter] = useState(initialFooter ?? "");
+	const [isSavingFooter, setIsSavingFooter] = useState(false);
 
 	const handleEdit = (template: EmailTemplateUI) => {
 		setEditingTemplate(template);
@@ -85,8 +96,60 @@ export function EmailTemplatesTab({ initialData }: EmailTemplatesTabProps) {
 		);
 	};
 
+	const handleSaveFooter = async () => {
+		setIsSavingFooter(true);
+		try {
+			await updateEmailFooterFn({ data: { value: footer } });
+			toast.success("Email footer saved");
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Failed to save footer",
+			);
+		} finally {
+			setIsSavingFooter(false);
+		}
+	};
+
 	return (
 		<>
+			<SettingsSection
+				icon={IconSignature}
+				title="Email Signature / Footer"
+				description="This text is appended to all outgoing emails"
+			>
+				<div className="space-y-3">
+					<div className="space-y-2">
+						<Label htmlFor="emailFooter">Footer text</Label>
+						<Textarea
+							id="emailFooter"
+							value={footer}
+							onChange={(e) => setFooter(e.target.value)}
+							rows={4}
+							placeholder="Best regards,&#10;Conference Committee"
+							className="text-sm"
+						/>
+						<p className="text-xs text-muted-foreground">
+							Leave empty to disable. Appended as plain text (or HTML for HTML
+							templates).
+						</p>
+					</div>
+					<div className="flex justify-end">
+						<Button
+							onClick={handleSaveFooter}
+							disabled={isSavingFooter}
+							size="sm"
+						>
+							{isSavingFooter && (
+								<IconLoader2 className="mr-2 size-4 animate-spin" />
+							)}
+							Save Footer
+						</Button>
+					</div>
+				</div>
+			</SettingsSection>
+
+			<div className="mt-6" />
+
 			<SettingsSection
 				icon={IconMail}
 				title="Email Templates"

@@ -20,6 +20,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Markdown } from "@/components/ui/markdown";
 import { Textarea } from "@/components/ui/textarea";
 import type { ReviewDecision, SubmissionType } from "@/generated/prisma/enums";
 import { typeLabels } from "@/lib/labels/submission";
@@ -55,6 +56,7 @@ interface ReviewFormProps {
 		} | null;
 	};
 	reviewMode: "OPEN" | "SINGLE_BLIND" | "DOUBLE_BLIND";
+	guidelines?: string;
 }
 
 export interface ReviewFormData {
@@ -135,6 +137,7 @@ export function ReviewForm({
 	initialData,
 	submission,
 	reviewMode,
+	guidelines,
 }: ReviewFormProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [contentExpanded, setContentExpanded] = useState(false);
@@ -613,12 +616,18 @@ export function ReviewForm({
 									Review Guidelines
 								</h3>
 							</div>
-							<div className="p-6 space-y-3 text-sm text-muted-foreground">
-								<p>• Provide constructive, specific feedback</p>
-								<p>• Support claims with evidence from the work</p>
-								<p>• Be respectful and professional</p>
-								<p>• Consider the work's contribution to the field</p>
-								<p>• Minimum 50 characters for comments</p>
+							<div className="p-6 text-sm text-muted-foreground">
+								{guidelines ? (
+									<Markdown content={guidelines} />
+								) : (
+									<div className="space-y-3">
+										<p>• Provide constructive, specific feedback</p>
+										<p>• Support claims with evidence from the work</p>
+										<p>• Be respectful and professional</p>
+										<p>• Consider the work's contribution to the field</p>
+										<p>• Minimum 50 characters for comments</p>
+									</div>
+								)}
 							</div>
 						</div>
 					</div>

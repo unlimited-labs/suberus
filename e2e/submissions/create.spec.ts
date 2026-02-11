@@ -220,7 +220,7 @@ test.describe("Submission Form", () => {
 		).toBeVisible({ timeout: 15000 });
 	});
 
-	test("shows character count for content", async ({ submissionPage }) => {
+	test("does not show character count for content", async ({ submissionPage }) => {
 		// Arrange
 		await submissionPage.goto();
 
@@ -230,7 +230,7 @@ test.describe("Submission Form", () => {
 		// Assert
 		await expect(
 			submissionPage.page.getByText(/11 \/ \d+-\d+ characters/),
-		).toBeVisible();
+		).not.toBeVisible();
 	});
 
 	test("shows file dropzone for FILE format type", async ({

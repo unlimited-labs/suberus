@@ -441,7 +441,7 @@ export async function withdrawSubmission(
 			void sendEmail("SUBMISSION_WITHDRAWN", presenter.email, {
 				authorName: `${presenter.firstName} ${presenter.lastName}`,
 				submissionTitle: submission.title,
-				submissionId,
+				submissionUrl: `${process.env.AUTH_URL}/submissions/${submissionId}`,
 			});
 		}
 	}
