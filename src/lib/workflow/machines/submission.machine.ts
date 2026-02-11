@@ -116,6 +116,23 @@ export const submissionMachine = setup({
 				AUTO_REJECT: {
 					target: "REJECTED",
 				},
+				// Editor decisions directly from REVIEWS_COMPLETE (shortcut)
+				EDITOR_ACCEPT: {
+					target: "ACCEPTED",
+					guard: "requiresEditorDecision",
+				},
+				EDITOR_CONDITIONAL: {
+					target: "CONDITIONALLY_ACCEPTED",
+					guard: "requiresEditorDecision",
+				},
+				EDITOR_REVISE: {
+					target: "REVISE_REQUIRED",
+					guard: "requiresEditorDecision",
+				},
+				EDITOR_REJECT: {
+					target: "REJECTED",
+					guard: "requiresEditorDecision",
+				},
 			},
 		},
 		AWAITING_DECISION: {

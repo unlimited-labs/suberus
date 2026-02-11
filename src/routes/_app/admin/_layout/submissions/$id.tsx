@@ -300,7 +300,9 @@ function SubmissionDetailPage() {
 	const canTransitionToAwaitingDecision =
 		submission.status === "REVIEWS_COMPLETE" && config.requiresEditorDecision;
 
-	const canMakeDecision = submission.status === "AWAITING_DECISION";
+	const canMakeDecision =
+		submission.status === "AWAITING_DECISION" ||
+		(submission.status === "REVIEWS_COMPLETE" && config.requiresEditorDecision);
 
 	const canOverrideDecision = [
 		"ACCEPTED",

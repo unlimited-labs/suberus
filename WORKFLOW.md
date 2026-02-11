@@ -325,13 +325,19 @@ Editors (role=EDITOR) can:
 
 ### From REVIEWS_COMPLETE
 **If requiresEditorDecision=false** (Abstracts):
+- Auto-applies reviewer decision immediately
 - Reviewer decides ACCEPT → `ACCEPTED`
 - Reviewer decides REJECT → `REJECTED`
 - Reviewer decides REVISE_AND_RESUBMIT → `REVISE_REQUIRED`
 - Reviewer decides ACCEPT_WITH_MINOR_REVISIONS → `CONDITIONALLY_ACCEPTED`
 
 **If requiresEditorDecision=true** (Papers):
-- → `AWAITING_DECISION`
+- → `AWAITING_DECISION` (editor transitions manually)
+- Editor can also decide directly from REVIEWS_COMPLETE (shortcut, skips AWAITING_DECISION):
+  - EDITOR_ACCEPT → `ACCEPTED`
+  - EDITOR_CONDITIONAL → `CONDITIONALLY_ACCEPTED`
+  - EDITOR_REVISE → `REVISE_REQUIRED`
+  - EDITOR_REJECT → `REJECTED`
 
 ### From AWAITING_DECISION
 Editor makes final decision:
@@ -507,7 +513,7 @@ When review submitted:
 Config: requiresEditorDecision = true
 
 When all reviews submitted:
-  if (config.autoTransitionAfterReviews) {
+  if (config.autoTransitionAfterReviews || !config.requiresEditorDecision) {
     submissionStatus = 'REVIEWS_COMPLETE'
     if (config.requiresEditorDecision) {
       submissionStatus = 'AWAITING_DECISION'
@@ -515,6 +521,8 @@ When all reviews submitted:
   } else {
     // Status stays UNDER_REVIEW - editor must manually transition
   }
+
+  // Editor can also decide directly from REVIEWS_COMPLETE (shortcut)
 
   // Editor reviews:
   // Review 1: ACCEPT (score: 4.5/5)
@@ -908,6 +916,8 @@ When FALSE (Manual):
 - Editor must manually transition to REVIEWS_COMPLETE
 - Allows editor to review all submissions before proceeding
 - Useful for papers requiring editorial oversight
+
+Note: When requiresEditorDecision=false, auto-transition always happens regardless of autoTransitionAfterReviews setting (reviewer decision must be applied).
 
 Example use cases:
 - Abstracts: autoTransitionAfterReviews = true (fast, automated)

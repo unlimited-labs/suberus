@@ -343,7 +343,7 @@ export async function checkAndTriggerReviewCompletion(
 	}
 
 	// Auto-transition if configured
-	if (config.autoTransitionAfterReviews) {
+	if (config.autoTransitionAfterReviews || !config.requiresEditorDecision) {
 		const result = await executeSubmissionTransition(
 			submissionId,
 			{ type: "ALL_REVIEWS_COMPLETE" },
