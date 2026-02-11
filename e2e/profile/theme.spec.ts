@@ -18,7 +18,7 @@ test.describe("Theme switching", () => {
 	test("switches to dark theme", async ({ page }) => {
 		// Arrange
 		await page.goto("/");
-		await page.waitForLoadState("networkidle");
+		await page.getByText("test@e2e.local").waitFor({ state: "visible" });
 
 		// Act
 		await openThemeSubmenu(page);
@@ -31,7 +31,7 @@ test.describe("Theme switching", () => {
 	test("switches to light theme", async ({ page }) => {
 		// Arrange
 		await page.goto("/");
-		await page.waitForLoadState("networkidle");
+		await page.getByText("test@e2e.local").waitFor({ state: "visible" });
 
 		// Act
 		await openThemeSubmenu(page);
@@ -44,7 +44,7 @@ test.describe("Theme switching", () => {
 	test("persists dark theme after reload", async ({ page }) => {
 		// Arrange
 		await page.goto("/");
-		await page.waitForLoadState("networkidle");
+		await page.getByText("test@e2e.local").waitFor({ state: "visible" });
 
 		// Act — set dark
 		await openThemeSubmenu(page);
@@ -60,7 +60,7 @@ test.describe("Theme switching", () => {
 
 		// Act — reload
 		await page.reload();
-		await page.waitForLoadState("networkidle");
+		await page.getByText("test@e2e.local").waitFor({ state: "visible" });
 
 		// Assert — cookie preserves theme across reload
 		await expect(page.locator("html")).toHaveClass(/dark/);
@@ -70,7 +70,7 @@ test.describe("Theme switching", () => {
 		// Arrange — emulate dark OS preference
 		await page.emulateMedia({ colorScheme: "dark" });
 		await page.goto("/");
-		await page.waitForLoadState("networkidle");
+		await page.getByText("test@e2e.local").waitFor({ state: "visible" });
 
 		// Act — set system theme
 		await openThemeSubmenu(page);
