@@ -15,7 +15,7 @@ import {
 	IconStarFilled,
 	IconX,
 } from "@tabler/icons-react";
-import { useForm } from "@tanstack/react-form";
+import { useForm, useStore } from "@tanstack/react-form";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -160,7 +160,7 @@ export function ReviewForm({
 		},
 	});
 
-	const values = form.state.values;
+	const values = useStore(form.store, (state) => state.values);
 
 	// Progress indicators
 	const hasDecision = !!values.decision;
