@@ -51,6 +51,13 @@ test.describe("Theme switching", () => {
 		await page.getByRole("menuitem", { name: "Dark" }).click();
 		await expect(page.locator("html")).toHaveClass(/dark/);
 
+		// Wait for setThemeFn POST to persist cookie before reloading
+		await expect(async () => {
+			const cookies = await page.context().cookies();
+			const theme = cookies.find((c) => c.name === "_preferred-theme");
+			expect(theme?.value).toBe("dark");
+		}).toPass();
+
 		// Act — reload
 		await page.reload();
 		await page.waitForLoadState("networkidle");
@@ -71,6 +78,13 @@ test.describe("Theme switching", () => {
 
 		// Assert — should be dark because OS is dark
 		await expect(page.locator("html")).toHaveClass(/dark/);
+
+		// Wait for setThemeFn + router.invalidate to complete (sets up matchMedia listener)
+		await expect(async () => {
+			const cookies = await page.context().cookies();
+			const theme = cookies.find((c) => c.name === "_preferred-theme");
+			expect(theme?.value).toBe("system");
+		}).toPass();
 
 		// Act — switch OS to light
 		await page.emulateMedia({ colorScheme: "light" });

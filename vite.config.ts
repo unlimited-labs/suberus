@@ -8,6 +8,7 @@ import { defineConfig } from "vite";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 
 const isDev = process.env.NODE_ENV !== "production";
+const isE2E = process.env.E2E === "true";
 
 const rollupConfig: Partial<RollupConfig> = {
 	onwarn(warning, log) {
@@ -31,6 +32,7 @@ const nitroConfig: NitroPluginConfig = {
 };
 
 const config = defineConfig({
+	server: isE2E ? { hmr: { overlay: false } } : undefined,
 	optimizeDeps: {
 		include: ["@tabler/icons-react", "countries-list"],
 	},
