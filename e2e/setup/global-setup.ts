@@ -85,6 +85,7 @@ const SUBMISSION_TYPE_CONFIGS = {
 		allowRevisions: true,
 		enableScoring: true,
 		scoringCriteria: ["Originality", "Clarity", "Significance", "Methodology"],
+		enableSessionSelection: false,
 	},
 	POSTER: {
 		isActive: true,
@@ -99,6 +100,7 @@ const SUBMISSION_TYPE_CONFIGS = {
 		allowRevisions: false,
 		enableScoring: false,
 		scoringCriteria: [],
+		enableSessionSelection: false,
 	},
 	FULL_PAPER: {
 		isActive: true,
@@ -113,6 +115,7 @@ const SUBMISSION_TYPE_CONFIGS = {
 		allowRevisions: true,
 		enableScoring: true,
 		scoringCriteria: ["Originality", "Clarity", "Significance", "Methodology", "Technical Quality"],
+		enableSessionSelection: false,
 	},
 };
 
