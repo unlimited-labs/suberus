@@ -171,13 +171,12 @@ export class SubmissionPage {
 	}
 
 	async fillAffiliation(index: number, affiliationName: string) {
-		const trigger = this.getAuthorCard(index).getByRole("combobox", { name: /affiliation/i })
-		await trigger.click()
-		await this.page.getByPlaceholder("Search affiliation...").fill(affiliationName)
+		const input = this.getAuthorCard(index).getByLabel("Affiliation")
+		await input.fill(affiliationName)
 		const option = this.page.getByRole("option").filter({ hasText: affiliationName }).first()
 		await option.waitFor({ state: "visible", timeout: 10000 })
 		await option.click()
-		await baseExpect(trigger).toContainText(affiliationName, { timeout: 5000 })
+		await baseExpect(input).toHaveValue(affiliationName, { timeout: 5000 })
 	}
 
 	async addAuthor() {

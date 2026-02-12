@@ -11,7 +11,7 @@ test.describe("Register Page - Step 1: Author Info", () => {
 		await expect(registerPage.page.getByLabel("Confirm Password *")).toBeVisible()
 		await expect(registerPage.page.getByLabel("First name *")).toBeVisible()
 		await expect(registerPage.page.getByLabel("Last name *")).toBeVisible()
-		await expect(registerPage.affiliationTrigger).toBeVisible()
+		await expect(registerPage.affiliationInput).toBeVisible()
 		// Title is a select component, check for the label text instead
 		await expect(registerPage.page.getByText("Title", { exact: true })).toBeVisible()
 		await expect(registerPage.continueButton).toBeVisible()
@@ -145,7 +145,7 @@ test.describe("Register Page - Step 2: Invoice", () => {
 		await expect(registerPage.page.getByLabel("E-mail *")).toHaveValue("newuser@example.com")
 		await expect(registerPage.page.getByLabel("First name *")).toHaveValue("Test")
 		await expect(registerPage.page.getByLabel("Last name *")).toHaveValue("User")
-		await expect(registerPage.affiliationTrigger).toContainText("Test University")
+		await expect(registerPage.affiliationInput).toHaveValue("Test University")
 	})
 
 	test("proceeds to step 3 with valid data", async ({ registerPage }) => {

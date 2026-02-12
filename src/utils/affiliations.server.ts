@@ -31,14 +31,15 @@ export async function findAffiliations(
 export async function upsertAffiliation(
 	name: string,
 ): Promise<AffiliationResult> {
-	return prisma.affiliation.upsert({
-		where: { name },
-		update: {},
-		create: { name },
-		select: {
-			id: true,
-			name: true,
-		},
+	const existing = await prisma.affiliation.findFirst({
+		where: { name: { equals: name, mode: "insensitive" } },
+		select: { id: true, name: true },
+	});
+	if (existing) return existing;
+
+	return prisma.affiliation.create({
+		data: { name },
+		select: { id: true, name: true },
 	});
 }
 

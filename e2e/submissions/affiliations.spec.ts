@@ -6,11 +6,10 @@ test.describe("Affiliations", () => {
 	}) => {
 		// Arrange
 		await submissionPage.goto();
-		const trigger = submissionPage.getAuthorCard(0).getByRole("combobox", { name: /affiliation/i });
+		const input = submissionPage.getAuthorCard(0).getByLabel("Affiliation");
 
 		// Act
-		await trigger.click();
-		await submissionPage.page.getByPlaceholder("Search affiliation...").fill("Test Univ");
+		await input.fill("Test Univ");
 		await expect(
 			submissionPage.page.getByRole("option", { name: "Test University", exact: true }),
 		).toBeVisible({ timeout: 5000 });
@@ -19,7 +18,7 @@ test.describe("Affiliations", () => {
 			.click();
 
 		// Assert
-		await expect(trigger).toContainText("Test University");
+		await expect(input).toHaveValue("Test University");
 	});
 
 	test("creates new affiliation via Create option", async ({
@@ -28,18 +27,17 @@ test.describe("Affiliations", () => {
 	}) => {
 		// Arrange
 		await submissionPage.goto();
-		const trigger = submissionPage.getAuthorCard(0).getByRole("combobox", { name: /affiliation/i });
+		const input = submissionPage.getAuthorCard(0).getByLabel("Affiliation");
 		const uniqueAffiliation = `New Affiliation ${testRun.testRunId}`;
 
 		// Act
-		await trigger.click();
-		await submissionPage.page.getByPlaceholder("Search affiliation...").fill(uniqueAffiliation);
+		await input.fill(uniqueAffiliation);
 		const createOption = submissionPage.page.getByRole("option").filter({ hasText: `Create "${uniqueAffiliation}"` });
 		await expect(createOption).toBeVisible({ timeout: 5000 });
 		await createOption.click();
 
 		// Assert
-		await expect(trigger).toContainText(uniqueAffiliation, { timeout: 5000 });
+		await expect(input).toHaveValue(uniqueAffiliation, { timeout: 5000 });
 	});
 
 	test("each author can have different affiliation", async ({
@@ -60,9 +58,112 @@ test.describe("Affiliations", () => {
 		await submissionPage.fillAffiliation(1, "Second University");
 
 		// Assert
-		const firstTrigger = submissionPage.getAuthorCard(0).getByRole("combobox", { name: /affiliation/i });
-		await expect(firstTrigger).toContainText("First University");
-		const secondTrigger = submissionPage.getAuthorCard(1).getByRole("combobox", { name: /affiliation/i });
-		await expect(secondTrigger).toContainText("Second University");
+		const firstInput = submissionPage.getAuthorCard(0).getByLabel("Affiliation");
+		await expect(firstInput).toHaveValue("First University");
+		const secondInput = submissionPage.getAuthorCard(1).getByLabel("Affiliation");
+		await expect(secondInput).toHaveValue("Second University");
+	});
+});
+
+test.describe("Affiliations - edge cases", () => {
+	test("case-insensitive match hides Create option", async ({
+		submissionPage,
+	}) => {
+		// Arrange
+		await submissionPage.goto();
+		const input = submissionPage.getAuthorCard(0).getByLabel("Affiliation");
+
+		// Act - type existing name in different case
+		await input.fill("test university");
+		await expect(
+			submissionPage.page.getByRole("option", { name: "Test University", exact: true }),
+		).toBeVisible({ timeout: 5000 });
+
+		// Assert - no Create option should appear since it's a case-insensitive match
+		await expect(
+			submissionPage.page.getByRole("option").filter({ hasText: /^Create "/ }),
+		).toBeHidden();
+	});
+
+	test("keyboard ArrowDown + Enter selects affiliation", async ({
+		submissionPage,
+	}) => {
+		// Arrange
+		await submissionPage.goto();
+		const input = submissionPage.getAuthorCard(0).getByLabel("Affiliation");
+
+		// Act
+		await input.fill("Test Univ");
+		await expect(
+			submissionPage.page.getByRole("option", { name: "Test University", exact: true }),
+		).toBeVisible({ timeout: 5000 });
+		await input.press("ArrowDown");
+		await input.press("Enter");
+
+		// Assert
+		await expect(input).toHaveValue("Test University");
+	});
+
+	test("Escape closes dropdown without selecting", async ({
+		submissionPage,
+	}) => {
+		// Arrange
+		await submissionPage.goto();
+		const input = submissionPage.getAuthorCard(0).getByLabel("Affiliation");
+
+		// Act
+		await input.fill("Test Univ");
+		await expect(
+			submissionPage.page.getByRole("option", { name: "Test University", exact: true }),
+		).toBeVisible({ timeout: 5000 });
+		await input.press("Escape");
+
+		// Assert - dropdown closed, input keeps typed text, no selection made
+		await expect(
+			submissionPage.page.getByRole("option"),
+		).toBeHidden();
+		await expect(input).toHaveValue("Test Univ");
+	});
+
+	test("blur auto-creates affiliation when no option selected", async ({
+		submissionPage,
+		testRun,
+	}) => {
+		// Arrange
+		await submissionPage.goto();
+		const input = submissionPage.getAuthorCard(0).getByLabel("Affiliation");
+		const uniqueName = `Blur Create ${testRun.testRunId}`;
+
+		// Act - type unique name, then blur by pressing Tab
+		await input.fill(uniqueName);
+		await expect(
+			submissionPage.page.getByRole("option").filter({ hasText: `Create "${uniqueName}"` }),
+		).toBeVisible({ timeout: 5000 });
+		await input.press("Tab");
+
+		// Assert - affiliation was auto-created on blur
+		await expect(input).toHaveValue(uniqueName, { timeout: 5000 });
+		// Verify the data attribute is set (server returned an ID)
+		await expect(input).toHaveAttribute("data-affiliation-id", /.+/, { timeout: 5000 });
+	});
+
+	test("clearing input resets affiliation value", async ({
+		submissionPage,
+	}) => {
+		// Arrange
+		await submissionPage.goto();
+		const input = submissionPage.getAuthorCard(0).getByLabel("Affiliation");
+
+		// First select an affiliation
+		await submissionPage.fillAffiliation(0, "Test University");
+		await expect(input).toHaveValue("Test University");
+		await expect(input).toHaveAttribute("data-affiliation-id", /.+/);
+
+		// Act - clear the input
+		await input.fill("");
+
+		// Assert - value is cleared, data attribute removed
+		await expect(input).toHaveValue("");
+		await expect(input).not.toHaveAttribute("data-affiliation-id");
 	});
 });

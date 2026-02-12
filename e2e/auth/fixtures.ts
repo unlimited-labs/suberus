@@ -70,7 +70,7 @@ export class RegisterPage {
 	readonly continueButton: Locator
 	readonly backButton: Locator
 	readonly createAccountButton: Locator
-	readonly affiliationTrigger: Locator
+	readonly affiliationInput: Locator
 
 	constructor(page: Page) {
 		this.page = page
@@ -79,7 +79,7 @@ export class RegisterPage {
 		this.continueButton = page.getByRole("button", { name: "Continue" })
 		this.backButton = page.getByRole("button", { name: "Back" })
 		this.createAccountButton = page.getByRole("button", { name: "Create account" })
-		this.affiliationTrigger = page.getByRole("combobox", { name: /affiliation/i })
+		this.affiliationInput = page.getByLabel("Affiliation")
 	}
 
 	async goto() {
@@ -102,13 +102,12 @@ export class RegisterPage {
 		await this.page.getByLabel("First name *").fill(data.firstName)
 		await this.page.getByLabel("Last name *").fill(data.lastName)
 
-		// AffiliationSelect is a combobox - click trigger, search, select or create
-		await this.affiliationTrigger.click()
-		await this.page.getByPlaceholder("Search affiliation...").fill(data.affiliation)
+		// AffiliationSelect is an inline autocomplete input
+		await this.affiliationInput.fill(data.affiliation)
 		const option = this.page.getByRole("option").filter({ hasText: data.affiliation }).first()
 		await option.waitFor({ state: "visible", timeout: 10000 })
 		await option.click()
-		await expect(this.affiliationTrigger).toContainText(data.affiliation, { timeout: 5000 })
+		await expect(this.affiliationInput).toHaveValue(data.affiliation, { timeout: 5000 })
 
 		if (data.title) {
 			await this.page.getByLabel("Title").click()
