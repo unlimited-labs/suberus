@@ -1,14 +1,11 @@
 import { IconArrowLeft, IconMail, IconMailCheck } from "@tabler/icons-react";
-import { useForm } from "@tanstack/react-form";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { AuthSidebar } from "@/components/forms/auth-sidebar";
-import { FieldError } from "@/components/forms/field-error";
-import { IconInput } from "@/components/forms/icon-input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { useAppForm } from "@/hooks/use-app-form";
 import { useZodFormField } from "@/hooks/use-zod-form-field";
 import { forgetPassword } from "@/lib/auth-client";
 
@@ -30,7 +27,7 @@ function ForgotPasswordPage() {
 
 	const emailValidators = useZodFormField(emailSchema);
 
-	const form = useForm({
+	const form = useAppForm({
 		defaultValues: {
 			email: "",
 		},
@@ -131,23 +128,15 @@ function ForgotPasswordPage() {
 					className="flex flex-1 flex-col"
 				>
 					<div className="flex-1 space-y-3">
-						<form.Field name="email" validators={emailValidators}>
+						<form.AppField name="email" validators={emailValidators}>
 							{(field) => (
-								<div className="space-y-1">
-									<Label htmlFor={field.name}>E-mail</Label>
-									<IconInput
-										id={field.name}
-										type="email"
-										icon={<IconMail className="size-4" />}
-										hasError={field.state.meta.errors.length > 0}
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-									/>
-									<FieldError errors={field.state.meta.errors} />
-								</div>
+								<field.IconInputField
+									label="E-mail"
+									type="email"
+									icon={<IconMail className="size-4" />}
+								/>
 							)}
-						</form.Field>
+						</form.AppField>
 					</div>
 
 					<div className="mt-4">

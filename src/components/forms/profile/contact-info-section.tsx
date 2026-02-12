@@ -9,13 +9,11 @@ import {
 	IconSelector,
 	IconWorld,
 } from "@tabler/icons-react";
-import { useForm } from "@tanstack/react-form";
 import { countries } from "countries-list";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { FieldError } from "@/components/forms/field-error";
-import { IconInput } from "@/components/forms/icon-input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +30,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import { useAppForm } from "@/hooks/use-app-form";
 import { useZodFormFieldOnChange } from "@/hooks/use-zod-form-field";
 import { sendVerificationEmail } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
@@ -94,7 +93,7 @@ export function ContactInfoSection({
 		}
 	};
 
-	const form = useForm({
+	const form = useAppForm({
 		defaultValues: initialData,
 		onSubmit: async ({ value }) => {
 			await onSave(value);
@@ -126,59 +125,50 @@ export function ContactInfoSection({
 			className="space-y-4"
 		>
 			{/* Email */}
-			<form.Field name="email" validators={emailValidators}>
+			<form.AppField name="email" validators={emailValidators}>
 				{(field) => (
-					<div className="space-y-1">
-						<Label htmlFor={field.name}>Email *</Label>
-						<IconInput
-							id={field.name}
-							type="email"
-							icon={<IconMail className="size-4" />}
-							hasError={field.state.meta.errors.length > 0}
-							value={field.state.value}
-							onBlur={field.handleBlur}
-							onChange={(e) => field.handleChange(e.target.value)}
-							disabled={isLoading}
-						/>
-						<FieldError errors={field.state.meta.errors} />
-						{/* Email verification status */}
-						{!emailChanged && (
-							<div className="flex items-center gap-2 pt-1">
-								{emailVerified ? (
-									<>
-										<IconMailCheck className="size-4 text-green-600" />
-										<span className="text-sm text-green-600">
-											Email verified
-										</span>
-									</>
-								) : (
-									<>
-										<IconMailX className="size-4 text-yellow-600" />
-										<span className="text-sm text-yellow-600">
-											Email not verified
-										</span>
-										<button
-											type="button"
-											onClick={handleResend}
-											disabled={cooldown > 0 || isResending}
-											className="ml-2 inline-flex items-center gap-1 text-sm font-medium text-primary underline underline-offset-2 hover:no-underline disabled:opacity-50"
-										>
-											<IconRefresh
-												className={`size-3 ${isResending ? "animate-spin" : ""}`}
-											/>
-											{cooldown > 0
-												? `Resend in ${cooldown}s`
-												: isResending
-													? "Sending..."
-													: "Resend"}
-										</button>
-									</>
-								)}
-							</div>
-						)}
-					</div>
+					<field.IconInputField
+						label="Email *"
+						type="email"
+						icon={<IconMail className="size-4" />}
+						disabled={isLoading}
+					/>
 				)}
-			</form.Field>
+			</form.AppField>
+
+			{/* Email verification status */}
+			{!emailChanged && (
+				<div className="flex items-center gap-2">
+					{emailVerified ? (
+						<>
+							<IconMailCheck className="size-4 text-green-600" />
+							<span className="text-sm text-green-600">Email verified</span>
+						</>
+					) : (
+						<>
+							<IconMailX className="size-4 text-yellow-600" />
+							<span className="text-sm text-yellow-600">
+								Email not verified
+							</span>
+							<button
+								type="button"
+								onClick={handleResend}
+								disabled={cooldown > 0 || isResending}
+								className="ml-2 inline-flex items-center gap-1 text-sm font-medium text-primary underline underline-offset-2 hover:no-underline disabled:opacity-50"
+							>
+								<IconRefresh
+									className={`size-3 ${isResending ? "animate-spin" : ""}`}
+								/>
+								{cooldown > 0
+									? `Resend in ${cooldown}s`
+									: isResending
+										? "Sending..."
+										: "Resend"}
+							</button>
+						</>
+					)}
+				</div>
+			)}
 
 			{/* Email change warning */}
 			{emailChanged && (

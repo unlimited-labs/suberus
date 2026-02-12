@@ -15,14 +15,14 @@ import {
 	IconStarFilled,
 	IconX,
 } from "@tabler/icons-react";
-import { useForm, useStore } from "@tanstack/react-form";
+import { useStore } from "@tanstack/react-form";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Markdown } from "@/components/ui/markdown";
-import { Textarea } from "@/components/ui/textarea";
 import type { ReviewDecision, SubmissionType } from "@/generated/prisma/enums";
+import { useAppForm } from "@/hooks/use-app-form";
 import { typeLabels } from "@/lib/labels/submission";
 import { cn } from "@/lib/utils";
 
@@ -139,10 +139,9 @@ export function ReviewForm({
 	reviewMode,
 	guidelines,
 }: ReviewFormProps) {
-	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [contentExpanded, setContentExpanded] = useState(false);
 
-	const form = useForm({
+	const form = useAppForm({
 		defaultValues: {
 			decision: initialData?.decision || ("ACCEPT" as ReviewDecision),
 			scoreNovelty: initialData?.scoreNovelty || 3,
@@ -154,12 +153,7 @@ export function ReviewForm({
 			privateNotes: initialData?.privateNotes || "",
 		},
 		onSubmit: async ({ value }) => {
-			setIsSubmitting(true);
-			try {
-				await onSubmit(value);
-			} finally {
-				setIsSubmitting(false);
-			}
+			await onSubmit(value);
 		},
 	});
 
@@ -476,42 +470,20 @@ export function ReviewForm({
 									</h2>
 								</div>
 
-								<form.Field name="comments">
+								<form.AppField name="comments">
 									{(field) => (
-										<div className="space-y-2">
-											<div className="flex items-center justify-between">
-												<Label htmlFor="comments" className="text-foreground">
-													Review Comments
-												</Label>
-												<span
-													className={cn(
-														"text-xs",
-														field.state.value.length >= 50
-															? "text-muted-foreground"
-															: "text-destructive",
-													)}
-												>
-													{field.state.value.length} characters
-													{field.state.value.length < 50 &&
-														` (min. 50 required)`}
-												</span>
-											</div>
-											<Textarea
-												id="comments"
-												name="comments"
-												value={field.state.value}
-												onChange={(e) => field.handleChange(e.target.value)}
-												onBlur={field.handleBlur}
-												rows={10}
-												placeholder="Provide detailed feedback on the submission's strengths, weaknesses, and suggestions for improvement..."
-												className="resize-none text-foreground"
-											/>
-											<p className="text-xs text-muted-foreground">
-												These comments will be visible to the authors.
-											</p>
-										</div>
+										<field.TextareaField
+											label="Review Comments"
+											rows={10}
+											placeholder="Provide detailed feedback on the submission's strengths, weaknesses, and suggestions for improvement..."
+											className="text-foreground"
+											charCount={{ min: 50 }}
+										/>
 									)}
-								</form.Field>
+								</form.AppField>
+								<p className="text-xs text-muted-foreground">
+									These comments will be visible to the authors.
+								</p>
 							</div>
 
 							<div className="border-t" />
@@ -525,46 +497,31 @@ export function ReviewForm({
 									</h2>
 								</div>
 
-								<form.Field name="privateNotes">
+								<form.AppField name="privateNotes">
 									{(field) => (
-										<div className="space-y-2">
-											<div className="flex items-center justify-between">
-												<Label
-													htmlFor="privateNotes"
-													className="text-foreground"
-												>
-													Confidential Notes{" "}
-													<span className="text-muted-foreground text-xs font-normal">
-														(Optional)
-													</span>
-												</Label>
-											</div>
-											<Textarea
-												id="privateNotes"
-												name="privateNotes"
-												value={field.state.value}
-												onChange={(e) => field.handleChange(e.target.value)}
-												onBlur={field.handleBlur}
-												rows={4}
-												placeholder="Internal notes visible only to editors and admins..."
-												className="resize-none text-foreground"
-											/>
-											<p className="text-xs text-muted-foreground">
-												Only visible to editors and administrators.
-											</p>
-										</div>
+										<field.TextareaField
+											label="Confidential Notes (Optional)"
+											rows={4}
+											placeholder="Internal notes visible only to editors and admins..."
+											className="text-foreground"
+										/>
 									)}
-								</form.Field>
+								</form.AppField>
+								<p className="text-xs text-muted-foreground">
+									Only visible to editors and administrators.
+								</p>
 							</div>
 
 							{/* Submit Section */}
 							<div className="pt-4">
 								<Button
 									type="submit"
-									disabled={isSubmitting || !allComplete}
+									disabled={form.state.isSubmitting || !allComplete}
 									className="w-full h-12 text-base font-semibold"
 								>
-									{isSubmitting ? "Submitting Review..." : "Submit Review"}
+									{form.state.isSubmitting
+										? "Submitting Review..."
+										: "Submit Review"}
 								</Button>
 								{!allComplete && (
 									<p className="text-xs text-muted-foreground text-center mt-2">

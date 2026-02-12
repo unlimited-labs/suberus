@@ -1,21 +1,9 @@
 import { IconBuilding, IconId } from "@tabler/icons-react";
-import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
 import { z } from "zod";
-import { FieldError } from "@/components/forms/field-error";
-import { IconInput } from "@/components/forms/icon-input";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { useAppForm } from "@/hooks/use-app-form";
 import { useZodFormFieldOnChange } from "@/hooks/use-zod-form-field";
-import { cn } from "@/lib/utils";
 import type { PersonalInfoFormData } from "@/lib/validations/profile";
 
 const TITLE_OPTIONS = [
@@ -45,7 +33,7 @@ export function PersonalInfoSection({
 }: PersonalInfoSectionProps) {
 	const [isValidationAttempted, setIsValidationAttempted] = useState(false);
 
-	const form = useForm({
+	const form = useAppForm({
 		defaultValues: initialData,
 		onSubmit: async ({ value }) => {
 			await onSave(value);
@@ -97,115 +85,63 @@ export function PersonalInfoSection({
 		>
 			{/* Name fields */}
 			<div className="grid gap-3 sm:grid-cols-2">
-				<form.Field name="firstName" validators={firstNameValidators}>
+				<form.AppField name="firstName" validators={firstNameValidators}>
 					{(field) => (
-						<div className="space-y-1">
-							<Label htmlFor={field.name}>First name *</Label>
-							<Input
-								id={field.name}
-								type="text"
-								className={cn(
-									"h-9",
-									field.state.meta.errors.length > 0 && "border-destructive",
-								)}
-								value={field.state.value}
-								onBlur={field.handleBlur}
-								onChange={(e) => field.handleChange(e.target.value)}
-								disabled={isLoading}
-							/>
-							<FieldError errors={field.state.meta.errors} />
-						</div>
+						<field.InputField
+							label="First name *"
+							type="text"
+							disabled={isLoading}
+						/>
 					)}
-				</form.Field>
+				</form.AppField>
 
-				<form.Field name="lastName" validators={lastNameValidators}>
+				<form.AppField name="lastName" validators={lastNameValidators}>
 					{(field) => (
-						<div className="space-y-1">
-							<Label htmlFor={field.name}>Last name *</Label>
-							<Input
-								id={field.name}
-								type="text"
-								className={cn(
-									"h-9",
-									field.state.meta.errors.length > 0 && "border-destructive",
-								)}
-								value={field.state.value}
-								onBlur={field.handleBlur}
-								onChange={(e) => field.handleChange(e.target.value)}
-								disabled={isLoading}
-							/>
-							<FieldError errors={field.state.meta.errors} />
-						</div>
+						<field.InputField
+							label="Last name *"
+							type="text"
+							disabled={isLoading}
+						/>
 					)}
-				</form.Field>
+				</form.AppField>
 			</div>
 
 			{/* Title + Affiliation */}
 			<div className="grid gap-3 sm:grid-cols-[120px_1fr]">
-				<form.Field name="title">
+				<form.AppField name="title">
 					{(field) => (
-						<div className="space-y-1">
-							<Label htmlFor={field.name}>Title</Label>
-							<Select
-								value={field.state.value || ""}
-								onValueChange={(value) => field.handleChange(value)}
-								disabled={isLoading}
-							>
-								<SelectTrigger className="h-9">
-									<SelectValue placeholder="—" />
-								</SelectTrigger>
-								<SelectContent>
-									{TITLE_OPTIONS.map((option) => (
-										<SelectItem key={option.value} value={option.value}>
-											{option.label}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
+						<field.SelectField
+							label="Title"
+							options={TITLE_OPTIONS}
+							disabled={isLoading}
+						/>
 					)}
-				</form.Field>
+				</form.AppField>
 
-				<form.Field name="affiliation" validators={affiliationValidators}>
+				<form.AppField name="affiliation" validators={affiliationValidators}>
 					{(field) => (
-						<div className="space-y-1">
-							<Label htmlFor={field.name}>Affiliation</Label>
-							<IconInput
-								id={field.name}
-								type="text"
-								icon={<IconBuilding className="size-4" />}
-								hasError={field.state.meta.errors.length > 0}
-								value={field.state.value || ""}
-								onBlur={field.handleBlur}
-								onChange={(e) => field.handleChange(e.target.value)}
-								disabled={isLoading}
-							/>
-							<FieldError errors={field.state.meta.errors} />
-						</div>
+						<field.IconInputField
+							label="Affiliation"
+							type="text"
+							icon={<IconBuilding className="size-4" />}
+							disabled={isLoading}
+						/>
 					)}
-				</form.Field>
+				</form.AppField>
 			</div>
 
 			{/* ORCID */}
-			<form.Field name="orcid" validators={orcidValidators}>
+			<form.AppField name="orcid" validators={orcidValidators}>
 				{(field) => (
-					<div className="space-y-1">
-						<Label htmlFor={field.name}>ORCID</Label>
-						<IconInput
-							id={field.name}
-							type="text"
-							icon={<IconId className="size-4" />}
-							placeholder="0000-0002-1825-0097"
-							hasError={field.state.meta.errors.length > 0}
-							value={field.state.value || ""}
-							onBlur={field.handleBlur}
-							onChange={(e) => field.handleChange(e.target.value)}
-							disabled={isLoading}
-						/>
-						<FieldError errors={field.state.meta.errors} />
-					</div>
+					<field.IconInputField
+						label="ORCID"
+						type="text"
+						icon={<IconId className="size-4" />}
+						placeholder="0000-0002-1825-0097"
+						disabled={isLoading}
+					/>
 				)}
-			</form.Field>
+			</form.AppField>
 
 			{/* Save button */}
 			<div className="flex justify-end pt-2">

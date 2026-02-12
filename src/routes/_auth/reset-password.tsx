@@ -3,16 +3,13 @@ import {
 	IconCheck,
 	IconExclamationCircle,
 } from "@tabler/icons-react";
-import { useForm } from "@tanstack/react-form";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { AuthSidebar } from "@/components/forms/auth-sidebar";
-import { FieldError } from "@/components/forms/field-error";
-import { PasswordInput } from "@/components/forms/password-input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { useAppForm } from "@/hooks/use-app-form";
 import { useZodFormField } from "@/hooks/use-zod-form-field";
 import { resetPassword } from "@/lib/auth-client";
 import { resetPasswordSchema } from "@/lib/validations/auth";
@@ -47,7 +44,7 @@ function ResetPasswordPage() {
 	const passwordValidators = useZodFormField(passwordSchema);
 	const confirmValidators = useZodFormField(confirmPasswordSchema);
 
-	const form = useForm({
+	const form = useAppForm({
 		defaultValues: {
 			newPassword: "",
 			confirmPassword: "",
@@ -225,37 +222,16 @@ function ResetPasswordPage() {
 					className="flex flex-1 flex-col"
 				>
 					<div className="flex-1 space-y-3">
-						<form.Field name="newPassword" validators={passwordValidators}>
-							{(field) => (
-								<div className="space-y-1">
-									<Label htmlFor={field.name}>New Password</Label>
-									<PasswordInput
-										id={field.name}
-										hasError={field.state.meta.errors.length > 0}
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={field.handleChange}
-									/>
-									<FieldError errors={field.state.meta.errors} />
-								</div>
-							)}
-						</form.Field>
+						<form.AppField name="newPassword" validators={passwordValidators}>
+							{(field) => <field.PasswordField label="New Password" />}
+						</form.AppField>
 
-						<form.Field name="confirmPassword" validators={confirmValidators}>
-							{(field) => (
-								<div className="space-y-1">
-									<Label htmlFor={field.name}>Confirm Password</Label>
-									<PasswordInput
-										id={field.name}
-										hasError={field.state.meta.errors.length > 0}
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={field.handleChange}
-									/>
-									<FieldError errors={field.state.meta.errors} />
-								</div>
-							)}
-						</form.Field>
+						<form.AppField
+							name="confirmPassword"
+							validators={confirmValidators}
+						>
+							{(field) => <field.PasswordField label="Confirm Password" />}
+						</form.AppField>
 					</div>
 
 					<div className="mt-4">

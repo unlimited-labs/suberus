@@ -7,7 +7,6 @@ import {
 	IconSelector,
 	IconWorld,
 } from "@tabler/icons-react";
-import { useForm } from "@tanstack/react-form";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { countries } from "countries-list";
 import { useCallback, useState } from "react";
@@ -16,7 +15,6 @@ import { z } from "zod";
 import { AffiliationSelect } from "@/components/forms/affiliation-select";
 import { AuthSidebar } from "@/components/forms/auth-sidebar";
 import { FieldError } from "@/components/forms/field-error";
-import { IconInput } from "@/components/forms/icon-input";
 import { PasswordInput } from "@/components/forms/password-input";
 import { TosModal } from "@/components/tos-modal";
 import { Button } from "@/components/ui/button";
@@ -29,20 +27,13 @@ import {
 	CommandItem,
 	CommandList,
 } from "@/components/ui/command";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { useAppForm } from "@/hooks/use-app-form";
 import { useMultiStep } from "@/hooks/use-multi-step";
 import { useZodFormFieldOnChange } from "@/hooks/use-zod-form-field";
 import { signUp } from "@/lib/auth-client";
@@ -123,7 +114,7 @@ function RegisterPage() {
 		defaultSurveyAnswers[q.id] = false;
 	}
 
-	const form = useForm({
+	const form = useAppForm({
 		defaultValues: {
 			email: "",
 			password: "",
@@ -298,42 +289,29 @@ function RegisterPage() {
 						{currentStep === 1 && (
 							<div className="animate-in fade-in slide-in-from-right-4 space-y-3 duration-300">
 								{/* Email */}
-								<form.Field name="email" validators={emailValidators}>
+								<form.AppField name="email" validators={emailValidators}>
 									{(field) => (
-										<div className="space-y-1">
-											<Label htmlFor={field.name}>E-mail *</Label>
-											<IconInput
-												id={field.name}
-												type="email"
-												icon={<IconMail className="size-4" />}
-												hasError={field.state.meta.errors.length > 0}
-												value={field.state.value}
-												onBlur={field.handleBlur}
-												onChange={(e) => field.handleChange(e.target.value)}
-											/>
-											<FieldError errors={field.state.meta.errors} />
-										</div>
+										<field.IconInputField
+											label="E-mail *"
+											type="email"
+											icon={<IconMail className="size-4" />}
+										/>
 									)}
-								</form.Field>
+								</form.AppField>
 
 								{/* Password fields */}
 								<div className="grid gap-2 sm:grid-cols-2">
-									<form.Field name="password" validators={passwordValidators}>
+									<form.AppField
+										name="password"
+										validators={passwordValidators}
+									>
 										{(field) => (
-											<div className="space-y-1">
-												<Label htmlFor={field.name}>Password *</Label>
-												<PasswordInput
-													id={field.name}
-													placeholder="Min. 10 characters"
-													hasError={field.state.meta.errors.length > 0}
-													value={field.state.value}
-													onBlur={field.handleBlur}
-													onChange={(value) => field.handleChange(value)}
-												/>
-												<FieldError errors={field.state.meta.errors} />
-											</div>
+											<field.PasswordField
+												label="Password *"
+												placeholder="Min. 10 characters"
+											/>
 										)}
-									</form.Field>
+									</form.AppField>
 
 									<form.Field
 										name="confirmPassword"
@@ -373,76 +351,35 @@ function RegisterPage() {
 
 								{/* Name fields */}
 								<div className="grid gap-2 sm:grid-cols-2">
-									<form.Field name="firstName" validators={firstNameValidators}>
+									<form.AppField
+										name="firstName"
+										validators={firstNameValidators}
+									>
 										{(field) => (
-											<div className="space-y-1">
-												<Label htmlFor={field.name}>First name *</Label>
-												<Input
-													id={field.name}
-													type="text"
-													className={cn(
-														"h-9",
-														field.state.meta.errors.length > 0 &&
-															"border-destructive",
-													)}
-													value={field.state.value}
-													onBlur={field.handleBlur}
-													onChange={(e) => field.handleChange(e.target.value)}
-												/>
-												<FieldError errors={field.state.meta.errors} />
-											</div>
+											<field.InputField label="First name *" type="text" />
 										)}
-									</form.Field>
+									</form.AppField>
 
-									<form.Field name="lastName" validators={lastNameValidators}>
+									<form.AppField
+										name="lastName"
+										validators={lastNameValidators}
+									>
 										{(field) => (
-											<div className="space-y-1">
-												<Label htmlFor={field.name}>Last name *</Label>
-												<Input
-													id={field.name}
-													type="text"
-													className={cn(
-														"h-9",
-														field.state.meta.errors.length > 0 &&
-															"border-destructive",
-													)}
-													value={field.state.value}
-													onBlur={field.handleBlur}
-													onChange={(e) => field.handleChange(e.target.value)}
-												/>
-												<FieldError errors={field.state.meta.errors} />
-											</div>
+											<field.InputField label="Last name *" type="text" />
 										)}
-									</form.Field>
+									</form.AppField>
 								</div>
 
 								{/* Title + Affiliation */}
 								<div className="grid gap-2 sm:grid-cols-[100px_1fr]">
-									<form.Field name="title">
+									<form.AppField name="title">
 										{(field) => (
-											<div className="space-y-1">
-												<Label htmlFor={field.name}>Title</Label>
-												<Select
-													value={field.state.value}
-													onValueChange={(value) => field.handleChange(value)}
-												>
-													<SelectTrigger className="h-9">
-														<SelectValue placeholder="—" />
-													</SelectTrigger>
-													<SelectContent>
-														{TITLE_OPTIONS.map((option) => (
-															<SelectItem
-																key={option.value}
-																value={option.value}
-															>
-																{option.label}
-															</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
-											</div>
+											<field.SelectField
+												label="Title"
+												options={TITLE_OPTIONS}
+											/>
 										)}
-									</form.Field>
+									</form.AppField>
 
 									<form.Field
 										name="affiliationId"
@@ -575,31 +512,20 @@ function RegisterPage() {
 								<div className="space-y-2 rounded-lg border border-border/50 bg-muted/30 p-3">
 									{surveyQuestions.length > 0 ? (
 										surveyQuestions.map((question) => (
-											<form.Field
+											<form.AppField
 												key={question.id}
 												name={
 													`surveyAnswers.${question.id}` as `surveyAnswers.${string}`
 												}
 											>
 												{(field) => (
-													<div className="flex items-start gap-3">
-														<Checkbox
-															id={`survey-${question.id}`}
-															checked={field.state.value as boolean}
-															onCheckedChange={(checked) =>
-																field.handleChange(checked === true)
-															}
-															className="mt-0.5"
-														/>
-														<Label
-															htmlFor={`survey-${question.id}`}
-															className="cursor-pointer text-sm font-normal leading-snug"
-														>
-															{question.label}
-														</Label>
-													</div>
+													<field.CheckboxField
+														label={question.label}
+														labelClassName="cursor-pointer text-sm font-normal leading-snug"
+														className="flex items-start gap-3"
+													/>
 												)}
-											</form.Field>
+											</form.AppField>
 										))
 									) : (
 										<p className="text-sm text-muted-foreground">

@@ -1,10 +1,10 @@
-import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
 import { z } from "zod";
 import { FieldError } from "@/components/forms/field-error";
 import { PasswordInput } from "@/components/forms/password-input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useAppForm } from "@/hooks/use-app-form";
 import { useZodFormFieldOnChange } from "@/hooks/use-zod-form-field";
 import type { PasswordChangeFormData } from "@/lib/validations/profile";
 
@@ -24,7 +24,7 @@ export function PasswordChangeSection({
 }: PasswordChangeSectionProps) {
 	const [isValidationAttempted, setIsValidationAttempted] = useState(false);
 
-	const form = useForm({
+	const form = useAppForm({
 		defaultValues: {
 			currentPassword: "",
 			newPassword: "",
@@ -61,42 +61,29 @@ export function PasswordChangeSection({
 			className="space-y-4"
 		>
 			{/* Current Password */}
-			<form.Field name="currentPassword" validators={currentPasswordValidators}>
+			<form.AppField
+				name="currentPassword"
+				validators={currentPasswordValidators}
+			>
 				{(field) => (
-					<div className="space-y-1">
-						<Label htmlFor={field.name}>Current password *</Label>
-						<PasswordInput
-							id={field.name}
-							hasError={field.state.meta.errors.length > 0}
-							value={field.state.value}
-							onBlur={field.handleBlur}
-							onChange={(value) => field.handleChange(value)}
-							disabled={isLoading}
-						/>
-						<FieldError errors={field.state.meta.errors} />
-					</div>
+					<field.PasswordField
+						label="Current password *"
+						disabled={isLoading}
+					/>
 				)}
-			</form.Field>
+			</form.AppField>
 
 			{/* New Password fields */}
 			<div className="grid gap-3 sm:grid-cols-2">
-				<form.Field name="newPassword" validators={newPasswordValidators}>
+				<form.AppField name="newPassword" validators={newPasswordValidators}>
 					{(field) => (
-						<div className="space-y-1">
-							<Label htmlFor={field.name}>New password *</Label>
-							<PasswordInput
-								id={field.name}
-								placeholder="Min. 10 characters"
-								hasError={field.state.meta.errors.length > 0}
-								value={field.state.value}
-								onBlur={field.handleBlur}
-								onChange={(value) => field.handleChange(value)}
-								disabled={isLoading}
-							/>
-							<FieldError errors={field.state.meta.errors} />
-						</div>
+						<field.PasswordField
+							label="New password *"
+							placeholder="Min. 10 characters"
+							disabled={isLoading}
+						/>
 					)}
-				</form.Field>
+				</form.AppField>
 
 				<form.Field
 					name="confirmNewPassword"

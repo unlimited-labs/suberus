@@ -13,12 +13,11 @@ import {
 	IconUsers,
 	IconWriting,
 } from "@tabler/icons-react";
-import { useForm, useStore } from "@tanstack/react-form";
+import { useStore } from "@tanstack/react-form";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { FieldError } from "@/components/forms/field-error";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Markdown } from "@/components/ui/markdown";
 import {
@@ -28,7 +27,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { useAppForm } from "@/hooks/use-app-form";
 import { useSession } from "@/hooks/use-session";
 import { useZodFormField } from "@/hooks/use-zod-form-field";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
@@ -107,7 +106,6 @@ export function SubmissionForm({
 	validationSettings,
 	guidelines,
 }: SubmissionFormProps) {
-	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isSavingDraft, setIsSavingDraft] = useState(false);
 	const { user } = useSession();
 	const hasAutoFilledRef = useRef(false);
@@ -157,7 +155,7 @@ export function SubmissionForm({
 		return substituteGuidelines(guidelines, validationSettings);
 	}, [guidelines, validationSettings]);
 
-	const form = useForm({
+	const form = useAppForm({
 		defaultValues: {
 			type: initialData?.type || defaultType,
 			title: initialData?.title || "",
@@ -178,12 +176,7 @@ export function SubmissionForm({
 			sessionId: initialData?.sessionId || null,
 		} satisfies SubmissionFormData,
 		onSubmit: async ({ value }) => {
-			setIsSubmitting(true);
-			try {
-				await onSubmit(value);
-			} finally {
-				setIsSubmitting(false);
-			}
+			await onSubmit(value);
 		},
 	});
 
@@ -450,24 +443,9 @@ export function SubmissionForm({
 								</div>
 
 								<div className="space-y-4">
-									<form.Field name="title" validators={titleValidators}>
-										{(field) => (
-											<div className="space-y-2">
-												<Label htmlFor="title" className="text-foreground">
-													Title
-												</Label>
-												<Input
-													id="title"
-													name="title"
-													value={field.state.value}
-													onChange={(e) => field.handleChange(e.target.value)}
-													onBlur={field.handleBlur}
-													className="text-foreground"
-												/>
-												<FieldError errors={field.state.meta.errors} />
-											</div>
-										)}
-									</form.Field>
+									<form.AppField name="title" validators={titleValidators}>
+										{(field) => <field.InputField label="Title" />}
+									</form.AppField>
 
 									{/* Content field always mounted to keep TanStack Form instance alive;
 									   validators disabled for FILE format to prevent stale validation blocking submit */}
@@ -481,14 +459,13 @@ export function SubmissionForm({
 													<Label htmlFor="content" className="text-foreground">
 														Abstract
 													</Label>
-													<Textarea
+													<textarea
 														id="content"
-														name="content"
 														value={field.state.value}
 														onChange={(e) => field.handleChange(e.target.value)}
 														onBlur={field.handleBlur}
 														rows={8}
-														className="resize-none text-foreground"
+														className="flex min-h-16 w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
 													/>
 													<FieldError errors={field.state.meta.errors} />
 												</div>
@@ -545,11 +522,7 @@ export function SubmissionForm({
 												value={field.state.value}
 												onChange={field.handleChange}
 											/>
-											{field.state.meta.errors.length > 0 && (
-												<p className="text-xs text-destructive mt-2">
-													{field.state.meta.errors[0]}
-												</p>
-											)}
+											<FieldError errors={field.state.meta.errors} />
 										</div>
 									)}
 								</form.Field>
@@ -579,11 +552,7 @@ export function SubmissionForm({
 															maxKeywords={validationSettings.maxKeywords}
 														/>
 													</div>
-													{field.state.meta.errors.length > 0 && (
-														<p className="text-xs text-destructive">
-															{field.state.meta.errors[0]}
-														</p>
-													)}
+													<FieldError errors={field.state.meta.errors} />
 												</div>
 											)}
 										</form.Field>
@@ -642,7 +611,7 @@ export function SubmissionForm({
 										<Button
 											type="button"
 											variant="outline"
-											disabled={isSavingDraft || isSubmitting}
+											disabled={isSavingDraft || form.state.isSubmitting}
 											className="gap-2"
 											onClick={async () => {
 												setIsSavingDraft(true);
@@ -668,10 +637,10 @@ export function SubmissionForm({
 									)}
 									<Button
 										type="submit"
-										disabled={isSubmitting || isSavingDraft}
+										disabled={form.state.isSubmitting || isSavingDraft}
 										className="gap-2 px-6"
 									>
-										{isSubmitting ? (
+										{form.state.isSubmitting ? (
 											<>
 												<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
 												Submitting...

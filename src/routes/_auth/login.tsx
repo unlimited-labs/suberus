@@ -1,15 +1,10 @@
 import { IconMail } from "@tabler/icons-react";
-import { useForm } from "@tanstack/react-form";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { z } from "zod";
 import { AuthSidebar } from "@/components/forms/auth-sidebar";
-import { FieldError } from "@/components/forms/field-error";
-import { IconInput } from "@/components/forms/icon-input";
-import { PasswordInput } from "@/components/forms/password-input";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { useAppForm } from "@/hooks/use-app-form";
 import { useZodFormField } from "@/hooks/use-zod-form-field";
 import { signIn } from "@/lib/auth-client";
 
@@ -32,7 +27,7 @@ function LoginPage() {
 	const emailValidators = useZodFormField(emailSchema);
 	const passwordValidators = useZodFormField(passwordSchema);
 
-	const form = useForm({
+	const form = useAppForm({
 		defaultValues: {
 			email: "",
 			password: "",
@@ -85,62 +80,26 @@ function LoginPage() {
 				>
 					<div className="flex-1 space-y-3">
 						{/* Email field */}
-						<form.Field name="email" validators={emailValidators}>
+						<form.AppField name="email" validators={emailValidators}>
 							{(field) => (
-								<div className="space-y-1">
-									<Label htmlFor={field.name}>E-mail</Label>
-									<IconInput
-										id={field.name}
-										type="email"
-										icon={<IconMail className="size-4" />}
-										hasError={field.state.meta.errors.length > 0}
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-									/>
-									<FieldError errors={field.state.meta.errors} />
-								</div>
+								<field.IconInputField
+									label="E-mail"
+									type="email"
+									icon={<IconMail className="size-4" />}
+								/>
 							)}
-						</form.Field>
+						</form.AppField>
 
 						{/* Password field */}
-						<form.Field name="password" validators={passwordValidators}>
-							{(field) => (
-								<div className="space-y-1">
-									<Label htmlFor={field.name}>Password</Label>
-									<PasswordInput
-										id={field.name}
-										hasError={field.state.meta.errors.length > 0}
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(value) => field.handleChange(value)}
-									/>
-									<FieldError errors={field.state.meta.errors} />
-								</div>
-							)}
-						</form.Field>
+						<form.AppField name="password" validators={passwordValidators}>
+							{(field) => <field.PasswordField label="Password" />}
+						</form.AppField>
 
 						{/* Remember me + Forgot password */}
 						<div className="flex items-center justify-between">
-							<form.Field name="rememberMe">
-								{(field) => (
-									<div className="flex items-center gap-2">
-										<Checkbox
-											id={field.name}
-											checked={field.state.value}
-											onCheckedChange={(checked) =>
-												field.handleChange(checked === true)
-											}
-										/>
-										<Label
-											htmlFor={field.name}
-											className="cursor-pointer text-sm font-normal text-muted-foreground"
-										>
-											Remember me
-										</Label>
-									</div>
-								)}
-							</form.Field>
+							<form.AppField name="rememberMe">
+								{(field) => <field.CheckboxField label="Remember me" />}
+							</form.AppField>
 
 							<Link
 								to="/forgot-password"
