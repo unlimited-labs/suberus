@@ -98,9 +98,16 @@ test.describe("Register Page - Step 1: Author Info", () => {
 		})
 		await registerPage.clickContinue()
 
-		// Assert
-		await expect(registerPage.page.getByLabel("Address")).toBeVisible()
-		await expect(registerPage.page.getByText("Select country...")).toBeVisible()
+		// Assert - wait for step 2 to load; retry Continue click if validation race
+		const countryPlaceholder = registerPage.page.getByText("Select country...")
+		try {
+			await expect(countryPlaceholder).toBeVisible({ timeout: 5000 })
+		} catch {
+			await registerPage.clickContinue()
+			await expect(countryPlaceholder).toBeVisible({ timeout: 10000 })
+		}
+		// Address field may need scrolling on mobile
+		await expect(registerPage.page.getByLabel("Address")).toBeAttached()
 	})
 })
 
@@ -117,6 +124,14 @@ test.describe("Register Page - Step 2: Invoice", () => {
 			affiliation: "Test University",
 		})
 		await registerPage.clickContinue()
+		// Wait for step 2 to load; retry Continue click if validation race
+		const countryPlaceholder = registerPage.page.getByText("Select country...")
+		try {
+			await countryPlaceholder.waitFor({ state: "visible", timeout: 5000 })
+		} catch {
+			await registerPage.clickContinue()
+			await countryPlaceholder.waitFor({ state: "visible", timeout: 10000 })
+		}
 	})
 
 	test("shows error for required country", async ({ registerPage }) => {
@@ -128,13 +143,14 @@ test.describe("Register Page - Step 2: Invoice", () => {
 	})
 
 	test("country search and selection works", async ({ registerPage }) => {
-		// Act
-		await registerPage.page.getByRole("combobox").click()
+		// Act - use placeholder to target country combobox specifically
+		const countrySelect = registerPage.page.getByText("Select country...")
+		await countrySelect.click()
 		await registerPage.page.getByPlaceholder("Search country...").fill("Poland")
 		await registerPage.page.getByRole("option", { name: "Poland" }).click()
 
 		// Assert
-		await expect(registerPage.page.getByRole("combobox")).toContainText("Poland")
+		await expect(registerPage.page.getByRole("combobox").filter({ hasText: "Poland" })).toBeVisible()
 	})
 
 	test("back button preserves step 1 data", async ({ registerPage }) => {

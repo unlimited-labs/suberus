@@ -15,7 +15,6 @@ export const conferenceSettingsSchema = z.object({
 
 export const submissionSettingsSchema = z.object({
 	maxAbstractLength: z.number().min(100).max(10000),
-	maxAuthors: z.number().min(1).max(50),
 	maxFileSize: z.number().min(1).max(100),
 	allowedFileTypes: z.array(z.string()),
 	requireOrcid: z.boolean(),

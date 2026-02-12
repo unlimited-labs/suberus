@@ -11,8 +11,13 @@ import {
 	IconScale,
 	IconSettings,
 } from "@tabler/icons-react";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import {
+	createFileRoute,
+	useNavigate,
+	useRouter,
+	useSearch,
+} from "@tanstack/react-router";
+import { z } from "zod";
 import { SessionsTab } from "@/components/admin/sessions/sessions-tab";
 import {
 	BrandingSettingsTab,
@@ -45,7 +50,12 @@ import {
 } from "@/utils/settings.functions";
 import { getSurveyQuestionsFn } from "@/utils/survey.functions";
 
+const searchSchema = z.object({
+	tab: z.string().optional(),
+});
+
 export const Route = createFileRoute("/_app/admin/_layout/settings/")({
+	validateSearch: searchSchema,
 	loader: async () => {
 		const [
 			conferenceSettings,
@@ -128,7 +138,9 @@ function AdminSettingsPage() {
 		surveyQuestions,
 		tosContent,
 	} = Route.useLoaderData();
-	const [activeTab, setActiveTab] = useState("conference");
+	const { tab } = useSearch({ from: "/_app/admin/_layout/settings/" });
+	const activeTab = tab ?? "conference";
+	const navigate = useNavigate({ from: Route.fullPath });
 	const router = useRouter();
 
 	return (
@@ -136,7 +148,16 @@ function AdminSettingsPage() {
 			<PageHeader icon={IconSettings} title="Configuration" />
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-5xl">
-					<Tabs value={activeTab} onValueChange={setActiveTab}>
+					<Tabs
+						value={activeTab}
+						onValueChange={(value) =>
+							navigate({
+								search: { tab: value },
+								replace: true,
+								resetScroll: false,
+							})
+						}
+					>
 						<TabsList className="mb-6 h-auto flex-wrap gap-1 rounded-lg border border-border bg-muted p-1">
 							{tabs.map((tab) => (
 								<TabsTrigger

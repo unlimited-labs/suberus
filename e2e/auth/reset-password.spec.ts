@@ -5,12 +5,7 @@ import {
 	waitForEmail,
 	getMailpitMessage,
 } from "./fixtures"
-
-// Dedicated user for password reset tests (destructive - password gets changed)
-const RESET_PASSWORD_USER = {
-	email: "reset-test@e2e.local",
-	password: "testpass123",
-}
+import { RESET_PASSWORD_USER } from "../helpers/test-users"
 
 test.describe("Reset Password Page", () => {
 	test.beforeEach(async () => {
@@ -116,7 +111,8 @@ test.describe("Full Password Reset Flow", () => {
 		expect(email).toBeTruthy()
 
 		const emailContent = await getMailpitMessage(email!.ID)
-		const resetUrlMatch = emailContent.Text.match(/https?:\/\/[^\s]+reset-password[^\s]+/)
+		expect(emailContent).toBeTruthy()
+		const resetUrlMatch = emailContent!.Text.match(/https?:\/\/[^\s]+reset-password[^\s]+/)
 		expect(resetUrlMatch).toBeTruthy()
 
 		// Navigate to the reset link (better-auth handles redirect to /reset-password?token=...)

@@ -15,6 +15,7 @@ import {
 	UserRole,
 } from "../../src/generated/prisma/enums";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { TEST_USER, ADMIN_USER, REVIEWER_USER, EDITOR_USER, DEFAULT_PASSWORD } from "./test-users";
 
 // Lazy-initialized Prisma client
 let prismaInstance: PrismaClient | null = null;
@@ -42,10 +43,10 @@ export async function getTestUserIds() {
 
 	const db = getPrisma();
 	const [testUser, adminUser, reviewerUser, editorUser] = await Promise.all([
-		db.user.findUnique({ where: { email: "test@e2e.local" } }),
-		db.user.findUnique({ where: { email: "admin@e2e.local" } }),
-		db.user.findUnique({ where: { email: "reviewer@e2e.local" } }),
-		db.user.findUnique({ where: { email: "editor@e2e.local" } }),
+		db.user.findUnique({ where: { email: TEST_USER.email } }),
+		db.user.findUnique({ where: { email: ADMIN_USER.email } }),
+		db.user.findUnique({ where: { email: REVIEWER_USER.email } }),
+		db.user.findUnique({ where: { email: EDITOR_USER.email } }),
 	]);
 
 	if (!testUser || !adminUser || !reviewerUser || !editorUser) {
@@ -581,7 +582,7 @@ export async function createTestUser(
 	const result = await auth.api.signUpEmail({
 		body: {
 			email: options.email,
-			password: options.password || "testpass123",
+			password: options.password || DEFAULT_PASSWORD,
 			name: options.lastName || "User",
 			firstName: options.firstName || "Test",
 			affiliationId: affiliation.id,

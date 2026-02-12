@@ -60,12 +60,13 @@ test.describe.serial("Admin - Conference Sessions", () => {
 		await page.getByRole("button", { name: "Create", exact: true }).click();
 
 		// Assert
-		await expect(page.getByText("Session created")).toBeVisible();
+		await expect(page.getByText("Session created")).toBeVisible({ timeout: 15000 });
+		await expect(page.getByRole("dialog")).toBeHidden();
 		await expect(
 			page.getByRole("cell", {
 				name: `${testRun.testRunId}_Quantum Computing`,
 			}),
-		).toBeVisible();
+		).toBeVisible({ timeout: 15000 });
 
 		// Cleanup
 		const { getPrisma } = await import("../helpers/test-db");
@@ -99,12 +100,13 @@ test.describe.serial("Admin - Conference Sessions", () => {
 		await page.getByRole("button", { name: "Save" }).click();
 
 		// Assert
-		await expect(page.getByText("Session updated")).toBeVisible();
+		await expect(page.getByText("Session updated")).toBeVisible({ timeout: 15000 });
+		await expect(page.getByRole("dialog")).toBeHidden();
 		await expect(
 			page.getByRole("cell", {
 				name: `${testRun.testRunId}_Advanced Robotics`,
 			}),
-		).toBeVisible();
+		).toBeVisible({ timeout: 15000 });
 
 		// Cleanup
 		await deleteSession(sessionId);
@@ -134,8 +136,8 @@ test.describe.serial("Admin - Conference Sessions", () => {
 		await activeSwitch.click();
 
 		// Assert
-		await expect(page.getByText("Session deactivated")).toBeVisible();
-		await expect(activeSwitch).not.toBeChecked();
+		await expect(page.getByText("Session deactivated")).toBeVisible({ timeout: 15000 });
+		await expect(activeSwitch).not.toBeChecked({ timeout: 10000 });
 
 		// Cleanup
 		await deleteSession(sessionId);

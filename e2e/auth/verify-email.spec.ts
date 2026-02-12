@@ -88,7 +88,8 @@ test.describe("Verify Email - Verification Link", () => {
 
 		// Extract verification URL from email body
 		const emailDetails = await getMailpitMessage(email!.ID)
-		const urlMatch = emailDetails.Text.match(/https?:\/\/[^\s]+verify[^\s]+/)
+		expect(emailDetails).not.toBeNull()
+		const urlMatch = emailDetails!.Text.match(/https?:\/\/[^\s]+verify[^\s]+/)
 		expect(urlMatch).not.toBeNull()
 		const verificationUrl = urlMatch![0]
 

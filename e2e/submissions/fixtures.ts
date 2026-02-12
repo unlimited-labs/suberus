@@ -1,13 +1,9 @@
 import { type Page, type Locator } from "@playwright/test"
 import { test as base, expect as baseExpect, type TestRunContext, type CleanupContext } from "../helpers/base-fixtures"
+import { loginAs } from "../helpers/auth"
 
-// Test data
-export const TEST_USER = {
-	email: "test@e2e.local",
-	password: "testpass123",
-	firstName: "Test",
-	lastName: "User",
-}
+export { TEST_USER } from "../helpers/test-users"
+export { clearMailpit, getMailpitMessages } from "../helpers/mailpit"
 
 export const VALID_SUBMISSION = {
 	type: "ABSTRACT" as const,
@@ -48,58 +44,10 @@ export function createUniqueSubmission(suffix?: string) {
 	}
 }
 
-// Mailpit helpers
-const MAILPIT_API = "http://localhost:8025/api/v1"
-
-export async function clearMailpit(testRunId?: string) {
-	try {
-		if (!testRunId) {
-			// Legacy: clear all messages
-			await fetch(`${MAILPIT_API}/messages`, { method: "DELETE" })
-			return
-		}
-
-		// Get all messages and delete only those matching testRunId
-		const { messages } = await getMailpitMessages()
-		for (const message of messages as Array<{ ID: string }>) {
-			try {
-				const response = await fetch(`${MAILPIT_API}/message/${message.ID}`)
-				const details = (await response.json()) as { Headers?: Record<string, string[]> }
-				// Check if X-Test-Run-Id header matches
-				const testRunHeader = details.Headers?.["X-Test-Run-Id"]?.[0]
-				if (testRunHeader === testRunId) {
-					await fetch(`${MAILPIT_API}/message/${message.ID}`, { method: "DELETE" })
-				}
-			} catch {
-				// Skip if message already deleted or error fetching
-			}
-		}
-	} catch {
-		// Mailpit might not be running
-	}
-}
-
-export async function getMailpitMessages() {
-	try {
-		const response = await fetch(`${MAILPIT_API}/messages`)
-		return (await response.json()) as {
-			messages: Array<{ ID: string; To: Array<{ Address: string }>; Subject: string }>
-		}
-	} catch {
-		return { messages: [] }
-	}
-}
-
 // Login helper
 export async function loginAsTestUser(page: Page) {
-	await page.goto("/login")
-	// SSR hydration + form render
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 })
-	await page.getByLabel("E-mail").fill(TEST_USER.email)
-	await page.getByLabel("Password").fill(TEST_USER.password)
-	await page.getByRole("button", { name: "Sign in" }).click()
-	// API auth + session + redirect
-	await page.waitForURL("/", { timeout: 30000 })
+	const { TEST_USER } = await import("../helpers/test-users")
+	await loginAs(page, TEST_USER)
 }
 
 // Page Object
@@ -121,7 +69,9 @@ export class SubmissionPage {
 	async goto() {
 		await this.page.goto("/submissions/new")
 		// Wait for author auto-fill from useSession() to complete
-		await baseExpect(this.page.locator('[data-testid="author-card-0"]').getByLabel("First name")).not.toHaveValue("", { timeout: 15000 })
+		const firstNameInput = this.page.locator('[data-testid="author-card-0"]').getByLabel("First name")
+		await baseExpect(firstNameInput).toBeVisible({ timeout: 30000 })
+		await baseExpect(firstNameInput).not.toHaveValue("", { timeout: 15000 })
 	}
 
 	async selectType(type: "ABSTRACT" | "POSTER" | "FULL_PAPER") {
@@ -172,11 +122,15 @@ export class SubmissionPage {
 
 	async fillAffiliation(index: number, affiliationName: string) {
 		const input = this.getAuthorCard(index).getByLabel("Affiliation")
-		await input.fill(affiliationName)
+		// Retry fill+click — dropdown can re-render and detach the option element
 		const option = this.page.getByRole("option").filter({ hasText: affiliationName }).first()
-		await option.waitFor({ state: "visible", timeout: 10000 })
-		await option.click()
-		await baseExpect(input).toHaveValue(affiliationName, { timeout: 5000 })
+		await baseExpect(async () => {
+			await input.click()
+			await input.fill(affiliationName)
+			await baseExpect(option).toBeVisible()
+			await option.click()
+			await baseExpect(input).toHaveValue(affiliationName)
+		}).toPass({ timeout: 30000 })
 	}
 
 	async addAuthor() {

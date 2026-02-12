@@ -1,4 +1,3 @@
-import { type Page } from "@playwright/test";
 import { test, expect } from "../helpers/base-fixtures";
 import {
 	createSubmission,
@@ -9,22 +8,8 @@ import {
 	EditorDecisionType,
 	SubmissionStatus,
 } from "../../src/generated/prisma/enums";
-
-const ADMIN_USER = {
-	email: "admin@e2e.local",
-	password: "testpass123",
-};
-
-async function loginAs(page: Page, user: { email: string; password: string }) {
-	await page.context().clearCookies();
-	await page.goto("/login");
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 30000 });
-	await page.getByLabel("E-mail").fill(user.email);
-	const passwordInput = page.getByLabel("Password");
-	await passwordInput.fill(user.password);
-	await passwordInput.press("Enter");
-	await page.waitForURL("/", { timeout: 30000 });
-}
+import { ADMIN_USER } from "../helpers/test-users";
+import { loginAs } from "../helpers/auth";
 
 test.describe("Override from Terminal States", () => {
 	test("admin can override ACCEPTED submission", async ({ page, testRun, cleanup }) => {
@@ -35,7 +20,7 @@ test.describe("Override from Terminal States", () => {
 			editorDecision: EditorDecisionType.ACCEPT,
 		});
 		cleanup.track(submissionId);
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${submissionId}`);
 		await expect(page.getByText("Accepted").first()).toBeVisible({ timeout: 10000 });
 
@@ -62,7 +47,7 @@ test.describe("Override from Terminal States", () => {
 			editorDecision: EditorDecisionType.ACCEPT,
 		});
 		cleanup.track(submissionId);
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${submissionId}`);
 
 		// Act
@@ -84,7 +69,7 @@ test.describe("Override from Terminal States", () => {
 			editorDecision: EditorDecisionType.REJECT,
 		});
 		cleanup.track(submissionId);
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${submissionId}`);
 		await expect(page.getByText("Rejected").first()).toBeVisible({ timeout: 10000 });
 
@@ -115,7 +100,7 @@ test.describe("Override from Terminal States", () => {
 			editorDecision: EditorDecisionType.CONDITIONALLY_ACCEPT,
 		});
 		cleanup.track(submissionId);
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${submissionId}`);
 		await expect(page.getByText("Conditionally Accepted").first()).toBeVisible({ timeout: 10000 });
 
@@ -144,7 +129,7 @@ test.describe("Override Negative Cases", () => {
 			status: SubmissionStatus.SUBMITTED,
 		});
 		cleanup.track(id);
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${id}`);
 
 		// Assert
@@ -161,7 +146,7 @@ test.describe("Override Negative Cases", () => {
 			title: "No Override Under Review Test",
 		});
 		cleanup.track(submissionId);
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${submissionId}`);
 
 		// Assert
@@ -182,7 +167,7 @@ test.describe("After Override", () => {
 			editorDecision: EditorDecisionType.ACCEPT,
 		});
 		cleanup.track(submissionId);
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${submissionId}`);
 
 		// Override

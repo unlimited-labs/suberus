@@ -1,4 +1,3 @@
-import { type Page } from "@playwright/test";
 import { test, expect } from "../helpers/base-fixtures";
 import {
 	createSubmission,
@@ -6,28 +5,8 @@ import {
 	getAssignmentStatus,
 } from "../helpers/test-db";
 import { AssignmentStatus, SubmissionStatus } from "../../src/generated/prisma/enums";
-
-// Test credentials
-const TEST_USER = {
-	email: "test@e2e.local",
-	password: "testpass123",
-};
-
-const ADMIN_USER = {
-	email: "admin@e2e.local",
-	password: "testpass123",
-};
-
-async function loginAs(page: Page, user: { email: string; password: string }) {
-	await page.context().clearCookies();
-	await page.goto("/login");
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 30000 });
-	await page.getByLabel("E-mail").fill(user.email);
-	const passwordInput = page.getByLabel("Password");
-	await passwordInput.fill(user.password);
-	await passwordInput.press("Enter");
-	await page.waitForURL("/", { timeout: 30000 });
-}
+import { TEST_USER, ADMIN_USER } from "../helpers/test-users";
+import { loginAs } from "../helpers/auth";
 
 test.describe("Author Withdrawal", () => {
 	test("author withdraws SUBMITTED submission", async ({ page, testRun, cleanup }) => {
@@ -38,7 +17,7 @@ test.describe("Author Withdrawal", () => {
 			status: SubmissionStatus.SUBMITTED,
 		});
 		cleanup.track(id);
-		await loginAs(page, TEST_USER);
+		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${id}`);
 
 		// Act
@@ -56,7 +35,7 @@ test.describe("Author Withdrawal", () => {
 			title: "Withdraw Under Review Test",
 		});
 		cleanup.track(submissionId);
-		await loginAs(page, TEST_USER);
+		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${submissionId}`);
 
 		// Act
@@ -75,7 +54,7 @@ test.describe("Author Withdrawal", () => {
 			status: SubmissionStatus.SUBMITTED,
 		});
 		cleanup.track(id);
-		await loginAs(page, TEST_USER);
+		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${id}`);
 
 		// Act
@@ -94,7 +73,7 @@ test.describe("Author Withdrawal", () => {
 			title: "Withdraw Cancels Assignments Test",
 		});
 		cleanup.track(submissionId);
-		await loginAs(page, TEST_USER);
+		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${submissionId}`);
 
 		// Act
@@ -120,13 +99,13 @@ test.describe("Withdrawal + Admin View", () => {
 			status: SubmissionStatus.SUBMITTED,
 		});
 		cleanup.track(id);
-		await loginAs(page, TEST_USER);
+		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${id}`);
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 
 		// Act - admin views in admin panel
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${id}`);
 
 		// Assert

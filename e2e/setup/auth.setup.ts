@@ -1,29 +1,5 @@
 import { test as setup, expect } from "@playwright/test"
-
-export const ADMIN_USER = {
-	email: "admin@e2e.local",
-	password: "testpass123",
-}
-
-export const TEST_USER = {
-	email: "test@e2e.local",
-	password: "testpass123",
-}
-
-export const REVIEWER_USER = {
-	email: "reviewer@e2e.local",
-	password: "testpass123",
-}
-
-export const EDITOR_USER = {
-	email: "editor@e2e.local",
-	password: "testpass123",
-}
-
-export const UNVERIFIED_USER = {
-	email: "unverified@e2e.local",
-	password: "testpass123",
-}
+import { ADMIN_USER, TEST_USER, REVIEWER_USER, EDITOR_USER, UNVERIFIED_USER } from "../helpers/test-users"
 
 const adminAuthFile = "e2e/.auth/admin.json"
 const userAuthFile = "e2e/.auth/user.json"

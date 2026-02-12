@@ -13,7 +13,7 @@ import {
 	clearMailpitForAddress,
 	waitForEmail,
 	getMailpitMessages,
-} from "../auth/fixtures"
+} from "../helpers/mailpit"
 import { EditorDecisionType, SubmissionStatus } from "../../src/generated/prisma/enums"
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000

@@ -6,41 +6,13 @@ import {
 	createSubmissionWithReview,
 } from "../helpers/test-db";
 import { SubmissionStatus } from "../../src/generated/prisma/enums";
+import { TEST_USER, ADMIN_USER, REVIEWER_USER } from "../helpers/test-users";
+import { loginAs } from "../helpers/auth";
 
 /**
  * Complete end-to-end workflow tests.
  * Tests use AAA pattern with Prisma seeding.
  */
-
-// Test credentials (must match global-setup.ts)
-const TEST_USER = {
-	email: "test@e2e.local",
-	password: "testpass123",
-};
-
-const ADMIN_USER = {
-	email: "admin@e2e.local",
-	password: "testpass123",
-};
-
-const REVIEWER_USER = {
-	email: "reviewer@e2e.local",
-	password: "testpass123",
-};
-
-// Helper functions
-async function loginAs(page: Page, user: { email: string; password: string }) {
-	await page.context().clearCookies();
-	await page.goto("/login");
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 30000 });
-	await page.getByLabel("E-mail").fill(user.email);
-	const passwordInput = page.getByLabel("Password");
-	await passwordInput.fill(user.password);
-	// Use Enter key which is more reliable than button click
-	await passwordInput.press("Enter");
-	// Wait for API response to complete before checking URL
-	await page.waitForURL("/", { timeout: 30000 });
-}
 
 async function addKeyword(page: Page, keyword: string) {
 	// Find Keywords section by heading
@@ -84,7 +56,7 @@ test.describe("Complete Submission Workflow", () => {
 		test.slow();
 		// Arrange
 		const submissionTitle = `${testRun.testRunId}_E2E Workflow`;
-		await loginAs(page, TEST_USER);
+		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto("/submissions/new");
 		await page.getByLabel("Title").waitFor({ state: "visible", timeout: 30000 });
 		// Wait for author auto-fill from useSession()
@@ -133,7 +105,7 @@ test.describe("Complete Submission Workflow", () => {
 		});
 		cleanup.track(id);
 
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await findSubmissionInAdmin(page, title);
 		await expect(page.getByText("Submitted").first()).toBeVisible();
 
@@ -165,7 +137,7 @@ test.describe("Complete Submission Workflow", () => {
 		});
 		cleanup.track(submissionId);
 
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await findSubmissionInAdmin(page, title);
 
 		// Verify submission is awaiting decision
@@ -197,7 +169,7 @@ test.describe("Desk Rejection Workflow", () => {
 		});
 		cleanup.track(id);
 
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await findSubmissionInAdmin(page, title);
 		await expect(page.getByText("Submitted").first()).toBeVisible();
 
@@ -228,7 +200,7 @@ test.describe("Reviewer Assignments", () => {
 		});
 		cleanup.track(submissionId);
 
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await findSubmissionInAdmin(page, title);
 		await expect(page.getByText("Under Review").first()).toBeVisible();
 
@@ -256,7 +228,7 @@ test.describe("Reviewer Assignments", () => {
 		});
 		cleanup.track(submissionId);
 
-		await loginAs(page, REVIEWER_USER);
+		await loginAs(page, REVIEWER_USER, { clearCookies: true });
 		await page.goto("/reviews");
 	
 		// Assert
@@ -273,7 +245,7 @@ test.describe("Status History", () => {
 		});
 		cleanup.track(submissionId);
 
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await findSubmissionInAdmin(page, title);
 
 		// Act
@@ -294,7 +266,7 @@ test.describe("Review Display", () => {
 		});
 		cleanup.track(submissionId);
 
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await findSubmissionInAdmin(page, title);
 
 		// Act
@@ -314,7 +286,7 @@ test.describe("Review Form Validation", () => {
 		});
 		cleanup.track(submissionId);
 
-		await loginAs(page, REVIEWER_USER);
+		await loginAs(page, REVIEWER_USER, { clearCookies: true });
 		await page.goto("/reviews");
 	
 		const assignmentRow = page.locator("tr").filter({ hasText: title });

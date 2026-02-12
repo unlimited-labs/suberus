@@ -108,9 +108,9 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 
 	// Guidelines
 	SUBMISSION_GUIDELINES:
-		"• Title should be concise and descriptive\n• Abstract minimum {{minAbstractLength}} characters\n• At least one author required\n• Add {{minKeywords}}-{{maxKeywords}} relevant keywords",
+		"- Title should be concise and descriptive\n- Abstract minimum {{minAbstractLength}} characters\n- At least one author required\n- Add {{minKeywords}}-{{maxKeywords}} relevant keywords",
 	REVIEW_GUIDELINES:
-		"• Provide constructive, specific feedback\n• Support claims with evidence from the work\n• Be respectful and professional\n• Consider the work's contribution to the field\n• Minimum 50 characters for comments",
+		"- Provide constructive, specific feedback\n- Support claims with evidence from the work\n- Be respectful and professional\n- Consider the work's contribution to the field\n- Minimum 50 characters for comments",
 
 	// Email footer
 	EMAIL_FOOTER_TEXT: "",

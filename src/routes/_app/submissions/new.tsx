@@ -77,18 +77,29 @@ function NewSubmissionPage() {
 		data: SubmissionFormData,
 		isDraft: boolean,
 	) => {
-		const result = await createSubmission({
-			data: {
-				type: data.type,
-				title: data.title,
-				content: data.content,
-				authors: data.authors,
-				keywords: data.keywords,
-				contentFormat: data.contentFormat,
-				sessionId: data.sessionId,
-				isDraft,
-			},
-		});
+		let result: Awaited<ReturnType<typeof createSubmission>>;
+		try {
+			result = await Promise.race([
+				createSubmission({
+					data: {
+						type: data.type,
+						title: data.title,
+						content: data.content,
+						authors: data.authors,
+						keywords: data.keywords,
+						contentFormat: data.contentFormat,
+						sessionId: data.sessionId,
+						isDraft,
+					},
+				}),
+				new Promise<never>((_, reject) =>
+					setTimeout(() => reject(new Error("Request timed out")), 30_000),
+				),
+			]);
+		} catch {
+			toast.error("Something went wrong. Please try again.");
+			return;
+		}
 
 		if (!result.success) {
 			if (result.issues && result.issues.length > 0) {

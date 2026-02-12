@@ -7,73 +7,22 @@ import { execSync } from "child_process";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 import { DEFAULT_EMAIL_TEMPLATES } from "../../prisma/default-email-templates";
+import {
+	TEST_USER,
+	ADMIN_USER,
+	REVIEWER_USER,
+	EDITOR_USER,
+	UNVERIFIED_USER,
+	ADMIN_VERIFY_TEST_USER,
+	RESET_PASSWORD_USER,
+} from "../helpers/test-users";
+import { mailpit } from "../helpers/mailpit";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(__dirname, "../..");
 
 // Load .env.local
 config({ quiet: true, path: resolve(PROJECT_ROOT, ".env.local") });
-
-const MAILPIT_API = "http://localhost:8025/api/v1";
-
-const TEST_USER = {
-	email: "test@e2e.local",
-	password: "testpass123",
-	firstName: "Test",
-	lastName: "User",
-	affiliationName: "Test University",
-};
-
-const ADMIN_USER = {
-	email: "admin@e2e.local",
-	password: "testpass123",
-	firstName: "Admin",
-	lastName: "User",
-	affiliationName: "Admin University",
-};
-
-const REVIEWER_USER = {
-	email: "reviewer@e2e.local",
-	password: "testpass123",
-	firstName: "Reviewer",
-	lastName: "User",
-	affiliationName: "Reviewer University",
-};
-
-const EDITOR_USER = {
-	email: "editor@e2e.local",
-	password: "testpass123",
-	firstName: "Editor",
-	lastName: "User",
-	affiliationName: "Editor University",
-};
-
-// Unverified user for email verification tests
-const UNVERIFIED_USER = {
-	email: "unverified@e2e.local",
-	password: "testpass123",
-	firstName: "Unverified",
-	lastName: "User",
-	affiliationName: "Unverified University",
-};
-
-// Separate unverified user for admin panel tests (destructive test - gets verified)
-const ADMIN_VERIFY_TEST_USER = {
-	email: "admin-verify-test@e2e.local",
-	password: "testpass123",
-	firstName: "AdminVerify",
-	lastName: "Test",
-	affiliationName: "AdminVerify University",
-};
-
-// Separate user for password reset tests (destructive test - password gets changed)
-const RESET_PASSWORD_USER = {
-	email: "reset-test@e2e.local",
-	password: "testpass123",
-	firstName: "Reset",
-	lastName: "Test",
-	affiliationName: "Password Reset Institute",
-};
 
 // Submission type configs with scoring and double-blind enabled for ORAL_PRESENTATION
 const SUBMISSION_TYPE_CONFIGS = {
@@ -140,7 +89,7 @@ async function globalSetup() {
 
 	// Clear all Mailpit messages
 	console.log("🔄 Clearing Mailpit...");
-	await fetch(`${MAILPIT_API}/messages`, { method: "DELETE" });
+	await mailpit.deleteMessages();
 	console.log("✅ Mailpit cleared");
 
 	// Clear Garage S3 bucket

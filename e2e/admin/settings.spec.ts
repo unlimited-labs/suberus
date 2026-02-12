@@ -106,6 +106,59 @@ test.describe("Admin Settings - Submission Types", () => {
 	})
 })
 
+test.describe("Admin Settings - Tab Navigation", () => {
+	test("defaults to conference tab without query param", async ({ adminSettingsPage, page }) => {
+		// Act
+		await adminSettingsPage.goto()
+
+		// Assert
+		await expect(page.getByRole("heading", { name: "Basic Information" })).toBeVisible()
+		await expect(page).toHaveURL("/admin/settings")
+	})
+
+	test("navigates to submissions tab via query param", async ({ page }) => {
+		// Act
+		await page.goto("/admin/settings?tab=submissions")
+
+		// Assert
+		await expect(page.getByRole("heading", { name: "Content Validation" })).toBeVisible()
+		await expect(page).toHaveURL("/admin/settings?tab=submissions")
+	})
+
+	test("updates URL when switching tabs", async ({ adminSettingsPage, page }, testInfo) => {
+		// Arrange
+		await adminSettingsPage.goto()
+
+		// Act
+		await adminSettingsPage.switchToSubmissionsTab(testInfo)
+
+		// Assert
+		await expect(page).toHaveURL("/admin/settings?tab=submissions")
+	})
+
+	test("preserves tab state on refresh", async ({ page }) => {
+		// Arrange
+		await page.goto("/admin/settings?tab=submissions")
+		await expect(page.getByRole("heading", { name: "Content Validation" })).toBeVisible()
+
+		// Act
+		await page.reload()
+
+		// Assert
+		await expect(page.getByRole("heading", { name: "Content Validation" })).toBeVisible()
+		await expect(page).toHaveURL("/admin/settings?tab=submissions")
+	})
+
+	test("handles invalid tab param gracefully", async ({ page }) => {
+		// Act
+		await page.goto("/admin/settings?tab=invalid")
+
+		// Assert - invalid tabs show the tab but may not have matching content
+		// The URL preserves the invalid tab parameter
+		await expect(page).toHaveURL("/admin/settings?tab=invalid")
+	})
+})
+
 test.describe("Admin Settings - Submission Validation", () => {
 	test.beforeEach(async ({ adminSettingsPage }, testInfo) => {
 		// Arrange
@@ -113,11 +166,18 @@ test.describe("Admin Settings - Submission Validation", () => {
 		await adminSettingsPage.switchToSubmissionsTab(testInfo)
 	})
 
-	test("displays validation settings sections", async ({ page }) => {
+	test("displays merged Content Validation section", async ({ page }) => {
 		// Assert
-		await expect(page.getByRole("heading", { name: "Title" })).toBeVisible()
-		await expect(page.getByRole("heading", { name: "Abstract" })).toBeVisible()
-		await expect(page.getByRole("heading", { name: "Keywords" })).toBeVisible()
+		await expect(page.getByRole("heading", { name: "Content Validation" })).toBeVisible()
+		await expect(page.getByText("Title, abstract and keyword restrictions")).toBeVisible()
+	})
+
+	test("displays all validation fields in single section", async ({ page, adminSettingsPage }) => {
+		// Assert - Title, Abstract, Keywords all in one section
+		// Check by unique labels instead of generic text
+		await expect(page.getByLabel("Min length (characters)").first()).toBeVisible()
+		await expect(page.getByText("For TEXT format submissions")).toBeVisible()
+		await expect(adminSettingsPage.getEnableKeywordsSwitch()).toBeVisible()
 		await expect(page.getByRole("heading", { name: "Files" })).toBeVisible()
 	})
 
@@ -127,9 +187,10 @@ test.describe("Admin Settings - Submission Validation", () => {
 		await expect(adminSettingsPage.getMaxLengthInput(0)).toBeVisible()
 	})
 
-	test("shows abstract length inputs", async ({ page }) => {
-		// Assert
-		await expect(page.getByRole("heading", { name: "Abstract" })).toBeVisible()
+	test("shows abstract length inputs", async ({ adminSettingsPage }) => {
+		// Assert - now part of Content Validation section, check inputs exist
+		await expect(adminSettingsPage.getMinLengthInput(1)).toBeVisible()
+		await expect(adminSettingsPage.getMaxLengthInput(1)).toBeVisible()
 	})
 
 	test("shows keywords min/max inputs when enabled", async ({ adminSettingsPage }, testInfo) => {
@@ -218,8 +279,17 @@ test.describe("Admin Settings - Submission Validation", () => {
 		await expect(page.getByLabel("Require ORCID")).toBeVisible()
 	})
 
-	test("shows max authors setting", async ({ page }) => {
-		// Assert
-		await expect(page.getByLabel("Max number of authors")).toBeVisible()
+	test("does not show max authors setting", async ({ page }) => {
+		// Assert - maxAuthors removed
+		await expect(page.getByLabel("Max number of authors")).not.toBeVisible()
+	})
+
+	test("uses markdown list syntax in guidelines placeholder", async ({ page }) => {
+		// Arrange
+		await page.getByRole("heading", { name: "Submission Guidelines" }).scrollIntoViewIfNeeded()
+
+		// Assert - should use "- " not "• "
+		const textarea = page.locator("textarea").filter({ hasText: /Title should be concise/ })
+		await expect(textarea).toHaveAttribute("placeholder", /^- /)
 	})
 })

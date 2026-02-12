@@ -47,14 +47,14 @@ test.describe("Affiliations", () => {
 		// Arrange
 		await submissionPage.goto();
 
-		// Act
-		await submissionPage.fillAffiliation(0, "First University");
-
+		// Act — add author and fill text fields first, then affiliations last
+		// (affiliation API calls can trigger React re-renders that reset the form)
 		await submissionPage.addAuthor();
 		await submissionPage.page.locator("#author-1-firstName").fill("Jane");
 		await submissionPage.page.locator("#author-1-lastName").fill("Doe");
 		await submissionPage.page.locator("#author-1-email").fill("jane@test.com");
 
+		await submissionPage.fillAffiliation(0, "First University");
 		await submissionPage.fillAffiliation(1, "Second University");
 
 		// Assert

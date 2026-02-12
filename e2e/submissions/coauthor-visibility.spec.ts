@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { type Page } from "@playwright/test";
 import {
 	createSubmission,
 	createTestUser,
@@ -8,21 +7,14 @@ import {
 	getTestUserIds,
 } from "../helpers/test-db";
 import { randomUUID } from "crypto";
+import { DEFAULT_PASSWORD, TEST_USER } from "../helpers/test-users";
+import { loginAs } from "../helpers/auth";
 
 /**
  * Co-author visibility tests
  * Tests that co-authors can see submissions they're listed on (read-only)
  * Uses per-test user isolation — each test creates its own co-author user
  */
-
-async function login(page: Page, email: string, password: string) {
-	await page.goto("/login");
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 });
-	await page.getByLabel("E-mail").fill(email);
-	await page.getByLabel("Password").fill(password);
-	await page.getByRole("button", { name: "Sign in" }).click();
-	await page.waitForURL("/", { timeout: 30000 });
-}
 
 interface CoAuthorScenario {
 	submission: { id: string; title: string };
@@ -36,7 +28,7 @@ async function arrangeCoAuthorScenario(title: string): Promise<CoAuthorScenario>
 
 	const coauthor = await createTestUser({
 		email: coauthorEmail,
-		password: "testpass123",
+		password: DEFAULT_PASSWORD,
 		firstName: "CoAuthor",
 		lastName: "Test",
 		emailVerified: true,
@@ -74,7 +66,7 @@ test.describe("Co-author Visibility", () => {
 
 		try {
 			// Act
-			await login(page, coauthor.email, "testpass123");
+			await loginAs(page, { email: coauthor.email, password: DEFAULT_PASSWORD });
 			await page.goto("/submissions");
 
 			// Assert
@@ -91,7 +83,7 @@ test.describe("Co-author Visibility", () => {
 
 		try {
 			// Act
-			await login(page, coauthor.email, "testpass123");
+			await loginAs(page, { email: coauthor.email, password: DEFAULT_PASSWORD });
 			await page.goto(`/submissions/${submission.id}`);
 
 			// Assert — read-only badge visible
@@ -111,7 +103,7 @@ test.describe("Co-author Visibility", () => {
 
 		try {
 			// Act — login as owner (test@e2e.local)
-			await login(page, "test@e2e.local", "testpass123");
+			await loginAs(page, TEST_USER);
 			await page.goto(`/submissions/${submission.id}`);
 
 			// Assert — no read-only badge
@@ -132,7 +124,7 @@ test.describe("Co-author Visibility", () => {
 
 		const otherUser = await createTestUser({
 			email: otherEmail,
-			password: "testpass123",
+			password: DEFAULT_PASSWORD,
 			firstName: "Other",
 			lastName: "User",
 			emailVerified: true,
@@ -150,7 +142,7 @@ test.describe("Co-author Visibility", () => {
 
 		try {
 			// Act — login as the other user (not listed as co-author)
-			await login(page, otherEmail, "testpass123");
+			await loginAs(page, { email: otherEmail, password: DEFAULT_PASSWORD });
 			await page.goto("/submissions");
 
 			// Assert — submission not visible

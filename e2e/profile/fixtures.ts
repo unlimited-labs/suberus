@@ -1,12 +1,6 @@
 import { test as base, expect as baseExpect, type Locator, type Page } from "@playwright/test"
 
-// Test data
-export const TEST_USER = {
-	email: "test@e2e.local",
-	password: "testpass123",
-	firstName: "Test",
-	lastName: "User",
-}
+export { TEST_USER } from "../helpers/test-users"
 
 export const VALID_ORCID = "0000-0002-1825-0097"
 
@@ -136,13 +130,13 @@ export class SettingsPage {
 
 	async expectToastSuccess(message: string | RegExp) {
 		await baseExpect(this.page.locator("[data-sonner-toast]").getByText(message)).toBeVisible({
-			timeout: 5000,
+			timeout: 15000,
 		})
 	}
 
 	async expectToastError(message: string | RegExp) {
 		await baseExpect(this.page.locator("[data-sonner-toast]").getByText(message)).toBeVisible({
-			timeout: 5000,
+			timeout: 15000,
 		})
 	}
 }

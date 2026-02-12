@@ -1,6 +1,8 @@
 import { expect } from "@playwright/test";
 import { test } from "./fixtures";
 import { setAppSetting, getPrisma } from "../helpers/test-db";
+import { TEST_USER } from "../helpers/test-users";
+import { loginAs } from "../helpers/auth";
 
 // Both describes share SUBMISSION_GUIDELINES DB setting — must be serial
 test.describe.configure({ mode: "serial" });
@@ -17,7 +19,7 @@ test.describe("Admin Settings - Submission Guidelines", () => {
 		const customGuidelines = "Custom submission guideline for E2E test";
 
 		// Act
-		const guidelinesTextarea = page.getByPlaceholder("• Title should be concise...");
+		const guidelinesTextarea = page.getByPlaceholder("- Title should be concise...");
 		await expect(guidelinesTextarea).toBeVisible();
 		await guidelinesTextarea.clear();
 		await guidelinesTextarea.fill(customGuidelines);
@@ -32,7 +34,7 @@ test.describe("Admin Settings - Submission Guidelines", () => {
 		const customGuidelines = "Custom review guideline for E2E test";
 
 		// Act
-		const guidelinesTextarea = page.getByPlaceholder("• Provide constructive feedback...");
+		const guidelinesTextarea = page.getByPlaceholder("- Provide constructive feedback...");
 		await expect(guidelinesTextarea).toBeVisible();
 		await guidelinesTextarea.clear();
 		await guidelinesTextarea.fill(customGuidelines);
@@ -73,13 +75,7 @@ test.describe("Submission Form - Custom Guidelines", () => {
 		);
 
 		// Act - navigate to submission form as test user
-		await page.context().clearCookies();
-		await page.goto("/login");
-		await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 });
-		await page.getByLabel("E-mail").fill("test@e2e.local");
-		await page.getByLabel("Password").fill("testpass123");
-		await page.getByRole("button", { name: "Sign in" }).click();
-		await page.waitForURL("/", { timeout: 30000 });
+		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto("/submissions/new");
 		await page.getByLabel("Title").waitFor({ state: "visible", timeout: 30000 });
 

@@ -1,67 +1,23 @@
 import { test as base, type Page } from "@playwright/test"
+import { ADMIN_USER, TEST_USER, REVIEWER_USER, EDITOR_USER } from "../helpers/test-users"
+import { loginAs } from "../helpers/auth"
 
-export const ADMIN_USER = {
-	email: "admin@e2e.local",
-	password: "testpass123",
-}
-
-export const TEST_USER = {
-	email: "test@e2e.local",
-	password: "testpass123",
-}
-
-export const REVIEWER_USER = {
-	email: "reviewer@e2e.local",
-	password: "testpass123",
-}
-
-export const EDITOR_USER = {
-	email: "editor@e2e.local",
-	password: "testpass123",
-}
+export { ADMIN_USER, TEST_USER, REVIEWER_USER, EDITOR_USER }
 
 export async function loginAsAdmin(page: Page) {
-	await page.goto("/login")
-	// SSR hydration + form render
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 })
-	await page.getByLabel("E-mail").fill(ADMIN_USER.email)
-	await page.getByLabel("Password").fill(ADMIN_USER.password)
-	await page.getByRole("button", { name: "Sign in" }).click()
-	// API auth + session + redirect
-	await page.waitForURL("/", { timeout: 30000 })
+	await loginAs(page, ADMIN_USER)
 }
 
 export async function loginAsTestUser(page: Page) {
-	await page.goto("/login")
-	// SSR hydration + form render
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 })
-	await page.getByLabel("E-mail").fill(TEST_USER.email)
-	await page.getByLabel("Password").fill(TEST_USER.password)
-	await page.getByRole("button", { name: "Sign in" }).click()
-	// API auth + session + redirect
-	await page.waitForURL("/", { timeout: 30000 })
+	await loginAs(page, TEST_USER)
 }
 
 export async function loginAsReviewer(page: Page) {
-	await page.goto("/login")
-	// SSR hydration + form render
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 })
-	await page.getByLabel("E-mail").fill(REVIEWER_USER.email)
-	await page.getByLabel("Password").fill(REVIEWER_USER.password)
-	await page.getByRole("button", { name: "Sign in" }).click()
-	// API auth + session + redirect
-	await page.waitForURL("/", { timeout: 30000 })
+	await loginAs(page, REVIEWER_USER)
 }
 
 export async function loginAsEditor(page: Page) {
-	await page.goto("/login")
-	// SSR hydration + form render
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 })
-	await page.getByLabel("E-mail").fill(EDITOR_USER.email)
-	await page.getByLabel("Password").fill(EDITOR_USER.password)
-	await page.getByRole("button", { name: "Sign in" }).click()
-	// API auth + session + redirect
-	await page.waitForURL("/", { timeout: 30000 })
+	await loginAs(page, EDITOR_USER)
 }
 
 export const test = base

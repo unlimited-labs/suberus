@@ -8,6 +8,9 @@ import {
 	deleteTestUser,
 } from "./helpers/test-db";
 
+import { ADMIN_USER, DEFAULT_PASSWORD } from "./helpers/test-users";
+import { loginAs } from "./helpers/auth";
+
 /**
  * E2E tests for Fee functionality
  * Tests user fee page and admin fee instructions editor
@@ -17,22 +20,6 @@ import {
  * - Fee exists = payment confirmed (paid)
  * - No fee = payment not received (unpaid)
  */
-
-// Admin user credentials (shared, read-only)
-const ADMIN_USER = {
-	email: "admin@e2e.local",
-	password: "testpass123",
-};
-
-// Helper: Login with email and password
-async function login(page: Page, email: string, password: string) {
-	await page.goto("/login");
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 });
-	await page.getByLabel("E-mail").fill(email);
-	await page.getByLabel("Password").fill(password);
-	await page.getByRole("button", { name: "Sign in" }).click();
-	await page.waitForURL("/", { timeout: 30000 });
-}
 
 // Page Object: Fee Page
 class FeePage {
@@ -115,7 +102,7 @@ test.describe("Fee - User View", () => {
 		// Arrange - Create unique test user
 		const testUser = await createTestUser({
 			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
-			password: "testpass123",
+			password: DEFAULT_PASSWORD,
 		});
 
 		const paidAt = new Date("2026-01-15");
@@ -127,7 +114,7 @@ test.describe("Fee - User View", () => {
 			paidAt,
 		});
 
-		await login(page, testUser.email, "testpass123");
+		await loginAs(page, { email: testUser.email, password: DEFAULT_PASSWORD });
 
 		// Act
 		const feePage = new FeePage(page);
@@ -151,10 +138,10 @@ test.describe("Fee - User View", () => {
 		// Arrange - Create unique test user (no fee)
 		const testUser = await createTestUser({
 			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
-			password: "testpass123",
+			password: DEFAULT_PASSWORD,
 		});
 
-		await login(page, testUser.email, "testpass123");
+		await loginAs(page, { email: testUser.email, password: DEFAULT_PASSWORD });
 
 		// Act
 		const feePage = new FeePage(page);
@@ -181,7 +168,7 @@ test.describe("Fee - User View", () => {
 		// Arrange - Create unique test user
 		const testUser = await createTestUser({
 			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
-			password: "testpass123",
+			password: DEFAULT_PASSWORD,
 		});
 
 		await createFee({
@@ -192,7 +179,7 @@ test.describe("Fee - User View", () => {
 			paidAt: new Date("2026-01-10"),
 		});
 
-		await login(page, testUser.email, "testpass123");
+		await loginAs(page, { email: testUser.email, password: DEFAULT_PASSWORD });
 
 		// Act
 		const feePage = new FeePage(page);
@@ -217,7 +204,7 @@ test.describe("Fee - Admin Instructions Editor", () => {
 
 	test("admin can edit and save fee payment instructions", async ({ page }) => {
 		// Arrange
-		await login(page, ADMIN_USER.email, ADMIN_USER.password);
+		await loginAs(page, ADMIN_USER);
 		const settingsPage = new AdminSettingsPage(page);
 		await settingsPage.goto();
 
@@ -241,7 +228,7 @@ Please transfer the fee to:
 
 	test("admin updated instructions are visible to users", async ({ page }) => {
 		// Arrange - Admin updates instructions
-		await login(page, ADMIN_USER.email, ADMIN_USER.password);
+		await loginAs(page, ADMIN_USER);
 		const settingsPage = new AdminSettingsPage(page);
 		await settingsPage.goto();
 		await settingsPage.openFeeInstructionsTab();
@@ -258,10 +245,10 @@ Please transfer the fee to:
 
 		const testUser = await createTestUser({
 			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
-			password: "testpass123",
+			password: DEFAULT_PASSWORD,
 		});
 
-		await login(page, testUser.email, "testpass123");
+		await loginAs(page, { email: testUser.email, password: DEFAULT_PASSWORD });
 		const feePage = new FeePage(page);
 		await feePage.goto();
 
@@ -276,7 +263,7 @@ Please transfer the fee to:
 		page,
 	}) => {
 		// Arrange
-		await login(page, ADMIN_USER.email, ADMIN_USER.password);
+		await loginAs(page, ADMIN_USER);
 		const settingsPage = new AdminSettingsPage(page);
 		await settingsPage.goto();
 		await settingsPage.openFeeInstructionsTab();
@@ -312,10 +299,10 @@ Please use the following details:
 
 		const testUser = await createTestUser({
 			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
-			password: "testpass123",
+			password: DEFAULT_PASSWORD,
 		});
 
-		await login(page, testUser.email, "testpass123");
+		await loginAs(page, { email: testUser.email, password: DEFAULT_PASSWORD });
 		const feePage = new FeePage(page);
 		await feePage.goto();
 
@@ -336,7 +323,7 @@ test.describe("Fee - Navigation", () => {
 		// Arrange - Use shared test user (read-only test)
 		const { testUserId } = await getTestUserIds();
 		const testUser = await getPrisma().user.findUnique({ where: { id: testUserId } });
-		await login(page, testUser!.email, "testpass123");
+		await loginAs(page, { email: testUser!.email, password: DEFAULT_PASSWORD });
 
 		// Act & Assert
 		await expect(page.getByRole("link", { name: "Fee" })).toBeVisible();
@@ -346,7 +333,7 @@ test.describe("Fee - Navigation", () => {
 		// Arrange - Use shared test user (read-only test)
 		const { testUserId } = await getTestUserIds();
 		const testUser = await getPrisma().user.findUnique({ where: { id: testUserId } });
-		await login(page, testUser!.email, "testpass123");
+		await loginAs(page, { email: testUser!.email, password: DEFAULT_PASSWORD });
 
 		// Act
 		await page.getByRole("link", { name: "Fee" }).click();
@@ -366,7 +353,7 @@ test.describe("Fee - Edge Cases", () => {
 		// Arrange - Create unique test user
 		const testUser = await createTestUser({
 			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
-			password: "testpass123",
+			password: DEFAULT_PASSWORD,
 		});
 		const db = getPrisma();
 
@@ -382,7 +369,7 @@ test.describe("Fee - Edge Cases", () => {
 			},
 		});
 
-		await login(page, testUser.email, "testpass123");
+		await loginAs(page, { email: testUser.email, password: DEFAULT_PASSWORD });
 
 		// Act
 		const feePage = new FeePage(page);
@@ -407,7 +394,7 @@ test.describe("Fee - Edge Cases", () => {
 		// Arrange - Create unique test user
 		const testUser = await createTestUser({
 			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
-			password: "testpass123",
+			password: DEFAULT_PASSWORD,
 		});
 
 		await createFee({
@@ -418,7 +405,7 @@ test.describe("Fee - Edge Cases", () => {
 			paidAt: new Date("2026-01-20"),
 		});
 
-		await login(page, testUser.email, "testpass123");
+		await loginAs(page, { email: testUser.email, password: DEFAULT_PASSWORD });
 
 		// Act - Navigate back and forth
 		await page.goto("/fee");

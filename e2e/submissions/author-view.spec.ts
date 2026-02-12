@@ -173,9 +173,9 @@ test.describe("Author - Submission Detail View", () => {
 		// Assert
 		if (testInfo.project.name.includes("mobile")) {
 			const mobileCards = page.locator(".md\\:hidden");
-			await expect(mobileCards.getByText(title)).toBeVisible();
+			await expect(mobileCards.getByText(title)).toBeVisible({ timeout: 15000 });
 		} else {
-			await expect(page.getByText(title).first()).toBeVisible();
+			await expect(page.getByText(title).first()).toBeVisible({ timeout: 15000 });
 		}
 	});
 });

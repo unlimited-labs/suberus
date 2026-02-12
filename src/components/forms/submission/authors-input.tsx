@@ -43,7 +43,6 @@ export interface Author {
 interface AuthorsInputProps {
 	value: Author[];
 	onChange: (authors: Author[]) => void;
-	maxAuthors?: number;
 	className?: string;
 }
 
@@ -252,7 +251,6 @@ function SortableAuthorItem({
 export function AuthorsInput({
 	value,
 	onChange,
-	maxAuthors: _maxAuthors = 10,
 	className,
 }: AuthorsInputProps) {
 	const [activeId, setActiveId] = useState<string | null>(null);

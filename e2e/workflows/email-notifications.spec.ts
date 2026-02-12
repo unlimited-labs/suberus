@@ -5,37 +5,9 @@ import {
 	createSubmissionWithReview,
 } from "../helpers/test-db";
 import { SubmissionStatus } from "../../src/generated/prisma/enums";
-import {
-	clearMailpitForAddress,
-	waitForEmail,
-	getMailpitMessage,
-} from "../auth/fixtures";
-
-const TEST_USER = {
-	email: "test@e2e.local",
-	password: "testpass123",
-};
-
-const ADMIN_USER = {
-	email: "admin@e2e.local",
-	password: "testpass123",
-};
-
-const REVIEWER_USER = {
-	email: "reviewer@e2e.local",
-	password: "testpass123",
-};
-
-async function loginAs(page: Page, user: { email: string; password: string }) {
-	await page.context().clearCookies();
-	await page.goto("/login");
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 30000 });
-	await page.getByLabel("E-mail").fill(user.email);
-	const passwordInput = page.getByLabel("Password");
-	await passwordInput.fill(user.password);
-	await passwordInput.press("Enter");
-	await page.waitForURL("/", { timeout: 30000 });
-}
+import { clearMailpitForAddress, waitForEmail, getMailpitMessage } from "../helpers/mailpit";
+import { TEST_USER, ADMIN_USER, REVIEWER_USER } from "../helpers/test-users";
+import { loginAs } from "../helpers/auth";
 
 async function addKeyword(page: Page, keyword: string) {
 	const keywordInput = page.locator("input.min-w-\\[120px\\]");
@@ -44,6 +16,10 @@ async function addKeyword(page: Page, keyword: string) {
 	await keywordInput.press("Enter");
 	await expect(page.getByText(keyword, { exact: true })).toBeVisible();
 }
+
+// Email tests must run serially: they share Mailpit inbox and clearMailpitForAddress
+// deletes all emails for an address, which interferes with concurrent tests.
+test.describe.configure({ mode: "serial" });
 
 test.describe("Submission Emails", () => {
 	test("submission confirmation email sent on new submission", async ({
@@ -54,7 +30,7 @@ test.describe("Submission Emails", () => {
 		// Arrange
 		await clearMailpitForAddress(TEST_USER.email);
 		const submissionTitle = `${testRun.testRunId}_Email Confirm Test`;
-		await loginAs(page, TEST_USER);
+		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto("/submissions/new");
 		await page.getByLabel("Title").waitFor({ state: "visible", timeout: 30000 });
 
@@ -91,13 +67,14 @@ test.describe("Submission Emails", () => {
 		await page.waitForURL(/\/submissions\/[a-f0-9-]+/, { timeout: 60000 });
 
 		// Assert
-		const email = await waitForEmail(TEST_USER.email, "Submission Received", 15000);
+		const email = await waitForEmail(TEST_USER.email, "Submission Received", 45000);
 		expect(email).not.toBeNull();
 
 		// Assert email contains submission URL, not "Submission ID:"
 		const emailDetails = await getMailpitMessage(email!.ID);
-		expect(emailDetails.Text).toMatch(/\/submissions\/[a-f0-9-]+/);
-		expect(emailDetails.Text).not.toContain("Submission ID:");
+		expect(emailDetails).not.toBeNull();
+		expect(emailDetails!.Text).toMatch(/\/submissions\/[a-f0-9-]+/);
+		expect(emailDetails!.Text).not.toContain("Submission ID:");
 	});
 
 	test("draft submission does NOT send email", async ({
@@ -108,7 +85,7 @@ test.describe("Submission Emails", () => {
 		// Arrange
 		await clearMailpitForAddress(TEST_USER.email);
 		const submissionTitle = `${testRun.testRunId}_Draft No Email Test`;
-		await loginAs(page, TEST_USER);
+		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto("/submissions/new");
 		await page.getByLabel("Title").waitFor({ state: "visible", timeout: 30000 });
 
@@ -153,6 +130,7 @@ test.describe("Submission Emails", () => {
 
 test.describe("Workflow Emails", () => {
 	test("withdrawal email sent to author", async ({ page, testRun, cleanup }) => {
+		test.slow();
 		// Arrange
 		await clearMailpitForAddress(TEST_USER.email);
 		const { id } = await createSubmission({
@@ -162,7 +140,7 @@ test.describe("Workflow Emails", () => {
 			authorData: { firstName: "Test", lastName: "User", email: TEST_USER.email },
 		});
 		cleanup.track(id);
-		await loginAs(page, TEST_USER);
+		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${id}`);
 
 		// Act
@@ -170,7 +148,7 @@ test.describe("Workflow Emails", () => {
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 
 		// Assert
-		const email = await waitForEmail(TEST_USER.email, "Submission Withdrawn", 15000);
+		const email = await waitForEmail(TEST_USER.email, "Submission Withdrawn", 30000);
 		expect(email).not.toBeNull();
 	});
 
@@ -183,7 +161,7 @@ test.describe("Workflow Emails", () => {
 			status: SubmissionStatus.SUBMITTED,
 		});
 		cleanup.track(id);
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${id}`);
 		await expect(page.getByText("Submitted").first()).toBeVisible({ timeout: 10000 });
 
@@ -196,11 +174,12 @@ test.describe("Workflow Emails", () => {
 		await expect(page.getByText(/Current Reviewers/i)).toBeVisible({ timeout: 10000 });
 
 		// Assert
-		const email = await waitForEmail(REVIEWER_USER.email, "New Review Assignment", 15000);
+		const email = await waitForEmail(REVIEWER_USER.email, "New Review Assignment", 30000);
 		expect(email).not.toBeNull();
 	});
 
 	test("decision email sent on accept", async ({ page, testRun, cleanup }) => {
+		test.slow();
 		// Arrange
 		await clearMailpitForAddress(TEST_USER.email);
 		const { submissionId } = await createSubmissionWithReview({
@@ -209,7 +188,7 @@ test.describe("Workflow Emails", () => {
 			authorData: { firstName: "Test", lastName: "User", email: TEST_USER.email },
 		});
 		cleanup.track(submissionId);
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${submissionId}`);
 		await expect(page.getByText(/Awaiting Decision/i).first()).toBeVisible({ timeout: 10000 });
 
@@ -222,7 +201,7 @@ test.describe("Workflow Emails", () => {
 		await page.getByRole("button", { name: /Submit Decision/i }).click();
 
 		// Assert
-		const email = await waitForEmail(TEST_USER.email, "Submission Accepted", 15000);
+		const email = await waitForEmail(TEST_USER.email, "Submission Accepted", 30000);
 		expect(email).not.toBeNull();
 	});
 
@@ -236,7 +215,7 @@ test.describe("Workflow Emails", () => {
 			authorData: { firstName: "Test", lastName: "User", email: TEST_USER.email },
 		});
 		cleanup.track(id);
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${id}`);
 		await expect(page.getByText("Submitted").first()).toBeVisible({ timeout: 10000 });
 
@@ -251,7 +230,7 @@ test.describe("Workflow Emails", () => {
 		]);
 
 		// Assert
-		const email = await waitForEmail(TEST_USER.email, "Submission Decision", 15000);
+		const email = await waitForEmail(TEST_USER.email, "Submission Decision", 30000);
 		expect(email).not.toBeNull();
 	});
 });

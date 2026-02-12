@@ -1,44 +1,13 @@
 import { test as base, expect as baseExpect, type TestRunContext, type CleanupContext } from "../helpers/base-fixtures"
 import { expect } from "@playwright/test"
 import { type Page, type Locator } from "@playwright/test"
+import { loginAs } from "../helpers/auth"
 
-// Test data
-export const ADMIN_USER = {
-	email: "admin@e2e.local",
-	password: "testpass123",
-	firstName: "Admin",
-	lastName: "User",
-}
+export { ADMIN_USER, TEST_USER, UNVERIFIED_USER, ADMIN_VERIFY_TEST_USER } from "../helpers/test-users"
 
-export const TEST_USER = {
-	email: "test@e2e.local",
-	firstName: "Test",
-	lastName: "User",
-}
-
-export const UNVERIFIED_USER = {
-	email: "unverified@e2e.local",
-	firstName: "Unverified",
-	lastName: "User",
-}
-
-// Separate user for destructive admin verification tests
-export const ADMIN_VERIFY_TEST_USER = {
-	email: "admin-verify-test@e2e.local",
-	firstName: "AdminVerify",
-	lastName: "Test",
-}
-
-// Login helper
 export async function loginAsAdmin(page: Page) {
-	await page.goto("/login")
-	// SSR hydration + form render
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 })
-	await page.getByLabel("E-mail").fill(ADMIN_USER.email)
-	await page.getByLabel("Password").fill(ADMIN_USER.password)
-	await page.getByRole("button", { name: "Sign in" }).click()
-	// API auth + session + redirect
-	await page.waitForURL("/", { timeout: 30000 })
+	const { ADMIN_USER } = await import("../helpers/test-users")
+	await loginAs(page, ADMIN_USER)
 }
 
 // Page Objects
@@ -236,7 +205,7 @@ export class AdminSettingsPage {
 		} else {
 			await this.submissionsTab.click()
 		}
-		await expect(this.page.getByRole("heading", { name: "Title" })).toBeVisible()
+		await expect(this.page.getByRole("heading", { name: "Content Validation" })).toBeVisible()
 	}
 
 	async switchToTypesTab(testInfo?: { project: { name: string } }) {
@@ -406,12 +375,8 @@ export class AdminSettingsPage {
 	}
 
 	async loginAsAdmin(testRunId: string) {
-		await this.page.goto("/login")
-		await this.page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 })
-		await this.page.getByLabel("E-mail").fill(`admin-${testRunId}@e2e.local`)
-		await this.page.getByLabel("Password").fill("testpass123")
-		await this.page.getByRole("button", { name: "Sign in" }).click()
-		await this.page.waitForURL("/", { timeout: 30000 })
+		const { DEFAULT_PASSWORD } = await import("../helpers/test-users")
+		await loginAs(this.page, { email: `admin-${testRunId}@e2e.local`, password: DEFAULT_PASSWORD })
 	}
 }
 

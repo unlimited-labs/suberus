@@ -1,14 +1,8 @@
 import { type Page, type Locator } from "@playwright/test"
 import { test as base, expect, type TestRunContext } from "../helpers/base-fixtures"
 
-// Test data
-export const TEST_USER = {
-	email: "test@e2e.local",
-	password: "testpass123",
-	firstName: "Test",
-	lastName: "User",
-	affiliation: "Test University",
-}
+export { TEST_USER } from "../helpers/test-users"
+export { clearMailpit, clearMailpitForAddress, getMailpitMessages, getMailpitMessage, waitForEmail } from "../helpers/mailpit"
 
 export const INVALID_USER = {
 	email: "invalid@example.com",
@@ -102,12 +96,14 @@ export class RegisterPage {
 		await this.page.getByLabel("First name *").fill(data.firstName)
 		await this.page.getByLabel("Last name *").fill(data.lastName)
 
-		// AffiliationSelect is an inline autocomplete input
-		await this.affiliationInput.fill(data.affiliation)
+		// AffiliationSelect is an inline autocomplete input — retry fill+click due to dropdown re-render
 		const option = this.page.getByRole("option").filter({ hasText: data.affiliation }).first()
-		await option.waitFor({ state: "visible", timeout: 10000 })
-		await option.click()
-		await expect(this.affiliationInput).toHaveValue(data.affiliation, { timeout: 5000 })
+		await expect(async () => {
+			await this.affiliationInput.fill(data.affiliation)
+			await expect(option).toBeVisible()
+			await option.click()
+			await expect(this.affiliationInput).toHaveValue(data.affiliation)
+		}).toPass({ timeout: 15000 })
 
 		if (data.title) {
 			await this.page.getByLabel("Title").click()
@@ -177,6 +173,8 @@ export class RegisterPage {
 
 	async clickBack() {
 		await this.backButton.click()
+		// Wait for step 1 form to be visible after navigation
+		await this.page.getByLabel("E-mail *").waitFor({ state: "visible", timeout: 10000 })
 	}
 
 	async clickCreateAccount() {
@@ -271,91 +269,6 @@ export class ResetPasswordPage {
 	async submit() {
 		await this.submitButton.click()
 	}
-}
-
-// Mailpit helpers
-const MAILPIT_API = "http://localhost:8025/api/v1"
-
-export async function clearMailpit(testRunId?: string) {
-	try {
-		if (!testRunId) {
-			// Legacy: clear all messages
-			await fetch(`${MAILPIT_API}/messages`, { method: "DELETE" })
-			return
-		}
-
-		// Get all messages and delete only those matching testRunId
-		const { messages } = await getMailpitMessages()
-		for (const message of messages) {
-			try {
-				const details = await getMailpitMessage(message.ID)
-				// Check if X-Test-Run-Id header matches
-				const testRunHeader = details.Headers?.["X-Test-Run-Id"]?.[0]
-				if (testRunHeader === testRunId) {
-					await fetch(`${MAILPIT_API}/message/${message.ID}`, { method: "DELETE" })
-				}
-			} catch {
-				// Skip if message already deleted or error fetching
-			}
-		}
-	} catch {
-		// Mailpit might not be running
-	}
-}
-
-export async function clearMailpitForAddress(address: string) {
-	try {
-		const { messages } = await getMailpitMessages()
-		for (const message of messages) {
-			if (message.To.some((t) => t.Address === address)) {
-				await fetch(`${MAILPIT_API}/message/${message.ID}`, { method: "DELETE" })
-			}
-		}
-	} catch {
-		// Mailpit might not be running
-	}
-}
-
-export async function getMailpitMessages() {
-	try {
-		const response = await fetch(`${MAILPIT_API}/messages`)
-		return (await response.json()) as {
-			messages: Array<{
-				ID: string
-				To: Array<{ Address: string }>
-				Subject: string
-			}>
-		}
-	} catch {
-		return { messages: [] }
-	}
-}
-
-export async function getMailpitMessage(id: string) {
-	const response = await fetch(`${MAILPIT_API}/message/${id}`)
-	return (await response.json()) as {
-		ID: string
-		To: Array<{ Address: string }>
-		Subject: string
-		Text: string
-		HTML: string
-		Headers?: Record<string, string[]>
-	}
-}
-
-export async function waitForEmail(toEmail: string, subjectContains: string, timeout = 10000) {
-	const startTime = Date.now()
-	while (Date.now() - startTime < timeout) {
-		const { messages } = await getMailpitMessages()
-		const email = messages.find(
-			(m) =>
-				m.To.some((t) => t.Address === toEmail) &&
-				m.Subject.toLowerCase().includes(subjectContains.toLowerCase())
-		)
-		if (email) return email
-		await new Promise((r) => setTimeout(r, 500))
-	}
-	return null
 }
 
 // Extended test with fixtures

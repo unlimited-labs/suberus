@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import { randomUUID } from "crypto";
 import {
 	createSubmission,
@@ -12,35 +12,8 @@ import {
 	getPrisma,
 } from "../helpers/test-db";
 import { SubmissionStatus, SubmissionType } from "../../src/generated/prisma/enums";
-
-const TEST_USER = {
-	email: "test@e2e.local",
-	password: "testpass123",
-};
-
-const ADMIN_USER = {
-	email: "admin@e2e.local",
-	password: "testpass123",
-};
-
-const REVIEWER_USER = {
-	email: "reviewer@e2e.local",
-	password: "testpass123",
-};
-
-const EDITOR_USER = {
-	email: "editor@e2e.local",
-	password: "testpass123",
-};
-
-async function login(page: Page, email: string, password: string) {
-	await page.goto("/login");
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 });
-	await page.getByLabel("E-mail").fill(email);
-	await page.getByLabel("Password").fill(password);
-	await page.getByRole("button", { name: "Sign in" }).click();
-	await page.waitForURL("/", { timeout: 30000 });
-}
+import { TEST_USER, ADMIN_USER, REVIEWER_USER, EDITOR_USER, DEFAULT_PASSWORD } from "../helpers/test-users";
+import { loginAs } from "../helpers/auth";
 
 test.describe("S3 Configuration", () => {
 	test("S3 is reachable and bucket exists", async () => {
@@ -74,7 +47,7 @@ test.describe.serial("File Access Control", () => {
 
 	test("author can see and download file", async ({ page }) => {
 		// Arrange
-		await login(page, TEST_USER.email, TEST_USER.password);
+		await loginAs(page, TEST_USER);
 
 		// Act
 		await page.goto(`/submissions/${submissionData.id}`);
@@ -86,7 +59,7 @@ test.describe.serial("File Access Control", () => {
 
 	test("editor can download any file", async ({ page }) => {
 		// Arrange
-		await login(page, EDITOR_USER.email, EDITOR_USER.password);
+		await loginAs(page, EDITOR_USER);
 
 		// Act - access via API
 		const response = await page.request.get(
@@ -99,7 +72,7 @@ test.describe.serial("File Access Control", () => {
 
 	test("admin can download any file", async ({ page }) => {
 		// Arrange
-		await login(page, ADMIN_USER.email, ADMIN_USER.password);
+		await loginAs(page, ADMIN_USER);
 
 		// Act
 		const response = await page.request.get(
@@ -126,14 +99,14 @@ test.describe.serial("File Access Control", () => {
 		const otherEmail = `other-${testRunId}@e2e.local`;
 		const otherUser = await createTestUser({
 			email: otherEmail,
-			password: "testpass123",
+			password: DEFAULT_PASSWORD,
 			firstName: "Other",
 			lastName: "User",
 			emailVerified: true,
 		});
 
 		try {
-			await login(page, otherEmail, "testpass123");
+			await loginAs(page, { email: otherEmail, password: DEFAULT_PASSWORD });
 
 			// Act
 			const response = await page.request.get(
@@ -186,7 +159,7 @@ test.describe.serial("File Access - Reviewer", () => {
 
 	test("assigned reviewer can access file", async ({ page }) => {
 		// Arrange
-		await login(page, REVIEWER_USER.email, REVIEWER_USER.password);
+		await loginAs(page, REVIEWER_USER);
 
 		// Act
 		const response = await page.request.get(
@@ -218,7 +191,7 @@ test.describe.serial("File Access - Unassigned Reviewer", () => {
 
 	test("unassigned reviewer cannot access file", async ({ page }) => {
 		// Arrange
-		await login(page, REVIEWER_USER.email, REVIEWER_USER.password);
+		await loginAs(page, REVIEWER_USER);
 
 		// Act
 		const response = await page.request.get(
@@ -260,7 +233,7 @@ test.describe.serial("File Access - Co-author", () => {
 
 	test("co-author can download file", async ({ page }) => {
 		// Arrange
-		await login(page, EDITOR_USER.email, EDITOR_USER.password);
+		await loginAs(page, EDITOR_USER);
 
 		// Act
 		const response = await page.request.get(
@@ -283,7 +256,7 @@ test.describe("File Access - Isolation & Cleanup", () => {
 		});
 
 		try {
-			await login(page, TEST_USER.email, TEST_USER.password);
+			await loginAs(page, TEST_USER);
 			await page.goto(`/submissions/${submission.id}`);
 
 			// Assert - no download button
@@ -341,7 +314,7 @@ test.describe("File Access - Isolation & Cleanup", () => {
 
 		try {
 			// Login as admin (can access all files)
-			await login(page, ADMIN_USER.email, ADMIN_USER.password);
+			await loginAs(page, ADMIN_USER);
 
 			// Act & Assert - both files accessible independently
 			const response1 = await page.request.get(`/api/files/${file1.fileId}`);
@@ -369,7 +342,7 @@ test.describe("File Revision", () => {
 		});
 
 		try {
-			await login(page, TEST_USER.email, TEST_USER.password);
+			await loginAs(page, TEST_USER);
 
 			// Act - navigate to revision page
 			await page.goto(`/submissions/${submissionData.id}/revise`);
@@ -496,7 +469,7 @@ test.describe.serial("File Revision Round Isolation", () => {
 
 	test("both version files accessible via API", async ({ page }) => {
 		// Arrange
-		await login(page, TEST_USER.email, TEST_USER.password);
+		await loginAs(page, TEST_USER);
 
 		// Act & Assert
 		const r1 = await page.request.get(`/api/files/${v1FileId}`);
@@ -509,7 +482,7 @@ test.describe.serial("File Revision Round Isolation", () => {
 		page,
 	}) => {
 		// Arrange
-		await login(page, TEST_USER.email, TEST_USER.password);
+		await loginAs(page, TEST_USER);
 		await page.goto(`/submissions/${submissionId}`);
 
 		// Assert - v2 (current) shown by default
@@ -530,7 +503,7 @@ test.describe.serial("File Revision Round Isolation", () => {
 		page,
 	}) => {
 		// Arrange
-		await login(page, TEST_USER.email, TEST_USER.password);
+		await loginAs(page, TEST_USER);
 
 		// Act - download v1 (PDF)
 		const r1 = await page.request.get(`/api/files/${v1FileId}`);

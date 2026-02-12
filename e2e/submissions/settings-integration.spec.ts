@@ -44,7 +44,7 @@ const test = base.extend<SettingsIntegrationFixtures>({
 async function goToAdminSubmissionSettings(adminPage: Page) {
 	await adminPage.goto("/admin/settings");
 	await adminPage.getByRole("tab", { name: /Submissions$/i }).click();
-	await expect(adminPage.getByRole("heading", { name: "Title" })).toBeVisible();
+	await expect(adminPage.getByRole("heading", { name: "Content Validation" })).toBeVisible();
 }
 
 // Helper: Navigate to admin submission types tab
@@ -105,7 +105,7 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 			// Restore validation settings
 			await page.reload();
 			await page.getByRole("tab", { name: /Submissions$/i }).click();
-			await expect(page.getByRole("heading", { name: "Title" })).toBeVisible();
+			await expect(page.getByRole("heading", { name: "Content Validation" })).toBeVisible();
 
 			// Ensure keywords enabled
 			const keywordsSwitch = page.getByLabel("Enable keywords");
@@ -218,7 +218,7 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 		await adminPage.reload();
 		await adminPage.getByRole("tab", { name: /Submissions$/i }).click();
 		await expect(
-			adminPage.getByRole("heading", { name: "Title" })
+			adminPage.getByRole("heading", { name: "Content Validation" })
 		).toBeVisible();
 		const restoreMinInput = adminPage.getByLabel("Min length (characters)").nth(1);
 		await restoreMinInput.clear();
@@ -253,7 +253,7 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 		await adminPage.goto("/admin/settings");
 		await adminPage.getByRole("tab", { name: /Submissions$/i }).click();
 		await expect(
-			adminPage.getByRole("heading", { name: "Title" })
+			adminPage.getByRole("heading", { name: "Content Validation" })
 		).toBeVisible();
 		const restoreMinInput = adminPage.getByLabel("Min keywords");
 		const restoreMaxInput = adminPage.getByLabel("Max keywords");
@@ -298,7 +298,7 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 		await adminPage.reload();
 		await adminPage.getByRole("tab", { name: /Submissions$/i }).click();
 		await expect(
-			adminPage.getByRole("heading", { name: "Title" })
+			adminPage.getByRole("heading", { name: "Content Validation" })
 		).toBeVisible();
 		const restoreSwitch = adminPage.getByLabel("Enable keywords");
 		const isNowEnabled = await restoreSwitch.isChecked();
@@ -333,7 +333,7 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 		await adminPage.reload();
 		await adminPage.getByRole("tab", { name: /Submissions$/i }).click();
 		await expect(
-			adminPage.getByRole("heading", { name: "Title" })
+			adminPage.getByRole("heading", { name: "Content Validation" })
 		).toBeVisible();
 		const maxFileSizeInput = adminPage.getByLabel("Max file size (MB)");
 		const originalSize = await maxFileSizeInput.inputValue();
@@ -351,7 +351,7 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 		await adminPage.reload();
 		await adminPage.getByRole("tab", { name: /Submissions$/i }).click();
 		await expect(
-			adminPage.getByRole("heading", { name: "Title" })
+			adminPage.getByRole("heading", { name: "Content Validation" })
 		).toBeVisible();
 		const restoreInput = adminPage.getByLabel("Max file size (MB)");
 		await restoreInput.clear();

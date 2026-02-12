@@ -26,7 +26,6 @@ export interface ValidationLimits {
 	maxAbstractLength: number;
 	minKeywords: number;
 	maxKeywords: number;
-	maxAuthors: number;
 	enableKeywords: boolean;
 }
 
@@ -38,7 +37,6 @@ export const DEFAULT_VALIDATION_LIMITS: ValidationLimits = {
 	maxAbstractLength: 2000,
 	minKeywords: 3,
 	maxKeywords: 5,
-	maxAuthors: 10,
 	enableKeywords: true,
 };
 
@@ -78,7 +76,6 @@ export function createDynamicSubmissionSchema(limits: ValidationLimits) {
 		authors: z
 			.array(authorSchema)
 			.min(1, "At least one author is required")
-			.max(limits.maxAuthors, `Maximum ${limits.maxAuthors} authors allowed`)
 			.refine(
 				(authors) => authors.filter((a) => a.isPresenter).length === 1,
 				"Exactly one presenter is required",

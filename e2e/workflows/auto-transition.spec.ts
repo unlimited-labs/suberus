@@ -1,4 +1,3 @@
-import { type Page } from "@playwright/test";
 import { test, expect } from "../helpers/base-fixtures";
 import {
 	createSubmission,
@@ -12,6 +11,8 @@ import {
 	SubmissionStatus,
 	SubmissionType,
 } from "../../src/generated/prisma/enums";
+import { ADMIN_USER, REVIEWER_USER } from "../helpers/test-users";
+import { loginAs } from "../helpers/auth";
 
 /**
  * E2E tests for auto-transition after reviews and editor decision from REVIEWS_COMPLETE.
@@ -21,22 +22,6 @@ import {
  * 2. Editor sees Make Decision from REVIEWS_COMPLETE (requiresEditorDecision=true)
  * 3. Editor makes decision directly from REVIEWS_COMPLETE
  */
-
-const ADMIN_USER = { email: "admin@e2e.local", password: "testpass123" };
-const REVIEWER_USER = { email: "reviewer@e2e.local", password: "testpass123" };
-
-async function loginAs(page: Page, user: { email: string; password: string }) {
-	await page.context().clearCookies();
-	await page.goto("/login");
-	await page
-		.getByLabel("E-mail")
-		.waitFor({ state: "visible", timeout: 30000 });
-	await page.getByLabel("E-mail").fill(user.email);
-	const passwordInput = page.getByLabel("Password");
-	await passwordInput.fill(user.password);
-	await passwordInput.press("Enter");
-	await page.waitForURL("/", { timeout: 30000 });
-}
 
 /**
  * Seed submission at REVIEWS_COMPLETE with 2 completed reviews.
@@ -115,7 +100,7 @@ test.describe("Auto-transition After Reviews", () => {
 		cleanup.track(submissionId);
 
 		// Act - Reviewer submits Accept review
-		await loginAs(page, REVIEWER_USER);
+		await loginAs(page, REVIEWER_USER, { clearCookies: true });
 		await page.goto("/reviews");
 
 		const assignmentRow = page.locator("tr").filter({ hasText: title });
@@ -166,7 +151,7 @@ test.describe("Auto-transition After Reviews", () => {
 		expect(submission?.status).toBe(SubmissionStatus.ACCEPTED);
 
 		// Also verify via admin UI
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${submissionId}`);
 		await expect(
 			page.locator('[data-testid="submission-status"]'),
@@ -188,7 +173,7 @@ test.describe("Editor Decision from REVIEWS_COMPLETE", () => {
 		cleanup.track(id);
 
 		// Act
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${id}`);
 		await expect(
 			page.locator('[data-testid="submission-status"]'),
@@ -216,7 +201,7 @@ test.describe("Editor Decision from REVIEWS_COMPLETE", () => {
 		);
 		cleanup.track(id);
 
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${id}`);
 		await expect(
 			page.locator('[data-testid="submission-status"]'),
@@ -265,7 +250,7 @@ test.describe("Editor Decision from REVIEWS_COMPLETE", () => {
 		);
 		cleanup.track(id);
 
-		await loginAs(page, ADMIN_USER);
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${id}`);
 		await expect(
 			page.locator('[data-testid="submission-status"]'),

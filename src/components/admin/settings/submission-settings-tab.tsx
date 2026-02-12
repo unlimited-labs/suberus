@@ -3,7 +3,6 @@ import {
 	IconFileText,
 	IconLoader2,
 	IconSettings,
-	IconTags,
 	IconUpload,
 } from "@tabler/icons-react";
 import { useState } from "react";
@@ -102,160 +101,184 @@ export function SubmissionSettingsTab({
 		<div className="space-y-6">
 			<SettingsSection
 				icon={IconFileText}
-				title="Title"
-				description="Title length restrictions"
+				title="Content Validation"
+				description="Title, abstract and keyword restrictions"
 			>
-				<div className="grid gap-4 sm:grid-cols-2">
-					<div className="space-y-2">
-						<Label htmlFor="minTitleLength">Min length (characters)</Label>
-						<Input
-							id="minTitleLength"
-							type="number"
-							min={1}
-							max={500}
-							value={data.minTitleLength}
-							onChange={(e) =>
-								handleChange(
-									"minTitleLength",
-									parseInt(e.target.value, 10) || 1,
-								)
-							}
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="maxTitleLength">Max length (characters)</Label>
-						<Input
-							id="maxTitleLength"
-							type="number"
-							min={10}
-							max={1000}
-							value={data.maxTitleLength}
-							onChange={(e) =>
-								handleChange(
-									"maxTitleLength",
-									parseInt(e.target.value, 10) || 200,
-								)
-							}
-						/>
-					</div>
-				</div>
-				{data.minTitleLength > data.maxTitleLength && (
-					<p className="text-xs text-destructive mt-2">
-						Min length cannot exceed max length
-					</p>
-				)}
-			</SettingsSection>
-
-			<SettingsSection
-				icon={IconFileText}
-				title="Abstract"
-				description="Abstract length restrictions (for TEXT format submissions)"
-				delay={50}
-			>
-				<div className="grid gap-4 sm:grid-cols-2">
-					<div className="space-y-2">
-						<Label htmlFor="minAbstractLength">Min length (characters)</Label>
-						<Input
-							id="minAbstractLength"
-							type="number"
-							min={0}
-							max={10000}
-							value={data.minAbstractLength}
-							onChange={(e) =>
-								handleChange(
-									"minAbstractLength",
-									parseInt(e.target.value, 10) || 0,
-								)
-							}
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="maxAbstractLength">Max length (characters)</Label>
-						<Input
-							id="maxAbstractLength"
-							type="number"
-							min={100}
-							max={50000}
-							value={data.maxAbstractLength}
-							onChange={(e) =>
-								handleChange(
-									"maxAbstractLength",
-									parseInt(e.target.value, 10) || 2000,
-								)
-							}
-						/>
-					</div>
-				</div>
-				{data.minAbstractLength > data.maxAbstractLength && (
-					<p className="text-xs text-destructive mt-2">
-						Min length cannot exceed max length
-					</p>
-				)}
-			</SettingsSection>
-
-			<SettingsSection
-				icon={IconTags}
-				title="Keywords"
-				description="Keyword requirements"
-				delay={100}
-			>
-				<div className="space-y-4">
-					<div className="flex items-center justify-between">
-						<div className="space-y-0.5">
-							<Label htmlFor="enableKeywords">Enable keywords</Label>
-							<p className="text-sm text-muted-foreground">
-								Authors can add keywords to submissions
-							</p>
-						</div>
-						<Switch
-							id="enableKeywords"
-							checked={data.enableKeywords}
-							onCheckedChange={(checked) =>
-								handleChange("enableKeywords", checked)
-							}
-						/>
-					</div>
-					{data.enableKeywords && (
-						<div className="grid gap-4 sm:grid-cols-2 pl-0 sm:pl-4">
+				<div className="space-y-6">
+					{/* Title */}
+					<div className="space-y-3">
+						<Label className="text-sm font-medium">Title</Label>
+						<div className="grid gap-4 sm:grid-cols-2">
 							<div className="space-y-2">
-								<Label htmlFor="minKeywords">Min keywords</Label>
+								<Label
+									htmlFor="minTitleLength"
+									className="text-xs text-muted-foreground"
+								>
+									Min length (characters)
+								</Label>
 								<Input
-									id="minKeywords"
+									id="minTitleLength"
 									type="number"
-									min={0}
-									max={20}
-									value={data.minKeywords}
+									min={1}
+									max={500}
+									value={data.minTitleLength}
 									onChange={(e) =>
 										handleChange(
-											"minKeywords",
+											"minTitleLength",
+											parseInt(e.target.value, 10) || 1,
+										)
+									}
+								/>
+							</div>
+							<div className="space-y-2">
+								<Label
+									htmlFor="maxTitleLength"
+									className="text-xs text-muted-foreground"
+								>
+									Max length (characters)
+								</Label>
+								<Input
+									id="maxTitleLength"
+									type="number"
+									min={10}
+									max={1000}
+									value={data.maxTitleLength}
+									onChange={(e) =>
+										handleChange(
+											"maxTitleLength",
+											parseInt(e.target.value, 10) || 200,
+										)
+									}
+								/>
+							</div>
+						</div>
+						{data.minTitleLength > data.maxTitleLength && (
+							<p className="text-xs text-destructive">
+								Min length cannot exceed max length
+							</p>
+						)}
+					</div>
+
+					<hr className="border-border/50" />
+
+					{/* Abstract */}
+					<div className="space-y-3">
+						<Label className="text-sm font-medium">Abstract</Label>
+						<p className="text-xs text-muted-foreground -mt-2">
+							For TEXT format submissions
+						</p>
+						<div className="grid gap-4 sm:grid-cols-2">
+							<div className="space-y-2">
+								<Label
+									htmlFor="minAbstractLength"
+									className="text-xs text-muted-foreground"
+								>
+									Min length (characters)
+								</Label>
+								<Input
+									id="minAbstractLength"
+									type="number"
+									min={0}
+									max={10000}
+									value={data.minAbstractLength}
+									onChange={(e) =>
+										handleChange(
+											"minAbstractLength",
 											parseInt(e.target.value, 10) || 0,
 										)
 									}
 								/>
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="maxKeywords">Max keywords</Label>
+								<Label
+									htmlFor="maxAbstractLength"
+									className="text-xs text-muted-foreground"
+								>
+									Max length (characters)
+								</Label>
 								<Input
-									id="maxKeywords"
+									id="maxAbstractLength"
 									type="number"
-									min={1}
-									max={20}
-									value={data.maxKeywords}
+									min={100}
+									max={50000}
+									value={data.maxAbstractLength}
 									onChange={(e) =>
 										handleChange(
-											"maxKeywords",
-											parseInt(e.target.value, 10) || 5,
+											"maxAbstractLength",
+											parseInt(e.target.value, 10) || 2000,
 										)
 									}
 								/>
 							</div>
 						</div>
-					)}
-					{data.enableKeywords && data.minKeywords > data.maxKeywords && (
-						<p className="text-xs text-destructive">
-							Min keywords cannot exceed max keywords
-						</p>
-					)}
+						{data.minAbstractLength > data.maxAbstractLength && (
+							<p className="text-xs text-destructive">
+								Min length cannot exceed max length
+							</p>
+						)}
+					</div>
+
+					<hr className="border-border/50" />
+
+					{/* Keywords */}
+					<div className="space-y-4">
+						<div className="flex items-center justify-between">
+							<div className="space-y-0.5">
+								<Label htmlFor="enableKeywords">Enable keywords</Label>
+								<p className="text-sm text-muted-foreground">
+									Authors can add keywords to submissions
+								</p>
+							</div>
+							<Switch
+								id="enableKeywords"
+								checked={data.enableKeywords}
+								onCheckedChange={(checked) =>
+									handleChange("enableKeywords", checked)
+								}
+							/>
+						</div>
+						{data.enableKeywords && (
+							<div className="grid gap-4 sm:grid-cols-2 pl-0 sm:pl-4">
+								<div className="space-y-2">
+									<Label htmlFor="minKeywords">Min keywords</Label>
+									<Input
+										id="minKeywords"
+										type="number"
+										min={0}
+										max={20}
+										value={data.minKeywords}
+										onChange={(e) =>
+											handleChange(
+												"minKeywords",
+												parseInt(e.target.value, 10) || 0,
+											)
+										}
+									/>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="maxKeywords">Max keywords</Label>
+									<Input
+										id="maxKeywords"
+										type="number"
+										min={1}
+										max={20}
+										value={data.maxKeywords}
+										onChange={(e) =>
+											handleChange(
+												"maxKeywords",
+												parseInt(e.target.value, 10) || 5,
+											)
+										}
+									/>
+								</div>
+							</div>
+						)}
+						{data.enableKeywords && data.minKeywords > data.maxKeywords && (
+							<p className="text-xs text-destructive">
+								Min keywords cannot exceed max keywords
+							</p>
+						)}
+					</div>
 				</div>
 			</SettingsSection>
 
@@ -263,7 +286,7 @@ export function SubmissionSettingsTab({
 				icon={IconUpload}
 				title="Files"
 				description="Uploaded file settings"
-				delay={150}
+				delay={50}
 			>
 				<div className="space-y-4">
 					<div className="space-y-2">
@@ -304,23 +327,9 @@ export function SubmissionSettingsTab({
 				icon={IconSettings}
 				title="Other Options"
 				description="Additional submission options"
-				delay={200}
+				delay={100}
 			>
 				<div className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor="maxAuthors">Max number of authors</Label>
-						<Input
-							id="maxAuthors"
-							type="number"
-							min={1}
-							max={50}
-							value={data.maxAuthors}
-							onChange={(e) =>
-								handleChange("maxAuthors", parseInt(e.target.value, 10) || 10)
-							}
-							className="max-w-32"
-						/>
-					</div>
 					<div className="flex items-center justify-between">
 						<div className="space-y-0.5">
 							<Label htmlFor="requireOrcid">Require ORCID</Label>
@@ -343,7 +352,7 @@ export function SubmissionSettingsTab({
 				icon={IconBook}
 				title="Submission Guidelines"
 				description="Markdown text shown to authors in the submission form sidebar. Use {{placeholder}} for dynamic values."
-				delay={250}
+				delay={150}
 			>
 				<div className="space-y-3">
 					<div className="flex flex-wrap gap-1.5">
@@ -365,7 +374,7 @@ export function SubmissionSettingsTab({
 						onChange={(e) => setSubmissionGuidelines(e.target.value)}
 						rows={6}
 						className="font-mono text-sm"
-						placeholder="• Title should be concise..."
+						placeholder="- Title should be concise..."
 					/>
 				</div>
 			</SettingsSection>
@@ -374,14 +383,14 @@ export function SubmissionSettingsTab({
 				icon={IconBook}
 				title="Review Guidelines"
 				description="Markdown text shown to reviewers in the review form sidebar"
-				delay={300}
+				delay={200}
 			>
 				<Textarea
 					value={reviewGuidelines}
 					onChange={(e) => setReviewGuidelines(e.target.value)}
 					rows={6}
 					className="font-mono text-sm"
-					placeholder="• Provide constructive feedback..."
+					placeholder="- Provide constructive feedback..."
 				/>
 			</SettingsSection>
 

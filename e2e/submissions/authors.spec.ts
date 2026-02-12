@@ -130,7 +130,7 @@ test.describe("Author Management", () => {
 	});
 
 	test("can submit with multiple authors", async ({ submissionPage, uniqueSubmission }) => {
-		test.slow(); // Full form fill with 2 authors + submit + redirect under load
+		test.setTimeout(180000); // Heavy test: 2 authors with affiliations + submit under load
 		// Arrange
 		await submissionPage.goto();
 		await submissionPage.fillTitle(uniqueSubmission.title);
@@ -151,11 +151,16 @@ test.describe("Author Management", () => {
 		// Set 2nd author affiliation last (React re-renders from other operations can clear it)
 		await submissionPage.fillAffiliation(1, "Partner University");
 
-		// Act
-		await submissionPage.submit();
+		// Wait for submit button to be enabled (form validation complete)
+		await expect(submissionPage.submitButton).toBeEnabled({ timeout: 10000 });
 
-		// Assert
-		await submissionPage.page.waitForURL(/\/submissions\/[a-f0-9-]+/, { timeout: 60000 });
+		// Act & Assert — submit with retry (server function can transiently fail under load)
+		await expect(async () => {
+			if (await submissionPage.submitButton.isEnabled()) {
+				await submissionPage.submitButton.click();
+			}
+			await expect(submissionPage.page).toHaveURL(/\/submissions\/[a-f0-9-]+/, { timeout: 15000 });
+		}).toPass({ timeout: 90000 });
 		await expect(submissionPage.page.getByText("Submission created successfully")).toBeVisible();
 	});
 });

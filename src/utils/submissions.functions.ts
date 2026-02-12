@@ -48,7 +48,6 @@ async function getValidationLimits(): Promise<ValidationLimits> {
 			"MAX_ABSTRACT_LENGTH",
 			"MIN_KEYWORDS",
 			"MAX_KEYWORDS",
-			"MAX_AUTHORS",
 			"ENABLE_KEYWORDS",
 		]);
 		return {
@@ -58,7 +57,6 @@ async function getValidationLimits(): Promise<ValidationLimits> {
 			maxAbstractLength: settings.MAX_ABSTRACT_LENGTH,
 			minKeywords: settings.MIN_KEYWORDS,
 			maxKeywords: settings.MAX_KEYWORDS,
-			maxAuthors: settings.MAX_AUTHORS,
 			enableKeywords: settings.ENABLE_KEYWORDS,
 		};
 	} catch {

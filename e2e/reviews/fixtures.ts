@@ -5,26 +5,10 @@ import {
 	type TestRunContext,
 	type CleanupContext,
 } from "../helpers/base-fixtures";
+import { ADMIN_USER, REVIEWER_USER, TEST_USER } from "../helpers/test-users";
+import { loginAs } from "../helpers/auth";
 
-// Test data
-export const ADMIN_USER = {
-	email: "admin@e2e.local",
-	password: "testpass123",
-};
-
-export const REVIEWER_USER = {
-	email: "reviewer@e2e.local",
-	password: "testpass123",
-	firstName: "Reviewer",
-	lastName: "User",
-};
-
-export const TEST_USER = {
-	email: "test@e2e.local",
-	password: "testpass123",
-	firstName: "Test",
-	lastName: "User",
-};
+export { ADMIN_USER, REVIEWER_USER, TEST_USER };
 
 // Re-export test-db helpers for Prisma seeding in tests
 export {
@@ -52,36 +36,15 @@ export function createTestSubmission(suffix?: string) {
 
 // Login helpers
 export async function loginAsAdmin(page: Page) {
-	await page.goto("/login");
-	// SSR hydration + form render
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 });
-	await page.getByLabel("E-mail").fill(ADMIN_USER.email);
-	await page.getByLabel("Password").fill(ADMIN_USER.password);
-	await page.getByRole("button", { name: "Sign in" }).click();
-	// API auth + session + redirect
-	await page.waitForURL("/", { timeout: 30000 });
+	await loginAs(page, ADMIN_USER);
 }
 
 export async function loginAsReviewer(page: Page) {
-	await page.goto("/login");
-	// SSR hydration + form render
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 });
-	await page.getByLabel("E-mail").fill(REVIEWER_USER.email);
-	await page.getByLabel("Password").fill(REVIEWER_USER.password);
-	await page.getByRole("button", { name: "Sign in" }).click();
-	// API auth + session + redirect
-	await page.waitForURL("/", { timeout: 30000 });
+	await loginAs(page, REVIEWER_USER);
 }
 
 export async function loginAsTestUser(page: Page) {
-	await page.goto("/login");
-	// SSR hydration + form render
-	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 });
-	await page.getByLabel("E-mail").fill(TEST_USER.email);
-	await page.getByLabel("Password").fill(TEST_USER.password);
-	await page.getByRole("button", { name: "Sign in" }).click();
-	// API auth + session + redirect
-	await page.waitForURL("/", { timeout: 30000 });
+	await loginAs(page, TEST_USER);
 }
 
 // Page Objects

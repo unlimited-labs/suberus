@@ -222,10 +222,10 @@ export default defineConfig({
 		},
 	],
 	webServer: {
-		command: "dotenv -e .env.local -- pnpm dev",
+		command: "pnpm build && pnpm preview",
 		url: "http://localhost:3001",
-		env: { PORT: "3001", E2E: "true" },
+		env: { PORT: "3001" },
 		reuseExistingServer: true,
-		timeout: 120_000,
+		timeout: 180_000,
 	},
 });
