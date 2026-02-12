@@ -236,6 +236,7 @@ test.describe("Admin Users Management", () => {
 
 	test.describe("User Status Toggle", () => {
 		test("can toggle user active status", async ({ adminUsersPage, userDetailPage }) => {
+			test.slow(); // Toggle + restore requires multiple mutations and query invalidations
 			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()

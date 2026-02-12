@@ -34,7 +34,8 @@ async function seedBrandingData() {
 	}
 }
 
-test.describe("Auth Page Branding", () => {
+test.describe("Auth Page Branding", { tag: "@serial" }, () => {
+	test.describe.configure({ mode: "serial" });
 	let originalValues: Map<BrandingKey, string | null>
 
 	test.beforeAll(async () => {

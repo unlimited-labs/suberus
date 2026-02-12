@@ -2,6 +2,9 @@ import { expect } from "@playwright/test";
 import { test } from "./fixtures";
 import { setAppSetting, getPrisma } from "../helpers/test-db";
 
+// Both describes share SUBMISSION_GUIDELINES DB setting — must be serial
+test.describe.configure({ mode: "serial" });
+
 test.describe("Admin Settings - Submission Guidelines", () => {
 	test.beforeEach(async ({ adminSettingsPage }, testInfo) => {
 		// Arrange
