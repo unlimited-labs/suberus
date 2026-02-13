@@ -176,6 +176,10 @@ test.describe("Workflow Emails", () => {
 		// Assert
 		const email = await waitForEmail(REVIEWER_USER.email, "New Review Assignment", 30000);
 		expect(email).not.toBeNull();
+
+		const emailDetails = await getMailpitMessage(email!.ID);
+		expect(emailDetails).not.toBeNull();
+		expect(emailDetails!.Text).toMatch(/\/reviews\/[a-f0-9-]+/);
 	});
 
 	test("decision email sent on accept", async ({ page, testRun, cleanup }) => {
@@ -203,6 +207,10 @@ test.describe("Workflow Emails", () => {
 		// Assert
 		const email = await waitForEmail(TEST_USER.email, "Submission Accepted", 30000);
 		expect(email).not.toBeNull();
+
+		const emailDetails = await getMailpitMessage(email!.ID);
+		expect(emailDetails).not.toBeNull();
+		expect(emailDetails!.Text).toMatch(/\/submissions\/[a-f0-9-]+/);
 	});
 
 	test("decision email sent on desk reject", async ({ page, testRun, cleanup }) => {

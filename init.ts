@@ -172,7 +172,7 @@ async function init() {
 		for (const template of DEFAULT_EMAIL_TEMPLATES) {
 			await prisma.emailTemplate.upsert({
 				where: { eventType: template.eventType },
-				update: {},
+				update: { availablePlaceholders: template.availablePlaceholders },
 				create: template,
 			});
 		}

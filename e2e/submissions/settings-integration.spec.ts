@@ -278,21 +278,21 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 			await saveValidationSettings(adminPage);
 		}
 
-		// Act - User: Navigate to form
-		await userPage.goto("/submissions/new");
-
-		// Assert - Keywords section hidden
-		await expect(
-			userPage.getByRole("heading", { name: "Keywords", exact: true })
-		).not.toBeVisible();
-		await expect(
-			userPage.getByText(/relevant keywords/i)
-		).not.toBeVisible();
-		await expect(
-			userPage.locator(".flex.items-center.gap-3").filter({
-				hasText: "Keywords",
-			})
-		).not.toBeVisible();
+		// Act + Assert - User: Navigate to form, retry until setting propagates
+		await expect(async () => {
+			await userPage.goto("/submissions/new");
+			await expect(
+				userPage.getByRole("heading", { name: "Keywords", exact: true })
+			).not.toBeVisible();
+			await expect(
+				userPage.getByText(/relevant keywords/i)
+			).not.toBeVisible();
+			await expect(
+				userPage.locator(".flex.items-center.gap-3").filter({
+					hasText: "Keywords",
+				})
+			).not.toBeVisible();
+		}).toPass({ timeout: 15000 });
 
 		// Cleanup: Re-enable keywords
 		await adminPage.reload();

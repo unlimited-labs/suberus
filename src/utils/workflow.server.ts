@@ -370,7 +370,7 @@ export async function checkAndTriggerReviewCompletion(
 				for (const editor of editors) {
 					void sendEmail("ALL_REVIEWS_COMPLETE", editor.email, {
 						submissionTitle: submission.title,
-						submissionId,
+						submissionUrl: `${process.env.AUTH_URL}/admin/submissions/${submissionId}`,
 					});
 				}
 			}
@@ -478,6 +478,7 @@ export async function deskRejectSubmission(
 				authorName: `${presenter.firstName} ${presenter.lastName}`,
 				submissionTitle: submission.title,
 				letterToAuthor: reason,
+				submissionUrl: `${process.env.AUTH_URL}/submissions/${submissionId}`,
 			});
 		}
 	}
@@ -563,6 +564,7 @@ export async function submitEditorDecision(
 				authorName: `${presenter.firstName} ${presenter.lastName}`,
 				submissionTitle: submission.title,
 				letterToAuthor: letterToAuthor ?? reasoning ?? "",
+				submissionUrl: `${process.env.AUTH_URL}/submissions/${submissionId}`,
 			});
 		}
 	}

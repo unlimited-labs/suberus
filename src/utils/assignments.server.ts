@@ -227,6 +227,7 @@ export async function assignReviewer(
 			reviewer.email,
 		submissionTitle: submission.title,
 		deadline: formatDate(deadline, dateFormat),
+		reviewUrl: `${process.env.AUTH_URL}/reviews/${assignment.id}`,
 	});
 
 	return { success: true, assignmentId: assignment.id };

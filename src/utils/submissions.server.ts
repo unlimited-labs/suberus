@@ -532,6 +532,7 @@ export async function resubmitSubmission(
 					? `${presenter.firstName} ${presenter.lastName}`
 					: "Author",
 				versionNumber: String(version.version),
+				submissionUrl: `${process.env.AUTH_URL}/admin/submissions/${submissionId}`,
 			});
 		}
 	}
@@ -711,7 +712,7 @@ export async function submitDraft(
 		void sendEmail("SUBMISSION_RECEIVED", presenter.email, {
 			authorName: `${presenter.firstName} ${presenter.lastName}`,
 			submissionTitle: submission.title,
-			submissionId,
+			submissionUrl: `${process.env.AUTH_URL}/submissions/${submissionId}`,
 		});
 	}
 
