@@ -239,6 +239,15 @@ async function init() {
 		}
 		s.stop("Reminder settings seeded");
 
+		// Invitation settings
+		s.start("Seeding invitation settings...");
+		await prisma.appSetting.upsert({
+			where: { key: "INVITATION_VALIDITY_HOURS" },
+			update: {},
+			create: { key: "INVITATION_VALIDITY_HOURS", value: APP_SETTINGS_DEFAULTS.INVITATION_VALIDITY_HOURS },
+		});
+		s.stop("Invitation settings seeded");
+
 		p.outro("Setup complete!");
 	} catch (error) {
 		p.log.error(`Seed failed: ${error instanceof Error ? error.message : error}`);

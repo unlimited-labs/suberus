@@ -7,6 +7,7 @@ import { randomUUID } from "crypto"
 import "dotenv/config"
 import { sendEmail } from "@/lib/server/email"
 import { getSetting } from "@/utils/settings.server"
+import { applyInvitationRole } from "@/lib/server/admin/invitations"
 import { linkCoAuthorsByEmail } from "@/utils/submissions.server"
 
 const connectionString = process.env.DATABASE_URL
@@ -132,6 +133,7 @@ export const auth = betterAuth({
 				after: async (user) => {
 					if (!user.emailVerified) return
 					await linkCoAuthorsByEmail(user.email, user.id)
+					await applyInvitationRole(user.id, user.email)
 				},
 			},
 		},

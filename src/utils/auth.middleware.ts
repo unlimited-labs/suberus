@@ -18,6 +18,14 @@ async function requireAdmin() {
 	return user;
 }
 
+async function requireAdminOnly() {
+	const user = await requireAuth();
+	if (user.role !== "ADMIN") {
+		throw new Response("Forbidden", { status: 403 });
+	}
+	return user;
+}
+
 export const authMiddleware = createMiddleware({ type: "function" }).server(
 	async ({ next }) => {
 		const user = await requireAuth();
@@ -31,6 +39,13 @@ export const adminMiddleware = createMiddleware({ type: "function" }).server(
 		return next({ context: { user } });
 	},
 );
+
+export const adminOnlyMiddleware = createMiddleware({
+	type: "function",
+}).server(async ({ next }) => {
+	const user = await requireAdminOnly();
+	return next({ context: { user } });
+});
 
 /** Request middleware for API routes - authenticates user */
 export const authRequestMiddleware = createMiddleware().server(

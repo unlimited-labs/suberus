@@ -49,6 +49,8 @@ model User {
   sessions             Session[]
   supervisedSessions   ConferenceSession[]       @relation("SessionSupervisor")
   surveyAnswers        SurveyAnswer[]
+  createdInvitations   Invitation[]              @relation("InvitationCreator")
+  usedInvitation       Invitation?               @relation("InvitationUser")
   affiliation          Affiliation?              @relation(fields: [affiliationId], references: [id])
 
   @@index([email])
@@ -431,6 +433,35 @@ model SurveyAnswer {
   @@map("survey_answers")
 }
 
+model Invitation {
+  id          String           @id @default(uuid()) @db.Uuid
+  email       String
+  role        UserRole
+  token       String           @unique
+  status      InvitationStatus @default(PENDING)
+  expiresAt   DateTime
+  createdById String           @db.Uuid
+  usedById    String?          @unique @db.Uuid
+  usedAt      DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  createdBy   User             @relation("InvitationCreator", fields: [createdById], references: [id])
+  usedBy      User?            @relation("InvitationUser", fields: [usedById], references: [id])
+
+  @@index([email])
+  @@index([token])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("invitations")
+}
+
+enum InvitationStatus {
+  PENDING
+  USED
+  EXPIRED
+  CANCELLED
+}
+
 enum UserRole {
   AUTHOR
   REVIEWER
@@ -524,6 +555,7 @@ enum EmailEventType {
   ACCOUNT_CREATED
   PASSWORD_RESET
   EMAIL_VERIFICATION
+  INVITATION
 }
 
 enum AppSettingKey {
@@ -567,4 +599,5 @@ enum AppSettingKey {
   TOS_CONTENT
   DATE_FORMAT
   TIME_FORMAT
+  INVITATION_VALIDITY_HOURS
 }

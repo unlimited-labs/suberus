@@ -2,6 +2,7 @@ import {
 	IconArrowLeft,
 	IconArrowRight,
 	IconCheck,
+	IconInfoCircle,
 	IconMail,
 	IconMapPin,
 	IconSelector,
@@ -17,6 +18,7 @@ import { AuthSidebar } from "@/components/forms/auth-sidebar";
 import { FieldError } from "@/components/forms/field-error";
 import { PasswordInput } from "@/components/forms/password-input";
 import { TosModal } from "@/components/tos-modal";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -27,6 +29,7 @@ import {
 	CommandItem,
 	CommandList,
 } from "@/components/ui/command";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
 	Popover,
@@ -39,19 +42,37 @@ import { useZodFormFieldOnChange } from "@/hooks/use-zod-form-field";
 import { signUp } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import {
+	consumeInvitationFn,
+	validateInvitationTokenFn,
+} from "@/utils/invitations.functions";
+import {
 	acceptTosFn,
 	getSurveyQuestionsForRegistrationFn,
 	getTosContentForRegistrationFn,
 	saveUserSurveyAnswersFn,
 } from "@/utils/survey.functions";
 
+const searchSchema = z.object({
+	token: z.string().optional(),
+});
+
 export const Route = createFileRoute("/_auth/register")({
-	loader: async () => {
+	validateSearch: searchSchema,
+	loaderDeps: ({ search }) => ({ token: search.token }),
+	loader: async ({ deps }) => {
 		const [surveyQuestions, tosContent] = await Promise.all([
 			getSurveyQuestionsForRegistrationFn(),
 			getTosContentForRegistrationFn(),
 		]);
-		return { surveyQuestions, tosContent };
+
+		let invitation: { email: string; role: string } | null = null;
+		if (deps.token) {
+			invitation = await validateInvitationTokenFn({
+				data: { token: deps.token },
+			});
+		}
+
+		return { surveyQuestions, tosContent, invitation, token: deps.token };
 	},
 	component: RegisterPage,
 });
@@ -105,7 +126,8 @@ function RegisterPage() {
 		conferenceLocation,
 		conferenceSubtitle,
 	} = Route.useRouteContext();
-	const { surveyQuestions, tosContent } = Route.useLoaderData();
+	const { surveyQuestions, tosContent, invitation, token } =
+		Route.useLoaderData();
 	const [countryOpen, setCountryOpen] = useState(false);
 	const [tosOpen, setTosOpen] = useState(false);
 
@@ -116,7 +138,7 @@ function RegisterPage() {
 
 	const form = useAppForm({
 		defaultValues: {
-			email: "",
+			email: invitation?.email ?? "",
 			password: "",
 			confirmPassword: "",
 			title: "",
@@ -144,6 +166,15 @@ function RegisterPage() {
 			if (result.error) {
 				toast.error(result.error.message ?? "Registration failed");
 				return;
+			}
+
+			// Consume invitation token if present
+			if (token) {
+				try {
+					await consumeInvitationFn({ data: { token } });
+				} catch {
+					// Invitation may have already been consumed - not critical
+				}
 			}
 
 			// Save survey answers + ToS acceptance (non-blocking)
@@ -288,16 +319,44 @@ function RegisterPage() {
 						{/* Step 1: Author Information */}
 						{currentStep === 1 && (
 							<div className="animate-in fade-in slide-in-from-right-4 space-y-3 duration-300">
+								{/* Invitation banner */}
+								{invitation && (
+									<Alert className="border-primary/30 bg-primary/5">
+										<IconInfoCircle className="size-4 text-primary" />
+										<AlertDescription>
+											You&apos;ve been invited as{" "}
+											<span className="font-semibold">
+												{invitation.role === "EDITOR" ? "Editor" : "Reviewer"}
+											</span>
+										</AlertDescription>
+									</Alert>
+								)}
+
 								{/* Email */}
-								<form.AppField name="email" validators={emailValidators}>
-									{(field) => (
-										<field.IconInputField
-											label="E-mail *"
-											type="email"
-											icon={<IconMail className="size-4" />}
-										/>
-									)}
-								</form.AppField>
+								{invitation ? (
+									<div className="space-y-1">
+										<Label>E-mail *</Label>
+										<div className="relative">
+											<IconMail className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
+											<Input
+												type="email"
+												value={invitation.email}
+												readOnly
+												className="bg-muted pl-9"
+											/>
+										</div>
+									</div>
+								) : (
+									<form.AppField name="email" validators={emailValidators}>
+										{(field) => (
+											<field.IconInputField
+												label="E-mail *"
+												type="email"
+												icon={<IconMail className="size-4" />}
+											/>
+										)}
+									</form.AppField>
+								)}
 
 								{/* Password fields */}
 								<div className="grid gap-2 sm:grid-cols-2">

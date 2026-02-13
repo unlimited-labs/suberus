@@ -1,0 +1,71 @@
+import { IconClock, IconLoader2 } from "@tabler/icons-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { SettingsSection } from "@/components/settings/settings-section";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { setSettingFn } from "@/utils/settings.functions";
+
+interface InvitationsSettingsTabProps {
+	initialValidityHours: number;
+}
+
+export function InvitationsSettingsTab({
+	initialValidityHours,
+}: InvitationsSettingsTabProps) {
+	const [validityHours, setValidityHours] = useState(initialValidityHours);
+	const [isSaving, setIsSaving] = useState(false);
+
+	const handleSave = async () => {
+		if (validityHours < 1) {
+			toast.error("Validity must be at least 1 hour");
+			return;
+		}
+
+		setIsSaving(true);
+		try {
+			await setSettingFn({
+				data: { key: "INVITATION_VALIDITY_HOURS", value: validityHours },
+			});
+			toast.success("Invitation settings saved");
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Failed to save settings",
+			);
+		} finally {
+			setIsSaving(false);
+		}
+	};
+
+	return (
+		<SettingsSection
+			icon={IconClock}
+			title="Invitation Settings"
+			description="Configure invitation expiration"
+		>
+			<div className="space-y-3">
+				<div className="space-y-2">
+					<Label htmlFor="validityHours">Invitation validity (hours)</Label>
+					<Input
+						id="validityHours"
+						type="number"
+						min={1}
+						value={validityHours}
+						onChange={(e) => setValidityHours(Number(e.target.value))}
+						className="max-w-[200px]"
+					/>
+					<p className="text-xs text-muted-foreground">
+						How long invitation links remain valid after being sent.
+					</p>
+				</div>
+				<div className="flex justify-end">
+					<Button onClick={handleSave} disabled={isSaving} size="sm">
+						{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
+						Save
+					</Button>
+				</div>
+			</div>
+		</SettingsSection>
+	);
+}

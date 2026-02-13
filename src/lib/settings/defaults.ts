@@ -130,6 +130,9 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	// Display format
 	DATE_FORMAT: "DD.MM.YYYY",
 	TIME_FORMAT: "24h",
+
+	// Invitations
+	INVITATION_VALIDITY_HOURS: 72,
 };
 
 /** Get default value for a setting key */

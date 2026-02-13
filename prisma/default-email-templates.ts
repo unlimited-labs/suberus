@@ -179,6 +179,22 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 		description: "Sent when a deadline is approaching",
 	},
 	{
+		eventType: "INVITATION",
+		subject: "You've been invited to {{conferenceName}}",
+		body: "Hello,\n\nYou have been invited to join {{conferenceName}} as {{roleName}}.\n\nPlease register using the link below:\n\n{{registrationUrl}}\n\nThis invitation expires on {{expiresAt}}.\n\nBest regards,\n{{conferenceName}}",
+		isEnabled: true,
+		isHtml: false,
+		ccEmails: [],
+		bccEmails: [],
+		availablePlaceholders: [
+			"conferenceName",
+			"roleName",
+			"registrationUrl",
+			"expiresAt",
+		],
+		description: "Sent when an admin invites a user to register",
+	},
+	{
 		eventType: "ACCOUNT_CREATED",
 		subject: "Welcome to {{conferenceName}}",
 		body: "Dear {{firstName}},\n\nYour account has been created successfully.\n\nPlease verify your email address to get started.\n\nBest regards,\n{{conferenceName}}",

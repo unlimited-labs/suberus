@@ -5,6 +5,7 @@ import {
 	IconDashboard,
 	IconFileStack,
 	IconFileText,
+	IconMailPlus,
 	IconSettings,
 	IconUsers,
 } from "@tabler/icons-react";
@@ -45,6 +46,12 @@ export const navigationSections: NavSection[] = [
 		items: [
 			{ name: "Dashboard", href: "/admin/dashboard", icon: IconDashboard },
 			{ name: "Users", href: "/admin/users", icon: IconUsers },
+			{
+				name: "Invitations",
+				href: "/admin/invitations",
+				icon: IconMailPlus,
+				roles: ["ADMIN"],
+			},
 			{ name: "Submissions", href: "/admin/submissions", icon: IconFileStack },
 			{ name: "Configuration", href: "/admin/settings", icon: IconAdjustments },
 		],

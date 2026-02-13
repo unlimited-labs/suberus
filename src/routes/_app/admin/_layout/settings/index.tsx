@@ -6,6 +6,7 @@ import {
 	IconFileStack,
 	IconFileText,
 	IconMail,
+	IconMailPlus,
 	IconPalette,
 	IconPresentation,
 	IconScale,
@@ -24,6 +25,7 @@ import {
 	ConferenceSettingsTab,
 	EmailTemplatesTab,
 	FeeInstructionsTab,
+	InvitationsSettingsTab,
 	RemindersSettingsTab,
 	SubmissionSettingsTab,
 	SubmissionTypesTab,
@@ -72,6 +74,7 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			emailFooter,
 			surveyQuestions,
 			tosContent,
+			invitationValidityHours,
 		] = await Promise.all([
 			getConferenceSettingsFn(),
 			getSubmissionTypeConfigsFn(),
@@ -87,6 +90,7 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			getEmailFooterFn(),
 			getSurveyQuestionsFn(),
 			getSettingFn({ data: { key: "TOS_CONTENT" } }),
+			getSettingFn({ data: { key: "INVITATION_VALIDITY_HOURS" } }),
 		]);
 		return {
 			conferenceSettings,
@@ -103,6 +107,7 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			emailFooter: emailFooter as string,
 			surveyQuestions,
 			tosContent: tosContent as string,
+			invitationValidityHours: invitationValidityHours as number,
 		};
 	},
 	component: AdminSettingsPage,
@@ -119,6 +124,7 @@ const tabs = [
 	{ id: "reminders", label: "Reminders", icon: IconBell },
 	{ id: "survey", label: "Survey", icon: IconClipboardList },
 	{ id: "tos", label: "Terms of Service", icon: IconScale },
+	{ id: "invitations", label: "Invitations", icon: IconMailPlus },
 ];
 
 function AdminSettingsPage() {
@@ -137,6 +143,7 @@ function AdminSettingsPage() {
 		emailFooter,
 		surveyQuestions,
 		tosContent,
+		invitationValidityHours,
 	} = Route.useLoaderData();
 	const { tab } = useSearch({ from: "/_app/admin/_layout/settings/" });
 	const activeTab = tab ?? "conference";
@@ -220,6 +227,12 @@ function AdminSettingsPage() {
 
 						<TabsContent value="tos">
 							<TosContentTab initialContent={tosContent} />
+						</TabsContent>
+
+						<TabsContent value="invitations">
+							<InvitationsSettingsTab
+								initialValidityHours={invitationValidityHours}
+							/>
 						</TabsContent>
 					</Tabs>
 

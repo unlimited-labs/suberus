@@ -101,6 +101,9 @@ export type AppSettingsMap = {
 	// Display format
 	DATE_FORMAT: string;
 	TIME_FORMAT: "24h" | "12h";
+
+	// Invitations
+	INVITATION_VALIDITY_HOURS: number;
 };
 
 /** Keys for submission type configs */

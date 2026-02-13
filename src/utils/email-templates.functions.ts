@@ -23,6 +23,7 @@ const emailEventTypeEnum = z.enum([
 	"ACCOUNT_CREATED",
 	"PASSWORD_RESET",
 	"EMAIL_VERIFICATION",
+	"INVITATION",
 ]);
 
 /** Get all email templates (admin only) */
