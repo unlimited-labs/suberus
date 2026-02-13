@@ -57,6 +57,7 @@ interface ReviewFormProps {
 	reviewMode: "OPEN" | "SINGLE_BLIND" | "DOUBLE_BLIND";
 	guidelines?: string;
 	scoringCriteria?: { name: string; description: string }[];
+	enableConfidenceLevel?: boolean;
 }
 
 export interface ReviewFormData {
@@ -113,6 +114,7 @@ export function ReviewForm({
 	reviewMode,
 	guidelines,
 	scoringCriteria = [],
+	enableConfidenceLevel = true,
 }: ReviewFormProps) {
 	const [contentExpanded, setContentExpanded] = useState(false);
 
@@ -149,7 +151,7 @@ export function ReviewForm({
 	const hasScores =
 		scoringCriteria.length === 0 ||
 		scoringCriteria.every((c) => (scores[c.name] ?? 0) > 0);
-	const hasConfidence = values.confidenceLevel > 0;
+	const hasConfidence = !enableConfidenceLevel || values.confidenceLevel > 0;
 	const hasComments = values.comments.length >= 50;
 
 	const allComplete = hasDecision && hasScores && hasConfidence && hasComments;
@@ -401,55 +403,59 @@ export function ReviewForm({
 								</>
 							)}
 
-							<div className="border-t" />
+							{enableConfidenceLevel && (
+								<>
+									<div className="border-t" />
 
-							{/* Confidence Level */}
-							<div className="space-y-4">
-								<div className="flex items-center gap-3">
-									<IconCircle className="size-5 text-muted-foreground" />
-									<h2 className="text-lg font-semibold text-foreground">
-										Confidence Level
-									</h2>
-								</div>
-								<form.Field name="confidenceLevel">
-									{(field) => (
-										<div className="space-y-2">
-											<div className="flex items-center gap-2">
-												{confidenceLevels.map((level) => (
-													<button
-														key={level.value}
-														type="button"
-														onClick={() => field.handleChange(level.value)}
-														className={cn(
-															"flex-1 h-12 rounded-lg border-2 transition-all font-medium text-sm",
-															field.state.value === level.value
-																? "border-primary bg-primary text-primary-foreground shadow-sm"
-																: "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground",
-														)}
-													>
-														{level.value}
-													</button>
-												))}
-											</div>
-											<div className="flex justify-between text-xs text-muted-foreground px-1">
-												<span>Very Low</span>
-												<span>Very High</span>
-											</div>
-											{field.state.value > 0 && (
-												<p className="text-sm text-foreground mt-2">
-													{confidenceLevels[field.state.value - 1].label}:{" "}
-													<span className="text-muted-foreground">
-														{
-															confidenceLevels[field.state.value - 1]
-																.description
-														}
-													</span>
-												</p>
-											)}
+									{/* Confidence Level */}
+									<div className="space-y-4">
+										<div className="flex items-center gap-3">
+											<IconCircle className="size-5 text-muted-foreground" />
+											<h2 className="text-lg font-semibold text-foreground">
+												Confidence Level
+											</h2>
 										</div>
-									)}
-								</form.Field>
-							</div>
+										<form.Field name="confidenceLevel">
+											{(field) => (
+												<div className="space-y-2">
+													<div className="flex items-center gap-2">
+														{confidenceLevels.map((level) => (
+															<button
+																key={level.value}
+																type="button"
+																onClick={() => field.handleChange(level.value)}
+																className={cn(
+																	"flex-1 h-12 rounded-lg border-2 transition-all font-medium text-sm",
+																	field.state.value === level.value
+																		? "border-primary bg-primary text-primary-foreground shadow-sm"
+																		: "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground",
+																)}
+															>
+																{level.value}
+															</button>
+														))}
+													</div>
+													<div className="flex justify-between text-xs text-muted-foreground px-1">
+														<span>Very Low</span>
+														<span>Very High</span>
+													</div>
+													{field.state.value > 0 && (
+														<p className="text-sm text-foreground mt-2">
+															{confidenceLevels[field.state.value - 1].label}:{" "}
+															<span className="text-muted-foreground">
+																{
+																	confidenceLevels[field.state.value - 1]
+																		.description
+																}
+															</span>
+														</p>
+													)}
+												</div>
+											)}
+										</form.Field>
+									</div>
+								</>
+							)}
 
 							<div className="border-t" />
 
@@ -545,11 +551,13 @@ export function ReviewForm({
 									completed={hasScores}
 									icon={IconStar}
 								/>
-								<ProgressItem
-									label="Confidence Level"
-									completed={hasConfidence}
-									icon={IconCircle}
-								/>
+								{enableConfidenceLevel && (
+									<ProgressItem
+										label="Confidence Level"
+										completed={hasConfidence}
+										icon={IconCircle}
+									/>
+								)}
 								<ProgressItem
 									label="Comments"
 									completed={hasComments}
@@ -603,12 +611,14 @@ export function ReviewForm({
 								icon={IconStar}
 								compact
 							/>
-							<ProgressItem
-								label="Confidence"
-								completed={hasConfidence}
-								icon={IconCircle}
-								compact
-							/>
+							{enableConfidenceLevel && (
+								<ProgressItem
+									label="Confidence"
+									completed={hasConfidence}
+									icon={IconCircle}
+									compact
+								/>
+							)}
 							<ProgressItem
 								label="Comments"
 								completed={hasComments}

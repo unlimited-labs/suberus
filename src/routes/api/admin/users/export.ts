@@ -1,16 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import * as XLSX from "xlsx";
 import type { UserRole } from "@/generated/prisma/enums";
+import { formatDateTime } from "@/lib/format-date";
 import { getUsers } from "@/lib/server/admin/users";
 import { adminRequestMiddleware } from "@/utils/auth.middleware";
-
-function formatDate(date: Date | null | undefined): string {
-	if (!date) return "";
-	return new Intl.DateTimeFormat("en-US", {
-		dateStyle: "medium",
-		timeStyle: "short",
-	}).format(date);
-}
+import { getSetting } from "@/utils/settings.server";
 
 export const Route = createFileRoute("/api/admin/users/export")({
 	server: {
@@ -33,7 +27,14 @@ export const Route = createFileRoute("/api/admin/users/export")({
 							? false
 							: undefined;
 
-				const { users } = await getUsers({ search, role, feePaid });
+				const [{ users }, dateFormat, timeFormat] = await Promise.all([
+					getUsers({ search, role, feePaid }),
+					getSetting("DATE_FORMAT"),
+					getSetting("TIME_FORMAT"),
+				]);
+
+				const fmtDate = (date: Date | null | undefined) =>
+					date ? formatDateTime(date, dateFormat, timeFormat) : "";
 
 				const rows = users.map((u) => ({
 					"First Name": u.firstName ?? "",
@@ -45,9 +46,9 @@ export const Route = createFileRoute("/api/admin/users/export")({
 					Status: u.isActive ? "Active" : "Inactive",
 					"Fee Status": u.fee?.paid ? "Paid" : "Unpaid",
 					"Fee Type": u.fee?.type ?? "",
-					"Fee Paid At": formatDate(u.fee?.paidAt),
-					"Created At": formatDate(u.createdAt),
-					"Last Login": formatDate(u.lastLoginAt),
+					"Fee Paid At": fmtDate(u.fee?.paidAt),
+					"Created At": fmtDate(u.createdAt),
+					"Last Login": fmtDate(u.lastLoginAt),
 				}));
 
 				const ws = XLSX.utils.json_to_sheet(rows);

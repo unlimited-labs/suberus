@@ -17,6 +17,7 @@ export interface SubmissionTypeConfig {
 	allowRevisions: boolean;
 	enableScoring: boolean;
 	scoringCriteria: { name: string; description: string }[];
+	enableConfidenceLevel: boolean;
 	enableSessionSelection: boolean;
 }
 
@@ -96,6 +97,10 @@ export type AppSettingsMap = {
 
 	// Terms of Service
 	TOS_CONTENT: string;
+
+	// Display format
+	DATE_FORMAT: string;
+	TIME_FORMAT: "24h" | "12h";
 };
 
 /** Keys for submission type configs */

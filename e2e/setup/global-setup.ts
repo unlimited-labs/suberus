@@ -44,6 +44,7 @@ const SUBMISSION_TYPE_CONFIGS = {
 			{ name: "Significance", description: "Importance and impact of the work" },
 			{ name: "Methodology", description: "Research design and execution" },
 		],
+		enableConfidenceLevel: true,
 		enableSessionSelection: false,
 	},
 	POSTER: {
@@ -59,6 +60,7 @@ const SUBMISSION_TYPE_CONFIGS = {
 		allowRevisions: false,
 		enableScoring: false,
 		scoringCriteria: [],
+		enableConfidenceLevel: true,
 		enableSessionSelection: false,
 	},
 	FULL_PAPER: {
@@ -80,6 +82,7 @@ const SUBMISSION_TYPE_CONFIGS = {
 			{ name: "Methodology", description: "Research design and execution" },
 			{ name: "Technical Quality", description: "Technical soundness and rigor" },
 		],
+		enableConfidenceLevel: true,
 		enableSessionSelection: false,
 	},
 };

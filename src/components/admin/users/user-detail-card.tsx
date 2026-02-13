@@ -34,6 +34,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import type { FeeType, UserRole } from "@/generated/prisma/enums";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
+import { useDateFormat } from "@/hooks/use-date-format";
 import type { AdminUser } from "@/lib/server/admin/users";
 import { patchAdminUser } from "@/utils/admin-users.functions";
 
@@ -63,14 +64,6 @@ const userRoles: { value: UserRole; label: string }[] = [
 	{ value: "ADMIN", label: "Administrator" },
 ];
 
-function formatDate(date: Date | null): string {
-	if (!date) return "—";
-	return new Intl.DateTimeFormat("en-US", {
-		dateStyle: "medium",
-		timeStyle: "short",
-	}).format(new Date(date));
-}
-
 interface PatchPayload {
 	role?: UserRole;
 	isActive?: boolean;
@@ -82,6 +75,8 @@ interface PatchPayload {
 export function UserDetailCard({ user }: UserDetailCardProps) {
 	const queryClient = useQueryClient();
 	const { canChangeRoles } = useAdminAuth();
+	const { formatDateTime } = useDateFormat();
+	const fmtDate = (date: Date | null) => (date ? formatDateTime(date) : "—");
 	const [feeDialogOpen, setFeeDialogOpen] = useState(false);
 	const [roleDialogOpen, setRoleDialogOpen] = useState(false);
 	const [selectedFeeType, setSelectedFeeType] = useState<FeeType>(
@@ -203,11 +198,11 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 							</div>
 							<div className="flex items-center gap-2">
 								<IconCalendar className="size-4 text-muted-foreground" />
-								<span>Created: {formatDate(user.createdAt)}</span>
+								<span>Created: {fmtDate(user.createdAt)}</span>
 							</div>
 							<div className="flex items-center gap-2">
 								<IconClock className="size-4 text-muted-foreground" />
-								<span>Last login: {formatDate(user.lastLoginAt)}</span>
+								<span>Last login: {fmtDate(user.lastLoginAt)}</span>
 							</div>
 							<div className="flex items-center gap-2">
 								{user.emailVerified ? (
@@ -266,7 +261,7 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 									{feeTypes.find((f) => f.value === user.fee?.type)?.label ??
 										user.fee.type}
 									{" • "}
-									Paid on: {formatDate(user.fee.paidAt)}
+									Paid on: {fmtDate(user.fee.paidAt)}
 								</p>
 							</div>
 						) : (

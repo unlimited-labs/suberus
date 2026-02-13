@@ -43,6 +43,7 @@ import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
+import { useDateFormat } from "@/hooks/use-date-format";
 import {
 	statusLabels,
 	statusVariants,
@@ -129,6 +130,7 @@ interface ConfigData {
 
 function SubmissionDetailPage() {
 	const { id } = Route.useParams();
+	const { formatDateTime } = useDateFormat();
 
 	const [isLoading, setIsLoading] = useState(true);
 	const [data, setData] = useState<SubmissionData | null>(null);
@@ -681,7 +683,7 @@ function SubmissionDetailPage() {
 														</p>
 													)}
 													<div className="text-xs text-muted-foreground">
-														{new Date(entry.createdAt).toLocaleString()}
+														{formatDateTime(new Date(entry.createdAt))}
 														{entry.triggeredByName &&
 															` by ${entry.triggeredByName}`}
 													</div>

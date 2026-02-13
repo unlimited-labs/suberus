@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import { useEffect } from "react";
 import { AppLayout } from "@/components/layout/app-layout";
 import { SpinnerSvg } from "@/components/spinner-svg";
+import { DateFormatProvider } from "@/hooks/use-date-format";
 import { useSession } from "@/hooks/use-session";
 import { APP_SETTINGS_DEFAULTS } from "@/lib/settings/defaults";
 import type { AppBranding } from "@/utils/settings.functions";
@@ -16,6 +17,8 @@ const defaults: AppBranding = {
 	secondaryColor: APP_SETTINGS_DEFAULTS.BRANDING_SECONDARY_COLOR,
 	footerText: APP_SETTINGS_DEFAULTS.BRANDING_FOOTER_TEXT,
 	authBackgroundUrl: "",
+	dateFormat: APP_SETTINGS_DEFAULTS.DATE_FORMAT,
+	timeFormat: APP_SETTINGS_DEFAULTS.TIME_FORMAT,
 };
 
 export const Route = createFileRoute("/_app")({
@@ -94,13 +97,18 @@ function AppLayoutRoute() {
 
 	return (
 		<div style={cssVars}>
-			<AppLayout
-				conferenceName={branding.conferenceName}
-				logoUrl={branding.logoUrl}
-				footerText={branding.footerText}
+			<DateFormatProvider
+				dateFormat={branding.dateFormat}
+				timeFormat={branding.timeFormat}
 			>
-				<Outlet />
-			</AppLayout>
+				<AppLayout
+					conferenceName={branding.conferenceName}
+					logoUrl={branding.logoUrl}
+					footerText={branding.footerText}
+				>
+					<Outlet />
+				</AppLayout>
+			</DateFormatProvider>
 		</div>
 	);
 }

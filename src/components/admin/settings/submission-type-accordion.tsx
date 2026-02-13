@@ -388,6 +388,25 @@ export function SubmissionTypeAccordion({
 						)}
 					</div>
 
+					{/* Confidence Level */}
+					<div className="flex items-center justify-between">
+						<div className="space-y-0.5">
+							<Label htmlFor="enableConfidenceLevel">
+								Enable confidence level
+							</Label>
+							<p className="text-sm text-muted-foreground">
+								Reviewers rate their confidence (1-5) when submitting a review
+							</p>
+						</div>
+						<Switch
+							id="enableConfidenceLevel"
+							checked={config.enableConfidenceLevel}
+							onCheckedChange={(checked) =>
+								handleChange("enableConfidenceLevel", checked)
+							}
+						/>
+					</div>
+
 					{/* Session Selection (Oral Presentation only) */}
 					{typeKey === "SUBMISSION_TYPE_ORAL_PRESENTATION" && (
 						<div className="flex items-center justify-between">

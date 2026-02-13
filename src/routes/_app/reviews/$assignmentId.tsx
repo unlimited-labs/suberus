@@ -44,7 +44,9 @@ function ReviewFormPage() {
 				comments: formData.comments,
 				privateNotes: formData.privateNotes || undefined,
 				scores: formData.scores,
-				confidenceLevel: formData.confidenceLevel,
+				confidenceLevel: config.enableConfidenceLevel
+					? formData.confidenceLevel
+					: undefined,
 			},
 		});
 
@@ -79,6 +81,7 @@ function ReviewFormPage() {
 					reviewMode={config.reviewMode}
 					guidelines={reviewGuidelines}
 					scoringCriteria={config.enableScoring ? config.scoringCriteria : []}
+					enableConfidenceLevel={config.enableConfidenceLevel}
 					initialData={
 						existingReview
 							? {

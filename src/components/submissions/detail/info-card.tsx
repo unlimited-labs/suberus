@@ -1,5 +1,6 @@
 import { IconCalendar, IconCategory, IconRefresh } from "@tabler/icons-react";
 import { VersionSelector } from "@/components/submissions/version-selector";
+import { useDateFormat } from "@/hooks/use-date-format";
 import type {
 	UserSubmission,
 	UserSubmissionVersion,
@@ -42,14 +43,7 @@ export function InfoCard({
 	selectedVersion,
 	onVersionChange,
 }: InfoCardProps) {
-	const formatDate = (date: Date | string) => {
-		const d = typeof date === "string" ? new Date(date) : date;
-		return d.toLocaleDateString("en-US", {
-			day: "2-digit",
-			month: "2-digit",
-			year: "numeric",
-		});
-	};
+	const { formatDate } = useDateFormat();
 
 	return (
 		<div className="rounded-2xl bg-card shadow-xl p-6 border">

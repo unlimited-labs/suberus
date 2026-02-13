@@ -96,8 +96,8 @@ test.describe("Auth Page Branding", { tag: "@serial" }, () => {
 		// Act
 		await page.goto("/login")
 
-		// Assert — formatted as "Month Day, Year – Month Day, Year"
-		await expect(page.getByText(/June 15, 2026/)).toBeVisible()
+		// Assert — formatted using default DD.MM.YYYY format
+		await expect(page.getByText(/15\.06\.2026/)).toBeVisible()
 	})
 
 	test("register page shows conference name in mobile header", async ({ page }) => {

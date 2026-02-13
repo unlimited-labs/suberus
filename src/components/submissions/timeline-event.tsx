@@ -14,6 +14,7 @@ import {
 	TimelineItem,
 } from "@/components/ui/timeline";
 import type { SubmissionStatus } from "@/generated/prisma/enums";
+import { useDateFormat } from "@/hooks/use-date-format";
 import type { UserSubmissionStatusHistory } from "@/utils/submissions.functions";
 
 interface TimelineEventProps {
@@ -97,6 +98,7 @@ const statusConfig: Record<
 export function TimelineEvent({ event, isLast = false }: TimelineEventProps) {
 	const config = statusConfig[event.status];
 	const Icon = config.icon;
+	const { formatDateTime } = useDateFormat();
 	const timestamp =
 		typeof event.timestamp === "string"
 			? new Date(event.timestamp)
@@ -112,13 +114,7 @@ export function TimelineEvent({ event, isLast = false }: TimelineEventProps) {
 				<div className="space-y-1">
 					<h3 className="font-medium text-foreground">{config.label}</h3>
 					<p className="text-sm text-muted-foreground">
-						{timestamp.toLocaleDateString("en-US", {
-							day: "2-digit",
-							month: "short",
-							year: "numeric",
-							hour: "2-digit",
-							minute: "2-digit",
-						})}
+						{formatDateTime(timestamp)}
 					</p>
 					<p className="text-xs text-muted-foreground">{event.triggeredBy}</p>
 					{event.metadata?.comment && (

@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { AssignmentStatus } from "@/generated/prisma/enums";
+import { useDateFormat } from "@/hooks/use-date-format";
 import {
 	assignmentStatusFilterOptions,
 	assignmentStatusLabels,
@@ -27,6 +28,8 @@ function DeadlineCell({
 	deadline: Date | null;
 	status: string;
 }) {
+	const { formatDate } = useDateFormat();
+
 	if (!deadline)
 		return (
 			<span className="text-muted-foreground text-sm italic">No deadline</span>
@@ -39,11 +42,7 @@ function DeadlineCell({
 	const isPast = daysRemaining < 0;
 	const isUrgent = daysRemaining <= 3 && daysRemaining >= 0;
 
-	const dateStr = deadline.toLocaleDateString("en-US", {
-		month: "short",
-		day: "numeric",
-		year: deadline.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
-	});
+	const dateStr = formatDate(deadline);
 
 	if (status === "COMPLETED") {
 		return (

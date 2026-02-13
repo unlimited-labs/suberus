@@ -1,6 +1,7 @@
 import {
 	IconBuilding,
 	IconCalendar,
+	IconClock,
 	IconLoader2,
 	IconMail,
 	IconWorld,
@@ -11,6 +12,15 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { DATE_FORMATS } from "@/lib/format-date";
 import type { ConferenceSettings } from "@/utils/settings.functions";
 import { updateConferenceSettingsFn } from "@/utils/settings.functions";
 
@@ -169,6 +179,61 @@ export function ConferenceSettingsTab({
 							value={data.notificationDate}
 							onChange={(e) => handleChange("notificationDate", e.target.value)}
 						/>
+					</div>
+				</div>
+				<div className="mt-6 flex justify-end">
+					<Button onClick={handleSave} disabled={isSaving}>
+						{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
+						Save
+					</Button>
+				</div>
+			</SettingsSection>
+
+			<SettingsSection
+				icon={IconClock}
+				title="Display Format"
+				description="Date and time display format across the application"
+				delay={200}
+			>
+				<div className="grid gap-6 sm:grid-cols-2">
+					<div className="space-y-2 sm:col-span-2">
+						<Label htmlFor="dateFormat">Date Format</Label>
+						<Select
+							value={data.dateFormat}
+							onValueChange={(value) => handleChange("dateFormat", value)}
+						>
+							<SelectTrigger id="dateFormat" className="max-w-64">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{DATE_FORMATS.map((fmt) => (
+									<SelectItem key={fmt.value} value={fmt.value}>
+										{fmt.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="space-y-3 sm:col-span-2">
+						<Label>Time Format</Label>
+						<RadioGroup
+							value={data.timeFormat}
+							onValueChange={(value) => handleChange("timeFormat", value)}
+							className="flex gap-6"
+						>
+							<div className="flex items-center gap-2">
+								<RadioGroupItem value="24h" id="time-24h" />
+								<Label htmlFor="time-24h" className="cursor-pointer">
+									24h (14:30)
+								</Label>
+							</div>
+							<div className="flex items-center gap-2">
+								<RadioGroupItem value="12h" id="time-12h" />
+								<Label htmlFor="time-12h" className="cursor-pointer">
+									12h (2:30 PM)
+								</Label>
+							</div>
+						</RadioGroup>
 					</div>
 				</div>
 				<div className="mt-6 flex justify-end">

@@ -475,6 +475,11 @@ export class ReviewFormPage {
 		return this.submitButton.isEnabled();
 	}
 
+	async isConfidenceLevelVisible(): Promise<boolean> {
+		const heading = this.page.getByRole("heading", { name: "Confidence Level" });
+		return heading.isVisible().catch(() => false);
+	}
+
 	/**
 	 * Check if the page shows "Review Not Found" error.
 	 * This happens when mock data has invalid UUIDs.

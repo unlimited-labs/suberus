@@ -5,6 +5,7 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Markdown } from "@/components/ui/markdown";
+import { useDateFormat } from "@/hooks/use-date-format";
 import { getPaymentInstructionsFn, getUserFeeFn } from "@/utils/fee.functions";
 
 export const Route = createFileRoute("/_app/fee/")({
@@ -28,6 +29,7 @@ const feeTypeLabels: Record<string, string> = {
 
 function FeePage() {
 	const { fee, instructions } = Route.useLoaderData();
+	const { formatDate } = useDateFormat();
 
 	return (
 		<div className="flex h-full flex-col">
@@ -136,11 +138,7 @@ function FeePage() {
 												Payment Date
 											</div>
 											<div className="text-lg font-semibold text-foreground">
-												{new Date(fee.paidAt).toLocaleDateString("en-US", {
-													year: "numeric",
-													month: "long",
-													day: "numeric",
-												})}
+												{formatDate(new Date(fee.paidAt))}
 											</div>
 										</div>
 									)}

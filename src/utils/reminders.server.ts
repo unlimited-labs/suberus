@@ -1,5 +1,6 @@
 import { prisma } from "@/db.server";
 import type { EmailEventType } from "@/generated/prisma/enums";
+import { formatDate } from "@/lib/format-date";
 import { sendEmail } from "@/lib/server/email";
 import { getSetting } from "./settings.server";
 
@@ -37,20 +38,12 @@ async function recordReminder(
 	});
 }
 
-/** Format a date for email display */
-function formatDate(date: Date): string {
-	return date.toLocaleDateString("en-US", {
-		year: "numeric",
-		month: "long",
-		day: "numeric",
-	});
-}
-
 /** Send reviewer deadline reminders (REVIEWER_REMINDER) */
 export async function sendReviewerReminders(): Promise<number> {
 	const settings = await getSetting("REMINDER_REVIEWER_SETTINGS");
 	if (!settings.enabled || settings.daysBefore.length === 0) return 0;
 
+	const dateFormat = await getSetting("DATE_FORMAT");
 	const now = new Date();
 	let sentCount = 0;
 
@@ -92,7 +85,7 @@ export async function sendReviewerReminders(): Promise<number> {
 			void sendEmail("REVIEWER_REMINDER", assignment.reviewer.email, {
 				reviewerName,
 				submissionTitle: assignment.submission.title,
-				deadline: formatDate(assignment.deadline),
+				deadline: formatDate(assignment.deadline, dateFormat),
 				daysRemaining: String(daysRemaining),
 			});
 
@@ -189,7 +182,10 @@ export async function sendDeadlineReminders(): Promise<number> {
 	const settings = await getSetting("REMINDER_DEADLINE_SETTINGS");
 	if (!settings.enabled || settings.daysBefore.length === 0) return 0;
 
-	const deadlineStr = await getSetting("SUBMISSION_DEADLINE");
+	const [deadlineStr, dateFormat] = await Promise.all([
+		getSetting("SUBMISSION_DEADLINE"),
+		getSetting("DATE_FORMAT"),
+	]);
 	if (!deadlineStr) return 0;
 
 	const deadline = new Date(deadlineStr);
@@ -231,7 +227,7 @@ export async function sendDeadlineReminders(): Promise<number> {
 			void sendEmail("DEADLINE_APPROACHING", submission.user.email, {
 				recipientName,
 				submissionTitle: submission.title,
-				deadline: formatDate(deadline),
+				deadline: formatDate(deadline, dateFormat),
 				daysRemaining: String(daysRemaining),
 			});
 

@@ -19,6 +19,7 @@ export const DEFAULT_ORAL_PRESENTATION_CONFIG: SubmissionTypeConfig = {
 		{ name: "Significance", description: "Importance and impact of the work" },
 		{ name: "Methodology", description: "Research design and execution" },
 	],
+	enableConfidenceLevel: true,
 	enableSessionSelection: false,
 };
 
@@ -36,6 +37,7 @@ export const DEFAULT_POSTER_CONFIG: SubmissionTypeConfig = {
 	allowRevisions: false,
 	enableScoring: false,
 	scoringCriteria: [],
+	enableConfidenceLevel: true,
 	enableSessionSelection: false,
 };
 
@@ -59,6 +61,7 @@ export const DEFAULT_FULL_PAPER_CONFIG: SubmissionTypeConfig = {
 		{ name: "Methodology", description: "Research design and execution" },
 		{ name: "Technical Quality", description: "Technical soundness and rigor" },
 	],
+	enableConfidenceLevel: true,
 	enableSessionSelection: false,
 };
 
@@ -123,6 +126,10 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	// Terms of Service
 	TOS_CONTENT:
 		"# Terms of Service\n\nPlease configure Terms of Service in the admin panel.",
+
+	// Display format
+	DATE_FORMAT: "DD.MM.YYYY",
+	TIME_FORMAT: "24h",
 };
 
 /** Get default value for a setting key */

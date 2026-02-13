@@ -331,6 +331,22 @@ export class AdminSettingsPage {
 		await expect(this.page.getByRole("heading", { name: "Logo & Graphics" })).toBeVisible()
 	}
 
+	// --- Display Format (Conference tab) ---
+
+	getDateFormatSelect() {
+		return this.page.locator("#dateFormat")
+	}
+
+	getTimeFormatRadio(value: "24h" | "12h") {
+		return this.page.locator(`#time-${value}`)
+	}
+
+	// --- Confidence Level (Submission Types tab) ---
+
+	getEnableConfidenceLevelSwitch() {
+		return this.page.getByLabel("Enable confidence level")
+	}
+
 	getLogoUrlInput() {
 		return this.page.getByLabel("Logo URL")
 	}

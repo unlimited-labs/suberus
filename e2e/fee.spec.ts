@@ -127,7 +127,7 @@ test.describe("Fee - User View", () => {
 		await expect(page.getByText("Full Conference Fee")).toBeVisible();
 		await expect(page.getByText("250.00")).toBeVisible();
 		await expect(page.getByText("EUR")).toBeVisible();
-		await expect(page.getByText("January 15, 2026")).toBeVisible();
+		await expect(page.getByText("15.01.2026")).toBeVisible();
 		await expect(feePage.paymentInstructions).toBeVisible();
 
 		// Cleanup

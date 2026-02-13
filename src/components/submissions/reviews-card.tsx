@@ -6,6 +6,7 @@ import {
 	AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { useDateFormat } from "@/hooks/use-date-format";
 import { cn } from "@/lib/utils";
 import type { UserSubmissionReview } from "@/utils/submissions.functions";
 
@@ -82,6 +83,7 @@ function ScoreBar({ label, score, maxScore = 5 }: ScoreBarProps) {
 }
 
 export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
+	const { formatDateTime } = useDateFormat();
 	if (reviews.length === 0) {
 		return null;
 	}
@@ -198,13 +200,7 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 
 										{/* Review Date */}
 										<div className="text-xs text-muted-foreground pt-2">
-											{createdAt.toLocaleDateString("en-US", {
-												day: "2-digit",
-												month: "short",
-												year: "numeric",
-												hour: "2-digit",
-												minute: "2-digit",
-											})}
+											{formatDateTime(createdAt)}
 										</div>
 									</div>
 								</AccordionContent>

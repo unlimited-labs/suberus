@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import type { SubmissionStatus } from "@/generated/prisma/enums";
+import { useDateFormat } from "@/hooks/use-date-format";
 import type { UserSubmissionDecision } from "@/utils/submissions.functions";
 
 interface EditorDecisionCardProps {
@@ -46,6 +47,7 @@ const statusLabels: Record<SubmissionStatus, string> = {
 };
 
 function DecisionContent({ decision }: { decision: UserSubmissionDecision }) {
+	const { formatDateTime } = useDateFormat();
 	return (
 		<div className="space-y-4">
 			{/* Reasoning */}
@@ -114,17 +116,7 @@ function DecisionContent({ decision }: { decision: UserSubmissionDecision }) {
 
 			{/* Decision Date */}
 			<div className="text-xs text-muted-foreground pt-2 border-t">
-				Decision date:{" "}
-				{(typeof decision.createdAt === "string"
-					? new Date(decision.createdAt)
-					: decision.createdAt
-				).toLocaleDateString("en-US", {
-					day: "2-digit",
-					month: "2-digit",
-					year: "numeric",
-					hour: "2-digit",
-					minute: "2-digit",
-				})}
+				Decision date: {formatDateTime(decision.createdAt)}
 			</div>
 		</div>
 	);

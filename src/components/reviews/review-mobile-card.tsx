@@ -7,6 +7,7 @@ import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useDateFormat } from "@/hooks/use-date-format";
 import {
 	assignmentStatusLabels,
 	assignmentStatusVariants,
@@ -15,6 +16,7 @@ import { typeLabels } from "@/lib/labels/submission";
 import type { ReviewerAssignment } from "@/utils/assignments.functions";
 
 export function ReviewMobileCard(assignment: ReviewerAssignment) {
+	const { formatDate } = useDateFormat();
 	const now = new Date();
 	const deadline = assignment.deadline;
 	const daysRemaining = deadline
@@ -25,10 +27,7 @@ export function ReviewMobileCard(assignment: ReviewerAssignment) {
 		daysRemaining !== null && daysRemaining <= 3 && daysRemaining >= 0;
 	const isAnonymous = assignment.authorName === "Anonymous Author";
 
-	const dateStr = deadline?.toLocaleDateString("en-US", {
-		month: "short",
-		day: "numeric",
-	});
+	const dateStr = deadline ? formatDate(deadline) : undefined;
 
 	return (
 		<Card className="overflow-hidden">

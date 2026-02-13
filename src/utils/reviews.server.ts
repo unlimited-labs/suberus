@@ -50,6 +50,7 @@ export async function getAssignmentForReview(
 		reviewMode: ReviewMode;
 		enableScoring: boolean;
 		scoringCriteria: { name: string; description: string }[];
+		enableConfidenceLevel: boolean;
 	};
 	existingReview?: {
 		decision: ReviewDecision;
@@ -123,6 +124,7 @@ export async function getAssignmentForReview(
 			reviewMode: config.reviewMode,
 			enableScoring: config.enableScoring,
 			scoringCriteria: config.scoringCriteria,
+			enableConfidenceLevel: config.enableConfidenceLevel,
 		},
 		existingReview: assignment.review
 			? {

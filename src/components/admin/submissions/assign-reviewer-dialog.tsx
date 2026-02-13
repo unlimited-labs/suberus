@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useDateFormat } from "@/hooks/use-date-format";
 import {
 	type AssignmentWithReviewer,
 	type AvailableReviewer,
@@ -48,6 +49,7 @@ export function AssignReviewerDialog({
 	onOpenChange,
 	onAssigned,
 }: AssignReviewerDialogProps) {
+	const { formatDate } = useDateFormat();
 	const [search, setSearch] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [isAssigning, setIsAssigning] = useState(false);
@@ -216,8 +218,7 @@ export function AssignReviewerDialog({
 											{assignment.deadline && (
 												<p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
 													<IconCalendar className="size-3" />
-													Due:{" "}
-													{new Date(assignment.deadline).toLocaleDateString()}
+													Due: {formatDate(new Date(assignment.deadline))}
 												</p>
 											)}
 										</div>

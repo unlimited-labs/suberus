@@ -5,6 +5,7 @@ import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
+import { useDateFormat } from "@/hooks/use-date-format";
 import type { UserSubmission } from "@/utils/submissions.functions";
 
 interface SubmissionsTableProps {
@@ -54,14 +55,7 @@ function CoAuthorBadge({ role }: { role: UserSubmission["role"] }) {
 }
 
 export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
-	const formatDate = (date: Date | string) => {
-		const d = typeof date === "string" ? new Date(date) : date;
-		return d.toLocaleDateString("en-US", {
-			day: "2-digit",
-			month: "2-digit",
-			year: "numeric",
-		});
-	};
+	const { formatDate } = useDateFormat();
 
 	return (
 		<>

@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { AuthLayout } from "@/components/layout/auth-layout";
 import { SpinnerSvg } from "@/components/spinner-svg";
 import { useSession } from "@/hooks/use-session";
+import { formatDate } from "@/lib/format-date";
 import { APP_SETTINGS_DEFAULTS } from "@/lib/settings/defaults";
 import type { AuthPageBranding } from "@/utils/settings.functions";
 import { getAuthPageBrandingFn } from "@/utils/settings.functions";
@@ -18,18 +19,19 @@ const defaults: AuthPageBranding = {
 	conferenceLocation: APP_SETTINGS_DEFAULTS.CONFERENCE_LOCATION,
 	conferenceSubtitle: APP_SETTINGS_DEFAULTS.CONFERENCE_SUBTITLE,
 	authBackgroundUrl: APP_SETTINGS_DEFAULTS.BRANDING_AUTH_BACKGROUND_KEY,
+	dateFormat: APP_SETTINGS_DEFAULTS.DATE_FORMAT,
 };
 
-function formatDateRange(start: string, end: string): string {
+function formatDateRange(
+	start: string,
+	end: string,
+	dateFormatStr: string,
+): string {
 	if (!start && !end) return "";
 	const fmt = (d: string) => {
 		const date = new Date(d);
 		if (Number.isNaN(date.getTime())) return "";
-		return date.toLocaleDateString("en-US", {
-			month: "long",
-			day: "numeric",
-			year: "numeric",
-		});
+		return formatDate(date, dateFormatStr);
 	};
 	const s = start ? fmt(start) : "";
 	const e = end ? fmt(end) : "";
@@ -46,6 +48,7 @@ export const Route = createFileRoute("/_auth")({
 				conferenceDate: formatDateRange(
 					branding.conferenceStartDate,
 					branding.conferenceEndDate,
+					branding.dateFormat,
 				),
 			};
 		} catch {

@@ -33,6 +33,7 @@ const submissionTypeConfigSchema = z.object({
 	scoringCriteria: z.array(
 		z.object({ name: z.string(), description: z.string() }),
 	),
+	enableConfidenceLevel: z.boolean(),
 	enableSessionSelection: z.boolean(),
 });
 
@@ -141,6 +142,8 @@ export interface ConferenceSettings {
 	reviewDeadline: string;
 	notificationDate: string;
 	subtitle: string;
+	dateFormat: string;
+	timeFormat: "24h" | "12h";
 }
 
 const conferenceSettingsSchema = z.object({
@@ -154,6 +157,8 @@ const conferenceSettingsSchema = z.object({
 	reviewDeadline: z.string(),
 	notificationDate: z.string(),
 	subtitle: z.string(),
+	dateFormat: z.string(),
+	timeFormat: z.enum(["24h", "12h"]),
 });
 
 /**
@@ -281,6 +286,8 @@ export const getConferenceSettingsFn = createServerFn({ method: "GET" })
 			"REVIEW_DEADLINE",
 			"NOTIFICATION_DATE",
 			"CONFERENCE_SUBTITLE",
+			"DATE_FORMAT",
+			"TIME_FORMAT",
 		]);
 		return {
 			name: settings.CONFERENCE_NAME,
@@ -293,6 +300,8 @@ export const getConferenceSettingsFn = createServerFn({ method: "GET" })
 			reviewDeadline: settings.REVIEW_DEADLINE,
 			notificationDate: settings.NOTIFICATION_DATE,
 			subtitle: settings.CONFERENCE_SUBTITLE,
+			dateFormat: settings.DATE_FORMAT,
+			timeFormat: settings.TIME_FORMAT,
 		};
 	});
 
@@ -313,6 +322,8 @@ export const updateConferenceSettingsFn = createServerFn({ method: "POST" })
 		await setSetting("REVIEW_DEADLINE", data.reviewDeadline);
 		await setSetting("NOTIFICATION_DATE", data.notificationDate);
 		await setSetting("CONFERENCE_SUBTITLE", data.subtitle);
+		await setSetting("DATE_FORMAT", data.dateFormat);
+		await setSetting("TIME_FORMAT", data.timeFormat);
 		return { success: true };
 	});
 
@@ -437,6 +448,8 @@ export interface BrandingSettings {
 /** App branding + conference name (for _app loader) */
 export interface AppBranding extends BrandingSettings {
 	conferenceName: string;
+	dateFormat: string;
+	timeFormat: "24h" | "12h";
 }
 
 const hexColorRegex = /^#[0-9a-fA-F]{6}$/;
@@ -462,6 +475,8 @@ export const getAppBrandingFn = createServerFn({ method: "GET" }).handler(
 			"BRANDING_PRIMARY_COLOR",
 			"BRANDING_SECONDARY_COLOR",
 			"BRANDING_FOOTER_TEXT",
+			"DATE_FORMAT",
+			"TIME_FORMAT",
 		]);
 		return {
 			conferenceName: settings.CONFERENCE_NAME,
@@ -471,6 +486,8 @@ export const getAppBrandingFn = createServerFn({ method: "GET" }).handler(
 			secondaryColor: settings.BRANDING_SECONDARY_COLOR,
 			footerText: settings.BRANDING_FOOTER_TEXT,
 			authBackgroundUrl: "",
+			dateFormat: settings.DATE_FORMAT,
+			timeFormat: settings.TIME_FORMAT,
 		};
 	},
 );
@@ -560,6 +577,7 @@ export interface AuthPageBranding {
 	conferenceLocation: string;
 	conferenceSubtitle: string;
 	authBackgroundUrl: string;
+	dateFormat: string;
 }
 
 /**
@@ -589,6 +607,7 @@ export const getAuthPageBrandingFn = createServerFn({ method: "GET" }).handler(
 				"CONFERENCE_DATE_END",
 				"CONFERENCE_LOCATION",
 				"CONFERENCE_SUBTITLE",
+				"DATE_FORMAT",
 			]),
 			getAuthBackgroundUrl(),
 		]);
@@ -602,6 +621,7 @@ export const getAuthPageBrandingFn = createServerFn({ method: "GET" }).handler(
 			conferenceLocation: s.CONFERENCE_LOCATION,
 			conferenceSubtitle: s.CONFERENCE_SUBTITLE,
 			authBackgroundUrl,
+			dateFormat: s.DATE_FORMAT,
 		};
 	},
 );

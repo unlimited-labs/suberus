@@ -3,6 +3,7 @@ import type {
 	AssignmentStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
+import { formatDate } from "@/lib/format-date";
 import { sendEmail } from "@/lib/server/email";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import { canAssignReviewer } from "@/lib/workflow";
@@ -212,21 +213,20 @@ export async function assignReviewer(
 	}
 
 	// Send assignment notification to reviewer
-	const reviewer = await prisma.user.findUniqueOrThrow({
-		where: { id: reviewerId },
-		select: { email: true, firstName: true, lastName: true },
-	});
+	const [reviewer, dateFormat] = await Promise.all([
+		prisma.user.findUniqueOrThrow({
+			where: { id: reviewerId },
+			select: { email: true, firstName: true, lastName: true },
+		}),
+		getSetting("DATE_FORMAT"),
+	]);
 
 	void sendEmail("REVIEWER_ASSIGNED", reviewer.email, {
 		reviewerName:
 			`${reviewer.firstName ?? ""} ${reviewer.lastName ?? ""}`.trim() ||
 			reviewer.email,
 		submissionTitle: submission.title,
-		deadline: deadline.toLocaleDateString("en-US", {
-			year: "numeric",
-			month: "long",
-			day: "numeric",
-		}),
+		deadline: formatDate(deadline, dateFormat),
 	});
 
 	return { success: true, assignmentId: assignment.id };
