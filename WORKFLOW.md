@@ -451,27 +451,29 @@ Round 2: Re-review
 ```typescript
 Config: {
   enableScoring: true,
-  scoringCriteria: {
-    novelty: true,
-    methodology: true,
-    clarity: true,
-    relevance: true
-  }
+  scoringCriteria: [
+    { name: "Originality", description: "Contribution to the field" },
+    { name: "Clarity", description: "Writing quality and structure" },
+    { name: "Significance", description: "Importance and impact" },
+    { name: "Methodology", description: "Research design and execution" },
+  ]
 }
 
-Review form shows:
-- Score Novelty: 1-5 (required if enabled)
-- Score Methodology: 1-5 (required if enabled)
-- Score Clarity: 1-5 (required if enabled)
-- Score Relevance: 1-5 (required if enabled)
-- Confidence Level: 1-5 (how confident are you?)
+Review form shows (dynamic from scoringCriteria):
+- Each criterion: 1-5 score (compact row with label + description)
+- Scale legend shown once: 1=Poor ... 5=Excellent
+- Confidence Level: 1-5
 - Comments: text
 - Private Notes: text (editor only)
 - Decision: ACCEPT/REJECT/REVISE/ACCEPT_WITH_MINOR
 
+Database storage:
+- Review.scores: Json? — stores Record<string, number>, e.g. {"Originality": 4, "Clarity": 5}
+- Admin can add/remove criteria with name + description per submission type
+
 Average score calculation:
-enabledScores = [novelty, methodology, clarity, relevance].filter(enabled)
-averageScore = sum(enabledScores) / enabledScores.length
+allScores = Object.values(review.scores)
+averageScore = sum(allScores) / allScores.length
 ```
 
 ### When Disabled (enableScoring=false)
@@ -483,7 +485,7 @@ Review form shows:
 - Decision: ACCEPT/REJECT/REVISE/ACCEPT_WITH_MINOR
 
 No scoring fields shown
-Score fields in database remain NULL
+Review.scores remains NULL
 ```
 
 ---
@@ -815,7 +817,7 @@ All submission status changes are logged in `SubmissionStatusHistory`:
   requireAllReviews: true,
   autoTransitionAfterReviews: true, // Auto-apply reviewer decision
   enableScoring: false,
-  scoringCriteria: null,
+  scoringCriteria: [],
   reviewMode: 'SINGLE_BLIND' // Authors don't see reviewers
 }
 ```
@@ -834,12 +836,12 @@ All submission status changes are logged in `SubmissionStatusHistory`:
   requireAllReviews: true,
   autoTransitionAfterReviews: false, // Editor manually reviews before transition
   enableScoring: true,
-  scoringCriteria: {
-    novelty: true,
-    methodology: true,
-    clarity: true,
-    relevance: true
-  },
+  scoringCriteria: [
+    { name: "Originality", description: "Contribution to the field" },
+    { name: "Clarity", description: "Writing quality and structure" },
+    { name: "Significance", description: "Importance and impact" },
+    { name: "Methodology", description: "Research design and execution" },
+  ],
   reviewMode: 'DOUBLE_BLIND' // Neither authors nor reviewers see identities
 }
 ```
@@ -860,7 +862,7 @@ POSTER uses identical workflow to ABSTRACT (single reviewer, reviewer decides).
   requireAllReviews: true,
   autoTransitionAfterReviews: true, // Auto-apply reviewer decision
   enableScoring: false,
-  scoringCriteria: null,
+  scoringCriteria: [],
   reviewMode: 'SINGLE_BLIND' // Authors don't see reviewers
 }
 ```

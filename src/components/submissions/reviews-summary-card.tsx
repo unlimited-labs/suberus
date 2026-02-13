@@ -51,12 +51,7 @@ export function ReviewsSummaryCard({
 
 	// Calculate average from available scores
 	const allScores = reviews.flatMap((r) =>
-		[
-			r.scores.originality,
-			r.scores.clarity,
-			r.scores.significance,
-			r.scores.overall,
-		].filter((s): s is number => s !== null),
+		r.scores ? Object.values(r.scores) : [],
 	);
 	const avgScore =
 		allScores.length > 0

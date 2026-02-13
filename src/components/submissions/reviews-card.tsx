@@ -88,12 +88,7 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 
 	// Calculate average score from available scores
 	const allScores = reviews.flatMap((r) =>
-		[
-			r.scores.originality,
-			r.scores.clarity,
-			r.scores.significance,
-			r.scores.overall,
-		].filter((s): s is number => s !== null),
+		r.scores ? Object.values(r.scores) : [],
 	);
 	const avgScore =
 		allScores.length > 0
@@ -134,8 +129,15 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 				{/* Reviews Accordion */}
 				<Accordion type="single" collapsible className="space-y-3">
 					{reviews.map((review) => {
-						const overallScore = review.scores.overall ?? 0;
-						const scoreConfig = getScoreColor(overallScore);
+						const scoreEntries = review.scores
+							? Object.entries(review.scores)
+							: [];
+						const reviewAvg =
+							scoreEntries.length > 0
+								? scoreEntries.reduce((sum, [, v]) => sum + v, 0) /
+									scoreEntries.length
+								: 0;
+						const scoreConfig = getScoreColor(reviewAvg);
 						const createdAt =
 							typeof review.createdAt === "string"
 								? new Date(review.createdAt)
@@ -152,31 +154,35 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 										<span className="font-medium text-foreground">
 											{review.reviewerName}
 										</span>
-										{review.scores.overall !== null && (
+										{scoreEntries.length > 0 && (
 											<Badge
 												variant="outline"
 												className={cn("font-semibold", scoreConfig.text)}
 											>
-												{review.scores.overall.toFixed(1)}/5
+												{reviewAvg.toFixed(1)}/5
 											</Badge>
 										)}
 									</div>
 								</AccordionTrigger>
 								<AccordionContent className="px-4 pb-4 pt-1">
 									<div className="space-y-4">
-										{/* Scores - horizontal on desktop */}
-										<div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-											<ScoreBar
-												label="Originality"
-												score={review.scores.originality}
-											/>
-											<ScoreBar label="Clarity" score={review.scores.clarity} />
-											<ScoreBar
-												label="Significance"
-												score={review.scores.significance}
-											/>
-											<ScoreBar label="Overall" score={review.scores.overall} />
-										</div>
+										{/* Scores - dynamic grid */}
+										{scoreEntries.length > 0 && (
+											<div
+												className={cn(
+													"grid grid-cols-1 gap-3",
+													scoreEntries.length >= 4
+														? "md:grid-cols-4"
+														: scoreEntries.length >= 2
+															? "md:grid-cols-2"
+															: "",
+												)}
+											>
+												{scoreEntries.map(([name, score]) => (
+													<ScoreBar key={name} label={name} score={score} />
+												))}
+											</div>
+										)}
 
 										{/* Comments */}
 										{review.comments && (

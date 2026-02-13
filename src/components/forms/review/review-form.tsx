@@ -19,7 +19,6 @@ import { useStore } from "@tanstack/react-form";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Markdown } from "@/components/ui/markdown";
 import type { ReviewDecision, SubmissionType } from "@/generated/prisma/enums";
 import { useAppForm } from "@/hooks/use-app-form";
@@ -57,14 +56,12 @@ interface ReviewFormProps {
 	};
 	reviewMode: "OPEN" | "SINGLE_BLIND" | "DOUBLE_BLIND";
 	guidelines?: string;
+	scoringCriteria?: { name: string; description: string }[];
 }
 
 export interface ReviewFormData {
 	decision: ReviewDecision;
-	scoreNovelty: number;
-	scoreMethodology: number;
-	scoreClarity: number;
-	scoreRelevance: number;
+	scores: Record<string, number>;
 	confidenceLevel: number;
 	comments: string;
 	privateNotes: string;
@@ -101,29 +98,6 @@ const decisionOptions = [
 	},
 ];
 
-const scoreCriteria = [
-	{
-		key: "scoreNovelty" as const,
-		label: "Novelty & Originality",
-		description: "Contribution to the field",
-	},
-	{
-		key: "scoreMethodology" as const,
-		label: "Methodology & Rigor",
-		description: "Research design and execution",
-	},
-	{
-		key: "scoreClarity" as const,
-		label: "Clarity & Presentation",
-		description: "Writing quality and structure",
-	},
-	{
-		key: "scoreRelevance" as const,
-		label: "Relevance & Impact",
-		description: "Significance to conference audience",
-	},
-];
-
 const confidenceLevels = [
 	{ value: 1, label: "Very Low", description: "Outside my expertise" },
 	{ value: 2, label: "Low", description: "Familiar but not expert" },
@@ -138,22 +112,33 @@ export function ReviewForm({
 	submission,
 	reviewMode,
 	guidelines,
+	scoringCriteria = [],
 }: ReviewFormProps) {
 	const [contentExpanded, setContentExpanded] = useState(false);
+
+	// Dynamic scores state — keyed by criterion name
+	const initialScores: Record<string, number> = {};
+	for (const c of scoringCriteria) {
+		initialScores[c.name] = initialData?.scores?.[c.name] ?? 3;
+	}
+	const [scores, setScores] = useState<Record<string, number>>(initialScores);
+
+	const setScore = (name: string, value: number) => {
+		setScores((prev) => ({ ...prev, [name]: value }));
+	};
 
 	const form = useAppForm({
 		defaultValues: {
 			decision: initialData?.decision || ("ACCEPT" as ReviewDecision),
-			scoreNovelty: initialData?.scoreNovelty || 3,
-			scoreMethodology: initialData?.scoreMethodology || 3,
-			scoreClarity: initialData?.scoreClarity || 3,
-			scoreRelevance: initialData?.scoreRelevance || 3,
 			confidenceLevel: initialData?.confidenceLevel || 3,
 			comments: initialData?.comments || "",
 			privateNotes: initialData?.privateNotes || "",
 		},
 		onSubmit: async ({ value }) => {
-			await onSubmit(value);
+			await onSubmit({
+				...value,
+				scores,
+			});
 		},
 	});
 
@@ -162,10 +147,8 @@ export function ReviewForm({
 	// Progress indicators
 	const hasDecision = !!values.decision;
 	const hasScores =
-		values.scoreNovelty > 0 &&
-		values.scoreMethodology > 0 &&
-		values.scoreClarity > 0 &&
-		values.scoreRelevance > 0;
+		scoringCriteria.length === 0 ||
+		scoringCriteria.every((c) => (scores[c.name] ?? 0) > 0);
 	const hasConfidence = values.confidenceLevel > 0;
 	const hasComments = values.comments.length >= 50;
 
@@ -357,57 +340,66 @@ export function ReviewForm({
 								</form.Field>
 							</div>
 
-							<div className="border-t" />
+							{/* Scoring Section — dynamic criteria, condensed */}
+							{scoringCriteria.length > 0 && (
+								<>
+									<div className="border-t" />
+									<div className="space-y-4">
+										<div className="flex items-center gap-3">
+											<IconStar className="size-5 text-muted-foreground" />
+											<h2 className="text-lg font-semibold text-foreground">
+												Evaluation Criteria
+											</h2>
+										</div>
 
-							{/* Scoring Section */}
-							<div className="space-y-4">
-								<div className="flex items-center gap-3">
-									<IconStar className="size-5 text-muted-foreground" />
-									<h2 className="text-lg font-semibold text-foreground">
-										Evaluation Criteria
-									</h2>
-								</div>
-
-								<div className="space-y-6">
-									{scoreCriteria.map((criterion) => (
-										<form.Field key={criterion.key} name={criterion.key}>
-											{(field) => (
-												<div className="space-y-3">
-													<div>
-														<Label className="text-foreground font-medium">
-															{criterion.label}
-														</Label>
-														<p className="text-xs text-muted-foreground mt-0.5">
-															{criterion.description}
-														</p>
+										<div className="rounded-lg border divide-y">
+											{scoringCriteria.map((criterion) => {
+												const currentScore = scores[criterion.name] ?? 0;
+												return (
+													<div
+														key={criterion.name}
+														className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-4 py-3"
+													>
+														<div className="flex-1 min-w-0">
+															<p className="text-sm font-medium text-foreground">
+																{criterion.name}
+															</p>
+															{criterion.description && (
+																<p className="text-xs text-muted-foreground">
+																	{criterion.description}
+																</p>
+															)}
+														</div>
+														<div className="flex items-center gap-1 shrink-0">
+															{[1, 2, 3, 4, 5].map((score) => (
+																<button
+																	key={score}
+																	type="button"
+																	onClick={() =>
+																		setScore(criterion.name, score)
+																	}
+																	className={cn(
+																		"size-9 rounded-md border text-sm font-medium transition-all",
+																		currentScore === score
+																			? "border-primary bg-primary text-primary-foreground shadow-sm"
+																			: "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground",
+																	)}
+																>
+																	{score}
+																</button>
+															))}
+														</div>
 													</div>
-													<div className="flex items-center gap-2">
-														{[1, 2, 3, 4, 5].map((score) => (
-															<button
-																key={score}
-																type="button"
-																onClick={() => field.handleChange(score)}
-																className={cn(
-																	"flex-1 h-12 rounded-lg border-2 transition-all font-medium",
-																	field.state.value === score
-																		? "border-primary bg-primary text-primary-foreground shadow-sm"
-																		: "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground",
-																)}
-															>
-																{score}
-															</button>
-														))}
-													</div>
-													<div className="flex justify-between text-xs text-muted-foreground px-1">
-														<span>Poor</span>
-														<span>Excellent</span>
-													</div>
-												</div>
-											)}
-										</form.Field>
-									))}
-								</div>
-							</div>
+												);
+											})}
+										</div>
+										<p className="text-xs text-muted-foreground px-1">
+											1 = Poor &middot; 2 = Below Average &middot; 3 = Average
+											&middot; 4 = Good &middot; 5 = Excellent
+										</p>
+									</div>
+								</>
+							)}
 
 							<div className="border-t" />
 

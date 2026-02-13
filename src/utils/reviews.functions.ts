@@ -19,10 +19,7 @@ const submitReviewSchema = z.object({
 	decision: reviewDecisionEnum,
 	comments: z.string().min(50, "Comments must be at least 50 characters"),
 	privateNotes: z.string().optional(),
-	scoreNovelty: z.number().int().min(1).max(5).optional(),
-	scoreMethodology: z.number().int().min(1).max(5).optional(),
-	scoreClarity: z.number().int().min(1).max(5).optional(),
-	scoreRelevance: z.number().int().min(1).max(5).optional(),
+	scores: z.record(z.string(), z.number().int().min(1).max(5)).optional(),
 	confidenceLevel: z.number().int().min(1).max(5).optional(),
 });
 
@@ -47,10 +44,7 @@ export const submitReviewFn = createServerFn({ method: "POST" })
 				decision: data.decision,
 				comments: data.comments,
 				privateNotes: data.privateNotes,
-				scoreNovelty: data.scoreNovelty,
-				scoreMethodology: data.scoreMethodology,
-				scoreClarity: data.scoreClarity,
-				scoreRelevance: data.scoreRelevance,
+				scores: data.scores,
 				confidenceLevel: data.confidenceLevel,
 			};
 

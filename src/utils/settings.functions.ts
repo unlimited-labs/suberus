@@ -30,7 +30,9 @@ const submissionTypeConfigSchema = z.object({
 	autoTransitionAfterReviews: z.boolean(),
 	allowRevisions: z.boolean(),
 	enableScoring: z.boolean(),
-	scoringCriteria: z.array(z.string()),
+	scoringCriteria: z.array(
+		z.object({ name: z.string(), description: z.string() }),
+	),
 	enableSessionSelection: z.boolean(),
 });
 

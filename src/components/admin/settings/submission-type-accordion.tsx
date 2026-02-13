@@ -1,4 +1,4 @@
-import { IconLoader2, IconTags } from "@tabler/icons-react";
+import { IconLoader2, IconPlus, IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -48,7 +48,6 @@ export function SubmissionTypeAccordion({
 	onChange,
 }: SubmissionTypeAccordionProps) {
 	const [isSaving, setIsSaving] = useState(false);
-	const [newCriterion, setNewCriterion] = useState("");
 
 	const displayName = SUBMISSION_TYPE_DISPLAY_NAMES[typeKey];
 
@@ -72,13 +71,10 @@ export function SubmissionTypeAccordion({
 	};
 
 	const addCriterion = () => {
-		if (newCriterion.trim()) {
-			handleChange("scoringCriteria", [
-				...config.scoringCriteria,
-				newCriterion.trim(),
-			]);
-			setNewCriterion("");
-		}
+		handleChange("scoringCriteria", [
+			...config.scoringCriteria,
+			{ name: "", description: "" },
+		]);
 	};
 
 	const removeCriterion = (index: number) => {
@@ -86,6 +82,17 @@ export function SubmissionTypeAccordion({
 			"scoringCriteria",
 			config.scoringCriteria.filter((_, i) => i !== index),
 		);
+	};
+
+	const updateCriterion = (
+		index: number,
+		field: "name" | "description",
+		value: string,
+	) => {
+		const updated = config.scoringCriteria.map((c, i) =>
+			i === index ? { ...c, [field]: value } : c,
+		);
+		handleChange("scoringCriteria", updated);
 	};
 
 	const handleSave = async () => {
@@ -332,36 +339,51 @@ export function SubmissionTypeAccordion({
 						{config.enableScoring && (
 							<div className="space-y-3 pl-0 sm:pl-4">
 								<Label>Scoring criteria</Label>
-								<div className="flex flex-wrap gap-2">
+								<div className="space-y-2">
 									{config.scoringCriteria.map((criterion, index) => (
-										<Badge
-											key={index}
-											variant="secondary"
-											className="cursor-pointer gap-1 pr-1 hover:bg-destructive/10"
-											onClick={() => removeCriterion(index)}
-										>
-											{criterion}
-											<span className="ml-1 text-destructive">×</span>
-										</Badge>
+										<div key={index} className="flex items-start gap-2">
+											<div className="grid flex-1 gap-2 sm:grid-cols-2">
+												<Input
+													placeholder="Criterion name"
+													value={criterion.name}
+													onChange={(e) =>
+														updateCriterion(index, "name", e.target.value)
+													}
+												/>
+												<Input
+													placeholder="Description (optional)"
+													value={criterion.description}
+													onChange={(e) =>
+														updateCriterion(
+															index,
+															"description",
+															e.target.value,
+														)
+													}
+												/>
+											</div>
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon"
+												className="shrink-0 text-destructive hover:bg-destructive/10"
+												onClick={() => removeCriterion(index)}
+											>
+												<IconTrash className="size-4" />
+											</Button>
+										</div>
 									))}
 								</div>
-								<div className="flex gap-2">
-									<Input
-										placeholder="Add criterion..."
-										value={newCriterion}
-										onChange={(e) => setNewCriterion(e.target.value)}
-										onKeyDown={(e) => e.key === "Enter" && addCriterion()}
-										className="max-w-64"
-									/>
-									<Button
-										type="button"
-										variant="outline"
-										size="icon"
-										onClick={addCriterion}
-									>
-										<IconTags className="size-4" />
-									</Button>
-								</div>
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									onClick={addCriterion}
+									className="gap-1"
+								>
+									<IconPlus className="size-4" />
+									Add criterion
+								</Button>
 							</div>
 						)}
 					</div>

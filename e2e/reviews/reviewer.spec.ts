@@ -275,10 +275,10 @@ test.describe("Reviewer - Scoring", () => {
 
 		// Assert
 		await expect(page.getByText("Evaluation Criteria")).toBeVisible();
-		await expect(page.getByText(/Novelty/i)).toBeVisible();
-		await expect(page.getByText(/Methodology/i)).toBeVisible();
-		await expect(page.getByText(/Clarity/i)).toBeVisible();
-		await expect(page.getByText(/Relevance/i)).toBeVisible();
+		await expect(page.getByText("Originality")).toBeVisible();
+		await expect(page.getByText("Clarity")).toBeVisible();
+		await expect(page.getByText("Significance")).toBeVisible();
+		await expect(page.getByText("Methodology")).toBeVisible();
 		await expect(page.getByRole("heading", { name: "Confidence Level" })).toBeVisible();
 	});
 

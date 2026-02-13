@@ -315,10 +315,7 @@ export async function createSubmissionWithReview(
 			decision: options.reviewDecision ?? ReviewDecision.ACCEPT,
 			comments: "This is a test review with detailed feedback for the submission.",
 			privateNotes: "Private notes for editors.",
-			scoreNovelty: 4,
-			scoreMethodology: 4,
-			scoreClarity: 5,
-			scoreRelevance: 4,
+			scores: { Originality: 4, Clarity: 5, Significance: 4, Methodology: 4 },
 			confidenceLevel: 4,
 		},
 	});

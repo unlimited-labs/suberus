@@ -43,10 +43,7 @@ function ReviewFormPage() {
 				decision: formData.decision,
 				comments: formData.comments,
 				privateNotes: formData.privateNotes || undefined,
-				scoreNovelty: formData.scoreNovelty,
-				scoreMethodology: formData.scoreMethodology,
-				scoreClarity: formData.scoreClarity,
-				scoreRelevance: formData.scoreRelevance,
+				scores: formData.scores,
 				confidenceLevel: formData.confidenceLevel,
 			},
 		});
@@ -81,17 +78,14 @@ function ReviewFormPage() {
 					}}
 					reviewMode={config.reviewMode}
 					guidelines={reviewGuidelines}
+					scoringCriteria={config.enableScoring ? config.scoringCriteria : []}
 					initialData={
 						existingReview
 							? {
 									decision: existingReview.decision,
 									comments: existingReview.comments ?? "",
 									privateNotes: existingReview.privateNotes ?? "",
-									scoreNovelty: existingReview.scoreNovelty ?? undefined,
-									scoreMethodology:
-										existingReview.scoreMethodology ?? undefined,
-									scoreClarity: existingReview.scoreClarity ?? undefined,
-									scoreRelevance: existingReview.scoreRelevance ?? undefined,
+									scores: existingReview.scores ?? {},
 									confidenceLevel: existingReview.confidenceLevel ?? undefined,
 								}
 							: undefined

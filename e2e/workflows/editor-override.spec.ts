@@ -189,6 +189,10 @@ test.describe("After Override", () => {
 		await page.getByLabel(/Internal Reasoning/i).fill("Re-confirmed acceptance");
 		await page.getByLabel(/Letter to Author/i).fill("Your submission is accepted.");
 		await page.getByRole("button", { name: "Submit Decision" }).click();
+		await Promise.race([
+			page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15000 }),
+			page.locator("[data-sonner-toast]").waitFor({ state: "visible", timeout: 15000 }),
+		]);
 
 		// Assert
 		await page.reload();

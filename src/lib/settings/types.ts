@@ -16,7 +16,7 @@ export interface SubmissionTypeConfig {
 	autoTransitionAfterReviews: boolean;
 	allowRevisions: boolean;
 	enableScoring: boolean;
-	scoringCriteria: string[];
+	scoringCriteria: { name: string; description: string }[];
 	enableSessionSelection: boolean;
 }
 

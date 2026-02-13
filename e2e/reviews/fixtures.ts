@@ -447,14 +447,14 @@ export class ReviewFormPage {
 		await this.privateNotesInput.fill(notes);
 	}
 
-	async setScore(criteria: "Novelty" | "Methodology" | "Clarity" | "Relevance", value: number) {
-		// Find the criteria section and click the score button
-		const section = this.page
+	async setScore(criterionName: string, value: number) {
+		// Find the criterion row and click the score button
+		const row = this.page
 			.locator("div")
-			.filter({ hasText: new RegExp(criteria, "i") })
+			.filter({ hasText: new RegExp(criterionName, "i") })
 			.first();
 		// Score buttons are 1-5
-		await section.getByRole("button", { name: value.toString(), exact: true }).click();
+		await row.getByRole("button", { name: value.toString(), exact: true }).click();
 	}
 
 	async setConfidenceLevel(value: number) {

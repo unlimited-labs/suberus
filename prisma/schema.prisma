@@ -246,10 +246,7 @@ model Review {
   decision         ReviewDecision
   comments         String?
   privateNotes     String?
-  scoreNovelty     Int?
-  scoreMethodology Int?
-  scoreClarity     Int?
-  scoreRelevance   Int?
+  scores           Json?
   confidenceLevel  Int?
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt

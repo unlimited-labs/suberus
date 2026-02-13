@@ -11,10 +11,7 @@ export interface ReviewSubmitData {
 	decision: ReviewDecision;
 	comments: string;
 	privateNotes?: string;
-	scoreNovelty?: number;
-	scoreMethodology?: number;
-	scoreClarity?: number;
-	scoreRelevance?: number;
+	scores?: Record<string, number>;
 	confidenceLevel?: number;
 }
 
@@ -52,16 +49,13 @@ export async function getAssignmentForReview(
 	config: {
 		reviewMode: ReviewMode;
 		enableScoring: boolean;
-		scoringCriteria: string[];
+		scoringCriteria: { name: string; description: string }[];
 	};
 	existingReview?: {
 		decision: ReviewDecision;
 		comments: string | null;
 		privateNotes: string | null;
-		scoreNovelty: number | null;
-		scoreMethodology: number | null;
-		scoreClarity: number | null;
-		scoreRelevance: number | null;
+		scores: Record<string, number> | null;
 		confidenceLevel: number | null;
 	};
 } | null> {
@@ -135,10 +129,7 @@ export async function getAssignmentForReview(
 					decision: assignment.review.decision,
 					comments: assignment.review.comments,
 					privateNotes: assignment.review.privateNotes,
-					scoreNovelty: assignment.review.scoreNovelty,
-					scoreMethodology: assignment.review.scoreMethodology,
-					scoreClarity: assignment.review.scoreClarity,
-					scoreRelevance: assignment.review.scoreRelevance,
+					scores: (assignment.review.scores as Record<string, number>) ?? null,
 					confidenceLevel: assignment.review.confidenceLevel,
 				}
 			: undefined,
@@ -185,10 +176,7 @@ export async function submitReview(
 				decision: data.decision,
 				comments: data.comments,
 				privateNotes: data.privateNotes,
-				scoreNovelty: data.scoreNovelty,
-				scoreMethodology: data.scoreMethodology,
-				scoreClarity: data.scoreClarity,
-				scoreRelevance: data.scoreRelevance,
+				scores: data.scores ?? undefined,
 				confidenceLevel: data.confidenceLevel,
 			},
 		});
@@ -204,10 +192,7 @@ export async function submitReview(
 				decision: data.decision,
 				comments: data.comments,
 				privateNotes: data.privateNotes,
-				scoreNovelty: data.scoreNovelty,
-				scoreMethodology: data.scoreMethodology,
-				scoreClarity: data.scoreClarity,
-				scoreRelevance: data.scoreRelevance,
+				scores: data.scores ?? undefined,
 				confidenceLevel: data.confidenceLevel,
 			},
 		});
@@ -259,10 +244,7 @@ export async function getSubmissionReviews(
 		decision: ReviewDecision;
 		comments: string | null;
 		privateNotes: string | null;
-		scoreNovelty: number | null;
-		scoreMethodology: number | null;
-		scoreClarity: number | null;
-		scoreRelevance: number | null;
+		scores: Record<string, number> | null;
 		confidenceLevel: number | null;
 		createdAt: Date;
 	}>
@@ -294,10 +276,7 @@ export async function getSubmissionReviews(
 		decision: r.decision,
 		comments: r.comments,
 		privateNotes: r.privateNotes,
-		scoreNovelty: r.scoreNovelty,
-		scoreMethodology: r.scoreMethodology,
-		scoreClarity: r.scoreClarity,
-		scoreRelevance: r.scoreRelevance,
+		scores: (r.scores as Record<string, number>) ?? null,
 		confidenceLevel: r.confidenceLevel,
 		createdAt: r.createdAt,
 	}));

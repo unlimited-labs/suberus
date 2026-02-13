@@ -13,7 +13,12 @@ export const DEFAULT_ORAL_PRESENTATION_CONFIG: SubmissionTypeConfig = {
 	autoTransitionAfterReviews: true,
 	allowRevisions: true,
 	enableScoring: true,
-	scoringCriteria: ["Originality", "Clarity", "Significance", "Methodology"],
+	scoringCriteria: [
+		{ name: "Originality", description: "Contribution to the field" },
+		{ name: "Clarity", description: "Writing quality and structure" },
+		{ name: "Significance", description: "Importance and impact of the work" },
+		{ name: "Methodology", description: "Research design and execution" },
+	],
 	enableSessionSelection: false,
 };
 
@@ -48,11 +53,11 @@ export const DEFAULT_FULL_PAPER_CONFIG: SubmissionTypeConfig = {
 	allowRevisions: true,
 	enableScoring: true,
 	scoringCriteria: [
-		"Originality",
-		"Clarity",
-		"Significance",
-		"Methodology",
-		"Technical Quality",
+		{ name: "Originality", description: "Contribution to the field" },
+		{ name: "Clarity", description: "Writing quality and structure" },
+		{ name: "Significance", description: "Importance and impact of the work" },
+		{ name: "Methodology", description: "Research design and execution" },
+		{ name: "Technical Quality", description: "Technical soundness and rigor" },
 	],
 	enableSessionSelection: false,
 };

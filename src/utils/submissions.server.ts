@@ -212,12 +212,7 @@ export interface UserSubmissionReview {
 	submissionId: string;
 	round: number;
 	reviewerName: string;
-	scores: {
-		originality: number | null;
-		clarity: number | null;
-		significance: number | null;
-		overall: number | null;
-	};
+	scores: Record<string, number> | null;
 	comments: string | null;
 	createdAt: Date;
 }
@@ -380,12 +375,7 @@ export async function getSubmissionById(
 			submissionId: r.submissionId,
 			round: r.round,
 			reviewerName: `Reviewer ${index + 1}`,
-			scores: {
-				originality: r.scoreNovelty,
-				clarity: r.scoreClarity,
-				significance: r.scoreRelevance,
-				overall: r.scoreMethodology, // Map overall to methodology for now
-			},
+			scores: (r.scores as Record<string, number>) ?? null,
 			comments: r.comments,
 			createdAt: r.createdAt,
 		}),
