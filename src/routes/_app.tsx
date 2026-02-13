@@ -6,6 +6,7 @@ import { SpinnerSvg } from "@/components/spinner-svg";
 import { DateFormatProvider } from "@/hooks/use-date-format";
 import { useSession } from "@/hooks/use-session";
 import { APP_SETTINGS_DEFAULTS } from "@/lib/settings/defaults";
+import { authRouteMiddleware } from "@/utils/auth.middleware";
 import type { AppBranding } from "@/utils/settings.functions";
 import { getAppBrandingFn } from "@/utils/settings.functions";
 
@@ -22,6 +23,9 @@ const defaults: AppBranding = {
 };
 
 export const Route = createFileRoute("/_app")({
+	server: {
+		middleware: [authRouteMiddleware],
+	},
 	loader: async () => {
 		try {
 			return await getAppBrandingFn();

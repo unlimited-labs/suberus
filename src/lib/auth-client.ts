@@ -13,7 +13,7 @@ export const {
 	sendVerificationEmail,
 } = authClient;
 
-// better-auth uses /request-password-reset endpoint
+// better-auth SDK's forgetPassword calls /forget-password but server exposes /request-password-reset
 export async function forgetPassword(options: {
 	email: string;
 	redirectTo?: string;
