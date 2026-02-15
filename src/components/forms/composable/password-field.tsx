@@ -1,38 +1,45 @@
 import { useStore } from "@tanstack/react-form";
 
-import { FieldError } from "@/components/forms/field-error";
 import { PasswordInput } from "@/components/forms/password-input";
-import { Label } from "@/components/ui/label";
+import {
+	Field,
+	FieldDescription,
+	FieldError,
+	FieldLabel,
+} from "@/components/ui/field";
 import { useFieldContext } from "@/hooks/form-context";
 
 interface FormPasswordFieldProps {
 	label: string;
 	placeholder?: string;
 	disabled?: boolean;
+	description?: string;
 }
 
 export function FormPasswordField({
 	label,
 	placeholder,
 	disabled,
+	description,
 }: FormPasswordFieldProps) {
 	const field = useFieldContext<string>();
 	const errors = useStore(field.store, (s) => s.meta.errors);
-	const hasError = field.state.meta.isTouched && errors.length > 0;
+	const hasError = field.state.meta.isBlurred && errors.length > 0;
 
 	return (
-		<div className="space-y-1">
-			<Label htmlFor={field.name}>{label}</Label>
+		<Field data-invalid={hasError}>
+			<FieldLabel htmlFor={field.name}>{label}</FieldLabel>
 			<PasswordInput
 				id={field.name}
-				hasError={hasError}
+				aria-invalid={hasError}
 				value={field.state.value}
 				onBlur={field.handleBlur}
 				onChange={field.handleChange}
 				placeholder={placeholder}
 				disabled={disabled}
 			/>
-			<FieldError errors={errors} />
-		</div>
+			{description && <FieldDescription>{description}</FieldDescription>}
+			<FieldError errors={hasError ? errors : undefined} />
+		</Field>
 	);
 }

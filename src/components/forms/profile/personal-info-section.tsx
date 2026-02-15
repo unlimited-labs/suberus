@@ -1,10 +1,10 @@
 import { IconBuilding, IconId } from "@tabler/icons-react";
-import { useState } from "react";
-import { z } from "zod";
+
 import { Button } from "@/components/ui/button";
 import { useAppForm } from "@/hooks/use-app-form";
-import { useZodFormFieldOnChange } from "@/hooks/use-zod-form-field";
+import { submitForm } from "@/lib/form-utils";
 import type { PersonalInfoFormData } from "@/lib/validations/profile";
+import { personalInfoSchema } from "@/lib/validations/profile";
 
 const TITLE_OPTIONS = [
 	{ value: "dr", label: "Dr" },
@@ -22,70 +22,34 @@ interface PersonalInfoSectionProps {
 	isLoading?: boolean;
 }
 
-const requiredString = (field: string) =>
-	z.string().min(1, `${field} is required`);
-const orcidRegex = /^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/;
-
 export function PersonalInfoSection({
 	initialData,
 	onSave,
 	isLoading,
 }: PersonalInfoSectionProps) {
-	const [isValidationAttempted, setIsValidationAttempted] = useState(false);
-
 	const form = useAppForm({
 		defaultValues: initialData,
+		validators: {
+			onChange: personalInfoSchema,
+			onSubmit: personalInfoSchema,
+		},
 		onSubmit: async ({ value }) => {
 			await onSave(value);
 		},
 	});
-
-	const firstNameValidators = useZodFormFieldOnChange(
-		requiredString("First name").min(
-			2,
-			"First name must be at least 2 characters",
-		),
-		isValidationAttempted,
-	);
-	const lastNameValidators = useZodFormFieldOnChange(
-		requiredString("Last name").min(
-			2,
-			"Last name must be at least 2 characters",
-		),
-		isValidationAttempted,
-	);
-	const affiliationValidators = useZodFormFieldOnChange(
-		z
-			.string()
-			.max(200, "Affiliation must be at most 200 characters")
-			.optional(),
-		isValidationAttempted,
-	);
-	const orcidValidators = useZodFormFieldOnChange(
-		z
-			.string()
-			.regex(orcidRegex, "Invalid ORCID format (e.g., 0000-0002-1825-0097)")
-			.optional()
-			.or(z.literal("")),
-		isValidationAttempted,
-	);
-
-	const handleSubmit = async () => {
-		setIsValidationAttempted(true);
-		await form.handleSubmit();
-	};
 
 	return (
 		<form
 			onSubmit={(e) => {
 				e.preventDefault();
 				e.stopPropagation();
+				void submitForm(form);
 			}}
 			className="space-y-4"
 		>
 			{/* Name fields */}
 			<div className="grid gap-3 sm:grid-cols-2">
-				<form.AppField name="firstName" validators={firstNameValidators}>
+				<form.AppField name="firstName">
 					{(field) => (
 						<field.InputField
 							label="First name *"
@@ -95,7 +59,7 @@ export function PersonalInfoSection({
 					)}
 				</form.AppField>
 
-				<form.AppField name="lastName" validators={lastNameValidators}>
+				<form.AppField name="lastName">
 					{(field) => (
 						<field.InputField
 							label="Last name *"
@@ -118,7 +82,7 @@ export function PersonalInfoSection({
 					)}
 				</form.AppField>
 
-				<form.AppField name="affiliation" validators={affiliationValidators}>
+				<form.AppField name="affiliation">
 					{(field) => (
 						<field.IconInputField
 							label="Affiliation"
@@ -131,7 +95,7 @@ export function PersonalInfoSection({
 			</div>
 
 			{/* ORCID */}
-			<form.AppField name="orcid" validators={orcidValidators}>
+			<form.AppField name="orcid">
 				{(field) => (
 					<field.IconInputField
 						label="ORCID"
@@ -139,6 +103,7 @@ export function PersonalInfoSection({
 						icon={<IconId className="size-4" />}
 						placeholder="0000-0002-1825-0097"
 						disabled={isLoading}
+						description="Format: 0000-0002-1825-0097"
 					/>
 				)}
 			</form.AppField>
@@ -146,8 +111,7 @@ export function PersonalInfoSection({
 			{/* Save button */}
 			<div className="flex justify-end pt-2">
 				<Button
-					type="button"
-					onClick={handleSubmit}
+					type="submit"
 					disabled={form.state.isSubmitting || isLoading}
 					className="h-9"
 				>

@@ -1,5 +1,9 @@
-import { FieldError } from "@/components/forms/field-error";
-import { Label } from "@/components/ui/label";
+import {
+	Field,
+	FieldDescription,
+	FieldError,
+	FieldLabel,
+} from "@/components/ui/field";
 import {
 	Select,
 	SelectContent,
@@ -19,19 +23,23 @@ interface FormSelectFieldProps {
 	options: readonly SelectOption[];
 	placeholder?: string;
 	disabled?: boolean;
+	description?: string;
 }
 
 export function FormSelectField({
 	label,
 	options,
-	placeholder = "—",
+	placeholder = "\u2014",
 	disabled,
+	description,
 }: FormSelectFieldProps) {
 	const field = useFieldContext<string>();
+	const hasError =
+		field.state.meta.isBlurred && field.state.meta.errors.length > 0;
 
 	return (
-		<div className="space-y-1">
-			<Label htmlFor={field.name}>{label}</Label>
+		<Field data-invalid={hasError}>
+			<FieldLabel htmlFor={field.name}>{label}</FieldLabel>
 			<Select
 				value={field.state.value || ""}
 				onValueChange={(value) => field.handleChange(value)}
@@ -48,7 +56,8 @@ export function FormSelectField({
 					))}
 				</SelectContent>
 			</Select>
-			<FieldError errors={field.state.meta.errors} />
-		</div>
+			{description && <FieldDescription>{description}</FieldDescription>}
+			<FieldError errors={hasError ? field.state.meta.errors : undefined} />
+		</Field>
 	);
 }

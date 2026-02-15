@@ -1,20 +1,16 @@
 import { IconMail } from "@tabler/icons-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { z } from "zod";
 import { AuthSidebar } from "@/components/forms/auth-sidebar";
 import { Button } from "@/components/ui/button";
 import { useAppForm } from "@/hooks/use-app-form";
-import { useZodFormField } from "@/hooks/use-zod-form-field";
 import { signIn } from "@/lib/auth-client";
+import { submitForm } from "@/lib/form-utils";
+import { loginSchema } from "@/lib/validations/auth";
 
 export const Route = createFileRoute("/_auth/login")({
 	component: LoginPage,
 });
-
-const emailSchema = z.email("Invalid email address");
-
-const passwordSchema = z.string().min(1, "Password is required");
 
 function LoginPage() {
 	const navigate = useNavigate();
@@ -24,14 +20,16 @@ function LoginPage() {
 		conferenceLocation,
 		conferenceSubtitle,
 	} = Route.useRouteContext();
-	const emailValidators = useZodFormField(emailSchema);
-	const passwordValidators = useZodFormField(passwordSchema);
 
 	const form = useAppForm({
 		defaultValues: {
 			email: "",
 			password: "",
 			rememberMe: false,
+		},
+		validators: {
+			onChange: loginSchema,
+			onSubmit: loginSchema,
 		},
 		onSubmit: async ({ value }) => {
 			const result = await signIn.email({
@@ -74,13 +72,13 @@ function LoginPage() {
 					onSubmit={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
-						void form.handleSubmit();
+						void submitForm(form);
 					}}
 					className="flex flex-1 flex-col"
 				>
 					<div className="flex-1 space-y-3">
 						{/* Email field */}
-						<form.AppField name="email" validators={emailValidators}>
+						<form.AppField name="email">
 							{(field) => (
 								<field.IconInputField
 									label="E-mail"
@@ -91,7 +89,7 @@ function LoginPage() {
 						</form.AppField>
 
 						{/* Password field */}
-						<form.AppField name="password" validators={passwordValidators}>
+						<form.AppField name="password">
 							{(field) => <field.PasswordField label="Password" />}
 						</form.AppField>
 

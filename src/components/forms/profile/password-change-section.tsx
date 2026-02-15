@@ -1,70 +1,45 @@
-import { useState } from "react";
-import { z } from "zod";
-import { FieldError } from "@/components/forms/field-error";
-import { PasswordInput } from "@/components/forms/password-input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { useAppForm } from "@/hooks/use-app-form";
-import { useZodFormFieldOnChange } from "@/hooks/use-zod-form-field";
+import { submitForm } from "@/lib/form-utils";
 import type { PasswordChangeFormData } from "@/lib/validations/profile";
+import { passwordChangeSchema } from "@/lib/validations/profile";
 
 interface PasswordChangeSectionProps {
 	onSave: (data: PasswordChangeFormData) => Promise<void>;
 	isLoading?: boolean;
 }
 
-const passwordSchema = z
-	.string()
-	.min(1, "Password is required")
-	.min(10, "Password must be at least 10 characters");
-
 export function PasswordChangeSection({
 	onSave,
 	isLoading,
 }: PasswordChangeSectionProps) {
-	const [isValidationAttempted, setIsValidationAttempted] = useState(false);
-
 	const form = useAppForm({
 		defaultValues: {
 			currentPassword: "",
 			newPassword: "",
 			confirmNewPassword: "",
 		},
+		validators: {
+			onChange: passwordChangeSchema,
+			onSubmit: passwordChangeSchema,
+		},
 		onSubmit: async ({ value }) => {
 			await onSave(value);
-			// Reset form after successful save
 			form.reset();
-			setIsValidationAttempted(false);
 		},
 	});
-
-	const currentPasswordValidators = useZodFormFieldOnChange(
-		z.string().min(1, "Current password is required"),
-		isValidationAttempted,
-	);
-	const newPasswordValidators = useZodFormFieldOnChange(
-		passwordSchema,
-		isValidationAttempted,
-	);
-
-	const handleSubmit = async () => {
-		setIsValidationAttempted(true);
-		await form.handleSubmit();
-	};
 
 	return (
 		<form
 			onSubmit={(e) => {
 				e.preventDefault();
 				e.stopPropagation();
+				void submitForm(form);
 			}}
 			className="space-y-4"
 		>
 			{/* Current Password */}
-			<form.AppField
-				name="currentPassword"
-				validators={currentPasswordValidators}
-			>
+			<form.AppField name="currentPassword">
 				{(field) => (
 					<field.PasswordField
 						label="Current password *"
@@ -75,56 +50,31 @@ export function PasswordChangeSection({
 
 			{/* New Password fields */}
 			<div className="grid gap-3 sm:grid-cols-2">
-				<form.AppField name="newPassword" validators={newPasswordValidators}>
+				<form.AppField name="newPassword">
 					{(field) => (
 						<field.PasswordField
 							label="New password *"
 							placeholder="Min. 10 characters"
 							disabled={isLoading}
+							description="Min. 10 characters"
 						/>
 					)}
 				</form.AppField>
 
-				<form.Field
-					name="confirmNewPassword"
-					validators={{
-						onSubmit: ({ value, fieldApi }) => {
-							if (!value) return "Please confirm your new password";
-							const newPassword = fieldApi.form.getFieldValue("newPassword");
-							if (value !== newPassword) return "Passwords do not match";
-							return undefined;
-						},
-						onChange: ({ value, fieldApi }) => {
-							if (!isValidationAttempted) return undefined;
-							if (!value) return "Please confirm your new password";
-							const newPassword = fieldApi.form.getFieldValue("newPassword");
-							if (value !== newPassword) return "Passwords do not match";
-							return undefined;
-						},
-					}}
-				>
+				<form.AppField name="confirmNewPassword">
 					{(field) => (
-						<div className="space-y-1">
-							<Label htmlFor={field.name}>Confirm new password *</Label>
-							<PasswordInput
-								id={field.name}
-								hasError={field.state.meta.errors.length > 0}
-								value={field.state.value}
-								onBlur={field.handleBlur}
-								onChange={(value) => field.handleChange(value)}
-								disabled={isLoading}
-							/>
-							<FieldError errors={field.state.meta.errors} />
-						</div>
+						<field.PasswordField
+							label="Confirm new password *"
+							disabled={isLoading}
+						/>
 					)}
-				</form.Field>
+				</form.AppField>
 			</div>
 
 			{/* Save button */}
 			<div className="flex justify-end pt-2">
 				<Button
-					type="button"
-					onClick={handleSubmit}
+					type="submit"
 					disabled={form.state.isSubmitting || isLoading}
 					className="h-9"
 				>

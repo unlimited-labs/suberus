@@ -1,8 +1,7 @@
 import type * as React from "react";
 
-import { FieldError } from "@/components/forms/field-error";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { useFieldContext } from "@/hooks/form-context";
 
 interface FormCheckboxFieldProps {
@@ -17,26 +16,26 @@ export function FormCheckboxField({
 	className,
 }: FormCheckboxFieldProps) {
 	const field = useFieldContext<boolean>();
+	const hasError =
+		field.state.meta.isBlurred && field.state.meta.errors.length > 0;
 
 	return (
-		<div className={className}>
-			<div className="flex items-center gap-2">
-				<Checkbox
-					id={field.name}
-					checked={field.state.value}
-					onCheckedChange={(checked) => field.handleChange(checked === true)}
-				/>
-				<Label
-					htmlFor={field.name}
-					className={
-						labelClassName ??
-						"cursor-pointer text-sm font-normal text-muted-foreground"
-					}
-				>
-					{label}
-				</Label>
-			</div>
-			<FieldError errors={field.state.meta.errors} />
-		</div>
+		<Field orientation="horizontal" className={className}>
+			<Checkbox
+				id={field.name}
+				checked={field.state.value}
+				onCheckedChange={(checked) => field.handleChange(checked === true)}
+			/>
+			<FieldLabel
+				htmlFor={field.name}
+				className={
+					labelClassName ??
+					"cursor-pointer text-sm font-normal text-muted-foreground"
+				}
+			>
+				{label}
+			</FieldLabel>
+			<FieldError errors={hasError ? field.state.meta.errors : undefined} />
+		</Field>
 	);
 }

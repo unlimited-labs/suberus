@@ -15,8 +15,6 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { AffiliationSelect } from "@/components/forms/affiliation-select";
 import { AuthSidebar } from "@/components/forms/auth-sidebar";
-import { FieldError } from "@/components/forms/field-error";
-import { PasswordInput } from "@/components/forms/password-input";
 import { TosModal } from "@/components/tos-modal";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -29,8 +27,13 @@ import {
 	CommandItem,
 	CommandList,
 } from "@/components/ui/command";
+import {
+	Field,
+	FieldDescription,
+	FieldError,
+	FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
 	Popover,
 	PopoverContent,
@@ -38,9 +41,15 @@ import {
 } from "@/components/ui/popover";
 import { useAppForm } from "@/hooks/use-app-form";
 import { useMultiStep } from "@/hooks/use-multi-step";
-import { useZodFormFieldOnChange } from "@/hooks/use-zod-form-field";
 import { signUp } from "@/lib/auth-client";
+import { submitForm } from "@/lib/form-utils";
 import { cn } from "@/lib/utils";
+import {
+	registerSchema,
+	registerStep1Schema,
+	registerStep2Schema,
+	registerStep3Schema,
+} from "@/lib/validations/auth";
 import {
 	consumeInvitationFn,
 	validateInvitationTokenFn,
@@ -77,14 +86,6 @@ export const Route = createFileRoute("/_auth/register")({
 	component: RegisterPage,
 });
 
-const emailSchema = z.email("Invalid email address");
-const passwordSchema = z
-	.string()
-	.min(1, "Password is required")
-	.min(10, "Password must be at least 10 characters");
-const requiredString = (field: string) =>
-	z.string().min(1, `${field} is required`);
-
 const TITLE_OPTIONS = [
 	{ value: "mr", label: "Mr." },
 	{ value: "ms", label: "Ms." },
@@ -103,20 +104,11 @@ const COUNTRIES = Object.values(countries)
 	.map((c) => c.name)
 	.toSorted((a, b) => a.localeCompare(b));
 
-type FormData = {
-	email: string;
-	password: string;
-	confirmPassword: string;
-	title: string;
-	firstName: string;
-	lastName: string;
-	affiliationId: string;
-	affiliationName: string;
-	address: string;
-	country: string;
-	surveyAnswers: Record<string, boolean>;
-	acceptTerms: boolean;
-};
+const stepSchemas = [
+	registerStep1Schema,
+	registerStep2Schema,
+	registerStep3Schema,
+];
 
 function RegisterPage() {
 	const navigate = useNavigate();
@@ -150,6 +142,10 @@ function RegisterPage() {
 			country: "",
 			surveyAnswers: defaultSurveyAnswers,
 			acceptTerms: false,
+		},
+		validators: {
+			onChange: registerSchema,
+			onSubmit: registerSchema,
 		},
 		onSubmit: async ({ value }) => {
 			const result = await signUp.email({
@@ -197,75 +193,50 @@ function RegisterPage() {
 
 	const validateStep = useCallback(
 		async (step: number): Promise<boolean> => {
-			const fieldsToValidate: (keyof FormData)[] =
-				step === 1
-					? [
-							"email",
-							"password",
-							"confirmPassword",
-							"firstName",
-							"lastName",
-							"affiliationId",
-						]
-					: step === 2
-						? ["country"]
-						: ["acceptTerms"];
+			const schema = stepSchemas[step - 1];
+			const result = schema.safeParse(form.state.values);
 
-			for (const fieldName of fieldsToValidate) {
-				await form.validateField(fieldName, "submit");
+			if (result.success) return true;
+
+			// Touch fields with errors and set errorMap so errors are visible.
+			// Setting errorSourceMap to 'form' ensures the form-level onChange
+			// validator can clear these errors when the user fixes the field.
+			const seen = new Set<string>();
+			for (const issue of result.error.issues) {
+				const fieldName = issue.path.join(".") as Parameters<
+					typeof form.setFieldMeta
+				>[0];
+				if (fieldName && !seen.has(fieldName)) {
+					seen.add(fieldName);
+					form.setFieldMeta(fieldName, (prev) => ({
+						...prev,
+						isTouched: true,
+						isBlurred: true,
+						errorMap: {
+							...prev.errorMap,
+							onChange: issue.message,
+						},
+						errorSourceMap: {
+							...prev.errorSourceMap,
+							onChange: "form",
+						},
+					}));
+				}
 			}
-
-			return !fieldsToValidate.some((fieldName) => {
-				const field = form.getFieldMeta(fieldName);
-				return field?.errors && field.errors.length > 0;
-			});
+			return false;
 		},
 		[form],
 	);
 
-	const {
-		currentStep,
-		next,
-		prev,
-		isFirst,
-		isLast,
-		isValidationAttempted,
-		markValidationAttempted,
-	} = useMultiStep({
+	const { currentStep, next, prev, isFirst, isLast } = useMultiStep({
 		totalSteps: 3,
 		validateStep,
 	});
 
-	const emailValidators = useZodFormFieldOnChange(
-		emailSchema,
-		isValidationAttempted,
-	);
-	const passwordValidators = useZodFormFieldOnChange(
-		passwordSchema,
-		isValidationAttempted,
-	);
-	const firstNameValidators = useZodFormFieldOnChange(
-		requiredString("First name"),
-		isValidationAttempted,
-	);
-	const lastNameValidators = useZodFormFieldOnChange(
-		requiredString("Last name"),
-		isValidationAttempted,
-	);
-	const affiliationIdValidators = useZodFormFieldOnChange(
-		requiredString("Affiliation"),
-		isValidationAttempted,
-	);
-	const countryValidators = useZodFormFieldOnChange(
-		requiredString("Country"),
-		isValidationAttempted,
-	);
-
 	const handleSubmit = async () => {
-		markValidationAttempted(3);
 		const isValid = await validateStep(3);
 		if (isValid) {
-			await form.handleSubmit();
+			await submitForm(form);
 		}
 	};
 
@@ -334,8 +305,8 @@ function RegisterPage() {
 
 								{/* Email */}
 								{invitation ? (
-									<div className="space-y-1">
-										<Label>E-mail *</Label>
+									<Field>
+										<FieldLabel>E-mail *</FieldLabel>
 										<div className="relative">
 											<IconMail className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
 											<Input
@@ -345,9 +316,9 @@ function RegisterPage() {
 												className="bg-muted pl-9"
 											/>
 										</div>
-									</div>
+									</Field>
 								) : (
-									<form.AppField name="email" validators={emailValidators}>
+									<form.AppField name="email">
 										{(field) => (
 											<field.IconInputField
 												label="E-mail *"
@@ -360,69 +331,32 @@ function RegisterPage() {
 
 								{/* Password fields */}
 								<div className="grid gap-2 sm:grid-cols-2">
-									<form.AppField
-										name="password"
-										validators={passwordValidators}
-									>
+									<form.AppField name="password">
 										{(field) => (
 											<field.PasswordField
 												label="Password *"
 												placeholder="Min. 10 characters"
+												description="Min. 10 characters"
 											/>
 										)}
 									</form.AppField>
 
-									<form.Field
-										name="confirmPassword"
-										validators={{
-											onSubmit: ({ value, fieldApi }) => {
-												if (!value) return "Confirm password";
-												const password =
-													fieldApi.form.getFieldValue("password");
-												if (value !== password) return "Passwords do not match";
-												return undefined;
-											},
-											onChange: ({ value, fieldApi }) => {
-												if (!isValidationAttempted) return undefined;
-												if (!value) return "Confirm password";
-												const password =
-													fieldApi.form.getFieldValue("password");
-												if (value !== password) return "Passwords do not match";
-												return undefined;
-											},
-										}}
-									>
+									<form.AppField name="confirmPassword">
 										{(field) => (
-											<div className="space-y-1">
-												<Label htmlFor={field.name}>Confirm Password *</Label>
-												<PasswordInput
-													id={field.name}
-													hasError={field.state.meta.errors.length > 0}
-													value={field.state.value}
-													onBlur={field.handleBlur}
-													onChange={(value) => field.handleChange(value)}
-												/>
-												<FieldError errors={field.state.meta.errors} />
-											</div>
+											<field.PasswordField label="Confirm Password *" />
 										)}
-									</form.Field>
+									</form.AppField>
 								</div>
 
 								{/* Name fields */}
 								<div className="grid gap-2 sm:grid-cols-2">
-									<form.AppField
-										name="firstName"
-										validators={firstNameValidators}
-									>
+									<form.AppField name="firstName">
 										{(field) => (
 											<field.InputField label="First name *" type="text" />
 										)}
 									</form.AppField>
 
-									<form.AppField
-										name="lastName"
-										validators={lastNameValidators}
-									>
+									<form.AppField name="lastName">
 										{(field) => (
 											<field.InputField label="Last name *" type="text" />
 										)}
@@ -440,25 +374,31 @@ function RegisterPage() {
 										)}
 									</form.AppField>
 
-									<form.Field
-										name="affiliationId"
-										validators={affiliationIdValidators}
-									>
-										{(field) => (
-											<div className="space-y-1">
-												<Label>Affiliation *</Label>
-												<AffiliationSelect
-													value={field.state.value || null}
-													displayValue={form.state.values.affiliationName}
-													onChange={(id, name) => {
-														field.handleChange(id ?? "");
-														form.setFieldValue("affiliationName", name);
-													}}
-													hasError={field.state.meta.errors.length > 0}
-												/>
-												<FieldError errors={field.state.meta.errors} />
-											</div>
-										)}
+									<form.Field name="affiliationId">
+										{(field) => {
+											const hasError =
+												field.state.meta.isBlurred &&
+												field.state.meta.errors.length > 0;
+											return (
+												<Field data-invalid={hasError}>
+													<FieldLabel>Affiliation *</FieldLabel>
+													<AffiliationSelect
+														value={field.state.value || null}
+														displayValue={form.state.values.affiliationName}
+														onChange={(id, name) => {
+															field.handleChange(id ?? "");
+															form.setFieldValue("affiliationName", name);
+														}}
+														hasError={hasError}
+													/>
+													<FieldError
+														errors={
+															hasError ? field.state.meta.errors : undefined
+														}
+													/>
+												</Field>
+											);
+										}}
 									</form.Field>
 								</div>
 							</div>
@@ -474,8 +414,8 @@ function RegisterPage() {
 								{/* Address */}
 								<form.Field name="address">
 									{(field) => (
-										<div className="space-y-1">
-											<Label htmlFor={field.name}>Address</Label>
+										<Field>
+											<FieldLabel htmlFor={field.name}>Address</FieldLabel>
 											<div className="relative">
 												<IconMapPin className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
 												<textarea
@@ -490,72 +430,84 @@ function RegisterPage() {
 													onChange={(e) => field.handleChange(e.target.value)}
 												/>
 											</div>
-										</div>
+											<FieldDescription>For billing purposes</FieldDescription>
+										</Field>
 									)}
 								</form.Field>
 
 								{/* Country */}
-								<form.Field name="country" validators={countryValidators}>
-									{(field) => (
-										<div className="space-y-1">
-											<Label>Country *</Label>
-											<Popover open={countryOpen} onOpenChange={setCountryOpen}>
-												<PopoverTrigger asChild>
-													<Button
-														variant="outline"
-														role="combobox"
-														aria-expanded={countryOpen}
-														className={cn(
-															"h-9 w-full justify-between pl-3 font-normal",
-															!field.state.value && "text-muted-foreground",
-															field.state.meta.errors.length > 0 &&
-																"border-destructive",
-														)}
-													>
-														<span className="flex items-center gap-2">
-															<IconWorld className="size-4 text-muted-foreground" />
-															{field.state.value || "Select country..."}
-														</span>
-														<IconSelector className="size-4 shrink-0 opacity-50" />
-													</Button>
-												</PopoverTrigger>
-												<PopoverContent
-													className="w-[--radix-popover-trigger-width] p-0"
-													align="start"
+								<form.Field name="country">
+									{(field) => {
+										const hasError =
+											field.state.meta.isBlurred &&
+											field.state.meta.errors.length > 0;
+										return (
+											<Field data-invalid={hasError}>
+												<FieldLabel>Country *</FieldLabel>
+												<Popover
+													open={countryOpen}
+													onOpenChange={setCountryOpen}
 												>
-													<Command>
-														<CommandInput placeholder="Search country..." />
-														<CommandList>
-															<CommandEmpty>No country found.</CommandEmpty>
-															<CommandGroup>
-																{COUNTRIES.map((country) => (
-																	<CommandItem
-																		key={country}
-																		value={country}
-																		onSelect={() => {
-																			field.handleChange(country);
-																			setCountryOpen(false);
-																		}}
-																	>
-																		<IconCheck
-																			className={cn(
-																				"mr-2 size-4",
-																				field.state.value === country
-																					? "opacity-100"
-																					: "opacity-0",
-																			)}
-																		/>
-																		{country}
-																	</CommandItem>
-																))}
-															</CommandGroup>
-														</CommandList>
-													</Command>
-												</PopoverContent>
-											</Popover>
-											<FieldError errors={field.state.meta.errors} />
-										</div>
-									)}
+													<PopoverTrigger asChild>
+														<Button
+															variant="outline"
+															role="combobox"
+															aria-expanded={countryOpen}
+															aria-invalid={hasError}
+															className={cn(
+																"h-9 w-full justify-between pl-3 font-normal",
+																!field.state.value && "text-muted-foreground",
+															)}
+														>
+															<span className="flex items-center gap-2">
+																<IconWorld className="size-4 text-muted-foreground" />
+																{field.state.value || "Select country..."}
+															</span>
+															<IconSelector className="size-4 shrink-0 opacity-50" />
+														</Button>
+													</PopoverTrigger>
+													<PopoverContent
+														className="w-[--radix-popover-trigger-width] p-0"
+														align="start"
+													>
+														<Command>
+															<CommandInput placeholder="Search country..." />
+															<CommandList>
+																<CommandEmpty>No country found.</CommandEmpty>
+																<CommandGroup>
+																	{COUNTRIES.map((country) => (
+																		<CommandItem
+																			key={country}
+																			value={country}
+																			onSelect={() => {
+																				field.handleChange(country);
+																				setCountryOpen(false);
+																			}}
+																		>
+																			<IconCheck
+																				className={cn(
+																					"mr-2 size-4",
+																					field.state.value === country
+																						? "opacity-100"
+																						: "opacity-0",
+																				)}
+																			/>
+																			{country}
+																		</CommandItem>
+																	))}
+																</CommandGroup>
+															</CommandList>
+														</Command>
+													</PopoverContent>
+												</Popover>
+												<FieldError
+													errors={
+														hasError ? field.state.meta.errors : undefined
+													}
+												/>
+											</Field>
+										);
+									}}
 								</form.Field>
 							</div>
 						)}
@@ -594,52 +546,51 @@ function RegisterPage() {
 								</div>
 
 								{/* Terms acceptance */}
-								<form.Field
-									name="acceptTerms"
-									validators={{
-										onSubmit: ({ value }) => {
-											if (!value) return "You must accept the Terms of Service";
-											return undefined;
-										},
-										onChange: ({ value }) => {
-											if (!isValidationAttempted) return undefined;
-											if (!value) return "You must accept the Terms of Service";
-											return undefined;
-										},
-									}}
-								>
-									{(field) => (
-										<div className="space-y-1 rounded-lg border border-primary/20 bg-primary/5 p-3">
-											<div className="flex items-start gap-2">
-												<Checkbox
-													id={field.name}
-													checked={field.state.value}
-													onCheckedChange={(checked) =>
-														field.handleChange(checked === true)
-													}
-													className="mt-0.5"
-												/>
-												<Label
-													htmlFor={field.name}
-													className="cursor-pointer text-sm font-normal leading-snug"
-												>
-													I agree to the{" "}
-													<button
-														type="button"
-														className="text-primary hover:underline"
-														onClick={(e) => {
-															e.preventDefault();
-															setTosOpen(true);
-														}}
+								<form.Field name="acceptTerms">
+									{(field) => {
+										const hasError =
+											field.state.meta.isBlurred &&
+											field.state.meta.errors.length > 0;
+										return (
+											<Field
+												data-invalid={hasError}
+												className="rounded-lg border border-primary/20 bg-primary/5 p-3"
+											>
+												<div className="flex items-start gap-2">
+													<Checkbox
+														id={field.name}
+														checked={field.state.value}
+														onCheckedChange={(checked) =>
+															field.handleChange(checked === true)
+														}
+														className="mt-0.5"
+													/>
+													<FieldLabel
+														htmlFor={field.name}
+														className="cursor-pointer text-sm font-normal leading-snug"
 													>
-														Terms of Service
-													</button>{" "}
-													*
-												</Label>
-											</div>
-											<FieldError errors={field.state.meta.errors} />
-										</div>
-									)}
+														I agree to the{" "}
+														<button
+															type="button"
+															className="text-primary hover:underline"
+															onClick={(e) => {
+																e.preventDefault();
+																setTosOpen(true);
+															}}
+														>
+															Terms of Service
+														</button>{" "}
+														*
+													</FieldLabel>
+												</div>
+												<FieldError
+													errors={
+														hasError ? field.state.meta.errors : undefined
+													}
+												/>
+											</Field>
+										);
+									}}
 								</form.Field>
 							</div>
 						)}

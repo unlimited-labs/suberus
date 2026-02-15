@@ -1,7 +1,11 @@
 import { useStore } from "@tanstack/react-form";
 
-import { FieldError } from "@/components/forms/field-error";
-import { Label } from "@/components/ui/label";
+import {
+	Field,
+	FieldDescription,
+	FieldError,
+	FieldLabel,
+} from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { useFieldContext } from "@/hooks/form-context";
 import { cn } from "@/lib/utils";
@@ -13,6 +17,7 @@ interface FormTextareaFieldProps {
 	disabled?: boolean;
 	className?: string;
 	charCount?: { min?: number };
+	description?: string;
 }
 
 export function FormTextareaField({
@@ -22,16 +27,17 @@ export function FormTextareaField({
 	disabled,
 	className,
 	charCount,
+	description,
 }: FormTextareaFieldProps) {
 	const field = useFieldContext<string>();
 	const errors = useStore(field.store, (s) => s.meta.errors);
-	const hasError = field.state.meta.isTouched && errors.length > 0;
+	const hasError = field.state.meta.isBlurred && errors.length > 0;
 	const length = field.state.value.length;
 
 	return (
-		<div className="space-y-1">
+		<Field data-invalid={hasError}>
 			<div className="flex items-center justify-between">
-				<Label htmlFor={field.name}>{label}</Label>
+				<FieldLabel htmlFor={field.name}>{label}</FieldLabel>
 				{charCount && (
 					<span
 						className={cn(
@@ -56,13 +62,11 @@ export function FormTextareaField({
 				rows={rows}
 				placeholder={placeholder}
 				disabled={disabled}
-				className={cn(
-					"resize-none",
-					hasError && "border-destructive",
-					className,
-				)}
+				aria-invalid={hasError}
+				className={cn("resize-none", className)}
 			/>
-			<FieldError errors={errors} />
-		</div>
+			{description && <FieldDescription>{description}</FieldDescription>}
+			<FieldError errors={hasError ? errors : undefined} />
+		</Field>
 	);
 }

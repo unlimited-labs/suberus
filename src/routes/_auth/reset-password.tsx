@@ -10,8 +10,8 @@ import { z } from "zod";
 import { AuthSidebar } from "@/components/forms/auth-sidebar";
 import { Button } from "@/components/ui/button";
 import { useAppForm } from "@/hooks/use-app-form";
-import { useZodFormField } from "@/hooks/use-zod-form-field";
 import { resetPassword } from "@/lib/auth-client";
+import { submitForm } from "@/lib/form-utils";
 import { resetPasswordSchema } from "@/lib/validations/auth";
 
 const searchSchema = z.object({
@@ -22,13 +22,6 @@ export const Route = createFileRoute("/_auth/reset-password")({
 	validateSearch: searchSchema,
 	component: ResetPasswordPage,
 });
-
-const passwordSchema = z
-	.string()
-	.min(1, "Password is required")
-	.min(10, "Password must be at least 10 characters");
-
-const confirmPasswordSchema = z.string().min(1, "Please confirm your password");
 
 function ResetPasswordPage() {
 	const { token } = Route.useSearch();
@@ -41,23 +34,17 @@ function ResetPasswordPage() {
 	const [isSuccess, setIsSuccess] = useState(false);
 	const [tokenError, setTokenError] = useState(false);
 
-	const passwordValidators = useZodFormField(passwordSchema);
-	const confirmValidators = useZodFormField(confirmPasswordSchema);
-
 	const form = useAppForm({
 		defaultValues: {
 			newPassword: "",
 			confirmPassword: "",
 		},
+		validators: {
+			onChange: resetPasswordSchema,
+			onSubmit: resetPasswordSchema,
+		},
 		onSubmit: async ({ value }) => {
 			if (!token) return;
-
-			// Validate passwords match
-			const result = resetPasswordSchema.safeParse(value);
-			if (!result.success) {
-				toast.error(result.error.issues[0]?.message ?? "Validation failed");
-				return;
-			}
 
 			const response = await resetPassword({
 				token,
@@ -217,19 +204,21 @@ function ResetPasswordPage() {
 					onSubmit={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
-						void form.handleSubmit();
+						void submitForm(form);
 					}}
 					className="flex flex-1 flex-col"
 				>
 					<div className="flex-1 space-y-3">
-						<form.AppField name="newPassword" validators={passwordValidators}>
-							{(field) => <field.PasswordField label="New Password" />}
+						<form.AppField name="newPassword">
+							{(field) => (
+								<field.PasswordField
+									label="New Password"
+									description="Min. 10 characters"
+								/>
+							)}
 						</form.AppField>
 
-						<form.AppField
-							name="confirmPassword"
-							validators={confirmValidators}
-						>
+						<form.AppField name="confirmPassword">
 							{(field) => <field.PasswordField label="Confirm Password" />}
 						</form.AppField>
 					</div>

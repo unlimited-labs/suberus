@@ -16,9 +16,13 @@ import {
 import { useStore } from "@tanstack/react-form";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
-import { FieldError } from "@/components/forms/field-error";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import {
+	Field,
+	FieldDescription,
+	FieldError,
+	FieldLabel,
+} from "@/components/ui/field";
 import { Markdown } from "@/components/ui/markdown";
 import {
 	Select,
@@ -29,7 +33,7 @@ import {
 } from "@/components/ui/select";
 import { useAppForm } from "@/hooks/use-app-form";
 import { useSession } from "@/hooks/use-session";
-import { useZodFormField } from "@/hooks/use-zod-form-field";
+import { submitForm } from "@/lib/form-utils";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import { cn } from "@/lib/utils";
 import { getAffiliationById } from "@/utils/affiliations.functions";
@@ -98,6 +102,37 @@ function substituteGuidelines(
 		.replace(/\{\{maxKeywords\}\}/g, String(settings.maxKeywords));
 }
 
+function createSubmissionSchema(settings: ValidationSettings) {
+	return z.object({
+		type: z.enum(["ABSTRACT", "POSTER", "FULL_PAPER"]),
+		title: z
+			.string()
+			.min(
+				settings.minTitleLength,
+				`Title must be at least ${settings.minTitleLength} characters`,
+			)
+			.max(
+				settings.maxTitleLength,
+				`Title must be at most ${settings.maxTitleLength} characters`,
+			),
+		content: z.string(),
+		authors: z.array(
+			z.object({
+				firstName: z.string(),
+				lastName: z.string(),
+				email: z.string(),
+				affiliationId: z.string().nullable(),
+				affiliationName: z.string(),
+				isPresenter: z.boolean(),
+			}),
+		),
+		keywords: z.array(z.string()),
+		file: z.custom<File | null>(),
+		contentFormat: z.enum(["TEXT", "FILE"]),
+		sessionId: z.string().nullable(),
+	});
+}
+
 export function SubmissionForm({
 	onSubmit,
 	onSaveDraft,
@@ -122,31 +157,27 @@ export function SubmissionForm({
 		{ id: string; name: string }[]
 	>([]);
 
-	// Zod validators for title and content
-	const titleValidators = useZodFormField(
-		z
-			.string()
-			.min(
-				validationSettings.minTitleLength,
-				`Title must be at least ${validationSettings.minTitleLength} characters`,
-			)
-			.max(
-				validationSettings.maxTitleLength,
-				`Title must be at most ${validationSettings.maxTitleLength} characters`,
-			),
+	const submissionSchema = useMemo(
+		() => createSubmissionSchema(validationSettings),
+		[validationSettings],
 	);
 
-	const contentValidators = useZodFormField(
-		z
-			.string()
-			.min(
-				validationSettings.minAbstractLength,
-				`Abstract must be at least ${validationSettings.minAbstractLength} characters`,
-			)
-			.max(
-				validationSettings.maxAbstractLength,
-				`Abstract must be at most ${validationSettings.maxAbstractLength} characters`,
-			),
+	// Content schema for text format
+	const contentSchema = useMemo(
+		() =>
+			z.object({
+				content: z
+					.string()
+					.min(
+						validationSettings.minAbstractLength,
+						`Abstract must be at least ${validationSettings.minAbstractLength} characters`,
+					)
+					.max(
+						validationSettings.maxAbstractLength,
+						`Abstract must be at most ${validationSettings.maxAbstractLength} characters`,
+					),
+			}),
+		[validationSettings],
 	);
 
 	// Substitute placeholders in guidelines
@@ -175,6 +206,10 @@ export function SubmissionForm({
 			contentFormat: defaultConfig?.contentFormat || "TEXT",
 			sessionId: initialData?.sessionId || null,
 		} satisfies SubmissionFormData,
+		validators: {
+			onChange: submissionSchema,
+			onSubmit: submissionSchema,
+		},
 		onSubmit: async ({ value }) => {
 			await onSubmit(value);
 		},
@@ -307,9 +342,16 @@ export function SubmissionForm({
 			if (newConfig.config.contentFormat === "TEXT") {
 				form.setFieldValue("file", null);
 			}
-			// Clear content if switching to FILE format
+			// Clear content and its stale validation errors when switching to FILE format.
+			// setFieldValue triggers the field-level onChange validator before React
+			// re-renders to remove it, leaving a stale error that blocks canSubmit.
 			if (newConfig.config.contentFormat === "FILE") {
 				form.setFieldValue("content", "");
+				form.setFieldMeta("content", (prev) => ({
+					...prev,
+					errorMap: {},
+					errorSourceMap: {},
+				}));
 			}
 		}
 	};
@@ -355,7 +397,7 @@ export function SubmissionForm({
 							onSubmit={(e) => {
 								e.preventDefault();
 								e.stopPropagation();
-								form.handleSubmit();
+								submitForm(form);
 							}}
 							className="space-y-6"
 						>
@@ -443,7 +485,7 @@ export function SubmissionForm({
 								</div>
 
 								<div className="space-y-4">
-									<form.AppField name="title" validators={titleValidators}>
+									<form.AppField name="title">
 										{(field) => <field.InputField label="Title" />}
 									</form.AppField>
 
@@ -451,39 +493,53 @@ export function SubmissionForm({
 									   validators disabled for FILE format to prevent stale validation blocking submit */}
 									<form.Field
 										name="content"
-										validators={isFileFormat ? undefined : contentValidators}
+										validators={
+											isFileFormat
+												? undefined
+												: {
+														onChange: contentSchema.shape.content,
+														onSubmit: contentSchema.shape.content,
+													}
+										}
 									>
-										{(field) =>
-											!isFileFormat ? (
-												<div className="space-y-2">
-													<Label htmlFor="content" className="text-foreground">
-														Abstract
-													</Label>
+										{(field) => {
+											if (isFileFormat) return null;
+											const hasError =
+												field.state.meta.isBlurred &&
+												field.state.meta.errors.length > 0;
+											return (
+												<Field data-invalid={hasError}>
+													<FieldLabel htmlFor="content">Abstract</FieldLabel>
 													<textarea
 														id="content"
 														value={field.state.value}
 														onChange={(e) => field.handleChange(e.target.value)}
 														onBlur={field.handleBlur}
 														rows={8}
-														className="flex min-h-16 w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+														aria-invalid={hasError}
+														className="flex min-h-16 w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 aria-invalid:ring-[3px]"
 													/>
-													<FieldError errors={field.state.meta.errors} />
-												</div>
-											) : null
-										}
+													<FieldError
+														errors={
+															hasError ? field.state.meta.errors : undefined
+														}
+													/>
+												</Field>
+											);
+										}}
 									</form.Field>
 
 									{/* Show file dropzone ONLY for FILE format */}
 									{isFileFormat && (
 										<form.Field name="file">
 											{(field) => (
-												<div className="space-y-2">
-													<Label className="text-foreground">
+												<Field>
+													<FieldLabel>
 														Document{" "}
 														<span className="text-destructive text-xs font-normal">
 															*
 														</span>
-													</Label>
+													</FieldLabel>
 													<FileDropzone
 														value={field.state.value}
 														onChange={field.handleChange}
@@ -491,14 +547,14 @@ export function SubmissionForm({
 														maxSize={validationSettings.maxFileSize}
 													/>
 													{!field.state.value && (
-														<p className="text-xs text-muted-foreground">
+														<FieldDescription>
 															Accepted formats:{" "}
 															{allowedExtensions
 																.map((e) => e.toUpperCase())
 																.join(", ")}
-														</p>
+														</FieldDescription>
 													)}
-												</div>
+												</Field>
 											)}
 										</form.Field>
 									)}
@@ -516,15 +572,24 @@ export function SubmissionForm({
 									</h2>
 								</div>
 								<form.Field name="authors">
-									{(field) => (
-										<div>
-											<AuthorsInput
-												value={field.state.value}
-												onChange={field.handleChange}
-											/>
-											<FieldError errors={field.state.meta.errors} />
-										</div>
-									)}
+									{(field) => {
+										const hasError =
+											field.state.meta.isBlurred &&
+											field.state.meta.errors.length > 0;
+										return (
+											<Field data-invalid={hasError}>
+												<AuthorsInput
+													value={field.state.value}
+													onChange={field.handleChange}
+												/>
+												<FieldError
+													errors={
+														hasError ? field.state.meta.errors : undefined
+													}
+												/>
+											</Field>
+										);
+									}}
 								</form.Field>
 							</div>
 
@@ -542,19 +607,28 @@ export function SubmissionForm({
 										</div>
 
 										<form.Field name="keywords">
-											{(field) => (
-												<div className="space-y-2">
-													<div className="rounded-lg border bg-muted/30 p-3">
-														<KeywordsInput
-															value={field.state.value}
-															onChange={field.handleChange}
-															minKeywords={validationSettings.minKeywords}
-															maxKeywords={validationSettings.maxKeywords}
+											{(field) => {
+												const hasError =
+													field.state.meta.isBlurred &&
+													field.state.meta.errors.length > 0;
+												return (
+													<Field data-invalid={hasError}>
+														<div className="rounded-lg border bg-muted/30 p-3">
+															<KeywordsInput
+																value={field.state.value}
+																onChange={field.handleChange}
+																minKeywords={validationSettings.minKeywords}
+																maxKeywords={validationSettings.maxKeywords}
+															/>
+														</div>
+														<FieldError
+															errors={
+																hasError ? field.state.meta.errors : undefined
+															}
 														/>
-													</div>
-													<FieldError errors={field.state.meta.errors} />
-												</div>
-											)}
+													</Field>
+												);
+											}}
 										</form.Field>
 									</div>
 								</>
@@ -744,22 +818,22 @@ export function SubmissionForm({
 								</div>
 							) : (
 								<div className="space-y-3 text-sm text-muted-foreground">
-									<p>• Title should be concise and descriptive</p>
+									<p>Title should be concise and descriptive</p>
 									{isFileFormat ? (
 										<p>
-											• Upload your document as{" "}
+											Upload your document as{" "}
 											{allowedExtensions.map((e) => e.toUpperCase()).join(", ")}
 										</p>
 									) : (
 										<p>
-											• Abstract minimum {validationSettings.minAbstractLength}{" "}
+											Abstract minimum {validationSettings.minAbstractLength}{" "}
 											characters
 										</p>
 									)}
-									<p>• At least one author required</p>
+									<p>At least one author required</p>
 									{validationSettings.enableKeywords && (
 										<p>
-											• Add {validationSettings.minKeywords}-
+											Add {validationSettings.minKeywords}-
 											{validationSettings.maxKeywords} relevant keywords
 										</p>
 									)}

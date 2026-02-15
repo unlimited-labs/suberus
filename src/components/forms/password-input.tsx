@@ -10,9 +10,9 @@ interface PasswordInputProps {
 	onChange: (value: string) => void;
 	onBlur?: () => void;
 	placeholder?: string;
-	hasError?: boolean;
 	className?: string;
 	disabled?: boolean;
+	"aria-invalid"?: boolean;
 }
 
 export function PasswordInput({
@@ -21,9 +21,9 @@ export function PasswordInput({
 	onChange,
 	onBlur,
 	placeholder,
-	hasError,
 	className,
 	disabled,
+	"aria-invalid": ariaInvalid,
 }: PasswordInputProps) {
 	const { type, toggle, Icon } = usePasswordVisibility();
 
@@ -34,11 +34,8 @@ export function PasswordInput({
 				id={id}
 				type={type}
 				placeholder={placeholder}
-				className={cn(
-					"h-9 pl-9 pr-10",
-					hasError && "border-destructive",
-					className,
-				)}
+				className={cn("h-9 pl-9 pr-10", className)}
+				aria-invalid={ariaInvalid}
 				value={value}
 				onBlur={onBlur}
 				onChange={(e) => onChange(e.target.value)}

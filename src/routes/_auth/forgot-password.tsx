@@ -2,18 +2,16 @@ import { IconArrowLeft, IconMail, IconMailCheck } from "@tabler/icons-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { z } from "zod";
 import { AuthSidebar } from "@/components/forms/auth-sidebar";
 import { Button } from "@/components/ui/button";
 import { useAppForm } from "@/hooks/use-app-form";
-import { useZodFormField } from "@/hooks/use-zod-form-field";
 import { forgetPassword } from "@/lib/auth-client";
+import { submitForm } from "@/lib/form-utils";
+import { forgotPasswordSchema } from "@/lib/validations/auth";
 
 export const Route = createFileRoute("/_auth/forgot-password")({
 	component: ForgotPasswordPage,
 });
-
-const emailSchema = z.email("Invalid email address");
 
 function ForgotPasswordPage() {
 	const {
@@ -25,11 +23,13 @@ function ForgotPasswordPage() {
 	const [isSubmitted, setIsSubmitted] = useState(false);
 	const [submittedEmail, setSubmittedEmail] = useState("");
 
-	const emailValidators = useZodFormField(emailSchema);
-
 	const form = useAppForm({
 		defaultValues: {
 			email: "",
+		},
+		validators: {
+			onChange: forgotPasswordSchema,
+			onSubmit: forgotPasswordSchema,
 		},
 		onSubmit: async ({ value }) => {
 			const result = await forgetPassword({
@@ -123,12 +123,12 @@ function ForgotPasswordPage() {
 					onSubmit={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
-						void form.handleSubmit();
+						void submitForm(form);
 					}}
 					className="flex flex-1 flex-col"
 				>
 					<div className="flex-1 space-y-3">
-						<form.AppField name="email" validators={emailValidators}>
+						<form.AppField name="email">
 							{(field) => (
 								<field.IconInputField
 									label="E-mail"

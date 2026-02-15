@@ -12,8 +12,6 @@ import {
 import { countries } from "countries-list";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { z } from "zod";
-import { FieldError } from "@/components/forms/field-error";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,17 +22,23 @@ import {
 	CommandItem,
 	CommandList,
 } from "@/components/ui/command";
-import { Label } from "@/components/ui/label";
+import {
+	Field,
+	FieldDescription,
+	FieldError,
+	FieldLabel,
+} from "@/components/ui/field";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { useAppForm } from "@/hooks/use-app-form";
-import { useZodFormFieldOnChange } from "@/hooks/use-zod-form-field";
 import { sendVerificationEmail } from "@/lib/auth-client";
+import { submitForm } from "@/lib/form-utils";
 import { cn } from "@/lib/utils";
 import type { ContactInfoFormData } from "@/lib/validations/profile";
+import { contactInfoSchema } from "@/lib/validations/profile";
 
 const COUNTRIES = Object.values(countries)
 	.map((c) => c.name)
@@ -48,8 +52,6 @@ interface ContactInfoSectionProps {
 	emailVerified: boolean;
 }
 
-const emailSchema = z.email("Invalid email address");
-
 const RESEND_COOLDOWN = 60;
 
 export function ContactInfoSection({
@@ -59,7 +61,6 @@ export function ContactInfoSection({
 	currentEmail,
 	emailVerified,
 }: ContactInfoSectionProps) {
-	const [isValidationAttempted, setIsValidationAttempted] = useState(false);
 	const [countryOpen, setCountryOpen] = useState(false);
 	const [cooldown, setCooldown] = useState(0);
 	const [isResending, setIsResending] = useState(false);
@@ -95,24 +96,14 @@ export function ContactInfoSection({
 
 	const form = useAppForm({
 		defaultValues: initialData,
+		validators: {
+			onChange: contactInfoSchema,
+			onSubmit: contactInfoSchema,
+		},
 		onSubmit: async ({ value }) => {
 			await onSave(value);
 		},
 	});
-
-	const emailValidators = useZodFormFieldOnChange(
-		emailSchema,
-		isValidationAttempted,
-	);
-	const addressValidators = useZodFormFieldOnChange(
-		z.string().max(500, "Address must be at most 500 characters").optional(),
-		isValidationAttempted,
-	);
-
-	const handleSubmit = async () => {
-		setIsValidationAttempted(true);
-		await form.handleSubmit();
-	};
 
 	const emailChanged = form.state.values.email !== currentEmail;
 
@@ -121,11 +112,12 @@ export function ContactInfoSection({
 			onSubmit={(e) => {
 				e.preventDefault();
 				e.stopPropagation();
+				void submitForm(form);
 			}}
 			className="space-y-4"
 		>
 			{/* Email */}
-			<form.AppField name="email" validators={emailValidators}>
+			<form.AppField name="email">
 				{(field) => (
 					<field.IconInputField
 						label="Email *"
@@ -183,37 +175,45 @@ export function ContactInfoSection({
 			)}
 
 			{/* Invoice Address */}
-			<form.Field name="address" validators={addressValidators}>
-				{(field) => (
-					<div className="space-y-1">
-						<Label htmlFor={field.name}>Invoice address</Label>
-						<div className="relative">
-							<IconMapPin className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
-							<textarea
-								id={field.name}
-								rows={2}
-								className={cn(
-									"flex w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 pl-9 text-sm text-foreground transition-colors",
-									"placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
-									"disabled:cursor-not-allowed disabled:opacity-50",
-									field.state.meta.errors.length > 0 && "border-destructive",
-								)}
-								value={field.state.value || ""}
-								onBlur={field.handleBlur}
-								onChange={(e) => field.handleChange(e.target.value)}
-								disabled={isLoading}
+			<form.Field name="address">
+				{(field) => {
+					const hasError =
+						field.state.meta.isBlurred && field.state.meta.errors.length > 0;
+					return (
+						<Field data-invalid={hasError}>
+							<FieldLabel htmlFor={field.name}>Invoice address</FieldLabel>
+							<div className="relative">
+								<IconMapPin className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
+								<textarea
+									id={field.name}
+									rows={2}
+									aria-invalid={hasError}
+									className={cn(
+										"flex w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 pl-9 text-sm text-foreground transition-colors",
+										"placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+										"disabled:cursor-not-allowed disabled:opacity-50",
+										"aria-invalid:border-destructive aria-invalid:ring-destructive/20 aria-invalid:ring-[3px]",
+									)}
+									value={field.state.value || ""}
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									disabled={isLoading}
+								/>
+							</div>
+							<FieldDescription>For billing purposes</FieldDescription>
+							<FieldError
+								errors={hasError ? field.state.meta.errors : undefined}
 							/>
-						</div>
-						<FieldError errors={field.state.meta.errors} />
-					</div>
-				)}
+						</Field>
+					);
+				}}
 			</form.Field>
 
 			{/* Country */}
 			<form.Field name="country">
 				{(field) => (
-					<div className="space-y-1">
-						<Label>Country</Label>
+					<Field>
+						<FieldLabel>Country</FieldLabel>
 						<Popover open={countryOpen} onOpenChange={setCountryOpen}>
 							<PopoverTrigger asChild>
 								<Button
@@ -267,15 +267,14 @@ export function ContactInfoSection({
 								</Command>
 							</PopoverContent>
 						</Popover>
-					</div>
+					</Field>
 				)}
 			</form.Field>
 
 			{/* Save button */}
 			<div className="flex justify-end pt-2">
 				<Button
-					type="button"
-					onClick={handleSubmit}
+					type="submit"
 					disabled={form.state.isSubmitting || isLoading}
 					className="h-9"
 				>

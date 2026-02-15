@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 
 interface UseMultiStepOptions {
 	totalSteps: number;
@@ -10,18 +10,8 @@ export function useMultiStep({
 	validateStep,
 }: UseMultiStepOptions) {
 	const [currentStep, setCurrentStep] = useState(1);
-	const [validationAttempted, setValidationAttempted] = useState<
-		Record<number, boolean>
-	>({});
-
-	const isValidationAttempted = useMemo(
-		() => validationAttempted[currentStep] ?? false,
-		[validationAttempted, currentStep],
-	);
 
 	const next = useCallback(async () => {
-		setValidationAttempted((prev) => ({ ...prev, [currentStep]: true }));
-
 		if (validateStep) {
 			const isValid = await validateStep(currentStep);
 			if (!isValid) return false;
@@ -49,14 +39,6 @@ export function useMultiStep({
 		[totalSteps],
 	);
 
-	const markValidationAttempted = useCallback(
-		(step?: number) => {
-			const targetStep = step ?? currentStep;
-			setValidationAttempted((prev) => ({ ...prev, [targetStep]: true }));
-		},
-		[currentStep],
-	);
-
 	return {
 		currentStep,
 		next,
@@ -64,8 +46,5 @@ export function useMultiStep({
 		goTo,
 		isFirst: currentStep === 1,
 		isLast: currentStep === totalSteps,
-		isValidationAttempted,
-		validationAttempted,
-		markValidationAttempted,
 	};
 }

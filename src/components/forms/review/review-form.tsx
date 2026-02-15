@@ -16,14 +16,17 @@ import {
 	IconX,
 } from "@tabler/icons-react";
 import { useStore } from "@tanstack/react-form";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Field, FieldError } from "@/components/ui/field";
 import { Markdown } from "@/components/ui/markdown";
 import type { ReviewDecision, SubmissionType } from "@/generated/prisma/enums";
 import { useAppForm } from "@/hooks/use-app-form";
+import { submitForm } from "@/lib/form-utils";
 import { typeLabels } from "@/lib/labels/submission";
 import { cn } from "@/lib/utils";
+import { createReviewSchema } from "@/lib/validations/review";
 
 interface SubmissionAuthor {
 	firstName: string;
@@ -118,29 +121,35 @@ export function ReviewForm({
 }: ReviewFormProps) {
 	const [contentExpanded, setContentExpanded] = useState(false);
 
-	// Dynamic scores state — keyed by criterion name
+	const reviewSchema = useMemo(
+		() =>
+			createReviewSchema({
+				enableConfidenceLevel,
+				scoringCriteria,
+			}),
+		[enableConfidenceLevel, scoringCriteria],
+	);
+
+	// Build initial scores from criteria
 	const initialScores: Record<string, number> = {};
 	for (const c of scoringCriteria) {
 		initialScores[c.name] = initialData?.scores?.[c.name] ?? 3;
 	}
-	const [scores, setScores] = useState<Record<string, number>>(initialScores);
-
-	const setScore = (name: string, value: number) => {
-		setScores((prev) => ({ ...prev, [name]: value }));
-	};
 
 	const form = useAppForm({
 		defaultValues: {
 			decision: initialData?.decision || ("ACCEPT" as ReviewDecision),
+			scores: initialScores,
 			confidenceLevel: initialData?.confidenceLevel || 3,
 			comments: initialData?.comments || "",
 			privateNotes: initialData?.privateNotes || "",
 		},
+		validators: {
+			onChange: reviewSchema,
+			onSubmit: reviewSchema,
+		},
 		onSubmit: async ({ value }) => {
-			await onSubmit({
-				...value,
-				scores,
-			});
+			await onSubmit(value);
 		},
 	});
 
@@ -150,7 +159,7 @@ export function ReviewForm({
 	const hasDecision = !!values.decision;
 	const hasScores =
 		scoringCriteria.length === 0 ||
-		scoringCriteria.every((c) => (scores[c.name] ?? 0) > 0);
+		scoringCriteria.every((c) => (values.scores[c.name] ?? 0) > 0);
 	const hasConfidence = !enableConfidenceLevel || values.confidenceLevel > 0;
 	const hasComments = values.comments.length >= 50;
 
@@ -274,7 +283,7 @@ export function ReviewForm({
 							onSubmit={(e) => {
 								e.preventDefault();
 								e.stopPropagation();
-								form.handleSubmit();
+								submitForm(form);
 							}}
 							className="space-y-6"
 						>
@@ -287,58 +296,71 @@ export function ReviewForm({
 									</h2>
 								</div>
 								<form.Field name="decision">
-									{(field) => (
-										<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-											{decisionOptions.map((option) => {
-												const Icon = option.icon;
-												const isSelected = field.state.value === option.value;
-												return (
-													<button
-														key={option.value}
-														type="button"
-														onClick={() => field.handleChange(option.value)}
-														className={cn(
-															"flex flex-col gap-2 p-4 rounded-lg border-2 transition-all text-left",
-															isSelected
-																? "border-primary bg-primary/5"
-																: "border-border hover:border-primary/50",
-														)}
-													>
-														<div className="flex items-center gap-2">
-															<div
+									{(field) => {
+										const hasError =
+											field.state.meta.isBlurred &&
+											field.state.meta.errors.length > 0;
+										return (
+											<Field data-invalid={hasError}>
+												<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+													{decisionOptions.map((option) => {
+														const Icon = option.icon;
+														const isSelected =
+															field.state.value === option.value;
+														return (
+															<button
+																key={option.value}
+																type="button"
+																onClick={() => field.handleChange(option.value)}
 																className={cn(
-																	"flex-shrink-0 p-1.5 rounded-md",
-																	isSelected ? "bg-primary/10" : "bg-muted",
-																)}
-															>
-																<Icon
-																	className={cn(
-																		"size-4",
-																		isSelected
-																			? "text-primary"
-																			: "text-muted-foreground",
-																	)}
-																/>
-															</div>
-															<span
-																className={cn(
-																	"font-medium text-sm",
+																	"flex flex-col gap-2 p-4 rounded-lg border-2 transition-all text-left",
 																	isSelected
-																		? "text-foreground"
-																		: "text-muted-foreground",
+																		? "border-primary bg-primary/5"
+																		: "border-border hover:border-primary/50",
 																)}
 															>
-																{option.label}
-															</span>
-														</div>
-														<p className="text-xs text-muted-foreground pl-8">
-															{option.description}
-														</p>
-													</button>
-												);
-											})}
-										</div>
-									)}
+																<div className="flex items-center gap-2">
+																	<div
+																		className={cn(
+																			"flex-shrink-0 p-1.5 rounded-md",
+																			isSelected ? "bg-primary/10" : "bg-muted",
+																		)}
+																	>
+																		<Icon
+																			className={cn(
+																				"size-4",
+																				isSelected
+																					? "text-primary"
+																					: "text-muted-foreground",
+																			)}
+																		/>
+																	</div>
+																	<span
+																		className={cn(
+																			"font-medium text-sm",
+																			isSelected
+																				? "text-foreground"
+																				: "text-muted-foreground",
+																		)}
+																	>
+																		{option.label}
+																	</span>
+																</div>
+																<p className="text-xs text-muted-foreground pl-8">
+																	{option.description}
+																</p>
+															</button>
+														);
+													})}
+												</div>
+												<FieldError
+													errors={
+														hasError ? field.state.meta.errors : undefined
+													}
+												/>
+											</Field>
+										);
+									}}
 								</form.Field>
 							</div>
 
@@ -355,45 +377,50 @@ export function ReviewForm({
 										</div>
 
 										<div className="rounded-lg border divide-y">
-											{scoringCriteria.map((criterion) => {
-												const currentScore = scores[criterion.name] ?? 0;
-												return (
-													<div
-														key={criterion.name}
-														className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-4 py-3"
-													>
-														<div className="flex-1 min-w-0">
-															<p className="text-sm font-medium text-foreground">
-																{criterion.name}
-															</p>
-															{criterion.description && (
-																<p className="text-xs text-muted-foreground">
-																	{criterion.description}
-																</p>
-															)}
-														</div>
-														<div className="flex items-center gap-1 shrink-0">
-															{[1, 2, 3, 4, 5].map((score) => (
-																<button
-																	key={score}
-																	type="button"
-																	onClick={() =>
-																		setScore(criterion.name, score)
-																	}
-																	className={cn(
-																		"size-9 rounded-md border text-sm font-medium transition-all",
-																		currentScore === score
-																			? "border-primary bg-primary text-primary-foreground shadow-sm"
-																			: "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground",
+											{scoringCriteria.map((criterion) => (
+												<form.Field
+													key={criterion.name}
+													name={`scores.${criterion.name}`}
+												>
+													{(field) => {
+														const currentScore =
+															(field.state.value as number) ?? 0;
+														return (
+															<div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-4 py-3">
+																<div className="flex-1 min-w-0">
+																	<p className="text-sm font-medium text-foreground">
+																		{criterion.name}
+																	</p>
+																	{criterion.description && (
+																		<p className="text-xs text-muted-foreground">
+																			{criterion.description}
+																		</p>
 																	)}
-																>
-																	{score}
-																</button>
-															))}
-														</div>
-													</div>
-												);
-											})}
+																</div>
+																<div className="flex items-center gap-1 shrink-0">
+																	{[1, 2, 3, 4, 5].map((score) => (
+																		<button
+																			key={score}
+																			type="button"
+																			onClick={() =>
+																				field.handleChange(score as never)
+																			}
+																			className={cn(
+																				"size-9 rounded-md border text-sm font-medium transition-all",
+																				currentScore === score
+																					? "border-primary bg-primary text-primary-foreground shadow-sm"
+																					: "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground",
+																			)}
+																		>
+																			{score}
+																		</button>
+																	))}
+																</div>
+															</div>
+														);
+													}}
+												</form.Field>
+											))}
 										</div>
 										<p className="text-xs text-muted-foreground px-1">
 											1 = Poor &middot; 2 = Below Average &middot; 3 = Average
@@ -416,42 +443,60 @@ export function ReviewForm({
 											</h2>
 										</div>
 										<form.Field name="confidenceLevel">
-											{(field) => (
-												<div className="space-y-2">
-													<div className="flex items-center gap-2">
-														{confidenceLevels.map((level) => (
-															<button
-																key={level.value}
-																type="button"
-																onClick={() => field.handleChange(level.value)}
-																className={cn(
-																	"flex-1 h-12 rounded-lg border-2 transition-all font-medium text-sm",
-																	field.state.value === level.value
-																		? "border-primary bg-primary text-primary-foreground shadow-sm"
-																		: "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground",
-																)}
-															>
-																{level.value}
-															</button>
-														))}
-													</div>
-													<div className="flex justify-between text-xs text-muted-foreground px-1">
-														<span>Very Low</span>
-														<span>Very High</span>
-													</div>
-													{field.state.value > 0 && (
-														<p className="text-sm text-foreground mt-2">
-															{confidenceLevels[field.state.value - 1].label}:{" "}
-															<span className="text-muted-foreground">
-																{
-																	confidenceLevels[field.state.value - 1]
-																		.description
-																}
-															</span>
-														</p>
-													)}
-												</div>
-											)}
+											{(field) => {
+												const hasError =
+													field.state.meta.isBlurred &&
+													field.state.meta.errors.length > 0;
+												return (
+													<Field data-invalid={hasError}>
+														<div className="space-y-2">
+															<div className="flex items-center gap-2">
+																{confidenceLevels.map((level) => (
+																	<button
+																		key={level.value}
+																		type="button"
+																		onClick={() =>
+																			field.handleChange(level.value)
+																		}
+																		className={cn(
+																			"flex-1 h-12 rounded-lg border-2 transition-all font-medium text-sm",
+																			field.state.value === level.value
+																				? "border-primary bg-primary text-primary-foreground shadow-sm"
+																				: "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground",
+																		)}
+																	>
+																		{level.value}
+																	</button>
+																))}
+															</div>
+															<div className="flex justify-between text-xs text-muted-foreground px-1">
+																<span>Very Low</span>
+																<span>Very High</span>
+															</div>
+															{field.state.value > 0 && (
+																<p className="text-sm text-foreground mt-2">
+																	{
+																		confidenceLevels[field.state.value - 1]
+																			.label
+																	}
+																	:{" "}
+																	<span className="text-muted-foreground">
+																		{
+																			confidenceLevels[field.state.value - 1]
+																				.description
+																		}
+																	</span>
+																</p>
+															)}
+														</div>
+														<FieldError
+															errors={
+																hasError ? field.state.meta.errors : undefined
+															}
+														/>
+													</Field>
+												);
+											}}
 										</form.Field>
 									</div>
 								</>
@@ -476,12 +521,10 @@ export function ReviewForm({
 											placeholder="Provide detailed feedback on the submission's strengths, weaknesses, and suggestions for improvement..."
 											className="text-foreground"
 											charCount={{ min: 50 }}
+											description="These comments will be visible to the authors"
 										/>
 									)}
 								</form.AppField>
-								<p className="text-xs text-muted-foreground">
-									These comments will be visible to the authors.
-								</p>
 							</div>
 
 							<div className="border-t" />
@@ -502,12 +545,10 @@ export function ReviewForm({
 											rows={4}
 											placeholder="Internal notes visible only to editors and admins..."
 											className="text-foreground"
+											description="Only visible to editors and administrators"
 										/>
 									)}
 								</form.AppField>
-								<p className="text-xs text-muted-foreground">
-									Only visible to editors and administrators.
-								</p>
 							</div>
 
 							{/* Submit Section */}

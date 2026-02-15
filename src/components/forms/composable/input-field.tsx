@@ -1,16 +1,20 @@
 import { useStore } from "@tanstack/react-form";
 
-import { FieldError } from "@/components/forms/field-error";
+import {
+	Field,
+	FieldDescription,
+	FieldError,
+	FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useFieldContext } from "@/hooks/form-context";
-import { cn } from "@/lib/utils";
 
 interface FormInputFieldProps {
 	label: string;
 	type?: string;
 	placeholder?: string;
 	disabled?: boolean;
+	description?: string;
 }
 
 export function FormInputField({
@@ -18,25 +22,28 @@ export function FormInputField({
 	type,
 	placeholder,
 	disabled,
+	description,
 }: FormInputFieldProps) {
 	const field = useFieldContext<string>();
 	const errors = useStore(field.store, (s) => s.meta.errors);
-	const hasError = field.state.meta.isTouched && errors.length > 0;
+	const hasError = field.state.meta.isBlurred && errors.length > 0;
 
 	return (
-		<div className="space-y-1">
-			<Label htmlFor={field.name}>{label}</Label>
+		<Field data-invalid={hasError}>
+			<FieldLabel htmlFor={field.name}>{label}</FieldLabel>
 			<Input
 				id={field.name}
 				type={type}
-				className={cn("h-9", hasError && "border-destructive")}
+				className="h-9"
+				aria-invalid={hasError}
 				value={field.state.value}
 				onBlur={field.handleBlur}
 				onChange={(e) => field.handleChange(e.target.value)}
 				placeholder={placeholder}
 				disabled={disabled}
 			/>
-			<FieldError errors={errors} />
-		</div>
+			{description && <FieldDescription>{description}</FieldDescription>}
+			<FieldError errors={hasError ? errors : undefined} />
+		</Field>
 	);
 }
