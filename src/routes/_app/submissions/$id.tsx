@@ -1,4 +1,5 @@
 import { IconArrowLeft, IconEye, IconFileText } from "@tabler/icons-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/layout/page-header";
@@ -13,21 +14,20 @@ import { EditorDecisionCard } from "@/components/submissions/editor-decision-car
 import { ReviewsSummaryCard } from "@/components/submissions/reviews-summary-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getSubmissionByIdFn } from "@/utils/submissions.functions";
+import { submissionDetailQueryOptions } from "@/utils/submissions.functions";
 
 export const Route = createFileRoute("/_app/submissions/$id")({
-	loader: async ({ params }) => {
-		const data = await getSubmissionByIdFn({
-			data: { submissionId: params.id },
-		});
-		return { data };
+	loader: async ({ params, context }) => {
+		await context.queryClient.ensureQueryData(
+			submissionDetailQueryOptions(params.id),
+		);
 	},
 	component: SubmissionDetailPage,
 });
 
 function SubmissionDetailPage() {
 	const { id } = Route.useParams();
-	const { data } = Route.useLoaderData();
+	const { data } = useSuspenseQuery(submissionDetailQueryOptions(id));
 
 	const [selectedVersion, setSelectedVersion] = useState(
 		data?.submission.currentVersion ?? 1,

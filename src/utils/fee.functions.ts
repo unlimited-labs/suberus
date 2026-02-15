@@ -1,7 +1,20 @@
+import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "./auth.middleware";
 import { getUserFee } from "./fee.server";
 import { getSetting } from "./settings.server";
+
+export const userFeeQueryOptions = () =>
+	queryOptions({
+		queryKey: ["fee"],
+		queryFn: () => getUserFeeFn(),
+	});
+
+export const paymentInstructionsQueryOptions = () =>
+	queryOptions({
+		queryKey: ["settings", "fee-instructions"],
+		queryFn: () => getPaymentInstructionsFn(),
+	});
 
 /**
  * Get current user's fee

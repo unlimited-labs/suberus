@@ -12,10 +12,10 @@ import {
 	IconScale,
 	IconSettings,
 } from "@tabler/icons-react";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import {
 	createFileRoute,
 	useNavigate,
-	useRouter,
 	useSearch,
 } from "@tanstack/react-router";
 import { z } from "zod";
@@ -35,22 +35,22 @@ import {
 import { toEmailTemplateUI } from "@/components/admin/settings/email-templates-tab";
 import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getEmailTemplatesFn } from "@/utils/email-templates.functions";
-import { getPaymentInstructionsFn } from "@/utils/fee.functions";
+import { emailTemplatesQueryOptions } from "@/utils/email-templates.functions";
+import { paymentInstructionsQueryOptions } from "@/utils/fee.functions";
 import {
-	getAllSessionsFn,
-	getReviewerUsersFn,
+	allSessionsQueryOptions,
+	reviewerUsersQueryOptions,
 } from "@/utils/sessions.functions";
 import {
-	getBrandingSettingsFn,
-	getConferenceSettingsFn,
-	getEmailFooterFn,
-	getReminderSettingsFn,
-	getSettingFn,
-	getSubmissionTypeConfigsFn,
-	getSubmissionValidationSettingsFn,
+	adminSettingQueryOptions,
+	brandingSettingsQueryOptions,
+	conferenceSettingsQueryOptions,
+	emailFooterQueryOptions,
+	reminderSettingsQueryOptions,
+	submissionTypesConfigQueryOptions,
+	submissionValidationSettingsQueryOptions,
 } from "@/utils/settings.functions";
-import { getSurveyQuestionsFn } from "@/utils/survey.functions";
+import { adminSurveyQuestionsQueryOptions } from "@/utils/survey.functions";
 
 const searchSchema = z.object({
 	tab: z.string().optional(),
@@ -58,57 +58,34 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 	validateSearch: searchSchema,
-	loader: async () => {
-		const [
-			conferenceSettings,
-			submissionTypes,
-			submissionSettings,
-			feeInstructions,
-			brandingSettings,
-			sessions,
-			reviewers,
-			reminderSettings,
-			emailTemplatesRaw,
-			submissionGuidelines,
-			reviewGuidelines,
-			emailFooter,
-			surveyQuestions,
-			tosContent,
-			invitationValidityHours,
-		] = await Promise.all([
-			getConferenceSettingsFn(),
-			getSubmissionTypeConfigsFn(),
-			getSubmissionValidationSettingsFn(),
-			getPaymentInstructionsFn(),
-			getBrandingSettingsFn(),
-			getAllSessionsFn(),
-			getReviewerUsersFn(),
-			getReminderSettingsFn(),
-			getEmailTemplatesFn(),
-			getSettingFn({ data: { key: "SUBMISSION_GUIDELINES" } }),
-			getSettingFn({ data: { key: "REVIEW_GUIDELINES" } }),
-			getEmailFooterFn(),
-			getSurveyQuestionsFn(),
-			getSettingFn({ data: { key: "TOS_CONTENT" } }),
-			getSettingFn({ data: { key: "INVITATION_VALIDITY_HOURS" } }),
+	loader: async ({ context }) => {
+		await Promise.all([
+			context.queryClient.ensureQueryData(conferenceSettingsQueryOptions()),
+			context.queryClient.ensureQueryData(submissionTypesConfigQueryOptions()),
+			context.queryClient.ensureQueryData(
+				submissionValidationSettingsQueryOptions(),
+			),
+			context.queryClient.ensureQueryData(paymentInstructionsQueryOptions()),
+			context.queryClient.ensureQueryData(brandingSettingsQueryOptions()),
+			context.queryClient.ensureQueryData(allSessionsQueryOptions()),
+			context.queryClient.ensureQueryData(reviewerUsersQueryOptions()),
+			context.queryClient.ensureQueryData(reminderSettingsQueryOptions()),
+			context.queryClient.ensureQueryData(emailTemplatesQueryOptions()),
+			context.queryClient.ensureQueryData(
+				adminSettingQueryOptions("SUBMISSION_GUIDELINES"),
+			),
+			context.queryClient.ensureQueryData(
+				adminSettingQueryOptions("REVIEW_GUIDELINES"),
+			),
+			context.queryClient.ensureQueryData(emailFooterQueryOptions()),
+			context.queryClient.ensureQueryData(adminSurveyQuestionsQueryOptions()),
+			context.queryClient.ensureQueryData(
+				adminSettingQueryOptions("TOS_CONTENT"),
+			),
+			context.queryClient.ensureQueryData(
+				adminSettingQueryOptions("INVITATION_VALIDITY_HOURS"),
+			),
 		]);
-		return {
-			conferenceSettings,
-			submissionTypes,
-			submissionSettings,
-			feeInstructions,
-			brandingSettings,
-			sessions,
-			reviewers,
-			reminderSettings,
-			emailTemplates: emailTemplatesRaw.map(toEmailTemplateUI),
-			submissionGuidelines: submissionGuidelines as string,
-			reviewGuidelines: reviewGuidelines as string,
-			emailFooter: emailFooter as string,
-			surveyQuestions,
-			tosContent: tosContent as string,
-			invitationValidityHours: invitationValidityHours as number,
-		};
 	},
 	component: AdminSettingsPage,
 });
@@ -128,27 +105,52 @@ const tabs = [
 ];
 
 function AdminSettingsPage() {
-	const {
-		conferenceSettings,
-		submissionTypes,
-		submissionSettings,
-		feeInstructions,
-		brandingSettings,
-		sessions,
-		reviewers,
-		reminderSettings,
-		emailTemplates,
-		submissionGuidelines,
-		reviewGuidelines,
-		emailFooter,
-		surveyQuestions,
-		tosContent,
-		invitationValidityHours,
-	} = Route.useLoaderData();
+	const queryClient = useQueryClient();
 	const { tab } = useSearch({ from: "/_app/admin/_layout/settings/" });
 	const activeTab = tab ?? "conference";
 	const navigate = useNavigate({ from: Route.fullPath });
-	const router = useRouter();
+
+	const { data: conferenceSettings } = useSuspenseQuery(
+		conferenceSettingsQueryOptions(),
+	);
+	const { data: submissionTypes } = useSuspenseQuery(
+		submissionTypesConfigQueryOptions(),
+	);
+	const { data: submissionSettings } = useSuspenseQuery(
+		submissionValidationSettingsQueryOptions(),
+	);
+	const { data: feeInstructions } = useSuspenseQuery(
+		paymentInstructionsQueryOptions(),
+	);
+	const { data: brandingSettings } = useSuspenseQuery(
+		brandingSettingsQueryOptions(),
+	);
+	const { data: sessions } = useSuspenseQuery(allSessionsQueryOptions());
+	const { data: reviewers } = useSuspenseQuery(reviewerUsersQueryOptions());
+	const { data: reminderSettings } = useSuspenseQuery(
+		reminderSettingsQueryOptions(),
+	);
+	const { data: emailTemplatesRaw } = useSuspenseQuery(
+		emailTemplatesQueryOptions(),
+	);
+	const { data: submissionGuidelines } = useSuspenseQuery(
+		adminSettingQueryOptions("SUBMISSION_GUIDELINES"),
+	);
+	const { data: reviewGuidelines } = useSuspenseQuery(
+		adminSettingQueryOptions("REVIEW_GUIDELINES"),
+	);
+	const { data: emailFooter } = useSuspenseQuery(emailFooterQueryOptions());
+	const { data: surveyQuestions } = useSuspenseQuery(
+		adminSurveyQuestionsQueryOptions(),
+	);
+	const { data: tosContent } = useSuspenseQuery(
+		adminSettingQueryOptions("TOS_CONTENT"),
+	);
+	const { data: invitationValidityHours } = useSuspenseQuery(
+		adminSettingQueryOptions("INVITATION_VALIDITY_HOURS"),
+	);
+
+	const emailTemplates = emailTemplatesRaw.map(toEmailTemplateUI);
 
 	return (
 		<div className="flex h-full flex-col">
@@ -185,8 +187,8 @@ function AdminSettingsPage() {
 						<TabsContent value="submissions">
 							<SubmissionSettingsTab
 								initialData={submissionSettings}
-								initialSubmissionGuidelines={submissionGuidelines}
-								initialReviewGuidelines={reviewGuidelines}
+								initialSubmissionGuidelines={submissionGuidelines as string}
+								initialReviewGuidelines={reviewGuidelines as string}
 							/>
 						</TabsContent>
 
@@ -198,14 +200,18 @@ function AdminSettingsPage() {
 							<SessionsTab
 								initialSessions={sessions}
 								reviewers={reviewers}
-								onUpdate={() => router.invalidate()}
+								onUpdate={() =>
+									queryClient.invalidateQueries({
+										queryKey: allSessionsQueryOptions().queryKey,
+									})
+								}
 							/>
 						</TabsContent>
 
 						<TabsContent value="emails">
 							<EmailTemplatesTab
 								initialData={emailTemplates}
-								initialFooter={emailFooter}
+								initialFooter={emailFooter as string}
 							/>
 						</TabsContent>
 
@@ -226,12 +232,12 @@ function AdminSettingsPage() {
 						</TabsContent>
 
 						<TabsContent value="tos">
-							<TosContentTab initialContent={tosContent} />
+							<TosContentTab initialContent={tosContent as string} />
 						</TabsContent>
 
 						<TabsContent value="invitations">
 							<InvitationsSettingsTab
-								initialValidityHours={invitationValidityHours}
+								initialValidityHours={invitationValidityHours as number}
 							/>
 						</TabsContent>
 					</Tabs>

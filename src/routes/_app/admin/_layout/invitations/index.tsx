@@ -1,5 +1,5 @@
 import { IconMailPlus } from "@tabler/icons-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -9,36 +9,32 @@ import { InvitationMobileCard } from "@/components/admin/invitations/invitation-
 import { InviteUserDialog } from "@/components/admin/invitations/invite-user-dialog";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
-import type { AdminInvitation } from "@/lib/server/admin/invitations";
 import {
+	adminInvitationsQueryOptions,
 	cancelInvitationFn,
-	getAdminInvitationsFn,
 	resendInvitationFn,
 } from "@/utils/admin-invitations.functions";
 
 export const Route = createFileRoute("/_app/admin/_layout/invitations/")({
+	loader: async ({ context }) => {
+		await context.queryClient.ensureQueryData(adminInvitationsQueryOptions());
+	},
 	component: InvitationsPage,
 });
-
-async function fetchInvitations(): Promise<AdminInvitation[]> {
-	return getAdminInvitationsFn();
-}
 
 function InvitationsPage() {
 	const queryClient = useQueryClient();
 	const [dialogOpen, setDialogOpen] = useState(false);
 
-	const {
-		data: invitations = [],
-		isLoading,
-		error,
-	} = useQuery({
-		queryKey: ["admin-invitations"],
-		queryFn: fetchInvitations,
-	});
+	const { data: invitations } = useSuspenseQuery(
+		adminInvitationsQueryOptions(),
+	);
 
 	const invalidate = useCallback(
-		() => queryClient.invalidateQueries({ queryKey: ["admin-invitations"] }),
+		() =>
+			queryClient.invalidateQueries({
+				queryKey: adminInvitationsQueryOptions().queryKey,
+			}),
 		[queryClient],
 	);
 
@@ -77,17 +73,6 @@ function InvitationsPage() {
 		[handleResend, handleCancel],
 	);
 
-	if (error) {
-		return (
-			<div className="flex h-full flex-col">
-				<PageHeader icon={IconMailPlus} title="Invitations" />
-				<div className="flex flex-1 items-center justify-center">
-					<p className="text-destructive">Error loading invitations</p>
-				</div>
-			</div>
-		);
-	}
-
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconMailPlus} title="Invitations">
@@ -97,31 +82,25 @@ function InvitationsPage() {
 				</Button>
 			</PageHeader>
 			<div className="flex-1 overflow-auto p-6">
-				{isLoading ? (
-					<div className="flex h-32 items-center justify-center">
-						<p className="text-muted-foreground">Loading...</p>
-					</div>
-				) : (
-					<DataTable
-						columns={columns}
-						data={invitations}
-						getRowId={(row) => row.id}
-						mobileCard={(invitation) => (
-							<InvitationMobileCard
-								invitation={invitation}
-								onResend={handleResend}
-								onCancel={handleCancel}
-							/>
-						)}
-						toolbar={(table) => (
-							<DataTableToolbar
-								table={table}
-								searchKey="email"
-								searchPlaceholder="Search invitations..."
-							/>
-						)}
-					/>
-				)}
+				<DataTable
+					columns={columns}
+					data={invitations}
+					getRowId={(row) => row.id}
+					mobileCard={(invitation) => (
+						<InvitationMobileCard
+							invitation={invitation}
+							onResend={handleResend}
+							onCancel={handleCancel}
+						/>
+					)}
+					toolbar={(table) => (
+						<DataTableToolbar
+							table={table}
+							searchKey="email"
+							searchPlaceholder="Search invitations..."
+						/>
+					)}
+				/>
 			</div>
 
 			<InviteUserDialog

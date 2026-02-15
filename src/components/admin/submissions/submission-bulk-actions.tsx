@@ -1,5 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
 import type { Table } from "@tanstack/react-table";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { BulkActionDialog } from "@/components/admin/data-table";
 import { Button } from "@/components/ui/button";
@@ -19,10 +20,9 @@ import {
 } from "@/utils/admin-submissions.functions";
 import type { AdminSubmission } from "@/utils/admin-submissions.server";
 import {
-	getActiveSessionsFn,
-	getReviewerUsersFn,
+	activeSessionsQueryOptions,
+	reviewerUsersQueryOptions,
 } from "@/utils/sessions.functions";
-import type { ReviewerUser } from "@/utils/sessions.server";
 
 interface SubmissionBulkActionsProps {
 	table: Table<AdminSubmission>;
@@ -44,22 +44,12 @@ export function SubmissionBulkActions({
 		useState<SubmissionStatus>("UNDER_REVIEW");
 	const [selectedReviewer, setSelectedReviewer] = useState<string>("");
 	const [selectedSession, setSelectedSession] = useState<string>("");
-	const [availableSessions, setAvailableSessions] = useState<
-		{ id: string; name: string }[]
-	>([]);
-	const [reviewers, setReviewers] = useState<ReviewerUser[]>([]);
+	const { data: availableSessions = [] } = useQuery(
+		activeSessionsQueryOptions(),
+	);
+	const { data: reviewers = [] } = useQuery(reviewerUsersQueryOptions());
 	const [isLoading, setIsLoading] = useState(false);
 	const [errors, setErrors] = useState<string[]>([]);
-
-	// Load active sessions and reviewers
-	useEffect(() => {
-		getActiveSessionsFn()
-			.then(setAvailableSessions)
-			.catch(() => {});
-		getReviewerUsersFn()
-			.then(setReviewers)
-			.catch(() => {});
-	}, []);
 
 	if (selectedCount === 0) return null;
 

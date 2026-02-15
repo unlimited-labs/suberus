@@ -1,3 +1,4 @@
+import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { authMiddleware } from "./auth.middleware";
@@ -22,6 +23,12 @@ const submitReviewSchema = z.object({
 	scores: z.record(z.string(), z.number().int().min(1).max(5)).optional(),
 	confidenceLevel: z.number().int().min(1).max(5).optional(),
 });
+
+export const assignmentForReviewQueryOptions = (assignmentId: string) =>
+	queryOptions({
+		queryKey: ["reviews", "assignment", assignmentId],
+		queryFn: () => getAssignmentForReviewFn({ data: { assignmentId } }),
+	});
 
 /** Get assignment details for review form (reviewer) */
 export const getAssignmentForReviewFn = createServerFn({ method: "GET" })

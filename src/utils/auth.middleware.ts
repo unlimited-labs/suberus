@@ -61,6 +61,25 @@ export const authRouteMiddleware = createMiddleware().server(
 	},
 );
 
+/** Route middleware - redirects non-admin users to dashboard */
+export const adminRouteMiddleware = createMiddleware().server(
+	async ({ next }) => {
+		const session = await auth.api.getSession({
+			headers: getRequestHeaders(),
+		});
+		if (!session?.user) {
+			throw redirect({ to: "/login" });
+		}
+		if (
+			!session.user.role ||
+			!["ADMIN", "EDITOR"].includes(session.user.role)
+		) {
+			throw redirect({ to: "/" });
+		}
+		return next({ context: { user: session.user } });
+	},
+);
+
 /** Request middleware for API routes - authenticates user */
 export const authRequestMiddleware = createMiddleware().server(
 	async ({ next }) => {

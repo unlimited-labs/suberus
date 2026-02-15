@@ -1,3 +1,4 @@
+import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
@@ -13,6 +14,12 @@ import {
 import { adminMiddleware, authMiddleware } from "./auth.middleware";
 
 export type { ReviewerAssignment, AssignmentWithReviewer, AvailableReviewer };
+
+export const myAssignmentsQueryOptions = () =>
+	queryOptions({
+		queryKey: ["reviews", "mine"],
+		queryFn: () => getMyAssignmentsFn(),
+	});
 
 /** Get available reviewers for a submission (editor) */
 export const getAvailableReviewersFn = createServerFn({ method: "GET" })

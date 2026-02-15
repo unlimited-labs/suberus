@@ -1,4 +1,5 @@
 import { IconArrowLeft, IconFileText } from "@tabler/icons-react";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
@@ -8,36 +9,45 @@ import {
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import {
-	getActiveSubmissionTypesFn,
-	getSubmissionGuidelinesFn,
-	getSubmissionValidationForFormFn,
+	activeSubmissionTypesQueryOptions,
+	submissionGuidelinesQueryOptions,
+	submissionValidationQueryOptions,
 } from "@/utils/settings.functions";
 import {
-	getSubmissionByIdFn,
+	submissionDetailQueryOptions,
 	submitDraftFn,
 	updateDraftSubmissionFn,
 	uploadSubmissionFile,
 } from "@/utils/submissions.functions";
 
 export const Route = createFileRoute("/_app/submissions/$id_/edit")({
-	loader: async ({ params }) => {
-		const [data, typeConfigs, validationSettings, submissionGuidelines] =
-			await Promise.all([
-				getSubmissionByIdFn({ data: { submissionId: params.id } }),
-				getActiveSubmissionTypesFn(),
-				getSubmissionValidationForFormFn(),
-				getSubmissionGuidelinesFn(),
-			]);
-		return { data, typeConfigs, validationSettings, submissionGuidelines };
+	loader: async ({ params, context }) => {
+		await Promise.all([
+			context.queryClient.ensureQueryData(
+				submissionDetailQueryOptions(params.id),
+			),
+			context.queryClient.ensureQueryData(activeSubmissionTypesQueryOptions()),
+			context.queryClient.ensureQueryData(submissionValidationQueryOptions()),
+			context.queryClient.ensureQueryData(submissionGuidelinesQueryOptions()),
+		]);
 	},
 	component: EditSubmissionPage,
 });
 
 function EditSubmissionPage() {
 	const { id } = Route.useParams();
-	const { data, typeConfigs, validationSettings, submissionGuidelines } =
-		Route.useLoaderData();
+	const { data } = useSuspenseQuery(submissionDetailQueryOptions(id));
+	const { data: typeConfigs } = useSuspenseQuery(
+		activeSubmissionTypesQueryOptions(),
+	);
+	const { data: validationSettings } = useSuspenseQuery(
+		submissionValidationQueryOptions(),
+	);
+	const { data: submissionGuidelines } = useSuspenseQuery(
+		submissionGuidelinesQueryOptions(),
+	);
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 
 	if (
 		!data ||
@@ -155,6 +165,9 @@ function EditSubmissionPage() {
 		}
 
 		toast.success(isDraft ? "Submission submitted" : "Submission updated");
+		await queryClient.invalidateQueries({
+			queryKey: submissionDetailQueryOptions(id).queryKey,
+		});
 		navigate({ to: "/submissions/$id", params: { id } });
 	};
 
@@ -163,6 +176,9 @@ function EditSubmissionPage() {
 				const saved = await saveSubmission(formData, true);
 				if (!saved) return;
 				toast.success("Draft saved");
+				await queryClient.invalidateQueries({
+					queryKey: submissionDetailQueryOptions(id).queryKey,
+				});
 				navigate({ to: "/submissions/$id", params: { id } });
 			}
 		: undefined;

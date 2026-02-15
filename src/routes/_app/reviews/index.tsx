@@ -1,18 +1,18 @@
 import { IconClipboardCheck } from "@tabler/icons-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { DataTable, DataTableToolbar } from "@/components/admin/data-table";
 import { PageHeader } from "@/components/layout/page-header";
 import { reviewColumns } from "@/components/reviews/review-columns";
 import { ReviewMobileCard } from "@/components/reviews/review-mobile-card";
 import {
-	getMyAssignmentsFn,
+	myAssignmentsQueryOptions,
 	type ReviewerAssignment,
 } from "@/utils/assignments.functions";
 
 export const Route = createFileRoute("/_app/reviews/")({
-	loader: async () => {
-		const result = await getMyAssignmentsFn();
-		return { assignments: result.assignments };
+	loader: async ({ context }) => {
+		await context.queryClient.ensureQueryData(myAssignmentsQueryOptions());
 	},
 	component: ReviewsPage,
 });
@@ -26,7 +26,8 @@ const columnLabels: Record<string, string> = {
 };
 
 function ReviewsPage() {
-	const { assignments } = Route.useLoaderData();
+	const { data: result } = useSuspenseQuery(myAssignmentsQueryOptions());
+	const assignments = result.assignments;
 
 	return (
 		<div className="flex h-full flex-col">

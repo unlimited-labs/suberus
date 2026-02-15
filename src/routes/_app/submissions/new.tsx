@@ -1,4 +1,5 @@
 import { IconFileText, IconMailX, IconRefresh } from "@tabler/icons-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -12,9 +13,9 @@ import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/use-session";
 import { sendVerificationEmail } from "@/lib/auth-client";
 import {
-	getActiveSubmissionTypesFn,
-	getSubmissionGuidelinesFn,
-	getSubmissionValidationForFormFn,
+	activeSubmissionTypesQueryOptions,
+	submissionGuidelinesQueryOptions,
+	submissionValidationQueryOptions,
 } from "@/utils/settings.functions";
 import {
 	createSubmission,
@@ -22,14 +23,12 @@ import {
 } from "@/utils/submissions.functions";
 
 export const Route = createFileRoute("/_app/submissions/new")({
-	loader: async () => {
-		const [typeConfigs, validationSettings, submissionGuidelines] =
-			await Promise.all([
-				getActiveSubmissionTypesFn(),
-				getSubmissionValidationForFormFn(),
-				getSubmissionGuidelinesFn(),
-			]);
-		return { typeConfigs, validationSettings, submissionGuidelines };
+	loader: async ({ context }) => {
+		await Promise.all([
+			context.queryClient.ensureQueryData(activeSubmissionTypesQueryOptions()),
+			context.queryClient.ensureQueryData(submissionValidationQueryOptions()),
+			context.queryClient.ensureQueryData(submissionGuidelinesQueryOptions()),
+		]);
 	},
 	component: NewSubmissionPage,
 });
@@ -37,8 +36,15 @@ export const Route = createFileRoute("/_app/submissions/new")({
 const RESEND_COOLDOWN = 60;
 
 function NewSubmissionPage() {
-	const { typeConfigs, validationSettings, submissionGuidelines } =
-		Route.useLoaderData();
+	const { data: typeConfigs } = useSuspenseQuery(
+		activeSubmissionTypesQueryOptions(),
+	);
+	const { data: validationSettings } = useSuspenseQuery(
+		submissionValidationQueryOptions(),
+	);
+	const { data: submissionGuidelines } = useSuspenseQuery(
+		submissionGuidelinesQueryOptions(),
+	);
 	const navigate = useNavigate();
 	const { user } = useSession();
 	const [cooldown, setCooldown] = useState(0);

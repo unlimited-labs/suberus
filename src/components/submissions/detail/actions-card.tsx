@@ -1,10 +1,14 @@
 import { IconEdit, IconSend, IconX } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import type { SubmissionStatus } from "@/generated/prisma/enums";
-import { submitDraftFn } from "@/utils/submissions.functions";
+import {
+	submissionDetailQueryOptions,
+	submitDraftFn,
+} from "@/utils/submissions.functions";
 import { withdrawSubmissionFn } from "@/utils/workflow.functions";
 
 interface ActionsCardProps {
@@ -19,6 +23,7 @@ export function ActionsCard({
 	showTitle = true,
 }: ActionsCardProps) {
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 	const [isLoading, setIsLoading] = useState(false);
 
 	const handleEdit = () =>
@@ -34,6 +39,9 @@ export function ActionsCard({
 			});
 			if (result.success) {
 				toast.success("Submission submitted");
+				await queryClient.invalidateQueries({
+					queryKey: submissionDetailQueryOptions(submissionId).queryKey,
+				});
 				navigate({ to: "/submissions/$id", params: { id: submissionId } });
 			} else {
 				toast.error(result.error ?? "Submit failed");
@@ -53,6 +61,9 @@ export function ActionsCard({
 			});
 			if (result.success) {
 				toast.success("Submission withdrawn");
+				await queryClient.invalidateQueries({
+					queryKey: submissionDetailQueryOptions(submissionId).queryKey,
+				});
 				navigate({ to: "/submissions/$id", params: { id: submissionId } });
 			} else {
 				toast.error(result.error ?? "Withdraw failed");

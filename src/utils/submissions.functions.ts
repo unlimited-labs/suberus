@@ -1,3 +1,4 @@
+import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
@@ -277,6 +278,18 @@ export const submitDraftFn = createServerFn({ method: "POST" })
 			return submitDraft(data.submissionId, context.user.id);
 		},
 	);
+
+export const mySubmissionsQueryOptions = () =>
+	queryOptions({
+		queryKey: ["submissions", "mine"],
+		queryFn: () => getMySubmissionsFn(),
+	});
+
+export const submissionDetailQueryOptions = (submissionId: string) =>
+	queryOptions({
+		queryKey: ["submissions", "detail", submissionId],
+		queryFn: () => getSubmissionByIdFn({ data: { submissionId } }),
+	});
 
 // Re-export types for use in components
 export type {

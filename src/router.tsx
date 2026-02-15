@@ -1,5 +1,6 @@
 import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
+import { RouteError } from "./components/route-error";
 import { RouteSpinner } from "./components/route-spinner";
 import * as TanstackQuery from "./integrations/tanstack-query/root-provider";
 
@@ -18,6 +19,7 @@ export const getRouter = () => {
 
 		defaultPreload: "intent",
 		defaultPendingComponent: RouteSpinner,
+		defaultErrorComponent: RouteError,
 		defaultPendingMs: 200,
 		defaultPendingMinMs: 300,
 	});

@@ -1,3 +1,4 @@
+import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
@@ -7,6 +8,12 @@ import {
 	resendInvitation,
 } from "./admin-invitations.server";
 import { adminOnlyMiddleware } from "./auth.middleware";
+
+export const adminInvitationsQueryOptions = () =>
+	queryOptions({
+		queryKey: ["admin", "invitations"],
+		queryFn: () => getAdminInvitationsFn(),
+	});
 
 export const getAdminInvitationsFn = createServerFn({ method: "GET" })
 	.middleware([adminOnlyMiddleware])

@@ -5,6 +5,7 @@ import {
 	IconSettings,
 	IconUser,
 } from "@tabler/icons-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -30,28 +31,32 @@ import {
 	updatePersonalInfoFn,
 } from "@/utils/profile.functions";
 import {
-	getActiveSurveyQuestionsFn,
-	getUserSurveyAnswersFn,
+	activeSurveyQuestionsQueryOptions,
+	userSurveyAnswersQueryOptions,
 } from "@/utils/survey.functions";
 
 export const Route = createFileRoute("/_app/settings")({
-	loader: async () => {
-		const [surveyQuestions, surveyAnswersRaw] = await Promise.all([
-			getActiveSurveyQuestionsFn(),
-			getUserSurveyAnswersFn(),
+	loader: async ({ context }) => {
+		await Promise.all([
+			context.queryClient.ensureQueryData(activeSurveyQuestionsQueryOptions()),
+			context.queryClient.ensureQueryData(userSurveyAnswersQueryOptions()),
 		]);
-		const surveyAnswers = surveyAnswersRaw.map((a) => ({
-			questionId: a.questionId,
-			value: a.value,
-		}));
-		return { surveyQuestions, surveyAnswers };
 	},
 	component: SettingsPage,
 });
 
 function SettingsPage() {
 	const { user } = useSession();
-	const { surveyQuestions, surveyAnswers } = Route.useLoaderData();
+	const { data: surveyQuestions } = useSuspenseQuery(
+		activeSurveyQuestionsQueryOptions(),
+	);
+	const { data: surveyAnswersRaw } = useSuspenseQuery(
+		userSurveyAnswersQueryOptions(),
+	);
+	const surveyAnswers = surveyAnswersRaw.map((a) => ({
+		questionId: a.questionId,
+		value: a.value,
+	}));
 	const [affiliationName, setAffiliationName] = useState("");
 
 	useEffect(() => {

@@ -1,16 +1,16 @@
 import { IconFileStack } from "@tabler/icons-react";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
 import { DataTable, DataTableToolbar } from "@/components/admin/data-table";
 import { submissionColumns } from "@/components/admin/submissions/columns";
 import { SubmissionBulkActions } from "@/components/admin/submissions/submission-bulk-actions";
 import { SubmissionMobileCard } from "@/components/admin/submissions/submission-mobile-card";
 import { PageHeader } from "@/components/layout/page-header";
-import { getAdminSubmissionsFn } from "@/utils/admin-submissions.functions";
+import { adminSubmissionsQueryOptions } from "@/utils/admin-submissions.functions";
 
 export const Route = createFileRoute("/_app/admin/_layout/submissions/")({
-	loader: async () => {
-		const result = await getAdminSubmissionsFn();
-		return { submissions: result.submissions };
+	loader: async ({ context }) => {
+		await context.queryClient.ensureQueryData(adminSubmissionsQueryOptions());
 	},
 	component: AdminSubmissionsPage,
 });
@@ -24,8 +24,10 @@ const columnLabels: Record<string, string> = {
 };
 
 function AdminSubmissionsPage() {
-	const { submissions } = Route.useLoaderData();
-	const router = useRouter();
+	const queryClient = useQueryClient();
+	const {
+		data: { submissions },
+	} = useSuspenseQuery(adminSubmissionsQueryOptions());
 
 	return (
 		<div className="flex h-full flex-col">
@@ -45,7 +47,11 @@ function AdminSubmissionsPage() {
 							actions={
 								<SubmissionBulkActions
 									table={table}
-									onSuccess={() => router.invalidate()}
+									onSuccess={() =>
+										queryClient.invalidateQueries({
+											queryKey: adminSubmissionsQueryOptions().queryKey,
+										})
+									}
 								/>
 							}
 						/>

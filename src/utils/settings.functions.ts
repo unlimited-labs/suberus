@@ -1,3 +1,4 @@
+import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import type {
@@ -36,6 +37,78 @@ const submissionTypeConfigSchema = z.object({
 	enableConfidenceLevel: z.boolean(),
 	enableSessionSelection: z.boolean(),
 });
+
+export const activeSubmissionTypesQueryOptions = () =>
+	queryOptions({
+		queryKey: ["settings", "submission-types-active"],
+		queryFn: () => getActiveSubmissionTypesFn(),
+	});
+
+export const submissionValidationQueryOptions = () =>
+	queryOptions({
+		queryKey: ["settings", "submission-validation-form"],
+		queryFn: () => getSubmissionValidationForFormFn(),
+	});
+
+export const submissionGuidelinesQueryOptions = () =>
+	queryOptions({
+		queryKey: ["settings", "submission-guidelines"],
+		queryFn: () => getSubmissionGuidelinesFn(),
+	});
+
+export const reviewGuidelinesQueryOptions = () =>
+	queryOptions({
+		queryKey: ["settings", "review-guidelines"],
+		queryFn: () => getReviewGuidelinesFn(),
+	});
+
+export const submissionDeadlineQueryOptions = () =>
+	queryOptions({
+		queryKey: ["settings", "submission-deadline"],
+		queryFn: () => getSubmissionDeadlineFn(),
+	});
+
+export const conferenceSettingsQueryOptions = () =>
+	queryOptions({
+		queryKey: ["settings", "conference"],
+		queryFn: () => getConferenceSettingsFn(),
+	});
+
+export const brandingSettingsQueryOptions = () =>
+	queryOptions({
+		queryKey: ["settings", "branding"],
+		queryFn: () => getBrandingSettingsFn(),
+	});
+
+export const submissionTypesConfigQueryOptions = () =>
+	queryOptions({
+		queryKey: ["settings", "submission-types-config"],
+		queryFn: () => getSubmissionTypeConfigsFn(),
+	});
+
+export const submissionValidationSettingsQueryOptions = () =>
+	queryOptions({
+		queryKey: ["settings", "submission-validation"],
+		queryFn: () => getSubmissionValidationSettingsFn(),
+	});
+
+export const adminSettingQueryOptions = (key: string) =>
+	queryOptions({
+		queryKey: ["settings", "admin", key],
+		queryFn: () => getSettingFn({ data: { key } }),
+	});
+
+export const reminderSettingsQueryOptions = () =>
+	queryOptions({
+		queryKey: ["settings", "reminders"],
+		queryFn: () => getReminderSettingsFn(),
+	});
+
+export const emailFooterQueryOptions = () =>
+	queryOptions({
+		queryKey: ["settings", "email-footer"],
+		queryFn: () => getEmailFooterFn(),
+	});
 
 /**
  * Get a single setting (admin only)

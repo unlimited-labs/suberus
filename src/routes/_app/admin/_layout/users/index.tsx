@@ -1,5 +1,5 @@
 import { IconDownload, IconUsers } from "@tabler/icons-react";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { DataTable, DataTableToolbar } from "@/components/admin/data-table";
 import { userColumns } from "@/components/admin/users/columns";
@@ -7,10 +7,12 @@ import { UserBulkActions } from "@/components/admin/users/user-bulk-actions";
 import { UserMobileCard } from "@/components/admin/users/user-mobile-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
-import type { AdminUser } from "@/lib/server/admin/users";
-import { getAdminUsers } from "@/utils/admin-users.functions";
+import { adminUsersQueryOptions } from "@/utils/admin-users.functions";
 
 export const Route = createFileRoute("/_app/admin/_layout/users/")({
+	loader: async ({ context }) => {
+		await context.queryClient.ensureQueryData(adminUsersQueryOptions());
+	},
 	component: UsersPage,
 });
 
@@ -22,31 +24,8 @@ const columnLabels: Record<string, string> = {
 	isActive: "Status",
 };
 
-async function fetchUsers(): Promise<AdminUser[]> {
-	const result = await getAdminUsers({ data: {} });
-	return result.users;
-}
-
 function UsersPage() {
-	const {
-		data: users = [],
-		isLoading,
-		error,
-	} = useQuery({
-		queryKey: ["admin-users"],
-		queryFn: fetchUsers,
-	});
-
-	if (error) {
-		return (
-			<div className="flex h-full flex-col">
-				<PageHeader icon={IconUsers} title="Users" />
-				<div className="flex flex-1 items-center justify-center">
-					<p className="text-destructive">Error loading users</p>
-				</div>
-			</div>
-		);
-	}
+	const { data: users } = useSuspenseQuery(adminUsersQueryOptions());
 
 	return (
 		<div className="flex h-full flex-col">
@@ -59,27 +38,21 @@ function UsersPage() {
 				</Button>
 			</PageHeader>
 			<div className="flex-1 overflow-auto p-6">
-				{isLoading ? (
-					<div className="flex h-32 items-center justify-center">
-						<p className="text-muted-foreground">Loading...</p>
-					</div>
-				) : (
-					<DataTable
-						columns={userColumns}
-						data={users}
-						getRowId={(row) => row.id}
-						mobileCard={UserMobileCard}
-						toolbar={(table) => (
-							<DataTableToolbar
-								table={table}
-								searchKey="name"
-								searchPlaceholder="Search users..."
-								columnLabels={columnLabels}
-								actions={<UserBulkActions table={table} />}
-							/>
-						)}
-					/>
-				)}
+				<DataTable
+					columns={userColumns}
+					data={users}
+					getRowId={(row) => row.id}
+					mobileCard={UserMobileCard}
+					toolbar={(table) => (
+						<DataTableToolbar
+							table={table}
+							searchKey="name"
+							searchPlaceholder="Search users..."
+							columnLabels={columnLabels}
+							actions={<UserBulkActions table={table} />}
+						/>
+					)}
+				/>
 			</div>
 		</div>
 	);

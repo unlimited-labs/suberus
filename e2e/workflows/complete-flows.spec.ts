@@ -152,7 +152,9 @@ test.describe("Complete Submission Workflow", () => {
 		await page.getByLabel(/Internal Reasoning/i).fill("Excellent submission - Accept");
 		await page.getByLabel(/Letter to Author/i).fill("Congratulations, your submission has been accepted.");
 		await page.getByRole("button", { name: /Submit Decision/i }).click();
-	
+		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
+		await page.getByRole("dialog").waitFor({ state: "hidden", timeout: 5000 });
+
 		// Assert
 		await page.reload();
 		await expect(page.getByText(/Accepted/i).first()).toBeVisible({ timeout: 10000 });

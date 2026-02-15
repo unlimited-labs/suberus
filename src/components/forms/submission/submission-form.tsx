@@ -14,6 +14,7 @@ import {
 	IconWriting,
 } from "@tabler/icons-react";
 import { useStore } from "@tanstack/react-form";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -37,7 +38,7 @@ import { submitForm } from "@/lib/form-utils";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import { cn } from "@/lib/utils";
 import { getAffiliationById } from "@/utils/affiliations.functions";
-import { getActiveSessionsFn } from "@/utils/sessions.functions";
+import { activeSessionsQueryOptions } from "@/utils/sessions.functions";
 import { type Author, AuthorsInput } from "./authors-input";
 import { FileDropzone } from "./file-dropzone";
 import { KeywordsInput } from "./keywords-input";
@@ -170,9 +171,6 @@ export function SubmissionForm({
 	const [selectedType, setSelectedType] = useState<
 		"ABSTRACT" | "POSTER" | "FULL_PAPER"
 	>(initialData?.type || defaultType);
-	const [activeSessions, setActiveSessions] = useState<
-		{ id: string; name: string }[]
-	>([]);
 
 	const submissionSchema = useMemo(
 		() => createSubmissionSchema(validationSettings),
@@ -336,16 +334,13 @@ export function SubmissionForm({
 	const currentTypeConfig = typeConfigs.find((t) => t.type === selectedType);
 
 	// Load active sessions when type is ABSTRACT and enableSessionSelection is true
-	useEffect(() => {
-		if (
-			selectedType === "ABSTRACT" &&
-			currentTypeConfig?.config.enableSessionSelection
-		) {
-			getActiveSessionsFn().then(setActiveSessions);
-		} else {
-			setActiveSessions([]);
-		}
-	}, [selectedType, currentTypeConfig]);
+	const showSessions =
+		selectedType === "ABSTRACT" &&
+		!!currentTypeConfig?.config.enableSessionSelection;
+	const { data: activeSessions = [] } = useQuery({
+		...activeSessionsQueryOptions(),
+		enabled: showSessions,
+	});
 	const isFileFormat = currentTypeConfig?.config.contentFormat === "FILE";
 
 	// Update contentFormat when type changes

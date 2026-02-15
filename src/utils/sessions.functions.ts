@@ -1,3 +1,4 @@
+import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { adminMiddleware, authMiddleware } from "./auth.middleware";
@@ -9,6 +10,24 @@ import {
 	getReviewerUsers,
 	updateSession,
 } from "./sessions.server";
+
+export const activeSessionsQueryOptions = () =>
+	queryOptions({
+		queryKey: ["sessions", "active"],
+		queryFn: () => getActiveSessionsFn(),
+	});
+
+export const allSessionsQueryOptions = () =>
+	queryOptions({
+		queryKey: ["sessions", "all"],
+		queryFn: () => getAllSessionsFn(),
+	});
+
+export const reviewerUsersQueryOptions = () =>
+	queryOptions({
+		queryKey: ["admin", "reviewers"],
+		queryFn: () => getReviewerUsersFn(),
+	});
 
 /**
  * Get all sessions with stats (admin only)

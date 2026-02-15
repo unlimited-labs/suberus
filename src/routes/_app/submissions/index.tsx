@@ -1,25 +1,28 @@
 import { IconFileText, IconLock, IconPlus } from "@tabler/icons-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/layout/page-header";
 import { SubmissionsTable } from "@/components/submissions/submissions-table";
 import { Button } from "@/components/ui/button";
-import { getSubmissionDeadlineFn } from "@/utils/settings.functions";
-import { getMySubmissionsFn } from "@/utils/submissions.functions";
+import { submissionDeadlineQueryOptions } from "@/utils/settings.functions";
+import { mySubmissionsQueryOptions } from "@/utils/submissions.functions";
 
 export const Route = createFileRoute("/_app/submissions/")({
-	loader: async () => {
-		const [submissions, { deadline }] = await Promise.all([
-			getMySubmissionsFn(),
-			getSubmissionDeadlineFn(),
+	loader: async ({ context }) => {
+		await Promise.all([
+			context.queryClient.ensureQueryData(mySubmissionsQueryOptions()),
+			context.queryClient.ensureQueryData(submissionDeadlineQueryOptions()),
 		]);
-		const isOpen = deadline ? new Date(deadline) > new Date() : true;
-		return { submissions, isOpen };
 	},
 	component: SubmissionsPage,
 });
 
 function SubmissionsPage() {
-	const { submissions, isOpen } = Route.useLoaderData();
+	const { data: submissions } = useSuspenseQuery(mySubmissionsQueryOptions());
+	const {
+		data: { deadline },
+	} = useSuspenseQuery(submissionDeadlineQueryOptions());
+	const isOpen = deadline ? new Date(deadline) > new Date() : true;
 
 	// Sort submissions by newest first (updatedAt DESC)
 	const sortedSubmissions = [...submissions].sort(

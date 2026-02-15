@@ -1,3 +1,4 @@
+import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
@@ -87,6 +88,18 @@ export const bulkChangeStatusFn = createServerFn({ method: "POST" })
 	)
 	.handler(async ({ data, context }) => {
 		return bulkChangeStatus(data.submissionIds, data.status, context.user.id);
+	});
+
+export const adminSubmissionsQueryOptions = () =>
+	queryOptions({
+		queryKey: ["submissions", "admin"],
+		queryFn: () => getAdminSubmissionsFn(),
+	});
+
+export const editorSubmissionQueryOptions = (submissionId: string) =>
+	queryOptions({
+		queryKey: ["submissions", "editor", submissionId],
+		queryFn: () => getSubmissionForEditorFn({ data: { submissionId } }),
 	});
 
 /** Bulk assign reviewer to submissions */

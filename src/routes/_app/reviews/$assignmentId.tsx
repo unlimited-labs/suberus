@@ -1,4 +1,5 @@
 import { IconArrowLeft, IconClipboardCheck } from "@tabler/icons-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import {
 	ReviewForm,
@@ -7,20 +8,19 @@ import {
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import {
-	getAssignmentForReviewFn,
+	assignmentForReviewQueryOptions,
 	submitReviewFn,
 } from "@/utils/reviews.functions";
-import { getReviewGuidelinesFn } from "@/utils/settings.functions";
+import { reviewGuidelinesQueryOptions } from "@/utils/settings.functions";
 
 export const Route = createFileRoute("/_app/reviews/$assignmentId")({
-	loader: async ({ params }) => {
-		const [data, reviewGuidelines] = await Promise.all([
-			getAssignmentForReviewFn({
-				data: { assignmentId: params.assignmentId },
-			}),
-			getReviewGuidelinesFn(),
+	loader: async ({ params, context }) => {
+		await Promise.all([
+			context.queryClient.ensureQueryData(
+				assignmentForReviewQueryOptions(params.assignmentId),
+			),
+			context.queryClient.ensureQueryData(reviewGuidelinesQueryOptions()),
 		]);
-		return { data, reviewGuidelines };
 	},
 	component: ReviewFormPage,
 });
@@ -28,7 +28,12 @@ export const Route = createFileRoute("/_app/reviews/$assignmentId")({
 function ReviewFormPage() {
 	const { assignmentId } = Route.useParams();
 	const router = useRouter();
-	const { data, reviewGuidelines } = Route.useLoaderData();
+	const { data } = useSuspenseQuery(
+		assignmentForReviewQueryOptions(assignmentId),
+	);
+	const { data: reviewGuidelines } = useSuspenseQuery(
+		reviewGuidelinesQueryOptions(),
+	);
 
 	if (!data) {
 		return <NotFoundState assignmentId={assignmentId} />;

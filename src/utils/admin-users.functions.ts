@@ -1,3 +1,4 @@
+import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
@@ -44,6 +45,28 @@ export const getAdminUserById = createServerFn({ method: "GET" })
 	.handler(async ({ data }) => {
 		const user = await fetchUserById(data.id);
 		return user ?? null;
+	});
+
+export const adminUsersQueryOptions = () =>
+	queryOptions({
+		queryKey: ["admin", "users"],
+		queryFn: async () => {
+			const r = await getAdminUsers({ data: {} });
+			return r.users;
+		},
+	});
+
+export const adminUserDetailQueryOptions = (id: string) =>
+	queryOptions({
+		queryKey: ["admin", "users", id],
+		queryFn: async () => {
+			try {
+				return await getAdminUserById({ data: { id } });
+			} catch (e) {
+				if (e instanceof Response && e.status === 404) return null;
+				throw e;
+			}
+		},
 	});
 
 const patchUserSchema = z.object({

@@ -1,3 +1,5 @@
+import { useStore } from "@tanstack/react-form";
+
 import {
 	Field,
 	FieldDescription,
@@ -34,8 +36,8 @@ export function FormSelectField({
 	description,
 }: FormSelectFieldProps) {
 	const field = useFieldContext<string>();
-	const hasError =
-		field.state.meta.isBlurred && field.state.meta.errors.length > 0;
+	const errors = useStore(field.store, (s) => s.meta.errors);
+	const hasError = field.state.meta.isBlurred && errors.length > 0;
 
 	return (
 		<Field data-invalid={hasError}>
@@ -57,7 +59,7 @@ export function FormSelectField({
 				</SelectContent>
 			</Select>
 			{description && <FieldDescription>{description}</FieldDescription>}
-			<FieldError errors={hasError ? field.state.meta.errors : undefined} />
+			<FieldError errors={hasError ? errors : undefined} />
 		</Field>
 	);
 }

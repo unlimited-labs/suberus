@@ -1,4 +1,5 @@
 import { IconCash, IconCheck, IconInfoCircle } from "@tabler/icons-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/layout/page-header";
 import { SettingsSection } from "@/components/settings/settings-section";
@@ -6,15 +7,17 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Markdown } from "@/components/ui/markdown";
 import { useDateFormat } from "@/hooks/use-date-format";
-import { getPaymentInstructionsFn, getUserFeeFn } from "@/utils/fee.functions";
+import {
+	paymentInstructionsQueryOptions,
+	userFeeQueryOptions,
+} from "@/utils/fee.functions";
 
 export const Route = createFileRoute("/_app/fee/")({
-	loader: async () => {
-		const [fee, instructions] = await Promise.all([
-			getUserFeeFn(),
-			getPaymentInstructionsFn(),
+	loader: async ({ context }) => {
+		await Promise.all([
+			context.queryClient.ensureQueryData(userFeeQueryOptions()),
+			context.queryClient.ensureQueryData(paymentInstructionsQueryOptions()),
 		]);
-		return { fee, instructions };
 	},
 	component: FeePage,
 });
@@ -28,7 +31,10 @@ const feeTypeLabels: Record<string, string> = {
 };
 
 function FeePage() {
-	const { fee, instructions } = Route.useLoaderData();
+	const { data: fee } = useSuspenseQuery(userFeeQueryOptions());
+	const { data: instructions } = useSuspenseQuery(
+		paymentInstructionsQueryOptions(),
+	);
 	const { formatDate } = useDateFormat();
 
 	return (

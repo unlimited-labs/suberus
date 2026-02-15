@@ -1,21 +1,17 @@
 import { IconShieldOff } from "@tabler/icons-react";
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
+import { adminRouteMiddleware } from "@/utils/auth.middleware";
 
 export const Route = createFileRoute("/_app/admin/_layout")({
+	server: {
+		middleware: [adminRouteMiddleware],
+	},
 	component: AdminLayout,
 });
 
 function AdminLayout() {
 	const { isAdmin } = useAdminAuth();
-	const navigate = useNavigate();
-
-	useEffect(() => {
-		if (!isAdmin) {
-			navigate({ to: "/" });
-		}
-	}, [isAdmin, navigate]);
 
 	if (!isAdmin) {
 		return (

@@ -1,3 +1,4 @@
+import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { adminMiddleware, authMiddleware } from "./auth.middleware";
@@ -12,6 +13,24 @@ import {
 	updateSurveyQuestion,
 	upsertSurveyAnswers,
 } from "./survey.server";
+
+export const activeSurveyQuestionsQueryOptions = () =>
+	queryOptions({
+		queryKey: ["survey", "questions", "active"],
+		queryFn: () => getActiveSurveyQuestionsFn(),
+	});
+
+export const userSurveyAnswersQueryOptions = () =>
+	queryOptions({
+		queryKey: ["survey", "answers"],
+		queryFn: () => getUserSurveyAnswersFn(),
+	});
+
+export const adminSurveyQuestionsQueryOptions = () =>
+	queryOptions({
+		queryKey: ["survey", "questions", "all"],
+		queryFn: () => getSurveyQuestionsFn(),
+	});
 
 // ── Admin functions ──
 

@@ -10,8 +10,13 @@ import {
 	IconUsers,
 	IconX,
 } from "@tabler/icons-react";
+import {
+	useQuery,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { AssignReviewerDialog } from "@/components/admin/submissions/assign-reviewer-dialog";
@@ -39,10 +44,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
-import type {
-	SubmissionStatus,
-	SubmissionType,
-} from "@/generated/prisma/enums";
 import { useDateFormat } from "@/hooks/use-date-format";
 import {
 	statusLabels,
@@ -51,11 +52,11 @@ import {
 } from "@/lib/labels/submission";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import {
-	getSubmissionForEditorFn,
+	editorSubmissionQueryOptions,
 	updateSubmissionSessionFn,
 } from "@/utils/admin-submissions.functions";
-import { getActiveSessionsFn } from "@/utils/sessions.functions";
-import { getSettingFn } from "@/utils/settings.functions";
+import { activeSessionsQueryOptions } from "@/utils/sessions.functions";
+import { adminSettingQueryOptions } from "@/utils/settings.functions";
 import {
 	editorOverrideFn,
 	transitionToAwaitingDecisionFn,
@@ -63,6 +64,11 @@ import {
 } from "@/utils/workflow.functions";
 
 export const Route = createFileRoute("/_app/admin/_layout/submissions/$id")({
+	loader: async ({ params, context }) => {
+		await context.queryClient.ensureQueryData(
+			editorSubmissionQueryOptions(params.id),
+		);
+	},
 	component: SubmissionDetailPage,
 });
 
@@ -72,69 +78,12 @@ function formatFileSize(bytes: number): string {
 	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-interface SubmissionData {
-	submission: {
-		id: string;
-		title: string;
-		content: string;
-		type: SubmissionType;
-		status: SubmissionStatus;
-		currentRound: number;
-		sessionId: string | null;
-		file: {
-			id: string;
-			fileName: string;
-			originalName: string;
-			mimeType: string;
-			size: number;
-		} | null;
-	};
-	authors: Array<{
-		firstName: string;
-		lastName: string;
-		email: string;
-		affiliationName: string | null;
-		isPresenter: boolean;
-	}>;
-	assignments: Array<{
-		id: string;
-		reviewerId: string;
-		reviewerName: string;
-		reviewerEmail: string;
-		status: string;
-		round: number;
-	}>;
-	reviews: Array<{
-		id: string;
-		reviewerName: string;
-		decision: string;
-		comments: string | null;
-		round: number;
-	}>;
-	statusHistory: Array<{
-		fromStatus: string | null;
-		toStatus: string;
-		event: string | null;
-		reason: string | null;
-		createdAt: Date;
-		triggeredByName: string | null;
-	}>;
-}
-
-interface ConfigData {
-	minReviewers: number;
-	maxReviewers: number;
-	requiresEditorDecision: boolean;
-	autoTransitionAfterReviews: boolean;
-}
-
 function SubmissionDetailPage() {
 	const { id } = Route.useParams();
+	const queryClient = useQueryClient();
 	const { formatDateTime } = useDateFormat();
 
-	const [isLoading, setIsLoading] = useState(true);
-	const [data, setData] = useState<SubmissionData | null>(null);
-	const [config, setConfig] = useState<ConfigData | null>(null);
+	const { data } = useSuspenseQuery(editorSubmissionQueryOptions(id));
 
 	const [showAssignDialog, setShowAssignDialog] = useState(false);
 	const [showDecisionDialog, setShowDecisionDialog] = useState(false);
@@ -142,114 +91,26 @@ function SubmissionDetailPage() {
 	const [showOverrideDialog, setShowOverrideDialog] = useState(false);
 	const [overrideReasoning, setOverrideReasoning] = useState("");
 	const [isTransitioning, setIsTransitioning] = useState(false);
-	const [availableSessions, setAvailableSessions] = useState<
-		{ id: string; name: string }[]
-	>([]);
 
-	async function loadData() {
-		setIsLoading(true);
-		try {
-			const result = await getSubmissionForEditorFn({
-				data: { submissionId: id },
-			});
-			if (result) {
-				setData(result as SubmissionData);
+	const invalidateSubmission = () =>
+		queryClient.invalidateQueries({
+			queryKey: editorSubmissionQueryOptions(id).queryKey,
+		});
 
-				// Load config for this submission type
-				const configKey = SUBMISSION_TYPE_TO_KEY[result.submission.type];
-				const configResult = await getSettingFn({ data: { key: configKey } });
-				if (configResult) {
-					setConfig(configResult as ConfigData);
-				}
+	// Load config for this submission type
+	const configKey = data
+		? SUBMISSION_TYPE_TO_KEY[data.submission.type]
+		: undefined;
+	const { data: config } = useQuery({
+		...adminSettingQueryOptions(configKey ?? ""),
+		enabled: !!configKey,
+	}) as { data: ConfigData | undefined };
 
-				// Load active sessions if submission is ABSTRACT
-				if (result.submission.type === "ABSTRACT") {
-					const sessions = await getActiveSessionsFn();
-					setAvailableSessions(sessions);
-				}
-			}
-		} catch (error) {
-			console.error("Failed to load submission:", error);
-		} finally {
-			setIsLoading(false);
-		}
-	}
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: loadData is stable
-	useEffect(() => {
-		loadData();
-	}, [id]);
-
-	async function handleTransitionToReviewsComplete() {
-		setIsTransitioning(true);
-		try {
-			const result = await transitionToReviewsCompleteFn({
-				data: { submissionId: id },
-			});
-			if (result.success) {
-				toast.success("Transitioned to Reviews Complete");
-				await loadData();
-			} else {
-				toast.error(result.error || "Transition failed");
-			}
-		} catch (_error) {
-			toast.error("Transition failed");
-		} finally {
-			setIsTransitioning(false);
-		}
-	}
-
-	async function handleEditorOverride() {
-		if (!overrideReasoning.trim()) return;
-		setIsTransitioning(true);
-		try {
-			const result = await editorOverrideFn({
-				data: { submissionId: id, reasoning: overrideReasoning.trim() },
-			});
-			if (result.success) {
-				toast.success("Decision overridden — now in Awaiting Decision");
-				setShowOverrideDialog(false);
-				setOverrideReasoning("");
-				await loadData();
-			} else {
-				toast.error(result.error || "Override failed");
-			}
-		} catch (_error) {
-			toast.error("Override failed");
-		} finally {
-			setIsTransitioning(false);
-		}
-	}
-
-	async function handleTransitionToAwaitingDecision() {
-		setIsTransitioning(true);
-		try {
-			const result = await transitionToAwaitingDecisionFn({
-				data: { submissionId: id },
-			});
-			if (result.success) {
-				toast.success("Transitioned to Awaiting Decision");
-				await loadData();
-			} else {
-				toast.error(result.error || "Transition failed");
-			}
-		} catch (_error) {
-			toast.error("Transition failed");
-		} finally {
-			setIsTransitioning(false);
-		}
-	}
-
-	if (isLoading) {
-		return (
-			<div className="flex h-full flex-col">
-				<PageHeader icon={IconFileText} title="Loading..." />
-				<div className="flex-1 flex items-center justify-center">
-					<IconLoader2 className="size-8 animate-spin text-muted-foreground" />
-				</div>
-			</div>
-		);
-	}
+	// Load active sessions if submission is ABSTRACT
+	const { data: availableSessions = [] } = useQuery({
+		...activeSessionsQueryOptions(),
+		enabled: data?.submission.type === "ABSTRACT",
+	});
 
 	if (!data || !config) {
 		return (
@@ -271,6 +132,66 @@ function SubmissionDetailPage() {
 	}
 
 	const { submission, authors, assignments, reviews, statusHistory } = data;
+
+	async function handleTransitionToReviewsComplete() {
+		setIsTransitioning(true);
+		try {
+			const result = await transitionToReviewsCompleteFn({
+				data: { submissionId: id },
+			});
+			if (result.success) {
+				toast.success("Transitioned to Reviews Complete");
+				await invalidateSubmission();
+			} else {
+				toast.error(result.error || "Transition failed");
+			}
+		} catch (_error) {
+			toast.error("Transition failed");
+		} finally {
+			setIsTransitioning(false);
+		}
+	}
+
+	async function handleEditorOverride() {
+		if (!overrideReasoning.trim()) return;
+		setIsTransitioning(true);
+		try {
+			const result = await editorOverrideFn({
+				data: { submissionId: id, reasoning: overrideReasoning.trim() },
+			});
+			if (result.success) {
+				toast.success("Decision overridden — now in Awaiting Decision");
+				setShowOverrideDialog(false);
+				setOverrideReasoning("");
+				await invalidateSubmission();
+			} else {
+				toast.error(result.error || "Override failed");
+			}
+		} catch (_error) {
+			toast.error("Override failed");
+		} finally {
+			setIsTransitioning(false);
+		}
+	}
+
+	async function handleTransitionToAwaitingDecision() {
+		setIsTransitioning(true);
+		try {
+			const result = await transitionToAwaitingDecisionFn({
+				data: { submissionId: id },
+			});
+			if (result.success) {
+				toast.success("Transitioned to Awaiting Decision");
+				await invalidateSubmission();
+			} else {
+				toast.error(result.error || "Transition failed");
+			}
+		} catch (_error) {
+			toast.error("Transition failed");
+		} finally {
+			setIsTransitioning(false);
+		}
+	}
 
 	// Calculate review progress
 	const currentRoundAssignments = assignments.filter(
@@ -494,7 +415,7 @@ function SubmissionDetailPage() {
 														},
 													});
 													toast.success("Session updated");
-													await loadData();
+													await invalidateSubmission();
 												} catch {
 													toast.error("Failed to update session");
 												}
@@ -706,7 +627,7 @@ function SubmissionDetailPage() {
 				maxReviewers={config.maxReviewers}
 				open={showAssignDialog}
 				onOpenChange={setShowAssignDialog}
-				onAssigned={loadData}
+				onAssigned={invalidateSubmission}
 			/>
 
 			<EditorDecisionDialog
@@ -715,7 +636,7 @@ function SubmissionDetailPage() {
 				reviews={currentRoundReviews}
 				open={showDecisionDialog}
 				onOpenChange={setShowDecisionDialog}
-				onDecisionMade={loadData}
+				onDecisionMade={invalidateSubmission}
 			/>
 
 			<DeskRejectDialog
@@ -723,7 +644,7 @@ function SubmissionDetailPage() {
 				submissionTitle={submission.title}
 				open={showDeskRejectDialog}
 				onOpenChange={setShowDeskRejectDialog}
-				onRejected={loadData}
+				onRejected={invalidateSubmission}
 			/>
 
 			{/* Override Decision Dialog */}
@@ -766,4 +687,11 @@ function SubmissionDetailPage() {
 			</Dialog>
 		</div>
 	);
+}
+
+interface ConfigData {
+	minReviewers: number;
+	maxReviewers: number;
+	requiresEditorDecision: boolean;
+	autoTransitionAfterReviews: boolean;
 }

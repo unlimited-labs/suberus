@@ -36,7 +36,11 @@ import type { FeeType, UserRole } from "@/generated/prisma/enums";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { useDateFormat } from "@/hooks/use-date-format";
 import type { AdminUser } from "@/lib/server/admin/users";
-import { patchAdminUser } from "@/utils/admin-users.functions";
+import {
+	adminUserDetailQueryOptions,
+	adminUsersQueryOptions,
+	patchAdminUser,
+} from "@/utils/admin-users.functions";
 
 interface UserDetailCardProps {
 	user: AdminUser;
@@ -88,8 +92,12 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 		mutationFn: (payload: PatchPayload) =>
 			patchAdminUser({ data: { id: user.id, ...payload } }),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["admin-users"] });
-			queryClient.invalidateQueries({ queryKey: ["admin-user", user.id] });
+			queryClient.invalidateQueries({
+				queryKey: adminUsersQueryOptions().queryKey,
+			});
+			queryClient.invalidateQueries({
+				queryKey: adminUserDetailQueryOptions(user.id).queryKey,
+			});
 			setFeeDialogOpen(false);
 			setRoleDialogOpen(false);
 		},

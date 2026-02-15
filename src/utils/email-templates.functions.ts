@@ -1,3 +1,4 @@
+import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { adminMiddleware } from "./auth.middleware";
@@ -25,6 +26,12 @@ const emailEventTypeEnum = z.enum([
 	"EMAIL_VERIFICATION",
 	"INVITATION",
 ]);
+
+export const emailTemplatesQueryOptions = () =>
+	queryOptions({
+		queryKey: ["admin", "email-templates"],
+		queryFn: () => getEmailTemplatesFn(),
+	});
 
 /** Get all email templates (admin only) */
 export const getEmailTemplatesFn = createServerFn({ method: "GET" })

@@ -4,6 +4,7 @@ import {
 	IconFileText,
 	IconSend,
 } from "@tabler/icons-react";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -13,31 +14,39 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-	getActiveSubmissionTypesFn,
-	getSubmissionValidationForFormFn,
+	activeSubmissionTypesQueryOptions,
+	submissionValidationQueryOptions,
 } from "@/utils/settings.functions";
 import {
-	getSubmissionByIdFn,
 	resubmitSubmissionFn,
+	submissionDetailQueryOptions,
 	uploadSubmissionFile,
 } from "@/utils/submissions.functions";
 
 export const Route = createFileRoute("/_app/submissions/$id_/revise")({
-	loader: async ({ params }) => {
-		const [data, typeConfigs, validationSettings] = await Promise.all([
-			getSubmissionByIdFn({ data: { submissionId: params.id } }),
-			getActiveSubmissionTypesFn(),
-			getSubmissionValidationForFormFn(),
+	loader: async ({ params, context }) => {
+		await Promise.all([
+			context.queryClient.ensureQueryData(
+				submissionDetailQueryOptions(params.id),
+			),
+			context.queryClient.ensureQueryData(activeSubmissionTypesQueryOptions()),
+			context.queryClient.ensureQueryData(submissionValidationQueryOptions()),
 		]);
-		return { data, typeConfigs, validationSettings };
 	},
 	component: ReviseSubmissionPage,
 });
 
 function ReviseSubmissionPage() {
 	const { id } = Route.useParams();
-	const { data, typeConfigs, validationSettings } = Route.useLoaderData();
+	const { data } = useSuspenseQuery(submissionDetailQueryOptions(id));
+	const { data: typeConfigs } = useSuspenseQuery(
+		activeSubmissionTypesQueryOptions(),
+	);
+	const { data: validationSettings } = useSuspenseQuery(
+		submissionValidationQueryOptions(),
+	);
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	if (!data || data.submission.status !== "REVISE_REQUIRED") {
@@ -140,6 +149,9 @@ function ReviseSubmissionPage() {
 					}
 
 					toast.success("Revision submitted successfully");
+					await queryClient.invalidateQueries({
+						queryKey: submissionDetailQueryOptions(id).queryKey,
+					});
 					navigate({ to: "/submissions/$id", params: { id } });
 				} catch {
 					toast.error("Resubmission failed");

@@ -14,7 +14,10 @@ import type { FeeType, UserRole } from "@/generated/prisma/enums";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { feeTypeOptions, userRoleOptions } from "@/lib/labels/user";
 import type { AdminUser } from "@/lib/server/admin/users";
-import { bulkAdminAction } from "@/utils/admin-users.functions";
+import {
+	adminUsersQueryOptions,
+	bulkAdminAction,
+} from "@/utils/admin-users.functions";
 
 interface UserBulkActionsProps {
 	table: Table<AdminUser>;
@@ -43,7 +46,9 @@ export function UserBulkActions({ table }: UserBulkActionsProps) {
 		mutationFn: (payload: BulkActionPayload) =>
 			bulkAdminAction({ data: payload }),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+			queryClient.invalidateQueries({
+				queryKey: adminUsersQueryOptions().queryKey,
+			});
 			table.resetRowSelection();
 			setFeeDialogOpen(false);
 			setRoleDialogOpen(false);
