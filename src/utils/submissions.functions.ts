@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
+	authorSchema,
 	createDynamicSubmissionSchema,
 	DEFAULT_VALIDATION_LIMITS,
 	type ValidationLimits,
@@ -22,7 +23,7 @@ const inputSchema = z.object({
 	type: z.enum(["ABSTRACT", "POSTER", "FULL_PAPER"]),
 	title: z.string(),
 	content: z.string(),
-	authors: z.array(z.any()),
+	authors: z.array(authorSchema),
 	keywords: z.array(z.string()),
 	contentFormat: z.enum(["TEXT", "FILE"]),
 	sessionId: z.uuid().nullish(),
@@ -229,7 +230,7 @@ export const updateDraftSubmissionFn = createServerFn({ method: "POST" })
 			type: z.enum(["ABSTRACT", "POSTER", "FULL_PAPER"]),
 			title: z.string(),
 			content: z.string(),
-			authors: z.array(z.any()),
+			authors: z.array(authorSchema),
 			keywords: z.array(z.string()),
 			contentFormat: z.enum(["TEXT", "FILE"]),
 			sessionId: z.uuid().nullish(),
