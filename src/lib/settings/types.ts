@@ -82,6 +82,7 @@ export type AppSettingsMap = {
 	BRANDING_SECONDARY_COLOR: string;
 	BRANDING_FOOTER_TEXT: string;
 	BRANDING_AUTH_BACKGROUND_KEY: string;
+	BRANDING_AUTH_BG_OVERLAY: number;
 
 	// Reminder settings
 	REMINDER_REVIEWER_SETTINGS: ReviewerReminderSettings;
@@ -147,9 +148,10 @@ export function getSubmissionTypeFromKey(
 /** Type-safe key for AppSettingsMap */
 export type AppSettingKeyType = keyof AppSettingsMap;
 
-/** Ensure AppSettingKeyType matches Prisma enum */
-export type _ValidateKeys = AppSettingKeyType extends AppSettingKey
-	? AppSettingKey extends AppSettingKeyType
-		? true
-		: never
-	: never;
+/** Ensure AppSettingsMap keys match Prisma AppSettingKey enum exactly.
+ *  If keys diverge, one of these becomes `never` → TS error on the Record below. */
+type _KeysMatch = [
+	AppSettingKeyType extends AppSettingKey ? true : never,
+	AppSettingKey extends AppSettingKeyType ? true : never,
+];
+export const APP_SETTING_KEYS_VALID: _KeysMatch = [true, true];

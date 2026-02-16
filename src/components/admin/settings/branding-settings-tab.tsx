@@ -12,6 +12,7 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import type { BrandingSettings } from "@/utils/settings.functions";
 import {
@@ -35,7 +36,10 @@ export function BrandingSettingsTab({ initialData }: BrandingSettingsTabProps) {
 	const [bgRemoving, setBgRemoving] = useState(false);
 	const bgInputRef = useRef<HTMLInputElement>(null);
 
-	const handleChange = (field: keyof BrandingSettings, value: string) => {
+	const handleChange = (
+		field: keyof BrandingSettings,
+		value: string | number,
+	) => {
 		setData((prev) => ({ ...prev, [field]: value }));
 	};
 
@@ -215,10 +219,34 @@ export function BrandingSettingsTab({ initialData }: BrandingSettingsTabProps) {
 						)}
 					</div>
 
+					{data.authBackgroundUrl && (
+						<div className="space-y-2">
+							<Label>Overlay darkness: {data.authBgOverlay}%</Label>
+							<Slider
+								value={[data.authBgOverlay]}
+								onValueChange={([v]) => handleChange("authBgOverlay", v)}
+								min={0}
+								max={100}
+								step={5}
+							/>
+							<p className="text-xs text-muted-foreground">
+								Controls how dark the overlay is on the auth background image
+							</p>
+						</div>
+					)}
+
 					<p className="text-xs text-muted-foreground">
 						Accepted formats: JPG, PNG, WebP. Max size: {MAX_BG_SIZE_MB}MB.
 					</p>
 				</div>
+				{data.authBackgroundUrl && (
+					<div className="mt-6 flex justify-end">
+						<Button onClick={handleSave} disabled={isSaving}>
+							{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
+							Save
+						</Button>
+					</div>
+				)}
 			</SettingsSection>
 
 			<SettingsSection

@@ -6,6 +6,7 @@ interface AuthLayoutProps {
 	conferenceName: string;
 	logoUrl: string;
 	backgroundImageUrl?: string;
+	overlayOpacity?: number;
 }
 
 export function AuthLayout({
@@ -13,6 +14,7 @@ export function AuthLayout({
 	conferenceName,
 	logoUrl,
 	backgroundImageUrl,
+	overlayOpacity = 60,
 }: AuthLayoutProps) {
 	return (
 		<div className="relative flex min-h-svh w-full items-center justify-center overflow-hidden bg-background">
@@ -25,7 +27,10 @@ export function AuthLayout({
 						style={{ backgroundImage: `url(${backgroundImageUrl})` }}
 					/>
 					{/* Dark overlay */}
-					<div className="pointer-events-none fixed inset-0 bg-black/60" />
+					<div
+						className="pointer-events-none fixed inset-0"
+						style={{ backgroundColor: `rgba(0,0,0,${overlayOpacity / 100})` }}
+					/>
 				</>
 			) : (
 				<>

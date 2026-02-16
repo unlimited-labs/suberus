@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "AppSettingKey" ADD VALUE 'BRANDING_AUTH_BG_OVERLAY';
