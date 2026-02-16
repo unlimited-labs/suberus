@@ -257,7 +257,15 @@
 	background: var(--muted-foreground);
 }
 
-/* Number input spinner styling */
+/* Number input spinner styling — match theme */
+input[type="number"] {
+	color-scheme: light;
+}
+
+:is(.dark) input[type="number"] {
+	color-scheme: dark;
+}
+
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
 	opacity: 0.6;

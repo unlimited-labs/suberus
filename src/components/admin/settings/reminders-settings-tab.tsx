@@ -1,9 +1,4 @@
-import {
-	IconBell,
-	IconClock,
-	IconLoader2,
-	IconUserCheck,
-} from "@tabler/icons-react";
+import { IconBell, IconLoader2 } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
@@ -77,15 +72,18 @@ export function RemindersSettingsTab({
 	};
 
 	return (
-		<div className="space-y-6">
-			<SettingsSection
-				icon={IconUserCheck}
-				title="Reviewer Reminders"
-				description="Remind reviewers before their review deadline"
-			>
+		<SettingsSection
+			icon={IconBell}
+			title="Reminders"
+			description="Configure automatic email reminders"
+		>
+			<div className="space-y-6">
+				{/* Reviewer Reminders */}
 				<div className="space-y-4">
 					<div className="flex items-center justify-between">
-						<Label htmlFor="reviewer-enabled">Enabled</Label>
+						<Label htmlFor="reviewer-enabled" className="font-medium">
+							Reviewer reminders
+						</Label>
 						<Switch
 							id="reviewer-enabled"
 							checked={data.reviewer.enabled}
@@ -111,23 +109,15 @@ export function RemindersSettingsTab({
 						</p>
 					</div>
 				</div>
-				<div className="mt-6 flex justify-end">
-					<Button onClick={handleSave} disabled={isSaving}>
-						{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
-						Save
-					</Button>
-				</div>
-			</SettingsSection>
 
-			<SettingsSection
-				icon={IconClock}
-				title="Revision Reminders"
-				description="Periodically remind authors to submit their revision"
-				delay={100}
-			>
+				<hr className="border-border/50" />
+
+				{/* Revision Reminders */}
 				<div className="space-y-4">
 					<div className="flex items-center justify-between">
-						<Label htmlFor="revision-enabled">Enabled</Label>
+						<Label htmlFor="revision-enabled" className="font-medium">
+							Revision reminders
+						</Label>
 						<Switch
 							id="revision-enabled"
 							checked={data.revision.enabled}
@@ -180,23 +170,15 @@ export function RemindersSettingsTab({
 						</div>
 					</div>
 				</div>
-				<div className="mt-6 flex justify-end">
-					<Button onClick={handleSave} disabled={isSaving}>
-						{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
-						Save
-					</Button>
-				</div>
-			</SettingsSection>
 
-			<SettingsSection
-				icon={IconBell}
-				title="Deadline Reminders"
-				description="Remind authors about the submission deadline"
-				delay={200}
-			>
+				<hr className="border-border/50" />
+
+				{/* Deadline Reminders */}
 				<div className="space-y-4">
 					<div className="flex items-center justify-between">
-						<Label htmlFor="deadline-enabled">Enabled</Label>
+						<Label htmlFor="deadline-enabled" className="font-medium">
+							Deadline reminders
+						</Label>
 						<Switch
 							id="deadline-enabled"
 							checked={data.deadline.enabled}
@@ -222,13 +204,14 @@ export function RemindersSettingsTab({
 						</p>
 					</div>
 				</div>
-				<div className="mt-6 flex justify-end">
-					<Button onClick={handleSave} disabled={isSaving}>
-						{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
-						Save
-					</Button>
-				</div>
-			</SettingsSection>
-		</div>
+			</div>
+
+			<div className="mt-6 flex justify-end">
+				<Button onClick={handleSave} disabled={isSaving}>
+					{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
+					Save
+				</Button>
+			</div>
+		</SettingsSection>
 	);
 }
