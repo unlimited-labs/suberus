@@ -124,24 +124,6 @@ test.describe("Auth Page Branding", { tag: "@serial" }, () => {
 		await expect(page.getByRole("heading", { name: "E2E Test Conference 2026" })).toBeVisible()
 	})
 
-	test("reset-password page shows conference name", async ({ page }) => {
-		// Act
-		await page.goto("/reset-password")
-
-		// Assert — reset-password without token shows error state, but header branding still renders
-		const headerBranding = page.locator("header").getByText("E2E Test Conference 2026")
-		await expect(headerBranding).toBeVisible()
-	})
-
-	test("auth layout header shows conference name", async ({ page }) => {
-		// Act
-		await page.goto("/login")
-
-		// Assert — the top-left branding strip
-		const brandingText = page.locator("header").getByText("E2E Test Conference 2026")
-		await expect(brandingText).toBeVisible()
-	})
-
 	test("auth layout header shows custom logo", async ({ page }) => {
 		// Act
 		await page.goto("/login")

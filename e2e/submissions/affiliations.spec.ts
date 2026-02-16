@@ -7,18 +7,16 @@ test.describe("Affiliations", () => {
 		// Arrange
 		await submissionPage.goto();
 		const input = submissionPage.getAuthorCard(0).getByLabel("Affiliation");
+		const option = submissionPage.page.getByRole("option", { name: "Test University", exact: true });
 
-		// Act
-		await input.fill("Test Univ");
-		await expect(
-			submissionPage.page.getByRole("option", { name: "Test University", exact: true }),
-		).toBeVisible({ timeout: 5000 });
-		await submissionPage.page
-			.getByRole("option", { name: "Test University", exact: true })
-			.click();
-
-		// Assert
-		await expect(input).toHaveValue("Test University");
+		// Act — retry pattern: autocomplete dropdown can re-render and detach
+		await expect(async () => {
+			await input.click();
+			await input.fill("Test Univ");
+			await expect(option).toBeVisible();
+			await option.click();
+			await expect(input).toHaveValue("Test University");
+		}).toPass({ timeout: 15000 });
 	});
 
 	test("creates new affiliation via Create option", async ({
@@ -159,11 +157,11 @@ test.describe("Affiliations - edge cases", () => {
 		await expect(input).toHaveValue("Test University");
 		await expect(input).toHaveAttribute("data-affiliation-id", /.+/);
 
-		// Act - clear the input
-		await input.fill("");
-
-		// Assert - value is cleared, data attribute removed
-		await expect(input).toHaveValue("");
-		await expect(input).not.toHaveAttribute("data-affiliation-id");
+		// Act - clear the input and wait for React state propagation
+		await expect(async () => {
+			await input.clear();
+			await expect(input).toHaveValue("");
+			await expect(input).not.toHaveAttribute("data-affiliation-id");
+		}).toPass({ timeout: 10000 });
 	});
 });

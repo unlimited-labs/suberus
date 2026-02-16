@@ -48,10 +48,15 @@ test.describe.serial("Admin - Date/Time Format", () => {
 	test("can change date format", async ({ page }) => {
 		// Arrange
 		const select = adminSettingsPage.getDateFormatSelect();
+		const now = new Date();
+		const mm = String(now.getMonth() + 1).padStart(2, "0");
+		const dd = String(now.getDate()).padStart(2, "0");
+		const yyyy = now.getFullYear();
+		const expectedLabel = `${mm}/${dd}/${yyyy}`;
 
 		// Act
 		await select.click();
-		await page.getByRole("option", { name: "02/13/2026" }).click();
+		await page.getByRole("option", { name: expectedLabel }).click();
 		await adminSettingsPage.saveConferenceSettings();
 
 		// Assert
@@ -64,7 +69,11 @@ test.describe.serial("Admin - Date/Time Format", () => {
 		await adminSettingsPage.switchToConferenceTab(testInfo);
 
 		// Assert - the select should show the previously saved MM/DD/YYYY format label
-		await expect(adminSettingsPage.getDateFormatSelect()).toContainText("02/13/2026");
+		const now = new Date();
+		const mm = String(now.getMonth() + 1).padStart(2, "0");
+		const dd = String(now.getDate()).padStart(2, "0");
+		const yyyy = now.getFullYear();
+		await expect(adminSettingsPage.getDateFormatSelect()).toContainText(`${mm}/${dd}/${yyyy}`);
 	});
 
 	test("time format radio buttons visible", async ({ page }) => {

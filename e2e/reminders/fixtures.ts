@@ -14,7 +14,7 @@ export class RemindersSettingsHelper {
 
 	async switchToRemindersTab() {
 		await this.page.getByRole("tab", { name: /Reminders/i }).click()
-		await expect(this.page.getByRole("heading", { name: "Reviewer Reminders" })).toBeVisible()
+		await expect(this.page.getByLabel("Reviewer reminders")).toBeVisible()
 	}
 
 	// --- Reviewer ---
@@ -48,10 +48,9 @@ export class RemindersSettingsHelper {
 		return this.page.locator("#deadline-days")
 	}
 
-	/** Click the Save button in the nth section (0-indexed) */
-	async saveSection(sectionIndex: number) {
-		const buttons = this.page.getByRole("button", { name: "Save" })
-		await buttons.nth(sectionIndex).click()
+	/** Click the Save button (single button for all reminder settings) */
+	async save() {
+		await this.page.getByRole("button", { name: "Save" }).click()
 	}
 }
 

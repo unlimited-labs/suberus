@@ -109,6 +109,7 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	BRANDING_FOOTER_TEXT: "",
 	BRANDING_AUTH_BACKGROUND_KEY: "",
 	BRANDING_AUTH_BG_OVERLAY: 60,
+	BRANDING_LOGO_DARK_INVERT: true,
 
 	// Reminder settings
 	REMINDER_REVIEWER_SETTINGS: { enabled: false, daysBefore: [3, 1] },

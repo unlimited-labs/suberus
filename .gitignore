@@ -31,5 +31,8 @@ playwright/.cache/
 .cursorrules
 e2e/.auth/
 .playwright-cli
+.playwright-mcp/
 .agents/
 tanstack-llms
+nul
+*.ai

@@ -58,6 +58,10 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 				name: "color-scheme",
 				content: "light dark",
 			},
+			{
+				name: "apple-mobile-web-app-title",
+				content: "Suberus",
+			},
 		],
 		links: [
 			{

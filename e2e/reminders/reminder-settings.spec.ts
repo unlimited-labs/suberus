@@ -27,9 +27,9 @@ test.describe("Admin Settings - Reminders", () => {
 		await remindersSettings.switchToRemindersTab()
 
 		// Assert
-		await expect(page.getByRole("heading", { name: "Reviewer Reminders" })).toBeVisible()
-		await expect(page.getByRole("heading", { name: "Revision Reminders" })).toBeVisible()
-		await expect(page.getByRole("heading", { name: "Deadline Reminders" })).toBeVisible()
+		await expect(page.getByLabel("Reviewer reminders")).toBeVisible()
+		await expect(page.getByLabel("Revision reminders")).toBeVisible()
+		await expect(page.getByLabel("Deadline reminders")).toBeVisible()
 	})
 
 	test("disables inputs when toggle is off", async ({ remindersSettings }) => {
@@ -60,7 +60,7 @@ test.describe("Admin Settings - Reminders", () => {
 		await remindersSettings.getReviewerEnabledSwitch().click()
 		await remindersSettings.getReviewerDaysInput().clear()
 		await remindersSettings.getReviewerDaysInput().fill("7, 3, 1")
-		await remindersSettings.saveSection(0)
+		await remindersSettings.save()
 
 		// Assert
 		await expect(page.getByText("Reminder settings saved")).toBeVisible({ timeout: 5000 })
@@ -83,7 +83,7 @@ test.describe("Admin Settings - Reminders", () => {
 		await remindersSettings.getRevisionIntervalInput().fill("5")
 		await remindersSettings.getRevisionMaxCountInput().clear()
 		await remindersSettings.getRevisionMaxCountInput().fill("2")
-		await remindersSettings.saveSection(1)
+		await remindersSettings.save()
 
 		// Assert
 		await expect(page.getByText("Reminder settings saved")).toBeVisible({ timeout: 5000 })
@@ -105,7 +105,7 @@ test.describe("Admin Settings - Reminders", () => {
 		await remindersSettings.getDeadlineEnabledSwitch().click()
 		await remindersSettings.getDeadlineDaysInput().clear()
 		await remindersSettings.getDeadlineDaysInput().fill("14, 7, 3")
-		await remindersSettings.saveSection(2)
+		await remindersSettings.save()
 
 		// Assert
 		await expect(page.getByText("Reminder settings saved")).toBeVisible({ timeout: 5000 })

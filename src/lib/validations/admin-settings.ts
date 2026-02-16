@@ -54,6 +54,7 @@ export const brandingSettingsSchema = z.object({
 	secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Invalid color format"),
 	footerText: z.string().max(500),
 	faviconUrl: z.string(),
+	logoDarkInvert: z.boolean(),
 });
 
 export type ConferenceSettingsFormData = z.infer<

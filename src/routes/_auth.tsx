@@ -20,6 +20,7 @@ const defaults: AuthPageBranding = {
 	conferenceSubtitle: APP_SETTINGS_DEFAULTS.CONFERENCE_SUBTITLE,
 	authBackgroundUrl: APP_SETTINGS_DEFAULTS.BRANDING_AUTH_BACKGROUND_KEY,
 	authBgOverlay: APP_SETTINGS_DEFAULTS.BRANDING_AUTH_BG_OVERLAY,
+	logoDarkInvert: APP_SETTINGS_DEFAULTS.BRANDING_LOGO_DARK_INVERT,
 	dateFormat: APP_SETTINGS_DEFAULTS.DATE_FORMAT,
 };
 
@@ -110,10 +111,10 @@ function AuthLayoutRoute() {
 	return (
 		<div style={cssVars}>
 			<AuthLayout
-				conferenceName={branding.conferenceName}
 				logoUrl={branding.logoUrl}
 				backgroundImageUrl={branding.authBackgroundUrl || undefined}
 				overlayOpacity={branding.authBgOverlay}
+				logoDarkInvert={branding.logoDarkInvert}
 			>
 				<Outlet />
 			</AuthLayout>

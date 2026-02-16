@@ -1,6 +1,7 @@
 import { IconHexagonLetterS } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import { EmailVerificationBanner } from "@/components/email-verification-banner";
+import { cn } from "@/lib/utils";
 import { MobileSidebar, Sidebar } from "./sidebar";
 
 interface AppLayoutProps {
@@ -8,6 +9,7 @@ interface AppLayoutProps {
 	conferenceName: string;
 	logoUrl: string;
 	footerText: string;
+	logoDarkInvert: boolean;
 }
 
 export function AppLayout({
@@ -15,20 +17,32 @@ export function AppLayout({
 	conferenceName,
 	logoUrl,
 	footerText,
+	logoDarkInvert,
 }: AppLayoutProps) {
 	return (
 		<div className="flex h-screen bg-sidebar">
-			<Sidebar conferenceName={conferenceName} logoUrl={logoUrl} />
+			<Sidebar
+				conferenceName={conferenceName}
+				logoUrl={logoUrl}
+				logoDarkInvert={logoDarkInvert}
+			/>
 			<div className="flex flex-1 flex-col overflow-hidden">
 				{/* Mobile header with hamburger */}
 				<div className="flex h-14 items-center px-4 md:hidden">
-					<MobileSidebar conferenceName={conferenceName} logoUrl={logoUrl} />
+					<MobileSidebar
+						conferenceName={conferenceName}
+						logoUrl={logoUrl}
+						logoDarkInvert={logoDarkInvert}
+					/>
 					<div className="ml-3 flex items-center gap-3">
 						{logoUrl ? (
 							<img
 								src={logoUrl}
 								alt="Logo"
-								className="h-7 w-auto object-contain"
+								className={cn(
+									"h-7 w-auto object-contain",
+									logoDarkInvert && "dark:invert dark:grayscale",
+								)}
 							/>
 						) : (
 							<IconHexagonLetterS className="size-7 text-primary" />

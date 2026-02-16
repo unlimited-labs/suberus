@@ -517,6 +517,7 @@ export interface BrandingSettings {
 	footerText: string;
 	authBackgroundUrl: string;
 	authBgOverlay: number;
+	logoDarkInvert: boolean;
 }
 
 /** App branding + conference name (for _app loader) */
@@ -535,6 +536,7 @@ const brandingSchema = z.object({
 	secondaryColor: z.string().regex(hexColorRegex, "Invalid hex color"),
 	footerText: z.string().max(500),
 	authBgOverlay: z.number().int().min(0).max(100),
+	logoDarkInvert: z.boolean(),
 });
 
 /**
@@ -550,6 +552,7 @@ export const getAppBrandingFn = createServerFn({ method: "GET" }).handler(
 			"BRANDING_PRIMARY_COLOR",
 			"BRANDING_SECONDARY_COLOR",
 			"BRANDING_FOOTER_TEXT",
+			"BRANDING_LOGO_DARK_INVERT",
 			"DATE_FORMAT",
 			"TIME_FORMAT",
 		]);
@@ -562,6 +565,7 @@ export const getAppBrandingFn = createServerFn({ method: "GET" }).handler(
 			footerText: settings.BRANDING_FOOTER_TEXT,
 			authBackgroundUrl: "",
 			authBgOverlay: 60,
+			logoDarkInvert: settings.BRANDING_LOGO_DARK_INVERT,
 			dateFormat: settings.DATE_FORMAT,
 			timeFormat: settings.TIME_FORMAT,
 		};
@@ -583,6 +587,7 @@ export const getBrandingSettingsFn = createServerFn({ method: "GET" })
 				"BRANDING_SECONDARY_COLOR",
 				"BRANDING_FOOTER_TEXT",
 				"BRANDING_AUTH_BG_OVERLAY",
+				"BRANDING_LOGO_DARK_INVERT",
 			]),
 			getAuthBackgroundUrl(),
 		]);
@@ -594,6 +599,7 @@ export const getBrandingSettingsFn = createServerFn({ method: "GET" })
 			footerText: settings.BRANDING_FOOTER_TEXT,
 			authBackgroundUrl,
 			authBgOverlay: settings.BRANDING_AUTH_BG_OVERLAY,
+			logoDarkInvert: settings.BRANDING_LOGO_DARK_INVERT,
 		};
 	});
 
@@ -610,6 +616,7 @@ export const updateBrandingSettingsFn = createServerFn({ method: "POST" })
 		await setSetting("BRANDING_SECONDARY_COLOR", data.secondaryColor);
 		await setSetting("BRANDING_FOOTER_TEXT", data.footerText);
 		await setSetting("BRANDING_AUTH_BG_OVERLAY", data.authBgOverlay);
+		await setSetting("BRANDING_LOGO_DARK_INVERT", data.logoDarkInvert);
 		return { success: true };
 	});
 
@@ -657,6 +664,7 @@ export interface AuthPageBranding {
 	conferenceSubtitle: string;
 	authBackgroundUrl: string;
 	authBgOverlay: number;
+	logoDarkInvert: boolean;
 	dateFormat: string;
 }
 
@@ -688,6 +696,7 @@ export const getAuthPageBrandingFn = createServerFn({ method: "GET" }).handler(
 				"CONFERENCE_LOCATION",
 				"CONFERENCE_SUBTITLE",
 				"BRANDING_AUTH_BG_OVERLAY",
+				"BRANDING_LOGO_DARK_INVERT",
 				"DATE_FORMAT",
 			]),
 			getAuthBackgroundUrl(),
@@ -703,6 +712,7 @@ export const getAuthPageBrandingFn = createServerFn({ method: "GET" }).handler(
 			conferenceSubtitle: s.CONFERENCE_SUBTITLE,
 			authBackgroundUrl,
 			authBgOverlay: s.BRANDING_AUTH_BG_OVERLAY,
+			logoDarkInvert: s.BRANDING_LOGO_DARK_INVERT,
 			dateFormat: s.DATE_FORMAT,
 		};
 	},

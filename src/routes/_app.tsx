@@ -19,6 +19,7 @@ const defaults: AppBranding = {
 	footerText: APP_SETTINGS_DEFAULTS.BRANDING_FOOTER_TEXT,
 	authBackgroundUrl: "",
 	authBgOverlay: APP_SETTINGS_DEFAULTS.BRANDING_AUTH_BG_OVERLAY,
+	logoDarkInvert: APP_SETTINGS_DEFAULTS.BRANDING_LOGO_DARK_INVERT,
 	dateFormat: APP_SETTINGS_DEFAULTS.DATE_FORMAT,
 	timeFormat: APP_SETTINGS_DEFAULTS.TIME_FORMAT,
 };
@@ -44,7 +45,7 @@ export const Route = createFileRoute("/_app")({
 		],
 		links: loaderData?.faviconUrl
 			? [{ rel: "icon", href: loaderData.faviconUrl }]
-			: [],
+			: [{ rel: "icon", href: "favicon.png" }],
 	}),
 	component: AppLayoutRoute,
 });
@@ -110,6 +111,7 @@ function AppLayoutRoute() {
 					conferenceName={branding.conferenceName}
 					logoUrl={branding.logoUrl}
 					footerText={branding.footerText}
+					logoDarkInvert={branding.logoDarkInvert}
 				>
 					<Outlet />
 				</AppLayout>

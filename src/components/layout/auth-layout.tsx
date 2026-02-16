@@ -1,20 +1,21 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 interface AuthLayoutProps {
 	children: ReactNode;
-	conferenceName: string;
 	logoUrl: string;
 	backgroundImageUrl?: string;
 	overlayOpacity?: number;
+	logoDarkInvert?: boolean;
 }
 
 export function AuthLayout({
 	children,
-	conferenceName,
 	logoUrl,
 	backgroundImageUrl,
 	overlayOpacity = 60,
+	logoDarkInvert = true,
 }: AuthLayoutProps) {
 	return (
 		<div className="relative flex min-h-svh w-full items-center justify-center overflow-hidden bg-background">
@@ -75,15 +76,13 @@ export function AuthLayout({
 				<Link to="/" className="group block">
 					<div className="flex items-center gap-3">
 						<img
-							src={logoUrl || "/logo.png"}
+							src={logoUrl || "/logo.svg"}
 							alt="Conference Logo"
-							className="h-8 w-auto transition-transform duration-300 group-hover:scale-105 sm:h-10 lg:h-12"
+							className={cn(
+								"h-8 w-auto transition-transform duration-300 group-hover:scale-105 sm:h-10 lg:h-28",
+								logoDarkInvert && "dark:invert dark:grayscale",
+							)}
 						/>
-					</div>
-					<div className="mt-2 border-l-2 border-primary/60 pl-3">
-						<p className="font-serif text-xs font-medium tracking-wide text-foreground/70 sm:text-sm">
-							{conferenceName}
-						</p>
 					</div>
 				</Link>
 			</header>

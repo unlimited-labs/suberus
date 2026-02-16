@@ -10,6 +10,7 @@ import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -147,6 +148,21 @@ export function BrandingSettingsTab({ initialData }: BrandingSettingsTabProps) {
 							onChange={(e) => handleChange("faviconUrl", e.target.value)}
 							placeholder="https://example.com/favicon.ico"
 						/>
+					</div>
+					<div className="flex items-center gap-2">
+						<Checkbox
+							id="logoDarkInvert"
+							checked={data.logoDarkInvert}
+							onCheckedChange={(checked) =>
+								setData((prev) => ({
+									...prev,
+									logoDarkInvert: checked === true,
+								}))
+							}
+						/>
+						<Label htmlFor="logoDarkInvert" className="cursor-pointer">
+							Invert logo in dark mode
+						</Label>
 					</div>
 				</div>
 				<div className="mt-6 flex justify-end">

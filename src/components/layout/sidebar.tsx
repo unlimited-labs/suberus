@@ -10,9 +10,14 @@ import { UserMenu } from "./user-menu";
 interface SidebarProps {
 	conferenceName: string;
 	logoUrl: string;
+	logoDarkInvert: boolean;
 }
 
-function SidebarContent({ conferenceName, logoUrl }: SidebarProps) {
+function SidebarContent({
+	conferenceName,
+	logoUrl,
+	logoDarkInvert,
+}: SidebarProps) {
 	const location = useLocation();
 	const { user } = useSession();
 	const sections = getNavigationForRole(user?.role ?? "AUTHOR");
@@ -23,9 +28,12 @@ function SidebarContent({ conferenceName, logoUrl }: SidebarProps) {
 			<div className="px-4 py-4">
 				<Link to="/" className="block">
 					<img
-						src={logoUrl || "/logo.png"}
+						src={logoUrl || "/logo.svg"}
 						alt="Suberus"
-						className="h-16 w-auto"
+						className={cn(
+							"h-22 w-auto mx-auto ",
+							logoDarkInvert && "dark:invert dark:grayscale",
+						)}
 					/>
 				</Link>
 				<div className="mt-3 border-l-4 border-primary pl-3">
@@ -79,15 +87,27 @@ function SidebarContent({ conferenceName, logoUrl }: SidebarProps) {
 	);
 }
 
-export function Sidebar({ conferenceName, logoUrl }: SidebarProps) {
+export function Sidebar({
+	conferenceName,
+	logoUrl,
+	logoDarkInvert,
+}: SidebarProps) {
 	return (
 		<aside className="hidden w-56 shrink-0 bg-sidebar md:flex md:flex-col">
-			<SidebarContent conferenceName={conferenceName} logoUrl={logoUrl} />
+			<SidebarContent
+				conferenceName={conferenceName}
+				logoUrl={logoUrl}
+				logoDarkInvert={logoDarkInvert}
+			/>
 		</aside>
 	);
 }
 
-export function MobileSidebar({ conferenceName, logoUrl }: SidebarProps) {
+export function MobileSidebar({
+	conferenceName,
+	logoUrl,
+	logoDarkInvert,
+}: SidebarProps) {
 	return (
 		<Sheet>
 			<SheetTrigger asChild>
@@ -97,7 +117,11 @@ export function MobileSidebar({ conferenceName, logoUrl }: SidebarProps) {
 				</Button>
 			</SheetTrigger>
 			<SheetContent side="left" className="w-64 p-0" showCloseButton={false}>
-				<SidebarContent conferenceName={conferenceName} logoUrl={logoUrl} />
+				<SidebarContent
+					conferenceName={conferenceName}
+					logoUrl={logoUrl}
+					logoDarkInvert={logoDarkInvert}
+				/>
 			</SheetContent>
 		</Sheet>
 	);

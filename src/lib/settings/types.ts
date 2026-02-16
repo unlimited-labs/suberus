@@ -83,6 +83,7 @@ export type AppSettingsMap = {
 	BRANDING_FOOTER_TEXT: string;
 	BRANDING_AUTH_BACKGROUND_KEY: string;
 	BRANDING_AUTH_BG_OVERLAY: number;
+	BRANDING_LOGO_DARK_INVERT: boolean;
 
 	// Reminder settings
 	REMINDER_REVIEWER_SETTINGS: ReviewerReminderSettings;

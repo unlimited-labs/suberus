@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "AppSettingKey" ADD VALUE 'BRANDING_LOGO_DARK_INVERT';

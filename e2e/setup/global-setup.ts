@@ -94,7 +94,7 @@ async function globalSetup() {
 
 	// Wipe database and recreate schema from prisma/schema.prisma
 	console.log("🔄 Resetting database...");
-	execSync("pnpm exec prisma db push --force-reset", {
+	execSync("pnpm db:reset", {
 		cwd: PROJECT_ROOT,
 		stdio: "pipe",
 		env: { ...process.env, PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION: "yes" },

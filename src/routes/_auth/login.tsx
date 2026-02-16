@@ -101,7 +101,7 @@ function LoginPage() {
 
 							<Link
 								to="/forgot-password"
-								className="text-sm text-primary hover:underline"
+								className="whitespace-nowrap text-sm text-primary hover:underline"
 							>
 								Forgot password?
 							</Link>
