@@ -1,17 +1,29 @@
-export const DATE_FORMATS = [
-	{ value: "DD.MM.YYYY", label: "13.02.2026" },
-	{ value: "DD/MM/YYYY", label: "13/02/2026" },
-	{ value: "MM/DD/YYYY", label: "02/13/2026" },
-	{ value: "YYYY-MM-DD", label: "2026-02-13 (ISO)" },
-	{ value: "DD-MM-YYYY", label: "13-02-2026" },
-	{ value: "D MMM YYYY", label: "13 Feb 2026" },
-	{ value: "MMM D, YYYY", label: "Feb 13, 2026" },
-	{ value: "D MMMM YYYY", label: "13 February 2026" },
-	{ value: "MMMM D, YYYY", label: "February 13, 2026" },
+const DATE_FORMAT_VALUES = [
+	"DD.MM.YYYY",
+	"DD/MM/YYYY",
+	"MM/DD/YYYY",
+	"YYYY-MM-DD",
+	"DD-MM-YYYY",
+	"D MMM YYYY",
+	"MMM D, YYYY",
+	"D MMMM YYYY",
+	"MMMM D, YYYY",
 ] as const;
 
-export type DateFormatValue = (typeof DATE_FORMATS)[number]["value"];
+export type DateFormatValue = (typeof DATE_FORMAT_VALUES)[number];
 export type TimeFormatValue = "24h" | "12h";
+
+export function getDateFormats(
+	now = new Date(),
+): Array<{ value: DateFormatValue; label: string }> {
+	return DATE_FORMAT_VALUES.map((value) => ({
+		value,
+		label:
+			value === "YYYY-MM-DD"
+				? `${formatDate(now, value)} (ISO)`
+				: formatDate(now, value),
+	}));
+}
 
 const MONTH_SHORT = [
 	"Jan",

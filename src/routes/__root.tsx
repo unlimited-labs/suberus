@@ -8,9 +8,9 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { type CSSProperties, useEffect } from "react";
-import { Toaster } from "sonner";
 import { SpinnerSvg } from "../components/spinner-svg";
 import { ThemeProvider } from "../components/theme-provider";
+import { Toaster } from "../components/ui/sonner";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import { getThemeFn } from "../lib/theme";
 import appCss from "../styles.css?url";
@@ -95,8 +95,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<div id="__loader" style={loaderStyle}>
 					<SpinnerSvg color={primaryColor} />
 				</div>
-				<ThemeProvider theme={theme}>{children}</ThemeProvider>
-				<Toaster position="top-right" richColors closeButton />
+				<ThemeProvider theme={theme}>
+					{children}
+					<Toaster position="top-right" richColors />
+				</ThemeProvider>
 				<TanStackDevtools
 					config={{
 						position: "bottom-right",

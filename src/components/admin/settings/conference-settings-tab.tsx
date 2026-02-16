@@ -20,7 +20,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { DATE_FORMATS } from "@/lib/format-date";
+import { getDateFormats } from "@/lib/format-date";
 import type { ConferenceSettings } from "@/utils/settings.functions";
 import { updateConferenceSettingsFn } from "@/utils/settings.functions";
 
@@ -196,17 +196,17 @@ export function ConferenceSettingsTab({
 				delay={200}
 			>
 				<div className="grid gap-6 sm:grid-cols-2">
-					<div className="space-y-2 sm:col-span-2">
+					<div className="space-y-2">
 						<Label htmlFor="dateFormat">Date Format</Label>
 						<Select
 							value={data.dateFormat}
 							onValueChange={(value) => handleChange("dateFormat", value)}
 						>
-							<SelectTrigger id="dateFormat" className="max-w-64">
+							<SelectTrigger id="dateFormat">
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								{DATE_FORMATS.map((fmt) => (
+								{getDateFormats().map((fmt) => (
 									<SelectItem key={fmt.value} value={fmt.value}>
 										{fmt.label}
 									</SelectItem>
@@ -214,7 +214,7 @@ export function ConferenceSettingsTab({
 							</SelectContent>
 						</Select>
 					</div>
-					<div className="space-y-3 sm:col-span-2">
+					<div className="space-y-3">
 						<Label>Time Format</Label>
 						<RadioGroup
 							value={data.timeFormat}
