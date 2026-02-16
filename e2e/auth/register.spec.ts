@@ -98,14 +98,8 @@ test.describe("Register Page - Step 1: Author Info", () => {
 		})
 		await registerPage.clickContinue()
 
-		// Assert - wait for step 2 to load; retry Continue click if validation race
-		const countryPlaceholder = registerPage.page.getByText("Select country...")
-		try {
-			await expect(countryPlaceholder).toBeVisible({ timeout: 5000 })
-		} catch {
-			await registerPage.clickContinue()
-			await expect(countryPlaceholder).toBeVisible({ timeout: 10000 })
-		}
+		// Assert - wait for step 2 to load (country combobox appears regardless of pre-fill)
+		await registerPage.waitForStep2()
 		// Address field may need scrolling on mobile
 		await expect(registerPage.page.getByLabel("Address")).toBeAttached()
 	})
@@ -124,18 +118,11 @@ test.describe("Register Page - Step 2: Invoice", () => {
 			affiliation: "Test University",
 		})
 		await registerPage.clickContinue()
-		// Wait for step 2 to load; retry Continue click if validation race
-		const countryPlaceholder = registerPage.page.getByText("Select country...")
-		try {
-			await countryPlaceholder.waitFor({ state: "visible", timeout: 5000 })
-		} catch {
-			await registerPage.clickContinue()
-			await countryPlaceholder.waitFor({ state: "visible", timeout: 10000 })
-		}
+		await registerPage.waitForStep2()
 	})
 
 	test("shows error for required country", async ({ registerPage }) => {
-		// Act
+		// Act — UTC timezone has no country mapping, so field is empty
 		await registerPage.clickContinue()
 
 		// Assert
@@ -143,14 +130,14 @@ test.describe("Register Page - Step 2: Invoice", () => {
 	})
 
 	test("country search and selection works", async ({ registerPage }) => {
-		// Act - use placeholder to target country combobox specifically
-		const countrySelect = registerPage.page.getByText("Select country...")
-		await countrySelect.click()
+		// Act
+		const combobox = registerPage.page.getByRole("combobox")
+		await combobox.click()
 		await registerPage.page.getByPlaceholder("Search country...").fill("Poland")
 		await registerPage.page.getByRole("option", { name: "Poland" }).click()
 
 		// Assert
-		await expect(registerPage.page.getByRole("combobox").filter({ hasText: "Poland" })).toBeVisible()
+		await expect(combobox.filter({ hasText: "Poland" })).toBeVisible()
 	})
 
 	test("back button preserves step 1 data", async ({ registerPage }) => {
@@ -313,6 +300,71 @@ test.describe("Register Page - Navigation", () => {
 
 		// Assert
 		await expect(registerPage.page).toHaveURL(/\/login/)
+	})
+})
+
+test.describe("Register Page - Country Auto-Detection (no match)", () => {
+	test.use({ timezoneId: "UTC" })
+
+	test("shows empty country field when timezone has no country mapping", async ({ registerPage }) => {
+		// Arrange
+		await registerPage.goto()
+		await registerPage.fillStep1({
+			email: "newuser@example.com",
+			password: "ValidPassword123!",
+			confirmPassword: "ValidPassword123!",
+			firstName: "Test",
+			lastName: "User",
+			affiliation: "Test University",
+		})
+		await registerPage.clickContinue()
+		await registerPage.waitForStep2()
+
+		// Assert — UTC has no country mapping, field shows placeholder
+		await expect(registerPage.page.getByRole("combobox").filter({ hasText: "Select country..." })).toBeVisible()
+	})
+})
+
+test.describe("Register Page - Country Auto-Detection", () => {
+	test.use({ timezoneId: "Europe/Warsaw" })
+
+	test("pre-fills country based on browser timezone", async ({ registerPage }) => {
+		// Arrange
+		await registerPage.goto()
+		await registerPage.fillStep1({
+			email: "newuser@example.com",
+			password: "ValidPassword123!",
+			confirmPassword: "ValidPassword123!",
+			firstName: "Test",
+			lastName: "User",
+			affiliation: "Test University",
+		})
+		await registerPage.clickContinue()
+		await registerPage.waitForStep2()
+
+		// Assert — Poland should be pre-selected from Europe/Warsaw timezone
+		await expect(registerPage.page.getByRole("combobox").filter({ hasText: "Poland" })).toBeVisible()
+	})
+
+	test("pre-filled country passes validation without manual selection", async ({ registerPage }) => {
+		// Arrange
+		await registerPage.goto()
+		await registerPage.fillStep1({
+			email: "newuser@example.com",
+			password: "ValidPassword123!",
+			confirmPassword: "ValidPassword123!",
+			firstName: "Test",
+			lastName: "User",
+			affiliation: "Test University",
+		})
+		await registerPage.clickContinue()
+		await registerPage.waitForStep2()
+
+		// Act — click Continue without manually selecting a country
+		await registerPage.clickContinue()
+
+		// Assert — should proceed to step 3 (terms checkbox visible)
+		await expect(registerPage.page.getByLabel(/I agree to the/)).toBeVisible()
 	})
 })
 

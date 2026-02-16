@@ -10,7 +10,7 @@ import {
 } from "@tabler/icons-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { countries } from "countries-list";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { AffiliationSelect } from "@/components/forms/affiliation-select";
@@ -42,6 +42,7 @@ import {
 import { useAppForm } from "@/hooks/use-app-form";
 import { useMultiStep } from "@/hooks/use-multi-step";
 import { signUp } from "@/lib/auth-client";
+import { detectCountry } from "@/lib/detect-country";
 import { submitForm } from "@/lib/form-utils";
 import { cn } from "@/lib/utils";
 import {
@@ -120,6 +121,10 @@ function RegisterPage() {
 	} = Route.useRouteContext();
 	const { surveyQuestions, tosContent, invitation, token } =
 		Route.useLoaderData();
+	const detectedCountry = useMemo(() => {
+		const name = detectCountry();
+		return name && COUNTRIES.includes(name) ? name : "";
+	}, []);
 	const [countryOpen, setCountryOpen] = useState(false);
 	const [tosOpen, setTosOpen] = useState(false);
 
@@ -139,7 +144,7 @@ function RegisterPage() {
 			affiliationId: "",
 			affiliationName: "",
 			address: "",
-			country: "",
+			country: detectedCountry,
 			surveyAnswers: defaultSurveyAnswers,
 			acceptTerms: false,
 		},

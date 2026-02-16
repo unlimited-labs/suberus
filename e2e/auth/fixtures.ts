@@ -113,22 +113,15 @@ export class RegisterPage {
 
 	// Step 2: Invoice Information
 	async fillStep2(data: { country: string; address?: string }) {
-		// Wait for step 2 to be visible; retry Continue click if async validation race
-		const countryPlaceholder = this.page.getByText("Select country...")
-		try {
-			await countryPlaceholder.waitFor({ state: "visible", timeout: 5000 })
-		} catch {
-			await this.continueButton.click()
-			await countryPlaceholder.waitFor({ state: "visible", timeout: 10000 })
-		}
+		// Wait for step 2 to be visible (country combobox appears regardless of pre-fill)
+		const combobox = this.page.getByRole("combobox")
+		await combobox.waitFor({ state: "visible", timeout: 10000 })
 
 		if (data.address) {
 			await this.page.getByLabel("Address").fill(data.address)
 		}
 
-		const combobox = this.page.getByRole("combobox")
 		const searchInput = this.page.getByPlaceholder("Search country...")
-		await combobox.waitFor({ state: "visible", timeout: 10000 })
 		await combobox.click()
 		// Retry click if dropdown doesn't open (can happen under load)
 		try {
@@ -139,6 +132,17 @@ export class RegisterPage {
 		}
 		await searchInput.fill(data.country)
 		await this.page.getByRole("option", { name: data.country }).click()
+	}
+
+	/** Wait for step 2 to be visible after navigating from step 1 */
+	async waitForStep2() {
+		const combobox = this.page.getByRole("combobox")
+		try {
+			await combobox.waitFor({ state: "visible", timeout: 5000 })
+		} catch {
+			await this.clickContinue()
+			await combobox.waitFor({ state: "visible", timeout: 10000 })
+		}
 	}
 
 	// Step 3: Survey

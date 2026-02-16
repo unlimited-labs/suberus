@@ -16,6 +16,7 @@ export default defineConfig({
 		trace: "on-first-retry",
 		screenshot: "on",
 		video: "retain-on-failure",
+		timezoneId: "UTC",
 	},
 	projects: [
 		// Auth setup - runs first to save authenticated state
