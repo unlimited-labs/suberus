@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
 	createActionsColumn,
@@ -36,7 +37,11 @@ export const userColumns: ColumnDef<AdminUser>[] = [
 					: null;
 
 			return (
-				<div className="flex flex-col">
+				<Link
+					to="/admin/users/$id"
+					params={{ id: row.original.id }}
+					className="flex flex-col hover:underline"
+				>
 					<span className="font-medium text-foreground">
 						{name ?? row.original.email}
 					</span>
@@ -45,7 +50,7 @@ export const userColumns: ColumnDef<AdminUser>[] = [
 							{row.original.email}
 						</span>
 					)}
-				</div>
+				</Link>
 			);
 		},
 		filterFn: "includesString",

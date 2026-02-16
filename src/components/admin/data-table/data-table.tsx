@@ -84,7 +84,7 @@ export function DataTable<TData, TValue>({
 			</div>
 
 			{/* Desktop Table */}
-			<div className="hidden md:block rounded-md border">
+			<div className="hidden md:block rounded-md border border-border/50">
 				<Table>
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (
