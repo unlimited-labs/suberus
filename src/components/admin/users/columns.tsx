@@ -9,7 +9,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import {
 	feeFilterOptions,
-	feeTypeLabels,
 	roleFilterOptions,
 	roleLabels,
 } from "@/lib/labels/user";
@@ -107,7 +106,7 @@ export const userColumns: ColumnDef<AdminUser>[] = [
 			}
 			return (
 				<Badge variant="outline" className="text-green-600 border-green-600">
-					{feeTypeLabels[fee.type] ?? fee.type}
+					{fee.type}
 				</Badge>
 			);
 		},

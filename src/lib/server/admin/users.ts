@@ -1,6 +1,6 @@
 import { prisma } from "@/db.server";
 import type { Prisma } from "@/generated/prisma/client";
-import type { FeeType, UserRole } from "@/generated/prisma/enums";
+import type { UserRole } from "@/generated/prisma/enums";
 import { linkCoAuthorsByEmail } from "@/utils/submissions.server";
 
 export interface AdminUser {
@@ -19,7 +19,9 @@ export interface AdminUser {
 		id: string;
 		userId: string;
 		paid: boolean;
-		type: FeeType;
+		type: string;
+		amount: number | null;
+		currency: string | null;
 		paidAt: Date | null;
 	} | null;
 }
@@ -110,6 +112,8 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 					userId: u.fee.userId,
 					paid: u.fee.paid,
 					type: u.fee.type,
+					amount: u.fee.amount ? Number(u.fee.amount) : null,
+					currency: u.fee.currency,
 					paidAt: u.fee.paidAt,
 				}
 			: null,
@@ -150,6 +154,8 @@ export async function getUserById(id: string): Promise<AdminUser | null> {
 					userId: user.fee.userId,
 					paid: user.fee.paid,
 					type: user.fee.type,
+					amount: user.fee.amount ? Number(user.fee.amount) : null,
+					currency: user.fee.currency,
 					paidAt: user.fee.paidAt,
 				}
 			: null,
@@ -158,7 +164,9 @@ export async function getUserById(id: string): Promise<AdminUser | null> {
 
 export interface BulkMarkFeesPaidInput {
 	userIds: string[];
-	feeType: FeeType;
+	feeType: string;
+	amount: number;
+	currency: string;
 }
 
 export async function bulkMarkFeesPaid(
@@ -174,12 +182,16 @@ export async function bulkMarkFeesPaid(
 				update: {
 					paid: true,
 					type: data.feeType,
+					amount: data.amount,
+					currency: data.currency,
 					paidAt: now,
 				},
 				create: {
 					userId,
 					paid: true,
 					type: data.feeType,
+					amount: data.amount,
+					currency: data.currency,
 					paidAt: now,
 				},
 			});
@@ -240,7 +252,9 @@ export async function toggleUserActive(
 
 export interface MarkFeePaidInput {
 	userId: string;
-	feeType: FeeType;
+	feeType: string;
+	amount: number;
+	currency: string;
 }
 
 export async function markFeePaid(
@@ -253,14 +267,29 @@ export async function markFeePaid(
 		update: {
 			paid: true,
 			type: data.feeType,
+			amount: data.amount,
+			currency: data.currency,
 			paidAt: now,
 		},
 		create: {
 			userId: data.userId,
 			paid: true,
 			type: data.feeType,
+			amount: data.amount,
+			currency: data.currency,
 			paidAt: now,
 		},
+	});
+
+	return { success: true };
+}
+
+export async function unmarkFeePaid(
+	userId: string,
+): Promise<{ success: boolean }> {
+	await prisma.fee.update({
+		where: { userId },
+		data: { paid: false, paidAt: null },
 	});
 
 	return { success: true };

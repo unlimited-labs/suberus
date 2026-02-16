@@ -74,6 +74,8 @@ export type AppSettingsMap = {
 
 	// Fee settings
 	FEE_PAYMENT_INSTRUCTIONS: string;
+	FEE_CURRENCY: "EUR" | "USD" | "PLN";
+	FEE_TYPES: Array<{ id: string; name: string; amount: number }>;
 
 	// Branding settings
 	BRANDING_LOGO_URL: string;

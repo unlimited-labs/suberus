@@ -1,4 +1,4 @@
-import type { FeeType, UserRole } from "@/generated/prisma/enums";
+import type { UserRole } from "@/generated/prisma/enums";
 
 export const roleLabels: Record<UserRole, string> = {
 	ADMIN: "Administrator",
@@ -14,26 +14,10 @@ export const roleFilterOptions = [
 	{ label: "Author", value: "AUTHOR" },
 ] as const;
 
-export const feeTypeLabels: Record<FeeType, string> = {
-	FULL: "Full",
-	STUDENT: "Student",
-	INVITED: "Invited",
-	STAFF: "Staff",
-	CASH: "Cash",
-};
-
 export const feeFilterOptions = [
 	{ label: "Paid", value: "paid" },
 	{ label: "Unpaid", value: "unpaid" },
 ] as const;
-
-export const feeTypeOptions: { value: FeeType; label: string }[] = [
-	{ value: "FULL", label: "Full" },
-	{ value: "STUDENT", label: "Student" },
-	{ value: "INVITED", label: "Invited" },
-	{ value: "STAFF", label: "Staff" },
-	{ value: "CASH", label: "Cash" },
-];
 
 export const userRoleOptions: { value: UserRole; label: string }[] = [
 	{ value: "AUTHOR", label: "Author" },

@@ -105,6 +105,7 @@ export class UserDetailPage {
 	readonly emailVerified: Locator
 	readonly emailNotVerified: Locator
 	readonly verifyEmailButton: Locator
+	readonly unmarkButton: Locator
 
 	constructor(page: Page) {
 		this.page = page
@@ -118,6 +119,7 @@ export class UserDetailPage {
 		this.emailVerified = page.getByText("Email verified")
 		this.emailNotVerified = page.getByText("Email not verified")
 		this.verifyEmailButton = page.getByRole("button", { name: "Verify" })
+		this.unmarkButton = page.getByRole("button", { name: "Unmark" })
 	}
 
 	async goto(userId: string) {
@@ -329,6 +331,17 @@ export class AdminSettingsPage {
 			await this.page.getByRole("tab", { name: /Branding/i }).click()
 		}
 		await expect(this.page.getByRole("heading", { name: "Logo & Graphics" })).toBeVisible()
+	}
+
+	// --- Fee tab ---
+
+	async switchToFeeTab(testInfo?: { project: { name: string } }) {
+		if (testInfo?.project.name === "mobile-admin") {
+			await this.page.getByRole("tab").nth(6).click()
+		} else {
+			await this.page.getByRole("tab", { name: /^Fee$/i }).click()
+		}
+		await expect(this.page.getByRole("heading", { name: "Fee Types" })).toBeVisible()
 	}
 
 	// --- Display Format (Conference tab) ---

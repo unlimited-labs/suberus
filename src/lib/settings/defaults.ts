@@ -100,6 +100,11 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	// Fee settings
 	FEE_PAYMENT_INSTRUCTIONS:
 		"# Payment Instructions\n\nPlease contact the conference organizer for payment details.",
+	FEE_CURRENCY: "EUR",
+	FEE_TYPES: [
+		{ id: "full", name: "Full Conference Fee", amount: 250 },
+		{ id: "student", name: "Student Fee", amount: 100 },
+	],
 
 	// Branding settings
 	BRANDING_LOGO_URL: "",

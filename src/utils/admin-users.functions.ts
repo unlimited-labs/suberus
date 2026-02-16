@@ -74,7 +74,10 @@ const patchUserSchema = z.object({
 	role: z.enum(["ADMIN", "EDITOR", "REVIEWER", "AUTHOR"]).optional(),
 	isActive: z.boolean().optional(),
 	markFeePaid: z.boolean().optional(),
-	feeType: z.enum(["FULL", "STUDENT", "INVITED", "STAFF", "CASH"]).optional(),
+	feeType: z.string().optional(),
+	feeAmount: z.number().optional(),
+	feeCurrency: z.string().optional(),
+	unmarkFeePaid: z.boolean().optional(),
 	verifyEmail: z.boolean().optional(),
 });
 
@@ -88,7 +91,9 @@ export const patchAdminUser = createServerFn({ method: "POST" })
 const bulkActionSchema = z.object({
 	action: z.enum(["mark_fee", "change_role"]),
 	userIds: z.array(z.string()).min(1, "No users selected"),
-	feeType: z.enum(["FULL", "STUDENT", "INVITED", "STAFF", "CASH"]).optional(),
+	feeType: z.string().optional(),
+	feeAmount: z.number().optional(),
+	feeCurrency: z.string().optional(),
 	role: z.enum(["ADMIN", "EDITOR", "REVIEWER", "AUTHOR"]).optional(),
 });
 

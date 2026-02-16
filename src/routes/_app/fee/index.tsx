@@ -22,14 +22,6 @@ export const Route = createFileRoute("/_app/fee/")({
 	component: FeePage,
 });
 
-const feeTypeLabels: Record<string, string> = {
-	FULL: "Full Conference Fee",
-	STUDENT: "Student Fee",
-	INVITED: "Invited Speaker Fee",
-	STAFF: "Staff Fee",
-	CASH: "Cash Payment",
-};
-
 function FeePage() {
 	const { data: fee } = useSuspenseQuery(userFeeQueryOptions());
 	const { data: instructions } = useSuspenseQuery(
@@ -114,7 +106,7 @@ function FeePage() {
 											Fee Type
 										</div>
 										<div className="text-lg font-semibold text-foreground">
-											{feeTypeLabels[fee.type] || fee.type}
+											{fee.type}
 										</div>
 									</div>
 

@@ -217,6 +217,7 @@ export interface ConferenceSettings {
 	subtitle: string;
 	dateFormat: string;
 	timeFormat: "24h" | "12h";
+	currency: "EUR" | "USD" | "PLN";
 }
 
 const conferenceSettingsSchema = z.object({
@@ -232,6 +233,7 @@ const conferenceSettingsSchema = z.object({
 	subtitle: z.string(),
 	dateFormat: z.string(),
 	timeFormat: z.enum(["24h", "12h"]),
+	currency: z.enum(["EUR", "USD", "PLN"]),
 });
 
 /**
@@ -361,6 +363,7 @@ export const getConferenceSettingsFn = createServerFn({ method: "GET" })
 			"CONFERENCE_SUBTITLE",
 			"DATE_FORMAT",
 			"TIME_FORMAT",
+			"FEE_CURRENCY",
 		]);
 		return {
 			name: settings.CONFERENCE_NAME,
@@ -375,6 +378,7 @@ export const getConferenceSettingsFn = createServerFn({ method: "GET" })
 			subtitle: settings.CONFERENCE_SUBTITLE,
 			dateFormat: settings.DATE_FORMAT,
 			timeFormat: settings.TIME_FORMAT,
+			currency: settings.FEE_CURRENCY,
 		};
 	});
 
@@ -397,6 +401,7 @@ export const updateConferenceSettingsFn = createServerFn({ method: "POST" })
 		await setSetting("CONFERENCE_SUBTITLE", data.subtitle);
 		await setSetting("DATE_FORMAT", data.dateFormat);
 		await setSetting("TIME_FORMAT", data.timeFormat);
+		await setSetting("FEE_CURRENCY", data.currency);
 		return { success: true };
 	});
 
@@ -796,5 +801,54 @@ export const updateReminderSettingsFn = createServerFn({ method: "POST" })
 		await setSetting("REMINDER_REVIEWER_SETTINGS", data.reviewer);
 		await setSetting("REMINDER_REVISION_SETTINGS", data.revision);
 		await setSetting("REMINDER_DEADLINE_SETTINGS", data.deadline);
+		return { success: true };
+	});
+
+// ── Fee types & currency ──────────────────────────────────────
+
+export const feeTypesQueryOptions = () =>
+	queryOptions({
+		queryKey: ["settings", "fee-types"],
+		queryFn: () => getFeeTypesFn(),
+	});
+
+export const feeCurrencyQueryOptions = () =>
+	queryOptions({
+		queryKey: ["settings", "fee-currency"],
+		queryFn: () => getFeeCurrencyFn(),
+	});
+
+/**
+ * Get fee types (requires auth — used by admin + user fee page)
+ */
+export const getFeeTypesFn = createServerFn({ method: "GET" })
+	.middleware([authMiddleware])
+	.handler(async () => {
+		return getSetting("FEE_TYPES");
+	});
+
+/**
+ * Get fee currency (requires auth)
+ */
+export const getFeeCurrencyFn = createServerFn({ method: "GET" })
+	.middleware([authMiddleware])
+	.handler(async () => {
+		return getSetting("FEE_CURRENCY");
+	});
+
+const feeTypeItemSchema = z.object({
+	id: z.string().min(1),
+	name: z.string().min(1),
+	amount: z.number().min(0),
+});
+
+/**
+ * Update fee types (admin only)
+ */
+export const updateFeeTypesFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(z.object({ feeTypes: z.array(feeTypeItemSchema).min(1) }))
+	.handler(async ({ data }) => {
+		await setSetting("FEE_TYPES", data.feeTypes);
 		return { success: true };
 	});

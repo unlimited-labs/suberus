@@ -3,7 +3,7 @@ export { ConferenceSettingsTab } from "./conference-settings-tab";
 export { EmailTemplateCard } from "./email-template-card";
 export { EmailTemplateDialog } from "./email-template-dialog";
 export { EmailTemplatesTab } from "./email-templates-tab";
-export { FeeInstructionsTab } from "./fee-instructions-tab";
+export { FeeTab } from "./fee-tab";
 export { InvitationsSettingsTab } from "./invitations-settings-tab";
 export { RemindersSettingsTab } from "./reminders-settings-tab";
 export { SubmissionSettingsTab } from "./submission-settings-tab";

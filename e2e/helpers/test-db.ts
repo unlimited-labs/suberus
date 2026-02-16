@@ -522,7 +522,7 @@ export async function getAssignmentStatus(assignmentId: string): Promise<Assignm
 // NOTE: Creating a fee = payment received (admin assigns fee after payment)
 export interface CreateFeeOptions {
 	userId: string;
-	type?: "FULL" | "STUDENT" | "INVITED" | "STAFF" | "CASH";
+	type?: string;
 	amount?: number;
 	currency?: string;
 	paidAt?: Date;
@@ -534,9 +534,9 @@ export async function createFee(options: CreateFeeOptions): Promise<{ id: string
 	const fee = await db.fee.create({
 		data: {
 			userId: options.userId,
-			type: options.type ?? "FULL",
+			type: options.type ?? "Full Conference Fee",
 			amount: options.amount ?? 150.0,
-			currency: options.currency ?? "USD",
+			currency: options.currency ?? "EUR",
 			paid: true, // Fee existence = payment received
 			paidAt: options.paidAt ?? new Date(),
 		},

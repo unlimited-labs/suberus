@@ -1,4 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+	useMutation,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
 import type { Table } from "@tanstack/react-table";
 import { useState } from "react";
 import { BulkActionDialog } from "@/components/admin/data-table";
@@ -10,14 +14,18 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import type { FeeType, UserRole } from "@/generated/prisma/enums";
+import type { UserRole } from "@/generated/prisma/enums";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
-import { feeTypeOptions, userRoleOptions } from "@/lib/labels/user";
+import { userRoleOptions } from "@/lib/labels/user";
 import type { AdminUser } from "@/lib/server/admin/users";
 import {
 	adminUsersQueryOptions,
 	bulkAdminAction,
 } from "@/utils/admin-users.functions";
+import {
+	feeCurrencyQueryOptions,
+	feeTypesQueryOptions,
+} from "@/utils/settings.functions";
 
 interface UserBulkActionsProps {
 	table: Table<AdminUser>;
@@ -26,7 +34,9 @@ interface UserBulkActionsProps {
 interface BulkActionPayload {
 	action: "mark_fee" | "change_role";
 	userIds: string[];
-	feeType?: FeeType;
+	feeType?: string;
+	feeAmount?: number;
+	feeCurrency?: string;
 	role?: UserRole;
 }
 
@@ -36,11 +46,25 @@ export function UserBulkActions({ table }: UserBulkActionsProps) {
 	const selectedRows = table.getFilteredSelectedRowModel().rows;
 	const selectedCount = selectedRows.length;
 
+	const { data: dynamicFeeTypes } = useSuspenseQuery(feeTypesQueryOptions());
+	const { data: feeCurrency } = useSuspenseQuery(feeCurrencyQueryOptions());
+
+	const feeTypes = dynamicFeeTypes as Array<{
+		id: string;
+		name: string;
+		amount: number;
+	}>;
+	const currency = feeCurrency as string;
+
 	const [selectedAction, setSelectedAction] = useState<string>("");
 	const [feeDialogOpen, setFeeDialogOpen] = useState(false);
 	const [roleDialogOpen, setRoleDialogOpen] = useState(false);
-	const [selectedFeeType, setSelectedFeeType] = useState<FeeType>("FULL");
+	const [selectedFeeTypeId, setSelectedFeeTypeId] = useState<string>(
+		feeTypes[0]?.id ?? "",
+	);
 	const [selectedRole, setSelectedRole] = useState<UserRole>("AUTHOR");
+
+	const selectedFeeType = feeTypes.find((ft) => ft.id === selectedFeeTypeId);
 
 	const mutation = useMutation({
 		mutationFn: (payload: BulkActionPayload) =>
@@ -67,11 +91,14 @@ export function UserBulkActions({ table }: UserBulkActionsProps) {
 	};
 
 	const handleMarkFeesPaid = () => {
+		if (!selectedFeeType) return;
 		const userIds = selectedRows.map((row) => row.original.id);
 		mutation.mutate({
 			action: "mark_fee",
 			userIds,
-			feeType: selectedFeeType,
+			feeType: selectedFeeType.name,
+			feeAmount: selectedFeeType.amount,
+			feeCurrency: currency,
 		});
 	};
 
@@ -120,17 +147,14 @@ export function UserBulkActions({ table }: UserBulkActionsProps) {
 				onConfirm={handleMarkFeesPaid}
 				isLoading={mutation.isPending}
 			>
-				<Select
-					value={selectedFeeType}
-					onValueChange={(v) => setSelectedFeeType(v as FeeType)}
-				>
+				<Select value={selectedFeeTypeId} onValueChange={setSelectedFeeTypeId}>
 					<SelectTrigger>
 						<SelectValue placeholder="Select fee type" />
 					</SelectTrigger>
 					<SelectContent>
-						{feeTypeOptions.map((type) => (
-							<SelectItem key={type.value} value={type.value}>
-								{type.label}
+						{feeTypes.map((type) => (
+							<SelectItem key={type.id} value={type.id}>
+								{type.name} — {type.amount.toFixed(2)} {currency}
 							</SelectItem>
 						))}
 					</SelectContent>

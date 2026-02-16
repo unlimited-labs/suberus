@@ -10,8 +10,13 @@ import {
 	IconUserCheck,
 	IconUserCog,
 	IconUserX,
+	IconX,
 } from "@tabler/icons-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+	useMutation,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,7 +37,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import type { FeeType, UserRole } from "@/generated/prisma/enums";
+import type { UserRole } from "@/generated/prisma/enums";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { useDateFormat } from "@/hooks/use-date-format";
 import type { AdminUser } from "@/lib/server/admin/users";
@@ -41,6 +46,10 @@ import {
 	adminUsersQueryOptions,
 	patchAdminUser,
 } from "@/utils/admin-users.functions";
+import {
+	feeCurrencyQueryOptions,
+	feeTypesQueryOptions,
+} from "@/utils/settings.functions";
 
 interface UserDetailCardProps {
 	user: AdminUser;
@@ -53,14 +62,6 @@ const roleLabels: Record<string, string> = {
 	AUTHOR: "Author",
 };
 
-const feeTypes: { value: FeeType; label: string }[] = [
-	{ value: "FULL", label: "Full" },
-	{ value: "STUDENT", label: "Student" },
-	{ value: "INVITED", label: "Invited" },
-	{ value: "STAFF", label: "Staff" },
-	{ value: "CASH", label: "Cash" },
-];
-
 const userRoles: { value: UserRole; label: string }[] = [
 	{ value: "AUTHOR", label: "Author" },
 	{ value: "REVIEWER", label: "Reviewer" },
@@ -72,7 +73,10 @@ interface PatchPayload {
 	role?: UserRole;
 	isActive?: boolean;
 	markFeePaid?: boolean;
-	feeType?: FeeType;
+	feeType?: string;
+	feeAmount?: number;
+	feeCurrency?: string;
+	unmarkFeePaid?: boolean;
 	verifyEmail?: boolean;
 }
 
@@ -83,10 +87,23 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 	const fmtDate = (date: Date | null) => (date ? formatDateTime(date) : "—");
 	const [feeDialogOpen, setFeeDialogOpen] = useState(false);
 	const [roleDialogOpen, setRoleDialogOpen] = useState(false);
-	const [selectedFeeType, setSelectedFeeType] = useState<FeeType>(
-		user.fee?.type ?? "FULL",
+
+	const { data: dynamicFeeTypes } = useSuspenseQuery(feeTypesQueryOptions());
+	const { data: feeCurrency } = useSuspenseQuery(feeCurrencyQueryOptions());
+
+	const feeTypes = dynamicFeeTypes as Array<{
+		id: string;
+		name: string;
+		amount: number;
+	}>;
+	const currency = feeCurrency as string;
+
+	const [selectedFeeTypeId, setSelectedFeeTypeId] = useState<string>(
+		feeTypes[0]?.id ?? "",
 	);
 	const [selectedRole, setSelectedRole] = useState<UserRole>(user.role);
+
+	const selectedFeeType = feeTypes.find((ft) => ft.id === selectedFeeTypeId);
 
 	const mutation = useMutation({
 		mutationFn: (payload: PatchPayload) =>
@@ -104,7 +121,17 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 	});
 
 	const handleMarkFeePaid = () => {
-		mutation.mutate({ markFeePaid: true, feeType: selectedFeeType });
+		if (!selectedFeeType) return;
+		mutation.mutate({
+			markFeePaid: true,
+			feeType: selectedFeeType.name,
+			feeAmount: selectedFeeType.amount,
+			feeCurrency: currency,
+		});
+	};
+
+	const handleUnmarkFeePaid = () => {
+		mutation.mutate({ unmarkFeePaid: true });
 	};
 
 	const handleChangeRole = () => {
@@ -258,16 +285,32 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 						</div>
 						{user.fee?.paid ? (
 							<div className="rounded-lg border bg-green-50 p-4 dark:bg-green-950/20">
-								<div className="flex items-center gap-2">
-									<IconCash className="size-5 text-green-600" />
-									<span className="font-medium text-green-700 dark:text-green-400">
-										Fee Paid
-									</span>
+								<div className="flex items-center justify-between">
+									<div className="flex items-center gap-2">
+										<IconCash className="size-5 text-green-600" />
+										<span className="font-medium text-green-700 dark:text-green-400">
+											Fee Paid
+										</span>
+									</div>
+									<Button
+										variant="ghost"
+										size="sm"
+										className="h-7 text-muted-foreground hover:text-destructive"
+										onClick={handleUnmarkFeePaid}
+										disabled={mutation.isPending}
+									>
+										<IconX className="mr-1 size-3.5" />
+										Unmark
+									</Button>
 								</div>
 								<p className="mt-1 text-sm text-green-600 dark:text-green-500">
-									Type:{" "}
-									{feeTypes.find((f) => f.value === user.fee?.type)?.label ??
-										user.fee.type}
+									Type: {user.fee.type}
+									{user.fee.amount !== null && user.fee.currency && (
+										<>
+											{" • "}
+											Amount: {user.fee.amount.toFixed(2)} {user.fee.currency}
+										</>
+									)}
 									{" • "}
 									Paid on: {fmtDate(user.fee.paidAt)}
 								</p>
@@ -295,22 +338,27 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 							Select fee type for user {user.firstName} {user.lastName}.
 						</DialogDescription>
 					</DialogHeader>
-					<div className="py-4">
+					<div className="space-y-3 py-4">
 						<Select
-							value={selectedFeeType}
-							onValueChange={(v) => setSelectedFeeType(v as FeeType)}
+							value={selectedFeeTypeId}
+							onValueChange={setSelectedFeeTypeId}
 						>
 							<SelectTrigger>
 								<SelectValue placeholder="Select fee type" />
 							</SelectTrigger>
 							<SelectContent>
 								{feeTypes.map((type) => (
-									<SelectItem key={type.value} value={type.value}>
-										{type.label}
+									<SelectItem key={type.id} value={type.id}>
+										{type.name} — {type.amount.toFixed(2)} {currency}
 									</SelectItem>
 								))}
 							</SelectContent>
 						</Select>
+						{selectedFeeType && (
+							<p className="text-sm text-muted-foreground">
+								Amount: {selectedFeeType.amount.toFixed(2)} {currency}
+							</p>
+						)}
 					</div>
 					<DialogFooter>
 						<Button variant="outline" onClick={() => setFeeDialogOpen(false)}>

@@ -303,9 +303,9 @@ model Fee {
   id        String    @id @default(uuid()) @db.Uuid
   userId    String    @unique @db.Uuid
   paid      Boolean   @default(false)
-  type      FeeType   @default(FULL)
+  type      String    @default("Full")
   amount    Decimal?  @db.Decimal(10, 2)
-  currency  String?   @default("USD")
+  currency  String?   @default("EUR")
   paidAt    DateTime?
   notes     String?
   createdAt DateTime  @default(now())
@@ -515,14 +515,6 @@ enum ReviewMode {
   DOUBLE_BLIND
 }
 
-enum FeeType {
-  FULL
-  STUDENT
-  INVITED
-  STAFF
-  CASH
-}
-
 enum FileType {
   SUBMISSION_MAIN
   SUBMISSION_SUPPLEMENTARY
@@ -600,4 +592,6 @@ enum AppSettingKey {
   DATE_FORMAT
   TIME_FORMAT
   INVITATION_VALIDITY_HOURS
+  FEE_CURRENCY
+  FEE_TYPES
 }

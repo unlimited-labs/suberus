@@ -5,12 +5,20 @@ import { UserDetailCard } from "@/components/admin/users/user-detail-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { adminUserDetailQueryOptions } from "@/utils/admin-users.functions";
+import {
+	feeCurrencyQueryOptions,
+	feeTypesQueryOptions,
+} from "@/utils/settings.functions";
 
 export const Route = createFileRoute("/_app/admin/_layout/users/$id")({
 	loader: async ({ params, context }) => {
-		await context.queryClient.ensureQueryData(
-			adminUserDetailQueryOptions(params.id),
-		);
+		await Promise.all([
+			context.queryClient.ensureQueryData(
+				adminUserDetailQueryOptions(params.id),
+			),
+			context.queryClient.ensureQueryData(feeTypesQueryOptions()),
+			context.queryClient.ensureQueryData(feeCurrencyQueryOptions()),
+		]);
 	},
 	component: UserDetailPage,
 });

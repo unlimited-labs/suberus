@@ -24,7 +24,7 @@ import {
 	BrandingSettingsTab,
 	ConferenceSettingsTab,
 	EmailTemplatesTab,
-	FeeInstructionsTab,
+	FeeTab,
 	InvitationsSettingsTab,
 	RemindersSettingsTab,
 	SubmissionSettingsTab,
@@ -46,6 +46,8 @@ import {
 	brandingSettingsQueryOptions,
 	conferenceSettingsQueryOptions,
 	emailFooterQueryOptions,
+	feeCurrencyQueryOptions,
+	feeTypesQueryOptions,
 	reminderSettingsQueryOptions,
 	submissionTypesConfigQueryOptions,
 	submissionValidationSettingsQueryOptions,
@@ -85,6 +87,8 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			context.queryClient.ensureQueryData(
 				adminSettingQueryOptions("INVITATION_VALIDITY_HOURS"),
 			),
+			context.queryClient.ensureQueryData(feeTypesQueryOptions()),
+			context.queryClient.ensureQueryData(feeCurrencyQueryOptions()),
 		]);
 	},
 	component: AdminSettingsPage,
@@ -97,7 +101,7 @@ const tabs = [
 	{ id: "sessions", label: "Sessions", icon: IconPresentation },
 	{ id: "emails", label: "Email Templates", icon: IconMail },
 	{ id: "branding", label: "Branding", icon: IconPalette },
-	{ id: "fee-instructions", label: "Fee Instructions", icon: IconCash },
+	{ id: "fee", label: "Fee", icon: IconCash },
 	{ id: "reminders", label: "Reminders", icon: IconBell },
 	{ id: "survey", label: "Survey", icon: IconClipboardList },
 	{ id: "tos", label: "Terms of Service", icon: IconScale },
@@ -149,6 +153,8 @@ function AdminSettingsPage() {
 	const { data: invitationValidityHours } = useSuspenseQuery(
 		adminSettingQueryOptions("INVITATION_VALIDITY_HOURS"),
 	);
+	const { data: feeTypes } = useSuspenseQuery(feeTypesQueryOptions());
+	const { data: feeCurrency } = useSuspenseQuery(feeCurrencyQueryOptions());
 
 	const emailTemplates = emailTemplatesRaw.map(toEmailTemplateUI);
 
@@ -219,8 +225,18 @@ function AdminSettingsPage() {
 							<BrandingSettingsTab initialData={brandingSettings} />
 						</TabsContent>
 
-						<TabsContent value="fee-instructions">
-							<FeeInstructionsTab initialInstructions={feeInstructions} />
+						<TabsContent value="fee">
+							<FeeTab
+								initialInstructions={feeInstructions}
+								initialFeeTypes={
+									feeTypes as Array<{
+										id: string;
+										name: string;
+										amount: number;
+									}>
+								}
+								currency={feeCurrency as string}
+							/>
 						</TabsContent>
 
 						<TabsContent value="reminders">

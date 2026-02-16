@@ -8,10 +8,18 @@ import { UserMobileCard } from "@/components/admin/users/user-mobile-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { adminUsersQueryOptions } from "@/utils/admin-users.functions";
+import {
+	feeCurrencyQueryOptions,
+	feeTypesQueryOptions,
+} from "@/utils/settings.functions";
 
 export const Route = createFileRoute("/_app/admin/_layout/users/")({
 	loader: async ({ context }) => {
-		await context.queryClient.ensureQueryData(adminUsersQueryOptions());
+		await Promise.all([
+			context.queryClient.ensureQueryData(adminUsersQueryOptions()),
+			context.queryClient.ensureQueryData(feeTypesQueryOptions()),
+			context.queryClient.ensureQueryData(feeCurrencyQueryOptions()),
+		]);
 	},
 	component: UsersPage,
 });

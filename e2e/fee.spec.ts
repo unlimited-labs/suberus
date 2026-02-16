@@ -67,7 +67,7 @@ class AdminSettingsPage {
 		this.page = page;
 		// Use tab role and ensure it's visible (tabs have hidden text on mobile)
 		this.feeInstructionsTab = page.getByRole("tab", {
-			name: /Fee Instructions/i,
+			name: /^Fee$/i,
 		});
 		this.instructionsTextarea = page.getByLabel("Instructions Content");
 		this.saveButton = page.getByRole("button", { name: "Save Instructions" });
@@ -108,7 +108,7 @@ test.describe("Fee - User View", () => {
 		const paidAt = new Date("2026-01-15");
 		await createFee({
 			userId: testUser.id,
-			type: "FULL",
+			type: "Full Conference Fee",
 			amount: 250.0,
 			currency: "EUR",
 			paidAt,
@@ -173,7 +173,7 @@ test.describe("Fee - User View", () => {
 
 		await createFee({
 			userId: testUser.id,
-			type: "INVITED",
+			type: "Invited Speaker Fee",
 			amount: 75.0,
 			currency: "GBP",
 			paidAt: new Date("2026-01-10"),
@@ -189,7 +189,7 @@ test.describe("Fee - User View", () => {
 		await expect(feePage.heading).toBeVisible();
 		await expect(feePage.paidBadge).toBeVisible();
 		await expect(page.getByText("Payment Received")).toBeVisible();
-		await expect(page.getByText("Invited Speaker Fee")).toBeVisible();
+		await expect(page.getByText("Invited Speaker Fee", { exact: false })).toBeVisible();
 		await expect(page.getByText("75.00")).toBeVisible();
 		await expect(page.getByText("GBP")).toBeVisible();
 
@@ -361,7 +361,7 @@ test.describe("Fee - Edge Cases", () => {
 		await db.fee.create({
 			data: {
 				userId: testUser.id,
-				type: "FULL",
+				type: "Full Conference Fee",
 				amount: null,
 				currency: null,
 				paid: true,
@@ -399,7 +399,7 @@ test.describe("Fee - Edge Cases", () => {
 
 		await createFee({
 			userId: testUser.id,
-			type: "FULL",
+			type: "Full Conference Fee",
 			amount: 200.0,
 			currency: "USD",
 			paidAt: new Date("2026-01-20"),

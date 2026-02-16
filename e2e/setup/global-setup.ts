@@ -457,6 +457,32 @@ async function globalSetup() {
 
 		console.log("✅ ToS content seeded");
 
+		// Fee types and currency
+		await prisma.appSetting.upsert({
+			where: { key: "FEE_TYPES" },
+			update: {
+				value: [
+					{ id: "full", name: "Full Conference Fee", amount: 250 },
+					{ id: "student", name: "Student Fee", amount: 100 },
+				],
+			},
+			create: {
+				key: "FEE_TYPES",
+				value: [
+					{ id: "full", name: "Full Conference Fee", amount: 250 },
+					{ id: "student", name: "Student Fee", amount: 100 },
+				],
+			},
+		});
+
+		await prisma.appSetting.upsert({
+			where: { key: "FEE_CURRENCY" },
+			update: { value: "EUR" },
+			create: { key: "FEE_CURRENCY", value: "EUR" },
+		});
+
+		console.log("✅ Fee types and currency seeded");
+
 	} catch (error) {
 		console.error("❌ Global setup failed:", error);
 		throw error;

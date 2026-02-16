@@ -1,4 +1,4 @@
-import type { FeeType, UserRole } from "@/generated/prisma/enums";
+import type { UserRole } from "@/generated/prisma/enums";
 import {
 	type AdminUser,
 	bulkChangeRole,
@@ -10,6 +10,7 @@ import {
 	markFeePaid,
 	toggleUserActive,
 	type UsersFilters,
+	unmarkFeePaid,
 	verifyUserEmail,
 } from "@/lib/server/admin/users";
 
@@ -30,7 +31,10 @@ export interface PatchUserData {
 	role?: UserRole;
 	isActive?: boolean;
 	markFeePaid?: boolean;
-	feeType?: FeeType;
+	feeType?: string;
+	feeAmount?: number;
+	feeCurrency?: string;
+	unmarkFeePaid?: boolean;
 	verifyEmail?: boolean;
 }
 
@@ -51,8 +55,23 @@ export async function patchUser(
 	}
 
 	// Mark fee paid
-	if (data.markFeePaid && data.feeType) {
-		await markFeePaid({ userId: data.id, feeType: data.feeType });
+	if (
+		data.markFeePaid &&
+		data.feeType &&
+		data.feeAmount !== undefined &&
+		data.feeCurrency
+	) {
+		await markFeePaid({
+			userId: data.id,
+			feeType: data.feeType,
+			amount: data.feeAmount,
+			currency: data.feeCurrency,
+		});
+	}
+
+	// Unmark fee paid
+	if (data.unmarkFeePaid) {
+		await unmarkFeePaid(data.id);
 	}
 
 	// Verify email
@@ -66,7 +85,9 @@ export async function patchUser(
 export interface BulkActionData {
 	action: "mark_fee" | "change_role";
 	userIds: string[];
-	feeType?: FeeType;
+	feeType?: string;
+	feeAmount?: number;
+	feeCurrency?: string;
 	role?: UserRole;
 }
 
@@ -74,12 +95,16 @@ export async function executeBulkAction(
 	data: BulkActionData,
 ): Promise<{ success: boolean; updated: number }> {
 	if (data.action === "mark_fee") {
-		if (!data.feeType) {
-			throw new Response("Fee type is required", { status: 400 });
+		if (!data.feeType || data.feeAmount === undefined || !data.feeCurrency) {
+			throw new Response("Fee type, amount and currency are required", {
+				status: 400,
+			});
 		}
 		return bulkMarkFeesPaid({
 			userIds: data.userIds,
 			feeType: data.feeType,
+			amount: data.feeAmount,
+			currency: data.feeCurrency,
 		});
 	}
 
