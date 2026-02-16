@@ -35,10 +35,12 @@ export default defineConfig({
 			testMatch: /e2e\/auth\/.*\.spec\.ts/,
 			use: { ...devices["Pixel 5"] },
 		},
-		// Admin tests - use admin auth (wait for settings-integration to avoid conflicts)
+		// Admin settings tests that modify shared state (DATE_FORMAT, TIME_FORMAT, FEE_CURRENCY)
+		// Chained as separate projects to prevent inter-file parallelism —
+		// all three use saveConferenceSettings() which writes ALL settings fields
 		{
-			name: "chromium-admin",
-			testMatch: /e2e\/admin\/.*\.spec\.ts/,
+			name: "admin-settings-1",
+			testMatch: /e2e\/admin\/conference-settings\.spec\.ts/,
 			dependencies: ["auth-setup"],
 			use: {
 				...devices["Desktop Chrome"],
@@ -46,9 +48,37 @@ export default defineConfig({
 			},
 		},
 		{
+			name: "admin-settings-2",
+			testMatch: /e2e\/admin\/date-format-settings\.spec\.ts/,
+			dependencies: ["admin-settings-1"],
+			use: {
+				...devices["Desktop Chrome"],
+				storageState: "e2e/.auth/admin.json",
+			},
+		},
+		{
+			name: "admin-settings-3",
+			testMatch: /e2e\/admin\/fee-settings\.spec\.ts/,
+			dependencies: ["admin-settings-2"],
+			use: {
+				...devices["Desktop Chrome"],
+				storageState: "e2e/.auth/admin.json",
+			},
+		},
+		// Admin tests - use admin auth (excludes settings tests that run in chained projects)
+		{
+			name: "chromium-admin",
+			testMatch: /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings).*\.spec\.ts/,
+			dependencies: ["auth-setup", "admin-settings-3"],
+			use: {
+				...devices["Desktop Chrome"],
+				storageState: "e2e/.auth/admin.json",
+			},
+		},
+		{
 			name: "mobile-admin",
-			testMatch: /e2e\/admin\/.*\.spec\.ts/,
-			dependencies: ["auth-setup"],
+			testMatch: /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings).*\.spec\.ts/,
+			dependencies: ["auth-setup", "admin-settings-3"],
 			use: {
 				...devices["Pixel 5"],
 				storageState: "e2e/.auth/admin.json",
@@ -177,10 +207,11 @@ export default defineConfig({
 			},
 		},
 		// Fee tests - cross-role (handles auth internally)
+		// Depends on admin-settings-serial to ensure DATE_FORMAT/FEE_CURRENCY are restored
 		{
 			name: "chromium-fee",
 			testMatch: /e2e\/fee\.spec\.ts/,
-			dependencies: ["auth-setup"],
+			dependencies: ["auth-setup", "admin-settings-3"],
 			use: {
 				...devices["Desktop Chrome"],
 			},
