@@ -101,9 +101,7 @@ export function PersonalInfoSection({
 						label="ORCID"
 						type="text"
 						icon={<IconId className="size-4" />}
-						placeholder="0000-0002-1825-0097"
 						disabled={isLoading}
-						description="Format: 0000-0002-1825-0097"
 					/>
 				)}
 			</form.AppField>

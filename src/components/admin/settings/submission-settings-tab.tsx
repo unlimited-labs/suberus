@@ -237,7 +237,7 @@ export function SubmissionSettingsTab({
 							/>
 						</div>
 						{data.enableKeywords && (
-							<div className="grid gap-4 sm:grid-cols-2 pl-0 sm:pl-4">
+							<div className="grid gap-4 sm:grid-cols-2">
 								<div className="space-y-2">
 									<Label htmlFor="minKeywords">Min keywords</Label>
 									<Input

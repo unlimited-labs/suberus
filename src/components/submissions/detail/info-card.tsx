@@ -61,7 +61,7 @@ export function InfoCard({
 				/>
 
 				{versions.length > 1 ? (
-					<div className="pt-2 border-t">
+					<div className="pt-2 border-t border-border/50">
 						<VersionSelector
 							versions={versions}
 							currentVersion={submission.currentVersion}
@@ -73,7 +73,7 @@ export function InfoCard({
 					<InfoItem label="Version" value={submission.currentVersion} />
 				)}
 
-				<div className="border-t pt-4">
+				<div className="border-t border-border/50 pt-4">
 					<InfoItem
 						icon={<IconCalendar className="size-4 text-muted-foreground" />}
 						label="Submitted"

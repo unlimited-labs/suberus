@@ -41,7 +41,7 @@ export function ContentTabs({
 	file,
 }: ContentTabsProps) {
 	return (
-		<div className="rounded-2xl bg-card shadow-2xl border p-8">
+		<div className="rounded-2xl bg-card shadow-2xl border border-border/50 p-8">
 			<Tabs defaultValue="overview" className="w-full">
 				<TabsList variant="line" className="mb-6">
 					<TabsTrigger value="overview" className="gap-2">
@@ -64,7 +64,7 @@ export function ContentTabs({
 							<p className="text-sm font-medium text-muted-foreground">
 								Document
 							</p>
-							<div className="flex items-center gap-4 p-4 rounded-lg border bg-muted/30">
+							<div className="flex items-center gap-4 p-4 rounded-lg border border-border/50 bg-muted/30">
 								<div className="flex-shrink-0 p-2 rounded-md bg-primary/10">
 									<IconFile className="size-6 text-primary" />
 								</div>
@@ -92,7 +92,7 @@ export function ContentTabs({
 							<p className="text-sm font-medium text-muted-foreground">
 								Abstract
 							</p>
-							<div className="text-sm text-foreground leading-relaxed whitespace-pre-line break-words bg-muted/30 p-4 rounded-lg border">
+							<div className="text-sm text-foreground leading-relaxed whitespace-pre-line break-words bg-muted/30 p-4 rounded-lg border border-border/50">
 								{content}
 							</div>
 						</div>
@@ -101,7 +101,7 @@ export function ContentTabs({
 							<p className="text-sm font-medium text-muted-foreground">
 								Content
 							</p>
-							<div className="text-sm text-muted-foreground p-4 rounded-lg border bg-muted/30">
+							<div className="text-sm text-muted-foreground p-4 rounded-lg border border-border/50 bg-muted/30">
 								No content available
 							</div>
 						</div>

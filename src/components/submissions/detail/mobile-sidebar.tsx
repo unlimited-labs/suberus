@@ -25,7 +25,7 @@ export function MobileSidebar({
 	return (
 		<div data-testid="submission-sidebar" className="lg:hidden space-y-6">
 			{/* Mobile Status */}
-			<div className="rounded-2xl bg-card shadow-xl border p-6">
+			<div className="rounded-2xl bg-card shadow-xl border border-border/50 p-6">
 				<div className="flex items-center justify-between flex-wrap gap-3">
 					<div>
 						<p className="text-sm text-muted-foreground mb-1">Status</p>
@@ -42,7 +42,7 @@ export function MobileSidebar({
 
 			{/* Mobile Version Selector */}
 			{versions.length > 1 && (
-				<div className="rounded-2xl bg-card shadow-xl border p-6">
+				<div className="rounded-2xl bg-card shadow-xl border border-border/50 p-6">
 					<VersionSelector
 						versions={versions}
 						currentVersion={submission.currentVersion}

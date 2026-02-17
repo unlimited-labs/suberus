@@ -56,7 +56,6 @@ export function PasswordChangeSection({
 							label="New password *"
 							placeholder="Min. 10 characters"
 							disabled={isLoading}
-							description="Min. 10 characters"
 						/>
 					)}
 				</form.AppField>

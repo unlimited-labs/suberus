@@ -60,7 +60,7 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 	return (
 		<>
 			{/* Desktop Table */}
-			<div className="hidden md:block rounded-md border">
+			<div className="hidden md:block rounded-md border border-border/50">
 				<div className="relative w-full overflow-auto">
 					<table className="w-full caption-bottom text-sm">
 						<thead className="[&_tr]:border-b">
