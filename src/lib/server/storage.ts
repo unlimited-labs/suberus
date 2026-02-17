@@ -7,7 +7,7 @@ import {
 	S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { logger } from "@/lib/server/logger";
+import { logger } from "@/logger.ts";
 
 // Environment variables for Garage S3
 const GARAGE_ENDPOINT = process.env.GARAGE_ENDPOINT;

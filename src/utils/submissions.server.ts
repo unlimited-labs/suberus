@@ -5,8 +5,8 @@ import type {
 	SubmissionType,
 } from "@/generated/prisma/enums";
 import { sendEmail } from "@/lib/server/email";
-import { logger } from "@/lib/server/logger";
 import type { CreateSubmissionInput } from "@/lib/validations/submission";
+import { logger } from "@/logger.ts";
 
 interface CreateSubmissionResult {
 	id: string;

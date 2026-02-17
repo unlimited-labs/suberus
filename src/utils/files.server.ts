@@ -1,7 +1,7 @@
 import { prisma } from "@/db.server";
 import type { UserRole } from "@/generated/prisma/enums";
-import { logger } from "@/lib/server/logger";
 import { deleteFile } from "@/lib/server/storage";
+import { logger } from "@/logger.ts";
 
 /** Check if a user has access to download a file */
 export async function checkFileAccess(

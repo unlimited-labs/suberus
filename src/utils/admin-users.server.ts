@@ -13,7 +13,7 @@ import {
 	unmarkFeePaid,
 	verifyUserEmail,
 } from "@/lib/server/admin/users";
-import { logger } from "@/lib/server/logger";
+import { logger } from "@/logger.ts";
 
 export type { AdminUser, GetUsersResponse, UsersFilters };
 

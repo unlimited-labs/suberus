@@ -6,7 +6,6 @@ import type {
 	SubmissionType,
 } from "@/generated/prisma/enums";
 import { sendEmail } from "@/lib/server/email";
-import { logger } from "@/lib/server/logger";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import {
@@ -20,6 +19,7 @@ import {
 	submissionMachine,
 	type TransitionResult,
 } from "@/lib/workflow";
+import { logger } from "@/logger.ts";
 import { getSetting } from "./settings.server";
 
 /**

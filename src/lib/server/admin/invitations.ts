@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { prisma } from "@/db.server";
 import type { InvitationStatus, UserRole } from "@/generated/prisma/enums";
 import { sendEmail } from "@/lib/server/email";
-import { logger } from "@/lib/server/logger";
+import { logger } from "@/logger.ts";
 import { getSetting } from "@/utils/settings.server";
 
 export interface AdminInvitation {

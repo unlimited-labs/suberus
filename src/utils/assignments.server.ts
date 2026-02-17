@@ -5,9 +5,9 @@ import type {
 } from "@/generated/prisma/enums";
 import { formatDate } from "@/lib/format-date";
 import { sendEmail } from "@/lib/server/email";
-import { logger } from "@/lib/server/logger";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import { canAssignReviewer } from "@/lib/workflow";
+import { logger } from "@/logger.ts";
 import { getSetting } from "./settings.server";
 import {
 	checkAndTriggerReviewCompletion,

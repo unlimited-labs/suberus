@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import { prisma } from "@/db.server";
 import type { EmailEventType } from "@/generated/prisma/enums";
-import { logger } from "@/lib/server/logger";
+import { logger } from "@/logger.ts";
 import { getSetting } from "@/utils/settings.server";
 
 const TEST_PLACEHOLDER_DATA: Record<string, string> = {

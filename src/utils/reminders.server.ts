@@ -2,7 +2,7 @@ import { prisma } from "@/db.server";
 import type { EmailEventType } from "@/generated/prisma/enums";
 import { formatDate } from "@/lib/format-date";
 import { sendEmail } from "@/lib/server/email";
-import { logger } from "@/lib/server/logger";
+import { logger } from "@/logger.ts";
 import { getSetting } from "./settings.server";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
