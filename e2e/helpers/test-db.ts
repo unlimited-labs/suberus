@@ -5,7 +5,6 @@
 
 import { PrismaClient } from "../../src/generated/prisma/client";
 import {
-	type AppSettingKey,
 	AssignmentStatus,
 	type EmailEventType,
 	EditorDecisionType,
@@ -14,6 +13,7 @@ import {
 	SubmissionType,
 	UserRole,
 } from "../../src/generated/prisma/enums";
+import type { AppSettingKey } from "../../src/lib/settings/types";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { TEST_USER, ADMIN_USER, REVIEWER_USER, EDITOR_USER, DEFAULT_PASSWORD } from "./test-users";
 

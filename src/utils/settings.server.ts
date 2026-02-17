@@ -1,5 +1,4 @@
 import { prisma } from "@/db.server";
-import type { AppSettingKey } from "@/generated/prisma/enums";
 import {
 	DEFAULT_FULL_PAPER_CONFIG,
 	DEFAULT_ORAL_PRESENTATION_CONFIG,
@@ -43,7 +42,7 @@ export async function getSetting<K extends keyof AppSettingsMap>(
 	key: K,
 ): Promise<AppSettingsMap[K]> {
 	const setting = await prisma.appSetting.findUnique({
-		where: { key: key as AppSettingKey },
+		where: { key },
 	});
 
 	if (!setting) {
@@ -75,10 +74,10 @@ export async function setSetting<K extends keyof AppSettingsMap>(
 	value: AppSettingsMap[K],
 ): Promise<void> {
 	await prisma.appSetting.upsert({
-		where: { key: key as AppSettingKey },
+		where: { key },
 		update: { value: value as object },
 		create: {
-			key: key as AppSettingKey,
+			key,
 			value: value as object,
 		},
 	});
@@ -95,7 +94,7 @@ export async function getSettings<K extends keyof AppSettingsMap>(
 	const settings = await Promise.all(
 		keys.map((key) =>
 			prisma.appSetting.findUnique({
-				where: { key: key as AppSettingKey },
+				where: { key },
 			}),
 		),
 	);

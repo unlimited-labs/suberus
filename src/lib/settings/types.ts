@@ -1,4 +1,4 @@
-import type { AppSettingKey, ReviewMode } from "@/generated/prisma/enums";
+import type { ReviewMode } from "@/generated/prisma/enums";
 
 /** Content format for submission types */
 export type ContentFormat = "TEXT" | "FILE";
@@ -147,13 +147,5 @@ export function getSubmissionTypeFromKey(
 	}
 }
 
-/** Type-safe key for AppSettingsMap */
-export type AppSettingKeyType = keyof AppSettingsMap;
-
-/** Ensure AppSettingsMap keys match Prisma AppSettingKey enum exactly.
- *  If keys diverge, one of these becomes `never` → TS error on the Record below. */
-type _KeysMatch = [
-	AppSettingKeyType extends AppSettingKey ? true : never,
-	AppSettingKey extends AppSettingKeyType ? true : never,
-];
-export const APP_SETTING_KEYS_VALID: _KeysMatch = [true, true];
+/** Type-safe key derived from AppSettingsMap (single source of truth) */
+export type AppSettingKey = keyof AppSettingsMap;
