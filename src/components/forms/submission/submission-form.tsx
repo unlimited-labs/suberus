@@ -460,23 +460,16 @@ export function SubmissionForm({
 																)}
 															/>
 														</div>
-														<div className="flex flex-col">
-															<span
-																className={cn(
-																	"font-medium",
-																	isSelected
-																		? "text-foreground"
-																		: "text-muted-foreground",
-																)}
-															>
-																{option.label}
-															</span>
-															<span className="text-xs text-muted-foreground">
-																{option.config.contentFormat === "FILE"
-																	? "File upload"
-																	: "Text"}
-															</span>
-														</div>
+														<span
+															className={cn(
+																"font-medium",
+																isSelected
+																	? "text-foreground"
+																	: "text-muted-foreground",
+															)}
+														>
+															{option.label}
+														</span>
 													</button>
 												);
 											})}
@@ -498,7 +491,12 @@ export function SubmissionForm({
 
 								<div className="space-y-4">
 									<form.AppField name="title">
-										{(field) => <field.InputField label="Title" />}
+										{(field) => (
+											<field.InputField
+												label="Title"
+												placeholder={`Minimum ${validationSettings.minTitleLength} characters`}
+											/>
+										)}
 									</form.AppField>
 
 									{/* Content field always mounted to keep TanStack Form instance alive;
@@ -529,6 +527,7 @@ export function SubmissionForm({
 														onBlur={field.handleBlur}
 														rows={8}
 														aria-invalid={hasError}
+														placeholder={`Minimum ${validationSettings.minAbstractLength} characters`}
 														className="flex min-h-16 w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 aria-invalid:ring-[3px]"
 													/>
 													<FieldError
@@ -629,7 +628,6 @@ export function SubmissionForm({
 															<KeywordsInput
 																value={field.state.value}
 																onChange={field.handleChange}
-																minKeywords={validationSettings.minKeywords}
 																maxKeywords={validationSettings.maxKeywords}
 															/>
 														</div>

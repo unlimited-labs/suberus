@@ -11,7 +11,6 @@ import { cn } from "@/lib/utils";
 interface KeywordsInputProps {
 	value: string[];
 	onChange: (keywords: string[]) => void;
-	minKeywords?: number;
 	maxKeywords?: number;
 	placeholder?: string;
 	className?: string;
@@ -20,9 +19,8 @@ interface KeywordsInputProps {
 export function KeywordsInput({
 	value,
 	onChange,
-	minKeywords = 0,
 	maxKeywords = 5,
-	placeholder = "",
+	placeholder = "Separate with comma or Enter",
 	className,
 }: KeywordsInputProps) {
 	const [inputValue, setInputValue] = useState("");
@@ -157,20 +155,6 @@ export function KeywordsInput({
 					{error}
 				</p>
 			)}
-
-			<p
-				className={cn(
-					"text-xs",
-					value.length < minKeywords
-						? "text-destructive"
-						: "text-muted-foreground",
-				)}
-			>
-				{value.length} /{" "}
-				{minKeywords > 0 ? `${minKeywords}-${maxKeywords}` : maxKeywords}{" "}
-				keywords
-				{value.length < minKeywords && ` (minimum ${minKeywords} required)`}
-			</p>
 		</div>
 	);
 }
