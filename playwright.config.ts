@@ -252,6 +252,15 @@ export default defineConfig({
 				...devices["Desktop Chrome"],
 			},
 		},
+		// Bundle tests - verify admin code splitting (handles auth internally)
+		{
+			name: "chromium-bundle",
+			testMatch: /e2e\/bundle\/.*\.spec\.ts/,
+			dependencies: ["auth-setup"],
+			use: {
+				...devices["Desktop Chrome"],
+			},
+		},
 	],
 	webServer: {
 		command: "pnpm build && pnpm preview",
