@@ -19,8 +19,6 @@ services:
   app:
     build:
       context: .
-      args:
-        VITE_APP_URL: http://localhost:3001
     container_name: suberus-app
     restart: unless-stopped
     ports:
@@ -41,9 +39,7 @@ services:
       SMTP_FROM_EMAIL: noreply@suberus.local
       SMTP_FROM_NAME: Suberus Conference
       AUTH_SECRET: dev-secret-key-change-in-production-please-use-at-least-32-chars
-      AUTH_URL: http://localhost:3001
-      VITE_AUTH_URL: http://localhost:3001
-      VITE_APP_URL: http://localhost:3001
+      APP_BASE_URL: http://localhost:3001
       NODE_ENV: production
       PORT: "3001"
       CRON_SECRET: test-cron-secret-for-e2e

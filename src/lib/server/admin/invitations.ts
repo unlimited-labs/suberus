@@ -63,8 +63,7 @@ export async function createInvitation(
 	});
 
 	const conferenceName = await getSetting("CONFERENCE_NAME");
-	const baseUrl = process.env.AUTH_URL ?? "http://localhost:3000";
-	const registrationUrl = `${baseUrl}/register?token=${token}`;
+	const registrationUrl = `${process.env.APP_BASE_URL}/register?token=${token}`;
 	const roleName = role === "EDITOR" ? "Editor" : "Reviewer";
 
 	await sendEmail("INVITATION", email, {
@@ -106,8 +105,7 @@ export async function resendInvitation(
 	});
 
 	const conferenceName = await getSetting("CONFERENCE_NAME");
-	const baseUrl = process.env.AUTH_URL ?? "http://localhost:3000";
-	const registrationUrl = `${baseUrl}/register?token=${token}`;
+	const registrationUrl = `${process.env.APP_BASE_URL}/register?token=${token}`;
 	const roleName = invitation.role === "EDITOR" ? "Editor" : "Reviewer";
 
 	await sendEmail("INVITATION", invitation.email, {

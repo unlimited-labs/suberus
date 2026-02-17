@@ -1,8 +1,6 @@
 import { createAuthClient } from "better-auth/react";
 
-const baseURL = import.meta.env.VITE_APP_URL ?? "http://localhost:3001";
-
-export const authClient = createAuthClient({ baseURL });
+export const authClient = createAuthClient();
 
 export const {
 	signIn,
@@ -18,7 +16,7 @@ export async function forgetPassword(options: {
 	email: string;
 	redirectTo?: string;
 }) {
-	const response = await fetch(`${baseURL}/api/auth/request-password-reset`, {
+	const response = await fetch("/api/auth/request-password-reset", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(options),

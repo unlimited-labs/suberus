@@ -15,7 +15,7 @@ const adapter = new PrismaPg({ connectionString })
 const prisma = new PrismaClient({ adapter })
 
 export const auth = betterAuth({
-	baseURL: process.env.AUTH_URL,
+	baseURL: process.env.APP_BASE_URL,
 	secret: process.env.AUTH_SECRET,
 	trustedOrigins:
 		process.env.NODE_ENV === "development"

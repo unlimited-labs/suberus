@@ -226,7 +226,7 @@ export async function submitReview(
 				reviewerName:
 					`${reviewer.firstName ?? ""} ${reviewer.lastName ?? ""}`.trim() ||
 					reviewer.email,
-				submissionUrl: `${process.env.AUTH_URL}/admin/submissions/${assignment.submissionId}`,
+				submissionUrl: `${process.env.APP_BASE_URL}/admin/submissions/${assignment.submissionId}`,
 			});
 		}
 	}

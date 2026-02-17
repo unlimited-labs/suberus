@@ -15,7 +15,6 @@ COPY prisma ./prisma
 COPY prisma.config.ts ./
 RUN pnpm exec prisma generate
 
-ARG VITE_APP_URL=http://localhost:3001
 ENV NODE_ENV=production
 
 COPY . .

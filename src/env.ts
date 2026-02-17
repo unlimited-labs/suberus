@@ -3,6 +3,7 @@ import { z } from "zod";
 
 export const env = createEnv({
 	server: {
+		APP_BASE_URL: z.url(),
 		SERVER_URL: z.url().optional(),
 		// Garage S3 storage (optional - only needed for FILE-based submissions)
 		GARAGE_ENDPOINT: z.url().optional(),
