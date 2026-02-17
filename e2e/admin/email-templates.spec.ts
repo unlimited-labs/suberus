@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test";
-import { test } from "./fixtures";
+import { test, ADMIN_USER } from "./fixtures";
+import { clearMailpitForAddress, waitForEmail, getMailpitMessage } from "../helpers/mailpit";
 import { getPrisma, setAppSetting } from "../helpers/test-db";
 
 /** Find a template card by its description text and click its edit button */
@@ -226,5 +227,82 @@ test.describe("Admin Settings - Email Footer", () => {
 			"EMAIL_FOOTER_TEXT" as Parameters<typeof setAppSetting>[0],
 			"",
 		);
+	});
+});
+
+test.describe("Admin Settings - Placeholder Tooltips & Test Email", () => {
+	test.describe.configure({ mode: "serial" });
+
+	test.beforeEach(async ({ adminSettingsPage }, testInfo) => {
+		// Arrange
+		await adminSettingsPage.goto();
+		if (testInfo.project.name === "mobile-admin") {
+			await adminSettingsPage.page.getByRole("tab").nth(4).click();
+		} else {
+			await adminSettingsPage.page
+				.getByRole("tab", { name: /Email Templates/i })
+				.click();
+		}
+		await expect(
+			adminSettingsPage.page.getByRole("heading", {
+				name: "Email Templates",
+			}),
+		).toBeVisible();
+	});
+
+	test("shows tooltip on placeholder badge hover", async ({ page }, testInfo) => {
+		// Tooltips don't work on mobile (no hover)
+		test.skip(testInfo.project.name === "mobile-admin", "No hover on mobile");
+
+		// Arrange
+		await openTemplateEditor(
+			page,
+			"Sent when a new submission is created",
+		);
+		const dialog = page.getByRole("dialog");
+		await expect(dialog).toBeVisible();
+
+		// Act - hover over a placeholder badge
+		const badge = dialog.getByText("submissionTitle", { exact: true });
+		await badge.hover();
+
+		// Assert
+		await expect(
+			page.getByRole("tooltip", { name: "Title of the submission" }),
+		).toBeVisible();
+	});
+
+	test("sends test email with placeholder data", async ({ page }) => {
+		// Arrange
+		await clearMailpitForAddress(ADMIN_USER.email);
+		await openTemplateEditor(
+			page,
+			"Sent when a new submission is created",
+		);
+		const dialog = page.getByRole("dialog");
+		await expect(dialog).toBeVisible();
+
+		// Act
+		await dialog.getByRole("button", { name: "Send Test" }).click();
+
+		// Assert - success toast
+		await expect(
+			page.getByText(/test email sent/i),
+		).toBeVisible({ timeout: 10000 });
+
+		// Assert - email received in Mailpit
+		const email = await waitForEmail(
+			ADMIN_USER.email,
+			"[TEST]",
+			15000,
+		);
+		expect(email).not.toBeNull();
+		expect(email!.Subject).toContain("[TEST]");
+
+		// Assert - placeholders replaced with example data
+		const emailDetails = await getMailpitMessage(email!.ID);
+		expect(emailDetails).not.toBeNull();
+		expect(emailDetails!.Text).toContain("John Doe");
+		expect(emailDetails!.Text).toContain("Example Submission Title");
 	});
 });

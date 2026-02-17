@@ -1,4 +1,4 @@
-import { IconLoader2 } from "@tabler/icons-react";
+import { IconLoader2, IconSend } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -15,9 +15,36 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { EmailEventType } from "@/generated/prisma/enums";
-import { updateEmailTemplateFn } from "@/utils/email-templates.functions";
+import {
+	sendTestEmailFn,
+	updateEmailTemplateFn,
+} from "@/utils/email-templates.functions";
 import type { EmailTemplateUI } from "./email-templates-tab";
+
+const PLACEHOLDER_DESCRIPTIONS: Record<string, string> = {
+	authorName: "Author's full name",
+	submissionTitle: "Title of the submission",
+	submissionUrl: "Link to view the submission",
+	firstName: "User's first name",
+	verificationUrl: "Email verification link",
+	conferenceName: "Name of the conference",
+	resetUrl: "Password reset link",
+	reviewerName: "Reviewer's full name",
+	deadline: "Review/revision deadline date",
+	reviewUrl: "Link to review the submission",
+	letterToAuthor: "Editor's decision letter text",
+	versionNumber: "Revision version number",
+	recipientName: "Recipient's name",
+	roleName: "Assigned role name",
+	registrationUrl: "Registration link",
+	expiresAt: "Invitation expiration date",
+};
 
 interface EmailTemplateDialogProps {
 	template: EmailTemplateUI | null;
@@ -34,6 +61,7 @@ export function EmailTemplateDialog({
 }: EmailTemplateDialogProps) {
 	const [data, setData] = useState<EmailTemplateUI | null>(template);
 	const [isSaving, setIsSaving] = useState(false);
+	const [isSendingTest, setIsSendingTest] = useState(false);
 
 	// Update local state when template changes
 	if (template && data?.eventType !== template.eventType) {
@@ -78,6 +106,27 @@ export function EmailTemplateDialog({
 			setIsSaving(false);
 		}
 	};
+
+	const handleSendTest = async () => {
+		if (!data) return;
+		setIsSendingTest(true);
+		try {
+			await sendTestEmailFn({
+				data: {
+					subject: data.subject,
+					body: data.body,
+					isHtml: false,
+				},
+			});
+			toast.success("Test email sent — check your inbox");
+		} catch {
+			toast.error("Failed to send test email");
+		} finally {
+			setIsSendingTest(false);
+		}
+	};
+
+	const busy = isSaving || isSendingTest;
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -142,36 +191,56 @@ export function EmailTemplateDialog({
 					<div className="space-y-2">
 						<Label>Available placeholders</Label>
 						<div className="flex flex-wrap gap-1.5">
-							{data.placeholders.map((placeholder) => (
-								<Badge
-									key={placeholder}
-									variant="outline"
-									className="cursor-pointer font-mono text-xs"
-									onClick={() => {
-										navigator.clipboard.writeText(placeholder);
-										toast.success("Copied to clipboard");
-									}}
-								>
-									{placeholder}
-								</Badge>
-							))}
+							{data.placeholders.map((placeholder) => {
+								const description =
+									PLACEHOLDER_DESCRIPTIONS[placeholder] ?? placeholder;
+								return (
+									<Tooltip key={placeholder}>
+										<TooltipTrigger asChild>
+											<Badge
+												variant="outline"
+												className="cursor-pointer font-mono text-xs"
+												onClick={() => {
+													navigator.clipboard.writeText(placeholder);
+													toast.success("Copied to clipboard");
+												}}
+											>
+												{placeholder}
+											</Badge>
+										</TooltipTrigger>
+										<TooltipContent>{description}</TooltipContent>
+									</Tooltip>
+								);
+							})}
 						</div>
-						<p className="text-xs text-muted-foreground">Click to copy</p>
+						<p className="text-xs text-muted-foreground">
+							Click to copy &middot; hover for description
+						</p>
 					</div>
 				</div>
 
-				<DialogFooter>
-					<Button
-						variant="outline"
-						onClick={() => onOpenChange(false)}
-						disabled={isSaving}
-					>
-						Cancel
+				<DialogFooter className="flex-row justify-between gap-2 sm:justify-between">
+					<Button variant="secondary" onClick={handleSendTest} disabled={busy}>
+						{isSendingTest ? (
+							<IconLoader2 className="mr-2 size-4 animate-spin" />
+						) : (
+							<IconSend className="mr-2 size-4" />
+						)}
+						Send Test
 					</Button>
-					<Button onClick={handleSave} disabled={isSaving}>
-						{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
-						Save
-					</Button>
+					<div className="flex gap-2">
+						<Button
+							variant="outline"
+							onClick={() => onOpenChange(false)}
+							disabled={busy}
+						>
+							Cancel
+						</Button>
+						<Button onClick={handleSave} disabled={busy}>
+							{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
+							Save
+						</Button>
+					</div>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

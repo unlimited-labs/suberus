@@ -11,6 +11,7 @@ import { type CSSProperties, useEffect } from "react";
 import { SpinnerSvg } from "../components/spinner-svg";
 import { ThemeProvider } from "../components/theme-provider";
 import { Toaster } from "../components/ui/sonner";
+import { TooltipProvider } from "../components/ui/tooltip";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import { getThemeFn } from "../lib/theme";
 import appCss from "../styles.css?url";
@@ -104,8 +105,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 					<SpinnerSvg color={primaryColor} />
 				</div>
 				<ThemeProvider theme={theme}>
-					{children}
-					<Toaster position="top-right" richColors />
+					<TooltipProvider>
+						{children}
+						<Toaster position="top-right" richColors />
+					</TooltipProvider>
 				</ThemeProvider>
 				<TanStackDevtools
 					config={{

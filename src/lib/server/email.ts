@@ -3,6 +3,26 @@ import { prisma } from "@/db.server";
 import type { EmailEventType } from "@/generated/prisma/enums";
 import { getSetting } from "@/utils/settings.server";
 
+const TEST_PLACEHOLDER_DATA: Record<string, string> = {
+	authorName: "John Doe",
+	submissionTitle: "Example Submission Title",
+	submissionUrl: "https://conference.example.com/submissions/1",
+	firstName: "John",
+	verificationUrl: "https://conference.example.com/verify?token=abc123",
+	conferenceName: "Example Conference 2026",
+	resetUrl: "https://conference.example.com/reset?token=abc123",
+	reviewerName: "Jane Smith",
+	deadline: "2026-03-15",
+	reviewUrl: "https://conference.example.com/reviews/1",
+	letterToAuthor:
+		"We are pleased to inform you that your submission has been accepted.",
+	versionNumber: "2",
+	recipientName: "John Doe",
+	roleName: "Reviewer",
+	registrationUrl: "https://conference.example.com/register?token=abc123",
+	expiresAt: "2026-04-01",
+};
+
 const transporter = nodemailer.createTransport({
 	host: process.env.SMTP_HOST ?? "localhost",
 	port: Number(process.env.SMTP_PORT ?? 1025),
@@ -59,4 +79,36 @@ export async function sendEmail(
 		// Log error but don't throw - email sending should not break the main flow
 		console.error(`Failed to send email (${eventType}):`, error);
 	}
+}
+
+export async function sendTestEmail(
+	to: string,
+	subject: string,
+	body: string,
+	isHtml: boolean,
+): Promise<void> {
+	let resolvedSubject = `[TEST] ${subject}`;
+	let resolvedBody = body;
+
+	for (const [key, value] of Object.entries(TEST_PLACEHOLDER_DATA)) {
+		const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
+		resolvedSubject = resolvedSubject.replace(regex, value);
+		resolvedBody = resolvedBody.replace(regex, value);
+	}
+
+	const footer = await getSetting("EMAIL_FOOTER_TEXT");
+	if (footer) {
+		if (isHtml) {
+			resolvedBody += `<hr><p>${footer}</p>`;
+		} else {
+			resolvedBody += `\n\n---\n${footer}`;
+		}
+	}
+
+	await transporter.sendMail({
+		from: process.env.SMTP_FROM ?? "conference@suberus.local",
+		to,
+		subject: resolvedSubject,
+		[isHtml ? "html" : "text"]: resolvedBody,
+	});
 }

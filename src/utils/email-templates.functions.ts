@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { sendTestEmail } from "@/lib/server/email";
 import { adminMiddleware } from "./auth.middleware";
 import {
 	getEmailTemplates,
@@ -56,4 +57,23 @@ export const updateEmailTemplateFn = createServerFn({ method: "POST" })
 	.handler(async ({ data }) => {
 		const { eventType, ...updateData } = data;
 		return updateEmailTemplate(eventType, updateData);
+	});
+
+/** Send a test email to the current admin (admin only) */
+export const sendTestEmailFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(
+		z.object({
+			subject: z.string().min(1),
+			body: z.string().min(1),
+			isHtml: z.boolean(),
+		}),
+	)
+	.handler(async ({ data, context }) => {
+		await sendTestEmail(
+			context.user.email,
+			data.subject,
+			data.body,
+			data.isHtml,
+		);
 	});
