@@ -120,8 +120,8 @@ export class SettingsEmailSection {
 	}
 
 	async goto() {
-		await this.page.goto("/settings")
-		await this.page.getByRole("heading", { name: "Settings" }).waitFor({ state: "visible" })
+		await this.page.goto("/profile")
+		await this.page.getByRole("heading", { name: "Profile" }).waitFor({ state: "visible" })
 	}
 
 	async expectVerified() {

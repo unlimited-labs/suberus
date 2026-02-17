@@ -4,7 +4,6 @@ import {
 	IconDotsVertical,
 	IconLogout,
 	IconMoon,
-	IconSettings,
 	IconSun,
 	IconUser,
 } from "@tabler/icons-react";
@@ -69,15 +68,9 @@ export function UserMenu() {
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" side="top" className="w-56">
 				<DropdownMenuItem asChild>
-					<Link to="/settings">
+					<Link to="/profile">
 						<IconUser className="mr-2" />
 						Profile
-					</Link>
-				</DropdownMenuItem>
-				<DropdownMenuItem asChild>
-					<Link to="/settings">
-						<IconSettings className="mr-2" />
-						Settings
 					</Link>
 				</DropdownMenuItem>
 				<DropdownMenuSub>

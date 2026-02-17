@@ -22,7 +22,7 @@ test.describe("Admin code splitting", () => {
 		await loginAsTestUser(page)
 		await page.goto("/submissions")
 		await page.waitForLoadState("networkidle")
-		await page.goto("/settings")
+		await page.goto("/profile")
 		await page.waitForLoadState("networkidle")
 
 		// Assert

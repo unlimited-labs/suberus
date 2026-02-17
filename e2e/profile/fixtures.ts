@@ -32,7 +32,7 @@ export class SettingsPage {
 
 	constructor(page: Page) {
 		this.page = page
-		this.heading = page.getByRole("heading", { name: "Settings" })
+		this.heading = page.getByRole("heading", { name: "Profile" })
 
 		// Personal info section
 		this.firstNameInput = page.getByLabel("First name *")
@@ -71,7 +71,7 @@ export class SettingsPage {
 	}
 
 	async goto() {
-		await this.page.goto("/settings")
+		await this.page.goto("/profile")
 		await this.heading.waitFor({ state: "visible" })
 	}
 

@@ -2,7 +2,6 @@ import {
 	IconClipboardList,
 	IconLock,
 	IconMail,
-	IconSettings,
 	IconUser,
 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -35,7 +34,7 @@ import {
 	userSurveyAnswersQueryOptions,
 } from "@/utils/survey.functions";
 
-export const Route = createFileRoute("/_app/settings")({
+export const Route = createFileRoute("/_app/profile")({
 	loader: async ({ context }) => {
 		await Promise.all([
 			context.queryClient.ensureQueryData(activeSurveyQuestionsQueryOptions()),
@@ -129,7 +128,7 @@ function SettingsPage() {
 
 	return (
 		<div className="flex h-full flex-col">
-			<PageHeader icon={IconSettings} title="Settings" />
+			<PageHeader icon={IconUser} title="Profile" />
 			<div className="settings-page-container flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-5xl space-y-8">
 					<SettingsSection

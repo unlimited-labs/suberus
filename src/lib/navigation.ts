@@ -6,7 +6,7 @@ import {
 	IconFileStack,
 	IconFileText,
 	IconMailPlus,
-	IconSettings,
+	IconUser,
 	IconUsers,
 } from "@tabler/icons-react";
 import type { ComponentType } from "react";
@@ -37,7 +37,7 @@ export const navigationSections: NavSection[] = [
 				icon: IconClipboardCheck,
 				roles: ["REVIEWER", "EDITOR", "ADMIN"],
 			},
-			{ name: "Settings", href: "/settings", icon: IconSettings },
+			{ name: "Profile", href: "/profile", icon: IconUser },
 		],
 	},
 	{
