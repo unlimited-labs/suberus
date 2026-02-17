@@ -4,7 +4,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/layout/page-header";
 import { SubmissionsTable } from "@/components/submissions/submissions-table";
 import { Button } from "@/components/ui/button";
-import { submissionDeadlineQueryOptions } from "@/utils/settings.functions";
+import {
+	activeSubmissionTypesQueryOptions,
+	submissionDeadlineQueryOptions,
+} from "@/utils/settings.functions";
 import { mySubmissionsQueryOptions } from "@/utils/submissions.functions";
 
 export const Route = createFileRoute("/_app/submissions/")({
@@ -12,6 +15,7 @@ export const Route = createFileRoute("/_app/submissions/")({
 		await Promise.all([
 			context.queryClient.ensureQueryData(mySubmissionsQueryOptions()),
 			context.queryClient.ensureQueryData(submissionDeadlineQueryOptions()),
+			context.queryClient.ensureQueryData(activeSubmissionTypesQueryOptions()),
 		]);
 	},
 	component: SubmissionsPage,
@@ -22,7 +26,12 @@ function SubmissionsPage() {
 	const {
 		data: { deadline },
 	} = useSuspenseQuery(submissionDeadlineQueryOptions());
-	const isOpen = deadline ? new Date(deadline) > new Date() : true;
+	const { data: activeTypes } = useSuspenseQuery(
+		activeSubmissionTypesQueryOptions(),
+	);
+	const deadlineOpen = deadline ? new Date(deadline) > new Date() : true;
+	const hasActiveTypes = activeTypes.length > 0;
+	const canSubmit = deadlineOpen && hasActiveTypes;
 
 	// Sort submissions by newest first (updatedAt DESC)
 	const sortedSubmissions = [...submissions].sort(
@@ -32,19 +41,24 @@ function SubmissionsPage() {
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconFileText} title="Submissions">
-				{isOpen && (
+				{canSubmit ? (
 					<Link to="/submissions/new">
 						<Button className="gap-2">
 							<IconPlus className="size-4" />
 							New Submission
 						</Button>
 					</Link>
+				) : (
+					<Button className="gap-2" disabled>
+						<IconPlus className="size-4" />
+						New Submission
+					</Button>
 				)}
 			</PageHeader>
 			<div className="flex-1 p-6 overflow-auto">
 				{sortedSubmissions.length === 0 ? (
-					<div className="rounded-lg border border-border p-8 text-center">
-						{isOpen ? (
+					<div className="rounded-lg border border-border/50 p-8 text-center">
+						{canSubmit ? (
 							<>
 								<IconFileText className="mx-auto size-12 text-muted-foreground/50" />
 								<p className="mt-4 text-muted-foreground">

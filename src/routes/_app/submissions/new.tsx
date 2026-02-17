@@ -1,4 +1,9 @@
-import { IconFileText, IconMailX, IconRefresh } from "@tabler/icons-react";
+import {
+	IconFileText,
+	IconLock,
+	IconMailX,
+	IconRefresh,
+} from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -158,6 +163,22 @@ function NewSubmissionPage() {
 	const handleSaveDraft = async (data: SubmissionFormData) => {
 		await createAndUploadFile(data, true);
 	};
+
+	if (typeConfigs.length === 0) {
+		return (
+			<div className="flex h-full flex-col">
+				<PageHeader icon={IconFileText} title="New Submission" />
+				<div className="flex flex-1 items-center justify-center p-6">
+					<div className="text-center">
+						<IconLock className="mx-auto size-12 text-muted-foreground/50" />
+						<p className="mt-4 text-muted-foreground">
+							No submission types are currently available
+						</p>
+					</div>
+				</div>
+			</div>
+		);
+	}
 
 	if (user && !user.emailVerified) {
 		return (

@@ -8,7 +8,7 @@ import {
 	type ValidationLimits,
 } from "@/lib/validations/submission";
 import { authMiddleware } from "./auth.middleware";
-import { getSettings } from "./settings.server";
+import { getActiveSubmissionTypes, getSettings } from "./settings.server";
 import {
 	createNewSubmission,
 	getSubmissionById,
@@ -71,6 +71,14 @@ export const createSubmission = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.inputValidator(inputSchema)
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
+		const activeTypes = await getActiveSubmissionTypes();
+		if (!activeTypes.some((t) => t.type === data.type)) {
+			return {
+				success: false,
+				error: "Selected submission type is not active",
+			};
+		}
+
 		if (!data.isDraft) {
 			const limits = await getValidationLimits();
 			const dynamicSchema = createDynamicSubmissionSchema(limits);
@@ -239,6 +247,14 @@ export const updateDraftSubmissionFn = createServerFn({ method: "POST" })
 		}),
 	)
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
+		const activeTypes = await getActiveSubmissionTypes();
+		if (!activeTypes.some((t) => t.type === data.type)) {
+			return {
+				success: false,
+				error: "Selected submission type is not active",
+			};
+		}
+
 		if (!data.isDraft) {
 			const limits = await getValidationLimits();
 			const dynamicSchema = createDynamicSubmissionSchema(limits);
