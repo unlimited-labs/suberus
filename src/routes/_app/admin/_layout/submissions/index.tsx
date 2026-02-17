@@ -3,6 +3,7 @@ import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { DataTable, DataTableToolbar } from "@/components/admin/data-table";
 import { submissionColumns } from "@/components/admin/submissions/columns";
+import { SubmissionExportButton } from "@/components/admin/submissions/export-button";
 import { SubmissionBulkActions } from "@/components/admin/submissions/submission-bulk-actions";
 import { SubmissionMobileCard } from "@/components/admin/submissions/submission-mobile-card";
 import { PageHeader } from "@/components/layout/page-header";
@@ -45,14 +46,17 @@ function AdminSubmissionsPage() {
 							searchPlaceholder="Search submissions..."
 							columnLabels={columnLabels}
 							actions={
-								<SubmissionBulkActions
-									table={table}
-									onSuccess={() =>
-										queryClient.invalidateQueries({
-											queryKey: adminSubmissionsQueryOptions().queryKey,
-										})
-									}
-								/>
+								<>
+									<SubmissionExportButton table={table} />
+									<SubmissionBulkActions
+										table={table}
+										onSuccess={() =>
+											queryClient.invalidateQueries({
+												queryKey: adminSubmissionsQueryOptions().queryKey,
+											})
+										}
+									/>
+								</>
 							}
 						/>
 					)}

@@ -117,25 +117,24 @@ export interface GetSubmissionsResponse {
 	total: number;
 }
 
-/** Get all submissions for admin view */
-export async function getAdminSubmissions(
-	filters: GetSubmissionsFilters,
-): Promise<GetSubmissionsResponse> {
-	const where: NonNullable<
-		Parameters<typeof prisma.submission.findMany>[0]
-	>["where"] = {};
+export type SubmissionWhereClause = NonNullable<
+	Parameters<typeof prisma.submission.findMany>[0]
+>["where"];
 
-	// Type filter
+/** Build Prisma where clause from admin submission filters */
+export function buildSubmissionWhereClause(
+	filters: GetSubmissionsFilters,
+): SubmissionWhereClause {
+	const where: SubmissionWhereClause = {};
+
 	if (filters.type && filters.type.length > 0) {
 		where.type = { in: filters.type };
 	}
 
-	// Status filter
 	if (filters.status && filters.status.length > 0) {
 		where.status = { in: filters.status };
 	}
 
-	// Search filter
 	if (filters.search) {
 		where.OR = [
 			{ title: { contains: filters.search, mode: "insensitive" } },
@@ -152,6 +151,15 @@ export async function getAdminSubmissions(
 			},
 		];
 	}
+
+	return where;
+}
+
+/** Get all submissions for admin view */
+export async function getAdminSubmissions(
+	filters: GetSubmissionsFilters,
+): Promise<GetSubmissionsResponse> {
+	const where = buildSubmissionWhereClause(filters);
 
 	const submissions = await prisma.submission.findMany({
 		where,
