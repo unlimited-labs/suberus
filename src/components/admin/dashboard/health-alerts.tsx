@@ -11,10 +11,23 @@ import type { AdminDashboardMetrics } from "@/utils/admin-dashboard.server";
 interface HealthAlertsProps {
 	data: AdminDashboardMetrics["health"] | undefined;
 	s3: AdminDashboardMetrics["s3"] | undefined;
+	smtp: AdminDashboardMetrics["smtp"] | undefined;
 }
 
-export function HealthAlerts({ data, s3 }: HealthAlertsProps) {
+export function HealthAlerts({ data, s3, smtp }: HealthAlertsProps) {
 	const alerts: React.ReactNode[] = [];
+
+	if (smtp?.status === "error") {
+		alerts.push(
+			<Alert key="smtp" variant="destructive">
+				<IconAlertCircle className="h-4 w-4" />
+				<AlertTitle>SMTP Unavailable</AlertTitle>
+				<AlertDescription>
+					{smtp.message} — {smtp.host}:{smtp.port}
+				</AlertDescription>
+			</Alert>,
+		);
+	}
 
 	if (s3?.status === "error") {
 		alerts.push(

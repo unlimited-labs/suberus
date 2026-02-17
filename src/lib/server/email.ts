@@ -83,6 +83,37 @@ export async function sendEmail(
 	}
 }
 
+export interface SmtpHealthResult {
+	status: "healthy" | "error";
+	host: string;
+	port: number;
+	message: string;
+}
+
+export async function checkSmtpHealth(): Promise<SmtpHealthResult> {
+	const host = process.env.SMTP_HOST ?? "localhost";
+	const port = Number(process.env.SMTP_PORT ?? 1025);
+
+	try {
+		await transporter.verify();
+		return {
+			status: "healthy",
+			host,
+			port,
+			message: "SMTP server is reachable",
+		};
+	} catch (err) {
+		const message = err instanceof Error ? err.message : "Unknown SMTP error";
+		logger.warn(`[smtp] health check failed: ${message}`);
+		return {
+			status: "error",
+			host,
+			port,
+			message,
+		};
+	}
+}
+
 export async function sendTestEmail(
 	to: string,
 	subject: string,
