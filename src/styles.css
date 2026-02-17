@@ -221,7 +221,13 @@
 }
 
 @layer base {
+	html {
+		overflow: hidden;
+		height: 100%;
+	}
 	body {
+		height: 100%;
+		overflow: hidden;
 		letter-spacing: var(--tracking-normal);
 		color: var(--foreground);
 	}
