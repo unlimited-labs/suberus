@@ -57,16 +57,20 @@ test.describe("Admin Users Management", () => {
 			await expect(adminUsersPage.getSelectedCount()).toBeVisible()
 		})
 
-		test("export XLSX button has correct link", async ({ adminUsersPage }) => {
+		test("export XLSX downloads a valid file", async ({ adminUsersPage }) => {
 			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
 			// Act
-			const href = await adminUsersPage.exportButton.getAttribute("href")
+			const response = await adminUsersPage.page.request.get("/api/admin/users/export")
 
 			// Assert
-			expect(href).toContain("/api/admin/users/export")
+			expect(response.status()).toBe(200)
+			expect(response.headers()["content-type"]).toContain("spreadsheetml.sheet")
+			expect(response.headers()["content-disposition"]).toContain("attachment")
+			const body = await response.body()
+			expect(body.length).toBeGreaterThan(0)
 		})
 	})
 

@@ -24,11 +24,11 @@ const rollupConfig: Partial<RollupConfig> = {
 
 const nitroConfig: NitroPluginConfig = {
 	rollupConfig,
+	serverDir: "server",
 	experimental: { tasks: true, vite: {} },
 	scheduledTasks: {
 		"*/5 * * * *": isDev ? [] : ["mails:reminder", "assignments:overdue"],
 	},
-	scanDirs: ["./src"],
 };
 
 const config = defineConfig({
