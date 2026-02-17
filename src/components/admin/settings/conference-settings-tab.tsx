@@ -6,6 +6,8 @@ import {
 	IconMail,
 	IconWorld,
 } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
@@ -22,7 +24,10 @@ import {
 } from "@/components/ui/select";
 import { getDateFormats } from "@/lib/format-date";
 import type { ConferenceSettings } from "@/utils/settings.functions";
-import { updateConferenceSettingsFn } from "@/utils/settings.functions";
+import {
+	conferenceSettingsQueryOptions,
+	updateConferenceSettingsFn,
+} from "@/utils/settings.functions";
 
 interface ConferenceSettingsTabProps {
 	initialData: ConferenceSettings;
@@ -31,6 +36,8 @@ interface ConferenceSettingsTabProps {
 export function ConferenceSettingsTab({
 	initialData,
 }: ConferenceSettingsTabProps) {
+	const queryClient = useQueryClient();
+	const router = useRouter();
 	const [data, setData] = useState(initialData);
 	const [isSaving, setIsSaving] = useState(false);
 
@@ -42,6 +49,10 @@ export function ConferenceSettingsTab({
 		setIsSaving(true);
 		try {
 			await updateConferenceSettingsFn({ data });
+			await queryClient.invalidateQueries({
+				queryKey: conferenceSettingsQueryOptions().queryKey,
+			});
+			await router.invalidate();
 			toast.success("Conference settings saved");
 		} catch (error) {
 			toast.error(error instanceof Error ? error.message : "Failed to save");
