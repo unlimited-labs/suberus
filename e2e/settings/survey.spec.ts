@@ -2,10 +2,10 @@ import { test, expect } from "../helpers/base-fixtures";
 
 test.describe("User Settings - Survey", () => {
 	test.beforeEach(async ({ page }) => {
-		// Arrange — navigate to settings
-		await page.goto("/settings");
+		// Arrange — navigate to profile
+		await page.goto("/profile");
 		await expect(
-			page.getByRole("heading", { name: "Settings" }),
+			page.getByRole("heading", { name: "Profile" }),
 		).toBeVisible({ timeout: 15000 });
 	});
 
@@ -72,7 +72,7 @@ test.describe("User Settings - Survey", () => {
 		// Act — reload
 		await page.reload();
 		await expect(
-			page.getByRole("heading", { name: "Settings" }),
+			page.getByRole("heading", { name: "Profile" }),
 		).toBeVisible({ timeout: 15000 });
 
 		// Assert
