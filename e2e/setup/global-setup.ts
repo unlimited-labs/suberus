@@ -409,7 +409,6 @@ async function globalSetup() {
 			{ key: "MAX_KEYWORDS", value: 5 },
 			{ key: "MAX_FILE_SIZE_MB", value: 10 },
 			{ key: "MAX_AUTHORS", value: 10 },
-			{ key: "REQUIRE_ORCID", value: false },
 			{ key: "ENABLE_KEYWORDS", value: true },
 			{ key: "ALLOWED_FILE_TYPES", value: ["pdf", "docx", "doc"] },
 		];

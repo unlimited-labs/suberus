@@ -33,9 +33,6 @@
 			"recommended": true,
 			"suspicious": {
 				"noArrayIndexKey": "off"
-			},
-			"nursery": {
-				"noDeprecatedImports": "error"
 			}
 		}
 	},

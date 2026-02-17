@@ -274,11 +274,6 @@ test.describe("Admin Settings - Submission Validation", () => {
 		await expect(page.getByText("Allowed file types")).toBeVisible()
 	})
 
-	test("shows ORCID requirement switch", async ({ page }) => {
-		// Assert
-		await expect(page.getByLabel("Require ORCID")).toBeVisible()
-	})
-
 	test("does not show max authors setting", async ({ page }) => {
 		// Assert - maxAuthors removed
 		await expect(page.getByLabel("Max number of authors")).not.toBeVisible()

@@ -305,7 +305,6 @@ export interface SubmissionValidationSettings {
 	minKeywords: number;
 	maxKeywords: number;
 	maxFileSize: number;
-	requireOrcid: boolean;
 	enableKeywords: boolean;
 	allowedFileTypes: string[];
 }
@@ -326,7 +325,6 @@ export const getSubmissionValidationSettingsFn = createServerFn({
 			"MIN_KEYWORDS",
 			"MAX_KEYWORDS",
 			"MAX_FILE_SIZE_MB",
-			"REQUIRE_ORCID",
 			"ENABLE_KEYWORDS",
 			"ALLOWED_FILE_TYPES",
 		]);
@@ -338,7 +336,6 @@ export const getSubmissionValidationSettingsFn = createServerFn({
 			minKeywords: settings.MIN_KEYWORDS,
 			maxKeywords: settings.MAX_KEYWORDS,
 			maxFileSize: settings.MAX_FILE_SIZE_MB,
-			requireOrcid: settings.REQUIRE_ORCID,
 			enableKeywords: settings.ENABLE_KEYWORDS,
 			allowedFileTypes: settings.ALLOWED_FILE_TYPES,
 		};
@@ -431,7 +428,6 @@ export const updateSubmissionValidationSettingsFn = createServerFn({
 			minKeywords: z.number().int().min(0).max(20),
 			maxKeywords: z.number().int().min(1).max(20),
 			maxFileSize: z.number().int().min(1).max(100),
-			requireOrcid: z.boolean(),
 			enableKeywords: z.boolean(),
 			allowedFileTypes: z.array(z.string()),
 		}),
@@ -464,7 +460,6 @@ export const updateSubmissionValidationSettingsFn = createServerFn({
 		await setSetting("MIN_KEYWORDS", data.minKeywords);
 		await setSetting("MAX_KEYWORDS", data.maxKeywords);
 		await setSetting("MAX_FILE_SIZE_MB", data.maxFileSize);
-		await setSetting("REQUIRE_ORCID", data.requireOrcid);
 		await setSetting("ENABLE_KEYWORDS", data.enableKeywords);
 		await setSetting("ALLOWED_FILE_TYPES", data.allowedFileTypes);
 

@@ -2,7 +2,6 @@ import {
 	IconBook,
 	IconFileText,
 	IconLoader2,
-	IconSettings,
 	IconUpload,
 } from "@tabler/icons-react";
 import { useState } from "react";
@@ -319,31 +318,6 @@ export function SubmissionSettingsTab({
 								</Label>
 							))}
 						</div>
-					</div>
-				</div>
-			</SettingsSection>
-
-			<SettingsSection
-				icon={IconSettings}
-				title="Other Options"
-				description="Additional submission options"
-				delay={100}
-			>
-				<div className="space-y-4">
-					<div className="flex items-center justify-between">
-						<div className="space-y-0.5">
-							<Label htmlFor="requireOrcid">Require ORCID</Label>
-							<p className="text-sm text-muted-foreground">
-								Authors must provide an ORCID identifier
-							</p>
-						</div>
-						<Switch
-							id="requireOrcid"
-							checked={data.requireOrcid}
-							onCheckedChange={(checked) =>
-								handleChange("requireOrcid", checked)
-							}
-						/>
 					</div>
 				</div>
 			</SettingsSection>

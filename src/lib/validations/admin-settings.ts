@@ -17,7 +17,6 @@ export const submissionSettingsSchema = z.object({
 	maxAbstractLength: z.number().min(100).max(10000),
 	maxFileSize: z.number().min(1).max(100),
 	allowedFileTypes: z.array(z.string()),
-	requireOrcid: z.boolean(),
 	enableKeywords: z.boolean(),
 	maxKeywords: z.number().min(1).max(20),
 });

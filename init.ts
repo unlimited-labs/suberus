@@ -207,7 +207,6 @@ async function init() {
 			"MAX_KEYWORDS",
 			"MAX_FILE_SIZE_MB",
 			"MAX_AUTHORS",
-			"REQUIRE_ORCID",
 			"ENABLE_KEYWORDS",
 			"ALLOWED_FILE_TYPES",
 		] as const;

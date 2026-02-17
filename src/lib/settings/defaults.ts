@@ -87,7 +87,6 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	MAX_FILE_SIZE_MB: 10,
 	ALLOWED_FILE_TYPES: ["pdf", "doc", "docx"],
 	MAX_AUTHORS: 10,
-	REQUIRE_ORCID: false,
 	ENABLE_KEYWORDS: true,
 	MIN_KEYWORDS: 3,
 	MAX_KEYWORDS: 5,

@@ -62,7 +62,6 @@ export type AppSettingsMap = {
 	MAX_FILE_SIZE_MB: number;
 	ALLOWED_FILE_TYPES: string[];
 	MAX_AUTHORS: number;
-	REQUIRE_ORCID: boolean;
 	ENABLE_KEYWORDS: boolean;
 	MIN_KEYWORDS: number;
 	MAX_KEYWORDS: number;
