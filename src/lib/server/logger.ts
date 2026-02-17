@@ -2,9 +2,11 @@ import { createConsola } from "consola";
 
 export const logger = createConsola({
 	formatOptions: {
-		colors: true,
+		// colors: true,
 		date: true,
-		columns: 80,
+		columns: 0,
 		compact: false,
 	},
 });
+
+logger.wrapAll();
