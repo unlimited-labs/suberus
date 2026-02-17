@@ -37,9 +37,8 @@ const config = defineConfig({
 		include: ["@tabler/icons-react", "countries-list"],
 	},
 	plugins: [
-		!isE2E && devtools(),
+		devtools(),
 		nitro(nitroConfig),
-		// this is the plugin that enables path aliases
 		viteTsConfigPaths({
 			projects: ["./tsconfig.json"],
 		}),
