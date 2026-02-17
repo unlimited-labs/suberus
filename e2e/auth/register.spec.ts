@@ -72,7 +72,7 @@ test.describe("Register Page - Step 1: Author Info", () => {
 	test("title select dropdown works", async ({ registerPage }) => {
 		// Arrange
 		await registerPage.goto()
-		const titleTrigger = registerPage.page.getByRole("combobox").first()
+		const titleTrigger = registerPage.page.getByRole("group").filter({ has: registerPage.page.getByText("Title", { exact: true }) }).getByRole("combobox").first()
 
 		// Act
 		await titleTrigger.click()
@@ -130,14 +130,17 @@ test.describe("Register Page - Step 2: Invoice", () => {
 	})
 
 	test("country search and selection works", async ({ registerPage }) => {
+		// Arrange
+		const countryField = registerPage.page.locator('[data-slot="field"]').filter({ has: registerPage.page.getByText("Country *", { exact: true }) })
+		const combobox = countryField.getByRole("combobox")
+
 		// Act
-		const combobox = registerPage.page.getByRole("combobox")
 		await combobox.click()
 		await registerPage.page.getByPlaceholder("Search country...").fill("Poland")
 		await registerPage.page.getByRole("option", { name: "Poland" }).click()
 
 		// Assert
-		await expect(combobox.filter({ hasText: "Poland" })).toBeVisible()
+		await expect(combobox).toContainText("Poland")
 	})
 
 	test("back button preserves step 1 data", async ({ registerPage }) => {
@@ -321,7 +324,8 @@ test.describe("Register Page - Country Auto-Detection (no match)", () => {
 		await registerPage.waitForStep2()
 
 		// Assert — UTC has no country mapping, field shows placeholder
-		await expect(registerPage.page.getByRole("combobox").filter({ hasText: "Select country..." })).toBeVisible()
+		const countryField = registerPage.page.locator('[data-slot="field"]').filter({ has: registerPage.page.getByText("Country *", { exact: true }) })
+		await expect(countryField.getByRole("combobox")).toContainText("Select country...")
 	})
 })
 
@@ -343,7 +347,8 @@ test.describe("Register Page - Country Auto-Detection", () => {
 		await registerPage.waitForStep2()
 
 		// Assert — Poland should be pre-selected from Europe/Warsaw timezone
-		await expect(registerPage.page.getByRole("combobox").filter({ hasText: "Poland" })).toBeVisible()
+		const countryField = registerPage.page.locator('[data-slot="field"]').filter({ has: registerPage.page.getByText("Country *", { exact: true }) })
+		await expect(countryField.getByRole("combobox")).toContainText("Poland")
 	})
 
 	test("pre-filled country passes validation without manual selection", async ({ registerPage }) => {

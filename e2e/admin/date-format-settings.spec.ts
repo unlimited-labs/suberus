@@ -41,7 +41,7 @@ test.describe.serial("Admin - Date/Time Format", () => {
 
 	test("date format select visible in conference settings", async ({ page }) => {
 		// Assert
-		await expect(page.getByRole("heading", { name: "Display Format" })).toBeVisible();
+		await expect(page.getByRole("heading", { name: "Date & Time" })).toBeVisible();
 		await expect(page.getByLabel("Date Format")).toBeVisible();
 	});
 

@@ -602,6 +602,12 @@ export async function updateDraftSubmission(
 			});
 		}
 
+		// Clear presenter reference before deleting authors (FK constraint)
+		await tx.submission.update({
+			where: { id: submissionId },
+			data: { presenterId: null },
+		});
+
 		// Replace authors: delete old, create new
 		await tx.submissionAuthor.deleteMany({
 			where: { submissionId },

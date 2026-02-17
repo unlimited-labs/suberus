@@ -68,10 +68,13 @@ test.describe("Submission Form", () => {
 		// Arrange
 		await submissionPage.goto();
 
-		// Assert
+		// Assert - Full Paper type button visible; selecting it reveals file dropzone
 		const fullPaperButton = submissionPage.getSubmissionTypeButton("Full Paper");
 		await expect(fullPaperButton).toBeVisible();
-		await expect(fullPaperButton).toContainText("File upload");
+		await fullPaperButton.click();
+		await expect(
+			submissionPage.page.getByText("Drop file or click to upload"),
+		).toBeVisible();
 	});
 
 	test("can fill title and content", async ({ submissionPage }) => {

@@ -113,9 +113,11 @@ export class RegisterPage {
 
 	// Step 2: Invoice Information
 	async fillStep2(data: { country: string; address?: string }) {
-		// Wait for step 2 to be visible (country combobox appears regardless of pre-fill)
-		const combobox = this.page.getByRole("combobox")
-		await combobox.waitFor({ state: "visible", timeout: 10000 })
+		// Wait for step 2 to be visible (country label is unique to step 2)
+		await this.page.getByText("Country *").waitFor({ state: "visible", timeout: 10000 })
+		// Scope combobox to the Country field to avoid strict mode violations during step transitions
+		const countryField = this.page.locator('[data-slot="field"]').filter({ has: this.page.getByText("Country *", { exact: true }) })
+		const combobox = countryField.getByRole("combobox")
 
 		if (data.address) {
 			await this.page.getByLabel("Address").fill(data.address)
@@ -136,12 +138,12 @@ export class RegisterPage {
 
 	/** Wait for step 2 to be visible after navigating from step 1 */
 	async waitForStep2() {
-		const combobox = this.page.getByRole("combobox")
+		const countryLabel = this.page.getByText("Country *")
 		try {
-			await combobox.waitFor({ state: "visible", timeout: 5000 })
+			await countryLabel.waitFor({ state: "visible", timeout: 5000 })
 		} catch {
 			await this.clickContinue()
-			await combobox.waitFor({ state: "visible", timeout: 10000 })
+			await countryLabel.waitFor({ state: "visible", timeout: 10000 })
 		}
 	}
 

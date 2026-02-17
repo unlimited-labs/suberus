@@ -246,8 +246,8 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 		// Act - User: Navigate to form
 		await userPage.goto("/submissions/new");
 
-		// Assert - Form shows updated limits
-		await expect(userPage.getByText(/0 \/ 2-4 keywords/i)).toBeVisible({ timeout: 10000 });
+		// Assert - Sidebar guidelines reflect updated keyword limits
+		await expect(userPage.getByText(/Add 2-4 relevant keywords/i)).toBeVisible({ timeout: 10000 });
 
 		// Cleanup: Restore original values
 		await adminPage.goto("/admin/settings");

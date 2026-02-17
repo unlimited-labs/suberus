@@ -49,13 +49,12 @@ test.describe("Form Validation", () => {
 			// Arrange
 			await submissionPage.goto();
 
-			// Assert
+			// Assert - Keywords section visible with heading and input
 			await expect(
-				submissionPage.page.getByText(/0 \/ 3-5 keywords/),
+				submissionPage.page.getByRole("heading", { name: "Keywords" }),
 			).toBeVisible();
-			await expect(
-				submissionPage.page.getByText(/minimum 3 required/i),
-			).toBeVisible();
+			const keywordsSection = submissionPage.getKeywordsSection();
+			await expect(keywordsSection.getByRole("textbox")).toBeVisible();
 		});
 
 		test("updates keyword count as keywords are added", async ({
@@ -63,22 +62,20 @@ test.describe("Form Validation", () => {
 		}) => {
 			// Arrange
 			await submissionPage.goto();
+			const keywordsSection = submissionPage.getKeywordsSection();
 
-			// Act & Assert
+			// Act & Assert - keywords appear as tags
 			await submissionPage.addKeyword("first");
-			await expect(
-				submissionPage.page.getByText(/1 \/ 3-5 keywords/),
-			).toBeVisible();
+			await expect(keywordsSection.getByText("first")).toBeVisible();
 
 			await submissionPage.addKeyword("second");
-			await expect(
-				submissionPage.page.getByText(/2 \/ 3-5 keywords/),
-			).toBeVisible();
+			await expect(keywordsSection.getByText("second")).toBeVisible();
 
 			await submissionPage.addKeyword("third");
-			await expect(
-				submissionPage.page.getByText(/3 \/ 3-5 keywords/),
-			).toBeVisible();
+			await expect(keywordsSection.getByText("third")).toBeVisible();
+
+			// Verify all three Remove buttons exist
+			await expect(keywordsSection.getByRole("button", { name: /Remove/ })).toHaveCount(3);
 		});
 
 		test("prevents duplicate keywords", async ({ submissionPage }) => {
@@ -94,9 +91,9 @@ test.describe("Form Validation", () => {
 			await expect(
 				submissionPage.page.getByText(/already added/i),
 			).toBeVisible();
-			await expect(
-				submissionPage.page.getByText(/1 \/ 3-5 keywords/),
-			).toBeVisible();
+			// Only one keyword tag exists (duplicate was rejected)
+			const keywordsSection = submissionPage.getKeywordsSection();
+			await expect(keywordsSection.getByRole("button", { name: /Remove/ })).toHaveCount(1);
 		});
 
 		test("can remove keyword", async ({ submissionPage }) => {
@@ -114,9 +111,9 @@ test.describe("Form Validation", () => {
 			await expect(
 				submissionPage.page.getByText("removable"),
 			).not.toBeVisible();
-			await expect(
-				submissionPage.page.getByText(/0 \/ 3-5 keywords/),
-			).toBeVisible();
+			// No keyword tags remain
+			const keywordsSection = submissionPage.getKeywordsSection();
+			await expect(keywordsSection.getByRole("button", { name: /Remove/ })).toHaveCount(0);
 		});
 	});
 

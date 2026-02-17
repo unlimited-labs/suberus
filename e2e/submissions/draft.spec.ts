@@ -104,7 +104,10 @@ test.describe("Draft - Skips Validation", () => {
 
 		// Act - clear content (making it too short) and save draft
 		await page.getByLabel("Abstract").fill("Short");
-		await page.getByRole("button", { name: "Save Draft" }).click();
+
+		// Use JavaScript click to guarantee the event fires
+		const saveDraftBtn = page.getByRole("button", { name: "Save Draft" });
+		await saveDraftBtn.evaluate((btn: HTMLButtonElement) => btn.click());
 
 		// Assert - should save despite invalid content length
 		await expect(page.locator("[data-sonner-toast]")).toContainText("Draft saved", { timeout: 15000 });

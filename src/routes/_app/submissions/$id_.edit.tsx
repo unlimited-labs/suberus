@@ -98,19 +98,25 @@ function EditSubmissionPage() {
 		formData: SubmissionFormData,
 		asDraft: boolean,
 	) => {
-		const result = await updateDraftSubmissionFn({
-			data: {
-				submissionId: id,
-				type: formData.type,
-				title: formData.title,
-				content: formData.content,
-				authors: formData.authors,
-				keywords: formData.keywords,
-				contentFormat: formData.contentFormat,
-				sessionId: formData.sessionId,
-				isDraft: asDraft,
-			},
-		});
+		let result: Awaited<ReturnType<typeof updateDraftSubmissionFn>>;
+		try {
+			result = await updateDraftSubmissionFn({
+				data: {
+					submissionId: id,
+					type: formData.type,
+					title: formData.title,
+					content: formData.content,
+					authors: formData.authors,
+					keywords: formData.keywords,
+					contentFormat: formData.contentFormat,
+					sessionId: formData.sessionId,
+					isDraft: asDraft,
+				},
+			});
+		} catch {
+			toast.error("Something went wrong. Please try again.");
+			return false;
+		}
 
 		if (!result.success) {
 			toast.error(result.error);
