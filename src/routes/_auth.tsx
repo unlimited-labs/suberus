@@ -1,4 +1,9 @@
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	Outlet,
+	redirect,
+	useNavigate,
+} from "@tanstack/react-router";
 import type { CSSProperties } from "react";
 import { useEffect } from "react";
 import { AuthLayout } from "@/components/layout/auth-layout";
@@ -6,6 +11,7 @@ import { SpinnerSvg } from "@/components/spinner-svg";
 import { useSession } from "@/hooks/use-session";
 import { formatDate } from "@/lib/format-date";
 import { APP_SETTINGS_DEFAULTS } from "@/lib/settings/defaults";
+import { checkInstallStatusFn } from "@/utils/install.functions";
 import type { AuthPageBranding } from "@/utils/settings.functions";
 import { getAuthPageBrandingFn } from "@/utils/settings.functions";
 
@@ -43,6 +49,11 @@ function formatDateRange(
 
 export const Route = createFileRoute("/_auth")({
 	beforeLoad: async () => {
+		const { installed } = await checkInstallStatusFn();
+		if (!installed) {
+			throw redirect({ to: "/install" });
+		}
+
 		try {
 			const branding = await getAuthPageBrandingFn();
 			return {
