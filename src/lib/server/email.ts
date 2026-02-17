@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { prisma } from "@/db.server";
 import type { EmailEventType } from "@/generated/prisma/enums";
+import { logger } from "@/lib/server/logger";
 import { getSetting } from "@/utils/settings.server";
 
 const TEST_PLACEHOLDER_DATA: Record<string, string> = {
@@ -75,9 +76,10 @@ export async function sendEmail(
 			[template.isHtml ? "html" : "text"]: body,
 			headers: Object.keys(headers).length > 0 ? headers : undefined,
 		});
+		logger.info(`[email] sent ${eventType} to ${to}`);
 	} catch (error) {
 		// Log error but don't throw - email sending should not break the main flow
-		console.error(`Failed to send email (${eventType}):`, error);
+		logger.error(`Failed to send email (${eventType}):`, error);
 	}
 }
 

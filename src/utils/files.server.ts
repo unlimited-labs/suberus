@@ -1,5 +1,6 @@
 import { prisma } from "@/db.server";
 import type { UserRole } from "@/generated/prisma/enums";
+import { logger } from "@/lib/server/logger";
 import { deleteFile } from "@/lib/server/storage";
 
 /** Check if a user has access to download a file */
@@ -99,7 +100,12 @@ export async function deleteSubmissionFiles(
 	for (const version of versions) {
 		if (version.file) {
 			// Remove S3 object
-			await deleteFile(version.file.storageKey).catch(() => {});
+			await deleteFile(version.file.storageKey).catch((err) => {
+				logger.error(
+					`[files] failed to delete S3 object ${version.file?.storageKey}:`,
+					err,
+				);
+			});
 			// Unlink from version first, then delete file record
 			await prisma.submissionVersion.update({
 				where: { id: version.id },

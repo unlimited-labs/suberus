@@ -7,6 +7,7 @@ import {
 	S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { logger } from "@/lib/server/logger";
 
 // Environment variables for Garage S3
 const GARAGE_ENDPOINT = process.env.GARAGE_ENDPOINT;
@@ -73,6 +74,7 @@ export async function uploadFile(
 	});
 
 	await client.send(command);
+	logger.info(`[s3] uploaded ${key}`);
 	return key;
 }
 
@@ -135,6 +137,7 @@ export async function deleteFile(key: string): Promise<void> {
 	});
 
 	await client.send(command);
+	logger.info(`[s3] deleted ${key}`);
 }
 
 /**
@@ -209,11 +212,13 @@ export async function checkS3Health(): Promise<S3HealthResult> {
 			message: "S3 storage is reachable",
 		};
 	} catch (err) {
+		const message = err instanceof Error ? err.message : "Unknown S3 error";
+		logger.warn(`[s3] health check failed: ${message}`);
 		return {
 			status: "error",
 			endpoint,
 			bucket,
-			message: err instanceof Error ? err.message : "Unknown S3 error",
+			message,
 		};
 	}
 }

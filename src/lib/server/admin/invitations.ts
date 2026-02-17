@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { prisma } from "@/db.server";
 import type { InvitationStatus, UserRole } from "@/generated/prisma/enums";
 import { sendEmail } from "@/lib/server/email";
+import { logger } from "@/lib/server/logger";
 import { getSetting } from "@/utils/settings.server";
 
 export interface AdminInvitation {
@@ -79,6 +80,8 @@ export async function createInvitation(
 		}),
 	});
 
+	logger.info(`[invitation] created for ${email} role=${role}`);
+
 	return { success: true };
 }
 
@@ -89,6 +92,7 @@ export async function cancelInvitation(
 		where: { id },
 		data: { status: "CANCELLED" },
 	});
+	logger.info(`[invitation] cancelled ${id}`);
 	return { success: true };
 }
 
@@ -147,6 +151,8 @@ export async function consumeInvitation(
 		where: { id: invitation.id },
 		data: { status: "USED", usedById: userId, usedAt: new Date() },
 	});
+
+	logger.info(`[invitation] consumed by user ${userId}`);
 
 	return { success: true };
 }

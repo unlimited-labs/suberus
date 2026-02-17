@@ -2,6 +2,7 @@ import { prisma } from "@/db.server";
 import type { EmailEventType } from "@/generated/prisma/enums";
 import { formatDate } from "@/lib/format-date";
 import { sendEmail } from "@/lib/server/email";
+import { logger } from "@/lib/server/logger";
 import { getSetting } from "./settings.server";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -41,7 +42,10 @@ async function recordReminder(
 /** Send reviewer deadline reminders (REVIEWER_REMINDER) */
 export async function sendReviewerReminders(): Promise<number> {
 	const settings = await getSetting("REMINDER_REVIEWER_SETTINGS");
-	if (!settings.enabled || settings.daysBefore.length === 0) return 0;
+	if (!settings.enabled || settings.daysBefore.length === 0) {
+		logger.debug("[reminders] reviewer reminders disabled, skipping");
+		return 0;
+	}
 
 	const dateFormat = await getSetting("DATE_FORMAT");
 	const now = new Date();
@@ -100,13 +104,17 @@ export async function sendReviewerReminders(): Promise<number> {
 		}
 	}
 
+	logger.info(`[reminders] sent ${sentCount} reviewer reminders`);
 	return sentCount;
 }
 
 /** Send revision nudge reminders (REVISION_REMINDER) */
 export async function sendRevisionReminders(): Promise<number> {
 	const settings = await getSetting("REMINDER_REVISION_SETTINGS");
-	if (!settings.enabled) return 0;
+	if (!settings.enabled) {
+		logger.debug("[reminders] revision reminders disabled, skipping");
+		return 0;
+	}
 
 	const now = new Date();
 
@@ -176,13 +184,17 @@ export async function sendRevisionReminders(): Promise<number> {
 		sentCount++;
 	}
 
+	logger.info(`[reminders] sent ${sentCount} revision reminders`);
 	return sentCount;
 }
 
 /** Send submission deadline approaching reminders (DEADLINE_APPROACHING) */
 export async function sendDeadlineReminders(): Promise<number> {
 	const settings = await getSetting("REMINDER_DEADLINE_SETTINGS");
-	if (!settings.enabled || settings.daysBefore.length === 0) return 0;
+	if (!settings.enabled || settings.daysBefore.length === 0) {
+		logger.debug("[reminders] deadline reminders disabled, skipping");
+		return 0;
+	}
 
 	const [deadlineStr, dateFormat] = await Promise.all([
 		getSetting("SUBMISSION_DEADLINE"),
@@ -244,5 +256,6 @@ export async function sendDeadlineReminders(): Promise<number> {
 		}
 	}
 
+	logger.info(`[reminders] sent ${sentCount} deadline reminders`);
 	return sentCount;
 }

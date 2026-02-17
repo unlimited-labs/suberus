@@ -5,6 +5,7 @@ import type {
 	SubmissionType,
 } from "@/generated/prisma/enums";
 import { sendEmail } from "@/lib/server/email";
+import { logger } from "@/lib/server/logger";
 import type { CreateSubmissionInput } from "@/lib/validations/submission";
 
 interface CreateSubmissionResult {
@@ -173,6 +174,10 @@ export async function createNewSubmission(
 			});
 		}
 	}
+
+	logger.info(
+		`[submission] created ${submission.id} type=${data.type}${isDraft ? " (draft)" : ""}`,
+	);
 
 	return { id: submission.id, success: true };
 }
@@ -537,6 +542,8 @@ export async function resubmitSubmission(
 		}
 	}
 
+	logger.info(`[submission] resubmitted ${submissionId} v${version.version}`);
+
 	return { success: true, versionNumber: version.version };
 }
 
@@ -667,6 +674,8 @@ export async function updateDraftSubmission(
 		);
 	});
 
+	logger.info(`[submission] updated draft ${submissionId}`);
+
 	return { success: true };
 }
 
@@ -703,6 +712,8 @@ export async function submitDraft(
 			},
 		});
 	});
+
+	logger.info(`[submission] submitted draft ${submissionId}`);
 
 	// Send confirmation email
 	const presenter = await prisma.submissionAuthor.findFirst({

@@ -5,6 +5,7 @@ import type {
 } from "@/generated/prisma/enums";
 import { formatDate } from "@/lib/format-date";
 import { sendEmail } from "@/lib/server/email";
+import { logger } from "@/lib/server/logger";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import { canAssignReviewer } from "@/lib/workflow";
 import { getSetting } from "./settings.server";
@@ -163,6 +164,9 @@ export async function assignReviewer(
 	// Validate can assign more reviewers
 	const currentCount = submission.reviewAssignments.length;
 	if (!canAssignReviewer(submission.status, currentCount, config)) {
+		logger.warn(
+			`[assignment] cannot assign reviewer to ${submissionId}: max ${config.maxReviewers} or invalid status`,
+		);
 		return {
 			success: false,
 			error: `Cannot assign reviewer: max ${config.maxReviewers} reviewers allowed or invalid status`,
@@ -174,6 +178,9 @@ export async function assignReviewer(
 		(a) => a.reviewerId === reviewerId,
 	);
 	if (existingAssignment) {
+		logger.warn(
+			`[assignment] reviewer ${reviewerId} already assigned to ${submissionId}`,
+		);
 		return {
 			success: false,
 			error: "Reviewer already assigned to this submission",
@@ -230,6 +237,10 @@ export async function assignReviewer(
 		reviewUrl: `${process.env.APP_BASE_URL}/reviews/${assignment.id}`,
 	});
 
+	logger.info(
+		`[assignment] assigned reviewer ${reviewerId} to submission ${submissionId} (${assignment.id})`,
+	);
+
 	return { success: true, assignmentId: assignment.id };
 }
 
@@ -260,6 +271,10 @@ export async function cancelAssignment(
 		{ type: "CANCEL" },
 		cancelledBy,
 	);
+
+	if (result.success) {
+		logger.info(`[assignment] cancelled ${assignmentId}`);
+	}
 
 	return { success: result.success, error: result.error };
 }
@@ -344,6 +359,8 @@ export async function markOverdueAssignments(): Promise<number> {
 		});
 		if (result.success) count++;
 	}
+
+	logger.info(`[assignment] marked ${count} overdue assignments`);
 
 	return count;
 }

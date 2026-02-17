@@ -13,6 +13,7 @@ import {
 	unmarkFeePaid,
 	verifyUserEmail,
 } from "@/lib/server/admin/users";
+import { logger } from "@/lib/server/logger";
 
 export type { AdminUser, GetUsersResponse, UsersFilters };
 
@@ -79,6 +80,17 @@ export async function patchUser(
 		await verifyUserEmail(data.id);
 	}
 
+	const changes = [
+		data.role !== undefined && `role=${data.role}`,
+		data.isActive !== undefined && `active=${data.isActive}`,
+		data.markFeePaid && "feePaid",
+		data.unmarkFeePaid && "feeUnpaid",
+		data.verifyEmail && "emailVerified",
+	]
+		.filter(Boolean)
+		.join(", ");
+	logger.info(`[admin] patchUser ${data.id}: ${changes}`);
+
 	return getUserById(data.id);
 }
 
@@ -100,6 +112,7 @@ export async function executeBulkAction(
 				status: 400,
 			});
 		}
+		logger.info(`[admin] bulk mark_fee for ${data.userIds.length} users`);
 		return bulkMarkFeesPaid({
 			userIds: data.userIds,
 			feeType: data.feeType,
@@ -112,6 +125,9 @@ export async function executeBulkAction(
 		if (!data.role) {
 			throw new Response("Role is required", { status: 400 });
 		}
+		logger.info(
+			`[admin] bulk change_role to ${data.role} for ${data.userIds.length} users`,
+		);
 		return bulkChangeRole({
 			userIds: data.userIds,
 			role: data.role,

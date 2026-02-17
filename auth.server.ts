@@ -6,6 +6,7 @@ import { PrismaPg } from "@prisma/adapter-pg"
 import { randomUUID } from "crypto"
 import "dotenv/config"
 import { sendEmail } from "@/lib/server/email"
+import { logger } from "@/lib/server/logger"
 import { getSetting } from "@/utils/settings.server"
 import { applyInvitationRole } from "@/lib/server/admin/invitations"
 import { linkCoAuthorsByEmail } from "@/utils/submissions.server"
@@ -113,7 +114,7 @@ export const auth = betterAuth({
 	},
 	onAPIError: {
 		onError: (error, _ctx) => {
-			console.error("[Better Auth Error]", error);
+			logger.error("[auth] API error:", error);
 		},
 	},
 	session: {

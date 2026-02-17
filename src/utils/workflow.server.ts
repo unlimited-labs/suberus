@@ -6,6 +6,7 @@ import type {
 	SubmissionType,
 } from "@/generated/prisma/enums";
 import { sendEmail } from "@/lib/server/email";
+import { logger } from "@/lib/server/logger";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import {
@@ -112,6 +113,9 @@ export async function executeSubmissionTransition(
 	// Check if the event can be sent from current state
 	if (!currentSnapshot.can(event)) {
 		actor.stop();
+		logger.warn(
+			`[workflow] invalid submission transition: ${event.type} from ${submission.status} (${submissionId})`,
+		);
 		return {
 			success: false,
 			fromState: submission.status,
@@ -167,6 +171,10 @@ export async function executeSubmissionTransition(
 	});
 
 	actor.stop();
+
+	logger.info(
+		`[workflow] submission ${submissionId}: ${submission.status} → ${newState} (${event.type})`,
+	);
 
 	return {
 		success: true,
@@ -251,6 +259,9 @@ export async function executeAssignmentTransition(
 	// Check if transition is valid using xstate v5 API
 	if (!currentSnapshot.can(event)) {
 		actor.stop();
+		logger.warn(
+			`[workflow] invalid assignment transition: ${event.type} from ${assignment.status} (${assignmentId})`,
+		);
 		return {
 			success: false,
 			fromState: assignment.status,
@@ -287,6 +298,10 @@ export async function executeAssignmentTransition(
 	});
 
 	actor.stop();
+
+	logger.info(
+		`[workflow] assignment ${assignmentId}: ${assignment.status} → ${newState} (${event.type})`,
+	);
 
 	return {
 		success: true,
@@ -344,6 +359,9 @@ export async function checkAndTriggerReviewCompletion(
 
 	// Auto-transition if configured
 	if (config.autoTransitionAfterReviews || !config.requiresEditorDecision) {
+		logger.info(
+			`[workflow] all reviews complete for submission ${submissionId}, auto-transitioning`,
+		);
 		const result = await executeSubmissionTransition(
 			submissionId,
 			{ type: "ALL_REVIEWS_COMPLETE" },
