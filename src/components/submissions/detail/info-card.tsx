@@ -46,7 +46,7 @@ export function InfoCard({
 	const { formatDate } = useDateFormat();
 
 	return (
-		<div className="rounded-2xl bg-card shadow-xl p-6 border">
+		<div className="rounded-2xl bg-card shadow-xl p-6 border border-border/50">
 			<h3 className="font-semibold text-foreground mb-4">Information</h3>
 			<div className="space-y-4">
 				<InfoItem

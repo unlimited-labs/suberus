@@ -153,7 +153,7 @@ export function ActionsCard({
 	if (!actions) return null;
 
 	return (
-		<div className="rounded-2xl bg-card shadow-xl p-6 border">
+		<div className="rounded-2xl bg-card shadow-xl p-6 border border-border/50">
 			{showTitle && (
 				<h3 className="font-semibold text-foreground mb-4">Actions</h3>
 			)}

@@ -131,7 +131,7 @@ export function EditorDecisionCard({
 		return (
 			<div
 				id="decision-section"
-				className="rounded-2xl bg-card shadow-2xl border"
+				className="rounded-2xl bg-card shadow-2xl border border-border/50"
 			>
 				<Accordion
 					type="single"

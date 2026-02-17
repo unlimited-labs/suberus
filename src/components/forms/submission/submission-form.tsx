@@ -746,7 +746,7 @@ export function SubmissionForm({
 				<div className="hidden lg:block">
 					<div className="sticky space-y-4">
 						{/* Progress Card */}
-						<div className="rounded-2xl bg-card shadow-xl p-6 border">
+						<div className="rounded-2xl bg-card shadow-xl p-6 border border-border/50">
 							<h3 className="font-semibold text-foreground mb-4">Progress</h3>
 							<div className="space-y-3">
 								<div className="flex items-center gap-3">
@@ -817,7 +817,7 @@ export function SubmissionForm({
 						</div>
 
 						{/* Guidelines Card */}
-						<div className="rounded-2xl bg-card shadow-xl p-6 border">
+						<div className="rounded-2xl bg-card shadow-xl p-6 border border-border/50">
 							<div className="flex items-center gap-2 mb-4">
 								<IconInfoCircle className="size-5 text-muted-foreground" />
 								<h3 className="font-semibold text-foreground">Guidelines</h3>
