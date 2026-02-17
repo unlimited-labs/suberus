@@ -113,6 +113,22 @@ export function ConferenceSettingsTab({
 							/>
 						</div>
 					</div>
+					<div className="space-y-2">
+						<Label htmlFor="currency">Currency</Label>
+						<Select
+							value={data.currency}
+							onValueChange={(value) => handleChange("currency", value)}
+						>
+							<SelectTrigger id="currency">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="EUR">EUR</SelectItem>
+								<SelectItem value="USD">USD</SelectItem>
+								<SelectItem value="PLN">PLN</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
 				</div>
 				<div className="mt-6 flex justify-end">
 					<Button onClick={handleSave} disabled={isSaving}>
@@ -191,11 +207,11 @@ export function ConferenceSettingsTab({
 
 			<SettingsSection
 				icon={IconClock}
-				title="Display Format"
+				title="Date & Time"
 				description="Date and time display format across the application"
 				delay={200}
 			>
-				<div className="grid gap-6 sm:grid-cols-3">
+				<div className="grid gap-6 sm:grid-cols-2">
 					<div className="space-y-2">
 						<Label htmlFor="dateFormat">Date Format</Label>
 						<Select
@@ -234,22 +250,6 @@ export function ConferenceSettingsTab({
 								</Label>
 							</div>
 						</RadioGroup>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="currency">Currency</Label>
-						<Select
-							value={data.currency}
-							onValueChange={(value) => handleChange("currency", value)}
-						>
-							<SelectTrigger id="currency">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="EUR">EUR</SelectItem>
-								<SelectItem value="USD">USD</SelectItem>
-								<SelectItem value="PLN">PLN</SelectItem>
-							</SelectContent>
-						</Select>
 					</div>
 				</div>
 				<div className="mt-6 flex justify-end">
