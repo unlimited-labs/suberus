@@ -87,7 +87,7 @@ export default defineConfig({
 		// Submission tests - use user auth (wait for settings-integration to complete first)
 		{
 			name: "chromium-user",
-			testMatch: /e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access).*\.spec\.ts/,
+			testMatch: /e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access|no-active-types).*\.spec\.ts/,
 			dependencies: ["auth-setup"],
 			use: {
 				...devices["Desktop Chrome"],
@@ -96,10 +96,20 @@ export default defineConfig({
 		},
 		{
 			name: "mobile-user",
-			testMatch: /e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access).*\.spec\.ts/,
+			testMatch: /e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access|no-active-types).*\.spec\.ts/,
 			dependencies: ["auth-setup"],
 			use: {
 				...devices["Pixel 5"],
+				storageState: "e2e/.auth/user.json",
+			},
+		},
+		// No-active-types test - modifies global submission type configs, must run isolated
+		{
+			name: "chromium-no-active-types",
+			testMatch: /no-active-types\.spec\.ts/,
+			dependencies: ["auth-setup", "chromium-user", "mobile-user"],
+			use: {
+				...devices["Desktop Chrome"],
 				storageState: "e2e/.auth/user.json",
 			},
 		},
