@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { userDashboardQueryOptions } from "@/utils/user-dashboard.functions";
 
 const searchSchema = z.object({
-	verified: z.enum(["true"]).optional(),
+	verified: z.literal(true).optional(),
 });
 
 export const Route = createFileRoute("/_app/")({
@@ -26,7 +26,7 @@ function DashboardPage() {
 	const { data } = useSuspenseQuery(userDashboardQueryOptions());
 
 	useEffect(() => {
-		if (verified === "true" && !toastShown.current) {
+		if (verified && !toastShown.current) {
 			toastShown.current = true;
 			toast.success("Email verified successfully!");
 		}
