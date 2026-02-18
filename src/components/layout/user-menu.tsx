@@ -62,7 +62,6 @@ export function UserMenu() {
 					<p className="text-sm font-medium text-sidebar-foreground">
 						{displayName}
 					</p>
-					<p className="text-xs text-muted-foreground">{user.email}</p>
 				</div>
 				<IconDotsVertical className="size-4 text-muted-foreground" />
 			</DropdownMenuTrigger>

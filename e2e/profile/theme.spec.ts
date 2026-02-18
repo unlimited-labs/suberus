@@ -1,10 +1,13 @@
 import { test, expect } from "../helpers/base-fixtures";
+import { TEST_USER } from "../helpers/test-users";
 
 test.use({ storageState: "e2e/.auth/user.json" });
 
+const DISPLAY_NAME = `${TEST_USER.firstName} ${TEST_USER.lastName}`;
+
 async function openThemeSubmenu(page: import("@playwright/test").Page) {
-	// Open user menu dropdown (trigger contains user email)
-	await page.getByText("test@e2e.local").click();
+	// Open user menu dropdown (trigger contains user display name)
+	await page.getByText(DISPLAY_NAME).click();
 	// Open theme submenu
 	await page.getByText("Theme").click();
 }
@@ -18,7 +21,7 @@ test.describe("Theme switching", () => {
 	test("switches to dark theme", async ({ page }) => {
 		// Arrange
 		await page.goto("/");
-		await page.getByText("test@e2e.local").waitFor({ state: "visible" });
+		await page.getByText(DISPLAY_NAME).waitFor({ state: "visible" });
 
 		// Act
 		await openThemeSubmenu(page);
@@ -31,7 +34,7 @@ test.describe("Theme switching", () => {
 	test("switches to light theme", async ({ page }) => {
 		// Arrange
 		await page.goto("/");
-		await page.getByText("test@e2e.local").waitFor({ state: "visible" });
+		await page.getByText(DISPLAY_NAME).waitFor({ state: "visible" });
 
 		// Act
 		await openThemeSubmenu(page);
@@ -44,7 +47,7 @@ test.describe("Theme switching", () => {
 	test("persists dark theme after reload", async ({ page }) => {
 		// Arrange
 		await page.goto("/");
-		await page.getByText("test@e2e.local").waitFor({ state: "visible" });
+		await page.getByText(DISPLAY_NAME).waitFor({ state: "visible" });
 
 		// Act — set dark
 		await openThemeSubmenu(page);
@@ -60,7 +63,7 @@ test.describe("Theme switching", () => {
 
 		// Act — reload
 		await page.reload();
-		await page.getByText("test@e2e.local").waitFor({ state: "visible" });
+		await page.getByText(DISPLAY_NAME).waitFor({ state: "visible" });
 
 		// Assert — cookie preserves theme across reload
 		await expect(page.locator("html")).toHaveClass(/dark/);
@@ -70,7 +73,7 @@ test.describe("Theme switching", () => {
 		// Arrange — emulate dark OS preference
 		await page.emulateMedia({ colorScheme: "dark" });
 		await page.goto("/");
-		await page.getByText("test@e2e.local").waitFor({ state: "visible" });
+		await page.getByText(DISPLAY_NAME).waitFor({ state: "visible" });
 
 		// Act — set system theme
 		await openThemeSubmenu(page);
