@@ -45,6 +45,7 @@ import { useMultiStep } from "@/hooks/use-multi-step";
 import { signUp } from "@/lib/auth-client";
 import { detectCountry } from "@/lib/detect-country";
 import { submitForm } from "@/lib/form-utils";
+import { titleOptions } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import {
 	registerSchema,
@@ -52,6 +53,7 @@ import {
 	registerStep2Schema,
 	registerStep3Schema,
 } from "@/lib/validations/auth";
+import { checkEmailAvailableFn } from "@/utils/auth.functions";
 import {
 	consumeInvitationFn,
 	validateInvitationTokenFn,
@@ -87,14 +89,6 @@ export const Route = createFileRoute("/_auth/register")({
 	},
 	component: RegisterPage,
 });
-
-const TITLE_OPTIONS = [
-	{ value: "mr", label: "Mr." },
-	{ value: "ms", label: "Ms." },
-	{ value: "msc", label: "M.Sc." },
-	{ value: "dr", label: "Dr." },
-	{ value: "prof", label: "Prof." },
-] as const;
 
 const STEPS = [
 	{ id: 1, title: "Author Information" },
@@ -202,7 +196,31 @@ function RegisterPage() {
 			const schema = stepSchemas[step - 1];
 			const result = schema.safeParse(form.state.values);
 
-			if (result.success) return true;
+			if (result.success) {
+				// Check email uniqueness on step 1
+				if (step === 1 && !invitation) {
+					const { available } = await checkEmailAvailableFn({
+						data: { email: form.state.values.email },
+					});
+					if (!available) {
+						form.setFieldMeta("email", (prev) => ({
+							...prev,
+							isTouched: true,
+							isBlurred: true,
+							errorMap: {
+								...prev.errorMap,
+								onChange: "Email is already registered",
+							},
+							errorSourceMap: {
+								...prev.errorSourceMap,
+								onChange: "form",
+							},
+						}));
+						return false;
+					}
+				}
+				return true;
+			}
 
 			// Touch fields with errors and set errorMap so errors are visible.
 			// Setting errorSourceMap to 'form' ensures the form-level onChange
@@ -231,7 +249,7 @@ function RegisterPage() {
 			}
 			return false;
 		},
-		[form],
+		[form, invitation],
 	);
 
 	const { currentStep, next, prev, isFirst, isLast } = useMultiStep({
@@ -373,10 +391,7 @@ function RegisterPage() {
 								<div className="grid gap-2 sm:grid-cols-[100px_1fr]">
 									<form.AppField name="title">
 										{(field) => (
-											<field.SelectField
-												label="Title"
-												options={TITLE_OPTIONS}
-											/>
+											<field.SelectField label="Title" options={titleOptions} />
 										)}
 									</form.AppField>
 

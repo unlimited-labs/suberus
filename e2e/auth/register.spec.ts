@@ -76,11 +76,30 @@ test.describe("Register Page - Step 1: Author Info", () => {
 
 		// Act
 		await titleTrigger.click()
-		await expect(registerPage.page.getByRole("option", { name: "Dr." })).toBeVisible()
-		await registerPage.page.getByRole("option", { name: "Dr." }).click()
+		await expect(registerPage.page.getByRole("option", { name: "Dr", exact: true })).toBeVisible()
+		await registerPage.page.getByRole("option", { name: "Dr", exact: true }).click()
 
 		// Assert
-		await expect(titleTrigger).toContainText("Dr.")
+		await expect(titleTrigger).toContainText("Dr")
+	})
+
+	test("shows error for already registered email", async ({ registerPage }) => {
+		// Arrange
+		await registerPage.goto()
+
+		// Act
+		await registerPage.fillStep1({
+			email: "test@e2e.local",
+			password: "ValidPassword123!",
+			confirmPassword: "ValidPassword123!",
+			firstName: "New",
+			lastName: "Person",
+			affiliation: "Test University",
+		})
+		await registerPage.clickContinue()
+
+		// Assert
+		await expect(registerPage.page.getByText("Email is already registered")).toBeVisible()
 	})
 
 	test("proceeds to step 2 with valid data", async ({ registerPage }) => {
