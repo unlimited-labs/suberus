@@ -5,6 +5,7 @@ import viteReact from "@vitejs/plugin-react";
 import type { RollupConfig } from "nitro/types";
 import { type NitroPluginConfig, nitro } from "nitro/vite";
 import { defineConfig } from "vite";
+import checker from "vite-plugin-checker";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 
 const isDev = process.env.NODE_ENV !== "production";
@@ -48,6 +49,15 @@ const config = defineConfig({
 			babel: {
 				plugins: ["babel-plugin-react-compiler"],
 			},
+		}),
+		// Force check TS errors on build
+		checker({
+			typescript: {
+				tsconfigPath: "./tsconfig.json",
+			},
+			// biome: {
+			// 	command: "check",
+			// },
 		}),
 	],
 });
