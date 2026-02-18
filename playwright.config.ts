@@ -132,6 +132,16 @@ export default defineConfig({
 				storageState: "e2e/.auth/unverified.json",
 			},
 		},
+		// Routing tests (404 page) - use user auth
+		{
+			name: "chromium-routing",
+			testMatch: /e2e\/routing\/.*\.spec\.ts/,
+			dependencies: ["auth-setup"],
+			use: {
+				...devices["Desktop Chrome"],
+				storageState: "e2e/.auth/user.json",
+			},
+		},
 		// Profile tests - use user auth
 		{
 			name: "chromium-profile",
