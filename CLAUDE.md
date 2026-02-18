@@ -4,10 +4,10 @@
 Abstract management system for scientific conferences.
 
 ## Tech Stack
-**Tech Stack:** [STACK.md](./STACK.md)
+**Tech Stack:** When implementing new feature which require external depandacies first always check [STACK.md](./STACK.md) for preferences.
 
 ## Functionality
-Treat the [guidelines](./WORKFLOW.md) as the single source of truth. If a change in the application contradicts the contents of the file, you **MUST** obtain the user's permission. In such case, also correct the WORKFLOW.md to reflect the current state.
+Treat the [workflow](./WORKFLOW.md) as the single source of truth. If a change in the application contradicts the contents of the file, you **MUST** get the user's permission. In such a case, also correct the WORKFLOW.md to reflect the current state.
 
 
 ## Key Guidelines
