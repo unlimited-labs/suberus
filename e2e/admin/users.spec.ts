@@ -121,6 +121,35 @@ test.describe("Admin Users Management", () => {
 			await expect(adminUsersPage.page).toHaveURL(/\/admin\/users$/)
 		})
 
+		test("email is a clickable mailto link", async ({ adminUsersPage, userDetailPage }) => {
+			// Arrange
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+			await adminUsersPage.openUserDetail(TEST_USER)
+
+			// Assert
+			const mailtoLink = userDetailPage.page.getByRole("link", { name: TEST_USER.email })
+			await expect(mailtoLink).toBeVisible()
+			await expect(mailtoLink).toHaveAttribute("href", `mailto:${TEST_USER.email}`)
+		})
+
+		test("displays academic title label in header", async ({ adminUsersPage, userDetailPage }) => {
+			// Arrange — set title on test user via Prisma
+			const { getPrisma } = await import("../helpers/test-db")
+			const db = getPrisma()
+			await db.user.updateMany({ where: { email: TEST_USER.email }, data: { title: "dr" } })
+
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+			await adminUsersPage.openUserDetail(TEST_USER)
+
+			// Assert — CardTitle renders as div[data-slot="card-title"], not a heading
+			await expect(userDetailPage.page.locator("[data-slot='card-title']").filter({ hasText: /^Dr\s/ })).toBeVisible()
+
+			// Cleanup
+			await db.user.updateMany({ where: { email: TEST_USER.email }, data: { title: null } })
+		})
+
 		test("shows fee status section", async ({ adminUsersPage, userDetailPage }) => {
 			// Arrange
 			await adminUsersPage.goto()

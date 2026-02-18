@@ -148,7 +148,7 @@ export class UserDetailPage {
 	}
 
 	getUserEmail() {
-		return this.page.locator("span").filter({ hasText: /@/ })
+		return this.page.getByRole("link").filter({ hasText: /@/ })
 	}
 
 	getRoleBadge() {

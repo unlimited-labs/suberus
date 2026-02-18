@@ -40,6 +40,7 @@ import { Separator } from "@/components/ui/separator";
 import type { UserRole } from "@/generated/prisma/enums";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { useDateFormat } from "@/hooks/use-date-format";
+import { roleLabels, titleLabels, userRoleOptions } from "@/lib/labels";
 import type { AdminUser } from "@/lib/server/admin/users";
 import {
 	adminUserDetailQueryOptions,
@@ -54,20 +55,6 @@ import {
 interface UserDetailCardProps {
 	user: AdminUser;
 }
-
-const roleLabels: Record<string, string> = {
-	ADMIN: "Administrator",
-	EDITOR: "Editor",
-	REVIEWER: "Reviewer",
-	AUTHOR: "Author",
-};
-
-const userRoles: { value: UserRole; label: string }[] = [
-	{ value: "AUTHOR", label: "Author" },
-	{ value: "REVIEWER", label: "Reviewer" },
-	{ value: "EDITOR", label: "Editor" },
-	{ value: "ADMIN", label: "Administrator" },
-];
 
 interface PatchPayload {
 	role?: UserRole;
@@ -153,7 +140,7 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 					<div className="flex items-start justify-between">
 						<div>
 							<CardTitle className="text-xl">
-								{user.title && `${user.title} `}
+								{user.title && `${titleLabels[user.title] ?? user.title} `}
 								{user.firstName} {user.lastName}
 							</CardTitle>
 							<div className="mt-1 flex items-center gap-2">
@@ -208,7 +195,12 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 						<div className="grid gap-3 sm:grid-cols-2">
 							<div className="flex items-center gap-2">
 								<IconMail className="size-4 text-muted-foreground" />
-								<span>{user.email}</span>
+								<a
+									href={`mailto:${user.email}`}
+									className="text-primary hover:underline"
+								>
+									{user.email}
+								</a>
 							</div>
 							{user.affiliation && (
 								<div className="flex items-center gap-2">
@@ -389,7 +381,7 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 								<SelectValue placeholder="Select role" />
 							</SelectTrigger>
 							<SelectContent>
-								{userRoles.map((role) => (
+								{userRoleOptions.map((role) => (
 									<SelectItem key={role.value} value={role.value}>
 										{role.label}
 									</SelectItem>

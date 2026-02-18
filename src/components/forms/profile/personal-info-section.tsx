@@ -3,18 +3,9 @@ import { IconBuilding, IconId } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { useAppForm } from "@/hooks/use-app-form";
 import { submitForm } from "@/lib/form-utils";
+import { titleOptions } from "@/lib/labels";
 import type { PersonalInfoFormData } from "@/lib/validations/profile";
 import { personalInfoSchema } from "@/lib/validations/profile";
-
-const TITLE_OPTIONS = [
-	{ value: "dr", label: "Dr" },
-	{ value: "prof", label: "Prof" },
-	{ value: "prof-dr", label: "Prof. Dr" },
-	{ value: "dr-hab", label: "Dr hab." },
-	{ value: "mgr", label: "MSc" },
-	{ value: "inz", label: "Eng" },
-	{ value: "lic", label: "BSc" },
-] as const;
 
 interface PersonalInfoSectionProps {
 	initialData: PersonalInfoFormData;
@@ -76,7 +67,7 @@ export function PersonalInfoSection({
 					{(field) => (
 						<field.SelectField
 							label="Title"
-							options={TITLE_OPTIONS}
+							options={titleOptions}
 							disabled={isLoading}
 						/>
 					)}
