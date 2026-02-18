@@ -1,6 +1,5 @@
 import path from "node:path";
-import { expect, test } from "@playwright/test";
-import { AdminSettingsPage } from "./fixtures";
+import { test, expect, AdminSettingsPage } from "./fixtures";
 import { getPrisma } from "../helpers/test-db";
 
 const BRANDING_KEYS = [

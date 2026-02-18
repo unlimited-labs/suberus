@@ -112,8 +112,7 @@ test.describe("Submission Detail - Desk Rejection", () => {
 
 		// Assert
 		await expect(page.getByText(/desk rejected/i)).toBeVisible({ timeout: 5000 });
-		const status = await adminSubmissionDetailPage.getStatus();
-		expect(status).toContain("Rejected");
+		await expect(adminSubmissionDetailPage.getStatusBadge()).toContainText("Rejected", { timeout: 10000 });
 	});
 
 	test("desk reject requires reason", async ({

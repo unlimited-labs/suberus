@@ -141,13 +141,10 @@ test.describe.serial("File Upload", () => {
 		// Act
 		await submissionPage.submit();
 
-		// Assert - redirect to detail page
-		await submissionPage.page.waitForURL(/\/submissions\/[a-f0-9-]+/, {
-			timeout: 60000,
-		});
+		// Assert - wait for success toast (doesn't depend on load event)
 		await expect(
 			submissionPage.page.getByText("Submission created successfully"),
-		).toBeVisible();
+		).toBeVisible({ timeout: 60000 });
 	});
 
 	test("uploaded file visible on detail page", async ({
@@ -172,14 +169,11 @@ test.describe.serial("File Upload", () => {
 
 		// Act - submit
 		await submissionPage.submit();
-		await submissionPage.page.waitForURL(/\/submissions\/[a-f0-9-]+/, {
-			timeout: 60000,
-		});
 
-		// Assert - file info visible on detail page
+		// Assert - file info visible on detail page (doesn't depend on load event)
 		await expect(
 			submissionPage.page.getByText("document.pdf"),
-		).toBeVisible();
+		).toBeVisible({ timeout: 60000 });
 		await expect(
 			submissionPage.page.getByTestId("file-download-button"),
 		).toBeVisible();
@@ -196,11 +190,11 @@ test.describe.serial("File Upload", () => {
 
 		// Act
 		await submissionPage.submit();
-		await submissionPage.page.waitForURL(/\/submissions\/[a-f0-9-]+/, {
-			timeout: 60000,
-		});
 
-		// Assert - no download button
+		// Assert - wait for detail page then check no file section
+		await expect(
+			submissionPage.page.getByText("Submission created successfully"),
+		).toBeVisible({ timeout: 60000 });
 		await expect(
 			submissionPage.page.getByTestId("file-download-button"),
 		).not.toBeVisible();

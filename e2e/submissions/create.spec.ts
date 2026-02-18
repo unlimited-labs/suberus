@@ -187,13 +187,10 @@ test.describe("Submission Form", () => {
 		// Act
 		await submissionPage.submit();
 
-		// Assert
-		await submissionPage.page.waitForURL(/\/submissions\/[a-f0-9-]+/, {
-			timeout: 60000,
-		});
+		// Assert - wait for success toast (doesn't depend on load event)
 		await expect(
 			submissionPage.page.getByText("Submission created successfully"),
-		).toBeVisible();
+		).toBeVisible({ timeout: 60000 });
 	});
 
 	test("shows error for short content", async ({ submissionPage }, testInfo) => {

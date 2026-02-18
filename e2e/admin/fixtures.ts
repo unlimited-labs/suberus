@@ -35,6 +35,8 @@ export class AdminUsersPage {
 	async waitForLoad() {
 		// Wait for heading (works on both desktop table and mobile cards)
 		await expect(this.heading).toBeVisible({ timeout: 10000 })
+		// Wait for table data to actually load (pagination shows non-zero page count)
+		await expect(this.page.getByText(/Page \d+ of [1-9]/)).toBeVisible({ timeout: 15000 })
 	}
 
 	async search(query: string) {
@@ -43,12 +45,12 @@ export class AdminUsersPage {
 		await this.searchInput.fill(query)
 	}
 
-	async selectUser(user: { email: string; firstName: string }) {
-		// Search by firstName to filter the list (needed when many users exist)
-		await this.search(user.firstName)
+	async selectUser(user: { email: string; firstName: string; lastName: string }) {
+		// Search by full name for precise match (firstName "Test" alone matches too many e2e users)
+		await this.search(`${user.firstName} ${user.lastName}`)
 		// Find the row by the exact email text - wait for it to be visible after filtering
 		const row = this.page.locator("tr").filter({ has: this.page.locator(`text="${user.email}"`) })
-		await expect(row).toBeVisible({ timeout: 5000 })
+		await expect(row).toBeVisible({ timeout: 10000 })
 		const checkbox = row.getByRole("checkbox")
 		await checkbox.click()
 		// Wait for checkbox to be checked
@@ -72,18 +74,19 @@ export class AdminUsersPage {
 		await this.page.getByRole("button", { name: "Apply" }).click()
 	}
 
-	async openUserDetail(user: { email: string; firstName: string }) {
-		// Search by firstName to filter the list (needed when many users exist)
-		await this.search(user.firstName)
+	async openUserDetail(user: { email: string; firstName: string; lastName: string }) {
+		// Search by full name for precise match (firstName "Test" alone matches too many e2e users)
+		await this.search(`${user.firstName} ${user.lastName}`)
 		// Find the row by the exact email text
 		const row = this.page.locator("tr").filter({ has: this.page.locator(`text="${user.email}"`) })
+		await expect(row).toBeVisible({ timeout: 10000 })
 		await row.getByRole("button", { name: "Actions menu" }).click()
 		await this.page.getByRole("menuitem", { name: "View" }).click()
 	}
 
-	async getRowByEmail(user: { email: string; firstName: string }) {
-		// Search by firstName to filter the list (needed when many users exist)
-		await this.search(user.firstName)
+	async getRowByEmail(user: { email: string; firstName: string; lastName: string }) {
+		// Search by full name for precise match
+		await this.search(`${user.firstName} ${user.lastName}`)
 		// Find the row by the exact email text
 		return this.page.locator("tr").filter({ has: this.page.locator(`text="${user.email}"`) })
 	}

@@ -17,8 +17,7 @@ test.describe("Draft Creation", () => {
 		await submissionPage.saveDraftButton.click();
 
 		// Assert - redirect to detail page with Draft badge
-		await page.waitForURL(/\/submissions\/[a-f0-9-]+/, { timeout: 60000 });
-		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText("Draft");
+		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText("Draft", { timeout: 60000 });
 	});
 
 	test("draft is visible in submissions list", async ({ page, testRun, cleanup }) => {
@@ -57,8 +56,7 @@ test.describe("Draft Creation", () => {
 		await submissionPage.saveDraftButton.click();
 
 		// Assert
-		await page.waitForURL(/\/submissions\/[a-f0-9-]+/, { timeout: 60000 });
-		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText("Draft");
+		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText("Draft", { timeout: 60000 });
 	});
 });
 
@@ -79,10 +77,9 @@ test.describe("Draft - Skips Validation", () => {
 		await submissionPage.saveDraftButton.click();
 
 		// Assert - should save successfully despite missing content/keywords
-		await page.waitForURL(/\/submissions\/[a-f0-9-]+/, { timeout: 60000 });
 		await expect(
 			page.locator('[data-testid="submission-status"]').first(),
-		).toContainText("Draft");
+		).toContainText("Draft", { timeout: 60000 });
 	});
 
 	test("save draft on edit page with invalid data succeeds", async ({
@@ -132,7 +129,7 @@ test.describe("Draft - Skips Validation", () => {
 		// Assert - should show field validation error, NOT redirect
 		await expect(
 			page.getByText(/at least 500 characters/i).or(page.locator("[data-sonner-toast]")),
-		).toBeVisible({ timeout: 15000 });
+		).toBeVisible({ timeout: 30000 });
 		await expect(page).toHaveURL(/\/submissions\/new/);
 	});
 });

@@ -1,4 +1,5 @@
 import { test as base, expect as baseExpect, type Page, type Locator } from "@playwright/test"
+import { dismissViteOverlay } from "../helpers/page-setup"
 
 export { UNVERIFIED_USER, TEST_USER } from "../helpers/test-users"
 export { clearMailpit, clearMailpitForAddress, getMailpitMessages, getMailpitMessage, waitForEmail } from "../helpers/mailpit"
@@ -146,6 +147,11 @@ interface EmailVerificationFixtures {
 }
 
 export const test = base.extend<EmailVerificationFixtures>({
+	page: async ({ page }, use) => {
+		await dismissViteOverlay(page);
+		await use(page);
+	},
+
 	verifyEmailPage: async ({ page }, use) => {
 		await use(new VerifyEmailPage(page))
 	},

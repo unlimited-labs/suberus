@@ -113,8 +113,8 @@ export class RegisterPage {
 
 	// Step 2: Invoice Information
 	async fillStep2(data: { country: string; address?: string }) {
-		// Wait for step 2 to be visible (country label is unique to step 2)
-		await this.page.getByText("Country *").waitFor({ state: "visible", timeout: 10000 })
+		// Wait for step 2 to be visible, retrying the Continue click if needed
+		await this.waitForStep2()
 		// Scope combobox to the Country field to avoid strict mode violations during step transitions
 		const countryField = this.page.locator('[data-slot="field"]').filter({ has: this.page.getByText("Country *", { exact: true }) })
 		const combobox = countryField.getByRole("combobox")

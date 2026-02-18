@@ -1,4 +1,5 @@
 import { test as base, expect as baseExpect, type Locator, type Page } from "@playwright/test"
+import { dismissViteOverlay } from "../helpers/page-setup"
 
 export { TEST_USER } from "../helpers/test-users"
 
@@ -147,6 +148,11 @@ interface SettingsFixtures {
 }
 
 export const test = base.extend<SettingsFixtures>({
+	page: async ({ page }, use) => {
+		await dismissViteOverlay(page);
+		await use(page);
+	},
+
 	settingsPage: async ({ page }, use) => {
 		await use(new SettingsPage(page))
 	},

@@ -295,7 +295,14 @@ test.describe("Admin Users Management", () => {
 		})
 
 		test("can manually verify user email", async ({ adminUsersPage, userDetailPage }) => {
-			// Arrange (dedicated test user - destructive test)
+			// Arrange — ensure email is unverified (destructive test may have run before)
+			const { getPrisma } = await import("../helpers/test-db")
+			const db = getPrisma()
+			await db.user.updateMany({
+				where: { email: ADMIN_VERIFY_TEST_USER.email },
+				data: { emailVerified: false },
+			})
+
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.openUserDetail(ADMIN_VERIFY_TEST_USER)

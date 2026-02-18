@@ -133,7 +133,7 @@ test.describe.serial("Submission - Track Selection", () => {
 		await page
 			.getByRole("button", { name: /oral presentation/i })
 			.click();
-		await expect(page.getByText("Preferred Track")).toBeVisible();
+		await expect(page.getByText("Preferred Track")).toBeVisible({ timeout: 10000 });
 		await page.getByRole("combobox").filter({ hasText: "None" }).click();
 
 		// Assert

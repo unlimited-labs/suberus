@@ -9,10 +9,9 @@ test.describe("Full User Flow", () => {
 
 		// Act
 		await submissionPage.submit();
-		await submissionPage.page.waitForURL(/\/submissions\/[a-f0-9-]+/, { timeout: 60000 });
 
-		// Assert
-		await expect(submissionPage.page.getByText("Submission created successfully")).toBeVisible();
+		// Assert - wait for success toast (doesn't depend on load event)
+		await expect(submissionPage.page.getByText("Submission created successfully")).toBeVisible({ timeout: 60000 });
 		const url = submissionPage.page.url();
 		expect(url).toMatch(/\/submissions\/[a-f0-9-]{36}$/);
 	});

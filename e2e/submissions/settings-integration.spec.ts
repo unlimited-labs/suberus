@@ -1,4 +1,5 @@
 import { test as base, expect, type BrowserContext, type Page } from "@playwright/test";
+import { dismissViteOverlay } from "../helpers/page-setup";
 
 /**
  * Integration tests verifying that admin settings are properly reflected in the submission form.
@@ -23,6 +24,7 @@ const test = base.extend<SettingsIntegrationFixtures>({
 	},
 	adminPage: async ({ adminContext }, use) => {
 		const page = await adminContext.newPage();
+		await dismissViteOverlay(page);
 		await use(page);
 		await page.close();
 	},
@@ -35,6 +37,7 @@ const test = base.extend<SettingsIntegrationFixtures>({
 	},
 	userPage: async ({ userContext }, use) => {
 		const page = await userContext.newPage();
+		await dismissViteOverlay(page);
 		await use(page);
 		await page.close();
 	},

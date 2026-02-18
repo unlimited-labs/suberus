@@ -10,6 +10,11 @@ import {
 
 import { ADMIN_USER, DEFAULT_PASSWORD } from "./helpers/test-users";
 import { loginAs } from "./helpers/auth";
+import { dismissViteOverlay } from "./helpers/page-setup";
+
+test.beforeEach(async ({ page }) => {
+	await dismissViteOverlay(page);
+});
 
 /**
  * E2E tests for Fee functionality
@@ -127,7 +132,8 @@ test.describe("Fee - User View", () => {
 		await expect(page.getByText("Full Conference Fee")).toBeVisible();
 		await expect(page.getByText("250.00")).toBeVisible();
 		await expect(page.getByText("EUR")).toBeVisible();
-		await expect(page.getByText("15.01.2026")).toBeVisible();
+		// Date format depends on admin setting (DD.MM.YYYY, MM/DD/YYYY, etc.)
+		await expect(page.getByText(/15[.\-\/]01[.\-\/]2026|01[.\-\/]15[.\-\/]2026|2026[.\-\/]01[.\-\/]15|Jan\w*\s+15|15\s+Jan\w*/)).toBeVisible();
 		await expect(feePage.paymentInstructions).toBeVisible();
 
 		// Cleanup

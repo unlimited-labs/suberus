@@ -64,7 +64,8 @@ test.describe("Submission Emails", () => {
 		await addKeyword(page, "e2e-verify");
 
 		await page.getByRole("button", { name: "Submit" }).click();
-		await page.waitForURL(/\/submissions\/[a-f0-9-]+/, { timeout: 60000 });
+		// Wait for success toast (appears before page redirect completes)
+		await expect(page.getByText("Submission created successfully")).toBeVisible({ timeout: 60000 });
 
 		// Assert
 		const email = await waitForEmail(TEST_USER.email, "Submission Received", 45000);
@@ -119,7 +120,8 @@ test.describe("Submission Emails", () => {
 		await addKeyword(page, "e2e-draft");
 
 		await page.getByRole("button", { name: "Save Draft" }).click();
-		await page.waitForURL(/\/submissions\/[a-f0-9-]+/, { timeout: 60000 });
+		// Wait for draft detail page content (doesn't depend on load event)
+		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText("Draft", { timeout: 60000 });
 
 		// Assert - wait briefly then verify no email with this draft's title
 		await page.waitForTimeout(3000);

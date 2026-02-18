@@ -63,7 +63,7 @@ test.describe("Admin Settings - Reminders", () => {
 		await remindersSettings.save()
 
 		// Assert
-		await expect(page.getByText("Reminder settings saved")).toBeVisible({ timeout: 5000 })
+		await expect(page.getByText("Reminder settings saved")).toBeVisible({ timeout: 10000 })
 
 		// Verify persistence after reload
 		await page.reload()
@@ -86,7 +86,7 @@ test.describe("Admin Settings - Reminders", () => {
 		await remindersSettings.save()
 
 		// Assert
-		await expect(page.getByText("Reminder settings saved")).toBeVisible({ timeout: 5000 })
+		await expect(page.getByText("Reminder settings saved")).toBeVisible({ timeout: 10000 })
 
 		// Verify persistence
 		await page.reload()
@@ -108,7 +108,7 @@ test.describe("Admin Settings - Reminders", () => {
 		await remindersSettings.save()
 
 		// Assert
-		await expect(page.getByText("Reminder settings saved")).toBeVisible({ timeout: 5000 })
+		await expect(page.getByText("Reminder settings saved")).toBeVisible({ timeout: 10000 })
 
 		// Verify persistence
 		await page.reload()

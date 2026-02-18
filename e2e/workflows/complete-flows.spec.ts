@@ -87,10 +87,9 @@ test.describe("Complete Submission Workflow", () => {
 		await addKeyword(page, "acceptance");
 
 		await page.getByRole("button", { name: "Submit" }).click();
-		await page.waitForURL(/\/submissions\/[a-f0-9-]+/, { timeout: 60000 });
 
-		// Assert
-		await expect(page.getByText(submissionTitle)).toBeVisible({ timeout: 10000 });
+		// Assert - wait for content (doesn't depend on load event)
+		await expect(page.getByText(submissionTitle)).toBeVisible({ timeout: 60000 });
 	});
 
 	/**

@@ -50,7 +50,7 @@ test.describe.serial("Task: mails:reminder", () => {
 
 		// Assert
 		expect(result.reviewerReminders).toBeGreaterThanOrEqual(1)
-		const email = await waitForEmail(REVIEWER_USER.email, "review", 10000)
+		const email = await waitForEmail(REVIEWER_USER.email, "reminder", 10000)
 		expect(email).toBeTruthy()
 
 		// Cleanup
@@ -72,7 +72,7 @@ test.describe.serial("Task: mails:reminder", () => {
 		// Act — first run
 		await runReminderTask(page)
 		// Wait for async email to arrive before clearing
-		await waitForEmail(REVIEWER_USER.email, "review", 10000)
+		await waitForEmail(REVIEWER_USER.email, "reminder", 10000)
 		await clearMailpit()
 
 		// Act — second run
@@ -80,7 +80,7 @@ test.describe.serial("Task: mails:reminder", () => {
 
 		// Assert — no new reviewer reminders (dedup via SentReminder)
 		expect(result.reviewerReminders).toBe(0)
-		const email = await waitForEmail(REVIEWER_USER.email, "review", 3000)
+		const email = await waitForEmail(REVIEWER_USER.email, "reminder", 3000)
 		expect(email).toBeNull()
 
 		// Cleanup

@@ -1,5 +1,4 @@
-import { expect, test } from "@playwright/test";
-import { AdminSettingsPage } from "./fixtures";
+import { test, expect, AdminSettingsPage } from "./fixtures";
 import { getPrisma, setAppSetting, createSubmissionWithAssignment } from "../helpers/test-db";
 import { deleteSubmission } from "../helpers/test-db";
 import { loginAs } from "../helpers/auth";

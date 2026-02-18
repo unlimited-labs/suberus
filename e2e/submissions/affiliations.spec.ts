@@ -28,14 +28,14 @@ test.describe("Affiliations", () => {
 		const input = submissionPage.getAuthorCard(0).getByLabel("Affiliation");
 		const uniqueAffiliation = `New Affiliation ${testRun.testRunId}`;
 
-		// Act
-		await input.fill(uniqueAffiliation);
-		const createOption = submissionPage.page.getByRole("option").filter({ hasText: `Create "${uniqueAffiliation}"` });
-		await expect(createOption).toBeVisible({ timeout: 5000 });
-		await createOption.click();
-
-		// Assert
-		await expect(input).toHaveValue(uniqueAffiliation, { timeout: 5000 });
+		// Act — retry pattern: dropdown can re-render and detach
+		await expect(async () => {
+			await input.fill(uniqueAffiliation);
+			const createOption = submissionPage.page.getByRole("option").filter({ hasText: `Create "${uniqueAffiliation}"` });
+			await expect(createOption).toBeVisible();
+			await createOption.click();
+			await expect(input).toHaveValue(uniqueAffiliation);
+		}).toPass({ timeout: 15000 });
 	});
 
 	test("each author can have different affiliation", async ({

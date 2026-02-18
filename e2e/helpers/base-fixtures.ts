@@ -1,6 +1,7 @@
 import { test as base, expect } from "@playwright/test";
 import { randomUUID } from "crypto";
 import { deleteSubmission, getPrisma } from "./test-db";
+import { dismissViteOverlay } from "./page-setup";
 
 export interface TestRunContext {
 	testRunId: string;
@@ -15,6 +16,11 @@ export const test = base.extend<{
 	testRun: TestRunContext;
 	cleanup: CleanupContext;
 }>({
+	page: async ({ page }, use) => {
+		await dismissViteOverlay(page);
+		await use(page);
+	},
+
 	testRun: async ({}, use) => {
 		const testRunId = `e2e_${randomUUID().slice(0, 8)}`;
 		await use({
