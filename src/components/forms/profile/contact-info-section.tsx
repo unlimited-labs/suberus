@@ -123,7 +123,7 @@ export function ContactInfoSection({
 						label="Email *"
 						type="email"
 						icon={<IconMail className="size-4" />}
-						disabled={isLoading}
+						disabled={isLoading || !emailVerified}
 					/>
 				)}
 			</form.AppField>

@@ -122,6 +122,14 @@ test.describe("Unverified User - Submission Block", () => {
 })
 
 test.describe("Unverified User - Settings Page", () => {
+	test("email input is disabled for unverified user", async ({ settingsEmailSection }) => {
+		// Arrange & Act
+		await settingsEmailSection.goto()
+
+		// Assert
+		await expect(settingsEmailSection.emailInput).toBeDisabled()
+	})
+
 	test("shows not verified status in settings", async ({ settingsEmailSection }) => {
 		// Arrange & Act
 		await settingsEmailSection.goto()

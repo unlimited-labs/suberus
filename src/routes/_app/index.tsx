@@ -9,6 +9,7 @@ import { userDashboardQueryOptions } from "@/utils/user-dashboard.functions";
 
 const searchSchema = z.object({
 	verified: z.literal(true).optional(),
+	error: z.string().optional(),
 });
 
 export const Route = createFileRoute("/_app/")({
@@ -20,7 +21,7 @@ export const Route = createFileRoute("/_app/")({
 });
 
 function DashboardPage() {
-	const { verified } = useSearch({ from: "/_app/" });
+	const { verified, error } = useSearch({ from: "/_app/" });
 	const toastShown = useRef(false);
 
 	const { data } = useSuspenseQuery(userDashboardQueryOptions());
@@ -28,9 +29,13 @@ function DashboardPage() {
 	useEffect(() => {
 		if (verified && !toastShown.current) {
 			toastShown.current = true;
-			toast.success("Email verified successfully!");
+			if (error) {
+				toast.info("Email is already verified.");
+			} else {
+				toast.success("Email verified successfully!");
+			}
 		}
-	}, [verified]);
+	}, [verified, error]);
 
 	return (
 		<div className="flex h-full flex-col">

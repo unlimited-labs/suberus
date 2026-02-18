@@ -1,5 +1,7 @@
 import { test, expect, TEST_USER, VALID_ORCID } from "./fixtures"
 
+const TEST_EMAIL = TEST_USER.email
+
 test.describe("User Settings", () => {
 	// storageState is already set in playwright.config.ts for profile tests
 
@@ -134,5 +136,24 @@ test.describe("User Settings", () => {
 		// Assert
 		await expect(settingsPage.emailVerifiedBadge).toBeVisible()
 		await expect(settingsPage.emailResendButton).not.toBeVisible()
+	})
+
+	test("sidebar user menu does not show email address", async ({ settingsPage }) => {
+		// Arrange
+		await settingsPage.goto()
+
+		// Assert
+		const trigger = settingsPage.page.locator("[class*='sidebar']").getByText(TEST_EMAIL)
+		await expect(trigger).not.toBeVisible()
+	})
+
+	test("shows already-verified toast for reused verification link", async ({ settingsPage }) => {
+		// Arrange & Act
+		await settingsPage.page.goto("/?verified=true&error=INVALID_TOKEN")
+
+		// Assert
+		await expect(
+			settingsPage.page.locator("[data-sonner-toast]").getByText("Email is already verified")
+		).toBeVisible({ timeout: 5000 })
 	})
 })
