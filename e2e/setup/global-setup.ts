@@ -440,6 +440,38 @@ async function globalSetup() {
 			},
 		});
 
+		await prisma.surveyQuestion.create({
+			data: {
+				label: "Dietary requirements",
+				type: "TEXT",
+				orderIndex: 2,
+				isActive: true,
+				isRequired: false,
+			},
+		});
+
+		await prisma.surveyQuestion.create({
+			data: {
+				label: "Preferred session format",
+				type: "SINGLE_SELECT",
+				orderIndex: 3,
+				isActive: true,
+				isRequired: true,
+				options: ["Oral", "Poster", "Workshop"],
+			},
+		});
+
+		await prisma.surveyQuestion.create({
+			data: {
+				label: "Which days will you attend?",
+				type: "MULTI_SELECT",
+				orderIndex: 4,
+				isActive: true,
+				isRequired: false,
+				options: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+			},
+		});
+
 		console.log("✅ Survey questions seeded");
 
 		// Terms of Service content

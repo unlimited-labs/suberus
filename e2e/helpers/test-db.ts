@@ -779,10 +779,23 @@ export async function createSentReminder(opts: {
 }
 
 /** Create a survey question */
-export async function createSurveyQuestion(label: string, orderIndex: number): Promise<{ id: string }> {
+export async function createSurveyQuestion(
+	label: string,
+	orderIndex: number,
+	type?: string,
+	options?: string[],
+	isRequired?: boolean,
+): Promise<{ id: string }> {
 	const db = getPrisma();
 	return db.surveyQuestion.create({
-		data: { label, orderIndex, isActive: true },
+		data: {
+			label,
+			orderIndex,
+			isActive: true,
+			...(type && { type: type as "CHECKBOX" | "TEXT" | "SINGLE_SELECT" | "MULTI_SELECT" }),
+			...(options && { options }),
+			...(isRequired !== undefined && { isRequired }),
+		},
 	});
 }
 

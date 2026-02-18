@@ -1,6 +1,9 @@
 import { test, expect } from "../helpers/base-fixtures";
 
 test.describe("User Settings - Survey", () => {
+	// Survey save sends ALL answers — parallel tests overwrite each other
+	test.describe.configure({ mode: "serial" });
+
 	test.beforeEach(async ({ page }) => {
 		// Arrange — navigate to profile
 		await page.goto("/profile");
@@ -69,18 +72,18 @@ test.describe("User Settings - Survey", () => {
 			.click();
 		await expect(page.getByText("Survey preferences saved")).toBeVisible();
 
-		// Act — reload
-		await page.reload();
-		await expect(
-			page.getByRole("heading", { name: "Profile" }),
-		).toBeVisible({ timeout: 15000 });
-
-		// Assert
-		await expect(
-			page.getByLabel(
-				"Please send me an Invitation Letter for a Visa Application.",
-			),
-		).toBeChecked();
+		// Assert — verify persistence after reload
+		await expect(async () => {
+			await page.reload();
+			await expect(
+				page.getByRole("heading", { name: "Profile" }),
+			).toBeVisible({ timeout: 15000 });
+			await expect(
+				page.getByLabel(
+					"Please send me an Invitation Letter for a Visa Application.",
+				),
+			).toBeChecked();
+		}).toPass({ timeout: 30000 });
 
 		// Cleanup — uncheck and save
 		await page
@@ -88,6 +91,110 @@ test.describe("User Settings - Survey", () => {
 				"Please send me an Invitation Letter for a Visa Application.",
 			)
 			.uncheck();
+		await page
+			.locator("section")
+			.filter({ hasText: "Survey" })
+			.getByRole("button", { name: "Save changes" })
+			.click();
+		await expect(page.getByText("Survey preferences saved")).toBeVisible();
+	});
+
+	test("user fills TEXT survey question", async ({ page }) => {
+		// Arrange
+		const textInput = page.getByLabel("Dietary requirements");
+		await expect(textInput).toBeVisible();
+
+		// Act
+		await textInput.fill("Vegan diet");
+		await page
+			.locator("section")
+			.filter({ hasText: "Survey" })
+			.getByRole("button", { name: "Save changes" })
+			.click();
+
+		// Assert
+		await expect(page.getByText("Survey preferences saved")).toBeVisible();
+		await expect(page.getByText("Survey preferences saved")).not.toBeVisible();
+
+		// Verify persistence
+		await expect(async () => {
+			await page.reload();
+			await expect(
+				page.getByRole("heading", { name: "Profile" }),
+			).toBeVisible({ timeout: 15000 });
+			await expect(page.getByLabel("Dietary requirements")).toHaveValue("Vegan diet");
+		}).toPass({ timeout: 30000 });
+
+		// Cleanup
+		await page.getByLabel("Dietary requirements").clear();
+		await page
+			.locator("section")
+			.filter({ hasText: "Survey" })
+			.getByRole("button", { name: "Save changes" })
+			.click();
+		await expect(page.getByText("Survey preferences saved")).toBeVisible();
+	});
+
+	test("user selects SINGLE_SELECT option", async ({ page }) => {
+		// Arrange
+		await expect(page.getByText("Preferred session format")).toBeVisible();
+
+		// Act — select "Poster" radio
+		await page.getByLabel("Poster").check();
+		await page
+			.locator("section")
+			.filter({ hasText: "Survey" })
+			.getByRole("button", { name: "Save changes" })
+			.click();
+
+		// Assert — wait for save to complete
+		await expect(page.getByText("Survey preferences saved")).toBeVisible();
+		await expect(page.getByText("Survey preferences saved")).not.toBeVisible();
+
+		// Verify persistence
+		await expect(async () => {
+			await page.reload();
+			await expect(
+				page.getByRole("heading", { name: "Profile" }),
+			).toBeVisible({ timeout: 15000 });
+			await expect(page.getByLabel("Poster")).toBeChecked();
+		}).toPass({ timeout: 30000 });
+
+		// Cleanup — clear by selecting a different option then saving empty
+		// No cleanup needed since survey answers are per-user test data
+	});
+
+	test("user selects MULTI_SELECT options", async ({ page }) => {
+		// Arrange
+		await expect(page.getByText("Which days will you attend?")).toBeVisible();
+
+		// Act — check Monday and Wednesday
+		await page.getByLabel("Monday").check();
+		await page.getByLabel("Wednesday").check();
+		await page
+			.locator("section")
+			.filter({ hasText: "Survey" })
+			.getByRole("button", { name: "Save changes" })
+			.click();
+
+		// Assert — wait for save to complete
+		await expect(page.getByText("Survey preferences saved")).toBeVisible();
+		await expect(page.getByText("Survey preferences saved")).not.toBeVisible();
+
+		// Verify persistence
+		await expect(async () => {
+			await page.reload();
+			await expect(
+				page.getByRole("heading", { name: "Profile" }),
+			).toBeVisible({ timeout: 15000 });
+			await expect(page.getByLabel("Monday")).toBeChecked();
+			await expect(page.getByLabel("Wednesday")).toBeChecked();
+			await expect(page.getByLabel("Tuesday")).not.toBeChecked();
+		}).toPass({ timeout: 30000 });
+
+		// Cleanup
+		await page.getByLabel("Monday").uncheck();
+		await page.getByLabel("Wednesday").uncheck();
 		await page
 			.locator("section")
 			.filter({ hasText: "Survey" })
