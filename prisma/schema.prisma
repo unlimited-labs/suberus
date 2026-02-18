@@ -403,12 +403,15 @@ model SentReminder {
 }
 
 model SurveyQuestion {
-  id         String         @id @default(uuid()) @db.Uuid
+  id         String             @id @default(uuid()) @db.Uuid
   label      String
-  orderIndex Int            @default(0)
-  isActive   Boolean        @default(true)
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
+  type       SurveyQuestionType @default(CHECKBOX)
+  options    Json?
+  isRequired Boolean            @default(false)
+  orderIndex Int                @default(0)
+  isActive   Boolean            @default(true)
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
   answers    SurveyAnswer[]
 
   @@index([isActive, orderIndex])
@@ -419,7 +422,7 @@ model SurveyAnswer {
   id         String         @id @default(uuid()) @db.Uuid
   userId     String         @db.Uuid
   questionId String         @db.Uuid
-  value      Boolean        @default(false)
+  value      String         @default("")
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt
   user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -451,6 +454,13 @@ model Invitation {
   @@index([status])
   @@index([expiresAt])
   @@map("invitations")
+}
+
+enum SurveyQuestionType {
+  CHECKBOX
+  TEXT
+  SINGLE_SELECT
+  MULTI_SELECT
 }
 
 enum InvitationStatus {

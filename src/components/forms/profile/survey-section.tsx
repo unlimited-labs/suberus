@@ -1,19 +1,22 @@
 import { IconLoader2 } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { SurveyQuestionField } from "@/components/forms/survey/survey-question-field";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import type { SurveyQuestionType } from "@/generated/prisma/enums";
 import { saveUserSurveyAnswersFn } from "@/utils/survey.functions";
 
 interface SurveyQuestion {
 	id: string;
 	label: string;
+	type: SurveyQuestionType;
+	options: string[] | null;
+	isRequired: boolean;
 }
 
 interface SurveyAnswer {
 	questionId: string;
-	value: boolean;
+	value: string;
 }
 
 interface SurveySectionProps {
@@ -27,17 +30,17 @@ export function SurveySection({
 }: SurveySectionProps) {
 	const answerMap = new Map(initialAnswers.map((a) => [a.questionId, a.value]));
 
-	const [answers, setAnswers] = useState<Record<string, boolean>>(() => {
-		const init: Record<string, boolean> = {};
+	const [answers, setAnswers] = useState<Record<string, string>>(() => {
+		const init: Record<string, string> = {};
 		for (const q of questions) {
-			init[q.id] = answerMap.get(q.id) ?? false;
+			init[q.id] = answerMap.get(q.id) ?? getDefaultValue(q.type);
 		}
 		return init;
 	});
 	const [isSaving, setIsSaving] = useState(false);
 
-	const handleToggle = (questionId: string, checked: boolean) => {
-		setAnswers((prev) => ({ ...prev, [questionId]: checked }));
+	const handleChange = (questionId: string, value: string) => {
+		setAnswers((prev) => ({ ...prev, [questionId]: value }));
 	};
 
 	const handleSave = async () => {
@@ -68,22 +71,12 @@ export function SurveySection({
 		<div className="space-y-4">
 			<div className="space-y-3">
 				{questions.map((question) => (
-					<div key={question.id} className="flex items-start gap-3">
-						<Checkbox
-							id={`survey-${question.id}`}
-							checked={answers[question.id] ?? false}
-							onCheckedChange={(checked) =>
-								handleToggle(question.id, checked === true)
-							}
-							className="mt-0.5"
-						/>
-						<Label
-							htmlFor={`survey-${question.id}`}
-							className="cursor-pointer text-sm font-normal leading-snug"
-						>
-							{question.label}
-						</Label>
-					</div>
+					<SurveyQuestionField
+						key={question.id}
+						question={question}
+						value={answers[question.id] ?? getDefaultValue(question.type)}
+						onChange={(value) => handleChange(question.id, value)}
+					/>
 				))}
 			</div>
 
@@ -95,4 +88,8 @@ export function SurveySection({
 			</div>
 		</div>
 	);
+}
+
+function getDefaultValue(type: SurveyQuestionType): string {
+	return type === "CHECKBOX" ? "false" : "";
 }

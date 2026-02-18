@@ -20,7 +20,7 @@ const registerBase = z.object({
 	affiliationName: z.string(),
 	address: z.string(),
 	country: z.string().min(1, "Country is required"),
-	surveyAnswers: z.record(z.string(), z.boolean()),
+	surveyAnswers: z.record(z.string(), z.string()),
 	acceptTerms: z
 		.boolean()
 		.refine((val) => val === true, "You must accept the Terms of Service"),

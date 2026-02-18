@@ -1,0 +1,136 @@
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import type { SurveyQuestionType } from "@/generated/prisma/enums";
+
+interface SurveyQuestionData {
+	id: string;
+	label: string;
+	type: SurveyQuestionType;
+	options: string[] | null;
+	isRequired: boolean;
+}
+
+interface SurveyQuestionFieldProps {
+	question: SurveyQuestionData;
+	value: string;
+	onChange: (value: string) => void;
+}
+
+export function SurveyQuestionField({
+	question,
+	value,
+	onChange,
+}: SurveyQuestionFieldProps) {
+	const requiredMark = question.isRequired ? " *" : "";
+
+	switch (question.type) {
+		case "CHECKBOX":
+			return (
+				<div className="flex items-start gap-3">
+					<Checkbox
+						id={`survey-${question.id}`}
+						checked={value === "true"}
+						onCheckedChange={(checked) =>
+							onChange(checked === true ? "true" : "false")
+						}
+						className="mt-0.5"
+					/>
+					<Label
+						htmlFor={`survey-${question.id}`}
+						className="cursor-pointer text-sm font-normal leading-snug"
+					>
+						{question.label}
+						{requiredMark}
+					</Label>
+				</div>
+			);
+
+		case "TEXT":
+			return (
+				<div className="space-y-1.5">
+					<Label htmlFor={`survey-${question.id}`} className="text-sm">
+						{question.label}
+						{requiredMark}
+					</Label>
+					<Input
+						id={`survey-${question.id}`}
+						value={value}
+						onChange={(e) => onChange(e.target.value)}
+						maxLength={500}
+						placeholder="Type your answer..."
+					/>
+				</div>
+			);
+
+		case "SINGLE_SELECT":
+			return (
+				<div className="space-y-1.5">
+					<Label className="text-sm">
+						{question.label}
+						{requiredMark}
+					</Label>
+					<RadioGroup value={value} onValueChange={onChange}>
+						{(question.options ?? []).map((option) => (
+							<div key={option} className="flex items-center gap-2">
+								<RadioGroupItem
+									value={option}
+									id={`survey-${question.id}-${option}`}
+								/>
+								<Label
+									htmlFor={`survey-${question.id}-${option}`}
+									className="cursor-pointer text-sm font-normal"
+								>
+									{option}
+								</Label>
+							</div>
+						))}
+					</RadioGroup>
+				</div>
+			);
+
+		case "MULTI_SELECT": {
+			const selected: string[] = value ? safeParseArray(value) : [];
+			return (
+				<div className="space-y-1.5">
+					<Label className="text-sm">
+						{question.label}
+						{requiredMark}
+					</Label>
+					<div className="space-y-2">
+						{(question.options ?? []).map((option) => (
+							<div key={option} className="flex items-center gap-2">
+								<Checkbox
+									id={`survey-${question.id}-${option}`}
+									checked={selected.includes(option)}
+									onCheckedChange={(checked) => {
+										const next = checked
+											? [...selected, option]
+											: selected.filter((s) => s !== option);
+										onChange(JSON.stringify(next));
+									}}
+								/>
+								<Label
+									htmlFor={`survey-${question.id}-${option}`}
+									className="cursor-pointer text-sm font-normal"
+								>
+									{option}
+								</Label>
+							</div>
+						))}
+					</div>
+				</div>
+			);
+		}
+	}
+}
+
+function safeParseArray(value: string): string[] {
+	try {
+		const parsed = JSON.parse(value);
+		return Array.isArray(parsed) ? parsed : [];
+	} catch {
+		return [];
+	}
+}

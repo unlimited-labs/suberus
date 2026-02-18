@@ -1,22 +1,47 @@
 import { prisma } from "@/db.server";
+import type { SurveyQuestion } from "@/generated/prisma/client";
+import { Prisma } from "@/generated/prisma/client";
+import type { SurveyQuestionType } from "@/generated/prisma/enums";
+
+type TypedSurveyQuestion = Omit<SurveyQuestion, "options"> & {
+	options: string[] | null;
+};
+
+function typeSurveyQuestion(q: SurveyQuestion): TypedSurveyQuestion {
+	return { ...q, options: q.options as string[] | null };
+}
 
 /**
  * Get survey questions, optionally filtered by active status.
  */
 export async function getSurveyQuestions(activeOnly = false) {
-	return prisma.surveyQuestion.findMany({
+	const questions = await prisma.surveyQuestion.findMany({
 		where: activeOnly ? { isActive: true } : undefined,
 		orderBy: { orderIndex: "asc" },
 	});
+	return questions.map(typeSurveyQuestion);
 }
 
 /**
  * Create a new survey question.
  */
-export async function createSurveyQuestion(label: string, orderIndex: number) {
-	return prisma.surveyQuestion.create({
-		data: { label, orderIndex },
+export async function createSurveyQuestion(
+	label: string,
+	orderIndex: number,
+	type?: SurveyQuestionType,
+	options?: string[],
+	isRequired?: boolean,
+) {
+	const created = await prisma.surveyQuestion.create({
+		data: {
+			label,
+			orderIndex,
+			...(type && { type }),
+			...(options && { options }),
+			...(isRequired !== undefined && { isRequired }),
+		},
 	});
+	return typeSurveyQuestion(created);
 }
 
 /**
@@ -24,9 +49,25 @@ export async function createSurveyQuestion(label: string, orderIndex: number) {
  */
 export async function updateSurveyQuestion(
 	id: string,
-	data: { label?: string; orderIndex?: number; isActive?: boolean },
+	data: {
+		label?: string;
+		orderIndex?: number;
+		isActive?: boolean;
+		type?: SurveyQuestionType;
+		options?: string[] | null;
+		isRequired?: boolean;
+	},
 ) {
-	return prisma.surveyQuestion.update({ where: { id }, data });
+	const { options, ...rest } = data;
+	return prisma.surveyQuestion.update({
+		where: { id },
+		data: {
+			...rest,
+			...(options !== undefined && {
+				options: options === null ? Prisma.DbNull : options,
+			}),
+		},
+	});
 }
 
 /**
@@ -68,7 +109,7 @@ export async function getUserSurveyAnswers(userId: string) {
  */
 export async function upsertSurveyAnswers(
 	userId: string,
-	answers: Array<{ questionId: string; value: boolean }>,
+	answers: Array<{ questionId: string; value: string }>,
 ) {
 	return prisma.$transaction(
 		answers.map((a) =>

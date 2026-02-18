@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { AffiliationSelect } from "@/components/forms/affiliation-select";
 import { AuthSidebar } from "@/components/forms/auth-sidebar";
+import { SurveyQuestionField } from "@/components/forms/survey/survey-question-field";
 import { TosModal } from "@/components/tos-modal";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -128,9 +129,9 @@ function RegisterPage() {
 	const [countryOpen, setCountryOpen] = useState(false);
 	const [tosOpen, setTosOpen] = useState(false);
 
-	const defaultSurveyAnswers: Record<string, boolean> = {};
+	const defaultSurveyAnswers: Record<string, string> = {};
 	for (const q of surveyQuestions) {
-		defaultSurveyAnswers[q.id] = false;
+		defaultSurveyAnswers[q.id] = q.type === "CHECKBOX" ? "false" : "";
 	}
 
 	const form = useAppForm({
@@ -520,28 +521,24 @@ function RegisterPage() {
 						{/* Step 3: Survey */}
 						{currentStep === 3 && (
 							<div className="animate-in fade-in slide-in-from-right-4 space-y-3 duration-300">
-								<p className="text-sm text-muted-foreground">
-									Please let us know if you need any additional documents.
-								</p>
-
-								{/* Dynamic survey checkboxes */}
-								<div className="space-y-2 rounded-lg border border-border/50 bg-muted/30 p-3">
+								{/* Dynamic survey questions */}
+								<div className="space-y-3 rounded-lg border border-border/50 bg-muted/30 p-3">
 									{surveyQuestions.length > 0 ? (
 										surveyQuestions.map((question) => (
-											<form.AppField
+											<form.Field
 												key={question.id}
 												name={
 													`surveyAnswers.${question.id}` as `surveyAnswers.${string}`
 												}
 											>
 												{(field) => (
-													<field.CheckboxField
-														label={question.label}
-														labelClassName="cursor-pointer text-sm font-normal leading-snug"
-														className="flex items-start gap-3"
+													<SurveyQuestionField
+														question={question}
+														value={field.state.value}
+														onChange={field.handleChange}
 													/>
 												)}
-											</form.AppField>
+											</form.Field>
 										))
 									) : (
 										<p className="text-sm text-muted-foreground">

@@ -43,10 +43,24 @@ export const getSurveyQuestionsFn = createServerFn({ method: "GET" })
 export const createSurveyQuestionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(
-		z.object({ label: z.string().min(1), orderIndex: z.number().int().min(0) }),
+		z.object({
+			label: z.string().min(1),
+			orderIndex: z.number().int().min(0),
+			type: z
+				.enum(["CHECKBOX", "TEXT", "SINGLE_SELECT", "MULTI_SELECT"])
+				.optional(),
+			options: z.array(z.string().min(1)).optional(),
+			isRequired: z.boolean().optional(),
+		}),
 	)
 	.handler(async ({ data }) => {
-		return createSurveyQuestion(data.label, data.orderIndex);
+		return createSurveyQuestion(
+			data.label,
+			data.orderIndex,
+			data.type,
+			data.options,
+			data.isRequired,
+		);
 	});
 
 export const updateSurveyQuestionFn = createServerFn({ method: "POST" })
@@ -57,6 +71,11 @@ export const updateSurveyQuestionFn = createServerFn({ method: "POST" })
 			label: z.string().min(1).optional(),
 			orderIndex: z.number().int().min(0).optional(),
 			isActive: z.boolean().optional(),
+			type: z
+				.enum(["CHECKBOX", "TEXT", "SINGLE_SELECT", "MULTI_SELECT"])
+				.optional(),
+			options: z.array(z.string().min(1)).nullable().optional(),
+			isRequired: z.boolean().optional(),
 		}),
 	)
 	.handler(async ({ data }) => {
@@ -99,7 +118,7 @@ export const saveUserSurveyAnswersFn = createServerFn({ method: "POST" })
 	.inputValidator(
 		z.object({
 			answers: z.array(
-				z.object({ questionId: z.string().uuid(), value: z.boolean() }),
+				z.object({ questionId: z.string().uuid(), value: z.string().max(500) }),
 			),
 		}),
 	)
