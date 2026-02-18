@@ -6,7 +6,7 @@ Abstract management system for scientific conferences.
 ## Tech Stack
 **Tech Stack:** [STACK.md](./STACK.md)
 
-## Functionality 
+## Functionality
 Treat the [guidelines](./WORKFLOW.md) as the single source of truth. If a change in the application contradicts the contents of the file, you **MUST** obtain the user's permission. In such case, also correct the WORKFLOW.md to reflect the current state.
 
 
@@ -39,31 +39,6 @@ Treat the [guidelines](./WORKFLOW.md) as the single source of truth. If a change
 - Run `pnpm lint` to check for linting errors
 - Run `pnpm build` to build production bundle
 
-### Playwright Tests
-- **ALWAYS** use `/playwright-best-practices` skill when writing or refactoring Playwright tests
-- Tests are in `e2e/` directory
-- Run tests: `pnpm exec playwright test`
-- Use web-first assertions (`expect().toBeVisible()`) instead of `waitForTimeout()`
-
-#### Test Data & Isolation
-- **Per-test data**: Each test creates own data via Prisma helpers in Arrange phase
-- **Helpers**: `createSubmission()`, `createSubmissionWithAssignment()`, `createSubmissionWithReview()` from `e2e/helpers/test-db.ts`
-- **Isolation**: Each test uses unique `testRunId` prefix (e.g., `e2e_a1b2c3d4`)
-- **Cleanup**: Automatic in afterEach via `base-fixtures.ts`
-- **Global seeds**: ONLY config data (users, submission types, validation settings) - NO scenario submissions
-
-#### AAA Pattern (Arrange-Act-Assert)
-- Structure tests with clear sections: Arrange (setup), Act (action), Assert (verify)
-- Add `// Arrange`, `// Act`, `// Assert` comments to every test
-- Don't use conditional logic (`if` checks) inside tests - assert the expected state directly
-
-## TanStack Start 
-When working with Tanstack Start related code **ALWAYS** read tanstack-llms\llms.md first and follow that documentation to better understand library.
-
-### Key Points
-- Use `.inputValidator()` with Zod schemas (NOT `.validator()`)
-- Separate server-only code in `.server.ts` files
-- Keep `.functions.ts` files thin - just wrappers
-- Throw `Response` for HTTP errors (401, 403, 404, etc.)
-- Use `getRequestHeaders()` (NOT `getHeaders()`) for auth
-- Import `auth` with relative path from `.functions.ts` files
+## TanStack Start
+When working with Tanstack Start related code **ALWAYS** read tanstack-llms\llms.md first and follow documentation to better understand the library.
+Always prefer Tanstack Start convention over nitro.
