@@ -71,6 +71,8 @@ test.describe.serial("Task: mails:reminder", () => {
 
 		// Act — first run
 		await runReminderTask(page)
+		// Wait for async email to arrive before clearing
+		await waitForEmail(REVIEWER_USER.email, "review", 10000)
 		await clearMailpit()
 
 		// Act — second run

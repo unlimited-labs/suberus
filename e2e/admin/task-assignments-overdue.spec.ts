@@ -13,7 +13,7 @@ async function runOverdueTask(page: import("@playwright/test").Page) {
 	return (await response.json()) as { result: { overdue: number } }
 }
 
-test.describe("Task: assignments:overdue", () => {
+test.describe.serial("Task: assignments:overdue", () => {
 	test("marks overdue PENDING assignment", async ({ page, testRun, cleanup }) => {
 		// Arrange
 		const { assignmentId, submissionId } = await createAssignmentWithDeadline({
