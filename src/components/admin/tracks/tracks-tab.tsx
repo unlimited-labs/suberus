@@ -2,34 +2,33 @@ import { IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { ReviewerUser, SessionWithStats } from "@/utils/sessions.server";
-import { SessionDialog } from "./session-dialog";
-import { SessionsList } from "./sessions-list";
+import type { ReviewerUser } from "@/utils/reviewers.server";
+import type { TrackWithStats } from "@/utils/tracks.server";
+import { TrackDialog } from "./track-dialog";
+import { TracksList } from "./tracks-list";
 
-interface SessionsTabProps {
-	initialSessions: SessionWithStats[];
+interface TracksTabProps {
+	initialTracks: TrackWithStats[];
 	reviewers: ReviewerUser[];
 	onUpdate: () => void;
 }
 
-export function SessionsTab({
-	initialSessions,
+export function TracksTab({
+	initialTracks,
 	reviewers,
 	onUpdate,
-}: SessionsTabProps) {
+}: TracksTabProps) {
 	const [dialogOpen, setDialogOpen] = useState(false);
-	const [editingSession, setEditingSession] = useState<SessionWithStats | null>(
-		null,
-	);
+	const [editingTrack, setEditingTrack] = useState<TrackWithStats | null>(null);
 
-	const handleEdit = (session: SessionWithStats) => {
-		setEditingSession(session);
+	const handleEdit = (track: TrackWithStats) => {
+		setEditingTrack(track);
 		setDialogOpen(true);
 	};
 
 	const handleCloseDialog = () => {
 		setDialogOpen(false);
-		setEditingSession(null);
+		setEditingTrack(null);
 	};
 
 	return (
@@ -37,26 +36,31 @@ export function SessionsTab({
 			<Card>
 				<CardHeader>
 					<div className="flex items-center justify-between">
-						<CardTitle>Conference Sessions</CardTitle>
+						<div>
+							<CardTitle>Conference Tracks</CardTitle>
+							<p className="text-sm text-muted-foreground">
+								Thematic paths that group presentations by subject area
+							</p>
+						</div>
 						<Button onClick={() => setDialogOpen(true)}>
 							<IconPlus className="mr-2 size-4" />
-							Create Session
+							Create Track
 						</Button>
 					</div>
 				</CardHeader>
 				<CardContent>
-					<SessionsList
-						sessions={initialSessions}
+					<TracksList
+						tracks={initialTracks}
 						onEdit={handleEdit}
 						onUpdate={onUpdate}
 					/>
 				</CardContent>
 			</Card>
 
-			<SessionDialog
+			<TrackDialog
 				open={dialogOpen}
 				onOpenChange={handleCloseDialog}
-				session={editingSession || undefined}
+				track={editingTrack || undefined}
 				reviewers={reviewers}
 				onSuccess={onUpdate}
 			/>

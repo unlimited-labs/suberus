@@ -47,7 +47,7 @@ model User {
   statusHistoryChanges SubmissionStatusHistory[]
   submissions          Submission[]              @relation("SubmissionOwner")
   sessions             Session[]
-  supervisedSessions   ConferenceSession[]       @relation("SessionSupervisor")
+  supervisedTracks     ConferenceTrack[]         @relation("TrackSupervisor")
   surveyAnswers        SurveyAnswer[]
   createdInvitations   Invitation[]              @relation("InvitationCreator")
   usedInvitation       Invitation?               @relation("InvitationUser")
@@ -88,7 +88,7 @@ model EmailTemplate {
   @@map("email_templates")
 }
 
-model ConferenceSession {
+model ConferenceTrack {
   id           String       @id @default(uuid()) @db.Uuid
   name         String       @unique
   supervisorId String?      @db.Uuid
@@ -96,12 +96,12 @@ model ConferenceSession {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
-  supervisor   User?        @relation("SessionSupervisor", fields: [supervisorId], references: [id], onDelete: SetNull)
+  supervisor   User?        @relation("TrackSupervisor", fields: [supervisorId], references: [id], onDelete: SetNull)
   submissions  Submission[]
 
   @@index([supervisorId])
   @@index([isActive])
-  @@map("conference_sessions")
+  @@map("conference_tracks")
 }
 
 model Keyword {
@@ -123,7 +123,7 @@ model Submission {
   status            SubmissionStatus          @default(SUBMITTED)
   currentRound      Int                       @default(1)
   userId            String                    @db.Uuid
-  sessionId         String?                   @db.Uuid
+  trackId           String?                   @db.Uuid
   presenterId       String?                   @db.Uuid
   currentVersionId  String?                   @unique @db.Uuid
   createdAt         DateTime                  @default(now())
@@ -137,13 +137,13 @@ model Submission {
   versions          SubmissionVersion[]       @relation("SubmissionVersions")
   currentVersion    SubmissionVersion?        @relation("CurrentVersion", fields: [currentVersionId], references: [id])
   presenterAuthor   SubmissionAuthor?         @relation("PresenterAuthor", fields: [presenterId], references: [id])
-  session           ConferenceSession?        @relation(fields: [sessionId], references: [id])
+  track             ConferenceTrack?          @relation(fields: [trackId], references: [id])
   user              User                      @relation("SubmissionOwner", fields: [userId], references: [id])
 
   @@index([userId])
   @@index([status])
   @@index([type])
-  @@index([sessionId])
+  @@index([trackId])
   @@index([presenterId])
   @@index([currentVersionId])
   @@index([createdAt])

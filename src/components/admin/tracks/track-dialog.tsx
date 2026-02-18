@@ -20,73 +20,74 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { createSessionFn, updateSessionFn } from "@/utils/sessions.functions";
-import type { ReviewerUser, SessionWithStats } from "@/utils/sessions.server";
+import type { ReviewerUser } from "@/utils/reviewers.server";
+import { createTrackFn, updateTrackFn } from "@/utils/tracks.functions";
+import type { TrackWithStats } from "@/utils/tracks.server";
 
-interface SessionDialogProps {
+interface TrackDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	session?: SessionWithStats;
+	track?: TrackWithStats;
 	reviewers: ReviewerUser[];
 	onSuccess: () => void;
 }
 
-export function SessionDialog({
+export function TrackDialog({
 	open,
 	onOpenChange,
-	session,
+	track,
 	reviewers,
 	onSuccess,
-}: SessionDialogProps) {
-	const isEdit = !!session;
-	const [name, setName] = useState(session?.name || "");
+}: TrackDialogProps) {
+	const isEdit = !!track;
+	const [name, setName] = useState(track?.name || "");
 	const [supervisorId, setSupervisorId] = useState<string | undefined>(
-		session?.supervisorId || undefined,
+		track?.supervisorId || undefined,
 	);
-	const [isActive, setIsActive] = useState(session?.isActive ?? true);
+	const [isActive, setIsActive] = useState(track?.isActive ?? true);
 	const [isSaving, setIsSaving] = useState(false);
 
-	// Reset form state when dialog opens or session changes
+	// Reset form state when dialog opens or track changes
 	useEffect(() => {
 		if (open) {
-			setName(session?.name || "");
-			setSupervisorId(session?.supervisorId || undefined);
-			setIsActive(session?.isActive ?? true);
+			setName(track?.name || "");
+			setSupervisorId(track?.supervisorId || undefined);
+			setIsActive(track?.isActive ?? true);
 		}
-	}, [open, session]);
+	}, [open, track]);
 
 	const handleSave = async () => {
 		if (!name.trim()) {
-			toast.error("Session name is required");
+			toast.error("Track name is required");
 			return;
 		}
 
 		if (name.length > 200) {
-			toast.error("Session name must be at most 200 characters");
+			toast.error("Track name must be at most 200 characters");
 			return;
 		}
 
 		setIsSaving(true);
 		try {
 			if (isEdit) {
-				await updateSessionFn({
+				await updateTrackFn({
 					data: {
-						id: session.id,
+						id: track.id,
 						name,
 						supervisorId:
 							supervisorId === "none" ? null : (supervisorId ?? null),
 						isActive,
 					},
 				});
-				toast.success("Session updated");
+				toast.success("Track updated");
 			} else {
-				await createSessionFn({
+				await createTrackFn({
 					data: {
 						name,
 						supervisorId,
 					},
 				});
-				toast.success("Session created");
+				toast.success("Track created");
 			}
 			onSuccess();
 			onOpenChange(false);
@@ -96,7 +97,7 @@ export function SessionDialog({
 			setIsActive(true);
 		} catch (error) {
 			const message =
-				error instanceof Error ? error.message : "Failed to save session";
+				error instanceof Error ? error.message : "Failed to save track";
 			toast.error(message);
 		} finally {
 			setIsSaving(false);
@@ -107,13 +108,9 @@ export function SessionDialog({
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>
-						{isEdit ? "Edit Session" : "Create Session"}
-					</DialogTitle>
+					<DialogTitle>{isEdit ? "Edit Track" : "Create Track"}</DialogTitle>
 					<DialogDescription>
-						{isEdit
-							? "Update session details"
-							: "Create a new conference session"}
+						{isEdit ? "Update track details" : "Create a new conference track"}
 					</DialogDescription>
 				</DialogHeader>
 
@@ -124,7 +121,7 @@ export function SessionDialog({
 							id="name"
 							value={name}
 							onChange={(e) => setName(e.target.value)}
-							placeholder="Session name"
+							placeholder="Track name"
 							maxLength={200}
 						/>
 					</div>

@@ -5,8 +5,8 @@ import { ADMIN_USER } from "../helpers/test-users";
 import {
 	createSubmission,
 	createSubmissionWithFile,
-	createSession,
-	deleteSession,
+	createTrack,
+	deleteTrack,
 } from "../helpers/test-db";
 
 test.describe("Export Submissions as ZIP", () => {
@@ -20,14 +20,14 @@ test.describe("Export Submissions as ZIP", () => {
 		cleanup,
 	}) => {
 		// Arrange
-		const sessionId = await createSession(testRun.testRunId, "TestSession");
+		const trackId = await createTrack(testRun.testRunId, "TestSession");
 		const sub = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Export Text Test",
 			content: "My abstract content for export",
 			type: "ABSTRACT",
 			keywords: ["keyword1", "keyword2"],
-			sessionId,
+			trackId,
 			authorData: { firstName: "Main", lastName: "Author" },
 			extraAuthors: [{ firstName: "Co", lastName: "Writer" }],
 		});
@@ -62,7 +62,7 @@ test.describe("Export Submissions as ZIP", () => {
 		const csv = zip.readAsText("submissions.csv");
 		const lines = csv.split("\n");
 		expect(lines[0]).toBe(
-			"sequentialNumber,title,mainAuthor,coAuthors,keywords,session",
+			"sequentialNumber,title,mainAuthor,coAuthors,keywords,track",
 		);
 		const dataRow = lines.find((l) => l.includes("Export Text Test"));
 		expect(dataRow).toBeDefined();
@@ -73,7 +73,7 @@ test.describe("Export Submissions as ZIP", () => {
 		expect(dataRow).toContain("TestSession");
 
 		// Cleanup
-		await deleteSession(sessionId).catch(() => {});
+		await deleteTrack(trackId).catch(() => {});
 	});
 
 	test("exports FILE submission as original file", async ({
@@ -167,7 +167,7 @@ test.describe("Export Submissions as ZIP", () => {
 
 		// Header
 		expect(lines[0]).toBe(
-			"sequentialNumber,title,mainAuthor,coAuthors,keywords,session",
+			"sequentialNumber,title,mainAuthor,coAuthors,keywords,track",
 		);
 
 		// Data row — same number of commas as header

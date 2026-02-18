@@ -109,7 +109,7 @@ function EditSubmissionPage() {
 					authors: formData.authors,
 					keywords: formData.keywords,
 					contentFormat: formData.contentFormat,
-					sessionId: formData.sessionId,
+					trackId: formData.trackId,
 					isDraft: asDraft,
 				},
 			});

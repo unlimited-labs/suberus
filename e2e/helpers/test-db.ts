@@ -90,8 +90,8 @@ export interface CreateSubmissionOptions {
 	}>;
 	/** Keywords to attach to the submission */
 	keywords?: string[];
-	/** Session ID to assign to the submission */
-	sessionId?: string;
+	/** Track ID to assign to the submission */
+	trackId?: string;
 }
 
 export async function createSubmission(options: CreateSubmissionOptions): Promise<{
@@ -116,7 +116,7 @@ export async function createSubmission(options: CreateSubmissionOptions): Promis
 					"Additional padding to meet minimum requirements.",
 			status: options.status ?? SubmissionStatus.SUBMITTED,
 			currentRound: 1,
-			sessionId: options.sessionId ?? null,
+			trackId: options.trackId ?? null,
 		},
 	});
 
@@ -717,31 +717,31 @@ export async function createSubmissionWithFile(
 }
 
 /**
- * Create a conference session
+ * Create a conference track
  */
-export async function createSession(
+export async function createTrack(
 	testRunId: string,
 	name: string,
 	supervisorId?: string,
 	isActive = true,
 ): Promise<string> {
 	const db = getPrisma();
-	const session = await db.conferenceSession.create({
+	const track = await db.conferenceTrack.create({
 		data: {
 			name: `${testRunId}_${name}`,
 			supervisorId: supervisorId || null,
 			isActive,
 		},
 	});
-	return session.id;
+	return track.id;
 }
 
 /**
- * Delete a session
+ * Delete a track
  */
-export async function deleteSession(sessionId: string): Promise<void> {
+export async function deleteTrack(trackId: string): Promise<void> {
 	const db = getPrisma();
-	await db.conferenceSession.delete({ where: { id: sessionId } });
+	await db.conferenceTrack.delete({ where: { id: trackId } });
 }
 
 /** Set an app setting directly (for test arrangement) */

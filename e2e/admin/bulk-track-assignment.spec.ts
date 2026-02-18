@@ -1,13 +1,13 @@
 import { expect } from "@playwright/test";
 import { test } from "../admin/fixtures";
 import {
-	createSession,
-	deleteSession,
+	createTrack,
+	deleteTrack,
 	createSubmission,
 	deleteSubmission,
 } from "../helpers/test-db";
 
-test.describe.serial("Admin - Bulk Session Assignment", () => {
+test.describe.serial("Admin - Bulk Track Assignment", () => {
 	test.beforeEach(({}, testInfo) => {
 		test.skip(
 			testInfo.project.name.includes("mobile"),
@@ -15,12 +15,12 @@ test.describe.serial("Admin - Bulk Session Assignment", () => {
 		);
 	});
 
-	test("should bulk assign ABSTRACT submissions to session", async ({
+	test("should bulk assign ABSTRACT submissions to track", async ({
 		page,
 		testRun,
 	}) => {
 		// Arrange
-		const sessionId = await createSession(testRun.testRunId, "AI Track");
+		const trackId = await createTrack(testRun.testRunId, "AI Track");
 		const { id: sub1Id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			type: "ABSTRACT",
@@ -60,7 +60,7 @@ test.describe.serial("Admin - Bulk Session Assignment", () => {
 			.filter({ hasText: /Bulk actions/ });
 		await bulkSelect.click();
 		await page
-			.getByRole("option", { name: /Assign to session/i })
+			.getByRole("option", { name: /Assign to track/i })
 			.click();
 		await page.getByRole("button", { name: "Apply" }).click();
 
@@ -68,7 +68,7 @@ test.describe.serial("Admin - Bulk Session Assignment", () => {
 		const dialog = page.getByRole("dialog");
 		await expect(dialog).toBeVisible();
 
-		// Select session in dialog
+		// Select track in dialog
 		await dialog.getByRole("combobox").click();
 		await page
 			.getByRole("option", { name: `${testRun.testRunId}_AI Track` })
@@ -83,7 +83,7 @@ test.describe.serial("Admin - Bulk Session Assignment", () => {
 		// Cleanup
 		await deleteSubmission(sub1Id);
 		await deleteSubmission(sub2Id);
-		await deleteSession(sessionId);
+		await deleteTrack(trackId);
 	});
 
 	test("should show error when non-ABSTRACT submissions included", async ({
@@ -91,7 +91,7 @@ test.describe.serial("Admin - Bulk Session Assignment", () => {
 		testRun,
 	}) => {
 		// Arrange
-		const sessionId = await createSession(testRun.testRunId, "Mixed Track");
+		const trackId = await createTrack(testRun.testRunId, "Mixed Track");
 		const { id: abstractId } = await createSubmission({
 			testRunId: testRun.testRunId,
 			type: "ABSTRACT",
@@ -122,20 +122,20 @@ test.describe.serial("Admin - Bulk Session Assignment", () => {
 		await abstractRow.getByRole("checkbox").check();
 		await posterRow.getByRole("checkbox").check();
 
-		// Open bulk session assignment
+		// Open bulk track assignment
 		const bulkSelect = page
 			.getByRole("combobox")
 			.filter({ hasText: /Bulk actions/ });
 		await bulkSelect.click();
 		await page
-			.getByRole("option", { name: /Assign to session/i })
+			.getByRole("option", { name: /Assign to track/i })
 			.click();
 		await page.getByRole("button", { name: "Apply" }).click();
 
 		const dialog = page.getByRole("dialog");
 		await expect(dialog).toBeVisible();
 
-		// Select session
+		// Select track
 		await dialog.getByRole("combobox").click();
 		await page
 			.getByRole("option", { name: `${testRun.testRunId}_Mixed Track` })
@@ -152,31 +152,31 @@ test.describe.serial("Admin - Bulk Session Assignment", () => {
 		// Cleanup
 		await deleteSubmission(abstractId);
 		await deleteSubmission(posterId);
-		await deleteSession(sessionId);
+		await deleteTrack(trackId);
 	});
 
-	test("should assign to None to clear sessions", async ({
+	test("should assign to None to clear tracks", async ({
 		page,
 		testRun,
 	}) => {
 		// Arrange
-		const sessionId = await createSession(
+		const trackId = await createTrack(
 			testRun.testRunId,
-			"Initial Session",
+			"Initial Track",
 		);
 		const { id: sub1Id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			type: "ABSTRACT",
 			title: "Clear A",
 			content: "Content",
-			sessionId,
+			trackId,
 		});
 		const { id: sub2Id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			type: "ABSTRACT",
 			title: "Clear B",
 			content: "Content",
-			sessionId,
+			trackId,
 		});
 
 		// Act
@@ -196,20 +196,20 @@ test.describe.serial("Admin - Bulk Session Assignment", () => {
 		await row1.getByRole("checkbox").check();
 		await row2.getByRole("checkbox").check();
 
-		// Open bulk session assignment
+		// Open bulk track assignment
 		const bulkSelect = page
 			.getByRole("combobox")
 			.filter({ hasText: /Bulk actions/ });
 		await bulkSelect.click();
 		await page
-			.getByRole("option", { name: /Assign to session/i })
+			.getByRole("option", { name: /Assign to track/i })
 			.click();
 		await page.getByRole("button", { name: "Apply" }).click();
 
 		const dialog = page.getByRole("dialog");
 		await expect(dialog).toBeVisible();
 
-		// Select "None" to clear sessions
+		// Select "None" to clear tracks
 		await dialog.getByRole("combobox").click();
 		await page.getByRole("option", { name: "None" }).click();
 
@@ -225,11 +225,11 @@ test.describe.serial("Admin - Bulk Session Assignment", () => {
 		const subs = await db.submission.findMany({
 			where: { id: { in: [sub1Id, sub2Id] } },
 		});
-		expect(subs.every((s) => s.sessionId === null)).toBe(true);
+		expect(subs.every((s) => s.trackId === null)).toBe(true);
 
 		// Cleanup
 		await deleteSubmission(sub1Id);
 		await deleteSubmission(sub2Id);
-		await deleteSession(sessionId);
+		await deleteTrack(trackId);
 	});
 });

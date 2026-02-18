@@ -35,7 +35,7 @@ const submissionTypeConfigSchema = z.object({
 		z.object({ name: z.string(), description: z.string() }),
 	),
 	enableConfidenceLevel: z.boolean(),
-	enableSessionSelection: z.boolean(),
+	enableTrackSelection: z.boolean(),
 });
 
 export const activeSubmissionTypesQueryOptions = () =>

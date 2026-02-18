@@ -12,20 +12,16 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { deleteSessionFn, updateSessionFn } from "@/utils/sessions.functions";
-import type { SessionWithStats } from "@/utils/sessions.server";
+import { deleteTrackFn, updateTrackFn } from "@/utils/tracks.functions";
+import type { TrackWithStats } from "@/utils/tracks.server";
 
-interface SessionsListProps {
-	sessions: SessionWithStats[];
-	onEdit: (session: SessionWithStats) => void;
+interface TracksListProps {
+	tracks: TrackWithStats[];
+	onEdit: (track: TrackWithStats) => void;
 	onUpdate: () => void;
 }
 
-export function SessionsList({
-	sessions,
-	onEdit,
-	onUpdate,
-}: SessionsListProps) {
+export function TracksList({ tracks, onEdit, onUpdate }: TracksListProps) {
 	const [deletingId, setDeletingId] = useState<string | null>(null);
 	const [togglingId, setTogglingId] = useState<string | null>(null);
 
@@ -33,9 +29,7 @@ export function SessionsList({
 
 	const handleDeleteClick = (id: string, submissionCount: number) => {
 		if (submissionCount > 0) {
-			toast.error(
-				`Cannot delete session with ${submissionCount} submission(s)`,
-			);
+			toast.error(`Cannot delete track with ${submissionCount} submission(s)`);
 			return;
 		}
 		setConfirmDeleteId(id);
@@ -46,12 +40,12 @@ export function SessionsList({
 		setDeletingId(confirmDeleteId);
 		setConfirmDeleteId(null);
 		try {
-			await deleteSessionFn({ data: { id: confirmDeleteId } });
-			toast.success("Session deleted");
+			await deleteTrackFn({ data: { id: confirmDeleteId } });
+			toast.success("Track deleted");
 			onUpdate();
 		} catch (error) {
 			const message =
-				error instanceof Error ? error.message : "Failed to delete session";
+				error instanceof Error ? error.message : "Failed to delete track";
 			toast.error(message);
 		} finally {
 			setDeletingId(null);
@@ -61,26 +55,26 @@ export function SessionsList({
 	const handleToggleActive = async (id: string, currentActive: boolean) => {
 		setTogglingId(id);
 		try {
-			await updateSessionFn({
+			await updateTrackFn({
 				data: {
 					id,
 					isActive: !currentActive,
 				},
 			});
-			toast.success(`Session ${!currentActive ? "activated" : "deactivated"}`);
+			toast.success(`Track ${!currentActive ? "activated" : "deactivated"}`);
 			onUpdate();
 		} catch (_error) {
-			toast.error("Failed to update session");
+			toast.error("Failed to update track");
 		} finally {
 			setTogglingId(null);
 		}
 	};
 
-	if (sessions.length === 0) {
+	if (tracks.length === 0) {
 		return (
 			<div className="flex min-h-[200px] items-center justify-center rounded-md border border-dashed">
 				<p className="text-sm text-muted-foreground">
-					No sessions yet. Create your first session.
+					No tracks yet. Create your first track.
 				</p>
 			</div>
 		);
@@ -99,37 +93,37 @@ export function SessionsList({
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{sessions.map((session) => (
-						<TableRow key={session.id}>
-							<TableCell className="font-medium">{session.name}</TableCell>
+					{tracks.map((track) => (
+						<TableRow key={track.id}>
+							<TableCell className="font-medium">{track.name}</TableCell>
 							<TableCell>
-								{session.supervisorName || (
+								{track.supervisorName || (
 									<span className="text-muted-foreground">None</span>
 								)}
 							</TableCell>
 							<TableCell className="text-center">
-								<Badge variant="secondary">{session.submissionCount}</Badge>
+								<Badge variant="secondary">{track.submissionCount}</Badge>
 							</TableCell>
 							<TableCell className="text-center">
 								<Switch
-									checked={session.isActive}
+									checked={track.isActive}
 									onCheckedChange={() =>
-										handleToggleActive(session.id, session.isActive)
+										handleToggleActive(track.id, track.isActive)
 									}
-									disabled={togglingId === session.id}
+									disabled={togglingId === track.id}
 								/>
 							</TableCell>
 							<TableCell className="text-right">
 								<div className="flex justify-end gap-2">
-									{confirmDeleteId === session.id ? (
+									{confirmDeleteId === track.id ? (
 										<>
 											<Button
 												variant="destructive"
 												size="sm"
 												onClick={handleDeleteConfirm}
-												disabled={deletingId === session.id}
+												disabled={deletingId === track.id}
 											>
-												{deletingId === session.id ? (
+												{deletingId === track.id ? (
 													<IconLoader2 className="mr-1 size-4 animate-spin" />
 												) : null}
 												Confirm
@@ -147,7 +141,7 @@ export function SessionsList({
 											<Button
 												variant="ghost"
 												size="icon"
-												onClick={() => onEdit(session)}
+												onClick={() => onEdit(track)}
 												aria-label="Edit"
 											>
 												<IconEdit className="size-4" />
@@ -156,11 +150,10 @@ export function SessionsList({
 												variant="ghost"
 												size="icon"
 												onClick={() =>
-													handleDeleteClick(session.id, session.submissionCount)
+													handleDeleteClick(track.id, track.submissionCount)
 												}
 												disabled={
-													session.submissionCount > 0 ||
-													deletingId === session.id
+													track.submissionCount > 0 || deletingId === track.id
 												}
 												aria-label="Delete"
 											>

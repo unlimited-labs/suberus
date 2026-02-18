@@ -19,19 +19,19 @@ const bulkDecisionEmailMap: Partial<Record<SubmissionStatus, EmailEventType>> =
 		REJECTED: "DECISION_REJECTED",
 	};
 
-export async function validateActiveSession(sessionId: string) {
-	const session = await prisma.conferenceSession.findUnique({
-		where: { id: sessionId },
+export async function validateActiveTrack(trackId: string) {
+	const track = await prisma.conferenceTrack.findUnique({
+		where: { id: trackId },
 		select: { isActive: true },
 	});
-	if (!session) throw new Response("Session not found", { status: 404 });
-	if (!session.isActive)
-		throw new Response("Session is not active", { status: 400 });
+	if (!track) throw new Response("Track not found", { status: 404 });
+	if (!track.isActive)
+		throw new Response("Track is not active", { status: 400 });
 }
 
-export async function updateSubmissionSession(
+export async function updateSubmissionTrack(
 	submissionId: string,
-	sessionId: string | null,
+	trackId: string | null,
 ) {
 	const submission = await prisma.submission.findUnique({
 		where: { id: submissionId },
@@ -43,25 +43,24 @@ export async function updateSubmissionSession(
 	}
 
 	if (submission.type !== "ABSTRACT") {
-		throw new Response(
-			"Only ABSTRACT submissions can be assigned to sessions",
-			{ status: 400 },
-		);
+		throw new Response("Only ABSTRACT submissions can be assigned to tracks", {
+			status: 400,
+		});
 	}
 
-	if (sessionId) {
-		await validateActiveSession(sessionId);
+	if (trackId) {
+		await validateActiveTrack(trackId);
 	}
 
 	await prisma.submission.update({
 		where: { id: submissionId },
-		data: { sessionId },
+		data: { trackId },
 	});
 }
 
-export async function bulkUpdateSubmissionSession(
+export async function bulkUpdateSubmissionTrack(
 	submissionIds: string[],
-	sessionId: string | null,
+	trackId: string | null,
 ) {
 	const submissions = await prisma.submission.findMany({
 		where: { id: { in: submissionIds } },
@@ -74,18 +73,18 @@ export async function bulkUpdateSubmissionSession(
 
 	if (nonAbstractSubmissions.length > 0) {
 		throw new Response(
-			`The following submissions are not ABSTRACT and cannot be assigned to sessions: ${nonAbstractSubmissions.map((s) => s.id).join(", ")}`,
+			`The following submissions are not ABSTRACT and cannot be assigned to tracks: ${nonAbstractSubmissions.map((s) => s.id).join(", ")}`,
 			{ status: 400 },
 		);
 	}
 
-	if (sessionId) {
-		await validateActiveSession(sessionId);
+	if (trackId) {
+		await validateActiveTrack(trackId);
 	}
 
 	await prisma.submission.updateMany({
 		where: { id: { in: submissionIds } },
-		data: { sessionId },
+		data: { trackId },
 	});
 
 	return { updated: submissionIds.length };
@@ -225,7 +224,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 		type: SubmissionType;
 		status: SubmissionStatus;
 		currentRound: number;
-		sessionId: string | null;
+		trackId: string | null;
 		file: {
 			id: string;
 			fileName: string;
@@ -320,7 +319,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 			type: submission.type,
 			status: submission.status,
 			currentRound: submission.currentRound,
-			sessionId: submission.sessionId,
+			trackId: submission.trackId,
 			file: submission.currentVersion?.file ?? null,
 		},
 		authors: submission.authors.map((a) => ({

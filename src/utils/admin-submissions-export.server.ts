@@ -30,7 +30,7 @@ export async function getSubmissionsForExport(filters: GetSubmissionsFilters) {
 			keywords: {
 				select: { keyword: { select: { name: true } } },
 			},
-			session: { select: { name: true } },
+			track: { select: { name: true } },
 			currentVersion: {
 				select: {
 					content: true,
@@ -85,7 +85,7 @@ function getCoAuthors(
 }
 
 function buildCsv(submissions: ExportSubmission[]): string {
-	const header = "sequentialNumber,title,mainAuthor,coAuthors,keywords,session";
+	const header = "sequentialNumber,title,mainAuthor,coAuthors,keywords,track";
 	const rows = submissions.map((s) => {
 		const main = getMainAuthor(s.authors);
 		const mainName = main ? `${main.firstName} ${main.lastName}` : "";
@@ -93,7 +93,7 @@ function buildCsv(submissions: ExportSubmission[]): string {
 			.map((a) => `${a.firstName} ${a.lastName}`)
 			.join(", ");
 		const keywords = s.keywords.map((k) => k.keyword.name).join(", ");
-		const session = s.session?.name ?? "";
+		const track = s.track?.name ?? "";
 
 		return [
 			String(s.sequentialNumber),
@@ -101,7 +101,7 @@ function buildCsv(submissions: ExportSubmission[]): string {
 			escapeCsvField(mainName),
 			escapeCsvField(coAuthors),
 			escapeCsvField(keywords),
-			escapeCsvField(session),
+			escapeCsvField(track),
 		].join(",");
 	});
 

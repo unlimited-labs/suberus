@@ -407,19 +407,19 @@ export function SubmissionTypeAccordion({
 						/>
 					</div>
 
-					{/* Session Selection (Oral Presentation only) */}
+					{/* Track Selection (Oral Presentation only) */}
 					{typeKey === "SUBMISSION_TYPE_ORAL_PRESENTATION" && (
 						<div className="flex items-center justify-between">
 							<div className="space-y-0.5">
-								<Label>Enable session selection</Label>
+								<Label>Enable track selection</Label>
 								<p className="text-sm text-muted-foreground">
-									Authors can select preferred session when submitting
+									Authors can select preferred track when submitting
 								</p>
 							</div>
 							<Switch
-								checked={config.enableSessionSelection}
+								checked={config.enableTrackSelection}
 								onCheckedChange={(checked) =>
-									handleChange("enableSessionSelection", checked)
+									handleChange("enableTrackSelection", checked)
 								}
 							/>
 						</div>

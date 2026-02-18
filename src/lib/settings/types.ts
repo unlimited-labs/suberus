@@ -18,7 +18,7 @@ export interface SubmissionTypeConfig {
 	enableScoring: boolean;
 	scoringCriteria: { name: string; description: string }[];
 	enableConfidenceLevel: boolean;
-	enableSessionSelection: boolean;
+	enableTrackSelection: boolean;
 }
 
 /** Reminder settings for reviewer deadline reminders */

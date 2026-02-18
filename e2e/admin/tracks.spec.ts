@@ -1,34 +1,34 @@
 import { expect, type Page, type TestInfo } from "@playwright/test";
 import { test } from "../admin/fixtures";
 import {
-	createSession,
-	deleteSession,
+	createTrack,
+	deleteTrack,
 	createSubmission,
 	deleteSubmission,
 } from "../helpers/test-db";
 
-/** Sessions tab is index 3; on mobile, labels are hidden so use nth() */
-async function clickSessionsTab(page: Page, testInfo: TestInfo) {
+/** Tracks tab is index 3; on mobile, labels are hidden so use nth() */
+async function clickTracksTab(page: Page, testInfo: TestInfo) {
 	if (testInfo.project.name.includes("mobile")) {
 		await page.getByRole("tab").nth(3).click();
 	} else {
-		await page.getByRole("tab", { name: /Sessions/i }).click();
+		await page.getByRole("tab", { name: /Tracks/i }).click();
 	}
 }
 
-test.describe.serial("Admin - Conference Sessions", () => {
-	test("should display sessions list", async ({ page, testRun }, testInfo) => {
+test.describe.serial("Admin - Conference Tracks", () => {
+	test("should display tracks list", async ({ page, testRun }, testInfo) => {
 		// Arrange
-		const sessionId = await createSession(
+		const trackId = await createTrack(
 			testRun.testRunId,
 			"AI & Machine Learning",
 		);
 
 		// Act
 		await page.goto("/admin/settings");
-		await clickSessionsTab(page, testInfo);
+		await clickTracksTab(page, testInfo);
 		await expect(
-			page.getByRole("button", { name: "Create Session" }),
+			page.getByRole("button", { name: "Create Track" }),
 		).toBeVisible();
 
 		// Assert
@@ -39,19 +39,19 @@ test.describe.serial("Admin - Conference Sessions", () => {
 		).toBeVisible();
 
 		// Cleanup
-		await deleteSession(sessionId);
+		await deleteTrack(trackId);
 	});
 
-	test("should create new session", async ({ page, testRun }, testInfo) => {
+	test("should create new track", async ({ page, testRun }, testInfo) => {
 		// Arrange
 		await page.goto("/admin/settings");
-		await clickSessionsTab(page, testInfo);
+		await clickTracksTab(page, testInfo);
 		await expect(
-			page.getByRole("button", { name: "Create Session" }),
+			page.getByRole("button", { name: "Create Track" }),
 		).toBeVisible();
 
 		// Act
-		await page.getByRole("button", { name: "Create Session" }).click();
+		await page.getByRole("button", { name: "Create Track" }).click();
 		await expect(page.getByRole("dialog")).toBeVisible();
 
 		await page
@@ -60,7 +60,7 @@ test.describe.serial("Admin - Conference Sessions", () => {
 		await page.getByRole("button", { name: "Create", exact: true }).click();
 
 		// Assert
-		await expect(page.getByText("Session created")).toBeVisible({ timeout: 15000 });
+		await expect(page.getByText("Track created")).toBeVisible({ timeout: 15000 });
 		await expect(page.getByRole("dialog")).toBeHidden();
 		await expect(
 			page.getByRole("cell", {
@@ -71,19 +71,19 @@ test.describe.serial("Admin - Conference Sessions", () => {
 		// Cleanup
 		const { getPrisma } = await import("../helpers/test-db");
 		const db = getPrisma();
-		const session = await db.conferenceSession.findFirst({
+		const track = await db.conferenceTrack.findFirst({
 			where: { name: `${testRun.testRunId}_Quantum Computing` },
 		});
-		if (session) await deleteSession(session.id);
+		if (track) await deleteTrack(track.id);
 	});
 
-	test("should edit session name", async ({ page, testRun }, testInfo) => {
+	test("should edit track name", async ({ page, testRun }, testInfo) => {
 		// Arrange
-		const sessionId = await createSession(testRun.testRunId, "Robotics");
+		const trackId = await createTrack(testRun.testRunId, "Robotics");
 		await page.goto("/admin/settings");
-		await clickSessionsTab(page, testInfo);
+		await clickTracksTab(page, testInfo);
 		await expect(
-			page.getByRole("button", { name: "Create Session" }),
+			page.getByRole("button", { name: "Create Track" }),
 		).toBeVisible();
 
 		// Act
@@ -100,7 +100,7 @@ test.describe.serial("Admin - Conference Sessions", () => {
 		await page.getByRole("button", { name: "Save" }).click();
 
 		// Assert
-		await expect(page.getByText("Session updated")).toBeVisible({ timeout: 15000 });
+		await expect(page.getByText("Track updated")).toBeVisible({ timeout: 15000 });
 		await expect(page.getByRole("dialog")).toBeHidden();
 		await expect(
 			page.getByRole("cell", {
@@ -109,21 +109,21 @@ test.describe.serial("Admin - Conference Sessions", () => {
 		).toBeVisible({ timeout: 15000 });
 
 		// Cleanup
-		await deleteSession(sessionId);
+		await deleteTrack(trackId);
 	});
 
-	test("should toggle session active status", async ({ page, testRun }, testInfo) => {
+	test("should toggle track active status", async ({ page, testRun }, testInfo) => {
 		// Arrange
-		const sessionId = await createSession(
+		const trackId = await createTrack(
 			testRun.testRunId,
 			"IoT Systems",
 			undefined,
 			true,
 		);
 		await page.goto("/admin/settings");
-		await clickSessionsTab(page, testInfo);
+		await clickTracksTab(page, testInfo);
 		await expect(
-			page.getByRole("button", { name: "Create Session" }),
+			page.getByRole("button", { name: "Create Track" }),
 		).toBeVisible();
 
 		// Act - toggle off
@@ -136,19 +136,19 @@ test.describe.serial("Admin - Conference Sessions", () => {
 		await activeSwitch.click();
 
 		// Assert
-		await expect(page.getByText("Session deactivated")).toBeVisible({ timeout: 15000 });
+		await expect(page.getByText("Track deactivated")).toBeVisible({ timeout: 15000 });
 		await expect(activeSwitch).not.toBeChecked({ timeout: 10000 });
 
 		// Cleanup
-		await deleteSession(sessionId);
+		await deleteTrack(trackId);
 	});
 
-	test("should disable delete button for session with submissions", async ({
+	test("should disable delete button for track with submissions", async ({
 		page,
 		testRun,
 	}, testInfo) => {
 		// Arrange
-		const sessionId = await createSession(
+		const trackId = await createTrack(
 			testRun.testRunId,
 			"Data Science",
 		);
@@ -157,13 +157,13 @@ test.describe.serial("Admin - Conference Sessions", () => {
 			type: "ABSTRACT",
 			title: "ML Paper",
 			content: "Content here",
-			sessionId,
+			trackId,
 		});
 
 		await page.goto("/admin/settings");
-		await clickSessionsTab(page, testInfo);
+		await clickTracksTab(page, testInfo);
 		await expect(
-			page.getByRole("button", { name: "Create Session" }),
+			page.getByRole("button", { name: "Create Track" }),
 		).toBeVisible();
 
 		// Assert - delete button should be disabled
@@ -174,19 +174,19 @@ test.describe.serial("Admin - Conference Sessions", () => {
 
 		// Cleanup
 		await deleteSubmission(submissionId);
-		await deleteSession(sessionId);
+		await deleteTrack(trackId);
 	});
 
-	test("should delete empty session", async ({ page, testRun }, testInfo) => {
+	test("should delete empty track", async ({ page, testRun }, testInfo) => {
 		// Arrange
-		await createSession(
+		await createTrack(
 			testRun.testRunId,
 			"Blockchain",
 		);
 		await page.goto("/admin/settings");
-		await clickSessionsTab(page, testInfo);
+		await clickTracksTab(page, testInfo);
 		await expect(
-			page.getByRole("button", { name: "Create Session" }),
+			page.getByRole("button", { name: "Create Track" }),
 		).toBeVisible();
 
 		// Act - click delete
@@ -199,23 +199,23 @@ test.describe.serial("Admin - Conference Sessions", () => {
 		await row.getByRole("button", { name: "Confirm" }).click();
 
 		// Assert
-		await expect(page.getByText("Session deleted")).toBeVisible();
+		await expect(page.getByText("Track deleted")).toBeVisible();
 	});
 
-	test("should enforce unique session names", async ({ page, testRun }, testInfo) => {
+	test("should enforce unique track names", async ({ page, testRun }, testInfo) => {
 		// Arrange
-		const sessionId = await createSession(
+		const trackId = await createTrack(
 			testRun.testRunId,
 			"Cybersecurity",
 		);
 		await page.goto("/admin/settings");
-		await clickSessionsTab(page, testInfo);
+		await clickTracksTab(page, testInfo);
 		await expect(
-			page.getByRole("button", { name: "Create Session" }),
+			page.getByRole("button", { name: "Create Track" }),
 		).toBeVisible();
 
 		// Act - try to create duplicate
-		await page.getByRole("button", { name: "Create Session" }).click();
+		await page.getByRole("button", { name: "Create Track" }).click();
 		await expect(page.getByRole("dialog")).toBeVisible();
 		await page
 			.getByLabel("Name")
@@ -228,6 +228,6 @@ test.describe.serial("Admin - Conference Sessions", () => {
 		).toBeVisible();
 
 		// Cleanup
-		await deleteSession(sessionId);
+		await deleteTrack(trackId);
 	});
 });

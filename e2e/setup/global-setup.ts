@@ -45,7 +45,7 @@ const SUBMISSION_TYPE_CONFIGS = {
 			{ name: "Methodology", description: "Research design and execution" },
 		],
 		enableConfidenceLevel: true,
-		enableSessionSelection: false,
+		enableTrackSelection: false,
 	},
 	POSTER: {
 		isActive: true,
@@ -61,7 +61,7 @@ const SUBMISSION_TYPE_CONFIGS = {
 		enableScoring: false,
 		scoringCriteria: [],
 		enableConfidenceLevel: true,
-		enableSessionSelection: false,
+		enableTrackSelection: false,
 	},
 	FULL_PAPER: {
 		isActive: true,
@@ -83,7 +83,7 @@ const SUBMISSION_TYPE_CONFIGS = {
 			{ name: "Technical Quality", description: "Technical soundness and rigor" },
 		],
 		enableConfidenceLevel: true,
-		enableSessionSelection: false,
+		enableTrackSelection: false,
 	},
 };
 

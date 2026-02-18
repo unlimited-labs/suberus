@@ -19,7 +19,6 @@ import {
 	useSearch,
 } from "@tanstack/react-router";
 import { z } from "zod";
-import { SessionsTab } from "@/components/admin/sessions/sessions-tab";
 import {
 	BrandingSettingsTab,
 	ConferenceSettingsTab,
@@ -33,14 +32,12 @@ import {
 	TosContentTab,
 } from "@/components/admin/settings";
 import { toEmailTemplateUI } from "@/components/admin/settings/email-templates-tab";
+import { TracksTab } from "@/components/admin/tracks/tracks-tab";
 import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { emailTemplatesQueryOptions } from "@/utils/email-templates.functions";
 import { paymentInstructionsQueryOptions } from "@/utils/fee.functions";
-import {
-	allSessionsQueryOptions,
-	reviewerUsersQueryOptions,
-} from "@/utils/sessions.functions";
+import { reviewerUsersQueryOptions } from "@/utils/reviewers.functions";
 import {
 	adminSettingQueryOptions,
 	brandingSettingsQueryOptions,
@@ -53,6 +50,7 @@ import {
 	submissionValidationSettingsQueryOptions,
 } from "@/utils/settings.functions";
 import { adminSurveyQuestionsQueryOptions } from "@/utils/survey.functions";
+import { allTracksQueryOptions } from "@/utils/tracks.functions";
 
 const searchSchema = z.object({
 	tab: z.string().optional(),
@@ -69,7 +67,7 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			),
 			context.queryClient.ensureQueryData(paymentInstructionsQueryOptions()),
 			context.queryClient.ensureQueryData(brandingSettingsQueryOptions()),
-			context.queryClient.ensureQueryData(allSessionsQueryOptions()),
+			context.queryClient.ensureQueryData(allTracksQueryOptions()),
 			context.queryClient.ensureQueryData(reviewerUsersQueryOptions()),
 			context.queryClient.ensureQueryData(reminderSettingsQueryOptions()),
 			context.queryClient.ensureQueryData(emailTemplatesQueryOptions()),
@@ -98,7 +96,7 @@ const tabs = [
 	{ id: "conference", label: "Conference", icon: IconBuilding },
 	{ id: "submissions", label: "Submissions", icon: IconFileText },
 	{ id: "types", label: "Submission Types", icon: IconFileStack },
-	{ id: "sessions", label: "Sessions", icon: IconPresentation },
+	{ id: "tracks", label: "Tracks", icon: IconPresentation },
 	{ id: "emails", label: "Email Templates", icon: IconMail },
 	{ id: "branding", label: "Branding", icon: IconPalette },
 	{ id: "fee", label: "Fee", icon: IconCash },
@@ -129,7 +127,7 @@ function AdminSettingsPage() {
 	const { data: brandingSettings } = useSuspenseQuery(
 		brandingSettingsQueryOptions(),
 	);
-	const { data: sessions } = useSuspenseQuery(allSessionsQueryOptions());
+	const { data: tracks } = useSuspenseQuery(allTracksQueryOptions());
 	const { data: reviewers } = useSuspenseQuery(reviewerUsersQueryOptions());
 	const { data: reminderSettings } = useSuspenseQuery(
 		reminderSettingsQueryOptions(),
@@ -202,13 +200,13 @@ function AdminSettingsPage() {
 							<SubmissionTypesTab initialData={submissionTypes} />
 						</TabsContent>
 
-						<TabsContent value="sessions">
-							<SessionsTab
-								initialSessions={sessions}
+						<TabsContent value="tracks">
+							<TracksTab
+								initialTracks={tracks}
 								reviewers={reviewers}
 								onUpdate={() =>
 									queryClient.invalidateQueries({
-										queryKey: allSessionsQueryOptions().queryKey,
+										queryKey: allTracksQueryOptions().queryKey,
 									})
 								}
 							/>

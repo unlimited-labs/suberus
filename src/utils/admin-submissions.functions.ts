@@ -4,11 +4,11 @@ import { z } from "zod";
 import {
 	bulkAssignReviewer,
 	bulkChangeStatus,
-	bulkUpdateSubmissionSession,
+	bulkUpdateSubmissionTrack,
 	type GetSubmissionsResponse,
 	getAdminSubmissions,
 	getSubmissionForEditor,
-	updateSubmissionSession,
+	updateSubmissionTrack,
 } from "./admin-submissions.server";
 import { adminMiddleware } from "./auth.middleware";
 
@@ -51,30 +51,30 @@ export const getSubmissionForEditorFn = createServerFn({ method: "GET" })
 		return getSubmissionForEditor(data.submissionId);
 	});
 
-/** Update submission session assignment */
-export const updateSubmissionSessionFn = createServerFn({ method: "POST" })
+/** Update submission track assignment */
+export const updateSubmissionTrackFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
 			submissionId: z.uuid(),
-			sessionId: z.uuid().nullable(),
+			trackId: z.uuid().nullable(),
 		}),
 	)
 	.handler(async ({ data }) => {
-		await updateSubmissionSession(data.submissionId, data.sessionId);
+		await updateSubmissionTrack(data.submissionId, data.trackId);
 	});
 
-/** Bulk update session assignment for multiple submissions */
-export const bulkUpdateSubmissionSessionFn = createServerFn({ method: "POST" })
+/** Bulk update track assignment for multiple submissions */
+export const bulkUpdateSubmissionTrackFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
 			submissionIds: z.array(z.uuid()).min(1),
-			sessionId: z.uuid().nullable(),
+			trackId: z.uuid().nullable(),
 		}),
 	)
 	.handler(async ({ data }) => {
-		return bulkUpdateSubmissionSession(data.submissionIds, data.sessionId);
+		return bulkUpdateSubmissionTrack(data.submissionIds, data.trackId);
 	});
 
 /** Bulk change submission status via workflow transitions */

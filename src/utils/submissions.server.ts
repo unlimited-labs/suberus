@@ -71,7 +71,7 @@ export async function createNewSubmission(
 				content: data.content,
 				status: initialStatus,
 				userId,
-				sessionId: data.sessionId || null,
+				trackId: data.trackId || null,
 			},
 		});
 
@@ -590,7 +590,7 @@ export async function updateDraftSubmission(
 				type: data.type,
 				title: data.title,
 				content: data.content,
-				sessionId: data.sessionId || null,
+				trackId: data.trackId || null,
 			},
 		});
 

@@ -27,7 +27,7 @@ const inputSchema = z.object({
 	authors: z.array(authorSchema),
 	keywords: z.array(z.string()),
 	contentFormat: z.enum(["TEXT", "FILE"]),
-	sessionId: z.uuid().nullish(),
+	trackId: z.uuid().nullish(),
 	isDraft: z.boolean().optional(),
 	// File upload handled separately via FormData
 });
@@ -242,7 +242,7 @@ export const updateDraftSubmissionFn = createServerFn({ method: "POST" })
 			authors: z.array(authorSchema),
 			keywords: z.array(z.string()),
 			contentFormat: z.enum(["TEXT", "FILE"]),
-			sessionId: z.uuid().nullish(),
+			trackId: z.uuid().nullish(),
 			isDraft: z.boolean().optional(),
 		}),
 	)

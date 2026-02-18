@@ -53,10 +53,10 @@ import {
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import {
 	editorSubmissionQueryOptions,
-	updateSubmissionSessionFn,
+	updateSubmissionTrackFn,
 } from "@/utils/admin-submissions.functions";
-import { activeSessionsQueryOptions } from "@/utils/sessions.functions";
 import { adminSettingQueryOptions } from "@/utils/settings.functions";
+import { activeTracksQueryOptions } from "@/utils/tracks.functions";
 import {
 	editorOverrideFn,
 	transitionToAwaitingDecisionFn,
@@ -106,9 +106,9 @@ function SubmissionDetailPage() {
 		enabled: !!configKey,
 	}) as { data: ConfigData | undefined };
 
-	// Load active sessions if submission is ABSTRACT
-	const { data: availableSessions = [] } = useQuery({
-		...activeSessionsQueryOptions(),
+	// Load active tracks if submission is ABSTRACT
+	const { data: availableTracks = [] } = useQuery({
+		...activeTracksQueryOptions(),
 		enabled: data?.submission.type === "ABSTRACT",
 	});
 
@@ -395,38 +395,38 @@ function SubmissionDetailPage() {
 								</CardContent>
 							</Card>
 
-							{/* Session Assignment (ABSTRACT only) */}
+							{/* Track Assignment (ABSTRACT only) */}
 							{submission.type === "ABSTRACT" && (
 								<Card>
 									<CardHeader>
 										<CardTitle className="text-base">
-											Session Assignment
+											Track Assignment
 										</CardTitle>
 									</CardHeader>
 									<CardContent>
 										<Select
-											value={submission.sessionId || "none"}
+											value={submission.trackId || "none"}
 											onValueChange={async (value) => {
 												try {
-													await updateSubmissionSessionFn({
+													await updateSubmissionTrackFn({
 														data: {
 															submissionId: submission.id,
-															sessionId: value === "none" ? null : value,
+															trackId: value === "none" ? null : value,
 														},
 													});
-													toast.success("Session updated");
+													toast.success("Track updated");
 													await invalidateSubmission();
 												} catch {
-													toast.error("Failed to update session");
+													toast.error("Failed to update track");
 												}
 											}}
 										>
 											<SelectTrigger>
-												<SelectValue placeholder="No session" />
+												<SelectValue placeholder="No track" />
 											</SelectTrigger>
 											<SelectContent>
 												<SelectItem value="none">None</SelectItem>
-												{availableSessions.map((s) => (
+												{availableTracks.map((s) => (
 													<SelectItem key={s.id} value={s.id}>
 														{s.name}
 													</SelectItem>

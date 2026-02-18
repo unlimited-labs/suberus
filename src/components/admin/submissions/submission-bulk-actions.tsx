@@ -16,13 +16,11 @@ import { statusChangeOptions } from "@/lib/labels/submission";
 import {
 	bulkAssignReviewerFn,
 	bulkChangeStatusFn,
-	bulkUpdateSubmissionSessionFn,
+	bulkUpdateSubmissionTrackFn,
 } from "@/utils/admin-submissions.functions";
 import type { AdminSubmission } from "@/utils/admin-submissions.server";
-import {
-	activeSessionsQueryOptions,
-	reviewerUsersQueryOptions,
-} from "@/utils/sessions.functions";
+import { reviewerUsersQueryOptions } from "@/utils/reviewers.functions";
+import { activeTracksQueryOptions } from "@/utils/tracks.functions";
 
 interface SubmissionBulkActionsProps {
 	table: Table<AdminSubmission>;
@@ -39,14 +37,12 @@ export function SubmissionBulkActions({
 	const [selectedAction, setSelectedAction] = useState<string>("");
 	const [statusDialogOpen, setStatusDialogOpen] = useState(false);
 	const [reviewerDialogOpen, setReviewerDialogOpen] = useState(false);
-	const [sessionDialogOpen, setSessionDialogOpen] = useState(false);
+	const [trackDialogOpen, setTrackDialogOpen] = useState(false);
 	const [selectedStatus, setSelectedStatus] =
 		useState<SubmissionStatus>("UNDER_REVIEW");
 	const [selectedReviewer, setSelectedReviewer] = useState<string>("");
-	const [selectedSession, setSelectedSession] = useState<string>("");
-	const { data: availableSessions = [] } = useQuery(
-		activeSessionsQueryOptions(),
-	);
+	const [selectedTrack, setSelectedTrack] = useState<string>("");
+	const { data: availableTracks = [] } = useQuery(activeTracksQueryOptions());
 	const { data: reviewers = [] } = useQuery(reviewerUsersQueryOptions());
 	const [isLoading, setIsLoading] = useState(false);
 	const [errors, setErrors] = useState<string[]>([]);
@@ -59,8 +55,8 @@ export function SubmissionBulkActions({
 			setStatusDialogOpen(true);
 		} else if (selectedAction === "assign_reviewer") {
 			setReviewerDialogOpen(true);
-		} else if (selectedAction === "assign_session") {
-			setSessionDialogOpen(true);
+		} else if (selectedAction === "assign_track") {
+			setTrackDialogOpen(true);
 		}
 	};
 
@@ -116,7 +112,7 @@ export function SubmissionBulkActions({
 		}
 	};
 
-	const handleAssignSession = async () => {
+	const handleAssignTrack = async () => {
 		setIsLoading(true);
 		setErrors([]);
 		try {
@@ -133,29 +129,27 @@ export function SubmissionBulkActions({
 					.map((row) => row.original.title)
 					.join(", ");
 				setErrors([
-					`The following submissions are not ABSTRACT type and cannot be assigned to sessions: ${titles}`,
+					`The following submissions are not ABSTRACT type and cannot be assigned to tracks: ${titles}`,
 				]);
 				return;
 			}
 
-			await bulkUpdateSubmissionSessionFn({
+			await bulkUpdateSubmissionTrackFn({
 				data: {
 					submissionIds,
-					sessionId:
-						selectedSession && selectedSession !== "none"
-							? selectedSession
-							: null,
+					trackId:
+						selectedTrack && selectedTrack !== "none" ? selectedTrack : null,
 				},
 			});
 
 			toast.success(`Updated ${submissionIds.length} submission(s)`);
 			table.resetRowSelection();
-			setSessionDialogOpen(false);
+			setTrackDialogOpen(false);
 			setSelectedAction("");
 			onSuccess?.();
 		} catch (error) {
 			const message =
-				error instanceof Error ? error.message : "Failed to assign session";
+				error instanceof Error ? error.message : "Failed to assign track";
 			setErrors([message]);
 		} finally {
 			setIsLoading(false);
@@ -165,7 +159,7 @@ export function SubmissionBulkActions({
 	const actions = [
 		{ value: "change_status", label: "Change status" },
 		{ value: "assign_reviewer", label: "Assign reviewer" },
-		{ value: "assign_session", label: "Assign to session" },
+		{ value: "assign_track", label: "Assign to track" },
 	];
 
 	return (
@@ -249,25 +243,25 @@ export function SubmissionBulkActions({
 			</BulkActionDialog>
 
 			<BulkActionDialog
-				open={sessionDialogOpen}
-				onOpenChange={setSessionDialogOpen}
-				title="Assign to session"
-				description={`Assign ${selectedCount} selected submission(s) to a conference session. Only ABSTRACT submissions can be assigned.`}
-				onConfirm={handleAssignSession}
+				open={trackDialogOpen}
+				onOpenChange={setTrackDialogOpen}
+				title="Assign to track"
+				description={`Assign ${selectedCount} selected submission(s) to a conference track. Only ABSTRACT submissions can be assigned.`}
+				onConfirm={handleAssignTrack}
 				isLoading={isLoading}
 				errors={errors}
 				confirmLabel="Assign"
 				loadingLabel="Assigning..."
 			>
-				<Select value={selectedSession} onValueChange={setSelectedSession}>
+				<Select value={selectedTrack} onValueChange={setSelectedTrack}>
 					<SelectTrigger>
-						<SelectValue placeholder="Select session" />
+						<SelectValue placeholder="Select track" />
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="none">None</SelectItem>
-						{availableSessions.map((session) => (
-							<SelectItem key={session.id} value={session.id}>
-								{session.name}
+						{availableTracks.map((track) => (
+							<SelectItem key={track.id} value={track.id}>
+								{track.name}
 							</SelectItem>
 						))}
 					</SelectContent>

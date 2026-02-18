@@ -99,7 +99,7 @@ function NewSubmissionPage() {
 						authors: data.authors,
 						keywords: data.keywords,
 						contentFormat: data.contentFormat,
-						sessionId: data.sessionId,
+						trackId: data.trackId,
 						isDraft,
 					},
 				}),

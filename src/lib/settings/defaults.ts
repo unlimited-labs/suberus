@@ -2,7 +2,7 @@ import type { AppSettingsMap, SubmissionTypeConfig } from "./types";
 
 /** Default config for Oral Presentation (TEXT-based) */
 export const DEFAULT_ORAL_PRESENTATION_CONFIG: SubmissionTypeConfig = {
-	isActive: true,
+	isActive: false,
 	contentFormat: "TEXT",
 	allowedExtensions: [],
 	minReviewers: 2,
@@ -20,12 +20,12 @@ export const DEFAULT_ORAL_PRESENTATION_CONFIG: SubmissionTypeConfig = {
 		{ name: "Methodology", description: "Research design and execution" },
 	],
 	enableConfidenceLevel: true,
-	enableSessionSelection: false,
+	enableTrackSelection: false,
 };
 
 /** Default config for Poster (TEXT-based) */
 export const DEFAULT_POSTER_CONFIG: SubmissionTypeConfig = {
-	isActive: true,
+	isActive: false,
 	contentFormat: "TEXT",
 	allowedExtensions: [],
 	minReviewers: 1,
@@ -38,12 +38,12 @@ export const DEFAULT_POSTER_CONFIG: SubmissionTypeConfig = {
 	enableScoring: false,
 	scoringCriteria: [],
 	enableConfidenceLevel: true,
-	enableSessionSelection: false,
+	enableTrackSelection: false,
 };
 
 /** Default config for Full Paper (FILE-based) */
 export const DEFAULT_FULL_PAPER_CONFIG: SubmissionTypeConfig = {
-	isActive: true,
+	isActive: false,
 	contentFormat: "FILE",
 	allowedExtensions: ["pdf", "doc", "docx"],
 	minReviewers: 3,
@@ -62,7 +62,7 @@ export const DEFAULT_FULL_PAPER_CONFIG: SubmissionTypeConfig = {
 		{ name: "Technical Quality", description: "Technical soundness and rigor" },
 	],
 	enableConfidenceLevel: true,
-	enableSessionSelection: false,
+	enableTrackSelection: false,
 };
 
 /** Default values for all app settings */

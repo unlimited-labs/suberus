@@ -38,7 +38,7 @@ import { submitForm } from "@/lib/form-utils";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import { cn } from "@/lib/utils";
 import { getAffiliationById } from "@/utils/affiliations.functions";
-import { activeSessionsQueryOptions } from "@/utils/sessions.functions";
+import { activeTracksQueryOptions } from "@/utils/tracks.functions";
 import { type Author, AuthorsInput } from "./authors-input";
 import { FileDropzone } from "./file-dropzone";
 import { KeywordsInput } from "./keywords-input";
@@ -86,7 +86,7 @@ export interface SubmissionFormData {
 	keywords: string[];
 	file: File | null;
 	contentFormat: "TEXT" | "FILE";
-	sessionId: string | null;
+	trackId: string | null;
 }
 
 /** Substitute {{placeholder}} values in guidelines text */
@@ -147,7 +147,7 @@ function createSubmissionSchema(settings: ValidationSettings) {
 		keywords: z.array(z.string()),
 		file: z.custom<File | null>(),
 		contentFormat: z.enum(["TEXT", "FILE"]),
-		sessionId: z.string().nullable(),
+		trackId: z.string().nullable(),
 	});
 }
 
@@ -219,7 +219,7 @@ export function SubmissionForm({
 			keywords: initialData?.keywords || [],
 			file: initialData?.file || null,
 			contentFormat: defaultConfig?.contentFormat || "TEXT",
-			sessionId: initialData?.sessionId || null,
+			trackId: initialData?.trackId || null,
 		} satisfies SubmissionFormData,
 		validators: {
 			onChange: submissionSchema,
@@ -333,13 +333,13 @@ export function SubmissionForm({
 	// Get current type config (use selectedType for reactive updates)
 	const currentTypeConfig = typeConfigs.find((t) => t.type === selectedType);
 
-	// Load active sessions when type is ABSTRACT and enableSessionSelection is true
-	const showSessions =
+	// Load active tracks when type is ABSTRACT and enableTrackSelection is true
+	const showTracks =
 		selectedType === "ABSTRACT" &&
-		!!currentTypeConfig?.config.enableSessionSelection;
-	const { data: activeSessions = [] } = useQuery({
-		...activeSessionsQueryOptions(),
-		enabled: showSessions,
+		!!currentTypeConfig?.config.enableTrackSelection;
+	const { data: activeTracks = [] } = useQuery({
+		...activeTracksQueryOptions(),
+		enabled: showTracks,
 	});
 	const isFileFormat = currentTypeConfig?.config.contentFormat === "FILE";
 
@@ -646,8 +646,8 @@ export function SubmissionForm({
 
 							{/* Session Selection (Oral Presentation only) */}
 							{selectedType === "ABSTRACT" &&
-								currentTypeConfig?.config.enableSessionSelection &&
-								activeSessions.length > 0 && (
+								currentTypeConfig?.config.enableTrackSelection &&
+								activeTracks.length > 0 && (
 									<>
 										<div className="border-t" />
 
@@ -655,11 +655,11 @@ export function SubmissionForm({
 											<div className="flex items-center gap-3">
 												<IconPresentation className="size-5 text-muted-foreground" />
 												<h2 className="text-lg font-semibold text-foreground">
-													Preferred Session
+													Preferred Track
 												</h2>
 											</div>
 
-											<form.Field name="sessionId">
+											<form.Field name="trackId">
 												{(field) => (
 													<Select
 														value={field.state.value || "none"}
@@ -668,11 +668,11 @@ export function SubmissionForm({
 														}
 													>
 														<SelectTrigger>
-															<SelectValue placeholder="Select session (optional)" />
+															<SelectValue placeholder="Select track (optional)" />
 														</SelectTrigger>
 														<SelectContent>
 															<SelectItem value="none">None</SelectItem>
-															{activeSessions.map((s) => (
+															{activeTracks.map((s) => (
 																<SelectItem key={s.id} value={s.id}>
 																	{s.name}
 																</SelectItem>
