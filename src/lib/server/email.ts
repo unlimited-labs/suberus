@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { prisma } from "@/db.server";
+import { env } from "@/env.ts";
 import type { EmailEventType } from "@/generated/prisma/enums";
 import { logger } from "@/logger.ts";
 import { getSetting } from "@/utils/settings.server";
@@ -25,9 +26,12 @@ const TEST_PLACEHOLDER_DATA: Record<string, string> = {
 };
 
 const transporter = nodemailer.createTransport({
-	host: process.env.SMTP_HOST ?? "localhost",
-	port: Number(process.env.SMTP_PORT ?? 1025),
-	secure: false,
+	host: env.SMTP_HOST,
+	port: env.SMTP_PORT,
+	secure: env.SMTP_SECURE,
+	...(env.SMTP_USER && env.SMTP_PASSWORD
+		? { auth: { user: env.SMTP_USER, pass: env.SMTP_PASSWORD } }
+		: {}),
 });
 
 export async function sendEmail(
@@ -63,12 +67,12 @@ export async function sendEmail(
 
 		// Add test run ID header in E2E mode for test isolation
 		const headers: Record<string, string> = {};
-		if (process.env.E2E === "true" && variables.testRunId) {
+		if (env.E2E && variables.testRunId) {
 			headers["X-Test-Run-Id"] = variables.testRunId;
 		}
 
 		await transporter.sendMail({
-			from: process.env.SMTP_FROM ?? "conference@suberus.local",
+			from: env.SMTP_FROM_EMAIL,
 			to,
 			cc: template.ccEmails.length > 0 ? template.ccEmails : undefined,
 			bcc: template.bccEmails.length > 0 ? template.bccEmails : undefined,
@@ -91,8 +95,8 @@ export interface SmtpHealthResult {
 }
 
 export async function checkSmtpHealth(): Promise<SmtpHealthResult> {
-	const host = process.env.SMTP_HOST ?? "localhost";
-	const port = Number(process.env.SMTP_PORT ?? 1025);
+	const host = env.SMTP_HOST ?? "localhost";
+	const port = env.SMTP_PORT;
 
 	try {
 		await transporter.verify();
@@ -139,7 +143,7 @@ export async function sendTestEmail(
 	}
 
 	await transporter.sendMail({
-		from: process.env.SMTP_FROM ?? "conference@suberus.local",
+		from: env.SMTP_FROM_EMAIL,
 		to,
 		subject: resolvedSubject,
 		[isHtml ? "html" : "text"]: resolvedBody,

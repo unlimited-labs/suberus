@@ -1,5 +1,6 @@
 import type { Session, User } from "better-auth/types";
 import { prisma } from "@/db.server";
+import { env } from "@/env";
 import type {
 	SubmissionStatus,
 	SubmissionType,
@@ -170,7 +171,7 @@ export async function createNewSubmission(
 			void sendEmail("SUBMISSION_RECEIVED", presenter.email, {
 				authorName: `${presenter.firstName} ${presenter.lastName}`,
 				submissionTitle: data.title,
-				submissionUrl: `${process.env.APP_BASE_URL}/submissions/${submission.id}`,
+				submissionUrl: `${env.APP_BASE_URL}/submissions/${submission.id}`,
 			});
 		}
 	}
@@ -537,7 +538,7 @@ export async function resubmitSubmission(
 					? `${presenter.firstName} ${presenter.lastName}`
 					: "Author",
 				versionNumber: String(version.version),
-				submissionUrl: `${process.env.APP_BASE_URL}/admin/submissions/${submissionId}`,
+				submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${submissionId}`,
 			});
 		}
 	}
@@ -729,7 +730,7 @@ export async function submitDraft(
 		void sendEmail("SUBMISSION_RECEIVED", presenter.email, {
 			authorName: `${presenter.firstName} ${presenter.lastName}`,
 			submissionTitle: submission.title,
-			submissionUrl: `${process.env.APP_BASE_URL}/submissions/${submissionId}`,
+			submissionUrl: `${env.APP_BASE_URL}/submissions/${submissionId}`,
 		});
 	}
 

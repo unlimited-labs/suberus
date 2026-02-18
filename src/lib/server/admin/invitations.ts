@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { prisma } from "@/db.server";
+import { env } from "@/env.ts";
 import type { InvitationStatus, UserRole } from "@/generated/prisma/enums";
 import { sendEmail } from "@/lib/server/email";
 import { logger } from "@/logger.ts";
@@ -64,7 +65,7 @@ export async function createInvitation(
 	});
 
 	const conferenceName = await getSetting("CONFERENCE_NAME");
-	const registrationUrl = `${process.env.APP_BASE_URL}/register?token=${token}`;
+	const registrationUrl = `${env.APP_BASE_URL}/register?token=${token}`;
 	const roleName = role === "EDITOR" ? "Editor" : "Reviewer";
 
 	await sendEmail("INVITATION", email, {
@@ -109,7 +110,7 @@ export async function resendInvitation(
 	});
 
 	const conferenceName = await getSetting("CONFERENCE_NAME");
-	const registrationUrl = `${process.env.APP_BASE_URL}/register?token=${token}`;
+	const registrationUrl = `${env.APP_BASE_URL}/register?token=${token}`;
 	const roleName = invitation.role === "EDITOR" ? "Editor" : "Reviewer";
 
 	await sendEmail("INVITATION", invitation.email, {

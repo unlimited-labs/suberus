@@ -10,16 +10,17 @@ import { logger } from "@/logger.ts"
 import { getSetting } from "@/utils/settings.server"
 import { applyInvitationRole } from "@/lib/server/admin/invitations"
 import { linkCoAuthorsByEmail } from "@/utils/submissions.server"
+import { env } from "@/env"
 
-const connectionString = process.env.DATABASE_URL
+const connectionString = env.DATABASE_URL
 const adapter = new PrismaPg({ connectionString })
 const prisma = new PrismaClient({ adapter })
 
 export const auth = betterAuth({
-	baseURL: process.env.APP_BASE_URL,
-	secret: process.env.AUTH_SECRET,
+	baseURL: env.APP_BASE_URL,
+	secret: env.AUTH_SECRET,
 	trustedOrigins:
-		process.env.NODE_ENV === "development"
+		env.NODE_ENV === "development"
 			? ["http://localhost:3001", "http://localhost:3002", "http://localhost:3003"]
 			: [],
 	database: prismaAdapter(prisma, {
@@ -53,6 +54,7 @@ export const auth = betterAuth({
 		sendOnSignUp: true,
 		autoSignInAfterVerification: true,
 		callbackURL: "/?verified=true",
+		expiresIn: 24 * 60 * 60, // 24h
 		sendVerificationEmail: async ({ user, url }) => {
 			const extUser = user as typeof user & { firstName?: string }
 			// Extract testRunId from E2E test emails (pattern: prefix-{testRunId}@e2e.local)

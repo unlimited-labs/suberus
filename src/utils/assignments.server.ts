@@ -1,4 +1,5 @@
 import { prisma } from "@/db.server";
+import { env } from "@/env.ts";
 import type {
 	AssignmentStatus,
 	SubmissionType,
@@ -234,7 +235,7 @@ export async function assignReviewer(
 			reviewer.email,
 		submissionTitle: submission.title,
 		deadline: formatDate(deadline, dateFormat),
-		reviewUrl: `${process.env.APP_BASE_URL}/reviews/${assignment.id}`,
+		reviewUrl: `${env.APP_BASE_URL}/reviews/${assignment.id}`,
 	});
 
 	logger.info(

@@ -7,13 +7,14 @@ import {
 	S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { env } from "@/env";
 import { logger } from "@/logger.ts";
 
 // Environment variables for Garage S3
-const GARAGE_ENDPOINT = process.env.GARAGE_ENDPOINT;
-const GARAGE_ACCESS_KEY_ID = process.env.GARAGE_ACCESS_KEY_ID;
-const GARAGE_SECRET_ACCESS_KEY = process.env.GARAGE_SECRET_ACCESS_KEY;
-const GARAGE_BUCKET = process.env.GARAGE_BUCKET;
+const GARAGE_ENDPOINT = env.GARAGE_ENDPOINT;
+const GARAGE_ACCESS_KEY_ID = env.GARAGE_ACCESS_KEY_ID;
+const GARAGE_SECRET_ACCESS_KEY = env.GARAGE_SECRET_ACCESS_KEY;
+const GARAGE_BUCKET = env.GARAGE_BUCKET;
 
 // Validate required environment variables
 function validateEnv(): void {

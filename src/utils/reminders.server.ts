@@ -1,4 +1,5 @@
 import { prisma } from "@/db.server";
+import { env } from "@/env.ts";
 import type { EmailEventType } from "@/generated/prisma/enums";
 import { formatDate } from "@/lib/format-date";
 import { sendEmail } from "@/lib/server/email";
@@ -91,7 +92,7 @@ export async function sendReviewerReminders(): Promise<number> {
 				submissionTitle: assignment.submission.title,
 				deadline: formatDate(assignment.deadline, dateFormat),
 				daysRemaining: String(daysRemaining),
-				reviewUrl: `${process.env.APP_BASE_URL}/reviews/${assignment.id}`,
+				reviewUrl: `${env.APP_BASE_URL}/reviews/${assignment.id}`,
 			});
 
 			await recordReminder(
@@ -172,7 +173,7 @@ export async function sendRevisionReminders(): Promise<number> {
 		void sendEmail("REVISION_REMINDER", submission.user.email, {
 			authorName,
 			submissionTitle: submission.title,
-			submissionUrl: `${process.env.APP_BASE_URL}/submissions/${submission.id}`,
+			submissionUrl: `${env.APP_BASE_URL}/submissions/${submission.id}`,
 		});
 
 		await recordReminder(
@@ -243,7 +244,7 @@ export async function sendDeadlineReminders(): Promise<number> {
 				submissionTitle: submission.title,
 				deadline: formatDate(deadline, dateFormat),
 				daysRemaining: String(daysRemaining),
-				submissionUrl: `${process.env.APP_BASE_URL}/submissions/${submission.id}`,
+				submissionUrl: `${env.APP_BASE_URL}/submissions/${submission.id}`,
 			});
 
 			await recordReminder(

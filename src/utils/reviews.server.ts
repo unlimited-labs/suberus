@@ -1,4 +1,5 @@
 import { prisma } from "@/db.server";
+import { env } from "@/env.ts";
 import type { ReviewDecision, ReviewMode } from "@/generated/prisma/enums";
 import { sendEmail } from "@/lib/server/email";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
@@ -226,7 +227,7 @@ export async function submitReview(
 				reviewerName:
 					`${reviewer.firstName ?? ""} ${reviewer.lastName ?? ""}`.trim() ||
 					reviewer.email,
-				submissionUrl: `${process.env.APP_BASE_URL}/admin/submissions/${assignment.submissionId}`,
+				submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${assignment.submissionId}`,
 			});
 		}
 	}

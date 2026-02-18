@@ -3,13 +3,31 @@ import { z } from "zod";
 
 export const env = createEnv({
 	server: {
+		NODE_ENV: z.string().default("development"),
+		LOG_LEVEL: z.coerce.number().default(3),
+
+		DATABASE_URL: z.url(),
 		APP_BASE_URL: z.url(),
-		SERVER_URL: z.url().optional(),
+
 		// Garage S3 storage (optional - only needed for FILE-based submissions)
 		GARAGE_ENDPOINT: z.url().optional(),
 		GARAGE_ACCESS_KEY_ID: z.string().optional(),
 		GARAGE_SECRET_ACCESS_KEY: z.string().optional(),
 		GARAGE_BUCKET: z.string().optional(),
+
+		// Mail configuration
+		SMTP_HOST: z.string(),
+		SMTP_PORT: z.coerce.number(),
+		SMTP_SECURE: z.stringbool().default(false),
+		SMTP_USER: z.string().optional(),
+		SMTP_PASSWORD: z.string().optional(),
+		SMTP_FROM_EMAIL: z.email(),
+		SMTP_FROM_NAME: z.string(),
+
+		AUTH_SECRET: z.string(),
+		PORT: z.coerce.number().default(3000),
+
+		E2E: z.stringbool().default(false),
 	},
 
 	/**
@@ -25,8 +43,14 @@ export const env = createEnv({
 	/**
 	 * What object holds the environment variables at runtime. This is usually
 	 * `process.env` or `import.meta.env`.
+	 *
+	 * In production SSR builds, Vite statically replaces `import.meta.env`
+	 * so we merge with `process.env` to ensure runtime vars are available.
 	 */
-	runtimeEnv: import.meta.env,
+	runtimeEnv: {
+		...import.meta.env,
+		...("process" in globalThis ? process.env : {}),
+	},
 
 	/**
 	 * By default, this library will feed the environment variables directly to

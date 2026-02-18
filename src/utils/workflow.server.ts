@@ -1,5 +1,6 @@
 import { createActor } from "xstate";
 import { prisma } from "@/db.server";
+import { env } from "@/env";
 import type {
 	AssignmentStatus,
 	SubmissionStatus,
@@ -388,7 +389,7 @@ export async function checkAndTriggerReviewCompletion(
 				for (const editor of editors) {
 					void sendEmail("ALL_REVIEWS_COMPLETE", editor.email, {
 						submissionTitle: submission.title,
-						submissionUrl: `${process.env.APP_BASE_URL}/admin/submissions/${submissionId}`,
+						submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${submissionId}`,
 					});
 				}
 			}
@@ -459,7 +460,7 @@ export async function withdrawSubmission(
 			void sendEmail("SUBMISSION_WITHDRAWN", presenter.email, {
 				authorName: `${presenter.firstName} ${presenter.lastName}`,
 				submissionTitle: submission.title,
-				submissionUrl: `${process.env.APP_BASE_URL}/submissions/${submissionId}`,
+				submissionUrl: `${env.APP_BASE_URL}/submissions/${submissionId}`,
 			});
 		}
 	}
@@ -496,7 +497,7 @@ export async function deskRejectSubmission(
 				authorName: `${presenter.firstName} ${presenter.lastName}`,
 				submissionTitle: submission.title,
 				letterToAuthor: reason,
-				submissionUrl: `${process.env.APP_BASE_URL}/submissions/${submissionId}`,
+				submissionUrl: `${env.APP_BASE_URL}/submissions/${submissionId}`,
 			});
 		}
 	}
@@ -582,7 +583,7 @@ export async function submitEditorDecision(
 				authorName: `${presenter.firstName} ${presenter.lastName}`,
 				submissionTitle: submission.title,
 				letterToAuthor: letterToAuthor ?? reasoning ?? "",
-				submissionUrl: `${process.env.APP_BASE_URL}/submissions/${submissionId}`,
+				submissionUrl: `${env.APP_BASE_URL}/submissions/${submissionId}`,
 			});
 		}
 	}
