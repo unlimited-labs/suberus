@@ -139,8 +139,14 @@ test.describe("User Settings - Survey", () => {
 		// Arrange
 		await expect(page.getByText("Preferred session format")).toBeVisible();
 
-		// Act — select "Poster" radio
-		await page.getByLabel("Poster").check();
+		// Act — open Select dropdown and pick "Poster"
+		const trigger = page
+			.locator("div")
+			.filter({ hasText: /^Preferred session format/ })
+			.getByRole("combobox");
+		await trigger.click();
+		await page.getByRole("option", { name: "Poster" }).click();
+
 		await page
 			.locator("section")
 			.filter({ hasText: "Survey" })
@@ -157,11 +163,13 @@ test.describe("User Settings - Survey", () => {
 			await expect(
 				page.getByRole("heading", { name: "Profile" }),
 			).toBeVisible({ timeout: 15000 });
-			await expect(page.getByLabel("Poster")).toBeChecked();
+			await expect(
+				page
+					.locator("div")
+					.filter({ hasText: /^Preferred session format/ })
+					.getByRole("combobox"),
+			).toContainText("Poster");
 		}).toPass({ timeout: 30000 });
-
-		// Cleanup — clear by selecting a different option then saving empty
-		// No cleanup needed since survey answers are per-user test data
 	});
 
 	test("user selects MULTI_SELECT options", async ({ page }) => {

@@ -230,7 +230,7 @@ export function SurveyQuestionsTab({
 									data-testid="question-row"
 									className="rounded-lg border border-border/50 bg-muted/20 p-3"
 								>
-									<div className="flex items-center gap-2">
+									<div className="flex items-start gap-2">
 										{/* Reorder arrows */}
 										<div className="flex flex-col gap-0.5">
 											<Button
@@ -257,7 +257,7 @@ export function SurveyQuestionsTab({
 										</div>
 
 										{/* Label + badges (view mode) / Edit form */}
-										<div className="flex-1">
+										<div className="min-w-0 flex-1">
 											{editingId === question.id ? (
 												<div className="space-y-2">
 													<div className="flex gap-2">
@@ -331,55 +331,70 @@ export function SurveyQuestionsTab({
 													</div>
 												</div>
 											) : (
-												<div className="flex flex-wrap items-center gap-1.5">
+												<div className="space-y-1">
 													<button
 														type="button"
-														className="text-left text-sm hover:underline"
+														className="text-left text-sm font-medium hover:underline"
 														onClick={() => handleStartEdit(question)}
 													>
 														{question.label}
 													</button>
-													<Badge variant="outline" className="text-[10px]">
-														{TYPE_LABELS[question.type]}
-													</Badge>
-													{question.isRequired && (
-														<Badge variant="secondary" className="text-[10px]">
-															Required
+													<div className="flex flex-wrap items-center gap-1.5">
+														<Badge variant="outline" className="text-[10px]">
+															{TYPE_LABELS[question.type]}
 														</Badge>
-													)}
+														{question.isRequired && (
+															<Badge
+																variant="secondary"
+																className="text-[10px]"
+															>
+																Required
+															</Badge>
+														)}
+													</div>
+													{isSelectType(question.type) &&
+														question.options &&
+														question.options.length > 0 && (
+															<p className="text-xs text-muted-foreground">
+																Options: {question.options.join(", ")}
+															</p>
+														)}
 												</div>
 											)}
 										</div>
 
-										{/* Active toggle */}
-										<div className="flex items-center gap-2">
-											<Label
-												htmlFor={`active-${question.id}`}
-												className="text-xs text-muted-foreground"
-											>
-												Active
-											</Label>
-											<Switch
-												id={`active-${question.id}`}
-												checked={question.isActive}
-												onCheckedChange={(checked) =>
-													handleToggleActive(question.id, checked)
-												}
-												disabled={busyId === question.id}
-											/>
-										</div>
+										{/* Active toggle + Delete (hidden during edit) */}
+										{editingId !== question.id && (
+											<>
+												<div className="flex items-center gap-2">
+													<Label
+														htmlFor={`active-${question.id}`}
+														className="hidden text-xs text-muted-foreground sm:inline"
+													>
+														Active
+													</Label>
+													<Switch
+														id={`active-${question.id}`}
+														checked={question.isActive}
+														onCheckedChange={(checked) =>
+															handleToggleActive(question.id, checked)
+														}
+														disabled={busyId === question.id}
+													/>
+												</div>
 
-										{/* Delete */}
-										<Button
-											variant="ghost"
-											size="icon-sm"
-											onClick={() => handleDelete(question.id)}
-											disabled={busyId === question.id}
-											className="text-destructive hover:text-destructive"
-											aria-label="Delete question"
-										>
-											<IconTrash className="size-4" />
-										</Button>
+												<Button
+													variant="ghost"
+													size="icon-sm"
+													onClick={() => handleDelete(question.id)}
+													disabled={busyId === question.id}
+													className="text-destructive hover:text-destructive"
+													aria-label="Delete question"
+												>
+													<IconTrash className="size-4" />
+												</Button>
+											</>
+										)}
 									</div>
 								</div>
 							))}
@@ -389,8 +404,11 @@ export function SurveyQuestionsTab({
 					{/* Add new question */}
 					<div
 						data-testid="add-question-section"
-						className="space-y-2 rounded-lg border border-dashed border-border p-3"
+						className="space-y-2 rounded-lg border border-dashed border-border bg-muted/10 p-4"
 					>
+						<p className="text-sm font-medium text-muted-foreground">
+							New Question
+						</p>
 						<div className="flex gap-2">
 							<Input
 								placeholder="New question label..."
@@ -407,7 +425,7 @@ export function SurveyQuestionsTab({
 								value={newType}
 								onValueChange={(v) => setNewType(v as SurveyQuestionType)}
 							>
-								<SelectTrigger className="h-8 w-[140px]">
+								<SelectTrigger className="h-8 w-[160px]">
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
@@ -457,10 +475,12 @@ function OptionsEditor({
 	onChange: (options: string[]) => void;
 }) {
 	return (
-		<div className="space-y-1.5 rounded border border-border/50 bg-background p-2">
-			<Label className="text-xs text-muted-foreground">Options</Label>
+		<div className="space-y-1.5 rounded-md border border-border/50 bg-background p-3">
+			<Label className="text-xs font-medium text-muted-foreground">
+				Options
+			</Label>
 			{options.map((opt, i) => (
-				<div key={i} className="flex gap-1">
+				<div key={i} className="flex gap-1.5">
 					<Input
 						value={opt}
 						onChange={(e) => {
@@ -469,7 +489,7 @@ function OptionsEditor({
 							onChange(next);
 						}}
 						placeholder={`Option ${i + 1}`}
-						className="h-7 text-sm"
+						className="h-8 text-sm"
 					/>
 					<Button
 						variant="ghost"

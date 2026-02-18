@@ -1,7 +1,13 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
 
 interface SurveyQuestionData {
@@ -64,31 +70,29 @@ export function SurveyQuestionField({
 				</div>
 			);
 
-		case "SINGLE_SELECT":
+		case "SINGLE_SELECT": {
+			const options = question.options ?? [];
 			return (
 				<div className="space-y-1.5">
-					<Label className="text-sm">
+					<Label htmlFor={`survey-${question.id}`} className="text-sm">
 						{question.label}
 						{requiredMark}
 					</Label>
-					<RadioGroup value={value} onValueChange={onChange}>
-						{(question.options ?? []).map((option) => (
-							<div key={option} className="flex items-center gap-2">
-								<RadioGroupItem
-									value={option}
-									id={`survey-${question.id}-${option}`}
-								/>
-								<Label
-									htmlFor={`survey-${question.id}-${option}`}
-									className="cursor-pointer text-sm font-normal"
-								>
+					<Select value={value} onValueChange={onChange}>
+						<SelectTrigger id={`survey-${question.id}`} className="h-9">
+							<SelectValue placeholder="Select an option..." />
+						</SelectTrigger>
+						<SelectContent>
+							{options.map((option) => (
+								<SelectItem key={option} value={option}>
 									{option}
-								</Label>
-							</div>
-						))}
-					</RadioGroup>
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
 				</div>
 			);
+		}
 
 		case "MULTI_SELECT": {
 			const selected: string[] = value ? safeParseArray(value) : [];
