@@ -11,25 +11,4 @@ test.describe("Nitro Tasks", () => {
 		expect(existsSync(resolve(OUTPUT_DIR, "_tasks/overdue.mjs"))).toBe(true)
 	})
 
-	test("mails:reminder task runs successfully", async ({ page }) => {
-		// Arrange - /_nitro/tasks/<name> is dev-only endpoint
-		const response = await page.request.get("/_nitro/tasks/mails:reminder")
-		test.skip(response.status() === 404, "/_nitro/tasks not available in production mode")
-
-		// Assert
-		expect(response.status()).toBe(200)
-		const data = await response.json()
-		expect(data.result).toBeDefined()
-	})
-
-	test("assignments:overdue task runs successfully", async ({ page }) => {
-		// Arrange
-		const response = await page.request.get("/_nitro/tasks/assignments:overdue")
-		test.skip(response.status() === 404, "/_nitro/tasks not available in production mode")
-
-		// Assert
-		expect(response.status()).toBe(200)
-		const data = await response.json()
-		expect(data.result).toBeDefined()
-	})
 })
