@@ -6,6 +6,8 @@ import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
+import { activityDetail } from "@/lib/activity-log";
+import { logActivity } from "@/lib/server/activity-log";
 import { sendEmail } from "@/lib/server/email";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
@@ -500,6 +502,13 @@ export async function deskRejectSubmission(
 				submissionUrl: `${env.APP_BASE_URL}/submissions/${submissionId}`,
 			});
 		}
+
+		await logActivity({
+			type: "DECISION_DESK_REJECT",
+			submissionId,
+			performedBy: editorId,
+			detail: activityDetail("DECISION_DESK_REJECT", { reason }),
+		});
 	}
 
 	return result;
@@ -586,6 +595,16 @@ export async function submitEditorDecision(
 				submissionUrl: `${env.APP_BASE_URL}/submissions/${submissionId}`,
 			});
 		}
+
+		await logActivity({
+			type: "DECISION_SUBMITTED",
+			submissionId,
+			performedBy: editorId,
+			detail: activityDetail("DECISION_SUBMITTED", {
+				decision,
+				reasoning,
+			}),
+		});
 	}
 
 	return result;

@@ -38,8 +38,8 @@ const idSchema = z.object({ id: z.string() });
 export const cancelInvitationFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.inputValidator(idSchema)
-	.handler(async ({ data }) => {
-		return cancelInvitation(data.id);
+	.handler(async ({ data, context }) => {
+		return cancelInvitation(data.id, context.user.id);
 	});
 
 export const resendInvitationFn = createServerFn({ method: "POST" })

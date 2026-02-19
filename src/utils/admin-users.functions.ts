@@ -2,12 +2,15 @@ import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
+	adminCheckDeletable,
+	adminDeleteUser,
+	adminUpdateProfile,
 	executeBulkAction,
 	fetchUserById,
 	fetchUsers,
 	patchUser,
 } from "./admin-users.server";
-import { adminMiddleware } from "./auth.middleware";
+import { adminMiddleware, adminOnlyMiddleware } from "./auth.middleware";
 
 const getUsersSchema = z.object({
 	search: z.string().optional(),
@@ -84,8 +87,8 @@ const patchUserSchema = z.object({
 export const patchAdminUser = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(patchUserSchema)
-	.handler(async ({ data }) => {
-		return patchUser(data);
+	.handler(async ({ data, context }) => {
+		return patchUser(data, context.user.id);
 	});
 
 const bulkActionSchema = z.object({
@@ -102,4 +105,48 @@ export const bulkAdminAction = createServerFn({ method: "POST" })
 	.inputValidator(bulkActionSchema)
 	.handler(async ({ data }) => {
 		return executeBulkAction(data);
+	});
+
+// --- Admin-only: profile edit, delete, deletable check ---
+
+const orcidRegex = /^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/;
+
+const adminEditProfileSchema = z.object({
+	id: z.string(),
+	firstName: z.string().min(2).max(50),
+	lastName: z.string().min(2).max(50),
+	title: z.string().optional(),
+	affiliation: z.string().max(200).optional(),
+	orcid: z
+		.string()
+		.regex(orcidRegex, "Invalid ORCID format")
+		.optional()
+		.or(z.literal("")),
+	email: z.email(),
+	address: z.string().max(500).optional(),
+	country: z.string().optional(),
+});
+
+export const updateAdminUserProfile = createServerFn({ method: "POST" })
+	.middleware([adminOnlyMiddleware])
+	.inputValidator(adminEditProfileSchema)
+	.handler(async ({ data }) => {
+		const { id, ...profileData } = data;
+		return adminUpdateProfile(id, profileData);
+	});
+
+const userIdSchema = z.object({ id: z.string() });
+
+export const checkAdminUserDeletable = createServerFn({ method: "GET" })
+	.middleware([adminOnlyMiddleware])
+	.inputValidator(userIdSchema)
+	.handler(async ({ data }) => {
+		return adminCheckDeletable(data.id);
+	});
+
+export const deleteAdminUser = createServerFn({ method: "POST" })
+	.middleware([adminOnlyMiddleware])
+	.inputValidator(userIdSchema)
+	.handler(async ({ data, context }) => {
+		return adminDeleteUser(data.id, context.user.id);
 	});

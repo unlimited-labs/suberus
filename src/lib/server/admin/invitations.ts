@@ -2,6 +2,8 @@ import { randomBytes } from "node:crypto";
 import { prisma } from "@/db.server";
 import { env } from "@/env.ts";
 import type { InvitationStatus, UserRole } from "@/generated/prisma/enums";
+import { activityDetail } from "@/lib/activity-log";
+import { logActivity } from "@/lib/server/activity-log";
 import { sendEmail } from "@/lib/server/email";
 import { logger } from "@/logger.ts";
 import { getSetting } from "@/utils/settings.server";
@@ -83,17 +85,31 @@ export async function createInvitation(
 
 	logger.info(`[invitation] created for ${email} role=${role}`);
 
+	await logActivity({
+		type: "INVITATION_CREATED",
+		performedBy: createdById,
+		detail: activityDetail("INVITATION_CREATED", { email, role }),
+	});
+
 	return { success: true };
 }
 
 export async function cancelInvitation(
 	id: string,
+	performedBy?: string,
 ): Promise<{ success: boolean }> {
 	await prisma.invitation.update({
 		where: { id },
 		data: { status: "CANCELLED" },
 	});
 	logger.info(`[invitation] cancelled ${id}`);
+
+	await logActivity({
+		type: "INVITATION_CANCELLED",
+		performedBy,
+		detail: activityDetail("INVITATION_CANCELLED"),
+	});
+
 	return { success: true };
 }
 
@@ -154,6 +170,12 @@ export async function consumeInvitation(
 	});
 
 	logger.info(`[invitation] consumed by user ${userId}`);
+
+	await logActivity({
+		type: "INVITATION_USED",
+		userId,
+		detail: activityDetail("INVITATION_USED", { email: invitation.email }),
+	});
 
 	return { success: true };
 }

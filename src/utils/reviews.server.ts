@@ -1,6 +1,8 @@
 import { prisma } from "@/db.server";
 import { env } from "@/env.ts";
 import type { ReviewDecision, ReviewMode } from "@/generated/prisma/enums";
+import { activityDetail } from "@/lib/activity-log";
+import { logActivity } from "@/lib/server/activity-log";
 import { sendEmail } from "@/lib/server/email";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import { completeReviewAssignment, startReview } from "./assignments.server";
@@ -231,6 +233,14 @@ export async function submitReview(
 			});
 		}
 	}
+
+	await logActivity({
+		type: "REVIEW_SUBMITTED",
+		submissionId: assignment.submissionId,
+		userId: reviewerId,
+		performedBy: reviewerId,
+		detail: activityDetail("REVIEW_SUBMITTED", { decision: data.decision }),
+	});
 
 	return { success: true };
 }

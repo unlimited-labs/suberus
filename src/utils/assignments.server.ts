@@ -4,7 +4,9 @@ import type {
 	AssignmentStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
+import { activityDetail } from "@/lib/activity-log";
 import { formatDate } from "@/lib/format-date";
+import { logActivity } from "@/lib/server/activity-log";
 import { sendEmail } from "@/lib/server/email";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import { canAssignReviewer } from "@/lib/workflow";
@@ -242,6 +244,17 @@ export async function assignReviewer(
 		`[assignment] assigned reviewer ${reviewerId} to submission ${submissionId} (${assignment.id})`,
 	);
 
+	await logActivity({
+		type: "REVIEW_ASSIGNED",
+		submissionId,
+		userId: reviewerId,
+		performedBy: assignedBy,
+		detail: activityDetail("REVIEW_ASSIGNED", {
+			assignmentId: assignment.id,
+			deadline: customDeadline?.toISOString(),
+		}),
+	});
+
 	return { success: true, assignmentId: assignment.id };
 }
 
@@ -275,6 +288,14 @@ export async function cancelAssignment(
 
 	if (result.success) {
 		logger.info(`[assignment] cancelled ${assignmentId}`);
+
+		await logActivity({
+			type: "REVIEW_CANCELLED",
+			submissionId: assignment.submissionId,
+			userId: assignment.reviewerId,
+			performedBy: cancelledBy,
+			detail: activityDetail("REVIEW_CANCELLED", { assignmentId }),
+		});
 	}
 
 	return { success: result.success, error: result.error };
@@ -307,6 +328,16 @@ export async function startReview(
 		{ type: "START_REVIEW" },
 		reviewerId,
 	);
+
+	if (result.success) {
+		await logActivity({
+			type: "REVIEW_STARTED",
+			submissionId: assignment.submissionId,
+			userId: reviewerId,
+			performedBy: reviewerId,
+			detail: activityDetail("REVIEW_STARTED", { assignmentId }),
+		});
+	}
 
 	return { success: result.success, error: result.error };
 }
@@ -358,7 +389,18 @@ export async function markOverdueAssignments(): Promise<number> {
 		const result = await executeAssignmentTransition(assignment.id, {
 			type: "MARK_OVERDUE",
 		});
-		if (result.success) count++;
+		if (result.success) {
+			count++;
+
+			await logActivity({
+				type: "REVIEW_OVERDUE",
+				submissionId: assignment.submissionId,
+				userId: assignment.reviewerId,
+				detail: activityDetail("REVIEW_OVERDUE", {
+					assignmentId: assignment.id,
+				}),
+			});
+		}
 	}
 
 	logger.info(`[assignment] marked ${count} overdue assignments`);

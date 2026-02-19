@@ -4,13 +4,18 @@ import {
 	bulkChangeRole,
 	bulkMarkFeesPaid,
 	changeUserRole,
+	checkUserDeletable,
+	type DeletableCheck,
+	deleteUser,
 	type GetUsersResponse,
 	getUserById,
 	getUsers,
 	markFeePaid,
 	toggleUserActive,
+	type UpdateUserProfileInput,
 	type UsersFilters,
 	unmarkFeePaid,
+	updateUserProfile,
 	verifyUserEmail,
 } from "@/lib/server/admin/users";
 import { logger } from "@/logger.ts";
@@ -41,18 +46,22 @@ export interface PatchUserData {
 
 export async function patchUser(
 	data: PatchUserData,
+	performedBy?: string,
 ): Promise<AdminUser | null> {
 	// Change role
 	if (data.role !== undefined) {
-		await changeUserRole({ userId: data.id, role: data.role });
+		await changeUserRole({ userId: data.id, role: data.role }, performedBy);
 	}
 
 	// Toggle active
 	if (data.isActive !== undefined) {
-		await toggleUserActive({
-			userId: data.id,
-			isActive: data.isActive,
-		});
+		await toggleUserActive(
+			{
+				userId: data.id,
+				isActive: data.isActive,
+			},
+			performedBy,
+		);
 	}
 
 	// Mark fee paid
@@ -62,22 +71,25 @@ export async function patchUser(
 		data.feeAmount !== undefined &&
 		data.feeCurrency
 	) {
-		await markFeePaid({
-			userId: data.id,
-			feeType: data.feeType,
-			amount: data.feeAmount,
-			currency: data.feeCurrency,
-		});
+		await markFeePaid(
+			{
+				userId: data.id,
+				feeType: data.feeType,
+				amount: data.feeAmount,
+				currency: data.feeCurrency,
+			},
+			performedBy,
+		);
 	}
 
 	// Unmark fee paid
 	if (data.unmarkFeePaid) {
-		await unmarkFeePaid(data.id);
+		await unmarkFeePaid(data.id, performedBy);
 	}
 
 	// Verify email
 	if (data.verifyEmail) {
-		await verifyUserEmail(data.id);
+		await verifyUserEmail(data.id, performedBy);
 	}
 
 	const changes = [
@@ -135,4 +147,28 @@ export async function executeBulkAction(
 	}
 
 	throw new Response("Invalid action", { status: 400 });
+}
+
+export async function adminUpdateProfile(
+	userId: string,
+	data: UpdateUserProfileInput,
+): Promise<AdminUser | null> {
+	await updateUserProfile(userId, data);
+	logger.info(`[admin] updateProfile ${userId}`);
+	return getUserById(userId);
+}
+
+export async function adminCheckDeletable(
+	userId: string,
+): Promise<DeletableCheck> {
+	return checkUserDeletable(userId);
+}
+
+export async function adminDeleteUser(
+	userId: string,
+	currentUserId: string,
+): Promise<{ success: boolean }> {
+	const result = await deleteUser(userId, currentUserId);
+	logger.info(`[admin] deleteUser ${userId}`);
+	return result;
 }

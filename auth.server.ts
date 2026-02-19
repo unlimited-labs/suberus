@@ -117,6 +117,17 @@ export const auth = betterAuth({
 	},
 	databaseHooks: {
 		user: {
+			create: {
+				after: async (user) => {
+					const { logActivity } = await import("@/lib/server/activity-log")
+					const { activityDetail } = await import("@/lib/activity-log")
+					await logActivity({
+						type: "USER_REGISTERED",
+						userId: user.id,
+						detail: activityDetail("USER_REGISTERED", { email: user.email }),
+					})
+				},
+			},
 			update: {
 				after: async (user) => {
 					if (!user.emailVerified) return

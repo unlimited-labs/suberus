@@ -1,6 +1,8 @@
 import { prisma } from "@/db.server";
 import type { Prisma } from "@/generated/prisma/client";
 import type { UserRole } from "@/generated/prisma/enums";
+import { activityDetail } from "@/lib/activity-log";
+import { logActivity } from "@/lib/server/activity-log";
 import { upsertAffiliation } from "@/utils/affiliations.server";
 import { linkCoAuthorsByEmail } from "@/utils/submissions.server";
 
@@ -238,10 +240,26 @@ export interface ChangeUserRoleInput {
 
 export async function changeUserRole(
 	data: ChangeUserRoleInput,
+	performedBy?: string,
 ): Promise<{ success: boolean }> {
+	const oldUser = await prisma.user.findUniqueOrThrow({
+		where: { id: data.userId },
+		select: { role: true },
+	});
+
 	await prisma.user.update({
 		where: { id: data.userId },
 		data: { role: data.role },
+	});
+
+	await logActivity({
+		type: "USER_ROLE_CHANGED",
+		userId: data.userId,
+		performedBy,
+		detail: activityDetail("USER_ROLE_CHANGED", {
+			fromRole: oldUser.role,
+			toRole: data.role,
+		}),
 	});
 
 	return { success: true };
@@ -254,10 +272,20 @@ export interface ToggleUserActiveInput {
 
 export async function toggleUserActive(
 	data: ToggleUserActiveInput,
+	performedBy?: string,
 ): Promise<{ success: boolean }> {
 	await prisma.user.update({
 		where: { id: data.userId },
 		data: { isActive: data.isActive },
+	});
+
+	await logActivity({
+		type: "USER_TOGGLED_ACTIVE",
+		userId: data.userId,
+		performedBy,
+		detail: activityDetail("USER_TOGGLED_ACTIVE", {
+			isActive: data.isActive,
+		}),
 	});
 
 	return { success: true };
@@ -272,6 +300,7 @@ export interface MarkFeePaidInput {
 
 export async function markFeePaid(
 	data: MarkFeePaidInput,
+	performedBy?: string,
 ): Promise<{ success: boolean }> {
 	const now = new Date();
 
@@ -294,15 +323,34 @@ export async function markFeePaid(
 		},
 	});
 
+	await logActivity({
+		type: "FEE_MARKED_PAID",
+		userId: data.userId,
+		performedBy,
+		detail: activityDetail("FEE_MARKED_PAID", {
+			feeType: data.feeType,
+			amount: data.amount,
+			currency: data.currency,
+		}),
+	});
+
 	return { success: true };
 }
 
 export async function unmarkFeePaid(
 	userId: string,
+	performedBy?: string,
 ): Promise<{ success: boolean }> {
 	await prisma.fee.update({
 		where: { userId },
 		data: { paid: false, paidAt: null },
+	});
+
+	await logActivity({
+		type: "FEE_MARKED_UNPAID",
+		userId,
+		performedBy,
+		detail: activityDetail("FEE_MARKED_UNPAID"),
 	});
 
 	return { success: true };
@@ -371,6 +419,7 @@ export async function updateUserProfile(
 
 export async function verifyUserEmail(
 	userId: string,
+	performedBy?: string,
 ): Promise<{ success: boolean }> {
 	const user = await prisma.user.update({
 		where: { id: userId },
@@ -379,6 +428,13 @@ export async function verifyUserEmail(
 	});
 
 	await linkCoAuthorsByEmail(user.email, userId);
+
+	await logActivity({
+		type: "USER_EMAIL_VERIFIED",
+		userId,
+		performedBy,
+		detail: activityDetail("USER_EMAIL_VERIFIED"),
+	});
 
 	return { success: true };
 }
@@ -452,6 +508,23 @@ export async function deleteUser(
 		});
 		await tx.sentReminder.deleteMany({ where: { userId } });
 		await tx.invitation.deleteMany({ where: { createdById: userId } });
+
+		const userToDelete = await tx.user.findUniqueOrThrow({
+			where: { id: userId },
+			select: { email: true },
+		});
+
+		await tx.activityLog.create({
+			data: {
+				type: "USER_DELETED",
+				userId,
+				performedBy: currentUserId,
+				detail: activityDetail("USER_DELETED", {
+					email: userToDelete.email,
+				}),
+			},
+		});
+
 		await tx.user.delete({ where: { id: userId } });
 	});
 

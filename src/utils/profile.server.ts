@@ -1,4 +1,6 @@
 import { prisma } from "@/db.server";
+import { activityDetail } from "@/lib/activity-log";
+import { logActivity } from "@/lib/server/activity-log";
 import { deleteFile, uploadFile } from "@/lib/server/storage";
 
 export async function updatePersonalInfo(
@@ -11,7 +13,7 @@ export async function updatePersonalInfo(
 		orcid?: string;
 	},
 ) {
-	return prisma.user.update({
+	const result = await prisma.user.update({
 		where: { id: userId },
 		data: {
 			firstName: data.firstName,
@@ -21,6 +23,17 @@ export async function updatePersonalInfo(
 			orcid: data.orcid || null,
 		},
 	});
+
+	await logActivity({
+		type: "USER_PROFILE_UPDATED",
+		userId,
+		performedBy: userId,
+		detail: activityDetail("USER_PROFILE_UPDATED", {
+			fields: Object.keys(data),
+		}),
+	});
+
+	return result;
 }
 
 export async function updateContactInfo(
@@ -30,13 +43,24 @@ export async function updateContactInfo(
 		country?: string;
 	},
 ) {
-	return prisma.user.update({
+	const result = await prisma.user.update({
 		where: { id: userId },
 		data: {
 			address: data.address || null,
 			country: data.country || null,
 		},
 	});
+
+	await logActivity({
+		type: "USER_PROFILE_UPDATED",
+		userId,
+		performedBy: userId,
+		detail: activityDetail("USER_PROFILE_UPDATED", {
+			fields: Object.keys(data),
+		}),
+	});
+
+	return result;
 }
 
 function generateAvatarKey(userId: string, ext: string): string {
