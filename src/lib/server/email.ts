@@ -67,8 +67,11 @@ export async function sendEmail(
 
 		// Add test run ID header in E2E mode for test isolation
 		const headers: Record<string, string> = {};
-		if (env.E2E && variables.testRunId) {
-			headers["X-Test-Run-Id"] = variables.testRunId;
+		if (env.E2E) {
+			const testRunIdMatch = to.match(/^[^-]+-([^@]+)@e2e\.local$/);
+			if (testRunIdMatch?.[1]) {
+				headers["X-Test-Run-Id"] = testRunIdMatch[1];
+			}
 		}
 
 		await transporter.sendMail({

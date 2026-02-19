@@ -38,15 +38,10 @@ export const auth = betterAuth({
 		minPasswordLength: 10,
 		sendResetPassword: async ({ user, url }) => {
 			const extUser = user as typeof user & { firstName?: string }
-			// Extract testRunId from E2E test emails (pattern: prefix-{testRunId}@e2e.local)
-			const testRunIdMatch = user.email.match(/^[^-]+-([^@]+)@e2e\.local$/)
-			const testRunId = testRunIdMatch?.[1]
-
 			await sendEmail("PASSWORD_RESET", user.email, {
 				firstName: extUser.firstName ?? user.email,
 				resetUrl: url,
 				conferenceName: await getSetting("CONFERENCE_NAME"),
-				...(testRunId && { testRunId }),
 			})
 		},
 	},
@@ -57,20 +52,10 @@ export const auth = betterAuth({
 		expiresIn: 24 * 60 * 60, // 24h
 		sendVerificationEmail: async ({ user, url }) => {
 			const extUser = user as typeof user & { firstName?: string }
-			// Extract testRunId from E2E test emails (pattern: prefix-{testRunId}@e2e.local)
-			const testRunIdMatch = user.email.match(/^[^-]+-([^@]+)@e2e\.local$/)
-			const testRunId = testRunIdMatch?.[1]
-
-			// Ensure callbackURL includes /?verified=true for toast display
-			const verificationUrl = url.includes("callbackURL=")
-				? url.replace(/callbackURL=[^&]*/, `callbackURL=${encodeURIComponent("/?verified=true")}`)
-				: `${url}${url.includes("?") ? "&" : "?"}callbackURL=${encodeURIComponent("/?verified=true")}`
-
 			await sendEmail("EMAIL_VERIFICATION", user.email, {
 				firstName: extUser.firstName ?? user.email,
-				verificationUrl,
+				verificationUrl: url,
 				conferenceName: await getSetting("CONFERENCE_NAME"),
-				...(testRunId && { testRunId }),
 			})
 		},
 	},
