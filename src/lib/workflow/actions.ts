@@ -5,7 +5,7 @@ import type {
 
 /**
  * Action metadata generators for audit trail
- * These functions create metadata objects for SubmissionStatusHistory
+ * These functions create metadata objects for ActivityLog
  */
 
 export interface StatusChangeMetadata {

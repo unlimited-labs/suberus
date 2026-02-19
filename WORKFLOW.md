@@ -749,14 +749,17 @@ Assumption: Minor edits don't create new version
 
 ## Audit Trail
 
-All submission status changes are logged in `SubmissionStatusHistory`:
-- From/to status transitions
-- Who triggered the change (user or system)
-- Review round number
-- Event type and reason
-- Flexible metadata (JSON)
+All system events are logged in `ActivityLog` with a granular `ActivityType` enum:
+- **User events:** registration, email verification, profile updates, role changes, activation/deactivation, deletion
+- **Submission events:** creation, draft submission, status transitions (from/to status, round, event, reason), withdrawal, resubmission, track changes
+- **Review events:** assignment, start, submission, cancellation, overdue marking
+- **Decision events:** editor decisions, desk rejections, decision overrides
+- **Invitation events:** creation, usage, cancellation
+- **Admin events:** fee paid/unpaid marking
 
-**Immutable:** History records are never deleted or modified - required for compliance and dispute resolution.
+Each entry includes: event type, target user/submission (optional), performer (or null for system actions), typed JSON detail, and timestamp.
+
+**Immutable:** Activity records are never deleted or modified — required for compliance and dispute resolution.
 
 ---
 
