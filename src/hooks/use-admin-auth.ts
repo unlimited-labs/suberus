@@ -15,5 +15,7 @@ export function useAdminAuth() {
 		isAdmin,
 		isOnlyAdmin,
 		canChangeRoles: isOnlyAdmin,
+		canEditProfiles: isOnlyAdmin,
+		canDeleteUsers: isOnlyAdmin,
 	};
 }

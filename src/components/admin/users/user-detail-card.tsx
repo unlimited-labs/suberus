@@ -3,13 +3,17 @@ import {
 	IconCalendar,
 	IconCash,
 	IconClock,
+	IconEdit,
 	IconId,
 	IconMail,
 	IconMailCheck,
 	IconMailX,
+	IconMapPin,
+	IconTrash,
 	IconUserCheck,
 	IconUserCog,
 	IconUserX,
+	IconWorld,
 	IconX,
 } from "@tabler/icons-react";
 import {
@@ -51,6 +55,8 @@ import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
 } from "@/utils/settings.functions";
+import { UserDeleteDialog } from "./user-delete-dialog";
+import { UserEditDialog } from "./user-edit-dialog";
 
 interface UserDetailCardProps {
 	user: AdminUser;
@@ -69,11 +75,13 @@ interface PatchPayload {
 
 export function UserDetailCard({ user }: UserDetailCardProps) {
 	const queryClient = useQueryClient();
-	const { canChangeRoles } = useAdminAuth();
+	const { canChangeRoles, canEditProfiles, canDeleteUsers } = useAdminAuth();
 	const { formatDateTime } = useDateFormat();
 	const fmtDate = (date: Date | null) => (date ? formatDateTime(date) : "—");
 	const [feeDialogOpen, setFeeDialogOpen] = useState(false);
 	const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+	const [editDialogOpen, setEditDialogOpen] = useState(false);
+	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
 	const { data: dynamicFeeTypes } = useSuspenseQuery(feeTypesQueryOptions());
 	const { data: feeCurrency } = useSuspenseQuery(feeCurrencyQueryOptions());
@@ -154,7 +162,17 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 								)}
 							</div>
 						</div>
-						<div className="flex gap-2">
+						<div className="flex flex-wrap gap-2">
+							{canEditProfiles && (
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => setEditDialogOpen(true)}
+								>
+									<IconEdit className="mr-2 size-4" />
+									Edit Profile
+								</Button>
+							)}
 							{canChangeRoles && (
 								<Button
 									variant="outline"
@@ -206,6 +224,24 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 								<div className="flex items-center gap-2">
 									<IconBuilding className="size-4 text-muted-foreground" />
 									<span>{user.affiliation}</span>
+								</div>
+							)}
+							{user.orcid && (
+								<div className="flex items-center gap-2">
+									<IconId className="size-4 text-muted-foreground" />
+									<span>ORCID: {user.orcid}</span>
+								</div>
+							)}
+							{user.country && (
+								<div className="flex items-center gap-2">
+									<IconWorld className="size-4 text-muted-foreground" />
+									<span>{user.country}</span>
+								</div>
+							)}
+							{user.address && (
+								<div className="flex items-start gap-2 sm:col-span-2">
+									<IconMapPin className="mt-0.5 size-4 text-muted-foreground" />
+									<span className="whitespace-pre-line">{user.address}</span>
 								</div>
 							)}
 						</div>
@@ -318,8 +354,40 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 							</div>
 						)}
 					</div>
+
+					{canDeleteUsers && (
+						<>
+							<Separator />
+							<div className="flex justify-end">
+								<Button
+									variant="destructive"
+									size="sm"
+									onClick={() => setDeleteDialogOpen(true)}
+								>
+									<IconTrash className="mr-2 size-4" />
+									Delete User
+								</Button>
+							</div>
+						</>
+					)}
 				</CardContent>
 			</Card>
+
+			{canEditProfiles && (
+				<UserEditDialog
+					user={user}
+					open={editDialogOpen}
+					onOpenChange={setEditDialogOpen}
+				/>
+			)}
+
+			{canDeleteUsers && (
+				<UserDeleteDialog
+					user={user}
+					open={deleteDialogOpen}
+					onOpenChange={setDeleteDialogOpen}
+				/>
+			)}
 
 			{/* Fee Dialog */}
 			<Dialog open={feeDialogOpen} onOpenChange={setFeeDialogOpen}>
