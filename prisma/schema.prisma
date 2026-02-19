@@ -44,7 +44,8 @@ model User {
   reviewAssignments    ReviewAssignment[]
   reviews              Review[]
   submissionAuthors    SubmissionAuthor[]
-  statusHistoryChanges SubmissionStatusHistory[]
+  activityTargets   ActivityLog[] @relation("ActivityTarget")
+  activityActions   ActivityLog[] @relation("ActivityPerformer")
   submissions          Submission[]              @relation("SubmissionOwner")
   sessions             Session[]
   supervisedTracks     ConferenceTrack[]         @relation("TrackSupervisor")
@@ -133,7 +134,7 @@ model Submission {
   reviews           Review[]
   authors           SubmissionAuthor[]        @relation("SubmissionAuthors")
   keywords          SubmissionKeyword[]
-  statusHistory     SubmissionStatusHistory[]
+  activityLog       ActivityLog[]
   versions          SubmissionVersion[]       @relation("SubmissionVersions")
   currentVersion    SubmissionVersion?        @relation("CurrentVersion", fields: [currentVersionId], references: [id])
   presenterAuthor   SubmissionAuthor?         @relation("PresenterAuthor", fields: [presenterId], references: [id])
@@ -280,23 +281,58 @@ model EditorDecision {
   @@map("editor_decisions")
 }
 
-model SubmissionStatusHistory {
-  id              String            @id @default(uuid()) @db.Uuid
-  submissionId    String            @db.Uuid
-  fromStatus      SubmissionStatus?
-  toStatus        SubmissionStatus
-  round           Int?
-  event           String?
-  reason          String?
-  triggeredBy     String?           @db.Uuid
-  metadata        Json?
-  createdAt       DateTime          @default(now())
-  submission      Submission        @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  triggeredByUser User?             @relation(fields: [triggeredBy], references: [id])
+enum ActivityType {
+  // User
+  USER_REGISTERED
+  USER_EMAIL_VERIFIED
+  USER_PROFILE_UPDATED
+  USER_PASSWORD_CHANGED
+  USER_ROLE_CHANGED
+  USER_TOGGLED_ACTIVE
+  USER_DELETED
+  // Submission
+  SUBMISSION_CREATED
+  SUBMISSION_DRAFT_SUBMITTED
+  SUBMISSION_STATUS_CHANGED
+  SUBMISSION_WITHDRAWN
+  SUBMISSION_RESUBMITTED
+  SUBMISSION_TRACK_CHANGED
+  // Review
+  REVIEW_ASSIGNED
+  REVIEW_STARTED
+  REVIEW_SUBMITTED
+  REVIEW_CANCELLED
+  REVIEW_OVERDUE
+  // Decision
+  DECISION_SUBMITTED
+  DECISION_DESK_REJECT
+  DECISION_OVERRIDE
+  // Invitation
+  INVITATION_CREATED
+  INVITATION_USED
+  INVITATION_CANCELLED
+  // Admin
+  FEE_MARKED_PAID
+  FEE_MARKED_UNPAID
+}
 
+model ActivityLog {
+  id           String       @id @default(uuid()) @db.Uuid
+  type         ActivityType
+  userId       String?      @db.Uuid
+  submissionId String?      @db.Uuid
+  performedBy  String?      @db.Uuid
+  detail       Json?
+  createdAt    DateTime     @default(now())
+
+  user        User?       @relation("ActivityTarget", fields: [userId], references: [id])
+  submission  Submission? @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  performer   User?       @relation("ActivityPerformer", fields: [performedBy], references: [id])
+
+  @@index([createdAt])
+  @@index([type])
   @@index([submissionId, createdAt])
-  @@index([toStatus])
-  @@map("submission_status_history")
+  @@map("activity_log")
 }
 
 model Fee {
