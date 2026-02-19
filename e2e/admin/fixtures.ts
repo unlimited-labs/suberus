@@ -3,7 +3,7 @@ import { expect } from "@playwright/test"
 import { type Page, type Locator } from "@playwright/test"
 import { loginAs } from "../helpers/auth"
 
-export { ADMIN_USER, TEST_USER, UNVERIFIED_USER, ADMIN_VERIFY_TEST_USER } from "../helpers/test-users"
+export { ADMIN_USER, TEST_USER, UNVERIFIED_USER, ADMIN_VERIFY_TEST_USER, EDITOR_USER } from "../helpers/test-users"
 
 export async function loginAsAdmin(page: Page) {
 	const { ADMIN_USER } = await import("../helpers/test-users")
@@ -109,6 +109,8 @@ export class UserDetailPage {
 	readonly emailNotVerified: Locator
 	readonly verifyEmailButton: Locator
 	readonly unmarkButton: Locator
+	readonly editProfileButton: Locator
+	readonly deleteUserButton: Locator
 
 	constructor(page: Page) {
 		this.page = page
@@ -123,6 +125,8 @@ export class UserDetailPage {
 		this.emailNotVerified = page.getByText("Email not verified")
 		this.verifyEmailButton = page.getByRole("button", { name: "Verify" })
 		this.unmarkButton = page.getByRole("button", { name: "Unmark" })
+		this.editProfileButton = page.getByRole("button", { name: "Edit Profile" })
+		this.deleteUserButton = page.getByRole("button", { name: "Delete User" })
 	}
 
 	async goto(userId: string) {

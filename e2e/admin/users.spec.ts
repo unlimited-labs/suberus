@@ -1,4 +1,5 @@
-import { test, expect, ADMIN_USER, TEST_USER, UNVERIFIED_USER, ADMIN_VERIFY_TEST_USER } from "./fixtures"
+import { test, expect, ADMIN_USER, TEST_USER, UNVERIFIED_USER, ADMIN_VERIFY_TEST_USER, EDITOR_USER } from "./fixtures"
+import { loginAs } from "../helpers/auth"
 
 // Desktop tests - skip on mobile since mobile shows cards instead of table
 // Note: Authentication is handled via storageState in playwright.config.ts
@@ -343,6 +344,174 @@ test.describe("Admin Users Management", () => {
 			// Assert
 			await expect(userDetailPage.emailVerified).toBeVisible({ timeout: 5000 })
 			await expect(userDetailPage.verifyEmailButton).not.toBeVisible()
+		})
+	})
+
+	test.describe("Edit Profile", () => {
+		test("Edit Profile button visible for admin", async ({ userDetailPage }) => {
+			// Arrange
+			const { getTestUserIds } = await import("../helpers/test-db")
+			const { testUserId } = await getTestUserIds()
+			await userDetailPage.goto(testUserId)
+
+			// Assert
+			await expect(userDetailPage.editProfileButton).toBeVisible({ timeout: 10000 })
+		})
+
+		test("Edit Profile dialog opens with user data", async ({ page, userDetailPage }) => {
+			// Arrange
+			const { getTestUserIds } = await import("../helpers/test-db")
+			const { testUserId } = await getTestUserIds()
+			await userDetailPage.goto(testUserId)
+			await expect(userDetailPage.editProfileButton).toBeVisible({ timeout: 10000 })
+
+			// Act
+			await userDetailPage.editProfileButton.click()
+
+			// Assert
+			const dialog = page.getByRole("dialog")
+			await dialog.waitFor({ state: "visible" })
+			await expect(dialog.getByText("Edit User Profile")).toBeVisible()
+			await expect(dialog.getByLabel("First name *")).toHaveValue(TEST_USER.firstName)
+			await expect(dialog.getByLabel("Last name *")).toHaveValue(TEST_USER.lastName)
+			await expect(dialog.getByLabel("Email *")).toHaveValue(TEST_USER.email)
+		})
+
+		test("can edit user profile", async ({ page, userDetailPage }) => {
+			test.slow()
+			// Arrange
+			const { createTestUser, deleteTestUser } = await import("../helpers/test-db")
+			const tempUser = await createTestUser({
+				email: `edit-profile-${Date.now()}@e2e.local`,
+				firstName: "EditBefore",
+				lastName: "ProfileBefore",
+			})
+
+			try {
+				await userDetailPage.goto(tempUser.id)
+				await expect(userDetailPage.editProfileButton).toBeVisible({ timeout: 10000 })
+
+				// Act
+				await userDetailPage.editProfileButton.click()
+				const dialog = page.getByRole("dialog")
+				await dialog.waitFor({ state: "visible" })
+
+				await dialog.getByLabel("First name *").clear()
+				await dialog.getByLabel("First name *").fill("EditAfter")
+				await dialog.getByLabel("Last name *").clear()
+				await dialog.getByLabel("Last name *").fill("ProfileAfter")
+				await dialog.getByRole("button", { name: "Save" }).click()
+
+				// Assert
+				await expect(page.getByText("Profile updated")).toBeVisible({ timeout: 5000 })
+				await expect(page.locator("[data-slot='card-title']")).toContainText("EditAfter")
+				await expect(page.locator("[data-slot='card-title']")).toContainText("ProfileAfter")
+			} finally {
+				await deleteTestUser(tempUser.id)
+			}
+		})
+
+		test("can cancel edit without saving", async ({ page, userDetailPage }) => {
+			// Arrange
+			const { getTestUserIds } = await import("../helpers/test-db")
+			const { testUserId } = await getTestUserIds()
+			await userDetailPage.goto(testUserId)
+			await expect(userDetailPage.editProfileButton).toBeVisible({ timeout: 10000 })
+
+			// Act
+			await userDetailPage.editProfileButton.click()
+			const dialog = page.getByRole("dialog")
+			await dialog.waitFor({ state: "visible" })
+			await dialog.getByLabel("First name *").clear()
+			await dialog.getByLabel("First name *").fill("ChangedName")
+			await dialog.getByRole("button", { name: "Cancel" }).click()
+
+			// Assert
+			await expect(dialog).not.toBeVisible()
+			await expect(page.locator("[data-slot='card-title']")).toContainText(TEST_USER.firstName)
+		})
+	})
+
+	test.describe("Delete User", () => {
+		test("Delete User button visible for admin", async ({ userDetailPage }) => {
+			// Arrange
+			const { getTestUserIds } = await import("../helpers/test-db")
+			const { testUserId } = await getTestUserIds()
+			await userDetailPage.goto(testUserId)
+
+			// Assert
+			await expect(userDetailPage.deleteUserButton).toBeVisible({ timeout: 10000 })
+		})
+
+		test("shows blocking reasons for user with submissions", async ({ page, userDetailPage }) => {
+			test.slow()
+			// Arrange
+			const { createTestUser, createSubmission, deleteSubmission, deleteTestUser } = await import("../helpers/test-db")
+			const tempUser = await createTestUser({
+				email: `delete-blocked-${Date.now()}@e2e.local`,
+				firstName: "DeleteBlocked",
+				lastName: "User",
+			})
+			const submission = await createSubmission({
+				title: "blocking-submission",
+				userId: tempUser.id,
+			})
+
+			try {
+				await userDetailPage.goto(tempUser.id)
+				await expect(userDetailPage.deleteUserButton).toBeVisible({ timeout: 10000 })
+
+				// Act
+				await userDetailPage.deleteUserButton.click()
+
+				// Assert
+				const dialog = page.getByRole("dialog")
+				await dialog.waitFor({ state: "visible" })
+				await expect(dialog.getByText("Cannot Delete User")).toBeVisible({ timeout: 5000 })
+			} finally {
+				await deleteSubmission(submission.id)
+				await deleteTestUser(tempUser.id)
+			}
+		})
+
+		test("can delete user without submissions", async ({ page, userDetailPage }) => {
+			test.slow()
+			// Arrange
+			const { createTestUser } = await import("../helpers/test-db")
+			const tempUser = await createTestUser({
+				email: `delete-ok-${Date.now()}@e2e.local`,
+				firstName: "DeleteOk",
+				lastName: "User",
+			})
+
+			await userDetailPage.goto(tempUser.id)
+			await expect(userDetailPage.deleteUserButton).toBeVisible({ timeout: 10000 })
+
+			// Act
+			await userDetailPage.deleteUserButton.click()
+			const dialog = page.getByRole("dialog")
+			await dialog.waitFor({ state: "visible" })
+			await dialog.getByRole("button", { name: "Delete User" }).click()
+
+			// Assert
+			await expect(page).toHaveURL(/\/admin\/users$/, { timeout: 10000 })
+			await expect(page.getByText("User deleted")).toBeVisible({ timeout: 5000 })
+		})
+	})
+
+	test.describe("Editor Visibility", () => {
+		test("Edit and Delete buttons not visible for editor", async ({ page, userDetailPage }) => {
+			// Arrange — re-auth as editor
+			await loginAs(page, EDITOR_USER, { clearCookies: true })
+
+			const { getTestUserIds } = await import("../helpers/test-db")
+			const { testUserId } = await getTestUserIds()
+			await userDetailPage.goto(testUserId)
+			await expect(userDetailPage.getUserEmail()).toBeVisible({ timeout: 10000 })
+
+			// Assert
+			await expect(userDetailPage.editProfileButton).not.toBeVisible()
+			await expect(userDetailPage.deleteUserButton).not.toBeVisible()
 		})
 	})
 })
