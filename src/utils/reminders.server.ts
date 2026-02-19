@@ -125,8 +125,11 @@ export async function sendRevisionReminders(): Promise<number> {
 			user: {
 				select: { id: true, email: true, firstName: true, lastName: true },
 			},
-			statusHistory: {
-				where: { toStatus: "REVISE_REQUIRED" },
+			activityLog: {
+				where: {
+					type: "SUBMISSION_STATUS_CHANGED",
+					detail: { path: ["toStatus"], equals: "REVISE_REQUIRED" },
+				},
 				orderBy: { createdAt: "desc" },
 				take: 1,
 			},
@@ -157,7 +160,7 @@ export async function sendRevisionReminders(): Promise<number> {
 			orderBy: { sentAt: "desc" },
 		});
 
-		const statusChangeDate = submission.statusHistory[0]?.createdAt;
+		const statusChangeDate = submission.activityLog[0]?.createdAt;
 		const referenceDate = lastReminder?.sentAt ?? statusChangeDate;
 		if (!referenceDate) continue;
 

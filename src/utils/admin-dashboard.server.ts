@@ -38,9 +38,14 @@ export interface AdminDashboardMetrics {
 		unverifiedUsers: number;
 	};
 	recentActivity: Array<{
-		submissionId: string;
-		submissionTitle: string;
-		event: string;
+		id: string;
+		type: string;
+		userId: string | null;
+		submissionId: string | null;
+		performerName: string | null;
+		submissionTitle: string | null;
+		userName: string | null;
+		detail: Record<string, string | number | boolean | null> | null;
 		createdAt: Date;
 	}>;
 	usersByCountry: Array<{ country: string; count: number }>;
@@ -128,13 +133,13 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		// Unverified users
 		prisma.user.count({ where: { emailVerified: false } }),
 		// Recent activity
-		prisma.submissionStatusHistory.findMany({
-			take: 10,
+		prisma.activityLog.findMany({
+			take: 20,
 			orderBy: { createdAt: "desc" },
 			include: {
-				submission: {
-					select: { id: true, title: true },
-				},
+				submission: { select: { id: true, title: true } },
+				user: { select: { id: true, firstName: true, lastName: true } },
+				performer: { select: { id: true, firstName: true, lastName: true } },
 			},
 		}),
 		// Users by country
@@ -235,9 +240,23 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 			unverifiedUsers,
 		},
 		recentActivity: recentActivity.map((item) => ({
-			submissionId: item.submission.id,
-			submissionTitle: item.submission.title,
-			event: item.event || "Status changed",
+			id: item.id,
+			type: item.type,
+			userId: item.userId,
+			submissionId: item.submissionId,
+			performerName: item.performer
+				? `${item.performer.firstName ?? ""} ${item.performer.lastName ?? ""}`.trim() ||
+					null
+				: null,
+			submissionTitle: item.submission?.title ?? null,
+			userName: item.user
+				? `${item.user.firstName ?? ""} ${item.user.lastName ?? ""}`.trim() ||
+					null
+				: null,
+			detail: item.detail as Record<
+				string,
+				string | number | boolean | null
+			> | null,
 			createdAt: item.createdAt,
 		})),
 		usersByCountry: usersByCountry

@@ -150,14 +150,18 @@ export async function createNewSubmission(
 			}),
 		);
 
-		// Create status history
-		await tx.submissionStatusHistory.create({
+		// Create activity log entry
+		await tx.activityLog.create({
 			data: {
+				type: "SUBMISSION_CREATED",
 				submissionId: submission.id,
-				fromStatus: null,
-				toStatus: initialStatus,
-				event: isDraft ? "draft_created" : "submission_created",
-				triggeredBy: userId,
+				performedBy: userId,
+				detail: {
+					type: "SUBMISSION_CREATED",
+					title: data.title,
+					submissionType: data.type,
+					isDraft,
+				},
 			},
 		});
 
@@ -312,8 +316,19 @@ export async function getSubmissionById(
 			keywords: {
 				include: { keyword: true },
 			},
-			statusHistory: {
-				include: { triggeredByUser: true },
+			activityLog: {
+				where: {
+					type: {
+						in: [
+							"SUBMISSION_CREATED",
+							"SUBMISSION_DRAFT_SUBMITTED",
+							"SUBMISSION_STATUS_CHANGED",
+							"SUBMISSION_WITHDRAWN",
+							"SUBMISSION_RESUBMITTED",
+						],
+					},
+				},
+				include: { performer: { select: { firstName: true, lastName: true } } },
 				orderBy: { createdAt: "asc" },
 			},
 			reviews: {
@@ -362,17 +377,39 @@ export async function getSubmissionById(
 	const keywords = submission.keywords.map((k) => k.keyword.name);
 
 	const statusHistory: UserSubmissionStatusHistory[] =
-		submission.statusHistory.map((h) => ({
-			id: h.id,
-			submissionId: h.submissionId,
-			status: h.toStatus,
-			timestamp: h.createdAt,
-			triggeredBy: h.triggeredByUser
-				? `${h.triggeredByUser.firstName ?? ""} ${h.triggeredByUser.lastName ?? ""}`.trim() ||
-					"System"
-				: "System",
-			metadata: h.metadata as { reason?: string; comment?: string } | undefined,
-		}));
+		submission.activityLog.map((h) => {
+			const detail = h.detail as Record<string, unknown> | null;
+
+			let status: SubmissionStatus;
+			switch (h.type) {
+				case "SUBMISSION_CREATED":
+					status = detail?.isDraft ? "DRAFT" : "SUBMITTED";
+					break;
+				case "SUBMISSION_DRAFT_SUBMITTED":
+					status = "SUBMITTED";
+					break;
+				case "SUBMISSION_RESUBMITTED":
+					status = "RESUBMITTED";
+					break;
+				case "SUBMISSION_WITHDRAWN":
+					status = "WITHDRAWN";
+					break;
+				default:
+					status = (detail?.toStatus as SubmissionStatus) ?? "SUBMITTED";
+			}
+
+			return {
+				id: h.id,
+				submissionId: h.submissionId ?? "",
+				status,
+				timestamp: h.createdAt,
+				triggeredBy: h.performer
+					? `${h.performer.firstName ?? ""} ${h.performer.lastName ?? ""}`.trim() ||
+						"System"
+					: "System",
+				metadata: detail as { reason?: string; comment?: string } | undefined,
+			};
+		});
 
 	// Reviews are anonymized for authors (just "Reviewer 1", "Reviewer 2", etc.)
 	const reviews: UserSubmissionReview[] = submission.reviews.map(
@@ -495,15 +532,16 @@ export async function resubmitSubmission(
 			},
 		});
 
-		// Status history
-		await tx.submissionStatusHistory.create({
+		// Activity log entry
+		await tx.activityLog.create({
 			data: {
+				type: "SUBMISSION_RESUBMITTED",
 				submissionId,
-				fromStatus: "REVISE_REQUIRED",
-				toStatus: "RESUBMITTED",
-				round: submission.currentRound,
-				event: "resubmission",
-				triggeredBy: userId,
+				performedBy: userId,
+				detail: {
+					type: "SUBMISSION_RESUBMITTED",
+					round: submission.currentRound,
+				},
 			},
 		});
 
@@ -709,13 +747,12 @@ export async function submitDraft(
 			data: { status: "SUBMITTED" },
 		});
 
-		await tx.submissionStatusHistory.create({
+		await tx.activityLog.create({
 			data: {
+				type: "SUBMISSION_DRAFT_SUBMITTED",
 				submissionId,
-				fromStatus: "DRAFT",
-				toStatus: "SUBMITTED",
-				event: "SUBMIT",
-				triggeredBy: userId,
+				performedBy: userId,
+				detail: { type: "SUBMISSION_DRAFT_SUBMITTED" },
 			},
 		});
 	});

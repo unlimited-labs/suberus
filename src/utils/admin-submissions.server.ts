@@ -300,9 +300,20 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 				},
 				orderBy: { createdAt: "desc" },
 			},
-			statusHistory: {
+			activityLog: {
+				where: {
+					type: {
+						in: [
+							"SUBMISSION_CREATED",
+							"SUBMISSION_DRAFT_SUBMITTED",
+							"SUBMISSION_STATUS_CHANGED",
+							"SUBMISSION_WITHDRAWN",
+							"SUBMISSION_RESUBMITTED",
+						],
+					},
+				},
 				include: {
-					triggeredByUser: { select: { firstName: true, lastName: true } },
+					performer: { select: { firstName: true, lastName: true } },
 				},
 				orderBy: { createdAt: "desc" },
 			},
@@ -348,16 +359,19 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 			comments: r.comments,
 			round: r.round,
 		})),
-		statusHistory: submission.statusHistory.map((h) => ({
-			fromStatus: h.fromStatus,
-			toStatus: h.toStatus,
-			event: h.event,
-			reason: h.reason,
-			createdAt: h.createdAt,
-			triggeredByName: h.triggeredByUser
-				? `${h.triggeredByUser.firstName ?? ""} ${h.triggeredByUser.lastName ?? ""}`.trim()
-				: null,
-		})),
+		statusHistory: submission.activityLog.map((h) => {
+			const detail = h.detail as Record<string, unknown> | null;
+			return {
+				fromStatus: (detail?.fromStatus as string) ?? null,
+				toStatus: (detail?.toStatus as string) ?? h.type,
+				event: (detail?.event as string) ?? h.type,
+				reason: (detail?.reason as string) ?? null,
+				createdAt: h.createdAt,
+				triggeredByName: h.performer
+					? `${h.performer.firstName ?? ""} ${h.performer.lastName ?? ""}`.trim()
+					: null,
+			};
+		}),
 	};
 }
 

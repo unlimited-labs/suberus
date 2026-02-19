@@ -88,29 +88,40 @@ export function RecentActivity({ events }: RecentActivityProps) {
 			<CardContent>
 				<div className="space-y-3 max-h-[300px] overflow-y-auto">
 					{events.map((event, index) => {
-						const Icon = getEventIcon(event.event);
-						const colorClass = getEventColor(event.event);
+						const Icon = getEventIcon(event.type);
+						const colorClass = getEventColor(event.type);
 
 						return (
 							<div
-								key={`${event.submissionId}-${index}`}
+								key={`${event.id}-${index}`}
 								className="flex items-start gap-3 pb-3 border-b last:border-b-0"
 							>
 								<div className={cn("mt-1", colorClass)}>
 									<Icon className="size-4" />
 								</div>
 								<div className="flex-1 min-w-0">
-									<Link
-										to="/admin/submissions/$id"
-										params={{ id: event.submissionId }}
-										className="text-sm font-medium hover:underline truncate block"
-									>
-										{event.submissionTitle}
-									</Link>
+									{event.submissionId ? (
+										<Link
+											to="/admin/submissions/$id"
+											params={{ id: event.submissionId }}
+											className="text-sm font-medium hover:underline truncate block"
+										>
+											{event.submissionTitle ?? event.type}
+										</Link>
+									) : (
+										<span className="text-sm font-medium truncate block">
+											{event.userName ?? event.type}
+										</span>
+									)}
 									<div className="flex items-center gap-2 mt-1">
 										<Badge variant="outline" className="text-xs">
-											{event.event}
+											{event.type}
 										</Badge>
+										{event.performerName && (
+											<span className="text-xs text-muted-foreground">
+												by {event.performerName}
+											</span>
+										)}
 										<span className="text-xs text-muted-foreground">
 											{formatTimeAgo(event.createdAt)}
 										</span>

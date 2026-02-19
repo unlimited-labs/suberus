@@ -190,16 +190,20 @@ export async function createSubmission(options: CreateSubmissionOptions): Promis
 		}
 	}
 
-	// Add status history
+	// Add activity log entry
 	if (options.status && options.status !== SubmissionStatus.DRAFT) {
-		await db.submissionStatusHistory.create({
+		await db.activityLog.create({
 			data: {
+				type: "SUBMISSION_STATUS_CHANGED",
 				submissionId: submission.id,
-				fromStatus: SubmissionStatus.DRAFT,
-				toStatus: options.status,
-				round: 1,
-				event: "SUBMIT",
-				reason: "Test submission",
+				detail: {
+					type: "SUBMISSION_STATUS_CHANGED",
+					fromStatus: SubmissionStatus.DRAFT,
+					toStatus: options.status,
+					round: 1,
+					event: "SUBMIT",
+					reason: "Test submission",
+				},
 			},
 		});
 	}
@@ -246,15 +250,19 @@ export async function createSubmissionWithAssignment(
 		},
 	});
 
-	// Add status history for UNDER_REVIEW
-	await db.submissionStatusHistory.create({
+	// Add activity log for UNDER_REVIEW
+	await db.activityLog.create({
 		data: {
+			type: "SUBMISSION_STATUS_CHANGED",
 			submissionId: submission.id,
-			fromStatus: SubmissionStatus.SUBMITTED,
-			toStatus: SubmissionStatus.UNDER_REVIEW,
-			round: 1,
-			event: "ASSIGN_REVIEWER",
-			reason: "Reviewer assigned",
+			detail: {
+				type: "SUBMISSION_STATUS_CHANGED",
+				fromStatus: SubmissionStatus.SUBMITTED,
+				toStatus: SubmissionStatus.UNDER_REVIEW,
+				round: 1,
+				event: "ASSIGN_REVIEWER",
+				reason: "Reviewer assigned",
+			},
 		},
 	});
 
@@ -320,15 +328,19 @@ export async function createSubmissionWithReview(
 		},
 	});
 
-	// Add status history
-	await db.submissionStatusHistory.create({
+	// Add activity log
+	await db.activityLog.create({
 		data: {
+			type: "SUBMISSION_STATUS_CHANGED",
 			submissionId: submission.id,
-			fromStatus: SubmissionStatus.UNDER_REVIEW,
-			toStatus: SubmissionStatus.AWAITING_DECISION,
-			round: 1,
-			event: "COMPLETE_REVIEWS",
-			reason: "All reviews completed",
+			detail: {
+				type: "SUBMISSION_STATUS_CHANGED",
+				fromStatus: SubmissionStatus.UNDER_REVIEW,
+				toStatus: SubmissionStatus.AWAITING_DECISION,
+				round: 1,
+				event: "COMPLETE_REVIEWS",
+				reason: "All reviews completed",
+			},
 		},
 	});
 
@@ -388,15 +400,19 @@ export async function createSubmissionWithDecision(
 		data: { status: targetStatus },
 	});
 
-	// Add status history
-	await db.submissionStatusHistory.create({
+	// Add activity log
+	await db.activityLog.create({
 		data: {
+			type: "SUBMISSION_STATUS_CHANGED",
 			submissionId,
-			fromStatus: SubmissionStatus.AWAITING_DECISION,
-			toStatus: targetStatus,
-			round: 1,
-			event: "EDITOR_DECISION",
-			reason: `Editor decision: ${decision}`,
+			detail: {
+				type: "SUBMISSION_STATUS_CHANGED",
+				fromStatus: SubmissionStatus.AWAITING_DECISION,
+				toStatus: targetStatus,
+				round: 1,
+				event: "EDITOR_DECISION",
+				reason: `Editor decision: ${decision}`,
+			},
 		},
 	});
 
@@ -421,7 +437,7 @@ export async function deleteSubmission(submissionId: string): Promise<void> {
 	await db.review.deleteMany({ where: { submissionId } });
 	await db.reviewAssignment.deleteMany({ where: { submissionId } });
 	await db.editorDecision.deleteMany({ where: { submissionId } });
-	await db.submissionStatusHistory.deleteMany({ where: { submissionId } });
+	await db.activityLog.deleteMany({ where: { submissionId } });
 	await db.submissionKeyword.deleteMany({ where: { submissionId } });
 	await db.submission.update({
 		where: { id: submissionId },

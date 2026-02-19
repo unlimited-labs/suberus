@@ -120,8 +120,11 @@ async function triggerRevisionReminderForSubmission(submissionId: string): Promi
 		where: { id: submissionId },
 		include: {
 			user: { select: { id: true, email: true, firstName: true, lastName: true } },
-			statusHistory: {
-				where: { toStatus: "REVISE_REQUIRED" },
+			activityLog: {
+				where: {
+					type: "SUBMISSION_STATUS_CHANGED",
+					detail: { path: ["toStatus"], equals: "REVISE_REQUIRED" },
+				},
 				orderBy: { createdAt: "desc" },
 				take: 1,
 			},
@@ -147,7 +150,7 @@ async function triggerRevisionReminderForSubmission(submissionId: string): Promi
 		orderBy: { sentAt: "desc" },
 	})
 
-	const statusChangeDate = submission.statusHistory[0]?.createdAt
+	const statusChangeDate = submission.activityLog[0]?.createdAt
 	const referenceDate = lastReminder?.sentAt ?? statusChangeDate
 	if (!referenceDate) return 0
 
@@ -393,8 +396,12 @@ test.describe("Reminder Emails - Revision", () => {
 
 		// Backdate the status history so intervalDays (1 day) has elapsed
 		const db = getPrisma()
-		await db.submissionStatusHistory.updateMany({
-			where: { submissionId, toStatus: SubmissionStatus.REVISE_REQUIRED },
+		await db.activityLog.updateMany({
+			where: {
+				submissionId,
+				type: "SUBMISSION_STATUS_CHANGED",
+				detail: { path: ["toStatus"], equals: "REVISE_REQUIRED" },
+			},
 			data: { createdAt: new Date(Date.now() - 2 * MS_PER_DAY) },
 		})
 
@@ -423,10 +430,14 @@ test.describe("Reminder Emails - Revision", () => {
 		})
 		cleanup.track(submissionId)
 
-		// Backdate status history
+		// Backdate activity log
 		const db = getPrisma()
-		await db.submissionStatusHistory.updateMany({
-			where: { submissionId, toStatus: SubmissionStatus.REVISE_REQUIRED },
+		await db.activityLog.updateMany({
+			where: {
+				submissionId,
+				type: "SUBMISSION_STATUS_CHANGED",
+				detail: { path: ["toStatus"], equals: "REVISE_REQUIRED" },
+			},
 			data: { createdAt: new Date(Date.now() - 2 * MS_PER_DAY) },
 		})
 

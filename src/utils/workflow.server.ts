@@ -12,7 +12,6 @@ import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import {
 	type AssignmentEvent,
 	assignmentMachine,
-	createSubmissionTransitionMetadata,
 	getAutoTransitionEvent,
 	getTransitionDescription,
 	type SubmissionContext,
@@ -155,18 +154,19 @@ export async function executeSubmissionTransition(
 			event.type,
 		);
 
-		await tx.submissionStatusHistory.create({
+		await tx.activityLog.create({
 			data: {
+				type: "SUBMISSION_STATUS_CHANGED",
 				submissionId,
-				fromStatus: submission.status,
-				toStatus: newState,
-				round: submission.currentRound,
-				event: event.type,
-				reason: reason || description,
-				triggeredBy,
-				metadata: createSubmissionTransitionMetadata(event.type, {
-					reason,
-				}) as object,
+				performedBy: triggeredBy,
+				detail: {
+					type: "SUBMISSION_STATUS_CHANGED",
+					fromStatus: submission.status,
+					toStatus: newState,
+					round: submission.currentRound,
+					event: event.type,
+					reason: reason || description,
+				},
 			},
 		});
 	});

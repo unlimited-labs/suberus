@@ -69,14 +69,18 @@ async function createSubmissionAtReviewsComplete(
 		});
 	}
 
-	await db.submissionStatusHistory.create({
+	await db.activityLog.create({
 		data: {
+			type: "SUBMISSION_STATUS_CHANGED",
 			submissionId: id,
-			fromStatus: SubmissionStatus.UNDER_REVIEW,
-			toStatus: SubmissionStatus.REVIEWS_COMPLETE,
-			round: 1,
-			event: "ALL_REVIEWS_COMPLETE",
-			reason: "All reviews completed",
+			detail: {
+				type: "SUBMISSION_STATUS_CHANGED",
+				fromStatus: SubmissionStatus.UNDER_REVIEW,
+				toStatus: SubmissionStatus.REVIEWS_COMPLETE,
+				round: 1,
+				event: "ALL_REVIEWS_COMPLETE",
+				reason: "All reviews completed",
+			},
 		},
 	});
 

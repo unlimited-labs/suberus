@@ -1,6 +1,7 @@
 import { prisma } from "@/db.server";
 import type { Prisma } from "@/generated/prisma/client";
 import type { UserRole } from "@/generated/prisma/enums";
+import { upsertAffiliation } from "@/utils/affiliations.server";
 import { linkCoAuthorsByEmail } from "@/utils/submissions.server";
 
 export interface AdminUser {
@@ -10,6 +11,10 @@ export interface AdminUser {
 	lastName: string | null;
 	title: string | null;
 	affiliation: string | null;
+	affiliationId: string | null;
+	orcid: string | null;
+	address: string | null;
+	country: string | null;
 	role: UserRole;
 	isActive: boolean;
 	emailVerified: boolean;
@@ -101,6 +106,10 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 		lastName: u.lastName,
 		title: u.title,
 		affiliation: u.affiliation?.name ?? null,
+		affiliationId: u.affiliationId,
+		orcid: u.orcid,
+		address: u.address,
+		country: u.country,
 		role: u.role,
 		isActive: u.isActive,
 		emailVerified: u.emailVerified,
@@ -143,6 +152,10 @@ export async function getUserById(id: string): Promise<AdminUser | null> {
 		lastName: user.lastName,
 		title: user.title,
 		affiliation: user.affiliation?.name ?? null,
+		affiliationId: user.affiliationId,
+		orcid: user.orcid,
+		address: user.address,
+		country: user.country,
 		role: user.role,
 		isActive: user.isActive,
 		emailVerified: user.emailVerified,
@@ -295,6 +308,67 @@ export async function unmarkFeePaid(
 	return { success: true };
 }
 
+export interface UpdateUserProfileInput {
+	firstName: string;
+	lastName: string;
+	title?: string;
+	email: string;
+	affiliation?: string;
+	orcid?: string;
+	address?: string;
+	country?: string;
+}
+
+export async function updateUserProfile(
+	userId: string,
+	data: UpdateUserProfileInput,
+): Promise<{ success: boolean }> {
+	const currentUser = await prisma.user.findUnique({
+		where: { id: userId },
+		select: { email: true },
+	});
+
+	if (!currentUser) {
+		throw new Response("User not found", { status: 404 });
+	}
+
+	const updateData: Prisma.UserUpdateInput = {
+		firstName: data.firstName,
+		lastName: data.lastName,
+		title: data.title || null,
+		orcid: data.orcid || null,
+		address: data.address || null,
+		country: data.country || null,
+	};
+
+	// Handle email change
+	if (data.email !== currentUser.email) {
+		const existing = await prisma.user.findUnique({
+			where: { email: data.email },
+		});
+		if (existing) {
+			throw new Response("Email already in use", { status: 409 });
+		}
+		updateData.email = data.email;
+		updateData.emailVerified = false;
+	}
+
+	// Handle affiliation
+	if (data.affiliation) {
+		const affiliation = await upsertAffiliation(data.affiliation);
+		updateData.affiliation = { connect: { id: affiliation.id } };
+	} else {
+		updateData.affiliation = { disconnect: true };
+	}
+
+	await prisma.user.update({
+		where: { id: userId },
+		data: updateData,
+	});
+
+	return { success: true };
+}
+
 export async function verifyUserEmail(
 	userId: string,
 ): Promise<{ success: boolean }> {
@@ -305,6 +379,81 @@ export async function verifyUserEmail(
 	});
 
 	await linkCoAuthorsByEmail(user.email, userId);
+
+	return { success: true };
+}
+
+export interface DeletableCheck {
+	deletable: boolean;
+	reasons: string[];
+}
+
+export async function checkUserDeletable(
+	userId: string,
+): Promise<DeletableCheck> {
+	const [submissions, reviews, editorDecisions] = await Promise.all([
+		prisma.submission.count({ where: { userId } }),
+		prisma.review.count({ where: { reviewerId: userId } }),
+		prisma.editorDecision.count({ where: { editorId: userId } }),
+	]);
+
+	const reasons: string[] = [];
+	if (submissions > 0) reasons.push(`${submissions} submission(s) as owner`);
+	if (reviews > 0) reasons.push(`${reviews} review(s) as reviewer`);
+	if (editorDecisions > 0)
+		reasons.push(`${editorDecisions} editor decision(s)`);
+
+	return { deletable: reasons.length === 0, reasons };
+}
+
+export async function deleteUser(
+	userId: string,
+	currentUserId: string,
+): Promise<{ success: boolean }> {
+	if (userId === currentUserId) {
+		throw new Response("Cannot delete your own account", { status: 400 });
+	}
+
+	// Prevent deleting last admin
+	const adminCount = await prisma.user.count({
+		where: { role: "ADMIN" },
+	});
+	const targetUser = await prisma.user.findUnique({
+		where: { id: userId },
+		select: { role: true },
+	});
+	if (targetUser?.role === "ADMIN" && adminCount <= 1) {
+		throw new Response("Cannot delete the last admin", { status: 400 });
+	}
+
+	const check = await checkUserDeletable(userId);
+	if (!check.deletable) {
+		throw new Response(`Cannot delete user: ${check.reasons.join(", ")}`, {
+			status: 409,
+		});
+	}
+
+	await prisma.$transaction(async (tx) => {
+		await tx.submissionAuthor.updateMany({
+			where: { userId },
+			data: { userId: null },
+		});
+		await tx.activityLog.updateMany({
+			where: { performedBy: userId },
+			data: { performedBy: null },
+		});
+		await tx.file.updateMany({
+			where: { uploadedById: userId },
+			data: { uploadedById: null },
+		});
+		await tx.reviewAssignment.updateMany({
+			where: { assignedBy: userId },
+			data: { assignedBy: null },
+		});
+		await tx.sentReminder.deleteMany({ where: { userId } });
+		await tx.invitation.deleteMany({ where: { createdById: userId } });
+		await tx.user.delete({ where: { id: userId } });
+	});
 
 	return { success: true };
 }
