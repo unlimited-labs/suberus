@@ -10,11 +10,7 @@ import {
 	IconUsers,
 	IconX,
 } from "@tabler/icons-react";
-import {
-	useQuery,
-	useQueryClient,
-	useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -22,18 +18,11 @@ import { toast } from "sonner";
 import { AssignReviewerDialog } from "@/components/admin/submissions/assign-reviewer-dialog";
 import { DeskRejectDialog } from "@/components/admin/submissions/desk-reject-dialog";
 import { EditorDecisionDialog } from "@/components/admin/submissions/editor-decision-dialog";
+import { OverrideDecisionDialog } from "@/components/admin/submissions/override-decision-dialog";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import {
 	Select,
 	SelectContent,
@@ -42,26 +31,24 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { useDateFormat } from "@/hooks/use-date-format";
+import { useSubmissionTransitions } from "@/hooks/use-submission-transitions";
+import { assignmentStatusColors } from "@/lib/labels/assignment";
 import {
+	reviewDecisionColors,
 	statusLabels,
 	statusVariants,
 	typeLabels,
 } from "@/lib/labels/submission";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
+import { formatFileSize } from "@/lib/utils";
 import {
 	editorSubmissionQueryOptions,
 	updateSubmissionTrackFn,
 } from "@/utils/admin-submissions.functions";
 import { adminSettingQueryOptions } from "@/utils/settings.functions";
 import { activeTracksQueryOptions } from "@/utils/tracks.functions";
-import {
-	editorOverrideFn,
-	transitionToAwaitingDecisionFn,
-	transitionToReviewsCompleteFn,
-} from "@/utils/workflow.functions";
 
 export const Route = createFileRoute("/_app/admin/_layout/submissions/$id")({
 	loader: async ({ params, context }) => {
@@ -72,15 +59,8 @@ export const Route = createFileRoute("/_app/admin/_layout/submissions/$id")({
 	component: SubmissionDetailPage,
 });
 
-function formatFileSize(bytes: number): string {
-	if (bytes < 1024) return `${bytes} B`;
-	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
 function SubmissionDetailPage() {
 	const { id } = Route.useParams();
-	const queryClient = useQueryClient();
 	const { formatDateTime } = useDateFormat();
 
 	const { data } = useSuspenseQuery(editorSubmissionQueryOptions(id));
@@ -89,13 +69,14 @@ function SubmissionDetailPage() {
 	const [showDecisionDialog, setShowDecisionDialog] = useState(false);
 	const [showDeskRejectDialog, setShowDeskRejectDialog] = useState(false);
 	const [showOverrideDialog, setShowOverrideDialog] = useState(false);
-	const [overrideReasoning, setOverrideReasoning] = useState("");
-	const [isTransitioning, setIsTransitioning] = useState(false);
 
-	const invalidateSubmission = () =>
-		queryClient.invalidateQueries({
-			queryKey: editorSubmissionQueryOptions(id).queryKey,
-		});
+	const {
+		isTransitioning,
+		invalidateSubmission,
+		handleTransitionToReviewsComplete,
+		handleTransitionToAwaitingDecision,
+		handleEditorOverride,
+	} = useSubmissionTransitions(id);
 
 	// Load config for this submission type
 	const configKey = data
@@ -134,66 +115,6 @@ function SubmissionDetailPage() {
 	}
 
 	const { submission, authors, assignments, reviews, statusHistory } = data;
-
-	async function handleTransitionToReviewsComplete() {
-		setIsTransitioning(true);
-		try {
-			const result = await transitionToReviewsCompleteFn({
-				data: { submissionId: id },
-			});
-			if (result.success) {
-				toast.success("Transitioned to Reviews Complete");
-				await invalidateSubmission();
-			} else {
-				toast.error(result.error || "Transition failed");
-			}
-		} catch (_error) {
-			toast.error("Transition failed");
-		} finally {
-			setIsTransitioning(false);
-		}
-	}
-
-	async function handleEditorOverride() {
-		if (!overrideReasoning.trim()) return;
-		setIsTransitioning(true);
-		try {
-			const result = await editorOverrideFn({
-				data: { submissionId: id, reasoning: overrideReasoning.trim() },
-			});
-			if (result.success) {
-				toast.success("Decision overridden — now in Awaiting Decision");
-				setShowOverrideDialog(false);
-				setOverrideReasoning("");
-				await invalidateSubmission();
-			} else {
-				toast.error(result.error || "Override failed");
-			}
-		} catch (_error) {
-			toast.error("Override failed");
-		} finally {
-			setIsTransitioning(false);
-		}
-	}
-
-	async function handleTransitionToAwaitingDecision() {
-		setIsTransitioning(true);
-		try {
-			const result = await transitionToAwaitingDecisionFn({
-				data: { submissionId: id },
-			});
-			if (result.success) {
-				toast.success("Transitioned to Awaiting Decision");
-				await invalidateSubmission();
-			} else {
-				toast.error(result.error || "Transition failed");
-			}
-		} catch (_error) {
-			toast.error("Transition failed");
-		} finally {
-			setIsTransitioning(false);
-		}
-	}
 
 	// Calculate review progress
 	const currentRoundAssignments = assignments.filter(
@@ -234,21 +155,6 @@ function SubmissionDetailPage() {
 		"CONDITIONALLY_ACCEPTED",
 		"REJECTED",
 	].includes(submission.status);
-
-	const reviewDecisionColors: Record<string, string> = {
-		ACCEPT: "bg-green-100 text-green-800",
-		ACCEPT_WITH_MINOR_REVISIONS: "bg-blue-100 text-blue-800",
-		REVISE_AND_RESUBMIT: "bg-amber-100 text-amber-800",
-		REJECT: "bg-red-100 text-red-800",
-	};
-
-	const assignmentStatusColors: Record<string, string> = {
-		PENDING: "bg-yellow-100 text-yellow-800",
-		IN_PROGRESS: "bg-blue-100 text-blue-800",
-		COMPLETED: "bg-green-100 text-green-800",
-		CANCELLED: "bg-gray-100 text-gray-800",
-		OVERDUE: "bg-red-100 text-red-800",
-	};
 
 	return (
 		<div className="flex h-full flex-col">
@@ -649,44 +555,12 @@ function SubmissionDetailPage() {
 				onRejected={invalidateSubmission}
 			/>
 
-			{/* Override Decision Dialog */}
-			<Dialog open={showOverrideDialog} onOpenChange={setShowOverrideDialog}>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Override Decision</DialogTitle>
-						<DialogDescription>
-							This will revert the submission to Awaiting Decision, allowing you
-							to make a new decision.
-						</DialogDescription>
-					</DialogHeader>
-					<div className="space-y-2 py-4">
-						<label htmlFor="override-reason" className="text-sm font-medium">
-							Reasoning *
-						</label>
-						<Textarea
-							id="override-reason"
-							placeholder="Why are you overriding this decision?"
-							value={overrideReasoning}
-							onChange={(e) => setOverrideReasoning(e.target.value)}
-							rows={3}
-						/>
-					</div>
-					<DialogFooter>
-						<Button
-							variant="outline"
-							onClick={() => setShowOverrideDialog(false)}
-						>
-							Cancel
-						</Button>
-						<Button
-							onClick={handleEditorOverride}
-							disabled={isTransitioning || !overrideReasoning.trim()}
-						>
-							{isTransitioning ? "Overriding..." : "Override"}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+			<OverrideDecisionDialog
+				open={showOverrideDialog}
+				onOpenChange={setShowOverrideDialog}
+				onOverride={handleEditorOverride}
+				isTransitioning={isTransitioning}
+			/>
 		</div>
 	);
 }

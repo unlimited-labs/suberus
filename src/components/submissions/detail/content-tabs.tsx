@@ -11,17 +11,12 @@ import { SubmissionTimeline } from "@/components/submissions/submission-timeline
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { formatFileSize } from "@/lib/utils";
 import type {
 	UserSubmissionAuthor,
 	UserSubmissionFile,
 	UserSubmissionStatusHistory,
 } from "@/utils/submissions.functions";
-
-function formatFileSize(bytes: number): string {
-	if (bytes < 1024) return `${bytes} B`;
-	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 interface ContentTabsProps {
 	title: string;

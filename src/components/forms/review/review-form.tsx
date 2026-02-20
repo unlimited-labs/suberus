@@ -25,7 +25,7 @@ import type { ReviewDecision, SubmissionType } from "@/generated/prisma/enums";
 import { useAppForm } from "@/hooks/use-app-form";
 import { submitForm } from "@/lib/form-utils";
 import { typeLabels } from "@/lib/labels/submission";
-import { cn } from "@/lib/utils";
+import { cn, formatFileSize } from "@/lib/utils";
 import { createReviewSchema } from "@/lib/validations/review";
 
 interface SubmissionAuthor {
@@ -33,12 +33,6 @@ interface SubmissionAuthor {
 	lastName: string;
 	affiliationName: string | null;
 	isPresenter: boolean;
-}
-
-function formatFileSize(bytes: number): string {
-	if (bytes < 1024) return `${bytes} B`;
-	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 interface ReviewFormProps {

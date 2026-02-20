@@ -1,4 +1,5 @@
 import type {
+	ReviewDecision,
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
@@ -60,6 +61,13 @@ export const typeFilterOptions = [
 	{ label: "Full Paper", value: "FULL_PAPER" },
 	{ label: "Poster", value: "POSTER" },
 ] as const;
+
+export const reviewDecisionColors = {
+	ACCEPT: "bg-green-100 text-green-800",
+	ACCEPT_WITH_MINOR_REVISIONS: "bg-blue-100 text-blue-800",
+	REVISE_AND_RESUBMIT: "bg-amber-100 text-amber-800",
+	REJECT: "bg-red-100 text-red-800",
+} satisfies Record<ReviewDecision, string> as Record<string, string>;
 
 export const statusChangeOptions: {
 	value: SubmissionStatus;

@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { reviewDecisionColors } from "@/lib/labels/submission";
 import { cn } from "@/lib/utils";
 import { submitEditorDecisionFn } from "@/utils/workflow.functions";
 
@@ -115,13 +116,6 @@ export function EditorDecisionDialog({
 		} finally {
 			setIsSubmitting(false);
 		}
-	};
-
-	const reviewDecisionColors: Record<string, string> = {
-		ACCEPT: "bg-green-100 text-green-800",
-		ACCEPT_WITH_MINOR_REVISIONS: "bg-blue-100 text-blue-800",
-		REVISE_AND_RESUBMIT: "bg-amber-100 text-amber-800",
-		REJECT: "bg-red-100 text-red-800",
 	};
 
 	return (

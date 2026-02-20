@@ -21,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDateFormat } from "@/hooks/use-date-format";
+import { assignmentStatusColors } from "@/lib/labels/assignment";
 import {
 	type AssignmentWithReviewer,
 	type AvailableReviewer,
@@ -150,14 +151,6 @@ export function AssignReviewerDialog({
 			toast.error("Failed to cancel assignment");
 		}
 	}
-
-	const assignmentStatusColors: Record<string, string> = {
-		PENDING: "bg-yellow-100 text-yellow-800",
-		IN_PROGRESS: "bg-blue-100 text-blue-800",
-		COMPLETED: "bg-green-100 text-green-800",
-		CANCELLED: "bg-gray-100 text-gray-800",
-		OVERDUE: "bg-red-100 text-red-800",
-	};
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
