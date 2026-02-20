@@ -8,7 +8,7 @@ interface Step {
 }
 
 interface AuthSidebarProps {
-	steps?: Step[];
+	steps?: readonly Step[];
 	currentStep?: number;
 	width?: "narrow" | "wide";
 	conferenceName: string;

@@ -3,7 +3,7 @@ import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { AuthSidebar } from "@/components/forms/auth-sidebar";
+import { AuthCard } from "@/components/layout/auth-card";
 import { Button } from "@/components/ui/button";
 import { sendVerificationEmail } from "@/lib/auth-client";
 
@@ -20,12 +20,6 @@ const RESEND_COOLDOWN = 60;
 
 function VerifyEmailPage() {
 	const { email } = useSearch({ from: "/_auth/verify-email" });
-	const {
-		conferenceName,
-		conferenceDate,
-		conferenceLocation,
-		conferenceSubtitle,
-	} = Route.useRouteContext();
 	const [cooldown, setCooldown] = useState(0);
 	const [isResending, setIsResending] = useState(false);
 
@@ -59,74 +53,49 @@ function VerifyEmailPage() {
 	};
 
 	return (
-		<div className="mx-auto flex w-full max-w-3xl overflow-hidden rounded-2xl bg-card shadow-2xl">
-			<AuthSidebar
-				conferenceName={conferenceName}
-				conferenceDate={conferenceDate}
-				conferenceLocation={conferenceLocation}
-				conferenceSubtitle={conferenceSubtitle}
-			/>
-			<div className="flex flex-1 flex-col bg-card p-5 text-foreground sm:p-6 lg:p-8">
-				{/* Mobile header */}
-				<div className="mb-4 lg:hidden">
-					<h1 className="text-lg font-bold">{conferenceName}</h1>
+		<AuthCard title="Check your email">
+			<div className="flex flex-1 flex-col items-center justify-center space-y-6 text-center">
+				<div className="rounded-full bg-primary/10 p-4">
+					<IconMail className="size-12 text-primary" />
 				</div>
 
-				{/* Desktop header */}
-				<div className="mb-4 hidden lg:block">
-					<h1 className="text-xl font-semibold tracking-tight">
-						Check your email
-					</h1>
+				<div className="space-y-2">
+					<h2 className="text-lg font-semibold lg:hidden">Check your email</h2>
+					<p className="text-sm text-muted-foreground">
+						We've sent a verification link to
+					</p>
+					{email && <p className="font-medium text-foreground">{email}</p>}
 				</div>
 
-				<div className="flex flex-1 flex-col items-center justify-center space-y-6 text-center">
-					<div className="rounded-full bg-primary/10 p-4">
-						<IconMail className="size-12 text-primary" />
-					</div>
-
-					<div className="space-y-2">
-						<h2 className="text-lg font-semibold lg:hidden">
-							Check your email
-						</h2>
-						<p className="text-sm text-muted-foreground">
-							We've sent a verification link to
-						</p>
-						{email && <p className="font-medium text-foreground">{email}</p>}
-					</div>
-
-					<div className="space-y-2 text-sm text-muted-foreground">
-						<p>Click the link in your email to verify your account.</p>
-						<p>The link expires in 24 hours.</p>
-					</div>
-
-					{email && (
-						<Button
-							variant="outline"
-							onClick={handleResend}
-							disabled={cooldown > 0 || isResending}
-							className="gap-2"
-						>
-							<IconRefresh
-								className={`size-4 ${isResending ? "animate-spin" : ""}`}
-							/>
-							{cooldown > 0
-								? `Resend in ${cooldown}s`
-								: isResending
-									? "Sending..."
-									: "Resend email"}
-						</Button>
-					)}
+				<div className="space-y-2 text-sm text-muted-foreground">
+					<p>Click the link in your email to verify your account.</p>
+					<p>The link expires in 24 hours.</p>
 				</div>
 
-				<p className="mt-4 text-center text-sm text-muted-foreground">
-					<Link
-						to="/login"
-						className="font-medium text-primary hover:underline"
+				{email && (
+					<Button
+						variant="outline"
+						onClick={handleResend}
+						disabled={cooldown > 0 || isResending}
+						className="gap-2"
 					>
-						Back to login
-					</Link>
-				</p>
+						<IconRefresh
+							className={`size-4 ${isResending ? "animate-spin" : ""}`}
+						/>
+						{cooldown > 0
+							? `Resend in ${cooldown}s`
+							: isResending
+								? "Sending..."
+								: "Resend email"}
+					</Button>
+				)}
 			</div>
-		</div>
+
+			<p className="mt-4 text-center text-sm text-muted-foreground">
+				<Link to="/login" className="font-medium text-primary hover:underline">
+					Back to login
+				</Link>
+			</p>
+		</AuthCard>
 	);
 }
