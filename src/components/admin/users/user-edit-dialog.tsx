@@ -1,25 +1,9 @@
-import {
-	IconBuilding,
-	IconCheck,
-	IconMail,
-	IconMapPin,
-	IconSelector,
-	IconWorld,
-} from "@tabler/icons-react";
+import { IconBuilding, IconMail, IconMapPin } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { countries } from "countries-list";
-import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-	CommandList,
-} from "@/components/ui/command";
+import { CountryCombobox } from "@/components/ui/country-combobox";
 import {
 	Dialog,
 	DialogContent,
@@ -28,11 +12,6 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
 import { useAppForm } from "@/hooks/use-app-form";
 import { submitForm } from "@/lib/form-utils";
 import { titleOptions } from "@/lib/labels";
@@ -43,10 +22,6 @@ import {
 	adminUsersQueryOptions,
 	updateAdminUserProfile,
 } from "@/utils/admin-users.functions";
-
-const COUNTRIES = Object.values(countries)
-	.map((c) => c.name)
-	.toSorted((a, b) => a.localeCompare(b));
 
 const orcidRegex = /^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/;
 
@@ -62,7 +37,6 @@ export function UserEditDialog({
 	onOpenChange,
 }: UserEditDialogProps) {
 	const queryClient = useQueryClient();
-	const [countryOpen, setCountryOpen] = useState(false);
 
 	const mutation = useMutation({
 		mutationFn: (data: {
@@ -226,58 +200,10 @@ export function UserEditDialog({
 						{(field) => (
 							<Field>
 								<FieldLabel>Country</FieldLabel>
-								<Popover open={countryOpen} onOpenChange={setCountryOpen}>
-									<PopoverTrigger asChild>
-										<Button
-											variant="outline"
-											role="combobox"
-											aria-expanded={countryOpen}
-											className={cn(
-												"h-9 w-full justify-between pl-3 font-normal",
-												!field.state.value && "text-muted-foreground",
-											)}
-										>
-											<span className="flex items-center gap-2">
-												<IconWorld className="size-4 text-muted-foreground" />
-												{field.state.value || "Select country..."}
-											</span>
-											<IconSelector className="size-4 shrink-0 opacity-50" />
-										</Button>
-									</PopoverTrigger>
-									<PopoverContent
-										className="w-[--radix-popover-trigger-width] p-0"
-										align="start"
-									>
-										<Command>
-											<CommandInput placeholder="Search country..." />
-											<CommandList>
-												<CommandEmpty>No country found.</CommandEmpty>
-												<CommandGroup>
-													{COUNTRIES.map((country) => (
-														<CommandItem
-															key={country}
-															value={country}
-															onSelect={() => {
-																field.handleChange(country);
-																setCountryOpen(false);
-															}}
-														>
-															<IconCheck
-																className={cn(
-																	"mr-2 size-4",
-																	field.state.value === country
-																		? "opacity-100"
-																		: "opacity-0",
-																)}
-															/>
-															{country}
-														</CommandItem>
-													))}
-												</CommandGroup>
-											</CommandList>
-										</Command>
-									</PopoverContent>
-								</Popover>
+								<CountryCombobox
+									value={field.state.value || ""}
+									onChange={field.handleChange}
+								/>
 							</Field>
 						)}
 					</form.Field>

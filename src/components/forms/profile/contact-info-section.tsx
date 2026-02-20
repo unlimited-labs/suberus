@@ -1,48 +1,28 @@
 import {
 	IconAlertCircle,
-	IconCheck,
 	IconMail,
 	IconMailCheck,
 	IconMailX,
 	IconMapPin,
 	IconRefresh,
-	IconSelector,
-	IconWorld,
 } from "@tabler/icons-react";
-import { countries } from "countries-list";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-	CommandList,
-} from "@/components/ui/command";
+import { CountryCombobox } from "@/components/ui/country-combobox";
 import {
 	Field,
 	FieldDescription,
 	FieldError,
 	FieldLabel,
 } from "@/components/ui/field";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
 import { useAppForm } from "@/hooks/use-app-form";
 import { sendVerificationEmail } from "@/lib/auth-client";
 import { submitForm } from "@/lib/form-utils";
 import { cn } from "@/lib/utils";
 import type { ContactInfoFormData } from "@/lib/validations/profile";
 import { contactInfoSchema } from "@/lib/validations/profile";
-
-const COUNTRIES = Object.values(countries)
-	.map((c) => c.name)
-	.toSorted((a, b) => a.localeCompare(b));
 
 interface ContactInfoSectionProps {
 	initialData: ContactInfoFormData;
@@ -61,7 +41,6 @@ export function ContactInfoSection({
 	currentEmail,
 	emailVerified,
 }: ContactInfoSectionProps) {
-	const [countryOpen, setCountryOpen] = useState(false);
 	const [cooldown, setCooldown] = useState(0);
 	const [isResending, setIsResending] = useState(false);
 
@@ -214,59 +193,11 @@ export function ContactInfoSection({
 				{(field) => (
 					<Field>
 						<FieldLabel>Country</FieldLabel>
-						<Popover open={countryOpen} onOpenChange={setCountryOpen}>
-							<PopoverTrigger asChild>
-								<Button
-									variant="outline"
-									role="combobox"
-									aria-expanded={countryOpen}
-									className={cn(
-										"h-9 w-full justify-between pl-3 font-normal",
-										!field.state.value && "text-muted-foreground",
-									)}
-									disabled={isLoading}
-								>
-									<span className="flex items-center gap-2">
-										<IconWorld className="size-4 text-muted-foreground" />
-										{field.state.value || "Select country..."}
-									</span>
-									<IconSelector className="size-4 shrink-0 opacity-50" />
-								</Button>
-							</PopoverTrigger>
-							<PopoverContent
-								className="w-[--radix-popover-trigger-width] p-0"
-								align="start"
-							>
-								<Command>
-									<CommandInput placeholder="Search country..." />
-									<CommandList>
-										<CommandEmpty>No country found.</CommandEmpty>
-										<CommandGroup>
-											{COUNTRIES.map((country) => (
-												<CommandItem
-													key={country}
-													value={country}
-													onSelect={() => {
-														field.handleChange(country);
-														setCountryOpen(false);
-													}}
-												>
-													<IconCheck
-														className={cn(
-															"mr-2 size-4",
-															field.state.value === country
-																? "opacity-100"
-																: "opacity-0",
-														)}
-													/>
-													{country}
-												</CommandItem>
-											))}
-										</CommandGroup>
-									</CommandList>
-								</Command>
-							</PopoverContent>
-						</Popover>
+						<CountryCombobox
+							value={field.state.value || ""}
+							onChange={field.handleChange}
+							disabled={isLoading}
+						/>
 					</Field>
 				)}
 			</form.Field>

@@ -1,15 +1,11 @@
 import {
 	IconArrowLeft,
 	IconArrowRight,
-	IconCheck,
 	IconInfoCircle,
 	IconMail,
 	IconMapPin,
-	IconSelector,
-	IconWorld,
 } from "@tabler/icons-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { countries } from "countries-list";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -20,14 +16,7 @@ import { TosModal } from "@/components/tos-modal";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-	CommandList,
-} from "@/components/ui/command";
+import { COUNTRIES, CountryCombobox } from "@/components/ui/country-combobox";
 import {
 	Field,
 	FieldDescription,
@@ -35,11 +24,6 @@ import {
 	FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
 import { useAppForm } from "@/hooks/use-app-form";
 import { useMultiStep } from "@/hooks/use-multi-step";
 import { signUp } from "@/lib/auth-client";
@@ -96,10 +80,6 @@ const STEPS = [
 	{ id: 3, title: "Survey" },
 ] as const;
 
-const COUNTRIES = Object.values(countries)
-	.map((c) => c.name)
-	.toSorted((a, b) => a.localeCompare(b));
-
 const stepSchemas = [
 	registerStep1Schema,
 	registerStep2Schema,
@@ -120,7 +100,6 @@ function RegisterPage() {
 		const name = detectCountry();
 		return name && COUNTRIES.includes(name) ? name : "";
 	}, []);
-	const [countryOpen, setCountryOpen] = useState(false);
 	const [tosOpen, setTosOpen] = useState(false);
 
 	const defaultSurveyAnswers: Record<string, string> = {};
@@ -465,62 +444,10 @@ function RegisterPage() {
 										return (
 											<Field data-invalid={hasError}>
 												<FieldLabel>Country *</FieldLabel>
-												<Popover
-													open={countryOpen}
-													onOpenChange={setCountryOpen}
-												>
-													<PopoverTrigger asChild>
-														<Button
-															variant="outline"
-															role="combobox"
-															aria-expanded={countryOpen}
-															aria-invalid={hasError}
-															className={cn(
-																"h-9 w-full justify-between pl-3 font-normal",
-																!field.state.value && "text-muted-foreground",
-															)}
-														>
-															<span className="flex items-center gap-2">
-																<IconWorld className="size-4 text-muted-foreground" />
-																{field.state.value || "Select country..."}
-															</span>
-															<IconSelector className="size-4 shrink-0 opacity-50" />
-														</Button>
-													</PopoverTrigger>
-													<PopoverContent
-														className="w-[--radix-popover-trigger-width] p-0"
-														align="start"
-													>
-														<Command>
-															<CommandInput placeholder="Search country..." />
-															<CommandList>
-																<CommandEmpty>No country found.</CommandEmpty>
-																<CommandGroup>
-																	{COUNTRIES.map((country) => (
-																		<CommandItem
-																			key={country}
-																			value={country}
-																			onSelect={() => {
-																				field.handleChange(country);
-																				setCountryOpen(false);
-																			}}
-																		>
-																			<IconCheck
-																				className={cn(
-																					"mr-2 size-4",
-																					field.state.value === country
-																						? "opacity-100"
-																						: "opacity-0",
-																				)}
-																			/>
-																			{country}
-																		</CommandItem>
-																	))}
-																</CommandGroup>
-															</CommandList>
-														</Command>
-													</PopoverContent>
-												</Popover>
+												<CountryCombobox
+													value={field.state.value}
+													onChange={field.handleChange}
+												/>
 												<FieldError
 													errors={
 														hasError ? field.state.meta.errors : undefined
