@@ -102,9 +102,11 @@ function SubmissionDetailPage() {
 		? SUBMISSION_TYPE_TO_KEY[data.submission.type]
 		: undefined;
 	const { data: config } = useQuery({
-		...adminSettingQueryOptions(configKey ?? ""),
+		...adminSettingQueryOptions(
+			configKey ?? "SUBMISSION_TYPE_ORAL_PRESENTATION",
+		),
 		enabled: !!configKey,
-	}) as { data: ConfigData | undefined };
+	});
 
 	// Load active tracks if submission is ABSTRACT
 	const { data: availableTracks = [] } = useQuery({
@@ -687,11 +689,4 @@ function SubmissionDetailPage() {
 			</Dialog>
 		</div>
 	);
-}
-
-interface ConfigData {
-	minReviewers: number;
-	maxReviewers: number;
-	requiresEditorDecision: boolean;
-	autoTransitionAfterReviews: boolean;
 }

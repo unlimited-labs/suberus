@@ -83,15 +83,8 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 	const [editDialogOpen, setEditDialogOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-	const { data: dynamicFeeTypes } = useSuspenseQuery(feeTypesQueryOptions());
-	const { data: feeCurrency } = useSuspenseQuery(feeCurrencyQueryOptions());
-
-	const feeTypes = dynamicFeeTypes as Array<{
-		id: string;
-		name: string;
-		amount: number;
-	}>;
-	const currency = feeCurrency as string;
+	const { data: feeTypes } = useSuspenseQuery(feeTypesQueryOptions());
+	const { data: currency } = useSuspenseQuery(feeCurrencyQueryOptions());
 
 	const [selectedFeeTypeId, setSelectedFeeTypeId] = useState<string>(
 		feeTypes[0]?.id ?? "",

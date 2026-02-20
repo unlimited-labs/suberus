@@ -92,10 +92,13 @@ export const submissionValidationSettingsQueryOptions = () =>
 		queryFn: () => getSubmissionValidationSettingsFn(),
 	});
 
-export const adminSettingQueryOptions = (key: string) =>
+export const adminSettingQueryOptions = <K extends keyof AppSettingsMap>(
+	key: K,
+) =>
 	queryOptions({
 		queryKey: ["settings", "admin", key],
-		queryFn: () => getSettingFn({ data: { key } }),
+		queryFn: () =>
+			getSettingFn({ data: { key } }) as Promise<AppSettingsMap[K]>,
 	});
 
 export const reminderSettingsQueryOptions = () =>
