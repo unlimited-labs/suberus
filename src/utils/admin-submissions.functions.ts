@@ -2,6 +2,10 @@ import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
+	checkSubmissionDeleteWarnings,
+	deleteSubmission,
+} from "@/lib/server/admin/submissions";
+import {
 	bulkAssignReviewer,
 	bulkChangeStatus,
 	bulkUpdateSubmissionTrack,
@@ -117,4 +121,20 @@ export const bulkAssignReviewerFn = createServerFn({ method: "POST" })
 			data.reviewerId,
 			context.user.id,
 		);
+	});
+
+/** Check warnings before deleting a submission */
+export const checkSubmissionDeletableFn = createServerFn({ method: "GET" })
+	.middleware([adminMiddleware])
+	.inputValidator(z.object({ submissionId: z.uuid() }))
+	.handler(async ({ data }) => {
+		return checkSubmissionDeleteWarnings(data.submissionId);
+	});
+
+/** Delete a submission */
+export const deleteSubmissionFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(z.object({ submissionId: z.uuid() }))
+	.handler(async ({ data, context }) => {
+		return deleteSubmission(data.submissionId, context.user.id);
 	});
