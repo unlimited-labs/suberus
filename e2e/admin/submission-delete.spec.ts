@@ -15,7 +15,7 @@ test.describe("Admin Submission Delete", () => {
 	}) => {
 		const sub = await createSubmission({
 			testRunId: testRun.testRunId,
-			title: testRun.prefix("Delete Simple"),
+			title: "Delete Simple",
 			status: SubmissionStatus.SUBMITTED,
 		})
 		cleanup.track(sub.id)
@@ -32,7 +32,9 @@ test.describe("Admin Submission Delete", () => {
 		await expect(
 			page.getByRole("heading", { name: "Delete Submission" }),
 		).toBeVisible()
-		await expect(page.getByText(sub.title)).toBeVisible()
+		await expect(
+			page.getByLabel("Delete Submission").getByText(sub.title),
+		).toBeVisible()
 
 		// No warnings for simple submission
 		await expect(page.getByText("Warnings:")).not.toBeVisible()
@@ -59,7 +61,7 @@ test.describe("Admin Submission Delete", () => {
 	}) => {
 		const { submissionId } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
-			title: testRun.prefix("Delete With Reviews"),
+			title: "Delete With Reviews",
 		})
 		cleanup.track(submissionId)
 
@@ -104,7 +106,7 @@ test.describe("Admin Submission Delete", () => {
 	}) => {
 		const { submissionId } = await createSubmissionWithReview({
 			testRunId: testRun.testRunId,
-			title: testRun.prefix("Delete With Completed Review"),
+			title: "Delete With Completed Review",
 		})
 		cleanup.track(submissionId)
 
@@ -133,7 +135,7 @@ test.describe("Admin Submission Delete", () => {
 	}) => {
 		const sub = await createSubmission({
 			testRunId: testRun.testRunId,
-			title: testRun.prefix("Delete Cancel"),
+			title: "Delete Cancel",
 			status: SubmissionStatus.SUBMITTED,
 		})
 		cleanup.track(sub.id)
@@ -174,7 +176,7 @@ test.describe("Admin Submission Delete", () => {
 	}) => {
 		const sub = await createSubmission({
 			testRunId: testRun.testRunId,
-			title: testRun.prefix("Delete Activity Log"),
+			title: "Delete Activity Log",
 			status: SubmissionStatus.DRAFT,
 		})
 		cleanup.track(sub.id)
