@@ -7,6 +7,7 @@ import {
 	IconGavel,
 	IconHistory,
 	IconLoader2,
+	IconTrash,
 	IconUsers,
 	IconX,
 } from "@tabler/icons-react";
@@ -19,6 +20,7 @@ import { AssignReviewerDialog } from "@/components/admin/submissions/assign-revi
 import { DeskRejectDialog } from "@/components/admin/submissions/desk-reject-dialog";
 import { EditorDecisionDialog } from "@/components/admin/submissions/editor-decision-dialog";
 import { OverrideDecisionDialog } from "@/components/admin/submissions/override-decision-dialog";
+import { SubmissionDeleteDialog } from "@/components/admin/submissions/submission-delete-dialog";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -69,6 +71,7 @@ function SubmissionDetailPage() {
 	const [showDecisionDialog, setShowDecisionDialog] = useState(false);
 	const [showDeskRejectDialog, setShowDeskRejectDialog] = useState(false);
 	const [showOverrideDialog, setShowOverrideDialog] = useState(false);
+	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
 	const {
 		isTransitioning,
@@ -253,6 +256,13 @@ function SubmissionDetailPage() {
 											Override Decision
 										</Button>
 									)}
+									<Button
+										variant="destructive"
+										onClick={() => setShowDeleteDialog(true)}
+									>
+										<IconTrash className="size-4 mr-2" />
+										Delete
+									</Button>
 								</div>
 							</div>
 						</CardHeader>
@@ -560,6 +570,13 @@ function SubmissionDetailPage() {
 				onOpenChange={setShowOverrideDialog}
 				onOverride={handleEditorOverride}
 				isTransitioning={isTransitioning}
+			/>
+
+			<SubmissionDeleteDialog
+				submissionId={submission.id}
+				submissionTitle={submission.title}
+				open={showDeleteDialog}
+				onOpenChange={setShowDeleteDialog}
 			/>
 		</div>
 	);
