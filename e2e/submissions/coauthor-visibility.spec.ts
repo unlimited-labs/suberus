@@ -61,6 +61,7 @@ async function arrangeCoAuthorScenario(title: string): Promise<CoAuthorScenario>
 
 test.describe("Co-author Visibility", () => {
 	test("co-author sees submission in list with badge", async ({ page }) => {
+		test.slow(); // createTestUser involves dynamic auth import
 		// Arrange
 		const { submission, coauthor, cleanup } = await arrangeCoAuthorScenario("CoAuthor List Test");
 
@@ -78,6 +79,7 @@ test.describe("Co-author Visibility", () => {
 	});
 
 	test("co-author detail is read-only — no Edit/Withdraw actions", async ({ page }) => {
+		test.slow(); // createTestUser involves dynamic auth import
 		// Arrange
 		const { submission, coauthor, cleanup } = await arrangeCoAuthorScenario("CoAuthor ReadOnly Test");
 
@@ -98,6 +100,7 @@ test.describe("Co-author Visibility", () => {
 	});
 
 	test("owner sees full actions — no read-only badge", async ({ page }) => {
+		test.slow(); // createTestUser involves dynamic auth import
 		// Arrange
 		const { submission, cleanup } = await arrangeCoAuthorScenario("Owner Actions Test");
 
@@ -117,6 +120,7 @@ test.describe("Co-author Visibility", () => {
 	});
 
 	test("unlinked co-author email — submission not visible", async ({ page }) => {
+		test.slow(); // createTestUser involves dynamic auth import
 		// Arrange — create submission with co-author email that doesn't match any user
 		const testRunId = `e2e_${randomUUID().slice(0, 8)}`;
 		const unlinkedEmail = `nobody-${testRunId}@e2e.local`;

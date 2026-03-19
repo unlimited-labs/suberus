@@ -29,6 +29,12 @@ const transporter = nodemailer.createTransport({
 	host: env.SMTP_HOST,
 	port: env.SMTP_PORT,
 	secure: env.SMTP_SECURE,
+	pool: true,
+	maxConnections: 1,
+	maxMessages: Infinity,
+	connectionTimeout: 10_000,
+	greetingTimeout: 10_000,
+	socketTimeout: 30_000,
 	...(env.SMTP_USER && env.SMTP_PASSWORD
 		? { auth: { user: env.SMTP_USER, pass: env.SMTP_PASSWORD } }
 		: {}),
@@ -102,7 +108,15 @@ export async function checkSmtpHealth(): Promise<SmtpHealthResult> {
 	const port = env.SMTP_PORT;
 
 	try {
-		await transporter.verify();
+		await Promise.race([
+			transporter.verify(),
+			new Promise((_, reject) =>
+				setTimeout(
+					() => reject(new Error("SMTP health check timed out")),
+					5000,
+				),
+			),
+		]);
 		return {
 			status: "healthy",
 			host,

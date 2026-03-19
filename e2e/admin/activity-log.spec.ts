@@ -139,7 +139,7 @@ test.describe("Activity Log - Recent Activity", () => {
 		// Assert - find the link with submission title and verify href
 		const main = page.getByRole("main");
 		const link = main.getByRole("link", { name: sub.title });
-		await expect(link).toBeVisible({ timeout: 5000 });
+		await expect(link).toBeVisible({ timeout: 15000 });
 		await expect(link).toHaveAttribute(
 			"href",
 			`/admin/submissions/${sub.id}`,

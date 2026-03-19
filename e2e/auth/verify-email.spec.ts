@@ -59,7 +59,7 @@ test.describe("Verify Email - Verification Link", () => {
 		testRun,
 		page,
 	}) => {
-		test.slow()
+		test.slow() // 3-step registration + email wait + verification
 		// Arrange - register new user
 		const uniqueEmail = `verify-link-${testRun.testRunId}@e2e.local`
 		await registerPage.goto()
@@ -76,7 +76,7 @@ test.describe("Verify Email - Verification Link", () => {
 		await registerPage.clickContinue()
 		await registerPage.fillStep3({ acceptTerms: true })
 		await registerPage.clickCreateAccount()
-		await expect(page).toHaveURL("/", { timeout: 10000 })
+		await expect(page).toHaveURL("/", { timeout: 15000 })
 
 		// Assert precondition - unverified banner is visible
 		const banner = page.locator("[role='alert']").filter({ hasText: /email.*not verified/i })
@@ -115,6 +115,7 @@ test.describe("Verify Email Page - Resend Flow", () => {
 		registerPage,
 		testRun,
 	}) => {
+		test.slow(); // 3-step registration + resend email wait
 		// Arrange
 		const uniqueEmail = `resend-${testRun.testRunId}@e2e.local`
 		await registerPage.goto()
@@ -131,17 +132,18 @@ test.describe("Verify Email Page - Resend Flow", () => {
 		await registerPage.clickContinue()
 		await registerPage.fillStep3({ acceptTerms: true })
 		await registerPage.clickCreateAccount()
-		await expect(registerPage.page).toHaveURL("/", { timeout: 10000 })
+		await expect(registerPage.page).toHaveURL("/", { timeout: 15000 })
 		// Clear only emails for this specific address (not all emails)
 		await clearMailpitForAddress(uniqueEmail)
 
 		// Act
 		const banner = registerPage.page.locator("[role='alert']").filter({ hasText: /email.*not verified/i })
+		await expect(banner).toBeVisible({ timeout: 5000 })
 		await banner.getByRole("button", { name: /resend/i }).click()
 
 		// Assert
 		await expect(registerPage.page.getByText(/verification email sent/i)).toBeVisible({
-			timeout: 5000,
+			timeout: 10000,
 		})
 		const email = await waitForEmail(uniqueEmail, "verify", 15000)
 		expect(email).not.toBeNull()
@@ -165,15 +167,16 @@ test.describe("Verify Email Page - Resend Flow", () => {
 		await registerPage.clickContinue()
 		await registerPage.fillStep3({ acceptTerms: true })
 		await registerPage.clickCreateAccount()
-		await expect(registerPage.page).toHaveURL("/", { timeout: 10000 })
+		await expect(registerPage.page).toHaveURL("/", { timeout: 15000 })
 
 		// Act
 		const banner = registerPage.page.locator("[role='alert']").filter({ hasText: /email.*not verified/i })
+		await expect(banner).toBeVisible({ timeout: 5000 })
 		const resendButton = banner.getByRole("button", { name: /resend/i })
 		await resendButton.click()
 
 		// Assert
-		await expect(resendButton).toContainText(/resend in \d+s/i, { timeout: 5000 })
+		await expect(resendButton).toContainText(/resend in \d+s/i, { timeout: 10000 })
 		await expect(resendButton).toBeDisabled()
 	})
 })

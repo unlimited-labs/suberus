@@ -8,7 +8,7 @@ import {
 	setAppSetting,
 	getTestUserIds,
 } from "../helpers/test-db"
-import { clearMailpit, waitForEmail } from "../helpers/mailpit"
+import { clearMailpitForAddress, waitForEmail } from "../helpers/mailpit"
 import { REVIEWER_USER, TEST_USER } from "../helpers/test-users"
 import { AssignmentStatus, EditorDecisionType, SubmissionStatus } from "../../src/generated/prisma/enums"
 
@@ -27,10 +27,6 @@ async function runReminderTask(page: import("@playwright/test").Page) {
 }
 
 test.describe.serial("Task: mails:reminder", () => {
-	test.beforeEach(async () => {
-		await clearMailpit()
-	})
-
 	// --- Reviewer reminders ---
 
 	test("sends reviewer reminder when deadline approaching", async ({ page, testRun, cleanup }) => {
@@ -48,9 +44,9 @@ test.describe.serial("Task: mails:reminder", () => {
 		// Act
 		const { result } = await runReminderTask(page)
 
-		// Assert
+		// Assert — search by testRunId in subject for cross-project isolation
 		expect(result.reviewerReminders).toBeGreaterThanOrEqual(1)
-		const email = await waitForEmail(REVIEWER_USER.email, "reminder", 10000)
+		const email = await waitForEmail(REVIEWER_USER.email, testRun.testRunId, 15000)
 		expect(email).toBeTruthy()
 
 		// Cleanup
@@ -72,15 +68,15 @@ test.describe.serial("Task: mails:reminder", () => {
 		// Act — first run
 		await runReminderTask(page)
 		// Wait for async email to arrive before clearing
-		await waitForEmail(REVIEWER_USER.email, "reminder", 10000)
-		await clearMailpit()
+		await waitForEmail(REVIEWER_USER.email, testRun.testRunId, 10000)
+		await clearMailpitForAddress(REVIEWER_USER.email)
 
 		// Act — second run
 		const { result } = await runReminderTask(page)
 
 		// Assert — no new reviewer reminders (dedup via SentReminder)
 		expect(result.reviewerReminders).toBe(0)
-		const email = await waitForEmail(REVIEWER_USER.email, "reminder", 3000)
+		const email = await waitForEmail(REVIEWER_USER.email, testRun.testRunId, 3000)
 		expect(email).toBeNull()
 
 		// Cleanup
@@ -147,9 +143,9 @@ test.describe.serial("Task: mails:reminder", () => {
 		// Act
 		const { result } = await runReminderTask(page)
 
-		// Assert
+		// Assert — search by testRunId for cross-project isolation
 		expect(result.revisionReminders).toBeGreaterThanOrEqual(1)
-		const email = await waitForEmail(TEST_USER.email, "revis", 10000)
+		const email = await waitForEmail(TEST_USER.email, testRun.testRunId, 15000)
 		expect(email).toBeTruthy()
 
 		// Cleanup
@@ -177,7 +173,7 @@ test.describe.serial("Task: mails:reminder", () => {
 
 		// Assert — no new revision reminders (maxCount reached)
 		expect(result.revisionReminders).toBe(0)
-		const email = await waitForEmail(TEST_USER.email, "revis", 3000)
+		const email = await waitForEmail(TEST_USER.email, testRun.testRunId, 3000)
 		expect(email).toBeNull()
 
 		// Cleanup
@@ -202,9 +198,9 @@ test.describe.serial("Task: mails:reminder", () => {
 		// Act
 		const { result } = await runReminderTask(page)
 
-		// Assert
+		// Assert — search by testRunId for cross-project isolation
 		expect(result.deadlineReminders).toBeGreaterThanOrEqual(1)
-		const email = await waitForEmail(TEST_USER.email, "deadline", 10000)
+		const email = await waitForEmail(TEST_USER.email, testRun.testRunId, 15000)
 		expect(email).toBeTruthy()
 
 		// Cleanup

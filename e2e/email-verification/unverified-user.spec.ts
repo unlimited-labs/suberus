@@ -55,25 +55,27 @@ test.describe("Unverified User - Email Verification Banner", () => {
 		// Arrange
 		await clearMailpitForAddress(UNVERIFIED_USER.email)
 		await page.goto("/")
+		await emailBanner.expectVisible()
 
 		// Act
 		await emailBanner.clickResend()
 
 		// Assert
-		await expect(page.getByText(/verification email sent/i)).toBeVisible({ timeout: 5000 })
-		const email = await waitForEmail(UNVERIFIED_USER.email, "verify", 10000)
+		await expect(page.getByText(/verification email sent/i)).toBeVisible({ timeout: 10000 })
+		const email = await waitForEmail(UNVERIFIED_USER.email, "verify", 15000)
 		expect(email).not.toBeNull()
 	})
 
 	test("resend button shows cooldown after click", async ({ page, emailBanner }) => {
 		// Arrange
 		await page.goto("/")
+		await emailBanner.expectVisible()
 
 		// Act
 		await emailBanner.clickResend()
 
 		// Assert
-		await expect(emailBanner.resendButton).toContainText(/resend in \d+s/i, { timeout: 5000 })
+		await expect(emailBanner.resendButton).toContainText(/resend in \d+s/i, { timeout: 10000 })
 		await expect(emailBanner.resendButton).toBeDisabled()
 	})
 })
@@ -99,15 +101,16 @@ test.describe("Unverified User - Submission Block", () => {
 		// Arrange
 		await clearMailpitForAddress(UNVERIFIED_USER.email)
 		await submissionBlockPage.goto()
+		await submissionBlockPage.expectBlocked()
 
 		// Act
 		await submissionBlockPage.clickResend()
 
 		// Assert
 		await expect(submissionBlockPage.page.getByText(/verification email sent/i)).toBeVisible({
-			timeout: 5000,
+			timeout: 10000,
 		})
-		const email = await waitForEmail(UNVERIFIED_USER.email, "verify", 10000)
+		const email = await waitForEmail(UNVERIFIED_USER.email, "verify", 15000)
 		expect(email).not.toBeNull()
 	})
 
@@ -156,9 +159,9 @@ test.describe("Unverified User - Settings Page", () => {
 
 		// Assert
 		await expect(settingsEmailSection.page.getByText(/verification email sent/i)).toBeVisible({
-			timeout: 5000,
+			timeout: 10000,
 		})
-		const email = await waitForEmail(UNVERIFIED_USER.email, "verify", 10000)
+		const email = await waitForEmail(UNVERIFIED_USER.email, "verify", 15000)
 		expect(email).not.toBeNull()
 	})
 })

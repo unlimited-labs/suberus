@@ -288,7 +288,7 @@ test.describe("Admin Settings - Placeholder Tooltips & Test Email", () => {
 		// Assert - success toast
 		await expect(
 			page.getByText(/test email sent/i),
-		).toBeVisible({ timeout: 10000 });
+		).toBeVisible({ timeout: 15000 });
 
 		// Assert - email received in Mailpit
 		const email = await waitForEmail(

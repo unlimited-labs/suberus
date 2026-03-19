@@ -55,13 +55,10 @@ export async function waitForEmail(toEmail: string, subjectContains: string, tim
 	const startTime = Date.now()
 	while (Date.now() - startTime < timeout) {
 		try {
-			const { messages } = await getMailpitMessages()
-			const email = messages.find(
-				(m) =>
-					m.To.some((t) => t.Address === toEmail) &&
-					m.Subject.toLowerCase().includes(subjectContains.toLowerCase()),
-			)
-			if (email) return email
+			const { messages } = await mailpit.searchMessages({
+				query: `to:${toEmail} subject:${subjectContains}`,
+			})
+			if (messages.length > 0) return messages[0]
 		} catch {
 			// Mailpit might not be running, fall through to retry
 		}

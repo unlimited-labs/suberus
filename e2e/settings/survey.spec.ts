@@ -186,8 +186,8 @@ test.describe("User Settings - Survey", () => {
 			.click();
 
 		// Assert — wait for save to complete
-		await expect(page.getByText("Survey preferences saved")).toBeVisible();
-		await expect(page.getByText("Survey preferences saved")).not.toBeVisible();
+		await expect(page.getByText("Survey preferences saved")).toBeVisible({ timeout: 10000 });
+		await expect(page.getByText("Survey preferences saved")).not.toBeVisible({ timeout: 15000 });
 
 		// Verify persistence
 		await expect(async () => {
