@@ -3,7 +3,7 @@ FROM node:22-alpine AS build
 
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
@@ -41,12 +41,14 @@ CMD ["npx", "prisma", "migrate", "deploy"]
 # --- Runtime stage ---
 FROM node:22-alpine
 
+RUN addgroup -g 1001 -S appgroup && adduser -S appuser -u 1001 -G appgroup
+
 WORKDIR /app
 
-COPY --from=build /app/.output ./.output
+COPY --from=build --chown=appuser:appgroup /app/.output ./.output
+COPY --chown=appuser:appgroup --chmod=755 docker-entrypoint.sh ./docker-entrypoint.sh
 
-COPY docker-entrypoint.sh ./docker-entrypoint.sh
-RUN chmod +x ./docker-entrypoint.sh
+USER appuser
 
 EXPOSE 3001
 
