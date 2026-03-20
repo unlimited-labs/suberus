@@ -217,6 +217,8 @@ export async function getValidSubmissionEvents(
 		"WITHDRAW",
 		"DESK_REJECT",
 		"ALL_REVIEWS_COMPLETE",
+		"MANUAL_TRANSITION_TO_REVIEWS_COMPLETE",
+		"MANUAL_TRANSITION_TO_AWAITING_DECISION",
 		"EDITOR_ACCEPT",
 		"EDITOR_CONDITIONAL",
 		"EDITOR_REVISE",
@@ -608,49 +610,4 @@ export async function submitEditorDecision(
 	}
 
 	return result;
-}
-
-/**
- * Resubmit a revised submission (author action)
- */
-export async function resubmitSubmission(
-	submissionId: string,
-	userId: string,
-	newVersionData: {
-		title: string;
-		content: string;
-		comment?: string;
-	},
-): Promise<TransitionResult> {
-	const submission = await prisma.submission.findUniqueOrThrow({
-		where: { id: submissionId },
-	});
-
-	// Create new version first
-	const newVersion = await prisma.submissionVersion.create({
-		data: {
-			submissionId,
-			version: submission.currentRound + 1,
-			title: newVersionData.title,
-			content: newVersionData.content,
-			comment: newVersionData.comment,
-		},
-	});
-
-	// Update submission with new version
-	await prisma.submission.update({
-		where: { id: submissionId },
-		data: {
-			title: newVersionData.title,
-			content: newVersionData.content,
-			currentVersionId: newVersion.id,
-		},
-	});
-
-	return executeSubmissionTransition(
-		submissionId,
-		{ type: "RESUBMIT" },
-		userId,
-		newVersionData.comment || "Author resubmitted revised version",
-	);
 }
