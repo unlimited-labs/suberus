@@ -399,16 +399,22 @@ export async function checkAndTriggerReviewCompletion(
 			}
 		}
 
-		// For abstracts (no editor decision), also apply reviewer decision
+		// For types without editor decision, auto-apply only if reviewers are unanimous
 		if (result.success && !config.requiresEditorDecision) {
-			const lastReview = submission.reviews[0];
-			if (lastReview) {
-				const autoEvent = getAutoTransitionEvent(lastReview.decision);
-				return executeSubmissionTransition(
-					submissionId,
-					{ type: autoEvent },
-					triggeredBy,
-					`Auto-applied reviewer decision: ${lastReview.decision}`,
+			const decisions = submission.reviews.map((r) => r.decision);
+			if (decisions.length > 0) {
+				const unanimous = decisions.every((d) => d === decisions[0]);
+				if (unanimous) {
+					const autoEvent = getAutoTransitionEvent(decisions[0]);
+					return executeSubmissionTransition(
+						submissionId,
+						{ type: autoEvent },
+						triggeredBy,
+						`Auto-applied unanimous reviewer decision: ${decisions[0]}`,
+					);
+				}
+				logger.info(
+					`[workflow] reviewers disagree for submission ${submissionId}, leaving at REVIEWS_COMPLETE for editor`,
 				);
 			}
 		}
