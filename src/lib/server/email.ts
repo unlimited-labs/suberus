@@ -5,6 +5,15 @@ import type { EmailEventType } from "@/generated/prisma/enums";
 import { logger } from "@/logger.ts";
 import { getSetting } from "@/utils/settings.server";
 
+function escapeHtml(str: string): string {
+	return str
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
+}
+
 const TEST_PLACEHOLDER_DATA: Record<string, string> = {
 	authorName: "John Doe",
 	submissionTitle: "Example Submission Title",
@@ -65,7 +74,7 @@ export async function sendEmail(
 		const footer = await getSetting("EMAIL_FOOTER_TEXT");
 		if (footer) {
 			if (template.isHtml) {
-				body += `<hr><p>${footer}</p>`;
+				body += `<hr><p>${escapeHtml(footer)}</p>`;
 			} else {
 				body += `\n\n---\n${footer}`;
 			}
@@ -153,7 +162,7 @@ export async function sendTestEmail(
 	const footer = await getSetting("EMAIL_FOOTER_TEXT");
 	if (footer) {
 		if (isHtml) {
-			resolvedBody += `<hr><p>${footer}</p>`;
+			resolvedBody += `<hr><p>${escapeHtml(footer)}</p>`;
 		} else {
 			resolvedBody += `\n\n---\n${footer}`;
 		}
