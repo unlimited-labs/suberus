@@ -229,16 +229,25 @@ test.describe("Activity Log - Recent Activity", () => {
 			.getByRole("heading", { name: "Admin Dashboard" })
 			.waitFor({ timeout: 10000 });
 
-		// Assert - "Show more" button should be visible
+		// Assert - "Show more" button should be visible (25 entries created, page size = 20)
 		const showMoreButton = page.getByRole("button", {
 			name: "Show more",
 		});
 		await expect(showMoreButton).toBeVisible({ timeout: 5000 });
 
-		// Click "Show more" - second page has < 20 items so button disappears
+		// Count test-specific entries visible before clicking (max 20 from first page)
+		const testEntryLink = page.getByRole("link", {
+			name: new RegExp(`${testRun.testRunId}_ShowMore`),
+		});
+		const countBefore = await testEntryLink.count();
+
+		// Click "Show more" to load additional entries
 		await showMoreButton.click();
 
-		// After loading completes the button is removed (fewer than PAGE_SIZE items remaining)
-		await expect(showMoreButton).toBeHidden({ timeout: 10000 });
+		// After loading, more test entries should be visible than before
+		await expect.poll(
+			() => testEntryLink.count(),
+			{ timeout: 10000 },
+		).toBeGreaterThan(countBefore);
 	});
 });

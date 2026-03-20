@@ -406,6 +406,7 @@ test.describe("Reminder Emails - Revision", () => {
 		})
 
 		await clearMailpitForAddress("test@e2e.local")
+		await cleanupSentReminders(submissionId)
 
 		// Act
 		const count = await triggerRevisionReminderForSubmission(submissionId)

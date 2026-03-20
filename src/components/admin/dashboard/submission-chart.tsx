@@ -103,10 +103,10 @@ export function SubmissionChart({ data }: SubmissionChartProps) {
 							))}
 						</Pie>
 						<Tooltip
-							formatter={(value: number | undefined) => {
-								if (value === undefined) return "0";
-								const percent = ((value / total) * 100).toFixed(1);
-								return `${value} (${percent}%)`;
+							formatter={(value) => {
+								const num = Number(value ?? 0);
+								const percent = ((num / total) * 100).toFixed(1);
+								return `${num} (${percent}%)`;
 							}}
 							labelFormatter={() => "Count"}
 						/>

@@ -294,7 +294,7 @@ test.describe("Admin Settings - Placeholder Tooltips & Test Email", () => {
 		const email = await waitForEmail(
 			ADMIN_USER.email,
 			"[TEST]",
-			15000,
+			10000,
 		);
 		expect(email).not.toBeNull();
 		expect(email!.Subject).toContain("[TEST]");

@@ -1,18 +1,20 @@
+import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import viteReact from "@vitejs/plugin-react";
-import type { RollupConfig } from "nitro/types";
+import viteReact, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { type NitroPluginConfig, nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 import checker from "vite-plugin-checker";
-import viteTsConfigPaths from "vite-tsconfig-paths";
 
 const isDev = process.env.NODE_ENV !== "production";
 const isE2E = process.env.E2E === "true";
 
-const rollupConfig: Partial<RollupConfig> = {
-	onwarn(warning, log) {
+const rollupConfig = {
+	onwarn(
+		warning: { code?: string; message: string },
+		log: (warning: unknown) => void,
+	) {
 		if (
 			warning.code === "MODULE_LEVEL_DIRECTIVE" || // "use client" directives
 			warning.code === "EMPTY_BUNDLE" // Empty chunks from tree-shaking
@@ -28,11 +30,13 @@ const nitroConfig: NitroPluginConfig = {
 	serverDir: "server",
 	experimental: { tasks: true, vite: {} },
 	scheduledTasks: {
-		"*/5 * * * *": isDev ? [] : ["mails:reminder", "assignments:overdue"],
+		"*/5 * * * *":
+			isDev || isE2E ? [] : ["mails:reminder", "assignments:overdue"],
 	},
 };
 
 const config = defineConfig({
+	resolve: { tsconfigPaths: true },
 	server: isE2E ? { hmr: { overlay: false } } : undefined,
 	optimizeDeps: {
 		include: ["@tabler/icons-react", "countries-list"],
@@ -40,16 +44,10 @@ const config = defineConfig({
 	plugins: [
 		devtools(),
 		nitro(nitroConfig),
-		viteTsConfigPaths({
-			projects: ["./tsconfig.json"],
-		}),
 		tailwindcss(),
 		tanstackStart(),
-		viteReact({
-			babel: {
-				plugins: ["babel-plugin-react-compiler"],
-			},
-		}),
+		viteReact(),
+		babel({ presets: [reactCompilerPreset()] }),
 		// Force check TS errors on build
 		checker({
 			typescript: {

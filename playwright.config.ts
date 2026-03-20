@@ -5,7 +5,7 @@ export default defineConfig({
 	fullyParallel: true,
 	forbidOnly: false,
 	retries: 2,
-	workers: 4,
+	workers: 2,
 	reporter:
 		process.env.CI || process.env.CLAUDE
 			? [["line"], ["html", { open: "never" }]]
@@ -68,7 +68,7 @@ export default defineConfig({
 		// Admin tests - use admin auth (excludes settings tests that run in chained projects)
 		{
 			name: "chromium-admin",
-			testMatch: /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings).*\.spec\.ts/,
+			testMatch: /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|task-mails-reminder).*\.spec\.ts/,
 			dependencies: ["auth-setup", "admin-settings-3"],
 			use: {
 				...devices["Desktop Chrome"],
@@ -77,7 +77,7 @@ export default defineConfig({
 		},
 		{
 			name: "mobile-admin",
-			testMatch: /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings).*\.spec\.ts/,
+			testMatch: /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|task-mails-reminder).*\.spec\.ts/,
 			dependencies: ["auth-setup", "admin-settings-3"],
 			use: {
 				...devices["Pixel 5"],
@@ -270,6 +270,16 @@ export default defineConfig({
 			testMatch: /e2e\/reminders\/reminder-emails\.spec\.ts/,
 			use: {
 				...devices["Desktop Chrome"],
+			},
+		},
+		// Task reminder tests - API-only, shares global state with reminder tests so must run after them
+		{
+			name: "task-mails-reminder",
+			testMatch: /e2e\/admin\/task-mails-reminder\.spec\.ts/,
+			dependencies: ["auth-setup", "admin-settings-3", "reminder-emails", "chromium-reminder-settings"],
+			use: {
+				...devices["Pixel 5"],
+				storageState: "e2e/.auth/admin.json",
 			},
 		},
 		// Bundle tests - verify admin code splitting (handles auth internally)

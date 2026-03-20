@@ -34,7 +34,7 @@ const transporter = nodemailer.createTransport({
 	maxMessages: Infinity,
 	connectionTimeout: 10_000,
 	greetingTimeout: 10_000,
-	socketTimeout: 30_000,
+	socketTimeout: 15_000,
 	...(env.SMTP_USER && env.SMTP_PASSWORD
 		? { auth: { user: env.SMTP_USER, pass: env.SMTP_PASSWORD } }
 		: {}),
@@ -159,10 +159,27 @@ export async function sendTestEmail(
 		}
 	}
 
-	await transporter.sendMail({
-		from: env.SMTP_FROM_EMAIL,
-		to,
-		subject: resolvedSubject,
-		[isHtml ? "html" : "text"]: resolvedBody,
+	// Use a direct (non-pooled) connection for one-off test emails
+	// to avoid queuing behind bulk emails in the pool
+	const direct = nodemailer.createTransport({
+		host: env.SMTP_HOST,
+		port: env.SMTP_PORT,
+		secure: env.SMTP_SECURE,
+		connectionTimeout: 10_000,
+		greetingTimeout: 10_000,
+		socketTimeout: 15_000,
+		...(env.SMTP_USER && env.SMTP_PASSWORD
+			? { auth: { user: env.SMTP_USER, pass: env.SMTP_PASSWORD } }
+			: {}),
 	});
+	try {
+		await direct.sendMail({
+			from: env.SMTP_FROM_EMAIL,
+			to,
+			subject: resolvedSubject,
+			[isHtml ? "html" : "text"]: resolvedBody,
+		});
+	} finally {
+		direct.close();
+	}
 }
