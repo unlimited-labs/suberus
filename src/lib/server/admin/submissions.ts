@@ -75,6 +75,9 @@ export async function deleteSubmission(
 			versions: {
 				select: { file: { select: { id: true, storageKey: true } } },
 			},
+			reviews: {
+				select: { id: true },
+			},
 		},
 	});
 
@@ -83,9 +86,21 @@ export async function deleteSubmission(
 	}
 
 	// Collect file storage keys for cleanup after transaction
-	const fileKeys = submission.versions
+	const versionFileKeys = submission.versions
 		.map((v) => v.file)
 		.filter((f): f is { id: string; storageKey: string } => f !== null);
+
+	// Also collect review attachment files
+	const reviewIds = submission.reviews.map((r) => r.id);
+	const reviewFiles =
+		reviewIds.length > 0
+			? await prisma.file.findMany({
+					where: { entityType: "REVIEW", entityId: { in: reviewIds } },
+					select: { id: true, storageKey: true },
+				})
+			: [];
+
+	const fileKeys = [...versionFileKeys, ...reviewFiles];
 
 	await prisma.$transaction(async (tx) => {
 		// Log deletion as a user-level activity (no submissionId — it's being deleted)
