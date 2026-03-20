@@ -2,7 +2,7 @@ import { prisma } from "@/db.server";
 import type { Prisma } from "@/generated/prisma/client";
 import type { UserRole } from "@/generated/prisma/enums";
 import { activityDetail } from "@/lib/activity-log";
-import { logActivity } from "@/lib/server/activity-log";
+import { logActivity, logActivityTx } from "@/lib/server/activity-log";
 import { upsertAffiliation } from "@/utils/affiliations.server";
 import { linkCoAuthorsByEmail } from "@/utils/submissions.server";
 
@@ -261,19 +261,21 @@ export async function changeUserRole(
 		select: { role: true },
 	});
 
-	await prisma.user.update({
-		where: { id: data.userId },
-		data: { role: data.role },
-	});
+	await prisma.$transaction(async (tx) => {
+		await tx.user.update({
+			where: { id: data.userId },
+			data: { role: data.role },
+		});
 
-	await logActivity({
-		type: "USER_ROLE_CHANGED",
-		userId: data.userId,
-		performedBy,
-		detail: activityDetail("USER_ROLE_CHANGED", {
-			fromRole: oldUser.role,
-			toRole: data.role,
-		}),
+		await logActivityTx(tx, {
+			type: "USER_ROLE_CHANGED",
+			userId: data.userId,
+			performedBy,
+			detail: activityDetail("USER_ROLE_CHANGED", {
+				fromRole: oldUser.role,
+				toRole: data.role,
+			}),
+		});
 	});
 
 	return { success: true };
@@ -288,18 +290,20 @@ export async function toggleUserActive(
 	data: ToggleUserActiveInput,
 	performedBy?: string,
 ): Promise<{ success: boolean }> {
-	await prisma.user.update({
-		where: { id: data.userId },
-		data: { isActive: data.isActive },
-	});
+	await prisma.$transaction(async (tx) => {
+		await tx.user.update({
+			where: { id: data.userId },
+			data: { isActive: data.isActive },
+		});
 
-	await logActivity({
-		type: "USER_TOGGLED_ACTIVE",
-		userId: data.userId,
-		performedBy,
-		detail: activityDetail("USER_TOGGLED_ACTIVE", {
-			isActive: data.isActive,
-		}),
+		await logActivityTx(tx, {
+			type: "USER_TOGGLED_ACTIVE",
+			userId: data.userId,
+			performedBy,
+			detail: activityDetail("USER_TOGGLED_ACTIVE", {
+				isActive: data.isActive,
+			}),
+		});
 	});
 
 	return { success: true };
@@ -318,34 +322,36 @@ export async function markFeePaid(
 ): Promise<{ success: boolean }> {
 	const now = new Date();
 
-	await prisma.fee.upsert({
-		where: { userId: data.userId },
-		update: {
-			paid: true,
-			type: data.feeType,
-			amount: data.amount,
-			currency: data.currency,
-			paidAt: now,
-		},
-		create: {
-			userId: data.userId,
-			paid: true,
-			type: data.feeType,
-			amount: data.amount,
-			currency: data.currency,
-			paidAt: now,
-		},
-	});
+	await prisma.$transaction(async (tx) => {
+		await tx.fee.upsert({
+			where: { userId: data.userId },
+			update: {
+				paid: true,
+				type: data.feeType,
+				amount: data.amount,
+				currency: data.currency,
+				paidAt: now,
+			},
+			create: {
+				userId: data.userId,
+				paid: true,
+				type: data.feeType,
+				amount: data.amount,
+				currency: data.currency,
+				paidAt: now,
+			},
+		});
 
-	await logActivity({
-		type: "FEE_MARKED_PAID",
-		userId: data.userId,
-		performedBy,
-		detail: activityDetail("FEE_MARKED_PAID", {
-			feeType: data.feeType,
-			amount: data.amount,
-			currency: data.currency,
-		}),
+		await logActivityTx(tx, {
+			type: "FEE_MARKED_PAID",
+			userId: data.userId,
+			performedBy,
+			detail: activityDetail("FEE_MARKED_PAID", {
+				feeType: data.feeType,
+				amount: data.amount,
+				currency: data.currency,
+			}),
+		});
 	});
 
 	return { success: true };
@@ -355,16 +361,18 @@ export async function unmarkFeePaid(
 	userId: string,
 	performedBy?: string,
 ): Promise<{ success: boolean }> {
-	await prisma.fee.update({
-		where: { userId },
-		data: { paid: false, paidAt: null },
-	});
+	await prisma.$transaction(async (tx) => {
+		await tx.fee.update({
+			where: { userId },
+			data: { paid: false, paidAt: null },
+		});
 
-	await logActivity({
-		type: "FEE_MARKED_UNPAID",
-		userId,
-		performedBy,
-		detail: activityDetail("FEE_MARKED_UNPAID"),
+		await logActivityTx(tx, {
+			type: "FEE_MARKED_UNPAID",
+			userId,
+			performedBy,
+			detail: activityDetail("FEE_MARKED_UNPAID"),
+		});
 	});
 
 	return { success: true };
