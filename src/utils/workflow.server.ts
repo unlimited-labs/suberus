@@ -426,13 +426,42 @@ export async function checkAndTriggerReviewCompletion(
 }
 
 /**
- * Withdraw a submission (author action)
+ * Withdraw a submission (author or admin/editor action)
  */
 export async function withdrawSubmission(
 	submissionId: string,
 	userId: string,
 	reason?: string,
 ): Promise<TransitionResult> {
+	// Verify authorization: owner, co-author, or admin/editor
+	const [submission, user] = await Promise.all([
+		prisma.submission.findUniqueOrThrow({
+			where: { id: submissionId },
+			select: {
+				userId: true,
+				authors: { select: { userId: true } },
+			},
+		}),
+		prisma.user.findUniqueOrThrow({
+			where: { id: userId },
+			select: { role: true },
+		}),
+	]);
+
+	const isOwner = submission.userId === userId;
+	const isCoAuthor = submission.authors.some((a) => a.userId === userId);
+	const isAdminOrEditor = user.role === "ADMIN" || user.role === "EDITOR";
+
+	if (!isOwner && !isCoAuthor && !isAdminOrEditor) {
+		return {
+			success: false,
+			fromState: "",
+			toState: "",
+			event: "WITHDRAW",
+			error: "Not authorized to withdraw this submission",
+		};
+	}
+
 	const result = await executeSubmissionTransition(
 		submissionId,
 		{ type: "WITHDRAW" },
