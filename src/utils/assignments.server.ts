@@ -2,6 +2,7 @@ import { prisma } from "@/db.server";
 import { env } from "@/env.ts";
 import type {
 	AssignmentStatus,
+	ReviewDecision,
 	SubmissionType,
 } from "@/generated/prisma/enums";
 import { activityDetail } from "@/lib/activity-log";
@@ -346,6 +347,7 @@ export async function startReview(
 export async function completeReviewAssignment(
 	assignmentId: string,
 	reviewerId: string,
+	decision: ReviewDecision,
 ): Promise<{ success: boolean; error?: string }> {
 	const assignment = await prisma.reviewAssignment.findUnique({
 		where: { id: assignmentId },
@@ -361,7 +363,7 @@ export async function completeReviewAssignment(
 
 	const result = await executeAssignmentTransition(
 		assignmentId,
-		{ type: "COMPLETE", decision: "ACCEPT" }, // Decision passed for metadata
+		{ type: "COMPLETE", decision },
 		reviewerId,
 	);
 

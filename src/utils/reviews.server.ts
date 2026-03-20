@@ -7,7 +7,6 @@ import { sendEmail } from "@/lib/server/email";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import { completeReviewAssignment, startReview } from "./assignments.server";
 import { getSetting } from "./settings.server";
-import { checkAndTriggerReviewCompletion } from "./workflow.server";
 
 /** Review submission data */
 export interface ReviewSubmitData {
@@ -203,13 +202,10 @@ export async function submitReview(
 		});
 	}
 
-	// Mark assignment as completed
+	// Mark assignment as completed (internally triggers review completion check)
 	if (assignment.status !== "COMPLETED") {
-		await completeReviewAssignment(assignmentId, reviewerId);
+		await completeReviewAssignment(assignmentId, reviewerId, data.decision);
 	}
-
-	// Check if all reviews are complete and trigger auto-transition
-	await checkAndTriggerReviewCompletion(assignment.submissionId, reviewerId);
 
 	// Notify editor(s) that a review was submitted
 	if (assignment.assignedBy) {
