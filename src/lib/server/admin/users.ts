@@ -225,6 +225,20 @@ export interface BulkChangeRoleInput {
 export async function bulkChangeRole(
 	data: BulkChangeRoleInput,
 ): Promise<{ success: boolean; updated: number }> {
+	if (data.role !== "ADMIN") {
+		const [adminCount, affectedAdmins] = await Promise.all([
+			prisma.user.count({ where: { role: "ADMIN" } }),
+			prisma.user.count({
+				where: { id: { in: data.userIds }, role: "ADMIN" },
+			}),
+		]);
+		if (adminCount - affectedAdmins < 1) {
+			throw new Response("Cannot change role: would leave no admins", {
+				status: 400,
+			});
+		}
+	}
+
 	const result = await prisma.user.updateMany({
 		where: { id: { in: data.userIds } },
 		data: { role: data.role },
