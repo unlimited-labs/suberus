@@ -27,6 +27,7 @@ stateDiagram-v2
     [*] --> Draft: Author creates
     Draft --> Submitted: Author submits
     Submitted --> UnderReview: Editor assigns reviewer
+    Submitted --> Rejected: Editor desk rejects
     Submitted --> Withdrawn: Author withdraws
 
     UnderReview --> ReviewsComplete: Reviewer submits
@@ -42,8 +43,9 @@ stateDiagram-v2
 
     Resubmitted --> UnderReview: Assign reviewer (round++)
 
+    ConditionallyAccepted --> Accepted: Editor confirms conditions met
+
     Accepted --> [*]
-    ConditionallyAccepted --> [*]
     Rejected --> [*]
     Withdrawn --> [*]
 
@@ -63,12 +65,17 @@ stateDiagram-v2
     [*] --> Draft: Author creates
     Draft --> Submitted: Author submits
     Submitted --> UnderReview: Editor assigns 2-3 reviewers
+    Submitted --> Rejected: Editor desk rejects
     Submitted --> Withdrawn: Author withdraws
 
     UnderReview --> ReviewsComplete: Editor transitions (after all reviews)
     UnderReview --> Withdrawn: Author withdraws
 
     ReviewsComplete --> AwaitingDecision: Editor transitions
+    ReviewsComplete --> Accepted: Editor ACCEPT (shortcut)
+    ReviewsComplete --> ConditionallyAccepted: Editor CONDITIONALLY_ACCEPT (shortcut)
+    ReviewsComplete --> ReviseRequired: Editor REVISE_AND_RESUBMIT (shortcut)
+    ReviewsComplete --> Rejected: Editor REJECT (shortcut)
 
     AwaitingDecision --> Accepted: Editor ACCEPT
     AwaitingDecision --> ConditionallyAccepted: Editor CONDITIONALLY_ACCEPT
@@ -130,6 +137,7 @@ flowchart TD
     Start([Author Creates Submission]) --> Draft[DRAFT]
     Draft -->|Author submits| Submitted[SUBMITTED]
 
+    Submitted -->|Desk reject| Rejected
     Submitted --> AssignType{Submission Type?}
 
     AssignType -->|Abstract 1 reviewer| Assign1[Editor assigns 1 reviewer]
@@ -165,13 +173,18 @@ flowchart TD
     EditorDec -->|REJECT| Rejected
 
     Revise -->|Author revises| Resubmitted[RESUBMITTED]
-    Resubmitted -->|Round++| AssignType
+    Resubmitted -->|Round++, Editor assigns reviewers| UnderReview
 
     Revise -->|Author gives up| Withdrawn[WITHDRAWN]
-    Submitted -->|Any time| Withdrawn
-    UnderReview -->|Any time| Withdrawn
+    Draft -->|Author withdraws| Withdrawn
+    Submitted -->|Author withdraws| Withdrawn
+    UnderReview -->|Author withdraws| Withdrawn
+    ReviewsComplete -->|Author withdraws| Withdrawn
+    Awaiting -->|Author withdraws| Withdrawn
+    Resubmitted -->|Author withdraws| Withdrawn
 
     Accepted --> End([End])
+    CondAccepted -->|Editor confirms conditions met| Accepted
     CondAccepted --> End
     Rejected --> End
     Withdrawn --> End
@@ -269,7 +282,7 @@ Each type has separate UI:
 Shared backend (`Submission` model) enables code reuse while maintaining UI/UX separation.
 
 ### 3. Configuration Drives Behavior
-All workflow logic reads from `SubmissionTypeConfig`. Code doesn't hardcode rules like "abstracts need 1 reviewer" - config determines this.
+All workflow logic reads from `SubmissionTypeConfig` (defined in `src/lib/settings/types.ts`, stored as JSON in the `app_settings` table via `AppSetting` model). Code doesn't hardcode rules like "abstracts need 1 reviewer" - config determines this.
 
 ### 4. Editor as Universal Reviewer
 Editors (role=EDITOR) can:
@@ -300,7 +313,7 @@ Editors (role=EDITOR) can:
 | Status | Description | Editor Override? |
 |--------|-------------|-----------------|
 | `ACCEPTED` | Final acceptance ✅ | ✅ Can reopen |
-| `CONDITIONALLY_ACCEPTED` | Accepted with minor conditions ✅ | ✅ Can reopen |
+| `CONDITIONALLY_ACCEPTED` | Accepted with minor conditions — editor can promote to ACCEPTED | ✅ Can reopen or promote |
 | `REJECTED` | Final rejection ❌ | ✅ Can reopen |
 | `WITHDRAWN` | Author withdrew | ❌ Truly final |
 
@@ -354,10 +367,21 @@ Editor makes final decision:
 - → `UNDER_REVIEW` (assign reviewers for new round)
 - Increment `currentRound`
 
-### From ACCEPTED / CONDITIONALLY_ACCEPTED / REJECTED
+### From CONDITIONALLY_ACCEPTED
+- → `ACCEPTED` (editor confirms minor conditions met)
+- → `AWAITING_DECISION` (editor override — reopens decision)
+- Only EDITOR/ADMIN can trigger
+- Transition to ACCEPTED requires reasoning (audit trail)
+
+### From ACCEPTED / REJECTED
 - → `AWAITING_DECISION` (editor override — reopens decision)
 - Only EDITOR/ADMIN can trigger
 - Requires reasoning (audit trail)
+
+### Withdrawal
+Author can withdraw from **any non-terminal state**: DRAFT, SUBMITTED, UNDER_REVIEW, REVIEWS_COMPLETE, AWAITING_DECISION, REVISE_REQUIRED, RESUBMITTED.
+- → `WITHDRAWN` (author withdraws)
+- No permission from editor needed
 
 ### Terminal States
 `WITHDRAWN` - No transitions out (truly final)
@@ -517,7 +541,12 @@ Config: requiresEditorDecision = true
 When all reviews submitted:
   if (config.autoTransitionAfterReviews || !config.requiresEditorDecision) {
     submissionStatus = 'REVIEWS_COMPLETE'
-    if (config.requiresEditorDecision) {
+
+    if (!config.requiresEditorDecision) {
+      // Auto-apply reviewer decision (abstracts/posters)
+      // → ACCEPTED / REJECTED / REVISE_REQUIRED / CONDITIONALLY_ACCEPTED
+      applyReviewerDecision(review.decision)
+    } else if (config.requiresEditorDecision) {
       submissionStatus = 'AWAITING_DECISION'
     }
   } else {
@@ -861,7 +890,7 @@ POSTER uses identical workflow to ABSTRACT (single reviewer, reviewer decides).
   requiresEditorDecision: false,
   allowRevisions: true,
 
-  reviewDeadline: 14, // days
+  reviewDeadline: 7, // days
   requireAllReviews: true,
   autoTransitionAfterReviews: true, // Auto-apply reviewer decision
   enableScoring: false,
@@ -1082,7 +1111,9 @@ Planned for future versions:
 
 ### xstate Integration
 
-Each submission type has its own state machine:
+Each submission type has its own state machine.
+
+> **Note:** The machine starts at `SUBMITTED`, not `DRAFT`. The DRAFT state is managed outside the state machine (simple status flag) because drafts have no workflow transitions — only free-form editing until the author submits.
 
 ```typescript
 export const abstractMachine = createMachine({
@@ -1122,7 +1153,10 @@ export const abstractMachine = createMachine({
     },
     ACCEPTED: { on: { EDITOR_OVERRIDE: 'AWAITING_DECISION' } },
     REJECTED: { on: { EDITOR_OVERRIDE: 'AWAITING_DECISION' } },
-    CONDITIONALLY_ACCEPTED: { on: { EDITOR_OVERRIDE: 'AWAITING_DECISION' } },
+    CONDITIONALLY_ACCEPTED: { on: {
+      CONFIRM_CONDITIONS_MET: 'ACCEPTED',
+      EDITOR_OVERRIDE: 'AWAITING_DECISION'
+    } },
     WITHDRAWN: { type: 'final' }
   }
 })
