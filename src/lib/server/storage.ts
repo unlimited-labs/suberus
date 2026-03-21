@@ -205,7 +205,12 @@ export async function checkS3Health(): Promise<S3HealthResult> {
 
 	try {
 		const client = getS3Client();
-		await client.send(new HeadBucketCommand({ Bucket: bucket }));
+		await Promise.race([
+			client.send(new HeadBucketCommand({ Bucket: bucket })),
+			new Promise((_, reject) =>
+				setTimeout(() => reject(new Error("S3 health check timed out")), 5000),
+			),
+		]);
 		return {
 			status: "healthy",
 			endpoint,

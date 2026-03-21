@@ -168,27 +168,43 @@ export async function sendTestEmail(
 		}
 	}
 
-	// Use a direct (non-pooled) connection for one-off test emails
-	// to avoid queuing behind bulk emails in the pool
-	const direct = nodemailer.createTransport({
-		host: env.SMTP_HOST,
-		port: env.SMTP_PORT,
-		secure: env.SMTP_SECURE,
-		connectionTimeout: 10_000,
-		greetingTimeout: 10_000,
-		socketTimeout: 15_000,
-		...(env.SMTP_USER && env.SMTP_PASSWORD
-			? { auth: { user: env.SMTP_USER, pass: env.SMTP_PASSWORD } }
-			: {}),
-	});
-	try {
-		await direct.sendMail({
-			from: env.SMTP_FROM_EMAIL,
-			to,
-			subject: resolvedSubject,
-			[isHtml ? "html" : "text"]: resolvedBody,
+	const mailOptions = {
+		from: env.SMTP_FROM_EMAIL,
+		to,
+		subject: resolvedSubject,
+		[isHtml ? "html" : "text"]: resolvedBody,
+	};
+
+	// Use a direct transport with retry for one-off test emails
+	// to avoid contention with the pooled connection
+	const send = async () => {
+		const direct = nodemailer.createTransport({
+			host: env.SMTP_HOST,
+			port: env.SMTP_PORT,
+			secure: env.SMTP_SECURE,
+			connectionTimeout: 10_000,
+			greetingTimeout: 10_000,
+			socketTimeout: 15_000,
+			...(env.SMTP_USER && env.SMTP_PASSWORD
+				? { auth: { user: env.SMTP_USER, pass: env.SMTP_PASSWORD } }
+				: {}),
 		});
-	} finally {
-		direct.close();
+		try {
+			await direct.sendMail(mailOptions);
+		} finally {
+			direct.close();
+		}
+	};
+
+	try {
+		await send();
+	} catch (err) {
+		const msg = err instanceof Error ? err.message : "";
+		const transient =
+			msg.includes("Greeting never received") || msg.includes("ECONN");
+		if (!transient) throw err;
+		logger.warn(`[smtp] test email transient error, retrying: ${msg}`);
+		await new Promise((r) => setTimeout(r, 2_000));
+		await send();
 	}
 }
