@@ -1115,15 +1115,21 @@ Planned for future versions:
 
 ### xstate Integration
 
-Each submission type has its own state machine.
+Each submission type uses a single shared state machine (`submissionMachine`).
 
-> **Note:** The machine starts at `SUBMITTED`, not `DRAFT`. The DRAFT state is managed outside the state machine (simple status flag) because drafts have no workflow transitions — only free-form editing until the author submits.
+> **Note:** The machine starts at `DRAFT`. Authors can save a draft and return later, or submit directly (creating with status `SUBMITTED` bypasses the DRAFT state). From DRAFT, the author can submit (`SUBMIT → SUBMITTED`) or withdraw (`WITHDRAW → WITHDRAWN`). No versioning or review logic applies in DRAFT — only free-form editing.
 
 ```typescript
 export const abstractMachine = createMachine({
   id: 'abstract',
-  initial: 'SUBMITTED',
+  initial: 'DRAFT',
   states: {
+    DRAFT: {
+      on: {
+        SUBMIT: 'SUBMITTED',
+        WITHDRAW: 'WITHDRAWN'
+      }
+    },
     SUBMITTED: {
       on: {
         ASSIGN_REVIEWER: 'UNDER_REVIEW',
