@@ -5,8 +5,8 @@ import { activityDetail } from "@/lib/activity-log";
 import { logActivity } from "@/lib/server/activity-log";
 import { sendEmail } from "@/lib/server/email";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
-import { completeReviewAssignment, startReview } from "./assignments.server";
 import { getSetting } from "./settings.server";
+import { checkAndTriggerReviewCompletion } from "./workflow.server";
 
 /** Review submission data */
 export interface ReviewSubmitData {
@@ -214,11 +214,6 @@ export async function submitReview(
 		validatedConfidence = data.confidenceLevel;
 	}
 
-	// Start review if not already started
-	if (assignment.status === "PENDING") {
-		await startReview(assignmentId, reviewerId);
-	}
-
 	const reviewData = {
 		decision: data.decision,
 		comments: data.comments,
@@ -227,27 +222,41 @@ export async function submitReview(
 		confidenceLevel: validatedConfidence,
 	};
 
-	// Check if review already exists (update vs create)
-	if (assignment.review) {
-		await prisma.review.update({
-			where: { id: assignment.review.id },
-			data: reviewData,
-		});
-	} else {
-		await prisma.review.create({
+	// Atomic: review create/update + assignment completion in one transaction
+	const wasPending = assignment.status === "PENDING";
+	const now = new Date();
+
+	await prisma.$transaction(async (tx) => {
+		if (assignment.review) {
+			await tx.review.update({
+				where: { id: assignment.review.id },
+				data: reviewData,
+			});
+		} else {
+			await tx.review.create({
+				data: {
+					assignmentId,
+					submissionId: assignment.submissionId,
+					reviewerId,
+					versionId: assignment.submission.currentVersionId,
+					round: assignment.round,
+					...reviewData,
+				},
+			});
+		}
+
+		await tx.reviewAssignment.update({
+			where: { id: assignmentId },
 			data: {
-				assignmentId,
-				submissionId: assignment.submissionId,
-				reviewerId,
-				versionId: assignment.submission.currentVersionId,
-				round: assignment.round,
-				...reviewData,
+				status: "COMPLETED",
+				...(wasPending ? { startedAt: now } : {}),
+				completedAt: now,
 			},
 		});
-	}
+	});
 
-	// Mark assignment as completed (internally triggers review completion check)
-	await completeReviewAssignment(assignmentId, reviewerId, data.decision);
+	// After transaction: trigger auto-transition if all reviews complete
+	await checkAndTriggerReviewCompletion(assignment.submissionId, reviewerId);
 
 	// Notify editor(s) that a review was submitted
 	if (assignment.assignedBy) {

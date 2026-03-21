@@ -562,11 +562,11 @@ export async function resubmitSubmission(
 
 		await tx.activityLog.create({
 			data: {
-				type: "SUBMISSION_STATUS_CHANGED",
+				type: "SUBMISSION_RESUBMITTED",
 				submissionId,
 				performedBy: userId,
 				detail: {
-					type: "SUBMISSION_STATUS_CHANGED",
+					type: "SUBMISSION_RESUBMITTED",
 					fromStatus: "REVISE_REQUIRED",
 					toStatus: "RESUBMITTED",
 					round: nextRound,

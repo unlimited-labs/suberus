@@ -3,6 +3,7 @@ import { prisma } from "@/db.server";
 import { env } from "@/env";
 import type {
 	AssignmentStatus,
+	ReviewDecision,
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
@@ -462,6 +463,17 @@ export async function checkAndTriggerReviewCompletion(
 							REJECT: "DECISION_REJECTED",
 						} as const;
 
+						const decisionLetterMap: Record<ReviewDecision, string> = {
+							ACCEPT:
+								"Based on the reviewer's recommendation, your submission has been accepted.",
+							ACCEPT_WITH_MINOR_REVISIONS:
+								"Based on the reviewer's recommendation, your submission has been conditionally accepted. Please address the minor revisions outlined in the review.",
+							REVISE_AND_RESUBMIT:
+								"Based on the reviewer's recommendation, your submission requires revisions. Please review the feedback and resubmit.",
+							REJECT:
+								"After careful review, your submission has not been accepted.",
+						};
+
 						const emailEvent = decisionEmailMap[decisions[0]];
 						const presenter = await prisma.submissionAuthor.findFirst({
 							where: { submissionId, isPresenter: true },
@@ -471,7 +483,7 @@ export async function checkAndTriggerReviewCompletion(
 							void sendEmail(emailEvent, presenter.email, {
 								authorName: `${presenter.firstName} ${presenter.lastName}`,
 								submissionTitle: submission.title,
-								letterToAuthor: `Reviewer decision: ${decisions[0]}`,
+								letterToAuthor: decisionLetterMap[decisions[0]],
 								submissionUrl: `${env.APP_BASE_URL}/submissions/${submissionId}`,
 							});
 						}
