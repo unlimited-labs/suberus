@@ -1,4 +1,5 @@
 import { prisma } from "@/db.server";
+import { env } from "@/env";
 import type {
 	EmailEventType,
 	SubmissionStatus,
@@ -402,12 +403,31 @@ export async function bulkChangeStatus(
 		if (result.success) {
 			updated++;
 
-			// Send decision email to presenter (skip UNDER_REVIEW)
+			// Create EditorDecision record for decision-type transitions (audit trail)
 			if (emailEvent) {
 				const submission = await prisma.submission.findUnique({
 					where: { id },
-					select: { title: true },
+					select: { title: true, currentRound: true },
 				});
+
+				await prisma.editorDecision.create({
+					data: {
+						submissionId: id,
+						editorId: triggeredBy,
+						round: submission?.currentRound ?? 1,
+						decision:
+							targetStatus === "ACCEPTED"
+								? "ACCEPT"
+								: targetStatus === "CONDITIONALLY_ACCEPTED"
+									? "CONDITIONALLY_ACCEPT"
+									: targetStatus === "REVISE_REQUIRED"
+										? "REVISE_AND_RESUBMIT"
+										: "REJECT",
+						reasoning: `Bulk status change to ${targetStatus}`,
+						basedOnReviews: [],
+					},
+				});
+
 				const presenter = await prisma.submissionAuthor.findFirst({
 					where: { submissionId: id, isPresenter: true },
 				});
@@ -415,6 +435,8 @@ export async function bulkChangeStatus(
 					void sendEmail(emailEvent, presenter.email, {
 						authorName: `${presenter.firstName} ${presenter.lastName}`,
 						submissionTitle: submission?.title ?? "",
+						letterToAuthor: `Bulk decision: ${targetStatus}`,
+						submissionUrl: `${env.APP_BASE_URL}/submissions/${id}`,
 					});
 				}
 			}

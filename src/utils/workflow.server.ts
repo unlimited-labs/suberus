@@ -40,14 +40,11 @@ async function getSubmissionConfig(
 async function buildSubmissionContext(
 	submissionId: string,
 ): Promise<SubmissionContext> {
-	// Fetch submission with all assignments and reviews, then filter by currentRound
+	// Fetch submission with assignments, then filter by currentRound
 	const submissionWithRelations = await prisma.submission.findUniqueOrThrow({
 		where: { id: submissionId },
 		include: {
 			reviewAssignments: true,
-			reviews: {
-				orderBy: { createdAt: "desc" },
-			},
 		},
 	});
 
@@ -57,9 +54,6 @@ async function buildSubmissionContext(
 		...submissionWithRelations,
 		reviewAssignments: submissionWithRelations.reviewAssignments.filter(
 			(a) => a.round === currentRound && a.status !== "CANCELLED",
-		),
-		reviews: submissionWithRelations.reviews.filter(
-			(r) => r.round === currentRound,
 		),
 	};
 
@@ -80,7 +74,6 @@ async function buildSubmissionContext(
 		maxReviewers: config.maxReviewers,
 		assignedReviewersCount,
 		completedReviewsCount,
-		lastReviewDecision: submission.reviews[0]?.decision,
 	};
 }
 

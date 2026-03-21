@@ -8,8 +8,10 @@ import type {
 import { activityDetail } from "@/lib/activity-log";
 import { logActivity } from "@/lib/server/activity-log";
 import { sendEmail } from "@/lib/server/email";
+import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import type { CreateSubmissionInput } from "@/lib/validations/submission";
 import { logger } from "@/logger.ts";
+import { getSetting } from "./settings.server";
 import { executeSubmissionTransition } from "./workflow.server";
 
 interface CreateSubmissionResult {
@@ -335,6 +337,11 @@ export async function getSubmissionById(
 				orderBy: { createdAt: "asc" },
 			},
 			reviews: {
+				include: {
+					reviewer: {
+						select: { firstName: true, lastName: true },
+					},
+				},
 				orderBy: { createdAt: "desc" },
 			},
 			editorDecisions: {
@@ -414,13 +421,20 @@ export async function getSubmissionById(
 			};
 		});
 
-	// Reviews are anonymized for authors (just "Reviewer 1", "Reviewer 2", etc.)
+	// In OPEN mode, authors can see reviewer identities (WORKFLOW.md)
+	const configKey = SUBMISSION_TYPE_TO_KEY[submission.type];
+	const config = await getSetting(configKey);
+	const isOpenReview = config.reviewMode === "OPEN";
+
 	const reviews: UserSubmissionReview[] = submission.reviews.map(
 		(r, index) => ({
 			id: r.id,
 			submissionId: r.submissionId,
 			round: r.round,
-			reviewerName: `Reviewer ${index + 1}`,
+			reviewerName: isOpenReview
+				? `${r.reviewer.firstName ?? ""} ${r.reviewer.lastName ?? ""}`.trim() ||
+					`Reviewer ${index + 1}`
+				: `Reviewer ${index + 1}`,
 			scores: (r.scores as Record<string, number>) ?? null,
 			comments: r.comments,
 			createdAt: r.createdAt,

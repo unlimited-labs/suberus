@@ -32,7 +32,6 @@ export interface SubmissionContext {
 	maxReviewers: number;
 	assignedReviewersCount: number;
 	completedReviewsCount: number;
-	lastReviewDecision?: ReviewDecision;
 }
 
 /** Events for assignment state machine */

@@ -34,18 +34,6 @@ export const submissionMachine = setup({
 		requiresEditorDecision: ({ context }) => {
 			return context.requiresEditorDecision;
 		},
-		reviewerAccepted: ({ context }) => {
-			return context.lastReviewDecision === "ACCEPT";
-		},
-		reviewerConditional: ({ context }) => {
-			return context.lastReviewDecision === "ACCEPT_WITH_MINOR_REVISIONS";
-		},
-		reviewerRevise: ({ context }) => {
-			return context.lastReviewDecision === "REVISE_AND_RESUBMIT";
-		},
-		reviewerRejected: ({ context }) => {
-			return context.lastReviewDecision === "REJECT";
-		},
 	},
 	actions: {
 		incrementRound: assign({
