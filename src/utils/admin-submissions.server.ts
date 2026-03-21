@@ -266,6 +266,9 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 		reviewerName: string;
 		decision: string;
 		comments: string | null;
+		privateNotes: string | null;
+		scores: Record<string, number> | null;
+		confidenceLevel: number | null;
 		round: number;
 	}>;
 	statusHistory: Array<{
@@ -370,6 +373,9 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 				r.reviewer.email,
 			decision: r.decision,
 			comments: r.comments,
+			privateNotes: r.privateNotes,
+			scores: (r.scores as Record<string, number>) ?? null,
+			confidenceLevel: r.confidenceLevel,
 			round: r.round,
 		})),
 		statusHistory: submission.activityLog.map((h) => {

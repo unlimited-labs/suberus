@@ -13,6 +13,7 @@ export const assignmentStatusFilterOptions = [
 	{ label: "In Progress", value: "IN_PROGRESS" },
 	{ label: "Completed", value: "COMPLETED" },
 	{ label: "Overdue", value: "OVERDUE" },
+	{ label: "Cancelled", value: "CANCELLED" },
 ] as const;
 
 export const assignmentStatusVariants: Record<

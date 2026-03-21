@@ -38,7 +38,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { useDateFormat } from "@/hooks/use-date-format";
 import { useSubmissionTransitions } from "@/hooks/use-submission-transitions";
-import { assignmentStatusColors } from "@/lib/labels/assignment";
+import {
+	assignmentStatusColors,
+	assignmentStatusLabels,
+} from "@/lib/labels/assignment";
 import {
 	reviewDecisionColors,
 	statusLabels,
@@ -448,7 +451,9 @@ function SubmissionDetailPage() {
 															assignmentStatusColors[assignment.status]
 														}
 													>
-														{assignment.status}
+														{assignmentStatusLabels[
+															assignment.status as keyof typeof assignmentStatusLabels
+														] ?? assignment.status}
 													</Badge>
 												</div>
 											))}

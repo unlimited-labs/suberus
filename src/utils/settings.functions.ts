@@ -184,10 +184,20 @@ export const updateSubmissionTypeConfigFn = createServerFn({ method: "POST" })
 		) {
 			throw new Response(
 				"FILE format requires at least one allowed extension",
-				{
-					status: 400,
-				},
+				{ status: 400 },
 			);
+		}
+
+		if (data.config.minReviewers > data.config.maxReviewers) {
+			throw new Response("Min reviewers cannot exceed max reviewers", {
+				status: 400,
+			});
+		}
+
+		if (data.config.enableScoring && data.config.scoringCriteria.length === 0) {
+			throw new Response("Scoring requires at least one criterion", {
+				status: 400,
+			});
 		}
 
 		await setSetting(

@@ -212,6 +212,9 @@ export const reviewColumns: ColumnDef<ReviewerAssignment>[] = [
 		cell: ({ row }) => {
 			const assignment = row.original;
 			const isCompleted = assignment.status === "COMPLETED";
+			const isCancelled = assignment.status === "CANCELLED";
+
+			if (isCancelled) return null;
 
 			return (
 				<div className="flex justify-end">

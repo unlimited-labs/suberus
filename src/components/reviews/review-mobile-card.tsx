@@ -116,28 +116,32 @@ export function ReviewMobileCard(assignment: ReviewerAssignment) {
 					)}
 
 					{/* Action */}
-					<Button
-						asChild
-						variant={assignment.status === "COMPLETED" ? "outline" : "default"}
-						className="w-full"
-						size="sm"
-					>
-						{assignment.status === "COMPLETED" ? (
-							<Link
-								to="/submissions/$id"
-								params={{ id: assignment.submissionId }}
-							>
-								View Review
-							</Link>
-						) : (
-							<Link
-								to="/reviews/$assignmentId"
-								params={{ assignmentId: assignment.id }}
-							>
-								Submit Review
-							</Link>
-						)}
-					</Button>
+					{assignment.status !== "CANCELLED" && (
+						<Button
+							asChild
+							variant={
+								assignment.status === "COMPLETED" ? "outline" : "default"
+							}
+							className="w-full"
+							size="sm"
+						>
+							{assignment.status === "COMPLETED" ? (
+								<Link
+									to="/submissions/$id"
+									params={{ id: assignment.submissionId }}
+								>
+									View Review
+								</Link>
+							) : (
+								<Link
+									to="/reviews/$assignmentId"
+									params={{ assignmentId: assignment.id }}
+								>
+									Submit Review
+								</Link>
+							)}
+						</Button>
+					)}
 				</div>
 			</CardContent>
 		</Card>
