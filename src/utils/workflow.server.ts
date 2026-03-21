@@ -403,6 +403,16 @@ export async function checkAndTriggerReviewCompletion(
 			}
 		}
 
+		// For types with editor decision, auto-transition to AWAITING_DECISION
+		if (result.success && config.requiresEditorDecision) {
+			await executeSubmissionTransition(
+				submissionId,
+				{ type: "MANUAL_TRANSITION_TO_AWAITING_DECISION" },
+				triggeredBy,
+				"Auto-transitioned to awaiting decision after reviews complete",
+			);
+		}
+
 		// For types without editor decision, auto-apply only if reviewers are unanimous
 		if (result.success && !config.requiresEditorDecision) {
 			const decisions = submission.reviews.map((r) => r.decision);

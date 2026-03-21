@@ -25,7 +25,11 @@ export const submissionMachine = setup({
 			);
 		},
 		shouldAutoTransition: ({ context }) => {
-			return context.autoTransitionAfterReviews;
+			// WORKFLOW.md: when requiresEditorDecision=false, auto-transition
+			// always happens regardless of autoTransitionAfterReviews setting
+			return (
+				context.autoTransitionAfterReviews || !context.requiresEditorDecision
+			);
 		},
 		requiresEditorDecision: ({ context }) => {
 			return context.requiresEditorDecision;

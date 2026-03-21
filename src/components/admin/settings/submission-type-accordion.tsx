@@ -300,6 +300,24 @@ export function SubmissionTypeAccordion({
 								}
 							/>
 						</div>
+						{config.requiresEditorDecision && (
+							<div className="flex items-center justify-between pl-0 sm:pl-4">
+								<div className="space-y-0.5">
+									<Label>Auto-advance after reviews</Label>
+									<p className="text-sm text-muted-foreground">
+										Automatically move to editor decision when all reviews are
+										complete. When off, editor must manually advance each
+										submission.
+									</p>
+								</div>
+								<Switch
+									checked={config.autoTransitionAfterReviews ?? true}
+									onCheckedChange={(checked) =>
+										handleChange("autoTransitionAfterReviews", checked)
+									}
+								/>
+							</div>
+						)}
 					</div>
 
 					{/* Revisions */}
