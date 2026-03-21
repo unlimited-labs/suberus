@@ -8,6 +8,7 @@ import type {
 import { sendEmail } from "@/lib/server/email";
 import type { CreateSubmissionInput } from "@/lib/validations/submission";
 import { logger } from "@/logger.ts";
+import { executeSubmissionTransition } from "./workflow.server";
 
 interface CreateSubmissionResult {
 	id: string;
@@ -507,10 +508,26 @@ export async function resubmitSubmission(
 		};
 	}
 
+	// Transition via state machine FIRST (validates state, increments currentRound, resets review counts, logs activity)
+	const result = await executeSubmissionTransition(
+		submissionId,
+		{ type: "RESUBMIT" },
+		userId,
+		data.comment || "Author resubmitted revised version",
+	);
+
+	if (!result.success) {
+		return {
+			success: false,
+			versionNumber: 0,
+			error: result.error ?? "Failed to transition submission status",
+		};
+	}
+
 	const nextVersion = (submission.currentVersion?.version ?? 0) + 1;
 
+	// Create new version and update submission content
 	const version = await prisma.$transaction(async (tx) => {
-		// Create new version
 		const version = await tx.submissionVersion.create({
 			data: {
 				submissionId,
@@ -521,27 +538,12 @@ export async function resubmitSubmission(
 			},
 		});
 
-		// Update submission
 		await tx.submission.update({
 			where: { id: submissionId },
 			data: {
 				title: data.title,
 				content: data.content,
-				status: "RESUBMITTED",
 				currentVersionId: version.id,
-			},
-		});
-
-		// Activity log entry
-		await tx.activityLog.create({
-			data: {
-				type: "SUBMISSION_RESUBMITTED",
-				submissionId,
-				performedBy: userId,
-				detail: {
-					type: "SUBMISSION_RESUBMITTED",
-					round: submission.currentRound,
-				},
 			},
 		});
 
@@ -601,10 +603,10 @@ export async function updateDraftSubmission(
 		return { success: false, error: "Submission not found" };
 	}
 
-	if (submission.status !== "DRAFT" && submission.status !== "SUBMITTED") {
+	if (submission.status !== "DRAFT") {
 		return {
 			success: false,
-			error: "Can only edit submissions in DRAFT or SUBMITTED status",
+			error: "Can only edit submissions in DRAFT status",
 		};
 	}
 
@@ -741,21 +743,16 @@ export async function submitDraft(
 		return { success: false, error: "Submission is not a draft" };
 	}
 
-	await prisma.$transaction(async (tx) => {
-		await tx.submission.update({
-			where: { id: submissionId },
-			data: { status: "SUBMITTED" },
-		});
+	const result = await executeSubmissionTransition(
+		submissionId,
+		{ type: "SUBMIT" },
+		userId,
+		"Author submitted draft",
+	);
 
-		await tx.activityLog.create({
-			data: {
-				type: "SUBMISSION_DRAFT_SUBMITTED",
-				submissionId,
-				performedBy: userId,
-				detail: { type: "SUBMISSION_DRAFT_SUBMITTED" },
-			},
-		});
-	});
+	if (!result.success) {
+		return { success: false, error: result.error ?? "Failed to submit draft" };
+	}
 
 	logger.info(`[submission] submitted draft ${submissionId}`);
 

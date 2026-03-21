@@ -406,12 +406,38 @@ export async function checkAndTriggerReviewCompletion(
 				const unanimous = decisions.every((d) => d === decisions[0]);
 				if (unanimous) {
 					const autoEvent = getAutoTransitionEvent(decisions[0]);
-					return executeSubmissionTransition(
+					const autoResult = await executeSubmissionTransition(
 						submissionId,
 						{ type: autoEvent },
 						triggeredBy,
 						`Auto-applied unanimous reviewer decision: ${decisions[0]}`,
 					);
+
+					// Send decision email to author after auto-apply
+					if (autoResult.success) {
+						const decisionEmailMap = {
+							ACCEPT: "DECISION_ACCEPTED",
+							ACCEPT_WITH_MINOR_REVISIONS: "DECISION_CONDITIONALLY_ACCEPTED",
+							REVISE_AND_RESUBMIT: "DECISION_REVISE_REQUIRED",
+							REJECT: "DECISION_REJECTED",
+						} as const;
+
+						const emailEvent = decisionEmailMap[decisions[0]];
+						const presenter = await prisma.submissionAuthor.findFirst({
+							where: { submissionId, isPresenter: true },
+						});
+
+						if (presenter) {
+							void sendEmail(emailEvent, presenter.email, {
+								authorName: `${presenter.firstName} ${presenter.lastName}`,
+								submissionTitle: submission.title,
+								letterToAuthor: `Reviewer decision: ${decisions[0]}`,
+								submissionUrl: `${env.APP_BASE_URL}/submissions/${submissionId}`,
+							});
+						}
+					}
+
+					return autoResult;
 				}
 				logger.info(
 					`[workflow] reviewers disagree for submission ${submissionId}, leaving at REVIEWS_COMPLETE for editor`,
@@ -590,19 +616,6 @@ export async function submitEditorDecision(
 
 	const event: SubmissionEvent = { type: eventMap[decision] };
 
-	// Create editor decision record
-	await prisma.editorDecision.create({
-		data: {
-			submissionId,
-			editorId,
-			round: submission.currentRound,
-			decision,
-			reasoning,
-			letterToAuthor,
-			basedOnReviews: submission.reviews.map((r) => r.id),
-		},
-	});
-
 	const result = await executeSubmissionTransition(
 		submissionId,
 		event,
@@ -611,6 +624,19 @@ export async function submitEditorDecision(
 	);
 
 	if (result.success) {
+		// Create editor decision record only after successful transition
+		await prisma.editorDecision.create({
+			data: {
+				submissionId,
+				editorId,
+				round: submission.currentRound,
+				decision,
+				reasoning,
+				letterToAuthor,
+				basedOnReviews: submission.reviews.map((r) => r.id),
+			},
+		});
+
 		// Send decision email to author
 		const decisionEmailMap = {
 			ACCEPT: "DECISION_ACCEPTED",
@@ -641,6 +667,50 @@ export async function submitEditorDecision(
 				decision,
 				reasoning,
 			}),
+		});
+	}
+
+	return result;
+}
+
+/**
+ * Override editor decision (reopen from terminal state)
+ */
+export async function overrideDecision(
+	submissionId: string,
+	editorId: string,
+	reasoning: string,
+): Promise<TransitionResult> {
+	const result = await executeSubmissionTransition(
+		submissionId,
+		{ type: "EDITOR_OVERRIDE" },
+		editorId,
+		reasoning,
+	);
+
+	if (result.success) {
+		const submission = await prisma.submission.findUniqueOrThrow({
+			where: { id: submissionId },
+			include: {
+				authors: { where: { isPresenter: true }, take: 1 },
+			},
+		});
+
+		const presenter = submission.authors[0];
+		if (presenter) {
+			void sendEmail("DECISION_OVERRIDDEN", presenter.email, {
+				authorName: `${presenter.firstName} ${presenter.lastName}`,
+				submissionTitle: submission.title,
+				previousDecision: result.fromState,
+				submissionUrl: `${env.APP_BASE_URL}/submissions/${submissionId}`,
+			});
+		}
+
+		await logActivity({
+			type: "DECISION_OVERRIDE",
+			submissionId,
+			performedBy: editorId,
+			detail: activityDetail("DECISION_OVERRIDE", { reasoning }),
 		});
 	}
 

@@ -43,6 +43,7 @@ const eventTypeLabels: Record<EmailEventType, string> = {
 	PASSWORD_RESET: "Password Reset",
 	EMAIL_VERIFICATION: "Email Verification",
 	INVITATION: "Invitation",
+	DECISION_OVERRIDDEN: "Decision Overridden",
 };
 
 /** Map Prisma EmailTemplate to UI shape */

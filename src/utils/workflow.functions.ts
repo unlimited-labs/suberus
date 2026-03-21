@@ -5,6 +5,7 @@ import { adminMiddleware, authMiddleware } from "./auth.middleware";
 import {
 	deskRejectSubmission,
 	executeSubmissionTransition,
+	overrideDecision,
 	submitEditorDecision,
 	withdrawSubmission,
 } from "./workflow.server";
@@ -101,10 +102,5 @@ export const editorOverrideFn = createServerFn({ method: "POST" })
 		}),
 	)
 	.handler(async ({ data, context }): Promise<TransitionResult> => {
-		return executeSubmissionTransition(
-			data.submissionId,
-			{ type: "EDITOR_OVERRIDE" },
-			context.user.id,
-			data.reasoning,
-		);
+		return overrideDecision(data.submissionId, context.user.id, data.reasoning);
 	});
