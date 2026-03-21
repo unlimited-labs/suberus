@@ -508,10 +508,7 @@ export async function resubmitSubmission(
 	data: ResubmitSubmissionInput,
 ): Promise<{ success: boolean; versionNumber: number; error?: string }> {
 	const submission = await prisma.submission.findFirst({
-		where: {
-			id: submissionId,
-			OR: [{ userId }, { authors: { some: { userId } } }],
-		},
+		where: { id: submissionId, userId },
 		include: { currentVersion: true },
 	});
 
@@ -527,25 +524,10 @@ export async function resubmitSubmission(
 		};
 	}
 
-	// Transition via state machine FIRST (validates state, increments currentRound, resets review counts, logs activity)
-	const result = await executeSubmissionTransition(
-		submissionId,
-		{ type: "RESUBMIT" },
-		userId,
-		data.comment || "Author resubmitted revised version",
-	);
-
-	if (!result.success) {
-		return {
-			success: false,
-			versionNumber: 0,
-			error: result.error ?? "Failed to transition submission status",
-		};
-	}
-
 	const nextVersion = (submission.currentVersion?.version ?? 0) + 1;
+	const nextRound = submission.currentRound + 1;
 
-	// Create new version and update submission content
+	// Atomic transaction: status transition + version creation (prevents stuck state on partial failure)
 	const version = await prisma.$transaction(async (tx) => {
 		const version = await tx.submissionVersion.create({
 			data: {
@@ -560,9 +542,27 @@ export async function resubmitSubmission(
 		await tx.submission.update({
 			where: { id: submissionId },
 			data: {
+				status: "RESUBMITTED",
+				currentRound: nextRound,
 				title: data.title,
 				content: data.content,
 				currentVersionId: version.id,
+			},
+		});
+
+		await tx.activityLog.create({
+			data: {
+				type: "SUBMISSION_STATUS_CHANGED",
+				submissionId,
+				performedBy: userId,
+				detail: {
+					type: "SUBMISSION_STATUS_CHANGED",
+					fromStatus: "REVISE_REQUIRED",
+					toStatus: "RESUBMITTED",
+					round: nextRound,
+					event: "RESUBMIT",
+					reason: data.comment || "Author resubmitted revised version",
+				},
 			},
 		});
 

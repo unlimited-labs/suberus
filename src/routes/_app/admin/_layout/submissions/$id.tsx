@@ -156,7 +156,7 @@ function SubmissionDetailPage() {
 
 	const canMakeDecision =
 		submission.status === "AWAITING_DECISION" ||
-		(submission.status === "REVIEWS_COMPLETE" && config.requiresEditorDecision);
+		submission.status === "REVIEWS_COMPLETE";
 
 	const canConfirmConditions = submission.status === "CONDITIONALLY_ACCEPTED";
 

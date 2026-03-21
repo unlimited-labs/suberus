@@ -466,14 +466,11 @@ export async function withdrawSubmission(
 	userId: string,
 	reason?: string,
 ): Promise<TransitionResult> {
-	// Verify authorization: owner, co-author, or admin/editor
+	// Verify authorization: owner or admin/editor (co-authors can only view)
 	const [submission, user] = await Promise.all([
 		prisma.submission.findUniqueOrThrow({
 			where: { id: submissionId },
-			select: {
-				userId: true,
-				authors: { select: { userId: true } },
-			},
+			select: { userId: true },
 		}),
 		prisma.user.findUniqueOrThrow({
 			where: { id: userId },
@@ -482,10 +479,9 @@ export async function withdrawSubmission(
 	]);
 
 	const isOwner = submission.userId === userId;
-	const isCoAuthor = submission.authors.some((a) => a.userId === userId);
 	const isAdminOrEditor = user.role === "ADMIN" || user.role === "EDITOR";
 
-	if (!isOwner && !isCoAuthor && !isAdminOrEditor) {
+	if (!isOwner && !isAdminOrEditor) {
 		return {
 			success: false,
 			fromState: "",
