@@ -26,7 +26,7 @@ export const DEFAULT_POSTER_CONFIG: SubmissionTypeConfig = {
 	minReviewers: 1,
 	maxReviewers: 1,
 	reviewMode: "SINGLE_BLIND",
-	reviewDeadlineDays: 7,
+	reviewDeadlineDays: 14,
 	requiresEditorDecision: false,
 	autoTransitionAfterReviews: true,
 	allowRevisions: true,

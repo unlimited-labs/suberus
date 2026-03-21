@@ -890,7 +890,7 @@ POSTER uses identical workflow to ABSTRACT (single reviewer, reviewer decides).
   requiresEditorDecision: false,
   allowRevisions: true,
 
-  reviewDeadline: 7, // days
+  reviewDeadline: 14, // days
   requireAllReviews: true,
   autoTransitionAfterReviews: true, // Auto-apply reviewer decision
   enableScoring: false,
