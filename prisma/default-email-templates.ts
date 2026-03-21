@@ -76,7 +76,7 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 		isHtml: false,
 		ccEmails: [],
 		bccEmails: [],
-		availablePlaceholders: ["reviewerName", "submissionTitle", "deadline", "reviewUrl"],
+		availablePlaceholders: ["reviewerName", "submissionTitle", "deadline", "reviewUrl", "daysRemaining"],
 		description: "Sent as a reminder to reviewers about upcoming deadlines",
 	},
 	{
@@ -146,6 +146,17 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 		description: "Sent when a submission is rejected",
 	},
 	{
+		eventType: "DECISION_OVERRIDDEN",
+		subject: "Decision Updated: {{submissionTitle}}",
+		body: 'Dear {{authorName}},\n\nThe decision on your submission "{{submissionTitle}}" has been reconsidered by the editor.\n\nPrevious decision: {{previousDecision}}\n\nThe submission is now under further review.\n\nView: {{submissionUrl}}',
+		isEnabled: true,
+		isHtml: false,
+		ccEmails: [],
+		bccEmails: [],
+		availablePlaceholders: ["authorName", "submissionTitle", "previousDecision", "submissionUrl"],
+		description: "Sent when an editor overrides a previous decision",
+	},
+	{
 		eventType: "REVISION_RECEIVED",
 		subject: "Revised Submission Received: {{submissionTitle}}",
 		body: "Dear Editor,\n\nA revised version of the submission has been received:\n\nTitle: {{submissionTitle}}\nAuthor: {{authorName}}\nVersion: {{versionNumber}}\n\nView: {{submissionUrl}}",
@@ -175,7 +186,7 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 		isHtml: false,
 		ccEmails: [],
 		bccEmails: [],
-		availablePlaceholders: ["recipientName", "submissionTitle", "deadline", "submissionUrl"],
+		availablePlaceholders: ["recipientName", "submissionTitle", "deadline", "submissionUrl", "daysRemaining"],
 		description: "Sent when a deadline is approaching",
 	},
 	{

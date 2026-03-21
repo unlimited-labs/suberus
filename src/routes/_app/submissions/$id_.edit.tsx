@@ -51,6 +51,7 @@ function EditSubmissionPage() {
 
 	if (
 		!data ||
+		data.submission.role === "coauthor" ||
 		(data.submission.status !== "DRAFT" &&
 			data.submission.status !== "SUBMITTED")
 	) {

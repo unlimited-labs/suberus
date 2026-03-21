@@ -49,7 +49,11 @@ function ReviseSubmissionPage() {
 	const queryClient = useQueryClient();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	if (!data || data.submission.status !== "REVISE_REQUIRED") {
+	if (
+		!data ||
+		data.submission.role === "coauthor" ||
+		data.submission.status !== "REVISE_REQUIRED"
+	) {
 		return (
 			<div className="flex h-full flex-col">
 				<PageHeader icon={IconFileText} title="Cannot Revise" />

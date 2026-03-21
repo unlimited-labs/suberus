@@ -5,8 +5,6 @@ import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
-import { activityDetail } from "@/lib/activity-log";
-import { logActivity } from "@/lib/server/activity-log";
 import { sendEmail } from "@/lib/server/email";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import type { CreateSubmissionInput } from "@/lib/validations/submission";
@@ -601,15 +599,6 @@ export async function resubmitSubmission(
 			});
 		}
 	}
-
-	await logActivity({
-		type: "SUBMISSION_RESUBMITTED",
-		submissionId,
-		performedBy: userId,
-		detail: activityDetail("SUBMISSION_RESUBMITTED", {
-			round: submission.currentRound + 1,
-		}),
-	});
 
 	logger.info(`[submission] resubmitted ${submissionId} v${version.version}`);
 
