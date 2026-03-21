@@ -184,6 +184,39 @@ export async function executeSubmissionTransition(
 }
 
 /**
+ * Validate a submission transition without executing it.
+ * Used when custom DB work (e.g., version creation) must be atomic with the status change.
+ */
+export async function validateSubmissionTransition(
+	submissionId: string,
+	event: SubmissionEvent,
+): Promise<{ valid: boolean; error?: string }> {
+	const submission = await prisma.submission.findUniqueOrThrow({
+		where: { id: submissionId },
+	});
+
+	const context = await buildSubmissionContext(submissionId);
+
+	const actor = createActor(submissionMachine, {
+		snapshot: submissionMachine.resolveState({
+			value: submission.status,
+			context,
+		}),
+	});
+
+	actor.start();
+	const valid = actor.getSnapshot().can(event);
+	actor.stop();
+
+	return valid
+		? { valid: true }
+		: {
+				valid: false,
+				error: `Invalid transition: ${event.type} from ${submission.status}`,
+			};
+}
+
+/**
  * Get valid events for a submission in current state
  */
 export async function getValidSubmissionEvents(

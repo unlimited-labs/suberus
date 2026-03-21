@@ -11,7 +11,10 @@ import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import type { CreateSubmissionInput } from "@/lib/validations/submission";
 import { logger } from "@/logger.ts";
 import { getSetting } from "./settings.server";
-import { executeSubmissionTransition } from "./workflow.server";
+import {
+	executeSubmissionTransition,
+	validateSubmissionTransition,
+} from "./workflow.server";
 
 interface CreateSubmissionResult {
 	id: string;
@@ -425,8 +428,17 @@ export async function getSubmissionById(
 	const config = await getSetting(configKey);
 	const isOpenReview = config.reviewMode === "OPEN";
 
-	const reviews: UserSubmissionReview[] = submission.reviews.map(
-		(r, index) => ({
+	// Hide current-round reviews during active review phase — authors see reviews only after decision
+	const activeReviewStatuses: SubmissionStatus[] = [
+		"UNDER_REVIEW",
+		"REVIEWS_COMPLETE",
+		"AWAITING_DECISION",
+	];
+	const hideCurrentRound = activeReviewStatuses.includes(submission.status);
+
+	const reviews: UserSubmissionReview[] = submission.reviews
+		.filter((r) => !hideCurrentRound || r.round < submission.currentRound)
+		.map((r, index) => ({
 			id: r.id,
 			submissionId: r.submissionId,
 			round: r.round,
@@ -437,8 +449,7 @@ export async function getSubmissionById(
 			scores: (r.scores as Record<string, number>) ?? null,
 			comments: r.comments,
 			createdAt: r.createdAt,
-		}),
-	);
+		}));
 
 	const latestDecision = submission.editorDecisions[0];
 	const decision: UserSubmissionDecision | null = latestDecision
@@ -515,12 +526,12 @@ export async function resubmitSubmission(
 		return { success: false, versionNumber: 0, error: "Submission not found" };
 	}
 
-	if (submission.status !== "REVISE_REQUIRED") {
-		return {
-			success: false,
-			versionNumber: 0,
-			error: "Submission is not in REVISE_REQUIRED status",
-		};
+	// Validate transition through xstate machine (single source of truth)
+	const validation = await validateSubmissionTransition(submissionId, {
+		type: "RESUBMIT",
+	});
+	if (!validation.valid) {
+		return { success: false, versionNumber: 0, error: validation.error };
 	}
 
 	const nextVersion = (submission.currentVersion?.version ?? 0) + 1;
