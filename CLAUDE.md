@@ -39,6 +39,21 @@ Treat the [workflow](./WORKFLOW.md) as the single source of truth. If a change i
 - Run `pnpm lint` to check for linting errors
 - Run `pnpm build` to build production bundle
 
-## TanStack Start
-When working with Tanstack Start related code **ALWAYS** read tanstack-llms\llms.md first and follow documentation to better understand the library.
-Always prefer Tanstack Start convention over nitro.
+## TanStack
+When working with any TanStack library, use the **TanStack CLI** to look up documentation:
+
+```bash
+# Search docs for a topic within a specific library (start, router, query, form, table, etc.)
+pnpx @tanstack/cli search-docs "<query>" --library <lib> --json
+
+# Fetch full content of a specific doc page (use paths from search results)
+pnpx @tanstack/cli doc query <path> --json
+
+# List all available TanStack libraries
+pnpx @tanstack/cli libraries --json
+
+# List ecosystem partners/tools by category (database, hosting, auth, etc.)
+pnpx @tanstack/cli ecosystem --category <category> --json
+```
+
+Always prefer TanStack Start convention over nitro.

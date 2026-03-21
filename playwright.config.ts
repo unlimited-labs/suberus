@@ -5,7 +5,7 @@ export default defineConfig({
 	fullyParallel: true,
 	forbidOnly: false,
 	retries: 2,
-	workers: 2,
+	workers: 1,
 	reporter:
 		process.env.CI || process.env.CLAUDE
 			? [["line"], ["html", { open: "never" }]]
