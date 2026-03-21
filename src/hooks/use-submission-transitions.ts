@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import type { TransitionResult } from "@/lib/workflow/types";
 import { editorSubmissionQueryOptions } from "@/utils/admin-submissions.functions";
 import {
+	confirmConditionsMetFn,
 	editorOverrideFn,
 	transitionToAwaitingDecisionFn,
 	transitionToReviewsCompleteFn,
@@ -62,11 +63,22 @@ export function useSubmissionTransitions(submissionId: string) {
 			onSuccess,
 		);
 
+	const handleConfirmConditionsMet = (
+		reasoning: string,
+		onSuccess?: () => void,
+	) =>
+		runTransition(
+			() => confirmConditionsMetFn({ data: { submissionId, reasoning } }),
+			"Conditions confirmed — submission accepted",
+			onSuccess,
+		);
+
 	return {
 		isTransitioning,
 		invalidateSubmission,
 		handleTransitionToReviewsComplete,
 		handleTransitionToAwaitingDecision,
 		handleEditorOverride,
+		handleConfirmConditionsMet,
 	};
 }

@@ -70,6 +70,7 @@ export const submissionMachine = setup({
 		DRAFT: {
 			on: {
 				SUBMIT: "SUBMITTED",
+				WITHDRAW: "WITHDRAWN",
 			},
 		},
 		SUBMITTED: {
@@ -129,6 +130,7 @@ export const submissionMachine = setup({
 				EDITOR_REJECT: {
 					target: "REJECTED",
 				},
+				WITHDRAW: "WITHDRAWN",
 			},
 		},
 		AWAITING_DECISION: {
@@ -137,6 +139,7 @@ export const submissionMachine = setup({
 				EDITOR_CONDITIONAL: "CONDITIONALLY_ACCEPTED",
 				EDITOR_REVISE: "REVISE_REQUIRED",
 				EDITOR_REJECT: "REJECTED",
+				WITHDRAW: "WITHDRAWN",
 			},
 		},
 		REVISE_REQUIRED: {
@@ -154,6 +157,7 @@ export const submissionMachine = setup({
 					target: "UNDER_REVIEW",
 					guard: "hasMinReviewers",
 				},
+				WITHDRAW: "WITHDRAWN",
 			},
 		},
 		// Terminal states (ACCEPTED/CONDITIONALLY_ACCEPTED/REJECTED allow editor override)
@@ -164,6 +168,7 @@ export const submissionMachine = setup({
 		},
 		CONDITIONALLY_ACCEPTED: {
 			on: {
+				CONFIRM_CONDITIONS_MET: "ACCEPTED",
 				EDITOR_OVERRIDE: "AWAITING_DECISION",
 			},
 		},

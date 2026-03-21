@@ -1,6 +1,7 @@
 import {
 	IconArrowLeft,
 	IconCalendar,
+	IconCheck,
 	IconDownload,
 	IconFile,
 	IconFileText,
@@ -17,6 +18,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { AssignReviewerDialog } from "@/components/admin/submissions/assign-reviewer-dialog";
+import { ConfirmConditionsDialog } from "@/components/admin/submissions/confirm-conditions-dialog";
 import { DeskRejectDialog } from "@/components/admin/submissions/desk-reject-dialog";
 import { EditorDecisionDialog } from "@/components/admin/submissions/editor-decision-dialog";
 import { OverrideDecisionDialog } from "@/components/admin/submissions/override-decision-dialog";
@@ -71,6 +73,8 @@ function SubmissionDetailPage() {
 	const [showDecisionDialog, setShowDecisionDialog] = useState(false);
 	const [showDeskRejectDialog, setShowDeskRejectDialog] = useState(false);
 	const [showOverrideDialog, setShowOverrideDialog] = useState(false);
+	const [showConfirmConditionsDialog, setShowConfirmConditionsDialog] =
+		useState(false);
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
 	const {
@@ -79,6 +83,7 @@ function SubmissionDetailPage() {
 		handleTransitionToReviewsComplete,
 		handleTransitionToAwaitingDecision,
 		handleEditorOverride,
+		handleConfirmConditionsMet,
 	} = useSubmissionTransitions(id);
 
 	// Load config for this submission type
@@ -152,6 +157,8 @@ function SubmissionDetailPage() {
 	const canMakeDecision =
 		submission.status === "AWAITING_DECISION" ||
 		(submission.status === "REVIEWS_COMPLETE" && config.requiresEditorDecision);
+
+	const canConfirmConditions = submission.status === "CONDITIONALLY_ACCEPTED";
 
 	const canOverrideDecision = [
 		"ACCEPTED",
@@ -245,6 +252,14 @@ function SubmissionDetailPage() {
 										<Button onClick={() => setShowDecisionDialog(true)}>
 											<IconGavel className="size-4 mr-2" />
 											Make Decision
+										</Button>
+									)}
+									{canConfirmConditions && (
+										<Button
+											onClick={() => setShowConfirmConditionsDialog(true)}
+										>
+											<IconCheck className="size-4 mr-2" />
+											Confirm Conditions Met
 										</Button>
 									)}
 									{canOverrideDecision && (
@@ -569,6 +584,13 @@ function SubmissionDetailPage() {
 				open={showOverrideDialog}
 				onOpenChange={setShowOverrideDialog}
 				onOverride={handleEditorOverride}
+				isTransitioning={isTransitioning}
+			/>
+
+			<ConfirmConditionsDialog
+				open={showConfirmConditionsDialog}
+				onOpenChange={setShowConfirmConditionsDialog}
+				onConfirm={handleConfirmConditionsMet}
 				isTransitioning={isTransitioning}
 			/>
 

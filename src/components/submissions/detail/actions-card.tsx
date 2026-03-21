@@ -97,14 +97,34 @@ export function ActionsCard({
 							<IconSend className="size-4" />
 							Submit
 						</Button>
+						<Button
+							variant="destructive"
+							className="gap-2 w-full"
+							onClick={handleWithdraw}
+							disabled={isLoading}
+						>
+							<IconX className="size-4" />
+							Withdraw Submission
+						</Button>
 					</>
 				);
 			case "REVISE_REQUIRED":
 				return (
-					<Button className="gap-2 w-full" onClick={handleRevise}>
-						<IconEdit className="size-4" />
-						Make Revisions
-					</Button>
+					<>
+						<Button className="gap-2 w-full" onClick={handleRevise}>
+							<IconEdit className="size-4" />
+							Make Revisions
+						</Button>
+						<Button
+							variant="destructive"
+							className="gap-2 w-full"
+							onClick={handleWithdraw}
+							disabled={isLoading}
+						>
+							<IconX className="size-4" />
+							Withdraw Submission
+						</Button>
+					</>
 				);
 			case "SUBMITTED":
 				return (

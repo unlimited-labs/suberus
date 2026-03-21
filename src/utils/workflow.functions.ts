@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { TransitionResult } from "@/lib/workflow";
 import { adminMiddleware, authMiddleware } from "./auth.middleware";
 import {
+	confirmConditionsMet,
 	deskRejectSubmission,
 	executeSubmissionTransition,
 	overrideDecision,
@@ -103,4 +104,21 @@ export const editorOverrideFn = createServerFn({ method: "POST" })
 	)
 	.handler(async ({ data, context }): Promise<TransitionResult> => {
 		return overrideDecision(data.submissionId, context.user.id, data.reasoning);
+	});
+
+/** Confirm conditions met — promote CONDITIONALLY_ACCEPTED to ACCEPTED (editor) */
+export const confirmConditionsMetFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(
+		z.object({
+			submissionId: z.uuid(),
+			reasoning: z.string().min(1, "Reasoning is required"),
+		}),
+	)
+	.handler(async ({ data, context }): Promise<TransitionResult> => {
+		return confirmConditionsMet(
+			data.submissionId,
+			context.user.id,
+			data.reasoning,
+		);
 	});

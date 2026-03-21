@@ -165,7 +165,10 @@ export async function executeSubmissionTransition(
 					type: "SUBMISSION_STATUS_CHANGED",
 					fromStatus: submission.status,
 					toStatus: newState,
-					round: submission.currentRound,
+					round:
+						event.type === "RESUBMIT"
+							? submission.currentRound + 1
+							: submission.currentRound,
 					event: event.type,
 					reason: reason || description,
 				},
@@ -224,6 +227,7 @@ export async function getValidSubmissionEvents(
 		"EDITOR_REVISE",
 		"EDITOR_REJECT",
 		"EDITOR_OVERRIDE",
+		"CONFIRM_CONDITIONS_MET",
 		"RESUBMIT",
 	] as const;
 
@@ -512,7 +516,7 @@ export async function withdrawSubmission(
 			);
 		}
 
-		// Send withdrawal notification to author
+		// Send withdrawal notification to presenter and admins
 		const submission = await prisma.submission.findUniqueOrThrow({
 			where: { id: submissionId },
 			include: {
@@ -527,6 +531,23 @@ export async function withdrawSubmission(
 				submissionTitle: submission.title,
 				submissionUrl: `${env.APP_BASE_URL}/submissions/${submissionId}`,
 			});
+		}
+
+		// Notify admins
+		const admins = await prisma.user.findMany({
+			where: { role: { in: ["ADMIN", "EDITOR"] }, isActive: true },
+			select: { email: true },
+		});
+		for (const admin of admins) {
+			if (admin.email !== presenter?.email) {
+				void sendEmail("SUBMISSION_WITHDRAWN", admin.email, {
+					authorName: presenter
+						? `${presenter.firstName} ${presenter.lastName}`
+						: "Author",
+					submissionTitle: submission.title,
+					submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${submissionId}`,
+				});
+			}
 		}
 	}
 
@@ -553,6 +574,19 @@ export async function deskRejectSubmission(
 			where: { id: submissionId },
 			include: {
 				authors: { where: { isPresenter: true }, take: 1 },
+			},
+		});
+
+		// Create editor decision record for audit trail
+		await prisma.editorDecision.create({
+			data: {
+				submissionId,
+				editorId,
+				round: submission.currentRound,
+				decision: "REJECT",
+				reasoning: reason,
+				letterToAuthor: reason,
+				basedOnReviews: [],
 			},
 		});
 
@@ -711,6 +745,72 @@ export async function overrideDecision(
 			submissionId,
 			performedBy: editorId,
 			detail: activityDetail("DECISION_OVERRIDE", { reasoning }),
+		});
+	}
+
+	return result;
+}
+
+/**
+ * Confirm conditions met — promote CONDITIONALLY_ACCEPTED to ACCEPTED
+ */
+export async function confirmConditionsMet(
+	submissionId: string,
+	editorId: string,
+	reasoning: string,
+): Promise<TransitionResult> {
+	const result = await executeSubmissionTransition(
+		submissionId,
+		{ type: "CONFIRM_CONDITIONS_MET" },
+		editorId,
+		reasoning,
+	);
+
+	if (result.success) {
+		const submission = await prisma.submission.findUniqueOrThrow({
+			where: { id: submissionId },
+			include: {
+				authors: { where: { isPresenter: true }, take: 1 },
+				reviews: {
+					orderBy: { createdAt: "desc" },
+				},
+			},
+		});
+
+		// Create editor decision record
+		const currentRoundReviews = submission.reviews.filter(
+			(r) => r.round === submission.currentRound,
+		);
+		await prisma.editorDecision.create({
+			data: {
+				submissionId,
+				editorId,
+				round: submission.currentRound,
+				decision: "ACCEPT",
+				reasoning,
+				basedOnReviews: currentRoundReviews.map((r) => r.id),
+			},
+		});
+
+		// Send acceptance email to presenter
+		const presenter = submission.authors[0];
+		if (presenter) {
+			void sendEmail("DECISION_ACCEPTED", presenter.email, {
+				authorName: `${presenter.firstName} ${presenter.lastName}`,
+				submissionTitle: submission.title,
+				letterToAuthor: reasoning,
+				submissionUrl: `${env.APP_BASE_URL}/submissions/${submissionId}`,
+			});
+		}
+
+		await logActivity({
+			type: "DECISION_SUBMITTED",
+			submissionId,
+			performedBy: editorId,
+			detail: activityDetail("DECISION_SUBMITTED", {
+				decision: "ACCEPT",
+				reasoning,
+			}),
 		});
 	}
 
