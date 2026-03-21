@@ -5,6 +5,8 @@ import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
+import { activityDetail } from "@/lib/activity-log";
+import { logActivity } from "@/lib/server/activity-log";
 import { sendEmail } from "@/lib/server/email";
 import type { CreateSubmissionInput } from "@/lib/validations/submission";
 import { logger } from "@/logger.ts";
@@ -492,7 +494,10 @@ export async function resubmitSubmission(
 	data: ResubmitSubmissionInput,
 ): Promise<{ success: boolean; versionNumber: number; error?: string }> {
 	const submission = await prisma.submission.findFirst({
-		where: { id: submissionId, userId },
+		where: {
+			id: submissionId,
+			OR: [{ userId }, { authors: { some: { userId } } }],
+		},
 		include: { currentVersion: true },
 	});
 
@@ -582,6 +587,15 @@ export async function resubmitSubmission(
 			});
 		}
 	}
+
+	await logActivity({
+		type: "SUBMISSION_RESUBMITTED",
+		submissionId,
+		performedBy: userId,
+		detail: activityDetail("SUBMISSION_RESUBMITTED", {
+			round: submission.currentRound + 1,
+		}),
+	});
 
 	logger.info(`[submission] resubmitted ${submissionId} v${version.version}`);
 

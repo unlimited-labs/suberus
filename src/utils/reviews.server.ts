@@ -114,12 +114,15 @@ export async function getAssignmentForReview(
 				assignment.submission.currentVersion?.content ??
 				assignment.submission.content,
 			type: assignment.submission.type,
-			authors: assignment.submission.authors.map((a) => ({
-				firstName: a.firstName,
-				lastName: a.lastName,
-				affiliationName: a.affiliation?.name ?? null,
-				isPresenter: a.isPresenter,
-			})),
+			authors:
+				config.reviewMode === "DOUBLE_BLIND"
+					? []
+					: assignment.submission.authors.map((a) => ({
+							firstName: a.firstName,
+							lastName: a.lastName,
+							affiliationName: a.affiliation?.name ?? null,
+							isPresenter: a.isPresenter,
+						})),
 			file: assignment.submission.currentVersion?.file ?? null,
 		},
 		config: {
@@ -166,6 +169,10 @@ export async function submitReview(
 		return { success: false, error: "Assignment has been cancelled" };
 	}
 
+	if (assignment.status === "COMPLETED") {
+		return { success: false, error: "Review already submitted" };
+	}
+
 	// Start review if not already started
 	if (assignment.status === "PENDING") {
 		await startReview(assignmentId, reviewerId);
@@ -173,7 +180,7 @@ export async function submitReview(
 
 	// Check if review already exists (update vs create)
 	if (assignment.review) {
-		// Update existing review
+		// Update existing review (before completion)
 		await prisma.review.update({
 			where: { id: assignment.review.id },
 			data: {
@@ -203,9 +210,7 @@ export async function submitReview(
 	}
 
 	// Mark assignment as completed (internally triggers review completion check)
-	if (assignment.status !== "COMPLETED") {
-		await completeReviewAssignment(assignmentId, reviewerId, data.decision);
-	}
+	await completeReviewAssignment(assignmentId, reviewerId, data.decision);
 
 	// Notify editor(s) that a review was submitted
 	if (assignment.assignedBy) {

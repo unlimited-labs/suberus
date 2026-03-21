@@ -171,7 +171,7 @@ export async function getAdminSubmissions(
 			},
 			reviewAssignments: {
 				where: { status: { notIn: ["CANCELLED"] } },
-				select: { status: true },
+				select: { status: true, round: true },
 			},
 		},
 		orderBy: { createdAt: "desc" },
@@ -185,9 +185,9 @@ export async function getAdminSubmissions(
 
 		const presenterEmail = s.presenterAuthor?.email ?? s.user.email;
 
-		// Count active and completed assignments for current round
+		// Count active and completed assignments for current round only
 		const currentRoundAssignments = s.reviewAssignments.filter(
-			(a) => a.status !== "CANCELLED",
+			(a) => a.round === s.currentRound,
 		);
 		const completedAssignments = currentRoundAssignments.filter(
 			(a) => a.status === "COMPLETED",
