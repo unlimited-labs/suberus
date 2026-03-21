@@ -103,8 +103,8 @@ const bulkActionSchema = z.object({
 export const bulkAdminAction = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(bulkActionSchema)
-	.handler(async ({ data }) => {
-		return executeBulkAction(data);
+	.handler(async ({ data, context }) => {
+		return executeBulkAction(data, context.user.id);
 	});
 
 // --- Admin-only: profile edit, delete, deletable check ---

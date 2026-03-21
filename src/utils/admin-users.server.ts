@@ -117,6 +117,7 @@ export interface BulkActionData {
 
 export async function executeBulkAction(
 	data: BulkActionData,
+	performedBy?: string,
 ): Promise<{ success: boolean; updated: number }> {
 	if (data.action === "mark_fee") {
 		if (!data.feeType || data.feeAmount === undefined || !data.feeCurrency) {
@@ -125,12 +126,15 @@ export async function executeBulkAction(
 			});
 		}
 		logger.info(`[admin] bulk mark_fee for ${data.userIds.length} users`);
-		return bulkMarkFeesPaid({
-			userIds: data.userIds,
-			feeType: data.feeType,
-			amount: data.feeAmount,
-			currency: data.feeCurrency,
-		});
+		return bulkMarkFeesPaid(
+			{
+				userIds: data.userIds,
+				feeType: data.feeType,
+				amount: data.feeAmount,
+				currency: data.feeCurrency,
+			},
+			performedBy,
+		);
 	}
 
 	if (data.action === "change_role") {
@@ -140,10 +144,13 @@ export async function executeBulkAction(
 		logger.info(
 			`[admin] bulk change_role to ${data.role} for ${data.userIds.length} users`,
 		);
-		return bulkChangeRole({
-			userIds: data.userIds,
-			role: data.role,
-		});
+		return bulkChangeRole(
+			{
+				userIds: data.userIds,
+				role: data.role,
+			},
+			performedBy,
+		);
 	}
 
 	throw new Response("Invalid action", { status: 400 });

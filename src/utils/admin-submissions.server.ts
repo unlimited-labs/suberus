@@ -5,7 +5,9 @@ import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
+import { activityDetail } from "@/lib/activity-log";
 import { statusChangeOptions } from "@/lib/labels/submission";
+import { logActivity } from "@/lib/server/activity-log";
 import { sendEmail } from "@/lib/server/email";
 import type { SubmissionEvent } from "@/lib/workflow";
 import { assignReviewer } from "./assignments.server";
@@ -33,10 +35,11 @@ export async function validateActiveTrack(trackId: string) {
 export async function updateSubmissionTrack(
 	submissionId: string,
 	trackId: string | null,
+	performedBy?: string,
 ) {
 	const submission = await prisma.submission.findUnique({
 		where: { id: submissionId },
-		select: { type: true },
+		select: { type: true, trackId: true },
 	});
 
 	if (!submission) {
@@ -56,6 +59,15 @@ export async function updateSubmissionTrack(
 	await prisma.submission.update({
 		where: { id: submissionId },
 		data: { trackId },
+	});
+
+	await logActivity({
+		type: "SUBMISSION_TRACK_CHANGED",
+		submissionId,
+		performedBy,
+		detail: activityDetail("SUBMISSION_TRACK_CHANGED", {
+			trackId,
+		}),
 	});
 }
 

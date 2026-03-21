@@ -5,6 +5,7 @@ import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
+import { logActivity } from "@/lib/server/activity-log";
 import { sendEmail } from "@/lib/server/email";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import type { CreateSubmissionInput } from "@/lib/validations/submission";
@@ -770,6 +771,12 @@ export async function submitDraft(
 	if (!result.success) {
 		return { success: false, error: result.error ?? "Failed to submit draft" };
 	}
+
+	await logActivity({
+		type: "SUBMISSION_DRAFT_SUBMITTED",
+		submissionId,
+		performedBy: userId,
+	});
 
 	logger.info(`[submission] submitted draft ${submissionId}`);
 

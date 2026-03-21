@@ -64,8 +64,12 @@ export const updateSubmissionTrackFn = createServerFn({ method: "POST" })
 			trackId: z.uuid().nullable(),
 		}),
 	)
-	.handler(async ({ data }) => {
-		await updateSubmissionTrack(data.submissionId, data.trackId);
+	.handler(async ({ data, context }) => {
+		await updateSubmissionTrack(
+			data.submissionId,
+			data.trackId,
+			context.user.id,
+		);
 	});
 
 /** Bulk update track assignment for multiple submissions */

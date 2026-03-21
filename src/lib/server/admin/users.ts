@@ -186,6 +186,7 @@ export interface BulkMarkFeesPaidInput {
 
 export async function bulkMarkFeesPaid(
 	data: BulkMarkFeesPaidInput,
+	performedBy?: string,
 ): Promise<{ success: boolean; updated: number }> {
 	const now = new Date();
 	let updated = 0;
@@ -210,6 +211,16 @@ export async function bulkMarkFeesPaid(
 					paidAt: now,
 				},
 			});
+			await logActivityTx(tx, {
+				type: "FEE_MARKED_PAID",
+				userId,
+				performedBy,
+				detail: activityDetail("FEE_MARKED_PAID", {
+					feeType: data.feeType,
+					amount: data.amount,
+					currency: data.currency,
+				}),
+			});
 			updated++;
 		}
 	});
@@ -224,6 +235,7 @@ export interface BulkChangeRoleInput {
 
 export async function bulkChangeRole(
 	data: BulkChangeRoleInput,
+	performedBy?: string,
 ): Promise<{ success: boolean; updated: number }> {
 	if (data.role !== "ADMIN") {
 		const [adminCount, affectedAdmins] = await Promise.all([
@@ -239,10 +251,30 @@ export async function bulkChangeRole(
 		}
 	}
 
+	// Fetch old roles for audit trail
+	const oldUsers = await prisma.user.findMany({
+		where: { id: { in: data.userIds } },
+		select: { id: true, role: true },
+	});
+
 	const result = await prisma.user.updateMany({
 		where: { id: { in: data.userIds } },
 		data: { role: data.role },
 	});
+
+	for (const user of oldUsers) {
+		if (user.role !== data.role) {
+			await logActivity({
+				type: "USER_ROLE_CHANGED",
+				userId: user.id,
+				performedBy,
+				detail: activityDetail("USER_ROLE_CHANGED", {
+					fromRole: user.role,
+					toRole: data.role,
+				}),
+			});
+		}
+	}
 
 	return { success: true, updated: result.count };
 }

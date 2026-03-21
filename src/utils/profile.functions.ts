@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { z } from "zod";
+import { logActivity } from "@/lib/server/activity-log";
 import { auth } from "../../auth.server";
 import { authMiddleware } from "./auth.middleware";
 import { updateContactInfo, updatePersonalInfo } from "./profile.server";
@@ -46,13 +47,14 @@ export const updateContactInfoFn = createServerFn({ method: "POST" })
 
 // Password change (better-auth)
 export const changePasswordFn = createServerFn({ method: "POST" })
+	.middleware([authMiddleware])
 	.inputValidator(
 		z.object({
 			currentPassword: z.string(),
 			newPassword: z.string().min(10),
 		}),
 	)
-	.handler(async ({ data }) => {
+	.handler(async ({ data, context }) => {
 		await auth.api.changePassword({
 			body: {
 				currentPassword: data.currentPassword,
@@ -60,6 +62,11 @@ export const changePasswordFn = createServerFn({ method: "POST" })
 				revokeOtherSessions: false,
 			},
 			headers: getRequestHeaders(),
+		});
+		await logActivity({
+			type: "USER_PASSWORD_CHANGED",
+			userId: context.user.id,
+			performedBy: context.user.id,
 		});
 		return { success: true };
 	});

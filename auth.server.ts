@@ -126,6 +126,11 @@ export const auth = betterAuth({
 						userId: user.id,
 						detail: activityDetail("USER_REGISTERED", { email: user.email }),
 					})
+					const extUser = user as typeof user & { firstName?: string }
+					void sendEmail("ACCOUNT_CREATED", user.email, {
+						firstName: extUser.firstName ?? user.email,
+						conferenceName: await getSetting("CONFERENCE_NAME"),
+					})
 				},
 			},
 			update: {
@@ -133,6 +138,18 @@ export const auth = betterAuth({
 					if (!user.emailVerified) return
 					await linkCoAuthorsByEmail(user.email, user.id)
 					await applyInvitationRole(user.id, user.email)
+					// Log self-service email verification (idempotent — checks if already logged)
+					const { prisma: dbClient } = await import("@/db.server")
+					const alreadyLogged = await dbClient.activityLog.findFirst({
+						where: { userId: user.id, type: "USER_EMAIL_VERIFIED" },
+					})
+					if (!alreadyLogged) {
+						const { logActivity } = await import("@/lib/server/activity-log")
+						await logActivity({
+							type: "USER_EMAIL_VERIFIED",
+							userId: user.id,
+						})
+					}
 				},
 			},
 		},

@@ -499,6 +499,13 @@ export async function withdrawSubmission(
 	);
 
 	if (result.success) {
+		await logActivity({
+			type: "SUBMISSION_WITHDRAWN",
+			submissionId,
+			performedBy: userId,
+			detail: activityDetail("SUBMISSION_WITHDRAWN", { reason }),
+		});
+
 		// Cancel all active reviewer assignments
 		const activeAssignments = await prisma.reviewAssignment.findMany({
 			where: {
