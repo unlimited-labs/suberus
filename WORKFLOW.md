@@ -7,7 +7,7 @@ Universal, configurable review workflow supporting multiple submission types (ab
 **Modular Design:**
 - System can handle **abstracts only**, **papers only**, or **both simultaneously**
 - Each type has independent configuration (reviewers, deadlines, review mode, workflow)
-- Separate UI routes and forms per type ("/abstracts", "/papers")
+- Separate UI routes and forms per type ("/abstracts", "/papers", "/posters")
 - Shared backend model (`Submission`) for code reuse
 - Enable/disable types via `isActive` flag in `SubmissionTypeConfig`
 
@@ -42,6 +42,9 @@ stateDiagram-v2
     ReviseRequired --> Withdrawn: Author gives up
 
     Resubmitted --> UnderReview: Assign reviewer (round++)
+    Resubmitted --> Withdrawn: Author withdraws
+
+    ReviewsComplete --> Withdrawn: Author withdraws
 
     ConditionallyAccepted --> Accepted: Editor confirms conditions met
 
@@ -87,8 +90,13 @@ stateDiagram-v2
 
     Resubmitted --> UnderReview: Assign reviewers (round++)
 
+    ConditionallyAccepted --> Accepted: Editor confirms conditions met
+
+    ReviewsComplete --> Withdrawn: Author withdraws
+    AwaitingDecision --> Withdrawn: Author withdraws
+    Resubmitted --> Withdrawn: Author withdraws
+
     Accepted --> [*]
-    ConditionallyAccepted --> [*]
     Rejected --> [*]
     Withdrawn --> [*]
 
@@ -141,6 +149,7 @@ flowchart TD
     Submitted --> AssignType{Submission Type?}
 
     AssignType -->|Abstract 1 reviewer| Assign1[Editor assigns 1 reviewer]
+    AssignType -->|Poster 1 reviewer| Assign1
     AssignType -->|Paper 2-3 reviewers| Assign2[Editor assigns 2-3 reviewers]
 
     Assign1 --> UnderReview[UNDER_REVIEW]
@@ -157,8 +166,8 @@ flowchart TD
 
     ReviewsComplete --> EditorCheck{Requires Editor Decision?}
 
-    EditorCheck -->|No Abstract| ReviewerDec{Reviewer Decision}
-    EditorCheck -->|Yes Paper| Awaiting[AWAITING_DECISION]
+    EditorCheck -->|No (Abstract/Poster)| ReviewerDec{Reviewer Decision}
+    EditorCheck -->|Yes (Paper)| Awaiting[AWAITING_DECISION]
 
     Awaiting --> EditorDec{Editor Decision}
 
@@ -274,7 +283,7 @@ Conference can enable submission types independently via `isActive` flag:
 - **Both Abstract + Paper** - Hybrid conference (e.g., abstract for talk selection, paper for proceedings)
 
 Each type has separate UI:
-- Separate navigation links ("/abstracts", "/papers")
+- Separate navigation links ("/abstracts", "/papers", "/posters")
 - Separate submission forms
 - Separate listing pages
 - Independent workflows
@@ -337,7 +346,7 @@ Editors (role=EDITOR) can:
 - → `UNDER_REVIEW` (reassign reviewer - stays same state)
 
 ### From REVIEWS_COMPLETE
-**If requiresEditorDecision=false** (Abstracts):
+**If requiresEditorDecision=false** (Abstracts/Posters):
 - Auto-applies reviewer decision immediately
 - Reviewer decides ACCEPT → `ACCEPTED`
 - Reviewer decides REJECT → `REJECTED`
@@ -486,7 +495,7 @@ Config: {
 Review form shows (dynamic from scoringCriteria):
 - Each criterion: 1-5 score (compact row with label + description)
 - Scale legend shown once: 1=Poor ... 5=Excellent
-- Confidence Level: 1-5
+- Confidence Level: 1-5 (only if enableConfidenceLevel=true in config)
 - Comments: text
 - Private Notes: text (editor only)
 - Decision: ACCEPT/REJECT/REVISE/ACCEPT_WITH_MINOR
@@ -901,14 +910,6 @@ POSTER uses identical workflow to ABSTRACT (single reviewer, reviewer decides).
 
 ---
 
-## Deployment Scenarios
-
-### Scenario 1: Abstract-Only Conference
-### Scenario 2: Paper-Only Conference
-### Scenario 3: Hybrid Conference (Abstract + Paper)
-
----
-
 ## Edge Cases
 
 ### Desk Rejection
@@ -1025,9 +1026,12 @@ Email system uses configurable templates stored in database with simple placehol
 | `DECISION_REJECTED` | Author          | Rejection |
 | `REVISION_REMINDER` | Author          | Revision deadline approaching |
 | `REVISION_RECEIVED` | Admin          | Author resubmits |
+| `DECISION_OVERRIDDEN` | Author          | Editor overrides previous decision |
 | `DEADLINE_APPROACHING` | Reviewer/Author | Generic deadline warning |
 | `ACCOUNT_CREATED` | User            | New account created |
 | `PASSWORD_RESET` | User            | Password reset requested |
+| `EMAIL_VERIFICATION` | User            | Email verification link |
+| `INVITATION` | Invited user    | Invitation to join the system |
 
 ### Available Placeholders
 
@@ -1123,6 +1127,7 @@ export const abstractMachine = createMachine({
     SUBMITTED: {
       on: {
         ASSIGN_REVIEWER: 'UNDER_REVIEW',
+        DESK_REJECT: 'REJECTED',
         WITHDRAW: 'WITHDRAWN'
       }
     },
@@ -1137,7 +1142,17 @@ export const abstractMachine = createMachine({
         AUTO_ACCEPT: 'ACCEPTED',
         AUTO_REJECT: 'REJECTED',
         AUTO_REVISE: 'REVISE_REQUIRED',
-        AUTO_CONDITIONAL: 'CONDITIONALLY_ACCEPTED'
+        AUTO_CONDITIONAL: 'CONDITIONALLY_ACCEPTED',
+        WITHDRAW: 'WITHDRAWN'
+      }
+    },
+    AWAITING_DECISION: {
+      on: {
+        EDITOR_ACCEPT: 'ACCEPTED',
+        EDITOR_CONDITIONAL: 'CONDITIONALLY_ACCEPTED',
+        EDITOR_REVISE: 'REVISE_REQUIRED',
+        EDITOR_REJECT: 'REJECTED',
+        WITHDRAW: 'WITHDRAWN'
       }
     },
     REVISE_REQUIRED: {
@@ -1148,7 +1163,8 @@ export const abstractMachine = createMachine({
     },
     RESUBMITTED: {
       on: {
-        ASSIGN_REVIEWER: 'UNDER_REVIEW'
+        ASSIGN_REVIEWER: 'UNDER_REVIEW',
+        WITHDRAW: 'WITHDRAWN'
       }
     },
     ACCEPTED: { on: { EDITOR_OVERRIDE: 'AWAITING_DECISION' } },
