@@ -173,26 +173,67 @@ export async function submitReview(
 		return { success: false, error: "Review already submitted" };
 	}
 
+	// Load config for server-side validation of scores/confidence
+	const configKey = SUBMISSION_TYPE_TO_KEY[assignment.submission.type];
+	const config = await getSetting(configKey);
+
+	// Validate scores when scoring is enabled
+	let validatedScores: Record<string, number> | undefined;
+	if (config.enableScoring) {
+		const criteriaNames = config.scoringCriteria.map(
+			(c: { name: string }) => c.name,
+		);
+		if (!data.scores || criteriaNames.length === 0) {
+			return {
+				success: false,
+				error: "Scores are required when scoring is enabled",
+			};
+		}
+		for (const name of criteriaNames) {
+			const score = data.scores[name];
+			if (score === undefined || score < 1 || score > 5) {
+				return {
+					success: false,
+					error: `Score for "${name}" is required (1-5)`,
+				};
+			}
+		}
+		validatedScores = data.scores;
+	}
+
+	// Validate confidence level when enabled
+	let validatedConfidence: number | undefined;
+	if (config.enableConfidenceLevel) {
+		if (
+			!data.confidenceLevel ||
+			data.confidenceLevel < 1 ||
+			data.confidenceLevel > 5
+		) {
+			return { success: false, error: "Confidence level is required (1-5)" };
+		}
+		validatedConfidence = data.confidenceLevel;
+	}
+
 	// Start review if not already started
 	if (assignment.status === "PENDING") {
 		await startReview(assignmentId, reviewerId);
 	}
 
+	const reviewData = {
+		decision: data.decision,
+		comments: data.comments,
+		privateNotes: data.privateNotes,
+		scores: validatedScores,
+		confidenceLevel: validatedConfidence,
+	};
+
 	// Check if review already exists (update vs create)
 	if (assignment.review) {
-		// Update existing review (before completion)
 		await prisma.review.update({
 			where: { id: assignment.review.id },
-			data: {
-				decision: data.decision,
-				comments: data.comments,
-				privateNotes: data.privateNotes,
-				scores: data.scores ?? undefined,
-				confidenceLevel: data.confidenceLevel,
-			},
+			data: reviewData,
 		});
 	} else {
-		// Create new review
 		await prisma.review.create({
 			data: {
 				assignmentId,
@@ -200,11 +241,7 @@ export async function submitReview(
 				reviewerId,
 				versionId: assignment.submission.currentVersionId,
 				round: assignment.round,
-				decision: data.decision,
-				comments: data.comments,
-				privateNotes: data.privateNotes,
-				scores: data.scores ?? undefined,
-				confidenceLevel: data.confidenceLevel,
+				...reviewData,
 			},
 		});
 	}
