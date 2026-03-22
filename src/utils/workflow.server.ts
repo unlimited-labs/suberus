@@ -263,6 +263,43 @@ export async function getValidSubmissionEvents(
 }
 
 /**
+ * Validate an assignment transition without executing it.
+ * Used when custom DB work (e.g., review creation) must be atomic with the status change.
+ */
+export async function validateAssignmentTransition(
+	assignmentId: string,
+	event: AssignmentEvent,
+): Promise<{ valid: boolean; error?: string }> {
+	const assignment = await prisma.reviewAssignment.findUniqueOrThrow({
+		where: { id: assignmentId },
+	});
+
+	const actor = createActor(assignmentMachine, {
+		snapshot: assignmentMachine.resolveState({
+			value: assignment.status,
+			context: {
+				assignmentId,
+				submissionId: assignment.submissionId,
+				reviewerId: assignment.reviewerId,
+				round: assignment.round,
+				deadline: assignment.deadline ?? undefined,
+			},
+		}),
+	});
+
+	actor.start();
+	const valid = actor.getSnapshot().can(event);
+	actor.stop();
+
+	return valid
+		? { valid: true }
+		: {
+				valid: false,
+				error: `Invalid transition: ${event.type} from ${assignment.status}`,
+			};
+}
+
+/**
  * Execute assignment status transition
  */
 export async function executeAssignmentTransition(
@@ -355,7 +392,7 @@ export async function checkAndTriggerReviewCompletion(
 		const [locked] = await tx.$queryRawUnsafe<
 			Array<{ id: string; status: string }>
 		>(
-			'SELECT "id", "status" FROM "Submission" WHERE "id" = $1 FOR UPDATE SKIP LOCKED',
+			'SELECT "id", "status" FROM "submissions" WHERE "id" = $1 FOR UPDATE SKIP LOCKED',
 			submissionId,
 		);
 

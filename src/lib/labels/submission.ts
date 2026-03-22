@@ -74,11 +74,6 @@ export const statusChangeOptions: {
 	label: string;
 	eventType: SubmissionEvent["type"];
 }[] = [
-	{
-		value: "UNDER_REVIEW",
-		label: "Under Review",
-		eventType: "ASSIGN_REVIEWER",
-	},
 	{ value: "ACCEPTED", label: "Accepted", eventType: "EDITOR_ACCEPT" },
 	{
 		value: "CONDITIONALLY_ACCEPTED",

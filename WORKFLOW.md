@@ -974,6 +974,18 @@ Assumption: Allow change before author notification
 7. History shows both decisions
 ```
 
+### Bulk Decisions (Editor/Admin)
+
+```
+Editor/Admin can apply decisions in bulk to multiple submissions:
+- Available targets: ACCEPTED, CONDITIONALLY_ACCEPTED, REVISE_REQUIRED, REJECTED
+- Each submission must be in a valid state for the transition
+  (REVIEWS_COMPLETE or AWAITING_DECISION)
+- Creates EditorDecision record and sends notification per submission
+- Respects allowRevisions config — cannot bulk-set REVISE_REQUIRED when disabled
+- All transitions go through xstate machine for validation
+```
+
 ---
 
 ## Notifications
@@ -1005,8 +1017,8 @@ Email system uses configurable templates stored in database with simple placehol
 | `SUBMISSION_WITHDRAWN` | Author, Admin   | When author withdraws |
 | `REVIEWER_ASSIGNED` | Reviewer        | When editor assigns review |
 | `REVIEWER_REMINDER` | Reviewer        | Deadline approaching (configurable days) |
-| `REVIEW_SUBMITTED` | Admin          | When reviewer submits review |
-| `ALL_REVIEWS_COMPLETE` | Admin          | Last review submitted |
+| `REVIEW_SUBMITTED` | Assigning Editor | When reviewer submits review |
+| `ALL_REVIEWS_COMPLETE` | Assigning Editor | Last review submitted |
 | `DECISION_ACCEPTED` | Author          | Final acceptance |
 | `DECISION_CONDITIONALLY_ACCEPTED` | Author          | Conditional acceptance |
 | `DECISION_REVISE_REQUIRED` | Author          | Revisions needed |

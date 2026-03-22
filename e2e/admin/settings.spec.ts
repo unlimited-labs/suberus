@@ -28,7 +28,7 @@ test.describe("Admin Settings - Submission Types", () => {
 
 		// Assert
 		await expect(page.getByText("Content Format")).toBeVisible()
-		await expect(page.getByText("Min reviewers")).toBeVisible()
+		await expect(page.getByText("Required reviewers")).toBeVisible()
 		await expect(page.getByText("Review mode")).toBeVisible()
 	})
 

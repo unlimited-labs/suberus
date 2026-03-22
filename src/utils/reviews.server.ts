@@ -6,7 +6,10 @@ import { logActivity } from "@/lib/server/activity-log";
 import { sendEmail } from "@/lib/server/email";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import { getSetting } from "./settings.server";
-import { checkAndTriggerReviewCompletion } from "./workflow.server";
+import {
+	checkAndTriggerReviewCompletion,
+	validateAssignmentTransition,
+} from "./workflow.server";
 
 /** Review submission data */
 export interface ReviewSubmitData {
@@ -165,12 +168,13 @@ export async function submitReview(
 		return { success: false, error: "Not assigned to this reviewer" };
 	}
 
-	if (assignment.status === "CANCELLED") {
-		return { success: false, error: "Assignment has been cancelled" };
-	}
-
-	if (assignment.status === "COMPLETED") {
-		return { success: false, error: "Review already submitted" };
+	// Validate transition through xstate (single source of truth)
+	const validation = await validateAssignmentTransition(assignmentId, {
+		type: "COMPLETE",
+		decision: data.decision,
+	});
+	if (!validation.valid) {
+		return { success: false, error: validation.error };
 	}
 
 	// Load config for server-side validation of scores/confidence
