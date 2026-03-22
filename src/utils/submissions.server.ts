@@ -11,6 +11,7 @@ import { sendEmail } from "@/lib/server/email";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import type { CreateSubmissionInput } from "@/lib/validations/submission";
 import { logger } from "@/logger.ts";
+import { assignReviewer } from "./assignments.server";
 import { getSetting } from "./settings.server";
 import {
 	executeSubmissionTransition,
@@ -598,6 +599,21 @@ export async function resubmitSubmission(
 			versionNumber: 0,
 			error: "Submission is not in REVISE_REQUIRED status",
 		};
+	}
+
+	// Auto-reassign reviewers from previous round
+	const previousAssignments = await prisma.reviewAssignment.findMany({
+		where: {
+			submissionId,
+			round: submission.currentRound, // previous round (before increment)
+			status: { notIn: ["CANCELLED"] },
+		},
+		select: { reviewerId: true, assignedBy: true },
+	});
+
+	for (const prev of previousAssignments) {
+		if (!prev.assignedBy) continue;
+		await assignReviewer(submissionId, prev.reviewerId, prev.assignedBy);
 	}
 
 	// Notify caretaker editor about the revision

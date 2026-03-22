@@ -51,10 +51,7 @@ export async function getAvailableReviewers(
 		where: { id: submissionId },
 		include: {
 			authors: { select: { email: true, userId: true } },
-			reviewAssignments: {
-				where: { status: { notIn: ["CANCELLED"] } },
-				select: { reviewerId: true },
-			},
+			reviewAssignments: true,
 		},
 	});
 
@@ -64,10 +61,12 @@ export async function getAvailableReviewers(
 		.map((a) => a.userId)
 		.filter((id): id is string => id !== null);
 
-	// Get already assigned reviewer IDs
-	const assignedReviewerIds = submission.reviewAssignments.map(
-		(a) => a.reviewerId,
-	);
+	// Get already assigned reviewer IDs (current round only — allows reassignment in new rounds)
+	const assignedReviewerIds = submission.reviewAssignments
+		.filter(
+			(a) => a.round === submission.currentRound && a.status !== "CANCELLED",
+		)
+		.map((a) => a.reviewerId);
 
 	// Query eligible reviewers (REVIEWER, EDITOR, ADMIN roles)
 	const reviewers = await prisma.user.findMany({
