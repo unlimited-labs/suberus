@@ -1,7 +1,9 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { env } from "@/env";
 import { sendTestEmail } from "@/lib/server/email";
+import { getSetting } from "@/utils/settings.server";
 import { adminMiddleware } from "./auth.middleware";
 import {
 	getEmailTemplates,
@@ -71,10 +73,36 @@ export const sendTestEmailFn = createServerFn({ method: "POST" })
 		}),
 	)
 	.handler(async ({ data, context }) => {
+		const conferenceName =
+			(await getSetting("CONFERENCE_NAME")) ?? "Example Conference";
+		const baseUrl = env.APP_BASE_URL;
+		const fullName = context.user.name || "Example User";
+
+		const placeholders: Record<string, string> = {
+			authorName: fullName,
+			submissionTitle: "Example Submission Title",
+			submissionUrl: `${baseUrl}/submissions/example`,
+			firstName: fullName.split(" ")[0],
+			verificationUrl: `${baseUrl}/verify?token=example`,
+			conferenceName,
+			resetUrl: `${baseUrl}/reset?token=example`,
+			reviewerName: fullName,
+			deadline: "2026-03-15",
+			reviewUrl: `${baseUrl}/reviews/example`,
+			letterToAuthor:
+				"We are pleased to inform you that your submission has been accepted.",
+			versionNumber: "2",
+			recipientName: fullName,
+			roleName: "Reviewer",
+			registrationUrl: `${baseUrl}/register?token=example`,
+			expiresAt: "2026-04-01",
+		};
+
 		await sendTestEmail(
 			context.user.email,
 			data.subject,
 			data.body,
 			data.isHtml,
+			placeholders,
 		);
 	});

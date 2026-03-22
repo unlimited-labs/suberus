@@ -14,26 +14,6 @@ function escapeHtml(str: string): string {
 		.replace(/'/g, "&#39;");
 }
 
-const TEST_PLACEHOLDER_DATA: Record<string, string> = {
-	authorName: "John Doe",
-	submissionTitle: "Example Submission Title",
-	submissionUrl: "https://conference.example.com/submissions/1",
-	firstName: "John",
-	verificationUrl: "https://conference.example.com/verify?token=abc123",
-	conferenceName: "Example Conference 2026",
-	resetUrl: "https://conference.example.com/reset?token=abc123",
-	reviewerName: "Jane Smith",
-	deadline: "2026-03-15",
-	reviewUrl: "https://conference.example.com/reviews/1",
-	letterToAuthor:
-		"We are pleased to inform you that your submission has been accepted.",
-	versionNumber: "2",
-	recipientName: "John Doe",
-	roleName: "Reviewer",
-	registrationUrl: "https://conference.example.com/register?token=abc123",
-	expiresAt: "2026-04-01",
-};
-
 const transporter = nodemailer.createTransport({
 	host: env.SMTP_HOST,
 	port: env.SMTP_PORT,
@@ -149,11 +129,12 @@ export async function sendTestEmail(
 	subject: string,
 	body: string,
 	isHtml: boolean,
+	placeholders: Record<string, string>,
 ): Promise<void> {
 	let resolvedSubject = `[TEST] ${subject}`;
 	let resolvedBody = body;
 
-	for (const [key, value] of Object.entries(TEST_PLACEHOLDER_DATA)) {
+	for (const [key, value] of Object.entries(placeholders)) {
 		const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
 		resolvedSubject = resolvedSubject.replace(regex, value);
 		resolvedBody = resolvedBody.replace(regex, value);
@@ -198,13 +179,23 @@ export async function sendTestEmail(
 
 	try {
 		await send();
+		logger.info(`[email] test sent to ${to}`);
 	} catch (err) {
 		const msg = err instanceof Error ? err.message : "";
 		const transient =
 			msg.includes("Greeting never received") || msg.includes("ECONN");
-		if (!transient) throw err;
+		if (!transient) {
+			logger.error("[email] test email failed:", err);
+			throw err;
+		}
 		logger.warn(`[smtp] test email transient error, retrying: ${msg}`);
 		await new Promise((r) => setTimeout(r, 2_000));
-		await send();
+		try {
+			await send();
+			logger.info(`[email] test sent to ${to} (retry)`);
+		} catch (retryErr) {
+			logger.error("[email] test email retry failed:", retryErr);
+			throw retryErr;
+		}
 	}
 }

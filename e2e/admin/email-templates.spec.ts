@@ -302,7 +302,7 @@ test.describe("Admin Settings - Placeholder Tooltips & Test Email", () => {
 		// Assert - placeholders replaced with example data
 		const emailDetails = await getMailpitMessage(email!.ID);
 		expect(emailDetails).not.toBeNull();
-		expect(emailDetails!.Text).toContain("John Doe");
+		expect(emailDetails!.Text).toContain(`${ADMIN_USER.firstName} ${ADMIN_USER.lastName}`);
 		expect(emailDetails!.Text).toContain("Example Submission Title");
 	});
 });
