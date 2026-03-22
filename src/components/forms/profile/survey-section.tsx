@@ -60,11 +60,7 @@ export function SurveySection({
 	};
 
 	if (questions.length === 0) {
-		return (
-			<p className="text-sm text-muted-foreground">
-				No survey questions available.
-			</p>
-		);
+		return null;
 	}
 
 	return (

@@ -115,7 +115,7 @@ function RegisterPage() {
 			address: "",
 			country: detectedCountry,
 			surveyAnswers: defaultSurveyAnswers,
-			acceptTerms: false,
+			acceptTerms: !tosContent,
 		},
 		validators: {
 			onChange: registerSchema,
@@ -149,13 +149,13 @@ function RegisterPage() {
 
 			// Save survey answers + ToS acceptance (non-blocking)
 			try {
+				const promises: Promise<unknown>[] = [];
 				const answers = Object.entries(value.surveyAnswers).map(
 					([questionId, val]) => ({ questionId, value: val }),
 				);
-				await Promise.all([
-					saveUserSurveyAnswersFn({ data: { answers } }),
-					acceptTosFn(),
-				]);
+				promises.push(saveUserSurveyAnswersFn({ data: { answers } }));
+				if (tosContent) promises.push(acceptTosFn());
+				await Promise.all(promises);
 			} catch {
 				// Account created successfully — survey/ToS can be updated in settings
 			}
@@ -443,9 +443,9 @@ function RegisterPage() {
 					{currentStep === 3 && (
 						<div className="animate-in fade-in slide-in-from-right-4 space-y-3 duration-300">
 							{/* Dynamic survey questions */}
-							<div className="space-y-3 rounded-lg border border-border/50 bg-muted/30 p-3">
-								{surveyQuestions.length > 0 ? (
-									surveyQuestions.map((question) => (
+							{surveyQuestions.length > 0 && (
+								<div className="space-y-3 rounded-lg border border-border/50 bg-muted/30 p-3">
+									{surveyQuestions.map((question) => (
 										<form.Field
 											key={question.id}
 											name={
@@ -460,59 +460,59 @@ function RegisterPage() {
 												/>
 											)}
 										</form.Field>
-									))
-								) : (
-									<p className="text-sm text-muted-foreground">
-										No additional questions at this time.
-									</p>
-								)}
-							</div>
+									))}
+								</div>
+							)}
 
 							{/* Terms acceptance */}
-							<form.Field name="acceptTerms">
-								{(field) => {
-									const hasError =
-										field.state.meta.isBlurred &&
-										field.state.meta.errors.length > 0;
-									return (
-										<Field
-											data-invalid={hasError}
-											className="rounded-lg border border-primary/20 bg-primary/5 p-3"
-										>
-											<div className="flex items-start gap-2">
-												<Checkbox
-													id={field.name}
-													checked={field.state.value}
-													onCheckedChange={(checked) =>
-														field.handleChange(checked === true)
-													}
-													className="mt-0.5"
-												/>
-												<FieldLabel
-													htmlFor={field.name}
-													className="cursor-pointer text-sm font-normal leading-snug"
-												>
-													I agree to the{" "}
-													<button
-														type="button"
-														className="text-primary hover:underline"
-														onClick={(e) => {
-															e.preventDefault();
-															setTosOpen(true);
-														}}
+							{tosContent && (
+								<form.Field name="acceptTerms">
+									{(field) => {
+										const hasError =
+											field.state.meta.isBlurred &&
+											field.state.meta.errors.length > 0;
+										return (
+											<Field
+												data-invalid={hasError}
+												className="rounded-lg border border-primary/20 bg-primary/5 p-3"
+											>
+												<div className="flex items-start gap-2">
+													<Checkbox
+														id={field.name}
+														checked={field.state.value}
+														onCheckedChange={(checked) =>
+															field.handleChange(checked === true)
+														}
+														className="mt-0.5"
+													/>
+													<FieldLabel
+														htmlFor={field.name}
+														className="cursor-pointer text-sm font-normal leading-snug"
 													>
-														Terms of Service
-													</button>{" "}
-													*
-												</FieldLabel>
-											</div>
-											<FieldError
-												errors={hasError ? field.state.meta.errors : undefined}
-											/>
-										</Field>
-									);
-								}}
-							</form.Field>
+														I agree to the{" "}
+														<button
+															type="button"
+															className="text-primary hover:underline"
+															onClick={(e) => {
+																e.preventDefault();
+																setTosOpen(true);
+															}}
+														>
+															Terms of Service
+														</button>{" "}
+														*
+													</FieldLabel>
+												</div>
+												<FieldError
+													errors={
+														hasError ? field.state.meta.errors : undefined
+													}
+												/>
+											</Field>
+										);
+									}}
+								</form.Field>
+							)}
 						</div>
 					)}
 				</div>
@@ -559,7 +559,13 @@ function RegisterPage() {
 				</Link>
 			</p>
 
-			<TosModal open={tosOpen} content={tosContent} onOpenChange={setTosOpen} />
+			{tosContent && (
+				<TosModal
+					open={tosOpen}
+					content={tosContent}
+					onOpenChange={setTosOpen}
+				/>
+			)}
 		</AuthCard>
 	);
 }
