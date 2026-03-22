@@ -198,7 +198,10 @@ export async function submitReview(
 				};
 			}
 		}
-		validatedScores = data.scores;
+		const scores = data.scores;
+		validatedScores = Object.fromEntries(
+			criteriaNames.map((name) => [name, scores[name]]),
+		);
 	}
 
 	// Validate confidence level when enabled
@@ -223,7 +226,6 @@ export async function submitReview(
 	};
 
 	// Atomic: review create/update + assignment completion in one transaction
-	const wasPending = assignment.status === "PENDING";
 	const now = new Date();
 
 	await prisma.$transaction(async (tx) => {
@@ -249,7 +251,6 @@ export async function submitReview(
 			where: { id: assignmentId },
 			data: {
 				status: "COMPLETED",
-				...(wasPending ? { startedAt: now } : {}),
 				completedAt: now,
 			},
 		});

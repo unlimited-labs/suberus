@@ -300,7 +300,6 @@ enum ActivityType {
   SUBMISSION_DELETED
   // Review
   REVIEW_ASSIGNED
-  REVIEW_STARTED
   REVIEW_SUBMITTED
   REVIEW_CANCELLED
   REVIEW_OVERDUE
@@ -536,7 +535,6 @@ enum SubmissionStatus {
 
 enum AssignmentStatus {
   PENDING
-  IN_PROGRESS
   COMPLETED
   CANCELLED
   OVERDUE

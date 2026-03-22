@@ -192,7 +192,6 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 	// Transform review assignments by status
 	const byAssignmentStatus: Record<AssignmentStatus, number> = {
 		PENDING: 0,
-		IN_PROGRESS: 0,
 		COMPLETED: 0,
 		CANCELLED: 0,
 		OVERDUE: 0,

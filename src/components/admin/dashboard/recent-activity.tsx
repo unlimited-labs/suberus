@@ -34,7 +34,6 @@ const activityLabels: Record<string, string> = {
 	SUBMISSION_RESUBMITTED: "Submission resubmitted",
 	SUBMISSION_TRACK_CHANGED: "Track changed",
 	REVIEW_ASSIGNED: "Reviewer assigned",
-	REVIEW_STARTED: "Review started",
 	REVIEW_SUBMITTED: "Review submitted",
 	REVIEW_CANCELLED: "Review cancelled",
 	REVIEW_OVERDUE: "Review overdue",

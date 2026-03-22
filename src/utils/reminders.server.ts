@@ -58,7 +58,7 @@ export async function sendReviewerReminders(): Promise<number> {
 
 		const assignments = await prisma.reviewAssignment.findMany({
 			where: {
-				status: { in: ["PENDING", "IN_PROGRESS"] },
+				status: "PENDING",
 				deadline: { lte: threshold, gt: now },
 			},
 			include: {

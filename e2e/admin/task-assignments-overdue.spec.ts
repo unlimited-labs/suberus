@@ -32,24 +32,6 @@ test.describe.serial("Task: assignments:overdue", () => {
 		expect(await getAssignmentStatus(assignmentId)).toBe("OVERDUE")
 	})
 
-	test("marks overdue IN_PROGRESS assignment", async ({ page, testRun, cleanup }) => {
-		// Arrange
-		const { assignmentId, submissionId } = await createAssignmentWithDeadline({
-			testRunId: testRun.testRunId,
-			title: "Overdue IN_PROGRESS",
-			assignmentStatus: AssignmentStatus.IN_PROGRESS,
-			deadline: new Date(Date.now() - DAY_MS),
-		})
-		cleanup.track(submissionId)
-
-		// Act
-		const { result } = await runOverdueTask(page)
-
-		// Assert
-		expect(result.overdue).toBeGreaterThanOrEqual(1)
-		expect(await getAssignmentStatus(assignmentId)).toBe("OVERDUE")
-	})
-
 	test("skips assignment with future deadline", async ({ page, testRun, cleanup }) => {
 		// Arrange
 		const { assignmentId, submissionId } = await createAssignmentWithDeadline({

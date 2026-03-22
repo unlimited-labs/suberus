@@ -428,22 +428,34 @@ export async function bulkChangeStatus(
 					select: { title: true, currentRound: true },
 				});
 
+				const decision =
+					targetStatus === "ACCEPTED"
+						? "ACCEPT"
+						: targetStatus === "CONDITIONALLY_ACCEPTED"
+							? "CONDITIONALLY_ACCEPT"
+							: targetStatus === "REVISE_REQUIRED"
+								? "REVISE_AND_RESUBMIT"
+								: "REJECT";
+
 				await prisma.editorDecision.create({
 					data: {
 						submissionId: id,
 						editorId: triggeredBy,
 						round: submission?.currentRound ?? 1,
-						decision:
-							targetStatus === "ACCEPTED"
-								? "ACCEPT"
-								: targetStatus === "CONDITIONALLY_ACCEPTED"
-									? "CONDITIONALLY_ACCEPT"
-									: targetStatus === "REVISE_REQUIRED"
-										? "REVISE_AND_RESUBMIT"
-										: "REJECT",
+						decision,
 						reasoning: `Bulk status change to ${targetStatus}`,
 						basedOnReviews: [],
 					},
+				});
+
+				await logActivity({
+					type: "DECISION_SUBMITTED",
+					submissionId: id,
+					performedBy: triggeredBy,
+					detail: activityDetail("DECISION_SUBMITTED", {
+						decision,
+						reasoning: `Bulk status change to ${targetStatus}`,
+					}),
 				});
 
 				const presenter = await prisma.submissionAuthor.findFirst({

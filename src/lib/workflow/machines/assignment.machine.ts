@@ -5,19 +5,15 @@ import type { AssignmentContext, AssignmentEvent } from "../types";
  * Review assignment lifecycle state machine
  *
  * Handles assignment status transitions:
- * PENDING → IN_PROGRESS → COMPLETED
- *        → OVERDUE → COMPLETED or CANCELLED
- *        → CANCELLED
+ * PENDING → COMPLETED (reviewer submits review)
+ *        → OVERDUE (deadline passed)
+ *        → CANCELLED (editor cancels)
+ * OVERDUE → COMPLETED or CANCELLED
  */
 export const assignmentMachine = setup({
 	types: {
 		context: {} as AssignmentContext,
 		events: {} as AssignmentEvent,
-	},
-	guards: {
-		hasDeadline: ({ context }) => {
-			return context.deadline !== undefined;
-		},
 	},
 }).createMachine({
 	id: "assignment",
@@ -30,13 +26,6 @@ export const assignmentMachine = setup({
 	},
 	states: {
 		PENDING: {
-			on: {
-				START_REVIEW: "IN_PROGRESS",
-				CANCEL: "CANCELLED",
-				MARK_OVERDUE: "OVERDUE",
-			},
-		},
-		IN_PROGRESS: {
 			on: {
 				COMPLETE: "COMPLETED",
 				CANCEL: "CANCELLED",

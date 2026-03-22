@@ -48,7 +48,7 @@ async function triggerReviewerReminderForAssignment(assignmentId: string): Promi
 		},
 	})
 	if (!assignment || !assignment.deadline) return 0
-	if (!["PENDING", "IN_PROGRESS"].includes(assignment.status)) return 0
+	if (assignment.status !== "PENDING") return 0
 	if (assignment.deadline <= now) return 0
 
 	for (let i = 0; i < settings.daysBefore.length; i++) {

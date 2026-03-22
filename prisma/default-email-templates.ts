@@ -93,13 +93,13 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 	{
 		eventType: "ALL_REVIEWS_COMPLETE",
 		subject: "All Reviews Complete: {{submissionTitle}}",
-		body: "Dear Editor,\n\nAll reviews have been completed for the submission:\n\nTitle: {{submissionTitle}}\n\nView: {{submissionUrl}}",
+		body: "Dear Editor,\n\nAll reviews have been completed for the submission:\n\nTitle: {{submissionTitle}}\n{{note}}\nView: {{submissionUrl}}",
 		isEnabled: true,
 		isHtml: false,
 		ccEmails: [],
 		bccEmails: [],
-		availablePlaceholders: ["submissionTitle", "submissionUrl"],
-		description: "Sent to editors when all reviews for a submission are complete",
+		availablePlaceholders: ["submissionTitle", "submissionUrl", "note"],
+		description: "Sent to editors when all reviews for a submission are complete. {{note}} contains a warning when reviewers disagree.",
 	},
 	{
 		eventType: "DECISION_ACCEPTED",

@@ -29,7 +29,6 @@ export type ActivityDetail =
 	| { type: "SUBMISSION_TRACK_CHANGED"; trackId: string | null }
 	| { type: "SUBMISSION_DELETED"; title: string; sequentialNumber: number }
 	| { type: "REVIEW_ASSIGNED"; assignmentId: string; deadline?: string }
-	| { type: "REVIEW_STARTED"; assignmentId: string }
 	| { type: "REVIEW_SUBMITTED"; decision: string }
 	| { type: "REVIEW_CANCELLED"; assignmentId: string }
 	| { type: "REVIEW_OVERDUE"; assignmentId: string }

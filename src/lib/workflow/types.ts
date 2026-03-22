@@ -36,7 +36,6 @@ export interface SubmissionContext {
 
 /** Events for assignment state machine */
 export type AssignmentEvent =
-	| { type: "START_REVIEW" }
 	| { type: "COMPLETE"; decision: ReviewDecision }
 	| { type: "CANCEL" }
 	| { type: "MARK_OVERDUE" };

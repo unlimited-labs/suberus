@@ -2,7 +2,6 @@ import type { AssignmentStatus } from "@/generated/prisma/enums";
 
 export const assignmentStatusLabels: Record<AssignmentStatus, string> = {
 	PENDING: "Pending",
-	IN_PROGRESS: "In Progress",
 	COMPLETED: "Completed",
 	CANCELLED: "Cancelled",
 	OVERDUE: "Overdue",
@@ -10,7 +9,6 @@ export const assignmentStatusLabels: Record<AssignmentStatus, string> = {
 
 export const assignmentStatusFilterOptions = [
 	{ label: "Pending", value: "PENDING" },
-	{ label: "In Progress", value: "IN_PROGRESS" },
 	{ label: "Completed", value: "COMPLETED" },
 	{ label: "Overdue", value: "OVERDUE" },
 	{ label: "Cancelled", value: "CANCELLED" },
@@ -21,7 +19,6 @@ export const assignmentStatusVariants: Record<
 	"default" | "secondary" | "destructive" | "outline"
 > = {
 	PENDING: "outline",
-	IN_PROGRESS: "secondary",
 	COMPLETED: "default",
 	CANCELLED: "outline",
 	OVERDUE: "destructive",
@@ -29,7 +26,6 @@ export const assignmentStatusVariants: Record<
 
 export const assignmentStatusColors = {
 	PENDING: "bg-yellow-100 text-yellow-800",
-	IN_PROGRESS: "bg-blue-100 text-blue-800",
 	COMPLETED: "bg-green-100 text-green-800",
 	CANCELLED: "bg-gray-100 text-gray-800",
 	OVERDUE: "bg-red-100 text-red-800",

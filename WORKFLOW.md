@@ -114,13 +114,9 @@ stateDiagram-v2
 stateDiagram-v2
     [*] --> Pending: Editor assigns reviewer
 
-    Pending --> InProgress: Reviewer opens submission
+    Pending --> Completed: Reviewer submits review
     Pending --> Overdue: Deadline passed
     Pending --> Cancelled: Editor cancels
-
-    InProgress --> Completed: Reviewer submits review
-    InProgress --> Overdue: Deadline passed
-    InProgress --> Cancelled: Editor cancels
 
     Overdue --> Cancelled: Editor reassigns
     Overdue --> Completed: Reviewer finally submits
@@ -223,9 +219,6 @@ sequenceDiagram
     System->>Reviewer1: Assignment (PENDING)
     System->>Reviewer2: Assignment (PENDING)
     System->>System: status = UNDER_REVIEW
-
-    Reviewer1->>System: Open submission
-    System->>System: assignment1 = IN_PROGRESS
 
     Reviewer1->>System: Submit review (REVISE)
     System->>System: assignment1 = COMPLETED
@@ -410,12 +403,10 @@ Flow:
 1. Editor assigns 1 reviewer
 2. Creates ReviewAssignment (status=PENDING)
 3. Submission status → UNDER_REVIEW
-4. Reviewer opens submission
-5. Assignment status → IN_PROGRESS
-6. Reviewer submits review
-7. Assignment status → COMPLETED
-8. Submission status → REVIEWS_COMPLETE
-9. Auto-apply decision (no editor needed)
+4. Reviewer submits review
+5. Assignment status → COMPLETED
+6. Submission status → REVIEWS_COMPLETE
+7. Auto-apply decision (no editor needed)
 ```
 
 ### Multiple Reviewers (Papers)
@@ -438,11 +429,11 @@ Flow:
 ### Assignment Status Progression
 
 ```
-PENDING → IN_PROGRESS → COMPLETED
-   ↓            ↓
-CANCELLED   OVERDUE
-   ↓            ↓
-  [End]     CANCELLED
+PENDING → COMPLETED
+   ↓          ↑
+OVERDUE ──────┘
+   ↓
+CANCELLED
 ```
 
 ### Reviewer Reassignment
@@ -790,7 +781,7 @@ Assumption: Minor edits don't create new version
 All system events are logged in `ActivityLog` with a granular `ActivityType` enum:
 - **User events:** registration, email verification, profile updates, role changes, activation/deactivation, deletion
 - **Submission events:** creation, draft submission, status transitions (from/to status, round, event, reason), withdrawal, resubmission, track changes
-- **Review events:** assignment, start, submission, cancellation, overdue marking
+- **Review events:** assignment, submission, cancellation, overdue marking
 - **Decision events:** editor decisions, desk rejections, decision overrides
 - **Invitation events:** creation, usage, cancellation
 - **Admin events:** fee paid/unpaid marking

@@ -315,14 +315,11 @@ export async function executeAssignmentTransition(
 	// Update assignment in database
 	const updateData: {
 		status: AssignmentStatus;
-		startedAt?: Date;
 		completedAt?: Date;
 		cancelledAt?: Date;
 	} = { status: newState };
 
-	if (event.type === "START_REVIEW") {
-		updateData.startedAt = new Date();
-	} else if (event.type === "COMPLETE") {
+	if (event.type === "COMPLETE") {
 		updateData.completedAt = new Date();
 	} else if (event.type === "CANCEL") {
 		updateData.cancelledAt = new Date();
@@ -354,7 +351,26 @@ export async function checkAndTriggerReviewCompletion(
 	submissionId: string,
 	triggeredBy?: string,
 ): Promise<TransitionResult | null> {
-	// Fetch submission with all related data and filter by currentRound in memory
+	// Acquire row lock to prevent duplicate transitions when multiple reviewers submit concurrently
+	const lockedSubmission = await prisma.$transaction(async (tx) => {
+		const [locked] = await tx.$queryRawUnsafe<
+			Array<{ id: string; status: string }>
+		>(
+			'SELECT "id", "status" FROM "Submission" WHERE "id" = $1 FOR UPDATE SKIP LOCKED',
+			submissionId,
+		);
+
+		// Row already locked by another concurrent call — let that one handle the transition
+		if (!locked) return null;
+		// Only trigger from UNDER_REVIEW
+		if (locked.status !== "UNDER_REVIEW") return null;
+
+		return locked;
+	});
+
+	if (!lockedSubmission) return null;
+
+	// Fetch full submission data after acquiring lock
 	const submissionWithRelations = await prisma.submission.findUniqueOrThrow({
 		where: { id: submissionId },
 		include: {
@@ -376,7 +392,7 @@ export async function checkAndTriggerReviewCompletion(
 		),
 	};
 
-	// Only trigger from UNDER_REVIEW
+	// Re-check status after lock (could have changed between lock release and re-read)
 	if (submission.status !== "UNDER_REVIEW") {
 		return null;
 	}
@@ -405,33 +421,46 @@ export async function checkAndTriggerReviewCompletion(
 			"All reviews completed - auto-transition",
 		);
 
-		if (result.success) {
-			// Notify the editor who assigned reviewers
-			const assignerIds = [
-				...new Set(
-					submission.reviewAssignments
-						.map((a) => a.assignedBy)
-						.filter((id): id is string => id !== null),
-				),
-			];
+		if (!result.success) {
+			return result;
+		}
 
-			if (assignerIds.length > 0) {
-				const editors = await prisma.user.findMany({
-					where: { id: { in: assignerIds } },
-					select: { email: true },
+		// Determine if reviewers disagree (relevant for !requiresEditorDecision)
+		let reviewersDisagree = false;
+		if (!config.requiresEditorDecision) {
+			const decisions = submission.reviews.map((r) => r.decision);
+			reviewersDisagree =
+				decisions.length > 1 && !decisions.every((d) => d === decisions[0]);
+		}
+
+		// Notify the editor who assigned reviewers
+		const assignerIds = [
+			...new Set(
+				submission.reviewAssignments
+					.map((a) => a.assignedBy)
+					.filter((id): id is string => id !== null),
+			),
+		];
+
+		if (assignerIds.length > 0) {
+			const editors = await prisma.user.findMany({
+				where: { id: { in: assignerIds } },
+				select: { email: true },
+			});
+
+			for (const editor of editors) {
+				void sendEmail("ALL_REVIEWS_COMPLETE", editor.email, {
+					submissionTitle: submission.title,
+					submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${submissionId}`,
+					note: reviewersDisagree
+						? "Reviewers disagree on the decision. Manual editor decision is required."
+						: "",
 				});
-
-				for (const editor of editors) {
-					void sendEmail("ALL_REVIEWS_COMPLETE", editor.email, {
-						submissionTitle: submission.title,
-						submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${submissionId}`,
-					});
-				}
 			}
 		}
 
 		// For types with editor decision, auto-transition to AWAITING_DECISION
-		if (result.success && config.requiresEditorDecision) {
+		if (config.requiresEditorDecision) {
 			await executeSubmissionTransition(
 				submissionId,
 				{ type: "MANUAL_TRANSITION_TO_AWAITING_DECISION" },
@@ -441,56 +470,56 @@ export async function checkAndTriggerReviewCompletion(
 		}
 
 		// For types without editor decision, auto-apply only if reviewers are unanimous
-		if (result.success && !config.requiresEditorDecision) {
+		if (!config.requiresEditorDecision) {
 			const decisions = submission.reviews.map((r) => r.decision);
-			if (decisions.length > 0) {
-				const unanimous = decisions.every((d) => d === decisions[0]);
-				if (unanimous) {
-					const autoEvent = getAutoTransitionEvent(decisions[0]);
-					const autoResult = await executeSubmissionTransition(
-						submissionId,
-						{ type: autoEvent },
-						triggeredBy,
-						`Auto-applied unanimous reviewer decision: ${decisions[0]}`,
-					);
+			if (decisions.length > 0 && !reviewersDisagree) {
+				const autoEvent = getAutoTransitionEvent(decisions[0]);
+				const autoResult = await executeSubmissionTransition(
+					submissionId,
+					{ type: autoEvent },
+					triggeredBy,
+					`Auto-applied unanimous reviewer decision: ${decisions[0]}`,
+				);
 
-					// Send decision email to author after auto-apply
-					if (autoResult.success) {
-						const decisionEmailMap = {
-							ACCEPT: "DECISION_ACCEPTED",
-							ACCEPT_WITH_MINOR_REVISIONS: "DECISION_CONDITIONALLY_ACCEPTED",
-							REVISE_AND_RESUBMIT: "DECISION_REVISE_REQUIRED",
-							REJECT: "DECISION_REJECTED",
-						} as const;
+				// Send decision email to author after auto-apply
+				if (autoResult.success) {
+					const decisionEmailMap = {
+						ACCEPT: "DECISION_ACCEPTED",
+						ACCEPT_WITH_MINOR_REVISIONS: "DECISION_CONDITIONALLY_ACCEPTED",
+						REVISE_AND_RESUBMIT: "DECISION_REVISE_REQUIRED",
+						REJECT: "DECISION_REJECTED",
+					} as const;
 
-						const decisionLetterMap: Record<ReviewDecision, string> = {
-							ACCEPT:
-								"Based on the reviewer's recommendation, your submission has been accepted.",
-							ACCEPT_WITH_MINOR_REVISIONS:
-								"Based on the reviewer's recommendation, your submission has been conditionally accepted. Please address the minor revisions outlined in the review.",
-							REVISE_AND_RESUBMIT:
-								"Based on the reviewer's recommendation, your submission requires revisions. Please review the feedback and resubmit.",
-							REJECT:
-								"After careful review, your submission has not been accepted.",
-						};
+					const decisionLetterMap: Record<ReviewDecision, string> = {
+						ACCEPT:
+							"Based on the reviewer's recommendation, your submission has been accepted.",
+						ACCEPT_WITH_MINOR_REVISIONS:
+							"Based on the reviewer's recommendation, your submission has been conditionally accepted. Please address the minor revisions outlined in the review.",
+						REVISE_AND_RESUBMIT:
+							"Based on the reviewer's recommendation, your submission requires revisions. Please review the feedback and resubmit.",
+						REJECT:
+							"After careful review, your submission has not been accepted.",
+					};
 
-						const emailEvent = decisionEmailMap[decisions[0]];
-						const presenter = await prisma.submissionAuthor.findFirst({
-							where: { submissionId, isPresenter: true },
+					const emailEvent = decisionEmailMap[decisions[0]];
+					const presenter = await prisma.submissionAuthor.findFirst({
+						where: { submissionId, isPresenter: true },
+					});
+
+					if (presenter) {
+						void sendEmail(emailEvent, presenter.email, {
+							authorName: `${presenter.firstName} ${presenter.lastName}`,
+							submissionTitle: submission.title,
+							letterToAuthor: decisionLetterMap[decisions[0]],
+							submissionUrl: `${env.APP_BASE_URL}/submissions/${submissionId}`,
 						});
-
-						if (presenter) {
-							void sendEmail(emailEvent, presenter.email, {
-								authorName: `${presenter.firstName} ${presenter.lastName}`,
-								submissionTitle: submission.title,
-								letterToAuthor: decisionLetterMap[decisions[0]],
-								submissionUrl: `${env.APP_BASE_URL}/submissions/${submissionId}`,
-							});
-						}
 					}
-
-					return autoResult;
 				}
+
+				return autoResult;
+			}
+
+			if (reviewersDisagree) {
 				logger.info(
 					`[workflow] reviewers disagree for submission ${submissionId}, leaving at REVIEWS_COMPLETE for editor`,
 				);
@@ -555,7 +584,7 @@ export async function withdrawSubmission(
 		const activeAssignments = await prisma.reviewAssignment.findMany({
 			where: {
 				submissionId,
-				status: { in: ["PENDING", "IN_PROGRESS", "OVERDUE"] },
+				status: { in: ["PENDING", "OVERDUE"] },
 			},
 		});
 

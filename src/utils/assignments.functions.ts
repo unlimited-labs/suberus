@@ -13,7 +13,7 @@ import {
 } from "./assignments.server";
 import { adminMiddleware, authMiddleware } from "./auth.middleware";
 
-export type { ReviewerAssignment, AssignmentWithReviewer, AvailableReviewer };
+export type { AssignmentWithReviewer, AvailableReviewer, ReviewerAssignment };
 
 export const myAssignmentsQueryOptions = () =>
 	queryOptions({
@@ -98,7 +98,7 @@ export const getMyAssignmentsFn = createServerFn({ method: "GET" })
 					.array(
 						z.enum([
 							"PENDING",
-							"IN_PROGRESS",
+
 							"COMPLETED",
 							"CANCELLED",
 							"OVERDUE",

@@ -2,7 +2,6 @@ import { prisma } from "@/db.server";
 import { env } from "@/env.ts";
 import type {
 	AssignmentStatus,
-	ReviewDecision,
 	SubmissionType,
 } from "@/generated/prisma/enums";
 import { activityDetail } from "@/lib/activity-log";
@@ -14,7 +13,6 @@ import { canAssignReviewer } from "@/lib/workflow";
 import { logger } from "@/logger.ts";
 import { getSetting } from "./settings.server";
 import {
-	checkAndTriggerReviewCompletion,
 	executeAssignmentTransition,
 	executeSubmissionTransition,
 } from "./workflow.server";
@@ -82,7 +80,7 @@ export async function getAvailableReviewers(
 		include: {
 			affiliation: { select: { name: true } },
 			reviewAssignments: {
-				where: { status: { in: ["PENDING", "IN_PROGRESS"] } },
+				where: { status: "PENDING" },
 			},
 			reviews: true,
 		},
@@ -302,79 +300,6 @@ export async function cancelAssignment(
 	return { success: result.success, error: result.error };
 }
 
-/** Start a review (reviewer opens submission) */
-export async function startReview(
-	assignmentId: string,
-	reviewerId: string,
-): Promise<{ success: boolean; error?: string }> {
-	const assignment = await prisma.reviewAssignment.findUnique({
-		where: { id: assignmentId },
-	});
-
-	if (!assignment) {
-		return { success: false, error: "Assignment not found" };
-	}
-
-	if (assignment.reviewerId !== reviewerId) {
-		return { success: false, error: "Not assigned to this reviewer" };
-	}
-
-	if (assignment.status !== "PENDING") {
-		// Already started or completed
-		return { success: true };
-	}
-
-	const result = await executeAssignmentTransition(
-		assignmentId,
-		{ type: "START_REVIEW" },
-		reviewerId,
-	);
-
-	if (result.success) {
-		await logActivity({
-			type: "REVIEW_STARTED",
-			submissionId: assignment.submissionId,
-			userId: reviewerId,
-			performedBy: reviewerId,
-			detail: activityDetail("REVIEW_STARTED", { assignmentId }),
-		});
-	}
-
-	return { success: result.success, error: result.error };
-}
-
-/** Complete a review */
-export async function completeReviewAssignment(
-	assignmentId: string,
-	reviewerId: string,
-	decision: ReviewDecision,
-): Promise<{ success: boolean; error?: string }> {
-	const assignment = await prisma.reviewAssignment.findUnique({
-		where: { id: assignmentId },
-	});
-
-	if (!assignment) {
-		return { success: false, error: "Assignment not found" };
-	}
-
-	if (assignment.reviewerId !== reviewerId) {
-		return { success: false, error: "Not assigned to this reviewer" };
-	}
-
-	const result = await executeAssignmentTransition(
-		assignmentId,
-		{ type: "COMPLETE", decision },
-		reviewerId,
-	);
-
-	if (result.success) {
-		// Check and trigger auto-transition if all reviews complete
-		await checkAndTriggerReviewCompletion(assignment.submissionId, reviewerId);
-	}
-
-	return { success: result.success, error: result.error };
-}
-
 /** Mark overdue assignments (called by cron job) */
 export async function markOverdueAssignments(): Promise<number> {
 	// Grace period: mark overdue 1 day after deadline (per WORKFLOW.md)
@@ -382,7 +307,7 @@ export async function markOverdueAssignments(): Promise<number> {
 
 	const overdueAssignments = await prisma.reviewAssignment.findMany({
 		where: {
-			status: { in: ["PENDING", "IN_PROGRESS"] },
+			status: "PENDING",
 			deadline: { lt: oneDayAgo },
 		},
 	});

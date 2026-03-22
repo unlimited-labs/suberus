@@ -76,14 +76,10 @@ export function ReviewProgress({ data }: ReviewProgressProps) {
 
 				<Progress value={completionRate} className="h-2" />
 
-				<div className="grid grid-cols-3 gap-4 pt-2">
+				<div className="grid grid-cols-2 gap-4 pt-2">
 					<div className="text-center">
 						<p className="text-2xl font-semibold">{byStatus.PENDING}</p>
 						<p className="text-xs text-muted-foreground">Pending</p>
-					</div>
-					<div className="text-center">
-						<p className="text-2xl font-semibold">{byStatus.IN_PROGRESS}</p>
-						<p className="text-xs text-muted-foreground">In Progress</p>
 					</div>
 					<div className="text-center">
 						<p className="text-2xl font-semibold">{byStatus.COMPLETED}</p>
