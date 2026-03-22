@@ -1009,12 +1009,16 @@ Email system uses configurable templates stored in database with simple placehol
 }
 ```
 
+### Notification Recipient Rules
+
+**Caretaker Editor** = the editor who most recently assigned a reviewer to the submission. Submission-level notifications go to this editor only, not to all admins. If no editor has handled the submission (DRAFT/SUBMITTED with no assignments), no admin-side emails are sent.
+
 ### Email Event Types
 
 | Event | Recipient       | Trigger |
 |-------|-----------------|---------|
 | `SUBMISSION_RECEIVED` | Author          | After successful submission |
-| `SUBMISSION_WITHDRAWN` | Author, Admin   | When author withdraws |
+| `SUBMISSION_WITHDRAWN` | Caretaker Editor | When author withdraws a handled submission (no email for unhandled DRAFT/SUBMITTED) |
 | `REVIEWER_ASSIGNED` | Reviewer        | When editor assigns review |
 | `REVIEWER_REMINDER` | Reviewer        | Deadline approaching (configurable days) |
 | `REVIEW_SUBMITTED` | Assigning Editor | When reviewer submits review |
@@ -1024,7 +1028,7 @@ Email system uses configurable templates stored in database with simple placehol
 | `DECISION_REVISE_REQUIRED` | Author          | Revisions needed |
 | `DECISION_REJECTED` | Author          | Rejection |
 | `REVISION_REMINDER` | Author          | Revision deadline approaching |
-| `REVISION_RECEIVED` | Admin          | Author resubmits |
+| `REVISION_RECEIVED` | Caretaker Editor | Author resubmits |
 | `DECISION_OVERRIDDEN` | Author          | Editor overrides previous decision |
 | `DEADLINE_APPROACHING` | Reviewer/Author | Generic deadline warning |
 | `ACCOUNT_CREATED` | User            | New account created |

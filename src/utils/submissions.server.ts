@@ -2,6 +2,7 @@ import type { Session, User } from "better-auth/types";
 import { prisma } from "@/db.server";
 import { env } from "@/env";
 import type {
+	EditorDecisionType,
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
@@ -13,7 +14,7 @@ import { logger } from "@/logger.ts";
 import { getSetting } from "./settings.server";
 import {
 	executeSubmissionTransition,
-	validateSubmissionTransition,
+	getCaretakerEditor,
 } from "./workflow.server";
 
 interface CreateSubmissionResult {
@@ -237,7 +238,7 @@ export interface UserSubmissionReview {
 export interface UserSubmissionDecision {
 	id: string;
 	submissionId: string;
-	decision: SubmissionStatus;
+	decision: EditorDecisionType;
 	reasoning: string | null;
 	letterToAuthor: string | null;
 	revisionsRequired?: string[];
@@ -456,7 +457,7 @@ export async function getSubmissionById(
 		? {
 				id: latestDecision.id,
 				submissionId: latestDecision.submissionId,
-				decision: latestDecision.decision as unknown as SubmissionStatus,
+				decision: latestDecision.decision,
 				reasoning: latestDecision.reasoning,
 				letterToAuthor: latestDecision.letterToAuthor,
 				createdAt: latestDecision.createdAt,
@@ -537,19 +538,20 @@ export async function resubmitSubmission(
 		};
 	}
 
-	// Validate transition through xstate machine (single source of truth)
-	const validation = await validateSubmissionTransition(submissionId, {
-		type: "RESUBMIT",
-	});
-	if (!validation.valid) {
-		return { success: false, versionNumber: 0, error: validation.error };
-	}
-
 	const nextVersion = (submission.currentVersion?.version ?? 0) + 1;
 	const nextRound = submission.currentRound + 1;
 
-	// Atomic transaction: status transition + version creation (prevents stuck state on partial failure)
+	// Atomic: lock row, verify status, create version, update status
 	const version = await prisma.$transaction(async (tx) => {
+		// Row lock prevents concurrent resubmissions (TOCTOU)
+		const [locked] = await tx.$queryRawUnsafe<Array<{ status: string }>>(
+			'SELECT "status" FROM "submissions" WHERE "id" = $1 FOR UPDATE',
+			submissionId,
+		);
+		if (!locked || locked.status !== "REVISE_REQUIRED") {
+			return null;
+		}
+
 		const version = await tx.submissionVersion.create({
 			data: {
 				submissionId,
@@ -590,37 +592,29 @@ export async function resubmitSubmission(
 		return version;
 	});
 
-	// Notify editor(s) about the revision
-	const assignments = await prisma.reviewAssignment.findMany({
-		where: { submissionId },
-		select: { assignedBy: true },
-		distinct: ["assignedBy"],
-	});
+	if (!version) {
+		return {
+			success: false,
+			versionNumber: 0,
+			error: "Submission is not in REVISE_REQUIRED status",
+		};
+	}
 
-	const editorIds = assignments
-		.map((a) => a.assignedBy)
-		.filter((id): id is string => id !== null);
-
-	if (editorIds.length > 0) {
-		const editors = await prisma.user.findMany({
-			where: { id: { in: editorIds } },
-			select: { email: true },
-		});
-
+	// Notify caretaker editor about the revision
+	const caretaker = await getCaretakerEditor(submissionId);
+	if (caretaker) {
 		const presenter = await prisma.submissionAuthor.findFirst({
 			where: { submissionId, isPresenter: true },
 		});
 
-		for (const editor of editors) {
-			void sendEmail("REVISION_RECEIVED", editor.email, {
-				submissionTitle: data.title,
-				authorName: presenter
-					? `${presenter.firstName} ${presenter.lastName}`
-					: "Author",
-				versionNumber: String(version.version),
-				submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${submissionId}`,
-			});
-		}
+		void sendEmail("REVISION_RECEIVED", caretaker.email, {
+			submissionTitle: data.title,
+			authorName: presenter
+				? `${presenter.firstName} ${presenter.lastName}`
+				: "Author",
+			versionNumber: String(version.version),
+			submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${submissionId}`,
+		});
 	}
 
 	logger.info(`[submission] resubmitted ${submissionId} v${version.version}`);

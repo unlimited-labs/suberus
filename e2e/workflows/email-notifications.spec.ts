@@ -131,9 +131,9 @@ test.describe("Submission Emails", () => {
 });
 
 test.describe("Workflow Emails", () => {
-	test("withdrawal email sent to author", async ({ page, testRun, cleanup }) => {
+	test("no withdrawal email for unhandled submission", async ({ page, testRun, cleanup }) => {
 		test.slow();
-		// Arrange
+		// Arrange — submission in SUBMITTED (no reviewer assigned = unhandled)
 		await clearMailpitForAddress(TEST_USER.email);
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
@@ -149,9 +149,10 @@ test.describe("Workflow Emails", () => {
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 
-		// Assert
-		const email = await waitForEmail(TEST_USER.email, "Submission Withdrawn", 30000);
-		expect(email).not.toBeNull();
+		// Assert — no email sent for unhandled submissions
+		await page.waitForTimeout(3000);
+		const email = await waitForEmail(TEST_USER.email, "Submission Withdrawn", 3000);
+		expect(email).toBeNull();
 	});
 
 	test("reviewer assignment email sent", async ({ page, testRun, cleanup }) => {

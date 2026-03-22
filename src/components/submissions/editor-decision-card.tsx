@@ -5,7 +5,7 @@ import {
 	AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
-import type { SubmissionStatus } from "@/generated/prisma/enums";
+import type { EditorDecisionType } from "@/generated/prisma/enums";
 import { useDateFormat } from "@/hooks/use-date-format";
 import type { UserSubmissionDecision } from "@/utils/submissions.functions";
 
@@ -15,35 +15,21 @@ interface EditorDecisionCardProps {
 	defaultCollapsed?: boolean;
 }
 
-const statusColors: Record<
-	SubmissionStatus,
+const decisionColors: Record<
+	EditorDecisionType,
 	"default" | "secondary" | "destructive" | "outline"
 > = {
-	DRAFT: "outline",
-	SUBMITTED: "default",
-	UNDER_REVIEW: "secondary",
-	REVIEWS_COMPLETE: "secondary",
-	AWAITING_DECISION: "secondary",
-	REVISE_REQUIRED: "outline",
-	RESUBMITTED: "default",
-	ACCEPTED: "default",
-	CONDITIONALLY_ACCEPTED: "default",
-	REJECTED: "destructive",
-	WITHDRAWN: "outline",
+	ACCEPT: "default",
+	CONDITIONALLY_ACCEPT: "default",
+	REVISE_AND_RESUBMIT: "outline",
+	REJECT: "destructive",
 };
 
-const statusLabels: Record<SubmissionStatus, string> = {
-	DRAFT: "Draft",
-	SUBMITTED: "Submitted",
-	UNDER_REVIEW: "Under Review",
-	REVIEWS_COMPLETE: "Reviews Complete",
-	AWAITING_DECISION: "Awaiting Decision",
-	REVISE_REQUIRED: "Revisions Required",
-	RESUBMITTED: "Resubmitted",
-	ACCEPTED: "Accepted",
-	CONDITIONALLY_ACCEPTED: "Conditionally Accepted",
-	REJECTED: "Rejected",
-	WITHDRAWN: "Withdrawn",
+const decisionLabels: Record<EditorDecisionType, string> = {
+	ACCEPT: "Accepted",
+	CONDITIONALLY_ACCEPT: "Conditionally Accepted",
+	REVISE_AND_RESUBMIT: "Revisions Required",
+	REJECT: "Rejected",
 };
 
 function DecisionContent({ decision }: { decision: UserSubmissionDecision }) {
@@ -144,8 +130,8 @@ export function EditorDecisionCard({
 								<h2 className="text-xl font-semibold text-foreground">
 									Editorial Decision
 								</h2>
-								<Badge variant={statusColors[decision.decision]}>
-									{statusLabels[decision.decision]}
+								<Badge variant={decisionColors[decision.decision]}>
+									{decisionLabels[decision.decision]}
 								</Badge>
 							</div>
 						</AccordionTrigger>
@@ -169,8 +155,8 @@ export function EditorDecisionCard({
 					<h2 className="text-xl font-semibold text-foreground">
 						Editorial Decision
 					</h2>
-					<Badge variant={statusColors[decision.decision]}>
-						{statusLabels[decision.decision]}
+					<Badge variant={decisionColors[decision.decision]}>
+						{decisionLabels[decision.decision]}
 					</Badge>
 				</div>
 				<DecisionContent decision={decision} />

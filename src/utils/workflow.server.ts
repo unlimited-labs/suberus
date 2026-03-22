@@ -26,6 +26,27 @@ import { logger } from "@/logger.ts";
 import { getSetting } from "./settings.server";
 
 /**
+ * Get the caretaker editor for a submission — the editor who most recently assigned a reviewer.
+ * Returns null if no editor has handled the submission.
+ */
+export async function getCaretakerEditor(
+	submissionId: string,
+): Promise<{ email: string } | null> {
+	const latestAssignment = await prisma.reviewAssignment.findFirst({
+		where: { submissionId, assignedBy: { not: null } },
+		orderBy: { assignedAt: "desc" },
+		select: { assignedBy: true },
+	});
+
+	if (!latestAssignment?.assignedBy) return null;
+
+	return prisma.user.findUnique({
+		where: { id: latestAssignment.assignedBy },
+		select: { email: true },
+	});
+}
+
+/**
  * Get submission type config for a submission
  */
 async function getSubmissionConfig(
@@ -472,30 +493,16 @@ export async function checkAndTriggerReviewCompletion(
 				decisions.length > 1 && !decisions.every((d) => d === decisions[0]);
 		}
 
-		// Notify the editor who assigned reviewers
-		const assignerIds = [
-			...new Set(
-				submission.reviewAssignments
-					.map((a) => a.assignedBy)
-					.filter((id): id is string => id !== null),
-			),
-		];
-
-		if (assignerIds.length > 0) {
-			const editors = await prisma.user.findMany({
-				where: { id: { in: assignerIds } },
-				select: { email: true },
+		// Notify caretaker editor
+		const caretaker = await getCaretakerEditor(submissionId);
+		if (caretaker) {
+			void sendEmail("ALL_REVIEWS_COMPLETE", caretaker.email, {
+				submissionTitle: submission.title,
+				submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${submissionId}`,
+				note: reviewersDisagree
+					? "Reviewers disagree on the decision. Manual editor decision is required."
+					: "",
 			});
-
-			for (const editor of editors) {
-				void sendEmail("ALL_REVIEWS_COMPLETE", editor.email, {
-					submissionTitle: submission.title,
-					submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${submissionId}`,
-					note: reviewersDisagree
-						? "Reviewers disagree on the decision. Manual editor decision is required."
-						: "",
-				});
-			}
 		}
 
 		// For types with editor decision, auto-transition to AWAITING_DECISION
@@ -644,31 +651,22 @@ export async function withdrawSubmission(
 			);
 		}
 
-		// Send withdrawal notification to presenter and admins
-		const submission = await prisma.submission.findUniqueOrThrow({
-			where: { id: submissionId },
-			include: {
-				authors: { where: { isPresenter: true }, take: 1 },
-			},
-		});
+		// Only notify caretaker editor when submission was handled (beyond DRAFT/SUBMITTED)
+		const wasHandled =
+			result.fromState !== "DRAFT" && result.fromState !== "SUBMITTED";
 
-		const presenter = submission.authors[0];
-		if (presenter) {
-			void sendEmail("SUBMISSION_WITHDRAWN", presenter.email, {
-				authorName: `${presenter.firstName} ${presenter.lastName}`,
-				submissionTitle: submission.title,
-				submissionUrl: `${env.APP_BASE_URL}/submissions/${submissionId}`,
-			});
-		}
+		if (wasHandled) {
+			const [submission, caretaker] = await Promise.all([
+				prisma.submission.findUniqueOrThrow({
+					where: { id: submissionId },
+					include: { authors: { where: { isPresenter: true }, take: 1 } },
+				}),
+				getCaretakerEditor(submissionId),
+			]);
 
-		// Notify admins
-		const admins = await prisma.user.findMany({
-			where: { role: { in: ["ADMIN", "EDITOR"] }, isActive: true },
-			select: { email: true },
-		});
-		for (const admin of admins) {
-			if (admin.email !== presenter?.email) {
-				void sendEmail("SUBMISSION_WITHDRAWN", admin.email, {
+			if (caretaker) {
+				const presenter = submission.authors[0];
+				void sendEmail("SUBMISSION_WITHDRAWN", caretaker.email, {
 					authorName: presenter
 						? `${presenter.firstName} ${presenter.lastName}`
 						: "Author",
