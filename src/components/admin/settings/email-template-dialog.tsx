@@ -119,8 +119,9 @@ export function EmailTemplateDialog({
 				},
 			});
 			toast.success("Test email sent — check your inbox");
-		} catch {
-			toast.error("Failed to send test email");
+		} catch (err) {
+			const message = err instanceof Error ? err.message : "Unknown error";
+			toast.error(`Failed to send test email: ${message}`);
 		} finally {
 			setIsSendingTest(false);
 		}
