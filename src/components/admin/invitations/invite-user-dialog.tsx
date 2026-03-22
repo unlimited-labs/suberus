@@ -33,7 +33,7 @@ export function InviteUserDialog({
 	onSuccess,
 }: InviteUserDialogProps) {
 	const [email, setEmail] = useState("");
-	const [role, setRole] = useState<"EDITOR" | "REVIEWER">("REVIEWER");
+	const [role, setRole] = useState<"EDITOR" | "REVIEWER" | "ADMIN">("REVIEWER");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -89,7 +89,9 @@ export function InviteUserDialog({
 						<Label htmlFor="invite-role">Role</Label>
 						<Select
 							value={role}
-							onValueChange={(v) => setRole(v as "EDITOR" | "REVIEWER")}
+							onValueChange={(v) =>
+								setRole(v as "EDITOR" | "REVIEWER" | "ADMIN")
+							}
 						>
 							<SelectTrigger id="invite-role">
 								<SelectValue />
@@ -97,6 +99,7 @@ export function InviteUserDialog({
 							<SelectContent>
 								<SelectItem value="REVIEWER">Reviewer</SelectItem>
 								<SelectItem value="EDITOR">Editor</SelectItem>
+								<SelectItem value="ADMIN">Administrator</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>

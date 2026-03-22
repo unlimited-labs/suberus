@@ -30,6 +30,7 @@ import { signUp } from "@/lib/auth-client";
 import { detectCountry } from "@/lib/detect-country";
 import { submitForm } from "@/lib/form-utils";
 import { titleOptions } from "@/lib/labels";
+import { roleLabels } from "@/lib/labels/user";
 import { cn } from "@/lib/utils";
 import {
 	registerSchema,
@@ -280,7 +281,7 @@ function RegisterPage() {
 									<AlertDescription>
 										You&apos;ve been invited as{" "}
 										<span className="font-semibold">
-											{invitation.role === "EDITOR" ? "Editor" : "Reviewer"}
+											{roleLabels[invitation.role as keyof typeof roleLabels]}
 										</span>
 									</AlertDescription>
 								</Alert>

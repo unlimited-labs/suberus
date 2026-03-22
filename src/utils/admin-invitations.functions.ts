@@ -23,7 +23,7 @@ export const getAdminInvitationsFn = createServerFn({ method: "GET" })
 
 const createInvitationSchema = z.object({
 	email: z.string().email(),
-	role: z.enum(["EDITOR", "REVIEWER"]),
+	role: z.enum(["EDITOR", "REVIEWER", "ADMIN"]),
 });
 
 export const createInvitationFn = createServerFn({ method: "POST" })

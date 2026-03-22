@@ -3,6 +3,7 @@ import { prisma } from "@/db.server";
 import { env } from "@/env.ts";
 import type { InvitationStatus, UserRole } from "@/generated/prisma/enums";
 import { activityDetail } from "@/lib/activity-log";
+import { roleLabels } from "@/lib/labels/user";
 import { logActivity } from "@/lib/server/activity-log";
 import { sendEmail } from "@/lib/server/email";
 import { logger } from "@/logger.ts";
@@ -68,7 +69,7 @@ export async function createInvitation(
 
 	const conferenceName = await getSetting("CONFERENCE_NAME");
 	const registrationUrl = `${env.APP_BASE_URL}/register?token=${token}`;
-	const roleName = role === "EDITOR" ? "Editor" : "Reviewer";
+	const roleName = roleLabels[role];
 
 	await sendEmail("INVITATION", email, {
 		conferenceName,
@@ -127,7 +128,7 @@ export async function resendInvitation(
 
 	const conferenceName = await getSetting("CONFERENCE_NAME");
 	const registrationUrl = `${env.APP_BASE_URL}/register?token=${token}`;
-	const roleName = invitation.role === "EDITOR" ? "Editor" : "Reviewer";
+	const roleName = roleLabels[invitation.role];
 
 	await sendEmail("INVITATION", invitation.email, {
 		conferenceName,
