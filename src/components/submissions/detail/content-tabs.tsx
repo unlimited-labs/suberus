@@ -68,7 +68,7 @@ export function ContentTabs({
 										{file.originalName}
 									</p>
 									<p className="text-xs text-muted-foreground">
-										{formatFileSize(file.size)} &middot; {file.mimeType}
+										{formatFileSize(file.size)}
 									</p>
 								</div>
 								<Button variant="outline" size="sm" className="gap-2" asChild>

@@ -35,15 +35,22 @@ interface AssignReviewerDialogProps {
 	submissionId: string;
 	submissionTitle: string;
 	requiredReviewers: number;
+	reviewDeadlineDays: number;
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	onAssigned?: () => void;
+}
+
+function computeDefaultDeadline(days: number): string {
+	const date = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+	return date.toISOString().split("T")[0];
 }
 
 export function AssignReviewerDialog({
 	submissionId,
 	submissionTitle,
 	requiredReviewers,
+	reviewDeadlineDays,
 	open,
 	onOpenChange,
 	onAssigned,
@@ -81,8 +88,9 @@ export function AssignReviewerDialog({
 	useEffect(() => {
 		if (open) {
 			loadData();
+			setCustomDeadline(computeDefaultDeadline(reviewDeadlineDays));
 		}
-	}, [open, submissionId]);
+	}, [open, submissionId, reviewDeadlineDays]);
 
 	// Filter reviewers by search
 	const filteredReviewers = availableReviewers.filter((r) => {
@@ -225,9 +233,7 @@ export function AssignReviewerDialog({
 
 					{/* Custom Deadline */}
 					<div className="space-y-2">
-						<Label htmlFor="deadline">
-							Custom deadline (optional, default from config)
-						</Label>
+						<Label htmlFor="deadline">Review deadline</Label>
 						<Input
 							id="deadline"
 							type="date"

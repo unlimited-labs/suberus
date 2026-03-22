@@ -404,8 +404,7 @@ function SubmissionDetailPage() {
 													{submission.file.originalName}
 												</p>
 												<p className="text-xs text-muted-foreground">
-													{formatFileSize(submission.file.size)} &middot;{" "}
-													{submission.file.mimeType}
+													{formatFileSize(submission.file.size)}
 												</p>
 											</div>
 											<a
@@ -657,6 +656,7 @@ function SubmissionDetailPage() {
 				submissionId={submission.id}
 				submissionTitle={submission.title}
 				requiredReviewers={config.requiredReviewers}
+				reviewDeadlineDays={config.reviewDeadlineDays}
 				open={showAssignDialog}
 				onOpenChange={setShowAssignDialog}
 				onAssigned={invalidateSubmission}
