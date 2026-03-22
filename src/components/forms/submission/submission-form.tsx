@@ -823,9 +823,10 @@ export function SubmissionForm({
 								<h3 className="font-semibold text-foreground">Guidelines</h3>
 							</div>
 							{renderedGuidelines ? (
-								<div className="text-sm text-muted-foreground">
-									<Markdown content={renderedGuidelines} />
-								</div>
+								<Markdown
+									content={renderedGuidelines}
+									className="text-sm text-muted-foreground"
+								/>
 							) : (
 								<div className="space-y-3 text-sm text-muted-foreground">
 									<p>Title should be concise and descriptive</p>
