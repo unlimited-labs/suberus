@@ -16,12 +16,12 @@ export const submissionMachine = setup({
 	},
 	guards: {
 		hasMinReviewers: ({ context }) => {
-			return context.assignedReviewersCount >= context.minReviewers;
+			return context.assignedReviewersCount >= context.requiredReviewers;
 		},
 		allReviewsComplete: ({ context }) => {
 			return (
 				context.completedReviewsCount >= context.assignedReviewersCount &&
-				context.assignedReviewersCount >= context.minReviewers
+				context.assignedReviewersCount >= context.requiredReviewers
 			);
 		},
 		shouldAutoTransition: ({ context }) => {
@@ -53,8 +53,7 @@ export const submissionMachine = setup({
 		currentRound: 1,
 		requiresEditorDecision: false,
 		autoTransitionAfterReviews: true,
-		minReviewers: 1,
-		maxReviewers: 1,
+		requiredReviewers: 1,
 		assignedReviewersCount: 0,
 		completedReviewsCount: 0,
 	},

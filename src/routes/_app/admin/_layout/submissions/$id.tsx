@@ -152,15 +152,17 @@ function SubmissionDetailPage() {
 				: reviews.filter((r) => r.round === Number(selectedReviewRound));
 
 	// Determine available actions based on status
-	const canAssignReviewers =
-		["SUBMITTED", "UNDER_REVIEW", "RESUBMITTED"].includes(submission.status) &&
-		currentRoundAssignments.length < config.maxReviewers;
+	const canAssignReviewers = [
+		"SUBMITTED",
+		"UNDER_REVIEW",
+		"RESUBMITTED",
+	].includes(submission.status);
 
 	const canDeskReject = submission.status === "SUBMITTED";
 
 	const allReviewsComplete =
 		completedAssignments.length >= currentRoundAssignments.length &&
-		currentRoundAssignments.length >= config.minReviewers;
+		currentRoundAssignments.length >= config.requiredReviewers;
 
 	const canTransitionToReviewsComplete =
 		submission.status === "UNDER_REVIEW" &&
@@ -434,7 +436,7 @@ function SubmissionDetailPage() {
 											{currentRoundAssignments.length})
 										</span>
 										<span className="text-sm font-normal text-muted-foreground">
-											Required: {config.minReviewers}-{config.maxReviewers}
+											Required: {config.requiredReviewers}
 										</span>
 									</CardTitle>
 								</CardHeader>
@@ -654,8 +656,7 @@ function SubmissionDetailPage() {
 			<AssignReviewerDialog
 				submissionId={submission.id}
 				submissionTitle={submission.title}
-				minReviewers={config.minReviewers}
-				maxReviewers={config.maxReviewers}
+				requiredReviewers={config.requiredReviewers}
 				open={showAssignDialog}
 				onOpenChange={setShowAssignDialog}
 				onAssigned={invalidateSubmission}

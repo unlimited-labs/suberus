@@ -272,8 +272,8 @@ export class AdminSettingsPage {
 		return this.page.getByLabel("Max file size (MB)")
 	}
 
-	getMinReviewersInput() {
-		const container = this.page.locator("div").filter({ hasText: /^Min reviewers$/ })
+	getRequiredReviewersInput() {
+		const container = this.page.locator("div").filter({ hasText: /^Required reviewers$/ })
 		return container.getByRole("spinbutton")
 	}
 

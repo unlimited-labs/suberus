@@ -53,8 +53,7 @@ stateDiagram-v2
     Withdrawn --> [*]
 
     note right of UnderReview
-        minReviewers: 1
-        maxReviewers: 1
+        requiredReviewers: 1
         requiresEditorDecision: false
         autoTransitionAfterReviews: true
         Auto-applies reviewer decision
@@ -101,7 +100,7 @@ stateDiagram-v2
     Withdrawn --> [*]
 
     note right of AwaitingDecision
-        minReviewers: 2-3
+        requiredReviewers: 2
         requiresEditorDecision: true
         autoTransitionAfterReviews: false
         Editor has full control
@@ -397,10 +396,10 @@ Author can withdraw from **any non-terminal state**: DRAFT, SUBMITTED, UNDER_REV
 ### Single Reviewer (Abstracts)
 
 ```typescript
-Config: minReviewers=1, maxReviewers=1
+Config: requiredReviewers=1
 
 Flow:
-1. Editor assigns 1 reviewer
+1. Editor assigns reviewer(s)
 2. Creates ReviewAssignment (status=PENDING)
 3. Submission status → UNDER_REVIEW
 4. Reviewer submits review
@@ -412,10 +411,10 @@ Flow:
 ### Multiple Reviewers (Papers)
 
 ```typescript
-Config: minReviewers=2, maxReviewers=3
+Config: requiredReviewers=2
 
 Flow:
-1. Editor assigns 2-3 reviewers
+1. Editor assigns reviewers (minimum 2)
 2. Creates multiple ReviewAssignment records
 3. Submission status → UNDER_REVIEW
 4. Reviewers work independently
@@ -840,8 +839,7 @@ Each entry includes: event type, target user/submission (optional), performer (o
 ```typescript
 {
   type: 'ABSTRACT',
-  minReviewers: 1,
-  maxReviewers: 1,
+  requiredReviewers: 1,
   requiresEditorDecision: false,
   allowRevisions: true,
 
@@ -859,8 +857,7 @@ Each entry includes: event type, target user/submission (optional), performer (o
 ```typescript
 {
   type: 'FULL_PAPER',
-  minReviewers: 2,
-  maxReviewers: 3,
+  requiredReviewers: 2,
   requiresEditorDecision: true,
   allowRevisions: true,
 
@@ -885,8 +882,7 @@ POSTER uses identical workflow to ABSTRACT (single reviewer, reviewer decides).
 ```typescript
 {
   type: 'POSTER',
-  minReviewers: 1,
-  maxReviewers: 1,
+  requiredReviewers: 1,
   requiresEditorDecision: false,
   allowRevisions: true,
 

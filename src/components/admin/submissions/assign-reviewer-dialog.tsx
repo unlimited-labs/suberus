@@ -34,8 +34,7 @@ import {
 interface AssignReviewerDialogProps {
 	submissionId: string;
 	submissionTitle: string;
-	minReviewers: number;
-	maxReviewers: number;
+	requiredReviewers: number;
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	onAssigned?: () => void;
@@ -44,8 +43,7 @@ interface AssignReviewerDialogProps {
 export function AssignReviewerDialog({
 	submissionId,
 	submissionTitle,
-	minReviewers,
-	maxReviewers,
+	requiredReviewers,
 	open,
 	onOpenChange,
 	onAssigned,
@@ -102,14 +100,7 @@ export function AssignReviewerDialog({
 		(a) => a.status !== "CANCELLED",
 	);
 
-	const canAssignMore = activeAssignments.length < maxReviewers;
-
 	async function handleAssign(reviewerId: string) {
-		if (!canAssignMore) {
-			toast.error(`Maximum ${maxReviewers} reviewers allowed`);
-			return;
-		}
-
 		setIsAssigning(true);
 		try {
 			const result = await assignReviewerFn({
@@ -167,18 +158,18 @@ export function AssignReviewerDialog({
 					<div className="space-y-3">
 						<div className="flex items-center justify-between">
 							<Label className="text-base">
-								Current Reviewers ({activeAssignments.length}/{maxReviewers})
+								Current Reviewers ({activeAssignments.length})
 							</Label>
 							<Badge
 								variant={
-									activeAssignments.length >= minReviewers
+									activeAssignments.length >= requiredReviewers
 										? "default"
 										: "secondary"
 								}
 							>
-								{activeAssignments.length >= minReviewers
-									? "Min. met"
-									: `Need ${minReviewers - activeAssignments.length} more`}
+								{activeAssignments.length >= requiredReviewers
+									? "Required met"
+									: `Need ${requiredReviewers - activeAssignments.length} more`}
 							</Badge>
 						</div>
 
@@ -233,94 +224,90 @@ export function AssignReviewerDialog({
 					</div>
 
 					{/* Custom Deadline */}
-					{canAssignMore && (
-						<div className="space-y-2">
-							<Label htmlFor="deadline">
-								Custom deadline (optional, default from config)
-							</Label>
-							<Input
-								id="deadline"
-								type="date"
-								value={customDeadline}
-								onChange={(e) => setCustomDeadline(e.target.value)}
-								min={new Date().toISOString().split("T")[0]}
-							/>
-						</div>
-					)}
+					<div className="space-y-2">
+						<Label htmlFor="deadline">
+							Custom deadline (optional, default from config)
+						</Label>
+						<Input
+							id="deadline"
+							type="date"
+							value={customDeadline}
+							onChange={(e) => setCustomDeadline(e.target.value)}
+							min={new Date().toISOString().split("T")[0]}
+						/>
+					</div>
 
 					{/* Available Reviewers */}
-					{canAssignMore && (
-						<div className="space-y-3">
-							<Label className="text-base">Available Reviewers</Label>
+					<div className="space-y-3">
+						<Label className="text-base">Available Reviewers</Label>
 
-							<div className="relative">
-								<IconSearch className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-								<Input
-									placeholder="Search by name, email, or affiliation..."
-									value={search}
-									onChange={(e) => setSearch(e.target.value)}
-									className="pl-10"
-								/>
-							</div>
-
-							{isLoading ? (
-								<div className="flex items-center justify-center py-8">
-									<IconLoader2 className="size-6 animate-spin text-muted-foreground" />
-								</div>
-							) : filteredReviewers.length === 0 ? (
-								<p className="text-sm text-muted-foreground py-4 text-center">
-									{search
-										? "No reviewers found matching search"
-										: "No available reviewers"}
-								</p>
-							) : (
-								<div className="max-h-64 overflow-y-auto space-y-2">
-									{filteredReviewers.map((reviewer) => (
-										<div
-											key={reviewer.id}
-											className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50"
-										>
-											<div className="min-w-0 flex-1">
-												<div className="flex items-center gap-2">
-													<IconUser className="size-4 text-muted-foreground shrink-0" />
-													<span className="font-medium truncate">
-														{reviewer.firstName} {reviewer.lastName}
-													</span>
-												</div>
-												<p className="text-sm text-muted-foreground truncate pl-6">
-													{reviewer.email}
-												</p>
-												{reviewer.affiliationName && (
-													<p className="text-xs text-muted-foreground truncate pl-6">
-														{reviewer.affiliationName}
-													</p>
-												)}
-												<div className="flex gap-2 mt-1 pl-6">
-													<Badge variant="outline" className="text-xs">
-														{reviewer.activeAssignmentsCount} active
-													</Badge>
-													<Badge variant="outline" className="text-xs">
-														{reviewer.completedReviewsCount} completed
-													</Badge>
-												</div>
-											</div>
-											<Button
-												size="sm"
-												onClick={() => handleAssign(reviewer.id)}
-												disabled={isAssigning}
-											>
-												{isAssigning ? (
-													<IconLoader2 className="size-4 animate-spin" />
-												) : (
-													"Assign"
-												)}
-											</Button>
-										</div>
-									))}
-								</div>
-							)}
+						<div className="relative">
+							<IconSearch className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+							<Input
+								placeholder="Search by name, email, or affiliation..."
+								value={search}
+								onChange={(e) => setSearch(e.target.value)}
+								className="pl-10"
+							/>
 						</div>
-					)}
+
+						{isLoading ? (
+							<div className="flex items-center justify-center py-8">
+								<IconLoader2 className="size-6 animate-spin text-muted-foreground" />
+							</div>
+						) : filteredReviewers.length === 0 ? (
+							<p className="text-sm text-muted-foreground py-4 text-center">
+								{search
+									? "No reviewers found matching search"
+									: "No available reviewers"}
+							</p>
+						) : (
+							<div className="max-h-64 overflow-y-auto space-y-2">
+								{filteredReviewers.map((reviewer) => (
+									<div
+										key={reviewer.id}
+										className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50"
+									>
+										<div className="min-w-0 flex-1">
+											<div className="flex items-center gap-2">
+												<IconUser className="size-4 text-muted-foreground shrink-0" />
+												<span className="font-medium truncate">
+													{reviewer.firstName} {reviewer.lastName}
+												</span>
+											</div>
+											<p className="text-sm text-muted-foreground truncate pl-6">
+												{reviewer.email}
+											</p>
+											{reviewer.affiliationName && (
+												<p className="text-xs text-muted-foreground truncate pl-6">
+													{reviewer.affiliationName}
+												</p>
+											)}
+											<div className="flex gap-2 mt-1 pl-6">
+												<Badge variant="outline" className="text-xs">
+													{reviewer.activeAssignmentsCount} active
+												</Badge>
+												<Badge variant="outline" className="text-xs">
+													{reviewer.completedReviewsCount} completed
+												</Badge>
+											</div>
+										</div>
+										<Button
+											size="sm"
+											onClick={() => handleAssign(reviewer.id)}
+											disabled={isAssigning}
+										>
+											{isAssigning ? (
+												<IconLoader2 className="size-4 animate-spin" />
+											) : (
+												"Assign"
+											)}
+										</Button>
+									</div>
+								))}
+							</div>
+						)}
+					</div>
 				</div>
 
 				<DialogFooter>

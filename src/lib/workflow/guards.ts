@@ -2,36 +2,20 @@ import type {
 	ReviewDecision,
 	SubmissionStatus,
 } from "@/generated/prisma/enums";
-import type { SubmissionTypeConfig } from "@/lib/settings/types";
 
 /**
  * Guard functions for workflow validation
  * Used both in xstate machines and server-side validation
  */
 
-/** Check if max reviewers limit reached */
-function canAssignMoreReviewers(
-	assignedCount: number,
-	config: SubmissionTypeConfig,
-): boolean {
-	return assignedCount < config.maxReviewers;
-}
-
 /** Check if submission can receive reviewer assignment */
-export function canAssignReviewer(
-	currentStatus: SubmissionStatus,
-	assignedCount: number,
-	config: SubmissionTypeConfig,
-): boolean {
+export function canAssignReviewer(currentStatus: SubmissionStatus): boolean {
 	const validStatuses: SubmissionStatus[] = [
 		"SUBMITTED",
 		"UNDER_REVIEW",
 		"RESUBMITTED",
 	];
-	return (
-		validStatuses.includes(currentStatus) &&
-		canAssignMoreReviewers(assignedCount, config)
-	);
+	return validStatuses.includes(currentStatus);
 }
 
 /** Map reviewer decision to auto-transition event */

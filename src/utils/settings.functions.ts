@@ -23,8 +23,7 @@ const submissionTypeConfigSchema = z.object({
 	isActive: z.boolean(),
 	contentFormat: z.enum(["TEXT", "FILE"]),
 	allowedExtensions: z.array(z.string()),
-	minReviewers: z.number().int().min(1).max(10),
-	maxReviewers: z.number().int().min(1).max(10),
+	requiredReviewers: z.number().int().min(1).max(10),
 	reviewMode: z.enum(["OPEN", "SINGLE_BLIND", "DOUBLE_BLIND"]),
 	reviewDeadlineDays: z.number().int().min(1).max(90),
 	requiresEditorDecision: z.boolean(),
@@ -186,12 +185,6 @@ export const updateSubmissionTypeConfigFn = createServerFn({ method: "POST" })
 				"FILE format requires at least one allowed extension",
 				{ status: 400 },
 			);
-		}
-
-		if (data.config.minReviewers > data.config.maxReviewers) {
-			throw new Response("Min reviewers cannot exceed max reviewers", {
-				status: 400,
-			});
 		}
 
 		if (data.config.enableScoring && data.config.scoringCriteria.length === 0) {

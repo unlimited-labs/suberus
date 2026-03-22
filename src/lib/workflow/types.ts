@@ -28,8 +28,7 @@ export interface SubmissionContext {
 	currentRound: number;
 	requiresEditorDecision: boolean;
 	autoTransitionAfterReviews: boolean;
-	minReviewers: number;
-	maxReviewers: number;
+	requiredReviewers: number;
 	assignedReviewersCount: number;
 	completedReviewsCount: number;
 }

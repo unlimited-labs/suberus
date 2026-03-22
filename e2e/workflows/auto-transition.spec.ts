@@ -26,7 +26,7 @@ import { loginAs } from "../helpers/auth";
 
 /**
  * Seed submission at REVIEWS_COMPLETE with 2 completed reviews.
- * Uses ABSTRACT type → ORAL_PRESENTATION config (minReviewers=2, requiresEditorDecision=true).
+ * Uses ABSTRACT type → ORAL_PRESENTATION config (requiredReviewers=2, requiresEditorDecision=true).
  */
 async function createSubmissionAtReviewsComplete(
 	testRunId: string,
@@ -96,7 +96,7 @@ test.describe("Auto-transition After Reviews", () => {
 	}) => {
 		test.slow();
 
-		// Arrange - POSTER: minReviewers=1, autoTransition=true, requiresEditorDecision=false
+		// Arrange - POSTER: requiredReviewers=1, autoTransition=true, requiresEditorDecision=false
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Auto-Transition Poster",
@@ -400,7 +400,7 @@ test.describe("Auto-transition config edge cases", () => {
 			});
 			cleanup.track(id);
 
-			// Create 2 completed assignments (minReviewers=2 for ORAL_PRESENTATION)
+			// Create 2 completed assignments (requiredReviewers=2 for ORAL_PRESENTATION)
 			const reviewerIds = [reviewerUserId, editorUserId];
 			for (let i = 0; i < 2; i++) {
 				const assignment = await db.reviewAssignment.create({

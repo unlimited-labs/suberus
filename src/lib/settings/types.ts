@@ -8,8 +8,7 @@ export interface SubmissionTypeConfig {
 	isActive: boolean;
 	contentFormat: ContentFormat;
 	allowedExtensions: string[]; // e.g., ["pdf", "doc", "docx"]
-	minReviewers: number;
-	maxReviewers: number;
+	requiredReviewers: number;
 	reviewMode: ReviewMode;
 	reviewDeadlineDays: number;
 	requiresEditorDecision: boolean;

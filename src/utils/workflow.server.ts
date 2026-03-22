@@ -71,8 +71,7 @@ async function buildSubmissionContext(
 		currentRound: submission.currentRound,
 		requiresEditorDecision: config.requiresEditorDecision,
 		autoTransitionAfterReviews: config.autoTransitionAfterReviews ?? true,
-		minReviewers: config.minReviewers,
-		maxReviewers: config.maxReviewers,
+		requiredReviewers: config.requiredReviewers,
 		assignedReviewersCount,
 		completedReviewsCount,
 	};
@@ -405,7 +404,10 @@ export async function checkAndTriggerReviewCompletion(
 	).length;
 
 	// Check if all reviews are complete
-	if (completedCount < assignedCount || assignedCount < config.minReviewers) {
+	if (
+		completedCount < assignedCount ||
+		assignedCount < config.requiredReviewers
+	) {
 		return null;
 	}
 

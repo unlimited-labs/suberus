@@ -209,37 +209,20 @@ export function SubmissionTypeAccordion({
 					</div>
 
 					{/* Reviewers */}
-					<div className="grid gap-4 sm:grid-cols-2">
-						<div className="space-y-2">
-							<Label>Min reviewers</Label>
-							<Input
-								type="number"
-								min={1}
-								max={10}
-								value={config.minReviewers}
-								onChange={(e) =>
-									handleChange(
-										"minReviewers",
-										parseInt(e.target.value, 10) || 1,
-									)
-								}
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label>Max reviewers</Label>
-							<Input
-								type="number"
-								min={1}
-								max={10}
-								value={config.maxReviewers}
-								onChange={(e) =>
-									handleChange(
-										"maxReviewers",
-										parseInt(e.target.value, 10) || 1,
-									)
-								}
-							/>
-						</div>
+					<div className="space-y-2">
+						<Label>Required reviewers</Label>
+						<Input
+							type="number"
+							min={1}
+							max={10}
+							value={config.requiredReviewers}
+							onChange={(e) =>
+								handleChange(
+									"requiredReviewers",
+									parseInt(e.target.value, 10) || 1,
+								)
+							}
+						/>
 					</div>
 
 					{/* Review mode */}

@@ -68,11 +68,11 @@ test.describe("Admin Settings - Submission Types", () => {
 	test("can save submission type settings", async ({ adminSettingsPage, page }) => {
 		// Arrange
 		await adminSettingsPage.expandSubmissionType("Oral Presentation")
-		const minReviewersInput = adminSettingsPage.getMinReviewersInput()
+		const requiredReviewersInput = adminSettingsPage.getRequiredReviewersInput()
 
 		// Act
-		await minReviewersInput.clear()
-		await minReviewersInput.fill("3")
+		await requiredReviewersInput.clear()
+		await requiredReviewersInput.fill("3")
 		await adminSettingsPage.saveSubmissionType()
 
 		// Assert

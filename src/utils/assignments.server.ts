@@ -165,13 +165,13 @@ export async function assignReviewer(
 
 	// Validate can assign more reviewers
 	const currentCount = submission.reviewAssignments.length;
-	if (!canAssignReviewer(submission.status, currentCount, config)) {
+	if (!canAssignReviewer(submission.status)) {
 		logger.warn(
-			`[assignment] cannot assign reviewer to ${submissionId}: max ${config.maxReviewers} or invalid status`,
+			`[assignment] cannot assign reviewer to ${submissionId}: invalid status ${submission.status}`,
 		);
 		return {
 			success: false,
-			error: `Cannot assign reviewer: max ${config.maxReviewers} reviewers allowed or invalid status`,
+			error: "Cannot assign reviewer: invalid submission status",
 		};
 	}
 
@@ -210,14 +210,14 @@ export async function assignReviewer(
 	// Check if we should transition to UNDER_REVIEW
 	const newCount = currentCount + 1;
 	if (
-		newCount >= config.minReviewers &&
+		newCount >= config.requiredReviewers &&
 		["SUBMITTED", "RESUBMITTED"].includes(submission.status)
 	) {
 		await executeSubmissionTransition(
 			submissionId,
 			{ type: "ASSIGN_REVIEWER" },
 			assignedBy,
-			`Assigned reviewer (${newCount}/${config.minReviewers} required)`,
+			`Assigned reviewer (${newCount}/${config.requiredReviewers} required)`,
 		);
 	}
 
