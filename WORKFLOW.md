@@ -616,10 +616,18 @@ When author resubmits after REVISE_REQUIRED:
   3. Update status
      - status = 'RESUBMITTED'
 
-  4. Editor assigns reviewers (same or different)
-     - New ReviewAssignment records with round = currentRound
+  4. Auto-reassign reviewers from previous round
+     - System copies non-cancelled ReviewAssignments from previous round
+     - New ReviewAssignment records with round = currentRound, status = PENDING
+     - Each reviewer receives REVIEWER_ASSIGNED notification
+     - If assignedCount >= requiredReviewers → auto-transition to UNDER_REVIEW
 
-  5. Continue workflow
+  5. Editor can modify assignments
+     - Cancel auto-assigned reviewers
+     - Assign different reviewers
+     - Previous-round reviewers are available for selection in the UI
+
+  6. Continue workflow
      - status = 'UNDER_REVIEW'
 ```
 
