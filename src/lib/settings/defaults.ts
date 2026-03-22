@@ -119,7 +119,7 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 		"- Provide constructive, specific feedback\n- Support claims with evidence from the work\n- Be respectful and professional\n- Consider the work's contribution to the field\n- Minimum 50 characters for comments",
 
 	// Email footer
-	EMAIL_FOOTER_TEXT: "",
+	EMAIL_FOOTER_TEXT: "Best regards,\n{{conferenceName}}",
 
 	// Terms of Service
 	TOS_CONTENT:

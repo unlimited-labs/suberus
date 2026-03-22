@@ -131,8 +131,11 @@ export function EmailTemplatesTab({
 							className="text-sm"
 						/>
 						<p className="text-xs text-muted-foreground">
-							Leave empty to disable. Appended as plain text (or HTML for HTML
-							templates).
+							Leave empty to disable. Appended to all outgoing emails. Use{" "}
+							<code className="rounded bg-muted px-1">
+								{"{{conferenceName}}"}
+							</code>{" "}
+							to insert the conference name.
 						</p>
 					</div>
 					<div className="flex justify-end">

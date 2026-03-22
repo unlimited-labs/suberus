@@ -53,10 +53,15 @@ export async function sendEmail(
 		// Append global email footer if configured
 		const footer = await getSetting("EMAIL_FOOTER_TEXT");
 		if (footer) {
+			const conferenceName = await getSetting("CONFERENCE_NAME");
+			const resolved = footer.replace(
+				/\{\{conferenceName\}\}/g,
+				conferenceName,
+			);
 			if (template.isHtml) {
-				body += `<hr><p>${escapeHtml(footer)}</p>`;
+				body += `<hr><p>${escapeHtml(resolved)}</p>`;
 			} else {
-				body += `\n\n---\n${footer}`;
+				body += `\n\n---\n${resolved}`;
 			}
 		}
 
@@ -142,10 +147,12 @@ export async function sendTestEmail(
 
 	const footer = await getSetting("EMAIL_FOOTER_TEXT");
 	if (footer) {
+		const conferenceName = await getSetting("CONFERENCE_NAME");
+		const resolved = footer.replace(/\{\{conferenceName\}\}/g, conferenceName);
 		if (isHtml) {
-			resolvedBody += `<hr><p>${escapeHtml(footer)}</p>`;
+			resolvedBody += `<hr><p>${escapeHtml(resolved)}</p>`;
 		} else {
-			resolvedBody += `\n\n---\n${footer}`;
+			resolvedBody += `\n\n---\n${resolved}`;
 		}
 	}
 

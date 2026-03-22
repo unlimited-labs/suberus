@@ -27,7 +27,7 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 	{
 		eventType: "EMAIL_VERIFICATION",
 		subject: "Verify your email - {{conferenceName}}",
-		body: "Hello {{firstName}},\n\nPlease click the link below to verify your email address:\n\n{{verificationUrl}}\n\nThis link expires in 24 hours.\n\nBest regards,\n{{conferenceName}}",
+		body: "Hello {{firstName}},\n\nPlease click the link below to verify your email address:\n\n{{verificationUrl}}\n\nThis link expires in 24 hours.",
 		isEnabled: true,
 		isHtml: false,
 		ccEmails: [],
@@ -38,7 +38,7 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 	{
 		eventType: "PASSWORD_RESET",
 		subject: "Reset your password - {{conferenceName}}",
-		body: "Hello {{firstName}},\n\nClick the link below to reset your password:\n\n{{resetUrl}}\n\nThis link expires in 1 hour.\n\nBest regards,\n{{conferenceName}}",
+		body: "Hello {{firstName}},\n\nClick the link below to reset your password:\n\n{{resetUrl}}\n\nThis link expires in 1 hour.",
 		isEnabled: true,
 		isHtml: false,
 		ccEmails: [],
@@ -192,7 +192,7 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 	{
 		eventType: "INVITATION",
 		subject: "You've been invited to {{conferenceName}}",
-		body: "Hello,\n\nYou have been invited to join {{conferenceName}} as {{roleName}}.\n\nPlease register using the link below:\n\n{{registrationUrl}}\n\nThis invitation expires on {{expiresAt}}.\n\nBest regards,\n{{conferenceName}}",
+		body: "Hello,\n\nYou have been invited to join {{conferenceName}} as {{roleName}}.\n\nPlease register using the link below:\n\n{{registrationUrl}}\n\nThis invitation expires on {{expiresAt}}.",
 		isEnabled: true,
 		isHtml: false,
 		ccEmails: [],
@@ -208,7 +208,7 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 	{
 		eventType: "ACCOUNT_CREATED",
 		subject: "Welcome to {{conferenceName}}",
-		body: "Dear {{firstName}},\n\nYour account has been created successfully.\n\nPlease verify your email address to get started.\n\nBest regards,\n{{conferenceName}}",
+		body: "Dear {{firstName}},\n\nYour account has been created successfully.\n\nPlease verify your email address to get started.",
 		isEnabled: true,
 		isHtml: false,
 		ccEmails: [],
