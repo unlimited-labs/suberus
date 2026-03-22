@@ -76,7 +76,9 @@ export const sendTestEmailFn = createServerFn({ method: "POST" })
 		const conferenceName =
 			(await getSetting("CONFERENCE_NAME")) ?? "Example Conference";
 		const baseUrl = env.APP_BASE_URL;
-		const fullName = context.user.name || "Example User";
+		const fullName =
+			[context.user.firstName, context.user.name].filter(Boolean).join(" ") ||
+			"Example User";
 
 		const placeholders: Record<string, string> = {
 			authorName: fullName,
