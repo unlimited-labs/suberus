@@ -30,6 +30,7 @@ interface ContactInfoSectionProps {
 	isLoading?: boolean;
 	currentEmail: string;
 	emailVerified: boolean;
+	pendingEmail?: string;
 }
 
 const RESEND_COOLDOWN = 60;
@@ -40,6 +41,7 @@ export function ContactInfoSection({
 	isLoading,
 	currentEmail,
 	emailVerified,
+	pendingEmail,
 }: ContactInfoSectionProps) {
 	const [cooldown, setCooldown] = useState(0);
 	const [isResending, setIsResending] = useState(false);
@@ -149,6 +151,18 @@ export function ContactInfoSection({
 						Changing your email requires verification. You will receive a
 						verification link at the new email address. Your current email will
 						remain active until you verify the new one.
+					</AlertDescription>
+				</Alert>
+			)}
+
+			{/* Pending email verification notice */}
+			{!emailChanged && pendingEmail && (
+				<Alert>
+					<IconMail className="size-4" />
+					<AlertDescription>
+						A verification link has been sent to <strong>{pendingEmail}</strong>
+						. Your current email will remain active until you verify the new
+						one.
 					</AlertDescription>
 				</Alert>
 			)}

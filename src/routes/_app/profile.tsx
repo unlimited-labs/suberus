@@ -25,6 +25,7 @@ import {
 	getAffiliationById,
 } from "@/utils/affiliations.functions";
 import {
+	changeEmailFn,
 	changePasswordFn,
 	updateContactInfoFn,
 	updatePersonalInfoFn,
@@ -57,6 +58,7 @@ function SettingsPage() {
 		value: a.value,
 	}));
 	const [affiliationName, setAffiliationName] = useState("");
+	const [pendingEmail, setPendingEmail] = useState<string>();
 
 	useEffect(() => {
 		if (user?.affiliationId) {
@@ -100,10 +102,17 @@ function SettingsPage() {
 	// Contact Info handlers
 	const handleContactInfoSave = async (data: ContactInfoFormData) => {
 		try {
+			if (data.email !== user.email) {
+				await changeEmailFn({ data: { newEmail: data.email } });
+				setPendingEmail(data.email);
+				toast.success("Verification email sent to your new address");
+			}
 			await updateContactInfoFn({
 				data: { address: data.address, country: data.country },
 			});
-			toast.success("Contact information updated successfully");
+			if (data.email === user.email) {
+				toast.success("Contact information updated successfully");
+			}
 		} catch (error) {
 			toast.error("Failed to update contact information");
 			throw error;
@@ -164,6 +173,7 @@ function SettingsPage() {
 							onSave={handleContactInfoSave}
 							currentEmail={user.email}
 							emailVerified={user.emailVerified}
+							pendingEmail={pendingEmail}
 						/>
 					</SettingsSection>
 

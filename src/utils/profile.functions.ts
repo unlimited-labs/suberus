@@ -45,6 +45,24 @@ export const updateContactInfoFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
+// Email change (better-auth)
+export const changeEmailFn = createServerFn({ method: "POST" })
+	.middleware([authMiddleware])
+	.inputValidator(
+		z.object({
+			newEmail: z.email(),
+		}),
+	)
+	.handler(async ({ data }) => {
+		await auth.api.changeEmail({
+			body: {
+				newEmail: data.newEmail,
+			},
+			headers: getRequestHeaders(),
+		});
+		return { success: true };
+	});
+
 // Password change (better-auth)
 export const changePasswordFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
