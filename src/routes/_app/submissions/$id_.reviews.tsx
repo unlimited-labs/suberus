@@ -120,7 +120,13 @@ function SubmissionReviewsPage() {
 					{reviews.length === 0 ? (
 						<div className="rounded-2xl bg-card shadow-2xl border p-8 text-center">
 							<p className="text-muted-foreground">
-								No reviews for this submission.
+								{[
+									"UNDER_REVIEW",
+									"REVIEWS_COMPLETE",
+									"AWAITING_DECISION",
+								].includes(submission.status)
+									? "Reviews will be visible after a decision is made."
+									: "No reviews for this submission."}
 							</p>
 						</div>
 					) : (

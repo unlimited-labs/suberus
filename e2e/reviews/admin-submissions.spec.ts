@@ -1,5 +1,5 @@
-import { test, expect, createSubmission, createSubmissionWithReview } from "./fixtures";
-import { SubmissionStatus } from "../../src/generated/prisma/enums";
+import { test, expect, createSubmission, createSubmissionWithReview, getPrisma } from "./fixtures";
+import { SubmissionStatus, ReviewDecision, AssignmentStatus } from "../../src/generated/prisma/enums";
 
 // Tests use admin storageState from playwright.config.ts
 
@@ -340,5 +340,104 @@ test.describe("Submission Detail - Reviews Tab", () => {
 
 		// Assert - should show the completed review
 		await expect(page.getByText(/Accept/i).first()).toBeVisible({ timeout: 10000 });
+	});
+
+	test("shows scores and confidence level in review card", async ({
+		page,
+		adminSubmissionDetailPage,
+		testRun,
+		cleanup,
+	}) => {
+		const { submissionId } = await createSubmissionWithReview({
+			testRunId: testRun.testRunId,
+			title: "Scores Display Test",
+		});
+		cleanup.track(submissionId);
+
+		await adminSubmissionDetailPage.goto(submissionId);
+		await adminSubmissionDetailPage.switchToReviewsTab();
+
+		// Assert — scores visible (use first() since multiple review cards may exist)
+		await expect(page.getByText("Scores").first()).toBeVisible({ timeout: 10000 });
+		await expect(page.getByText("Originality").first()).toBeVisible();
+		await expect(page.getByText("4/5").first()).toBeVisible();
+
+		// Assert — confidence visible
+		await expect(page.getByText("Confidence:").first()).toBeVisible();
+	});
+
+	test("shows private notes with editor-only label", async ({
+		page,
+		adminSubmissionDetailPage,
+		testRun,
+		cleanup,
+	}) => {
+		const { submissionId } = await createSubmissionWithReview({
+			testRunId: testRun.testRunId,
+			title: "Private Notes Test",
+		});
+		cleanup.track(submissionId);
+
+		await adminSubmissionDetailPage.goto(submissionId);
+		await adminSubmissionDetailPage.switchToReviewsTab();
+
+		// Assert — private notes visible with label
+		await expect(
+			page.getByText("Private Notes (editor only)")
+		).toBeVisible({ timeout: 10000 });
+		await expect(page.getByText("Private notes for editors.")).toBeVisible();
+	});
+
+	test("round selector appears with multi-round reviews", async ({
+		page,
+		adminSubmissionDetailPage,
+		testRun,
+		cleanup,
+	}) => {
+		const db = getPrisma();
+		const { submissionId } = await createSubmissionWithReview({
+			testRunId: testRun.testRunId,
+			title: "Round Selector Test",
+		});
+		cleanup.track(submissionId);
+
+		// Add a round 2 review
+		const { reviewerUserId, adminUserId } = await import("../helpers/test-db").then(m => m.getTestUserIds());
+		const assignment2 = await db.reviewAssignment.create({
+			data: {
+				submissionId,
+				reviewerId: reviewerUserId,
+				round: 2,
+				status: AssignmentStatus.COMPLETED,
+				deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+				assignedBy: adminUserId,
+				completedAt: new Date(),
+				orderIndex: 0,
+			},
+		});
+		await db.review.create({
+			data: {
+				assignmentId: assignment2.id,
+				submissionId,
+				reviewerId: reviewerUserId,
+				round: 2,
+				decision: ReviewDecision.ACCEPT,
+				comments: "Round 2 review comment.",
+			},
+		});
+		await db.submission.update({
+			where: { id: submissionId },
+			data: { currentRound: 2 },
+		});
+
+		await adminSubmissionDetailPage.goto(submissionId);
+		await adminSubmissionDetailPage.switchToReviewsTab();
+
+		// Assert — round selector visible (default shows current round)
+		await expect(page.getByText(/Current round/)).toBeVisible({ timeout: 10000 });
+
+		// Open selector and verify "All rounds" option
+		await page.getByText(/Current round/).click();
+		await expect(page.getByText("All rounds")).toBeVisible();
 	});
 });

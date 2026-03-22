@@ -127,28 +127,6 @@ export function ActionsCard({
 					</>
 				);
 			case "SUBMITTED":
-				return (
-					<>
-						<Button
-							variant="outline"
-							className="gap-2 w-full"
-							onClick={handleEdit}
-							disabled={isLoading}
-						>
-							<IconEdit className="size-4" />
-							Edit Submission
-						</Button>
-						<Button
-							variant="destructive"
-							className="gap-2 w-full"
-							onClick={handleWithdraw}
-							disabled={isLoading}
-						>
-							<IconX className="size-4" />
-							Withdraw Submission
-						</Button>
-					</>
-				);
 			case "UNDER_REVIEW":
 			case "REVIEWS_COMPLETE":
 			case "AWAITING_DECISION":

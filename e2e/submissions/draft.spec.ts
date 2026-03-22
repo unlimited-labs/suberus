@@ -253,7 +253,7 @@ test.describe("Edit Page", () => {
 		await expect(page.getByText(newTitle).first()).toBeVisible({ timeout: 10000 });
 	});
 
-	test("edit page for SUBMITTED shows Submit (not Save Draft)", async ({
+	test("edit page for SUBMITTED shows Cannot Edit", async ({
 		page,
 		testRun,
 		cleanup,
@@ -269,9 +269,9 @@ test.describe("Edit Page", () => {
 		// Act
 		await page.goto(`/submissions/${id}/edit`);
 
-		// Assert
-		await expect(page.getByRole("button", { name: "Submit" })).toBeVisible({ timeout: 10000 });
-		await expect(page.getByRole("button", { name: "Save Draft" })).not.toBeVisible();
+		// Assert — editing SUBMITTED is now blocked (only DRAFT allowed)
+		await expect(page.getByText("Cannot Edit")).toBeVisible({ timeout: 10000 });
+		await expect(page.getByText("Submission can only be edited in Draft status")).toBeVisible();
 	});
 
 	test("edit page shows error for non-editable status", async ({

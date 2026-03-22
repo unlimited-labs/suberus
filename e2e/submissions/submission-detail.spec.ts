@@ -1,26 +1,26 @@
 import { test, expect } from "./fixtures";
-import { createSubmission } from "../helpers/test-db";
+import { createSubmission, createSubmissionWithReview, getPrisma } from "../helpers/test-db";
 import { SubmissionStatus } from "../../src/generated/prisma/enums";
 
 test.describe("Submission Detail - Actions Card", () => {
-	test.describe("Edit button for SUBMITTED status", () => {
-		test("shows Edit Submission button for SUBMITTED status", async ({ page, testRun, cleanup }) => {
+	test.describe("Edit button for DRAFT status", () => {
+		test("shows Continue Editing button for DRAFT status", async ({ page, testRun, cleanup }) => {
 			// Arrange
 			const { id } = await createSubmission({
 				testRunId: testRun.testRunId,
 				title: "Edit Button Test",
-				status: SubmissionStatus.SUBMITTED,
+				status: SubmissionStatus.DRAFT,
 			});
 			cleanup.track(id);
 			await page.goto(`/submissions/${id}`);
 
-			// Assert - Edit button should be visible
+			// Assert - Edit button should be visible for DRAFT
 			await expect(
-				page.getByRole("button", { name: "Edit Submission" })
+				page.getByRole("button", { name: "Continue Editing" })
 			).toBeVisible();
 		});
 
-		test("shows Withdraw button alongside Edit for SUBMITTED status", async ({
+		test("SUBMITTED shows only Withdraw button (no Edit)", async ({
 			page,
 			testRun,
 			cleanup,
@@ -34,27 +34,30 @@ test.describe("Submission Detail - Actions Card", () => {
 			cleanup.track(id);
 			await page.goto(`/submissions/${id}`);
 
-			// Assert - both buttons should be visible
+			// Assert - only Withdraw visible, no Edit
+			await expect(
+				page.getByRole("button", { name: "Continue Editing" })
+			).not.toBeVisible();
 			await expect(
 				page.getByRole("button", { name: "Edit Submission" })
-			).toBeVisible();
+			).not.toBeVisible();
 			await expect(
 				page.getByRole("button", { name: "Withdraw Submission" })
 			).toBeVisible();
 		});
 
-		test("Edit button navigates to edit form", async ({ page, testRun, cleanup }) => {
+		test("Continue Editing navigates to edit form from DRAFT", async ({ page, testRun, cleanup }) => {
 			// Arrange
 			const { id } = await createSubmission({
 				testRunId: testRun.testRunId,
 				title: "Edit Navigate Test",
-				status: SubmissionStatus.SUBMITTED,
+				status: SubmissionStatus.DRAFT,
 			});
 			cleanup.track(id);
 			await page.goto(`/submissions/${id}`);
 
 			// Act - click Edit
-			await page.getByRole("button", { name: "Edit Submission" }).click();
+			await page.getByRole("button", { name: "Continue Editing" }).click();
 
 			// Assert - should navigate to edit page
 			await page.waitForURL(/\/submissions\/[a-f0-9-]+\/edit/, { timeout: 10000 });
@@ -465,5 +468,84 @@ test.describe("Submission Detail - Edge Cases", () => {
 		// Assert
 		await expect(page.getByText("Bartholomew-Christopher")).toBeVisible();
 		await expect(page.getByText("Worthington-Pemberton-Smith")).toBeVisible();
+	});
+});
+
+test.describe("Submission Detail - Review Visibility", () => {
+	test("author sees no reviews during UNDER_REVIEW even when reviews exist", async ({
+		page,
+		testRun,
+		cleanup,
+	}) => {
+		const db = getPrisma();
+		// Create submission with review (AWAITING_DECISION) then set status back to UNDER_REVIEW
+		const { submissionId } = await createSubmissionWithReview({
+			testRunId: testRun.testRunId,
+			title: "Review Hidden Test",
+		});
+		cleanup.track(submissionId);
+
+		// Force status to UNDER_REVIEW (reviews exist but should be hidden)
+		await db.submission.update({
+			where: { id: submissionId },
+			data: { status: SubmissionStatus.UNDER_REVIEW },
+		});
+
+		await page.goto(`/submissions/${submissionId}/reviews`);
+
+		// Assert — reviews hidden, status-aware message shown
+		await expect(
+			page.getByText("Reviews will be visible after a decision is made.")
+		).toBeVisible();
+	});
+
+	test("author sees reviews after REVISE_REQUIRED decision", async ({
+		page,
+		testRun,
+		cleanup,
+	}) => {
+		const db = getPrisma();
+		const { submissionId } = await createSubmissionWithReview({
+			testRunId: testRun.testRunId,
+			title: "Review Visible Test",
+		});
+		cleanup.track(submissionId);
+
+		// Set to REVISE_REQUIRED (post-decision — reviews should be visible)
+		await db.submission.update({
+			where: { id: submissionId },
+			data: { status: SubmissionStatus.REVISE_REQUIRED },
+		});
+
+		await page.goto(`/submissions/${submissionId}/reviews`);
+
+		// Assert — reviews section visible (accordion header with reviewer name)
+		await expect(page.getByText("Reviews – Round 1")).toBeVisible();
+		await expect(page.getByText("Reviewer 1")).toBeVisible();
+	});
+
+	test("author sees previous round reviews during current round UNDER_REVIEW", async ({
+		page,
+		testRun,
+		cleanup,
+	}) => {
+		const db = getPrisma();
+		const { submissionId } = await createSubmissionWithReview({
+			testRunId: testRun.testRunId,
+			title: "Multi Round Review Test",
+		});
+		cleanup.track(submissionId);
+
+		// Simulate round 2 UNDER_REVIEW (round 1 reviews should be visible)
+		await db.submission.update({
+			where: { id: submissionId },
+			data: { status: SubmissionStatus.UNDER_REVIEW, currentRound: 2 },
+		});
+
+		await page.goto(`/submissions/${submissionId}/reviews`);
+
+		// Assert — round 1 review visible (round < currentRound)
+		await expect(page.getByText("Reviews – Round 1")).toBeVisible();
+		await expect(page.getByText("Reviewer 1")).toBeVisible();
 	});
 });

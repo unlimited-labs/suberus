@@ -52,8 +52,7 @@ function EditSubmissionPage() {
 	if (
 		!data ||
 		data.submission.role === "coauthor" ||
-		(data.submission.status !== "DRAFT" &&
-			data.submission.status !== "SUBMITTED")
+		data.submission.status !== "DRAFT"
 	) {
 		return (
 			<div className="flex h-full flex-col">
@@ -63,7 +62,7 @@ function EditSubmissionPage() {
 						<p className="text-muted-foreground mb-4">
 							{!data
 								? "Submission not found"
-								: "Submission can only be edited in Draft or Submitted status"}
+								: "Submission can only be edited in Draft status"}
 						</p>
 						<Link to="/submissions/$id" params={{ id }}>
 							<Button variant="outline" className="gap-2">
