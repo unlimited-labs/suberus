@@ -121,7 +121,7 @@ model Submission {
   type              SubmissionType
   title             String
   content           String
-  status            SubmissionStatus          @default(SUBMITTED)
+  status            SubmissionStatus          @default(DRAFT)
   currentRound      Int                       @default(1)
   userId            String                    @db.Uuid
   trackId           String?                   @db.Uuid

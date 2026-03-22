@@ -526,6 +526,17 @@ export async function resubmitSubmission(
 		return { success: false, versionNumber: 0, error: "Submission not found" };
 	}
 
+	// Check if revisions are allowed for this submission type
+	const configKey = SUBMISSION_TYPE_TO_KEY[submission.type];
+	const config = await getSetting(configKey);
+	if (!config.allowRevisions) {
+		return {
+			success: false,
+			versionNumber: 0,
+			error: "Revisions are not allowed for this submission type",
+		};
+	}
+
 	// Validate transition through xstate machine (single source of truth)
 	const validation = await validateSubmissionTransition(submissionId, {
 		type: "RESUBMIT",

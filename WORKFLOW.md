@@ -412,7 +412,7 @@ Flow:
 ### Multiple Reviewers (Papers)
 
 ```typescript
-Config: minReviewers=2, maxReviewers=3, requireAllReviews=true
+Config: minReviewers=2, maxReviewers=3
 
 Flow:
 1. Editor assigns 2-3 reviewers
@@ -846,7 +846,7 @@ Each entry includes: event type, target user/submission (optional), performer (o
   allowRevisions: true,
 
   reviewDeadline: 14, // days
-  requireAllReviews: true,
+
   autoTransitionAfterReviews: true, // Auto-apply reviewer decision
   enableScoring: false,
   scoringCriteria: [],
@@ -865,7 +865,7 @@ Each entry includes: event type, target user/submission (optional), performer (o
   allowRevisions: true,
 
   reviewDeadline: 21, // days
-  requireAllReviews: true,
+
   autoTransitionAfterReviews: false, // Editor manually reviews before transition
   enableScoring: true,
   scoringCriteria: [
@@ -891,7 +891,7 @@ POSTER uses identical workflow to ABSTRACT (single reviewer, reviewer decides).
   allowRevisions: true,
 
   reviewDeadline: 14, // days
-  requireAllReviews: true,
+
   autoTransitionAfterReviews: true, // Auto-apply reviewer decision
   enableScoring: false,
   scoringCriteria: [],
