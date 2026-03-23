@@ -212,7 +212,7 @@ async function globalSetup() {
 
 		await prisma.user.update({
 			where: { id: testResult.user.id },
-			data: { emailVerified: true, isActive: true, affiliationId: testAffiliation.id },
+			data: { emailVerified: true, isActive: true, affiliationId: testAffiliation.id, needInvoice: true },
 		});
 
 		console.log(`✅ Test user created: ${TEST_USER.email}`);

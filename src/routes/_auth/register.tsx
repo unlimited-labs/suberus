@@ -3,8 +3,8 @@ import {
 	IconArrowRight,
 	IconInfoCircle,
 	IconMail,
-	IconMapPin,
 } from "@tabler/icons-react";
+import { useStore } from "@tanstack/react-form";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -17,12 +17,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { COUNTRIES, CountryCombobox } from "@/components/ui/country-combobox";
-import {
-	Field,
-	FieldDescription,
-	FieldError,
-	FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useAppForm } from "@/hooks/use-app-form";
 import { useMultiStep } from "@/hooks/use-multi-step";
@@ -112,6 +107,7 @@ function RegisterPage() {
 			lastName: "",
 			affiliationId: "",
 			affiliationName: "",
+			needInvoice: true,
 			address: "",
 			country: detectedCountry,
 			surveyAnswers: defaultSurveyAnswers,
@@ -129,6 +125,7 @@ function RegisterPage() {
 				firstName: value.firstName,
 				title: value.title || undefined,
 				affiliationId: value.affiliationId || undefined,
+				needInvoice: value.needInvoice,
 				address: value.address || undefined,
 				country: value.country || undefined,
 			} as Parameters<typeof signUp.email>[0]);
@@ -164,6 +161,8 @@ function RegisterPage() {
 			navigate({ to: "/" });
 		},
 	});
+
+	const needInvoice = useStore(form.store, (s) => s.values.needInvoice);
 
 	const validateStep = useCallback(
 		async (step: number): Promise<boolean> => {
@@ -388,33 +387,48 @@ function RegisterPage() {
 					{/* Step 2: Invoice Information */}
 					{currentStep === 2 && (
 						<div className="animate-in fade-in slide-in-from-right-4 space-y-3 duration-300">
-							<p className="text-sm text-muted-foreground">
-								Please provide your billing address for invoice purposes.
-							</p>
-
-							{/* Address */}
-							<form.Field name="address">
+							{/* Need Invoice checkbox */}
+							<form.AppField name="needInvoice">
 								{(field) => (
-									<Field>
-										<FieldLabel htmlFor={field.name}>Address</FieldLabel>
-										<div className="relative">
-											<IconMapPin className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
-											<textarea
-												id={field.name}
-												rows={2}
-												className={cn(
-													"flex w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 pl-9 text-sm transition-colors",
-													"placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
-													"disabled:cursor-not-allowed disabled:opacity-50",
-												)}
-												value={field.state.value}
-												onChange={(e) => field.handleChange(e.target.value)}
-											/>
-										</div>
-										<FieldDescription>For billing purposes</FieldDescription>
-									</Field>
+									<field.CheckboxField label="I need an invoice for my organization" />
 								)}
-							</form.Field>
+							</form.AppField>
+
+							{/* Billing details (visible when invoice needed) */}
+							{needInvoice && (
+								<form.Field name="address">
+									{(field) => {
+										const hasError =
+											field.state.meta.isBlurred &&
+											field.state.meta.errors.length > 0;
+										return (
+											<Field data-invalid={hasError}>
+												<FieldLabel htmlFor={field.name}>
+													Billing details (organization) *
+												</FieldLabel>
+												<textarea
+													id={field.name}
+													rows={3}
+													placeholder="Company/organization name, billing address, VAT/Tax ID (if applicable)"
+													className={cn(
+														"flex w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 text-sm transition-colors",
+														"placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+														"disabled:cursor-not-allowed disabled:opacity-50",
+													)}
+													value={field.state.value}
+													onChange={(e) => field.handleChange(e.target.value)}
+													onBlur={field.handleBlur}
+												/>
+												<FieldError
+													errors={
+														hasError ? field.state.meta.errors : undefined
+													}
+												/>
+											</Field>
+										);
+									}}
+								</form.Field>
+							)}
 
 							{/* Country */}
 							<form.Field name="country">

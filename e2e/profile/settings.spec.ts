@@ -15,6 +15,8 @@ test.describe("User Settings", () => {
 		await expect(settingsPage.lastNameInput).toBeVisible()
 		await expect(settingsPage.orcidInput).toBeVisible()
 		await expect(settingsPage.savePersonalBtn).toBeVisible()
+		await expect(settingsPage.needInvoiceCheckbox).toBeVisible()
+		await expect(settingsPage.needInvoiceCheckbox).toBeChecked()
 		await expect(settingsPage.addressInput).toBeVisible()
 		await expect(settingsPage.saveContactBtn).toBeVisible()
 		await expect(settingsPage.currentPasswordInput).toBeVisible()

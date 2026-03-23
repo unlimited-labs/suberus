@@ -18,6 +18,7 @@ const registerBase = z.object({
 	title: z.string(),
 	affiliationId: z.string().min(1, "Affiliation is required"),
 	affiliationName: z.string(),
+	needInvoice: z.boolean(),
 	address: z.string(),
 	country: z.string().min(1, "Country is required"),
 	surveyAnswers: z.record(z.string(), z.string()),
@@ -55,9 +56,16 @@ export const registerStep1Schema = registerStep1Base.refine(
 	},
 );
 
-export const registerStep2Schema = z.object({
-	country: z.string().min(1, "Country is required"),
-});
+export const registerStep2Schema = z
+	.object({
+		needInvoice: z.boolean(),
+		address: z.string(),
+		country: z.string().min(1, "Country is required"),
+	})
+	.refine((data) => !data.needInvoice || data.address.trim().length > 0, {
+		message: "Billing details are required when invoice is needed",
+		path: ["address"],
+	});
 
 export const registerStep3Schema = z.object({
 	acceptTerms: z

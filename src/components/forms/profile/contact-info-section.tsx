@@ -3,20 +3,15 @@ import {
 	IconMail,
 	IconMailCheck,
 	IconMailX,
-	IconMapPin,
 	IconRefresh,
 } from "@tabler/icons-react";
+import { useStore } from "@tanstack/react-form";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { CountryCombobox } from "@/components/ui/country-combobox";
-import {
-	Field,
-	FieldDescription,
-	FieldError,
-	FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { useAppForm } from "@/hooks/use-app-form";
 import { sendVerificationEmail } from "@/lib/auth-client";
 import { submitForm } from "@/lib/form-utils";
@@ -86,7 +81,9 @@ export function ContactInfoSection({
 		},
 	});
 
-	const emailChanged = form.state.values.email !== currentEmail;
+	const email = useStore(form.store, (s) => s.values.email);
+	const emailChanged = email !== currentEmail;
+	const needInvoice = useStore(form.store, (s) => s.values.needInvoice);
 
 	return (
 		<form
@@ -167,22 +164,31 @@ export function ContactInfoSection({
 				</Alert>
 			)}
 
-			{/* Invoice Address */}
-			<form.Field name="address">
-				{(field) => {
-					const hasError =
-						field.state.meta.isBlurred && field.state.meta.errors.length > 0;
-					return (
-						<Field data-invalid={hasError}>
-							<FieldLabel htmlFor={field.name}>Invoice address</FieldLabel>
-							<div className="relative">
-								<IconMapPin className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
+			{/* Need Invoice */}
+			<form.AppField name="needInvoice">
+				{(field) => (
+					<field.CheckboxField label="I need an invoice for my organization" />
+				)}
+			</form.AppField>
+
+			{/* Billing details (visible when invoice needed) */}
+			{needInvoice && (
+				<form.Field name="address">
+					{(field) => {
+						const hasError =
+							field.state.meta.isBlurred && field.state.meta.errors.length > 0;
+						return (
+							<Field data-invalid={hasError}>
+								<FieldLabel htmlFor={field.name}>
+									Billing details (organization)
+								</FieldLabel>
 								<textarea
 									id={field.name}
-									rows={2}
+									rows={3}
+									placeholder="Company/organization name, billing address, VAT/Tax ID (if applicable)"
 									aria-invalid={hasError}
 									className={cn(
-										"flex w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 pl-9 text-sm text-foreground transition-colors",
+										"flex w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 text-sm text-foreground transition-colors",
 										"placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
 										"disabled:cursor-not-allowed disabled:opacity-50",
 										"aria-invalid:border-destructive aria-invalid:ring-destructive/20 aria-invalid:ring-[3px]",
@@ -192,15 +198,14 @@ export function ContactInfoSection({
 									onChange={(e) => field.handleChange(e.target.value)}
 									disabled={isLoading}
 								/>
-							</div>
-							<FieldDescription>For billing purposes</FieldDescription>
-							<FieldError
-								errors={hasError ? field.state.meta.errors : undefined}
-							/>
-						</Field>
-					);
-				}}
-			</form.Field>
+								<FieldError
+									errors={hasError ? field.state.meta.errors : undefined}
+								/>
+							</Field>
+						);
+					}}
+				</form.Field>
+			)}
 
 			{/* Country */}
 			<form.Field name="country">

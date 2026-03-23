@@ -50,7 +50,7 @@ export async function createInvitation(
 	// Check if email is already registered
 	const existingUser = await prisma.user.findUnique({ where: { email } });
 	if (existingUser) {
-		throw new Response("User with this email already exists", { status: 400 });
+		throw new Error("User with this email already exists");
 	}
 
 	// Cancel any existing PENDING invitation for same email

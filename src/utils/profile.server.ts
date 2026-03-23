@@ -39,6 +39,7 @@ export async function updatePersonalInfo(
 export async function updateContactInfo(
 	userId: string,
 	data: {
+		needInvoice?: boolean;
 		address?: string;
 		country?: string;
 	},
@@ -46,6 +47,7 @@ export async function updateContactInfo(
 	const result = await prisma.user.update({
 		where: { id: userId },
 		data: {
+			needInvoice: data.needInvoice,
 			address: data.address || null,
 			country: data.country || null,
 		},

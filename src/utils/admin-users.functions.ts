@@ -123,6 +123,7 @@ const adminEditProfileSchema = z.object({
 		.optional()
 		.or(z.literal("")),
 	email: z.email(),
+	needInvoice: z.boolean().optional(),
 	address: z.string().max(500).optional(),
 	country: z.string().optional(),
 });

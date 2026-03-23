@@ -94,6 +94,11 @@ export const auth = betterAuth({
 				required: false,
 				input: true,
 			},
+			needInvoice: {
+				type: "boolean",
+				required: false,
+				input: true,
+			},
 			role: {
 				type: Object.keys(UserRole) as (keyof typeof UserRole)[],
 				required: false,

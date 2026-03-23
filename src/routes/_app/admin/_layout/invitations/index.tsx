@@ -86,6 +86,7 @@ function InvitationsPage() {
 					columns={columns}
 					data={invitations}
 					getRowId={(row) => row.id}
+					rowDataTestId="invitation-item"
 					mobileCard={(invitation) => (
 						<InvitationMobileCard
 							invitation={invitation}

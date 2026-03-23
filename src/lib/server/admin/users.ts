@@ -17,6 +17,7 @@ export interface AdminUser {
 	orcid: string | null;
 	address: string | null;
 	country: string | null;
+	needInvoice: boolean;
 	role: UserRole;
 	isActive: boolean;
 	emailVerified: boolean;
@@ -112,6 +113,7 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 		orcid: u.orcid,
 		address: u.address,
 		country: u.country,
+		needInvoice: u.needInvoice,
 		role: u.role,
 		isActive: u.isActive,
 		emailVerified: u.emailVerified,
@@ -158,6 +160,7 @@ export async function getUserById(id: string): Promise<AdminUser | null> {
 		orcid: user.orcid,
 		address: user.address,
 		country: user.country,
+		needInvoice: user.needInvoice,
 		role: user.role,
 		isActive: user.isActive,
 		emailVerified: user.emailVerified,
@@ -417,6 +420,7 @@ export interface UpdateUserProfileInput {
 	email: string;
 	affiliation?: string;
 	orcid?: string;
+	needInvoice?: boolean;
 	address?: string;
 	country?: string;
 }
@@ -439,6 +443,7 @@ export async function updateUserProfile(
 		lastName: data.lastName,
 		title: data.title || null,
 		orcid: data.orcid || null,
+		needInvoice: data.needInvoice,
 		address: data.address || null,
 		country: data.country || null,
 	};

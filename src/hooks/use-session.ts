@@ -10,6 +10,7 @@ export interface SessionUser {
 	title: string | null;
 	affiliationId: string | null;
 	orcid: string | null;
+	needInvoice: boolean;
 	address: string | null;
 	country: string | null;
 	role: UserRole;
@@ -28,6 +29,7 @@ interface BetterAuthUser {
 	title: string | null;
 	affiliationId: string | null;
 	orcid: string | null;
+	needInvoice: boolean;
 	address: string | null;
 	country: string | null;
 	role: UserRole;

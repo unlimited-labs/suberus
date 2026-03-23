@@ -120,7 +120,7 @@ export class RegisterPage {
 		const combobox = countryField.getByRole("combobox")
 
 		if (data.address) {
-			await this.page.getByLabel("Address").fill(data.address)
+			await this.page.getByLabel("Billing details (organization)").fill(data.address)
 		}
 
 		const searchInput = this.page.getByPlaceholder("Search country...")

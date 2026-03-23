@@ -72,7 +72,7 @@ test.describe("Verify Email - Verification Link", () => {
 			affiliation: "Test University",
 		})
 		await registerPage.clickContinue()
-		await registerPage.fillStep2({ country: "Poland" })
+		await registerPage.fillStep2({ country: "Poland", address: "Test Org\n123 Test St" })
 		await registerPage.clickContinue()
 		await registerPage.fillStep3({ acceptTerms: true })
 		await registerPage.clickCreateAccount()
@@ -128,7 +128,7 @@ test.describe("Verify Email Page - Resend Flow", () => {
 			affiliation: "Test University",
 		})
 		await registerPage.clickContinue()
-		await registerPage.fillStep2({ country: "Poland" })
+		await registerPage.fillStep2({ country: "Poland", address: "Test Org\n123 Test St" })
 		await registerPage.clickContinue()
 		await registerPage.fillStep3({ acceptTerms: true })
 		await registerPage.clickCreateAccount()
@@ -163,7 +163,7 @@ test.describe("Verify Email Page - Resend Flow", () => {
 			affiliation: "Test University",
 		})
 		await registerPage.clickContinue()
-		await registerPage.fillStep2({ country: "Poland" })
+		await registerPage.fillStep2({ country: "Poland", address: "Test Org\n123 Test St" })
 		await registerPage.clickContinue()
 		await registerPage.fillStep3({ acceptTerms: true })
 		await registerPage.clickCreateAccount()

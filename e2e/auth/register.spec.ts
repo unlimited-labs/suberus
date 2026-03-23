@@ -119,8 +119,8 @@ test.describe("Register Page - Step 1: Author Info", () => {
 
 		// Assert - wait for step 2 to load (country combobox appears regardless of pre-fill)
 		await registerPage.waitForStep2()
-		// Address field may need scrolling on mobile
-		await expect(registerPage.page.getByLabel("Address")).toBeAttached()
+		// Billing details field visible (checkbox is checked by default)
+		await expect(registerPage.page.getByLabel("Billing details (organization)")).toBeAttached()
 	})
 })
 
@@ -175,7 +175,7 @@ test.describe("Register Page - Step 2: Invoice", () => {
 
 	test("proceeds to step 3 with valid data", async ({ registerPage }) => {
 		// Act
-		await registerPage.fillStep2({ country: "Poland" })
+		await registerPage.fillStep2({ country: "Poland", address: "Test Org\n123 Test St" })
 		await registerPage.clickContinue()
 
 		// Assert
@@ -197,7 +197,7 @@ test.describe("Register Page - Step 3: Survey", () => {
 			affiliation: "Test University",
 		})
 		await registerPage.clickContinue()
-		await registerPage.fillStep2({ country: "Poland" })
+		await registerPage.fillStep2({ country: "Poland", address: "Test Org\n123 Test St" })
 		await registerPage.clickContinue()
 	})
 
@@ -268,7 +268,7 @@ test.describe("Register Page - Registration Flow", () => {
 			affiliation: "Test University",
 		})
 		await registerPage.clickContinue()
-		await registerPage.fillStep2({ country: "Poland" })
+		await registerPage.fillStep2({ country: "Poland", address: "Test Org\n123 Test St" })
 		await registerPage.clickContinue()
 		await registerPage.fillStep3({ acceptTerms: true })
 
@@ -297,7 +297,7 @@ test.describe("Register Page - Registration Flow", () => {
 			affiliation: "Test University",
 		})
 		await registerPage.clickContinue()
-		await registerPage.fillStep2({ country: "Poland" })
+		await registerPage.fillStep2({ country: "Poland", address: "Test Org\n123 Test St" })
 		await registerPage.clickContinue()
 		await registerPage.fillStep3({ acceptTerms: true })
 
@@ -384,7 +384,8 @@ test.describe("Register Page - Country Auto-Detection", () => {
 		await registerPage.clickContinue()
 		await registerPage.waitForStep2()
 
-		// Act — click Continue without manually selecting a country
+		// Act — fill billing details (required when needInvoice is checked), then Continue
+		await registerPage.page.getByLabel("Billing details (organization)").fill("Test Org\n123 Test St")
 		await registerPage.clickContinue()
 
 		// Assert — should proceed to step 3 (terms checkbox visible)

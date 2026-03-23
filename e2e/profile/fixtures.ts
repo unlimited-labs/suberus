@@ -18,6 +18,7 @@ export class SettingsPage {
 	readonly savePersonalBtn: Locator
 	// Contact info
 	readonly emailInput: Locator
+	readonly needInvoiceCheckbox: Locator
 	readonly addressInput: Locator
 	readonly countryButton: Locator
 	readonly saveContactBtn: Locator
@@ -50,7 +51,8 @@ export class SettingsPage {
 		// Contact info section - scope within the section with "Contact & Invoice" heading
 		const contactSection = page.locator("section").filter({ has: page.getByRole("heading", { name: "Contact & Invoice Information" }) })
 		this.emailInput = page.getByLabel("Email *")
-		this.addressInput = page.getByLabel("Invoice address")
+		this.needInvoiceCheckbox = page.getByLabel("I need an invoice for my organization")
+		this.addressInput = page.getByLabel("Billing details (organization)")
 		// Country combobox within contact section
 		this.countryButton = contactSection.getByRole("combobox")
 		this.saveContactBtn = page
@@ -101,6 +103,10 @@ export class SettingsPage {
 
 	async fillContactInfo(data: { address?: string; country?: string }) {
 		if (data.address !== undefined) {
+			// Ensure invoice checkbox is checked so billing details field is visible
+			if (!(await this.needInvoiceCheckbox.isChecked())) {
+				await this.needInvoiceCheckbox.click()
+			}
 			await this.addressInput.clear()
 			await this.addressInput.fill(data.address)
 		}

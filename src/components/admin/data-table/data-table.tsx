@@ -31,6 +31,8 @@ interface DataTableProps<TData, TValue> {
 	toolbar?: (table: ReturnType<typeof useReactTable<TData>>) => React.ReactNode;
 	mobileCard?: (row: TData) => React.ReactNode;
 	getRowId?: (row: TData) => string;
+	/** Static data-testid applied to each data row (desktop `<tr>` and mobile card wrapper) */
+	rowDataTestId?: string;
 }
 
 export function DataTable<TData, TValue>({
@@ -39,6 +41,7 @@ export function DataTable<TData, TValue>({
 	toolbar,
 	mobileCard,
 	getRowId,
+	rowDataTestId,
 }: DataTableProps<TData, TValue>) {
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -108,6 +111,7 @@ export function DataTable<TData, TValue>({
 								<TableRow
 									key={row.id}
 									data-state={row.getIsSelected() && "selected"}
+									data-testid={rowDataTestId}
 								>
 									{row.getVisibleCells().map((cell) => (
 										<TableCell key={cell.id}>
@@ -137,11 +141,11 @@ export function DataTable<TData, TValue>({
 			{mobileCard && (
 				<div className="md:hidden space-y-3">
 					{table.getRowModel().rows?.length ? (
-						table
-							.getRowModel()
-							.rows.map((row) => (
-								<div key={row.id}>{mobileCard(row.original)}</div>
-							))
+						table.getRowModel().rows.map((row) => (
+							<div key={row.id} data-testid={rowDataTestId}>
+								{mobileCard(row.original)}
+							</div>
+						))
 					) : (
 						<div className="text-center py-8 text-muted-foreground">
 							No results.

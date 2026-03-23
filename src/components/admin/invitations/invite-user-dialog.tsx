@@ -51,13 +51,12 @@ export function InviteUserDialog({
 			setRole("REVIEWER");
 			onOpenChange(false);
 			onSuccess();
-		} catch (error) {
+		} catch (error: unknown) {
+			const msg = error instanceof Error ? error.message : String(error);
 			toast.error(
-				error instanceof Response
+				/already exists/i.test(msg)
 					? "User with this email already exists"
-					: error instanceof Error
-						? error.message
-						: "Failed to send invitation",
+					: msg || "Failed to send invitation",
 			);
 		} finally {
 			setIsSubmitting(false);

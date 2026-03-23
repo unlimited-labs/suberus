@@ -1,4 +1,5 @@
-import { IconBuilding, IconMail, IconMapPin } from "@tabler/icons-react";
+import { IconBuilding, IconMail } from "@tabler/icons-react";
+import { useStore } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -46,6 +47,7 @@ export function UserEditDialog({
 			affiliation?: string;
 			orcid?: string;
 			email: string;
+			needInvoice?: boolean;
 			address?: string;
 			country?: string;
 		}) => updateAdminUserProfile({ data: { id: user.id, ...data } }),
@@ -76,6 +78,7 @@ export function UserEditDialog({
 			affiliation: user.affiliation ?? "",
 			orcid: user.orcid ?? "",
 			email: user.email,
+			needInvoice: user.needInvoice,
 			address: user.address ?? "",
 			country: user.country ?? "",
 		},
@@ -98,11 +101,14 @@ export function UserEditDialog({
 				affiliation: value.affiliation || undefined,
 				orcid: value.orcid || undefined,
 				email: value.email,
+				needInvoice: value.needInvoice,
 				address: value.address || undefined,
 				country: value.country || undefined,
 			});
 		},
 	});
+
+	const needInvoice = useStore(form.store, (s) => s.values.needInvoice);
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -166,22 +172,30 @@ export function UserEditDialog({
 						)}
 					</form.AppField>
 
-					<form.Field name="address">
-						{(field) => {
-							const hasError =
-								field.state.meta.isBlurred &&
-								field.state.meta.errors.length > 0;
-							return (
-								<Field data-invalid={hasError}>
-									<FieldLabel htmlFor={field.name}>Invoice address</FieldLabel>
-									<div className="relative">
-										<IconMapPin className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
+					<form.AppField name="needInvoice">
+						{(field) => (
+							<field.CheckboxField label="Needs invoice for organization" />
+						)}
+					</form.AppField>
+
+					{needInvoice && (
+						<form.Field name="address">
+							{(field) => {
+								const hasError =
+									field.state.meta.isBlurred &&
+									field.state.meta.errors.length > 0;
+								return (
+									<Field data-invalid={hasError}>
+										<FieldLabel htmlFor={field.name}>
+											Billing details (organization)
+										</FieldLabel>
 										<textarea
 											id={field.name}
-											rows={2}
+											rows={3}
+											placeholder="Company/organization name, billing address, VAT/Tax ID (if applicable)"
 											aria-invalid={hasError}
 											className={cn(
-												"flex w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 pl-9 text-sm text-foreground transition-colors",
+												"flex w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 text-sm text-foreground transition-colors",
 												"placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
 												"disabled:cursor-not-allowed disabled:opacity-50",
 												"aria-invalid:border-destructive aria-invalid:ring-destructive/20 aria-invalid:ring-[3px]",
@@ -190,11 +204,11 @@ export function UserEditDialog({
 											onBlur={field.handleBlur}
 											onChange={(e) => field.handleChange(e.target.value)}
 										/>
-									</div>
-								</Field>
-							);
-						}}
-					</form.Field>
+									</Field>
+								);
+							}}
+						</form.Field>
+					)}
 
 					<form.Field name="country">
 						{(field) => (

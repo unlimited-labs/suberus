@@ -167,6 +167,7 @@ function SettingsPage() {
 						<ContactInfoSection
 							initialData={{
 								email: user.email,
+								needInvoice: user.needInvoice,
 								address: user.address ?? "",
 								country: user.country ?? "",
 							}}
