@@ -23,13 +23,43 @@ const SOURCE_ID = "countries-source";
 const FILL_LAYER_ID = "countries-fill";
 const LINE_LAYER_ID = "countries-line";
 
+const LEGEND_ITEMS = [
+	{ color: "#bfdbfe", label: "1–5" },
+	{ color: "#60a5fa", label: "6–20" },
+	{ color: "#2563eb", label: "21–50" },
+	{ color: "#1e3a8a", label: "50+" },
+] as const;
+
 const COLOR_STEPS = {
 	none: "transparent",
-	low: "#bfdbfe",
-	medium: "#60a5fa",
-	high: "#2563eb",
-	max: "#1e3a8a",
+	low: LEGEND_ITEMS[0].color,
+	medium: LEGEND_ITEMS[1].color,
+	high: LEGEND_ITEMS[2].color,
+	max: LEGEND_ITEMS[3].color,
 } as const;
+
+// Static MapLibre expression — colors are known at build time, no need to scan features
+const COLOR_EXPRESSION = [
+	"match",
+	["get", "fillColor"],
+	COLOR_STEPS.low,
+	COLOR_STEPS.low,
+	COLOR_STEPS.medium,
+	COLOR_STEPS.medium,
+	COLOR_STEPS.high,
+	COLOR_STEPS.high,
+	COLOR_STEPS.max,
+	COLOR_STEPS.max,
+	"transparent",
+] as unknown as MapLibreGL.ExpressionSpecification;
+
+const MAP_STYLES = {
+	light:
+		"https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json",
+	dark: "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json",
+} as const;
+
+const MAP_CENTER: [number, number] = [10, 30];
 
 function getColorForCount(count: number): string {
 	if (count <= 0) return COLOR_STEPS.none;
@@ -73,22 +103,6 @@ function buildGeoJson(data: AdminDashboardMetrics["usersByCountry"]) {
 	return geojson;
 }
 
-function buildColorExpression(
-	geojson: ReturnType<typeof buildGeoJson>,
-): MapLibreGL.ExpressionSpecification {
-	const expr: unknown[] = ["match", ["get", "fillColor"]];
-	const uniqueColors = new Set<string>();
-	for (const feat of geojson.features) {
-		const c = (feat.properties as Record<string, unknown>).fillColor as string;
-		if (c && c !== "transparent") uniqueColors.add(c);
-	}
-	for (const color of uniqueColors) {
-		expr.push(color, color);
-	}
-	expr.push("transparent");
-	return expr as unknown as MapLibreGL.ExpressionSpecification;
-}
-
 function ChoroplethLayer({
 	data,
 }: {
@@ -100,15 +114,9 @@ function ChoroplethLayer({
 	mapRef.current = map;
 
 	const geojson = useMemo(() => buildGeoJson(data), [data]);
-	const colorExpression = useMemo(
-		() => buildColorExpression(geojson),
-		[geojson],
-	);
 
 	const geojsonRef = useRef(geojson);
 	geojsonRef.current = geojson;
-	const colorExpressionRef = useRef(colorExpression);
-	colorExpressionRef.current = colorExpression;
 
 	// Mount: add source, layers, and event handlers
 	useEffect(() => {
@@ -124,7 +132,7 @@ function ChoroplethLayer({
 			type: "fill",
 			source: SOURCE_ID,
 			paint: {
-				"fill-color": colorExpressionRef.current,
+				"fill-color": COLOR_EXPRESSION,
 				"fill-opacity": 0.7,
 			},
 		});
@@ -134,8 +142,8 @@ function ChoroplethLayer({
 			type: "line",
 			source: SOURCE_ID,
 			paint: {
-				"line-color": "#94a3b8",
-				"line-width": 0.5,
+				"line-color": "#64748b",
+				"line-width": 0.8,
 			},
 		});
 
@@ -210,22 +218,36 @@ function ChoroplethLayer({
 		};
 	}, [isLoaded, map]);
 
-	// Update source data and paint when data changes
+	// Update source data when data changes (paint uses static COLOR_EXPRESSION)
 	useEffect(() => {
 		if (!isLoaded || !map) return;
 
 		const source = map.getSource(SOURCE_ID) as MapLibreGL.GeoJSONSource;
 		if (source) {
 			source.setData(geojson as GeoJSON.FeatureCollection);
-
-			if (map.getLayer(FILL_LAYER_ID)) {
-				map.setPaintProperty(FILL_LAYER_ID, "fill-color", colorExpression);
-			}
 		}
-	}, [isLoaded, map, geojson, colorExpression]);
+	}, [isLoaded, map, geojson]);
 
 	return null;
 }
+
+// Static JSX hoisted to module level (rendering-hoist-jsx)
+const mapLegend = (
+	<div className="absolute bottom-2 left-2 z-10 rounded-md border bg-background/80 p-2 text-xs backdrop-blur-sm">
+		<div className="mb-1 font-medium">Users</div>
+		<div className="flex flex-col gap-0.5">
+			{LEGEND_ITEMS.map(({ color, label }) => (
+				<div key={label} className="flex items-center gap-1.5">
+					<div
+						className="size-3 rounded-sm border border-border/50"
+						style={{ backgroundColor: color }}
+					/>
+					<span>{label}</span>
+				</div>
+			))}
+		</div>
+	</div>
+);
 
 export function UserCountryMap({ data }: UserCountryMapProps) {
 	if (!data) {
@@ -263,16 +285,10 @@ export function UserCountryMap({ data }: UserCountryMapProps) {
 			</CardHeader>
 			<CardContent>
 				<div className="h-[300px] md:h-[400px]">
-					<MapView
-						center={[10, 30]}
-						zoom={1.5}
-						styles={{
-							light: "https://tiles.openfreemap.org/styles/bright",
-							dark: "https://tiles.openfreemap.org/styles/dark",
-						}}
-					>
+					<MapView center={MAP_CENTER} zoom={1.5} styles={MAP_STYLES}>
 						<MapControls showZoom showFullscreen position="bottom-right" />
 						<ChoroplethLayer data={data} />
+						{mapLegend}
 					</MapView>
 				</div>
 			</CardContent>
