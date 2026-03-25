@@ -18,7 +18,7 @@ const reviewDecisionEnum = z.enum([
 const submitReviewSchema = z.object({
 	assignmentId: z.uuid(),
 	decision: reviewDecisionEnum,
-	comments: z.string().min(50, "Comments must be at least 50 characters"),
+	comments: z.string(),
 	privateNotes: z.string().optional(),
 	scores: z.record(z.string(), z.number().int().min(1).max(5)).optional(),
 	confidenceLevel: z.number().int().min(1).max(5).optional(),

@@ -155,7 +155,7 @@ export function ReviewForm({
 		scoringCriteria.length === 0 ||
 		scoringCriteria.every((c) => (values.scores[c.name] ?? 0) > 0);
 	const hasConfidence = !enableConfidenceLevel || values.confidenceLevel > 0;
-	const hasComments = values.comments.length >= 50;
+	const hasComments = true;
 
 	const allComplete = hasDecision && hasScores && hasConfidence && hasComments;
 
@@ -514,7 +514,6 @@ export function ReviewForm({
 											rows={10}
 											placeholder="Provide detailed feedback on the submission's strengths, weaknesses, and suggestions for improvement..."
 											className="text-foreground"
-											charCount={{ min: 50 }}
 											description="These comments will be visible to the authors"
 										/>
 									)}

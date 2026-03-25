@@ -23,7 +23,7 @@ export function createReviewSchema(options: ReviewSchemaOptions) {
 		confidenceLevel: options.enableConfidenceLevel
 			? z.number().min(1, "Confidence level is required").max(5)
 			: z.number(),
-		comments: z.string().min(50, "Comments must be at least 50 characters"),
+		comments: z.string(),
 		privateNotes: z.string(),
 	});
 }
