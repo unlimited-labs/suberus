@@ -187,6 +187,18 @@ export async function createNewSubmission(
 				submissionUrl: `${env.APP_BASE_URL}/submissions/${submission.id}`,
 			});
 		}
+		// Notify admin about new submission
+		const contactEmail = await getSetting("CONTACT_EMAIL");
+		if (contactEmail) {
+			const allAuthors = data.authors
+				.map((a) => `${a.firstName} ${a.lastName}`)
+				.join(", ");
+			void sendEmail("NEW_SUBMISSION_NOTIFY", contactEmail, {
+				submissionTitle: data.title,
+				authors: allAuthors,
+				submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${submission.id}`,
+			});
+		}
 	}
 
 	logger.info(
@@ -821,6 +833,24 @@ export async function submitDraft(
 			authorName: `${presenter.firstName} ${presenter.lastName}`,
 			submissionTitle: submission.title,
 			submissionUrl: `${env.APP_BASE_URL}/submissions/${submissionId}`,
+		});
+	}
+
+	// Notify admin about new submission
+	const contactEmail = await getSetting("CONTACT_EMAIL");
+	if (contactEmail) {
+		const allAuthors = await prisma.submissionAuthor.findMany({
+			where: { submissionId },
+			orderBy: { orderIndex: "asc" },
+			select: { firstName: true, lastName: true },
+		});
+		const authorsStr = allAuthors
+			.map((a) => `${a.firstName} ${a.lastName}`)
+			.join(", ");
+		void sendEmail("NEW_SUBMISSION_NOTIFY", contactEmail, {
+			submissionTitle: submission.title,
+			authors: authorsStr,
+			submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${submissionId}`,
 		});
 	}
 

@@ -44,6 +44,8 @@ const eventTypeLabels: Record<EmailEventType, string> = {
 	EMAIL_VERIFICATION: "Email Verification",
 	INVITATION: "Invitation",
 	DECISION_OVERRIDDEN: "Decision Overridden",
+	NEW_REGISTRATION_NOTIFY: "New Registration (Admin)",
+	NEW_SUBMISSION_NOTIFY: "New Submission (Admin)",
 };
 
 /** Map Prisma EmailTemplate to UI shape */

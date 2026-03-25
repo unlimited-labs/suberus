@@ -63,3 +63,6 @@ export const RESET_PASSWORD_USER: TestUserData = {
 }
 
 export const DEFAULT_PASSWORD = "testpass123"
+
+/** Contact email configured in Basic Information — receives admin notifications */
+export const CONTACT_EMAIL = "contact@e2e.local"

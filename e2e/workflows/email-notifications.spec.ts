@@ -6,7 +6,7 @@ import {
 } from "../helpers/test-db";
 import { SubmissionStatus } from "../../src/generated/prisma/enums";
 import { clearMailpitForAddress, waitForEmail, getMailpitMessage } from "../helpers/mailpit";
-import { TEST_USER, ADMIN_USER, REVIEWER_USER } from "../helpers/test-users";
+import { TEST_USER, ADMIN_USER, REVIEWER_USER, CONTACT_EMAIL } from "../helpers/test-users";
 import { loginAs } from "../helpers/auth";
 
 async function addKeyword(page: Page, keyword: string) {
@@ -243,5 +243,167 @@ test.describe("Workflow Emails", () => {
 		// Assert
 		const email = await waitForEmail(TEST_USER.email, "Submission Decision", 30000);
 		expect(email).not.toBeNull();
+	});
+});
+
+test.describe("Admin Notification Emails", () => {
+	test("admin notified on new submission", async ({ page, testRun }) => {
+		test.slow();
+		// Arrange
+		await clearMailpitForAddress(CONTACT_EMAIL);
+		const submissionTitle = `${testRun.testRunId}_Admin Notify Test`;
+		await loginAs(page, TEST_USER, { clearCookies: true });
+		await page.goto("/submissions/new");
+		await page.getByLabel("Title").waitFor({ state: "visible", timeout: 30000 });
+
+		// Act
+		await page.getByRole("button", { name: "Oral Presentation" }).click();
+		const authorCard = page.locator('[data-testid="author-card-0"]');
+		await expect(authorCard.getByLabel("First name")).not.toBeEmpty({ timeout: 15000 });
+
+		await page.getByLabel("Title").fill(submissionTitle);
+		await page.getByLabel("Abstract").fill(
+			"This is a comprehensive test submission for admin notification testing. " +
+				"The purpose is to validate that admin receives an email when a new submission is created. " +
+				"This abstract discusses methodology and results of the testing approach in detail. " +
+				"The testing framework ensures all components function as expected in production. " +
+				"Additional context is provided here to meet minimum character requirements. " +
+				"More content added here to ensure we pass all validation checks successfully. " +
+				"The admin notification system is a critical part of the submission workflow pipeline."
+		);
+
+		const affiliationInput = authorCard.getByLabel("Affiliation");
+		await affiliationInput.fill("Test University");
+		const affiliationOption = page.getByRole("option").filter({ hasText: "Test University" }).first();
+		await affiliationOption.waitFor({ state: "visible", timeout: 10000 });
+		await affiliationOption.click();
+		await expect(affiliationInput).toHaveValue("Test University", { timeout: 5000 });
+
+		await addKeyword(page, "admin-notify");
+		await addKeyword(page, "e2e-test");
+		await addKeyword(page, "notification");
+
+		await page.getByRole("button", { name: "Submit" }).click();
+		await expect(page.getByText("Submission created successfully")).toBeVisible({ timeout: 60000 });
+
+		// Assert — admin (contact email) receives notification
+		const email = await waitForEmail(CONTACT_EMAIL, "New Submission", 45000);
+		expect(email).not.toBeNull();
+
+		const emailDetails = await getMailpitMessage(email!.ID);
+		expect(emailDetails).not.toBeNull();
+		expect(emailDetails!.Text).toContain(submissionTitle);
+		expect(emailDetails!.Text).toContain("Test User");
+		expect(emailDetails!.Text).toMatch(/\/admin\/submissions\/[a-f0-9-]+/);
+	});
+
+	test("admin NOT notified on draft save", async ({ page, testRun }) => {
+		test.slow();
+		// Arrange
+		await clearMailpitForAddress(CONTACT_EMAIL);
+		const submissionTitle = `${testRun.testRunId}_Admin Draft No Notify`;
+		await loginAs(page, TEST_USER, { clearCookies: true });
+		await page.goto("/submissions/new");
+		await page.getByLabel("Title").waitFor({ state: "visible", timeout: 30000 });
+
+		// Act — save as draft
+		await page.getByRole("button", { name: "Oral Presentation" }).click();
+		const authorCard = page.locator('[data-testid="author-card-0"]');
+		await expect(authorCard.getByLabel("First name")).not.toBeEmpty({ timeout: 15000 });
+
+		await page.getByLabel("Title").fill(submissionTitle);
+		await page.getByLabel("Abstract").fill(
+			"This is a comprehensive test submission for draft admin notification testing. " +
+				"The purpose is to validate that drafts do NOT send admin notifications at all. " +
+				"This abstract discusses methodology and results of the testing approach in detail. " +
+				"The testing framework ensures all components function as expected in production. " +
+				"Additional context is provided here to meet minimum character requirements. " +
+				"More content added here to ensure we pass all validation checks successfully. " +
+				"The draft save mechanism should silently persist without triggering admin notifications."
+		);
+
+		const affiliationInput = authorCard.getByLabel("Affiliation");
+		await affiliationInput.fill("Test University");
+		const affiliationOption = page.getByRole("option").filter({ hasText: "Test University" }).first();
+		await affiliationOption.waitFor({ state: "visible", timeout: 10000 });
+		await affiliationOption.click();
+		await expect(affiliationInput).toHaveValue("Test University", { timeout: 5000 });
+
+		await addKeyword(page, "admin-draft");
+		await addKeyword(page, "no-notify");
+		await addKeyword(page, "e2e-draft");
+
+		await page.getByRole("button", { name: "Save Draft" }).click();
+		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText("Draft", { timeout: 60000 });
+
+		// Assert — no admin notification for drafts
+		await page.waitForTimeout(3000);
+		const email = await waitForEmail(CONTACT_EMAIL, submissionTitle, 3000);
+		expect(email).toBeNull();
+	});
+
+	test("admin notified on new registration", async ({ page, testRun }) => {
+		test.slow();
+		// Arrange
+		await clearMailpitForAddress(CONTACT_EMAIL);
+		const uniqueEmail = `admin-notify-${testRun.testRunId}@e2e.local`;
+
+		// Act — register a new user
+		await page.goto("/register");
+		await page.getByLabel("E-mail *").fill(uniqueEmail);
+		await page.getByLabel("Password *", { exact: true }).fill("ValidPassword123!");
+		await page.getByLabel("Confirm Password *").fill("ValidPassword123!");
+		await page.getByLabel("First name *").fill("NewReg");
+		await page.getByLabel("Last name *").fill("TestUser");
+
+		const affiliationInput = page.getByLabel("Affiliation");
+		const option = page.getByRole("option").filter({ hasText: "Test University" }).first();
+		await expect(async () => {
+			await affiliationInput.fill("Test University");
+			await expect(option).toBeVisible();
+			await option.click();
+			await expect(affiliationInput).toHaveValue("Test University");
+		}).toPass({ timeout: 15000 });
+
+		await page.getByRole("button", { name: "Continue" }).click();
+
+		// Step 2 — country
+		await page.getByText("Country *").waitFor({ state: "visible", timeout: 10000 });
+		const countryField = page.locator('[data-slot="field"]').filter({ has: page.getByText("Country *", { exact: true }) });
+		const combobox = countryField.getByRole("combobox");
+		await combobox.click();
+		const searchInput = page.getByPlaceholder("Search country...");
+		try {
+			await searchInput.waitFor({ state: "visible", timeout: 5000 });
+		} catch {
+			await combobox.click();
+			await searchInput.waitFor({ state: "visible", timeout: 10000 });
+		}
+		await searchInput.fill("Poland");
+		await page.getByRole("option", { name: "Poland" }).click();
+		await page.getByLabel("Billing details (organization)").fill("Test Org");
+		await page.getByRole("button", { name: "Continue" }).click();
+
+		// Step 3 — terms
+		const termsCheckbox = page.getByLabel(/I agree to the/);
+		try {
+			await termsCheckbox.waitFor({ state: "visible", timeout: 5000 });
+		} catch {
+			await page.getByRole("button", { name: "Continue" }).click();
+			await termsCheckbox.waitFor({ state: "visible", timeout: 10000 });
+		}
+		await termsCheckbox.check();
+		await page.getByRole("button", { name: "Create account" }).click();
+		await expect(page).toHaveURL("/", { timeout: 15000 });
+
+		// Assert — admin receives registration notification
+		const email = await waitForEmail(CONTACT_EMAIL, "New Registration", 30000);
+		expect(email).not.toBeNull();
+
+		const emailDetails = await getMailpitMessage(email!.ID);
+		expect(emailDetails).not.toBeNull();
+		expect(emailDetails!.Text).toContain("NewReg");
+		expect(emailDetails!.Text).toContain("TestUser");
+		expect(emailDetails!.Text).toContain("Test University");
 	});
 });

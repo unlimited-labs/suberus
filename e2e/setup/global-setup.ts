@@ -511,6 +511,15 @@ async function globalSetup() {
 
 		console.log("✅ Fee types and currency seeded");
 
+		// Contact email for admin notifications
+		await prisma.appSetting.upsert({
+			where: { key: "CONTACT_EMAIL" },
+			update: { value: "contact@e2e.local" },
+			create: { key: "CONTACT_EMAIL", value: "contact@e2e.local" },
+		});
+
+		console.log("✅ Contact email seeded");
+
 	} catch (error) {
 		console.error("❌ Global setup failed:", error);
 		throw error;

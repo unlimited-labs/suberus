@@ -134,11 +134,29 @@ export const auth = betterAuth({
 						userId: user.id,
 						detail: activityDetail("USER_REGISTERED", { email: user.email }),
 					})
-					const extUser = user as typeof user & { firstName?: string }
+					const extUser = user as typeof user & { firstName?: string; affiliationId?: string }
 					void sendEmail("ACCOUNT_CREATED", user.email, {
 						firstName: extUser.firstName ?? user.email,
 						conferenceName: await getSetting("CONFERENCE_NAME"),
 					})
+					// Notify admin about new registration
+					const contactEmail = await getSetting("CONTACT_EMAIL")
+					if (contactEmail) {
+						let affiliationName = ""
+						if (extUser.affiliationId) {
+							const { prisma: dbClient } = await import("@/db.server")
+							const affiliation = await dbClient.affiliation.findUnique({
+								where: { id: extUser.affiliationId },
+								select: { name: true },
+							})
+							affiliationName = affiliation?.name ?? ""
+						}
+						void sendEmail("NEW_REGISTRATION_NOTIFY", contactEmail, {
+							firstName: extUser.firstName ?? "",
+							lastName: user.name ?? "",
+							affiliation: affiliationName,
+						})
+					}
 				},
 			},
 			update: {

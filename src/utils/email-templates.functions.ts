@@ -29,6 +29,8 @@ const emailEventTypeEnum = z.enum([
 	"PASSWORD_RESET",
 	"EMAIL_VERIFICATION",
 	"INVITATION",
+	"NEW_REGISTRATION_NOTIFY",
+	"NEW_SUBMISSION_NOTIFY",
 ]);
 
 export const emailTemplatesQueryOptions = () =>
