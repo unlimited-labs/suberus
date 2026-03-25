@@ -81,6 +81,27 @@ test.describe("Admin Settings - Submission Types", () => {
 		).toBeVisible({ timeout: 5000 })
 	})
 
+	for (const typeName of ["Oral Presentation", "Poster", "Full Paper"] as const) {
+		test(`Save button visible in FILE format for ${typeName}`, async ({ adminSettingsPage, page }) => {
+			// Arrange
+			await adminSettingsPage.expandSubmissionType(typeName)
+
+			// Act — switch to FILE if not already
+			const formatSelect = adminSettingsPage.getContentFormatSelect()
+			const currentFormat = await formatSelect.textContent()
+			if (currentFormat?.includes("Text")) {
+				await adminSettingsPage.selectContentFormat("File Upload")
+				await expect(page.getByText("Allowed file extensions")).toBeVisible()
+			}
+
+			// Assert — Save button must be visible (not clipped by parent overflow)
+			const saveButton = page.getByRole("button", { name: "Save" })
+			await saveButton.scrollIntoViewIfNeeded()
+			await expect(saveButton).toBeVisible()
+			await expect(saveButton).toBeInViewport()
+		})
+	}
+
 	test("validates FILE format requires at least one extension", async ({ adminSettingsPage, page }) => {
 		// Arrange
 		await adminSettingsPage.expandSubmissionType("Full Paper")
