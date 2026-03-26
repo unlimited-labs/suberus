@@ -24,12 +24,9 @@ export const submissionMachine = setup({
 				context.assignedReviewersCount >= context.requiredReviewers
 			);
 		},
-		shouldAutoTransition: ({ context }) => {
-			// WORKFLOW.md: when requiresEditorDecision=false, auto-transition
-			// always happens regardless of autoTransitionAfterReviews setting
-			return (
-				context.autoTransitionAfterReviews || !context.requiresEditorDecision
-			);
+		shouldAutoTransition: () => {
+			// Auto-transition always happens when all reviews are complete
+			return true;
 		},
 		requiresEditorDecision: ({ context }) => {
 			return context.requiresEditorDecision;
@@ -52,7 +49,6 @@ export const submissionMachine = setup({
 		submissionType: "ABSTRACT",
 		currentRound: 1,
 		requiresEditorDecision: false,
-		autoTransitionAfterReviews: true,
 		requiredReviewers: 1,
 		assignedReviewersCount: 0,
 		completedReviewsCount: 0,

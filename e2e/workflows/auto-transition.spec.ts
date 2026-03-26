@@ -4,7 +4,6 @@ import {
 	createSubmissionWithAssignment,
 	getPrisma,
 	getTestUserIds,
-	setAppSetting,
 } from "../helpers/test-db";
 import {
 	AssignmentStatus,
@@ -96,7 +95,7 @@ test.describe("Auto-transition After Reviews", () => {
 	}) => {
 		test.slow();
 
-		// Arrange - POSTER: requiredReviewers=1, autoTransition=true, requiresEditorDecision=false
+		// Arrange - POSTER: requiredReviewers=1, requiresEditorDecision=false
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Auto-Transition Poster",
@@ -294,44 +293,35 @@ test.describe("Editor Decision from REVIEWS_COMPLETE", () => {
 });
 
 test.describe("Auto-transition config edge cases", () => {
-	test("requiresEditorDecision=false overrides autoTransitionAfterReviews=false", async ({
+	test("requiresEditorDecision=true auto-advances to AWAITING_DECISION", async ({
 		testRun,
 		cleanup,
 	}) => {
-		// WORKFLOW.md rule: when requiresEditorDecision=false, auto-transition
-		// always happens regardless of autoTransitionAfterReviews setting
 		const db = getPrisma();
-		const originalConfig = await db.appSetting.findUnique({
-			where: { key: "SUBMISSION_TYPE_POSTER" },
+		const { adminUserId, reviewerUserId, editorUserId } =
+			await getTestUserIds();
+
+		const { id } = await createSubmission({
+			testRunId: testRun.testRunId,
+			title: "Auto AWAITING_DECISION Test",
+			type: SubmissionType.ABSTRACT,
+			status: SubmissionStatus.UNDER_REVIEW,
 		});
+		cleanup.track(id);
 
-		await setAppSetting("SUBMISSION_TYPE_POSTER", {
-			...(originalConfig?.value as object),
-			autoTransitionAfterReviews: false,
-			requiresEditorDecision: false,
-		});
-
-		try {
-			const { adminUserId, reviewerUserId } = await getTestUserIds();
-
-			const { id } = await createSubmission({
-				testRunId: testRun.testRunId,
-				title: "Override Guard Test",
-				type: SubmissionType.POSTER,
-				status: SubmissionStatus.UNDER_REVIEW,
-			});
-			cleanup.track(id);
-
+		// Create 2 completed assignments (requiredReviewers=2 for ORAL_PRESENTATION)
+		const reviewerIds = [reviewerUserId, editorUserId];
+		for (let i = 0; i < 2; i++) {
 			const assignment = await db.reviewAssignment.create({
 				data: {
 					submissionId: id,
-					reviewerId: reviewerUserId,
+					reviewerId: reviewerIds[i],
 					round: 1,
 					status: AssignmentStatus.COMPLETED,
 					completedAt: new Date(),
 					deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
 					assignedBy: adminUserId,
-					orderIndex: 0,
+					orderIndex: i,
 				},
 			});
 
@@ -339,112 +329,23 @@ test.describe("Auto-transition config edge cases", () => {
 				data: {
 					assignmentId: assignment.id,
 					submissionId: id,
-					reviewerId: reviewerUserId,
+					reviewerId: reviewerIds[i],
 					round: 1,
 					decision: ReviewDecision.ACCEPT,
-					comments:
-						"Test review comment for auto-transition override guard test.",
+					comments: "Test review for auto AWAITING_DECISION test.",
 				},
 			});
-
-			const { checkAndTriggerReviewCompletion } = await import(
-				"../../src/utils/workflow.server"
-			);
-			const result = await checkAndTriggerReviewCompletion(
-				id,
-				reviewerUserId,
-			);
-
-			expect(result).not.toBeNull();
-			expect(result?.success).toBe(true);
-
-			const submission = await db.submission.findUnique({
-				where: { id },
-				select: { status: true },
-			});
-			expect(submission?.status).toBe(SubmissionStatus.ACCEPTED);
-		} finally {
-			if (originalConfig) {
-				await setAppSetting(
-					"SUBMISSION_TYPE_POSTER",
-					originalConfig.value as object,
-				);
-			}
 		}
-	});
 
-	test("autoTransitionAfterReviews=true + requiresEditorDecision=true auto-advances to AWAITING_DECISION", async ({
-		testRun,
-		cleanup,
-	}) => {
-		const db = getPrisma();
-		const originalConfig = await db.appSetting.findUnique({
-			where: { key: "SUBMISSION_TYPE_ORAL_PRESENTATION" },
+		const { checkAndTriggerReviewCompletion } = await import(
+			"../../src/utils/workflow.server"
+		);
+		await checkAndTriggerReviewCompletion(id, reviewerUserId);
+
+		const submission = await db.submission.findUnique({
+			where: { id },
+			select: { status: true },
 		});
-
-		await setAppSetting("SUBMISSION_TYPE_ORAL_PRESENTATION", {
-			...(originalConfig?.value as object),
-			autoTransitionAfterReviews: true,
-			requiresEditorDecision: true,
-		});
-
-		try {
-			const { adminUserId, reviewerUserId, editorUserId } =
-				await getTestUserIds();
-
-			const { id } = await createSubmission({
-				testRunId: testRun.testRunId,
-				title: "Auto AWAITING_DECISION Test",
-				type: SubmissionType.ABSTRACT,
-				status: SubmissionStatus.UNDER_REVIEW,
-			});
-			cleanup.track(id);
-
-			// Create 2 completed assignments (requiredReviewers=2 for ORAL_PRESENTATION)
-			const reviewerIds = [reviewerUserId, editorUserId];
-			for (let i = 0; i < 2; i++) {
-				const assignment = await db.reviewAssignment.create({
-					data: {
-						submissionId: id,
-						reviewerId: reviewerIds[i],
-						round: 1,
-						status: AssignmentStatus.COMPLETED,
-						completedAt: new Date(),
-						deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-						assignedBy: adminUserId,
-						orderIndex: i,
-					},
-				});
-
-				await db.review.create({
-					data: {
-						assignmentId: assignment.id,
-						submissionId: id,
-						reviewerId: reviewerIds[i],
-						round: 1,
-						decision: ReviewDecision.ACCEPT,
-						comments: "Test review for auto AWAITING_DECISION test.",
-					},
-				});
-			}
-
-			const { checkAndTriggerReviewCompletion } = await import(
-				"../../src/utils/workflow.server"
-			);
-			await checkAndTriggerReviewCompletion(id, reviewerUserId);
-
-			const submission = await db.submission.findUnique({
-				where: { id },
-				select: { status: true },
-			});
-			expect(submission?.status).toBe(SubmissionStatus.AWAITING_DECISION);
-		} finally {
-			if (originalConfig) {
-				await setAppSetting(
-					"SUBMISSION_TYPE_ORAL_PRESENTATION",
-					originalConfig.value as object,
-				);
-			}
-		}
+		expect(submission?.status).toBe(SubmissionStatus.AWAITING_DECISION);
 	});
 });

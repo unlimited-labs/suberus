@@ -7,7 +7,6 @@ import {
 	confirmConditionsMetFn,
 	editorOverrideFn,
 	transitionToAwaitingDecisionFn,
-	transitionToReviewsCompleteFn,
 } from "@/utils/workflow.functions";
 
 export function useSubmissionTransitions(submissionId: string) {
@@ -44,12 +43,6 @@ export function useSubmissionTransitions(submissionId: string) {
 		}
 	}
 
-	const handleTransitionToReviewsComplete = () =>
-		runTransition(
-			() => transitionToReviewsCompleteFn({ data: { submissionId } }),
-			"Transitioned to Reviews Complete",
-		);
-
 	const handleTransitionToAwaitingDecision = () =>
 		runTransition(
 			() => transitionToAwaitingDecisionFn({ data: { submissionId } }),
@@ -76,7 +69,6 @@ export function useSubmissionTransitions(submissionId: string) {
 	return {
 		isTransitioning,
 		invalidateSubmission,
-		handleTransitionToReviewsComplete,
 		handleTransitionToAwaitingDecision,
 		handleEditorOverride,
 		handleConfirmConditionsMet,

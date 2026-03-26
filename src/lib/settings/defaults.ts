@@ -9,7 +9,6 @@ export const DEFAULT_ORAL_PRESENTATION_CONFIG: SubmissionTypeConfig = {
 	reviewMode: "SINGLE_BLIND",
 	reviewDeadlineDays: 14,
 	requiresEditorDecision: false,
-	autoTransitionAfterReviews: true,
 	allowRevisions: true,
 	enableScoring: false,
 	scoringCriteria: [],
@@ -27,7 +26,6 @@ export const DEFAULT_POSTER_CONFIG: SubmissionTypeConfig = {
 	reviewMode: "SINGLE_BLIND",
 	reviewDeadlineDays: 14,
 	requiresEditorDecision: false,
-	autoTransitionAfterReviews: true,
 	allowRevisions: true,
 	enableScoring: false,
 	scoringCriteria: [],
@@ -45,7 +43,6 @@ export const DEFAULT_FULL_PAPER_CONFIG: SubmissionTypeConfig = {
 	reviewMode: "DOUBLE_BLIND",
 	reviewDeadlineDays: 21,
 	requiresEditorDecision: true,
-	autoTransitionAfterReviews: false,
 	allowRevisions: true,
 	enableScoring: true,
 	scoringCriteria: [

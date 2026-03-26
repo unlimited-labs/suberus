@@ -56,7 +56,6 @@ stateDiagram-v2
     note right of UnderReview
         requiredReviewers: 1
         requiresEditorDecision: false
-        autoTransitionAfterReviews: true
         Auto-applies reviewer decision
     end note
 ```
@@ -104,8 +103,7 @@ stateDiagram-v2
     note right of AwaitingDecision
         requiredReviewers: 2
         requiresEditorDecision: true
-        autoTransitionAfterReviews: false
-        Editor has full control
+        Editor makes final decision
     end note
 ```
 
@@ -154,12 +152,7 @@ flowchart TD
 
     UnderReview --> ReviewWait{All reviews complete?}
     ReviewWait -->|No| UnderReview
-    ReviewWait -->|Yes| TransitionCheck{autoTransition?}
-
-    TransitionCheck -->|Yes Auto| ReviewsComplete[REVIEWS_COMPLETE]
-    TransitionCheck -->|No Manual| UnderReview
-
-    UnderReview -->|Editor transitions manually| ReviewsComplete
+    ReviewWait -->|Yes| ReviewsComplete[REVIEWS_COMPLETE]
 
     ReviewsComplete --> EditorCheck{Requires Editor Decision?}
 
@@ -226,12 +219,8 @@ sequenceDiagram
 
     Reviewer2->>System: Submit review (REVISE)
     System->>System: assignment2 = COMPLETED
-    Note right of System: Paper with autoTransition=false<br/>Status stays UNDER_REVIEW
-
-    Editor->>System: View all reviews
-    Editor->>System: Transition to REVIEWS_COMPLETE
+    Note right of System: All reviews complete → auto-transition
     System->>System: status = REVIEWS_COMPLETE
-    Editor->>System: Transition to AWAITING_DECISION
     System->>System: status = AWAITING_DECISION
     Editor->>System: Decision: REVISE_AND_RESUBMIT
     System->>System: status = REVISE_REQUIRED
@@ -541,18 +530,14 @@ When review submitted:
 Config: requiresEditorDecision = true
 
 When all reviews submitted:
-  if (config.autoTransitionAfterReviews || !config.requiresEditorDecision) {
-    submissionStatus = 'REVIEWS_COMPLETE'
+  submissionStatus = 'REVIEWS_COMPLETE'
 
-    if (!config.requiresEditorDecision) {
-      // Auto-apply reviewer decision (abstracts/posters)
-      // → ACCEPTED / REJECTED / REVISE_REQUIRED / CONDITIONALLY_ACCEPTED
-      applyReviewerDecision(review.decision)
-    } else if (config.requiresEditorDecision) {
-      submissionStatus = 'AWAITING_DECISION'
-    }
+  if (!config.requiresEditorDecision) {
+    // Auto-apply reviewer decision (abstracts/posters)
+    // → ACCEPTED / REJECTED / REVISE_REQUIRED / CONDITIONALLY_ACCEPTED
+    applyReviewerDecision(review.decision)
   } else {
-    // Status stays UNDER_REVIEW - editor must manually transition
+    submissionStatus = 'AWAITING_DECISION'
   }
 
   // Editor can also decide directly from REVIEWS_COMPLETE (shortcut)
@@ -856,7 +841,6 @@ Each entry includes: event type, target user/submission (optional), performer (o
 
   reviewDeadline: 14, // days
 
-  autoTransitionAfterReviews: true, // Auto-apply reviewer decision
   enableScoring: false,
   scoringCriteria: [],
   reviewMode: 'SINGLE_BLIND' // Authors don't see reviewers
@@ -874,7 +858,6 @@ Each entry includes: event type, target user/submission (optional), performer (o
 
   reviewDeadline: 21, // days
 
-  autoTransitionAfterReviews: false, // Editor manually reviews before transition
   enableScoring: true,
   scoringCriteria: [
     { name: "Originality", description: "Contribution to the field" },
@@ -899,7 +882,6 @@ POSTER uses identical workflow to ABSTRACT (single reviewer, reviewer decides).
 
   reviewDeadline: 14, // days
 
-  autoTransitionAfterReviews: true, // Auto-apply reviewer decision
   enableScoring: false,
   scoringCriteria: [],
   reviewMode: 'SINGLE_BLIND' // Authors don't see reviewers
@@ -956,27 +938,15 @@ Permissions: Only EDITOR and ADMIN can desk accept
 Note: EditorDecision.letterToAuthor should explain acceptance reason
 ```
 
-### Auto vs Manual Transition After Reviews
+### Auto-Transition After Reviews
 
 ```
-Config: autoTransitionAfterReviews (per submission type)
+When all reviews are submitted, system always auto-transitions to REVIEWS_COMPLETE.
 
-When TRUE (Automatic):
-- Last review submitted → System auto-transitions to REVIEWS_COMPLETE
-- For papers: Then auto-transitions to AWAITING_DECISION
-- For abstracts: Applies reviewer decision immediately
-
-When FALSE (Manual):
-- All reviews submitted → Status stays UNDER_REVIEW
-- Editor must manually transition to REVIEWS_COMPLETE
-- Allows editor to review all submissions before proceeding
-- Useful for papers requiring editorial oversight
-
-Note: When requiresEditorDecision=false, auto-transition always happens regardless of autoTransitionAfterReviews setting (reviewer decision must be applied).
-
-Example use cases:
-- Abstracts: autoTransitionAfterReviews = true (fast, automated)
-- Papers: autoTransitionAfterReviews = false (editor control)
+- requiresEditorDecision=false: Reviewer decision applied automatically
+  (REVIEWS_COMPLETE → terminal state)
+- requiresEditorDecision=true: Auto-advances to AWAITING_DECISION,
+  editor makes final decision
 ```
 
 ### Reviewer Withdraws Mid-Review

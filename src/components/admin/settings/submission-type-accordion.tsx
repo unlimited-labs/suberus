@@ -142,7 +142,7 @@ export function SubmissionTypeAccordion({
 					<div className="flex items-center justify-between">
 						<div className="space-y-0.5">
 							<Label>Active</Label>
-							<p className="text-sm text-muted-foreground">
+							<p className="text-xs italic text-muted-foreground/70">
 								Type available for selection when submitting
 							</p>
 						</div>
@@ -156,7 +156,7 @@ export function SubmissionTypeAccordion({
 					<div className="space-y-3">
 						<div className="space-y-0.5">
 							<Label>Content Format</Label>
-							<p className="text-sm text-muted-foreground">
+							<p className="text-xs italic text-muted-foreground/70">
 								How authors provide their submission content
 							</p>
 						</div>
@@ -272,7 +272,7 @@ export function SubmissionTypeAccordion({
 						<div className="flex items-center justify-between">
 							<div className="space-y-0.5">
 								<Label>Requires editor decision</Label>
-								<p className="text-sm text-muted-foreground">
+								<p className="text-xs italic text-muted-foreground/70">
 									Editor makes the final accept/reject decision. When off, the
 									reviewer's recommendation is applied automatically.
 								</p>
@@ -284,25 +284,6 @@ export function SubmissionTypeAccordion({
 								}
 							/>
 						</div>
-						{config.requiresEditorDecision && (
-							<div className="flex items-center justify-between pl-0 sm:pl-4">
-								<div className="space-y-0.5">
-									<Label>Auto-advance after reviews</Label>
-									<p className="text-sm text-muted-foreground">
-										When all reviewers submit, automatically queue the
-										submission for editor decision. When off, submission stays
-										in review until editor advances it manually (e.g. to request
-										additional reviews first).
-									</p>
-								</div>
-								<Switch
-									checked={config.autoTransitionAfterReviews ?? true}
-									onCheckedChange={(checked) =>
-										handleChange("autoTransitionAfterReviews", checked)
-									}
-								/>
-							</div>
-						)}
 					</div>
 
 					{/* Revisions */}
@@ -310,7 +291,7 @@ export function SubmissionTypeAccordion({
 						<div className="flex items-center justify-between">
 							<div className="space-y-0.5">
 								<Label>Allow revisions</Label>
-								<p className="text-sm text-muted-foreground">
+								<p className="text-xs italic text-muted-foreground/70">
 									Authors can submit revised versions
 								</p>
 							</div>
@@ -328,7 +309,7 @@ export function SubmissionTypeAccordion({
 						<div className="flex items-center justify-between">
 							<div className="space-y-0.5">
 								<Label>Enable scoring</Label>
-								<p className="text-sm text-muted-foreground">
+								<p className="text-xs italic text-muted-foreground/70">
 									Reviewers score based on criteria
 								</p>
 							</div>
@@ -397,7 +378,7 @@ export function SubmissionTypeAccordion({
 							<Label htmlFor="enableConfidenceLevel">
 								Enable confidence level
 							</Label>
-							<p className="text-sm text-muted-foreground">
+							<p className="text-xs italic text-muted-foreground/70">
 								Reviewers rate their confidence (1-5) when submitting a review
 							</p>
 						</div>
@@ -416,7 +397,7 @@ export function SubmissionTypeAccordion({
 							<Label htmlFor="enableReviewAttachment">
 								Enable review attachment
 							</Label>
-							<p className="text-sm text-muted-foreground">
+							<p className="text-xs italic text-muted-foreground/70">
 								Reviewers can upload a PDF/DOCX file with their review
 							</p>
 						</div>
@@ -434,7 +415,7 @@ export function SubmissionTypeAccordion({
 						<div className="flex items-center justify-between">
 							<div className="space-y-0.5">
 								<Label>Enable track selection</Label>
-								<p className="text-sm text-muted-foreground">
+								<p className="text-xs italic text-muted-foreground/70">
 									Authors can select preferred track when submitting
 								</p>
 							</div>

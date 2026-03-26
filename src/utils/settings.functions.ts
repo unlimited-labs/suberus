@@ -27,7 +27,6 @@ const submissionTypeConfigSchema = z.object({
 	reviewMode: z.enum(["OPEN", "SINGLE_BLIND", "DOUBLE_BLIND"]),
 	reviewDeadlineDays: z.number().int().min(1).max(90),
 	requiresEditorDecision: z.boolean(),
-	autoTransitionAfterReviews: z.boolean(),
 	allowRevisions: z.boolean(),
 	enableScoring: z.boolean(),
 	scoringCriteria: z.array(

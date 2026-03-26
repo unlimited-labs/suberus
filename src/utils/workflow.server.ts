@@ -91,7 +91,6 @@ async function buildSubmissionContext(
 		submissionType: submission.type,
 		currentRound: submission.currentRound,
 		requiresEditorDecision: config.requiresEditorDecision,
-		autoTransitionAfterReviews: config.autoTransitionAfterReviews ?? true,
 		requiredReviewers: config.requiredReviewers,
 		assignedReviewersCount,
 		completedReviewsCount,
@@ -469,8 +468,8 @@ export async function checkAndTriggerReviewCompletion(
 		return null;
 	}
 
-	// Auto-transition if configured
-	if (config.autoTransitionAfterReviews || !config.requiresEditorDecision) {
+	// Auto-transition: always advance when all reviews complete
+	{
 		logger.info(
 			`[workflow] all reviews complete for submission ${submissionId}, auto-transitioning`,
 		);
@@ -583,8 +582,6 @@ export async function checkAndTriggerReviewCompletion(
 
 		return result;
 	}
-
-	return null;
 }
 
 /**

@@ -1,6 +1,5 @@
 import {
 	IconArrowLeft,
-	IconCalendar,
 	IconCheck,
 	IconDownload,
 	IconFile,
@@ -17,6 +16,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { ActivityHistoryEvent } from "@/components/admin/submissions/activity-history-event";
 import { AssignReviewerDialog } from "@/components/admin/submissions/assign-reviewer-dialog";
 import { ConfirmConditionsDialog } from "@/components/admin/submissions/confirm-conditions-dialog";
 import { DeskAcceptDialog } from "@/components/admin/submissions/desk-accept-dialog";
@@ -36,8 +36,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Timeline, TimelineItem } from "@/components/ui/timeline";
-import { useDateFormat } from "@/hooks/use-date-format";
+import { Timeline } from "@/components/ui/timeline";
 import { useSubmissionTransitions } from "@/hooks/use-submission-transitions";
 import {
 	assignmentStatusColors,
@@ -69,7 +68,6 @@ export const Route = createFileRoute("/_app/admin/_layout/submissions/$id")({
 
 function SubmissionDetailPage() {
 	const { id } = Route.useParams();
-	const { formatDateTime } = useDateFormat();
 
 	const { data } = useSuspenseQuery(editorSubmissionQueryOptions(id));
 
@@ -87,7 +85,6 @@ function SubmissionDetailPage() {
 	const {
 		isTransitioning,
 		invalidateSubmission,
-		handleTransitionToReviewsComplete,
 		handleTransitionToAwaitingDecision,
 		handleEditorOverride,
 		handleConfirmConditionsMet,
@@ -129,7 +126,7 @@ function SubmissionDetailPage() {
 		);
 	}
 
-	const { submission, authors, assignments, reviews, statusHistory } = data;
+	const { submission, authors, assignments, reviews, activityHistory } = data;
 
 	// Calculate review progress
 	const currentRoundAssignments = assignments.filter(
@@ -162,15 +159,6 @@ function SubmissionDetailPage() {
 
 	const canDeskAccept = submission.status === "SUBMITTED";
 	const canDeskReject = submission.status === "SUBMITTED";
-
-	const allReviewsComplete =
-		completedAssignments.length >= currentRoundAssignments.length &&
-		currentRoundAssignments.length >= config.requiredReviewers;
-
-	const canTransitionToReviewsComplete =
-		submission.status === "UNDER_REVIEW" &&
-		allReviewsComplete &&
-		!config.autoTransitionAfterReviews;
 
 	const canTransitionToAwaitingDecision =
 		submission.status === "REVIEWS_COMPLETE" && config.requiresEditorDecision;
@@ -251,19 +239,6 @@ function SubmissionDetailPage() {
 										>
 											<IconX className="size-4 mr-2" />
 											Desk Reject
-										</Button>
-									)}
-									{canTransitionToReviewsComplete && (
-										<Button
-											onClick={handleTransitionToReviewsComplete}
-											disabled={isTransitioning}
-										>
-											{isTransitioning ? (
-												<IconLoader2 className="size-4 mr-2 animate-spin" />
-											) : (
-												<IconCalendar className="size-4 mr-2" />
-											)}
-											Mark Reviews Complete
 										</Button>
 									)}
 									{canTransitionToAwaitingDecision && (
@@ -630,47 +605,17 @@ function SubmissionDetailPage() {
 								<CardHeader>
 									<CardTitle className="text-base flex items-center gap-2">
 										<IconHistory className="size-4" />
-										Status History
+										Activity History
 									</CardTitle>
 								</CardHeader>
 								<CardContent>
 									<Timeline>
-										{statusHistory.map((entry, index) => (
-											<TimelineItem key={index}>
-												<div className="flex flex-col gap-1">
-													<div className="flex items-center gap-2">
-														<Badge
-															variant={
-																statusVariants[
-																	entry.toStatus as keyof typeof statusVariants
-																] ?? "secondary"
-															}
-														>
-															{statusLabels[
-																entry.toStatus as keyof typeof statusLabels
-															] ?? entry.toStatus}
-														</Badge>
-														{entry.fromStatus && (
-															<span className="text-xs text-muted-foreground">
-																from{" "}
-																{statusLabels[
-																	entry.fromStatus as keyof typeof statusLabels
-																] ?? entry.fromStatus}
-															</span>
-														)}
-													</div>
-													{entry.reason && (
-														<p className="text-sm text-muted-foreground">
-															{entry.reason}
-														</p>
-													)}
-													<div className="text-xs text-muted-foreground">
-														{formatDateTime(new Date(entry.createdAt))}
-														{entry.triggeredByName &&
-															` by ${entry.triggeredByName}`}
-													</div>
-												</div>
-											</TimelineItem>
+										{activityHistory.map((entry, index) => (
+											<ActivityHistoryEvent
+												key={index}
+												entry={entry}
+												isLast={index === activityHistory.length - 1}
+											/>
 										))}
 									</Timeline>
 								</CardContent>

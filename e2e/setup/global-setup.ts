@@ -34,7 +34,7 @@ const SUBMISSION_TYPE_CONFIGS = {
 		reviewMode: "DOUBLE_BLIND",
 		reviewDeadlineDays: 14,
 		requiresEditorDecision: true,
-		autoTransitionAfterReviews: false,
+
 		allowRevisions: true,
 		enableScoring: true,
 		scoringCriteria: [
@@ -54,7 +54,7 @@ const SUBMISSION_TYPE_CONFIGS = {
 		reviewMode: "SINGLE_BLIND",
 		reviewDeadlineDays: 7,
 		requiresEditorDecision: false,
-		autoTransitionAfterReviews: true,
+
 		allowRevisions: false,
 		enableScoring: false,
 		scoringCriteria: [],
@@ -69,7 +69,7 @@ const SUBMISSION_TYPE_CONFIGS = {
 		reviewMode: "DOUBLE_BLIND",
 		reviewDeadlineDays: 21,
 		requiresEditorDecision: true,
-		autoTransitionAfterReviews: false,
+
 		allowRevisions: true,
 		enableScoring: true,
 		scoringCriteria: [
