@@ -580,6 +580,22 @@ function SubmissionDetailPage() {
 												)}
 											</div>
 
+											{review.attachment && (
+												<div className="border-t pt-3">
+													<p className="text-sm font-medium mb-1">Attachment</p>
+													<a
+														href={`/api/files/${review.attachment.id}`}
+														className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+													>
+														<IconDownload className="size-4" />
+														{review.attachment.originalName}
+														<span className="text-xs text-muted-foreground">
+															({formatFileSize(review.attachment.size)})
+														</span>
+													</a>
+												</div>
+											)}
+
 											{review.privateNotes && (
 												<div className="border-t pt-3">
 													<p className="text-sm font-medium mb-1 text-amber-600 dark:text-amber-400">

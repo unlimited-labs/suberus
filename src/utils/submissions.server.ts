@@ -245,6 +245,12 @@ export interface UserSubmissionReview {
 	reviewerName: string;
 	scores: Record<string, number> | null;
 	comments: string | null;
+	attachment: {
+		id: string;
+		fileName: string;
+		originalName: string;
+		size: number;
+	} | null;
 	createdAt: Date;
 }
 
@@ -450,9 +456,36 @@ export async function getSubmissionById(
 	];
 	const hideCurrentRound = activeReviewStatuses.includes(submission.status);
 
-	const reviews: UserSubmissionReview[] = submission.reviews
-		.filter((r) => !hideCurrentRound || r.round < submission.currentRound)
-		.map((r, index) => ({
+	const visibleReviews = submission.reviews.filter(
+		(r) => !hideCurrentRound || r.round < submission.currentRound,
+	);
+
+	// Load attachments for visible reviews
+	const visibleReviewIds = visibleReviews.map((r) => r.id);
+	const reviewAttachments =
+		visibleReviewIds.length > 0
+			? await prisma.file.findMany({
+					where: {
+						entityType: "REVIEW",
+						entityId: { in: visibleReviewIds },
+						type: "REVIEW_ATTACHMENT",
+					},
+					select: {
+						id: true,
+						entityId: true,
+						fileName: true,
+						originalName: true,
+						size: true,
+					},
+				})
+			: [];
+	const attachmentByReviewId = new Map(
+		reviewAttachments.map((a) => [a.entityId, a]),
+	);
+
+	const reviews: UserSubmissionReview[] = visibleReviews.map((r, index) => {
+		const att = attachmentByReviewId.get(r.id);
+		return {
 			id: r.id,
 			submissionId: r.submissionId,
 			round: r.round,
@@ -462,8 +495,17 @@ export async function getSubmissionById(
 				: `Reviewer ${index + 1}`,
 			scores: (r.scores as Record<string, number>) ?? null,
 			comments: r.comments,
+			attachment: att
+				? {
+						id: att.id,
+						fileName: att.fileName,
+						originalName: att.originalName,
+						size: att.size,
+					}
+				: null,
 			createdAt: r.createdAt,
-		}));
+		};
+	});
 
 	const latestDecision = submission.editorDecisions[0];
 	const decision: UserSubmissionDecision | null = latestDecision

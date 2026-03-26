@@ -1,4 +1,8 @@
-import { IconMessageCircle } from "@tabler/icons-react";
+import {
+	IconDownload,
+	IconMessageCircle,
+	IconPaperclip,
+} from "@tabler/icons-react";
 import {
 	Accordion,
 	AccordionContent,
@@ -7,7 +11,7 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { useDateFormat } from "@/hooks/use-date-format";
-import { cn } from "@/lib/utils";
+import { cn, formatFileSize } from "@/lib/utils";
 import type { UserSubmissionReview } from "@/utils/submissions.functions";
 
 interface ReviewsCardProps {
@@ -195,6 +199,26 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 												<div className="text-sm text-foreground leading-relaxed bg-background/50 p-3 rounded-lg border">
 													{review.comments}
 												</div>
+											</div>
+										)}
+
+										{/* Attachment */}
+										{review.attachment && (
+											<div className="pt-3 border-t">
+												<p className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
+													<IconPaperclip className="size-3.5" />
+													Attachment
+												</p>
+												<a
+													href={`/api/files/${review.attachment.id}`}
+													className="inline-flex items-center gap-2 text-sm text-primary hover:underline bg-background/50 p-2 rounded-lg border"
+												>
+													<IconDownload className="size-4" />
+													{review.attachment.originalName}
+													<span className="text-xs text-muted-foreground">
+														({formatFileSize(review.attachment.size)})
+													</span>
+												</a>
 											</div>
 										)}
 

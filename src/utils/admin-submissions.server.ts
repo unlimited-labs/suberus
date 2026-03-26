@@ -273,6 +273,12 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 		scores: Record<string, number> | null;
 		confidenceLevel: number | null;
 		round: number;
+		attachment: {
+			id: string;
+			fileName: string;
+			originalName: string;
+			size: number;
+		} | null;
 	}>;
 	statusHistory: Array<{
 		fromStatus: string | null;
@@ -369,18 +375,51 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 			status: a.status,
 			round: a.round,
 		})),
-		reviews: submission.reviews.map((r) => ({
-			id: r.id,
-			reviewerName:
-				`${r.reviewer.firstName ?? ""} ${r.reviewer.lastName ?? ""}`.trim() ||
-				r.reviewer.email,
-			decision: r.decision,
-			comments: r.comments,
-			privateNotes: r.privateNotes,
-			scores: (r.scores as Record<string, number>) ?? null,
-			confidenceLevel: r.confidenceLevel,
-			round: r.round,
-		})),
+		reviews: await (async () => {
+			const reviewIds = submission.reviews.map((r) => r.id);
+			const attachments =
+				reviewIds.length > 0
+					? await prisma.file.findMany({
+							where: {
+								entityType: "REVIEW",
+								entityId: { in: reviewIds },
+								type: "REVIEW_ATTACHMENT",
+							},
+							select: {
+								id: true,
+								entityId: true,
+								fileName: true,
+								originalName: true,
+								size: true,
+							},
+						})
+					: [];
+			const attMap = new Map(attachments.map((a) => [a.entityId, a]));
+
+			return submission.reviews.map((r) => {
+				const att = attMap.get(r.id);
+				return {
+					id: r.id,
+					reviewerName:
+						`${r.reviewer.firstName ?? ""} ${r.reviewer.lastName ?? ""}`.trim() ||
+						r.reviewer.email,
+					decision: r.decision,
+					comments: r.comments,
+					privateNotes: r.privateNotes,
+					scores: (r.scores as Record<string, number>) ?? null,
+					confidenceLevel: r.confidenceLevel,
+					round: r.round,
+					attachment: att
+						? {
+								id: att.id,
+								fileName: att.fileName,
+								originalName: att.originalName,
+								size: att.size,
+							}
+						: null,
+				};
+			});
+		})(),
 		statusHistory: submission.activityLog.map((h) => {
 			const detail = h.detail as Record<string, unknown> | null;
 			return {

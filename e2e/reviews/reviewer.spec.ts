@@ -1,3 +1,4 @@
+import path from "path";
 import { test, expect, createSubmissionWithAssignment } from "./fixtures";
 
 // Tests use reviewer storageState from playwright.config.ts
@@ -144,11 +145,11 @@ test.describe("Reviewer - Review Form", () => {
 		await reviewFormPage.selectDecision("Revise and Resubmit");
 	});
 
-	test("submit button disabled without comments", async ({ page, reviewerAssignmentsPage, reviewFormPage, testRun, cleanup }) => {
+	test("submit button always visible on review form", async ({ page, reviewerAssignmentsPage, reviewFormPage, testRun, cleanup }) => {
 		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
-			title: "Submit Button Disabled Test",
+			title: "Submit Button Visible Test",
 		});
 		cleanup.track(submissionId);
 
@@ -158,58 +159,8 @@ test.describe("Reviewer - Review Form", () => {
 		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
 
-		// Assert - submit should be disabled without comments
-		await expect(reviewFormPage.submitButton).toBeDisabled();
-	});
-
-	test("submit button enabled with valid comments", async ({ page, reviewerAssignmentsPage, reviewFormPage, testRun, cleanup }) => {
-		// Arrange
-		const { submissionId, title } = await createSubmissionWithAssignment({
-			testRunId: testRun.testRunId,
-			title: "Submit Button Enabled Test",
-		});
-		cleanup.track(submissionId);
-
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
-		await expect(reviewFormPage.commentsInput).toBeVisible({ timeout: 10000 });
-
-		// Act - fill comments with minimum required characters
-		const commentsField = page.getByRole("textbox", { name: "Review Comments" });
-		await commentsField.click();
-		await commentsField.pressSequentially(
-			"This is a well-structured submission that presents interesting findings with sound methodology.",
-			{ delay: 5 }
-		);
-
-		// Assert - character count should update
-		await expect(page.locator("span").filter({ hasText: /^\d{2,} characters$/ })).toBeVisible({ timeout: 5000 });
-	});
-
-	test("shows character count for comments", async ({ page, reviewerAssignmentsPage, testRun, cleanup }) => {
-		// Arrange
-		const { submissionId, title } = await createSubmissionWithAssignment({
-			testRunId: testRun.testRunId,
-			title: "Character Count Test",
-		});
-		cleanup.track(submissionId);
-
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
-
-		// Act
-		const commentsField = page.getByRole("textbox", { name: "Review Comments" });
-		await commentsField.click();
-		await commentsField.pressSequentially("Short comment", { delay: 5 });
-
-		// Assert
-		await expect(page.getByText(/characters \(min\. 50 required\)/)).toBeVisible();
+		// Assert - submit button is visible (comments are optional)
+		await expect(reviewFormPage.submitButton).toBeVisible();
 	});
 
 	test("can fill private notes", async ({ page, reviewerAssignmentsPage, reviewFormPage, testRun, cleanup }) => {
@@ -326,5 +277,169 @@ test.describe("Reviewer - Double-blind Mode", () => {
 		// Assert
 		await expect(page.getByText(/Double-blind review.*author information hidden/i)).toBeVisible();
 		await expect(page.locator('[data-slot="card-title"]').filter({ hasText: "Authors" })).not.toBeVisible();
+	});
+});
+
+test.describe("Reviewer - Attachment", () => {
+	const FIXTURES_DIR = path.resolve("e2e/submissions/fixtures");
+
+	test("shows attachment section on review form", async ({ page, reviewerAssignmentsPage, testRun, cleanup }) => {
+		// Arrange
+		const { submissionId, title } = await createSubmissionWithAssignment({
+			testRunId: testRun.testRunId,
+			title: "Attachment Section Test",
+		});
+		cleanup.track(submissionId);
+
+		await reviewerAssignmentsPage.goto();
+		const assignmentRow = page.locator("tr").filter({ hasText: title });
+		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
+
+		// Act
+		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
+		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+
+		// Assert
+		await expect(page.getByRole("heading", { name: "Attachment" })).toBeVisible();
+		await expect(page.getByText("Upload a PDF or DOCX file")).toBeVisible();
+	});
+
+	test("can upload a PDF attachment", async ({ page, reviewerAssignmentsPage, testRun, cleanup }) => {
+		// Arrange
+		const { submissionId, title } = await createSubmissionWithAssignment({
+			testRunId: testRun.testRunId,
+			title: "Upload PDF Attachment Test",
+		});
+		cleanup.track(submissionId);
+
+		await reviewerAssignmentsPage.goto();
+		const assignmentRow = page.locator("tr").filter({ hasText: title });
+		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
+		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
+		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+
+		// Act - upload file
+		const fileInput = page.locator('input[type="file"]');
+		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.pdf"));
+
+		// Assert - file name displayed
+		await expect(page.getByText("document.pdf")).toBeVisible();
+	});
+
+	test("can upload a DOCX attachment", async ({ page, reviewerAssignmentsPage, testRun, cleanup }) => {
+		// Arrange
+		const { submissionId, title } = await createSubmissionWithAssignment({
+			testRunId: testRun.testRunId,
+			title: "Upload DOCX Attachment Test",
+		});
+		cleanup.track(submissionId);
+
+		await reviewerAssignmentsPage.goto();
+		const assignmentRow = page.locator("tr").filter({ hasText: title });
+		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
+		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
+		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+
+		// Act - upload file
+		const fileInput = page.locator('input[type="file"]');
+		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.docx"));
+
+		// Assert - file name displayed
+		await expect(page.getByText("document.docx")).toBeVisible();
+	});
+
+	test("can remove uploaded attachment", async ({ page, reviewerAssignmentsPage, testRun, cleanup }) => {
+		// Arrange
+		const { submissionId, title } = await createSubmissionWithAssignment({
+			testRunId: testRun.testRunId,
+			title: "Remove Attachment Test",
+		});
+		cleanup.track(submissionId);
+
+		await reviewerAssignmentsPage.goto();
+		const assignmentRow = page.locator("tr").filter({ hasText: title });
+		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
+		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
+		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+
+		// Act - upload then remove
+		const fileInput = page.locator('input[type="file"]');
+		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.pdf"));
+		await expect(page.getByText("document.pdf")).toBeVisible();
+
+		await page.getByRole("button", { name: "Remove file" }).click();
+
+		// Assert - dropzone visible again
+		await expect(page.getByText("Drop file or click to upload")).toBeVisible();
+	});
+
+	test("rejects invalid file type", async ({ page, reviewerAssignmentsPage, testRun, cleanup }) => {
+		// Arrange
+		const { submissionId, title } = await createSubmissionWithAssignment({
+			testRunId: testRun.testRunId,
+			title: "Invalid File Type Test",
+		});
+		cleanup.track(submissionId);
+
+		await reviewerAssignmentsPage.goto();
+		const assignmentRow = page.locator("tr").filter({ hasText: title });
+		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
+		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
+		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+
+		// Act - upload invalid file type
+		const fileInput = page.locator('input[type="file"]');
+		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.txt"));
+
+		// Assert - error message shown
+		await expect(page.getByText(/not accepted/i)).toBeVisible();
+	});
+
+	test("can submit review without attachment", async ({ page, reviewerAssignmentsPage, reviewFormPage, testRun, cleanup }) => {
+		// Arrange
+		const { submissionId, title } = await createSubmissionWithAssignment({
+			testRunId: testRun.testRunId,
+			title: "Submit Without Attachment Test",
+		});
+		cleanup.track(submissionId);
+
+		await reviewerAssignmentsPage.goto();
+		const assignmentRow = page.locator("tr").filter({ hasText: title });
+		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
+		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
+		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+
+		// Act - submit without attachment (attachment is optional)
+		await reviewFormPage.selectDecision("Accept");
+
+		// Assert - submit should work
+		await reviewFormPage.submit();
+		await page.waitForURL("/reviews");
+	});
+
+	test("can submit review with attachment", async ({ page, reviewerAssignmentsPage, reviewFormPage, testRun, cleanup }) => {
+		// Arrange
+		const { submissionId, title } = await createSubmissionWithAssignment({
+			testRunId: testRun.testRunId,
+			title: "Submit With Attachment Test",
+		});
+		cleanup.track(submissionId);
+
+		await reviewerAssignmentsPage.goto();
+		const assignmentRow = page.locator("tr").filter({ hasText: title });
+		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
+		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
+		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+
+		// Act - upload attachment and submit
+		const fileInput = page.locator('input[type="file"]');
+		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.pdf"));
+		await expect(page.getByText("document.pdf")).toBeVisible();
+
+		await reviewFormPage.selectDecision("Accept");
+		await reviewFormPage.submit();
+
+		// Assert - redirected to reviews list
+		await page.waitForURL("/reviews");
 	});
 });

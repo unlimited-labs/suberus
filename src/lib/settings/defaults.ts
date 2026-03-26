@@ -14,6 +14,7 @@ export const DEFAULT_ORAL_PRESENTATION_CONFIG: SubmissionTypeConfig = {
 	enableScoring: false,
 	scoringCriteria: [],
 	enableConfidenceLevel: true,
+	enableReviewAttachment: true,
 	enableTrackSelection: false,
 };
 
@@ -31,6 +32,7 @@ export const DEFAULT_POSTER_CONFIG: SubmissionTypeConfig = {
 	enableScoring: false,
 	scoringCriteria: [],
 	enableConfidenceLevel: true,
+	enableReviewAttachment: true,
 	enableTrackSelection: false,
 };
 
@@ -54,6 +56,7 @@ export const DEFAULT_FULL_PAPER_CONFIG: SubmissionTypeConfig = {
 		{ name: "Technical Quality", description: "Technical soundness and rigor" },
 	],
 	enableConfidenceLevel: true,
+	enableReviewAttachment: true,
 	enableTrackSelection: false,
 };
 

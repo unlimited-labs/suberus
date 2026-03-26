@@ -17,6 +17,7 @@ export interface SubmissionTypeConfig {
 	enableScoring: boolean;
 	scoringCriteria: { name: string; description: string }[];
 	enableConfidenceLevel: boolean;
+	enableReviewAttachment: boolean;
 	enableTrackSelection: boolean;
 }
 

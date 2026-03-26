@@ -433,6 +433,26 @@ export async function deleteSubmission(submissionId: string): Promise<void> {
 	}
 	await db.sentReminder.deleteMany({ where: { entityId: submissionId } });
 
+	// Delete review attachment files (entityType=REVIEW, entityId=reviewId)
+	const reviews = await db.review.findMany({
+		where: { submissionId },
+		select: { id: true },
+	});
+	if (reviews.length > 0) {
+		const reviewIds = reviews.map((r) => r.id);
+		const reviewFiles = await db.file.findMany({
+			where: { entityType: "REVIEW", entityId: { in: reviewIds } },
+			select: { id: true, storageKey: true },
+		});
+		if (reviewFiles.length > 0) {
+			const { deleteFile } = await import("../../src/lib/server/storage");
+			for (const f of reviewFiles) {
+				await deleteFile(f.storageKey).catch(() => {});
+			}
+			await db.file.deleteMany({ where: { id: { in: reviewFiles.map((f) => f.id) } } });
+		}
+	}
+
 	// Delete in order respecting FK constraints
 	await db.review.deleteMany({ where: { submissionId } });
 	await db.reviewAssignment.deleteMany({ where: { submissionId } });

@@ -1,6 +1,8 @@
 import { IconArrowLeft, IconClipboardCheck } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useRef } from "react";
+import { toast } from "sonner";
 import {
 	ReviewForm,
 	type ReviewFormData,
@@ -10,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import {
 	assignmentForReviewQueryOptions,
 	submitReviewFn,
+	uploadReviewAttachmentFn,
 } from "@/utils/reviews.functions";
 import { reviewGuidelinesQueryOptions } from "@/utils/settings.functions";
 
@@ -34,12 +37,14 @@ function ReviewFormPage() {
 	const { data: reviewGuidelines } = useSuspenseQuery(
 		reviewGuidelinesQueryOptions(),
 	);
+	const attachmentFileRef = useRef<File | null>(null);
 
 	if (!data) {
 		return <NotFoundState assignmentId={assignmentId} />;
 	}
 
-	const { assignment, submission, config, existingReview } = data;
+	const { assignment, submission, config, existingReview, existingAttachment } =
+		data;
 
 	const handleSubmit = async (formData: ReviewFormData) => {
 		const result = await submitReviewFn({
@@ -55,11 +60,43 @@ function ReviewFormPage() {
 			},
 		});
 
-		if (result.success) {
-			router.navigate({ to: "/reviews" });
-		} else {
+		if (!result.success) {
 			console.error("Failed to submit review:", result.error);
+			return;
 		}
+
+		// Upload attachment if present
+		const file = attachmentFileRef.current;
+		if (file && result.reviewId) {
+			try {
+				const buffer = await file.arrayBuffer();
+				const base64 = btoa(
+					new Uint8Array(buffer).reduce(
+						(d, byte) => d + String.fromCharCode(byte),
+						"",
+					),
+				);
+
+				const uploadResult = await uploadReviewAttachmentFn({
+					data: {
+						reviewId: result.reviewId,
+						fileName: file.name,
+						mimeType: file.type,
+						fileBase64: base64,
+					},
+				});
+
+				if (!uploadResult.success) {
+					toast.error(
+						`Review submitted but file upload failed: ${uploadResult.error}`,
+					);
+				}
+			} catch {
+				toast.error("Review submitted but file upload failed");
+			}
+		}
+
+		router.navigate({ to: "/reviews" });
 	};
 
 	return (
@@ -87,6 +124,11 @@ function ReviewFormPage() {
 					guidelines={reviewGuidelines}
 					scoringCriteria={config.enableScoring ? config.scoringCriteria : []}
 					enableConfidenceLevel={config.enableConfidenceLevel}
+					enableReviewAttachment={config.enableReviewAttachment}
+					onAttachmentChange={(file) => {
+						attachmentFileRef.current = file;
+					}}
+					existingAttachment={existingAttachment}
 					initialData={
 						existingReview
 							? {

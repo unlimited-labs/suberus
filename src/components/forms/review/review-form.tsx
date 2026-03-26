@@ -10,6 +10,7 @@ import {
 	IconFileText,
 	IconLock,
 	IconMessageCircle,
+	IconPaperclip,
 	IconScale,
 	IconStar,
 	IconStarFilled,
@@ -17,6 +18,7 @@ import {
 } from "@tabler/icons-react";
 import { useStore } from "@tanstack/react-form";
 import { useMemo, useState } from "react";
+import { FileDropzone } from "@/components/forms/submission/file-dropzone";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError } from "@/components/ui/field";
@@ -55,6 +57,14 @@ interface ReviewFormProps {
 	guidelines?: string;
 	scoringCriteria?: { name: string; description: string }[];
 	enableConfidenceLevel?: boolean;
+	enableReviewAttachment?: boolean;
+	onAttachmentChange?: (file: File | null) => void;
+	existingAttachment?: {
+		id: string;
+		fileName: string;
+		originalName: string;
+		size: number;
+	};
 }
 
 export interface ReviewFormData {
@@ -112,8 +122,15 @@ export function ReviewForm({
 	guidelines,
 	scoringCriteria = [],
 	enableConfidenceLevel = true,
+	enableReviewAttachment = false,
+	onAttachmentChange,
+	existingAttachment,
 }: ReviewFormProps) {
 	const [contentExpanded, setContentExpanded] = useState(false);
+	const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+	const [keepExistingAttachment, setKeepExistingAttachment] = useState(
+		!!existingAttachment,
+	);
 
 	const reviewSchema = useMemo(
 		() =>
@@ -519,6 +536,67 @@ export function ReviewForm({
 									)}
 								</form.AppField>
 							</div>
+
+							{/* Attachment Section */}
+							{enableReviewAttachment && (
+								<>
+									<div className="border-t" />
+									<div className="space-y-4">
+										<div className="flex items-center gap-3">
+											<IconPaperclip className="size-5 text-muted-foreground" />
+											<h2 className="text-lg font-semibold text-foreground">
+												Attachment
+											</h2>
+											<Badge variant="outline" className="text-xs">
+												Optional
+											</Badge>
+										</div>
+										<p className="text-sm text-muted-foreground">
+											Upload a PDF or DOCX file with detailed review notes
+										</p>
+										{existingAttachment && keepExistingAttachment ? (
+											<div className="flex items-center gap-3 p-4 rounded-lg border border-border bg-muted/30">
+												<div className="flex-shrink-0 p-2 rounded bg-primary/10">
+													<IconFile className="size-5 text-primary" />
+												</div>
+												<div className="flex-1 min-w-0">
+													<a
+														href={`/api/files/${existingAttachment.id}`}
+														className="text-sm font-medium text-foreground hover:underline truncate block"
+													>
+														{existingAttachment.originalName}
+													</a>
+													<p className="text-xs text-muted-foreground">
+														{formatFileSize(existingAttachment.size)}
+													</p>
+												</div>
+												<Button
+													type="button"
+													size="icon-sm"
+													variant="ghost"
+													onClick={() => {
+														setKeepExistingAttachment(false);
+														onAttachmentChange?.(null);
+													}}
+													aria-label="Remove file"
+												>
+													<IconX className="size-4" />
+												</Button>
+											</div>
+										) : (
+											<FileDropzone
+												value={attachmentFile}
+												onChange={(file) => {
+													setAttachmentFile(file);
+													onAttachmentChange?.(file);
+												}}
+												accept=".pdf,.doc,.docx"
+												maxSize={10}
+											/>
+										)}
+									</div>
+								</>
+							)}
 
 							<div className="border-t" />
 

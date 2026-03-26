@@ -4,7 +4,13 @@ import type { ReviewDecision, ReviewMode } from "@/generated/prisma/enums";
 import { activityDetail } from "@/lib/activity-log";
 import { logActivity } from "@/lib/server/activity-log";
 import { sendEmail } from "@/lib/server/email";
+import {
+	deleteFile,
+	generateReviewFileKey,
+	uploadFile,
+} from "@/lib/server/storage";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
+import { logger } from "@/logger.ts";
 import { getSetting } from "./settings.server";
 import {
 	checkAndTriggerReviewCompletion,
@@ -56,6 +62,7 @@ export async function getAssignmentForReview(
 		enableScoring: boolean;
 		scoringCriteria: { name: string; description: string }[];
 		enableConfidenceLevel: boolean;
+		enableReviewAttachment: boolean;
 	};
 	existingReview?: {
 		decision: ReviewDecision;
@@ -63,6 +70,12 @@ export async function getAssignmentForReview(
 		privateNotes: string | null;
 		scores: Record<string, number> | null;
 		confidenceLevel: number | null;
+	};
+	existingAttachment?: {
+		id: string;
+		fileName: string;
+		originalName: string;
+		size: number;
 	};
 } | null> {
 	const assignment = await prisma.reviewAssignment.findUnique({
@@ -133,6 +146,7 @@ export async function getAssignmentForReview(
 			enableScoring: config.enableScoring,
 			scoringCriteria: config.scoringCriteria,
 			enableConfidenceLevel: config.enableConfidenceLevel,
+			enableReviewAttachment: config.enableReviewAttachment ?? true,
 		},
 		existingReview: assignment.review
 			? {
@@ -143,6 +157,18 @@ export async function getAssignmentForReview(
 					confidenceLevel: assignment.review.confidenceLevel,
 				}
 			: undefined,
+		existingAttachment: await (async () => {
+			if (!assignment.review) return undefined;
+			const att = await prisma.file.findFirst({
+				where: {
+					entityType: "REVIEW",
+					entityId: assignment.review.id,
+					type: "REVIEW_ATTACHMENT",
+				},
+				select: { id: true, fileName: true, originalName: true, size: true },
+			});
+			return att ?? undefined;
+		})(),
 	};
 }
 
@@ -151,7 +177,7 @@ export async function submitReview(
 	assignmentId: string,
 	reviewerId: string,
 	data: ReviewSubmitData,
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; reviewId?: string; error?: string }> {
 	const assignment = await prisma.reviewAssignment.findUnique({
 		where: { id: assignmentId },
 		include: {
@@ -232,14 +258,16 @@ export async function submitReview(
 	// Atomic: review create/update + assignment completion in one transaction
 	const now = new Date();
 
-	await prisma.$transaction(async (tx) => {
+	const reviewId = await prisma.$transaction(async (tx) => {
+		let id: string;
 		if (assignment.review) {
 			await tx.review.update({
 				where: { id: assignment.review.id },
 				data: reviewData,
 			});
+			id = assignment.review.id;
 		} else {
-			await tx.review.create({
+			const created = await tx.review.create({
 				data: {
 					assignmentId,
 					submissionId: assignment.submissionId,
@@ -249,6 +277,7 @@ export async function submitReview(
 					...reviewData,
 				},
 			});
+			id = created.id;
 		}
 
 		await tx.reviewAssignment.update({
@@ -258,6 +287,8 @@ export async function submitReview(
 				completedAt: now,
 			},
 		});
+
+		return id;
 	});
 
 	// After transaction: trigger auto-transition if all reviews complete
@@ -294,7 +325,7 @@ export async function submitReview(
 		detail: activityDetail("REVIEW_SUBMITTED", { decision: data.decision }),
 	});
 
-	return { success: true };
+	return { success: true, reviewId };
 }
 
 /** Get reviews for a submission (editor view) */
@@ -312,6 +343,12 @@ export async function getSubmissionReviews(
 		privateNotes: string | null;
 		scores: Record<string, number> | null;
 		confidenceLevel: number | null;
+		attachment: {
+			id: string;
+			fileName: string;
+			originalName: string;
+			size: number;
+		} | null;
 		createdAt: Date;
 	}>
 > {
@@ -332,18 +369,112 @@ export async function getSubmissionReviews(
 		orderBy: { createdAt: "asc" },
 	});
 
-	return reviews.map((r) => ({
-		id: r.id,
-		reviewerName:
-			`${r.reviewer.firstName ?? ""} ${r.reviewer.lastName ?? ""}`.trim() ||
-			r.reviewer.email,
-		reviewerEmail: r.reviewer.email,
-		round: r.round,
-		decision: r.decision,
-		comments: r.comments,
-		privateNotes: r.privateNotes,
-		scores: (r.scores as Record<string, number>) ?? null,
-		confidenceLevel: r.confidenceLevel,
-		createdAt: r.createdAt,
-	}));
+	// Load attachments for all reviews
+	const reviewIds = reviews.map((r) => r.id);
+	const attachments = await prisma.file.findMany({
+		where: {
+			entityType: "REVIEW",
+			entityId: { in: reviewIds },
+			type: "REVIEW_ATTACHMENT",
+		},
+		select: {
+			id: true,
+			entityId: true,
+			fileName: true,
+			originalName: true,
+			size: true,
+		},
+	});
+	const attachmentByReviewId = new Map(attachments.map((a) => [a.entityId, a]));
+
+	return reviews.map((r) => {
+		const att = attachmentByReviewId.get(r.id);
+		return {
+			id: r.id,
+			reviewerName:
+				`${r.reviewer.firstName ?? ""} ${r.reviewer.lastName ?? ""}`.trim() ||
+				r.reviewer.email,
+			reviewerEmail: r.reviewer.email,
+			round: r.round,
+			decision: r.decision,
+			comments: r.comments,
+			privateNotes: r.privateNotes,
+			scores: (r.scores as Record<string, number>) ?? null,
+			confidenceLevel: r.confidenceLevel,
+			attachment: att
+				? {
+						id: att.id,
+						fileName: att.fileName,
+						originalName: att.originalName,
+						size: att.size,
+					}
+				: null,
+			createdAt: r.createdAt,
+		};
+	});
+}
+
+/** Upload a file attachment for a review */
+export async function uploadReviewAttachment(
+	reviewId: string,
+	userId: string,
+	fileName: string,
+	mimeType: string,
+	fileBase64: string,
+): Promise<{ success: boolean; fileId?: string; error?: string }> {
+	// Verify reviewer owns this review
+	const review = await prisma.review.findUnique({
+		where: { id: reviewId },
+		select: { id: true, reviewerId: true },
+	});
+
+	if (!review) {
+		return { success: false, error: "Review not found" };
+	}
+	if (review.reviewerId !== userId) {
+		return { success: false, error: "Not authorized" };
+	}
+
+	// Decode base64 to buffer
+	const buffer = Buffer.from(fileBase64, "base64");
+	const storageKey = generateReviewFileKey(reviewId, fileName);
+
+	// Upload to S3
+	await uploadFile(buffer, storageKey, mimeType);
+
+	// Delete existing attachment if any (1 file per review)
+	const existingFile = await prisma.file.findFirst({
+		where: {
+			entityType: "REVIEW",
+			entityId: reviewId,
+			type: "REVIEW_ATTACHMENT",
+		},
+	});
+
+	if (existingFile) {
+		await deleteFile(existingFile.storageKey).catch((err) => {
+			logger.error(
+				`[files] failed to delete old review attachment ${existingFile.storageKey}:`,
+				err,
+			);
+		});
+		await prisma.file.delete({ where: { id: existingFile.id } });
+	}
+
+	// Create file record
+	const file = await prisma.file.create({
+		data: {
+			entityType: "REVIEW",
+			entityId: reviewId,
+			type: "REVIEW_ATTACHMENT",
+			storageKey,
+			fileName,
+			originalName: fileName,
+			mimeType,
+			size: buffer.length,
+			uploadedById: userId,
+		},
+	});
+
+	return { success: true, fileId: file.id };
 }

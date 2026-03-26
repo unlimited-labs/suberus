@@ -178,6 +178,18 @@ export function generateSubmissionFileKey(
 	return `submissions/${submissionId}/v${versionNumber}/${timestamp}-${sanitizedName}`;
 }
 
+/**
+ * Generate a unique storage key for a review attachment file
+ */
+export function generateReviewFileKey(
+	reviewId: string,
+	originalName: string,
+): string {
+	const timestamp = Date.now();
+	const sanitizedName = originalName.replace(/[^a-zA-Z0-9.-]/g, "_");
+	return `reviews/${reviewId}/${timestamp}-${sanitizedName}`;
+}
+
 export interface S3HealthResult {
 	status: "healthy" | "error";
 	endpoint: string;

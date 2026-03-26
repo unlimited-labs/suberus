@@ -6,6 +6,7 @@ import {
 	getAssignmentForReview,
 	type ReviewSubmitData,
 	submitReview,
+	uploadReviewAttachment,
 } from "./reviews.server";
 
 const reviewDecisionEnum = z.enum([
@@ -46,7 +47,7 @@ export const submitReviewFn = createServerFn({ method: "POST" })
 		async ({
 			data,
 			context,
-		}): Promise<{ success: boolean; error?: string }> => {
+		}): Promise<{ success: boolean; reviewId?: string; error?: string }> => {
 			const reviewData: ReviewSubmitData = {
 				decision: data.decision,
 				comments: data.comments,
@@ -56,5 +57,31 @@ export const submitReviewFn = createServerFn({ method: "POST" })
 			};
 
 			return submitReview(data.assignmentId, context.user.id, reviewData);
+		},
+	);
+
+const uploadReviewAttachmentSchema = z.object({
+	reviewId: z.uuid(),
+	fileName: z.string(),
+	mimeType: z.string(),
+	fileBase64: z.string(),
+});
+
+/** Upload a file attachment for a review */
+export const uploadReviewAttachmentFn = createServerFn({ method: "POST" })
+	.middleware([authMiddleware])
+	.inputValidator(uploadReviewAttachmentSchema)
+	.handler(
+		async ({
+			data,
+			context,
+		}): Promise<{ success: boolean; fileId?: string; error?: string }> => {
+			return uploadReviewAttachment(
+				data.reviewId,
+				context.user.id,
+				data.fileName,
+				data.mimeType,
+				data.fileBase64,
+			);
 		},
 	);

@@ -85,6 +85,56 @@ export async function checkFileAccess(
 		}
 	}
 
+	// Check access for review attachment files (entityType=REVIEW)
+	if (file.submissionVersions.length === 0) {
+		const fileWithEntity = await prisma.file.findUnique({
+			where: { id: fileId },
+			select: { entityType: true, entityId: true },
+		});
+
+		if (fileWithEntity?.entityType === "REVIEW") {
+			const review = await prisma.review.findUnique({
+				where: { id: fileWithEntity.entityId },
+				select: {
+					reviewerId: true,
+					submission: {
+						select: {
+							userId: true,
+							authors: { select: { userId: true } },
+							reviewAssignments: {
+								where: { status: { not: "CANCELLED" } },
+								select: { reviewerId: true },
+							},
+						},
+					},
+				},
+			});
+
+			if (review) {
+				// Reviewer who uploaded
+				if (review.reviewerId === userId) {
+					return { authorized: true, file };
+				}
+				// Submission owner
+				if (review.submission.userId === userId) {
+					return { authorized: true, file };
+				}
+				// Co-author
+				if (review.submission.authors.some((a) => a.userId === userId)) {
+					return { authorized: true, file };
+				}
+				// Other assigned reviewers
+				if (
+					review.submission.reviewAssignments.some(
+						(a) => a.reviewerId === userId,
+					)
+				) {
+					return { authorized: true, file };
+				}
+			}
+		}
+	}
+
 	return { authorized: false, file };
 }
 

@@ -408,6 +408,25 @@ export function SubmissionTypeAccordion({
 						/>
 					</div>
 
+					{/* Review Attachment */}
+					<div className="flex items-center justify-between">
+						<div className="space-y-0.5">
+							<Label htmlFor="enableReviewAttachment">
+								Enable review attachment
+							</Label>
+							<p className="text-sm text-muted-foreground">
+								Reviewers can upload a PDF/DOCX file with their review
+							</p>
+						</div>
+						<Switch
+							id="enableReviewAttachment"
+							checked={config.enableReviewAttachment}
+							onCheckedChange={(checked) =>
+								handleChange("enableReviewAttachment", checked)
+							}
+						/>
+					</div>
+
 					{/* Track Selection (Oral Presentation only) */}
 					{typeKey === "SUBMISSION_TYPE_ORAL_PRESENTATION" && (
 						<div className="flex items-center justify-between">
