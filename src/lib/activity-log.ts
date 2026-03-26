@@ -38,6 +38,7 @@ export type ActivityDetail =
 			reasoning?: string;
 	  }
 	| { type: "DECISION_DESK_REJECT"; reason: string }
+	| { type: "DECISION_DESK_ACCEPT"; reason: string }
 	| { type: "DECISION_OVERRIDE"; reasoning: string }
 	| { type: "INVITATION_CREATED"; email: string; role: UserRole }
 	| { type: "INVITATION_USED"; email: string }

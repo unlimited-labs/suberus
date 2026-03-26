@@ -39,6 +39,7 @@ const activityLabels: Record<string, string> = {
 	REVIEW_OVERDUE: "Review overdue",
 	DECISION_SUBMITTED: "Decision submitted",
 	DECISION_DESK_REJECT: "Desk rejected",
+	DECISION_DESK_ACCEPT: "Desk accepted",
 	DECISION_OVERRIDE: "Decision overridden",
 	INVITATION_CREATED: "Invitation sent",
 	INVITATION_USED: "Invitation accepted",
@@ -64,6 +65,7 @@ function getEventColor(type: string): string {
 	if (type === "REVIEW_OVERDUE") return "text-orange-600";
 	if (type === "REVIEW_CANCELLED") return "text-gray-600";
 	if (type === "DECISION_DESK_REJECT") return "text-red-600";
+	if (type === "DECISION_DESK_ACCEPT") return "text-green-600";
 	if (type === "FEE_MARKED_UNPAID") return "text-red-600";
 
 	if (type.startsWith("USER_")) return "text-indigo-600";

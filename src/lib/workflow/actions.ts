@@ -47,6 +47,7 @@ export function getTransitionDescription(
 		SUBMIT: "Submission submitted for review",
 		ASSIGN_REVIEWER: "Reviewer assigned, submission under review",
 		DESK_REJECT: "Submission rejected without review (desk rejection)",
+		DESK_ACCEPT: "Submission accepted without review (desk acceptance)",
 		WITHDRAW: "Submission withdrawn by author",
 		ALL_REVIEWS_COMPLETE: "All reviews completed",
 		MANUAL_TRANSITION_TO_REVIEWS_COMPLETE:

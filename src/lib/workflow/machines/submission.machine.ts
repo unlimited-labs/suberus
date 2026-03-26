@@ -71,6 +71,7 @@ export const submissionMachine = setup({
 					guard: "hasMinReviewers",
 				},
 				DESK_REJECT: "REJECTED",
+				DESK_ACCEPT: "ACCEPTED",
 				WITHDRAW: "WITHDRAWN",
 			},
 		},

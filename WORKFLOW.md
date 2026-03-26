@@ -27,6 +27,7 @@ stateDiagram-v2
     [*] --> Draft: Author creates
     Draft --> Submitted: Author submits
     Submitted --> UnderReview: Editor assigns reviewer
+    Submitted --> Accepted: Editor desk accepts
     Submitted --> Rejected: Editor desk rejects
     Submitted --> Withdrawn: Author withdraws
 
@@ -67,6 +68,7 @@ stateDiagram-v2
     [*] --> Draft: Author creates
     Draft --> Submitted: Author submits
     Submitted --> UnderReview: Editor assigns 2-3 reviewers
+    Submitted --> Accepted: Editor desk accepts
     Submitted --> Rejected: Editor desk rejects
     Submitted --> Withdrawn: Author withdraws
 
@@ -329,6 +331,7 @@ Editors (role=EDITOR) can:
 
 ### From SUBMITTED
 - → `UNDER_REVIEW` (when reviewer assigned)
+- → `ACCEPTED` (desk acceptance by Editor/Admin - no review needed)
 - → `REJECTED` (desk rejection by Editor/Admin - no review needed)
 - → `WITHDRAWN` (author withdraws)
 
@@ -789,7 +792,7 @@ All system events are logged in `ActivityLog` with a granular `ActivityType` enu
 - **User events:** registration, email verification, profile updates, role changes, activation/deactivation, deletion
 - **Submission events:** creation, draft submission, status transitions (from/to status, round, event, reason), withdrawal, resubmission, track changes
 - **Review events:** assignment, submission, cancellation, overdue marking
-- **Decision events:** editor decisions, desk rejections, decision overrides
+- **Decision events:** editor decisions, desk rejections, desk acceptances, decision overrides
 - **Invitation events:** creation, usage, cancellation
 - **Admin events:** fee paid/unpaid marking
 
@@ -929,6 +932,28 @@ Flow:
 
 Permissions: Only EDITOR and ADMIN can desk reject
 Note: EditorDecision.letterToAuthor should explain rejection reason
+```
+
+### Desk Acceptance
+
+```
+Scenario: Editor/Admin accepts submission without review
+
+Use cases:
+- Invited speaker / keynote
+- Editorial decision (pre-approved content)
+- Resubmission from trusted source
+
+Flow:
+1. Author submits → status = SUBMITTED
+2. Editor/Admin reviews submission
+3. Editor decides: desk accept (no reviewers needed)
+4. Editor creates EditorDecision with reasoning
+5. Status → ACCEPTED (direct, skips review process)
+6. Author notified with acceptance reason
+
+Permissions: Only EDITOR and ADMIN can desk accept
+Note: EditorDecision.letterToAuthor should explain acceptance reason
 ```
 
 ### Auto vs Manual Transition After Reviews

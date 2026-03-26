@@ -6,6 +6,7 @@ export type SubmissionEvent =
 	| { type: "ASSIGN_REVIEWER" }
 	| { type: "WITHDRAW" }
 	| { type: "DESK_REJECT"; reason: string }
+	| { type: "DESK_ACCEPT"; reason: string }
 	| { type: "ALL_REVIEWS_COMPLETE" }
 	| { type: "MANUAL_TRANSITION_TO_REVIEWS_COMPLETE" }
 	| { type: "MANUAL_TRANSITION_TO_AWAITING_DECISION" }

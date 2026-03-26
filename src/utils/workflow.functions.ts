@@ -4,6 +4,7 @@ import type { TransitionResult } from "@/lib/workflow";
 import { adminMiddleware, authMiddleware } from "./auth.middleware";
 import {
 	confirmConditionsMet,
+	deskAcceptSubmission,
 	deskRejectSubmission,
 	executeSubmissionTransition,
 	overrideDecision,
@@ -22,6 +23,23 @@ export const withdrawSubmissionFn = createServerFn({ method: "POST" })
 	)
 	.handler(async ({ data, context }): Promise<TransitionResult> => {
 		return withdrawSubmission(data.submissionId, context.user.id, data.reason);
+	});
+
+/** Desk accept submission (editor) */
+export const deskAcceptFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(
+		z.object({
+			submissionId: z.uuid(),
+			reason: z.string().min(1, "Reason is required"),
+		}),
+	)
+	.handler(async ({ data, context }): Promise<TransitionResult> => {
+		return deskAcceptSubmission(
+			data.submissionId,
+			context.user.id,
+			data.reason,
+		);
 	});
 
 /** Desk reject submission (editor) */

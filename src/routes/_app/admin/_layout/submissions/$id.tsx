@@ -19,6 +19,7 @@ import { toast } from "sonner";
 
 import { AssignReviewerDialog } from "@/components/admin/submissions/assign-reviewer-dialog";
 import { ConfirmConditionsDialog } from "@/components/admin/submissions/confirm-conditions-dialog";
+import { DeskAcceptDialog } from "@/components/admin/submissions/desk-accept-dialog";
 import { DeskRejectDialog } from "@/components/admin/submissions/desk-reject-dialog";
 import { EditorDecisionDialog } from "@/components/admin/submissions/editor-decision-dialog";
 import { OverrideDecisionDialog } from "@/components/admin/submissions/override-decision-dialog";
@@ -74,6 +75,7 @@ function SubmissionDetailPage() {
 
 	const [showAssignDialog, setShowAssignDialog] = useState(false);
 	const [showDecisionDialog, setShowDecisionDialog] = useState(false);
+	const [showDeskAcceptDialog, setShowDeskAcceptDialog] = useState(false);
 	const [showDeskRejectDialog, setShowDeskRejectDialog] = useState(false);
 	const [showOverrideDialog, setShowOverrideDialog] = useState(false);
 	const [showConfirmConditionsDialog, setShowConfirmConditionsDialog] =
@@ -158,6 +160,7 @@ function SubmissionDetailPage() {
 		"RESUBMITTED",
 	].includes(submission.status);
 
+	const canDeskAccept = submission.status === "SUBMITTED";
 	const canDeskReject = submission.status === "SUBMITTED";
 
 	const allReviewsComplete =
@@ -228,6 +231,16 @@ function SubmissionDetailPage() {
 										>
 											<IconUsers className="size-4 mr-2" />
 											Assign Reviewer
+										</Button>
+									)}
+									{canDeskAccept && (
+										<Button
+											variant="outline"
+											className="text-green-600"
+											onClick={() => setShowDeskAcceptDialog(true)}
+										>
+											<IconCheck className="size-4 mr-2" />
+											Desk Accept
 										</Button>
 									)}
 									{canDeskReject && (
@@ -685,6 +698,14 @@ function SubmissionDetailPage() {
 				open={showDecisionDialog}
 				onOpenChange={setShowDecisionDialog}
 				onDecisionMade={invalidateSubmission}
+			/>
+
+			<DeskAcceptDialog
+				submissionId={submission.id}
+				submissionTitle={submission.title}
+				open={showDeskAcceptDialog}
+				onOpenChange={setShowDeskAcceptDialog}
+				onAccepted={invalidateSubmission}
 			/>
 
 			<DeskRejectDialog

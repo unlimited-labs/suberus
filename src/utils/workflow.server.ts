@@ -681,6 +681,63 @@ export async function withdrawSubmission(
 }
 
 /**
+ * Desk accept a submission (editor action)
+ */
+export async function deskAcceptSubmission(
+	submissionId: string,
+	editorId: string,
+	reason: string,
+): Promise<TransitionResult> {
+	const result = await executeSubmissionTransition(
+		submissionId,
+		{ type: "DESK_ACCEPT", reason },
+		editorId,
+		reason,
+	);
+
+	if (result.success) {
+		const submission = await prisma.submission.findUniqueOrThrow({
+			where: { id: submissionId },
+			include: {
+				authors: { where: { isPresenter: true }, take: 1 },
+			},
+		});
+
+		// Create editor decision record for audit trail
+		await prisma.editorDecision.create({
+			data: {
+				submissionId,
+				editorId,
+				round: submission.currentRound,
+				decision: "ACCEPT",
+				reasoning: reason,
+				letterToAuthor: reason,
+				basedOnReviews: [],
+			},
+		});
+
+		const presenter = submission.authors[0];
+		if (presenter) {
+			void sendEmail("DECISION_ACCEPTED", presenter.email, {
+				authorName: `${presenter.firstName} ${presenter.lastName}`,
+				submissionTitle: submission.title,
+				letterToAuthor: reason,
+				submissionUrl: `${env.APP_BASE_URL}/submissions/${submissionId}`,
+			});
+		}
+
+		await logActivity({
+			type: "DECISION_DESK_ACCEPT",
+			submissionId,
+			performedBy: editorId,
+			detail: activityDetail("DECISION_DESK_ACCEPT", { reason }),
+		});
+	}
+
+	return result;
+}
+
+/**
  * Desk reject a submission (editor action)
  */
 export async function deskRejectSubmission(
