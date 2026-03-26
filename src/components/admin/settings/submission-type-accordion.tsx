@@ -273,7 +273,8 @@ export function SubmissionTypeAccordion({
 							<div className="space-y-0.5">
 								<Label>Requires editor decision</Label>
 								<p className="text-sm text-muted-foreground">
-									Editor must make the final decision
+									Editor makes the final accept/reject decision. When off, the
+									reviewer's recommendation is applied automatically.
 								</p>
 							</div>
 							<Switch
@@ -288,9 +289,10 @@ export function SubmissionTypeAccordion({
 								<div className="space-y-0.5">
 									<Label>Auto-advance after reviews</Label>
 									<p className="text-sm text-muted-foreground">
-										Automatically move to editor decision when all reviews are
-										complete. When off, editor must manually advance each
-										submission.
+										When all reviewers submit, automatically queue the
+										submission for editor decision. When off, submission stays
+										in review until editor advances it manually (e.g. to request
+										additional reviews first).
 									</p>
 								</div>
 								<Switch
