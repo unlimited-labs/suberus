@@ -308,7 +308,7 @@ test.describe("Submission Detail - Status History", () => {
 		await adminSubmissionDetailPage.switchToHistoryTab();
 
 		// Assert
-		await expect(page.getByText("Status History", { exact: true })).toBeVisible();
+		await expect(page.getByText("Activity History", { exact: true })).toBeVisible();
 	});
 });
 

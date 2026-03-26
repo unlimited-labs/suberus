@@ -13,40 +13,12 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { activityLabels } from "@/lib/labels/activity";
 import { cn } from "@/lib/utils";
 import { getMoreActivity } from "@/utils/admin-dashboard.functions";
 import type { AdminDashboardMetrics } from "@/utils/admin-dashboard.server";
 
 type ActivityEvent = AdminDashboardMetrics["recentActivity"][number];
-
-const activityLabels: Record<string, string> = {
-	USER_REGISTERED: "User registered",
-	USER_EMAIL_VERIFIED: "Email verified",
-	USER_PROFILE_UPDATED: "Profile updated",
-	USER_PASSWORD_CHANGED: "Password changed",
-	USER_ROLE_CHANGED: "Role changed",
-	USER_TOGGLED_ACTIVE: "User status changed",
-	USER_DELETED: "User deleted",
-	SUBMISSION_CREATED: "Submission created",
-	SUBMISSION_DRAFT_SUBMITTED: "Draft submitted",
-	SUBMISSION_STATUS_CHANGED: "Status changed",
-	SUBMISSION_WITHDRAWN: "Submission withdrawn",
-	SUBMISSION_RESUBMITTED: "Submission resubmitted",
-	SUBMISSION_TRACK_CHANGED: "Track changed",
-	REVIEW_ASSIGNED: "Reviewer assigned",
-	REVIEW_SUBMITTED: "Review submitted",
-	REVIEW_CANCELLED: "Review cancelled",
-	REVIEW_OVERDUE: "Review overdue",
-	DECISION_SUBMITTED: "Decision submitted",
-	DECISION_DESK_REJECT: "Desk rejected",
-	DECISION_DESK_ACCEPT: "Desk accepted",
-	DECISION_OVERRIDE: "Decision overridden",
-	INVITATION_CREATED: "Invitation sent",
-	INVITATION_USED: "Invitation accepted",
-	INVITATION_CANCELLED: "Invitation cancelled",
-	FEE_MARKED_PAID: "Fee marked paid",
-	FEE_MARKED_UNPAID: "Fee marked unpaid",
-};
 
 function getEventIcon(type: string) {
 	if (type === "USER_DELETED") return IconUserMinus;

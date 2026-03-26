@@ -280,13 +280,12 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 			size: number;
 		} | null;
 	}>;
-	statusHistory: Array<{
-		fromStatus: string | null;
-		toStatus: string;
-		event: string | null;
-		reason: string | null;
+	activityHistory: Array<{
+		activityType: string;
 		createdAt: Date;
-		triggeredByName: string | null;
+		performerName: string | null;
+		targetUserName: string | null;
+		detail: Record<string, string | number | boolean | null>;
 	}>;
 } | null> {
 	const submission = await prisma.submission.findUnique({
@@ -334,13 +333,23 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 							"SUBMISSION_STATUS_CHANGED",
 							"SUBMISSION_WITHDRAWN",
 							"SUBMISSION_RESUBMITTED",
+							"SUBMISSION_TRACK_CHANGED",
+							"REVIEW_ASSIGNED",
+							"REVIEW_SUBMITTED",
+							"REVIEW_CANCELLED",
+							"REVIEW_OVERDUE",
+							"DECISION_SUBMITTED",
+							"DECISION_DESK_REJECT",
+							"DECISION_DESK_ACCEPT",
+							"DECISION_OVERRIDE",
 						],
 					},
 				},
 				include: {
 					performer: { select: { firstName: true, lastName: true } },
+					user: { select: { firstName: true, lastName: true } },
 				},
-				orderBy: { createdAt: "desc" },
+				orderBy: { createdAt: "asc" },
 			},
 		},
 	});
@@ -420,19 +429,19 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 				};
 			});
 		})(),
-		statusHistory: submission.activityLog.map((h) => {
-			const detail = h.detail as Record<string, unknown> | null;
-			return {
-				fromStatus: (detail?.fromStatus as string) ?? null,
-				toStatus: (detail?.toStatus as string) ?? h.type,
-				event: (detail?.event as string) ?? h.type,
-				reason: (detail?.reason as string) ?? null,
-				createdAt: h.createdAt,
-				triggeredByName: h.performer
-					? `${h.performer.firstName ?? ""} ${h.performer.lastName ?? ""}`.trim()
-					: null,
-			};
-		}),
+		activityHistory: submission.activityLog.map((h) => ({
+			activityType: h.type,
+			createdAt: h.createdAt,
+			performerName: h.performer
+				? `${h.performer.firstName ?? ""} ${h.performer.lastName ?? ""}`.trim() ||
+					null
+				: null,
+			targetUserName: h.user
+				? `${h.user.firstName ?? ""} ${h.user.lastName ?? ""}`.trim() || null
+				: null,
+			detail:
+				(h.detail as Record<string, string | number | boolean | null>) ?? {},
+		})),
 	};
 }
 

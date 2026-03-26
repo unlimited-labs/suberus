@@ -414,7 +414,7 @@ test.describe("Review Workflow - Submission Detail Tabs", () => {
 		await detailPage.switchToHistoryTab();
 
 		// Assert
-		await expect(page.getByText("Status History")).toBeVisible();
+		await expect(page.getByText("Activity History")).toBeVisible();
 		await expect(page.getByText(/AWAITING_DECISION|Awaiting Decision/i).first()).toBeVisible();
 	});
 });

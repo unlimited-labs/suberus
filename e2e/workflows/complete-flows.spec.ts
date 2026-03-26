@@ -253,7 +253,7 @@ test.describe("Status History", () => {
 		await page.getByRole("tab", { name: /History/i }).click();
 
 		// Assert
-		await expect(page.getByText("Status History", { exact: true })).toBeVisible();
+		await expect(page.getByText("Activity History", { exact: true })).toBeVisible();
 		await expect(page.getByText(/AWAITING_DECISION|Awaiting Decision/i).first()).toBeVisible();
 	});
 });

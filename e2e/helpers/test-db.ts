@@ -856,3 +856,25 @@ export async function deleteUserSurveyAnswers(userId: string): Promise<void> {
 	const db = getPrisma();
 	await db.surveyAnswer.deleteMany({ where: { userId } });
 }
+
+/** Create an activity log entry (for seeding history in tests) */
+export async function createActivityLog(opts: {
+	type: string;
+	submissionId: string;
+	detail: Record<string, unknown>;
+	performedBy?: string;
+	userId?: string;
+	createdAt?: Date;
+}): Promise<{ id: string }> {
+	const db = getPrisma();
+	return db.activityLog.create({
+		data: {
+			type: opts.type as never,
+			submissionId: opts.submissionId,
+			detail: opts.detail as object,
+			performedBy: opts.performedBy ?? null,
+			userId: opts.userId ?? null,
+			...(opts.createdAt && { createdAt: opts.createdAt }),
+		},
+	});
+}
