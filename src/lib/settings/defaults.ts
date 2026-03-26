@@ -9,7 +9,7 @@ export const DEFAULT_ORAL_PRESENTATION_CONFIG: SubmissionTypeConfig = {
 	reviewMode: "SINGLE_BLIND",
 	reviewDeadlineDays: 14,
 	requiresEditorDecision: false,
-	allowRevisions: true,
+
 	enableScoring: false,
 	scoringCriteria: [],
 	enableConfidenceLevel: true,
@@ -26,7 +26,7 @@ export const DEFAULT_POSTER_CONFIG: SubmissionTypeConfig = {
 	reviewMode: "SINGLE_BLIND",
 	reviewDeadlineDays: 14,
 	requiresEditorDecision: false,
-	allowRevisions: true,
+
 	enableScoring: false,
 	scoringCriteria: [],
 	enableConfidenceLevel: true,
@@ -43,7 +43,7 @@ export const DEFAULT_FULL_PAPER_CONFIG: SubmissionTypeConfig = {
 	reviewMode: "DOUBLE_BLIND",
 	reviewDeadlineDays: 21,
 	requiresEditorDecision: true,
-	allowRevisions: true,
+
 	enableScoring: true,
 	scoringCriteria: [
 		{ name: "Originality", description: "Contribution to the field" },

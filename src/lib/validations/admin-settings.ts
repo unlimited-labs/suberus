@@ -29,7 +29,6 @@ export const submissionTypeSettingsSchema = z.object({
 	reviewMode: z.enum(["open", "single-blind", "double-blind"]),
 	reviewDeadlineDays: z.number().min(1).max(90),
 	requiresEditorDecision: z.boolean(),
-	allowRevisions: z.boolean(),
 	enableScoring: z.boolean(),
 	scoringCriteria: z.array(z.string()),
 });

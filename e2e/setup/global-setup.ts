@@ -34,8 +34,6 @@ const SUBMISSION_TYPE_CONFIGS = {
 		reviewMode: "DOUBLE_BLIND",
 		reviewDeadlineDays: 14,
 		requiresEditorDecision: true,
-
-		allowRevisions: true,
 		enableScoring: true,
 		scoringCriteria: [
 			{ name: "Originality", description: "Contribution to the field" },
@@ -54,8 +52,6 @@ const SUBMISSION_TYPE_CONFIGS = {
 		reviewMode: "SINGLE_BLIND",
 		reviewDeadlineDays: 7,
 		requiresEditorDecision: false,
-
-		allowRevisions: false,
 		enableScoring: false,
 		scoringCriteria: [],
 		enableConfidenceLevel: true,
@@ -69,8 +65,6 @@ const SUBMISSION_TYPE_CONFIGS = {
 		reviewMode: "DOUBLE_BLIND",
 		reviewDeadlineDays: 21,
 		requiresEditorDecision: true,
-
-		allowRevisions: true,
 		enableScoring: true,
 		scoringCriteria: [
 			{ name: "Originality", description: "Contribution to the field" },

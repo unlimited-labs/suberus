@@ -9,11 +9,8 @@ import { activityDetail } from "@/lib/activity-log";
 import { statusChangeOptions } from "@/lib/labels/submission";
 import { logActivity } from "@/lib/server/activity-log";
 import { sendEmail } from "@/lib/server/email";
-import type { SubmissionTypeConfig } from "@/lib/settings/types";
-import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import type { SubmissionEvent } from "@/lib/workflow";
 import { assignReviewer } from "./assignments.server";
-import { getSetting } from "./settings.server";
 import { executeSubmissionTransition } from "./workflow.server";
 
 /** Maps target status → email event type for decision notifications to authors */
@@ -463,22 +460,6 @@ export async function bulkChangeStatus(
 	const emailEvent = bulkDecisionEmailMap[targetStatus];
 
 	for (const id of submissionIds) {
-		// Block REVISE_REQUIRED when allowRevisions is disabled for this submission type
-		if (targetStatus === "REVISE_REQUIRED") {
-			const sub = await prisma.submission.findUnique({
-				where: { id },
-				select: { type: true, title: true },
-			});
-			if (sub) {
-				const configKey = SUBMISSION_TYPE_TO_KEY[sub.type];
-				const config: SubmissionTypeConfig = await getSetting(configKey);
-				if (!config.allowRevisions) {
-					errors.push(`"${sub.title}": revisions disabled for ${sub.type}`);
-					continue;
-				}
-			}
-		}
-
 		const result = await executeSubmissionTransition(
 			id,
 			event,

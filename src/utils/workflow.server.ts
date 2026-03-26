@@ -518,11 +518,7 @@ export async function checkAndTriggerReviewCompletion(
 		if (!config.requiresEditorDecision) {
 			const decisions = submission.reviews.map((r) => r.decision);
 
-			// Don't auto-apply REVISE_AND_RESUBMIT when revisions are disabled — leave for editor
-			const revisionsBlocked =
-				!config.allowRevisions && decisions[0] === "REVISE_AND_RESUBMIT";
-
-			if (decisions.length > 0 && !reviewersDisagree && !revisionsBlocked) {
+			if (decisions.length > 0 && !reviewersDisagree) {
 				const autoEvent = getAutoTransitionEvent(decisions[0]);
 				const autoResult = await executeSubmissionTransition(
 					submissionId,
@@ -569,11 +565,7 @@ export async function checkAndTriggerReviewCompletion(
 				return autoResult;
 			}
 
-			if (revisionsBlocked) {
-				logger.info(
-					`[workflow] reviewer recommends REVISE but allowRevisions=false for submission ${submissionId}, leaving at REVIEWS_COMPLETE for editor`,
-				);
-			} else if (reviewersDisagree) {
+			if (reviewersDisagree) {
 				logger.info(
 					`[workflow] reviewers disagree for submission ${submissionId}, leaving at REVIEWS_COMPLETE for editor`,
 				);
@@ -819,21 +811,6 @@ export async function submitEditorDecision(
 			(r) => r.round === submissionWithRelations.currentRound,
 		),
 	};
-
-	// Block REVISE_AND_RESUBMIT when revisions are disabled for this type
-	if (decision === "REVISE_AND_RESUBMIT") {
-		const config = await getSubmissionConfig(submission.type);
-		if (!config.allowRevisions) {
-			return {
-				success: false,
-				fromState: submission.status,
-				toState: submission.status,
-				event: "EDITOR_REVISE",
-				error:
-					"Cannot request revisions: revisions are disabled for this submission type",
-			};
-		}
-	}
 
 	// Map decision to event
 	const eventMap = {

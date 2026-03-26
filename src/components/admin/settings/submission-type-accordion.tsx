@@ -286,24 +286,6 @@ export function SubmissionTypeAccordion({
 						</div>
 					</div>
 
-					{/* Revisions */}
-					<div className="space-y-4">
-						<div className="flex items-center justify-between">
-							<div className="space-y-0.5">
-								<Label>Allow revisions</Label>
-								<p className="text-xs italic text-muted-foreground/70">
-									Authors can submit revised versions
-								</p>
-							</div>
-							<Switch
-								checked={config.allowRevisions}
-								onCheckedChange={(checked) =>
-									handleChange("allowRevisions", checked)
-								}
-							/>
-						</div>
-					</div>
-
 					{/* Scoring */}
 					<div className="space-y-4">
 						<div className="flex items-center justify-between">

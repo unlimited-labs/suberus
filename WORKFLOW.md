@@ -837,7 +837,6 @@ Each entry includes: event type, target user/submission (optional), performer (o
   type: 'ABSTRACT',
   requiredReviewers: 1,
   requiresEditorDecision: false,
-  allowRevisions: true,
 
   reviewDeadline: 14, // days
 
@@ -854,7 +853,6 @@ Each entry includes: event type, target user/submission (optional), performer (o
   type: 'FULL_PAPER',
   requiredReviewers: 2,
   requiresEditorDecision: true,
-  allowRevisions: true,
 
   reviewDeadline: 21, // days
 
@@ -878,7 +876,6 @@ POSTER uses identical workflow to ABSTRACT (single reviewer, reviewer decides).
   type: 'POSTER',
   requiredReviewers: 1,
   requiresEditorDecision: false,
-  allowRevisions: true,
 
   reviewDeadline: 14, // days
 
@@ -985,7 +982,6 @@ Editor/Admin can apply decisions in bulk to multiple submissions:
 - Each submission must be in a valid state for the transition
   (REVIEWS_COMPLETE or AWAITING_DECISION)
 - Creates EditorDecision record and sends notification per submission
-- Respects allowRevisions config — cannot bulk-set REVISE_REQUIRED when disabled
 - All transitions go through xstate machine for validation
 ```
 

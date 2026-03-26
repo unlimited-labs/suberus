@@ -12,7 +12,6 @@ export interface SubmissionTypeConfig {
 	reviewMode: ReviewMode;
 	reviewDeadlineDays: number;
 	requiresEditorDecision: boolean;
-	allowRevisions: boolean;
 	enableScoring: boolean;
 	scoringCriteria: { name: string; description: string }[];
 	enableConfidenceLevel: boolean;
