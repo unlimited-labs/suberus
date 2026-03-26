@@ -36,3 +36,4 @@ e2e/.auth/
 tanstack-llms
 nul
 *.ai
+.repl_history
