@@ -65,6 +65,7 @@ interface ReviewFormProps {
 		originalName: string;
 		size: number;
 	};
+	readOnly?: boolean;
 }
 
 export interface ReviewFormData {
@@ -125,6 +126,7 @@ export function ReviewForm({
 	enableReviewAttachment = false,
 	onAttachmentChange,
 	existingAttachment,
+	readOnly = false,
 }: ReviewFormProps) {
 	const [contentExpanded, setContentExpanded] = useState(false);
 	const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
@@ -322,12 +324,16 @@ export function ReviewForm({
 															<button
 																key={option.value}
 																type="button"
+																disabled={readOnly}
 																onClick={() => field.handleChange(option.value)}
 																className={cn(
 																	"flex flex-col gap-2 p-4 rounded-lg border-2 transition-all text-left",
+																	readOnly && "cursor-default",
 																	isSelected
 																		? "border-primary bg-primary/5"
-																		: "border-border hover:border-primary/50",
+																		: readOnly
+																			? "border-border opacity-60"
+																			: "border-border hover:border-primary/50",
 																)}
 															>
 																<div className="flex items-center gap-2">
@@ -413,6 +419,7 @@ export function ReviewForm({
 																		<button
 																			key={score}
 																			type="button"
+																			disabled={readOnly}
 																			onClick={() =>
 																				field.handleChange(score as never)
 																			}
@@ -420,7 +427,9 @@ export function ReviewForm({
 																				"size-9 rounded-md border text-sm font-medium transition-all",
 																				currentScore === score
 																					? "border-primary bg-primary text-primary-foreground shadow-sm"
-																					: "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground",
+																					: readOnly
+																						? "border-border text-muted-foreground opacity-60"
+																						: "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground",
 																			)}
 																		>
 																			{score}
@@ -466,6 +475,7 @@ export function ReviewForm({
 																	<button
 																		key={level.value}
 																		type="button"
+																		disabled={readOnly}
 																		onClick={() =>
 																			field.handleChange(level.value)
 																		}
@@ -473,7 +483,9 @@ export function ReviewForm({
 																			"flex-1 h-12 rounded-lg border-2 transition-all font-medium text-sm",
 																			field.state.value === level.value
 																				? "border-primary bg-primary text-primary-foreground shadow-sm"
-																				: "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground",
+																				: readOnly
+																					? "border-border text-muted-foreground opacity-60"
+																					: "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground",
 																		)}
 																	>
 																		{level.value}
@@ -532,6 +544,7 @@ export function ReviewForm({
 											placeholder="Provide detailed feedback on the submission's strengths, weaknesses, and suggestions for improvement..."
 											className="text-foreground"
 											description="These comments will be visible to the authors"
+											disabled={readOnly}
 										/>
 									)}
 								</form.AppField>
@@ -547,52 +560,81 @@ export function ReviewForm({
 											<h2 className="text-lg font-semibold text-foreground">
 												Attachment
 											</h2>
-											<Badge variant="outline" className="text-xs">
-												Optional
-											</Badge>
+											{!readOnly && (
+												<Badge variant="outline" className="text-xs">
+													Optional
+												</Badge>
+											)}
 										</div>
-										<p className="text-sm text-muted-foreground">
-											Upload a PDF or DOCX file with detailed review notes
-										</p>
-										{existingAttachment && keepExistingAttachment ? (
-											<div className="flex items-center gap-3 p-4 rounded-lg border border-border bg-muted/30">
-												<div className="flex-shrink-0 p-2 rounded bg-primary/10">
-													<IconFile className="size-5 text-primary" />
+										{readOnly ? (
+											existingAttachment ? (
+												<div className="flex items-center gap-3 p-4 rounded-lg border border-border bg-muted/30">
+													<div className="flex-shrink-0 p-2 rounded bg-primary/10">
+														<IconFile className="size-5 text-primary" />
+													</div>
+													<div className="flex-1 min-w-0">
+														<a
+															href={`/api/files/${existingAttachment.id}`}
+															className="text-sm font-medium text-foreground hover:underline truncate block"
+														>
+															{existingAttachment.originalName}
+														</a>
+														<p className="text-xs text-muted-foreground">
+															{formatFileSize(existingAttachment.size)}
+														</p>
+													</div>
 												</div>
-												<div className="flex-1 min-w-0">
-													<a
-														href={`/api/files/${existingAttachment.id}`}
-														className="text-sm font-medium text-foreground hover:underline truncate block"
-													>
-														{existingAttachment.originalName}
-													</a>
-													<p className="text-xs text-muted-foreground">
-														{formatFileSize(existingAttachment.size)}
-													</p>
-												</div>
-												<Button
-													type="button"
-													size="icon-sm"
-													variant="ghost"
-													onClick={() => {
-														setKeepExistingAttachment(false);
-														onAttachmentChange?.(null);
-													}}
-													aria-label="Remove file"
-												>
-													<IconX className="size-4" />
-												</Button>
-											</div>
+											) : (
+												<p className="text-sm text-muted-foreground italic">
+													No attachment
+												</p>
+											)
 										) : (
-											<FileDropzone
-												value={attachmentFile}
-												onChange={(file) => {
-													setAttachmentFile(file);
-													onAttachmentChange?.(file);
-												}}
-												accept=".pdf,.doc,.docx"
-												maxSize={10}
-											/>
+											<>
+												<p className="text-sm text-muted-foreground">
+													Upload a PDF or DOCX file with detailed review notes
+												</p>
+												{existingAttachment && keepExistingAttachment ? (
+													<div className="flex items-center gap-3 p-4 rounded-lg border border-border bg-muted/30">
+														<div className="flex-shrink-0 p-2 rounded bg-primary/10">
+															<IconFile className="size-5 text-primary" />
+														</div>
+														<div className="flex-1 min-w-0">
+															<a
+																href={`/api/files/${existingAttachment.id}`}
+																className="text-sm font-medium text-foreground hover:underline truncate block"
+															>
+																{existingAttachment.originalName}
+															</a>
+															<p className="text-xs text-muted-foreground">
+																{formatFileSize(existingAttachment.size)}
+															</p>
+														</div>
+														<Button
+															type="button"
+															size="icon-sm"
+															variant="ghost"
+															onClick={() => {
+																setKeepExistingAttachment(false);
+																onAttachmentChange?.(null);
+															}}
+															aria-label="Remove file"
+														>
+															<IconX className="size-4" />
+														</Button>
+													</div>
+												) : (
+													<FileDropzone
+														value={attachmentFile}
+														onChange={(file) => {
+															setAttachmentFile(file);
+															onAttachmentChange?.(file);
+														}}
+														accept=".pdf,.doc,.docx"
+														maxSize={10}
+													/>
+												)}
+											</>
 										)}
 									</div>
 								</>
@@ -617,28 +659,31 @@ export function ReviewForm({
 											placeholder="Internal notes visible only to editors and admins..."
 											className="text-foreground"
 											description="Only visible to editors and administrators"
+											disabled={readOnly}
 										/>
 									)}
 								</form.AppField>
 							</div>
 
 							{/* Submit Section */}
-							<div className="pt-4">
-								<Button
-									type="submit"
-									disabled={form.state.isSubmitting || !allComplete}
-									className="w-full h-12 text-base font-semibold"
-								>
-									{form.state.isSubmitting
-										? "Submitting Review..."
-										: "Submit Review"}
-								</Button>
-								{!allComplete && (
-									<p className="text-xs text-muted-foreground text-center mt-2">
-										Complete all required sections to submit
-									</p>
-								)}
-							</div>
+							{!readOnly && (
+								<div className="pt-4">
+									<Button
+										type="submit"
+										disabled={form.state.isSubmitting || !allComplete}
+										className="w-full h-12 text-base font-semibold"
+									>
+										{form.state.isSubmitting
+											? "Submitting Review..."
+											: "Submit Review"}
+									</Button>
+									{!allComplete && (
+										<p className="text-xs text-muted-foreground text-center mt-2">
+											Complete all required sections to submit
+										</p>
+									)}
+								</div>
+							)}
 						</form>
 					</div>
 				</div>

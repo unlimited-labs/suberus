@@ -127,8 +127,8 @@ export function ReviewMobileCard(assignment: ReviewerAssignment) {
 						>
 							{assignment.status === "COMPLETED" ? (
 								<Link
-									to="/submissions/$id"
-									params={{ id: assignment.submissionId }}
+									to="/reviews/$assignmentId"
+									params={{ assignmentId: assignment.id }}
 								>
 									View Review
 								</Link>

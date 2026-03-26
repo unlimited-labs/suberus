@@ -45,6 +45,7 @@ function ReviewFormPage() {
 
 	const { assignment, submission, config, existingReview, existingAttachment } =
 		data;
+	const isReadOnly = assignment.status === "COMPLETED";
 
 	const handleSubmit = async (formData: ReviewFormData) => {
 		const result = await submitReviewFn({
@@ -101,7 +102,10 @@ function ReviewFormPage() {
 
 	return (
 		<div className="flex h-full flex-col">
-			<PageHeader icon={IconClipboardCheck} title="Submit Review">
+			<PageHeader
+				icon={IconClipboardCheck}
+				title={isReadOnly ? "View Review" : "Submit Review"}
+			>
 				<Link to="/reviews">
 					<Button variant="outline" className="gap-2">
 						<IconArrowLeft className="size-4" />
@@ -112,6 +116,7 @@ function ReviewFormPage() {
 
 			<div className="flex-1 p-6 overflow-auto">
 				<ReviewForm
+					readOnly={isReadOnly}
 					onSubmit={handleSubmit}
 					submission={{
 						title: submission.title,

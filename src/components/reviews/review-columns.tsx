@@ -225,8 +225,8 @@ export const reviewColumns: ColumnDef<ReviewerAssignment>[] = [
 					>
 						{isCompleted ? (
 							<Link
-								to="/submissions/$id"
-								params={{ id: assignment.submissionId }}
+								to="/reviews/$assignmentId"
+								params={{ assignmentId: assignment.id }}
 							>
 								View Review
 							</Link>
