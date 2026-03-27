@@ -30,23 +30,29 @@ const MODULE_REGISTRY: Record<string, string> = {
 
 type CliArgs =
 	| { mode: "interactive" }
-	| { mode: "exec"; expressions: string[]; preloadModules: string[] }
-	| { mode: "discovery"; command: "tables" | "enums" | "modules"; }
-	| { mode: "discovery"; command: "module-exports"; target: string }
-	| { mode: "stdin"; preloadModules: string[] };
+	| { mode: "help" }
+	| { mode: "exec"; expressions: string[]; preloadModules: string[]; raw: boolean }
+	| { mode: "discovery"; command: "tables" | "enums" | "modules" }
+	| { mode: "discovery"; command: "module-exports" | "schema"; target: string }
+	| { mode: "stdin"; preloadModules: string[]; raw: boolean };
 
 function parseArgs(argv: string[]): CliArgs {
 	const expressions: string[] = [];
 	const preloadModules: string[] = [];
-	let discoveryCommand: "tables" | "enums" | "modules" | "module-exports" | null = null;
+	let discoveryCommand: "tables" | "enums" | "modules" | "module-exports" | "schema" | null = null;
 	let discoveryTarget: string | undefined;
+	let raw = false;
 
 	for (let i = 0; i < argv.length; i++) {
 		const arg = argv[i];
-		if (arg === "--exec" && i + 1 < argv.length) {
+		if (arg === "--help" || arg === "-h") {
+			return { mode: "help" };
+		} else if (arg === "--exec" && i + 1 < argv.length) {
 			expressions.push(argv[++i]);
 		} else if (arg === "--module" && i + 1 < argv.length) {
 			preloadModules.push(argv[++i]);
+		} else if (arg === "--raw") {
+			raw = true;
 		} else if (arg === "--tables") {
 			discoveryCommand = "tables";
 		} else if (arg === "--enums") {
@@ -56,6 +62,9 @@ function parseArgs(argv: string[]): CliArgs {
 		} else if (arg === "--module-exports" && i + 1 < argv.length) {
 			discoveryCommand = "module-exports";
 			discoveryTarget = argv[++i];
+		} else if (arg === "--schema" && i + 1 < argv.length) {
+			discoveryCommand = "schema";
+			discoveryTarget = argv[++i];
 		} else {
 			process.stderr.write(`Unknown argument: ${arg}\n`);
 			printUsage();
@@ -64,18 +73,18 @@ function parseArgs(argv: string[]): CliArgs {
 	}
 
 	if (discoveryCommand) {
-		if (discoveryCommand === "module-exports") {
-			return { mode: "discovery", command: "module-exports", target: discoveryTarget! };
+		if (discoveryCommand === "module-exports" || discoveryCommand === "schema") {
+			return { mode: "discovery", command: discoveryCommand, target: discoveryTarget! };
 		}
 		return { mode: "discovery", command: discoveryCommand };
 	}
 
 	if (expressions.length > 0) {
-		return { mode: "exec", expressions, preloadModules };
+		return { mode: "exec", expressions, preloadModules, raw };
 	}
 
 	if (!process.stdin.isTTY) {
-		return { mode: "stdin", preloadModules };
+		return { mode: "stdin", preloadModules, raw };
 	}
 
 	return { mode: "interactive" };
@@ -86,15 +95,36 @@ function printUsage() {
 		[
 			"Usage: pnpm repl [options]",
 			"",
-			"Options:",
-			"  --exec <expr>            Evaluate expression, output JSON",
-			"  --module <name>          Pre-load a module before eval",
-			"  --tables                 List database model names (JSON)",
-			"  --enums                  List enums with values (JSON)",
-			"  --modules                List loadable modules (JSON)",
-			"  --module-exports <name>  List named exports of a module (JSON)",
+			"Modes:",
+			"  (no args)                Interactive REPL",
+			"  --exec <expr>            Evaluate expression(s), output JSON (repeatable)",
+			"  stdin pipe               Piped input is eval'd as expression",
 			"",
-			"No options starts interactive REPL. Piped stdin is eval'd as expression.",
+			"Discovery:",
+			"  --tables                 List database model names",
+			"  --enums                  List enums with values",
+			"  --modules                List loadable server modules",
+			"  --module-exports <name>  List named exports of a module",
+			"  --schema <model>         Show model fields, types, and relations",
+			"",
+			"Modifiers:",
+			"  --module <name>          Pre-load a module before eval (repeatable)",
+			"  --raw                    Output bare result without { ok, result } wrapper",
+			"  --help, -h               Show this help",
+			"",
+			"Examples:",
+			'  pnpm repl --exec "await db.user.count()"',
+			'  pnpm repl --exec "expr1" --exec "expr2"',
+			'  pnpm repl --module workflow --exec "Object.keys(await load(\'workflow\'))"',
+			"  pnpm repl --schema user",
+			'  pnpm repl --raw --exec "await db.user.findMany()"',
+			'  echo "await db.user.count()" | pnpm repl',
+			"",
+			"Output (non-interactive):",
+			'  Success: { "ok": true, "result": <value> }',
+			'  Error:   { "ok": false, "error": "<message>" }',
+			"  Multiple --exec: returns array of results",
+			"  --raw: outputs bare result value",
 			"",
 		].join("\n"),
 	);
@@ -136,6 +166,24 @@ interface Core {
 	load: (name: string) => Promise<unknown>;
 	getTableNames: () => string[];
 	getEnumMap: () => Record<string, string[]>;
+	getModelSchema: (name: string) => ModelSchema | undefined;
+}
+
+interface ModelSchema {
+	model: string;
+	dbName: string | null;
+	fields: Array<{
+		name: string;
+		type: string;
+		kind: string;
+		isList?: true;
+		isId?: true;
+		isUnique?: true;
+		hasDefaultValue?: true;
+		isRequired?: true;
+		isUpdatedAt?: true;
+		relation?: { name: string; from: string[]; to: string[] };
+	}>;
 }
 
 async function initCore(opts: { silent: boolean }): Promise<Core> {
@@ -181,7 +229,42 @@ async function initCore(opts: { silent: boolean }): Promise<Core> {
 		return result;
 	}
 
-	return { db: db as Core["db"], enums: Enums, load, getTableNames, getEnumMap };
+	function getModelSchema(name: string): ModelSchema | undefined {
+		const rdm = (db as unknown as { _runtimeDataModel: { models: Record<string, { fields: Array<Record<string, unknown>>; dbName: string | null }> } })._runtimeDataModel;
+		// Match case-insensitively: "user" → "User", "submissionVersion" → "SubmissionVersion"
+		const modelEntry = Object.entries(rdm.models).find(
+			([k]) => k.toLowerCase() === name.toLowerCase(),
+		);
+		if (!modelEntry) return undefined;
+		const [modelName, model] = modelEntry;
+
+		const fields: ModelSchema["fields"] = model.fields.map((f) => {
+			const field: ModelSchema["fields"][number] = {
+				name: f.name as string,
+				type: f.type as string,
+				kind: f.kind as string,
+			};
+			// Only include truthy boolean flags (mirrors Prisma DMMF sparse format)
+			if (f.isList) field.isList = true;
+			if (f.isId) field.isId = true;
+			if (f.isUnique) field.isUnique = true;
+			if (f.hasDefaultValue) field.hasDefaultValue = true;
+			if (f.isRequired) field.isRequired = true;
+			if (f.isUpdatedAt) field.isUpdatedAt = true;
+			if (f.kind === "object" && f.relationName) {
+				field.relation = {
+					name: f.relationName as string,
+					from: (f.relationFromFields as string[]) ?? [],
+					to: (f.relationToFields as string[]) ?? [],
+				};
+			}
+			return field;
+		});
+
+		return { model: modelName, dbName: model.dbName, fields };
+	}
+
+	return { db: db as Core["db"], enums: Enums, load, getTableNames, getEnumMap, getModelSchema };
 }
 
 // ---------------------------------------------------------------------------
@@ -209,6 +292,15 @@ async function runDiscovery(core: Core, command: string, target?: string) {
 			outputJson({ module: target, exports });
 			break;
 		}
+		case "schema": {
+			const schema = core.getModelSchema(target!);
+			if (!schema) {
+				outputJson({ ok: false, error: `Unknown model: "${target}". Available: ${core.getTableNames().join(", ")}` });
+				process.exit(1);
+			}
+			outputJson(schema);
+			break;
+		}
 	}
 }
 
@@ -219,7 +311,7 @@ async function runDiscovery(core: Core, command: string, target?: string) {
 // biome-ignore lint/complexity/noBannedTypes: AsyncFunction constructor requires Function type
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor as new (...args: string[]) => Function;
 
-async function runExec(core: Core, expressions: string[], preloadModules: string[]) {
+async function runExec(core: Core, expressions: string[], preloadModules: string[], raw: boolean) {
 	// Build eval context
 	const context: Record<string, unknown> = { db: core.db, load: core.load };
 
@@ -245,19 +337,41 @@ async function runExec(core: Core, expressions: string[], preloadModules: string
 	const contextKeys = Object.keys(context);
 	const contextValues = Object.values(context);
 
+	const results: Array<{ ok: true; result: unknown } | { ok: false; error: string }> = [];
+
 	for (const expression of expressions) {
 		try {
 			const isMultiStatement = expression.includes(";");
 			const body = isMultiStatement ? expression : `return (${expression})`;
 			const fn = new AsyncFunction(...contextKeys, body);
 			const result = await fn(...contextValues);
-			outputJson({ ok: true, result: result === undefined ? null : result });
+			results.push({ ok: true, result: result === undefined ? null : result });
 		} catch (err) {
 			process.stderr.write((err as Error).stack ?? (err as Error).message);
 			process.stderr.write("\n");
-			outputJson({ ok: false, error: (err as Error).message });
-			process.exit(1);
+			results.push({ ok: false, error: (err as Error).message });
 		}
+	}
+
+	// Single expression: unwrap from array
+	const output = expressions.length === 1 ? results[0] : results;
+
+	if (raw) {
+		if (expressions.length === 1) {
+			const r = results[0];
+			if (r.ok) {
+				outputJson(r.result);
+			} else {
+				outputJson({ error: r.error });
+				process.exit(1);
+			}
+		} else {
+			outputJson(results.map((r) => (r.ok ? r.result : { error: r.error })));
+			if (results.some((r) => !r.ok)) process.exit(1);
+		}
+	} else {
+		outputJson(output);
+		if (Array.isArray(output) ? output.some((r) => !r.ok) : !output.ok) process.exit(1);
 	}
 }
 
@@ -378,6 +492,11 @@ async function runInteractive(core: Core) {
 async function main() {
 	const args = parseArgs(process.argv.slice(2));
 
+	if (args.mode === "help") {
+		printUsage();
+		process.exit(0);
+	}
+
 	// --modules doesn't need DB connection
 	if (args.mode === "discovery" && args.command === "modules") {
 		outputJson({ modules: MODULE_REGISTRY });
@@ -392,10 +511,10 @@ async function main() {
 			await runDiscovery(core, args.command, "target" in args ? args.target : undefined);
 			break;
 		case "exec":
-			await runExec(core, args.expressions, args.preloadModules);
+			await runExec(core, args.expressions, args.preloadModules, args.raw);
 			break;
 		case "stdin":
-			await runExec(core, [await readStdin()], args.preloadModules);
+			await runExec(core, [await readStdin()], args.preloadModules, args.raw);
 			break;
 		case "interactive":
 			await runInteractive(core);
