@@ -319,7 +319,7 @@ test.describe("Review Form Validation", () => {
 			{ delay: 5 }
 		);
 
-		// Assert character count
-		await expect(page.locator("span").filter({ hasText: /^\d{2,} characters$/ })).toBeVisible({ timeout: 5000 });
+		// Assert submit button is enabled after filling all required fields
+		await expect(page.getByRole("button", { name: "Submit Review" })).toBeEnabled();
 	});
 });

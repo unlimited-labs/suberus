@@ -491,12 +491,11 @@ test.describe("Submission Detail - Review Visibility", () => {
 			data: { status: SubmissionStatus.UNDER_REVIEW },
 		});
 
-		await page.goto(`/submissions/${submissionId}/reviews`);
+		await page.goto(`/submissions/${submissionId}`);
+		await expect(page.getByText("Submission Details")).toBeVisible();
 
-		// Assert — reviews hidden, status-aware message shown
-		await expect(
-			page.getByText("Reviews will be visible after a decision is made.")
-		).toBeVisible();
+		// Assert — reviews section not rendered (server filters out current-round reviews)
+		await expect(page.getByText("Reviews – Round 1")).not.toBeVisible();
 	});
 
 	test("author sees reviews after REVISE_REQUIRED decision", async ({
@@ -517,7 +516,7 @@ test.describe("Submission Detail - Review Visibility", () => {
 			data: { status: SubmissionStatus.REVISE_REQUIRED },
 		});
 
-		await page.goto(`/submissions/${submissionId}/reviews`);
+		await page.goto(`/submissions/${submissionId}`);
 
 		// Assert — reviews section visible (accordion header with reviewer name)
 		await expect(page.getByText("Reviews – Round 1")).toBeVisible();
@@ -542,7 +541,7 @@ test.describe("Submission Detail - Review Visibility", () => {
 			data: { status: SubmissionStatus.UNDER_REVIEW, currentRound: 2 },
 		});
 
-		await page.goto(`/submissions/${submissionId}/reviews`);
+		await page.goto(`/submissions/${submissionId}`);
 
 		// Assert — round 1 review visible (round < currentRound)
 		await expect(page.getByText("Reviews – Round 1")).toBeVisible();

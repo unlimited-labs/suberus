@@ -300,7 +300,7 @@ test.describe("Reviewer - Attachment", () => {
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
 
 		// Assert
-		await expect(page.getByRole("heading", { name: "Attachment" })).toBeVisible();
+		await expect(page.getByRole("heading", { name: "Attachment", exact: true })).toBeVisible();
 		await expect(page.getByText("Upload a PDF or DOCX file")).toBeVisible();
 	});
 

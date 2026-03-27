@@ -14,8 +14,6 @@ test.describe("Review Re-submit Blocked After Completion", () => {
 		testRun,
 		cleanup,
 	}) => {
-		test.slow();
-
 		// Arrange - create submission with completed review (AWAITING_DECISION)
 		const { submissionId, assignmentId } = await createSubmissionWithReview({
 			testRunId: testRun.testRunId,
@@ -32,28 +30,22 @@ test.describe("Review Re-submit Blocked After Completion", () => {
 		});
 		expect(assignment?.status).toBe(AssignmentStatus.COMPLETED);
 
-		// Act - reviewer navigates to review form
+		// Act - reviewer navigates to completed review
 		await loginAs(page, REVIEWER_USER, { clearCookies: true });
 		await page.goto(`/reviews/${assignmentId}`);
 
-		// The review form should show the existing review but prevent re-submission.
-		// Check that form loads (reviewer can view their submitted review)
-		await expect(page.getByRole("heading", { name: "Decision", exact: true })).toBeVisible({ timeout: 10000 });
+		// Assert — form is in read-only "View Review" mode
+		await expect(page.getByRole("heading", { name: "View Review", level: 1 })).toBeVisible({ timeout: 10000 });
 
-		// Change decision to REJECT and try to submit
-		await page.getByRole("button", { name: /Reject.*not meet/i }).click();
+		// Decision buttons are disabled
+		await expect(page.getByRole("button", { name: /Reject.*not meet/i })).toBeDisabled();
+		await expect(page.getByRole("button", { name: /Accept Work meets/i })).toBeDisabled();
 
-		const commentsField = page.getByRole("textbox", { name: "Review Comments" });
-		await commentsField.click();
-		await commentsField.fill(
-			"Changed my mind — this work does not meet the required standards for publication.",
-		);
+		// Comments field is disabled
+		await expect(page.getByRole("textbox", { name: "Review Comments" })).toBeDisabled();
 
-		await page.getByRole("button", { name: "Submit Review" }).click();
-
-		// Assert - submission fails silently (no navigation to /reviews)
-		await page.waitForTimeout(3000);
-		await expect(page).not.toHaveURL("/reviews");
+		// No submit button visible
+		await expect(page.getByRole("button", { name: "Submit Review" })).not.toBeVisible();
 
 		// Verify the original review decision is unchanged in DB
 		const review = await db.review.findFirst({
@@ -62,7 +54,7 @@ test.describe("Review Re-submit Blocked After Completion", () => {
 		});
 		expect(review?.decision).toBe(ReviewDecision.ACCEPT);
 
-		// Verify submission status is still AWAITING_DECISION (not changed to REJECTED)
+		// Verify submission status is still AWAITING_DECISION
 		const submission = await db.submission.findUnique({
 			where: { id: submissionId },
 			select: { status: true },

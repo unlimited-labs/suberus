@@ -61,7 +61,7 @@ test.describe("Admin - Submission Activity History", () => {
 			.waitFor({ state: "visible", timeout: 10000 });
 		await page.getByRole("tab", { name: /History/i }).click();
 
-		await expect(page.getByText("Reviewer assigned")).toBeVisible();
+		await expect(page.getByRole("heading", { name: "Reviewer assigned" })).toBeVisible();
 	});
 
 	test("shows review submitted event with decision", async ({
@@ -200,7 +200,7 @@ test.describe("Admin - Submission Activity History", () => {
 		await page.getByRole("tab", { name: /History/i }).click();
 
 		// Verify both events are visible
-		await expect(page.getByText("Reviewer assigned")).toBeVisible();
+		await expect(page.getByRole("heading", { name: "Reviewer assigned" })).toBeVisible();
 		await expect(page.getByText("Review submitted")).toBeVisible();
 
 		// Verify chronological order: "Reviewer assigned" appears before "Review submitted"
