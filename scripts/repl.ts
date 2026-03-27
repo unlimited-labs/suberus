@@ -359,12 +359,17 @@ async function runDiscovery(core: Core, command: string, target?: string) {
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor as new (...args: string[]) => Function;
 
 async function evalWithTimeout(fn: () => Promise<unknown>, timeoutMs: number): Promise<unknown> {
-	return Promise.race([
-		fn(),
-		new Promise((_resolve, reject) => {
-			setTimeout(() => reject(new Error(`Timeout after ${timeoutMs}ms`)), timeoutMs);
-		}),
-	]);
+	let timer: ReturnType<typeof setTimeout>;
+	try {
+		return await Promise.race([
+			fn(),
+			new Promise<never>((_resolve, reject) => {
+				timer = setTimeout(() => reject(new Error(`Timeout after ${timeoutMs}ms`)), timeoutMs);
+			}),
+		]);
+	} finally {
+		clearTimeout(timer!);
+	}
 }
 
 async function runExec(core: Core, expressions: string[], preloadModules: string[], raw: boolean, timeoutMs: number) {
