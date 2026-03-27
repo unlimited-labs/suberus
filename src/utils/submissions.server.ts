@@ -279,6 +279,7 @@ export interface UserSubmissionVersion {
 	version: number;
 	title: string;
 	content: string;
+	comment: string | null;
 	authors: UserSubmissionAuthor[];
 	keywords: string[];
 	file: UserSubmissionFile | null;
@@ -531,6 +532,7 @@ export async function getSubmissionById(
 			version: v.version,
 			title: v.title,
 			content: v.content,
+			comment: v.comment,
 			authors, // All versions share same author structure for simplicity
 			keywords,
 			file: v.file

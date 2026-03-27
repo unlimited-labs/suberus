@@ -1,4 +1,11 @@
-import { IconArrowLeft, IconEye, IconFileText } from "@tabler/icons-react";
+import {
+	IconArrowLeft,
+	IconEdit,
+	IconEye,
+	IconFileText,
+	IconFilter,
+	IconMessageCircle,
+} from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -11,9 +18,16 @@ import {
 	StatusCard,
 } from "@/components/submissions/detail";
 import { EditorDecisionCard } from "@/components/submissions/editor-decision-card";
-import { ReviewsSummaryCard } from "@/components/submissions/reviews-summary-card";
+import { ReviewsCard } from "@/components/submissions/reviews-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { submissionDetailQueryOptions } from "@/utils/submissions.functions";
 
 export const Route = createFileRoute("/_app/submissions/$id")({
@@ -32,6 +46,7 @@ function SubmissionDetailPage() {
 	const [selectedVersion, setSelectedVersion] = useState(
 		data?.submission.currentVersion ?? 1,
 	);
+	const [selectedRound, setSelectedRound] = useState<string>("all");
 
 	if (!data) {
 		return <NotFoundState id={id} />;
@@ -39,6 +54,23 @@ function SubmissionDetailPage() {
 
 	const { submission, statusHistory, reviews, decision, versions } = data;
 	const isReadOnly = submission.role === "coauthor";
+
+	// Reviews grouped by round
+	const rounds = [...new Set(reviews.map((r) => r.round))].sort(
+		(a, b) => b - a,
+	);
+	const filteredReviews =
+		selectedRound === "all"
+			? reviews
+			: reviews.filter((r) => r.round === Number(selectedRound));
+	const groupedByRound = rounds
+		.filter((round) =>
+			selectedRound === "all" ? true : round === Number(selectedRound),
+		)
+		.map((round) => ({
+			round,
+			reviews: filteredReviews.filter((r) => r.round === round),
+		}));
 
 	// Get version-specific data
 	const versionData = versions.find((v) => v.version === selectedVersion);
@@ -84,7 +116,61 @@ function SubmissionDetailPage() {
 							/>
 
 							{reviews.length > 0 && (
-								<ReviewsSummaryCard reviews={reviews} submissionId={id} />
+								<div className="space-y-4">
+									<div className="flex items-center justify-between flex-wrap gap-4">
+										<div className="flex items-center gap-3">
+											<IconMessageCircle className="size-5 text-muted-foreground" />
+											<h2 className="text-lg font-semibold">Reviews</h2>
+											<span className="text-sm text-muted-foreground">
+												({reviews.length})
+											</span>
+										</div>
+										{rounds.length > 1 && (
+											<div className="flex items-center gap-2">
+												<IconFilter className="size-4 text-muted-foreground" />
+												<Select
+													value={selectedRound}
+													onValueChange={setSelectedRound}
+												>
+													<SelectTrigger className="w-[140px]">
+														<SelectValue />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value="all">All rounds</SelectItem>
+														{rounds.map((round) => (
+															<SelectItem key={round} value={round.toString()}>
+																Round {round}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+											</div>
+										)}
+									</div>
+									{groupedByRound.map(({ round, reviews: roundReviews }) => {
+										const versionComment = versions.find(
+											(v) => v.version === round && v.comment,
+										);
+										return (
+											<div key={round} className="space-y-4">
+												{versionComment && (
+													<div className="rounded-2xl bg-card shadow-2xl border p-6">
+														<div className="flex items-center gap-3 mb-3">
+															<IconEdit className="size-5 text-muted-foreground" />
+															<h3 className="text-sm font-semibold text-foreground">
+																Author's revision notes – Version {round}
+															</h3>
+														</div>
+														<div className="text-sm text-foreground leading-relaxed bg-muted/50 p-3 rounded-lg border">
+															{versionComment.comment}
+														</div>
+													</div>
+												)}
+												<ReviewsCard reviews={roundReviews} round={round} />
+											</div>
+										);
+									})}
+								</div>
 							)}
 
 							{decision && (
