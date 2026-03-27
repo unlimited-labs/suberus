@@ -1,13 +1,10 @@
 import { countries } from "countries-list";
 import MapLibreGL from "maplibre-gl";
 import { useEffect, useMemo, useRef } from "react";
-import { feature } from "topojson-client";
-import type { GeometryCollection, Topology } from "topojson-specification";
-import topology from "world-atlas/countries-110m.json";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapControls, Map as MapView, useMap } from "@/components/ui/map";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ISO_NUMERIC_TO_ALPHA2 } from "@/lib/iso-numeric-to-alpha2";
+import { COUNTRY_CENTROIDS } from "@/lib/country-centroids";
 import type { AdminDashboardMetrics } from "@/utils/admin-dashboard.server";
 
 interface UserCountryMapProps {
@@ -19,91 +16,73 @@ for (const [code, info] of Object.entries(countries)) {
 	countryNameToCode.set(info.name, code);
 }
 
-const SOURCE_ID = "countries-source";
-const FILL_LAYER_ID = "countries-fill";
-const LINE_LAYER_ID = "countries-line";
+const SOURCE_ID = "bubbles-source";
+const CIRCLE_LAYER_ID = "bubbles-circle";
+const LABEL_LAYER_ID = "bubbles-label";
 
-const LEGEND_ITEMS = [
-	{ color: "#bfdbfe", label: "1–5" },
-	{ color: "#60a5fa", label: "6–20" },
-	{ color: "#2563eb", label: "21–50" },
-	{ color: "#1e3a8a", label: "50+" },
-] as const;
+const BUBBLE_COLOR = "#2563eb";
+const BUBBLE_STROKE_COLOR = "#ffffff";
 
-const COLOR_STEPS = {
-	none: "transparent",
-	low: LEGEND_ITEMS[0].color,
-	medium: LEGEND_ITEMS[1].color,
-	high: LEGEND_ITEMS[2].color,
-	max: LEGEND_ITEMS[3].color,
-} as const;
-
-// Static MapLibre expression — colors are known at build time, no need to scan features
-const COLOR_EXPRESSION = [
-	"match",
-	["get", "fillColor"],
-	COLOR_STEPS.low,
-	COLOR_STEPS.low,
-	COLOR_STEPS.medium,
-	COLOR_STEPS.medium,
-	COLOR_STEPS.high,
-	COLOR_STEPS.high,
-	COLOR_STEPS.max,
-	COLOR_STEPS.max,
-	"transparent",
-] as unknown as MapLibreGL.ExpressionSpecification;
-
-const MAP_STYLES = {
-	light:
-		"https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json",
-	dark: "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json",
-} as const;
+const CIRCLE_RADIUS_EXPRESSION: MapLibreGL.ExpressionSpecification = [
+	"step",
+	["get", "userCount"],
+	8,
+	6,
+	14,
+	21,
+	22,
+	51,
+	30,
+];
 
 const MAP_CENTER: [number, number] = [10, 30];
 
-function getColorForCount(count: number): string {
-	if (count <= 0) return COLOR_STEPS.none;
-	if (count <= 5) return COLOR_STEPS.low;
-	if (count <= 20) return COLOR_STEPS.medium;
-	if (count <= 50) return COLOR_STEPS.high;
-	return COLOR_STEPS.max;
-}
-
-function buildGeoJson(data: AdminDashboardMetrics["usersByCountry"]) {
+function buildGeoJson(
+	data: AdminDashboardMetrics["usersByCountry"],
+): GeoJSON.FeatureCollection {
 	const alpha2ToCount = new globalThis.Map<string, number>();
+	const alpha2ToName = new globalThis.Map<string, string>();
+
 	for (const entry of data) {
 		const code = countryNameToCode.get(entry.country);
-		if (code) {
-			alpha2ToCount.set(code, (alpha2ToCount.get(code) ?? 0) + entry.count);
+		if (!code) continue;
+		alpha2ToCount.set(code, (alpha2ToCount.get(code) ?? 0) + entry.count);
+		if (!alpha2ToName.has(code)) {
+			alpha2ToName.set(code, entry.country);
 		}
 	}
 
-	const geojson = feature(
-		topology as unknown as Topology,
-		topology.objects.countries as GeometryCollection,
-	) as GeoJSON.FeatureCollection;
+	const features: GeoJSON.Feature[] = [];
 
-	for (const feat of geojson.features) {
-		const numericId = feat.id as string;
-		const alpha2 = ISO_NUMERIC_TO_ALPHA2[numericId];
-		const count = alpha2 ? (alpha2ToCount.get(alpha2) ?? 0) : 0;
-		const countryInfo = alpha2
-			? countries[alpha2 as keyof typeof countries]
-			: undefined;
+	for (const [alpha2, count] of alpha2ToCount) {
+		const coords = COUNTRY_CENTROIDS[alpha2];
+		if (!coords || count <= 0) continue;
 
-		feat.properties = {
-			...feat.properties,
-			alpha2: alpha2 ?? "",
-			userCount: count,
-			countryName: countryInfo?.name ?? numericId,
-			fillColor: getColorForCount(count),
-		};
+		features.push({
+			type: "Feature",
+			geometry: { type: "Point", coordinates: coords },
+			properties: {
+				alpha2,
+				userCount: count,
+				countryName:
+					alpha2ToName.get(alpha2) ??
+					countries[alpha2 as keyof typeof countries]?.name ??
+					alpha2,
+			},
+		});
 	}
 
-	return geojson;
+	// Sort so smaller circles render on top (larger circles first in array → drawn first)
+	features.sort(
+		(a, b) =>
+			(b.properties as { userCount: number }).userCount -
+			(a.properties as { userCount: number }).userCount,
+	);
+
+	return { type: "FeatureCollection", features };
 }
 
-function ChoroplethLayer({
+function BubbleLayer({
 	data,
 }: {
 	data: AdminDashboardMetrics["usersByCountry"];
@@ -114,36 +93,43 @@ function ChoroplethLayer({
 	mapRef.current = map;
 
 	const geojson = useMemo(() => buildGeoJson(data), [data]);
-
 	const geojsonRef = useRef(geojson);
 	geojsonRef.current = geojson;
 
-	// Mount: add source, layers, and event handlers
 	useEffect(() => {
 		if (!isLoaded || !map) return;
 
 		map.addSource(SOURCE_ID, {
 			type: "geojson",
-			data: geojsonRef.current as GeoJSON.FeatureCollection,
+			data: geojsonRef.current,
 		});
 
 		map.addLayer({
-			id: FILL_LAYER_ID,
-			type: "fill",
+			id: CIRCLE_LAYER_ID,
+			type: "circle",
 			source: SOURCE_ID,
 			paint: {
-				"fill-color": COLOR_EXPRESSION,
-				"fill-opacity": 0.7,
+				"circle-radius": CIRCLE_RADIUS_EXPRESSION,
+				"circle-color": BUBBLE_COLOR,
+				"circle-opacity": 0.75,
+				"circle-stroke-width": 1.5,
+				"circle-stroke-color": BUBBLE_STROKE_COLOR,
 			},
 		});
 
 		map.addLayer({
-			id: LINE_LAYER_ID,
-			type: "line",
+			id: LABEL_LAYER_ID,
+			type: "symbol",
 			source: SOURCE_ID,
+			layout: {
+				"text-field": ["to-string", ["get", "userCount"]],
+				"text-size": 11,
+				"text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+				"text-allow-overlap": true,
+				"text-ignore-placement": true,
+			},
 			paint: {
-				"line-color": "#64748b",
-				"line-width": 0.8,
+				"text-color": "#ffffff",
 			},
 		});
 
@@ -157,16 +143,6 @@ function ChoroplethLayer({
 
 			const feat = e.features[0];
 			const name = feat.properties?.countryName as string;
-			const count = feat.properties?.userCount as number;
-
-			if (count <= 0) {
-				if (popupRef.current) {
-					popupRef.current.remove();
-					popupRef.current = null;
-				}
-				m.getCanvas().style.cursor = "";
-				return;
-			}
 
 			m.getCanvas().style.cursor = "pointer";
 
@@ -181,7 +157,7 @@ function ChoroplethLayer({
 			popupRef.current
 				.setLngLat(e.lngLat)
 				.setHTML(
-					`<div style="font-size:13px;font-weight:500;padding:2px 4px">${name}: ${count} ${count === 1 ? "user" : "users"}</div>`,
+					`<div style="font-size:13px;font-weight:500;padding:2px 4px">${name}</div>`,
 				)
 				.addTo(m);
 		};
@@ -196,12 +172,12 @@ function ChoroplethLayer({
 			}
 		};
 
-		map.on("mousemove", FILL_LAYER_ID, handleMouseMove);
-		map.on("mouseleave", FILL_LAYER_ID, handleMouseLeave);
+		map.on("mousemove", CIRCLE_LAYER_ID, handleMouseMove);
+		map.on("mouseleave", CIRCLE_LAYER_ID, handleMouseLeave);
 
 		return () => {
-			map.off("mousemove", FILL_LAYER_ID, handleMouseMove);
-			map.off("mouseleave", FILL_LAYER_ID, handleMouseLeave);
+			map.off("mousemove", CIRCLE_LAYER_ID, handleMouseMove);
+			map.off("mouseleave", CIRCLE_LAYER_ID, handleMouseLeave);
 
 			if (popupRef.current) {
 				popupRef.current.remove();
@@ -209,8 +185,8 @@ function ChoroplethLayer({
 			}
 
 			try {
-				if (map.getLayer(LINE_LAYER_ID)) map.removeLayer(LINE_LAYER_ID);
-				if (map.getLayer(FILL_LAYER_ID)) map.removeLayer(FILL_LAYER_ID);
+				if (map.getLayer(LABEL_LAYER_ID)) map.removeLayer(LABEL_LAYER_ID);
+				if (map.getLayer(CIRCLE_LAYER_ID)) map.removeLayer(CIRCLE_LAYER_ID);
 				if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
 			} catch {
 				// ignore cleanup errors during unmount
@@ -218,36 +194,17 @@ function ChoroplethLayer({
 		};
 	}, [isLoaded, map]);
 
-	// Update source data when data changes (paint uses static COLOR_EXPRESSION)
 	useEffect(() => {
 		if (!isLoaded || !map) return;
 
 		const source = map.getSource(SOURCE_ID) as MapLibreGL.GeoJSONSource;
 		if (source) {
-			source.setData(geojson as GeoJSON.FeatureCollection);
+			source.setData(geojson);
 		}
 	}, [isLoaded, map, geojson]);
 
 	return null;
 }
-
-// Static JSX hoisted to module level (rendering-hoist-jsx)
-const mapLegend = (
-	<div className="absolute bottom-2 left-2 z-10 rounded-md border bg-background/80 p-2 text-xs backdrop-blur-sm">
-		<div className="mb-1 font-medium">Users</div>
-		<div className="flex flex-col gap-0.5">
-			{LEGEND_ITEMS.map(({ color, label }) => (
-				<div key={label} className="flex items-center gap-1.5">
-					<div
-						className="size-3 rounded-sm border border-border/50"
-						style={{ backgroundColor: color }}
-					/>
-					<span>{label}</span>
-				</div>
-			))}
-		</div>
-	</div>
-);
 
 export function UserCountryMap({ data }: UserCountryMapProps) {
 	if (!data) {
@@ -285,10 +242,9 @@ export function UserCountryMap({ data }: UserCountryMapProps) {
 			</CardHeader>
 			<CardContent>
 				<div className="h-[300px] md:h-[400px]">
-					<MapView center={MAP_CENTER} zoom={1.5} styles={MAP_STYLES}>
+					<MapView center={MAP_CENTER} zoom={1.5}>
 						<MapControls showZoom showFullscreen position="bottom-right" />
-						<ChoroplethLayer data={data} />
-						{mapLegend}
+						<BubbleLayer data={data} />
 					</MapView>
 				</div>
 			</CardContent>
