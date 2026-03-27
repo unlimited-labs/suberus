@@ -5,6 +5,12 @@ import { PageHeader } from "@/components/layout/page-header";
 import { SubmissionsTable } from "@/components/submissions/submissions-table";
 import { Button } from "@/components/ui/button";
 import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
 	activeSubmissionTypesQueryOptions,
 	submissionDeadlineQueryOptions,
 } from "@/utils/settings.functions";
@@ -24,14 +30,22 @@ export const Route = createFileRoute("/_app/submissions/")({
 function SubmissionsPage() {
 	const { data: submissions } = useSuspenseQuery(mySubmissionsQueryOptions());
 	const {
-		data: { deadline },
+		data: { deadline, locked },
 	} = useSuspenseQuery(submissionDeadlineQueryOptions());
 	const { data: activeTypes } = useSuspenseQuery(
 		activeSubmissionTypesQueryOptions(),
 	);
 	const deadlineOpen = deadline ? new Date(deadline) > new Date() : true;
 	const hasActiveTypes = activeTypes.length > 0;
-	const canSubmit = deadlineOpen && hasActiveTypes;
+	const canSubmit = !locked && deadlineOpen && hasActiveTypes;
+
+	const disabledReason = locked
+		? "Submissions have been closed by the administrator"
+		: !deadlineOpen
+			? "The submission deadline has passed"
+			: !hasActiveTypes
+				? "No submission types are currently active"
+				: "";
 
 	// Sort submissions by newest first (updatedAt DESC)
 	const sortedSubmissions = [...submissions].sort(
@@ -49,10 +63,22 @@ function SubmissionsPage() {
 						</Button>
 					</Link>
 				) : (
-					<Button className="gap-2" disabled>
-						<IconPlus className="size-4" />
-						New Submission
-					</Button>
+					<TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<span
+									data-testid="new-submission-disabled"
+									className="inline-block cursor-not-allowed"
+								>
+									<Button className="gap-2 pointer-events-none" disabled>
+										<IconPlus className="size-4" />
+										New Submission
+									</Button>
+								</span>
+							</TooltipTrigger>
+							<TooltipContent>{disabledReason}</TooltipContent>
+						</Tooltip>
+					</TooltipProvider>
 				)}
 			</PageHeader>
 			<div className="flex-1 p-6 overflow-auto">

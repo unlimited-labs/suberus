@@ -22,6 +22,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { getDateFormats } from "@/lib/format-date";
 import type { ConferenceSettings } from "@/utils/settings.functions";
 import {
@@ -43,6 +44,10 @@ export function ConferenceSettingsTab({
 
 	const handleChange = (field: keyof ConferenceSettings, value: string) => {
 		setData((prev) => ({ ...prev, [field]: value }));
+	};
+
+	const handleToggle = (field: keyof ConferenceSettings, checked: boolean) => {
+		setData((prev) => ({ ...prev, [field]: checked }));
 	};
 
 	const handleSave = async () => {
@@ -166,6 +171,9 @@ export function ConferenceSettingsTab({
 								handleChange("conferenceStartDate", e.target.value)
 							}
 						/>
+						<p className="text-xs text-muted-foreground">
+							First day of the conference
+						</p>
 					</div>
 					<div className="space-y-2">
 						<Label htmlFor="conferenceEndDate">Conference End</Label>
@@ -177,6 +185,9 @@ export function ConferenceSettingsTab({
 								handleChange("conferenceEndDate", e.target.value)
 							}
 						/>
+						<p className="text-xs text-muted-foreground">
+							Last day of the conference
+						</p>
 					</div>
 					<div className="space-y-2">
 						<Label htmlFor="submissionDeadline">Submission Deadline</Label>
@@ -188,6 +199,57 @@ export function ConferenceSettingsTab({
 								handleChange("submissionDeadline", e.target.value)
 							}
 						/>
+						<p className="text-xs text-muted-foreground">
+							After this date the system automatically stops accepting new
+							submissions. Leave empty for no limit.
+						</p>
+					</div>
+					<div className="space-y-2">
+						<Label htmlFor="registrationDeadline">Registration Deadline</Label>
+						<Input
+							id="registrationDeadline"
+							type="date"
+							value={data.registrationDeadline}
+							onChange={(e) =>
+								handleChange("registrationDeadline", e.target.value)
+							}
+						/>
+						<p className="text-xs text-muted-foreground">
+							After this date public registration is blocked. Invitation-based
+							registration still works. Leave empty for no limit.
+						</p>
+					</div>
+					<div className="flex items-center justify-between sm:col-span-2 rounded-lg border border-border/50 p-3">
+						<div>
+							<Label htmlFor="submissionsLocked">Close submissions</Label>
+							<p className="text-xs text-muted-foreground">
+								Immediately block all new submissions, regardless of the
+								deadline
+							</p>
+						</div>
+						<Switch
+							id="submissionsLocked"
+							checked={data.submissionsLocked}
+							onCheckedChange={(checked) =>
+								handleToggle("submissionsLocked", checked)
+							}
+						/>
+					</div>
+					<div className="flex items-center justify-between sm:col-span-2 rounded-lg border border-border/50 p-3">
+						<div>
+							<Label htmlFor="registrationLocked">Close registration</Label>
+							<p className="text-xs text-muted-foreground">
+								Immediately block public registration, regardless of the
+								deadline. Invited users can still register.
+							</p>
+						</div>
+						<Switch
+							id="registrationLocked"
+							checked={data.registrationLocked}
+							onCheckedChange={(checked) =>
+								handleToggle("registrationLocked", checked)
+							}
+						/>
 					</div>
 					<div className="space-y-2">
 						<Label htmlFor="reviewDeadline">Review Deadline</Label>
@@ -197,8 +259,11 @@ export function ConferenceSettingsTab({
 							value={data.reviewDeadline}
 							onChange={(e) => handleChange("reviewDeadline", e.target.value)}
 						/>
+						<p className="text-xs text-muted-foreground">
+							Deadline for reviewers to submit their reviews
+						</p>
 					</div>
-					<div className="space-y-2 sm:col-span-2">
+					<div className="space-y-2">
 						<Label htmlFor="notificationDate">Notification Date</Label>
 						<Input
 							id="notificationDate"
@@ -206,6 +271,9 @@ export function ConferenceSettingsTab({
 							value={data.notificationDate}
 							onChange={(e) => handleChange("notificationDate", e.target.value)}
 						/>
+						<p className="text-xs text-muted-foreground">
+							Date when authors are notified of the decision
+						</p>
 					</div>
 				</div>
 				<div className="mt-6 flex justify-end">

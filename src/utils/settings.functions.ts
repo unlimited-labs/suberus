@@ -216,8 +216,11 @@ export interface ConferenceSettings {
 	conferenceStartDate: string;
 	conferenceEndDate: string;
 	submissionDeadline: string;
+	submissionsLocked: boolean;
 	reviewDeadline: string;
 	notificationDate: string;
+	registrationDeadline: string;
+	registrationLocked: boolean;
 	subtitle: string;
 	dateFormat: string;
 	timeFormat: "24h" | "12h";
@@ -232,8 +235,11 @@ const conferenceSettingsSchema = z.object({
 	conferenceStartDate: z.string(),
 	conferenceEndDate: z.string(),
 	submissionDeadline: z.string(),
+	submissionsLocked: z.boolean(),
 	reviewDeadline: z.string(),
 	notificationDate: z.string(),
+	registrationDeadline: z.string(),
+	registrationLocked: z.boolean(),
 	subtitle: z.string(),
 	dateFormat: z.string(),
 	timeFormat: z.enum(["24h", "12h"]),
@@ -359,8 +365,11 @@ export const getConferenceSettingsFn = createServerFn({ method: "GET" })
 			"CONFERENCE_DATE_START",
 			"CONFERENCE_DATE_END",
 			"SUBMISSION_DEADLINE",
+			"SUBMISSIONS_LOCKED",
 			"REVIEW_DEADLINE",
 			"NOTIFICATION_DATE",
+			"REGISTRATION_DEADLINE",
+			"REGISTRATION_LOCKED",
 			"CONFERENCE_SUBTITLE",
 			"DATE_FORMAT",
 			"TIME_FORMAT",
@@ -374,8 +383,11 @@ export const getConferenceSettingsFn = createServerFn({ method: "GET" })
 			conferenceStartDate: settings.CONFERENCE_DATE_START,
 			conferenceEndDate: settings.CONFERENCE_DATE_END,
 			submissionDeadline: settings.SUBMISSION_DEADLINE,
+			submissionsLocked: settings.SUBMISSIONS_LOCKED,
 			reviewDeadline: settings.REVIEW_DEADLINE,
 			notificationDate: settings.NOTIFICATION_DATE,
+			registrationDeadline: settings.REGISTRATION_DEADLINE,
+			registrationLocked: settings.REGISTRATION_LOCKED,
 			subtitle: settings.CONFERENCE_SUBTITLE,
 			dateFormat: settings.DATE_FORMAT,
 			timeFormat: settings.TIME_FORMAT,
@@ -397,8 +409,11 @@ export const updateConferenceSettingsFn = createServerFn({ method: "POST" })
 		await setSetting("CONFERENCE_DATE_START", data.conferenceStartDate);
 		await setSetting("CONFERENCE_DATE_END", data.conferenceEndDate);
 		await setSetting("SUBMISSION_DEADLINE", data.submissionDeadline);
+		await setSetting("SUBMISSIONS_LOCKED", data.submissionsLocked);
 		await setSetting("REVIEW_DEADLINE", data.reviewDeadline);
 		await setSetting("NOTIFICATION_DATE", data.notificationDate);
+		await setSetting("REGISTRATION_DEADLINE", data.registrationDeadline);
+		await setSetting("REGISTRATION_LOCKED", data.registrationLocked);
 		await setSetting("CONFERENCE_SUBTITLE", data.subtitle);
 		await setSetting("DATE_FORMAT", data.dateFormat);
 		await setSetting("TIME_FORMAT", data.timeFormat);
@@ -503,13 +518,36 @@ export const getSubmissionValidationForFormFn = createServerFn({
 	});
 
 /**
- * Get submission deadline (public - requires auth)
+ * Get submission deadline + lock status (public - requires auth)
  */
 export const getSubmissionDeadlineFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.handler(async () => {
-		const deadline = await getSetting("SUBMISSION_DEADLINE");
-		return { deadline };
+		const [deadline, locked] = await Promise.all([
+			getSetting("SUBMISSION_DEADLINE"),
+			getSetting("SUBMISSIONS_LOCKED"),
+		]);
+		return { deadline, locked };
+	});
+
+/**
+ * Get registration status (public, no auth — needed on register page)
+ */
+export const getRegistrationStatusFn = createServerFn({
+	method: "GET",
+}).handler(async () => {
+	const [deadline, locked] = await Promise.all([
+		getSetting("REGISTRATION_DEADLINE"),
+		getSetting("REGISTRATION_LOCKED"),
+	]);
+	const deadlinePassed = deadline ? new Date(deadline) < new Date() : false;
+	return { closed: locked || deadlinePassed, locked, deadlinePassed };
+});
+
+export const registrationStatusQueryOptions = () =>
+	queryOptions({
+		queryKey: ["settings", "registration-status"],
+		queryFn: () => getRegistrationStatusFn(),
 	});
 
 /** Branding settings shape */

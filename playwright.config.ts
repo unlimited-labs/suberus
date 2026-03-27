@@ -27,13 +27,20 @@ export default defineConfig({
 		// Unauthenticated tests (login, register, forgot-password)
 		{
 			name: "chromium",
-			testMatch: /e2e\/auth\/.*\.spec\.ts/,
+			testMatch: /e2e\/auth\/(?!registration-locks).*\.spec\.ts/,
 			use: { ...devices["Desktop Chrome"] },
 		},
 		{
 			name: "mobile",
-			testMatch: /e2e\/auth\/.*\.spec\.ts/,
+			testMatch: /e2e\/auth\/(?!registration-locks).*\.spec\.ts/,
 			use: { ...devices["Pixel 5"] },
+		},
+		// Registration lock tests - modifies global settings, must run isolated
+		{
+			name: "chromium-registration-locks",
+			testMatch: /registration-locks\.spec\.ts/,
+			dependencies: ["chromium", "mobile"],
+			use: { ...devices["Desktop Chrome"] },
 		},
 		// Admin settings tests that modify shared state (DATE_FORMAT, TIME_FORMAT, FEE_CURRENCY)
 		// Chained as separate projects to prevent inter-file parallelism —
@@ -87,7 +94,7 @@ export default defineConfig({
 		// Submission tests - use user auth (wait for settings-integration to complete first)
 		{
 			name: "chromium-user",
-			testMatch: /e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access|no-active-types).*\.spec\.ts/,
+			testMatch: /e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access|no-active-types|deadline-locks).*\.spec\.ts/,
 			dependencies: ["auth-setup"],
 			use: {
 				...devices["Desktop Chrome"],
@@ -96,7 +103,7 @@ export default defineConfig({
 		},
 		{
 			name: "mobile-user",
-			testMatch: /e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access|no-active-types).*\.spec\.ts/,
+			testMatch: /e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access|no-active-types|deadline-locks).*\.spec\.ts/,
 			dependencies: ["auth-setup"],
 			use: {
 				...devices["Pixel 5"],
@@ -111,6 +118,15 @@ export default defineConfig({
 			use: {
 				...devices["Desktop Chrome"],
 				storageState: "e2e/.auth/user.json",
+			},
+		},
+		// Deadline locks test - modifies global settings, must run isolated after other submission tests
+		{
+			name: "chromium-deadline-locks",
+			testMatch: /deadline-locks\.spec\.ts/,
+			dependencies: ["auth-setup", "chromium-user", "mobile-user"],
+			use: {
+				...devices["Desktop Chrome"],
 			},
 		},
 		// Settings integration tests - runs FIRST, modifies global settings then restores

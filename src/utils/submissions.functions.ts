@@ -8,7 +8,11 @@ import {
 	type ValidationLimits,
 } from "@/lib/validations/submission";
 import { authMiddleware } from "./auth.middleware";
-import { getActiveSubmissionTypes, getSettings } from "./settings.server";
+import {
+	getActiveSubmissionTypes,
+	getSetting,
+	getSettings,
+} from "./settings.server";
 import {
 	createNewSubmission,
 	getSubmissionById,
@@ -71,6 +75,23 @@ export const createSubmission = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.inputValidator(inputSchema)
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
+		const [submissionDeadline, submissionsLocked] = await Promise.all([
+			getSetting("SUBMISSION_DEADLINE"),
+			getSetting("SUBMISSIONS_LOCKED"),
+		]);
+		if (submissionsLocked) {
+			return {
+				success: false,
+				error: "Submissions are currently closed by the administrator",
+			};
+		}
+		if (submissionDeadline && new Date(submissionDeadline) < new Date()) {
+			return {
+				success: false,
+				error: "The submission deadline has passed",
+			};
+		}
+
 		const activeTypes = await getActiveSubmissionTypes();
 		if (!activeTypes.some((t) => t.type === data.type)) {
 			return {

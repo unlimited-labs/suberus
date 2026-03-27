@@ -2,6 +2,7 @@ import {
 	IconArrowLeft,
 	IconArrowRight,
 	IconInfoCircle,
+	IconLock,
 	IconMail,
 } from "@tabler/icons-react";
 import { useStore } from "@tanstack/react-form";
@@ -38,6 +39,7 @@ import {
 	consumeInvitationFn,
 	validateInvitationTokenFn,
 } from "@/utils/invitations.functions";
+import { getRegistrationStatusFn } from "@/utils/settings.functions";
 import {
 	acceptTosFn,
 	getSurveyQuestionsForRegistrationFn,
@@ -53,10 +55,13 @@ export const Route = createFileRoute("/_auth/register")({
 	validateSearch: searchSchema,
 	loaderDeps: ({ search }) => ({ token: search.token }),
 	loader: async ({ deps }) => {
-		const [surveyQuestions, tosContent] = await Promise.all([
-			getSurveyQuestionsForRegistrationFn(),
-			getTosContentForRegistrationFn(),
-		]);
+		const [surveyQuestions, tosContent, registrationStatus] = await Promise.all(
+			[
+				getSurveyQuestionsForRegistrationFn(),
+				getTosContentForRegistrationFn(),
+				getRegistrationStatusFn(),
+			],
+		);
 
 		let invitation: { email: string; role: string } | null = null;
 		if (deps.token) {
@@ -65,7 +70,16 @@ export const Route = createFileRoute("/_auth/register")({
 			});
 		}
 
-		return { surveyQuestions, tosContent, invitation, token: deps.token };
+		// Block public registration if closed, but allow invitation-based
+		const registrationClosed = registrationStatus.closed && !invitation;
+
+		return {
+			surveyQuestions,
+			tosContent,
+			invitation,
+			token: deps.token,
+			registrationClosed,
+		};
 	},
 	component: RegisterPage,
 });
@@ -82,7 +96,40 @@ const stepSchemas = [
 	registerStep3Schema,
 ];
 
+function RegistrationClosedPage() {
+	return (
+		<AuthCard title="Registration Closed">
+			<div className="space-y-4 py-4 text-center">
+				<IconLock className="mx-auto size-12 text-muted-foreground/50" />
+				<p className="text-muted-foreground">
+					Registration is currently closed.
+				</p>
+				<p className="text-sm text-muted-foreground">
+					If you already have an account, you can{" "}
+					<Link
+						to="/login"
+						className="font-medium text-primary hover:underline"
+					>
+						sign in
+					</Link>
+					.
+				</p>
+			</div>
+		</AuthCard>
+	);
+}
+
 function RegisterPage() {
+	const { registrationClosed } = Route.useLoaderData();
+
+	if (registrationClosed) {
+		return <RegistrationClosedPage />;
+	}
+
+	return <RegisterForm />;
+}
+
+function RegisterForm() {
 	const navigate = useNavigate();
 	const { surveyQuestions, tosContent, invitation, token } =
 		Route.useLoaderData();
@@ -118,6 +165,15 @@ function RegisterPage() {
 			onSubmit: registerSchema,
 		},
 		onSubmit: async ({ value }) => {
+			// Defense-in-depth: re-check registration status before submit
+			if (!token) {
+				const status = await getRegistrationStatusFn();
+				if (status.closed) {
+					toast.error("Registration is currently closed");
+					return;
+				}
+			}
+
 			const result = await signUp.email({
 				email: value.email,
 				password: value.password,
