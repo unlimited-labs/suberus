@@ -57,3 +57,12 @@ pnpx @tanstack/cli ecosystem --category <category> --json
 ```
 
 Always prefer TanStack Start convention over nitro.
+
+## Database REPL
+Use `pnpm repl` for direct DB access, module inspection, and expression evaluation. Run `pnpm repl --help` for full usage. Key flags:
+- `--exec "<expr>"` — eval JS with `db`, enums, `load()` in scope; returns JSON
+- `--schema [model]` — model fields/types/relations (all models if omitted)
+- `--tables` / `--enums` / `--modules` / `--module-exports <name>` — discovery
+- `--module <name>` — pre-load server module exports into eval context
+- `--raw` — bare result without `{ok, result}` wrapper
+- `$` object persists across multiple `--exec` in one invocation
