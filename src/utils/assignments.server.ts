@@ -13,6 +13,7 @@ import { canAssignReviewer } from "@/lib/workflow";
 import { logger } from "@/logger.ts";
 import { getSetting } from "./settings.server";
 import {
+	checkAndTriggerReviewCompletion,
 	executeAssignmentTransition,
 	executeSubmissionTransition,
 } from "./workflow.server";
@@ -294,6 +295,10 @@ export async function cancelAssignment(
 			performedBy: cancelledBy,
 			detail: activityDetail("REVIEW_CANCELLED", { assignmentId }),
 		});
+
+		// Re-check if remaining reviews now satisfy completion criteria
+		// (e.g., requiredReviewers was reduced and cancelled assignment was excess)
+		await checkAndTriggerReviewCompletion(assignment.submissionId, cancelledBy);
 	}
 
 	return { success: result.success, error: result.error };
