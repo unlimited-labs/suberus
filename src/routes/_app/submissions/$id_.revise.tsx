@@ -18,6 +18,7 @@ import {
 	submissionValidationQueryOptions,
 } from "@/utils/settings.functions";
 import {
+	mySubmissionsQueryOptions,
 	resubmitSubmissionFn,
 	submissionDetailQueryOptions,
 	uploadSubmissionFile,
@@ -153,9 +154,14 @@ function ReviseSubmissionPage() {
 					}
 
 					toast.success("Revision submitted successfully");
-					await queryClient.invalidateQueries({
-						queryKey: submissionDetailQueryOptions(id).queryKey,
-					});
+					await Promise.all([
+						queryClient.invalidateQueries({
+							queryKey: submissionDetailQueryOptions(id).queryKey,
+						}),
+						queryClient.invalidateQueries({
+							queryKey: mySubmissionsQueryOptions().queryKey,
+						}),
+					]);
 					navigate({ to: "/submissions/$id", params: { id } });
 				} catch {
 					toast.error("Resubmission failed");

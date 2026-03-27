@@ -1,4 +1,5 @@
 import { IconLoader2, IconSend } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/tooltip";
 import type { EmailEventType } from "@/generated/prisma/enums";
 import {
+	emailTemplatesQueryOptions,
 	sendTestEmailFn,
 	updateEmailTemplateFn,
 } from "@/utils/email-templates.functions";
@@ -59,6 +61,7 @@ export function EmailTemplateDialog({
 	onOpenChange,
 	onSave,
 }: EmailTemplateDialogProps) {
+	const queryClient = useQueryClient();
 	const [data, setData] = useState<EmailTemplateUI | null>(template);
 	const [isSaving, setIsSaving] = useState(false);
 	const [isSendingTest, setIsSendingTest] = useState(false);
@@ -96,6 +99,9 @@ export function EmailTemplateDialog({
 						.filter(Boolean),
 					isEnabled: data.isEnabled,
 				},
+			});
+			await queryClient.invalidateQueries({
+				queryKey: emailTemplatesQueryOptions().queryKey,
 			});
 			onSave(data);
 			toast.success(`Template "${data.name}" saved`);

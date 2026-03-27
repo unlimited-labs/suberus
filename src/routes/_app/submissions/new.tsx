@@ -4,7 +4,7 @@ import {
 	IconMailX,
 	IconRefresh,
 } from "@tabler/icons-react";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -24,8 +24,10 @@ import {
 } from "@/utils/settings.functions";
 import {
 	createSubmission,
+	mySubmissionsQueryOptions,
 	uploadSubmissionFile,
 } from "@/utils/submissions.functions";
+import { userDashboardQueryOptions } from "@/utils/user-dashboard.functions";
 
 export const Route = createFileRoute("/_app/submissions/new")({
 	loader: async ({ context }) => {
@@ -51,6 +53,7 @@ function NewSubmissionPage() {
 		submissionGuidelinesQueryOptions(),
 	);
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 	const { user } = useSession();
 	const [cooldown, setCooldown] = useState(0);
 	const [isResending, setIsResending] = useState(false);
@@ -153,6 +156,14 @@ function NewSubmissionPage() {
 		}
 
 		toast.success(isDraft ? "Draft saved" : "Submission created successfully");
+		await Promise.all([
+			queryClient.invalidateQueries({
+				queryKey: mySubmissionsQueryOptions().queryKey,
+			}),
+			queryClient.invalidateQueries({
+				queryKey: userDashboardQueryOptions().queryKey,
+			}),
+		]);
 		navigate({ to: "/submissions/$id", params: { id: result.id } });
 	};
 

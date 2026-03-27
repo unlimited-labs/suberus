@@ -1,10 +1,14 @@
 import { IconLoader2 } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SurveyQuestionField } from "@/components/forms/survey/survey-question-field";
 import { Button } from "@/components/ui/button";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
-import { saveUserSurveyAnswersFn } from "@/utils/survey.functions";
+import {
+	saveUserSurveyAnswersFn,
+	userSurveyAnswersQueryOptions,
+} from "@/utils/survey.functions";
 
 interface SurveyQuestion {
 	id: string;
@@ -28,6 +32,7 @@ export function SurveySection({
 	questions,
 	initialAnswers,
 }: SurveySectionProps) {
+	const queryClient = useQueryClient();
 	const answerMap = new Map(initialAnswers.map((a) => [a.questionId, a.value]));
 
 	const [answers, setAnswers] = useState<Record<string, string>>(() => {
@@ -51,6 +56,9 @@ export function SurveySection({
 				value,
 			}));
 			await saveUserSurveyAnswersFn({ data: { answers: data } });
+			await queryClient.invalidateQueries({
+				queryKey: userSurveyAnswersQueryOptions().queryKey,
+			});
 			toast.success("Survey preferences saved");
 		} catch {
 			toast.error("Failed to save survey preferences");

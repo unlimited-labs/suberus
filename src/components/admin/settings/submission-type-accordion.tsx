@@ -1,4 +1,5 @@
 import { IconLoader2, IconPlus, IconTrash } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -26,7 +27,10 @@ import type {
 	SubmissionTypeKey,
 } from "@/lib/settings/types";
 import { SUBMISSION_TYPE_DISPLAY_NAMES } from "@/lib/settings/types";
-import { updateSubmissionTypeConfigFn } from "@/utils/settings.functions";
+import {
+	submissionTypesConfigQueryOptions,
+	updateSubmissionTypeConfigFn,
+} from "@/utils/settings.functions";
 
 const reviewModeLabels = {
 	OPEN: "Open",
@@ -47,6 +51,7 @@ export function SubmissionTypeAccordion({
 	config,
 	onChange,
 }: SubmissionTypeAccordionProps) {
+	const queryClient = useQueryClient();
 	const [isSaving, setIsSaving] = useState(false);
 
 	const displayName = SUBMISSION_TYPE_DISPLAY_NAMES[typeKey];
@@ -109,6 +114,9 @@ export function SubmissionTypeAccordion({
 		try {
 			await updateSubmissionTypeConfigFn({
 				data: { type: typeKey, config },
+			});
+			await queryClient.invalidateQueries({
+				queryKey: submissionTypesConfigQueryOptions().queryKey,
 			});
 			toast.success(`"${displayName}" settings saved`);
 		} catch (error) {

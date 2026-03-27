@@ -7,6 +7,7 @@ import {
 	IconTrash,
 	IconX,
 } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
@@ -24,6 +25,8 @@ import {
 import { Switch } from "@/components/ui/switch";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
 import {
+	activeSurveyQuestionsQueryOptions,
+	adminSurveyQuestionsQueryOptions,
 	createSurveyQuestionFn,
 	deleteSurveyQuestionFn,
 	reorderSurveyQuestionsFn,
@@ -57,6 +60,7 @@ const isSelectType = (type: SurveyQuestionType) =>
 export function SurveyQuestionsTab({
 	initialQuestions,
 }: SurveyQuestionsTabProps) {
+	const queryClient = useQueryClient();
 	const [questions, setQuestions] =
 		useState<SurveyQuestion[]>(initialQuestions);
 	const [newLabel, setNewLabel] = useState("");
@@ -95,6 +99,14 @@ export function SurveyQuestionsTab({
 				},
 			});
 			setQuestions((prev) => [...prev, created]);
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: adminSurveyQuestionsQueryOptions().queryKey,
+				}),
+				queryClient.invalidateQueries({
+					queryKey: activeSurveyQuestionsQueryOptions().queryKey,
+				}),
+			]);
 			setNewLabel("");
 			setNewType("CHECKBOX");
 			setNewRequired(false);
@@ -111,6 +123,9 @@ export function SurveyQuestionsTab({
 		setBusyId(id);
 		try {
 			await updateSurveyQuestionFn({ data: { id, isActive } });
+			await queryClient.invalidateQueries({
+				queryKey: activeSurveyQuestionsQueryOptions().queryKey,
+			});
 			setQuestions((prev) =>
 				prev.map((q) => (q.id === id ? { ...q, isActive } : q)),
 			);
@@ -165,6 +180,14 @@ export function SurveyQuestionsTab({
 						: q,
 				),
 			);
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: adminSurveyQuestionsQueryOptions().queryKey,
+				}),
+				queryClient.invalidateQueries({
+					queryKey: activeSurveyQuestionsQueryOptions().queryKey,
+				}),
+			]);
 			setEditingId(null);
 			toast.success("Question updated");
 		} catch {
@@ -178,6 +201,14 @@ export function SurveyQuestionsTab({
 		setBusyId(id);
 		try {
 			await deleteSurveyQuestionFn({ data: { id } });
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: adminSurveyQuestionsQueryOptions().queryKey,
+				}),
+				queryClient.invalidateQueries({
+					queryKey: activeSurveyQuestionsQueryOptions().queryKey,
+				}),
+			]);
 			setQuestions((prev) => prev.filter((q) => q.id !== id));
 			toast.success("Question deleted");
 		} catch {
@@ -202,6 +233,9 @@ export function SurveyQuestionsTab({
 		try {
 			await reorderSurveyQuestionsFn({
 				data: { orderedIds: reordered.map((q) => q.id) },
+			});
+			await queryClient.invalidateQueries({
+				queryKey: adminSurveyQuestionsQueryOptions().queryKey,
 			});
 		} catch {
 			setQuestions(questions);

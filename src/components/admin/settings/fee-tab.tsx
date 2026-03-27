@@ -5,6 +5,7 @@ import {
 	IconPlus,
 	IconTrash,
 } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
@@ -12,7 +13,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { paymentInstructionsQueryOptions } from "@/utils/fee.functions";
 import {
+	feeTypesQueryOptions,
 	updateFeeInstructionsFn,
 	updateFeeTypesFn,
 } from "@/utils/settings.functions";
@@ -34,6 +37,7 @@ export function FeeTab({
 	initialFeeTypes,
 	currency,
 }: FeeTabProps) {
+	const queryClient = useQueryClient();
 	const [content, setContent] = useState(initialInstructions);
 	const [isSavingInstructions, setIsSavingInstructions] = useState(false);
 	const [feeTypes, setFeeTypes] = useState<FeeType[]>(initialFeeTypes);
@@ -53,6 +57,9 @@ export function FeeTab({
 		setIsSavingInstructions(true);
 		try {
 			await updateFeeInstructionsFn({ data: { content } });
+			await queryClient.invalidateQueries({
+				queryKey: paymentInstructionsQueryOptions().queryKey,
+			});
 			toast.success("Fee payment instructions saved");
 		} catch {
 			toast.error("Failed to save fee instructions");
@@ -65,6 +72,9 @@ export function FeeTab({
 		setIsSavingTypes(true);
 		try {
 			await updateFeeTypesFn({ data: { feeTypes: types } });
+			await queryClient.invalidateQueries({
+				queryKey: feeTypesQueryOptions().queryKey,
+			});
 			setFeeTypes(types);
 			toast.success("Fee types saved");
 		} catch {

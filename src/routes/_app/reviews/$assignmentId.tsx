@@ -1,5 +1,5 @@
 import { IconArrowLeft, IconClipboardCheck } from "@tabler/icons-react";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useRef } from "react";
 import { toast } from "sonner";
@@ -9,12 +9,14 @@ import {
 } from "@/components/forms/review/review-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
+import { myAssignmentsQueryOptions } from "@/utils/assignments.functions";
 import {
 	assignmentForReviewQueryOptions,
 	submitReviewFn,
 	uploadReviewAttachmentFn,
 } from "@/utils/reviews.functions";
 import { reviewGuidelinesQueryOptions } from "@/utils/settings.functions";
+import { userDashboardQueryOptions } from "@/utils/user-dashboard.functions";
 
 export const Route = createFileRoute("/_app/reviews/$assignmentId")({
 	loader: async ({ params, context }) => {
@@ -31,6 +33,7 @@ export const Route = createFileRoute("/_app/reviews/$assignmentId")({
 function ReviewFormPage() {
 	const { assignmentId } = Route.useParams();
 	const router = useRouter();
+	const queryClient = useQueryClient();
 	const { data } = useSuspenseQuery(
 		assignmentForReviewQueryOptions(assignmentId),
 	);
@@ -97,6 +100,17 @@ function ReviewFormPage() {
 			}
 		}
 
+		await Promise.all([
+			queryClient.invalidateQueries({
+				queryKey: myAssignmentsQueryOptions().queryKey,
+			}),
+			queryClient.invalidateQueries({
+				queryKey: assignmentForReviewQueryOptions(assignmentId).queryKey,
+			}),
+			queryClient.invalidateQueries({
+				queryKey: userDashboardQueryOptions().queryKey,
+			}),
+		]);
 		router.navigate({ to: "/reviews" });
 	};
 

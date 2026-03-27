@@ -46,7 +46,7 @@ export const Route = createFileRoute("/_app/profile")({
 });
 
 function SettingsPage() {
-	const { user } = useSession();
+	const { user, refetch: refetchSession } = useSession();
 	const { data: surveyQuestions } = useSuspenseQuery(
 		activeSurveyQuestionsQueryOptions(),
 	);
@@ -92,6 +92,7 @@ function SettingsPage() {
 					orcid: data.orcid,
 				},
 			});
+			await refetchSession();
 			toast.success("Personal information updated successfully");
 		} catch (error) {
 			toast.error("Failed to update personal information");
@@ -110,6 +111,7 @@ function SettingsPage() {
 			await updateContactInfoFn({
 				data: { address: data.address, country: data.country },
 			});
+			await refetchSession();
 			if (data.email === user.email) {
 				toast.success("Contact information updated successfully");
 			}

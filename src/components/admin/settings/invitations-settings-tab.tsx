@@ -1,11 +1,15 @@
 import { IconClock, IconLoader2 } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { setSettingFn } from "@/utils/settings.functions";
+import {
+	adminSettingQueryOptions,
+	setSettingFn,
+} from "@/utils/settings.functions";
 
 interface InvitationsSettingsTabProps {
 	initialValidityHours: number;
@@ -14,6 +18,7 @@ interface InvitationsSettingsTabProps {
 export function InvitationsSettingsTab({
 	initialValidityHours,
 }: InvitationsSettingsTabProps) {
+	const queryClient = useQueryClient();
 	const [validityHours, setValidityHours] = useState(initialValidityHours);
 	const [isSaving, setIsSaving] = useState(false);
 
@@ -27,6 +32,10 @@ export function InvitationsSettingsTab({
 		try {
 			await setSettingFn({
 				data: { key: "INVITATION_VALIDITY_HOURS", value: validityHours },
+			});
+			await queryClient.invalidateQueries({
+				queryKey: adminSettingQueryOptions("INVITATION_VALIDITY_HOURS")
+					.queryKey,
 			});
 			toast.success("Invitation settings saved");
 		} catch (error) {

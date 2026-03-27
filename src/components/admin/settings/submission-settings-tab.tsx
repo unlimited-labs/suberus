@@ -4,6 +4,7 @@ import {
 	IconLoader2,
 	IconUpload,
 } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
@@ -14,8 +15,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import type { SubmissionValidationSettings } from "@/utils/settings.functions";
 import {
+	reviewGuidelinesQueryOptions,
+	type SubmissionValidationSettings,
+	submissionGuidelinesQueryOptions,
+	submissionValidationQueryOptions,
 	updateReviewGuidelinesFn,
 	updateSubmissionGuidelinesFn,
 	updateSubmissionValidationSettingsFn,
@@ -49,6 +53,7 @@ export function SubmissionSettingsTab({
 	initialSubmissionGuidelines,
 	initialReviewGuidelines,
 }: SubmissionSettingsTabProps) {
+	const queryClient = useQueryClient();
 	const [data, setData] = useState(initialData);
 	const [isSaving, setIsSaving] = useState(false);
 	const [submissionGuidelines, setSubmissionGuidelines] = useState(
@@ -84,6 +89,17 @@ export function SubmissionSettingsTab({
 				}),
 				updateReviewGuidelinesFn({
 					data: { value: reviewGuidelines },
+				}),
+			]);
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: submissionValidationQueryOptions().queryKey,
+				}),
+				queryClient.invalidateQueries({
+					queryKey: submissionGuidelinesQueryOptions().queryKey,
+				}),
+				queryClient.invalidateQueries({
+					queryKey: reviewGuidelinesQueryOptions().queryKey,
 				}),
 			]);
 			toast.success("Submission settings saved");

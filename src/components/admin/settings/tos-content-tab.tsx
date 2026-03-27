@@ -1,17 +1,22 @@
 import { IconFileText, IconLoader2 } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { updateTosContentFn } from "@/utils/settings.functions";
+import {
+	adminSettingQueryOptions,
+	updateTosContentFn,
+} from "@/utils/settings.functions";
 
 interface TosContentTabProps {
 	initialContent: string;
 }
 
 export function TosContentTab({ initialContent }: TosContentTabProps) {
+	const queryClient = useQueryClient();
 	const [content, setContent] = useState(initialContent);
 	const [isSaving, setIsSaving] = useState(false);
 
@@ -19,6 +24,9 @@ export function TosContentTab({ initialContent }: TosContentTabProps) {
 		setIsSaving(true);
 		try {
 			await updateTosContentFn({ data: { content } });
+			await queryClient.invalidateQueries({
+				queryKey: adminSettingQueryOptions("TOS_CONTENT").queryKey,
+			});
 			toast.success("Terms of Service saved");
 		} catch {
 			toast.error("Failed to save Terms of Service");

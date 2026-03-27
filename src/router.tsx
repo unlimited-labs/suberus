@@ -18,6 +18,7 @@ export const getRouter = () => {
 		},
 
 		defaultPreload: "intent",
+		defaultPreloadStaleTime: 0,
 		defaultPendingComponent: RouteSpinner,
 		defaultErrorComponent: RouteError,
 		defaultPendingMs: 200,

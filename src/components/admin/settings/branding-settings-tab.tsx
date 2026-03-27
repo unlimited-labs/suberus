@@ -6,6 +6,8 @@ import {
 	IconTrash,
 	IconUpload,
 } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
@@ -15,8 +17,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
-import type { BrandingSettings } from "@/utils/settings.functions";
 import {
+	type BrandingSettings,
+	brandingSettingsQueryOptions,
 	deleteAuthBackgroundFn,
 	updateBrandingSettingsFn,
 	uploadAuthBackgroundFn,
@@ -31,6 +34,8 @@ const MAX_BG_SIZE_MB = 5;
 const MAX_BG_SIZE_BYTES = MAX_BG_SIZE_MB * 1024 * 1024;
 
 export function BrandingSettingsTab({ initialData }: BrandingSettingsTabProps) {
+	const queryClient = useQueryClient();
+	const router = useRouter();
 	const [data, setData] = useState(initialData);
 	const [isSaving, setIsSaving] = useState(false);
 	const [bgUploading, setBgUploading] = useState(false);
@@ -48,6 +53,10 @@ export function BrandingSettingsTab({ initialData }: BrandingSettingsTabProps) {
 		setIsSaving(true);
 		try {
 			await updateBrandingSettingsFn({ data });
+			await queryClient.invalidateQueries({
+				queryKey: brandingSettingsQueryOptions().queryKey,
+			});
+			await router.invalidate();
 			toast.success("Branding settings saved");
 		} catch {
 			toast.error("Failed to save branding settings");

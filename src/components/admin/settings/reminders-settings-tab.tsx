@@ -1,4 +1,5 @@
 import { IconBell, IconLoader2 } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
@@ -6,8 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import type { ReminderSettings } from "@/utils/settings.functions";
-import { updateReminderSettingsFn } from "@/utils/settings.functions";
+import {
+	type ReminderSettings,
+	reminderSettingsQueryOptions,
+	updateReminderSettingsFn,
+} from "@/utils/settings.functions";
 
 interface RemindersSettingsTabProps {
 	initialData: ReminderSettings;
@@ -27,6 +31,7 @@ function formatDaysBefore(days: number[]): string {
 export function RemindersSettingsTab({
 	initialData,
 }: RemindersSettingsTabProps) {
+	const queryClient = useQueryClient();
 	const [data, setData] = useState(initialData);
 	const [reviewerDaysText, setReviewerDaysText] = useState(
 		formatDaysBefore(initialData.reviewer.daysBefore),
@@ -57,6 +62,9 @@ export function RemindersSettingsTab({
 					revision: data.revision,
 					deadline: { ...data.deadline, daysBefore: deadlineDays },
 				},
+			});
+			await queryClient.invalidateQueries({
+				queryKey: reminderSettingsQueryOptions().queryKey,
 			});
 			setData((prev) => ({
 				...prev,

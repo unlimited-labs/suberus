@@ -2,7 +2,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import type { TransitionResult } from "@/lib/workflow/types";
-import { editorSubmissionQueryOptions } from "@/utils/admin-submissions.functions";
+import {
+	adminSubmissionsQueryOptions,
+	editorSubmissionQueryOptions,
+} from "@/utils/admin-submissions.functions";
 import {
 	confirmConditionsMetFn,
 	editorOverrideFn,
@@ -15,9 +18,14 @@ export function useSubmissionTransitions(submissionId: string) {
 
 	const invalidateSubmission = useCallback(
 		() =>
-			queryClient.invalidateQueries({
-				queryKey: editorSubmissionQueryOptions(submissionId).queryKey,
-			}),
+			Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: editorSubmissionQueryOptions(submissionId).queryKey,
+				}),
+				queryClient.invalidateQueries({
+					queryKey: adminSubmissionsQueryOptions().queryKey,
+				}),
+			]),
 		[queryClient, submissionId],
 	);
 

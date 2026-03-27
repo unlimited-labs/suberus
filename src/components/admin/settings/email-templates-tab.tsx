@@ -1,4 +1,5 @@
 import { IconLoader2, IconMail, IconSignature } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -7,7 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { EmailEventType } from "@/generated/prisma/enums";
-import { updateEmailFooterFn } from "@/utils/settings.functions";
+import {
+	emailFooterQueryOptions,
+	updateEmailFooterFn,
+} from "@/utils/settings.functions";
 import { EmailTemplateCard } from "./email-template-card";
 import { EmailTemplateDialog } from "./email-template-dialog";
 
@@ -82,6 +86,7 @@ export function EmailTemplatesTab({
 	initialData,
 	initialFooter,
 }: EmailTemplatesTabProps) {
+	const queryClient = useQueryClient();
 	const [templates, setTemplates] = useState(initialData);
 	const [editingTemplate, setEditingTemplate] =
 		useState<EmailTemplateUI | null>(null);
@@ -104,6 +109,9 @@ export function EmailTemplatesTab({
 		setIsSavingFooter(true);
 		try {
 			await updateEmailFooterFn({ data: { value: footer } });
+			await queryClient.invalidateQueries({
+				queryKey: emailFooterQueryOptions().queryKey,
+			});
 			toast.success("Email footer saved");
 		} catch (error) {
 			toast.error(

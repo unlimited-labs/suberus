@@ -14,6 +14,7 @@ import {
 	submissionValidationQueryOptions,
 } from "@/utils/settings.functions";
 import {
+	mySubmissionsQueryOptions,
 	submissionDetailQueryOptions,
 	submitDraftFn,
 	updateDraftSubmissionFn,
@@ -171,9 +172,14 @@ function EditSubmissionPage() {
 		}
 
 		toast.success(isDraft ? "Submission submitted" : "Submission updated");
-		await queryClient.invalidateQueries({
-			queryKey: submissionDetailQueryOptions(id).queryKey,
-		});
+		await Promise.all([
+			queryClient.invalidateQueries({
+				queryKey: submissionDetailQueryOptions(id).queryKey,
+			}),
+			queryClient.invalidateQueries({
+				queryKey: mySubmissionsQueryOptions().queryKey,
+			}),
+		]);
 		navigate({ to: "/submissions/$id", params: { id } });
 	};
 
@@ -182,9 +188,14 @@ function EditSubmissionPage() {
 				const saved = await saveSubmission(formData, true);
 				if (!saved) return;
 				toast.success("Draft saved");
-				await queryClient.invalidateQueries({
-					queryKey: submissionDetailQueryOptions(id).queryKey,
-				});
+				await Promise.all([
+					queryClient.invalidateQueries({
+						queryKey: submissionDetailQueryOptions(id).queryKey,
+					}),
+					queryClient.invalidateQueries({
+						queryKey: mySubmissionsQueryOptions().queryKey,
+					}),
+				]);
 				navigate({ to: "/submissions/$id", params: { id } });
 			}
 		: undefined;
