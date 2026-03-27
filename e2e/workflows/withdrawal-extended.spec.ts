@@ -29,6 +29,7 @@ test.describe("Withdrawal from Extended States", () => {
 
 		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
+		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 
 		// Assert
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
@@ -48,6 +49,7 @@ test.describe("Withdrawal from Extended States", () => {
 
 		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
+		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 
 		// Assert
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
@@ -66,6 +68,7 @@ test.describe("Withdrawal from Extended States", () => {
 
 		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
+		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 
 		// Assert
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
@@ -85,6 +88,7 @@ test.describe("Withdrawal from Extended States", () => {
 
 		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
+		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 
 		// Assert
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
@@ -104,6 +108,7 @@ test.describe("Withdrawal from Extended States", () => {
 
 		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
+		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 
 		// Assert
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
@@ -135,6 +140,7 @@ test.describe("Withdrawal from Extended States", () => {
 
 		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
+		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 
 		// Assert - assignment should be cancelled

@@ -191,6 +191,7 @@ function SubmissionDetailPage() {
 								{!isReadOnly && (
 									<ActionsCard
 										submissionId={submission.id}
+										submissionTitle={submission.title}
 										status={submission.status}
 									/>
 								)}

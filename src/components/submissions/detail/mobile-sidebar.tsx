@@ -54,7 +54,11 @@ export function MobileSidebar({
 
 			{/* Mobile Actions */}
 			{!isReadOnly && (
-				<ActionsCard submissionId={submission.id} status={submission.status} />
+				<ActionsCard
+					submissionId={submission.id}
+					submissionTitle={submission.title}
+					status={submission.status}
+				/>
 			)}
 		</div>
 	);

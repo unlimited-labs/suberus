@@ -22,6 +22,7 @@ test.describe("Author Withdrawal", () => {
 
 		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
+		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 
 		// Assert
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
@@ -40,6 +41,7 @@ test.describe("Author Withdrawal", () => {
 
 		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
+		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 
 		// Assert
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
@@ -59,6 +61,7 @@ test.describe("Author Withdrawal", () => {
 
 		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
+		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 
 		// Assert - no action buttons after withdrawal
@@ -78,6 +81,7 @@ test.describe("Author Withdrawal", () => {
 
 		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
+		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 
 		// Assert - assignment status should be CANCELLED
@@ -102,6 +106,7 @@ test.describe("Withdrawal + Admin View", () => {
 		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${id}`);
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
+		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 
 		// Act - admin views in admin panel

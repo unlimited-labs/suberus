@@ -147,6 +147,7 @@ test.describe("Workflow Emails", () => {
 
 		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
+		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 
 		// Assert — no email sent for unhandled submissions
