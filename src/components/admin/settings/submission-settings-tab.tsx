@@ -15,6 +15,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import type { LlmHealthResult } from "@/lib/server/llm";
+import {
+	type ExtractionSettings,
+	extractionAdminSettingsQueryOptions,
+	updateExtractionSettingsFn,
+} from "@/utils/extraction.functions";
 import {
 	reviewGuidelinesQueryOptions,
 	type SubmissionValidationSettings,
@@ -24,11 +30,14 @@ import {
 	updateSubmissionGuidelinesFn,
 	updateSubmissionValidationSettingsFn,
 } from "@/utils/settings.functions";
+import { ExtractionModeSettings } from "./extraction-mode-settings";
 
 interface SubmissionSettingsTabProps {
 	initialData: SubmissionValidationSettings;
 	initialSubmissionGuidelines: string;
 	initialReviewGuidelines: string;
+	initialExtraction: ExtractionSettings;
+	llmHealth: LlmHealthResult;
 }
 
 const submissionGuidelinesPlaceholders = [
@@ -52,6 +61,8 @@ export function SubmissionSettingsTab({
 	initialData,
 	initialSubmissionGuidelines,
 	initialReviewGuidelines,
+	initialExtraction,
+	llmHealth,
 }: SubmissionSettingsTabProps) {
 	const queryClient = useQueryClient();
 	const [data, setData] = useState(initialData);
@@ -62,6 +73,13 @@ export function SubmissionSettingsTab({
 	const [reviewGuidelines, setReviewGuidelines] = useState(
 		initialReviewGuidelines,
 	);
+	const [extractionEnabled, setExtractionEnabled] = useState(
+		initialExtraction.enabled,
+	);
+	const [extractionHeuristic, setExtractionHeuristic] = useState(
+		initialExtraction.heuristic,
+	);
+	const [extractionAi, setExtractionAi] = useState(initialExtraction.ai);
 
 	const handleChange = <K extends keyof SubmissionValidationSettings>(
 		field: K,
@@ -90,6 +108,13 @@ export function SubmissionSettingsTab({
 				updateReviewGuidelinesFn({
 					data: { value: reviewGuidelines },
 				}),
+				updateExtractionSettingsFn({
+					data: {
+						enabled: extractionEnabled,
+						heuristic: extractionHeuristic,
+						ai: extractionAi,
+					},
+				}),
 			]);
 			await Promise.all([
 				queryClient.invalidateQueries({
@@ -100,6 +125,9 @@ export function SubmissionSettingsTab({
 				}),
 				queryClient.invalidateQueries({
 					queryKey: reviewGuidelinesQueryOptions().queryKey,
+				}),
+				queryClient.invalidateQueries({
+					queryKey: extractionAdminSettingsQueryOptions().queryKey,
 				}),
 			]);
 			toast.success("Submission settings saved");
@@ -383,6 +411,16 @@ export function SubmissionSettingsTab({
 					placeholder="- Provide constructive feedback..."
 				/>
 			</SettingsSection>
+
+			<ExtractionModeSettings
+				enabled={extractionEnabled}
+				onEnabledChange={setExtractionEnabled}
+				heuristic={extractionHeuristic}
+				onHeuristicChange={setExtractionHeuristic}
+				ai={extractionAi}
+				onAiChange={setExtractionAi}
+				llmHealth={llmHealth}
+			/>
 
 			<div className="flex justify-end border-t pt-6">
 				<Button onClick={handleSave} disabled={isSaving}>

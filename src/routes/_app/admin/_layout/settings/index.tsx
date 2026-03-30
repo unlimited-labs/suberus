@@ -36,6 +36,10 @@ import { TracksTab } from "@/components/admin/tracks/tracks-tab";
 import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { emailTemplatesQueryOptions } from "@/utils/email-templates.functions";
+import {
+	extractionAdminSettingsQueryOptions,
+	llmHealthQueryOptions,
+} from "@/utils/extraction.functions";
 import { paymentInstructionsQueryOptions } from "@/utils/fee.functions";
 import { reviewerUsersQueryOptions } from "@/utils/reviewers.functions";
 import {
@@ -87,6 +91,10 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			),
 			context.queryClient.ensureQueryData(feeTypesQueryOptions()),
 			context.queryClient.ensureQueryData(feeCurrencyQueryOptions()),
+			context.queryClient.ensureQueryData(
+				extractionAdminSettingsQueryOptions(),
+			),
+			context.queryClient.ensureQueryData(llmHealthQueryOptions()),
 		]);
 	},
 	component: AdminSettingsPage,
@@ -153,6 +161,10 @@ function AdminSettingsPage() {
 	);
 	const { data: feeTypes } = useSuspenseQuery(feeTypesQueryOptions());
 	const { data: feeCurrency } = useSuspenseQuery(feeCurrencyQueryOptions());
+	const { data: extractionSettings } = useSuspenseQuery(
+		extractionAdminSettingsQueryOptions(),
+	);
+	const { data: llmHealth } = useSuspenseQuery(llmHealthQueryOptions());
 
 	const emailTemplates = emailTemplatesRaw.map(toEmailTemplateUI);
 
@@ -193,6 +205,8 @@ function AdminSettingsPage() {
 								initialData={submissionSettings}
 								initialSubmissionGuidelines={submissionGuidelines as string}
 								initialReviewGuidelines={reviewGuidelines as string}
+								initialExtraction={extractionSettings}
+								llmHealth={llmHealth}
 							/>
 						</TabsContent>
 

@@ -8,6 +8,7 @@ import {
 } from "@/components/forms/submission/submission-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
+import { extractionSettingsQueryOptions } from "@/utils/extraction.functions";
 import {
 	activeSubmissionTypesQueryOptions,
 	submissionGuidelinesQueryOptions,
@@ -30,6 +31,7 @@ export const Route = createFileRoute("/_app/submissions/$id_/edit")({
 			context.queryClient.ensureQueryData(activeSubmissionTypesQueryOptions()),
 			context.queryClient.ensureQueryData(submissionValidationQueryOptions()),
 			context.queryClient.ensureQueryData(submissionGuidelinesQueryOptions()),
+			context.queryClient.ensureQueryData(extractionSettingsQueryOptions()),
 		]);
 	},
 	component: EditSubmissionPage,
@@ -46,6 +48,9 @@ function EditSubmissionPage() {
 	);
 	const { data: submissionGuidelines } = useSuspenseQuery(
 		submissionGuidelinesQueryOptions(),
+	);
+	const { data: extractionSettings } = useSuspenseQuery(
+		extractionSettingsQueryOptions(),
 	);
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
@@ -221,6 +226,7 @@ function EditSubmissionPage() {
 					typeConfigs={typeConfigs}
 					validationSettings={validationSettings}
 					guidelines={submissionGuidelines}
+					extractionEnabled={extractionSettings.enabled}
 				/>
 			</div>
 		</div>

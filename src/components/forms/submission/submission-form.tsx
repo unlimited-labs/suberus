@@ -18,12 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import {
-	Field,
-	FieldDescription,
-	FieldError,
-	FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Markdown } from "@/components/ui/markdown";
 import {
 	Select,
@@ -40,8 +35,10 @@ import { cn } from "@/lib/utils";
 import { getAffiliationById } from "@/utils/affiliations.functions";
 import { activeTracksQueryOptions } from "@/utils/tracks.functions";
 import { type Author, AuthorsInput } from "./authors-input";
-import { FileDropzone } from "./file-dropzone";
+import { ExtractionOverlay } from "./extraction-overlay";
+import { FileUploadSection } from "./file-upload-section";
 import { KeywordsInput } from "./keywords-input";
+import { useDocumentExtraction } from "./use-document-extraction";
 
 /** Active submission type from settings */
 export interface ActiveSubmissionType {
@@ -76,6 +73,7 @@ interface SubmissionFormProps {
 	typeConfigs: ActiveSubmissionType[];
 	validationSettings: ValidationSettings;
 	guidelines?: string;
+	extractionEnabled?: boolean;
 }
 
 export interface SubmissionFormData {
@@ -158,6 +156,7 @@ export function SubmissionForm({
 	typeConfigs,
 	validationSettings,
 	guidelines,
+	extractionEnabled,
 }: SubmissionFormProps) {
 	const [isSavingDraft, setIsSavingDraft] = useState(false);
 	const { user } = useSession();
@@ -387,11 +386,33 @@ export function SubmissionForm({
 	const allowedExtensions = currentTypeConfig?.config.allowedExtensions || [];
 	const acceptString = allowedExtensions.map((ext) => `.${ext}`).join(",");
 
+	// Document extraction hook
+	const {
+		isExtracting,
+		elapsedSeconds,
+		handleFileChange: handleFileWithExtraction,
+	} = useDocumentExtraction({
+		enabled: !!extractionEnabled,
+		skipExtraction: !!initialData?.title,
+		onExtracted: ({ title, authors, keywords }) => {
+			if (title) form.setFieldValue("title", title);
+			if (authors) {
+				form.setFieldValue("authors", authors);
+				hasAutoFilledRef.current = true;
+			}
+			if (keywords) form.setFieldValue("keywords", keywords);
+		},
+	});
+
 	return (
 		<div className="mx-auto w-full max-w-7xl">
 			<div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
 				{/* Main Form */}
-				<div className="overflow-hidden rounded-2xl bg-card shadow-2xl">
+				<div className="relative overflow-hidden rounded-2xl bg-card shadow-2xl">
+					<ExtractionOverlay
+						isExtracting={isExtracting}
+						elapsedSeconds={elapsedSeconds}
+					/>
 					<div className="p-8">
 						{/* Header */}
 						<div className="mb-8">
@@ -478,6 +499,26 @@ export function SubmissionForm({
 								</form.Field>
 							</div>
 
+							{/* File upload (above content when extraction enabled) */}
+							{isFileFormat && extractionEnabled && (
+								<>
+									<div className="border-t" />
+									<form.Field name="file">
+										{(field) => (
+											<FileUploadSection
+												value={field.state.value}
+												onChange={(file) =>
+													handleFileWithExtraction(file, field.handleChange)
+												}
+												accept={acceptString}
+												maxSize={validationSettings.maxFileSize}
+												allowedExtensions={allowedExtensions}
+											/>
+										)}
+									</form.Field>
+								</>
+							)}
+
 							<div className="border-t" />
 
 							{/* Content Section */}
@@ -540,32 +581,17 @@ export function SubmissionForm({
 										}}
 									</form.Field>
 
-									{/* Show file dropzone ONLY for FILE format */}
-									{isFileFormat && (
+									{/* Show file dropzone in content section when extraction NOT enabled */}
+									{isFileFormat && !extractionEnabled && (
 										<form.Field name="file">
 											{(field) => (
-												<Field>
-													<FieldLabel>
-														Document{" "}
-														<span className="text-destructive text-xs font-normal">
-															*
-														</span>
-													</FieldLabel>
-													<FileDropzone
-														value={field.state.value}
-														onChange={field.handleChange}
-														accept={acceptString}
-														maxSize={validationSettings.maxFileSize}
-													/>
-													{!field.state.value && (
-														<FieldDescription>
-															Accepted formats:{" "}
-															{allowedExtensions
-																.map((e) => e.toUpperCase())
-																.join(", ")}
-														</FieldDescription>
-													)}
-												</Field>
+												<FileUploadSection
+													value={field.state.value}
+													onChange={field.handleChange}
+													accept={acceptString}
+													maxSize={validationSettings.maxFileSize}
+													allowedExtensions={allowedExtensions}
+												/>
 											)}
 										</form.Field>
 									)}

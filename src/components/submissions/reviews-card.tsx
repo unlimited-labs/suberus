@@ -2,6 +2,7 @@ import {
 	IconDownload,
 	IconMessageCircle,
 	IconPaperclip,
+	IconStarFilled,
 } from "@tabler/icons-react";
 import {
 	Accordion,
@@ -19,7 +20,6 @@ interface ReviewsCardProps {
 	round?: number;
 }
 
-// Helper function to get color class based on score - unified color scheme
 function getScoreColor(score: number): {
 	bar: string;
 	text: string;
@@ -92,14 +92,13 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 		return null;
 	}
 
-	// Calculate average score from available scores
 	const allScores = reviews.flatMap((r) =>
 		r.scores ? Object.values(r.scores) : [],
 	);
-	const avgScore =
-		allScores.length > 0
-			? allScores.reduce((sum, s) => sum + s, 0) / allScores.length
-			: 0;
+	const hasScores = allScores.length > 0;
+	const avgScore = hasScores
+		? allScores.reduce((sum, s) => sum + s, 0) / allScores.length
+		: 0;
 	const avgColorConfig = getScoreColor(avgScore);
 
 	return (
@@ -109,30 +108,39 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 		>
 			<div className="space-y-4">
 				{/* Header */}
-				<div className="flex items-center gap-3">
-					<IconMessageCircle className="size-5 text-muted-foreground" />
-					<h2 className="text-lg font-semibold text-foreground">
-						Reviews – Round {round}
-					</h2>
-				</div>
-
-				{/* Average Score Card */}
-				<div
-					className={cn(
-						"flex items-center justify-between p-4 rounded-xl border",
-						avgColorConfig.bg,
-					)}
-				>
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-3">
+						<IconMessageCircle className="size-5 text-muted-foreground" />
+						<h2 className="text-lg font-semibold text-foreground">
+							Reviews – Round {round}
+						</h2>
+					</div>
 					<span className="text-sm text-muted-foreground">
-						Average score ({reviews.length}{" "}
-						{reviews.length === 1 ? "review" : "reviews"})
-					</span>
-					<span className={cn("text-xl font-bold", avgColorConfig.text)}>
-						{avgScore.toFixed(2)}/5
+						{reviews.length} {reviews.length === 1 ? "review" : "reviews"}
 					</span>
 				</div>
 
-				{/* Reviews Accordion */}
+				{/* Average Score Card — only when scoring is enabled */}
+				{hasScores && (
+					<div
+						className={cn(
+							"flex items-center justify-between p-4 rounded-xl border",
+							avgColorConfig.bg,
+						)}
+					>
+						<div className="flex items-center gap-2">
+							<IconStarFilled className="size-4 text-muted-foreground" />
+							<span className="text-sm text-muted-foreground">
+								Average score
+							</span>
+						</div>
+						<span className={cn("text-xl font-bold", avgColorConfig.text)}>
+							{avgScore.toFixed(2)}/5
+						</span>
+					</div>
+				)}
+
+				{/* Reviews */}
 				<Accordion type="single" collapsible className="space-y-3">
 					{reviews.map((review) => {
 						const scoreEntries = review.scores
@@ -148,6 +156,8 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 							typeof review.createdAt === "string"
 								? new Date(review.createdAt)
 								: review.createdAt;
+						const hasComments = !!review.comments;
+						const hasAttachment = !!review.attachment;
 
 						return (
 							<AccordionItem
@@ -168,11 +178,17 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 												{reviewAvg.toFixed(1)}/5
 											</Badge>
 										)}
+										{hasComments && (
+											<IconMessageCircle className="size-3.5 text-muted-foreground" />
+										)}
+										{hasAttachment && (
+											<IconPaperclip className="size-3.5 text-muted-foreground" />
+										)}
 									</div>
 								</AccordionTrigger>
 								<AccordionContent className="px-4 pb-4 pt-1">
 									<div className="space-y-4">
-										{/* Scores - dynamic grid */}
+										{/* Scores */}
 										{scoreEntries.length > 0 && (
 											<div
 												className={cn(
@@ -192,7 +208,11 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 
 										{/* Comments */}
 										{review.comments && (
-											<div className="pt-3 border-t">
+											<div
+												className={cn(
+													scoreEntries.length > 0 ? "pt-3 border-t" : "",
+												)}
+											>
 												<p className="text-sm font-medium text-muted-foreground mb-2">
 													Comments
 												</p>
@@ -200,6 +220,13 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 													{review.comments}
 												</div>
 											</div>
+										)}
+
+										{/* No content fallback */}
+										{!review.comments && scoreEntries.length === 0 && (
+											<p className="text-sm text-muted-foreground italic">
+												No detailed feedback provided.
+											</p>
 										)}
 
 										{/* Attachment */}

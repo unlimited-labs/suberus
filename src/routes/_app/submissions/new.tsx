@@ -17,6 +17,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/use-session";
 import { sendVerificationEmail } from "@/lib/auth-client";
+import { extractionSettingsQueryOptions } from "@/utils/extraction.functions";
 import {
 	activeSubmissionTypesQueryOptions,
 	submissionGuidelinesQueryOptions,
@@ -35,6 +36,7 @@ export const Route = createFileRoute("/_app/submissions/new")({
 			context.queryClient.ensureQueryData(activeSubmissionTypesQueryOptions()),
 			context.queryClient.ensureQueryData(submissionValidationQueryOptions()),
 			context.queryClient.ensureQueryData(submissionGuidelinesQueryOptions()),
+			context.queryClient.ensureQueryData(extractionSettingsQueryOptions()),
 		]);
 	},
 	component: NewSubmissionPage,
@@ -51,6 +53,9 @@ function NewSubmissionPage() {
 	);
 	const { data: submissionGuidelines } = useSuspenseQuery(
 		submissionGuidelinesQueryOptions(),
+	);
+	const { data: extractionSettings } = useSuspenseQuery(
+		extractionSettingsQueryOptions(),
 	);
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
@@ -238,6 +243,7 @@ function NewSubmissionPage() {
 					typeConfigs={typeConfigs}
 					validationSettings={validationSettings}
 					guidelines={submissionGuidelines}
+					extractionEnabled={extractionSettings.enabled}
 				/>
 			</div>
 		</div>
