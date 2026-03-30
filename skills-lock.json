@@ -6,6 +6,11 @@
       "sourceType": "github",
       "computedHash": "576ee8b8c2e1b514b1eea2d152320e208e4187e44fa4ae923ad33142f25ee8d1"
     },
+    "enhance-prompt": {
+      "source": "google-labs-code/stitch-skills",
+      "sourceType": "github",
+      "computedHash": "28c47bcbc0e8d81f48fbbbe41d227efe4018a32c5d4674b0d052a70d215072d3"
+    },
     "find-skills": {
       "source": "vercel-labs/skills",
       "sourceType": "github",
@@ -20,6 +25,11 @@
       "source": "softaworks/agent-toolkit",
       "sourceType": "github",
       "computedHash": "da3caa5f2bfd7274fad3f08524ff3ad4f427978773c3e77e7b14e44aaac31d78"
+    },
+    "tanstack-cli": {
+      "source": "tanstack-skills/tanstack-skills",
+      "sourceType": "github",
+      "computedHash": "3c6f36d9e50abb4b72c11a5a0d2e9bbc98dfb1eff05a398923b31e6e8e108909"
     },
     "ui-ux-pro-max": {
       "source": "nextlevelbuilder/ui-ux-pro-max-skill",
