@@ -66,8 +66,13 @@ export function DeskAcceptDialog({
 		}
 	};
 
+	const handleOpenChange = (isOpen: boolean) => {
+		if (!isOpen) setReason("");
+		onOpenChange(isOpen);
+	};
+
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
 					<DialogTitle>Desk Acceptance</DialogTitle>
@@ -107,7 +112,7 @@ export function DeskAcceptDialog({
 				<DialogFooter>
 					<Button
 						variant="outline"
-						onClick={() => onOpenChange(false)}
+						onClick={() => handleOpenChange(false)}
 						disabled={isSubmitting}
 					>
 						Cancel

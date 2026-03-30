@@ -118,8 +118,17 @@ export function EditorDecisionDialog({
 		}
 	};
 
+	const handleOpenChange = (isOpen: boolean) => {
+		if (!isOpen) {
+			setSelectedDecision(null);
+			setReasoning("");
+			setLetterToAuthor("");
+		}
+		onOpenChange(isOpen);
+	};
+
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
 				<DialogHeader>
 					<DialogTitle>Editor Decision</DialogTitle>
@@ -134,8 +143,11 @@ export function EditorDecisionDialog({
 						<div className="space-y-3">
 							<Label className="text-base">Reviewer Recommendations</Label>
 							<div className="space-y-2 max-h-48 overflow-y-auto">
-								{reviews.map((review, index) => (
-									<div key={index} className="rounded-lg border p-3 space-y-2">
+								{reviews.map((review) => (
+									<div
+										key={review.reviewerName}
+										className="rounded-lg border p-3 space-y-2"
+									>
 										<div className="flex items-center justify-between">
 											<span className="font-medium text-sm">
 												{review.reviewerName}

@@ -5,6 +5,7 @@ import {
 	IconUser,
 	IconX,
 } from "@tabler/icons-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -56,41 +57,31 @@ export function AssignReviewerDialog({
 	onAssigned,
 }: AssignReviewerDialogProps) {
 	const { formatDate } = useDateFormat();
+	const queryClient = useQueryClient();
 	const [search, setSearch] = useState("");
-	const [isLoading, setIsLoading] = useState(false);
-	const [isAssigning, setIsAssigning] = useState(false);
-	const [availableReviewers, setAvailableReviewers] = useState<
-		AvailableReviewer[]
-	>([]);
-	const [currentAssignments, setCurrentAssignments] = useState<
-		AssignmentWithReviewer[]
-	>([]);
+	const [assigningReviewerId, setAssigningReviewerId] = useState<string | null>(
+		null,
+	);
 	const [customDeadline, setCustomDeadline] = useState("");
 
-	async function loadData() {
-		setIsLoading(true);
-		try {
-			const [reviewers, assignments] = await Promise.all([
-				getAvailableReviewersFn({ data: { submissionId } }),
-				getSubmissionAssignmentsFn({ data: { submissionId } }),
-			]);
-			setAvailableReviewers(reviewers);
-			setCurrentAssignments(assignments);
-		} catch (_error) {
-			toast.error("Failed to load reviewers");
-		} finally {
-			setIsLoading(false);
-		}
-	}
-
-	// Load data when dialog opens
-	// biome-ignore lint/correctness/useExhaustiveDependencies: loadData is stable
+	// Initialize deadline when dialog opens
 	useEffect(() => {
-		if (open) {
-			loadData();
-			setCustomDeadline(computeDefaultDeadline(reviewDeadlineDays));
-		}
-	}, [open, submissionId, reviewDeadlineDays]);
+		if (open) setCustomDeadline(computeDefaultDeadline(reviewDeadlineDays));
+	}, [open, reviewDeadlineDays]);
+
+	const { data: availableReviewers = [], isLoading } = useQuery<
+		AvailableReviewer[]
+	>({
+		queryKey: ["submissions", submissionId, "available-reviewers"],
+		queryFn: () => getAvailableReviewersFn({ data: { submissionId } }),
+		enabled: open,
+	});
+
+	const { data: currentAssignments = [] } = useQuery<AssignmentWithReviewer[]>({
+		queryKey: ["submissions", submissionId, "assignments"],
+		queryFn: () => getSubmissionAssignmentsFn({ data: { submissionId } }),
+		enabled: open,
+	});
 
 	// Filter reviewers by search
 	const filteredReviewers = availableReviewers.filter((r) => {
@@ -109,7 +100,7 @@ export function AssignReviewerDialog({
 	);
 
 	async function handleAssign(reviewerId: string) {
-		setIsAssigning(true);
+		setAssigningReviewerId(reviewerId);
 		try {
 			const result = await assignReviewerFn({
 				data: {
@@ -123,7 +114,9 @@ export function AssignReviewerDialog({
 
 			if (result.success) {
 				toast.success("Reviewer assigned");
-				await loadData();
+				await queryClient.invalidateQueries({
+					queryKey: ["submissions", submissionId],
+				});
 				onAssigned?.();
 			} else {
 				toast.error(result.error || "Failed to assign reviewer");
@@ -131,7 +124,7 @@ export function AssignReviewerDialog({
 		} catch (_error) {
 			toast.error("Failed to assign reviewer");
 		} finally {
-			setIsAssigning(false);
+			setAssigningReviewerId(null);
 		}
 	}
 
@@ -143,7 +136,9 @@ export function AssignReviewerDialog({
 
 			if (result.success) {
 				toast.success("Assignment cancelled");
-				await loadData();
+				await queryClient.invalidateQueries({
+					queryKey: ["submissions", submissionId],
+				});
 				onAssigned?.();
 			} else {
 				toast.error(result.error || "Failed to cancel assignment");
@@ -303,9 +298,9 @@ export function AssignReviewerDialog({
 										<Button
 											size="sm"
 											onClick={() => handleAssign(reviewer.id)}
-											disabled={isAssigning}
+											disabled={assigningReviewerId !== null}
 										>
-											{isAssigning ? (
+											{assigningReviewerId === reviewer.id ? (
 												<IconLoader2 className="size-4 animate-spin" />
 											) : (
 												"Assign"
