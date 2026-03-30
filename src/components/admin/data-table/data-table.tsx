@@ -28,7 +28,10 @@ import { DataTablePagination } from "./data-table-pagination";
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
 	data: TData[];
-	toolbar?: (table: ReturnType<typeof useReactTable<TData>>) => React.ReactNode;
+	toolbar?: (
+		table: ReturnType<typeof useReactTable<TData>>,
+		rowSelection: RowSelectionState,
+	) => React.ReactNode;
 	mobileCard?: (row: TData) => React.ReactNode;
 	getRowId?: (row: TData) => string;
 	/** Static data-testid applied to each data row (desktop `<tr>` and mobile card wrapper) */
@@ -80,7 +83,7 @@ export function DataTable<TData, TValue>({
 
 	return (
 		<div className="space-y-4">
-			<div>{toolbar?.(table)}</div>
+			<div>{toolbar?.(table, rowSelection)}</div>
 
 			{/* Desktop Table */}
 			<div className="hidden md:block rounded-md border border-border/50">

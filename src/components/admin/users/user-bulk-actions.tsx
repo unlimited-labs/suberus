@@ -1,9 +1,5 @@
-import {
-	useMutation,
-	useQueryClient,
-	useSuspenseQuery,
-} from "@tanstack/react-query";
-import type { Table } from "@tanstack/react-table";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { RowSelectionState, Table } from "@tanstack/react-table";
 import { useState } from "react";
 import { BulkActionDialog } from "@/components/admin/data-table";
 import { Button } from "@/components/ui/button";
@@ -29,6 +25,7 @@ import {
 
 interface UserBulkActionsProps {
 	table: Table<AdminUser>;
+	rowSelection: RowSelectionState;
 }
 
 interface BulkActionPayload {
@@ -40,21 +37,16 @@ interface BulkActionPayload {
 	role?: UserRole;
 }
 
-export function UserBulkActions({ table }: UserBulkActionsProps) {
+export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 	const queryClient = useQueryClient();
 	const { canChangeRoles } = useAdminAuth();
-	const selectedRows = table.getFilteredSelectedRowModel().rows;
-	const selectedCount = selectedRows.length;
+	const selectedCount = Object.keys(rowSelection).length;
+	const selectedRows = table
+		.getCoreRowModel()
+		.rows.filter((row) => Boolean(rowSelection[row.id]));
 
-	const { data: dynamicFeeTypes } = useSuspenseQuery(feeTypesQueryOptions());
-	const { data: feeCurrency } = useSuspenseQuery(feeCurrencyQueryOptions());
-
-	const feeTypes = dynamicFeeTypes as Array<{
-		id: string;
-		name: string;
-		amount: number;
-	}>;
-	const currency = feeCurrency as string;
+	const { data: feeTypes = [] } = useQuery(feeTypesQueryOptions());
+	const { data: currency = "" } = useQuery(feeCurrencyQueryOptions());
 
 	const [selectedAction, setSelectedAction] = useState<string>("");
 	const [feeDialogOpen, setFeeDialogOpen] = useState(false);

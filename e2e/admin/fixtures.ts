@@ -46,14 +46,11 @@ export class AdminUsersPage {
 	}
 
 	async selectUser(user: { email: string; firstName: string; lastName: string }) {
-		// Search by full name for precise match (firstName "Test" alone matches too many e2e users)
-		await this.search(`${user.firstName} ${user.lastName}`)
-		// Find the row by the exact email text - wait for it to be visible after filtering
+		// Find the row by email — the email is unique, no need to search first
 		const row = this.page.locator("tr").filter({ has: this.page.locator(`text="${user.email}"`) })
 		await expect(row).toBeVisible({ timeout: 10000 })
 		const checkbox = row.getByRole("checkbox")
-		await checkbox.click()
-		// Wait for checkbox to be checked
+		await checkbox.check()
 		await expect(checkbox).toBeChecked()
 	}
 

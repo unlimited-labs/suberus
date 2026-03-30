@@ -51,13 +51,15 @@ function UsersPage() {
 					data={users}
 					getRowId={(row) => row.id}
 					mobileCard={UserMobileCard}
-					toolbar={(table) => (
+					toolbar={(table, rowSelection) => (
 						<DataTableToolbar
 							table={table}
 							searchKey="name"
 							searchPlaceholder="Search users..."
 							columnLabels={columnLabels}
-							actions={<UserBulkActions table={table} />}
+							actions={
+								<UserBulkActions table={table} rowSelection={rowSelection} />
+							}
 						/>
 					)}
 				/>
