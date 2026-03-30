@@ -106,9 +106,10 @@ interface RecentActivityProps {
 const PAGE_SIZE = 20;
 
 export function RecentActivity({ events }: RecentActivityProps) {
-	const [allEvents, setAllEvents] = useState<ActivityEvent[]>(events ?? []);
+	const [extraEvents, setExtraEvents] = useState<ActivityEvent[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [hasMore, setHasMore] = useState((events?.length ?? 0) === PAGE_SIZE);
+	const allEvents = [...(events ?? []), ...extraEvents];
 
 	async function handleShowMore() {
 		const lastEvent = allEvents[allEvents.length - 1];
@@ -118,7 +119,7 @@ export function RecentActivity({ events }: RecentActivityProps) {
 			const more = await getMoreActivity({
 				data: { cursor: lastEvent.id },
 			});
-			setAllEvents((prev) => [...prev, ...more]);
+			setExtraEvents((prev) => [...prev, ...more]);
 			setHasMore(more.length === PAGE_SIZE);
 		} finally {
 			setLoading(false);

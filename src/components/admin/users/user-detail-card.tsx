@@ -436,7 +436,10 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 					<div className="py-4">
 						<Select
 							value={selectedRole}
-							onValueChange={(v) => setSelectedRole(v as UserRole)}
+							onValueChange={(v) => {
+								const found = userRoleOptions.find((opt) => opt.value === v);
+								if (found) setSelectedRole(found.value);
+							}}
 						>
 							<SelectTrigger>
 								<SelectValue placeholder="Select role" />

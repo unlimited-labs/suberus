@@ -171,7 +171,10 @@ export function UserBulkActions({ table }: UserBulkActionsProps) {
 			>
 				<Select
 					value={selectedRole}
-					onValueChange={(v) => setSelectedRole(v as UserRole)}
+					onValueChange={(v) => {
+						const found = userRoleOptions.find((opt) => opt.value === v);
+						if (found) setSelectedRole(found.value);
+					}}
 				>
 					<SelectTrigger>
 						<SelectValue placeholder="Select role" />

@@ -3,21 +3,9 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/admin/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { invitationStatusConfig } from "@/lib/labels/invitation-status";
 import { roleLabels } from "@/lib/labels/user";
 import type { AdminInvitation } from "@/lib/server/admin/invitations";
-
-const statusConfig: Record<
-	string,
-	{
-		label: string;
-		variant: "default" | "secondary" | "destructive" | "outline";
-	}
-> = {
-	PENDING: { label: "Pending", variant: "secondary" },
-	USED: { label: "Used", variant: "default" },
-	EXPIRED: { label: "Expired", variant: "outline" },
-	CANCELLED: { label: "Cancelled", variant: "destructive" },
-};
 
 interface InvitationColumnsOptions {
 	onResend: (id: string) => void;
@@ -60,7 +48,7 @@ export function createInvitationColumns(
 			),
 			cell: ({ row }) => {
 				const status = row.getValue("status") as string;
-				const config = statusConfig[status] ?? {
+				const config = invitationStatusConfig[status] ?? {
 					label: status,
 					variant: "outline" as const,
 				};

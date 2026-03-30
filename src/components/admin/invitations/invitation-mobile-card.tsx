@@ -2,21 +2,9 @@ import { IconMailForward, IconX } from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { invitationStatusConfig } from "@/lib/labels/invitation-status";
 import { roleLabels } from "@/lib/labels/user";
 import type { AdminInvitation } from "@/lib/server/admin/invitations";
-
-const statusConfig: Record<
-	string,
-	{
-		label: string;
-		variant: "default" | "secondary" | "destructive" | "outline";
-	}
-> = {
-	PENDING: { label: "Pending", variant: "secondary" },
-	USED: { label: "Used", variant: "default" },
-	EXPIRED: { label: "Expired", variant: "outline" },
-	CANCELLED: { label: "Cancelled", variant: "destructive" },
-};
 
 interface InvitationMobileCardProps {
 	invitation: AdminInvitation;
@@ -29,7 +17,7 @@ export function InvitationMobileCard({
 	onResend,
 	onCancel,
 }: InvitationMobileCardProps) {
-	const status = statusConfig[invitation.status] ?? {
+	const status = invitationStatusConfig[invitation.status] ?? {
 		label: invitation.status,
 		variant: "outline" as const,
 	};

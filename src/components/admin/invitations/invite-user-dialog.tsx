@@ -88,9 +88,19 @@ export function InviteUserDialog({
 						<Label htmlFor="invite-role">Role</Label>
 						<Select
 							value={role}
-							onValueChange={(v) =>
-								setRole(v as "EDITOR" | "REVIEWER" | "ADMIN")
-							}
+							onValueChange={(v) => {
+								const inviteRoles = [
+									"REVIEWER",
+									"EDITOR",
+									"ADMIN",
+								] as const satisfies readonly (
+									| "EDITOR"
+									| "REVIEWER"
+									| "ADMIN"
+								)[];
+								const isValid = (inviteRoles as readonly string[]).includes(v);
+								if (isValid) setRole(v as (typeof inviteRoles)[number]);
+							}}
 						>
 							<SelectTrigger id="invite-role">
 								<SelectValue />

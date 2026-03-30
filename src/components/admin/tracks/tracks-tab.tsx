@@ -58,6 +58,7 @@ export function TracksTab({
 			</Card>
 
 			<TrackDialog
+				key={editingTrack?.id ?? "new"}
 				open={dialogOpen}
 				onOpenChange={handleCloseDialog}
 				track={editingTrack || undefined}

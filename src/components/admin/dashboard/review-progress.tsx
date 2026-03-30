@@ -62,8 +62,8 @@ export function ReviewProgress({ data }: ReviewProgressProps) {
 								dataKey="value"
 								strokeWidth={0}
 							>
-								{chartData.map((entry, index) => (
-									<Cell key={`cell-${index}`} fill={entry.fill} />
+								{chartData.map((entry) => (
+									<Cell key={entry.name} fill={entry.fill} />
 								))}
 							</Pie>
 						</PieChart>

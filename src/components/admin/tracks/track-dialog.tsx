@@ -1,5 +1,5 @@
 import { IconLoader2 } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,15 +46,6 @@ export function TrackDialog({
 	);
 	const [isActive, setIsActive] = useState(track?.isActive ?? true);
 	const [isSaving, setIsSaving] = useState(false);
-
-	// Reset form state when dialog opens or track changes
-	useEffect(() => {
-		if (open) {
-			setName(track?.name || "");
-			setSupervisorId(track?.supervisorId || undefined);
-			setIsActive(track?.isActive ?? true);
-		}
-	}, [open, track]);
 
 	const handleSave = async () => {
 		if (!name.trim()) {
