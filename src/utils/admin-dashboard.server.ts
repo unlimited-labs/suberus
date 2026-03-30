@@ -6,6 +6,7 @@ import type {
 	UserRole,
 } from "@/generated/prisma/enums";
 import { checkSmtpHealth, type SmtpHealthResult } from "@/lib/server/email";
+import { checkLlmHealth, type LlmHealthResult } from "@/lib/server/llm";
 import { checkS3Health, type S3HealthResult } from "@/lib/server/storage";
 
 export interface AdminDashboardMetrics {
@@ -51,14 +52,16 @@ export interface AdminDashboardMetrics {
 	usersByCountry: Array<{ country: string; count: number }>;
 	s3: S3HealthResult;
 	smtp: SmtpHealthResult;
+	llm: LlmHealthResult;
 }
 
 export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics> {
 	const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-	const [s3Health, smtpHealth] = await Promise.all([
+	const [s3Health, smtpHealth, llmHealth] = await Promise.all([
 		checkS3Health(),
 		checkSmtpHealth(),
+		checkLlmHealth(),
 	]);
 
 	const [
@@ -263,5 +266,6 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 			.map((g) => ({ country: g.country, count: g._count })),
 		s3: s3Health,
 		smtp: smtpHealth,
+		llm: llmHealth,
 	};
 }

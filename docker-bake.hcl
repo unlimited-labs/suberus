@@ -11,7 +11,7 @@ variable "TAG" {
 }
 
 group "default" {
-  targets = ["app", "migrate"]
+  targets = ["app", "migrate", "docling"]
 }
 
 target "app" {
@@ -35,4 +35,15 @@ target "migrate" {
   ]
   cache-from = ["type=registry,ref=${REGISTRY}/${IMAGE_NAME}:migrate-cache"]
   cache-to   = ["type=registry,ref=${REGISTRY}/${IMAGE_NAME}:migrate-cache,mode=max"]
+}
+
+target "docling" {
+  context    = "./services/docling-api"
+  dockerfile = "Dockerfile"
+  tags = [
+    "${REGISTRY}/suberus/docling:${TAG}",
+    "${REGISTRY}/suberus/docling:latest",
+  ]
+  cache-from = ["type=registry,ref=${REGISTRY}/suberus/docling:cache"]
+  cache-to   = ["type=registry,ref=${REGISTRY}/suberus/docling:cache,mode=max"]
 }

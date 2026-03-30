@@ -77,6 +77,11 @@ export type AppSettingsMap = {
 	FEE_CURRENCY: "EUR" | "USD" | "PLN";
 	FEE_TYPES: Array<{ id: string; name: string; amount: number }>;
 
+	// Extraction settings
+	EXTRACTION_ENABLED: boolean;
+	EXTRACTION_HEURISTIC: boolean;
+	EXTRACTION_AI: boolean;
+
 	// Branding settings
 	BRANDING_LOGO_URL: string;
 	BRANDING_FAVICON_URL: string;

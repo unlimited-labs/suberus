@@ -15,7 +15,16 @@ import {
 } from "../../src/generated/prisma/enums";
 import type { AppSettingKey } from "../../src/lib/settings/types";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { config } from "dotenv";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
 import { TEST_USER, ADMIN_USER, REVIEWER_USER, EDITOR_USER, DEFAULT_PASSWORD } from "./test-users";
+
+// Load .env + .env.test to ensure test schema is used
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const PROJECT_ROOT = resolve(__dirname, "../..");
+config({ quiet: true, path: resolve(PROJECT_ROOT, ".env") });
+config({ quiet: true, path: resolve(PROJECT_ROOT, ".env.test"), override: true });
 
 // Lazy-initialized Prisma client
 let prismaInstance: PrismaClient | null = null;

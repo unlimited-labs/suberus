@@ -24,6 +24,15 @@ export const env = createEnv({
 		SMTP_FROM_EMAIL: z.email(),
 		SMTP_FROM_NAME: z.string(),
 
+		// LLM API (optional, for AI-assisted document extraction)
+		// OpenAI-compatible endpoint (Ollama /v1, llama.cpp, vLLM, etc.)
+		LLM_API_URL: z.url().optional(),
+		LLM_API_KEY: z.string().optional(),
+		LLM_MODEL: z.string().optional(),
+
+		// Docling API (optional, enhances LLM extraction with better markdown)
+		DOCLING_URL: z.url().optional(),
+
 		AUTH_SECRET: z.string(),
 		PORT: z.coerce.number().default(3000),
 

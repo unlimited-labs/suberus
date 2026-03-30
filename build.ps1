@@ -26,6 +26,7 @@ try {
     Write-Host "`n=== Done ===" -ForegroundColor Green
     Write-Host "  Runtime : $($env:REGISTRY)/$($env:IMAGE_NAME):$($env:TAG)"
     Write-Host "  Migrate : $($env:REGISTRY)/$($env:IMAGE_NAME):migrate-$($env:TAG)"
+    Write-Host "  Docling : $($env:REGISTRY)/suberus/docling:$($env:TAG)"
 }
 catch {
     Write-Error "Build pipeline failed: $_"
