@@ -514,7 +514,7 @@ function OptionsEditor({
 				Options
 			</Label>
 			{options.map((opt, i) => (
-				<div key={i} className="flex gap-1.5">
+				<div key={opt} className="flex gap-1.5">
 					<Input
 						value={opt}
 						onChange={(e) => {

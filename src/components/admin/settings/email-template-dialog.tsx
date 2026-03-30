@@ -21,7 +21,6 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { EmailEventType } from "@/generated/prisma/enums";
 import {
 	emailTemplatesQueryOptions,
 	sendTestEmailFn,
@@ -66,11 +65,6 @@ export function EmailTemplateDialog({
 	const [isSaving, setIsSaving] = useState(false);
 	const [isSendingTest, setIsSendingTest] = useState(false);
 
-	// Update local state when template changes
-	if (template && data?.eventType !== template.eventType) {
-		setData(template);
-	}
-
 	if (!data) return null;
 
 	const handleChange = <K extends keyof EmailTemplateUI>(
@@ -86,7 +80,7 @@ export function EmailTemplateDialog({
 		try {
 			await updateEmailTemplateFn({
 				data: {
-					eventType: data.eventType as EmailEventType,
+					eventType: data.eventType,
 					subject: data.subject,
 					body: data.body,
 					ccEmails: data.cc

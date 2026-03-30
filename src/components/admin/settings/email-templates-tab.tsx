@@ -182,6 +182,7 @@ export function EmailTemplatesTab({
 			</SettingsSection>
 
 			<EmailTemplateDialog
+				key={editingTemplate?.eventType ?? "none"}
 				template={editingTemplate}
 				open={dialogOpen}
 				onOpenChange={setDialogOpen}

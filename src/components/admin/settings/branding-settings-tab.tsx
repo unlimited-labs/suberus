@@ -8,7 +8,7 @@ import {
 } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
@@ -65,49 +65,46 @@ export function BrandingSettingsTab({ initialData }: BrandingSettingsTabProps) {
 		}
 	};
 
-	const handleBgUpload = useCallback(
-		async (e: React.ChangeEvent<HTMLInputElement>) => {
-			const file = e.target.files?.[0];
-			if (!file) return;
+	const handleBgUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
 
-			if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-				toast.error("Invalid file type. Use JPG, PNG, or WebP.");
-				return;
-			}
-			if (file.size > MAX_BG_SIZE_BYTES) {
-				toast.error(`File size exceeds ${MAX_BG_SIZE_MB}MB limit.`);
-				return;
-			}
+		if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+			toast.error("Invalid file type. Use JPG, PNG, or WebP.");
+			return;
+		}
+		if (file.size > MAX_BG_SIZE_BYTES) {
+			toast.error(`File size exceeds ${MAX_BG_SIZE_MB}MB limit.`);
+			return;
+		}
 
-			setBgUploading(true);
-			try {
-				const base64 = await new Promise<string>((resolve, reject) => {
-					const reader = new FileReader();
-					reader.onloadend = () => {
-						const result = reader.result as string;
-						// Strip data URL prefix to get raw base64
-						resolve(result.split(",")[1]);
-					};
-					reader.onerror = reject;
-					reader.readAsDataURL(file);
-				});
+		setBgUploading(true);
+		try {
+			const base64 = await new Promise<string>((resolve, reject) => {
+				const reader = new FileReader();
+				reader.onloadend = () => {
+					const result = reader.result as string;
+					// Strip data URL prefix to get raw base64
+					resolve(result.split(",")[1]);
+				};
+				reader.onerror = reject;
+				reader.readAsDataURL(file);
+			});
 
-				const { url } = await uploadAuthBackgroundFn({
-					data: { fileBase64: base64, mimeType: file.type },
-				});
-				setData((prev) => ({ ...prev, authBackgroundUrl: url }));
-				toast.success("Background image uploaded");
-			} catch {
-				toast.error("Failed to upload background image");
-			} finally {
-				setBgUploading(false);
-				if (bgInputRef.current) bgInputRef.current.value = "";
-			}
-		},
-		[],
-	);
+			const { url } = await uploadAuthBackgroundFn({
+				data: { fileBase64: base64, mimeType: file.type },
+			});
+			setData((prev) => ({ ...prev, authBackgroundUrl: url }));
+			toast.success("Background image uploaded");
+		} catch {
+			toast.error("Failed to upload background image");
+		} finally {
+			setBgUploading(false);
+			if (bgInputRef.current) bgInputRef.current.value = "";
+		}
+	};
 
-	const handleBgRemove = useCallback(async () => {
+	const handleBgRemove = async () => {
 		setBgRemoving(true);
 		try {
 			await deleteAuthBackgroundFn();
@@ -118,7 +115,7 @@ export function BrandingSettingsTab({ initialData }: BrandingSettingsTabProps) {
 		} finally {
 			setBgRemoving(false);
 		}
-	}, []);
+	};
 
 	return (
 		<div className="space-y-6">

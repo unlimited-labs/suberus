@@ -315,7 +315,10 @@ export function SubmissionTypeAccordion({
 								<Label>Scoring criteria</Label>
 								<div className="space-y-2">
 									{config.scoringCriteria.map((criterion, index) => (
-										<div key={index} className="flex items-start gap-2">
+										<div
+											key={`${index}-${criterion.name}`}
+											className="flex items-start gap-2"
+										>
 											<div className="grid flex-1 gap-2 sm:grid-cols-2">
 												<Input
 													placeholder="Criterion name"
