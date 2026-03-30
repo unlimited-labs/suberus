@@ -31,6 +31,21 @@
       "sourceType": "github",
       "computedHash": "3c6f36d9e50abb4b72c11a5a0d2e9bbc98dfb1eff05a398923b31e6e8e108909"
     },
+    "typescript-advanced-types": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "computedHash": "ee8377c523a911be41c31037b477805773ca5ab5ade181e44ca7dd3cd8df6692"
+    },
+    "typescript-expert": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "3e45cb0773354ceeefcdf18fac14c8f6f476e7af7d83af57fcde9839d18ea39c"
+    },
+    "typescript-react-reviewer": {
+      "source": "dotneet/claude-code-marketplace",
+      "sourceType": "github",
+      "computedHash": "21fa76f3823df89fbd4e299d03772aaaa5c1d67c586a8b9b51d1888431acd84a"
+    },
     "ui-ux-pro-max": {
       "source": "nextlevelbuilder/ui-ux-pro-max-skill",
       "sourceType": "github",
