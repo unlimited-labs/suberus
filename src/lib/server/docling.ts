@@ -9,6 +9,11 @@
 import { env } from "@/env";
 import { createHealthCache } from "./health-cache";
 
+export interface DoclingHealthResult {
+	status: "healthy" | "unavailable";
+	message: string;
+}
+
 const healthCache = createHealthCache<boolean>(60_000);
 
 async function isDoclingHealthy(): Promise<boolean> {
@@ -30,6 +35,31 @@ async function isDoclingHealthy(): Promise<boolean> {
 		healthCache.set(false);
 		console.warn("[docling] Service unavailable at", env.DOCLING_URL);
 		return false;
+	}
+}
+
+export async function checkDoclingHealth(): Promise<DoclingHealthResult> {
+	if (!env.DOCLING_URL) {
+		return { status: "unavailable", message: "DOCLING_URL not configured" };
+	}
+
+	try {
+		const response = await fetch(env.DOCLING_URL, {
+			signal: AbortSignal.timeout(2_000),
+		});
+
+		if (!response.ok) {
+			return {
+				status: "unavailable",
+				message: `Docling returned ${response.status}`,
+			};
+		}
+		return { status: "healthy", message: "Connected" };
+	} catch {
+		return {
+			status: "unavailable",
+			message: "Cannot reach Docling service",
+		};
 	}
 }
 

@@ -82,6 +82,20 @@ export type AppSettingsMap = {
 	EXTRACTION_HEURISTIC: boolean;
 	EXTRACTION_AI: boolean;
 
+	// Service health (written by scheduled task)
+	SERVICE_HEALTH_LLM: {
+		status: "healthy" | "unavailable";
+		message: string;
+		gpu?: boolean;
+		models?: string[];
+		checkedAt: string;
+	};
+	SERVICE_HEALTH_DOCLING: {
+		status: "healthy" | "unavailable";
+		message: string;
+		checkedAt: string;
+	};
+
 	// Branding settings
 	BRANDING_LOGO_URL: string;
 	BRANDING_FAVICON_URL: string;

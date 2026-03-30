@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import type { LlmHealthResult } from "@/lib/server/llm";
+import type { AppSettingsMap } from "@/lib/settings/types";
 import {
 	type ExtractionSettings,
 	extractionAdminSettingsQueryOptions,
@@ -37,7 +37,8 @@ interface SubmissionSettingsTabProps {
 	initialSubmissionGuidelines: string;
 	initialReviewGuidelines: string;
 	initialExtraction: ExtractionSettings;
-	llmHealth: LlmHealthResult;
+	llmHealth: AppSettingsMap["SERVICE_HEALTH_LLM"];
+	doclingHealth: AppSettingsMap["SERVICE_HEALTH_DOCLING"];
 }
 
 const submissionGuidelinesPlaceholders = [
@@ -63,6 +64,7 @@ export function SubmissionSettingsTab({
 	initialReviewGuidelines,
 	initialExtraction,
 	llmHealth,
+	doclingHealth,
 }: SubmissionSettingsTabProps) {
 	const queryClient = useQueryClient();
 	const [data, setData] = useState(initialData);
@@ -420,6 +422,7 @@ export function SubmissionSettingsTab({
 				ai={extractionAi}
 				onAiChange={setExtractionAi}
 				llmHealth={llmHealth}
+				doclingHealth={doclingHealth}
 			/>
 
 			<div className="flex justify-end border-t pt-6">

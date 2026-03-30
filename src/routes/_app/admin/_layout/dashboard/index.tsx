@@ -33,6 +33,7 @@ function AdminDashboard() {
 					s3={data?.s3}
 					smtp={data?.smtp}
 					llm={data?.llm}
+					docling={data?.docling}
 				/>
 				<MetricsGrid metrics={data} isLoading={false} />
 				<div className="grid gap-6 lg:grid-cols-2">

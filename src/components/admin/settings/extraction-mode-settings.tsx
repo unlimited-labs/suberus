@@ -2,8 +2,8 @@ import { IconFileSearch } from "@tabler/icons-react";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { formatLlmStatus } from "@/lib/format-llm-status";
-import type { LlmHealthResult } from "@/lib/server/llm";
+import { formatDoclingStatus, formatLlmStatus } from "@/lib/format-llm-status";
+import type { AppSettingsMap } from "@/lib/settings/types";
 import { cn } from "@/lib/utils";
 import { EngineToggle } from "./engine-toggle";
 
@@ -14,7 +14,8 @@ interface ExtractionModeSettingsProps {
 	onHeuristicChange: (enabled: boolean) => void;
 	ai: boolean;
 	onAiChange: (enabled: boolean) => void;
-	llmHealth: LlmHealthResult;
+	llmHealth: AppSettingsMap["SERVICE_HEALTH_LLM"];
+	doclingHealth: AppSettingsMap["SERVICE_HEALTH_DOCLING"];
 }
 
 export function ExtractionModeSettings({
@@ -25,8 +26,10 @@ export function ExtractionModeSettings({
 	ai,
 	onAiChange,
 	llmHealth,
+	doclingHealth,
 }: ExtractionModeSettingsProps) {
 	const llmAvailable = llmHealth.status === "healthy";
+	const doclingAvailable = doclingHealth.status === "healthy";
 
 	return (
 		<SettingsSection
@@ -62,6 +65,12 @@ export function ExtractionModeSettings({
 							description="Extracts metadata based on document structure and formatting conventions. Processes instantly, no additional infrastructure required."
 							checked={heuristic}
 							onCheckedChange={onHeuristicChange}
+							footer={
+								<StatusBadge
+									available={doclingAvailable}
+									label={formatDoclingStatus(doclingHealth)}
+								/>
+							}
 						/>
 
 						<EngineToggle
@@ -77,7 +86,7 @@ export function ExtractionModeSettings({
 									: undefined
 							}
 							footer={
-								<LlmStatusBadge
+								<StatusBadge
 									available={llmAvailable}
 									label={formatLlmStatus(llmHealth)}
 								/>
@@ -96,7 +105,7 @@ export function ExtractionModeSettings({
 	);
 }
 
-function LlmStatusBadge({
+function StatusBadge({
 	available,
 	label,
 }: {

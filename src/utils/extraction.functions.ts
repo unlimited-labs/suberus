@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import type { LlmHealthResult } from "@/lib/server/llm";
+import type { AppSettingsMap } from "@/lib/settings/types";
 import { adminMiddleware, authMiddleware } from "./auth.middleware";
 import { getSetting, setSetting } from "./settings.server";
 
@@ -84,15 +84,30 @@ export const updateExtractionSettingsFn = createServerFn({ method: "POST" })
 		]);
 	});
 
-export const checkLlmHealthFn = createServerFn({ method: "GET" })
+export const getLlmHealthFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.handler(async (): Promise<LlmHealthResult> => {
-		const { checkLlmHealth } = await import("@/lib/server/llm");
-		return checkLlmHealth();
-	});
+	.handler(
+		async (): Promise<AppSettingsMap["SERVICE_HEALTH_LLM"]> =>
+			getSetting("SERVICE_HEALTH_LLM"),
+	);
 
 export const llmHealthQueryOptions = () =>
 	queryOptions({
 		queryKey: ["admin", "llm-health"],
-		queryFn: () => checkLlmHealthFn(),
+		queryFn: () => getLlmHealthFn(),
+		refetchInterval: 5 * 60_000,
+	});
+
+export const getDoclingHealthFn = createServerFn({ method: "GET" })
+	.middleware([adminMiddleware])
+	.handler(
+		async (): Promise<AppSettingsMap["SERVICE_HEALTH_DOCLING"]> =>
+			getSetting("SERVICE_HEALTH_DOCLING"),
+	);
+
+export const doclingHealthQueryOptions = () =>
+	queryOptions({
+		queryKey: ["admin", "docling-health"],
+		queryFn: () => getDoclingHealthFn(),
+		refetchInterval: 5 * 60_000,
 	});

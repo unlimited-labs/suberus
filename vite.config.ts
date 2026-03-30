@@ -31,7 +31,9 @@ const nitroConfig: NitroPluginConfig = {
 	experimental: { tasks: true, vite: {} },
 	scheduledTasks: {
 		"*/5 * * * *":
-			isDev || isE2E ? [] : ["mails:reminder", "assignments:overdue"],
+			isDev || isE2E
+				? []
+				: ["mails:reminder", "assignments:overdue", "services:health"],
 	},
 };
 

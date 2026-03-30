@@ -1,6 +1,9 @@
-import type { LlmHealthResult } from "@/lib/server/llm";
+import type { AppSettingsMap } from "@/lib/settings/types";
 
-export function formatLlmStatus(health: LlmHealthResult): string {
+type LlmHealth = AppSettingsMap["SERVICE_HEALTH_LLM"];
+type DoclingHealth = AppSettingsMap["SERVICE_HEALTH_DOCLING"];
+
+export function formatLlmStatus(health: LlmHealth): string {
 	if (health.status !== "healthy") return "LLM unavailable";
 
 	const parts = ["LLM connected"];
@@ -9,6 +12,11 @@ export function formatLlmStatus(health: LlmHealthResult): string {
 	if (health.models?.length) parts.push(health.models.join(", "));
 
 	return parts.join(" · ");
+}
+
+export function formatDoclingStatus(health: DoclingHealth): string {
+	if (health.status !== "healthy") return "Docling unavailable";
+	return "Docling connected";
 }
 
 export function pluralize(

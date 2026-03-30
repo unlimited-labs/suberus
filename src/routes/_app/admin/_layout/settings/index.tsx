@@ -37,6 +37,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { emailTemplatesQueryOptions } from "@/utils/email-templates.functions";
 import {
+	doclingHealthQueryOptions,
 	extractionAdminSettingsQueryOptions,
 	llmHealthQueryOptions,
 } from "@/utils/extraction.functions";
@@ -95,6 +96,7 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 				extractionAdminSettingsQueryOptions(),
 			),
 			context.queryClient.ensureQueryData(llmHealthQueryOptions()),
+			context.queryClient.ensureQueryData(doclingHealthQueryOptions()),
 		]);
 	},
 	component: AdminSettingsPage,
@@ -165,6 +167,7 @@ function AdminSettingsPage() {
 		extractionAdminSettingsQueryOptions(),
 	);
 	const { data: llmHealth } = useSuspenseQuery(llmHealthQueryOptions());
+	const { data: doclingHealth } = useSuspenseQuery(doclingHealthQueryOptions());
 
 	const emailTemplates = emailTemplatesRaw.map(toEmailTemplateUI);
 
@@ -207,6 +210,7 @@ function AdminSettingsPage() {
 								initialReviewGuidelines={reviewGuidelines as string}
 								initialExtraction={extractionSettings}
 								llmHealth={llmHealth}
+								doclingHealth={doclingHealth}
 							/>
 						</TabsContent>
 

@@ -6,8 +6,9 @@ import type {
 	UserRole,
 } from "@/generated/prisma/enums";
 import { checkSmtpHealth, type SmtpHealthResult } from "@/lib/server/email";
-import { checkLlmHealth, type LlmHealthResult } from "@/lib/server/llm";
 import { checkS3Health, type S3HealthResult } from "@/lib/server/storage";
+import type { AppSettingsMap } from "@/lib/settings/types";
+import { getSetting } from "./settings.server";
 
 export interface AdminDashboardMetrics {
 	users: {
@@ -52,16 +53,18 @@ export interface AdminDashboardMetrics {
 	usersByCountry: Array<{ country: string; count: number }>;
 	s3: S3HealthResult;
 	smtp: SmtpHealthResult;
-	llm: LlmHealthResult;
+	llm: AppSettingsMap["SERVICE_HEALTH_LLM"];
+	docling: AppSettingsMap["SERVICE_HEALTH_DOCLING"];
 }
 
 export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics> {
 	const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-	const [s3Health, smtpHealth, llmHealth] = await Promise.all([
+	const [s3Health, smtpHealth, llmHealth, doclingHealth] = await Promise.all([
 		checkS3Health(),
 		checkSmtpHealth(),
-		checkLlmHealth(),
+		getSetting("SERVICE_HEALTH_LLM"),
+		getSetting("SERVICE_HEALTH_DOCLING"),
 	]);
 
 	const [
@@ -267,5 +270,6 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		s3: s3Health,
 		smtp: smtpHealth,
 		llm: llmHealth,
+		docling: doclingHealth,
 	};
 }

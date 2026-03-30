@@ -91,6 +91,18 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	EXTRACTION_HEURISTIC: true,
 	EXTRACTION_AI: false,
 
+	// Service health (written by scheduled task)
+	SERVICE_HEALTH_LLM: {
+		status: "unavailable",
+		message: "Not checked yet",
+		checkedAt: "",
+	},
+	SERVICE_HEALTH_DOCLING: {
+		status: "unavailable",
+		message: "Not checked yet",
+		checkedAt: "",
+	},
+
 	// Submission type configs
 	SUBMISSION_TYPE_ORAL_PRESENTATION: DEFAULT_ORAL_PRESENTATION_CONFIG,
 	SUBMISSION_TYPE_POSTER: DEFAULT_POSTER_CONFIG,
