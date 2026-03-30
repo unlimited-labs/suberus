@@ -38,7 +38,80 @@ const reviewModeLabels = {
 	DOUBLE_BLIND: "Double-blind",
 } as const;
 
+const REVIEW_MODES = Object.keys(
+	reviewModeLabels,
+) as (keyof typeof reviewModeLabels)[];
+
+const CONTENT_FORMATS = [
+	"TEXT",
+	"FILE",
+] as const satisfies readonly ContentFormat[];
+
 const FILE_EXTENSIONS = ["pdf", "doc", "docx"] as const;
+
+interface ScoringCriteriaSectionProps {
+	criteria: SubmissionTypeConfig["scoringCriteria"];
+	onUpdate: (
+		index: number,
+		field: "name" | "description",
+		value: string,
+	) => void;
+	onRemove: (index: number) => void;
+	onAdd: () => void;
+}
+
+function ScoringCriteriaSection({
+	criteria,
+	onUpdate,
+	onRemove,
+	onAdd,
+}: ScoringCriteriaSectionProps) {
+	return (
+		<div className="space-y-3 pl-0 sm:pl-4">
+			<Label>Scoring criteria</Label>
+			<div className="space-y-2">
+				{criteria.map((criterion, index) => (
+					<div
+						key={`${index}-${criterion.name}`}
+						className="flex items-start gap-2"
+					>
+						<div className="grid flex-1 gap-2 sm:grid-cols-2">
+							<Input
+								placeholder="Criterion name"
+								value={criterion.name}
+								onChange={(e) => onUpdate(index, "name", e.target.value)}
+							/>
+							<Input
+								placeholder="Description (optional)"
+								value={criterion.description}
+								onChange={(e) => onUpdate(index, "description", e.target.value)}
+							/>
+						</div>
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon"
+							className="shrink-0 text-destructive hover:bg-destructive/10"
+							onClick={() => onRemove(index)}
+						>
+							<IconTrash className="size-4" />
+						</Button>
+					</div>
+				))}
+			</div>
+			<Button
+				type="button"
+				variant="outline"
+				size="sm"
+				onClick={onAdd}
+				className="gap-1"
+			>
+				<IconPlus className="size-4" />
+				Add criterion
+			</Button>
+		</div>
+	);
+}
 
 interface SubmissionTypeAccordionProps {
 	typeKey: SubmissionTypeKey;
@@ -170,9 +243,10 @@ export function SubmissionTypeAccordion({
 						</div>
 						<Select
 							value={config.contentFormat}
-							onValueChange={(value) =>
-								handleChange("contentFormat", value as ContentFormat)
-							}
+							onValueChange={(value) => {
+								const found = CONTENT_FORMATS.find((f) => f === value);
+								if (found) handleChange("contentFormat", found);
+							}}
 						>
 							<SelectTrigger className="max-w-64">
 								<SelectValue />
@@ -239,12 +313,10 @@ export function SubmissionTypeAccordion({
 							<Label>Review mode</Label>
 							<Select
 								value={config.reviewMode}
-								onValueChange={(value) =>
-									handleChange(
-										"reviewMode",
-										value as SubmissionTypeConfig["reviewMode"],
-									)
-								}
+								onValueChange={(value) => {
+									const found = REVIEW_MODES.find((m) => m === value);
+									if (found) handleChange("reviewMode", found);
+								}}
 							>
 								<SelectTrigger>
 									<SelectValue />
@@ -311,57 +383,12 @@ export function SubmissionTypeAccordion({
 							/>
 						</div>
 						{config.enableScoring && (
-							<div className="space-y-3 pl-0 sm:pl-4">
-								<Label>Scoring criteria</Label>
-								<div className="space-y-2">
-									{config.scoringCriteria.map((criterion, index) => (
-										<div
-											key={`${index}-${criterion.name}`}
-											className="flex items-start gap-2"
-										>
-											<div className="grid flex-1 gap-2 sm:grid-cols-2">
-												<Input
-													placeholder="Criterion name"
-													value={criterion.name}
-													onChange={(e) =>
-														updateCriterion(index, "name", e.target.value)
-													}
-												/>
-												<Input
-													placeholder="Description (optional)"
-													value={criterion.description}
-													onChange={(e) =>
-														updateCriterion(
-															index,
-															"description",
-															e.target.value,
-														)
-													}
-												/>
-											</div>
-											<Button
-												type="button"
-												variant="ghost"
-												size="icon"
-												className="shrink-0 text-destructive hover:bg-destructive/10"
-												onClick={() => removeCriterion(index)}
-											>
-												<IconTrash className="size-4" />
-											</Button>
-										</div>
-									))}
-								</div>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={addCriterion}
-									className="gap-1"
-								>
-									<IconPlus className="size-4" />
-									Add criterion
-								</Button>
-							</div>
+							<ScoringCriteriaSection
+								criteria={config.scoringCriteria}
+								onUpdate={updateCriterion}
+								onRemove={removeCriterion}
+								onAdd={addCriterion}
+							/>
 						)}
 					</div>
 

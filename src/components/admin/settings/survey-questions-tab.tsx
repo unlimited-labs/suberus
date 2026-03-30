@@ -57,6 +57,210 @@ const TYPE_LABELS: Record<SurveyQuestionType, string> = {
 const isSelectType = (type: SurveyQuestionType) =>
 	type === "SINGLE_SELECT" || type === "MULTI_SELECT";
 
+const SURVEY_QUESTION_TYPES = [
+	"CHECKBOX",
+	"TEXT",
+	"SINGLE_SELECT",
+	"MULTI_SELECT",
+] as const satisfies readonly SurveyQuestionType[];
+
+interface SurveyQuestionRowProps {
+	question: SurveyQuestion;
+	index: number;
+	total: number;
+	isEditing: boolean;
+	isBusy: boolean;
+	editLabel: string;
+	editType: SurveyQuestionType;
+	editRequired: boolean;
+	editOptions: string[];
+	onEditLabelChange: (v: string) => void;
+	onEditTypeChange: (v: SurveyQuestionType) => void;
+	onEditRequiredChange: (v: boolean) => void;
+	onEditOptionsChange: (v: string[]) => void;
+	onMove: (dir: "up" | "down") => void;
+	onSaveEdit: () => void;
+	onStartEdit: () => void;
+	onCancelEdit: () => void;
+	onToggleActive: (active: boolean) => void;
+	onDelete: () => void;
+}
+
+function SurveyQuestionRow({
+	question,
+	index,
+	total,
+	isEditing,
+	isBusy,
+	editLabel,
+	editType,
+	editRequired,
+	editOptions,
+	onEditLabelChange,
+	onEditTypeChange,
+	onEditRequiredChange,
+	onEditOptionsChange,
+	onMove,
+	onSaveEdit,
+	onStartEdit,
+	onCancelEdit,
+	onToggleActive,
+	onDelete,
+}: SurveyQuestionRowProps) {
+	return (
+		<div
+			data-testid="question-row"
+			className="rounded-lg border border-border/50 bg-muted/20 p-3"
+		>
+			<div className="flex items-start gap-2">
+				{/* Reorder arrows */}
+				<div className="flex flex-col gap-0.5">
+					<Button
+						variant="ghost"
+						size="icon-sm"
+						disabled={index === 0 || isBusy}
+						onClick={() => onMove("up")}
+						aria-label="Move up"
+					>
+						<IconArrowUp className="size-3.5" />
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon-sm"
+						disabled={index === total - 1 || isBusy}
+						onClick={() => onMove("down")}
+						aria-label="Move down"
+					>
+						<IconArrowDown className="size-3.5" />
+					</Button>
+				</div>
+
+				{/* Label + badges (view mode) / Edit form */}
+				<div className="min-w-0 flex-1">
+					{isEditing ? (
+						<div className="space-y-2">
+							<div className="flex gap-2">
+								<Input
+									value={editLabel}
+									onChange={(e) => onEditLabelChange(e.target.value)}
+									className="h-8 text-sm"
+									onKeyDown={(e) => {
+										if (e.key === "Escape") onCancelEdit();
+									}}
+								/>
+							</div>
+							<div className="flex flex-wrap items-center gap-2">
+								<Select
+									value={editType}
+									onValueChange={(v) => {
+										const found = SURVEY_QUESTION_TYPES.find((t) => t === v);
+										if (found) onEditTypeChange(found);
+									}}
+								>
+									<SelectTrigger className="h-8 w-[140px]">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="CHECKBOX">Checkbox</SelectItem>
+										<SelectItem value="TEXT">Text</SelectItem>
+										<SelectItem value="SINGLE_SELECT">Single Select</SelectItem>
+										<SelectItem value="MULTI_SELECT">Multi Select</SelectItem>
+									</SelectContent>
+								</Select>
+								<div className="flex items-center gap-1.5">
+									<Switch
+										id={`edit-required-${question.id}`}
+										checked={editRequired}
+										onCheckedChange={onEditRequiredChange}
+									/>
+									<Label
+										htmlFor={`edit-required-${question.id}`}
+										className="text-xs"
+									>
+										Required
+									</Label>
+								</div>
+							</div>
+							{isSelectType(editType) && (
+								<OptionsEditor
+									options={editOptions}
+									onChange={onEditOptionsChange}
+								/>
+							)}
+							<div className="flex gap-2">
+								<Button size="sm" onClick={onSaveEdit} disabled={isBusy}>
+									Save
+								</Button>
+								<Button size="sm" variant="outline" onClick={onCancelEdit}>
+									Cancel
+								</Button>
+							</div>
+						</div>
+					) : (
+						<div className="space-y-1">
+							<button
+								type="button"
+								className="text-left text-sm font-medium hover:underline"
+								onClick={onStartEdit}
+							>
+								{question.label}
+							</button>
+							<div className="flex flex-wrap items-center gap-1.5">
+								<Badge variant="outline" className="text-[10px]">
+									{TYPE_LABELS[question.type]}
+								</Badge>
+								{question.isRequired && (
+									<Badge variant="secondary" className="text-[10px]">
+										Required
+									</Badge>
+								)}
+							</div>
+							{isSelectType(question.type) &&
+								question.options &&
+								question.options.length > 0 && (
+									<p className="text-xs text-muted-foreground">
+										Options: {question.options.join(", ")}
+									</p>
+								)}
+						</div>
+					)}
+				</div>
+
+				{/* Active toggle + Delete (hidden during edit) */}
+				{!isEditing && (
+					<>
+						<div className="flex items-center gap-2">
+							<Label
+								htmlFor={`active-${question.id}`}
+								className="hidden text-xs text-muted-foreground sm:inline"
+							>
+								Active
+							</Label>
+							<Switch
+								id={`active-${question.id}`}
+								checked={question.isActive}
+								onCheckedChange={onToggleActive}
+								disabled={isBusy}
+							/>
+						</div>
+
+						<Button
+							variant="ghost"
+							size="icon-sm"
+							onClick={onDelete}
+							disabled={isBusy}
+							className="text-destructive hover:text-destructive"
+							aria-label="Delete question"
+						>
+							<IconTrash className="size-4" />
+						</Button>
+					</>
+				)}
+			</div>
+		</div>
+	);
+}
+
 export function SurveyQuestionsTab({
 	initialQuestions,
 }: SurveyQuestionsTabProps) {
@@ -141,7 +345,7 @@ export function SurveyQuestionsTab({
 		setEditLabel(q.label);
 		setEditType(q.type);
 		setEditRequired(q.isRequired);
-		setEditOptions(Array.isArray(q.options) ? (q.options as string[]) : []);
+		setEditOptions(Array.isArray(q.options) ? q.options : []);
 	};
 
 	const handleSaveEdit = async (id: string) => {
@@ -259,178 +463,30 @@ export function SurveyQuestionsTab({
 					) : (
 						<div className="space-y-2">
 							{questions.map((question, index) => (
-								<div
+								<SurveyQuestionRow
 									key={question.id}
-									data-testid="question-row"
-									className="rounded-lg border border-border/50 bg-muted/20 p-3"
-								>
-									<div className="flex items-start gap-2">
-										{/* Reorder arrows */}
-										<div className="flex flex-col gap-0.5">
-											<Button
-												variant="ghost"
-												size="icon-sm"
-												disabled={index === 0 || busyId === question.id}
-												onClick={() => handleMove(index, "up")}
-												aria-label="Move up"
-											>
-												<IconArrowUp className="size-3.5" />
-											</Button>
-											<Button
-												variant="ghost"
-												size="icon-sm"
-												disabled={
-													index === questions.length - 1 ||
-													busyId === question.id
-												}
-												onClick={() => handleMove(index, "down")}
-												aria-label="Move down"
-											>
-												<IconArrowDown className="size-3.5" />
-											</Button>
-										</div>
-
-										{/* Label + badges (view mode) / Edit form */}
-										<div className="min-w-0 flex-1">
-											{editingId === question.id ? (
-												<div className="space-y-2">
-													<div className="flex gap-2">
-														<Input
-															value={editLabel}
-															onChange={(e) => setEditLabel(e.target.value)}
-															className="h-8 text-sm"
-															onKeyDown={(e) => {
-																if (e.key === "Escape") setEditingId(null);
-															}}
-														/>
-													</div>
-													<div className="flex flex-wrap items-center gap-2">
-														<Select
-															value={editType}
-															onValueChange={(v) =>
-																setEditType(v as SurveyQuestionType)
-															}
-														>
-															<SelectTrigger className="h-8 w-[140px]">
-																<SelectValue />
-															</SelectTrigger>
-															<SelectContent>
-																<SelectItem value="CHECKBOX">
-																	Checkbox
-																</SelectItem>
-																<SelectItem value="TEXT">Text</SelectItem>
-																<SelectItem value="SINGLE_SELECT">
-																	Single Select
-																</SelectItem>
-																<SelectItem value="MULTI_SELECT">
-																	Multi Select
-																</SelectItem>
-															</SelectContent>
-														</Select>
-														<div className="flex items-center gap-1.5">
-															<Switch
-																id={`edit-required-${question.id}`}
-																checked={editRequired}
-																onCheckedChange={setEditRequired}
-															/>
-															<Label
-																htmlFor={`edit-required-${question.id}`}
-																className="text-xs"
-															>
-																Required
-															</Label>
-														</div>
-													</div>
-													{isSelectType(editType) && (
-														<OptionsEditor
-															options={editOptions}
-															onChange={setEditOptions}
-														/>
-													)}
-													<div className="flex gap-2">
-														<Button
-															size="sm"
-															onClick={() => handleSaveEdit(question.id)}
-															disabled={busyId === question.id}
-														>
-															Save
-														</Button>
-														<Button
-															size="sm"
-															variant="outline"
-															onClick={() => setEditingId(null)}
-														>
-															Cancel
-														</Button>
-													</div>
-												</div>
-											) : (
-												<div className="space-y-1">
-													<button
-														type="button"
-														className="text-left text-sm font-medium hover:underline"
-														onClick={() => handleStartEdit(question)}
-													>
-														{question.label}
-													</button>
-													<div className="flex flex-wrap items-center gap-1.5">
-														<Badge variant="outline" className="text-[10px]">
-															{TYPE_LABELS[question.type]}
-														</Badge>
-														{question.isRequired && (
-															<Badge
-																variant="secondary"
-																className="text-[10px]"
-															>
-																Required
-															</Badge>
-														)}
-													</div>
-													{isSelectType(question.type) &&
-														question.options &&
-														question.options.length > 0 && (
-															<p className="text-xs text-muted-foreground">
-																Options: {question.options.join(", ")}
-															</p>
-														)}
-												</div>
-											)}
-										</div>
-
-										{/* Active toggle + Delete (hidden during edit) */}
-										{editingId !== question.id && (
-											<>
-												<div className="flex items-center gap-2">
-													<Label
-														htmlFor={`active-${question.id}`}
-														className="hidden text-xs text-muted-foreground sm:inline"
-													>
-														Active
-													</Label>
-													<Switch
-														id={`active-${question.id}`}
-														checked={question.isActive}
-														onCheckedChange={(checked) =>
-															handleToggleActive(question.id, checked)
-														}
-														disabled={busyId === question.id}
-													/>
-												</div>
-
-												<Button
-													variant="ghost"
-													size="icon-sm"
-													onClick={() => handleDelete(question.id)}
-													disabled={busyId === question.id}
-													className="text-destructive hover:text-destructive"
-													aria-label="Delete question"
-												>
-													<IconTrash className="size-4" />
-												</Button>
-											</>
-										)}
-									</div>
-								</div>
+									question={question}
+									index={index}
+									total={questions.length}
+									isEditing={editingId === question.id}
+									isBusy={busyId === question.id}
+									editLabel={editLabel}
+									editType={editType}
+									editRequired={editRequired}
+									editOptions={editOptions}
+									onEditLabelChange={setEditLabel}
+									onEditTypeChange={setEditType}
+									onEditRequiredChange={setEditRequired}
+									onEditOptionsChange={setEditOptions}
+									onMove={(dir) => handleMove(index, dir)}
+									onSaveEdit={() => handleSaveEdit(question.id)}
+									onStartEdit={() => handleStartEdit(question)}
+									onCancelEdit={() => setEditingId(null)}
+									onToggleActive={(active) =>
+										handleToggleActive(question.id, active)
+									}
+									onDelete={() => handleDelete(question.id)}
+								/>
 							))}
 						</div>
 					)}
@@ -457,7 +513,10 @@ export function SurveyQuestionsTab({
 						<div className="flex flex-wrap items-center gap-2">
 							<Select
 								value={newType}
-								onValueChange={(v) => setNewType(v as SurveyQuestionType)}
+								onValueChange={(v) => {
+									const found = SURVEY_QUESTION_TYPES.find((t) => t === v);
+									if (found) setNewType(found);
+								}}
 							>
 								<SelectTrigger className="h-8 w-[160px]">
 									<SelectValue />

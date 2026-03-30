@@ -58,6 +58,139 @@ import {
 import { UserDeleteDialog } from "./user-delete-dialog";
 import { UserEditDialog } from "./user-edit-dialog";
 
+interface FeeType {
+	id: string;
+	name: string;
+	amount: number;
+}
+
+interface UserFeeDialogProps {
+	open: boolean;
+	onOpenChange: (v: boolean) => void;
+	userName: string;
+	feeTypes: FeeType[];
+	currency: string;
+	selectedFeeTypeId: string;
+	selectedFeeType: FeeType | undefined;
+	onFeeTypeChange: (id: string) => void;
+	onConfirm: () => void;
+	isPending: boolean;
+}
+
+function UserFeeDialog({
+	open,
+	onOpenChange,
+	userName,
+	feeTypes,
+	currency,
+	selectedFeeTypeId,
+	selectedFeeType,
+	onFeeTypeChange,
+	onConfirm,
+	isPending,
+}: UserFeeDialogProps) {
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>Mark Fee as Paid</DialogTitle>
+					<DialogDescription>
+						Select fee type for user {userName}.
+					</DialogDescription>
+				</DialogHeader>
+				<div className="space-y-3 py-4">
+					<Select value={selectedFeeTypeId} onValueChange={onFeeTypeChange}>
+						<SelectTrigger>
+							<SelectValue placeholder="Select fee type" />
+						</SelectTrigger>
+						<SelectContent>
+							{feeTypes.map((type) => (
+								<SelectItem key={type.id} value={type.id}>
+									{type.name} — {type.amount.toFixed(2)} {currency}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+					{selectedFeeType && (
+						<p className="text-sm text-muted-foreground">
+							Amount: {selectedFeeType.amount.toFixed(2)} {currency}
+						</p>
+					)}
+				</div>
+				<DialogFooter>
+					<Button variant="outline" onClick={() => onOpenChange(false)}>
+						Cancel
+					</Button>
+					<Button onClick={onConfirm} disabled={isPending}>
+						{isPending ? "Saving..." : "Save"}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+interface UserRoleDialogProps {
+	open: boolean;
+	onOpenChange: (v: boolean) => void;
+	userName: string;
+	selectedRole: UserRole;
+	onRoleChange: (role: UserRole) => void;
+	onConfirm: () => void;
+	isPending: boolean;
+}
+
+function UserRoleDialog({
+	open,
+	onOpenChange,
+	userName,
+	selectedRole,
+	onRoleChange,
+	onConfirm,
+	isPending,
+}: UserRoleDialogProps) {
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>Change User Role</DialogTitle>
+					<DialogDescription>
+						Select a new role for user {userName}.
+					</DialogDescription>
+				</DialogHeader>
+				<div className="py-4">
+					<Select
+						value={selectedRole}
+						onValueChange={(v) => {
+							const found = userRoleOptions.find((opt) => opt.value === v);
+							if (found) onRoleChange(found.value);
+						}}
+					>
+						<SelectTrigger>
+							<SelectValue placeholder="Select role" />
+						</SelectTrigger>
+						<SelectContent>
+							{userRoleOptions.map((role) => (
+								<SelectItem key={role.value} value={role.value}>
+									{role.label}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
+				<DialogFooter>
+					<Button variant="outline" onClick={() => onOpenChange(false)}>
+						Cancel
+					</Button>
+					<Button onClick={onConfirm} disabled={isPending}>
+						{isPending ? "Saving..." : "Save"}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
 interface UserDetailCardProps {
 	user: AdminUser;
 }
@@ -382,87 +515,27 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 				/>
 			)}
 
-			{/* Fee Dialog */}
-			<Dialog open={feeDialogOpen} onOpenChange={setFeeDialogOpen}>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Mark Fee as Paid</DialogTitle>
-						<DialogDescription>
-							Select fee type for user {user.firstName} {user.lastName}.
-						</DialogDescription>
-					</DialogHeader>
-					<div className="space-y-3 py-4">
-						<Select
-							value={selectedFeeTypeId}
-							onValueChange={setSelectedFeeTypeId}
-						>
-							<SelectTrigger>
-								<SelectValue placeholder="Select fee type" />
-							</SelectTrigger>
-							<SelectContent>
-								{feeTypes.map((type) => (
-									<SelectItem key={type.id} value={type.id}>
-										{type.name} — {type.amount.toFixed(2)} {currency}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-						{selectedFeeType && (
-							<p className="text-sm text-muted-foreground">
-								Amount: {selectedFeeType.amount.toFixed(2)} {currency}
-							</p>
-						)}
-					</div>
-					<DialogFooter>
-						<Button variant="outline" onClick={() => setFeeDialogOpen(false)}>
-							Cancel
-						</Button>
-						<Button onClick={handleMarkFeePaid} disabled={mutation.isPending}>
-							{mutation.isPending ? "Saving..." : "Save"}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
-
-			{/* Role Dialog */}
-			<Dialog open={roleDialogOpen} onOpenChange={setRoleDialogOpen}>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Change User Role</DialogTitle>
-						<DialogDescription>
-							Select a new role for user {user.firstName} {user.lastName}.
-						</DialogDescription>
-					</DialogHeader>
-					<div className="py-4">
-						<Select
-							value={selectedRole}
-							onValueChange={(v) => {
-								const found = userRoleOptions.find((opt) => opt.value === v);
-								if (found) setSelectedRole(found.value);
-							}}
-						>
-							<SelectTrigger>
-								<SelectValue placeholder="Select role" />
-							</SelectTrigger>
-							<SelectContent>
-								{userRoleOptions.map((role) => (
-									<SelectItem key={role.value} value={role.value}>
-										{role.label}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-					<DialogFooter>
-						<Button variant="outline" onClick={() => setRoleDialogOpen(false)}>
-							Cancel
-						</Button>
-						<Button onClick={handleChangeRole} disabled={mutation.isPending}>
-							{mutation.isPending ? "Saving..." : "Save"}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+			<UserFeeDialog
+				open={feeDialogOpen}
+				onOpenChange={setFeeDialogOpen}
+				userName={`${user.firstName} ${user.lastName}`}
+				feeTypes={feeTypes}
+				currency={currency}
+				selectedFeeTypeId={selectedFeeTypeId}
+				selectedFeeType={selectedFeeType}
+				onFeeTypeChange={setSelectedFeeTypeId}
+				onConfirm={handleMarkFeePaid}
+				isPending={mutation.isPending}
+			/>
+			<UserRoleDialog
+				open={roleDialogOpen}
+				onOpenChange={setRoleDialogOpen}
+				userName={`${user.firstName} ${user.lastName}`}
+				selectedRole={selectedRole}
+				onRoleChange={setSelectedRole}
+				onConfirm={handleChangeRole}
+				isPending={mutation.isPending}
+			/>
 		</>
 	);
 }
