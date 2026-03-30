@@ -2,10 +2,15 @@ import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
 export const env = createEnv({
-	server: {
+	shared: {
 		NODE_ENV: z.string().default("development"),
 		LOG_LEVEL: z.coerce.number().default(3),
+	},
 
+	clientPrefix: "VITE_",
+	client: {},
+
+	server: {
 		DATABASE_URL: z.url(),
 		APP_BASE_URL: z.url(),
 
@@ -22,7 +27,6 @@ export const env = createEnv({
 		SMTP_USER: z.string().optional(),
 		SMTP_PASSWORD: z.string().optional(),
 		SMTP_FROM_EMAIL: z.email(),
-		SMTP_FROM_NAME: z.string(),
 
 		// LLM API (optional, for AI-assisted document extraction)
 		// OpenAI-compatible endpoint (Ollama /v1, llama.cpp, vLLM, etc.)
@@ -34,19 +38,8 @@ export const env = createEnv({
 		DOCLING_URL: z.url().optional(),
 
 		AUTH_SECRET: z.string(),
-		PORT: z.coerce.number().default(3000),
 
 		E2E: z.stringbool().default(false),
-	},
-
-	/**
-	 * The prefix that client-side variables must have. This is enforced both at
-	 * a type-level and at runtime.
-	 */
-	clientPrefix: "VITE_",
-
-	client: {
-		VITE_APP_TITLE: z.string().min(1).optional(),
 	},
 
 	/**

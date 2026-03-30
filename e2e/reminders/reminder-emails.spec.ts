@@ -289,7 +289,7 @@ async function sendReminderEmail(
 	})
 
 	await transporter.sendMail({
-		from: process.env.SMTP_FROM ?? "conference@suberus.local",
+		from: process.env.SMTP_FROM_EMAIL ?? "conference@suberus.local",
 		to,
 		subject,
 		[template.isHtml ? "html" : "text"]: body,

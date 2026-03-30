@@ -1,6 +1,7 @@
 import { createMiddleware } from "@tanstack/react-start";
 import chalk from "chalk";
 import { createConsola } from "consola";
+import { env } from "./env";
 
 const levelBadge: Record<string, (s: string) => string> = {
 	error: chalk.bgRed.white,
@@ -19,7 +20,7 @@ function colorPrint(level: string, msg: string) {
 }
 
 export const logger = createConsola({
-	level: Number(process.env.LOG_LEVEL) || 3,
+	level: env.LOG_LEVEL,
 	reporters: [
 		{
 			log(logObj) {
