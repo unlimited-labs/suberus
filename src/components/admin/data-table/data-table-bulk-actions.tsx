@@ -1,5 +1,6 @@
 import type { Table } from "@tanstack/react-table";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
 	Select,
@@ -47,6 +48,8 @@ export function DataTableBulkActions<TData>({
 			table.resetRowSelection();
 			setSelectedAction("");
 			onActionComplete?.();
+		} catch (_error) {
+			toast.error("Action failed");
 		} finally {
 			setIsLoading(false);
 		}

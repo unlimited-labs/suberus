@@ -80,11 +80,7 @@ export function DataTable<TData, TValue>({
 
 	return (
 		<div className="space-y-4">
-			<div
-				key={`${JSON.stringify(columnVisibility)}-${JSON.stringify(rowSelection)}`}
-			>
-				{toolbar?.(table)}
-			</div>
+			<div>{toolbar?.(table)}</div>
 
 			{/* Desktop Table */}
 			<div className="hidden md:block rounded-md border border-border/50">
@@ -154,10 +150,7 @@ export function DataTable<TData, TValue>({
 				</div>
 			)}
 
-			<DataTablePagination
-				table={table}
-				key={`${pagination.pageIndex}-${pagination.pageSize}-${JSON.stringify(columnFilters)}`}
-			/>
+			<DataTablePagination table={table} />
 		</div>
 	);
 }

@@ -1,6 +1,5 @@
 import { IconSearch, IconX } from "@tabler/icons-react";
 import type { Table } from "@tanstack/react-table";
-import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,12 +26,6 @@ export function DataTableToolbar<TData>({
 	const columnFilterValue = searchKey
 		? ((table.getColumn(searchKey)?.getFilterValue() as string) ?? "")
 		: "";
-	const [searchValue, setSearchValue] = useState(columnFilterValue);
-
-	// Sync local state with external filter changes (e.g., reset)
-	useEffect(() => {
-		setSearchValue(columnFilterValue);
-	}, [columnFilterValue]);
 
 	return (
 		<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -42,19 +35,18 @@ export function DataTableToolbar<TData>({
 						<IconSearch className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 						<Input
 							placeholder={searchPlaceholder}
-							value={searchValue}
+							value={columnFilterValue}
 							onChange={(event) => {
-								const value = event.target.value;
-								setSearchValue(value);
-								table.getColumn(searchKey)?.setFilterValue(value || undefined);
+								table
+									.getColumn(searchKey)
+									?.setFilterValue(event.target.value || undefined);
 							}}
 							className="h-8 w-[150px] pl-8 pr-8 lg:w-[250px]"
 						/>
-						{searchValue && (
+						{columnFilterValue && (
 							<button
 								type="button"
 								onClick={() => {
-									setSearchValue("");
 									table.getColumn(searchKey)?.setFilterValue(undefined);
 								}}
 								className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
@@ -79,11 +71,7 @@ export function DataTableToolbar<TData>({
 			</div>
 			<div className="flex items-center gap-2">
 				{actions}
-				<DataTableViewOptions
-					table={table}
-					columnLabels={columnLabels}
-					key={JSON.stringify(table.getState().columnVisibility)}
-				/>
+				<DataTableViewOptions table={table} columnLabels={columnLabels} />
 			</div>
 		</div>
 	);

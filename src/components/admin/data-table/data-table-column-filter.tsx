@@ -1,6 +1,5 @@
 import { IconFilter, IconFilterFilled } from "@tabler/icons-react";
 import type { Column } from "@tanstack/react-table";
-import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -28,37 +27,25 @@ export function DataTableColumnFilter<TData, TValue>({
 }: DataTableColumnFilterProps<TData, TValue>) {
 	const facets = column?.getFacetedUniqueValues();
 	const columnFilterValue = column?.getFilterValue() as string[] | undefined;
-	const [selectedValues, setSelectedValues] = useState<Set<string>>(
-		new Set(columnFilterValue),
-	);
-
-	// Sync with external filter changes
-	useEffect(() => {
-		setSelectedValues(new Set(columnFilterValue));
-	}, [columnFilterValue]);
-
+	const selectedValues = new Set(columnFilterValue ?? []);
 	const hasFilters = selectedValues.size > 0;
 
 	const handleSelect = (value: string) => {
-		const newSelectedValues = new Set(selectedValues);
-		if (newSelectedValues.has(value)) {
-			newSelectedValues.delete(value);
+		const next = new Set(selectedValues);
+		if (next.has(value)) {
+			next.delete(value);
 		} else {
-			newSelectedValues.add(value);
+			next.add(value);
 		}
-		setSelectedValues(newSelectedValues);
-		const filterValues = Array.from(newSelectedValues);
+		const filterValues = Array.from(next);
 		column?.setFilterValue(filterValues.length ? filterValues : undefined);
 	};
 
 	const handleClear = () => {
-		setSelectedValues(new Set());
 		column?.setFilterValue(undefined);
 	};
 
 	const handleSelectAll = () => {
-		const allValues = new Set(options.map((o) => o.value));
-		setSelectedValues(allValues);
 		column?.setFilterValue(options.map((o) => o.value));
 	};
 

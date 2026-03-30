@@ -50,8 +50,8 @@ export function BulkActionDialog({
 						<Alert variant="destructive">
 							<AlertDescription>
 								<ul className="list-disc pl-4 space-y-1">
-									{errors.map((error, i) => (
-										<li key={i}>{error}</li>
+									{errors.map((error) => (
+										<li key={error}>{error}</li>
 									))}
 								</ul>
 							</AlertDescription>

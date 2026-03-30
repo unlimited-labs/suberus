@@ -1,6 +1,5 @@
 import { IconFilter, IconFilterFilled, IconX } from "@tabler/icons-react";
 import type { Column } from "@tanstack/react-table";
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,23 +18,14 @@ export function DataTableTextFilter<TData, TValue>({
 	column,
 	placeholder = "Search...",
 }: DataTableTextFilterProps<TData, TValue>) {
-	const columnFilterValue = column?.getFilterValue() as string | undefined;
-	const [value, setValue] = useState(columnFilterValue ?? "");
-
-	// Sync with external filter changes
-	useEffect(() => {
-		setValue(columnFilterValue ?? "");
-	}, [columnFilterValue]);
-
+	const value = (column?.getFilterValue() as string | undefined) ?? "";
 	const hasFilter = !!value;
 
 	const handleChange = (newValue: string) => {
-		setValue(newValue);
 		column?.setFilterValue(newValue || undefined);
 	};
 
 	const handleClear = () => {
-		setValue("");
 		column?.setFilterValue(undefined);
 	};
 
