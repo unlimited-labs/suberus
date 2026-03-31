@@ -152,10 +152,14 @@ test.describe("Register Page - Step 2: Invoice", () => {
 		// Arrange
 		const countryField = registerPage.page.locator('[data-slot="field"]').filter({ has: registerPage.page.getByText("Country *", { exact: true }) })
 		const combobox = countryField.getByRole("combobox")
+		const searchInput = registerPage.page.getByPlaceholder("Search country...")
 
-		// Act
-		await combobox.click()
-		await registerPage.page.getByPlaceholder("Search country...").fill("Poland")
+		// Act — retry click in case dropdown doesn't open immediately after step transition
+		await expect(async () => {
+			await combobox.click()
+			await expect(searchInput).toBeVisible()
+		}).toPass({ timeout: 10000 })
+		await searchInput.fill("Poland")
 		await registerPage.page.getByRole("option", { name: "Poland" }).click()
 
 		// Assert
