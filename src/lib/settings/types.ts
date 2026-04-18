@@ -54,6 +54,7 @@ export type AppSettingsMap = {
 	CONTACT_EMAIL: string;
 	CONFERENCE_LOCATION: string;
 	CONFERENCE_WEBSITE: string;
+	CONFERENCE_TIMEZONE: string;
 
 	// Submission settings
 	MIN_TITLE_LENGTH: number;

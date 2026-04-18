@@ -225,6 +225,7 @@ export interface ConferenceSettings {
 	dateFormat: string;
 	timeFormat: "24h" | "12h";
 	currency: "EUR" | "USD" | "PLN";
+	timezone: string;
 }
 
 const conferenceSettingsSchema = z.object({
@@ -244,6 +245,12 @@ const conferenceSettingsSchema = z.object({
 	dateFormat: z.string(),
 	timeFormat: z.enum(["24h", "12h"]),
 	currency: z.enum(["EUR", "USD", "PLN"]),
+	timezone: z
+		.string()
+		.refine(
+			(tz) => tz === "" || Intl.supportedValuesOf("timeZone").includes(tz),
+			"Invalid IANA timezone",
+		),
 });
 
 /**
@@ -374,6 +381,7 @@ export const getConferenceSettingsFn = createServerFn({ method: "GET" })
 			"DATE_FORMAT",
 			"TIME_FORMAT",
 			"FEE_CURRENCY",
+			"CONFERENCE_TIMEZONE",
 		]);
 		return {
 			name: settings.CONFERENCE_NAME,
@@ -392,6 +400,7 @@ export const getConferenceSettingsFn = createServerFn({ method: "GET" })
 			dateFormat: settings.DATE_FORMAT,
 			timeFormat: settings.TIME_FORMAT,
 			currency: settings.FEE_CURRENCY,
+			timezone: settings.CONFERENCE_TIMEZONE,
 		};
 	});
 
@@ -418,6 +427,7 @@ export const updateConferenceSettingsFn = createServerFn({ method: "POST" })
 		await setSetting("DATE_FORMAT", data.dateFormat);
 		await setSetting("TIME_FORMAT", data.timeFormat);
 		await setSetting("FEE_CURRENCY", data.currency);
+		await setSetting("CONFERENCE_TIMEZONE", data.timezone);
 		return { success: true };
 	});
 

@@ -73,6 +73,7 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	CONTACT_EMAIL: "",
 	CONFERENCE_LOCATION: "",
 	CONFERENCE_WEBSITE: "",
+	CONFERENCE_TIMEZONE: "",
 
 	// Submission settings
 	MIN_TITLE_LENGTH: 10,

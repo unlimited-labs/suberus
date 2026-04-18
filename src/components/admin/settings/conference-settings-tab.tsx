@@ -8,7 +8,7 @@ import {
 } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { TimezoneCombobox } from "@/components/ui/timezone-combobox";
 import { getDateFormats } from "@/lib/format-date";
 import type { ConferenceSettings } from "@/utils/settings.functions";
 import {
@@ -41,6 +42,16 @@ export function ConferenceSettingsTab({
 	const router = useRouter();
 	const [data, setData] = useState(initialData);
 	const [isSaving, setIsSaving] = useState(false);
+	const timezoneFromBrowser = initialData.timezone === "";
+
+	useEffect(() => {
+		if (initialData.timezone === "") {
+			const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+			if (browserTz) {
+				setData((prev) => ({ ...prev, timezone: browserTz }));
+			}
+		}
+	}, [initialData.timezone]);
 
 	const handleChange = (field: keyof ConferenceSettings, value: string) => {
 		setData((prev) => ({ ...prev, [field]: value }));
@@ -144,6 +155,19 @@ export function ConferenceSettingsTab({
 								<SelectItem value="PLN">PLN</SelectItem>
 							</SelectContent>
 						</Select>
+					</div>
+					<div className="space-y-2">
+						<Label htmlFor="timezone">Conference timezone</Label>
+						<TimezoneCombobox
+							id="timezone"
+							value={data.timezone}
+							onChange={(value) => handleChange("timezone", value)}
+						/>
+						<p className="text-xs text-muted-foreground">
+							{timezoneFromBrowser
+								? "Detected from your browser. Click Save to confirm."
+								: "Used for displaying the conference schedule."}
+						</p>
 					</div>
 				</div>
 				<div className="mt-6 flex justify-end">

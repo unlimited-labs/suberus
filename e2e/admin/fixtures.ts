@@ -300,6 +300,10 @@ export class AdminSettingsPage {
 		return this.page.getByLabel("Conference Name")
 	}
 
+	getTimezoneCombobox() {
+		return this.page.getByRole("combobox", { name: /timezone/i })
+	}
+
 	async saveConferenceSettings() {
 		await this.page.getByRole("button", { name: "Save" }).first().click()
 	}

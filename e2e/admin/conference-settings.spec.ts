@@ -113,4 +113,40 @@ test.describe.serial("Admin Conference Settings", () => {
 		// Assert
 		await expect(page.getByText("Conference settings saved")).toBeVisible({ timeout: 5000 });
 	});
+
+	test("timezone pre-fills from browser and persists after save", async ({
+		page,
+	}, testInfo) => {
+		// Arrange — reset stored value so the UI falls back to browser detection
+		const db = getPrisma();
+		await db.appSetting.upsert({
+			where: { key: "CONFERENCE_TIMEZONE" },
+			update: { value: "" },
+			create: { key: "CONFERENCE_TIMEZONE", value: "" },
+		});
+		await page.reload();
+		await adminSettingsPage.switchToConferenceTab(testInfo);
+
+		const combobox = adminSettingsPage.getTimezoneCombobox();
+
+		// Assert — combobox is pre-filled (browser detection), not the placeholder
+		await expect(combobox).toBeVisible();
+		await expect(combobox).not.toHaveText(/Select timezone/i);
+
+		// Act — pick a known zone
+		await combobox.click();
+		await page.getByPlaceholder("Search timezone...").fill("Europe/Warsaw");
+		await page.getByRole("option", { name: "Europe/Warsaw" }).click();
+		await adminSettingsPage.saveConferenceSettings();
+		await expect(page.getByText("Conference settings saved")).toBeVisible({
+			timeout: 10000,
+		});
+
+		// Assert — persisted after reload
+		await page.reload();
+		await adminSettingsPage.switchToConferenceTab(testInfo);
+		await expect(adminSettingsPage.getTimezoneCombobox()).toHaveText(
+			/Europe\/Warsaw/,
+		);
+	});
 });
