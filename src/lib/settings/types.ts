@@ -128,6 +128,13 @@ export type AppSettingsMap = {
 
 	// Invitations
 	INVITATION_VALIDITY_HOURS: number;
+
+	// Schedule planner
+	SCHEDULE_STATE: {
+		status: "DRAFT" | "PUBLISHED";
+		publishedAt?: string;
+		publishedBy?: string;
+	};
 };
 
 /** Keys for submission type configs */

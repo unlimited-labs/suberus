@@ -152,6 +152,9 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 
 	// Invitations
 	INVITATION_VALIDITY_HOURS: 72,
+
+	// Schedule planner
+	SCHEDULE_STATE: { status: "DRAFT" },
 };
 
 /** Get default value for a setting key */
