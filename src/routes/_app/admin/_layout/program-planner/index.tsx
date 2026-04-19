@@ -3,6 +3,14 @@ import { IconCalendar } from "@tabler/icons-react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
+import {
+	BreakEventCard,
+	type BreakEventData,
+} from "@/components/admin/planner/break-event-card";
+import {
+	SessionEventCard,
+	type SessionEventData,
+} from "@/components/admin/planner/session-event-card";
 import { PageHeader } from "@/components/layout/page-header";
 import {
 	allSessionsQueryOptions,
@@ -46,8 +54,22 @@ function ProgramPlannerPage() {
 		start: s.startAt,
 		end: s.endAt,
 		resourceId: s.roomId ?? undefined,
-		backgroundColor: s.track?.color ?? undefined,
-		data: { kind: "session" as const, sessionId: s.id },
+		backgroundColor: "transparent",
+		data: {
+			kind: "session" as const,
+			sessionId: s.id,
+			trackColor: s.track?.color ?? null,
+			trackName: s.track?.name ?? null,
+			chairs: s.chairs.map((c) => ({
+				firstName: c.firstName,
+				lastName: c.lastName,
+			})),
+			presentations: s.presentations.map((p) => ({
+				id: p.id,
+				submissionTitle: p.submissionTitle,
+				durationMin: p.durationMin,
+			})),
+		} satisfies SessionEventData,
 	}));
 
 	const breakEvents = breaks.map((b) => ({
@@ -56,8 +78,8 @@ function ProgramPlannerPage() {
 		start: b.startAt,
 		end: b.endAt,
 		resourceId: b.roomId ?? undefined,
-		backgroundColor: "oklch(0.85 0.02 260)",
-		data: { kind: "break" as const, breakId: b.id },
+		backgroundColor: "transparent",
+		data: { kind: "break" as const, breakId: b.id } satisfies BreakEventData,
 	}));
 
 	const events = [...sessionEvents, ...breakEvents];
@@ -135,6 +157,19 @@ function ProgramPlannerPage() {
 					timezone={settings.timezone || undefined}
 					timeFormat={settings.timeFormat === "12h" ? "12-hour" : "24-hour"}
 					onEventUpdate={handleEventUpdate}
+					renderEvent={(event) => {
+						const data = event.data as
+							| SessionEventData
+							| BreakEventData
+							| undefined;
+						if (data?.kind === "break") {
+							return <BreakEventCard title={event.title} />;
+						}
+						if (data?.kind === "session") {
+							return <SessionEventCard title={event.title} data={data} />;
+						}
+						return null;
+					}}
 				/>
 			</div>
 		</div>
