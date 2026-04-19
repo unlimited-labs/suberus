@@ -1,5 +1,6 @@
 import {
 	IconAdjustments,
+	IconCalendar,
 	IconCash,
 	IconClipboardCheck,
 	IconDashboard,
@@ -53,6 +54,12 @@ export const navigationSections: NavSection[] = [
 				roles: ["ADMIN"],
 			},
 			{ name: "Submissions", href: "/admin/submissions", icon: IconFileStack },
+			{
+				name: "Program Planner",
+				href: "/admin/program-planner",
+				icon: IconCalendar,
+				roles: ["ADMIN"],
+			},
 			{ name: "Configuration", href: "/admin/settings", icon: IconAdjustments },
 		],
 	},
