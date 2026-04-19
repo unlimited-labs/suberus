@@ -77,3 +77,24 @@ export async function updateProgramTrack(
 export async function deleteProgramTrack(id: string): Promise<void> {
 	await prisma.programTrack.delete({ where: { id } });
 }
+
+export async function importFromConferenceTracks(): Promise<{
+	created: number;
+	skipped: number;
+}> {
+	const [intake, existing] = await Promise.all([
+		prisma.conferenceTrack.findMany({ select: { name: true } }),
+		prisma.programTrack.findMany({ select: { name: true } }),
+	]);
+	const existingNames = new Set(existing.map((t) => t.name));
+	const toCreate = intake.filter((t) => !existingNames.has(t.name));
+	if (toCreate.length === 0) return { created: 0, skipped: intake.length };
+
+	await prisma.programTrack.createMany({
+		data: toCreate.map((t) => {
+			const { series, seriesOrder } = parseSeries(t.name);
+			return { name: t.name, series, seriesOrder };
+		}),
+	});
+	return { created: toCreate.length, skipped: intake.length - toCreate.length };
+}

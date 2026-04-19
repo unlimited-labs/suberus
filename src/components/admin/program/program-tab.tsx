@@ -1,7 +1,9 @@
-import { IconPlus } from "@tabler/icons-react";
+import { IconDownload, IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { importProgramTracksFromIntakeFn } from "@/utils/program-tracks.functions";
 import type { ProgramTrackWithStats } from "@/utils/program-tracks.server";
 import type { RoomWithStats } from "@/utils/rooms.server";
 import { ProgramTrackDialog } from "./program-track-dialog";
@@ -27,6 +29,29 @@ export function ProgramTab({
 	const [trackDialogOpen, setTrackDialogOpen] = useState(false);
 	const [editingTrack, setEditingTrack] =
 		useState<ProgramTrackWithStats | null>(null);
+	const [importing, setImporting] = useState(false);
+
+	const handleImport = async () => {
+		setImporting(true);
+		try {
+			const { created, skipped } = await importProgramTracksFromIntakeFn();
+			if (created === 0) {
+				toast.info("No new tracks to import", {
+					description: `${skipped} intake track(s) already present`,
+				});
+			} else {
+				toast.success(`Imported ${created} track(s)`, {
+					description:
+						skipped > 0 ? `${skipped} skipped as duplicates` : undefined,
+				});
+				onProgramTracksUpdate();
+			}
+		} catch (e) {
+			toast.error(e instanceof Error ? e.message : "Failed to import");
+		} finally {
+			setImporting(false);
+		}
+	};
 
 	const openRoomEdit = (room: RoomWithStats) => {
 		setEditingRoom(room);
@@ -83,10 +108,20 @@ export function ProgramTab({
 								submission-intake tracks.
 							</p>
 						</div>
-						<Button onClick={() => setTrackDialogOpen(true)}>
-							<IconPlus className="mr-2 size-4" />
-							Create Program Track
-						</Button>
+						<div className="flex gap-2">
+							<Button
+								variant="outline"
+								onClick={handleImport}
+								disabled={importing}
+							>
+								<IconDownload className="mr-2 size-4" />
+								Import from intake
+							</Button>
+							<Button onClick={() => setTrackDialogOpen(true)}>
+								<IconPlus className="mr-2 size-4" />
+								Create Program Track
+							</Button>
+						</div>
 					</div>
 				</CardHeader>
 				<CardContent>

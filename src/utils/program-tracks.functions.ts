@@ -6,6 +6,7 @@ import {
 	createProgramTrack,
 	deleteProgramTrack,
 	getAllProgramTracks,
+	importFromConferenceTracks,
 	updateProgramTrack,
 } from "./program-tracks.server";
 
@@ -60,4 +61,12 @@ export const deleteProgramTrackFn = createServerFn({ method: "POST" })
 	.inputValidator(z.object({ id: z.uuid() }))
 	.handler(async ({ data }) => {
 		await deleteProgramTrack(data.id);
+	});
+
+export const importProgramTracksFromIntakeFn = createServerFn({
+	method: "POST",
+})
+	.middleware([adminMiddleware])
+	.handler(async () => {
+		return importFromConferenceTracks();
 	});
