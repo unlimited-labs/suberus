@@ -17,6 +17,7 @@ import { CapacityStrip } from "@/components/admin/planner/capacity-strip";
 import { CreateEventDialog } from "@/components/admin/planner/create-event-dialog";
 import { CreateSessionDialog } from "@/components/admin/planner/create-session-dialog";
 import { IssuesPanel } from "@/components/admin/planner/issues-panel";
+import { MobilePlanner } from "@/components/admin/planner/mobile-planner";
 import { PublishButton } from "@/components/admin/planner/publish-button";
 import { SessionEditorSheet } from "@/components/admin/planner/session-editor-sheet";
 import {
@@ -77,6 +78,7 @@ function ProgramPlannerPage() {
 	const [selectionDialog, setSelectionDialog] = useState<{
 		submissionIds: string[];
 	} | null>(null);
+	const [mobileQueueOpen, setMobileQueueOpen] = useState(false);
 
 	const confStart = settings.conferenceStartDate
 		? new Date(settings.conferenceStartDate)
@@ -270,7 +272,40 @@ function ProgramPlannerPage() {
 				)}
 				<CapacityStrip />
 				<IssuesPanel sessions={sessions} />
-				<div className="flex min-h-0 flex-1">
+				<div className="flex min-h-0 flex-1 md:hidden">
+					<div className="flex-1 overflow-auto">
+						<MobilePlanner
+							sessions={sessions}
+							breaks={breaks}
+							conferenceStart={confStart}
+							conferenceEnd={confEnd}
+							timezone={settings.timezone || undefined}
+							initialDate={currentDate ?? confStart ?? new Date()}
+							onSessionClick={(id) => setSelectedEvent({ kind: "session", id })}
+							onBreakClick={(id) => setSelectedEvent({ kind: "break", id })}
+							onOpenSubmissions={() => setMobileQueueOpen(true)}
+						/>
+					</div>
+				</div>
+				{mobileQueueOpen && (
+					<div className="fixed inset-0 z-40 flex md:hidden">
+						<button
+							type="button"
+							className="absolute inset-0 bg-black/40"
+							onClick={() => setMobileQueueOpen(false)}
+							aria-label="Close submissions panel"
+						/>
+						<div className="relative ml-auto flex h-full w-full max-w-sm bg-background shadow-xl">
+							<UnscheduledSidebar
+								onCreateSession={(ids) => {
+									setSelectionDialog({ submissionIds: ids });
+									setMobileQueueOpen(false);
+								}}
+							/>
+						</div>
+					</div>
+				)}
+				<div className="hidden min-h-0 flex-1 md:flex">
 					<UnscheduledSidebar
 						onCreateSession={(ids) =>
 							setSelectionDialog({ submissionIds: ids })
