@@ -1,4 +1,4 @@
-import { IlamyResourceCalendar } from "@ilamy/calendar";
+import { IlamyResourceCalendar, type WeekDays } from "@ilamy/calendar";
 import { IconCalendar } from "@tabler/icons-react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
@@ -128,6 +128,26 @@ function ProgramPlannerPage() {
 		? new Date(settings.conferenceStartDate)
 		: undefined;
 
+	const parseHour = (v: string, fallback: number) => {
+		const m = v?.match(/^(\d{1,2}):(\d{2})$/);
+		if (!m) return fallback;
+		return Number(m[1]) + Number(m[2]) / 60;
+	};
+	const allDays: WeekDays[] = [
+		"sunday",
+		"monday",
+		"tuesday",
+		"wednesday",
+		"thursday",
+		"friday",
+		"saturday",
+	];
+	const businessHours = {
+		daysOfWeek: allDays,
+		startTime: parseHour(settings.dayStart, 9),
+		endTime: parseHour(settings.dayEnd, 18),
+	};
+
 	if (rooms.length === 0) {
 		return (
 			<div className="flex h-full flex-col">
@@ -156,6 +176,8 @@ function ProgramPlannerPage() {
 					initialDate={initialDate}
 					timezone={settings.timezone || undefined}
 					timeFormat={settings.timeFormat === "12h" ? "12-hour" : "24-hour"}
+					businessHours={businessHours}
+					hideNonBusinessHours
 					onEventUpdate={handleEventUpdate}
 					renderEvent={(event) => {
 						const data = event.data as

@@ -169,6 +169,29 @@ export function ConferenceSettingsTab({
 								: "Used for displaying the conference schedule."}
 						</p>
 					</div>
+					<div className="space-y-2">
+						<Label htmlFor="dayStart">Daily hours</Label>
+						<div className="flex items-center gap-2">
+							<Input
+								id="dayStart"
+								type="time"
+								value={data.dayStart}
+								onChange={(e) => handleChange("dayStart", e.target.value)}
+								className="w-32"
+							/>
+							<span className="text-muted-foreground">-</span>
+							<Input
+								id="dayEnd"
+								type="time"
+								value={data.dayEnd}
+								onChange={(e) => handleChange("dayEnd", e.target.value)}
+								className="w-32"
+							/>
+						</div>
+						<p className="text-xs text-muted-foreground">
+							Visible range in the program planner.
+						</p>
+					</div>
 				</div>
 				<div className="mt-6 flex justify-end">
 					<Button onClick={handleSave} disabled={isSaving}>
