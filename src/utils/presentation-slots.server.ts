@@ -6,6 +6,29 @@ export async function createSlot(data: {
 	durationMin: number;
 }): Promise<{ id: string }> {
 	return prisma.$transaction(async (tx) => {
+		const session = await tx.programSession.findUnique({
+			where: { id: data.sessionId },
+			select: {
+				startAt: true,
+				endAt: true,
+				presentations: { select: { durationMin: true } },
+			},
+		});
+		if (!session) throw new Error("Session not found");
+
+		const sessionDurationMin = Math.round(
+			(session.endAt.getTime() - session.startAt.getTime()) / 60_000,
+		);
+		const usedMin = session.presentations.reduce(
+			(sum, p) => sum + p.durationMin,
+			0,
+		);
+		if (usedMin + data.durationMin > sessionDurationMin) {
+			throw new Error(
+				`Session is full: ${usedMin}/${sessionDurationMin} min used, cannot add ${data.durationMin} min`,
+			);
+		}
+
 		const last = await tx.presentationSlot.findFirst({
 			where: { sessionId: data.sessionId },
 			orderBy: { order: "desc" },

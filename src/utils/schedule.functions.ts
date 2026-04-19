@@ -1,12 +1,15 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { adminMiddleware, authMiddleware } from "./auth.middleware";
+import type { PublicProgram } from "./schedule.server";
 import {
+	getPublicProgram,
 	getScheduleIssues,
 	getScheduleState,
 	publishSchedule,
 	unpublishSchedule,
 } from "./schedule.server";
+import { getSettings } from "./settings.server";
 
 export const scheduleStateQueryOptions = () =>
 	queryOptions({
@@ -43,3 +46,46 @@ export const unpublishScheduleFn = createServerFn({ method: "POST" })
 	.handler(async () => {
 		await unpublishSchedule();
 	});
+
+export const publicProgramQueryOptions = () =>
+	queryOptions({
+		queryKey: ["program", "public"],
+		queryFn: () => getPublicProgramFn(),
+	});
+
+export const getPublicProgramFn = createServerFn({ method: "GET" }).handler(
+	async (): Promise<PublicProgram | null> => getPublicProgram(),
+);
+
+export interface PublicConferenceInfo {
+	name: string;
+	subtitle: string;
+	startDate: string;
+	endDate: string;
+	timezone: string;
+}
+
+export const publicConferenceInfoQueryOptions = () =>
+	queryOptions({
+		queryKey: ["conference", "public-info"],
+		queryFn: () => getPublicConferenceInfoFn(),
+	});
+
+export const getPublicConferenceInfoFn = createServerFn({
+	method: "GET",
+}).handler(async (): Promise<PublicConferenceInfo> => {
+	const s = await getSettings([
+		"CONFERENCE_NAME",
+		"CONFERENCE_SUBTITLE",
+		"CONFERENCE_DATE_START",
+		"CONFERENCE_DATE_END",
+		"CONFERENCE_TIMEZONE",
+	]);
+	return {
+		name: s.CONFERENCE_NAME,
+		subtitle: s.CONFERENCE_SUBTITLE ?? "",
+		startDate: s.CONFERENCE_DATE_START,
+		endDate: s.CONFERENCE_DATE_END,
+		timezone: s.CONFERENCE_TIMEZONE,
+	};
+});

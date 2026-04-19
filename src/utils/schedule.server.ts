@@ -25,6 +25,101 @@ export async function unpublishSchedule(): Promise<void> {
 	await setSetting("SCHEDULE_STATE", { status: "DRAFT" });
 }
 
+export interface PublicProgramSession {
+	id: string;
+	title: string;
+	startAt: Date;
+	endAt: Date;
+	room: { id: string; name: string } | null;
+	track: { id: string; name: string; color: string | null } | null;
+	chairs: Array<{ firstName: string | null; lastName: string | null }>;
+	presentations: Array<{
+		id: string;
+		order: number;
+		durationMin: number;
+		submissionTitle: string;
+		authors: Array<{ firstName: string; lastName: string; orderIndex: number }>;
+	}>;
+}
+
+export interface PublicProgramBreak {
+	id: string;
+	title: string;
+	startAt: Date;
+	endAt: Date;
+	room: { id: string; name: string } | null;
+}
+
+export interface PublicProgram {
+	sessions: PublicProgramSession[];
+	breaks: PublicProgramBreak[];
+}
+
+export async function getPublicProgram(): Promise<PublicProgram | null> {
+	const state = await getSetting("SCHEDULE_STATE");
+	if (state.status !== "PUBLISHED") return null;
+
+	const [sessions, breaks] = await Promise.all([
+		prisma.programSession.findMany({
+			include: {
+				room: { select: { id: true, name: true } },
+				track: { select: { id: true, name: true, color: true } },
+				chairs: {
+					include: { user: { select: { firstName: true, lastName: true } } },
+				},
+				presentations: {
+					orderBy: { order: "asc" },
+					include: {
+						submission: {
+							select: {
+								title: true,
+								authors: {
+									select: { firstName: true, lastName: true, orderIndex: true },
+									orderBy: { orderIndex: "asc" },
+								},
+							},
+						},
+					},
+				},
+			},
+			orderBy: [{ startAt: "asc" }, { roomId: "asc" }],
+		}),
+		prisma.scheduleBreak.findMany({
+			include: { room: { select: { id: true, name: true } } },
+			orderBy: { startAt: "asc" },
+		}),
+	]);
+
+	return {
+		sessions: sessions.map((s) => ({
+			id: s.id,
+			title: s.title,
+			startAt: s.startAt,
+			endAt: s.endAt,
+			room: s.room,
+			track: s.track,
+			chairs: s.chairs.map((c) => ({
+				firstName: c.user.firstName,
+				lastName: c.user.lastName,
+			})),
+			presentations: s.presentations.map((p) => ({
+				id: p.id,
+				order: p.order,
+				durationMin: p.durationMin,
+				submissionTitle: p.submission.title,
+				authors: p.submission.authors,
+			})),
+		})),
+		breaks: breaks.map((b) => ({
+			id: b.id,
+			title: b.title,
+			startAt: b.startAt,
+			endAt: b.endAt,
+			room: b.room,
+		})),
+	};
+}
+
 export type IssueKind =
 	| "CHAIR_OVERLAP"
 	| "AUTHOR_OVERLAP"

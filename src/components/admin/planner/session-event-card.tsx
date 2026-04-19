@@ -1,4 +1,5 @@
 import { IconUsers } from "@tabler/icons-react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 export interface SessionEventData {
@@ -6,6 +7,7 @@ export interface SessionEventData {
 	sessionId: string;
 	trackColor: string | null;
 	trackName: string | null;
+	sessionDurationMin: number;
 	chairs: Array<{ firstName: string | null; lastName: string | null }>;
 	presentations: Array<{
 		id: string;
@@ -26,20 +28,52 @@ function initials(
 export function SessionEventCard({
 	title,
 	data,
+	onSubmissionDrop,
 }: {
 	title: string;
 	data: SessionEventData;
+	onSubmissionDrop?: (submissionId: string) => void;
 }) {
 	const band = data.trackColor ?? "var(--muted-foreground)";
 	const hasChairs = data.chairs.length > 0;
 	const slotCount = data.presentations.length;
+	const usedMin = data.presentations.reduce((s, p) => s + p.durationMin, 0);
+	const capacityPct =
+		data.sessionDurationMin > 0
+			? Math.min(100, Math.round((usedMin / data.sessionDurationMin) * 100))
+			: 0;
+	const capacityFull = usedMin >= data.sessionDurationMin;
+	const [isDragOver, setIsDragOver] = useState(false);
 
 	return (
-		<div
+		<section
+			aria-label={title}
 			className={cn(
-				"relative flex h-full flex-col gap-1 overflow-hidden rounded-md border bg-background p-1.5 pl-2.5 text-[11px] shadow-sm",
+				"relative flex h-full flex-col gap-1 overflow-hidden rounded-md border bg-background p-1.5 pl-2.5 text-[11px] shadow-sm transition-colors",
 				!hasChairs && "border-dashed",
+				isDragOver && "border-primary bg-primary/5 ring-1 ring-primary",
 			)}
+			onDragOver={(e) => {
+				if (!e.dataTransfer.types.includes("submissionid")) return;
+				e.preventDefault();
+				e.stopPropagation();
+				setIsDragOver(true);
+			}}
+			onDragEnter={(e) => {
+				if (!e.dataTransfer.types.includes("submissionid")) return;
+				e.preventDefault();
+				setIsDragOver(true);
+			}}
+			onDragLeave={() => setIsDragOver(false)}
+			onDrop={(e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				setIsDragOver(false);
+				const submissionId = e.dataTransfer.getData("submissionid");
+				if (submissionId && onSubmissionDrop) {
+					onSubmissionDrop(submissionId);
+				}
+			}}
 		>
 			{/* Track color band */}
 			<span
@@ -105,6 +139,27 @@ export function SessionEventCard({
 			) : (
 				<p className="text-[10px] italic opacity-60">No talks assigned</p>
 			)}
-		</div>
+
+			{/* Capacity bar */}
+			<div className="mt-auto pt-1">
+				<div className="flex items-center justify-between text-[9px] text-muted-foreground/70">
+					<span>
+						{usedMin}/{data.sessionDurationMin} min
+					</span>
+					{capacityFull && (
+						<span className="text-amber-600 dark:text-amber-400">full</span>
+					)}
+				</div>
+				<div className="mt-0.5 h-[3px] w-full overflow-hidden rounded-full bg-muted">
+					<div
+						className={cn(
+							"h-full rounded-full transition-all",
+							capacityFull ? "bg-amber-500" : "bg-primary/60",
+						)}
+						style={{ width: `${capacityPct}%` }}
+					/>
+				</div>
+			</div>
+		</section>
 	);
 }

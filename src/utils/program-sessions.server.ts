@@ -20,6 +20,7 @@ export interface ProgramSessionDetail {
 		order: number;
 		durationMin: number;
 		submissionTitle: string;
+		authors: Array<{ firstName: string; lastName: string; orderIndex: number }>;
 	}>;
 }
 
@@ -44,7 +45,17 @@ export async function listSessions(range?: {
 			},
 			presentations: {
 				orderBy: { order: "asc" },
-				include: { submission: { select: { title: true } } },
+				include: {
+					submission: {
+						select: {
+							title: true,
+							authors: {
+								select: { firstName: true, lastName: true, orderIndex: true },
+								orderBy: { orderIndex: "asc" },
+							},
+						},
+					},
+				},
 			},
 		},
 		orderBy: [{ startAt: "asc" }, { roomId: "asc" }],
@@ -70,6 +81,7 @@ export async function listSessions(range?: {
 			order: p.order,
 			durationMin: p.durationMin,
 			submissionTitle: p.submission.title,
+			authors: p.submission.authors,
 		})),
 	}));
 }
@@ -141,5 +153,33 @@ export async function removeChair(
 ): Promise<void> {
 	await prisma.programSessionChair.delete({
 		where: { sessionId_userId: { sessionId, userId } },
+	});
+}
+
+export interface UnscheduledSubmission {
+	id: string;
+	title: string;
+	type: string;
+	authors: Array<{ firstName: string; lastName: string; orderIndex: number }>;
+}
+
+export async function listUnscheduledSubmissions(): Promise<
+	UnscheduledSubmission[]
+> {
+	return prisma.submission.findMany({
+		where: {
+			status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] },
+			presentationSlot: { is: null },
+		},
+		select: {
+			id: true,
+			title: true,
+			type: true,
+			authors: {
+				select: { firstName: true, lastName: true, orderIndex: true },
+				orderBy: { orderIndex: "asc" },
+			},
+		},
+		orderBy: { createdAt: "asc" },
 	});
 }

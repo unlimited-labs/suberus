@@ -1,22 +1,37 @@
-import { IlamyResourceCalendar, type WeekDays } from "@ilamy/calendar";
-import { IconCalendar } from "@tabler/icons-react";
+import {
+	type CalendarEvent,
+	IlamyResourceCalendar,
+	type WeekDays,
+} from "@ilamy/calendar";
+import { IconAlertTriangle, IconCalendar } from "@tabler/icons-react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { toast } from "sonner";
+import { BreakEditorSheet } from "@/components/admin/planner/break-editor-sheet";
 import {
 	BreakEventCard,
 	type BreakEventData,
 } from "@/components/admin/planner/break-event-card";
+import { CreateEventDialog } from "@/components/admin/planner/create-event-dialog";
+import { IssuesPanel } from "@/components/admin/planner/issues-panel";
+import { PublishButton } from "@/components/admin/planner/publish-button";
+import { SessionEditorSheet } from "@/components/admin/planner/session-editor-sheet";
 import {
 	SessionEventCard,
 	type SessionEventData,
 } from "@/components/admin/planner/session-event-card";
+import { UnscheduledSidebar } from "@/components/admin/planner/unscheduled-sidebar";
 import { PageHeader } from "@/components/layout/page-header";
+import { createSlotFn } from "@/utils/presentation-slots.functions";
 import {
 	allSessionsQueryOptions,
 	moveSessionFn,
+	unscheduledSubmissionsQueryOptions,
 } from "@/utils/program-sessions.functions";
+import { allProgramTracksQueryOptions } from "@/utils/program-tracks.functions";
 import { allRoomsQueryOptions } from "@/utils/rooms.functions";
+import { scheduleStateQueryOptions } from "@/utils/schedule.functions";
 import {
 	allBreaksQueryOptions,
 	updateBreakFn,
@@ -30,10 +45,18 @@ export const Route = createFileRoute("/_app/admin/_layout/program-planner/")({
 			context.queryClient.ensureQueryData(allSessionsQueryOptions()),
 			context.queryClient.ensureQueryData(allBreaksQueryOptions()),
 			context.queryClient.ensureQueryData(conferenceSettingsQueryOptions()),
+			context.queryClient.ensureQueryData(allProgramTracksQueryOptions()),
+			context.queryClient.ensureQueryData(unscheduledSubmissionsQueryOptions()),
+			context.queryClient.ensureQueryData(scheduleStateQueryOptions()),
 		]);
 	},
 	component: ProgramPlannerPage,
 });
+
+type SelectedEvent =
+	| { kind: "session"; id: string }
+	| { kind: "break"; id: string }
+	| null;
 
 function ProgramPlannerPage() {
 	const queryClient = useQueryClient();
@@ -41,6 +64,22 @@ function ProgramPlannerPage() {
 	const { data: sessions } = useSuspenseQuery(allSessionsQueryOptions());
 	const { data: breaks } = useSuspenseQuery(allBreaksQueryOptions());
 	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
+
+	const [selectedEvent, setSelectedEvent] = useState<SelectedEvent>(null);
+	const [currentDate, setCurrentDate] = useState<Date | null>(null);
+	const [calendarKey, setCalendarKey] = useState(0);
+
+	const confStart = settings.conferenceStartDate
+		? new Date(settings.conferenceStartDate)
+		: null;
+	const confEnd = settings.conferenceEndDate
+		? new Date(settings.conferenceEndDate)
+		: null;
+	const isOutsideRange =
+		currentDate !== null &&
+		confStart !== null &&
+		confEnd !== null &&
+		(currentDate < confStart || currentDate > confEnd);
 
 	const resources = rooms.map((r) => ({
 		id: r.id,
@@ -60,6 +99,9 @@ function ProgramPlannerPage() {
 			sessionId: s.id,
 			trackColor: s.track?.color ?? null,
 			trackName: s.track?.name ?? null,
+			sessionDurationMin: Math.round(
+				(new Date(s.endAt).getTime() - new Date(s.startAt).getTime()) / 60_000,
+			),
 			chairs: s.chairs.map((c) => ({
 				firstName: c.firstName,
 				lastName: c.lastName,
@@ -91,6 +133,23 @@ function ProgramPlannerPage() {
 		queryClient.invalidateQueries({
 			queryKey: allBreaksQueryOptions().queryKey,
 		});
+		queryClient.invalidateQueries({
+			queryKey: unscheduledSubmissionsQueryOptions().queryKey,
+		});
+	};
+
+	const handleSubmissionDrop = async (
+		sessionId: string,
+		submissionId: string,
+	) => {
+		try {
+			await createSlotFn({
+				data: { sessionId, submissionId, durationMin: 15 },
+			});
+			invalidate();
+		} catch (e) {
+			toast.error(e instanceof Error ? e.message : "Failed to assign");
+		}
 	};
 
 	const handleEventUpdate = async (event: {
@@ -121,6 +180,15 @@ function ProgramPlannerPage() {
 			const message =
 				error instanceof Error ? error.message : "Failed to update";
 			toast.error(message);
+		}
+	};
+
+	const handleEventClick = (event: CalendarEvent) => {
+		const data = event.data as SessionEventData | BreakEventData | undefined;
+		if (data?.kind === "session" && data.sessionId) {
+			setSelectedEvent({ kind: "session", id: data.sessionId });
+		} else if (data?.kind === "break" && data.breakId) {
+			setSelectedEvent({ kind: "break", id: data.breakId });
 		}
 	};
 
@@ -165,35 +233,92 @@ function ProgramPlannerPage() {
 	}
 
 	return (
-		<div className="flex min-h-0 flex-1 flex-col overflow-auto">
-			<PageHeader icon={IconCalendar} title="Program Planner" />
-			<div className="p-4">
-				<IlamyResourceCalendar
-					resources={resources}
-					events={events}
-					orientation="vertical"
-					initialView="day"
-					initialDate={initialDate}
-					timezone={settings.timezone || undefined}
-					timeFormat={settings.timeFormat === "12h" ? "12-hour" : "24-hour"}
-					businessHours={businessHours}
-					hideNonBusinessHours
-					onEventUpdate={handleEventUpdate}
-					renderEvent={(event) => {
-						const data = event.data as
-							| SessionEventData
-							| BreakEventData
-							| undefined;
-						if (data?.kind === "break") {
-							return <BreakEventCard title={event.title} />;
-						}
-						if (data?.kind === "session") {
-							return <SessionEventCard title={event.title} data={data} />;
-						}
-						return null;
-					}}
-				/>
+		<>
+			<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+				<PageHeader icon={IconCalendar} title="Program Planner">
+					<PublishButton />
+				</PageHeader>
+				{isOutsideRange && (
+					<div className="flex items-center gap-2 border-b bg-amber-50 px-4 py-2 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-200">
+						<IconAlertTriangle size={13} className="shrink-0" />
+						Outside conference dates
+						{confStart && (
+							<button
+								type="button"
+								className="ml-auto underline hover:no-underline"
+								onClick={() => {
+									setCurrentDate(confStart);
+									setCalendarKey((k) => k + 1);
+								}}
+							>
+								Return
+							</button>
+						)}
+					</div>
+				)}
+				<IssuesPanel sessions={sessions} />
+				<div className="flex min-h-0 flex-1">
+					<UnscheduledSidebar />
+					<div className="flex-1 overflow-auto p-4">
+						<div data-planner-cal className="size-full">
+							<IlamyResourceCalendar
+								key={calendarKey}
+								resources={resources}
+								events={events}
+								orientation="vertical"
+								initialView="day"
+								initialDate={initialDate}
+								timezone={settings.timezone || undefined}
+								timeFormat={
+									settings.timeFormat === "12h" ? "12-hour" : "24-hour"
+								}
+								businessHours={businessHours}
+								hideNonBusinessHours
+								onDateChange={(date) => setCurrentDate(date.toDate())}
+								onEventUpdate={handleEventUpdate}
+								onEventClick={handleEventClick}
+								renderEventForm={(props) => (
+									<CreateEventDialog
+										{...props}
+										onCreated={invalidate}
+										timezone={settings.timezone || undefined}
+									/>
+								)}
+								renderEvent={(event) => {
+									const data = event.data as
+										| SessionEventData
+										| BreakEventData
+										| undefined;
+									if (data?.kind === "break") {
+										return <BreakEventCard title={event.title} />;
+									}
+									if (data?.kind === "session") {
+										return (
+											<SessionEventCard
+												title={event.title}
+												data={data}
+												onSubmissionDrop={(submissionId) =>
+													handleSubmissionDrop(data.sessionId, submissionId)
+												}
+											/>
+										);
+									}
+									return null;
+								}}
+							/>
+						</div>
+					</div>
+				</div>
 			</div>
-		</div>
+
+			<SessionEditorSheet
+				sessionId={selectedEvent?.kind === "session" ? selectedEvent.id : null}
+				onClose={() => setSelectedEvent(null)}
+			/>
+			<BreakEditorSheet
+				breakId={selectedEvent?.kind === "break" ? selectedEvent.id : null}
+				onClose={() => setSelectedEvent(null)}
+			/>
+		</>
 	);
 }

@@ -58,7 +58,9 @@ export function AppLayout({
 				{/* Content card */}
 				<main className="flex flex-1 flex-col overflow-auto bg-background shadow-lg md:m-2 md:rounded-2xl">
 					<EmailVerificationBanner />
-					<div className="flex-1 overflow-auto">{children}</div>
+					<div className="flex flex-1 flex-col overflow-auto min-h-0">
+						{children}
+					</div>
 					{footerText && (
 						<footer className="border-t px-4 py-3 text-center text-xs text-muted-foreground">
 							{footerText}

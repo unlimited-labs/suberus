@@ -7,6 +7,7 @@ import {
 	createSession,
 	deleteSession,
 	listSessions,
+	listUnscheduledSubmissions,
 	moveSession,
 	removeChair,
 	updateSession,
@@ -101,4 +102,16 @@ export const removeChairFn = createServerFn({ method: "POST" })
 	.inputValidator(z.object({ sessionId: z.uuid(), userId: z.uuid() }))
 	.handler(async ({ data }) => {
 		await removeChair(data.sessionId, data.userId);
+	});
+
+export const unscheduledSubmissionsQueryOptions = () =>
+	queryOptions({
+		queryKey: ["unscheduledSubmissions"],
+		queryFn: () => listUnscheduledSubmissionsFn(),
+	});
+
+export const listUnscheduledSubmissionsFn = createServerFn({ method: "GET" })
+	.middleware([adminMiddleware])
+	.handler(async () => {
+		return listUnscheduledSubmissions();
 	});

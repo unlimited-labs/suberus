@@ -20,9 +20,9 @@ import { prisma } from "@/db.server";
 const SEED_EMAIL_RE = /^seed-author-\d+@example\.local$/;
 const SEED_PREFIX = "SEED · ";
 
-const NUM_AUTHORS = 15;
-const NUM_SUBMISSIONS = 40;
-const NUM_ROOMS = 4;
+const NUM_AUTHORS = 30;
+const NUM_SUBMISSIONS = 90;
+const NUM_ROOMS = 3;
 const NUM_PROGRAM_TRACKS = 6;
 
 const TRACK_COLORS = [
@@ -274,22 +274,46 @@ async function seedSessionsAndBreaks(
 	const submissions = await prisma.submission.findMany({
 		where: { status: "ACCEPTED", presentationSlot: null },
 		select: { id: true },
-		take: 24,
 	});
 
-	// Build 6 sessions: 2 days × 3 morning/afternoon slots, alternating rooms.
-	const slotSpecs = [
+	// 2 days, up to 4 time windows per day, each window fills all rooms
+	// → ~8 windows × NUM_ROOMS sessions (with some gaps for variety).
+	const windowSpecs: Array<{
+		dayOffset: number;
+		startHour: number;
+		endHour: number;
+		// if set, only first N rooms used (leave columns empty for visual variety)
+		roomCount?: number;
+		// custom title override (used for plenaries)
+		titlePrefix?: string;
+	}> = [
+		{
+			dayOffset: 0,
+			startHour: 8,
+			endHour: 9,
+			roomCount: 1,
+			titlePrefix: "Plenary",
+		},
 		{ dayOffset: 0, startHour: 9, endHour: 10.5 },
 		{ dayOffset: 0, startHour: 11, endHour: 12.5 },
 		{ dayOffset: 0, startHour: 14, endHour: 15.5 },
+		{ dayOffset: 0, startHour: 16, endHour: 17.5, roomCount: 2 },
+		{
+			dayOffset: 1,
+			startHour: 8,
+			endHour: 9,
+			roomCount: 1,
+			titlePrefix: "Plenary",
+		},
 		{ dayOffset: 1, startHour: 9, endHour: 10.5 },
 		{ dayOffset: 1, startHour: 11, endHour: 12.5 },
 		{ dayOffset: 1, startHour: 14, endHour: 15.5 },
+		{ dayOffset: 1, startHour: 16, endHour: 17.5, roomCount: 2 },
 	];
 
 	let submissionCursor = 0;
-	for (let i = 0; i < slotSpecs.length; i++) {
-		const spec = slotSpecs[i];
+	let trackCursor = 0;
+	for (const spec of windowSpecs) {
 		const start = new Date(baseDate);
 		start.setUTCDate(start.getUTCDate() + spec.dayOffset);
 		start.setUTCHours(
@@ -302,47 +326,57 @@ async function seedSessionsAndBreaks(
 		end.setUTCDate(end.getUTCDate() + spec.dayOffset);
 		end.setUTCHours(Math.floor(spec.endHour), (spec.endHour % 1) * 60, 0, 0);
 
-		const roomId = roomIds[i % roomIds.length];
-		const trackId = trackIds[i % trackIds.length];
+		const usedRooms = roomIds.slice(0, spec.roomCount ?? roomIds.length);
+		for (const roomId of usedRooms) {
+			const trackId = trackIds[trackCursor % trackIds.length];
+			trackCursor++;
 
-		const session = await prisma.programSession.create({
-			data: {
-				title: `${SEED_PREFIX}${faker.lorem.words({ min: 2, max: 4 })}`,
-				startAt: start,
-				endAt: end,
-				roomId,
-				trackId,
-			},
-			select: { id: true },
-		});
-
-		// 1-2 chairs per session
-		const chairUserIds = pickN(authorUserIds, faker.number.int({ min: 1, max: 2 }));
-		for (const uid of chairUserIds) {
-			await prisma.programSessionChair.create({
-				data: { sessionId: session.id, userId: uid },
-			});
-		}
-
-		// 3 presentation slots per session (15 min each)
-		for (let s = 0; s < 3 && submissionCursor < submissions.length; s++) {
-			await prisma.presentationSlot.create({
+			const session = await prisma.programSession.create({
 				data: {
-					sessionId: session.id,
-					submissionId: submissions[submissionCursor].id,
-					order: s,
-					durationMin: 15,
+					title: spec.titlePrefix
+					? `${SEED_PREFIX}${spec.titlePrefix}: ${faker.lorem.words({ min: 3, max: 6 })}`
+					: `${SEED_PREFIX}${faker.lorem.words({ min: 2, max: 4 })}`,
+					startAt: start,
+					endAt: end,
+					roomId,
+					trackId,
 				},
+				select: { id: true },
 			});
-			submissionCursor++;
+
+			const chairUserIds = pickN(
+				authorUserIds,
+				faker.number.int({ min: 1, max: 2 }),
+			);
+			for (const uid of chairUserIds) {
+				await prisma.programSessionChair.create({
+					data: { sessionId: session.id, userId: uid },
+				});
+			}
+
+			// Plenary: single 60-min keynote; regular: 3-4 talks of 15-20 min.
+			const isPlenary = !!spec.titlePrefix;
+			const slotCount = isPlenary ? 1 : faker.number.int({ min: 3, max: 4 });
+			for (let s = 0; s < slotCount && submissionCursor < submissions.length; s++) {
+				await prisma.presentationSlot.create({
+					data: {
+						sessionId: session.id,
+						submissionId: submissions[submissionCursor].id,
+						order: s,
+						durationMin: isPlenary ? 60 : faker.helpers.arrayElement([15, 20]),
+					},
+				});
+				submissionCursor++;
+			}
 		}
 	}
 
-	// 2 breaks per day: coffee + lunch
+	// Breaks per day: coffee + lunch + afternoon
 	for (const dayOffset of [0, 1]) {
 		for (const spec of [
-			{ title: "Coffee", startHour: 10.5, endHour: 11 },
+			{ title: "Morning Coffee", startHour: 10.5, endHour: 11 },
 			{ title: "Lunch", startHour: 12.5, endHour: 14 },
+			{ title: "Afternoon Coffee", startHour: 15.5, endHour: 16 },
 		]) {
 			const start = new Date(baseDate);
 			start.setUTCDate(start.getUTCDate() + dayOffset);
