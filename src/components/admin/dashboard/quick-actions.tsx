@@ -1,5 +1,6 @@
 import {
 	IconAdjustments,
+	IconCalendar,
 	IconDownload,
 	IconFileStack,
 	IconUsers,
@@ -54,6 +55,16 @@ export function QuickActions() {
 						<Link to="/admin/settings">
 							<IconAdjustments className="size-5" />
 							<span className="text-sm">Configuration</span>
+						</Link>
+					</Button>
+					<Button
+						variant="outline"
+						className="h-auto py-4 flex flex-col gap-2"
+						asChild
+					>
+						<Link to="/admin/program-planner">
+							<IconCalendar className="size-5" />
+							<span className="text-sm">Program Planner</span>
 						</Link>
 					</Button>
 				</div>

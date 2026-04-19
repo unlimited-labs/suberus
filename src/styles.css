@@ -10,6 +10,8 @@
 @import "@fontsource/dm-sans/500.css";
 @import "@fontsource/dm-sans/600.css";
 
+@source "../node_modules/@ilamy/calendar/dist";
+
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
