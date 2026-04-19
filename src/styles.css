@@ -12,6 +12,22 @@
 
 @source "../node_modules/@ilamy/calendar/dist";
 
+/*
+ * Planner: stretch ilamy's fixed 60px hour rows to fill viewport.
+ * Library ships cells as literal Tailwind arbitrary classes (h-[60px],
+ * min-h-[60px]); we match them via attribute selectors scoped under
+ * .planner-grid so the override cannot leak elsewhere.
+ * --planner-hours is set inline by the planner route.
+ */
+.planner-grid {
+	--planner-hour-px: max(60px, calc((100vh - 220px) / var(--planner-hours, 9)));
+}
+.planner-grid [class~="h-[60px]"],
+.planner-grid [class~="min-h-[60px]"] {
+	height: var(--planner-hour-px);
+	min-height: var(--planner-hour-px);
+}
+
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
