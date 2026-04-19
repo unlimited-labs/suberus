@@ -1,5 +1,5 @@
 import { IconArrowLeft, IconArrowRight, IconX } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { UnscheduledSubmission } from "@/utils/program-sessions.server";
 
 interface BulkReadReaderProps {
@@ -14,6 +14,15 @@ export function BulkReadReader({
 	onClose,
 }: BulkReadReaderProps) {
 	const [idx, setIdx] = useState(initialIndex);
+	const closeRef = useRef<HTMLButtonElement>(null);
+
+	useEffect(() => {
+		closeRef.current?.focus();
+		const opener = document.activeElement;
+		return () => {
+			if (opener instanceof HTMLElement) opener.focus();
+		};
+	}, []);
 
 	useEffect(() => {
 		const handler = (e: KeyboardEvent) => {
@@ -52,10 +61,11 @@ export function BulkReadReader({
 					← → navigate · Esc to close
 				</span>
 				<button
+					ref={closeRef}
 					type="button"
 					onClick={onClose}
-					className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-					aria-label="Close"
+					className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+					aria-label="Close reading mode"
 				>
 					<IconX size={16} />
 				</button>

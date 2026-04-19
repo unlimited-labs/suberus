@@ -107,6 +107,7 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 					onClick={() => setOpen(true)}
 					className="flex flex-col items-center gap-1 rounded px-2 py-2 text-muted-foreground hover:bg-muted hover:text-foreground"
 					title="Unscheduled submissions"
+					aria-label={`Open unscheduled submissions panel (${submissions.length})`}
 				>
 					<IconLayoutList size={16} />
 					<span className="text-[10px] font-medium uppercase tracking-wide [writing-mode:vertical-rl]">
@@ -151,6 +152,7 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 							type="button"
 							onClick={() => setOpen(false)}
 							className="rounded p-1 text-muted-foreground hover:bg-muted"
+							aria-label="Collapse sidebar"
 						>
 							<IconChevronLeft size={14} />
 						</button>
@@ -174,6 +176,7 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 								type="button"
 								onClick={() => setSearch("")}
 								className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+								aria-label="Clear search"
 							>
 								<IconX size={11} />
 							</button>
@@ -181,11 +184,17 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 					</div>
 				</div>
 
-				<div className="flex gap-1 border-b px-2 py-1.5">
+				<div
+					className="flex gap-1 border-b px-2 py-1.5"
+					role="tablist"
+					aria-label="Group submissions by"
+				>
 					{MODES.map((m) => (
 						<button
 							key={m.key}
 							type="button"
+							role="tab"
+							aria-selected={mode === m.key}
 							onClick={() => setMode(m.key)}
 							className={`flex-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${
 								mode === m.key
@@ -343,6 +352,7 @@ function SubmissionRow({
 		>
 			<input
 				type="checkbox"
+				aria-label={`Select ${s.title}`}
 				checked={selected}
 				onChange={() => onToggleSelect(false)}
 				onClick={(e) => {
