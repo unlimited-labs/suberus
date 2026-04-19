@@ -1,4 +1,5 @@
 import {
+	IconBook,
 	IconChevronDown,
 	IconChevronLeft,
 	IconChevronRight,
@@ -12,6 +13,7 @@ import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { unscheduledSubmissionsQueryOptions } from "@/utils/program-sessions.functions";
 import type { UnscheduledSubmission } from "@/utils/program-sessions.server";
+import { BulkReadReader } from "./bulk-read-reader";
 import {
 	type GroupingMode,
 	groupSubmissions,
@@ -45,6 +47,7 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 	const [expanded, setExpanded] = useState<Set<string>>(new Set());
 	const [lastAnchor, setLastAnchor] = useState<string | null>(null);
 	const [draggingId, setDraggingId] = useState<string | null>(null);
+	const [readerStart, setReaderStart] = useState<number | null>(null);
 
 	const filtered = useMemo(
 		() => submissions.filter((s) => matchesSearch(s, search.trim())),
@@ -122,157 +125,179 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 	}
 
 	return (
-		<div className="flex min-h-0 w-72 shrink-0 flex-col border-r">
-			<div className="flex items-center justify-between border-b px-3 py-2">
-				<div className="flex items-center gap-1.5">
-					<IconLayoutList size={14} className="text-muted-foreground" />
-					<span className="text-xs font-medium">Unscheduled</span>
-					<span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-						{submissions.length}
-					</span>
-				</div>
-				<button
-					type="button"
-					onClick={() => setOpen(false)}
-					className="rounded p-1 text-muted-foreground hover:bg-muted"
-				>
-					<IconChevronLeft size={14} />
-				</button>
-			</div>
-
-			<div className="border-b px-2 py-2">
-				<div className="relative">
-					<IconSearch
-						size={12}
-						className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-					/>
-					<Input
-						value={search}
-						onChange={(e) => setSearch(e.target.value)}
-						placeholder="Search title, author, keyword…"
-						className="h-7 pl-7 text-xs"
-					/>
-					{search && (
+		<>
+			<div className="flex min-h-0 w-72 shrink-0 flex-col border-r">
+				<div className="flex items-center justify-between border-b px-3 py-2">
+					<div className="flex items-center gap-1.5">
+						<IconLayoutList size={14} className="text-muted-foreground" />
+						<span className="text-xs font-medium">Unscheduled</span>
+						<span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+							{submissions.length}
+						</span>
+					</div>
+					<div className="flex items-center gap-1">
+						{submissions.length > 0 && (
+							<button
+								type="button"
+								onClick={() => setReaderStart(0)}
+								className="flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+								title="Open reading mode"
+							>
+								<IconBook size={12} />
+								Read
+							</button>
+						)}
 						<button
 							type="button"
-							onClick={() => setSearch("")}
-							className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+							onClick={() => setOpen(false)}
+							className="rounded p-1 text-muted-foreground hover:bg-muted"
 						>
-							<IconX size={11} />
+							<IconChevronLeft size={14} />
 						</button>
-					)}
+					</div>
 				</div>
-			</div>
 
-			<div className="flex gap-1 border-b px-2 py-1.5">
-				{MODES.map((m) => (
-					<button
-						key={m.key}
-						type="button"
-						onClick={() => setMode(m.key)}
-						className={`flex-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${
-							mode === m.key
-								? "bg-muted text-foreground"
-								: "text-muted-foreground hover:bg-muted/50"
-						}`}
-					>
-						{m.label}
-					</button>
-				))}
-			</div>
-
-			<div className="flex-1 overflow-y-auto">
-				{groups.length === 0 ? (
-					<div className="flex flex-col items-center justify-center gap-1 p-6 text-center">
-						{search ? (
-							<p className="text-xs text-muted-foreground">No results</p>
-						) : (
-							<>
-								<p className="text-xs font-medium text-muted-foreground">
-									All scheduled
-								</p>
-								<p className="text-[11px] text-muted-foreground/70">
-									Every accepted submission has been assigned to a session.
-								</p>
-							</>
+				<div className="border-b px-2 py-2">
+					<div className="relative">
+						<IconSearch
+							size={12}
+							className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+						/>
+						<Input
+							value={search}
+							onChange={(e) => setSearch(e.target.value)}
+							placeholder="Search title, author, keyword…"
+							className="h-7 pl-7 text-xs"
+						/>
+						{search && (
+							<button
+								type="button"
+								onClick={() => setSearch("")}
+								className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+							>
+								<IconX size={11} />
+							</button>
 						)}
 					</div>
-				) : (
-					groups.map((group, gIdx) => {
-						const isCollapsed =
-							gIdx === 0
-								? collapsed.has(group.key)
-								: !collapsed.has(`open:${group.key}`);
-						return (
-							<div key={group.key} className="border-b last:border-b-0">
-								<button
-									type="button"
-									onClick={() => {
-										if (gIdx === 0) toggleGroup(group.key);
-										else toggleGroup(`open:${group.key}`);
-									}}
-									className="flex w-full items-center gap-1.5 bg-muted/20 px-2.5 py-1.5 text-left hover:bg-muted/40"
-								>
-									<IconChevronDown
-										size={11}
-										className={`text-muted-foreground transition-transform ${
-											isCollapsed ? "-rotate-90" : ""
-										}`}
-									/>
-									<span className="text-[11px] font-semibold uppercase tracking-wide text-foreground">
-										{group.label}
-									</span>
-									<span className="ml-auto text-[10px] text-muted-foreground">
-										{group.submissions.length}
-									</span>
-								</button>
-								{!isCollapsed && (
-									<ul className="divide-y">
-										{group.submissions.map((s) => (
-											<SubmissionRow
-												key={s.id}
-												submission={s}
-												selected={selected.has(s.id)}
-												expanded={expanded.has(s.id)}
-												dragging={draggingId === s.id}
-												onToggleSelect={(shift) => toggleSelect(s.id, shift)}
-												onToggleExpand={() => toggleExpand(s.id)}
-												onDragStart={() => setDraggingId(s.id)}
-												onDragEnd={() => setDraggingId(null)}
-											/>
-										))}
-									</ul>
-								)}
-							</div>
-						);
-					})
+				</div>
+
+				<div className="flex gap-1 border-b px-2 py-1.5">
+					{MODES.map((m) => (
+						<button
+							key={m.key}
+							type="button"
+							onClick={() => setMode(m.key)}
+							className={`flex-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${
+								mode === m.key
+									? "bg-muted text-foreground"
+									: "text-muted-foreground hover:bg-muted/50"
+							}`}
+						>
+							{m.label}
+						</button>
+					))}
+				</div>
+
+				<div className="flex-1 overflow-y-auto">
+					{groups.length === 0 ? (
+						<div className="flex flex-col items-center justify-center gap-1 p-6 text-center">
+							{search ? (
+								<p className="text-xs text-muted-foreground">No results</p>
+							) : (
+								<>
+									<p className="text-xs font-medium text-muted-foreground">
+										All scheduled
+									</p>
+									<p className="text-[11px] text-muted-foreground/70">
+										Every accepted submission has been assigned to a session.
+									</p>
+								</>
+							)}
+						</div>
+					) : (
+						groups.map((group, gIdx) => {
+							const isCollapsed =
+								gIdx === 0
+									? collapsed.has(group.key)
+									: !collapsed.has(`open:${group.key}`);
+							return (
+								<div key={group.key} className="border-b last:border-b-0">
+									<button
+										type="button"
+										onClick={() => {
+											if (gIdx === 0) toggleGroup(group.key);
+											else toggleGroup(`open:${group.key}`);
+										}}
+										className="flex w-full items-center gap-1.5 bg-muted/20 px-2.5 py-1.5 text-left hover:bg-muted/40"
+									>
+										<IconChevronDown
+											size={11}
+											className={`text-muted-foreground transition-transform ${
+												isCollapsed ? "-rotate-90" : ""
+											}`}
+										/>
+										<span className="text-[11px] font-semibold uppercase tracking-wide text-foreground">
+											{group.label}
+										</span>
+										<span className="ml-auto text-[10px] text-muted-foreground">
+											{group.submissions.length}
+										</span>
+									</button>
+									{!isCollapsed && (
+										<ul className="divide-y">
+											{group.submissions.map((s) => (
+												<SubmissionRow
+													key={s.id}
+													submission={s}
+													selected={selected.has(s.id)}
+													expanded={expanded.has(s.id)}
+													dragging={draggingId === s.id}
+													onToggleSelect={(shift) => toggleSelect(s.id, shift)}
+													onToggleExpand={() => toggleExpand(s.id)}
+													onDragStart={() => setDraggingId(s.id)}
+													onDragEnd={() => setDraggingId(null)}
+												/>
+											))}
+										</ul>
+									)}
+								</div>
+							);
+						})
+					)}
+				</div>
+
+				{selected.size > 0 && (
+					<div className="flex items-center gap-2 border-t bg-muted/40 px-2 py-2">
+						<span className="rounded-full bg-background px-2 py-0.5 text-[11px] font-medium">
+							{selected.size} selected
+						</span>
+						<button
+							type="button"
+							onClick={() => {
+								onCreateSession?.(Array.from(selected));
+							}}
+							className="rounded bg-primary px-2 py-1 text-[11px] font-medium text-primary-foreground hover:bg-primary/90"
+						>
+							+ Create session
+						</button>
+						<button
+							type="button"
+							onClick={() => setSelected(new Set())}
+							className="ml-auto text-[11px] text-muted-foreground hover:text-foreground"
+						>
+							Clear
+						</button>
+					</div>
 				)}
 			</div>
-
-			{selected.size > 0 && (
-				<div className="flex items-center gap-2 border-t bg-muted/40 px-2 py-2">
-					<span className="rounded-full bg-background px-2 py-0.5 text-[11px] font-medium">
-						{selected.size} selected
-					</span>
-					<button
-						type="button"
-						onClick={() => {
-							onCreateSession?.(Array.from(selected));
-						}}
-						className="rounded bg-primary px-2 py-1 text-[11px] font-medium text-primary-foreground hover:bg-primary/90"
-					>
-						+ Create session
-					</button>
-					<button
-						type="button"
-						onClick={() => setSelected(new Set())}
-						className="ml-auto text-[11px] text-muted-foreground hover:text-foreground"
-					>
-						Clear
-					</button>
-				</div>
+			{readerStart !== null && (
+				<BulkReadReader
+					submissions={submissions}
+					initialIndex={readerStart}
+					onClose={() => setReaderStart(null)}
+				/>
 			)}
-		</div>
+		</>
 	);
 }
 
