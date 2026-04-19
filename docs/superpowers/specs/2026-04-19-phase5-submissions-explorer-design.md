@@ -1,7 +1,7 @@
 ---
 title: Phase 5 — Submissions Explorer & Session Scaffolding
 date: 2026-04-19
-status: draft
+status: implemented
 parent: 2026-04-18-conference-schedule-planner-design.md
 ---
 
@@ -45,17 +45,18 @@ Grouping is done client-side — one fetch, four views.
 Layout top→bottom: header · search · **mode tabs** · group list · **selection
 action bar** (when N≥1).
 
-Modes (4):
+Modes (2, trimmed from originally-proposed 4):
 
-- **Program Track** — matches submission's `trackName` against existing
-  `ProgramTrack.name`; unmatched → "No program track" group. Empty state
-  explains: "Program tracks are assigned to submissions when you create a
-  session — this view will populate as you plan."
 - **Intake track** (default) — groups by `ConferenceTrack.name`, unknown
   → "Unassigned"
-- **Keyword** — groups by most-specific keyword (first in `keywords[]`);
-  submission appears once
 - **Presenter** — groups by primary author (`authors[0]`)
+
+Dropped during implementation:
+- *Program Track* — redundant for unscheduled submissions, since
+  `Submission` has no FK to `ProgramTrack`; would have duplicated Intake
+  with extra filtering.
+- *Keyword* — author-provided keywords have too little overlap to produce
+  useful groups; kept as a search match target instead.
 
 Groups: `<details>` accordions with count badge. First group open, rest
 closed. Empty group hidden.
