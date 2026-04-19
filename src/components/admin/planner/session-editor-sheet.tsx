@@ -61,7 +61,15 @@ import {
 	updateSessionFn,
 } from "@/utils/program-sessions.functions";
 import { allProgramTracksQueryOptions } from "@/utils/program-tracks.functions";
+import { allRoomsQueryOptions } from "@/utils/rooms.functions";
+import { conferenceSettingsQueryOptions } from "@/utils/settings.functions";
 import { suggestSessionName } from "./suggest-session-name";
+import {
+	addMinutes,
+	formatDurationMin,
+	tzLocalInputToUtc,
+	utcToTzLocalInput,
+} from "./tz-datetime";
 
 interface SessionEditorSheetProps {
 	sessionId: string | null;
@@ -99,7 +107,10 @@ function SessionEditorBody({
 	const queryClient = useQueryClient();
 	const { data: sessions } = useSuspenseQuery(allSessionsQueryOptions());
 	const { data: tracks } = useSuspenseQuery(allProgramTracksQueryOptions());
+	const { data: rooms } = useSuspenseQuery(allRoomsQueryOptions());
+	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
 	const { data: users } = useQuery(adminUsersQueryOptions());
+	const tz = settings.timezone || undefined;
 
 	const session = sessions.find((s) => s.id === sessionId);
 
@@ -161,6 +172,52 @@ function SessionEditorBody({
 			invalidate();
 		} catch (e) {
 			toast.error(e instanceof Error ? e.message : "Failed to update track");
+		}
+	};
+
+	const handleRoomChange = async (value: string) => {
+		try {
+			await updateSessionFn({
+				data: { id: sessionId, roomId: value === "none" ? null : value },
+			});
+			invalidate();
+		} catch (e) {
+			toast.error(e instanceof Error ? e.message : "Failed to update room");
+		}
+	};
+
+	const handleStartChange = async (local: string) => {
+		if (!local || !session) return;
+		const newStart = tzLocalInputToUtc(local, tz);
+		const duration = formatDurationMin(
+			new Date(session.startAt),
+			new Date(session.endAt),
+		);
+		const newEnd = addMinutes(newStart, duration);
+		try {
+			await updateSessionFn({
+				data: {
+					id: sessionId,
+					startAt: newStart.toISOString(),
+					endAt: newEnd.toISOString(),
+				},
+			});
+			invalidate();
+		} catch (e) {
+			toast.error(e instanceof Error ? e.message : "Failed to update time");
+		}
+	};
+
+	const handleDurationChange = async (minutes: number) => {
+		if (!session) return;
+		const newEnd = addMinutes(new Date(session.startAt), minutes);
+		try {
+			await updateSessionFn({
+				data: { id: sessionId, endAt: newEnd.toISOString() },
+			});
+			invalidate();
+		} catch (e) {
+			toast.error(e instanceof Error ? e.message : "Failed to update duration");
 		}
 	};
 
@@ -315,32 +372,102 @@ function SessionEditorBody({
 						</button>
 					)}
 				</div>
-				<div className="space-y-1">
-					<Label className="text-xs text-muted-foreground">Track</Label>
-					<Select
-						value={session.trackId ?? "none"}
-						onValueChange={handleTrackChange}
-					>
-						<SelectTrigger className="h-8 text-sm">
-							<SelectValue placeholder="No track" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="none">No track</SelectItem>
-							{tracks.map((t) => (
-								<SelectItem key={t.id} value={t.id}>
-									<span className="flex items-center gap-2">
-										{t.color && (
-											<span
-												className="size-2.5 shrink-0 rounded-full"
-												style={{ backgroundColor: t.color }}
-											/>
-										)}
-										{t.name}
-									</span>
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+				<div className="grid grid-cols-2 gap-3">
+					<div className="space-y-1">
+						<Label
+							htmlFor="session-start"
+							className="text-xs text-muted-foreground"
+						>
+							Start
+						</Label>
+						<Input
+							id="session-start"
+							type="datetime-local"
+							value={utcToTzLocalInput(new Date(session.startAt), tz)}
+							onChange={(e) => handleStartChange(e.target.value)}
+							className="h-8 text-sm"
+						/>
+					</div>
+					<div className="space-y-1">
+						<Label
+							htmlFor="session-duration"
+							className="text-xs text-muted-foreground"
+						>
+							Duration (min)
+						</Label>
+						<Input
+							id="session-duration"
+							type="number"
+							min={5}
+							step={5}
+							defaultValue={formatDurationMin(
+								new Date(session.startAt),
+								new Date(session.endAt),
+							)}
+							key={`${session.startAt}-${session.endAt}`}
+							onBlur={(e) => {
+								const v = Number(e.target.value);
+								if (
+									v >= 5 &&
+									v !==
+										formatDurationMin(
+											new Date(session.startAt),
+											new Date(session.endAt),
+										)
+								)
+									handleDurationChange(v);
+							}}
+							className="h-8 text-sm"
+						/>
+					</div>
+				</div>
+				<div className="grid grid-cols-2 gap-3">
+					<div className="space-y-1">
+						<Label className="text-xs text-muted-foreground">Room</Label>
+						<Select
+							value={session.roomId ?? "none"}
+							onValueChange={handleRoomChange}
+						>
+							<SelectTrigger className="h-8 text-sm">
+								<SelectValue placeholder="No room" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="none">No room</SelectItem>
+								{rooms.map((r) => (
+									<SelectItem key={r.id} value={r.id}>
+										{r.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="space-y-1">
+						<Label className="text-xs text-muted-foreground">Track</Label>
+						<Select
+							value={session.trackId ?? "none"}
+							onValueChange={handleTrackChange}
+						>
+							<SelectTrigger className="h-8 text-sm">
+								<SelectValue placeholder="No track" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="none">No track</SelectItem>
+								{tracks.map((t) => (
+									<SelectItem key={t.id} value={t.id}>
+										<span className="flex items-center gap-2">
+											{t.color && (
+												<span
+													className="size-2.5 shrink-0 rounded-full"
+													style={{ backgroundColor: t.color }}
+												/>
+											)}
+											{t.name}
+										</span>
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
 				</div>
 			</SheetHeader>
 
