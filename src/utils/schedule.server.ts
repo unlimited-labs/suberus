@@ -25,6 +25,78 @@ export async function unpublishSchedule(): Promise<void> {
 	await setSetting("SCHEDULE_STATE", { status: "DRAFT" });
 }
 
+export interface CapacityInfo {
+	talks: number;
+	scheduled: number;
+	rooms: number;
+	days: number;
+	hoursPerDay: number;
+	slotMinutes: number;
+	theoreticalSlots: number;
+	utilizationPct: number;
+}
+
+export async function getCapacity(): Promise<CapacityInfo> {
+	const [
+		talks,
+		scheduled,
+		rooms,
+		conferenceStart,
+		conferenceEnd,
+		dayStart,
+		dayEnd,
+	] = await Promise.all([
+		prisma.submission.count({
+			where: { status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] } },
+		}),
+		prisma.presentationSlot.count(),
+		prisma.room.count(),
+		getSetting("CONFERENCE_DATE_START"),
+		getSetting("CONFERENCE_DATE_END"),
+		getSetting("CONFERENCE_DAY_START"),
+		getSetting("CONFERENCE_DAY_END"),
+	]);
+
+	const days =
+		conferenceStart && conferenceEnd
+			? Math.max(
+					1,
+					Math.round(
+						(new Date(conferenceEnd).getTime() -
+							new Date(conferenceStart).getTime()) /
+							86_400_000,
+					) + 1,
+				)
+			: 1;
+
+	const parseHours = (hhmm: string | null | undefined): number => {
+		if (!hhmm) return 0;
+		const [h, m] = hhmm.split(":").map(Number);
+		return h + (m || 0) / 60;
+	};
+	const hoursPerDay = Math.max(
+		0,
+		parseHours(dayEnd as string) - parseHours(dayStart as string),
+	);
+	const slotMinutes = 15;
+	const theoreticalSlots = Math.floor(
+		(days * rooms * hoursPerDay * 60) / slotMinutes,
+	);
+	const utilizationPct =
+		theoreticalSlots > 0 ? Math.round((scheduled / theoreticalSlots) * 100) : 0;
+
+	return {
+		talks,
+		scheduled,
+		rooms,
+		days,
+		hoursPerDay,
+		slotMinutes,
+		theoreticalSlots,
+		utilizationPct,
+	};
+}
+
 export interface PublicProgramSession {
 	id: string;
 	title: string;

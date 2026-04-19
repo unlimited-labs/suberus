@@ -13,6 +13,7 @@ import {
 	BreakEventCard,
 	type BreakEventData,
 } from "@/components/admin/planner/break-event-card";
+import { CapacityStrip } from "@/components/admin/planner/capacity-strip";
 import { CreateEventDialog } from "@/components/admin/planner/create-event-dialog";
 import { CreateSessionDialog } from "@/components/admin/planner/create-session-dialog";
 import { IssuesPanel } from "@/components/admin/planner/issues-panel";
@@ -32,7 +33,10 @@ import {
 } from "@/utils/program-sessions.functions";
 import { allProgramTracksQueryOptions } from "@/utils/program-tracks.functions";
 import { allRoomsQueryOptions } from "@/utils/rooms.functions";
-import { scheduleStateQueryOptions } from "@/utils/schedule.functions";
+import {
+	scheduleCapacityQueryOptions,
+	scheduleStateQueryOptions,
+} from "@/utils/schedule.functions";
 import {
 	allBreaksQueryOptions,
 	updateBreakFn,
@@ -49,6 +53,7 @@ export const Route = createFileRoute("/_app/admin/_layout/program-planner/")({
 			context.queryClient.ensureQueryData(allProgramTracksQueryOptions()),
 			context.queryClient.ensureQueryData(unscheduledSubmissionsQueryOptions()),
 			context.queryClient.ensureQueryData(scheduleStateQueryOptions()),
+			context.queryClient.ensureQueryData(scheduleCapacityQueryOptions()),
 		]);
 	},
 	component: ProgramPlannerPage,
@@ -139,6 +144,9 @@ function ProgramPlannerPage() {
 		});
 		queryClient.invalidateQueries({
 			queryKey: unscheduledSubmissionsQueryOptions().queryKey,
+		});
+		queryClient.invalidateQueries({
+			queryKey: scheduleCapacityQueryOptions().queryKey,
 		});
 	};
 
@@ -260,6 +268,7 @@ function ProgramPlannerPage() {
 						)}
 					</div>
 				)}
+				<CapacityStrip />
 				<IssuesPanel sessions={sessions} />
 				<div className="flex min-h-0 flex-1">
 					<UnscheduledSidebar

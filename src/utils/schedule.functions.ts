@@ -3,6 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { adminMiddleware, authMiddleware } from "./auth.middleware";
 import type { PublicProgram } from "./schedule.server";
 import {
+	getCapacity,
 	getPublicProgram,
 	getScheduleIssues,
 	getScheduleState,
@@ -27,6 +28,18 @@ export const getScheduleStateFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.handler(async () => {
 		return getScheduleState();
+	});
+
+export const scheduleCapacityQueryOptions = () =>
+	queryOptions({
+		queryKey: ["schedule", "capacity"],
+		queryFn: () => getScheduleCapacityFn(),
+	});
+
+export const getScheduleCapacityFn = createServerFn({ method: "GET" })
+	.middleware([adminMiddleware])
+	.handler(async () => {
+		return getCapacity();
 	});
 
 export const getScheduleIssuesFn = createServerFn({ method: "GET" })
