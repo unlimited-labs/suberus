@@ -19,41 +19,42 @@ model Affiliation {
 }
 
 model User {
-  id                   String                    @id @default(uuid()) @db.Uuid
+  id                   String                @id @default(uuid()) @db.Uuid
   image                String?
-  email                String                    @unique
-  createdAt            DateTime                  @default(now())
-  updatedAt            DateTime                  @updatedAt
+  email                String                @unique
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
   title                String?
   firstName            String?
   lastName             String?
   orcid                String?
   address              String?
   country              String?
-  needInvoice          Boolean                   @default(false)
-  role                 UserRole                  @default(AUTHOR)
-  emailVerified        Boolean                   @default(false)
-  isActive             Boolean                   @default(true)
+  needInvoice          Boolean               @default(false)
+  role                 UserRole              @default(AUTHOR)
+  emailVerified        Boolean               @default(false)
+  isActive             Boolean               @default(true)
   lastLoginAt          DateTime?
   tosAcceptedAt        DateTime?
-  affiliationId        String?                   @db.Uuid
+  affiliationId        String?               @db.Uuid
   accounts             Account[]
   editorDecisions      EditorDecision[]
   fee                  Fee?
   uploadedFiles        File[]
-  assignedReviews      ReviewAssignment[]        @relation("AssignedReviews")
+  assignedReviews      ReviewAssignment[]    @relation("AssignedReviews")
   reviewAssignments    ReviewAssignment[]
   reviews              Review[]
   submissionAuthors    SubmissionAuthor[]
-  activityTargets   ActivityLog[] @relation("ActivityTarget")
-  activityActions   ActivityLog[] @relation("ActivityPerformer")
-  submissions          Submission[]              @relation("SubmissionOwner")
+  activityTargets      ActivityLog[]         @relation("ActivityTarget")
+  activityActions      ActivityLog[]         @relation("ActivityPerformer")
+  submissions          Submission[]          @relation("SubmissionOwner")
   sessions             Session[]
-  supervisedTracks     ConferenceTrack[]         @relation("TrackSupervisor")
+  programSessionChairs ProgramSessionChair[]
+  supervisedTracks     ConferenceTrack[]     @relation("TrackSupervisor")
   surveyAnswers        SurveyAnswer[]
-  createdInvitations   Invitation[]              @relation("InvitationCreator")
-  usedInvitation       Invitation?               @relation("InvitationUser")
-  affiliation          Affiliation?              @relation(fields: [affiliationId], references: [id])
+  createdInvitations   Invitation[]          @relation("InvitationCreator")
+  usedInvitation       Invitation?           @relation("InvitationUser")
+  affiliation          Affiliation?          @relation(fields: [affiliationId], references: [id])
 
   @@index([email])
   @@index([role])
@@ -65,8 +66,8 @@ model User {
 model AppSetting {
   key       String   @id
   value     Json
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("app_settings")
 }
@@ -91,15 +92,15 @@ model EmailTemplate {
 }
 
 model ConferenceTrack {
-  id           String       @id @default(uuid()) @db.Uuid
-  name         String       @unique
-  supervisorId String?      @db.Uuid
-  isActive     Boolean      @default(true)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @unique
+  supervisorId String?  @db.Uuid
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  supervisor   User?        @relation("TrackSupervisor", fields: [supervisorId], references: [id], onDelete: SetNull)
-  submissions  Submission[]
+  supervisor  User?        @relation("TrackSupervisor", fields: [supervisorId], references: [id], onDelete: SetNull)
+  submissions Submission[]
 
   @@index([supervisorId])
   @@index([isActive])
@@ -117,30 +118,31 @@ model Keyword {
 }
 
 model Submission {
-  id                String                    @id @default(uuid()) @db.Uuid
-  sequentialNumber  Int                       @unique @default(autoincrement())
+  id                String              @id @default(uuid()) @db.Uuid
+  sequentialNumber  Int                 @unique @default(autoincrement())
   type              SubmissionType
   title             String
   content           String
-  status            SubmissionStatus          @default(DRAFT)
-  currentRound      Int                       @default(1)
-  userId            String                    @db.Uuid
-  trackId           String?                   @db.Uuid
-  presenterId       String?                   @db.Uuid
-  currentVersionId  String?                   @unique @db.Uuid
-  createdAt         DateTime                  @default(now())
-  updatedAt         DateTime                  @updatedAt
+  status            SubmissionStatus    @default(DRAFT)
+  currentRound      Int                 @default(1)
+  userId            String              @db.Uuid
+  trackId           String?             @db.Uuid
+  presenterId       String?             @db.Uuid
+  currentVersionId  String?             @unique @db.Uuid
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
   editorDecisions   EditorDecision[]
   reviewAssignments ReviewAssignment[]
   reviews           Review[]
-  authors           SubmissionAuthor[]        @relation("SubmissionAuthors")
+  authors           SubmissionAuthor[]  @relation("SubmissionAuthors")
+  presentationSlot  PresentationSlot?
   keywords          SubmissionKeyword[]
   activityLog       ActivityLog[]
-  versions          SubmissionVersion[]       @relation("SubmissionVersions")
-  currentVersion    SubmissionVersion?        @relation("CurrentVersion", fields: [currentVersionId], references: [id])
-  presenterAuthor   SubmissionAuthor?         @relation("PresenterAuthor", fields: [presenterId], references: [id])
-  track             ConferenceTrack?          @relation(fields: [trackId], references: [id])
-  user              User                      @relation("SubmissionOwner", fields: [userId], references: [id])
+  versions          SubmissionVersion[] @relation("SubmissionVersions")
+  currentVersion    SubmissionVersion?  @relation("CurrentVersion", fields: [currentVersionId], references: [id])
+  presenterAuthor   SubmissionAuthor?   @relation("PresenterAuthor", fields: [presenterId], references: [id])
+  track             ConferenceTrack?    @relation(fields: [trackId], references: [id])
+  user              User                @relation("SubmissionOwner", fields: [userId], references: [id])
 
   @@index([userId])
   @@index([status])
@@ -239,23 +241,23 @@ model ReviewAssignment {
 }
 
 model Review {
-  id               String             @id @default(uuid()) @db.Uuid
-  assignmentId     String             @unique @db.Uuid
-  submissionId     String             @db.Uuid
-  reviewerId       String             @db.Uuid
-  versionId        String?            @db.Uuid
-  round            Int
-  decision         ReviewDecision
-  comments         String?
-  privateNotes     String?
-  scores           Json?
-  confidenceLevel  Int?
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  assignment       ReviewAssignment   @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  reviewer         User               @relation(fields: [reviewerId], references: [id])
-  submission       Submission         @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  version          SubmissionVersion? @relation(fields: [versionId], references: [id])
+  id              String             @id @default(uuid()) @db.Uuid
+  assignmentId    String             @unique @db.Uuid
+  submissionId    String             @db.Uuid
+  reviewerId      String             @db.Uuid
+  versionId       String?            @db.Uuid
+  round           Int
+  decision        ReviewDecision
+  comments        String?
+  privateNotes    String?
+  scores          Json?
+  confidenceLevel Int?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  assignment      ReviewAssignment   @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  reviewer        User               @relation(fields: [reviewerId], references: [id])
+  submission      Submission         @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  version         SubmissionVersion? @relation(fields: [versionId], references: [id])
 
   @@index([submissionId, round])
   @@index([reviewerId])
@@ -327,9 +329,9 @@ model ActivityLog {
   detail       Json?
   createdAt    DateTime     @default(now())
 
-  user        User?       @relation("ActivityTarget", fields: [userId], references: [id])
-  submission  Submission? @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  performer   User?       @relation("ActivityPerformer", fields: [performedBy], references: [id])
+  user       User?       @relation("ActivityTarget", fields: [userId], references: [id])
+  submission Submission? @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  performer  User?       @relation("ActivityPerformer", fields: [performedBy], references: [id])
 
   @@index([createdAt])
   @@index([type])
@@ -494,6 +496,98 @@ model Invitation {
   @@map("invitations")
 }
 
+model Room {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  capacity  Int?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  programSessions ProgramSession[]
+  breaks          ScheduleBreak[]
+
+  @@map("rooms")
+}
+
+model ProgramTrack {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique
+  color       String?
+  series      String?
+  seriesOrder Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  programSessions ProgramSession[]
+
+  @@index([series, seriesOrder])
+  @@map("program_tracks")
+}
+
+model ProgramSession {
+  id        String   @id @default(uuid()) @db.Uuid
+  title     String
+  trackId   String?  @db.Uuid
+  roomId    String?  @db.Uuid
+  startAt   DateTime
+  endAt     DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  track         ProgramTrack?         @relation(fields: [trackId], references: [id], onDelete: SetNull)
+  room          Room?                 @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  chairs        ProgramSessionChair[]
+  presentations PresentationSlot[]
+
+  @@index([startAt])
+  @@index([roomId, startAt])
+  @@index([trackId])
+  @@map("program_sessions")
+}
+
+model ProgramSessionChair {
+  sessionId String @db.Uuid
+  userId    String @db.Uuid
+
+  session ProgramSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([sessionId, userId])
+  @@index([userId])
+  @@map("program_session_chairs")
+}
+
+model PresentationSlot {
+  id           String   @id @default(uuid()) @db.Uuid
+  sessionId    String   @db.Uuid
+  submissionId String   @unique @db.Uuid
+  order        Int
+  durationMin  Int
+  createdAt    DateTime @default(now())
+
+  session    ProgramSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  submission Submission     @relation(fields: [submissionId], references: [id], onDelete: Restrict)
+
+  @@unique([sessionId, order])
+  @@map("presentation_slots")
+}
+
+model ScheduleBreak {
+  id        String   @id @default(uuid()) @db.Uuid
+  title     String
+  roomId    String?  @db.Uuid
+  startAt   DateTime
+  endAt     DateTime
+  createdAt DateTime @default(now())
+
+  room Room? @relation(fields: [roomId], references: [id], onDelete: SetNull)
+
+  @@index([startAt])
+  @@index([roomId, startAt])
+  @@map("schedule_breaks")
+}
+
 enum SurveyQuestionType {
   CHECKBOX
   TEXT
@@ -597,4 +691,3 @@ enum EmailEventType {
   NEW_REGISTRATION_NOTIFY
   NEW_SUBMISSION_NOTIFY
 }
-
