@@ -165,9 +165,9 @@ function ProgramPlannerPage() {
 	}
 
 	return (
-		<div className="flex h-full flex-col">
+		<div className="flex min-h-0 flex-1 flex-col overflow-auto">
 			<PageHeader icon={IconCalendar} title="Program Planner" />
-			<div className="flex-1 overflow-hidden p-4">
+			<div className="p-4">
 				<IlamyResourceCalendar
 					resources={resources}
 					events={events}
