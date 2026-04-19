@@ -1,6 +1,7 @@
 import {
 	IconBell,
 	IconBuilding,
+	IconCalendarEvent,
 	IconCash,
 	IconClipboardList,
 	IconFileStack,
@@ -19,6 +20,7 @@ import {
 	useSearch,
 } from "@tanstack/react-router";
 import { z } from "zod";
+import { ProgramTab } from "@/components/admin/program";
 import {
 	BrandingSettingsTab,
 	ConferenceSettingsTab,
@@ -42,7 +44,9 @@ import {
 	llmHealthQueryOptions,
 } from "@/utils/extraction.functions";
 import { paymentInstructionsQueryOptions } from "@/utils/fee.functions";
+import { allProgramTracksQueryOptions } from "@/utils/program-tracks.functions";
 import { reviewerUsersQueryOptions } from "@/utils/reviewers.functions";
+import { allRoomsQueryOptions } from "@/utils/rooms.functions";
 import {
 	adminSettingQueryOptions,
 	brandingSettingsQueryOptions,
@@ -97,6 +101,8 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			),
 			context.queryClient.ensureQueryData(llmHealthQueryOptions()),
 			context.queryClient.ensureQueryData(doclingHealthQueryOptions()),
+			context.queryClient.ensureQueryData(allRoomsQueryOptions()),
+			context.queryClient.ensureQueryData(allProgramTracksQueryOptions()),
 		]);
 	},
 	component: AdminSettingsPage,
@@ -107,6 +113,7 @@ const tabs = [
 	{ id: "submissions", label: "Submissions", icon: IconFileText },
 	{ id: "types", label: "Submission Types", icon: IconFileStack },
 	{ id: "tracks", label: "Tracks", icon: IconPresentation },
+	{ id: "program", label: "Program", icon: IconCalendarEvent },
 	{ id: "emails", label: "Email Templates", icon: IconMail },
 	{ id: "branding", label: "Branding", icon: IconPalette },
 	{ id: "fee", label: "Fee", icon: IconCash },
@@ -168,6 +175,10 @@ function AdminSettingsPage() {
 	);
 	const { data: llmHealth } = useSuspenseQuery(llmHealthQueryOptions());
 	const { data: doclingHealth } = useSuspenseQuery(doclingHealthQueryOptions());
+	const { data: rooms } = useSuspenseQuery(allRoomsQueryOptions());
+	const { data: programTracks } = useSuspenseQuery(
+		allProgramTracksQueryOptions(),
+	);
 
 	const emailTemplates = emailTemplatesRaw.map(toEmailTemplateUI);
 
@@ -225,6 +236,23 @@ function AdminSettingsPage() {
 								onUpdate={() =>
 									queryClient.invalidateQueries({
 										queryKey: allTracksQueryOptions().queryKey,
+									})
+								}
+							/>
+						</TabsContent>
+
+						<TabsContent value="program">
+							<ProgramTab
+								initialRooms={rooms}
+								initialProgramTracks={programTracks}
+								onRoomsUpdate={() =>
+									queryClient.invalidateQueries({
+										queryKey: allRoomsQueryOptions().queryKey,
+									})
+								}
+								onProgramTracksUpdate={() =>
+									queryClient.invalidateQueries({
+										queryKey: allProgramTracksQueryOptions().queryKey,
 									})
 								}
 							/>
