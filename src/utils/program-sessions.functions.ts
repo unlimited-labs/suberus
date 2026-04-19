@@ -5,6 +5,7 @@ import { adminMiddleware, authMiddleware } from "./auth.middleware";
 import {
 	assignChair,
 	createSession,
+	createSessionWithPresentations,
 	deleteSession,
 	listSessions,
 	listUnscheduledSubmissions,
@@ -114,4 +115,27 @@ export const listUnscheduledSubmissionsFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(async () => {
 		return listUnscheduledSubmissions();
+	});
+
+export const createSessionWithPresentationsFn = createServerFn({
+	method: "POST",
+})
+	.middleware([adminMiddleware])
+	.inputValidator(
+		z.object({
+			title: z.string().min(1).max(300),
+			trackId: z.uuid().nullable().optional(),
+			roomId: z.uuid().nullable().optional(),
+			startAt: z.iso.datetime(),
+			endAt: z.iso.datetime(),
+			slotDurationMin: z.number().int().min(1).max(480),
+			submissionIds: z.array(z.uuid()).min(1),
+		}),
+	)
+	.handler(async ({ data }) => {
+		return createSessionWithPresentations({
+			...data,
+			startAt: new Date(data.startAt),
+			endAt: new Date(data.endAt),
+		});
 	});

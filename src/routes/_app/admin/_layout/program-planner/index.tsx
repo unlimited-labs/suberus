@@ -14,6 +14,7 @@ import {
 	type BreakEventData,
 } from "@/components/admin/planner/break-event-card";
 import { CreateEventDialog } from "@/components/admin/planner/create-event-dialog";
+import { CreateSessionDialog } from "@/components/admin/planner/create-session-dialog";
 import { IssuesPanel } from "@/components/admin/planner/issues-panel";
 import { PublishButton } from "@/components/admin/planner/publish-button";
 import { SessionEditorSheet } from "@/components/admin/planner/session-editor-sheet";
@@ -68,6 +69,9 @@ function ProgramPlannerPage() {
 	const [selectedEvent, setSelectedEvent] = useState<SelectedEvent>(null);
 	const [currentDate, setCurrentDate] = useState<Date | null>(null);
 	const [calendarKey, setCalendarKey] = useState(0);
+	const [selectionDialog, setSelectionDialog] = useState<{
+		submissionIds: string[];
+	} | null>(null);
 
 	const confStart = settings.conferenceStartDate
 		? new Date(settings.conferenceStartDate)
@@ -258,7 +262,11 @@ function ProgramPlannerPage() {
 				)}
 				<IssuesPanel sessions={sessions} />
 				<div className="flex min-h-0 flex-1">
-					<UnscheduledSidebar />
+					<UnscheduledSidebar
+						onCreateSession={(ids) =>
+							setSelectionDialog({ submissionIds: ids })
+						}
+					/>
 					<div className="flex-1 overflow-auto p-4">
 						<div data-planner-cal className="size-full">
 							<IlamyResourceCalendar
@@ -319,6 +327,49 @@ function ProgramPlannerPage() {
 				breakId={selectedEvent?.kind === "break" ? selectedEvent.id : null}
 				onClose={() => setSelectedEvent(null)}
 			/>
+			{selectionDialog && (
+				<CreateSessionDialog
+					open={true}
+					submissionIds={selectionDialog.submissionIds}
+					defaultStartAt={computeDefaultStartAt(
+						currentDate,
+						sessions,
+						confStart,
+						settings.dayStart,
+					)}
+					timezone={settings.timezone || undefined}
+					onClose={() => setSelectionDialog(null)}
+					onCreated={() => {
+						invalidate();
+						setSelectionDialog(null);
+					}}
+				/>
+			)}
 		</>
 	);
+}
+
+function computeDefaultStartAt(
+	currentDate: Date | null,
+	sessions: Array<{ startAt: string | Date; endAt: string | Date }>,
+	confStart: Date | null,
+	dayStartTime: string,
+): Date {
+	const day = currentDate ?? confStart ?? new Date();
+	const dayBegin = new Date(day);
+	const [h, m] = (dayStartTime || "09:00").split(":").map(Number);
+	dayBegin.setHours(h, m, 0, 0);
+
+	const dayEnd = new Date(dayBegin);
+	dayEnd.setHours(23, 59, 59, 999);
+
+	const daySessions = sessions.filter((s) => {
+		const start = new Date(s.startAt);
+		return start >= dayBegin && start <= dayEnd;
+	});
+	if (daySessions.length === 0) return dayBegin;
+	return daySessions.reduce((acc: Date, s) => {
+		const end = new Date(s.endAt);
+		return end > acc ? end : acc;
+	}, dayBegin);
 }

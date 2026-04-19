@@ -12,7 +12,6 @@ import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { unscheduledSubmissionsQueryOptions } from "@/utils/program-sessions.functions";
 import type { UnscheduledSubmission } from "@/utils/program-sessions.server";
-import { allProgramTracksQueryOptions } from "@/utils/program-tracks.functions";
 import {
 	type GroupingMode,
 	groupSubmissions,
@@ -27,8 +26,6 @@ const TYPE_LABELS: Record<string, string> = {
 
 const MODES: Array<{ key: GroupingMode; label: string }> = [
 	{ key: "intake", label: "Intake" },
-	{ key: "program-track", label: "Program" },
-	{ key: "keyword", label: "Keyword" },
 	{ key: "presenter", label: "Presenter" },
 ];
 
@@ -40,9 +37,6 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 	const { data: submissions } = useSuspenseQuery(
 		unscheduledSubmissionsQueryOptions(),
 	);
-	const { data: programTracks } = useSuspenseQuery(
-		allProgramTracksQueryOptions(),
-	);
 	const [open, setOpen] = useState(true);
 	const [search, setSearch] = useState("");
 	const [mode, setMode] = useState<GroupingMode>("intake");
@@ -52,19 +46,14 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 	const [lastAnchor, setLastAnchor] = useState<string | null>(null);
 	const [draggingId, setDraggingId] = useState<string | null>(null);
 
-	const programTrackNames = useMemo(
-		() => new Set(programTracks.map((t) => t.name)),
-		[programTracks],
-	);
-
 	const filtered = useMemo(
 		() => submissions.filter((s) => matchesSearch(s, search.trim())),
 		[submissions, search],
 	);
 
 	const groups = useMemo(
-		() => groupSubmissions(filtered, mode, programTrackNames),
-		[filtered, mode, programTrackNames],
+		() => groupSubmissions(filtered, mode),
+		[filtered, mode],
 	);
 
 	const flatIds = useMemo(

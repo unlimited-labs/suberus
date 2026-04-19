@@ -1,6 +1,6 @@
 import type { UnscheduledSubmission } from "@/utils/program-sessions.server";
 
-export type GroupingMode = "program-track" | "intake" | "keyword" | "presenter";
+export type GroupingMode = "intake" | "presenter";
 
 export interface SubmissionGroup {
 	key: string;
@@ -9,12 +9,10 @@ export interface SubmissionGroup {
 }
 
 const UNASSIGNED = "__unassigned__";
-const NO_PROGRAM_TRACK = "__no_program_track__";
 
 export function groupSubmissions(
 	submissions: UnscheduledSubmission[],
 	mode: GroupingMode,
-	programTrackNames: Set<string>,
 ): SubmissionGroup[] {
 	const buckets = new Map<
 		string,
@@ -30,14 +28,6 @@ export function groupSubmissions(
 		if (mode === "intake") {
 			if (s.trackName) push(s.trackName, s.trackName, s);
 			else push(UNASSIGNED, "Unassigned", s);
-		} else if (mode === "program-track") {
-			if (s.trackName && programTrackNames.has(s.trackName))
-				push(s.trackName, s.trackName, s);
-			else push(NO_PROGRAM_TRACK, "No program track", s);
-		} else if (mode === "keyword") {
-			const kw = s.keywords[0];
-			if (kw) push(kw.id, kw.name, s);
-			else push(UNASSIGNED, "No keywords", s);
 		} else if (mode === "presenter") {
 			const a = s.authors[0];
 			if (a) {
@@ -51,8 +41,8 @@ export function groupSubmissions(
 		([key, { label, items }]) => ({ key, label, submissions: items }),
 	);
 	groups.sort((a, b) => {
-		const aEmpty = a.key === UNASSIGNED || a.key === NO_PROGRAM_TRACK;
-		const bEmpty = b.key === UNASSIGNED || b.key === NO_PROGRAM_TRACK;
+		const aEmpty = a.key === UNASSIGNED;
+		const bEmpty = b.key === UNASSIGNED;
 		if (aEmpty !== bEmpty) return aEmpty ? 1 : -1;
 		if (b.submissions.length !== a.submissions.length)
 			return b.submissions.length - a.submissions.length;

@@ -206,3 +206,49 @@ export async function listUnscheduledSubmissions(): Promise<
 		keywords: r.keywords.map((k) => k.keyword),
 	}));
 }
+
+export async function createSessionWithPresentations(data: {
+	title: string;
+	trackId?: string | null;
+	roomId?: string | null;
+	startAt: Date;
+	endAt: Date;
+	slotDurationMin: number;
+	submissionIds: string[];
+}): Promise<{ id: string }> {
+	return prisma.$transaction(async (tx) => {
+		const valid = await tx.submission.findMany({
+			where: {
+				id: { in: data.submissionIds },
+				status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] },
+				presentationSlot: { is: null },
+			},
+			select: { id: true },
+		});
+		if (valid.length !== data.submissionIds.length) {
+			throw new Error("Some submissions are not accepted or already scheduled");
+		}
+
+		const session = await tx.programSession.create({
+			data: {
+				title: data.title,
+				trackId: data.trackId ?? null,
+				roomId: data.roomId ?? null,
+				startAt: data.startAt,
+				endAt: data.endAt,
+			},
+			select: { id: true },
+		});
+
+		await tx.presentationSlot.createMany({
+			data: data.submissionIds.map((submissionId, idx) => ({
+				sessionId: session.id,
+				submissionId,
+				order: idx,
+				durationMin: data.slotDurationMin,
+			})),
+		});
+
+		return session;
+	});
+}
