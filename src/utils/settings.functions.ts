@@ -245,12 +245,15 @@ const conferenceSettingsSchema = z.object({
 	dateFormat: z.string(),
 	timeFormat: z.enum(["24h", "12h"]),
 	currency: z.enum(["EUR", "USD", "PLN"]),
-	timezone: z
-		.string()
-		.refine(
-			(tz) => tz === "" || Intl.supportedValuesOf("timeZone").includes(tz),
-			"Invalid IANA timezone",
-		),
+	timezone: z.string().refine((tz) => {
+		if (tz === "") return true;
+		try {
+			new Intl.DateTimeFormat("en", { timeZone: tz });
+			return true;
+		} catch {
+			return false;
+		}
+	}, "Invalid IANA timezone"),
 });
 
 /**
