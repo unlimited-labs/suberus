@@ -2,7 +2,6 @@ import { IlamyResourceCalendar, type WeekDays } from "@ilamy/calendar";
 import { IconCalendar } from "@tabler/icons-react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import type { CSSProperties } from "react";
 import { toast } from "sonner";
 import {
 	BreakEventCard,
@@ -165,22 +164,10 @@ function ProgramPlannerPage() {
 		);
 	}
 
-	const visibleHours = Math.max(
-		1,
-		Math.ceil(businessHours.endTime - businessHours.startTime),
-	);
-
 	return (
-		<div className="flex h-full flex-col">
+		<div className="flex min-h-0 flex-1 flex-col overflow-auto">
 			<PageHeader icon={IconCalendar} title="Program Planner" />
-			<div
-				className="planner-grid flex-1 overflow-auto p-4"
-				style={
-					{
-						"--planner-hours": visibleHours,
-					} as CSSProperties
-				}
-			>
+			<div className="p-4">
 				<IlamyResourceCalendar
 					resources={resources}
 					events={events}
