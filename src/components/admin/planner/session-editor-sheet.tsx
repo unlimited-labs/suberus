@@ -1,7 +1,10 @@
 import {
 	IconChevronDown,
 	IconChevronUp,
+	IconCut,
 	IconPlus,
+	IconRepeat,
+	IconSparkles,
 	IconTrash,
 	IconUser,
 	IconX,
@@ -51,11 +54,14 @@ import {
 import {
 	allSessionsQueryOptions,
 	assignChairFn,
+	continueSeriesFn,
 	deleteSessionFn,
 	removeChairFn,
+	splitSessionFn,
 	updateSessionFn,
 } from "@/utils/program-sessions.functions";
 import { allProgramTracksQueryOptions } from "@/utils/program-tracks.functions";
+import { suggestSessionName } from "./suggest-session-name";
 
 interface SessionEditorSheetProps {
 	sessionId: string | null;
@@ -102,6 +108,7 @@ function SessionEditorBody({
 	const [chairSearch, setChairSearch] = useState("");
 	const [chairOpen, setChairOpen] = useState(false);
 	const [deleting, setDeleting] = useState(false);
+	const [splitOpen, setSplitOpen] = useState(false);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: reset local state when session changes
 	useEffect(() => {
@@ -200,6 +207,48 @@ function SessionEditorBody({
 		}
 	};
 
+	const handleContinueSeries = async () => {
+		try {
+			await continueSeriesFn({ data: { sessionId } });
+			invalidate();
+			toast.success("Created next session in series");
+		} catch (e) {
+			toast.error(e instanceof Error ? e.message : "Failed to continue series");
+		}
+	};
+
+	const handleSplit = async (afterSlotOrder: number) => {
+		try {
+			await splitSessionFn({ data: { sessionId, afterSlotOrder } });
+			invalidate();
+			setSplitOpen(false);
+			toast.success("Session split");
+		} catch (e) {
+			toast.error(e instanceof Error ? e.message : "Failed to split");
+		}
+	};
+
+	const handleSuggestName = () => {
+		const suggestion = suggestSessionName(
+			session.presentations.map((p) => ({
+				id: p.submissionId,
+				title: p.submissionTitle,
+				type: "ABSTRACT",
+				abstract: null,
+				trackId: null,
+				trackName: null,
+				authors: p.authors,
+				keywords: [],
+			})),
+		);
+		if (suggestion && suggestion !== "Session") {
+			setTitle(suggestion);
+			setTitleDirty(true);
+		} else {
+			toast.info("No suggestion available (need common title words)");
+		}
+	};
+
 	const handleDelete = async () => {
 		setDeleting(true);
 		try {
@@ -242,17 +291,30 @@ function SessionEditorBody({
 				<SheetTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
 					Session editor
 				</SheetTitle>
-				<Input
-					value={title}
-					onChange={(e) => {
-						setTitle(e.target.value);
-						setTitleDirty(true);
-					}}
-					onBlur={handleSaveTitle}
-					onKeyDown={(e) => e.key === "Enter" && handleSaveTitle()}
-					className="text-base font-medium"
-					placeholder="Session title"
-				/>
+				<div className="relative">
+					<Input
+						value={title}
+						onChange={(e) => {
+							setTitle(e.target.value);
+							setTitleDirty(true);
+						}}
+						onBlur={handleSaveTitle}
+						onKeyDown={(e) => e.key === "Enter" && handleSaveTitle()}
+						className="pr-20 text-base font-medium"
+						placeholder="Session title"
+					/>
+					{session.presentations.length >= 2 && (
+						<button
+							type="button"
+							onClick={handleSuggestName}
+							className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+							title="Auto-suggest from presentations"
+						>
+							<IconSparkles size={10} />
+							suggest
+						</button>
+					)}
+				</div>
 				<div className="space-y-1">
 					<Label className="text-xs text-muted-foreground">Track</Label>
 					<Select
@@ -433,7 +495,51 @@ function SessionEditorBody({
 				</div>
 			</div>
 
-			<SheetFooter className="border-t p-4">
+			<SheetFooter className="flex flex-col gap-2 border-t p-4">
+				<div className="flex gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={handleContinueSeries}
+						className="flex-1"
+					>
+						<IconRepeat size={13} />
+						Continue series
+					</Button>
+					<Popover open={splitOpen} onOpenChange={setSplitOpen}>
+						<PopoverTrigger asChild>
+							<Button
+								variant="outline"
+								size="sm"
+								disabled={sortedPresentations.length < 2}
+								className="flex-1"
+							>
+								<IconCut size={13} />
+								Split
+							</Button>
+						</PopoverTrigger>
+						<PopoverContent className="w-72 p-0" align="end">
+							<div className="border-b p-2 text-xs font-medium">
+								Split after presentation:
+							</div>
+							<div className="max-h-64 overflow-y-auto p-1">
+								{sortedPresentations.slice(0, -1).map((p) => (
+									<button
+										key={p.id}
+										type="button"
+										onClick={() => handleSplit(p.order)}
+										className="block w-full rounded px-2 py-1.5 text-left text-xs hover:bg-muted"
+									>
+										<span className="mr-2 font-mono text-muted-foreground">
+											{p.order + 1}.
+										</span>
+										<span className="line-clamp-1">{p.submissionTitle}</span>
+									</button>
+								))}
+							</div>
+						</PopoverContent>
+					</Popover>
+				</div>
 				<Button
 					variant="destructive"
 					size="sm"

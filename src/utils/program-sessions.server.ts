@@ -207,6 +207,116 @@ export async function listUnscheduledSubmissions(): Promise<
 	}));
 }
 
+export async function continueSeries(
+	sessionId: string,
+): Promise<{ id: string }> {
+	return prisma.$transaction(async (tx) => {
+		const current = await tx.programSession.findUnique({
+			where: { id: sessionId },
+			select: {
+				title: true,
+				trackId: true,
+				startAt: true,
+				endAt: true,
+			},
+		});
+		if (!current) throw new Error("Session not found");
+
+		const match = current.title.match(/^(.+?)\s+(\d+)$/);
+		let base: string;
+		let nextNum: number;
+		if (match) {
+			base = match[1].trim();
+			nextNum = Number.parseInt(match[2], 10) + 1;
+		} else {
+			base = current.title;
+			nextNum = 2;
+			await tx.programSession.update({
+				where: { id: sessionId },
+				data: { title: `${base} 1` },
+			});
+		}
+
+		const durationMs = current.endAt.getTime() - current.startAt.getTime();
+		const newStart = new Date(current.endAt);
+		const newEnd = new Date(newStart.getTime() + durationMs);
+
+		const created = await tx.programSession.create({
+			data: {
+				title: `${base} ${nextNum}`,
+				trackId: current.trackId,
+				roomId: null,
+				startAt: newStart,
+				endAt: newEnd,
+			},
+			select: { id: true },
+		});
+		return created;
+	});
+}
+
+export async function splitSession(
+	sessionId: string,
+	afterSlotOrder: number,
+): Promise<{ id: string }> {
+	return prisma.$transaction(async (tx) => {
+		const current = await tx.programSession.findUnique({
+			where: { id: sessionId },
+			select: {
+				title: true,
+				trackId: true,
+				roomId: true,
+				startAt: true,
+				endAt: true,
+				presentations: {
+					orderBy: { order: "asc" },
+					select: { id: true, order: true, durationMin: true },
+				},
+			},
+		});
+		if (!current) throw new Error("Session not found");
+
+		const moved = current.presentations.filter((p) => p.order > afterSlotOrder);
+		if (moved.length === 0)
+			throw new Error("Cannot split: no presentations after split point");
+		const kept = current.presentations.filter((p) => p.order <= afterSlotOrder);
+		if (kept.length === 0)
+			throw new Error("Cannot split: no presentations before split point");
+
+		const keptDurationMin = kept.reduce((s, p) => s + p.durationMin, 0);
+		const movedDurationMin = moved.reduce((s, p) => s + p.durationMin, 0);
+		const splitTime = new Date(
+			current.startAt.getTime() + keptDurationMin * 60_000,
+		);
+		const newEnd = new Date(splitTime.getTime() + movedDurationMin * 60_000);
+
+		const newSession = await tx.programSession.create({
+			data: {
+				title: `${current.title} (2)`,
+				trackId: current.trackId,
+				roomId: current.roomId,
+				startAt: splitTime,
+				endAt: newEnd,
+			},
+			select: { id: true },
+		});
+
+		await tx.programSession.update({
+			where: { id: sessionId },
+			data: { endAt: splitTime },
+		});
+
+		for (let i = 0; i < moved.length; i++) {
+			await tx.presentationSlot.update({
+				where: { id: moved[i].id },
+				data: { sessionId: newSession.id, order: i },
+			});
+		}
+
+		return newSession;
+	});
+}
+
 export async function createSessionWithPresentations(data: {
 	title: string;
 	trackId?: string | null;

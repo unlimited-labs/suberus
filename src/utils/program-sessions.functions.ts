@@ -4,6 +4,7 @@ import { z } from "zod";
 import { adminMiddleware, authMiddleware } from "./auth.middleware";
 import {
 	assignChair,
+	continueSeries,
 	createSession,
 	createSessionWithPresentations,
 	deleteSession,
@@ -11,6 +12,7 @@ import {
 	listUnscheduledSubmissions,
 	moveSession,
 	removeChair,
+	splitSession,
 	updateSession,
 } from "./program-sessions.server";
 
@@ -138,4 +140,23 @@ export const createSessionWithPresentationsFn = createServerFn({
 			startAt: new Date(data.startAt),
 			endAt: new Date(data.endAt),
 		});
+	});
+
+export const continueSeriesFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(z.object({ sessionId: z.uuid() }))
+	.handler(async ({ data }) => {
+		return continueSeries(data.sessionId);
+	});
+
+export const splitSessionFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(
+		z.object({
+			sessionId: z.uuid(),
+			afterSlotOrder: z.number().int().min(0),
+		}),
+	)
+	.handler(async ({ data }) => {
+		return splitSession(data.sessionId, data.afterSlotOrder);
 	});
