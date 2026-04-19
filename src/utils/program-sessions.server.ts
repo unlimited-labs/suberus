@@ -160,13 +160,17 @@ export interface UnscheduledSubmission {
 	id: string;
 	title: string;
 	type: string;
+	abstract: string | null;
+	trackId: string | null;
+	trackName: string | null;
+	keywords: Array<{ id: string; name: string }>;
 	authors: Array<{ firstName: string; lastName: string; orderIndex: number }>;
 }
 
 export async function listUnscheduledSubmissions(): Promise<
 	UnscheduledSubmission[]
 > {
-	return prisma.submission.findMany({
+	const rows = await prisma.submission.findMany({
 		where: {
 			status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] },
 			presentationSlot: { is: null },
@@ -175,11 +179,30 @@ export async function listUnscheduledSubmissions(): Promise<
 			id: true,
 			title: true,
 			type: true,
+			content: true,
+			trackId: true,
+			track: { select: { name: true } },
 			authors: {
 				select: { firstName: true, lastName: true, orderIndex: true },
 				orderBy: { orderIndex: "asc" },
 			},
+			keywords: {
+				select: {
+					keyword: { select: { id: true, name: true } },
+				},
+				take: 5,
+			},
 		},
 		orderBy: { createdAt: "asc" },
 	});
+	return rows.map((r) => ({
+		id: r.id,
+		title: r.title,
+		type: r.type,
+		abstract: r.content,
+		trackId: r.trackId,
+		trackName: r.track?.name ?? null,
+		authors: r.authors,
+		keywords: r.keywords.map((k) => k.keyword),
+	}));
 }
