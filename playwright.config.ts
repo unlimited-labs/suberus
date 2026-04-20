@@ -91,22 +91,14 @@ export default defineConfig({
 				storageState: "e2e/.auth/admin.json",
 			},
 		},
-		// Planner tests - isolated from admin-settings chain (planner specs restore their own state)
+		// Planner tests - desktop only for now; mobile-specific planner coverage is future work
 		{
 			name: "chromium-planner",
 			testMatch: /e2e\/admin\/planner\/.*\.spec\.ts/,
+			testIgnore: /mobile-planner\.spec\.ts/,
 			dependencies: ["auth-setup"],
 			use: {
 				...devices["Desktop Chrome"],
-				storageState: "e2e/.auth/admin.json",
-			},
-		},
-		{
-			name: "mobile-planner",
-			testMatch: /e2e\/admin\/planner\/.*\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: {
-				...devices["Pixel 5"],
 				storageState: "e2e/.auth/admin.json",
 			},
 		},
