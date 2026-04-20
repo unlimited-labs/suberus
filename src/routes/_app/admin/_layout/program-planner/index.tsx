@@ -333,6 +333,7 @@ function ProgramPlannerPage() {
 								onDateChange={(date) => setCurrentDate(date.toDate())}
 								onEventUpdate={handleEventUpdate}
 								onEventClick={handleEventClick}
+								renderCurrentTimeIndicator={() => null}
 								renderEventForm={(props) => (
 									<CreateEventDialog
 										{...props}
