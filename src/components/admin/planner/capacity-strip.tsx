@@ -6,7 +6,7 @@ export function CapacityStrip() {
 	const { data: cap } = useSuspenseQuery(scheduleCapacityQueryOptions());
 
 	const deficit = cap.talks - cap.totalSlots;
-	const coverageColor =
+	const color =
 		deficit > 0
 			? "text-amber-700 dark:text-amber-400"
 			: deficit === 0 && cap.talks > 0
@@ -16,11 +16,12 @@ export function CapacityStrip() {
 	return (
 		<div
 			className="flex items-center gap-2 border-b px-3 py-1 text-[11px] tabular-nums"
-			title={`${cap.sessions} session${cap.sessions === 1 ? "" : "s"} × ${cap.slotMinutes}-min slots`}
+			title={`${cap.talks} accepted talks, ${cap.scheduled} already placed, ${cap.totalSlots} slots available across ${cap.sessions} session${cap.sessions === 1 ? "" : "s"} × ${cap.slotMinutes} min`}
 		>
 			<IconGauge size={12} className="text-muted-foreground" />
-			<span className={`font-medium ${coverageColor}`}>
+			<span className={`font-medium ${color}`}>
 				<span className="text-foreground">{cap.talks}</span>
+				<span className="text-muted-foreground"> ({cap.scheduled} placed)</span>
 				<span className="text-muted-foreground/70"> / </span>
 				<span className="text-foreground">{cap.totalSlots}</span>{" "}
 				<span className="text-muted-foreground">slots</span>
@@ -35,11 +36,6 @@ export function CapacityStrip() {
 					· {Math.abs(deficit)} spare
 				</span>
 			)}
-			<span className="text-muted-foreground/50">·</span>
-			<span className="text-muted-foreground">
-				<span className="font-medium text-foreground">{cap.scheduled}</span>{" "}
-				placed
-			</span>
 		</div>
 	);
 }
