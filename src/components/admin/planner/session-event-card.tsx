@@ -51,7 +51,7 @@ export function SessionEventCard({
 			className={cn(
 				"relative flex h-full flex-col gap-1 overflow-hidden rounded-md border bg-background p-1.5 pl-2.5 text-[11px] shadow-sm transition-colors",
 				!hasChairs && "border-dashed",
-				isDragOver && "border-primary ring-2 ring-primary",
+				isDragOver && "border-primary bg-accent ring-2 ring-primary",
 			)}
 			onDragOver={(e) => {
 				if (!e.dataTransfer.types.includes("submissionid")) return;
