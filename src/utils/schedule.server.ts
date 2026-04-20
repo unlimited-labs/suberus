@@ -311,22 +311,41 @@ export async function getScheduleIssues(): Promise<ScheduleIssue[]> {
 		}
 	}
 
+	// Pre-compute per-session chair/author maps once (invariant across j-loop).
+	const chairMaps = sessions.map((s) => {
+		const m = new Set<string>();
+		for (const c of s.chairs) m.add(c.userId);
+		return m;
+	});
+	const authorMaps = sessions.map((s) => {
+		const m = new Map<
+			string,
+			{ firstName: string; lastName: string; email: string }
+		>();
+		for (const p of s.presentations) {
+			for (const au of p.submission.authors) {
+				const key = au.userId ?? `email:${au.email}`;
+				if (!m.has(key)) m.set(key, au);
+			}
+		}
+		return m;
+	});
+
 	// 1 & 2 & 3. Pairwise overlaps
-	for (let i = 0; i < sessions.length; i++) {
-		for (let j = i + 1; j < sessions.length; j++) {
-			const a = sessions[i];
+	const n = sessions.length;
+	for (let i = 0; i < n; i++) {
+		const a = sessions[i];
+		const aChairSet = chairMaps[i];
+		const aAuthors = authorMaps[i];
+		for (let j = i + 1; j < n; j++) {
 			const b = sessions[j];
 			if (!overlaps(a, b)) continue;
 
 			// Chair overlap (dedup per pair)
-			const aChairKeys = new Map<string, string>();
-			for (const c of a.chairs) {
-				aChairKeys.set(c.userId, personName(c.user));
-			}
 			const chairClashes: string[] = [];
 			const seenChairKeys = new Set<string>();
 			for (const c of b.chairs) {
-				if (aChairKeys.has(c.userId) && !seenChairKeys.has(c.userId)) {
+				if (aChairSet.has(c.userId) && !seenChairKeys.has(c.userId)) {
 					seenChairKeys.add(c.userId);
 					chairClashes.push(personName(c.user));
 				}
@@ -349,16 +368,6 @@ export async function getScheduleIssues(): Promise<ScheduleIssue[]> {
 			}
 
 			// Author overlap (dedup per pair, via userId or email fallback)
-			const aAuthors = new Map<
-				string,
-				{ firstName: string; lastName: string; email: string }
-			>();
-			for (const p of a.presentations) {
-				for (const au of p.submission.authors) {
-					const key = au.userId ?? `email:${au.email}`;
-					if (!aAuthors.has(key)) aAuthors.set(key, au);
-				}
-			}
 			const authorClashes: string[] = [];
 			const seenAuthorKeys = new Set<string>();
 			for (const p of b.presentations) {

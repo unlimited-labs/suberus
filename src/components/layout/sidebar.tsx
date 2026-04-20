@@ -1,6 +1,7 @@
 import { IconExternalLink, IconMenu2 } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useSession } from "@/hooks/use-session";
@@ -24,14 +25,19 @@ function SidebarContent({
 	const { user } = useSession();
 	const { data: scheduleState } = useQuery(scheduleStateQueryOptions());
 	const isPublished = scheduleState?.status === "PUBLISHED";
-	const sections = getNavigationForRole(user?.role ?? "AUTHOR")
-		.map((section) => ({
-			...section,
-			items: section.items.filter(
-				(item) => !item.requiresPublishedSchedule || isPublished,
-			),
-		}))
-		.filter((section) => section.items.length > 0);
+	const role = user?.role ?? "AUTHOR";
+	const sections = useMemo(
+		() =>
+			getNavigationForRole(role)
+				.map((section) => ({
+					...section,
+					items: section.items.filter(
+						(item) => !item.requiresPublishedSchedule || isPublished,
+					),
+				}))
+				.filter((section) => section.items.length > 0),
+		[role, isPublished],
+	);
 
 	return (
 		<div className="flex h-full flex-col">

@@ -133,7 +133,10 @@ export function MobilePlanner({
 		);
 	}, [sessions, breaks]);
 
-	const dayItems = allItems.filter((i) => sameDay(i.startAt, cursor, timezone));
+	const dayItems = useMemo(
+		() => allItems.filter((i) => sameDay(i.startAt, cursor, timezone)),
+		[allItems, cursor, timezone],
+	);
 
 	const shiftDay = (delta: number) => {
 		const next = new Date(cursor);
