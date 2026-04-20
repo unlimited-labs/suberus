@@ -2,8 +2,6 @@ import {
 	IconBook,
 	IconChevronDown,
 	IconChevronLeft,
-	IconChevronRight,
-	IconGripVertical,
 	IconLayoutList,
 	IconSearch,
 	IconX,
@@ -12,19 +10,16 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { unscheduledSubmissionsQueryOptions } from "@/utils/program-sessions.functions";
-import type { UnscheduledSubmission } from "@/utils/program-sessions.server";
 import { BulkReadReader } from "./bulk-read-reader";
 import {
 	type GroupingMode,
 	groupSubmissions,
 	matchesSearch,
 } from "./session-grouper";
-
-const TYPE_LABELS: Record<string, string> = {
-	ABSTRACT: "Oral",
-	FULL_PAPER: "Paper",
-	POSTER: "Poster",
-};
+import { SidebarCollapsed } from "./unscheduled/sidebar-collapsed";
+import { SubmissionRow } from "./unscheduled/submission-row";
+import { useSubmissionSelection } from "./unscheduled/use-submission-selection";
+import { useToggleSet } from "./unscheduled/use-toggle-set";
 
 const MODES: Array<{ key: GroupingMode; label: string }> = [
 	{ key: "intake", label: "Track" },
@@ -42,10 +37,8 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 	const [open, setOpen] = useState(true);
 	const [search, setSearch] = useState("");
 	const [mode, setMode] = useState<GroupingMode>("intake");
-	const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set());
-	const [selected, setSelected] = useState<Set<string>>(() => new Set());
-	const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
-	const [lastAnchor, setLastAnchor] = useState<string | null>(null);
+	const collapsed = useToggleSet<string>();
+	const expanded = useToggleSet<string>();
 	const [draggingId, setDraggingId] = useState<string | null>(null);
 	const [readerStart, setReaderStart] = useState<number | null>(null);
 
@@ -64,64 +57,14 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 		[groups],
 	);
 
-	const toggleSelect = (id: string, shift: boolean) => {
-		setSelected((prev) => {
-			const next = new Set(prev);
-			if (shift && lastAnchor) {
-				const a = flatIds.indexOf(lastAnchor);
-				const b = flatIds.indexOf(id);
-				if (a >= 0 && b >= 0) {
-					const [from, to] = a < b ? [a, b] : [b, a];
-					for (let i = from; i <= to; i++) next.add(flatIds[i]);
-					return next;
-				}
-			}
-			if (next.has(id)) next.delete(id);
-			else next.add(id);
-			return next;
-		});
-		setLastAnchor(id);
-	};
-
-	const toggleGroup = (key: string) =>
-		setCollapsed((prev) => {
-			const next = new Set(prev);
-			if (next.has(key)) next.delete(key);
-			else next.add(key);
-			return next;
-		});
-
-	const toggleExpand = (id: string) =>
-		setExpanded((prev) => {
-			const next = new Set(prev);
-			if (next.has(id)) next.delete(id);
-			else next.add(id);
-			return next;
-		});
+	const selection = useSubmissionSelection(flatIds);
 
 	if (!open) {
 		return (
-			<div className="flex flex-col items-center border-r bg-muted/30 pt-3">
-				<button
-					type="button"
-					onClick={() => setOpen(true)}
-					className="flex flex-col items-center gap-1 rounded px-2 py-2 text-muted-foreground hover:bg-muted hover:text-foreground"
-					title="Unscheduled submissions"
-					aria-label={`Open unscheduled submissions panel (${submissions.length})`}
-				>
-					<IconLayoutList size={16} />
-					<span className="text-[10px] font-medium uppercase tracking-wide [writing-mode:vertical-rl]">
-						Unscheduled ({submissions.length})
-					</span>
-				</button>
-				<button
-					type="button"
-					onClick={() => setOpen(true)}
-					className="mt-2 rounded p-1 text-muted-foreground hover:bg-muted"
-				>
-					<IconChevronRight size={14} />
-				</button>
-			</div>
+			<SidebarCollapsed
+				count={submissions.length}
+				onExpand={() => setOpen(true)}
+			/>
 		);
 	}
 
@@ -234,15 +177,15 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 						groups.map((group, gIdx) => {
 							const isCollapsed =
 								gIdx === 0
-									? collapsed.has(group.key)
-									: !collapsed.has(`open:${group.key}`);
+									? collapsed.set.has(group.key)
+									: !collapsed.set.has(`open:${group.key}`);
 							return (
 								<div key={group.key} className="border-b last:border-b-0">
 									<button
 										type="button"
 										onClick={() => {
-											if (gIdx === 0) toggleGroup(group.key);
-											else toggleGroup(`open:${group.key}`);
+											if (gIdx === 0) collapsed.toggle(group.key);
+											else collapsed.toggle(`open:${group.key}`);
 										}}
 										data-testid={`unscheduled-group-${group.key}`}
 										className="flex w-full items-center gap-1.5 bg-muted/20 px-2.5 py-1.5 text-left hover:bg-muted/40"
@@ -266,11 +209,13 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 												<SubmissionRow
 													key={s.id}
 													submission={s}
-													selected={selected.has(s.id)}
-													expanded={expanded.has(s.id)}
+													selected={selection.selected.has(s.id)}
+													expanded={expanded.set.has(s.id)}
 													dragging={draggingId === s.id}
-													onToggleSelect={(shift) => toggleSelect(s.id, shift)}
-													onToggleExpand={() => toggleExpand(s.id)}
+													onToggleSelect={(shift) =>
+														selection.toggle(s.id, shift)
+													}
+													onToggleExpand={() => expanded.toggle(s.id)}
 													onDragStart={() => setDraggingId(s.id)}
 													onDragEnd={() => setDraggingId(null)}
 												/>
@@ -283,18 +228,18 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 					)}
 				</div>
 
-				{selected.size > 0 && (
+				{selection.selected.size > 0 && (
 					<div
 						data-testid="sidebar-selection-bar"
 						className="flex items-center gap-2 border-t bg-muted/40 px-2 py-2"
 					>
 						<span className="rounded-full bg-background px-2 py-0.5 text-[11px] font-medium">
-							{selected.size} selected
+							{selection.selected.size} selected
 						</span>
 						<button
 							type="button"
 							onClick={() => {
-								onCreateSession?.(Array.from(selected));
+								onCreateSession?.(Array.from(selection.selected));
 							}}
 							data-testid="sidebar-bulk-create-session"
 							className="rounded bg-primary px-2 py-1 text-[11px] font-medium text-primary-foreground hover:bg-primary/90"
@@ -303,7 +248,7 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 						</button>
 						<button
 							type="button"
-							onClick={() => setSelected(new Set())}
+							onClick={selection.clear}
 							className="ml-auto text-[11px] text-muted-foreground hover:text-foreground"
 						>
 							Clear
@@ -319,128 +264,5 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 				/>
 			)}
 		</>
-	);
-}
-
-interface RowProps {
-	submission: UnscheduledSubmission;
-	selected: boolean;
-	expanded: boolean;
-	dragging: boolean;
-	onToggleSelect: (shift: boolean) => void;
-	onToggleExpand: () => void;
-	onDragStart: () => void;
-	onDragEnd: () => void;
-}
-
-function SubmissionRow({
-	submission: s,
-	selected,
-	expanded,
-	dragging,
-	onToggleSelect,
-	onToggleExpand,
-	onDragStart,
-	onDragEnd,
-}: RowProps) {
-	const [leaving, setLeaving] = useState(false);
-	const authors = s.authors
-		.slice(0, 3)
-		.map((a) => `${a.firstName} ${a.lastName}`)
-		.join(", ");
-	const more = s.authors.length > 3 ? ` +${s.authors.length - 3}` : "";
-
-	return (
-		<li
-			data-testid={`unscheduled-row-${s.id}`}
-			draggable
-			onDragStart={(e) => {
-				e.dataTransfer.setData("submissionid", s.id);
-				e.dataTransfer.effectAllowed = "copy";
-				onDragStart();
-			}}
-			onDragEnd={(e) => {
-				if (e.dataTransfer.dropEffect !== "none") setLeaving(true);
-				onDragEnd();
-			}}
-			className={`group flex cursor-grab items-start gap-1.5 px-2 py-2 transition-all duration-200 ease-out hover:bg-muted/40 active:cursor-grabbing ${
-				dragging ? "opacity-40" : ""
-			} ${selected ? "bg-primary/5" : ""} ${
-				leaving
-					? "pointer-events-none max-h-0 -translate-x-4 overflow-hidden py-0 opacity-0"
-					: "max-h-60"
-			}`}
-		>
-			<input
-				type="checkbox"
-				aria-label={`Select ${s.title}`}
-				checked={selected}
-				onChange={() => onToggleSelect(false)}
-				onClick={(e) => {
-					e.stopPropagation();
-					if (e.shiftKey) {
-						e.preventDefault();
-						onToggleSelect(true);
-					}
-				}}
-				className="mt-1 shrink-0 accent-primary"
-			/>
-			<IconGripVertical
-				size={12}
-				className="mt-1 shrink-0 text-muted-foreground/40 group-hover:text-muted-foreground"
-			/>
-			<div className="min-w-0 flex-1">
-				<button
-					type="button"
-					onClick={onToggleExpand}
-					className="block w-full text-left"
-				>
-					<div className="flex items-start gap-1.5">
-						<span className="mt-0.5 shrink-0 rounded bg-muted px-1 py-0.5 text-[9px] font-medium uppercase tracking-wide text-muted-foreground">
-							{TYPE_LABELS[s.type] ?? s.type}
-						</span>
-						<p
-							className={`text-xs font-medium leading-snug ${
-								expanded ? "" : "line-clamp-2"
-							}`}
-						>
-							{s.title}
-						</p>
-					</div>
-					{s.authors.length > 0 && (
-						<p className="mt-0.5 truncate text-[11px] text-muted-foreground">
-							{authors}
-							{more}
-						</p>
-					)}
-				</button>
-				{expanded && (
-					<div className="mt-2 space-y-1.5">
-						{s.abstract && (
-							<p className="line-clamp-6 text-[11px] leading-relaxed text-muted-foreground">
-								{s.abstract}
-							</p>
-						)}
-						{s.keywords.length > 0 && (
-							<div className="flex flex-wrap gap-1">
-								{s.keywords.map((k) => (
-									<span
-										key={k.id}
-										className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
-									>
-										{k.name}
-									</span>
-								))}
-							</div>
-						)}
-						{s.trackName && (
-							<p className="text-[10px] text-muted-foreground">
-								Intake: {s.trackName}
-							</p>
-						)}
-					</div>
-				)}
-			</div>
-		</li>
 	);
 }

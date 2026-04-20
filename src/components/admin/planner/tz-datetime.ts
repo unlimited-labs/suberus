@@ -49,3 +49,30 @@ export function formatDurationMin(start: Date, end: Date): number {
 export function addMinutes(d: Date, min: number): Date {
 	return new Date(d.getTime() + min * 60_000);
 }
+
+export function sameDayInTz(a: Date, b: Date, tz: string | undefined): boolean {
+	const fmt = new Intl.DateTimeFormat("en-CA", {
+		timeZone: tz,
+		year: "numeric",
+		month: "2-digit",
+		day: "2-digit",
+	});
+	return fmt.format(a) === fmt.format(b);
+}
+
+export function formatDayLabel(d: Date, tz: string | undefined): string {
+	return new Intl.DateTimeFormat(undefined, {
+		timeZone: tz,
+		weekday: "short",
+		day: "numeric",
+		month: "short",
+	}).format(d);
+}
+
+export function formatClockTime(d: Date, tz: string | undefined): string {
+	return new Intl.DateTimeFormat(undefined, {
+		timeZone: tz,
+		hour: "2-digit",
+		minute: "2-digit",
+	}).format(d);
+}
