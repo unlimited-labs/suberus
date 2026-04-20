@@ -21,7 +21,7 @@ test.describe("Admin Settings - Email Templates", () => {
 		// Arrange
 		await adminSettingsPage.goto();
 		if (testInfo.project.name === "mobile-admin") {
-			await adminSettingsPage.page.getByRole("tab").nth(4).click();
+			await adminSettingsPage.page.getByRole("tab").nth(5).click();
 		} else {
 			await adminSettingsPage.page
 				.getByRole("tab", { name: /Email Templates/i })
@@ -195,7 +195,7 @@ test.describe("Admin Settings - Email Footer", () => {
 		// Arrange
 		await adminSettingsPage.goto();
 		if (testInfo.project.name === "mobile-admin") {
-			await adminSettingsPage.page.getByRole("tab").nth(4).click();
+			await adminSettingsPage.page.getByRole("tab").nth(5).click();
 		} else {
 			await adminSettingsPage.page
 				.getByRole("tab", { name: /Email Templates/i })
@@ -237,7 +237,7 @@ test.describe("Admin Settings - Placeholder Tooltips & Test Email", () => {
 		// Arrange
 		await adminSettingsPage.goto();
 		if (testInfo.project.name === "mobile-admin") {
-			await adminSettingsPage.page.getByRole("tab").nth(4).click();
+			await adminSettingsPage.page.getByRole("tab").nth(5).click();
 		} else {
 			await adminSettingsPage.page
 				.getByRole("tab", { name: /Email Templates/i })

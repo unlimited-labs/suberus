@@ -312,7 +312,7 @@ export class AdminSettingsPage {
 
 	async switchToSurveyTab(testInfo?: { project: { name: string } }) {
 		if (testInfo?.project.name === "mobile-admin") {
-			await this.page.getByRole("tab").nth(8).click()
+			await this.page.getByRole("tab").nth(9).click()
 		} else {
 			await this.page.getByRole("tab", { name: /Survey/i }).click()
 		}
@@ -323,7 +323,7 @@ export class AdminSettingsPage {
 
 	async switchToTosTab(testInfo?: { project: { name: string } }) {
 		if (testInfo?.project.name === "mobile-admin") {
-			await this.page.getByRole("tab").nth(9).click()
+			await this.page.getByRole("tab").nth(10).click()
 		} else {
 			await this.page.getByRole("tab", { name: /Terms of Service/i }).click()
 		}
@@ -334,7 +334,7 @@ export class AdminSettingsPage {
 
 	async switchToBrandingTab(testInfo?: { project: { name: string } }) {
 		if (testInfo?.project.name === "mobile-admin") {
-			await this.page.getByRole("tab").nth(5).click()
+			await this.page.getByRole("tab").nth(6).click()
 		} else {
 			await this.page.getByRole("tab", { name: /Branding/i }).click()
 		}
@@ -345,7 +345,7 @@ export class AdminSettingsPage {
 
 	async switchToFeeTab(testInfo?: { project: { name: string } }) {
 		if (testInfo?.project.name === "mobile-admin") {
-			await this.page.getByRole("tab").nth(6).click()
+			await this.page.getByRole("tab").nth(7).click()
 		} else {
 			await this.page.getByRole("tab", { name: /^Fee$/i }).click()
 		}
