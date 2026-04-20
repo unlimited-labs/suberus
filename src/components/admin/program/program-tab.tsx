@@ -252,8 +252,12 @@ export function ProgramTab({
 						<div>
 							<CardTitle>Program Tracks</CardTitle>
 							<p className="text-sm text-muted-foreground">
-								Color-coded groups used for schedule organization. Separate from
-								submission-intake tracks.
+								Optional color-coded groups for related sessions (e.g. a
+								multi-part "Machine Learning" series sharing one color). A
+								session can be created without a track — use tracks only when
+								you want visual grouping or series continuation in the planner.
+								Separate from submission-intake tracks (which authors pick when
+								submitting).
 							</p>
 						</div>
 						<div className="flex gap-2">
