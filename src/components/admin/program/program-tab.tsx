@@ -252,12 +252,8 @@ export function ProgramTab({
 						<div>
 							<CardTitle>Program Tracks</CardTitle>
 							<p className="text-sm text-muted-foreground">
-								Optional color-coded groups for related sessions (e.g. a
-								multi-part "Machine Learning" series sharing one color). A
-								session can be created without a track — use tracks only when
-								you want visual grouping or series continuation in the planner.
-								Separate from submission-intake tracks (which authors pick when
-								submitting).
+								Optional color tags for grouping related sessions (e.g. a
+								multi-part series). Sessions can exist without a track.
 							</p>
 						</div>
 						<div className="flex gap-2">
