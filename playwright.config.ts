@@ -72,10 +72,10 @@ export default defineConfig({
 				storageState: "e2e/.auth/admin.json",
 			},
 		},
-		// Admin tests - use admin auth (excludes settings tests that run in chained projects)
+		// Admin tests - use admin auth (excludes settings tests that run in chained projects, and planner tests that have their own isolated projects)
 		{
 			name: "chromium-admin",
-			testMatch: /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|task-mails-reminder).*\.spec\.ts/,
+			testMatch: /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|task-mails-reminder|planner\/).*\.spec\.ts/,
 			dependencies: ["auth-setup", "admin-settings-3"],
 			use: {
 				...devices["Desktop Chrome"],
@@ -84,8 +84,27 @@ export default defineConfig({
 		},
 		{
 			name: "mobile-admin",
-			testMatch: /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|task-mails-reminder).*\.spec\.ts/,
+			testMatch: /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|task-mails-reminder|planner\/).*\.spec\.ts/,
 			dependencies: ["auth-setup", "admin-settings-3"],
+			use: {
+				...devices["Pixel 5"],
+				storageState: "e2e/.auth/admin.json",
+			},
+		},
+		// Planner tests - isolated from admin-settings chain (planner specs restore their own state)
+		{
+			name: "chromium-planner",
+			testMatch: /e2e\/admin\/planner\/.*\.spec\.ts/,
+			dependencies: ["auth-setup"],
+			use: {
+				...devices["Desktop Chrome"],
+				storageState: "e2e/.auth/admin.json",
+			},
+		},
+		{
+			name: "mobile-planner",
+			testMatch: /e2e\/admin\/planner\/.*\.spec\.ts/,
+			dependencies: ["auth-setup"],
 			use: {
 				...devices["Pixel 5"],
 				storageState: "e2e/.auth/admin.json",
