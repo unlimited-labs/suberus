@@ -59,10 +59,12 @@ import {
 	deleteSessionFn,
 	removeChairFn,
 	splitSessionFn,
+	unscheduledSubmissionsQueryOptions,
 	updateSessionFn,
 } from "@/utils/program-sessions.functions";
 import { allProgramTracksQueryOptions } from "@/utils/program-tracks.functions";
 import { allRoomsQueryOptions } from "@/utils/rooms.functions";
+import { scheduleCapacityQueryOptions } from "@/utils/schedule.functions";
 import { conferenceSettingsQueryOptions } from "@/utils/settings.functions";
 import { suggestSessionName } from "./suggest-session-name";
 import {
@@ -131,6 +133,12 @@ function SessionEditorBody({
 	const invalidate = useCallback(() => {
 		queryClient.invalidateQueries({
 			queryKey: allSessionsQueryOptions().queryKey,
+		});
+		queryClient.invalidateQueries({
+			queryKey: unscheduledSubmissionsQueryOptions().queryKey,
+		});
+		queryClient.invalidateQueries({
+			queryKey: scheduleCapacityQueryOptions().queryKey,
 		});
 	}, [queryClient]);
 
