@@ -2,6 +2,7 @@ import {
 	IconArrowDown,
 	IconArrowUp,
 	IconEdit,
+	IconExternalLink,
 	IconLoader2,
 	IconTrash,
 } from "@tabler/icons-react";
@@ -82,7 +83,7 @@ export function RoomsList({ rooms, onEdit, onUpdate }: RoomsListProps) {
 					<TableRow>
 						<TableHead className="w-24">Order</TableHead>
 						<TableHead>Name</TableHead>
-						<TableHead className="text-center">Capacity</TableHead>
+						<TableHead>Description</TableHead>
 						<TableHead className="text-center">Sessions</TableHead>
 						<TableHead className="text-right">Actions</TableHead>
 					</TableRow>
@@ -118,9 +119,24 @@ export function RoomsList({ rooms, onEdit, onUpdate }: RoomsListProps) {
 										</Button>
 									</div>
 								</TableCell>
-								<TableCell className="font-medium">{room.name}</TableCell>
-								<TableCell className="text-center text-muted-foreground">
-									{room.capacity ?? "—"}
+								<TableCell className="font-medium">
+									<div className="flex items-center gap-1.5">
+										<span>{room.name}</span>
+										{room.link && (
+											<a
+												href={room.link}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="text-muted-foreground hover:text-foreground"
+												aria-label={`Open ${room.name} link`}
+											>
+												<IconExternalLink className="size-3.5" />
+											</a>
+										)}
+									</div>
+								</TableCell>
+								<TableCell className="max-w-xs truncate text-xs text-muted-foreground">
+									{room.description ?? "—"}
 								</TableCell>
 								<TableCell className="text-center">
 									<Badge variant="secondary">{room.sessionCount}</Badge>

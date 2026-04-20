@@ -223,7 +223,6 @@ async function seedRooms(): Promise<string[]> {
 		const r = await prisma.room.create({
 			data: {
 				name: `${SEED_PREFIX}${["Aula Magna", "Hall A", "Hall B", "Room 101"][i] ?? `Room ${i + 1}`}`,
-				capacity: faker.helpers.arrayElement([60, 120, 250, 400]),
 				order: i,
 			},
 			select: { id: true },

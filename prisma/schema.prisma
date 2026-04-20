@@ -497,12 +497,13 @@ model Invitation {
 }
 
 model Room {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String   @unique
-  capacity  Int?
-  order     Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique
+  description String?
+  link        String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   programSessions ProgramSession[]
   breaks          ScheduleBreak[]

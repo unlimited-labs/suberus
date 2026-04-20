@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { createRoomFn, updateRoomFn } from "@/utils/rooms.functions";
 import type { RoomWithStats } from "@/utils/rooms.server";
 
@@ -29,9 +30,8 @@ export function RoomDialog({
 }: RoomDialogProps) {
 	const isEdit = !!room;
 	const [name, setName] = useState(room?.name ?? "");
-	const [capacity, setCapacity] = useState<string>(
-		room?.capacity?.toString() ?? "",
-	);
+	const [description, setDescription] = useState(room?.description ?? "");
+	const [link, setLink] = useState(room?.link ?? "");
 	const [isSaving, setIsSaving] = useState(false);
 
 	const handleSave = async () => {
@@ -39,32 +39,35 @@ export function RoomDialog({
 			toast.error("Room name is required");
 			return;
 		}
-		const parsedCapacity = capacity.trim() ? Number(capacity) : null;
-		if (
-			parsedCapacity !== null &&
-			(!Number.isInteger(parsedCapacity) || parsedCapacity <= 0)
-		) {
-			toast.error("Capacity must be a positive integer");
-			return;
+		const trimmedLink = link.trim();
+		if (trimmedLink) {
+			try {
+				new URL(trimmedLink);
+			} catch {
+				toast.error("Link must be a valid URL");
+				return;
+			}
 		}
 
 		setIsSaving(true);
 		try {
+			const payload = {
+				name: name.trim(),
+				description: description.trim() || null,
+				link: trimmedLink || null,
+			};
 			if (isEdit) {
-				await updateRoomFn({
-					data: { id: room.id, name: name.trim(), capacity: parsedCapacity },
-				});
+				await updateRoomFn({ data: { id: room.id, ...payload } });
 				toast.success("Room updated");
 			} else {
-				await createRoomFn({
-					data: { name: name.trim(), capacity: parsedCapacity },
-				});
+				await createRoomFn({ data: payload });
 				toast.success("Room created");
 			}
 			onSuccess();
 			onOpenChange(false);
 			setName("");
-			setCapacity("");
+			setDescription("");
+			setLink("");
 		} catch (error) {
 			const message =
 				error instanceof Error ? error.message : "Failed to save room";
@@ -94,17 +97,28 @@ export function RoomDialog({
 					</div>
 
 					<div className="space-y-2">
-						<Label htmlFor="room-capacity">Capacity</Label>
+						<Label htmlFor="room-description">Description</Label>
+						<Textarea
+							id="room-description"
+							value={description}
+							onChange={(e) => setDescription(e.target.value)}
+							placeholder="Optional — building, floor, notes…"
+							rows={2}
+							maxLength={1000}
+						/>
+					</div>
+
+					<div className="space-y-2">
+						<Label htmlFor="room-link">Link</Label>
 						<Input
-							id="room-capacity"
-							type="number"
-							min={1}
-							value={capacity}
-							onChange={(e) => setCapacity(e.target.value)}
-							placeholder="Optional"
+							id="room-link"
+							type="url"
+							value={link}
+							onChange={(e) => setLink(e.target.value)}
+							placeholder="https://maps.google.com/…"
 						/>
 						<p className="text-xs text-muted-foreground">
-							Used only for display; not enforced.
+							Optional — e.g. Google Maps link, building website.
 						</p>
 					</div>
 				</div>

@@ -21,17 +21,26 @@ export const getAllRoomsFn = createServerFn({ method: "GET" })
 		return getAllRooms();
 	});
 
+const roomLinkSchema = z
+	.union([z.literal(""), z.url()])
+	.optional()
+	.nullable();
+
 export const createRoomFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
 			name: z.string().min(1).max(200),
-			capacity: z.number().int().positive().nullable().optional(),
+			description: z.string().max(1000).nullable().optional(),
+			link: roomLinkSchema,
 			order: z.number().int().nonnegative().optional(),
 		}),
 	)
 	.handler(async ({ data }) => {
-		return createRoom(data);
+		return createRoom({
+			...data,
+			link: data.link === "" ? null : data.link,
+		});
 	});
 
 export const updateRoomFn = createServerFn({ method: "POST" })
@@ -40,13 +49,17 @@ export const updateRoomFn = createServerFn({ method: "POST" })
 		z.object({
 			id: z.uuid(),
 			name: z.string().min(1).max(200).optional(),
-			capacity: z.number().int().positive().nullable().optional(),
+			description: z.string().max(1000).nullable().optional(),
+			link: roomLinkSchema,
 			order: z.number().int().nonnegative().optional(),
 		}),
 	)
 	.handler(async ({ data }) => {
-		const { id, ...update } = data;
-		await updateRoom(id, update);
+		const { id, link, ...rest } = data;
+		await updateRoom(id, {
+			...rest,
+			...(link !== undefined ? { link: link === "" ? null : link } : {}),
+		});
 	});
 
 export const deleteRoomFn = createServerFn({ method: "POST" })
