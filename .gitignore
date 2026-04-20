@@ -38,3 +38,6 @@ nul
 *.ai
 .repl_history
 /.mcp.json
+---
+.env.test
+docs/login-colors-bug.png
