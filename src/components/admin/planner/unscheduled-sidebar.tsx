@@ -27,7 +27,7 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const MODES: Array<{ key: GroupingMode; label: string }> = [
-	{ key: "intake", label: "Intake" },
+	{ key: "intake", label: "Track" },
 	{ key: "presenter", label: "Presenter" },
 ];
 
