@@ -426,29 +426,31 @@ export const updateConferenceSettingsFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(conferenceSettingsSchema)
 	.handler(async ({ data }) => {
-		await setSetting("CONFERENCE_NAME", data.name);
-		await setSetting("CONFERENCE_LOCATION", data.location);
-		await setSetting("CONFERENCE_WEBSITE", data.website);
-		await setSetting("CONTACT_EMAIL", data.contactEmail);
-		await setSetting("CONFERENCE_DATE_START", data.conferenceStartDate);
-		await setSetting("CONFERENCE_DATE_END", data.conferenceEndDate);
-		await setSetting("SUBMISSION_DEADLINE", data.submissionDeadline);
-		await setSetting("SUBMISSIONS_LOCKED", data.submissionsLocked);
-		await setSetting("REVIEW_DEADLINE", data.reviewDeadline);
-		await setSetting("NOTIFICATION_DATE", data.notificationDate);
-		await setSetting("REGISTRATION_DEADLINE", data.registrationDeadline);
-		await setSetting("REGISTRATION_LOCKED", data.registrationLocked);
-		await setSetting("CONFERENCE_SUBTITLE", data.subtitle);
-		await setSetting("DATE_FORMAT", data.dateFormat);
-		await setSetting("TIME_FORMAT", data.timeFormat);
-		await setSetting("FEE_CURRENCY", data.currency);
-		await setSetting("CONFERENCE_TIMEZONE", data.timezone);
-		await setSetting("CONFERENCE_DAY_START", data.dayStart);
-		await setSetting("CONFERENCE_DAY_END", data.dayEnd);
-		await setSetting(
-			"CONFERENCE_DEFAULT_PRESENTATION_MIN",
-			data.defaultPresentationMin,
-		);
+		await Promise.all([
+			setSetting("CONFERENCE_NAME", data.name),
+			setSetting("CONFERENCE_LOCATION", data.location),
+			setSetting("CONFERENCE_WEBSITE", data.website),
+			setSetting("CONTACT_EMAIL", data.contactEmail),
+			setSetting("CONFERENCE_DATE_START", data.conferenceStartDate),
+			setSetting("CONFERENCE_DATE_END", data.conferenceEndDate),
+			setSetting("SUBMISSION_DEADLINE", data.submissionDeadline),
+			setSetting("SUBMISSIONS_LOCKED", data.submissionsLocked),
+			setSetting("REVIEW_DEADLINE", data.reviewDeadline),
+			setSetting("NOTIFICATION_DATE", data.notificationDate),
+			setSetting("REGISTRATION_DEADLINE", data.registrationDeadline),
+			setSetting("REGISTRATION_LOCKED", data.registrationLocked),
+			setSetting("CONFERENCE_SUBTITLE", data.subtitle),
+			setSetting("DATE_FORMAT", data.dateFormat),
+			setSetting("TIME_FORMAT", data.timeFormat),
+			setSetting("FEE_CURRENCY", data.currency),
+			setSetting("CONFERENCE_TIMEZONE", data.timezone),
+			setSetting("CONFERENCE_DAY_START", data.dayStart),
+			setSetting("CONFERENCE_DAY_END", data.dayEnd),
+			setSetting(
+				"CONFERENCE_DEFAULT_PRESENTATION_MIN",
+				data.defaultPresentationMin,
+			),
+		]);
 		return { success: true };
 	});
 

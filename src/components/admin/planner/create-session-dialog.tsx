@@ -95,10 +95,10 @@ export function CreateSessionDialog({
 		unscheduledSubmissionsQueryOptions(),
 	);
 
-	const selected = useMemo(
-		() => submissions.filter((s) => submissionIds.includes(s.id)),
-		[submissions, submissionIds],
-	);
+	const selected = useMemo(() => {
+		const idSet = new Set(submissionIds);
+		return submissions.filter((s) => idSet.has(s.id));
+	}, [submissions, submissionIds]);
 	const suggested = useMemo(() => suggestSessionName(selected), [selected]);
 
 	const [title, setTitle] = useState("");

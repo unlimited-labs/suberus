@@ -42,9 +42,9 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 	const [open, setOpen] = useState(true);
 	const [search, setSearch] = useState("");
 	const [mode, setMode] = useState<GroupingMode>("intake");
-	const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-	const [selected, setSelected] = useState<Set<string>>(new Set());
-	const [expanded, setExpanded] = useState<Set<string>>(new Set());
+	const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set());
+	const [selected, setSelected] = useState<Set<string>>(() => new Set());
+	const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
 	const [lastAnchor, setLastAnchor] = useState<string | null>(null);
 	const [draggingId, setDraggingId] = useState<string | null>(null);
 	const [readerStart, setReaderStart] = useState<number | null>(null);

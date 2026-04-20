@@ -306,12 +306,14 @@ export async function splitSession(
 			data: { endAt: splitTime },
 		});
 
-		for (let i = 0; i < moved.length; i++) {
-			await tx.presentationSlot.update({
-				where: { id: moved[i].id },
-				data: { sessionId: newSession.id, order: i },
-			});
-		}
+		await Promise.all(
+			moved.map((slot, i) =>
+				tx.presentationSlot.update({
+					where: { id: slot.id },
+					data: { sessionId: newSession.id, order: i },
+				}),
+			),
+		);
 
 		return newSession;
 	});

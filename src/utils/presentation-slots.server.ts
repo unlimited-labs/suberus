@@ -127,17 +127,18 @@ export async function reorderSlots(
 		}
 
 		// Two-phase: shift to negative to avoid @@unique(sessionId, order) collisions.
-		for (const [idx, id] of orderedIds.entries()) {
-			await tx.presentationSlot.update({
-				where: { id },
-				data: { order: -(idx + 1) },
-			});
-		}
-		for (const [idx, id] of orderedIds.entries()) {
-			await tx.presentationSlot.update({
-				where: { id },
-				data: { order: idx },
-			});
-		}
+		await Promise.all(
+			orderedIds.map((id, idx) =>
+				tx.presentationSlot.update({
+					where: { id },
+					data: { order: -(idx + 1) },
+				}),
+			),
+		);
+		await Promise.all(
+			orderedIds.map((id, idx) =>
+				tx.presentationSlot.update({ where: { id }, data: { order: idx } }),
+			),
+		);
 	});
 }
