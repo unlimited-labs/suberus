@@ -113,12 +113,12 @@ export function PublishButton() {
 			</Button>
 
 			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-				<DialogContent className="sm:max-w-md">
+				<DialogContent className="flex max-h-[85vh] flex-col sm:max-w-md">
 					<DialogHeader>
 						<DialogTitle>Publish program</DialogTitle>
 					</DialogHeader>
 
-					<div className="space-y-3 py-2">
+					<div className="flex min-h-0 flex-1 flex-col gap-3 py-2">
 						{issuesLoading ? (
 							<div className="flex items-center gap-2 text-sm text-muted-foreground">
 								<IconLoader2 size={14} className="animate-spin" />
@@ -126,11 +126,11 @@ export function PublishButton() {
 							</div>
 						) : issues && issues.length > 0 ? (
 							<>
-								<p className="text-sm text-muted-foreground">
+								<p className="shrink-0 text-sm text-muted-foreground">
 									{issues.length} issue{issues.length !== 1 ? "s" : ""} found.
 									You can still publish.
 								</p>
-								<ul className="space-y-1.5">
+								<ul className="min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">
 									{issues.map((issue, i) => (
 										<li
 											key={`${issue.kind}-${i}`}
