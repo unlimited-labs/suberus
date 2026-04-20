@@ -1,5 +1,7 @@
 import {
+	IconBuildingCommunity,
 	IconClock,
+	IconColorSwatch,
 	IconDownload,
 	IconLoader2,
 	IconPlus,
@@ -8,8 +10,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TimezoneCombobox } from "@/components/ui/timezone-combobox";
@@ -120,166 +122,136 @@ export function ProgramTab({
 
 	return (
 		<div className="space-y-6">
-			<Card>
-				<CardHeader>
-					<div className="flex items-center justify-between gap-3">
-						<div>
-							<CardTitle className="flex items-center gap-2">
-								<IconClock className="size-4" />
-								Planner
-							</CardTitle>
-							<p className="text-sm text-muted-foreground">
-								Settings used by the program planner to organize presentations
-								into sessions across rooms and days
-							</p>
-						</div>
-						<Button onClick={handlePlannerSave} disabled={plannerSaving}>
-							{plannerSaving && (
-								<IconLoader2 className="mr-2 size-4 animate-spin" />
-							)}
-							Save
-						</Button>
+			<SettingsSection
+				icon={IconClock}
+				title="Planner"
+				description="Settings used by the program planner to organize presentations into sessions across rooms and days"
+			>
+				<div className="grid gap-6 sm:grid-cols-2">
+					<div className="space-y-2">
+						<Label htmlFor="timezone">Conference timezone</Label>
+						<TimezoneCombobox
+							id="timezone"
+							value={plannerData.timezone}
+							onChange={(v) =>
+								setPlannerData((prev) => ({ ...prev, timezone: v }))
+							}
+						/>
+						<p className="text-xs text-muted-foreground">
+							{timezoneFromBrowser
+								? "Detected from your browser. Click Save to confirm."
+								: "All session start/end times are stored in UTC and displayed in this zone."}
+						</p>
 					</div>
-				</CardHeader>
-				<CardContent>
-					<div className="grid gap-6 sm:grid-cols-2">
-						<div className="space-y-2">
-							<Label htmlFor="timezone">Conference timezone</Label>
-							<TimezoneCombobox
-								id="timezone"
-								value={plannerData.timezone}
-								onChange={(v) =>
-									setPlannerData((prev) => ({ ...prev, timezone: v }))
+					<div className="space-y-2">
+						<Label htmlFor="dayStart">Planner visible hours</Label>
+						<div className="flex items-center gap-2">
+							<Input
+								id="dayStart"
+								type="time"
+								value={plannerData.dayStart}
+								onChange={(e) =>
+									setPlannerData((prev) => ({
+										...prev,
+										dayStart: e.target.value,
+									}))
 								}
+								className="w-32"
 							/>
-							<p className="text-xs text-muted-foreground">
-								{timezoneFromBrowser
-									? "Detected from your browser. Click Save to confirm."
-									: "All session start/end times are stored in UTC and displayed in this zone."}
-							</p>
+							<span className="text-muted-foreground">-</span>
+							<Input
+								id="dayEnd"
+								type="time"
+								value={plannerData.dayEnd}
+								onChange={(e) =>
+									setPlannerData((prev) => ({
+										...prev,
+										dayEnd: e.target.value,
+									}))
+								}
+								className="w-32"
+							/>
 						</div>
-						<div className="space-y-2">
-							<Label htmlFor="dayStart">Planner visible hours</Label>
-							<div className="flex items-center gap-2">
-								<Input
-									id="dayStart"
-									type="time"
-									value={plannerData.dayStart}
-									onChange={(e) =>
-										setPlannerData((prev) => ({
-											...prev,
-											dayStart: e.target.value,
-										}))
-									}
-									className="w-32"
-								/>
-								<span className="text-muted-foreground">-</span>
-								<Input
-									id="dayEnd"
-									type="time"
-									value={plannerData.dayEnd}
-									onChange={(e) =>
-										setPlannerData((prev) => ({
-											...prev,
-											dayEnd: e.target.value,
-										}))
-									}
-									className="w-32"
-								/>
-							</div>
-							<p className="text-xs text-muted-foreground">
-								Visible window in the planner grid.
-							</p>
-						</div>
-						<div className="space-y-2">
-							<Label htmlFor="defaultPresentationMin">
-								Default presentation length
-							</Label>
-							<div className="flex items-center gap-2">
-								<Input
-									id="defaultPresentationMin"
-									type="number"
-									min={5}
-									max={480}
-									step={5}
-									value={plannerData.defaultPresentationMin}
-									onChange={(e) =>
-										setPlannerData((prev) => ({
-											...prev,
-											defaultPresentationMin: Number(e.target.value) || 15,
-										}))
-									}
-									className="w-24"
-								/>
-								<span className="text-sm text-muted-foreground">minutes</span>
-							</div>
-							<p className="text-xs text-muted-foreground">
-								Pre-filled when creating sessions and dropping submissions.
-							</p>
-						</div>
+						<p className="text-xs text-muted-foreground">
+							Visible window in the planner grid.
+						</p>
 					</div>
-				</CardContent>
-			</Card>
+					<div className="space-y-2">
+						<Label htmlFor="defaultPresentationMin">
+							Default presentation length
+						</Label>
+						<div className="flex items-center gap-2">
+							<Input
+								id="defaultPresentationMin"
+								type="number"
+								min={5}
+								max={480}
+								step={5}
+								value={plannerData.defaultPresentationMin}
+								onChange={(e) =>
+									setPlannerData((prev) => ({
+										...prev,
+										defaultPresentationMin: Number(e.target.value) || 15,
+									}))
+								}
+								className="w-24"
+							/>
+							<span className="text-sm text-muted-foreground">minutes</span>
+						</div>
+						<p className="text-xs text-muted-foreground">
+							Pre-filled when creating sessions and dropping submissions.
+						</p>
+					</div>
+				</div>
+				<div className="mt-6 flex justify-end">
+					<Button onClick={handlePlannerSave} disabled={plannerSaving}>
+						{plannerSaving && (
+							<IconLoader2 className="mr-2 size-4 animate-spin" />
+						)}
+						Save
+					</Button>
+				</div>
+			</SettingsSection>
 
-			<Card>
-				<CardHeader>
-					<div className="flex items-center justify-between">
-						<div>
-							<CardTitle>Rooms</CardTitle>
-							<p className="text-sm text-muted-foreground">
-								Physical locations where sessions take place. Order controls
-								column placement in the planner.
-							</p>
-						</div>
-						<Button onClick={() => setRoomDialogOpen(true)}>
-							<IconPlus className="mr-2 size-4" />
-							Create Room
-						</Button>
-					</div>
-				</CardHeader>
-				<CardContent>
-					<RoomsList
-						rooms={initialRooms}
-						onEdit={openRoomEdit}
-						onUpdate={onRoomsUpdate}
-					/>
-				</CardContent>
-			</Card>
+			<SettingsSection
+				icon={IconBuildingCommunity}
+				title="Rooms"
+				description="Physical locations where sessions take place. Order controls column placement in the planner."
+			>
+				<div className="mb-4 flex justify-end">
+					<Button onClick={() => setRoomDialogOpen(true)}>
+						<IconPlus className="mr-2 size-4" />
+						Create Room
+					</Button>
+				</div>
+				<RoomsList
+					rooms={initialRooms}
+					onEdit={openRoomEdit}
+					onUpdate={onRoomsUpdate}
+				/>
+			</SettingsSection>
 
-			<Card>
-				<CardHeader>
-					<div className="flex items-center justify-between">
-						<div>
-							<CardTitle>Program Tracks</CardTitle>
-							<p className="text-sm text-muted-foreground">
-								Optional color tags for grouping related sessions (e.g. a
-								multi-part series). Sessions can exist without a track.
-							</p>
-						</div>
-						<div className="flex gap-2">
-							<Button
-								variant="outline"
-								onClick={handleImport}
-								disabled={importing}
-							>
-								<IconDownload className="mr-2 size-4" />
-								Import from intake
-							</Button>
-							<Button onClick={() => setTrackDialogOpen(true)}>
-								<IconPlus className="mr-2 size-4" />
-								Create Program Track
-							</Button>
-						</div>
-					</div>
-				</CardHeader>
-				<CardContent>
-					<ProgramTracksList
-						tracks={initialProgramTracks}
-						onEdit={openTrackEdit}
-						onUpdate={onProgramTracksUpdate}
-					/>
-				</CardContent>
-			</Card>
+			<SettingsSection
+				icon={IconColorSwatch}
+				title="Program Tracks"
+				description="Optional color tags for grouping related sessions (e.g. a multi-part series). Sessions can exist without a track."
+			>
+				<div className="mb-4 flex justify-end gap-2">
+					<Button variant="outline" onClick={handleImport} disabled={importing}>
+						<IconDownload className="mr-2 size-4" />
+						Import from intake
+					</Button>
+					<Button onClick={() => setTrackDialogOpen(true)}>
+						<IconPlus className="mr-2 size-4" />
+						Create Program Track
+					</Button>
+				</div>
+				<ProgramTracksList
+					tracks={initialProgramTracks}
+					onEdit={openTrackEdit}
+					onUpdate={onProgramTracksUpdate}
+				/>
+			</SettingsSection>
 
 			<RoomDialog
 				key={editingRoom?.id ?? "new-room"}
