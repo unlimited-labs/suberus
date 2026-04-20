@@ -1,9 +1,10 @@
+import { IconAlertTriangle } from "@tabler/icons-react";
+import { useMemo } from "react";
 import {
-	IconAlertTriangle,
-	IconChevronDown,
-	IconChevronUp,
-} from "@tabler/icons-react";
-import { useMemo, useState } from "react";
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
 import type { ProgramSessionDetail } from "@/utils/program-sessions.server";
 
 interface Issue {
@@ -55,7 +56,6 @@ interface IssuesPanelProps {
 }
 
 export function IssuesPanel({ sessions }: IssuesPanelProps) {
-	const [expanded, setExpanded] = useState(false);
 	const issues = useMemo(() => detectIssues(sessions), [sessions]);
 
 	if (issues.length === 0) return null;
@@ -63,69 +63,55 @@ export function IssuesPanel({ sessions }: IssuesPanelProps) {
 	const overlapCount = issues.filter((i) => i.type === "room-overlap").length;
 	const noRoomCount = issues.filter((i) => i.type === "no-room").length;
 
-	return (
-		<div className="mx-4 mb-0 mt-3 overflow-hidden rounded-md border border-amber-200 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/30">
-			<button
-				type="button"
-				onClick={() => setExpanded((v) => !v)}
-				className="flex w-full items-center gap-2 px-3 py-2 text-left"
-			>
-				<IconAlertTriangle
-					size={14}
-					className="shrink-0 text-amber-600 dark:text-amber-400"
-				/>
-				<span className="flex-1 text-xs font-medium text-amber-800 dark:text-amber-300">
-					{issues.length} {issues.length === 1 ? "issue" : "issues"}
-					{overlapCount > 0 && noRoomCount > 0 && (
-						<span className="ml-1 font-normal opacity-70">
-							({overlapCount} overlap{overlapCount > 1 ? "s" : ""},{" "}
-							{noRoomCount} without room)
-						</span>
-					)}
-					{overlapCount > 0 && noRoomCount === 0 && (
-						<span className="ml-1 font-normal opacity-70">
-							({overlapCount} overlap{overlapCount > 1 ? "s" : ""})
-						</span>
-					)}
-					{noRoomCount > 0 && overlapCount === 0 && (
-						<span className="ml-1 font-normal opacity-70">
-							({noRoomCount} without room)
-						</span>
-					)}
-				</span>
-				{expanded ? (
-					<IconChevronUp
-						size={13}
-						className="text-amber-600 dark:text-amber-400"
-					/>
-				) : (
-					<IconChevronDown
-						size={13}
-						className="text-amber-600 dark:text-amber-400"
-					/>
-				)}
-			</button>
+	const summary =
+		overlapCount > 0 && noRoomCount > 0
+			? `${overlapCount} overlap${overlapCount > 1 ? "s" : ""}, ${noRoomCount} without room`
+			: overlapCount > 0
+				? `${overlapCount} overlap${overlapCount > 1 ? "s" : ""}`
+				: `${noRoomCount} without room`;
 
-			{expanded && (
-				<ul className="max-h-48 overflow-y-auto border-t border-amber-200 px-3 py-2 dark:border-amber-900/60">
-					{issues.map((issue, i) => (
-						<li
-							// biome-ignore lint/suspicious/noArrayIndexKey: static list
-							key={i}
-							className="flex items-start gap-2 py-0.5"
-						>
-							<span
-								className={`mt-1 size-1.5 shrink-0 rounded-full ${
-									issue.type === "room-overlap" ? "bg-red-500" : "bg-amber-500"
-								}`}
-							/>
-							<span className="text-xs text-amber-900 dark:text-amber-200">
-								{issue.message}
-							</span>
-						</li>
-					))}
-				</ul>
-			)}
+	return (
+		<div className="px-4 pt-2">
+			<Popover>
+				<PopoverTrigger asChild>
+					<button
+						type="button"
+						className="inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800 transition-colors hover:bg-amber-100 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300 dark:hover:bg-amber-950/60"
+					>
+						<IconAlertTriangle size={13} className="shrink-0" />
+						<span>
+							{issues.length} {issues.length === 1 ? "issue" : "issues"}
+						</span>
+						<span className="font-normal opacity-70">· {summary}</span>
+					</button>
+				</PopoverTrigger>
+				<PopoverContent
+					align="start"
+					className="w-96 max-w-[calc(100vw-2rem)] p-0"
+				>
+					<div className="border-b px-3 py-2 text-xs font-medium">
+						Issues ({issues.length})
+					</div>
+					<ul className="max-h-[60vh] overflow-y-auto p-2">
+						{issues.map((issue, i) => (
+							<li
+								// biome-ignore lint/suspicious/noArrayIndexKey: static list
+								key={i}
+								className="flex items-start gap-2 rounded px-1.5 py-1 hover:bg-muted"
+							>
+								<span
+									className={`mt-1.5 size-1.5 shrink-0 rounded-full ${
+										issue.type === "room-overlap"
+											? "bg-red-500"
+											: "bg-amber-500"
+									}`}
+								/>
+								<span className="text-xs leading-relaxed">{issue.message}</span>
+							</li>
+						))}
+					</ul>
+				</PopoverContent>
+			</Popover>
 		</div>
 	);
 }
