@@ -4,7 +4,6 @@ import {
 	IconCalendarEvent,
 	IconCash,
 	IconClipboardList,
-	IconClock,
 	IconFileStack,
 	IconFileText,
 	IconMail,
@@ -28,7 +27,6 @@ import {
 	EmailTemplatesTab,
 	FeeTab,
 	InvitationsSettingsTab,
-	PlannerSettingsTab,
 	RemindersSettingsTab,
 	SubmissionSettingsTab,
 	SubmissionTypesTab,
@@ -123,7 +121,6 @@ const tabs = [
 	{ id: "survey", label: "Survey", icon: IconClipboardList },
 	{ id: "tos", label: "Terms of Service", icon: IconScale },
 	{ id: "invitations", label: "Invitations", icon: IconMailPlus },
-	{ id: "planner", label: "Planner", icon: IconClock },
 ];
 
 function AdminSettingsPage() {
@@ -244,14 +241,11 @@ function AdminSettingsPage() {
 							/>
 						</TabsContent>
 
-						<TabsContent value="planner">
-							<PlannerSettingsTab initialData={conferenceSettings} />
-						</TabsContent>
-
 						<TabsContent value="program">
 							<ProgramTab
 								initialRooms={rooms}
 								initialProgramTracks={programTracks}
+								initialConferenceSettings={conferenceSettings}
 								onRoomsUpdate={() =>
 									queryClient.invalidateQueries({
 										queryKey: allRoomsQueryOptions().queryKey,

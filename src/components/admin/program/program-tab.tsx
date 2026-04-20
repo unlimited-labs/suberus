@@ -1,11 +1,26 @@
-import { IconDownload, IconPlus } from "@tabler/icons-react";
-import { useState } from "react";
+import {
+	IconClock,
+	IconDownload,
+	IconLoader2,
+	IconPlus,
+} from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { TimezoneCombobox } from "@/components/ui/timezone-combobox";
 import { importProgramTracksFromIntakeFn } from "@/utils/program-tracks.functions";
 import type { ProgramTrackWithStats } from "@/utils/program-tracks.server";
 import type { RoomWithStats } from "@/utils/rooms.server";
+import type { ConferenceSettings } from "@/utils/settings.functions";
+import {
+	conferenceSettingsQueryOptions,
+	updateConferenceSettingsFn,
+} from "@/utils/settings.functions";
 import { ProgramTrackDialog } from "./program-track-dialog";
 import { ProgramTracksList } from "./program-tracks-list";
 import { RoomDialog } from "./room-dialog";
@@ -14,6 +29,7 @@ import { RoomsList } from "./rooms-list";
 interface ProgramTabProps {
 	initialRooms: RoomWithStats[];
 	initialProgramTracks: ProgramTrackWithStats[];
+	initialConferenceSettings: ConferenceSettings;
 	onRoomsUpdate: () => void;
 	onProgramTracksUpdate: () => void;
 }
@@ -21,15 +37,30 @@ interface ProgramTabProps {
 export function ProgramTab({
 	initialRooms,
 	initialProgramTracks,
+	initialConferenceSettings,
 	onRoomsUpdate,
 	onProgramTracksUpdate,
 }: ProgramTabProps) {
+	const queryClient = useQueryClient();
+	const router = useRouter();
 	const [roomDialogOpen, setRoomDialogOpen] = useState(false);
 	const [editingRoom, setEditingRoom] = useState<RoomWithStats | null>(null);
 	const [trackDialogOpen, setTrackDialogOpen] = useState(false);
 	const [editingTrack, setEditingTrack] =
 		useState<ProgramTrackWithStats | null>(null);
 	const [importing, setImporting] = useState(false);
+	const [plannerData, setPlannerData] = useState(initialConferenceSettings);
+	const [plannerSaving, setPlannerSaving] = useState(false);
+	const timezoneFromBrowser = initialConferenceSettings.timezone === "";
+
+	useEffect(() => {
+		if (initialConferenceSettings.timezone === "") {
+			const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+			if (browserTz) {
+				setPlannerData((prev) => ({ ...prev, timezone: browserTz }));
+			}
+		}
+	}, [initialConferenceSettings.timezone]);
 
 	const handleImport = async () => {
 		setImporting(true);
@@ -53,6 +84,22 @@ export function ProgramTab({
 		}
 	};
 
+	const handlePlannerSave = async () => {
+		setPlannerSaving(true);
+		try {
+			await updateConferenceSettingsFn({ data: plannerData });
+			await queryClient.invalidateQueries({
+				queryKey: conferenceSettingsQueryOptions().queryKey,
+			});
+			await router.invalidate();
+			toast.success("Planner settings saved");
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Failed to save");
+		} finally {
+			setPlannerSaving(false);
+		}
+	};
+
 	const openRoomEdit = (room: RoomWithStats) => {
 		setEditingRoom(room);
 		setRoomDialogOpen(true);
@@ -73,6 +120,107 @@ export function ProgramTab({
 
 	return (
 		<div className="space-y-6">
+			<Card>
+				<CardHeader>
+					<div className="flex items-center justify-between gap-3">
+						<div>
+							<CardTitle className="flex items-center gap-2">
+								<IconClock className="size-4" />
+								Planner
+							</CardTitle>
+							<p className="text-sm text-muted-foreground">
+								Settings used by the program planner to organize presentations
+								into sessions across rooms and days
+							</p>
+						</div>
+						<Button onClick={handlePlannerSave} disabled={plannerSaving}>
+							{plannerSaving && (
+								<IconLoader2 className="mr-2 size-4 animate-spin" />
+							)}
+							Save
+						</Button>
+					</div>
+				</CardHeader>
+				<CardContent>
+					<div className="grid gap-6 sm:grid-cols-2">
+						<div className="space-y-2">
+							<Label htmlFor="timezone">Conference timezone</Label>
+							<TimezoneCombobox
+								id="timezone"
+								value={plannerData.timezone}
+								onChange={(v) =>
+									setPlannerData((prev) => ({ ...prev, timezone: v }))
+								}
+							/>
+							<p className="text-xs text-muted-foreground">
+								{timezoneFromBrowser
+									? "Detected from your browser. Click Save to confirm."
+									: "All session start/end times are stored in UTC and displayed in this zone."}
+							</p>
+						</div>
+						<div className="space-y-2">
+							<Label htmlFor="dayStart">Planner visible hours</Label>
+							<div className="flex items-center gap-2">
+								<Input
+									id="dayStart"
+									type="time"
+									value={plannerData.dayStart}
+									onChange={(e) =>
+										setPlannerData((prev) => ({
+											...prev,
+											dayStart: e.target.value,
+										}))
+									}
+									className="w-32"
+								/>
+								<span className="text-muted-foreground">-</span>
+								<Input
+									id="dayEnd"
+									type="time"
+									value={plannerData.dayEnd}
+									onChange={(e) =>
+										setPlannerData((prev) => ({
+											...prev,
+											dayEnd: e.target.value,
+										}))
+									}
+									className="w-32"
+								/>
+							</div>
+							<p className="text-xs text-muted-foreground">
+								Visible window in the planner grid.
+							</p>
+						</div>
+						<div className="space-y-2">
+							<Label htmlFor="defaultPresentationMin">
+								Default presentation length
+							</Label>
+							<div className="flex items-center gap-2">
+								<Input
+									id="defaultPresentationMin"
+									type="number"
+									min={5}
+									max={480}
+									step={5}
+									value={plannerData.defaultPresentationMin}
+									onChange={(e) =>
+										setPlannerData((prev) => ({
+											...prev,
+											defaultPresentationMin: Number(e.target.value) || 15,
+										}))
+									}
+									className="w-24"
+								/>
+								<span className="text-sm text-muted-foreground">minutes</span>
+							</div>
+							<p className="text-xs text-muted-foreground">
+								Pre-filled when creating sessions and dropping submissions.
+							</p>
+						</div>
+					</div>
+				</CardContent>
+			</Card>
+
 			<Card>
 				<CardHeader>
 					<div className="flex items-center justify-between">
