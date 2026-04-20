@@ -5,6 +5,7 @@ import {
 	createSlot,
 	deleteSlot,
 	reorderSlots,
+	updateSlotDuration,
 } from "./presentation-slots.server";
 
 export const createSlotFn = createServerFn({ method: "POST" })
@@ -25,6 +26,18 @@ export const deleteSlotFn = createServerFn({ method: "POST" })
 	.inputValidator(z.object({ id: z.uuid() }))
 	.handler(async ({ data }) => {
 		await deleteSlot(data.id);
+	});
+
+export const updateSlotDurationFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(
+		z.object({
+			id: z.uuid(),
+			durationMin: z.number().int().positive().max(600),
+		}),
+	)
+	.handler(async ({ data }) => {
+		await updateSlotDuration(data.id, data.durationMin);
 	});
 
 export const reorderSlotsFn = createServerFn({ method: "POST" })

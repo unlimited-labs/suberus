@@ -30,6 +30,7 @@ import {
 } from "@/utils/program-sessions.functions";
 import { allProgramTracksQueryOptions } from "@/utils/program-tracks.functions";
 import { allRoomsQueryOptions } from "@/utils/rooms.functions";
+import { conferenceSettingsQueryOptions } from "@/utils/settings.functions";
 import { suggestSessionName } from "./suggest-session-name";
 
 interface CreateSessionDialogProps {
@@ -89,6 +90,7 @@ export function CreateSessionDialog({
 }: CreateSessionDialogProps) {
 	const { data: rooms } = useSuspenseQuery(allRoomsQueryOptions());
 	const { data: tracks } = useSuspenseQuery(allProgramTracksQueryOptions());
+	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
 	const { data: submissions } = useSuspenseQuery(
 		unscheduledSubmissionsQueryOptions(),
 	);
@@ -102,7 +104,7 @@ export function CreateSessionDialog({
 	const [title, setTitle] = useState("");
 	const [roomId, setRoomId] = useState<string>(rooms[0]?.id ?? "none");
 	const [trackId, setTrackId] = useState<string>("none");
-	const [slotMin, setSlotMin] = useState(15);
+	const [slotMin, setSlotMin] = useState(settings.defaultPresentationMin);
 	const [saving, setSaving] = useState(false);
 
 	const durationMin = submissionIds.length * slotMin;
@@ -117,7 +119,7 @@ export function CreateSessionDialog({
 
 	const handleClose = () => {
 		setTitle("");
-		setSlotMin(15);
+		setSlotMin(settings.defaultPresentationMin);
 		setTrackId("none");
 		onClose();
 	};

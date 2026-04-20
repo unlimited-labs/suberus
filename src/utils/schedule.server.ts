@@ -45,6 +45,7 @@ export async function getCapacity(): Promise<CapacityInfo> {
 		conferenceEnd,
 		dayStart,
 		dayEnd,
+		defaultSlotMin,
 	] = await Promise.all([
 		prisma.submission.count({
 			where: { status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] } },
@@ -55,6 +56,7 @@ export async function getCapacity(): Promise<CapacityInfo> {
 		getSetting("CONFERENCE_DATE_END"),
 		getSetting("CONFERENCE_DAY_START"),
 		getSetting("CONFERENCE_DAY_END"),
+		getSetting("CONFERENCE_DEFAULT_PRESENTATION_MIN"),
 	]);
 
 	const days =
@@ -78,7 +80,7 @@ export async function getCapacity(): Promise<CapacityInfo> {
 		0,
 		parseHours(dayEnd as string) - parseHours(dayStart as string),
 	);
-	const slotMinutes = 15;
+	const slotMinutes = defaultSlotMin || 15;
 	const theoreticalSlots = Math.floor(
 		(days * rooms * hoursPerDay * 60) / slotMinutes,
 	);

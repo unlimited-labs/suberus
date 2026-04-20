@@ -29,6 +29,7 @@ import { createSessionFn } from "@/utils/program-sessions.functions";
 import { allProgramTracksQueryOptions } from "@/utils/program-tracks.functions";
 import { allRoomsQueryOptions } from "@/utils/rooms.functions";
 import { createBreakFn } from "@/utils/schedule-breaks.functions";
+import { conferenceSettingsQueryOptions } from "@/utils/settings.functions";
 
 interface CreateEventDialogProps extends EventFormProps {
 	onCreated: () => void;
@@ -84,6 +85,7 @@ export function CreateEventDialog({
 }: CreateEventDialogProps) {
 	const { data: rooms } = useSuspenseQuery(allRoomsQueryOptions());
 	const { data: tracks } = useSuspenseQuery(allProgramTracksQueryOptions());
+	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
 
 	const startRaw = selectedEvent?.start as
 		| { toDate?: () => Date }
@@ -102,7 +104,9 @@ export function CreateEventDialog({
 	);
 	const [trackId, setTrackId] = useState<string>("none");
 	const [presentationCount, setPresentationCount] = useState(4);
-	const [minutesPerPresentation, setMinutesPerPresentation] = useState(15);
+	const [minutesPerPresentation, setMinutesPerPresentation] = useState(
+		settings.defaultPresentationMin,
+	);
 	const [breakDurationMin, setBreakDurationMin] = useState(30);
 	const [saving, setSaving] = useState(false);
 
@@ -138,7 +142,7 @@ export function CreateEventDialog({
 		setTitle("");
 		setType("session");
 		setPresentationCount(4);
-		setMinutesPerPresentation(15);
+		setMinutesPerPresentation(settings.defaultPresentationMin);
 		setBreakDurationMin(30);
 		setTrackId("none");
 		onClose();

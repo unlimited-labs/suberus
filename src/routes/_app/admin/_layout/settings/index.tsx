@@ -4,6 +4,7 @@ import {
 	IconCalendarEvent,
 	IconCash,
 	IconClipboardList,
+	IconClock,
 	IconFileStack,
 	IconFileText,
 	IconMail,
@@ -27,6 +28,7 @@ import {
 	EmailTemplatesTab,
 	FeeTab,
 	InvitationsSettingsTab,
+	PlannerSettingsTab,
 	RemindersSettingsTab,
 	SubmissionSettingsTab,
 	SubmissionTypesTab,
@@ -114,6 +116,7 @@ const tabs = [
 	{ id: "types", label: "Submission Types", icon: IconFileStack },
 	{ id: "tracks", label: "Tracks", icon: IconPresentation },
 	{ id: "program", label: "Program", icon: IconCalendarEvent },
+	{ id: "planner", label: "Planner", icon: IconClock },
 	{ id: "emails", label: "Email Templates", icon: IconMail },
 	{ id: "branding", label: "Branding", icon: IconPalette },
 	{ id: "fee", label: "Fee", icon: IconCash },
@@ -239,6 +242,10 @@ function AdminSettingsPage() {
 									})
 								}
 							/>
+						</TabsContent>
+
+						<TabsContent value="planner">
+							<PlannerSettingsTab initialData={conferenceSettings} />
 						</TabsContent>
 
 						<TabsContent value="program">

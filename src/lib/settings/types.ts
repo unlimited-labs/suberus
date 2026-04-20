@@ -57,6 +57,7 @@ export type AppSettingsMap = {
 	CONFERENCE_TIMEZONE: string;
 	CONFERENCE_DAY_START: string; // "HH:mm" (24h), e.g. "09:00"
 	CONFERENCE_DAY_END: string; // "HH:mm" (24h), e.g. "18:00"
+	CONFERENCE_DEFAULT_PRESENTATION_MIN: number;
 
 	// Submission settings
 	MIN_TITLE_LENGTH: number;

@@ -48,6 +48,45 @@ export async function createSlot(data: {
 	});
 }
 
+export async function updateSlotDuration(
+	id: string,
+	durationMin: number,
+): Promise<void> {
+	await prisma.$transaction(async (tx) => {
+		const slot = await tx.presentationSlot.findUnique({
+			where: { id },
+			select: {
+				sessionId: true,
+				durationMin: true,
+				session: {
+					select: {
+						startAt: true,
+						endAt: true,
+						presentations: { select: { id: true, durationMin: true } },
+					},
+				},
+			},
+		});
+		if (!slot) throw new Error("Slot not found");
+
+		const sessionDurationMin = Math.round(
+			(slot.session.endAt.getTime() - slot.session.startAt.getTime()) / 60_000,
+		);
+		const usedOthers = slot.session.presentations
+			.filter((p) => p.id !== id)
+			.reduce((s, p) => s + p.durationMin, 0);
+		if (usedOthers + durationMin > sessionDurationMin) {
+			throw new Error(
+				`Session is full: other slots use ${usedOthers}/${sessionDurationMin} min`,
+			);
+		}
+		await tx.presentationSlot.update({
+			where: { id },
+			data: { durationMin },
+		});
+	});
+}
+
 export async function deleteSlot(id: string): Promise<void> {
 	const slot = await prisma.presentationSlot.findUnique({
 		where: { id },

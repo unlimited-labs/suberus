@@ -158,7 +158,11 @@ function ProgramPlannerPage() {
 	) => {
 		try {
 			await createSlotFn({
-				data: { sessionId, submissionId, durationMin: 15 },
+				data: {
+					sessionId,
+					submissionId,
+					durationMin: settings.defaultPresentationMin,
+				},
 			});
 			invalidate();
 		} catch (e) {

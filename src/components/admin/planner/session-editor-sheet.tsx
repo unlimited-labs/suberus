@@ -50,6 +50,7 @@ import { adminUsersQueryOptions } from "@/utils/admin-users.functions";
 import {
 	deleteSlotFn,
 	reorderSlotsFn,
+	updateSlotDurationFn,
 } from "@/utils/presentation-slots.functions";
 import {
 	allSessionsQueryOptions,
@@ -247,6 +248,15 @@ function SessionEditorBody({
 			invalidate();
 		} catch (e) {
 			toast.error(e instanceof Error ? e.message : "Failed to remove");
+		}
+	};
+
+	const handleSlotDurationChange = async (id: string, durationMin: number) => {
+		try {
+			await updateSlotDurationFn({ data: { id, durationMin } });
+			invalidate();
+		} catch (e) {
+			toast.error(e instanceof Error ? e.message : "Failed to update duration");
 		}
 	};
 
@@ -604,9 +614,27 @@ function SessionEditorBody({
 												? p.authors
 														.map((a) => `${a.firstName} ${a.lastName}`)
 														.join(", ")
-												: "No authors"}{" "}
-											· {p.durationMin} min
+												: "No authors"}
 										</p>
+									</div>
+									<div className="flex items-center gap-1">
+										<Input
+											type="number"
+											min={1}
+											step={5}
+											defaultValue={p.durationMin}
+											key={`${p.id}:${p.durationMin}`}
+											onBlur={(e) => {
+												const v = Number(e.target.value);
+												if (v > 0 && v !== p.durationMin)
+													handleSlotDurationChange(p.id, v);
+											}}
+											aria-label={`Duration of ${p.submissionTitle}`}
+											className="h-7 w-14 px-1.5 text-center text-xs tabular-nums"
+										/>
+										<span className="text-[10px] text-muted-foreground">
+											min
+										</span>
 									</div>
 									<Button
 										variant="ghost"
