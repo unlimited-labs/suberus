@@ -30,6 +30,7 @@ import { allProgramTracksQueryOptions } from "@/utils/program-tracks.functions";
 import { allRoomsQueryOptions } from "@/utils/rooms.functions";
 import { createBreakFn } from "@/utils/schedule-breaks.functions";
 import { conferenceSettingsQueryOptions } from "@/utils/settings.functions";
+import { tzLocalInputToUtc, utcToTzLocalInput } from "./tz-datetime";
 
 interface CreateEventDialogProps extends EventFormProps {
 	onCreated: () => void;
@@ -97,8 +98,20 @@ export function CreateEventDialog({
 			? selectedEvent.resourceId
 			: undefined;
 
+	const initialStart =
+		startRaw == null
+			? new Date()
+			: typeof startRaw === "object" &&
+					"toDate" in startRaw &&
+					typeof startRaw.toDate === "function"
+				? startRaw.toDate()
+				: new Date(startRaw as string | Date);
+
 	const [type, setType] = useState<EventType>("session");
 	const [title, setTitle] = useState("");
+	const [startInput, setStartInput] = useState<string>(
+		utcToTzLocalInput(initialStart, timezone),
+	);
 	const [roomId, setRoomId] = useState<string>(
 		resourceId ?? rooms[0]?.id ?? "",
 	);
@@ -110,14 +123,7 @@ export function CreateEventDialog({
 	const [breakDurationMin, setBreakDurationMin] = useState(30);
 	const [saving, setSaving] = useState(false);
 
-	const startDate =
-		startRaw == null
-			? new Date()
-			: typeof startRaw === "object" &&
-					"toDate" in startRaw &&
-					typeof startRaw.toDate === "function"
-				? startRaw.toDate()
-				: new Date(startRaw as string | Date);
+	const startDate = tzLocalInputToUtc(startInput, timezone);
 
 	const sessionDurationMin = presentationCount * minutesPerPresentation;
 	const sessionEndDate = new Date(
@@ -141,6 +147,7 @@ export function CreateEventDialog({
 	const handleClose = () => {
 		setTitle("");
 		setType("session");
+		setStartInput(utcToTzLocalInput(initialStart, timezone));
 		setPresentationCount(4);
 		setMinutesPerPresentation(settings.defaultPresentationMin);
 		setBreakDurationMin(30);
@@ -216,6 +223,17 @@ export function CreateEventDialog({
 								{t === "session" ? "Session" : "Break"}
 							</button>
 						))}
+					</div>
+
+					{/* Start time */}
+					<div className="space-y-2">
+						<Label htmlFor="event-start">Start</Label>
+						<Input
+							id="event-start"
+							type="datetime-local"
+							value={startInput}
+							onChange={(e) => setStartInput(e.target.value)}
+						/>
 					</div>
 
 					{/* Time summary */}
