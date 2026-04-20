@@ -331,6 +331,7 @@ function SubmissionRow({
 	onDragStart,
 	onDragEnd,
 }: RowProps) {
+	const [leaving, setLeaving] = useState(false);
 	const authors = s.authors
 		.slice(0, 3)
 		.map((a) => `${a.firstName} ${a.lastName}`)
@@ -345,10 +346,17 @@ function SubmissionRow({
 				e.dataTransfer.effectAllowed = "copy";
 				onDragStart();
 			}}
-			onDragEnd={onDragEnd}
-			className={`group flex cursor-grab items-start gap-1.5 px-2 py-2 hover:bg-muted/40 active:cursor-grabbing ${
+			onDragEnd={(e) => {
+				if (e.dataTransfer.dropEffect !== "none") setLeaving(true);
+				onDragEnd();
+			}}
+			className={`group flex cursor-grab items-start gap-1.5 px-2 py-2 transition-all duration-200 ease-out hover:bg-muted/40 active:cursor-grabbing ${
 				dragging ? "opacity-40" : ""
-			} ${selected ? "bg-primary/5" : ""}`}
+			} ${selected ? "bg-primary/5" : ""} ${
+				leaving
+					? "pointer-events-none max-h-0 -translate-x-4 overflow-hidden py-0 opacity-0"
+					: "max-h-60"
+			}`}
 		>
 			<input
 				type="checkbox"
