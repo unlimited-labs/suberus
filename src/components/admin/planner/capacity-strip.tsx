@@ -2,40 +2,53 @@ import { IconGauge } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { scheduleCapacityQueryOptions } from "@/utils/schedule.functions";
 
+function formatMinutes(min: number): string {
+	if (min <= 0) return "0 min";
+	const h = Math.floor(min / 60);
+	const m = Math.round(min % 60);
+	if (h === 0) return `${m} min`;
+	if (m === 0) return `${h}h`;
+	return `${h}h ${m}m`;
+}
+
 export function CapacityStrip() {
 	const { data: cap } = useSuspenseQuery(scheduleCapacityQueryOptions());
 
-	const deficit = cap.talks - cap.totalSlots;
-	const color =
-		deficit > 0
-			? "text-amber-700 dark:text-amber-400"
-			: deficit === 0 && cap.talks > 0
-				? "text-emerald-700 dark:text-emerald-400"
-				: "text-muted-foreground";
+	const unplaced = Math.max(0, cap.talks - cap.scheduled);
+	const fullUtilization =
+		cap.sessionMinutes > 0 && cap.usedMinutes >= cap.sessionMinutes;
 
 	return (
 		<div
-			className="flex items-center gap-2 border-b px-3 py-1 text-[11px] tabular-nums"
-			title={`${cap.talks} accepted talks, ${cap.scheduled} already placed, ${cap.totalSlots} slots available across ${cap.sessions} session${cap.sessions === 1 ? "" : "s"} × ${cap.slotMinutes} min`}
+			className="flex flex-wrap items-center gap-2 border-b px-3 py-1 text-[11px] tabular-nums"
+			title={`${cap.sessions} session${cap.sessions === 1 ? "" : "s"} · ${formatMinutes(cap.sessionMinutes)} total · ${formatMinutes(cap.usedMinutes)} used`}
 		>
 			<IconGauge size={12} className="text-muted-foreground" />
-			<span className={`font-medium ${color}`}>
-				<span className="text-foreground">{cap.talks}</span>
-				<span className="text-muted-foreground"> ({cap.scheduled} placed)</span>
+			<span className="text-muted-foreground">
+				<span className="font-medium text-foreground">{cap.scheduled}</span>
 				<span className="text-muted-foreground/70"> / </span>
-				<span className="text-foreground">{cap.totalSlots}</span>{" "}
-				<span className="text-muted-foreground">slots</span>
+				<span className="font-medium text-foreground">{cap.talks}</span> placed
 			</span>
-			{deficit > 0 && (
-				<span className="text-amber-700 dark:text-amber-400">
-					· need {deficit} more
-				</span>
+			{unplaced > 0 && (
+				<>
+					<span className="text-muted-foreground/50">·</span>
+					<span className="text-muted-foreground">
+						<span className="font-medium text-foreground">{unplaced}</span>{" "}
+						unassigned
+					</span>
+				</>
 			)}
-			{deficit < 0 && (
-				<span className="text-muted-foreground">
-					· {Math.abs(deficit)} spare
-				</span>
-			)}
+			<span className="text-muted-foreground/50">·</span>
+			<span
+				className={
+					fullUtilization
+						? "text-amber-700 dark:text-amber-400"
+						: "text-muted-foreground"
+				}
+			>
+				<span className="font-medium">{formatMinutes(cap.freeMinutes)}</span>{" "}
+				free{fullUtilization ? " (sessions full)" : ""}
+			</span>
 		</div>
 	);
 }
