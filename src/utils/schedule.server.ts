@@ -216,17 +216,43 @@ function overlaps(
 	return a.startAt < b.endAt && a.endAt > b.startAt;
 }
 
+function personName(
+	p:
+		| { firstName: string | null; lastName: string | null; email: string }
+		| { firstName: string; lastName: string; email: string }
+		| null
+		| undefined,
+): string {
+	if (!p) return "Unknown";
+	const first = (p.firstName ?? "").trim();
+	const last = (p.lastName ?? "").trim();
+	const full = `${first} ${last}`.trim();
+	return full || p.email || "Unknown";
+}
+
 export async function getScheduleIssues(): Promise<ScheduleIssue[]> {
 	const [sessions, breaks] = await Promise.all([
 		prisma.programSession.findMany({
 			include: {
-				chairs: { select: { userId: true } },
+				chairs: {
+					include: {
+						user: { select: { firstName: true, lastName: true, email: true } },
+					},
+				},
 				presentations: {
 					include: {
 						submission: {
 							select: {
+								title: true,
 								status: true,
-								authors: { select: { userId: true, email: true } },
+								authors: {
+									select: {
+										userId: true,
+										firstName: true,
+										lastName: true,
+										email: true,
+									},
+								},
 							},
 						},
 					},
@@ -264,7 +290,7 @@ export async function getScheduleIssues(): Promise<ScheduleIssue[]> {
 		if (totalMin > sessionMin) {
 			issues.push({
 				kind: "SLOT_DURATION_OVERFLOW",
-				message: `Session "${s.title}" slots total ${totalMin}min > ${sessionMin}min`,
+				message: `Session "${s.title}" is over-booked: ${totalMin} min of talks scheduled, only ${sessionMin} min available`,
 				sessionIds: [s.id],
 			});
 		}
@@ -275,9 +301,10 @@ export async function getScheduleIssues(): Promise<ScheduleIssue[]> {
 		for (const p of s.presentations) {
 			const st = p.submission.status;
 			if (st !== "ACCEPTED" && st !== "CONDITIONALLY_ACCEPTED") {
+				const statusLabel = st.replace(/_/g, " ").toLowerCase();
 				issues.push({
 					kind: "NON_ACCEPTED_SUBMISSION",
-					message: `Slot in "${s.title}" references ${st} submission`,
+					message: `"${p.submission.title}" in session "${s.title}" is ${statusLabel} (not accepted)`,
 					sessionIds: [s.id],
 				});
 			}
@@ -291,16 +318,25 @@ export async function getScheduleIssues(): Promise<ScheduleIssue[]> {
 			const b = sessions[j];
 			if (!overlaps(a, b)) continue;
 
-			// Chair overlap
-			const aChairs = new Set(a.chairs.map((c) => c.userId));
+			// Chair overlap (dedup per pair)
+			const aChairKeys = new Map<string, string>();
+			for (const c of a.chairs) {
+				aChairKeys.set(c.userId, personName(c.user));
+			}
+			const chairClashes: string[] = [];
+			const seenChairKeys = new Set<string>();
 			for (const c of b.chairs) {
-				if (aChairs.has(c.userId)) {
-					issues.push({
-						kind: "CHAIR_OVERLAP",
-						message: `Chair ${c.userId} in overlapping sessions`,
-						sessionIds: [a.id, b.id],
-					});
+				if (aChairKeys.has(c.userId) && !seenChairKeys.has(c.userId)) {
+					seenChairKeys.add(c.userId);
+					chairClashes.push(personName(c.user));
 				}
+			}
+			if (chairClashes.length > 0) {
+				issues.push({
+					kind: "CHAIR_OVERLAP",
+					message: `${chairClashes.join(", ")} chair${chairClashes.length === 1 ? "s" : ""} overlapping sessions "${a.title}" and "${b.title}"`,
+					sessionIds: [a.id, b.id],
+				});
 			}
 
 			// Room double-booked (sessions)
@@ -312,24 +348,34 @@ export async function getScheduleIssues(): Promise<ScheduleIssue[]> {
 				});
 			}
 
-			// Author overlap (via user or email fallback)
-			const aAuthors = new Set<string>();
+			// Author overlap (dedup per pair, via userId or email fallback)
+			const aAuthors = new Map<
+				string,
+				{ firstName: string; lastName: string; email: string }
+			>();
 			for (const p of a.presentations) {
 				for (const au of p.submission.authors) {
-					aAuthors.add(au.userId ?? `email:${au.email}`);
+					const key = au.userId ?? `email:${au.email}`;
+					if (!aAuthors.has(key)) aAuthors.set(key, au);
 				}
 			}
+			const authorClashes: string[] = [];
+			const seenAuthorKeys = new Set<string>();
 			for (const p of b.presentations) {
 				for (const au of p.submission.authors) {
 					const key = au.userId ?? `email:${au.email}`;
-					if (aAuthors.has(key)) {
-						issues.push({
-							kind: "AUTHOR_OVERLAP",
-							message: `Author ${key} in overlapping sessions`,
-							sessionIds: [a.id, b.id],
-						});
+					if (aAuthors.has(key) && !seenAuthorKeys.has(key)) {
+						seenAuthorKeys.add(key);
+						authorClashes.push(personName(au));
 					}
 				}
+			}
+			if (authorClashes.length > 0) {
+				issues.push({
+					kind: "AUTHOR_OVERLAP",
+					message: `${authorClashes.join(", ")} presenting in overlapping sessions "${a.title}" and "${b.title}"`,
+					sessionIds: [a.id, b.id],
+				});
 			}
 		}
 	}
