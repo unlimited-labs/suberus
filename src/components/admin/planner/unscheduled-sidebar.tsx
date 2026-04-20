@@ -21,7 +21,7 @@ import {
 } from "./session-grouper";
 
 const TYPE_LABELS: Record<string, string> = {
-	ABSTRACT: "Abstract",
+	ABSTRACT: "Oral",
 	FULL_PAPER: "Paper",
 	POSTER: "Poster",
 };
