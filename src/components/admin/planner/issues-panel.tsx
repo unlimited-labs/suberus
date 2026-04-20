@@ -107,7 +107,7 @@ export function IssuesPanel({ sessions }: IssuesPanelProps) {
 			</button>
 
 			{expanded && (
-				<ul className="border-t border-amber-200 px-3 py-2 dark:border-amber-900/60">
+				<ul className="max-h-48 overflow-y-auto border-t border-amber-200 px-3 py-2 dark:border-amber-900/60">
 					{issues.map((issue, i) => (
 						<li
 							// biome-ignore lint/suspicious/noArrayIndexKey: static list
