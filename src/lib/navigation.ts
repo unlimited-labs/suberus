@@ -1,6 +1,7 @@
 import {
 	IconAdjustments,
 	IconCalendar,
+	IconCalendarEvent,
 	IconCash,
 	IconClipboardCheck,
 	IconDashboard,
@@ -18,6 +19,8 @@ export interface NavItem {
 	href: string;
 	icon: ComponentType<{ className?: string }>;
 	roles?: UserRole[]; // undefined = visible to all
+	external?: boolean; // open in new tab
+	requiresPublishedSchedule?: boolean; // only show when program is published
 }
 
 export interface NavSection {
@@ -30,6 +33,13 @@ export const navigationSections: NavSection[] = [
 	{
 		items: [
 			{ name: "Dashboard", href: "/", icon: IconDashboard },
+			{
+				name: "Program",
+				href: "/program",
+				icon: IconCalendarEvent,
+				external: true,
+				requiresPublishedSchedule: true,
+			},
 			{ name: "Submissions", href: "/submissions", icon: IconFileText },
 			{ name: "Fee", href: "/fee", icon: IconCash },
 			{

@@ -116,7 +116,6 @@ const tabs = [
 	{ id: "types", label: "Submission Types", icon: IconFileStack },
 	{ id: "tracks", label: "Tracks", icon: IconPresentation },
 	{ id: "program", label: "Program", icon: IconCalendarEvent },
-	{ id: "planner", label: "Planner", icon: IconClock },
 	{ id: "emails", label: "Email Templates", icon: IconMail },
 	{ id: "branding", label: "Branding", icon: IconPalette },
 	{ id: "fee", label: "Fee", icon: IconCash },
@@ -124,6 +123,7 @@ const tabs = [
 	{ id: "survey", label: "Survey", icon: IconClipboardList },
 	{ id: "tos", label: "Terms of Service", icon: IconScale },
 	{ id: "invitations", label: "Invitations", icon: IconMailPlus },
+	{ id: "planner", label: "Planner", icon: IconClock },
 ];
 
 function AdminSettingsPage() {

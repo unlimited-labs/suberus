@@ -1,10 +1,12 @@
-import { IconMenu2 } from "@tabler/icons-react";
+import { IconExternalLink, IconMenu2 } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useSession } from "@/hooks/use-session";
 import { getNavigationForRole } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
+import { scheduleStateQueryOptions } from "@/utils/schedule.functions";
 import { UserMenu } from "./user-menu";
 
 interface SidebarProps {
@@ -20,7 +22,16 @@ function SidebarContent({
 }: SidebarProps) {
 	const location = useLocation();
 	const { user } = useSession();
-	const sections = getNavigationForRole(user?.role ?? "AUTHOR");
+	const { data: scheduleState } = useQuery(scheduleStateQueryOptions());
+	const isPublished = scheduleState?.status === "PUBLISHED";
+	const sections = getNavigationForRole(user?.role ?? "AUTHOR")
+		.map((section) => ({
+			...section,
+			items: section.items.filter(
+				(item) => !item.requiresPublishedSchedule || isPublished,
+			),
+		}))
+		.filter((section) => section.items.length > 0);
 
 	return (
 		<div className="flex h-full flex-col">
@@ -55,20 +66,33 @@ function SidebarContent({
 						<div className="flex flex-col gap-1">
 							{section.items.map((item) => {
 								const isActive =
-									location.pathname === item.href ||
-									(item.href !== "/" &&
-										location.pathname.startsWith(item.href));
+									!item.external &&
+									(location.pathname === item.href ||
+										(item.href !== "/" &&
+											location.pathname.startsWith(item.href)));
+								const className = cn(
+									"flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+									isActive
+										? "bg-sidebar-primary text-sidebar-primary-foreground"
+										: "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+								);
+								if (item.external) {
+									return (
+										<a
+											key={item.href}
+											href={item.href}
+											target="_blank"
+											rel="noopener noreferrer"
+											className={className}
+										>
+											<item.icon className="size-5" />
+											<span className="flex-1">{item.name}</span>
+											<IconExternalLink className="size-3.5 opacity-60" />
+										</a>
+									);
+								}
 								return (
-									<Link
-										key={item.href}
-										to={item.href}
-										className={cn(
-											"flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-											isActive
-												? "bg-sidebar-primary text-sidebar-primary-foreground"
-												: "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-										)}
-									>
+									<Link key={item.href} to={item.href} className={className}>
 										<item.icon className="size-5" />
 										{item.name}
 									</Link>

@@ -55,7 +55,7 @@ export function PlannerSettingsTab({ initialData }: PlannerSettingsTabProps) {
 			<SettingsSection
 				icon={IconClock}
 				title="Planner"
-				description="Time zone, working hours window shown in the grid, and default presentation length used by create flows and capacity calculations."
+				description="Settings used by the program planner to organize presentations into sessions across rooms and days"
 			>
 				<div className="grid gap-6 sm:grid-cols-2">
 					<div className="space-y-2">
