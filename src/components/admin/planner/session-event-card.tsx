@@ -1,4 +1,4 @@
-import { IconUsers } from "@tabler/icons-react";
+import { IconCircleCheckFilled, IconUsers } from "@tabler/icons-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -116,45 +116,27 @@ export function SessionEventCard({
 				)}
 			</div>
 
-			{/* Slot list */}
-			{slotCount > 0 ? (
-				<ul className="min-h-0 flex-1 space-y-0.5 overflow-hidden text-[10px] text-muted-foreground">
-					{data.presentations.slice(0, 4).map((p, idx) => (
-						<li key={p.id} className="flex items-center gap-1 truncate">
-							<span className="shrink-0 tabular-nums text-[9px] opacity-60">
-								{idx + 1}.
-							</span>
-							<span className="truncate">{p.submissionTitle}</span>
-							<span className="ml-auto shrink-0 text-[9px] opacity-60">
-								{p.durationMin}′
-							</span>
-						</li>
-					))}
-					{slotCount > 4 && (
-						<li className="text-[9px] italic opacity-60">
-							+{slotCount - 4} more
-						</li>
-					)}
-				</ul>
-			) : (
-				<p className="text-[10px] italic opacity-60">No talks assigned</p>
-			)}
-
 			{/* Capacity bar */}
 			<div className="mt-auto pt-1">
 				<div className="flex items-center justify-between text-[9px] text-muted-foreground/70">
 					<span>
-						{usedMin}/{data.sessionDurationMin} min
+						{slotCount} {slotCount === 1 ? "talk" : "talks"} ·{" "}
+						<span className="tabular-nums">
+							{usedMin}/{data.sessionDurationMin} min
+						</span>
 					</span>
 					{capacityFull && (
-						<span className="text-amber-600 dark:text-amber-400">full</span>
+						<IconCircleCheckFilled
+							className="size-3.5 text-emerald-600 dark:text-emerald-400"
+							aria-label="Full"
+						/>
 					)}
 				</div>
 				<div className="mt-0.5 h-[3px] w-full overflow-hidden rounded-full bg-muted">
 					<div
 						className={cn(
 							"h-full rounded-full transition-all",
-							capacityFull ? "bg-amber-500" : "bg-primary/60",
+							capacityFull ? "bg-emerald-500" : "bg-primary/60",
 						)}
 						style={{ width: `${capacityPct}%` }}
 					/>
