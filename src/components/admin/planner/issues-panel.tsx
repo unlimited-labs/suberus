@@ -77,6 +77,7 @@ export function IssuesPanel({ sessions, onSessionClick }: IssuesPanelProps) {
 				<PopoverTrigger asChild>
 					<button
 						type="button"
+						data-testid="issues-popover-trigger"
 						className="inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800 transition-colors hover:bg-amber-100 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300 dark:hover:bg-amber-950/60"
 					>
 						<IconAlertTriangle size={13} className="shrink-0" />
@@ -88,6 +89,7 @@ export function IssuesPanel({ sessions, onSessionClick }: IssuesPanelProps) {
 				</PopoverTrigger>
 				<PopoverContent
 					align="start"
+					data-testid="issues-popover"
 					className="w-96 max-w-[calc(100vw-2rem)] p-0"
 				>
 					<div className="border-b px-3 py-2 text-xs font-medium">
@@ -110,6 +112,7 @@ export function IssuesPanel({ sessions, onSessionClick }: IssuesPanelProps) {
 									<li
 										// biome-ignore lint/suspicious/noArrayIndexKey: static list
 										key={i}
+										data-testid={`issue-item-${i}`}
 									>
 										<button
 											type="button"
@@ -133,6 +136,7 @@ export function IssuesPanel({ sessions, onSessionClick }: IssuesPanelProps) {
 								<li
 									// biome-ignore lint/suspicious/noArrayIndexKey: static list
 									key={i}
+									data-testid={`issue-item-${i}`}
 									className="flex items-start gap-2 rounded px-1.5 py-1"
 								>
 									{dot}

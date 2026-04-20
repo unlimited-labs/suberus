@@ -148,7 +148,7 @@ export function MobilePlanner({
 	const canNext = !conferenceEnd || cursor < conferenceEnd;
 
 	return (
-		<div className="flex flex-col">
+		<div className="flex flex-col" data-testid="mobile-planner">
 			<div className="sticky top-0 z-10 flex items-center gap-2 border-b bg-background px-3 py-2">
 				<button
 					type="button"
@@ -200,6 +200,7 @@ export function MobilePlanner({
 									key={`break:${item.id}`}
 									type="button"
 									onClick={() => onBreakClick(item.id)}
+									data-testid={`mobile-break-${item.id}`}
 									className="flex w-full items-center gap-3 bg-muted/30 px-3 py-3 text-left hover:bg-muted/50"
 								>
 									<div className="w-14 shrink-0 text-center">
@@ -226,6 +227,7 @@ export function MobilePlanner({
 								key={`session:${item.id}`}
 								type="button"
 								onClick={() => onSessionClick(item.id)}
+								data-testid={`mobile-session-${item.id}`}
 								className="flex w-full items-stretch gap-3 px-3 py-3 text-left hover:bg-muted/40"
 							>
 								<div className="w-14 shrink-0 text-center">

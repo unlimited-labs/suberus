@@ -45,6 +45,7 @@ export function BulkReadReader({
 
 	return (
 		<div
+			data-testid="bulk-reader"
 			className="fixed inset-0 z-50 flex flex-col bg-background"
 			role="dialog"
 			aria-modal="true"
@@ -64,6 +65,7 @@ export function BulkReadReader({
 					ref={closeRef}
 					type="button"
 					onClick={onClose}
+					data-testid="bulk-reader-close"
 					className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					aria-label="Close reading mode"
 				>
@@ -76,6 +78,7 @@ export function BulkReadReader({
 					type="button"
 					onClick={() => setIdx((i) => Math.max(0, i - 1))}
 					disabled={safe === 0}
+					data-testid="bulk-reader-prev"
 					className="flex w-12 shrink-0 items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-20 disabled:hover:bg-transparent"
 					aria-label="Previous"
 				>
@@ -117,6 +120,7 @@ export function BulkReadReader({
 					type="button"
 					onClick={() => setIdx((i) => Math.min(submissions.length - 1, i + 1))}
 					disabled={safe === submissions.length - 1}
+					data-testid="bulk-reader-next"
 					className="flex w-12 shrink-0 items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-20 disabled:hover:bg-transparent"
 					aria-label="Next"
 				>

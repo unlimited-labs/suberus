@@ -77,7 +77,7 @@ export function RoomsList({ rooms, onEdit, onUpdate }: RoomsListProps) {
 	);
 
 	return (
-		<div className="overflow-x-auto rounded-md border">
+		<div className="overflow-x-auto rounded-md border" data-testid="rooms-list">
 			<Table>
 				<TableHeader>
 					<TableRow>
@@ -94,7 +94,7 @@ export function RoomsList({ rooms, onEdit, onUpdate }: RoomsListProps) {
 						const next = idx < sorted.length - 1 ? sorted[idx + 1] : null;
 						const isBusy = pendingId === room.id;
 						return (
-							<TableRow key={room.id}>
+							<TableRow key={room.id} data-testid={`room-row-${room.id}`}>
 								<TableCell>
 									<div className="flex items-center gap-1">
 										<Button
@@ -150,6 +150,7 @@ export function RoomsList({ rooms, onEdit, onUpdate }: RoomsListProps) {
 													size="sm"
 													onClick={() => handleDelete(room.id)}
 													disabled={isBusy}
+													data-testid="room-confirm-delete"
 												>
 													{isBusy && (
 														<IconLoader2 className="mr-1 size-4 animate-spin" />
@@ -171,6 +172,7 @@ export function RoomsList({ rooms, onEdit, onUpdate }: RoomsListProps) {
 													size="icon"
 													onClick={() => onEdit(room)}
 													aria-label="Edit"
+													data-testid="room-edit"
 												>
 													<IconEdit className="size-4" />
 												</Button>
@@ -180,6 +182,7 @@ export function RoomsList({ rooms, onEdit, onUpdate }: RoomsListProps) {
 													onClick={() => setConfirmDeleteId(room.id)}
 													disabled={isBusy || room.sessionCount > 0}
 													aria-label="Delete"
+													data-testid="room-delete"
 												>
 													<IconTrash className="size-4" />
 												</Button>

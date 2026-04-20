@@ -90,6 +90,7 @@ export function SessionEditorSheet({
 		>
 			<SheetContent
 				side="right"
+				data-testid="session-editor"
 				className="flex flex-col gap-0 p-0 sm:max-w-md"
 			>
 				{sessionId !== null && (
@@ -375,6 +376,7 @@ function SessionEditorBody({
 						}}
 						onBlur={handleSaveTitle}
 						onKeyDown={(e) => e.key === "Enter" && handleSaveTitle()}
+						data-testid="session-editor-title"
 						className="pr-20 text-base font-medium"
 						placeholder="Session title"
 					/>
@@ -403,6 +405,7 @@ function SessionEditorBody({
 							type="datetime-local"
 							value={utcToTzLocalInput(new Date(session.startAt), tz)}
 							onChange={(e) => handleStartChange(e.target.value)}
+							data-testid="session-editor-start"
 							className="h-8 text-sm"
 						/>
 					</div>
@@ -418,6 +421,7 @@ function SessionEditorBody({
 							type="number"
 							min={5}
 							step={5}
+							data-testid="session-editor-duration"
 							defaultValue={formatDurationMin(
 								new Date(session.startAt),
 								new Date(session.endAt),
@@ -446,7 +450,10 @@ function SessionEditorBody({
 							value={session.roomId ?? "none"}
 							onValueChange={handleRoomChange}
 						>
-							<SelectTrigger className="h-8 text-sm">
+							<SelectTrigger
+								data-testid="session-editor-room"
+								className="h-8 text-sm"
+							>
 								<SelectValue placeholder="No room" />
 							</SelectTrigger>
 							<SelectContent>
@@ -465,7 +472,10 @@ function SessionEditorBody({
 							value={session.trackId ?? "none"}
 							onValueChange={handleTrackChange}
 						>
-							<SelectTrigger className="h-8 text-sm">
+							<SelectTrigger
+								data-testid="session-editor-track"
+								className="h-8 text-sm"
+							>
 								<SelectValue placeholder="No track" />
 							</SelectTrigger>
 							<SelectContent>
@@ -502,7 +512,12 @@ function SessionEditorBody({
 						{session.chairs.length < 3 && (
 							<Popover open={chairOpen} onOpenChange={setChairOpen}>
 								<PopoverTrigger asChild>
-									<Button size="xs" variant="outline" className="gap-1">
+									<Button
+										size="xs"
+										variant="outline"
+										data-testid="session-editor-add-chair"
+										className="gap-1"
+									>
 										<IconPlus size={11} />
 										Add chair
 									</Button>
@@ -593,6 +608,7 @@ function SessionEditorBody({
 							{sortedPresentations.map((p, i) => (
 								<div
 									key={p.id}
+									data-testid={`session-editor-slot-${p.id}`}
 									className="flex items-center gap-2 rounded-md border px-2 py-1.5"
 								>
 									<div className="flex flex-col">
@@ -664,6 +680,7 @@ function SessionEditorBody({
 						variant="outline"
 						size="sm"
 						onClick={handleContinueSeries}
+						data-testid="session-editor-continue-series"
 						className="flex-1"
 					>
 						<IconRepeat size={13} />
@@ -675,6 +692,7 @@ function SessionEditorBody({
 								variant="outline"
 								size="sm"
 								disabled={sortedPresentations.length < 2}
+								data-testid="session-editor-split"
 								className="flex-1"
 							>
 								<IconCut size={13} />
@@ -708,6 +726,7 @@ function SessionEditorBody({
 					size="sm"
 					disabled={deleting}
 					onClick={handleDelete}
+					data-testid="session-editor-delete"
 					className="w-full"
 				>
 					<IconTrash size={14} />

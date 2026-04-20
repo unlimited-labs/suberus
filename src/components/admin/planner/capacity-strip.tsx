@@ -20,6 +20,7 @@ export function CapacityStrip() {
 
 	return (
 		<div
+			data-testid="capacity-strip"
 			className="flex flex-wrap items-center gap-2 border-b px-3 py-1 text-[11px] tabular-nums"
 			title={`${cap.sessions} session${cap.sessions === 1 ? "" : "s"} · ${formatMinutes(cap.sessionMinutes)} total · ${formatMinutes(cap.usedMinutes)} used`}
 		>

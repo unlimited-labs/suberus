@@ -36,6 +36,7 @@ export function BreakEditorSheet({ breakId, onClose }: BreakEditorSheetProps) {
 		<Sheet open={breakId !== null} onOpenChange={(open) => !open && onClose()}>
 			<SheetContent
 				side="right"
+				data-testid="break-editor"
 				className="flex flex-col gap-0 p-0 sm:max-w-md"
 			>
 				{breakId !== null && (
@@ -132,6 +133,7 @@ function BreakEditorBody({
 					}}
 					onBlur={handleSaveTitle}
 					onKeyDown={(e) => e.key === "Enter" && handleSaveTitle()}
+					data-testid="break-editor-title"
 					className="text-base font-medium"
 					placeholder="Break title"
 				/>
@@ -164,6 +166,7 @@ function BreakEditorBody({
 					size="sm"
 					disabled={deleting}
 					onClick={handleDelete}
+					data-testid="break-editor-delete"
 					className="w-full"
 				>
 					<IconTrash size={14} />

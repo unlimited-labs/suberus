@@ -5,9 +5,18 @@ export interface BreakEventData {
 	breakId: string;
 }
 
-export function BreakEventCard({ title }: { title: string }) {
+export function BreakEventCard({
+	title,
+	data,
+}: {
+	title: string;
+	data?: BreakEventData;
+}) {
 	return (
-		<div className="flex h-full items-center gap-1.5 overflow-hidden rounded-md border border-dashed bg-muted/50 px-2 py-1 text-[11px] text-muted-foreground">
+		<div
+			data-testid={data ? `break-card-${data.breakId}` : "break-card"}
+			className="flex h-full items-center gap-1.5 overflow-hidden rounded-md border border-dashed bg-muted/50 px-2 py-1 text-[11px] text-muted-foreground"
+		>
 			<IconCoffee className="size-3.5 shrink-0" />
 			<span className="truncate font-medium">{title}</span>
 		</div>

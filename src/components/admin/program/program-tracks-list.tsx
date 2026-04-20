@@ -55,7 +55,10 @@ export function ProgramTracksList({
 	}
 
 	return (
-		<div className="overflow-x-auto rounded-md border">
+		<div
+			className="overflow-x-auto rounded-md border"
+			data-testid="program-tracks-list"
+		>
 			<Table>
 				<TableHeader>
 					<TableRow>
@@ -70,7 +73,10 @@ export function ProgramTracksList({
 					{tracks.map((track) => {
 						const isBusy = pendingId === track.id;
 						return (
-							<TableRow key={track.id}>
+							<TableRow
+								key={track.id}
+								data-testid={`program-track-row-${track.id}`}
+							>
 								<TableCell>
 									<span
 										className="inline-block size-5 rounded-full border"
@@ -105,6 +111,7 @@ export function ProgramTracksList({
 													size="sm"
 													onClick={() => handleDelete(track.id)}
 													disabled={isBusy}
+													data-testid="program-track-confirm-delete"
 												>
 													{isBusy && (
 														<IconLoader2 className="mr-1 size-4 animate-spin" />
@@ -126,6 +133,7 @@ export function ProgramTracksList({
 													size="icon"
 													onClick={() => onEdit(track)}
 													aria-label="Edit"
+													data-testid="program-track-edit"
 												>
 													<IconEdit className="size-4" />
 												</Button>
@@ -135,6 +143,7 @@ export function ProgramTracksList({
 													onClick={() => setConfirmDeleteId(track.id)}
 													disabled={isBusy || track.sessionCount > 0}
 													aria-label="Delete"
+													data-testid="program-track-delete"
 												>
 													<IconTrash className="size-4" />
 												</Button>

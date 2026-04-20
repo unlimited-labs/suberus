@@ -79,7 +79,7 @@ export function RoomDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent>
+			<DialogContent data-testid="room-dialog">
 				<DialogHeader>
 					<DialogTitle>{isEdit ? "Edit Room" : "Create Room"}</DialogTitle>
 				</DialogHeader>
@@ -93,6 +93,7 @@ export function RoomDialog({
 							onChange={(e) => setName(e.target.value)}
 							placeholder="Aula Magna, Room 101, …"
 							maxLength={200}
+							data-testid="room-name"
 						/>
 					</div>
 
@@ -105,6 +106,7 @@ export function RoomDialog({
 							placeholder="Optional — building, floor, notes…"
 							rows={2}
 							maxLength={1000}
+							data-testid="room-description"
 						/>
 					</div>
 
@@ -116,6 +118,7 @@ export function RoomDialog({
 							value={link}
 							onChange={(e) => setLink(e.target.value)}
 							placeholder="https://maps.google.com/…"
+							data-testid="room-link"
 						/>
 						<p className="text-xs text-muted-foreground">
 							Optional — e.g. Google Maps link, building website.
@@ -127,7 +130,11 @@ export function RoomDialog({
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
 						Cancel
 					</Button>
-					<Button onClick={handleSave} disabled={isSaving}>
+					<Button
+						onClick={handleSave}
+						disabled={isSaving}
+						data-testid="room-submit"
+					>
 						{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 						{isEdit ? "Save" : "Create"}
 					</Button>

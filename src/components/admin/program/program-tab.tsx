@@ -219,7 +219,10 @@ export function ProgramTab({
 				description="Physical locations where sessions take place. Order controls column placement in the planner."
 			>
 				<div className="mb-4 flex justify-end">
-					<Button onClick={() => setRoomDialogOpen(true)}>
+					<Button
+						onClick={() => setRoomDialogOpen(true)}
+						data-testid="create-room"
+					>
 						<IconPlus className="mr-2 size-4" />
 						Create Room
 					</Button>
@@ -237,11 +240,19 @@ export function ProgramTab({
 				description="Optional color tags for grouping related sessions (e.g. a multi-part series). Sessions can exist without a track."
 			>
 				<div className="mb-4 flex justify-end gap-2">
-					<Button variant="outline" onClick={handleImport} disabled={importing}>
+					<Button
+						variant="outline"
+						onClick={handleImport}
+						disabled={importing}
+						data-testid="import-program-tracks-from-intake"
+					>
 						<IconDownload className="mr-2 size-4" />
 						Import from intake
 					</Button>
-					<Button onClick={() => setTrackDialogOpen(true)}>
+					<Button
+						onClick={() => setTrackDialogOpen(true)}
+						data-testid="create-program-track"
+					>
 						<IconPlus className="mr-2 size-4" />
 						Create Program Track
 					</Button>

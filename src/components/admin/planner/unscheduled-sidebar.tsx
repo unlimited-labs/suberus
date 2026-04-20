@@ -127,7 +127,10 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 
 	return (
 		<>
-			<div className="flex min-h-0 w-72 shrink-0 flex-col border-r">
+			<div
+				data-testid="unscheduled-sidebar"
+				className="flex min-h-0 w-72 shrink-0 flex-col border-r"
+			>
 				<div className="flex items-center justify-between border-b px-3 py-2">
 					<div className="flex items-center gap-1.5">
 						<IconLayoutList size={14} className="text-muted-foreground" />
@@ -141,6 +144,7 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 							<button
 								type="button"
 								onClick={() => setReaderStart(0)}
+								data-testid="sidebar-bulk-read"
 								className="flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
 								title="Open reading mode"
 							>
@@ -169,6 +173,7 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
 							placeholder="Search title, author, keyword…"
+							data-testid="sidebar-search"
 							className="h-7 pl-7 text-xs"
 						/>
 						{search && (
@@ -188,6 +193,7 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 					className="flex gap-1 border-b px-2 py-1.5"
 					role="tablist"
 					aria-label="Group submissions by"
+					data-testid="sidebar-grouping-select"
 				>
 					{MODES.map((m) => (
 						<button
@@ -196,6 +202,7 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 							role="tab"
 							aria-selected={mode === m.key}
 							onClick={() => setMode(m.key)}
+							data-testid={`sidebar-grouping-${m.key}`}
 							className={`flex-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${
 								mode === m.key
 									? "bg-muted text-foreground"
@@ -237,6 +244,7 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 											if (gIdx === 0) toggleGroup(group.key);
 											else toggleGroup(`open:${group.key}`);
 										}}
+										data-testid={`unscheduled-group-${group.key}`}
 										className="flex w-full items-center gap-1.5 bg-muted/20 px-2.5 py-1.5 text-left hover:bg-muted/40"
 									>
 										<IconChevronDown
@@ -276,7 +284,10 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 				</div>
 
 				{selected.size > 0 && (
-					<div className="flex items-center gap-2 border-t bg-muted/40 px-2 py-2">
+					<div
+						data-testid="sidebar-selection-bar"
+						className="flex items-center gap-2 border-t bg-muted/40 px-2 py-2"
+					>
 						<span className="rounded-full bg-background px-2 py-0.5 text-[11px] font-medium">
 							{selected.size} selected
 						</span>
@@ -285,6 +296,7 @@ export function UnscheduledSidebar({ onCreateSession }: SidebarProps = {}) {
 							onClick={() => {
 								onCreateSession?.(Array.from(selected));
 							}}
+							data-testid="sidebar-bulk-create-session"
 							className="rounded bg-primary px-2 py-1 text-[11px] font-medium text-primary-foreground hover:bg-primary/90"
 						>
 							+ Create session
@@ -340,6 +352,7 @@ function SubmissionRow({
 
 	return (
 		<li
+			data-testid={`unscheduled-row-${s.id}`}
 			draggable
 			onDragStart={(e) => {
 				e.dataTransfer.setData("submissionid", s.id);

@@ -48,6 +48,7 @@ export function SessionEventCard({
 	return (
 		<section
 			aria-label={title}
+			data-testid={`session-card-${data.sessionId}`}
 			className={cn(
 				"relative flex h-full flex-col gap-1 overflow-hidden rounded-md border bg-background p-1.5 pl-2.5 text-[11px] shadow-sm transition-colors",
 				!hasChairs && "border-dashed",
@@ -84,7 +85,10 @@ export function SessionEventCard({
 			{/* Header: title + chairs */}
 			<div className="flex items-start justify-between gap-1">
 				<div className="min-w-0 flex-1">
-					<p className="truncate font-semibold leading-tight text-foreground">
+					<p
+						data-testid="session-card-title"
+						className="truncate font-semibold leading-tight text-foreground"
+					>
 						{title}
 					</p>
 					{data.trackName && (
@@ -117,7 +121,7 @@ export function SessionEventCard({
 			</div>
 
 			{/* Capacity bar */}
-			<div className="mt-auto pt-1">
+			<div className="mt-auto pt-1" data-testid="session-card-capacity">
 				<div className="flex items-center justify-between text-[9px] text-muted-foreground/70">
 					<span>
 						{slotCount} {slotCount === 1 ? "talk" : "talks"} ·{" "}

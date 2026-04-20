@@ -196,7 +196,7 @@ export function CreateEventDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange}>
-			<DialogContent className="sm:max-w-sm">
+			<DialogContent data-testid="create-event-dialog" className="sm:max-w-sm">
 				<DialogHeader>
 					<DialogTitle>New event</DialogTitle>
 				</DialogHeader>
@@ -209,6 +209,7 @@ export function CreateEventDialog({
 								key={t}
 								type="button"
 								onClick={() => setType(t)}
+								data-testid={`create-event-type-${t}`}
 								className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
 									type === t
 										? "border-primary bg-primary text-primary-foreground"
@@ -233,6 +234,7 @@ export function CreateEventDialog({
 							type="datetime-local"
 							value={startInput}
 							onChange={(e) => setStartInput(e.target.value)}
+							data-testid="create-event-start"
 						/>
 					</div>
 
@@ -265,6 +267,7 @@ export function CreateEventDialog({
 							onChange={(e) => setTitle(e.target.value)}
 							onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
 							placeholder={type === "session" ? "Session title" : "Break title"}
+							data-testid="create-event-title"
 							autoFocus
 						/>
 					</div>
@@ -356,7 +359,11 @@ export function CreateEventDialog({
 					<Button variant="outline" onClick={handleClose}>
 						Cancel
 					</Button>
-					<Button disabled={saving} onClick={handleSubmit}>
+					<Button
+						disabled={saving}
+						onClick={handleSubmit}
+						data-testid="create-event-submit"
+					>
 						Create
 					</Button>
 				</DialogFooter>

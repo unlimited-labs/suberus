@@ -352,7 +352,7 @@ function ProgramPlannerPage() {
 										| BreakEventData
 										| undefined;
 									if (data?.kind === "break") {
-										return <BreakEventCard title={event.title} />;
+										return <BreakEventCard title={event.title} data={data} />;
 									}
 									if (data?.kind === "session") {
 										return (

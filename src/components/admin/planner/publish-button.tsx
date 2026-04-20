@@ -95,6 +95,7 @@ export function PublishButton({ onSessionClick }: PublishButtonProps = {}) {
 			<Button
 				size="sm"
 				variant="outline"
+				data-testid="unpublish-button"
 				className="gap-1.5 text-green-700 border-green-300 hover:bg-green-50 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-950"
 				disabled={busy}
 				onClick={handleUnpublish}
@@ -111,13 +112,21 @@ export function PublishButton({ onSessionClick }: PublishButtonProps = {}) {
 
 	return (
 		<>
-			<Button size="sm" className="gap-1.5" onClick={() => setDialogOpen(true)}>
+			<Button
+				size="sm"
+				data-testid="publish-button"
+				className="gap-1.5"
+				onClick={() => setDialogOpen(true)}
+			>
 				<IconWorld size={14} />
 				Publish
 			</Button>
 
 			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-				<DialogContent className="flex max-h-[85vh] flex-col sm:max-w-md">
+				<DialogContent
+					data-testid="publish-dialog"
+					className="flex max-h-[85vh] flex-col sm:max-w-md"
+				>
 					<DialogHeader>
 						<DialogTitle>Publish program</DialogTitle>
 					</DialogHeader>
@@ -134,7 +143,10 @@ export function PublishButton({ onSessionClick }: PublishButtonProps = {}) {
 									{issues.length} issue{issues.length !== 1 ? "s" : ""} found.
 									You can still publish.
 								</p>
-								<ul className="min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">
+								<ul
+									data-testid="publish-issues-list"
+									className="min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1"
+								>
 									{issues.map((issue, i) => {
 										const targetId = issue.sessionIds[0];
 										const body = (
@@ -155,7 +167,10 @@ export function PublishButton({ onSessionClick }: PublishButtonProps = {}) {
 										);
 										if (onSessionClick && targetId) {
 											return (
-												<li key={`${issue.kind}-${i}`}>
+												<li
+													key={`${issue.kind}-${i}`}
+													data-testid={`publish-issue-${i}`}
+												>
 													<button
 														type="button"
 														onClick={() => {
@@ -172,6 +187,7 @@ export function PublishButton({ onSessionClick }: PublishButtonProps = {}) {
 										return (
 											<li
 												key={`${issue.kind}-${i}`}
+												data-testid={`publish-issue-${i}`}
 												className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm dark:border-amber-800 dark:bg-amber-950"
 											>
 												{body}
@@ -200,6 +216,7 @@ export function PublishButton({ onSessionClick }: PublishButtonProps = {}) {
 							size="sm"
 							disabled={busy || issuesLoading}
 							onClick={handlePublish}
+							data-testid="publish-confirm"
 							className="gap-1.5"
 						>
 							{busy ? (

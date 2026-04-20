@@ -106,7 +106,7 @@ export function ProgramTrackDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent>
+			<DialogContent data-testid="program-track-dialog">
 				<DialogHeader>
 					<DialogTitle>
 						{isEdit ? "Edit Program Track" : "Create Program Track"}
@@ -122,6 +122,7 @@ export function ProgramTrackDialog({
 							onChange={(e) => setName(e.target.value)}
 							placeholder={'e.g. "ML" or "ML 2"'}
 							maxLength={200}
+							data-testid="program-track-name"
 						/>
 						{seriesPreview.series ? (
 							<div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -202,7 +203,11 @@ export function ProgramTrackDialog({
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
 						Cancel
 					</Button>
-					<Button onClick={handleSave} disabled={isSaving}>
+					<Button
+						onClick={handleSave}
+						disabled={isSaving}
+						data-testid="program-track-submit"
+					>
 						{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 						{isEdit ? "Save" : "Create"}
 					</Button>

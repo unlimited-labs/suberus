@@ -154,7 +154,10 @@ export function CreateSessionDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
-			<DialogContent className="sm:max-w-sm">
+			<DialogContent
+				data-testid="create-session-dialog"
+				className="sm:max-w-sm"
+			>
 				<DialogHeader>
 					<DialogTitle>
 						Create session from {submissionIds.length}{" "}
@@ -186,6 +189,7 @@ export function CreateSessionDialog({
 								onChange={(e) => setTitle(e.target.value)}
 								onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
 								placeholder={suggested}
+								data-testid="create-session-name"
 								autoFocus
 							/>
 							{suggested && (
@@ -205,7 +209,7 @@ export function CreateSessionDialog({
 					<div className="space-y-2">
 						<Label>Room</Label>
 						<Select value={roomId} onValueChange={setRoomId}>
-							<SelectTrigger>
+							<SelectTrigger data-testid="create-session-room">
 								<SelectValue placeholder="No room" />
 							</SelectTrigger>
 							<SelectContent>
@@ -260,7 +264,11 @@ export function CreateSessionDialog({
 					<Button variant="outline" onClick={handleClose}>
 						Cancel
 					</Button>
-					<Button disabled={saving} onClick={handleSubmit}>
+					<Button
+						disabled={saving}
+						onClick={handleSubmit}
+						data-testid="create-session-submit"
+					>
 						Create
 					</Button>
 				</DialogFooter>
