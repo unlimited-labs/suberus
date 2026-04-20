@@ -1,0 +1,110 @@
+import { type Locator, type Page, expect } from "@playwright/test";
+
+export class ProgramPlannerPage {
+	readonly page: Page;
+	readonly sidebar: Locator;
+	readonly sidebarSearch: Locator;
+	readonly sidebarSelectionBar: Locator;
+	readonly bulkCreateButton: Locator;
+	readonly bulkReadButton: Locator;
+	readonly capacityStrip: Locator;
+	readonly issuesTrigger: Locator;
+	readonly issuesPopover: Locator;
+	readonly publishButton: Locator;
+	readonly unpublishButton: Locator;
+	readonly publishDialog: Locator;
+	readonly publishConfirm: Locator;
+	readonly publishIssuesList: Locator;
+	readonly createSessionDialog: Locator;
+	readonly createEventDialog: Locator;
+	readonly sessionEditor: Locator;
+	readonly breakEditor: Locator;
+
+	constructor(page: Page) {
+		this.page = page;
+		this.sidebar = page.getByTestId("unscheduled-sidebar");
+		this.sidebarSearch = page.getByTestId("sidebar-search");
+		this.sidebarSelectionBar = page.getByTestId("sidebar-selection-bar");
+		this.bulkCreateButton = page.getByTestId("sidebar-bulk-create-session");
+		this.bulkReadButton = page.getByTestId("sidebar-bulk-read");
+		this.capacityStrip = page.getByTestId("capacity-strip");
+		this.issuesTrigger = page.getByTestId("issues-popover-trigger");
+		this.issuesPopover = page.getByTestId("issues-popover");
+		this.publishButton = page.getByTestId("publish-button");
+		this.unpublishButton = page.getByTestId("unpublish-button");
+		this.publishDialog = page.getByTestId("publish-dialog");
+		this.publishConfirm = page.getByTestId("publish-confirm");
+		this.publishIssuesList = page.getByTestId("publish-issues-list");
+		this.createSessionDialog = page.getByTestId("create-session-dialog");
+		this.createEventDialog = page.getByTestId("create-event-dialog");
+		this.sessionEditor = page.getByTestId("session-editor");
+		this.breakEditor = page.getByTestId("break-editor");
+	}
+
+	async goto() {
+		await this.page.goto("/admin/program-planner");
+		await expect(this.sidebar.or(this.page.getByTestId("mobile-planner"))).toBeVisible(
+			{ timeout: 15000 },
+		);
+	}
+
+	unscheduledRow(submissionId: string): Locator {
+		return this.page.getByTestId(`unscheduled-row-${submissionId}`);
+	}
+
+	sessionCard(sessionId: string): Locator {
+		return this.page.getByTestId(`session-card-${sessionId}`);
+	}
+
+	breakCard(breakId: string): Locator {
+		return this.page.getByTestId(`break-card-${breakId}`);
+	}
+
+	issueItem(index: number): Locator {
+		return this.page.getByTestId(`issue-item-${index}`);
+	}
+
+	publishIssue(index: number): Locator {
+		return this.page.getByTestId(`publish-issue-${index}`);
+	}
+
+	async openSessionEditor(sessionId: string) {
+		await this.sessionCard(sessionId).click();
+		await expect(this.sessionEditor).toBeVisible();
+	}
+
+	async openBreakEditor(breakId: string) {
+		await this.breakCard(breakId).click();
+		await expect(this.breakEditor).toBeVisible();
+	}
+
+	async openIssuesPopover() {
+		await this.issuesTrigger.click();
+		await expect(this.issuesPopover).toBeVisible();
+	}
+
+	async setGroupingMode(mode: "intake" | "presenter") {
+		await this.page.getByTestId(`sidebar-grouping-${mode}`).click();
+	}
+
+	async searchUnscheduled(q: string) {
+		await this.sidebarSearch.fill(q);
+	}
+
+	async selectUnscheduled(submissionIds: string[]) {
+		for (const id of submissionIds) {
+			const row = this.unscheduledRow(id);
+			await row.getByRole("checkbox").check();
+		}
+	}
+
+	async openPublishDialog() {
+		await this.publishButton.click();
+		await expect(this.publishDialog).toBeVisible();
+	}
+
+	async confirmPublish() {
+		await this.publishConfirm.click();
+		await expect(this.publishDialog).toBeHidden();
+	}
+}
