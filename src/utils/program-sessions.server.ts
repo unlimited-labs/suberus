@@ -173,6 +173,7 @@ export async function listUnscheduledSubmissions(): Promise<
 	const rows = await prisma.submission.findMany({
 		where: {
 			status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] },
+			type: { in: ["ABSTRACT", "POSTER"] },
 			presentationSlot: { is: null },
 		},
 		select: {
@@ -333,12 +334,15 @@ export async function createSessionWithPresentations(data: {
 			where: {
 				id: { in: data.submissionIds },
 				status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] },
+				type: { in: ["ABSTRACT", "POSTER"] },
 				presentationSlot: { is: null },
 			},
 			select: { id: true },
 		});
 		if (valid.length !== data.submissionIds.length) {
-			throw new Error("Some submissions are not accepted or already scheduled");
+			throw new Error(
+				"Some submissions are not accepted, not presentable, or already scheduled",
+			);
 		}
 
 		const session = await tx.programSession.create({

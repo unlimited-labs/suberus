@@ -48,7 +48,10 @@ export async function getCapacity(): Promise<CapacityInfo> {
 		defaultSlotMin,
 	] = await Promise.all([
 		prisma.submission.count({
-			where: { status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] } },
+			where: {
+				status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] },
+				type: { in: ["ABSTRACT", "POSTER"] },
+			},
 		}),
 		prisma.presentationSlot.count(),
 		prisma.room.count(),
