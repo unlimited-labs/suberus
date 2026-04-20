@@ -1,11 +1,7 @@
-import { test, expect, loginAsAdmin } from "./fixtures";
+import { test, expect } from "./fixtures";
 import { createRoom, deleteRoom, getPrisma } from "../../helpers/test-db";
 
 test.describe.serial("Program Settings — Rooms CRUD", () => {
-	test.beforeEach(async ({ page }) => {
-		await loginAsAdmin(page);
-	});
-
 	test("lists existing rooms", async ({ programSettingsPage, testRun }, testInfo) => {
 		const roomId = await createRoom(testRun.testRunId, "Aula Magna", {
 			description: "Main hall, floor 1",

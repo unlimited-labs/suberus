@@ -1,12 +1,8 @@
-import { test, expect, loginAsAdmin } from "./fixtures";
+import { test, expect } from "./fixtures";
 import { createSubmission, getPrisma } from "../../helpers/test-db";
 import { SubmissionStatus, SubmissionType } from "../../../src/generated/prisma/enums";
 
 test.describe.serial("Planner — Bulk create session from selection", () => {
-	test.beforeEach(async ({ page }) => {
-		await loginAsAdmin(page);
-	});
-
 	test("creates a session from multiple selected submissions", async ({
 		plannerPage,
 		testRun,

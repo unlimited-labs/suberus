@@ -1,12 +1,8 @@
-import { test, expect, loginAsAdmin } from "./fixtures";
+import { test, expect } from "./fixtures";
 import { createSubmission } from "../../helpers/test-db";
 import { SubmissionStatus, SubmissionType } from "../../../src/generated/prisma/enums";
 
 test.describe.serial("Planner — Sidebar grouping, search, type labels", () => {
-	test.beforeEach(async ({ page }) => {
-		await loginAsAdmin(page);
-	});
-
 	test("search filters unscheduled submissions", async ({
 		plannerPage,
 		testRun,

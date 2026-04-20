@@ -1,4 +1,4 @@
-import { test, expect, loginAsAdmin } from "./fixtures";
+import { test, expect } from "./fixtures";
 import {
 	createProgramSession,
 	createRoom,
@@ -13,11 +13,10 @@ function isoDay(offsetDays: number, hour: number): Date {
 }
 
 test.describe.serial("Planner — Mobile stacked list", () => {
-	test.beforeEach(async ({ page }, testInfo) => {
+	test.beforeEach(async ({}, testInfo) => {
 		if (!testInfo.project.name.includes("mobile")) {
 			test.skip();
 		}
-		await loginAsAdmin(page);
 		await setConferenceDates(
 			isoDay(-1, 0).toISOString(),
 			isoDay(30, 23).toISOString(),

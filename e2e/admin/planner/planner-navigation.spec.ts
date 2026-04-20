@@ -1,11 +1,7 @@
-import { test, expect, loginAsAdmin } from "./fixtures";
+import { test, expect } from "./fixtures";
 import { setSchedulePublished } from "../../helpers/test-db";
 
 test.describe.serial("Planner — Navigation", () => {
-	test.beforeEach(async ({ page }) => {
-		await loginAsAdmin(page);
-	});
-
 	test("Program link appears in navigation once schedule is published", async ({
 		page,
 	}) => {

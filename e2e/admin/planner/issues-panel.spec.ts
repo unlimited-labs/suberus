@@ -1,4 +1,4 @@
-import { test, expect, loginAsAdmin } from "./fixtures";
+import { test, expect } from "./fixtures";
 import {
 	createProgramSession,
 	createRoom,
@@ -13,8 +13,7 @@ function isoDay(offsetDays: number, hour: number): Date {
 }
 
 test.describe.serial("Planner — Issues popover", () => {
-	test.beforeEach(async ({ page }) => {
-		await loginAsAdmin(page);
+	test.beforeEach(async () => {
 		await setConferenceDates(
 			isoDay(-1, 0).toISOString(),
 			isoDay(30, 23).toISOString(),
