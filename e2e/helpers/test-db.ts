@@ -866,6 +866,202 @@ export async function deleteUserSurveyAnswers(userId: string): Promise<void> {
 	await db.surveyAnswer.deleteMany({ where: { userId } });
 }
 
+// ============================================================================
+// Program planner helpers
+// ============================================================================
+
+/** Create a Room (prefixed by testRunId for isolation) */
+export async function createRoom(
+	testRunId: string,
+	name: string,
+	opts?: { description?: string; link?: string; order?: number },
+): Promise<string> {
+	const db = getPrisma();
+	const room = await db.room.create({
+		data: {
+			name: `${testRunId}_${name}`,
+			description: opts?.description ?? null,
+			link: opts?.link ?? null,
+			order: opts?.order ?? 0,
+		},
+	});
+	return room.id;
+}
+
+export async function deleteRoom(roomId: string): Promise<void> {
+	const db = getPrisma();
+	await db.room.delete({ where: { id: roomId } }).catch(() => {});
+}
+
+/** Create a ProgramTrack (prefixed by testRunId) */
+export async function createProgramTrack(
+	testRunId: string,
+	name: string,
+	opts?: { color?: string; series?: string; seriesOrder?: number },
+): Promise<string> {
+	const db = getPrisma();
+	const track = await db.programTrack.create({
+		data: {
+			name: `${testRunId}_${name}`,
+			color: opts?.color ?? null,
+			series: opts?.series ?? null,
+			seriesOrder: opts?.seriesOrder ?? null,
+		},
+	});
+	return track.id;
+}
+
+export async function deleteProgramTrack(trackId: string): Promise<void> {
+	const db = getPrisma();
+	await db.programTrack.delete({ where: { id: trackId } }).catch(() => {});
+}
+
+/** Create a ProgramSession */
+export interface CreateProgramSessionOptions {
+	testRunId: string;
+	title: string;
+	startAt: Date;
+	endAt: Date;
+	roomId?: string;
+	trackId?: string;
+	chairUserIds?: string[];
+}
+
+export async function createProgramSession(
+	opts: CreateProgramSessionOptions,
+): Promise<string> {
+	const db = getPrisma();
+	const session = await db.programSession.create({
+		data: {
+			title: `${opts.testRunId}_${opts.title}`,
+			startAt: opts.startAt,
+			endAt: opts.endAt,
+			roomId: opts.roomId ?? null,
+			trackId: opts.trackId ?? null,
+			chairs: opts.chairUserIds?.length
+				? {
+						create: opts.chairUserIds.map((userId) => ({ userId })),
+					}
+				: undefined,
+		},
+	});
+	return session.id;
+}
+
+export async function deleteProgramSession(sessionId: string): Promise<void> {
+	const db = getPrisma();
+	await db.programSession
+		.delete({ where: { id: sessionId } })
+		.catch(() => {});
+}
+
+/** Attach a submission to a session as a presentation slot */
+export async function addPresentationToSession(
+	sessionId: string,
+	submissionId: string,
+	opts?: { order?: number; durationMin?: number },
+): Promise<string> {
+	const db = getPrisma();
+	const order =
+		opts?.order ??
+		(await db.presentationSlot.count({ where: { sessionId } }));
+	const slot = await db.presentationSlot.create({
+		data: {
+			sessionId,
+			submissionId,
+			order,
+			durationMin: opts?.durationMin ?? 15,
+		},
+	});
+	return slot.id;
+}
+
+/** Create a schedule break */
+export async function createScheduleBreak(
+	testRunId: string,
+	opts: {
+		title: string;
+		startAt: Date;
+		endAt: Date;
+		roomId?: string;
+	},
+): Promise<string> {
+	const db = getPrisma();
+	const br = await db.scheduleBreak.create({
+		data: {
+			title: `${testRunId}_${opts.title}`,
+			startAt: opts.startAt,
+			endAt: opts.endAt,
+			roomId: opts.roomId ?? null,
+		},
+	});
+	return br.id;
+}
+
+export async function deleteScheduleBreak(breakId: string): Promise<void> {
+	const db = getPrisma();
+	await db.scheduleBreak.delete({ where: { id: breakId } }).catch(() => {});
+}
+
+/** Set conference timezone */
+export async function setConferenceTimezone(tz: string): Promise<void> {
+	await setAppSetting("CONFERENCE_TIMEZONE", tz);
+}
+
+/** Set conference dates (ISO strings). Use to keep sessions in-bounds. */
+export async function setConferenceDates(
+	startIso: string,
+	endIso: string,
+): Promise<void> {
+	await setAppSetting("CONFERENCE_DATE_START", startIso);
+	await setAppSetting("CONFERENCE_DATE_END", endIso);
+}
+
+/** Set conference daily visible hours */
+export async function setDailyBusinessHours(
+	dayStart: string,
+	dayEnd: string,
+): Promise<void> {
+	await setAppSetting("CONFERENCE_DAY_START", dayStart);
+	await setAppSetting("CONFERENCE_DAY_END", dayEnd);
+}
+
+/** Toggle schedule published state directly (bypasses UI) */
+export async function setSchedulePublished(
+	published: boolean,
+	userId?: string,
+): Promise<void> {
+	if (published) {
+		await setAppSetting("SCHEDULE_STATE", {
+			status: "PUBLISHED",
+			publishedAt: new Date().toISOString(),
+			publishedBy: userId ?? null,
+		});
+	} else {
+		await setAppSetting("SCHEDULE_STATE", { status: "DRAFT" });
+	}
+}
+
+/** Remove every planner row created for a test run (by name prefix) */
+export async function cleanupPlannerForRun(testRunId: string): Promise<void> {
+	const db = getPrisma();
+	const prefix = `${testRunId}_`;
+
+	const sessions = await db.programSession.findMany({
+		where: { title: { startsWith: prefix } },
+		select: { id: true },
+	});
+	for (const s of sessions) await deleteProgramSession(s.id);
+
+	await db.scheduleBreak.deleteMany({
+		where: { title: { startsWith: prefix } },
+	});
+	await db.programTrack.deleteMany({
+		where: { name: { startsWith: prefix } },
+	});
+	await db.room.deleteMany({ where: { name: { startsWith: prefix } } });
+}
+
 /** Create an activity log entry (for seeding history in tests) */
 export async function createActivityLog(opts: {
 	type: string;
