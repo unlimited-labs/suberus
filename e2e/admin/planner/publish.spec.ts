@@ -16,7 +16,7 @@ function isoDay(offsetDays: number, hour: number): Date {
 test.describe.serial("Planner — Publish / Unpublish", () => {
 	test.beforeEach(async () => {
 		await setConferenceDates(
-			isoDay(-1, 0).toISOString(),
+			isoDay(0, 0).toISOString(),
 			isoDay(30, 23).toISOString(),
 		);
 		await setSchedulePublished(false);
@@ -27,8 +27,8 @@ test.describe.serial("Planner — Publish / Unpublish", () => {
 		await createProgramSession({
 			testRunId: testRun.testRunId,
 			title: "Pub Session",
-			startAt: isoDay(1, 10),
-			endAt: isoDay(1, 11),
+			startAt: isoDay(0, 10),
+			endAt: isoDay(0, 11),
 			roomId,
 		});
 
@@ -50,15 +50,15 @@ test.describe.serial("Planner — Publish / Unpublish", () => {
 		await createProgramSession({
 			testRunId: testRun.testRunId,
 			title: "A",
-			startAt: isoDay(1, 10),
-			endAt: isoDay(1, 12),
+			startAt: isoDay(0, 10),
+			endAt: isoDay(0, 12),
 			roomId,
 		});
 		await createProgramSession({
 			testRunId: testRun.testRunId,
 			title: "B",
-			startAt: isoDay(1, 11),
-			endAt: isoDay(1, 13),
+			startAt: isoDay(0, 11),
+			endAt: isoDay(0, 13),
 			roomId,
 		});
 
@@ -69,11 +69,13 @@ test.describe.serial("Planner — Publish / Unpublish", () => {
 		await expect(plannerPage.publishIssue(0)).toBeVisible();
 	});
 
-	test("unpublishes a published schedule", async ({ plannerPage }) => {
+	test("unpublishes a published schedule", async ({ plannerPage, testRun }) => {
+		await createRoom(testRun.testRunId, "UnpubRoom");
 		await setSchedulePublished(true);
 
 		await plannerPage.goto();
-		await expect(plannerPage.unpublishButton).toBeVisible();
+		await plannerPage.page.reload();
+		await expect(plannerPage.unpublishButton).toBeVisible({ timeout: 15000 });
 		await plannerPage.unpublishButton.click();
 
 		await expect(

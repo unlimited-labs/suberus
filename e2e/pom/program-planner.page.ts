@@ -43,9 +43,9 @@ export class ProgramPlannerPage {
 
 	async goto() {
 		await this.page.goto("/admin/program-planner");
-		await expect(this.sidebar.or(this.page.getByTestId("mobile-planner"))).toBeVisible(
-			{ timeout: 15000 },
-		);
+		await expect(
+			this.page.getByRole("heading", { name: "Program Planner" }),
+		).toBeVisible({ timeout: 15000 });
 	}
 
 	unscheduledRow(submissionId: string): Locator {

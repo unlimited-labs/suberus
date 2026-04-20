@@ -16,7 +16,7 @@ function isoDay(offsetDays: number, hour: number): Date {
 test.describe.serial("Public /program", () => {
 	test.beforeEach(async () => {
 		await setConferenceDates(
-			isoDay(-1, 0).toISOString(),
+			isoDay(0, 0).toISOString(),
 			isoDay(30, 23).toISOString(),
 		);
 	});
@@ -29,8 +29,8 @@ test.describe.serial("Public /program", () => {
 		await createProgramSession({
 			testRunId: testRun.testRunId,
 			title: "Keynote Alpha",
-			startAt: isoDay(2, 9),
-			endAt: isoDay(2, 10),
+			startAt: isoDay(0, 14),
+			endAt: isoDay(0, 15),
 			roomId,
 		});
 		await setSchedulePublished(true);
@@ -48,8 +48,8 @@ test.describe.serial("Public /program", () => {
 		await createProgramSession({
 			testRunId: testRun.testRunId,
 			title: "Draft Session",
-			startAt: isoDay(2, 9),
-			endAt: isoDay(2, 10),
+			startAt: isoDay(0, 14),
+			endAt: isoDay(0, 15),
 			roomId,
 		});
 		await setSchedulePublished(false);

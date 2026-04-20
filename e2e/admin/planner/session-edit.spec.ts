@@ -16,7 +16,7 @@ function isoDay(offsetDays: number, hour: number): Date {
 test.describe.serial("Planner — Session editor", () => {
 	test.beforeEach(async () => {
 		await setConferenceDates(
-			isoDay(-1, 0).toISOString(),
+			isoDay(0, 0).toISOString(),
 			isoDay(30, 23).toISOString(),
 		);
 	});
@@ -26,8 +26,8 @@ test.describe.serial("Planner — Session editor", () => {
 		testRun,
 	}) => {
 		const roomId = await createRoom(testRun.testRunId, "Aula");
-		const start = isoDay(1, 10);
-		const end = isoDay(1, 12);
+		const start = isoDay(0, 10);
+		const end = isoDay(0, 12);
 		const sessionId = await createProgramSession({
 			testRunId: testRun.testRunId,
 			title: "Morning Session",
@@ -59,8 +59,8 @@ test.describe.serial("Planner — Session editor", () => {
 
 	test("changes duration via editor", async ({ plannerPage, testRun }) => {
 		const roomId = await createRoom(testRun.testRunId, "Room B");
-		const start = isoDay(1, 10);
-		const end = isoDay(1, 11);
+		const start = isoDay(0, 13);
+		const end = isoDay(0, 14);
 		const sessionId = await createProgramSession({
 			testRunId: testRun.testRunId,
 			title: "Short",
@@ -97,8 +97,8 @@ test.describe.serial("Planner — Session editor", () => {
 		const sessionId = await createProgramSession({
 			testRunId: testRun.testRunId,
 			title: "ToDelete",
-			startAt: isoDay(2, 10),
-			endAt: isoDay(2, 11),
+			startAt: isoDay(0, 15),
+			endAt: isoDay(0, 16),
 			roomId,
 		});
 

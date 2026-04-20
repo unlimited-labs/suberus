@@ -1,5 +1,5 @@
 import { test as baseAdminTest } from "../fixtures";
-import { cleanupPlannerForRun } from "../../helpers/test-db";
+import { cleanupPlannerForRun, createRoom } from "../../helpers/test-db";
 import { ProgramPlannerPage } from "../../pom/program-planner.page";
 import { ProgramSettingsPage } from "../../pom/program-settings.page";
 import { PublicProgramPage } from "../../pom/public-program.page";
@@ -8,10 +8,14 @@ interface PlannerFixtures {
 	plannerPage: ProgramPlannerPage;
 	programSettingsPage: ProgramSettingsPage;
 	publicProgramPage: PublicProgramPage;
+	/** Ensure at least one room exists so the planner grid renders (not the "no rooms" placeholder). */
+	sanityRoomId: string;
 }
 
 export const test = baseAdminTest.extend<PlannerFixtures>({
-	plannerPage: async ({ page }, use) => {
+	plannerPage: async ({ page, sanityRoomId }, use) => {
+		// depend on sanityRoomId so the planner always has at least one room
+		void sanityRoomId;
 		await use(new ProgramPlannerPage(page));
 	},
 	programSettingsPage: async ({ page }, use) => {
@@ -19,6 +23,10 @@ export const test = baseAdminTest.extend<PlannerFixtures>({
 	},
 	publicProgramPage: async ({ page }, use) => {
 		await use(new PublicProgramPage(page));
+	},
+	sanityRoomId: async ({ testRun }, use) => {
+		const id = await createRoom(testRun.testRunId, "SanityRoom");
+		await use(id);
 	},
 	testRun: async ({ testRun }, use) => {
 		await use(testRun);

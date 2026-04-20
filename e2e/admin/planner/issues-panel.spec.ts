@@ -15,7 +15,7 @@ function isoDay(offsetDays: number, hour: number): Date {
 test.describe.serial("Planner — Issues popover", () => {
 	test.beforeEach(async () => {
 		await setConferenceDates(
-			isoDay(-1, 0).toISOString(),
+			isoDay(0, 0).toISOString(),
 			isoDay(30, 23).toISOString(),
 		);
 	});
@@ -28,15 +28,15 @@ test.describe.serial("Planner — Issues popover", () => {
 		const sessionA = await createProgramSession({
 			testRunId: testRun.testRunId,
 			title: "Alpha",
-			startAt: isoDay(1, 10),
-			endAt: isoDay(1, 12),
+			startAt: isoDay(0, 10),
+			endAt: isoDay(0, 12),
 			roomId,
 		});
 		await createProgramSession({
 			testRunId: testRun.testRunId,
 			title: "Beta",
-			startAt: isoDay(1, 11),
-			endAt: isoDay(1, 13),
+			startAt: isoDay(0, 11),
+			endAt: isoDay(0, 13),
 			roomId,
 		});
 
@@ -63,8 +63,8 @@ test.describe.serial("Planner — Issues popover", () => {
 		await createProgramSession({
 			testRunId: testRun.testRunId,
 			title: "Homeless",
-			startAt: isoDay(1, 10),
-			endAt: isoDay(1, 11),
+			startAt: isoDay(0, 10),
+			endAt: isoDay(0, 11),
 		});
 
 		await plannerPage.goto();

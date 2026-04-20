@@ -18,7 +18,7 @@ function isoDay(offsetDays: number, hour: number): Date {
 test.describe.serial("Planner — Capacity strip", () => {
 	test.beforeEach(async () => {
 		await setConferenceDates(
-			isoDay(-1, 0).toISOString(),
+			isoDay(0, 0).toISOString(),
 			isoDay(30, 23).toISOString(),
 		);
 	});
@@ -43,8 +43,8 @@ test.describe.serial("Planner — Capacity strip", () => {
 		const sessionId = await createProgramSession({
 			testRunId: testRun.testRunId,
 			title: "CapSession",
-			startAt: isoDay(1, 10),
-			endAt: isoDay(1, 12),
+			startAt: isoDay(0, 10),
+			endAt: isoDay(0, 12),
 			roomId,
 		});
 		await addPresentationToSession(sessionId, sub.id, { durationMin: 30 });

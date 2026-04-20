@@ -18,7 +18,7 @@ test.describe.serial("Planner — Mobile stacked list", () => {
 			test.skip();
 		}
 		await setConferenceDates(
-			isoDay(-1, 0).toISOString(),
+			isoDay(0, 0).toISOString(),
 			isoDay(30, 23).toISOString(),
 		);
 	});
