@@ -1,0 +1,74 @@
+import { test, expect, loginAsAdmin } from "./fixtures";
+import {
+	addPresentationToSession,
+	createProgramSession,
+	createRoom,
+	createSubmission,
+	setConferenceDates,
+} from "../../helpers/test-db";
+import { SubmissionStatus, SubmissionType } from "../../../src/generated/prisma/enums";
+
+function isoDay(offsetDays: number, hour: number): Date {
+	const d = new Date();
+	d.setUTCDate(d.getUTCDate() + offsetDays);
+	d.setUTCHours(hour, 0, 0, 0);
+	return d;
+}
+
+test.describe.serial("Planner — Presentation assignment", () => {
+	test.beforeEach(async ({ page }) => {
+		await loginAsAdmin(page);
+		await setConferenceDates(
+			isoDay(-1, 0).toISOString(),
+			isoDay(30, 23).toISOString(),
+		);
+	});
+
+	test("assigned submission appears inside session editor; unscheduled ABSTRACT shows in sidebar", async ({
+		plannerPage,
+		testRun,
+		cleanup,
+	}) => {
+		const accepted = await createSubmission({
+			testRunId: testRun.testRunId,
+			title: "Accepted Talk",
+			status: SubmissionStatus.ACCEPTED,
+			type: SubmissionType.ABSTRACT,
+		});
+		cleanup.track(accepted.id);
+		const unscheduled = await createSubmission({
+			testRunId: testRun.testRunId,
+			title: "Queued Talk",
+			status: SubmissionStatus.ACCEPTED,
+			type: SubmissionType.ABSTRACT,
+		});
+		cleanup.track(unscheduled.id);
+
+		const roomId = await createRoom(testRun.testRunId, "Hall");
+		const sessionId = await createProgramSession({
+			testRunId: testRun.testRunId,
+			title: "Presentations",
+			startAt: isoDay(1, 10),
+			endAt: isoDay(1, 12),
+			roomId,
+		});
+		await addPresentationToSession(sessionId, accepted.id, {
+			durationMin: 30,
+		});
+
+		await plannerPage.goto();
+
+		// Unscheduled row visible
+		await expect(plannerPage.unscheduledRow(unscheduled.id)).toBeVisible({
+			timeout: 10000,
+		});
+		// Assigned one is NOT in unscheduled sidebar
+		await expect(plannerPage.unscheduledRow(accepted.id)).toBeHidden();
+
+		// Open session editor, verify slot row is present
+		await plannerPage.openSessionEditor(sessionId);
+		await expect(
+			plannerPage.page.locator('[data-testid^="session-editor-slot-"]'),
+		).toHaveCount(1);
+	});
+});
