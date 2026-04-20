@@ -37,7 +37,11 @@ const ISSUE_LABELS: Record<string, string> = {
 	SESSION_OUT_OF_BOUNDS: "Session outside conference dates",
 };
 
-export function PublishButton() {
+interface PublishButtonProps {
+	onSessionClick?: (sessionId: string) => void;
+}
+
+export function PublishButton({ onSessionClick }: PublishButtonProps = {}) {
 	const queryClient = useQueryClient();
 	const { data: state } = useSuspenseQuery(scheduleStateQueryOptions());
 	const [dialogOpen, setDialogOpen] = useState(false);
@@ -131,25 +135,49 @@ export function PublishButton() {
 									You can still publish.
 								</p>
 								<ul className="min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">
-									{issues.map((issue, i) => (
-										<li
-											key={`${issue.kind}-${i}`}
-											className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm dark:border-amber-800 dark:bg-amber-950"
-										>
-											<IconAlertTriangle
-												size={14}
-												className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400"
-											/>
-											<div>
-												<p className="font-medium text-amber-900 dark:text-amber-200">
-													{ISSUE_LABELS[issue.kind] ?? issue.kind}
-												</p>
-												<p className="text-xs text-amber-700 dark:text-amber-400">
-													{issue.message}
-												</p>
-											</div>
-										</li>
-									))}
+									{issues.map((issue, i) => {
+										const targetId = issue.sessionIds[0];
+										const body = (
+											<>
+												<IconAlertTriangle
+													size={14}
+													className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400"
+												/>
+												<div className="flex-1">
+													<p className="font-medium text-amber-900 dark:text-amber-200">
+														{ISSUE_LABELS[issue.kind] ?? issue.kind}
+													</p>
+													<p className="text-xs text-amber-700 dark:text-amber-400">
+														{issue.message}
+													</p>
+												</div>
+											</>
+										);
+										if (onSessionClick && targetId) {
+											return (
+												<li key={`${issue.kind}-${i}`}>
+													<button
+														type="button"
+														onClick={() => {
+															onSessionClick(targetId);
+															setDialogOpen(false);
+														}}
+														className="flex w-full items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-left text-sm transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950 dark:hover:bg-amber-900"
+													>
+														{body}
+													</button>
+												</li>
+											);
+										}
+										return (
+											<li
+												key={`${issue.kind}-${i}`}
+												className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm dark:border-amber-800 dark:bg-amber-950"
+											>
+												{body}
+											</li>
+										);
+									})}
 								</ul>
 							</>
 						) : (

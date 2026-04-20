@@ -53,9 +53,10 @@ function detectIssues(sessions: ProgramSessionDetail[]): Issue[] {
 
 interface IssuesPanelProps {
 	sessions: ProgramSessionDetail[];
+	onSessionClick?: (sessionId: string) => void;
 }
 
-export function IssuesPanel({ sessions }: IssuesPanelProps) {
+export function IssuesPanel({ sessions, onSessionClick }: IssuesPanelProps) {
 	const issues = useMemo(() => detectIssues(sessions), [sessions]);
 
 	if (issues.length === 0) return null;
@@ -93,12 +94,8 @@ export function IssuesPanel({ sessions }: IssuesPanelProps) {
 						Issues ({issues.length})
 					</div>
 					<ul className="max-h-[60vh] overflow-y-auto p-2">
-						{issues.map((issue, i) => (
-							<li
-								// biome-ignore lint/suspicious/noArrayIndexKey: static list
-								key={i}
-								className="flex items-start gap-2 rounded px-1.5 py-1 hover:bg-muted"
-							>
+						{issues.map((issue, i) => {
+							const dot = (
 								<span
 									className={`mt-1.5 size-1.5 shrink-0 rounded-full ${
 										issue.type === "room-overlap"
@@ -106,9 +103,45 @@ export function IssuesPanel({ sessions }: IssuesPanelProps) {
 											: "bg-amber-500"
 									}`}
 								/>
-								<span className="text-xs leading-relaxed">{issue.message}</span>
-							</li>
-						))}
+							);
+							const targetId = issue.sessionIds[0];
+							if (onSessionClick && targetId) {
+								return (
+									<li
+										// biome-ignore lint/suspicious/noArrayIndexKey: static list
+										key={i}
+									>
+										<button
+											type="button"
+											onClick={() => onSessionClick(targetId)}
+											className="flex w-full items-start gap-2 rounded px-1.5 py-1 text-left hover:bg-muted"
+										>
+											{dot}
+											<span className="flex-1 text-xs leading-relaxed">
+												{issue.message}
+											</span>
+											{issue.sessionIds.length > 1 && (
+												<span className="shrink-0 text-[10px] text-muted-foreground">
+													+{issue.sessionIds.length - 1}
+												</span>
+											)}
+										</button>
+									</li>
+								);
+							}
+							return (
+								<li
+									// biome-ignore lint/suspicious/noArrayIndexKey: static list
+									key={i}
+									className="flex items-start gap-2 rounded px-1.5 py-1"
+								>
+									{dot}
+									<span className="text-xs leading-relaxed">
+										{issue.message}
+									</span>
+								</li>
+							);
+						})}
 					</ul>
 				</PopoverContent>
 			</Popover>
