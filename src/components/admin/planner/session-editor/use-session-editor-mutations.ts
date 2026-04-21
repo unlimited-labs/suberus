@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { toast } from "sonner";
 import {
 	deleteSlotFn,
@@ -19,25 +18,13 @@ import {
 	tzLocalInputToUtc,
 } from "@/utils/tz-datetime";
 import { useInvalidatePlannerQueries } from "../hooks/use-invalidate-planner-queries";
+import { useMutationRun } from "../hooks/use-mutation-run";
 
 type SessionTimes = { startAt: string | Date; endAt: string | Date };
 
 export function useSessionEditorMutations(sessionId: string) {
 	const { invalidateSessions: invalidate } = useInvalidatePlannerQueries();
-
-	const run = useCallback(
-		async <T>(fn: () => Promise<T>, errorMsg: string): Promise<T | null> => {
-			try {
-				const result = await fn();
-				invalidate();
-				return result;
-			} catch (e) {
-				toast.error(e instanceof Error ? e.message : errorMsg);
-				return null;
-			}
-		},
-		[invalidate],
-	);
+	const run = useMutationRun(invalidate);
 
 	return {
 		invalidate,

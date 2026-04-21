@@ -1,6 +1,6 @@
 import { useCallback } from "react";
-import { toast } from "sonner";
 import { useInvalidatePlannerQueries } from "@/components/admin/planner/hooks/use-invalidate-planner-queries";
+import { useMutationRun } from "@/components/admin/planner/hooks/use-mutation-run";
 import { createSlotFn } from "@/utils/presentation-slots.functions";
 import { moveSessionFn } from "@/utils/program-sessions.functions";
 import { updateBreakFn } from "@/utils/schedule-breaks.functions";
@@ -15,51 +15,51 @@ interface CalendarMoveEvent {
 
 export function usePlannerMutations(defaultPresentationMin: number) {
 	const { invalidateAll: invalidate } = useInvalidatePlannerQueries();
+	const run = useMutationRun(invalidate);
 
 	const handleSubmissionDrop = useCallback(
-		async (sessionId: string, submissionId: string) => {
-			try {
-				await createSlotFn({
-					data: {
-						sessionId,
-						submissionId,
-						durationMin: defaultPresentationMin,
-					},
-				});
-				invalidate();
-			} catch (e) {
-				toast.error(e instanceof Error ? e.message : "Failed to assign");
-			}
-		},
-		[defaultPresentationMin, invalidate],
+		(sessionId: string, submissionId: string) =>
+			run(
+				() =>
+					createSlotFn({
+						data: {
+							sessionId,
+							submissionId,
+							durationMin: defaultPresentationMin,
+						},
+					}),
+				"Failed to assign",
+			),
+		[defaultPresentationMin, run],
 	);
 
 	const handleEventUpdate = useCallback(
-		async (event: CalendarMoveEvent) => {
+		(event: CalendarMoveEvent) => {
 			const kind = event.data?.kind;
 			const roomId =
 				typeof event.resourceId === "string" ? event.resourceId : null;
 			const startAt = event.start.toDate().toISOString();
 			const endAt = event.end.toDate().toISOString();
 
-			try {
-				if (kind === "session" && event.data?.sessionId) {
-					await moveSessionFn({
-						data: { id: event.data.sessionId, startAt, endAt, roomId },
-					});
-				} else if (kind === "break" && event.data?.breakId) {
-					await updateBreakFn({
-						data: { id: event.data.breakId, startAt, endAt, roomId },
-					});
-				}
-				invalidate();
-			} catch (error) {
-				toast.error(
-					error instanceof Error ? error.message : "Failed to update",
+			const sessionId = event.data?.sessionId;
+			const breakId = event.data?.breakId;
+			if (kind === "session" && sessionId) {
+				return run(
+					() =>
+						moveSessionFn({ data: { id: sessionId, startAt, endAt, roomId } }),
+					"Failed to update",
 				);
 			}
+			if (kind === "break" && breakId) {
+				return run(
+					() =>
+						updateBreakFn({ data: { id: breakId, startAt, endAt, roomId } }),
+					"Failed to update",
+				);
+			}
+			return Promise.resolve(null);
 		},
-		[invalidate],
+		[run],
 	);
 
 	return { invalidate, handleSubmissionDrop, handleEventUpdate };

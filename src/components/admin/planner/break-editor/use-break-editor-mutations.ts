@@ -1,27 +1,13 @@
-import { useCallback } from "react";
-import { toast } from "sonner";
 import {
 	deleteBreakFn,
 	updateBreakFn,
 } from "@/utils/schedule-breaks.functions";
 import { useInvalidatePlannerQueries } from "../hooks/use-invalidate-planner-queries";
+import { useMutationRun } from "../hooks/use-mutation-run";
 
 export function useBreakEditorMutations(breakId: string) {
 	const { invalidateBreaks: invalidate } = useInvalidatePlannerQueries();
-
-	const run = useCallback(
-		async <T>(fn: () => Promise<T>, errorMsg: string): Promise<T | null> => {
-			try {
-				const result = await fn();
-				invalidate();
-				return result;
-			} catch (e) {
-				toast.error(e instanceof Error ? e.message : errorMsg);
-				return null;
-			}
-		},
-		[invalidate],
-	);
+	const run = useMutationRun(invalidate);
 
 	return {
 		updateTitle: (title: string) =>
