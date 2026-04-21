@@ -1,15 +1,10 @@
 import { IconSparkles } from "@tabler/icons-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { formatDurationMin, utcToTzLocalInput } from "@/utils/tz-datetime";
+import { RoomSelect } from "../shared/room-select";
+import { TrackSelect } from "../shared/track-select";
 
 interface Room {
 	id: string;
@@ -139,52 +134,23 @@ export function SessionEditorHeader({
 			<div className="grid grid-cols-2 gap-3">
 				<div className="space-y-1">
 					<Label className="text-xs text-muted-foreground">Room</Label>
-					<Select value={session.roomId ?? "none"} onValueChange={onRoomChange}>
-						<SelectTrigger
-							data-testid="session-editor-room"
-							className="h-8 text-sm"
-						>
-							<SelectValue placeholder="No room" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="none">No room</SelectItem>
-							{rooms.map((r) => (
-								<SelectItem key={r.id} value={r.id}>
-									{r.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+					<RoomSelect
+						value={session.roomId ?? "none"}
+						onValueChange={onRoomChange}
+						rooms={rooms}
+						testId="session-editor-room"
+						triggerClassName="h-8 text-sm"
+					/>
 				</div>
 				<div className="space-y-1">
 					<Label className="text-xs text-muted-foreground">Track</Label>
-					<Select
+					<TrackSelect
 						value={session.trackId ?? "none"}
 						onValueChange={onTrackChange}
-					>
-						<SelectTrigger
-							data-testid="session-editor-track"
-							className="h-8 text-sm"
-						>
-							<SelectValue placeholder="No track" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="none">No track</SelectItem>
-							{tracks.map((t) => (
-								<SelectItem key={t.id} value={t.id}>
-									<span className="flex items-center gap-2">
-										{t.color && (
-											<span
-												className="size-2.5 shrink-0 rounded-full"
-												style={{ backgroundColor: t.color }}
-											/>
-										)}
-										{t.name}
-									</span>
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+						tracks={tracks}
+						testId="session-editor-track"
+						triggerClassName="h-8 text-sm"
+					/>
 				</div>
 			</div>
 		</SheetHeader>

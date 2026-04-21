@@ -13,19 +13,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { createSessionFn } from "@/utils/program-sessions.functions";
 import { allProgramTracksQueryOptions } from "@/utils/program-tracks.functions";
 import { allRoomsQueryOptions } from "@/utils/rooms.functions";
 import { createBreakFn } from "@/utils/schedule-breaks.functions";
 import { conferenceSettingsQueryOptions } from "@/utils/settings.functions";
 import { tzLocalInputToUtc, utcToTzLocalInput } from "@/utils/tz-datetime";
+import { RoomSelect } from "./shared/room-select";
+import { TrackSelect } from "./shared/track-select";
 import { Stepper } from "./stepper";
 
 interface CreateEventDialogProps extends EventFormProps {
@@ -230,49 +225,23 @@ export function CreateEventDialog({
 						/>
 					</div>
 
-					{/* Room */}
 					<div className="space-y-2">
 						<Label>Room</Label>
-						<Select value={roomId} onValueChange={setRoomId}>
-							<SelectTrigger>
-								<SelectValue placeholder="No room" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="none">No room</SelectItem>
-								{rooms.map((r) => (
-									<SelectItem key={r.id} value={r.id}>
-										{r.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+						<RoomSelect
+							value={roomId}
+							onValueChange={setRoomId}
+							rooms={rooms}
+						/>
 					</div>
 
-					{/* Track — sessions only */}
 					{type === "session" && (
 						<div className="space-y-2">
 							<Label>Track</Label>
-							<Select value={trackId} onValueChange={setTrackId}>
-								<SelectTrigger>
-									<SelectValue placeholder="No track" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="none">No track</SelectItem>
-									{tracks.map((t) => (
-										<SelectItem key={t.id} value={t.id}>
-											<span className="flex items-center gap-2">
-												{t.color && (
-													<span
-														className="size-2.5 shrink-0 rounded-full"
-														style={{ backgroundColor: t.color }}
-													/>
-												)}
-												{t.name}
-											</span>
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+							<TrackSelect
+								value={trackId}
+								onValueChange={setTrackId}
+								tracks={tracks}
+							/>
 						</div>
 					)}
 

@@ -5,13 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import {
 	Sheet,
 	SheetContent,
 	SheetFooter,
@@ -21,6 +14,7 @@ import {
 import { allRoomsQueryOptions } from "@/utils/rooms.functions";
 import { allBreaksQueryOptions } from "@/utils/schedule-breaks.functions";
 import { useBreakEditorMutations } from "./break-editor/use-break-editor-mutations";
+import { RoomSelect } from "./shared/room-select";
 
 interface BreakEditorSheetProps {
 	breakId: string | null;
@@ -109,22 +103,12 @@ function BreakEditorBody({
 					<Label className="text-xs text-muted-foreground">
 						Room (optional)
 					</Label>
-					<Select
+					<RoomSelect
 						value={breakItem.roomId ?? "none"}
 						onValueChange={mutations.updateRoom}
-					>
-						<SelectTrigger className="h-8 text-sm">
-							<SelectValue placeholder="No room" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="none">No room</SelectItem>
-							{rooms.map((r) => (
-								<SelectItem key={r.id} value={r.id}>
-									{r.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+						rooms={rooms}
+						triggerClassName="h-8 text-sm"
+					/>
 				</div>
 			</SheetHeader>
 
