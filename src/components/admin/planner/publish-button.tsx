@@ -36,7 +36,7 @@ const ISSUE_LABELS: Record<string, string> = {
 };
 
 export function PublishButton() {
-	const { invalidateSchedule: invalidate } = useInvalidatePlannerQueries();
+	const invalidate = useInvalidatePlannerQueries();
 	const { selectSession } = usePlannerSelection();
 	const { data: state } = useSuspenseQuery(scheduleStateQueryOptions());
 	const [dialogOpen, setDialogOpen] = useState(false);

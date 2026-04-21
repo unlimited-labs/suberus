@@ -1,13 +1,12 @@
-import type { CalendarEvent } from "@ilamy/calendar";
 import { IconCalendar } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { BreakEditorSheet } from "@/components/admin/planner/break-editor-sheet";
-import type { BreakEventData } from "@/components/admin/planner/break-event-card";
 import { CapacityStrip } from "@/components/admin/planner/capacity-strip";
-import { computeDefaultStartAt } from "@/components/admin/planner/compute-default-start-at";
 import { CreateSessionDialog } from "@/components/admin/planner/create-session-dialog";
+import { useNextStartAt } from "@/components/admin/planner/hooks/use-next-start-at";
+import { usePlannerCalendarHandlers } from "@/components/admin/planner/hooks/use-planner-calendar-handlers";
 import { usePlannerEvents } from "@/components/admin/planner/hooks/use-planner-events";
 import { usePlannerMutations } from "@/components/admin/planner/hooks/use-planner-mutations";
 import { IssuesPanel } from "@/components/admin/planner/issues-panel";
@@ -22,7 +21,6 @@ import {
 } from "@/components/admin/planner/planner-context";
 import { PublishButton } from "@/components/admin/planner/publish-button";
 import { SessionEditorSheet } from "@/components/admin/planner/session-editor-sheet";
-import type { SessionEventData } from "@/components/admin/planner/session-event-card";
 import { UnscheduledSidebar } from "@/components/admin/planner/unscheduled-sidebar";
 import { PageHeader } from "@/components/layout/page-header";
 import {
@@ -71,8 +69,6 @@ function ProgramPlannerContent() {
 	const {
 		selectedSessionId,
 		selectedBreakId,
-		selectSession,
-		selectBreak,
 		clearSelection,
 		creationSubmissionIds,
 		closeCreateFromSelection,
@@ -80,52 +76,38 @@ function ProgramPlannerContent() {
 		setMobileQueueOpen,
 	} = usePlannerSelection();
 
-	const [currentDate, setCurrentDate] = useState<Date | null>(null);
-	const [calendarKey, setCalendarKey] = useState(0);
-
 	const confStart = settings.conferenceStartDate
 		? new Date(settings.conferenceStartDate)
 		: null;
 	const confEnd = settings.conferenceEndDate
 		? new Date(settings.conferenceEndDate)
 		: null;
+
+	const { resources, events } = usePlannerEvents(rooms, sessions, breaks);
+	const { invalidate, handleSubmissionDrop, handleEventUpdate } =
+		usePlannerMutations(settings.defaultPresentationMin);
+	const {
+		currentDate,
+		setCurrentDate,
+		calendarKey,
+		handleEventClick,
+		returnToConference,
+		handleSessionCreated,
+	} = usePlannerCalendarHandlers(confStart);
+	const defaultStartAt = useNextStartAt(currentDate);
+
 	const isOutsideRange =
 		currentDate !== null &&
 		confStart !== null &&
 		confEnd !== null &&
 		(currentDate < confStart || currentDate > confEnd);
 
-	const { resources, events } = usePlannerEvents(rooms, sessions, breaks);
-	const { invalidate, handleSubmissionDrop, handleEventUpdate } =
-		usePlannerMutations(settings.defaultPresentationMin);
-
-	const handleEventClick = useCallback(
-		(event: CalendarEvent) => {
-			const data = event.data as SessionEventData | BreakEventData | undefined;
-			if (data?.kind === "session") selectSession(data.sessionId);
-			else if (data?.kind === "break") selectBreak(data.breakId);
-		},
-		[selectSession, selectBreak],
-	);
-
-	const handleReturnToConference = useCallback(() => {
-		if (!confStart) return;
-		setCurrentDate(confStart);
-		setCalendarKey((k) => k + 1);
-	}, [confStart]);
-
 	const closeMobileQueue = useCallback(
 		() => setMobileQueueOpen(false),
 		[setMobileQueueOpen],
 	);
 
-	const handleSessionCreated = useCallback(() => {
-		invalidate();
-		closeCreateFromSelection();
-	}, [invalidate, closeCreateFromSelection]);
-
 	const tz = settings.timezone || undefined;
-	const initialDate = confStart ?? undefined;
 
 	if (rooms.length === 0) return <NoRoomsPlaceholder />;
 
@@ -137,7 +119,7 @@ function ProgramPlannerContent() {
 				</PageHeader>
 				{isOutsideRange && (
 					<OutsideRangeBanner
-						onReturn={confStart ? handleReturnToConference : null}
+						onReturn={confStart ? returnToConference : null}
 					/>
 				)}
 				<CapacityStrip />
@@ -162,7 +144,7 @@ function ProgramPlannerContent() {
 							calendarKey={calendarKey}
 							resources={resources}
 							events={events}
-							initialDate={initialDate}
+							initialDate={confStart ?? undefined}
 							timezone={tz}
 							timeFormat={settings.timeFormat}
 							dayStart={settings.dayStart}
@@ -186,12 +168,7 @@ function ProgramPlannerContent() {
 				<CreateSessionDialog
 					open={true}
 					submissionIds={creationSubmissionIds}
-					defaultStartAt={computeDefaultStartAt(
-						currentDate,
-						sessions,
-						confStart,
-						settings.dayStart,
-					)}
+					defaultStartAt={defaultStartAt}
 					timezone={tz}
 					onClose={closeCreateFromSelection}
 					onCreated={handleSessionCreated}

@@ -1,9 +1,9 @@
 import { toast } from "sonner";
 import {
-	deleteSlotFn,
-	reorderSlotsFn,
-	updateSlotDurationFn,
-} from "@/utils/presentation-slots.functions";
+	deletePresentationFn,
+	reorderPresentationsFn,
+	updatePresentationDurationFn,
+} from "@/utils/presentations.functions";
 import {
 	assignChairFn,
 	continueSeriesFn,
@@ -23,7 +23,7 @@ import { useMutationRun } from "../hooks/use-mutation-run";
 type SessionTimes = { startAt: string | Date; endAt: string | Date };
 
 export function useSessionEditorMutations(sessionId: string) {
-	const { invalidateSessions: invalidate } = useInvalidatePlannerQueries();
+	const invalidate = useInvalidatePlannerQueries();
 	const run = useMutationRun(invalidate);
 
 	return {
@@ -88,15 +88,15 @@ export function useSessionEditorMutations(sessionId: string) {
 				"Failed to remove chair",
 			),
 		removePresentation: (id: string) =>
-			run(() => deleteSlotFn({ data: { id } }), "Failed to remove"),
-		updateSlotDuration: (id: string, durationMin: number) =>
+			run(() => deletePresentationFn({ data: { id } }), "Failed to remove"),
+		updatePresentationDuration: (id: string, durationMin: number) =>
 			run(
-				() => updateSlotDurationFn({ data: { id, durationMin } }),
+				() => updatePresentationDurationFn({ data: { id, durationMin } }),
 				"Failed to update duration",
 			),
 		reorderPresentations: (orderedIds: string[]) =>
 			run(
-				() => reorderSlotsFn({ data: { sessionId, orderedIds } }),
+				() => reorderPresentationsFn({ data: { sessionId, orderedIds } }),
 				"Failed to reorder",
 			),
 		continueSeries: async () => {

@@ -2,53 +2,23 @@ import { IconSparkles } from "@tabler/icons-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { formatDurationMin, utcToTzLocalInput } from "@/utils/tz-datetime";
+import { utcToTzLocalInput } from "@/utils/tz-datetime";
 import { RoomSelect } from "../shared/room-select";
 import { TrackSelect } from "../shared/track-select";
-import type { PlannerSession } from "../types";
+import { useSessionEditor } from "./session-editor-context";
 
-type Room = { id: string; name: string };
-type Track = NonNullable<PlannerSession["track"]>;
-
-export interface SessionEditorHeaderCallbacks {
-	onTitleChange: (v: string) => void;
-	onSaveTitle: () => void;
-	onTrackChange: (v: string | null) => void;
-	onRoomChange: (v: string | null) => void;
-	onStartChange: (v: string) => void;
-	onDurationChange: (minutes: number) => void;
-	onSuggestName: () => void;
-}
-
-interface Props {
-	session: PlannerSession;
-	title: string;
-	tz: string | undefined;
-	rooms: Room[];
-	tracks: Track[];
-	callbacks: SessionEditorHeaderCallbacks;
-}
-
-export function SessionEditorHeader({
-	session,
-	title,
-	tz,
-	rooms,
-	tracks,
-	callbacks: {
-		onTitleChange,
+export function SessionEditorHeader() {
+	const {
+		session,
+		tz,
+		rooms,
+		tracks,
+		title,
+		sessionDurationMin,
+		mutations,
 		onSaveTitle,
-		onTrackChange,
-		onRoomChange,
-		onStartChange,
-		onDurationChange,
 		onSuggestName,
-	},
-}: Props) {
-	const currentDuration = formatDurationMin(
-		new Date(session.startAt),
-		new Date(session.endAt),
-	);
+	} = useSessionEditor();
 	return (
 		<SheetHeader className="gap-3 border-b p-4">
 			<SheetTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -56,8 +26,8 @@ export function SessionEditorHeader({
 			</SheetTitle>
 			<div className="relative">
 				<Input
-					value={title}
-					onChange={(e) => onTitleChange(e.target.value)}
+					value={title.value}
+					onChange={(e) => title.set(e.target.value)}
 					onBlur={onSaveTitle}
 					onKeyDown={(e) => e.key === "Enter" && onSaveTitle()}
 					data-testid="session-editor-title"
@@ -88,7 +58,7 @@ export function SessionEditorHeader({
 						id="session-start"
 						type="datetime-local"
 						value={utcToTzLocalInput(new Date(session.startAt), tz)}
-						onChange={(e) => onStartChange(e.target.value)}
+						onChange={(e) => mutations.updateStart(e.target.value, tz, session)}
 						data-testid="session-editor-start"
 						className="h-8 text-sm"
 					/>
@@ -106,11 +76,13 @@ export function SessionEditorHeader({
 						min={5}
 						step={5}
 						data-testid="session-editor-duration"
-						defaultValue={currentDuration}
+						defaultValue={sessionDurationMin}
 						key={`${String(session.startAt)}-${String(session.endAt)}`}
 						onBlur={(e) => {
 							const v = Number(e.target.value);
-							if (v >= 5 && v !== currentDuration) onDurationChange(v);
+							if (v >= 5 && v !== sessionDurationMin) {
+								mutations.updateDuration(v, session);
+							}
 						}}
 						className="h-8 text-sm"
 					/>
@@ -121,7 +93,7 @@ export function SessionEditorHeader({
 					<Label className="text-xs text-muted-foreground">Room</Label>
 					<RoomSelect
 						value={session.roomId}
-						onValueChange={onRoomChange}
+						onValueChange={mutations.updateRoom}
 						rooms={rooms}
 						testId="session-editor-room"
 						triggerClassName="h-8 text-sm"
@@ -131,7 +103,7 @@ export function SessionEditorHeader({
 					<Label className="text-xs text-muted-foreground">Track</Label>
 					<TrackSelect
 						value={session.trackId}
-						onValueChange={onTrackChange}
+						onValueChange={mutations.updateTrack}
 						tracks={tracks}
 						testId="session-editor-track"
 						triggerClassName="h-8 text-sm"

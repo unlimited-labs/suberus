@@ -2,13 +2,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { adminMiddleware } from "./auth.middleware";
 import {
-	createSlot,
-	deleteSlot,
-	reorderSlots,
-	updateSlotDuration,
-} from "./presentation-slots.server";
+	createPresentation,
+	deletePresentation,
+	reorderPresentations,
+	updatePresentationDuration,
+} from "./presentations.server";
 
-export const createSlotFn = createServerFn({ method: "POST" })
+export const createPresentationFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
@@ -18,17 +18,17 @@ export const createSlotFn = createServerFn({ method: "POST" })
 		}),
 	)
 	.handler(async ({ data }) => {
-		return createSlot(data);
+		return createPresentation(data);
 	});
 
-export const deleteSlotFn = createServerFn({ method: "POST" })
+export const deletePresentationFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(z.object({ id: z.uuid() }))
 	.handler(async ({ data }) => {
-		await deleteSlot(data.id);
+		await deletePresentation(data.id);
 	});
 
-export const updateSlotDurationFn = createServerFn({ method: "POST" })
+export const updatePresentationDurationFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
@@ -37,10 +37,10 @@ export const updateSlotDurationFn = createServerFn({ method: "POST" })
 		}),
 	)
 	.handler(async ({ data }) => {
-		await updateSlotDuration(data.id, data.durationMin);
+		await updatePresentationDuration(data.id, data.durationMin);
 	});
 
-export const reorderSlotsFn = createServerFn({ method: "POST" })
+export const reorderPresentationsFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
@@ -49,5 +49,5 @@ export const reorderSlotsFn = createServerFn({ method: "POST" })
 		}),
 	)
 	.handler(async ({ data }) => {
-		await reorderSlots(data.sessionId, data.orderedIds);
+		await reorderPresentations(data.sessionId, data.orderedIds);
 	});

@@ -1,14 +1,7 @@
 import type { CalendarEvent } from "@ilamy/calendar";
-import {
-	BreakEventCard,
-	type BreakEventData,
-} from "@/components/admin/planner/break-event-card";
-import {
-	SessionEventCard,
-	type SessionEventData,
-} from "@/components/admin/planner/session-event-card";
-
-type PlannerEventData = SessionEventData | BreakEventData;
+import { BreakEventCard } from "@/components/admin/planner/break-event-card";
+import { SessionEventCard } from "@/components/admin/planner/session-event-card";
+import { parseCalendarEventData } from "./hooks/parse-calendar-event-data";
 
 interface Props {
 	event: CalendarEvent;
@@ -16,7 +9,7 @@ interface Props {
 }
 
 export function PlannerEventRenderer({ event, onSubmissionDrop }: Props) {
-	const data = event.data as PlannerEventData | undefined;
+	const data = parseCalendarEventData(event);
 	if (data?.kind === "break") {
 		return <BreakEventCard title={event.title} data={data} />;
 	}

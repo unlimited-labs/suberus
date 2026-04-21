@@ -1,22 +1,21 @@
 import type { CalendarEvent } from "@ilamy/calendar";
 import { useCallback } from "react";
-import { createSlotFn } from "@/utils/presentation-slots.functions";
+import { createPresentationFn } from "@/utils/presentations.functions";
 import { moveSessionFn } from "@/utils/program-sessions.functions";
 import { updateBreakFn } from "@/utils/schedule-breaks.functions";
-import type { BreakEventData } from "../break-event-card";
-import type { SessionEventData } from "../session-event-card";
+import { parseCalendarEventData } from "./parse-calendar-event-data";
 import { useInvalidatePlannerQueries } from "./use-invalidate-planner-queries";
 import { useMutationRun } from "./use-mutation-run";
 
 export function usePlannerMutations(defaultPresentationMin: number) {
-	const { invalidateAll: invalidate } = useInvalidatePlannerQueries();
+	const invalidate = useInvalidatePlannerQueries();
 	const run = useMutationRun(invalidate);
 
 	const handleSubmissionDrop = useCallback(
 		(sessionId: string, submissionId: string) =>
 			run(
 				() =>
-					createSlotFn({
+					createPresentationFn({
 						data: {
 							sessionId,
 							submissionId,
@@ -30,7 +29,7 @@ export function usePlannerMutations(defaultPresentationMin: number) {
 
 	const handleEventUpdate = useCallback(
 		(event: CalendarEvent) => {
-			const data = event.data as SessionEventData | BreakEventData | undefined;
+			const data = parseCalendarEventData(event);
 			const roomId =
 				typeof event.resourceId === "string" ? event.resourceId : null;
 			const startAt = event.start.toDate().toISOString();

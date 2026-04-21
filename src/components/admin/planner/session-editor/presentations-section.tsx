@@ -2,32 +2,15 @@ import { IconChevronDown, IconChevronUp, IconX } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useSessionEditor } from "./session-editor-context";
 
-interface Presentation {
-	id: string;
-	order: number;
-	submissionTitle: string;
-	durationMin: number;
-	authors: Array<{ firstName: string; lastName: string }>;
-}
-
-interface Props {
-	presentations: Presentation[];
-	usedMin: number;
-	sessionDurationMin: number;
-	onRemove: (id: string) => void;
-	onUpdateDuration: (id: string, durationMin: number) => void;
-	onReorder: (orderedIds: string[]) => void;
-}
-
-export function PresentationsSection({
-	presentations,
-	usedMin,
-	sessionDurationMin,
-	onRemove,
-	onUpdateDuration,
-	onReorder,
-}: Props) {
+export function PresentationsSection() {
+	const {
+		sortedPresentations: presentations,
+		usedMin,
+		sessionDurationMin,
+		mutations,
+	} = useSessionEditor();
 	const remainingMin = sessionDurationMin - usedMin;
 	const capacityFull = usedMin >= sessionDurationMin;
 
@@ -35,7 +18,7 @@ export function PresentationsSection({
 		const reordered = [...presentations];
 		const swap = dir === "up" ? index - 1 : index + 1;
 		[reordered[index], reordered[swap]] = [reordered[swap], reordered[index]];
-		onReorder(reordered.map((p) => p.id));
+		mutations.reorderPresentations(reordered.map((p) => p.id));
 	};
 
 	return (
@@ -108,7 +91,9 @@ export function PresentationsSection({
 									key={`${p.id}:${p.durationMin}`}
 									onBlur={(e) => {
 										const v = Number(e.target.value);
-										if (v > 0 && v !== p.durationMin) onUpdateDuration(p.id, v);
+										if (v > 0 && v !== p.durationMin) {
+											mutations.updatePresentationDuration(p.id, v);
+										}
 									}}
 									aria-label={`Duration of ${p.submissionTitle}`}
 									className="h-7 w-14 px-1.5 text-center text-xs tabular-nums"
@@ -118,7 +103,7 @@ export function PresentationsSection({
 							<Button
 								variant="ghost"
 								size="icon-sm"
-								onClick={() => onRemove(p.id)}
+								onClick={() => mutations.removePresentation(p.id)}
 							>
 								<IconX size={12} />
 							</Button>

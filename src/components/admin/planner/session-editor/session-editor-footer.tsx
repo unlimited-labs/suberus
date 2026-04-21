@@ -7,32 +7,19 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { SheetFooter } from "@/components/ui/sheet";
+import { useSessionEditor } from "./session-editor-context";
 
-interface SplitCandidate {
-	id: string;
-	order: number;
-	submissionTitle: string;
-}
-
-interface Props {
-	presentations: SplitCandidate[];
-	deleting: boolean;
-	onContinueSeries: () => void;
-	onSplit: (afterSlotOrder: number) => void;
-	onDelete: () => void;
-}
-
-export function SessionEditorFooter({
-	presentations,
-	deleting,
-	onContinueSeries,
-	onSplit,
-	onDelete,
-}: Props) {
+export function SessionEditorFooter() {
+	const {
+		sortedPresentations: presentations,
+		deleting,
+		mutations,
+		onDelete,
+	} = useSessionEditor();
 	const [splitOpen, setSplitOpen] = useState(false);
 
 	const handleSplit = (order: number) => {
-		onSplit(order);
+		mutations.split(order);
 		setSplitOpen(false);
 	};
 
@@ -42,7 +29,7 @@ export function SessionEditorFooter({
 				<Button
 					variant="outline"
 					size="sm"
-					onClick={onContinueSeries}
+					onClick={mutations.continueSeries}
 					data-testid="session-editor-continue-series"
 					className="flex-1"
 				>

@@ -6,7 +6,7 @@ import { useInvalidatePlannerQueries } from "../hooks/use-invalidate-planner-que
 import { useMutationRun } from "../hooks/use-mutation-run";
 
 export function useBreakEditorMutations(breakId: string) {
-	const { invalidateBreaks: invalidate } = useInvalidatePlannerQueries();
+	const invalidate = useInvalidatePlannerQueries();
 	const run = useMutationRun(invalidate);
 
 	return {

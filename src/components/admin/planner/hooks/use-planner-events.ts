@@ -1,5 +1,6 @@
 import type { IlamyResourceCalendarProps } from "@ilamy/calendar";
 import { useMemo } from "react";
+import { formatDurationMin } from "@/utils/tz-datetime";
 import type { BreakEventData } from "../break-event-card";
 import type { SessionEventData } from "../session-event-card";
 import type { PlannerBreak, PlannerSession } from "../types";
@@ -31,9 +32,9 @@ export function usePlannerEvents(
 				sessionId: s.id,
 				trackColor: s.track?.color ?? null,
 				trackName: s.track?.name ?? null,
-				sessionDurationMin: Math.round(
-					(new Date(s.endAt).getTime() - new Date(s.startAt).getTime()) /
-						60_000,
+				sessionDurationMin: formatDurationMin(
+					new Date(s.startAt),
+					new Date(s.endAt),
 				),
 				chairs: s.chairs.map((c) => ({
 					firstName: c.firstName,

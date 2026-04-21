@@ -15,34 +15,26 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import { useSessionEditor } from "./session-editor-context";
 
-interface Chair {
+type Chair = {
 	userId: string;
 	firstName: string | null;
 	lastName: string | null;
-}
+};
 
-interface User {
-	id: string;
-	email: string;
+const userName = (u: {
 	firstName: string | null;
 	lastName: string | null;
-}
-
-interface Props {
-	chairs: Chair[];
-	users: User[] | undefined;
-	onAdd: (userId: string) => void;
-	onRemove: (userId: string) => void;
-}
-
-const userName = (u: Pick<User, "firstName" | "lastName" | "email">) =>
-	[u.firstName, u.lastName].filter(Boolean).join(" ") || u.email;
+	email: string;
+}) => [u.firstName, u.lastName].filter(Boolean).join(" ") || u.email;
 
 const chairName = (c: Pick<Chair, "firstName" | "lastName">) =>
 	[c.firstName, c.lastName].filter(Boolean).join(" ") || "Unknown";
 
-export function ChairsSection({ chairs, users, onAdd, onRemove }: Props) {
+export function ChairsSection() {
+	const { session, users, mutations } = useSessionEditor();
+	const chairs = session.chairs;
 	const [search, setSearch] = useState("");
 	const [open, setOpen] = useState(false);
 
@@ -59,7 +51,7 @@ export function ChairsSection({ chairs, users, onAdd, onRemove }: Props) {
 	});
 
 	const handleSelect = (userId: string) => {
-		onAdd(userId);
+		mutations.addChair(userId);
 		setOpen(false);
 		setSearch("");
 	};
@@ -132,7 +124,7 @@ export function ChairsSection({ chairs, users, onAdd, onRemove }: Props) {
 							<Button
 								variant="ghost"
 								size="icon-sm"
-								onClick={() => onRemove(c.userId)}
+								onClick={() => mutations.removeChair(c.userId)}
 							>
 								<IconX size={12} />
 							</Button>

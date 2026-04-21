@@ -1,6 +1,6 @@
 import { prisma } from "@/db.server";
 
-export async function createSlot(data: {
+export async function createPresentation(data: {
 	sessionId: string;
 	submissionId: string;
 	durationMin: number;
@@ -35,7 +35,7 @@ export async function createSlot(data: {
 			select: { order: true },
 		});
 		const nextOrder = (last?.order ?? -1) + 1;
-		const slot = await tx.presentationSlot.create({
+		const presentation = await tx.presentationSlot.create({
 			data: {
 				sessionId: data.sessionId,
 				submissionId: data.submissionId,
@@ -44,16 +44,16 @@ export async function createSlot(data: {
 			},
 			select: { id: true },
 		});
-		return slot;
+		return presentation;
 	});
 }
 
-export async function updateSlotDuration(
+export async function updatePresentationDuration(
 	id: string,
 	durationMin: number,
 ): Promise<void> {
 	await prisma.$transaction(async (tx) => {
-		const slot = await tx.presentationSlot.findUnique({
+		const presentation = await tx.presentationSlot.findUnique({
 			where: { id },
 			select: {
 				sessionId: true,
@@ -67,17 +67,19 @@ export async function updateSlotDuration(
 				},
 			},
 		});
-		if (!slot) throw new Error("Slot not found");
+		if (!presentation) throw new Error("Presentation not found");
 
 		const sessionDurationMin = Math.round(
-			(slot.session.endAt.getTime() - slot.session.startAt.getTime()) / 60_000,
+			(presentation.session.endAt.getTime() -
+				presentation.session.startAt.getTime()) /
+				60_000,
 		);
-		const usedOthers = slot.session.presentations
+		const usedOthers = presentation.session.presentations
 			.filter((p) => p.id !== id)
 			.reduce((s, p) => s + p.durationMin, 0);
 		if (usedOthers + durationMin > sessionDurationMin) {
 			throw new Error(
-				`Session is full: other slots use ${usedOthers}/${sessionDurationMin} min`,
+				`Session is full: other presentations use ${usedOthers}/${sessionDurationMin} min`,
 			);
 		}
 		await tx.presentationSlot.update({
@@ -87,12 +89,12 @@ export async function updateSlotDuration(
 	});
 }
 
-export async function deleteSlot(id: string): Promise<void> {
-	const slot = await prisma.presentationSlot.findUnique({
+export async function deletePresentation(id: string): Promise<void> {
+	const presentation = await prisma.presentationSlot.findUnique({
 		where: { id },
 		select: { sessionId: true, order: true },
 	});
-	if (!slot) return;
+	if (!presentation) return;
 
 	await prisma.$transaction(async (tx) => {
 		await tx.presentationSlot.delete({ where: { id } });
@@ -100,16 +102,16 @@ export async function deleteSlot(id: string): Promise<void> {
 		await tx.$executeRaw`
 			UPDATE presentation_slots
 			SET "order" = "order" - 1
-			WHERE "sessionId" = ${slot.sessionId}::uuid AND "order" > ${slot.order}
+			WHERE "sessionId" = ${presentation.sessionId}::uuid AND "order" > ${presentation.order}
 		`;
 	});
 }
 
 /**
- * Reorder slots within a single session. `orderedIds` must contain every slot
- * in the session exactly once; new `order` = index in array.
+ * Reorder presentations within a single session. `orderedIds` must contain
+ * every presentation in the session exactly once; new `order` = index in array.
  */
-export async function reorderSlots(
+export async function reorderPresentations(
 	sessionId: string,
 	orderedIds: string[],
 ): Promise<void> {
@@ -123,7 +125,9 @@ export async function reorderSlots(
 		}
 		const existingSet = new Set(existing.map((s) => s.id));
 		for (const id of orderedIds) {
-			if (!existingSet.has(id)) throw new Error(`Slot ${id} not in session`);
+			if (!existingSet.has(id)) {
+				throw new Error(`Presentation ${id} not in session`);
+			}
 		}
 
 		// Two-phase: shift to negative to avoid @@unique(sessionId, order) collisions.
