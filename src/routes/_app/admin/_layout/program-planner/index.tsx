@@ -59,6 +59,10 @@ function ProgramPlannerPage() {
 	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
 
 	const [selectedEvent, setSelectedEvent] = useState<SelectedEvent>(null);
+	const selectSession = (id: string) =>
+		setSelectedEvent({ kind: "session", id });
+	const selectBreak = (id: string) => setSelectedEvent({ kind: "break", id });
+	const clearSelection = () => setSelectedEvent(null);
 	const [currentDate, setCurrentDate] = useState<Date | null>(null);
 	const [calendarKey, setCalendarKey] = useState(0);
 	const [selectionDialog, setSelectionDialog] = useState<{
@@ -84,12 +88,11 @@ function ProgramPlannerPage() {
 
 	const handleEventClick = (event: CalendarEvent) => {
 		const data = event.data as SessionEventData | BreakEventData | undefined;
-		if (data?.kind === "session" && data.sessionId) {
-			setSelectedEvent({ kind: "session", id: data.sessionId });
-		} else if (data?.kind === "break" && data.breakId) {
-			setSelectedEvent({ kind: "break", id: data.breakId });
-		}
+		if (data?.kind === "session") selectSession(data.sessionId);
+		else if (data?.kind === "break") selectBreak(data.breakId);
 	};
+
+	const tz = settings.timezone || undefined;
 
 	const initialDate = settings.conferenceStartDate
 		? new Date(settings.conferenceStartDate)
@@ -115,9 +118,7 @@ function ProgramPlannerPage() {
 		<>
 			<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
 				<PageHeader icon={IconCalendar} title="Program Planner">
-					<PublishButton
-						onSessionClick={(id) => setSelectedEvent({ kind: "session", id })}
-					/>
+					<PublishButton onSessionClick={selectSession} />
 				</PageHeader>
 				{isOutsideRange && (
 					<div className="flex items-center gap-2 border-b bg-amber-50 px-4 py-2 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-200">
@@ -138,10 +139,7 @@ function ProgramPlannerPage() {
 					</div>
 				)}
 				<CapacityStrip />
-				<IssuesPanel
-					sessions={sessions}
-					onSessionClick={(id) => setSelectedEvent({ kind: "session", id })}
-				/>
+				<IssuesPanel sessions={sessions} onSessionClick={selectSession} />
 				<div className="flex min-h-0 flex-1 md:hidden">
 					<div className="flex-1 overflow-auto">
 						<MobilePlanner
@@ -149,10 +147,10 @@ function ProgramPlannerPage() {
 							breaks={breaks}
 							conferenceStart={confStart}
 							conferenceEnd={confEnd}
-							timezone={settings.timezone || undefined}
+							timezone={tz}
 							initialDate={currentDate ?? confStart ?? new Date()}
-							onSessionClick={(id) => setSelectedEvent({ kind: "session", id })}
-							onBreakClick={(id) => setSelectedEvent({ kind: "break", id })}
+							onSessionClick={selectSession}
+							onBreakClick={selectBreak}
 							onOpenSubmissions={() => setMobileQueueOpen(true)}
 						/>
 					</div>
@@ -187,7 +185,7 @@ function ProgramPlannerPage() {
 							resources={resources}
 							events={events}
 							initialDate={initialDate}
-							timezone={settings.timezone || undefined}
+							timezone={tz}
 							timeFormat={settings.timeFormat}
 							dayStart={settings.dayStart}
 							dayEnd={settings.dayEnd}
@@ -203,11 +201,11 @@ function ProgramPlannerPage() {
 
 			<SessionEditorSheet
 				sessionId={selectedEvent?.kind === "session" ? selectedEvent.id : null}
-				onClose={() => setSelectedEvent(null)}
+				onClose={clearSelection}
 			/>
 			<BreakEditorSheet
 				breakId={selectedEvent?.kind === "break" ? selectedEvent.id : null}
-				onClose={() => setSelectedEvent(null)}
+				onClose={clearSelection}
 			/>
 			{selectionDialog && (
 				<CreateSessionDialog
@@ -219,7 +217,7 @@ function ProgramPlannerPage() {
 						confStart,
 						settings.dayStart,
 					)}
-					timezone={settings.timezone || undefined}
+					timezone={tz}
 					onClose={() => setSelectionDialog(null)}
 					onCreated={() => {
 						invalidate();
