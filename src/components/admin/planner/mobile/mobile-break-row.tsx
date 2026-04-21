@@ -1,4 +1,4 @@
-import { formatClockTime, formatDurationMin } from "../tz-datetime";
+import { formatClockTime, formatDurationMin } from "@/utils/tz-datetime";
 import type { BreakItem } from "./planner-item";
 
 interface Props {

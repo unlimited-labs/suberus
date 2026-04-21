@@ -1,7 +1,6 @@
 import { IconTrash } from "@tabler/icons-react";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,11 +19,8 @@ import {
 	SheetTitle,
 } from "@/components/ui/sheet";
 import { allRoomsQueryOptions } from "@/utils/rooms.functions";
-import {
-	allBreaksQueryOptions,
-	deleteBreakFn,
-	updateBreakFn,
-} from "@/utils/schedule-breaks.functions";
+import { allBreaksQueryOptions } from "@/utils/schedule-breaks.functions";
+import { useBreakEditorMutations } from "./break-editor/use-break-editor-mutations";
 
 interface BreakEditorSheetProps {
 	breakId: string | null;
@@ -54,9 +50,9 @@ function BreakEditorBody({
 	breakId: string;
 	onClose: () => void;
 }) {
-	const queryClient = useQueryClient();
 	const { data: breaks } = useSuspenseQuery(allBreaksQueryOptions());
 	const { data: rooms } = useSuspenseQuery(allRoomsQueryOptions());
+	const mutations = useBreakEditorMutations(breakId);
 
 	const breakItem = breaks.find((b) => b.id === breakId);
 
@@ -70,12 +66,6 @@ function BreakEditorBody({
 		setTitleDirty(false);
 	}, [breakItem?.id]);
 
-	const invalidate = useCallback(() => {
-		queryClient.invalidateQueries({
-			queryKey: allBreaksQueryOptions().queryKey,
-		});
-	}, [queryClient]);
-
 	if (!breakItem) {
 		return (
 			<div className="flex flex-1 items-center justify-center p-8">
@@ -86,37 +76,15 @@ function BreakEditorBody({
 
 	const handleSaveTitle = async () => {
 		if (!titleDirty) return;
-		try {
-			await updateBreakFn({ data: { id: breakId, title } });
-			invalidate();
-			setTitleDirty(false);
-		} catch (e) {
-			toast.error(e instanceof Error ? e.message : "Failed to save");
-		}
-	};
-
-	const handleRoomChange = async (value: string) => {
-		try {
-			await updateBreakFn({
-				data: { id: breakId, roomId: value === "none" ? null : value },
-			});
-			invalidate();
-		} catch (e) {
-			toast.error(e instanceof Error ? e.message : "Failed to update room");
-		}
+		const r = await mutations.updateTitle(title);
+		if (r !== null) setTitleDirty(false);
 	};
 
 	const handleDelete = async () => {
 		setDeleting(true);
-		try {
-			await deleteBreakFn({ data: { id: breakId } });
-			invalidate();
-			onClose();
-		} catch (e) {
-			toast.error(e instanceof Error ? e.message : "Failed to delete break");
-		} finally {
-			setDeleting(false);
-		}
+		const r = await mutations.deleteBreak();
+		if (r !== null) onClose();
+		setDeleting(false);
 	};
 
 	return (
@@ -143,7 +111,7 @@ function BreakEditorBody({
 					</Label>
 					<Select
 						value={breakItem.roomId ?? "none"}
-						onValueChange={handleRoomChange}
+						onValueChange={mutations.updateRoom}
 					>
 						<SelectTrigger className="h-8 text-sm">
 							<SelectValue placeholder="No room" />

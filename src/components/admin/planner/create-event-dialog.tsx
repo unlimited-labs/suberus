@@ -25,8 +25,8 @@ import { allProgramTracksQueryOptions } from "@/utils/program-tracks.functions";
 import { allRoomsQueryOptions } from "@/utils/rooms.functions";
 import { createBreakFn } from "@/utils/schedule-breaks.functions";
 import { conferenceSettingsQueryOptions } from "@/utils/settings.functions";
+import { tzLocalInputToUtc, utcToTzLocalInput } from "@/utils/tz-datetime";
 import { Stepper } from "./stepper";
-import { tzLocalInputToUtc, utcToTzLocalInput } from "./tz-datetime";
 
 interface CreateEventDialogProps extends EventFormProps {
 	onCreated: () => void;

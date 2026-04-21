@@ -9,7 +9,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { formatDurationMin, utcToTzLocalInput } from "../tz-datetime";
+import { formatDurationMin, utcToTzLocalInput } from "@/utils/tz-datetime";
 
 interface Room {
 	id: string;
@@ -30,14 +30,9 @@ interface Session {
 	presentations: unknown[];
 }
 
-interface Props {
-	session: Session;
-	title: string;
+export interface SessionEditorHeaderCallbacks {
 	onTitleChange: (v: string) => void;
 	onSaveTitle: () => void;
-	tz: string | undefined;
-	rooms: Room[];
-	tracks: Track[];
 	onTrackChange: (v: string) => void;
 	onRoomChange: (v: string) => void;
 	onStartChange: (v: string) => void;
@@ -45,19 +40,30 @@ interface Props {
 	onSuggestName: () => void;
 }
 
+interface Props {
+	session: Session;
+	title: string;
+	tz: string | undefined;
+	rooms: Room[];
+	tracks: Track[];
+	callbacks: SessionEditorHeaderCallbacks;
+}
+
 export function SessionEditorHeader({
 	session,
 	title,
-	onTitleChange,
-	onSaveTitle,
 	tz,
 	rooms,
 	tracks,
-	onTrackChange,
-	onRoomChange,
-	onStartChange,
-	onDurationChange,
-	onSuggestName,
+	callbacks: {
+		onTitleChange,
+		onSaveTitle,
+		onTrackChange,
+		onRoomChange,
+		onStartChange,
+		onDurationChange,
+		onSuggestName,
+	},
 }: Props) {
 	const currentDuration = formatDurationMin(
 		new Date(session.startAt),

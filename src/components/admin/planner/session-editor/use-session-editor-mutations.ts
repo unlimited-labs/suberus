@@ -1,4 +1,3 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import {
@@ -7,38 +6,24 @@ import {
 	updateSlotDurationFn,
 } from "@/utils/presentation-slots.functions";
 import {
-	allSessionsQueryOptions,
 	assignChairFn,
 	continueSeriesFn,
 	deleteSessionFn,
 	removeChairFn,
 	splitSessionFn,
-	unscheduledSubmissionsQueryOptions,
 	updateSessionFn,
 } from "@/utils/program-sessions.functions";
-import { scheduleCapacityQueryOptions } from "@/utils/schedule.functions";
 import {
 	addMinutes,
 	formatDurationMin,
 	tzLocalInputToUtc,
-} from "../tz-datetime";
+} from "@/utils/tz-datetime";
+import { useInvalidatePlannerQueries } from "../hooks/use-invalidate-planner-queries";
 
 type SessionTimes = { startAt: string | Date; endAt: string | Date };
 
 export function useSessionEditorMutations(sessionId: string) {
-	const queryClient = useQueryClient();
-
-	const invalidate = useCallback(() => {
-		queryClient.invalidateQueries({
-			queryKey: allSessionsQueryOptions().queryKey,
-		});
-		queryClient.invalidateQueries({
-			queryKey: unscheduledSubmissionsQueryOptions().queryKey,
-		});
-		queryClient.invalidateQueries({
-			queryKey: scheduleCapacityQueryOptions().queryKey,
-		});
-	}, [queryClient]);
+	const { invalidateSessions: invalidate } = useInvalidatePlannerQueries();
 
 	const run = useCallback(
 		async <T>(fn: () => Promise<T>, errorMsg: string): Promise<T | null> => {

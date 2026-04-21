@@ -1,17 +1,9 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { toast } from "sonner";
+import { useInvalidatePlannerQueries } from "@/components/admin/planner/hooks/use-invalidate-planner-queries";
 import { createSlotFn } from "@/utils/presentation-slots.functions";
-import {
-	allSessionsQueryOptions,
-	moveSessionFn,
-	unscheduledSubmissionsQueryOptions,
-} from "@/utils/program-sessions.functions";
-import { scheduleCapacityQueryOptions } from "@/utils/schedule.functions";
-import {
-	allBreaksQueryOptions,
-	updateBreakFn,
-} from "@/utils/schedule-breaks.functions";
+import { moveSessionFn } from "@/utils/program-sessions.functions";
+import { updateBreakFn } from "@/utils/schedule-breaks.functions";
 
 interface CalendarMoveEvent {
 	id: string | number;
@@ -22,22 +14,7 @@ interface CalendarMoveEvent {
 }
 
 export function usePlannerMutations(defaultPresentationMin: number) {
-	const queryClient = useQueryClient();
-
-	const invalidate = useCallback(() => {
-		queryClient.invalidateQueries({
-			queryKey: allSessionsQueryOptions().queryKey,
-		});
-		queryClient.invalidateQueries({
-			queryKey: allBreaksQueryOptions().queryKey,
-		});
-		queryClient.invalidateQueries({
-			queryKey: unscheduledSubmissionsQueryOptions().queryKey,
-		});
-		queryClient.invalidateQueries({
-			queryKey: scheduleCapacityQueryOptions().queryKey,
-		});
-	}, [queryClient]);
+	const { invalidateAll: invalidate } = useInvalidatePlannerQueries();
 
 	const handleSubmissionDrop = useCallback(
 		async (sessionId: string, submissionId: string) => {

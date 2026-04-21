@@ -1,9 +1,4 @@
-import {
-	IconClock,
-	IconMinus,
-	IconPlus,
-	IconSparkles,
-} from "@tabler/icons-react";
+import { IconClock, IconSparkles } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -31,6 +26,7 @@ import {
 import { allProgramTracksQueryOptions } from "@/utils/program-tracks.functions";
 import { allRoomsQueryOptions } from "@/utils/rooms.functions";
 import { conferenceSettingsQueryOptions } from "@/utils/settings.functions";
+import { Stepper } from "./stepper";
 import { suggestSessionName } from "./suggest-session-name";
 
 interface CreateSessionDialogProps {
@@ -40,44 +36,6 @@ interface CreateSessionDialogProps {
 	timezone?: string;
 	onClose: () => void;
 	onCreated: (sessionId: string) => void;
-}
-
-function Stepper({
-	value,
-	min,
-	max,
-	step = 1,
-	onChange,
-}: {
-	value: number;
-	min: number;
-	max: number;
-	step?: number;
-	onChange: (v: number) => void;
-}) {
-	return (
-		<div className="flex h-9 items-center rounded-md border">
-			<button
-				type="button"
-				className="flex h-full w-9 items-center justify-center border-r text-muted-foreground transition-colors hover:bg-muted disabled:opacity-40"
-				disabled={value <= min}
-				onClick={() => onChange(Math.max(min, value - step))}
-			>
-				<IconMinus size={13} />
-			</button>
-			<span className="flex-1 text-center text-sm font-medium tabular-nums">
-				{value}
-			</span>
-			<button
-				type="button"
-				className="flex h-full w-9 items-center justify-center border-l text-muted-foreground transition-colors hover:bg-muted disabled:opacity-40"
-				disabled={value >= max}
-				onClick={() => onChange(Math.min(max, value + step))}
-			>
-				<IconPlus size={13} />
-			</button>
-		</div>
-	);
 }
 
 export function CreateSessionDialog({

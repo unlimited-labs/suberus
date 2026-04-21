@@ -125,19 +125,21 @@ function SessionEditorBody({
 			<SessionEditorHeader
 				session={session}
 				title={title}
-				onTitleChange={(v) => {
-					setTitle(v);
-					setTitleDirty(true);
-				}}
-				onSaveTitle={handleSaveTitle}
 				tz={tz}
 				rooms={rooms}
 				tracks={tracks}
-				onTrackChange={mutations.updateTrack}
-				onRoomChange={mutations.updateRoom}
-				onStartChange={(v) => mutations.updateStart(v, tz, session)}
-				onDurationChange={(m) => mutations.updateDuration(m, session)}
-				onSuggestName={handleSuggestName}
+				callbacks={{
+					onTitleChange: (v) => {
+						setTitle(v);
+						setTitleDirty(true);
+					},
+					onSaveTitle: handleSaveTitle,
+					onTrackChange: mutations.updateTrack,
+					onRoomChange: mutations.updateRoom,
+					onStartChange: (v) => mutations.updateStart(v, tz, session),
+					onDurationChange: (m) => mutations.updateDuration(m, session),
+					onSuggestName: handleSuggestName,
+				}}
 			/>
 
 			<div className="flex-1 divide-y overflow-y-auto">
