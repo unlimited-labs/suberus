@@ -1,0 +1,43 @@
+import { IconBook, IconChevronLeft, IconLayoutList } from "@tabler/icons-react";
+
+interface Props {
+	count: number;
+	onOpenReader: () => void;
+	onCollapse: () => void;
+}
+
+export function SidebarHeader({ count, onOpenReader, onCollapse }: Props) {
+	return (
+		<div className="flex items-center justify-between border-b px-3 py-2">
+			<div className="flex items-center gap-1.5">
+				<IconLayoutList size={14} className="text-muted-foreground" />
+				<span className="text-xs font-medium">Unscheduled</span>
+				<span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+					{count}
+				</span>
+			</div>
+			<div className="flex items-center gap-1">
+				{count > 0 && (
+					<button
+						type="button"
+						onClick={onOpenReader}
+						data-testid="sidebar-bulk-read"
+						className="flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+						title="Open reading mode"
+					>
+						<IconBook size={12} />
+						Read
+					</button>
+				)}
+				<button
+					type="button"
+					onClick={onCollapse}
+					className="rounded p-1 text-muted-foreground hover:bg-muted"
+					aria-label="Collapse sidebar"
+				>
+					<IconChevronLeft size={14} />
+				</button>
+			</div>
+		</div>
+	);
+}

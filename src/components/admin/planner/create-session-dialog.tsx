@@ -1,4 +1,3 @@
-import { IconClock, IconSparkles } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -10,7 +9,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
 	createSessionWithPresentationsFn,
@@ -20,6 +18,8 @@ import { allProgramTracksQueryOptions } from "@/utils/program-tracks.functions";
 import { allRoomsQueryOptions } from "@/utils/rooms.functions";
 import { conferenceSettingsQueryOptions } from "@/utils/settings.functions";
 import { RoomSelect } from "./shared/room-select";
+import { TimeRangeSummary } from "./shared/time-range-summary";
+import { TitleWithSuggest } from "./shared/title-with-suggest";
 import { TrackSelect } from "./shared/track-select";
 import { Stepper } from "./stepper";
 import { suggestSessionName } from "./suggest-session-name";
@@ -55,25 +55,18 @@ export function CreateSessionDialog({
 	const suggested = useMemo(() => suggestSessionName(selected), [selected]);
 
 	const [title, setTitle] = useState("");
-	const [roomId, setRoomId] = useState<string>(rooms[0]?.id ?? "none");
-	const [trackId, setTrackId] = useState<string>("none");
+	const [roomId, setRoomId] = useState<string | null>(rooms[0]?.id ?? null);
+	const [trackId, setTrackId] = useState<string | null>(null);
 	const [slotMin, setSlotMin] = useState(settings.defaultPresentationMin);
 	const [saving, setSaving] = useState(false);
 
 	const durationMin = submissionIds.length * slotMin;
 	const endAt = new Date(defaultStartAt.getTime() + durationMin * 60_000);
 
-	const formatTime = (d: Date) =>
-		d.toLocaleTimeString([], {
-			hour: "2-digit",
-			minute: "2-digit",
-			timeZone: timezone || undefined,
-		});
-
 	const handleClose = () => {
 		setTitle("");
 		setSlotMin(settings.defaultPresentationMin);
-		setTrackId("none");
+		setTrackId(null);
 		onClose();
 	};
 
@@ -88,8 +81,8 @@ export function CreateSessionDialog({
 			const { id } = await createSessionWithPresentationsFn({
 				data: {
 					title: finalTitle,
-					roomId: roomId === "none" ? null : roomId,
-					trackId: trackId === "none" ? null : trackId,
+					roomId,
+					trackId,
 					startAt: defaultStartAt.toISOString(),
 					endAt: endAt.toISOString(),
 					slotDurationMin: slotMin,
@@ -119,44 +112,27 @@ export function CreateSessionDialog({
 				</DialogHeader>
 
 				<div className="space-y-4">
-					<div className="flex items-center gap-2 rounded-md bg-muted/60 px-3 py-2">
-						<IconClock size={14} className="shrink-0 text-muted-foreground" />
-						<span className="text-sm font-medium tabular-nums">
-							{formatTime(defaultStartAt)}
-						</span>
-						<span className="text-muted-foreground">→</span>
-						<span className="text-sm font-medium tabular-nums">
-							{formatTime(endAt)}
-						</span>
-						<span className="ml-auto text-xs text-muted-foreground">
-							{durationMin} min
-						</span>
-					</div>
+					<TimeRangeSummary
+						start={defaultStartAt}
+						end={endAt}
+						totalMin={durationMin}
+						timezone={timezone}
+					/>
 
 					<div className="space-y-2">
 						<Label htmlFor="cs-title">Title</Label>
-						<div className="relative">
-							<Input
-								id="cs-title"
-								value={title}
-								onChange={(e) => setTitle(e.target.value)}
-								onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-								placeholder={suggested}
-								data-testid="create-session-name"
-								autoFocus
-							/>
-							{suggested && (
-								<button
-									type="button"
-									onClick={() => setTitle(suggested)}
-									className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted/70 hover:text-foreground"
-									title={`Use suggested: "${suggested}"`}
-								>
-									<IconSparkles size={10} />
-									suggest
-								</button>
-							)}
-						</div>
+						<TitleWithSuggest
+							id="cs-title"
+							value={title}
+							onChange={setTitle}
+							onEnter={handleSubmit}
+							placeholder={suggested}
+							suggestion={suggested}
+							onApplySuggestion={() => setTitle(suggested)}
+							suggestTitle={`Use suggested: "${suggested}"`}
+							testId="create-session-name"
+							autoFocus
+						/>
 					</div>
 
 					<div className="space-y-2">

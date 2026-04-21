@@ -6,37 +6,19 @@ import {
 } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import { formatDayLabel, sameDayInTz } from "@/utils/tz-datetime";
-import type { BreakEventData } from "./break-event-card";
 import { MobileBreakRow } from "./mobile/mobile-break-row";
 import { MobileSessionRow } from "./mobile/mobile-session-row";
 import { buildPlannerItems } from "./mobile/planner-item";
-import type { SessionEventData } from "./session-event-card";
+import { usePlannerSelection } from "./planner-context";
+import type { PlannerBreak, PlannerSession } from "./types";
 
 interface MobilePlannerProps {
-	sessions: Array<{
-		id: string;
-		title: string;
-		startAt: string | Date;
-		endAt: string | Date;
-		room: { name: string } | null;
-		track: { name: string; color: string | null } | null;
-		chairs: Array<{ firstName: string | null; lastName: string | null }>;
-		presentations: unknown[];
-	}>;
-	breaks: Array<{
-		id: string;
-		title: string;
-		startAt: string | Date;
-		endAt: string | Date;
-		room: { name: string } | null;
-	}>;
+	sessions: PlannerSession[];
+	breaks: PlannerBreak[];
 	conferenceStart: Date | null;
 	conferenceEnd: Date | null;
 	timezone: string | undefined;
 	initialDate: Date;
-	onSessionClick: (id: string) => void;
-	onBreakClick: (id: string) => void;
-	onOpenSubmissions: () => void;
 }
 
 export function MobilePlanner({
@@ -46,10 +28,9 @@ export function MobilePlanner({
 	conferenceEnd,
 	timezone,
 	initialDate,
-	onSessionClick,
-	onBreakClick,
-	onOpenSubmissions,
 }: MobilePlannerProps) {
+	const { selectSession, selectBreak, setMobileQueueOpen } =
+		usePlannerSelection();
 	const [cursor, setCursor] = useState<Date>(initialDate);
 
 	const allItems = useMemo(
@@ -97,7 +78,7 @@ export function MobilePlanner({
 				</button>
 				<button
 					type="button"
-					onClick={onOpenSubmissions}
+					onClick={() => setMobileQueueOpen(true)}
 					className="ml-1 flex items-center gap-1 rounded border px-2 py-1 text-xs"
 					aria-label="Open submissions"
 				>
@@ -122,14 +103,14 @@ export function MobilePlanner({
 								key={`break:${item.id}`}
 								item={item}
 								timezone={timezone}
-								onClick={onBreakClick}
+								onClick={selectBreak}
 							/>
 						) : (
 							<MobileSessionRow
 								key={`session:${item.id}`}
 								item={item}
 								timezone={timezone}
-								onClick={onSessionClick}
+								onClick={selectSession}
 							/>
 						),
 					)
@@ -138,5 +119,3 @@ export function MobilePlanner({
 		</div>
 	);
 }
-
-export type { BreakEventData, SessionEventData };

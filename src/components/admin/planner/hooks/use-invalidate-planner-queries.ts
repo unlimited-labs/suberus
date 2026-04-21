@@ -4,7 +4,11 @@ import {
 	allSessionsQueryOptions,
 	unscheduledSubmissionsQueryOptions,
 } from "@/utils/program-sessions.functions";
-import { scheduleCapacityQueryOptions } from "@/utils/schedule.functions";
+import {
+	scheduleCapacityQueryOptions,
+	scheduleIssuesQueryOptions,
+	scheduleStateQueryOptions,
+} from "@/utils/schedule.functions";
 import { allBreaksQueryOptions } from "@/utils/schedule-breaks.functions";
 
 export function useInvalidatePlannerQueries() {
@@ -28,13 +32,27 @@ export function useInvalidatePlannerQueries() {
 		});
 	}, [queryClient]);
 
+	const invalidateSchedule = useCallback(() => {
+		queryClient.invalidateQueries({
+			queryKey: scheduleStateQueryOptions().queryKey,
+		});
+		queryClient.invalidateQueries({
+			queryKey: scheduleIssuesQueryOptions().queryKey,
+		});
+	}, [queryClient]);
+
 	const invalidateAll = useCallback(() => {
 		invalidateSessions();
 		invalidateBreaks();
 	}, [invalidateSessions, invalidateBreaks]);
 
 	return useMemo(
-		() => ({ invalidateSessions, invalidateBreaks, invalidateAll }),
-		[invalidateSessions, invalidateBreaks, invalidateAll],
+		() => ({
+			invalidateSessions,
+			invalidateBreaks,
+			invalidateSchedule,
+			invalidateAll,
+		}),
+		[invalidateSessions, invalidateBreaks, invalidateSchedule, invalidateAll],
 	);
 }

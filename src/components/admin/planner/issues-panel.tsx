@@ -5,7 +5,8 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import type { ProgramSessionDetail } from "@/utils/program-sessions.server";
+import { usePlannerSelection } from "./planner-context";
+import type { PlannerSession } from "./types";
 
 interface Issue {
 	type: "room-overlap" | "no-room";
@@ -13,7 +14,7 @@ interface Issue {
 	sessionIds: string[];
 }
 
-function detectIssues(sessions: ProgramSessionDetail[]): Issue[] {
+function detectIssues(sessions: PlannerSession[]): Issue[] {
 	const issues: Issue[] = [];
 
 	// No room assigned
@@ -52,11 +53,11 @@ function detectIssues(sessions: ProgramSessionDetail[]): Issue[] {
 }
 
 interface IssuesPanelProps {
-	sessions: ProgramSessionDetail[];
-	onSessionClick?: (sessionId: string) => void;
+	sessions: PlannerSession[];
 }
 
-export function IssuesPanel({ sessions, onSessionClick }: IssuesPanelProps) {
+export function IssuesPanel({ sessions }: IssuesPanelProps) {
+	const { selectSession } = usePlannerSelection();
 	const issues = useMemo(() => detectIssues(sessions), [sessions]);
 
 	if (issues.length === 0) return null;
@@ -107,16 +108,13 @@ export function IssuesPanel({ sessions, onSessionClick }: IssuesPanelProps) {
 								/>
 							);
 							const targetId = issue.sessionIds[0];
-							if (onSessionClick && targetId) {
+							const key = `${issue.type}-${i}`;
+							if (targetId) {
 								return (
-									<li
-										// biome-ignore lint/suspicious/noArrayIndexKey: static list
-										key={i}
-										data-testid={`issue-item-${i}`}
-									>
+									<li key={key} data-testid={`issue-item-${i}`}>
 										<button
 											type="button"
-											onClick={() => onSessionClick(targetId)}
+											onClick={() => selectSession(targetId)}
 											className="flex w-full items-start gap-2 rounded px-1.5 py-1 text-left hover:bg-muted"
 										>
 											{dot}
@@ -134,8 +132,7 @@ export function IssuesPanel({ sessions, onSessionClick }: IssuesPanelProps) {
 							}
 							return (
 								<li
-									// biome-ignore lint/suspicious/noArrayIndexKey: static list
-									key={i}
+									key={key}
 									data-testid={`issue-item-${i}`}
 									className="flex items-start gap-2 rounded px-1.5 py-1"
 								>

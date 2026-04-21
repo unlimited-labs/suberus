@@ -33,20 +33,14 @@ export function useSessionEditorMutations(sessionId: string) {
 				() => updateSessionFn({ data: { id: sessionId, title } }),
 				"Failed to save",
 			),
-		updateTrack: (value: string) =>
+		updateTrack: (trackId: string | null) =>
 			run(
-				() =>
-					updateSessionFn({
-						data: { id: sessionId, trackId: value === "none" ? null : value },
-					}),
+				() => updateSessionFn({ data: { id: sessionId, trackId } }),
 				"Failed to update track",
 			),
-		updateRoom: (value: string) =>
+		updateRoom: (roomId: string | null) =>
 			run(
-				() =>
-					updateSessionFn({
-						data: { id: sessionId, roomId: value === "none" ? null : value },
-					}),
+				() => updateSessionFn({ data: { id: sessionId, roomId } }),
 				"Failed to update room",
 			),
 		updateStart: (

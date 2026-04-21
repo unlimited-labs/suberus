@@ -20,6 +20,7 @@ import { createBreakFn } from "@/utils/schedule-breaks.functions";
 import { conferenceSettingsQueryOptions } from "@/utils/settings.functions";
 import { tzLocalInputToUtc, utcToTzLocalInput } from "@/utils/tz-datetime";
 import { RoomSelect } from "./shared/room-select";
+import { TimeRangeSummary } from "./shared/time-range-summary";
 import { TrackSelect } from "./shared/track-select";
 import { Stepper } from "./stepper";
 
@@ -65,10 +66,10 @@ export function CreateEventDialog({
 	const [startInput, setStartInput] = useState<string>(
 		utcToTzLocalInput(initialStart, timezone),
 	);
-	const [roomId, setRoomId] = useState<string>(
-		resourceId ?? rooms[0]?.id ?? "",
+	const [roomId, setRoomId] = useState<string | null>(
+		resourceId ?? rooms[0]?.id ?? null,
 	);
-	const [trackId, setTrackId] = useState<string>("none");
+	const [trackId, setTrackId] = useState<string | null>(null);
 	const [presentationCount, setPresentationCount] = useState(4);
 	const [minutesPerPresentation, setMinutesPerPresentation] = useState(
 		settings.defaultPresentationMin,
@@ -86,13 +87,6 @@ export function CreateEventDialog({
 		startDate.getTime() + breakDurationMin * 60_000,
 	);
 
-	const formatTime = (date: Date) =>
-		date.toLocaleTimeString([], {
-			hour: "2-digit",
-			minute: "2-digit",
-			timeZone: timezone || undefined,
-		});
-
 	const handleOpenChange = (isOpen: boolean) => {
 		if (!isOpen) handleClose();
 	};
@@ -104,7 +98,7 @@ export function CreateEventDialog({
 		setPresentationCount(4);
 		setMinutesPerPresentation(settings.defaultPresentationMin);
 		setBreakDurationMin(30);
-		setTrackId("none");
+		setTrackId(null);
 		onClose();
 	};
 
@@ -119,8 +113,8 @@ export function CreateEventDialog({
 				await createSessionFn({
 					data: {
 						title: title.trim(),
-						roomId: roomId === "none" ? null : roomId || null,
-						trackId: trackId === "none" ? null : trackId,
+						roomId,
+						trackId,
 						startAt: startDate.toISOString(),
 						endAt: sessionEndDate.toISOString(),
 					},
@@ -129,7 +123,7 @@ export function CreateEventDialog({
 				await createBreakFn({
 					data: {
 						title: title.trim(),
-						roomId: roomId === "none" ? null : roomId || null,
+						roomId,
 						startAt: startDate.toISOString(),
 						endAt: breakEndDate.toISOString(),
 					},
@@ -191,25 +185,19 @@ export function CreateEventDialog({
 						/>
 					</div>
 
-					{/* Time summary */}
-					<div className="flex items-center gap-2 rounded-md bg-muted/60 px-3 py-2">
-						<IconClock size={14} className="shrink-0 text-muted-foreground" />
-						<span className="text-sm font-medium tabular-nums">
-							{formatTime(startDate)}
-						</span>
-						<span className="text-muted-foreground">→</span>
-						<span className="text-sm font-medium tabular-nums">
-							{formatTime(endDate)}
-						</span>
-						<span className="ml-auto text-xs text-muted-foreground">
-							{totalMin} min
-							{type === "session" && (
+					<TimeRangeSummary
+						start={startDate}
+						end={endDate}
+						totalMin={totalMin}
+						timezone={timezone}
+						extra={
+							type === "session" ? (
 								<span className="ml-1 opacity-60">
 									({presentationCount} × {minutesPerPresentation})
 								</span>
-							)}
-						</span>
-					</div>
+							) : null
+						}
+					/>
 
 					{/* Title */}
 					<div className="space-y-2">

@@ -1,4 +1,5 @@
 import type { SessionEventData } from "../session-event-card";
+import type { PlannerBreak, PlannerSession } from "../types";
 
 export type SessionItem = {
 	kind: "session";
@@ -24,28 +25,9 @@ export type BreakItem = {
 
 export type PlannerItem = SessionItem | BreakItem;
 
-type RawSession = {
-	id: string;
-	title: string;
-	startAt: string | Date;
-	endAt: string | Date;
-	room: { name: string } | null;
-	track: { name: string; color: string | null } | null;
-	chairs: Array<{ firstName: string | null; lastName: string | null }>;
-	presentations: unknown[];
-};
-
-type RawBreak = {
-	id: string;
-	title: string;
-	startAt: string | Date;
-	endAt: string | Date;
-	room: { name: string } | null;
-};
-
 export function buildPlannerItems(
-	sessions: RawSession[],
-	breaks: RawBreak[],
+	sessions: PlannerSession[],
+	breaks: PlannerBreak[],
 ): PlannerItem[] {
 	const s: PlannerItem[] = sessions.map((x) => ({
 		kind: "session",

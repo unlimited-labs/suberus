@@ -104,7 +104,7 @@ function BreakEditorBody({
 						Room (optional)
 					</Label>
 					<RoomSelect
-						value={breakItem.roomId ?? "none"}
+						value={breakItem.roomId}
 						onValueChange={mutations.updateRoom}
 						rooms={rooms}
 						triggerClassName="h-8 text-sm"

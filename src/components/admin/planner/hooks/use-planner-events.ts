@@ -1,40 +1,17 @@
 import type { IlamyResourceCalendarProps } from "@ilamy/calendar";
 import { useMemo } from "react";
+import type { BreakEventData } from "../break-event-card";
+import type { SessionEventData } from "../session-event-card";
+import type { PlannerBreak, PlannerSession } from "../types";
 
 type PlannerEvent = NonNullable<IlamyResourceCalendarProps["events"]>[number];
-
-import type { BreakEventData } from "@/components/admin/planner/break-event-card";
-import type { SessionEventData } from "@/components/admin/planner/session-event-card";
-
-type SessionInput = {
-	id: string;
-	title: string;
-	startAt: string | Date;
-	endAt: string | Date;
-	roomId: string | null;
-	track: { name: string; color: string | null } | null;
-	chairs: Array<{ firstName: string | null; lastName: string | null }>;
-	presentations: Array<{
-		id: string;
-		submissionTitle: string;
-		durationMin: number;
-	}>;
-};
-
-type BreakInput = {
-	id: string;
-	title: string;
-	startAt: string | Date;
-	endAt: string | Date;
-	roomId: string | null;
-};
 
 type RoomInput = { id: string; name: string; order: number };
 
 export function usePlannerEvents(
 	rooms: RoomInput[],
-	sessions: SessionInput[],
-	breaks: BreakInput[],
+	sessions: PlannerSession[],
+	breaks: PlannerBreak[],
 ) {
 	const resources = useMemo(
 		() => rooms.map((r) => ({ id: r.id, title: r.name, position: r.order })),

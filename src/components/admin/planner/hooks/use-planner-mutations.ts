@@ -1,17 +1,12 @@
+import type { CalendarEvent } from "@ilamy/calendar";
 import { useCallback } from "react";
-import { useInvalidatePlannerQueries } from "@/components/admin/planner/hooks/use-invalidate-planner-queries";
-import { useMutationRun } from "@/components/admin/planner/hooks/use-mutation-run";
 import { createSlotFn } from "@/utils/presentation-slots.functions";
 import { moveSessionFn } from "@/utils/program-sessions.functions";
 import { updateBreakFn } from "@/utils/schedule-breaks.functions";
-
-interface CalendarMoveEvent {
-	id: string | number;
-	start: { toDate: () => Date };
-	end: { toDate: () => Date };
-	resourceId?: string | number;
-	data?: { kind?: "session" | "break"; sessionId?: string; breakId?: string };
-}
+import type { BreakEventData } from "../break-event-card";
+import type { SessionEventData } from "../session-event-card";
+import { useInvalidatePlannerQueries } from "./use-invalidate-planner-queries";
+import { useMutationRun } from "./use-mutation-run";
 
 export function usePlannerMutations(defaultPresentationMin: number) {
 	const { invalidateAll: invalidate } = useInvalidatePlannerQueries();
@@ -34,26 +29,28 @@ export function usePlannerMutations(defaultPresentationMin: number) {
 	);
 
 	const handleEventUpdate = useCallback(
-		(event: CalendarMoveEvent) => {
-			const kind = event.data?.kind;
+		(event: CalendarEvent) => {
+			const data = event.data as SessionEventData | BreakEventData | undefined;
 			const roomId =
 				typeof event.resourceId === "string" ? event.resourceId : null;
 			const startAt = event.start.toDate().toISOString();
 			const endAt = event.end.toDate().toISOString();
 
-			const sessionId = event.data?.sessionId;
-			const breakId = event.data?.breakId;
-			if (kind === "session" && sessionId) {
+			if (data?.kind === "session") {
 				return run(
 					() =>
-						moveSessionFn({ data: { id: sessionId, startAt, endAt, roomId } }),
+						moveSessionFn({
+							data: { id: data.sessionId, startAt, endAt, roomId },
+						}),
 					"Failed to update",
 				);
 			}
-			if (kind === "break" && breakId) {
+			if (data?.kind === "break") {
 				return run(
 					() =>
-						updateBreakFn({ data: { id: breakId, startAt, endAt, roomId } }),
+						updateBreakFn({
+							data: { id: data.breakId, startAt, endAt, roomId },
+						}),
 					"Failed to update",
 				);
 			}

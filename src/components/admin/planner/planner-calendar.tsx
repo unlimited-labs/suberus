@@ -4,28 +4,14 @@ import {
 	type IlamyResourceCalendarProps,
 	type WeekDays,
 } from "@ilamy/calendar";
-import {
-	BreakEventCard,
-	type BreakEventData,
-} from "@/components/admin/planner/break-event-card";
-import { CreateEventDialog } from "@/components/admin/planner/create-event-dialog";
-import {
-	SessionEventCard,
-	type SessionEventData,
-} from "@/components/admin/planner/session-event-card";
+import { useCallback } from "react";
+import { CreateEventDialog } from "./create-event-dialog";
+import { PlannerEventRenderer } from "./planner-event-renderer";
 
 interface Resource {
 	id: string;
 	title: string;
 	position: number;
-}
-
-interface CalendarMoveEvent {
-	id: string | number;
-	start: { toDate: () => Date };
-	end: { toDate: () => Date };
-	resourceId?: string | number;
-	data?: { kind?: "session" | "break"; sessionId?: string; breakId?: string };
 }
 
 interface Props {
@@ -38,7 +24,7 @@ interface Props {
 	dayStart: string;
 	dayEnd: string;
 	onDateChange: (date: Date) => void;
-	onEventUpdate: (event: CalendarMoveEvent) => void;
+	onEventUpdate: (event: CalendarEvent) => void;
 	onEventClick: (event: CalendarEvent) => void;
 	onSubmissionDrop: (sessionId: string, submissionId: string) => void;
 	onCreated: () => void;
@@ -59,6 +45,8 @@ function parseHour(v: string, fallback: number) {
 	if (!m) return fallback;
 	return Number(m[1]) + Number(m[2]) / 60;
 }
+
+const hideCurrentTimeIndicator = () => null;
 
 export function PlannerCalendar({
 	calendarKey,
@@ -81,6 +69,28 @@ export function PlannerCalendar({
 		endTime: parseHour(dayEnd, 18),
 	};
 
+	const handleDateChange = useCallback<
+		NonNullable<IlamyResourceCalendarProps["onDateChange"]>
+	>((date) => onDateChange(date.toDate()), [onDateChange]);
+
+	const renderEventForm = useCallback<
+		NonNullable<IlamyResourceCalendarProps["renderEventForm"]>
+	>(
+		(props) => (
+			<CreateEventDialog {...props} onCreated={onCreated} timezone={timezone} />
+		),
+		[onCreated, timezone],
+	);
+
+	const renderEvent = useCallback<
+		NonNullable<IlamyResourceCalendarProps["renderEvent"]>
+	>(
+		(event) => (
+			<PlannerEventRenderer event={event} onSubmissionDrop={onSubmissionDrop} />
+		),
+		[onSubmissionDrop],
+	);
+
 	return (
 		<div data-planner-cal className="size-full">
 			<IlamyResourceCalendar
@@ -94,38 +104,12 @@ export function PlannerCalendar({
 				timeFormat={timeFormat === "12h" ? "12-hour" : "24-hour"}
 				businessHours={businessHours}
 				hideNonBusinessHours
-				onDateChange={(date) => onDateChange(date.toDate())}
+				onDateChange={handleDateChange}
 				onEventUpdate={onEventUpdate}
 				onEventClick={onEventClick}
-				renderCurrentTimeIndicator={() => null}
-				renderEventForm={(props) => (
-					<CreateEventDialog
-						{...props}
-						onCreated={onCreated}
-						timezone={timezone}
-					/>
-				)}
-				renderEvent={(event) => {
-					const data = event.data as
-						| SessionEventData
-						| BreakEventData
-						| undefined;
-					if (data?.kind === "break") {
-						return <BreakEventCard title={event.title} data={data} />;
-					}
-					if (data?.kind === "session") {
-						return (
-							<SessionEventCard
-								title={event.title}
-								data={data}
-								onSubmissionDrop={(submissionId) =>
-									onSubmissionDrop(data.sessionId, submissionId)
-								}
-							/>
-						);
-					}
-					return null;
-				}}
+				renderCurrentTimeIndicator={hideCurrentTimeIndicator}
+				renderEventForm={renderEventForm}
+				renderEvent={renderEvent}
 			/>
 		</div>
 	);

@@ -13,12 +13,14 @@ interface Track {
 }
 
 interface Props {
-	value: string;
-	onValueChange: (v: string) => void;
+	value: string | null;
+	onValueChange: (v: string | null) => void;
 	tracks: Track[];
 	testId?: string;
 	triggerClassName?: string;
 }
+
+const NONE = "__none__";
 
 export function TrackSelect({
 	value,
@@ -28,12 +30,15 @@ export function TrackSelect({
 	triggerClassName,
 }: Props) {
 	return (
-		<Select value={value} onValueChange={onValueChange}>
+		<Select
+			value={value ?? NONE}
+			onValueChange={(v) => onValueChange(v === NONE ? null : v)}
+		>
 			<SelectTrigger data-testid={testId} className={triggerClassName}>
 				<SelectValue placeholder="No track" />
 			</SelectTrigger>
 			<SelectContent>
-				<SelectItem value="none">No track</SelectItem>
+				<SelectItem value={NONE}>No track</SelectItem>
 				{tracks.map((t) => (
 					<SelectItem key={t.id} value={t.id}>
 						<span className="flex items-center gap-2">

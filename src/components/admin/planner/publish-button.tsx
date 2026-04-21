@@ -5,11 +5,7 @@ import {
 	IconWorld,
 	IconWorldOff,
 } from "@tabler/icons-react";
-import {
-	useQuery,
-	useQueryClient,
-	useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -26,6 +22,8 @@ import {
 	scheduleStateQueryOptions,
 	unpublishScheduleFn,
 } from "@/utils/schedule.functions";
+import { useInvalidatePlannerQueries } from "./hooks/use-invalidate-planner-queries";
+import { usePlannerSelection } from "./planner-context";
 
 const ISSUE_LABELS: Record<string, string> = {
 	SESSION_WITHOUT_CHAIR: "Session without chair",
@@ -37,12 +35,9 @@ const ISSUE_LABELS: Record<string, string> = {
 	SESSION_OUT_OF_BOUNDS: "Session outside conference dates",
 };
 
-interface PublishButtonProps {
-	onSessionClick?: (sessionId: string) => void;
-}
-
-export function PublishButton({ onSessionClick }: PublishButtonProps = {}) {
-	const queryClient = useQueryClient();
+export function PublishButton() {
+	const { invalidateSchedule: invalidate } = useInvalidatePlannerQueries();
+	const { selectSession } = usePlannerSelection();
 	const { data: state } = useSuspenseQuery(scheduleStateQueryOptions());
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [busy, setBusy] = useState(false);
@@ -53,15 +48,6 @@ export function PublishButton({ onSessionClick }: PublishButtonProps = {}) {
 	});
 
 	const isPublished = state.status === "PUBLISHED";
-
-	const invalidate = () => {
-		queryClient.invalidateQueries({
-			queryKey: scheduleStateQueryOptions().queryKey,
-		});
-		queryClient.invalidateQueries({
-			queryKey: scheduleIssuesQueryOptions().queryKey,
-		});
-	};
 
 	const handlePublish = async () => {
 		setBusy(true);
@@ -165,7 +151,7 @@ export function PublishButton({ onSessionClick }: PublishButtonProps = {}) {
 												</div>
 											</>
 										);
-										if (onSessionClick && targetId) {
+										if (targetId) {
 											return (
 												<li
 													key={`${issue.kind}-${i}`}
@@ -174,7 +160,7 @@ export function PublishButton({ onSessionClick }: PublishButtonProps = {}) {
 													<button
 														type="button"
 														onClick={() => {
-															onSessionClick(targetId);
+															selectSession(targetId);
 															setDialogOpen(false);
 														}}
 														className="flex w-full items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-left text-sm transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950 dark:hover:bg-amber-900"

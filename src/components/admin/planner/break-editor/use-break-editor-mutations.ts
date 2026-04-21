@@ -15,12 +15,9 @@ export function useBreakEditorMutations(breakId: string) {
 				() => updateBreakFn({ data: { id: breakId, title } }),
 				"Failed to save",
 			),
-		updateRoom: (value: string) =>
+		updateRoom: (roomId: string | null) =>
 			run(
-				() =>
-					updateBreakFn({
-						data: { id: breakId, roomId: value === "none" ? null : value },
-					}),
+				() => updateBreakFn({ data: { id: breakId, roomId } }),
 				"Failed to update room",
 			),
 		deleteBreak: () =>

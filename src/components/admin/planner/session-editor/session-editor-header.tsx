@@ -5,38 +5,23 @@ import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { formatDurationMin, utcToTzLocalInput } from "@/utils/tz-datetime";
 import { RoomSelect } from "../shared/room-select";
 import { TrackSelect } from "../shared/track-select";
+import type { PlannerSession } from "../types";
 
-interface Room {
-	id: string;
-	name: string;
-}
-
-interface Track {
-	id: string;
-	name: string;
-	color: string | null;
-}
-
-interface Session {
-	startAt: string | Date;
-	endAt: string | Date;
-	roomId: string | null;
-	trackId: string | null;
-	presentations: unknown[];
-}
+type Room = { id: string; name: string };
+type Track = NonNullable<PlannerSession["track"]>;
 
 export interface SessionEditorHeaderCallbacks {
 	onTitleChange: (v: string) => void;
 	onSaveTitle: () => void;
-	onTrackChange: (v: string) => void;
-	onRoomChange: (v: string) => void;
+	onTrackChange: (v: string | null) => void;
+	onRoomChange: (v: string | null) => void;
 	onStartChange: (v: string) => void;
 	onDurationChange: (minutes: number) => void;
 	onSuggestName: () => void;
 }
 
 interface Props {
-	session: Session;
+	session: PlannerSession;
 	title: string;
 	tz: string | undefined;
 	rooms: Room[];
@@ -135,7 +120,7 @@ export function SessionEditorHeader({
 				<div className="space-y-1">
 					<Label className="text-xs text-muted-foreground">Room</Label>
 					<RoomSelect
-						value={session.roomId ?? "none"}
+						value={session.roomId}
 						onValueChange={onRoomChange}
 						rooms={rooms}
 						testId="session-editor-room"
@@ -145,7 +130,7 @@ export function SessionEditorHeader({
 				<div className="space-y-1">
 					<Label className="text-xs text-muted-foreground">Track</Label>
 					<TrackSelect
-						value={session.trackId ?? "none"}
+						value={session.trackId}
 						onValueChange={onTrackChange}
 						tracks={tracks}
 						testId="session-editor-track"

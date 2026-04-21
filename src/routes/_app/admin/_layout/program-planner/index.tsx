@@ -1,14 +1,25 @@
 import type { CalendarEvent } from "@ilamy/calendar";
-import { IconAlertTriangle, IconCalendar } from "@tabler/icons-react";
+import { IconCalendar } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { BreakEditorSheet } from "@/components/admin/planner/break-editor-sheet";
 import type { BreakEventData } from "@/components/admin/planner/break-event-card";
 import { CapacityStrip } from "@/components/admin/planner/capacity-strip";
+import { computeDefaultStartAt } from "@/components/admin/planner/compute-default-start-at";
 import { CreateSessionDialog } from "@/components/admin/planner/create-session-dialog";
+import { usePlannerEvents } from "@/components/admin/planner/hooks/use-planner-events";
+import { usePlannerMutations } from "@/components/admin/planner/hooks/use-planner-mutations";
 import { IssuesPanel } from "@/components/admin/planner/issues-panel";
 import { MobilePlanner } from "@/components/admin/planner/mobile-planner";
+import { MobileQueueOverlay } from "@/components/admin/planner/mobile-queue-overlay";
+import { NoRoomsPlaceholder } from "@/components/admin/planner/no-rooms-placeholder";
+import { OutsideRangeBanner } from "@/components/admin/planner/outside-range-banner";
+import { PlannerCalendar } from "@/components/admin/planner/planner-calendar";
+import {
+	PlannerSelectionProvider,
+	usePlannerSelection,
+} from "@/components/admin/planner/planner-context";
 import { PublishButton } from "@/components/admin/planner/publish-button";
 import { SessionEditorSheet } from "@/components/admin/planner/session-editor-sheet";
 import type { SessionEventData } from "@/components/admin/planner/session-event-card";
@@ -26,10 +37,6 @@ import {
 } from "@/utils/schedule.functions";
 import { allBreaksQueryOptions } from "@/utils/schedule-breaks.functions";
 import { conferenceSettingsQueryOptions } from "@/utils/settings.functions";
-import { computeDefaultStartAt } from "./compute-default-start-at";
-import { PlannerCalendar } from "./planner-calendar";
-import { usePlannerEvents } from "./use-planner-events";
-import { usePlannerMutations } from "./use-planner-mutations";
 
 export const Route = createFileRoute("/_app/admin/_layout/program-planner/")({
 	loader: async ({ context }) => {
@@ -47,28 +54,34 @@ export const Route = createFileRoute("/_app/admin/_layout/program-planner/")({
 	component: ProgramPlannerPage,
 });
 
-type SelectedEvent =
-	| { kind: "session"; id: string }
-	| { kind: "break"; id: string }
-	| null;
-
 function ProgramPlannerPage() {
+	return (
+		<PlannerSelectionProvider>
+			<ProgramPlannerContent />
+		</PlannerSelectionProvider>
+	);
+}
+
+function ProgramPlannerContent() {
 	const { data: rooms } = useSuspenseQuery(allRoomsQueryOptions());
 	const { data: sessions } = useSuspenseQuery(allSessionsQueryOptions());
 	const { data: breaks } = useSuspenseQuery(allBreaksQueryOptions());
 	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
 
-	const [selectedEvent, setSelectedEvent] = useState<SelectedEvent>(null);
-	const selectSession = (id: string) =>
-		setSelectedEvent({ kind: "session", id });
-	const selectBreak = (id: string) => setSelectedEvent({ kind: "break", id });
-	const clearSelection = () => setSelectedEvent(null);
+	const {
+		selectedSessionId,
+		selectedBreakId,
+		selectSession,
+		selectBreak,
+		clearSelection,
+		creationSubmissionIds,
+		closeCreateFromSelection,
+		mobileQueueOpen,
+		setMobileQueueOpen,
+	} = usePlannerSelection();
+
 	const [currentDate, setCurrentDate] = useState<Date | null>(null);
 	const [calendarKey, setCalendarKey] = useState(0);
-	const [selectionDialog, setSelectionDialog] = useState<{
-		submissionIds: string[];
-	} | null>(null);
-	const [mobileQueueOpen, setMobileQueueOpen] = useState(false);
 
 	const confStart = settings.conferenceStartDate
 		? new Date(settings.conferenceStartDate)
@@ -86,60 +99,49 @@ function ProgramPlannerPage() {
 	const { invalidate, handleSubmissionDrop, handleEventUpdate } =
 		usePlannerMutations(settings.defaultPresentationMin);
 
-	const handleEventClick = (event: CalendarEvent) => {
-		const data = event.data as SessionEventData | BreakEventData | undefined;
-		if (data?.kind === "session") selectSession(data.sessionId);
-		else if (data?.kind === "break") selectBreak(data.breakId);
-	};
+	const handleEventClick = useCallback(
+		(event: CalendarEvent) => {
+			const data = event.data as SessionEventData | BreakEventData | undefined;
+			if (data?.kind === "session") selectSession(data.sessionId);
+			else if (data?.kind === "break") selectBreak(data.breakId);
+		},
+		[selectSession, selectBreak],
+	);
+
+	const handleReturnToConference = useCallback(() => {
+		if (!confStart) return;
+		setCurrentDate(confStart);
+		setCalendarKey((k) => k + 1);
+	}, [confStart]);
+
+	const closeMobileQueue = useCallback(
+		() => setMobileQueueOpen(false),
+		[setMobileQueueOpen],
+	);
+
+	const handleSessionCreated = useCallback(() => {
+		invalidate();
+		closeCreateFromSelection();
+	}, [invalidate, closeCreateFromSelection]);
 
 	const tz = settings.timezone || undefined;
+	const initialDate = confStart ?? undefined;
 
-	const initialDate = settings.conferenceStartDate
-		? new Date(settings.conferenceStartDate)
-		: undefined;
-
-	if (rooms.length === 0) {
-		return (
-			<div className="flex h-full flex-col">
-				<PageHeader icon={IconCalendar} title="Program Planner" />
-				<div className="flex flex-1 items-center justify-center p-8">
-					<div className="max-w-md rounded-md border border-dashed p-8 text-center">
-						<p className="text-sm text-muted-foreground">
-							No rooms configured. Add rooms in Settings → Program before using
-							the planner.
-						</p>
-					</div>
-				</div>
-			</div>
-		);
-	}
+	if (rooms.length === 0) return <NoRoomsPlaceholder />;
 
 	return (
 		<>
 			<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
 				<PageHeader icon={IconCalendar} title="Program Planner">
-					<PublishButton onSessionClick={selectSession} />
+					<PublishButton />
 				</PageHeader>
 				{isOutsideRange && (
-					<div className="flex items-center gap-2 border-b bg-amber-50 px-4 py-2 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-200">
-						<IconAlertTriangle size={13} className="shrink-0" />
-						Outside conference dates
-						{confStart && (
-							<button
-								type="button"
-								className="ml-auto underline hover:no-underline"
-								onClick={() => {
-									setCurrentDate(confStart);
-									setCalendarKey((k) => k + 1);
-								}}
-							>
-								Return
-							</button>
-						)}
-					</div>
+					<OutsideRangeBanner
+						onReturn={confStart ? handleReturnToConference : null}
+					/>
 				)}
 				<CapacityStrip />
-				<IssuesPanel sessions={sessions} onSessionClick={selectSession} />
+				<IssuesPanel sessions={sessions} />
 				<div className="flex min-h-0 flex-1 md:hidden">
 					<div className="flex-1 overflow-auto">
 						<MobilePlanner
@@ -149,36 +151,12 @@ function ProgramPlannerPage() {
 							conferenceEnd={confEnd}
 							timezone={tz}
 							initialDate={currentDate ?? confStart ?? new Date()}
-							onSessionClick={selectSession}
-							onBreakClick={selectBreak}
-							onOpenSubmissions={() => setMobileQueueOpen(true)}
 						/>
 					</div>
 				</div>
-				{mobileQueueOpen && (
-					<div className="fixed inset-0 z-40 flex md:hidden">
-						<button
-							type="button"
-							className="absolute inset-0 bg-black/40"
-							onClick={() => setMobileQueueOpen(false)}
-							aria-label="Close submissions panel"
-						/>
-						<div className="relative ml-auto flex h-full w-full max-w-sm bg-background shadow-xl">
-							<UnscheduledSidebar
-								onCreateSession={(ids) => {
-									setSelectionDialog({ submissionIds: ids });
-									setMobileQueueOpen(false);
-								}}
-							/>
-						</div>
-					</div>
-				)}
+				{mobileQueueOpen && <MobileQueueOverlay onClose={closeMobileQueue} />}
 				<div className="hidden min-h-0 flex-1 md:flex">
-					<UnscheduledSidebar
-						onCreateSession={(ids) =>
-							setSelectionDialog({ submissionIds: ids })
-						}
-					/>
+					<UnscheduledSidebar />
 					<div className="flex-1 overflow-auto p-4">
 						<PlannerCalendar
 							calendarKey={calendarKey}
@@ -189,7 +167,7 @@ function ProgramPlannerPage() {
 							timeFormat={settings.timeFormat}
 							dayStart={settings.dayStart}
 							dayEnd={settings.dayEnd}
-							onDateChange={(d) => setCurrentDate(d)}
+							onDateChange={setCurrentDate}
 							onEventUpdate={handleEventUpdate}
 							onEventClick={handleEventClick}
 							onSubmissionDrop={handleSubmissionDrop}
@@ -200,17 +178,14 @@ function ProgramPlannerPage() {
 			</div>
 
 			<SessionEditorSheet
-				sessionId={selectedEvent?.kind === "session" ? selectedEvent.id : null}
+				sessionId={selectedSessionId}
 				onClose={clearSelection}
 			/>
-			<BreakEditorSheet
-				breakId={selectedEvent?.kind === "break" ? selectedEvent.id : null}
-				onClose={clearSelection}
-			/>
-			{selectionDialog && (
+			<BreakEditorSheet breakId={selectedBreakId} onClose={clearSelection} />
+			{creationSubmissionIds && (
 				<CreateSessionDialog
 					open={true}
-					submissionIds={selectionDialog.submissionIds}
+					submissionIds={creationSubmissionIds}
 					defaultStartAt={computeDefaultStartAt(
 						currentDate,
 						sessions,
@@ -218,11 +193,8 @@ function ProgramPlannerPage() {
 						settings.dayStart,
 					)}
 					timezone={tz}
-					onClose={() => setSelectionDialog(null)}
-					onCreated={() => {
-						invalidate();
-						setSelectionDialog(null);
-					}}
+					onClose={closeCreateFromSelection}
+					onCreated={handleSessionCreated}
 				/>
 			)}
 		</>
