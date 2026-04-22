@@ -7,6 +7,8 @@ export class ProgramPlannerPage {
 	readonly sidebarSelectionBar: Locator;
 	readonly bulkCreateButton: Locator;
 	readonly bulkReadButton: Locator;
+	readonly selectModeToggle: Locator;
+	readonly roomFilterToggle: Locator;
 	readonly capacityStrip: Locator;
 	readonly issuesTrigger: Locator;
 	readonly issuesPopover: Locator;
@@ -27,6 +29,8 @@ export class ProgramPlannerPage {
 		this.sidebarSelectionBar = page.getByTestId("sidebar-selection-bar");
 		this.bulkCreateButton = page.getByTestId("sidebar-bulk-create-session");
 		this.bulkReadButton = page.getByTestId("sidebar-bulk-read");
+		this.selectModeToggle = page.getByTestId("sidebar-toggle-select-mode");
+		this.roomFilterToggle = page.getByTestId("room-filter-toggle");
 		this.capacityStrip = page.getByTestId("capacity-strip");
 		this.issuesTrigger = page.getByTestId("issues-popover-trigger");
 		this.issuesPopover = page.getByTestId("issues-popover");
@@ -91,7 +95,14 @@ export class ProgramPlannerPage {
 		await this.sidebarSearch.fill(q);
 	}
 
+	async enableSelectMode() {
+		const pressed = await this.selectModeToggle.getAttribute("aria-pressed");
+		if (pressed !== "true") await this.selectModeToggle.click();
+		await expect(this.selectModeToggle).toHaveAttribute("aria-pressed", "true");
+	}
+
 	async selectUnscheduled(submissionIds: string[]) {
+		await this.enableSelectMode();
 		for (const id of submissionIds) {
 			const row = this.unscheduledRow(id);
 			await row.getByRole("checkbox").check();
