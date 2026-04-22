@@ -6,7 +6,6 @@ import {
 	useMemo,
 	useState,
 } from "react";
-import { toast } from "sonner";
 import type { AdminUser } from "@/lib/server/admin/users";
 import { formatDurationMin } from "@/lib/tz-datetime";
 import { adminUsersQueryOptions } from "@/server-fns/admin/users";
@@ -15,7 +14,6 @@ import { allSessionsQueryOptions } from "@/server-fns/planner/sessions";
 import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
 import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
 import { useEditableTitle } from "../hooks/use-editable-title";
-import { suggestSessionName } from "../suggest-session-name";
 import type { PlannerSession } from "../types";
 import { useSessionEditorMutations } from "./use-session-editor-mutations";
 
@@ -35,7 +33,6 @@ interface SessionEditorContextValue {
 	deleting: boolean;
 	mutations: Mutations;
 	onSaveTitle: () => Promise<void>;
-	onSuggestName: () => void;
 	onDelete: () => Promise<void>;
 }
 
@@ -84,27 +81,6 @@ export function SessionEditorProvider({
 			title.clearDirty();
 		};
 
-		const onSuggestName = () => {
-			const suggestion = suggestSessionName(
-				session.presentations.map((p) => ({
-					id: p.submissionId,
-					title: p.submissionTitle,
-					type: "ABSTRACT",
-					abstract: null,
-					trackId: null,
-					trackName: null,
-					authors: p.authors,
-					keywords: [],
-					file: null,
-				})),
-			);
-			if (suggestion && suggestion !== "Session") {
-				title.set(suggestion);
-			} else {
-				toast.info("No suggestion available (need common title words)");
-			}
-		};
-
 		const onDelete = async () => {
 			setDeleting(true);
 			const result = await mutations.deleteSession();
@@ -125,7 +101,6 @@ export function SessionEditorProvider({
 			deleting,
 			mutations,
 			onSaveTitle,
-			onSuggestName,
 			onDelete,
 		};
 	}, [session, tz, rooms, tracks, users, title, deleting, mutations, onClose]);

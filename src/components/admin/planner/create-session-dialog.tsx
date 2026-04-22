@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,20 +9,16 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
-import {
-	createSessionWithPresentationsFn,
-	unscheduledSubmissionsQueryOptions,
-} from "@/server-fns/planner/sessions";
+import { createSessionWithPresentationsFn } from "@/server-fns/planner/sessions";
 import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
 import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
 import { RoomSelect } from "./shared/room-select";
 import { TimeRangeSummary } from "./shared/time-range-summary";
-import { TitleWithSuggest } from "./shared/title-with-suggest";
 import { TrackSelect } from "./shared/track-select";
 import { Stepper } from "./stepper";
-import { suggestSessionName } from "./suggest-session-name";
 
 interface CreateSessionDialogProps {
 	open: boolean;
@@ -44,16 +40,6 @@ export function CreateSessionDialog({
 	const { data: rooms } = useSuspenseQuery(allRoomsQueryOptions());
 	const { data: tracks } = useSuspenseQuery(allProgramTracksQueryOptions());
 	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
-	const { data: submissions } = useSuspenseQuery(
-		unscheduledSubmissionsQueryOptions(),
-	);
-
-	const selected = useMemo(() => {
-		const idSet = new Set(submissionIds);
-		return submissions.filter((s) => idSet.has(s.id));
-	}, [submissions, submissionIds]);
-	const suggested = useMemo(() => suggestSessionName(selected), [selected]);
-
 	const [title, setTitle] = useState("");
 	const [roomId, setRoomId] = useState<string | null>(rooms[0]?.id ?? null);
 	const [trackId, setTrackId] = useState<string | null>(null);
@@ -71,7 +57,7 @@ export function CreateSessionDialog({
 	};
 
 	const handleSubmit = async () => {
-		const finalTitle = title.trim() || suggested;
+		const finalTitle = title.trim();
 		if (!finalTitle) {
 			toast.error("Title is required");
 			return;
@@ -121,16 +107,13 @@ export function CreateSessionDialog({
 
 					<div className="space-y-2">
 						<Label htmlFor="cs-title">Title</Label>
-						<TitleWithSuggest
+						<Input
 							id="cs-title"
 							value={title}
-							onChange={setTitle}
-							onEnter={handleSubmit}
-							placeholder={suggested}
-							suggestion={suggested}
-							onApplySuggestion={() => setTitle(suggested)}
-							suggestTitle={`Use suggested: "${suggested}"`}
-							testId="create-session-name"
+							onChange={(e) => setTitle(e.target.value)}
+							onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+							placeholder="Session title"
+							data-testid="create-session-name"
 							autoFocus
 						/>
 					</div>
