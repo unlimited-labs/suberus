@@ -19,15 +19,14 @@ import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
 import { createSessionFn } from "@/server-fns/planner/sessions";
 import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
 import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
+import { usePlannerTools } from "./planner-tools-context";
 import { RoomSelect } from "./shared/room-select";
 import { TimeRangeSummary } from "./shared/time-range-summary";
 import { TrackSelect } from "./shared/track-select";
 import { Stepper } from "./stepper";
 
 interface CreateEventDialogProps extends EventFormProps {
-	onCreated: () => void;
 	timezone?: string;
-	defaultStartAt: Date;
 }
 
 type EventType = "session" | "break";
@@ -36,10 +35,9 @@ export function CreateEventDialog({
 	open,
 	selectedEvent,
 	onClose,
-	onCreated,
 	timezone,
-	defaultStartAt,
 }: CreateEventDialogProps) {
+	const { defaultStartAt, onCreated } = usePlannerTools();
 	const { data: rooms } = useSuspenseQuery(allRoomsQueryOptions());
 	const { data: tracks } = useSuspenseQuery(allProgramTracksQueryOptions());
 	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());

@@ -1,7 +1,7 @@
 import { IconCalendar } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { BreakEditorSheet } from "@/components/admin/planner/break-editor-sheet";
 import { CapacityStrip } from "@/components/admin/planner/capacity-strip";
 import { computeHiddenWeekdays } from "@/components/admin/planner/compute-hidden-weekdays";
@@ -10,6 +10,7 @@ import { useNextStartAt } from "@/components/admin/planner/hooks/use-next-start-
 import { usePlannerCalendarHandlers } from "@/components/admin/planner/hooks/use-planner-calendar-handlers";
 import { usePlannerEvents } from "@/components/admin/planner/hooks/use-planner-events";
 import { usePlannerMutations } from "@/components/admin/planner/hooks/use-planner-mutations";
+import { useRoomVisibility } from "@/components/admin/planner/hooks/use-room-visibility";
 import { IssuesPanel } from "@/components/admin/planner/issues-panel";
 import { MobilePlanner } from "@/components/admin/planner/mobile-planner";
 import { MobileQueueOverlay } from "@/components/admin/planner/mobile-queue-overlay";
@@ -20,6 +21,7 @@ import {
 	PlannerSelectionProvider,
 	usePlannerSelection,
 } from "@/components/admin/planner/planner-context";
+import { PlannerToolsProvider } from "@/components/admin/planner/planner-tools-context";
 import { PublishButton } from "@/components/admin/planner/publish-button";
 import { SessionEditorSheet } from "@/components/admin/planner/session-editor-sheet";
 import { UnscheduledSidebar } from "@/components/admin/planner/unscheduled-sidebar";
@@ -84,35 +86,12 @@ function ProgramPlannerContent() {
 		? new Date(settings.conferenceEndDate)
 		: null;
 
-	const [hiddenRoomIds, setHiddenRoomIds] = useState<Set<string>>(
-		() => new Set(),
-	);
-
-	const toggleRoomVisibility = useCallback((roomId: string) => {
-		setHiddenRoomIds((prev) => {
-			const next = new Set(prev);
-			if (next.has(roomId)) next.delete(roomId);
-			else next.add(roomId);
-			return next;
-		});
-	}, []);
-
-	const showAllRooms = useCallback(() => setHiddenRoomIds(new Set()), []);
-
-	const visibleRooms = useMemo(
-		() => rooms.filter((r) => !hiddenRoomIds.has(r.id)),
-		[rooms, hiddenRoomIds],
-	);
+	const roomVisibility = useRoomVisibility(rooms);
 
 	const { resources, events } = usePlannerEvents(
-		visibleRooms,
+		roomVisibility.visibleRooms,
 		sessions,
 		breaks,
-	);
-
-	const hiddenRoomsKey = useMemo(
-		() => Array.from(hiddenRoomIds).sort().join(","),
-		[hiddenRoomIds],
 	);
 
 	const hiddenWeekdays = useMemo(
@@ -177,29 +156,30 @@ function ProgramPlannerContent() {
 				<div className="hidden min-h-0 flex-1 md:flex">
 					<UnscheduledSidebar />
 					<div className="flex-1 overflow-auto p-4">
-						<PlannerCalendar
-							calendarKey={`${calendarKey}:${hiddenRoomsKey}`}
-							resources={resources}
-							events={events}
+						<PlannerToolsProvider
 							rooms={rooms}
-							hiddenRoomIds={hiddenRoomIds}
-							onToggleRoom={toggleRoomVisibility}
-							onShowAllRooms={showAllRooms}
-							initialDate={currentDate ?? confStart ?? undefined}
-							initialView={currentView}
+							room={roomVisibility}
 							defaultStartAt={defaultStartAt}
-							timezone={tz}
-							timeFormat={settings.timeFormat}
-							dayStart={settings.dayStart}
-							dayEnd={settings.dayEnd}
-							hiddenDays={hiddenWeekdays}
-							onDateChange={setCurrentDate}
-							onViewChange={setCurrentView}
-							onEventUpdate={handleEventUpdate}
-							onEventClick={handleEventClick}
-							onSubmissionDrop={handleSubmissionDrop}
 							onCreated={invalidate}
-						/>
+							onSubmissionDrop={handleSubmissionDrop}
+						>
+							<PlannerCalendar
+								calendarKey={`${calendarKey}:${roomVisibility.hiddenRoomsKey}`}
+								resources={resources}
+								events={events}
+								initialDate={currentDate ?? confStart ?? undefined}
+								initialView={currentView}
+								timezone={tz}
+								timeFormat={settings.timeFormat}
+								dayStart={settings.dayStart}
+								dayEnd={settings.dayEnd}
+								hiddenDays={hiddenWeekdays}
+								onDateChange={setCurrentDate}
+								onViewChange={setCurrentView}
+								onEventUpdate={handleEventUpdate}
+								onEventClick={handleEventClick}
+							/>
+						</PlannerToolsProvider>
 					</div>
 				</div>
 			</div>

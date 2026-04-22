@@ -16,22 +16,12 @@ interface Resource {
 	position: number;
 }
 
-interface Room {
-	id: string;
-	name: string;
-}
-
 interface Props {
 	calendarKey: string | number;
 	resources: Resource[];
 	events: NonNullable<IlamyResourceCalendarProps["events"]>;
-	rooms: Room[];
-	hiddenRoomIds: Set<string>;
-	onToggleRoom: (roomId: string) => void;
-	onShowAllRooms: () => void;
 	initialDate: Date | undefined;
 	initialView: CalendarView;
-	defaultStartAt: Date;
 	timezone: string | undefined;
 	timeFormat: "12h" | "24h" | null | undefined;
 	dayStart: string;
@@ -41,8 +31,6 @@ interface Props {
 	onViewChange: (view: CalendarView) => void;
 	onEventUpdate: (event: CalendarEvent) => void;
 	onEventClick: (event: CalendarEvent) => void;
-	onSubmissionDrop: (sessionId: string, submissionId: string) => void;
-	onCreated: () => void;
 }
 
 const ALL_DAYS: WeekDays[] = [
@@ -63,17 +51,18 @@ function parseHour(v: string, fallback: number) {
 
 const hideCurrentTimeIndicator = () => null;
 
+const renderEvent: NonNullable<IlamyResourceCalendarProps["renderEvent"]> = (
+	event,
+) => <PlannerEventRenderer event={event} />;
+
+const headerComponent = <PlannerCalendarHeader />;
+
 export function PlannerCalendar({
 	calendarKey,
 	resources,
 	events,
-	rooms,
-	hiddenRoomIds,
-	onToggleRoom,
-	onShowAllRooms,
 	initialDate,
 	initialView,
-	defaultStartAt,
 	timezone,
 	timeFormat,
 	dayStart,
@@ -83,8 +72,6 @@ export function PlannerCalendar({
 	onViewChange,
 	onEventUpdate,
 	onEventClick,
-	onSubmissionDrop,
-	onCreated,
 }: Props) {
 	const businessHours = {
 		daysOfWeek: ALL_DAYS,
@@ -103,24 +90,8 @@ export function PlannerCalendar({
 	const renderEventForm = useCallback<
 		NonNullable<IlamyResourceCalendarProps["renderEventForm"]>
 	>(
-		(props) => (
-			<CreateEventDialog
-				{...props}
-				onCreated={onCreated}
-				timezone={timezone}
-				defaultStartAt={defaultStartAt}
-			/>
-		),
-		[onCreated, timezone, defaultStartAt],
-	);
-
-	const renderEvent = useCallback<
-		NonNullable<IlamyResourceCalendarProps["renderEvent"]>
-	>(
-		(event) => (
-			<PlannerEventRenderer event={event} onSubmissionDrop={onSubmissionDrop} />
-		),
-		[onSubmissionDrop],
+		(props) => <CreateEventDialog {...props} timezone={timezone} />,
+		[timezone],
 	);
 
 	return (
@@ -144,14 +115,7 @@ export function PlannerCalendar({
 				renderCurrentTimeIndicator={hideCurrentTimeIndicator}
 				renderEventForm={renderEventForm}
 				renderEvent={renderEvent}
-				headerComponent={
-					<PlannerCalendarHeader
-						rooms={rooms}
-						hiddenRoomIds={hiddenRoomIds}
-						onToggleRoom={onToggleRoom}
-						onShowAllRooms={onShowAllRooms}
-					/>
-				}
+				headerComponent={headerComponent}
 			/>
 		</div>
 	);
