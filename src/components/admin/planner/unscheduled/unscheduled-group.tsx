@@ -7,6 +7,7 @@ interface Props {
 	isCollapsed: boolean;
 	onToggle: () => void;
 	selectMode: boolean;
+	showTypeBadge: boolean;
 	selectedIds: Set<string>;
 	expandedIds: Set<string>;
 	draggingId: string | null;
@@ -21,6 +22,7 @@ export function UnscheduledGroup({
 	isCollapsed,
 	onToggle,
 	selectMode,
+	showTypeBadge,
 	selectedIds,
 	expandedIds,
 	draggingId,
@@ -57,6 +59,7 @@ export function UnscheduledGroup({
 							key={s.id}
 							submission={s}
 							selectMode={selectMode}
+							showTypeBadge={showTypeBadge}
 							selected={selectedIds.has(s.id)}
 							expanded={expandedIds.has(s.id)}
 							dragging={draggingId === s.id}

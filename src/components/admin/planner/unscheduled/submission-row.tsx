@@ -11,6 +11,7 @@ const TYPE_LABELS: Record<string, string> = {
 interface Props {
 	submission: UnscheduledSubmission;
 	selectMode: boolean;
+	showTypeBadge: boolean;
 	selected: boolean;
 	expanded: boolean;
 	dragging: boolean;
@@ -23,6 +24,7 @@ interface Props {
 export function SubmissionRow({
 	submission: s,
 	selectMode,
+	showTypeBadge,
 	selected,
 	expanded,
 	dragging,
@@ -86,9 +88,11 @@ export function SubmissionRow({
 					className="block w-full text-left"
 				>
 					<div className="flex items-start gap-1.5">
-						<span className="mt-0.5 shrink-0 rounded bg-muted px-1 py-0.5 text-[9px] font-medium uppercase tracking-wide text-muted-foreground">
-							{TYPE_LABELS[s.type] ?? s.type}
-						</span>
+						{showTypeBadge && (
+							<span className="mt-0.5 shrink-0 rounded bg-muted px-1 py-0.5 text-[9px] font-medium uppercase tracking-wide text-muted-foreground">
+								{TYPE_LABELS[s.type] ?? s.type}
+							</span>
+						)}
 						<p
 							className={`text-xs font-medium leading-snug ${
 								expanded ? "" : "line-clamp-2"

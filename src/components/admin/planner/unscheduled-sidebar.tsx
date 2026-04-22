@@ -33,6 +33,11 @@ export function UnscheduledSidebar() {
 	const [draggingId, setDraggingId] = useState<string | null>(null);
 	const [readerStart, setReaderStart] = useState<number | null>(null);
 
+	const showTypeBadge = useMemo(
+		() => new Set(submissions.map((s) => s.type)).size > 1,
+		[submissions],
+	);
+
 	const filtered = useMemo(
 		() => submissions.filter((s) => matchesSearch(s, search.trim())),
 		[submissions, search],
@@ -119,6 +124,7 @@ export function UnscheduledSidebar() {
 									isCollapsed={isCollapsed}
 									onToggle={() => collapsed.toggle(toggleKey)}
 									selectMode={selectMode}
+									showTypeBadge={showTypeBadge}
 									selectedIds={selection.selected}
 									expandedIds={expanded.set}
 									draggingId={draggingId}
