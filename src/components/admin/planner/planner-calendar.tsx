@@ -1,5 +1,6 @@
 import {
 	type CalendarEvent,
+	type CalendarView,
 	IlamyResourceCalendar,
 	type IlamyResourceCalendarProps,
 	type WeekDays,
@@ -15,16 +16,18 @@ interface Resource {
 }
 
 interface Props {
-	calendarKey: number;
+	calendarKey: string | number;
 	resources: Resource[];
 	events: NonNullable<IlamyResourceCalendarProps["events"]>;
 	initialDate: Date | undefined;
+	initialView: CalendarView;
 	defaultStartAt: Date;
 	timezone: string | undefined;
 	timeFormat: "12h" | "24h" | null | undefined;
 	dayStart: string;
 	dayEnd: string;
 	onDateChange: (date: Date) => void;
+	onViewChange: (view: CalendarView) => void;
 	onEventUpdate: (event: CalendarEvent) => void;
 	onEventClick: (event: CalendarEvent) => void;
 	onSubmissionDrop: (sessionId: string, submissionId: string) => void;
@@ -54,12 +57,14 @@ export function PlannerCalendar({
 	resources,
 	events,
 	initialDate,
+	initialView,
 	defaultStartAt,
 	timezone,
 	timeFormat,
 	dayStart,
 	dayEnd,
 	onDateChange,
+	onViewChange,
 	onEventUpdate,
 	onEventClick,
 	onSubmissionDrop,
@@ -74,6 +79,10 @@ export function PlannerCalendar({
 	const handleDateChange = useCallback<
 		NonNullable<IlamyResourceCalendarProps["onDateChange"]>
 	>((date) => onDateChange(date.toDate()), [onDateChange]);
+
+	const handleViewChange = useCallback<
+		NonNullable<IlamyResourceCalendarProps["onViewChange"]>
+	>((view) => onViewChange(view), [onViewChange]);
 
 	const renderEventForm = useCallback<
 		NonNullable<IlamyResourceCalendarProps["renderEventForm"]>
@@ -105,13 +114,14 @@ export function PlannerCalendar({
 				resources={resources}
 				events={events}
 				orientation="vertical"
-				initialView="day"
+				initialView={initialView}
 				initialDate={initialDate}
 				timezone={timezone}
 				timeFormat={timeFormat === "12h" ? "12-hour" : "24-hour"}
 				businessHours={businessHours}
 				hideNonBusinessHours
 				onDateChange={handleDateChange}
+				onViewChange={handleViewChange}
 				onEventUpdate={onEventUpdate}
 				onEventClick={onEventClick}
 				renderCurrentTimeIndicator={hideCurrentTimeIndicator}

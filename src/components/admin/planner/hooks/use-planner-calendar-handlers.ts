@@ -1,4 +1,4 @@
-import type { CalendarEvent } from "@ilamy/calendar";
+import type { CalendarEvent, CalendarView } from "@ilamy/calendar";
 import { useCallback, useState } from "react";
 import { usePlannerSelection } from "../planner-context";
 import { parseCalendarEventData } from "./parse-calendar-event-data";
@@ -10,6 +10,7 @@ export function usePlannerCalendarHandlers(confStart: Date | null) {
 	const invalidate = useInvalidatePlannerQueries();
 
 	const [currentDate, setCurrentDate] = useState<Date | null>(null);
+	const [currentView, setCurrentView] = useState<CalendarView>("day");
 	const [calendarKey, setCalendarKey] = useState(0);
 
 	const handleEventClick = useCallback(
@@ -35,6 +36,8 @@ export function usePlannerCalendarHandlers(confStart: Date | null) {
 	return {
 		currentDate,
 		setCurrentDate,
+		currentView,
+		setCurrentView,
 		calendarKey,
 		handleEventClick,
 		returnToConference,

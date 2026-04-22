@@ -1,7 +1,7 @@
 import { IconCalendar } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { BreakEditorSheet } from "@/components/admin/planner/break-editor-sheet";
 import { CapacityStrip } from "@/components/admin/planner/capacity-strip";
 import { CreateSessionDialog } from "@/components/admin/planner/create-session-dialog";
@@ -20,6 +20,7 @@ import {
 	usePlannerSelection,
 } from "@/components/admin/planner/planner-context";
 import { PublishButton } from "@/components/admin/planner/publish-button";
+import { RoomFilterPopover } from "@/components/admin/planner/room-filter-popover";
 import { SessionEditorSheet } from "@/components/admin/planner/session-editor-sheet";
 import { UnscheduledSidebar } from "@/components/admin/planner/unscheduled-sidebar";
 import { PageHeader } from "@/components/layout/page-header";
@@ -83,12 +84,43 @@ function ProgramPlannerContent() {
 		? new Date(settings.conferenceEndDate)
 		: null;
 
-	const { resources, events } = usePlannerEvents(rooms, sessions, breaks);
+	const [hiddenRoomIds, setHiddenRoomIds] = useState<Set<string>>(
+		() => new Set(),
+	);
+
+	const toggleRoomVisibility = useCallback((roomId: string) => {
+		setHiddenRoomIds((prev) => {
+			const next = new Set(prev);
+			if (next.has(roomId)) next.delete(roomId);
+			else next.add(roomId);
+			return next;
+		});
+	}, []);
+
+	const showAllRooms = useCallback(() => setHiddenRoomIds(new Set()), []);
+
+	const visibleRooms = useMemo(
+		() => rooms.filter((r) => !hiddenRoomIds.has(r.id)),
+		[rooms, hiddenRoomIds],
+	);
+
+	const { resources, events } = usePlannerEvents(
+		visibleRooms,
+		sessions,
+		breaks,
+	);
+
+	const hiddenRoomsKey = useMemo(
+		() => Array.from(hiddenRoomIds).sort().join(","),
+		[hiddenRoomIds],
+	);
 	const { invalidate, handleSubmissionDrop, handleEventUpdate } =
 		usePlannerMutations(settings.defaultPresentationMin);
 	const {
 		currentDate,
 		setCurrentDate,
+		currentView,
+		setCurrentView,
 		calendarKey,
 		handleEventClick,
 		returnToConference,
@@ -139,23 +171,35 @@ function ProgramPlannerContent() {
 				{mobileQueueOpen && <MobileQueueOverlay onClose={closeMobileQueue} />}
 				<div className="hidden min-h-0 flex-1 md:flex">
 					<UnscheduledSidebar />
-					<div className="flex-1 overflow-auto p-4">
-						<PlannerCalendar
-							calendarKey={calendarKey}
-							resources={resources}
-							events={events}
-							initialDate={confStart ?? undefined}
-							defaultStartAt={defaultStartAt}
-							timezone={tz}
-							timeFormat={settings.timeFormat}
-							dayStart={settings.dayStart}
-							dayEnd={settings.dayEnd}
-							onDateChange={setCurrentDate}
-							onEventUpdate={handleEventUpdate}
-							onEventClick={handleEventClick}
-							onSubmissionDrop={handleSubmissionDrop}
-							onCreated={invalidate}
-						/>
+					<div className="flex min-h-0 flex-1 flex-col">
+						<div className="flex items-center gap-2 border-b px-4 py-1.5">
+							<RoomFilterPopover
+								rooms={rooms}
+								hiddenIds={hiddenRoomIds}
+								onToggle={toggleRoomVisibility}
+								onShowAll={showAllRooms}
+							/>
+						</div>
+						<div className="flex-1 overflow-auto p-4">
+							<PlannerCalendar
+								calendarKey={`${calendarKey}:${hiddenRoomsKey}`}
+								resources={resources}
+								events={events}
+								initialDate={currentDate ?? confStart ?? undefined}
+								initialView={currentView}
+								defaultStartAt={defaultStartAt}
+								timezone={tz}
+								timeFormat={settings.timeFormat}
+								dayStart={settings.dayStart}
+								dayEnd={settings.dayEnd}
+								onDateChange={setCurrentDate}
+								onViewChange={setCurrentView}
+								onEventUpdate={handleEventUpdate}
+								onEventClick={handleEventClick}
+								onSubmissionDrop={handleSubmissionDrop}
+								onCreated={invalidate}
+							/>
+						</div>
 					</div>
 				</div>
 			</div>
