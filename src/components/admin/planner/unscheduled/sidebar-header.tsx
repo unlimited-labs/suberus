@@ -25,9 +25,6 @@ export function SidebarHeader({
 			<div className="flex items-center gap-1.5">
 				<IconLayoutList size={14} className="text-muted-foreground" />
 				<span className="text-xs font-medium">Unscheduled</span>
-				<span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-					{count}
-				</span>
 			</div>
 			<div className="flex items-center gap-1">
 				{count > 0 && (
