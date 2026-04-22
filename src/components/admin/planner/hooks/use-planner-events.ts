@@ -48,18 +48,20 @@ export function usePlannerEvents(
 			} satisfies SessionEventData,
 		}));
 
+		const allRoomIds = rooms.map((r) => r.id);
 		const breakEvents = breaks.map((b) => ({
 			id: `break:${b.id}`,
 			title: b.title,
 			start: b.startAt,
 			end: b.endAt,
 			resourceId: b.roomId ?? undefined,
+			resourceIds: b.roomId ? undefined : allRoomIds,
 			backgroundColor: "transparent",
 			data: { kind: "break" as const, breakId: b.id } satisfies BreakEventData,
 		}));
 
 		return [...sessionEvents, ...breakEvents];
-	}, [sessions, breaks]);
+	}, [sessions, breaks, rooms]);
 
 	return { resources, events };
 }
