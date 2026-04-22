@@ -6,10 +6,7 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	adminSettingQueryOptions,
-	setSettingFn,
-} from "@/utils/settings.functions";
+import { adminSettingQueryOptions, setSettingFn } from "@/server-fns/settings";
 
 interface InvitationsSettingsTabProps {
 	initialValidityHours: number;

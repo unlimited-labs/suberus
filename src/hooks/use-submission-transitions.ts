@@ -5,12 +5,12 @@ import type { TransitionResult } from "@/lib/workflow/types";
 import {
 	adminSubmissionsQueryOptions,
 	editorSubmissionQueryOptions,
-} from "@/utils/admin-submissions.functions";
+} from "@/server-fns/admin/submissions";
 import {
 	confirmConditionsMetFn,
 	editorOverrideFn,
 	transitionToAwaitingDecisionFn,
-} from "@/utils/workflow.functions";
+} from "@/server-fns/workflow";
 
 export function useSubmissionTransitions(submissionId: string) {
 	const queryClient = useQueryClient();

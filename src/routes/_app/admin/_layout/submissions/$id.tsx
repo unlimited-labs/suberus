@@ -53,9 +53,9 @@ import { formatFileSize } from "@/lib/utils";
 import {
 	editorSubmissionQueryOptions,
 	updateSubmissionTrackFn,
-} from "@/utils/admin-submissions.functions";
-import { adminSettingQueryOptions } from "@/utils/settings.functions";
-import { activeTracksQueryOptions } from "@/utils/tracks.functions";
+} from "@/server-fns/admin/submissions";
+import { adminSettingQueryOptions } from "@/server-fns/settings";
+import { activeTracksQueryOptions } from "@/server-fns/tracks";
 
 export const Route = createFileRoute("/_app/admin/_layout/submissions/$id")({
 	loader: async ({ params, context }) => {

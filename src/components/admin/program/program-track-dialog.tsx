@@ -12,12 +12,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { ProgramTrackWithStats } from "@/lib/server/planner/tracks";
 import { cn } from "@/lib/utils";
 import {
 	createProgramTrackFn,
 	updateProgramTrackFn,
-} from "@/utils/program-tracks.functions";
-import type { ProgramTrackWithStats } from "@/utils/program-tracks.server";
+} from "@/server-fns/planner/tracks";
 
 const SERIES_RE = /^(.+?)\s+(\d+)$/;
 

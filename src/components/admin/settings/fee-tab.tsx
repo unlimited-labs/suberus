@@ -13,12 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { paymentInstructionsQueryOptions } from "@/utils/fee.functions";
+import { paymentInstructionsQueryOptions } from "@/server-fns/fee";
 import {
 	feeTypesQueryOptions,
 	updateFeeInstructionsFn,
 	updateFeeTypesFn,
-} from "@/utils/settings.functions";
+} from "@/server-fns/settings";
 
 interface FeeType {
 	id: string;

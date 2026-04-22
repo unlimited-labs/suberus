@@ -7,7 +7,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import type { EditorDecisionType } from "@/generated/prisma/enums";
 import { useDateFormat } from "@/hooks/use-date-format";
-import type { UserSubmissionDecision } from "@/utils/submissions.functions";
+import type { UserSubmissionDecision } from "@/server-fns/submissions";
 
 interface EditorDecisionCardProps {
 	decision: UserSubmissionDecision;

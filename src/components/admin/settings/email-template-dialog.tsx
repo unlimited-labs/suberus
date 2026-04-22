@@ -25,7 +25,7 @@ import {
 	emailTemplatesQueryOptions,
 	sendTestEmailFn,
 	updateEmailTemplateFn,
-} from "@/utils/email-templates.functions";
+} from "@/server-fns/settings/email-templates";
 import type { EmailTemplateUI } from "./email-templates-tab";
 
 const PLACEHOLDER_DESCRIPTIONS: Record<string, string> = {

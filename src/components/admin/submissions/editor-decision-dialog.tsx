@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { reviewDecisionColors } from "@/lib/labels/submission";
 import { cn } from "@/lib/utils";
-import { submitEditorDecisionFn } from "@/utils/workflow.functions";
+import { submitEditorDecisionFn } from "@/server-fns/workflow";
 
 interface EditorDecisionDialogProps {
 	submissionId: string;

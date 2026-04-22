@@ -8,19 +8,19 @@ import {
 } from "@/components/forms/submission/submission-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
-import { extractionSettingsQueryOptions } from "@/utils/extraction.functions";
 import {
 	activeSubmissionTypesQueryOptions,
 	submissionGuidelinesQueryOptions,
 	submissionValidationQueryOptions,
-} from "@/utils/settings.functions";
+} from "@/server-fns/settings";
+import { extractionSettingsQueryOptions } from "@/server-fns/settings/extraction";
 import {
 	mySubmissionsQueryOptions,
 	submissionDetailQueryOptions,
 	submitDraftFn,
 	updateDraftSubmissionFn,
 	uploadSubmissionFile,
-} from "@/utils/submissions.functions";
+} from "@/server-fns/submissions";
 
 export const Route = createFileRoute("/_app/submissions/$id_/edit")({
 	loader: async ({ params, context }) => {

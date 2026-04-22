@@ -11,7 +11,7 @@ import {
 	type ReminderSettings,
 	reminderSettingsQueryOptions,
 	updateReminderSettingsFn,
-} from "@/utils/settings.functions";
+} from "@/server-fns/settings";
 
 interface RemindersSettingsTabProps {
 	initialData: ReminderSettings;

@@ -23,17 +23,17 @@ import type {
 import {
 	createAffiliation,
 	getAffiliationById,
-} from "@/utils/affiliations.functions";
+} from "@/server-fns/affiliations";
 import {
 	changeEmailFn,
 	changePasswordFn,
 	updateContactInfoFn,
 	updatePersonalInfoFn,
-} from "@/utils/profile.functions";
+} from "@/server-fns/profile";
 import {
 	activeSurveyQuestionsQueryOptions,
 	userSurveyAnswersQueryOptions,
-} from "@/utils/survey.functions";
+} from "@/server-fns/settings/survey";
 
 export const Route = createFileRoute("/_app/profile")({
 	loader: async ({ context }) => {

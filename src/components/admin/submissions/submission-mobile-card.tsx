@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { statusLabels, typeLabels } from "@/lib/labels/submission";
-import type { AdminSubmission } from "@/utils/admin-submissions.server";
+import type { AdminSubmission } from "@/lib/server/admin/submissions";
 
 export function SubmissionMobileCard(submission: AdminSubmission) {
 	return (

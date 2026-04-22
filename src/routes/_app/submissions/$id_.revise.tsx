@@ -16,13 +16,13 @@ import { Textarea } from "@/components/ui/textarea";
 import {
 	activeSubmissionTypesQueryOptions,
 	submissionValidationQueryOptions,
-} from "@/utils/settings.functions";
+} from "@/server-fns/settings";
 import {
 	mySubmissionsQueryOptions,
 	resubmitSubmissionFn,
 	submissionDetailQueryOptions,
 	uploadSubmissionFile,
-} from "@/utils/submissions.functions";
+} from "@/server-fns/submissions";
 
 export const Route = createFileRoute("/_app/submissions/$id_/revise")({
 	loader: async ({ params, context }) => {

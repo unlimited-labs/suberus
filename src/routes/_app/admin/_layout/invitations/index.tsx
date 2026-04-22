@@ -13,7 +13,7 @@ import {
 	adminInvitationsQueryOptions,
 	cancelInvitationFn,
 	resendInvitationFn,
-} from "@/utils/admin-invitations.functions";
+} from "@/server-fns/admin/invitations";
 
 export const Route = createFileRoute("/_app/admin/_layout/invitations/")({
 	loader: async ({ context }) => {

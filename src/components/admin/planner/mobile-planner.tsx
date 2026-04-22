@@ -5,7 +5,7 @@ import {
 	IconLayoutList,
 } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
-import { formatDayLabel, sameDayInTz } from "@/utils/tz-datetime";
+import { formatDayLabel, sameDayInTz } from "@/lib/tz-datetime";
 import { MobileBreakRow } from "./mobile/mobile-break-row";
 import { MobileSessionRow } from "./mobile/mobile-session-row";
 import { buildPlannerItems } from "./mobile/planner-item";

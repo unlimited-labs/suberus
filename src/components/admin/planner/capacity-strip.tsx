@@ -1,6 +1,6 @@
 import { IconGauge } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { scheduleCapacityQueryOptions } from "@/utils/schedule.functions";
+import { scheduleCapacityQueryOptions } from "@/server-fns/planner/schedule";
 
 function formatMinutes(min: number): string {
 	if (min <= 0) return "0 min";

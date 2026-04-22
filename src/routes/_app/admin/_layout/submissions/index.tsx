@@ -7,7 +7,7 @@ import { SubmissionExportButton } from "@/components/admin/submissions/export-bu
 import { SubmissionBulkActions } from "@/components/admin/submissions/submission-bulk-actions";
 import { SubmissionMobileCard } from "@/components/admin/submissions/submission-mobile-card";
 import { PageHeader } from "@/components/layout/page-header";
-import { adminSubmissionsQueryOptions } from "@/utils/admin-submissions.functions";
+import { adminSubmissionsQueryOptions } from "@/server-fns/admin/submissions";
 
 export const Route = createFileRoute("/_app/admin/_layout/submissions/")({
 	loader: async ({ context }) => {

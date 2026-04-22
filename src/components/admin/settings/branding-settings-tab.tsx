@@ -23,7 +23,7 @@ import {
 	deleteAuthBackgroundFn,
 	updateBrandingSettingsFn,
 	uploadAuthBackgroundFn,
-} from "@/utils/settings.functions";
+} from "@/server-fns/settings";
 
 interface BrandingSettingsTabProps {
 	initialData: BrandingSettings;

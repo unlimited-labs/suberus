@@ -13,14 +13,14 @@ import {
 } from "@/components/ui/select";
 import type { SubmissionStatus } from "@/generated/prisma/enums";
 import { statusChangeOptions } from "@/lib/labels/submission";
+import type { AdminSubmission } from "@/lib/server/admin/submissions";
 import {
 	bulkAssignReviewerFn,
 	bulkChangeStatusFn,
 	bulkUpdateSubmissionTrackFn,
-} from "@/utils/admin-submissions.functions";
-import type { AdminSubmission } from "@/utils/admin-submissions.server";
-import { reviewerUsersQueryOptions } from "@/utils/reviewers.functions";
-import { activeTracksQueryOptions } from "@/utils/tracks.functions";
+} from "@/server-fns/admin/submissions";
+import { reviewerUsersQueryOptions } from "@/server-fns/reviews/reviewers";
+import { activeTracksQueryOptions } from "@/server-fns/tracks";
 
 interface SubmissionBulkActionsProps {
 	table: Table<AdminSubmission>;

@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { PageHeader } from "@/components/layout/page-header";
-import { userDashboardQueryOptions } from "@/utils/user-dashboard.functions";
+import { userDashboardQueryOptions } from "@/server-fns/user-dashboard";
 
 const searchSchema = z.object({
 	verified: z.literal(true).optional(),

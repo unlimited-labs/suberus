@@ -3,8 +3,8 @@ import * as XLSX from "xlsx";
 import type { UserRole } from "@/generated/prisma/enums";
 import { formatDateTime } from "@/lib/format-date";
 import { getUsers } from "@/lib/server/admin/users";
-import { adminRequestMiddleware } from "@/utils/auth.middleware";
-import { getSetting } from "@/utils/settings.server";
+import { adminRequestMiddleware } from "@/lib/server/middleware/auth";
+import { getSetting } from "@/lib/server/settings";
 
 export const Route = createFileRoute("/api/admin/users/export")({
 	server: {

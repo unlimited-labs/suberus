@@ -2,7 +2,7 @@ import { IconSparkles } from "@tabler/icons-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { utcToTzLocalInput } from "@/utils/tz-datetime";
+import { utcToTzLocalInput } from "@/lib/tz-datetime";
 import { RoomSelect } from "../shared/room-select";
 import { TrackSelect } from "../shared/track-select";
 import { useSessionEditor } from "./session-editor-context";

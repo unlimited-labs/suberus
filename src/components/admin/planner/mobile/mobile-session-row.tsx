@@ -1,5 +1,5 @@
 import { IconUsers } from "@tabler/icons-react";
-import { formatClockTime, formatDurationMin } from "@/utils/tz-datetime";
+import { formatClockTime, formatDurationMin } from "@/lib/tz-datetime";
 import type { SessionItem } from "./planner-item";
 
 interface Props {

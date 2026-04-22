@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { extractDocumentMetadataFn } from "@/utils/extraction.functions";
+import { extractDocumentMetadataFn } from "@/server-fns/settings/extraction";
 import type { Author } from "./authors-input";
 
 interface UseDocumentExtractionOptions {

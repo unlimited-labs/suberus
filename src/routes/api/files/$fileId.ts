@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type { UserRole } from "@/generated/prisma/enums";
+import { checkFileAccess } from "@/lib/server/files";
+import { authRequestMiddleware } from "@/lib/server/middleware/auth";
 import { getFileContent } from "@/lib/server/storage";
-import { authRequestMiddleware } from "@/utils/auth.middleware";
-import { checkFileAccess } from "@/utils/files.server";
 
 export const Route = createFileRoute("/api/files/$fileId")({
 	server: {

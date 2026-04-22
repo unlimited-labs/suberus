@@ -11,8 +11,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { deleteProgramTrackFn } from "@/utils/program-tracks.functions";
-import type { ProgramTrackWithStats } from "@/utils/program-tracks.server";
+import type { ProgramTrackWithStats } from "@/lib/server/planner/tracks";
+import { deleteProgramTrackFn } from "@/server-fns/planner/tracks";
 
 interface ProgramTracksListProps {
 	tracks: ProgramTrackWithStats[];

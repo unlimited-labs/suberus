@@ -13,8 +13,8 @@ import {
 import {
 	activeSubmissionTypesQueryOptions,
 	submissionDeadlineQueryOptions,
-} from "@/utils/settings.functions";
-import { mySubmissionsQueryOptions } from "@/utils/submissions.functions";
+} from "@/server-fns/settings";
+import { mySubmissionsQueryOptions } from "@/server-fns/submissions";
 
 export const Route = createFileRoute("/_app/submissions/")({
 	loader: async ({ context }) => {

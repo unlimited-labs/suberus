@@ -19,7 +19,7 @@ import {
 	assignmentStatusVariants,
 } from "@/lib/labels/assignment";
 import { typeFilterOptions, typeLabels } from "@/lib/labels/submission";
-import type { ReviewerAssignment } from "@/utils/assignments.functions";
+import type { ReviewerAssignment } from "@/server-fns/reviews/assignments";
 
 function DeadlineCell({
 	deadline,

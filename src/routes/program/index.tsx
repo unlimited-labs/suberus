@@ -3,16 +3,16 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import type {
+	PublicProgramBreak,
+	PublicProgramSession,
+} from "@/lib/server/planner/schedule";
 import { cn } from "@/lib/utils";
 import {
 	publicConferenceInfoQueryOptions,
 	publicProgramQueryOptions,
-} from "@/utils/schedule.functions";
-import type {
-	PublicProgramBreak,
-	PublicProgramSession,
-} from "@/utils/schedule.server";
-import { getAppBrandingFn } from "@/utils/settings.functions";
+} from "@/server-fns/planner/schedule";
+import { getAppBrandingFn } from "@/server-fns/settings";
 
 export const Route = createFileRoute("/program/")({
 	loader: async ({ context }) => {

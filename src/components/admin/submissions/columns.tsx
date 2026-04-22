@@ -14,7 +14,7 @@ import {
 	typeFilterOptions,
 	typeLabels,
 } from "@/lib/labels/submission";
-import type { AdminSubmission } from "@/utils/admin-submissions.server";
+import type { AdminSubmission } from "@/lib/server/admin/submissions";
 
 export const submissionColumns: ColumnDef<AdminSubmission>[] = [
 	createSelectColumn<AdminSubmission>(),

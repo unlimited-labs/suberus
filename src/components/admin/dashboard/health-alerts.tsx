@@ -7,7 +7,7 @@ import { Link } from "@tanstack/react-router";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { formatLlmStatus, pluralize } from "@/lib/format-llm-status";
-import type { AdminDashboardMetrics } from "@/utils/admin-dashboard.server";
+import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
 
 interface HealthAlertsProps {
 	data: AdminDashboardMetrics["health"] | undefined;

@@ -8,7 +8,7 @@ import { ReviewMobileCard } from "@/components/reviews/review-mobile-card";
 import {
 	myAssignmentsQueryOptions,
 	type ReviewerAssignment,
-} from "@/utils/assignments.functions";
+} from "@/server-fns/reviews/assignments";
 
 export const Route = createFileRoute("/_app/reviews/")({
 	loader: async ({ context }) => {

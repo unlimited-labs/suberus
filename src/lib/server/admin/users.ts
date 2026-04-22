@@ -3,8 +3,9 @@ import type { Prisma } from "@/generated/prisma/client";
 import type { UserRole } from "@/generated/prisma/enums";
 import { activityDetail } from "@/lib/activity-log";
 import { logActivity, logActivityTx } from "@/lib/server/activity-log";
-import { upsertAffiliation } from "@/utils/affiliations.server";
-import { linkCoAuthorsByEmail } from "@/utils/submissions.server";
+import { upsertAffiliation } from "@/lib/server/affiliations";
+import { linkCoAuthorsByEmail } from "@/lib/server/submissions";
+import { logger } from "@/logger.ts";
 
 export interface AdminUser {
 	id: string;
@@ -588,4 +589,159 @@ export async function deleteUser(
 	});
 
 	return { success: true };
+}
+
+// === Admin orchestration layer ===
+
+export async function fetchUsers(
+	filters: UsersFilters,
+): Promise<GetUsersResponse> {
+	return getUsers(filters);
+}
+
+export async function fetchUserById(id: string): Promise<AdminUser | null> {
+	return getUserById(id);
+}
+
+export interface PatchUserData {
+	id: string;
+	role?: UserRole;
+	isActive?: boolean;
+	markFeePaid?: boolean;
+	feeType?: string;
+	feeAmount?: number;
+	feeCurrency?: string;
+	unmarkFeePaid?: boolean;
+	verifyEmail?: boolean;
+}
+
+export async function patchUser(
+	data: PatchUserData,
+	performedBy?: string,
+): Promise<AdminUser | null> {
+	if (data.role !== undefined) {
+		await changeUserRole({ userId: data.id, role: data.role }, performedBy);
+	}
+
+	if (data.isActive !== undefined) {
+		await toggleUserActive(
+			{
+				userId: data.id,
+				isActive: data.isActive,
+			},
+			performedBy,
+		);
+	}
+
+	if (
+		data.markFeePaid &&
+		data.feeType &&
+		data.feeAmount !== undefined &&
+		data.feeCurrency
+	) {
+		await markFeePaid(
+			{
+				userId: data.id,
+				feeType: data.feeType,
+				amount: data.feeAmount,
+				currency: data.feeCurrency,
+			},
+			performedBy,
+		);
+	}
+
+	if (data.unmarkFeePaid) {
+		await unmarkFeePaid(data.id, performedBy);
+	}
+
+	if (data.verifyEmail) {
+		await verifyUserEmail(data.id, performedBy);
+	}
+
+	const changes = [
+		data.role !== undefined && `role=${data.role}`,
+		data.isActive !== undefined && `active=${data.isActive}`,
+		data.markFeePaid && "feePaid",
+		data.unmarkFeePaid && "feeUnpaid",
+		data.verifyEmail && "emailVerified",
+	]
+		.filter(Boolean)
+		.join(", ");
+	logger.info(`[admin] patchUser ${data.id}: ${changes}`);
+
+	return getUserById(data.id);
+}
+
+export interface BulkActionData {
+	action: "mark_fee" | "change_role";
+	userIds: string[];
+	feeType?: string;
+	feeAmount?: number;
+	feeCurrency?: string;
+	role?: UserRole;
+}
+
+export async function executeBulkAction(
+	data: BulkActionData,
+	performedBy?: string,
+): Promise<{ success: boolean; updated: number }> {
+	if (data.action === "mark_fee") {
+		if (!data.feeType || data.feeAmount === undefined || !data.feeCurrency) {
+			throw new Response("Fee type, amount and currency are required", {
+				status: 400,
+			});
+		}
+		logger.info(`[admin] bulk mark_fee for ${data.userIds.length} users`);
+		return bulkMarkFeesPaid(
+			{
+				userIds: data.userIds,
+				feeType: data.feeType,
+				amount: data.feeAmount,
+				currency: data.feeCurrency,
+			},
+			performedBy,
+		);
+	}
+
+	if (data.action === "change_role") {
+		if (!data.role) {
+			throw new Response("Role is required", { status: 400 });
+		}
+		logger.info(
+			`[admin] bulk change_role to ${data.role} for ${data.userIds.length} users`,
+		);
+		return bulkChangeRole(
+			{
+				userIds: data.userIds,
+				role: data.role,
+			},
+			performedBy,
+		);
+	}
+
+	throw new Response("Invalid action", { status: 400 });
+}
+
+export async function adminUpdateProfile(
+	userId: string,
+	data: UpdateUserProfileInput,
+): Promise<AdminUser | null> {
+	await updateUserProfile(userId, data);
+	logger.info(`[admin] updateProfile ${userId}`);
+	return getUserById(userId);
+}
+
+export async function adminCheckDeletable(
+	userId: string,
+): Promise<DeletableCheck> {
+	return checkUserDeletable(userId);
+}
+
+export async function adminDeleteUser(
+	userId: string,
+	currentUserId: string,
+): Promise<{ success: boolean }> {
+	const result = await deleteUser(userId, currentUserId);
+	logger.info(`[admin] deleteUser ${userId}`);
+	return result;
 }

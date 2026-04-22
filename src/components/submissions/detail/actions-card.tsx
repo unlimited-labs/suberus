@@ -9,7 +9,7 @@ import {
 	mySubmissionsQueryOptions,
 	submissionDetailQueryOptions,
 	submitDraftFn,
-} from "@/utils/submissions.functions";
+} from "@/server-fns/submissions";
 import { WithdrawDialog } from "./withdraw-dialog";
 
 interface ActionsCardProps {

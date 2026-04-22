@@ -9,7 +9,7 @@ import { ReviewProgress } from "@/components/admin/dashboard/review-progress";
 import { SubmissionChart } from "@/components/admin/dashboard/submission-chart";
 import { UserCountryMap } from "@/components/admin/dashboard/user-country-map";
 import { PageHeader } from "@/components/layout/page-header";
-import { adminDashboardQueryOptions } from "@/utils/admin-dashboard.functions";
+import { adminDashboardQueryOptions } from "@/server-fns/admin/dashboard";
 
 export const Route = createFileRoute("/_app/admin/_layout/dashboard/")({
 	loader: async ({ context }) => {

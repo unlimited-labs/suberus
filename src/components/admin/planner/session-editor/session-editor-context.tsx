@@ -7,13 +7,13 @@ import {
 	useState,
 } from "react";
 import { toast } from "sonner";
-import { adminUsersQueryOptions } from "@/utils/admin-users.functions";
-import type { AdminUser } from "@/utils/admin-users.server";
-import { allSessionsQueryOptions } from "@/utils/program-sessions.functions";
-import { allProgramTracksQueryOptions } from "@/utils/program-tracks.functions";
-import { allRoomsQueryOptions } from "@/utils/rooms.functions";
-import { conferenceSettingsQueryOptions } from "@/utils/settings.functions";
-import { formatDurationMin } from "@/utils/tz-datetime";
+import type { AdminUser } from "@/lib/server/admin/users";
+import { formatDurationMin } from "@/lib/tz-datetime";
+import { adminUsersQueryOptions } from "@/server-fns/admin/users";
+import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
+import { allSessionsQueryOptions } from "@/server-fns/planner/sessions";
+import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
+import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
 import { useEditableTitle } from "../hooks/use-editable-title";
 import { suggestSessionName } from "../suggest-session-name";
 import type { PlannerSession } from "../types";

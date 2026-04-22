@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
-import { unscheduledSubmissionsQueryOptions } from "@/utils/program-sessions.functions";
+import { unscheduledSubmissionsQueryOptions } from "@/server-fns/planner/sessions";
 import { BulkReadReader } from "./bulk-read-reader";
 import { usePlannerSelection } from "./planner-context";
 import {

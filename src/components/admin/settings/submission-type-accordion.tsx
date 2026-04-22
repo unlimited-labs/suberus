@@ -30,7 +30,7 @@ import { SUBMISSION_TYPE_DISPLAY_NAMES } from "@/lib/settings/types";
 import {
 	submissionTypesConfigQueryOptions,
 	updateSubmissionTypeConfigFn,
-} from "@/utils/settings.functions";
+} from "@/server-fns/settings";
 
 const reviewModeLabels = {
 	OPEN: "Open",

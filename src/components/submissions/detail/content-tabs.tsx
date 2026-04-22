@@ -16,7 +16,7 @@ import type {
 	UserSubmissionAuthor,
 	UserSubmissionFile,
 	UserSubmissionStatusHistory,
-} from "@/utils/submissions.functions";
+} from "@/server-fns/submissions";
 
 interface ContentTabsProps {
 	title: string;

@@ -24,11 +24,11 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { getDateFormats } from "@/lib/format-date";
-import type { ConferenceSettings } from "@/utils/settings.functions";
+import type { ConferenceSettings } from "@/server-fns/settings";
 import {
 	conferenceSettingsQueryOptions,
 	updateConferenceSettingsFn,
-} from "@/utils/settings.functions";
+} from "@/server-fns/settings";
 
 interface ConferenceSettingsTabProps {
 	initialData: ConferenceSettings;

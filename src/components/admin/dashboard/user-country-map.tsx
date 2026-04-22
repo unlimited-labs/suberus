@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapControls, Map as MapView, useMap } from "@/components/ui/map";
 import { Skeleton } from "@/components/ui/skeleton";
 import { COUNTRY_CENTROIDS } from "@/lib/country-centroids";
-import type { AdminDashboardMetrics } from "@/utils/admin-dashboard.server";
+import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
 
 interface UserCountryMapProps {
 	data: AdminDashboardMetrics["usersByCountry"] | undefined;

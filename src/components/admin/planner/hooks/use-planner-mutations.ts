@@ -1,8 +1,8 @@
 import type { CalendarEvent } from "@ilamy/calendar";
 import { useCallback } from "react";
-import { createPresentationFn } from "@/utils/presentations.functions";
-import { moveSessionFn } from "@/utils/program-sessions.functions";
-import { updateBreakFn } from "@/utils/schedule-breaks.functions";
+import { updateBreakFn } from "@/server-fns/planner/breaks";
+import { createPresentationFn } from "@/server-fns/planner/presentations";
+import { moveSessionFn } from "@/server-fns/planner/sessions";
 import { parseCalendarEventData } from "./parse-calendar-event-data";
 import { useInvalidatePlannerQueries } from "./use-invalidate-planner-queries";
 import { useMutationRun } from "./use-mutation-run";

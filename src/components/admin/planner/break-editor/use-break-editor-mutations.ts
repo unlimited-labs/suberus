@@ -1,7 +1,4 @@
-import {
-	deleteBreakFn,
-	updateBreakFn,
-} from "@/utils/schedule-breaks.functions";
+import { deleteBreakFn, updateBreakFn } from "@/server-fns/planner/breaks";
 import { useInvalidatePlannerQueries } from "../hooks/use-invalidate-planner-queries";
 import { useMutationRun } from "../hooks/use-mutation-run";
 

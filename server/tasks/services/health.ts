@@ -11,7 +11,7 @@ export default defineTask({
 
 		const { checkLlmHealth } = await import("@/lib/server/llm");
 		const { checkDoclingHealth } = await import("@/lib/server/docling");
-		const { setSetting } = await import("@/utils/settings.server");
+		const { setSetting } = await import("@/lib/server/settings");
 
 		const [llm, docling] = await Promise.all([
 			checkLlmHealth(),

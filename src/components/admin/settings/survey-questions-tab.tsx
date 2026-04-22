@@ -31,7 +31,7 @@ import {
 	deleteSurveyQuestionFn,
 	reorderSurveyQuestionsFn,
 	updateSurveyQuestionFn,
-} from "@/utils/survey.functions";
+} from "@/server-fns/settings/survey";
 
 interface SurveyQuestion {
 	id: string;

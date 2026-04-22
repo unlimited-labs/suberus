@@ -17,7 +17,7 @@ import {
 	adminUsersQueryOptions,
 	checkAdminUserDeletable,
 	deleteAdminUser,
-} from "@/utils/admin-users.functions";
+} from "@/server-fns/admin/users";
 
 interface UserDeleteDialogProps {
 	user: AdminUser;

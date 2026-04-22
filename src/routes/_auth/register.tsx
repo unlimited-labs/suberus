@@ -34,18 +34,18 @@ import {
 	registerStep2Schema,
 	registerStep3Schema,
 } from "@/lib/validations/auth";
-import { checkEmailAvailableFn } from "@/utils/auth.functions";
+import { checkEmailAvailableFn } from "@/server-fns/auth";
 import {
 	consumeInvitationFn,
 	validateInvitationTokenFn,
-} from "@/utils/invitations.functions";
-import { getRegistrationStatusFn } from "@/utils/settings.functions";
+} from "@/server-fns/invitations";
+import { getRegistrationStatusFn } from "@/server-fns/settings";
 import {
 	acceptTosFn,
 	getSurveyQuestionsForRegistrationFn,
 	getTosContentForRegistrationFn,
 	saveUserSurveyAnswersFn,
-} from "@/utils/survey.functions";
+} from "@/server-fns/settings/survey";
 
 const searchSchema = z.object({
 	token: z.string().optional(),

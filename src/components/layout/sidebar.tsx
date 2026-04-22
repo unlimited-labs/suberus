@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useSession } from "@/hooks/use-session";
 import { getNavigationForRole } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
-import { scheduleStateQueryOptions } from "@/utils/schedule.functions";
+import { scheduleStateQueryOptions } from "@/server-fns/planner/schedule";
 import { UserMenu } from "./user-menu";
 
 interface SidebarProps {

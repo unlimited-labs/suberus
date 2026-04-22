@@ -6,7 +6,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import type { UserSubmissionVersion } from "@/utils/submissions.functions";
+import type { UserSubmissionVersion } from "@/server-fns/submissions";
 
 interface VersionSelectorProps {
 	versions: UserSubmissionVersion[];

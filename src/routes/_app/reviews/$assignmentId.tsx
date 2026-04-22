@@ -9,14 +9,14 @@ import {
 } from "@/components/forms/review/review-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
-import { myAssignmentsQueryOptions } from "@/utils/assignments.functions";
 import {
 	assignmentForReviewQueryOptions,
 	submitReviewFn,
 	uploadReviewAttachmentFn,
-} from "@/utils/reviews.functions";
-import { reviewGuidelinesQueryOptions } from "@/utils/settings.functions";
-import { userDashboardQueryOptions } from "@/utils/user-dashboard.functions";
+} from "@/server-fns/reviews";
+import { myAssignmentsQueryOptions } from "@/server-fns/reviews/assignments";
+import { reviewGuidelinesQueryOptions } from "@/server-fns/settings";
+import { userDashboardQueryOptions } from "@/server-fns/user-dashboard";
 
 export const Route = createFileRoute("/_app/reviews/$assignmentId")({
 	loader: async ({ params, context }) => {

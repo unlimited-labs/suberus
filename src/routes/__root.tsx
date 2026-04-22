@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { type CSSProperties, useEffect } from "react";
+import { getPrimaryColorFn } from "@/server-fns/settings";
 import { SpinnerSvg } from "../components/spinner-svg";
 import { ThemeProvider } from "../components/theme-provider";
 import { Button } from "../components/ui/button";
@@ -17,7 +18,6 @@ import { TooltipProvider } from "../components/ui/tooltip";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import { getThemeFn } from "../lib/theme";
 import appCss from "../styles.css?url";
-import { getPrimaryColorFn } from "../utils/settings.functions";
 
 interface MyRouterContext {
 	queryClient: QueryClient;

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { deskAcceptFn } from "@/utils/workflow.functions";
+import { deskAcceptFn } from "@/server-fns/workflow";
 
 interface DeskAcceptDialogProps {
 	submissionId: string;

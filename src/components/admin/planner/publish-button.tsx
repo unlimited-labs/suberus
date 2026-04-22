@@ -21,7 +21,7 @@ import {
 	scheduleIssuesQueryOptions,
 	scheduleStateQueryOptions,
 	unpublishScheduleFn,
-} from "@/utils/schedule.functions";
+} from "@/server-fns/planner/schedule";
 import { useInvalidatePlannerQueries } from "./hooks/use-invalidate-planner-queries";
 import { usePlannerSelection } from "./planner-context";
 

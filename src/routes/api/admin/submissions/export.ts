@@ -7,8 +7,8 @@ import type {
 import {
 	createSubmissionsZipStream,
 	getSubmissionsForExport,
-} from "@/utils/admin-submissions-export.server";
-import { adminRequestMiddleware } from "@/utils/auth.middleware";
+} from "@/lib/server/admin/submissions-export";
+import { adminRequestMiddleware } from "@/lib/server/middleware/auth";
 
 export const Route = createFileRoute("/api/admin/submissions/export")({
 	server: {

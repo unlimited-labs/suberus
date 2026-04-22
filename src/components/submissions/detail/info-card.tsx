@@ -4,7 +4,7 @@ import { useDateFormat } from "@/hooks/use-date-format";
 import type {
 	UserSubmission,
 	UserSubmissionVersion,
-} from "@/utils/submissions.functions";
+} from "@/server-fns/submissions";
 import { TYPE_LABELS } from "./constants";
 
 interface InfoItemProps {

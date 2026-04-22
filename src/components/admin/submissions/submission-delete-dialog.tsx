@@ -17,7 +17,7 @@ import {
 	checkSubmissionDeletableFn,
 	deleteSubmissionFn,
 	editorSubmissionQueryOptions,
-} from "@/utils/admin-submissions.functions";
+} from "@/server-fns/admin/submissions";
 
 interface SubmissionDeleteDialogProps {
 	submissionId: string;

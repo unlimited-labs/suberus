@@ -19,8 +19,8 @@ import { Textarea } from "@/components/ui/textarea";
 import {
 	mySubmissionsQueryOptions,
 	submissionDetailQueryOptions,
-} from "@/utils/submissions.functions";
-import { withdrawSubmissionFn } from "@/utils/workflow.functions";
+} from "@/server-fns/submissions";
+import { withdrawSubmissionFn } from "@/server-fns/workflow";
 
 interface WithdrawDialogProps {
 	submissionId: string;

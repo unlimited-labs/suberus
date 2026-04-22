@@ -50,11 +50,11 @@ import {
 	adminUserDetailQueryOptions,
 	adminUsersQueryOptions,
 	patchAdminUser,
-} from "@/utils/admin-users.functions";
+} from "@/server-fns/admin/users";
 import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
-} from "@/utils/settings.functions";
+} from "@/server-fns/settings";
 import { UserDeleteDialog } from "./user-delete-dialog";
 import { UserEditDialog } from "./user-edit-dialog";
 

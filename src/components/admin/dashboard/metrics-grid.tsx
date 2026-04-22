@@ -5,7 +5,7 @@ import {
 	IconUsers,
 } from "@tabler/icons-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { AdminDashboardMetrics } from "@/utils/admin-dashboard.server";
+import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
 
 interface MetricsGridProps {
 	metrics: AdminDashboardMetrics | undefined;

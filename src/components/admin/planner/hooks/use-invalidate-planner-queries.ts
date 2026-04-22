@@ -1,15 +1,15 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
-import {
-	allSessionsQueryOptions,
-	unscheduledSubmissionsQueryOptions,
-} from "@/utils/program-sessions.functions";
+import { allBreaksQueryOptions } from "@/server-fns/planner/breaks";
 import {
 	scheduleCapacityQueryOptions,
 	scheduleIssuesQueryOptions,
 	scheduleStateQueryOptions,
-} from "@/utils/schedule.functions";
-import { allBreaksQueryOptions } from "@/utils/schedule-breaks.functions";
+} from "@/server-fns/planner/schedule";
+import {
+	allSessionsQueryOptions,
+	unscheduledSubmissionsQueryOptions,
+} from "@/server-fns/planner/sessions";
 
 export function useInvalidatePlannerQueries() {
 	const queryClient = useQueryClient();

@@ -17,11 +17,11 @@ import type { AdminUser } from "@/lib/server/admin/users";
 import {
 	adminUsersQueryOptions,
 	bulkAdminAction,
-} from "@/utils/admin-users.functions";
+} from "@/server-fns/admin/users";
 import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
-} from "@/utils/settings.functions";
+} from "@/server-fns/settings";
 
 interface UserBulkActionsProps {
 	table: Table<AdminUser>;

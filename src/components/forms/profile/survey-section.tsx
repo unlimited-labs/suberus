@@ -8,7 +8,7 @@ import type { SurveyQuestionType } from "@/generated/prisma/enums";
 import {
 	saveUserSurveyAnswersFn,
 	userSurveyAnswersQueryOptions,
-} from "@/utils/survey.functions";
+} from "@/server-fns/settings/survey";
 
 interface SurveyQuestion {
 	id: string;

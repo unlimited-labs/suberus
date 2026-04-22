@@ -18,8 +18,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { deleteRoomFn, updateRoomFn } from "@/utils/rooms.functions";
-import type { RoomWithStats } from "@/utils/rooms.server";
+import type { RoomWithStats } from "@/lib/server/planner/rooms";
+import { deleteRoomFn, updateRoomFn } from "@/server-fns/planner/rooms";
 
 interface RoomsListProps {
 	rooms: RoomWithStats[];

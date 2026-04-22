@@ -37,16 +37,10 @@ import { toEmailTemplateUI } from "@/components/admin/settings/email-templates-t
 import { TracksTab } from "@/components/admin/tracks/tracks-tab";
 import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { emailTemplatesQueryOptions } from "@/utils/email-templates.functions";
-import {
-	doclingHealthQueryOptions,
-	extractionAdminSettingsQueryOptions,
-	llmHealthQueryOptions,
-} from "@/utils/extraction.functions";
-import { paymentInstructionsQueryOptions } from "@/utils/fee.functions";
-import { allProgramTracksQueryOptions } from "@/utils/program-tracks.functions";
-import { reviewerUsersQueryOptions } from "@/utils/reviewers.functions";
-import { allRoomsQueryOptions } from "@/utils/rooms.functions";
+import { paymentInstructionsQueryOptions } from "@/server-fns/fee";
+import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
+import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
+import { reviewerUsersQueryOptions } from "@/server-fns/reviews/reviewers";
 import {
 	adminSettingQueryOptions,
 	brandingSettingsQueryOptions,
@@ -57,9 +51,15 @@ import {
 	reminderSettingsQueryOptions,
 	submissionTypesConfigQueryOptions,
 	submissionValidationSettingsQueryOptions,
-} from "@/utils/settings.functions";
-import { adminSurveyQuestionsQueryOptions } from "@/utils/survey.functions";
-import { allTracksQueryOptions } from "@/utils/tracks.functions";
+} from "@/server-fns/settings";
+import { emailTemplatesQueryOptions } from "@/server-fns/settings/email-templates";
+import {
+	doclingHealthQueryOptions,
+	extractionAdminSettingsQueryOptions,
+	llmHealthQueryOptions,
+} from "@/server-fns/settings/extraction";
+import { adminSurveyQuestionsQueryOptions } from "@/server-fns/settings/survey";
+import { allTracksQueryOptions } from "@/server-fns/tracks";
 
 const searchSchema = z.object({
 	tab: z.string().optional(),

@@ -7,11 +7,11 @@ import { UserBulkActions } from "@/components/admin/users/user-bulk-actions";
 import { UserMobileCard } from "@/components/admin/users/user-mobile-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
-import { adminUsersQueryOptions } from "@/utils/admin-users.functions";
+import { adminUsersQueryOptions } from "@/server-fns/admin/users";
 import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
-} from "@/utils/settings.functions";
+} from "@/server-fns/settings";
 
 export const Route = createFileRoute("/_app/admin/_layout/users/")({
 	loader: async ({ context }) => {

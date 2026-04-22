@@ -6,8 +6,8 @@ import { activityDetail } from "@/lib/activity-log";
 import { roleLabels } from "@/lib/labels/user";
 import { logActivity } from "@/lib/server/activity-log";
 import { sendEmail } from "@/lib/server/email";
+import { getSetting } from "@/lib/server/settings";
 import { logger } from "@/logger.ts";
-import { getSetting } from "@/utils/settings.server";
 
 export interface AdminInvitation {
 	id: string;

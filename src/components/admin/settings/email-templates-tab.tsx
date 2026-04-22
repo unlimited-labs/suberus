@@ -11,7 +11,7 @@ import type { EmailEventType } from "@/generated/prisma/enums";
 import {
 	emailFooterQueryOptions,
 	updateEmailFooterFn,
-} from "@/utils/settings.functions";
+} from "@/server-fns/settings";
 import { EmailTemplateCard } from "./email-template-card";
 import { EmailTemplateDialog } from "./email-template-dialog";
 

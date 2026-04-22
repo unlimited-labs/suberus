@@ -14,7 +14,7 @@ import { installSchema } from "@/lib/validations/install";
 import {
 	checkInstallStatusFn,
 	performInstallFn,
-} from "@/utils/install.functions";
+} from "@/server-fns/settings/install";
 
 export const Route = createFileRoute("/install")({
 	beforeLoad: async () => {

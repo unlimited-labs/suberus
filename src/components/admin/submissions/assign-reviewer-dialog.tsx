@@ -30,7 +30,7 @@ import {
 	cancelAssignmentFn,
 	getAvailableReviewersFn,
 	getSubmissionAssignmentsFn,
-} from "@/utils/assignments.functions";
+} from "@/server-fns/reviews/assignments";
 
 interface AssignReviewerDialogProps {
 	submissionId: string;

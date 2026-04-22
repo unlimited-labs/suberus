@@ -17,18 +17,18 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/use-session";
 import { sendVerificationEmail } from "@/lib/auth-client";
-import { extractionSettingsQueryOptions } from "@/utils/extraction.functions";
 import {
 	activeSubmissionTypesQueryOptions,
 	submissionGuidelinesQueryOptions,
 	submissionValidationQueryOptions,
-} from "@/utils/settings.functions";
+} from "@/server-fns/settings";
+import { extractionSettingsQueryOptions } from "@/server-fns/settings/extraction";
 import {
 	createSubmission,
 	mySubmissionsQueryOptions,
 	uploadSubmissionFile,
-} from "@/utils/submissions.functions";
-import { userDashboardQueryOptions } from "@/utils/user-dashboard.functions";
+} from "@/server-fns/submissions";
+import { userDashboardQueryOptions } from "@/server-fns/user-dashboard";
 
 export const Route = createFileRoute("/_app/submissions/new")({
 	loader: async ({ context }) => {

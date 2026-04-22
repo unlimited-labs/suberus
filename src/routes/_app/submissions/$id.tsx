@@ -28,7 +28,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { submissionDetailQueryOptions } from "@/utils/submissions.functions";
+import { submissionDetailQueryOptions } from "@/server-fns/submissions";
 
 export const Route = createFileRoute("/_app/submissions/$id")({
 	loader: async ({ params, context }) => {

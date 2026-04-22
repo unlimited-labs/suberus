@@ -19,7 +19,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { createInvitationFn } from "@/utils/admin-invitations.functions";
+import { createInvitationFn } from "@/server-fns/admin/invitations";
 
 interface InviteUserDialogProps {
 	open: boolean;

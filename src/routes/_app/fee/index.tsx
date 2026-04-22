@@ -10,7 +10,7 @@ import { useDateFormat } from "@/hooks/use-date-format";
 import {
 	paymentInstructionsQueryOptions,
 	userFeeQueryOptions,
-} from "@/utils/fee.functions";
+} from "@/server-fns/fee";
 
 export const Route = createFileRoute("/_app/fee/")({
 	loader: async ({ context }) => {

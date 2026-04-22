@@ -1,6 +1,6 @@
 import { IconGripVertical } from "@tabler/icons-react";
 import { useState } from "react";
-import type { UnscheduledSubmission } from "@/utils/program-sessions.server";
+import type { UnscheduledSubmission } from "@/lib/server/planner/sessions";
 
 const TYPE_LABELS: Record<string, string> = {
 	ABSTRACT: "Oral",

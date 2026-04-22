@@ -5,10 +5,10 @@ import { AppLayout } from "@/components/layout/app-layout";
 import { SpinnerSvg } from "@/components/spinner-svg";
 import { DateFormatProvider } from "@/hooks/use-date-format";
 import { useSession } from "@/hooks/use-session";
+import { authRouteMiddleware } from "@/lib/server/middleware/auth";
 import { APP_SETTINGS_DEFAULTS } from "@/lib/settings/defaults";
-import { authRouteMiddleware } from "@/utils/auth.middleware";
-import type { AppBranding } from "@/utils/settings.functions";
-import { getAppBrandingFn } from "@/utils/settings.functions";
+import type { AppBranding } from "@/server-fns/settings";
+import { getAppBrandingFn } from "@/server-fns/settings";
 
 const defaults: AppBranding = {
 	conferenceName: APP_SETTINGS_DEFAULTS.CONFERENCE_NAME,

@@ -1,4 +1,4 @@
-import type { UnscheduledSubmission } from "@/utils/program-sessions.server";
+import type { UnscheduledSubmission } from "@/lib/server/planner/sessions";
 
 export type GroupingMode = "intake" | "presenter";
 

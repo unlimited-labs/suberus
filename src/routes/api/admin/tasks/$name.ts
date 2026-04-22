@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { markOverdueAssignments } from "@/utils/assignments.server";
-import { adminRequestMiddleware } from "@/utils/auth.middleware";
+import { markOverdueAssignments } from "@/lib/server/assignments";
+import { adminRequestMiddleware } from "@/lib/server/middleware/auth";
 import {
 	sendDeadlineReminders,
 	sendReviewerReminders,
 	sendRevisionReminders,
-} from "@/utils/reminders.server";
+} from "@/lib/server/reminders";
 
 const TASK_RUNNERS: Record<string, () => Promise<Record<string, unknown>>> = {
 	"assignments:overdue": async () => ({

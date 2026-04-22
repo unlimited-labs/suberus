@@ -13,12 +13,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createSessionFn } from "@/utils/program-sessions.functions";
-import { allProgramTracksQueryOptions } from "@/utils/program-tracks.functions";
-import { allRoomsQueryOptions } from "@/utils/rooms.functions";
-import { createBreakFn } from "@/utils/schedule-breaks.functions";
-import { conferenceSettingsQueryOptions } from "@/utils/settings.functions";
-import { tzLocalInputToUtc, utcToTzLocalInput } from "@/utils/tz-datetime";
+import { tzLocalInputToUtc, utcToTzLocalInput } from "@/lib/tz-datetime";
+import { createBreakFn } from "@/server-fns/planner/breaks";
+import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
+import { createSessionFn } from "@/server-fns/planner/sessions";
+import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
+import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
 import { RoomSelect } from "./shared/room-select";
 import { TimeRangeSummary } from "./shared/time-range-summary";
 import { TrackSelect } from "./shared/track-select";

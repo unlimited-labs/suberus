@@ -1,9 +1,14 @@
 import { toast } from "sonner";
 import {
+	addMinutes,
+	formatDurationMin,
+	tzLocalInputToUtc,
+} from "@/lib/tz-datetime";
+import {
 	deletePresentationFn,
 	reorderPresentationsFn,
 	updatePresentationDurationFn,
-} from "@/utils/presentations.functions";
+} from "@/server-fns/planner/presentations";
 import {
 	assignChairFn,
 	continueSeriesFn,
@@ -11,12 +16,7 @@ import {
 	removeChairFn,
 	splitSessionFn,
 	updateSessionFn,
-} from "@/utils/program-sessions.functions";
-import {
-	addMinutes,
-	formatDurationMin,
-	tzLocalInputToUtc,
-} from "@/utils/tz-datetime";
+} from "@/server-fns/planner/sessions";
 import { useInvalidatePlannerQueries } from "../hooks/use-invalidate-planner-queries";
 import { useMutationRun } from "../hooks/use-mutation-run";
 

@@ -6,8 +6,8 @@ import {
 	useMemo,
 	useState,
 } from "react";
-import { allRoomsQueryOptions } from "@/utils/rooms.functions";
-import { allBreaksQueryOptions } from "@/utils/schedule-breaks.functions";
+import { allBreaksQueryOptions } from "@/server-fns/planner/breaks";
+import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
 import { useEditableTitle } from "../hooks/use-editable-title";
 import type { PlannerBreak } from "../types";
 import { useBreakEditorMutations } from "./use-break-editor-mutations";

@@ -22,7 +22,7 @@ import {
 	adminUserDetailQueryOptions,
 	adminUsersQueryOptions,
 	updateAdminUserProfile,
-} from "@/utils/admin-users.functions";
+} from "@/server-fns/admin/users";
 
 const orcidRegex = /^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/;
 

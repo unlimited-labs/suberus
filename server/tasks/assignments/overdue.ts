@@ -1,6 +1,6 @@
 import { defineTask } from "nitro/task";
 import { logger } from "@/logger";
-import { markOverdueAssignments } from "@/utils/assignments.server";
+import { markOverdueAssignments } from "@/lib/server/assignments";
 
 export default defineTask({
 	meta: {

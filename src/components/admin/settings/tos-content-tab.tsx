@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
 	adminSettingQueryOptions,
 	updateTosContentFn,
-} from "@/utils/settings.functions";
+} from "@/server-fns/settings";
 
 interface TosContentTabProps {
 	initialContent: string;

@@ -2,7 +2,7 @@ import { VersionSelector } from "@/components/submissions/version-selector";
 import type {
 	UserSubmission,
 	UserSubmissionVersion,
-} from "@/utils/submissions.functions";
+} from "@/server-fns/submissions";
 import { ActionsCard } from "./actions-card";
 import { TYPE_LABELS } from "./constants";
 import { StatusCard } from "./status-card";

@@ -6,7 +6,7 @@ import {
 	createAffiliation,
 	getAffiliationById,
 	getAffiliations,
-} from "@/utils/affiliations.functions";
+} from "@/server-fns/affiliations";
 
 interface Affiliation {
 	id: string;

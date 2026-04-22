@@ -11,9 +11,9 @@ import { SpinnerSvg } from "@/components/spinner-svg";
 import { useSession } from "@/hooks/use-session";
 import { formatDate } from "@/lib/format-date";
 import { APP_SETTINGS_DEFAULTS } from "@/lib/settings/defaults";
-import { checkInstallStatusFn } from "@/utils/install.functions";
-import type { AuthPageBranding } from "@/utils/settings.functions";
-import { getAuthPageBrandingFn } from "@/utils/settings.functions";
+import type { AuthPageBranding } from "@/server-fns/settings";
+import { getAuthPageBrandingFn } from "@/server-fns/settings";
+import { checkInstallStatusFn } from "@/server-fns/settings/install";
 
 const defaults: AuthPageBranding = {
 	conferenceName: APP_SETTINGS_DEFAULTS.CONFERENCE_NAME,

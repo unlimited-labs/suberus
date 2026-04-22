@@ -1,5 +1,5 @@
 import { Timeline } from "@/components/ui/timeline";
-import type { UserSubmissionStatusHistory } from "@/utils/submissions.functions";
+import type { UserSubmissionStatusHistory } from "@/server-fns/submissions";
 import { TimelineEvent } from "./timeline-event";
 
 interface SubmissionTimelineProps {

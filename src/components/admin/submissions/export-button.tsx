@@ -1,7 +1,7 @@
 import { IconDownload } from "@tabler/icons-react";
 import type { Table } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import type { AdminSubmission } from "@/utils/admin-submissions.server";
+import type { AdminSubmission } from "@/lib/server/admin/submissions";
 
 interface SubmissionExportButtonProps {
 	table: Table<AdminSubmission>;

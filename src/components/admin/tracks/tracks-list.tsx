@@ -12,8 +12,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { deleteTrackFn, updateTrackFn } from "@/utils/tracks.functions";
-import type { TrackWithStats } from "@/utils/tracks.server";
+import type { TrackWithStats } from "@/lib/server/tracks";
+import { deleteTrackFn, updateTrackFn } from "@/server-fns/tracks";
 
 interface TracksListProps {
 	tracks: TrackWithStats[];

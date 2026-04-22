@@ -4,7 +4,7 @@ import {
 	sendDeadlineReminders,
 	sendReviewerReminders,
 	sendRevisionReminders,
-} from "@/utils/reminders.server";
+} from "@/lib/server/reminders";
 
 export default defineTask({
 	meta: {

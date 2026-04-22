@@ -23,18 +23,18 @@ import { PublishButton } from "@/components/admin/planner/publish-button";
 import { SessionEditorSheet } from "@/components/admin/planner/session-editor-sheet";
 import { UnscheduledSidebar } from "@/components/admin/planner/unscheduled-sidebar";
 import { PageHeader } from "@/components/layout/page-header";
-import {
-	allSessionsQueryOptions,
-	unscheduledSubmissionsQueryOptions,
-} from "@/utils/program-sessions.functions";
-import { allProgramTracksQueryOptions } from "@/utils/program-tracks.functions";
-import { allRoomsQueryOptions } from "@/utils/rooms.functions";
+import { allBreaksQueryOptions } from "@/server-fns/planner/breaks";
+import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
 import {
 	scheduleCapacityQueryOptions,
 	scheduleStateQueryOptions,
-} from "@/utils/schedule.functions";
-import { allBreaksQueryOptions } from "@/utils/schedule-breaks.functions";
-import { conferenceSettingsQueryOptions } from "@/utils/settings.functions";
+} from "@/server-fns/planner/schedule";
+import {
+	allSessionsQueryOptions,
+	unscheduledSubmissionsQueryOptions,
+} from "@/server-fns/planner/sessions";
+import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
+import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
 
 export const Route = createFileRoute("/_app/admin/_layout/program-planner/")({
 	loader: async ({ context }) => {

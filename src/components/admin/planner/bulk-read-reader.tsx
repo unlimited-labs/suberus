@@ -1,6 +1,6 @@
 import { IconArrowLeft, IconArrowRight, IconX } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
-import type { UnscheduledSubmission } from "@/utils/program-sessions.server";
+import type { UnscheduledSubmission } from "@/lib/server/planner/sessions";
 
 interface BulkReadReaderProps {
 	submissions: UnscheduledSubmission[];

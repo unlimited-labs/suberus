@@ -10,13 +10,13 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
 import {
 	createSessionWithPresentationsFn,
 	unscheduledSubmissionsQueryOptions,
-} from "@/utils/program-sessions.functions";
-import { allProgramTracksQueryOptions } from "@/utils/program-tracks.functions";
-import { allRoomsQueryOptions } from "@/utils/rooms.functions";
-import { conferenceSettingsQueryOptions } from "@/utils/settings.functions";
+} from "@/server-fns/planner/sessions";
+import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
+import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
 import { RoomSelect } from "./shared/room-select";
 import { TimeRangeSummary } from "./shared/time-range-summary";
 import { TitleWithSuggest } from "./shared/title-with-suggest";

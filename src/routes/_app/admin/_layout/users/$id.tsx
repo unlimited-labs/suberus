@@ -4,11 +4,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { UserDetailCard } from "@/components/admin/users/user-detail-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
-import { adminUserDetailQueryOptions } from "@/utils/admin-users.functions";
+import { adminUserDetailQueryOptions } from "@/server-fns/admin/users";
 import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
-} from "@/utils/settings.functions";
+} from "@/server-fns/settings";
 
 export const Route = createFileRoute("/_app/admin/_layout/users/$id")({
 	loader: async ({ params, context }) => {

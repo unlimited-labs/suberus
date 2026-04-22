@@ -14,9 +14,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { activityLabels } from "@/lib/labels/activity";
+import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
 import { cn } from "@/lib/utils";
-import { getMoreActivity } from "@/utils/admin-dashboard.functions";
-import type { AdminDashboardMetrics } from "@/utils/admin-dashboard.server";
+import { getMoreActivity } from "@/server-fns/admin/dashboard";
 
 type ActivityEvent = AdminDashboardMetrics["recentActivity"][number];
 

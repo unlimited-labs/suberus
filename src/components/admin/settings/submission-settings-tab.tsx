@@ -17,11 +17,6 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import type { AppSettingsMap } from "@/lib/settings/types";
 import {
-	type ExtractionSettings,
-	extractionAdminSettingsQueryOptions,
-	updateExtractionSettingsFn,
-} from "@/utils/extraction.functions";
-import {
 	reviewGuidelinesQueryOptions,
 	type SubmissionValidationSettings,
 	submissionGuidelinesQueryOptions,
@@ -29,7 +24,12 @@ import {
 	updateReviewGuidelinesFn,
 	updateSubmissionGuidelinesFn,
 	updateSubmissionValidationSettingsFn,
-} from "@/utils/settings.functions";
+} from "@/server-fns/settings";
+import {
+	type ExtractionSettings,
+	extractionAdminSettingsQueryOptions,
+	updateExtractionSettingsFn,
+} from "@/server-fns/settings/extraction";
 import { ExtractionModeSettings } from "./extraction-mode-settings";
 
 interface SubmissionSettingsTabProps {
