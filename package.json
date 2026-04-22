@@ -38,7 +38,7 @@
     "@fontsource/dm-sans": "^5.2.8",
     "@fontsource/rajdhani": "^5.2.7",
     "@fontsource/spectral": "^5.2.8",
-    "@ilamy/calendar": "^1.5.2",
+    "@ilamy/calendar": "^1.6.2",
     "@prisma/adapter-pg": "^7.7.0",
     "@prisma/client": "^7.7.0",
     "@t3-oss/env-core": "^0.13.11",

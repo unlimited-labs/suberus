@@ -295,9 +295,3 @@ input[type="number"]::-webkit-inner-spin-button:hover,
 input[type="number"]::-webkit-outer-spin-button:hover {
 	opacity: 1;
 }
-
-/* Fix: ilamy day-view body columns use justify-center, which creates blank
-   space above business hours when rendered inside a height-bounded container */
-[data-planner-cal] .flex.flex-1.w-full > * {
-	justify-content: flex-start;
-}

@@ -92,7 +92,7 @@ export function PlannerCalendar({
 	);
 
 	return (
-		<div data-planner-cal className="size-full">
+		<div className="size-full">
 			<IlamyResourceCalendar
 				key={calendarKey}
 				resources={resources}
