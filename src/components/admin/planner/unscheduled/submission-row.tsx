@@ -10,6 +10,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 interface Props {
 	submission: UnscheduledSubmission;
+	selectMode: boolean;
 	selected: boolean;
 	expanded: boolean;
 	dragging: boolean;
@@ -21,6 +22,7 @@ interface Props {
 
 export function SubmissionRow({
 	submission: s,
+	selectMode,
 	selected,
 	expanded,
 	dragging,
@@ -57,20 +59,22 @@ export function SubmissionRow({
 					: "max-h-60"
 			}`}
 		>
-			<input
-				type="checkbox"
-				aria-label={`Select ${s.title}`}
-				checked={selected}
-				onChange={() => onToggleSelect(false)}
-				onClick={(e) => {
-					e.stopPropagation();
-					if (e.shiftKey) {
-						e.preventDefault();
-						onToggleSelect(true);
-					}
-				}}
-				className="mt-1 shrink-0 accent-primary"
-			/>
+			{selectMode && (
+				<input
+					type="checkbox"
+					aria-label={`Select ${s.title}`}
+					checked={selected}
+					onChange={() => onToggleSelect(false)}
+					onClick={(e) => {
+						e.stopPropagation();
+						if (e.shiftKey) {
+							e.preventDefault();
+							onToggleSelect(true);
+						}
+					}}
+					className="mt-1 shrink-0 accent-primary"
+				/>
+			)}
 			<IconGripVertical
 				size={12}
 				className="mt-1 shrink-0 text-muted-foreground/40 group-hover:text-muted-foreground"

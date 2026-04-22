@@ -6,6 +6,7 @@ interface Props {
 	group: SubmissionGroup;
 	isCollapsed: boolean;
 	onToggle: () => void;
+	selectMode: boolean;
 	selectedIds: Set<string>;
 	expandedIds: Set<string>;
 	draggingId: string | null;
@@ -19,6 +20,7 @@ export function UnscheduledGroup({
 	group,
 	isCollapsed,
 	onToggle,
+	selectMode,
 	selectedIds,
 	expandedIds,
 	draggingId,
@@ -54,6 +56,7 @@ export function UnscheduledGroup({
 						<SubmissionRow
 							key={s.id}
 							submission={s}
+							selectMode={selectMode}
 							selected={selectedIds.has(s.id)}
 							expanded={expandedIds.has(s.id)}
 							dragging={draggingId === s.id}

@@ -1,12 +1,25 @@
-import { IconBook, IconChevronLeft, IconLayoutList } from "@tabler/icons-react";
+import {
+	IconBook,
+	IconChevronLeft,
+	IconLayoutList,
+	IconSquareCheck,
+} from "@tabler/icons-react";
 
 interface Props {
 	count: number;
+	selectMode: boolean;
+	onToggleSelectMode: () => void;
 	onOpenReader: () => void;
 	onCollapse: () => void;
 }
 
-export function SidebarHeader({ count, onOpenReader, onCollapse }: Props) {
+export function SidebarHeader({
+	count,
+	selectMode,
+	onToggleSelectMode,
+	onOpenReader,
+	onCollapse,
+}: Props) {
 	return (
 		<div className="flex items-center justify-between border-b px-3 py-2">
 			<div className="flex items-center gap-1.5">
@@ -18,16 +31,37 @@ export function SidebarHeader({ count, onOpenReader, onCollapse }: Props) {
 			</div>
 			<div className="flex items-center gap-1">
 				{count > 0 && (
-					<button
-						type="button"
-						onClick={onOpenReader}
-						data-testid="sidebar-bulk-read"
-						className="flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-						title="Open reading mode"
-					>
-						<IconBook size={12} />
-						Read
-					</button>
+					<>
+						<button
+							type="button"
+							onClick={onToggleSelectMode}
+							data-testid="sidebar-toggle-select-mode"
+							aria-pressed={selectMode}
+							className={`flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium hover:bg-muted ${
+								selectMode
+									? "bg-primary/10 text-primary hover:bg-primary/15"
+									: "text-muted-foreground hover:text-foreground"
+							}`}
+							title={
+								selectMode
+									? "Exit selection mode (Esc or S)"
+									: "Select submissions (S)"
+							}
+						>
+							<IconSquareCheck size={12} />
+							Select
+						</button>
+						<button
+							type="button"
+							onClick={onOpenReader}
+							data-testid="sidebar-bulk-read"
+							className="flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+							title="Open reading mode"
+						>
+							<IconBook size={12} />
+							Read
+						</button>
+					</>
 				)}
 				<button
 					type="button"

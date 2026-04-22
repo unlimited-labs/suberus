@@ -1,3 +1,4 @@
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 import { unscheduledSubmissionsQueryOptions } from "@/server-fns/planner/sessions";
@@ -26,6 +27,7 @@ export function UnscheduledSidebar() {
 	const [open, setOpen] = useState(true);
 	const [search, setSearch] = useState("");
 	const [mode, setMode] = useState<GroupingMode>("intake");
+	const [selectMode, setSelectMode] = useState(false);
 	const collapsed = useToggleSet<string>();
 	const expanded = useToggleSet<string>();
 	const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -53,6 +55,23 @@ export function UnscheduledSidebar() {
 		[openCreateFromSelection, selection.selected],
 	);
 
+	const handleToggleSelectMode = useCallback(() => {
+		setSelectMode((prev) => {
+			if (prev) selection.clear();
+			return !prev;
+		});
+	}, [selection.clear]);
+
+	useHotkey("S", handleToggleSelectMode, { enabled: open });
+	useHotkey(
+		"Escape",
+		() => {
+			selection.clear();
+			setSelectMode(false);
+		},
+		{ enabled: open && selectMode },
+	);
+
 	const handleDragStart = useCallback((id: string) => setDraggingId(id), []);
 	const handleDragEnd = useCallback(() => setDraggingId(null), []);
 
@@ -73,6 +92,8 @@ export function UnscheduledSidebar() {
 			>
 				<SidebarHeader
 					count={submissions.length}
+					selectMode={selectMode}
+					onToggleSelectMode={handleToggleSelectMode}
 					onOpenReader={() => setReaderStart(0)}
 					onCollapse={() => setOpen(false)}
 				/>
@@ -97,6 +118,7 @@ export function UnscheduledSidebar() {
 									group={group}
 									isCollapsed={isCollapsed}
 									onToggle={() => collapsed.toggle(toggleKey)}
+									selectMode={selectMode}
 									selectedIds={selection.selected}
 									expandedIds={expanded.set}
 									draggingId={draggingId}
