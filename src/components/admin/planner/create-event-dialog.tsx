@@ -27,6 +27,7 @@ import { Stepper } from "./stepper";
 interface CreateEventDialogProps extends EventFormProps {
 	onCreated: () => void;
 	timezone?: string;
+	defaultStartAt: Date;
 }
 
 type EventType = "session" | "break";
@@ -37,6 +38,7 @@ export function CreateEventDialog({
 	onClose,
 	onCreated,
 	timezone,
+	defaultStartAt,
 }: CreateEventDialogProps) {
 	const { data: rooms } = useSuspenseQuery(allRoomsQueryOptions());
 	const { data: tracks } = useSuspenseQuery(allProgramTracksQueryOptions());
@@ -54,7 +56,7 @@ export function CreateEventDialog({
 
 	const initialStart =
 		startRaw == null
-			? new Date()
+			? defaultStartAt
 			: typeof startRaw === "object" &&
 					"toDate" in startRaw &&
 					typeof startRaw.toDate === "function"

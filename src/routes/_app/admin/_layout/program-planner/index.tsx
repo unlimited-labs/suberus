@@ -145,6 +145,7 @@ function ProgramPlannerContent() {
 							resources={resources}
 							events={events}
 							initialDate={confStart ?? undefined}
+							defaultStartAt={defaultStartAt}
 							timezone={tz}
 							timeFormat={settings.timeFormat}
 							dayStart={settings.dayStart}

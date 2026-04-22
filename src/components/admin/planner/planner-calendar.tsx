@@ -19,6 +19,7 @@ interface Props {
 	resources: Resource[];
 	events: NonNullable<IlamyResourceCalendarProps["events"]>;
 	initialDate: Date | undefined;
+	defaultStartAt: Date;
 	timezone: string | undefined;
 	timeFormat: "12h" | "24h" | null | undefined;
 	dayStart: string;
@@ -53,6 +54,7 @@ export function PlannerCalendar({
 	resources,
 	events,
 	initialDate,
+	defaultStartAt,
 	timezone,
 	timeFormat,
 	dayStart,
@@ -77,9 +79,14 @@ export function PlannerCalendar({
 		NonNullable<IlamyResourceCalendarProps["renderEventForm"]>
 	>(
 		(props) => (
-			<CreateEventDialog {...props} onCreated={onCreated} timezone={timezone} />
+			<CreateEventDialog
+				{...props}
+				onCreated={onCreated}
+				timezone={timezone}
+				defaultStartAt={defaultStartAt}
+			/>
 		),
-		[onCreated, timezone],
+		[onCreated, timezone, defaultStartAt],
 	);
 
 	const renderEvent = useCallback<
