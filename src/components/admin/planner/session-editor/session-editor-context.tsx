@@ -95,6 +95,7 @@ export function SessionEditorProvider({
 					trackName: null,
 					authors: p.authors,
 					keywords: [],
+					file: null,
 				})),
 			);
 			if (suggestion && suggestion !== "Session") {

@@ -13,6 +13,7 @@ interface Props {
 	draggingId: string | null;
 	onToggleSelect: (id: string, shift: boolean) => void;
 	onToggleExpand: (id: string) => void;
+	onOpenReader: (id: string) => void;
 	onDragStart: (id: string) => void;
 	onDragEnd: () => void;
 }
@@ -28,6 +29,7 @@ export function UnscheduledGroup({
 	draggingId,
 	onToggleSelect,
 	onToggleExpand,
+	onOpenReader,
 	onDragStart,
 	onDragEnd,
 }: Props) {
@@ -65,6 +67,7 @@ export function UnscheduledGroup({
 							dragging={draggingId === s.id}
 							onToggleSelect={(shift) => onToggleSelect(s.id, shift)}
 							onToggleExpand={() => onToggleExpand(s.id)}
+							onOpenReader={() => onOpenReader(s.id)}
 							onDragStart={() => onDragStart(s.id)}
 							onDragEnd={onDragEnd}
 						/>

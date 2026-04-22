@@ -1,4 +1,9 @@
-import { IconArrowLeft, IconArrowRight, IconX } from "@tabler/icons-react";
+import {
+	IconArrowLeft,
+	IconArrowRight,
+	IconDownload,
+	IconX,
+} from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 import type { UnscheduledSubmission } from "@/lib/server/planner/sessions";
 
@@ -104,6 +109,19 @@ export function BulkReadReader({
 					<h1 className="text-2xl font-semibold leading-tight">{s.title}</h1>
 					{authorLine && (
 						<p className="text-sm text-muted-foreground">{authorLine}</p>
+					)}
+					{s.file && (
+						<a
+							href={`/api/files/${s.file.id}`}
+							download={s.file.originalName}
+							data-testid={`bulk-reader-download-${s.id}`}
+							className="inline-flex w-fit items-center gap-1.5 rounded border px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+						>
+							<IconDownload size={12} />
+							<span className="max-w-[320px] truncate">
+								{s.file.originalName}
+							</span>
+						</a>
 					)}
 					{s.abstract ? (
 						<div className="whitespace-pre-wrap text-[15px] leading-relaxed">

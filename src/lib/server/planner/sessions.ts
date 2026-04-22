@@ -165,6 +165,7 @@ export interface UnscheduledSubmission {
 	trackName: string | null;
 	keywords: Array<{ id: string; name: string }>;
 	authors: Array<{ firstName: string; lastName: string; orderIndex: number }>;
+	file: { id: string; originalName: string } | null;
 }
 
 export async function listUnscheduledSubmissions(): Promise<
@@ -193,6 +194,11 @@ export async function listUnscheduledSubmissions(): Promise<
 				},
 				take: 5,
 			},
+			currentVersion: {
+				select: {
+					file: { select: { id: true, originalName: true } },
+				},
+			},
 		},
 		orderBy: { createdAt: "asc" },
 	});
@@ -205,6 +211,7 @@ export async function listUnscheduledSubmissions(): Promise<
 		trackName: r.track?.name ?? null,
 		authors: r.authors,
 		keywords: r.keywords.map((k) => k.keyword),
+		file: r.currentVersion?.file ?? null,
 	}));
 }
 

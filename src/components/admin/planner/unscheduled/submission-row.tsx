@@ -1,4 +1,4 @@
-import { IconGripVertical } from "@tabler/icons-react";
+import { IconDownload, IconGripVertical } from "@tabler/icons-react";
 import { useState } from "react";
 import type { UnscheduledSubmission } from "@/lib/server/planner/sessions";
 
@@ -17,6 +17,7 @@ interface Props {
 	dragging: boolean;
 	onToggleSelect: (shift: boolean) => void;
 	onToggleExpand: () => void;
+	onOpenReader: () => void;
 	onDragStart: () => void;
 	onDragEnd: () => void;
 }
@@ -30,6 +31,7 @@ export function SubmissionRow({
 	dragging,
 	onToggleSelect,
 	onToggleExpand,
+	onOpenReader,
 	onDragStart,
 	onDragEnd,
 }: Props) {
@@ -44,6 +46,7 @@ export function SubmissionRow({
 		<li
 			data-testid={`unscheduled-row-${s.id}`}
 			draggable
+			onDoubleClick={onOpenReader}
 			onDragStart={(e) => {
 				e.dataTransfer.setData("submissionid", s.id);
 				e.dataTransfer.effectAllowed = "copy";
@@ -114,6 +117,20 @@ export function SubmissionRow({
 							<p className="line-clamp-6 text-[11px] leading-relaxed text-muted-foreground">
 								{s.abstract}
 							</p>
+						)}
+						{s.file && (
+							<a
+								href={`/api/files/${s.file.id}`}
+								download={s.file.originalName}
+								onClick={(e) => e.stopPropagation()}
+								data-testid={`unscheduled-download-${s.id}`}
+								className="inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] text-muted-foreground hover:bg-muted hover:text-foreground"
+							>
+								<IconDownload size={10} />
+								<span className="max-w-[180px] truncate">
+									{s.file.originalName}
+								</span>
+							</a>
 						)}
 						{s.keywords.length > 0 && (
 							<div className="flex flex-wrap gap-1">

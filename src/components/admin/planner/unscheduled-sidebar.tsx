@@ -80,6 +80,14 @@ export function UnscheduledSidebar() {
 	const handleDragStart = useCallback((id: string) => setDraggingId(id), []);
 	const handleDragEnd = useCallback(() => setDraggingId(null), []);
 
+	const handleOpenReader = useCallback(
+		(id: string) => {
+			const index = submissions.findIndex((s) => s.id === id);
+			if (index >= 0) setReaderStart(index);
+		},
+		[submissions],
+	);
+
 	if (!open) {
 		return (
 			<SidebarCollapsed
@@ -130,6 +138,7 @@ export function UnscheduledSidebar() {
 									draggingId={draggingId}
 									onToggleSelect={selection.toggle}
 									onToggleExpand={expanded.toggle}
+									onOpenReader={handleOpenReader}
 									onDragStart={handleDragStart}
 									onDragEnd={handleDragEnd}
 								/>
