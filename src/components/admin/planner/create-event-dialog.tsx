@@ -187,7 +187,44 @@ export function CreateEventDialog({
 						/>
 					</div>
 
+					{/* Duration controls */}
+					{type === "session" ? (
+						<div className="grid grid-cols-2 gap-4">
+							<div className="space-y-2">
+								<Label>Presentations</Label>
+								<Stepper
+									value={presentationCount}
+									min={1}
+									max={20}
+									onChange={setPresentationCount}
+								/>
+							</div>
+							<div className="space-y-2">
+								<Label>Min / talk</Label>
+								<Stepper
+									value={minutesPerPresentation}
+									min={5}
+									max={120}
+									step={5}
+									onChange={setMinutesPerPresentation}
+								/>
+							</div>
+						</div>
+					) : (
+						<div className="space-y-2">
+							<Label>Duration</Label>
+							<Stepper
+								value={breakDurationMin}
+								min={5}
+								max={180}
+								step={5}
+								onChange={setBreakDurationMin}
+							/>
+						</div>
+					)}
+
 					<TimeRangeSummary
+						compact
 						start={startDate}
 						end={endDate}
 						totalMin={totalMin}
@@ -231,42 +268,6 @@ export function CreateEventDialog({
 								value={trackId}
 								onValueChange={setTrackId}
 								tracks={tracks}
-							/>
-						</div>
-					)}
-
-					{/* Duration controls */}
-					{type === "session" ? (
-						<div className="grid grid-cols-2 gap-4">
-							<div className="space-y-2">
-								<Label>Presentations</Label>
-								<Stepper
-									value={presentationCount}
-									min={1}
-									max={20}
-									onChange={setPresentationCount}
-								/>
-							</div>
-							<div className="space-y-2">
-								<Label>Min / talk</Label>
-								<Stepper
-									value={minutesPerPresentation}
-									min={5}
-									max={120}
-									step={5}
-									onChange={setMinutesPerPresentation}
-								/>
-							</div>
-						</div>
-					) : (
-						<div className="space-y-2">
-							<Label>Duration</Label>
-							<Stepper
-								value={breakDurationMin}
-								min={5}
-								max={180}
-								step={5}
-								onChange={setBreakDurationMin}
 							/>
 						</div>
 					)}

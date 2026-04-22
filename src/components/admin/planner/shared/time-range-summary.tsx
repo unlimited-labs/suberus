@@ -7,6 +7,7 @@ interface Props {
 	totalMin: number;
 	timezone: string | undefined;
 	extra?: ReactNode;
+	compact?: boolean;
 }
 
 function formatTime(date: Date, timezone: string | undefined) {
@@ -23,14 +24,32 @@ export function TimeRangeSummary({
 	totalMin,
 	timezone,
 	extra,
+	compact = false,
 }: Props) {
+	if (compact) {
+		return (
+			<div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+				<IconClock size={12} className="shrink-0" />
+				<span className="font-medium tabular-nums text-foreground">
+					{formatTime(start, timezone)}
+				</span>
+				<span>—</span>
+				<span className="font-medium tabular-nums text-foreground">
+					{formatTime(end, timezone)}
+				</span>
+				<span className="ml-auto">
+					{totalMin} min{extra}
+				</span>
+			</div>
+		);
+	}
 	return (
 		<div className="flex items-center gap-2 rounded-md bg-muted/60 px-3 py-2">
 			<IconClock size={14} className="shrink-0 text-muted-foreground" />
 			<span className="text-sm font-medium tabular-nums">
 				{formatTime(start, timezone)}
 			</span>
-			<span className="text-muted-foreground">→</span>
+			<span className="text-muted-foreground">—</span>
 			<span className="text-sm font-medium tabular-nums">
 				{formatTime(end, timezone)}
 			</span>
