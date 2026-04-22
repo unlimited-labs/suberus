@@ -4,6 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 import { BreakEditorSheet } from "@/components/admin/planner/break-editor-sheet";
 import { CapacityStrip } from "@/components/admin/planner/capacity-strip";
+import { computeHiddenWeekdays } from "@/components/admin/planner/compute-hidden-weekdays";
 import { CreateSessionDialog } from "@/components/admin/planner/create-session-dialog";
 import { useNextStartAt } from "@/components/admin/planner/hooks/use-next-start-at";
 import { usePlannerCalendarHandlers } from "@/components/admin/planner/hooks/use-planner-calendar-handlers";
@@ -20,7 +21,6 @@ import {
 	usePlannerSelection,
 } from "@/components/admin/planner/planner-context";
 import { PublishButton } from "@/components/admin/planner/publish-button";
-import { RoomFilterPopover } from "@/components/admin/planner/room-filter-popover";
 import { SessionEditorSheet } from "@/components/admin/planner/session-editor-sheet";
 import { UnscheduledSidebar } from "@/components/admin/planner/unscheduled-sidebar";
 import { PageHeader } from "@/components/layout/page-header";
@@ -114,6 +114,11 @@ function ProgramPlannerContent() {
 		() => Array.from(hiddenRoomIds).sort().join(","),
 		[hiddenRoomIds],
 	);
+
+	const hiddenWeekdays = useMemo(
+		() => computeHiddenWeekdays(confStart, confEnd),
+		[confStart, confEnd],
+	);
 	const { invalidate, handleSubmissionDrop, handleEventUpdate } =
 		usePlannerMutations(settings.defaultPresentationMin);
 	const {
@@ -171,35 +176,30 @@ function ProgramPlannerContent() {
 				{mobileQueueOpen && <MobileQueueOverlay onClose={closeMobileQueue} />}
 				<div className="hidden min-h-0 flex-1 md:flex">
 					<UnscheduledSidebar />
-					<div className="flex min-h-0 flex-1 flex-col">
-						<div className="flex items-center gap-2 border-b px-4 py-1.5">
-							<RoomFilterPopover
-								rooms={rooms}
-								hiddenIds={hiddenRoomIds}
-								onToggle={toggleRoomVisibility}
-								onShowAll={showAllRooms}
-							/>
-						</div>
-						<div className="flex-1 overflow-auto p-4">
-							<PlannerCalendar
-								calendarKey={`${calendarKey}:${hiddenRoomsKey}`}
-								resources={resources}
-								events={events}
-								initialDate={currentDate ?? confStart ?? undefined}
-								initialView={currentView}
-								defaultStartAt={defaultStartAt}
-								timezone={tz}
-								timeFormat={settings.timeFormat}
-								dayStart={settings.dayStart}
-								dayEnd={settings.dayEnd}
-								onDateChange={setCurrentDate}
-								onViewChange={setCurrentView}
-								onEventUpdate={handleEventUpdate}
-								onEventClick={handleEventClick}
-								onSubmissionDrop={handleSubmissionDrop}
-								onCreated={invalidate}
-							/>
-						</div>
+					<div className="flex-1 overflow-auto p-4">
+						<PlannerCalendar
+							calendarKey={`${calendarKey}:${hiddenRoomsKey}`}
+							resources={resources}
+							events={events}
+							rooms={rooms}
+							hiddenRoomIds={hiddenRoomIds}
+							onToggleRoom={toggleRoomVisibility}
+							onShowAllRooms={showAllRooms}
+							initialDate={currentDate ?? confStart ?? undefined}
+							initialView={currentView}
+							defaultStartAt={defaultStartAt}
+							timezone={tz}
+							timeFormat={settings.timeFormat}
+							dayStart={settings.dayStart}
+							dayEnd={settings.dayEnd}
+							hiddenDays={hiddenWeekdays}
+							onDateChange={setCurrentDate}
+							onViewChange={setCurrentView}
+							onEventUpdate={handleEventUpdate}
+							onEventClick={handleEventClick}
+							onSubmissionDrop={handleSubmissionDrop}
+							onCreated={invalidate}
+						/>
 					</div>
 				</div>
 			</div>

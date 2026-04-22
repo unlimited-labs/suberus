@@ -33,16 +33,16 @@ export function RoomFilterPopover({
 				<button
 					type="button"
 					data-testid="room-filter-toggle"
-					className={`flex items-center gap-1.5 rounded border px-2 py-1 text-xs hover:bg-muted ${
+					className={`flex h-9 items-center gap-1.5 rounded-md px-3 text-xs font-medium transition-colors ${
 						active
-							? "border-primary/40 bg-primary/5 text-primary"
-							: "text-muted-foreground"
+							? "bg-primary/10 text-primary hover:bg-primary/15"
+							: "text-muted-foreground hover:bg-muted hover:text-foreground"
 					}`}
 				>
-					<IconFilter size={12} />
+					<IconFilter size={13} />
 					Rooms
 					{active && (
-						<span className="rounded-full bg-primary/10 px-1.5 text-[10px] font-medium text-primary">
+						<span className="rounded-full bg-primary/20 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-primary">
 							{rooms.length - hiddenCount}/{rooms.length}
 						</span>
 					)}

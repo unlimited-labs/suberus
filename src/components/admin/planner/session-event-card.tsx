@@ -1,3 +1,4 @@
+import { useIlamyCalendarContext } from "@ilamy/calendar";
 import { IconCircleCheckFilled, IconUsers } from "@tabler/icons-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -34,6 +35,8 @@ export function SessionEventCard({
 	data: SessionEventData;
 	onSubmissionDrop?: (submissionId: string) => void;
 }) {
+	const { view } = useIlamyCalendarContext();
+	const compact = view === "week";
 	const band = data.trackColor ?? "var(--muted-foreground)";
 	const hasChairs = data.chairs.length > 0;
 	const slotCount = data.presentations.length;
@@ -82,70 +85,81 @@ export function SessionEventCard({
 				style={{ backgroundColor: band }}
 			/>
 
-			{/* Header: title + chairs */}
-			<div className="flex items-start justify-between gap-1">
-				<div className="min-w-0 flex-1">
-					<p
-						data-testid="session-card-title"
-						className="truncate font-semibold leading-tight text-foreground"
-					>
-						{title}
-					</p>
-					{data.trackName && (
-						<p className="truncate text-[10px] text-muted-foreground">
-							{data.trackName}
-						</p>
-					)}
-				</div>
-
-				{hasChairs ? (
-					<div className="flex shrink-0 -space-x-1">
-						{data.chairs.slice(0, 3).map((c, i) => (
-							<span
-								key={`${c.firstName}-${c.lastName}-${i}`}
-								className="inline-flex size-5 items-center justify-center rounded-full border border-background bg-muted text-[9px] font-semibold text-muted-foreground"
-								title={`${c.firstName ?? ""} ${c.lastName ?? ""}`.trim()}
+			{compact ? (
+				<p
+					data-testid="session-card-title"
+					className="whitespace-normal break-words font-semibold leading-tight text-foreground"
+				>
+					{title}
+				</p>
+			) : (
+				<>
+					{/* Header: title + chairs */}
+					<div className="flex items-start justify-between gap-1">
+						<div className="min-w-0 flex-1">
+							<p
+								data-testid="session-card-title"
+								className="truncate font-semibold leading-tight text-foreground"
 							>
-								{initials(c.firstName, c.lastName)}
-							</span>
-						))}
-					</div>
-				) : (
-					<span
-						className="inline-flex shrink-0 items-center gap-0.5 text-[9px] text-amber-600 dark:text-amber-400"
-						title="No chair assigned"
-					>
-						<IconUsers className="size-3" />!
-					</span>
-				)}
-			</div>
+								{title}
+							</p>
+							{data.trackName && (
+								<p className="truncate text-[10px] text-muted-foreground">
+									{data.trackName}
+								</p>
+							)}
+						</div>
 
-			{/* Capacity bar */}
-			<div className="mt-auto pt-1" data-testid="session-card-capacity">
-				<div className="flex items-center justify-between text-[9px] text-muted-foreground/70">
-					<span>
-						{slotCount} {slotCount === 1 ? "talk" : "talks"} ·{" "}
-						<span className="tabular-nums">
-							{usedMin}/{data.sessionDurationMin} min
-						</span>
-					</span>
-					{capacityFull && (
-						<IconCircleCheckFilled
-							className="size-3.5 text-emerald-600 dark:text-emerald-400"
-							aria-label="Full"
-						/>
-					)}
-				</div>
-				<div className="mt-0.5 h-[3px] w-full overflow-hidden rounded-full bg-muted">
-					<div
-						className={cn(
-							"h-full rounded-full transition-all",
-							capacityFull ? "bg-emerald-500" : "bg-primary/60",
+						{hasChairs ? (
+							<div className="flex shrink-0 -space-x-1">
+								{data.chairs.slice(0, 3).map((c, i) => (
+									<span
+										key={`${c.firstName}-${c.lastName}-${i}`}
+										className="inline-flex size-5 items-center justify-center rounded-full border border-background bg-muted text-[9px] font-semibold text-muted-foreground"
+										title={`${c.firstName ?? ""} ${c.lastName ?? ""}`.trim()}
+									>
+										{initials(c.firstName, c.lastName)}
+									</span>
+								))}
+							</div>
+						) : (
+							<span
+								className="inline-flex shrink-0 items-center gap-0.5 text-[9px] text-amber-600 dark:text-amber-400"
+								title="No chair assigned"
+							>
+								<IconUsers className="size-3" />!
+							</span>
 						)}
-						style={{ width: `${capacityPct}%` }}
-					/>
-				</div>
-			</div>
+					</div>
+
+					{/* Capacity bar */}
+					<div className="mt-auto pt-1" data-testid="session-card-capacity">
+						<div className="flex items-center justify-between text-[9px] text-muted-foreground/70">
+							<span>
+								{slotCount} {slotCount === 1 ? "talk" : "talks"} ·{" "}
+								<span className="tabular-nums">
+									{usedMin}/{data.sessionDurationMin} min
+								</span>
+							</span>
+							{capacityFull && (
+								<IconCircleCheckFilled
+									className="size-3.5 text-emerald-600 dark:text-emerald-400"
+									aria-label="Full"
+								/>
+							)}
+						</div>
+						<div className="mt-0.5 h-[3px] w-full overflow-hidden rounded-full bg-muted">
+							<div
+								className={cn(
+									"h-full rounded-full transition-all",
+									capacityFull ? "bg-emerald-500" : "bg-primary/60",
+								)}
+								style={{ width: `${capacityPct}%` }}
+							/>
+						</div>
+					</div>
+				</>
+			)}
 		</section>
 	);
 }

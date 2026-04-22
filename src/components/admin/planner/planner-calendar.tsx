@@ -7,6 +7,7 @@ import {
 } from "@ilamy/calendar";
 import { useCallback } from "react";
 import { CreateEventDialog } from "./create-event-dialog";
+import { PlannerCalendarHeader } from "./planner-calendar-header";
 import { PlannerEventRenderer } from "./planner-event-renderer";
 
 interface Resource {
@@ -15,10 +16,19 @@ interface Resource {
 	position: number;
 }
 
+interface Room {
+	id: string;
+	name: string;
+}
+
 interface Props {
 	calendarKey: string | number;
 	resources: Resource[];
 	events: NonNullable<IlamyResourceCalendarProps["events"]>;
+	rooms: Room[];
+	hiddenRoomIds: Set<string>;
+	onToggleRoom: (roomId: string) => void;
+	onShowAllRooms: () => void;
 	initialDate: Date | undefined;
 	initialView: CalendarView;
 	defaultStartAt: Date;
@@ -26,6 +36,7 @@ interface Props {
 	timeFormat: "12h" | "24h" | null | undefined;
 	dayStart: string;
 	dayEnd: string;
+	hiddenDays: WeekDays[];
 	onDateChange: (date: Date) => void;
 	onViewChange: (view: CalendarView) => void;
 	onEventUpdate: (event: CalendarEvent) => void;
@@ -56,6 +67,10 @@ export function PlannerCalendar({
 	calendarKey,
 	resources,
 	events,
+	rooms,
+	hiddenRoomIds,
+	onToggleRoom,
+	onShowAllRooms,
 	initialDate,
 	initialView,
 	defaultStartAt,
@@ -63,6 +78,7 @@ export function PlannerCalendar({
 	timeFormat,
 	dayStart,
 	dayEnd,
+	hiddenDays,
 	onDateChange,
 	onViewChange,
 	onEventUpdate,
@@ -120,6 +136,7 @@ export function PlannerCalendar({
 				timeFormat={timeFormat === "12h" ? "12-hour" : "24-hour"}
 				businessHours={businessHours}
 				hideNonBusinessHours
+				hiddenDays={hiddenDays}
 				onDateChange={handleDateChange}
 				onViewChange={handleViewChange}
 				onEventUpdate={onEventUpdate}
@@ -127,6 +144,14 @@ export function PlannerCalendar({
 				renderCurrentTimeIndicator={hideCurrentTimeIndicator}
 				renderEventForm={renderEventForm}
 				renderEvent={renderEvent}
+				headerComponent={
+					<PlannerCalendarHeader
+						rooms={rooms}
+						hiddenRoomIds={hiddenRoomIds}
+						onToggleRoom={onToggleRoom}
+						onShowAllRooms={onShowAllRooms}
+					/>
+				}
 			/>
 		</div>
 	);
