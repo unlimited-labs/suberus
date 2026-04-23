@@ -145,7 +145,9 @@ export function CreateEventDialog({
 		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogContent data-testid="create-event-dialog" className="sm:max-w-sm">
 				<DialogHeader>
-					<DialogTitle>New event</DialogTitle>
+					<DialogTitle>
+						{type === "session" ? "New session" : "New break"}
+					</DialogTitle>
 				</DialogHeader>
 
 				<div className="space-y-4">
