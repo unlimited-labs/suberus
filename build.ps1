@@ -27,6 +27,7 @@ try {
     Write-Host "  Runtime : $($env:REGISTRY)/$($env:IMAGE_NAME):$($env:TAG)"
     Write-Host "  Migrate : $($env:REGISTRY)/$($env:IMAGE_NAME):migrate-$($env:TAG)"
     Write-Host "  Docling : $($env:REGISTRY)/suberus/docling:$($env:TAG)"
+    Write-Host "  Planner : $($env:REGISTRY)/suberus/planner:$($env:TAG)"
 }
 catch {
     Write-Error "Build pipeline failed: $_"
