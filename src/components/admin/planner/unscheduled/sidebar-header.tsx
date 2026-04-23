@@ -1,33 +1,51 @@
 import {
 	IconBook,
+	IconCalendarCheck,
 	IconChevronLeft,
 	IconLayoutList,
 	IconSquareCheck,
 } from "@tabler/icons-react";
 
+type ListMode = "unscheduled" | "scheduled";
+
 interface Props {
+	mode: ListMode;
 	count: number;
 	selectMode: boolean;
+	onToggleMode: () => void;
 	onToggleSelectMode: () => void;
 	onOpenReader: () => void;
 	onCollapse: () => void;
 }
 
 export function SidebarHeader({
+	mode,
 	count,
 	selectMode,
+	onToggleMode,
 	onToggleSelectMode,
 	onOpenReader,
 	onCollapse,
 }: Props) {
+	const isScheduled = mode === "scheduled";
+	const Icon = isScheduled ? IconCalendarCheck : IconLayoutList;
+	const otherLabel = isScheduled ? "Unscheduled" : "Scheduled";
 	return (
 		<div className="flex items-center justify-between border-b px-3 py-2">
-			<div className="flex items-center gap-1.5">
-				<IconLayoutList size={14} className="text-muted-foreground" />
-				<span className="text-xs font-medium">Unscheduled</span>
-			</div>
+			<button
+				type="button"
+				onClick={onToggleMode}
+				data-testid="sidebar-toggle-mode"
+				aria-pressed={isScheduled}
+				title={`Switch to ${otherLabel}`}
+				className="flex items-center gap-1.5 rounded px-1 py-0.5 text-xs font-medium text-foreground hover:bg-muted"
+			>
+				<Icon size={14} className="text-muted-foreground" />
+				<span>{isScheduled ? "Scheduled" : "Unscheduled"}</span>
+				<span className="text-[10px] text-muted-foreground">({count})</span>
+			</button>
 			<div className="flex items-center gap-1">
-				{count > 0 && (
+				{!isScheduled && count > 0 && (
 					<>
 						<button
 							type="button"

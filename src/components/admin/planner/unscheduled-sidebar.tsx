@@ -1,7 +1,11 @@
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
-import { unscheduledSubmissionsQueryOptions } from "@/server-fns/planner/sessions";
+import {
+	allSessionsQueryOptions,
+	unscheduledSubmissionsQueryOptions,
+} from "@/server-fns/planner/sessions";
+import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
 import { BulkReadReader } from "./bulk-read-reader";
 import { usePlannerSelection } from "./planner-context";
 import {
@@ -10,6 +14,7 @@ import {
 	matchesSearch,
 } from "./session-grouper";
 import { GroupingTabs } from "./unscheduled/grouping-tabs";
+import { ScheduledList } from "./unscheduled/scheduled-list";
 import { SelectionBar } from "./unscheduled/selection-bar";
 import { SidebarCollapsed } from "./unscheduled/sidebar-collapsed";
 import { SidebarHeader } from "./unscheduled/sidebar-header";
@@ -19,12 +24,17 @@ import { UnscheduledGroup } from "./unscheduled/unscheduled-group";
 import { useSubmissionSelection } from "./unscheduled/use-submission-selection";
 import { useToggleSet } from "./unscheduled/use-toggle-set";
 
+type ListMode = "unscheduled" | "scheduled";
+
 export function UnscheduledSidebar() {
-	const { openCreateFromSelection } = usePlannerSelection();
+	const { openCreateFromSelection, selectSession } = usePlannerSelection();
 	const { data: submissions } = useSuspenseQuery(
 		unscheduledSubmissionsQueryOptions(),
 	);
+	const { data: sessions } = useSuspenseQuery(allSessionsQueryOptions());
+	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
 	const [open, setOpen] = useState(true);
+	const [listMode, setListMode] = useState<ListMode>("unscheduled");
 	const [search, setSearch] = useState("");
 	const [mode, setMode] = useState<GroupingMode>("intake");
 	const [selectMode, setSelectMode] = useState(false);
@@ -88,6 +98,26 @@ export function UnscheduledSidebar() {
 		[submissions],
 	);
 
+	const scheduledCount = useMemo(
+		() => sessions.reduce((n, s) => n + s.presentations.length, 0),
+		[sessions],
+	);
+	const headerCount =
+		listMode === "scheduled" ? scheduledCount : submissions.length;
+	const isScheduled = listMode === "scheduled";
+
+	const handleToggleListMode = useCallback(() => {
+		setListMode((prev) => {
+			const next: ListMode = prev === "scheduled" ? "unscheduled" : "scheduled";
+			if (next === "scheduled") {
+				selection.clear();
+				setSelectMode(false);
+			}
+			setSearch("");
+			return next;
+		});
+	}, [selection]);
+
 	if (!open) {
 		return (
 			<SidebarCollapsed
@@ -104,17 +134,26 @@ export function UnscheduledSidebar() {
 				className="flex min-h-0 w-72 shrink-0 flex-col border-r"
 			>
 				<SidebarHeader
-					count={submissions.length}
+					mode={listMode}
+					count={headerCount}
 					selectMode={selectMode}
+					onToggleMode={handleToggleListMode}
 					onToggleSelectMode={handleToggleSelectMode}
 					onOpenReader={() => setReaderStart(0)}
 					onCollapse={() => setOpen(false)}
 				/>
 				<SidebarSearch value={search} onChange={setSearch} />
-				<GroupingTabs mode={mode} onChange={setMode} />
+				{!isScheduled && <GroupingTabs mode={mode} onChange={setMode} />}
 
 				<div className="flex-1 overflow-y-auto">
-					{groups.length === 0 ? (
+					{isScheduled ? (
+						<ScheduledList
+							sessions={sessions}
+							search={search}
+							timezone={settings.timezone || undefined}
+							onOpenSession={selectSession}
+						/>
+					) : groups.length === 0 ? (
 						<UnscheduledEmpty hasSearch={Boolean(search)} />
 					) : (
 						groups.map((group, gIdx) => {
@@ -147,7 +186,7 @@ export function UnscheduledSidebar() {
 					)}
 				</div>
 
-				{selection.selected.size > 0 && (
+				{!isScheduled && selection.selected.size > 0 && (
 					<SelectionBar
 						count={selection.selected.size}
 						onCreateSession={handleCreateSession}
