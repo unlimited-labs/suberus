@@ -72,11 +72,17 @@ test.describe.serial("Planner — Session editor", () => {
 		await plannerPage.goto();
 		await plannerPage.openSessionEditor(sessionId);
 
-		const durationInput = plannerPage.page.getByTestId(
-			"session-editor-duration",
+		// 120 min = 6 slots × 20 min (default)
+		const slotCountInput = plannerPage.page.getByTestId(
+			"session-editor-slot-count",
 		);
-		await durationInput.fill("120");
-		await durationInput.blur();
+		const slotMinInput = plannerPage.page.getByTestId(
+			"session-editor-slot-min",
+		);
+		await slotMinInput.fill("20");
+		await slotMinInput.blur();
+		await slotCountInput.fill("6");
+		await slotCountInput.blur();
 
 		const db = getPrisma();
 		await expect

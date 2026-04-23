@@ -1,10 +1,22 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { utcToTzLocalInput } from "@/lib/tz-datetime";
+import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
 import { RoomSelect } from "../shared/room-select";
 import { TrackSelect } from "../shared/track-select";
 import { useSessionEditor } from "./session-editor-context";
+
+function formatMinutes(min: number): string {
+	if (min <= 0) return "0 min";
+	const h = Math.floor(min / 60);
+	const m = Math.round(min % 60);
+	if (h === 0) return `${m} min`;
+	if (m === 0) return `${h}h`;
+	return `${h}h ${m}m`;
+}
 
 export function SessionEditorHeader() {
 	const {
@@ -14,9 +26,35 @@ export function SessionEditorHeader() {
 		tracks,
 		title,
 		sessionDurationMin,
+		sortedPresentations,
 		mutations,
 		onSaveTitle,
 	} = useSessionEditor();
+	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
+	const defaultSlotMin = settings.defaultPresentationMin;
+
+	const initialSlotMin = sortedPresentations[0]?.durationMin ?? defaultSlotMin;
+	const initialSlotCount = Math.max(
+		1,
+		Math.round(sessionDurationMin / Math.max(1, initialSlotMin)),
+	);
+
+	const [slotCount, setSlotCount] = useState(initialSlotCount);
+	const [slotMin, setSlotMin] = useState(initialSlotMin);
+
+	useEffect(() => {
+		setSlotCount(initialSlotCount);
+		setSlotMin(initialSlotMin);
+	}, [initialSlotCount, initialSlotMin]);
+
+	const computedDuration = slotCount * slotMin;
+
+	const commit = (nextCount: number, nextMin: number) => {
+		const total = Math.max(1, nextCount * nextMin);
+		if (total !== sessionDurationMin) {
+			mutations.updateDuration(total, session);
+		}
+	};
 	return (
 		<SheetHeader className="gap-3 border-b p-4">
 			<SheetTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -31,48 +69,69 @@ export function SessionEditorHeader() {
 				className="text-base font-medium"
 				placeholder="Session title"
 			/>
+			<div className="space-y-1">
+				<Label
+					htmlFor="session-start"
+					className="text-xs text-muted-foreground"
+				>
+					Start
+				</Label>
+				<Input
+					id="session-start"
+					type="datetime-local"
+					value={utcToTzLocalInput(new Date(session.startAt), tz)}
+					onChange={(e) => mutations.updateStart(e.target.value, tz, session)}
+					data-testid="session-editor-start"
+					className="h-8 text-sm"
+				/>
+			</div>
 			<div className="grid grid-cols-2 gap-3">
 				<div className="space-y-1">
 					<Label
-						htmlFor="session-start"
+						htmlFor="session-slot-count"
 						className="text-xs text-muted-foreground"
 					>
-						Start
+						Slots
 					</Label>
 					<Input
-						id="session-start"
-						type="datetime-local"
-						value={utcToTzLocalInput(new Date(session.startAt), tz)}
-						onChange={(e) => mutations.updateStart(e.target.value, tz, session)}
-						data-testid="session-editor-start"
+						id="session-slot-count"
+						type="number"
+						min={1}
+						step={1}
+						value={slotCount}
+						data-testid="session-editor-slot-count"
+						onChange={(e) => setSlotCount(Math.max(1, Number(e.target.value)))}
+						onBlur={() => commit(slotCount, slotMin)}
 						className="h-8 text-sm"
 					/>
 				</div>
 				<div className="space-y-1">
 					<Label
-						htmlFor="session-duration"
+						htmlFor="session-slot-min"
 						className="text-xs text-muted-foreground"
 					>
-						Duration (min)
+						Min / slot
 					</Label>
 					<Input
-						id="session-duration"
+						id="session-slot-min"
 						type="number"
-						min={5}
+						min={1}
 						step={5}
-						data-testid="session-editor-duration"
-						defaultValue={sessionDurationMin}
-						key={`${String(session.startAt)}-${String(session.endAt)}`}
-						onBlur={(e) => {
-							const v = Number(e.target.value);
-							if (v >= 5 && v !== sessionDurationMin) {
-								mutations.updateDuration(v, session);
-							}
-						}}
+						value={slotMin}
+						data-testid="session-editor-slot-min"
+						onChange={(e) => setSlotMin(Math.max(1, Number(e.target.value)))}
+						onBlur={() => commit(slotCount, slotMin)}
 						className="h-8 text-sm"
 					/>
 				</div>
 			</div>
+			<p className="text-[11px] text-muted-foreground">
+				Session duration:{" "}
+				<span className="font-medium text-foreground">
+					{formatMinutes(computedDuration)}
+				</span>{" "}
+				({slotCount} × {slotMin} min)
+			</p>
 			<div className="grid grid-cols-2 gap-3">
 				<div className="space-y-1">
 					<Label className="text-xs text-muted-foreground">Room</Label>
