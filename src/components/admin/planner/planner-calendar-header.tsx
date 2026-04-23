@@ -1,6 +1,5 @@
 import { useIlamyCalendarContext } from "@ilamy/calendar";
 import { IconCalendarStar, IconPlus, IconWand } from "@tabler/icons-react";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,16 +8,14 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
 import { CalendarNavGroup } from "./header/calendar-nav-group";
 import { CalendarViewSwitcher } from "./header/calendar-view-switcher";
 import { usePlannerTools } from "./planner-tools-context";
 import { RoomFilterPopover } from "./room-filter-popover";
 
 export function PlannerCalendarHeader() {
-	const { rooms, room } = usePlannerTools();
+	const { rooms, room, onJumpToConferenceStart } = usePlannerTools();
 	const navigate = useNavigate();
-	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
 	const {
 		currentDate,
 		view,
@@ -26,31 +23,10 @@ export function PlannerCalendarHeader() {
 		nextPeriod,
 		prevPeriod,
 		today,
-		setCurrentDate,
 		openEventForm,
 	} = useIlamyCalendarContext();
 
-	const confStart = settings.conferenceStartDate
-		? new Date(settings.conferenceStartDate)
-		: null;
-	const confEnd = settings.conferenceEndDate
-		? new Date(settings.conferenceEndDate)
-		: null;
-	const canJumpToConference =
-		confStart != null &&
-		confEnd != null &&
-		!Number.isNaN(confStart.getTime()) &&
-		!Number.isNaN(confEnd.getTime());
-
-	const goToConferenceStart = () => {
-		if (!confStart) return;
-		setCurrentDate(
-			currentDate
-				.year(confStart.getFullYear())
-				.month(confStart.getMonth())
-				.date(confStart.getDate()),
-		);
-	};
+	const canJumpToConference = onJumpToConferenceStart != null;
 
 	const title =
 		view === "week"
@@ -76,7 +52,7 @@ export function PlannerCalendarHeader() {
 									size="sm"
 									variant="outline"
 									className="h-9 gap-1.5"
-									onClick={goToConferenceStart}
+									onClick={() => onJumpToConferenceStart?.()}
 									disabled={!canJumpToConference}
 									data-testid="planner-jump-conference-start"
 								>

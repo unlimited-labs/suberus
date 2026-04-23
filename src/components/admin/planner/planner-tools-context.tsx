@@ -12,6 +12,7 @@ interface PlannerToolsValue {
 	defaultStartAt: Date;
 	onCreated: () => void;
 	onSubmissionDrop: (sessionId: string, submissionId: string) => void;
+	onJumpToConferenceStart: (() => void) | null;
 }
 
 const Context = createContext<PlannerToolsValue | null>(null);
@@ -31,11 +32,26 @@ export function PlannerToolsProvider({
 	defaultStartAt,
 	onCreated,
 	onSubmissionDrop,
+	onJumpToConferenceStart,
 	children,
 }: ProviderProps) {
 	const value = useMemo<PlannerToolsValue>(
-		() => ({ rooms, room, defaultStartAt, onCreated, onSubmissionDrop }),
-		[rooms, room, defaultStartAt, onCreated, onSubmissionDrop],
+		() => ({
+			rooms,
+			room,
+			defaultStartAt,
+			onCreated,
+			onSubmissionDrop,
+			onJumpToConferenceStart,
+		}),
+		[
+			rooms,
+			room,
+			defaultStartAt,
+			onCreated,
+			onSubmissionDrop,
+			onJumpToConferenceStart,
+		],
 	);
 
 	return <Context.Provider value={value}>{children}</Context.Provider>;

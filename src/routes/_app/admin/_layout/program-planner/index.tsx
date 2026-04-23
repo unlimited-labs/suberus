@@ -162,6 +162,7 @@ function ProgramPlannerContent() {
 							defaultStartAt={defaultStartAt}
 							onCreated={invalidate}
 							onSubmissionDrop={handleSubmissionDrop}
+							onJumpToConferenceStart={confStart ? returnToConference : null}
 						>
 							<PlannerCalendar
 								calendarKey={`${calendarKey}:${roomVisibility.hiddenRoomsKey}`}
