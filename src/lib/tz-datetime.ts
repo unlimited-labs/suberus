@@ -1,6 +1,15 @@
+function resolveTz(tz: string | undefined): string {
+	if (tz) return tz;
+	try {
+		return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+	} catch {
+		return "UTC";
+	}
+}
+
 export function utcToTzLocalInput(utc: Date, tz: string | undefined): string {
 	const parts = new Intl.DateTimeFormat("en-CA", {
-		timeZone: tz || undefined,
+		timeZone: resolveTz(tz),
 		year: "numeric",
 		month: "2-digit",
 		day: "2-digit",
@@ -17,9 +26,8 @@ export function tzLocalInputToUtc(local: string, tz: string | undefined): Date {
 	const [y, m, d] = datePart.split("-").map(Number);
 	const [hh, mm] = timePart.split(":").map(Number);
 	const guess = new Date(Date.UTC(y, m - 1, d, hh, mm));
-	if (!tz) return guess;
 	const parts = new Intl.DateTimeFormat("en-CA", {
-		timeZone: tz,
+		timeZone: resolveTz(tz),
 		year: "numeric",
 		month: "2-digit",
 		day: "2-digit",
