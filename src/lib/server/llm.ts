@@ -45,8 +45,27 @@ export async function checkLlmHealth(): Promise<LlmHealthResult> {
 			const models =
 				data.data?.map((m) => m.id) ?? data.models?.map((m) => m.name) ?? [];
 
-			result = { status: "healthy", message: "Connected", models };
-			result.gpu = await detectGpu();
+			const missing: string[] = [];
+			if (env.LLM_MODEL && !models.includes(env.LLM_MODEL)) {
+				missing.push(`LLM_MODEL='${env.LLM_MODEL}'`);
+			}
+			if (
+				env.LLM_EMBEDDING_MODEL &&
+				!models.includes(env.LLM_EMBEDDING_MODEL)
+			) {
+				missing.push(`LLM_EMBEDDING_MODEL='${env.LLM_EMBEDDING_MODEL}'`);
+			}
+
+			if (missing.length > 0) {
+				result = {
+					status: "unavailable",
+					message: `Configured model not reported by API: ${missing.join(", ")}. Available: ${models.join(", ") || "(none)"}`,
+					models,
+				};
+			} else {
+				result = { status: "healthy", message: "Connected", models };
+				result.gpu = await detectGpu();
+			}
 		}
 	} catch {
 		result = {
@@ -85,12 +104,14 @@ interface GenerateOptions {
 	system: string;
 	user: string;
 	maxTokens?: number;
+	timeoutMs?: number;
 }
 
 export async function generateWithLlm({
 	system,
 	user,
 	maxTokens = 512,
+	timeoutMs = 60_000,
 }: GenerateOptions): Promise<string> {
 	if (!env.LLM_API_URL) {
 		throw new Error("LLM_API_URL not configured");
@@ -117,7 +138,7 @@ export async function generateWithLlm({
 			stop: ["\n\n"],
 			chat_template_kwargs: { enable_thinking: false },
 		}),
-		signal: AbortSignal.timeout(60_000),
+		signal: AbortSignal.timeout(timeoutMs),
 	});
 
 	if (!response.ok) {

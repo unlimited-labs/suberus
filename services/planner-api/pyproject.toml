@@ -1,0 +1,15 @@
+[project]
+name = "planner-api"
+version = "0.1.0"
+description = "Constrained clustering service for conference session planning"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "numpy>=2.0",
+    "scikit-learn>=1.5",
+    "k-means-constrained>=0.7.5",
+]
+
+[tool.uv]
+package = false

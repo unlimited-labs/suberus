@@ -1,5 +1,6 @@
 import { useIlamyCalendarContext } from "@ilamy/calendar";
-import { IconPlus } from "@tabler/icons-react";
+import { IconPlus, IconWand } from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { CalendarNavGroup } from "./header/calendar-nav-group";
 import { CalendarViewSwitcher } from "./header/calendar-view-switcher";
@@ -8,6 +9,7 @@ import { RoomFilterPopover } from "./room-filter-popover";
 
 export function PlannerCalendarHeader() {
 	const { rooms, room } = usePlannerTools();
+	const navigate = useNavigate();
 	const {
 		currentDate,
 		view,
@@ -47,6 +49,15 @@ export function PlannerCalendarHeader() {
 					onShowAll={room.showAll}
 				/>
 				<CalendarViewSwitcher current={view} onChange={setView} />
+				<Button
+					size="sm"
+					variant="outline"
+					className="h-9 gap-1.5"
+					onClick={() => navigate({ to: "/admin/program-planner/auto-plan" })}
+				>
+					<IconWand className="h-4 w-4" />
+					<span>Auto-plan</span>
+				</Button>
 				<Button
 					size="sm"
 					variant="default"

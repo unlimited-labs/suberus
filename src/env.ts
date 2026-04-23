@@ -33,9 +33,13 @@ export const env = createEnv({
 		LLM_API_URL: z.url().optional(),
 		LLM_API_KEY: z.string().optional(),
 		LLM_MODEL: z.string().optional(),
+		LLM_EMBEDDING_MODEL: z.string().optional(),
 
 		// Docling API (optional, enhances LLM extraction with better markdown)
 		DOCLING_URL: z.url().optional(),
+
+		// Planner API (optional, enables auto session clustering)
+		PLANNER_API_URL: z.url().optional(),
 
 		AUTH_SECRET: z.string(),
 

@@ -136,6 +136,7 @@ model Submission {
   reviews           Review[]
   authors           SubmissionAuthor[]  @relation("SubmissionAuthors")
   presentationSlot  PresentationSlot?
+  embedding         SubmissionEmbedding?
   keywords          SubmissionKeyword[]
   activityLog       ActivityLog[]
   versions          SubmissionVersion[] @relation("SubmissionVersions")
@@ -155,6 +156,20 @@ model Submission {
   @@index([status, type, createdAt])
   @@index([status, userId, createdAt])
   @@map("submissions")
+}
+
+model SubmissionEmbedding {
+  submissionId String                      @id @db.Uuid
+  embedding    Unsupported("vector(2560)")
+  hash         String
+  model        String
+  createdAt    DateTime                    @default(now())
+  updatedAt    DateTime                    @updatedAt
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([hash])
+  @@map("submission_embeddings")
 }
 
 model SubmissionVersion {
