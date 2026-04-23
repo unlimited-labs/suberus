@@ -1,7 +1,15 @@
 import { useIlamyCalendarContext } from "@ilamy/calendar";
-import { IconPlus, IconWand } from "@tabler/icons-react";
+import { IconCalendarStar, IconPlus, IconWand } from "@tabler/icons-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
 import { CalendarNavGroup } from "./header/calendar-nav-group";
 import { CalendarViewSwitcher } from "./header/calendar-view-switcher";
 import { usePlannerTools } from "./planner-tools-context";
@@ -10,6 +18,7 @@ import { RoomFilterPopover } from "./room-filter-popover";
 export function PlannerCalendarHeader() {
 	const { rooms, room } = usePlannerTools();
 	const navigate = useNavigate();
+	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
 	const {
 		currentDate,
 		view,
@@ -17,8 +26,31 @@ export function PlannerCalendarHeader() {
 		nextPeriod,
 		prevPeriod,
 		today,
+		setCurrentDate,
 		openEventForm,
 	} = useIlamyCalendarContext();
+
+	const confStart = settings.conferenceStartDate
+		? new Date(settings.conferenceStartDate)
+		: null;
+	const confEnd = settings.conferenceEndDate
+		? new Date(settings.conferenceEndDate)
+		: null;
+	const canJumpToConference =
+		confStart != null &&
+		confEnd != null &&
+		!Number.isNaN(confStart.getTime()) &&
+		!Number.isNaN(confEnd.getTime());
+
+	const goToConferenceStart = () => {
+		if (!confStart) return;
+		setCurrentDate(
+			currentDate
+				.year(confStart.getFullYear())
+				.month(confStart.getMonth())
+				.date(confStart.getDate()),
+		);
+	};
 
 	const title =
 		view === "week"
@@ -36,6 +68,30 @@ export function PlannerCalendarHeader() {
 					onNext={nextPeriod}
 					onToday={today}
 				/>
+				<TooltipProvider>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<span>
+								<Button
+									size="sm"
+									variant="outline"
+									className="h-9 gap-1.5"
+									onClick={goToConferenceStart}
+									disabled={!canJumpToConference}
+									data-testid="planner-jump-conference-start"
+								>
+									<IconCalendarStar className="h-4 w-4" />
+									<span>Conference start</span>
+								</Button>
+							</span>
+						</TooltipTrigger>
+						<TooltipContent>
+							{canJumpToConference
+								? "Jump to day 1 of the conference"
+								: "Set conference start and end dates in settings to enable"}
+						</TooltipContent>
+					</Tooltip>
+				</TooltipProvider>
 				<h2 className="truncate text-sm font-semibold tracking-tight">
 					{title}
 				</h2>
