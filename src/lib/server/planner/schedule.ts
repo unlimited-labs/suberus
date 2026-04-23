@@ -44,36 +44,46 @@ export interface CapacityInfo {
 }
 
 export async function getCapacity(): Promise<CapacityInfo> {
-	const [talks, sessionsList, slotsList, defaultPresentationMin] =
-		await Promise.all([
-			prisma.submission.count({
-				where: {
-					status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] },
-					type: { in: ["ABSTRACT", "POSTER"] },
-				},
-			}),
-			prisma.programSession.findMany({
-				select: { startAt: true, endAt: true },
-			}),
-			prisma.presentationSlot.findMany({ select: { durationMin: true } }),
-			getSetting("CONFERENCE_DEFAULT_PRESENTATION_MIN"),
-		]);
+	const [talks, sessionsWithSlots, defaultPresentationMin] = await Promise.all([
+		prisma.submission.count({
+			where: {
+				status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] },
+				type: { in: ["ABSTRACT", "POSTER"] },
+			},
+		}),
+		prisma.programSession.findMany({
+			select: {
+				startAt: true,
+				endAt: true,
+				presentations: { select: { durationMin: true } },
+			},
+		}),
+		getSetting("CONFERENCE_DEFAULT_PRESENTATION_MIN"),
+	]);
 
-	const sessionMinutes = sessionsList.reduce(
-		(sum, s) => sum + (s.endAt.getTime() - s.startAt.getTime()) / 60_000,
-		0,
-	);
-	const usedMinutes = slotsList.reduce((sum, s) => sum + s.durationMin, 0);
+	let sessionMinutes = 0;
+	let usedMinutes = 0;
+	let scheduled = 0;
+	let freeSlots = 0;
+
+	for (const s of sessionsWithSlots) {
+		const total = (s.endAt.getTime() - s.startAt.getTime()) / 60_000;
+		const used = s.presentations.reduce((sum, p) => sum + p.durationMin, 0);
+		const free = Math.max(0, total - used);
+		sessionMinutes += total;
+		usedMinutes += used;
+		scheduled += s.presentations.length;
+		if (defaultPresentationMin > 0) {
+			freeSlots += Math.floor(free / defaultPresentationMin);
+		}
+	}
+
 	const freeMinutes = Math.max(0, sessionMinutes - usedMinutes);
-	const freeSlots =
-		defaultPresentationMin > 0
-			? Math.floor(freeMinutes / defaultPresentationMin)
-			: 0;
 
 	return {
 		talks,
-		scheduled: slotsList.length,
-		sessions: sessionsList.length,
+		scheduled,
+		sessions: sessionsWithSlots.length,
 		freeSlots,
 		sessionMinutes: Math.round(sessionMinutes),
 		usedMinutes,
