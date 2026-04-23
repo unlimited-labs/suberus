@@ -36,8 +36,16 @@ export function CapacityStrip() {
 						? "text-amber-700 dark:text-amber-400"
 						: "text-muted-foreground"
 				}
+				title={`Free capacity: ${cap.freeSlots} slot${
+					cap.freeSlots === 1 ? "" : "s"
+				} at default length`}
 			>
 				<span className="font-medium">{formatMinutes(cap.freeMinutes)}</span>{" "}
+				<span className="text-muted-foreground/70">
+					(~
+					<span className="font-medium text-foreground">{cap.freeSlots}</span>{" "}
+					slot{cap.freeSlots === 1 ? "" : "s"})
+				</span>{" "}
 				free{fullUtilization ? " (sessions full)" : ""}
 			</span>
 		</div>

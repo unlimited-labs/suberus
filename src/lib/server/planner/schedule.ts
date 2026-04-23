@@ -40,19 +40,24 @@ export interface CapacityInfo {
 	sessionMinutes: number;
 	usedMinutes: number;
 	freeMinutes: number;
+	freeSlots: number;
 }
 
 export async function getCapacity(): Promise<CapacityInfo> {
-	const [talks, sessionsList, slotsList] = await Promise.all([
-		prisma.submission.count({
-			where: {
-				status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] },
-				type: { in: ["ABSTRACT", "POSTER"] },
-			},
-		}),
-		prisma.programSession.findMany({ select: { startAt: true, endAt: true } }),
-		prisma.presentationSlot.findMany({ select: { durationMin: true } }),
-	]);
+	const [talks, sessionsList, slotsList, defaultPresentationMin] =
+		await Promise.all([
+			prisma.submission.count({
+				where: {
+					status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] },
+					type: { in: ["ABSTRACT", "POSTER"] },
+				},
+			}),
+			prisma.programSession.findMany({
+				select: { startAt: true, endAt: true },
+			}),
+			prisma.presentationSlot.findMany({ select: { durationMin: true } }),
+			getSetting("CONFERENCE_DEFAULT_PRESENTATION_MIN"),
+		]);
 
 	const sessionMinutes = sessionsList.reduce(
 		(sum, s) => sum + (s.endAt.getTime() - s.startAt.getTime()) / 60_000,
@@ -60,11 +65,16 @@ export async function getCapacity(): Promise<CapacityInfo> {
 	);
 	const usedMinutes = slotsList.reduce((sum, s) => sum + s.durationMin, 0);
 	const freeMinutes = Math.max(0, sessionMinutes - usedMinutes);
+	const freeSlots =
+		defaultPresentationMin > 0
+			? Math.floor(freeMinutes / defaultPresentationMin)
+			: 0;
 
 	return {
 		talks,
 		scheduled: slotsList.length,
 		sessions: sessionsList.length,
+		freeSlots,
 		sessionMinutes: Math.round(sessionMinutes),
 		usedMinutes,
 		freeMinutes: Math.round(freeMinutes),
