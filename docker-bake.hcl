@@ -11,7 +11,7 @@ variable "TAG" {
 }
 
 group "default" {
-  targets = ["app", "migrate", "docling"]
+  targets = ["app", "migrate", "docling", "planner"]
 }
 
 target "app" {
@@ -46,4 +46,15 @@ target "docling" {
   ]
   cache-from = ["type=registry,ref=${REGISTRY}/suberus/docling:cache"]
   cache-to   = ["type=registry,ref=${REGISTRY}/suberus/docling:cache,mode=max"]
+}
+
+target "planner" {
+  context    = "./services/planner-api"
+  dockerfile = "Dockerfile"
+  tags = [
+    "${REGISTRY}/suberus/planner:${TAG}",
+    "${REGISTRY}/suberus/planner:latest",
+  ]
+  cache-from = ["type=registry,ref=${REGISTRY}/suberus/planner:cache"]
+  cache-to   = ["type=registry,ref=${REGISTRY}/suberus/planner:cache,mode=max"]
 }
