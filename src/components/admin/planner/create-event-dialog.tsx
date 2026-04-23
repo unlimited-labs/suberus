@@ -34,6 +34,24 @@ interface CreateEventDialogProps extends EventFormProps {
 
 type EventType = "session" | "break";
 
+function toDate(raw: unknown): Date | null {
+	if (raw == null) return null;
+	if (raw instanceof Date) return raw;
+	if (
+		typeof raw === "object" &&
+		"toDate" in raw &&
+		typeof (raw as { toDate: unknown }).toDate === "function"
+	) {
+		const d = (raw as { toDate: () => Date }).toDate();
+		return Number.isNaN(d.getTime()) ? null : d;
+	}
+	if (typeof raw === "string" || typeof raw === "number") {
+		const d = new Date(raw);
+		return Number.isNaN(d.getTime()) ? null : d;
+	}
+	return null;
+}
+
 export function CreateEventDialog({
 	open,
 	selectedEvent,
@@ -46,24 +64,17 @@ export function CreateEventDialog({
 	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
 	const { data: sessions } = useSuspenseQuery(allSessionsQueryOptions());
 
-	const startRaw = selectedEvent?.start as
-		| { toDate?: () => Date }
-		| Date
-		| string
-		| undefined;
 	const resourceId =
 		typeof selectedEvent?.resourceId === "string"
 			? selectedEvent.resourceId
 			: undefined;
 
-	const initialStart =
-		startRaw == null
-			? defaultStartAt
-			: typeof startRaw === "object" &&
-					"toDate" in startRaw &&
-					typeof startRaw.toDate === "function"
-				? startRaw.toDate()
-				: new Date(startRaw as string | Date);
+	const initialStart = toDate(selectedEvent?.start) ?? defaultStartAt;
+	const clickedEnd = toDate(selectedEvent?.end);
+	const clickedDurationMin =
+		clickedEnd && clickedEnd.getTime() > initialStart.getTime()
+			? Math.round((clickedEnd.getTime() - initialStart.getTime()) / 60_000)
+			: null;
 
 	const [type, setType] = useState<EventType>("session");
 	const [title, setTitle] = useState("");
@@ -78,7 +89,11 @@ export function CreateEventDialog({
 	const [minutesPerPresentation, setMinutesPerPresentation] = useState(
 		settings.defaultPresentationMin,
 	);
-	const [breakDurationMin, setBreakDurationMin] = useState(30);
+	const [breakDurationMin, setBreakDurationMin] = useState(
+		clickedDurationMin != null
+			? Math.min(180, Math.max(5, clickedDurationMin))
+			: 30,
+	);
 	const [saving, setSaving] = useState(false);
 
 	const startDate = tzLocalInputToUtc(startInput, timezone);
