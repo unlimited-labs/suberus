@@ -19,7 +19,6 @@ import { embedSubmissions } from "./embeddings";
 
 const LABEL_MAX_ABSTRACT_CHARS = 1500;
 const LABEL_MAX_TOKENS = 60;
-const LABEL_CONCURRENCY = 4;
 const LABEL_SYSTEM_PROMPT = `You name academic conference sessions. Given a list of presentations (title + abstract snippet), return a single concise English session title (4-8 words) that captures the shared theme. Respond with only the title, no quotes, no explanation.`;
 
 interface ClusterApiResponse {
@@ -139,7 +138,7 @@ async function runAutoPlan(jobId: string): Promise<void> {
 	let labeled = 0;
 	const { results: proposedSessions, errors: labelErrors } =
 		await PromisePool.for(orderedClusters)
-			.withConcurrency(LABEL_CONCURRENCY)
+			.withConcurrency(env.LLM_CONCURRENCY)
 			.process(async (c, i): Promise<ProposedSession> => {
 				const sess = sessions[i];
 				const members = c.member_ids

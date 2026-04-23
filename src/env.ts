@@ -40,6 +40,7 @@ export const env = createEnv({
 
 		// Planner API (optional, enables auto session clustering)
 		PLANNER_API_URL: z.url().optional(),
+		LLM_CONCURRENCY: z.coerce.number().int().positive().default(4),
 
 		AUTH_SECRET: z.string(),
 

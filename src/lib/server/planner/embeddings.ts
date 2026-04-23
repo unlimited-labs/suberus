@@ -7,7 +7,6 @@ import { logger } from "@/logger.ts";
 const EMBEDDING_DIM = 2560;
 const MAX_TEXT_CHARS = 3000;
 const EMBEDDING_TIMEOUT_MS = 180_000;
-const EMBEDDING_CONCURRENCY = 8;
 
 export interface EmbeddingInput {
 	id: string;
@@ -122,7 +121,7 @@ export async function embedSubmissions(
 
 	const fresh = new Map<string, number[]>();
 	const { errors } = await PromisePool.for(toCompute)
-		.withConcurrency(EMBEDDING_CONCURRENCY)
+		.withConcurrency(env.LLM_CONCURRENCY)
 		.process(async (item) => {
 			const v = await callEmbeddingApi(`${item.title}\n\n${item.content}`);
 			if (v.length !== EMBEDDING_DIM) {
