@@ -124,29 +124,64 @@ export async function generateWithLlm({
 		headers.Authorization = `Bearer ${env.LLM_API_KEY}`;
 	}
 
-	const response = await fetch(`${env.LLM_API_URL}/chat/completions`, {
-		method: "POST",
-		headers,
-		body: JSON.stringify({
-			model: env.LLM_MODEL || "phi3:mini",
-			messages: [
-				{ role: "system", content: system },
-				{ role: "user", content: user },
-			],
-			temperature: 0,
-			max_tokens: maxTokens,
-			stop: ["\n\n"],
-			chat_template_kwargs: { enable_thinking: false },
-		}),
-		signal: AbortSignal.timeout(timeoutMs),
-	});
+	const url = `${env.LLM_API_URL}/chat/completions`;
+	const model = env.LLM_MODEL || "phi3:mini";
+
+	let response: Response;
+	try {
+		response = await fetch(url, {
+			method: "POST",
+			headers,
+			body: JSON.stringify({
+				model,
+				messages: [
+					{ role: "system", content: system },
+					{ role: "user", content: user },
+				],
+				temperature: 0,
+				max_tokens: maxTokens,
+				stop: ["\n\n"],
+				chat_template_kwargs: { enable_thinking: false },
+			}),
+			signal: AbortSignal.timeout(timeoutMs),
+		});
+	} catch (e) {
+		throw new Error(
+			`LLM request failed (${url}, model=${model}): ${describeFetchError(e, timeoutMs)}`,
+			{ cause: e },
+		);
+	}
 
 	if (!response.ok) {
-		throw new Error(`LLM API returned ${response.status}`);
+		const body = await response.text().catch(() => "");
+		throw new Error(
+			`LLM API ${response.status} ${response.statusText} at ${url}${
+				body ? `: ${body.slice(0, 300)}` : ""
+			}`,
+		);
 	}
 
 	const data = (await response.json()) as {
 		choices: { message: { content: string } }[];
 	};
 	return data.choices[0]?.message.content || "";
+}
+
+function describeFetchError(e: unknown, timeoutMs: number): string {
+	if (e instanceof Error) {
+		if (e.name === "TimeoutError" || e.name === "AbortError") {
+			return `timed out after ${timeoutMs}ms`;
+		}
+		const cause = (e as { cause?: unknown }).cause;
+		const causeMsg =
+			cause instanceof Error
+				? `${cause.name}: ${cause.message}${
+						"code" in cause && cause.code ? ` (${cause.code})` : ""
+					}`
+				: cause
+					? String(cause)
+					: "";
+		return causeMsg ? `${e.message} — ${causeMsg}` : e.message;
+	}
+	return String(e);
 }

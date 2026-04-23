@@ -166,8 +166,19 @@ async function runAutoPlan(jobId: string): Promise<void> {
 			});
 
 	if (labelErrors.length > 0) {
+		for (const e of labelErrors) {
+			logger.error(`[autoplan] labeling error for cluster:`, e);
+		}
+		const counts = new Map<string, number>();
+		for (const e of labelErrors) {
+			const msg = e instanceof Error ? e.message : String(e);
+			counts.set(msg, (counts.get(msg) ?? 0) + 1);
+		}
+		const summary = Array.from(counts.entries())
+			.map(([msg, n]) => (n > 1 ? `${msg} (×${n})` : msg))
+			.join("; ");
 		throw new Error(
-			`Labeling failed for ${labelErrors.length} cluster(s): ${labelErrors.map((e) => e.message).join("; ")}`,
+			`Labeling failed for ${labelErrors.length}/${orderedClusters.length} cluster(s): ${summary}`,
 		);
 	}
 
