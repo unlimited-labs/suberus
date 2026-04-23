@@ -90,7 +90,8 @@ export function PlannerCalendar({
 	const renderEventForm = useCallback<
 		NonNullable<IlamyResourceCalendarProps["renderEventForm"]>
 	>(
-		(props) => <CreateEventDialog {...props} timezone={timezone} />,
+		(props) =>
+			props.open ? <CreateEventDialog {...props} timezone={timezone} /> : null,
 		[timezone],
 	);
 

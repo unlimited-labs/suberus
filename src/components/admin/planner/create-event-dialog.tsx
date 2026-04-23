@@ -64,10 +64,13 @@ export function CreateEventDialog({
 	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
 	const { data: sessions } = useSuspenseQuery(allSessionsQueryOptions());
 
+	const rawResourceId = selectedEvent?.resourceId;
 	const resourceId =
-		typeof selectedEvent?.resourceId === "string"
-			? selectedEvent.resourceId
-			: undefined;
+		typeof rawResourceId === "string"
+			? rawResourceId
+			: typeof rawResourceId === "number"
+				? String(rawResourceId)
+				: undefined;
 
 	const initialStart = toDate(selectedEvent?.start) ?? defaultStartAt;
 	const clickedEnd = toDate(selectedEvent?.end);
