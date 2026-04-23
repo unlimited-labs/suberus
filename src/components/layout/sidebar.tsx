@@ -24,19 +24,22 @@ function SidebarContent({
 	const location = useLocation();
 	const { user } = useSession();
 	const { data: scheduleState } = useQuery(scheduleStateQueryOptions());
-	const isPublished = scheduleState?.status === "PUBLISHED";
+	const status = scheduleState?.status;
 	const role = user?.role ?? "AUTHOR";
+	const canSeeDraft = role === "ADMIN" || role === "EDITOR";
+	const programVisible =
+		status === "PUBLISHED" || (status === "DRAFT_PUBLISHED" && canSeeDraft);
 	const sections = useMemo(
 		() =>
 			getNavigationForRole(role)
 				.map((section) => ({
 					...section,
 					items: section.items.filter(
-						(item) => !item.requiresPublishedSchedule || isPublished,
+						(item) => !item.requiresPublishedSchedule || programVisible,
 					),
 				}))
 				.filter((section) => section.items.length > 0),
-		[role, isPublished],
+		[role, programVisible],
 	);
 
 	return (

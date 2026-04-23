@@ -1,5 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeaders } from "@tanstack/react-start/server";
 import { adminMiddleware, authMiddleware } from "@/lib/server/middleware/auth";
 import type { PublicProgram } from "@/lib/server/planner/schedule";
 import {
@@ -8,9 +9,11 @@ import {
 	getScheduleIssues,
 	getScheduleState,
 	publishSchedule,
+	publishScheduleDraft,
 	unpublishSchedule,
 } from "@/lib/server/planner/schedule";
 import { getSettings } from "@/lib/server/settings";
+import { auth } from "../../../auth.server";
 
 export const scheduleStateQueryOptions = () =>
 	queryOptions({
@@ -54,6 +57,12 @@ export const publishScheduleFn = createServerFn({ method: "POST" })
 		await publishSchedule(context.user.id);
 	});
 
+export const publishScheduleDraftFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.handler(async ({ context }) => {
+		await publishScheduleDraft(context.user.id);
+	});
+
 export const unpublishScheduleFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.handler(async () => {
@@ -67,7 +76,12 @@ export const publicProgramQueryOptions = () =>
 	});
 
 export const getPublicProgramFn = createServerFn({ method: "GET" }).handler(
-	async (): Promise<PublicProgram | null> => getPublicProgram(),
+	async (): Promise<PublicProgram | null> => {
+		const session = await auth.api.getSession({ headers: getRequestHeaders() });
+		const role = session?.user?.role;
+		const canPreviewDraft = role === "ADMIN" || role === "EDITOR";
+		return getPublicProgram(canPreviewDraft);
+	},
 );
 
 export interface PublicConferenceInfo {

@@ -1,7 +1,7 @@
 import { prisma } from "@/db.server";
 import { getSetting, setSetting } from "@/lib/server/settings";
 
-export type ScheduleStatus = "DRAFT" | "PUBLISHED";
+export type ScheduleStatus = "DRAFT" | "DRAFT_PUBLISHED" | "PUBLISHED";
 
 export interface ScheduleState {
 	status: ScheduleStatus;
@@ -16,6 +16,14 @@ export async function getScheduleState(): Promise<ScheduleState> {
 export async function publishSchedule(userId: string): Promise<void> {
 	await setSetting("SCHEDULE_STATE", {
 		status: "PUBLISHED",
+		publishedAt: new Date().toISOString(),
+		publishedBy: userId,
+	});
+}
+
+export async function publishScheduleDraft(userId: string): Promise<void> {
+	await setSetting("SCHEDULE_STATE", {
+		status: "DRAFT_PUBLISHED",
 		publishedAt: new Date().toISOString(),
 		publishedBy: userId,
 	});
@@ -93,9 +101,14 @@ export interface PublicProgram {
 	breaks: PublicProgramBreak[];
 }
 
-export async function getPublicProgram(): Promise<PublicProgram | null> {
+export async function getPublicProgram(
+	viewerCanPreviewDraft = false,
+): Promise<PublicProgram | null> {
 	const state = await getSetting("SCHEDULE_STATE");
-	if (state.status !== "PUBLISHED") return null;
+	const isVisible =
+		state.status === "PUBLISHED" ||
+		(state.status === "DRAFT_PUBLISHED" && viewerCanPreviewDraft);
+	if (!isVisible) return null;
 
 	const [sessions, breaks] = await Promise.all([
 		prisma.programSession.findMany({

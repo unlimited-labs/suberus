@@ -134,7 +134,7 @@ export type AppSettingsMap = {
 
 	// Schedule planner
 	SCHEDULE_STATE: {
-		status: "DRAFT" | "PUBLISHED";
+		status: "DRAFT" | "DRAFT_PUBLISHED" | "PUBLISHED";
 		publishedAt?: string;
 		publishedBy?: string;
 	};
