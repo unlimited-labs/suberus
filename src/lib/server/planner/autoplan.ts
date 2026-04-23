@@ -1,3 +1,4 @@
+import { PromisePool } from "@supercharge/promise-pool";
 import { prisma } from "@/db.server";
 import { env } from "@/env";
 import { logger } from "@/logger.ts";
@@ -18,6 +19,7 @@ import { embedSubmissions } from "./embeddings";
 
 const LABEL_MAX_ABSTRACT_CHARS = 1500;
 const LABEL_MAX_TOKENS = 60;
+const LABEL_CONCURRENCY = 4;
 const LABEL_SYSTEM_PROMPT = `You name academic conference sessions. Given a list of presentations (title + abstract snippet), return a single concise English session title (4-8 words) that captures the shared theme. Respond with only the title, no quotes, no explanation.`;
 
 interface ClusterApiResponse {
@@ -120,14 +122,9 @@ async function runAutoPlan(jobId: string): Promise<void> {
 	}
 
 	setStage(jobId, "embedding", submissions.length);
-	// Wrap embedSubmissions with per-item progress: call it in chunks of 1 via loop
-	// (embedSubmissions is idempotent on cached entries)
-	const allEmbeddings: { id: string; embedding: number[] }[] = [];
-	for (let i = 0; i < submissions.length; i++) {
-		const r = await embedSubmissions([submissions[i]]);
-		allEmbeddings.push(r[0]);
-		setProgress(jobId, i + 1);
-	}
+	const allEmbeddings = await embedSubmissions(submissions, {
+		onProgress: (done) => setProgress(jobId, done),
+	});
 
 	setStage(jobId, "clustering", 0);
 	const cluster = await callClusterApi(allEmbeddings, sessions.length);
@@ -135,36 +132,44 @@ async function runAutoPlan(jobId: string): Promise<void> {
 	setStage(jobId, "labeling", cluster.clusters.length);
 	const submissionMap = new Map(submissions.map((s) => [s.id, s]));
 
-	const proposedSessions: ProposedSession[] = [];
 	const orderedClusters = cluster.clusters
 		.slice()
 		.sort((a, b) => a.session_index - b.session_index);
 
-	for (let i = 0; i < orderedClusters.length; i++) {
-		const c = orderedClusters[i];
-		const sess = sessions[i];
-		const members = c.member_ids
-			.map((id) => submissionMap.get(id))
-			.filter((s): s is (typeof submissions)[number] => s !== undefined);
+	let labeled = 0;
+	const { results: proposedSessions, errors: labelErrors } =
+		await PromisePool.for(orderedClusters)
+			.withConcurrency(LABEL_CONCURRENCY)
+			.process(async (c, i): Promise<ProposedSession> => {
+				const sess = sessions[i];
+				const members = c.member_ids
+					.map((id) => submissionMap.get(id))
+					.filter((s): s is (typeof submissions)[number] => s !== undefined);
 
-		const title = await labelCluster(members);
+				const title = await labelCluster(members);
 
-		const presentations: ProposedPresentation[] = members.map((m) => ({
-			submissionId: m.id,
-			title: m.title,
-		}));
+				const presentations: ProposedPresentation[] = members.map((m) => ({
+					submissionId: m.id,
+					title: m.title,
+				}));
 
-		proposedSessions.push({
-			sessionId: sess.id,
-			originalTitle: sess.title,
-			proposedTitle: title,
-			roomName: sess.room?.name ?? null,
-			startAt: sess.startAt.toISOString(),
-			endAt: sess.endAt.toISOString(),
-			presentations,
-		});
+				setProgress(jobId, ++labeled);
 
-		setProgress(jobId, i + 1);
+				return {
+					sessionId: sess.id,
+					originalTitle: sess.title,
+					proposedTitle: title,
+					roomName: sess.room?.name ?? null,
+					startAt: sess.startAt.toISOString(),
+					endAt: sess.endAt.toISOString(),
+					presentations,
+				};
+			});
+
+	if (labelErrors.length > 0) {
+		throw new Error(
+			`Labeling failed for ${labelErrors.length} cluster(s): ${labelErrors.map((e) => e.message).join("; ")}`,
+		);
 	}
 
 	const proposal: AutoPlanProposal = {

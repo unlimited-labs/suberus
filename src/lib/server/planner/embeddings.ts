@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { PromisePool } from "@supercharge/promise-pool";
 import { prisma } from "@/db.server";
 import { env } from "@/env";
 import { logger } from "@/logger.ts";
@@ -6,6 +7,7 @@ import { logger } from "@/logger.ts";
 const EMBEDDING_DIM = 2560;
 const MAX_TEXT_CHARS = 3000;
 const EMBEDDING_TIMEOUT_MS = 180_000;
+const EMBEDDING_CONCURRENCY = 8;
 
 export interface EmbeddingInput {
 	id: string;
@@ -71,8 +73,13 @@ async function callEmbeddingApi(text: string): Promise<number[]> {
 	return v;
 }
 
+export interface EmbedSubmissionsOptions {
+	onProgress?: (done: number) => void;
+}
+
 export async function embedSubmissions(
 	inputs: EmbeddingInput[],
+	options: EmbedSubmissionsOptions = {},
 ): Promise<EmbeddingResult[]> {
 	if (inputs.length === 0) return [];
 	if (!env.LLM_EMBEDDING_MODEL)
@@ -107,30 +114,40 @@ export async function embedSubmissions(
 		`[embeddings] ${inputs.length} requested, ${inputs.length - toCompute.length} cached, ${toCompute.length} to compute`,
 	);
 
-	const fresh = new Map<string, number[]>();
-	for (const item of toCompute) {
-		const v = await callEmbeddingApi(`${item.title}\n\n${item.content}`);
-		if (v.length !== EMBEDDING_DIM) {
-			throw new Error(
-				`Embedding dim mismatch for ${item.id}: got ${v.length}, expected ${EMBEDDING_DIM}`,
-			);
-		}
-		fresh.set(item.id, v);
-	}
+	let done = 0;
+	const report = () => options.onProgress?.(++done);
 
-	for (const x of toCompute) {
-		const v = fresh.get(x.id);
-		if (!v) continue;
-		const literal = vectorLiteral(v);
-		await prisma.$executeRaw`
-			INSERT INTO submission_embeddings ("submissionId", embedding, hash, model, "updatedAt")
-			VALUES (${x.id}::uuid, ${literal}::vector, ${x.hash}, ${model}, NOW())
-			ON CONFLICT ("submissionId") DO UPDATE
-			SET embedding = EXCLUDED.embedding,
-			    hash = EXCLUDED.hash,
-			    model = EXCLUDED.model,
-			    "updatedAt" = NOW()
-		`;
+	// Cached hits count as immediate progress.
+	for (let i = 0; i < inputs.length - toCompute.length; i++) report();
+
+	const fresh = new Map<string, number[]>();
+	const { errors } = await PromisePool.for(toCompute)
+		.withConcurrency(EMBEDDING_CONCURRENCY)
+		.process(async (item) => {
+			const v = await callEmbeddingApi(`${item.title}\n\n${item.content}`);
+			if (v.length !== EMBEDDING_DIM) {
+				throw new Error(
+					`Embedding dim mismatch for ${item.id}: got ${v.length}, expected ${EMBEDDING_DIM}`,
+				);
+			}
+			const literal = vectorLiteral(v);
+			await prisma.$executeRaw`
+				INSERT INTO submission_embeddings ("submissionId", embedding, hash, model, "updatedAt")
+				VALUES (${item.id}::uuid, ${literal}::vector, ${item.hash}, ${model}, NOW())
+				ON CONFLICT ("submissionId") DO UPDATE
+				SET embedding = EXCLUDED.embedding,
+				    hash = EXCLUDED.hash,
+				    model = EXCLUDED.model,
+				    "updatedAt" = NOW()
+			`;
+			fresh.set(item.id, v);
+			report();
+		});
+
+	if (errors.length > 0) {
+		throw new Error(
+			`Embedding failed for ${errors.length} item(s): ${errors.map((e) => e.message).join("; ")}`,
+		);
 	}
 
 	return withHashes.map((x) => {
