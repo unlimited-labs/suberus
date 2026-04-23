@@ -16,7 +16,10 @@ import { Label } from "@/components/ui/label";
 import { tzLocalInputToUtc, utcToTzLocalInput } from "@/lib/tz-datetime";
 import { createBreakFn } from "@/server-fns/planner/breaks";
 import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
-import { createSessionFn } from "@/server-fns/planner/sessions";
+import {
+	allSessionsQueryOptions,
+	createSessionFn,
+} from "@/server-fns/planner/sessions";
 import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
 import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
 import { usePlannerTools } from "./planner-tools-context";
@@ -41,6 +44,7 @@ export function CreateEventDialog({
 	const { data: rooms } = useSuspenseQuery(allRoomsQueryOptions());
 	const { data: tracks } = useSuspenseQuery(allProgramTracksQueryOptions());
 	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
+	const { data: sessions } = useSuspenseQuery(allSessionsQueryOptions());
 
 	const startRaw = selectedEvent?.start as
 		| { toDate?: () => Date }
@@ -103,7 +107,8 @@ export function CreateEventDialog({
 	};
 
 	const handleSubmit = async () => {
-		if (!title.trim()) {
+		const trimmed = title.trim();
+		if (type === "break" && !trimmed) {
 			toast.error("Title is required");
 			return;
 		}
@@ -112,7 +117,7 @@ export function CreateEventDialog({
 			if (type === "session") {
 				await createSessionFn({
 					data: {
-						title: title.trim(),
+						title: trimmed || undefined,
 						roomId,
 						trackId,
 						startAt: startDate.toISOString(),
@@ -122,7 +127,7 @@ export function CreateEventDialog({
 			} else {
 				await createBreakFn({
 					data: {
-						title: title.trim(),
+						title: trimmed,
 						roomId,
 						startAt: startDate.toISOString(),
 						endAt: breakEndDate.toISOString(),
@@ -240,13 +245,19 @@ export function CreateEventDialog({
 
 					{/* Title */}
 					<div className="space-y-2">
-						<Label htmlFor="event-title">Title</Label>
+						<Label htmlFor="event-title">
+							{type === "session" ? "Title (optional)" : "Title"}
+						</Label>
 						<Input
 							id="event-title"
 							value={title}
 							onChange={(e) => setTitle(e.target.value)}
 							onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-							placeholder={type === "session" ? "Session title" : "Break title"}
+							placeholder={
+								type === "session"
+									? `Session ${sessions.length + 1}`
+									: "Break title"
+							}
 							data-testid="create-event-title"
 							autoFocus
 						/>

@@ -86,16 +86,22 @@ export async function listSessions(range?: {
 	}));
 }
 
+async function defaultSessionTitle(): Promise<string> {
+	const count = await prisma.programSession.count();
+	return `Session ${count + 1}`;
+}
+
 export async function createSession(data: {
-	title: string;
+	title?: string | null;
 	trackId?: string | null;
 	roomId?: string | null;
 	startAt: Date;
 	endAt: Date;
 }): Promise<{ id: string }> {
+	const title = data.title?.trim() || (await defaultSessionTitle());
 	return prisma.programSession.create({
 		data: {
-			title: data.title,
+			title,
 			trackId: data.trackId ?? null,
 			roomId: data.roomId ?? null,
 			startAt: data.startAt,
@@ -328,7 +334,7 @@ export async function splitSession(
 }
 
 export async function createSessionWithPresentations(data: {
-	title: string;
+	title?: string | null;
 	trackId?: string | null;
 	roomId?: string | null;
 	startAt: Date;
@@ -336,6 +342,7 @@ export async function createSessionWithPresentations(data: {
 	slotDurationMin: number;
 	submissionIds: string[];
 }): Promise<{ id: string }> {
+	const title = data.title?.trim() || (await defaultSessionTitle());
 	return prisma.$transaction(async (tx) => {
 		const valid = await tx.submission.findMany({
 			where: {
@@ -354,7 +361,7 @@ export async function createSessionWithPresentations(data: {
 
 		const session = await tx.programSession.create({
 			data: {
-				title: data.title,
+				title,
 				trackId: data.trackId ?? null,
 				roomId: data.roomId ?? null,
 				startAt: data.startAt,

@@ -29,7 +29,7 @@ export const listSessionsFn = createServerFn({ method: "GET" })
 	});
 
 const sessionCreateSchema = z.object({
-	title: z.string().min(1).max(300),
+	title: z.string().max(300).optional(),
 	trackId: z.uuid().nullable().optional(),
 	roomId: z.uuid().nullable().optional(),
 	startAt: z.iso.datetime(),
@@ -125,7 +125,7 @@ export const createSessionWithPresentationsFn = createServerFn({
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
-			title: z.string().min(1).max(300),
+			title: z.string().max(300).optional(),
 			trackId: z.uuid().nullable().optional(),
 			roomId: z.uuid().nullable().optional(),
 			startAt: z.iso.datetime(),
