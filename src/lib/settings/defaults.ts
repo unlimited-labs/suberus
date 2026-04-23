@@ -77,6 +77,7 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	CONFERENCE_DAY_START: "09:00",
 	CONFERENCE_DAY_END: "18:00",
 	CONFERENCE_DEFAULT_PRESENTATION_MIN: 15,
+	PLANNER_AUTOPLAN_ENABLED: false,
 
 	// Submission settings
 	MIN_TITLE_LENGTH: 10,
@@ -102,6 +103,11 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 		checkedAt: "",
 	},
 	SERVICE_HEALTH_DOCLING: {
+		status: "unavailable",
+		message: "Not checked yet",
+		checkedAt: "",
+	},
+	SERVICE_HEALTH_PLANNER: {
 		status: "unavailable",
 		message: "Not checked yet",
 		checkedAt: "",

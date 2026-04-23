@@ -14,9 +14,13 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { TimezoneCombobox } from "@/components/ui/timezone-combobox";
+import { formatLlmStatus } from "@/lib/format-llm-status";
 import type { RoomWithStats } from "@/lib/server/planner/rooms";
 import type { ProgramTrackWithStats } from "@/lib/server/planner/tracks";
+import type { AppSettingsMap } from "@/lib/settings/types";
+import { cn } from "@/lib/utils";
 import { importProgramTracksFromIntakeFn } from "@/server-fns/planner/tracks";
 import type { ConferenceSettings } from "@/server-fns/settings";
 import {
@@ -32,6 +36,7 @@ interface ProgramTabProps {
 	initialRooms: RoomWithStats[];
 	initialProgramTracks: ProgramTrackWithStats[];
 	initialConferenceSettings: ConferenceSettings;
+	llmHealth: AppSettingsMap["SERVICE_HEALTH_LLM"];
 	onRoomsUpdate: () => void;
 	onProgramTracksUpdate: () => void;
 }
@@ -40,9 +45,11 @@ export function ProgramTab({
 	initialRooms,
 	initialProgramTracks,
 	initialConferenceSettings,
+	llmHealth,
 	onRoomsUpdate,
 	onProgramTracksUpdate,
 }: ProgramTabProps) {
+	const llmAvailable = llmHealth.status === "healthy";
 	const queryClient = useQueryClient();
 	const router = useRouter();
 	const [roomDialogOpen, setRoomDialogOpen] = useState(false);
@@ -202,6 +209,44 @@ export function ProgramTab({
 							Pre-filled when creating sessions and dropping submissions.
 						</p>
 					</div>
+				</div>
+				<div className="mt-6 space-y-2 border-t pt-6">
+					<div className="flex items-center justify-between gap-4">
+						<div className="space-y-0.5">
+							<Label htmlFor="autoplanEnabled">
+								Enable autoplanner (requires LLM access)
+							</Label>
+							<p className="text-sm text-muted-foreground">
+								Lets admins cluster accepted abstracts into sessions and
+								generate session titles via the LLM service.
+							</p>
+						</div>
+						<Switch
+							id="autoplanEnabled"
+							checked={plannerData.autoplanEnabled}
+							disabled={!llmAvailable}
+							onCheckedChange={(v) =>
+								setPlannerData((prev) => ({ ...prev, autoplanEnabled: v }))
+							}
+						/>
+					</div>
+					<div className="flex items-center gap-1.5">
+						<div
+							className={cn(
+								"size-1.5 rounded-full",
+								llmAvailable ? "bg-green-500" : "bg-red-500",
+							)}
+						/>
+						<span className="text-[11px] text-muted-foreground">
+							{formatLlmStatus(llmHealth)}
+						</span>
+					</div>
+					{!llmAvailable && (
+						<p className="text-xs text-amber-700 dark:text-amber-400">
+							LLM API is not available. Configure LLM_API_URL and ensure the
+							service is running to enable autoplanning.
+						</p>
+					)}
 				</div>
 				<div className="mt-6 flex justify-end">
 					<Button onClick={handlePlannerSave} disabled={plannerSaving}>

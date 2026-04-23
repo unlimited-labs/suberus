@@ -246,6 +246,7 @@ function AdminSettingsPage() {
 								initialRooms={rooms}
 								initialProgramTracks={programTracks}
 								initialConferenceSettings={conferenceSettings}
+								llmHealth={llmHealth}
 								onRoomsUpdate={() =>
 									queryClient.invalidateQueries({
 										queryKey: allRoomsQueryOptions().queryKey,

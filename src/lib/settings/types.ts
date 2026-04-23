@@ -58,6 +58,7 @@ export type AppSettingsMap = {
 	CONFERENCE_DAY_START: string; // "HH:mm" (24h), e.g. "09:00"
 	CONFERENCE_DAY_END: string; // "HH:mm" (24h), e.g. "18:00"
 	CONFERENCE_DEFAULT_PRESENTATION_MIN: number;
+	PLANNER_AUTOPLAN_ENABLED: boolean;
 
 	// Submission settings
 	MIN_TITLE_LENGTH: number;
@@ -95,6 +96,11 @@ export type AppSettingsMap = {
 		checkedAt: string;
 	};
 	SERVICE_HEALTH_DOCLING: {
+		status: "healthy" | "unavailable";
+		message: string;
+		checkedAt: string;
+	};
+	SERVICE_HEALTH_PLANNER: {
 		status: "healthy" | "unavailable";
 		message: string;
 		checkedAt: string;

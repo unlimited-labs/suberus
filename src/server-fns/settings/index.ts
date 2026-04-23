@@ -229,6 +229,7 @@ export interface ConferenceSettings {
 	dayStart: string;
 	dayEnd: string;
 	defaultPresentationMin: number;
+	autoplanEnabled: boolean;
 }
 
 const conferenceSettingsSchema = z.object({
@@ -260,6 +261,7 @@ const conferenceSettingsSchema = z.object({
 	dayStart: z.string().regex(/^\d{2}:\d{2}$/, "Expected HH:mm"),
 	dayEnd: z.string().regex(/^\d{2}:\d{2}$/, "Expected HH:mm"),
 	defaultPresentationMin: z.number().int().min(5).max(480),
+	autoplanEnabled: z.boolean(),
 });
 
 /**
@@ -394,6 +396,7 @@ export const getConferenceSettingsFn = createServerFn({ method: "GET" })
 			"CONFERENCE_DAY_START",
 			"CONFERENCE_DAY_END",
 			"CONFERENCE_DEFAULT_PRESENTATION_MIN",
+			"PLANNER_AUTOPLAN_ENABLED",
 		]);
 		return {
 			name: settings.CONFERENCE_NAME,
@@ -416,6 +419,7 @@ export const getConferenceSettingsFn = createServerFn({ method: "GET" })
 			dayStart: settings.CONFERENCE_DAY_START,
 			dayEnd: settings.CONFERENCE_DAY_END,
 			defaultPresentationMin: settings.CONFERENCE_DEFAULT_PRESENTATION_MIN,
+			autoplanEnabled: settings.PLANNER_AUTOPLAN_ENABLED,
 		};
 	});
 
@@ -450,6 +454,7 @@ export const updateConferenceSettingsFn = createServerFn({ method: "POST" })
 				"CONFERENCE_DEFAULT_PRESENTATION_MIN",
 				data.defaultPresentationMin,
 			),
+			setSetting("PLANNER_AUTOPLAN_ENABLED", data.autoplanEnabled),
 		]);
 		return { success: true };
 	});
