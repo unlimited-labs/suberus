@@ -14,7 +14,6 @@ function formatMinutes(min: number): string {
 export function CapacityStrip() {
 	const { data: cap } = useSuspenseQuery(scheduleCapacityQueryOptions());
 
-	const unplaced = Math.max(0, cap.talks - cap.scheduled);
 	const fullUtilization =
 		cap.sessionMinutes > 0 && cap.usedMinutes >= cap.sessionMinutes;
 
@@ -30,15 +29,6 @@ export function CapacityStrip() {
 				<span className="text-muted-foreground/70"> / </span>
 				<span className="font-medium text-foreground">{cap.talks}</span> placed
 			</span>
-			{unplaced > 0 && (
-				<>
-					<span className="text-muted-foreground/50">·</span>
-					<span className="text-muted-foreground">
-						<span className="font-medium text-foreground">{unplaced}</span>{" "}
-						unassigned
-					</span>
-				</>
-			)}
 			<span className="text-muted-foreground/50">·</span>
 			<span
 				className={

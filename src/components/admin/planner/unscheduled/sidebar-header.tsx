@@ -10,7 +10,7 @@ type ListMode = "unscheduled" | "scheduled";
 
 interface Props {
 	mode: ListMode;
-	count: number;
+	hasItems: boolean;
 	selectMode: boolean;
 	onToggleMode: () => void;
 	onToggleSelectMode: () => void;
@@ -20,7 +20,7 @@ interface Props {
 
 export function SidebarHeader({
 	mode,
-	count,
+	hasItems,
 	selectMode,
 	onToggleMode,
 	onToggleSelectMode,
@@ -42,10 +42,9 @@ export function SidebarHeader({
 			>
 				<Icon size={14} className="text-muted-foreground" />
 				<span>{isScheduled ? "Scheduled" : "Unscheduled"}</span>
-				<span className="text-[10px] text-muted-foreground">({count})</span>
 			</button>
 			<div className="flex items-center gap-1">
-				{!isScheduled && count > 0 && (
+				{!isScheduled && hasItems && (
 					<>
 						<button
 							type="button"

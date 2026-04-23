@@ -102,8 +102,8 @@ export function UnscheduledSidebar() {
 		() => sessions.reduce((n, s) => n + s.presentations.length, 0),
 		[sessions],
 	);
-	const headerCount =
-		listMode === "scheduled" ? scheduledCount : submissions.length;
+	const hasItems =
+		listMode === "scheduled" ? scheduledCount > 0 : submissions.length > 0;
 	const isScheduled = listMode === "scheduled";
 
 	const handleToggleListMode = useCallback(() => {
@@ -135,7 +135,7 @@ export function UnscheduledSidebar() {
 			>
 				<SidebarHeader
 					mode={listMode}
-					count={headerCount}
+					hasItems={hasItems}
 					selectMode={selectMode}
 					onToggleMode={handleToggleListMode}
 					onToggleSelectMode={handleToggleSelectMode}
