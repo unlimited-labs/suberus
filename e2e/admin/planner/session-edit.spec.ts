@@ -74,10 +74,10 @@ test.describe.serial("Planner — Session editor", () => {
 
 		// 120 min = 6 slots × 20 min (default)
 		const slotCountInput = plannerPage.page.getByTestId(
-			"session-editor-slot-count",
+			"session-editor-slots-count",
 		);
 		const slotMinInput = plannerPage.page.getByTestId(
-			"session-editor-slot-min",
+			"session-editor-slots-min",
 		);
 		await slotMinInput.fill("20");
 		await slotMinInput.blur();

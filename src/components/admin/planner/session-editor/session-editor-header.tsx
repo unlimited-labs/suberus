@@ -99,7 +99,7 @@ export function SessionEditorHeader() {
 						min={1}
 						step={1}
 						value={slotCount}
-						data-testid="session-editor-slot-count"
+						data-testid="session-editor-slots-count"
 						onChange={(e) => setSlotCount(Math.max(1, Number(e.target.value)))}
 						onBlur={() => commit(slotCount, slotMin)}
 						className="h-8 text-sm"
@@ -118,7 +118,7 @@ export function SessionEditorHeader() {
 						min={1}
 						step={5}
 						value={slotMin}
-						data-testid="session-editor-slot-min"
+						data-testid="session-editor-slots-min"
 						onChange={(e) => setSlotMin(Math.max(1, Number(e.target.value)))}
 						onBlur={() => commit(slotCount, slotMin)}
 						className="h-8 text-sm"
