@@ -1,4 +1,5 @@
 import { prisma } from "@/db.server";
+import { parseSeries } from "./tracks";
 
 export interface ProgramSessionDetail {
 	id: string;
@@ -236,12 +237,12 @@ export async function continueSeries(
 		});
 		if (!current) throw new Error("Session not found");
 
-		const match = current.title.match(/^(.+?)\s+(\d+)$/);
+		const parsed = parseSeries(current.title);
 		let base: string;
 		let nextNum: number;
-		if (match) {
-			base = match[1].trim();
-			nextNum = Number.parseInt(match[2], 10) + 1;
+		if (parsed.series && parsed.seriesOrder !== null) {
+			base = parsed.series;
+			nextNum = parsed.seriesOrder + 1;
 		} else {
 			base = current.title;
 			nextNum = 2;

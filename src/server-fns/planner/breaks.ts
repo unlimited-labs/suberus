@@ -8,6 +8,7 @@ import {
 	listBreaks,
 	updateBreak,
 } from "@/lib/server/planner/breaks";
+import { zDateString } from "@/lib/validations/zod-helpers";
 
 export const allBreaksQueryOptions = () =>
 	queryOptions({
@@ -27,16 +28,12 @@ export const createBreakFn = createServerFn({ method: "POST" })
 		z.object({
 			title: z.string().min(1).max(200),
 			roomId: z.uuid().nullable().optional(),
-			startAt: z.iso.datetime(),
-			endAt: z.iso.datetime(),
+			startAt: zDateString,
+			endAt: zDateString,
 		}),
 	)
 	.handler(async ({ data }) => {
-		return createBreak({
-			...data,
-			startAt: new Date(data.startAt),
-			endAt: new Date(data.endAt),
-		});
+		return createBreak(data);
 	});
 
 export const updateBreakFn = createServerFn({ method: "POST" })
@@ -46,17 +43,13 @@ export const updateBreakFn = createServerFn({ method: "POST" })
 			id: z.uuid(),
 			title: z.string().min(1).max(200).optional(),
 			roomId: z.uuid().nullable().optional(),
-			startAt: z.iso.datetime().optional(),
-			endAt: z.iso.datetime().optional(),
+			startAt: zDateString.optional(),
+			endAt: zDateString.optional(),
 		}),
 	)
 	.handler(async ({ data }) => {
-		const { id, startAt, endAt, ...rest } = data;
-		await updateBreak(id, {
-			...rest,
-			...(startAt ? { startAt: new Date(startAt) } : {}),
-			...(endAt ? { endAt: new Date(endAt) } : {}),
-		});
+		const { id, ...rest } = data;
+		await updateBreak(id, rest);
 	});
 
 export const deleteBreakFn = createServerFn({ method: "POST" })

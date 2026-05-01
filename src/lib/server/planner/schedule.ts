@@ -1,5 +1,6 @@
 import { prisma } from "@/db.server";
 import { getSetting, setSetting } from "@/lib/server/settings";
+import { computeSessionUsage, freeSlotsFor } from "./session-usage";
 
 export type ScheduleStatus = "DRAFT" | "DRAFT_PUBLISHED" | "PUBLISHED";
 
@@ -67,27 +68,21 @@ export async function getCapacity(): Promise<CapacityInfo> {
 	let freeSlots = 0;
 
 	for (const s of sessionsWithSlots) {
-		const total = (s.endAt.getTime() - s.startAt.getTime()) / 60_000;
-		const used = s.presentations.reduce((sum, p) => sum + p.durationMin, 0);
-		const free = Math.max(0, total - used);
-		sessionMinutes += total;
-		usedMinutes += used;
+		const usage = computeSessionUsage(s);
+		sessionMinutes += usage.sessionMin;
+		usedMinutes += usage.usedMin;
 		scheduled += s.presentations.length;
-		if (defaultPresentationMin > 0) {
-			freeSlots += Math.floor(free / defaultPresentationMin);
-		}
+		freeSlots += freeSlotsFor(usage.freeMin, defaultPresentationMin);
 	}
-
-	const freeMinutes = Math.max(0, sessionMinutes - usedMinutes);
 
 	return {
 		talks,
 		scheduled,
 		sessions: sessionsWithSlots.length,
 		freeSlots,
-		sessionMinutes: Math.round(sessionMinutes),
+		sessionMinutes,
 		usedMinutes,
-		freeMinutes: Math.round(freeMinutes),
+		freeMinutes: Math.max(0, sessionMinutes - usedMinutes),
 	};
 }
 
@@ -227,7 +222,7 @@ function personName(
 	return full || p.email || "Unknown";
 }
 
-export async function getScheduleIssues(): Promise<ScheduleIssue[]> {
+async function loadIssueData() {
 	const [sessions, breaks] = await Promise.all([
 		prisma.programSession.findMany({
 			include: {
@@ -266,34 +261,41 @@ export async function getScheduleIssues(): Promise<ScheduleIssue[]> {
 			},
 		}),
 	]);
+	return { sessions, breaks };
+}
 
+type IssueSession = Awaited<
+	ReturnType<typeof loadIssueData>
+>["sessions"][number];
+type IssueBreak = Awaited<ReturnType<typeof loadIssueData>>["breaks"][number];
+
+function findSessionsWithoutChair(sessions: IssueSession[]): ScheduleIssue[] {
+	return sessions
+		.filter((s) => s.chairs.length === 0)
+		.map((s) => ({
+			kind: "SESSION_WITHOUT_CHAIR",
+			message: `Session "${s.title}" has no chair`,
+			sessionIds: [s.id],
+		}));
+}
+
+function findOverbookedSessions(sessions: IssueSession[]): ScheduleIssue[] {
 	const issues: ScheduleIssue[] = [];
-
-	// 5. Session without chair
 	for (const s of sessions) {
-		if (s.chairs.length === 0) {
-			issues.push({
-				kind: "SESSION_WITHOUT_CHAIR",
-				message: `Session "${s.title}" has no chair`,
-				sessionIds: [s.id],
-			});
-		}
-	}
-
-	// 4. Slot durations exceed session length
-	for (const s of sessions) {
-		const totalMin = s.presentations.reduce((a, p) => a + p.durationMin, 0);
-		const sessionMin = (s.endAt.getTime() - s.startAt.getTime()) / 60000;
-		if (totalMin > sessionMin) {
+		const { sessionMin, usedMin } = computeSessionUsage(s);
+		if (usedMin > sessionMin) {
 			issues.push({
 				kind: "SLOT_DURATION_OVERFLOW",
-				message: `Session "${s.title}" is over-booked: ${totalMin} min of talks scheduled, only ${sessionMin} min available`,
+				message: `Session "${s.title}" is over-booked: ${usedMin} min of talks scheduled, only ${sessionMin} min available`,
 				sessionIds: [s.id],
 			});
 		}
 	}
+	return issues;
+}
 
-	// 6. Non-accepted submissions
+function findNonAcceptedSubmissions(sessions: IssueSession[]): ScheduleIssue[] {
+	const issues: ScheduleIssue[] = [];
 	for (const s of sessions) {
 		for (const p of s.presentations) {
 			const st = p.submission.status;
@@ -307,13 +309,11 @@ export async function getScheduleIssues(): Promise<ScheduleIssue[]> {
 			}
 		}
 	}
+	return issues;
+}
 
-	// Pre-compute per-session chair/author maps once (invariant across j-loop).
-	const chairMaps = sessions.map((s) => {
-		const m = new Set<string>();
-		for (const c of s.chairs) m.add(c.userId);
-		return m;
-	});
+function findPairwiseOverlapIssues(sessions: IssueSession[]): ScheduleIssue[] {
+	const chairMaps = sessions.map((s) => new Set(s.chairs.map((c) => c.userId)));
 	const authorMaps = sessions.map((s) => {
 		const m = new Map<
 			string,
@@ -328,21 +328,17 @@ export async function getScheduleIssues(): Promise<ScheduleIssue[]> {
 		return m;
 	});
 
-	// 1 & 2 & 3. Pairwise overlaps
-	const n = sessions.length;
-	for (let i = 0; i < n; i++) {
+	const issues: ScheduleIssue[] = [];
+	for (let i = 0; i < sessions.length; i++) {
 		const a = sessions[i];
-		const aChairSet = chairMaps[i];
-		const aAuthors = authorMaps[i];
-		for (let j = i + 1; j < n; j++) {
+		for (let j = i + 1; j < sessions.length; j++) {
 			const b = sessions[j];
 			if (!overlaps(a, b)) continue;
 
-			// Chair overlap (dedup per pair)
 			const chairClashes: string[] = [];
 			const seenChairKeys = new Set<string>();
 			for (const c of b.chairs) {
-				if (aChairSet.has(c.userId) && !seenChairKeys.has(c.userId)) {
+				if (chairMaps[i].has(c.userId) && !seenChairKeys.has(c.userId)) {
 					seenChairKeys.add(c.userId);
 					chairClashes.push(personName(c.user));
 				}
@@ -355,7 +351,6 @@ export async function getScheduleIssues(): Promise<ScheduleIssue[]> {
 				});
 			}
 
-			// Room double-booked (sessions)
 			if (a.roomId && a.roomId === b.roomId) {
 				issues.push({
 					kind: "ROOM_DOUBLE_BOOKED",
@@ -364,13 +359,12 @@ export async function getScheduleIssues(): Promise<ScheduleIssue[]> {
 				});
 			}
 
-			// Author overlap (dedup per pair, via userId or email fallback)
 			const authorClashes: string[] = [];
 			const seenAuthorKeys = new Set<string>();
 			for (const p of b.presentations) {
 				for (const au of p.submission.authors) {
 					const key = au.userId ?? `email:${au.email}`;
-					if (aAuthors.has(key) && !seenAuthorKeys.has(key)) {
+					if (authorMaps[i].has(key) && !seenAuthorKeys.has(key)) {
 						seenAuthorKeys.add(key);
 						authorClashes.push(personName(au));
 					}
@@ -385,8 +379,14 @@ export async function getScheduleIssues(): Promise<ScheduleIssue[]> {
 			}
 		}
 	}
+	return issues;
+}
 
-	// Room double-booked: session vs break
+function findBreakRoomConflicts(
+	sessions: IssueSession[],
+	breaks: IssueBreak[],
+): ScheduleIssue[] {
+	const issues: ScheduleIssue[] = [];
 	for (const s of sessions) {
 		if (!s.roomId) continue;
 		for (const b of breaks) {
@@ -400,6 +400,16 @@ export async function getScheduleIssues(): Promise<ScheduleIssue[]> {
 			}
 		}
 	}
-
 	return issues;
+}
+
+export async function getScheduleIssues(): Promise<ScheduleIssue[]> {
+	const { sessions, breaks } = await loadIssueData();
+	return [
+		...findSessionsWithoutChair(sessions),
+		...findOverbookedSessions(sessions),
+		...findNonAcceptedSubmissions(sessions),
+		...findPairwiseOverlapIssues(sessions),
+		...findBreakRoomConflicts(sessions, breaks),
+	];
 }

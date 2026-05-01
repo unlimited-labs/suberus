@@ -1,4 +1,5 @@
 import { prisma } from "@/db.server";
+import { computeSessionUsage } from "./session-usage";
 
 export async function createPresentation(data: {
 	sessionId: string;
@@ -16,16 +17,10 @@ export async function createPresentation(data: {
 		});
 		if (!session) throw new Error("Session not found");
 
-		const sessionDurationMin = Math.round(
-			(session.endAt.getTime() - session.startAt.getTime()) / 60_000,
-		);
-		const usedMin = session.presentations.reduce(
-			(sum, p) => sum + p.durationMin,
-			0,
-		);
-		if (usedMin + data.durationMin > sessionDurationMin) {
+		const { sessionMin, usedMin } = computeSessionUsage(session);
+		if (usedMin + data.durationMin > sessionMin) {
 			throw new Error(
-				`Session is full: ${usedMin}/${sessionDurationMin} min used, cannot add ${data.durationMin} min`,
+				`Session is full: ${usedMin}/${sessionMin} min used, cannot add ${data.durationMin} min`,
 			);
 		}
 
@@ -69,17 +64,13 @@ export async function updatePresentationDuration(
 		});
 		if (!presentation) throw new Error("Presentation not found");
 
-		const sessionDurationMin = Math.round(
-			(presentation.session.endAt.getTime() -
-				presentation.session.startAt.getTime()) /
-				60_000,
+		const { sessionMin, usedMin: usedOthers } = computeSessionUsage(
+			presentation.session,
+			{ excludePresentationId: id },
 		);
-		const usedOthers = presentation.session.presentations
-			.filter((p) => p.id !== id)
-			.reduce((s, p) => s + p.durationMin, 0);
-		if (usedOthers + durationMin > sessionDurationMin) {
+		if (usedOthers + durationMin > sessionMin) {
 			throw new Error(
-				`Session is full: other presentations use ${usedOthers}/${sessionDurationMin} min`,
+				`Session is full: other presentations use ${usedOthers}/${sessionMin} min`,
 			);
 		}
 		await tx.presentationSlot.update({

@@ -15,6 +15,7 @@ import {
 	splitSession,
 	updateSession,
 } from "@/lib/server/planner/sessions";
+import { zDateString } from "@/lib/validations/zod-helpers";
 
 export const allSessionsQueryOptions = () =>
 	queryOptions({
@@ -32,19 +33,15 @@ const sessionCreateSchema = z.object({
 	title: z.string().max(300).optional(),
 	trackId: z.uuid().nullable().optional(),
 	roomId: z.uuid().nullable().optional(),
-	startAt: z.iso.datetime(),
-	endAt: z.iso.datetime(),
+	startAt: zDateString,
+	endAt: zDateString,
 });
 
 export const createSessionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(sessionCreateSchema)
 	.handler(async ({ data }) => {
-		return createSession({
-			...data,
-			startAt: new Date(data.startAt),
-			endAt: new Date(data.endAt),
-		});
+		return createSession(data);
 	});
 
 export const updateSessionFn = createServerFn({ method: "POST" })
@@ -55,17 +52,13 @@ export const updateSessionFn = createServerFn({ method: "POST" })
 			title: z.string().min(1).max(300).optional(),
 			trackId: z.uuid().nullable().optional(),
 			roomId: z.uuid().nullable().optional(),
-			startAt: z.iso.datetime().optional(),
-			endAt: z.iso.datetime().optional(),
+			startAt: zDateString.optional(),
+			endAt: zDateString.optional(),
 		}),
 	)
 	.handler(async ({ data }) => {
-		const { id, startAt, endAt, ...rest } = data;
-		await updateSession(id, {
-			...rest,
-			...(startAt ? { startAt: new Date(startAt) } : {}),
-			...(endAt ? { endAt: new Date(endAt) } : {}),
-		});
+		const { id, ...rest } = data;
+		await updateSession(id, rest);
 	});
 
 export const deleteSessionFn = createServerFn({ method: "POST" })
@@ -80,17 +73,14 @@ export const moveSessionFn = createServerFn({ method: "POST" })
 	.inputValidator(
 		z.object({
 			id: z.uuid(),
-			startAt: z.iso.datetime(),
-			endAt: z.iso.datetime(),
+			startAt: zDateString,
+			endAt: zDateString,
 			roomId: z.uuid().nullable().optional(),
 		}),
 	)
 	.handler(async ({ data }) => {
-		await moveSession(data.id, {
-			startAt: new Date(data.startAt),
-			endAt: new Date(data.endAt),
-			roomId: data.roomId,
-		});
+		const { id, ...rest } = data;
+		await moveSession(id, rest);
 	});
 
 export const assignChairFn = createServerFn({ method: "POST" })
@@ -128,18 +118,14 @@ export const createSessionWithPresentationsFn = createServerFn({
 			title: z.string().max(300).optional(),
 			trackId: z.uuid().nullable().optional(),
 			roomId: z.uuid().nullable().optional(),
-			startAt: z.iso.datetime(),
-			endAt: z.iso.datetime(),
+			startAt: zDateString,
+			endAt: zDateString,
 			slotDurationMin: z.number().int().min(1).max(480),
 			submissionIds: z.array(z.uuid()).min(1),
 		}),
 	)
 	.handler(async ({ data }) => {
-		return createSessionWithPresentations({
-			...data,
-			startAt: new Date(data.startAt),
-			endAt: new Date(data.endAt),
-		});
+		return createSessionWithPresentations(data);
 	});
 
 export const continueSeriesFn = createServerFn({ method: "POST" })
