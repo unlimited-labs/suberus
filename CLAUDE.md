@@ -28,6 +28,16 @@ Treat the [workflow](./WORKFLOW.md) as the single source of truth. If a change i
 - Use Prisma for database operations
 - UI **MUST** be mobile friendly
 - MUST Use Conventional Commits format when writing commit messages: https://www.conventionalcommits.org/en/v1.0.0
+- Use repomix when user asks specific questions about libraries used in project, for example: `pnpx repomix --remote 'https://github.com/kcsujeet/ilamy-calendar'`, or clone github repository.
+
+
+### Knowledge Graph
+A graphify knowledge graph of `src/` exists at `graphify-out/graph.json` (1,066 nodes, 1,085 edges, 283 communities). Use it to understand architecture before making changes:
+- Query: `/graphify query "<question>"` — find what connects to what
+- Explain a node: `/graphify explain "<FunctionName>"` — all connections in plain language
+- Shortest path: `/graphify path "ModuleA" "ModuleB"` — trace dependency chains
+
+**After making code changes**, update the graph: `/graphify src --update`
 
 ### Before Making Changes
 - Read relevant code files first
@@ -38,6 +48,7 @@ Treat the [workflow](./WORKFLOW.md) as the single source of truth. If a change i
 ### After Making Changes
 - Run `pnpm lint` to check for linting errors
 - Run `pnpm build` to build production bundle
+- Run `/graphify src --update` to keep the knowledge graph current
 
 ## TanStack
 When working with any TanStack library, use the **TanStack CLI** to look up documentation:

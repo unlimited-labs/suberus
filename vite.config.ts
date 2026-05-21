@@ -7,7 +7,7 @@ import { type NitroPluginConfig, nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 import checker from "vite-plugin-checker";
 
-const isDev = process.env.NODE_ENV !== "production";
+// const isDev = process.env.NODE_ENV !== "production";
 const isE2E = process.env.E2E === "true";
 
 const rollupConfig = {
@@ -30,10 +30,9 @@ const nitroConfig: NitroPluginConfig = {
 	serverDir: "server",
 	experimental: { tasks: true, vite: {} },
 	scheduledTasks: {
-		"*/5 * * * *":
-			isDev || isE2E
-				? []
-				: ["mails:reminder", "assignments:overdue", "services:health"],
+		"*/5 * * * *": isE2E
+			? []
+			: ["mails:reminder", "assignments:overdue", "services:health"],
 	},
 };
 
