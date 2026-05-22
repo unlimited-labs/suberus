@@ -17,6 +17,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/use-session";
 import { sendVerificationEmail } from "@/lib/auth-client";
+import { extractZodIssueMessage, logClientError } from "@/lib/log-client-error";
 import {
 	activeSubmissionTypesQueryOptions,
 	submissionGuidelinesQueryOptions,
@@ -112,11 +113,21 @@ function NewSubmissionPage() {
 					},
 				}),
 				new Promise<never>((_, reject) =>
-					setTimeout(() => reject(new Error("Request timed out")), 30_000),
+					setTimeout(() => reject(new Error("Request timed out")), 60_000),
 				),
 			]);
-		} catch {
-			toast.error("Something went wrong. Please try again.");
+		} catch (e) {
+			await logClientError("[submission] createSubmission failed", e);
+			if (e instanceof Error && e.message === "Request timed out") {
+				toast.error(
+					"Submission took too long. Check your submissions list before retrying — it may have gone through.",
+				);
+			} else {
+				toast.error(
+					extractZodIssueMessage(e) ??
+						"Something went wrong. Please try again.",
+				);
+			}
 			return;
 		}
 
@@ -155,7 +166,8 @@ function NewSubmissionPage() {
 						`${isDraft ? "Draft saved" : "Submission created"} but file upload failed: ${uploadResult.error}`,
 					);
 				}
-			} catch {
+			} catch (e) {
+				await logClientError("[submission] file upload failed", e);
 				toast.error("File upload failed");
 			}
 		}

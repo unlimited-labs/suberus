@@ -11,10 +11,7 @@ export const authorSchema = z.object({
 		.max(100, "Last name must be at most 100 characters"),
 	email: z.email("Invalid email address"),
 	affiliationId: z.uuid().nullable(),
-	affiliationName: z
-		.string()
-		.min(1, "Affiliation is required")
-		.max(200, "Affiliation must be at most 200 characters"),
+	affiliationName: z.string().min(1, "Affiliation is required"),
 	isPresenter: z.boolean(),
 });
 
