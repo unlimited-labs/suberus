@@ -46,31 +46,47 @@ export async function createNewSubmission(
 ): Promise<CreateSubmissionResult> {
 	// Create submission in transaction
 	const submission = await prisma.$transaction(async (tx) => {
-		// Upsert affiliations for authors without affiliationId
-		const authorAffiliations = await Promise.all(
-			data.authors.map(async (author) => {
-				if (author.affiliationId) {
-					return author.affiliationId;
-				}
-				const affiliation = await tx.affiliation.upsert({
-					where: { name: author.affiliationName },
-					update: {},
-					create: { name: author.affiliationName },
-				});
-				return affiliation.id;
-			}),
+		// Upsert affiliations for authors without affiliationId — dedupe by name
+		// and run sequentially to avoid intra-transaction race on the unique
+		// constraint when multiple co-authors share an affiliation.
+		const uniqueAffiliationNames = Array.from(
+			new Set(
+				data.authors
+					.filter((a) => !a.affiliationId)
+					.map((a) => a.affiliationName),
+			),
 		);
+		const affiliationByName = new Map<string, string>();
+		for (const name of uniqueAffiliationNames) {
+			const affiliation = await tx.affiliation.upsert({
+				where: { name },
+				update: {},
+				create: { name },
+			});
+			affiliationByName.set(name, affiliation.id);
+		}
+		const authorAffiliations = data.authors.map((a) => {
+			if (a.affiliationId) return a.affiliationId;
+			const id = affiliationByName.get(a.affiliationName);
+			if (!id) {
+				throw new Error(
+					`Affiliation upsert missing for "${a.affiliationName}"`,
+				);
+			}
+			return id;
+		});
 
-		// Upsert keywords
-		const keywordRecords = await Promise.all(
-			data.keywords.map(async (keyword) => {
-				return tx.keyword.upsert({
-					where: { name: keyword },
-					update: {},
-					create: { name: keyword },
-				});
-			}),
-		);
+		// Upsert keywords — dedupe + sequential for the same reason
+		const uniqueKeywordNames = Array.from(new Set(data.keywords));
+		const keywordRecords: Array<{ id: string; name: string }> = [];
+		for (const name of uniqueKeywordNames) {
+			const keyword = await tx.keyword.upsert({
+				where: { name },
+				update: {},
+				create: { name },
+			});
+			keywordRecords.push({ id: keyword.id, name: keyword.name });
+		}
 
 		// Create submission
 		const initialStatus = isDraft ? "DRAFT" : "SUBMITTED";

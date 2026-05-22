@@ -7,7 +7,20 @@ import {
 	DEFAULT_VALIDATION_LIMITS,
 	type ValidationLimits,
 } from "@/lib/validations/submission";
+import { logger } from "@/logger";
 import { authMiddleware } from "./auth.middleware";
+
+function isPrismaKnownError(
+	err: unknown,
+): err is { code: string; meta?: Record<string, unknown> } {
+	return (
+		typeof err === "object" &&
+		err !== null &&
+		"code" in err &&
+		typeof (err as { code: unknown }).code === "string"
+	);
+}
+
 import {
 	getActiveSubmissionTypes,
 	getSetting,
@@ -116,12 +129,37 @@ export const createSubmission = createServerFn({ method: "POST" })
 			}
 		}
 
-		const submission = await createNewSubmission(
-			data,
-			context.user.id,
-			data.isDraft,
-		);
-		return { success: true, id: submission.id };
+		try {
+			const submission = await createNewSubmission(
+				data,
+				context.user.id,
+				data.isDraft,
+			);
+			return { success: true, id: submission.id };
+		} catch (err) {
+			logger.error("[createSubmission] failed", {
+				userId: context.user.id,
+				type: data.type,
+				contentFormat: data.contentFormat,
+				isDraft: !!data.isDraft,
+				titleLen: data.title.length,
+				contentLen: data.content.length,
+				authorsCount: data.authors.length,
+				keywordsCount: data.keywords.length,
+				err,
+			});
+			if (isPrismaKnownError(err) && err.code === "P2002") {
+				return {
+					success: false,
+					error:
+						"A conflicting record exists. Please contact support if this persists.",
+				};
+			}
+			return {
+				success: false,
+				error: "Server error while creating submission. Please try again.",
+			};
+		}
 	});
 
 /** File upload endpoint for FILE-based submissions */
@@ -292,15 +330,41 @@ export const updateDraftSubmissionFn = createServerFn({ method: "POST" })
 			}
 		}
 
-		const updateResult = await updateDraftSubmission(
-			data.submissionId,
-			context.user.id,
-			data,
-		);
-		if (!updateResult.success) {
-			return { success: false, error: updateResult.error ?? "Update failed" };
+		try {
+			const updateResult = await updateDraftSubmission(
+				data.submissionId,
+				context.user.id,
+				data,
+			);
+			if (!updateResult.success) {
+				return { success: false, error: updateResult.error ?? "Update failed" };
+			}
+			return { success: true, id: data.submissionId };
+		} catch (err) {
+			logger.error("[updateDraftSubmission] failed", {
+				userId: context.user.id,
+				submissionId: data.submissionId,
+				type: data.type,
+				contentFormat: data.contentFormat,
+				isDraft: !!data.isDraft,
+				titleLen: data.title.length,
+				contentLen: data.content.length,
+				authorsCount: data.authors.length,
+				keywordsCount: data.keywords.length,
+				err,
+			});
+			if (isPrismaKnownError(err) && err.code === "P2002") {
+				return {
+					success: false,
+					error:
+						"A conflicting record exists. Please contact support if this persists.",
+				};
+			}
+			return {
+				success: false,
+				error: "Server error while updating submission. Please try again.",
+			};
 		}
-		return { success: true, id: data.submissionId };
 	});
 
 /** Submit a draft (DRAFT → SUBMITTED) */
@@ -312,7 +376,19 @@ export const submitDraftFn = createServerFn({ method: "POST" })
 			data,
 			context,
 		}): Promise<{ success: boolean; error?: string }> => {
-			return submitDraft(data.submissionId, context.user.id);
+			try {
+				return await submitDraft(data.submissionId, context.user.id);
+			} catch (err) {
+				logger.error("[submitDraft] failed", {
+					userId: context.user.id,
+					submissionId: data.submissionId,
+					err,
+				});
+				return {
+					success: false,
+					error: "Server error while submitting draft. Please try again.",
+				};
+			}
 		},
 	);
 
