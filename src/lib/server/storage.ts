@@ -179,6 +179,20 @@ export function generateSubmissionFileKey(
 }
 
 /**
+ * Generate a storage key for a file staged for extraction processing
+ * @param jobId - JobProgress row ID
+ * @param originalName - Original file name
+ * @returns Storage key
+ */
+export function generateExtractionFileKey(
+	jobId: string,
+	originalName: string,
+): string {
+	const sanitizedName = originalName.replace(/[^a-zA-Z0-9.-]/g, "_");
+	return `extraction-staging/${jobId}/${sanitizedName}`;
+}
+
+/**
  * Generate a unique storage key for a review attachment file
  */
 export function generateReviewFileKey(

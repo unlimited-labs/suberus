@@ -122,7 +122,7 @@ async function tryLlmExtraction(
 // with complete data, confidence is HIGH. We can't detect missing authors
 // without knowing expected count, which is not available from heuristics.
 
-function isLowConfidence(result: ExtractionResult): boolean {
+export function isLowConfidence(result: ExtractionResult): boolean {
 	// Rule 1: no title
 	if (!result.title) return true;
 	// Rule 2: title too long (probably a paragraph)
@@ -169,7 +169,7 @@ export function detectLanguage(text: string): "pl" | "en" | "other" {
  *     enriched with AI emails/affiliations matched by name
  *   - If heuristic found 0 authors, use AI authors entirely
  */
-function mergeResults(
+export function mergeResults(
 	heuristic: ExtractionResult,
 	ai: ExtractionResult,
 ): ExtractionResult {
