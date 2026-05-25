@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { prisma } from "@/db.server.ts";
 import { createJobProgress, getJobProgress } from "@/lib/server/job-progress";
 import { adminMiddleware } from "@/lib/server/middleware/auth";
 import { applyAutoPlan } from "@/lib/server/planner/autoplan";
@@ -31,9 +32,7 @@ export const getAutoPlanJobFn = createServerFn({ method: "GET" })
 
 		const proposalRow =
 			job.status === "done"
-				? await (
-						await import("@/db.server")
-					).prisma.autoplanProposal.findUnique({
+				? await prisma.autoplanProposal.findUnique({
 						where: { jobId: data.jobId },
 					})
 				: null;

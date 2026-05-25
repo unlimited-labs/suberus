@@ -17,6 +17,11 @@ export async function getBoss(): Promise<PgBoss> {
 	await _boss.start();
 	logger.info("[pg-boss] started");
 
+	const { registerExtractionWorker } = await import("./workers/extraction");
+	const { registerAutoplanWorker } = await import("./workers/autoplan");
+	registerExtractionWorker(_boss);
+	registerAutoplanWorker(_boss);
+
 	return _boss;
 }
 
