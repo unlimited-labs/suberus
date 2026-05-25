@@ -2,14 +2,8 @@ import { PromisePool } from "@supercharge/promise-pool";
 import { prisma } from "@/db.server";
 import { env } from "@/env";
 import { logger } from "@/logger.ts";
+import { setJobCurrent, setJobStage } from "../job-progress";
 import { generateWithLlm } from "../llm";
-import {
-	createJob,
-	getJob,
-	setProgress,
-	setStage,
-	updateJob,
-} from "./autoplan-queue";
 import type {
 	AutoPlanProposal,
 	ProposedPresentation,
@@ -71,21 +65,8 @@ async function labelCluster(
 		.trim();
 }
 
-export async function startAutoPlan(): Promise<string> {
-	const job = createJob();
-	// Fire and forget — don't await
-	runAutoPlan(job.id).catch((e: unknown) => {
-		logger.error(`[autoplan] job ${job.id} failed:`, e);
-		updateJob(job.id, {
-			status: "error",
-			error: e instanceof Error ? e.message : String(e),
-		});
-	});
-	return job.id;
-}
-
-async function runAutoPlan(jobId: string): Promise<void> {
-	setStage(jobId, "loading", 0);
+export async function runAutoPlan(jobId: string): Promise<AutoPlanProposal> {
+	await setJobStage(jobId, "loading", 0);
 
 	const submissions = await prisma.submission.findMany({
 		where: { status: "ACCEPTED", type: "ABSTRACT" },
@@ -120,15 +101,15 @@ async function runAutoPlan(jobId: string): Promise<void> {
 		);
 	}
 
-	setStage(jobId, "embedding", submissions.length);
+	await setJobStage(jobId, "embedding", submissions.length);
 	const allEmbeddings = await embedSubmissions(submissions, {
-		onProgress: (done) => setProgress(jobId, done),
+		onProgress: (done) => setJobCurrent(jobId, done),
 	});
 
-	setStage(jobId, "clustering", 0);
+	await setJobStage(jobId, "clustering", 0);
 	const cluster = await callClusterApi(allEmbeddings, sessions.length);
 
-	setStage(jobId, "labeling", cluster.clusters.length);
+	await setJobStage(jobId, "labeling", cluster.clusters.length);
 	const submissionMap = new Map(submissions.map((s) => [s.id, s]));
 
 	const orderedClusters = cluster.clusters
@@ -152,7 +133,7 @@ async function runAutoPlan(jobId: string): Promise<void> {
 					title: m.title,
 				}));
 
-				setProgress(jobId, ++labeled);
+				await setJobCurrent(jobId, ++labeled);
 
 				return {
 					sessionId: sess.id,
@@ -193,14 +174,11 @@ async function runAutoPlan(jobId: string): Promise<void> {
 		},
 	};
 
-	updateJob(jobId, {
-		status: "done",
-		progress: { stage: "done", current: 1, total: 1 },
-		proposal,
-	});
 	logger.info(
 		`[autoplan] job ${jobId} done: ${proposedSessions.length} sessions, ${submissions.length} presentations`,
 	);
+
+	return proposal;
 }
 
 export interface ApplyResult {
@@ -210,13 +188,16 @@ export interface ApplyResult {
 }
 
 export async function applyAutoPlan(jobId: string): Promise<ApplyResult> {
-	const job = getJob(jobId);
-	if (!job) throw new Error(`Job ${jobId} not found or expired`);
-	if (job.status !== "done" || !job.proposal)
-		throw new Error(`Job ${jobId} is not in 'done' state (${job.status})`);
-	if (job.appliedAt) throw new Error(`Job ${jobId} already applied`);
+	const proposalRow = await prisma.autoplanProposal.findUnique({
+		where: { jobId },
+		include: { job: true },
+	});
+	if (!proposalRow) throw new Error(`Proposal for job ${jobId} not found`);
+	if (proposalRow.job.status !== "done")
+		throw new Error(`Job ${jobId} is not done (${proposalRow.job.status})`);
+	if (proposalRow.appliedAt) throw new Error(`Job ${jobId} already applied`);
 
-	const proposal = job.proposal;
+	const proposal = proposalRow.data as unknown as AutoPlanProposal;
 	const sessionIds = proposal.sessions.map((s) => s.sessionId);
 
 	const result = await prisma.$transaction(async (tx) => {
@@ -263,7 +244,11 @@ export async function applyAutoPlan(jobId: string): Promise<ApplyResult> {
 		};
 	});
 
-	updateJob(jobId, { appliedAt: new Date() });
+	await prisma.autoplanProposal.update({
+		where: { jobId },
+		data: { appliedAt: new Date() },
+	});
+
 	logger.info(
 		`[autoplan] job ${jobId} applied: ${result.sessionsUpdated} sessions, -${result.slotsDeleted}/+${result.slotsCreated} slots`,
 	);
