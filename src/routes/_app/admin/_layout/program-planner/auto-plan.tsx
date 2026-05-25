@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { useJobSSE } from "@/hooks/use-job-sse";
 import { cn } from "@/lib/utils";
 import {
 	applyAutoPlanFn,
@@ -93,16 +94,14 @@ function AutoPlanPage() {
 		onSuccess: (res) => setJobId(res.jobId),
 	});
 
-	const job = useQuery({
+	const sse = useJobSSE(jobId);
+
+	// Only fetch full proposal data when job completes
+	const jobResult = useQuery({
 		queryKey: ["autoplan-job", jobId],
 		queryFn: () =>
 			jobId ? getAutoPlanJobFn({ data: { jobId } }) : Promise.resolve(null),
-		enabled: jobId !== null,
-		refetchInterval: (q) => {
-			const d = q.state.data;
-			if (!d || d.notFound) return false;
-			return d.status === "done" || d.status === "error" ? false : 1500;
-		},
+		enabled: jobId !== null && sse.status === "done",
 	});
 
 	const apply = useMutation({
@@ -115,13 +114,14 @@ function AutoPlanPage() {
 		},
 	});
 
-	const data = job.data && !job.data.notFound ? job.data : null;
+	const data =
+		jobResult.data && !jobResult.data.notFound ? jobResult.data : null;
 	const running =
-		start.isPending || data?.status === "running" || data?.status === "pending";
-	const done = data?.status === "done" && data.proposal && !data.appliedAt;
+		start.isPending || sse.status === "running" || sse.status === "pending";
+	const done = sse.status === "done" && data?.proposal && !data.appliedAt;
 	const errorMsg =
-		data?.status === "error"
-			? (data.error ?? "Unknown error")
+		sse.status === "error"
+			? (sse.error ?? "Unknown error")
 			: apply.error
 				? apply.error.message
 				: start.error
@@ -151,7 +151,15 @@ function AutoPlanPage() {
 						/>
 					)}
 
-					{running && <ProgressView data={data} />}
+					{running && (
+						<ProgressView
+							progress={{
+								stage: sse.stage,
+								current: sse.current,
+								total: sse.total,
+							}}
+						/>
+					)}
 
 					{errorMsg && !running && (
 						<ErrorView message={errorMsg} onBack={goBack} />
@@ -213,15 +221,14 @@ function IntroView({
 }
 
 function ProgressView({
-	data,
+	progress,
 }: {
-	data: Awaited<ReturnType<typeof getAutoPlanJobFn>> | null;
+	progress: { stage: string; current: number; total: number };
 }) {
-	const progress = data && !data.notFound ? data.progress : null;
-	const currentStage = (progress?.stage ?? "loading") as Stage;
+	const currentStage = (progress.stage ?? "loading") as Stage;
 	const activeIdx = STAGES.findIndex((s) => s.key === currentStage);
-	const current = progress?.current ?? 0;
-	const total = progress?.total ?? 0;
+	const current = progress.current;
+	const total = progress.total;
 
 	// Global progress: each stage is 1/n of the whole; add sub-progress within current stage.
 	const stageCount = STAGES.length;
