@@ -707,3 +707,32 @@ enum EmailEventType {
   NEW_REGISTRATION_NOTIFY
   NEW_SUBMISSION_NOTIFY
 }
+
+model JobProgress {
+  id        String   @id @default(uuid()) @db.Uuid
+  queue     String
+  status    String   @default("pending") // pending | running | done | error
+  stage     String   @default("queued")
+  current   Int      @default(0)
+  total     Int      @default(0)
+  error     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  autoplanProposal AutoplanProposal?
+
+  @@index([queue, status])
+  @@map("job_progress")
+}
+
+model AutoplanProposal {
+  id        String    @id @default(uuid()) @db.Uuid
+  jobId     String    @unique @map("job_id") @db.Uuid
+  data      Json
+  appliedAt DateTime? @map("applied_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  job JobProgress @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@map("autoplan_proposals")
+}
