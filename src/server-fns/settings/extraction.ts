@@ -1,8 +1,11 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { createJobProgress, getJobProgress } from "@/lib/server/job-progress";
 import { adminMiddleware, authMiddleware } from "@/lib/server/middleware/auth";
+import { getBoss } from "@/lib/server/queue";
 import { getSetting, setSetting } from "@/lib/server/settings";
+import { generateExtractionFileKey, uploadFile } from "@/lib/server/storage";
 import type { AppSettingsMap } from "@/lib/settings/types";
 
 // --- Public (auth-required) ---
@@ -30,7 +33,7 @@ export const extractionSettingsQueryOptions = () =>
 		queryFn: () => getExtractionSettingsFn(),
 	});
 
-export const extractDocumentMetadataFn = createServerFn({ method: "POST" })
+export const enqueueExtractionFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.inputValidator(
 		z.object({
@@ -39,13 +42,48 @@ export const extractDocumentMetadataFn = createServerFn({ method: "POST" })
 		}),
 	)
 	.handler(async ({ data }) => {
-		const { extractFromDocx } = await import("@/lib/server/extraction");
 		const [heuristic, ai] = await Promise.all([
 			getSetting("EXTRACTION_HEURISTIC"),
 			getSetting("EXTRACTION_AI"),
 		]);
+
+		const jobId = await createJobProgress("extraction");
 		const buffer = Buffer.from(data.fileBase64, "base64");
-		return extractFromDocx(buffer, { heuristic, ai }, data.fileName);
+		const storageKey = generateExtractionFileKey(jobId, data.fileName);
+		await uploadFile(buffer, storageKey, "application/octet-stream");
+
+		const boss = await getBoss();
+		await boss.send("extraction", {
+			jobId,
+			storageKey,
+			fileName: data.fileName,
+			heuristic,
+			ai,
+		});
+
+		return { jobId };
+	});
+
+export const getExtractionResultFn = createServerFn({ method: "GET" })
+	.middleware([authMiddleware])
+	.inputValidator(z.object({ jobId: z.string().uuid() }))
+	.handler(async ({ data }) => {
+		const job = await getJobProgress(data.jobId);
+		if (!job) return { notFound: true as const };
+
+		let result = null;
+		if (job.status === "done") {
+			const boss = await getBoss();
+			const pgJob = await boss.getJobById("extraction", data.jobId);
+			result = pgJob?.output ?? null;
+		}
+
+		return {
+			notFound: false as const,
+			status: job.status,
+			error: job.error,
+			result,
+		};
 	});
 
 // --- Admin ---

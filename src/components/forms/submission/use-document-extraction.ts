@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { extractDocumentMetadataFn } from "@/server-fns/settings/extraction";
+import { useJobSSE } from "@/hooks/use-job-sse";
+import {
+	enqueueExtractionFn,
+	getExtractionResultFn,
+} from "@/server-fns/settings/extraction";
 import type { Author } from "./authors-input";
 
 interface UseDocumentExtractionOptions {
@@ -15,13 +19,15 @@ interface UseDocumentExtractionOptions {
 interface UseDocumentExtractionReturn {
 	isExtracting: boolean;
 	elapsedSeconds: number;
+	stage: string;
+	progress: { current: number; total: number };
 	handleFileChange: (
 		file: File | null,
 		fieldHandleChange: (file: File | null) => void,
 	) => void;
 }
 
-const EXTRACTION_TIMEOUT_MS = 30_000;
+const SUPPORTED_EXTENSIONS = [".docx", ".pdf"];
 
 function fileToBase64(file: File): Promise<string> {
 	return new Promise((resolve, reject) => {
@@ -60,13 +66,17 @@ export function useDocumentExtraction({
 }: UseDocumentExtractionOptions): UseDocumentExtractionReturn {
 	const [isExtracting, setIsExtracting] = useState(false);
 	const [elapsedSeconds, setElapsedSeconds] = useState(0);
+	const [jobId, setJobId] = useState<string | null>(null);
 	const abortRef = useRef<AbortController | null>(null);
+	const handledJobRef = useRef<string | null>(null);
 
 	// Stable ref for callback — updated via effect, not during render
 	const onExtractedRef = useRef(onExtracted);
 	useEffect(() => {
 		onExtractedRef.current = onExtracted;
 	}, [onExtracted]);
+
+	const sseState = useJobSSE(jobId);
 
 	// Elapsed timer
 	useEffect(() => {
@@ -76,6 +86,63 @@ export function useDocumentExtraction({
 		}, 1000);
 		return () => clearInterval(interval);
 	}, [isExtracting]);
+
+	// Handle SSE completion
+	useEffect(() => {
+		if (!jobId || sseState.status !== "done") return;
+		if (handledJobRef.current === jobId) return;
+		handledJobRef.current = jobId;
+
+		const fetchResult = async () => {
+			try {
+				const response = await getExtractionResultFn({
+					data: { jobId },
+				});
+
+				if (response.notFound || response.status !== "done") return;
+
+				const result = response.result as {
+					title?: string;
+					authors?: {
+						firstName: string;
+						lastName: string;
+						email?: string;
+						affiliationName?: string;
+					}[];
+					keywords?: string[];
+				} | null;
+
+				if (!result) return;
+
+				const extracted: Parameters<typeof onExtractedRef.current>[0] = {};
+				if (result.title) extracted.title = result.title;
+				if (result.authors && result.authors.length > 0)
+					extracted.authors = mapToFormAuthors(result.authors);
+				if (result.keywords && result.keywords.length > 0)
+					extracted.keywords = result.keywords;
+
+				onExtractedRef.current(extracted);
+			} catch (error) {
+				console.error("[extraction] Failed to fetch result:", error);
+			} finally {
+				setIsExtracting(false);
+				setJobId(null);
+			}
+		};
+
+		void fetchResult();
+	}, [jobId, sseState.status]);
+
+	// Handle SSE error
+	useEffect(() => {
+		if (!jobId || sseState.status !== "error") return;
+		if (handledJobRef.current === jobId) return;
+		handledJobRef.current = jobId;
+
+		console.error("[extraction] Job failed:", sseState.error);
+		setIsExtracting(false);
+		setJobId(null);
+	}, [jobId, sseState.status, sseState.error]);
 
 	// Cleanup on unmount — abort any in-flight extraction
 	useEffect(() => {
@@ -95,7 +162,9 @@ export function useDocumentExtraction({
 				!file ||
 				!enabled ||
 				skipExtraction ||
-				!file.name.toLowerCase().endsWith(".docx")
+				!SUPPORTED_EXTENSIONS.some((ext) =>
+					file.name.toLowerCase().endsWith(ext),
+				)
 			) {
 				return;
 			}
@@ -107,42 +176,24 @@ export function useDocumentExtraction({
 
 			setIsExtracting(true);
 			setElapsedSeconds(0);
+			setJobId(null);
+			handledJobRef.current = null;
 
 			try {
 				const fileBase64 = await fileToBase64(file);
 
 				if (controller.signal.aborted) return;
 
-				const timeout = new Promise<never>((_, reject) =>
-					setTimeout(
-						() => reject(new Error("extraction timeout")),
-						EXTRACTION_TIMEOUT_MS,
-					),
-				);
-
-				const result = await Promise.race([
-					extractDocumentMetadataFn({
-						data: { fileBase64, fileName: file.name },
-					}),
-					timeout,
-				]);
+				const { jobId: newJobId } = await enqueueExtractionFn({
+					data: { fileBase64, fileName: file.name },
+				});
 
 				if (controller.signal.aborted) return;
 
-				const extracted: Parameters<typeof onExtractedRef.current>[0] = {};
-				if (result.title) extracted.title = result.title;
-				if (result.authors && result.authors.length > 0)
-					extracted.authors = mapToFormAuthors(result.authors);
-				if (result.keywords && result.keywords.length > 0)
-					extracted.keywords = result.keywords;
-
-				onExtractedRef.current(extracted);
+				setJobId(newJobId);
 			} catch (error) {
 				if (!controller.signal.aborted) {
 					console.error("[extraction] Client extraction failed:", error);
-				}
-			} finally {
-				if (!controller.signal.aborted) {
 					setIsExtracting(false);
 				}
 			}
@@ -150,5 +201,11 @@ export function useDocumentExtraction({
 		[enabled, skipExtraction],
 	);
 
-	return { isExtracting, elapsedSeconds, handleFileChange };
+	return {
+		isExtracting,
+		elapsedSeconds,
+		stage: sseState.stage,
+		progress: { current: sseState.current, total: sseState.total },
+		handleFileChange,
+	};
 }
