@@ -78,7 +78,7 @@ async function processExtractionJob(
 			const paragraphs = parseDocx(buffer);
 			const classified = classifyZones(paragraphs);
 			const result = extractFromZones(classified);
-			await completeJob(jobId);
+			await completeJob(jobId, result as object);
 			return result;
 		}
 
@@ -89,7 +89,7 @@ async function processExtractionJob(
 			const heuristicResult = extractFromZones(classified);
 
 			if (!isLowConfidence(heuristicResult)) {
-				await completeJob(jobId);
+				await completeJob(jobId, heuristicResult as object);
 				return heuristicResult;
 			}
 
@@ -107,7 +107,7 @@ async function processExtractionJob(
 			const merged = aiResult
 				? mergeResults(heuristicResult, aiResult)
 				: heuristicResult;
-			await completeJob(jobId);
+			await completeJob(jobId, merged as object);
 			return merged;
 		}
 
@@ -115,15 +115,16 @@ async function processExtractionJob(
 		await setJobStage(jobId, "docling", 2);
 		const doclingMd = await getDoclingMarkdown(buffer, fileName);
 		if (!doclingMd) {
-			await completeJob(jobId);
+			await completeJob(jobId, {});
 			return {};
 		}
 
 		await setJobStage(jobId, "ai", 2);
 		const llmInput = cutAtAbstract(doclingMd);
 		const aiResult = await tryLlmExtraction(llmInput);
-		await completeJob(jobId);
-		return aiResult ?? {};
+		const finalResult = aiResult ?? {};
+		await completeJob(jobId, finalResult as object);
+		return finalResult;
 	} catch (error) {
 		const message =
 			error instanceof Error ? error.message : "Unknown extraction error";

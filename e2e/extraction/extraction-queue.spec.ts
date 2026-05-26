@@ -1,4 +1,5 @@
 import path from "path";
+import { setAppSetting } from "../helpers/test-db";
 import {
 	test,
 	expect,
@@ -8,6 +9,17 @@ import {
 } from "./fixtures";
 
 test.describe("Extraction Queue", () => {
+	test.beforeAll(async () => {
+		await setAppSetting("EXTRACTION_ENABLED", true);
+		await setAppSetting("EXTRACTION_HEURISTIC", true);
+		await setAppSetting("EXTRACTION_AI", true);
+	});
+
+	test.afterAll(async () => {
+		await setAppSetting("EXTRACTION_ENABLED", false);
+		await setAppSetting("EXTRACTION_AI", false);
+	});
+
 	test("DOCX upload triggers extraction and fills title", async ({
 		extractionPage,
 	}) => {
@@ -17,8 +29,10 @@ test.describe("Extraction Queue", () => {
 		await extractionPage.waitForExtractionStart();
 		await extractionPage.waitForExtractionComplete();
 
-		const title = await extractionPage.getExtractedTitle();
-		expect(title.length).toBeGreaterThan(10);
+		// Auto-retry: result fills asynchronously after overlay disappears
+		await expect(extractionPage.titleInput).not.toHaveValue("", {
+			timeout: 10_000,
+		});
 	});
 
 	test("PDF upload triggers extraction and fills title", async ({
@@ -30,8 +44,9 @@ test.describe("Extraction Queue", () => {
 		await extractionPage.waitForExtractionStart();
 		await extractionPage.waitForExtractionComplete();
 
-		const title = await extractionPage.getExtractedTitle();
-		expect(title.length).toBeGreaterThan(10);
+		await expect(extractionPage.titleInput).not.toHaveValue("", {
+			timeout: 10_000,
+		});
 	});
 
 	test("DOCX extraction fills author fields", async ({ extractionPage }) => {

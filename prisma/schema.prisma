@@ -716,6 +716,7 @@ model JobProgress {
   current   Int      @default(0)
   total     Int      @default(0)
   error     String?
+  result    Json?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

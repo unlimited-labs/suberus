@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import type { ExtractionResult } from "@/lib/server/extraction";
 import { createJobProgress, getJobProgress } from "@/lib/server/job-progress";
 import { adminMiddleware, authMiddleware } from "@/lib/server/middleware/auth";
 import { getBoss } from "@/lib/server/queue";
@@ -71,18 +72,11 @@ export const getExtractionResultFn = createServerFn({ method: "GET" })
 		const job = await getJobProgress(data.jobId);
 		if (!job) return { notFound: true as const };
 
-		let result = null;
-		if (job.status === "done") {
-			const boss = await getBoss();
-			const pgJob = await boss.getJobById("extraction", data.jobId);
-			result = pgJob?.output ?? null;
-		}
-
 		return {
 			notFound: false as const,
 			status: job.status,
 			error: job.error,
-			result,
+			result: (job.result as ExtractionResult | null) ?? null,
 		};
 	});
 

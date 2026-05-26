@@ -1,4 +1,5 @@
 import { prisma } from "@/db.server.ts";
+import type { Prisma } from "@/generated/prisma/client.js";
 
 export async function createJobProgress(queue: string): Promise<string> {
 	const job = await prisma.jobProgress.create({
@@ -28,10 +29,13 @@ export async function setJobCurrent(
 	});
 }
 
-export async function completeJob(jobId: string): Promise<void> {
+export async function completeJob(
+	jobId: string,
+	result?: Prisma.InputJsonValue,
+): Promise<void> {
 	await prisma.jobProgress.update({
 		where: { id: jobId },
-		data: { status: "done", stage: "done", current: 1, total: 1 },
+		data: { status: "done", stage: "done", current: 1, total: 1, result },
 	});
 }
 
