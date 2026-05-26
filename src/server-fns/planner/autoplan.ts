@@ -5,7 +5,7 @@ import { createJobProgress, getJobProgress } from "@/lib/server/job-progress";
 import { adminMiddleware } from "@/lib/server/middleware/auth";
 import { applyAutoPlan } from "@/lib/server/planner/autoplan";
 import type { AutoPlanProposal } from "@/lib/server/planner/autoplan-types";
-import { getBoss } from "@/lib/server/queue";
+import { ensureQueueAndSend } from "@/lib/server/queue";
 import { getSetting } from "@/lib/server/settings";
 
 export const startAutoPlanFn = createServerFn({ method: "POST" })
@@ -18,8 +18,7 @@ export const startAutoPlanFn = createServerFn({ method: "POST" })
 			);
 		}
 		const jobId = await createJobProgress("autoplan");
-		const boss = await getBoss();
-		await boss.send("autoplan", { jobId });
+		await ensureQueueAndSend("autoplan", { jobId });
 		return { jobId };
 	});
 

@@ -2,36 +2,60 @@ import { PgBoss } from "pg-boss";
 import { env } from "@/env.ts";
 import { logger } from "@/logger.ts";
 
-let _boss: PgBoss | null = null;
+const QUEUES = ["extraction", "autoplan"] as const;
 
-export async function getBoss(): Promise<PgBoss> {
-	if (_boss) return _boss;
+let _initPromise: Promise<PgBoss> | null = null;
 
-	_boss = new PgBoss({
+async function initBoss(): Promise<PgBoss> {
+	const boss = new PgBoss({
 		connectionString: env.DATABASE_URL,
 		monitorIntervalSeconds: 30,
 	});
 
-	_boss.on("error", (err: Error) => logger.error("[pg-boss] error:", err));
+	boss.on("error", (err: Error) => logger.error("[pg-boss] error:", err));
 
-	await _boss.start();
+	await boss.start();
 	logger.info("[pg-boss] started");
 
-	await _boss.createQueue("extraction").catch(() => {});
-	await _boss.createQueue("autoplan").catch(() => {});
+	for (const q of QUEUES) {
+		await boss.createQueue(q).catch(() => {});
+	}
 
 	const { registerExtractionWorker } = await import("./workers/extraction");
 	const { registerAutoplanWorker } = await import("./workers/autoplan");
-	await registerExtractionWorker(_boss);
-	await registerAutoplanWorker(_boss);
+	await registerExtractionWorker(boss);
+	await registerAutoplanWorker(boss);
 
-	return _boss;
+	return boss;
+}
+
+export function getBoss(): Promise<PgBoss> {
+	if (!_initPromise) {
+		_initPromise = initBoss().catch((err) => {
+			_initPromise = null;
+			throw err;
+		});
+	}
+	return _initPromise;
+}
+
+export async function ensureQueueAndSend(
+	name: string,
+	data: object,
+): Promise<string | null> {
+	const boss = await getBoss();
+	const queue = await boss.getQueue(name);
+	if (!queue) {
+		await boss.createQueue(name);
+	}
+	return boss.send(name, data);
 }
 
 export async function stopBoss(): Promise<void> {
-	if (_boss) {
-		await _boss.stop({ graceful: true, timeout: 10_000 });
-		_boss = null;
+	if (_initPromise) {
+		const boss = await _initPromise;
+		await boss.stop({ graceful: true, timeout: 10_000 });
+		_initPromise = null;
 		logger.info("[pg-boss] stopped");
 	}
 }

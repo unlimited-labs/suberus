@@ -4,7 +4,7 @@ import { z } from "zod";
 import type { ExtractionResult } from "@/lib/server/extraction";
 import { createJobProgress, getJobProgress } from "@/lib/server/job-progress";
 import { adminMiddleware, authMiddleware } from "@/lib/server/middleware/auth";
-import { getBoss } from "@/lib/server/queue";
+import { ensureQueueAndSend } from "@/lib/server/queue";
 import { getSetting, setSetting } from "@/lib/server/settings";
 import { generateExtractionFileKey, uploadFile } from "@/lib/server/storage";
 import type { AppSettingsMap } from "@/lib/settings/types";
@@ -53,8 +53,7 @@ export const enqueueExtractionFn = createServerFn({ method: "POST" })
 		const storageKey = generateExtractionFileKey(jobId, data.fileName);
 		await uploadFile(buffer, storageKey, "application/octet-stream");
 
-		const boss = await getBoss();
-		await boss.send("extraction", {
+		await ensureQueueAndSend("extraction", {
 			jobId,
 			storageKey,
 			fileName: data.fileName,
