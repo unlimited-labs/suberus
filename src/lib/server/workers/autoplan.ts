@@ -33,8 +33,8 @@ async function handleAutoplanJob(jobs: Job<AutoplanJobData>[]): Promise<void> {
 	}
 }
 
-export function registerAutoplanWorker(boss: PgBoss): void {
-	boss.work<AutoplanJobData>(
+export async function registerAutoplanWorker(boss: PgBoss): Promise<void> {
+	await boss.work<AutoplanJobData>(
 		"autoplan",
 		{ localConcurrency: 1 },
 		handleAutoplanJob,

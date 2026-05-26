@@ -137,8 +137,8 @@ async function processExtractionJob(
 	}
 }
 
-export function registerExtractionWorker(boss: PgBoss): void {
-	boss.work<ExtractionJobData>(
+export async function registerExtractionWorker(boss: PgBoss): Promise<void> {
+	await boss.work<ExtractionJobData>(
 		"extraction",
 		{ localConcurrency: 2 },
 		handleExtraction,

@@ -26,12 +26,9 @@ test.describe("Extraction Queue", () => {
 		await extractionPage.gotoFullPaperForm();
 		await extractionPage.uploadFile(SAMPLE_DOCX);
 
-		await extractionPage.waitForExtractionStart();
-		await extractionPage.waitForExtractionComplete();
-
-		// Auto-retry: result fills asynchronously after overlay disappears
+		// Wait for title to be filled — extraction may be instant for DOCX
 		await expect(extractionPage.titleInput).not.toHaveValue("", {
-			timeout: 10_000,
+			timeout: 30_000,
 		});
 	});
 
@@ -41,11 +38,9 @@ test.describe("Extraction Queue", () => {
 		await extractionPage.gotoFullPaperForm();
 		await extractionPage.uploadFile(SAMPLE_PDF);
 
-		await extractionPage.waitForExtractionStart();
-		await extractionPage.waitForExtractionComplete();
-
+		// PDF extraction takes longer (docling + LLM)
 		await expect(extractionPage.titleInput).not.toHaveValue("", {
-			timeout: 10_000,
+			timeout: 60_000,
 		});
 	});
 
