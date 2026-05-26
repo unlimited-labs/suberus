@@ -121,6 +121,16 @@ export default defineConfig({
 				storageState: "e2e/.auth/user.json",
 			},
 		},
+		// Extraction tests - user auth, requires docling + LLM services
+		{
+			name: "chromium-extraction",
+			testMatch: /e2e\/extraction\/.*\.spec\.ts/,
+			dependencies: ["auth-setup"],
+			use: {
+				...devices["Desktop Chrome"],
+				storageState: "e2e/.auth/user.json",
+			},
+		},
 		// No-active-types test - modifies global submission type configs, must run isolated
 		{
 			name: "chromium-no-active-types",
