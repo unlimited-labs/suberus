@@ -43,12 +43,17 @@ export async function ensureQueueAndSend(
 	name: string,
 	data: object,
 ): Promise<string | null> {
+	logger.info(`[pg-boss] ensureQueueAndSend: ${name}`);
 	const boss = await getBoss();
+	logger.info(`[pg-boss] got boss, checking queue: ${name}`);
 	const queue = await boss.getQueue(name);
 	if (!queue) {
+		logger.info(`[pg-boss] queue ${name} not found, creating...`);
 		await boss.createQueue(name);
 	}
-	return boss.send(name, data);
+	const jobId = await boss.send(name, data);
+	logger.info(`[pg-boss] sent job ${jobId} to ${name}`);
+	return jobId;
 }
 
 export async function stopBoss(): Promise<void> {
