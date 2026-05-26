@@ -16,12 +16,18 @@ export function ExtractionOverlay({
 			className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/80 backdrop-blur-sm"
 			role="status"
 			aria-label="Extracting metadata from document"
+			data-testid="extraction-overlay"
 		>
 			<div className="flex flex-col items-center gap-3">
 				<IconLoader2 className="size-8 animate-spin text-primary" />
 				<div className="text-center">
 					<p className="text-sm font-medium">Extracting metadata...</p>
-					<p className="text-xs text-muted-foreground">{elapsedSeconds}s</p>
+					<p
+						className="text-xs text-muted-foreground"
+						data-testid="extraction-elapsed"
+					>
+						{elapsedSeconds}s
+					</p>
 					{elapsedSeconds >= 10 ? (
 						<p className="mt-1 text-xs text-muted-foreground">
 							Extraction is taking longer than usual...
