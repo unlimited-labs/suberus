@@ -1,12 +1,12 @@
-import { Buffer } from "node:buffer";
-import { Readable } from "node:stream";
+import type { Buffer } from "node:buffer";
+import type { Readable } from "node:stream";
 import archiver from "archiver";
 import { prisma } from "@/db.server";
 import {
 	buildSubmissionWhereClause,
 	type GetSubmissionsFilters,
 } from "@/lib/server/admin/submissions";
-import { getFileContent } from "@/lib/server/storage";
+import { getFileBuffer } from "@/lib/server/storage";
 
 export async function getSubmissionsForExport(filters: GetSubmissionsFilters) {
 	const where = buildSubmissionWhereClause(filters);
@@ -109,17 +109,7 @@ function buildCsv(submissions: ExportSubmission[]): string {
 }
 
 async function fetchFileBuffer(storageKey: string): Promise<Buffer> {
-	const { body } = await getFileContent(storageKey);
-	// body may be Web ReadableStream or Node Readable depending on AWS SDK runtime
-	const stream =
-		body instanceof Readable
-			? body
-			: Readable.fromWeb(body as import("node:stream/web").ReadableStream);
-	const chunks: Buffer[] = [];
-	for await (const chunk of stream) {
-		chunks.push(Buffer.from(chunk));
-	}
-	return Buffer.concat(chunks);
+	return getFileBuffer(storageKey);
 }
 
 export async function createSubmissionsZipStream(

@@ -126,6 +126,23 @@ export async function getFileContent(key: string): Promise<{
 }
 
 /**
+ * Get file content as a Buffer (for server-side processing).
+ * Uses AWS SDK's transformToByteArray which handles both Node and Web streams.
+ */
+export async function getFileBuffer(key: string): Promise<Buffer> {
+	const client = getS3Client();
+
+	const command = new GetObjectCommand({
+		Bucket: GARAGE_BUCKET,
+		Key: key,
+	});
+
+	const response = await client.send(command);
+	const bytes = await response.Body!.transformToByteArray();
+	return Buffer.from(bytes);
+}
+
+/**
  * Delete a file from Garage S3
  * @param key - Storage key
  */

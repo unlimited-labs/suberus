@@ -12,7 +12,7 @@ import { MAX_HEADER_FALLBACK } from "../extraction-patterns";
 import { classifyZones } from "../extraction-zones";
 import { completeJob, failJob, setJobStage } from "../job-progress";
 import { checkLlmHealth } from "../llm";
-import { deleteFile, getFileContent } from "../storage";
+import { deleteFile, getFileBuffer } from "../storage";
 
 export interface ExtractionJobData {
 	jobId: string;
@@ -20,18 +20,6 @@ export interface ExtractionJobData {
 	fileName: string;
 	heuristic: boolean;
 	ai: boolean;
-}
-
-async function streamToBuffer(stream: ReadableStream): Promise<Buffer> {
-	const reader = stream.getReader();
-	const chunks: Uint8Array[] = [];
-	let done = false;
-	while (!done) {
-		const result = await reader.read();
-		done = result.done;
-		if (result.value) chunks.push(result.value);
-	}
-	return Buffer.concat(chunks);
 }
 
 function cutAtAbstract(md: string): string {
@@ -70,8 +58,7 @@ async function processExtractionJob(
 
 	try {
 		await setJobStage(jobId, "downloading", 1);
-		const { body } = await getFileContent(storageKey);
-		const buffer = await streamToBuffer(body);
+		const buffer = await getFileBuffer(storageKey);
 
 		if (isDocx && heuristic && !ai) {
 			await setJobStage(jobId, "heuristic", 1);
