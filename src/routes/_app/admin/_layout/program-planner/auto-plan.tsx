@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useJobSSE } from "@/hooks/use-job-sse";
+import type { AutoplanStage } from "@/lib/server/planner/autoplan-types";
 import { cn } from "@/lib/utils";
 import {
 	applyAutoPlanFn,
@@ -35,7 +36,7 @@ export const Route = createFileRoute(
 	component: AutoPlanPage,
 });
 
-type Stage = "loading" | "embedding" | "clustering" | "labeling" | "done";
+type Stage = AutoplanStage | "done";
 
 interface StageSpec {
 	key: Stage;
