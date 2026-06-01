@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useJobSSE } from "@/hooks/use-job-sse";
 import {
 	enqueueExtractionFn,
@@ -140,6 +141,7 @@ export function useDocumentExtraction({
 		handledJobRef.current = jobId;
 
 		console.error("[extraction] Job failed:", sseState.error);
+		toast.error(`Extraction failed: ${sseState.error ?? "unknown error"}`);
 		setIsExtracting(false);
 		setJobId(null);
 	}, [jobId, sseState.status, sseState.error]);
@@ -194,6 +196,9 @@ export function useDocumentExtraction({
 			} catch (error) {
 				if (!controller.signal.aborted) {
 					console.error("[extraction] Client extraction failed:", error);
+					const message =
+						error instanceof Error ? error.message : "unknown error";
+					toast.error(`Extraction failed: ${message}`);
 					setIsExtracting(false);
 				}
 			}

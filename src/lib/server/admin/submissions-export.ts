@@ -1,4 +1,3 @@
-import type { Buffer } from "node:buffer";
 import type { Readable } from "node:stream";
 import archiver from "archiver";
 import { prisma } from "@/db.server";
@@ -108,10 +107,6 @@ function buildCsv(submissions: ExportSubmission[]): string {
 	return [header, ...rows].join("\n");
 }
 
-async function fetchFileBuffer(storageKey: string): Promise<Buffer> {
-	return getFileBuffer(storageKey);
-}
-
 export async function createSubmissionsZipStream(
 	submissions: ExportSubmission[],
 ): Promise<Readable> {
@@ -123,7 +118,7 @@ export async function createSubmissionsZipStream(
 			const file = s.currentVersion?.file;
 			if (file) {
 				try {
-					const buffer = await fetchFileBuffer(file.storageKey);
+					const buffer = await getFileBuffer(file.storageKey);
 					const ext = getFileExtension(file.originalName);
 					return { name: `${s.sequentialNumber}${ext}`, data: buffer };
 				} catch {

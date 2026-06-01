@@ -1,4 +1,4 @@
-import { getDoclingMarkdown } from "./docling";
+import { checkDoclingHealth, getDoclingMarkdown } from "./docling";
 import { parseDocx } from "./docx-parser";
 import { extractFromZones } from "./extraction-heuristic";
 import { extractWithLlm } from "./extraction-llm";
@@ -29,40 +29,34 @@ export interface ExtractionConfig {
 	ai: boolean;
 }
 
-/**
- * Extract metadata from a DOCX file.
- *
- * Pipeline (when both heuristic + ai enabled):
- *   1. Parse DOCX XML → zone classification → heuristic extraction (1-5ms)
- *   2. If LOW confidence → get LLM input:
- *      a. DOCLING_URL set → send to docling, get markdown (better formatting)
- *      b. No docling → use XML header text from zone classifier
- *   3. Send to LLM → get AI result (5-50s)
- *   4. Merge: heuristic author count + AI enrichment, heuristic keywords only
- */
+export type StageReporter = (
+	stage: string,
+	totalStages: number,
+) => Promise<void>;
+
+function cutAtAbstract(md: string): string {
+	const headerEnd = md.search(
+		/\n\s*(\*\*)?(Abstract|Introduction|ABSTRACT|\d+\.\s)/,
+	);
+	return headerEnd > 0
+		? md.slice(0, headerEnd)
+		: md.slice(0, MAX_HEADER_FALLBACK);
+}
+
 export async function extractFromDocx(
 	buffer: Buffer,
 	config: ExtractionConfig,
 	fileName?: string,
+	onStage?: StageReporter,
 ): Promise<ExtractionResult> {
 	const paragraphs = parseDocx(buffer);
 	const classified = classifyZones(paragraphs);
 
-	// Build LLM input: prefer docling markdown (better formatting), fallback to XML header text
 	async function getLlmInput(): Promise<string> {
 		if (fileName) {
 			const doclingMd = await getDoclingMarkdown(buffer, fileName);
-			if (doclingMd) {
-				// Cut at Abstract/Introduction/numbered section
-				const headerEnd = doclingMd.search(
-					/\n\s*(\*\*)?(Abstract|Introduction|ABSTRACT|\d+\.\s)/,
-				);
-				return headerEnd > 0
-					? doclingMd.slice(0, headerEnd)
-					: doclingMd.slice(0, MAX_HEADER_FALLBACK);
-			}
+			if (doclingMd) return cutAtAbstract(doclingMd);
 		}
-		// Fallback: header text from XML zone classifier
 		return classified
 			.filter((c) => c.zone !== "BODY")
 			.map((c) => c.para.text.trim())
@@ -70,8 +64,10 @@ export async function extractFromDocx(
 	}
 
 	if (config.heuristic && config.ai) {
+		await onStage?.("heuristic", 2);
 		const heuristic = extractFromZones(classified);
 		if (isLowConfidence(heuristic)) {
+			await onStage?.("ai", 2);
 			const llmInput = await getLlmInput();
 			const aiResult = await tryLlmExtraction(llmInput);
 			if (aiResult) return mergeResults(heuristic, aiResult);
@@ -80,16 +76,44 @@ export async function extractFromDocx(
 	}
 
 	if (config.heuristic) {
+		await onStage?.("heuristic", 1);
 		return extractFromZones(classified);
 	}
 
 	if (config.ai) {
+		await onStage?.("docling", 2);
 		const llmInput = await getLlmInput();
+		await onStage?.("ai", 2);
 		const aiResult = await tryLlmExtraction(llmInput);
 		return aiResult ?? {};
 	}
 
 	return {};
+}
+
+export async function extractFromPdf(
+	buffer: Buffer,
+	fileName: string,
+	config: ExtractionConfig,
+	onStage?: StageReporter,
+): Promise<ExtractionResult> {
+	if (!config.ai) return {};
+
+	const health = await checkDoclingHealth();
+	if (health.status !== "healthy") {
+		throw new Error(
+			`PDF extraction unavailable: docling service is ${health.message}`,
+		);
+	}
+
+	await onStage?.("docling", 2);
+	const doclingMd = await getDoclingMarkdown(buffer, fileName);
+	if (!doclingMd) return {};
+
+	await onStage?.("ai", 2);
+	const llmInput = cutAtAbstract(doclingMd);
+	const aiResult = await tryLlmExtraction(llmInput);
+	return aiResult ?? {};
 }
 
 async function tryLlmExtraction(

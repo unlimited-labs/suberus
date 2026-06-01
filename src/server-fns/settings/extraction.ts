@@ -34,22 +34,31 @@ export const extractionSettingsQueryOptions = () =>
 		queryFn: () => getExtractionSettingsFn(),
 	});
 
+const MAX_BASE64_BYTES = 20 * 1024 * 1024;
+
 export const enqueueExtractionFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.inputValidator(
 		z.object({
-			fileBase64: z.string(),
+			fileBase64: z.string().max(MAX_BASE64_BYTES),
 			fileName: z.string(),
 		}),
 	)
 	.handler(async ({ data }) => {
+		const buffer = Buffer.from(data.fileBase64, "base64");
+		const maxFileSizeMb = await getSetting("MAX_FILE_SIZE_MB");
+		const maxBytes = maxFileSizeMb * 1024 * 1024;
+		if (buffer.length > maxBytes) {
+			throw new Error(`File exceeds max size of ${maxFileSizeMb} MB`);
+		}
+
+		// Snapshot at enqueue: settings changes mid-extraction don't affect in-flight jobs.
 		const [heuristic, ai] = await Promise.all([
 			getSetting("EXTRACTION_HEURISTIC"),
 			getSetting("EXTRACTION_AI"),
 		]);
 
 		const jobId = await createJobProgress("extraction");
-		const buffer = Buffer.from(data.fileBase64, "base64");
 		const storageKey = generateExtractionFileKey(jobId, data.fileName);
 		await uploadFile(buffer, storageKey, "application/octet-stream");
 

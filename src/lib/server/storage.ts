@@ -7,6 +7,8 @@ import {
 	S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import filenamify from "filenamify";
+import latinize from "latinize";
 import { env } from "@/env";
 import { logger } from "@/logger.ts";
 
@@ -100,9 +102,7 @@ export async function getFileDownloadUrl(
 }
 
 /**
- * Get file content from S3 as a readable stream
- * @param key - Storage key
- * @returns File body stream with metadata
+ * Get file content from S3 as a Web ReadableStream (for HTTP responses).
  */
 export async function getFileContent(key: string): Promise<{
 	body: ReadableStream;
@@ -117,9 +117,10 @@ export async function getFileContent(key: string): Promise<{
 	});
 
 	const response = await client.send(command);
+	if (!response.Body) throw new Error(`S3 returned empty body for key: ${key}`);
 
 	return {
-		body: response.Body as ReadableStream,
+		body: response.Body.transformToWebStream(),
 		contentType: response.ContentType ?? "application/octet-stream",
 		contentLength: response.ContentLength ?? 0,
 	};
@@ -138,7 +139,8 @@ export async function getFileBuffer(key: string): Promise<Buffer> {
 	});
 
 	const response = await client.send(command);
-	const bytes = await response.Body!.transformToByteArray();
+	if (!response.Body) throw new Error(`S3 returned empty body for key: ${key}`);
+	const bytes = await response.Body.transformToByteArray();
 	return Buffer.from(bytes);
 }
 
@@ -179,46 +181,35 @@ export async function fileExists(key: string): Promise<boolean> {
 }
 
 /**
- * Generate a unique storage key for a submission file
- * @param submissionId - Submission ID
- * @param versionNumber - Version number
- * @param originalName - Original file name
- * @returns Storage key
+ * Sanitize a filename for use as an S3 storage key segment.
+ * Latinizes diacritics (ą→a, ö→o) then strips unsafe characters.
  */
+export function sanitizeFileName(originalName: string): string {
+	return filenamify(latinize(originalName), { replacement: "_" });
+}
+
 export function generateSubmissionFileKey(
 	submissionId: string,
 	versionNumber: number,
 	originalName: string,
 ): string {
 	const timestamp = Date.now();
-	const sanitizedName = originalName.replace(/[^a-zA-Z0-9.-]/g, "_");
-	return `submissions/${submissionId}/v${versionNumber}/${timestamp}-${sanitizedName}`;
+	return `submissions/${submissionId}/v${versionNumber}/${timestamp}-${sanitizeFileName(originalName)}`;
 }
 
-/**
- * Generate a storage key for a file staged for extraction processing
- * @param jobId - JobProgress row ID
- * @param originalName - Original file name
- * @returns Storage key
- */
 export function generateExtractionFileKey(
 	jobId: string,
 	originalName: string,
 ): string {
-	const sanitizedName = originalName.replace(/[^a-zA-Z0-9.-]/g, "_");
-	return `extraction-staging/${jobId}/${sanitizedName}`;
+	return `extraction-staging/${jobId}/${sanitizeFileName(originalName)}`;
 }
 
-/**
- * Generate a unique storage key for a review attachment file
- */
 export function generateReviewFileKey(
 	reviewId: string,
 	originalName: string,
 ): string {
 	const timestamp = Date.now();
-	const sanitizedName = originalName.replace(/[^a-zA-Z0-9.-]/g, "_");
-	return `reviews/${reviewId}/${timestamp}-${sanitizedName}`;
+	return `reviews/${reviewId}/${timestamp}-${sanitizeFileName(originalName)}`;
 }
 
 export interface S3HealthResult {
