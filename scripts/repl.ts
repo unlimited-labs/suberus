@@ -8,21 +8,21 @@ import { consola } from "consola";
 // ---------------------------------------------------------------------------
 
 const MODULE_REGISTRY: Record<string, string> = {
-	workflow: "@/utils/workflow.server",
-	submissions: "@/utils/submissions.server",
-	reviews: "@/utils/reviews.server",
-	assignments: "@/utils/assignments.server",
-	settings: "@/utils/settings.server",
-	"admin-subs": "@/utils/admin-submissions.server",
-	"admin-users": "@/utils/admin-users.server",
+	workflow: "@/lib/server/workflow",
+	submissions: "@/lib/server/submissions",
+	reviews: "@/lib/server/reviews",
+	assignments: "@/lib/server/assignments",
+	settings: "@/lib/server/settings",
+	"admin-subs": "@/lib/server/admin/submissions",
+	"admin-users": "@/lib/server/admin/users",
 	email: "@/lib/server/email",
-	reminders: "@/utils/reminders.server",
-	dashboard: "@/utils/admin-dashboard.server",
-	tracks: "@/utils/tracks.server",
-	fees: "@/utils/fee.server",
-	survey: "@/utils/survey.server",
-	invitations: "@/utils/invitations.server",
-	profiles: "@/utils/profiles.server",
+	reminders: "@/lib/server/reminders",
+	dashboard: "@/lib/server/admin/dashboard",
+	tracks: "@/lib/server/tracks",
+	fees: "@/lib/server/fee",
+	survey: "@/lib/server/survey",
+	invitations: "@/lib/server/admin/invitations",
+	profiles: "@/lib/server/profile",
 };
 
 const DEFAULT_TIMEOUT_MS = 30_000;
