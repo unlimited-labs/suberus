@@ -77,7 +77,7 @@ export async function getDoclingMarkdown(
 		const response = await fetch(env.DOCLING_URL, {
 			method: "POST",
 			body: form,
-			signal: AbortSignal.timeout(10_000),
+			signal: AbortSignal.timeout(120_000),
 		});
 
 		if (!response.ok) {

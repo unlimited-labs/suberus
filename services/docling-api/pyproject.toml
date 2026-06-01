@@ -1,0 +1,23 @@
+[project]
+name = "suberus-docling-api"
+version = "0.1.0"
+description = "DOCX/PDF -> markdown/JSON/DocTags conversion service"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "docling>=2.95",
+    "easyocr",
+    "fastapi",
+    "uvicorn[standard]",
+    "python-multipart",
+    "torch",
+    "torchvision",
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+torchvision = { index = "pytorch-cpu" }
