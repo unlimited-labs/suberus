@@ -94,7 +94,20 @@ test.describe.serial("Autoplan — queue happy path", () => {
 		// Restore default
 		await setAppSetting("PLANNER_AUTOPLAN_ENABLED", false).catch(() => {});
 
-		// Clean up sessions and room created with TEST_PREFIX
+		// applyAutoPlan rewrites session titles, so prefix-based cleanup misses
+		// them. Delete by roomId first; cleanupPlannerForRun then drops the room.
+		if (sharedRoomId) {
+			const sessions = await db.programSession.findMany({
+				where: { roomId: sharedRoomId },
+				select: { id: true },
+			});
+			for (const s of sessions) {
+				await db.presentationSlot.deleteMany({ where: { sessionId: s.id } }).catch(() => {});
+				await db.programSession.delete({ where: { id: s.id } }).catch(() => {});
+			}
+		}
+
+		// Clean up planner state created with TEST_PREFIX (room, breaks, tracks)
 		await cleanupPlannerForRun(TEST_PREFIX).catch(() => {});
 
 		// Clean up submissions
