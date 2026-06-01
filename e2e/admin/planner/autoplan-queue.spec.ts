@@ -8,8 +8,8 @@
  * These tests hit real LLM endpoints — use generous timeouts.
  */
 
-import { test, expect, loginAsAdmin } from "./fixtures";
-import { createSubmission, createProgramSession, createRoom, cleanupPlannerForRun, getPrisma } from "../../helpers/test-db";
+import { test, expect } from "./fixtures";
+import { createSubmission, createProgramSession, createRoom, cleanupPlannerForRun, getPrisma, setAppSetting } from "../../helpers/test-db";
 import { SubmissionStatus, SubmissionType } from "../../../src/generated/prisma/enums";
 
 const TEST_PREFIX = "autoplan_e2e";
@@ -20,6 +20,9 @@ let sharedSubmissionIds: string[] = [];
 
 test.describe.serial("Autoplan — queue happy path", () => {
 	test.beforeAll(async () => {
+		// Enable autoplanner (default is false)
+		await setAppSetting("PLANNER_AUTOPLAN_ENABLED", true);
+
 		// Create room
 		sharedRoomId = await createRoom(TEST_PREFIX, "MainRoom");
 
@@ -88,6 +91,9 @@ test.describe.serial("Autoplan — queue happy path", () => {
 	test.afterAll(async () => {
 		const db = getPrisma();
 
+		// Restore default
+		await setAppSetting("PLANNER_AUTOPLAN_ENABLED", false).catch(() => {});
+
 		// Clean up sessions and room created with TEST_PREFIX
 		await cleanupPlannerForRun(TEST_PREFIX).catch(() => {});
 
@@ -108,7 +114,6 @@ test.describe.serial("Autoplan — queue happy path", () => {
 	});
 
 	test("autoplan page loads and shows Generate proposal button", async ({ page }) => {
-		await loginAsAdmin(page);
 		await page.goto("/admin/program-planner/auto-plan");
 
 		await expect(
@@ -117,7 +122,6 @@ test.describe.serial("Autoplan — queue happy path", () => {
 	});
 
 	test("autoplan generates proposal with progress stages", async ({ page }) => {
-		await loginAsAdmin(page);
 		await page.goto("/admin/program-planner/auto-plan");
 
 		const generateBtn = page.getByRole("button", { name: /Generate proposal/i });
@@ -136,7 +140,6 @@ test.describe.serial("Autoplan — queue happy path", () => {
 	});
 
 	test("proposal can be applied to schedule", async ({ page }) => {
-		await loginAsAdmin(page);
 		await page.goto("/admin/program-planner/auto-plan");
 
 		const generateBtn = page.getByRole("button", { name: /Generate proposal/i });
