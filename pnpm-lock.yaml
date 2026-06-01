@@ -131,9 +131,15 @@ importers:
       fast-xml-parser:
         specifier: ^5.7.1
         version: 5.7.1
+      filenamify:
+        specifier: ^7.0.1
+        version: 7.0.1
       html-react-parser:
         specifier: ^6.0.1
         version: 6.0.1(@types/react@19.2.14)(react@19.2.5)
+      latinize:
+        specifier: ^2.0.0
+        version: 2.0.0
       lucide-react:
         specifier: ^1.8.0
         version: 1.8.0(react@19.2.5)
@@ -228,6 +234,9 @@ importers:
       '@types/adm-zip':
         specifier: ^0.5.8
         version: 0.5.8
+      '@types/latinize':
+        specifier: ^0.2.18
+        version: 0.2.18
       '@types/node':
         specifier: ^25.6.0
         version: 25.6.0
@@ -2994,6 +3003,9 @@ packages:
   '@types/geojson@7946.0.16':
     resolution: {integrity: sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==}
 
+  '@types/latinize@0.2.18':
+    resolution: {integrity: sha512-QjX4tcVEOcqDakv96sLMA2ESMcxSJel5KHxmcBgeTlZI7v6gFx9Tjqmt5+Pp8ijfGGr6CxuXzDNYk8A/iZ/GiA==}
+
   '@types/node@25.6.0':
     resolution: {integrity: sha512-+qIYRKdNYJwY3vRCZMdJbPLJAtGjQBudzZzdzwQYkEPQd+PJGixUL5QfvCLDaULoLv+RhT3LDkwEfKaAkgSmNQ==}
 
@@ -4099,6 +4111,14 @@ packages:
     resolution: {integrity: sha512-d+l3qxjSesT4V7v2fh+QnmFnUWv9lSpjarhShNTgBOfA0ttejbQUAlHLitbjkoRiDulW0OPoQPYIGhIC8ohejg==}
     engines: {node: '>=18'}
 
+  filename-reserved-regex@4.0.0:
+    resolution: {integrity: sha512-9ZT504KxEQDamsOogZImAWGEN24R1uFAxU3ZS4AZqn2ooidmN68Olh7n4/RcA4lLatZztjA0ZSuxeLHVoCc8JA==}
+    engines: {node: '>=20'}
+
+  filenamify@7.0.1:
+    resolution: {integrity: sha512-9b4rfnaX2MkJCgp27wypV6DAMvj4WMOSgJ+TdcpJIO84Dql+Cv6iJjdG4XDTLubOWkfNiBv3joO59sau/TXw+Q==}
+    engines: {node: '>=20'}
+
   fill-range@7.1.1:
     resolution: {integrity: sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==}
     engines: {node: '>=8'}
@@ -4588,6 +4608,9 @@ packages:
   kysely@0.28.16:
     resolution: {integrity: sha512-3i5pmOiZvMDj00qhrIVbH0AnioVTx22DMP7Vn5At4yJO46iy+FM8Y/g61ltenLVSo3fiO8h8Q3QOFgf/gQ72ww==}
     engines: {node: '>=20.0.0'}
+
+  latinize@2.0.0:
+    resolution: {integrity: sha512-bMWAnS0C6s9rNqahOEzBEIb9RWECgD1sfmDPws/YoFGAVbC3cjNGCS3Y1THhaQ5wtTJfrq1RO69IM2dGA0DuEg==}
 
   launch-editor@2.13.2:
     resolution: {integrity: sha512-4VVDnbOpLXy/s8rdRCSXb+zfMeFR0WlJWpET1iA9CQdlZDfwyLjUuGQzXU4VeOoey6AicSAluWan7Etga6Kcmg==}
@@ -9605,6 +9628,8 @@ snapshots:
 
   '@types/geojson@7946.0.16': {}
 
+  '@types/latinize@0.2.18': {}
+
   '@types/node@25.6.0':
     dependencies:
       undici-types: 7.19.2
@@ -10688,6 +10713,12 @@ snapshots:
     dependencies:
       is-unicode-supported: 2.1.0
 
+  filename-reserved-regex@4.0.0: {}
+
+  filenamify@7.0.1:
+    dependencies:
+      filename-reserved-regex: 4.0.0
+
   fill-range@7.1.1:
     dependencies:
       to-regex-range: 5.0.1
@@ -11133,6 +11164,8 @@ snapshots:
   kleur@4.1.5: {}
 
   kysely@0.28.16: {}
+
+  latinize@2.0.0: {}
 
   launch-editor@2.13.2:
     dependencies:
