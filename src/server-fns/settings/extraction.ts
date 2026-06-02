@@ -2,11 +2,10 @@ import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import type { ExtractionResult } from "@/lib/server/extraction";
-import { createJobProgress, getJobProgress } from "@/lib/server/job-progress";
+import { enqueueExtractionJob } from "@/lib/server/extraction-queue";
+import { getJobProgress } from "@/lib/server/job-progress";
 import { adminMiddleware, authMiddleware } from "@/lib/server/middleware/auth";
-import { ensureQueueAndSend } from "@/lib/server/queue";
 import { getSetting, setSetting } from "@/lib/server/settings";
-import { generateExtractionFileKey, uploadFile } from "@/lib/server/storage";
 import type { AppSettingsMap } from "@/lib/settings/types";
 
 // --- Public (auth-required) ---
@@ -46,31 +45,7 @@ export const enqueueExtractionFn = createServerFn({ method: "POST" })
 	)
 	.handler(async ({ data }) => {
 		const buffer = Buffer.from(data.fileBase64, "base64");
-		const maxFileSizeMb = await getSetting("MAX_FILE_SIZE_MB");
-		const maxBytes = maxFileSizeMb * 1024 * 1024;
-		if (buffer.length > maxBytes) {
-			throw new Error(`File exceeds max size of ${maxFileSizeMb} MB`);
-		}
-
-		// Snapshot at enqueue: settings changes mid-extraction don't affect in-flight jobs.
-		const [heuristic, ai] = await Promise.all([
-			getSetting("EXTRACTION_HEURISTIC"),
-			getSetting("EXTRACTION_AI"),
-		]);
-
-		const jobId = await createJobProgress("extraction");
-		const storageKey = generateExtractionFileKey(jobId, data.fileName);
-		await uploadFile(buffer, storageKey, "application/octet-stream");
-
-		await ensureQueueAndSend("extraction", {
-			jobId,
-			storageKey,
-			fileName: data.fileName,
-			heuristic,
-			ai,
-		});
-
-		return { jobId };
+		return enqueueExtractionJob(buffer, data.fileName);
 	});
 
 export const getExtractionResultFn = createServerFn({ method: "GET" })
