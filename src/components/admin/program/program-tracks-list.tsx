@@ -1,8 +1,4 @@
-import { IconEdit, IconLoader2, IconTrash } from "@tabler/icons-react";
-import { useState } from "react";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
 	Table,
 	TableBody,
@@ -13,6 +9,8 @@ import {
 } from "@/components/ui/table";
 import type { ProgramTrackWithStats } from "@/lib/server/planner/tracks";
 import { deleteProgramTrackFn } from "@/server-fns/planner/tracks";
+import { RowActions } from "./row-actions";
+import { useConfirmDelete } from "./use-confirm-delete";
 
 interface ProgramTracksListProps {
 	tracks: ProgramTrackWithStats[];
@@ -25,24 +23,13 @@ export function ProgramTracksList({
 	onEdit,
 	onUpdate,
 }: ProgramTracksListProps) {
-	const [pendingId, setPendingId] = useState<string | null>(null);
-	const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-
-	const handleDelete = async (id: string) => {
-		setPendingId(id);
-		setConfirmDeleteId(null);
-		try {
-			await deleteProgramTrackFn({ data: { id } });
-			toast.success("Program track deleted");
-			onUpdate();
-		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "Failed to delete track";
-			toast.error(message);
-		} finally {
-			setPendingId(null);
-		}
-	};
+	const { pendingId, confirmId, askDelete, cancelDelete, remove } =
+		useConfirmDelete({
+			onDelete: (id) => deleteProgramTrackFn({ data: { id } }),
+			successMessage: "Program track deleted",
+			fallbackErrorMessage: "Failed to delete track",
+			onMutated: onUpdate,
+		});
 
 	if (tracks.length === 0) {
 		return (
@@ -103,53 +90,16 @@ export function ProgramTracksList({
 									<Badge variant="secondary">{track.sessionCount}</Badge>
 								</TableCell>
 								<TableCell className="text-right">
-									<div className="flex justify-end gap-2">
-										{confirmDeleteId === track.id ? (
-											<>
-												<Button
-													variant="destructive"
-													size="sm"
-													onClick={() => handleDelete(track.id)}
-													disabled={isBusy}
-													data-testid="program-track-confirm-delete"
-												>
-													{isBusy && (
-														<IconLoader2 className="mr-1 size-4 animate-spin" />
-													)}
-													Confirm
-												</Button>
-												<Button
-													variant="outline"
-													size="sm"
-													onClick={() => setConfirmDeleteId(null)}
-												>
-													Cancel
-												</Button>
-											</>
-										) : (
-											<>
-												<Button
-													variant="ghost"
-													size="icon"
-													onClick={() => onEdit(track)}
-													aria-label="Edit"
-													data-testid="program-track-edit"
-												>
-													<IconEdit className="size-4" />
-												</Button>
-												<Button
-													variant="ghost"
-													size="icon"
-													onClick={() => setConfirmDeleteId(track.id)}
-													disabled={isBusy || track.sessionCount > 0}
-													aria-label="Delete"
-													data-testid="program-track-delete"
-												>
-													<IconTrash className="size-4" />
-												</Button>
-											</>
-										)}
-									</div>
+									<RowActions
+										isBusy={isBusy}
+										isConfirming={confirmId === track.id}
+										deleteDisabled={track.sessionCount > 0}
+										onEdit={() => onEdit(track)}
+										onAskDelete={() => askDelete(track.id)}
+										onConfirmDelete={() => remove(track.id)}
+										onCancelDelete={cancelDelete}
+										testIdPrefix="program-track"
+									/>
 								</TableCell>
 							</TableRow>
 						);

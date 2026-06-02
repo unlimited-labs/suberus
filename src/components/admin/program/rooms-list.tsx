@@ -1,12 +1,8 @@
 import {
 	IconArrowDown,
 	IconArrowUp,
-	IconEdit,
 	IconExternalLink,
-	IconLoader2,
-	IconTrash,
 } from "@tabler/icons-react";
-import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,6 +16,8 @@ import {
 } from "@/components/ui/table";
 import type { RoomWithStats } from "@/lib/server/planner/rooms";
 import { deleteRoomFn, updateRoomFn } from "@/server-fns/planner/rooms";
+import { RowActions } from "./row-actions";
+import { useConfirmDelete } from "./use-confirm-delete";
 
 interface RoomsListProps {
 	rooms: RoomWithStats[];
@@ -28,8 +26,19 @@ interface RoomsListProps {
 }
 
 export function RoomsList({ rooms, onEdit, onUpdate }: RoomsListProps) {
-	const [pendingId, setPendingId] = useState<string | null>(null);
-	const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+	const {
+		pendingId,
+		setPendingId,
+		confirmId,
+		askDelete,
+		cancelDelete,
+		remove,
+	} = useConfirmDelete({
+		onDelete: (id) => deleteRoomFn({ data: { id } }),
+		successMessage: "Room deleted",
+		fallbackErrorMessage: "Failed to delete room",
+		onMutated: onUpdate,
+	});
 
 	const swapOrder = async (a: RoomWithStats, b: RoomWithStats) => {
 		setPendingId(a.id);
@@ -41,22 +50,6 @@ export function RoomsList({ rooms, onEdit, onUpdate }: RoomsListProps) {
 			onUpdate();
 		} catch {
 			toast.error("Failed to reorder");
-		} finally {
-			setPendingId(null);
-		}
-	};
-
-	const handleDelete = async (id: string) => {
-		setPendingId(id);
-		setConfirmDeleteId(null);
-		try {
-			await deleteRoomFn({ data: { id } });
-			toast.success("Room deleted");
-			onUpdate();
-		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "Failed to delete room";
-			toast.error(message);
 		} finally {
 			setPendingId(null);
 		}
@@ -142,53 +135,16 @@ export function RoomsList({ rooms, onEdit, onUpdate }: RoomsListProps) {
 									<Badge variant="secondary">{room.sessionCount}</Badge>
 								</TableCell>
 								<TableCell className="text-right">
-									<div className="flex justify-end gap-2">
-										{confirmDeleteId === room.id ? (
-											<>
-												<Button
-													variant="destructive"
-													size="sm"
-													onClick={() => handleDelete(room.id)}
-													disabled={isBusy}
-													data-testid="room-confirm-delete"
-												>
-													{isBusy && (
-														<IconLoader2 className="mr-1 size-4 animate-spin" />
-													)}
-													Confirm
-												</Button>
-												<Button
-													variant="outline"
-													size="sm"
-													onClick={() => setConfirmDeleteId(null)}
-												>
-													Cancel
-												</Button>
-											</>
-										) : (
-											<>
-												<Button
-													variant="ghost"
-													size="icon"
-													onClick={() => onEdit(room)}
-													aria-label="Edit"
-													data-testid="room-edit"
-												>
-													<IconEdit className="size-4" />
-												</Button>
-												<Button
-													variant="ghost"
-													size="icon"
-													onClick={() => setConfirmDeleteId(room.id)}
-													disabled={isBusy || room.sessionCount > 0}
-													aria-label="Delete"
-													data-testid="room-delete"
-												>
-													<IconTrash className="size-4" />
-												</Button>
-											</>
-										)}
-									</div>
+									<RowActions
+										isBusy={isBusy}
+										isConfirming={confirmId === room.id}
+										deleteDisabled={room.sessionCount > 0}
+										onEdit={() => onEdit(room)}
+										onAskDelete={() => askDelete(room.id)}
+										onConfirmDelete={() => remove(room.id)}
+										onCancelDelete={cancelDelete}
+										testIdPrefix="room"
+									/>
 								</TableCell>
 							</TableRow>
 						);
