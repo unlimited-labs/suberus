@@ -1,6 +1,5 @@
 import { useStore } from "@tanstack/react-form";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -12,12 +11,10 @@ import {
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAppForm } from "@/hooks/use-app-form";
 import { submitForm } from "@/lib/form-utils";
 import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
-import { createSessionWithPresentationsFn } from "@/server-fns/planner/sessions";
 import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
-import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
+import { useCreateSessionForm } from "./hooks/use-create-session-form";
 import { RoomSelect } from "./shared/room-select";
 import { TimeRangeSummary } from "./shared/time-range-summary";
 import { TrackSelect } from "./shared/track-select";
@@ -32,13 +29,6 @@ interface CreateSessionDialogProps {
 	onCreated: (sessionId: string) => void;
 }
 
-interface SessionFormValues {
-	title: string;
-	roomId: string | null;
-	trackId: string | null;
-	slotMin: number;
-}
-
 export function CreateSessionDialog({
 	open,
 	submissionIds,
@@ -49,46 +39,13 @@ export function CreateSessionDialog({
 }: CreateSessionDialogProps) {
 	const { data: rooms } = useSuspenseQuery(allRoomsQueryOptions());
 	const { data: tracks } = useSuspenseQuery(allProgramTracksQueryOptions());
-	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
 
-	const defaultValues: SessionFormValues = {
-		title: "",
-		roomId: rooms[0]?.id ?? null,
-		trackId: null,
-		slotMin: settings.defaultPresentationMin,
-	};
-
-	const form = useAppForm({
-		defaultValues,
-		onSubmit: async ({ value }) => {
-			const durationMin = submissionIds.length * value.slotMin;
-			const endAt = new Date(defaultStartAt.getTime() + durationMin * 60_000);
-			try {
-				const { id } = await createSessionWithPresentationsFn({
-					data: {
-						title: value.title.trim(),
-						roomId: value.roomId,
-						trackId: value.trackId,
-						startAt: defaultStartAt.toISOString(),
-						endAt: endAt.toISOString(),
-						slotDurationMin: value.slotMin,
-						submissionIds,
-					},
-				});
-				onCreated(id);
-				handleClose();
-			} catch (e) {
-				toast.error(
-					e instanceof Error ? e.message : "Failed to create session",
-				);
-			}
-		},
+	const { form, handleClose } = useCreateSessionForm({
+		submissionIds,
+		defaultStartAt,
+		onClose,
+		onCreated,
 	});
-
-	const handleClose = () => {
-		form.reset();
-		onClose();
-	};
 
 	const slotMin = useStore(form.store, (s) => s.values.slotMin);
 	const durationMin = submissionIds.length * slotMin;
