@@ -1,7 +1,7 @@
 import type { EventFormProps } from "@ilamy/calendar";
 import { IconClock, IconLayoutGrid } from "@tabler/icons-react";
+import { useStore } from "@tanstack/react-form";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,8 +11,11 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAppForm } from "@/hooks/use-app-form";
+import { submitForm } from "@/lib/form-utils";
 import { tzLocalInputToUtc, utcToTzLocalInput } from "@/lib/tz-datetime";
 import { createBreakFn } from "@/server-fns/planner/breaks";
 import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
@@ -33,6 +36,17 @@ interface CreateEventDialogProps extends EventFormProps {
 }
 
 type EventType = "session" | "break";
+
+interface EventFormValues {
+	type: EventType;
+	title: string;
+	startInput: string;
+	roomId: string | null;
+	trackId: string | null;
+	presentationCount: number;
+	minutesPerPresentation: number;
+	breakDurationMin: number;
+}
 
 function toDate(raw: unknown): Date | null {
 	if (raw == null) return null;
@@ -79,28 +93,82 @@ export function CreateEventDialog({
 			? Math.round((clickedEnd.getTime() - initialStart.getTime()) / 60_000)
 			: null;
 
-	const [type, setType] = useState<EventType>("session");
-	const [title, setTitle] = useState("");
-	const [startInput, setStartInput] = useState<string>(
-		utcToTzLocalInput(initialStart, timezone),
+	const defaultValues: EventFormValues = {
+		type: "session",
+		title: "",
+		startInput: utcToTzLocalInput(initialStart, timezone),
+		roomId: resourceId ?? rooms[0]?.id ?? null,
+		trackId: null,
+		presentationCount: 4,
+		minutesPerPresentation: settings.defaultPresentationMin,
+		breakDurationMin:
+			clickedDurationMin != null
+				? Math.min(180, Math.max(5, clickedDurationMin))
+				: 30,
+	};
+
+	const form = useAppForm({
+		defaultValues,
+		onSubmit: async ({ value }) => {
+			const startDate = tzLocalInputToUtc(value.startInput, timezone);
+			const trimmed = value.title.trim();
+			try {
+				if (value.type === "session") {
+					const endDate = new Date(
+						startDate.getTime() +
+							value.presentationCount * value.minutesPerPresentation * 60_000,
+					);
+					await createSessionFn({
+						data: {
+							title: trimmed || undefined,
+							roomId: value.roomId,
+							trackId: value.trackId,
+							startAt: startDate.toISOString(),
+							endAt: endDate.toISOString(),
+						},
+					});
+				} else {
+					const endDate = new Date(
+						startDate.getTime() + value.breakDurationMin * 60_000,
+					);
+					await createBreakFn({
+						data: {
+							title: trimmed,
+							roomId: value.roomId,
+							startAt: startDate.toISOString(),
+							endAt: endDate.toISOString(),
+						},
+					});
+				}
+				onCreated();
+				handleClose();
+			} catch (e) {
+				toast.error(e instanceof Error ? e.message : "Failed to create");
+			}
+		},
+	});
+
+	const handleClose = () => {
+		form.reset();
+		onClose();
+	};
+
+	const type = useStore(form.store, (s) => s.values.type);
+	const startInput = useStore(form.store, (s) => s.values.startInput);
+	const presentationCount = useStore(
+		form.store,
+		(s) => s.values.presentationCount,
 	);
-	const [roomId, setRoomId] = useState<string | null>(
-		resourceId ?? rooms[0]?.id ?? null,
+	const minutesPerPresentation = useStore(
+		form.store,
+		(s) => s.values.minutesPerPresentation,
 	);
-	const [trackId, setTrackId] = useState<string | null>(null);
-	const [presentationCount, setPresentationCount] = useState(4);
-	const [minutesPerPresentation, setMinutesPerPresentation] = useState(
-		settings.defaultPresentationMin,
+	const breakDurationMin = useStore(
+		form.store,
+		(s) => s.values.breakDurationMin,
 	);
-	const [breakDurationMin, setBreakDurationMin] = useState(
-		clickedDurationMin != null
-			? Math.min(180, Math.max(5, clickedDurationMin))
-			: 30,
-	);
-	const [saving, setSaving] = useState(false);
 
 	const startDate = tzLocalInputToUtc(startInput, timezone);
-
 	const sessionDurationMin = presentationCount * minutesPerPresentation;
 	const sessionEndDate = new Date(
 		startDate.getTime() + sessionDurationMin * 60_000,
@@ -108,64 +176,11 @@ export function CreateEventDialog({
 	const breakEndDate = new Date(
 		startDate.getTime() + breakDurationMin * 60_000,
 	);
-
-	const handleOpenChange = (isOpen: boolean) => {
-		if (!isOpen) handleClose();
-	};
-
-	const handleClose = () => {
-		setTitle("");
-		setType("session");
-		setStartInput(utcToTzLocalInput(initialStart, timezone));
-		setPresentationCount(4);
-		setMinutesPerPresentation(settings.defaultPresentationMin);
-		setBreakDurationMin(30);
-		setTrackId(null);
-		onClose();
-	};
-
-	const handleSubmit = async () => {
-		const trimmed = title.trim();
-		if (type === "break" && !trimmed) {
-			toast.error("Title is required");
-			return;
-		}
-		setSaving(true);
-		try {
-			if (type === "session") {
-				await createSessionFn({
-					data: {
-						title: trimmed || undefined,
-						roomId,
-						trackId,
-						startAt: startDate.toISOString(),
-						endAt: sessionEndDate.toISOString(),
-					},
-				});
-			} else {
-				await createBreakFn({
-					data: {
-						title: trimmed,
-						roomId,
-						startAt: startDate.toISOString(),
-						endAt: breakEndDate.toISOString(),
-					},
-				});
-			}
-			onCreated();
-			handleClose();
-		} catch (e) {
-			toast.error(e instanceof Error ? e.message : "Failed to create");
-		} finally {
-			setSaving(false);
-		}
-	};
-
 	const endDate = type === "session" ? sessionEndDate : breakEndDate;
 	const totalMin = type === "session" ? sessionDurationMin : breakDurationMin;
 
 	return (
-		<Dialog open={open} onOpenChange={handleOpenChange}>
+		<Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
 			<DialogContent data-testid="create-event-dialog" className="sm:max-w-sm">
 				<DialogHeader>
 					<DialogTitle>
@@ -173,77 +188,104 @@ export function CreateEventDialog({
 					</DialogTitle>
 				</DialogHeader>
 
-				<div className="space-y-4">
+				<form
+					onSubmit={(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+						void submitForm(form);
+					}}
+					className="space-y-4"
+				>
 					{/* Type toggle */}
-					<div className="grid grid-cols-2 gap-2">
-						{(["session", "break"] as const).map((t) => (
-							<button
-								key={t}
-								type="button"
-								onClick={() => setType(t)}
-								data-testid={`create-event-type-${t}`}
-								className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
-									type === t
-										? "border-primary bg-primary text-primary-foreground"
-										: "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
-								}`}
-							>
-								{t === "session" ? (
-									<IconLayoutGrid size={14} />
-								) : (
-									<IconClock size={14} />
-								)}
-								{t === "session" ? "Session" : "Break"}
-							</button>
-						))}
-					</div>
+					<form.Field name="type">
+						{(field) => (
+							<div className="grid grid-cols-2 gap-2">
+								{(["session", "break"] as const).map((t) => (
+									<button
+										key={t}
+										type="button"
+										onClick={() => field.handleChange(t)}
+										data-testid={`create-event-type-${t}`}
+										className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
+											field.state.value === t
+												? "border-primary bg-primary text-primary-foreground"
+												: "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
+										}`}
+									>
+										{t === "session" ? (
+											<IconLayoutGrid size={14} />
+										) : (
+											<IconClock size={14} />
+										)}
+										{t === "session" ? "Session" : "Break"}
+									</button>
+								))}
+							</div>
+						)}
+					</form.Field>
 
 					{/* Start time */}
-					<div className="space-y-2">
-						<Label htmlFor="event-start">Start</Label>
-						<Input
-							id="event-start"
-							type="datetime-local"
-							value={startInput}
-							onChange={(e) => setStartInput(e.target.value)}
-							data-testid="create-event-start"
-						/>
-					</div>
+					<form.Field name="startInput">
+						{(field) => (
+							<div className="space-y-2">
+								<Label htmlFor="event-start">Start</Label>
+								<Input
+									id="event-start"
+									type="datetime-local"
+									value={field.state.value}
+									onChange={(e) => field.handleChange(e.target.value)}
+									data-testid="create-event-start"
+								/>
+							</div>
+						)}
+					</form.Field>
 
 					{/* Duration controls */}
 					{type === "session" ? (
 						<div className="grid grid-cols-2 gap-4">
-							<div className="space-y-2">
-								<Label>Presentations</Label>
-								<Stepper
-									value={presentationCount}
-									min={1}
-									max={20}
-									onChange={setPresentationCount}
-								/>
-							</div>
-							<div className="space-y-2">
-								<Label>Min / talk</Label>
-								<Stepper
-									value={minutesPerPresentation}
-									min={5}
-									max={120}
-									step={5}
-									onChange={setMinutesPerPresentation}
-								/>
-							</div>
+							<form.Field name="presentationCount">
+								{(field) => (
+									<div className="space-y-2">
+										<Label>Presentations</Label>
+										<Stepper
+											value={field.state.value}
+											min={1}
+											max={20}
+											onChange={field.handleChange}
+										/>
+									</div>
+								)}
+							</form.Field>
+							<form.Field name="minutesPerPresentation">
+								{(field) => (
+									<div className="space-y-2">
+										<Label>Min / talk</Label>
+										<Stepper
+											value={field.state.value}
+											min={5}
+											max={120}
+											step={5}
+											onChange={field.handleChange}
+										/>
+									</div>
+								)}
+							</form.Field>
 						</div>
 					) : (
-						<div className="space-y-2">
-							<Label>Duration</Label>
-							<Stepper
-								value={breakDurationMin}
-								min={5}
-								max={180}
-								step={5}
-								onChange={setBreakDurationMin}
-							/>
-						</div>
+						<form.Field name="breakDurationMin">
+							{(field) => (
+								<div className="space-y-2">
+									<Label>Duration</Label>
+									<Stepper
+										value={field.state.value}
+										min={5}
+										max={180}
+										step={5}
+										onChange={field.handleChange}
+									/>
+								</div>
+							)}
+						</form.Field>
 					)}
 
 					<TimeRangeSummary
@@ -262,58 +304,83 @@ export function CreateEventDialog({
 					/>
 
 					{/* Title */}
-					<div className="space-y-2">
-						<Label htmlFor="event-title">
-							{type === "session" ? "Title (optional)" : "Title"}
-						</Label>
-						<Input
-							id="event-title"
-							value={title}
-							onChange={(e) => setTitle(e.target.value)}
-							onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-							placeholder={
-								type === "session"
-									? `Session ${sessions.length + 1}`
-									: "Break title"
-							}
-							data-testid="create-event-title"
-							autoFocus
-						/>
-					</div>
+					<form.Field
+						name="title"
+						validators={{
+							onSubmit: ({ value }) =>
+								type === "break" && !value.trim()
+									? "Title is required"
+									: undefined,
+						}}
+					>
+						{(field) => {
+							const errors = field.state.meta.errors;
+							const hasError = errors.length > 0;
+							return (
+								<Field data-invalid={hasError} className="space-y-2">
+									<Label htmlFor="event-title">
+										{type === "session" ? "Title (optional)" : "Title"}
+									</Label>
+									<Input
+										id="event-title"
+										value={field.state.value}
+										onChange={(e) => field.handleChange(e.target.value)}
+										aria-invalid={hasError}
+										placeholder={
+											type === "session"
+												? `Session ${sessions.length + 1}`
+												: "Break title"
+										}
+										data-testid="create-event-title"
+										autoFocus
+									/>
+									<FieldError errors={hasError ? errors : undefined} />
+								</Field>
+							);
+						}}
+					</form.Field>
 
-					<div className="space-y-2">
-						<Label>Room</Label>
-						<RoomSelect
-							value={roomId}
-							onValueChange={setRoomId}
-							rooms={rooms}
-						/>
-					</div>
+					<form.Field name="roomId">
+						{(field) => (
+							<div className="space-y-2">
+								<Label>Room</Label>
+								<RoomSelect
+									value={field.state.value}
+									onValueChange={field.handleChange}
+									rooms={rooms}
+								/>
+							</div>
+						)}
+					</form.Field>
 
 					{type === "session" && (
-						<div className="space-y-2">
-							<Label>Track</Label>
-							<TrackSelect
-								value={trackId}
-								onValueChange={setTrackId}
-								tracks={tracks}
-							/>
-						</div>
+						<form.Field name="trackId">
+							{(field) => (
+								<div className="space-y-2">
+									<Label>Track</Label>
+									<TrackSelect
+										value={field.state.value}
+										onValueChange={field.handleChange}
+										tracks={tracks}
+									/>
+								</div>
+							)}
+						</form.Field>
 					)}
-				</div>
 
-				<DialogFooter>
-					<Button variant="outline" onClick={handleClose}>
-						Cancel
-					</Button>
-					<Button
-						disabled={saving}
-						onClick={handleSubmit}
-						data-testid="create-event-submit"
-					>
-						Create
-					</Button>
-				</DialogFooter>
+					<DialogFooter>
+						<Button type="button" variant="outline" onClick={handleClose}>
+							Cancel
+						</Button>
+						<Button
+							type="submit"
+							disabled={form.state.isSubmitting}
+							data-testid="create-event-submit"
+						>
+							Create
+						</Button>
+					</DialogFooter>
+				</form>
 			</DialogContent>
 		</Dialog>
 	);
