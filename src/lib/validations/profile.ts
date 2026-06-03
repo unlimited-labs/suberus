@@ -26,29 +26,26 @@ export const personalInfoSchema = z.object({
 		.or(z.literal("")),
 });
 
+// needInvoice/address/country are always present in the form (defaulted), so
+// they are required here — this lets BillingFieldsGroup map onto them.
 export const contactInfoSchema = z.object({
 	email: z.email("Invalid email address"),
-	needInvoice: z.boolean().optional(),
+	needInvoice: z.boolean(),
 	address: z
 		.string()
-		.max(500, "Billing details must be at most 500 characters")
-		.optional(),
-	country: z.string().optional(),
+		.max(500, "Billing details must be at most 500 characters"),
+	country: z.string(),
 });
 
-export const passwordChangeSchema = z
-	.object({
-		currentPassword: z.string().min(1, "Current password is required"),
-		newPassword: z
-			.string()
-			.min(1, "New password is required")
-			.min(10, "Password must be at least 10 characters"),
-		confirmNewPassword: z.string().min(1, "Please confirm your new password"),
-	})
-	.refine((data) => data.newPassword === data.confirmNewPassword, {
-		message: "Passwords do not match",
-		path: ["confirmNewPassword"],
-	});
+// Password match is enforced by PasswordFieldsGroup (field-level validator).
+export const passwordChangeSchema = z.object({
+	currentPassword: z.string().min(1, "Current password is required"),
+	newPassword: z
+		.string()
+		.min(1, "New password is required")
+		.min(10, "Password must be at least 10 characters"),
+	confirmNewPassword: z.string().min(1, "Please confirm your new password"),
+});
 
 // Admin user edit combines personal + contact fields in a single form
 export const adminUserEditSchema = personalInfoSchema.extend(

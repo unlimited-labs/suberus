@@ -7,6 +7,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { PasswordFieldsGroup } from "@/components/forms/composable/password-fields-group";
 import { AuthCard } from "@/components/layout/auth-card";
 import { useAppForm } from "@/hooks/use-app-form";
 import { resetPassword } from "@/lib/auth-client";
@@ -128,18 +129,13 @@ function ResetPasswordPage() {
 				className="flex flex-1 flex-col"
 			>
 				<div className="flex-1 space-y-3">
-					<form.AppField name="newPassword">
-						{(field) => (
-							<field.PasswordField
-								label="New Password"
-								description="Min. 10 characters"
-							/>
-						)}
-					</form.AppField>
-
-					<form.AppField name="confirmPassword">
-						{(field) => <field.PasswordField label="Confirm Password" />}
-					</form.AppField>
+					<PasswordFieldsGroup
+						form={form}
+						fields={{ password: "newPassword", confirm: "confirmPassword" }}
+						passwordLabel="New Password"
+						passwordDescription="Min. 10 characters"
+						confirmLabel="Confirm Password"
+					/>
 				</div>
 
 				<div className="mt-4">

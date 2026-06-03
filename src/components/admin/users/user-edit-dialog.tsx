@@ -1,8 +1,8 @@
 import { IconBuilding, IconMail } from "@tabler/icons-react";
-import { useStore } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { BillingFieldsGroup } from "@/components/forms/composable/billing-fields-group";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -99,8 +99,6 @@ export function UserEditDialog({
 		},
 	});
 
-	const needInvoice = useStore(form.store, (s) => s.values.needInvoice);
-
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="sm:max-w-lg">
@@ -163,27 +161,15 @@ export function UserEditDialog({
 						)}
 					</form.AppField>
 
-					<form.AppField name="needInvoice">
-						{(field) => (
-							<field.CheckboxField label="Needs invoice for organization" />
-						)}
-					</form.AppField>
-
-					{needInvoice && (
-						<form.AppField name="address">
-							{(field) => (
-								<field.TextareaField
-									label="Billing details (organization)"
-									rows={3}
-									placeholder="Company/organization name, billing address, VAT/Tax ID (if applicable)"
-								/>
-							)}
-						</form.AppField>
-					)}
-
-					<form.AppField name="country">
-						{(field) => <field.CountryComboboxField label="Country" />}
-					</form.AppField>
+					<BillingFieldsGroup
+						form={form}
+						fields={{
+							needInvoice: "needInvoice",
+							address: "address",
+							country: "country",
+						}}
+						needInvoiceLabel="Needs invoice for organization"
+					/>
 
 					<DialogFooter>
 						<Button

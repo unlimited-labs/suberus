@@ -1,3 +1,4 @@
+import { PasswordFieldsGroup } from "@/components/forms/composable/password-fields-group";
 import { useAppForm } from "@/hooks/use-app-form";
 import type { PasswordChangeFormData } from "@/lib/validations/profile";
 import { passwordChangeSchema } from "@/lib/validations/profile";
@@ -47,26 +48,15 @@ export function PasswordChangeSection({
 			</form.AppField>
 
 			{/* New Password fields */}
-			<div className="grid gap-3 sm:grid-cols-2">
-				<form.AppField name="newPassword">
-					{(field) => (
-						<field.PasswordField
-							label="New password *"
-							placeholder="Min. 10 characters"
-							disabled={isLoading}
-						/>
-					)}
-				</form.AppField>
-
-				<form.AppField name="confirmNewPassword">
-					{(field) => (
-						<field.PasswordField
-							label="Confirm new password *"
-							disabled={isLoading}
-						/>
-					)}
-				</form.AppField>
-			</div>
+			<PasswordFieldsGroup
+				form={form}
+				fields={{ password: "newPassword", confirm: "confirmNewPassword" }}
+				passwordLabel="New password *"
+				passwordPlaceholder="Min. 10 characters"
+				confirmLabel="Confirm new password *"
+				disabled={isLoading}
+				twoColumn
+			/>
 
 			{/* Save button */}
 			<div className="flex justify-end pt-2">

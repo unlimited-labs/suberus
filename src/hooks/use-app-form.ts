@@ -10,7 +10,7 @@ import { FormSubmitButton } from "@/components/forms/composable/submit-button";
 import { FormTextareaField } from "@/components/forms/composable/textarea-field";
 import { fieldContext, formContext } from "./form-context";
 
-export const { useAppForm } = createFormHook({
+export const { useAppForm, withForm, withFieldGroup } = createFormHook({
 	fieldComponents: {
 		InputField: FormInputField,
 		IconInputField: FormIconInputField,

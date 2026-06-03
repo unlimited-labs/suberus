@@ -8,6 +8,7 @@ import {
 import { useStore } from "@tanstack/react-form";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { BillingFieldsGroup } from "@/components/forms/composable/billing-fields-group";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAppForm } from "@/hooks/use-app-form";
 import { sendVerificationEmail } from "@/lib/auth-client";
@@ -78,7 +79,6 @@ export function ContactInfoSection({
 
 	const email = useStore(form.store, (s) => s.values.email);
 	const emailChanged = email !== currentEmail;
-	const needInvoice = useStore(form.store, (s) => s.values.needInvoice);
 
 	return (
 		<form
@@ -159,33 +159,16 @@ export function ContactInfoSection({
 				</Alert>
 			)}
 
-			{/* Need Invoice */}
-			<form.AppField name="needInvoice">
-				{(field) => (
-					<field.CheckboxField label="I need an invoice for my organization" />
-				)}
-			</form.AppField>
-
-			{/* Billing details (visible when invoice needed) */}
-			{needInvoice && (
-				<form.AppField name="address">
-					{(field) => (
-						<field.TextareaField
-							label="Billing details (organization)"
-							rows={3}
-							placeholder="Company/organization name, billing address, VAT/Tax ID (if applicable)"
-							disabled={isLoading}
-						/>
-					)}
-				</form.AppField>
-			)}
-
-			{/* Country */}
-			<form.AppField name="country">
-				{(field) => (
-					<field.CountryComboboxField label="Country" disabled={isLoading} />
-				)}
-			</form.AppField>
+			{/* Invoice / billing details */}
+			<BillingFieldsGroup
+				form={form}
+				fields={{
+					needInvoice: "needInvoice",
+					address: "address",
+					country: "country",
+				}}
+				disabled={isLoading}
+			/>
 
 			{/* Save button */}
 			<div className="flex justify-end pt-2">
