@@ -716,53 +716,57 @@ export function SubmissionForm({
 								<p className="text-xs text-muted-foreground hidden sm:block">
 									By submitting, you agree to the conference guidelines
 								</p>
-								<div className="flex gap-2 ml-auto">
-									{onSaveDraft && (
-										<Button
-											type="button"
-											variant="outline"
-											disabled={isSavingDraft || form.state.isSubmitting}
-											className="gap-2"
-											onClick={async () => {
-												setIsSavingDraft(true);
-												try {
-													await onSaveDraft(form.state.values);
-												} finally {
-													setIsSavingDraft(false);
-												}
-											}}
-										>
-											{isSavingDraft ? (
-												<>
-													<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-													Saving...
-												</>
-											) : (
-												<>
-													<IconDeviceFloppy className="size-4" />
-													Save Draft
-												</>
+								<form.Subscribe selector={(s) => s.isSubmitting}>
+									{(isSubmitting) => (
+										<div className="flex gap-2 ml-auto">
+											{onSaveDraft && (
+												<Button
+													type="button"
+													variant="outline"
+													disabled={isSavingDraft || isSubmitting}
+													className="gap-2"
+													onClick={async () => {
+														setIsSavingDraft(true);
+														try {
+															await onSaveDraft(form.state.values);
+														} finally {
+															setIsSavingDraft(false);
+														}
+													}}
+												>
+													{isSavingDraft ? (
+														<>
+															<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+															Saving...
+														</>
+													) : (
+														<>
+															<IconDeviceFloppy className="size-4" />
+															Save Draft
+														</>
+													)}
+												</Button>
 											)}
-										</Button>
+											<Button
+												type="submit"
+												disabled={isSubmitting || isSavingDraft}
+												className="gap-2 px-6"
+											>
+												{isSubmitting ? (
+													<>
+														<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+														Submitting...
+													</>
+												) : (
+													<>
+														<IconSend className="size-4" />
+														Submit
+													</>
+												)}
+											</Button>
+										</div>
 									)}
-									<Button
-										type="submit"
-										disabled={form.state.isSubmitting || isSavingDraft}
-										className="gap-2 px-6"
-									>
-										{form.state.isSubmitting ? (
-											<>
-												<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-												Submitting...
-											</>
-										) : (
-											<>
-												<IconSend className="size-4" />
-												Submit
-											</>
-										)}
-									</Button>
-								</div>
+								</form.Subscribe>
 							</div>
 						</form>
 					</div>
