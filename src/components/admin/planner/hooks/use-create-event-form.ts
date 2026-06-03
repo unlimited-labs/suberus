@@ -3,24 +3,15 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAppForm } from "@/hooks/use-app-form";
 import { tzLocalInputToUtc, utcToTzLocalInput } from "@/lib/tz-datetime";
+import {
+	type EventFormValues,
+	eventFormSchema,
+} from "@/lib/validations/planner";
 import { createBreakFn } from "@/server-fns/planner/breaks";
 import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
 import { createSessionFn } from "@/server-fns/planner/sessions";
 import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
 import { usePlannerTools } from "../planner-tools-context";
-
-type EventType = "session" | "break";
-
-interface EventFormValues {
-	type: EventType;
-	title: string;
-	startInput: string;
-	roomId: string | null;
-	trackId: string | null;
-	presentationCount: number;
-	minutesPerPresentation: number;
-	breakDurationMin: number;
-}
 
 function toDate(raw: unknown): Date | null {
 	if (raw == null) return null;
@@ -86,6 +77,10 @@ export function useCreateEventForm({
 
 	const form = useAppForm({
 		defaultValues,
+		validators: {
+			onChange: eventFormSchema,
+			onSubmit: eventFormSchema,
+		},
 		onSubmit: async ({ value }) => {
 			const startDate = tzLocalInputToUtc(value.startInput, timezone);
 			const trimmed = value.title.trim();

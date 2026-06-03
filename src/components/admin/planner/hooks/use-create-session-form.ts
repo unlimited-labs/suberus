@@ -1,16 +1,13 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAppForm } from "@/hooks/use-app-form";
+import {
+	type SessionFormValues,
+	sessionFormSchema,
+} from "@/lib/validations/planner";
 import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
 import { createSessionWithPresentationsFn } from "@/server-fns/planner/sessions";
 import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
-
-interface SessionFormValues {
-	title: string;
-	roomId: string | null;
-	trackId: string | null;
-	slotMin: number;
-}
 
 interface UseCreateSessionFormArgs {
 	submissionIds: string[];
@@ -37,6 +34,10 @@ export function useCreateSessionForm({
 
 	const form = useAppForm({
 		defaultValues,
+		validators: {
+			onChange: sessionFormSchema,
+			onSubmit: sessionFormSchema,
+		},
 		onSubmit: async ({ value }) => {
 			const durationMin = submissionIds.length * value.slotMin;
 			const endAt = new Date(defaultStartAt.getTime() + durationMin * 60_000);
