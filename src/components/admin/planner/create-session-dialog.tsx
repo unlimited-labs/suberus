@@ -153,13 +153,7 @@ export function CreateSessionDialog({
 						<Button type="button" variant="outline" onClick={handleClose}>
 							Cancel
 						</Button>
-						<Button
-							type="submit"
-							disabled={form.state.isSubmitting}
-							data-testid="create-session-submit"
-						>
-							Create
-						</Button>
+						<form.SubmitButton label="Create" testId="create-session-submit" />
 					</DialogFooter>
 				</form>
 			</DialogContent>

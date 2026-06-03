@@ -3,7 +3,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AuthCard } from "@/components/layout/auth-card";
-import { Button } from "@/components/ui/button";
 import { useAppForm } from "@/hooks/use-app-form";
 import { forgetPassword } from "@/lib/auth-client";
 import { submitForm } from "@/lib/form-utils";
@@ -107,13 +106,11 @@ function ForgotPasswordPage() {
 				</div>
 
 				<div className="mt-4">
-					<Button
-						type="submit"
+					<form.SubmitButton
+						label="Send reset link"
+						submittingLabel="Sending..."
 						className="h-9 w-full"
-						disabled={form.state.isSubmitting}
-					>
-						{form.state.isSubmitting ? "Sending..." : "Send reset link"}
-					</Button>
+					/>
 				</div>
 			</form>
 

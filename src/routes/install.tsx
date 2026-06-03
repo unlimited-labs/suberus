@@ -7,7 +7,6 @@ import {
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { AuthLayout } from "@/components/layout/auth-layout";
-import { Button } from "@/components/ui/button";
 import { useAppForm } from "@/hooks/use-app-form";
 import { submitForm } from "@/lib/form-utils";
 import { installSchema } from "@/lib/validations/install";
@@ -151,13 +150,11 @@ function InstallPage() {
 
 						{/* Submit */}
 						<div className="mt-5">
-							<Button
-								type="submit"
+							<form.SubmitButton
+								label="Complete Setup"
+								submittingLabel="Setting up..."
 								className="h-9 w-full"
-								disabled={form.state.isSubmitting}
-							>
-								{form.state.isSubmitting ? "Setting up..." : "Complete Setup"}
-							</Button>
+							/>
 						</div>
 					</form>
 				</div>

@@ -607,16 +607,18 @@ function RegisterForm() {
 							<IconArrowRight className="ml-2 size-4" />
 						</Button>
 					) : (
-						<Button
-							type="button"
-							onClick={handleSubmit}
-							disabled={form.state.isSubmitting}
-							className="h-9 flex-1"
-						>
-							{form.state.isSubmitting
-								? "Creating account..."
-								: "Create account"}
-						</Button>
+						<form.Subscribe selector={(s) => s.isSubmitting}>
+							{(isSubmitting) => (
+								<Button
+									type="button"
+									onClick={handleSubmit}
+									disabled={isSubmitting}
+									className="h-9 flex-1"
+								>
+									{isSubmitting ? "Creating account..." : "Create account"}
+								</Button>
+							)}
+						</form.Subscribe>
 					)}
 				</div>
 			</form>

@@ -2,7 +2,6 @@ import { IconMail } from "@tabler/icons-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { AuthCard } from "@/components/layout/auth-card";
-import { Button } from "@/components/ui/button";
 import { useAppForm } from "@/hooks/use-app-form";
 import { signIn } from "@/lib/auth-client";
 import { submitForm } from "@/lib/form-utils";
@@ -82,13 +81,11 @@ function LoginPage() {
 				</div>
 
 				<div className="mt-4">
-					<Button
-						type="submit"
+					<form.SubmitButton
+						label="Sign in"
+						submittingLabel="Signing in..."
 						className="h-9 w-full"
-						disabled={form.state.isSubmitting}
-					>
-						{form.state.isSubmitting ? "Signing in..." : "Sign in"}
-					</Button>
+					/>
 				</div>
 			</form>
 

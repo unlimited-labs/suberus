@@ -230,12 +230,11 @@ export function UserEditDialog({
 						>
 							Cancel
 						</Button>
-						<Button
-							type="submit"
-							disabled={form.state.isSubmitting || mutation.isPending}
-						>
-							{form.state.isSubmitting ? "Saving..." : "Save"}
-						</Button>
+						<form.SubmitButton
+							label="Save"
+							submittingLabel="Saving..."
+							disabled={mutation.isPending}
+						/>
 					</DialogFooter>
 				</form>
 			</DialogContent>

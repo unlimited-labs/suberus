@@ -263,13 +263,7 @@ export function CreateEventDialog({
 						<Button type="button" variant="outline" onClick={handleClose}>
 							Cancel
 						</Button>
-						<Button
-							type="submit"
-							disabled={form.state.isSubmitting}
-							data-testid="create-event-submit"
-						>
-							Create
-						</Button>
+						<form.SubmitButton label="Create" testId="create-event-submit" />
 					</DialogFooter>
 				</form>
 			</DialogContent>

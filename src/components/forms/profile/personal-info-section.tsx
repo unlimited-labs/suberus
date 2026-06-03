@@ -1,6 +1,5 @@
 import { IconBuilding, IconId } from "@tabler/icons-react";
 
-import { Button } from "@/components/ui/button";
 import { useAppForm } from "@/hooks/use-app-form";
 import { submitForm } from "@/lib/form-utils";
 import { titleOptions } from "@/lib/labels";
@@ -99,13 +98,12 @@ export function PersonalInfoSection({
 
 			{/* Save button */}
 			<div className="flex justify-end pt-2">
-				<Button
-					type="submit"
-					disabled={form.state.isSubmitting || isLoading}
+				<form.SubmitButton
+					label="Save changes"
+					submittingLabel="Saving..."
+					disabled={isLoading}
 					className="h-9"
-				>
-					{form.state.isSubmitting ? "Saving..." : "Save changes"}
-				</Button>
+				/>
 			</div>
 		</form>
 	);

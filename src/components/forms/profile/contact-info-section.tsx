@@ -9,7 +9,6 @@ import { useStore } from "@tanstack/react-form";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { CountryCombobox } from "@/components/ui/country-combobox";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { useAppForm } from "@/hooks/use-app-form";
@@ -223,13 +222,12 @@ export function ContactInfoSection({
 
 			{/* Save button */}
 			<div className="flex justify-end pt-2">
-				<Button
-					type="submit"
-					disabled={form.state.isSubmitting || isLoading}
+				<form.SubmitButton
+					label="Save changes"
+					submittingLabel="Saving..."
+					disabled={isLoading}
 					className="h-9"
-				>
-					{form.state.isSubmitting ? "Saving..." : "Save changes"}
-				</Button>
+				/>
 			</div>
 		</form>
 	);

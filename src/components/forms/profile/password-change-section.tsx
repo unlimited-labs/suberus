@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { useAppForm } from "@/hooks/use-app-form";
 import { submitForm } from "@/lib/form-utils";
 import type { PasswordChangeFormData } from "@/lib/validations/profile";
@@ -72,13 +71,12 @@ export function PasswordChangeSection({
 
 			{/* Save button */}
 			<div className="flex justify-end pt-2">
-				<Button
-					type="submit"
-					disabled={form.state.isSubmitting || isLoading}
+				<form.SubmitButton
+					label="Change password"
+					submittingLabel="Changing password..."
+					disabled={isLoading}
 					className="h-9"
-				>
-					{form.state.isSubmitting ? "Changing password..." : "Change password"}
-				</Button>
+				/>
 			</div>
 		</form>
 	);

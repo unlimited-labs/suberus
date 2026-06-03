@@ -8,7 +8,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { AuthCard } from "@/components/layout/auth-card";
-import { Button } from "@/components/ui/button";
 import { useAppForm } from "@/hooks/use-app-form";
 import { resetPassword } from "@/lib/auth-client";
 import { submitForm } from "@/lib/form-utils";
@@ -145,13 +144,11 @@ function ResetPasswordPage() {
 				</div>
 
 				<div className="mt-4">
-					<Button
-						type="submit"
+					<form.SubmitButton
+						label="Reset password"
+						submittingLabel="Resetting..."
 						className="h-9 w-full"
-						disabled={form.state.isSubmitting}
-					>
-						{form.state.isSubmitting ? "Resetting..." : "Reset password"}
-					</Button>
+					/>
 				</div>
 			</form>
 

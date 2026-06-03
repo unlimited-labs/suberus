@@ -668,15 +668,12 @@ export function ReviewForm({
 							{/* Submit Section */}
 							{!readOnly && (
 								<div className="pt-4">
-									<Button
-										type="submit"
-										disabled={form.state.isSubmitting || !allComplete}
+									<form.SubmitButton
+										label="Submit Review"
+										submittingLabel="Submitting Review..."
+										disabled={!allComplete}
 										className="w-full h-12 text-base font-semibold"
-									>
-										{form.state.isSubmitting
-											? "Submitting Review..."
-											: "Submit Review"}
-									</Button>
+									/>
 									{!allComplete && (
 										<p className="text-xs text-muted-foreground text-center mt-2">
 											Complete all required sections to submit
