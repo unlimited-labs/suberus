@@ -25,7 +25,6 @@ import { Field, FieldError } from "@/components/ui/field";
 import { Markdown } from "@/components/ui/markdown";
 import type { ReviewDecision, SubmissionType } from "@/generated/prisma/enums";
 import { useAppForm } from "@/hooks/use-app-form";
-import { submitForm } from "@/lib/form-utils";
 import { typeLabels } from "@/lib/labels/submission";
 import { cn, formatFileSize } from "@/lib/utils";
 import { createReviewSchema } from "@/lib/validations/review";
@@ -296,7 +295,7 @@ export function ReviewForm({
 							onSubmit={(e) => {
 								e.preventDefault();
 								e.stopPropagation();
-								submitForm(form);
+								void form.handleSubmit();
 							}}
 							className="space-y-6"
 						>

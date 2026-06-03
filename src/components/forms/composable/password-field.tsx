@@ -24,7 +24,12 @@ export function FormPasswordField({
 }: FormPasswordFieldProps) {
 	const field = useFieldContext<string>();
 	const errors = useStore(field.store, (s) => s.meta.errors);
-	const hasError = field.state.meta.isBlurred && errors.length > 0;
+	const submissionAttempts = useStore(
+		field.form.store,
+		(s) => s.submissionAttempts,
+	);
+	const hasError =
+		(field.state.meta.isBlurred || submissionAttempts > 0) && errors.length > 0;
 
 	return (
 		<Field data-invalid={hasError}>

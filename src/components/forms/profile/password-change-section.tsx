@@ -1,5 +1,4 @@
 import { useAppForm } from "@/hooks/use-app-form";
-import { submitForm } from "@/lib/form-utils";
 import type { PasswordChangeFormData } from "@/lib/validations/profile";
 import { passwordChangeSchema } from "@/lib/validations/profile";
 
@@ -33,7 +32,7 @@ export function PasswordChangeSection({
 			onSubmit={(e) => {
 				e.preventDefault();
 				e.stopPropagation();
-				void submitForm(form);
+				void form.handleSubmit();
 			}}
 			className="space-y-4"
 		>

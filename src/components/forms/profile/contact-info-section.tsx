@@ -13,7 +13,6 @@ import { CountryCombobox } from "@/components/ui/country-combobox";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { useAppForm } from "@/hooks/use-app-form";
 import { sendVerificationEmail } from "@/lib/auth-client";
-import { submitForm } from "@/lib/form-utils";
 import { cn } from "@/lib/utils";
 import type { ContactInfoFormData } from "@/lib/validations/profile";
 import { contactInfoSchema } from "@/lib/validations/profile";
@@ -83,13 +82,14 @@ export function ContactInfoSection({
 	const email = useStore(form.store, (s) => s.values.email);
 	const emailChanged = email !== currentEmail;
 	const needInvoice = useStore(form.store, (s) => s.values.needInvoice);
+	const submissionAttempts = useStore(form.store, (s) => s.submissionAttempts);
 
 	return (
 		<form
 			onSubmit={(e) => {
 				e.preventDefault();
 				e.stopPropagation();
-				void submitForm(form);
+				void form.handleSubmit();
 			}}
 			className="space-y-4"
 		>
@@ -175,7 +175,8 @@ export function ContactInfoSection({
 				<form.Field name="address">
 					{(field) => {
 						const hasError =
-							field.state.meta.isBlurred && field.state.meta.errors.length > 0;
+							(field.state.meta.isBlurred || submissionAttempts > 0) &&
+							field.state.meta.errors.length > 0;
 						return (
 							<Field data-invalid={hasError}>
 								<FieldLabel htmlFor={field.name}>

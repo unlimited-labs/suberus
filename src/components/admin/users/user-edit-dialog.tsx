@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { useAppForm } from "@/hooks/use-app-form";
-import { submitForm } from "@/lib/form-utils";
 import { titleOptions } from "@/lib/labels";
 import type { AdminUser } from "@/lib/server/admin/users";
 import { cn } from "@/lib/utils";
@@ -120,7 +119,7 @@ export function UserEditDialog({
 					onSubmit={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
-						void submitForm(form);
+						void form.handleSubmit();
 					}}
 					className="space-y-4"
 				>

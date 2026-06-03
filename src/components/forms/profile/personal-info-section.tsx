@@ -1,7 +1,6 @@
 import { IconBuilding, IconId } from "@tabler/icons-react";
 
 import { useAppForm } from "@/hooks/use-app-form";
-import { submitForm } from "@/lib/form-utils";
 import { titleOptions } from "@/lib/labels";
 import type { PersonalInfoFormData } from "@/lib/validations/profile";
 import { personalInfoSchema } from "@/lib/validations/profile";
@@ -33,7 +32,7 @@ export function PersonalInfoSection({
 			onSubmit={(e) => {
 				e.preventDefault();
 				e.stopPropagation();
-				void submitForm(form);
+				void form.handleSubmit();
 			}}
 			className="space-y-4"
 		>

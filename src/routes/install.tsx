@@ -8,7 +8,6 @@ import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { AuthLayout } from "@/components/layout/auth-layout";
 import { useAppForm } from "@/hooks/use-app-form";
-import { submitForm } from "@/lib/form-utils";
 import { installSchema } from "@/lib/validations/install";
 import {
 	checkInstallStatusFn,
@@ -69,7 +68,7 @@ function InstallPage() {
 						onSubmit={(e) => {
 							e.preventDefault();
 							e.stopPropagation();
-							void submitForm(form);
+							void form.handleSubmit();
 						}}
 						className="flex flex-1 flex-col"
 					>

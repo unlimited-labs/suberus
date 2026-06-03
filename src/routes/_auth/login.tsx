@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import { AuthCard } from "@/components/layout/auth-card";
 import { useAppForm } from "@/hooks/use-app-form";
 import { signIn } from "@/lib/auth-client";
-import { submitForm } from "@/lib/form-utils";
 import { loginSchema } from "@/lib/validations/auth";
 
 export const Route = createFileRoute("/_auth/login")({
@@ -47,7 +46,7 @@ function LoginPage() {
 				onSubmit={(e) => {
 					e.preventDefault();
 					e.stopPropagation();
-					void submitForm(form);
+					void form.handleSubmit();
 				}}
 				className="flex flex-1 flex-col"
 			>

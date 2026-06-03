@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { AuthCard } from "@/components/layout/auth-card";
 import { useAppForm } from "@/hooks/use-app-form";
 import { forgetPassword } from "@/lib/auth-client";
-import { submitForm } from "@/lib/form-utils";
 import { forgotPasswordSchema } from "@/lib/validations/auth";
 
 export const Route = createFileRoute("/_auth/forgot-password")({
@@ -89,7 +88,7 @@ function ForgotPasswordPage() {
 				onSubmit={(e) => {
 					e.preventDefault();
 					e.stopPropagation();
-					void submitForm(form);
+					void form.handleSubmit();
 				}}
 				className="flex flex-1 flex-col"
 			>

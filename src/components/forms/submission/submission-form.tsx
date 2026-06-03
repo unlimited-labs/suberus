@@ -29,7 +29,6 @@ import {
 } from "@/components/ui/select";
 import { useAppForm } from "@/hooks/use-app-form";
 import { useSession } from "@/hooks/use-session";
-import { submitForm } from "@/lib/form-utils";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import { cn } from "@/lib/utils";
 import { getAffiliationById } from "@/server-fns/affiliations";
@@ -328,6 +327,10 @@ export function SubmissionForm({
 	}, [user, initialData?.authors, form]);
 
 	const values = useStore(form.store, (state) => state.values);
+	const submissionAttempts = useStore(
+		form.store,
+		(state) => state.submissionAttempts,
+	);
 
 	// Get current type config (use selectedType for reactive updates)
 	const currentTypeConfig = typeConfigs.find((t) => t.type === selectedType);
@@ -430,7 +433,7 @@ export function SubmissionForm({
 							onSubmit={(e) => {
 								e.preventDefault();
 								e.stopPropagation();
-								submitForm(form);
+								void form.handleSubmit();
 							}}
 							className="space-y-6"
 						>
@@ -556,7 +559,8 @@ export function SubmissionForm({
 										{(field) => {
 											if (isFileFormat) return null;
 											const hasError =
-												field.state.meta.isBlurred &&
+												(field.state.meta.isBlurred ||
+													submissionAttempts > 0) &&
 												field.state.meta.errors.length > 0;
 											return (
 												<Field data-invalid={hasError}>
@@ -611,7 +615,7 @@ export function SubmissionForm({
 								<form.Field name="authors">
 									{(field) => {
 										const hasError =
-											field.state.meta.isBlurred &&
+											(field.state.meta.isBlurred || submissionAttempts > 0) &&
 											field.state.meta.errors.length > 0;
 										return (
 											<Field data-invalid={hasError}>
@@ -646,7 +650,8 @@ export function SubmissionForm({
 										<form.Field name="keywords">
 											{(field) => {
 												const hasError =
-													field.state.meta.isBlurred &&
+													(field.state.meta.isBlurred ||
+														submissionAttempts > 0) &&
 													field.state.meta.errors.length > 0;
 												return (
 													<Field data-invalid={hasError}>

@@ -13,7 +13,6 @@ import {
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { submitForm } from "@/lib/form-utils";
 import { tzLocalInputToUtc } from "@/lib/tz-datetime";
 import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
 import { allSessionsQueryOptions } from "@/server-fns/planner/sessions";
@@ -83,7 +82,7 @@ export function CreateEventDialog({
 					onSubmit={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
-						void submitForm(form);
+						void form.handleSubmit();
 					}}
 					className="space-y-4"
 				>

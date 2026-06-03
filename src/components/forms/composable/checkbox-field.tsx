@@ -1,3 +1,4 @@
+import { useStore } from "@tanstack/react-form";
 import type * as React from "react";
 
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,8 +17,13 @@ export function FormCheckboxField({
 	className,
 }: FormCheckboxFieldProps) {
 	const field = useFieldContext<boolean>();
+	const submissionAttempts = useStore(
+		field.form.store,
+		(s) => s.submissionAttempts,
+	);
 	const hasError =
-		field.state.meta.isBlurred && field.state.meta.errors.length > 0;
+		(field.state.meta.isBlurred || submissionAttempts > 0) &&
+		field.state.meta.errors.length > 0;
 
 	return (
 		<Field orientation="horizontal" className={className}>

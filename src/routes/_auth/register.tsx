@@ -24,7 +24,6 @@ import { useAppForm } from "@/hooks/use-app-form";
 import { useMultiStep } from "@/hooks/use-multi-step";
 import { signUp } from "@/lib/auth-client";
 import { detectCountry } from "@/lib/detect-country";
-import { submitForm } from "@/lib/form-utils";
 import { titleOptions } from "@/lib/labels";
 import { roleLabels } from "@/lib/labels/user";
 import { cn } from "@/lib/utils";
@@ -289,7 +288,7 @@ function RegisterForm() {
 	const handleSubmit = async () => {
 		const isValid = await validateStep(3);
 		if (isValid) {
-			await submitForm(form);
+			await form.handleSubmit();
 		}
 	};
 

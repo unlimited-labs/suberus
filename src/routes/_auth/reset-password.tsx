@@ -10,7 +10,6 @@ import { z } from "zod";
 import { AuthCard } from "@/components/layout/auth-card";
 import { useAppForm } from "@/hooks/use-app-form";
 import { resetPassword } from "@/lib/auth-client";
-import { submitForm } from "@/lib/form-utils";
 import { resetPasswordSchema } from "@/lib/validations/auth";
 
 const searchSchema = z.object({
@@ -124,7 +123,7 @@ function ResetPasswordPage() {
 				onSubmit={(e) => {
 					e.preventDefault();
 					e.stopPropagation();
-					void submitForm(form);
+					void form.handleSubmit();
 				}}
 				className="flex flex-1 flex-col"
 			>
