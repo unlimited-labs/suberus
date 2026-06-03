@@ -50,6 +50,12 @@ export const passwordChangeSchema = z
 		path: ["confirmNewPassword"],
 	});
 
+// Admin user edit combines personal + contact fields in a single form
+export const adminUserEditSchema = personalInfoSchema.extend(
+	contactInfoSchema.shape,
+);
+
 export type PersonalInfoFormData = z.infer<typeof personalInfoSchema>;
 export type ContactInfoFormData = z.infer<typeof contactInfoSchema>;
 export type PasswordChangeFormData = z.infer<typeof passwordChangeSchema>;
+export type AdminUserEditFormData = z.infer<typeof adminUserEditSchema>;

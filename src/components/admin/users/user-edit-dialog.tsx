@@ -14,13 +14,13 @@ import {
 import { useAppForm } from "@/hooks/use-app-form";
 import { titleOptions } from "@/lib/labels";
 import type { AdminUser } from "@/lib/server/admin/users";
+import type { AdminUserEditFormData } from "@/lib/validations/profile";
+import { adminUserEditSchema } from "@/lib/validations/profile";
 import {
 	adminUserDetailQueryOptions,
 	adminUsersQueryOptions,
 	updateAdminUserProfile,
 } from "@/server-fns/admin/users";
-
-const orcidRegex = /^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/;
 
 interface UserEditDialogProps {
 	user: AdminUser;
@@ -66,28 +66,23 @@ export function UserEditDialog({
 		},
 	});
 
+	const defaultValues: AdminUserEditFormData = {
+		firstName: user.firstName ?? "",
+		lastName: user.lastName ?? "",
+		title: user.title ?? "",
+		affiliation: user.affiliation ?? "",
+		orcid: user.orcid ?? "",
+		email: user.email,
+		needInvoice: user.needInvoice,
+		address: user.address ?? "",
+		country: user.country ?? "",
+	};
+
 	const form = useAppForm({
-		defaultValues: {
-			firstName: user.firstName ?? "",
-			lastName: user.lastName ?? "",
-			title: user.title ?? "",
-			affiliation: user.affiliation ?? "",
-			orcid: user.orcid ?? "",
-			email: user.email,
-			needInvoice: user.needInvoice,
-			address: user.address ?? "",
-			country: user.country ?? "",
-		},
+		defaultValues,
 		validators: {
-			onSubmit: ({ value }) => {
-				const errors: Record<string, string> = {};
-				if (value.firstName.length < 2) errors.firstName = "Min 2 characters";
-				if (value.lastName.length < 2) errors.lastName = "Min 2 characters";
-				if (!value.email) errors.email = "Email is required";
-				if (value.orcid && !orcidRegex.test(value.orcid))
-					errors.orcid = "Invalid ORCID format";
-				return Object.keys(errors).length > 0 ? errors : undefined;
-			},
+			onChange: adminUserEditSchema,
+			onSubmit: adminUserEditSchema,
 		},
 		onSubmit: async ({ value }) => {
 			await mutation.mutateAsync({
