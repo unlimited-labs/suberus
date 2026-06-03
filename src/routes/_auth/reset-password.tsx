@@ -143,11 +143,13 @@ function ResetPasswordPage() {
 				</div>
 
 				<div className="mt-4">
-					<form.SubmitButton
-						label="Reset password"
-						submittingLabel="Resetting..."
-						className="h-9 w-full"
-					/>
+					<form.AppForm>
+						<form.SubmitButton
+							label="Reset password"
+							submittingLabel="Resetting..."
+							className="h-9 w-full"
+						/>
+					</form.AppForm>
 				</div>
 			</form>
 

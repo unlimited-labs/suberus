@@ -149,11 +149,13 @@ function InstallPage() {
 
 						{/* Submit */}
 						<div className="mt-5">
-							<form.SubmitButton
-								label="Complete Setup"
-								submittingLabel="Setting up..."
-								className="h-9 w-full"
-							/>
+							<form.AppForm>
+								<form.SubmitButton
+									label="Complete Setup"
+									submittingLabel="Setting up..."
+									className="h-9 w-full"
+								/>
+							</form.AppForm>
 						</div>
 					</form>
 				</div>

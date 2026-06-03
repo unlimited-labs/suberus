@@ -70,12 +70,14 @@ export function PasswordChangeSection({
 
 			{/* Save button */}
 			<div className="flex justify-end pt-2">
-				<form.SubmitButton
-					label="Change password"
-					submittingLabel="Changing password..."
-					disabled={isLoading}
-					className="h-9"
-				/>
+				<form.AppForm>
+					<form.SubmitButton
+						label="Change password"
+						submittingLabel="Changing password..."
+						disabled={isLoading}
+						className="h-9"
+					/>
+				</form.AppForm>
 			</div>
 		</form>
 	);

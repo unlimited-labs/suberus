@@ -152,7 +152,12 @@ export function CreateSessionDialog({
 						<Button type="button" variant="outline" onClick={handleClose}>
 							Cancel
 						</Button>
-						<form.SubmitButton label="Create" testId="create-session-submit" />
+						<form.AppForm>
+							<form.SubmitButton
+								label="Create"
+								testId="create-session-submit"
+							/>
+						</form.AppForm>
 					</DialogFooter>
 				</form>
 			</DialogContent>

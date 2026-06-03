@@ -80,11 +80,13 @@ function LoginPage() {
 				</div>
 
 				<div className="mt-4">
-					<form.SubmitButton
-						label="Sign in"
-						submittingLabel="Signing in..."
-						className="h-9 w-full"
-					/>
+					<form.AppForm>
+						<form.SubmitButton
+							label="Sign in"
+							submittingLabel="Signing in..."
+							className="h-9 w-full"
+						/>
+					</form.AppForm>
 				</div>
 			</form>
 

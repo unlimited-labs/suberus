@@ -189,12 +189,14 @@ export function ContactInfoSection({
 
 			{/* Save button */}
 			<div className="flex justify-end pt-2">
-				<form.SubmitButton
-					label="Save changes"
-					submittingLabel="Saving..."
-					disabled={isLoading}
-					className="h-9"
-				/>
+				<form.AppForm>
+					<form.SubmitButton
+						label="Save changes"
+						submittingLabel="Saving..."
+						disabled={isLoading}
+						className="h-9"
+					/>
+				</form.AppForm>
 			</div>
 		</form>
 	);

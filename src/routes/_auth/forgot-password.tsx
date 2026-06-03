@@ -105,11 +105,13 @@ function ForgotPasswordPage() {
 				</div>
 
 				<div className="mt-4">
-					<form.SubmitButton
-						label="Send reset link"
-						submittingLabel="Sending..."
-						className="h-9 w-full"
-					/>
+					<form.AppForm>
+						<form.SubmitButton
+							label="Send reset link"
+							submittingLabel="Sending..."
+							className="h-9 w-full"
+						/>
+					</form.AppForm>
 				</div>
 			</form>
 
