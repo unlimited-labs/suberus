@@ -16,7 +16,6 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { useAppForm } from "@/hooks/use-app-form";
 import { titleOptions } from "@/lib/labels";
 import type { AdminUser } from "@/lib/server/admin/users";
-import { cn } from "@/lib/utils";
 import {
 	adminUserDetailQueryOptions,
 	adminUsersQueryOptions,
@@ -178,35 +177,15 @@ export function UserEditDialog({
 					</form.AppField>
 
 					{needInvoice && (
-						<form.Field name="address">
-							{(field) => {
-								const hasError =
-									field.state.meta.isBlurred &&
-									field.state.meta.errors.length > 0;
-								return (
-									<Field data-invalid={hasError}>
-										<FieldLabel htmlFor={field.name}>
-											Billing details (organization)
-										</FieldLabel>
-										<textarea
-											id={field.name}
-											rows={3}
-											placeholder="Company/organization name, billing address, VAT/Tax ID (if applicable)"
-											aria-invalid={hasError}
-											className={cn(
-												"flex w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 text-sm text-foreground transition-colors",
-												"placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
-												"disabled:cursor-not-allowed disabled:opacity-50",
-												"aria-invalid:border-destructive aria-invalid:ring-destructive/20 aria-invalid:ring-[3px]",
-											)}
-											value={field.state.value || ""}
-											onBlur={field.handleBlur}
-											onChange={(e) => field.handleChange(e.target.value)}
-										/>
-									</Field>
-								);
-							}}
-						</form.Field>
+						<form.AppField name="address">
+							{(field) => (
+								<field.TextareaField
+									label="Billing details (organization)"
+									rows={3}
+									placeholder="Company/organization name, billing address, VAT/Tax ID (if applicable)"
+								/>
+							)}
+						</form.AppField>
 					)}
 
 					<form.Field name="country">

@@ -10,10 +10,9 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CountryCombobox } from "@/components/ui/country-combobox";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { useAppForm } from "@/hooks/use-app-form";
 import { sendVerificationEmail } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
 import type { ContactInfoFormData } from "@/lib/validations/profile";
 import { contactInfoSchema } from "@/lib/validations/profile";
 
@@ -82,7 +81,6 @@ export function ContactInfoSection({
 	const email = useStore(form.store, (s) => s.values.email);
 	const emailChanged = email !== currentEmail;
 	const needInvoice = useStore(form.store, (s) => s.values.needInvoice);
-	const submissionAttempts = useStore(form.store, (s) => s.submissionAttempts);
 
 	return (
 		<form
@@ -172,39 +170,16 @@ export function ContactInfoSection({
 
 			{/* Billing details (visible when invoice needed) */}
 			{needInvoice && (
-				<form.Field name="address">
-					{(field) => {
-						const hasError =
-							(field.state.meta.isBlurred || submissionAttempts > 0) &&
-							field.state.meta.errors.length > 0;
-						return (
-							<Field data-invalid={hasError}>
-								<FieldLabel htmlFor={field.name}>
-									Billing details (organization)
-								</FieldLabel>
-								<textarea
-									id={field.name}
-									rows={3}
-									placeholder="Company/organization name, billing address, VAT/Tax ID (if applicable)"
-									aria-invalid={hasError}
-									className={cn(
-										"flex w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 text-sm text-foreground transition-colors",
-										"placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
-										"disabled:cursor-not-allowed disabled:opacity-50",
-										"aria-invalid:border-destructive aria-invalid:ring-destructive/20 aria-invalid:ring-[3px]",
-									)}
-									value={field.state.value || ""}
-									onBlur={field.handleBlur}
-									onChange={(e) => field.handleChange(e.target.value)}
-									disabled={isLoading}
-								/>
-								<FieldError
-									errors={hasError ? field.state.meta.errors : undefined}
-								/>
-							</Field>
-						);
-					}}
-				</form.Field>
+				<form.AppField name="address">
+					{(field) => (
+						<field.TextareaField
+							label="Billing details (organization)"
+							rows={3}
+							placeholder="Company/organization name, billing address, VAT/Tax ID (if applicable)"
+							disabled={isLoading}
+						/>
+					)}
+				</form.AppField>
 			)}
 
 			{/* Country */}

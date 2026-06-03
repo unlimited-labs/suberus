@@ -451,38 +451,15 @@ function RegisterForm() {
 
 							{/* Billing details (visible when invoice needed) */}
 							{needInvoice && (
-								<form.Field name="address">
-									{(field) => {
-										const hasError =
-											field.state.meta.isBlurred &&
-											field.state.meta.errors.length > 0;
-										return (
-											<Field data-invalid={hasError}>
-												<FieldLabel htmlFor={field.name}>
-													Billing details (organization) *
-												</FieldLabel>
-												<textarea
-													id={field.name}
-													rows={3}
-													placeholder="Company/organization name, billing address, VAT/Tax ID (if applicable)"
-													className={cn(
-														"flex w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 text-sm transition-colors",
-														"placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
-														"disabled:cursor-not-allowed disabled:opacity-50",
-													)}
-													value={field.state.value}
-													onChange={(e) => field.handleChange(e.target.value)}
-													onBlur={field.handleBlur}
-												/>
-												<FieldError
-													errors={
-														hasError ? field.state.meta.errors : undefined
-													}
-												/>
-											</Field>
-										);
-									}}
-								</form.Field>
+								<form.AppField name="address">
+									{(field) => (
+										<field.TextareaField
+											label="Billing details (organization) *"
+											rows={3}
+											placeholder="Company/organization name, billing address, VAT/Tax ID (if applicable)"
+										/>
+									)}
+								</form.AppField>
 							)}
 
 							{/* Country */}
