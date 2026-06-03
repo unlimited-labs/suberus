@@ -345,31 +345,6 @@ export function SubmissionForm({
 	});
 	const isFileFormat = currentTypeConfig?.config.contentFormat === "FILE";
 
-	// Update contentFormat when type changes
-	const handleTypeChange = (newType: "ABSTRACT" | "POSTER" | "FULL_PAPER") => {
-		setSelectedType(newType); // Trigger re-render
-		form.setFieldValue("type", newType);
-		const newConfig = typeConfigs.find((t) => t.type === newType);
-		if (newConfig) {
-			form.setFieldValue("contentFormat", newConfig.config.contentFormat);
-			// Clear file if switching to TEXT format
-			if (newConfig.config.contentFormat === "TEXT") {
-				form.setFieldValue("file", null);
-			}
-			// Clear content and its stale validation errors when switching to FILE format.
-			// setFieldValue triggers the field-level onChange validator before React
-			// re-renders to remove it, leaving a stale error that blocks canSubmit.
-			if (newConfig.config.contentFormat === "FILE") {
-				form.setFieldValue("content", "");
-				form.setFieldMeta("content", (prev) => ({
-					...prev,
-					errorMap: {},
-					errorSourceMap: {},
-				}));
-			}
-		}
-	};
-
 	// Progress indicators (use validation settings)
 	const hasType = !!values.type;
 	const hasContent = isFileFormat
@@ -445,8 +420,39 @@ export function SubmissionForm({
 										Submission Type
 									</h2>
 								</div>
-								<form.Field name="type">
-									{() => (
+								<form.Field
+									name="type"
+									listeners={{
+										onChange: ({ value, fieldApi }) => {
+											const newConfig = typeConfigs.find(
+												(t) => t.type === value,
+											);
+											if (!newConfig) return;
+											const f = fieldApi.form;
+											f.setFieldValue(
+												"contentFormat",
+												newConfig.config.contentFormat,
+											);
+											// Clear file if switching to TEXT format
+											if (newConfig.config.contentFormat === "TEXT") {
+												f.setFieldValue("file", null);
+											}
+											// Clear content and its stale validation errors when
+											// switching to FILE format. setFieldValue triggers the
+											// field-level onChange validator before React re-renders
+											// to remove it, leaving a stale error that blocks canSubmit.
+											if (newConfig.config.contentFormat === "FILE") {
+												f.setFieldValue("content", "");
+												f.setFieldMeta("content", (prev) => ({
+													...prev,
+													errorMap: {},
+													errorSourceMap: {},
+												}));
+											}
+										},
+									}}
+								>
+									{(field) => (
 										<div
 											className={cn(
 												"grid gap-3",
@@ -461,7 +467,10 @@ export function SubmissionForm({
 													<button
 														key={option.type}
 														type="button"
-														onClick={() => handleTypeChange(option.type)}
+														onClick={() => {
+															field.handleChange(option.type);
+															setSelectedType(option.type);
+														}}
 														className={cn(
 															"flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
 															isSelected
