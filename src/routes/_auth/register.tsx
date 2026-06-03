@@ -17,7 +17,7 @@ import { TosModal } from "@/components/tos-modal";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { COUNTRIES, CountryCombobox } from "@/components/ui/country-combobox";
+import { COUNTRIES } from "@/components/ui/country-combobox";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useAppForm } from "@/hooks/use-app-form";
@@ -463,25 +463,9 @@ function RegisterForm() {
 							)}
 
 							{/* Country */}
-							<form.Field name="country">
-								{(field) => {
-									const hasError =
-										field.state.meta.isBlurred &&
-										field.state.meta.errors.length > 0;
-									return (
-										<Field data-invalid={hasError}>
-											<FieldLabel>Country *</FieldLabel>
-											<CountryCombobox
-												value={field.state.value}
-												onChange={field.handleChange}
-											/>
-											<FieldError
-												errors={hasError ? field.state.meta.errors : undefined}
-											/>
-										</Field>
-									);
-								}}
-							</form.Field>
+							<form.AppField name="country">
+								{(field) => <field.CountryComboboxField label="Country *" />}
+							</form.AppField>
 						</div>
 					)}
 

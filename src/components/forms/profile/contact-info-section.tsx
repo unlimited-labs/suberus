@@ -9,8 +9,6 @@ import { useStore } from "@tanstack/react-form";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CountryCombobox } from "@/components/ui/country-combobox";
-import { Field, FieldLabel } from "@/components/ui/field";
 import { useAppForm } from "@/hooks/use-app-form";
 import { sendVerificationEmail } from "@/lib/auth-client";
 import type { ContactInfoFormData } from "@/lib/validations/profile";
@@ -183,18 +181,11 @@ export function ContactInfoSection({
 			)}
 
 			{/* Country */}
-			<form.Field name="country">
+			<form.AppField name="country">
 				{(field) => (
-					<Field>
-						<FieldLabel>Country</FieldLabel>
-						<CountryCombobox
-							value={field.state.value || ""}
-							onChange={field.handleChange}
-							disabled={isLoading}
-						/>
-					</Field>
+					<field.CountryComboboxField label="Country" disabled={isLoading} />
 				)}
-			</form.Field>
+			</form.AppField>
 
 			{/* Save button */}
 			<div className="flex justify-end pt-2">

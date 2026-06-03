@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { CountryCombobox } from "@/components/ui/country-combobox";
 import {
 	Dialog,
 	DialogContent,
@@ -12,7 +11,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Field, FieldLabel } from "@/components/ui/field";
 import { useAppForm } from "@/hooks/use-app-form";
 import { titleOptions } from "@/lib/labels";
 import type { AdminUser } from "@/lib/server/admin/users";
@@ -188,17 +186,9 @@ export function UserEditDialog({
 						</form.AppField>
 					)}
 
-					<form.Field name="country">
-						{(field) => (
-							<Field>
-								<FieldLabel>Country</FieldLabel>
-								<CountryCombobox
-									value={field.state.value || ""}
-									onChange={field.handleChange}
-								/>
-							</Field>
-						)}
-					</form.Field>
+					<form.AppField name="country">
+						{(field) => <field.CountryComboboxField label="Country" />}
+					</form.AppField>
 
 					<DialogFooter>
 						<Button

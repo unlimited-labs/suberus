@@ -1,6 +1,7 @@
 import { createFormHook } from "@tanstack/react-form";
 
 import { FormCheckboxField } from "@/components/forms/composable/checkbox-field";
+import { FormCountryComboboxField } from "@/components/forms/composable/country-combobox-field";
 import { FormIconInputField } from "@/components/forms/composable/icon-input-field";
 import { FormInputField } from "@/components/forms/composable/input-field";
 import { FormPasswordField } from "@/components/forms/composable/password-field";
@@ -17,6 +18,7 @@ export const { useAppForm } = createFormHook({
 		TextareaField: FormTextareaField,
 		SelectField: FormSelectField,
 		CheckboxField: FormCheckboxField,
+		CountryComboboxField: FormCountryComboboxField,
 	},
 	formComponents: {
 		SubmitButton: FormSubmitButton,
