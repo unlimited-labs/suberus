@@ -6,7 +6,8 @@ export const loginSchema = z.object({
 	rememberMe: z.boolean(),
 });
 
-const registerBase = z.object({
+// Exported so register.tsx can derive per-field validators (registerBase.shape.*)
+export const registerBase = z.object({
 	email: z.email("Invalid email address"),
 	password: z
 		.string()
@@ -27,6 +28,8 @@ const registerBase = z.object({
 		.refine((val) => val === true, "You must accept the Terms of Service"),
 });
 
+// Full-form safety net (form onSubmit). Per-step + match + async-email checks
+// run as field-level validators in register.tsx.
 export const registerSchema = registerBase.refine(
 	(data) => data.password === data.confirmPassword,
 	{
@@ -34,44 +37,6 @@ export const registerSchema = registerBase.refine(
 		path: ["confirmPassword"],
 	},
 );
-
-/** Per-step schemas for multi-step validation */
-export const registerStep1Base = z.object({
-	email: z.email("Invalid email address"),
-	password: z
-		.string()
-		.min(1, "Password is required")
-		.min(10, "Password must be at least 10 characters"),
-	confirmPassword: z.string().min(1, "Please confirm your password"),
-	firstName: z.string().min(1, "First name is required"),
-	lastName: z.string().min(1, "Last name is required"),
-	affiliationId: z.string().min(1, "Affiliation is required"),
-});
-
-export const registerStep1Schema = registerStep1Base.refine(
-	(data) => data.password === data.confirmPassword,
-	{
-		message: "Passwords do not match",
-		path: ["confirmPassword"],
-	},
-);
-
-export const registerStep2Schema = z
-	.object({
-		needInvoice: z.boolean(),
-		address: z.string(),
-		country: z.string().min(1, "Country is required"),
-	})
-	.refine((data) => !data.needInvoice || data.address.trim().length > 0, {
-		message: "Billing details are required when invoice is needed",
-		path: ["address"],
-	});
-
-export const registerStep3Schema = z.object({
-	acceptTerms: z
-		.boolean()
-		.refine((val) => val === true, "You must accept the Terms of Service"),
-});
 
 export const forgotPasswordSchema = z.object({
 	email: z.email("Invalid email address"),

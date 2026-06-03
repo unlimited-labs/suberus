@@ -27,12 +27,7 @@ import { detectCountry } from "@/lib/detect-country";
 import { titleOptions } from "@/lib/labels";
 import { roleLabels } from "@/lib/labels/user";
 import { cn } from "@/lib/utils";
-import {
-	registerSchema,
-	registerStep1Schema,
-	registerStep2Schema,
-	registerStep3Schema,
-} from "@/lib/validations/auth";
+import { registerBase, registerSchema } from "@/lib/validations/auth";
 import { checkEmailAvailableFn } from "@/server-fns/auth";
 import {
 	consumeInvitationFn,
@@ -89,11 +84,29 @@ const STEPS = [
 	{ id: 3, title: "Survey" },
 ] as const;
 
-const stepSchemas = [
-	registerStep1Schema,
-	registerStep2Schema,
-	registerStep3Schema,
-];
+type RegisterField =
+	| "email"
+	| "password"
+	| "confirmPassword"
+	| "firstName"
+	| "lastName"
+	| "affiliationId"
+	| "address"
+	| "country"
+	| "acceptTerms";
+
+const STEP_FIELDS: Record<number, RegisterField[]> = {
+	1: [
+		"email",
+		"password",
+		"confirmPassword",
+		"firstName",
+		"lastName",
+		"affiliationId",
+	],
+	2: ["address", "country"],
+	3: ["acceptTerms"],
+};
 
 function RegistrationClosedPage() {
 	return (
@@ -159,8 +172,8 @@ function RegisterForm() {
 			surveyAnswers: defaultSurveyAnswers,
 			acceptTerms: !tosContent,
 		},
+		// Full-form safety net; live + per-step checks are field-level validators.
 		validators: {
-			onChange: registerSchema,
 			onSubmit: registerSchema,
 		},
 		onSubmit: async ({ value }) => {
@@ -219,65 +232,23 @@ function RegisterForm() {
 
 	const needInvoice = useStore(form.store, (s) => s.values.needInvoice);
 
+	// Run the current step's field-level validators (incl. async email check)
+	// and reveal any errors by marking the fields blurred.
 	const validateStep = useCallback(
 		async (step: number): Promise<boolean> => {
-			const schema = stepSchemas[step - 1];
-			const result = schema.safeParse(form.state.values);
-
-			if (result.success) {
-				// Check email uniqueness on step 1
-				if (step === 1 && !invitation) {
-					const { available } = await checkEmailAvailableFn({
-						data: { email: form.state.values.email },
-					});
-					if (!available) {
-						form.setFieldMeta("email", (prev) => ({
-							...prev,
-							isTouched: true,
-							isBlurred: true,
-							errorMap: {
-								...prev.errorMap,
-								onChange: "Email is already registered",
-							},
-							errorSourceMap: {
-								...prev.errorSourceMap,
-								onChange: "form",
-							},
-						}));
-						return false;
-					}
-				}
-				return true;
-			}
-
-			// Touch fields with errors and set errorMap so errors are visible.
-			// Setting errorSourceMap to 'form' ensures the form-level onChange
-			// validator can clear these errors when the user fixes the field.
-			const seen = new Set<string>();
-			for (const issue of result.error.issues) {
-				const fieldName = issue.path.join(".") as Parameters<
-					typeof form.setFieldMeta
-				>[0];
-				if (fieldName && !seen.has(fieldName)) {
-					seen.add(fieldName);
-					form.setFieldMeta(fieldName, (prev) => ({
-						...prev,
-						isTouched: true,
-						isBlurred: true,
-						errorMap: {
-							...prev.errorMap,
-							onChange: issue.message,
-						},
-						errorSourceMap: {
-							...prev.errorSourceMap,
-							onChange: "form",
-						},
-					}));
+			const fields = STEP_FIELDS[step] ?? [];
+			const results = await Promise.all(
+				fields.map((field) => form.validateField(field, "change")),
+			);
+			const ok = results.every((errors) => errors.length === 0);
+			if (!ok) {
+				for (const field of fields) {
+					form.setFieldMeta(field, (prev) => ({ ...prev, isBlurred: true }));
 				}
 			}
-			return false;
+			return ok;
 		},
-		[form, invitation],
+		[form],
 	);
 
 	const { currentStep, next, prev, isFirst, isLast } = useMultiStep({
@@ -356,7 +327,21 @@ function RegisterForm() {
 									</div>
 								</Field>
 							) : (
-								<form.AppField name="email">
+								<form.AppField
+									name="email"
+									validators={{
+										onChange: registerBase.shape.email,
+										onChangeAsyncDebounceMs: 400,
+										onChangeAsync: async ({ value }) => {
+											const { available } = await checkEmailAvailableFn({
+												data: { email: value },
+											});
+											return available
+												? undefined
+												: "Email is already registered";
+										},
+									}}
+								>
 									{(field) => (
 										<field.IconInputField
 											label="E-mail *"
@@ -369,7 +354,10 @@ function RegisterForm() {
 
 							{/* Password fields */}
 							<div className="grid gap-2 sm:grid-cols-2">
-								<form.AppField name="password">
+								<form.AppField
+									name="password"
+									validators={{ onChange: registerBase.shape.password }}
+								>
 									{(field) => (
 										<field.PasswordField
 											label="Password *"
@@ -379,7 +367,16 @@ function RegisterForm() {
 									)}
 								</form.AppField>
 
-								<form.AppField name="confirmPassword">
+								<form.AppField
+									name="confirmPassword"
+									validators={{
+										onChangeListenTo: ["password"],
+										onChange: ({ value, fieldApi }) =>
+											value !== fieldApi.form.getFieldValue("password")
+												? "Passwords do not match"
+												: undefined,
+									}}
+								>
 									{(field) => (
 										<field.PasswordField label="Confirm Password *" />
 									)}
@@ -388,13 +385,19 @@ function RegisterForm() {
 
 							{/* Name fields */}
 							<div className="grid gap-2 sm:grid-cols-2">
-								<form.AppField name="firstName">
+								<form.AppField
+									name="firstName"
+									validators={{ onChange: registerBase.shape.firstName }}
+								>
 									{(field) => (
 										<field.InputField label="First name *" type="text" />
 									)}
 								</form.AppField>
 
-								<form.AppField name="lastName">
+								<form.AppField
+									name="lastName"
+									validators={{ onChange: registerBase.shape.lastName }}
+								>
 									{(field) => (
 										<field.InputField label="Last name *" type="text" />
 									)}
@@ -409,7 +412,10 @@ function RegisterForm() {
 									)}
 								</form.AppField>
 
-								<form.Field name="affiliationId">
+								<form.Field
+									name="affiliationId"
+									validators={{ onChange: registerBase.shape.affiliationId }}
+								>
 									{(field) => {
 										const hasError =
 											field.state.meta.isBlurred &&
@@ -451,7 +457,17 @@ function RegisterForm() {
 
 							{/* Billing details (visible when invoice needed) */}
 							{needInvoice && (
-								<form.AppField name="address">
+								<form.AppField
+									name="address"
+									validators={{
+										onChangeListenTo: ["needInvoice"],
+										onChange: ({ value, fieldApi }) =>
+											fieldApi.form.getFieldValue("needInvoice") &&
+											value.trim().length === 0
+												? "Billing details are required when invoice is needed"
+												: undefined,
+									}}
+								>
 									{(field) => (
 										<field.TextareaField
 											label="Billing details (organization) *"
@@ -463,7 +479,10 @@ function RegisterForm() {
 							)}
 
 							{/* Country */}
-							<form.AppField name="country">
+							<form.AppField
+								name="country"
+								validators={{ onChange: registerBase.shape.country }}
+							>
 								{(field) => <field.CountryComboboxField label="Country *" />}
 							</form.AppField>
 						</div>
@@ -496,7 +515,10 @@ function RegisterForm() {
 
 							{/* Terms acceptance */}
 							{tosContent && (
-								<form.Field name="acceptTerms">
+								<form.Field
+									name="acceptTerms"
+									validators={{ onChange: registerBase.shape.acceptTerms }}
+								>
 									{(field) => {
 										const hasError =
 											field.state.meta.isBlurred &&
