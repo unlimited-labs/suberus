@@ -6,24 +6,16 @@ import {
 import { Link } from "@tanstack/react-router";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { formatLlmStatus, pluralize } from "@/lib/format-llm-status";
+import { pluralize } from "@/lib/format-llm-status";
 import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
 
 interface HealthAlertsProps {
 	data: AdminDashboardMetrics["health"] | undefined;
 	s3: AdminDashboardMetrics["s3"] | undefined;
 	smtp: AdminDashboardMetrics["smtp"] | undefined;
-	llm: AdminDashboardMetrics["llm"] | undefined;
-	docling: AdminDashboardMetrics["docling"] | undefined;
 }
 
-export function HealthAlerts({
-	data,
-	s3,
-	smtp,
-	llm,
-	docling,
-}: HealthAlertsProps) {
+export function HealthAlerts({ data, s3, smtp }: HealthAlertsProps) {
 	return (
 		<>
 			{smtp?.status === "error" ? (
@@ -94,55 +86,6 @@ export function HealthAlerts({
 						<Button variant="outline" size="sm" asChild>
 							<Link to="/admin/users">View Users</Link>
 						</Button>
-					</AlertDescription>
-				</Alert>
-			) : null}
-
-			{llm?.status === "unavailable" ? (
-				<Alert className="border-blue-500 bg-blue-50 dark:bg-blue-950">
-					<IconInfoCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-					<AlertTitle className="text-blue-800 dark:text-blue-200">
-						LLM Unavailable
-					</AlertTitle>
-					<AlertDescription className="text-blue-700 dark:text-blue-300">
-						{llm.message}. AI-assisted document extraction will use
-						structure-based mode.
-					</AlertDescription>
-				</Alert>
-			) : null}
-
-			{llm?.status === "healthy" ? (
-				<Alert className="border-green-500 bg-green-50 dark:bg-green-950">
-					<IconInfoCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-					<AlertTitle className="text-green-800 dark:text-green-200">
-						LLM Connected
-					</AlertTitle>
-					<AlertDescription className="text-green-700 dark:text-green-300">
-						{formatLlmStatus(llm)}
-					</AlertDescription>
-				</Alert>
-			) : null}
-
-			{docling?.status === "unavailable" ? (
-				<Alert className="border-blue-500 bg-blue-50 dark:bg-blue-950">
-					<IconInfoCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-					<AlertTitle className="text-blue-800 dark:text-blue-200">
-						Docling Unavailable
-					</AlertTitle>
-					<AlertDescription className="text-blue-700 dark:text-blue-300">
-						{docling.message}. DOCX conversion will fall back to XML parsing.
-					</AlertDescription>
-				</Alert>
-			) : null}
-
-			{docling?.status === "healthy" ? (
-				<Alert className="border-green-500 bg-green-50 dark:bg-green-950">
-					<IconInfoCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-					<AlertTitle className="text-green-800 dark:text-green-200">
-						Docling Connected
-					</AlertTitle>
-					<AlertDescription className="text-green-700 dark:text-green-300">
-						DOCX to markdown conversion service available
 					</AlertDescription>
 				</Alert>
 			) : null}

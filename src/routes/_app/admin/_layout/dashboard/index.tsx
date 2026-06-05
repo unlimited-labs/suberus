@@ -7,6 +7,7 @@ import { QuickActions } from "@/components/admin/dashboard/quick-actions";
 import { RecentActivity } from "@/components/admin/dashboard/recent-activity";
 import { ReviewProgress } from "@/components/admin/dashboard/review-progress";
 import { SubmissionChart } from "@/components/admin/dashboard/submission-chart";
+import { SystemHealthCard } from "@/components/admin/dashboard/system-health-card";
 import { UserCountryMap } from "@/components/admin/dashboard/user-country-map";
 import { PageHeader } from "@/components/layout/page-header";
 import { adminDashboardQueryOptions } from "@/server-fns/admin/dashboard";
@@ -28,13 +29,7 @@ function AdminDashboard() {
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconDashboard} title="Admin Dashboard" />
 			<div className="flex-1 overflow-auto p-6 space-y-6">
-				<HealthAlerts
-					data={data?.health}
-					s3={data?.s3}
-					smtp={data?.smtp}
-					llm={data?.llm}
-					docling={data?.docling}
-				/>
+				<HealthAlerts data={data?.health} s3={data?.s3} smtp={data?.smtp} />
 				<MetricsGrid metrics={data} isLoading={false} />
 				<div className="grid gap-6 lg:grid-cols-2">
 					<SubmissionChart data={data?.submissions} />
@@ -45,6 +40,12 @@ function AdminDashboard() {
 					<RecentActivity events={data?.recentActivity} />
 					<QuickActions />
 				</div>
+				<SystemHealthCard
+					s3={data?.s3}
+					smtp={data?.smtp}
+					llm={data?.llm}
+					docling={data?.docling}
+				/>
 			</div>
 		</div>
 	);
