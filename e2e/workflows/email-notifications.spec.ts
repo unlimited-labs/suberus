@@ -394,6 +394,16 @@ test.describe("Admin Notification Emails", () => {
 			await termsCheckbox.waitFor({ state: "visible", timeout: 10000 });
 		}
 		await termsCheckbox.check();
+
+		// Answer the seeded required "Preferred session format" question (isRequired
+		// is enforced on step 3, otherwise account creation is blocked).
+		const formatTrigger = page
+			.locator("div")
+			.filter({ hasText: /^Preferred session format/ })
+			.getByRole("combobox");
+		await formatTrigger.click();
+		await page.getByRole("option", { name: "Oral" }).click();
+
 		await page.getByRole("button", { name: "Create account" }).click();
 		await expect(page).toHaveURL("/", { timeout: 15000 });
 

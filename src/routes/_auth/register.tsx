@@ -28,6 +28,7 @@ import { titleOptions } from "@/lib/labels";
 import { roleLabels } from "@/lib/labels/user";
 import { cn } from "@/lib/utils";
 import { registerBase, registerSchema } from "@/lib/validations/auth";
+import { surveyAnswerRequiredError } from "@/lib/validations/survey";
 import { checkEmailAvailableFn } from "@/server-fns/auth";
 import {
 	consumeInvitationFn,
@@ -236,7 +237,14 @@ function RegisterForm() {
 	// and reveal any errors by marking the fields blurred.
 	const validateStep = useCallback(
 		async (step: number): Promise<boolean> => {
-			const fields = STEP_FIELDS[step] ?? [];
+			// Step 3 also gates on any required survey questions (dynamic fields).
+			const surveyFields =
+				step === 3
+					? surveyQuestions
+							.filter((q) => q.isRequired)
+							.map((q) => `surveyAnswers.${q.id}` as `surveyAnswers.${string}`)
+					: [];
+			const fields = [...(STEP_FIELDS[step] ?? []), ...surveyFields];
 			const results = await Promise.all(
 				fields.map((field) => form.validateField(field, "change")),
 			);
@@ -248,7 +256,7 @@ function RegisterForm() {
 			}
 			return ok;
 		},
-		[form],
+		[form, surveyQuestions],
 	);
 
 	const { currentStep, next, prev, isFirst, isLast } = useMultiStep({
@@ -500,14 +508,30 @@ function RegisterForm() {
 											name={
 												`surveyAnswers.${question.id}` as `surveyAnswers.${string}`
 											}
+											validators={{
+												onChange: ({ value }) =>
+													surveyAnswerRequiredError(question, value),
+											}}
 										>
-											{(field) => (
-												<SurveyQuestionField
-													question={question}
-													value={field.state.value}
-													onChange={field.handleChange}
-												/>
-											)}
+											{(field) => {
+												const hasError =
+													field.state.meta.isBlurred &&
+													field.state.meta.errors.length > 0;
+												return (
+													<Field data-invalid={hasError}>
+														<SurveyQuestionField
+															question={question}
+															value={field.state.value}
+															onChange={field.handleChange}
+														/>
+														<FieldError
+															errors={
+																hasError ? field.state.meta.errors : undefined
+															}
+														/>
+													</Field>
+												);
+											}}
 										</form.Field>
 									))}
 								</div>

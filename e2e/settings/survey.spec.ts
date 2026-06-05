@@ -210,4 +210,53 @@ test.describe("User Settings - Survey", () => {
 			.click();
 		await expect(page.getByText("Survey preferences saved")).toBeVisible();
 	});
+
+	test("required question blocks save until answered", async ({ page }) => {
+		// Arrange — empty the seeded required answer directly in the DB
+		const { getPrisma } = await import("../helpers/test-db");
+		const db = getPrisma();
+		const user = await db.user.findUnique({
+			where: { email: "test@e2e.local" },
+			select: { id: true },
+		});
+		const question = await db.surveyQuestion.findFirst({
+			where: { label: "Preferred session format" },
+			select: { id: true },
+		});
+		await db.surveyAnswer.updateMany({
+			where: { userId: user?.id, questionId: question?.id },
+			data: { value: "" },
+		});
+
+		await page.reload();
+		await expect(
+			page.getByRole("heading", { name: "Profile" }),
+		).toBeVisible({ timeout: 15000 });
+
+		const saveButton = page
+			.locator("section")
+			.filter({ hasText: "Survey" })
+			.getByRole("button", { name: "Save changes" });
+
+		// Act — attempt to save with the required SINGLE_SELECT empty
+		await saveButton.click();
+
+		// Assert — required error shown, nothing saved
+		await expect(page.getByText("This field is required")).toBeVisible();
+		await expect(
+			page.getByText("Survey preferences saved"),
+		).not.toBeVisible();
+
+		// Act — answer it; save now succeeds (restores the seeded state)
+		const trigger = page
+			.locator("div")
+			.filter({ hasText: /^Preferred session format/ })
+			.getByRole("combobox");
+		await trigger.click();
+		await page.getByRole("option", { name: "Poster" }).click();
+		await saveButton.click();
+
+		// Assert
+		await expect(page.getByText("Survey preferences saved")).toBeVisible();
+	});
 });

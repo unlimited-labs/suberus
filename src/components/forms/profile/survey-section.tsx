@@ -1,10 +1,10 @@
-import { IconLoader2 } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 import { toast } from "sonner";
 import { SurveyQuestionField } from "@/components/forms/survey/survey-question-field";
-import { Button } from "@/components/ui/button";
+import { Field, FieldError } from "@/components/ui/field";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
+import { useAppForm } from "@/hooks/use-app-form";
+import { surveyAnswerRequiredError } from "@/lib/validations/survey";
 import {
 	saveUserSurveyAnswersFn,
 	userSurveyAnswersQueryOptions,
@@ -35,62 +35,90 @@ export function SurveySection({
 	const queryClient = useQueryClient();
 	const answerMap = new Map(initialAnswers.map((a) => [a.questionId, a.value]));
 
-	const [answers, setAnswers] = useState<Record<string, string>>(() => {
-		const init: Record<string, string> = {};
-		for (const q of questions) {
-			init[q.id] = answerMap.get(q.id) ?? getDefaultValue(q.type);
-		}
-		return init;
-	});
-	const [isSaving, setIsSaving] = useState(false);
+	const defaultValues: Record<string, string> = {};
+	for (const q of questions) {
+		defaultValues[q.id] = answerMap.get(q.id) ?? getDefaultValue(q.type);
+	}
 
-	const handleChange = (questionId: string, value: string) => {
-		setAnswers((prev) => ({ ...prev, [questionId]: value }));
-	};
-
-	const handleSave = async () => {
-		setIsSaving(true);
-		try {
-			const data = Object.entries(answers).map(([questionId, value]) => ({
+	const form = useAppForm({
+		defaultValues,
+		onSubmit: async ({ value }) => {
+			const answers = Object.entries(value).map(([questionId, val]) => ({
 				questionId,
-				value,
+				value: val,
 			}));
-			await saveUserSurveyAnswersFn({ data: { answers: data } });
-			await queryClient.invalidateQueries({
-				queryKey: userSurveyAnswersQueryOptions().queryKey,
-			});
-			toast.success("Survey preferences saved");
-		} catch {
-			toast.error("Failed to save survey preferences");
-		} finally {
-			setIsSaving(false);
-		}
-	};
+			try {
+				await saveUserSurveyAnswersFn({ data: { answers } });
+				await queryClient.invalidateQueries({
+					queryKey: userSurveyAnswersQueryOptions().queryKey,
+				});
+				toast.success("Survey preferences saved");
+			} catch {
+				toast.error("Failed to save survey preferences");
+			}
+		},
+	});
 
 	if (questions.length === 0) {
 		return null;
 	}
 
 	return (
-		<div className="space-y-4">
+		<form
+			onSubmit={(e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				// Reveal required-field errors on submit (errors gate on isBlurred).
+				for (const question of questions) {
+					form.setFieldMeta(question.id, (prev) => ({
+						...prev,
+						isBlurred: true,
+					}));
+				}
+				void form.handleSubmit();
+			}}
+			className="space-y-4"
+		>
 			<div className="space-y-3">
 				{questions.map((question) => (
-					<SurveyQuestionField
+					<form.Field
 						key={question.id}
-						question={question}
-						value={answers[question.id] ?? getDefaultValue(question.type)}
-						onChange={(value) => handleChange(question.id, value)}
-					/>
+						name={question.id}
+						validators={{
+							onChange: ({ value }) =>
+								surveyAnswerRequiredError(question, value),
+							onSubmit: ({ value }) =>
+								surveyAnswerRequiredError(question, value),
+						}}
+					>
+						{(field) => {
+							const hasError =
+								(field.state.meta.isBlurred ||
+									field.form.state.submissionAttempts > 0) &&
+								field.state.meta.errors.length > 0;
+							return (
+								<Field data-invalid={hasError}>
+									<SurveyQuestionField
+										question={question}
+										value={field.state.value}
+										onChange={field.handleChange}
+									/>
+									<FieldError
+										errors={hasError ? field.state.meta.errors : undefined}
+									/>
+								</Field>
+							);
+						}}
+					</form.Field>
 				))}
 			</div>
 
 			<div className="flex justify-end pt-2">
-				<Button type="button" onClick={handleSave} disabled={isSaving}>
-					{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
-					Save changes
-				</Button>
+				<form.AppForm>
+					<form.SubmitButton label="Save changes" submittingLabel="Saving..." />
+				</form.AppForm>
 			</div>
-		</div>
+		</form>
 	);
 }
 

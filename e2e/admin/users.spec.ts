@@ -430,6 +430,44 @@ test.describe("Admin Users Management", () => {
 			await expect(dialog).not.toBeVisible()
 			await expect(page.locator("[data-slot='card-title']")).toContainText(TEST_USER.firstName)
 		})
+
+		test("duplicate email shows inline field error, not just a toast", async ({ page, userDetailPage }) => {
+			test.slow()
+			// Arrange — temp user we can safely mutate
+			const { createTestUser, deleteTestUser } = await import("../helpers/test-db")
+			const tempUser = await createTestUser({
+				email: `dup-email-${Date.now()}@e2e.local`,
+				firstName: "DupEmail",
+				lastName: "User",
+			})
+
+			try {
+				await userDetailPage.goto(tempUser.id)
+				await expect(userDetailPage.editProfileButton).toBeVisible({ timeout: 10000 })
+				await userDetailPage.editProfileButton.click()
+				const dialog = page.getByRole("dialog")
+				await dialog.waitFor({ state: "visible" })
+
+				// Act — set email to an already-registered address (admin), then save.
+				// Blur + value assertion ensure the change is committed to form state
+				// before submit (otherwise an unchanged email submits successfully).
+				const emailField = dialog.getByLabel("Email *")
+				await emailField.clear()
+				await emailField.fill(ADMIN_USER.email)
+				await emailField.blur()
+				await expect(emailField).toHaveValue(ADMIN_USER.email)
+				await dialog.getByRole("button", { name: "Save" }).click()
+
+				// Assert — inline error appears inside the dialog (server 409 → field error)
+				await expect(dialog.getByText("Email already in use")).toBeVisible({ timeout: 5000 })
+				// Dialog stays open (submit failed)
+				await expect(dialog).toBeVisible()
+				// 409 no longer raises a toast (field error replaces it)
+				await expect(page.getByText("Profile updated")).not.toBeVisible()
+			} finally {
+				await deleteTestUser(tempUser.id)
+			}
+		})
 	})
 
 	test.describe("Delete User", () => {

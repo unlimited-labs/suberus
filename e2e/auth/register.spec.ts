@@ -213,6 +213,19 @@ test.describe("Register Page - Step 3: Survey", () => {
 		await expect(registerPage.page.getByText("You must accept the Terms of Service")).toBeVisible()
 	})
 
+	test("blocks account creation when a required survey question is unanswered", async ({ registerPage }) => {
+		// Arrange — accept terms but leave the required "Preferred session format" empty
+		await registerPage.page.getByLabel(/I agree to the/).check()
+
+		// Act
+		await registerPage.clickCreateAccount()
+
+		// Assert — required survey error shown, still on step 3 (no redirect)
+		await expect(registerPage.page.getByText("This field is required")).toBeVisible()
+		await expect(registerPage.createAccountButton).toBeVisible()
+		await expect(registerPage.page).not.toHaveURL("/")
+	})
+
 	test("dynamic survey checkboxes are toggleable", async ({ registerPage }) => {
 		// Arrange — questions seeded in global setup
 		const visaCheckbox = registerPage.page.getByLabel(

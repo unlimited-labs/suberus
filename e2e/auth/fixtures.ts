@@ -163,6 +163,18 @@ export class RegisterPage {
 				await this.page.getByLabel(label).check()
 			}
 		}
+
+		// Answer the seeded required "Preferred session format" question so the
+		// step gates open (survey isRequired is enforced). No-op if not present.
+		const formatTrigger = this.page
+			.locator("div")
+			.filter({ hasText: /^Preferred session format/ })
+			.getByRole("combobox")
+		if (await formatTrigger.isVisible().catch(() => false)) {
+			await formatTrigger.click()
+			await this.page.getByRole("option", { name: "Oral" }).click()
+		}
+
 		if (data.acceptTerms) {
 			await this.page.getByLabel(/I agree to the/).check()
 		}

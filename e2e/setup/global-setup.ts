@@ -441,7 +441,7 @@ async function globalSetup() {
 			},
 		});
 
-		await prisma.surveyQuestion.create({
+		const preferredFormatQuestion = await prisma.surveyQuestion.create({
 			data: {
 				label: "Preferred session format",
 				type: "SINGLE_SELECT",
@@ -449,6 +449,17 @@ async function globalSetup() {
 				isActive: true,
 				isRequired: true,
 				options: ["Oral", "Poster", "Workshop"],
+			},
+		});
+
+		// Pre-answer the required question for the main test user so the profile
+		// survey section (which now enforces isRequired) is satisfied on load and
+		// existing save tests are not blocked.
+		await prisma.surveyAnswer.create({
+			data: {
+				userId: testResult.user.id,
+				questionId: preferredFormatQuestion.id,
+				value: "Poster",
 			},
 		});
 

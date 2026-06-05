@@ -21,6 +21,7 @@ import {
 	adminUsersQueryOptions,
 	updateAdminUserProfile,
 } from "@/server-fns/admin/users";
+import { checkEmailAvailableFn } from "@/server-fns/auth";
 
 interface UserEditDialogProps {
 	user: AdminUser;
@@ -57,12 +58,8 @@ export function UserEditDialog({
 			onOpenChange(false);
 			toast.success("Profile updated");
 		},
-		onError: (error) => {
-			if (error instanceof Response && error.status === 409) {
-				toast.error("Email already in use");
-			} else {
-				toast.error("Failed to update profile");
-			}
+		onError: () => {
+			toast.error("Failed to update profile");
 		},
 	});
 
@@ -83,19 +80,32 @@ export function UserEditDialog({
 		validators: {
 			onChange: adminUserEditSchema,
 			onSubmit: adminUserEditSchema,
-		},
-		onSubmit: async ({ value }) => {
-			await mutation.mutateAsync({
-				firstName: value.firstName,
-				lastName: value.lastName,
-				title: value.title || undefined,
-				affiliation: value.affiliation || undefined,
-				orcid: value.orcid || undefined,
-				email: value.email,
-				needInvoice: value.needInvoice,
-				address: value.address || undefined,
-				country: value.country || undefined,
-			});
+			// Email uniqueness is enforced here as a pre-check, mirroring the
+			// register form: a 409 thrown by the update server fn does NOT reject
+			// on the client (it resolves), so we cannot map it from the mutation.
+			// Returning `{ fields }` surfaces the conflict on the `email` field.
+			onSubmitAsync: async ({ value }) => {
+				if (value.email !== user.email) {
+					const { available } = await checkEmailAvailableFn({
+						data: { email: value.email },
+					});
+					if (!available) {
+						return { fields: { email: "Email already in use" } };
+					}
+				}
+				await mutation.mutateAsync({
+					firstName: value.firstName,
+					lastName: value.lastName,
+					title: value.title || undefined,
+					affiliation: value.affiliation || undefined,
+					orcid: value.orcid || undefined,
+					email: value.email,
+					needInvoice: value.needInvoice,
+					address: value.address || undefined,
+					country: value.country || undefined,
+				});
+				return null;
+			},
 		},
 	});
 

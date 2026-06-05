@@ -16,6 +16,12 @@ interface FormSubmitButtonProps {
  * through `form.Subscribe` so the disabled state actually engages during async
  * submit (reading `form.state.isSubmitting` directly in render is non-reactive
  * and never re-renders, which allowed double-submits).
+ *
+ * The button is intentionally NOT disabled while the form is merely invalid:
+ * clicking submit on an invalid form runs the validators and reveals the field
+ * errors (the validators block the real submit anyway). Disabling on
+ * `!canSubmit` breaks that click-to-validate flow — and Playwright treats both
+ * `disabled` and `aria-disabled` as un-clickable, so it also breaks the suite.
  */
 export function FormSubmitButton({
 	label,
