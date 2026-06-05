@@ -2,6 +2,7 @@
 // Separate process because `auth.server` binds its Prisma client to DATABASE_URL
 // at import and Node caches the module, so one process can only seed one DB.
 import { PrismaClient } from "../../src/generated/prisma/client";
+import { UserRole } from "../../src/generated/prisma/enums";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { config } from "dotenv";
 import { dirname, resolve } from "path";
@@ -84,208 +85,52 @@ async function seed() {
 	if (!connectionString) throw new Error("DATABASE_URL not set for seed");
 	const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 
+	type SeedUser = { email: string; password: string; firstName: string; lastName: string; affiliationName: string };
+	async function seedUser(
+		u: SeedUser,
+		opts: { role?: UserRole; emailVerified?: boolean; needInvoice?: boolean } = {},
+	) {
+		const affiliation = await prisma.affiliation.upsert({
+			where: { name: u.affiliationName },
+			update: {},
+			create: { name: u.affiliationName },
+		});
+		const res = await auth.api.signUpEmail({
+			body: {
+				email: u.email,
+				password: u.password,
+				name: u.lastName,
+				firstName: u.firstName,
+				affiliationId: affiliation.id,
+			},
+		});
+		if (!res?.user) throw new Error(`Failed to create user: ${u.email}`);
+		await prisma.user.update({
+			where: { id: res.user.id },
+			data: {
+				isActive: true,
+				emailVerified: opts.emailVerified ?? true,
+				affiliationId: affiliation.id,
+				...(opts.role ? { role: opts.role } : {}),
+				...(opts.needInvoice ? { needInvoice: true } : {}),
+			},
+		});
+		console.log(`✅ User created: ${u.email}`);
+		return res.user;
+	}
+
 	try {
 		// ============================================================
 		// CREATE TEST USERS
 		// ============================================================
 
-		const testAffiliation = await prisma.affiliation.upsert({
-			where: { name: TEST_USER.affiliationName },
-			update: {},
-			create: { name: TEST_USER.affiliationName },
-		});
-
-		const adminAffiliation = await prisma.affiliation.upsert({
-			where: { name: ADMIN_USER.affiliationName },
-			update: {},
-			create: { name: ADMIN_USER.affiliationName },
-		});
-
-		const reviewerAffiliation = await prisma.affiliation.upsert({
-			where: { name: REVIEWER_USER.affiliationName },
-			update: {},
-			create: { name: REVIEWER_USER.affiliationName },
-		});
-
-		const editorAffiliation = await prisma.affiliation.upsert({
-			where: { name: EDITOR_USER.affiliationName },
-			update: {},
-			create: { name: EDITOR_USER.affiliationName },
-		});
-
-		const unverifiedAffiliation = await prisma.affiliation.upsert({
-			where: { name: UNVERIFIED_USER.affiliationName },
-			update: {},
-			create: { name: UNVERIFIED_USER.affiliationName },
-		});
-
-		const adminVerifyTestAffiliation = await prisma.affiliation.upsert({
-			where: { name: ADMIN_VERIFY_TEST_USER.affiliationName },
-			update: {},
-			create: { name: ADMIN_VERIFY_TEST_USER.affiliationName },
-		});
-
-		const resetPasswordAffiliation = await prisma.affiliation.upsert({
-			where: { name: RESET_PASSWORD_USER.affiliationName },
-			update: {},
-			create: { name: RESET_PASSWORD_USER.affiliationName },
-		});
-
-		// Create test user
-		const testResult = await auth.api.signUpEmail({
-			body: {
-				email: TEST_USER.email,
-				password: TEST_USER.password,
-				name: TEST_USER.lastName,
-				firstName: TEST_USER.firstName,
-				affiliationId: testAffiliation.id,
-			},
-		});
-
-		if (!testResult?.user) {
-			throw new Error("Failed to create test user");
-		}
-
-		await prisma.user.update({
-			where: { id: testResult.user.id },
-			data: { emailVerified: true, isActive: true, affiliationId: testAffiliation.id, needInvoice: true },
-		});
-
-		console.log(`✅ Test user created: ${TEST_USER.email}`);
-
-		// Create admin user
-		const adminResult = await auth.api.signUpEmail({
-			body: {
-				email: ADMIN_USER.email,
-				password: ADMIN_USER.password,
-				name: ADMIN_USER.lastName,
-				firstName: ADMIN_USER.firstName,
-				affiliationId: adminAffiliation.id,
-			},
-		});
-
-		if (!adminResult?.user) {
-			throw new Error("Failed to create admin user");
-		}
-
-		await prisma.user.update({
-			where: { id: adminResult.user.id },
-			data: { emailVerified: true, isActive: true, role: "ADMIN", affiliationId: adminAffiliation.id },
-		});
-
-		console.log(`✅ Admin user created: ${ADMIN_USER.email}`);
-
-		// Create reviewer user
-		const reviewerResult = await auth.api.signUpEmail({
-			body: {
-				email: REVIEWER_USER.email,
-				password: REVIEWER_USER.password,
-				name: REVIEWER_USER.lastName,
-				firstName: REVIEWER_USER.firstName,
-				affiliationId: reviewerAffiliation.id,
-			},
-		});
-
-		if (!reviewerResult?.user) {
-			throw new Error("Failed to create reviewer user");
-		}
-
-		await prisma.user.update({
-			where: { id: reviewerResult.user.id },
-			data: { emailVerified: true, isActive: true, role: "REVIEWER", affiliationId: reviewerAffiliation.id },
-		});
-
-		console.log(`✅ Reviewer user created: ${REVIEWER_USER.email}`);
-
-		// Create editor user
-		const editorResult = await auth.api.signUpEmail({
-			body: {
-				email: EDITOR_USER.email,
-				password: EDITOR_USER.password,
-				name: EDITOR_USER.lastName,
-				firstName: EDITOR_USER.firstName,
-				affiliationId: editorAffiliation.id,
-			},
-		});
-
-		if (!editorResult?.user) {
-			throw new Error("Failed to create editor user");
-		}
-
-		await prisma.user.update({
-			where: { id: editorResult.user.id },
-			data: { emailVerified: true, isActive: true, role: "EDITOR", affiliationId: editorAffiliation.id },
-		});
-
-		console.log(`✅ Editor user created: ${EDITOR_USER.email}`);
-
-		// Create unverified user (for email verification tests)
-		const unverifiedResult = await auth.api.signUpEmail({
-			body: {
-				email: UNVERIFIED_USER.email,
-				password: UNVERIFIED_USER.password,
-				name: UNVERIFIED_USER.lastName,
-				firstName: UNVERIFIED_USER.firstName,
-				affiliationId: unverifiedAffiliation.id,
-			},
-		});
-
-		if (!unverifiedResult?.user) {
-			throw new Error("Failed to create unverified user");
-		}
-
-		// Keep emailVerified: false (default) but mark as active
-		await prisma.user.update({
-			where: { id: unverifiedResult.user.id },
-			data: { isActive: true, affiliationId: unverifiedAffiliation.id },
-		});
-
-		console.log(`✅ Unverified user created: ${UNVERIFIED_USER.email}`);
-
-		// Create admin verify test user (for destructive admin panel tests)
-		const adminVerifyTestResult = await auth.api.signUpEmail({
-			body: {
-				email: ADMIN_VERIFY_TEST_USER.email,
-				password: ADMIN_VERIFY_TEST_USER.password,
-				name: ADMIN_VERIFY_TEST_USER.lastName,
-				firstName: ADMIN_VERIFY_TEST_USER.firstName,
-				affiliationId: adminVerifyTestAffiliation.id,
-			},
-		});
-
-		if (!adminVerifyTestResult?.user) {
-			throw new Error("Failed to create admin verify test user");
-		}
-
-		// Keep emailVerified: false (default) but mark as active
-		await prisma.user.update({
-			where: { id: adminVerifyTestResult.user.id },
-			data: { isActive: true, affiliationId: adminVerifyTestAffiliation.id },
-		});
-
-		console.log(`✅ Admin verify test user created: ${ADMIN_VERIFY_TEST_USER.email}`);
-
-		// Create reset password test user (for destructive password reset tests)
-		const resetPasswordResult = await auth.api.signUpEmail({
-			body: {
-				email: RESET_PASSWORD_USER.email,
-				password: RESET_PASSWORD_USER.password,
-				name: RESET_PASSWORD_USER.lastName,
-				firstName: RESET_PASSWORD_USER.firstName,
-				affiliationId: resetPasswordAffiliation.id,
-			},
-		});
-
-		if (!resetPasswordResult?.user) {
-			throw new Error("Failed to create reset password test user");
-		}
-
-		await prisma.user.update({
-			where: { id: resetPasswordResult.user.id },
-			data: { emailVerified: true, isActive: true, affiliationId: resetPasswordAffiliation.id },
-		});
-
-		console.log(`✅ Reset password test user created: ${RESET_PASSWORD_USER.email}`);
+		const testUser = await seedUser(TEST_USER, { emailVerified: true, needInvoice: true });
+		await seedUser(ADMIN_USER, { role: UserRole.ADMIN });
+		await seedUser(REVIEWER_USER, { role: UserRole.REVIEWER });
+		await seedUser(EDITOR_USER, { role: UserRole.EDITOR });
+		await seedUser(UNVERIFIED_USER, { emailVerified: false });
+		await seedUser(ADMIN_VERIFY_TEST_USER, { emailVerified: false });
+		await seedUser(RESET_PASSWORD_USER, { emailVerified: true });
 
 		// ============================================================
 		// SEED APP SETTINGS
@@ -399,7 +244,7 @@ async function seed() {
 		// existing save tests are not blocked.
 		await prisma.surveyAnswer.create({
 			data: {
-				userId: testResult.user.id,
+				userId: testUser.id,
 				questionId: preferredFormatQuestion.id,
 				value: "Poster",
 			},
