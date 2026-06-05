@@ -21,8 +21,6 @@
     "db:update": "dotenv -e .env -- prisma migrate deploy && prisma generate",
     "db:studio": "dotenv -e .env -- prisma studio",
     "db:reset": "dotenv -e .env -- prisma migrate reset --force",
-    "db:test:reset": "dotenv -e .env.test -- prisma migrate reset --force",
-    "db:test:studio": "dotenv -e .env.test -- prisma studio",
     "repl": "dotenv -e .env -- tsx scripts/repl.ts",
     "rand": "openssl rand -base64 32",
     "update:shadcn:win": "Get-ChildItem -Path src/components/ui/ -Filter *.tsx | ForEach-Object { $baseName = [System.IO.Path]::GetFileNameWithoutExtension($_.Name); pnpx shadcn@latest add -y -o $baseName; }"

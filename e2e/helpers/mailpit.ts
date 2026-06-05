@@ -9,22 +9,10 @@ export function workerFrom(): string {
 	return fromAddrFor(Number(process.env.TEST_PARALLEL_INDEX ?? 0))
 }
 
-// Delete only this worker's messages; shared Mailpit stays intact for dev.
-export async function clearMailpitForWorker() {
+// Delete messages tagged with a test's unique run id (testRunId is globally
+// unique, so this never touches other workers' or dev's mail).
+export async function clearMailpit(testRunId: string) {
 	try {
-		await mailpit.deleteMessagesBySearch({ query: `from:${workerFrom()}` })
-	} catch {
-		// Mailpit might not be running
-	}
-}
-
-export async function clearMailpit(testRunId?: string) {
-	try {
-		if (!testRunId) {
-			await mailpit.deleteMessages()
-			return
-		}
-
 		const { messages } = await mailpit.listMessages(0, 200)
 		for (const message of messages) {
 			try {
@@ -43,7 +31,7 @@ export async function clearMailpit(testRunId?: string) {
 
 export async function clearMailpitForAddress(address: string) {
 	try {
-		await mailpit.deleteMessagesBySearch({ query: `to:${address}` })
+		await mailpit.deleteMessagesBySearch({ query: `from:${workerFrom()} to:${address}` })
 	} catch {
 		// Mailpit might not be running
 	}
