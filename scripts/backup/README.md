@@ -24,7 +24,7 @@ sudo apt install -y restic rclone        # or download static binaries
 # Docker must be running with the suberus stack (docker compose up -d)
 
 # restic password — pick the location that matches how the backup runs:
-#   (a) system-wide (root, systemd units): /etc/suberus/restic-password
+#   (a) system-wide (root / system cron): /etc/suberus/restic-password
 sudo install -d -m 700 /etc/suberus
 printf 'a-long-random-passphrase\n' | sudo tee /etc/suberus/restic-password >/dev/null
 sudo chmod 600 /etc/suberus/restic-password
@@ -86,26 +86,24 @@ post-restore consistency check + row-count sanity.
 > Restoring into a **new** database requires it to exist first:
 > `docker exec suberus-postgres createdb -U suberus suberus_restore`.
 
-## Automation (systemd)
+## Automation (cron)
+
+A user crontab needs no root and works anywhere cron runs. Set an explicit
+`PATH` (cron's is minimal) and pass the config via `BACKUP_ENV`:
+
+```cron
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# Nightly backup at 02:30
+30 2 * * * BACKUP_ENV=/path/to/backup.env /bin/bash /path/to/backup.sh >> /path/to/logs/backup.log 2>&1
+# Weekly restic integrity check (Sunday 04:00)
+0 4 * * 0 BACKUP_ENV=/path/to/backup.env /bin/bash -c 'source /path/to/lib.sh; load_config; restic_cmd check' >> /path/to/logs/check.log 2>&1
+```
+
+Before relying on it, test in cron's stripped environment to catch PATH issues:
 
 ```bash
-sudo cp scripts/backup/suberus-backup.{service,timer} /etc/systemd/system/
-sudo cp scripts/backup/suberus-restic-check.{service,timer} /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now suberus-backup.timer suberus-restic-check.timer
-systemctl list-timers 'suberus-*'
-```
-
-- `suberus-backup.timer` — daily 02:30 (`Persistent=true`, catches missed runs).
-- `suberus-restic-check.timer` — Sunday 04:00, repository integrity.
-
-Edit `WorkingDirectory`/paths in the unit files to match the deploy location
-(`/opt/suberus` by default).
-
-**Crontab alternative:**
-
-```
-30 2 * * * cd /opt/suberus && scripts/backup/backup.sh >> /var/log/suberus-backup.log 2>&1
+env -i HOME="$HOME" PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+  BACKUP_ENV=/path/to/backup.env /bin/bash /path/to/backup.sh
 ```
 
 ## Multiple Suberus instances on one host
@@ -134,18 +132,14 @@ instance's `restic forget --prune` only ever touches its own repo).
    BACKUP_ENV=scripts/backup/backup.env.confA bash scripts/backup/restore.sh latest
    ```
 
-3. **Automate with templated units** (`%i` = instance name → `backup.env.%i`):
+3. **Automate** — one cron line per instance, staggered so they don't dump
+   and mirror at the same moment:
 
-   ```bash
-   sudo cp scripts/backup/suberus-backup@.{service,timer} /etc/systemd/system/
-   sudo cp scripts/backup/suberus-restic-check@.{service,timer} /etc/systemd/system/
-   sudo systemctl daemon-reload
-   sudo systemctl enable --now suberus-backup@confA.timer suberus-backup@confB.timer
-   sudo systemctl enable --now suberus-restic-check@confA.timer
+   ```cron
+   PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+   30 2 * * * BACKUP_ENV=/home/u/suberus-backup/backup.env.confA /bin/bash /home/u/suberus-backup/backup.sh >> /home/u/suberus-backup/logs/confA.log 2>&1
+   45 2 * * * BACKUP_ENV=/home/u/suberus-backup/backup.env.confB /bin/bash /home/u/suberus-backup/backup.sh >> /home/u/suberus-backup/logs/confB.log 2>&1
    ```
-
-   `RandomizedDelaySec` staggers concurrent instances so they don't dump/mirror
-   at the same moment.
 
 ## Off-site portability
 
