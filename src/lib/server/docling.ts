@@ -5,7 +5,8 @@
  * PDF extraction depends on it entirely; for DOCX it is an optional enhancement.
  *
  * Fail-fast: if docling is unavailable, logs error and returns null immediately.
- * Caller falls back to XML header text — no retries, no blocking.
+ * DOCX callers then fall back to XML header text (parseDocx zones); PDF has no
+ * fallback and the extraction job fails. No retries, no blocking.
  */
 import { env } from "@/env";
 import { createHealthCache } from "./health-cache";
