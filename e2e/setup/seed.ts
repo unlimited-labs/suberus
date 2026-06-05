@@ -9,6 +9,13 @@ import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 import { DEFAULT_EMAIL_TEMPLATES } from "../../prisma/default-email-templates";
 import {
+	APP_SETTINGS_DEFAULTS,
+	DEFAULT_ORAL_PRESENTATION_CONFIG,
+	DEFAULT_POSTER_CONFIG,
+	DEFAULT_FULL_PAPER_CONFIG,
+} from "../../src/lib/settings/defaults";
+import type { SubmissionTypeConfig } from "../../src/lib/settings/types";
+import {
 	TEST_USER,
 	ADMIN_USER,
 	REVIEWER_USER,
@@ -24,15 +31,14 @@ const PROJECT_ROOT = resolve(__dirname, "../..");
 // DATABASE_URL/SMTP_FROM_EMAIL come from the parent process and must win over .env.
 config({ quiet: true, path: resolve(PROJECT_ROOT, ".env") });
 
-// Submission type configs with scoring and double-blind enabled for ORAL_PRESENTATION
+// Test environment = app defaults (src/lib/settings/defaults.ts) + the deltas the
+// E2E suite needs (types active, scoring/double-blind on ORAL, reviewer counts).
 const SUBMISSION_TYPE_CONFIGS = {
 	ORAL_PRESENTATION: {
+		...DEFAULT_ORAL_PRESENTATION_CONFIG,
 		isActive: true,
-		contentFormat: "TEXT",
-		allowedExtensions: [],
 		requiredReviewers: 2,
 		reviewMode: "DOUBLE_BLIND",
-		reviewDeadlineDays: 14,
 		requiresEditorDecision: true,
 		enableScoring: true,
 		scoringCriteria: [
@@ -41,42 +47,18 @@ const SUBMISSION_TYPE_CONFIGS = {
 			{ name: "Significance", description: "Importance and impact of the work" },
 			{ name: "Methodology", description: "Research design and execution" },
 		],
-		enableConfidenceLevel: true,
-		enableTrackSelection: false,
 	},
 	POSTER: {
+		...DEFAULT_POSTER_CONFIG,
 		isActive: true,
-		contentFormat: "TEXT",
-		allowedExtensions: [],
-		requiredReviewers: 1,
-		reviewMode: "SINGLE_BLIND",
 		reviewDeadlineDays: 7,
-		requiresEditorDecision: false,
-		enableScoring: false,
-		scoringCriteria: [],
-		enableConfidenceLevel: true,
-		enableTrackSelection: false,
 	},
 	FULL_PAPER: {
+		...DEFAULT_FULL_PAPER_CONFIG,
 		isActive: true,
-		contentFormat: "FILE",
-		allowedExtensions: ["pdf", "doc", "docx"],
 		requiredReviewers: 3,
-		reviewMode: "DOUBLE_BLIND",
-		reviewDeadlineDays: 21,
-		requiresEditorDecision: true,
-		enableScoring: true,
-		scoringCriteria: [
-			{ name: "Originality", description: "Contribution to the field" },
-			{ name: "Clarity", description: "Writing quality and structure" },
-			{ name: "Significance", description: "Importance and impact of the work" },
-			{ name: "Methodology", description: "Research design and execution" },
-			{ name: "Technical Quality", description: "Technical soundness and rigor" },
-		],
-		enableConfidenceLevel: true,
-		enableTrackSelection: false,
 	},
-};
+} satisfies Record<string, SubmissionTypeConfig>;
 
 async function seed() {
 	const { auth } = await import("../../auth.server");
@@ -177,25 +159,26 @@ async function seed() {
 
 		console.log("✅ Submission type configs seeded");
 
-		// Validation settings
-		const validationSettings = [
-			{ key: "MIN_TITLE_LENGTH", value: 10 },
-			{ key: "MAX_TITLE_LENGTH", value: 200 },
-			{ key: "MIN_ABSTRACT_LENGTH", value: 500 },
-			{ key: "MAX_ABSTRACT_LENGTH", value: 2000 },
-			{ key: "MIN_KEYWORDS", value: 3 },
-			{ key: "MAX_KEYWORDS", value: 5 },
-			{ key: "MAX_FILE_SIZE_MB", value: 10 },
-			{ key: "MAX_AUTHORS", value: 10 },
-			{ key: "ENABLE_KEYWORDS", value: true },
-			{ key: "ALLOWED_FILE_TYPES", value: ["pdf", "docx", "doc"] },
-		];
+		// Validation settings — sourced from app defaults (single source of truth)
+		const VALIDATION_KEYS = [
+			"MIN_TITLE_LENGTH",
+			"MAX_TITLE_LENGTH",
+			"MIN_ABSTRACT_LENGTH",
+			"MAX_ABSTRACT_LENGTH",
+			"MIN_KEYWORDS",
+			"MAX_KEYWORDS",
+			"MAX_FILE_SIZE_MB",
+			"MAX_AUTHORS",
+			"ENABLE_KEYWORDS",
+			"ALLOWED_FILE_TYPES",
+		] as const;
 
-		for (const setting of validationSettings) {
+		for (const key of VALIDATION_KEYS) {
+			const value = APP_SETTINGS_DEFAULTS[key];
 			await prisma.appSetting.upsert({
-				where: { key: setting.key as any },
-				update: { value: setting.value },
-				create: { key: setting.key as any, value: setting.value },
+				where: { key },
+				update: { value },
+				create: { key, value },
 			});
 		}
 
@@ -277,28 +260,17 @@ async function seed() {
 
 		console.log("✅ ToS content seeded");
 
-		// Fee types and currency
+		// Fee types and currency — sourced from app defaults
 		await prisma.appSetting.upsert({
 			where: { key: "FEE_TYPES" },
-			update: {
-				value: [
-					{ id: "full", name: "Full Conference Fee", amount: 250 },
-					{ id: "student", name: "Student Fee", amount: 100 },
-				],
-			},
-			create: {
-				key: "FEE_TYPES",
-				value: [
-					{ id: "full", name: "Full Conference Fee", amount: 250 },
-					{ id: "student", name: "Student Fee", amount: 100 },
-				],
-			},
+			update: { value: APP_SETTINGS_DEFAULTS.FEE_TYPES },
+			create: { key: "FEE_TYPES", value: APP_SETTINGS_DEFAULTS.FEE_TYPES },
 		});
 
 		await prisma.appSetting.upsert({
 			where: { key: "FEE_CURRENCY" },
-			update: { value: "EUR" },
-			create: { key: "FEE_CURRENCY", value: "EUR" },
+			update: { value: APP_SETTINGS_DEFAULTS.FEE_CURRENCY },
+			create: { key: "FEE_CURRENCY", value: APP_SETTINGS_DEFAULTS.FEE_CURRENCY },
 		});
 
 		console.log("✅ Fee types and currency seeded");
