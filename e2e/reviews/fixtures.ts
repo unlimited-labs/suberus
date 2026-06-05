@@ -8,6 +8,11 @@ import {
 } from "../helpers/base-fixtures";
 import { ADMIN_USER, REVIEWER_USER, TEST_USER } from "../helpers/test-users";
 import { loginAs } from "../helpers/auth";
+import {
+	expectActionAvailable,
+	expectActionUnavailable,
+	runSubmissionAction,
+} from "../helpers/submission-actions";
 
 export { ADMIN_USER, REVIEWER_USER, TEST_USER };
 
@@ -104,32 +109,20 @@ export class AdminSubmissionsPage {
 export class AdminSubmissionDetailPage {
 	readonly page: Page;
 	readonly backButton: Locator;
-	readonly assignReviewerButton: Locator;
-	readonly deskRejectButton: Locator;
-	readonly makeDecisionButton: Locator;
-	readonly markReviewsCompleteButton: Locator;
-	readonly readyForDecisionButton: Locator;
-	readonly overrideDecisionButton: Locator;
 
 	constructor(page: Page) {
 		this.page = page;
 		this.backButton = page.getByRole("link", { name: "Back" });
-		this.assignReviewerButton = page.getByRole("button", {
-			name: "Assign Reviewer",
-		});
-		this.deskRejectButton = page.getByRole("button", { name: "Desk Reject" });
-		this.makeDecisionButton = page.getByRole("button", {
-			name: "Make Decision",
-		});
-		this.markReviewsCompleteButton = page.getByRole("button", {
-			name: "Mark Reviews Complete",
-		});
-		this.readyForDecisionButton = page.getByRole("button", {
-			name: "Ready for Decision",
-		});
-		this.overrideDecisionButton = page.getByRole("button", {
-			name: "Override Decision",
-		});
+	}
+
+	/** Assert an action is available (primary button or Actions menu item). */
+	expectActionAvailable(name: string) {
+		return expectActionAvailable(this.page, name);
+	}
+
+	/** Assert an action is NOT available. */
+	expectActionUnavailable(name: string) {
+		return expectActionUnavailable(this.page, name);
 	}
 
 	async goto(submissionId: string) {
@@ -151,30 +144,26 @@ export class AdminSubmissionDetailPage {
 	}
 
 	async openAssignReviewerDialog() {
-		await this.assignReviewerButton.click();
+		await runSubmissionAction(this.page, "Assign Reviewer");
 		await this.page.getByRole("dialog").waitFor({ state: "visible" });
 	}
 
 	async openDeskRejectDialog() {
-		await this.deskRejectButton.click();
+		await runSubmissionAction(this.page, "Desk Reject");
 		await this.page.getByRole("dialog").waitFor({ state: "visible" });
 	}
 
 	async openEditorDecisionDialog() {
-		await this.makeDecisionButton.click();
+		await runSubmissionAction(this.page, "Make Decision");
 		await this.page.getByRole("dialog").waitFor({ state: "visible" });
 	}
 
-	async clickMarkReviewsComplete() {
-		await this.markReviewsCompleteButton.click();
-	}
-
 	async clickReadyForDecision() {
-		await this.readyForDecisionButton.click();
+		await runSubmissionAction(this.page, "Ready for Decision");
 	}
 
 	async openOverrideDialog() {
-		await this.overrideDecisionButton.click();
+		await runSubmissionAction(this.page, "Override Decision");
 		await this.page.getByRole("dialog").waitFor({ state: "visible" });
 	}
 

@@ -574,6 +574,7 @@ function SubmissionDetailPage() {
 											<Button
 												variant="outline"
 												className="w-full justify-between"
+												data-testid="submission-actions-trigger"
 											>
 												{primaryAction ? "More actions" : "Actions"}
 												<IconChevronDown className="size-4" />

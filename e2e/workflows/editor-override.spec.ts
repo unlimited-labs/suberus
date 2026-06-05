@@ -10,6 +10,10 @@ import {
 } from "../../src/generated/prisma/enums";
 import { ADMIN_USER } from "../helpers/test-users";
 import { loginAs } from "../helpers/auth";
+import {
+	expectActionUnavailable,
+	runSubmissionAction,
+} from "../helpers/submission-actions";
 
 test.describe("Override from Terminal States", () => {
 	test("admin can override ACCEPTED submission", async ({ page, testRun, cleanup }) => {
@@ -25,7 +29,7 @@ test.describe("Override from Terminal States", () => {
 		await expect(page.getByText("Accepted").first()).toBeVisible({ timeout: 10000 });
 
 		// Act
-		await page.getByRole("button", { name: "Override Decision" }).click();
+		await runSubmissionAction(page, "Override Decision");
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 		await page.locator("#override-reason").fill("Need to reconsider this decision");
 		await page.getByRole("button", { name: "Override", exact: true }).click();
@@ -51,7 +55,7 @@ test.describe("Override from Terminal States", () => {
 		await page.goto(`/admin/submissions/${submissionId}`);
 
 		// Act
-		await page.getByRole("button", { name: "Override Decision" }).click();
+		await runSubmissionAction(page, "Override Decision");
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 
 		// Assert
@@ -74,7 +78,7 @@ test.describe("Override from Terminal States", () => {
 		await expect(page.getByText("Rejected").first()).toBeVisible({ timeout: 10000 });
 
 		// Act
-		await page.getByRole("button", { name: "Override Decision" }).click();
+		await runSubmissionAction(page, "Override Decision");
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 		await page.locator("#override-reason").fill("New evidence provided");
 		await page.getByRole("button", { name: "Override", exact: true }).click();
@@ -105,7 +109,7 @@ test.describe("Override from Terminal States", () => {
 		await expect(page.getByText("Conditionally Accepted").first()).toBeVisible({ timeout: 10000 });
 
 		// Act
-		await page.getByRole("button", { name: "Override Decision" }).click();
+		await runSubmissionAction(page, "Override Decision");
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 		await page.locator("#override-reason").fill("Conditions not met");
 		await page.getByRole("button", { name: "Override", exact: true }).click();
@@ -134,9 +138,7 @@ test.describe("Override Negative Cases", () => {
 
 		// Assert
 		await expect(page.getByText("Submitted").first()).toBeVisible({ timeout: 10000 });
-		await expect(
-			page.getByRole("button", { name: "Override Decision" })
-		).not.toBeVisible();
+		await expectActionUnavailable(page, "Override Decision");
 	});
 
 	test("override button not shown for UNDER_REVIEW", async ({ page, testRun, cleanup }) => {
@@ -151,9 +153,7 @@ test.describe("Override Negative Cases", () => {
 
 		// Assert
 		await expect(page.getByText("Under Review").first()).toBeVisible({ timeout: 10000 });
-		await expect(
-			page.getByRole("button", { name: "Override Decision" })
-		).not.toBeVisible();
+		await expectActionUnavailable(page, "Override Decision");
 	});
 });
 
@@ -171,7 +171,7 @@ test.describe("After Override", () => {
 		await page.goto(`/admin/submissions/${submissionId}`);
 
 		// Override
-		await page.getByRole("button", { name: "Override Decision" }).click();
+		await runSubmissionAction(page, "Override Decision");
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 		await page.locator("#override-reason").fill("Re-evaluating");
 		await page.getByRole("button", { name: "Override", exact: true }).click();
@@ -183,7 +183,7 @@ test.describe("After Override", () => {
 		await expect(page.getByText("Awaiting Decision").first()).toBeVisible({ timeout: 10000 });
 
 		// Act - make new decision
-		await page.getByRole("button", { name: "Make Decision" }).click();
+		await runSubmissionAction(page, "Make Decision");
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 		await page.getByRole("button", { name: /Accept.*publication/i }).click();
 		await page.getByLabel(/Internal Reasoning/i).fill("Re-confirmed acceptance");

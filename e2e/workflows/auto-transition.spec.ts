@@ -13,6 +13,10 @@ import {
 } from "../../src/generated/prisma/enums";
 import { ADMIN_USER, REVIEWER_USER } from "../helpers/test-users";
 import { loginAs } from "../helpers/auth";
+import {
+	expectActionAvailable,
+	runSubmissionAction,
+} from "../helpers/submission-actions";
 
 /**
  * E2E tests for auto-transition after reviews and editor decision from REVIEWS_COMPLETE.
@@ -183,14 +187,10 @@ test.describe("Editor Decision from REVIEWS_COMPLETE", () => {
 			page.locator('[data-testid="submission-status"]'),
 		).toBeVisible({ timeout: 10000 });
 
-		// Assert - Make Decision button visible (new shortcut from REVIEWS_COMPLETE)
-		await expect(
-			page.getByRole("button", { name: "Make Decision" }),
-		).toBeVisible();
-		// Ready for Decision should also be visible (existing transition)
-		await expect(
-			page.getByRole("button", { name: "Ready for Decision" }),
-		).toBeVisible();
+		// Assert - both actions available (Make Decision lives in the Actions menu,
+		// Ready for Decision is the contextual primary button)
+		await expectActionAvailable(page, "Make Decision");
+		await expectActionAvailable(page, "Ready for Decision");
 	});
 
 	test("editor accepts submission directly from REVIEWS_COMPLETE", async ({
@@ -212,7 +212,7 @@ test.describe("Editor Decision from REVIEWS_COMPLETE", () => {
 		).toBeVisible({ timeout: 10000 });
 
 		// Act - Make decision directly (skip AWAITING_DECISION step)
-		await page.getByRole("button", { name: "Make Decision" }).click();
+		await runSubmissionAction(page, "Make Decision");
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 
 		await page
@@ -261,7 +261,7 @@ test.describe("Editor Decision from REVIEWS_COMPLETE", () => {
 		).toBeVisible({ timeout: 10000 });
 
 		// Act - Reject directly from REVIEWS_COMPLETE
-		await page.getByRole("button", { name: "Make Decision" }).click();
+		await runSubmissionAction(page, "Make Decision");
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 
 		await page

@@ -103,7 +103,7 @@ test.describe("Submission Detail - Desk Rejection", () => {
 		await adminSubmissionDetailPage.waitForLoad();
 
 		// Assert precondition
-		await expect(adminSubmissionDetailPage.deskRejectButton).toBeVisible();
+		await adminSubmissionDetailPage.expectActionAvailable("Desk Reject");
 
 		// Act
 		await adminSubmissionDetailPage.openDeskRejectDialog();
@@ -164,7 +164,7 @@ test.describe("Submission Detail - Assign Reviewers", () => {
 		await adminSubmissionDetailPage.waitForLoad();
 
 		// Assert
-		await expect(adminSubmissionDetailPage.assignReviewerButton).toBeVisible();
+		await adminSubmissionDetailPage.expectActionAvailable("Assign Reviewer");
 	});
 
 	test("can open assign reviewer dialog", async ({

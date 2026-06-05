@@ -70,8 +70,8 @@ test.describe("Review Workflow - Admin Actions", () => {
 			await detailPage.waitForLoad();
 
 			// Assert
-			await expect(detailPage.deskRejectButton).toBeVisible();
-			await expect(detailPage.assignReviewerButton).toBeVisible();
+			await detailPage.expectActionAvailable("Desk Reject");
+			await detailPage.expectActionAvailable("Assign Reviewer");
 		});
 
 		test("under review status shows assign reviewer but not desk reject", async ({ page, testRun, cleanup }) => {
@@ -98,8 +98,8 @@ test.describe("Review Workflow - Admin Actions", () => {
 			await detailPage.waitForLoad();
 
 			// Assert
-			await expect(detailPage.assignReviewerButton).toBeVisible();
-			await expect(detailPage.deskRejectButton).not.toBeVisible();
+			await detailPage.expectActionAvailable("Assign Reviewer");
+			await detailPage.expectActionUnavailable("Desk Reject");
 		});
 
 		test("awaiting decision status shows make decision button", async ({ page, testRun, cleanup }) => {
@@ -126,7 +126,7 @@ test.describe("Review Workflow - Admin Actions", () => {
 			await detailPage.waitForLoad();
 
 			// Assert
-			await expect(detailPage.makeDecisionButton).toBeVisible();
+			await detailPage.expectActionAvailable("Make Decision");
 		});
 	});
 
