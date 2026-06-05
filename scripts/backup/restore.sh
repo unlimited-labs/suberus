@@ -78,7 +78,7 @@ docker exec -i "$PG_CONTAINER" pg_restore -U "$PG_USER" -d "$TARGET_DB" \
 
 # --- 5. Post-restore verification + sanity counts ------------------------
 log "verifying restored state"
-PG_DB="$TARGET_DB" GARAGE_BUCKET="$TARGET_BUCKET" \
+VERIFY_PG_DB="$TARGET_DB" VERIFY_BUCKET="$TARGET_BUCKET" \
   bash "$LIB_DIR/verify-consistency.sh" --live || warn "post-restore consistency check reported issues"
 
 for t in submissions files users; do

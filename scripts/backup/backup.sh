@@ -20,12 +20,16 @@ exec 3>&1
 exec >"$RUN_LOG" 2>&1
 finish() {
   local rc=$?
-  notify_backup_result "$rc" "$RUN_LOG"   # email OK/FAILED with a log tail
-  cat "$RUN_LOG" >&3 2>/dev/null           # forward full log to cron's stdout
-  rm -rf "${work:-}" 2>/dev/null
-  rm -f "${RCLONE_CONF_EPHEMERAL:-}" "$RUN_LOG" 2>/dev/null
+  set +e                                    # never let cleanup abort the trap
+  notify_backup_result "$rc" "$RUN_LOG"     # email OK/FAILED with a log tail
+  cat "$RUN_LOG" >&3 2>/dev/null            # forward full log to cron's stdout
+  [[ -n "${work:-}" ]] && rm -rf "$work"
+  rm -f "${RCLONE_CONF_EPHEMERAL:-}" "$RUN_LOG"
 }
 trap finish EXIT
+# Route signals through a normal exit so finish() (email + log flush) still runs.
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 preflight
 
@@ -54,13 +58,14 @@ log "mirrored $obj_count object(s)"
 git_sha=$(cd "$REPO_ROOT" && git rev-parse HEAD 2>/dev/null || echo unknown)
 last_migration=$(ls "$REPO_ROOT/prisma/migrations" 2>/dev/null | grep -E '^[0-9]' | tail -1 || echo unknown)
 pg_version=$(pg_psql -At -c 'SHOW server_version' 2>/dev/null || echo unknown)
+[[ "$DUMP_EXCLUDE_PGBOSS" == "1" ]] && pgboss_excluded=true || pgboss_excluded=false
 cat > "$work/manifest.json" <<JSON
 {
   "createdAt": "$start_ts",
   "gitSha": "$git_sha",
   "lastMigration": "$last_migration",
   "pgServerVersion": "$pg_version",
-  "pgbossExcluded": ${DUMP_EXCLUDE_PGBOSS:-0},
+  "pgbossExcluded": $pgboss_excluded,
   "s3Exclude": "$S3_EXCLUDE",
   "objectCount": $obj_count,
   "dumpBytes": $dump_size,

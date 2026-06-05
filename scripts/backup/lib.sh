@@ -144,10 +144,14 @@ send_email() {
   if ! command -v curl >/dev/null 2>&1; then
     warn "curl missing — cannot send alert email"; return 0
   fi
-  : "${SMTP_HOST:?SMTP_HOST required for alerting}" \
-    "${SMTP_PORT:?SMTP_PORT required}" "${SMTP_USER:?SMTP_USER required}" \
-    "${SMTP_PASSWORD:?SMTP_PASSWORD required}" "${SMTP_FROM_EMAIL:?SMTP_FROM_EMAIL required}"
-  local msg; msg="$(mktemp)"
+  # Soft-check (never hard-exit: this runs inside the EXIT trap).
+  if [[ -z "${SMTP_HOST:-}" || -z "${SMTP_PORT:-}" || -z "${SMTP_USER:-}" \
+        || -z "${SMTP_PASSWORD:-}" || -z "${SMTP_FROM_EMAIL:-}" ]]; then
+    warn "alerting enabled but SMTP_* incomplete — skipping email"; return 0
+  fi
+  local msg cred; msg="$(mktemp)"; cred="$(mktemp)"; chmod 600 "$cred"
+  # Credentials via a 0600 config file, not argv (avoids `ps` exposure).
+  printf 'user = "%s:%s"\n' "$SMTP_USER" "$SMTP_PASSWORD" > "$cred"
   {
     printf 'From: %s <%s>\n' "$SMTP_FROM_NAME" "$SMTP_FROM_EMAIL"
     printf 'To: %s\n' "$ALERT_EMAIL_TO"
@@ -158,12 +162,13 @@ send_email() {
   } > "$msg"
   local insecure=(); [[ "$SMTP_TLS_INSECURE" == "1" ]] && insecure=(--insecure)
   curl --silent --show-error --ssl-reqd "${insecure[@]}" \
+    --config "$cred" \
     --connect-timeout 15 --max-time "${SMTP_MAX_TIME:-60}" \
     --url "smtp://$SMTP_HOST:$SMTP_PORT" \
     --mail-from "$SMTP_FROM_EMAIL" --mail-rcpt "$ALERT_EMAIL_TO" \
-    --user "$SMTP_USER:$SMTP_PASSWORD" --upload-file "$msg" \
+    --upload-file "$msg" \
     2>&1 | sed 's/^/[smtp] /' >&2 || warn "alert email send failed"
-  rm -f "$msg"
+  rm -f "$msg" "$cred"
 }
 
 # notify_backup_result <exit-code> <log-file>. Emails OK/FAILED with a log tail.

@@ -16,6 +16,16 @@ load_config
 
 MODE="${1:?usage: verify-consistency.sh <staging_dir>|--live}"
 
+# Allow callers (restore drills into throwaway targets) to override the DB /
+# bucket AFTER load_config — env-prefix vars alone don't survive because
+# load_config re-sources backup.env. ensure_rclone_conf is needed for --live
+# so the Garage endpoint is resolved when GARAGE_CONTAINER is set.
+PG_DB="${VERIFY_PG_DB:-$PG_DB}"
+GARAGE_BUCKET="${VERIFY_BUCKET:-$GARAGE_BUCKET}"
+if [[ "$MODE" == "--live" ]]; then
+  ensure_rclone_conf
+fi
+
 # storageKey list from the DB. Table is mapped to "files", column "storageKey".
 # Extraction-staging files are never recorded in the files table, so excluding
 # that prefix from the mirror does not create false danglings.
@@ -26,7 +36,7 @@ db_keys() {
 # Object key list from the chosen source.
 storage_keys() {
   if [[ "$MODE" == "--live" ]]; then
-    rclone_cmd lsf --files-only -R "$RCLONE_REMOTE:$GARAGE_BUCKET"
+    rclone_cmd lsf --files-only -R --exclude "$S3_EXCLUDE" "$RCLONE_REMOTE:$GARAGE_BUCKET"
   else
     local dir="$MODE/storage"
     [[ -d "$dir" ]] || die "storage mirror not found: $dir"
@@ -35,7 +45,7 @@ storage_keys() {
 }
 
 tmp="$(mktemp -d)"
-trap 'rm -rf "$tmp"' EXIT
+trap 'rm -rf "$tmp"; rm -f "${RCLONE_CONF_EPHEMERAL:-}"' EXIT
 
 db_keys      | sort -u > "$tmp/db.txt"
 storage_keys | sort -u > "$tmp/storage.txt"
