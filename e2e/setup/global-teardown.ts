@@ -1,6 +1,6 @@
-import { execSync } from "child_process";
 import { existsSync, readFileSync, rmSync } from "fs";
 import { PIDS_FILE } from "./global-setup";
+import { killPids } from "./server-control";
 
 // Stop the per-worker app servers spawned by global-setup.
 async function globalTeardown() {
@@ -11,17 +11,7 @@ async function globalTeardown() {
 	} catch {
 		// ignore malformed file
 	}
-	for (const pid of pids) {
-		try {
-			if (process.platform === "win32") {
-				execSync(`taskkill /pid ${pid} /T /F`, { stdio: "ignore" });
-			} else {
-				process.kill(pid, "SIGTERM");
-			}
-		} catch {
-			// already exited
-		}
-	}
+	await killPids(pids);
 	rmSync(PIDS_FILE, { force: true });
 	console.log("✅ Global teardown: stopped E2E servers");
 }

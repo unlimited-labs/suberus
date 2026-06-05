@@ -13,6 +13,7 @@ import {
 	baseUrlFor,
 	fromAddrFor,
 } from "../../playwright.config";
+import { killPids } from "./server-control";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(__dirname, "../..");
@@ -40,16 +41,37 @@ function newestMtime(dir: string): number {
 	return newest;
 }
 
-/** Rebuild the production output if missing or older than the newest source file. */
+// Inputs whose change should invalidate the build (not just src/).
+const BUILD_INPUTS = [
+	"src",
+	"prisma/schema.prisma",
+	"package.json",
+	"playwright.config.ts",
+	"vite.config.ts",
+	"auth.server.ts",
+].map((p) => resolve(PROJECT_ROOT, p));
+
+function newestInputMtime(): number {
+	let newest = 0;
+	for (const p of BUILD_INPUTS) {
+		if (!existsSync(p)) continue;
+		const st = statSync(p);
+		newest = Math.max(newest, st.isDirectory() ? newestMtime(p) : st.mtimeMs);
+	}
+	return newest;
+}
+
+/** Rebuild the production output if forced, missing, or older than any build input. */
 function buildIfStale() {
 	const fresh =
+		!process.env.E2E_FORCE_BUILD &&
 		existsSync(OUTPUT_SERVER) &&
-		statSync(OUTPUT_SERVER).mtimeMs >= newestMtime(resolve(PROJECT_ROOT, "src"));
+		statSync(OUTPUT_SERVER).mtimeMs >= newestInputMtime();
 	if (fresh) {
 		console.log("✅ Build up to date, skipping");
 		return;
 	}
-	console.log("🔄 Building app (.output stale or missing)...");
+	console.log("🔄 Building app (.output stale, missing, or E2E_FORCE_BUILD)...");
 	execSync("pnpm build", { cwd: PROJECT_ROOT, stdio: "inherit" });
 	console.log("✅ Build complete");
 }
@@ -66,19 +88,23 @@ async function recreateDatabase(name: string) {
 	}
 }
 
-/** Poll the server URL until it responds (any HTTP status) or times out. */
-async function waitForServer(url: string, timeoutMs = 120_000) {
+/** Poll the server until it returns a 2xx, or fail fast if it exits / times out. */
+async function waitForServer(url: string, exitCode: () => number | null, timeoutMs = 120_000) {
 	const start = Date.now();
+	let last = "no response";
 	while (Date.now() - start < timeoutMs) {
+		const code = exitCode();
+		if (code !== null) throw new Error(`Server ${url} exited (code ${code}) during startup`);
 		try {
-			await fetch(url);
-			return;
+			const res = await fetch(url);
+			if (res.ok) return;
+			last = `HTTP ${res.status}`;
 		} catch {
-			// server not listening yet
+			last = "connection refused";
 		}
 		await new Promise((r) => setTimeout(r, 500));
 	}
-	throw new Error(`Server at ${url} did not become ready within ${timeoutMs}ms`);
+	throw new Error(`Server at ${url} not ready within ${timeoutMs}ms (last: ${last})`);
 }
 
 async function globalSetup() {
@@ -88,49 +114,58 @@ async function globalSetup() {
 	const pids: number[] = [];
 
 	// DB must be migrated + seeded before its server boots (the server queries on
-	// startup), so prepare and spawn per worker in sequence.
-	for (let i = 0; i < E2E_WORKERS; i++) {
-		const dbName = dbNameFor(i);
-		const dbUrl = dbUrlFor(i);
+	// startup), so prepare and spawn per worker in sequence. On any failure, kill
+	// whatever we already spawned so nothing is orphaned on the e2e ports.
+	try {
+		for (let i = 0; i < E2E_WORKERS; i++) {
+			const dbName = dbNameFor(i);
+			const dbUrl = dbUrlFor(i);
 
-		console.log(`🔄 [worker ${i}] Recreating database ${dbName}...`);
-		await recreateDatabase(dbName);
+			console.log(`🔄 [worker ${i}] Recreating database ${dbName}...`);
+			await recreateDatabase(dbName);
 
-		console.log(`🔄 [worker ${i}] Applying migrations to ${dbName}...`);
-		execSync("pnpm exec prisma migrate reset --force", {
-			cwd: PROJECT_ROOT,
-			stdio: "pipe",
-			env: {
-				...process.env,
-				DATABASE_URL: dbUrl,
-				PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION: "yes",
-			},
-		});
+			console.log(`🔄 [worker ${i}] Applying migrations to ${dbName}...`);
+			execSync("pnpm exec prisma migrate reset --force", {
+				cwd: PROJECT_ROOT,
+				stdio: "pipe",
+				env: {
+					...process.env,
+					DATABASE_URL: dbUrl,
+					PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION: "yes",
+				},
+			});
 
-		console.log(`🌱 [worker ${i}] Seeding ${dbName}...`);
-		execSync("pnpm exec tsx e2e/setup/seed.ts", {
-			cwd: PROJECT_ROOT,
-			stdio: "inherit",
-			env: { ...process.env, DATABASE_URL: dbUrl, SMTP_FROM_EMAIL: fromAddrFor(i) },
-		});
+			console.log(`🌱 [worker ${i}] Seeding ${dbName}...`);
+			execSync("pnpm exec tsx e2e/setup/seed.ts", {
+				cwd: PROJECT_ROOT,
+				stdio: "inherit",
+				env: { ...process.env, DATABASE_URL: dbUrl, SMTP_FROM_EMAIL: fromAddrFor(i) },
+			});
 
-		console.log(`🚀 [worker ${i}] Starting server on ${baseUrlFor(i)}...`);
-		const logFd = openSync(join(LOG_DIR, `worker-${i}.log`), "w");
-		const child = spawn(
-			"node",
-			["--env-file=.env", ".output/server/index.mjs"],
-			{
+			console.log(`🚀 [worker ${i}] Starting server on ${baseUrlFor(i)}...`);
+			const logFd = openSync(join(LOG_DIR, `worker-${i}.log`), "w");
+			const child = spawn("node", ["--env-file=.env", ".output/server/index.mjs"], {
 				cwd: PROJECT_ROOT,
 				env: { ...process.env, ...envFor(i) },
 				stdio: ["ignore", logFd, logFd],
-			},
-		);
-		if (child.pid) pids.push(child.pid);
-		await waitForServer(baseUrlFor(i));
-		console.log(`✅ [worker ${i}] Database ${dbName} + server ready`);
+			});
+			let exitCode: number | null = null;
+			child.on("exit", (c) => {
+				exitCode = c ?? 0;
+			});
+			if (child.pid) {
+				pids.push(child.pid);
+				// Persist incrementally so teardown can stop servers even if a later
+				// worker's setup throws.
+				writeFileSync(PIDS_FILE, JSON.stringify(pids));
+			}
+			await waitForServer(baseUrlFor(i), () => exitCode);
+			console.log(`✅ [worker ${i}] Database ${dbName} + server ready`);
+		}
+	} catch (err) {
+		await killPids(pids);
+		throw err;
 	}
-
-	writeFileSync(PIDS_FILE, JSON.stringify(pids));
 
 	// Shared Mailpit/S3 are intentionally NOT wiped (would destroy dev mail/files);
 	// E2E mail is scoped per worker by from-address, S3 keys by unique submission id.
