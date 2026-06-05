@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -61,6 +62,9 @@ export function CreateSessionDialog({
 						Create session from {submissionIds.length}{" "}
 						{submissionIds.length === 1 ? "submission" : "submissions"}
 					</DialogTitle>
+					<DialogDescription className="sr-only">
+						Schedule a new program session from the selected submissions.
+					</DialogDescription>
 				</DialogHeader>
 
 				<form

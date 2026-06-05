@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -114,6 +115,9 @@ export function UserEditDialog({
 			<DialogContent className="sm:max-w-lg">
 				<DialogHeader>
 					<DialogTitle>Edit User Profile</DialogTitle>
+					<DialogDescription className="sr-only">
+						Edit the user's contact and billing details.
+					</DialogDescription>
 				</DialogHeader>
 				<form
 					onSubmit={(e) => {

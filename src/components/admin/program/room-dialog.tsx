@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -82,6 +83,9 @@ export function RoomDialog({
 			<DialogContent data-testid="room-dialog">
 				<DialogHeader>
 					<DialogTitle>{isEdit ? "Edit Room" : "Create Room"}</DialogTitle>
+					<DialogDescription className="sr-only">
+						Configure a room's name, description and join link.
+					</DialogDescription>
 				</DialogHeader>
 
 				<div className="space-y-4">

@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -144,6 +145,9 @@ export function PublishButton() {
 				>
 					<DialogHeader>
 						<DialogTitle>Publish program</DialogTitle>
+						<DialogDescription className="sr-only">
+							Review schedule issues and publish the program.
+						</DialogDescription>
 					</DialogHeader>
 
 					<div className="flex min-h-0 flex-1 flex-col gap-3 py-2">

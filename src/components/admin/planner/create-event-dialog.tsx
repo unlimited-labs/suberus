@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -76,6 +77,9 @@ export function CreateEventDialog({
 					<DialogTitle>
 						{type === "session" ? "New session" : "New break"}
 					</DialogTitle>
+					<DialogDescription className="sr-only">
+						Add a new session or break to the program schedule.
+					</DialogDescription>
 				</DialogHeader>
 
 				<form

@@ -3,7 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+	Sheet,
+	SheetContent,
+	SheetDescription,
+	SheetTitle,
+	SheetTrigger,
+} from "@/components/ui/sheet";
 import { useSession } from "@/hooks/use-session";
 import { getNavigationForRole } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
@@ -150,6 +156,10 @@ export function MobileSidebar({
 				</Button>
 			</SheetTrigger>
 			<SheetContent side="left" className="w-64 p-0" showCloseButton={false}>
+				<SheetTitle className="sr-only">Navigation menu</SheetTitle>
+				<SheetDescription className="sr-only">
+					Main application navigation.
+				</SheetDescription>
 				<SidebarContent
 					conferenceName={conferenceName}
 					logoUrl={logoUrl}

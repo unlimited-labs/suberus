@@ -1,6 +1,7 @@
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -19,6 +20,9 @@ export function TosModal({ open, content, onOpenChange }: TosModalProps) {
 			<DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
 				<DialogHeader>
 					<DialogTitle>Terms of Service</DialogTitle>
+					<DialogDescription className="sr-only">
+						The conference terms of service document.
+					</DialogDescription>
 				</DialogHeader>
 				<div className="flex-1 overflow-y-auto pr-2">
 					<Markdown content={content} />

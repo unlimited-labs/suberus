@@ -1,4 +1,4 @@
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription } from "@/components/ui/sheet";
 import { ChairsSection } from "./session-editor/chairs-section";
 import { PresentationsSection } from "./session-editor/presentations-section";
 import { SessionEditorProvider } from "./session-editor/session-editor-context";
@@ -24,6 +24,9 @@ export function SessionEditorSheet({
 				data-testid="session-editor"
 				className="flex flex-col gap-0 p-0 sm:max-w-md"
 			>
+				<SheetDescription className="sr-only">
+					Edit the session's details, chairs and presentations.
+				</SheetDescription>
 				{sessionId !== null && (
 					<SessionEditorProvider
 						sessionId={sessionId}

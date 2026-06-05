@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import {
 	Sheet,
 	SheetContent,
+	SheetDescription,
 	SheetFooter,
 	SheetHeader,
 	SheetTitle,
@@ -28,6 +29,9 @@ export function BreakEditorSheet({ breakId, onClose }: BreakEditorSheetProps) {
 				data-testid="break-editor"
 				className="flex flex-col gap-0 p-0 sm:max-w-md"
 			>
+				<SheetDescription className="sr-only">
+					Edit the break's details.
+				</SheetDescription>
 				{breakId !== null && (
 					<BreakEditorProvider
 						breakId={breakId}

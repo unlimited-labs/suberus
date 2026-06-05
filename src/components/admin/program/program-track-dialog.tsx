@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -111,6 +112,9 @@ export function ProgramTrackDialog({
 					<DialogTitle>
 						{isEdit ? "Edit Program Track" : "Create Program Track"}
 					</DialogTitle>
+					<DialogDescription className="sr-only">
+						Set the program track's name and color.
+					</DialogDescription>
 				</DialogHeader>
 
 				<div className="space-y-4">
