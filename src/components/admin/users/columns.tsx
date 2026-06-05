@@ -9,10 +9,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import {
 	feeFilterOptions,
+	formatSubmissionRole,
 	roleFilterOptions,
 	roleLabels,
 } from "@/lib/labels/user";
 import type { AdminUser } from "@/lib/server/admin/users";
+import { cn } from "@/lib/utils";
+import { SubmissionsColumnHeader } from "./submissions-column-header";
 
 export const userColumns: ColumnDef<AdminUser>[] = [
 	createSelectColumn<AdminUser>(),
@@ -111,6 +114,76 @@ export const userColumns: ColumnDef<AdminUser>[] = [
 			);
 		},
 		filterFn: facetedFilterFn,
+	},
+	{
+		id: "submissions",
+		accessorFn: (row) =>
+			row.submissionRoles.reduce((sum, r) => sum + r.count, 0),
+		header: ({ column, table }) => (
+			<SubmissionsColumnHeader column={column} table={table} />
+		),
+		cell: ({ row }) => {
+			const roles = row.original.submissionRoles;
+			if (roles.length === 0) {
+				return (
+					<span
+						data-testid="user-submissions"
+						className="text-muted-foreground"
+					>
+						—
+					</span>
+				);
+			}
+			return (
+				<div data-testid="user-submissions" className="flex flex-wrap gap-1">
+					{roles.map((r) => (
+						<Badge
+							key={`${r.type}-${r.role}-${r.draft}`}
+							variant="outline"
+							className={cn(r.draft && "border-dashed text-muted-foreground")}
+						>
+							{formatSubmissionRole(r)}
+						</Badge>
+					))}
+				</div>
+			);
+		},
+	},
+	{
+		id: "submissionType",
+		accessorFn: (row) => [...new Set(row.submissionRoles.map((r) => r.type))],
+		getUniqueValues: (row) => [
+			...new Set(row.submissionRoles.map((r) => r.type)),
+		],
+		filterFn: "arrIncludesSome",
+		enableHiding: false,
+		enableSorting: false,
+	},
+	{
+		id: "submissionRole",
+		accessorFn: (row) => [...new Set(row.submissionRoles.map((r) => r.role))],
+		getUniqueValues: (row) => [
+			...new Set(row.submissionRoles.map((r) => r.role)),
+		],
+		filterFn: "arrIncludesSome",
+		enableHiding: false,
+		enableSorting: false,
+	},
+	{
+		id: "submissionDraft",
+		accessorFn: (row) => [
+			...new Set(
+				row.submissionRoles.map((r) => (r.draft ? "draft" : "submitted")),
+			),
+		],
+		getUniqueValues: (row) => [
+			...new Set(
+				row.submissionRoles.map((r) => (r.draft ? "draft" : "submitted")),
+			),
+		],
+		filterFn: "arrIncludesSome",
+		enableHiding: false,
+		enableSorting: false,
 	},
 	{
 		accessorKey: "isActive",

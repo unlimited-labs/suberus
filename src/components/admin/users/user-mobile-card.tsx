@@ -1,8 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { roleLabels } from "@/lib/labels/user";
+import { formatSubmissionRole, roleLabels } from "@/lib/labels/user";
 import type { AdminUser } from "@/lib/server/admin/users";
+import { cn } from "@/lib/utils";
 
 export function UserMobileCard(user: AdminUser) {
 	return (
@@ -30,6 +31,21 @@ export function UserMobileCard(user: AdminUser) {
 							)}
 						</div>
 					</div>
+					{user.submissionRoles.length > 0 && (
+						<div className="mt-3 flex flex-wrap gap-1">
+							{user.submissionRoles.map((r) => (
+								<Badge
+									key={`${r.type}-${r.role}-${r.draft}`}
+									variant="outline"
+									className={cn(
+										r.draft && "border-dashed text-muted-foreground",
+									)}
+								>
+									{formatSubmissionRole(r)}
+								</Badge>
+							))}
+						</div>
+					)}
 				</CardContent>
 			</Card>
 		</Link>

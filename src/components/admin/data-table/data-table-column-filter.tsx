@@ -84,15 +84,26 @@ export function DataTableColumnFilter<TData, TValue>({
 							const count = facets?.get(option.value) ?? 0;
 
 							return (
-								<button
-									type="button"
+								// biome-ignore lint/a11y/useSemanticElements: the visible control is a Radix Checkbox (a <button>); a nested <button> breaks hydration and double-toggles. This row carries role/aria-checked + keyboard handling instead.
+								<div
 									key={option.value}
-									className="flex w-full items-center gap-2 rounded px-1 py-0.5 hover:bg-muted/50"
+									role="checkbox"
+									aria-checked={isSelected}
+									tabIndex={0}
+									className="flex w-full cursor-pointer items-center gap-2 rounded px-1 py-0.5 hover:bg-muted/50"
 									onClick={() => handleSelect(option.value)}
+									onKeyDown={(e) => {
+										if (e.key === "Enter" || e.key === " ") {
+											e.preventDefault();
+											handleSelect(option.value);
+										}
+									}}
 								>
 									<Checkbox
 										checked={isSelected}
-										onCheckedChange={() => handleSelect(option.value)}
+										tabIndex={-1}
+										aria-hidden
+										className="pointer-events-none"
 									/>
 									<span className="flex-1 text-left text-sm">
 										{option.label}
@@ -100,7 +111,7 @@ export function DataTableColumnFilter<TData, TValue>({
 									<span className="text-xs text-muted-foreground tabular-nums">
 										{count}
 									</span>
-								</button>
+								</div>
 							);
 						})}
 					</div>

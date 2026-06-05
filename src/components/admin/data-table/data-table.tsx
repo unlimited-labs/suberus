@@ -36,6 +36,8 @@ interface DataTableProps<TData, TValue> {
 	getRowId?: (row: TData) => string;
 	/** Static data-testid applied to each data row (desktop `<tr>` and mobile card wrapper) */
 	rowDataTestId?: string;
+	/** Initial column visibility, e.g. to hide filter-only helper columns */
+	initialColumnVisibility?: VisibilityState;
 }
 
 export function DataTable<TData, TValue>({
@@ -45,9 +47,12 @@ export function DataTable<TData, TValue>({
 	mobileCard,
 	getRowId,
 	rowDataTestId,
+	initialColumnVisibility,
 }: DataTableProps<TData, TValue>) {
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+		initialColumnVisibility ?? {},
+	);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [pagination, setPagination] = useState<PaginationState>({

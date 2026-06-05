@@ -1,4 +1,9 @@
 import type { UserRole } from "@/generated/prisma/enums";
+import type {
+	SubmissionInvolvementRole,
+	SubmissionRoleSummary,
+} from "@/lib/server/admin/users";
+import { typeLabels } from "./submission";
 
 export const roleLabels: Record<UserRole, string> = {
 	ADMIN: "Administrator",
@@ -25,3 +30,30 @@ export const userRoleOptions: { value: UserRole; label: string }[] = [
 	{ value: "EDITOR", label: "Editor" },
 	{ value: "ADMIN", label: "Administrator" },
 ];
+
+export const submissionRoleLabels: Record<SubmissionInvolvementRole, string> = {
+	author: "author",
+	coauthor: "coauthor",
+};
+
+export const submissionRoleFilterOptions = [
+	{ label: "Author", value: "author" },
+	{ label: "Coauthor", value: "coauthor" },
+] as const;
+
+export const submissionDraftFilterOptions = [
+	{ label: "Submitted", value: "submitted" },
+	{ label: "Draft", value: "draft" },
+] as const;
+
+/** Single badge label, e.g. "Poster · coauthor ×3 (draft)". */
+export function formatSubmissionRole(role: SubmissionRoleSummary): string {
+	const count = role.count > 1 ? ` ×${role.count}` : "";
+	const draft = role.draft ? " (draft)" : "";
+	return `${typeLabels[role.type]} · ${submissionRoleLabels[role.role]}${count}${draft}`;
+}
+
+/** Comma-joined summary of all involvements (used in XLSX export). */
+export function formatSubmissionRoles(roles: SubmissionRoleSummary[]): string {
+	return roles.map(formatSubmissionRole).join(", ");
+}

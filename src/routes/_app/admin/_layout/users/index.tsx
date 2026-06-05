@@ -29,6 +29,7 @@ const columnLabels: Record<string, string> = {
 	role: "Role",
 	affiliation: "Affiliation",
 	feePaid: "Fee",
+	submissions: "Submissions",
 	isActive: "Status",
 };
 
@@ -51,6 +52,11 @@ function UsersPage() {
 					data={users}
 					getRowId={(row) => row.id}
 					mobileCard={UserMobileCard}
+					initialColumnVisibility={{
+						submissionType: false,
+						submissionRole: false,
+						submissionDraft: false,
+					}}
 					toolbar={(table, rowSelection) => (
 						<DataTableToolbar
 							table={table}

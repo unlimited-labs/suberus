@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import * as XLSX from "xlsx";
 import type { UserRole } from "@/generated/prisma/enums";
 import { formatDateTime } from "@/lib/format-date";
+import { formatSubmissionRoles } from "@/lib/labels/user";
 import { getUsers } from "@/lib/server/admin/users";
 import { adminRequestMiddleware } from "@/lib/server/middleware/auth";
 import { getSetting } from "@/lib/server/settings";
@@ -43,6 +44,7 @@ export const Route = createFileRoute("/api/admin/users/export")({
 					Title: u.title ?? "",
 					Affiliation: u.affiliation ?? "",
 					Role: u.role,
+					Submissions: formatSubmissionRoles(u.submissionRoles),
 					Status: u.isActive ? "Active" : "Inactive",
 					"Fee Status": u.fee?.paid ? "Paid" : "Unpaid",
 					"Fee Type": u.fee?.type ?? "",

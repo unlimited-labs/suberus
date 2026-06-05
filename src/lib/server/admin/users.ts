@@ -1,11 +1,20 @@
 import { prisma } from "@/db.server";
 import type { Prisma } from "@/generated/prisma/client";
-import type { UserRole } from "@/generated/prisma/enums";
+import type { SubmissionType, UserRole } from "@/generated/prisma/enums";
 import { activityDetail } from "@/lib/activity-log";
 import { logActivity, logActivityTx } from "@/lib/server/activity-log";
 import { upsertAffiliation } from "@/lib/server/affiliations";
 import { linkCoAuthorsByEmail } from "@/lib/server/submissions";
 import { logger } from "@/logger.ts";
+
+export type SubmissionInvolvementRole = "author" | "coauthor";
+
+export interface SubmissionRoleSummary {
+	type: SubmissionType;
+	role: SubmissionInvolvementRole;
+	draft: boolean;
+	count: number;
+}
 
 export interface AdminUser {
 	id: string;
@@ -33,6 +42,7 @@ export interface AdminUser {
 		currency: string | null;
 		paidAt: Date | null;
 	} | null;
+	submissionRoles: SubmissionRoleSummary[];
 }
 
 export interface UsersFilters {
@@ -44,6 +54,54 @@ export interface UsersFilters {
 export interface GetUsersResponse {
 	users: AdminUser[];
 	total: number;
+}
+
+/** Prisma include fragment that loads everything needed to derive submission roles. */
+const submissionRolesInclude = {
+	submissions: { select: { type: true, status: true } },
+	submissionAuthors: {
+		select: {
+			submission: { select: { type: true, status: true, userId: true } },
+		},
+	},
+} satisfies Prisma.UserInclude;
+
+type UserWithSubmissionRoles = Prisma.UserGetPayload<{
+	include: typeof submissionRolesInclude;
+}>;
+
+/**
+ * Aggregate a user's submission involvements into (type, role, draft) buckets.
+ * Author = owns the submission; coauthor = listed as author on someone else's.
+ */
+function buildSubmissionRoles(
+	user: UserWithSubmissionRoles,
+): SubmissionRoleSummary[] {
+	const buckets = new Map<string, SubmissionRoleSummary>();
+
+	const add = (
+		type: SubmissionType,
+		role: SubmissionInvolvementRole,
+		draft: boolean,
+	) => {
+		const key = `${type}|${role}|${draft}`;
+		const existing = buckets.get(key);
+		if (existing) {
+			existing.count += 1;
+		} else {
+			buckets.set(key, { type, role, draft, count: 1 });
+		}
+	};
+
+	for (const s of user.submissions) {
+		add(s.type, "author", s.status === "DRAFT");
+	}
+	for (const sa of user.submissionAuthors) {
+		if (sa.submission.userId === user.id) continue; // own submission → already counted as author
+		add(sa.submission.type, "coauthor", sa.submission.status === "DRAFT");
+	}
+
+	return Array.from(buckets.values());
 }
 
 export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
@@ -99,6 +157,7 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 		include: {
 			fee: true,
 			affiliation: true,
+			...submissionRolesInclude,
 		},
 		orderBy: { createdAt: "desc" },
 	});
@@ -131,6 +190,7 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 					paidAt: u.fee.paidAt,
 				}
 			: null,
+		submissionRoles: buildSubmissionRoles(u),
 	}));
 
 	return {
@@ -145,6 +205,7 @@ export async function getUserById(id: string): Promise<AdminUser | null> {
 		include: {
 			fee: true,
 			affiliation: true,
+			...submissionRolesInclude,
 		},
 	});
 
@@ -178,6 +239,7 @@ export async function getUserById(id: string): Promise<AdminUser | null> {
 					paidAt: user.fee.paidAt,
 				}
 			: null,
+		submissionRoles: buildSubmissionRoles(user),
 	};
 }
 
