@@ -93,11 +93,20 @@ A user crontab needs no root and works anywhere cron runs. Set an explicit
 
 ```cron
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-# Nightly backup at 02:30
-30 2 * * * BACKUP_ENV=/path/to/backup.env /bin/bash /path/to/backup.sh >> /path/to/logs/backup.log 2>&1
+# Nightly backup at 02:30 (logs rotate monthly via the date-stamped filename)
+30 2 * * * BACKUP_ENV=/path/to/backup.env /bin/bash /path/to/backup.sh >> /path/to/logs/backup-$(date +\%Y\%m).log 2>&1
 # Weekly restic integrity check (Sunday 04:00)
-0 4 * * 0 BACKUP_ENV=/path/to/backup.env /bin/bash -c 'source /path/to/lib.sh; load_config; restic_cmd check' >> /path/to/logs/check.log 2>&1
+0 4 * * 0 BACKUP_ENV=/path/to/backup.env /bin/bash -c 'source /path/to/lib.sh; load_config; restic_cmd check' >> /path/to/logs/check-$(date +\%Y\%m).log 2>&1
+# Prune logs older than 60 days (Sunday 05:00)
+0 5 * * 0 find /path/to/logs -name '*.log' -mtime +60 -delete
 ```
+
+Notes:
+- `%` must be escaped as `\%` in crontab; the date-stamped filename gives one
+  log file per month, and the prune line bounds total log growth.
+- `backup.sh` auto-removes its own staging dir on exit and sweeps stale
+  `run.*` dirs left by interrupted runs. `STAGING_DIR` needs free space ≥
+  (db dump + full bucket size) for one run.
 
 Before relying on it, test in cron's stripped environment to catch PATH issues:
 

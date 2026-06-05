@@ -15,6 +15,7 @@ load_config
 preflight
 
 start_ts=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+sweep_stale_staging
 work="$(mktemp -d "$STAGING_DIR/run.XXXXXX")"
 trap 'rm -rf "$work"; rm -f "${RCLONE_CONF_EPHEMERAL:-}"' EXIT
 mkdir -p "$work/storage"

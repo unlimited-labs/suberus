@@ -116,3 +116,16 @@ preflight() {
   mkdir -p "$STAGING_DIR"
   log "preflight OK"
 }
+
+# Remove staging run dirs left behind by a previously killed run. The EXIT
+# trap normally cleans them, but SIGKILL / power loss can leak a full copy
+# (db dump + entire S3 mirror). Drops anything older than ~1 day.
+sweep_stale_staging() {
+  [[ -d "$STAGING_DIR" ]] || return 0
+  local stale
+  stale=$(find "$STAGING_DIR" -maxdepth 1 -name 'run.*' -type d -mtime +0 2>/dev/null | wc -l | tr -d ' ')
+  if [[ "$stale" -gt 0 ]]; then
+    warn "removing $stale stale staging dir(s) from interrupted runs"
+    find "$STAGING_DIR" -maxdepth 1 -name 'run.*' -type d -mtime +0 -exec rm -rf {} + 2>/dev/null || true
+  fi
+}
