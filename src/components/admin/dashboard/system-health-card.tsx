@@ -5,7 +5,7 @@ import {
 	IconMail,
 } from "@tabler/icons-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatDoclingStatus, formatLlmStatus } from "@/lib/format-llm-status";
+import { formatLlmStatus } from "@/lib/format-llm-status";
 import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
 import { cn } from "@/lib/utils";
 
@@ -51,7 +51,10 @@ export function SystemHealthCard({
 			icon: IconFileText,
 			name: "Docling",
 			status: docling?.status ?? "unavailable",
-			detail: docling ? formatDoclingStatus(docling) : "Unknown",
+			detail:
+				docling?.status === "healthy"
+					? "PDF & DOCX to markdown conversion"
+					: (docling?.message ?? "Unknown"),
 		},
 		{
 			icon: IconDatabase,

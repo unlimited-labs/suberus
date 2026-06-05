@@ -1,7 +1,8 @@
 /**
  * Optional Docling API client.
- * Converts DOCX to markdown with better formatting than raw XML parsing.
+ * Converts PDF and DOCX to markdown with better formatting than raw XML parsing.
  * Used as enhanced input for LLM extraction when DOCLING_URL is configured.
+ * PDF extraction depends on it entirely; for DOCX it is an optional enhancement.
  *
  * Fail-fast: if docling is unavailable, logs error and returns null immediately.
  * Caller falls back to XML header text — no retries, no blocking.
