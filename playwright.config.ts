@@ -1,10 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 import type { TestOptions } from "./e2e/helpers/base-fixtures";
 
-// Per-worker E2E isolation: each worker runs its own app server (port 3001+i)
+// Per-worker E2E isolation: each worker runs its own app server (port 3031+i)
 // against its own database suberus_e2e_${i}. Dev DB/Mailpit/S3 are never touched.
 export const E2E_WORKERS = Number(process.env.E2E_WORKERS ?? 2);
-export const E2E_BASE_PORT = 3001;
+export const E2E_BASE_PORT = 3031;
 export const portFor = (i: number) => E2E_BASE_PORT + i;
 export const baseUrlFor = (i: number) => `http://localhost:${portFor(i)}`;
 export const PG_BASE = "postgresql://suberus:suberus_dev_password@localhost:5432";
