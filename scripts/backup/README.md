@@ -23,10 +23,15 @@ up — both are derived/transient state.
 sudo apt install -y restic rclone        # or download static binaries
 # Docker must be running with the suberus stack (docker compose up -d)
 
-# restic password
+# restic password — pick the location that matches how the backup runs:
+#   (a) system-wide (root, systemd units): /etc/suberus/restic-password
 sudo install -d -m 700 /etc/suberus
 printf 'a-long-random-passphrase\n' | sudo tee /etc/suberus/restic-password >/dev/null
 sudo chmod 600 /etc/suberus/restic-password
+#   (b) per-user (no sudo, user crontab): keep it in the tooling dir instead
+#   ( openssl rand -base64 24 > ~/suberus-backup/restic-password; chmod 600 ~/suberus-backup/restic-password )
+# Either way, point RESTIC_PASSWORD_FILE in backup.env at the file you chose,
+# and back up THAT password separately — losing it makes the repo unrecoverable.
 
 # SSH to the backup host (key-based, host in known_hosts)
 ssh-keygen -t ed25519 -f ~/.ssh/suberus_backup    # if needed
