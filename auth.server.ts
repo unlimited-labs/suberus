@@ -21,7 +21,12 @@ export const auth = betterAuth({
 	secret: env.AUTH_SECRET,
 	trustedOrigins:
 		env.NODE_ENV === "development"
-			? ["http://localhost:3001", "http://localhost:3002", "http://localhost:3003"]
+			? [
+					"http://localhost:3001",
+					"http://localhost:3031",
+					"http://localhost:3032",
+					"http://localhost:3033",
+				]
 			: [],
 	database: prismaAdapter(prisma, {
 		provider: "postgresql",
