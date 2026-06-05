@@ -1,0 +1,12 @@
+[Unit]
+Description=Suberus restic repository integrity check
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/suberus
+# Loads config via lib.sh (honors RESTIC_SFTP_COMMAND) then checks the repo.
+ExecStart=/usr/bin/env bash -c 'source scripts/backup/lib.sh; load_config; restic_cmd check'
+User=root
+TimeoutStartSec=7200

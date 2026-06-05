@@ -1,0 +1,4 @@
+# Backup tooling runs on Linux hosts — force LF so shebangs/systemd units work.
+*.sh text eol=lf
+*.service text eol=lf
+*.timer text eol=lf

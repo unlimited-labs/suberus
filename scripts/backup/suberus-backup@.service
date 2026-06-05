@@ -1,0 +1,16 @@
+[Unit]
+# Templated unit for multiple Suberus instances on one host.
+# Instance name (%i) selects the per-instance config backup.env.%i,
+# which MUST point RESTIC_REPOSITORY at a SEPARATE restic repo.
+#   systemctl enable --now suberus-backup@confA.timer
+Description=Suberus backup [%i] (PostgreSQL + Garage S3 -> restic/SFTP)
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/suberus
+Environment=BACKUP_ENV=/opt/suberus/scripts/backup/backup.env.%i
+ExecStart=/opt/suberus/scripts/backup/backup.sh
+User=root
+TimeoutStartSec=3600

@@ -20,6 +20,11 @@ dev-volumes/
 
 /garage/rclone.conf
 
+# Backup tooling: real configs hold repo/SFTP secrets (incl. per-instance backup.env.<name>)
+/scripts/backup/backup.env
+/scripts/backup/backup.env.*
+!/scripts/backup/backup.env.example
+
 # Playwright
 test-results/
 playwright-report/
