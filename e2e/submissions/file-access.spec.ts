@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../helpers/base-fixtures";
 import { randomUUID } from "crypto";
 import {
 	createSubmission,

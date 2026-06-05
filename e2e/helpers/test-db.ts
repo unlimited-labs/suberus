@@ -18,24 +18,33 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { config } from "dotenv";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { dbUrlFor, baseUrlFor, fromAddrFor } from "../../playwright.config";
 import { TEST_USER, ADMIN_USER, REVIEWER_USER, EDITOR_USER, DEFAULT_PASSWORD } from "./test-users";
 
-// Load .env + .env.test to ensure test schema is used
+// App modules dynamically imported by test helpers (e.g. storage.ts → src/env.ts)
+// need env; the per-worker overrides point in-process app code at this worker's DB.
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(__dirname, "../..");
 config({ quiet: true, path: resolve(PROJECT_ROOT, ".env") });
-config({ quiet: true, path: resolve(PROJECT_ROOT, ".env.test"), override: true });
+{
+	const wi = Number(process.env.TEST_PARALLEL_INDEX ?? 0);
+	process.env.DATABASE_URL = dbUrlFor(wi);
+	process.env.APP_BASE_URL = baseUrlFor(wi);
+	process.env.SMTP_FROM_EMAIL = fromAddrFor(wi);
+}
 
-// Lazy-initialized Prisma client
-let prismaInstance: PrismaClient | null = null;
+const clients = new Map<number, PrismaClient>();
 
-export function getPrisma(): PrismaClient {
-	if (!prismaInstance) {
-		const connectionString = process.env.DATABASE_URL;
-		const adapter = new PrismaPg({ connectionString });
-		prismaInstance = new PrismaClient({ adapter });
+export function getPrisma(
+	workerIndex = Number(process.env.TEST_PARALLEL_INDEX ?? 0),
+): PrismaClient {
+	let client = clients.get(workerIndex);
+	if (!client) {
+		const adapter = new PrismaPg({ connectionString: dbUrlFor(workerIndex) });
+		client = new PrismaClient({ adapter });
+		clients.set(workerIndex, client);
 	}
-	return prismaInstance;
+	return client;
 }
 
 export const prisma = {

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./helpers/base-fixtures";
 import { type Page, type Locator } from "@playwright/test";
 import {
 	createFee,

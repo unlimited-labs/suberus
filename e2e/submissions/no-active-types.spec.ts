@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../helpers/base-fixtures";
 import { getPrisma, setAppSetting } from "../helpers/test-db";
 import {
 	DEFAULT_ORAL_PRESENTATION_CONFIG,

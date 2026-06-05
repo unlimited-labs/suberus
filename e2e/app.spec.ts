@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./helpers/base-fixtures";
 
 test("app loads and shows login page", async ({ page }) => {
 	// Arrange & Act

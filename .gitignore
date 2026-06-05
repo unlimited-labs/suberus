@@ -30,6 +30,8 @@ playwright/.cache/
 .idea
 .cursorrules
 e2e/.auth/
+e2e/.server-logs/
+e2e/.server-pids.json
 .playwright-cli
 .playwright-mcp/
 .agents/

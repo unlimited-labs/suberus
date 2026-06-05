@@ -1,8 +1,22 @@
 import { MailpitClient } from "mailpit-api"
+import { fromAddrFor } from "../../playwright.config"
 
 const mailpit = new MailpitClient(process.env.MAILPIT_URL ?? "http://localhost:8025")
 
 export { mailpit }
+
+export function workerFrom(): string {
+	return fromAddrFor(Number(process.env.TEST_PARALLEL_INDEX ?? 0))
+}
+
+// Delete only this worker's messages; shared Mailpit stays intact for dev.
+export async function clearMailpitForWorker() {
+	try {
+		await mailpit.deleteMessagesBySearch({ query: `from:${workerFrom()}` })
+	} catch {
+		// Mailpit might not be running
+	}
+}
 
 export async function clearMailpit(testRunId?: string) {
 	try {
@@ -56,7 +70,7 @@ export async function waitForEmail(toEmail: string, subjectContains: string, tim
 	while (Date.now() - startTime < timeout) {
 		try {
 			const { messages } = await mailpit.searchMessages({
-				query: `to:${toEmail} subject:${subjectContains}`,
+				query: `from:${workerFrom()} to:${toEmail} subject:${subjectContains}`,
 			})
 			if (messages.length > 0) return messages[0]
 		} catch {

@@ -1,5 +1,6 @@
 import { test as base, expect } from "@playwright/test";
 import { randomUUID } from "crypto";
+import { baseUrlFor } from "../../playwright.config";
 import { deleteSubmission, getPrisma } from "./test-db";
 import { dismissViteOverlay } from "./page-setup";
 
@@ -12,10 +13,28 @@ export interface CleanupContext {
 	track: (submissionId: string) => void;
 }
 
-export const test = base.extend<{
-	testRun: TestRunContext;
-	cleanup: CleanupContext;
-}>({
+/** Per-project test options (settable via project `use`). */
+export interface TestOptions {
+	role: string | undefined;
+}
+
+export const test = base.extend<
+	TestOptions & {
+		testRun: TestRunContext;
+		cleanup: CleanupContext;
+	}
+>({
+	// Projects set `use: { role: "admin" }`; storageState resolves the worker's file.
+	role: [undefined, { option: true }],
+
+	baseURL: async ({}, use, testInfo) => {
+		await use(baseUrlFor(testInfo.parallelIndex));
+	},
+
+	storageState: async ({ role }, use, testInfo) => {
+		await use(role ? `e2e/.auth/${role}-${testInfo.parallelIndex}.json` : undefined);
+	},
+
 	page: async ({ page }, use) => {
 		await dismissViteOverlay(page);
 		await use(page);
@@ -29,15 +48,14 @@ export const test = base.extend<{
 		});
 	},
 
-	cleanup: async ({ testRun }, use) => {
+	cleanup: async ({ testRun }, use, testInfo) => {
 		const trackedIds: string[] = [];
 
 		await use({
 			track: (id: string) => trackedIds.push(id),
 		});
 
-		// afterEach - cleanup tracked + orphaned by prefix
-		const db = getPrisma();
+		const db = getPrisma(testInfo.parallelIndex);
 		for (const id of trackedIds) {
 			await deleteSubmission(id).catch(() => {});
 		}

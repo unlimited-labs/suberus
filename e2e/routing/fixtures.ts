@@ -1,4 +1,4 @@
-import { test as base, expect } from "@playwright/test"
+import { test as base, expect } from "../helpers/base-fixtures"
 import { dismissViteOverlay } from "../helpers/page-setup"
 
 export const test = base.extend({

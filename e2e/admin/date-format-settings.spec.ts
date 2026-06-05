@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../helpers/base-fixtures";
 import { AdminSettingsPage } from "./fixtures";
 import { getPrisma } from "../helpers/test-db";
 

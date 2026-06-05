@@ -1,5 +1,11 @@
-import { test as base, expect, type BrowserContext, type Page } from "@playwright/test";
+import { expect, type BrowserContext, type Page } from "@playwright/test";
+import { test as base } from "../helpers/base-fixtures";
+import { baseUrlFor } from "../../playwright.config";
 import { dismissViteOverlay } from "../helpers/page-setup";
+
+// Per-worker auth file + server URL (this spec builds its own browser contexts).
+const workerAuth = (role: string, parallelIndex: number) =>
+	`e2e/.auth/${role}-${parallelIndex}.json`;
 
 /**
  * Integration tests verifying that admin settings are properly reflected in the submission form.
@@ -15,9 +21,10 @@ interface SettingsIntegrationFixtures {
 }
 
 const test = base.extend<SettingsIntegrationFixtures>({
-	adminContext: async ({ browser }, use) => {
+	adminContext: async ({ browser }, use, testInfo) => {
 		const context = await browser.newContext({
-			storageState: "e2e/.auth/admin.json",
+			baseURL: baseUrlFor(testInfo.parallelIndex),
+			storageState: workerAuth("admin", testInfo.parallelIndex),
 		});
 		await use(context);
 		await context.close();
@@ -28,9 +35,10 @@ const test = base.extend<SettingsIntegrationFixtures>({
 		await use(page);
 		await page.close();
 	},
-	userContext: async ({ browser }, use) => {
+	userContext: async ({ browser }, use, testInfo) => {
 		const context = await browser.newContext({
-			storageState: "e2e/.auth/user.json",
+			baseURL: baseUrlFor(testInfo.parallelIndex),
+			storageState: workerAuth("user", testInfo.parallelIndex),
 		});
 		await use(context);
 		await context.close();
@@ -69,9 +77,10 @@ async function saveValidationSettings(adminPage: Page) {
 // afterAll ensures settings are restored even if a test fails mid-cleanup
 test.describe.serial("Admin Settings Integration with Submission Form", () => {
 	// Safety net: restore all settings to defaults after all tests complete
-	test.afterAll(async ({ browser }) => {
+	test.afterAll(async ({ browser }, testInfo) => {
 		const context = await browser.newContext({
-			storageState: "e2e/.auth/admin.json",
+			baseURL: baseUrlFor(testInfo.parallelIndex),
+			storageState: workerAuth("admin", testInfo.parallelIndex),
 		});
 		const page = await context.newPage();
 

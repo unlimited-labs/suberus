@@ -1,4 +1,5 @@
-import { test as base, expect as baseExpect, type Locator, type Page } from "@playwright/test"
+import { type Locator, type Page } from "@playwright/test"
+import { test as base, expect as baseExpect } from "../helpers/base-fixtures"
 import { dismissViteOverlay } from "../helpers/page-setup"
 
 export { TEST_USER } from "../helpers/test-users"

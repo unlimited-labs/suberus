@@ -17,6 +17,8 @@ services:
       - "max_replication_slots=10"
       - "-c"
       - "max_wal_senders=10"
+      - "-c"
+      - "max_connections=300"
     volumes:
       - ./dev-volumes/postgres_data:/var/lib/postgresql
     networks:

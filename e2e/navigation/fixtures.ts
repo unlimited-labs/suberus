@@ -1,4 +1,5 @@
-import { test as base, type Page } from "@playwright/test"
+import { type Page } from "@playwright/test"
+import { test as base } from "../helpers/base-fixtures"
 import { ADMIN_USER, TEST_USER, REVIEWER_USER, EDITOR_USER } from "../helpers/test-users"
 import { loginAs } from "../helpers/auth"
 import { dismissViteOverlay } from "../helpers/page-setup"

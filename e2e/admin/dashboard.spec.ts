@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../helpers/base-fixtures";
 
 /**
  * E2E tests for Admin Dashboard

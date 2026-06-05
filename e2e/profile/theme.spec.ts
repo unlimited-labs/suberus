@@ -1,8 +1,6 @@
 import { test, expect } from "../helpers/base-fixtures";
 import { TEST_USER } from "../helpers/test-users";
 
-test.use({ storageState: "e2e/.auth/user.json" });
-
 const DISPLAY_NAME = `${TEST_USER.firstName} ${TEST_USER.lastName}`;
 
 async function openThemeSubmenu(page: import("@playwright/test").Page) {

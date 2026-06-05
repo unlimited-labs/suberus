@@ -1,4 +1,4 @@
-import { test as base, expect } from "@playwright/test"
+import { test as base, expect } from "../helpers/base-fixtures"
 import { getPrisma } from "../helpers/test-db"
 import { dismissViteOverlay } from "../helpers/page-setup"
 import { TEST_USER } from "../helpers/test-users"
