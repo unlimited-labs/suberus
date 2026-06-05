@@ -16,6 +16,7 @@ import {
 	IconRoute,
 	IconStarFilled,
 	IconTrash,
+	IconUserCircle,
 	IconUsers,
 	IconX,
 } from "@tabler/icons-react";
@@ -269,6 +270,7 @@ function SubmissionDetailPage() {
 												{authors.map((author, index) => (
 													<div
 														key={`${author.email}-${index}`}
+														data-testid={`submission-author-${index}`}
 														className={cn(
 															"flex items-start gap-3 rounded-lg border p-3 transition-colors",
 															author.isPresenter
@@ -288,9 +290,21 @@ function SubmissionDetailPage() {
 														</div>
 														<div className="min-w-0 flex-1">
 															<div className="flex flex-wrap items-center gap-2">
-																<span className="font-medium text-foreground">
-																	{author.firstName} {author.lastName}
-																</span>
+																{author.userId ? (
+																	<Link
+																		to="/admin/users/$id"
+																		params={{ id: author.userId }}
+																		data-testid={`author-profile-link-${index}`}
+																		className="flex items-center gap-1 font-medium text-foreground hover:text-primary hover:underline"
+																	>
+																		{author.firstName} {author.lastName}
+																		<IconUserCircle className="size-4 text-muted-foreground" />
+																	</Link>
+																) : (
+																	<span className="font-medium text-foreground">
+																		{author.firstName} {author.lastName}
+																	</span>
+																)}
 																{author.isPresenter && (
 																	<Badge
 																		variant="secondary"

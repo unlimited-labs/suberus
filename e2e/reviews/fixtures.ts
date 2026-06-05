@@ -139,6 +139,16 @@ export class AdminSubmissionDetailPage {
 		return this.page.locator('[data-testid="submission-status"]');
 	}
 
+	/** Get an author card by order index (0-based) */
+	getAuthor(index: number): Locator {
+		return this.page.getByTestId(`submission-author-${index}`);
+	}
+
+	/** Get the profile link for a registered-user author by order index */
+	getAuthorProfileLink(index: number): Locator {
+		return this.page.getByTestId(`author-profile-link-${index}`);
+	}
+
 	async getStatus() {
 		return this.getStatusBadge().textContent();
 	}

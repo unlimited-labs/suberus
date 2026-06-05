@@ -4,6 +4,9 @@ import type { TestOptions } from "./e2e/helpers/base-fixtures";
 // Per-worker E2E isolation: each worker runs its own app server (port 3031+i)
 // against its own database suberus_e2e_${i}. Dev DB/Mailpit/S3 are never touched.
 export const E2E_WORKERS = Number(process.env.E2E_WORKERS ?? 2);
+// Isolated build-output dir for E2E: keeps the production build the E2E servers
+// serve from out of `.output`, so a concurrent dev `pnpm build` can't clobber it.
+export const E2E_OUTPUT_DIR = ".output-e2e";
 export const E2E_BASE_PORT = 3031;
 export const portFor = (i: number) => E2E_BASE_PORT + i;
 export const baseUrlFor = (i: number) => `http://localhost:${portFor(i)}`;
@@ -87,6 +90,7 @@ export default defineConfig<TestOptions>({
 		roleProject("mobile-profile", /e2e\/profile\/.*\.spec\.ts/, { role: "user", device: "mobile" }),
 		roleProject("chromium-settings", /e2e\/settings\/.*\.spec\.ts/, { role: "user" }),
 		roleProject("chromium-reviews-admin", /e2e\/reviews\/admin-submissions\.spec\.ts/, { role: "admin" }),
+		roleProject("chromium-reviews-author-links", /e2e\/reviews\/author-profile-links\.spec\.ts/, { role: "admin" }),
 		roleProject("chromium-reviewer", /e2e\/reviews\/reviewer\.spec\.ts/, { role: "reviewer" }),
 		roleProject("chromium-reminder-settings", /e2e\/reminders\/reminder-settings\.spec\.ts/, { role: "admin" }),
 		roleProject("task-mails-reminder", /e2e\/admin\/task-mails-reminder\.spec\.ts/, { role: "admin", device: "mobile" }),

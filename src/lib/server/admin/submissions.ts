@@ -399,6 +399,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 		email: string;
 		affiliationName: string | null;
 		isPresenter: boolean;
+		userId: string | null;
 	}>;
 	assignments: Array<{
 		id: string;
@@ -450,7 +451,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 				},
 			},
 			authors: {
-				include: { affiliation: true },
+				include: { affiliation: true, user: { select: { id: true } } },
 				orderBy: { orderIndex: "asc" },
 			},
 			reviewAssignments: {
@@ -519,6 +520,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 			email: a.email,
 			affiliationName: a.affiliation?.name ?? null,
 			isPresenter: a.isPresenter,
+			userId: a.userId,
 		})),
 		assignments: submission.reviewAssignments.map((a) => ({
 			id: a.id,
