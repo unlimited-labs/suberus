@@ -7,6 +7,11 @@ $env:REGISTRY   = "registry.wimiip.eu"
 $env:IMAGE_NAME = "suberus/app"
 $env:TAG        = Get-Date -Format "yyyyMMdd"
 
+# Build metadata injected into the image (readable at runtime via /api/version)
+$env:GIT_COMMIT = (& git rev-parse --short HEAD).Trim()
+if (& git status --porcelain) { $env:GIT_COMMIT += "-dirty" }
+$env:BUILD_DATE = [DateTime]::UtcNow.ToString("o")
+
 # --- Helper ---
 function Invoke-Docker {
     param([string[]]$Arguments)

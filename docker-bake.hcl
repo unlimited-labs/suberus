@@ -10,6 +10,14 @@ variable "TAG" {
   default = "latest"
 }
 
+variable "GIT_COMMIT" {
+  default = "unknown"
+}
+
+variable "BUILD_DATE" {
+  default = "unknown"
+}
+
 group "default" {
   targets = ["app", "migrate", "docling", "planner"]
 }
@@ -21,6 +29,10 @@ target "app" {
     "${REGISTRY}/${IMAGE_NAME}:${TAG}",
     "${REGISTRY}/${IMAGE_NAME}:latest",
   ]
+  args = {
+    GIT_COMMIT = "${GIT_COMMIT}"
+    BUILD_DATE = "${BUILD_DATE}"
+  }
   cache-from = ["type=registry,ref=${REGISTRY}/${IMAGE_NAME}:cache"]
   cache-to   = ["type=registry,ref=${REGISTRY}/${IMAGE_NAME}:cache,mode=max"]
 }

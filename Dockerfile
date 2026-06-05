@@ -41,6 +41,12 @@ CMD ["npx", "prisma", "migrate", "deploy"]
 # --- Runtime stage ---
 FROM node:22-alpine
 
+# Build metadata (passed via docker-bake args); exposed at runtime via /api/version
+ARG GIT_COMMIT=unknown
+ARG BUILD_DATE=unknown
+ENV GIT_COMMIT=$GIT_COMMIT
+ENV BUILD_DATE=$BUILD_DATE
+
 RUN addgroup -g 1001 -S appgroup && adduser -S appuser -u 1001 -G appgroup
 
 WORKDIR /app

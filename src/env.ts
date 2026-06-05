@@ -45,6 +45,10 @@ export const env = createEnv({
 		AUTH_SECRET: z.string(),
 
 		E2E: z.stringbool().default(false),
+
+		// Build metadata (injected at build time via Docker ARG/ENV)
+		GIT_COMMIT: z.string().default("unknown"),
+		BUILD_DATE: z.string().default("unknown"),
 	},
 
 	/**
