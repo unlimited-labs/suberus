@@ -19,6 +19,23 @@ export const envFor = (i: number) => ({
 	SMTP_FROM_EMAIL: fromAddrFor(i),
 });
 
+// Role-authenticated project: storageState comes from the `role` option (resolved
+// per worker by base-fixtures), so these all depend on auth-setup.
+const roleProject = (
+	name: string,
+	testMatch: RegExp,
+	opts: { role: string; device?: "desktop" | "mobile"; testIgnore?: RegExp },
+) => ({
+	name,
+	testMatch,
+	...(opts.testIgnore ? { testIgnore: opts.testIgnore } : {}),
+	dependencies: ["auth-setup"],
+	use: {
+		...devices[opts.device === "mobile" ? "Pixel 5" : "Desktop Chrome"],
+		role: opts.role,
+	},
+});
+
 export default defineConfig<TestOptions>({
 	testDir: "./e2e",
 	// File-level parallelism preserves each file's beforeAll/afterAll on one worker.
@@ -41,222 +58,52 @@ export default defineConfig<TestOptions>({
 	},
 	projects: [
 		// Auth setup - logs in every role on every worker, saves per-worker state
-		{
-			name: "auth-setup",
-			testMatch: /auth\.setup\.ts/,
-		},
-		// Unauthenticated tests (login, register, forgot-password)
-		{
-			name: "chromium",
-			testMatch: /e2e\/auth\/(?!registration-locks).*\.spec\.ts/,
-			use: { ...devices["Desktop Chrome"] },
-		},
-		{
-			name: "mobile",
-			testMatch: /e2e\/auth\/(?!registration-locks).*\.spec\.ts/,
-			use: { ...devices["Pixel 5"] },
-		},
-		// Registration lock tests - mutate global settings
-		{
-			name: "chromium-registration-locks",
-			testMatch: /registration-locks\.spec\.ts/,
-			use: { ...devices["Desktop Chrome"] },
-		},
-		// Admin settings tests - mutate shared settings (in-file save/restore)
-		{
-			name: "admin-conference-settings",
-			testMatch: /e2e\/admin\/conference-settings\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: { ...devices["Desktop Chrome"], role: "admin" },
-		},
-		{
-			name: "admin-date-format-settings",
-			testMatch: /e2e\/admin\/date-format-settings\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: { ...devices["Desktop Chrome"], role: "admin" },
-		},
-		{
-			name: "admin-fee-settings",
-			testMatch: /e2e\/admin\/fee-settings\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: { ...devices["Desktop Chrome"], role: "admin" },
-		},
-		// Admin tests - admin auth (excludes settings + planner + task-mails which have own projects)
-		{
-			name: "chromium-admin",
-			testMatch: /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|task-mails-reminder|planner\/).*\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: { ...devices["Desktop Chrome"], role: "admin" },
-		},
-		{
-			name: "mobile-admin",
-			testMatch: /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|task-mails-reminder|planner\/).*\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: { ...devices["Pixel 5"], role: "admin" },
-		},
-		// Planner tests - desktop only for now
-		{
-			name: "chromium-planner",
-			testMatch: /e2e\/admin\/planner\/.*\.spec\.ts/,
-			testIgnore: /mobile-planner\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: { ...devices["Desktop Chrome"], role: "admin" },
-		},
-		// Submission tests - user auth
-		{
-			name: "chromium-user",
-			testMatch: /e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access|no-active-types|deadline-locks).*\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: { ...devices["Desktop Chrome"], role: "user" },
-		},
-		{
-			name: "mobile-user",
-			testMatch: /e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access|no-active-types|deadline-locks).*\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: { ...devices["Pixel 5"], role: "user" },
-		},
-		// Extraction tests - user auth, requires docling + LLM services
-		{
-			name: "chromium-extraction",
-			testMatch: /e2e\/extraction\/.*\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: { ...devices["Desktop Chrome"], role: "user" },
-		},
-		// No-active-types test - mutates global submission type configs
-		{
-			name: "chromium-no-active-types",
-			testMatch: /no-active-types\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: { ...devices["Desktop Chrome"], role: "user" },
-		},
-		// Deadline locks test - mutates global settings, cross-role internally
-		{
-			name: "chromium-deadline-locks",
-			testMatch: /deadline-locks\.spec\.ts/,
-			use: { ...devices["Desktop Chrome"] },
-		},
-		// Settings integration tests - mutates global settings then restores
-		{
-			name: "chromium-integration",
-			testMatch: /settings-integration\.spec\.ts/,
-			use: { ...devices["Desktop Chrome"] },
-		},
-		// Email verification tests - unverified user auth
-		{
-			name: "chromium-unverified",
-			testMatch: /e2e\/email-verification\/.*\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: { ...devices["Desktop Chrome"], role: "unverified" },
-		},
-		// Routing tests (404 page) - user auth
-		{
-			name: "chromium-routing",
-			testMatch: /e2e\/routing\/.*\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: { ...devices["Desktop Chrome"], role: "user" },
-		},
-		// Profile tests - user auth
-		{
-			name: "chromium-profile",
-			testMatch: /e2e\/profile\/.*\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: { ...devices["Desktop Chrome"], role: "user" },
-		},
-		{
-			name: "mobile-profile",
-			testMatch: /e2e\/profile\/.*\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: { ...devices["Pixel 5"], role: "user" },
-		},
-		// User settings tests - user auth
-		{
-			name: "chromium-settings",
-			testMatch: /e2e\/settings\/.*\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: { ...devices["Desktop Chrome"], role: "user" },
-		},
-		// Review workflow tests - admin actions (admin auth)
-		{
-			name: "chromium-reviews-admin",
-			testMatch: /e2e\/reviews\/admin-submissions\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: { ...devices["Desktop Chrome"], role: "admin" },
-		},
-		// Review workflow tests - cross-role (handles auth internally)
-		{
-			name: "chromium-reviews-workflow",
-			testMatch: /e2e\/reviews\/workflow\.spec\.ts/,
-			use: { ...devices["Desktop Chrome"] },
-		},
-		// Reviewer tests - reviewer auth
-		{
-			name: "chromium-reviewer",
-			testMatch: /e2e\/reviews\/reviewer\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: { ...devices["Desktop Chrome"], role: "reviewer" },
-		},
-		// Complete workflow tests - cross-role (handles auth internally)
-		{
-			name: "chromium-workflows",
-			testMatch: /e2e\/workflows\/.*\.spec\.ts/,
-			use: { ...devices["Desktop Chrome"] },
-		},
-		// API tests - no browser auth needed (uses own authorization)
-		{
-			name: "api",
-			testMatch: /e2e\/api\/.*\.spec\.ts/,
-			use: { ...devices["Desktop Chrome"] },
-		},
-		// Navigation tests - cross-role (handles auth internally)
-		{
-			name: "chromium-navigation",
-			testMatch: /e2e\/navigation\/.*\.spec\.ts/,
-			use: { ...devices["Desktop Chrome"] },
-		},
-		// Fee tests - cross-role (handles auth internally)
-		{
-			name: "chromium-fee",
-			testMatch: /e2e\/fee\.spec\.ts/,
-			use: { ...devices["Desktop Chrome"] },
-		},
-		// Co-author visibility tests - cross-role (handles auth internally)
-		{
-			name: "chromium-coauthor",
-			testMatch: /coauthor-visibility\.spec\.ts/,
-			use: { ...devices["Desktop Chrome"] },
-		},
-		// File access tests - cross-role (handles auth internally)
-		{
-			name: "chromium-file-access",
-			testMatch: /file-access\.spec\.ts/,
-			use: { ...devices["Desktop Chrome"] },
-		},
-		// Reminder settings tests - admin auth (UI tests)
-		{
-			name: "chromium-reminder-settings",
-			testMatch: /e2e\/reminders\/reminder-settings\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: { ...devices["Desktop Chrome"], role: "admin" },
-		},
-		// Reminder email tests - no browser auth needed (DB + Mailpit only)
-		{
-			name: "reminder-emails",
-			testMatch: /e2e\/reminders\/reminder-emails\.spec\.ts/,
-			use: { ...devices["Desktop Chrome"] },
-		},
-		// Task reminder tests - API-only, admin auth
-		{
-			name: "task-mails-reminder",
-			testMatch: /e2e\/admin\/task-mails-reminder\.spec\.ts/,
-			dependencies: ["auth-setup"],
-			use: { ...devices["Pixel 5"], role: "admin" },
-		},
-		// Bundle tests - verify admin code splitting (handles auth internally)
-		{
-			name: "chromium-bundle",
-			testMatch: /e2e\/bundle\/.*\.spec\.ts/,
-			use: { ...devices["Desktop Chrome"] },
-		},
+		{ name: "auth-setup", testMatch: /auth\.setup\.ts/ },
+
+		// Unauthenticated auth tests (login, register, forgot-password)
+		{ name: "chromium", testMatch: /e2e\/auth\/(?!registration-locks).*\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
+		{ name: "mobile", testMatch: /e2e\/auth\/(?!registration-locks).*\.spec\.ts/, use: { ...devices["Pixel 5"] } },
+
+		// Admin settings - mutate shared settings (in-file save/restore)
+		roleProject("admin-conference-settings", /e2e\/admin\/conference-settings\.spec\.ts/, { role: "admin" }),
+		roleProject("admin-date-format-settings", /e2e\/admin\/date-format-settings\.spec\.ts/, { role: "admin" }),
+		roleProject("admin-fee-settings", /e2e\/admin\/fee-settings\.spec\.ts/, { role: "admin" }),
+
+		// Admin (excludes settings + planner + task-mails, which have own projects)
+		roleProject("chromium-admin", /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|task-mails-reminder|planner\/).*\.spec\.ts/, { role: "admin" }),
+		roleProject("mobile-admin", /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|task-mails-reminder|planner\/).*\.spec\.ts/, { role: "admin", device: "mobile" }),
+
+		// Planner - desktop only for now
+		roleProject("chromium-planner", /e2e\/admin\/planner\/.*\.spec\.ts/, { role: "admin", testIgnore: /mobile-planner\.spec\.ts/ }),
+
+		// Submissions - user auth
+		roleProject("chromium-user", /e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access|no-active-types|deadline-locks).*\.spec\.ts/, { role: "user" }),
+		roleProject("mobile-user", /e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access|no-active-types|deadline-locks).*\.spec\.ts/, { role: "user", device: "mobile" }),
+		roleProject("chromium-extraction", /e2e\/extraction\/.*\.spec\.ts/, { role: "user" }),
+		roleProject("chromium-no-active-types", /no-active-types\.spec\.ts/, { role: "user" }),
+		roleProject("chromium-unverified", /e2e\/email-verification\/.*\.spec\.ts/, { role: "unverified" }),
+		roleProject("chromium-routing", /e2e\/routing\/.*\.spec\.ts/, { role: "user" }),
+		roleProject("chromium-profile", /e2e\/profile\/.*\.spec\.ts/, { role: "user" }),
+		roleProject("mobile-profile", /e2e\/profile\/.*\.spec\.ts/, { role: "user", device: "mobile" }),
+		roleProject("chromium-settings", /e2e\/settings\/.*\.spec\.ts/, { role: "user" }),
+		roleProject("chromium-reviews-admin", /e2e\/reviews\/admin-submissions\.spec\.ts/, { role: "admin" }),
+		roleProject("chromium-reviewer", /e2e\/reviews\/reviewer\.spec\.ts/, { role: "reviewer" }),
+		roleProject("chromium-reminder-settings", /e2e\/reminders\/reminder-settings\.spec\.ts/, { role: "admin" }),
+		roleProject("task-mails-reminder", /e2e\/admin\/task-mails-reminder\.spec\.ts/, { role: "admin", device: "mobile" }),
+
+		// Cross-role / global-mutating - auth handled internally, no role/deps
+		{ name: "chromium-registration-locks", testMatch: /registration-locks\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
+		{ name: "chromium-deadline-locks", testMatch: /deadline-locks\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
+		{ name: "chromium-integration", testMatch: /settings-integration\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
+		{ name: "chromium-reviews-workflow", testMatch: /e2e\/reviews\/workflow\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
+		{ name: "chromium-workflows", testMatch: /e2e\/workflows\/.*\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
+		{ name: "api", testMatch: /e2e\/api\/.*\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
+		{ name: "chromium-navigation", testMatch: /e2e\/navigation\/.*\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
+		{ name: "chromium-fee", testMatch: /e2e\/fee\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
+		{ name: "chromium-coauthor", testMatch: /coauthor-visibility\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
+		{ name: "chromium-file-access", testMatch: /file-access\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
+		{ name: "reminder-emails", testMatch: /e2e\/reminders\/reminder-emails\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
+		{ name: "chromium-bundle", testMatch: /e2e\/bundle\/.*\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
 	],
 	// No `webServer`: global-setup owns the server lifecycle (servers must not boot
 	// before their per-worker DB is seeded). See e2e/setup/global-setup.ts.
