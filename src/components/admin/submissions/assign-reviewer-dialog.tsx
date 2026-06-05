@@ -22,7 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDateFormat } from "@/hooks/use-date-format";
-import { assignmentStatusColors } from "@/lib/labels/assignment";
+import { assignmentStatusVariants } from "@/lib/labels/assignment";
 import {
 	type AssignmentWithReviewer,
 	type AvailableReviewer,
@@ -151,7 +151,7 @@ export function AssignReviewerDialog({
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-				<DialogHeader>
+				<DialogHeader className="min-w-0">
 					<DialogTitle>Assign Reviewers</DialogTitle>
 					<DialogDescription className="truncate">
 						{submissionTitle}
@@ -195,8 +195,10 @@ export function AssignReviewerDialog({
 													{assignment.reviewerName}
 												</span>
 												<Badge
-													variant="outline"
-													className={assignmentStatusColors[assignment.status]}
+													variant={
+														assignmentStatusVariants[assignment.status] ??
+														"outline"
+													}
 												>
 													{assignment.status}
 												</Badge>

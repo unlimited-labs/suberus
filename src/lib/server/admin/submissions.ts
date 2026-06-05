@@ -384,6 +384,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 		status: SubmissionStatus;
 		currentRound: number;
 		trackId: string | null;
+		createdAt: Date;
 		file: {
 			id: string;
 			fileName: string;
@@ -406,6 +407,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 		reviewerEmail: string;
 		status: string;
 		round: number;
+		deadline: Date | null;
 	}>;
 	reviews: Array<{
 		id: string;
@@ -508,6 +510,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 			status: submission.status,
 			currentRound: submission.currentRound,
 			trackId: submission.trackId,
+			createdAt: submission.createdAt,
 			file: submission.currentVersion?.file ?? null,
 		},
 		authors: submission.authors.map((a) => ({
@@ -526,6 +529,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 			reviewerEmail: a.reviewer.email,
 			status: a.status,
 			round: a.round,
+			deadline: a.deadline,
 		})),
 		reviews: await (async () => {
 			const reviewIds = submission.reviews.map((r) => r.id);
