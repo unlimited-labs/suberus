@@ -109,7 +109,11 @@ function SettingsPage() {
 				toast.success("Verification email sent to your new address");
 			}
 			await updateContactInfoFn({
-				data: { address: data.address, country: data.country },
+				data: {
+					needInvoice: data.needInvoice,
+					address: data.address,
+					country: data.country,
+				},
 			});
 			await refetchSession();
 			if (data.email === user.email) {
