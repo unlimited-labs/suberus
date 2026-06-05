@@ -51,6 +51,9 @@ docs/login-colors-bug.png
 
 # Local-only conference abstracts (place PDFs here for seed-kpt2025 script)
 kpt2025-demo/
+mf2024-demo/
 
 # Local-only project instructions (untracked)
 CLAUDE.md
+graphify-out/
+docs/
