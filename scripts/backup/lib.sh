@@ -49,6 +49,12 @@ load_config() {
 
   STAGING_DIR="${STAGING_DIR:-/var/tmp/suberus-backup}"
 
+  # Email alerting (optional). Disabled when ALERT_EMAIL_TO is empty.
+  ALERT_EMAIL_TO="${ALERT_EMAIL_TO:-}"
+  ALERT_ON_SUCCESS="${ALERT_ON_SUCCESS:-1}"
+  SMTP_FROM_NAME="${SMTP_FROM_NAME:-Suberus Backup}"
+  SMTP_TLS_INSECURE="${SMTP_TLS_INSECURE:-0}"
+
   : "${RESTIC_REPOSITORY:?RESTIC_REPOSITORY is required (set in backup.env)}"
   if [[ -z "${RESTIC_PASSWORD_FILE:-}" && -z "${RESTIC_PASSWORD:-}" ]]; then
     die "RESTIC_PASSWORD_FILE or RESTIC_PASSWORD is required"
@@ -128,4 +134,58 @@ sweep_stale_staging() {
     warn "removing $stale stale staging dir(s) from interrupted runs"
     find "$STAGING_DIR" -maxdepth 1 -name 'run.*' -type d -mtime +0 -exec rm -rf {} + 2>/dev/null || true
   fi
+}
+
+# --- Email alerting (curl SMTP + STARTTLS, no extra deps) ----------------
+# send_email <subject> <body-file>. No-op when ALERT_EMAIL_TO is empty.
+send_email() {
+  local subject="$1" body_file="$2"
+  [[ -z "$ALERT_EMAIL_TO" ]] && return 0
+  if ! command -v curl >/dev/null 2>&1; then
+    warn "curl missing — cannot send alert email"; return 0
+  fi
+  : "${SMTP_HOST:?SMTP_HOST required for alerting}" \
+    "${SMTP_PORT:?SMTP_PORT required}" "${SMTP_USER:?SMTP_USER required}" \
+    "${SMTP_PASSWORD:?SMTP_PASSWORD required}" "${SMTP_FROM_EMAIL:?SMTP_FROM_EMAIL required}"
+  local msg; msg="$(mktemp)"
+  {
+    printf 'From: %s <%s>\n' "$SMTP_FROM_NAME" "$SMTP_FROM_EMAIL"
+    printf 'To: %s\n' "$ALERT_EMAIL_TO"
+    printf 'Subject: %s\n' "$subject"
+    printf 'Date: %s\n' "$(date -R 2>/dev/null || date)"
+    printf 'Content-Type: text/plain; charset=UTF-8\n\n'
+    cat "$body_file"
+  } > "$msg"
+  local insecure=(); [[ "$SMTP_TLS_INSECURE" == "1" ]] && insecure=(--insecure)
+  curl --silent --show-error --ssl-reqd "${insecure[@]}" \
+    --connect-timeout 15 --max-time "${SMTP_MAX_TIME:-60}" \
+    --url "smtp://$SMTP_HOST:$SMTP_PORT" \
+    --mail-from "$SMTP_FROM_EMAIL" --mail-rcpt "$ALERT_EMAIL_TO" \
+    --user "$SMTP_USER:$SMTP_PASSWORD" --upload-file "$msg" \
+    2>&1 | sed 's/^/[smtp] /' >&2 || warn "alert email send failed"
+  rm -f "$msg"
+}
+
+# notify_backup_result <exit-code> <log-file>. Emails OK/FAILED with a log tail.
+notify_backup_result() {
+  local rc="$1" logf="$2" tag="${BACKUP_HOST_TAG:-suberus}" status
+  if (( rc == 0 )); then
+    status="OK"
+    [[ "$ALERT_ON_SUCCESS" == "1" ]] || return 0
+  else
+    status="FAILED (rc=$rc)"
+  fi
+  local body; body="$(mktemp)"
+  {
+    echo "Suberus backup $status"
+    echo "instance: $tag"
+    echo "repo:     ${RESTIC_REPOSITORY:-?}"
+    echo "host:     $(hostname 2>/dev/null || echo '?')"
+    echo "time:     $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+    echo
+    echo "----- log tail -----"
+    tail -n 30 "$logf" 2>/dev/null
+  } > "$body"
+  send_email "[Suberus backup] $tag: $status" "$body"
+  rm -f "$body"
 }

@@ -12,12 +12,26 @@ LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib.sh
 source "$LIB_DIR/lib.sh"
 load_config
+
+# Capture all output to a run log (for the alert email) while still forwarding
+# it to the original stdout/stderr (which cron redirects to its own log file).
+RUN_LOG="$(mktemp)"
+exec 3>&1
+exec >"$RUN_LOG" 2>&1
+finish() {
+  local rc=$?
+  notify_backup_result "$rc" "$RUN_LOG"   # email OK/FAILED with a log tail
+  cat "$RUN_LOG" >&3 2>/dev/null           # forward full log to cron's stdout
+  rm -rf "${work:-}" 2>/dev/null
+  rm -f "${RCLONE_CONF_EPHEMERAL:-}" "$RUN_LOG" 2>/dev/null
+}
+trap finish EXIT
+
 preflight
 
 start_ts=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
 sweep_stale_staging
 work="$(mktemp -d "$STAGING_DIR/run.XXXXXX")"
-trap 'rm -rf "$work"; rm -f "${RCLONE_CONF_EPHEMERAL:-}"' EXIT
 mkdir -p "$work/storage"
 log "staging: $work"
 

@@ -150,6 +150,15 @@ instance's `restic forget --prune` only ever touches its own repo).
    45 2 * * * BACKUP_ENV=/home/u/suberus-backup/backup.env.confB /bin/bash /home/u/suberus-backup/backup.sh >> /home/u/suberus-backup/logs/confB.log 2>&1
    ```
 
+## Email alerts
+
+`backup.sh` emails a result (success or failure, with a 30-line log tail) when
+`ALERT_EMAIL_TO` is set — sent via `curl` over SMTP+STARTTLS, no extra deps.
+Set the `SMTP_*` vars in `backup.env`. `ALERT_ON_SUCCESS=0` sends only on
+failure. The send is time-bounded (`--connect-timeout`/`--max-time`) so a stuck
+mail server can never hang the backup. The same captured output is still
+forwarded to stdout, so cron logs are unaffected.
+
 ## Off-site portability
 
 Because restic abstracts the backend, moving off SFTP later (e.g. Backblaze B2,
