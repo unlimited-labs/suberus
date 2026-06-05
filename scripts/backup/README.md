@@ -11,10 +11,24 @@ snapshot. Designed to survive Prisma migrations and S3 key-layout changes.
 | Database | `pg_dump -Fc` via `docker exec suberus-postgres` | Logical dump of whatever schema exists → migration-agnostic. Client version == server (PG18), so pgvector dumps/restores cleanly. |
 | Storage | `rclone sync` of the entire bucket | Copies whatever keys exist → layout changes (`generateSubmissionFileKey` etc.) are irrelevant. Reuses the repo's `garage/rclone.conf`. |
 | Repository | `restic` over SFTP | Encryption at-rest (GDPR — manuscripts are personal data), dedup, retention, `restic check`. |
-| Consistency | dump DB → mirror S3; verify `files.storageKey` ↔ objects | Objects only grow between the two steps → no dangling references. |
+| Consistency | snapshot `files.storageKey` at dump time → mirror S3 → verify keys ↔ objects (`LC_ALL=C`) | Catches a dump/mirror that don't agree, before the snapshot is committed. |
 
 `pgboss` (transient job queue) and Electric SQL's shape cache are **not** backed
 up — both are derived/transient state.
+
+**Consistency is best-effort, not point-in-time.** DB and bucket are two
+systems captured a few seconds apart, so a file deleted in that window can show
+as a dangling reference and fail the run (fails closed — no bad snapshot is
+uploaded). The check compares the storageKey set captured *at dump time*
+against the mirror, not the live DB. For a fully quiesced backup, pause writes
+during the run.
+
+**Trust boundary.** rclone reaches Garage over plain `http://` on the Docker
+network (same as the app itself) — fine inside a trusted host, but the bucket
+payload is not encrypted in transit on that hop. The off-site leg (restic over
+SFTP) and at-rest (restic encryption) are protected. Set
+`StrictHostKeyChecking=yes` with a seeded `known_hosts` for the SFTP host in
+production.
 
 ## Prerequisites (on the VPS / Linux host)
 

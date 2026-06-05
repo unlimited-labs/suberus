@@ -1,32 +1,30 @@
 #!/usr/bin/env bash
-# Shared helpers for Suberus backup/restore scripts.
-# Sourced by backup.sh, restore.sh, verify-consistency.sh.
-
+# Shared helpers, sourced by backup.sh / restore.sh / verify-consistency.sh.
 set -Eeuo pipefail
 
-# --- Paths ---------------------------------------------------------------
 LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$LIB_DIR/../.." && pwd)"
 
-# --- Logging -------------------------------------------------------------
 log()  { printf '%s [backup] %s\n'  "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$*" >&2; }
 warn() { printf '%s [backup] WARN: %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$*" >&2; }
 die()  { printf '%s [backup] ERROR: %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$*" >&2; exit 1; }
 
-# --- Config --------------------------------------------------------------
-# Loads scripts/backup/backup.env (real config, git-ignored). Falls back to
-# environment if the file is absent (e.g. systemd EnvironmentFile).
 load_config() {
   local env_file="${BACKUP_ENV:-$LIB_DIR/backup.env}"
   if [[ -f "$env_file" ]]; then
+    # Config is sourced (= code exec): refuse a group/other-writable file.
+    if find "$env_file" -maxdepth 0 -perm /022 2>/dev/null | grep -q .; then
+      die "config $env_file is group/other-writable — refusing to source (chmod 600)"
+    fi
     # shellcheck disable=SC1090
     source "$env_file"
     log "loaded config: $env_file"
+  elif [[ -n "${BACKUP_ENV:-}" ]]; then
+    die "BACKUP_ENV='$env_file' set but file not found"
   else
     warn "no backup.env at $env_file — relying on process environment"
   fi
 
-  # Defaults (override in backup.env)
   PG_CONTAINER="${PG_CONTAINER:-suberus-postgres}"
   PG_USER="${PG_USER:-suberus}"
   PG_DB="${PG_DB:-suberus}"
@@ -36,10 +34,8 @@ load_config() {
   RCLONE_REMOTE="${RCLONE_REMOTE:-garage}"
   GARAGE_BUCKET="${GARAGE_BUCKET:-suberus-files}"
   S3_EXCLUDE="${S3_EXCLUDE:-extraction-staging/**}"
-  # When GARAGE_CONTAINER is set, the S3 endpoint is resolved from that
-  # container at runtime (for Garage instances whose S3 port isn't published
-  # to the host — typical multi-tenant deploys). Requires GARAGE_ACCESS_KEY_ID
-  # and GARAGE_SECRET_ACCESS_KEY. Leave empty to use a static RCLONE_CONF.
+  # Set GARAGE_CONTAINER to resolve the S3 endpoint from a container at runtime
+  # (port not published to host); needs GARAGE_ACCESS_KEY_ID/SECRET.
   GARAGE_CONTAINER="${GARAGE_CONTAINER:-}"
   GARAGE_REGION="${GARAGE_REGION:-garage}"
   GARAGE_S3_PORT="${GARAGE_S3_PORT:-3902}"
@@ -49,7 +45,6 @@ load_config() {
 
   STAGING_DIR="${STAGING_DIR:-/var/tmp/suberus-backup}"
 
-  # Email alerting (optional). Disabled when ALERT_EMAIL_TO is empty.
   ALERT_EMAIL_TO="${ALERT_EMAIL_TO:-}"
   ALERT_ON_SUCCESS="${ALERT_ON_SUCCESS:-1}"
   SMTP_FROM_NAME="${SMTP_FROM_NAME:-Suberus Backup}"
@@ -61,15 +56,12 @@ load_config() {
   fi
 }
 
-# --- Tooling -------------------------------------------------------------
 require_cmd() { command -v "$1" >/dev/null 2>&1 || die "missing command: $1"; }
 
 rclone_cmd() { rclone --config "$RCLONE_CONF" "$@"; }
 
-# Build an ephemeral rclone config pointing at a Garage container by resolving
-# its current Docker IP (the S3 API port is often not published to the host).
-# Sets RCLONE_CONF to the temp file and RCLONE_CONF_EPHEMERAL for cleanup.
-# No-op when GARAGE_CONTAINER is empty (static RCLONE_CONF is used as-is).
+# Write an ephemeral 0600 rclone config pointing at the Garage container's
+# current Docker IP. No-op when GARAGE_CONTAINER is empty.
 RCLONE_CONF_EPHEMERAL=""
 ensure_rclone_conf() {
   [[ -z "$GARAGE_CONTAINER" ]] && return 0
@@ -88,10 +80,7 @@ ensure_rclone_conf() {
   log "garage endpoint resolved: $GARAGE_CONTAINER -> http://$ip:$GARAGE_S3_PORT"
 }
 
-# restic wrapper that injects an optional custom SFTP transport so a specific
-# SSH key / options can be used without an OS-level ~/.ssh/config entry.
-# Set RESTIC_SFTP_COMMAND (full ssh command, must end with: -s sftp) or
-# RESTIC_SFTP_ARGS (extra args appended to restic's default ssh) in backup.env.
+# restic with optional SFTP transport override (RESTIC_SFTP_COMMAND/_ARGS).
 restic_cmd() {
   local opts=()
   [[ -n "${RESTIC_SFTP_COMMAND:-}" ]] && opts+=(-o "sftp.command=$RESTIC_SFTP_COMMAND")
@@ -99,10 +88,8 @@ restic_cmd() {
   restic ${opts[@]+"${opts[@]}"} "$@"
 }
 
-# Run psql inside the postgres container; reads SQL from stdin or -c.
 pg_psql() { docker exec -i "$PG_CONTAINER" psql -U "$PG_USER" -d "$PG_DB" "$@"; }
 
-# --- Preflight -----------------------------------------------------------
 preflight() {
   require_cmd docker
   require_cmd rclone
@@ -120,12 +107,11 @@ preflight() {
     || die "restic repo unreachable/uninitialised: $RESTIC_REPOSITORY (run 'restic init')"
 
   mkdir -p "$STAGING_DIR"
+  chmod 700 "$STAGING_DIR" 2>/dev/null || true
   log "preflight OK"
 }
 
-# Remove staging run dirs left behind by a previously killed run. The EXIT
-# trap normally cleans them, but SIGKILL / power loss can leak a full copy
-# (db dump + entire S3 mirror). Drops anything older than ~1 day.
+# Drop staging dirs leaked by a killed run (the EXIT trap misses SIGKILL).
 sweep_stale_staging() {
   [[ -d "$STAGING_DIR" ]] || return 0
   local stale
@@ -136,7 +122,6 @@ sweep_stale_staging() {
   fi
 }
 
-# --- Email alerting (curl SMTP + STARTTLS, no extra deps) ----------------
 # send_email <subject> <body-file>. No-op when ALERT_EMAIL_TO is empty.
 send_email() {
   local subject="$1" body_file="$2"
@@ -144,12 +129,13 @@ send_email() {
   if ! command -v curl >/dev/null 2>&1; then
     warn "curl missing — cannot send alert email"; return 0
   fi
-  # Soft-check (never hard-exit: this runs inside the EXIT trap).
   if [[ -z "${SMTP_HOST:-}" || -z "${SMTP_PORT:-}" || -z "${SMTP_USER:-}" \
         || -z "${SMTP_PASSWORD:-}" || -z "${SMTP_FROM_EMAIL:-}" ]]; then
     warn "alerting enabled but SMTP_* incomplete — skipping email"; return 0
   fi
   local msg cred; msg="$(mktemp)"; cred="$(mktemp)"; chmod 600 "$cred"
+  trap 'rm -f "$msg" "$cred"' RETURN
+  [[ "$SMTP_TLS_INSECURE" == "1" ]] && warn "SMTP_TLS_INSECURE=1 — TLS cert verification DISABLED"
   # Credentials via a 0600 config file, not argv (avoids `ps` exposure).
   printf 'user = "%s:%s"\n' "$SMTP_USER" "$SMTP_PASSWORD" > "$cred"
   {
@@ -166,7 +152,7 @@ send_email() {
     --connect-timeout 15 --max-time "${SMTP_MAX_TIME:-60}" \
     --url "smtp://$SMTP_HOST:$SMTP_PORT" \
     --mail-from "$SMTP_FROM_EMAIL" --mail-rcpt "$ALERT_EMAIL_TO" \
-    --upload-file "$msg" \
+    --upload-file "$msg" </dev/null \
     2>&1 | sed 's/^/[smtp] /' >&2 || warn "alert email send failed"
   rm -f "$msg" "$cred"
 }

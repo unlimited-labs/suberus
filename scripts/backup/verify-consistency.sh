@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
-# Verify that every File.storageKey in the DB has a matching object in the
-# storage mirror (and report orphans the other way round).
-#
-# Modes:
-#   verify-consistency.sh <staging_dir>   # compare DB vs staging/storage (backup)
-#   verify-consistency.sh --live          # compare DB vs live bucket (post-restore)
-#
-# Exit code: non-zero if any DANGLING reference is found (DB row without object).
-# Orphans (object without DB row) are reported as warnings only.
+# Compare files.storageKey against the stored objects.
+#   verify-consistency.sh <staging_dir>   # backup: DB keys vs staging/storage
+#   verify-consistency.sh --live           # post-restore: DB keys vs live bucket
+# Exit non-zero on any dangling ref (DB key without object); orphans only warn.
 
 LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib.sh
@@ -16,24 +11,21 @@ load_config
 
 MODE="${1:?usage: verify-consistency.sh <staging_dir>|--live}"
 
-# Allow callers (restore drills into throwaway targets) to override the DB /
-# bucket AFTER load_config — env-prefix vars alone don't survive because
-# load_config re-sources backup.env. ensure_rclone_conf is needed for --live
-# so the Garage endpoint is resolved when GARAGE_CONTAINER is set.
+# Overrides applied AFTER load_config (env-prefix vars get clobbered by re-source).
 PG_DB="${VERIFY_PG_DB:-$PG_DB}"
 GARAGE_BUCKET="${VERIFY_BUCKET:-$GARAGE_BUCKET}"
-if [[ "$MODE" == "--live" ]]; then
-  ensure_rclone_conf
-fi
+[[ "$MODE" == "--live" ]] && ensure_rclone_conf
 
-# storageKey list from the DB. Table is mapped to "files", column "storageKey".
-# Extraction-staging files are never recorded in the files table, so excluding
-# that prefix from the mirror does not create false danglings.
 db_keys() {
-  pg_psql -At -c 'SELECT "storageKey" FROM files ORDER BY 1'
+  # Backup mode: use the keys captured at dump time. --live: query the DB.
+  if [[ "$MODE" != "--live" && -f "$MODE/db-storage-keys.txt" ]]; then
+    cat "$MODE/db-storage-keys.txt"
+  else
+    pg_psql -At -c \
+      "SELECT \"storageKey\" FROM files WHERE \"storageKey\" IS NOT NULL AND \"storageKey\" <> ''"
+  fi
 }
 
-# Object key list from the chosen source.
 storage_keys() {
   if [[ "$MODE" == "--live" ]]; then
     rclone_cmd lsf --files-only -R --exclude "$S3_EXCLUDE" "$RCLONE_REMOTE:$GARAGE_BUCKET"
@@ -47,21 +39,21 @@ storage_keys() {
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"; rm -f "${RCLONE_CONF_EPHEMERAL:-}"' EXIT
 
-db_keys      | sort -u > "$tmp/db.txt"
-storage_keys | sort -u > "$tmp/storage.txt"
+# LC_ALL=C: comm compares byte-wise and needs inputs sorted the same way.
+db_keys      | LC_ALL=C sort -u > "$tmp/db.txt"
+storage_keys | LC_ALL=C sort -u > "$tmp/storage.txt"
 
-# Apply the same exclude the mirror uses, so live/backup compare like-for-like.
-# S3_EXCLUDE is an rclone glob (prefix/**); translate the common prefix form.
-excl_prefix="${S3_EXCLUDE%/\*\*}"
-if [[ -n "$excl_prefix" && "$excl_prefix" != "$S3_EXCLUDE" ]]; then
-  grep -v "^$excl_prefix/" "$tmp/db.txt" > "$tmp/db.f.txt" || true
-  mv "$tmp/db.f.txt" "$tmp/db.txt"
+# Drop DB keys under the excluded prefix (literal match), matching the mirror.
+if [[ "$S3_EXCLUDE" == */\*\* ]]; then
+  excl_prefix="${S3_EXCLUDE%/\*\*}/"
+  awk -v p="$excl_prefix" 'index($0, p) != 1' "$tmp/db.txt" > "$tmp/db.f.txt"
+  LC_ALL=C sort -u "$tmp/db.f.txt" > "$tmp/db.txt"; rm -f "$tmp/db.f.txt"
+elif [[ -n "$S3_EXCLUDE" ]]; then
+  warn "S3_EXCLUDE='$S3_EXCLUDE' is not a 'prefix/**' glob — DB-side filter skipped; counts may be off"
 fi
 
-# DANGLING: in DB, missing from storage.
-comm -23 "$tmp/db.txt" "$tmp/storage.txt" > "$tmp/dangling.txt" || true
-# ORPHAN: in storage, no DB row.
-comm -13 "$tmp/db.txt" "$tmp/storage.txt" > "$tmp/orphan.txt" || true
+LC_ALL=C comm -23 "$tmp/db.txt" "$tmp/storage.txt" > "$tmp/dangling.txt" || true
+LC_ALL=C comm -13 "$tmp/db.txt" "$tmp/storage.txt" > "$tmp/orphan.txt" || true
 
 db_count=$(wc -l < "$tmp/db.txt" | tr -d ' ')
 st_count=$(wc -l < "$tmp/storage.txt" | tr -d ' ')
