@@ -1,4 +1,5 @@
 import { type Page, type Locator } from "@playwright/test"
+import { randomUUID } from "node:crypto"
 import { test as base, expect as baseExpect, type TestRunContext, type CleanupContext } from "../helpers/base-fixtures"
 import { loginAs } from "../helpers/auth"
 
@@ -25,7 +26,7 @@ export const VALID_SUBMISSION = {
 
 // Generate unique submission data to avoid test conflicts
 export function createUniqueSubmission(suffix?: string) {
-	const id = suffix ?? Date.now().toString()
+	const id = suffix ?? randomUUID().slice(0, 8)
 	return {
 		type: "ABSTRACT" as const,
 		title: `${id}_Test Submission`,

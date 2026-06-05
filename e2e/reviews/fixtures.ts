@@ -1,4 +1,5 @@
 import { type Page, type Locator } from "@playwright/test";
+import { randomUUID } from "node:crypto";
 import {
 	test as base,
 	expect as baseExpect,
@@ -25,7 +26,7 @@ export type { TestRunContext, CleanupContext } from "../helpers/base-fixtures";
 
 // Generate unique submission data
 export function createTestSubmission(suffix?: string) {
-	const id = suffix ?? Date.now().toString();
+	const id = suffix ?? randomUUID().slice(0, 8);
 	return {
 		type: "ABSTRACT" as const,
 		title: `${id}_Review Test Submission`,
@@ -219,8 +220,7 @@ export class AssignReviewerDialog {
 
 	async searchReviewer(query: string) {
 		await this.searchInput.fill(query);
-		// Wait for search results to update
-		await this.page.waitForTimeout(300);
+		// No fixed sleep: callers assert on the filtered result, which auto-waits.
 	}
 
 	async assignReviewerByEmail(email: string) {
