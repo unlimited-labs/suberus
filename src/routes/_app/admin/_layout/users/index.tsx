@@ -51,6 +51,7 @@ function UsersPage() {
 					columns={userColumns}
 					data={users}
 					getRowId={(row) => row.id}
+					rowDataTestId="user-row"
 					mobileCard={UserMobileCard}
 					initialColumnVisibility={{
 						submissionType: false,

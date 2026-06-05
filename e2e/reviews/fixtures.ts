@@ -75,13 +75,13 @@ export class AdminSubmissionsPage {
 	}
 
 	async openSubmissionDetail(title: string) {
-		const row = this.page.locator("tr").filter({ hasText: title });
+		const row = this.page.getByTestId("submission-row").filter({ visible: true, hasText: title });
 		await row.getByRole("button", { name: "Actions menu" }).click();
 		await this.page.getByRole("menuitem", { name: "View" }).click();
 	}
 
 	getRowByTitle(title: string) {
-		return this.page.locator("tr").filter({ hasText: title });
+		return this.page.getByTestId("submission-row").filter({ visible: true, hasText: title });
 	}
 
 	/** Get status badge for a submission row */
@@ -226,7 +226,7 @@ export class AssignReviewerDialog {
 	async assignReviewerByEmail(email: string) {
 		// Find reviewer row by email and click Assign
 		const reviewerRow = this.page
-			.locator("div")
+			.getByTestId("reviewer-option")
 			.filter({ hasText: email })
 			.first();
 		await reviewerRow.getByRole("button", { name: "Assign" }).click();

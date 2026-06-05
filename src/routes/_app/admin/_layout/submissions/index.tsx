@@ -38,6 +38,7 @@ function AdminSubmissionsPage() {
 					columns={submissionColumns}
 					data={submissions}
 					getRowId={(row) => row.id}
+					rowDataTestId="submission-row"
 					mobileCard={SubmissionMobileCard}
 					toolbar={(table) => (
 						<DataTableToolbar

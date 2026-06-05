@@ -269,6 +269,7 @@ export function AssignReviewerDialog({
 								{filteredReviewers.map((reviewer) => (
 									<div
 										key={reviewer.id}
+										data-testid="reviewer-option"
 										className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50"
 									>
 										<div className="min-w-0 flex-1">
