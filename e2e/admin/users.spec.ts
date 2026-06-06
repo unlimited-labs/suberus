@@ -75,6 +75,57 @@ test.describe("Admin Users Management", () => {
 		})
 	})
 
+	test.describe("Column Visibility", () => {
+		test("hides a column and shows it again from the Columns menu", async ({ adminUsersPage, page }) => {
+			// Arrange
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+
+			const affiliationHeader = page
+				.getByRole("columnheader")
+				.filter({ hasText: "Affiliation" })
+			await expect(affiliationHeader).toBeVisible()
+
+			const columnsButton = page.getByRole("button", { name: "Columns" })
+
+			// Act — hide the column
+			await columnsButton.click()
+			const item = page.getByRole("menuitemcheckbox", { name: "Affiliation" })
+			await expect(item).toHaveAttribute("aria-checked", "true")
+			await item.click()
+			await page.keyboard.press("Escape")
+
+			// Assert — column is hidden
+			await expect(affiliationHeader).toBeHidden()
+
+			// Act — reopen: the menu item must reflect the hidden state, then re-show
+			await columnsButton.click()
+			const itemAgain = page.getByRole("menuitemcheckbox", { name: "Affiliation" })
+			await expect(itemAgain).toHaveAttribute("aria-checked", "false")
+			await itemAgain.click()
+			await page.keyboard.press("Escape")
+
+			// Assert — column is visible again (regression: hide-but-cannot-show)
+			await expect(affiliationHeader).toBeVisible()
+		})
+
+		test("keeps the Columns menu open and flips the checkbox in place", async ({ adminUsersPage, page }) => {
+			// Arrange
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+
+			await page.getByRole("button", { name: "Columns" }).click()
+			const item = page.getByRole("menuitemcheckbox", { name: "Affiliation" })
+
+			// Act & Assert — toggling does not close the menu; checkbox updates live
+			await expect(item).toHaveAttribute("aria-checked", "true")
+			await item.click()
+			await expect(item).toHaveAttribute("aria-checked", "false")
+			await item.click()
+			await expect(item).toHaveAttribute("aria-checked", "true")
+		})
+	})
+
 	test.describe("User Detail Page", () => {
 		test("displays user details correctly", async ({ adminUsersPage, userDetailPage }) => {
 			// Arrange

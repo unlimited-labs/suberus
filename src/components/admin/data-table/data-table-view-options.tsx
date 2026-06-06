@@ -1,5 +1,6 @@
 import { IconColumns3 } from "@tabler/icons-react";
 import type { Table } from "@tanstack/react-table";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,15 +21,35 @@ export function DataTableViewOptions<TData>({
 	table,
 	columnLabels = {},
 }: DataTableViewOptionsProps<TData>) {
-	const columns = table.getAllColumns().filter((column) => column.getCanHide());
+	const hideableColumns = table
+		.getAllColumns()
+		.filter((column) => column.getCanHide());
 
-	// Get visibility state to trigger re-renders
-	const columnVisibility = table.getState().columnVisibility;
+	const readVisibility = (): Record<string, boolean> =>
+		Object.fromEntries(hideableColumns.map((c) => [c.id, c.getIsVisible()]));
 
-	if (columns.length === 0) return null;
+	// The dropdown lives in a portal and does not re-render from the table's
+	// columnVisibility change, so the checkboxes would show a stale state — a
+	// hidden column could not be shown again, because radix derives the next
+	// value as `!checked` from a frozen `checked` prop. Mirror visibility in
+	// local state (drives the checkboxes, re-renders immediately on toggle) and
+	// re-sync from the columns whenever the menu opens.
+	const [visibility, setVisibility] =
+		useState<Record<string, boolean>>(readVisibility);
+
+	if (hideableColumns.length === 0) return null;
+
+	const toggle = (columnId: string, visible: boolean) => {
+		table.getColumn(columnId)?.toggleVisibility(visible);
+		setVisibility((prev) => ({ ...prev, [columnId]: visible }));
+	};
 
 	return (
-		<DropdownMenu>
+		<DropdownMenu
+			onOpenChange={(open) => {
+				if (open) setVisibility(readVisibility());
+			}}
+		>
 			<DropdownMenuTrigger asChild>
 				<Button variant="outline" size="sm" className="h-8">
 					<IconColumns3 className="mr-2 size-4" />
@@ -38,14 +59,14 @@ export function DataTableViewOptions<TData>({
 			<DropdownMenuContent align="end" className="w-[180px]">
 				<DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
 				<DropdownMenuSeparator />
-				{columns.map((column) => {
+				{hideableColumns.map((column) => {
 					const label = columnLabels[column.id] ?? column.id;
-					const isVisible = columnVisibility[column.id] !== false;
 					return (
 						<DropdownMenuCheckboxItem
 							key={column.id}
-							checked={isVisible}
-							onCheckedChange={(value) => column.toggleVisibility(!!value)}
+							checked={visibility[column.id] ?? true}
+							onCheckedChange={(value) => toggle(column.id, !!value)}
+							onSelect={(event) => event.preventDefault()}
 						>
 							{label}
 						</DropdownMenuCheckboxItem>
