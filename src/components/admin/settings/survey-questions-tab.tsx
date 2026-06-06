@@ -23,6 +23,7 @@ import {
 	updateSurveyQuestionFn,
 } from "@/server-fns/settings/survey";
 import { SurveyQuestionAddForm } from "./survey-question-add-form";
+import { SurveyQuestionDeleteDialog } from "./survey-question-delete-dialog";
 import { SurveyQuestionDialog } from "./survey-question-dialog";
 import {
 	isSelectType,
@@ -151,6 +152,7 @@ export function SurveyQuestionsTab({
 	const [questions, setQuestions] =
 		useState<SurveyQuestion[]>(initialQuestions);
 	const [editing, setEditing] = useState<SurveyQuestion | null>(null);
+	const [deleting, setDeleting] = useState<SurveyQuestion | null>(null);
 	const [busyId, setBusyId] = useState<string | null>(null);
 
 	const invalidateSurvey = () =>
@@ -250,12 +252,15 @@ export function SurveyQuestionsTab({
 		}
 	};
 
-	const handleDelete = async (id: string) => {
+	const handleConfirmDelete = async () => {
+		if (!deleting) return;
+		const id = deleting.id;
 		setBusyId(id);
 		try {
 			await deleteSurveyQuestionFn({ data: { id } });
 			await invalidateSurvey();
 			setQuestions((prev) => prev.filter((q) => q.id !== id));
+			setDeleting(null);
 			toast.success("Question deleted");
 		} catch {
 			toast.error("Failed to delete question");
@@ -316,7 +321,7 @@ export function SurveyQuestionsTab({
 									onToggleActive={(active) =>
 										handleToggleActive(question.id, active)
 									}
-									onDelete={() => handleDelete(question.id)}
+									onDelete={() => setDeleting(question)}
 								/>
 							))}
 						</div>
@@ -333,6 +338,16 @@ export function SurveyQuestionsTab({
 					if (!open) setEditing(null);
 				}}
 				onSave={handleEditSave}
+			/>
+
+			<SurveyQuestionDeleteDialog
+				question={deleting}
+				open={deleting !== null}
+				onOpenChange={(open) => {
+					if (!open) setDeleting(null);
+				}}
+				onConfirm={handleConfirmDelete}
+				isBusy={busyId === deleting?.id}
 			/>
 		</div>
 	);

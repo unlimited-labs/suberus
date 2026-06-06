@@ -112,13 +112,42 @@ test.describe("Admin Settings - Survey Questions", () => {
 		await page.getByRole("button", { name: "Add" }).click();
 		await expect(page.getByText("Question added")).toBeVisible();
 
-		// Act — find the row by data-testid and delete
+		// Act — open the row's delete confirmation, then confirm
 		const row = page.getByTestId("question-row").filter({ hasText: deleteLabel });
 		await row.getByRole("button", { name: "Delete question" }).click();
+		const dialog = page.getByRole("dialog");
+		await expect(dialog).toContainText(deleteLabel);
+		await dialog.getByRole("button", { name: "Delete", exact: true }).click();
 
 		// Assert
 		await expect(page.getByText("Question deleted")).toBeVisible();
 		await expect(page.getByTestId("question-row").filter({ hasText: deleteLabel })).not.toBeVisible();
+	});
+
+	test("admin can cancel question deletion", async ({ page, testRun }) => {
+		// Arrange — create a question to (not) delete
+		const keepLabel = testRun.prefix("Temp question to keep");
+		const db = getPrisma();
+		await db.surveyAnswer.deleteMany({ where: { question: { label: keepLabel } } });
+		await db.surveyQuestion.deleteMany({ where: { label: keepLabel } });
+
+		await page.getByPlaceholder("New question label...").fill(keepLabel);
+		await page.getByRole("button", { name: "Add" }).click();
+		await expect(page.getByText("Question added")).toBeVisible();
+
+		// Act — open the confirmation, then cancel
+		const row = page.getByTestId("question-row").filter({ hasText: keepLabel });
+		await row.getByRole("button", { name: "Delete question" }).click();
+		const dialog = page.getByRole("dialog");
+		await dialog.getByRole("button", { name: "Cancel" }).click();
+
+		// Assert — still present, nothing deleted
+		await expect(dialog).not.toBeVisible();
+		await expect(row).toBeVisible();
+		expect(await db.surveyQuestion.count({ where: { label: keepLabel } })).toBe(1);
+
+		// Cleanup
+		await db.surveyQuestion.deleteMany({ where: { label: keepLabel } });
 	});
 
 	test("admin reorders questions with up/down arrows", async ({ page }) => {
