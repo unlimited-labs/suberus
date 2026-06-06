@@ -6,13 +6,18 @@ import type {
 	SubmissionType,
 } from "@/generated/prisma/enums";
 import { activityDetail } from "@/lib/activity-log";
-import { statusChangeOptions } from "@/lib/labels/submission";
+import {
+	type SubmissionTodo,
+	statusChangeOptions,
+} from "@/lib/labels/submission";
 import { logActivity, logActivityTx } from "@/lib/server/activity-log";
 import { assignReviewer } from "@/lib/server/assignments";
 import { sendEmail } from "@/lib/server/email";
+import { getSubmissionTypeConfigs } from "@/lib/server/settings";
 import { deleteFile } from "@/lib/server/storage";
 import { executeSubmissionTransition } from "@/lib/server/workflow";
 import type { SubmissionEvent } from "@/lib/workflow";
+import { hasMinReviewers } from "@/lib/workflow/guards";
 
 export interface SubmissionDeleteWarnings {
 	warnings: string[];
@@ -260,8 +265,53 @@ export interface AdminSubmission {
 	ownerEmail: string;
 	reviewerCount: number;
 	completedReviewsCount: number;
+	todo: SubmissionTodo;
 	createdAt: Date;
 	updatedAt: Date;
+}
+
+/**
+ * Derive the next admin action ("TODO") for a submission.
+ * Shares thresholds with the workflow state machine via `hasMinReviewers`
+ * (see src/lib/workflow/guards.ts) so the two can't drift. `overdue` and
+ * `payment` are intentionally outside the machine's domain and live only here.
+ */
+export function computeSubmissionTodo(args: {
+	status: SubmissionStatus;
+	assigned: number;
+	completed: number;
+	required: number;
+	overdueCount: number;
+	feePaid: boolean;
+}): SubmissionTodo {
+	const { status, assigned, completed, required, overdueCount, feePaid } = args;
+
+	switch (status) {
+		case "DRAFT":
+			return { kind: "AWAITING_SUBMISSION" };
+		case "SUBMITTED":
+		case "RESUBMITTED":
+			return hasMinReviewers(assigned, required)
+				? { kind: "AWAITING_REVIEWS", completed, required }
+				: { kind: "ASSIGN_REVIEWER", assigned, required };
+		case "UNDER_REVIEW":
+			if (overdueCount > 0) return { kind: "REVIEWER_OVERDUE", overdueCount };
+			return hasMinReviewers(assigned, required)
+				? { kind: "AWAITING_REVIEWS", completed, required }
+				: { kind: "ASSIGN_REVIEWER", assigned, required };
+		case "REVIEWS_COMPLETE":
+		case "AWAITING_DECISION":
+			return { kind: "MAKE_DECISION" };
+		case "REVISE_REQUIRED":
+			return { kind: "AWAITING_REVISION" };
+		case "CONDITIONALLY_ACCEPTED":
+			return { kind: "VERIFY_CONDITIONS" };
+		case "ACCEPTED":
+			return feePaid ? { kind: "NONE" } : { kind: "PAYMENT_REMINDER" };
+		default:
+			// REJECTED, WITHDRAWN
+			return { kind: "NONE" };
+	}
 }
 
 export interface GetSubmissionsFilters {
@@ -319,22 +369,37 @@ export async function getAdminSubmissions(
 ): Promise<GetSubmissionsResponse> {
 	const where = buildSubmissionWhereClause(filters);
 
-	const submissions = await prisma.submission.findMany({
-		where,
-		include: {
-			user: {
-				select: { firstName: true, lastName: true, email: true },
+	const [submissions, configs] = await Promise.all([
+		prisma.submission.findMany({
+			where,
+			include: {
+				user: {
+					select: {
+						firstName: true,
+						lastName: true,
+						email: true,
+						fee: { select: { paid: true } },
+					},
+				},
+				presenterAuthor: {
+					select: { firstName: true, lastName: true, email: true },
+				},
+				reviewAssignments: {
+					where: { status: { notIn: ["CANCELLED"] } },
+					select: { status: true, round: true, deadline: true },
+				},
 			},
-			presenterAuthor: {
-				select: { firstName: true, lastName: true, email: true },
-			},
-			reviewAssignments: {
-				where: { status: { notIn: ["CANCELLED"] } },
-				select: { status: true, round: true },
-			},
-		},
-		orderBy: { createdAt: "desc" },
-	});
+			orderBy: { createdAt: "desc" },
+		}),
+		getSubmissionTypeConfigs(),
+	]);
+
+	const requiredByType: Record<SubmissionType, number> = {
+		ABSTRACT: configs.ORAL_PRESENTATION.requiredReviewers,
+		POSTER: configs.POSTER.requiredReviewers,
+		FULL_PAPER: configs.FULL_PAPER.requiredReviewers,
+	};
+	const now = new Date();
 
 	const result: AdminSubmission[] = submissions.map((s) => {
 		// Get presenter name or owner name
@@ -351,6 +416,10 @@ export async function getAdminSubmissions(
 		const completedAssignments = currentRoundAssignments.filter(
 			(a) => a.status === "COMPLETED",
 		);
+		const overdueCount = currentRoundAssignments.filter(
+			(a) =>
+				a.status === "OVERDUE" || (a.deadline !== null && a.deadline < now),
+		).length;
 
 		return {
 			id: s.id,
@@ -363,6 +432,14 @@ export async function getAdminSubmissions(
 			ownerEmail: presenterEmail,
 			reviewerCount: currentRoundAssignments.length,
 			completedReviewsCount: completedAssignments.length,
+			todo: computeSubmissionTodo({
+				status: s.status,
+				assigned: currentRoundAssignments.length,
+				completed: completedAssignments.length,
+				required: requiredByType[s.type],
+				overdueCount,
+				feePaid: s.user.fee?.paid ?? false,
+			}),
 			createdAt: s.createdAt,
 			updatedAt: s.updatedAt,
 		};

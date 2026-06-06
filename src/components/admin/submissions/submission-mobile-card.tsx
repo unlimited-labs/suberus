@@ -1,7 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { statusLabels, typeLabels } from "@/lib/labels/submission";
+import {
+	statusLabels,
+	todoBadgeVariant,
+	todoLabel,
+	todoTone,
+	typeLabels,
+} from "@/lib/labels/submission";
 import type { AdminSubmission } from "@/lib/server/admin/submissions";
 
 export function SubmissionMobileCard(submission: AdminSubmission) {
@@ -31,6 +37,11 @@ export function SubmissionMobileCard(submission: AdminSubmission) {
 					<p className="text-sm text-muted-foreground">
 						{submission.ownerName}
 					</p>
+					{todoTone(submission.todo.kind) === "action" && (
+						<Badge variant={todoBadgeVariant[submission.todo.kind]}>
+							{todoLabel(submission.todo)}
+						</Badge>
+					)}
 				</div>
 			</CardContent>
 		</Card>

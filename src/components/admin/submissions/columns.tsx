@@ -8,13 +8,51 @@ import {
 } from "@/components/admin/data-table";
 import { Badge } from "@/components/ui/badge";
 import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+	type SubmissionTodo,
 	statusFilterOptions,
 	statusLabels,
 	statusVariants,
+	type TodoKind,
+	todoBadgeVariant,
+	todoFilterOptions,
+	todoLabel,
+	todoSortRank,
+	todoTone,
+	todoTooltip,
 	typeFilterOptions,
 	typeLabels,
 } from "@/lib/labels/submission";
 import type { AdminSubmission } from "@/lib/server/admin/submissions";
+
+function TodoCell({ todo }: { todo: SubmissionTodo }) {
+	const label = todoLabel(todo);
+	const tooltip = todoTooltip(todo);
+	const body =
+		todoTone(todo.kind) === "action" ? (
+			<Badge variant={todoBadgeVariant[todo.kind]}>{label}</Badge>
+		) : (
+			<span className="text-xs text-muted-foreground">{label}</span>
+		);
+
+	if (!tooltip) return body;
+
+	return (
+		<TooltipProvider>
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<span className="inline-flex cursor-help">{body}</span>
+				</TooltipTrigger>
+				<TooltipContent>{tooltip}</TooltipContent>
+			</Tooltip>
+		</TooltipProvider>
+	);
+}
 
 export const submissionColumns: ColumnDef<AdminSubmission>[] = [
 	createSelectColumn<AdminSubmission>(),
@@ -116,6 +154,23 @@ export const submissionColumns: ColumnDef<AdminSubmission>[] = [
 			const round = row.getValue("currentRound") as number;
 			return <span className="text-muted-foreground">R{round}</span>;
 		},
+	},
+	{
+		id: "todo",
+		accessorFn: (row) => row.todo.kind,
+		header: ({ column }) => (
+			<DataTableColumnHeader
+				column={column}
+				title="TODO"
+				filterOptions={[...todoFilterOptions]}
+			/>
+		),
+		cell: ({ row }) => <TodoCell todo={row.original.todo} />,
+		filterFn: facetedFilterFn,
+		sortingFn: (a, b) =>
+			todoSortRank[a.getValue<TodoKind>("todo")] -
+			todoSortRank[b.getValue<TodoKind>("todo")],
+		size: 160,
 	},
 	createActionsColumn<AdminSubmission>({
 		getViewLink: (submission) => ({

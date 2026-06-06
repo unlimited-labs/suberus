@@ -1,4 +1,5 @@
 import { assign, setup } from "xstate";
+import { allReviewsComplete, hasMinReviewers } from "../guards";
 import type { SubmissionContext, SubmissionEvent } from "../types";
 
 /**
@@ -15,15 +16,17 @@ export const submissionMachine = setup({
 		events: {} as SubmissionEvent,
 	},
 	guards: {
-		hasMinReviewers: ({ context }) => {
-			return context.assignedReviewersCount >= context.requiredReviewers;
-		},
-		allReviewsComplete: ({ context }) => {
-			return (
-				context.completedReviewsCount >= context.assignedReviewersCount &&
-				context.assignedReviewersCount >= context.requiredReviewers
-			);
-		},
+		hasMinReviewers: ({ context }) =>
+			hasMinReviewers(
+				context.assignedReviewersCount,
+				context.requiredReviewers,
+			),
+		allReviewsComplete: ({ context }) =>
+			allReviewsComplete(
+				context.assignedReviewersCount,
+				context.completedReviewsCount,
+				context.requiredReviewers,
+			),
 		shouldAutoTransition: () => {
 			// Auto-transition always happens when all reviews are complete
 			return true;

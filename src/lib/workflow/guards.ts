@@ -18,6 +18,20 @@ export function canAssignReviewer(currentStatus: SubmissionStatus): boolean {
 	return validStatuses.includes(currentStatus);
 }
 
+/** Whether the minimum required reviewers have been assigned */
+export function hasMinReviewers(assigned: number, required: number): boolean {
+	return assigned >= required;
+}
+
+/** Whether all assigned reviews are complete and the minimum is met */
+export function allReviewsComplete(
+	assigned: number,
+	completed: number,
+	required: number,
+): boolean {
+	return completed >= assigned && assigned >= required;
+}
+
 /** Map reviewer decision to auto-transition event */
 export function getAutoTransitionEvent(
 	decision: ReviewDecision,

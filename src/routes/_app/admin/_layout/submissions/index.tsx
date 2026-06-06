@@ -22,6 +22,7 @@ const columnLabels: Record<string, string> = {
 	status: "Status",
 	ownerName: "Author",
 	currentRound: "Round",
+	todo: "TODO",
 };
 
 function AdminSubmissionsPage() {
