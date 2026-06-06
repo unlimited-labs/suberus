@@ -8,6 +8,7 @@ import {
 import { SubmissionStatus } from "../../src/generated/prisma/enums";
 import { TEST_USER, ADMIN_USER, REVIEWER_USER } from "../helpers/test-users";
 import { loginAs } from "../helpers/auth";
+import { runSubmissionAction } from "../helpers/submission-actions";
 
 /**
  * Complete end-to-end workflow tests.
@@ -109,7 +110,7 @@ test.describe("Complete Submission Workflow", () => {
 		await expect(page.getByText("Submitted").first()).toBeVisible();
 
 		// Act
-		await page.getByRole("button", { name: /Assign Reviewer/i }).click();
+		await runSubmissionAction(page, "Assign Reviewer");
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 
 		// Assert
@@ -175,7 +176,7 @@ test.describe("Desk Rejection Workflow", () => {
 		await expect(page.getByText("Submitted").first()).toBeVisible();
 
 		// Act
-		await page.getByRole("button", { name: /Desk Reject/i }).click();
+		await runSubmissionAction(page, "Desk Reject");
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 
 		await page.getByLabel(/Reason/i).fill("Out of scope for this conference - E2E test");
@@ -206,7 +207,7 @@ test.describe("Reviewer Assignments", () => {
 		await expect(page.getByText("Under Review").first()).toBeVisible();
 
 		// Act
-		await page.getByRole("button", { name: /Assign Reviewer/i }).click();
+		await runSubmissionAction(page, "Assign Reviewer");
 		const dialog = page.getByRole("dialog");
 		await dialog.waitFor({ state: "visible" });
 

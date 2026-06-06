@@ -6,6 +6,7 @@ import { config } from "dotenv";
 import pg from "pg";
 import {
 	E2E_WORKERS,
+	E2E_OUTPUT_DIR,
 	PG_BASE,
 	dbNameFor,
 	dbUrlFor,
@@ -20,14 +21,15 @@ const PROJECT_ROOT = resolve(__dirname, "../..");
 
 config({ quiet: true, path: resolve(PROJECT_ROOT, ".env.local") });
 
-const OUTPUT_SERVER = resolve(PROJECT_ROOT, ".output/server/index.mjs");
+const OUTPUT_DIR = resolve(PROJECT_ROOT, E2E_OUTPUT_DIR);
+const OUTPUT_SERVER = resolve(OUTPUT_DIR, "server/index.mjs");
 const LOG_DIR = resolve(PROJECT_ROOT, "e2e/.server-logs");
 export const PIDS_FILE = resolve(PROJECT_ROOT, "e2e/.server-pids.json");
 
 /** Newest mtime (ms) across a directory tree, skipping build/vendor dirs. */
 function newestMtime(dir: string): number {
 	let newest = 0;
-	const skip = new Set(["node_modules", ".output", ".git", ".nitro", "dist"]);
+	const skip = new Set(["node_modules", ".output", E2E_OUTPUT_DIR, ".git", ".nitro", "dist"]);
 	for (const entry of readdirSync(dir, { withFileTypes: true })) {
 		if (entry.name.startsWith(".") && entry.isDirectory()) continue;
 		if (skip.has(entry.name)) continue;
@@ -71,8 +73,12 @@ function buildIfStale() {
 		console.log("✅ Build up to date, skipping");
 		return;
 	}
-	console.log("🔄 Building app (.output stale, missing, or E2E_FORCE_BUILD)...");
-	execSync("pnpm build", { cwd: PROJECT_ROOT, stdio: "inherit" });
+	console.log(`🔄 Building app into ${E2E_OUTPUT_DIR} (stale, missing, or E2E_FORCE_BUILD)...`);
+	execSync("pnpm build", {
+		cwd: PROJECT_ROOT,
+		stdio: "inherit",
+		env: { ...process.env, BUILD_OUTPUT_DIR: E2E_OUTPUT_DIR },
+	});
 	console.log("✅ Build complete");
 }
 
@@ -144,7 +150,7 @@ async function globalSetup() {
 
 			console.log(`🚀 [worker ${i}] Starting server on ${baseUrlFor(i)}...`);
 			const logFd = openSync(join(LOG_DIR, `worker-${i}.log`), "w");
-			const child = spawn("node", ["--env-file=.env", ".output/server/index.mjs"], {
+			const child = spawn("node", ["--env-file=.env", `${E2E_OUTPUT_DIR}/server/index.mjs`], {
 				cwd: PROJECT_ROOT,
 				env: { ...process.env, ...envFor(i) },
 				stdio: ["ignore", logFd, logFd],

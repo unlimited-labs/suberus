@@ -9,6 +9,7 @@ count.txt
 .tanstack
 .wrangler
 .output
+.output-e2e
 .vinxi
 todos.json
 /src/routeTree.gen.ts

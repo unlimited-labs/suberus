@@ -8,6 +8,7 @@ import { SubmissionStatus } from "../../src/generated/prisma/enums";
 import { clearMailpitForAddress, waitForEmail, getMailpitMessage } from "../helpers/mailpit";
 import { TEST_USER, ADMIN_USER, REVIEWER_USER, CONTACT_EMAIL } from "../helpers/test-users";
 import { loginAs } from "../helpers/auth";
+import { runSubmissionAction } from "../helpers/submission-actions";
 
 async function addKeyword(page: Page, keyword: string) {
 	const keywordInput = page.locator("input.min-w-\\[120px\\]");
@@ -170,7 +171,7 @@ test.describe("Workflow Emails", () => {
 		await expect(page.getByText("Submitted").first()).toBeVisible({ timeout: 10000 });
 
 		// Act - assign reviewer
-		await page.getByRole("button", { name: /Assign Reviewer/i }).click();
+		await runSubmissionAction(page, "Assign Reviewer");
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 		await page.getByPlaceholder("Search by name, email, or affiliation...").fill(REVIEWER_USER.email);
 		const reviewerRow = page.locator("div").filter({ hasText: REVIEWER_USER.email }).first();
@@ -232,7 +233,7 @@ test.describe("Workflow Emails", () => {
 		await expect(page.getByText("Submitted").first()).toBeVisible({ timeout: 10000 });
 
 		// Act
-		await page.getByRole("button", { name: /Desk Reject/i }).click();
+		await runSubmissionAction(page, "Desk Reject");
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 		await page.getByLabel(/Reason/i).fill("Out of scope - E2E email test");
 		await page.getByRole("button", { name: /Reject Submission/i }).click();

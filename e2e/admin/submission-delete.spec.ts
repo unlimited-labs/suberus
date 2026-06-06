@@ -6,6 +6,7 @@ import {
 	getPrisma,
 } from "../helpers/test-db"
 import { SubmissionStatus } from "../../src/generated/prisma/enums"
+import { runSubmissionAction } from "../helpers/submission-actions"
 
 test.describe("Admin Submission Delete", () => {
 	test("can delete a simple submitted submission", async ({
@@ -26,7 +27,7 @@ test.describe("Admin Submission Delete", () => {
 			.waitFor({ timeout: 10000 })
 
 		// Click delete
-		await page.getByRole("button", { name: "Delete" }).click()
+		await runSubmissionAction(page, "Delete")
 
 		// Confirm dialog appears
 		await expect(
@@ -70,7 +71,7 @@ test.describe("Admin Submission Delete", () => {
 			.getByRole("heading", { level: 1 })
 			.waitFor({ timeout: 10000 })
 
-		await page.getByRole("button", { name: "Delete" }).click()
+		await runSubmissionAction(page, "Delete")
 
 		// Should show warnings
 		await expect(page.getByText("Warnings:")).toBeVisible({ timeout: 5000 })
@@ -115,7 +116,7 @@ test.describe("Admin Submission Delete", () => {
 			.getByRole("heading", { level: 1 })
 			.waitFor({ timeout: 10000 })
 
-		await page.getByRole("button", { name: "Delete" }).click()
+		await runSubmissionAction(page, "Delete")
 
 		await expect(page.getByText("Warnings:")).toBeVisible({ timeout: 5000 })
 		await expect(
@@ -145,7 +146,7 @@ test.describe("Admin Submission Delete", () => {
 			.getByRole("heading", { level: 1 })
 			.waitFor({ timeout: 10000 })
 
-		await page.getByRole("button", { name: "Delete" }).click()
+		await runSubmissionAction(page, "Delete")
 		await expect(
 			page.getByRole("heading", { name: "Delete Submission" }),
 		).toBeVisible()
@@ -186,7 +187,7 @@ test.describe("Admin Submission Delete", () => {
 			.getByRole("heading", { level: 1 })
 			.waitFor({ timeout: 10000 })
 
-		await page.getByRole("button", { name: "Delete" }).click()
+		await runSubmissionAction(page, "Delete")
 		await page.getByRole("button", { name: "Delete Submission" }).click()
 
 		await expect(page).toHaveURL("/admin/submissions", { timeout: 10000 })

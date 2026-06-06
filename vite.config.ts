@@ -10,6 +10,11 @@ import checker from "vite-plugin-checker";
 // const isDev = process.env.NODE_ENV !== "production";
 const isE2E = process.env.E2E === "true";
 
+// Optional build-output isolation: when set, Nitro writes the build here instead
+// of the default `.output`. The E2E harness uses this so a concurrent `pnpm build`
+// (e.g. a dev rebuild) can't clobber the assets the running E2E servers serve.
+const outputDir = process.env.BUILD_OUTPUT_DIR;
+
 const rollupConfig = {
 	onwarn(
 		warning: { code?: string; message: string },
@@ -28,6 +33,7 @@ const rollupConfig = {
 const nitroConfig: NitroPluginConfig = {
 	rollupConfig,
 	serverDir: "server",
+	...(outputDir ? { output: { dir: outputDir } } : {}),
 	experimental: { tasks: true, vite: {} },
 	scheduledTasks: {
 		"*/5 * * * *": isE2E

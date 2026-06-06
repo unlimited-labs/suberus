@@ -9,6 +9,7 @@ import {
 } from "../../src/generated/prisma/enums"
 import { TEST_USER, ADMIN_USER, REVIEWER_USER } from "../helpers/test-users"
 import { loginAs } from "../helpers/auth"
+import { runSubmissionAction } from "../helpers/submission-actions"
 
 async function findSubmissionInAdmin(page: import("@playwright/test").Page, title: string) {
 	await page.goto("/admin/submissions")
@@ -100,7 +101,7 @@ test.describe("Resubmission Auto-Reassign Reviewers", () => {
 		await loginAs(page, ADMIN_USER, { clearCookies: true })
 		await findSubmissionInAdmin(page, revisedTitle)
 
-		await page.getByRole("button", { name: /Assign Reviewer/i }).click()
+		await runSubmissionAction(page, "Assign Reviewer")
 		const dialog = page.getByRole("dialog")
 		await dialog.waitFor({ state: "visible" })
 

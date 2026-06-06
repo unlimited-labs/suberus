@@ -25,7 +25,7 @@ test.describe.serial("Admin - Track Assignment", () => {
 		await page.goto(`/admin/submissions/${submissionId}`);
 
 		// Assert - wait for page load, track card visible
-		await expect(page.getByText("Track Assignment")).toBeVisible();
+		await expect(page.getByText("Track", { exact: true })).toBeVisible();
 		await expect(page.getByRole("combobox")).toBeVisible();
 
 		// Cleanup
@@ -53,7 +53,7 @@ test.describe.serial("Admin - Track Assignment", () => {
 		).toBeVisible();
 
 		// Assert - no track assignment section
-		await expect(page.getByText("Track Assignment")).not.toBeVisible();
+		await expect(page.getByText("Track", { exact: true })).not.toBeVisible();
 
 		// Cleanup
 		await deleteSubmission(submissionId);
@@ -79,7 +79,7 @@ test.describe.serial("Admin - Track Assignment", () => {
 		).toBeVisible();
 
 		// Assert - no track assignment section
-		await expect(page.getByText("Track Assignment")).not.toBeVisible();
+		await expect(page.getByText("Track", { exact: true })).not.toBeVisible();
 
 		// Cleanup
 		await deleteSubmission(submissionId);
@@ -97,7 +97,7 @@ test.describe.serial("Admin - Track Assignment", () => {
 
 		// Act
 		await page.goto(`/admin/submissions/${submissionId}`);
-		await expect(page.getByText("Track Assignment")).toBeVisible();
+		await expect(page.getByText("Track", { exact: true })).toBeVisible();
 		await page.getByRole("combobox").click();
 		await page
 			.getByRole("option", { name: `${testRun.testRunId}_NLP Research` })
@@ -125,7 +125,7 @@ test.describe.serial("Admin - Track Assignment", () => {
 
 		// Act
 		await page.goto(`/admin/submissions/${submissionId}`);
-		await expect(page.getByText("Track Assignment")).toBeVisible();
+		await expect(page.getByText("Track", { exact: true })).toBeVisible();
 		await page.getByRole("combobox").click();
 		await page
 			.getByRole("option", { name: `${testRun.testRunId}_ML Track` })
@@ -156,7 +156,7 @@ test.describe.serial("Admin - Track Assignment", () => {
 
 		// Act
 		await page.goto(`/admin/submissions/${submissionId}`);
-		await expect(page.getByText("Track Assignment")).toBeVisible();
+		await expect(page.getByText("Track", { exact: true })).toBeVisible();
 		await page.getByRole("combobox").click();
 		await page.getByRole("option", { name: "None" }).click();
 
@@ -194,7 +194,7 @@ test.describe.serial("Admin - Track Assignment", () => {
 
 		// Act
 		await page.goto(`/admin/submissions/${submissionId}`);
-		await expect(page.getByText("Track Assignment")).toBeVisible();
+		await expect(page.getByText("Track", { exact: true })).toBeVisible();
 		await page.getByRole("combobox").click();
 
 		// Assert
