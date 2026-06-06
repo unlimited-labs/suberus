@@ -161,7 +161,7 @@ export async function consumeInvitation(
 	userId: string,
 ): Promise<{ success: boolean }> {
 	const invitation = await prisma.invitation.findUnique({ where: { token } });
-	if (!invitation || invitation.status !== "PENDING") {
+	if (invitation?.status !== "PENDING") {
 		throw new Response("Invalid invitation", { status: 400 });
 	}
 

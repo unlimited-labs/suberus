@@ -621,7 +621,7 @@ export async function resubmitSubmission(
 			'SELECT "status" FROM "submissions" WHERE "id" = $1 FOR UPDATE',
 			submissionId,
 		);
-		if (!locked || locked.status !== "REVISE_REQUIRED") {
+		if (locked?.status !== "REVISE_REQUIRED") {
 			return null;
 		}
 

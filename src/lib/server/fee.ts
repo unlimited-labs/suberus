@@ -13,7 +13,7 @@ export async function getUserFee(
 		where: { userId },
 	});
 
-	if (!fee || !fee.paid) {
+	if (!fee?.paid) {
 		return null;
 	}
 

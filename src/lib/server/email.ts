@@ -39,7 +39,7 @@ export async function sendEmail(
 			where: { eventType },
 		});
 
-		if (!template || !template.isEnabled) return;
+		if (!template?.isEnabled) return;
 
 		let subject = template.subject;
 		let body = template.body;
