@@ -8,6 +8,8 @@ import {
 	createTestUser,
 	deleteSubmission,
 	deleteTestUser,
+	getPrisma,
+	getTestUserIds,
 } from "../helpers/test-db";
 import { DEFAULT_PASSWORD } from "../helpers/test-users";
 import { test } from "./fixtures";
@@ -91,6 +93,34 @@ test.describe("Admin submissions — TODO column", () => {
 		await expect(row(page, awaitingDecision.title)).toContainText("Make decision");
 		await expect(row(page, conditional.title)).toContainText("Verify conditions");
 		await expect(row(page, revise.title)).toContainText("Awaiting revision");
+	});
+
+	test("a completed review past its deadline is not counted as overdue", async ({ page, testRun }, testInfo) => {
+		test.skip(testInfo.project.name === "mobile-admin", "desktop table only");
+
+		// Arrange — UNDER_REVIEW with one COMPLETED (past deadline) + one PENDING
+		// (future deadline). The completed one must NOT inflate the overdue count.
+		const sub = await createSubmission({
+			testRunId: testRun.testRunId,
+			title: "CompletedPastDeadline",
+			status: "UNDER_REVIEW",
+		});
+		createdSubmissions.push(sub.id);
+		const db = getPrisma();
+		const { reviewerUserId, adminUserId } = await getTestUserIds();
+		const past = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+		const future = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+		await db.reviewAssignment.createMany({
+			data: [
+				{ submissionId: sub.id, reviewerId: reviewerUserId, round: 1, status: "COMPLETED", deadline: past, completedAt: past, orderIndex: 0 },
+				{ submissionId: sub.id, reviewerId: adminUserId, round: 1, status: "PENDING", deadline: future, orderIndex: 1 },
+			],
+		});
+
+		// Act + Assert
+		await gotoList(page, testRun.testRunId);
+		await expect(row(page, sub.title)).toBeVisible();
+		await expect(row(page, sub.title)).not.toContainText("Review overdue");
 	});
 
 	test("payment reminder follows the owner's fee", async ({ page, testRun }, testInfo) => {

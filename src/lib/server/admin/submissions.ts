@@ -416,9 +416,12 @@ export async function getAdminSubmissions(
 		const completedAssignments = currentRoundAssignments.filter(
 			(a) => a.status === "COMPLETED",
 		);
+		// Overdue = reviewer still owes a review past deadline. A COMPLETED
+		// assignment is done regardless of its (now-passed) deadline.
 		const overdueCount = currentRoundAssignments.filter(
 			(a) =>
-				a.status === "OVERDUE" || (a.deadline !== null && a.deadline < now),
+				a.status === "OVERDUE" ||
+				(a.status === "PENDING" && a.deadline !== null && a.deadline < now),
 		).length;
 
 		return {
