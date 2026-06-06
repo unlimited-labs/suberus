@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import type { ColumnDef } from "@tanstack/react-table";
+import type { Column, ColumnDef } from "@tanstack/react-table";
 import {
 	createActionsColumn,
 	createSelectColumn,
@@ -231,6 +231,31 @@ function rawAnswer(row: AdminUser, questionId: string): string {
 
 /** Build a survey-answer column for the users list, with type-appropriate sort & filter. */
 function surveyColumn(col: SurveyListColumn): ColumnDef<AdminUser> {
+	const facetOptions: FilterOption[] = (col.options ?? []).map((o) => ({
+		label: o,
+		value: o,
+	}));
+
+	/** Column header with either a faceted filter or a text-search filter. */
+	const header =
+		(filter: { filterOptions: FilterOption[] } | { textFilter: true }) =>
+		({ column }: { column: Column<AdminUser> }) => (
+			<DataTableColumnHeader
+				column={column}
+				title={col.header}
+				{...("filterOptions" in filter
+					? { filterOptions: filter.filterOptions }
+					: { textFilter: { placeholder: "Search..." } })}
+			/>
+		);
+
+	const textColumn = {
+		accessorFn: (row: AdminUser) =>
+			formatSurveyAnswerValue(col.type, rawAnswer(row, col.id)),
+		header: header({ textFilter: true }),
+		filterFn: "includesString",
+	} satisfies Partial<ColumnDef<AdminUser>>;
+
 	const base: ColumnDef<AdminUser> = {
 		id: `survey-${col.id}`,
 		cell: ({ row }) => {
@@ -245,66 +270,36 @@ function surveyColumn(col: SurveyListColumn): ColumnDef<AdminUser> {
 		},
 	};
 
-	const facetOptions: FilterOption[] = (col.options ?? []).map((o) => ({
-		label: o,
-		value: o,
-	}));
-
 	switch (col.type) {
-		case "CHECKBOX":
+		case "CHECKBOX": {
+			// Unanswered ("") is a distinct bucket — it stays "—" in the cell and
+			// matches neither Yes nor No, rather than being silently filed as "No".
+			const yesNo = (v: string) =>
+				v === "true" ? "Yes" : v === "false" ? "No" : "";
 			return {
 				...base,
-				accessorFn: (row) => (rawAnswer(row, col.id) === "true" ? "Yes" : "No"),
-				header: ({ column }) => (
-					<DataTableColumnHeader
-						column={column}
-						title={col.header}
-						filterOptions={[
-							{ label: "Yes", value: "Yes" },
-							{ label: "No", value: "No" },
-						]}
-					/>
-				),
+				accessorFn: (row) => yesNo(rawAnswer(row, col.id)),
+				header: header({
+					filterOptions: [
+						{ label: "Yes", value: "Yes" },
+						{ label: "No", value: "No" },
+					],
+				}),
 				filterFn: facetedFilterFn,
 			};
+		}
 
 		case "SINGLE_SELECT":
+			if (!facetOptions.length) return { ...base, ...textColumn };
 			return {
 				...base,
 				accessorFn: (row) => rawAnswer(row, col.id),
-				header: ({ column }) =>
-					facetOptions.length ? (
-						<DataTableColumnHeader
-							column={column}
-							title={col.header}
-							filterOptions={facetOptions}
-						/>
-					) : (
-						<DataTableColumnHeader
-							column={column}
-							title={col.header}
-							textFilter={{ placeholder: "Search..." }}
-						/>
-					),
-				filterFn: facetOptions.length ? facetedFilterFn : "includesString",
+				header: header({ filterOptions: facetOptions }),
+				filterFn: facetedFilterFn,
 			};
 
 		case "MULTI_SELECT":
-			if (!facetOptions.length) {
-				return {
-					...base,
-					accessorFn: (row) =>
-						formatSurveyAnswerValue("MULTI_SELECT", rawAnswer(row, col.id)),
-					header: ({ column }) => (
-						<DataTableColumnHeader
-							column={column}
-							title={col.header}
-							textFilter={{ placeholder: "Search..." }}
-						/>
-					),
-					filterFn: "includesString",
-				};
-			}
+			if (!facetOptions.length) return { ...base, ...textColumn };
 			return {
 				...base,
 				accessorFn: (row) => parseMultiSelect(rawAnswer(row, col.id)),
@@ -319,29 +314,12 @@ function surveyColumn(col: SurveyListColumn): ColumnDef<AdminUser> {
 							rawAnswer(b.original, col.id),
 						),
 					),
-				header: ({ column }) => (
-					<DataTableColumnHeader
-						column={column}
-						title={col.header}
-						filterOptions={facetOptions}
-					/>
-				),
+				header: header({ filterOptions: facetOptions }),
 				filterFn: "arrIncludesSome",
 			};
 
 		default:
-			return {
-				...base,
-				accessorFn: (row) => rawAnswer(row, col.id),
-				header: ({ column }) => (
-					<DataTableColumnHeader
-						column={column}
-						title={col.header}
-						textFilter={{ placeholder: "Search..." }}
-					/>
-				),
-				filterFn: "includesString",
-			};
+			return { ...base, ...textColumn };
 	}
 }
 

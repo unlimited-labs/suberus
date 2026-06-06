@@ -5,6 +5,7 @@ import { expect, test } from "./fixtures";
 // Verifies the survey feature surfaces in the admin Users area:
 // always in the detail panel + XLSX export, and (when toggled) as a list column.
 test.describe("Survey answers in Users area", () => {
+	let stamp: string;
 	let questionId: string;
 	let questionLabel: string;
 	let listFieldName: string;
@@ -20,7 +21,7 @@ test.describe("Survey answers in Users area", () => {
 
 	test.beforeAll(async ({}, testInfo) => {
 		const db = getPrisma();
-		const stamp = `${testInfo.workerIndex}-${Date.now()}`;
+		stamp = `${testInfo.workerIndex}-${Date.now()}`;
 		questionLabel = `E2E survey-in-users ${stamp}`;
 		listFieldName = `Diet ${stamp}`;
 		answerValue = `VeganValue ${stamp}`;
@@ -110,13 +111,22 @@ test.describe("Survey answers in Users area", () => {
 			"column filter is desktop table only",
 		);
 
-		// Arrange — both users visible
+		// Row locator by email that does NOT re-run the name search — so the only
+		// narrowing between arrange and assert is the survey column filter itself.
+		const rowByEmail = (email: string) =>
+			page
+				.getByTestId("user-row")
+				.filter({ visible: true, has: page.locator(`text="${email}"`) });
+
+		// Arrange — scope the list to both test users via the shared stamp (matches
+		// both names), then confirm both rows are present.
 		await adminUsersPage.goto();
 		await adminUsersPage.waitForLoad();
-		await expect(await adminUsersPage.getRowByEmail(user)).toBeVisible();
-		await expect(await adminUsersPage.getRowByEmail(otherUser)).toBeVisible();
+		await adminUsersPage.search(stamp);
+		await expect(rowByEmail(user.email)).toBeVisible();
+		await expect(rowByEmail(otherUser.email)).toBeVisible();
 
-		// Act — filter the survey column by this user's answer
+		// Act — filter the survey column by this user's answer only
 		await page
 			.getByRole("columnheader")
 			.filter({ hasText: listFieldName })
@@ -127,9 +137,9 @@ test.describe("Survey answers in Users area", () => {
 			.getByPlaceholder("Search...")
 			.fill(answerValue);
 
-		// Assert — only the matching user remains
-		await expect(await adminUsersPage.getRowByEmail(user)).toBeVisible();
-		await expect(await adminUsersPage.getRowByEmail(otherUser)).toHaveCount(0);
+		// Assert — the column filter (not a name search) leaves only the match
+		await expect(rowByEmail(user.email)).toBeVisible();
+		await expect(rowByEmail(otherUser.email)).toHaveCount(0);
 	});
 
 	test("user detail always shows the Survey Responses section", async ({
