@@ -305,7 +305,11 @@ export function ConferenceSettingsTab({
 							</SelectTrigger>
 							<SelectContent>
 								{getDateFormats().map((fmt) => (
-									<SelectItem key={fmt.value} value={fmt.value}>
+									<SelectItem
+										key={fmt.value}
+										value={fmt.value}
+										data-testid={`date-format-option-${fmt.value}`}
+									>
 										{fmt.label}
 									</SelectItem>
 								))}

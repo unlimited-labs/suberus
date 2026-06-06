@@ -48,15 +48,11 @@ test.describe.serial("Admin - Date/Time Format", () => {
 	test("can change date format", async ({ page }) => {
 		// Arrange
 		const select = adminSettingsPage.getDateFormatSelect();
-		const now = new Date();
-		const mm = String(now.getMonth() + 1).padStart(2, "0");
-		const dd = String(now.getDate()).padStart(2, "0");
-		const yyyy = now.getFullYear();
-		const expectedLabel = `${mm}/${dd}/${yyyy}`;
 
-		// Act
+		// Act - select by stable testid: the MM/DD/YYYY and DD/MM/YYYY previews
+		// are identical whenever day === month (e.g. 06/06), so option text is ambiguous.
 		await select.click();
-		await page.getByRole("option", { name: expectedLabel }).click();
+		await page.getByTestId("date-format-option-MM/DD/YYYY").click();
 		await adminSettingsPage.saveConferenceSettings();
 
 		// Assert
