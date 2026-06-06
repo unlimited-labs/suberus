@@ -4,11 +4,12 @@ import {
 	createActionsColumn,
 	createSelectColumn,
 	DataTableColumnHeader,
+	type FilterOption,
 	facetedFilterFn,
 } from "@/components/admin/data-table";
 import { Badge } from "@/components/ui/badge";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
-import { formatSurveyAnswerValue } from "@/lib/labels/survey";
+import { formatSurveyAnswerValue, parseMultiSelect } from "@/lib/labels/survey";
 import {
 	feeFilterOptions,
 	formatSubmissionRole,
@@ -23,6 +24,7 @@ export interface SurveyListColumn {
 	id: string;
 	header: string;
 	type: SurveyQuestionType;
+	options?: string[];
 }
 
 const baseUserColumns: ColumnDef<AdminUser>[] = [
@@ -220,15 +222,17 @@ const actionsColumn = createActionsColumn<AdminUser>({
 	}),
 });
 
-/** Build a survey-answer column for the users list. */
+/** Raw stored answer value for a survey question, or "" when unanswered. */
+function rawAnswer(row: AdminUser, questionId: string): string {
+	return (
+		row.surveyAnswers.find((a) => a.questionId === questionId)?.value ?? ""
+	);
+}
+
+/** Build a survey-answer column for the users list, with type-appropriate sort & filter. */
 function surveyColumn(col: SurveyListColumn): ColumnDef<AdminUser> {
-	return {
+	const base: ColumnDef<AdminUser> = {
 		id: `survey-${col.id}`,
-		accessorFn: (row) =>
-			row.surveyAnswers.find((a) => a.questionId === col.id)?.value ?? "",
-		header: ({ column }) => (
-			<DataTableColumnHeader column={column} title={col.header} />
-		),
 		cell: ({ row }) => {
 			const answer = row.original.surveyAnswers.find(
 				(a) => a.questionId === col.id,
@@ -239,8 +243,106 @@ function surveyColumn(col: SurveyListColumn): ColumnDef<AdminUser> {
 				</span>
 			);
 		},
-		enableSorting: false,
 	};
+
+	const facetOptions: FilterOption[] = (col.options ?? []).map((o) => ({
+		label: o,
+		value: o,
+	}));
+
+	switch (col.type) {
+		case "CHECKBOX":
+			return {
+				...base,
+				accessorFn: (row) => (rawAnswer(row, col.id) === "true" ? "Yes" : "No"),
+				header: ({ column }) => (
+					<DataTableColumnHeader
+						column={column}
+						title={col.header}
+						filterOptions={[
+							{ label: "Yes", value: "Yes" },
+							{ label: "No", value: "No" },
+						]}
+					/>
+				),
+				filterFn: facetedFilterFn,
+			};
+
+		case "SINGLE_SELECT":
+			return {
+				...base,
+				accessorFn: (row) => rawAnswer(row, col.id),
+				header: ({ column }) =>
+					facetOptions.length ? (
+						<DataTableColumnHeader
+							column={column}
+							title={col.header}
+							filterOptions={facetOptions}
+						/>
+					) : (
+						<DataTableColumnHeader
+							column={column}
+							title={col.header}
+							textFilter={{ placeholder: "Search..." }}
+						/>
+					),
+				filterFn: facetOptions.length ? facetedFilterFn : "includesString",
+			};
+
+		case "MULTI_SELECT":
+			if (!facetOptions.length) {
+				return {
+					...base,
+					accessorFn: (row) =>
+						formatSurveyAnswerValue("MULTI_SELECT", rawAnswer(row, col.id)),
+					header: ({ column }) => (
+						<DataTableColumnHeader
+							column={column}
+							title={col.header}
+							textFilter={{ placeholder: "Search..." }}
+						/>
+					),
+					filterFn: "includesString",
+				};
+			}
+			return {
+				...base,
+				accessorFn: (row) => parseMultiSelect(rawAnswer(row, col.id)),
+				getUniqueValues: (row) => parseMultiSelect(rawAnswer(row, col.id)),
+				sortingFn: (a, b) =>
+					formatSurveyAnswerValue(
+						"MULTI_SELECT",
+						rawAnswer(a.original, col.id),
+					).localeCompare(
+						formatSurveyAnswerValue(
+							"MULTI_SELECT",
+							rawAnswer(b.original, col.id),
+						),
+					),
+				header: ({ column }) => (
+					<DataTableColumnHeader
+						column={column}
+						title={col.header}
+						filterOptions={facetOptions}
+					/>
+				),
+				filterFn: "arrIncludesSome",
+			};
+
+		default:
+			return {
+				...base,
+				accessorFn: (row) => rawAnswer(row, col.id),
+				header: ({ column }) => (
+					<DataTableColumnHeader
+						column={column}
+						title={col.header}
+						textFilter={{ placeholder: "Search..." }}
+					/>
+				),
+				filterFn: "includesString",
+			};
+	}
 }
 
 /** Compose the users-list columns, inserting survey columns before the actions column. */

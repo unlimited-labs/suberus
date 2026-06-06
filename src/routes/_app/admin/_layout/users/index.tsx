@@ -53,6 +53,7 @@ function UsersPage() {
 					id: q.id,
 					header: q.fieldName ?? q.label,
 					type: q.type,
+					options: q.options ?? undefined,
 				})),
 		[surveyQuestions],
 	);

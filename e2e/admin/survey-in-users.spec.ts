@@ -9,7 +9,14 @@ test.describe("Survey answers in Users area", () => {
 	let questionLabel: string;
 	let listFieldName: string;
 	let answerValue: string;
+	let otherAnswerValue: string;
 	let user: { id: string; email: string; firstName: string; lastName: string };
+	let otherUser: {
+		id: string;
+		email: string;
+		firstName: string;
+		lastName: string;
+	};
 
 	test.beforeAll(async ({}, testInfo) => {
 		const db = getPrisma();
@@ -17,6 +24,7 @@ test.describe("Survey answers in Users area", () => {
 		questionLabel = `E2E survey-in-users ${stamp}`;
 		listFieldName = `Diet ${stamp}`;
 		answerValue = `VeganValue ${stamp}`;
+		otherAnswerValue = `OmnivoreValue ${stamp}`;
 
 		const question = await db.surveyQuestion.create({
 			data: {
@@ -46,6 +54,22 @@ test.describe("Survey answers in Users area", () => {
 		await db.surveyAnswer.create({
 			data: { userId: user.id, questionId, value: answerValue },
 		});
+
+		// Control user with a different answer — used to prove the column filter narrows.
+		const otherCreated = await createTestUser({
+			email: `survey-user-other-${stamp}@e2e.local`,
+			firstName: "Survey",
+			lastName: `Other${stamp}`,
+		});
+		otherUser = {
+			id: otherCreated.id,
+			email: otherCreated.email,
+			firstName: "Survey",
+			lastName: `Other${stamp}`,
+		};
+		await db.surveyAnswer.create({
+			data: { userId: otherUser.id, questionId, value: otherAnswerValue },
+		});
 	});
 
 	test.afterAll(async () => {
@@ -53,6 +77,7 @@ test.describe("Survey answers in Users area", () => {
 		await db.surveyAnswer.deleteMany({ where: { questionId } });
 		await db.surveyQuestion.delete({ where: { id: questionId } }).catch(() => {});
 		await deleteTestUser(user.id).catch(() => {});
+		await deleteTestUser(otherUser.id).catch(() => {});
 	});
 
 	test("field name appears as a list column with the user's answer", async ({
@@ -74,6 +99,37 @@ test.describe("Survey answers in Users area", () => {
 		).toBeVisible();
 		const row = await adminUsersPage.getRowByEmail(user);
 		await expect(row).toContainText(answerValue);
+	});
+
+	test("survey column text filter narrows the list", async ({
+		adminUsersPage,
+		page,
+	}, testInfo) => {
+		test.skip(
+			testInfo.project.name === "mobile-admin",
+			"column filter is desktop table only",
+		);
+
+		// Arrange — both users visible
+		await adminUsersPage.goto();
+		await adminUsersPage.waitForLoad();
+		await expect(await adminUsersPage.getRowByEmail(user)).toBeVisible();
+		await expect(await adminUsersPage.getRowByEmail(otherUser)).toBeVisible();
+
+		// Act — filter the survey column by this user's answer
+		await page
+			.getByRole("columnheader")
+			.filter({ hasText: listFieldName })
+			.getByRole("button", { name: "Filter" })
+			.click();
+		await page
+			.locator("[data-slot='popover-content']")
+			.getByPlaceholder("Search...")
+			.fill(answerValue);
+
+		// Assert — only the matching user remains
+		await expect(await adminUsersPage.getRowByEmail(user)).toBeVisible();
+		await expect(await adminUsersPage.getRowByEmail(otherUser)).toHaveCount(0);
 	});
 
 	test("user detail always shows the Survey Responses section", async ({

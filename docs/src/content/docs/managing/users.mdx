@@ -1,0 +1,65 @@
+---
+title: Users
+description: Manage people — roles, activation, fees, and survey answers.
+sidebar:
+  order: 5
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+The **Users** screen lists everyone registered. From here you change roles, activate
+or deactivate accounts, mark fees as paid, and review the answers people gave to
+your registration survey.
+
+<Aside type="note" title="Where to find it">
+**Users** in the admin sidebar. Click a row to open a user's detail.
+</Aside>
+
+> 🖼️ *[Screenshot placeholder — Users list]*
+
+## The list
+
+| Column | What it shows |
+|---|---|
+| **Name** | The user's full name (searchable). |
+| **Role** | Author, Reviewer, Editor, or Admin. |
+| **Affiliation** | Their institution/organisation. |
+| **Fee** | Whether their conference fee is marked paid. |
+| **Submissions** | How many submissions they have. |
+| **Status** | Active or deactivated. |
+| *(Survey columns)* | Any survey answers you chose to **show in the users list** appear as extra columns. Each can be sorted and filtered like the built-in columns — choice and checkbox questions get a multi-select filter, free-text questions get a search box. |
+
+Search by name, toggle columns, and use **Export XLSX** to download the full list
+(including survey answers). Select rows for **bulk actions**.
+
+<Aside type="tip" title="Surfacing survey answers">
+Which survey answers appear as columns here is controlled per question on the
+**[Survey](/configuration/survey/)** tab via *Show in users list*.
+</Aside>
+
+## The user detail
+
+Opening a user shows their profile, submissions, survey answers, and management
+actions:
+
+| Action | What it does |
+|---|---|
+| **Change role** | Promote/demote between Author, Reviewer, Editor, Admin. Reviewers (and above) can be assigned to review. |
+| **Activate / deactivate** | Block or restore account access without deleting the user. |
+| **Mark fee paid / unpaid** | Record payment status (per fee type / currency from **[Fee](/configuration/fee/)**). |
+| **View survey answers** | See everything the user submitted in the registration survey. |
+
+<Aside type="caution">
+Role changes, activation/deactivation, and fee marking are recorded in the
+**[activity log](/managing/activity-log/)**. Deactivating is reversible; deleting a
+user is not — prefer deactivation unless you're sure.
+</Aside>
+
+## Related
+
+<CardGrid>
+	<LinkCard title="Invitations" href="/managing/invitations/" description="Invite reviewers and co-organisers." />
+	<LinkCard title="Survey" href="/configuration/survey/" description="Define the questions and which answers show here." />
+	<LinkCard title="Fee" href="/configuration/fee/" description="Fee types and currency behind the Fee column." />
+	<LinkCard title="Roles & permissions" href="/configuration/roles-and-permissions/" description="What each role can do." />
+</CardGrid>
