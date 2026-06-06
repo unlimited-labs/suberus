@@ -1,5 +1,5 @@
 import type { Readable } from "node:stream";
-import archiver from "archiver";
+import { ZipArchive } from "archiver";
 import { prisma } from "@/db.server";
 import {
 	buildSubmissionWhereClause,
@@ -110,7 +110,7 @@ function buildCsv(submissions: ExportSubmission[]): string {
 export async function createSubmissionsZipStream(
 	submissions: ExportSubmission[],
 ): Promise<Readable> {
-	const archive = archiver("zip", { store: true });
+	const archive = new ZipArchive({ store: true });
 
 	// Fetch all file contents in parallel, then append sequentially
 	const fileEntries = await Promise.all(
