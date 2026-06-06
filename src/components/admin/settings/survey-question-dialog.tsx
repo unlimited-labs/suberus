@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -8,77 +7,30 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FieldError } from "@/components/ui/field";
 import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import type { SurveyQuestionType } from "@/generated/prisma/enums";
+import type { SurveyQuestionFormValues } from "@/lib/validations/survey";
 import {
 	isSelectType,
 	OptionsEditor,
-	ShowInListFields,
 	type SurveyQuestion,
-	TypeSelect,
+	surveyTypeOptions,
 } from "./survey-question-fields";
-
-export interface SurveyQuestionFormValues {
-	label: string;
-	type: SurveyQuestionType;
-	isRequired: boolean;
-	options: string[];
-	showInUsersList: boolean;
-	fieldName: string;
-}
+import { useSurveyQuestionForm } from "./use-survey-question-form";
 
 interface SurveyQuestionDialogProps {
 	question: SurveyQuestion | null;
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	onSubmit: (values: SurveyQuestionFormValues) => void;
-	isBusy: boolean;
+	onSave: (values: SurveyQuestionFormValues) => Promise<void>;
 }
 
 export function SurveyQuestionDialog({
 	question,
 	open,
 	onOpenChange,
-	onSubmit,
-	isBusy,
+	onSave,
 }: SurveyQuestionDialogProps) {
-	const [label, setLabel] = useState("");
-	const [type, setType] = useState<SurveyQuestionType>("CHECKBOX");
-	const [isRequired, setIsRequired] = useState(false);
-	const [options, setOptions] = useState<string[]>([]);
-	const [showInUsersList, setShowInUsersList] = useState(false);
-	const [fieldName, setFieldName] = useState("");
-	const [attempted, setAttempted] = useState(false);
-
-	// Seed the form whenever a new question is opened for editing.
-	useEffect(() => {
-		if (!question) return;
-		setLabel(question.label);
-		setType(question.type);
-		setIsRequired(question.isRequired);
-		setOptions(Array.isArray(question.options) ? question.options : []);
-		setShowInUsersList(question.showInUsersList);
-		setFieldName(question.fieldName ?? "");
-		setAttempted(false);
-	}, [question]);
-
-	const optionCount = options.filter((o) => o.trim()).length;
-	const missingOptions = isSelectType(type) && optionCount < 2;
-	const missingFieldName = showInUsersList && !fieldName.trim();
-	const isValid =
-		label.trim().length > 0 && !missingOptions && !missingFieldName;
-
-	const handleSave = () => {
-		if (!isValid) {
-			setAttempted(true);
-			return;
-		}
-		onSubmit({ label, type, isRequired, options, showInUsersList, fieldName });
-	};
-
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
@@ -89,76 +41,120 @@ export function SurveyQuestionDialog({
 						appear.
 					</DialogDescription>
 				</DialogHeader>
-
-				<div className="space-y-4 py-1">
-					<div className="space-y-1.5">
-						<Label htmlFor="sq-label">Question label</Label>
-						<Input
-							id="sq-label"
-							value={label}
-							onChange={(e) => setLabel(e.target.value)}
-							placeholder="Question label..."
-						/>
-					</div>
-
-					<div className="grid grid-cols-2 gap-3">
-						<div className="space-y-1.5">
-							<Label htmlFor="sq-type">Type</Label>
-							<TypeSelect id="sq-type" value={type} onChange={setType} />
-						</div>
-						<div className="space-y-1.5">
-							<Label htmlFor="sq-required">Required</Label>
-							<div className="flex h-9 items-center">
-								<Switch
-									id="sq-required"
-									checked={isRequired}
-									onCheckedChange={setIsRequired}
-								/>
-							</div>
-						</div>
-					</div>
-
-					{isSelectType(type) && (
-						<div className="space-y-1">
-							<OptionsEditor options={options} onChange={setOptions} />
-							{attempted && missingOptions && (
-								<p className="text-xs text-destructive">
-									Select questions require at least 2 options.
-								</p>
-							)}
-						</div>
-					)}
-
-					<Separator />
-
-					<div className="space-y-1.5">
-						<p className="text-sm font-medium text-muted-foreground">
-							Users list
-						</p>
-						<ShowInListFields
-							idPrefix="dialog"
-							showInList={showInUsersList}
-							fieldName={fieldName}
-							onShowInListChange={setShowInUsersList}
-							onFieldNameChange={setFieldName}
-							error={
-								attempted && missingFieldName
-									? "Field name is required to show in users list"
-									: undefined
-							}
-						/>
-					</div>
-				</div>
-
-				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
-						Cancel
-					</Button>
-					<Button onClick={handleSave} disabled={isBusy || !label.trim()}>
-						{isBusy ? "Saving..." : "Save"}
-					</Button>
-				</DialogFooter>
+				{/* Remount per question (key) so form defaults re-seed without effects. */}
+				{question && (
+					<SurveyQuestionDialogForm
+						key={question.id}
+						question={question}
+						onSave={onSave}
+						onCancel={() => onOpenChange(false)}
+					/>
+				)}
 			</DialogContent>
 		</Dialog>
+	);
+}
+
+function SurveyQuestionDialogForm({
+	question,
+	onSave,
+	onCancel,
+}: {
+	question: SurveyQuestion;
+	onSave: (values: SurveyQuestionFormValues) => Promise<void>;
+	onCancel: () => void;
+}) {
+	const form = useSurveyQuestionForm(question, async (values) => {
+		await onSave(values);
+	});
+
+	return (
+		<form
+			onSubmit={(e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				void form.handleSubmit();
+			}}
+			className="space-y-4"
+		>
+			<form.AppField name="label">
+				{(field) => (
+					<field.InputField
+						label="Question label"
+						placeholder="Question label..."
+					/>
+				)}
+			</form.AppField>
+
+			<div className="grid grid-cols-2 gap-3">
+				<form.AppField name="type">
+					{(field) => (
+						<field.SelectField label="Type" options={surveyTypeOptions} />
+					)}
+				</form.AppField>
+				<form.AppField name="isRequired">
+					{(field) => <field.SwitchField label="Required" />}
+				</form.AppField>
+			</div>
+
+			<form.Subscribe selector={(s) => s.values.type}>
+				{(type) =>
+					isSelectType(type) ? (
+						<form.Field name="options">
+							{(field) => (
+								<div className="space-y-1">
+									<OptionsEditor
+										options={field.state.value}
+										onChange={field.handleChange}
+									/>
+									<form.Subscribe selector={(s) => s.submissionAttempts}>
+										{(attempts) => (
+											<FieldError
+												errors={
+													attempts > 0 ? field.state.meta.errors : undefined
+												}
+											/>
+										)}
+									</form.Subscribe>
+								</div>
+							)}
+						</form.Field>
+					) : null
+				}
+			</form.Subscribe>
+
+			<Separator />
+
+			<div className="space-y-2">
+				<p className="text-sm font-medium text-muted-foreground">Users list</p>
+				<form.AppField name="showInUsersList">
+					{(field) => <field.SwitchField label="Show in users list" />}
+				</form.AppField>
+				<form.Subscribe selector={(s) => s.values.showInUsersList}>
+					{(show) =>
+						show ? (
+							<form.AppField name="fieldName">
+								{(field) => (
+									<field.InputField
+										label="Field name"
+										placeholder="Field name..."
+										description="Name shown as a column in the Users list and as the XLSX export header."
+									/>
+								)}
+							</form.AppField>
+						) : null
+					}
+				</form.Subscribe>
+			</div>
+
+			<DialogFooter>
+				<Button type="button" variant="outline" onClick={onCancel}>
+					Cancel
+				</Button>
+				<form.AppForm>
+					<form.SubmitButton label="Save" submittingLabel="Saving..." />
+				</form.AppForm>
+			</DialogFooter>
+		</form>
 	);
 }

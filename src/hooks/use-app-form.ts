@@ -7,6 +7,7 @@ import { FormInputField } from "@/components/forms/composable/input-field";
 import { FormPasswordField } from "@/components/forms/composable/password-field";
 import { FormSelectField } from "@/components/forms/composable/select-field";
 import { FormSubmitButton } from "@/components/forms/composable/submit-button";
+import { FormSwitchField } from "@/components/forms/composable/switch-field";
 import { FormTextareaField } from "@/components/forms/composable/textarea-field";
 import { fieldContext, formContext } from "./form-context";
 
@@ -18,6 +19,7 @@ export const { useAppForm, withForm, withFieldGroup } = createFormHook({
 		TextareaField: FormTextareaField,
 		SelectField: FormSelectField,
 		CheckboxField: FormCheckboxField,
+		SwitchField: FormSwitchField,
 		CountryComboboxField: FormCountryComboboxField,
 	},
 	formComponents: {

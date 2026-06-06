@@ -9,7 +9,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
 
 export interface SurveyQuestion {
@@ -31,48 +30,50 @@ export const TYPE_LABELS: Record<SurveyQuestionType, string> = {
 	MULTI_SELECT: "Multi",
 };
 
-export const SURVEY_QUESTION_TYPES = [
-	"CHECKBOX",
-	"TEXT",
-	"SINGLE_SELECT",
-	"MULTI_SELECT",
-] as const satisfies readonly SurveyQuestionType[];
+/** Option set for the type `SelectField` (full labels for the edit dialog). */
+export const surveyTypeOptions = [
+	{ value: "CHECKBOX", label: "Checkbox" },
+	{ value: "TEXT", label: "Text" },
+	{ value: "SINGLE_SELECT", label: "Single Select" },
+	{ value: "MULTI_SELECT", label: "Multi Select" },
+] as const satisfies readonly { value: SurveyQuestionType; label: string }[];
 
 export const isSelectType = (type: SurveyQuestionType) =>
 	type === "SINGLE_SELECT" || type === "MULTI_SELECT";
 
+/** Compact, controlled type picker used by the inline add form. */
 export function TypeSelect({
 	value,
 	onChange,
-	id,
 	className,
 }: {
 	value: SurveyQuestionType;
 	onChange: (v: SurveyQuestionType) => void;
-	id?: string;
 	className?: string;
 }) {
 	return (
 		<Select
 			value={value}
 			onValueChange={(v) => {
-				const found = SURVEY_QUESTION_TYPES.find((t) => t === v);
-				if (found) onChange(found);
+				const found = surveyTypeOptions.find((t) => t.value === v);
+				if (found) onChange(found.value);
 			}}
 		>
-			<SelectTrigger id={id} className={className}>
+			<SelectTrigger className={className}>
 				<SelectValue />
 			</SelectTrigger>
 			<SelectContent>
-				<SelectItem value="CHECKBOX">Checkbox</SelectItem>
-				<SelectItem value="TEXT">Text</SelectItem>
-				<SelectItem value="SINGLE_SELECT">Single Select</SelectItem>
-				<SelectItem value="MULTI_SELECT">Multi Select</SelectItem>
+				{surveyTypeOptions.map((opt) => (
+					<SelectItem key={opt.value} value={opt.value}>
+						{opt.label}
+					</SelectItem>
+				))}
 			</SelectContent>
 		</Select>
 	);
 }
 
+/** Controlled editor for select-question options (value + onChange). */
 export function OptionsEditor({
 	options,
 	onChange,
@@ -115,57 +116,6 @@ export function OptionsEditor({
 				<IconPlus className="mr-1 size-3" />
 				Add option
 			</Button>
-		</div>
-	);
-}
-
-export function ShowInListFields({
-	idPrefix,
-	showInList,
-	fieldName,
-	onShowInListChange,
-	onFieldNameChange,
-	error,
-}: {
-	idPrefix: string;
-	showInList: boolean;
-	fieldName: string;
-	onShowInListChange: (v: boolean) => void;
-	onFieldNameChange: (v: string) => void;
-	error?: string;
-}) {
-	return (
-		<div className="space-y-2 rounded-md border border-border/50 bg-background p-3">
-			<div className="flex items-center gap-2">
-				<Switch
-					id={`show-in-list-${idPrefix}`}
-					checked={showInList}
-					onCheckedChange={onShowInListChange}
-				/>
-				<Label htmlFor={`show-in-list-${idPrefix}`} className="text-sm">
-					Show in users list
-				</Label>
-			</div>
-			{showInList && (
-				<div className="space-y-1">
-					<Input
-						value={fieldName}
-						onChange={(e) => onFieldNameChange(e.target.value)}
-						placeholder="Field name..."
-						className="h-8 text-sm"
-						aria-label="Field name"
-						aria-invalid={error ? true : undefined}
-					/>
-					{error ? (
-						<p className="text-xs text-destructive">{error}</p>
-					) : (
-						<p className="text-xs text-muted-foreground">
-							Name shown as a column in the Users list and as the XLSX export
-							header.
-						</p>
-					)}
-				</div>
-			)}
 		</div>
 	);
 }

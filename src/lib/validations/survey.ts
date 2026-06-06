@@ -1,4 +1,43 @@
+import { z } from "zod";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
+
+/**
+ * Shape + cross-field rules for the admin survey-question editor (add + edit).
+ * Single source of truth for the form's validation, consumed via TanStack Form
+ * in `useSurveyQuestionForm`. Business rules:
+ * - label is required,
+ * - select questions need at least 2 non-empty options,
+ * - a field name is required when the question is shown in the users list.
+ */
+export const surveyQuestionFormSchema = z
+	.object({
+		label: z.string().trim().min(1, "Label is required"),
+		type: z.enum(["CHECKBOX", "TEXT", "SINGLE_SELECT", "MULTI_SELECT"]),
+		isRequired: z.boolean(),
+		options: z.array(z.string()),
+		showInUsersList: z.boolean(),
+		fieldName: z.string(),
+	})
+	.superRefine((value, ctx) => {
+		const isSelect =
+			value.type === "SINGLE_SELECT" || value.type === "MULTI_SELECT";
+		if (isSelect && value.options.filter((o) => o.trim()).length < 2) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				path: ["options"],
+				message: "Select questions require at least 2 options",
+			});
+		}
+		if (value.showInUsersList && !value.fieldName.trim()) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				path: ["fieldName"],
+				message: "Field name is required to show in users list",
+			});
+		}
+	});
+
+export type SurveyQuestionFormValues = z.infer<typeof surveyQuestionFormSchema>;
 
 /**
  * Validates a survey answer against the question's `isRequired` flag.

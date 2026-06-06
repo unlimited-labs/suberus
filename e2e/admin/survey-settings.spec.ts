@@ -327,9 +327,9 @@ test.describe("Admin Settings - Survey Questions", () => {
 		await addSection.getByLabel("Show in users list").click();
 		await addSection.getByRole("button", { name: "Add", exact: true }).click();
 
-		// Assert — validation error, not persisted
+		// Assert — inline field error (TanStack Form), not persisted
 		await expect(
-			page.getByText("Field name is required to show in users list"),
+			addSection.getByText("Field name is required to show in users list"),
 		).toBeVisible();
 		expect(await db.surveyQuestion.count({ where: { label } })).toBe(0);
 	});
