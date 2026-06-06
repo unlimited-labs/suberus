@@ -9,6 +9,7 @@ import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
 } from "@/server-fns/settings";
+import { adminSurveyQuestionsQueryOptions } from "@/server-fns/settings/survey";
 
 export const Route = createFileRoute("/_app/admin/_layout/users/$id")({
 	loader: async ({ params, context }) => {
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/_app/admin/_layout/users/$id")({
 			),
 			context.queryClient.ensureQueryData(feeTypesQueryOptions()),
 			context.queryClient.ensureQueryData(feeCurrencyQueryOptions()),
+			context.queryClient.ensureQueryData(adminSurveyQuestionsQueryOptions()),
 		]);
 	},
 	component: UserDetailPage,

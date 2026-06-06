@@ -2,10 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import * as XLSX from "xlsx";
 import type { UserRole } from "@/generated/prisma/enums";
 import { formatDateTime } from "@/lib/format-date";
+import { formatSurveyAnswerValue } from "@/lib/labels/survey";
 import { formatSubmissionRoles } from "@/lib/labels/user";
 import { getUsers } from "@/lib/server/admin/users";
 import { adminRequestMiddleware } from "@/lib/server/middleware/auth";
 import { getSetting } from "@/lib/server/settings";
+import { getSurveyQuestions } from "@/lib/server/survey";
 
 export const Route = createFileRoute("/api/admin/users/export")({
 	server: {
@@ -28,30 +30,48 @@ export const Route = createFileRoute("/api/admin/users/export")({
 							? false
 							: undefined;
 
-				const [{ users }, dateFormat, timeFormat] = await Promise.all([
-					getUsers({ search, role, feePaid }),
-					getSetting("DATE_FORMAT"),
-					getSetting("TIME_FORMAT"),
-				]);
+				const [{ users }, questions, dateFormat, timeFormat] =
+					await Promise.all([
+						getUsers({ search, role, feePaid }),
+						getSurveyQuestions(),
+						getSetting("DATE_FORMAT"),
+						getSetting("TIME_FORMAT"),
+					]);
 
 				const fmtDate = (date: Date | null | undefined) =>
 					date ? formatDateTime(date, dateFormat, timeFormat) : "";
 
-				const rows = users.map((u) => ({
-					"First Name": u.firstName ?? "",
-					"Last Name": u.lastName ?? "",
-					Email: u.email,
-					Title: u.title ?? "",
-					Affiliation: u.affiliation ?? "",
-					Role: u.role,
-					Submissions: formatSubmissionRoles(u.submissionRoles),
-					Status: u.isActive ? "Active" : "Inactive",
-					"Fee Status": u.fee?.paid ? "Paid" : "Unpaid",
-					"Fee Type": u.fee?.type ?? "",
-					"Fee Paid At": fmtDate(u.fee?.paidAt),
-					"Created At": fmtDate(u.createdAt),
-					"Last Login": fmtDate(u.lastLoginAt),
-				}));
+				const rows = users.map((u) => {
+					const answerByQuestion = new Map(
+						u.surveyAnswers.map((a) => [a.questionId, a.value]),
+					);
+					const surveyColumns: Record<string, string> = {};
+					for (const q of questions) {
+						surveyColumns[q.fieldName ?? q.label] = formatSurveyAnswerValue(
+							q.type,
+							answerByQuestion.get(q.id) ?? "",
+						);
+					}
+
+					return {
+						"First Name": u.firstName ?? "",
+						"Last Name": u.lastName ?? "",
+						Email: u.email,
+						Title: u.title ?? "",
+						Affiliation: u.affiliation ?? "",
+						Role: u.role,
+						Submissions: formatSubmissionRoles(u.submissionRoles),
+						Status: u.isActive ? "Active" : "Inactive",
+						"Fee Status": u.fee?.paid ? "Paid" : "Unpaid",
+						"Fee Type": u.fee?.type ?? "",
+						"Fee Paid At": fmtDate(u.fee?.paidAt),
+						"Need Invoice": u.needInvoice ? "True" : "False",
+						"Invoice details": u.address ?? "",
+						"Created At": fmtDate(u.createdAt),
+						"Last Login": fmtDate(u.lastLoginAt),
+						...surveyColumns,
+					};
+				});
 
 				const ws = XLSX.utils.json_to_sheet(rows);
 				const wb = XLSX.utils.book_new();

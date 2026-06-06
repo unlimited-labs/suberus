@@ -51,6 +51,8 @@ export const createSurveyQuestionFn = createServerFn({ method: "POST" })
 				.optional(),
 			options: z.array(z.string().min(1)).optional(),
 			isRequired: z.boolean().optional(),
+			showInUsersList: z.boolean().optional(),
+			fieldName: z.string().nullable().optional(),
 		}),
 	)
 	.handler(async ({ data }) => {
@@ -60,6 +62,8 @@ export const createSurveyQuestionFn = createServerFn({ method: "POST" })
 			data.type,
 			data.options,
 			data.isRequired,
+			data.showInUsersList,
+			data.fieldName,
 		);
 	});
 
@@ -76,6 +80,8 @@ export const updateSurveyQuestionFn = createServerFn({ method: "POST" })
 				.optional(),
 			options: z.array(z.string().min(1)).nullable().optional(),
 			isRequired: z.boolean().optional(),
+			showInUsersList: z.boolean().optional(),
+			fieldName: z.string().nullable().optional(),
 		}),
 	)
 	.handler(async ({ data }) => {

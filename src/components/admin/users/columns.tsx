@@ -7,6 +7,8 @@ import {
 	facetedFilterFn,
 } from "@/components/admin/data-table";
 import { Badge } from "@/components/ui/badge";
+import type { SurveyQuestionType } from "@/generated/prisma/enums";
+import { formatSurveyAnswerValue } from "@/lib/labels/survey";
 import {
 	feeFilterOptions,
 	formatSubmissionRole,
@@ -17,7 +19,13 @@ import type { AdminUser } from "@/lib/server/admin/users";
 import { cn } from "@/lib/utils";
 import { SubmissionsColumnHeader } from "./submissions-column-header";
 
-export const userColumns: ColumnDef<AdminUser>[] = [
+export interface SurveyListColumn {
+	id: string;
+	header: string;
+	type: SurveyQuestionType;
+}
+
+const baseUserColumns: ColumnDef<AdminUser>[] = [
 	createSelectColumn<AdminUser>(),
 	{
 		id: "name",
@@ -199,14 +207,49 @@ export const userColumns: ColumnDef<AdminUser>[] = [
 			);
 		},
 	},
-	createActionsColumn<AdminUser>({
-		getViewLink: (user) => ({
-			to: "/admin/users/$id",
-			params: { id: user.id },
-		}),
-		getEditLink: (user) => ({
-			to: "/admin/users/$id",
-			params: { id: user.id },
-		}),
-	}),
 ];
+
+const actionsColumn = createActionsColumn<AdminUser>({
+	getViewLink: (user) => ({
+		to: "/admin/users/$id",
+		params: { id: user.id },
+	}),
+	getEditLink: (user) => ({
+		to: "/admin/users/$id",
+		params: { id: user.id },
+	}),
+});
+
+/** Build a survey-answer column for the users list. */
+function surveyColumn(col: SurveyListColumn): ColumnDef<AdminUser> {
+	return {
+		id: `survey-${col.id}`,
+		accessorFn: (row) =>
+			row.surveyAnswers.find((a) => a.questionId === col.id)?.value ?? "",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title={col.header} />
+		),
+		cell: ({ row }) => {
+			const answer = row.original.surveyAnswers.find(
+				(a) => a.questionId === col.id,
+			);
+			return (
+				<span className="text-muted-foreground">
+					{answer ? formatSurveyAnswerValue(col.type, answer.value) : "—"}
+				</span>
+			);
+		},
+		enableSorting: false,
+	};
+}
+
+/** Compose the users-list columns, inserting survey columns before the actions column. */
+export function buildUserColumns(
+	surveyColumns: SurveyListColumn[] = [],
+): ColumnDef<AdminUser>[] {
+	return [
+		...baseUserColumns,
+		...surveyColumns.map(surveyColumn),
+		actionsColumn,
+	];
+}

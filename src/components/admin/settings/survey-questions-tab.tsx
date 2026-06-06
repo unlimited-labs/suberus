@@ -3,9 +3,9 @@ import {
 	IconArrowUp,
 	IconClipboardList,
 	IconLoader2,
+	IconPencil,
 	IconPlus,
 	IconTrash,
-	IconX,
 } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -15,13 +15,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
 import {
@@ -32,56 +25,30 @@ import {
 	reorderSurveyQuestionsFn,
 	updateSurveyQuestionFn,
 } from "@/server-fns/settings/survey";
-
-interface SurveyQuestion {
-	id: string;
-	label: string;
-	type: SurveyQuestionType;
-	options: string[] | null;
-	isRequired: boolean;
-	orderIndex: number;
-	isActive: boolean;
-}
+import {
+	SurveyQuestionDialog,
+	type SurveyQuestionFormValues,
+} from "./survey-question-dialog";
+import {
+	isSelectType,
+	OptionsEditor,
+	ShowInListFields,
+	type SurveyQuestion,
+	TYPE_LABELS,
+	TypeSelect,
+} from "./survey-question-fields";
 
 interface SurveyQuestionsTabProps {
 	initialQuestions: SurveyQuestion[];
 }
 
-const TYPE_LABELS: Record<SurveyQuestionType, string> = {
-	CHECKBOX: "Checkbox",
-	TEXT: "Text",
-	SINGLE_SELECT: "Single",
-	MULTI_SELECT: "Multi",
-};
-
-const isSelectType = (type: SurveyQuestionType) =>
-	type === "SINGLE_SELECT" || type === "MULTI_SELECT";
-
-const SURVEY_QUESTION_TYPES = [
-	"CHECKBOX",
-	"TEXT",
-	"SINGLE_SELECT",
-	"MULTI_SELECT",
-] as const satisfies readonly SurveyQuestionType[];
-
 interface SurveyQuestionRowProps {
 	question: SurveyQuestion;
 	index: number;
 	total: number;
-	isEditing: boolean;
 	isBusy: boolean;
-	editLabel: string;
-	editType: SurveyQuestionType;
-	editRequired: boolean;
-	editOptions: string[];
-	onEditLabelChange: (v: string) => void;
-	onEditTypeChange: (v: SurveyQuestionType) => void;
-	onEditRequiredChange: (v: boolean) => void;
-	onEditOptionsChange: (v: string[]) => void;
 	onMove: (dir: "up" | "down") => void;
-	onSaveEdit: () => void;
-	onStartEdit: () => void;
-	onCancelEdit: () => void;
+	onEdit: () => void;
 	onToggleActive: (active: boolean) => void;
 	onDelete: () => void;
 }
@@ -90,173 +57,97 @@ function SurveyQuestionRow({
 	question,
 	index,
 	total,
-	isEditing,
 	isBusy,
-	editLabel,
-	editType,
-	editRequired,
-	editOptions,
-	onEditLabelChange,
-	onEditTypeChange,
-	onEditRequiredChange,
-	onEditOptionsChange,
 	onMove,
-	onSaveEdit,
-	onStartEdit,
-	onCancelEdit,
+	onEdit,
 	onToggleActive,
 	onDelete,
 }: SurveyQuestionRowProps) {
 	return (
 		<div
 			data-testid="question-row"
-			className="rounded-lg border border-border/50 bg-muted/20 p-3"
+			className="flex items-center gap-2 rounded-lg border border-border/50 bg-muted/20 p-2.5"
 		>
-			<div className="flex items-start gap-2">
-				{/* Reorder arrows */}
-				<div className="flex flex-col gap-0.5">
-					<Button
-						variant="ghost"
-						size="icon-sm"
-						disabled={index === 0 || isBusy}
-						onClick={() => onMove("up")}
-						aria-label="Move up"
-					>
-						<IconArrowUp className="size-3.5" />
-					</Button>
-					<Button
-						variant="ghost"
-						size="icon-sm"
-						disabled={index === total - 1 || isBusy}
-						onClick={() => onMove("down")}
-						aria-label="Move down"
-					>
-						<IconArrowDown className="size-3.5" />
-					</Button>
-				</div>
+			{/* Reorder arrows */}
+			<div className="flex flex-col">
+				<Button
+					variant="ghost"
+					size="icon-sm"
+					disabled={index === 0 || isBusy}
+					onClick={() => onMove("up")}
+					aria-label="Move up"
+				>
+					<IconArrowUp className="size-3.5" />
+				</Button>
+				<Button
+					variant="ghost"
+					size="icon-sm"
+					disabled={index === total - 1 || isBusy}
+					onClick={() => onMove("down")}
+					aria-label="Move down"
+				>
+					<IconArrowDown className="size-3.5" />
+				</Button>
+			</div>
 
-				{/* Label + badges (view mode) / Edit form */}
-				<div className="min-w-0 flex-1">
-					{isEditing ? (
-						<div className="space-y-2">
-							<div className="flex gap-2">
-								<Input
-									value={editLabel}
-									onChange={(e) => onEditLabelChange(e.target.value)}
-									className="h-8 text-sm"
-									onKeyDown={(e) => {
-										if (e.key === "Escape") onCancelEdit();
-									}}
-								/>
-							</div>
-							<div className="flex flex-wrap items-center gap-2">
-								<Select
-									value={editType}
-									onValueChange={(v) => {
-										const found = SURVEY_QUESTION_TYPES.find((t) => t === v);
-										if (found) onEditTypeChange(found);
-									}}
-								>
-									<SelectTrigger className="h-8 w-[140px]">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="CHECKBOX">Checkbox</SelectItem>
-										<SelectItem value="TEXT">Text</SelectItem>
-										<SelectItem value="SINGLE_SELECT">Single Select</SelectItem>
-										<SelectItem value="MULTI_SELECT">Multi Select</SelectItem>
-									</SelectContent>
-								</Select>
-								<div className="flex items-center gap-1.5">
-									<Switch
-										id={`edit-required-${question.id}`}
-										checked={editRequired}
-										onCheckedChange={onEditRequiredChange}
-									/>
-									<Label
-										htmlFor={`edit-required-${question.id}`}
-										className="text-xs"
-									>
-										Required
-									</Label>
-								</div>
-							</div>
-							{isSelectType(editType) && (
-								<OptionsEditor
-									options={editOptions}
-									onChange={onEditOptionsChange}
-								/>
-							)}
-							<div className="flex gap-2">
-								<Button size="sm" onClick={onSaveEdit} disabled={isBusy}>
-									Save
-								</Button>
-								<Button size="sm" variant="outline" onClick={onCancelEdit}>
-									Cancel
-								</Button>
-							</div>
-						</div>
-					) : (
-						<div className="space-y-1">
-							<button
-								type="button"
-								className="text-left text-sm font-medium hover:underline"
-								onClick={onStartEdit}
-							>
-								{question.label}
-							</button>
-							<div className="flex flex-wrap items-center gap-1.5">
-								<Badge variant="outline" className="text-[10px]">
-									{TYPE_LABELS[question.type]}
-								</Badge>
-								{question.isRequired && (
-									<Badge variant="secondary" className="text-[10px]">
-										Required
-									</Badge>
-								)}
-							</div>
-							{isSelectType(question.type) &&
-								question.options &&
-								question.options.length > 0 && (
-									<p className="text-xs text-muted-foreground">
-										Options: {question.options.join(", ")}
-									</p>
-								)}
-						</div>
+			{/* Label + badges */}
+			<button
+				type="button"
+				onClick={onEdit}
+				className="min-w-0 flex-1 text-left"
+			>
+				<p className="truncate text-sm font-medium">{question.label}</p>
+				<div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+					<Badge variant="outline" className="text-[10px]">
+						{TYPE_LABELS[question.type]}
+					</Badge>
+					{question.isRequired && (
+						<Badge variant="secondary" className="text-[10px]">
+							Required
+						</Badge>
+					)}
+					{question.showInUsersList && (
+						<Badge variant="secondary" className="text-[10px]">
+							In list: {question.fieldName ?? question.label}
+						</Badge>
 					)}
 				</div>
+			</button>
 
-				{/* Active toggle + Delete (hidden during edit) */}
-				{!isEditing && (
-					<>
-						<div className="flex items-center gap-2">
-							<Label
-								htmlFor={`active-${question.id}`}
-								className="hidden text-xs text-muted-foreground sm:inline"
-							>
-								Active
-							</Label>
-							<Switch
-								id={`active-${question.id}`}
-								checked={question.isActive}
-								onCheckedChange={onToggleActive}
-								disabled={isBusy}
-							/>
-						</div>
-
-						<Button
-							variant="ghost"
-							size="icon-sm"
-							onClick={onDelete}
-							disabled={isBusy}
-							className="text-destructive hover:text-destructive"
-							aria-label="Delete question"
-						>
-							<IconTrash className="size-4" />
-						</Button>
-					</>
-				)}
+			{/* Actions */}
+			<Button
+				variant="ghost"
+				size="icon-sm"
+				onClick={onEdit}
+				disabled={isBusy}
+				aria-label="Edit question"
+			>
+				<IconPencil className="size-4" />
+			</Button>
+			<div className="flex items-center gap-1.5">
+				<Label
+					htmlFor={`active-${question.id}`}
+					className="hidden text-xs text-muted-foreground sm:inline"
+				>
+					Active
+				</Label>
+				<Switch
+					id={`active-${question.id}`}
+					checked={question.isActive}
+					onCheckedChange={onToggleActive}
+					disabled={isBusy}
+				/>
 			</div>
+			<Button
+				variant="ghost"
+				size="icon-sm"
+				onClick={onDelete}
+				disabled={isBusy}
+				className="text-destructive hover:text-destructive"
+				aria-label="Delete question"
+			>
+				<IconTrash className="size-4" />
+			</Button>
 		</div>
 	);
 }
@@ -271,13 +162,21 @@ export function SurveyQuestionsTab({
 	const [newType, setNewType] = useState<SurveyQuestionType>("CHECKBOX");
 	const [newRequired, setNewRequired] = useState(false);
 	const [newOptions, setNewOptions] = useState<string[]>([]);
+	const [newShowInList, setNewShowInList] = useState(false);
+	const [newFieldName, setNewFieldName] = useState("");
 	const [isAdding, setIsAdding] = useState(false);
-	const [editingId, setEditingId] = useState<string | null>(null);
-	const [editLabel, setEditLabel] = useState("");
-	const [editType, setEditType] = useState<SurveyQuestionType>("CHECKBOX");
-	const [editRequired, setEditRequired] = useState(false);
-	const [editOptions, setEditOptions] = useState<string[]>([]);
+	const [editing, setEditing] = useState<SurveyQuestion | null>(null);
 	const [busyId, setBusyId] = useState<string | null>(null);
+
+	const invalidateSurvey = () =>
+		Promise.all([
+			queryClient.invalidateQueries({
+				queryKey: adminSurveyQuestionsQueryOptions().queryKey,
+			}),
+			queryClient.invalidateQueries({
+				queryKey: activeSurveyQuestionsQueryOptions().queryKey,
+			}),
+		]);
 
 	const handleAdd = async () => {
 		if (!newLabel.trim()) return;
@@ -286,6 +185,10 @@ export function SurveyQuestionsTab({
 			newOptions.filter((o) => o.trim()).length < 2
 		) {
 			toast.error("Select questions require at least 2 options");
+			return;
+		}
+		if (newShowInList && !newFieldName.trim()) {
+			toast.error("Field name is required to show in users list");
 			return;
 		}
 		setIsAdding(true);
@@ -299,22 +202,19 @@ export function SurveyQuestionsTab({
 					orderIndex: questions.length,
 					type: newType,
 					isRequired: newRequired,
+					showInUsersList: newShowInList,
+					fieldName: newShowInList ? newFieldName.trim() : null,
 					...(cleanOptions && { options: cleanOptions }),
 				},
 			});
 			setQuestions((prev) => [...prev, created]);
-			await Promise.all([
-				queryClient.invalidateQueries({
-					queryKey: adminSurveyQuestionsQueryOptions().queryKey,
-				}),
-				queryClient.invalidateQueries({
-					queryKey: activeSurveyQuestionsQueryOptions().queryKey,
-				}),
-			]);
+			await invalidateSurvey();
 			setNewLabel("");
 			setNewType("CHECKBOX");
 			setNewRequired(false);
 			setNewOptions([]);
+			setNewShowInList(false);
+			setNewFieldName("");
 			toast.success("Question added");
 		} catch {
 			toast.error("Failed to add question");
@@ -340,35 +240,26 @@ export function SurveyQuestionsTab({
 		}
 	};
 
-	const handleStartEdit = (q: SurveyQuestion) => {
-		setEditingId(q.id);
-		setEditLabel(q.label);
-		setEditType(q.type);
-		setEditRequired(q.isRequired);
-		setEditOptions(Array.isArray(q.options) ? q.options : []);
-	};
-
-	const handleSaveEdit = async (id: string) => {
-		if (!editLabel.trim()) return;
-		if (
-			isSelectType(editType) &&
-			editOptions.filter((o) => o.trim()).length < 2
-		) {
-			toast.error("Select questions require at least 2 options");
-			return;
-		}
+	const handleEditSubmit = async (values: SurveyQuestionFormValues) => {
+		if (!editing) return;
+		const id = editing.id;
 		setBusyId(id);
 		try {
-			const cleanOptions = isSelectType(editType)
-				? editOptions.filter((o) => o.trim()).map((o) => o.trim())
+			const cleanOptions = isSelectType(values.type)
+				? values.options.filter((o) => o.trim()).map((o) => o.trim())
+				: null;
+			const cleanFieldName = values.showInUsersList
+				? values.fieldName.trim()
 				: null;
 			await updateSurveyQuestionFn({
 				data: {
 					id,
-					label: editLabel.trim(),
-					type: editType,
-					isRequired: editRequired,
+					label: values.label.trim(),
+					type: values.type,
+					isRequired: values.isRequired,
 					options: cleanOptions,
+					showInUsersList: values.showInUsersList,
+					fieldName: cleanFieldName,
 				},
 			});
 			setQuestions((prev) =>
@@ -376,23 +267,18 @@ export function SurveyQuestionsTab({
 					q.id === id
 						? {
 								...q,
-								label: editLabel.trim(),
-								type: editType,
-								isRequired: editRequired,
+								label: values.label.trim(),
+								type: values.type,
+								isRequired: values.isRequired,
 								options: cleanOptions,
+								showInUsersList: values.showInUsersList,
+								fieldName: cleanFieldName,
 							}
 						: q,
 				),
 			);
-			await Promise.all([
-				queryClient.invalidateQueries({
-					queryKey: adminSurveyQuestionsQueryOptions().queryKey,
-				}),
-				queryClient.invalidateQueries({
-					queryKey: activeSurveyQuestionsQueryOptions().queryKey,
-				}),
-			]);
-			setEditingId(null);
+			await invalidateSurvey();
+			setEditing(null);
 			toast.success("Question updated");
 		} catch {
 			toast.error("Failed to update question");
@@ -405,14 +291,7 @@ export function SurveyQuestionsTab({
 		setBusyId(id);
 		try {
 			await deleteSurveyQuestionFn({ data: { id } });
-			await Promise.all([
-				queryClient.invalidateQueries({
-					queryKey: adminSurveyQuestionsQueryOptions().queryKey,
-				}),
-				queryClient.invalidateQueries({
-					queryKey: activeSurveyQuestionsQueryOptions().queryKey,
-				}),
-			]);
+			await invalidateSurvey();
 			setQuestions((prev) => prev.filter((q) => q.id !== id));
 			toast.success("Question deleted");
 		} catch {
@@ -468,20 +347,9 @@ export function SurveyQuestionsTab({
 									question={question}
 									index={index}
 									total={questions.length}
-									isEditing={editingId === question.id}
 									isBusy={busyId === question.id}
-									editLabel={editLabel}
-									editType={editType}
-									editRequired={editRequired}
-									editOptions={editOptions}
-									onEditLabelChange={setEditLabel}
-									onEditTypeChange={setEditType}
-									onEditRequiredChange={setEditRequired}
-									onEditOptionsChange={setEditOptions}
 									onMove={(dir) => handleMove(index, dir)}
-									onSaveEdit={() => handleSaveEdit(question.id)}
-									onStartEdit={() => handleStartEdit(question)}
-									onCancelEdit={() => setEditingId(null)}
+									onEdit={() => setEditing(question)}
 									onToggleActive={(active) =>
 										handleToggleActive(question.id, active)
 									}
@@ -511,23 +379,11 @@ export function SurveyQuestionsTab({
 							/>
 						</div>
 						<div className="flex flex-wrap items-center gap-2">
-							<Select
+							<TypeSelect
 								value={newType}
-								onValueChange={(v) => {
-									const found = SURVEY_QUESTION_TYPES.find((t) => t === v);
-									if (found) setNewType(found);
-								}}
-							>
-								<SelectTrigger className="h-8 w-[160px]">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="CHECKBOX">Checkbox</SelectItem>
-									<SelectItem value="TEXT">Text</SelectItem>
-									<SelectItem value="SINGLE_SELECT">Single Select</SelectItem>
-									<SelectItem value="MULTI_SELECT">Multi Select</SelectItem>
-								</SelectContent>
-							</Select>
+								onChange={setNewType}
+								className="h-8 w-[160px]"
+							/>
 							<div className="flex items-center gap-1.5">
 								<Switch
 									id="new-required"
@@ -553,55 +409,26 @@ export function SurveyQuestionsTab({
 						{isSelectType(newType) && (
 							<OptionsEditor options={newOptions} onChange={setNewOptions} />
 						)}
+						<ShowInListFields
+							idPrefix="new"
+							showInList={newShowInList}
+							fieldName={newFieldName}
+							onShowInListChange={setNewShowInList}
+							onFieldNameChange={setNewFieldName}
+						/>
 					</div>
 				</div>
 			</SettingsSection>
-		</div>
-	);
-}
 
-function OptionsEditor({
-	options,
-	onChange,
-}: {
-	options: string[];
-	onChange: (options: string[]) => void;
-}) {
-	return (
-		<div className="space-y-1.5 rounded-md border border-border/50 bg-background p-3">
-			<Label className="text-xs font-medium text-muted-foreground">
-				Options
-			</Label>
-			{options.map((opt, i) => (
-				<div key={opt} className="flex gap-1.5">
-					<Input
-						value={opt}
-						onChange={(e) => {
-							const next = [...options];
-							next[i] = e.target.value;
-							onChange(next);
-						}}
-						placeholder={`Option ${i + 1}`}
-						className="h-8 text-sm"
-					/>
-					<Button
-						variant="ghost"
-						size="icon-sm"
-						onClick={() => onChange(options.filter((_, j) => j !== i))}
-						aria-label="Remove option"
-					>
-						<IconX className="size-3.5" />
-					</Button>
-				</div>
-			))}
-			<Button
-				variant="outline"
-				size="sm"
-				onClick={() => onChange([...options, ""])}
-			>
-				<IconPlus className="mr-1 size-3" />
-				Add option
-			</Button>
+			<SurveyQuestionDialog
+				question={editing}
+				open={editing !== null}
+				onOpenChange={(open) => {
+					if (!open) setEditing(null);
+				}}
+				onSubmit={handleEditSubmit}
+				isBusy={busyId === editing?.id}
+			/>
 		</div>
 	);
 }

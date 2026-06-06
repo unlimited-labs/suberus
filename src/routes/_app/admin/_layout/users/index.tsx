@@ -1,8 +1,12 @@
 import { IconDownload, IconUsers } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { DataTable, DataTableToolbar } from "@/components/admin/data-table";
-import { userColumns } from "@/components/admin/users/columns";
+import {
+	buildUserColumns,
+	type SurveyListColumn,
+} from "@/components/admin/users/columns";
 import { UserBulkActions } from "@/components/admin/users/user-bulk-actions";
 import { UserMobileCard } from "@/components/admin/users/user-mobile-card";
 import { PageHeader } from "@/components/layout/page-header";
@@ -12,6 +16,7 @@ import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
 } from "@/server-fns/settings";
+import { adminSurveyQuestionsQueryOptions } from "@/server-fns/settings/survey";
 
 export const Route = createFileRoute("/_app/admin/_layout/users/")({
 	loader: async ({ context }) => {
@@ -19,6 +24,7 @@ export const Route = createFileRoute("/_app/admin/_layout/users/")({
 			context.queryClient.ensureQueryData(adminUsersQueryOptions()),
 			context.queryClient.ensureQueryData(feeTypesQueryOptions()),
 			context.queryClient.ensureQueryData(feeCurrencyQueryOptions()),
+			context.queryClient.ensureQueryData(adminSurveyQuestionsQueryOptions()),
 		]);
 	},
 	component: UsersPage,
@@ -35,6 +41,36 @@ const columnLabels: Record<string, string> = {
 
 function UsersPage() {
 	const { data: users } = useSuspenseQuery(adminUsersQueryOptions());
+	const { data: surveyQuestions } = useSuspenseQuery(
+		adminSurveyQuestionsQueryOptions(),
+	);
+
+	const surveyColumns = useMemo<SurveyListColumn[]>(
+		() =>
+			surveyQuestions
+				.filter((q) => q.showInUsersList)
+				.map((q) => ({
+					id: q.id,
+					header: q.fieldName ?? q.label,
+					type: q.type,
+				})),
+		[surveyQuestions],
+	);
+
+	const columns = useMemo(
+		() => buildUserColumns(surveyColumns),
+		[surveyColumns],
+	);
+
+	const dynamicColumnLabels = useMemo(
+		() => ({
+			...columnLabels,
+			...Object.fromEntries(
+				surveyColumns.map((c) => [`survey-${c.id}`, c.header]),
+			),
+		}),
+		[surveyColumns],
+	);
 
 	return (
 		<div className="flex h-full flex-col">
@@ -48,11 +84,13 @@ function UsersPage() {
 			</PageHeader>
 			<div className="flex-1 overflow-auto p-6">
 				<DataTable
-					columns={userColumns}
+					columns={columns}
 					data={users}
 					getRowId={(row) => row.id}
 					rowDataTestId="user-row"
-					mobileCard={UserMobileCard}
+					mobileCard={(u) => (
+						<UserMobileCard user={u} surveyColumns={surveyColumns} />
+					)}
 					initialColumnVisibility={{
 						submissionType: false,
 						submissionRole: false,
@@ -63,7 +101,7 @@ function UsersPage() {
 							table={table}
 							searchKey="name"
 							searchPlaceholder="Search users..."
-							columnLabels={columnLabels}
+							columnLabels={dynamicColumnLabels}
 							actions={
 								<UserBulkActions table={table} rowSelection={rowSelection} />
 							}

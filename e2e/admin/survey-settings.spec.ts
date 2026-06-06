@@ -53,15 +53,12 @@ test.describe("Admin Settings - Survey Questions", () => {
 		await page.getByRole("button", { name: "Add" }).click();
 		await expect(page.getByText("Question added")).toBeVisible();
 
-		// Act — click label to edit
-		await page.getByRole("button", { name: originalLabel }).click();
-		const editRow = page.getByTestId("question-row").filter({
-			has: page.getByRole("button", { name: "Save" }),
-		});
-		const input = editRow.getByRole("textbox").first();
-		await input.clear();
-		await input.fill(updatedLabel);
-		await editRow.getByRole("button", { name: "Save" }).click();
+		// Act — open edit dialog, change label, save
+		const row = page.getByTestId("question-row").filter({ hasText: originalLabel });
+		await row.getByRole("button", { name: "Edit question" }).click();
+		const dialog = page.getByRole("dialog");
+		await dialog.getByLabel("Question label").fill(updatedLabel);
+		await dialog.getByRole("button", { name: "Save" }).click();
 
 		// Assert
 		await expect(page.getByText("Question updated")).toBeVisible();
@@ -247,6 +244,96 @@ test.describe("Admin Settings - Survey Questions", () => {
 		await db.surveyQuestion.deleteMany({ where: { label: newLabel } });
 	});
 
+	test("admin enables Show in users list with field name", async ({ page, testRun }) => {
+		// Arrange
+		const label = testRun.prefix("Show-in-list question");
+		const fieldName = testRun.prefix("Diet");
+		const db = getPrisma();
+		await db.surveyAnswer.deleteMany({ where: { question: { label } } });
+		await db.surveyQuestion.deleteMany({ where: { label } });
+
+		const addSection = page.getByTestId("add-question-section");
+		await addSection.getByPlaceholder("New question label...").fill(label);
+
+		// Act — toggle on + fill field name
+		await addSection.getByLabel("Show in users list").click();
+		await addSection.getByLabel("Field name").fill(fieldName);
+		await addSection.getByRole("button", { name: "Add", exact: true }).click();
+
+		// Assert — UI + persisted state
+		await expect(page.getByText("Question added")).toBeVisible();
+		await expect(
+			page
+				.getByTestId("question-row")
+				.filter({ hasText: label })
+				.getByText(`In list: ${fieldName}`),
+		).toBeVisible();
+		const saved = await db.surveyQuestion.findFirst({ where: { label } });
+		expect(saved?.showInUsersList).toBe(true);
+		expect(saved?.fieldName).toBe(fieldName);
+
+		// Cleanup
+		await db.surveyAnswer.deleteMany({ where: { question: { label } } });
+		await db.surveyQuestion.deleteMany({ where: { label } });
+	});
+
+	test("admin edits existing question to enable Show in users list", async ({ page, testRun }) => {
+		// Arrange — create a plain question (show off), then edit it on
+		const label = testRun.prefix("Edit-to-show question");
+		const fieldName = testRun.prefix("Parking");
+		const db = getPrisma();
+		await db.surveyAnswer.deleteMany({ where: { question: { label } } });
+		await db.surveyQuestion.deleteMany({ where: { label } });
+
+		await page.getByPlaceholder("New question label...").fill(label);
+		await page.getByRole("button", { name: "Add", exact: true }).click();
+		await expect(page.getByText("Question added")).toBeVisible();
+
+		// Act — open edit dialog, enable show in list + field name, save
+		const row = page.getByTestId("question-row").filter({ hasText: label });
+		await row.getByRole("button", { name: "Edit question" }).click();
+		const dialog = page.getByRole("dialog");
+		await dialog.getByLabel("Show in users list").click();
+		await dialog.getByLabel("Field name").fill(fieldName);
+		await dialog.getByRole("button", { name: "Save" }).click();
+
+		// Assert — UI badge + persisted state
+		await expect(page.getByText("Question updated")).toBeVisible();
+		await expect(
+			page
+				.getByTestId("question-row")
+				.filter({ hasText: label })
+				.getByText(`In list: ${fieldName}`),
+		).toBeVisible();
+		const saved = await db.surveyQuestion.findFirst({ where: { label } });
+		expect(saved?.showInUsersList).toBe(true);
+		expect(saved?.fieldName).toBe(fieldName);
+
+		// Cleanup
+		await db.surveyAnswer.deleteMany({ where: { question: { label } } });
+		await db.surveyQuestion.deleteMany({ where: { label } });
+	});
+
+	test("toggle Show in users list ON without field name is rejected", async ({ page, testRun }) => {
+		// Arrange
+		const label = testRun.prefix("No-fieldname question");
+		const db = getPrisma();
+		await db.surveyQuestion.deleteMany({ where: { label } });
+
+		const addSection = page.getByTestId("add-question-section");
+		await addSection.getByPlaceholder("New question label...").fill(label);
+
+		// Act — toggle on but leave field name empty
+		await addSection.getByLabel("Show in users list").click();
+		await addSection.getByRole("button", { name: "Add", exact: true }).click();
+
+		// Assert — validation error, not persisted
+		await expect(
+			page.getByText("Field name is required to show in users list"),
+		).toBeVisible();
+		expect(await db.surveyQuestion.count({ where: { label } })).toBe(0);
+	});
+
 	test("admin edits question type", async ({ page, testRun }) => {
 		// Arrange — create a temp question to avoid modifying seeded data
 		const tempLabel = testRun.prefix("Type change question");
@@ -258,16 +345,13 @@ test.describe("Admin Settings - Survey Questions", () => {
 		await page.getByRole("button", { name: "Add" }).click();
 		await expect(page.getByText("Question added")).toBeVisible();
 
-		// Act — click label to edit, then change type to TEXT
-		await page.getByRole("button", { name: tempLabel }).click();
-		const editRow = page.getByTestId("question-row").filter({
-			has: page.getByRole("button", { name: "Save" }),
-		});
-		const editTypeSelect = editRow.getByRole("combobox").first();
-		await editTypeSelect.click();
+		// Act — open edit dialog, change type to TEXT, save
+		const editRow = page.getByTestId("question-row").filter({ hasText: tempLabel });
+		await editRow.getByRole("button", { name: "Edit question" }).click();
+		const dialog = page.getByRole("dialog");
+		await dialog.getByRole("combobox").first().click();
 		await page.getByRole("option", { name: "Text" }).click();
-
-		await editRow.getByRole("button", { name: "Save" }).click();
+		await dialog.getByRole("button", { name: "Save" }).click();
 
 		// Assert
 		await expect(page.getByText("Question updated")).toBeVisible();

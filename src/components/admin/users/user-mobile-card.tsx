@@ -1,11 +1,19 @@
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatSurveyAnswerValue } from "@/lib/labels/survey";
 import { formatSubmissionRole, roleLabels } from "@/lib/labels/user";
 import type { AdminUser } from "@/lib/server/admin/users";
 import { cn } from "@/lib/utils";
+import type { SurveyListColumn } from "./columns";
 
-export function UserMobileCard(user: AdminUser) {
+export function UserMobileCard({
+	user,
+	surveyColumns = [],
+}: {
+	user: AdminUser;
+	surveyColumns?: SurveyListColumn[];
+}) {
 	return (
 		<Link to="/admin/users/$id" params={{ id: user.id }}>
 			<Card>
@@ -44,6 +52,23 @@ export function UserMobileCard(user: AdminUser) {
 									{formatSubmissionRole(r)}
 								</Badge>
 							))}
+						</div>
+					)}
+					{surveyColumns.length > 0 && (
+						<div className="mt-3 space-y-1">
+							{surveyColumns.map((col) => {
+								const answer = user.surveyAnswers.find(
+									(a) => a.questionId === col.id,
+								);
+								return (
+									<p key={col.id} className="text-xs text-muted-foreground">
+										<span className="font-medium">{col.header}:</span>{" "}
+										{answer
+											? formatSurveyAnswerValue(col.type, answer.value)
+											: "—"}
+									</p>
+								);
+							})}
 						</div>
 					)}
 				</CardContent>

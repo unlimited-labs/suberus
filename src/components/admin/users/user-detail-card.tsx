@@ -57,6 +57,7 @@ import {
 } from "@/server-fns/settings";
 import { UserDeleteDialog } from "./user-delete-dialog";
 import { UserEditDialog } from "./user-edit-dialog";
+import { UserSurveySection } from "./user-survey-section";
 
 interface FeeType {
 	id: string;
@@ -419,6 +420,9 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 					</div>
 
 					<Separator />
+
+					{/* Survey Responses */}
+					<UserSurveySection surveyAnswers={user.surveyAnswers} />
 
 					{/* Fee Status */}
 					<div className="space-y-3">

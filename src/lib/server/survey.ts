@@ -31,6 +31,8 @@ export async function createSurveyQuestion(
 	type?: SurveyQuestionType,
 	options?: string[],
 	isRequired?: boolean,
+	showInUsersList?: boolean,
+	fieldName?: string | null,
 ) {
 	const created = await prisma.surveyQuestion.create({
 		data: {
@@ -39,6 +41,8 @@ export async function createSurveyQuestion(
 			...(type && { type }),
 			...(options && { options }),
 			...(isRequired !== undefined && { isRequired }),
+			...(showInUsersList !== undefined && { showInUsersList }),
+			...(fieldName !== undefined && { fieldName: fieldName || null }),
 		},
 	});
 	return typeSurveyQuestion(created);
@@ -56,9 +60,11 @@ export async function updateSurveyQuestion(
 		type?: SurveyQuestionType;
 		options?: string[] | null;
 		isRequired?: boolean;
+		showInUsersList?: boolean;
+		fieldName?: string | null;
 	},
 ) {
-	const { options, ...rest } = data;
+	const { options, fieldName, ...rest } = data;
 	return prisma.surveyQuestion.update({
 		where: { id },
 		data: {
@@ -66,6 +72,7 @@ export async function updateSurveyQuestion(
 			...(options !== undefined && {
 				options: options === null ? Prisma.DbNull : options,
 			}),
+			...(fieldName !== undefined && { fieldName: fieldName || null }),
 		},
 	});
 }

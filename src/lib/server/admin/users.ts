@@ -43,6 +43,7 @@ export interface AdminUser {
 		paidAt: Date | null;
 	} | null;
 	submissionRoles: SubmissionRoleSummary[];
+	surveyAnswers: { questionId: string; value: string }[];
 }
 
 export interface UsersFilters {
@@ -64,6 +65,7 @@ const submissionRolesInclude = {
 			submission: { select: { type: true, status: true, userId: true } },
 		},
 	},
+	surveyAnswers: { select: { questionId: true, value: true } },
 } satisfies Prisma.UserInclude;
 
 type UserWithSubmissionRoles = Prisma.UserGetPayload<{
@@ -191,6 +193,7 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 				}
 			: null,
 		submissionRoles: buildSubmissionRoles(u),
+		surveyAnswers: u.surveyAnswers,
 	}));
 
 	return {
@@ -240,6 +243,7 @@ export async function getUserById(id: string): Promise<AdminUser | null> {
 				}
 			: null,
 		submissionRoles: buildSubmissionRoles(user),
+		surveyAnswers: user.surveyAnswers,
 	};
 }
 

@@ -465,6 +465,8 @@ model SurveyQuestion {
   isRequired Boolean            @default(false)
   orderIndex Int                @default(0)
   isActive   Boolean            @default(true)
+  showInUsersList Boolean       @default(false)
+  fieldName  String?
   createdAt  DateTime           @default(now())
   updatedAt  DateTime           @updatedAt
   answers    SurveyAnswer[]
