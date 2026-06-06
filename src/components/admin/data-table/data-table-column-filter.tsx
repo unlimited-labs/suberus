@@ -1,5 +1,6 @@
 import { IconFilter, IconFilterFilled } from "@tabler/icons-react";
 import type { Column } from "@tanstack/react-table";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -26,9 +27,25 @@ export function DataTableColumnFilter<TData, TValue>({
 	options,
 }: DataTableColumnFilterProps<TData, TValue>) {
 	const facets = column?.getFacetedUniqueValues();
-	const columnFilterValue = column?.getFilterValue() as string[] | undefined;
-	const selectedValues = new Set(columnFilterValue ?? []);
+	const readSelection = () =>
+		new Set((column?.getFilterValue() as string[] | undefined) ?? []);
+
+	// The popover lives in a portal and does not re-render from the table's
+	// filter-state change while open, so the checkboxes would only reflect a
+	// toggle after reopening (and the toggle closure would freeze, blocking
+	// deselect). We keep a local mirror of the selection (drives the checkboxes,
+	// re-renders immediately) and re-sync it from the column whenever the popover
+	// opens (so an external Reset stays consistent). Same pattern as
+	// SubmissionsColumnHeader.
+	const [selectedValues, setSelectedValues] =
+		useState<Set<string>>(readSelection);
+
 	const hasFilters = selectedValues.size > 0;
+
+	const apply = (next: Set<string>) => {
+		setSelectedValues(next);
+		column?.setFilterValue(next.size ? Array.from(next) : undefined);
+	};
 
 	const handleSelect = (value: string) => {
 		const next = new Set(selectedValues);
@@ -37,20 +54,25 @@ export function DataTableColumnFilter<TData, TValue>({
 		} else {
 			next.add(value);
 		}
-		const filterValues = Array.from(next);
-		column?.setFilterValue(filterValues.length ? filterValues : undefined);
+		apply(next);
 	};
 
 	const handleClear = () => {
-		column?.setFilterValue(undefined);
+		apply(new Set());
 	};
 
 	const handleSelectAll = () => {
-		column?.setFilterValue(options.map((o) => o.value));
+		apply(new Set(options.map((o) => o.value)));
 	};
 
 	return (
-		<Popover>
+		<Popover
+			onOpenChange={(open) => {
+				// Re-sync from the source of truth when opening, so an external
+				// Reset (toolbar) is reflected.
+				if (open) setSelectedValues(readSelection());
+			}}
+		>
 			<PopoverTrigger asChild>
 				<Button
 					variant="ghost"

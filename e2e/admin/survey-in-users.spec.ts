@@ -7,6 +7,8 @@ import { expect, test } from "./fixtures";
 test.describe("Survey answers in Users area", () => {
 	let stamp: string;
 	let questionId: string;
+	let selectQuestionId: string;
+	let selectFieldName: string;
 	let questionLabel: string;
 	let listFieldName: string;
 	let answerValue: string;
@@ -71,12 +73,41 @@ test.describe("Survey answers in Users area", () => {
 		await db.surveyAnswer.create({
 			data: { userId: otherUser.id, questionId, value: otherAnswerValue },
 		});
+
+		// SINGLE_SELECT question with options → faceted (checkbox) filter in list.
+		selectFieldName = `DietChoice ${stamp}`;
+		const selectQuestion = await db.surveyQuestion.create({
+			data: {
+				label: `E2E survey-select ${stamp}`,
+				type: "SINGLE_SELECT",
+				options: ["Vegan", "Omnivore"],
+				orderIndex: 998,
+				isActive: true,
+				showInUsersList: true,
+				fieldName: selectFieldName,
+			},
+		});
+		selectQuestionId = selectQuestion.id;
+		await db.surveyAnswer.createMany({
+			data: [
+				{ userId: user.id, questionId: selectQuestionId, value: "Vegan" },
+				{
+					userId: otherUser.id,
+					questionId: selectQuestionId,
+					value: "Omnivore",
+				},
+			],
+		});
 	});
 
 	test.afterAll(async () => {
 		const db = getPrisma();
-		await db.surveyAnswer.deleteMany({ where: { questionId } });
-		await db.surveyQuestion.delete({ where: { id: questionId } }).catch(() => {});
+		await db.surveyAnswer.deleteMany({
+			where: { questionId: { in: [questionId, selectQuestionId] } },
+		});
+		await db.surveyQuestion
+			.deleteMany({ where: { id: { in: [questionId, selectQuestionId] } } })
+			.catch(() => {});
 		await deleteTestUser(user.id).catch(() => {});
 		await deleteTestUser(otherUser.id).catch(() => {});
 	});
@@ -140,6 +171,54 @@ test.describe("Survey answers in Users area", () => {
 		// Assert — the column filter (not a name search) leaves only the match
 		await expect(rowByEmail(user.email)).toBeVisible();
 		await expect(rowByEmail(otherUser.email)).toHaveCount(0);
+	});
+
+	test("survey faceted filter checkbox checks, narrows, and unchecks", async ({
+		adminUsersPage,
+		page,
+	}, testInfo) => {
+		test.skip(
+			testInfo.project.name === "mobile-admin",
+			"faceted filter is desktop table only",
+		);
+
+		const rowByEmail = (email: string) =>
+			page
+				.getByTestId("user-row")
+				.filter({ visible: true, has: page.locator(`text="${email}"`) });
+
+		// Arrange — both users in scope
+		await adminUsersPage.goto();
+		await adminUsersPage.waitForLoad();
+		await adminUsersPage.search(stamp);
+		await expect(rowByEmail(user.email)).toBeVisible();
+		await expect(rowByEmail(otherUser.email)).toBeVisible();
+
+		// Open the faceted filter popover on the SINGLE_SELECT column
+		await page
+			.getByRole("columnheader")
+			.filter({ hasText: selectFieldName })
+			.getByRole("button", { name: "Filter" })
+			.click();
+		const popover = page.locator("[data-slot='popover-content']");
+		const veganOption = popover.getByRole("checkbox", { name: "Vegan" });
+
+		// Act — check "Vegan"
+		await expect(veganOption).toHaveAttribute("aria-checked", "false");
+		await veganOption.click();
+
+		// Assert — option reflects checked state AND list narrows to the Vegan user
+		await expect(veganOption).toHaveAttribute("aria-checked", "true");
+		await expect(rowByEmail(user.email)).toBeVisible();
+		await expect(rowByEmail(otherUser.email)).toHaveCount(0);
+
+		// Act — uncheck "Vegan"
+		await veganOption.click();
+
+		// Assert — option clears and both users are visible again
+		await expect(veganOption).toHaveAttribute("aria-checked", "false");
+		await expect(rowByEmail(user.email)).toBeVisible();
+		await expect(rowByEmail(otherUser.email)).toBeVisible();
 	});
 
 	test("user detail always shows the Survey Responses section", async ({
