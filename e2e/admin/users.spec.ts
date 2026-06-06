@@ -126,6 +126,77 @@ test.describe("Admin Users Management", () => {
 		})
 	})
 
+	test.describe("Column Filter (faceted)", () => {
+		const openRoleFilter = (page: import("@playwright/test").Page) =>
+			page
+				.getByRole("columnheader")
+				.filter({ hasText: "Role" })
+				.getByRole("button", { name: "Filter" })
+				.click()
+
+		test("Role filter checkbox checks in place, narrows, and unchecks", async ({
+			adminUsersPage,
+			page,
+		}) => {
+			// Arrange
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+			const visibleRows = page.getByTestId("user-row").filter({ visible: true })
+			const before = await visibleRows.count()
+			expect(before).toBeGreaterThan(1)
+
+			// Open the Role faceted filter
+			await openRoleFilter(page)
+			const popover = page.locator("[data-slot='popover-content']")
+			const adminOption = popover.getByRole("checkbox", { name: "Administrator" })
+
+			// Act — check "Administrator"
+			await expect(adminOption).toHaveAttribute("aria-checked", "false")
+			await adminOption.click()
+
+			// Assert — checkbox flips in place (regression: was stuck false) and list narrows
+			await expect(adminOption).toHaveAttribute("aria-checked", "true")
+			const filtered = await visibleRows.count()
+			expect(filtered).toBeGreaterThan(0)
+			expect(filtered).toBeLessThan(before)
+
+			// Act — uncheck (regression: frozen closure blocked deselect)
+			await adminOption.click()
+
+			// Assert — clears and list is restored
+			await expect(adminOption).toHaveAttribute("aria-checked", "false")
+			await expect(visibleRows).toHaveCount(before)
+		})
+
+		test("Role filter selection persists across popover reopen", async ({
+			adminUsersPage,
+			page,
+		}) => {
+			// Arrange
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+
+			await openRoleFilter(page)
+			const popover = page.locator("[data-slot='popover-content']")
+			await popover.getByRole("checkbox", { name: "Administrator" }).click()
+			await expect(
+				popover.getByRole("checkbox", { name: "Administrator" }),
+			).toHaveAttribute("aria-checked", "true")
+
+			// Act — close and reopen
+			await page.keyboard.press("Escape")
+			await expect(popover).toBeHidden()
+			await openRoleFilter(page)
+
+			// Assert — onOpenChange re-sync keeps the selection checked
+			await expect(
+				page
+					.locator("[data-slot='popover-content']")
+					.getByRole("checkbox", { name: "Administrator" }),
+			).toHaveAttribute("aria-checked", "true")
+		})
+	})
+
 	test.describe("User Detail Page", () => {
 		test("displays user details correctly", async ({ adminUsersPage, userDetailPage }) => {
 			// Arrange
