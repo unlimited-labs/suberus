@@ -1,5 +1,5 @@
 import path from "path";
-import { test, expect, VALID_SUBMISSION } from "./fixtures";
+import { type SubmissionPage, test, expect, VALID_SUBMISSION } from "./fixtures";
 
 const FIXTURES_DIR = path.resolve("e2e/submissions/fixtures");
 
@@ -198,5 +198,60 @@ test.describe.serial("File Upload", () => {
 		await expect(
 			submissionPage.page.getByTestId("file-download-button"),
 		).not.toBeVisible();
+	});
+});
+
+/**
+ * Security: the client `accept` filter only checks the file name extension, so
+ * a malicious file named `.pdf` slips past it. The server must reject by magic
+ * number (real content), not by the forgeable name/mime. These tests upload
+ * spoofed files that the client accepts but the server must refuse.
+ */
+test.describe.serial("File Upload — server-side magic-number validation", () => {
+	async function submitSpoofedFile(
+		submissionPage: SubmissionPage,
+		testRunId: string,
+		fixture: string,
+	) {
+		await submissionPage.goto();
+		await submissionPage.selectType("FULL_PAPER");
+		await submissionPage.fillTitle(`${testRunId}_${fixture}`);
+
+		// Client accepts it because the name ends in `.pdf`
+		const fileInput = submissionPage.page.locator('input[type="file"]');
+		await fileInput.setInputFiles(path.join(FIXTURES_DIR, fixture));
+		await expect(submissionPage.page.getByText(fixture)).toBeVisible();
+
+		await submissionPage.fillAuthor(0, VALID_SUBMISSION.authors[0]);
+		await submissionPage.addKeyword("security");
+		await submissionPage.addKeyword("magic-number");
+		await submissionPage.addKeyword("e2e");
+
+		await submissionPage.submit();
+	}
+
+	test("rejects text content disguised as .pdf", async ({
+		submissionPage,
+		testRun,
+	}) => {
+		test.slow();
+		await submitSpoofedFile(submissionPage, testRun.testRunId, "spoofed.pdf");
+
+		// Server refused the upload despite the .pdf name
+		await expect(
+			submissionPage.page.getByText(/file upload failed/i),
+		).toBeVisible({ timeout: 60000 });
+	});
+
+	test("rejects an image disguised as .pdf", async ({
+		submissionPage,
+		testRun,
+	}) => {
+		test.slow();
+		await submitSpoofedFile(submissionPage, testRun.testRunId, "image.pdf");
+
+		await expect(
+			submissionPage.page.getByText(/file upload failed/i),
+		).toBeVisible({ timeout: 60000 });
 	});
 });

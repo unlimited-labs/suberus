@@ -1,0 +1,3 @@
+This is plain text pretending to be a PDF by file extension only.
+It has no %PDF- magic number, so server-side validation must reject it
+even though the client accept filter (.pdf) lets it through.
