@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Markdown } from "@/components/ui/markdown";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { getErrorMessage } from "@/lib/error-message";
 import {
@@ -46,14 +48,33 @@ export function TosContentTab({ initialContent }: TosContentTabProps) {
 				<div className="space-y-4">
 					<div className="space-y-2">
 						<Label htmlFor="tos-content">Content</Label>
-						<Textarea
-							id="tos-content"
-							value={content}
-							onChange={(e) => setContent(e.target.value)}
-							rows={15}
-							placeholder="# Terms of Service&#10;&#10;Enter terms of service here..."
-							className="font-mono text-sm"
-						/>
+						<Tabs defaultValue="edit">
+							<TabsList>
+								<TabsTrigger value="edit">Edit</TabsTrigger>
+								<TabsTrigger value="preview">Preview</TabsTrigger>
+							</TabsList>
+							<TabsContent value="edit">
+								<Textarea
+									id="tos-content"
+									value={content}
+									onChange={(e) => setContent(e.target.value)}
+									rows={15}
+									placeholder="# Terms of Service&#10;&#10;Enter terms of service here..."
+									className="font-mono text-sm"
+								/>
+							</TabsContent>
+							<TabsContent value="preview">
+								<div className="min-h-[22rem] rounded-md border p-4">
+									{content.trim() ? (
+										<Markdown content={content} />
+									) : (
+										<p className="text-sm text-muted-foreground">
+											Nothing to preview yet
+										</p>
+									)}
+								</div>
+							</TabsContent>
+						</Tabs>
 						<p className="text-xs text-muted-foreground">
 							Supports Markdown formatting (headings, lists, links, bold,
 							italic)
