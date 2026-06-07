@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { getUploadedFile } from "@/lib/server/form-upload";
 import { authMiddleware } from "@/lib/server/middleware/auth";
 import {
 	getActiveSubmissionTypes,
@@ -165,19 +166,25 @@ export const createSubmission = createServerFn({ method: "POST" })
 /** File upload endpoint for FILE-based submissions */
 export const uploadSubmissionFile = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.inputValidator(
-		z.object({
-			submissionId: z.uuid(),
-			versionNumber: z.number().int().positive(),
-			fileName: z.string(),
-			fileBase64: z.string(), // Base64 encoded file content
-		}),
+	.inputValidator((data: FormData) =>
+		z
+			.object({
+				submissionId: z.uuid(),
+				versionNumber: z.coerce.number().int().positive(),
+				file: z.instanceof(File),
+			})
+			.parse({
+				submissionId: data.get("submissionId"),
+				versionNumber: data.get("versionNumber"),
+				file: getUploadedFile(data),
+			}),
 	)
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
 		// Dynamic import to avoid loading storage module when not needed
 		const { uploadFile, generateSubmissionFileKey } = await import(
 			"@/lib/server/storage"
 		);
+		const { fileToBuffer } = await import("@/lib/server/form-upload");
 		const { prisma } = await import("@/db.server");
 
 		// Verify submission belongs to user
@@ -190,8 +197,8 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 			return { success: false, error: "Submission not found" };
 		}
 
-		// Convert base64 to buffer
-		const buffer = Buffer.from(data.fileBase64, "base64");
+		const fileName = data.file.name;
+		const buffer = await fileToBuffer(data.file);
 
 		// Validate the real file type by magic number against the allowed
 		// extensions for this submission's type — never trust the client mime.
@@ -222,7 +229,7 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 		const storageKey = generateSubmissionFileKey(
 			data.submissionId,
 			data.versionNumber,
-			data.fileName,
+			fileName,
 		);
 
 		// Upload to S3 with the detected (trustworthy) mime type
@@ -235,8 +242,8 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 				entityId: submission.currentVersion?.id ?? submission.id,
 				type: "SUBMISSION_MAIN",
 				storageKey,
-				fileName: data.fileName,
-				originalName: data.fileName,
+				fileName,
+				originalName: fileName,
 				mimeType: detected.mime,
 				size: buffer.length,
 				uploadedById: context.user.id,

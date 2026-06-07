@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { COUNTRY_CENTROIDS } from "@/lib/country-centroids";
 import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
 
-interface UserCountryMapProps {
+interface UsersByCountryCardProps {
 	data: AdminDashboardMetrics["usersByCountry"] | undefined;
 }
 
@@ -47,47 +47,64 @@ const CIRCLE_RADIUS_EXPRESSION: MapLibreGL.ExpressionSpecification = [
 
 const MAP_CENTER: [number, number] = [10, 30];
 
-function buildGeoJson(
+interface CountryRow {
+	country: string;
+	code: string | null;
+	count: number;
+}
+
+// Aggregate registrations by country, merging duplicate names under the same
+// ISO code. Sorted by count desc — the list renders top-down, and the map draws
+// larger bubbles first so smaller ones land on top.
+function aggregateByCountry(
 	data: AdminDashboardMetrics["usersByCountry"],
-): GeoJSON.FeatureCollection {
-	const alpha2ToCount = new globalThis.Map<string, number>();
-	const alpha2ToName = new globalThis.Map<string, string>();
+): CountryRow[] {
+	const byCode = new globalThis.Map<string, CountryRow>();
+	const byName = new globalThis.Map<string, CountryRow>();
 
 	for (const entry of data) {
-		const code = countryNameToCode.get(entry.country);
-		if (!code) continue;
-		alpha2ToCount.set(code, (alpha2ToCount.get(code) ?? 0) + entry.count);
-		if (!alpha2ToName.has(code)) {
-			alpha2ToName.set(code, entry.country);
+		const code = countryNameToCode.get(entry.country) ?? null;
+		const bucket = code ? byCode : byName;
+		const key = code ?? entry.country;
+		const existing = bucket.get(key);
+		if (existing) {
+			existing.count += entry.count;
+		} else {
+			bucket.set(key, { country: entry.country, code, count: entry.count });
 		}
 	}
 
-	const features: GeoJSON.Feature[] = [];
+	return [...byCode.values(), ...byName.values()].sort(
+		(a, b) => b.count - a.count,
+	);
+}
 
-	for (const [alpha2, count] of alpha2ToCount) {
-		const coords = COUNTRY_CENTROIDS[alpha2];
-		if (!coords || count <= 0) continue;
+interface BubbleProperties {
+	alpha2: string;
+	userCount: number;
+	countryName: string;
+}
+
+function buildGeoJson(
+	data: AdminDashboardMetrics["usersByCountry"],
+): GeoJSON.FeatureCollection<GeoJSON.Point, BubbleProperties> {
+	const features: GeoJSON.Feature<GeoJSON.Point, BubbleProperties>[] = [];
+
+	for (const row of aggregateByCountry(data)) {
+		if (!row.code) continue;
+		const coords = COUNTRY_CENTROIDS[row.code];
+		if (!coords || row.count <= 0) continue;
 
 		features.push({
 			type: "Feature",
 			geometry: { type: "Point", coordinates: coords },
 			properties: {
-				alpha2,
-				userCount: count,
-				countryName:
-					alpha2ToName.get(alpha2) ??
-					countries[alpha2 as keyof typeof countries]?.name ??
-					alpha2,
+				alpha2: row.code,
+				userCount: row.count,
+				countryName: row.country,
 			},
 		});
 	}
-
-	// Sort so smaller circles render on top (larger circles first in array → drawn first)
-	features.sort(
-		(a, b) =>
-			(b.properties as { userCount: number }).userCount -
-			(a.properties as { userCount: number }).userCount,
-	);
 
 	return { type: "FeatureCollection", features };
 }
@@ -236,45 +253,21 @@ function BubbleLayer({
 	return null;
 }
 
-interface CountryRow {
-	country: string;
-	code: string | null;
-	count: number;
-}
-
-function aggregateByCountry(
-	data: AdminDashboardMetrics["usersByCountry"],
-): CountryRow[] {
-	const byCode = new globalThis.Map<string, CountryRow>();
-	const byName = new globalThis.Map<string, CountryRow>();
-
-	for (const entry of data) {
-		const code = countryNameToCode.get(entry.country) ?? null;
-		const bucket = code ? byCode : byName;
-		const key = code ?? entry.country;
-		const existing = bucket.get(key);
-		if (existing) {
-			existing.count += entry.count;
-		} else {
-			bucket.set(key, { country: entry.country, code, count: entry.count });
-		}
-	}
-
-	return [...byCode.values(), ...byName.values()].sort(
-		(a, b) => b.count - a.count,
-	);
-}
-
 function CountryFlag({ code }: { code: string | null }) {
 	const upper = code?.toUpperCase();
 	// biome-ignore lint/performance/noDynamicNamespaceImportAccess: flag is resolved at runtime from the country code; all flags are needed
 	const Flag = upper ? Flags[upper as keyof typeof Flags] : undefined;
 
 	if (!Flag) {
-		return <IconWorld className="size-4 shrink-0 text-muted-foreground" />;
+		return (
+			<IconWorld
+				aria-hidden
+				className="size-4 shrink-0 text-muted-foreground"
+			/>
+		);
 	}
 
-	return <Flag className="h-4 w-6 shrink-0 rounded-sm" />;
+	return <Flag aria-hidden className="h-4 w-6 shrink-0 rounded-sm" />;
 }
 
 function CountryList({
@@ -304,7 +297,7 @@ function CountryList({
 	);
 }
 
-export function UserCountryMap({ data }: UserCountryMapProps) {
+export function UsersByCountryCard({ data }: UsersByCountryCardProps) {
 	const resolvedTheme = useResolvedAppTheme();
 	const [view, setView] = useState<"map" | "list">("map");
 
@@ -338,7 +331,10 @@ export function UserCountryMap({ data }: UserCountryMapProps) {
 
 	return (
 		<Card>
-			<Tabs value={view} onValueChange={(v) => setView(v as "map" | "list")}>
+			<Tabs
+				value={view}
+				onValueChange={(v) => setView(v === "list" ? "list" : "map")}
+			>
 				<CardHeader>
 					<CardTitle>Users by Country</CardTitle>
 					<CardAction>

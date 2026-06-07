@@ -3,6 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import type { ExtractionResult } from "@/lib/server/extraction";
 import { enqueueExtractionJob } from "@/lib/server/extraction-queue";
+import { fileToBuffer, getUploadedFile } from "@/lib/server/form-upload";
 import { getJobProgress } from "@/lib/server/job-progress";
 import { adminMiddleware, authMiddleware } from "@/lib/server/middleware/auth";
 import { getSetting, setSetting } from "@/lib/server/settings";
@@ -33,19 +34,12 @@ export const extractionSettingsQueryOptions = () =>
 		queryFn: () => getExtractionSettingsFn(),
 	});
 
-const MAX_BASE64_BYTES = 20 * 1024 * 1024;
-
 export const enqueueExtractionFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.inputValidator(
-		z.object({
-			fileBase64: z.string().max(MAX_BASE64_BYTES),
-			fileName: z.string(),
-		}),
-	)
+	.inputValidator((data: FormData) => ({ file: getUploadedFile(data) }))
 	.handler(async ({ data }) => {
-		const buffer = Buffer.from(data.fileBase64, "base64");
-		return enqueueExtractionJob(buffer, data.fileName);
+		const buffer = await fileToBuffer(data.file);
+		return enqueueExtractionJob(buffer, data.file.name);
 	});
 
 export const getExtractionResultFn = createServerFn({ method: "GET" })

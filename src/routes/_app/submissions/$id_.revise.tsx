@@ -126,21 +126,13 @@ function ReviseSubmissionPage() {
 					// Upload file if FILE format with new file
 					if (isFileFormat && formData.file) {
 						try {
-							const buffer = await formData.file.arrayBuffer();
-							const base64 = btoa(
-								new Uint8Array(buffer).reduce(
-									(d, byte) => d + String.fromCharCode(byte),
-									"",
-								),
-							);
+							const uploadData = new FormData();
+							uploadData.append("file", formData.file);
+							uploadData.append("submissionId", id);
+							uploadData.append("versionNumber", String(result.versionNumber));
 
 							const uploadResult = await uploadSubmissionFile({
-								data: {
-									submissionId: id,
-									versionNumber: result.versionNumber,
-									fileName: formData.file.name,
-									fileBase64: base64,
-								},
+								data: uploadData,
 							});
 
 							if (!uploadResult.success) {

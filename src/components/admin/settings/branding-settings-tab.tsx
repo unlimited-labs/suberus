@@ -80,20 +80,10 @@ export function BrandingSettingsTab({ initialData }: BrandingSettingsTabProps) {
 
 		setBgUploading(true);
 		try {
-			const base64 = await new Promise<string>((resolve, reject) => {
-				const reader = new FileReader();
-				reader.onloadend = () => {
-					const result = reader.result as string;
-					// Strip data URL prefix to get raw base64
-					resolve(result.split(",")[1]);
-				};
-				reader.onerror = reject;
-				reader.readAsDataURL(file);
-			});
+			const formData = new FormData();
+			formData.append("file", file);
 
-			const { url } = await uploadAuthBackgroundFn({
-				data: { fileBase64: base64 },
-			});
+			const { url } = await uploadAuthBackgroundFn({ data: formData });
 			setData((prev) => ({ ...prev, authBackgroundUrl: url }));
 			toast.success("Background image uploaded");
 		} catch {

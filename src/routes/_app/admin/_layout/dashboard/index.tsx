@@ -8,7 +8,7 @@ import { RecentActivity } from "@/components/admin/dashboard/recent-activity";
 import { ReviewProgress } from "@/components/admin/dashboard/review-progress";
 import { SubmissionChart } from "@/components/admin/dashboard/submission-chart";
 import { SystemHealthCard } from "@/components/admin/dashboard/system-health-card";
-import { UserCountryMap } from "@/components/admin/dashboard/user-country-map";
+import { UsersByCountryCard } from "@/components/admin/dashboard/users-by-country-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { adminDashboardQueryOptions } from "@/server-fns/admin/dashboard";
 
@@ -35,7 +35,7 @@ function AdminDashboard() {
 					<SubmissionChart data={data?.submissions} />
 					<ReviewProgress data={data?.reviews} />
 				</div>
-				<UserCountryMap data={data?.usersByCountry} />
+				<UsersByCountryCard data={data?.usersByCountry} />
 				<div className="grid gap-6 lg:grid-cols-2">
 					<RecentActivity events={data?.recentActivity} />
 					<QuickActions />

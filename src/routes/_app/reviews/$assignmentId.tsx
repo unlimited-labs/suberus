@@ -73,20 +73,12 @@ function ReviewFormPage() {
 		const file = attachmentFileRef.current;
 		if (file && result.reviewId) {
 			try {
-				const buffer = await file.arrayBuffer();
-				const base64 = btoa(
-					new Uint8Array(buffer).reduce(
-						(d, byte) => d + String.fromCharCode(byte),
-						"",
-					),
-				);
+				const formData = new FormData();
+				formData.append("file", file);
+				formData.append("reviewId", result.reviewId);
 
 				const uploadResult = await uploadReviewAttachmentFn({
-					data: {
-						reviewId: result.reviewId,
-						fileName: file.name,
-						fileBase64: base64,
-					},
+					data: formData,
 				});
 
 				if (!uploadResult.success) {

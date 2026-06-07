@@ -4,6 +4,7 @@ import type { ReviewDecision, ReviewMode } from "@/generated/prisma/enums";
 import { activityDetail } from "@/lib/activity-log";
 import { logActivity } from "@/lib/server/activity-log";
 import { sendEmail } from "@/lib/server/email";
+import { fileToBuffer } from "@/lib/server/form-upload";
 import { getSetting } from "@/lib/server/settings";
 import {
 	deleteFile,
@@ -423,8 +424,7 @@ export async function getSubmissionReviews(
 export async function uploadReviewAttachment(
 	reviewId: string,
 	userId: string,
-	fileName: string,
-	fileBase64: string,
+	upload: File,
 ): Promise<{ success: boolean; fileId?: string; error?: string }> {
 	// Verify reviewer owns this review
 	const review = await prisma.review.findUnique({
@@ -439,8 +439,8 @@ export async function uploadReviewAttachment(
 		return { success: false, error: "Not authorized" };
 	}
 
-	// Decode base64 to buffer
-	const buffer = Buffer.from(fileBase64, "base64");
+	const fileName = upload.name;
+	const buffer = await fileToBuffer(upload);
 
 	// Validate by magic number — reviewers may attach a PDF or DOCX only.
 	const maxBytes = (await getSetting("MAX_FILE_SIZE_MB")) * 1024 * 1024;

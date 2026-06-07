@@ -143,22 +143,12 @@ function NewSubmissionPage() {
 		// If FILE format with file, upload it
 		if (data.contentFormat === "FILE" && data.file) {
 			try {
-				const buffer = await data.file.arrayBuffer();
-				const base64 = btoa(
-					new Uint8Array(buffer).reduce(
-						(d, byte) => d + String.fromCharCode(byte),
-						"",
-					),
-				);
+				const formData = new FormData();
+				formData.append("file", data.file);
+				formData.append("submissionId", result.id);
+				formData.append("versionNumber", "1");
 
-				const uploadResult = await uploadSubmissionFile({
-					data: {
-						submissionId: result.id,
-						versionNumber: 1,
-						fileName: data.file.name,
-						fileBase64: base64,
-					},
-				});
+				const uploadResult = await uploadSubmissionFile({ data: formData });
 
 				if (!uploadResult.success) {
 					toast.error(

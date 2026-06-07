@@ -29,18 +29,6 @@ interface UseDocumentExtractionReturn {
 	) => void;
 }
 
-function fileToBase64(file: File): Promise<string> {
-	return new Promise((resolve, reject) => {
-		const reader = new FileReader();
-		reader.onload = () => {
-			const result = reader.result as string;
-			resolve(result.split(",")[1]);
-		};
-		reader.onerror = reject;
-		reader.readAsDataURL(file);
-	});
-}
-
 function mapToFormAuthors(
 	authors: {
 		firstName: string;
@@ -181,12 +169,13 @@ export function useDocumentExtraction({
 			handledJobRef.current = null;
 
 			try {
-				const fileBase64 = await fileToBase64(file);
+				const formData = new FormData();
+				formData.append("file", file);
 
 				if (controller.signal.aborted) return;
 
 				const { jobId: newJobId } = await enqueueExtractionFn({
-					data: { fileBase64, fileName: file.name },
+					data: formData,
 				});
 
 				if (controller.signal.aborted) return;

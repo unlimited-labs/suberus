@@ -132,22 +132,12 @@ function EditSubmissionPage() {
 		// Upload file if needed
 		if (formData.contentFormat === "FILE" && formData.file) {
 			try {
-				const buffer = await formData.file.arrayBuffer();
-				const base64 = btoa(
-					new Uint8Array(buffer).reduce(
-						(d, byte) => d + String.fromCharCode(byte),
-						"",
-					),
-				);
+				const uploadData = new FormData();
+				uploadData.append("file", formData.file);
+				uploadData.append("submissionId", id);
+				uploadData.append("versionNumber", String(submission.currentVersion));
 
-				const uploadResult = await uploadSubmissionFile({
-					data: {
-						submissionId: id,
-						versionNumber: submission.currentVersion,
-						fileName: formData.file.name,
-						fileBase64: base64,
-					},
-				});
+				const uploadResult = await uploadSubmissionFile({ data: uploadData });
 
 				if (!uploadResult.success) {
 					toast.error(`Saved but file upload failed: ${uploadResult.error}`);

@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { getUploadedFile } from "@/lib/server/form-upload";
 import { adminMiddleware, authMiddleware } from "@/lib/server/middleware/auth";
 import {
 	getActiveSubmissionTypes,
@@ -706,16 +707,13 @@ export const updateBrandingSettingsFn = createServerFn({ method: "POST" })
  */
 export const uploadAuthBackgroundFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
-		z.object({
-			fileBase64: z.string(),
-		}),
-	)
+	.inputValidator((data: FormData) => ({ file: getUploadedFile(data) }))
 	.handler(async ({ data }) => {
 		const { uploadAuthBackground, getAuthBackgroundUrl } = await import(
 			"@/lib/server/branding"
 		);
-		const buffer = Buffer.from(data.fileBase64, "base64");
+		const { fileToBuffer } = await import("@/lib/server/form-upload");
+		const buffer = await fileToBuffer(data.file);
 		await uploadAuthBackground(buffer);
 		const url = await getAuthBackgroundUrl();
 		return { url };
