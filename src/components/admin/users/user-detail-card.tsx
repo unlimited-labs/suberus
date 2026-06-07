@@ -410,10 +410,6 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 						</h3>
 						<div className="grid gap-3 sm:grid-cols-2">
 							<div className="flex items-center gap-2">
-								<IconId className="size-4 text-muted-foreground" />
-								<span className="text-xs font-mono">{user.id}</span>
-							</div>
-							<div className="flex items-center gap-2">
 								<IconCalendar className="size-4 text-muted-foreground" />
 								<span>Created: {fmtDate(user.createdAt)}</span>
 							</div>
