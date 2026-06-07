@@ -15,7 +15,7 @@ export function MetricSparkline({ data, color }: MetricSparklineProps) {
 			aria-hidden="true"
 			className="pointer-events-none absolute inset-x-0 bottom-0 h-12 opacity-70"
 		>
-			<ResponsiveContainer width="100%" height="100%">
+			<ResponsiveContainer width="100%" height={48}>
 				<AreaChart
 					data={chartData}
 					margin={{ top: 2, right: 0, bottom: 0, left: 0 }}
