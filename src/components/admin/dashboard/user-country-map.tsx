@@ -1,6 +1,7 @@
 import { countries } from "countries-list";
 import MapLibreGL from "maplibre-gl";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useTheme } from "@/components/theme-provider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapControls, Map as MapView, useMap } from "@/components/ui/map";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -80,6 +81,26 @@ function buildGeoJson(
 	);
 
 	return { type: "FeatureCollection", features };
+}
+
+function useResolvedAppTheme(): "light" | "dark" {
+	const { theme } = useTheme();
+	const [systemDark, setSystemDark] = useState(
+		() =>
+			typeof window !== "undefined" &&
+			window.matchMedia("(prefers-color-scheme: dark)").matches,
+	);
+
+	useEffect(() => {
+		if (theme !== "system") return;
+		const mql = window.matchMedia("(prefers-color-scheme: dark)");
+		const onChange = (e: MediaQueryListEvent) => setSystemDark(e.matches);
+		mql.addEventListener("change", onChange);
+		return () => mql.removeEventListener("change", onChange);
+	}, [theme]);
+
+	if (theme === "system") return systemDark ? "dark" : "light";
+	return theme;
 }
 
 function BubbleLayer({
@@ -207,6 +228,8 @@ function BubbleLayer({
 }
 
 export function UserCountryMap({ data }: UserCountryMapProps) {
+	const resolvedTheme = useResolvedAppTheme();
+
 	if (!data) {
 		return (
 			<Card>
@@ -242,7 +265,7 @@ export function UserCountryMap({ data }: UserCountryMapProps) {
 			</CardHeader>
 			<CardContent>
 				<div className="h-[300px] md:h-[400px]">
-					<MapView center={MAP_CENTER} zoom={1.5}>
+					<MapView center={MAP_CENTER} zoom={1.5} theme={resolvedTheme}>
 						<MapControls showZoom showFullscreen position="bottom-right" />
 						<BubbleLayer data={data} />
 					</MapView>
