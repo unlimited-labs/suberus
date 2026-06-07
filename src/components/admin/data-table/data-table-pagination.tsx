@@ -4,7 +4,7 @@ import {
 	IconChevronsLeft,
 	IconChevronsRight,
 } from "@tabler/icons-react";
-import type { Table } from "@tanstack/react-table";
+import type { PaginationState, Table } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -12,19 +12,28 @@ import {
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
-	SelectValue,
 } from "@/components/ui/select";
 
 interface DataTablePaginationProps<TData> {
 	table: Table<TData>;
+	/**
+	 * Authoritative pagination state owned by the parent. Display values are read
+	 * from here rather than `table.getState()` because the shared table instance's
+	 * options are mutated during render, so reads off `table` in this child can
+	 * tear (return a stale page size). Table methods are still used for actions.
+	 */
+	pagination: PaginationState;
 }
 
 export function DataTablePagination<TData>({
 	table,
+	pagination,
 }: DataTablePaginationProps<TData>) {
 	const totalRows = table.getFilteredRowModel().rows.length;
-	const pageSize = table.getState().pagination.pageSize;
-	const pageCount = table.getPageCount();
+	const { pageSize, pageIndex } = pagination;
+	const pageCount = Math.max(1, Math.ceil(totalRows / pageSize));
+	const canPreviousPage = pageIndex > 0;
+	const canNextPage = pageIndex < pageCount - 1;
 
 	return (
 		<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-2">
@@ -47,11 +56,11 @@ export function DataTablePagination<TData>({
 							table.setPageSize(Number(value));
 						}}
 					>
-						<SelectTrigger className="h-8 w-[70px]">
-							<SelectValue placeholder={pageSize} />
+						<SelectTrigger className="h-8 w-[70px]" data-testid="rows-per-page">
+							{pageSize}
 						</SelectTrigger>
 						<SelectContent side="top">
-							{[10, 20, 30, 40, 50].map((size) => (
+							{[10, 20, 30, 40, 50, 100, 200].map((size) => (
 								<SelectItem key={size} value={`${size}`}>
 									{size}
 								</SelectItem>
@@ -60,14 +69,14 @@ export function DataTablePagination<TData>({
 					</Select>
 				</div>
 				<div className="flex items-center justify-center text-sm font-medium text-foreground">
-					Page {table.getState().pagination.pageIndex + 1} of {pageCount}
+					Page {pageIndex + 1} of {pageCount}
 				</div>
 				<div className="flex items-center gap-1">
 					<Button
 						variant="outline"
 						size="icon-sm"
 						onClick={() => table.setPageIndex(0)}
-						disabled={!table.getCanPreviousPage()}
+						disabled={!canPreviousPage}
 					>
 						<span className="sr-only">Go to first page</span>
 						<IconChevronsLeft className="size-4" />
@@ -76,7 +85,7 @@ export function DataTablePagination<TData>({
 						variant="outline"
 						size="icon-sm"
 						onClick={() => table.previousPage()}
-						disabled={!table.getCanPreviousPage()}
+						disabled={!canPreviousPage}
 					>
 						<span className="sr-only">Go to previous page</span>
 						<IconChevronLeft className="size-4" />
@@ -85,7 +94,7 @@ export function DataTablePagination<TData>({
 						variant="outline"
 						size="icon-sm"
 						onClick={() => table.nextPage()}
-						disabled={!table.getCanNextPage()}
+						disabled={!canNextPage}
 					>
 						<span className="sr-only">Go to next page</span>
 						<IconChevronRight className="size-4" />
@@ -93,8 +102,8 @@ export function DataTablePagination<TData>({
 					<Button
 						variant="outline"
 						size="icon-sm"
-						onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-						disabled={!table.getCanNextPage()}
+						onClick={() => table.setPageIndex(pageCount - 1)}
+						disabled={!canNextPage}
 					>
 						<span className="sr-only">Go to last page</span>
 						<IconChevronsRight className="size-4" />

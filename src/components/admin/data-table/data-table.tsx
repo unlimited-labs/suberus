@@ -8,7 +8,6 @@ import {
 	getFilteredRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
-	type PaginationState,
 	type RowSelectionState,
 	type SortingState,
 	useReactTable,
@@ -24,6 +23,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { usePersistedState } from "@/hooks/use-persisted-state";
+import { useTablePagination } from "@/hooks/use-table-pagination";
 import { DataTablePagination } from "./data-table-pagination";
 
 interface DataTableProps<TData, TValue> {
@@ -67,10 +67,7 @@ export function DataTable<TData, TValue>({
 		);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [sorting, setSorting] = useState<SortingState>([]);
-	const [pagination, setPagination] = useState<PaginationState>({
-		pageIndex: 0,
-		pageSize: 20,
-	});
+	const [pagination, setPagination] = useTablePagination(storageKey);
 
 	const table = useReactTable({
 		data,
@@ -170,7 +167,7 @@ export function DataTable<TData, TValue>({
 				</div>
 			)}
 
-			<DataTablePagination table={table} />
+			<DataTablePagination table={table} pagination={pagination} />
 		</div>
 	);
 }
