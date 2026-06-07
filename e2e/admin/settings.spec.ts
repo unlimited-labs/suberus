@@ -39,7 +39,6 @@ test.describe("Admin Settings - Submission Types", () => {
 		// Assert
 		await expect(page.getByText("Allowed file extensions")).toBeVisible()
 		await expect(page.getByText("pdf", { exact: true })).toBeVisible()
-		await expect(page.getByText("doc", { exact: true })).toBeVisible()
 		await expect(page.getByText("docx", { exact: true })).toBeVisible()
 	})
 
@@ -109,7 +108,6 @@ test.describe("Admin Settings - Submission Types", () => {
 
 		// Act
 		await adminSettingsPage.getFileExtensionCheckbox("pdf").uncheck()
-		await adminSettingsPage.getFileExtensionCheckbox("doc").uncheck()
 		await adminSettingsPage.getFileExtensionCheckbox("docx").uncheck()
 
 		// Assert

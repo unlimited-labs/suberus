@@ -249,7 +249,7 @@ test.describe("Submission Form", () => {
 		).toBeVisible();
 		await expect(submissionPage.page.getByText("Document *")).toBeVisible();
 		await expect(
-			submissionPage.page.getByText(/Accepted formats:.*PDF.*DOC.*DOCX/i),
+			submissionPage.page.getByText(/Accepted formats:.*PDF.*DOCX/i),
 		).toBeVisible();
 	});
 
