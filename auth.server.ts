@@ -129,6 +129,16 @@ export const auth = betterAuth({
 		modelName: "verification",
 	},
 	databaseHooks: {
+		session: {
+			create: {
+				after: async (session) => {
+					await prisma.user.update({
+						where: { id: session.userId },
+						data: { lastLoginAt: new Date() },
+					})
+				},
+			},
+		},
 		user: {
 			create: {
 				after: async (user) => {
