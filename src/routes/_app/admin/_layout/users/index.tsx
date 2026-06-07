@@ -37,6 +37,7 @@ const columnLabels: Record<string, string> = {
 	feePaid: "Fee",
 	submissions: "Submissions",
 	isActive: "Status",
+	createdAt: "Registration Date",
 };
 
 function UsersPage() {

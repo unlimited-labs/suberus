@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { useDateFormat } from "@/hooks/use-date-format";
 import { formatSurveyAnswerValue } from "@/lib/labels/survey";
 import { formatSubmissionRole, roleLabels } from "@/lib/labels/user";
 import type { AdminUser } from "@/lib/server/admin/users";
@@ -14,6 +15,7 @@ export function UserMobileCard({
 	user: AdminUser;
 	surveyColumns?: SurveyListColumn[];
 }) {
+	const { formatDate } = useDateFormat();
 	return (
 		<Link to="/admin/users/$id" params={{ id: user.id }}>
 			<Card>
@@ -29,6 +31,9 @@ export function UserMobileCard({
 									{user.affiliation}
 								</p>
 							)}
+							<p className="text-xs text-muted-foreground">
+								Registered {formatDate(user.createdAt)}
+							</p>
 						</div>
 						<div className="text-right">
 							<Badge variant="secondary">{roleLabels[user.role]}</Badge>

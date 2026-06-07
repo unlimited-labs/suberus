@@ -67,7 +67,7 @@ export const Route = createFileRoute("/api/admin/users/export")({
 						"Fee Paid At": fmtDate(u.fee?.paidAt),
 						"Need Invoice": u.needInvoice ? "True" : "False",
 						"Invoice details": u.address ?? "",
-						"Created At": fmtDate(u.createdAt),
+						"Registration Date": fmtDate(u.createdAt),
 						"Last Login": fmtDate(u.lastLoginAt),
 						...surveyColumns,
 					};

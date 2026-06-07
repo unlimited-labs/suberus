@@ -9,6 +9,7 @@ import {
 } from "@/components/admin/data-table";
 import { Badge } from "@/components/ui/badge";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
+import { useDateFormat } from "@/hooks/use-date-format";
 import { formatSurveyAnswerValue, parseMultiSelect } from "@/lib/labels/survey";
 import {
 	feeFilterOptions,
@@ -25,6 +26,13 @@ export interface SurveyListColumn {
 	header: string;
 	type: SurveyQuestionType;
 	options?: string[];
+}
+
+function DateCell({ date }: { date: Date | string }) {
+	const { formatDate } = useDateFormat();
+	return (
+		<span className="text-sm text-muted-foreground">{formatDate(date)}</span>
+	);
 }
 
 const baseUserColumns: ColumnDef<AdminUser>[] = [
@@ -208,6 +216,13 @@ const baseUserColumns: ColumnDef<AdminUser>[] = [
 				<Badge variant="destructive">Inactive</Badge>
 			);
 		},
+	},
+	{
+		accessorKey: "createdAt",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Registration Date" />
+		),
+		cell: ({ row }) => <DateCell date={row.getValue("createdAt")} />,
 	},
 ];
 
