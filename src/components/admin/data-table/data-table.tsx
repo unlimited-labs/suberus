@@ -23,6 +23,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { usePersistedState } from "@/hooks/use-persisted-state";
 import { DataTablePagination } from "./data-table-pagination";
 
 interface DataTableProps<TData, TValue> {
@@ -38,6 +39,8 @@ interface DataTableProps<TData, TValue> {
 	rowDataTestId?: string;
 	/** Initial column visibility, e.g. to hide filter-only helper columns */
 	initialColumnVisibility?: VisibilityState;
+	/** When set, column visibility is persisted to localStorage under this key (per-table). */
+	storageKey?: string;
 }
 
 export function DataTable<TData, TValue>({
@@ -48,11 +51,20 @@ export function DataTable<TData, TValue>({
 	getRowId,
 	rowDataTestId,
 	initialColumnVisibility,
+	storageKey,
 }: DataTableProps<TData, TValue>) {
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-		initialColumnVisibility ?? {},
-	);
+	const [columnVisibility, setColumnVisibility] =
+		usePersistedState<VisibilityState>(
+			storageKey ? `suberus.table.columns.${storageKey}` : undefined,
+			initialColumnVisibility ?? {},
+			{
+				merge: (stored, fallback) =>
+					stored && typeof stored === "object" && !Array.isArray(stored)
+						? { ...fallback, ...stored }
+						: fallback,
+			},
+		);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [pagination, setPagination] = useState<PaginationState>({

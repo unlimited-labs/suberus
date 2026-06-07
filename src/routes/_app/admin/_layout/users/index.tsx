@@ -89,6 +89,7 @@ function UsersPage() {
 					data={users}
 					getRowId={(row) => row.id}
 					rowDataTestId="user-row"
+					storageKey="admin-users"
 					mobileCard={(u) => (
 						<UserMobileCard user={u} surveyColumns={surveyColumns} />
 					)}

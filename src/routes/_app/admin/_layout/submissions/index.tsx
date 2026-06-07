@@ -40,6 +40,7 @@ function AdminSubmissionsPage() {
 					data={submissions}
 					getRowId={(row) => row.id}
 					rowDataTestId="submission-row"
+					storageKey="admin-submissions"
 					mobileCard={SubmissionMobileCard}
 					toolbar={(table) => (
 						<DataTableToolbar

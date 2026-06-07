@@ -124,6 +124,42 @@ test.describe("Admin Users Management", () => {
 			await item.click()
 			await expect(item).toHaveAttribute("aria-checked", "true")
 		})
+
+		test("persists hidden column across reload (localStorage)", async ({ adminUsersPage, page }) => {
+			// Arrange
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+
+			const affiliationHeader = page
+				.getByRole("columnheader")
+				.filter({ hasText: "Affiliation" })
+			await expect(affiliationHeader).toBeVisible()
+
+			// Act — hide the column
+			await page.getByRole("button", { name: "Columns" }).click()
+			await page.getByRole("menuitemcheckbox", { name: "Affiliation" }).click()
+			await page.keyboard.press("Escape")
+			await expect(affiliationHeader).toBeHidden()
+
+			// Assert — choice is written to localStorage (await to avoid the write race)
+			await expect(async () => {
+				const raw = await page.evaluate(() =>
+					localStorage.getItem("suberus.table.columns.admin-users"),
+				)
+				expect(raw).toContain('"affiliation":false')
+			}).toPass()
+
+			// Act — reload
+			await page.reload()
+			await adminUsersPage.waitForLoad()
+
+			// Assert — column stays hidden and the menu reflects it
+			await expect(affiliationHeader).toBeHidden()
+			await page.getByRole("button", { name: "Columns" }).click()
+			await expect(
+				page.getByRole("menuitemcheckbox", { name: "Affiliation" }),
+			).toHaveAttribute("aria-checked", "false")
+		})
 	})
 
 	test.describe("Column Filter (faceted)", () => {
