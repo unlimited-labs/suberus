@@ -119,7 +119,6 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		totalAssignments,
 		completedAssignments,
 		paidFees,
-		paidSubmitters,
 		unpaidSubmitters,
 		overdueReviews,
 		pendingDecisions,
@@ -173,10 +172,6 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		prisma.fee.findMany({
 			where: { paid: true },
 			select: { amount: true },
-		}),
-		// Paid submitters (users with >=1 submission who paid the fee)
-		prisma.user.count({
-			where: { submissions: { some: {} }, fee: { paid: true } },
 		}),
 		// Unpaid submitters (users with >=1 submission and no paid fee)
 		prisma.user.count({
@@ -336,7 +331,7 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		},
 		fees: {
 			totalCollected,
-			paidCount: paidSubmitters,
+			paidCount: paidFees.length,
 			unpaidCount: unpaidSubmitters,
 		},
 		health: {
