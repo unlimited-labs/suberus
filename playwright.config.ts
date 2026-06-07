@@ -9,7 +9,10 @@ export const E2E_WORKERS = Number(process.env.E2E_WORKERS ?? 2);
 export const E2E_OUTPUT_DIR = ".output-e2e";
 export const E2E_BASE_PORT = 3031;
 export const portFor = (i: number) => E2E_BASE_PORT + i;
-export const baseUrlFor = (i: number) => `http://localhost:${portFor(i)}`;
+// Use 127.0.0.1 (not "localhost"): under full-suite load on Windows, "localhost"
+// intermittently resolves to IPv6 ::1, which the IPv4-only app server refuses
+// (ECONNREFUSED ::1) — flaking page.goto navigations and page.request API calls.
+export const baseUrlFor = (i: number) => `http://127.0.0.1:${portFor(i)}`;
 export const PG_BASE = "postgresql://suberus:suberus_dev_password@localhost:5432";
 export const dbNameFor = (i: number) => `suberus_e2e_${i}`;
 export const dbUrlFor = (i: number) => `${PG_BASE}/${dbNameFor(i)}`;
@@ -55,9 +58,15 @@ export default defineConfig<TestOptions>({
 	use: {
 		baseURL: baseUrlFor(0),
 		trace: "on-first-retry",
-		screenshot: "on",
+		// only-on-failure: capturing a screenshot after every one of ~960 tests
+		// adds constant memory/handle churn that contributed to native Chromium
+		// worker crashes (exit 0xC0000409) under 2-worker load on Windows.
+		screenshot: "only-on-failure",
 		video: "retain-on-failure",
 		timezoneId: "UTC",
+		// Headless tests don't need the GPU process; it's a known source of
+		// 0xC0000409 worker crashes on Windows. Disable it for stability.
+		launchOptions: { args: ["--disable-gpu"] },
 	},
 	projects: [
 		// Auth setup - logs in every role on every worker, saves per-worker state
