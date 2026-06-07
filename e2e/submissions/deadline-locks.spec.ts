@@ -3,6 +3,12 @@ import { setAppSetting } from "../helpers/test-db"
 import { loginAs } from "../helpers/auth"
 import { TEST_USER } from "../helpers/test-users"
 
+// Date offset from now as a YYYY-MM-DD string (matches the format admins enter)
+const dateInDays = (days: number) =>
+	new Date(Date.now() + days * 24 * 60 * 60 * 1000)
+		.toISOString()
+		.split("T")[0]
+
 // These tests modify global settings — run serially and restore after
 test.describe.serial("Submission deadline & lock", () => {
 	test.afterAll(async () => {
@@ -83,6 +89,63 @@ test.describe.serial("Submission deadline & lock", () => {
 		await expect(
 			page.getByRole("button", { name: "New Submission" }),
 		).toBeEnabled()
+
+		// Clean up
+		await setAppSetting("SUBMISSION_DEADLINE", "")
+	})
+
+	test("hides deadline banner when no deadline is set", async ({ page }) => {
+		await setAppSetting("SUBMISSION_DEADLINE", "")
+		await setAppSetting("SUBMISSIONS_LOCKED", false)
+
+		await loginAs(page, TEST_USER)
+		await page.goto("/submissions")
+
+		await expect(page.getByTestId("submission-deadline")).toHaveCount(0)
+	})
+
+	test("shows deadline banner with the date, neutral when far away", async ({
+		page,
+	}) => {
+		await setAppSetting("SUBMISSION_DEADLINE", dateInDays(30))
+		await setAppSetting("SUBMISSIONS_LOCKED", false)
+
+		await loginAs(page, TEST_USER)
+		await page.goto("/submissions")
+
+		await expect(page.getByTestId("submission-deadline")).toBeVisible()
+		const date = page.getByTestId("submission-deadline-date")
+		// Renders a formatted date (every format includes a 4-digit year)
+		await expect(date).toHaveText(/\d{4}/)
+		// Far from the deadline → no urgency styling
+		await expect(date).not.toHaveClass(/text-red-700/)
+		await expect(date).not.toHaveClass(/font-bold/)
+	})
+
+	test("colors deadline red within a week (not bold)", async ({ page }) => {
+		await setAppSetting("SUBMISSION_DEADLINE", dateInDays(5))
+		await setAppSetting("SUBMISSIONS_LOCKED", false)
+
+		await loginAs(page, TEST_USER)
+		await page.goto("/submissions")
+
+		const date = page.getByTestId("submission-deadline-date")
+		await expect(date).toBeVisible()
+		await expect(date).toHaveClass(/text-red-700/)
+		await expect(date).not.toHaveClass(/font-bold/)
+	})
+
+	test("bolds deadline within three days", async ({ page }) => {
+		await setAppSetting("SUBMISSION_DEADLINE", dateInDays(2))
+		await setAppSetting("SUBMISSIONS_LOCKED", false)
+
+		await loginAs(page, TEST_USER)
+		await page.goto("/submissions")
+
+		const date = page.getByTestId("submission-deadline-date")
+		await expect(date).toBeVisible()
+		await expect(date).toHaveClass(/text-red-700/)
+		await expect(date).toHaveClass(/font-bold/)
 
 		// Clean up
 		await setAppSetting("SUBMISSION_DEADLINE", "")

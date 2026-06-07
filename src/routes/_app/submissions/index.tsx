@@ -1,4 +1,9 @@
-import { IconFileText, IconLock, IconPlus } from "@tabler/icons-react";
+import {
+	IconCalendar,
+	IconFileText,
+	IconLock,
+	IconPlus,
+} from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/layout/page-header";
@@ -10,11 +15,15 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useDateFormat } from "@/hooks/use-date-format";
+import { cn } from "@/lib/utils";
 import {
 	activeSubmissionTypesQueryOptions,
 	submissionDeadlineQueryOptions,
 } from "@/server-fns/settings";
 import { mySubmissionsQueryOptions } from "@/server-fns/submissions";
+
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 export const Route = createFileRoute("/_app/submissions/")({
 	loader: async ({ context }) => {
@@ -35,6 +44,12 @@ function SubmissionsPage() {
 	const { data: activeTypes } = useSuspenseQuery(
 		activeSubmissionTypesQueryOptions(),
 	);
+	const { formatDate } = useDateFormat();
+	const daysLeft = deadline
+		? Math.ceil((new Date(deadline).getTime() - Date.now()) / MS_PER_DAY)
+		: null;
+	const deadlineUrgent = daysLeft !== null && daysLeft <= 7;
+	const deadlineCritical = daysLeft !== null && daysLeft <= 3;
 	const deadlineOpen = deadline ? new Date(deadline) > new Date() : true;
 	const hasActiveTypes = activeTypes.length > 0;
 	const canSubmit = !locked && deadlineOpen && hasActiveTypes;
@@ -81,6 +96,25 @@ function SubmissionsPage() {
 					</TooltipProvider>
 				)}
 			</PageHeader>
+			{deadline && (
+				<div
+					data-testid="submission-deadline"
+					className="flex items-center gap-2 border-b border-border px-6 py-2 text-sm"
+				>
+					<IconCalendar className="size-4 text-muted-foreground" />
+					<span className="text-muted-foreground">Submission deadline:</span>
+					<span
+						data-testid="submission-deadline-date"
+						className={cn(
+							"font-medium",
+							deadlineUrgent && "text-red-700 dark:text-red-400",
+							deadlineCritical && "font-bold",
+						)}
+					>
+						{formatDate(deadline)}
+					</span>
+				</div>
+			)}
 			<div className="flex-1 p-6 overflow-auto">
 				{sortedSubmissions.length === 0 ? (
 					<div className="rounded-lg border border-border/50 p-8 text-center">
