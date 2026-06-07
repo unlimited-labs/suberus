@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { getErrorMessage } from "@/lib/error-message";
 import type { SurveyQuestionFormValues } from "@/lib/validations/survey";
 import {
 	activeSurveyQuestionsQueryOptions,
@@ -184,8 +185,8 @@ export function SurveyQuestionsTab({
 			setQuestions((prev) => [...prev, created]);
 			await invalidateSurvey();
 			toast.success("Question added");
-		} catch {
-			toast.error("Failed to add question");
+		} catch (error) {
+			toast.error(getErrorMessage(error, "Failed to add question"));
 			throw new Error("create failed");
 		}
 	};
@@ -229,8 +230,8 @@ export function SurveyQuestionsTab({
 			await invalidateSurvey();
 			setEditing(null);
 			toast.success("Question updated");
-		} catch {
-			toast.error("Failed to update question");
+		} catch (error) {
+			toast.error(getErrorMessage(error, "Failed to update question"));
 			throw new Error("update failed");
 		}
 	};

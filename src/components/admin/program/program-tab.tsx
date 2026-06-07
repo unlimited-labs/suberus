@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { TimezoneCombobox } from "@/components/ui/timezone-combobox";
+import { getErrorMessage } from "@/lib/error-message";
 import { formatLlmStatus } from "@/lib/format-llm-status";
 import type { RoomWithStats } from "@/lib/server/planner/rooms";
 import type { ProgramTrackWithStats } from "@/lib/server/planner/tracks";
@@ -87,7 +88,7 @@ export function ProgramTab({
 				onProgramTracksUpdate();
 			}
 		} catch (e) {
-			toast.error(e instanceof Error ? e.message : "Failed to import");
+			toast.error(getErrorMessage(e, "Failed to import"));
 		} finally {
 			setImporting(false);
 		}
@@ -103,7 +104,7 @@ export function ProgramTab({
 			await router.invalidate();
 			toast.success("Planner settings saved");
 		} catch (error) {
-			toast.error(error instanceof Error ? error.message : "Failed to save");
+			toast.error(getErrorMessage(error, "Failed to save"));
 		} finally {
 			setPlannerSaving(false);
 		}

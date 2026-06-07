@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { getErrorMessage } from "@/lib/error-message";
 import { deskAcceptFn } from "@/server-fns/workflow";
 
 interface DeskAcceptDialogProps {
@@ -58,9 +59,7 @@ export function DeskAcceptDialog({
 				toast.error(result.error || "Failed to accept submission");
 			}
 		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "Failed to accept submission";
-			toast.error(message);
+			toast.error(getErrorMessage(error, "Failed to accept submission"));
 		} finally {
 			setIsSubmitting(false);
 		}

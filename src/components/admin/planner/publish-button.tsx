@@ -24,6 +24,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getErrorMessage } from "@/lib/error-message";
 import {
 	publishScheduleDraftFn,
 	publishScheduleFn,
@@ -75,7 +76,7 @@ export function PublishButton() {
 			invalidate();
 			setDialogOpen(false);
 		} catch (e) {
-			toast.error(e instanceof Error ? e.message : "Failed to publish");
+			toast.error(getErrorMessage(e, "Failed to publish"));
 		} finally {
 			setBusy(null);
 		}
@@ -88,7 +89,7 @@ export function PublishButton() {
 			invalidate();
 			toast.success("Program unpublished");
 		} catch (e) {
-			toast.error(e instanceof Error ? e.message : "Failed to unpublish");
+			toast.error(getErrorMessage(e, "Failed to unpublish"));
 		} finally {
 			setBusy(null);
 		}

@@ -21,6 +21,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { getErrorMessage } from "@/lib/error-message";
 import {
 	SUPPORTED_FILE_EXTENSIONS,
 	type SupportedFileExtension,
@@ -195,9 +196,7 @@ export function SubmissionTypeAccordion({
 			});
 			toast.success(`"${displayName}" settings saved`);
 		} catch (error) {
-			toast.error(
-				error instanceof Error ? error.message : "Failed to save settings",
-			);
+			toast.error(getErrorMessage(error, "Failed to save settings"));
 		} finally {
 			setIsSaving(false);
 		}

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/error-message";
 
 interface UseConfirmDeleteOptions {
 	onDelete: (id: string) => Promise<void>;
@@ -32,9 +33,7 @@ export function useConfirmDelete({
 			toast.success(successMessage);
 			onMutated();
 		} catch (error) {
-			toast.error(
-				error instanceof Error ? error.message : fallbackErrorMessage,
-			);
+			toast.error(getErrorMessage(error, fallbackErrorMessage));
 		} finally {
 			setPendingId(null);
 		}

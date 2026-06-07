@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { getErrorMessage } from "@/lib/error-message";
 import { FILE_TYPE_OPTIONS } from "@/lib/settings/file-types";
 import type { AppSettingsMap } from "@/lib/settings/types";
 import {
@@ -127,9 +128,7 @@ export function SubmissionSettingsTab({
 			]);
 			toast.success("Submission settings saved");
 		} catch (error) {
-			toast.error(
-				error instanceof Error ? error.message : "Failed to save settings",
-			);
+			toast.error(getErrorMessage(error, "Failed to save settings"));
 		} finally {
 			setIsSaving(false);
 		}

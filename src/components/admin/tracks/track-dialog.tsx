@@ -20,6 +20,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { getErrorMessage } from "@/lib/error-message";
 import type { ReviewerUser } from "@/lib/server/reviewers";
 import type { TrackWithStats } from "@/lib/server/tracks";
 import { createTrackFn, updateTrackFn } from "@/server-fns/tracks";
@@ -87,9 +88,7 @@ export function TrackDialog({
 			setSupervisorId(undefined);
 			setIsActive(true);
 		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "Failed to save track";
-			toast.error(message);
+			toast.error(getErrorMessage(error, "Failed to save track"));
 		} finally {
 			setIsSaving(false);
 		}

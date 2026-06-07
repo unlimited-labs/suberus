@@ -12,6 +12,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import type { SubmissionStatus } from "@/generated/prisma/enums";
+import { getErrorMessage } from "@/lib/error-message";
 import { statusChangeOptions } from "@/lib/labels/submission";
 import type { AdminSubmission } from "@/lib/server/admin/submissions";
 import {
@@ -78,9 +79,7 @@ export function SubmissionBulkActions({
 				onSuccess?.();
 			}
 		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "Failed to change status";
-			setErrors([message]);
+			setErrors([getErrorMessage(error, "Failed to change status")]);
 		} finally {
 			setIsLoading(false);
 		}
@@ -104,9 +103,7 @@ export function SubmissionBulkActions({
 				onSuccess?.();
 			}
 		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "Failed to assign reviewer";
-			setErrors([message]);
+			setErrors([getErrorMessage(error, "Failed to assign reviewer")]);
 		} finally {
 			setIsLoading(false);
 		}
@@ -148,9 +145,7 @@ export function SubmissionBulkActions({
 			setSelectedAction("");
 			onSuccess?.();
 		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "Failed to assign track";
-			setErrors([message]);
+			setErrors([getErrorMessage(error, "Failed to assign track")]);
 		} finally {
 			setIsLoading(false);
 		}

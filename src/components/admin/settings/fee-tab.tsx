@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { getErrorMessage } from "@/lib/error-message";
 import { paymentInstructionsQueryOptions } from "@/server-fns/fee";
 import {
 	feeTypesQueryOptions,
@@ -61,8 +62,8 @@ export function FeeTab({
 				queryKey: paymentInstructionsQueryOptions().queryKey,
 			});
 			toast.success("Fee payment instructions saved");
-		} catch {
-			toast.error("Failed to save fee instructions");
+		} catch (error) {
+			toast.error(getErrorMessage(error, "Failed to save fee instructions"));
 		} finally {
 			setIsSavingInstructions(false);
 		}
@@ -77,8 +78,8 @@ export function FeeTab({
 			});
 			setFeeTypes(types);
 			toast.success("Fee types saved");
-		} catch {
-			toast.error("Failed to save fee types");
+		} catch (error) {
+			toast.error(getErrorMessage(error, "Failed to save fee types"));
 		} finally {
 			setIsSavingTypes(false);
 		}

@@ -6,6 +6,7 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { getErrorMessage } from "@/lib/error-message";
 import {
 	adminSettingQueryOptions,
 	updateTosContentFn,
@@ -28,8 +29,8 @@ export function TosContentTab({ initialContent }: TosContentTabProps) {
 				queryKey: adminSettingQueryOptions("TOS_CONTENT").queryKey,
 			});
 			toast.success("Terms of Service saved");
-		} catch {
-			toast.error("Failed to save Terms of Service");
+		} catch (error) {
+			toast.error(getErrorMessage(error, "Failed to save Terms of Service"));
 		} finally {
 			setIsSaving(false);
 		}

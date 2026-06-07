@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { EmailEventType } from "@/generated/prisma/enums";
+import { getErrorMessage } from "@/lib/error-message";
 import {
 	emailFooterQueryOptions,
 	updateEmailFooterFn,
@@ -114,9 +115,7 @@ export function EmailTemplatesTab({
 			});
 			toast.success("Email footer saved");
 		} catch (error) {
-			toast.error(
-				error instanceof Error ? error.message : "Failed to save footer",
-			);
+			toast.error(getErrorMessage(error, "Failed to save footer"));
 		} finally {
 			setIsSavingFooter(false);
 		}

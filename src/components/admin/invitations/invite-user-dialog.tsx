@@ -19,6 +19,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { getErrorMessage } from "@/lib/error-message";
 import { createInvitationFn } from "@/server-fns/admin/invitations";
 
 interface InviteUserDialogProps {
@@ -52,11 +53,11 @@ export function InviteUserDialog({
 			onOpenChange(false);
 			onSuccess();
 		} catch (error: unknown) {
-			const msg = error instanceof Error ? error.message : String(error);
+			const msg = getErrorMessage(error, "Failed to send invitation");
 			toast.error(
 				/already exists/i.test(msg)
 					? "User with this email already exists"
-					: msg || "Failed to send invitation",
+					: msg,
 			);
 		} finally {
 			setIsSubmitting(false);

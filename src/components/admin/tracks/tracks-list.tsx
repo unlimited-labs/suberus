@@ -12,6 +12,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { getErrorMessage } from "@/lib/error-message";
 import type { TrackWithStats } from "@/lib/server/tracks";
 import { deleteTrackFn, updateTrackFn } from "@/server-fns/tracks";
 
@@ -44,9 +45,7 @@ export function TracksList({ tracks, onEdit, onUpdate }: TracksListProps) {
 			toast.success("Track deleted");
 			onUpdate();
 		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "Failed to delete track";
-			toast.error(message);
+			toast.error(getErrorMessage(error, "Failed to delete track"));
 		} finally {
 			setDeletingId(null);
 		}

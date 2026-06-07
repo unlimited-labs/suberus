@@ -21,6 +21,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getErrorMessage } from "@/lib/error-message";
 import {
 	emailTemplatesQueryOptions,
 	sendTestEmailFn,
@@ -100,8 +101,8 @@ export function EmailTemplateDialog({
 			onSave(data);
 			toast.success(`Template "${data.name}" saved`);
 			onOpenChange(false);
-		} catch {
-			toast.error("Failed to save template");
+		} catch (error) {
+			toast.error(getErrorMessage(error, "Failed to save template"));
 		} finally {
 			setIsSaving(false);
 		}
@@ -120,8 +121,9 @@ export function EmailTemplateDialog({
 			});
 			toast.success("Test email sent — check your inbox");
 		} catch (err) {
-			const message = err instanceof Error ? err.message : "Unknown error";
-			toast.error(`Failed to send test email: ${message}`);
+			toast.error(
+				`Failed to send test email: ${getErrorMessage(err, "Unknown error")}`,
+			);
 		} finally {
 			setIsSendingTest(false);
 		}

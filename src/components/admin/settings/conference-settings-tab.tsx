@@ -23,6 +23,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { getErrorMessage } from "@/lib/error-message";
 import { getDateFormats } from "@/lib/format-date";
 import type { ConferenceSettings } from "@/server-fns/settings";
 import {
@@ -63,7 +64,7 @@ export function ConferenceSettingsTab({
 			await router.invalidate();
 			toast.success("Conference settings saved");
 		} catch (error) {
-			toast.error(error instanceof Error ? error.message : "Failed to save");
+			toast.error(getErrorMessage(error, "Failed to save"));
 		} finally {
 			setIsSaving(false);
 		}

@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
+import { getErrorMessage } from "@/lib/error-message";
 import {
 	type BrandingSettings,
 	brandingSettingsQueryOptions,
@@ -58,8 +59,8 @@ export function BrandingSettingsTab({ initialData }: BrandingSettingsTabProps) {
 			});
 			await router.invalidate();
 			toast.success("Branding settings saved");
-		} catch {
-			toast.error("Failed to save branding settings");
+		} catch (error) {
+			toast.error(getErrorMessage(error, "Failed to save branding settings"));
 		} finally {
 			setIsSaving(false);
 		}

@@ -6,6 +6,7 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getErrorMessage } from "@/lib/error-message";
 import { adminSettingQueryOptions, setSettingFn } from "@/server-fns/settings";
 
 interface InvitationsSettingsTabProps {
@@ -36,9 +37,7 @@ export function InvitationsSettingsTab({
 			});
 			toast.success("Invitation settings saved");
 		} catch (error) {
-			toast.error(
-				error instanceof Error ? error.message : "Failed to save settings",
-			);
+			toast.error(getErrorMessage(error, "Failed to save settings"));
 		} finally {
 			setIsSaving(false);
 		}

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getErrorMessage } from "@/lib/error-message";
 import type { ProgramTrackWithStats } from "@/lib/server/planner/tracks";
 import { cn } from "@/lib/utils";
 import {
@@ -97,9 +98,7 @@ export function ProgramTrackDialog({
 			setName("");
 			setColor("");
 		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "Failed to save track";
-			toast.error(message);
+			toast.error(getErrorMessage(error, "Failed to save track"));
 		} finally {
 			setIsSaving(false);
 		}

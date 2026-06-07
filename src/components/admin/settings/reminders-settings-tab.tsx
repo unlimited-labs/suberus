@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { getErrorMessage } from "@/lib/error-message";
 import {
 	type ReminderSettings,
 	reminderSettingsQueryOptions,
@@ -73,7 +74,7 @@ export function RemindersSettingsTab({
 			}));
 			toast.success("Reminder settings saved");
 		} catch (error) {
-			toast.error(error instanceof Error ? error.message : "Failed to save");
+			toast.error(getErrorMessage(error, "Failed to save"));
 		} finally {
 			setIsSaving(false);
 		}
