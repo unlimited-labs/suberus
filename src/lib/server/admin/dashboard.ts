@@ -51,14 +51,53 @@ export interface AdminDashboardMetrics {
 		createdAt: Date;
 	}>;
 	usersByCountry: Array<{ country: string; count: number }>;
+	trends: {
+		users: number[];
+		submissions: number[];
+		reviewsCompleted: number[];
+		feesCollected: number[];
+	};
 	s3: S3HealthResult;
 	smtp: SmtpHealthResult;
 	llm: AppSettingsMap["SERVICE_HEALTH_LLM"];
 	docling: AppSettingsMap["SERVICE_HEALTH_DOCLING"];
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+const TREND_DAYS = 14;
+
+function dayIndex(date: Date, windowStart: Date): number {
+	// Normalize to local midnight and round so DST (23h/25h days) doesn't shift buckets.
+	const dayStart = new Date(date);
+	dayStart.setHours(0, 0, 0, 0);
+	const idx = Math.round((dayStart.getTime() - windowStart.getTime()) / DAY_MS);
+	return Math.min(Math.max(idx, 0), TREND_DAYS - 1);
+}
+
+function bucketCounts(dates: Date[], windowStart: Date): number[] {
+	const buckets = new Array<number>(TREND_DAYS).fill(0);
+	for (const date of dates) {
+		buckets[dayIndex(date, windowStart)] += 1;
+	}
+	return buckets;
+}
+
+function bucketSums(
+	rows: Array<{ date: Date; amount: number }>,
+	windowStart: Date,
+): number[] {
+	const buckets = new Array<number>(TREND_DAYS).fill(0);
+	for (const row of rows) {
+		buckets[dayIndex(row.date, windowStart)] += row.amount;
+	}
+	return buckets;
+}
+
 export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics> {
 	const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+	const trendWindowStart = new Date();
+	trendWindowStart.setHours(0, 0, 0, 0);
+	trendWindowStart.setDate(trendWindowStart.getDate() - (TREND_DAYS - 1));
 
 	const [s3Health, smtpHealth, llmHealth, doclingHealth] = await Promise.all([
 		checkS3Health(),
@@ -86,6 +125,10 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		unverifiedUsers,
 		recentActivity,
 		usersByCountry,
+		trendUsers,
+		trendSubmissions,
+		trendReviewsCompleted,
+		trendFees,
 	] = await Promise.all([
 		// Users by role
 		prisma.user.groupBy({
@@ -154,6 +197,26 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 			_count: true,
 			where: { country: { not: null } },
 		}),
+		// Trend: new signups per day (last 14 days)
+		prisma.user.findMany({
+			where: { createdAt: { gte: trendWindowStart } },
+			select: { createdAt: true },
+		}),
+		// Trend: new submissions per day (last 14 days)
+		prisma.submission.findMany({
+			where: { createdAt: { gte: trendWindowStart } },
+			select: { createdAt: true },
+		}),
+		// Trend: completed reviews per day (last 14 days)
+		prisma.reviewAssignment.findMany({
+			where: { completedAt: { gte: trendWindowStart } },
+			select: { completedAt: true },
+		}),
+		// Trend: fees collected per day (last 14 days)
+		prisma.fee.findMany({
+			where: { paid: true, paidAt: { gte: trendWindowStart } },
+			select: { paidAt: true, amount: true },
+		}),
 	]);
 
 	// Transform users by role
@@ -215,6 +278,33 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		return sum + (fee.amount ? Number(fee.amount) : 0);
 	}, 0);
 
+	// Build daily trend series (last 14 days, oldest -> newest)
+	const trends = {
+		users: bucketCounts(
+			trendUsers.map((u) => u.createdAt),
+			trendWindowStart,
+		),
+		submissions: bucketCounts(
+			trendSubmissions.map((s) => s.createdAt),
+			trendWindowStart,
+		),
+		reviewsCompleted: bucketCounts(
+			trendReviewsCompleted
+				.map((r) => r.completedAt)
+				.filter((d): d is Date => d !== null),
+			trendWindowStart,
+		),
+		feesCollected: bucketSums(
+			trendFees
+				.filter((f): f is typeof f & { paidAt: Date } => f.paidAt !== null)
+				.map((f) => ({
+					date: f.paidAt,
+					amount: f.amount ? Number(f.amount) : 0,
+				})),
+			trendWindowStart,
+		),
+	};
+
 	return {
 		users: {
 			total: totalUsers,
@@ -267,6 +357,7 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		usersByCountry: usersByCountry
 			.filter((g): g is typeof g & { country: string } => g.country !== null)
 			.map((g) => ({ country: g.country, count: g._count })),
+		trends,
 		s3: s3Health,
 		smtp: smtpHealth,
 		llm: llmHealth,
