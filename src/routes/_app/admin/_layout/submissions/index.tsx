@@ -17,12 +17,16 @@ export const Route = createFileRoute("/_app/admin/_layout/submissions/")({
 });
 
 const columnLabels: Record<string, string> = {
+	sequentialNumber: "Sequential number",
 	title: "Title",
 	type: "Type",
 	status: "Status",
 	ownerName: "Author",
 	currentRound: "Round",
 	todo: "TODO",
+	createdAt: "Submitted",
+	updatedAt: "Last updated",
+	actions: "Actions",
 };
 
 function AdminSubmissionsPage() {
@@ -41,6 +45,7 @@ function AdminSubmissionsPage() {
 					getRowId={(row) => row.id}
 					rowDataTestId="submission-row"
 					storageKey="admin-submissions"
+					initialColumnVisibility={{ updatedAt: false }}
 					mobileCard={SubmissionMobileCard}
 					toolbar={(table) => (
 						<DataTableToolbar

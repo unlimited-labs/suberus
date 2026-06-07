@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { useDateFormat } from "@/hooks/use-date-format";
 import {
 	statusLabels,
 	todoBadgeVariant,
@@ -11,6 +12,7 @@ import {
 import type { AdminSubmission } from "@/lib/server/admin/submissions";
 
 export function SubmissionMobileCard(submission: AdminSubmission) {
+	const { formatDate } = useDateFormat();
 	return (
 		<Card>
 			<CardContent className="p-4">
@@ -36,6 +38,9 @@ export function SubmissionMobileCard(submission: AdminSubmission) {
 					</div>
 					<p className="text-sm text-muted-foreground">
 						{submission.ownerName}
+					</p>
+					<p className="text-xs text-muted-foreground">
+						Submitted {formatDate(submission.createdAt)}
 					</p>
 					{todoTone(submission.todo.kind) === "action" && (
 						<Badge variant={todoBadgeVariant[submission.todo.kind]}>

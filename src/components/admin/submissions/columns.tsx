@@ -13,6 +13,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useDateFormat } from "@/hooks/use-date-format";
 import {
 	type SubmissionTodo,
 	statusFilterOptions,
@@ -29,6 +30,13 @@ import {
 	typeLabels,
 } from "@/lib/labels/submission";
 import type { AdminSubmission } from "@/lib/server/admin/submissions";
+
+function DateCell({ date }: { date: Date | string }) {
+	const { formatDate } = useDateFormat();
+	return (
+		<span className="text-sm text-muted-foreground">{formatDate(date)}</span>
+	);
+}
 
 function TodoCell({ todo }: { todo: SubmissionTodo }) {
 	const label = todoLabel(todo);
@@ -171,6 +179,20 @@ export const submissionColumns: ColumnDef<AdminSubmission>[] = [
 			todoSortRank[a.getValue<TodoKind>("todo")] -
 			todoSortRank[b.getValue<TodoKind>("todo")],
 		size: 160,
+	},
+	{
+		accessorKey: "createdAt",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Submitted" />
+		),
+		cell: ({ row }) => <DateCell date={row.getValue("createdAt")} />,
+	},
+	{
+		accessorKey: "updatedAt",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Last updated" />
+		),
+		cell: ({ row }) => <DateCell date={row.getValue("updatedAt")} />,
 	},
 	createActionsColumn<AdminSubmission>({
 		getViewLink: (submission) => ({
