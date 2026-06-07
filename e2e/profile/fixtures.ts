@@ -38,9 +38,13 @@ export class SettingsPage {
 		this.heading = page.getByRole("heading", { name: "Profile" })
 
 		// Personal info section
+		const personalSection = page
+			.locator("section")
+			.filter({ has: page.getByRole("heading", { name: "Personal Information" }) })
 		this.firstNameInput = page.getByLabel("First name *")
 		this.lastNameInput = page.getByLabel("Last name *")
-		this.titleSelect = page.getByLabel("Title")
+		// Title is a Radix Select trigger (no id assoc with label) — scope to section
+		this.titleSelect = personalSection.getByRole("combobox")
 		this.affiliationInput = page.getByLabel("Affiliation")
 		this.orcidInput = page.getByLabel("ORCID")
 		// Use section element with heading to find the correct Save button
@@ -82,6 +86,8 @@ export class SettingsPage {
 	async fillPersonalInfo(data: {
 		firstName?: string
 		lastName?: string
+		title?: string
+		affiliation?: string
 		orcid?: string
 	}) {
 		if (data.firstName !== undefined) {
@@ -91,6 +97,14 @@ export class SettingsPage {
 		if (data.lastName !== undefined) {
 			await this.lastNameInput.clear()
 			await this.lastNameInput.fill(data.lastName)
+		}
+		if (data.title !== undefined) {
+			await this.titleSelect.click()
+			await this.page.getByRole("option", { name: data.title, exact: true }).click()
+		}
+		if (data.affiliation !== undefined) {
+			await this.affiliationInput.clear()
+			await this.affiliationInput.fill(data.affiliation)
 		}
 		if (data.orcid !== undefined) {
 			await this.orcidInput.clear()

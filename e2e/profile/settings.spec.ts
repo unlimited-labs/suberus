@@ -159,3 +159,122 @@ test.describe("User Settings", () => {
 		).toBeVisible({ timeout: 5000 })
 	})
 })
+
+// Personal info is read from the DB (not the better-auth session), so every change
+// must survive a full reload. These tests guard the DB round-trip end to end.
+test.describe("Personal info persistence (DB round-trip)", () => {
+	// Restore the canonical profile after each test so mutations don't leak into
+	// other tests/files that rely on TEST_USER's name/affiliation.
+	test.afterEach(async ({ settingsPage }) => {
+		await settingsPage.goto()
+		await settingsPage.fillPersonalInfo({
+			firstName: TEST_USER.firstName,
+			lastName: TEST_USER.lastName,
+			affiliation: TEST_USER.affiliationName,
+			orcid: "",
+		})
+		await settingsPage.savePersonalInfo()
+		await settingsPage.expectToastSuccess(/personal information updated/i)
+	})
+
+	test("persists ORCID after reload", async ({ settingsPage }) => {
+		// Arrange
+		await settingsPage.goto()
+
+		// Act
+		await settingsPage.fillPersonalInfo({ orcid: VALID_ORCID })
+		await settingsPage.savePersonalInfo()
+		await settingsPage.expectToastSuccess(/personal information updated/i)
+		await settingsPage.goto()
+
+		// Assert
+		await expect(settingsPage.orcidInput).toHaveValue(VALID_ORCID)
+	})
+
+	test("persists ORCID with X checksum after reload", async ({ settingsPage }) => {
+		// Arrange
+		const orcidWithX = "0000-0002-1825-009X"
+		await settingsPage.goto()
+
+		// Act
+		await settingsPage.fillPersonalInfo({ orcid: orcidWithX })
+		await settingsPage.savePersonalInfo()
+		await settingsPage.expectToastSuccess(/personal information updated/i)
+		await settingsPage.goto()
+
+		// Assert
+		await expect(settingsPage.orcidInput).toHaveValue(orcidWithX)
+	})
+
+	test("clears ORCID when emptied", async ({ settingsPage }) => {
+		// Arrange — first set an ORCID, then clear it
+		await settingsPage.goto()
+		await settingsPage.fillPersonalInfo({ orcid: VALID_ORCID })
+		await settingsPage.savePersonalInfo()
+		await settingsPage.expectToastSuccess(/personal information updated/i)
+
+		// Act
+		await settingsPage.goto()
+		await settingsPage.fillPersonalInfo({ orcid: "" })
+		await settingsPage.savePersonalInfo()
+		await settingsPage.expectToastSuccess(/personal information updated/i)
+		await settingsPage.goto()
+
+		// Assert
+		await expect(settingsPage.orcidInput).toHaveValue("")
+	})
+
+	test("persists title selection after reload", async ({ settingsPage }) => {
+		// Arrange
+		await settingsPage.goto()
+
+		// Act
+		await settingsPage.fillPersonalInfo({ title: "MSc" })
+		await settingsPage.savePersonalInfo()
+		await settingsPage.expectToastSuccess(/personal information updated/i)
+		await settingsPage.goto()
+
+		// Assert
+		await expect(settingsPage.titleSelect).toContainText("MSc")
+	})
+
+	test("persists affiliation after reload", async ({ settingsPage }) => {
+		// Arrange
+		const newAffiliation = "Round-Trip Institute"
+		await settingsPage.goto()
+
+		// Act
+		await settingsPage.fillPersonalInfo({ affiliation: newAffiliation })
+		await settingsPage.savePersonalInfo()
+		await settingsPage.expectToastSuccess(/personal information updated/i)
+		await settingsPage.goto()
+
+		// Assert
+		await expect(settingsPage.affiliationInput).toHaveValue(newAffiliation)
+	})
+
+	test("persists all personal fields together after reload", async ({ settingsPage }) => {
+		// Arrange
+		const data = {
+			firstName: "Updated",
+			lastName: "Person",
+			title: "Dr hab.",
+			affiliation: "Combined Change University",
+			orcid: VALID_ORCID,
+		}
+		await settingsPage.goto()
+
+		// Act
+		await settingsPage.fillPersonalInfo(data)
+		await settingsPage.savePersonalInfo()
+		await settingsPage.expectToastSuccess(/personal information updated/i)
+		await settingsPage.goto()
+
+		// Assert
+		await expect(settingsPage.firstNameInput).toHaveValue(data.firstName)
+		await expect(settingsPage.lastNameInput).toHaveValue(data.lastName)
+		await expect(settingsPage.titleSelect).toContainText(data.title)
+		await expect(settingsPage.affiliationInput).toHaveValue(data.affiliation)
+		await expect(settingsPage.orcidInput).toHaveValue(data.orcid)
+	})
+})

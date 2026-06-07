@@ -8,6 +8,26 @@ import { SUPPORTED_IMAGE_EXTENSIONS } from "@/lib/settings/file-types";
 /** Avatar images are capped at 5MB (matches the upload UI). */
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
 
+export async function getPersonalInfo(userId: string) {
+	const user = await prisma.user.findUniqueOrThrow({
+		where: { id: userId },
+		select: {
+			firstName: true,
+			lastName: true,
+			title: true,
+			orcid: true,
+			affiliation: { select: { name: true } },
+		},
+	});
+	return {
+		firstName: user.firstName ?? "",
+		lastName: user.lastName ?? "",
+		title: user.title ?? "",
+		orcid: user.orcid ?? "",
+		affiliation: user.affiliation?.name ?? "",
+	};
+}
+
 export async function updatePersonalInfo(
 	userId: string,
 	data: {

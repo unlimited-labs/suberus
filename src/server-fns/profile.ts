@@ -1,14 +1,29 @@
+import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { logActivity } from "@/lib/server/activity-log";
 import { authMiddleware } from "@/lib/server/middleware/auth";
-import { updateContactInfo, updatePersonalInfo } from "@/lib/server/profile";
+import {
+	getPersonalInfo,
+	updateContactInfo,
+	updatePersonalInfo,
+} from "@/lib/server/profile";
 import { auth } from "../../auth.server";
 
 const orcidRegex = /^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/;
 
 // Personal info
+export const personalInfoQueryOptions = () =>
+	queryOptions({
+		queryKey: ["profile", "personal-info"],
+		queryFn: () => getPersonalInfoFn(),
+	});
+
+export const getPersonalInfoFn = createServerFn({ method: "GET" })
+	.middleware([authMiddleware])
+	.handler(async ({ context }) => getPersonalInfo(context.user.id));
+
 export const updatePersonalInfoFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.inputValidator(

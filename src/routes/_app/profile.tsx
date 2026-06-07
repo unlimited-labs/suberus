@@ -4,9 +4,9 @@ import {
 	IconMail,
 	IconUser,
 } from "@tabler/icons-react";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { ContactInfoSection } from "@/components/forms/profile/contact-info-section";
 import { PasswordChangeSection } from "@/components/forms/profile/password-change-section";
@@ -20,13 +20,11 @@ import type {
 	PasswordChangeFormData,
 	PersonalInfoFormData,
 } from "@/lib/validations/profile";
-import {
-	createAffiliation,
-	getAffiliationById,
-} from "@/server-fns/affiliations";
+import { createAffiliation } from "@/server-fns/affiliations";
 import {
 	changeEmailFn,
 	changePasswordFn,
+	personalInfoQueryOptions,
 	updateContactInfoFn,
 	updatePersonalInfoFn,
 } from "@/server-fns/profile";
@@ -38,6 +36,7 @@ import {
 export const Route = createFileRoute("/_app/profile")({
 	loader: async ({ context }) => {
 		await Promise.all([
+			context.queryClient.ensureQueryData(personalInfoQueryOptions()),
 			context.queryClient.ensureQueryData(activeSurveyQuestionsQueryOptions()),
 			context.queryClient.ensureQueryData(userSurveyAnswersQueryOptions()),
 		]);
@@ -47,6 +46,8 @@ export const Route = createFileRoute("/_app/profile")({
 
 function SettingsPage() {
 	const { user, refetch: refetchSession } = useSession();
+	const queryClient = useQueryClient();
+	const { data: personalInfo } = useSuspenseQuery(personalInfoQueryOptions());
 	const { data: surveyQuestions } = useSuspenseQuery(
 		activeSurveyQuestionsQueryOptions(),
 	);
@@ -57,18 +58,7 @@ function SettingsPage() {
 		questionId: a.questionId,
 		value: a.value,
 	}));
-	const [affiliationName, setAffiliationName] = useState("");
 	const [pendingEmail, setPendingEmail] = useState<string>();
-
-	useEffect(() => {
-		if (user?.affiliationId) {
-			getAffiliationById({ data: { id: user.affiliationId } }).then(
-				(result) => {
-					if (result) setAffiliationName(result.name);
-				},
-			);
-		}
-	}, [user?.affiliationId]);
 
 	if (!user) return null;
 
@@ -92,7 +82,10 @@ function SettingsPage() {
 					orcid: data.orcid,
 				},
 			});
-			await refetchSession();
+			await Promise.all([
+				queryClient.invalidateQueries(personalInfoQueryOptions()),
+				refetchSession(),
+			]);
 			toast.success("Personal information updated successfully");
 		} catch (error) {
 			toast.error("Failed to update personal information");
@@ -153,13 +146,7 @@ function SettingsPage() {
 						delay={0}
 					>
 						<PersonalInfoSection
-							initialData={{
-								title: user.title ?? "",
-								firstName: user.firstName ?? "",
-								lastName: user.lastName ?? "",
-								affiliation: affiliationName,
-								orcid: user.orcid ?? "",
-							}}
+							initialData={personalInfo}
 							onSave={handlePersonalInfoSave}
 						/>
 					</SettingsSection>
