@@ -156,7 +156,6 @@ function NewSubmissionPage() {
 						submissionId: result.id,
 						versionNumber: 1,
 						fileName: data.file.name,
-						mimeType: data.file.type,
 						fileBase64: base64,
 					},
 				});

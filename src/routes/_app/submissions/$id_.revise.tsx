@@ -139,7 +139,6 @@ function ReviseSubmissionPage() {
 									submissionId: id,
 									versionNumber: result.versionNumber,
 									fileName: formData.file.name,
-									mimeType: formData.file.type,
 									fileBase64: base64,
 								},
 							});

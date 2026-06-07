@@ -145,7 +145,6 @@ function EditSubmissionPage() {
 						submissionId: id,
 						versionNumber: submission.currentVersion,
 						fileName: formData.file.name,
-						mimeType: formData.file.type,
 						fileBase64: base64,
 					},
 				});

@@ -35,6 +35,7 @@ export async function enqueueExtractionJob(
 		jobId,
 		storageKey,
 		fileName,
+		fileExt: detected.ext,
 		heuristic,
 		ai,
 	});

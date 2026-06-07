@@ -170,7 +170,6 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 			submissionId: z.uuid(),
 			versionNumber: z.number().int().positive(),
 			fileName: z.string(),
-			mimeType: z.string(),
 			fileBase64: z.string(), // Base64 encoded file content
 		}),
 	)

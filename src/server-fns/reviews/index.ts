@@ -63,7 +63,6 @@ export const submitReviewFn = createServerFn({ method: "POST" })
 const uploadReviewAttachmentSchema = z.object({
 	reviewId: z.uuid(),
 	fileName: z.string(),
-	mimeType: z.string(),
 	fileBase64: z.string(),
 });
 

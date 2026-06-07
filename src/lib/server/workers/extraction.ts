@@ -13,6 +13,8 @@ export interface ExtractionJobData {
 	jobId: string;
 	storageKey: string;
 	fileName: string;
+	/** Extension detected by magic-number validation at enqueue time. */
+	fileExt: string;
 	heuristic: boolean;
 	ai: boolean;
 }
@@ -26,8 +28,12 @@ async function handleExtraction(jobs: Job<ExtractionJobData>[]): Promise<void> {
 async function processExtractionJob(
 	job: Job<ExtractionJobData>,
 ): Promise<ExtractionResult> {
-	const { jobId, storageKey, fileName, heuristic, ai } = job.data;
-	const isDocx = fileName.toLowerCase().endsWith(".docx");
+	const { jobId, storageKey, fileName, fileExt, heuristic, ai } = job.data;
+	// Route on the validated content type, not the (forgeable) file name.
+	// Fall back to the name for jobs enqueued before fileExt was added.
+	const isDocx = fileExt
+		? fileExt === "docx"
+		: fileName.toLowerCase().endsWith(".docx");
 	const config: ExtractionConfig = { heuristic, ai };
 	const reportStage = (stage: string, total: number) =>
 		setJobStage(jobId, stage, total);

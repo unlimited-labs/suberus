@@ -85,7 +85,6 @@ function ReviewFormPage() {
 					data: {
 						reviewId: result.reviewId,
 						fileName: file.name,
-						mimeType: file.type,
 						fileBase64: base64,
 					},
 				});
