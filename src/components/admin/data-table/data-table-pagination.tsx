@@ -31,6 +31,9 @@ export function DataTablePagination<TData>({
 }: DataTablePaginationProps<TData>) {
 	const totalRows = table.getFilteredRowModel().rows.length;
 	const { pageSize, pageIndex } = pagination;
+	// Derived from the parent-owned pagination state, not `table.getState()`
+	// (see prop doc). Floor at 1 so an empty table reads "Page 1 of 1" rather
+	// than the "of 0" TanStack's getPageCount() would yield next to "No results.".
 	const pageCount = Math.max(1, Math.ceil(totalRows / pageSize));
 	const canPreviousPage = pageIndex > 0;
 	const canNextPage = pageIndex < pageCount - 1;

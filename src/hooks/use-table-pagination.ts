@@ -1,7 +1,13 @@
 import type { PaginationState } from "@tanstack/react-table";
+import { z } from "zod";
 import { usePersistedState } from "@/hooks/use-persisted-state";
 
 const DEFAULT_PAGE_SIZE = 20;
+
+const paginationSchema = z.object({
+	pageIndex: z.number(),
+	pageSize: z.number(),
+}) satisfies z.ZodType<PaginationState>;
 
 /**
  * Table pagination state with the page size persisted to localStorage per-table.
@@ -14,13 +20,9 @@ export function useTablePagination(storageKey?: string) {
 		storageKey ? `suberus.table.pagination.${storageKey}` : undefined,
 		{ pageIndex: 0, pageSize: DEFAULT_PAGE_SIZE },
 		{
-			merge: (stored, fallback) => ({
-				pageIndex: 0,
-				pageSize:
-					typeof stored?.pageSize === "number"
-						? stored.pageSize
-						: fallback.pageSize,
-			}),
+			schema: paginationSchema,
+			// Restore only the page size; page position always resets on entry.
+			merge: (stored) => ({ pageIndex: 0, pageSize: stored.pageSize }),
 		},
 	);
 }

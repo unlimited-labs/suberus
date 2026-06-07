@@ -5,9 +5,20 @@ import {
 	useRef,
 	useState,
 } from "react";
+import type { z } from "zod";
 
 interface PersistedStateOptions<T> {
-	/** Reconcile the stored value with the current default, e.g. to keep keys added after the value was last saved. */
+	/**
+	 * Validates the raw value parsed from localStorage. Anything that fails the
+	 * schema (malformed JSON shape, an older/foreign value) is discarded and the
+	 * default kept. When provided, `merge` receives the validated `T`.
+	 */
+	schema?: z.ZodType<T>;
+	/**
+	 * Reconcile the stored value with the current default, e.g. to keep keys added
+	 * after the value was last saved, or to reset a field on load. Runs after
+	 * `schema` validation, so `stored` is a trusted `T`.
+	 */
 	merge?: (stored: T, fallback: T) => T;
 }
 
@@ -27,6 +38,8 @@ export function usePersistedState<T>(
 	const defaultRef = useRef(defaultValue);
 	const mergeRef = useRef(options?.merge);
 	mergeRef.current = options?.merge;
+	const schemaRef = useRef(options?.schema);
+	schemaRef.current = options?.schema;
 	const hydrated = useRef(false);
 
 	useEffect(() => {
@@ -34,7 +47,17 @@ export function usePersistedState<T>(
 		try {
 			const raw = window.localStorage.getItem(key);
 			if (raw === null) return;
-			const stored = JSON.parse(raw) as T;
+			const parsed: unknown = JSON.parse(raw);
+			const schema = schemaRef.current;
+			let stored: T;
+			if (schema) {
+				const result = schema.safeParse(parsed);
+				if (!result.success) return; // malformed/old shape — keep default
+				stored = result.data;
+			} else {
+				// No schema: the caller opts into trusting the stored shape.
+				stored = parsed as T;
+			}
 			const merge = mergeRef.current;
 			setValue(merge ? merge(stored, defaultRef.current) : stored);
 		} catch {

@@ -14,6 +14,7 @@ import {
 	type VisibilityState,
 } from "@tanstack/react-table";
 import { useState } from "react";
+import { z } from "zod";
 import {
 	Table,
 	TableBody,
@@ -25,6 +26,11 @@ import {
 import { usePersistedState } from "@/hooks/use-persisted-state";
 import { useTablePagination } from "@/hooks/use-table-pagination";
 import { DataTablePagination } from "./data-table-pagination";
+
+const columnVisibilitySchema = z.record(
+	z.string(),
+	z.boolean(),
+) satisfies z.ZodType<VisibilityState>;
 
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
@@ -59,10 +65,9 @@ export function DataTable<TData, TValue>({
 			storageKey ? `suberus.table.columns.${storageKey}` : undefined,
 			initialColumnVisibility ?? {},
 			{
-				merge: (stored, fallback) =>
-					stored && typeof stored === "object" && !Array.isArray(stored)
-						? { ...fallback, ...stored }
-						: fallback,
+				schema: columnVisibilitySchema,
+				// Keep defaults for columns added since the value was last saved.
+				merge: (stored, fallback) => ({ ...fallback, ...stored }),
 			},
 		);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
