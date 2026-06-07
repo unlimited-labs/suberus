@@ -13,6 +13,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { FILE_ACCEPT_ATTRIBUTE } from "@/lib/settings/file-types";
 import {
 	activeSubmissionTypesQueryOptions,
 	submissionValidationQueryOptions,
@@ -92,7 +93,7 @@ function ReviseSubmissionPage() {
 	const acceptString =
 		allowedExtensions.length > 0
 			? allowedExtensions.map((ext: string) => `.${ext}`).join(",")
-			: ".pdf,.doc,.docx";
+			: FILE_ACCEPT_ATTRIBUTE;
 	const maxFileSize = validationSettings.maxFileSize ?? 10;
 
 	return (

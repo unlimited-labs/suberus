@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useJobSSE } from "@/hooks/use-job-sse";
+import { SUPPORTED_FILE_EXTENSIONS_DOTTED } from "@/lib/settings/file-types";
 import {
 	enqueueExtractionFn,
 	getExtractionResultFn,
@@ -27,8 +28,6 @@ interface UseDocumentExtractionReturn {
 		fieldHandleChange: (file: File | null) => void,
 	) => void;
 }
-
-const SUPPORTED_EXTENSIONS = [".docx", ".pdf"];
 
 function fileToBase64(file: File): Promise<string> {
 	return new Promise((resolve, reject) => {
@@ -164,7 +163,7 @@ export function useDocumentExtraction({
 				!file ||
 				!enabled ||
 				skipExtraction ||
-				!SUPPORTED_EXTENSIONS.some((ext) =>
+				!SUPPORTED_FILE_EXTENSIONS_DOTTED.some((ext) =>
 					file.name.toLowerCase().endsWith(ext),
 				)
 			) {

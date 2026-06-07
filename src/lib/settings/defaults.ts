@@ -1,3 +1,4 @@
+import { SUPPORTED_FILE_EXTENSIONS } from "./file-types";
 import type { AppSettingsMap, SubmissionTypeConfig } from "./types";
 
 /** Default config for Oral Presentation (TEXT-based) */
@@ -38,7 +39,7 @@ export const DEFAULT_POSTER_CONFIG: SubmissionTypeConfig = {
 export const DEFAULT_FULL_PAPER_CONFIG: SubmissionTypeConfig = {
 	isActive: false,
 	contentFormat: "FILE",
-	allowedExtensions: ["pdf", "doc", "docx"],
+	allowedExtensions: [...SUPPORTED_FILE_EXTENSIONS],
 	requiredReviewers: 2,
 	reviewMode: "DOUBLE_BLIND",
 	reviewDeadlineDays: 21,
@@ -85,7 +86,7 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	MIN_ABSTRACT_LENGTH: 500,
 	MAX_ABSTRACT_LENGTH: 2000,
 	MAX_FILE_SIZE_MB: 10,
-	ALLOWED_FILE_TYPES: ["pdf", "doc", "docx"],
+	ALLOWED_FILE_TYPES: [...SUPPORTED_FILE_EXTENSIONS],
 	MAX_AUTHORS: 10,
 	ENABLE_KEYWORDS: true,
 	MIN_KEYWORDS: 3,

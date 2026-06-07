@@ -7,7 +7,7 @@ export type ContentFormat = "TEXT" | "FILE";
 export interface SubmissionTypeConfig {
 	isActive: boolean;
 	contentFormat: ContentFormat;
-	allowedExtensions: string[]; // e.g., ["pdf", "doc", "docx"]
+	allowedExtensions: string[]; // subset of SUPPORTED_FILE_EXTENSIONS, e.g. ["pdf", "docx"]
 	requiredReviewers: number;
 	reviewMode: ReviewMode;
 	reviewDeadlineDays: number;

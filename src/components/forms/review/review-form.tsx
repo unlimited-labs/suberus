@@ -26,6 +26,7 @@ import { Markdown } from "@/components/ui/markdown";
 import type { ReviewDecision, SubmissionType } from "@/generated/prisma/enums";
 import { useAppForm } from "@/hooks/use-app-form";
 import { typeLabels } from "@/lib/labels/submission";
+import { FILE_ACCEPT_ATTRIBUTE } from "@/lib/settings/file-types";
 import { cn, formatFileSize } from "@/lib/utils";
 import { createReviewSchema } from "@/lib/validations/review";
 
@@ -629,7 +630,7 @@ export function ReviewForm({
 															setAttachmentFile(file);
 															onAttachmentChange?.(file);
 														}}
-														accept=".pdf,.doc,.docx"
+														accept={FILE_ACCEPT_ATTRIBUTE}
 														maxSize={10}
 													/>
 												)}

@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { FILE_TYPE_OPTIONS } from "@/lib/settings/file-types";
 import type { AppSettingsMap } from "@/lib/settings/types";
 import {
 	reviewGuidelinesQueryOptions,
@@ -48,14 +49,6 @@ const submissionGuidelinesPlaceholders = [
 	"maxAbstractLength",
 	"minKeywords",
 	"maxKeywords",
-];
-
-const fileTypeOptions = [
-	{ value: "pdf", label: "PDF" },
-	{ value: "docx", label: "DOCX" },
-	{ value: "doc", label: "DOC" },
-	{ value: "txt", label: "TXT" },
-	{ value: "rtf", label: "RTF" },
 ];
 
 export function SubmissionSettingsTab({
@@ -351,7 +344,7 @@ export function SubmissionSettingsTab({
 					<div className="space-y-2">
 						<Label>Allowed file types</Label>
 						<div className="flex flex-wrap gap-4">
-							{fileTypeOptions.map((type) => (
+							{FILE_TYPE_OPTIONS.map((type) => (
 								<Label
 									key={type.value}
 									className="flex cursor-pointer items-center gap-2 font-normal"

@@ -1,6 +1,7 @@
 import { IconFile, IconUpload, IconX } from "@tabler/icons-react";
 import { type DragEvent, useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { FILE_ACCEPT_ATTRIBUTE } from "@/lib/settings/file-types";
 import { cn } from "@/lib/utils";
 
 interface FileDropzoneProps {
@@ -14,7 +15,7 @@ interface FileDropzoneProps {
 export function FileDropzone({
 	value,
 	onChange,
-	accept = ".pdf,.doc,.docx",
+	accept = FILE_ACCEPT_ATTRIBUTE,
 	maxSize = 10,
 	className,
 }: FileDropzoneProps) {

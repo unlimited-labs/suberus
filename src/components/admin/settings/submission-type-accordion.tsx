@@ -21,6 +21,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { SUPPORTED_FILE_EXTENSIONS } from "@/lib/settings/file-types";
 import type {
 	ContentFormat,
 	SubmissionTypeConfig,
@@ -46,8 +47,6 @@ const CONTENT_FORMATS = [
 	"TEXT",
 	"FILE",
 ] as const satisfies readonly ContentFormat[];
-
-const FILE_EXTENSIONS = ["pdf", "doc", "docx"] as const;
 
 interface ScoringCriteriaSectionProps {
 	criteria: SubmissionTypeConfig["scoringCriteria"];
@@ -262,7 +261,7 @@ export function SubmissionTypeAccordion({
 							<div className="space-y-2 pl-0 sm:pl-4 pt-2">
 								<Label className="text-sm">Allowed file extensions</Label>
 								<div className="flex flex-wrap gap-3">
-									{FILE_EXTENSIONS.map((ext) => (
+									{SUPPORTED_FILE_EXTENSIONS.map((ext) => (
 										<div
 											key={ext}
 											className="flex items-center gap-2 cursor-pointer"
