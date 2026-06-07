@@ -5,9 +5,7 @@ const IMAGE_NAME = "suberus/app";
 const TAG = new Date().toISOString().slice(0, 10).replace(/-/g, "");
 
 function gitCommit(): string {
-	const sha = execFileSync("git", ["rev-parse", "--short", "HEAD"]).toString().trim();
-	const dirty = execFileSync("git", ["status", "--porcelain"]).toString().trim();
-	return dirty ? `${sha}-dirty` : sha;
+	return execFileSync("git", ["rev-parse", "--short", "HEAD"]).toString().trim();
 }
 
 const GIT_COMMIT = gitCommit();
