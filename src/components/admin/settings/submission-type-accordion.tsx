@@ -21,7 +21,10 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { SUPPORTED_FILE_EXTENSIONS } from "@/lib/settings/file-types";
+import {
+	SUPPORTED_FILE_EXTENSIONS,
+	type SupportedFileExtension,
+} from "@/lib/settings/file-types";
 import type {
 	ContentFormat,
 	SubmissionTypeConfig,
@@ -135,7 +138,7 @@ export function SubmissionTypeAccordion({
 		onChange({ ...config, [field]: value });
 	};
 
-	const toggleExtension = (ext: string) => {
+	const toggleExtension = (ext: SupportedFileExtension) => {
 		const current = config.allowedExtensions;
 		if (current.includes(ext)) {
 			handleChange(

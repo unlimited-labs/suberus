@@ -80,7 +80,6 @@ export const uploadReviewAttachmentFn = createServerFn({ method: "POST" })
 				data.reviewId,
 				context.user.id,
 				data.fileName,
-				data.mimeType,
 				data.fileBase64,
 			);
 		},

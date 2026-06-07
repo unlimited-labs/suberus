@@ -9,6 +9,7 @@ import {
 	getSubmissionTypeConfigs,
 	setSetting,
 } from "@/lib/server/settings";
+import { SUPPORTED_FILE_EXTENSIONS } from "@/lib/settings/file-types";
 import type {
 	AppSettingsMap,
 	DeadlineReminderSettings,
@@ -22,7 +23,7 @@ import type {
 const submissionTypeConfigSchema = z.object({
 	isActive: z.boolean(),
 	contentFormat: z.enum(["TEXT", "FILE"]),
-	allowedExtensions: z.array(z.string()),
+	allowedExtensions: z.array(z.enum(SUPPORTED_FILE_EXTENSIONS)),
 	requiredReviewers: z.number().int().min(1).max(10),
 	reviewMode: z.enum(["OPEN", "SINGLE_BLIND", "DOUBLE_BLIND"]),
 	reviewDeadlineDays: z.number().int().min(1).max(90),
@@ -708,7 +709,6 @@ export const uploadAuthBackgroundFn = createServerFn({ method: "POST" })
 	.inputValidator(
 		z.object({
 			fileBase64: z.string(),
-			mimeType: z.string(),
 		}),
 	)
 	.handler(async ({ data }) => {
@@ -716,7 +716,7 @@ export const uploadAuthBackgroundFn = createServerFn({ method: "POST" })
 			"@/lib/server/branding"
 		);
 		const buffer = Buffer.from(data.fileBase64, "base64");
-		await uploadAuthBackground(buffer, data.mimeType);
+		await uploadAuthBackground(buffer);
 		const url = await getAuthBackgroundUrl();
 		return { url };
 	});

@@ -8,6 +8,15 @@ export const SUPPORTED_FILE_EXTENSIONS = ["pdf", "docx"] as const;
 
 export type SupportedFileExtension = (typeof SUPPORTED_FILE_EXTENSIONS)[number];
 
+/**
+ * Image extensions accepted for branding/avatar uploads. Values are the
+ * extensions `file-type` reports (e.g. JPEG is detected as "jpg").
+ */
+export const SUPPORTED_IMAGE_EXTENSIONS = ["jpg", "png", "webp"] as const;
+
+export type SupportedImageExtension =
+	(typeof SUPPORTED_IMAGE_EXTENSIONS)[number];
+
 /** Labelled options for settings UIs (checkbox lists). */
 export const FILE_TYPE_OPTIONS = SUPPORTED_FILE_EXTENSIONS.map((value) => ({
 	value,

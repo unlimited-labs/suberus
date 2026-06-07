@@ -92,7 +92,7 @@ export function BrandingSettingsTab({ initialData }: BrandingSettingsTabProps) {
 			});
 
 			const { url } = await uploadAuthBackgroundFn({
-				data: { fileBase64: base64, mimeType: file.type },
+				data: { fileBase64: base64 },
 			});
 			setData((prev) => ({ ...prev, authBackgroundUrl: url }));
 			toast.success("Background image uploaded");

@@ -1,4 +1,5 @@
 import type { ReviewMode } from "@/generated/prisma/enums";
+import type { SupportedFileExtension } from "./file-types";
 
 /** Content format for submission types */
 export type ContentFormat = "TEXT" | "FILE";
@@ -7,7 +8,7 @@ export type ContentFormat = "TEXT" | "FILE";
 export interface SubmissionTypeConfig {
 	isActive: boolean;
 	contentFormat: ContentFormat;
-	allowedExtensions: string[]; // subset of SUPPORTED_FILE_EXTENSIONS, e.g. ["pdf", "docx"]
+	allowedExtensions: SupportedFileExtension[];
 	requiredReviewers: number;
 	reviewMode: ReviewMode;
 	reviewDeadlineDays: number;

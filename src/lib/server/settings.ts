@@ -6,6 +6,10 @@ import {
 	getDefaultSetting,
 } from "@/lib/settings/defaults";
 import {
+	SUPPORTED_FILE_EXTENSIONS,
+	type SupportedFileExtension,
+} from "@/lib/settings/file-types";
+import {
 	type AppSettingsMap,
 	SUBMISSION_TYPE_KEYS,
 	type SubmissionTypeConfig,
@@ -35,6 +39,28 @@ function normalizeScoringCriteria(
 }
 
 /**
+ * Drop file extensions no longer supported (e.g. legacy doc/txt/rtf stored
+ * before they were removed). Self-heals on the next save.
+ */
+function normalizeAllowedExtensions(
+	config: SubmissionTypeConfig,
+): SubmissionTypeConfig {
+	if (!Array.isArray(config.allowedExtensions)) return config;
+	const supported = config.allowedExtensions.filter(
+		(ext): ext is SupportedFileExtension =>
+			(SUPPORTED_FILE_EXTENSIONS as readonly string[]).includes(ext),
+	);
+	if (supported.length === config.allowedExtensions.length) return config;
+	return { ...config, allowedExtensions: supported };
+}
+
+function normalizeSubmissionTypeConfig(
+	config: SubmissionTypeConfig,
+): SubmissionTypeConfig {
+	return normalizeAllowedExtensions(normalizeScoringCriteria(config));
+}
+
+/**
  * Get a single setting value by key.
  * Returns default if not found in DB.
  */
@@ -57,7 +83,7 @@ export async function getSetting<K extends keyof AppSettingsMap>(
 		value &&
 		typeof value === "object"
 	) {
-		return normalizeScoringCriteria(
+		return normalizeSubmissionTypeConfig(
 			value as unknown as SubmissionTypeConfig,
 		) as AppSettingsMap[K];
 	}
@@ -131,15 +157,15 @@ export async function getSubmissionTypeConfigs(): Promise<{
 	// Merge with defaults so newly-added fields always have a value
 	// Normalize legacy string[] scoringCriteria to { name, description }[]
 	return {
-		ORAL_PRESENTATION: normalizeScoringCriteria({
+		ORAL_PRESENTATION: normalizeSubmissionTypeConfig({
 			...DEFAULT_ORAL_PRESENTATION_CONFIG,
 			...settings.SUBMISSION_TYPE_ORAL_PRESENTATION,
 		}),
-		POSTER: normalizeScoringCriteria({
+		POSTER: normalizeSubmissionTypeConfig({
 			...DEFAULT_POSTER_CONFIG,
 			...settings.SUBMISSION_TYPE_POSTER,
 		}),
-		FULL_PAPER: normalizeScoringCriteria({
+		FULL_PAPER: normalizeSubmissionTypeConfig({
 			...DEFAULT_FULL_PAPER_CONFIG,
 			...settings.SUBMISSION_TYPE_FULL_PAPER,
 		}),

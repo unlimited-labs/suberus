@@ -1,7 +1,9 @@
+import { SUPPORTED_FILE_EXTENSIONS } from "@/lib/settings/file-types";
 import { createJobProgress } from "./job-progress";
 import { ensureQueueAndSend } from "./queue";
 import { getSetting } from "./settings";
 import { generateExtractionFileKey, uploadFile } from "./storage";
+import { validateUpload } from "./validate-upload";
 
 /**
  * Stage a file in object storage and enqueue an extraction job.
@@ -15,10 +17,10 @@ export async function enqueueExtractionJob(
 	fileName: string,
 ): Promise<{ jobId: string }> {
 	const maxFileSizeMb = await getSetting("MAX_FILE_SIZE_MB");
-	const maxBytes = maxFileSizeMb * 1024 * 1024;
-	if (buffer.length > maxBytes) {
-		throw new Error(`File exceeds max size of ${maxFileSizeMb} MB`);
-	}
+	const detected = await validateUpload(buffer, {
+		allowedExtensions: SUPPORTED_FILE_EXTENSIONS,
+		maxBytes: maxFileSizeMb * 1024 * 1024,
+	});
 
 	const [heuristic, ai] = await Promise.all([
 		getSetting("EXTRACTION_HEURISTIC"),
@@ -27,7 +29,7 @@ export async function enqueueExtractionJob(
 
 	const jobId = await createJobProgress("extraction");
 	const storageKey = generateExtractionFileKey(jobId, fileName);
-	await uploadFile(buffer, storageKey, "application/octet-stream");
+	await uploadFile(buffer, storageKey, detected.mime);
 
 	await ensureQueueAndSend("extraction", {
 		jobId,

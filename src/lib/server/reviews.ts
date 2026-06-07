@@ -11,9 +11,14 @@ import {
 	uploadFile,
 } from "@/lib/server/storage";
 import {
+	UploadValidationError,
+	validateUpload,
+} from "@/lib/server/validate-upload";
+import {
 	checkAndTriggerReviewCompletion,
 	validateAssignmentTransition,
 } from "@/lib/server/workflow";
+import { SUPPORTED_FILE_EXTENSIONS } from "@/lib/settings/file-types";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import { logger } from "@/logger.ts";
 
@@ -419,7 +424,6 @@ export async function uploadReviewAttachment(
 	reviewId: string,
 	userId: string,
 	fileName: string,
-	mimeType: string,
 	fileBase64: string,
 ): Promise<{ success: boolean; fileId?: string; error?: string }> {
 	// Verify reviewer owns this review
@@ -437,10 +441,26 @@ export async function uploadReviewAttachment(
 
 	// Decode base64 to buffer
 	const buffer = Buffer.from(fileBase64, "base64");
+
+	// Validate by magic number — reviewers may attach a PDF or DOCX only.
+	const maxBytes = (await getSetting("MAX_FILE_SIZE_MB")) * 1024 * 1024;
+	let detected: { ext: string; mime: string };
+	try {
+		detected = await validateUpload(buffer, {
+			allowedExtensions: SUPPORTED_FILE_EXTENSIONS,
+			maxBytes,
+		});
+	} catch (error) {
+		if (error instanceof UploadValidationError) {
+			return { success: false, error: error.message };
+		}
+		throw error;
+	}
+
 	const storageKey = generateReviewFileKey(reviewId, fileName);
 
-	// Upload to S3
-	await uploadFile(buffer, storageKey, mimeType);
+	// Upload to S3 with the detected (trustworthy) mime type
+	await uploadFile(buffer, storageKey, detected.mime);
 
 	// Delete existing attachment if any (1 file per review)
 	const existingFile = await prisma.file.findFirst({
@@ -470,7 +490,7 @@ export async function uploadReviewAttachment(
 			storageKey,
 			fileName,
 			originalName: fileName,
-			mimeType,
+			mimeType: detected.mime,
 			size: buffer.length,
 			uploadedById: userId,
 		},

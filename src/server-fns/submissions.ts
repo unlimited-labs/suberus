@@ -17,6 +17,7 @@ import {
 	type UserSubmission,
 	updateDraftSubmission,
 } from "@/lib/server/submissions";
+import { SUPPORTED_FILE_EXTENSIONS } from "@/lib/settings/file-types";
 import {
 	authorSchema,
 	createDynamicSubmissionSchema,
@@ -193,6 +194,31 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 		// Convert base64 to buffer
 		const buffer = Buffer.from(data.fileBase64, "base64");
 
+		// Validate the real file type by magic number against the allowed
+		// extensions for this submission's type — never trust the client mime.
+		const { validateUpload, UploadValidationError } = await import(
+			"@/lib/server/validate-upload"
+		);
+		const activeTypes = await getActiveSubmissionTypes();
+		const typeConfig = activeTypes.find(
+			(t) => t.type === submission.type,
+		)?.config;
+		const allowedExtensions =
+			typeConfig && typeConfig.allowedExtensions.length > 0
+				? typeConfig.allowedExtensions
+				: SUPPORTED_FILE_EXTENSIONS;
+		const maxBytes = (await getSetting("MAX_FILE_SIZE_MB")) * 1024 * 1024;
+
+		let detected: { ext: string; mime: string };
+		try {
+			detected = await validateUpload(buffer, { allowedExtensions, maxBytes });
+		} catch (error) {
+			if (error instanceof UploadValidationError) {
+				return { success: false, error: error.message };
+			}
+			throw error;
+		}
+
 		// Generate storage key
 		const storageKey = generateSubmissionFileKey(
 			data.submissionId,
@@ -200,8 +226,8 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 			data.fileName,
 		);
 
-		// Upload to S3
-		await uploadFile(buffer, storageKey, data.mimeType);
+		// Upload to S3 with the detected (trustworthy) mime type
+		await uploadFile(buffer, storageKey, detected.mime);
 
 		// Create file record
 		const file = await prisma.file.create({
@@ -212,7 +238,7 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 				storageKey,
 				fileName: data.fileName,
 				originalName: data.fileName,
-				mimeType: data.mimeType,
+				mimeType: detected.mime,
 				size: buffer.length,
 				uploadedById: context.user.id,
 			},

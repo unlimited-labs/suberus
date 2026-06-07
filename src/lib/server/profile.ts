@@ -2,6 +2,11 @@ import { prisma } from "@/db.server";
 import { activityDetail } from "@/lib/activity-log";
 import { logActivity } from "@/lib/server/activity-log";
 import { deleteFile, uploadFile } from "@/lib/server/storage";
+import { validateUpload } from "@/lib/server/validate-upload";
+import { SUPPORTED_IMAGE_EXTENSIONS } from "@/lib/settings/file-types";
+
+/** Avatar images are capped at 5MB (matches the upload UI). */
+const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
 
 export async function updatePersonalInfo(
 	userId: string,
@@ -69,13 +74,12 @@ function generateAvatarKey(userId: string, ext: string): string {
 	return `avatars/${userId}/${Date.now()}.${ext}`;
 }
 
-export async function updateUserAvatar(
-	userId: string,
-	buffer: Buffer,
-	mimeType: string,
-) {
-	const ext = mimeType.split("/")[1] || "jpg";
-	const key = generateAvatarKey(userId, ext);
+export async function updateUserAvatar(userId: string, buffer: Buffer) {
+	const detected = await validateUpload(buffer, {
+		allowedExtensions: SUPPORTED_IMAGE_EXTENSIONS,
+		maxBytes: MAX_AVATAR_BYTES,
+	});
+	const key = generateAvatarKey(userId, detected.ext);
 
 	// Delete old avatar if exists
 	const user = await prisma.user.findUnique({
@@ -86,7 +90,7 @@ export async function updateUserAvatar(
 		await deleteFile(user.image);
 	}
 
-	await uploadFile(buffer, key, mimeType);
+	await uploadFile(buffer, key, detected.mime);
 	await prisma.user.update({
 		where: { id: userId },
 		data: { image: key },
