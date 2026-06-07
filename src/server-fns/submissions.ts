@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { prisma } from "@/db.server";
 import { getUploadedFile } from "@/lib/server/form-upload";
 import { authMiddleware } from "@/lib/server/middleware/auth";
 import {
@@ -89,21 +90,30 @@ export const createSubmission = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.inputValidator(inputSchema)
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
-		const [submissionDeadline, submissionsLocked] = await Promise.all([
-			getSetting("SUBMISSION_DEADLINE"),
-			getSetting("SUBMISSIONS_LOCKED"),
-		]);
-		if (submissionsLocked) {
-			return {
-				success: false,
-				error: "Submissions are currently closed by the administrator",
-			};
-		}
-		if (submissionDeadline && new Date(submissionDeadline) < new Date()) {
-			return {
-				success: false,
-				error: "The submission deadline has passed",
-			};
+		const [submissionDeadline, submissionsLocked, lateAllowed] =
+			await Promise.all([
+				getSetting("SUBMISSION_DEADLINE"),
+				getSetting("SUBMISSIONS_LOCKED"),
+				prisma.user
+					.findUnique({
+						where: { id: context.user.id },
+						select: { allowLateSubmission: true },
+					})
+					.then((u) => u?.allowLateSubmission ?? false),
+			]);
+		if (!lateAllowed) {
+			if (submissionsLocked) {
+				return {
+					success: false,
+					error: "Submissions are currently closed by the administrator",
+				};
+			}
+			if (submissionDeadline && new Date(submissionDeadline) < new Date()) {
+				return {
+					success: false,
+					error: "The submission deadline has passed",
+				};
+			}
 		}
 
 		const activeTypes = await getActiveSubmissionTypes();

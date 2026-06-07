@@ -8,6 +8,7 @@ export type ActivityDetail =
 	| { type: "USER_PASSWORD_CHANGED" }
 	| { type: "USER_ROLE_CHANGED"; fromRole: UserRole; toRole: UserRole }
 	| { type: "USER_TOGGLED_ACTIVE"; isActive: boolean }
+	| { type: "USER_TOGGLED_LATE_SUBMISSION"; allowLateSubmission: boolean }
 	| { type: "USER_DELETED"; email: string }
 	| {
 			type: "SUBMISSION_CREATED";

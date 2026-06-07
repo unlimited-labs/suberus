@@ -798,6 +798,18 @@ export async function deleteTrack(trackId: string): Promise<void> {
 	await db.conferenceTrack.delete({ where: { id: trackId } });
 }
 
+/** Set a user's allowLateSubmission flag directly (for test arrangement) */
+export async function setUserLateSubmission(
+	userId: string,
+	allow: boolean,
+): Promise<void> {
+	const db = getPrisma();
+	await db.user.update({
+		where: { id: userId },
+		data: { allowLateSubmission: allow },
+	});
+}
+
 /** Set an app setting directly (for test arrangement) */
 export async function setAppSetting(key: AppSettingKey, value: unknown): Promise<void> {
 	const db = getPrisma();

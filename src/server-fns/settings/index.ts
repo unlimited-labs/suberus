@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { prisma } from "@/db.server";
 import { getUploadedFile } from "@/lib/server/form-upload";
 import { adminMiddleware, authMiddleware } from "@/lib/server/middleware/auth";
 import {
@@ -562,12 +563,18 @@ export const getSubmissionValidationForFormFn = createServerFn({
  */
 export const getSubmissionDeadlineFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
-	.handler(async () => {
-		const [deadline, locked] = await Promise.all([
+	.handler(async ({ context }) => {
+		const [deadline, locked, canBypass] = await Promise.all([
 			getSetting("SUBMISSION_DEADLINE"),
 			getSetting("SUBMISSIONS_LOCKED"),
+			prisma.user
+				.findUnique({
+					where: { id: context.user.id },
+					select: { allowLateSubmission: true },
+				})
+				.then((u) => u?.allowLateSubmission ?? false),
 		]);
-		return { deadline, locked };
+		return { deadline, locked, canBypass };
 	});
 
 /**

@@ -34,6 +34,7 @@ model User {
   role                 UserRole              @default(AUTHOR)
   emailVerified        Boolean               @default(false)
   isActive             Boolean               @default(true)
+  allowLateSubmission  Boolean               @default(false)
   lastLoginAt          DateTime?
   tosAcceptedAt        DateTime?
   affiliationId        String?               @db.Uuid
@@ -307,6 +308,7 @@ enum ActivityType {
   USER_PASSWORD_CHANGED
   USER_ROLE_CHANGED
   USER_TOGGLED_ACTIVE
+  USER_TOGGLED_LATE_SUBMISSION
   USER_DELETED
   // Submission
   SUBMISSION_CREATED

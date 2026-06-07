@@ -39,7 +39,7 @@ export const Route = createFileRoute("/_app/submissions/")({
 function SubmissionsPage() {
 	const { data: submissions } = useSuspenseQuery(mySubmissionsQueryOptions());
 	const {
-		data: { deadline, locked },
+		data: { deadline, locked, canBypass },
 	} = useSuspenseQuery(submissionDeadlineQueryOptions());
 	const { data: activeTypes } = useSuspenseQuery(
 		activeSubmissionTypesQueryOptions(),
@@ -50,17 +50,19 @@ function SubmissionsPage() {
 		: null;
 	const deadlineUrgent = daysLeft !== null && daysLeft <= 7;
 	const deadlineCritical = daysLeft !== null && daysLeft <= 3;
-	const deadlineOpen = deadline ? new Date(deadline) > new Date() : true;
+	const deadlineOpen =
+		canBypass || (deadline ? new Date(deadline) > new Date() : true);
 	const hasActiveTypes = activeTypes.length > 0;
-	const canSubmit = !locked && deadlineOpen && hasActiveTypes;
+	const canSubmit = (canBypass || !locked) && deadlineOpen && hasActiveTypes;
 
-	const disabledReason = locked
-		? "Submissions have been closed by the administrator"
-		: !deadlineOpen
-			? "The submission deadline has passed"
-			: !hasActiveTypes
-				? "No submission types are currently active"
-				: "";
+	const disabledReason =
+		!canBypass && locked
+			? "Submissions have been closed by the administrator"
+			: !deadlineOpen
+				? "The submission deadline has passed"
+				: !hasActiveTypes
+					? "No submission types are currently active"
+					: "";
 
 	// Sort submissions by newest first (updatedAt DESC)
 	const sortedSubmissions = [...submissions].sort(

@@ -44,6 +44,7 @@ export interface AdminUser {
 	needInvoice: boolean;
 	role: UserRole;
 	isActive: boolean;
+	allowLateSubmission: boolean;
 	emailVerified: boolean;
 	createdAt: Date;
 	lastLoginAt: Date | null;
@@ -264,6 +265,7 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 		needInvoice: u.needInvoice,
 		role: u.role,
 		isActive: u.isActive,
+		allowLateSubmission: u.allowLateSubmission,
 		emailVerified: u.emailVerified,
 		createdAt: u.createdAt,
 		lastLoginAt: u.lastLoginAt,
@@ -310,6 +312,7 @@ export async function getUserById(id: string): Promise<AdminUserDetail | null> {
 		needInvoice: user.needInvoice,
 		role: user.role,
 		isActive: user.isActive,
+		allowLateSubmission: user.allowLateSubmission,
 		emailVerified: user.emailVerified,
 		createdAt: user.createdAt,
 		lastLoginAt: user.lastLoginAt,
@@ -487,6 +490,34 @@ export async function toggleUserActive(
 			performedBy,
 			detail: activityDetail("USER_TOGGLED_ACTIVE", {
 				isActive: data.isActive,
+			}),
+		});
+	});
+
+	return { success: true };
+}
+
+export interface ToggleUserLateSubmissionInput {
+	userId: string;
+	allowLateSubmission: boolean;
+}
+
+export async function toggleUserLateSubmission(
+	data: ToggleUserLateSubmissionInput,
+	performedBy?: string,
+): Promise<{ success: boolean }> {
+	await prisma.$transaction(async (tx) => {
+		await tx.user.update({
+			where: { id: data.userId },
+			data: { allowLateSubmission: data.allowLateSubmission },
+		});
+
+		await logActivityTx(tx, {
+			type: "USER_TOGGLED_LATE_SUBMISSION",
+			userId: data.userId,
+			performedBy,
+			detail: activityDetail("USER_TOGGLED_LATE_SUBMISSION", {
+				allowLateSubmission: data.allowLateSubmission,
 			}),
 		});
 	});
@@ -758,6 +789,7 @@ export interface PatchUserData {
 	id: string;
 	role?: UserRole;
 	isActive?: boolean;
+	allowLateSubmission?: boolean;
 	markFeePaid?: boolean;
 	feeType?: string;
 	feeAmount?: number;
@@ -779,6 +811,16 @@ export async function patchUser(
 			{
 				userId: data.id,
 				isActive: data.isActive,
+			},
+			performedBy,
+		);
+	}
+
+	if (data.allowLateSubmission !== undefined) {
+		await toggleUserLateSubmission(
+			{
+				userId: data.id,
+				allowLateSubmission: data.allowLateSubmission,
 			},
 			performedBy,
 		);
@@ -812,6 +854,8 @@ export async function patchUser(
 	const changes = [
 		data.role !== undefined && `role=${data.role}`,
 		data.isActive !== undefined && `active=${data.isActive}`,
+		data.allowLateSubmission !== undefined &&
+			`allowLateSubmission=${data.allowLateSubmission}`,
 		data.markFeePaid && "feePaid",
 		data.unmarkFeePaid && "feeUnpaid",
 		data.verifyEmail && "emailVerified",

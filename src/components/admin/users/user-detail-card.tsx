@@ -3,6 +3,8 @@ import {
 	IconCalendar,
 	IconCash,
 	IconClock,
+	IconClockPlus,
+	IconClockX,
 	IconEdit,
 	IconId,
 	IconMail,
@@ -200,6 +202,7 @@ interface UserDetailCardProps {
 interface PatchPayload {
 	role?: UserRole;
 	isActive?: boolean;
+	allowLateSubmission?: boolean;
 	markFeePaid?: boolean;
 	feeType?: string;
 	feeAmount?: number;
@@ -265,6 +268,10 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 		mutation.mutate({ isActive: !user.isActive });
 	};
 
+	const handleToggleLateSubmission = () => {
+		mutation.mutate({ allowLateSubmission: !user.allowLateSubmission });
+	};
+
 	const handleVerifyEmail = () => {
 		mutation.mutate({ verifyEmail: true });
 	};
@@ -326,6 +333,25 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 									<>
 										<IconUserCheck className="mr-2 size-4" />
 										Activate
+									</>
+								)}
+							</Button>
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={handleToggleLateSubmission}
+								disabled={mutation.isPending}
+								data-testid="toggle-late-submission"
+							>
+								{user.allowLateSubmission ? (
+									<>
+										<IconClockX className="mr-2 size-4" />
+										Disallow late submission
+									</>
+								) : (
+									<>
+										<IconClockPlus className="mr-2 size-4" />
+										Allow late submission
 									</>
 								)}
 							</Button>

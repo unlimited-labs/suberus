@@ -48,8 +48,11 @@ actions:
 |---|---|
 | **Change role** | Promote/demote between Author, Reviewer, Editor, Admin. Reviewers (and above) can be assigned to review. |
 | **Activate / deactivate** | Block or restore account access without deleting the user. |
+| **Allow / disallow late submission** | Let this user create new submissions even after the submission deadline has passed and while submissions are locked. Off by default; affects only this user. |
 | **Mark fee paid / unpaid** | Record payment status (per fee type / currency from **[Fee](/configuration/fee/)**). |
 | **View survey answers** | See everything the user submitted in the registration survey. |
+
+> 🖼️ *[Screenshot placeholder — User detail actions incl. Allow late submission]*
 
 ### Submissions panel
 
@@ -69,7 +72,7 @@ are included.
 | **Last updated** | When the submission last changed. |
 
 <Aside type="caution">
-Role changes, activation/deactivation, and fee marking are recorded in the
+Role changes, activation/deactivation, late-submission permission changes, and fee marking are recorded in the
 **[activity log](/managing/activity-log/)**. Deactivating is reversible; deleting a
 user is not — prefer deactivation unless you're sure.
 </Aside>

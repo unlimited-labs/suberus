@@ -1,5 +1,5 @@
 import { test, expect } from "../helpers/base-fixtures"
-import { setAppSetting } from "../helpers/test-db"
+import { getTestUserIds, setAppSetting, setUserLateSubmission } from "../helpers/test-db"
 import { loginAs } from "../helpers/auth"
 import { TEST_USER } from "../helpers/test-users"
 
@@ -149,5 +149,45 @@ test.describe.serial("Submission deadline & lock", () => {
 
 		// Clean up
 		await setAppSetting("SUBMISSION_DEADLINE", "")
+	})
+})
+
+// Per-user "Allow late submission" override bypasses both deadline and lock
+test.describe.serial("Late submission override", () => {
+	test.afterAll(async () => {
+		const { testUserId } = await getTestUserIds()
+		await setUserLateSubmission(testUserId, false)
+		await setAppSetting("SUBMISSIONS_LOCKED", false)
+		await setAppSetting("SUBMISSION_DEADLINE", "")
+	})
+
+	test("override lets user submit past deadline and while locked", async ({
+		page,
+	}) => {
+		const { testUserId } = await getTestUserIds()
+		const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+			.toISOString()
+			.split("T")[0]
+		await setAppSetting("SUBMISSION_DEADLINE", yesterday)
+		await setAppSetting("SUBMISSIONS_LOCKED", true)
+		await setUserLateSubmission(testUserId, true)
+
+		await loginAs(page, TEST_USER)
+		await page.goto("/submissions")
+
+		await expect(
+			page.getByRole("button", { name: "New Submission" }),
+		).toBeEnabled()
+	})
+
+	test("disabling the override blocks the user again", async ({ page }) => {
+		const { testUserId } = await getTestUserIds()
+		// Deadline + lock still active from previous test
+		await setUserLateSubmission(testUserId, false)
+
+		await loginAs(page, TEST_USER)
+		await page.goto("/submissions")
+
+		await expect(page.getByTestId("new-submission-disabled")).toBeVisible()
 	})
 })

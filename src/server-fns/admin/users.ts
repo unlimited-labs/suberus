@@ -79,6 +79,7 @@ const patchUserSchema = z.object({
 	id: z.string(),
 	role: z.enum(["ADMIN", "EDITOR", "REVIEWER", "AUTHOR"]).optional(),
 	isActive: z.boolean().optional(),
+	allowLateSubmission: z.boolean().optional(),
 	markFeePaid: z.boolean().optional(),
 	feeType: z.string().optional(),
 	feeAmount: z.number().optional(),

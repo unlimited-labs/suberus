@@ -623,6 +623,23 @@ When author resubmits after REVISE_REQUIRED:
 
 ## Deadlines
 
+### Submission Deadline
+
+```typescript
+Config: SUBMISSION_DEADLINE (date, optional) + SUBMISSIONS_LOCKED (boolean)
+
+When an author creates a new submission (draft or final):
+- If SUBMISSIONS_LOCKED is on -> blocked
+- Else if SUBMISSION_DEADLINE is set and has passed -> blocked
+- Otherwise allowed
+
+Per-user override: User.allowLateSubmission (default false)
+- When true, that user bypasses BOTH the deadline and SUBMISSIONS_LOCKED
+- Set by admins/editors via the user detail page; recorded in the activity log
+  (USER_TOGGLED_LATE_SUBMISSION)
+- Only affects new-submission creation (edits/resubmits are not deadline-guarded)
+```
+
 ### Review Deadlines
 
 ```typescript

@@ -5,6 +5,7 @@ export const activityLabels: Record<string, string> = {
 	USER_PASSWORD_CHANGED: "Password changed",
 	USER_ROLE_CHANGED: "Role changed",
 	USER_TOGGLED_ACTIVE: "User status changed",
+	USER_TOGGLED_LATE_SUBMISSION: "Late submission permission changed",
 	USER_DELETED: "User deleted",
 	SUBMISSION_CREATED: "Submission created",
 	SUBMISSION_DRAFT_SUBMITTED: "Draft submitted",
