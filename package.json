@@ -65,6 +65,7 @@
     "consola": "^3.4.2",
     "countries-and-timezones": "^3.9.0",
     "countries-list": "^3.3.0",
+    "country-flag-icons": "^1.6.17",
     "dotenv": "^17.4.2",
     "fast-xml-parser": "^5.8.0",
     "file-type": "^22.0.1",

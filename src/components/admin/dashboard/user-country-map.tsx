@@ -1,10 +1,19 @@
+import { IconList, IconMap, IconWorld } from "@tabler/icons-react";
 import { countries } from "countries-list";
+import * as Flags from "country-flag-icons/react/3x2";
 import MapLibreGL from "maplibre-gl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "@/components/theme-provider";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Card,
+	CardAction,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 import { MapControls, Map as MapView, useMap } from "@/components/ui/map";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { COUNTRY_CENTROIDS } from "@/lib/country-centroids";
 import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
 
@@ -227,8 +236,77 @@ function BubbleLayer({
 	return null;
 }
 
+interface CountryRow {
+	country: string;
+	code: string | null;
+	count: number;
+}
+
+function aggregateByCountry(
+	data: AdminDashboardMetrics["usersByCountry"],
+): CountryRow[] {
+	const byCode = new globalThis.Map<string, CountryRow>();
+	const byName = new globalThis.Map<string, CountryRow>();
+
+	for (const entry of data) {
+		const code = countryNameToCode.get(entry.country) ?? null;
+		const bucket = code ? byCode : byName;
+		const key = code ?? entry.country;
+		const existing = bucket.get(key);
+		if (existing) {
+			existing.count += entry.count;
+		} else {
+			bucket.set(key, { country: entry.country, code, count: entry.count });
+		}
+	}
+
+	return [...byCode.values(), ...byName.values()].sort(
+		(a, b) => b.count - a.count,
+	);
+}
+
+function CountryFlag({ code }: { code: string | null }) {
+	const upper = code?.toUpperCase();
+	// biome-ignore lint/performance/noDynamicNamespaceImportAccess: flag is resolved at runtime from the country code; all flags are needed
+	const Flag = upper ? Flags[upper as keyof typeof Flags] : undefined;
+
+	if (!Flag) {
+		return <IconWorld className="size-4 shrink-0 text-muted-foreground" />;
+	}
+
+	return <Flag className="h-4 w-6 shrink-0 rounded-sm" />;
+}
+
+function CountryList({
+	data,
+}: {
+	data: AdminDashboardMetrics["usersByCountry"];
+}) {
+	const rows = useMemo(() => aggregateByCountry(data), [data]);
+
+	return (
+		<div className="max-h-[300px] space-y-1 overflow-y-auto md:max-h-[400px]">
+			{rows.map((row) => (
+				<div
+					key={row.code ?? row.country}
+					className="flex items-center justify-between gap-3 border-b py-2 last:border-b-0"
+				>
+					<div className="flex min-w-0 items-center gap-2">
+						<CountryFlag code={row.code} />
+						<span className="truncate text-sm">{row.country}</span>
+					</div>
+					<span className="shrink-0 text-sm font-medium tabular-nums text-muted-foreground">
+						{row.count}
+					</span>
+				</div>
+			))}
+		</div>
+	);
+}
+
 export function UserCountryMap({ data }: UserCountryMapProps) {
 	const resolvedTheme = useResolvedAppTheme();
+	const [view, setView] = useState<"map" | "list">("map");
 
 	if (!data) {
 		return (
@@ -260,17 +338,36 @@ export function UserCountryMap({ data }: UserCountryMapProps) {
 
 	return (
 		<Card>
-			<CardHeader>
-				<CardTitle>Users by Country</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<div className="h-[300px] md:h-[400px]">
-					<MapView center={MAP_CENTER} zoom={1.5} theme={resolvedTheme}>
-						<MapControls showZoom showFullscreen position="bottom-right" />
-						<BubbleLayer data={data} />
-					</MapView>
-				</div>
-			</CardContent>
+			<Tabs value={view} onValueChange={(v) => setView(v as "map" | "list")}>
+				<CardHeader>
+					<CardTitle>Users by Country</CardTitle>
+					<CardAction>
+						<TabsList>
+							<TabsTrigger value="map">
+								<IconMap />
+								<span className="hidden sm:inline">Map</span>
+							</TabsTrigger>
+							<TabsTrigger value="list">
+								<IconList />
+								<span className="hidden sm:inline">List</span>
+							</TabsTrigger>
+						</TabsList>
+					</CardAction>
+				</CardHeader>
+				<CardContent>
+					<TabsContent value="map">
+						<div className="h-[300px] md:h-[400px]">
+							<MapView center={MAP_CENTER} zoom={1.5} theme={resolvedTheme}>
+								<MapControls showZoom showFullscreen position="bottom-right" />
+								<BubbleLayer data={data} />
+							</MapView>
+						</div>
+					</TabsContent>
+					<TabsContent value="list">
+						<CountryList data={data} />
+					</TabsContent>
+				</CardContent>
+			</Tabs>
 		</Card>
 	);
 }
