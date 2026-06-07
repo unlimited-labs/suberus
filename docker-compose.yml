@@ -28,26 +28,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  # Electric SQL for real-time sync
-  electric:
-    image: electricsql/electric:latest
-    container_name: suberus-electric
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    environment:
-      DATABASE_URL: postgresql://suberus:suberus_dev_password@postgres:5432/suberus?sslmode=disable
-      ELECTRIC_INSECURE: "true"
-      ELECTRIC_PORT: "3000"
-      ELECTRIC_STORAGE_DIR: /app/storage
-    volumes:
-      - ./dev-volumes/electric_storage:/app/storage
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - suberus-network
       
   # Garage S3-compatible storage
   garage:
