@@ -55,7 +55,7 @@ export function MetricsGrid({ metrics, isLoading }: MetricsGridProps) {
 			<MetricCard
 				icon={IconCoins}
 				title="Fees Collected"
-				value={`$${fees.totalCollected.toFixed(0)}`}
+				value={`${fees.totalCollected.toFixed(0)} ${fees.currency}`}
 				subtitle={`${fees.paidCount} / ${fees.paidCount + fees.unpaidCount} paid`}
 				trend={trends.feesCollected}
 				trendColor="#22c55e"

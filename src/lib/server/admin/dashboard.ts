@@ -33,6 +33,7 @@ export interface AdminDashboardMetrics {
 		totalCollected: number;
 		paidCount: number;
 		unpaidCount: number;
+		currency: AppSettingsMap["FEE_CURRENCY"];
 	};
 	health: {
 		overdueReviews: number;
@@ -99,12 +100,14 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 	trendWindowStart.setHours(0, 0, 0, 0);
 	trendWindowStart.setDate(trendWindowStart.getDate() - (TREND_DAYS - 1));
 
-	const [s3Health, smtpHealth, llmHealth, doclingHealth] = await Promise.all([
-		checkS3Health(),
-		checkSmtpHealth(),
-		getSetting("SERVICE_HEALTH_LLM"),
-		getSetting("SERVICE_HEALTH_DOCLING"),
-	]);
+	const [s3Health, smtpHealth, llmHealth, doclingHealth, feeCurrency] =
+		await Promise.all([
+			checkS3Health(),
+			checkSmtpHealth(),
+			getSetting("SERVICE_HEALTH_LLM"),
+			getSetting("SERVICE_HEALTH_DOCLING"),
+			getSetting("FEE_CURRENCY"),
+		]);
 
 	const [
 		usersGroupedByRole,
@@ -333,6 +336,7 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 			totalCollected,
 			paidCount: paidFees.length,
 			unpaidCount: unpaidSubmitters,
+			currency: feeCurrency,
 		},
 		health: {
 			overdueReviews,
