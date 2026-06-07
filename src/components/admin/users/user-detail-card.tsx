@@ -45,7 +45,7 @@ import type { UserRole } from "@/generated/prisma/enums";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { useDateFormat } from "@/hooks/use-date-format";
 import { roleLabels, titleLabels, userRoleOptions } from "@/lib/labels";
-import type { AdminUser } from "@/lib/server/admin/users";
+import type { AdminUserDetail } from "@/lib/server/admin/users";
 import {
 	adminUserDetailQueryOptions,
 	adminUsersQueryOptions,
@@ -57,6 +57,7 @@ import {
 } from "@/server-fns/settings";
 import { UserDeleteDialog } from "./user-delete-dialog";
 import { UserEditDialog } from "./user-edit-dialog";
+import { UserSubmissionsSection } from "./user-submissions-section";
 import { UserSurveySection } from "./user-survey-section";
 
 interface FeeType {
@@ -193,7 +194,7 @@ function UserRoleDialog({
 }
 
 interface UserDetailCardProps {
-	user: AdminUser;
+	user: AdminUserDetail;
 }
 
 interface PatchPayload {
@@ -418,6 +419,11 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 							</div>
 						</div>
 					</div>
+
+					<Separator />
+
+					{/* Submissions */}
+					<UserSubmissionsSection submissions={user.submissions} />
 
 					<Separator />
 

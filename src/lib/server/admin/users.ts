@@ -1,6 +1,10 @@
 import { prisma } from "@/db.server";
 import type { Prisma } from "@/generated/prisma/client";
-import type { SubmissionType, UserRole } from "@/generated/prisma/enums";
+import type {
+	SubmissionStatus,
+	SubmissionType,
+	UserRole,
+} from "@/generated/prisma/enums";
 import { activityDetail } from "@/lib/activity-log";
 import { logActivity, logActivityTx } from "@/lib/server/activity-log";
 import { upsertAffiliation } from "@/lib/server/affiliations";
@@ -14,6 +18,16 @@ export interface SubmissionRoleSummary {
 	role: SubmissionInvolvementRole;
 	draft: boolean;
 	count: number;
+}
+
+export interface AdminUserSubmission {
+	id: string;
+	sequentialNumber: number;
+	title: string;
+	type: SubmissionType;
+	status: SubmissionStatus;
+	role: SubmissionInvolvementRole;
+	updatedAt: Date;
 }
 
 export interface AdminUser {
@@ -44,6 +58,11 @@ export interface AdminUser {
 	} | null;
 	submissionRoles: SubmissionRoleSummary[];
 	surveyAnswers: { questionId: string; value: string }[];
+}
+
+/** User detail payload — adds the full submission list (owned + co-authored). */
+export interface AdminUserDetail extends AdminUser {
+	submissions: AdminUserSubmission[];
 }
 
 export interface UsersFilters {
@@ -104,6 +123,73 @@ function buildSubmissionRoles(
 	}
 
 	return Array.from(buckets.values());
+}
+
+const submissionDetailSelect = {
+	id: true,
+	sequentialNumber: true,
+	title: true,
+	type: true,
+	status: true,
+	updatedAt: true,
+} satisfies Prisma.SubmissionSelect;
+
+/** Detail-page include: full submission rows for owned + co-authored work. */
+const userDetailInclude = {
+	fee: true,
+	affiliation: true,
+	surveyAnswers: { select: { questionId: true, value: true } },
+	submissions: { select: submissionDetailSelect },
+	submissionAuthors: {
+		select: {
+			submission: { select: { ...submissionDetailSelect, userId: true } },
+		},
+	},
+} satisfies Prisma.UserInclude;
+
+type UserWithDetail = Prisma.UserGetPayload<{
+	include: typeof userDetailInclude;
+}>;
+
+/**
+ * Build the user's submission list (owned as author, others' as coauthor),
+ * deduped so a user who both owns and co-authors a submission shows once as author.
+ */
+function buildUserSubmissions(user: UserWithDetail): AdminUserSubmission[] {
+	// Map keyed by submission id → at most one row per submission. Owned rows are
+	// added first (role "author") and win over any co-author row for the same
+	// submission, even if the user is listed multiple times as co-author.
+	const byId = new Map<string, AdminUserSubmission>();
+
+	for (const s of user.submissions) {
+		byId.set(s.id, {
+			id: s.id,
+			sequentialNumber: s.sequentialNumber,
+			title: s.title,
+			type: s.type,
+			status: s.status,
+			role: "author",
+			updatedAt: s.updatedAt,
+		});
+	}
+
+	for (const sa of user.submissionAuthors) {
+		const s = sa.submission;
+		if (byId.has(s.id)) continue; // already counted (as author, or a duplicate co-author row)
+		byId.set(s.id, {
+			id: s.id,
+			sequentialNumber: s.sequentialNumber,
+			title: s.title,
+			type: s.type,
+			status: s.status,
+			role: "coauthor",
+			updatedAt: s.updatedAt,
+		});
+	}
+
+	return Array.from(byId.values()).sort(
+		(a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
+	);
 }
 
 export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
@@ -202,14 +288,10 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 	};
 }
 
-export async function getUserById(id: string): Promise<AdminUser | null> {
+export async function getUserById(id: string): Promise<AdminUserDetail | null> {
 	const user = await prisma.user.findUnique({
 		where: { id },
-		include: {
-			fee: true,
-			affiliation: true,
-			...submissionRolesInclude,
-		},
+		include: userDetailInclude,
 	});
 
 	if (!user) return null;
@@ -243,6 +325,7 @@ export async function getUserById(id: string): Promise<AdminUser | null> {
 				}
 			: null,
 		submissionRoles: buildSubmissionRoles(user),
+		submissions: buildUserSubmissions(user),
 		surveyAnswers: user.surveyAnswers,
 	};
 }
@@ -665,7 +748,9 @@ export async function fetchUsers(
 	return getUsers(filters);
 }
 
-export async function fetchUserById(id: string): Promise<AdminUser | null> {
+export async function fetchUserById(
+	id: string,
+): Promise<AdminUserDetail | null> {
 	return getUserById(id);
 }
 
@@ -684,7 +769,7 @@ export interface PatchUserData {
 export async function patchUser(
 	data: PatchUserData,
 	performedBy?: string,
-): Promise<AdminUser | null> {
+): Promise<AdminUserDetail | null> {
 	if (data.role !== undefined) {
 		await changeUserRole({ userId: data.id, role: data.role }, performedBy);
 	}
@@ -791,7 +876,7 @@ export async function executeBulkAction(
 export async function adminUpdateProfile(
 	userId: string,
 	data: UpdateUserProfileInput,
-): Promise<AdminUser | null> {
+): Promise<AdminUserDetail | null> {
 	await updateUserProfile(userId, data);
 	logger.info(`[admin] updateProfile ${userId}`);
 	return getUserById(userId);

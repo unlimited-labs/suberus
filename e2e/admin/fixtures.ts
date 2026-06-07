@@ -108,6 +108,7 @@ export class UserDetailPage {
 	readonly unmarkButton: Locator
 	readonly editProfileButton: Locator
 	readonly deleteUserButton: Locator
+	readonly submissionRows: Locator
 
 	constructor(page: Page) {
 		this.page = page
@@ -124,6 +125,7 @@ export class UserDetailPage {
 		this.unmarkButton = page.getByRole("button", { name: "Unmark" })
 		this.editProfileButton = page.getByRole("button", { name: "Edit Profile" })
 		this.deleteUserButton = page.getByRole("button", { name: "Delete User" })
+		this.submissionRows = page.getByTestId("user-submission-row")
 	}
 
 	async goto(userId: string) {

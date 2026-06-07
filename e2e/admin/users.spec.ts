@@ -1,5 +1,6 @@
 import { test, expect, ADMIN_USER, TEST_USER, UNVERIFIED_USER, ADMIN_VERIFY_TEST_USER, EDITOR_USER } from "./fixtures"
 import { loginAs } from "../helpers/auth"
+import { SubmissionStatus } from "../../src/generated/prisma/enums"
 
 // Desktop tests - skip on mobile since mobile shows cards instead of table
 // Note: Authentication is handled via storageState in playwright.config.ts
@@ -319,6 +320,254 @@ test.describe("Admin Users Management", () => {
 			await expect(
 				userDetailPage.feeStatusPaid.or(userDetailPage.feeStatusUnpaid)
 			).toBeVisible()
+		})
+	})
+
+	test.describe("User Submissions Panel", () => {
+		test("shows owned submission with Author badge and clickable title", async ({ page, userDetailPage }) => {
+			test.slow()
+			// Arrange
+			const { createTestUser, createSubmission, deleteSubmission, deleteTestUser } = await import("../helpers/test-db")
+			const owner = await createTestUser({
+				email: `subpanel-owner-${Date.now()}@e2e.local`,
+				firstName: "SubPanel",
+				lastName: "Owner",
+			})
+			const submission = await createSubmission({
+				title: `owned-submission-${Date.now()}`,
+				userId: owner.id,
+				status: SubmissionStatus.SUBMITTED,
+			})
+
+			try {
+				// Act
+				await userDetailPage.goto(owner.id)
+				const row = userDetailPage.submissionRows.filter({ hasText: submission.title })
+				await expect(row).toBeVisible({ timeout: 10000 })
+
+				// Assert — role badge + status
+				await expect(row.getByText("Author", { exact: true })).toBeVisible()
+				await expect(row.getByText("Submitted", { exact: true })).toBeVisible()
+
+				// Act — title links to submission detail
+				await row.getByRole("link", { name: submission.title }).click()
+				await expect(page).toHaveURL(new RegExp(`/admin/submissions/${submission.id}`))
+			} finally {
+				await deleteSubmission(submission.id)
+				await deleteTestUser(owner.id)
+			}
+		})
+
+		test("shows co-authored submission with Co-author badge", async ({ userDetailPage }) => {
+			test.slow()
+			// Arrange — owner's submission lists tempUser as a co-author (linked by userId)
+			const { createTestUser, createSubmission, deleteSubmission, deleteTestUser } = await import("../helpers/test-db")
+			const coAuthor = await createTestUser({
+				email: `subpanel-coauthor-${Date.now()}@e2e.local`,
+				firstName: "SubPanel",
+				lastName: "CoAuthor",
+			})
+			const owner = await createTestUser({
+				email: `subpanel-owner2-${Date.now()}@e2e.local`,
+				firstName: "SubPanel",
+				lastName: "Owner2",
+			})
+			const submission = await createSubmission({
+				title: `coauthored-submission-${Date.now()}`,
+				userId: owner.id,
+				status: SubmissionStatus.SUBMITTED,
+				extraAuthors: [
+					{
+						firstName: "SubPanel",
+						lastName: "CoAuthor",
+						email: coAuthor.email,
+						userId: coAuthor.id,
+					},
+				],
+			})
+
+			try {
+				// Act
+				await userDetailPage.goto(coAuthor.id)
+				const row = userDetailPage.submissionRows.filter({ hasText: submission.title })
+				await expect(row).toBeVisible({ timeout: 10000 })
+
+				// Assert
+				await expect(row.getByText("Co-author", { exact: true })).toBeVisible()
+			} finally {
+				await deleteSubmission(submission.id)
+				await deleteTestUser(owner.id)
+				await deleteTestUser(coAuthor.id)
+			}
+		})
+
+		test("shows draft submissions", async ({ userDetailPage }) => {
+			test.slow()
+			// Arrange
+			const { createTestUser, createSubmission, deleteSubmission, deleteTestUser } = await import("../helpers/test-db")
+			const owner = await createTestUser({
+				email: `subpanel-draft-${Date.now()}@e2e.local`,
+				firstName: "SubPanel",
+				lastName: "Draft",
+			})
+			const submission = await createSubmission({
+				title: `draft-submission-${Date.now()}`,
+				userId: owner.id,
+				status: SubmissionStatus.DRAFT,
+			})
+
+			try {
+				// Act
+				await userDetailPage.goto(owner.id)
+				const row = userDetailPage.submissionRows.filter({ hasText: submission.title })
+
+				// Assert
+				await expect(row).toBeVisible({ timeout: 10000 })
+				await expect(row.getByText("Draft", { exact: true })).toBeVisible()
+			} finally {
+				await deleteSubmission(submission.id)
+				await deleteTestUser(owner.id)
+			}
+		})
+
+		test("user who owns AND co-authors the same submission appears once as Author", async ({ userDetailPage }) => {
+			test.slow()
+			// Arrange — owner is also listed as a co-author on their own submission
+			const { createTestUser, createSubmission, deleteSubmission, deleteTestUser } = await import("../helpers/test-db")
+			const owner = await createTestUser({
+				email: `subpanel-dual-${Date.now()}@e2e.local`,
+				firstName: "SubPanel",
+				lastName: "Dual",
+			})
+			const submission = await createSubmission({
+				title: `dual-role-submission-${Date.now()}`,
+				userId: owner.id,
+				status: SubmissionStatus.SUBMITTED,
+				extraAuthors: [
+					{
+						firstName: "SubPanel",
+						lastName: "Dual",
+						email: owner.email,
+						userId: owner.id,
+					},
+				],
+			})
+
+			try {
+				// Act
+				await userDetailPage.goto(owner.id)
+				const rows = userDetailPage.submissionRows.filter({ hasText: submission.title })
+
+				// Assert — deduped to a single row, tagged Author (not Co-author)
+				await expect(rows).toHaveCount(1)
+				await expect(rows.getByText("Author", { exact: true })).toBeVisible()
+				await expect(rows.getByText("Co-author", { exact: true })).toHaveCount(0)
+			} finally {
+				await deleteSubmission(submission.id)
+				await deleteTestUser(owner.id)
+			}
+		})
+
+		test("unlinked co-author (no userId) does not appear on their detail page", async ({ userDetailPage }) => {
+			test.slow()
+			// Arrange — a co-author listed by email only (userId null, e.g. not yet verified)
+			const { createTestUser, createSubmission, deleteSubmission, deleteTestUser } = await import("../helpers/test-db")
+			const unlinked = await createTestUser({
+				email: `subpanel-unlinked-${Date.now()}@e2e.local`,
+				firstName: "SubPanel",
+				lastName: "Unlinked",
+			})
+			const owner = await createTestUser({
+				email: `subpanel-owner3-${Date.now()}@e2e.local`,
+				firstName: "SubPanel",
+				lastName: "Owner3",
+			})
+			const submission = await createSubmission({
+				title: `unlinked-coauthor-submission-${Date.now()}`,
+				userId: owner.id,
+				status: SubmissionStatus.SUBMITTED,
+				extraAuthors: [
+					{
+						firstName: "SubPanel",
+						lastName: "Unlinked",
+						email: unlinked.email, // listed by email, but userId left null
+					},
+				],
+			})
+
+			try {
+				// Act
+				await userDetailPage.goto(unlinked.id)
+				await expect(userDetailPage.getUserEmail()).toBeVisible({ timeout: 10000 })
+
+				// Assert — email-only authorship is not surfaced (only userId-linked rows count)
+				await expect(userDetailPage.page.getByText("No submissions")).toBeVisible()
+				await expect(userDetailPage.submissionRows).toHaveCount(0)
+			} finally {
+				await deleteSubmission(submission.id)
+				await deleteTestUser(owner.id)
+				await deleteTestUser(unlinked.id)
+			}
+		})
+
+		test("submissions are ordered by last updated, newest first", async ({ userDetailPage }) => {
+			test.slow()
+			// Arrange — two owned submissions; bump the first so it becomes most-recently updated
+			const { createTestUser, createSubmission, deleteSubmission, deleteTestUser, getPrisma } = await import("../helpers/test-db")
+			const owner = await createTestUser({
+				email: `subpanel-order-${Date.now()}@e2e.local`,
+				firstName: "SubPanel",
+				lastName: "Order",
+			})
+			const older = await createSubmission({
+				title: `order-older-${Date.now()}`,
+				userId: owner.id,
+				status: SubmissionStatus.SUBMITTED,
+			})
+			const newer = await createSubmission({
+				title: `order-newer-${Date.now()}`,
+				userId: owner.id,
+				status: SubmissionStatus.SUBMITTED,
+			})
+			// Touch `older` so its updatedAt (auto-managed) overtakes `newer`
+			const db = getPrisma()
+			await db.submission.update({ where: { id: older.id }, data: { title: older.title } })
+
+			try {
+				// Act
+				await userDetailPage.goto(owner.id)
+				await expect(userDetailPage.submissionRows).toHaveCount(2)
+
+				// Assert — the just-touched submission is first
+				await expect(userDetailPage.submissionRows.nth(0)).toContainText(older.title)
+				await expect(userDetailPage.submissionRows.nth(1)).toContainText(newer.title)
+			} finally {
+				await deleteSubmission(older.id)
+				await deleteSubmission(newer.id)
+				await deleteTestUser(owner.id)
+			}
+		})
+
+		test("shows empty state for user without submissions", async ({ userDetailPage }) => {
+			// Arrange
+			const { createTestUser, deleteTestUser } = await import("../helpers/test-db")
+			const lonely = await createTestUser({
+				email: `subpanel-empty-${Date.now()}@e2e.local`,
+				firstName: "SubPanel",
+				lastName: "Empty",
+			})
+
+			try {
+				// Act
+				await userDetailPage.goto(lonely.id)
+				await expect(userDetailPage.getUserEmail()).toBeVisible({ timeout: 10000 })
+
+				// Assert
+				await expect(userDetailPage.page.getByText("No submissions")).toBeVisible()
+				await expect(userDetailPage.submissionRows).toHaveCount(0)
+			} finally {
+				await deleteTestUser(lonely.id)
+			}
 		})
 	})
 
