@@ -1,5 +1,6 @@
 import { Readable } from "node:stream";
 import { createFileRoute } from "@tanstack/react-router";
+import { format } from "date-fns";
 import type {
 	SubmissionStatus,
 	SubmissionType,
@@ -36,7 +37,7 @@ export const Route = createFileRoute("/api/admin/submissions/export")({
 				const archive = await createSubmissionsZipStream(submissions);
 				const webStream = Readable.toWeb(archive) as ReadableStream<Uint8Array>;
 
-				const filename = `submissions-export-${new Date().toISOString().split("T")[0]}.zip`;
+				const filename = `submissions-export-${format(new Date(), "yyyy-MM-dd")}.zip`;
 
 				return new Response(webStream, {
 					headers: {

@@ -1,5 +1,6 @@
 import { IconClock } from "@tabler/icons-react";
 import type { ReactNode } from "react";
+import { formatClockTime } from "@/lib/tz-datetime";
 
 interface Props {
 	start: Date;
@@ -8,14 +9,6 @@ interface Props {
 	timezone: string | undefined;
 	extra?: ReactNode;
 	compact?: boolean;
-}
-
-function formatTime(date: Date, timezone: string | undefined) {
-	return date.toLocaleTimeString([], {
-		hour: "2-digit",
-		minute: "2-digit",
-		timeZone: timezone || undefined,
-	});
 }
 
 export function TimeRangeSummary({
@@ -31,11 +24,11 @@ export function TimeRangeSummary({
 			<div className="flex items-center gap-1.5 text-xs text-muted-foreground">
 				<IconClock size={12} className="shrink-0" />
 				<span className="font-medium tabular-nums text-foreground">
-					{formatTime(start, timezone)}
+					{formatClockTime(start, timezone)}
 				</span>
 				<span>—</span>
 				<span className="font-medium tabular-nums text-foreground">
-					{formatTime(end, timezone)}
+					{formatClockTime(end, timezone)}
 				</span>
 				<span className="ml-auto">
 					{totalMin} min{extra}
@@ -47,11 +40,11 @@ export function TimeRangeSummary({
 		<div className="flex items-center gap-2 rounded-md bg-muted/60 px-3 py-2">
 			<IconClock size={14} className="shrink-0 text-muted-foreground" />
 			<span className="text-sm font-medium tabular-nums">
-				{formatTime(start, timezone)}
+				{formatClockTime(start, timezone)}
 			</span>
 			<span className="text-muted-foreground">—</span>
 			<span className="text-sm font-medium tabular-nums">
-				{formatTime(end, timezone)}
+				{formatClockTime(end, timezone)}
 			</span>
 			<span className="ml-auto text-xs text-muted-foreground">
 				{totalMin} min{extra}

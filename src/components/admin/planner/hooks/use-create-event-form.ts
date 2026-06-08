@@ -1,5 +1,6 @@
 import type { EventFormProps } from "@ilamy/calendar";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { addMinutes, differenceInMinutes, isAfter, isValid } from "date-fns";
 import { toast } from "sonner";
 import { useAppForm } from "@/hooks/use-app-form";
 import { tzLocalInputToUtc, utcToTzLocalInput } from "@/lib/tz-datetime";
@@ -22,11 +23,11 @@ function toDate(raw: unknown): Date | null {
 		typeof (raw as { toDate: unknown }).toDate === "function"
 	) {
 		const d = (raw as { toDate: () => Date }).toDate();
-		return Number.isNaN(d.getTime()) ? null : d;
+		return isValid(d) ? d : null;
 	}
 	if (typeof raw === "string" || typeof raw === "number") {
 		const d = new Date(raw);
-		return Number.isNaN(d.getTime()) ? null : d;
+		return isValid(d) ? d : null;
 	}
 	return null;
 }
@@ -57,8 +58,8 @@ export function useCreateEventForm({
 	const initialStart = toDate(selectedEvent?.start) ?? defaultStartAt;
 	const clickedEnd = toDate(selectedEvent?.end);
 	const clickedDurationMin =
-		clickedEnd && clickedEnd.getTime() > initialStart.getTime()
-			? Math.round((clickedEnd.getTime() - initialStart.getTime()) / 60_000)
+		clickedEnd && isAfter(clickedEnd, initialStart)
+			? differenceInMinutes(clickedEnd, initialStart)
 			: null;
 
 	const defaultValues: EventFormValues = {
@@ -86,9 +87,9 @@ export function useCreateEventForm({
 			const trimmed = value.title.trim();
 			try {
 				if (value.type === "session") {
-					const endDate = new Date(
-						startDate.getTime() +
-							value.presentationCount * value.minutesPerPresentation * 60_000,
+					const endDate = addMinutes(
+						startDate,
+						value.presentationCount * value.minutesPerPresentation,
 					);
 					await createSessionFn({
 						data: {
@@ -100,9 +101,7 @@ export function useCreateEventForm({
 						},
 					});
 				} else {
-					const endDate = new Date(
-						startDate.getTime() + value.breakDurationMin * 60_000,
-					);
+					const endDate = addMinutes(startDate, value.breakDurationMin);
 					await createBreakFn({
 						data: {
 							title: trimmed,

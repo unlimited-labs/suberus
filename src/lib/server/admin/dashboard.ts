@@ -1,3 +1,4 @@
+import { differenceInCalendarDays, startOfDay, subDays } from "date-fns";
 import { prisma } from "@/db.server";
 import type {
 	AssignmentStatus,
@@ -64,14 +65,11 @@ export interface AdminDashboardMetrics {
 	docling: AppSettingsMap["SERVICE_HEALTH_DOCLING"];
 }
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 const TREND_DAYS = 14;
 
 function dayIndex(date: Date, windowStart: Date): number {
-	// Normalize to local midnight and round so DST (23h/25h days) doesn't shift buckets.
-	const dayStart = new Date(date);
-	dayStart.setHours(0, 0, 0, 0);
-	const idx = Math.round((dayStart.getTime() - windowStart.getTime()) / DAY_MS);
+	// differenceInCalendarDays is DST-safe (counts calendar boundaries, not 24h spans).
+	const idx = differenceInCalendarDays(date, windowStart);
 	return Math.min(Math.max(idx, 0), TREND_DAYS - 1);
 }
 
@@ -95,10 +93,8 @@ function bucketSums(
 }
 
 export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics> {
-	const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-	const trendWindowStart = new Date();
-	trendWindowStart.setHours(0, 0, 0, 0);
-	trendWindowStart.setDate(trendWindowStart.getDate() - (TREND_DAYS - 1));
+	const sevenDaysAgo = subDays(new Date(), 7);
+	const trendWindowStart = subDays(startOfDay(new Date()), TREND_DAYS - 1);
 
 	const [s3Health, smtpHealth, llmHealth, doclingHealth, feeCurrency] =
 		await Promise.all([

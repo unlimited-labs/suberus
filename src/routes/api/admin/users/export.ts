@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { format } from "date-fns";
 import * as XLSX from "xlsx";
 import type { UserRole } from "@/generated/prisma/enums";
 import { formatDateTime } from "@/lib/format-date";
@@ -78,7 +79,7 @@ export const Route = createFileRoute("/api/admin/users/export")({
 				XLSX.utils.book_append_sheet(wb, ws, "Users");
 				const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
 
-				const filename = `users-export-${new Date().toISOString().split("T")[0]}.xlsx`;
+				const filename = `users-export-${format(new Date(), "yyyy-MM-dd")}.xlsx`;
 
 				return new Response(buffer, {
 					headers: {

@@ -36,13 +36,16 @@ function InstallPage() {
 			firstName: "",
 			lastName: "",
 			affiliation: "",
+			timezone: "",
 		},
 		validators: {
 			onChange: installSchema,
 			onSubmit: installSchema,
 		},
 		onSubmit: async ({ value }) => {
-			await performInstallFn({ data: value });
+			// Seed the conference timezone from the browser (client-side at submit).
+			const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? "";
+			await performInstallFn({ data: { ...value, timezone } });
 			toast.success("Setup complete! You can now sign in.");
 			navigate({ to: "/login" });
 		},

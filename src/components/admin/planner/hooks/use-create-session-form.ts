@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { addMinutes } from "date-fns";
 import { toast } from "sonner";
 import { useAppForm } from "@/hooks/use-app-form";
 import {
@@ -40,7 +41,7 @@ export function useCreateSessionForm({
 		},
 		onSubmit: async ({ value }) => {
 			const durationMin = submissionIds.length * value.slotMin;
-			const endAt = new Date(defaultStartAt.getTime() + durationMin * 60_000);
+			const endAt = addMinutes(defaultStartAt, durationMin);
 			try {
 				const { id } = await createSessionWithPresentationsFn({
 					data: {

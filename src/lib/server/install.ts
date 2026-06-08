@@ -53,11 +53,16 @@ export async function performInstall(data: InstallFormData): Promise<void> {
 		},
 	});
 
-	// 4. Conference name
+	// 4. Conference name + timezone (seeded from the browser at install)
 	await prisma.appSetting.upsert({
 		where: { key: "CONFERENCE_NAME" },
 		update: { value: data.conferenceName },
 		create: { key: "CONFERENCE_NAME", value: data.conferenceName },
+	});
+	await prisma.appSetting.upsert({
+		where: { key: "CONFERENCE_TIMEZONE" },
+		update: { value: data.timezone },
+		create: { key: "CONFERENCE_TIMEZONE", value: data.timezone },
 	});
 
 	// 5. Email templates

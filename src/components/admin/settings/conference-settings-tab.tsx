@@ -23,6 +23,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { TimezoneCombobox } from "@/components/ui/timezone-combobox";
 import { getErrorMessage } from "@/lib/error-message";
 import { getDateFormats } from "@/lib/format-date";
 import type { ConferenceSettings } from "@/server-fns/settings";
@@ -337,6 +338,18 @@ export function ConferenceSettingsTab({
 								</Label>
 							</div>
 						</RadioGroup>
+					</div>
+					<div className="space-y-2 sm:col-span-2">
+						<Label htmlFor="timezone">Conference Timezone</Label>
+						<TimezoneCombobox
+							id="timezone"
+							value={data.timezone}
+							onChange={(v) => handleChange("timezone", v)}
+						/>
+						<p className="text-xs text-muted-foreground">
+							All session start/end times are stored in UTC and displayed in
+							this zone.
+						</p>
 					</div>
 				</div>
 				<div className="mt-6 flex justify-end">

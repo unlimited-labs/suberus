@@ -4,6 +4,7 @@ import {
 	IconChevronRight,
 	IconLayoutList,
 } from "@tabler/icons-react";
+import { addDays } from "date-fns";
 import { useMemo, useState } from "react";
 import { formatDayLabel, sameDayInTz } from "@/lib/tz-datetime";
 import { MobileBreakRow } from "./mobile/mobile-break-row";
@@ -44,9 +45,7 @@ export function MobilePlanner({
 	);
 
 	const shiftDay = (delta: number) => {
-		const next = new Date(cursor);
-		next.setDate(next.getDate() + delta);
-		setCursor(next);
+		setCursor(addDays(cursor, delta));
 	};
 
 	const canPrev = !conferenceStart || cursor > conferenceStart;

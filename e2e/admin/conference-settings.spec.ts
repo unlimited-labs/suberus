@@ -114,38 +114,40 @@ test.describe.serial("Admin Conference Settings", () => {
 		await expect(page.getByText("Conference settings saved")).toBeVisible({ timeout: 5000 });
 	});
 
-	test("timezone pre-fills from browser and persists after save", async ({
+	test("timezone is editable on Conference tab and persists after save", async ({
 		page,
-	}) => {
-		// Timezone combobox lives on the Program tab (moved from Conference/Planner
-		// tabs in commit bae3509). Use ?tab=program URL which works on desktop+mobile.
+	}, testInfo) => {
+		// Timezone combobox lives on the Conference tab (Date & Time section) and is the
+		// single source of truth — seeded at install, edited here (no browser re-detection).
 
-		// Arrange — reset stored value so the UI falls back to browser detection
+		// Arrange — seed a known persisted value, then reload so the UI reflects it
 		const db = getPrisma();
 		await db.appSetting.upsert({
 			where: { key: "CONFERENCE_TIMEZONE" },
-			update: { value: "" },
-			create: { key: "CONFERENCE_TIMEZONE", value: "" },
+			update: { value: "America/New_York" },
+			create: { key: "CONFERENCE_TIMEZONE", value: "America/New_York" },
 		});
-		await page.goto("/admin/settings?tab=program");
+		await adminSettingsPage.goto();
+		await adminSettingsPage.switchToConferenceTab(testInfo);
 
 		const combobox = adminSettingsPage.getTimezoneCombobox();
 
-		// Assert — combobox is pre-filled (browser detection), not the placeholder
+		// Assert — combobox reflects the persisted value (SSOT), not the placeholder
 		await expect(combobox).toBeVisible({ timeout: 10000 });
-		await expect(combobox).not.toHaveText(/Select timezone/i);
+		await expect(combobox).toHaveText(/America\/New_York/);
 
-		// Act — pick a known zone
+		// Act — change to a different known zone and save
 		await combobox.click();
 		await page.getByPlaceholder("Search timezone...").fill("Europe/Warsaw");
 		await page.getByRole("option", { name: "Europe/Warsaw" }).click();
-		await page.getByRole("button", { name: "Save" }).first().click();
-		await expect(page.getByText(/Planner settings saved/i)).toBeVisible({
+		await adminSettingsPage.saveConferenceSettings();
+		await expect(page.getByText("Conference settings saved")).toBeVisible({
 			timeout: 10000,
 		});
 
 		// Assert — persisted after reload
-		await page.goto("/admin/settings?tab=program");
+		await adminSettingsPage.goto();
+		await adminSettingsPage.switchToConferenceTab(testInfo);
 		await expect(adminSettingsPage.getTimezoneCombobox()).toHaveText(
 			/Europe\/Warsaw/,
 			{ timeout: 10000 },

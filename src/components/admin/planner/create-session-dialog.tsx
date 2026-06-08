@@ -1,5 +1,6 @@
 import { useStore } from "@tanstack/react-form";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { addMinutes } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -49,7 +50,7 @@ export function CreateSessionDialog({
 
 	const slotMin = useStore(form.store, (s) => s.values.slotMin);
 	const durationMin = submissionIds.length * slotMin;
-	const endAt = new Date(defaultStartAt.getTime() + durationMin * 60_000);
+	const endAt = addMinutes(defaultStartAt, durationMin);
 
 	return (
 		<Dialog open={open} onOpenChange={(v) => !v && handleClose()}>

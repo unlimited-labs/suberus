@@ -4,6 +4,7 @@ import {
 	IconClock,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import { differenceInCalendarDays } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,10 +18,9 @@ import type { ReviewerAssignment } from "@/server-fns/reviews/assignments";
 
 export function ReviewMobileCard(assignment: ReviewerAssignment) {
 	const { formatDate } = useDateFormat();
-	const now = new Date();
 	const deadline = assignment.deadline;
 	const daysRemaining = deadline
-		? Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+		? differenceInCalendarDays(deadline, new Date())
 		: null;
 	const isPast = daysRemaining !== null && daysRemaining < 0;
 	const isUrgent =

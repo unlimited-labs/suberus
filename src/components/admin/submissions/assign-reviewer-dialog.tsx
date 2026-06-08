@@ -6,6 +6,7 @@ import {
 	IconX,
 } from "@tabler/icons-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { addDays, format } from "date-fns";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -43,8 +44,7 @@ interface AssignReviewerDialogProps {
 }
 
 function computeDefaultDeadline(days: number): string {
-	const date = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-	return date.toISOString().split("T")[0];
+	return format(addDays(new Date(), days), "yyyy-MM-dd");
 }
 
 export function AssignReviewerDialog({
@@ -238,7 +238,7 @@ export function AssignReviewerDialog({
 							type="date"
 							value={customDeadline}
 							onChange={(e) => setCustomDeadline(e.target.value)}
-							min={new Date().toISOString().split("T")[0]}
+							min={format(new Date(), "yyyy-MM-dd")}
 						/>
 					</div>
 

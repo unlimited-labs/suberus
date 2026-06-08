@@ -4,6 +4,7 @@ import {
 	redirect,
 	useNavigate,
 } from "@tanstack/react-router";
+import { isValid } from "date-fns";
 import type { CSSProperties } from "react";
 import { useEffect } from "react";
 import { AuthLayout } from "@/components/layout/auth-layout";
@@ -38,7 +39,7 @@ function formatDateRange(
 	if (!start && !end) return "";
 	const fmt = (d: string) => {
 		const date = new Date(d);
-		if (Number.isNaN(date.getTime())) return "";
+		if (!isValid(date)) return "";
 		return formatDate(date, dateFormatStr);
 	};
 	const s = start ? fmt(start) : "";

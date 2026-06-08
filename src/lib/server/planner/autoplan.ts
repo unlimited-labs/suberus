@@ -1,4 +1,5 @@
 import { PromisePool } from "@supercharge/promise-pool";
+import { differenceInMinutes } from "date-fns";
 import { prisma } from "@/db.server";
 import { env } from "@/env";
 import { logger } from "@/logger.ts";
@@ -309,10 +310,7 @@ export async function applyAutoPlan(jobId: string): Promise<ApplyResult> {
 
 			const sessionDurationMin = Math.max(
 				1,
-				Math.round(
-					(new Date(s.endAt).getTime() - new Date(s.startAt).getTime()) /
-						60_000,
-				),
+				differenceInMinutes(new Date(s.endAt), new Date(s.startAt)),
 			);
 			const durations = distributeDurations(
 				sessionDurationMin,

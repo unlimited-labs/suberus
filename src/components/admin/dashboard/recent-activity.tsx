@@ -13,6 +13,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRelativeTime } from "@/lib/format-date";
 import { activityLabels } from "@/lib/labels/activity";
 import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
 import { cn } from "@/lib/utils";
@@ -78,25 +79,6 @@ function getEventDescription(event: ActivityEvent): string | null {
 		default:
 			return null;
 	}
-}
-
-function formatTimeAgo(date: Date): string {
-	const now = new Date();
-	const diffMs = now.getTime() - new Date(date).getTime();
-	const diffMins = Math.floor(diffMs / 60000);
-	const diffHours = Math.floor(diffMs / 3600000);
-	const diffDays = Math.floor(diffMs / 86400000);
-
-	if (diffMins < 1) {
-		return "just now";
-	}
-	if (diffMins < 60) {
-		return `${diffMins}m ago`;
-	}
-	if (diffHours < 24) {
-		return `${diffHours}h ago`;
-	}
-	return `${diffDays}d ago`;
 }
 
 interface RecentActivityProps {
@@ -169,7 +151,7 @@ export function RecentActivity({ events }: RecentActivityProps) {
 											{label}
 										</Badge>
 										<span className="text-xs text-muted-foreground">
-											{formatTimeAgo(event.createdAt)}
+											{formatRelativeTime(event.createdAt)}
 										</span>
 									</div>
 

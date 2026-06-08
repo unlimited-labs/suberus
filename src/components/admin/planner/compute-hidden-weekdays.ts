@@ -1,4 +1,6 @@
+import { tz } from "@date-fns/tz";
 import type { WeekDays } from "@ilamy/calendar";
+import { differenceInCalendarDays, eachDayOfInterval, getDay } from "date-fns";
 
 const WEEKDAYS: readonly WeekDays[] = [
 	"sunday",
@@ -10,30 +12,20 @@ const WEEKDAYS: readonly WeekDays[] = [
 	"saturday",
 ] as const;
 
-const MS_PER_DAY = 86_400_000;
+// Conference start/end are UTC-midnight dates; evaluate weekdays in UTC so the
+// runtime timezone can't shift them by a day.
+const inUtc = { in: tz("UTC") };
 
 export function computeHiddenWeekdays(
 	start: Date | null,
 	end: Date | null,
 ): WeekDays[] {
 	if (!start || !end) return [];
-	const startMs = Date.UTC(
-		start.getUTCFullYear(),
-		start.getUTCMonth(),
-		start.getUTCDate(),
-	);
-	const endMs = Date.UTC(
-		end.getUTCFullYear(),
-		end.getUTCMonth(),
-		end.getUTCDate(),
-	);
-	const diffDays = Math.round((endMs - startMs) / MS_PER_DAY) + 1;
+	const diffDays = differenceInCalendarDays(end, start, inUtc) + 1;
 	if (diffDays <= 0 || diffDays >= 7) return [];
 
-	const present = new Set<number>();
-	for (let d = 0; d < diffDays; d++) {
-		const date = new Date(startMs + d * MS_PER_DAY);
-		present.add(date.getUTCDay());
-	}
+	const present = new Set(
+		eachDayOfInterval({ start, end }, inUtc).map((d) => getDay(d, inUtc)),
+	);
 	return WEEKDAYS.filter((_, idx) => !present.has(idx));
 }

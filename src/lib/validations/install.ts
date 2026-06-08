@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zIanaTz } from "@/lib/validations/zod-helpers";
 
 const installBase = z.object({
 	conferenceName: z.string().min(1, "Conference name is required").max(200),
@@ -11,6 +12,8 @@ const installBase = z.object({
 	firstName: z.string().min(1, "First name is required"),
 	lastName: z.string().min(1, "Last name is required"),
 	affiliation: z.string().min(1, "Affiliation is required"),
+	// Auto-detected from the browser at submit time; not a user-facing field.
+	timezone: zIanaTz,
 });
 
 export const installSchema = installBase.refine(

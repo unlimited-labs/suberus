@@ -1,3 +1,5 @@
+import { format, formatDistanceToNow, isValid } from "date-fns";
+
 const DATE_FORMAT_VALUES = [
 	"DD.MM.YYYY",
 	"DD/MM/YYYY",
@@ -13,6 +15,21 @@ const DATE_FORMAT_VALUES = [
 export type DateFormatValue = (typeof DATE_FORMAT_VALUES)[number];
 export type TimeFormatValue = "24h" | "12h";
 
+// Map the stored (moment-style) format values to date-fns patterns.
+// Note: date-fns tokens are case-sensitive (DD = day-of-year, YYYY = week-year),
+// so day-of-month is `dd` and calendar year is `yyyy`.
+const DATE_FORMAT_PATTERNS: Record<DateFormatValue, string> = {
+	"DD.MM.YYYY": "dd.MM.yyyy",
+	"DD/MM/YYYY": "dd/MM/yyyy",
+	"MM/DD/YYYY": "MM/dd/yyyy",
+	"YYYY-MM-DD": "yyyy-MM-dd",
+	"DD-MM-YYYY": "dd-MM-yyyy",
+	"D MMM YYYY": "d MMM yyyy",
+	"MMM D, YYYY": "MMM d, yyyy",
+	"D MMMM YYYY": "d MMMM yyyy",
+	"MMMM D, YYYY": "MMMM d, yyyy",
+};
+
 export function getDateFormats(
 	now = new Date(),
 ): Array<{ value: DateFormatValue; label: string }> {
@@ -25,90 +42,23 @@ export function getDateFormats(
 	}));
 }
 
-const MONTH_SHORT = [
-	"Jan",
-	"Feb",
-	"Mar",
-	"Apr",
-	"May",
-	"Jun",
-	"Jul",
-	"Aug",
-	"Sep",
-	"Oct",
-	"Nov",
-	"Dec",
-];
-
-const MONTH_LONG = [
-	"January",
-	"February",
-	"March",
-	"April",
-	"May",
-	"June",
-	"July",
-	"August",
-	"September",
-	"October",
-	"November",
-	"December",
-];
-
 function toDate(date: Date | string): Date {
 	return typeof date === "string" ? new Date(date) : date;
 }
 
-function pad(n: number): string {
-	return n < 10 ? `0${n}` : String(n);
-}
-
-export function formatDate(date: Date | string, format: string): string {
+export function formatDate(date: Date | string, dateFormat: string): string {
 	const d = toDate(date);
-	if (Number.isNaN(d.getTime())) return "";
-
-	const day = d.getDate();
-	const month = d.getMonth(); // 0-based
-	const year = d.getFullYear();
-
-	switch (format) {
-		case "DD.MM.YYYY":
-			return `${pad(day)}.${pad(month + 1)}.${year}`;
-		case "DD/MM/YYYY":
-			return `${pad(day)}/${pad(month + 1)}/${year}`;
-		case "MM/DD/YYYY":
-			return `${pad(month + 1)}/${pad(day)}/${year}`;
-		case "YYYY-MM-DD":
-			return `${year}-${pad(month + 1)}-${pad(day)}`;
-		case "DD-MM-YYYY":
-			return `${pad(day)}-${pad(month + 1)}-${year}`;
-		case "D MMM YYYY":
-			return `${day} ${MONTH_SHORT[month]} ${year}`;
-		case "MMM D, YYYY":
-			return `${MONTH_SHORT[month]} ${day}, ${year}`;
-		case "D MMMM YYYY":
-			return `${day} ${MONTH_LONG[month]} ${year}`;
-		case "MMMM D, YYYY":
-			return `${MONTH_LONG[month]} ${day}, ${year}`;
-		default:
-			return `${pad(day)}.${pad(month + 1)}.${year}`;
-	}
+	if (!isValid(d)) return "";
+	const pattern =
+		DATE_FORMAT_PATTERNS[dateFormat as DateFormatValue] ??
+		DATE_FORMAT_PATTERNS["DD.MM.YYYY"];
+	return format(d, pattern);
 }
 
 export function formatTime(date: Date | string, timeFormat: string): string {
 	const d = toDate(date);
-	if (Number.isNaN(d.getTime())) return "";
-
-	const hours = d.getHours();
-	const minutes = d.getMinutes();
-
-	if (timeFormat === "12h") {
-		const h = hours % 12 || 12;
-		const ampm = hours < 12 ? "AM" : "PM";
-		return `${h}:${pad(minutes)} ${ampm}`;
-	}
-
-	return `${pad(hours)}:${pad(minutes)}`;
+	if (!isValid(d)) return "";
+	return format(d, timeFormat === "12h" ? "h:mm a" : "HH:mm");
 }
 
 export function formatDateTime(
@@ -120,4 +70,20 @@ export function formatDateTime(
 	const timePart = formatTime(date, timeFormat);
 	if (!datePart) return "";
 	return `${datePart}, ${timePart}`;
+}
+
+export function formatRelativeTime(date: Date | string): string {
+	const d = toDate(date);
+	if (!isValid(d)) return "";
+	return formatDistanceToNow(d, { addSuffix: true });
+}
+
+/** Compact duration label from a minute count, e.g. "0 min", "45 min", "2h", "2h 30m". */
+export function formatDurationShort(min: number): string {
+	if (min <= 0) return "0 min";
+	const h = Math.floor(min / 60);
+	const m = Math.round(min % 60);
+	if (h === 0) return `${m} min`;
+	if (m === 0) return `${h}h`;
+	return `${h}h ${m}m`;
 }

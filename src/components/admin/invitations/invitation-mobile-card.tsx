@@ -2,6 +2,7 @@ import { IconMailForward, IconX } from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useDateFormat } from "@/hooks/use-date-format";
 import { invitationStatusConfig } from "@/lib/labels/invitation-status";
 import { roleLabels } from "@/lib/labels/user";
 import type { AdminInvitation } from "@/lib/server/admin/invitations";
@@ -17,6 +18,7 @@ export function InvitationMobileCard({
 	onResend,
 	onCancel,
 }: InvitationMobileCardProps) {
+	const { formatDate } = useDateFormat();
 	const status = invitationStatusConfig[invitation.status] ?? {
 		label: invitation.status,
 		variant: "outline" as const,
@@ -29,7 +31,7 @@ export function InvitationMobileCard({
 					<div>
 						<p className="font-medium">{invitation.email}</p>
 						<p className="text-sm text-muted-foreground">
-							Expires: {new Date(invitation.expiresAt).toLocaleDateString()}
+							Expires: {formatDate(invitation.expiresAt)}
 						</p>
 					</div>
 					<div className="flex flex-col items-end gap-1">

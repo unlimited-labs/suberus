@@ -1,3 +1,5 @@
+import { differenceInMinutes } from "date-fns";
+
 export interface SessionWindow {
 	startAt: Date;
 	endAt: Date;
@@ -18,9 +20,7 @@ export function computeSessionUsage(
 	session: SessionWindow & { presentations: PresentationDuration[] },
 	opts?: { excludePresentationId?: string },
 ): SessionUsage {
-	const sessionMin = Math.round(
-		(session.endAt.getTime() - session.startAt.getTime()) / 60_000,
-	);
+	const sessionMin = differenceInMinutes(session.endAt, session.startAt);
 	const usedMin = session.presentations.reduce((sum, p) => {
 		if (opts?.excludePresentationId && p.id === opts.excludePresentationId) {
 			return sum;

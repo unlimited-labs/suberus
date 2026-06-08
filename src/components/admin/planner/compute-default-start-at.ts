@@ -1,3 +1,5 @@
+import { endOfDay, isAfter, isWithinInterval, set } from "date-fns";
+
 export function computeDefaultStartAt(
 	currentDate: Date | null,
 	sessions: Array<{ startAt: string | Date; endAt: string | Date }>,
@@ -5,20 +7,21 @@ export function computeDefaultStartAt(
 	dayStartTime: string,
 ): Date {
 	const day = currentDate ?? confStart ?? new Date();
-	const dayBegin = new Date(day);
 	const [h, m] = (dayStartTime || "09:00").split(":").map(Number);
-	dayBegin.setHours(h, m, 0, 0);
-
-	const dayEnd = new Date(dayBegin);
-	dayEnd.setHours(23, 59, 59, 999);
-
-	const daySessions = sessions.filter((s) => {
-		const start = new Date(s.startAt);
-		return start >= dayBegin && start <= dayEnd;
+	const dayBegin = set(day, {
+		hours: h,
+		minutes: m,
+		seconds: 0,
+		milliseconds: 0,
 	});
+	const dayEnd = endOfDay(dayBegin);
+
+	const daySessions = sessions.filter((s) =>
+		isWithinInterval(new Date(s.startAt), { start: dayBegin, end: dayEnd }),
+	);
 	if (daySessions.length === 0) return dayBegin;
 	return daySessions.reduce((acc: Date, s) => {
 		const end = new Date(s.endAt);
-		return end > acc ? end : acc;
+		return isAfter(end, acc) ? end : acc;
 	}, dayBegin);
 }

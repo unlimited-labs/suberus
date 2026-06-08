@@ -22,6 +22,7 @@ import {
 } from "@tabler/icons-react";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { isPast } from "date-fns";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -87,7 +88,7 @@ function isOverdue(deadline: Date | string | null, status: string): boolean {
 	if (!deadline || status === "COMPLETED" || status === "CANCELLED") {
 		return false;
 	}
-	return new Date(deadline).getTime() < Date.now();
+	return isPast(new Date(deadline));
 }
 
 function SubmissionDetailPage() {

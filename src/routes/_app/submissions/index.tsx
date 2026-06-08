@@ -6,6 +6,7 @@ import {
 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { compareDesc, differenceInCalendarDays, isAfter } from "date-fns";
 import { PageHeader } from "@/components/layout/page-header";
 import { SubmissionsTable } from "@/components/submissions/submissions-table";
 import { Button } from "@/components/ui/button";
@@ -22,8 +23,6 @@ import {
 	submissionDeadlineQueryOptions,
 } from "@/server-fns/settings";
 import { mySubmissionsQueryOptions } from "@/server-fns/submissions";
-
-const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 export const Route = createFileRoute("/_app/submissions/")({
 	loader: async ({ context }) => {
@@ -46,12 +45,12 @@ function SubmissionsPage() {
 	);
 	const { formatDate } = useDateFormat();
 	const daysLeft = deadline
-		? Math.ceil((new Date(deadline).getTime() - Date.now()) / MS_PER_DAY)
+		? differenceInCalendarDays(new Date(deadline), new Date())
 		: null;
 	const deadlineUrgent = daysLeft !== null && daysLeft <= 7;
 	const deadlineCritical = daysLeft !== null && daysLeft <= 3;
 	const deadlineOpen =
-		canBypass || (deadline ? new Date(deadline) > new Date() : true);
+		canBypass || (deadline ? isAfter(new Date(deadline), new Date()) : true);
 	const hasActiveTypes = activeTypes.length > 0;
 	const canSubmit = (canBypass || !locked) && deadlineOpen && hasActiveTypes;
 
@@ -65,8 +64,8 @@ function SubmissionsPage() {
 					: "";
 
 	// Sort submissions by newest first (updatedAt DESC)
-	const sortedSubmissions = [...submissions].sort(
-		(a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+	const sortedSubmissions = [...submissions].sort((a, b) =>
+		compareDesc(new Date(a.updatedAt), new Date(b.updatedAt)),
 	);
 
 	return (

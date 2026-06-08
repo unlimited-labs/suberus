@@ -1,3 +1,4 @@
+import { compareAsc } from "date-fns";
 import { Timeline } from "@/components/ui/timeline";
 import type { UserSubmissionStatusHistory } from "@/server-fns/submissions";
 import { TimelineEvent } from "./timeline-event";
@@ -12,17 +13,9 @@ export function SubmissionTimeline({
 	compact = false,
 }: SubmissionTimelineProps) {
 	// Sort history chronologically (oldest first)
-	const sortedHistory = [...statusHistory].sort((a, b) => {
-		const aTime =
-			typeof a.timestamp === "string"
-				? new Date(a.timestamp).getTime()
-				: a.timestamp.getTime();
-		const bTime =
-			typeof b.timestamp === "string"
-				? new Date(b.timestamp).getTime()
-				: b.timestamp.getTime();
-		return aTime - bTime;
-	});
+	const sortedHistory = [...statusHistory].sort((a, b) =>
+		compareAsc(new Date(a.timestamp), new Date(b.timestamp)),
+	);
 
 	if (compact) {
 		return (

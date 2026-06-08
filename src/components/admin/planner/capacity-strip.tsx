@@ -1,15 +1,7 @@
 import { IconGauge } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { formatDurationShort } from "@/lib/format-date";
 import { scheduleCapacityQueryOptions } from "@/server-fns/planner/schedule";
-
-function formatMinutes(min: number): string {
-	if (min <= 0) return "0 min";
-	const h = Math.floor(min / 60);
-	const m = Math.round(min % 60);
-	if (h === 0) return `${m} min`;
-	if (m === 0) return `${h}h`;
-	return `${h}h ${m}m`;
-}
 
 export function CapacityStrip() {
 	const { data: cap } = useSuspenseQuery(scheduleCapacityQueryOptions());
@@ -21,7 +13,7 @@ export function CapacityStrip() {
 		<div
 			data-testid="capacity-strip"
 			className="flex flex-wrap items-center gap-2 border-b px-3 py-1 text-[11px] tabular-nums"
-			title={`${cap.sessions} session${cap.sessions === 1 ? "" : "s"} · ${formatMinutes(cap.sessionMinutes)} total · ${formatMinutes(cap.usedMinutes)} used`}
+			title={`${cap.sessions} session${cap.sessions === 1 ? "" : "s"} · ${formatDurationShort(cap.sessionMinutes)} total · ${formatDurationShort(cap.usedMinutes)} used`}
 		>
 			<IconGauge size={12} className="text-muted-foreground" />
 			<span className="text-muted-foreground">
@@ -38,7 +30,9 @@ export function CapacityStrip() {
 				}
 				title="Slots assume the default presentation length"
 			>
-				<span className="font-medium">{formatMinutes(cap.freeMinutes)}</span>{" "}
+				<span className="font-medium">
+					{formatDurationShort(cap.freeMinutes)}
+				</span>{" "}
 				<span className="text-muted-foreground/70">
 					(<span className="font-medium text-foreground">{cap.freeSlots}</span>{" "}
 					slot{cap.freeSlots === 1 ? "" : "s"})

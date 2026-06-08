@@ -2,6 +2,7 @@ import type { EventFormProps } from "@ilamy/calendar";
 import { IconClock, IconLayoutGrid } from "@tabler/icons-react";
 import { useStore } from "@tanstack/react-form";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { addMinutes } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -61,12 +62,8 @@ export function CreateEventDialog({
 
 	const startDate = tzLocalInputToUtc(startInput, timezone);
 	const sessionDurationMin = presentationCount * minutesPerPresentation;
-	const sessionEndDate = new Date(
-		startDate.getTime() + sessionDurationMin * 60_000,
-	);
-	const breakEndDate = new Date(
-		startDate.getTime() + breakDurationMin * 60_000,
-	);
+	const sessionEndDate = addMinutes(startDate, sessionDurationMin);
+	const breakEndDate = addMinutes(startDate, breakDurationMin);
 	const endDate = type === "session" ? sessionEndDate : breakEndDate;
 	const totalMin = type === "session" ? sessionDurationMin : breakDurationMin;
 

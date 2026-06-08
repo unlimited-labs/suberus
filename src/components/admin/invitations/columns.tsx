@@ -3,6 +3,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/admin/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useDateFormat } from "@/hooks/use-date-format";
 import { invitationStatusConfig } from "@/lib/labels/invitation-status";
 import { roleLabels } from "@/lib/labels/user";
 import type { AdminInvitation } from "@/lib/server/admin/invitations";
@@ -10,6 +11,13 @@ import type { AdminInvitation } from "@/lib/server/admin/invitations";
 interface InvitationColumnsOptions {
 	onResend: (id: string) => void;
 	onCancel: (id: string) => void;
+}
+
+function DateCell({ value }: { value: string }) {
+	const { formatDate } = useDateFormat();
+	return (
+		<span className="text-sm text-muted-foreground">{formatDate(value)}</span>
+	);
 }
 
 export function createInvitationColumns(
@@ -60,28 +68,18 @@ export function createInvitationColumns(
 			header: ({ column }) => (
 				<DataTableColumnHeader column={column} title="Expires" />
 			),
-			cell: ({ row }) => {
-				const date = new Date(row.getValue("expiresAt") as string);
-				return (
-					<span className="text-sm text-muted-foreground">
-						{date.toLocaleDateString()}
-					</span>
-				);
-			},
+			cell: ({ row }) => (
+				<DateCell value={row.getValue("expiresAt") as string} />
+			),
 		},
 		{
 			accessorKey: "createdAt",
 			header: ({ column }) => (
 				<DataTableColumnHeader column={column} title="Created" />
 			),
-			cell: ({ row }) => {
-				const date = new Date(row.getValue("createdAt") as string);
-				return (
-					<span className="text-sm text-muted-foreground">
-						{date.toLocaleDateString()}
-					</span>
-				);
-			},
+			cell: ({ row }) => (
+				<DateCell value={row.getValue("createdAt") as string} />
+			),
 		},
 		{
 			id: "actions",

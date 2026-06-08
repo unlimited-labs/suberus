@@ -8,14 +8,13 @@ import {
 } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { TimezoneCombobox } from "@/components/ui/timezone-combobox";
 import { getErrorMessage } from "@/lib/error-message";
 import { formatLlmStatus } from "@/lib/format-llm-status";
 import type { RoomWithStats } from "@/lib/server/planner/rooms";
@@ -61,16 +60,6 @@ export function ProgramTab({
 	const [importing, setImporting] = useState(false);
 	const [plannerData, setPlannerData] = useState(initialConferenceSettings);
 	const [plannerSaving, setPlannerSaving] = useState(false);
-	const timezoneFromBrowser = initialConferenceSettings.timezone === "";
-
-	useEffect(() => {
-		if (initialConferenceSettings.timezone === "") {
-			const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-			if (browserTz) {
-				setPlannerData((prev) => ({ ...prev, timezone: browserTz }));
-			}
-		}
-	}, [initialConferenceSettings.timezone]);
 
 	const handleImport = async () => {
 		setImporting(true);
@@ -136,21 +125,6 @@ export function ProgramTab({
 				description="Settings used by the program planner to organize presentations into sessions across rooms and days"
 			>
 				<div className="grid gap-6 sm:grid-cols-2">
-					<div className="space-y-2">
-						<Label htmlFor="timezone">Conference timezone</Label>
-						<TimezoneCombobox
-							id="timezone"
-							value={plannerData.timezone}
-							onChange={(v) =>
-								setPlannerData((prev) => ({ ...prev, timezone: v }))
-							}
-						/>
-						<p className="text-xs text-muted-foreground">
-							{timezoneFromBrowser
-								? "Detected from your browser. Click Save to confirm."
-								: "All session start/end times are stored in UTC and displayed in this zone."}
-						</p>
-					</div>
 					<div className="space-y-2">
 						<Label htmlFor="dayStart">Planner visible hours</Label>
 						<div className="flex items-center gap-2">

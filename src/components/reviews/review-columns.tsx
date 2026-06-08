@@ -5,6 +5,7 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
+import { compareAsc, differenceInCalendarDays } from "date-fns";
 import {
 	DataTableColumnHeader,
 	facetedFilterFn,
@@ -35,10 +36,7 @@ function DeadlineCell({
 			<span className="text-muted-foreground text-sm italic">No deadline</span>
 		);
 
-	const now = new Date();
-	const daysRemaining = Math.ceil(
-		(deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-	);
+	const daysRemaining = differenceInCalendarDays(deadline, new Date());
 	const isPast = daysRemaining < 0;
 	const isUrgent = daysRemaining <= 3 && daysRemaining >= 0;
 
@@ -184,7 +182,7 @@ export const reviewColumns: ColumnDef<ReviewerAssignment>[] = [
 			if (!a && !b) return 0;
 			if (!a) return 1;
 			if (!b) return -1;
-			return a.getTime() - b.getTime();
+			return compareAsc(a, b);
 		},
 	},
 	{

@@ -1,12 +1,20 @@
 import { IconCalendar, IconSearch, IconX } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import {
+	addMinutes,
+	compareAsc,
+	eachDayOfInterval,
+	format,
+	isAfter,
+} from "date-fns";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import type {
 	PublicProgramBreak,
 	PublicProgramSession,
 } from "@/lib/server/planner/schedule";
+import { formatClockTime, sameDayInTz } from "@/lib/tz-datetime";
 import { cn } from "@/lib/utils";
 import {
 	publicConferenceInfoQueryOptions,
@@ -36,55 +44,20 @@ export const Route = createFileRoute("/program/")({
 	component: ProgramPage,
 });
 
-function formatTime(date: Date | string, tz?: string): string {
-	return new Date(date).toLocaleTimeString("en-GB", {
-		hour: "2-digit",
-		minute: "2-digit",
-		timeZone: tz || undefined,
-	});
-}
-
-function addMinutes(date: Date | string, minutes: number): Date {
-	return new Date(new Date(date).getTime() + minutes * 60_000);
-}
-
-function isoDay(date: Date | string, timezone?: string): string {
-	return new Date(date).toLocaleDateString("en-CA", {
-		timeZone: timezone || undefined,
-	});
-}
-
-function getDaysBetween(start: string, end: string): Date[] {
-	const days: Date[] = [];
-	const cur = new Date(start);
-	const last = new Date(end);
-	cur.setHours(0, 0, 0, 0);
-	last.setHours(0, 0, 0, 0);
-	while (cur <= last) {
-		days.push(new Date(cur));
-		cur.setDate(cur.getDate() + 1);
-	}
-	return days;
-}
-
-function formatDayLabel(date: Date): {
+function dayLabelParts(date: Date): {
 	weekday: string;
 	dayNum: string;
 	month: string;
 } {
 	return {
-		weekday: date.toLocaleDateString("en-US", { weekday: "long" }),
-		dayNum: String(date.getDate()).padStart(2, "0"),
-		month: date.toLocaleDateString("en-US", { month: "long" }),
+		weekday: format(date, "EEEE"),
+		dayNum: format(date, "dd"),
+		month: format(date, "MMMM"),
 	};
 }
 
 function formatLongDate(dateStr: string): string {
-	return new Date(dateStr).toLocaleDateString("en-US", {
-		month: "long",
-		day: "numeric",
-		year: "numeric",
-	});
+	return format(new Date(dateStr), "MMMM d, yyyy");
 }
 
 type ProgramItem =
@@ -111,7 +84,10 @@ function ProgramPage() {
 	const tz = settings.timezone || undefined;
 	const days =
 		settings.startDate && settings.endDate
-			? getDaysBetween(settings.startDate, settings.endDate)
+			? eachDayOfInterval({
+					start: new Date(settings.startDate),
+					end: new Date(settings.endDate),
+				})
 			: [];
 
 	const q = search.toLowerCase().trim();
@@ -132,20 +108,18 @@ function ProgramPage() {
 	};
 
 	const itemsForDay = (day: Date): ProgramItem[] => {
-		const dayStr = isoDay(day, tz);
 		const sessions = program.sessions
-			.filter((s) => isoDay(s.startAt, tz) === dayStr)
+			.filter((s) => sameDayInTz(new Date(s.startAt), day, tz))
 			.filter(sessionMatches);
-		const breaks = program.breaks.filter(
-			(b) => isoDay(b.startAt, tz) === dayStr,
+		const breaks = program.breaks.filter((b) =>
+			sameDayInTz(new Date(b.startAt), day, tz),
 		);
 		const all: ProgramItem[] = [
 			...sessions.map((s) => ({ kind: "session" as const, data: s })),
 			...breaks.map((b) => ({ kind: "break" as const, data: b })),
 		];
-		return all.sort(
-			(a, b) =>
-				new Date(a.data.startAt).getTime() - new Date(b.data.startAt).getTime(),
+		return all.sort((a, b) =>
+			compareAsc(new Date(a.data.startAt), new Date(b.data.startAt)),
 		);
 	};
 
@@ -161,7 +135,7 @@ function ProgramPage() {
 			if (it.kind === "session") last.sessions.push(it.data);
 			else last.breaks.push(it.data);
 			// Extend group end if this item ends later
-			if (new Date(it.data.endAt).getTime() > new Date(last.endAt).getTime()) {
+			if (isAfter(new Date(it.data.endAt), new Date(last.endAt))) {
 				last.endAt = it.data.endAt;
 			}
 		} else {
@@ -230,7 +204,7 @@ function ProgramPage() {
 							style={{ scrollbarWidth: "none" }}
 						>
 							{days.map((day, i) => {
-								const label = formatDayLabel(day);
+								const label = dayLabelParts(day);
 								const isActive = activeDay === i;
 								return (
 									<button
@@ -358,7 +332,8 @@ function TimeSlot({
 						className="text-[10px] uppercase tracking-[0.25em] text-stone-500 tabular-nums sm:text-[11px] sm:tracking-[0.3em]"
 						style={{ fontFamily: "var(--font-sans)" }}
 					>
-						{formatTime(group.startAt, tz)} — {formatTime(group.endAt, tz)}
+						{formatClockTime(new Date(group.startAt), tz)} —{" "}
+						{formatClockTime(new Date(group.endAt), tz)}
 					</p>
 					<p
 						className="mt-1 text-xl italic text-stone-700 sm:text-2xl dark:text-stone-300"
@@ -382,7 +357,8 @@ function TimeSlot({
 					className="text-sm uppercase tracking-[0.2em] text-stone-600 tabular-nums dark:text-stone-400"
 					style={{ fontFamily: "var(--font-sans)" }}
 				>
-					{formatTime(group.startAt, tz)} — {formatTime(group.endAt, tz)}
+					{formatClockTime(new Date(group.startAt), tz)} —{" "}
+					{formatClockTime(new Date(group.endAt), tz)}
 				</span>
 			</div>
 
@@ -408,7 +384,8 @@ function TimeSlot({
 								className="text-[10px] uppercase tracking-[0.25em] text-stone-500 sm:tracking-[0.3em]"
 								style={{ fontFamily: "var(--font-sans)" }}
 							>
-								{formatTime(b.startAt, tz)} — {formatTime(b.endAt, tz)}
+								{formatClockTime(new Date(b.startAt), tz)} —{" "}
+								{formatClockTime(new Date(b.endAt), tz)}
 								{b.room && ` · ${b.room.name}`}
 							</p>
 							<p
@@ -500,7 +477,7 @@ function SessionArticle({
 						const offset = session.presentations
 							.slice(0, i)
 							.reduce((a, prev) => a + prev.durationMin, 0);
-						const presStart = addMinutes(session.startAt, offset);
+						const presStart = addMinutes(new Date(session.startAt), offset);
 						return (
 							<li
 								key={p.id}
@@ -520,7 +497,7 @@ function SessionArticle({
 										className="mt-1 block text-[10px] uppercase tracking-[0.15em] text-stone-500 tabular-nums"
 										style={{ fontFamily: "var(--font-sans)" }}
 									>
-										{formatTime(presStart, tz)}
+										{formatClockTime(presStart, tz)}
 									</span>
 								</div>
 								<div className="min-w-0">

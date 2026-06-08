@@ -1,4 +1,5 @@
 import { IconAlertTriangle } from "@tabler/icons-react";
+import { areIntervalsOverlapping } from "date-fns";
 import { useMemo } from "react";
 import {
 	Popover,
@@ -35,11 +36,11 @@ function detectIssues(sessions: PlannerSession[]): Issue[] {
 			const a = roomSessions[i];
 			const b = roomSessions[j];
 			if (a.roomId !== b.roomId) continue;
-			const aStart = new Date(a.startAt).getTime();
-			const aEnd = new Date(a.endAt).getTime();
-			const bStart = new Date(b.startAt).getTime();
-			const bEnd = new Date(b.endAt).getTime();
-			if (aStart < bEnd && aEnd > bStart) {
+			const overlap = areIntervalsOverlapping(
+				{ start: new Date(a.startAt), end: new Date(a.endAt) },
+				{ start: new Date(b.startAt), end: new Date(b.endAt) },
+			);
+			if (overlap) {
 				issues.push({
 					type: "room-overlap",
 					message: `"${a.title}" and "${b.title}" overlap in the same room`,

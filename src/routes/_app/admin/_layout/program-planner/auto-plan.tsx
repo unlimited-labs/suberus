@@ -13,6 +13,7 @@ import {
 } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { format } from "date-fns";
 import { type ComponentType, useState } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/page-header";
@@ -75,13 +76,8 @@ const STAGES: StageSpec[] = [
 function formatDateRange(startAt: string, endAt: string): string {
 	const s = new Date(startAt);
 	const e = new Date(endAt);
-	const date = s.toLocaleDateString(undefined, {
-		weekday: "short",
-		month: "short",
-		day: "numeric",
-	});
-	const hm = (d: Date) =>
-		d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+	const date = format(s, "EEE, MMM d");
+	const hm = (d: Date) => format(d, "HH:mm");
 	return `${date} · ${hm(s)}–${hm(e)}`;
 }
 

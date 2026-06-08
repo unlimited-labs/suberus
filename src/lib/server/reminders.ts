@@ -1,3 +1,4 @@
+import { addDays, differenceInCalendarDays } from "date-fns";
 import { prisma } from "@/db.server";
 import { env } from "@/env.ts";
 import type { EmailEventType } from "@/generated/prisma/enums";
@@ -5,8 +6,6 @@ import { formatDate } from "@/lib/format-date";
 import { sendEmail } from "@/lib/server/email";
 import { getSetting } from "@/lib/server/settings";
 import { logger } from "@/logger.ts";
-
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 /** Check if a reminder was already sent */
 async function wasReminderSent(
@@ -54,7 +53,7 @@ export async function sendReviewerReminders(): Promise<number> {
 
 	for (let i = 0; i < settings.daysBefore.length; i++) {
 		const days = settings.daysBefore[i];
-		const threshold = new Date(now.getTime() + days * MS_PER_DAY);
+		const threshold = addDays(now, days);
 
 		const assignments = await prisma.reviewAssignment.findMany({
 			where: {
@@ -83,9 +82,7 @@ export async function sendReviewerReminders(): Promise<number> {
 			const reviewerName =
 				`${assignment.reviewer.firstName ?? ""} ${assignment.reviewer.lastName ?? ""}`.trim() ||
 				assignment.reviewer.email;
-			const daysRemaining = Math.ceil(
-				(assignment.deadline.getTime() - now.getTime()) / MS_PER_DAY,
-			);
+			const daysRemaining = differenceInCalendarDays(assignment.deadline, now);
 
 			void sendEmail("REVIEWER_REMINDER", assignment.reviewer.email, {
 				reviewerName,
@@ -164,9 +161,7 @@ export async function sendRevisionReminders(): Promise<number> {
 		const referenceDate = lastReminder?.sentAt ?? statusChangeDate;
 		if (!referenceDate) continue;
 
-		const daysSinceReference = Math.floor(
-			(now.getTime() - referenceDate.getTime()) / MS_PER_DAY,
-		);
+		const daysSinceReference = differenceInCalendarDays(now, referenceDate);
 		if (daysSinceReference < settings.intervalDays) continue;
 
 		const authorName =
@@ -214,7 +209,7 @@ export async function sendDeadlineReminders(): Promise<number> {
 
 	for (let i = 0; i < settings.daysBefore.length; i++) {
 		const days = settings.daysBefore[i];
-		const daysUntilDeadline = (deadline.getTime() - now.getTime()) / MS_PER_DAY;
+		const daysUntilDeadline = differenceInCalendarDays(deadline, now);
 
 		// Only send if we're within the daysBefore window
 		if (daysUntilDeadline > days) continue;
@@ -240,7 +235,7 @@ export async function sendDeadlineReminders(): Promise<number> {
 			const recipientName =
 				`${submission.user.firstName ?? ""} ${submission.user.lastName ?? ""}`.trim() ||
 				submission.user.email;
-			const daysRemaining = Math.ceil(daysUntilDeadline);
+			const daysRemaining = daysUntilDeadline;
 
 			void sendEmail("DEADLINE_APPROACHING", submission.user.email, {
 				recipientName,

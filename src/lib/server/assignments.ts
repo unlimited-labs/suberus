@@ -1,3 +1,4 @@
+import { addDays, compareAsc, subDays } from "date-fns";
 import { prisma } from "@/db.server";
 import { env } from "@/env.ts";
 import type {
@@ -191,8 +192,7 @@ export async function assignReviewer(
 
 	// Calculate deadline
 	const deadline =
-		customDeadline ??
-		new Date(Date.now() + config.reviewDeadlineDays * 24 * 60 * 60 * 1000);
+		customDeadline ?? addDays(new Date(), config.reviewDeadlineDays);
 
 	// Create assignment
 	const assignment = await prisma.reviewAssignment.create({
@@ -307,7 +307,7 @@ export async function cancelAssignment(
 /** Mark overdue assignments (called by cron job) */
 export async function markOverdueAssignments(): Promise<number> {
 	// Grace period: mark overdue 1 day after deadline (per WORKFLOW.md)
-	const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+	const oneDayAgo = subDays(new Date(), 1);
 
 	const overdueAssignments = await prisma.reviewAssignment.findMany({
 		where: {
@@ -471,7 +471,7 @@ export async function getReviewerAssignments(
 		if (!a.deadline && !b.deadline) return 0;
 		if (!a.deadline) return 1;
 		if (!b.deadline) return -1;
-		return a.deadline.getTime() - b.deadline.getTime();
+		return compareAsc(a.deadline, b.deadline);
 	});
 
 	return { assignments: result, total: result.length };

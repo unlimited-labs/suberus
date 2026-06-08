@@ -1,3 +1,4 @@
+import { compareAsc } from "date-fns";
 import type { SessionEventData } from "../session-event-card";
 import type { PlannerBreak, PlannerSession } from "../types";
 
@@ -52,5 +53,5 @@ export function buildPlannerItems(
 		title: x.title,
 		roomName: x.room?.name ?? null,
 	}));
-	return [...s, ...b].sort((a, b) => a.startAt.getTime() - b.startAt.getTime());
+	return [...s, ...b].sort((a, b) => compareAsc(a.startAt, b.startAt));
 }

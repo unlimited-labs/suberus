@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { addHours, format } from "date-fns";
 import { prisma } from "@/db.server";
 import { env } from "@/env.ts";
 import type { InvitationStatus, UserRole } from "@/generated/prisma/enums";
@@ -61,7 +62,7 @@ export async function createInvitation(
 
 	const token = randomBytes(32).toString("hex");
 	const validityHours = await getSetting("INVITATION_VALIDITY_HOURS");
-	const expiresAt = new Date(Date.now() + validityHours * 60 * 60 * 1000);
+	const expiresAt = addHours(new Date(), validityHours);
 
 	await prisma.invitation.create({
 		data: { email, role, token, expiresAt, createdById },
@@ -75,13 +76,7 @@ export async function createInvitation(
 		conferenceName,
 		roleName,
 		registrationUrl,
-		expiresAt: expiresAt.toLocaleDateString("en-US", {
-			year: "numeric",
-			month: "long",
-			day: "numeric",
-			hour: "2-digit",
-			minute: "2-digit",
-		}),
+		expiresAt: format(expiresAt, "MMMM d, yyyy, hh:mm a"),
 	});
 
 	logger.info(`[invitation] created for ${email} role=${role}`);
@@ -119,7 +114,7 @@ export async function resendInvitation(
 ): Promise<{ success: boolean }> {
 	const token = randomBytes(32).toString("hex");
 	const validityHours = await getSetting("INVITATION_VALIDITY_HOURS");
-	const expiresAt = new Date(Date.now() + validityHours * 60 * 60 * 1000);
+	const expiresAt = addHours(new Date(), validityHours);
 
 	const invitation = await prisma.invitation.update({
 		where: { id },
@@ -134,13 +129,7 @@ export async function resendInvitation(
 		conferenceName,
 		roleName,
 		registrationUrl,
-		expiresAt: expiresAt.toLocaleDateString("en-US", {
-			year: "numeric",
-			month: "long",
-			day: "numeric",
-			hour: "2-digit",
-			minute: "2-digit",
-		}),
+		expiresAt: format(expiresAt, "MMMM d, yyyy, hh:mm a"),
 	});
 
 	return { success: true };

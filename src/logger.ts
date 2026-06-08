@@ -1,6 +1,7 @@
 import { createMiddleware } from "@tanstack/react-start";
 import chalk from "chalk";
 import { createConsola } from "consola";
+import { format } from "date-fns";
 import { env } from "./env";
 
 const levelBadge: Record<string, (s: string) => string> = {
@@ -24,7 +25,7 @@ export const logger = createConsola({
 	reporters: [
 		{
 			log(logObj) {
-				const ts = new Date().toLocaleTimeString("pl", { hour12: false });
+				const ts = format(new Date(), "HH:mm:ss");
 				const tag = logObj.tag ? `[${logObj.tag}] ` : " ";
 				const msg = logObj.args.map(String).join(" ");
 				colorPrint(logObj.type, `${ts} ${tag}${msg}`);

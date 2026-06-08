@@ -1,3 +1,8 @@
+import {
+	addMilliseconds,
+	addMinutes,
+	differenceInMilliseconds,
+} from "date-fns";
 import { prisma } from "@/db.server";
 import { parseSeries } from "./tracks";
 
@@ -252,9 +257,9 @@ export async function continueSeries(
 			});
 		}
 
-		const durationMs = current.endAt.getTime() - current.startAt.getTime();
+		const durationMs = differenceInMilliseconds(current.endAt, current.startAt);
 		const newStart = new Date(current.endAt);
-		const newEnd = new Date(newStart.getTime() + durationMs);
+		const newEnd = addMilliseconds(newStart, durationMs);
 
 		const created = await tx.programSession.create({
 			data: {
@@ -300,10 +305,8 @@ export async function splitSession(
 
 		const keptDurationMin = kept.reduce((s, p) => s + p.durationMin, 0);
 		const movedDurationMin = moved.reduce((s, p) => s + p.durationMin, 0);
-		const splitTime = new Date(
-			current.startAt.getTime() + keptDurationMin * 60_000,
-		);
-		const newEnd = new Date(splitTime.getTime() + movedDurationMin * 60_000);
+		const splitTime = addMinutes(current.startAt, keptDurationMin);
+		const newEnd = addMinutes(splitTime, movedDurationMin);
 
 		const newSession = await tx.programSession.create({
 			data: {

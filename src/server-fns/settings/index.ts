@@ -20,6 +20,7 @@ import type {
 	SubmissionTypeConfig,
 	SubmissionTypeKey,
 } from "@/lib/settings/types";
+import { zIanaTz } from "@/lib/validations/zod-helpers";
 
 // Schema for submission type config
 const submissionTypeConfigSchema = z.object({
@@ -252,15 +253,7 @@ const conferenceSettingsSchema = z.object({
 	dateFormat: z.string(),
 	timeFormat: z.enum(["24h", "12h"]),
 	currency: z.enum(["EUR", "USD", "PLN"]),
-	timezone: z.string().refine((tz) => {
-		if (tz === "") return true;
-		try {
-			new Intl.DateTimeFormat("en", { timeZone: tz });
-			return true;
-		} catch {
-			return false;
-		}
-	}, "Invalid IANA timezone"),
+	timezone: zIanaTz,
 	dayStart: z.string().regex(/^\d{2}:\d{2}$/, "Expected HH:mm"),
 	dayEnd: z.string().regex(/^\d{2}:\d{2}$/, "Expected HH:mm"),
 	defaultPresentationMin: z.number().int().min(5).max(480),

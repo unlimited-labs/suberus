@@ -1,3 +1,4 @@
+import { compareDesc } from "date-fns";
 import { prisma } from "@/db.server";
 import type { Prisma } from "@/generated/prisma/client";
 import type {
@@ -188,8 +189,8 @@ function buildUserSubmissions(user: UserWithDetail): AdminUserSubmission[] {
 		});
 	}
 
-	return Array.from(byId.values()).sort(
-		(a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
+	return Array.from(byId.values()).sort((a, b) =>
+		compareDesc(a.updatedAt, b.updatedAt),
 	);
 }
 

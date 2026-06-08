@@ -3,20 +3,12 @@ import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { formatDurationShort } from "@/lib/format-date";
 import { utcToTzLocalInput } from "@/lib/tz-datetime";
 import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
 import { RoomSelect } from "../shared/room-select";
 import { TrackSelect } from "../shared/track-select";
 import { useSessionEditor } from "./session-editor-context";
-
-function formatMinutes(min: number): string {
-	if (min <= 0) return "0 min";
-	const h = Math.floor(min / 60);
-	const m = Math.round(min % 60);
-	if (h === 0) return `${m} min`;
-	if (m === 0) return `${h}h`;
-	return `${h}h ${m}m`;
-}
 
 export function SessionEditorHeader() {
 	const {
@@ -128,7 +120,7 @@ export function SessionEditorHeader() {
 			<p className="text-[11px] text-muted-foreground">
 				Session duration:{" "}
 				<span className="font-medium text-foreground">
-					{formatMinutes(computedDuration)}
+					{formatDurationShort(computedDuration)}
 				</span>{" "}
 				({slotCount} × {slotMin} min)
 			</p>
