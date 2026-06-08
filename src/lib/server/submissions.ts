@@ -1,4 +1,5 @@
 import type { Session, User } from "better-auth/types";
+import latinize from "latinize";
 import { prisma } from "@/db.server";
 import { env } from "@/env";
 import type {
@@ -26,6 +27,14 @@ interface CreateSubmissionResult {
 export interface AuthSession {
 	session: Session;
 	user: User & { id: string };
+}
+
+/** Latinized, lowercased "first last" key for name-based author matching */
+function normalizeName(firstName: string, lastName: string): string {
+	return `${latinize(firstName)} ${latinize(lastName)}`
+		.trim()
+		.toLowerCase()
+		.replace(/\s+/g, " ");
 }
 
 /** Link co-author records to a user account by email (case-insensitive, only where userId is null) */
@@ -152,6 +161,9 @@ export async function createNewSubmission(
 			},
 			select: { id: true, email: true },
 		});
+		const matchedEmails = new Set(
+			matchedUsers.map((u) => u.email.toLowerCase()),
+		);
 		for (const matchedUser of matchedUsers) {
 			await tx.submissionAuthor.updateMany({
 				where: {
@@ -161,6 +173,35 @@ export async function createNewSubmission(
 				},
 				data: { userId: matchedUser.id },
 			});
+		}
+
+		// Fallback: link the submitter's own author row even when they entered a
+		// different email than their account. Match by latinized name and ONLY
+		// when exactly one still-unlinked author matches (avoid namesakes). Safe
+		// because we link to the known submitter id — grants no extra access.
+		const submitterAlreadyLinked = matchedUsers.some((u) => u.id === userId);
+		if (!submitterAlreadyLinked) {
+			const submitter = await tx.user.findUnique({
+				where: { id: userId },
+				select: { firstName: true, lastName: true },
+			});
+			const target = normalizeName(
+				submitter?.firstName ?? "",
+				submitter?.lastName ?? "",
+			);
+			if (target) {
+				const candidates = authors.filter(
+					(a) =>
+						!matchedEmails.has(a.email.toLowerCase()) &&
+						normalizeName(a.firstName, a.lastName) === target,
+				);
+				if (candidates.length === 1) {
+					await tx.submissionAuthor.update({
+						where: { id: candidates[0].id },
+						data: { userId },
+					});
+				}
+			}
 		}
 
 		// Create submission keywords
