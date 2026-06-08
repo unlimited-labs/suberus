@@ -152,7 +152,14 @@ function SubmissionDetailPage() {
 		);
 	}
 
-	const { submission, authors, assignments, reviews, activityHistory } = data;
+	const {
+		submission,
+		submitter,
+		authors,
+		assignments,
+		reviews,
+		activityHistory,
+	} = data;
 
 	// Calculate review progress
 	const currentRoundAssignments = assignments.filter(
@@ -706,6 +713,21 @@ function SubmissionDetailPage() {
 										<span className="font-medium">
 											{formatDate(submission.createdAt)}
 										</span>
+									</div>
+									<div className="flex items-center justify-between gap-2">
+										<span className="flex items-center gap-1.5 text-muted-foreground">
+											<IconUserCircle className="size-4" />
+											Submitter
+										</span>
+										<Link
+											to="/admin/users/$id"
+											params={{ id: submitter.id }}
+											data-testid="submission-submitter-link"
+											className="flex items-center gap-1 font-medium hover:text-primary hover:underline"
+										>
+											{`${submitter.firstName ?? ""} ${submitter.lastName ?? ""}`.trim() ||
+												"—"}
+										</Link>
 									</div>
 
 									{submission.type === "ABSTRACT" && (

@@ -473,6 +473,11 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 			size: number;
 		} | null;
 	};
+	submitter: {
+		id: string;
+		firstName: string | null;
+		lastName: string | null;
+	};
 	authors: Array<{
 		firstName: string;
 		lastName: string;
@@ -530,6 +535,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 					},
 				},
 			},
+			user: { select: { id: true, firstName: true, lastName: true } },
 			authors: {
 				include: { affiliation: true, user: { select: { id: true } } },
 				orderBy: { orderIndex: "asc" },
@@ -593,6 +599,11 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 			trackId: submission.trackId,
 			createdAt: submission.createdAt,
 			file: submission.currentVersion?.file ?? null,
+		},
+		submitter: {
+			id: submission.user.id,
+			firstName: submission.user.firstName,
+			lastName: submission.user.lastName,
 		},
 		authors: submission.authors.map((a) => ({
 			firstName: a.firstName,
