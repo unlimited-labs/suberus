@@ -191,16 +191,21 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 	)
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
 		// Dynamic import to avoid loading storage module when not needed
-		const { uploadFile, generateSubmissionFileKey } = await import(
-			"@/lib/server/storage"
-		);
+		const { uploadFile, generateSubmissionFileKey, generateAuthorFileName } =
+			await import("@/lib/server/storage");
 		const { fileToBuffer } = await import("@/lib/server/form-upload");
 		const { prisma } = await import("@/db.server");
 
 		// Verify submission belongs to user
 		const submission = await prisma.submission.findFirst({
 			where: { id: data.submissionId, userId: context.user.id },
-			include: { currentVersion: true },
+			include: {
+				currentVersion: true,
+				authors: {
+					select: { firstName: true, lastName: true },
+					orderBy: { orderIndex: "asc" },
+				},
+			},
 		});
 
 		if (!submission) {
@@ -235,6 +240,16 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 			throw error;
 		}
 
+		// Display name shown in the system reflects the authors, not the uploaded
+		// file name. The S3 key and fileName keep the real uploaded name.
+		const dotIndex = fileName.lastIndexOf(".");
+		const uploadedExt =
+			dotIndex >= 0 ? fileName.slice(dotIndex + 1) : detected.ext;
+		const displayName =
+			submission.authors.length > 0
+				? generateAuthorFileName(submission.authors, uploadedExt)
+				: fileName;
+
 		// Generate storage key
 		const storageKey = generateSubmissionFileKey(
 			data.submissionId,
@@ -253,7 +268,7 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 				type: "SUBMISSION_MAIN",
 				storageKey,
 				fileName,
-				originalName: fileName,
+				originalName: displayName,
 				mimeType: detected.mime,
 				size: buffer.length,
 				uploadedById: context.user.id,
