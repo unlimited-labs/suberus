@@ -1,8 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { env } from "@/env";
+import { authRequestMiddleware } from "@/lib/server/middleware/auth";
 
 export const Route = createFileRoute("/api/version")({
 	server: {
+		// Build info (commit/date) is only used by the in-app version-skew check;
+		// gate it behind auth so it isn't an anonymous fingerprinting endpoint.
+		middleware: [authRequestMiddleware],
 		handlers: {
 			GET: () =>
 				Response.json({

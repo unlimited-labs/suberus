@@ -390,7 +390,6 @@ export async function getSubmissionById(
 	submissionId: string,
 	userId: string,
 ): Promise<SubmissionDetail | null> {
-	console.log("[DEBUG] getSubmissionById called:", submissionId, userId);
 	try {
 		const submission = await prisma.submission.findFirst({
 			where: { id: submissionId, ...userAccessFilter(userId) },

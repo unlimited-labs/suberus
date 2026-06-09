@@ -37,6 +37,14 @@ export const auth = betterAuth({
 			generateId: () => randomUUID(),
 		},
 	},
+	// Explicit throttling of auth endpoints (login, reset, sign-up). Since email
+	// verification is a soft block, login is the brute-force surface — don't rely
+	// on framework defaults silently changing.
+	rateLimit: {
+		enabled: true,
+		window: 60,
+		max: 20,
+	},
 	emailAndPassword: {
 		enabled: true,
 		requireEmailVerification: false, // Soft-block: users can login, but app restricts actions
