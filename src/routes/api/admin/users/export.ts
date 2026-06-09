@@ -8,6 +8,7 @@ import { formatSubmissionRoles } from "@/lib/labels/user";
 import { getUsers } from "@/lib/server/admin/users";
 import { adminRequestMiddleware } from "@/lib/server/middleware/auth";
 import { getSetting } from "@/lib/server/settings";
+import { neutralizeFormula } from "@/lib/server/spreadsheet-safe";
 import { getSurveyQuestions } from "@/lib/server/survey";
 
 export const Route = createFileRoute("/api/admin/users/export")({
@@ -48,18 +49,17 @@ export const Route = createFileRoute("/api/admin/users/export")({
 					);
 					const surveyColumns: Record<string, string> = {};
 					for (const q of questions) {
-						surveyColumns[q.fieldName ?? q.label] = formatSurveyAnswerValue(
-							q.type,
-							answerByQuestion.get(q.id) ?? "",
+						surveyColumns[q.fieldName ?? q.label] = neutralizeFormula(
+							formatSurveyAnswerValue(q.type, answerByQuestion.get(q.id) ?? ""),
 						);
 					}
 
 					return {
-						"First Name": u.firstName ?? "",
-						"Last Name": u.lastName ?? "",
-						Email: u.email,
-						Title: u.title ?? "",
-						Affiliation: u.affiliation ?? "",
+						"First Name": neutralizeFormula(u.firstName ?? ""),
+						"Last Name": neutralizeFormula(u.lastName ?? ""),
+						Email: neutralizeFormula(u.email),
+						Title: neutralizeFormula(u.title ?? ""),
+						Affiliation: neutralizeFormula(u.affiliation ?? ""),
 						Role: u.role,
 						Submissions: formatSubmissionRoles(u.submissionRoles),
 						Status: u.isActive ? "Active" : "Inactive",
@@ -67,7 +67,7 @@ export const Route = createFileRoute("/api/admin/users/export")({
 						"Fee Type": u.fee?.type ?? "",
 						"Fee Paid At": fmtDate(u.fee?.paidAt),
 						"Need Invoice": u.needInvoice ? "True" : "False",
-						"Invoice details": u.address ?? "",
+						"Invoice details": neutralizeFormula(u.address ?? ""),
 						"Registration Date": fmtDate(u.createdAt),
 						"Last Login": fmtDate(u.lastLoginAt),
 						...surveyColumns,

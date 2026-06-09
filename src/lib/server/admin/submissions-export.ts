@@ -5,6 +5,7 @@ import {
 	buildSubmissionWhereClause,
 	type GetSubmissionsFilters,
 } from "@/lib/server/admin/submissions";
+import { neutralizeFormula } from "@/lib/server/spreadsheet-safe";
 import { getFileBuffer } from "@/lib/server/storage";
 
 export async function getSubmissionsForExport(filters: GetSubmissionsFilters) {
@@ -48,10 +49,11 @@ type ExportSubmission = Awaited<
 >[number];
 
 function escapeCsvField(value: string): string {
-	if (value.includes('"') || value.includes(",") || value.includes("\n")) {
-		return `"${value.replace(/"/g, '""')}"`;
+	const safe = neutralizeFormula(value);
+	if (safe.includes('"') || safe.includes(",") || safe.includes("\n")) {
+		return `"${safe.replace(/"/g, '""')}"`;
 	}
-	return value;
+	return safe;
 }
 
 function getFileExtension(originalName: string): string {
