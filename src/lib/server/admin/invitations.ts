@@ -174,13 +174,23 @@ export async function applyInvitationRole(
 	userId: string,
 	email: string,
 ): Promise<void> {
+	// Apply the invited role exactly once. This runs from the user-update hook,
+	// which fires on every profile change after verification; without the
+	// roleAppliedAt guard an admin-issued demotion would be silently reverted
+	// the next time the user edits their profile.
 	const invitation = await prisma.invitation.findFirst({
-		where: { email, status: "USED", usedById: userId },
+		where: { email, status: "USED", usedById: userId, roleAppliedAt: null },
 	});
 	if (!invitation) return;
 
-	await prisma.user.update({
-		where: { id: userId },
-		data: { role: invitation.role },
+	await prisma.$transaction(async (tx) => {
+		await tx.user.update({
+			where: { id: userId },
+			data: { role: invitation.role },
+		});
+		await tx.invitation.update({
+			where: { id: invitation.id },
+			data: { roleAppliedAt: new Date() },
+		});
 	});
 }

@@ -504,6 +504,7 @@ model Invitation {
   createdById String           @db.Uuid
   usedById    String?          @unique @db.Uuid
   usedAt      DateTime?
+  roleAppliedAt DateTime?
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   createdBy   User             @relation("InvitationCreator", fields: [createdById], references: [id])
