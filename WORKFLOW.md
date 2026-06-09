@@ -47,6 +47,7 @@ stateDiagram-v2
 
     ReviewsComplete --> Withdrawn: Author withdraws
 
+    ConditionallyAccepted --> ConditionallyAccepted: Author uploads revised version (no new round)
     ConditionallyAccepted --> Accepted: Editor confirms conditions met
 
     Accepted --> [*]
@@ -90,6 +91,7 @@ stateDiagram-v2
 
     Resubmitted --> UnderReview: Assign reviewers (round++)
 
+    ConditionallyAccepted --> ConditionallyAccepted: Author uploads revised version (no new round)
     ConditionallyAccepted --> Accepted: Editor confirms conditions met
 
     ReviewsComplete --> Withdrawn: Author withdraws
@@ -183,6 +185,7 @@ flowchart TD
     Resubmitted -->|Author withdraws| Withdrawn
 
     Accepted --> End([End])
+    CondAccepted -->|Author uploads revised version, no new round| CondAccepted
     CondAccepted -->|Editor confirms conditions met| Accepted
     CondAccepted --> End
     Rejected --> End
@@ -305,7 +308,7 @@ Editors (role=EDITOR) can:
 | Status | Description | Editor Override? |
 |--------|-------------|-----------------|
 | `ACCEPTED` | Final acceptance ✅ | ✅ Can reopen |
-| `CONDITIONALLY_ACCEPTED` | Accepted with minor conditions — editor can promote to ACCEPTED | ✅ Can reopen or promote |
+| `CONDITIONALLY_ACCEPTED` | Accepted with minor conditions — author can upload a revised version; editor promotes to ACCEPTED | ✅ Can reopen or promote |
 | `REJECTED` | Final rejection ❌ | ✅ Can reopen |
 | `WITHDRAWN` | Author withdrew | ❌ Truly final |
 
@@ -361,10 +364,14 @@ Editor makes final decision:
 - Increment `currentRound`
 
 ### From CONDITIONALLY_ACCEPTED
+- → `CONDITIONALLY_ACCEPTED` (author uploads a revised version — camera-ready / minor revisions)
+  - Creates a new `SubmissionVersion`; status, `currentRound`, and reviewer assignments are unchanged
+  - Does **NOT** start a new review round (unlike REVISE_REQUIRED → RESUBMITTED)
+  - Author may upload multiple times; editor reviews the latest version
+  - Notifies caretaker editor (`REVISION_RECEIVED`)
 - → `ACCEPTED` (editor confirms minor conditions met)
 - → `AWAITING_DECISION` (editor override — reopens decision)
-- Only EDITOR/ADMIN can trigger
-- Transition to ACCEPTED requires reasoning (audit trail)
+- Promotion to ACCEPTED and override are EDITOR/ADMIN only and require reasoning (audit trail)
 
 ### From ACCEPTED / REJECTED
 - → `AWAITING_DECISION` (editor override — reopens decision)
