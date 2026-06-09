@@ -31,6 +31,18 @@ export const userRoleOptions: { value: UserRole; label: string }[] = [
 	{ value: "ADMIN", label: "Administrator" },
 ];
 
+/**
+ * Role choices a performer may assign. Non-admins (editors) cannot grant the
+ * ADMIN role, so it is omitted from their picker (server-enforced regardless).
+ */
+export function assignableRoleOptions(
+	canAssignAdminRole: boolean,
+): { value: UserRole; label: string }[] {
+	return canAssignAdminRole
+		? userRoleOptions
+		: userRoleOptions.filter((opt) => opt.value !== "ADMIN");
+}
+
 export const submissionRoleLabels: Record<SubmissionInvolvementRole, string> = {
 	author: "author",
 	coauthor: "coauthor",

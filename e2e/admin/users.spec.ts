@@ -954,9 +954,41 @@ test.describe("Admin Users Management", () => {
 			await userDetailPage.goto(testUserId)
 			await expect(userDetailPage.getUserEmail()).toBeVisible({ timeout: 10000 })
 
-			// Assert
+			// Assert — profile edit / delete stay admin-only
 			await expect(userDetailPage.editProfileButton).not.toBeVisible()
 			await expect(userDetailPage.deleteUserButton).not.toBeVisible()
+		})
+
+		test("editor can change roles but the Administrator option is hidden", async ({ page, userDetailPage }) => {
+			// Arrange — editor viewing a non-admin (author) user
+			await loginAs(page, EDITOR_USER, { clearCookies: true })
+
+			const { getTestUserIds } = await import("../helpers/test-db")
+			const { testUserId } = await getTestUserIds()
+			await userDetailPage.goto(testUserId)
+			await expect(userDetailPage.getUserEmail()).toBeVisible({ timeout: 10000 })
+
+			// Act — open the change-role dialog (editors may change non-admin roles)
+			await expect(userDetailPage.changeRoleButton).toBeVisible()
+			await userDetailPage.changeRoleButton.click()
+			await page.getByRole("combobox").click()
+
+			// Assert — ADMIN is not an assignable option for an editor
+			await expect(page.getByRole("option", { name: "Editor" })).toBeVisible()
+			await expect(page.getByRole("option", { name: "Administrator" })).toHaveCount(0)
+		})
+
+		test("editor cannot change an admin's role", async ({ page, userDetailPage }) => {
+			// Arrange — editor viewing an ADMIN user
+			await loginAs(page, EDITOR_USER, { clearCookies: true })
+
+			const { getPrisma } = await import("../helpers/test-db")
+			const admin = await getPrisma().user.findFirstOrThrow({ where: { role: "ADMIN" } })
+			await userDetailPage.goto(admin.id)
+			await expect(userDetailPage.getUserEmail()).toBeVisible({ timeout: 10000 })
+
+			// Assert — no role-change control is offered for an admin target
+			await expect(userDetailPage.changeRoleButton).not.toBeVisible()
 		})
 	})
 })

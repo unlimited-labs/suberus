@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import type { UserRole } from "@/generated/prisma/enums";
 import {
 	adminCheckDeletable,
 	adminDeleteUser,
@@ -92,7 +93,10 @@ export const patchAdminUser = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(patchUserSchema)
 	.handler(async ({ data, context }) => {
-		return patchUser(data, context.user.id);
+		return patchUser(data, {
+			id: context.user.id,
+			role: context.user.role as UserRole,
+		});
 	});
 
 const bulkActionSchema = z.object({
@@ -108,7 +112,10 @@ export const bulkAdminAction = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(bulkActionSchema)
 	.handler(async ({ data, context }) => {
-		return executeBulkAction(data, context.user.id);
+		return executeBulkAction(data, {
+			id: context.user.id,
+			role: context.user.role as UserRole,
+		});
 	});
 
 // --- Admin-only: profile edit, delete, deletable check ---

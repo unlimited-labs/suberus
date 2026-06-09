@@ -14,7 +14,10 @@ export function useAdminAuth() {
 		isPending,
 		isAdmin,
 		isOnlyAdmin,
-		canChangeRoles: isOnlyAdmin,
+		// Editors may change roles, but only ADMINs may grant/revoke the ADMIN
+		// role or modify another admin (enforced server-side too).
+		canChangeRoles: isAdmin,
+		canAssignAdminRole: isOnlyAdmin,
 		canEditProfiles: isOnlyAdmin,
 		canDeleteUsers: isOnlyAdmin,
 	};

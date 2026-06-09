@@ -392,8 +392,10 @@ export interface BulkChangeRoleInput {
 
 export async function bulkChangeRole(
 	data: BulkChangeRoleInput,
-	performedBy?: string,
+	performer: RoleChangePerformer,
 ): Promise<{ success: boolean; updated: number }> {
+	await assertRoleChangeAllowed(performer, data.userIds, data.role);
+
 	if (data.role !== "ADMIN") {
 		const [adminCount, affectedAdmins] = await Promise.all([
 			prisma.user.count({ where: { role: "ADMIN" } }),
@@ -424,7 +426,7 @@ export async function bulkChangeRole(
 			await logActivity({
 				type: "USER_ROLE_CHANGED",
 				userId: user.id,
-				performedBy,
+				performedBy: performer.id,
 				detail: activityDetail("USER_ROLE_CHANGED", {
 					fromRole: user.role,
 					toRole: data.role,
@@ -436,6 +438,45 @@ export async function bulkChangeRole(
 	return { success: true, updated: result.count };
 }
 
+/** Who is performing a role change — used for privilege checks + audit. */
+export interface RoleChangePerformer {
+	id: string;
+	role: UserRole;
+}
+
+/**
+ * Authorize a role change. Enforced centrally so the single-user and bulk
+ * paths share identical rules:
+ *  - nobody may change their own role (prevents self-escalation/lockout);
+ *  - only an ADMIN may grant the ADMIN role;
+ *  - a non-ADMIN (EDITOR) may not modify a user who is currently ADMIN.
+ * Throws a 403 Response when the change is not permitted.
+ */
+async function assertRoleChangeAllowed(
+	performer: RoleChangePerformer,
+	targetUserIds: string[],
+	newRole: UserRole,
+): Promise<void> {
+	if (targetUserIds.includes(performer.id)) {
+		throw new Response("You cannot change your own role", { status: 403 });
+	}
+	if (performer.role !== "ADMIN") {
+		if (newRole === "ADMIN") {
+			throw new Response("Only an admin can grant the ADMIN role", {
+				status: 403,
+			});
+		}
+		const adminTargets = await prisma.user.count({
+			where: { id: { in: targetUserIds }, role: "ADMIN" },
+		});
+		if (adminTargets > 0) {
+			throw new Response("Only an admin can change an admin's role", {
+				status: 403,
+			});
+		}
+	}
+}
+
 export interface ChangeUserRoleInput {
 	userId: string;
 	role: UserRole;
@@ -443,12 +484,24 @@ export interface ChangeUserRoleInput {
 
 export async function changeUserRole(
 	data: ChangeUserRoleInput,
-	performedBy?: string,
+	performer: RoleChangePerformer,
 ): Promise<{ success: boolean }> {
+	await assertRoleChangeAllowed(performer, [data.userId], data.role);
+
 	const oldUser = await prisma.user.findUniqueOrThrow({
 		where: { id: data.userId },
 		select: { role: true },
 	});
+
+	// Prevent demoting the last remaining admin (single-user path).
+	if (oldUser.role === "ADMIN" && data.role !== "ADMIN") {
+		const adminCount = await prisma.user.count({ where: { role: "ADMIN" } });
+		if (adminCount <= 1) {
+			throw new Response("Cannot change role: would leave no admins", {
+				status: 400,
+			});
+		}
+	}
 
 	await prisma.$transaction(async (tx) => {
 		await tx.user.update({
@@ -459,7 +512,7 @@ export async function changeUserRole(
 		await logActivityTx(tx, {
 			type: "USER_ROLE_CHANGED",
 			userId: data.userId,
-			performedBy,
+			performedBy: performer.id,
 			detail: activityDetail("USER_ROLE_CHANGED", {
 				fromRole: oldUser.role,
 				toRole: data.role,
@@ -801,10 +854,11 @@ export interface PatchUserData {
 
 export async function patchUser(
 	data: PatchUserData,
-	performedBy?: string,
+	performer: RoleChangePerformer,
 ): Promise<AdminUserDetail | null> {
+	const performedBy = performer.id;
 	if (data.role !== undefined) {
-		await changeUserRole({ userId: data.id, role: data.role }, performedBy);
+		await changeUserRole({ userId: data.id, role: data.role }, performer);
 	}
 
 	if (data.isActive !== undefined) {
@@ -879,8 +933,9 @@ export interface BulkActionData {
 
 export async function executeBulkAction(
 	data: BulkActionData,
-	performedBy?: string,
+	performer: RoleChangePerformer,
 ): Promise<{ success: boolean; updated: number }> {
+	const performedBy = performer.id;
 	if (data.action === "mark_fee") {
 		if (!data.feeType || data.feeAmount === undefined || !data.feeCurrency) {
 			throw new Response("Fee type, amount and currency are required", {
@@ -911,7 +966,7 @@ export async function executeBulkAction(
 				userIds: data.userIds,
 				role: data.role,
 			},
-			performedBy,
+			performer,
 		);
 	}
 

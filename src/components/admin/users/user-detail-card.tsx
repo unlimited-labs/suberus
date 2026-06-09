@@ -46,7 +46,7 @@ import { Separator } from "@/components/ui/separator";
 import type { UserRole } from "@/generated/prisma/enums";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { useDateFormat } from "@/hooks/use-date-format";
-import { roleLabels, titleLabels, userRoleOptions } from "@/lib/labels";
+import { assignableRoleOptions, roleLabels, titleLabels } from "@/lib/labels";
 import type { AdminUserDetail } from "@/lib/server/admin/users";
 import {
 	adminUserDetailQueryOptions,
@@ -142,6 +142,7 @@ interface UserRoleDialogProps {
 	onRoleChange: (role: UserRole) => void;
 	onConfirm: () => void;
 	isPending: boolean;
+	roleOptions: { value: UserRole; label: string }[];
 }
 
 function UserRoleDialog({
@@ -152,6 +153,7 @@ function UserRoleDialog({
 	onRoleChange,
 	onConfirm,
 	isPending,
+	roleOptions,
 }: UserRoleDialogProps) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -166,7 +168,7 @@ function UserRoleDialog({
 					<Select
 						value={selectedRole}
 						onValueChange={(v) => {
-							const found = userRoleOptions.find((opt) => opt.value === v);
+							const found = roleOptions.find((opt) => opt.value === v);
 							if (found) onRoleChange(found.value);
 						}}
 					>
@@ -174,7 +176,7 @@ function UserRoleDialog({
 							<SelectValue placeholder="Select role" />
 						</SelectTrigger>
 						<SelectContent>
-							{userRoleOptions.map((role) => (
+							{roleOptions.map((role) => (
 								<SelectItem key={role.value} value={role.value}>
 									{role.label}
 								</SelectItem>
@@ -213,7 +215,15 @@ interface PatchPayload {
 
 export function UserDetailCard({ user }: UserDetailCardProps) {
 	const queryClient = useQueryClient();
-	const { canChangeRoles, canEditProfiles, canDeleteUsers } = useAdminAuth();
+	const {
+		canChangeRoles,
+		canAssignAdminRole,
+		canEditProfiles,
+		canDeleteUsers,
+	} = useAdminAuth();
+	// Editors cannot modify a user who is already an admin.
+	const canChangeThisRole =
+		canChangeRoles && (canAssignAdminRole || user.role !== "ADMIN");
 	const { formatDateTime } = useDateFormat();
 	const fmtDate = (date: Date | null) => (date ? formatDateTime(date) : "—");
 	const [feeDialogOpen, setFeeDialogOpen] = useState(false);
@@ -308,7 +318,7 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 									Edit Profile
 								</Button>
 							)}
-							{canChangeRoles && (
+							{canChangeThisRole && (
 								<Button
 									variant="outline"
 									size="sm"
@@ -567,6 +577,7 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 				onRoleChange={setSelectedRole}
 				onConfirm={handleChangeRole}
 				isPending={mutation.isPending}
+				roleOptions={assignableRoleOptions(canAssignAdminRole)}
 			/>
 		</>
 	);

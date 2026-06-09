@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import type { UserRole } from "@/generated/prisma/enums";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
-import { userRoleOptions } from "@/lib/labels/user";
+import { assignableRoleOptions } from "@/lib/labels/user";
 import type { AdminUser } from "@/lib/server/admin/users";
 import {
 	adminUsersQueryOptions,
@@ -39,7 +39,8 @@ interface BulkActionPayload {
 
 export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 	const queryClient = useQueryClient();
-	const { canChangeRoles } = useAdminAuth();
+	const { canChangeRoles, canAssignAdminRole } = useAdminAuth();
+	const roleOptions = assignableRoleOptions(canAssignAdminRole);
 	const selectedCount = Object.keys(rowSelection).length;
 	const selectedRows = table
 		.getCoreRowModel()
@@ -164,7 +165,7 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 				<Select
 					value={selectedRole}
 					onValueChange={(v) => {
-						const found = userRoleOptions.find((opt) => opt.value === v);
+						const found = roleOptions.find((opt) => opt.value === v);
 						if (found) setSelectedRole(found.value);
 					}}
 				>
@@ -172,7 +173,7 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 						<SelectValue placeholder="Select role" />
 					</SelectTrigger>
 					<SelectContent>
-						{userRoleOptions.map((role) => (
+						{roleOptions.map((role) => (
 							<SelectItem key={role.value} value={role.value}>
 								{role.label}
 							</SelectItem>
