@@ -24,6 +24,10 @@ test.describe("Confirm Conditions Met", () => {
 		// Act
 		await page.getByRole("button", { name: "Confirm Conditions Met" }).click();
 		await page.getByRole("dialog").waitFor({ state: "visible" });
+		// No revision uploaded yet → warning banner
+		await expect(
+			page.getByText(/has not uploaded a revised version/i),
+		).toBeVisible();
 		await page.locator("#confirm-conditions-reason").fill("Author addressed all minor conditions");
 		await page.getByRole("button", { name: "Confirm Accepted" }).click();
 
@@ -113,6 +117,10 @@ test.describe("Confirm Conditions Met", () => {
 
 		await page.getByRole("button", { name: "Confirm Conditions Met" }).click();
 		await page.getByRole("dialog").waitFor({ state: "visible" });
+		// Revision was uploaded → confirmation banner
+		await expect(
+			page.getByText(/uploaded a revised version/i),
+		).toBeVisible();
 		await page
 			.locator("#confirm-conditions-reason")
 			.fill("Revised version resolves the conditions");

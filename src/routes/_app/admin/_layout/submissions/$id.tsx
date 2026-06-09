@@ -170,6 +170,11 @@ function SubmissionDetailPage() {
 	const displayedContent = displayedVersion?.content ?? submission.content;
 	const displayedFile = displayedVersion?.file ?? submission.file;
 
+	// Whether the author uploaded a revised version after a conditional acceptance
+	const revisionUploaded = activityHistory.some(
+		(e) => e.activityType === "SUBMISSION_REVISION_UPLOADED",
+	);
+
 	// Calculate review progress
 	const currentRoundAssignments = assignments.filter(
 		(a) => a.round === submission.currentRound && a.status !== "CANCELLED",
@@ -921,6 +926,8 @@ function SubmissionDetailPage() {
 				onOpenChange={setShowConfirmConditionsDialog}
 				onConfirm={handleConfirmConditionsMet}
 				isTransitioning={isTransitioning}
+				revisionUploaded={revisionUploaded}
+				latestVersion={submission.currentVersionNumber}
 			/>
 
 			<SubmissionDeleteDialog
