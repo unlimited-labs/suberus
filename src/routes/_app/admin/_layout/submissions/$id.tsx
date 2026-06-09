@@ -35,6 +35,7 @@ import { EditorDecisionDialog } from "@/components/admin/submissions/editor-deci
 import { OverrideDecisionDialog } from "@/components/admin/submissions/override-decision-dialog";
 import { SubmissionDeleteDialog } from "@/components/admin/submissions/submission-delete-dialog";
 import { PageHeader } from "@/components/layout/page-header";
+import { VersionSelector } from "@/components/submissions/version-selector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -107,6 +108,7 @@ function SubmissionDetailPage() {
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 	const [selectedReviewRound, setSelectedReviewRound] =
 		useState<string>("current");
+	const [selectedVersion, setSelectedVersion] = useState<number | null>(null);
 
 	const {
 		isTransitioning,
@@ -159,7 +161,14 @@ function SubmissionDetailPage() {
 		assignments,
 		reviews,
 		activityHistory,
+		versions,
 	} = data;
+
+	// Version viewing: default to current version unless an older one is selected
+	const effectiveVersion = selectedVersion ?? submission.currentVersionNumber;
+	const displayedVersion = versions.find((v) => v.version === effectiveVersion);
+	const displayedContent = displayedVersion?.content ?? submission.content;
+	const displayedFile = displayedVersion?.file ?? submission.file;
 
 	// Calculate review progress
 	const currentRoundAssignments = assignments.filter(
@@ -342,25 +351,35 @@ function SubmissionDetailPage() {
 
 									{/* Abstract / Content */}
 									<Card>
-										<CardHeader>
+										<CardHeader className="flex flex-row items-start justify-between gap-4">
 											<CardTitle className="text-base">Content</CardTitle>
+											{versions.length > 1 && (
+												<div className="w-44">
+													<VersionSelector
+														versions={versions}
+														currentVersion={submission.currentVersionNumber}
+														selectedVersion={effectiveVersion}
+														onVersionChange={setSelectedVersion}
+													/>
+												</div>
+											)}
 										</CardHeader>
 										<CardContent>
-											{submission.file ? (
+											{displayedFile ? (
 												<div className="flex items-center gap-4 rounded-lg border bg-muted/30 p-4">
 													<div className="shrink-0 rounded-md bg-primary/10 p-2">
 														<IconFile className="size-6 text-primary" />
 													</div>
 													<div className="min-w-0 flex-1">
 														<p className="truncate text-sm font-medium text-foreground">
-															{submission.file.originalName}
+															{displayedFile.originalName}
 														</p>
 														<p className="text-xs text-muted-foreground">
-															{formatFileSize(submission.file.size)}
+															{formatFileSize(displayedFile.size)}
 														</p>
 													</div>
 													<a
-														href={`/api/files/${submission.file.id}`}
+														href={`/api/files/${displayedFile.id}`}
 														data-testid="file-download-button"
 														className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
 													>
@@ -370,7 +389,7 @@ function SubmissionDetailPage() {
 												</div>
 											) : (
 												<div className="prose prose-sm max-w-none dark:prose-invert">
-													{submission.content.split(/\n{2,}/).map((para, i) => (
+													{displayedContent.split(/\n{2,}/).map((para, i) => (
 														<p
 															key={i}
 															className="whitespace-pre-wrap break-words"

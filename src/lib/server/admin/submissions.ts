@@ -463,6 +463,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 		type: SubmissionType;
 		status: SubmissionStatus;
 		currentRound: number;
+		currentVersionNumber: number;
 		trackId: string | null;
 		createdAt: Date;
 		file: {
@@ -473,6 +474,21 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 			size: number;
 		} | null;
 	};
+	versions: Array<{
+		id: string;
+		version: number;
+		title: string;
+		content: string;
+		comment: string | null;
+		createdAt: Date;
+		file: {
+			id: string;
+			fileName: string;
+			originalName: string;
+			mimeType: string;
+			size: number;
+		} | null;
+	}>;
 	submitter: {
 		id: string;
 		firstName: string | null;
@@ -535,6 +551,20 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 					},
 				},
 			},
+			versions: {
+				include: {
+					file: {
+						select: {
+							id: true,
+							fileName: true,
+							originalName: true,
+							mimeType: true,
+							size: true,
+						},
+					},
+				},
+				orderBy: { version: "asc" },
+			},
 			user: { select: { id: true, firstName: true, lastName: true } },
 			authors: {
 				include: { affiliation: true, user: { select: { id: true } } },
@@ -565,6 +595,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 							"SUBMISSION_STATUS_CHANGED",
 							"SUBMISSION_WITHDRAWN",
 							"SUBMISSION_RESUBMITTED",
+							"SUBMISSION_REVISION_UPLOADED",
 							"SUBMISSION_TRACK_CHANGED",
 							"REVIEW_ASSIGNED",
 							"REVIEW_SUBMITTED",
@@ -596,10 +627,20 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 			type: submission.type,
 			status: submission.status,
 			currentRound: submission.currentRound,
+			currentVersionNumber: submission.currentVersion?.version ?? 1,
 			trackId: submission.trackId,
 			createdAt: submission.createdAt,
 			file: submission.currentVersion?.file ?? null,
 		},
+		versions: submission.versions.map((v) => ({
+			id: v.id,
+			version: v.version,
+			title: v.title,
+			content: v.content,
+			comment: v.comment,
+			createdAt: v.createdAt,
+			file: v.file,
+		})),
 		submitter: {
 			id: submission.user.id,
 			firstName: submission.user.firstName,

@@ -113,6 +113,13 @@ export function ActionsCard({
 						</Button>
 					</>
 				);
+			case "CONDITIONALLY_ACCEPTED":
+				return (
+					<Button className="gap-2 w-full" onClick={handleRevise}>
+						<IconEdit className="size-4" />
+						Upload Revised Version
+					</Button>
+				);
 			case "SUBMITTED":
 			case "UNDER_REVIEW":
 			case "REVIEWS_COMPLETE":

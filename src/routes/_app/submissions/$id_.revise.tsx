@@ -22,6 +22,7 @@ import {
 	mySubmissionsQueryOptions,
 	resubmitSubmissionFn,
 	submissionDetailQueryOptions,
+	submitConditionalRevisionFn,
 	uploadSubmissionFile,
 } from "@/server-fns/submissions";
 
@@ -51,11 +52,11 @@ function ReviseSubmissionPage() {
 	const queryClient = useQueryClient();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	if (
-		!data ||
-		data.submission.role === "coauthor" ||
-		data.submission.status !== "REVISE_REQUIRED"
-	) {
+	const canRevise =
+		data?.submission.status === "REVISE_REQUIRED" ||
+		data?.submission.status === "CONDITIONALLY_ACCEPTED";
+
+	if (!data || data.submission.role === "coauthor" || !canRevise) {
 		return (
 			<div className="flex h-full flex-col">
 				<PageHeader icon={IconFileText} title="Cannot Revise" />
@@ -64,7 +65,7 @@ function ReviseSubmissionPage() {
 						<p className="text-muted-foreground mb-4">
 							{!data
 								? "Submission not found"
-								: "Submission is not in revision-required state"}
+								: "Submission is not in a revisable state"}
 						</p>
 						<Link to="/submissions/$id" params={{ id }}>
 							<Button variant="outline" className="gap-2">
@@ -79,6 +80,7 @@ function ReviseSubmissionPage() {
 	}
 
 	const { submission, versions } = data;
+	const isConditional = submission.status === "CONDITIONALLY_ACCEPTED";
 	const currentVersion = versions.find(
 		(v) => v.version === submission.currentVersion,
 	);
@@ -106,10 +108,14 @@ function ReviseSubmissionPage() {
 			acceptString={acceptString}
 			maxFileSize={maxFileSize}
 			isSubmitting={isSubmitting}
+			isConditional={isConditional}
 			onSubmit={async (formData) => {
 				setIsSubmitting(true);
 				try {
-					const result = await resubmitSubmissionFn({
+					const submitFn = isConditional
+						? submitConditionalRevisionFn
+						: resubmitSubmissionFn;
+					const result = await submitFn({
 						data: {
 							submissionId: id,
 							title: formData.title,
@@ -180,6 +186,7 @@ interface RevisionFormProps {
 	acceptString: string;
 	maxFileSize: number;
 	isSubmitting: boolean;
+	isConditional: boolean;
 	onSubmit: (data: {
 		title: string;
 		content: string;
@@ -197,6 +204,7 @@ function RevisionForm({
 	acceptString,
 	maxFileSize,
 	isSubmitting,
+	isConditional,
 	onSubmit,
 }: RevisionFormProps) {
 	const [title, setTitle] = useState(initialTitle);
@@ -211,7 +219,10 @@ function RevisionForm({
 
 	return (
 		<div className="flex h-full flex-col">
-			<PageHeader icon={IconFileText} title="Revise Submission">
+			<PageHeader
+				icon={IconFileText}
+				title={isConditional ? "Upload Revised Version" : "Revise Submission"}
+			>
 				<Link to="/submissions/$id" params={{ id: submissionId }}>
 					<Button variant="outline" className="gap-2">
 						<IconArrowLeft className="size-4" />
@@ -302,7 +313,13 @@ function RevisionForm({
 							className="w-full gap-2"
 						>
 							<IconSend className="size-4" />
-							{isSubmitting ? "Submitting Revision..." : "Submit Revision"}
+							{isSubmitting
+								? isConditional
+									? "Uploading..."
+									: "Submitting Revision..."
+								: isConditional
+									? "Upload Revised Version"
+									: "Submit Revision"}
 						</Button>
 					</form>
 				</div>
