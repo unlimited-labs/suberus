@@ -46,8 +46,12 @@ export async function sendEmail(
 
 		for (const [key, value] of Object.entries(variables)) {
 			const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
-			subject = subject.replace(regex, value);
-			body = body.replace(regex, value);
+			// Function replacers avoid `$`-pattern interpretation in the value.
+			// HTML bodies escape the (often user-controlled) value to prevent
+			// markup/link injection; the subject is a plain-text header.
+			const bodyValue = template.isHtml ? escapeHtml(value) : value;
+			subject = subject.replace(regex, () => value);
+			body = body.replace(regex, () => bodyValue);
 		}
 
 		// Append global email footer if configured
@@ -141,8 +145,9 @@ export async function sendTestEmail(
 
 	for (const [key, value] of Object.entries(placeholders)) {
 		const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
-		resolvedSubject = resolvedSubject.replace(regex, value);
-		resolvedBody = resolvedBody.replace(regex, value);
+		const bodyValue = isHtml ? escapeHtml(value) : value;
+		resolvedSubject = resolvedSubject.replace(regex, () => value);
+		resolvedBody = resolvedBody.replace(regex, () => bodyValue);
 	}
 
 	const footer = await getSetting("EMAIL_FOOTER_TEXT");
