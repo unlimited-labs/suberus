@@ -80,28 +80,31 @@ const decisionOptions = [
 	{
 		value: "ACCEPT" as const,
 		label: "Accept",
-		description: "Work meets all criteria and should be accepted",
+		description: "Recommends accepting the work as-is, with no changes.",
 		icon: IconCheck,
 		color: "emerald",
 	},
 	{
 		value: "ACCEPT_WITH_MINOR_REVISIONS" as const,
 		label: "Accept with Minor Revisions",
-		description: "Good work, needs small improvements",
+		description:
+			"Recommends conditional acceptance — the author fixes small issues, with no new review round.",
 		icon: IconCircleCheck,
 		color: "sky",
 	},
 	{
 		value: "REVISE_AND_RESUBMIT" as const,
 		label: "Revise and Resubmit",
-		description: "Potential but requires significant changes",
+		description:
+			"Sends the work back for substantial changes and another review round.",
 		icon: IconAlertCircle,
 		color: "amber",
 	},
 	{
 		value: "REJECT" as const,
 		label: "Reject",
-		description: "Work does not meet publication standards",
+		description:
+			"Recommends rejection — the work cannot be accepted, even after revisions.",
 		icon: IconX,
 		color: "red",
 	},
