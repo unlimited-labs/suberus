@@ -15,6 +15,7 @@ import { validateUpload } from "./validate-upload";
 export async function enqueueExtractionJob(
 	buffer: Buffer,
 	fileName: string,
+	createdById?: string,
 ): Promise<{ jobId: string }> {
 	const maxFileSizeMb = await getSetting("MAX_FILE_SIZE_MB");
 	const detected = await validateUpload(buffer, {
@@ -27,7 +28,7 @@ export async function enqueueExtractionJob(
 		getSetting("EXTRACTION_AI"),
 	]);
 
-	const jobId = await createJobProgress("extraction");
+	const jobId = await createJobProgress("extraction", createdById);
 	const storageKey = generateExtractionFileKey(jobId, fileName);
 	await uploadFile(buffer, storageKey, detected.mime);
 

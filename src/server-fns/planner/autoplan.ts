@@ -10,14 +10,14 @@ import { getSetting } from "@/lib/server/settings";
 
 export const startAutoPlanFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.handler(async () => {
+	.handler(async ({ context }) => {
 		const enabled = await getSetting("PLANNER_AUTOPLAN_ENABLED");
 		if (!enabled) {
 			throw new Error(
 				"Autoplanner is disabled. Enable it in Configuration/Program/Planner.",
 			);
 		}
-		const jobId = await createJobProgress("autoplan");
+		const jobId = await createJobProgress("autoplan", context.user.id);
 		await ensureQueueAndSend("autoplan", { jobId });
 		return { jobId };
 	});

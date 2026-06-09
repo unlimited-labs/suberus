@@ -37,9 +37,9 @@ export const extractionSettingsQueryOptions = () =>
 export const enqueueExtractionFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.inputValidator((data: FormData) => ({ file: getUploadedFile(data) }))
-	.handler(async ({ data }) => {
+	.handler(async ({ data, context }) => {
 		const buffer = await fileToBuffer(data.file);
-		return enqueueExtractionJob(buffer, data.file.name);
+		return enqueueExtractionJob(buffer, data.file.name, context.user.id);
 	});
 
 export const getExtractionResultFn = createServerFn({ method: "GET" })

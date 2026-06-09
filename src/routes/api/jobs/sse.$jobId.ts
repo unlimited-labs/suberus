@@ -6,8 +6,22 @@ export const Route = createFileRoute("/api/jobs/sse/$jobId")({
 	server: {
 		middleware: [authRequestMiddleware],
 		handlers: {
-			GET: async ({ params }) => {
+			GET: async ({ params, context }) => {
 				const { jobId } = params;
+
+				// Ownership check: only the user who created the job (or an
+				// editor/admin) may stream its progress. Prevents enumerating
+				// other users' job status/errors.
+				const owned = await prisma.jobProgress.findUnique({
+					where: { id: jobId },
+					select: { createdById: true },
+				});
+				const isStaff =
+					context.user.role === "ADMIN" || context.user.role === "EDITOR";
+				if (owned && !isStaff && owned.createdById !== context.user.id) {
+					return new Response("Forbidden", { status: 403 });
+				}
+
 				const encoder = new TextEncoder();
 
 				const stream = new ReadableStream({

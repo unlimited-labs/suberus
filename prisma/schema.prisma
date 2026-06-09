@@ -721,10 +721,11 @@ model JobProgress {
   stage     String   @default("queued")
   current   Int      @default(0)
   total     Int      @default(0)
-  error     String?
-  result    Json?
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  error       String?
+  result      Json?
+  createdById String?  @map("created_by_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   autoplanProposal AutoplanProposal?
 

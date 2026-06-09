@@ -1,9 +1,12 @@
 import { prisma } from "@/db.server.ts";
 import type { Prisma } from "@/generated/prisma/client.js";
 
-export async function createJobProgress(queue: string): Promise<string> {
+export async function createJobProgress(
+	queue: string,
+	createdById?: string,
+): Promise<string> {
 	const job = await prisma.jobProgress.create({
-		data: { queue },
+		data: { queue, createdById },
 	});
 	return job.id;
 }
