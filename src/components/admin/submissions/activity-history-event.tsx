@@ -5,6 +5,7 @@ import {
 	IconEdit,
 	IconEye,
 	IconFileText,
+	IconFileUpload,
 	IconGavel,
 	IconRefresh,
 	IconSend,
@@ -46,6 +47,7 @@ const activityConfig: Record<
 	SUBMISSION_STATUS_CHANGED: { color: "blue", icon: IconRefresh },
 	SUBMISSION_WITHDRAWN: { color: "gray", icon: IconX },
 	SUBMISSION_RESUBMITTED: { color: "blue", icon: IconRefresh },
+	SUBMISSION_REVISION_UPLOADED: { color: "blue", icon: IconFileUpload },
 	SUBMISSION_TRACK_CHANGED: { color: "purple", icon: IconArrowsExchange },
 	REVIEW_ASSIGNED: { color: "orange", icon: IconUserPlus },
 	REVIEW_SUBMITTED: { color: "green", icon: IconEye },
@@ -203,6 +205,11 @@ function ActivityDetail({ entry }: { entry: ActivityHistoryEntry }) {
 			const round = d.round as number | undefined;
 			if (!round) return null;
 			return <p className="text-sm text-muted-foreground">Round {round}</p>;
+		}
+		case "SUBMISSION_REVISION_UPLOADED": {
+			const version = d.version as number | undefined;
+			if (!version) return null;
+			return <p className="text-sm text-muted-foreground">Version {version}</p>;
 		}
 		default:
 			return null;

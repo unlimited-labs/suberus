@@ -27,6 +27,7 @@ export type ActivityDetail =
 	  }
 	| { type: "SUBMISSION_WITHDRAWN"; reason?: string }
 	| { type: "SUBMISSION_RESUBMITTED"; round: number }
+	| { type: "SUBMISSION_REVISION_UPLOADED"; version: number }
 	| { type: "SUBMISSION_TRACK_CHANGED"; trackId: string | null }
 	| { type: "SUBMISSION_DELETED"; title: string; sequentialNumber: number }
 	| { type: "REVIEW_ASSIGNED"; assignmentId: string; deadline?: string }

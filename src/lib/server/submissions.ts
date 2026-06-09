@@ -751,6 +751,103 @@ export async function resubmitSubmission(
 	return { success: true, versionNumber: version.version };
 }
 
+/**
+ * Submit a revised version while CONDITIONALLY_ACCEPTED (camera-ready / minor revisions).
+ * Creates a new version WITHOUT incrementing the round, reassigning reviewers, or starting a
+ * new review round — the status stays CONDITIONALLY_ACCEPTED until an editor confirms conditions.
+ */
+export async function submitConditionalRevision(
+	submissionId: string,
+	userId: string,
+	data: ResubmitSubmissionInput,
+): Promise<{ success: boolean; versionNumber: number; error?: string }> {
+	const submission = await prisma.submission.findFirst({
+		where: { id: submissionId, userId },
+		include: { currentVersion: true },
+	});
+
+	if (!submission) {
+		return { success: false, versionNumber: 0, error: "Submission not found" };
+	}
+
+	const nextVersion = (submission.currentVersion?.version ?? 0) + 1;
+
+	// Atomic: lock row, verify status, create version, update content (status unchanged)
+	const version = await prisma.$transaction(async (tx) => {
+		const [locked] = await tx.$queryRawUnsafe<Array<{ status: string }>>(
+			'SELECT "status" FROM "submissions" WHERE "id" = $1 FOR UPDATE',
+			submissionId,
+		);
+		if (locked?.status !== "CONDITIONALLY_ACCEPTED") {
+			return null;
+		}
+
+		const version = await tx.submissionVersion.create({
+			data: {
+				submissionId,
+				version: nextVersion,
+				title: data.title,
+				content: data.content,
+				comment: data.comment,
+			},
+		});
+
+		await tx.submission.update({
+			where: { id: submissionId },
+			data: {
+				title: data.title,
+				content: data.content,
+				currentVersionId: version.id,
+			},
+		});
+
+		await tx.activityLog.create({
+			data: {
+				type: "SUBMISSION_REVISION_UPLOADED",
+				submissionId,
+				performedBy: userId,
+				detail: {
+					type: "SUBMISSION_REVISION_UPLOADED",
+					version: nextVersion,
+				},
+			},
+		});
+
+		return version;
+	});
+
+	if (!version) {
+		return {
+			success: false,
+			versionNumber: 0,
+			error: "Submission is not in CONDITIONALLY_ACCEPTED status",
+		};
+	}
+
+	// Notify caretaker editor about the revised version
+	const caretaker = await getCaretakerEditor(submissionId);
+	if (caretaker) {
+		const presenter = await prisma.submissionAuthor.findFirst({
+			where: { submissionId, isPresenter: true },
+		});
+
+		void sendEmail("REVISION_RECEIVED", caretaker.email, {
+			submissionTitle: data.title,
+			authorName: presenter
+				? `${presenter.firstName} ${presenter.lastName}`
+				: "Author",
+			versionNumber: String(version.version),
+			submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${submissionId}`,
+		});
+	}
+
+	logger.info(
+		`[submission] conditional revision ${submissionId} v${version.version}`,
+	);
+
+	return { success: true, versionNumber: version.version };
+}
+
 /** Update a draft submission (DRAFT or SUBMITTED status) */
 export async function updateDraftSubmission(
 	submissionId: string,

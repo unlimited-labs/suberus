@@ -15,6 +15,7 @@ import {
 	getSubmissionsForUser,
 	resubmitSubmission,
 	type SubmissionDetail,
+	submitConditionalRevision,
 	submitDraft,
 	type UserSubmission,
 	updateDraftSubmission,
@@ -338,6 +339,34 @@ export const resubmitSubmissionFn = createServerFn({ method: "POST" })
 			error?: string;
 		}> => {
 			return resubmitSubmission(data.submissionId, context.user.id, {
+				title: data.title,
+				content: data.content,
+				comment: data.comment,
+			});
+		},
+	);
+
+/** Submit a revised version while conditionally accepted (no new review round) */
+export const submitConditionalRevisionFn = createServerFn({ method: "POST" })
+	.middleware([authMiddleware])
+	.inputValidator(
+		z.object({
+			submissionId: z.uuid(),
+			title: z.string(),
+			content: z.string(),
+			comment: z.string().optional(),
+		}),
+	)
+	.handler(
+		async ({
+			data,
+			context,
+		}): Promise<{
+			success: boolean;
+			versionNumber: number;
+			error?: string;
+		}> => {
+			return submitConditionalRevision(data.submissionId, context.user.id, {
 				title: data.title,
 				content: data.content,
 				comment: data.comment,
