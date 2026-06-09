@@ -189,6 +189,15 @@ export function sanitizeFileName(originalName: string): string {
 }
 
 /**
+ * Build a `Content-Disposition: attachment` value with a latinized, ASCII-safe
+ * filename (e.g. ą → a). HTTP header values are ByteStrings, so raw
+ * diacritics throw; reuse the same sanitization as the S3 storage keys.
+ */
+export function contentDispositionAttachment(originalName: string): string {
+	return `attachment; filename="${sanitizeFileName(originalName)}"`;
+}
+
+/**
  * Build the display name for a submission file from its authors:
  *   single author → Imie_Nazwisko.ext
  *   multiple      → Imie_Nazwisko_et_al.ext  (first author by orderIndex)

@@ -2,7 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import type { UserRole } from "@/generated/prisma/enums";
 import { checkFileAccess } from "@/lib/server/files";
 import { authRequestMiddleware } from "@/lib/server/middleware/auth";
-import { getFileContent } from "@/lib/server/storage";
+import {
+	contentDispositionAttachment,
+	getFileContent,
+} from "@/lib/server/storage";
 
 export const Route = createFileRoute("/api/files/$fileId")({
 	server: {
@@ -33,7 +36,9 @@ export const Route = createFileRoute("/api/files/$fileId")({
 				return new Response(result.body, {
 					headers: {
 						"Content-Type": file.mimeType,
-						"Content-Disposition": `attachment; filename="${file.originalName}"`,
+						"Content-Disposition": contentDispositionAttachment(
+							file.originalName,
+						),
 						...(result.contentLength && {
 							"Content-Length": String(result.contentLength),
 						}),
