@@ -41,7 +41,10 @@ export const auth = betterAuth({
 	// verification is a soft block, login is the brute-force surface — don't rely
 	// on framework defaults silently changing.
 	rateLimit: {
-		enabled: true,
+		// Throttle auth endpoints in production only. Left off in dev/E2E, where
+		// there is no trusted proxy IP to key the limiter on (better-auth would
+		// otherwise warn and skip on every request).
+		enabled: env.NODE_ENV === "production" && !env.E2E,
 		window: 60,
 		max: 20,
 	},
