@@ -283,10 +283,10 @@ test.describe("Review Workflow - Reviewer Actions", () => {
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+/);
 
 		// Assert
-		await expect(page.getByRole("button", { name: /Accept Work meets/i })).toBeVisible();
+		await expect(page.getByRole("button", { name: /Accept Recommends accepting/i })).toBeVisible();
 		await expect(page.getByRole("button", { name: /Accept with Minor Revisions/i })).toBeVisible();
 		await expect(page.getByRole("button", { name: /Revise and Resubmit/i })).toBeVisible();
-		await expect(page.getByRole("button", { name: /Reject Work does not/i })).toBeVisible();
+		await expect(page.getByRole("button", { name: /Reject Recommends rejection/i })).toBeVisible();
 	});
 
 	test("review form shows guidelines with minimum comment length", async ({ page, testRun, cleanup }) => {

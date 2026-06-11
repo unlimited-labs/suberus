@@ -38,8 +38,8 @@ test.describe("Review Re-submit Blocked After Completion", () => {
 		await expect(page.getByRole("heading", { name: "View Review", level: 1 })).toBeVisible({ timeout: 10000 });
 
 		// Decision buttons are disabled
-		await expect(page.getByRole("button", { name: /Reject.*not meet/i })).toBeDisabled();
-		await expect(page.getByRole("button", { name: /Accept Work meets/i })).toBeDisabled();
+		await expect(page.getByRole("button", { name: /Reject Recommends rejection/i })).toBeDisabled();
+		await expect(page.getByRole("button", { name: /Accept Recommends accepting/i })).toBeDisabled();
 
 		// Comments field is disabled
 		await expect(page.getByRole("textbox", { name: "Review Comments" })).toBeDisabled();

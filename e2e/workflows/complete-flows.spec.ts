@@ -300,7 +300,7 @@ test.describe("Review Form Validation", () => {
 		await expect(page.getByRole("heading", { name: "Decision", exact: true })).toBeVisible({ timeout: 10000 });
 
 		// Act - fill form
-		await page.getByRole("button", { name: /Accept Work meets/i }).click();
+		await page.getByRole("button", { name: /Accept Recommends accepting/i }).click();
 
 		// Fill evaluation scores
 		const scoreButtons = await page.getByRole("button", { name: "4", exact: true }).all();

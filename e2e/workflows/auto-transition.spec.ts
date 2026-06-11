@@ -123,7 +123,7 @@ test.describe("Auto-transition After Reviews", () => {
 
 		// Select Accept decision
 		await page
-			.getByRole("button", { name: /Accept Work meets/i })
+			.getByRole("button", { name: /Accept Recommends accepting/i })
 			.click();
 
 		// Fill evaluation scores (4 criteria + confidence = all score "4" buttons)
