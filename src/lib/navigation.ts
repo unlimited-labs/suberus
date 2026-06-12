@@ -1,5 +1,6 @@
 import {
 	IconAdjustments,
+	IconBuildingStore,
 	IconCalendar,
 	IconCalendarEvent,
 	IconCash,
@@ -40,7 +41,18 @@ export const navigationSections: NavSection[] = [
 				external: true,
 				requiresPublishedSchedule: true,
 			},
-			{ name: "Submissions", href: "/submissions", icon: IconFileText },
+			{
+				name: "Submissions",
+				href: "/submissions",
+				icon: IconFileText,
+				roles: ["AUTHOR", "REVIEWER", "EDITOR", "ADMIN"],
+			},
+			{
+				name: "Exhibitor",
+				href: "/exhibitor",
+				icon: IconBuildingStore,
+				roles: ["EXHIBITOR"],
+			},
 			{ name: "Fee", href: "/fee", icon: IconCash },
 			{
 				name: "Reviews",
@@ -64,6 +76,11 @@ export const navigationSections: NavSection[] = [
 				roles: ["ADMIN"],
 			},
 			{ name: "Submissions", href: "/admin/submissions", icon: IconFileStack },
+			{
+				name: "Exhibitors",
+				href: "/admin/exhibitors",
+				icon: IconBuildingStore,
+			},
 			{
 				name: "Program Planner",
 				href: "/admin/program-planner",

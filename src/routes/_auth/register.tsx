@@ -20,6 +20,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { COUNTRIES } from "@/components/ui/country-combobox";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAppForm } from "@/hooks/use-app-form";
 import { useMultiStep } from "@/hooks/use-multi-step";
 import { signUp } from "@/lib/auth-client";
@@ -30,6 +31,10 @@ import { cn } from "@/lib/utils";
 import { registerBase, registerSchema } from "@/lib/validations/auth";
 import { surveyAnswerRequiredError } from "@/lib/validations/survey";
 import { checkEmailAvailableFn } from "@/server-fns/auth";
+import {
+	becomeExhibitorFn,
+	exhibitorSignupAvailableFn,
+} from "@/server-fns/exhibitors";
 import {
 	consumeInvitationFn,
 	validateInvitationTokenFn,
@@ -50,13 +55,17 @@ export const Route = createFileRoute("/_auth/register")({
 	validateSearch: searchSchema,
 	loaderDeps: ({ search }) => ({ token: search.token }),
 	loader: async ({ deps }) => {
-		const [surveyQuestions, tosContent, registrationStatus] = await Promise.all(
-			[
-				getSurveyQuestionsForRegistrationFn(),
-				getTosContentForRegistrationFn(),
-				getRegistrationStatusFn(),
-			],
-		);
+		const [
+			surveyQuestions,
+			tosContent,
+			registrationStatus,
+			exhibitorSignupAvailable,
+		] = await Promise.all([
+			getSurveyQuestionsForRegistrationFn(),
+			getTosContentForRegistrationFn(),
+			getRegistrationStatusFn(),
+			exhibitorSignupAvailableFn(),
+		]);
 
 		let invitation: { email: string; role: string } | null = null;
 		if (deps.token) {
@@ -74,6 +83,7 @@ export const Route = createFileRoute("/_auth/register")({
 			invitation,
 			token: deps.token,
 			registrationClosed,
+			exhibitorSignupAvailable,
 		};
 	},
 	component: RegisterPage,
@@ -144,8 +154,16 @@ function RegisterPage() {
 
 function RegisterForm() {
 	const navigate = useNavigate();
-	const { surveyQuestions, tosContent, invitation, token } =
-		Route.useLoaderData();
+	const {
+		surveyQuestions,
+		tosContent,
+		invitation,
+		token,
+		exhibitorSignupAvailable,
+	} = Route.useLoaderData();
+	const [accountType, setAccountType] = useState<"participant" | "exhibitor">(
+		"participant",
+	);
 	const detectedCountry = useMemo(() => {
 		const name = detectCountry();
 		return name && COUNTRIES.includes(name) ? name : "";
@@ -224,6 +242,19 @@ function RegisterForm() {
 				await Promise.all(promises);
 			} catch {
 				// Account created successfully — survey/ToS can be updated in settings
+			}
+
+			if (accountType === "exhibitor") {
+				try {
+					await becomeExhibitorFn();
+					// Full page load so the client session picks up the new role
+					window.location.assign("/exhibitor");
+					return;
+				} catch {
+					toast.error(
+						"Could not register as exhibitor — your account was created as a regular participant",
+					);
+				}
 			}
 
 			toast.success("Account created! Check your email to verify.");
@@ -307,6 +338,45 @@ function RegisterForm() {
 					{/* Step 1: Author Information */}
 					{currentStep === 1 && (
 						<div className="animate-in fade-in slide-in-from-right-4 space-y-3 duration-300">
+							{/* Account type (only when exhibitor signup is active) */}
+							{exhibitorSignupAvailable && !invitation && (
+								<Field>
+									<FieldLabel>Account type</FieldLabel>
+									<RadioGroup
+										value={accountType}
+										onValueChange={(value) =>
+											setAccountType(
+												value === "exhibitor" ? "exhibitor" : "participant",
+											)
+										}
+										className="grid gap-2 sm:grid-cols-2"
+									>
+										<FieldLabel
+											htmlFor="account-type-participant"
+											className="flex cursor-pointer items-center gap-2 rounded-lg border border-input p-3 font-normal has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5"
+										>
+											<RadioGroupItem
+												value="participant"
+												id="account-type-participant"
+												data-testid="register-account-type-participant"
+											/>
+											Participant / Author
+										</FieldLabel>
+										<FieldLabel
+											htmlFor="account-type-exhibitor"
+											className="flex cursor-pointer items-center gap-2 rounded-lg border border-input p-3 font-normal has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5"
+										>
+											<RadioGroupItem
+												value="exhibitor"
+												id="account-type-exhibitor"
+												data-testid="register-account-type-exhibitor"
+											/>
+											Exhibitor (company booth)
+										</FieldLabel>
+									</RadioGroup>
+								</Field>
+							)}
+
 							{/* Invitation banner */}
 							{invitation && (
 								<Alert className="border-primary/30 bg-primary/5">

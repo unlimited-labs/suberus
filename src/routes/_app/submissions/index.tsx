@@ -5,8 +5,9 @@ import {
 	IconPlus,
 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { compareDesc, differenceInCalendarDays, isAfter } from "date-fns";
+import { useEffect } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { SubmissionsTable } from "@/components/submissions/submissions-table";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,8 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useDateFormat } from "@/hooks/use-date-format";
+import { useSession } from "@/hooks/use-session";
+import { redirectExhibitorRouteMiddleware } from "@/lib/server/middleware/auth";
 import { cn } from "@/lib/utils";
 import {
 	activeSubmissionTypesQueryOptions,
@@ -25,6 +28,9 @@ import {
 import { mySubmissionsQueryOptions } from "@/server-fns/submissions";
 
 export const Route = createFileRoute("/_app/submissions/")({
+	server: {
+		middleware: [redirectExhibitorRouteMiddleware],
+	},
 	loader: async ({ context }) => {
 		await Promise.all([
 			context.queryClient.ensureQueryData(mySubmissionsQueryOptions()),
@@ -36,6 +42,16 @@ export const Route = createFileRoute("/_app/submissions/")({
 });
 
 function SubmissionsPage() {
+	const navigate = useNavigate();
+	const { user, isPending } = useSession();
+
+	// Client-side guard for SPA navigations (server middleware covers full loads)
+	useEffect(() => {
+		if (!isPending && user?.role === "EXHIBITOR") {
+			navigate({ to: "/exhibitor" });
+		}
+	}, [isPending, user, navigate]);
+
 	const { data: submissions } = useSuspenseQuery(mySubmissionsQueryOptions());
 	const {
 		data: { deadline, locked, canBypass },

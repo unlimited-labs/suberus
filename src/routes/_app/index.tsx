@@ -1,10 +1,16 @@
 import { IconDashboard } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, useSearch } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	useNavigate,
+	useSearch,
+} from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { PageHeader } from "@/components/layout/page-header";
+import { useSession } from "@/hooks/use-session";
+import { redirectExhibitorRouteMiddleware } from "@/lib/server/middleware/auth";
 import { userDashboardQueryOptions } from "@/server-fns/user-dashboard";
 
 const searchSchema = z.object({
@@ -14,6 +20,9 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/_app/")({
 	validateSearch: searchSchema,
+	server: {
+		middleware: [redirectExhibitorRouteMiddleware],
+	},
 	loader: async ({ context }) => {
 		await context.queryClient.ensureQueryData(userDashboardQueryOptions());
 	},
@@ -21,10 +30,19 @@ export const Route = createFileRoute("/_app/")({
 });
 
 function DashboardPage() {
+	const navigate = useNavigate();
+	const { user, isPending } = useSession();
 	const { verified, error } = useSearch({ from: "/_app/" });
 	const toastShown = useRef(false);
 
 	const { data } = useSuspenseQuery(userDashboardQueryOptions());
+
+	// Client-side guard for SPA navigations (server middleware covers full loads)
+	useEffect(() => {
+		if (!isPending && user?.role === "EXHIBITOR") {
+			navigate({ to: "/exhibitor" });
+		}
+	}, [isPending, user, navigate]);
 
 	useEffect(() => {
 		if (verified && !toastShown.current) {

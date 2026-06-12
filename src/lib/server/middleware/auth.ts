@@ -80,6 +80,35 @@ export const adminRouteMiddleware = createMiddleware().server(
 	},
 );
 
+/** Route middleware - exhibitor panel; redirects non-exhibitor users to dashboard */
+export const exhibitorRouteMiddleware = createMiddleware().server(
+	async ({ next }) => {
+		const session = await auth.api.getSession({
+			headers: getRequestHeaders(),
+		});
+		if (!session?.user) {
+			throw redirect({ to: "/login" });
+		}
+		if (session.user.role !== "EXHIBITOR") {
+			throw redirect({ to: "/" });
+		}
+		return next({ context: { user: session.user } });
+	},
+);
+
+/** Route middleware - sends exhibitors to their panel (author-facing pages) */
+export const redirectExhibitorRouteMiddleware = createMiddleware().server(
+	async ({ next }) => {
+		const session = await auth.api.getSession({
+			headers: getRequestHeaders(),
+		});
+		if (session?.user?.role === "EXHIBITOR") {
+			throw redirect({ to: "/exhibitor" });
+		}
+		return next();
+	},
+);
+
 /** Request middleware for API routes - authenticates user */
 export const authRequestMiddleware = createMiddleware().server(
 	async ({ next }) => {
