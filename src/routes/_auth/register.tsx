@@ -392,7 +392,7 @@ function RegisterForm() {
 												<span className="flex flex-col gap-0.5">
 													<span className="font-medium">Exhibitor</span>
 													<span className="text-xs text-muted-foreground">
-														Present your company with a booth at the conference
+														Represent your company at the conference
 													</span>
 												</span>
 											</span>
