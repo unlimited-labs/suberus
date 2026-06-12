@@ -207,8 +207,12 @@ function SubmissionDetailPage() {
 		submission.type !== "EXHIBITOR" &&
 		["SUBMITTED", "UNDER_REVIEW", "RESUBMITTED"].includes(submission.status);
 
-	const canDeskAccept = submission.status === "SUBMITTED";
-	const canDeskReject = submission.status === "SUBMITTED";
+	// Exhibitor entries are decided via the exhibitor approval flow (updates
+	// Exhibitor.status + notifies the exhibitor), not via desk decisions
+	const canDeskAccept =
+		submission.status === "SUBMITTED" && submission.type !== "EXHIBITOR";
+	const canDeskReject =
+		submission.status === "SUBMITTED" && submission.type !== "EXHIBITOR";
 
 	const canTransitionToAwaitingDecision =
 		submission.status === "REVIEWS_COMPLETE" && config.requiresEditorDecision;
@@ -219,11 +223,11 @@ function SubmissionDetailPage() {
 
 	const canConfirmConditions = submission.status === "CONDITIONALLY_ACCEPTED";
 
-	const canOverrideDecision = [
-		"ACCEPTED",
-		"CONDITIONALLY_ACCEPTED",
-		"REJECTED",
-	].includes(submission.status);
+	const canOverrideDecision =
+		submission.type !== "EXHIBITOR" &&
+		["ACCEPTED", "CONDITIONALLY_ACCEPTED", "REJECTED"].includes(
+			submission.status,
+		);
 
 	// One contextual primary action; everything else goes to the Actions menu.
 	const primaryAction = canTransitionToAwaitingDecision
