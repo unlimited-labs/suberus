@@ -1,3 +1,4 @@
+import { waitForEmail } from "../helpers/mailpit";
 import { getPrisma } from "../helpers/test-db";
 import {
 	createExhibitorUser,
@@ -88,6 +89,46 @@ test.describe.serial("Exhibitor without presentation", () => {
 		await page.reload();
 		await expect(page.getByTestId("exhibitor-status")).toContainText(
 			"Approved",
+		);
+		await expect(page.getByTestId("exhibitor-submit")).not.toBeVisible();
+		await expect(page.getByTestId("exhibitor-company-name")).toBeDisabled();
+	});
+
+	test("apply → reject with reason → locked panel + rejection email", async ({
+		page,
+		adminPage,
+		testRun,
+	}) => {
+		const email = `exhibitor-reject-${testRun.testRunId}@e2e.local`;
+		createdEmails.push(email);
+		const companyName = testRun.prefix("RejectCo Ltd");
+		await createExhibitorUser(email);
+
+		// --- Exhibitor: apply (no presentation section in this config) ---
+		await loginAsExhibitor(page, email);
+		await submitExhibitorApplication(page, companyName);
+
+		// --- Admin: reject with a reason from the detail page ---
+		await adminPage.goto("/admin/exhibitors");
+		const row = adminPage
+			.getByTestId("exhibitor-row")
+			.filter({ visible: true, hasText: companyName });
+		await expect(row).toBeVisible();
+		await row.getByRole("link", { name: companyName }).click();
+		await decideExhibitor(adminPage, "reject", "Booth capacity reached");
+		await expect(adminPage.getByTestId("exhibitor-decision")).toContainText(
+			"Not accepted",
+		);
+
+		// --- Exhibitor receives the rejection email ---
+		const rejectionEmail = await waitForEmail(email, "not accepted", 20000);
+		expect(rejectionEmail).not.toBeNull();
+		expect(rejectionEmail?.Subject).toContain("not accepted");
+
+		// --- Exhibitor panel: rejected + locked form ---
+		await page.reload();
+		await expect(page.getByTestId("exhibitor-status")).toContainText(
+			"Not accepted",
 		);
 		await expect(page.getByTestId("exhibitor-submit")).not.toBeVisible();
 		await expect(page.getByTestId("exhibitor-company-name")).toBeDisabled();
