@@ -2,15 +2,15 @@ import {
 	test,
 	expect,
 	AdminSubmissionsPage,
-	AdminSubmissionDetailPage,
 	EditorDecisionDialog,
 	ReviewerAssignmentsPage,
 	ReviewFormPage,
-	ADMIN_USER,
 	REVIEWER_USER,
 	createSubmission,
 	createSubmissionWithAssignment,
 	createSubmissionWithReview,
+	loginAsAdminViaForm,
+	openAdminSubmissionDetail,
 } from "./fixtures";
 import { SubmissionStatus } from "../../src/generated/prisma/enums";
 
@@ -31,11 +31,7 @@ test.describe("Review Workflow - Admin Actions", () => {
 			cleanup.track(id);
 
 			// Login as admin
-			await page.goto("/login");
-			await page.getByLabel("E-mail").fill(ADMIN_USER.email);
-			await page.getByLabel("Password").fill(ADMIN_USER.password);
-			await page.getByRole("button", { name: "Sign in" }).click();
-			await page.waitForURL("/");
+			await loginAsAdminViaForm(page);
 
 			// Act
 			const submissionsPage = new AdminSubmissionsPage(page);
@@ -55,19 +51,9 @@ test.describe("Review Workflow - Admin Actions", () => {
 			cleanup.track(id);
 
 			// Login as admin
-			await page.goto("/login");
-			await page.getByLabel("E-mail").fill(ADMIN_USER.email);
-			await page.getByLabel("Password").fill(ADMIN_USER.password);
-			await page.getByRole("button", { name: "Sign in" }).click();
-			await page.waitForURL("/");
+			await loginAsAdminViaForm(page);
 
-			const submissionsPage = new AdminSubmissionsPage(page);
-			await submissionsPage.goto();
-			await submissionsPage.search(title);
-			await submissionsPage.openSubmissionDetail(title);
-
-			const detailPage = new AdminSubmissionDetailPage(page);
-			await detailPage.waitForLoad();
+			const detailPage = await openAdminSubmissionDetail(page, title);
 
 			// Assert
 			await detailPage.expectActionAvailable("Desk Reject");
@@ -83,19 +69,9 @@ test.describe("Review Workflow - Admin Actions", () => {
 			cleanup.track(submissionId);
 
 			// Login as admin
-			await page.goto("/login");
-			await page.getByLabel("E-mail").fill(ADMIN_USER.email);
-			await page.getByLabel("Password").fill(ADMIN_USER.password);
-			await page.getByRole("button", { name: "Sign in" }).click();
-			await page.waitForURL("/");
+			await loginAsAdminViaForm(page);
 
-			const submissionsPage = new AdminSubmissionsPage(page);
-			await submissionsPage.goto();
-			await submissionsPage.search(title);
-			await submissionsPage.openSubmissionDetail(title);
-
-			const detailPage = new AdminSubmissionDetailPage(page);
-			await detailPage.waitForLoad();
+			const detailPage = await openAdminSubmissionDetail(page, title);
 
 			// Assert
 			await detailPage.expectActionAvailable("Assign Reviewer");
@@ -111,19 +87,9 @@ test.describe("Review Workflow - Admin Actions", () => {
 			cleanup.track(submissionId);
 
 			// Login as admin
-			await page.goto("/login");
-			await page.getByLabel("E-mail").fill(ADMIN_USER.email);
-			await page.getByLabel("Password").fill(ADMIN_USER.password);
-			await page.getByRole("button", { name: "Sign in" }).click();
-			await page.waitForURL("/");
+			await loginAsAdminViaForm(page);
 
-			const submissionsPage = new AdminSubmissionsPage(page);
-			await submissionsPage.goto();
-			await submissionsPage.search(title);
-			await submissionsPage.openSubmissionDetail(title);
-
-			const detailPage = new AdminSubmissionDetailPage(page);
-			await detailPage.waitForLoad();
+			const detailPage = await openAdminSubmissionDetail(page, title);
 
 			// Assert
 			await detailPage.expectActionAvailable("Make Decision");
@@ -140,19 +106,9 @@ test.describe("Review Workflow - Admin Actions", () => {
 			cleanup.track(submissionId);
 
 			// Login as admin
-			await page.goto("/login");
-			await page.getByLabel("E-mail").fill(ADMIN_USER.email);
-			await page.getByLabel("Password").fill(ADMIN_USER.password);
-			await page.getByRole("button", { name: "Sign in" }).click();
-			await page.waitForURL("/");
+			await loginAsAdminViaForm(page);
 
-			const submissionsPage = new AdminSubmissionsPage(page);
-			await submissionsPage.goto();
-			await submissionsPage.search(title);
-			await submissionsPage.openSubmissionDetail(title);
-
-			const detailPage = new AdminSubmissionDetailPage(page);
-			await detailPage.waitForLoad();
+			const detailPage = await openAdminSubmissionDetail(page, title);
 
 			// Act
 			await detailPage.openEditorDecisionDialog();
@@ -173,19 +129,9 @@ test.describe("Review Workflow - Admin Actions", () => {
 			cleanup.track(submissionId);
 
 			// Login as admin
-			await page.goto("/login");
-			await page.getByLabel("E-mail").fill(ADMIN_USER.email);
-			await page.getByLabel("Password").fill(ADMIN_USER.password);
-			await page.getByRole("button", { name: "Sign in" }).click();
-			await page.waitForURL("/");
+			await loginAsAdminViaForm(page);
 
-			const submissionsPage = new AdminSubmissionsPage(page);
-			await submissionsPage.goto();
-			await submissionsPage.search(title);
-			await submissionsPage.openSubmissionDetail(title);
-
-			const detailPage = new AdminSubmissionDetailPage(page);
-			await detailPage.waitForLoad();
+			const detailPage = await openAdminSubmissionDetail(page, title);
 
 			// Act
 			await detailPage.openEditorDecisionDialog();
@@ -332,19 +278,9 @@ test.describe("Review Workflow - Submission Detail Tabs", () => {
 		cleanup.track(id);
 
 		// Login as admin
-		await page.goto("/login");
-		await page.getByLabel("E-mail").fill(ADMIN_USER.email);
-		await page.getByLabel("Password").fill(ADMIN_USER.password);
-		await page.getByRole("button", { name: "Sign in" }).click();
-		await page.waitForURL("/");
+		await loginAsAdminViaForm(page);
 
-		const submissionsPage = new AdminSubmissionsPage(page);
-		await submissionsPage.goto();
-		await submissionsPage.search(title);
-		await submissionsPage.openSubmissionDetail(title);
-
-		const detailPage = new AdminSubmissionDetailPage(page);
-		await detailPage.waitForLoad();
+		await openAdminSubmissionDetail(page, title);
 
 		// Assert
 		await expect(page.getByRole("tab", { name: /Content/i })).toBeVisible();
@@ -362,19 +298,9 @@ test.describe("Review Workflow - Submission Detail Tabs", () => {
 		cleanup.track(submissionId);
 
 		// Login as admin
-		await page.goto("/login");
-		await page.getByLabel("E-mail").fill(ADMIN_USER.email);
-		await page.getByLabel("Password").fill(ADMIN_USER.password);
-		await page.getByRole("button", { name: "Sign in" }).click();
-		await page.waitForURL("/");
+		await loginAsAdminViaForm(page);
 
-		const submissionsPage = new AdminSubmissionsPage(page);
-		await submissionsPage.goto();
-		await submissionsPage.search(title);
-		await submissionsPage.openSubmissionDetail(title);
-
-		const detailPage = new AdminSubmissionDetailPage(page);
-		await detailPage.waitForLoad();
+		const detailPage = await openAdminSubmissionDetail(page, title);
 
 		// Act
 		await detailPage.switchToReviewsTab();
@@ -392,19 +318,9 @@ test.describe("Review Workflow - Submission Detail Tabs", () => {
 		cleanup.track(submissionId);
 
 		// Login as admin
-		await page.goto("/login");
-		await page.getByLabel("E-mail").fill(ADMIN_USER.email);
-		await page.getByLabel("Password").fill(ADMIN_USER.password);
-		await page.getByRole("button", { name: "Sign in" }).click();
-		await page.waitForURL("/");
+		await loginAsAdminViaForm(page);
 
-		const submissionsPage = new AdminSubmissionsPage(page);
-		await submissionsPage.goto();
-		await submissionsPage.search(title);
-		await submissionsPage.openSubmissionDetail(title);
-
-		const detailPage = new AdminSubmissionDetailPage(page);
-		await detailPage.waitForLoad();
+		const detailPage = await openAdminSubmissionDetail(page, title);
 
 		// Act
 		await detailPage.switchToHistoryTab();

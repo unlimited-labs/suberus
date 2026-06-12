@@ -53,6 +53,15 @@ export async function loginAsTestUser(page: Page) {
 	await loginAs(page, TEST_USER);
 }
 
+/** Log in as the admin user through the login form (no stored session). */
+export async function loginAsAdminViaForm(page: Page) {
+	await page.goto("/login");
+	await page.getByLabel("E-mail").fill(ADMIN_USER.email);
+	await page.getByLabel("Password").fill(ADMIN_USER.password);
+	await page.getByRole("button", { name: "Sign in" }).click();
+	await page.waitForURL("/");
+}
+
 // Page Objects
 
 /** Admin Submissions List Page */
@@ -504,6 +513,17 @@ export class ReviewFormPage {
 			return false;
 		}
 	}
+}
+
+/** Open a submission's admin detail page by title and return the detail POM. */
+export async function openAdminSubmissionDetail(page: Page, title: string) {
+	const submissionsPage = new AdminSubmissionsPage(page);
+	await submissionsPage.goto();
+	await submissionsPage.search(title);
+	await submissionsPage.openSubmissionDetail(title);
+	const detailPage = new AdminSubmissionDetailPage(page);
+	await detailPage.waitForLoad();
+	return detailPage;
 }
 
 // Extended test with fixtures
