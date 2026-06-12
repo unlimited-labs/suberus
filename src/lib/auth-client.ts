@@ -2,14 +2,8 @@ import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient();
 
-export const {
-	signIn,
-	signUp,
-	signOut,
-	useSession,
-	resetPassword,
-	sendVerificationEmail,
-} = authClient;
+export const { signIn, signUp, signOut, resetPassword, sendVerificationEmail } =
+	authClient;
 
 // better-auth SDK's forgetPassword calls /forget-password but server exposes /request-password-reset
 export async function forgetPassword(options: {
