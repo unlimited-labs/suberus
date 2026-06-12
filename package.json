@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "typecheck": "tsc --noEmit",
     "build:docker": "tsx scripts/docker.ts",
     "preview": "node --env-file=.env .output/server/index.mjs",
     "test": "vitest run",
