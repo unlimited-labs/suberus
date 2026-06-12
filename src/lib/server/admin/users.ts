@@ -416,13 +416,14 @@ export async function bulkChangeRole(
 		select: { id: true, role: true },
 	});
 
+	// Exhibitor role is managed by the exhibitor lifecycle, not manual change
 	const result = await prisma.user.updateMany({
-		where: { id: { in: data.userIds } },
+		where: { id: { in: data.userIds }, role: { not: "EXHIBITOR" } },
 		data: { role: data.role },
 	});
 
 	for (const user of oldUsers) {
-		if (user.role !== data.role) {
+		if (user.role !== data.role && user.role !== "EXHIBITOR") {
 			await logActivity({
 				type: "USER_ROLE_CHANGED",
 				userId: user.id,
