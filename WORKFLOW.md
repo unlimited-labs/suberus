@@ -262,6 +262,8 @@ sequenceDiagram
 ### 1. Submission Types Are Distinct
 Each submission type (ABSTRACT, FULL_PAPER, POSTER) has independent configuration. No shared behavior assumed between types.
 
+EXHIBITOR is a special non-reviewed submission type used only for exhibitor company presentations — see [Exhibitor Flow](#exhibitor-flow).
+
 ### 2. Modular Activation - Flexible Deployment
 Conference can enable submission types independently via `isActive` flag:
 - **Abstract only** - Traditional conference abstracts
@@ -815,21 +817,24 @@ Each entry includes: event type, target user/submission (optional), performer (o
 
 ### Role-Based Access
 
-| Action | Author | Reviewer | Editor | Admin |
-|--------|--------|----------|--------|-------|
-| Create submission | ✅ | ✅ | ✅ | ✅ |
-| View own submissions | ✅ | ✅ | ✅ | ✅ |
-| Be assigned as reviewer | ❌ | ✅ | ✅ | ✅ |
-| View assigned submissions | ❌ | ✅ | ✅ | ✅ |
-| View all submissions | ❌ | ❌ | ✅ | ✅ |
-| Assign reviewers | ❌ | ❌ | ✅ | ✅ |
-| Submit review | ❌ | ✅ | ✅ | ✅ |
-| View all reviews | ❌ | ❌ | ✅ | ✅ |
-| View private notes | ❌ | ❌ | ✅ | ✅ |
-| Make editor decision | ❌ | ❌ | ✅ | ✅ |
-| View reviewer identity | 🔀 | ❌ | ✅ | ✅ |
-| View author identity | 🔀 | 🔀 | ✅ | ✅ |
-| Resubmit revision | ✅ (own) | ✅ (own) | ✅ (own) | ✅ (own) |
+| Action | Author | Reviewer | Editor | Admin | Exhibitor |
+|--------|--------|----------|--------|-------|-----------|
+| Create submission | ✅ | ✅ | ✅ | ✅ | ❌ |
+| View own submissions | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Be assigned as reviewer | ❌ | ✅ | ✅ | ✅ | ❌ |
+| View assigned submissions | ❌ | ✅ | ✅ | ✅ | ❌ |
+| View all submissions | ❌ | ❌ | ✅ | ✅ | ❌ |
+| Assign reviewers | ❌ | ❌ | ✅ | ✅ | ❌ |
+| Submit review | ❌ | ✅ | ✅ | ✅ | ❌ |
+| View all reviews | ❌ | ❌ | ✅ | ✅ | ❌ |
+| View private notes | ❌ | ❌ | ✅ | ✅ | ❌ |
+| Make editor decision | ❌ | ❌ | ✅ | ✅ | ❌ |
+| View reviewer identity | 🔀 | ❌ | ✅ | ✅ | ❌ |
+| View author identity | 🔀 | 🔀 | ✅ | ✅ | ❌ |
+| Resubmit revision | ✅ (own) | ✅ (own) | ✅ (own) | ✅ (own) | ❌ |
+| Create/edit own exhibitor application | ❌ | ❌ | ❌ | ❌ | ✅ |
+| View all exhibitor applications | ❌ | ❌ | ✅ | ✅ | ❌ |
+| Decide exhibitor applications | ❌ | ❌ | ✅ | ✅ | ❌ |
 
 **Legend:**
 - ✅ Always allowed
@@ -845,10 +850,11 @@ Each entry includes: event type, target user/submission (optional), performer (o
 | Editor/Admin see all identities | ✅ | ✅ | ✅ |
 
 **Notes:**
-- All users can create submissions and view their own regardless of role
+- All users except EXHIBITOR can create submissions and view their own regardless of role
 - Editor/Admin can be assigned as reviewers like regular Reviewers
 - Editor/Admin ALWAYS see all identities (authors + reviewers) regardless of review mode
 - Review mode is configured per submission type in `SubmissionTypeConfig`
+- EXHIBITOR users manage their company presentation only through the exhibitor panel: they have no Submissions/Reviews navigation, and `/` and `/submissions` redirect to `/exhibitor`. The EXHIBITOR role is assigned only by the exhibitor signup flow — it cannot be assigned or removed manually (single and bulk role changes block EXHIBITOR targets).
 
 ---
 
@@ -859,6 +865,7 @@ Each entry includes: event type, target user/submission (optional), performer (o
 ```typescript
 {
   type: 'ABSTRACT',
+  includeInPlanner: true, // accepted abstracts appear in the program planner
   requiredReviewers: 1,
   requiresEditorDecision: false,
 
@@ -875,6 +882,7 @@ Each entry includes: event type, target user/submission (optional), performer (o
 ```typescript
 {
   type: 'FULL_PAPER',
+  includeInPlanner: false, // default false — papers usually aren't scheduled as talks
   requiredReviewers: 2,
   requiresEditorDecision: true,
 
@@ -898,6 +906,7 @@ POSTER uses identical workflow to ABSTRACT (single reviewer, reviewer decides).
 ```typescript
 {
   type: 'POSTER',
+  includeInPlanner: true,
   requiredReviewers: 1,
   requiresEditorDecision: false,
 
@@ -908,6 +917,92 @@ POSTER uses identical workflow to ABSTRACT (single reviewer, reviewer decides).
   reviewMode: 'SINGLE_BLIND' // Authors don't see reviewers
 }
 ```
+
+### Exhibitor Configuration
+
+EXHIBITOR never enters review — only these fields are meaningful (review fields are ignored). See [Exhibitor Flow](#exhibitor-flow).
+
+```typescript
+{
+  type: 'EXHIBITOR',
+  isActive: false,                    // master guard: enables the whole exhibitor feature
+  includeInPlanner: true,             // approved presentations appear in the planner pool
+  allowExhibitorPresentation: false,  // exhibitor form offers an optional company presentation
+}
+```
+
+**`includeInPlanner`** (all types): accepted submissions of a type are admitted to the program planner (pool, create-session validation, capacity) only when this flag is on. Defaults: ABSTRACT ✅, POSTER ✅, FULL_PAPER ❌, EXHIBITOR ✅. Configured per type in the Submission Types accordion (regular types) or the Conference tab → Exhibitors section (EXHIBITOR).
+
+---
+
+## Exhibitor Flow
+
+Companies can register dedicated **exhibitor** accounts, complete a company application with an **optional company presentation**, and receive a single organizer **approve/reject** decision. Exhibitor presentations are **never peer-reviewed**.
+
+### Configuration (master guard)
+
+Exhibitor behavior is stored in `SubmissionTypeConfig` under `SUBMISSION_TYPE_EXHIBITOR`, but configured in admin Settings → **Conference tab → Exhibitors section** (NOT the Submission Types tab):
+
+| Switch | Config field | Effect |
+|--------|--------------|--------|
+| **Enable exhibitors** | `isActive` | Master guard. Gates: the "Exhibitor" account-type choice on registration, the admin **Exhibitors** nav entry, and the two sub-switches below (hidden when off). |
+| **Include in program planner** | `includeInPlanner` | Approved exhibitor presentations appear in the planner pool. |
+| **Allow presentation** | `allowExhibitorPresentation` | The exhibitor panel offers the optional company presentation section. When off, presentation input is ignored server-side. |
+
+### Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> Pending: Signup with "Exhibitor" account type
+    Pending --> Pending: Save / complete application (first completion stamps appliedAt)
+    Pending --> Approved: Organizer approves (reason ≥ 3 chars)
+    Pending --> Rejected: Organizer rejects (reason ≥ 3 chars)
+    Pending --> Withdrawn: Exhibitor withdraws (panel) or linked presentation withdrawn
+
+    Approved --> [*]
+    Rejected --> [*]
+    Withdrawn --> [*]
+
+    note right of Pending
+        Application editable only while
+        PENDING and undecided.
+        Completing it with a presentation creates a
+        Submission (type EXHIBITOR, status SUBMITTED).
+    end note
+
+    note right of Approved
+        Linked submission uses ONLY existing
+        desk transitions: SUBMITTED → ACCEPTED
+        (approve) / REJECTED (reject) /
+        WITHDRAWN (withdraw). No new statuses.
+    end note
+```
+
+### Flow
+
+1. **Signup** — registration shows an **Account type** choice (*Participant / Author* vs *Exhibitor*) only when exhibitors are enabled; **invited users never see it**. Choosing Exhibitor sets role `EXHIBITOR` and creates an empty `Exhibitor` row (status `PENDING`). Only AUTHOR accounts with no submissions can become exhibitors.
+2. **Application** (`/exhibitor` panel) — company data (`companyName`, `description`, `website`, `package`) plus the optional presentation (only when **Allow presentation** is on). The presentation uses standard submission authors with **exactly one presenter**. Submitting stamps `appliedAt`; if a presentation was given, a `Submission` (type `EXHIBITOR`, status `SUBMITTED`) is created. Removing the presentation in a pre-decision edit withdraws the orphaned submission. Logged as `EXHIBITOR_APPLIED`.
+3. **Decision** (`/admin/exhibitors` list + detail, EDITOR/ADMIN) — single **Approve/Reject** with a required reason (min. 3 characters), available only for **pending, completed** applications. The decision desk-accepts/desk-rejects the linked submission (if any), sets `Exhibitor.status` + `decidedAt`/`decidedBy`, sends `EXHIBITOR_APPROVED`/`EXHIBITOR_REJECTED`, and writes the activity log. The application is **locked after the decision**.
+4. **After approval** — the presentation appears in the planner pool (when `includeInPlanner`) and in the submissions export. Exhibitor talks are scheduled **manually**; autoplan stays ABSTRACT-only.
+5. **Withdrawal** — the exhibitor can withdraw while `PENDING` (panel; withdraws the linked presentation through the workflow). Withdrawing the linked presentation via the regular submission withdraw also syncs a `PENDING` application to `WITHDRAWN`.
+
+Exhibitors **without a presentation** are fully supported (shown as *No presentation*); the decision works the same. There is no dedicated email when an application without a presentation is completed — `NEW_REGISTRATION_NOTIFY`/`NEW_SUBMISSION_NOTIFY` cover the organizer side (accepted trade-off).
+
+### Isolation Rules
+
+EXHIBITOR submissions never enter the review workflow:
+
+- **No reviewer assignment** — blocked server-side; the admin submission page hides the assign action.
+- **No desk accept/reject/override from the admin submission page** — the actions are hidden and the server functions return an error pointing to the exhibitor approval flow (which updates `Exhibitor.status` and notifies the exhibitor).
+- **Excluded from bulk status change** — exhibitor submissions are skipped.
+- **TODO column shows nothing** — exhibitor entries never need review attention.
+- **Autoplan stays ABSTRACT-only** — exhibitor presentations are scheduled manually.
+
+EXHIBITOR users:
+
+- No Submissions/Reviews navigation; `/` and `/submissions` redirect to `/exhibitor`.
+- The role is not assignable manually — single and bulk role changes block EXHIBITOR targets; the role is granted only by the signup flow.
+- **Fee:** the existing per-user Fee applies, marked paid/unpaid on the user detail page (linked from the exhibitor detail).
 
 ---
 
@@ -1058,6 +1153,8 @@ Email system uses configurable templates stored in database with simple placehol
 | `PASSWORD_RESET` | User            | Password reset requested |
 | `EMAIL_VERIFICATION` | User            | Email verification link |
 | `INVITATION` | Invited user    | Invitation to join the system |
+| `EXHIBITOR_APPROVED` | Exhibitor       | Organizer approves the exhibitor application |
+| `EXHIBITOR_REJECTED` | Exhibitor       | Organizer rejects the exhibitor application |
 
 ### Available Placeholders
 
@@ -1072,7 +1169,7 @@ Email system uses configurable templates stored in database with simple placehol
 ```
 {{submissionId}}      - Unique ID
 {{submissionTitle}}   - Title
-{{submissionType}}    - ABSTRACT/FULL_PAPER/POSTER
+{{submissionType}}    - ABSTRACT/FULL_PAPER/POSTER/EXHIBITOR
 {{submissionStatus}}  - Current status
 {{submissionRound}}   - Review round number
 {{submissionUrl}}     - Direct link to submission
@@ -1098,6 +1195,14 @@ Email system uses configurable templates stored in database with simple placehol
 {{editorName}}        - Editor who made decision
 {{decisionReason}}    - Brief reasoning
 {{decisionLetter}}    - Full letter to author
+```
+
+**Exhibitor placeholders** (EXHIBITOR_APPROVED / EXHIBITOR_REJECTED only):
+```
+{{firstName}}         - Exhibitor's first name
+{{companyName}}       - Company name from the application
+{{reason}}            - Decision reason entered by the organizer
+{{conferenceName}}    - Conference name
 ```
 
 ### Email Processing

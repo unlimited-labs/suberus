@@ -13,6 +13,8 @@ or reject completed applications.
 
 <Aside type="note" title="Where to find it">
 **Exhibitors** in the admin sidebar. Click a row to open an exhibitor's detail.
+The entry only appears when **Enable exhibitors** is on — switch it in the
+**Exhibitors** section of **[Configuration › Conference](/configuration/conference/)**.
 </Aside>
 
 🖼️ [Screenshot placeholder: Exhibitors list]
@@ -66,10 +68,24 @@ The reason you enter is recorded in the **[activity log](/managing/activity-log/
 and included in the email sent to the exhibitor.
 </Aside>
 
+<Aside type="note" title="This is the only place to decide">
+Exhibitor presentations cannot be desk accepted, desk rejected, or overridden on
+the **[Submissions](/managing/submissions/)** detail page, and they never enter
+peer review — the application is decided here, as one decision covering the
+company and its presentation.
+</Aside>
+
+## Withdrawal
+
+Exhibitors can withdraw their own **pending** application from their panel; the
+linked presentation (if any) is withdrawn with it. The reverse also stays in sync:
+if a pending exhibitor's presentation is withdrawn from the submission side, the
+application is marked *Withdrawn* too. Withdrawn applications cannot be decided.
+
 ## Related
 
 <CardGrid>
-	<LinkCard title="Submission Types" href="/configuration/submission-types/" description="Enable exhibitor registration and the optional presentation." />
+	<LinkCard title="Conference" href="/configuration/conference/" description="Enable exhibitors and the optional presentation (Exhibitors section)." />
 	<LinkCard title="Users" href="/managing/users/" description="Mark the exhibitor's conference fee as paid." />
 	<LinkCard title="Activity log" href="/managing/activity-log/" description="Audit trail of exhibitor decisions." />
 </CardGrid>
