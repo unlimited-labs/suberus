@@ -1,5 +1,6 @@
 import { test, expect } from "./fixtures";
 import { createSubmission } from "../helpers/test-db";
+import { skipOnMobile } from "../helpers/skip-on-mobile";
 import { SubmissionStatus } from "../../src/generated/prisma/enums";
 
 test.describe("Author - My Submissions List", () => {
@@ -52,10 +53,7 @@ test.describe("Author - Submission Detail View", () => {
 
 	test("submission detail shows tabs (Overview, History)", async ({ page, testRun, cleanup }, testInfo) => {
 		// Skip on mobile - tabs may be displayed differently
-		if (testInfo.project.name.includes("mobile")) {
-			test.skip();
-			return;
-		}
+		skipOnMobile(testInfo);
 
 		// Arrange
 		const { id } = await createSubmission({
@@ -96,10 +94,7 @@ test.describe("Author - Submission Detail View", () => {
 
 	test("author info is visible in Overview tab", async ({ page, testRun, cleanup }, testInfo) => {
 		// Skip on mobile - tabs may be displayed differently
-		if (testInfo.project.name.includes("mobile")) {
-			test.skip();
-			return;
-		}
+		skipOnMobile(testInfo);
 
 		// Arrange
 		const { id } = await createSubmission({
@@ -119,10 +114,7 @@ test.describe("Author - Submission Detail View", () => {
 
 	test("can switch to History tab and see status history", async ({ page, testRun, cleanup }, testInfo) => {
 		// Skip on mobile - tabs may be displayed differently
-		if (testInfo.project.name.includes("mobile")) {
-			test.skip();
-			return;
-		}
+		skipOnMobile(testInfo);
 
 		// Arrange
 		const { id } = await createSubmission({

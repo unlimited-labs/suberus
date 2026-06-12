@@ -1,5 +1,6 @@
 import { test, expect } from "./fixtures";
 import { createSubmission, createSubmissionWithReview, getPrisma } from "../helpers/test-db";
+import { skipOnMobile } from "../helpers/skip-on-mobile";
 import { SubmissionStatus } from "../../src/generated/prisma/enums";
 
 test.describe("Submission Detail - Actions Card", () => {
@@ -185,10 +186,7 @@ Third paragraph to ensure multiple line breaks are preserved correctly in the su
 
 test.describe("Submission Detail - Authors in Overview", () => {
 	test("authors are displayed in Overview tab", async ({ page, testRun, cleanup }, testInfo) => {
-		if (testInfo.project.name.includes("mobile")) {
-			test.skip();
-			return;
-		}
+		skipOnMobile(testInfo);
 
 		// Arrange
 		const { id } = await createSubmission({
@@ -273,10 +271,7 @@ test.describe("Submission Detail - Authors in Overview", () => {
 	});
 
 	test("only one tab exists for authors (no separate Authors tab)", async ({ page, testRun, cleanup }, testInfo) => {
-		if (testInfo.project.name.includes("mobile")) {
-			test.skip();
-			return;
-		}
+		skipOnMobile(testInfo);
 
 		// Arrange
 		const { id } = await createSubmission({
@@ -296,10 +291,7 @@ test.describe("Submission Detail - Authors in Overview", () => {
 
 test.describe("Submission Detail - Tabs Visibility", () => {
 	test("tabs have visible border in light mode", async ({ page, testRun, cleanup }, testInfo) => {
-		if (testInfo.project.name.includes("mobile")) {
-			test.skip();
-			return;
-		}
+		skipOnMobile(testInfo);
 
 		// Arrange
 		const { id } = await createSubmission({
@@ -322,10 +314,7 @@ test.describe("Submission Detail - Tabs Visibility", () => {
 	});
 
 	test("inactive tabs have readable text in light mode", async ({ page, testRun, cleanup }, testInfo) => {
-		if (testInfo.project.name.includes("mobile")) {
-			test.skip();
-			return;
-		}
+		skipOnMobile(testInfo);
 
 		// Arrange
 		const { id } = await createSubmission({
@@ -348,10 +337,7 @@ test.describe("Submission Detail - Tabs Visibility", () => {
 	});
 
 	test("active tab has visual distinction in light mode", async ({ page, testRun, cleanup }, testInfo) => {
-		if (testInfo.project.name.includes("mobile")) {
-			test.skip();
-			return;
-		}
+		skipOnMobile(testInfo);
 
 		// Arrange
 		const { id } = await createSubmission({
@@ -371,10 +357,7 @@ test.describe("Submission Detail - Tabs Visibility", () => {
 	});
 
 	test("tabs work correctly in dark mode", async ({ page, testRun, cleanup }, testInfo) => {
-		if (testInfo.project.name.includes("mobile")) {
-			test.skip();
-			return;
-		}
+		skipOnMobile(testInfo);
 
 		// Arrange
 		const { id } = await createSubmission({

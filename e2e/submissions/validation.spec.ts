@@ -1,14 +1,12 @@
 import { test, expect, VALID_SUBMISSION } from "./fixtures";
+import { skipOnMobile } from "../helpers/skip-on-mobile";
 
 test.describe("Form Validation", () => {
 	test.describe("Content Validation", () => {
 		test("shows error for content too short", async ({ submissionPage }, testInfo) => {
 			test.slow(); // Form fill with author + keywords + submit under load
 			// Skip on mobile - toast positioning may differ
-			if (testInfo.project.name.includes("mobile")) {
-				test.skip();
-				return;
-			}
+			skipOnMobile(testInfo);
 
 			// Arrange
 			await submissionPage.goto();
