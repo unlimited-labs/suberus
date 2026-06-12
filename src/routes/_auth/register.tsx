@@ -1,9 +1,11 @@
 import {
 	IconArrowLeft,
 	IconArrowRight,
+	IconBuildingStore,
 	IconInfoCircle,
 	IconLock,
 	IconMail,
+	IconUser,
 } from "@tabler/icons-react";
 import { useStore } from "@tanstack/react-form";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
@@ -355,25 +357,45 @@ function RegisterForm() {
 									>
 										<FieldLabel
 											htmlFor="account-type-participant"
-											className="flex cursor-pointer items-center gap-2 rounded-lg border border-input p-3 font-normal has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5"
+											className="group flex cursor-pointer items-start gap-3 rounded-lg border border-input p-3 font-normal transition-colors hover:bg-muted/50 has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5"
 										>
 											<RadioGroupItem
 												value="participant"
 												id="account-type-participant"
 												data-testid="register-account-type-participant"
+												className="mt-1"
 											/>
-											Participant / Author
+											<span className="flex items-start gap-2.5">
+												<IconUser className="mt-0.5 size-5 shrink-0 text-muted-foreground group-has-data-[state=checked]:text-primary" />
+												<span className="flex flex-col gap-0.5">
+													<span className="font-medium">
+														Participant / Author
+													</span>
+													<span className="text-xs text-muted-foreground">
+														Submit abstracts and attend the conference
+													</span>
+												</span>
+											</span>
 										</FieldLabel>
 										<FieldLabel
 											htmlFor="account-type-exhibitor"
-											className="flex cursor-pointer items-center gap-2 rounded-lg border border-input p-3 font-normal has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5"
+											className="group flex cursor-pointer items-start gap-3 rounded-lg border border-input p-3 font-normal transition-colors hover:bg-muted/50 has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5"
 										>
 											<RadioGroupItem
 												value="exhibitor"
 												id="account-type-exhibitor"
 												data-testid="register-account-type-exhibitor"
+												className="mt-1"
 											/>
-											Exhibitor (company booth)
+											<span className="flex items-start gap-2.5">
+												<IconBuildingStore className="mt-0.5 size-5 shrink-0 text-muted-foreground group-has-data-[state=checked]:text-primary" />
+												<span className="flex flex-col gap-0.5">
+													<span className="font-medium">Exhibitor</span>
+													<span className="text-xs text-muted-foreground">
+														Present your company with a booth at the conference
+													</span>
+												</span>
+											</span>
 										</FieldLabel>
 									</RadioGroup>
 								</Field>
