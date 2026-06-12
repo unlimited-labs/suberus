@@ -100,15 +100,28 @@ class AdminSettingsPage {
 	}
 }
 
+/** Create a uniquely-named fee test user. */
+async function createFeeTestUser() {
+	return createTestUser({
+		email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
+		password: DEFAULT_PASSWORD,
+	});
+}
+
+/** Log in as the given user and open the fee page. */
+async function loginAndOpenFeePage(page: Page, testUser: { email: string }) {
+	await loginAs(page, { email: testUser.email, password: DEFAULT_PASSWORD });
+	const feePage = new FeePage(page);
+	await feePage.goto();
+	return feePage;
+}
+
 test.describe("Fee - User View", () => {
 	test("user with assigned fee sees payment confirmation and details", async ({
 		page,
 	}) => {
 		// Arrange - Create unique test user
-		const testUser = await createTestUser({
-			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
-			password: DEFAULT_PASSWORD,
-		});
+		const testUser = await createFeeTestUser();
 
 		const paidAt = new Date("2026-01-15");
 		await createFee({
@@ -119,11 +132,8 @@ test.describe("Fee - User View", () => {
 			paidAt,
 		});
 
-		await loginAs(page, { email: testUser.email, password: DEFAULT_PASSWORD });
-
 		// Act
-		const feePage = new FeePage(page);
-		await feePage.goto();
+		const feePage = await loginAndOpenFeePage(page, testUser);
 
 		// Assert
 		await expect(feePage.heading).toBeVisible();
@@ -142,16 +152,10 @@ test.describe("Fee - User View", () => {
 
 	test("user without fee sees payment not received alert", async ({ page }) => {
 		// Arrange - Create unique test user (no fee)
-		const testUser = await createTestUser({
-			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
-			password: DEFAULT_PASSWORD,
-		});
-
-		await loginAs(page, { email: testUser.email, password: DEFAULT_PASSWORD });
+		const testUser = await createFeeTestUser();
 
 		// Act
-		const feePage = new FeePage(page);
-		await feePage.goto();
+		const feePage = await loginAndOpenFeePage(page, testUser);
 
 		// Assert
 		await expect(feePage.heading).toBeVisible();
@@ -172,10 +176,7 @@ test.describe("Fee - User View", () => {
 
 	test("user with invited speaker fee sees correct fee type", async ({ page }) => {
 		// Arrange - Create unique test user
-		const testUser = await createTestUser({
-			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
-			password: DEFAULT_PASSWORD,
-		});
+		const testUser = await createFeeTestUser();
 
 		await createFee({
 			userId: testUser.id,
@@ -185,11 +186,8 @@ test.describe("Fee - User View", () => {
 			paidAt: new Date("2026-01-10"),
 		});
 
-		await loginAs(page, { email: testUser.email, password: DEFAULT_PASSWORD });
-
 		// Act
-		const feePage = new FeePage(page);
-		await feePage.goto();
+		const feePage = await loginAndOpenFeePage(page, testUser);
 
 		// Assert
 		await expect(feePage.heading).toBeVisible();
@@ -249,14 +247,9 @@ Please transfer the fee to:
 		await page.goto("/login");
 		await page.waitForURL("/login");
 
-		const testUser = await createTestUser({
-			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
-			password: DEFAULT_PASSWORD,
-		});
+		const testUser = await createFeeTestUser();
 
-		await loginAs(page, { email: testUser.email, password: DEFAULT_PASSWORD });
-		const feePage = new FeePage(page);
-		await feePage.goto();
+		await loginAndOpenFeePage(page, testUser);
 
 		// Assert - Instructions contain the unique text
 		await expect(page.getByText(uniqueText)).toBeVisible({ timeout: 10000 });
@@ -303,14 +296,9 @@ Please use the following details:
 		await page.goto("/login");
 		await page.waitForURL("/login");
 
-		const testUser = await createTestUser({
-			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
-			password: DEFAULT_PASSWORD,
-		});
+		const testUser = await createFeeTestUser();
 
-		await loginAs(page, { email: testUser.email, password: DEFAULT_PASSWORD });
-		const feePage = new FeePage(page);
-		await feePage.goto();
+		await loginAndOpenFeePage(page, testUser);
 
 		// Markdown should be rendered (not raw)
 		await expect(page.getByRole("heading", { name: "Bank Transfer" })).toBeVisible({ timeout: 10000 });
@@ -357,10 +345,7 @@ test.describe("Fee - Edge Cases", () => {
 		page,
 	}) => {
 		// Arrange - Create unique test user
-		const testUser = await createTestUser({
-			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
-			password: DEFAULT_PASSWORD,
-		});
+		const testUser = await createFeeTestUser();
 		const db = getPrisma();
 
 		// Create fee with null amount (admin confirmed payment but didn't enter amount)
@@ -375,11 +360,8 @@ test.describe("Fee - Edge Cases", () => {
 			},
 		});
 
-		await loginAs(page, { email: testUser.email, password: DEFAULT_PASSWORD });
-
 		// Act
-		const feePage = new FeePage(page);
-		await feePage.goto();
+		const feePage = await loginAndOpenFeePage(page, testUser);
 
 		// Assert
 		await expect(feePage.heading).toBeVisible();
@@ -398,10 +380,7 @@ test.describe("Fee - Edge Cases", () => {
 		page,
 	}) => {
 		// Arrange - Create unique test user
-		const testUser = await createTestUser({
-			email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
-			password: DEFAULT_PASSWORD,
-		});
+		const testUser = await createFeeTestUser();
 
 		await createFee({
 			userId: testUser.id,
