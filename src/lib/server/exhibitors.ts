@@ -6,6 +6,7 @@ import { getSetting, getSubmissionTypeConfigs } from "@/lib/server/settings";
 import {
 	deskAcceptSubmission,
 	deskRejectSubmission,
+	validateSubmissionTransition,
 	withdrawSubmission,
 } from "@/lib/server/workflow";
 import type {
@@ -191,6 +192,25 @@ export async function saveExhibitorApplication(
 
 	const isFirstApply = !exhibitor.appliedAt;
 
+	// Validate WITHDRAW transition before entering the transaction (pre-decision removal path)
+	let removedSubmissionRound: number | null = null;
+	if (!presentation && exhibitor.submissionId) {
+		const withdrawValidation = await validateSubmissionTransition(
+			exhibitor.submissionId,
+			{ type: "WITHDRAW" },
+		);
+		if (!withdrawValidation.valid) {
+			throw new Error(
+				withdrawValidation.error ?? "Cannot withdraw linked presentation",
+			);
+		}
+		const removedSubmission = await prisma.submission.findUniqueOrThrow({
+			where: { id: exhibitor.submissionId },
+			select: { currentRound: true },
+		});
+		removedSubmissionRound = removedSubmission.currentRound;
+	}
+
 	await prisma.$transaction(async (tx) => {
 		let submissionId = exhibitor.submissionId;
 
@@ -209,6 +229,21 @@ export async function saveExhibitorApplication(
 			await tx.submission.update({
 				where: { id: submissionId },
 				data: { status: "WITHDRAWN" },
+			});
+			await tx.activityLog.create({
+				data: {
+					type: "SUBMISSION_STATUS_CHANGED",
+					submissionId,
+					performedBy: userId,
+					detail: {
+						type: "SUBMISSION_STATUS_CHANGED",
+						fromStatus: "SUBMITTED",
+						toStatus: "WITHDRAWN",
+						round: removedSubmissionRound,
+						event: "WITHDRAW",
+						reason: "Presentation removed by exhibitor",
+					},
+				},
 			});
 			submissionId = null;
 		}
@@ -368,6 +403,7 @@ export async function decideExhibitor(
 				: activityDetail("EXHIBITOR_REJECTED", { reason }),
 	});
 
+	const conferenceName = await getSetting("CONFERENCE_NAME");
 	void sendEmail(
 		decision === "APPROVED" ? "EXHIBITOR_APPROVED" : "EXHIBITOR_REJECTED",
 		exhibitor.user.email,
@@ -375,7 +411,7 @@ export async function decideExhibitor(
 			firstName: exhibitor.user.firstName ?? exhibitor.user.email,
 			companyName: exhibitor.companyName ?? "",
 			reason,
-			conferenceName: await getSetting("CONFERENCE_NAME"),
+			conferenceName,
 		},
 	);
 }
