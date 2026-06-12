@@ -226,8 +226,11 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 		canDeleteUsers,
 	} = useAdminAuth();
 	// Editors cannot modify a user who is already an admin.
+	// Exhibitor role is managed by the exhibitor lifecycle, not manual change.
 	const canChangeThisRole =
-		canChangeRoles && (canAssignAdminRole || user.role !== "ADMIN");
+		canChangeRoles &&
+		(canAssignAdminRole || user.role !== "ADMIN") &&
+		user.role !== "EXHIBITOR";
 	const { formatDateTime } = useDateFormat();
 	const fmtDate = (date: Date | null) => (date ? formatDateTime(date) : "—");
 	const [feeDialogOpen, setFeeDialogOpen] = useState(false);

@@ -493,6 +493,13 @@ export async function changeUserRole(
 		select: { role: true },
 	});
 
+	// Exhibitor role is managed by the exhibitor lifecycle only.
+	if (oldUser.role === "EXHIBITOR") {
+		throw new Response("Cannot manually change an exhibitor's role", {
+			status: 403,
+		});
+	}
+
 	// Prevent demoting the last remaining admin (single-user path).
 	if (oldUser.role === "ADMIN" && data.role !== "ADMIN") {
 		const adminCount = await prisma.user.count({ where: { role: "ADMIN" } });
