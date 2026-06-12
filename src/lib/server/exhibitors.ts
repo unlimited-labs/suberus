@@ -1,4 +1,5 @@
 import { prisma } from "@/db.server";
+import { env } from "@/env";
 import { activityDetail } from "@/lib/activity-log";
 import { logActivity, logActivityTx } from "@/lib/server/activity-log";
 import { sendEmail } from "@/lib/server/email";
@@ -211,8 +212,9 @@ export async function saveExhibitorApplication(
 		removedSubmissionRound = removedSubmission.currentRound;
 	}
 
-	await prisma.$transaction(async (tx) => {
+	const createdSubmissionId = await prisma.$transaction(async (tx) => {
 		let submissionId = exhibitor.submissionId;
+		let created: string | null = null;
 
 		if (presentation) {
 			if (submissionId) {
@@ -223,6 +225,7 @@ export async function saveExhibitorApplication(
 					userId,
 					presentation,
 				);
+				created = submissionId;
 			}
 		} else if (submissionId) {
 			// Presentation removed in a pre-decision edit: withdraw the orphaned submission
@@ -272,7 +275,24 @@ export async function saveExhibitorApplication(
 				}),
 			});
 		}
+
+		return created;
 	});
+
+	// Notify admin about the new presentation submission (create path only)
+	if (createdSubmissionId && presentation) {
+		const contactEmail = await getSetting("CONTACT_EMAIL");
+		if (contactEmail) {
+			const allAuthors = presentation.authors
+				.map((a) => `${a.firstName} ${a.lastName}`)
+				.join(", ");
+			void sendEmail("NEW_SUBMISSION_NOTIFY", contactEmail, {
+				submissionTitle: presentation.title,
+				authors: allAuthors,
+				submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${createdSubmissionId}`,
+			});
+		}
+	}
 }
 
 /** Withdraw own application (PENDING only); withdraws the linked presentation via workflow */
