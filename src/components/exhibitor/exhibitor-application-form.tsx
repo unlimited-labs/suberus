@@ -60,7 +60,6 @@ const formSchema = z
 			.string()
 			.max(5000, "Description must be at most 5000 characters"),
 		website: z.url("Invalid URL").or(z.literal("")),
-		package: z.string().max(200, "Package must be at most 200 characters"),
 		addPresentation: z.boolean(),
 		presentationTitle: z.string(),
 		presentationContent: z.string(),
@@ -118,7 +117,6 @@ export function ExhibitorApplicationForm({
 			companyName: exhibitor.companyName ?? "",
 			description: exhibitor.description ?? "",
 			website: exhibitor.website ?? "",
-			package: exhibitor.package ?? "",
 			addPresentation: Boolean(submission),
 			presentationTitle: submission?.title ?? "",
 			presentationContent: submission?.content ?? "",
@@ -145,7 +143,6 @@ export function ExhibitorApplicationForm({
 						companyName: value.companyName,
 						description: value.description || undefined,
 						website: value.website,
-						package: value.package || undefined,
 						presentation:
 							allowPresentation && value.addPresentation
 								? {
@@ -228,16 +225,6 @@ export function ExhibitorApplicationForm({
 									label="Website"
 									placeholder="https://example.com"
 									testId="exhibitor-website"
-								/>
-							)}
-						</form.AppField>
-
-						<form.AppField name="package">
-							{(field) => (
-								<field.InputField
-									label="Package / participation type"
-									description="As agreed with the organizer"
-									testId="exhibitor-package"
 								/>
 							)}
 						</form.AppField>

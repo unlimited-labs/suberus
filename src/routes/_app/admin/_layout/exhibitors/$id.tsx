@@ -2,17 +2,21 @@ import { IconArrowLeft, IconBuildingStore } from "@tabler/icons-react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { toast } from "sonner";
 import { DecideExhibitorDialog } from "@/components/admin/exhibitors/decide-exhibitor-dialog";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useDateFormat } from "@/hooks/use-date-format";
+import { getErrorMessage } from "@/lib/error-message";
 import { exhibitorStatusBadge } from "@/lib/labels/exhibitor";
 import { statusLabels, statusVariants } from "@/lib/labels/submission";
 import {
 	exhibitorDetailQueryOptions,
 	listExhibitorsQueryOptions,
+	setExhibitorPackageFn,
 } from "@/server-fns/exhibitors";
 
 export const Route = createFileRoute("/_app/admin/_layout/exhibitors/$id")({
@@ -51,6 +55,58 @@ function InfoRow({
 }
 
 const notProvided = <span className="text-muted-foreground">Not provided</span>;
+
+/** Package is declared by the organizer (what was agreed), editable in any status */
+function PackageEditor({
+	exhibitorId,
+	currentPackage,
+	onSaved,
+}: {
+	exhibitorId: string;
+	currentPackage: string | null;
+	onSaved: () => void;
+}) {
+	const [value, setValue] = useState(currentPackage ?? "");
+	const [isSaving, setIsSaving] = useState(false);
+	const isUnchanged = value.trim() === (currentPackage ?? "");
+
+	const handleSave = async () => {
+		setIsSaving(true);
+		try {
+			await setExhibitorPackageFn({
+				data: { id: exhibitorId, package: value.trim() || null },
+			});
+			toast.success("Package saved");
+			onSaved();
+		} catch (error) {
+			toast.error(getErrorMessage(error, "Failed to save package"));
+		} finally {
+			setIsSaving(false);
+		}
+	};
+
+	return (
+		// span: InfoRow renders children inside a <span>, a div would be invalid nesting
+		<span className="flex w-full max-w-sm items-center gap-2">
+			<Input
+				value={value}
+				onChange={(e) => setValue(e.target.value)}
+				maxLength={200}
+				placeholder="As agreed with the exhibitor"
+				data-testid="exhibitor-package-input"
+			/>
+			<Button
+				size="sm"
+				variant="outline"
+				onClick={handleSave}
+				disabled={isUnchanged || isSaving}
+				data-testid="exhibitor-package-save"
+			>
+				{isSaving ? "Saving..." : "Save"}
+			</Button>
+		</span>
+	);
+}
 
 function ExhibitorDetailPage() {
 	const { id } = Route.useParams();
@@ -115,7 +171,18 @@ function ExhibitorDetailPage() {
 								)}
 							</InfoRow>
 							<InfoRow label="Package">
-								{exhibitor.package || notProvided}
+								<PackageEditor
+									exhibitorId={exhibitor.id}
+									currentPackage={exhibitor.package}
+									onSaved={() => {
+										void queryClient.invalidateQueries({
+											queryKey: exhibitorDetailQueryOptions(id).queryKey,
+										});
+										void queryClient.invalidateQueries({
+											queryKey: listExhibitorsQueryOptions().queryKey,
+										});
+									}}
+								/>
 							</InfoRow>
 							<InfoRow label="Description">
 								{exhibitor.description ? (

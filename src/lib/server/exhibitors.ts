@@ -257,7 +257,6 @@ export async function saveExhibitorApplication(
 				companyName: data.companyName,
 				description: data.description ?? null,
 				website: data.website || null,
-				package: data.package ?? null,
 				submissionId,
 				appliedAt: exhibitor.appliedAt ?? new Date(),
 			},
@@ -370,6 +369,18 @@ export async function getExhibitorDetail(id: string) {
 			},
 			decidedBy: { select: { firstName: true, lastName: true } },
 		},
+	});
+}
+
+/** Admin-declared package (agreed with the exhibitor); editable regardless of status */
+export async function setExhibitorPackage(
+	id: string,
+	value: string | null,
+): Promise<void> {
+	const trimmed = value?.trim() || null;
+	await prisma.exhibitor.update({
+		where: { id },
+		data: { package: trimmed },
 	});
 }
 

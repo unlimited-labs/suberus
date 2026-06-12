@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ExhibitorStatus } from "@/generated/prisma/enums";
@@ -9,12 +8,14 @@ interface ExhibitorStatusCardProps {
 	status: ExhibitorStatus;
 	appliedAt: Date | null;
 	decidedAt: Date | null;
+	packageName: string | null;
 }
 
 export function ExhibitorStatusCard({
 	status,
 	appliedAt,
 	decidedAt,
+	packageName,
 }: ExhibitorStatusCardProps) {
 	const { formatDate } = useDateFormat();
 	const badge = exhibitorStatusBadge(status, appliedAt);
@@ -48,16 +49,14 @@ export function ExhibitorStatusCard({
 						)}
 					</div>
 				)}
-				<p className="text-sm text-muted-foreground">
-					The conference fee is handled on the{" "}
-					<Link
-						to="/fee"
-						className="text-primary underline-offset-4 hover:underline"
+				{packageName && (
+					<p
+						className="text-sm text-muted-foreground"
+						data-testid="exhibitor-package-display"
 					>
-						Conference fee
-					</Link>{" "}
-					page.
-				</p>
+						Package: <span className="text-foreground">{packageName}</span>
+					</p>
+				)}
 			</CardContent>
 		</Card>
 	);

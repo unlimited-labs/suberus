@@ -55,6 +55,7 @@ function ExhibitorPage() {
 								status={exhibitor.status}
 								appliedAt={exhibitor.appliedAt}
 								decidedAt={exhibitor.decidedAt}
+								packageName={exhibitor.package}
 							/>
 							<ExhibitorApplicationForm
 								exhibitor={exhibitor}

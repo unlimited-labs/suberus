@@ -9,6 +9,7 @@ import {
 	isExhibitorSignupAvailable,
 	listExhibitors,
 	saveExhibitorApplication,
+	setExhibitorPackage,
 	withdrawOwnExhibitor,
 } from "@/lib/server/exhibitors";
 import { adminMiddleware, authMiddleware } from "@/lib/server/middleware/auth";
@@ -78,6 +79,16 @@ export const getExhibitorFn = createServerFn({ method: "GET" })
 		if (!row) return null;
 		return { ...row, user: mapUserFee(row.user) };
 	});
+
+export const setExhibitorPackageFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.inputValidator(
+		z.object({
+			id: z.uuid(),
+			package: z.string().max(200).nullable(),
+		}),
+	)
+	.handler(({ data }) => setExhibitorPackage(data.id, data.package));
 
 export const decideExhibitorFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])

@@ -82,7 +82,6 @@ test.describe.serial("Exhibitor happy path", () => {
 		await page
 			.getByTestId("exhibitor-website")
 			.fill("https://acme.example.com");
-		await page.getByTestId("exhibitor-package").fill("Gold package");
 		await page.getByTestId("exhibitor-add-presentation").click();
 		await page.getByTestId("exhibitor-presentation-title").fill(talkTitle);
 		await page
@@ -129,6 +128,15 @@ test.describe.serial("Exhibitor happy path", () => {
 		await expect(
 			adminPage.getByTestId("exhibitor-presentation"),
 		).toContainText(talkTitle);
+
+		// --- Admin declares the agreed package on the detail page ---
+		await adminPage.getByTestId("exhibitor-package-input").fill("Gold");
+		await adminPage.getByTestId("exhibitor-package-save").click();
+		await expect(adminPage.getByText("Package saved")).toBeVisible();
+		await expect(adminPage.getByTestId("exhibitor-package-input")).toHaveValue(
+			"Gold",
+		);
+
 		await decideExhibitor(adminPage, "approve", "Welcome aboard");
 		await expect(adminPage.getByTestId("exhibitor-decision")).toContainText(
 			"Approved",
@@ -143,6 +151,9 @@ test.describe.serial("Exhibitor happy path", () => {
 		await page.reload();
 		await expect(page.getByTestId("exhibitor-status")).toContainText(
 			"Approved",
+		);
+		await expect(page.getByTestId("exhibitor-package-display")).toContainText(
+			"Gold",
 		);
 		await expect(page.getByTestId("exhibitor-submit")).not.toBeVisible();
 		await expect(page.getByTestId("exhibitor-withdraw")).not.toBeVisible();
