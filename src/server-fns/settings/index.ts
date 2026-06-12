@@ -25,9 +25,11 @@ import { zIanaTz } from "@/lib/validations/zod-helpers";
 // Schema for submission type config
 const submissionTypeConfigSchema = z.object({
 	isActive: z.boolean(),
+	includeInPlanner: z.boolean(),
+	allowExhibitorPresentation: z.boolean(),
 	contentFormat: z.enum(["TEXT", "FILE"]),
 	allowedExtensions: z.array(z.enum(SUPPORTED_FILE_EXTENSIONS)),
-	requiredReviewers: z.number().int().min(1).max(10),
+	requiredReviewers: z.number().int().min(0).max(10),
 	reviewMode: z.enum(["OPEN", "SINGLE_BLIND", "DOUBLE_BLIND"]),
 	reviewDeadlineDays: z.number().int().min(1).max(90),
 	requiresEditorDecision: z.boolean(),
@@ -36,6 +38,7 @@ const submissionTypeConfigSchema = z.object({
 		z.object({ name: z.string(), description: z.string() }),
 	),
 	enableConfidenceLevel: z.boolean(),
+	enableReviewAttachment: z.boolean(),
 	enableTrackSelection: z.boolean(),
 });
 
@@ -173,6 +176,7 @@ export const updateSubmissionTypeConfigFn = createServerFn({ method: "POST" })
 				"SUBMISSION_TYPE_ORAL_PRESENTATION",
 				"SUBMISSION_TYPE_POSTER",
 				"SUBMISSION_TYPE_FULL_PAPER",
+				"SUBMISSION_TYPE_EXHIBITOR",
 			]),
 			config: submissionTypeConfigSchema,
 		}),
@@ -193,6 +197,14 @@ export const updateSubmissionTypeConfigFn = createServerFn({ method: "POST" })
 			throw new Response("Scoring requires at least one criterion", {
 				status: 400,
 			});
+		}
+
+		// Only EXHIBITOR (never reviewed) may have zero required reviewers
+		if (
+			data.type !== "SUBMISSION_TYPE_EXHIBITOR" &&
+			data.config.requiredReviewers < 1
+		) {
+			throw new Response("At least one reviewer is required", { status: 400 });
 		}
 
 		await setSetting(

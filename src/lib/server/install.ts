@@ -79,6 +79,7 @@ export async function performInstall(data: InstallFormData): Promise<void> {
 		"SUBMISSION_TYPE_ORAL_PRESENTATION",
 		"SUBMISSION_TYPE_POSTER",
 		"SUBMISSION_TYPE_FULL_PAPER",
+		"SUBMISSION_TYPE_EXHIBITOR",
 	] as const;
 
 	for (const key of submissionTypeKeys) {

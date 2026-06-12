@@ -14,6 +14,7 @@ interface SubmissionTypesTabProps {
 		ORAL_PRESENTATION: SubmissionTypeConfig;
 		POSTER: SubmissionTypeConfig;
 		FULL_PAPER: SubmissionTypeConfig;
+		EXHIBITOR: SubmissionTypeConfig;
 	};
 }
 
@@ -22,6 +23,7 @@ export function SubmissionTypesTab({ initialData }: SubmissionTypesTabProps) {
 		SUBMISSION_TYPE_ORAL_PRESENTATION: initialData.ORAL_PRESENTATION,
 		SUBMISSION_TYPE_POSTER: initialData.POSTER,
 		SUBMISSION_TYPE_FULL_PAPER: initialData.FULL_PAPER,
+		SUBMISSION_TYPE_EXHIBITOR: initialData.EXHIBITOR,
 	});
 
 	const handleConfigChange = (

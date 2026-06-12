@@ -1,5 +1,6 @@
 import { prisma } from "@/db.server";
 import {
+	DEFAULT_EXHIBITOR_CONFIG,
 	DEFAULT_FULL_PAPER_CONFIG,
 	DEFAULT_ORAL_PRESENTATION_CONFIG,
 	DEFAULT_POSTER_CONFIG,
@@ -145,11 +146,13 @@ export async function getSubmissionTypeConfigs(): Promise<{
 	ORAL_PRESENTATION: SubmissionTypeConfig;
 	POSTER: SubmissionTypeConfig;
 	FULL_PAPER: SubmissionTypeConfig;
+	EXHIBITOR: SubmissionTypeConfig;
 }> {
 	const keys: SubmissionTypeKey[] = [
 		"SUBMISSION_TYPE_ORAL_PRESENTATION",
 		"SUBMISSION_TYPE_POSTER",
 		"SUBMISSION_TYPE_FULL_PAPER",
+		"SUBMISSION_TYPE_EXHIBITOR",
 	];
 
 	const settings = await getSettings(keys);
@@ -168,6 +171,10 @@ export async function getSubmissionTypeConfigs(): Promise<{
 		FULL_PAPER: normalizeSubmissionTypeConfig({
 			...DEFAULT_FULL_PAPER_CONFIG,
 			...settings.SUBMISSION_TYPE_FULL_PAPER,
+		}),
+		EXHIBITOR: normalizeSubmissionTypeConfig({
+			...DEFAULT_EXHIBITOR_CONFIG,
+			...settings.SUBMISSION_TYPE_EXHIBITOR,
 		}),
 	};
 }

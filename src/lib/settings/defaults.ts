@@ -4,6 +4,8 @@ import type { AppSettingsMap, SubmissionTypeConfig } from "./types";
 /** Default config for Oral Presentation (TEXT-based) */
 export const DEFAULT_ORAL_PRESENTATION_CONFIG: SubmissionTypeConfig = {
 	isActive: false,
+	includeInPlanner: true,
+	allowExhibitorPresentation: false,
 	contentFormat: "TEXT",
 	allowedExtensions: [],
 	requiredReviewers: 1,
@@ -21,6 +23,8 @@ export const DEFAULT_ORAL_PRESENTATION_CONFIG: SubmissionTypeConfig = {
 /** Default config for Poster (TEXT-based) */
 export const DEFAULT_POSTER_CONFIG: SubmissionTypeConfig = {
 	isActive: false,
+	includeInPlanner: true,
+	allowExhibitorPresentation: false,
 	contentFormat: "TEXT",
 	allowedExtensions: [],
 	requiredReviewers: 1,
@@ -38,6 +42,8 @@ export const DEFAULT_POSTER_CONFIG: SubmissionTypeConfig = {
 /** Default config for Full Paper (FILE-based) */
 export const DEFAULT_FULL_PAPER_CONFIG: SubmissionTypeConfig = {
 	isActive: false,
+	includeInPlanner: false,
+	allowExhibitorPresentation: false,
 	contentFormat: "FILE",
 	allowedExtensions: [...SUPPORTED_FILE_EXTENSIONS],
 	requiredReviewers: 2,
@@ -55,6 +61,24 @@ export const DEFAULT_FULL_PAPER_CONFIG: SubmissionTypeConfig = {
 	],
 	enableConfidenceLevel: true,
 	enableReviewAttachment: true,
+	enableTrackSelection: false,
+};
+
+/** Default config for Exhibitor (presentation content optional; review fields are ignored defaults — EXHIBITOR never enters review) */
+export const DEFAULT_EXHIBITOR_CONFIG: SubmissionTypeConfig = {
+	isActive: false,
+	includeInPlanner: true,
+	allowExhibitorPresentation: false,
+	contentFormat: "TEXT",
+	allowedExtensions: [],
+	requiredReviewers: 0,
+	reviewMode: "OPEN",
+	reviewDeadlineDays: 14,
+	requiresEditorDecision: false,
+	enableScoring: false,
+	scoringCriteria: [],
+	enableConfidenceLevel: false,
+	enableReviewAttachment: false,
 	enableTrackSelection: false,
 };
 
@@ -118,6 +142,7 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	SUBMISSION_TYPE_ORAL_PRESENTATION: DEFAULT_ORAL_PRESENTATION_CONFIG,
 	SUBMISSION_TYPE_POSTER: DEFAULT_POSTER_CONFIG,
 	SUBMISSION_TYPE_FULL_PAPER: DEFAULT_FULL_PAPER_CONFIG,
+	SUBMISSION_TYPE_EXHIBITOR: DEFAULT_EXHIBITOR_CONFIG,
 
 	// Fee settings
 	FEE_PAYMENT_INSTRUCTIONS:

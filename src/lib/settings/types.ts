@@ -7,6 +7,10 @@ export type ContentFormat = "TEXT" | "FILE";
 /** Configuration for a submission type stored as JSON in AppSetting */
 export interface SubmissionTypeConfig {
 	isActive: boolean;
+	/** Accepted submissions of this type appear in the program planner (pool, create-session, capacity). */
+	includeInPlanner: boolean;
+	/** EXHIBITOR only: the exhibitor form offers an optional presentation section. */
+	allowExhibitorPresentation: boolean;
 	contentFormat: ContentFormat;
 	allowedExtensions: SupportedFileExtension[];
 	requiredReviewers: number;
@@ -77,6 +81,7 @@ export type AppSettingsMap = {
 	SUBMISSION_TYPE_ORAL_PRESENTATION: SubmissionTypeConfig;
 	SUBMISSION_TYPE_POSTER: SubmissionTypeConfig;
 	SUBMISSION_TYPE_FULL_PAPER: SubmissionTypeConfig;
+	SUBMISSION_TYPE_EXHIBITOR: SubmissionTypeConfig;
 
 	// Fee settings
 	FEE_PAYMENT_INSTRUCTIONS: string;
@@ -152,6 +157,7 @@ export const SUBMISSION_TYPE_KEYS = [
 	"SUBMISSION_TYPE_ORAL_PRESENTATION",
 	"SUBMISSION_TYPE_POSTER",
 	"SUBMISSION_TYPE_FULL_PAPER",
+	"SUBMISSION_TYPE_EXHIBITOR",
 ] as const;
 
 export type SubmissionTypeKey = (typeof SUBMISSION_TYPE_KEYS)[number];
@@ -161,6 +167,7 @@ export const SUBMISSION_TYPE_TO_KEY = {
 	ABSTRACT: "SUBMISSION_TYPE_ORAL_PRESENTATION",
 	POSTER: "SUBMISSION_TYPE_POSTER",
 	FULL_PAPER: "SUBMISSION_TYPE_FULL_PAPER",
+	EXHIBITOR: "SUBMISSION_TYPE_EXHIBITOR",
 } as const;
 
 /** Map from AppSettingKey to display name */
@@ -169,12 +176,13 @@ export const SUBMISSION_TYPE_DISPLAY_NAMES: Record<SubmissionTypeKey, string> =
 		SUBMISSION_TYPE_ORAL_PRESENTATION: "Oral Presentation",
 		SUBMISSION_TYPE_POSTER: "Poster",
 		SUBMISSION_TYPE_FULL_PAPER: "Full Paper",
+		SUBMISSION_TYPE_EXHIBITOR: "Exhibitor",
 	};
 
 /** Helper to extract SubmissionType from key */
 export function getSubmissionTypeFromKey(
 	key: SubmissionTypeKey,
-): "ABSTRACT" | "POSTER" | "FULL_PAPER" {
+): "ABSTRACT" | "POSTER" | "FULL_PAPER" | "EXHIBITOR" {
 	switch (key) {
 		case "SUBMISSION_TYPE_ORAL_PRESENTATION":
 			return "ABSTRACT";
@@ -182,6 +190,8 @@ export function getSubmissionTypeFromKey(
 			return "POSTER";
 		case "SUBMISSION_TYPE_FULL_PAPER":
 			return "FULL_PAPER";
+		case "SUBMISSION_TYPE_EXHIBITOR":
+			return "EXHIBITOR";
 	}
 }
 
