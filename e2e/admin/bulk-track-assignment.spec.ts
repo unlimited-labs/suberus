@@ -18,6 +18,7 @@ test.describe.serial("Admin - Bulk Track Assignment", () => {
 	test("should bulk assign ABSTRACT submissions to track", async ({
 		page,
 		testRun,
+		adminSubmissionsPage,
 	}) => {
 		// Arrange
 		const trackId = await createTrack(testRun.testRunId, "AI Track");
@@ -35,38 +36,12 @@ test.describe.serial("Admin - Bulk Track Assignment", () => {
 		});
 
 		// Act
-		await page.goto("/admin/submissions");
-		// Filter to test submissions
-		await page.getByPlaceholder("Search submissions...").fill(testRun.testRunId);
-		await expect(
-			page.getByRole("cell", { name: `${testRun.testRunId}_Paper 1` }),
-		).toBeVisible();
-
-		// Select submissions
-		const row1 = page
-			.locator("tr")
-			.filter({ hasText: `${testRun.testRunId}_Paper 1` });
-		const row2 = page
-			.locator("tr")
-			.filter({ hasText: `${testRun.testRunId}_Paper 2` });
-		await row1.getByRole("checkbox").check();
-		await row2.getByRole("checkbox").check();
-
+		await adminSubmissionsPage.gotoAndSearch(testRun.testRunId, "Paper 1");
+		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Paper 1`);
+		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Paper 2`);
 		await expect(page.getByText("2 selected")).toBeVisible();
 
-		// Open bulk actions (filter to distinguish from pagination combobox)
-		const bulkSelect = page
-			.getByRole("combobox")
-			.filter({ hasText: /Bulk actions/ });
-		await bulkSelect.click();
-		await page
-			.getByRole("option", { name: /Assign to track/i })
-			.click();
-		await page.getByRole("button", { name: "Apply" }).click();
-
-		// Dialog should open
-		const dialog = page.getByRole("dialog");
-		await expect(dialog).toBeVisible();
+		const dialog = await adminSubmissionsPage.openBulkAction(/Assign to track/i);
 
 		// Select track in dialog
 		await dialog.getByRole("combobox").click();
@@ -89,6 +64,7 @@ test.describe.serial("Admin - Bulk Track Assignment", () => {
 	test("should show error when non-ABSTRACT submissions included", async ({
 		page,
 		testRun,
+		adminSubmissionsPage,
 	}) => {
 		// Arrange
 		const trackId = await createTrack(testRun.testRunId, "Mixed Track");
@@ -106,34 +82,11 @@ test.describe.serial("Admin - Bulk Track Assignment", () => {
 		});
 
 		// Act
-		await page.goto("/admin/submissions");
-		await page.getByPlaceholder("Search submissions...").fill(testRun.testRunId);
-		await expect(
-			page.getByRole("cell", { name: `${testRun.testRunId}_Abstract Paper` }),
-		).toBeVisible();
+		await adminSubmissionsPage.gotoAndSearch(testRun.testRunId, "Abstract Paper");
+		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Abstract Paper`);
+		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Poster Paper`);
 
-		// Select both
-		const abstractRow = page
-			.locator("tr")
-			.filter({ hasText: `${testRun.testRunId}_Abstract Paper` });
-		const posterRow = page
-			.locator("tr")
-			.filter({ hasText: `${testRun.testRunId}_Poster Paper` });
-		await abstractRow.getByRole("checkbox").check();
-		await posterRow.getByRole("checkbox").check();
-
-		// Open bulk track assignment
-		const bulkSelect = page
-			.getByRole("combobox")
-			.filter({ hasText: /Bulk actions/ });
-		await bulkSelect.click();
-		await page
-			.getByRole("option", { name: /Assign to track/i })
-			.click();
-		await page.getByRole("button", { name: "Apply" }).click();
-
-		const dialog = page.getByRole("dialog");
-		await expect(dialog).toBeVisible();
+		const dialog = await adminSubmissionsPage.openBulkAction(/Assign to track/i);
 
 		// Select track
 		await dialog.getByRole("combobox").click();
@@ -158,6 +111,7 @@ test.describe.serial("Admin - Bulk Track Assignment", () => {
 	test("should assign to None to clear tracks", async ({
 		page,
 		testRun,
+		adminSubmissionsPage,
 	}) => {
 		// Arrange
 		const trackId = await createTrack(
@@ -180,34 +134,11 @@ test.describe.serial("Admin - Bulk Track Assignment", () => {
 		});
 
 		// Act
-		await page.goto("/admin/submissions");
-		await page.getByPlaceholder("Search submissions...").fill(testRun.testRunId);
-		await expect(
-			page.getByRole("cell", { name: `${testRun.testRunId}_Clear A` }),
-		).toBeVisible();
+		await adminSubmissionsPage.gotoAndSearch(testRun.testRunId, "Clear A");
+		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Clear A`);
+		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Clear B`);
 
-		// Select submissions
-		const row1 = page
-			.locator("tr")
-			.filter({ hasText: `${testRun.testRunId}_Clear A` });
-		const row2 = page
-			.locator("tr")
-			.filter({ hasText: `${testRun.testRunId}_Clear B` });
-		await row1.getByRole("checkbox").check();
-		await row2.getByRole("checkbox").check();
-
-		// Open bulk track assignment
-		const bulkSelect = page
-			.getByRole("combobox")
-			.filter({ hasText: /Bulk actions/ });
-		await bulkSelect.click();
-		await page
-			.getByRole("option", { name: /Assign to track/i })
-			.click();
-		await page.getByRole("button", { name: "Apply" }).click();
-
-		const dialog = page.getByRole("dialog");
-		await expect(dialog).toBeVisible();
+		const dialog = await adminSubmissionsPage.openBulkAction(/Assign to track/i);
 
 		// Select "None" to clear tracks
 		await dialog.getByRole("combobox").click();

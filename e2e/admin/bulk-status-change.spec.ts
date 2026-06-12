@@ -17,6 +17,7 @@ test.describe.serial("Admin - Bulk Status Change", () => {
 	test("should bulk accept submissions in AWAITING_DECISION", async ({
 		page,
 		testRun,
+		adminSubmissionsPage,
 	}) => {
 		// Arrange
 		const { submissionId: sub1Id } = await createSubmissionWithReview({
@@ -31,34 +32,12 @@ test.describe.serial("Admin - Bulk Status Change", () => {
 		});
 
 		// Act
-		await page.goto("/admin/submissions");
-		await page.getByPlaceholder("Search submissions...").fill(testRun.testRunId);
-		await expect(
-			page.getByRole("cell", { name: `${testRun.testRunId}_Accept A` }),
-		).toBeVisible();
-
-		// Select submissions
-		const row1 = page
-			.locator("tr")
-			.filter({ hasText: `${testRun.testRunId}_Accept A` });
-		const row2 = page
-			.locator("tr")
-			.filter({ hasText: `${testRun.testRunId}_Accept B` });
-		await row1.getByRole("checkbox").check();
-		await row2.getByRole("checkbox").check();
+		await adminSubmissionsPage.gotoAndSearch(testRun.testRunId, "Accept A");
+		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Accept A`);
+		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Accept B`);
 		await expect(page.getByText("2 selected")).toBeVisible();
 
-		// Open bulk actions
-		const bulkSelect = page
-			.getByRole("combobox")
-			.filter({ hasText: /Bulk actions/ });
-		await bulkSelect.click();
-		await page.getByRole("option", { name: /Change status/i }).click();
-		await page.getByRole("button", { name: "Apply" }).click();
-
-		// Dialog
-		const dialog = page.getByRole("dialog");
-		await expect(dialog).toBeVisible();
+		const dialog = await adminSubmissionsPage.openBulkAction(/Change status/i);
 
 		// Select "Accepted"
 		await dialog.getByRole("combobox").click();
@@ -78,6 +57,7 @@ test.describe.serial("Admin - Bulk Status Change", () => {
 	test("should show errors for invalid status transitions", async ({
 		page,
 		testRun,
+		adminSubmissionsPage,
 	}) => {
 		// Arrange - SUBMITTED cannot transition directly to ACCEPTED
 		const { id: subId } = await createSubmission({
@@ -87,26 +67,10 @@ test.describe.serial("Admin - Bulk Status Change", () => {
 		});
 
 		// Act
-		await page.goto("/admin/submissions");
-		await page.getByPlaceholder("Search submissions...").fill(testRun.testRunId);
-		await expect(
-			page.getByRole("cell", { name: `${testRun.testRunId}_Invalid Trans` }),
-		).toBeVisible();
+		await adminSubmissionsPage.gotoAndSearch(testRun.testRunId, "Invalid Trans");
+		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Invalid Trans`);
 
-		const row = page
-			.locator("tr")
-			.filter({ hasText: `${testRun.testRunId}_Invalid Trans` });
-		await row.getByRole("checkbox").check();
-
-		const bulkSelect = page
-			.getByRole("combobox")
-			.filter({ hasText: /Bulk actions/ });
-		await bulkSelect.click();
-		await page.getByRole("option", { name: /Change status/i }).click();
-		await page.getByRole("button", { name: "Apply" }).click();
-
-		const dialog = page.getByRole("dialog");
-		await expect(dialog).toBeVisible();
+		const dialog = await adminSubmissionsPage.openBulkAction(/Change status/i);
 
 		// Select "Accepted" — invalid from SUBMITTED
 		await dialog.getByRole("combobox").click();
@@ -120,7 +84,7 @@ test.describe.serial("Admin - Bulk Status Change", () => {
 		await deleteSubmission(subId);
 	});
 
-	test("should bulk reject submissions", async ({ page, testRun }) => {
+	test("should bulk reject submissions", async ({ page, testRun, adminSubmissionsPage }) => {
 		// Arrange
 		const { submissionId: subId } = await createSubmissionWithReview({
 			testRunId: testRun.testRunId,
@@ -129,26 +93,10 @@ test.describe.serial("Admin - Bulk Status Change", () => {
 		});
 
 		// Act
-		await page.goto("/admin/submissions");
-		await page.getByPlaceholder("Search submissions...").fill(testRun.testRunId);
-		await expect(
-			page.getByRole("cell", { name: `${testRun.testRunId}_Reject Me` }),
-		).toBeVisible();
+		await adminSubmissionsPage.gotoAndSearch(testRun.testRunId, "Reject Me");
+		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Reject Me`);
 
-		const row = page
-			.locator("tr")
-			.filter({ hasText: `${testRun.testRunId}_Reject Me` });
-		await row.getByRole("checkbox").check();
-
-		const bulkSelect = page
-			.getByRole("combobox")
-			.filter({ hasText: /Bulk actions/ });
-		await bulkSelect.click();
-		await page.getByRole("option", { name: /Change status/i }).click();
-		await page.getByRole("button", { name: "Apply" }).click();
-
-		const dialog = page.getByRole("dialog");
-		await expect(dialog).toBeVisible();
+		const dialog = await adminSubmissionsPage.openBulkAction(/Change status/i);
 
 		// Select "Rejected"
 		await dialog.getByRole("combobox").click();

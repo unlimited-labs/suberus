@@ -11,6 +11,44 @@ export async function loginAsAdmin(page: Page) {
 }
 
 // Page Objects
+
+/** Admin Submissions list — bulk-action helpers (desktop table layout). */
+export class AdminSubmissionsPage {
+	readonly page: Page
+	readonly searchInput: Locator
+
+	constructor(page: Page) {
+		this.page = page
+		this.searchInput = page.getByPlaceholder("Search submissions...")
+	}
+
+	async goto() {
+		await this.page.goto("/admin/submissions")
+	}
+
+	/** Navigate, filter by the test-run id, and wait until the given submission cell appears. */
+	async gotoAndSearch(testRunId: string, expectTitle: string) {
+		await this.goto()
+		await this.searchInput.fill(testRunId)
+		await expect(this.page.getByRole("cell", { name: `${testRunId}_${expectTitle}` })).toBeVisible()
+	}
+
+	/** Tick the row checkbox for a submission identified by its full (prefixed) title. */
+	async selectRow(fullTitle: string) {
+		await this.page.locator("tr").filter({ hasText: fullTitle }).getByRole("checkbox").check()
+	}
+
+	/** Open a bulk action from the toolbar and return the opened dialog. */
+	async openBulkAction(optionName: string | RegExp): Promise<Locator> {
+		await this.page.getByRole("combobox").filter({ hasText: /Bulk actions/ }).click()
+		await this.page.getByRole("option", { name: optionName }).click()
+		await this.page.getByRole("button", { name: "Apply" }).click()
+		const dialog = this.page.getByRole("dialog")
+		await expect(dialog).toBeVisible()
+		return dialog
+	}
+}
+
 export class AdminUsersPage {
 	readonly page: Page
 	readonly heading: Locator
@@ -423,6 +461,7 @@ export class AdminSettingsPage {
 interface AdminFixtures {
 	testRun: TestRunContext
 	cleanup: CleanupContext
+	adminSubmissionsPage: AdminSubmissionsPage
 	adminUsersPage: AdminUsersPage
 	userDetailPage: UserDetailPage
 	bulkActionDialog: BulkActionDialog
@@ -430,6 +469,9 @@ interface AdminFixtures {
 }
 
 export const test = base.extend<AdminFixtures>({
+	adminSubmissionsPage: async ({ page }, use) => {
+		await use(new AdminSubmissionsPage(page))
+	},
 	adminUsersPage: async ({ page }, use) => {
 		await use(new AdminUsersPage(page))
 	},

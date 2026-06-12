@@ -17,6 +17,7 @@ test.describe.serial("Admin - Bulk Assign Reviewer", () => {
 	test("should bulk assign reviewer to submissions", async ({
 		page,
 		testRun,
+		adminSubmissionsPage,
 	}) => {
 		// Arrange
 		const { id: sub1Id } = await createSubmission({
@@ -33,34 +34,12 @@ test.describe.serial("Admin - Bulk Assign Reviewer", () => {
 		});
 
 		// Act
-		await page.goto("/admin/submissions");
-		await page.getByPlaceholder("Search submissions...").fill(testRun.testRunId);
-		await expect(
-			page.getByRole("cell", { name: `${testRun.testRunId}_Assign Rev A` }),
-		).toBeVisible();
-
-		// Select both
-		const row1 = page
-			.locator("tr")
-			.filter({ hasText: `${testRun.testRunId}_Assign Rev A` });
-		const row2 = page
-			.locator("tr")
-			.filter({ hasText: `${testRun.testRunId}_Assign Rev B` });
-		await row1.getByRole("checkbox").check();
-		await row2.getByRole("checkbox").check();
+		await adminSubmissionsPage.gotoAndSearch(testRun.testRunId, "Assign Rev A");
+		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Assign Rev A`);
+		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Assign Rev B`);
 		await expect(page.getByText("2 selected")).toBeVisible();
 
-		// Open bulk actions
-		const bulkSelect = page
-			.getByRole("combobox")
-			.filter({ hasText: /Bulk actions/ });
-		await bulkSelect.click();
-		await page.getByRole("option", { name: /Assign reviewer/i }).click();
-		await page.getByRole("button", { name: "Apply" }).click();
-
-		// Dialog
-		const dialog = page.getByRole("dialog");
-		await expect(dialog).toBeVisible();
+		const dialog = await adminSubmissionsPage.openBulkAction(/Assign reviewer/i);
 
 		// Select the seeded reviewer (Reviewer User)
 		await dialog.getByRole("combobox").click();
@@ -87,6 +66,7 @@ test.describe.serial("Admin - Bulk Assign Reviewer", () => {
 	test("should show error when reviewer already assigned", async ({
 		page,
 		testRun,
+		adminSubmissionsPage,
 	}) => {
 		// Arrange - create submission and pre-assign the reviewer
 		const { id: subId } = await createSubmission({
@@ -115,26 +95,10 @@ test.describe.serial("Admin - Bulk Assign Reviewer", () => {
 		});
 
 		// Act
-		await page.goto("/admin/submissions");
-		await page.getByPlaceholder("Search submissions...").fill(testRun.testRunId);
-		await expect(
-			page.getByRole("cell", { name: `${testRun.testRunId}_Already Assigned` }),
-		).toBeVisible();
+		await adminSubmissionsPage.gotoAndSearch(testRun.testRunId, "Already Assigned");
+		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Already Assigned`);
 
-		const row = page
-			.locator("tr")
-			.filter({ hasText: `${testRun.testRunId}_Already Assigned` });
-		await row.getByRole("checkbox").check();
-
-		const bulkSelect = page
-			.getByRole("combobox")
-			.filter({ hasText: /Bulk actions/ });
-		await bulkSelect.click();
-		await page.getByRole("option", { name: /Assign reviewer/i }).click();
-		await page.getByRole("button", { name: "Apply" }).click();
-
-		const dialog = page.getByRole("dialog");
-		await expect(dialog).toBeVisible();
+		const dialog = await adminSubmissionsPage.openBulkAction(/Assign reviewer/i);
 
 		// Select the same reviewer
 		await dialog.getByRole("combobox").click();
