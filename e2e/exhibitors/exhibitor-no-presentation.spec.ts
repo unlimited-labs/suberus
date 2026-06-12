@@ -115,7 +115,7 @@ test.describe.serial("Exhibitor without presentation", () => {
 			.filter({ visible: true, hasText: companyName });
 		await expect(row).toBeVisible();
 		await row.getByRole("link", { name: companyName }).click();
-		await decideExhibitor(adminPage, "reject", "Booth capacity reached");
+		await decideExhibitor(adminPage, "reject", "Capacity reached");
 		await expect(adminPage.getByTestId("exhibitor-decision")).toContainText(
 			"Not accepted",
 		);
