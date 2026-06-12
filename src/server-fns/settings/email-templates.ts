@@ -2,6 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { env } from "@/env";
+import { EmailEventType } from "@/generated/prisma/enums";
 import { sendTestEmail } from "@/lib/server/email";
 import {
 	getEmailTemplates,
@@ -10,28 +11,7 @@ import {
 import { adminMiddleware } from "@/lib/server/middleware/auth";
 import { getSetting } from "@/lib/server/settings";
 
-const emailEventTypeEnum = z.enum([
-	"SUBMISSION_RECEIVED",
-	"SUBMISSION_WITHDRAWN",
-	"REVIEWER_ASSIGNED",
-	"REVIEWER_REMINDER",
-	"REVIEW_SUBMITTED",
-	"ALL_REVIEWS_COMPLETE",
-	"DECISION_ACCEPTED",
-	"DECISION_CONDITIONALLY_ACCEPTED",
-	"DECISION_REVISE_REQUIRED",
-	"DECISION_REJECTED",
-	"DECISION_OVERRIDDEN",
-	"REVISION_REMINDER",
-	"REVISION_RECEIVED",
-	"DEADLINE_APPROACHING",
-	"ACCOUNT_CREATED",
-	"PASSWORD_RESET",
-	"EMAIL_VERIFICATION",
-	"INVITATION",
-	"NEW_REGISTRATION_NOTIFY",
-	"NEW_SUBMISSION_NOTIFY",
-]);
+const emailEventTypeEnum = z.enum(EmailEventType);
 
 export const emailTemplatesQueryOptions = () =>
 	queryOptions({

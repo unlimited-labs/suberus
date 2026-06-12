@@ -43,10 +43,14 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import type { UserRole } from "@/generated/prisma/enums";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { useDateFormat } from "@/hooks/use-date-format";
-import { assignableRoleOptions, roleLabels, titleLabels } from "@/lib/labels";
+import {
+	type AssignableUserRole,
+	assignableRoleOptions,
+	roleLabels,
+	titleLabels,
+} from "@/lib/labels";
 import type { AdminUserDetail } from "@/lib/server/admin/users";
 import {
 	adminUserDetailQueryOptions,
@@ -138,11 +142,11 @@ interface UserRoleDialogProps {
 	open: boolean;
 	onOpenChange: (v: boolean) => void;
 	userName: string;
-	selectedRole: UserRole;
-	onRoleChange: (role: UserRole) => void;
+	selectedRole: AssignableUserRole;
+	onRoleChange: (role: AssignableUserRole) => void;
 	onConfirm: () => void;
 	isPending: boolean;
-	roleOptions: { value: UserRole; label: string }[];
+	roleOptions: { value: AssignableUserRole; label: string }[];
 }
 
 function UserRoleDialog({
@@ -202,7 +206,7 @@ interface UserDetailCardProps {
 }
 
 interface PatchPayload {
-	role?: UserRole;
+	role?: AssignableUserRole;
 	isActive?: boolean;
 	allowLateSubmission?: boolean;
 	markFeePaid?: boolean;
@@ -237,7 +241,10 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 	const [selectedFeeTypeId, setSelectedFeeTypeId] = useState<string>(
 		feeTypes[0]?.id ?? "",
 	);
-	const [selectedRole, setSelectedRole] = useState<UserRole>(user.role);
+	// EXHIBITOR cannot be granted here (exhibitor signup only), so default to AUTHOR
+	const [selectedRole, setSelectedRole] = useState<AssignableUserRole>(
+		user.role === "EXHIBITOR" ? "AUTHOR" : user.role,
+	);
 
 	const selectedFeeType = feeTypes.find((ft) => ft.id === selectedFeeTypeId);
 

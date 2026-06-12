@@ -10,6 +10,7 @@ export const roleLabels: Record<UserRole, string> = {
 	EDITOR: "Editor",
 	REVIEWER: "Reviewer",
 	AUTHOR: "Author",
+	EXHIBITOR: "Exhibitor",
 };
 
 export const roleFilterOptions = [
@@ -17,6 +18,7 @@ export const roleFilterOptions = [
 	{ label: "Editor", value: "EDITOR" },
 	{ label: "Reviewer", value: "REVIEWER" },
 	{ label: "Author", value: "AUTHOR" },
+	{ label: "Exhibitor", value: "EXHIBITOR" },
 ] as const;
 
 export const feeFilterOptions = [
@@ -24,7 +26,10 @@ export const feeFilterOptions = [
 	{ label: "Unpaid", value: "unpaid" },
 ] as const;
 
-export const userRoleOptions: { value: UserRole; label: string }[] = [
+/** Roles an admin may grant directly; EXHIBITOR is granted via exhibitor signup only. */
+export type AssignableUserRole = Exclude<UserRole, "EXHIBITOR">;
+
+export const userRoleOptions: { value: AssignableUserRole; label: string }[] = [
 	{ value: "AUTHOR", label: "Author" },
 	{ value: "REVIEWER", label: "Reviewer" },
 	{ value: "EDITOR", label: "Editor" },
@@ -37,7 +42,7 @@ export const userRoleOptions: { value: UserRole; label: string }[] = [
  */
 export function assignableRoleOptions(
 	canAssignAdminRole: boolean,
-): { value: UserRole; label: string }[] {
+): { value: AssignableUserRole; label: string }[] {
 	return canAssignAdminRole
 		? userRoleOptions
 		: userRoleOptions.filter((opt) => opt.value !== "ADMIN");

@@ -10,9 +10,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import type { UserRole } from "@/generated/prisma/enums";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
-import { assignableRoleOptions } from "@/lib/labels/user";
+import {
+	type AssignableUserRole,
+	assignableRoleOptions,
+} from "@/lib/labels/user";
 import type { AdminUser } from "@/lib/server/admin/users";
 import {
 	adminUsersQueryOptions,
@@ -34,7 +36,7 @@ interface BulkActionPayload {
 	feeType?: string;
 	feeAmount?: number;
 	feeCurrency?: string;
-	role?: UserRole;
+	role?: AssignableUserRole;
 }
 
 export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
@@ -55,7 +57,8 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 	const [selectedFeeTypeId, setSelectedFeeTypeId] = useState<string>(
 		feeTypes[0]?.id ?? "",
 	);
-	const [selectedRole, setSelectedRole] = useState<UserRole>("AUTHOR");
+	const [selectedRole, setSelectedRole] =
+		useState<AssignableUserRole>("AUTHOR");
 
 	const selectedFeeType = feeTypes.find((ft) => ft.id === selectedFeeTypeId);
 

@@ -47,6 +47,7 @@ const typeLabels: Record<SubmissionType, string> = {
 	ABSTRACT: "Abstract",
 	FULL_PAPER: "Full Paper",
 	POSTER: "Poster",
+	EXHIBITOR: "Exhibitor",
 };
 
 function CoAuthorBadge({ role }: { role: UserSubmission["role"] }) {

@@ -398,6 +398,7 @@ export async function getAdminSubmissions(
 		ABSTRACT: configs.ORAL_PRESENTATION.requiredReviewers,
 		POSTER: configs.POSTER.requiredReviewers,
 		FULL_PAPER: configs.FULL_PAPER.requiredReviewers,
+		EXHIBITOR: 0, // exhibitor entries are not peer-reviewed
 	};
 	const now = new Date();
 

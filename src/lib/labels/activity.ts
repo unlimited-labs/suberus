@@ -27,4 +27,8 @@ export const activityLabels: Record<string, string> = {
 	INVITATION_CANCELLED: "Invitation cancelled",
 	FEE_MARKED_PAID: "Fee marked paid",
 	FEE_MARKED_UNPAID: "Fee marked unpaid",
+	EXHIBITOR_APPLIED: "Exhibitor applied",
+	EXHIBITOR_APPROVED: "Exhibitor approved",
+	EXHIBITOR_REJECTED: "Exhibitor rejected",
+	EXHIBITOR_WITHDRAWN: "Exhibitor withdrawn",
 };

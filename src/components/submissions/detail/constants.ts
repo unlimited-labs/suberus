@@ -35,4 +35,5 @@ export const TYPE_LABELS: Record<SubmissionType, string> = {
 	ABSTRACT: "Abstract",
 	FULL_PAPER: "Full Paper",
 	POSTER: "Poster",
+	EXHIBITOR: "Exhibitor",
 };

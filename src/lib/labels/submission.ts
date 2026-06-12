@@ -54,12 +54,14 @@ export const typeLabels: Record<SubmissionType, string> = {
 	ABSTRACT: "Oral Presentation",
 	FULL_PAPER: "Full Paper",
 	POSTER: "Poster",
+	EXHIBITOR: "Exhibitor",
 };
 
 export const typeFilterOptions = [
 	{ label: "Oral Presentation", value: "ABSTRACT" },
 	{ label: "Full Paper", value: "FULL_PAPER" },
 	{ label: "Poster", value: "POSTER" },
+	{ label: "Exhibitor", value: "EXHIBITOR" },
 ] as const;
 
 export const reviewDecisionColors = {

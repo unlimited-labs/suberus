@@ -51,7 +51,15 @@ export type ActivityDetail =
 			amount: number;
 			currency: string;
 	  }
-	| { type: "FEE_MARKED_UNPAID" };
+	| { type: "FEE_MARKED_UNPAID" }
+	| {
+			type: "EXHIBITOR_APPLIED";
+			companyName: string;
+			hasPresentation: boolean;
+	  }
+	| { type: "EXHIBITOR_APPROVED"; reason: string }
+	| { type: "EXHIBITOR_REJECTED"; reason: string }
+	| { type: "EXHIBITOR_WITHDRAWN" };
 
 /** Helper to create a typed activity detail object */
 export function activityDetail<T extends ActivityDetail["type"]>(

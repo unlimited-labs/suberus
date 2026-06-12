@@ -229,6 +229,7 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		REVIEWER: 0,
 		EDITOR: 0,
 		ADMIN: 0,
+		EXHIBITOR: 0,
 	};
 	for (const group of usersGroupedByRole) {
 		byRole[group.role] = group._count;
@@ -257,6 +258,7 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		ABSTRACT: 0,
 		FULL_PAPER: 0,
 		POSTER: 0,
+		EXHIBITOR: 0,
 	};
 	for (const group of submissionsGroupedByType) {
 		byType[group.type] = group._count;

@@ -55,10 +55,14 @@ function EditSubmissionPage() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 
+	const submission = data?.submission;
+
 	if (
-		!data ||
-		data.submission.role === "coauthor" ||
-		data.submission.status !== "DRAFT"
+		!submission ||
+		submission.role === "coauthor" ||
+		submission.status !== "DRAFT" ||
+		// Exhibitor entries are managed via the exhibitor flow, not this form
+		submission.type === "EXHIBITOR"
 	) {
 		return (
 			<div className="flex h-full flex-col">
@@ -66,9 +70,11 @@ function EditSubmissionPage() {
 				<div className="flex-1 p-6 flex items-center justify-center">
 					<div className="text-center">
 						<p className="text-muted-foreground mb-4">
-							{!data
+							{!submission
 								? "Submission not found"
-								: "Submission can only be edited in Draft status"}
+								: submission.type === "EXHIBITOR"
+									? "Exhibitor entries cannot be edited here"
+									: "Submission can only be edited in Draft status"}
 						</p>
 						<Link to="/submissions/$id" params={{ id }}>
 							<Button variant="outline" className="gap-2">
@@ -82,7 +88,6 @@ function EditSubmissionPage() {
 		);
 	}
 
-	const { submission } = data;
 	const isDraft = submission.status === "DRAFT";
 
 	const initialData: Partial<SubmissionFormData> = {
