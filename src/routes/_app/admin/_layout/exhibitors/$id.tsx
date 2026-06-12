@@ -86,13 +86,11 @@ function PackageEditor({
 	};
 
 	return (
-		// span: InfoRow renders children inside a <span>, a div would be invalid nesting
 		<span className="flex w-full max-w-sm items-center gap-2">
 			<Input
 				value={value}
 				onChange={(e) => setValue(e.target.value)}
 				maxLength={200}
-				placeholder="As agreed with the exhibitor"
 				data-testid="exhibitor-package-input"
 			/>
 			<Button
@@ -222,17 +220,6 @@ function ExhibitorDetailPage() {
 									<Badge variant="destructive">Unpaid</Badge>
 								)}
 							</InfoRow>
-							<p className="text-muted-foreground">
-								The conference fee is managed on the{" "}
-								<Link
-									to="/admin/users/$id"
-									params={{ id: user.id }}
-									className="text-primary underline-offset-4 hover:underline"
-								>
-									user details
-								</Link>{" "}
-								page.
-							</p>
 						</CardContent>
 					</Card>
 
