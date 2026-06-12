@@ -202,11 +202,10 @@ function SubmissionDetailPage() {
 				: reviews.filter((r) => r.round === Number(selectedReviewRound));
 
 	// Determine available actions based on status
-	const canAssignReviewers = [
-		"SUBMITTED",
-		"UNDER_REVIEW",
-		"RESUBMITTED",
-	].includes(submission.status);
+	// (EXHIBITOR submissions are never peer-reviewed — no reviewer assignment)
+	const canAssignReviewers =
+		submission.type !== "EXHIBITOR" &&
+		["SUBMITTED", "UNDER_REVIEW", "RESUBMITTED"].includes(submission.status);
 
 	const canDeskAccept = submission.status === "SUBMITTED";
 	const canDeskReject = submission.status === "SUBMITTED";

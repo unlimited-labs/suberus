@@ -160,6 +160,19 @@ export async function assignReviewer(
 		),
 	};
 
+	// EXHIBITOR submissions are never peer-reviewed (desk decisions via the
+	// exhibitor approve/reject flow only)
+	if (submission.type === "EXHIBITOR") {
+		logger.warn(
+			`[assignment] cannot assign reviewer to ${submissionId}: exhibitor submissions are not peer-reviewed`,
+		);
+		return {
+			success: false,
+			error:
+				"Cannot assign reviewer: exhibitor submissions are not peer-reviewed",
+		};
+	}
+
 	// Get config
 	const configKey = SUBMISSION_TYPE_TO_KEY[submission.type];
 	const config = await getSetting(configKey);

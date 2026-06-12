@@ -277,6 +277,7 @@ export interface AdminSubmission {
  * `payment` are intentionally outside the machine's domain and live only here.
  */
 export function computeSubmissionTodo(args: {
+	type: SubmissionType;
 	status: SubmissionStatus;
 	assigned: number;
 	completed: number;
@@ -284,13 +285,17 @@ export function computeSubmissionTodo(args: {
 	overdueCount: number;
 	feePaid: boolean;
 }): SubmissionTodo {
-	const { status, assigned, completed, required, overdueCount, feePaid } = args;
+	const { type, status, assigned, completed, required, overdueCount, feePaid } =
+		args;
 
 	switch (status) {
 		case "DRAFT":
 			return { kind: "AWAITING_SUBMISSION" };
 		case "SUBMITTED":
 		case "RESUBMITTED":
+			// EXHIBITOR submissions are never peer-reviewed; decisions happen via
+			// the exhibitor approve/reject flow, so there is no review TODO here.
+			if (type === "EXHIBITOR") return { kind: "NONE" };
 			return hasMinReviewers(assigned, required)
 				? { kind: "AWAITING_REVIEWS", completed, required }
 				: { kind: "ASSIGN_REVIEWER", assigned, required };
@@ -437,6 +442,7 @@ export async function getAdminSubmissions(
 			reviewerCount: currentRoundAssignments.length,
 			completedReviewsCount: completedAssignments.length,
 			todo: computeSubmissionTodo({
+				type: s.type,
 				status: s.status,
 				assigned: currentRoundAssignments.length,
 				completed: completedAssignments.length,
@@ -742,9 +748,23 @@ export async function bulkChangeStatus(
 	let updated = 0;
 	const errors: string[] = [];
 
+	// EXHIBITOR decisions must go through the exhibitor approve/reject flow,
+	// which also updates Exhibitor.status and sends exhibitor emails.
+	const exhibitorSubmissions = await prisma.submission.findMany({
+		where: { id: { in: submissionIds }, type: "EXHIBITOR" },
+		select: { id: true, title: true },
+	});
+	const exhibitorIds = new Set(exhibitorSubmissions.map((s) => s.id));
+	for (const s of exhibitorSubmissions) {
+		errors.push(
+			`"${s.title}" is an exhibitor presentation — decide it via the exhibitor approve/reject flow`,
+		);
+	}
+
 	const emailEvent = bulkDecisionEmailMap[targetStatus];
 
 	for (const id of submissionIds) {
+		if (exhibitorIds.has(id)) continue;
 		const result = await executeSubmissionTransition(
 			id,
 			event,
