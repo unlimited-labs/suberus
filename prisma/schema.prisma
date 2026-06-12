@@ -738,7 +738,7 @@ enum ExhibitorStatus {
 model Exhibitor {
   id           String          @id @default(uuid()) @db.Uuid
   userId       String          @unique @db.Uuid
-  companyName  String          @default("")
+  companyName  String?
   description  String?
   website      String?
   package      String?
@@ -750,11 +750,12 @@ model Exhibitor {
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
   user         User            @relation("ExhibitorUser", fields: [userId], references: [id], onDelete: Cascade)
-  submission   Submission?     @relation(fields: [submissionId], references: [id])
+  submission   Submission?     @relation(fields: [submissionId], references: [id], onDelete: SetNull)
   decidedBy    User?           @relation("ExhibitorDecider", fields: [decidedById], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@index([appliedAt])
+  @@index([createdAt])
   @@map("exhibitors")
 }
 
