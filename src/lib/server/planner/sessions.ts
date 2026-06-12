@@ -4,6 +4,7 @@ import {
 	differenceInMilliseconds,
 } from "date-fns";
 import { prisma } from "@/db.server";
+import { getPlannerIncludedTypes } from "./included-types";
 import { parseSeries } from "./tracks";
 
 export interface ProgramSessionDetail {
@@ -183,10 +184,11 @@ export interface UnscheduledSubmission {
 export async function listUnscheduledSubmissions(): Promise<
 	UnscheduledSubmission[]
 > {
+	const includedTypes = await getPlannerIncludedTypes();
 	const rows = await prisma.submission.findMany({
 		where: {
 			status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] },
-			type: { in: ["ABSTRACT", "POSTER"] },
+			type: { in: includedTypes },
 			presentationSlot: { is: null },
 		},
 		select: {
@@ -346,13 +348,18 @@ export async function createSessionWithPresentations(data: {
 	slotDurationMin: number;
 	submissionIds: string[];
 }): Promise<{ id: string }> {
-	const title = data.title?.trim() || (await defaultSessionTitle());
+	const [title, includedTypes] = await Promise.all([
+		data.title?.trim()
+			? Promise.resolve(data.title.trim())
+			: defaultSessionTitle(),
+		getPlannerIncludedTypes(),
+	]);
 	return prisma.$transaction(async (tx) => {
 		const valid = await tx.submission.findMany({
 			where: {
 				id: { in: data.submissionIds },
 				status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] },
-				type: { in: ["ABSTRACT", "POSTER"] },
+				type: { in: includedTypes },
 				presentationSlot: { is: null },
 			},
 			select: { id: true },

@@ -1,5 +1,6 @@
 import { prisma } from "@/db.server";
 import { getSetting, setSetting } from "@/lib/server/settings";
+import { getPlannerIncludedTypes } from "./included-types";
 import { computeSessionUsage, freeSlotsFor } from "./session-usage";
 
 export type ScheduleStatus = "DRAFT" | "DRAFT_PUBLISHED" | "PUBLISHED";
@@ -45,11 +46,12 @@ export interface CapacityInfo {
 }
 
 export async function getCapacity(): Promise<CapacityInfo> {
+	const includedTypes = await getPlannerIncludedTypes();
 	const [talks, sessionsWithSlots, defaultPresentationMin] = await Promise.all([
 		prisma.submission.count({
 			where: {
 				status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] },
-				type: { in: ["ABSTRACT", "POSTER"] },
+				type: { in: includedTypes },
 			},
 		}),
 		prisma.programSession.findMany({
