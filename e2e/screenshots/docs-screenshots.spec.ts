@@ -1,0 +1,569 @@
+/**
+ * Documentation screenshot capture — NOT a test suite.
+ *
+ * Generates the screenshots listed in docs/SCREENSHOTS.md into
+ * docs/src/assets/screenshots/. Skipped entirely unless DOCS_SHOTS=1:
+ *
+ *   E2E_WORKERS=1 DOCS_SHOTS=1 pnpm exec playwright test --project=screenshots
+ *
+ * Shot 03 (installer) needs a separate empty-DB server; set DOCS_INSTALL_URL
+ * (e.g. http://127.0.0.1:3055) to a running instance with zero users.
+ */
+import { test, expect } from "../helpers/base-fixtures";
+import {
+	createFee,
+	createAssignmentWithDeadline,
+	createSubmission,
+	createSubmissionWithAssignment,
+	createSubmissionWithDecision,
+	createSubmissionWithFile,
+	createSubmissionWithReview,
+	createTestUser,
+	getPrisma,
+	getTestUserIds,
+	setAppSetting,
+	setConferenceDates,
+	setConferenceTimezone,
+	setDailyBusinessHours,
+} from "../helpers/test-db";
+import { runSubmissionAction } from "../helpers/submission-actions";
+import {
+	EditorDecisionType,
+	InvitationStatus,
+	SubmissionStatus,
+	SubmissionType,
+	UserRole,
+} from "../../src/generated/prisma/enums";
+import { randomUUID } from "crypto";
+import * as path from "path";
+import * as fs from "fs";
+import type { Page } from "@playwright/test";
+
+const SHOTS_DIR = path.resolve("docs/src/assets/screenshots");
+
+const day = (d: number, time: string) => new Date(`2026-09-${String(d).padStart(2, "0")}T${time}:00.000Z`);
+
+/**
+ * Capture the viewport at 1440×`height` (default 900). Settings/dashboard pages
+ * scroll inside an internal container, so fullPage can't reach below the fold —
+ * a taller viewport is the reliable way to get the whole tab on one image.
+ * `full: true` uses a real fullPage shot (pages that scroll at body level).
+ */
+async function shot(page: Page, name: string, opts?: { full?: boolean; height?: number }) {
+	const height = opts?.height ?? 900;
+	if (height !== 900) {
+		await page.setViewportSize({ width: 1440, height });
+		await page.waitForTimeout(600);
+	}
+	await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+	await page.waitForTimeout(500);
+	if (height !== 900) {
+		// The tall viewport is only a measuring canvas — clip to where content
+		// actually ends so screenshots carry no dead whitespace. Leaf elements
+		// only: full-height flex containers (and the dev build footer pinned to
+		// their bottom) would otherwise report the whole viewport as content.
+		const bottom = await page.evaluate(() => {
+			const root = document.querySelector("main") ?? document.body;
+			let max = 0;
+			for (const el of Array.from(root.querySelectorAll("*"))) {
+				if (el.children.length > 0) continue;
+				const text = (el.textContent ?? "").trim();
+				const isMedia = ["IMG", "SVG", "CANVAS", "INPUT", "BUTTON", "SELECT", "TEXTAREA"].includes(el.tagName.toUpperCase());
+				if (!text && !isMedia) continue;
+				if (/^build\b/i.test(text)) continue;
+				const r = el.getBoundingClientRect();
+				if (r.width <= 0 || r.height <= 0) continue;
+				if (r.bottom > max) max = r.bottom;
+			}
+			return Math.ceil(max);
+		});
+		const clipHeight = Math.min(height, Math.max(900, bottom + 32));
+		await page.screenshot({
+			path: path.join(SHOTS_DIR, name),
+			clip: { x: 0, y: 0, width: 1440, height: clipHeight },
+		});
+		await page.setViewportSize({ width: 1440, height: 900 });
+		await page.waitForTimeout(300);
+		return;
+	}
+	await page.screenshot({ path: path.join(SHOTS_DIR, name), fullPage: opts?.full ?? false });
+}
+
+// Shared ids filled by beforeAll
+const ctx = {
+	multiVersionId: "",
+	submittedId: "",
+	decidedId: "",
+	docxId: "",
+	profileUserId: "",
+};
+
+/** Resolve ctx ids from the DB by title (survives worker restarts). */
+async function resolveCtx() {
+	const db = getPrisma();
+	const byTitle = async (title: string) => {
+		const s = await db.submission.findFirst({ where: { title } });
+		if (!s) throw new Error(`ctx submission not found: ${title}`);
+		return s.id;
+	};
+	ctx.submittedId = await byTitle("Graph Neural Networks for Predicting Grain Boundary Mobility");
+	ctx.decidedId = await byTitle("Crystal Plasticity FEM of Ti-6Al-4V Lattice Structures");
+	ctx.multiVersionId = await byTitle("Coupled CFD-FEM Model of Laser Powder Bed Fusion");
+	ctx.docxId = await byTitle("Microstructure-Informed Fatigue Life Prediction");
+	const profileUser = await db.user.findUnique({ where: { email: "sofia.rossi@example.org" } });
+	if (!profileUser) throw new Error("ctx profile user not found");
+	ctx.profileUserId = profileUser.id;
+}
+
+test.describe("docs screenshots", () => {
+	test.skip(!process.env.DOCS_SHOTS, "Set DOCS_SHOTS=1 to capture docs screenshots");
+	test.describe.configure({ retries: 0, timeout: 90_000 });
+	test.use({ viewport: { width: 1440, height: 900 } });
+
+	test.beforeAll(async () => {
+		test.setTimeout(300_000);
+		fs.mkdirSync(SHOTS_DIR, { recursive: true });
+		const db = getPrisma();
+		const { testUserId, adminUserId, reviewerUserId, editorUserId } = await getTestUserIds();
+
+		// Worker restarts (after any test failure) re-run beforeAll — make the
+		// arrangement idempotent and resolve ctx ids from the DB at the end.
+		const arranged = await db.user.findUnique({
+			where: { email: "maria.kowalska@example.org" },
+		});
+		if (arranged) {
+			await resolveCtx();
+			return;
+		}
+
+		// --- conference identity & dates ---------------------------------------
+		await setAppSetting("CONFERENCE_NAME", "ICCMS 2026");
+		await setAppSetting("CONFERENCE_SUBTITLE", "International Conference on Computational Materials Science");
+		await setAppSetting("CONFERENCE_LOCATION", "Krakow, Poland");
+		await setAppSetting("CONFERENCE_WEBSITE", "https://iccms2026.example.org");
+		await setAppSetting("CONTACT_EMAIL", "contact@iccms2026.example.org");
+		// Native date inputs need plain yyyy-MM-dd values
+		await setConferenceDates("2026-09-14", "2026-09-16");
+		await setAppSetting("SUBMISSION_DEADLINE", "2026-05-31");
+		await setAppSetting("REGISTRATION_DEADLINE", "2026-08-31");
+		await setAppSetting("REVIEW_DEADLINE", "2026-06-30");
+		await setAppSetting("NOTIFICATION_DATE", "2026-07-15");
+		await setConferenceTimezone("UTC");
+		await setDailyBusinessHours("08:00", "18:00");
+
+		// --- realistic users (distinct affiliations: createTestUser creates, not upserts)
+		const people: Array<[string, string, string, UserRole, string]> = [
+			["Maria", "Kowalska", "AGH University of Krakow", UserRole.REVIEWER, "PL"],
+			["James", "Chen", "Massachusetts Institute of Technology", UserRole.REVIEWER, "US"],
+			["Sofia", "Rossi", "Politecnico di Milano", UserRole.AUTHOR, "IT"],
+			["Lukas", "Weber", "ETH Zurich", UserRole.AUTHOR, "CH"],
+			["Emily", "Watson", "University of Cambridge", UserRole.EDITOR, "GB"],
+			["Kenji", "Tanaka", "NIMS Tsukuba", UserRole.AUTHOR, "JP"],
+			["Anna", "Nowak", "TU Delft", UserRole.AUTHOR, "NL"],
+			["Pedro", "Alvarez", "UPC Barcelona", UserRole.AUTHOR, "ES"],
+		];
+		const userIds: string[] = [];
+		for (const [firstName, lastName, affiliationName, role, country] of people) {
+			const u = await createTestUser({
+				email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.org`,
+				firstName,
+				lastName,
+				affiliationName,
+				role,
+			});
+			await db.user.update({ where: { id: u.id }, data: { country } });
+			userIds.push(u.id);
+		}
+		// Submissions are owned by the matching realistic author (not the e2e test user)
+		const authorUser = (i: number) =>
+			[userIds[2], userIds[3], userIds[5], userIds[6], userIds[7]][i % 5];
+
+		// --- survey: surface answers as users-list columns ----------------------
+		const formatQ = await db.surveyQuestion.findFirst({ where: { label: "Preferred session format" } });
+		if (formatQ) {
+			await db.surveyQuestion.update({
+				where: { id: formatQ.id },
+				data: { showInUsersList: true, fieldName: "Format" },
+			});
+			const formats = ["Oral", "Poster", "Oral", "Workshop", "Oral"];
+			for (let i = 0; i < formats.length; i++) {
+				await db.surveyAnswer.create({
+					data: { userId: userIds[i], questionId: formatQ.id, value: formats[i] },
+				});
+			}
+		}
+		const dietQ = await db.surveyQuestion.findFirst({ where: { label: "Dietary requirements" } });
+		if (dietQ) {
+			await db.surveyQuestion.update({
+				where: { id: dietQ.id },
+				data: { showInUsersList: true, fieldName: "Diet" },
+			});
+			const diets = ["Vegetarian", "None", "Gluten-free"];
+			for (let i = 0; i < diets.length; i++) {
+				await db.surveyAnswer.create({
+					data: { userId: userIds[i], questionId: dietQ.id, value: diets[i] },
+				});
+			}
+		}
+
+		// --- fees ----------------------------------------------------------------
+		for (const uid of [userIds[0], userIds[2], userIds[3], testUserId]) {
+			await createFee({ userId: uid, type: "Regular", amount: 150, currency: "EUR" });
+		}
+
+		// --- intake tracks ---------------------------------------------------------
+		const mlTrack = await db.conferenceTrack.create({
+			data: { name: "Machine Learning in Materials", supervisorId: reviewerUserId, isActive: true },
+		});
+		await db.conferenceTrack.create({
+			data: { name: "Additive Manufacturing", supervisorId: null, isActive: true },
+		});
+		await db.conferenceTrack.create({
+			data: { name: "Multiscale Modelling", supervisorId: editorUserId, isActive: true },
+		});
+
+		// --- submissions across the workflow --------------------------------------
+		const authorPool = [
+			{ firstName: "Sofia", lastName: "Rossi", affiliationName: "Politecnico di Milano", email: "sofia.rossi@example.org" },
+			{ firstName: "Lukas", lastName: "Weber", affiliationName: "ETH Zurich", email: "lukas.weber@example.org" },
+			{ firstName: "Kenji", lastName: "Tanaka", affiliationName: "NIMS Tsukuba", email: "kenji.tanaka@example.org" },
+			{ firstName: "Anna", lastName: "Nowak", affiliationName: "TU Delft", email: "anna.nowak@example.org" },
+			{ firstName: "Pedro", lastName: "Alvarez", affiliationName: "UPC Barcelona", email: "pedro.alvarez@example.org" },
+		];
+		const author = (i: number) => authorPool[i % authorPool.length];
+
+		await createSubmission({
+			title: "Graph Neural Networks for Predicting Grain Boundary Mobility",
+			status: SubmissionStatus.SUBMITTED,
+			authorData: author(0),
+			userId: authorUser(0),
+			keywords: ["machine learning", "grain boundaries"],
+			trackId: mlTrack.id,
+		});
+		await createSubmission({
+			title: "In-situ Observation of Dendrite Growth in Al-Cu Alloys",
+			status: SubmissionStatus.SUBMITTED,
+			authorData: author(1),
+			userId: authorUser(1),
+			keywords: ["solidification", "dendrites"],
+		});
+		await createSubmissionWithAssignment({
+			title: "Phase-Field Simulation of Rapid Solidification in L-PBF",
+			authorData: author(2),
+			userId: authorUser(2),
+			keywords: ["phase-field", "additive manufacturing"],
+		});
+		await createAssignmentWithDeadline({
+			title: "Bayesian Optimisation of CALPHAD Model Parameters",
+			authorData: author(3),
+			userId: authorUser(3),
+		});
+		await createSubmissionWithReview({
+			title: "A Transformer Surrogate for Nucleation Kinetics in Continuous Casting",
+			authorData: author(4),
+			userId: authorUser(4),
+			keywords: ["surrogate models", "nucleation"],
+		});
+
+		const acceptedTitles = [
+			"Crystal Plasticity FEM of Ti-6Al-4V Lattice Structures",
+			"High-Throughput DFT Screening of High-Entropy Alloys",
+			"Digital Twin of an Industrial Heat-Treatment Line",
+			"Molecular Dynamics Study of Hydrogen Embrittlement in Ferrite",
+			"Uncertainty Quantification in ICME Workflows",
+		];
+		const acceptedIds: string[] = [];
+		for (let i = 0; i < acceptedTitles.length; i++) {
+			const s = await createSubmissionWithDecision({
+				title: acceptedTitles[i],
+				editorDecision: EditorDecisionType.ACCEPT,
+				authorData: author(i),
+				userId: authorUser(i),
+			});
+			acceptedIds.push(s.submissionId);
+		}
+
+		await createSubmissionWithDecision({
+			title: "Deep Learning Segmentation of EBSD Orientation Maps",
+			editorDecision: EditorDecisionType.CONDITIONALLY_ACCEPT,
+			authorData: author(1),
+			userId: authorUser(1),
+		});
+		await createSubmissionWithDecision({
+			title: "A Cellular Automaton Model of Recrystallisation",
+			editorDecision: EditorDecisionType.REVISE_AND_RESUBMIT,
+			authorData: author(2),
+			userId: authorUser(2),
+		});
+		await createSubmissionWithDecision({
+			title: "Empirical Hardness Correlations Revisited",
+			editorDecision: EditorDecisionType.REJECT,
+			authorData: author(3),
+			userId: authorUser(3),
+		});
+
+		// Full paper with two versions → version selector on the Content tab
+		const mv = await createSubmissionWithFile({
+			title: "Coupled CFD-FEM Model of Laser Powder Bed Fusion",
+			type: SubmissionType.FULL_PAPER,
+			status: SubmissionStatus.AWAITING_DECISION,
+			authorData: author(4),
+			userId: authorUser(4),
+			keywords: ["L-PBF", "multiphysics"],
+		});
+		const v2 = await db.submissionVersion.create({
+			data: {
+				submissionId: mv.id,
+				version: 2,
+				title: "Coupled CFD-FEM Model of Laser Powder Bed Fusion",
+				content: "Revised manuscript addressing reviewer comments.",
+				fileId: mv.fileId,
+			},
+		});
+		await db.submission.update({ where: { id: mv.id }, data: { currentVersionId: v2.id } });
+
+		// DOCX upload (extraction context)
+		await createSubmissionWithFile({
+			title: "Microstructure-Informed Fatigue Life Prediction",
+			type: SubmissionType.FULL_PAPER,
+			status: SubmissionStatus.SUBMITTED,
+			authorData: author(0),
+			userId: authorUser(0),
+			fixturePath: "e2e/submissions/fixtures/extraction-sample.docx",
+			fileName: "manuscript.docx",
+			mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+		});
+		// --- program planner --------------------------------------------------------
+		const aula = await db.room.create({
+			data: { name: "Aula Magna", description: "Main lecture hall", order: 0 },
+		});
+		const r101 = await db.room.create({ data: { name: "Room 101", order: 1 } });
+		const tModel = await db.programTrack.create({
+			data: { name: "Modelling & Simulation", color: "#3b82f6" },
+		});
+		const tData = await db.programTrack.create({
+			data: { name: "Data-Driven Methods", color: "#8b5cf6" },
+		});
+
+		const mkSession = async (
+			title: string,
+			startAt: Date,
+			endAt: Date,
+			roomId: string,
+			trackId: string | null,
+			submissionIds: string[],
+		) => {
+			const s = await db.programSession.create({
+				data: { title, startAt, endAt, roomId, trackId },
+			});
+			for (let i = 0; i < submissionIds.length; i++) {
+				await db.presentationSlot.create({
+					data: { sessionId: s.id, submissionId: submissionIds[i], order: i, durationMin: 20 },
+				});
+			}
+			return s.id;
+		};
+
+		await mkSession("Opening & Plenary Keynote", day(14, "09:00"), day(14, "10:30"), aula.id, tModel.id, [acceptedIds[0]]);
+		await mkSession("ML Interatomic Potentials", day(14, "11:00"), day(14, "12:30"), aula.id, tData.id, [acceptedIds[1], acceptedIds[2]]);
+		await mkSession("Phase-Field & Microstructure", day(15, "09:00"), day(15, "10:30"), r101.id, tModel.id, [acceptedIds[3]]);
+		await db.scheduleBreak.create({
+			data: { title: "Lunch Break", startAt: day(14, "12:30"), endAt: day(14, "13:30"), roomId: null },
+		});
+
+		// --- invitations --------------------------------------------------------------
+		const hours = (h: number) => new Date(Date.now() + h * 3600 * 1000);
+		await db.invitation.create({
+			data: {
+				email: "new.reviewer@example.org",
+				role: UserRole.REVIEWER,
+				token: randomUUID(),
+				status: InvitationStatus.PENDING,
+				expiresAt: hours(72),
+				createdById: adminUserId,
+			},
+		});
+		await db.invitation.create({
+			data: {
+				email: "emily.watson@example.org",
+				role: UserRole.EDITOR,
+				token: randomUUID(),
+				status: InvitationStatus.USED,
+				expiresAt: hours(-24),
+				usedAt: hours(-48),
+				usedById: userIds[4],
+				createdById: adminUserId,
+			},
+		});
+		await db.invitation.create({
+			data: {
+				email: "declined.person@example.org",
+				role: UserRole.REVIEWER,
+				token: randomUUID(),
+				status: InvitationStatus.CANCELLED,
+				expiresAt: hours(-2),
+				createdById: adminUserId,
+			},
+		});
+
+		// Helper-created status logs carry a hardcoded "Test submission" reason — reword
+		const logs = await db.activityLog.findMany({ where: { type: "SUBMISSION_STATUS_CHANGED" } });
+		for (const l of logs) {
+			const detail = l.detail as Record<string, unknown>;
+			if (detail?.reason === "Test submission") {
+				await db.activityLog.update({
+					where: { id: l.id },
+					data: { detail: { ...detail, reason: "Submitted by author" } },
+				});
+			}
+		}
+
+		// --- make the e2e service accounts look like real people ----------------------
+		// Safe at this point: auth-setup already logged everyone in (sessions are
+		// keyed by user id, not email) and getTestUserIds() has cached the ids.
+		const makeover: Array<[string, { firstName: string; lastName: string; email: string; affiliation: string; country: string }]> = [
+			["test@e2e.local", { firstName: "Tomasz", lastName: "Zielinski", email: "tomasz.zielinski@example.org", affiliation: "Warsaw University of Technology", country: "PL" }],
+			["admin@e2e.local", { firstName: "Joanna", lastName: "Wisniewska", email: "joanna.wisniewska@example.org", affiliation: "Conference Office", country: "PL" }],
+			["reviewer@e2e.local", { firstName: "Robert", lastName: "Garcia", email: "robert.garcia@example.org", affiliation: "University of Texas at Austin", country: "US" }],
+			["editor@e2e.local", { firstName: "Helen", lastName: "Park", email: "helen.park@example.org", affiliation: "KAIST", country: "KR" }],
+			["unverified@e2e.local", { firstName: "Ben", lastName: "Fischer", email: "ben.fischer@example.org", affiliation: "TU Munich", country: "DE" }],
+			["admin-verify-test@e2e.local", { firstName: "Olga", lastName: "Petrova", email: "olga.petrova@example.org", affiliation: "Sofia University", country: "BG" }],
+			["reset-test@e2e.local", { firstName: "David", lastName: "Kim", email: "david.kim@example.org", affiliation: "Seoul National University", country: "KR" }],
+		];
+		for (const [oldEmail, m] of makeover) {
+			const u = await db.user.findUnique({ where: { email: oldEmail } });
+			if (!u) continue;
+			const aff = await db.affiliation.upsert({
+				where: { name: m.affiliation },
+				update: {},
+				create: { name: m.affiliation },
+			});
+			await db.user.update({
+				where: { id: u.id },
+				data: {
+					firstName: m.firstName,
+					lastName: m.lastName,
+					email: m.email,
+					affiliationId: aff.id,
+					country: m.country,
+				},
+			});
+		}
+
+		await resolveCtx();
+	});
+
+	// ---- Part 1: Configuration --------------------------------------------------
+
+	test("01 login screen", async ({ browser, baseURL }) => {
+		const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+		const page = await context.newPage();
+		await page.goto(`${baseURL}/login`);
+		await shot(page, "01-configuration-login.png", { full: false });
+		await context.close();
+	});
+
+	test("02 configuration tabs", async ({ page }) => {
+		await page.goto("/admin/settings");
+		await shot(page, "02-configuration-tabs.png", { full: false });
+	});
+
+	test("03 installer", async ({ browser }) => {
+		const installUrl = process.env.DOCS_INSTALL_URL;
+		test.skip(!installUrl, "Set DOCS_INSTALL_URL to a fresh (uninstalled) instance");
+		const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+		const page = await context.newPage();
+		await page.goto(`${installUrl}/install`);
+		await shot(page, "03-configuration-install.png");
+		await context.close();
+	});
+
+	const settingsTabs: Array<[string, string, string, number]> = [
+		["04", "conference", "04-configuration-conference.png", 2000],
+		["05", "submissions", "05-configuration-submissions.png", 2400],
+		["06", "types", "06-configuration-submission-types.png", 1300],
+		["07", "tracks", "07-configuration-tracks.png", 1100],
+		["08", "program", "08-configuration-program.png", 1800],
+		["09", "emails", "09-configuration-email-templates.png", 2800],
+		["10", "branding", "10-configuration-branding.png", 1700],
+		["11", "fee", "11-configuration-fee.png", 1500],
+		["12", "reminders", "12-configuration-reminders.png", 1600],
+		["13", "survey", "13-configuration-survey.png", 1700],
+		["15", "invitations", "15-configuration-invitations.png", 1000],
+	];
+	for (const [num, tab, file, height] of settingsTabs) {
+		test(`${num} settings tab ${tab}`, async ({ page }) => {
+			await page.goto(`/admin/settings?tab=${tab}`);
+			await shot(page, file, { height });
+		});
+	}
+
+	test("14 terms of service (preview)", async ({ page }) => {
+		await page.goto("/admin/settings?tab=tos");
+		await page.getByRole("tab", { name: /preview/i }).or(page.getByRole("button", { name: /preview/i })).first().click();
+		await shot(page, "14-configuration-terms-of-service.png", { height: 1300 });
+	});
+
+	// ---- Part 2: Managing ---------------------------------------------------------
+
+	test("16+17 dashboard", async ({ page }) => {
+		await page.goto("/admin/dashboard");
+		await page.waitForTimeout(1500); // charts/sparklines animate in
+		await shot(page, "16-managing-dashboard-full.png", { height: 3200 });
+		await shot(page, "17-managing-dashboard.png");
+	});
+
+	test("18 submissions list", async ({ page }) => {
+		await page.goto("/admin/submissions");
+		await shot(page, "18-managing-submissions-list.png", { height: 2000 });
+	});
+
+	test("19 submission detail with version selector", async ({ page }) => {
+		await page.goto(`/admin/submissions/${ctx.multiVersionId}`);
+		await shot(page, "19-managing-submission-versions.png");
+	});
+
+	test("20 assign reviewer dialog", async ({ page }) => {
+		await page.goto(`/admin/submissions/${ctx.submittedId}`);
+		await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+		await runSubmissionAction(page, "Assign Reviewer");
+		await expect(page.getByRole("dialog")).toBeVisible();
+		await shot(page, "20-managing-assign-reviewer-dialog.png", { full: false });
+	});
+
+	test("21 users list", async ({ page }) => {
+		await page.goto("/admin/users");
+		await shot(page, "21-managing-users-list.png", { height: 2000 });
+	});
+
+	test("22+23 user detail", async ({ page }) => {
+		await page.goto(`/admin/users/${ctx.profileUserId}`);
+		await shot(page, "22-managing-user-detail.png", { height: 1800 });
+		const panel = page.getByText(/submissions/i).first();
+		await panel.scrollIntoViewIfNeeded().catch(() => {});
+		await shot(page, "23-managing-user-submissions.png");
+	});
+
+	test("24 invitations list", async ({ page }) => {
+		await page.goto("/admin/invitations");
+		await shot(page, "24-managing-invitations.png");
+	});
+
+	test("25 program planner", async ({ page }) => {
+		await page.goto("/admin/program-planner");
+		await page.waitForTimeout(1500); // calendar layout settles
+		await shot(page, "25-managing-program-planner.png");
+	});
+
+	test("26 extraction status on submission", async ({ page }) => {
+		await page.goto(`/admin/submissions/${ctx.docxId}`);
+		await shot(page, "26-managing-extraction-status.png", { height: 1300 });
+	});
+
+	test("27 activity history on submission", async ({ page }) => {
+		await page.goto(`/admin/submissions/${ctx.decidedId}`);
+		await page.getByRole("tab", { name: /history/i }).click();
+		await page.waitForTimeout(500);
+		await shot(page, "27-managing-activity-history.png", { height: 1000 });
+	});
+});

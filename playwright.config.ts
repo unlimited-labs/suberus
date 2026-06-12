@@ -88,6 +88,9 @@ export default defineConfig<TestOptions>({
 		// Planner - desktop only for now
 		roleProject("chromium-planner", /e2e\/admin\/planner\/.*\.spec\.ts/, { role: "admin", testIgnore: /mobile-planner\.spec\.ts/ }),
 
+		// Docs screenshot capture - no-op unless DOCS_SHOTS=1 (see e2e/screenshots/)
+		roleProject("screenshots", /e2e\/screenshots\/.*\.spec\.ts/, { role: "admin" }),
+
 		// Submissions - user auth
 		roleProject("chromium-user", /e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access|no-active-types|deadline-locks).*\.spec\.ts/, { role: "user" }),
 		roleProject("mobile-user", /e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access|no-active-types|deadline-locks).*\.spec\.ts/, { role: "user", device: "mobile" }),

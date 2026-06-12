@@ -96,3 +96,4 @@ skills-lock.json
 /docs/pnpm-lock.yaml
 /docs/README.md
 /docs/tsconfig.json
+.fallow/
