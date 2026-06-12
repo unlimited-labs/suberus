@@ -3,28 +3,27 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ExhibitorStatus } from "@/generated/prisma/enums";
 import { useDateFormat } from "@/hooks/use-date-format";
-
-type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
-
-const decidedStatusBadges: Record<
-	Exclude<ExhibitorStatus, "PENDING">,
-	{ label: string; variant: BadgeVariant }
-> = {
-	APPROVED: { label: "Approved", variant: "default" },
-	REJECTED: { label: "Not accepted", variant: "destructive" },
-	WITHDRAWN: { label: "Withdrawn", variant: "outline" },
-};
+import {
+	exhibitorStatusLabels,
+	exhibitorStatusVariants,
+} from "@/lib/labels/exhibitor";
 
 function statusBadge(
 	status: ExhibitorStatus,
 	appliedAt: Date | null,
-): { label: string; variant: BadgeVariant } {
+): {
+	label: string;
+	variant: "default" | "secondary" | "destructive" | "outline";
+} {
 	if (status === "PENDING") {
 		return appliedAt
 			? { label: "Awaiting decision", variant: "secondary" }
 			: { label: "Application not submitted", variant: "outline" };
 	}
-	return decidedStatusBadges[status];
+	return {
+		label: exhibitorStatusLabels[status],
+		variant: exhibitorStatusVariants[status],
+	};
 }
 
 interface ExhibitorStatusCardProps {
@@ -69,12 +68,6 @@ export function ExhibitorStatusCard({
 							</span>
 						)}
 					</div>
-				)}
-				{decidedAt && (
-					<p className="text-sm text-muted-foreground">
-						Your application has been decided. Any further changes are handled
-						by the organizer — please contact them directly.
-					</p>
 				)}
 				<p className="text-sm text-muted-foreground">
 					The conference fee is handled on the{" "}

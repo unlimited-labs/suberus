@@ -108,6 +108,7 @@ export function ExhibitorApplicationForm({
 	const [withdrawOpen, setWithdrawOpen] = useState(false);
 	const submission = exhibitor.submission;
 
+	// Mirrors the server lock condition in saveExhibitorApplication
 	const isLocked =
 		exhibitor.status !== "PENDING" || Boolean(exhibitor.decidedAt);
 	const canWithdraw = !isLocked && Boolean(exhibitor.appliedAt);
