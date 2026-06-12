@@ -15,6 +15,7 @@ interface FormInputFieldProps {
 	placeholder?: string;
 	disabled?: boolean;
 	description?: string;
+	testId?: string;
 }
 
 export function FormInputField({
@@ -23,6 +24,7 @@ export function FormInputField({
 	placeholder,
 	disabled,
 	description,
+	testId,
 }: FormInputFieldProps) {
 	const field = useFieldContext<string>();
 	const errors = useStore(field.store, (s) => s.meta.errors);
@@ -46,6 +48,7 @@ export function FormInputField({
 				onChange={(e) => field.handleChange(e.target.value)}
 				placeholder={placeholder}
 				disabled={disabled}
+				data-testid={testId}
 			/>
 			{description && <FieldDescription>{description}</FieldDescription>}
 			<FieldError errors={hasError ? errors : undefined} />

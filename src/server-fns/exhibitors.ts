@@ -12,6 +12,7 @@ import {
 	withdrawOwnExhibitor,
 } from "@/lib/server/exhibitors";
 import { adminMiddleware, authMiddleware } from "@/lib/server/middleware/auth";
+import { getSubmissionTypeConfigs } from "@/lib/server/settings";
 import { exhibitorApplicationSchema } from "@/lib/validations/exhibitor";
 
 export const exhibitorSignupAvailableFn = createServerFn({
@@ -36,6 +37,16 @@ export const saveExhibitorApplicationFn = createServerFn({ method: "POST" })
 export const withdrawMyExhibitorFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.handler(({ context }) => withdrawOwnExhibitor(context.user.id));
+
+/** Exhibitor-facing slice of admin settings needed by the exhibitor panel */
+export const exhibitorPanelConfigFn = createServerFn({ method: "GET" })
+	.middleware([authMiddleware])
+	.handler(async () => {
+		const configs = await getSubmissionTypeConfigs();
+		return {
+			allowPresentation: configs.EXHIBITOR.allowExhibitorPresentation,
+		};
+	});
 
 // Prisma Decimal does not cross the server-fn serialization boundary
 function mapUserFee<F extends { amount: unknown }, U extends { fee: F | null }>(
@@ -85,4 +96,16 @@ export const exhibitorSignupAvailableQueryOptions = () =>
 	queryOptions({
 		queryKey: ["exhibitor", "signup-available"],
 		queryFn: () => exhibitorSignupAvailableFn(),
+	});
+
+export const myExhibitorQueryOptions = () =>
+	queryOptions({
+		queryKey: ["exhibitor", "me"],
+		queryFn: () => getMyExhibitorFn(),
+	});
+
+export const exhibitorPanelConfigQueryOptions = () =>
+	queryOptions({
+		queryKey: ["exhibitor", "panel-config"],
+		queryFn: () => exhibitorPanelConfigFn(),
 	});

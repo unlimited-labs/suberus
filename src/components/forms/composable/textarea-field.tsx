@@ -18,6 +18,7 @@ interface FormTextareaFieldProps {
 	className?: string;
 	charCount?: { min?: number };
 	description?: string;
+	testId?: string;
 }
 
 export function FormTextareaField({
@@ -28,6 +29,7 @@ export function FormTextareaField({
 	className,
 	charCount,
 	description,
+	testId,
 }: FormTextareaFieldProps) {
 	const field = useFieldContext<string>();
 	const errors = useStore(field.store, (s) => s.meta.errors);
@@ -69,6 +71,7 @@ export function FormTextareaField({
 				disabled={disabled}
 				aria-invalid={hasError}
 				className={cn("resize-none", className)}
+				data-testid={testId}
 			/>
 			{description && <FieldDescription>{description}</FieldDescription>}
 			<FieldError errors={hasError ? errors : undefined} />

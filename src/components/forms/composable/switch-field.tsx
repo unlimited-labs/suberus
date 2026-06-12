@@ -9,12 +9,14 @@ interface FormSwitchFieldProps {
 	label: string | React.ReactNode;
 	labelClassName?: string;
 	className?: string;
+	testId?: string;
 }
 
 export function FormSwitchField({
 	label,
 	labelClassName,
 	className,
+	testId,
 }: FormSwitchFieldProps) {
 	const field = useFieldContext<boolean>();
 	const submissionAttempts = useStore(
@@ -31,6 +33,7 @@ export function FormSwitchField({
 				id={field.name}
 				checked={field.state.value}
 				onCheckedChange={(checked) => field.handleChange(checked === true)}
+				data-testid={testId}
 			/>
 			<FieldLabel
 				htmlFor={field.name}
