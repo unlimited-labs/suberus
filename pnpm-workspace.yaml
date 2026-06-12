@@ -1,1 +1,13 @@
+# better-auth kysely-adapter imports DEFAULT_MIGRATION_LOCK_TABLE, removed in kysely >=0.29
+# (build break). Remove once @better-auth/kysely-adapter supports kysely 0.29.
+overrides:
+  kysely: 0.28.16
+
+allowBuilds:
+  '@prisma/engines': true
+  esbuild: true
+  lefthook: true
+  msgpackr-extract: true
+  msw: true
+  prisma: true
 onlyBuiltDependencies: lefthook

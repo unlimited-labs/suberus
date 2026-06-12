@@ -134,18 +134,6 @@
     "vite-plugin-checker": "^0.14.1",
     "vitest": "^4.1.8"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@prisma/engines",
-      "esbuild",
-      "lefthook",
-      "msw",
-      "prisma"
-    ],
-    "overrides": {
-      "kysely": "0.28.16"
-    }
-  },
   "engines": {
     "node": ">=22"
   }
