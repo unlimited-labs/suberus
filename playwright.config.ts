@@ -113,6 +113,7 @@ export default defineConfig<TestOptions>({
 		{ name: "chromium-integration", testMatch: /settings-integration\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
 		{ name: "chromium-reviews-workflow", testMatch: /e2e\/reviews\/workflow\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
 		{ name: "chromium-workflows", testMatch: /e2e\/workflows\/.*\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
+		{ name: "chromium-exhibitors", testMatch: /e2e\/exhibitors\/.*\.spec\.ts/, dependencies: ["auth-setup"], use: { ...devices["Desktop Chrome"] } },
 		{ name: "api", testMatch: /e2e\/api\/.*\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
 		{ name: "chromium-navigation", testMatch: /e2e\/navigation\/.*\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
 		{ name: "chromium-fee", testMatch: /e2e\/fee\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
