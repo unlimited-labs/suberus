@@ -1,7 +1,10 @@
 import {
 	IconAlertTriangle,
+	IconBuildingStore,
 	IconInfoCircle,
 	IconLoader2,
+	IconPresentation,
+	IconSend,
 } from "@tabler/icons-react";
 import { useStore } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
@@ -199,92 +202,116 @@ export function ExhibitorApplicationForm({
 					className="space-y-6"
 				>
 					<fieldset disabled={isLocked} className="min-w-0 space-y-6">
-						<form.AppField name="companyName">
-							{(field) => (
-								<field.InputField
-									label="Company name"
-									testId="exhibitor-company-name"
-								/>
-							)}
-						</form.AppField>
+						{/* Company section */}
+						<div className="space-y-4">
+							<div className="flex items-center gap-3">
+								<IconBuildingStore className="size-5 text-muted-foreground" />
+								<h2 className="text-lg font-semibold text-foreground">
+									Company details
+								</h2>
+							</div>
 
-						<form.AppField name="description">
-							{(field) => (
-								<field.TextareaField
-									label="Description"
-									rows={5}
-									description="Shown in conference materials"
-									testId="exhibitor-description"
-								/>
-							)}
-						</form.AppField>
-
-						<form.AppField name="website">
-							{(field) => (
-								<field.InputField
-									label="Website"
-									placeholder="https://example.com"
-									testId="exhibitor-website"
-								/>
-							)}
-						</form.AppField>
-
-						{allowPresentation && (
-							<div className="space-y-4 border-t pt-6">
-								<form.AppField name="addPresentation">
+							<div className="space-y-4">
+								<form.AppField name="companyName">
 									{(field) => (
-										<field.SwitchField
-											label="Submit a company presentation"
-											testId="exhibitor-add-presentation"
+										<field.InputField
+											label="Company name"
+											testId="exhibitor-company-name"
 										/>
 									)}
 								</form.AppField>
 
-								{addPresentation && (
-									<>
-										<form.AppField name="presentationTitle">
-											{(field) => (
-												<field.InputField
-													label="Title"
-													testId="exhibitor-presentation-title"
-												/>
-											)}
-										</form.AppField>
+								<form.AppField name="description">
+									{(field) => (
+										<field.TextareaField
+											label="Description"
+											rows={5}
+											description="Shown in conference materials"
+											testId="exhibitor-description"
+										/>
+									)}
+								</form.AppField>
 
-										<form.AppField name="presentationContent">
-											{(field) => (
-												<field.TextareaField
-													label="Abstract"
-													rows={6}
-													testId="exhibitor-presentation-content"
-												/>
-											)}
-										</form.AppField>
-
-										<form.Field name="authors">
-											{(field) => {
-												const hasError =
-													(field.state.meta.isBlurred ||
-														submissionAttempts > 0) &&
-													field.state.meta.errors.length > 0;
-												return (
-													<Field data-invalid={hasError}>
-														<AuthorsInput
-															value={field.state.value}
-															onChange={field.handleChange}
-														/>
-														<FieldError
-															errors={
-																hasError ? field.state.meta.errors : undefined
-															}
-														/>
-													</Field>
-												);
-											}}
-										</form.Field>
-									</>
-								)}
+								<form.AppField name="website">
+									{(field) => (
+										<field.InputField
+											label="Website"
+											placeholder="https://example.com"
+											testId="exhibitor-website"
+										/>
+									)}
+								</form.AppField>
 							</div>
+						</div>
+
+						{allowPresentation && (
+							<>
+								<div className="border-t" />
+
+								{/* Presentation section */}
+								<div className="space-y-4">
+									<div className="flex items-center gap-3">
+										<IconPresentation className="size-5 text-muted-foreground" />
+										<h2 className="text-lg font-semibold text-foreground">
+											Presentation
+										</h2>
+									</div>
+
+									<form.AppField name="addPresentation">
+										{(field) => (
+											<field.SwitchField
+												label="Submit a company presentation"
+												testId="exhibitor-add-presentation"
+											/>
+										)}
+									</form.AppField>
+
+									{addPresentation && (
+										<div className="space-y-4">
+											<form.AppField name="presentationTitle">
+												{(field) => (
+													<field.InputField
+														label="Title"
+														testId="exhibitor-presentation-title"
+													/>
+												)}
+											</form.AppField>
+
+											<form.AppField name="presentationContent">
+												{(field) => (
+													<field.TextareaField
+														label="Abstract"
+														rows={6}
+														testId="exhibitor-presentation-content"
+													/>
+												)}
+											</form.AppField>
+
+											<form.Field name="authors">
+												{(field) => {
+													const hasError =
+														(field.state.meta.isBlurred ||
+															submissionAttempts > 0) &&
+														field.state.meta.errors.length > 0;
+													return (
+														<Field data-invalid={hasError}>
+															<AuthorsInput
+																value={field.state.value}
+																onChange={field.handleChange}
+															/>
+															<FieldError
+																errors={
+																	hasError ? field.state.meta.errors : undefined
+																}
+															/>
+														</Field>
+													);
+												}}
+											</form.Field>
+										</div>
+									)}
+								</div>
+							</>
 						)}
 					</fieldset>
 
@@ -303,17 +330,30 @@ export function ExhibitorApplicationForm({
 							) : (
 								<span />
 							)}
-							<form.AppForm>
-								<form.SubmitButton
-									label={
-										exhibitor.appliedAt ? "Save changes" : "Submit application"
-									}
-									submittingLabel={
-										exhibitor.appliedAt ? "Saving..." : "Submitting..."
-									}
-									testId="exhibitor-submit"
-								/>
-							</form.AppForm>
+							<form.Subscribe selector={(s) => s.isSubmitting}>
+								{(isSubmitting) => (
+									<Button
+										type="submit"
+										className="gap-2 px-6"
+										disabled={isSubmitting}
+										data-testid="exhibitor-submit"
+									>
+										{isSubmitting ? (
+											<>
+												<IconLoader2 className="size-4 animate-spin" />
+												{exhibitor.appliedAt ? "Saving..." : "Submitting..."}
+											</>
+										) : (
+											<>
+												<IconSend className="size-4" />
+												{exhibitor.appliedAt
+													? "Save changes"
+													: "Submit application"}
+											</>
+										)}
+									</Button>
+								)}
+							</form.Subscribe>
 						</div>
 					)}
 				</form>

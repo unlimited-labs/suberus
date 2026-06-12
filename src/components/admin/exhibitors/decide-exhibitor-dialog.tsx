@@ -1,4 +1,8 @@
-import { IconInfoCircle, IconLoader2 } from "@tabler/icons-react";
+import {
+	IconAlertTriangle,
+	IconInfoCircle,
+	IconLoader2,
+} from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -58,6 +62,7 @@ export function DecideExhibitorDialog({
 	const [reason, setReason] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const text = copy[decision];
+	const isReject = decision === "REJECTED";
 
 	const handleSubmit = async () => {
 		if (reason.trim().length < 3) {
@@ -97,8 +102,12 @@ export function DecideExhibitorDialog({
 				</DialogHeader>
 
 				<div className="space-y-4 py-4">
-					<Alert>
-						<IconInfoCircle className="size-4" />
+					<Alert variant={isReject ? "destructive" : "default"}>
+						{isReject ? (
+							<IconAlertTriangle className="size-4" />
+						) : (
+							<IconInfoCircle className="size-4" />
+						)}
 						<AlertDescription>{text.alert}</AlertDescription>
 					</Alert>
 
