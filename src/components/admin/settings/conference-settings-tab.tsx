@@ -26,18 +26,22 @@ import { Switch } from "@/components/ui/switch";
 import { TimezoneCombobox } from "@/components/ui/timezone-combobox";
 import { getErrorMessage } from "@/lib/error-message";
 import { getDateFormats } from "@/lib/format-date";
+import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import type { ConferenceSettings } from "@/server-fns/settings";
 import {
 	conferenceSettingsQueryOptions,
 	updateConferenceSettingsFn,
 } from "@/server-fns/settings";
+import { ExhibitorsSettingsSection } from "./exhibitors-settings-section";
 
 interface ConferenceSettingsTabProps {
 	initialData: ConferenceSettings;
+	initialExhibitorConfig: SubmissionTypeConfig;
 }
 
 export function ConferenceSettingsTab({
 	initialData,
+	initialExhibitorConfig,
 }: ConferenceSettingsTabProps) {
 	const queryClient = useQueryClient();
 	const router = useRouter();
@@ -359,6 +363,11 @@ export function ConferenceSettingsTab({
 					</Button>
 				</div>
 			</SettingsSection>
+
+			<ExhibitorsSettingsSection
+				initialConfig={initialExhibitorConfig}
+				delay={300}
+			/>
 		</div>
 	);
 }

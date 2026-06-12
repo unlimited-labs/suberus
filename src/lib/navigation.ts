@@ -22,6 +22,7 @@ export interface NavItem {
 	roles?: UserRole[]; // undefined = visible to all
 	external?: boolean; // open in new tab
 	requiresPublishedSchedule?: boolean; // only show when program is published
+	requiresExhibitorsEnabled?: boolean; // only show when the exhibitors feature is on
 }
 
 export interface NavSection {
@@ -80,6 +81,7 @@ export const navigationSections: NavSection[] = [
 				name: "Exhibitors",
 				href: "/admin/exhibitors",
 				icon: IconBuildingStore,
+				requiresExhibitorsEnabled: true,
 			},
 			{
 				name: "Program Planner",

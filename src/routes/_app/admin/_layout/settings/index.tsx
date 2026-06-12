@@ -211,7 +211,10 @@ function AdminSettingsPage() {
 						</TabsList>
 
 						<TabsContent value="conference">
-							<ConferenceSettingsTab initialData={conferenceSettings} />
+							<ConferenceSettingsTab
+								initialData={conferenceSettings}
+								initialExhibitorConfig={submissionTypes.EXHIBITOR}
+							/>
 						</TabsContent>
 
 						<TabsContent value="submissions">

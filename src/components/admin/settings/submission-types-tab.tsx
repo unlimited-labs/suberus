@@ -40,7 +40,9 @@ export function SubmissionTypesTab({ initialData }: SubmissionTypesTabProps) {
 			description="Configure individual submission types"
 		>
 			<Accordion type="single" collapsible className="space-y-3">
-				{SUBMISSION_TYPE_KEYS.map((key) => (
+				{SUBMISSION_TYPE_KEYS.filter(
+					(key) => key !== "SUBMISSION_TYPE_EXHIBITOR",
+				).map((key) => (
 					<SubmissionTypeAccordion
 						key={key}
 						typeKey={key}

@@ -13,6 +13,7 @@ import {
 import { useSession } from "@/hooks/use-session";
 import { getNavigationForRole } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
+import { exhibitorSignupAvailableQueryOptions } from "@/server-fns/exhibitors";
 import { scheduleStateQueryOptions } from "@/server-fns/planner/schedule";
 import { BrandLogo } from "./brand-logo";
 import { UserMenu } from "./user-menu";
@@ -31,6 +32,9 @@ function SidebarContent({
 	const location = useLocation();
 	const { user } = useSession();
 	const { data: scheduleState } = useQuery(scheduleStateQueryOptions());
+	const { data: exhibitorsEnabled } = useQuery(
+		exhibitorSignupAvailableQueryOptions(),
+	);
 	const status = scheduleState?.status;
 	const role = user?.role ?? "AUTHOR";
 	const canSeeDraft = role === "ADMIN" || role === "EDITOR";
@@ -42,11 +46,13 @@ function SidebarContent({
 				.map((section) => ({
 					...section,
 					items: section.items.filter(
-						(item) => !item.requiresPublishedSchedule || programVisible,
+						(item) =>
+							(!item.requiresPublishedSchedule || programVisible) &&
+							(!item.requiresExhibitorsEnabled || exhibitorsEnabled === true),
 					),
 				}))
 				.filter((section) => section.items.length > 0),
-		[role, programVisible],
+		[role, programVisible, exhibitorsEnabled],
 	);
 
 	return (
