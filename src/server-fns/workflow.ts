@@ -45,7 +45,20 @@ export const withdrawSubmissionFn = createServerFn({ method: "POST" })
 		}),
 	)
 	.handler(async ({ data, context }): Promise<TransitionResult> => {
-		return withdrawSubmission(data.submissionId, context.user.id, data.reason);
+		const result = await withdrawSubmission(
+			data.submissionId,
+			context.user.id,
+			data.reason,
+		);
+		// Keep the exhibitor application in sync when its linked presentation
+		// is withdrawn outside the exhibitor panel
+		if (result.success) {
+			await prisma.exhibitor.updateMany({
+				where: { submissionId: data.submissionId, status: "PENDING" },
+				data: { status: "WITHDRAWN" },
+			});
+		}
+		return result;
 	});
 
 /** Desk accept submission (editor) */
