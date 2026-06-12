@@ -251,7 +251,7 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 	},
 	{
 		eventType: "EXHIBITOR_REJECTED",
-		subject: "Your exhibitor application — {{conferenceName}}",
+		subject: "Your exhibitor application was not accepted — {{conferenceName}}",
 		body: "Dear {{firstName}},\n\nWe regret to inform you that your exhibitor application for {{companyName}} has not been accepted.\n\n{{reason}}\n\nThank you for your interest in {{conferenceName}}.",
 		isEnabled: true,
 		isHtml: false,

@@ -37,22 +37,26 @@ export const withdrawMyExhibitorFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.handler(({ context }) => withdrawOwnExhibitor(context.user.id));
 
+// Prisma Decimal does not cross the server-fn serialization boundary
+function mapUserFee<F extends { amount: unknown }, U extends { fee: F | null }>(
+	user: U,
+) {
+	return {
+		...user,
+		fee: user.fee
+			? {
+					...user.fee,
+					amount: user.fee.amount ? Number(user.fee.amount) : null,
+				}
+			: null,
+	};
+}
+
 export const listExhibitorsFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(async () => {
 		const rows = await listExhibitors();
-		return rows.map((r) => ({
-			...r,
-			user: {
-				...r.user,
-				fee: r.user.fee
-					? {
-							...r.user.fee,
-							amount: r.user.fee.amount ? Number(r.user.fee.amount) : null,
-						}
-					: null,
-			},
-		}));
+		return rows.map((r) => ({ ...r, user: mapUserFee(r.user) }));
 	});
 
 export const getExhibitorFn = createServerFn({ method: "GET" })
@@ -61,18 +65,7 @@ export const getExhibitorFn = createServerFn({ method: "GET" })
 	.handler(async ({ data }) => {
 		const row = await getExhibitorDetail(data.id);
 		if (!row) return null;
-		return {
-			...row,
-			user: {
-				...row.user,
-				fee: row.user.fee
-					? {
-							...row.user.fee,
-							amount: row.user.fee.amount ? Number(row.user.fee.amount) : null,
-						}
-					: null,
-			},
-		};
+		return { ...row, user: mapUserFee(row.user) };
 	});
 
 export const decideExhibitorFn = createServerFn({ method: "POST" })
@@ -93,7 +86,3 @@ export const exhibitorSignupAvailableQueryOptions = () =>
 		queryKey: ["exhibitor", "signup-available"],
 		queryFn: () => exhibitorSignupAvailableFn(),
 	});
-
-// NOTE: getMyExhibitorFn, listExhibitorsFn, getExhibitorFn return Prisma types that
-// include Decimal (fee.amount). queryOptions wrappers for those fns belong in the
-// consuming components/routes where the server module can guarantee number return types.
