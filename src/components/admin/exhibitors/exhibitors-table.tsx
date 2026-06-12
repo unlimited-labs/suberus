@@ -25,7 +25,7 @@ const statusFilterOptions: FilterOption[] = [
 	exhibitorStatusBadge("APPROVED", null),
 	exhibitorStatusBadge("REJECTED", null),
 	exhibitorStatusBadge("WITHDRAWN", null),
-].map((badge) => ({ label: badge.label, value: badge.label }));
+].map((badge) => ({ label: badge.label, value: badge.key }));
 
 function DateCell({ date }: { date: Date | string }) {
 	const { formatDate } = useDateFormat();
@@ -93,7 +93,7 @@ const columns: ColumnDef<AdminExhibitorRow>[] = [
 	},
 	{
 		id: "status",
-		accessorFn: (row) => exhibitorStatusBadge(row.status, row.appliedAt).label,
+		accessorFn: (row) => exhibitorStatusBadge(row.status, row.appliedAt).key,
 		header: ({ column }) => (
 			<DataTableColumnHeader
 				column={column}

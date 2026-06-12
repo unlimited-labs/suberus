@@ -111,6 +111,7 @@ export function DecideExhibitorDialog({
 							data-testid="decide-exhibitor-reason"
 							value={reason}
 							onChange={(e) => setReason(e.target.value)}
+							placeholder="Reason for the decision (included in the email to the exhibitor)"
 							rows={4}
 							required
 						/>

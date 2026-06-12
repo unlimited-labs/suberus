@@ -17,20 +17,40 @@ export const exhibitorStatusVariants: Record<
 	WITHDRAWN: "outline",
 };
 
+export type ExhibitorDisplayStatus =
+	| "NOT_SUBMITTED"
+	| "AWAITING_DECISION"
+	| "APPROVED"
+	| "REJECTED"
+	| "WITHDRAWN";
+
 /** Display badge for an exhibitor; PENDING splits by application completeness */
 export function exhibitorStatusBadge(
 	status: ExhibitorStatus,
 	appliedAt: Date | string | null,
 ): {
+	key: ExhibitorDisplayStatus;
 	label: string;
 	variant: "default" | "secondary" | "destructive" | "outline";
 } {
 	if (status === "PENDING") {
 		return appliedAt
-			? { label: "Awaiting decision", variant: "secondary" }
-			: { label: "Application not submitted", variant: "outline" };
+			? {
+					key: "AWAITING_DECISION",
+					label: "Awaiting decision",
+					variant: "secondary",
+				}
+			: {
+					key: "NOT_SUBMITTED",
+					label: "Application not submitted",
+					variant: "outline",
+				};
 	}
 	return {
+		key: status as Exclude<
+			ExhibitorDisplayStatus,
+			"NOT_SUBMITTED" | "AWAITING_DECISION"
+		>,
 		label: exhibitorStatusLabels[status],
 		variant: exhibitorStatusVariants[status],
 	};

@@ -10,7 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDateFormat } from "@/hooks/use-date-format";
 import { exhibitorStatusBadge } from "@/lib/labels/exhibitor";
 import { statusLabels, statusVariants } from "@/lib/labels/submission";
-import { exhibitorDetailQueryOptions } from "@/server-fns/exhibitors";
+import {
+	exhibitorDetailQueryOptions,
+	listExhibitorsQueryOptions,
+} from "@/server-fns/exhibitors";
 
 export const Route = createFileRoute("/_app/admin/_layout/exhibitors/$id")({
 	loader: async ({ params, context }) => {
@@ -269,7 +272,7 @@ function ExhibitorDetailPage() {
 					}}
 					onDecided={() => {
 						void queryClient.invalidateQueries({
-							queryKey: ["admin", "exhibitors"],
+							queryKey: listExhibitorsQueryOptions().queryKey,
 						});
 					}}
 				/>
