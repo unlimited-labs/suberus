@@ -1,5 +1,5 @@
 import { execSync, spawn } from "child_process";
-import { existsSync, statSync, readdirSync, openSync, writeFileSync, mkdirSync } from "fs";
+import { existsSync, statSync, readdirSync, openSync, writeFileSync, mkdirSync, appendFileSync } from "fs";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 import { config } from "dotenv";
@@ -156,8 +156,12 @@ async function globalSetup() {
 				stdio: ["ignore", logFd, logFd],
 			});
 			let exitCode: number | null = null;
-			child.on("exit", (c) => {
+			child.on("exit", (c, sig) => {
 				exitCode = c ?? 0;
+				appendFileSync(
+					join(LOG_DIR, `worker-${i}.log`),
+					`[global-setup] server process exited code=${c} signal=${sig} at ${new Date().toISOString()}\n`,
+				);
 			});
 			if (child.pid) {
 				pids.push(child.pid);

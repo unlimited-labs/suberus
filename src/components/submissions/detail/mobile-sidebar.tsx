@@ -33,9 +33,8 @@ export function MobileSidebar({
 					</div>
 					<div className="text-right">
 						<p className="text-xs text-muted-foreground">
-							{TYPE_LABELS[submission.type]} • Runda {submission.currentRound}
+							{TYPE_LABELS[submission.type]} • Round {submission.currentRound}
 						</p>
-						<p className="text-xs text-muted-foreground">{submission.id}</p>
 					</div>
 				</div>
 			</div>

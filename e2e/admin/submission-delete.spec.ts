@@ -23,7 +23,7 @@ test.describe("Admin Submission Delete", () => {
 
 		await page.goto(`/admin/submissions/${sub.id}`)
 		await page
-			.getByRole("heading", { level: 1 })
+			.getByRole("heading", { name: sub.title })
 			.waitFor({ timeout: 10000 })
 
 		// Click delete
@@ -60,7 +60,7 @@ test.describe("Admin Submission Delete", () => {
 		testRun,
 		cleanup,
 	}) => {
-		const { submissionId } = await createSubmissionWithAssignment({
+		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Delete With Reviews",
 		})
@@ -68,7 +68,7 @@ test.describe("Admin Submission Delete", () => {
 
 		await page.goto(`/admin/submissions/${submissionId}`)
 		await page
-			.getByRole("heading", { level: 1 })
+			.getByRole("heading", { name: title })
 			.waitFor({ timeout: 10000 })
 
 		await runSubmissionAction(page, "Delete")
@@ -105,7 +105,7 @@ test.describe("Admin Submission Delete", () => {
 		testRun,
 		cleanup,
 	}) => {
-		const { submissionId } = await createSubmissionWithReview({
+		const { submissionId, title } = await createSubmissionWithReview({
 			testRunId: testRun.testRunId,
 			title: "Delete With Completed Review",
 		})
@@ -113,7 +113,7 @@ test.describe("Admin Submission Delete", () => {
 
 		await page.goto(`/admin/submissions/${submissionId}`)
 		await page
-			.getByRole("heading", { level: 1 })
+			.getByRole("heading", { name: title })
 			.waitFor({ timeout: 10000 })
 
 		await runSubmissionAction(page, "Delete")
@@ -143,7 +143,7 @@ test.describe("Admin Submission Delete", () => {
 
 		await page.goto(`/admin/submissions/${sub.id}`)
 		await page
-			.getByRole("heading", { level: 1 })
+			.getByRole("heading", { name: sub.title })
 			.waitFor({ timeout: 10000 })
 
 		await runSubmissionAction(page, "Delete")
@@ -184,7 +184,7 @@ test.describe("Admin Submission Delete", () => {
 
 		await page.goto(`/admin/submissions/${sub.id}`)
 		await page
-			.getByRole("heading", { level: 1 })
+			.getByRole("heading", { name: sub.title })
 			.waitFor({ timeout: 10000 })
 
 		await runSubmissionAction(page, "Delete")

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useAppForm } from "@/hooks/use-app-form";
 import {
 	type SurveyQuestionFormValues,
@@ -32,8 +33,15 @@ export function useSurveyQuestionForm(
 		formApi: { reset: () => void },
 	) => Promise<void>,
 ) {
+	// Stable identity: a fresh defaultValues object (with a fresh options array)
+	// on every render makes the form's per-render update() churn the field tree
+	// whenever the parent re-renders, remounting the option inputs mid-edit.
+	const defaultValues = useMemo(
+		() => toSurveyQuestionFormValues(initial),
+		[initial],
+	);
 	return useAppForm({
-		defaultValues: toSurveyQuestionFormValues(initial),
+		defaultValues,
 		validators: {
 			onChange: surveyQuestionFormSchema,
 			onSubmit: surveyQuestionFormSchema,

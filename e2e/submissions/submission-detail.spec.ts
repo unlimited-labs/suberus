@@ -69,16 +69,20 @@ test.describe("Submission Detail - Actions Card", () => {
 test.describe("Submission Detail - Info Card", () => {
 	test("does not display Submission ID in info card", async ({ page, testRun, cleanup }) => {
 		// Arrange
-		const { id } = await createSubmission({
+		// Title must not contain the phrase "Submission ID" — the assertions
+		// below would substring-match the page heading otherwise.
+		const { id, title } = await createSubmission({
 			testRunId: testRun.testRunId,
-			title: "No Submission ID Test",
+			title: "Info Card Hides Internals Test",
 			status: SubmissionStatus.SUBMITTED,
 		});
 		cleanup.track(id);
 		await page.goto(`/submissions/${id}`);
 
-		// Assert
-		await expect(page.getByText("Submission ID")).not.toBeVisible();
+		// Assert — anchor on the loaded page first; a bare not-visible check
+		// passes trivially against the loading skeleton.
+		await expect(page.getByRole("heading", { name: title })).toBeVisible();
+		await expect(page.getByText("Submission ID", { exact: true })).not.toBeVisible();
 		await expect(page.getByText(id)).not.toBeVisible();
 	});
 });

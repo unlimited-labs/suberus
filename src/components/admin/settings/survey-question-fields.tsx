@@ -86,8 +86,10 @@ export function OptionsEditor({
 			<Label className="text-xs font-medium text-muted-foreground">
 				Options
 			</Label>
+			{/* Index keys: keying by value remounts the input on every keystroke
+			    (and duplicates collide while two empty options exist). */}
 			{options.map((opt, i) => (
-				<div key={opt} className="flex gap-1.5">
+				<div key={i} className="flex gap-1.5">
 					<Input
 						value={opt}
 						onChange={(e) => {
@@ -99,6 +101,7 @@ export function OptionsEditor({
 						className="h-8 text-sm"
 					/>
 					<Button
+						type="button"
 						variant="ghost"
 						size="icon-sm"
 						onClick={() => onChange(options.filter((_, j) => j !== i))}
@@ -109,6 +112,7 @@ export function OptionsEditor({
 				</div>
 			))}
 			<Button
+				type="button"
 				variant="outline"
 				size="sm"
 				onClick={() => onChange([...options, ""])}

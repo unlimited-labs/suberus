@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -34,10 +34,16 @@ export function SessionEditorHeader() {
 	const [slotCount, setSlotCount] = useState(initialSlotCount);
 	const [slotMin, setSlotMin] = useState(initialSlotMin);
 
-	useEffect(() => {
+	// Re-sync only when the session or its presentations change — NOT when a
+	// committed duration echoes back (initialSlotCount derives from duration),
+	// which would clobber a value the user is typing in the other input.
+	const syncKey = `${session.id}:${initialSlotMin}`;
+	const [lastSyncKey, setLastSyncKey] = useState(syncKey);
+	if (lastSyncKey !== syncKey) {
+		setLastSyncKey(syncKey);
 		setSlotCount(initialSlotCount);
 		setSlotMin(initialSlotMin);
-	}, [initialSlotCount, initialSlotMin]);
+	}
 
 	const computedDuration = slotCount * slotMin;
 
