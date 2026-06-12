@@ -109,3 +109,15 @@ export const exhibitorPanelConfigQueryOptions = () =>
 		queryKey: ["exhibitor", "panel-config"],
 		queryFn: () => exhibitorPanelConfigFn(),
 	});
+
+export const listExhibitorsQueryOptions = () =>
+	queryOptions({
+		queryKey: ["admin", "exhibitors"],
+		queryFn: () => listExhibitorsFn(),
+	});
+
+export const exhibitorDetailQueryOptions = (id: string) =>
+	queryOptions({
+		queryKey: ["admin", "exhibitors", id],
+		queryFn: () => getExhibitorFn({ data: { id } }),
+	});

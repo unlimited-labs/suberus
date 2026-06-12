@@ -1,0 +1,75 @@
+---
+title: Exhibitors
+description: Review exhibitor applications and approve or reject them.
+sidebar:
+  order: 6
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+The **Exhibitors** screen lists every exhibitor account. From here you review
+company applications, open the optional presentation they submitted, and approve
+or reject completed applications.
+
+<Aside type="note" title="Where to find it">
+**Exhibitors** in the admin sidebar. Click a row to open an exhibitor's detail.
+</Aside>
+
+🖼️ [Screenshot placeholder: Exhibitors list]
+
+## The list
+
+| Column | What it shows |
+|---|---|
+| **Company** | The company name from the application (searchable); "—" until provided. |
+| **Contact** | The exhibitor's name and email (searchable). |
+| **Status** | *Application not submitted*, *Awaiting decision*, *Approved*, *Not accepted*, or *Withdrawn* (filterable). |
+| **Applied** | When the application was submitted, or *Not applied yet*. |
+| **Presentation** | The title of the linked presentation, or *No presentation*. |
+| **Fee** | The fee type when the conference fee is marked paid; "—" otherwise. |
+
+Exhibitors who have not submitted their application yet are shown muted — there
+is nothing to decide for them. Your column choices are remembered in this browser
+and restored next time you open the page.
+
+## The exhibitor detail
+
+Opening an exhibitor shows four sections:
+
+| Section | What it shows |
+|---|---|
+| **Company** | Name, website (as a link), package, description, and the application date, with the current status badge. |
+| **Contact** | The exhibitor's name, email, and fee status. The conference fee itself is marked paid/unpaid on the **[user detail](/managing/users/)** page — follow the link in this section. |
+| **Presentation** | When the exhibitor submitted one: title, submission status badge, authors (presenter marked), and the abstract. Otherwise *No presentation*. |
+| **Decision** | Approve/reject buttons, the recorded decision, or a note that no decision is possible yet. |
+
+🖼️ [Screenshot placeholder: Exhibitor detail]
+
+## Deciding an application
+
+Only **pending, completed** applications can be decided. While the application is
+not submitted, the Decision section shows *Application not completed — no decision
+possible*.
+
+| Action | What it does |
+|---|---|
+| **Approve** | Approves the application, automatically accepts the linked presentation (if any), and emails the exhibitor. Requires a reason (min. 3 characters). |
+| **Reject** | Rejects the application, automatically rejects the linked presentation (if any), and emails the exhibitor. Requires a reason (min. 3 characters). |
+
+🖼️ [Screenshot placeholder: Decision dialog with reason]
+
+After a decision the section shows the outcome badge together with who decided and
+when. Decisions cannot be undone.
+
+<Aside type="caution">
+The reason you enter is recorded in the **[activity log](/managing/activity-log/)**
+and included in the email sent to the exhibitor.
+</Aside>
+
+## Related
+
+<CardGrid>
+	<LinkCard title="Submission Types" href="/configuration/submission-types/" description="Enable exhibitor registration and the optional presentation." />
+	<LinkCard title="Users" href="/managing/users/" description="Mark the exhibitor's conference fee as paid." />
+	<LinkCard title="Activity log" href="/managing/activity-log/" description="Audit trail of exhibitor decisions." />
+</CardGrid>

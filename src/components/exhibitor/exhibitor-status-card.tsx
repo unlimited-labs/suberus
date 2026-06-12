@@ -3,28 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ExhibitorStatus } from "@/generated/prisma/enums";
 import { useDateFormat } from "@/hooks/use-date-format";
-import {
-	exhibitorStatusLabels,
-	exhibitorStatusVariants,
-} from "@/lib/labels/exhibitor";
-
-function statusBadge(
-	status: ExhibitorStatus,
-	appliedAt: Date | null,
-): {
-	label: string;
-	variant: "default" | "secondary" | "destructive" | "outline";
-} {
-	if (status === "PENDING") {
-		return appliedAt
-			? { label: "Awaiting decision", variant: "secondary" }
-			: { label: "Application not submitted", variant: "outline" };
-	}
-	return {
-		label: exhibitorStatusLabels[status],
-		variant: exhibitorStatusVariants[status],
-	};
-}
+import { exhibitorStatusBadge } from "@/lib/labels/exhibitor";
 
 interface ExhibitorStatusCardProps {
 	status: ExhibitorStatus;
@@ -38,7 +17,7 @@ export function ExhibitorStatusCard({
 	decidedAt,
 }: ExhibitorStatusCardProps) {
 	const { formatDate } = useDateFormat();
-	const badge = statusBadge(status, appliedAt);
+	const badge = exhibitorStatusBadge(status, appliedAt);
 
 	return (
 		<Card data-testid="exhibitor-status">
