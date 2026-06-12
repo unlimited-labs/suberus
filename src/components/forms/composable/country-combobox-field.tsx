@@ -1,13 +1,6 @@
-import { useStore } from "@tanstack/react-form";
-
+import { FormField } from "@/components/forms/composable/form-field";
 import { CountryCombobox } from "@/components/ui/country-combobox";
-import {
-	Field,
-	FieldDescription,
-	FieldError,
-	FieldLabel,
-} from "@/components/ui/field";
-import { useFieldContext } from "@/hooks/form-context";
+import { useFieldError } from "@/hooks/use-field-error";
 
 interface FormCountryComboboxFieldProps {
 	label: string;
@@ -20,25 +13,21 @@ export function FormCountryComboboxField({
 	disabled,
 	description,
 }: FormCountryComboboxFieldProps) {
-	const field = useFieldContext<string>();
-	const errors = useStore(field.store, (s) => s.meta.errors);
-	const submissionAttempts = useStore(
-		field.form.store,
-		(s) => s.submissionAttempts,
-	);
-	const hasError =
-		(field.state.meta.isBlurred || submissionAttempts > 0) && errors.length > 0;
+	const { field, errors, hasError } = useFieldError();
 
 	return (
-		<Field data-invalid={hasError}>
-			<FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+		<FormField
+			label={label}
+			htmlFor={field.name}
+			hasError={hasError}
+			errors={errors}
+			description={description}
+		>
 			<CountryCombobox
 				value={field.state.value || ""}
 				onChange={field.handleChange}
 				disabled={disabled}
 			/>
-			{description && <FieldDescription>{description}</FieldDescription>}
-			<FieldError errors={hasError ? errors : undefined} />
-		</Field>
+		</FormField>
 	);
 }

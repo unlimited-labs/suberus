@@ -1,13 +1,6 @@
-import { useStore } from "@tanstack/react-form";
-
-import {
-	Field,
-	FieldDescription,
-	FieldError,
-	FieldLabel,
-} from "@/components/ui/field";
+import { FormField } from "@/components/forms/composable/form-field";
 import { Textarea } from "@/components/ui/textarea";
-import { useFieldContext } from "@/hooks/form-context";
+import { useFieldError } from "@/hooks/use-field-error";
 import { cn } from "@/lib/utils";
 
 interface FormTextareaFieldProps {
@@ -31,21 +24,18 @@ export function FormTextareaField({
 	description,
 	testId,
 }: FormTextareaFieldProps) {
-	const field = useFieldContext<string>();
-	const errors = useStore(field.store, (s) => s.meta.errors);
-	const submissionAttempts = useStore(
-		field.form.store,
-		(s) => s.submissionAttempts,
-	);
-	const hasError =
-		(field.state.meta.isBlurred || submissionAttempts > 0) && errors.length > 0;
+	const { field, errors, hasError } = useFieldError();
 	const length = field.state.value.length;
 
 	return (
-		<Field data-invalid={hasError}>
-			<div className="flex items-center justify-between">
-				<FieldLabel htmlFor={field.name}>{label}</FieldLabel>
-				{charCount && (
+		<FormField
+			label={label}
+			htmlFor={field.name}
+			hasError={hasError}
+			errors={errors}
+			description={description}
+			labelAddon={
+				charCount && (
 					<span
 						className={cn(
 							"text-xs",
@@ -59,8 +49,9 @@ export function FormTextareaField({
 							length < charCount.min &&
 							` (min. ${charCount.min} required)`}
 					</span>
-				)}
-			</div>
+				)
+			}
+		>
 			<Textarea
 				id={field.name}
 				value={field.state.value}
@@ -73,8 +64,6 @@ export function FormTextareaField({
 				className={cn("resize-none", className)}
 				data-testid={testId}
 			/>
-			{description && <FieldDescription>{description}</FieldDescription>}
-			<FieldError errors={hasError ? errors : undefined} />
-		</Field>
+		</FormField>
 	);
 }

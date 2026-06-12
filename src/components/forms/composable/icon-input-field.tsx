@@ -1,14 +1,8 @@
-import { useStore } from "@tanstack/react-form";
 import type * as React from "react";
 
+import { FormField } from "@/components/forms/composable/form-field";
 import { IconInput } from "@/components/forms/icon-input";
-import {
-	Field,
-	FieldDescription,
-	FieldError,
-	FieldLabel,
-} from "@/components/ui/field";
-import { useFieldContext } from "@/hooks/form-context";
+import { useFieldError } from "@/hooks/use-field-error";
 
 interface FormIconInputFieldProps {
 	label: string;
@@ -27,18 +21,16 @@ export function FormIconInputField({
 	disabled,
 	description,
 }: FormIconInputFieldProps) {
-	const field = useFieldContext<string>();
-	const errors = useStore(field.store, (s) => s.meta.errors);
-	const submissionAttempts = useStore(
-		field.form.store,
-		(s) => s.submissionAttempts,
-	);
-	const hasError =
-		(field.state.meta.isBlurred || submissionAttempts > 0) && errors.length > 0;
+	const { field, errors, hasError } = useFieldError();
 
 	return (
-		<Field data-invalid={hasError}>
-			<FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+		<FormField
+			label={label}
+			htmlFor={field.name}
+			hasError={hasError}
+			errors={errors}
+			description={description}
+		>
 			<IconInput
 				id={field.name}
 				type={type}
@@ -50,8 +42,6 @@ export function FormIconInputField({
 				placeholder={placeholder}
 				disabled={disabled}
 			/>
-			{description && <FieldDescription>{description}</FieldDescription>}
-			<FieldError errors={hasError ? errors : undefined} />
-		</Field>
+		</FormField>
 	);
 }
