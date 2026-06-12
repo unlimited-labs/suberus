@@ -37,13 +37,8 @@ test.describe("Reviewer - Review Form", () => {
 		});
 		cleanup.track(submissionId);
 
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-
 		// Act
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Assert
 		await expect(page.getByText(title).first()).toBeVisible();
@@ -57,13 +52,8 @@ test.describe("Reviewer - Review Form", () => {
 		});
 		cleanup.track(submissionId);
 
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-
 		// Act
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Assert
 		await expect(page.getByRole("heading", { name: "Decision" })).toBeVisible();
@@ -86,13 +76,8 @@ test.describe("Reviewer - Review Form", () => {
 		});
 		cleanup.track(submissionId);
 
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-
 		// Act
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Assert
 		await expect(page.getByRole("heading", { name: "Review Progress", exact: true })).toBeVisible();
@@ -112,13 +97,8 @@ test.describe("Reviewer - Review Form", () => {
 		});
 		cleanup.track(submissionId);
 
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-
 		// Act
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Assert - look for the sidebar heading, not the submission title
 		await expect(page.getByRole("heading", { name: "Review Guidelines", exact: true })).toBeVisible();
@@ -132,11 +112,7 @@ test.describe("Reviewer - Review Form", () => {
 		});
 		cleanup.track(submissionId);
 
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await reviewerAssignmentsPage.openReviewForm(title);
 		await expect(page.getByRole("heading", { name: "Decision", exact: true })).toBeVisible({ timeout: 10000 });
 
 		// Act & Assert - select each decision
@@ -145,7 +121,7 @@ test.describe("Reviewer - Review Form", () => {
 		await reviewFormPage.selectDecision("Revise and Resubmit");
 	});
 
-	test("submit button always visible on review form", async ({ page, reviewerAssignmentsPage, reviewFormPage, testRun, cleanup }) => {
+	test("submit button always visible on review form", async ({ reviewerAssignmentsPage, reviewFormPage, testRun, cleanup }) => {
 		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
@@ -153,17 +129,13 @@ test.describe("Reviewer - Review Form", () => {
 		});
 		cleanup.track(submissionId);
 
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Assert - submit button is visible (comments are optional)
 		await expect(reviewFormPage.submitButton).toBeVisible();
 	});
 
-	test("can fill private notes", async ({ page, reviewerAssignmentsPage, reviewFormPage, testRun, cleanup }) => {
+	test("can fill private notes", async ({ reviewerAssignmentsPage, reviewFormPage, testRun, cleanup }) => {
 		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
@@ -171,11 +143,7 @@ test.describe("Reviewer - Review Form", () => {
 		});
 		cleanup.track(submissionId);
 
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Act
 		await reviewFormPage.fillPrivateNotes("Confidential notes for editors only.");
@@ -192,11 +160,7 @@ test.describe("Reviewer - Review Form", () => {
 		});
 		cleanup.track(submissionId);
 
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Act
 		await reviewFormPage.backButton.click();
@@ -216,13 +180,8 @@ test.describe("Reviewer - Scoring", () => {
 			title: "Scoring Criteria Test",
 		});
 		cleanup.track(submissionId);
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-
 		// Act
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Assert
 		await expect(page.getByText("Evaluation Criteria")).toBeVisible();
@@ -240,11 +199,7 @@ test.describe("Reviewer - Scoring", () => {
 			title: "Score Buttons Test",
 		});
 		cleanup.track(submissionId);
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await reviewerAssignmentsPage.openReviewForm(title);
 		await expect(page.getByText("Evaluation Criteria")).toBeVisible();
 
 		// Act
@@ -266,13 +221,8 @@ test.describe("Reviewer - Double-blind Mode", () => {
 			title: "Double Blind Test",
 		});
 		cleanup.track(submissionId);
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-
 		// Act
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Assert
 		await expect(page.getByText(/Double-blind review.*author information hidden/i)).toBeVisible();
@@ -291,13 +241,8 @@ test.describe("Reviewer - Attachment", () => {
 		});
 		cleanup.track(submissionId);
 
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-
 		// Act
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Assert
 		await expect(page.getByRole("heading", { name: "Attachment", exact: true })).toBeVisible();
@@ -312,11 +257,7 @@ test.describe("Reviewer - Attachment", () => {
 		});
 		cleanup.track(submissionId);
 
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Act - upload file
 		const fileInput = page.locator('input[type="file"]');
@@ -334,11 +275,7 @@ test.describe("Reviewer - Attachment", () => {
 		});
 		cleanup.track(submissionId);
 
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Act - upload file
 		const fileInput = page.locator('input[type="file"]');
@@ -356,11 +293,7 @@ test.describe("Reviewer - Attachment", () => {
 		});
 		cleanup.track(submissionId);
 
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Act - upload then remove
 		const fileInput = page.locator('input[type="file"]');
@@ -381,11 +314,7 @@ test.describe("Reviewer - Attachment", () => {
 		});
 		cleanup.track(submissionId);
 
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Act - upload invalid file type
 		const fileInput = page.locator('input[type="file"]');
@@ -403,11 +332,7 @@ test.describe("Reviewer - Attachment", () => {
 		});
 		cleanup.track(submissionId);
 
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Act - submit without attachment (attachment is optional)
 		await reviewFormPage.selectDecision("Accept");
@@ -425,11 +350,7 @@ test.describe("Reviewer - Attachment", () => {
 		});
 		cleanup.track(submissionId);
 
-		await reviewerAssignmentsPage.goto();
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Act - upload attachment and submit
 		const fileInput = page.locator('input[type="file"]');

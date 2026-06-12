@@ -381,6 +381,15 @@ export class ReviewerAssignmentsPage {
 		await baseExpect(this.heading).toBeVisible({ timeout: 10000 });
 	}
 
+	/** Navigate to the assignments list, open a submission's review form, and wait for it to load. */
+	async openReviewForm(submissionTitle: string) {
+		await this.goto();
+		const row = this.page.locator("tr").filter({ hasText: submissionTitle });
+		await baseExpect(row).toBeVisible({ timeout: 10000 });
+		await row.getByRole("link", { name: "Submit Review" }).click();
+		await this.page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+	}
+
 	async openReview(submissionTitle: string) {
 		// Find the card/row with submission title and click to start review
 		const row = this.page.locator("tr, [class*='card'], div").filter({
