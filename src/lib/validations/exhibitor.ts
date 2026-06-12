@@ -23,7 +23,11 @@ export const exhibitorPresentationSchema = z.object({
 	content: z.string().min(10, "Content must be at least 10 characters"),
 	authors: z
 		.array(exhibitorAuthorSchema)
-		.min(1, "At least one author is required"),
+		.min(1, "At least one author is required")
+		.refine(
+			(authors) => authors.filter((a) => a.isPresenter).length === 1,
+			"Exactly one author must be marked as presenter",
+		),
 });
 
 export const exhibitorApplicationSchema = z.object({
