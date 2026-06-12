@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { getErrorMessage } from "@/lib/error-message";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
+import { exhibitorSignupAvailableQueryOptions } from "@/server-fns/exhibitors";
 import {
 	submissionTypesConfigQueryOptions,
 	updateSubmissionTypeConfigFn,
@@ -39,9 +40,15 @@ export function ExhibitorsSettingsSection({
 			await updateSubmissionTypeConfigFn({
 				data: { type: "SUBMISSION_TYPE_EXHIBITOR", config },
 			});
-			await queryClient.invalidateQueries({
-				queryKey: submissionTypesConfigQueryOptions().queryKey,
-			});
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: submissionTypesConfigQueryOptions().queryKey,
+				}),
+				// Sidebar gates the Exhibitors menu entry on this query
+				queryClient.invalidateQueries({
+					queryKey: exhibitorSignupAvailableQueryOptions().queryKey,
+				}),
+			]);
 			toast.success("Exhibitor settings saved");
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to save"));
