@@ -55,6 +55,8 @@ model User {
   surveyAnswers        SurveyAnswer[]
   createdInvitations   Invitation[]          @relation("InvitationCreator")
   usedInvitation       Invitation?           @relation("InvitationUser")
+  exhibitor            Exhibitor?            @relation("ExhibitorUser")
+  decidedExhibitors    Exhibitor[]           @relation("ExhibitorDecider")
   affiliation          Affiliation?          @relation(fields: [affiliationId], references: [id])
 
   @@index([email])
@@ -145,6 +147,7 @@ model Submission {
   presenterAuthor   SubmissionAuthor?   @relation("PresenterAuthor", fields: [presenterId], references: [id])
   track             ConferenceTrack?    @relation(fields: [trackId], references: [id])
   user              User                @relation("SubmissionOwner", fields: [userId], references: [id])
+  exhibitor         Exhibitor?
 
   @@index([userId])
   @@index([status])
@@ -336,6 +339,11 @@ enum ActivityType {
   // Admin
   FEE_MARKED_PAID
   FEE_MARKED_UNPAID
+  // Exhibitor
+  EXHIBITOR_APPLIED
+  EXHIBITOR_APPROVED
+  EXHIBITOR_REJECTED
+  EXHIBITOR_WITHDRAWN
 }
 
 model ActivityLog {
@@ -629,12 +637,14 @@ enum UserRole {
   REVIEWER
   EDITOR
   ADMIN
+  EXHIBITOR
 }
 
 enum SubmissionType {
   ABSTRACT
   FULL_PAPER
   POSTER
+  EXHIBITOR
 }
 
 enum SubmissionStatus {
@@ -682,6 +692,7 @@ enum FileType {
   SUBMISSION_MAIN
   SUBMISSION_SUPPLEMENTARY
   REVIEW_ATTACHMENT
+  EXHIBITOR_LOGO
   OTHER
 }
 
@@ -689,6 +700,7 @@ enum FileEntityType {
   SUBMISSION
   SUBMISSION_VERSION
   REVIEW
+  EXHIBITOR
 }
 
 enum EmailEventType {
@@ -712,6 +724,38 @@ enum EmailEventType {
   INVITATION
   NEW_REGISTRATION_NOTIFY
   NEW_SUBMISSION_NOTIFY
+  EXHIBITOR_APPROVED
+  EXHIBITOR_REJECTED
+}
+
+enum ExhibitorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+model Exhibitor {
+  id           String          @id @default(uuid()) @db.Uuid
+  userId       String          @unique @db.Uuid
+  companyName  String          @default("")
+  description  String?
+  website      String?
+  package      String?
+  status       ExhibitorStatus @default(PENDING)
+  submissionId String?         @unique @db.Uuid
+  appliedAt    DateTime?
+  decidedAt    DateTime?
+  decidedById  String?         @db.Uuid
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  user         User            @relation("ExhibitorUser", fields: [userId], references: [id], onDelete: Cascade)
+  submission   Submission?     @relation(fields: [submissionId], references: [id])
+  decidedBy    User?           @relation("ExhibitorDecider", fields: [decidedById], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([appliedAt])
+  @@map("exhibitors")
 }
 
 model JobProgress {
