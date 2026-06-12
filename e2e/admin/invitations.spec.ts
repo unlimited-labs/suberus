@@ -1,4 +1,5 @@
 import { test as base, expect } from "../helpers/base-fixtures"
+import { type Page } from "@playwright/test"
 import { getPrisma } from "../helpers/test-db"
 import { dismissViteOverlay } from "../helpers/page-setup"
 import { TEST_USER } from "../helpers/test-users"
@@ -20,8 +21,29 @@ const test = base.extend<{ testEmail: string }>({
 	},
 })
 
-function invitationItem(page: import("@playwright/test").Page, email: string) {
+function invitationItem(page: Page, email: string) {
 	return page.locator('[data-testid="invitation-item"]:visible').filter({ hasText: email })
+}
+
+/** Open the invitations page, launch the Invite User dialog, and return it. */
+async function openInviteDialog(page: Page) {
+	await page.goto("/admin/invitations")
+	await expect(page.getByRole("heading", { name: "Invitations" })).toBeVisible({ timeout: 10000 })
+	await page.getByRole("button", { name: /Invite User/i }).click()
+	const dialog = page.getByRole("dialog")
+	await dialog.waitFor({ state: "visible" })
+	return dialog
+}
+
+/** Send an invitation for the given email and wait for the confirmation toast. */
+async function sendInvitation(page: Page, email: string) {
+	const dialog = await openInviteDialog(page)
+	await dialog.getByLabel("Email").fill(email)
+	await dialog.getByRole("button", { name: /Send Invitation/i }).click()
+	await expect(
+		page.locator("[data-sonner-toast]").getByText(/invitation sent/i),
+	).toBeVisible({ timeout: 10000 })
+	await dialog.waitFor({ state: "hidden", timeout: 5000 })
 }
 
 test.describe("Admin Invitations", () => {
@@ -29,15 +51,8 @@ test.describe("Admin Invitations", () => {
 		page,
 		testEmail,
 	}) => {
-		// Arrange
-		await page.goto("/admin/invitations")
-		await expect(page.getByRole("heading", { name: "Invitations" })).toBeVisible({ timeout: 10000 })
-
 		// Act
-		await page.getByRole("button", { name: /Invite User/i }).click()
-		const dialog = page.getByRole("dialog")
-		await dialog.waitFor({ state: "visible" })
-
+		const dialog = await openInviteDialog(page)
 		await dialog.getByLabel("Email").fill(testEmail)
 		await dialog.getByRole("combobox").click()
 		await page.getByRole("option", { name: "Administrator" }).click()
@@ -59,15 +74,8 @@ test.describe("Admin Invitations", () => {
 		page,
 		testEmail,
 	}) => {
-		// Arrange
-		await page.goto("/admin/invitations")
-		await expect(page.getByRole("heading", { name: "Invitations" })).toBeVisible({ timeout: 10000 })
-
 		// Act - Reviewer is the default role
-		await page.getByRole("button", { name: /Invite User/i }).click()
-		const dialog = page.getByRole("dialog")
-		await dialog.waitFor({ state: "visible" })
-
+		const dialog = await openInviteDialog(page)
 		await dialog.getByLabel("Email").fill(testEmail)
 		await dialog.getByRole("button", { name: /Send Invitation/i }).click()
 
@@ -83,15 +91,8 @@ test.describe("Admin Invitations", () => {
 	test("invitation shows error for already registered email", async ({
 		page,
 	}) => {
-		// Arrange
-		await page.goto("/admin/invitations")
-		await expect(page.getByRole("heading", { name: "Invitations" })).toBeVisible({ timeout: 10000 })
-
 		// Act - try to invite existing user
-		await page.getByRole("button", { name: /Invite User/i }).click()
-		const dialog = page.getByRole("dialog")
-		await dialog.waitFor({ state: "visible" })
-
+		const dialog = await openInviteDialog(page)
 		await dialog.getByLabel("Email").fill(TEST_USER.email)
 		await dialog.getByRole("button", { name: /Send Invitation/i }).click()
 
@@ -106,18 +107,7 @@ test.describe("Admin Invitations", () => {
 		testEmail,
 	}) => {
 		// Arrange - create invitation first
-		await page.goto("/admin/invitations")
-		await expect(page.getByRole("heading", { name: "Invitations" })).toBeVisible({ timeout: 10000 })
-
-		await page.getByRole("button", { name: /Invite User/i }).click()
-		const dialog = page.getByRole("dialog")
-		await dialog.waitFor({ state: "visible" })
-		await dialog.getByLabel("Email").fill(testEmail)
-		await dialog.getByRole("button", { name: /Send Invitation/i }).click()
-		await expect(
-			page.locator("[data-sonner-toast]").getByText(/invitation sent/i),
-		).toBeVisible({ timeout: 10000 })
-		await dialog.waitFor({ state: "hidden", timeout: 5000 })
+		await sendInvitation(page, testEmail)
 
 		// Act - cancel the invitation
 		const item = invitationItem(page, testEmail)
@@ -136,18 +126,7 @@ test.describe("Admin Invitations", () => {
 		testEmail,
 	}) => {
 		// Arrange - create invitation first
-		await page.goto("/admin/invitations")
-		await expect(page.getByRole("heading", { name: "Invitations" })).toBeVisible({ timeout: 10000 })
-
-		await page.getByRole("button", { name: /Invite User/i }).click()
-		const dialog = page.getByRole("dialog")
-		await dialog.waitFor({ state: "visible" })
-		await dialog.getByLabel("Email").fill(testEmail)
-		await dialog.getByRole("button", { name: /Send Invitation/i }).click()
-		await expect(
-			page.locator("[data-sonner-toast]").getByText(/invitation sent/i),
-		).toBeVisible({ timeout: 10000 })
-		await dialog.waitFor({ state: "hidden", timeout: 5000 })
+		await sendInvitation(page, testEmail)
 
 		// Act - resend the invitation
 		const item = invitationItem(page, testEmail)
