@@ -9,7 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { type CSSProperties, useEffect } from "react";
-import { getPrimaryColorFn } from "@/server-fns/settings";
+import { getOgMetadataFn, getPrimaryColorFn } from "@/server-fns/settings";
 import { SpinnerSvg } from "../components/spinner-svg";
 import { ThemeProvider } from "../components/theme-provider";
 import { Button } from "../components/ui/button";
@@ -36,16 +36,21 @@ const loaderStyle: CSSProperties = {
 export const Route = createRootRouteWithContext<MyRouterContext>()({
 	loader: async () => {
 		try {
-			const [primaryColor, theme] = await Promise.all([
+			const [primaryColor, theme, og] = await Promise.all([
 				getPrimaryColorFn(),
 				getThemeFn(),
+				getOgMetadataFn(),
 			]);
-			return { primaryColor, theme };
+			return { primaryColor, theme, og };
 		} catch {
-			return { primaryColor: "var(--primary)", theme: "system" as const };
+			return {
+				primaryColor: "var(--primary)",
+				theme: "system" as const,
+				og: null,
+			};
 		}
 	},
-	head: () => ({
+	head: ({ loaderData }) => ({
 		meta: [
 			{
 				charSet: "utf-8",
@@ -65,6 +70,18 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 				name: "apple-mobile-web-app-title",
 				content: "Suberus",
 			},
+			...(loaderData?.og
+				? [
+						{ name: "description", content: loaderData.og.description },
+						{ property: "og:type", content: "website" },
+						{ property: "og:title", content: loaderData.og.title },
+						{ property: "og:description", content: loaderData.og.description },
+						{ property: "og:image", content: loaderData.og.imageUrl },
+						{ property: "og:image:width", content: "512" },
+						{ property: "og:image:height", content: "512" },
+						{ name: "twitter:card", content: "summary" },
+					]
+				: []),
 		],
 		links: [
 			{

@@ -2,6 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { prisma } from "@/db.server";
+import { env } from "@/env";
 import { getUploadedFile } from "@/lib/server/form-upload";
 import { adminMiddleware, authMiddleware } from "@/lib/server/middleware/auth";
 import {
@@ -11,6 +12,7 @@ import {
 	getSubmissionTypeConfigs,
 	setSetting,
 } from "@/lib/server/settings";
+import { getDefaultSetting } from "@/lib/settings/defaults";
 import { SUPPORTED_FILE_EXTENSIONS } from "@/lib/settings/file-types";
 import type {
 	AppSettingsMap,
@@ -765,6 +767,35 @@ export interface AuthPageBranding {
 export const getPrimaryColorFn = createServerFn({ method: "GET" }).handler(
 	async () => {
 		return await getSetting("BRANDING_PRIMARY_COLOR");
+	},
+);
+
+/** OpenGraph metadata (public, no auth) */
+export interface OgMetadata {
+	title: string;
+	description: string;
+	imageUrl: string;
+}
+
+/**
+ * Get OpenGraph metadata (public, no auth).
+ * Used by root route head() for social sharing tags.
+ */
+export const getOgMetadataFn = createServerFn({ method: "GET" }).handler(
+	async (): Promise<OgMetadata> => {
+		const s = await getSettings(["CONFERENCE_NAME", "CONFERENCE_SUBTITLE"]);
+		const isConfigured =
+			s.CONFERENCE_NAME &&
+			s.CONFERENCE_NAME !== getDefaultSetting("CONFERENCE_NAME");
+		return {
+			title: isConfigured
+				? s.CONFERENCE_NAME
+				: "Suberus - Conference Management System",
+			description:
+				s.CONFERENCE_SUBTITLE ||
+				"Abstract management system for scientific conferences.",
+			imageUrl: `${env.APP_BASE_URL.replace(/\/$/, "")}/web-app-manifest-512x512.png`,
+		};
 	},
 );
 
