@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { cn } from "@/lib/utils";
+import { BrandLogo } from "./brand-logo";
 
 interface AuthLayoutProps {
 	children: ReactNode;
@@ -75,13 +75,11 @@ export function AuthLayout({
 			<header className="fixed left-0 top-0 z-20 p-5 sm:p-6 lg:p-8">
 				<Link to="/" className="group block">
 					<div className="flex items-center gap-3">
-						<img
-							src={logoUrl || "/logo.svg"}
+						<BrandLogo
+							logoUrl={logoUrl}
+							logoDarkInvert={logoDarkInvert}
 							alt="Conference Logo"
-							className={cn(
-								"h-8 w-auto transition-transform duration-300 group-hover:scale-105 sm:h-10 lg:h-28",
-								logoDarkInvert && "dark:invert dark:grayscale",
-							)}
+							className="h-8 w-auto transition-transform duration-300 group-hover:scale-105 sm:h-10 lg:h-28"
 						/>
 					</div>
 				</Link>

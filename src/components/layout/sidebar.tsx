@@ -14,6 +14,7 @@ import { useSession } from "@/hooks/use-session";
 import { getNavigationForRole } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { scheduleStateQueryOptions } from "@/server-fns/planner/schedule";
+import { BrandLogo } from "./brand-logo";
 import { UserMenu } from "./user-menu";
 
 interface SidebarProps {
@@ -53,13 +54,11 @@ function SidebarContent({
 			{/* Logo & Conference */}
 			<div className="px-4 py-4">
 				<Link to="/" className="block">
-					<img
-						src={logoUrl || "/logo.svg"}
+					<BrandLogo
+						logoUrl={logoUrl}
+						logoDarkInvert={logoDarkInvert}
 						alt="Suberus"
-						className={cn(
-							"h-22 w-auto mx-auto ",
-							logoDarkInvert && "dark:invert dark:grayscale",
-						)}
+						className="h-22 w-auto mx-auto"
 					/>
 				</Link>
 				<div className="mt-3 border-l-4 border-primary pl-3">
