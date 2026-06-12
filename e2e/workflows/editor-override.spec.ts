@@ -1,4 +1,5 @@
 import { test, expect } from "../helpers/base-fixtures";
+import { waitForDialogToClose } from "../helpers/dialog";
 import {
 	createSubmission,
 	createSubmissionWithAssignment,
@@ -35,10 +36,7 @@ test.describe("Override from Terminal States", () => {
 		await page.getByRole("button", { name: "Override", exact: true }).click();
 
 		// Assert
-		await Promise.race([
-			page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15000 }),
-			page.locator("[data-sonner-toast]").waitFor({ state: "visible", timeout: 15000 }),
-		]);
+		await waitForDialogToClose(page);
 		await page.reload();
 		await expect(page.getByText("Awaiting Decision").first()).toBeVisible({ timeout: 10000 });
 	});
@@ -84,10 +82,7 @@ test.describe("Override from Terminal States", () => {
 		await page.getByRole("button", { name: "Override", exact: true }).click();
 
 		// Assert
-		await Promise.race([
-			page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15000 }),
-			page.locator("[data-sonner-toast]").waitFor({ state: "visible", timeout: 15000 }),
-		]);
+		await waitForDialogToClose(page);
 		await page.reload();
 		await expect(page.getByText("Awaiting Decision").first()).toBeVisible({ timeout: 10000 });
 	});
@@ -115,10 +110,7 @@ test.describe("Override from Terminal States", () => {
 		await page.getByRole("button", { name: "Override", exact: true }).click();
 
 		// Assert
-		await Promise.race([
-			page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15000 }),
-			page.locator("[data-sonner-toast]").waitFor({ state: "visible", timeout: 15000 }),
-		]);
+		await waitForDialogToClose(page);
 		await page.reload();
 		await expect(page.getByText("Awaiting Decision").first()).toBeVisible({ timeout: 10000 });
 	});
@@ -175,10 +167,7 @@ test.describe("After Override", () => {
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 		await page.locator("#override-reason").fill("Re-evaluating");
 		await page.getByRole("button", { name: "Override", exact: true }).click();
-		await Promise.race([
-			page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15000 }),
-			page.locator("[data-sonner-toast]").waitFor({ state: "visible", timeout: 15000 }),
-		]);
+		await waitForDialogToClose(page);
 		await page.reload();
 		await expect(page.getByText("Awaiting Decision").first()).toBeVisible({ timeout: 10000 });
 
@@ -189,10 +178,7 @@ test.describe("After Override", () => {
 		await page.getByLabel(/Internal Reasoning/i).fill("Re-confirmed acceptance");
 		await page.getByLabel(/Letter to Author/i).fill("Your submission is accepted.");
 		await page.getByRole("button", { name: "Submit Decision" }).click();
-		await Promise.race([
-			page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15000 }),
-			page.locator("[data-sonner-toast]").waitFor({ state: "visible", timeout: 15000 }),
-		]);
+		await waitForDialogToClose(page);
 
 		// Assert
 		await page.reload();

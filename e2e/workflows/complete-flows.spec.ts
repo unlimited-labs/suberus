@@ -1,5 +1,6 @@
 import { type Page } from "@playwright/test";
 import { test, expect } from "../helpers/base-fixtures";
+import { waitForDialogToClose } from "../helpers/dialog";
 import {
 	createSubmission,
 	createSubmissionWithAssignment,
@@ -182,10 +183,7 @@ test.describe("Desk Rejection Workflow", () => {
 		await page.getByLabel(/Reason/i).fill("Out of scope for this conference - E2E test");
 		await page.getByRole("button", { name: /Reject Submission/i }).click();
 
-		await Promise.race([
-			page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15000 }),
-			page.locator("[data-sonner-toast]").waitFor({ state: "visible", timeout: 15000 }),
-		]);
+		await waitForDialogToClose(page);
 
 		// Assert
 		await page.reload();

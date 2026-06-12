@@ -1,4 +1,5 @@
 import { test, expect } from "../helpers/base-fixtures";
+import { waitForDialogToClose } from "../helpers/dialog";
 import { createSubmissionWithDecision } from "../helpers/test-db";
 import { EditorDecisionType } from "../../src/generated/prisma/enums";
 import { ADMIN_USER, TEST_USER } from "../helpers/test-users";
@@ -32,10 +33,7 @@ test.describe("Confirm Conditions Met", () => {
 		await page.getByRole("button", { name: "Confirm Accepted" }).click();
 
 		// Assert
-		await Promise.race([
-			page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15000 }),
-			page.locator("[data-sonner-toast]").waitFor({ state: "visible", timeout: 15000 }),
-		]);
+		await waitForDialogToClose(page);
 		await page.reload();
 		await expect(page.locator('[data-testid="submission-status"]')).toHaveText(/Accepted/i, { timeout: 10000 });
 	});
