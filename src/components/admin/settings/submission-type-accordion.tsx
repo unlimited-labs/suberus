@@ -234,6 +234,23 @@ export function SubmissionTypeAccordion({
 						/>
 					</div>
 
+					{/* Program planner inclusion */}
+					<div className="flex items-center justify-between">
+						<div className="space-y-0.5">
+							<Label>Include in program planner</Label>
+							<p className="text-xs italic text-muted-foreground/70">
+								Accepted submissions of this type appear in the program planner
+							</p>
+						</div>
+						<Switch
+							data-testid="settings-include-in-planner"
+							checked={config.includeInPlanner}
+							onCheckedChange={(checked) =>
+								handleChange("includeInPlanner", checked)
+							}
+						/>
+					</div>
+
 					{/* Content Format */}
 					<div className="space-y-3">
 						<div className="space-y-0.5">
