@@ -3,12 +3,10 @@ import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useRef } from "react";
 import { toast } from "sonner";
-import {
-	ReviewForm,
-	type ReviewFormData,
-} from "@/components/forms/review/review-form";
+import { ReviewForm } from "@/components/forms/review/review-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
+import type { ReviewFormData } from "@/lib/validations/review";
 import {
 	assignmentForReviewQueryOptions,
 	submitReviewFn,

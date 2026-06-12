@@ -28,7 +28,10 @@ import { useAppForm } from "@/hooks/use-app-form";
 import { typeLabels } from "@/lib/labels/submission";
 import { FILE_ACCEPT_ATTRIBUTE } from "@/lib/settings/file-types";
 import { cn, formatFileSize } from "@/lib/utils";
-import { createReviewSchema } from "@/lib/validations/review";
+import {
+	createReviewSchema,
+	type ReviewFormData,
+} from "@/lib/validations/review";
 
 interface SubmissionAuthor {
 	firstName: string;
@@ -66,14 +69,6 @@ interface ReviewFormProps {
 		size: number;
 	};
 	readOnly?: boolean;
-}
-
-export interface ReviewFormData {
-	decision: ReviewDecision;
-	scores: Record<string, number>;
-	confidenceLevel: number;
-	comments: string;
-	privateNotes: string;
 }
 
 const decisionOptions = [
