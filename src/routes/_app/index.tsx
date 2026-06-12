@@ -55,6 +55,8 @@ function DashboardPage() {
 		}
 	}, [verified, error]);
 
+	if (user?.role === "EXHIBITOR") return null;
+
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconDashboard} title="Dashboard" />

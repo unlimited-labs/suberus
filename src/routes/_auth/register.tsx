@@ -254,6 +254,8 @@ function RegisterForm() {
 					toast.error(
 						"Could not register as exhibitor — your account was created as a regular participant",
 					);
+					navigate({ to: "/" });
+					return;
 				}
 			}
 

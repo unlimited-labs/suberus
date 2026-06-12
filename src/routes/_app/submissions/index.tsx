@@ -84,6 +84,8 @@ function SubmissionsPage() {
 		compareDesc(new Date(a.updatedAt), new Date(b.updatedAt)),
 	);
 
+	if (user?.role === "EXHIBITOR") return null;
+
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconFileText} title="Submissions">
