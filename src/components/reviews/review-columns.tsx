@@ -12,6 +12,7 @@ import {
 } from "@/components/admin/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { typeFilterOptions, typeLabels } from "@/features/submissions/labels";
 import type { AssignmentStatus } from "@/generated/prisma/enums";
 import { useDateFormat } from "@/hooks/use-date-format";
 import {
@@ -19,7 +20,6 @@ import {
 	assignmentStatusLabels,
 	assignmentStatusVariants,
 } from "@/lib/labels/assignment";
-import { typeFilterOptions, typeLabels } from "@/lib/labels/submission";
 import type { ReviewerAssignment } from "@/server-fns/reviews/assignments";
 
 function DeadlineCell({

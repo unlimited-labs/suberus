@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
-import { useDateFormat } from "@/hooks/use-date-format";
 import {
 	statusLabels,
 	statusVariants,
 	typeLabels,
-} from "@/lib/labels/submission";
+} from "@/features/submissions/labels";
+import { useDateFormat } from "@/hooks/use-date-format";
 import type { AdminUserSubmission } from "@/lib/server/admin/users";
 
 interface UserSubmissionsSectionProps {

@@ -6,7 +6,11 @@ import {
 } from "@tabler/icons-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-
+import { PageHeader } from "@/components/layout/page-header";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { editorSubmissionQueryOptions } from "@/features/submissions/api/admin-submissions";
 import {
 	ActionsCard,
 	ContentTab,
@@ -16,15 +20,10 @@ import {
 	ReviewersCard,
 	ReviewsTab,
 	type SubmissionDialogKind,
-} from "@/components/admin/submissions/detail";
-import { PageHeader } from "@/components/layout/page-header";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAdminSubmissionDetail } from "@/hooks/use-admin-submission-detail";
-import { useSubmissionTransitions } from "@/hooks/use-submission-transitions";
-import { typeLabels } from "@/lib/labels/submission";
-import { editorSubmissionQueryOptions } from "@/server-fns/admin/submissions";
+} from "@/features/submissions/components/admin/detail";
+import { useAdminSubmissionDetail } from "@/features/submissions/hooks/use-admin-submission-detail";
+import { useSubmissionTransitions } from "@/features/submissions/hooks/use-submission-transitions";
+import { typeLabels } from "@/features/submissions/labels";
 
 export const Route = createFileRoute("/_app/admin/_layout/submissions/$id")({
 	loader: async ({ params, context }) => {

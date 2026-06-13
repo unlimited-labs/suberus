@@ -8,23 +8,23 @@ import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { FileDropzone } from "@/components/forms/submission/file-dropzone";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { FILE_ACCEPT_ATTRIBUTE } from "@/lib/settings/file-types";
-import {
-	activeSubmissionTypesQueryOptions,
-	submissionValidationQueryOptions,
-} from "@/server-fns/settings";
 import {
 	mySubmissionsQueryOptions,
 	resubmitSubmissionFn,
 	submissionDetailQueryOptions,
 	submitConditionalRevisionFn,
 	uploadSubmissionFile,
-} from "@/server-fns/submissions";
+} from "@/features/submissions/api/submissions";
+import { FileDropzone } from "@/features/submissions/components/form/file-dropzone";
+import { FILE_ACCEPT_ATTRIBUTE } from "@/lib/settings/file-types";
+import {
+	activeSubmissionTypesQueryOptions,
+	submissionValidationQueryOptions,
+} from "@/server-fns/settings";
 
 export const Route = createFileRoute("/_app/submissions/$id_/revise")({
 	loader: async ({ params, context }) => {

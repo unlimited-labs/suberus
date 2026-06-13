@@ -8,13 +8,18 @@ import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import {
-	SubmissionForm,
-	type SubmissionFormData,
-} from "@/components/forms/submission/submission-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+	createSubmission,
+	mySubmissionsQueryOptions,
+	uploadSubmissionFile,
+} from "@/features/submissions/api/submissions";
+import {
+	SubmissionForm,
+	type SubmissionFormData,
+} from "@/features/submissions/components/form/submission-form";
 import { useSession } from "@/hooks/use-session";
 import { sendVerificationEmail } from "@/lib/auth-client";
 import { extractZodIssueMessage, logClientError } from "@/lib/log-client-error";
@@ -24,11 +29,6 @@ import {
 	submissionValidationQueryOptions,
 } from "@/server-fns/settings";
 import { extractionSettingsQueryOptions } from "@/server-fns/settings/extraction";
-import {
-	createSubmission,
-	mySubmissionsQueryOptions,
-	uploadSubmissionFile,
-} from "@/server-fns/submissions";
 import { userDashboardQueryOptions } from "@/server-fns/user-dashboard";
 
 export const Route = createFileRoute("/_app/submissions/new")({

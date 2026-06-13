@@ -1,9 +1,9 @@
+import { typeLabels } from "@/features/submissions/labels";
 import type { UserRole } from "@/generated/prisma/enums";
 import type {
 	SubmissionInvolvementRole,
 	SubmissionRoleSummary,
 } from "@/lib/server/admin/users";
-import { typeLabels } from "./submission";
 
 export const roleLabels: Record<UserRole, string> = {
 	ADMIN: "Administrator",

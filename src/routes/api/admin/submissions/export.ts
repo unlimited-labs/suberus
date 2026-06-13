@@ -1,14 +1,14 @@
 import { Readable } from "node:stream";
 import { createFileRoute } from "@tanstack/react-router";
 import { format } from "date-fns";
+import {
+	createSubmissionsZipStream,
+	getSubmissionsForExport,
+} from "@/features/submissions/server/export";
 import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
-import {
-	createSubmissionsZipStream,
-	getSubmissionsForExport,
-} from "@/lib/server/admin/submissions-export";
 import { adminRequestMiddleware } from "@/lib/server/middleware/auth";
 
 export const Route = createFileRoute("/api/admin/submissions/export")({

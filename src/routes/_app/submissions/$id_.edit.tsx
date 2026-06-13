@@ -2,25 +2,25 @@ import { IconArrowLeft, IconFileText } from "@tabler/icons-react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import {
-	SubmissionForm,
-	type SubmissionFormData,
-} from "@/components/forms/submission/submission-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
-import {
-	activeSubmissionTypesQueryOptions,
-	submissionGuidelinesQueryOptions,
-	submissionValidationQueryOptions,
-} from "@/server-fns/settings";
-import { extractionSettingsQueryOptions } from "@/server-fns/settings/extraction";
 import {
 	mySubmissionsQueryOptions,
 	submissionDetailQueryOptions,
 	submitDraftFn,
 	updateDraftSubmissionFn,
 	uploadSubmissionFile,
-} from "@/server-fns/submissions";
+} from "@/features/submissions/api/submissions";
+import {
+	SubmissionForm,
+	type SubmissionFormData,
+} from "@/features/submissions/components/form/submission-form";
+import {
+	activeSubmissionTypesQueryOptions,
+	submissionGuidelinesQueryOptions,
+	submissionValidationQueryOptions,
+} from "@/server-fns/settings";
+import { extractionSettingsQueryOptions } from "@/server-fns/settings/extraction";
 
 export const Route = createFileRoute("/_app/submissions/$id_/edit")({
 	loader: async ({ params, context }) => {

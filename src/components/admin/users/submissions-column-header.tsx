@@ -24,7 +24,7 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { typeFilterOptions } from "@/lib/labels/submission";
+import { typeFilterOptions } from "@/features/submissions/labels";
 import {
 	submissionDraftFilterOptions,
 	submissionRoleFilterOptions,

@@ -9,7 +9,7 @@ import { sendEmail } from "@/lib/server/email"
 import { logger } from "@/logger.ts"
 import { getSetting } from "@/lib/server/settings"
 import { applyInvitationRole } from "@/lib/server/admin/invitations"
-import { linkCoAuthorsByEmail } from "@/lib/server/submissions"
+import { linkCoAuthorsByEmail } from "@/features/submissions/server/submissions"
 import { env } from "@/env"
 
 const connectionString = env.DATABASE_URL

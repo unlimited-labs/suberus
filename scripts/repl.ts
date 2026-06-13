@@ -9,11 +9,11 @@ import { consola } from "consola";
 
 const MODULE_REGISTRY: Record<string, string> = {
 	workflow: "@/lib/server/workflow",
-	submissions: "@/lib/server/submissions",
+	submissions: "@/features/submissions/server/submissions",
 	reviews: "@/lib/server/reviews",
 	assignments: "@/lib/server/assignments",
 	settings: "@/lib/server/settings",
-	"admin-subs": "@/lib/server/admin/submissions",
+	"admin-subs": "@/features/submissions/server/admin-submissions",
 	"admin-users": "@/lib/server/admin/users",
 	email: "@/lib/server/email",
 	reminders: "@/lib/server/reminders",

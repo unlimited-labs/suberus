@@ -2,12 +2,12 @@ import { IconFileStack } from "@tabler/icons-react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { DataTable, DataTableToolbar } from "@/components/admin/data-table";
-import { submissionColumns } from "@/components/admin/submissions/columns";
-import { SubmissionExportButton } from "@/components/admin/submissions/export-button";
-import { SubmissionBulkActions } from "@/components/admin/submissions/submission-bulk-actions";
-import { SubmissionMobileCard } from "@/components/admin/submissions/submission-mobile-card";
 import { PageHeader } from "@/components/layout/page-header";
-import { adminSubmissionsQueryOptions } from "@/server-fns/admin/submissions";
+import { adminSubmissionsQueryOptions } from "@/features/submissions/api/admin-submissions";
+import { submissionColumns } from "@/features/submissions/components/admin/columns";
+import { SubmissionExportButton } from "@/features/submissions/components/admin/export-button";
+import { SubmissionBulkActions } from "@/features/submissions/components/admin/submission-bulk-actions";
+import { SubmissionMobileCard } from "@/features/submissions/components/admin/submission-mobile-card";
 
 export const Route = createFileRoute("/_app/admin/_layout/submissions/")({
 	loader: async ({ context }) => {

@@ -11,10 +11,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import {
-	type Author,
-	AuthorsInput,
-} from "@/components/forms/submission/authors-input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +29,10 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Field, FieldError } from "@/components/ui/field";
+import {
+	type Author,
+	AuthorsInput,
+} from "@/features/submissions/components/form/authors-input";
 import { useAppForm } from "@/hooks/use-app-form";
 import { exhibitorPresentationSchema } from "@/lib/validations/exhibitor";
 import {

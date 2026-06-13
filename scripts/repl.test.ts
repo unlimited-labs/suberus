@@ -74,7 +74,7 @@ describe("repl (offline)", () => {
 		const data = parseJson(stdout) as { modules: Record<string, string> };
 		expect(data.modules).toBeDefined();
 		expect(data.modules.workflow).toBe("@/lib/server/workflow");
-		expect(data.modules.submissions).toBe("@/lib/server/submissions");
+		expect(data.modules.submissions).toBe("@/features/submissions/server/submissions");
 		expect(Object.keys(data.modules).length).toBeGreaterThanOrEqual(15);
 	});
 

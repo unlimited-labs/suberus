@@ -10,15 +10,6 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/layout/page-header";
-import {
-	ActionsCard,
-	ContentTabs,
-	InfoCard,
-	MobileSidebar,
-	StatusCard,
-} from "@/components/submissions/detail";
-import { EditorDecisionCard } from "@/components/submissions/editor-decision-card";
-import { ReviewsCard } from "@/components/submissions/reviews-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +19,16 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { submissionDetailQueryOptions } from "@/server-fns/submissions";
+import { submissionDetailQueryOptions } from "@/features/submissions/api/submissions";
+import {
+	ActionsCard,
+	ContentTabs,
+	InfoCard,
+	MobileSidebar,
+	StatusCard,
+} from "@/features/submissions/components/detail";
+import { EditorDecisionCard } from "@/features/submissions/components/editor-decision-card";
+import { ReviewsCard } from "@/features/submissions/components/reviews-card";
 
 export const Route = createFileRoute("/_app/submissions/$id")({
 	loader: async ({ params, context }) => {

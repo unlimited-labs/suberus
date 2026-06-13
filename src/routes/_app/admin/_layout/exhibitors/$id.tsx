@@ -9,10 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { statusLabels, statusVariants } from "@/features/submissions/labels";
 import { useDateFormat } from "@/hooks/use-date-format";
 import { getErrorMessage } from "@/lib/error-message";
 import { exhibitorStatusBadge } from "@/lib/labels/exhibitor";
-import { statusLabels, statusVariants } from "@/lib/labels/submission";
 import {
 	exhibitorDetailQueryOptions,
 	listExhibitorsQueryOptions,

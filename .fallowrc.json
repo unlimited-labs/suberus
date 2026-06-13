@@ -22,6 +22,37 @@
     // ]
   },
   "rules": {
-    "unused-dependencies": "warn"
+    "unused-dependencies": "warn",
+    // Feature-slice boundaries. Starts at "warn" during migration; flip to
+    // "error" once a feature is fully decoupled (see dev-docs/ARCHITECTURE.md).
+    "boundary-violation": "warn"
+  },
+  // Added incrementally, one feature-zone per migration PR. Only `submissions`
+  // is migrated so far (autoDiscover finds it); the other allow-list names are
+  // forward references that activate as those features migrate. `shared` zone is
+  // declared ahead of its files. coverage.requireAllFiles is intentionally left
+  // off until the last feature lands (un-migrated src/lib would drown it).
+  "boundaries": {
+    "zones": [
+      { "name": "routes", "patterns": ["src/routes/**"] },
+      { "name": "shared", "patterns": ["src/shared/**"] },
+      { "name": "features", "autoDiscover": ["src/features"] }
+    ],
+    "rules": [
+      { "from": "shared", "allow": [] },
+      {
+        "from": "routes",
+        "allow": [
+          "shared", "workflow", "settings", "activity-log", "auth",
+          "submissions", "reviews", "planner", "extraction", "exhibitors",
+          "fee", "profile", "users", "invitations", "dashboard", "tracks"
+        ]
+      },
+      {
+        "from": "submissions",
+        "allow": ["shared", "workflow", "settings", "activity-log", "auth"],
+        "allowTypeOnly": ["workflow", "settings"]
+      }
+    ]
   }
 }
