@@ -16,7 +16,6 @@ import {
 import { useStore } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Markdown } from "@/components/ui/markdown";
@@ -29,41 +28,37 @@ import {
 } from "@/components/ui/select";
 import { useAppForm } from "@/hooks/use-app-form";
 import { useSession } from "@/hooks/use-session";
-import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import { cn } from "@/lib/utils";
 import { getAffiliationById } from "@/server-fns/affiliations";
 import { activeTracksQueryOptions } from "@/server-fns/tracks";
-import { type Author, AuthorsInput } from "./authors-input";
+import { AuthorsInput } from "./authors-input";
 import { ExtractionOverlay } from "./extraction-overlay";
 import { FileUploadSection } from "./file-upload-section";
 import { KeywordsInput } from "./keywords-input";
+import {
+	buildContentSchema,
+	buildSubmissionFormSchema,
+	substituteGuidelines,
+} from "./submission-form-schema";
+import type {
+	ActiveSubmissionType,
+	SubmissionFormData,
+	ValidationSettings,
+} from "./submission-form-types";
+import { computeSubmissionProgress } from "./submission-progress";
 import { useDocumentExtraction } from "./use-document-extraction";
 
-/** Active submission type from settings */
-export interface ActiveSubmissionType {
-	type: "ABSTRACT" | "POSTER" | "FULL_PAPER";
-	label: string;
-	config: SubmissionTypeConfig;
-}
+export type {
+	ActiveSubmissionType,
+	SubmissionFormData,
+	ValidationSettings,
+} from "./submission-form-types";
 
 const typeIcons = {
 	ABSTRACT: IconFileText,
 	POSTER: IconSparkles,
 	FULL_PAPER: IconFile,
 } as const;
-
-/** Validation settings from admin panel */
-export interface ValidationSettings {
-	minTitleLength: number;
-	maxTitleLength: number;
-	minAbstractLength: number;
-	maxAbstractLength: number;
-	minKeywords: number;
-	maxKeywords: number;
-	maxFileSize: number;
-	allowedFileTypes: string[];
-	enableKeywords: boolean;
-}
 
 interface SubmissionFormProps {
 	onSubmit: (data: SubmissionFormData) => Promise<void>;
@@ -73,79 +68,6 @@ interface SubmissionFormProps {
 	validationSettings: ValidationSettings;
 	guidelines?: string;
 	extractionEnabled?: boolean;
-}
-
-export interface SubmissionFormData {
-	type: "ABSTRACT" | "POSTER" | "FULL_PAPER";
-	title: string;
-	content: string;
-	authors: Author[];
-	keywords: string[];
-	file: File | null;
-	contentFormat: "TEXT" | "FILE";
-	trackId: string | null;
-}
-
-/** Substitute {{placeholder}} values in guidelines text */
-function substituteGuidelines(
-	text: string,
-	settings: ValidationSettings,
-): string {
-	return text
-		.replace(/\{\{minTitleLength\}\}/g, String(settings.minTitleLength))
-		.replace(/\{\{maxTitleLength\}\}/g, String(settings.maxTitleLength))
-		.replace(/\{\{minAbstractLength\}\}/g, String(settings.minAbstractLength))
-		.replace(/\{\{maxAbstractLength\}\}/g, String(settings.maxAbstractLength))
-		.replace(/\{\{minKeywords\}\}/g, String(settings.minKeywords))
-		.replace(/\{\{maxKeywords\}\}/g, String(settings.maxKeywords));
-}
-
-function createSubmissionSchema(settings: ValidationSettings) {
-	return z.object({
-		type: z.enum(["ABSTRACT", "POSTER", "FULL_PAPER"]),
-		title: z
-			.string()
-			.min(
-				settings.minTitleLength,
-				`Title must be at least ${settings.minTitleLength} characters`,
-			)
-			.max(
-				settings.maxTitleLength,
-				`Title must be at most ${settings.maxTitleLength} characters`,
-			),
-		content: z.string(),
-		authors: z
-			.array(
-				z.object({
-					firstName: z.string(),
-					lastName: z.string(),
-					email: z.string(),
-					affiliationId: z.string().nullable(),
-					affiliationName: z.string(),
-					isPresenter: z.boolean(),
-				}),
-			)
-			.refine(
-				(authors) => authors.every((a) => a.firstName.length > 0),
-				"First name is required for all authors",
-			)
-			.refine(
-				(authors) => authors.every((a) => a.lastName.length > 0),
-				"Last name is required for all authors",
-			)
-			.refine(
-				(authors) => authors.every((a) => a.email.length > 0),
-				"Email is required for all authors",
-			)
-			.refine(
-				(authors) => authors.every((a) => a.affiliationName.length > 0),
-				"Affiliation is required for all authors",
-			),
-		keywords: z.array(z.string()),
-		file: z.custom<File | null>(),
-		contentFormat: z.enum(["TEXT", "FILE"]),
-		trackId: z.string().nullable(),
-	});
 }
 
 export function SubmissionForm({
@@ -171,25 +93,12 @@ export function SubmissionForm({
 	>(initialData?.type || defaultType);
 
 	const submissionSchema = useMemo(
-		() => createSubmissionSchema(validationSettings),
+		() => buildSubmissionFormSchema(validationSettings),
 		[validationSettings],
 	);
 
-	// Content schema for text format
 	const contentSchema = useMemo(
-		() =>
-			z.object({
-				content: z
-					.string()
-					.min(
-						validationSettings.minAbstractLength,
-						`Abstract must be at least ${validationSettings.minAbstractLength} characters`,
-					)
-					.max(
-						validationSettings.maxAbstractLength,
-						`Abstract must be at most ${validationSettings.maxAbstractLength} characters`,
-					),
-			}),
+		() => buildContentSchema(validationSettings),
 		[validationSettings],
 	);
 
@@ -345,20 +254,8 @@ export function SubmissionForm({
 	});
 	const isFileFormat = currentTypeConfig?.config.contentFormat === "FILE";
 
-	// Progress indicators (use validation settings)
-	const hasType = !!values.type;
-	const hasContent = isFileFormat
-		? values.file !== null
-		: values.title.length >= validationSettings.minTitleLength &&
-			values.content.length >= validationSettings.minAbstractLength;
-	const hasAuthors =
-		values.authors.length > 0 &&
-		values.authors.every(
-			(a) => a.firstName && a.lastName && a.email && a.affiliationName,
-		);
-	const hasKeywords =
-		!validationSettings.enableKeywords ||
-		values.keywords.length >= validationSettings.minKeywords;
+	const { hasType, hasContent, hasAuthors, hasKeywords } =
+		computeSubmissionProgress(values, validationSettings, isFileFormat);
 
 	// Get allowed extensions for file dropzone
 	const allowedExtensions = currentTypeConfig?.config.allowedExtensions || [];
