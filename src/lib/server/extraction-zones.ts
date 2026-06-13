@@ -31,6 +31,100 @@ export interface ClassifiedPara {
 
 // --- Zone classification ---
 
+interface ZoneContext {
+	text: string;
+	para: DocParagraph;
+	fontSize: number;
+	maxSize: number;
+}
+
+/** A classification step: the zone this paragraph belongs to, and the next state. */
+interface ZoneStep {
+	assign: Zone;
+	next: Zone;
+}
+
+const isBodyStart = (text: string) =>
+	BODY_START_RE.test(text) || SECTION_RE.test(text);
+
+function stepFromTitle(): ZoneStep {
+	// First non-empty paragraph is the title, then expect authors.
+	return { assign: "TITLE", next: "AUTHORS" };
+}
+
+function stepFromAuthors({
+	text,
+	para,
+	fontSize,
+	maxSize,
+}: ZoneContext): ZoneStep {
+	if (isBodyStart(text)) return { assign: "BODY", next: "BODY" };
+	if (KEYWORDS_RE.test(text)) return { assign: "KEYWORDS", next: "KEYWORDS" };
+	if (EMAIL_RE.test(text) && !looksLikeAuthorLine(para)) {
+		return { assign: "EMAILS", next: "EMAILS" };
+	}
+	if (looksLikeAffiliation(text, para)) {
+		return { assign: "AFFILIATIONS", next: "AFFILIATIONS" };
+	}
+	if (
+		looksLikeAuthorLine(para) ||
+		(maxSize > 0 && fontSize < maxSize && fontSize > 0) ||
+		looksLikePersonName(text.replace(/[*†‡§]/g, "").trim())
+	) {
+		return { assign: "AUTHORS", next: "AUTHORS" };
+	}
+	// Ambiguous — treat as affiliation (safer than body)
+	return { assign: "AFFILIATIONS", next: "AFFILIATIONS" };
+}
+
+function stepFromAffiliations({ text, para }: ZoneContext): ZoneStep {
+	if (isBodyStart(text)) return { assign: "BODY", next: "BODY" };
+	if (KEYWORDS_RE.test(text)) return { assign: "KEYWORDS", next: "KEYWORDS" };
+	if (EMAILS_PREFIX_RE.test(text) || EMAIL_RE.test(text)) {
+		return { assign: "EMAILS", next: "EMAILS" };
+	}
+	if (/^\*?correspondence/i.test(text)) {
+		return { assign: "AFFILIATIONS", next: "AFFILIATIONS" };
+	}
+	if (
+		looksLikeAffiliation(text, para) ||
+		INSTITUTION_RE.test(text) ||
+		// Continuation of affiliation: address-like or short non-body text
+		(text.length < MAX_AFFILIATION_CONTINUATION_LENGTH &&
+			!looksLikeAuthorLine(para))
+	) {
+		return { assign: "AFFILIATIONS", next: "AFFILIATIONS" };
+	}
+	return { assign: "BODY", next: "BODY" };
+}
+
+function stepFromEmails({ text }: ZoneContext): ZoneStep {
+	if (isBodyStart(text)) return { assign: "BODY", next: "BODY" };
+	if (KEYWORDS_RE.test(text)) return { assign: "KEYWORDS", next: "KEYWORDS" };
+	if (EMAIL_RE.test(text)) return { assign: "EMAILS", next: "EMAILS" };
+	return { assign: "BODY", next: "BODY" };
+}
+
+function stepFromKeywords({ text }: ZoneContext): ZoneStep {
+	if (isBodyStart(text)) return { assign: "BODY", next: "BODY" };
+	// Single keywords line, then body.
+	return { assign: "KEYWORDS", next: "BODY" };
+}
+
+function stepFromBody({ text }: ZoneContext): ZoneStep {
+	if (KEYWORDS_RE.test(text)) return { assign: "KEYWORDS", next: "KEYWORDS" };
+	return { assign: "BODY", next: "BODY" };
+}
+
+const ZONE_STEPS: Record<Zone, (ctx: ZoneContext) => ZoneStep> = {
+	TITLE: stepFromTitle,
+	AUTHORS: stepFromAuthors,
+	AFFILIATIONS: stepFromAffiliations,
+	EMAILS: stepFromEmails,
+	KEYWORDS: stepFromKeywords,
+	BODY: stepFromBody,
+};
+
 export function classifyZones(paragraphs: DocParagraph[]): ClassifiedPara[] {
 	const result: ClassifiedPara[] = [];
 	let zone: Zone = "TITLE";
@@ -42,107 +136,14 @@ export function classifyZones(paragraphs: DocParagraph[]): ClassifiedPara[] {
 		const text = para.text.trim();
 		if (text.length === 0) continue;
 
-		const fontSize = getParaFontSize(para);
-
-		switch (zone) {
-			case "TITLE": {
-				// Title: largest font, or first paragraph if no font info
-				result.push({ zone: "TITLE", para });
-				zone = "AUTHORS";
-				break;
-			}
-
-			case "AUTHORS": {
-				if (BODY_START_RE.test(text) || SECTION_RE.test(text)) {
-					zone = "BODY";
-					result.push({ zone: "BODY", para });
-				} else if (KEYWORDS_RE.test(text)) {
-					zone = "KEYWORDS";
-					result.push({ zone: "KEYWORDS", para });
-				} else if (EMAIL_RE.test(text) && !looksLikeAuthorLine(para)) {
-					zone = "EMAILS";
-					result.push({ zone: "EMAILS", para });
-				} else if (looksLikeAffiliation(text, para)) {
-					zone = "AFFILIATIONS";
-					result.push({ zone: "AFFILIATIONS", para });
-				} else if (
-					looksLikeAuthorLine(para) ||
-					(maxSize > 0 && fontSize < maxSize && fontSize > 0) ||
-					looksLikePersonName(text.replace(/[*†‡§]/g, "").trim())
-				) {
-					result.push({ zone: "AUTHORS", para });
-				} else {
-					// Ambiguous — treat as affiliation (safer than body)
-					zone = "AFFILIATIONS";
-					result.push({ zone: "AFFILIATIONS", para });
-				}
-				break;
-			}
-
-			case "AFFILIATIONS": {
-				if (BODY_START_RE.test(text) || SECTION_RE.test(text)) {
-					zone = "BODY";
-					result.push({ zone: "BODY", para });
-				} else if (KEYWORDS_RE.test(text)) {
-					zone = "KEYWORDS";
-					result.push({ zone: "KEYWORDS", para });
-				} else if (EMAILS_PREFIX_RE.test(text) || EMAIL_RE.test(text)) {
-					zone = "EMAILS";
-					result.push({ zone: "EMAILS", para });
-				} else if (/^\*?correspondence/i.test(text)) {
-					result.push({ zone: "AFFILIATIONS", para });
-				} else if (
-					looksLikeAffiliation(text, para) ||
-					INSTITUTION_RE.test(text) ||
-					// Continuation of affiliation: address-like or short non-body text
-					(text.length < MAX_AFFILIATION_CONTINUATION_LENGTH &&
-						!looksLikeAuthorLine(para))
-				) {
-					result.push({ zone: "AFFILIATIONS", para });
-				} else {
-					zone = "BODY";
-					result.push({ zone: "BODY", para });
-				}
-				break;
-			}
-
-			case "EMAILS": {
-				if (BODY_START_RE.test(text) || SECTION_RE.test(text)) {
-					zone = "BODY";
-					result.push({ zone: "BODY", para });
-				} else if (KEYWORDS_RE.test(text)) {
-					zone = "KEYWORDS";
-					result.push({ zone: "KEYWORDS", para });
-				} else if (EMAIL_RE.test(text)) {
-					result.push({ zone: "EMAILS", para });
-				} else {
-					zone = "BODY";
-					result.push({ zone: "BODY", para });
-				}
-				break;
-			}
-
-			case "KEYWORDS": {
-				if (BODY_START_RE.test(text) || SECTION_RE.test(text)) {
-					zone = "BODY";
-					result.push({ zone: "BODY", para });
-				} else {
-					result.push({ zone: "KEYWORDS", para });
-					zone = "BODY";
-				}
-				break;
-			}
-
-			case "BODY": {
-				if (KEYWORDS_RE.test(text)) {
-					zone = "KEYWORDS";
-					result.push({ zone: "KEYWORDS", para });
-				} else {
-					result.push({ zone: "BODY", para });
-				}
-				break;
-			}
-		}
+		const { assign, next } = ZONE_STEPS[zone]({
+			text,
+			para,
+			fontSize: getParaFontSize(para),
+			maxSize,
+		});
+		result.push({ zone: assign, para });
+		zone = next;
 	}
 
 	return result;
