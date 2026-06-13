@@ -1,5 +1,9 @@
 import { prisma } from "@/db.server";
 import type { UserRole } from "@/generated/prisma/enums";
+import {
+	isReviewFileAuthorized,
+	isSubmissionFileAuthorized,
+} from "@/lib/server/file-access-rules";
 import { deleteFile } from "@/lib/server/storage";
 import { logger } from "@/logger.ts";
 
@@ -67,20 +71,7 @@ export async function checkFileAccess(
 
 	// Check access through any linked submission version
 	for (const version of file.submissionVersions) {
-		const submission = version.submission;
-
-		// Author (submission owner)
-		if (submission.userId === userId) {
-			return { authorized: true, file };
-		}
-
-		// Co-author
-		if (submission.authors.some((a) => a.userId === userId)) {
-			return { authorized: true, file };
-		}
-
-		// Assigned reviewer (non-cancelled)
-		if (submission.reviewAssignments.some((a) => a.reviewerId === userId)) {
+		if (isSubmissionFileAuthorized(version.submission, userId)) {
 			return { authorized: true, file };
 		}
 	}
@@ -110,27 +101,8 @@ export async function checkFileAccess(
 				},
 			});
 
-			if (review) {
-				// Reviewer who uploaded
-				if (review.reviewerId === userId) {
-					return { authorized: true, file };
-				}
-				// Submission owner
-				if (review.submission.userId === userId) {
-					return { authorized: true, file };
-				}
-				// Co-author
-				if (review.submission.authors.some((a) => a.userId === userId)) {
-					return { authorized: true, file };
-				}
-				// Other assigned reviewers
-				if (
-					review.submission.reviewAssignments.some(
-						(a) => a.reviewerId === userId,
-					)
-				) {
-					return { authorized: true, file };
-				}
+			if (review && isReviewFileAuthorized(review, userId)) {
+				return { authorized: true, file };
 			}
 		}
 	}
