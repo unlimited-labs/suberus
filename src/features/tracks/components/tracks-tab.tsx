@@ -2,8 +2,8 @@ import { IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { TrackWithStats } from "@/features/tracks/server/tracks";
 import type { ReviewerUser } from "@/lib/server/reviewers";
-import type { TrackWithStats } from "@/lib/server/tracks";
 import { TrackDialog } from "./track-dialog";
 import { TracksList } from "./tracks-list";
 

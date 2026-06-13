@@ -19,13 +19,13 @@ import {
 	SubmissionForm,
 	type SubmissionFormData,
 } from "@/features/submissions/components/form/submission-form";
+import { activeTracksQueryOptions } from "@/features/tracks/api/tracks";
 import {
 	activeSubmissionTypesQueryOptions,
 	submissionGuidelinesQueryOptions,
 	submissionValidationQueryOptions,
 } from "@/server-fns/settings";
 import { extractionSettingsQueryOptions } from "@/server-fns/settings/extraction";
-import { activeTracksQueryOptions } from "@/server-fns/tracks";
 
 export const Route = createFileRoute("/_app/submissions/$id_/edit")({
 	loader: async ({ params, context }) => {

@@ -56,6 +56,10 @@
       {
         "from": "profile",
         "allow": ["shared", "settings", "activity-log", "auth"]
+      },
+      {
+        "from": "tracks",
+        "allow": ["shared", "auth"]
       }
     ]
   }

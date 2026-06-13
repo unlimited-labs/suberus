@@ -34,9 +34,10 @@ import {
 	TosContentTab,
 } from "@/components/admin/settings";
 import { toEmailTemplateUI } from "@/components/admin/settings/email-templates-tab";
-import { TracksTab } from "@/components/admin/tracks/tracks-tab";
 import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { allTracksQueryOptions } from "@/features/tracks/api/tracks";
+import { TracksTab } from "@/features/tracks/components/tracks-tab";
 import { paymentInstructionsQueryOptions } from "@/server-fns/fee";
 import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
 import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
@@ -59,7 +60,6 @@ import {
 	llmHealthQueryOptions,
 } from "@/server-fns/settings/extraction";
 import { adminSurveyQuestionsQueryOptions } from "@/server-fns/settings/survey";
-import { allTracksQueryOptions } from "@/server-fns/tracks";
 
 const searchSchema = z.object({
 	tab: z.string().optional(),

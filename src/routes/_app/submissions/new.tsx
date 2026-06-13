@@ -24,6 +24,7 @@ import {
 	SubmissionForm,
 	type SubmissionFormData,
 } from "@/features/submissions/components/form/submission-form";
+import { activeTracksQueryOptions } from "@/features/tracks/api/tracks";
 import { useSession } from "@/hooks/use-session";
 import { sendVerificationEmail } from "@/lib/auth-client";
 import { extractZodIssueMessage, logClientError } from "@/lib/log-client-error";
@@ -33,7 +34,6 @@ import {
 	submissionValidationQueryOptions,
 } from "@/server-fns/settings";
 import { extractionSettingsQueryOptions } from "@/server-fns/settings/extraction";
-import { activeTracksQueryOptions } from "@/server-fns/tracks";
 import { userDashboardQueryOptions } from "@/server-fns/user-dashboard";
 
 export const Route = createFileRoute("/_app/submissions/new")({

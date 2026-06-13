@@ -12,7 +12,7 @@ import { submissionColumns } from "@/features/submissions/components/admin/colum
 import { SubmissionExportButton } from "@/features/submissions/components/admin/export-button";
 import { SubmissionBulkActions } from "@/features/submissions/components/admin/submission-bulk-actions";
 import { SubmissionMobileCard } from "@/features/submissions/components/admin/submission-mobile-card";
-import { activeTracksQueryOptions } from "@/server-fns/tracks";
+import { activeTracksQueryOptions } from "@/features/tracks/api/tracks";
 
 export const Route = createFileRoute("/_app/admin/_layout/submissions/")({
 	loader: async ({ context }) => {

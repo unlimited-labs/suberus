@@ -12,9 +12,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { deleteTrackFn, updateTrackFn } from "@/features/tracks/api/tracks";
+import type { TrackWithStats } from "@/features/tracks/server/tracks";
 import { getErrorMessage } from "@/lib/error-message";
-import type { TrackWithStats } from "@/lib/server/tracks";
-import { deleteTrackFn, updateTrackFn } from "@/server-fns/tracks";
 
 interface TracksListProps {
 	tracks: TrackWithStats[];

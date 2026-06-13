@@ -18,7 +18,7 @@ const MODULE_REGISTRY: Record<string, string> = {
 	email: "@/lib/server/email",
 	reminders: "@/lib/server/reminders",
 	dashboard: "@/lib/server/admin/dashboard",
-	tracks: "@/lib/server/tracks",
+	tracks: "@/features/tracks/server/tracks",
 	fees: "@/lib/server/fee",
 	survey: "@/lib/server/survey",
 	invitations: "@/lib/server/admin/invitations",

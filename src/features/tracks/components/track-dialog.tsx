@@ -20,10 +20,10 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { createTrackFn, updateTrackFn } from "@/features/tracks/api/tracks";
+import type { TrackWithStats } from "@/features/tracks/server/tracks";
 import { getErrorMessage } from "@/lib/error-message";
 import type { ReviewerUser } from "@/lib/server/reviewers";
-import type { TrackWithStats } from "@/lib/server/tracks";
-import { createTrackFn, updateTrackFn } from "@/server-fns/tracks";
 
 interface TrackDialogProps {
 	open: boolean;

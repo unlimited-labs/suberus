@@ -25,7 +25,7 @@ import {
 import { useAdminSubmissionDetail } from "@/features/submissions/hooks/use-admin-submission-detail";
 import { useSubmissionTransitions } from "@/features/submissions/hooks/use-submission-transitions";
 import { typeLabels } from "@/features/submissions/labels";
-import { activeTracksQueryOptions } from "@/server-fns/tracks";
+import { activeTracksQueryOptions } from "@/features/tracks/api/tracks";
 
 export const Route = createFileRoute("/_app/admin/_layout/submissions/$id")({
 	loader: async ({ params, context }) => {
