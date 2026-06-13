@@ -191,6 +191,37 @@ test.describe("Desk Rejection Workflow", () => {
 	});
 });
 
+test.describe("Desk Acceptance Workflow", () => {
+	test("admin can desk accept a submitted submission", async ({ page, testRun, cleanup }) => {
+		// Arrange
+		const { id, title } = await createSubmission({
+			testRunId: testRun.testRunId,
+			title: "Desk Accept Workflow Test",
+			status: SubmissionStatus.SUBMITTED,
+		});
+		cleanup.track(id);
+
+		await loginAs(page, ADMIN_USER, { clearCookies: true });
+		await findSubmissionInAdmin(page, title);
+		await expect(page.getByTestId("submission-status")).toHaveText(/Submitted/i);
+
+		// Act
+		await runSubmissionAction(page, "Desk Accept");
+		await page.getByRole("dialog").waitFor({ state: "visible" });
+
+		await page.getByLabel(/Reason/i).fill("Invited speaker - E2E test");
+		await page.getByRole("button", { name: /Accept Submission/i }).click();
+
+		await waitForDialogToClose(page);
+
+		// Assert
+		await page.reload();
+		await expect(page.getByTestId("submission-status")).toHaveText(/Accepted/i, {
+			timeout: 10000,
+		});
+	});
+});
+
 test.describe("Reviewer Assignments", () => {
 	test("admin can view and manage reviewer assignments", async ({ page, testRun, cleanup }) => {
 		// Arrange
