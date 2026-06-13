@@ -5,10 +5,11 @@ import type { SubmissionTypeConfig } from "@/lib/settings/types";
 
 // Derived from the editor-submission query payload so these stay in sync with
 // the server shape. `import type` is erased at build — no server/client leak.
-type EditorSubmissionData = NonNullable<
+export type EditorSubmissionData = NonNullable<
 	Awaited<ReturnType<typeof getSubmissionForEditor>>
 >;
 export type EditorSubmission = EditorSubmissionData["submission"];
+export type EditorAuthor = EditorSubmissionData["authors"][number];
 export type EditorAssignment = EditorSubmissionData["assignments"][number];
 export type EditorReview = EditorSubmissionData["reviews"][number];
 export type EditorVersion = EditorSubmissionData["versions"][number];
