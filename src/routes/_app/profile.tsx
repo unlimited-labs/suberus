@@ -8,26 +8,26 @@ import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ContactInfoSection } from "@/components/forms/profile/contact-info-section";
-import { PasswordChangeSection } from "@/components/forms/profile/password-change-section";
-import { PersonalInfoSection } from "@/components/forms/profile/personal-info-section";
-import { SurveySection } from "@/components/forms/profile/survey-section";
 import { PageHeader } from "@/components/layout/page-header";
 import { SettingsSection } from "@/components/settings/settings-section";
-import { useSession } from "@/hooks/use-session";
-import type {
-	ContactInfoFormData,
-	PasswordChangeFormData,
-	PersonalInfoFormData,
-} from "@/lib/validations/profile";
-import { createAffiliation } from "@/server-fns/affiliations";
 import {
 	changeEmailFn,
 	changePasswordFn,
 	personalInfoQueryOptions,
 	updateContactInfoFn,
 	updatePersonalInfoFn,
-} from "@/server-fns/profile";
+} from "@/features/profile/api/profile";
+import { ContactInfoSection } from "@/features/profile/components/contact-info-section";
+import { PasswordChangeSection } from "@/features/profile/components/password-change-section";
+import { PersonalInfoSection } from "@/features/profile/components/personal-info-section";
+import { SurveySection } from "@/features/profile/components/survey-section";
+import type {
+	ContactInfoFormData,
+	PasswordChangeFormData,
+	PersonalInfoFormData,
+} from "@/features/profile/validations";
+import { useSession } from "@/hooks/use-session";
+import { createAffiliation } from "@/server-fns/affiliations";
 import {
 	activeSurveyQuestionsQueryOptions,
 	userSurveyAnswersQueryOptions,

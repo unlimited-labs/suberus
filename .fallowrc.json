@@ -52,6 +52,10 @@
         "from": "submissions",
         "allow": ["shared", "workflow", "settings", "activity-log", "auth"],
         "allowTypeOnly": ["workflow", "settings"]
+      },
+      {
+        "from": "profile",
+        "allow": ["shared", "settings", "activity-log", "auth"]
       }
     ]
   }

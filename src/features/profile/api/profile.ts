@@ -2,14 +2,14 @@ import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { z } from "zod";
-import { logActivity } from "@/lib/server/activity-log";
-import { authMiddleware } from "@/lib/server/middleware/auth";
 import {
 	getPersonalInfo,
 	updateContactInfo,
 	updatePersonalInfo,
-} from "@/lib/server/profile";
-import { auth } from "../../auth.server";
+} from "@/features/profile/server/profile";
+import { logActivity } from "@/lib/server/activity-log";
+import { authMiddleware } from "@/lib/server/middleware/auth";
+import { auth } from "../../../../auth.server";
 
 const orcidRegex = /^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/;
 

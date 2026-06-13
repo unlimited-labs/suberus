@@ -12,11 +12,11 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import type { AdminUserEditFormData } from "@/features/profile/validations";
+import { adminUserEditSchema } from "@/features/profile/validations";
 import { useAppForm } from "@/hooks/use-app-form";
 import { titleOptions } from "@/lib/labels";
 import type { AdminUser } from "@/lib/server/admin/users";
-import type { AdminUserEditFormData } from "@/lib/validations/profile";
-import { adminUserEditSchema } from "@/lib/validations/profile";
 import {
 	adminUserDetailQueryOptions,
 	adminUsersQueryOptions,

@@ -22,7 +22,7 @@ const MODULE_REGISTRY: Record<string, string> = {
 	fees: "@/lib/server/fee",
 	survey: "@/lib/server/survey",
 	invitations: "@/lib/server/admin/invitations",
-	profiles: "@/lib/server/profile",
+	profiles: "@/features/profile/server/profile",
 };
 
 const DEFAULT_TIMEOUT_MS = 30_000;

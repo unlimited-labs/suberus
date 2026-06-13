@@ -10,10 +10,10 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { BillingFieldsGroup } from "@/components/forms/composable/billing-fields-group";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import type { ContactInfoFormData } from "@/features/profile/validations";
+import { contactInfoSchema } from "@/features/profile/validations";
 import { useAppForm } from "@/hooks/use-app-form";
 import { sendVerificationEmail } from "@/lib/auth-client";
-import type { ContactInfoFormData } from "@/lib/validations/profile";
-import { contactInfoSchema } from "@/lib/validations/profile";
 
 interface ContactInfoSectionProps {
 	initialData: ContactInfoFormData;

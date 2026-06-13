@@ -1,9 +1,8 @@
 import { IconBuilding, IconId } from "@tabler/icons-react";
-
+import type { PersonalInfoFormData } from "@/features/profile/validations";
+import { personalInfoSchema } from "@/features/profile/validations";
 import { useAppForm } from "@/hooks/use-app-form";
 import { titleOptions } from "@/lib/labels";
-import type { PersonalInfoFormData } from "@/lib/validations/profile";
-import { personalInfoSchema } from "@/lib/validations/profile";
 
 interface PersonalInfoSectionProps {
 	initialData: PersonalInfoFormData;
