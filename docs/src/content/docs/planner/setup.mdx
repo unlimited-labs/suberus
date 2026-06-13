@@ -1,0 +1,111 @@
+---
+title: 'Program Planner: setup'
+description: Everything the planner needs before you schedule — conference dates and timezone, visible hours, default presentation length, rooms, and program tracks.
+sidebar:
+  label: Setup
+  order: 2
+---
+
+import { Aside, Steps, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+Before you can schedule anything, the planner needs a few things in place: the
+**conference dates and timezone**, the planner's **visible hours** and **default
+presentation length**, your **rooms**, and (optionally) **program tracks**.
+
+<Aside type="note" title="Where to find it">
+**Configuration › Program** holds the *Planner*, *Rooms*, and *Program Tracks*
+sections (the *Planner* section has its own **Save**; rooms and tracks save as you
+create them). The **conference dates and timezone** live on
+**[Configuration › Conference](/configuration/conference/)**.
+</Aside>
+
+![Program tab](../../../assets/screenshots/08-configuration-program.png)
+
+## Prerequisites: dates & timezone
+
+The planner reads two things from the **[Conference](/configuration/conference/)**
+tab:
+
+- **Conference Start / End** define which **days** the calendar shows — days
+  outside the range are hidden, and a session dragged outside it is flagged as
+  *outside conference dates*.
+- **Conference Timezone** is the zone **all** session times are shown in (times are
+  stored in UTC).
+
+Set both before scheduling, or the grid has nothing to lay out.
+
+## How to prepare the planner
+
+<Steps>
+
+1. On **[Conference](/configuration/conference/)**, set the **Conference Start/End**
+   dates and the **Conference Timezone**.
+
+2. On **Program › Planner**, set the **visible hours** and a **default presentation
+   length**, then **Save**.
+
+3. On **Program › Rooms**, click **Create Room** for each physical (or virtual)
+   location.
+
+4. *(Optional)* On **Program › Program Tracks**, create colour tags to group related
+   sessions.
+
+</Steps>
+
+## Planner
+
+| Field | What it does | What to enter / Notes |
+|---|---|---|
+| **Planner visible hours** | The start–end window shown on the calendar grid. | Two times, e.g. `08:00`–`18:00`. |
+| **Default presentation length** | Pre-filled duration when creating sessions or dropping a submission onto the grid. | Minutes, 5–480 (step 5). |
+| **Enable autoplanner** | Lets the planner cluster accepted abstracts into sessions and auto-generate session titles. | Requires the LLM service — see the caution below. |
+
+<Aside type="caution" title="Enabling the autoplanner needs the LLM service">
+The **Enable autoplanner** toggle stays **disabled with a red status dot** until the
+LLM service is reachable. The LLM and clustering services are **deployment-level**
+configuration (`LLM_API_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_EMBEDDING_MODEL`, and
+`PLANNER_API_URL` environment variables) — they **cannot** be set from the admin UI.
+If the toggle is stuck off, ask your **system administrator** to configure and start
+those services. See **[Autoplanner](/planner/autoplanner/)**.
+</Aside>
+
+## Rooms
+
+Physical or virtual locations where sessions take place.
+
+| Field | What it does | What to enter / Notes |
+|---|---|---|
+| **Name** | Room label shown on the planner and the public program. | Required, up to 200 characters (e.g. *Aula Magna*, *Room 101*). |
+| **Description** | Extra detail (building, floor, notes). | Optional, up to 1000 characters. |
+| **Link** | A URL for the room. | Optional — must be a valid URL (e.g. a map link or a video-call join link). |
+
+<Aside type="tip" title="Room order = column order">
+Rooms appear as **columns** on the calendar in their saved **order** (left to
+right). Reorder rooms here to control the grid layout.
+</Aside>
+
+## Program Tracks
+
+Optional colour tags for grouping related sessions (e.g. a multi-part series).
+Sessions can exist without a program track.
+
+<Aside type="caution" title="Two different 'tracks'">
+**Program Tracks** (here) colour-group *sessions* on the schedule. The subject
+**[Tracks](/configuration/tracks/)** on the *Tracks* tab group *submissions* and are
+what authors pick when submitting. They are separate features.
+</Aside>
+
+| Element | What it does | What to enter / Notes |
+|---|---|---|
+| **Name** | The track label. | Required, up to 200 characters. Add a number suffix (e.g. `ML 2`) to link sessions into a **series**. |
+| **Color** | The colour shown on sessions using this track. | Optional — pick a preset, choose a custom colour, or paste a `#RRGGBB` hex. |
+| **Import from intake** | Bulk-creates program tracks from your submission (intake) tracks. | Skips duplicates by name; reports how many were created/skipped. |
+
+## Related
+
+<CardGrid>
+	<LinkCard title="Overview" href="/planner/overview/" description="How the planner fits together." />
+	<LinkCard title="Conference" href="/configuration/conference/" description="Dates & timezone the planner depends on." />
+	<LinkCard title="Tracks" href="/configuration/tracks/" description="The separate, subject-based submission tracks." />
+	<LinkCard title="Autoplanner" href="/planner/autoplanner/" description="Enable and run the LLM-assisted planner." />
+</CardGrid>

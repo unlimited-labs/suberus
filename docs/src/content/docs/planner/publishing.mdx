@@ -1,0 +1,83 @@
+---
+title: Publishing
+description: Take the schedule from draft to public — the pre-publish issue checks, the three publication states, and what attendees see on the public program.
+sidebar:
+  label: Publishing
+  order: 5
+---
+
+import { Aside, Steps, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+When the schedule is ready, **publish** it to make the public program available. A
+pre-publish check warns you about clashes and gaps first, and you can choose to share
+the program with **admins only** before going fully public.
+
+<Aside type="note" title="Where to find it">
+The **Publish** button in the planner header. Once published, the program is public
+at `/program`.
+</Aside>
+
+![Publish dialog showing the pre-publish issue checks](../../../assets/screenshots/31-planner-publish-dialog.png)
+
+## Publication states
+
+| State | Who sees the program | How to get there |
+|---|---|---|
+| **Draft** | Only you, in the planner. | The default before publishing. |
+| **Draft published** | Admins only (visible in their menu, not public). | **Publish draft** in the dialog. |
+| **Published** | Everyone, at `/program`. | **Publish**. |
+
+Publishing is reversible: **Unpublish** returns the program to *Draft* and hides it
+from everyone.
+
+## How to publish
+
+<Steps>
+
+1. Click **Publish** in the planner header to open the dialog.
+
+2. Review the **issue checks** (below). Fix what you can on the
+   **[planner grid](/planner/manual-scheduling/)**, or proceed anyway.
+
+3. Choose **Publish draft** to share with admins only first, or **Publish** (shown
+   as **Publish anyway** when issues remain) to go public.
+
+4. To retract, open the dialog again and choose **Unpublish**.
+
+</Steps>
+
+## Pre-publish issue checks
+
+The dialog runs these checks and lists anything it finds. They **warn but never
+block** — *Publish anyway* is always available.
+
+| Check | What it means | How to fix |
+|---|---|---|
+| **Session without chair** | A session has no assigned chair. | Add a chair in the session editor (up to 3). |
+| **Presentations exceed session duration** | The talks total more than the session's length. | Trim durations, add slots, or move a talk out. |
+| **Room double-booked** | Two sessions overlap in the same room. | Move one to another room or time. |
+| **Chair in overlapping sessions** | A chair is booked for two sessions at once. | Reassign one session's chair or reschedule. |
+| **Author in overlapping sessions** | An author presents in two sessions at once. | Reschedule one of the talks. |
+| **Non-accepted submission in program** | A scheduled talk isn't an accepted submission. | Remove it, or finalise its decision. |
+| **Session outside conference dates** | A session falls outside the conference start/end. | Move it within range, or adjust the dates on **[Conference](/configuration/conference/)**. |
+
+## The public program
+
+Once **Published**, attendees see the program at `/program`:
+
+- A **day selector** to switch between conference days, and a **search** box (titles,
+  speakers, tracks).
+- Sessions grouped by time slot — **parallel** sessions sit side by side — each
+  showing its room, track colour, **chairs**, and a numbered list of presentations
+  with times and authors.
+- **Breaks** shown inline between sessions.
+
+![Public program page at /program](../../../assets/screenshots/32-program-public-page.png)
+
+## Related
+
+<CardGrid>
+	<LinkCard title="Overview" href="/planner/overview/" description="How the planner fits together." />
+	<LinkCard title="Manual scheduling" href="/planner/manual-scheduling/" description="Fix the issues flagged here." />
+	<LinkCard title="Branding" href="/configuration/branding/" description="The look of the public site the program appears on." />
+</CardGrid>

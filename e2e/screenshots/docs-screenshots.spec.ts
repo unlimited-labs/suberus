@@ -25,6 +25,7 @@ import {
 	setConferenceDates,
 	setConferenceTimezone,
 	setDailyBusinessHours,
+	setSchedulePublished,
 } from "../helpers/test-db";
 import { runSubmissionAction } from "../helpers/submission-actions";
 import {
@@ -42,6 +43,17 @@ import type { Page } from "@playwright/test";
 const SHOTS_DIR = path.resolve("docs/src/assets/screenshots");
 
 const day = (d: number, time: string) => new Date(`2026-09-${String(d).padStart(2, "0")}T${time}:00.000Z`);
+
+/** A service is "up" if it answers at all (any HTTP status, not a network error). */
+async function serviceUp(url: string | undefined): Promise<boolean> {
+	if (!url) return false;
+	try {
+		await fetch(url, { signal: AbortSignal.timeout(4000) });
+		return true;
+	} catch {
+		return false;
+	}
+}
 
 /**
  * Capture the viewport at 1440×`height` (default 900). Settings/dashboard pages
@@ -150,6 +162,7 @@ test.describe("docs screenshots", () => {
 		await setAppSetting("NOTIFICATION_DATE", "2026-07-15");
 		await setConferenceTimezone("UTC");
 		await setDailyBusinessHours("08:00", "18:00");
+		await setAppSetting("PLANNER_AUTOPLAN_ENABLED", true);
 
 		// --- realistic users (distinct affiliations: createTestUser creates, not upserts)
 		const people: Array<[string, string, string, UserRole, string]> = [
@@ -565,5 +578,63 @@ test.describe("docs screenshots", () => {
 		await page.getByRole("tab", { name: /history/i }).click();
 		await page.waitForTimeout(500);
 		await shot(page, "27-managing-activity-history.png", { height: 1000 });
+	});
+
+	// ---- Part 3: Program Planner --------------------------------------------------
+
+	test("28 session editor", async ({ page }) => {
+		await page.goto("/admin/program-planner");
+		await page.waitForTimeout(1500); // calendar layout settles
+		await page.getByTestId("session-card-title").first().click();
+		await expect(page.getByTestId("session-editor")).toBeVisible();
+		await page.waitForTimeout(500);
+		await shot(page, "28-planner-session-editor.png");
+	});
+
+	test("29 reading mode", async ({ page }) => {
+		await page.goto("/admin/program-planner");
+		await page.waitForTimeout(1500);
+		await page.getByTestId("sidebar-bulk-read").click();
+		await expect(page.getByTestId("bulk-reader")).toBeVisible();
+		await page.waitForTimeout(500);
+		await shot(page, "29-planner-reading-mode.png");
+	});
+
+	test("30 autoplan proposal preview", async ({ page }) => {
+		const servicesUp =
+			(await serviceUp(process.env.LLM_API_URL)) &&
+			(await serviceUp(process.env.PLANNER_API_URL));
+		test.skip(!servicesUp, "Autoplan needs LLM_API_URL + PLANNER_API_URL reachable");
+		test.setTimeout(240_000);
+		await page.goto("/admin/program-planner/auto-plan");
+		await page.getByRole("button", { name: "Generate proposal" }).click();
+		// Embedding → clustering → labeling round-trips over the network.
+		await expect(page.getByRole("heading", { name: "Proposal ready" })).toBeVisible({
+			timeout: 200_000,
+		});
+		await page.waitForTimeout(800);
+		await shot(page, "30-planner-autoplan-preview.png");
+	});
+
+	test("31 publish dialog", async ({ page }) => {
+		await page.goto("/admin/program-planner");
+		await page.waitForTimeout(1500);
+		await page.getByTestId("publish-button").click();
+		await expect(page.getByTestId("publish-dialog")).toBeVisible();
+		// Issue checks load asynchronously; wait for the list (sessions have no chairs).
+		await page.getByTestId("publish-issues-list").waitFor({ state: "visible", timeout: 10000 }).catch(() => {});
+		await page.waitForTimeout(500);
+		await shot(page, "31-planner-publish-dialog.png", { full: false });
+	});
+
+	test("32 public program", async ({ page }) => {
+		await setSchedulePublished(true);
+		try {
+			await page.goto("/program");
+			await page.waitForTimeout(1200);
+			await shot(page, "32-program-public-page.png", { height: 2200 });
+		} finally {
+			await setSchedulePublished(false);
+		}
 	});
 });

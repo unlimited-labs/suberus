@@ -2,7 +2,11 @@
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
   "entry": [
     "src/index.{ts,tsx,js,jsx}",
-    "src/main.{ts,tsx,js,jsx}"
+    "src/main.{ts,tsx,js,jsx}",
+    // Framework-auto-loaded entry points fallow can't see (no nitro plugin):
+    "src/start.ts", // TanStack Start createStart instance
+    "server/plugins/**/*.ts", // nitro definePlugin (run at startup)
+    "server/tasks/**/*.ts" // nitro defineTask (scheduledTasks, see vite.config.ts)
   ],
   "ignoreExportsUsedInFile": true,
   "duplicates": {

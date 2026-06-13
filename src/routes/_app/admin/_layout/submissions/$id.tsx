@@ -22,7 +22,6 @@ import {
 } from "@tabler/icons-react";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { isPast } from "date-fns";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -31,6 +30,16 @@ import { AssignReviewerDialog } from "@/components/admin/submissions/assign-revi
 import { ConfirmConditionsDialog } from "@/components/admin/submissions/confirm-conditions-dialog";
 import { DeskAcceptDialog } from "@/components/admin/submissions/desk-accept-dialog";
 import { DeskRejectDialog } from "@/components/admin/submissions/desk-reject-dialog";
+import {
+	computeReviewProgress,
+	filterReviewsByRound,
+	getActionAvailability,
+	getPrimaryAction,
+	getReviewRounds,
+	hasRevisionUpload,
+	isOverdue,
+	resolveDisplayedVersion,
+} from "@/components/admin/submissions/detail/availability";
 import { EditorDecisionDialog } from "@/components/admin/submissions/editor-decision-dialog";
 import { OverrideDecisionDialog } from "@/components/admin/submissions/override-decision-dialog";
 import { SubmissionDeleteDialog } from "@/components/admin/submissions/submission-delete-dialog";
@@ -84,13 +93,6 @@ export const Route = createFileRoute("/_app/admin/_layout/submissions/$id")({
 	},
 	component: SubmissionDetailPage,
 });
-
-function isOverdue(deadline: Date | string | null, status: string): boolean {
-	if (!deadline || status === "COMPLETED" || status === "CANCELLED") {
-		return false;
-	}
-	return isPast(new Date(deadline));
-}
 
 function SubmissionDetailPage() {
 	const { id } = Route.useParams();
@@ -164,79 +166,43 @@ function SubmissionDetailPage() {
 		versions,
 	} = data;
 
-	// Version viewing: default to current version unless an older one is selected
-	const effectiveVersion = selectedVersion ?? submission.currentVersionNumber;
-	const displayedVersion = versions.find((v) => v.version === effectiveVersion);
-	const displayedContent = displayedVersion?.content ?? submission.content;
-	const displayedFile = displayedVersion?.file ?? submission.file;
+	const {
+		effectiveVersion,
+		content: displayedContent,
+		file: displayedFile,
+	} = resolveDisplayedVersion(versions, selectedVersion, submission);
 
-	// Whether the author uploaded a revised version after a conditional acceptance
-	const revisionUploaded = activityHistory.some(
-		(e) => e.activityType === "SUBMISSION_REVISION_UPLOADED",
+	const revisionUploaded = hasRevisionUpload(activityHistory);
+
+	const {
+		currentRoundAssignments,
+		completedAssignments,
+		progress: reviewProgress,
+	} = computeReviewProgress(assignments, submission.currentRound);
+	const currentRoundReviews = filterReviewsByRound(
+		reviews,
+		"current",
+		submission.currentRound,
 	);
 
-	// Calculate review progress
-	const currentRoundAssignments = assignments.filter(
-		(a) => a.round === submission.currentRound && a.status !== "CANCELLED",
+	const allReviewRounds = getReviewRounds(reviews);
+	const displayedReviews = filterReviewsByRound(
+		reviews,
+		selectedReviewRound,
+		submission.currentRound,
 	);
-	const completedAssignments = currentRoundAssignments.filter(
-		(a) => a.status === "COMPLETED",
-	);
-	const currentRoundReviews = reviews.filter(
-		(r) => r.round === submission.currentRound,
-	);
-	const reviewProgress =
-		currentRoundAssignments.length > 0
-			? (completedAssignments.length / currentRoundAssignments.length) * 100
-			: 0;
 
-	// Reviews with round filtering for reviews tab
-	const allReviewRounds = [...new Set(reviews.map((r) => r.round))].sort(
-		(a, b) => b - a,
-	);
-	const displayedReviews =
-		selectedReviewRound === "all"
-			? reviews
-			: selectedReviewRound === "current"
-				? currentRoundReviews
-				: reviews.filter((r) => r.round === Number(selectedReviewRound));
-
-	// Determine available actions based on status
-	// (EXHIBITOR submissions are never peer-reviewed — no reviewer assignment)
-	const canAssignReviewers =
-		submission.type !== "EXHIBITOR" &&
-		["SUBMITTED", "UNDER_REVIEW", "RESUBMITTED"].includes(submission.status);
-
-	// Exhibitor entries are decided via the exhibitor approval flow (updates
-	// Exhibitor.status + notifies the exhibitor), not via desk decisions
-	const canDeskAccept =
-		submission.status === "SUBMITTED" && submission.type !== "EXHIBITOR";
-	const canDeskReject =
-		submission.status === "SUBMITTED" && submission.type !== "EXHIBITOR";
-
-	const canTransitionToAwaitingDecision =
-		submission.status === "REVIEWS_COMPLETE" && config.requiresEditorDecision;
-
-	const canMakeDecision =
-		submission.status === "AWAITING_DECISION" ||
-		submission.status === "REVIEWS_COMPLETE";
-
-	const canConfirmConditions = submission.status === "CONDITIONALLY_ACCEPTED";
-
-	const canOverrideDecision =
-		submission.type !== "EXHIBITOR" &&
-		["ACCEPTED", "CONDITIONALLY_ACCEPTED", "REJECTED"].includes(
-			submission.status,
-		);
-
-	// One contextual primary action; everything else goes to the Actions menu.
-	const primaryAction = canTransitionToAwaitingDecision
-		? "transition"
-		: canMakeDecision
-			? "decision"
-			: canConfirmConditions
-				? "conditions"
-				: null;
+	const availability = getActionAvailability(submission, config);
+	const {
+		canAssignReviewers,
+		canDeskAccept,
+		canDeskReject,
+		canTransitionToAwaitingDecision,
+		canMakeDecision,
+		canConfirmConditions,
+		canOverrideDecision,
+	} = availability;
+	const primaryAction = getPrimaryAction(availability);
 
 	return (
 		<div className="flex h-full flex-col">

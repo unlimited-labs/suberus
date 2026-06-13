@@ -36,7 +36,7 @@ Settings tabs deep-link via `?tab=<id>`.
 - [x] **05** — `configuration/submissions.mdx` — *Submissions tab* (validation + extraction) — `/admin/settings?tab=submissions`
 - [x] **06** — `configuration/submission-types.mdx` — *Submission Types — three accordions* — `/admin/settings?tab=types`
 - [x] **07** — `configuration/tracks.mdx` — *Tracks tab* (list + Create) — `/admin/settings?tab=tracks`
-- [x] **08** — `configuration/program.mdx` — *Program tab* (Planner + Rooms + Program Tracks) — `/admin/settings?tab=program`
+- [x] **08** — `planner/setup.mdx` — *Program tab* (Planner + Rooms + Program Tracks) — `/admin/settings?tab=program`
 - [x] **09** — `configuration/email-templates.mdx` — *Email Templates tab* (footer + list) — `/admin/settings?tab=emails`
 - [x] **10** — `configuration/branding.mdx` — *Branding tab* — `/admin/settings?tab=branding`
 - [x] **11** — `configuration/fee.mdx` — *Fee tab* (types + instructions) — `/admin/settings?tab=fee`
@@ -60,9 +60,19 @@ Settings tabs deep-link via `?tab=<id>`.
 - [x] **22** — `managing/users.mdx` — *User detail actions* (incl. Allow late submission) — `/admin/users/<id>`
 - [x] **23** — `managing/users.mdx` — *User submissions panel* — `/admin/users/<id>`
 - [x] **24** — `managing/invitations.mdx` — *Invitations list* — `/admin/invitations`
-- [x] **25** — `managing/program.mdx` — *Program Planner calendar* (rooms × days) — `/admin/program-planner`
+- [x] **25** — `planner/overview.mdx` — *Program Planner calendar* (rooms × days) — `/admin/program-planner`
 - [x] **26** — `managing/extraction.mdx` — *Extraction status on a submission* (DOCX) — `/admin/submissions/<id>`
 - [x] **27** — `managing/activity-log.mdx` — *Activity history on a submission* — `/admin/submissions/<id>` → history section
+
+---
+
+## Part 3 — Program Planner  (`/admin/program-planner`)
+
+- [x] **28** — `planner/manual-scheduling.mdx` — *Session editor* (chairs + presentations) — open a session → right panel
+- [x] **29** — `planner/manual-scheduling.mdx` — *Reading mode* (full-screen submission reader) — sidebar → **Read**
+- [x] **30** — `planner/autoplanner.mdx` — *Auto-plan proposal preview* (session cards + stats) — `/admin/program-planner/auto-plan` → **Generate proposal**
+- [x] **31** — `planner/publishing.mdx` — *Publish dialog* (pre-publish issue checks) — header **Publish**
+- [x] **32** — `planner/publishing.mdx` — *Public program* (parallel sessions, chairs, breaks) — `/program`
 
 ---
 
@@ -71,3 +81,5 @@ Settings tabs deep-link via `?tab=<id>`.
 - **14 (ToS):** switch to the **Preview** tab, not Edit.
 - **19, 20, 26, 27:** open a specific submission (version selector / open dialog / DOCX upload / history section).
 - **22, 23:** open a specific user; **22** needs the action area (incl. *Allow late submission*).
+- **30 (autoplan):** needs the LLM + clustering services reachable (`LLM_API_URL`, `PLANNER_API_URL`); the test skips itself if either is down. Captures the *result preview*, not the transient stage screen.
+- **32 (public program):** publishes the schedule via the `setSchedulePublished(true)` helper, captures `/program`, then restores draft.
