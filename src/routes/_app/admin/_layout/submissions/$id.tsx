@@ -4,6 +4,7 @@ import {
 	IconHistory,
 	IconMessages,
 } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/layout/page-header";
@@ -24,6 +25,7 @@ import {
 import { useAdminSubmissionDetail } from "@/features/submissions/hooks/use-admin-submission-detail";
 import { useSubmissionTransitions } from "@/features/submissions/hooks/use-submission-transitions";
 import { typeLabels } from "@/features/submissions/labels";
+import { activeTracksQueryOptions } from "@/server-fns/tracks";
 
 export const Route = createFileRoute("/_app/admin/_layout/submissions/$id")({
 	loader: async ({ params, context }) => {
@@ -36,7 +38,8 @@ export const Route = createFileRoute("/_app/admin/_layout/submissions/$id")({
 
 function SubmissionDetailPage() {
 	const { id } = Route.useParams();
-	const detail = useAdminSubmissionDetail(id);
+	const { data: availableTracks = [] } = useQuery(activeTracksQueryOptions());
+	const detail = useAdminSubmissionDetail(id, availableTracks);
 	const {
 		isTransitioning,
 		invalidateSubmission,
@@ -70,7 +73,6 @@ function SubmissionDetailPage() {
 	const {
 		data,
 		config,
-		availableTracks,
 		availability,
 		primaryAction,
 		currentRoundReviews,

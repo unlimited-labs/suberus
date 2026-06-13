@@ -4,7 +4,11 @@ import {
 	IconMailX,
 	IconRefresh,
 } from "@tabler/icons-react";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import {
+	useQuery,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -29,6 +33,7 @@ import {
 	submissionValidationQueryOptions,
 } from "@/server-fns/settings";
 import { extractionSettingsQueryOptions } from "@/server-fns/settings/extraction";
+import { activeTracksQueryOptions } from "@/server-fns/tracks";
 import { userDashboardQueryOptions } from "@/server-fns/user-dashboard";
 
 export const Route = createFileRoute("/_app/submissions/new")({
@@ -58,6 +63,7 @@ function NewSubmissionPage() {
 	const { data: extractionSettings } = useSuspenseQuery(
 		extractionSettingsQueryOptions(),
 	);
+	const { data: availableTracks = [] } = useQuery(activeTracksQueryOptions());
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const { user } = useSession();
@@ -245,6 +251,7 @@ function NewSubmissionPage() {
 					validationSettings={validationSettings}
 					guidelines={submissionGuidelines}
 					extractionEnabled={extractionSettings.enabled}
+					availableTracks={availableTracks}
 				/>
 			</div>
 		</div>

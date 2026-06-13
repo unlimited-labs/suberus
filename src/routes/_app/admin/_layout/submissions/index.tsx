@@ -1,5 +1,9 @@
 import { IconFileStack } from "@tabler/icons-react";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import {
+	useQuery,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { DataTable, DataTableToolbar } from "@/components/admin/data-table";
 import { PageHeader } from "@/components/layout/page-header";
@@ -8,6 +12,7 @@ import { submissionColumns } from "@/features/submissions/components/admin/colum
 import { SubmissionExportButton } from "@/features/submissions/components/admin/export-button";
 import { SubmissionBulkActions } from "@/features/submissions/components/admin/submission-bulk-actions";
 import { SubmissionMobileCard } from "@/features/submissions/components/admin/submission-mobile-card";
+import { activeTracksQueryOptions } from "@/server-fns/tracks";
 
 export const Route = createFileRoute("/_app/admin/_layout/submissions/")({
 	loader: async ({ context }) => {
@@ -34,6 +39,7 @@ function AdminSubmissionsPage() {
 	const {
 		data: { submissions },
 	} = useSuspenseQuery(adminSubmissionsQueryOptions());
+	const { data: availableTracks = [] } = useQuery(activeTracksQueryOptions());
 
 	return (
 		<div className="flex h-full flex-col">
@@ -58,6 +64,7 @@ function AdminSubmissionsPage() {
 									<SubmissionExportButton table={table} />
 									<SubmissionBulkActions
 										table={table}
+										availableTracks={availableTracks}
 										onSuccess={() =>
 											queryClient.invalidateQueries({
 												queryKey: adminSubmissionsQueryOptions().queryKey,

@@ -1,11 +1,10 @@
 import { useStore } from "@tanstack/react-form";
-import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import type { AvailableTrack } from "@/features/submissions/types";
 import { useAppForm } from "@/hooks/use-app-form";
 import { useSession } from "@/hooks/use-session";
 import { getAffiliationById } from "@/server-fns/affiliations";
-import { activeTracksQueryOptions } from "@/server-fns/tracks";
 
 import {
 	buildContentSchema,
@@ -28,6 +27,8 @@ interface UseSubmissionFormArgs {
 	validationSettings: ValidationSettings;
 	guidelines?: string;
 	extractionEnabled?: boolean;
+	/** Active tracks loaded by the route; rendered only when track selection applies. */
+	availableTracks: AvailableTrack[];
 }
 
 type SubmissionType = "ABSTRACT" | "POSTER" | "FULL_PAPER";
@@ -45,6 +46,7 @@ export function useSubmissionForm({
 	validationSettings,
 	guidelines,
 	extractionEnabled,
+	availableTracks,
 }: UseSubmissionFormArgs) {
 	const [isSavingDraft, setIsSavingDraft] = useState(false);
 	const { user } = useSession();
@@ -202,13 +204,6 @@ export function useSubmissionForm({
 	);
 
 	const currentTypeConfig = typeConfigs.find((t) => t.type === selectedType);
-	const showTracks =
-		selectedType === "ABSTRACT" &&
-		!!currentTypeConfig?.config.enableTrackSelection;
-	const { data: activeTracks = [] } = useQuery({
-		...activeTracksQueryOptions(),
-		enabled: showTracks,
-	});
 	const isFileFormat = currentTypeConfig?.config.contentFormat === "FILE";
 
 	const progress = computeSubmissionProgress(
@@ -279,7 +274,7 @@ export function useSubmissionForm({
 		selectedType,
 		selectType,
 		currentTypeConfig,
-		activeTracks,
+		activeTracks: availableTracks,
 		isFileFormat,
 		allowedExtensions,
 		acceptString,

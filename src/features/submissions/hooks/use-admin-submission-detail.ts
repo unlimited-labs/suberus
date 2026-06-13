@@ -13,19 +13,16 @@ import {
 	hasRevisionUpload,
 	type PrimaryAction,
 } from "@/features/submissions/components/admin/detail/availability";
-import type { getActiveTracks } from "@/lib/server/tracks";
+import type { AvailableTrack } from "@/features/submissions/types";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import { adminSettingQueryOptions } from "@/server-fns/settings";
-import { activeTracksQueryOptions } from "@/server-fns/tracks";
-
-type ActiveTrack = Awaited<ReturnType<typeof getActiveTracks>>[number];
 
 export interface AdminSubmissionDetailReady {
 	status: "ready";
 	data: EditorSubmissionData;
 	config: SubmissionTypeConfig;
-	availableTracks: ActiveTrack[];
+	availableTracks: AvailableTrack[];
 	availability: ActionAvailability;
 	primaryAction: PrimaryAction | null;
 	currentRoundReviews: EditorReview[];
@@ -45,7 +42,10 @@ export type AdminSubmissionDetail =
  * derives the workflow state the page renders from. Returns a discriminated
  * result so callers narrow to `ready` without null checks.
  */
-export function useAdminSubmissionDetail(id: string): AdminSubmissionDetail {
+export function useAdminSubmissionDetail(
+	id: string,
+	availableTracks: AvailableTrack[],
+): AdminSubmissionDetail {
 	const { data } = useSuspenseQuery(editorSubmissionQueryOptions(id));
 
 	const configKey = data
@@ -56,11 +56,6 @@ export function useAdminSubmissionDetail(id: string): AdminSubmissionDetail {
 			configKey ?? "SUBMISSION_TYPE_ORAL_PRESENTATION",
 		),
 		enabled: !!configKey,
-	});
-
-	const { data: availableTracks = [] } = useQuery({
-		...activeTracksQueryOptions(),
-		enabled: data?.submission.type === "ABSTRACT",
 	});
 
 	if (!data || !config) return { status: "not-found" };

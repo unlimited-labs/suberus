@@ -5,7 +5,6 @@ import {
 	IconTags,
 	IconUsers,
 } from "@tabler/icons-react";
-
 import { Button } from "@/components/ui/button";
 import { Field, FieldError } from "@/components/ui/field";
 import {
@@ -15,6 +14,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import type { AvailableTrack } from "@/features/submissions/types";
 
 import { AuthorsInput } from "./authors-input";
 import { ExtractionOverlay } from "./extraction-overlay";
@@ -44,6 +44,7 @@ interface SubmissionFormProps {
 	validationSettings: ValidationSettings;
 	guidelines?: string;
 	extractionEnabled?: boolean;
+	availableTracks: AvailableTrack[];
 }
 
 export function SubmissionForm(props: SubmissionFormProps) {

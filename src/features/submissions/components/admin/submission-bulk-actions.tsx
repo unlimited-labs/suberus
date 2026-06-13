@@ -18,18 +18,20 @@ import {
 } from "@/features/submissions/api/admin-submissions";
 import { statusChangeOptions } from "@/features/submissions/labels";
 import type { AdminSubmission } from "@/features/submissions/server/admin-submissions";
+import type { AvailableTrack } from "@/features/submissions/types";
 import type { SubmissionStatus } from "@/generated/prisma/enums";
 import { getErrorMessage } from "@/lib/error-message";
 import { reviewerUsersQueryOptions } from "@/server-fns/reviews/reviewers";
-import { activeTracksQueryOptions } from "@/server-fns/tracks";
 
 interface SubmissionBulkActionsProps {
 	table: Table<AdminSubmission>;
+	availableTracks: AvailableTrack[];
 	onSuccess?: () => void;
 }
 
 export function SubmissionBulkActions({
 	table,
+	availableTracks,
 	onSuccess,
 }: SubmissionBulkActionsProps) {
 	const selectedRows = table.getFilteredSelectedRowModel().rows;
@@ -43,7 +45,6 @@ export function SubmissionBulkActions({
 		useState<SubmissionStatus>("UNDER_REVIEW");
 	const [selectedReviewer, setSelectedReviewer] = useState<string>("");
 	const [selectedTrack, setSelectedTrack] = useState<string>("");
-	const { data: availableTracks = [] } = useQuery(activeTracksQueryOptions());
 	const { data: reviewers = [] } = useQuery(reviewerUsersQueryOptions());
 	const [isLoading, setIsLoading] = useState(false);
 	const [errors, setErrors] = useState<string[]>([]);

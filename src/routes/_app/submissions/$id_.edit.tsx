@@ -1,5 +1,9 @@
 import { IconArrowLeft, IconFileText } from "@tabler/icons-react";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import {
+	useQuery,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/page-header";
@@ -21,6 +25,7 @@ import {
 	submissionValidationQueryOptions,
 } from "@/server-fns/settings";
 import { extractionSettingsQueryOptions } from "@/server-fns/settings/extraction";
+import { activeTracksQueryOptions } from "@/server-fns/tracks";
 
 export const Route = createFileRoute("/_app/submissions/$id_/edit")({
 	loader: async ({ params, context }) => {
@@ -52,6 +57,7 @@ function EditSubmissionPage() {
 	const { data: extractionSettings } = useSuspenseQuery(
 		extractionSettingsQueryOptions(),
 	);
+	const { data: availableTracks = [] } = useQuery(activeTracksQueryOptions());
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 
@@ -221,6 +227,7 @@ function EditSubmissionPage() {
 					validationSettings={validationSettings}
 					guidelines={submissionGuidelines}
 					extractionEnabled={extractionSettings.enabled}
+					availableTracks={availableTracks}
 				/>
 			</div>
 		</div>
