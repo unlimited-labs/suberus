@@ -18,6 +18,7 @@ import { deleteFile } from "@/lib/server/storage";
 import { executeSubmissionTransition } from "@/lib/server/workflow";
 import type { SubmissionEvent } from "@/lib/workflow";
 import { hasMinReviewers } from "@/lib/workflow/guards";
+import { decisionTypeFor } from "./bulk-decision";
 
 export interface SubmissionDeleteWarnings {
 	warnings: string[];
@@ -733,6 +734,51 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 	};
 }
 
+/** Record the editor-decision audit trail + notify the presenter for a bulk decision. */
+async function recordBulkDecision(
+	submissionId: string,
+	targetStatus: SubmissionStatus,
+	emailEvent: EmailEventType,
+	triggeredBy: string,
+): Promise<void> {
+	const submission = await prisma.submission.findUnique({
+		where: { id: submissionId },
+		select: { title: true, currentRound: true },
+	});
+	const decision = decisionTypeFor(targetStatus);
+	const reasoning = `Bulk status change to ${targetStatus}`;
+
+	await prisma.editorDecision.create({
+		data: {
+			submissionId,
+			editorId: triggeredBy,
+			round: submission?.currentRound ?? 1,
+			decision,
+			reasoning,
+			basedOnReviews: [],
+		},
+	});
+
+	await logActivity({
+		type: "DECISION_SUBMITTED",
+		submissionId,
+		performedBy: triggeredBy,
+		detail: activityDetail("DECISION_SUBMITTED", { decision, reasoning }),
+	});
+
+	const presenter = await prisma.submissionAuthor.findFirst({
+		where: { submissionId, isPresenter: true },
+	});
+	if (presenter) {
+		void sendEmail(emailEvent, presenter.email, {
+			authorName: `${presenter.firstName} ${presenter.lastName}`,
+			submissionTitle: submission?.title ?? "",
+			letterToAuthor: `Bulk decision: ${targetStatus}`,
+			submissionUrl: `${env.APP_BASE_URL}/submissions/${submissionId}`,
+		});
+	}
+}
+
 /** Bulk change status via workflow transitions */
 export async function bulkChangeStatus(
 	submissionIds: string[],
@@ -771,59 +817,8 @@ export async function bulkChangeStatus(
 			triggeredBy,
 			`Bulk status change to ${targetStatus}`,
 		);
-		if (result.success) {
-			updated++;
 
-			// Create EditorDecision record for decision-type transitions (audit trail)
-			if (emailEvent) {
-				const submission = await prisma.submission.findUnique({
-					where: { id },
-					select: { title: true, currentRound: true },
-				});
-
-				const decision =
-					targetStatus === "ACCEPTED"
-						? "ACCEPT"
-						: targetStatus === "CONDITIONALLY_ACCEPTED"
-							? "CONDITIONALLY_ACCEPT"
-							: targetStatus === "REVISE_REQUIRED"
-								? "REVISE_AND_RESUBMIT"
-								: "REJECT";
-
-				await prisma.editorDecision.create({
-					data: {
-						submissionId: id,
-						editorId: triggeredBy,
-						round: submission?.currentRound ?? 1,
-						decision,
-						reasoning: `Bulk status change to ${targetStatus}`,
-						basedOnReviews: [],
-					},
-				});
-
-				await logActivity({
-					type: "DECISION_SUBMITTED",
-					submissionId: id,
-					performedBy: triggeredBy,
-					detail: activityDetail("DECISION_SUBMITTED", {
-						decision,
-						reasoning: `Bulk status change to ${targetStatus}`,
-					}),
-				});
-
-				const presenter = await prisma.submissionAuthor.findFirst({
-					where: { submissionId: id, isPresenter: true },
-				});
-				if (presenter) {
-					void sendEmail(emailEvent, presenter.email, {
-						authorName: `${presenter.firstName} ${presenter.lastName}`,
-						submissionTitle: submission?.title ?? "",
-						letterToAuthor: `Bulk decision: ${targetStatus}`,
-						submissionUrl: `${env.APP_BASE_URL}/submissions/${id}`,
-					});
-				}
-			}
-		} else {
+		if (!result.success) {
 			const submission = await prisma.submission.findUnique({
 				where: { id },
 				select: { title: true },
@@ -832,6 +827,13 @@ export async function bulkChangeStatus(
 				result.error ??
 					`Failed to transition "${submission?.title ?? id}" to ${targetStatus}`,
 			);
+			continue;
+		}
+
+		updated++;
+		// Decision-type transitions get an EditorDecision audit record + email
+		if (emailEvent) {
+			await recordBulkDecision(id, targetStatus, emailEvent, triggeredBy);
 		}
 	}
 
