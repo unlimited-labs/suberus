@@ -140,19 +140,4 @@ export const createSubmissionSchema = z.object({
 	trackId: z.uuid().nullable().optional(),
 });
 
-/** Schema for TEXT-based submissions (requires content) */
-export const textSubmissionSchema = createSubmissionSchema.refine(
-	(data) => {
-		if (data.contentFormat === "TEXT") {
-			return data.content.length >= 100;
-		}
-		return true;
-	},
-	{
-		message: "Content must be at least 100 characters",
-		path: ["content"],
-	},
-);
-
-export type AuthorInput = z.infer<typeof authorSchema>;
 export type CreateSubmissionInput = z.infer<typeof createSubmissionSchema>;

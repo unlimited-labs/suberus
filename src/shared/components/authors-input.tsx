@@ -32,8 +32,6 @@ import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 
-export type { Author };
-
 interface AuthorsInputProps {
 	value: Author[];
 	onChange: (authors: Author[]) => void;

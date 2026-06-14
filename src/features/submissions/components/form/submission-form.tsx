@@ -29,11 +29,7 @@ import type {
 import { SubmissionProgressSidebar } from "./submission-progress-sidebar";
 import { SubmissionTypeSelector } from "./submission-type-selector";
 
-export type {
-	ActiveSubmissionType,
-	SubmissionFormData,
-	ValidationSettings,
-} from "./submission-form-types";
+export type { SubmissionFormData } from "./submission-form-types";
 
 interface SubmissionFormProps {
 	onSubmit: (data: SubmissionFormData) => Promise<void>;

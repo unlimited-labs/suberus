@@ -193,7 +193,7 @@ export async function getPublicProgram(
 	};
 }
 
-export type { IssueKind, ScheduleIssue } from "./schedule-issues";
+export type { ScheduleIssue } from "./schedule-issues";
 
 async function loadIssueData() {
 	const [sessions, breaks] = await Promise.all([

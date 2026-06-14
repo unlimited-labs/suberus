@@ -13,7 +13,6 @@ const DATE_FORMAT_VALUES = [
 ] as const;
 
 export type DateFormatValue = (typeof DATE_FORMAT_VALUES)[number];
-export type TimeFormatValue = "24h" | "12h";
 
 // Map the stored (moment-style) format values to date-fns patterns.
 // Note: date-fns tokens are case-sensitive (DD = day-of-year, YYYY = week-year),

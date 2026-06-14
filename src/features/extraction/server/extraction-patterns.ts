@@ -13,8 +13,6 @@ export const INSTITUTION_RE =
 	/university|institute|politechnika|akademi|laboratory|department|faculty|research\s*network|łukasiewicz/i;
 export const SUSPICIOUS_NAME_CHARS = /[(){}[\]<>@#$%^&*=+\\|/~`"]/;
 export const CAPITALIZED_START = /^[A-ZÀ-ŽĄ-Ż]/;
-export const POSTAL_CODE_RE = /\d{2}-\d{3}\s/;
-export const CURLY_BRACE_EMAIL_RE = /\{([^}]+)\}@([\w.\-À-žĄ-ż]+\.\w{2,})/g;
 
 // Magic numbers
 export const MAX_TITLE_LENGTH = 300;

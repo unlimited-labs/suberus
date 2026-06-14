@@ -43,7 +43,6 @@ export const exhibitorApplicationSchema = z.object({
 	presentation: exhibitorPresentationSchema.optional(),
 });
 
-export type ExhibitorAuthorInput = z.infer<typeof exhibitorAuthorSchema>;
 export type ExhibitorPresentationInput = z.infer<
 	typeof exhibitorPresentationSchema
 >;

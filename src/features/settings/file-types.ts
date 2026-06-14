@@ -14,9 +14,6 @@ export type SupportedFileExtension = (typeof SUPPORTED_FILE_EXTENSIONS)[number];
  */
 export const SUPPORTED_IMAGE_EXTENSIONS = ["jpg", "png", "webp"] as const;
 
-export type SupportedImageExtension =
-	(typeof SUPPORTED_IMAGE_EXTENSIONS)[number];
-
 /** Labelled options for settings UIs (checkbox lists). */
 export const FILE_TYPE_OPTIONS = SUPPORTED_FILE_EXTENSIONS.map((value) => ({
 	value,

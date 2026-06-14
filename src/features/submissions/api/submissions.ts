@@ -491,7 +491,6 @@ export const submissionDetailQueryOptions = (submissionId: string) =>
 
 // Re-export types for use in components
 export type {
-	SubmissionDetail,
 	UserSubmission,
 	UserSubmissionAuthor,
 	UserSubmissionDecision,
