@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
+import { auth } from "@/features/auth/server/auth.server";
 import type { PublicProgram } from "@/lib/server/planner/schedule";
 import {
 	getCapacity,
@@ -16,7 +17,6 @@ import {
 	adminMiddleware,
 	authMiddleware,
 } from "@/shared/server/middleware/auth";
-import { auth } from "../../../auth.server";
 
 export const scheduleStateQueryOptions = () =>
 	queryOptions({

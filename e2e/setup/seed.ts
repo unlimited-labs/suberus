@@ -61,7 +61,7 @@ const SUBMISSION_TYPE_CONFIGS = {
 } satisfies Record<string, SubmissionTypeConfig>;
 
 async function seed() {
-	const { auth } = await import("../../auth.server");
+	const { auth } = await import("../../src/features/auth/server/auth.server");
 
 	const connectionString = process.env.DATABASE_URL;
 	if (!connectionString) throw new Error("DATABASE_URL not set for seed");

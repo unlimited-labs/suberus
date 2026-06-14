@@ -50,7 +50,7 @@ const BUILD_INPUTS = [
 	"package.json",
 	"playwright.config.ts",
 	"vite.config.ts",
-	"auth.server.ts",
+	"src/features/auth/server/auth.server.ts",
 ].map((p) => resolve(PROJECT_ROOT, p));
 
 function newestInputMtime(): number {

@@ -1,7 +1,7 @@
 import { redirect } from "@tanstack/react-router";
 import { createMiddleware } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
-import { auth } from "../../../../auth.server";
+import { auth } from "@/features/auth/server/auth.server";
 
 async function requireAuth() {
 	const session = await auth.api.getSession({ headers: getRequestHeaders() });

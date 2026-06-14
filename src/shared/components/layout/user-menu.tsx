@@ -9,9 +9,9 @@ import {
 } from "@tabler/icons-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { signOut } from "@/lib/auth-client";
 import { useTheme } from "@/shared/components/theme-provider";
 import { useSession } from "@/shared/hooks/use-session";
+import { signOut } from "@/shared/lib/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import {
 	DropdownMenu,

@@ -629,7 +629,7 @@ export async function createTestUser(
 	});
 
 	// Use Better Auth signup (handles password hashing and account creation)
-	const { auth } = await import("../../auth.server");
+	const { auth } = await import("../../src/features/auth/server/auth.server");
 	const result = await auth.api.signUpEmail({
 		body: {
 			email: options.email,

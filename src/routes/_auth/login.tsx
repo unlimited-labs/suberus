@@ -1,10 +1,10 @@
 import { IconMail } from "@tabler/icons-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { AuthCard } from "@/components/layout/auth-card";
-import { signIn } from "@/lib/auth-client";
+import { AuthCard } from "@/features/auth/components/auth-card";
 import { loginSchema } from "@/lib/validations/auth";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import { signIn } from "@/shared/lib/auth-client";
 
 export const Route = createFileRoute("/_auth/login")({
 	component: LoginPage,

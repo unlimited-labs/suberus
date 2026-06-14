@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { UserRole } from "@/generated/prisma/enums";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/shared/lib/auth-client";
 
 export interface SessionUser {
 	id: string;

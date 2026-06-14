@@ -29,11 +29,15 @@
   },
   // Added incrementally, one feature-zone per migration PR. Migrated so far
   // (autoDiscover finds them): submissions, profile, tracks, fee, workflow,
-  // activity-log. The
+  // activity-log, auth. The
   // other allow-list names are forward references that activate as those features
   // migrate. `shared` zone is declared ahead of its files. coverage.requireAllFiles
   // is intentionally left off until the last feature lands (un-migrated src/lib
   // would drown it).
+  //
+  // auth deferred edges (kept at warn until resolved): auth -> submissions
+  // (linkCoAuthorsByEmail) is a backwards core->app edge; settings/invitations
+  // are still in src/lib (untracked) so getSetting/applyInvitationRole carry over.
   "boundaries": {
     "zones": [
       { "name": "routes", "patterns": ["src/routes/**"] },
@@ -74,6 +78,10 @@
       {
         "from": "activity-log",
         "allow": ["shared"]
+      },
+      {
+        "from": "auth",
+        "allow": ["shared", "settings", "activity-log"]
       }
     ]
   }

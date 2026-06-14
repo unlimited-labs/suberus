@@ -11,8 +11,8 @@ import { toast } from "sonner";
 import { BillingFieldsGroup } from "@/components/forms/composable/billing-fields-group";
 import type { ContactInfoFormData } from "@/features/profile/validations";
 import { contactInfoSchema } from "@/features/profile/validations";
-import { sendVerificationEmail } from "@/lib/auth-client";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import { sendVerificationEmail } from "@/shared/lib/auth-client";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 
 interface ContactInfoSectionProps {

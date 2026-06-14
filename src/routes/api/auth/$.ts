@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { auth } from "../../../../auth.server";
+import { auth } from "@/features/auth/server/auth.server";
 
 // better-auth passes `ctx.request?.clone()` to callbacks (e.g.
 // sendVerificationEmail, see better-auth PR #9619). Under concurrent load the

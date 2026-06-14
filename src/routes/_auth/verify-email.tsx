@@ -3,8 +3,8 @@ import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { AuthCard } from "@/components/layout/auth-card";
-import { sendVerificationEmail } from "@/lib/auth-client";
+import { AuthCard } from "@/features/auth/components/auth-card";
+import { sendVerificationEmail } from "@/shared/lib/auth-client";
 import { Button } from "@/shared/ui/button";
 
 const searchSchema = z.object({

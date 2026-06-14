@@ -6,7 +6,7 @@ import {
 } from "@tabler/icons-react";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { AuthLayout } from "@/components/layout/auth-layout";
+import { AuthLayout } from "@/features/auth/components/auth-layout";
 import { installSchema } from "@/lib/validations/install";
 import {
 	checkInstallStatusFn,

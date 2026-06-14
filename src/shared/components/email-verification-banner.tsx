@@ -1,8 +1,8 @@
 import { IconAlertTriangle, IconRefresh, IconX } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { sendVerificationEmail } from "@/lib/auth-client";
 import { useSession } from "@/shared/hooks/use-session";
+import { sendVerificationEmail } from "@/shared/lib/auth-client";
 import { Alert, AlertAction, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 

@@ -1,20 +1,20 @@
-import { PrismaClient, UserRole } from "@/generated/prisma/client"
-import { betterAuth } from "better-auth"
-import { prismaAdapter } from "better-auth/adapters/prisma"
-import { tanstackStartCookies } from "better-auth/tanstack-start"
-import { PrismaPg } from "@prisma/adapter-pg"
-import { randomUUID } from "crypto"
-import "dotenv/config"
-import { sendEmail } from "@/shared/server/email"
-import { logger } from "@/logger.ts"
-import { getSetting } from "@/lib/server/settings"
-import { applyInvitationRole } from "@/lib/server/admin/invitations"
-import { linkCoAuthorsByEmail } from "@/features/submissions/server/submissions"
-import { env } from "@/env"
+import { randomUUID } from "node:crypto";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { betterAuth } from "better-auth";
+import { prismaAdapter } from "better-auth/adapters/prisma";
+import { tanstackStartCookies } from "better-auth/tanstack-start";
+import { PrismaClient, UserRole } from "@/generated/prisma/client";
+import "dotenv/config";
+import { env } from "@/env";
+import { linkCoAuthorsByEmail } from "@/features/submissions/server/submissions";
+import { applyInvitationRole } from "@/lib/server/admin/invitations";
+import { getSetting } from "@/lib/server/settings";
+import { logger } from "@/logger.ts";
+import { sendEmail } from "@/shared/server/email";
 
-const connectionString = env.DATABASE_URL
-const adapter = new PrismaPg({ connectionString })
-const prisma = new PrismaClient({ adapter })
+const connectionString = env.DATABASE_URL;
+const adapter = new PrismaPg({ connectionString });
+const prisma = new PrismaClient({ adapter });
 
 export const auth = betterAuth({
 	baseURL: env.APP_BASE_URL,
@@ -53,12 +53,12 @@ export const auth = betterAuth({
 		requireEmailVerification: false, // Soft-block: users can login, but app restricts actions
 		minPasswordLength: 10,
 		sendResetPassword: async ({ user, url }) => {
-			const extUser = user as typeof user & { firstName?: string }
+			const extUser = user as typeof user & { firstName?: string };
 			await sendEmail("PASSWORD_RESET", user.email, {
 				firstName: extUser.firstName ?? user.email,
 				resetUrl: url,
 				conferenceName: await getSetting("CONFERENCE_NAME"),
-			})
+			});
 		},
 	},
 	emailVerification: {
@@ -67,12 +67,12 @@ export const auth = betterAuth({
 		callbackURL: "/?verified=true",
 		expiresIn: 24 * 60 * 60, // 24h
 		sendVerificationEmail: async ({ user, url }) => {
-			const extUser = user as typeof user & { firstName?: string }
+			const extUser = user as typeof user & { firstName?: string };
 			await sendEmail("EMAIL_VERIFICATION", user.email, {
 				firstName: extUser.firstName ?? user.email,
 				verificationUrl: url,
 				conferenceName: await getSetting("CONFERENCE_NAME"),
-			})
+			});
 		},
 	},
 	user: {
@@ -146,64 +146,77 @@ export const auth = betterAuth({
 					await prisma.user.update({
 						where: { id: session.userId },
 						data: { lastLoginAt: new Date() },
-					})
+					});
 				},
 			},
 		},
 		user: {
 			create: {
 				after: async (user) => {
-					const { logActivity } = await import("@/features/activity-log/server/activity-log")
-					const { activityDetail } = await import("@/features/activity-log/types")
+					const { logActivity } = await import(
+						"@/features/activity-log/server/activity-log"
+					);
+					const { activityDetail } = await import(
+						"@/features/activity-log/types"
+					);
 					await logActivity({
 						type: "USER_REGISTERED",
 						userId: user.id,
 						detail: activityDetail("USER_REGISTERED", { email: user.email }),
-					})
-					const extUser = user as typeof user & { firstName?: string; affiliationId?: string }
+					});
+					const extUser = user as typeof user & {
+						firstName?: string;
+						affiliationId?: string;
+					};
 					void sendEmail("ACCOUNT_CREATED", user.email, {
 						firstName: extUser.firstName ?? user.email,
 						conferenceName: await getSetting("CONFERENCE_NAME"),
-					})
+					});
 					// Notify admin about new registration
-					const contactEmail = await getSetting("CONTACT_EMAIL")
+					const contactEmail = await getSetting("CONTACT_EMAIL");
 					if (contactEmail) {
-						let affiliationName = ""
+						let affiliationName = "";
 						if (extUser.affiliationId) {
-							const { prisma: dbClient } = await import("@/shared/server/db.server")
+							const { prisma: dbClient } = await import(
+								"@/shared/server/db.server"
+							);
 							const affiliation = await dbClient.affiliation.findUnique({
 								where: { id: extUser.affiliationId },
 								select: { name: true },
-							})
-							affiliationName = affiliation?.name ?? ""
+							});
+							affiliationName = affiliation?.name ?? "";
 						}
 						void sendEmail("NEW_REGISTRATION_NOTIFY", contactEmail, {
 							firstName: extUser.firstName ?? "",
 							lastName: user.name ?? "",
 							affiliation: affiliationName,
-						})
+						});
 					}
 				},
 			},
 			update: {
 				after: async (user) => {
-					if (!user.emailVerified) return
-					await linkCoAuthorsByEmail(user.email, user.id)
-					await applyInvitationRole(user.id, user.email)
+					if (!user.emailVerified) return;
+					await linkCoAuthorsByEmail(user.email, user.id);
+					await applyInvitationRole(user.id, user.email);
 					// Log self-service email verification (idempotent — checks if already logged)
-					const { prisma: dbClient } = await import("@/shared/server/db.server")
+					const { prisma: dbClient } = await import(
+						"@/shared/server/db.server"
+					);
 					const alreadyLogged = await dbClient.activityLog.findFirst({
 						where: { userId: user.id, type: "USER_EMAIL_VERIFIED" },
-					})
+					});
 					if (!alreadyLogged) {
-						const { logActivity } = await import("@/features/activity-log/server/activity-log")
+						const { logActivity } = await import(
+							"@/features/activity-log/server/activity-log"
+						);
 						await logActivity({
 							type: "USER_EMAIL_VERIFIED",
 							userId: user.id,
-						})
+						});
 					}
 				},
 			},
 		},
 	},
-})
+});

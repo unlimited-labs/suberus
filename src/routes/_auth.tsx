@@ -7,7 +7,7 @@ import {
 import { isValid } from "date-fns";
 import type { CSSProperties } from "react";
 import { useEffect } from "react";
-import { AuthLayout } from "@/components/layout/auth-layout";
+import { AuthLayout } from "@/features/auth/components/auth-layout";
 import { APP_SETTINGS_DEFAULTS } from "@/lib/settings/defaults";
 import type { AuthPageBranding } from "@/server-fns/settings";
 import { getAuthPageBrandingFn } from "@/server-fns/settings";

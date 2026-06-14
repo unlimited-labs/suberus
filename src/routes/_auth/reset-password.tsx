@@ -8,10 +8,10 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { PasswordFieldsGroup } from "@/components/forms/composable/password-fields-group";
-import { AuthCard } from "@/components/layout/auth-card";
-import { resetPassword } from "@/lib/auth-client";
+import { AuthCard } from "@/features/auth/components/auth-card";
 import { resetPasswordSchema } from "@/lib/validations/auth";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import { resetPassword } from "@/shared/lib/auth-client";
 
 const searchSchema = z.object({
 	token: z.string().optional(),

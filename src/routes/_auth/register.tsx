@@ -14,16 +14,15 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { AffiliationSelect } from "@/components/forms/affiliation-select";
 import { SurveyQuestionField } from "@/components/forms/survey/survey-question-field";
-import { AuthCard } from "@/components/layout/auth-card";
-import { TosModal } from "@/components/tos-modal";
+import { checkEmailAvailableFn } from "@/features/auth/api/auth";
+import { AuthCard } from "@/features/auth/components/auth-card";
+import { TosModal } from "@/features/auth/components/tos-modal";
 import { useMultiStep } from "@/hooks/use-multi-step";
-import { signUp } from "@/lib/auth-client";
 import { detectCountry } from "@/lib/detect-country";
 import { titleOptions } from "@/lib/labels";
 import { roleLabels } from "@/lib/labels/user";
 import { registerBase, registerSchema } from "@/lib/validations/auth";
 import { surveyAnswerRequiredError } from "@/lib/validations/survey";
-import { checkEmailAvailableFn } from "@/server-fns/auth";
 import {
 	becomeExhibitorFn,
 	exhibitorSignupAvailableFn,
@@ -40,6 +39,7 @@ import {
 	saveUserSurveyAnswersFn,
 } from "@/server-fns/settings/survey";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import { signUp } from "@/shared/lib/auth-client";
 import { cn } from "@/shared/lib/utils";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";

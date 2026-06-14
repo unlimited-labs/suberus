@@ -1,6 +1,6 @@
 import { getRouteApi } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { AuthSidebar } from "@/components/forms/auth-sidebar";
+import { AuthSidebar } from "@/features/auth/components/auth-sidebar";
 import { cn } from "@/shared/lib/utils";
 
 interface Step {
