@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { markOverdueAssignments } from "@/lib/server/assignments";
+import { markOverdueAssignments } from "@/features/reviews/server/assignments";
 import {
 	sendDeadlineReminders,
 	sendReviewerReminders,

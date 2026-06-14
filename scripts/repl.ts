@@ -10,8 +10,8 @@ import { consola } from "consola";
 const MODULE_REGISTRY: Record<string, string> = {
 	workflow: "@/features/workflow/server/workflow",
 	submissions: "@/features/submissions/server/submissions",
-	reviews: "@/lib/server/reviews",
-	assignments: "@/lib/server/assignments",
+	reviews: "@/features/reviews/server/reviews",
+	assignments: "@/features/reviews/server/assignments",
 	settings: "@/features/settings/server/settings",
 	"admin-subs": "@/features/submissions/server/admin-submissions",
 	"admin-users": "@/lib/server/admin/users",

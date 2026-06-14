@@ -4,6 +4,7 @@ import {
 	logActivityTx,
 } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
+import { assignReviewer } from "@/features/reviews/server/assignments";
 import { getSubmissionTypeConfigs } from "@/features/settings/server/settings";
 import {
 	type SubmissionTodo,
@@ -17,7 +18,6 @@ import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
-import { assignReviewer } from "@/lib/server/assignments";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
 import { deleteFile } from "@/shared/server/storage";

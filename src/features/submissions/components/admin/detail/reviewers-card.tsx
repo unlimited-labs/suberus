@@ -2,7 +2,7 @@ import { IconClock } from "@tabler/icons-react";
 import {
 	assignmentStatusLabels,
 	assignmentStatusVariants,
-} from "@/lib/labels/assignment";
+} from "@/features/reviews/labels";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";

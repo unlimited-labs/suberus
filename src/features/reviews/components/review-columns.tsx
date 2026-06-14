@@ -10,14 +10,14 @@ import {
 	DataTableColumnHeader,
 	facetedFilterFn,
 } from "@/components/admin/data-table";
-import { typeFilterOptions, typeLabels } from "@/features/submissions/labels";
-import type { AssignmentStatus } from "@/generated/prisma/enums";
+import type { ReviewerAssignment } from "@/features/reviews/api/assignments";
 import {
 	assignmentStatusFilterOptions,
 	assignmentStatusLabels,
 	assignmentStatusVariants,
-} from "@/lib/labels/assignment";
-import type { ReviewerAssignment } from "@/server-fns/reviews/assignments";
+} from "@/features/reviews/labels";
+import { typeFilterOptions, typeLabels } from "@/features/submissions/labels";
+import type { AssignmentStatus } from "@/generated/prisma/enums";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";

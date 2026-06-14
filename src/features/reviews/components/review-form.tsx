@@ -18,14 +18,14 @@ import {
 } from "@tabler/icons-react";
 import { useStore } from "@tanstack/react-form";
 import { useMemo, useState } from "react";
+import {
+	createReviewSchema,
+	type ReviewFormData,
+} from "@/features/reviews/validations";
 import { FILE_ACCEPT_ATTRIBUTE } from "@/features/settings/file-types";
 import { FileDropzone } from "@/features/submissions/components/form/file-dropzone";
 import { typeLabels } from "@/features/submissions/labels";
 import type { ReviewDecision, SubmissionType } from "@/generated/prisma/enums";
-import {
-	createReviewSchema,
-	type ReviewFormData,
-} from "@/lib/validations/review";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { cn, formatFileSize } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";

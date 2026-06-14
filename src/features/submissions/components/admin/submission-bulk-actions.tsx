@@ -3,6 +3,7 @@ import type { Table } from "@tanstack/react-table";
 import { useState } from "react";
 import { toast } from "sonner";
 import { BulkActionDialog } from "@/components/admin/data-table";
+import { reviewerUsersQueryOptions } from "@/features/reviews/api/reviewers";
 import {
 	bulkAssignReviewerFn,
 	bulkChangeStatusFn,
@@ -12,7 +13,6 @@ import { statusChangeOptions } from "@/features/submissions/labels";
 import type { AdminSubmission } from "@/features/submissions/server/admin-submissions";
 import type { AvailableTrack } from "@/features/submissions/types";
 import type { SubmissionStatus } from "@/generated/prisma/enums";
-import { reviewerUsersQueryOptions } from "@/server-fns/reviews/reviewers";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
 import {

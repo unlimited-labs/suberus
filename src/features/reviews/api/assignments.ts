@@ -10,7 +10,7 @@ import {
 	getReviewerAssignments,
 	getSubmissionAssignments,
 	type ReviewerAssignment,
-} from "@/lib/server/assignments";
+} from "@/features/reviews/server/assignments";
 import {
 	adminMiddleware,
 	authMiddleware,

@@ -29,7 +29,7 @@
   },
   // Added incrementally, one feature-zone per migration PR. Migrated so far
   // (autoDiscover finds them): submissions, profile, tracks, fee, workflow,
-  // activity-log, auth, settings, survey, email-templates, install, extraction. The
+  // activity-log, auth, settings, survey, email-templates, install, extraction, reviews. The
   // other allow-list names are forward references that activate as those features
   // migrate. `shared` zone is declared ahead of its files. coverage.requireAllFiles
   // is intentionally left off until the last feature lands (un-migrated src/lib
@@ -57,7 +57,7 @@
       },
       {
         "from": "submissions",
-        "allow": ["shared", "workflow", "settings", "activity-log", "auth", "extraction"],
+        "allow": ["shared", "workflow", "settings", "activity-log", "auth", "extraction", "reviews"],
         "allowTypeOnly": ["workflow", "settings"]
       },
       {
@@ -66,7 +66,7 @@
       },
       {
         "from": "tracks",
-        "allow": ["shared", "auth"]
+        "allow": ["shared", "auth", "reviews"]
       },
       {
         "from": "fee",
@@ -109,6 +109,14 @@
         "from": "extraction",
         "allow": ["shared", "settings"],
         "allowTypeOnly": ["submissions"]
+      },
+      {
+        // CORE feature (consumed by submissions + tracks). Deferred warn:
+        // reviews->submissions VALUE back-edge — 3 components import FileDropzone
+        // + submission typeLabels/typeFilterOptions. NOT allowed (kept visible);
+        // resolve by lifting FileDropzone to shared/components.
+        "from": "reviews",
+        "allow": ["shared", "workflow", "settings", "activity-log"]
       }
     ]
   }

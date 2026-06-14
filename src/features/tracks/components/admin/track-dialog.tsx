@@ -1,12 +1,12 @@
 import { IconLoader2 } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import type { ReviewerUser } from "@/features/reviews/server/reviewers";
 import {
 	createTrackFn,
 	updateTrackFn,
 } from "@/features/tracks/api/admin-tracks";
 import type { TrackWithStats } from "@/features/tracks/server/admin-tracks";
-import type { ReviewerUser } from "@/lib/server/reviewers";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
 import {

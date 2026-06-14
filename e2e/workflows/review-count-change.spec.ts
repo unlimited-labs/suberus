@@ -157,7 +157,7 @@ test.describe("Reviewer count change — cancel triggers completion", () => {
 
 		// Cancel the pending reviewer — should trigger completion re-check
 		const { cancelAssignment } = await import(
-			"../../src/lib/server/assignments"
+			"../../src/features/reviews/server/assignments"
 		);
 		const result = await cancelAssignment(pendingIds[0], adminUserId);
 		expect(result.success).toBe(true);
@@ -197,7 +197,7 @@ test.describe("Reviewer count change — cancel triggers completion", () => {
 
 		// Cancel the pending reviewer
 		const { cancelAssignment } = await import(
-			"../../src/lib/server/assignments"
+			"../../src/features/reviews/server/assignments"
 		);
 		const result = await cancelAssignment(pendingIds[0], adminUserId);
 		expect(result.success).toBe(true);
@@ -237,7 +237,7 @@ test.describe("Reviewer count change — cancel triggers completion", () => {
 
 		// Cancel 1 pending → 2 assigned (1 completed, 1 pending), requiredReviewers=2
 		const { cancelAssignment } = await import(
-			"../../src/lib/server/assignments"
+			"../../src/features/reviews/server/assignments"
 		);
 		const result = await cancelAssignment(pendingIds[0], adminUserId);
 		expect(result.success).toBe(true);

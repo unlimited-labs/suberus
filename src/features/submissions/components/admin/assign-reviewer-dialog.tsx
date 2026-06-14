@@ -9,7 +9,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { addDays, format } from "date-fns";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { assignmentStatusVariants } from "@/lib/labels/assignment";
 import {
 	type AssignmentWithReviewer,
 	type AvailableReviewer,
@@ -17,7 +16,8 @@ import {
 	cancelAssignmentFn,
 	getAvailableReviewersFn,
 	getSubmissionAssignmentsFn,
-} from "@/server-fns/reviews/assignments";
+} from "@/features/reviews/api/assignments";
+import { assignmentStatusVariants } from "@/features/reviews/labels";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";

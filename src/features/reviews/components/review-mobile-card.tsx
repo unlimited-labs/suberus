@@ -5,12 +5,12 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { differenceInCalendarDays } from "date-fns";
-import { typeLabels } from "@/features/submissions/labels";
+import type { ReviewerAssignment } from "@/features/reviews/api/assignments";
 import {
 	assignmentStatusLabels,
 	assignmentStatusVariants,
-} from "@/lib/labels/assignment";
-import type { ReviewerAssignment } from "@/server-fns/reviews/assignments";
+} from "@/features/reviews/labels";
+import { typeLabels } from "@/features/submissions/labels";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";

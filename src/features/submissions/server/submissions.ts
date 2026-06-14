@@ -2,6 +2,7 @@ import type { Session, User } from "better-auth/types";
 import latinize from "latinize";
 import { env } from "@/env";
 import { logActivity } from "@/features/activity-log/server/activity-log";
+import { assignReviewer } from "@/features/reviews/server/assignments";
 import { getSetting } from "@/features/settings/server/settings";
 import { SUBMISSION_TYPE_TO_KEY } from "@/features/settings/types";
 import type { CreateSubmissionInput } from "@/features/submissions/validations";
@@ -14,7 +15,6 @@ import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
-import { assignReviewer } from "@/lib/server/assignments";
 import { logger } from "@/logger.ts";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";

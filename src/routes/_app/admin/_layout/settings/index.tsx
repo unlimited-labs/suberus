@@ -31,6 +31,7 @@ import {
 } from "@/features/extraction/api/extraction";
 import { paymentInstructionsQueryOptions } from "@/features/fee/api/fee";
 import { FeeTab } from "@/features/fee/components/admin/fee-tab";
+import { reviewerUsersQueryOptions } from "@/features/reviews/api/reviewers";
 import {
 	adminSettingQueryOptions,
 	brandingSettingsQueryOptions,
@@ -55,7 +56,6 @@ import { allTracksQueryOptions } from "@/features/tracks/api/admin-tracks";
 import { TracksTab } from "@/features/tracks/components/admin/tracks-tab";
 import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
 import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
-import { reviewerUsersQueryOptions } from "@/server-fns/reviews/reviewers";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
