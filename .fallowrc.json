@@ -13,39 +13,38 @@
     // Hide pair-only clones; focus on widespread copy-paste
     // worth refactoring. Lower to 2 to report every duplicate pair.
     "minOccurrences": 3
-    // Common additions (uncomment to enable):
-    // "ignore": [
-    //   "**/lib/**",          // for repos that publish transpiled output to lib/
-    //   "**/legacy/**",       // for repos with legacy-build artifacts
-    //   "**/__generated__/**", // Relay, GraphQL Code Generator
-    //   "**/generated/**"     // OpenAPI, Protobuf codegen
-    // ]
   },
   "rules": {
     "unused-dependencies": "warn",
-    // Feature-slice boundaries. Starts at "warn" during migration; flip to
-    // "error" once a feature is fully decoupled (see dev-docs/ARCHITECTURE.md).
-    "boundary-violation": "warn"
+    // Feature-slice boundaries. All features migrated + decoupled; enforced.
+    "boundary-violation": "error"
   },
-  // Added incrementally, one feature-zone per migration PR. ALL FEATURES NOW MIGRATED
-  // (autoDiscover finds them): submissions, profile, tracks, fee, workflow, activity-log,
-  // auth, settings, survey, email-templates, install, extraction, reviews, planner,
-  // exhibitors, users, invitations, dashboard. `shared` zone is declared ahead of its
-  // files. coverage.requireAllFiles still OFF — turn ON once the remaining un-migrated
-  // `src/lib/*` carry-over utils are placed (format-llm-status, country-centroids,
-  // health-cache, validate-upload, form-upload, job-progress, reminders, affiliations,
-  // zod-helpers, etc.). Before flipping boundary-violation warn->error: resolve the
-  // deferred edges below + the pg-boss worker-registration inversion.
-  //
-  // auth deferred edges (kept at warn until resolved): backwards core->app edges
-  // auth -> submissions (linkCoAuthorsByEmail) and auth -> invitations
-  // (applyInvitationRole, now a TRACKED warn since invitations migrated). auth
-  // deliberately does NOT allow either, so they stay visible.
+  // Feature-first vertical slices (see dev-docs/ARCHITECTURE.md). Each feature is
+  // its own zone, so a sibling app-feature import fails. `shared` is the floor
+  // (imports nothing above it); `routes` compose anything; core features may be
+  // imported by app features but never import an app feature.
   "boundaries": {
     "zones": [
       { "name": "routes", "patterns": ["src/routes/**"] },
       { "name": "shared", "patterns": ["src/shared/**"] },
-      { "name": "features", "autoDiscover": ["src/features"] }
+      { "name": "workflow", "patterns": ["src/features/workflow/**"] },
+      { "name": "settings", "patterns": ["src/features/settings/**"] },
+      { "name": "activity-log", "patterns": ["src/features/activity-log/**"] },
+      { "name": "auth", "patterns": ["src/features/auth/**"] },
+      { "name": "survey", "patterns": ["src/features/survey/**"] },
+      { "name": "extraction", "patterns": ["src/features/extraction/**"] },
+      { "name": "reviews", "patterns": ["src/features/reviews/**"] },
+      { "name": "exhibitors", "patterns": ["src/features/exhibitors/**"] },
+      { "name": "submissions", "patterns": ["src/features/submissions/**"] },
+      { "name": "planner", "patterns": ["src/features/planner/**"] },
+      { "name": "fee", "patterns": ["src/features/fee/**"] },
+      { "name": "profile", "patterns": ["src/features/profile/**"] },
+      { "name": "users", "patterns": ["src/features/users/**"] },
+      { "name": "invitations", "patterns": ["src/features/invitations/**"] },
+      { "name": "dashboard", "patterns": ["src/features/dashboard/**"] },
+      { "name": "tracks", "patterns": ["src/features/tracks/**"] },
+      { "name": "email-templates", "patterns": ["src/features/email-templates/**"] },
+      { "name": "install", "patterns": ["src/features/install/**"] }
     ],
     "rules": [
       { "from": "shared", "allow": [] },
@@ -58,109 +57,44 @@
           "email-templates", "install"
         ]
       },
+      { "from": "workflow", "allow": ["shared", "settings", "activity-log", "auth"] },
+      { "from": "settings", "allow": ["shared", "extraction", "exhibitors", "auth"] },
+      { "from": "activity-log", "allow": ["shared"] },
+      { "from": "auth", "allow": ["shared", "settings", "activity-log"] },
+      { "from": "survey", "allow": ["shared", "settings", "auth"] },
+      { "from": "extraction", "allow": ["shared", "settings", "auth"] },
+      { "from": "reviews", "allow": ["shared", "workflow", "settings", "activity-log", "auth"] },
+      { "from": "exhibitors", "allow": ["shared", "activity-log", "settings", "workflow", "auth"] },
       {
         "from": "submissions",
-        "allow": ["shared", "workflow", "settings", "activity-log", "auth", "extraction", "reviews"],
-        "allowTypeOnly": ["workflow", "settings"]
+        "allow": ["shared", "workflow", "settings", "activity-log", "auth", "extraction", "reviews"]
       },
-      {
-        "from": "profile",
-        "allow": ["shared", "settings", "activity-log", "auth", "survey"]
-      },
-      {
-        "from": "tracks",
-        "allow": ["shared", "auth", "reviews"]
-      },
-      {
-        "from": "fee",
-        "allow": ["shared", "settings", "auth"]
-      },
-      {
-        "from": "workflow",
-        "allow": ["shared", "settings", "activity-log"]
-      },
-      {
-        "from": "activity-log",
-        "allow": ["shared"]
-      },
-      {
-        "from": "auth",
-        "allow": ["shared", "settings", "activity-log"]
-      },
-      {
-        "from": "settings",
-        "allow": ["shared", "extraction", "exhibitors"]
-      },
-      {
-        "from": "survey",
-        "allow": ["shared", "settings"]
-      },
-      {
-        "from": "email-templates",
-        "allow": ["shared", "settings"]
-      },
-      {
-        "from": "install",
-        "allow": ["shared", "settings", "auth"]
-      },
-      {
-        // CORE feature. allowTypeOnly:[submissions] = the type-only `Author`
-        // import in use-document-extraction (erased at build) — deferred edge,
-        // resolve by lifting Author to shared types. (The shared/queue->worker
-        // back-edge was RESOLVED — workers register via src/pg-boss-workers,
-        // an untracked composition module imported by queue.ts's initBoss.)
-        "from": "extraction",
-        "allow": ["shared", "settings"],
-        "allowTypeOnly": ["submissions"]
-      },
-      {
-        // CORE feature (consumed by submissions + tracks). Deferred warn:
-        // reviews->submissions VALUE back-edge — 3 components import FileDropzone
-        // + submission typeLabels/typeFilterOptions. NOT allowed (kept visible);
-        // resolve by lifting FileDropzone to shared/components.
-        "from": "reviews",
-        "allow": ["shared", "workflow", "settings", "activity-log"]
-      },
-      {
-        // APP feature (no feature imports planner). Deferred warn (kept visible):
-        // shared/components/layout/sidebar -> planner/api/schedule (backwards
-        // shared->planner; resolve via props/context). (The shared/queue->autoplan
-        // worker back-edge was RESOLVED via src/pg-boss-workers, an untracked
-        // composition module imported by queue.ts's initBoss.)
-        "from": "planner",
-        "allow": ["shared", "settings", "auth"]
-      },
-      {
-        // CORE feature (provides the settings exhibitor section; consumed by settings).
-        // Deferred warns (kept visible, NOT in allow): exhibitors->submissions VALUE
-        // (exhibitor-application-form imports AuthorsInput) — lift AuthorsInput+FileDropzone
-        // to shared. shared/components/layout/sidebar -> exhibitors/api (backwards shared->core).
-        "from": "exhibitors",
-        "allow": ["shared", "activity-log", "settings", "workflow"]
-      },
-      {
-        // APP feature (admin user mgmt; a hub). Forced APP — imports app features.
-        // Deferred sibling warns (kept visible, NOT in allow): OUT users->submissions
-        // (linkCoAuthorsByEmail + submission typeLabels/statusLabels), users->profile
-        // (adminUserEditSchema). IN planner->users (chair picker adminUsersQueryOptions),
-        // invitations->users (roleLabels). Resolve by lifting shared bits before error flip.
-        "from": "users",
-        "allow": ["shared", "activity-log", "survey", "settings", "auth"]
-      },
-      {
-        // APP feature (admin invite mgmt + participant accept-on-register). Forced APP
-        // — imports users (roleLabels). Deferred warns (kept visible, NOT in allow):
-        // invitations->users (roleLabels) sibling; auth->invitations (applyInvitationRole)
-        // backwards core->app (lives in auth's allow comment, not here).
-        "from": "invitations",
-        "allow": ["shared", "activity-log", "settings"]
-      },
-      {
-        // APP feature (admin metrics/health + participant home metrics). Clean LEAF —
-        // aggregates via direct prisma queries, imports NO other app feature. No deferred warns.
-        "from": "dashboard",
-        "allow": ["shared", "settings", "activity-log"]
-      }
-    ]
+      { "from": "planner", "allow": ["shared", "settings", "auth"] },
+      { "from": "fee", "allow": ["shared", "settings", "auth"] },
+      { "from": "profile", "allow": ["shared", "settings", "activity-log", "auth", "survey"] },
+      { "from": "users", "allow": ["shared", "activity-log", "survey", "settings", "auth"] },
+      { "from": "invitations", "allow": ["shared", "activity-log", "settings", "auth"] },
+      { "from": "dashboard", "allow": ["shared", "settings", "activity-log", "auth"] },
+      { "from": "tracks", "allow": ["shared", "auth", "reviews"] },
+      { "from": "email-templates", "allow": ["shared", "settings", "auth"] },
+      { "from": "install", "allow": ["shared", "settings", "auth"] }
+    ],
+    "coverage": {
+      "requireAllFiles": true,
+      "allowUnmatched": [
+        "src/*.ts",
+        "src/*.tsx",
+        "src/*.css",
+        "src/server/**",
+        "src/generated/**",
+        "src/integrations/**",
+        "src/routeTree.gen.ts",
+        "*.ts",
+        "e2e/**",
+        "docs/**",
+        "scripts/**",
+        "prisma/**"
+      ]
+    }
   }
 }
