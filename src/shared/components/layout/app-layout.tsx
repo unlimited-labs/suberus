@@ -10,6 +10,8 @@ interface AppLayoutProps {
 	logoUrl: string;
 	footerText: string;
 	logoDarkInvert: boolean;
+	scheduleStatus?: string;
+	exhibitorsEnabled: boolean;
 }
 
 export function AppLayout({
@@ -18,6 +20,8 @@ export function AppLayout({
 	logoUrl,
 	footerText,
 	logoDarkInvert,
+	scheduleStatus,
+	exhibitorsEnabled,
 }: AppLayoutProps) {
 	return (
 		<div className="flex h-screen bg-sidebar">
@@ -25,6 +29,8 @@ export function AppLayout({
 				conferenceName={conferenceName}
 				logoUrl={logoUrl}
 				logoDarkInvert={logoDarkInvert}
+				scheduleStatus={scheduleStatus}
+				exhibitorsEnabled={exhibitorsEnabled}
 			/>
 			<div className="flex flex-1 flex-col overflow-hidden">
 				{/* Mobile header with hamburger */}
@@ -33,6 +39,8 @@ export function AppLayout({
 						conferenceName={conferenceName}
 						logoUrl={logoUrl}
 						logoDarkInvert={logoDarkInvert}
+						scheduleStatus={scheduleStatus}
+						exhibitorsEnabled={exhibitorsEnabled}
 					/>
 					<div className="ml-3 flex items-center gap-3">
 						{logoUrl ? (

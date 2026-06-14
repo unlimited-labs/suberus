@@ -1,9 +1,6 @@
 import { IconExternalLink, IconMenu2 } from "@tabler/icons-react";
-import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { exhibitorSignupAvailableQueryOptions } from "@/features/exhibitors/api/exhibitors";
-import { scheduleStateQueryOptions } from "@/features/planner/api/schedule";
 import { useSession } from "@/shared/hooks/use-session";
 import { getNavigationForRole } from "@/shared/lib/navigation";
 import { cn } from "@/shared/lib/utils";
@@ -22,24 +19,27 @@ interface SidebarProps {
 	conferenceName: string;
 	logoUrl: string;
 	logoDarkInvert: boolean;
+	/** Planner schedule status + exhibitor-signup flag are supplied by the route
+	 * (which may import those slices), keeping this shared layout decoupled from
+	 * the planner/exhibitors features. */
+	scheduleStatus?: string;
+	exhibitorsEnabled: boolean;
 }
 
 function SidebarContent({
 	conferenceName,
 	logoUrl,
 	logoDarkInvert,
+	scheduleStatus,
+	exhibitorsEnabled,
 }: SidebarProps) {
 	const location = useLocation();
 	const { user } = useSession();
-	const { data: scheduleState } = useQuery(scheduleStateQueryOptions());
-	const { data: exhibitorsEnabled } = useQuery(
-		exhibitorSignupAvailableQueryOptions(),
-	);
-	const status = scheduleState?.status;
 	const role = user?.role ?? "AUTHOR";
 	const canSeeDraft = role === "ADMIN" || role === "EDITOR";
 	const programVisible =
-		status === "PUBLISHED" || (status === "DRAFT_PUBLISHED" && canSeeDraft);
+		scheduleStatus === "PUBLISHED" ||
+		(scheduleStatus === "DRAFT_PUBLISHED" && canSeeDraft);
 	const sections = useMemo(
 		() =>
 			getNavigationForRole(role)
@@ -48,7 +48,7 @@ function SidebarContent({
 					items: section.items.filter(
 						(item) =>
 							(!item.requiresPublishedSchedule || programVisible) &&
-							(!item.requiresExhibitorsEnabled || exhibitorsEnabled === true),
+							(!item.requiresExhibitorsEnabled || exhibitorsEnabled),
 					),
 				}))
 				.filter((section) => section.items.length > 0),
@@ -131,27 +131,15 @@ function SidebarContent({
 	);
 }
 
-export function Sidebar({
-	conferenceName,
-	logoUrl,
-	logoDarkInvert,
-}: SidebarProps) {
+export function Sidebar(props: SidebarProps) {
 	return (
 		<aside className="hidden w-56 shrink-0 bg-sidebar md:flex md:flex-col">
-			<SidebarContent
-				conferenceName={conferenceName}
-				logoUrl={logoUrl}
-				logoDarkInvert={logoDarkInvert}
-			/>
+			<SidebarContent {...props} />
 		</aside>
 	);
 }
 
-export function MobileSidebar({
-	conferenceName,
-	logoUrl,
-	logoDarkInvert,
-}: SidebarProps) {
+export function MobileSidebar(props: SidebarProps) {
 	return (
 		<Sheet>
 			<SheetTrigger asChild>
@@ -165,11 +153,7 @@ export function MobileSidebar({
 				<SheetDescription className="sr-only">
 					Main application navigation.
 				</SheetDescription>
-				<SidebarContent
-					conferenceName={conferenceName}
-					logoUrl={logoUrl}
-					logoDarkInvert={logoDarkInvert}
-				/>
+				<SidebarContent {...props} />
 			</SheetContent>
 		</Sheet>
 	);

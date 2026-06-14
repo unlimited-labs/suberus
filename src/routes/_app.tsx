@@ -1,6 +1,9 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import type { CSSProperties } from "react";
 import { useEffect } from "react";
+import { exhibitorSignupAvailableQueryOptions } from "@/features/exhibitors/api/exhibitors";
+import { scheduleStateQueryOptions } from "@/features/planner/api/schedule";
 import type { AppBranding } from "@/features/settings/api/settings";
 import { getAppBrandingFn } from "@/features/settings/api/settings";
 import { APP_SETTINGS_DEFAULTS } from "@/features/settings/defaults";
@@ -79,6 +82,12 @@ function AppLayoutRoute() {
 	const { user, isPending } = useSession();
 	const branding = Route.useLoaderData();
 	const cssVars = buildCssVarOverrides(branding);
+	// Sidebar navigation gates (lifted here so the shared layout stays decoupled
+	// from the planner/exhibitors slices).
+	const { data: scheduleState } = useQuery(scheduleStateQueryOptions());
+	const { data: exhibitorsEnabled } = useQuery(
+		exhibitorSignupAvailableQueryOptions(),
+	);
 
 	useEffect(() => {
 		if (!isPending && !user) {
@@ -112,6 +121,8 @@ function AppLayoutRoute() {
 					logoUrl={branding.logoUrl}
 					footerText={branding.footerText}
 					logoDarkInvert={branding.logoDarkInvert}
+					scheduleStatus={scheduleState?.status}
+					exhibitorsEnabled={exhibitorsEnabled === true}
 				>
 					<Outlet />
 				</AppLayout>
