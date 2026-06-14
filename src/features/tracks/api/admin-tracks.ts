@@ -7,7 +7,7 @@ import {
 	getAllTracks,
 	updateTrack,
 } from "@/features/tracks/server/admin-tracks";
-import { adminMiddleware } from "@/lib/server/middleware/auth";
+import { adminMiddleware } from "@/shared/server/middleware/auth";
 
 export const allTracksQueryOptions = () =>
 	queryOptions({

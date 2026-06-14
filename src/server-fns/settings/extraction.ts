@@ -5,9 +5,12 @@ import type { ExtractionResult } from "@/lib/server/extraction";
 import { enqueueExtractionJob } from "@/lib/server/extraction-queue";
 import { fileToBuffer, getUploadedFile } from "@/lib/server/form-upload";
 import { getJobProgress } from "@/lib/server/job-progress";
-import { adminMiddleware, authMiddleware } from "@/lib/server/middleware/auth";
 import { getSetting, setSetting } from "@/lib/server/settings";
 import type { AppSettingsMap } from "@/lib/settings/types";
+import {
+	adminMiddleware,
+	authMiddleware,
+} from "@/shared/server/middleware/auth";
 
 // --- Public (auth-required) ---
 

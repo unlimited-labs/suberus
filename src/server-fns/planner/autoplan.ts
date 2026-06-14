@@ -1,12 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { prisma } from "@/db.server.ts";
 import { createJobProgress, getJobProgress } from "@/lib/server/job-progress";
-import { adminMiddleware } from "@/lib/server/middleware/auth";
 import { applyAutoPlan } from "@/lib/server/planner/autoplan";
 import type { AutoPlanProposal } from "@/lib/server/planner/autoplan-types";
-import { ensureQueueAndSend } from "@/lib/server/queue";
 import { getSetting } from "@/lib/server/settings";
+import { prisma } from "@/shared/server/db.server.ts";
+import { adminMiddleware } from "@/shared/server/middleware/auth";
+import { ensureQueueAndSend } from "@/shared/server/queue";
 
 export const startAutoPlanFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])

@@ -1,11 +1,11 @@
 import { addDays, differenceInCalendarDays } from "date-fns";
-import { prisma } from "@/db.server";
 import { env } from "@/env.ts";
 import type { EmailEventType } from "@/generated/prisma/enums";
-import { sendEmail } from "@/lib/server/email";
 import { getSetting } from "@/lib/server/settings";
 import { logger } from "@/logger.ts";
 import { formatDate } from "@/shared/lib/format-date";
+import { prisma } from "@/shared/server/db.server";
+import { sendEmail } from "@/shared/server/email";
 
 /** Check if a reminder was already sent */
 async function wasReminderSent(

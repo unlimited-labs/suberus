@@ -463,7 +463,7 @@ export async function deleteSubmission(submissionId: string): Promise<void> {
 			select: { id: true, storageKey: true },
 		});
 		if (reviewFiles.length > 0) {
-			const { deleteFile } = await import("../../src/lib/server/storage");
+			const { deleteFile } = await import("../../src/shared/server/storage");
 			for (const f of reviewFiles) {
 				await deleteFile(f.storageKey).catch(() => {});
 			}
@@ -490,7 +490,7 @@ export async function deleteSubmission(submissionId: string): Promise<void> {
 		select: { id: true, storageKey: true },
 	});
 	if (allFiles.length > 0) {
-		const { deleteFile } = await import("../../src/lib/server/storage");
+		const { deleteFile } = await import("../../src/shared/server/storage");
 		for (const f of allFiles) {
 			await deleteFile(f.storageKey).catch(() => {});
 		}
@@ -725,7 +725,7 @@ export async function createSubmissionWithFile(
 	const mimeType = options.mimeType ?? "application/pdf";
 
 	// Upload to S3
-	const { uploadFile, generateSubmissionFileKey } = await import("../../src/lib/server/storage");
+	const { uploadFile, generateSubmissionFileKey } = await import("../../src/shared/server/storage");
 	const storageKey = generateSubmissionFileKey(submission.id, 1, fileName);
 	await uploadFile(Buffer.from(fileBuffer), storageKey, mimeType);
 

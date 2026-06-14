@@ -1,5 +1,5 @@
-import { prisma } from "@/db.server";
 import type { EmailEventType } from "@/generated/prisma/enums";
+import { prisma } from "@/shared/server/db.server";
 
 /** Get all email templates */
 export async function getEmailTemplates() {

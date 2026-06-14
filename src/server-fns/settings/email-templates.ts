@@ -3,13 +3,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { env } from "@/env";
 import { EmailEventType } from "@/generated/prisma/enums";
-import { sendTestEmail } from "@/lib/server/email";
+import { getSetting } from "@/lib/server/settings";
+import { sendTestEmail } from "@/shared/server/email";
 import {
 	getEmailTemplates,
 	updateEmailTemplate,
-} from "@/lib/server/email-templates";
-import { adminMiddleware } from "@/lib/server/middleware/auth";
-import { getSetting } from "@/lib/server/settings";
+} from "@/shared/server/email-templates";
+import { adminMiddleware } from "@/shared/server/middleware/auth";
 
 const emailEventTypeEnum = z.enum(EmailEventType);
 

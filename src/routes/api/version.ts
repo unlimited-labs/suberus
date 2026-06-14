@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { env } from "@/env";
-import { authRequestMiddleware } from "@/lib/server/middleware/auth";
+import { authRequestMiddleware } from "@/shared/server/middleware/auth";
 
 export const Route = createFileRoute("/api/version")({
 	server: {

@@ -1,7 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { prisma } from "@/db.server";
-import { adminMiddleware, authMiddleware } from "@/lib/server/middleware/auth";
 import {
 	confirmConditionsMet,
 	deskAcceptSubmission,
@@ -12,6 +10,11 @@ import {
 	withdrawSubmission,
 } from "@/lib/server/workflow";
 import type { TransitionResult } from "@/lib/workflow";
+import { prisma } from "@/shared/server/db.server";
+import {
+	adminMiddleware,
+	authMiddleware,
+} from "@/shared/server/middleware/auth";
 
 // Exhibitor entries are decided via the exhibitor approval flow, which also
 // updates Exhibitor.status and notifies the exhibitor — block direct desk

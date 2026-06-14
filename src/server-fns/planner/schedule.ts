@@ -1,7 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
-import { adminMiddleware, authMiddleware } from "@/lib/server/middleware/auth";
 import type { PublicProgram } from "@/lib/server/planner/schedule";
 import {
 	getCapacity,
@@ -13,6 +12,10 @@ import {
 	unpublishSchedule,
 } from "@/lib/server/planner/schedule";
 import { getSettings } from "@/lib/server/settings";
+import {
+	adminMiddleware,
+	authMiddleware,
+} from "@/shared/server/middleware/auth";
 import { auth } from "../../../auth.server";
 
 export const scheduleStateQueryOptions = () =>

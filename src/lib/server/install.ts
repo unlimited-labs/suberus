@@ -1,6 +1,6 @@
-import { prisma } from "@/db.server";
 import { APP_SETTINGS_DEFAULTS } from "@/lib/settings/defaults";
 import type { InstallFormData } from "@/lib/validations/install";
+import { prisma } from "@/shared/server/db.server";
 import { auth } from "../../../auth.server";
 import { DEFAULT_EMAIL_TEMPLATES } from "../../../prisma/default-email-templates";
 

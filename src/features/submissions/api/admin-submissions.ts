@@ -12,7 +12,7 @@ import {
 	getSubmissionForEditor,
 	updateSubmissionTrack,
 } from "@/features/submissions/server/admin-submissions";
-import { adminMiddleware } from "@/lib/server/middleware/auth";
+import { adminMiddleware } from "@/shared/server/middleware/auth";
 
 const submissionTypeEnum = z.enum(["ABSTRACT", "FULL_PAPER", "POSTER"]);
 const submissionStatusEnum = z.enum([

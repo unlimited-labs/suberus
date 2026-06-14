@@ -1,4 +1,4 @@
-import { prisma } from "@/db.server";
+import { prisma } from "@/shared/server/db.server";
 import { computeSessionUsage } from "./session-usage";
 
 export async function createPresentation(data: {

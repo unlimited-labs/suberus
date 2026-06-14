@@ -10,7 +10,6 @@ import { compareDesc, differenceInCalendarDays, isAfter } from "date-fns";
 import { useEffect } from "react";
 import { mySubmissionsQueryOptions } from "@/features/submissions/api/submissions";
 import { SubmissionsTable } from "@/features/submissions/components/submissions-table";
-import { redirectExhibitorRouteMiddleware } from "@/lib/server/middleware/auth";
 import {
 	activeSubmissionTypesQueryOptions,
 	submissionDeadlineQueryOptions,
@@ -19,6 +18,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { useSession } from "@/shared/hooks/use-session";
 import { cn } from "@/shared/lib/utils";
+import { redirectExhibitorRouteMiddleware } from "@/shared/server/middleware/auth";
 import { Button } from "@/shared/ui/button";
 import {
 	Tooltip,

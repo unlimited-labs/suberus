@@ -1,5 +1,5 @@
-import { prisma } from "@/db.server";
 import type { ActivityType } from "@/generated/prisma/enums";
+import { prisma } from "@/shared/server/db.server";
 
 export interface LogActivityParams {
 	type: ActivityType;

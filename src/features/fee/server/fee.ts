@@ -1,5 +1,5 @@
-import { prisma } from "@/db.server";
 import type { Fee } from "@/generated/prisma/client";
+import { prisma } from "@/shared/server/db.server";
 
 /**
  * Get fee for a specific user

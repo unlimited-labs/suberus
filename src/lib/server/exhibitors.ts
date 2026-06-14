@@ -1,8 +1,6 @@
-import { prisma } from "@/db.server";
 import { env } from "@/env";
 import { activityDetail } from "@/lib/activity-log";
 import { logActivity, logActivityTx } from "@/lib/server/activity-log";
-import { sendEmail } from "@/lib/server/email";
 import { getSetting, getSubmissionTypeConfigs } from "@/lib/server/settings";
 import {
 	deskAcceptSubmission,
@@ -14,6 +12,8 @@ import type {
 	ExhibitorApplicationInput,
 	ExhibitorPresentationInput,
 } from "@/lib/validations/exhibitor";
+import { prisma } from "@/shared/server/db.server";
+import { sendEmail } from "@/shared/server/email";
 
 type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 

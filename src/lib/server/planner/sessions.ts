@@ -3,7 +3,7 @@ import {
 	addMinutes,
 	differenceInMilliseconds,
 } from "date-fns";
-import { prisma } from "@/db.server";
+import { prisma } from "@/shared/server/db.server";
 import { getPlannerIncludedTypes } from "./included-types";
 import { parseSeries } from "./tracks";
 

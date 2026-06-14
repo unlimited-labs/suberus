@@ -1,8 +1,8 @@
 import { PromisePool } from "@supercharge/promise-pool";
 import { differenceInMinutes } from "date-fns";
-import { prisma } from "@/db.server";
 import { env } from "@/env";
 import { logger } from "@/logger.ts";
+import { prisma } from "@/shared/server/db.server";
 import { setJobCurrent, setJobStage } from "../job-progress";
 import { generateWithLlm } from "../llm";
 import {

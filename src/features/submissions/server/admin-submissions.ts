@@ -1,4 +1,3 @@
-import { prisma } from "@/db.server";
 import { env } from "@/env";
 import {
 	type SubmissionTodo,
@@ -12,12 +11,13 @@ import type {
 import { activityDetail } from "@/lib/activity-log";
 import { logActivity, logActivityTx } from "@/lib/server/activity-log";
 import { assignReviewer } from "@/lib/server/assignments";
-import { sendEmail } from "@/lib/server/email";
 import { getSubmissionTypeConfigs } from "@/lib/server/settings";
-import { deleteFile } from "@/lib/server/storage";
 import { executeSubmissionTransition } from "@/lib/server/workflow";
 import type { SubmissionEvent } from "@/lib/workflow";
 import { hasMinReviewers } from "@/lib/workflow/guards";
+import { prisma } from "@/shared/server/db.server";
+import { sendEmail } from "@/shared/server/email";
+import { deleteFile } from "@/shared/server/storage";
 import { decisionTypeFor } from "./bulk-decision-rules";
 
 export interface SubmissionDeleteWarnings {

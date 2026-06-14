@@ -2,13 +2,13 @@ import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getUploadedFile } from "@/lib/server/form-upload";
-import { authMiddleware } from "@/lib/server/middleware/auth";
 import {
 	getAssignmentForReview,
 	type ReviewSubmitData,
 	submitReview,
 	uploadReviewAttachment,
 } from "@/lib/server/reviews";
+import { authMiddleware } from "@/shared/server/middleware/auth";
 
 const reviewDecisionEnum = z.enum([
 	"ACCEPT",

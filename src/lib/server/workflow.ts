@@ -1,5 +1,4 @@
 import { createActor } from "xstate";
-import { prisma } from "@/db.server";
 import { env } from "@/env";
 import type {
 	AssignmentStatus,
@@ -9,7 +8,6 @@ import type {
 } from "@/generated/prisma/enums";
 import { activityDetail } from "@/lib/activity-log";
 import { logActivity } from "@/lib/server/activity-log";
-import { sendEmail } from "@/lib/server/email";
 import { getSetting } from "@/lib/server/settings";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
@@ -24,6 +22,8 @@ import {
 	type TransitionResult,
 } from "@/lib/workflow";
 import { logger } from "@/logger.ts";
+import { prisma } from "@/shared/server/db.server";
+import { sendEmail } from "@/shared/server/email";
 
 /**
  * Get the caretaker editor for a submission — the editor who most recently assigned a reviewer.

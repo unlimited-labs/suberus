@@ -4,7 +4,7 @@ import {
 	consumeInvitation,
 	validateInvitationToken,
 } from "@/lib/server/admin/invitations";
-import { authMiddleware } from "@/lib/server/middleware/auth";
+import { authMiddleware } from "@/shared/server/middleware/auth";
 
 export const validateInvitationTokenFn = createServerFn({ method: "GET" })
 	.inputValidator(z.object({ token: z.string() }))

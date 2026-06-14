@@ -14,7 +14,7 @@ import {
 import {
 	adminMiddleware,
 	adminOnlyMiddleware,
-} from "@/lib/server/middleware/auth";
+} from "@/shared/server/middleware/auth";
 
 const getUsersSchema = z.object({
 	search: z.string().optional(),

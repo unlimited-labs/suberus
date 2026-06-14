@@ -12,9 +12,12 @@ import {
 	setExhibitorPackage,
 	withdrawOwnExhibitor,
 } from "@/lib/server/exhibitors";
-import { adminMiddleware, authMiddleware } from "@/lib/server/middleware/auth";
 import { getSubmissionTypeConfigs } from "@/lib/server/settings";
 import { exhibitorApplicationSchema } from "@/lib/validations/exhibitor";
+import {
+	adminMiddleware,
+	authMiddleware,
+} from "@/shared/server/middleware/auth";
 
 export const exhibitorSignupAvailableFn = createServerFn({
 	method: "GET",

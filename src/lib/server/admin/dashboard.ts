@@ -1,15 +1,15 @@
 import { differenceInCalendarDays, startOfDay, subDays } from "date-fns";
-import { prisma } from "@/db.server";
 import type {
 	AssignmentStatus,
 	SubmissionStatus,
 	SubmissionType,
 	UserRole,
 } from "@/generated/prisma/enums";
-import { checkSmtpHealth, type SmtpHealthResult } from "@/lib/server/email";
 import { getSetting } from "@/lib/server/settings";
-import { checkS3Health, type S3HealthResult } from "@/lib/server/storage";
 import type { AppSettingsMap } from "@/lib/settings/types";
+import { prisma } from "@/shared/server/db.server";
+import { checkSmtpHealth, type SmtpHealthResult } from "@/shared/server/email";
+import { checkS3Health, type S3HealthResult } from "@/shared/server/storage";
 
 export interface AdminDashboardMetrics {
 	users: {

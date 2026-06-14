@@ -8,7 +8,7 @@ import {
 	updatePersonalInfo,
 } from "@/features/profile/server/profile";
 import { logActivity } from "@/lib/server/activity-log";
-import { authMiddleware } from "@/lib/server/middleware/auth";
+import { authMiddleware } from "@/shared/server/middleware/auth";
 import { auth } from "../../../../auth.server";
 
 const orcidRegex = /^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/;

@@ -1,9 +1,9 @@
 import nodemailer from "nodemailer";
-import { prisma } from "@/db.server";
 import { env } from "@/env.ts";
 import type { EmailEventType } from "@/generated/prisma/enums";
 import { getSetting } from "@/lib/server/settings";
 import { logger } from "@/logger.ts";
+import { prisma } from "@/shared/server/db.server";
 
 function escapeHtml(str: string): string {
 	return str

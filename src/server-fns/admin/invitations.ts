@@ -7,7 +7,7 @@ import {
 	getInvitations,
 	resendInvitation,
 } from "@/lib/server/admin/invitations";
-import { adminOnlyMiddleware } from "@/lib/server/middleware/auth";
+import { adminOnlyMiddleware } from "@/shared/server/middleware/auth";
 
 export const adminInvitationsQueryOptions = () =>
 	queryOptions({

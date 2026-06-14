@@ -2,7 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getAdminDashboardMetrics } from "@/lib/server/admin/dashboard";
-import { adminMiddleware } from "@/lib/server/middleware/auth";
+import { adminMiddleware } from "@/shared/server/middleware/auth";
 
 export const getAdminDashboard = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
@@ -14,7 +14,7 @@ export const getMoreActivity = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.inputValidator(z.object({ cursor: z.string().optional() }))
 	.handler(async ({ data }) => {
-		const { prisma } = await import("@/db.server");
+		const { prisma } = await import("@/shared/server/db.server");
 		const items = await prisma.activityLog.findMany({
 			take: 20,
 			...(data.cursor

@@ -1,12 +1,12 @@
 import type { Job, PgBoss } from "pg-boss";
-import { logger } from "@/logger.ts";
 import {
 	type ExtractionConfig,
 	type ExtractionResult,
 	extractFromDocx,
 	extractFromPdf,
-} from "../extraction";
-import { completeJob, failJob, setJobStage } from "../job-progress";
+} from "@/lib/server/extraction";
+import { completeJob, failJob, setJobStage } from "@/lib/server/job-progress";
+import { logger } from "@/logger.ts";
 import { deleteFile, getFileBuffer } from "../storage";
 
 export interface ExtractionJobData {

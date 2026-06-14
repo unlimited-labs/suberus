@@ -1,10 +1,8 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { prisma } from "@/db.server";
 import { env } from "@/env";
 import { getUploadedFile } from "@/lib/server/form-upload";
-import { adminMiddleware, authMiddleware } from "@/lib/server/middleware/auth";
 import {
 	getActiveSubmissionTypes,
 	getSetting,
@@ -23,6 +21,11 @@ import type {
 	SubmissionTypeKey,
 } from "@/lib/settings/types";
 import { zIanaTz } from "@/lib/validations/zod-helpers";
+import { prisma } from "@/shared/server/db.server";
+import {
+	adminMiddleware,
+	authMiddleware,
+} from "@/shared/server/middleware/auth";
 
 // Schema for submission type config
 const submissionTypeConfigSchema = z.object({

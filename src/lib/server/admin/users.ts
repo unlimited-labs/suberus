@@ -1,5 +1,4 @@
 import { compareDesc } from "date-fns";
-import { prisma } from "@/db.server";
 import { linkCoAuthorsByEmail } from "@/features/submissions/server/submissions";
 import type { Prisma } from "@/generated/prisma/client";
 import type {
@@ -11,6 +10,7 @@ import { activityDetail } from "@/lib/activity-log";
 import { logActivity, logActivityTx } from "@/lib/server/activity-log";
 import { upsertAffiliation } from "@/lib/server/affiliations";
 import { logger } from "@/logger.ts";
+import { prisma } from "@/shared/server/db.server";
 
 export type SubmissionInvolvementRole = "author" | "coauthor";
 

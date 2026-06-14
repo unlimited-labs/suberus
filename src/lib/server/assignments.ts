@@ -1,5 +1,4 @@
 import { addDays, compareAsc, subDays } from "date-fns";
-import { prisma } from "@/db.server";
 import { env } from "@/env.ts";
 import type {
 	AssignmentStatus,
@@ -7,7 +6,6 @@ import type {
 } from "@/generated/prisma/enums";
 import { activityDetail } from "@/lib/activity-log";
 import { logActivity } from "@/lib/server/activity-log";
-import { sendEmail } from "@/lib/server/email";
 import { getSetting } from "@/lib/server/settings";
 import {
 	checkAndTriggerReviewCompletion,
@@ -18,6 +16,8 @@ import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import { canAssignReviewer } from "@/lib/workflow";
 import { logger } from "@/logger.ts";
 import { formatDate } from "@/shared/lib/format-date";
+import { prisma } from "@/shared/server/db.server";
+import { sendEmail } from "@/shared/server/email";
 
 /** Reviewer data for assignment UI */
 export interface AvailableReviewer {

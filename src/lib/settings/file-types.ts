@@ -1,7 +1,7 @@
 /**
  * Single source of truth for file extensions supported by submission/review
  * uploads. The set is bounded by what auto-extraction can actually parse
- * (see src/lib/server/workers/extraction.ts and use-document-extraction.ts).
+ * (see src/shared/server/workers/extraction.ts and use-document-extraction.ts).
  */
 
 export const SUPPORTED_FILE_EXTENSIONS = ["pdf", "docx"] as const;

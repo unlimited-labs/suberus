@@ -1,5 +1,5 @@
-import { prisma } from "@/db.server";
 import { getSetting, setSetting } from "@/lib/server/settings";
+import { prisma } from "@/shared/server/db.server";
 import { getPlannerIncludedTypes } from "./included-types";
 import {
 	findPairwiseOverlapIssues,

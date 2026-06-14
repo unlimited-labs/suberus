@@ -1,4 +1,4 @@
-import { prisma } from "@/db.server";
+import { prisma } from "@/shared/server/db.server";
 
 export interface TrackSimple {
 	id: string;

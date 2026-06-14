@@ -1,7 +1,7 @@
-import { prisma } from "@/db.server";
 import type { SurveyQuestion } from "@/generated/prisma/client";
 import { Prisma } from "@/generated/prisma/client";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
+import { prisma } from "@/shared/server/db.server";
 
 type TypedSurveyQuestion = Omit<SurveyQuestion, "options"> & {
 	options: string[] | null;

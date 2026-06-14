@@ -1,8 +1,8 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { getUserFee } from "@/features/fee/server/fee";
-import { authMiddleware } from "@/lib/server/middleware/auth";
 import { getSetting } from "@/lib/server/settings";
+import { authMiddleware } from "@/shared/server/middleware/auth";
 
 export const userFeeQueryOptions = () =>
 	queryOptions({

@@ -5,7 +5,7 @@ import { tanstackStartCookies } from "better-auth/tanstack-start"
 import { PrismaPg } from "@prisma/adapter-pg"
 import { randomUUID } from "crypto"
 import "dotenv/config"
-import { sendEmail } from "@/lib/server/email"
+import { sendEmail } from "@/shared/server/email"
 import { logger } from "@/logger.ts"
 import { getSetting } from "@/lib/server/settings"
 import { applyInvitationRole } from "@/lib/server/admin/invitations"
@@ -170,7 +170,7 @@ export const auth = betterAuth({
 					if (contactEmail) {
 						let affiliationName = ""
 						if (extUser.affiliationId) {
-							const { prisma: dbClient } = await import("@/db.server")
+							const { prisma: dbClient } = await import("@/shared/server/db.server")
 							const affiliation = await dbClient.affiliation.findUnique({
 								where: { id: extUser.affiliationId },
 								select: { name: true },
@@ -191,7 +191,7 @@ export const auth = betterAuth({
 					await linkCoAuthorsByEmail(user.email, user.id)
 					await applyInvitationRole(user.id, user.email)
 					// Log self-service email verification (idempotent — checks if already logged)
-					const { prisma: dbClient } = await import("@/db.server")
+					const { prisma: dbClient } = await import("@/shared/server/db.server")
 					const alreadyLogged = await dbClient.activityLog.findFirst({
 						where: { userId: user.id, type: "USER_EMAIL_VERIFIED" },
 					})

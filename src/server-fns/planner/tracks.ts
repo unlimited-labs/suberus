@@ -1,7 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { adminMiddleware, authMiddleware } from "@/lib/server/middleware/auth";
 import {
 	createProgramTrack,
 	deleteProgramTrack,
@@ -9,6 +8,10 @@ import {
 	importFromConferenceTracks,
 	updateProgramTrack,
 } from "@/lib/server/planner/tracks";
+import {
+	adminMiddleware,
+	authMiddleware,
+} from "@/shared/server/middleware/auth";
 
 export const allProgramTracksQueryOptions = () =>
 	queryOptions({

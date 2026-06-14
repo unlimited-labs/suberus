@@ -9,7 +9,7 @@ import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
-import { adminRequestMiddleware } from "@/lib/server/middleware/auth";
+import { adminRequestMiddleware } from "@/shared/server/middleware/auth";
 
 export const Route = createFileRoute("/api/admin/submissions/export")({
 	server: {

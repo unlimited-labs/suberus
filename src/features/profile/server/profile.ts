@@ -1,9 +1,9 @@
-import { prisma } from "@/db.server";
 import { activityDetail } from "@/lib/activity-log";
 import { logActivity } from "@/lib/server/activity-log";
-import { deleteFile, uploadFile } from "@/lib/server/storage";
 import { validateUpload } from "@/lib/server/validate-upload";
 import { SUPPORTED_IMAGE_EXTENSIONS } from "@/lib/settings/file-types";
+import { prisma } from "@/shared/server/db.server";
+import { deleteFile, uploadFile } from "@/shared/server/storage";
 
 /** Avatar images are capped at 5MB (matches the upload UI). */
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024;

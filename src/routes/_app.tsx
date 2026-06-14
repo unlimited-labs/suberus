@@ -1,7 +1,6 @@
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import type { CSSProperties } from "react";
 import { useEffect } from "react";
-import { authRouteMiddleware } from "@/lib/server/middleware/auth";
 import { APP_SETTINGS_DEFAULTS } from "@/lib/settings/defaults";
 import type { AppBranding } from "@/server-fns/settings";
 import { getAppBrandingFn } from "@/server-fns/settings";
@@ -9,6 +8,7 @@ import { AppLayout } from "@/shared/components/layout/app-layout";
 import { SpinnerSvg } from "@/shared/components/spinner-svg";
 import { DateFormatProvider } from "@/shared/hooks/use-date-format";
 import { useSession } from "@/shared/hooks/use-session";
+import { authRouteMiddleware } from "@/shared/server/middleware/auth";
 
 const defaults: AppBranding = {
 	conferenceName: APP_SETTINGS_DEFAULTS.CONFERENCE_NAME,

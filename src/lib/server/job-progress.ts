@@ -1,5 +1,5 @@
-import { prisma } from "@/db.server.ts";
 import type { Prisma } from "@/generated/prisma/client.js";
+import { prisma } from "@/shared/server/db.server.ts";
 
 export async function createJobProgress(
 	queue: string,

@@ -1,8 +1,8 @@
 import crypto from "node:crypto";
 import { PromisePool } from "@supercharge/promise-pool";
-import { prisma } from "@/db.server";
 import { env } from "@/env";
 import { logger } from "@/logger.ts";
+import { prisma } from "@/shared/server/db.server";
 
 const EMBEDDING_DIM = 2560;
 const MAX_TEXT_CHARS = 3000;

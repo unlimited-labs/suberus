@@ -11,7 +11,10 @@ import {
 	getSubmissionAssignments,
 	type ReviewerAssignment,
 } from "@/lib/server/assignments";
-import { adminMiddleware, authMiddleware } from "@/lib/server/middleware/auth";
+import {
+	adminMiddleware,
+	authMiddleware,
+} from "@/shared/server/middleware/auth";
 
 export type { AssignmentWithReviewer, AvailableReviewer, ReviewerAssignment };
 
@@ -111,7 +114,7 @@ export const getMyAssignmentsFn = createServerFn({ method: "GET" })
 	)
 	.handler(async ({ data, context }) => {
 		// Verify user is a reviewer
-		const { prisma } = await import("@/db.server");
+		const { prisma } = await import("@/shared/server/db.server");
 		const user = await prisma.user.findUnique({
 			where: { id: context.user.id },
 			select: { role: true },

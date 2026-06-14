@@ -18,7 +18,7 @@ import { loginAs } from "../helpers/auth";
 test.describe("S3 Configuration", () => {
 	test("S3 is reachable and bucket exists", async () => {
 		// Arrange
-		const { checkS3Health } = await import("../../src/lib/server/storage");
+		const { checkS3Health } = await import("../../src/shared/server/storage");
 
 		// Act
 		const result = await checkS3Health();
@@ -400,7 +400,7 @@ test.describe.serial("File Revision Round Isolation", () => {
 
 		// Create v2 with different file (DOCX)
 		const { uploadFile, generateSubmissionFileKey } = await import(
-			"../../src/lib/server/storage"
+			"../../src/shared/server/storage"
 		);
 		const docxPath = path.resolve("e2e/submissions/fixtures/document.docx");
 		const docxBuffer = fs.readFileSync(docxPath);
@@ -460,7 +460,7 @@ test.describe.serial("File Revision Round Isolation", () => {
 
 	test("both files exist in S3", async () => {
 		// Arrange
-		const { fileExists } = await import("../../src/lib/server/storage");
+		const { fileExists } = await import("../../src/shared/server/storage");
 
 		// Assert
 		expect(await fileExists(v1StorageKey)).toBe(true);
@@ -535,7 +535,7 @@ test.describe("File S3 Cleanup", () => {
 		});
 
 		const { fileExists, deleteFile } = await import(
-			"../../src/lib/server/storage"
+			"../../src/shared/server/storage"
 		);
 
 		// Pre-condition: file exists in S3

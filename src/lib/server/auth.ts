@@ -1,4 +1,4 @@
-import { prisma } from "@/db.server";
+import { prisma } from "@/shared/server/db.server";
 
 export async function checkEmailAvailable(email: string) {
 	const user = await prisma.user.findUnique({

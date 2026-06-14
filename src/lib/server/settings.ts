@@ -1,4 +1,3 @@
-import { prisma } from "@/db.server";
 import {
 	DEFAULT_EXHIBITOR_CONFIG,
 	DEFAULT_FULL_PAPER_CONFIG,
@@ -16,6 +15,7 @@ import {
 	type SubmissionTypeConfig,
 	type SubmissionTypeKey,
 } from "@/lib/settings/types";
+import { prisma } from "@/shared/server/db.server";
 
 /**
  * Normalize legacy scoringCriteria format.

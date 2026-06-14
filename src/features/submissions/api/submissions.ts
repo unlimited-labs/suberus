@@ -1,7 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { prisma } from "@/db.server";
 import {
 	createNewSubmission,
 	getSubmissionById,
@@ -20,7 +19,6 @@ import {
 	type ValidationLimits,
 } from "@/features/submissions/validations";
 import { getUploadedFile } from "@/lib/server/form-upload";
-import { authMiddleware } from "@/lib/server/middleware/auth";
 import {
 	getActiveSubmissionTypes,
 	getSetting,
@@ -28,6 +26,8 @@ import {
 } from "@/lib/server/settings";
 import { SUPPORTED_FILE_EXTENSIONS } from "@/lib/settings/file-types";
 import { logger } from "@/logger";
+import { prisma } from "@/shared/server/db.server";
+import { authMiddleware } from "@/shared/server/middleware/auth";
 
 function isPrismaKnownError(
 	err: unknown,
@@ -193,9 +193,9 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
 		// Dynamic import to avoid loading storage module when not needed
 		const { uploadFile, generateSubmissionFileKey, generateAuthorFileName } =
-			await import("@/lib/server/storage");
+			await import("@/shared/server/storage");
 		const { fileToBuffer } = await import("@/lib/server/form-upload");
-		const { prisma } = await import("@/db.server");
+		const { prisma } = await import("@/shared/server/db.server");
 
 		// Verify submission belongs to user
 		const submission = await prisma.submission.findFirst({
@@ -286,7 +286,7 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 				});
 				if (oldFile) {
 					const { deleteFile: deleteS3File } = await import(
-						"@/lib/server/storage"
+						"@/shared/server/storage"
 					);
 					await deleteS3File(oldFile.storageKey).catch(() => {});
 					await prisma.file.delete({

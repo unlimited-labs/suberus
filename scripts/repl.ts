@@ -15,7 +15,7 @@ const MODULE_REGISTRY: Record<string, string> = {
 	settings: "@/lib/server/settings",
 	"admin-subs": "@/features/submissions/server/admin-submissions",
 	"admin-users": "@/lib/server/admin/users",
-	email: "@/lib/server/email",
+	email: "@/shared/server/email",
 	reminders: "@/lib/server/reminders",
 	dashboard: "@/lib/server/admin/dashboard",
 	tracks: "@/features/tracks/server/tracks",
@@ -188,7 +188,7 @@ function outputJson(data: unknown) {
 // ---------------------------------------------------------------------------
 
 interface Core {
-	db: Awaited<typeof import("@/db.server.ts")>["prisma"] & Record<string, unknown>;
+	db: Awaited<typeof import("@/shared/server/db.server.ts")>["prisma"] & Record<string, unknown>;
 	enums: Record<string, unknown>;
 	load: (name: string) => Promise<unknown>;
 	getTableNames: () => string[];
@@ -219,7 +219,7 @@ type RuntimeDataModel = {
 };
 
 async function initCore(opts: { silent: boolean }): Promise<Core> {
-	const { prisma: db } = await import("@/db.server.ts");
+	const { prisma: db } = await import("@/shared/server/db.server.ts");
 	const Enums = await import("../src/generated/prisma/enums.ts");
 
 	try {
