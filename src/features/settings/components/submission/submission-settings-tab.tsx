@@ -7,9 +7,6 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { SettingsSection } from "@/components/settings/settings-section";
-import { FILE_TYPE_OPTIONS } from "@/lib/settings/file-types";
-import type { AppSettingsMap } from "@/lib/settings/types";
 import {
 	reviewGuidelinesQueryOptions,
 	type SubmissionValidationSettings,
@@ -18,7 +15,10 @@ import {
 	updateReviewGuidelinesFn,
 	updateSubmissionGuidelinesFn,
 	updateSubmissionValidationSettingsFn,
-} from "@/server-fns/settings";
+} from "@/features/settings/api/settings";
+import { SettingsSection } from "@/features/settings/components/settings-section";
+import { FILE_TYPE_OPTIONS } from "@/features/settings/file-types";
+import type { AppSettingsMap } from "@/features/settings/types";
 import {
 	type ExtractionSettings,
 	extractionAdminSettingsQueryOptions,

@@ -14,7 +14,7 @@ export default defineTask({
 		const { checkPlannerHealth } = await import(
 			"@/lib/server/planner/health"
 		);
-		const { setSetting } = await import("@/lib/server/settings");
+		const { setSetting } = await import("@/features/settings/server/settings");
 
 		const [llm, docling, planner] = await Promise.all([
 			checkLlmHealth(),

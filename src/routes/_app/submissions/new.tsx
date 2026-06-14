@@ -13,6 +13,11 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
+	activeSubmissionTypesQueryOptions,
+	submissionGuidelinesQueryOptions,
+	submissionValidationQueryOptions,
+} from "@/features/settings/api/settings";
+import {
 	createSubmission,
 	mySubmissionsQueryOptions,
 	uploadSubmissionFile,
@@ -23,11 +28,6 @@ import {
 } from "@/features/submissions/components/form/submission-form";
 import { activeTracksQueryOptions } from "@/features/tracks/api/tracks";
 import { extractZodIssueMessage, logClientError } from "@/lib/log-client-error";
-import {
-	activeSubmissionTypesQueryOptions,
-	submissionGuidelinesQueryOptions,
-	submissionValidationQueryOptions,
-} from "@/server-fns/settings";
 import { extractionSettingsQueryOptions } from "@/server-fns/settings/extraction";
 import { userDashboardQueryOptions } from "@/server-fns/user-dashboard";
 import { PageHeader } from "@/shared/components/layout/page-header";

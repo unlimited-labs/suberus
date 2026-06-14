@@ -279,7 +279,7 @@ Each type has separate UI:
 Shared backend (`Submission` model) enables code reuse while maintaining UI/UX separation.
 
 ### 3. Configuration Drives Behavior
-All workflow logic reads from `SubmissionTypeConfig` (defined in `src/lib/settings/types.ts`, stored as JSON in the `app_settings` table via `AppSetting` model). Code doesn't hardcode rules like "abstracts need 1 reviewer" - config determines this.
+All workflow logic reads from `SubmissionTypeConfig` (defined in `src/features/settings/types.ts`, stored as JSON in the `app_settings` table via `AppSetting` model). Code doesn't hardcode rules like "abstracts need 1 reviewer" - config determines this.
 
 ### 4. Editor as Universal Reviewer
 Editors (role=EDITOR) can:

@@ -1,6 +1,6 @@
-import { getSetting, setSetting } from "@/lib/server/settings";
+import { SUPPORTED_IMAGE_EXTENSIONS } from "@/features/settings/file-types";
+import { getSetting, setSetting } from "@/features/settings/server/settings";
 import { validateUpload } from "@/lib/server/validate-upload";
-import { SUPPORTED_IMAGE_EXTENSIONS } from "@/lib/settings/file-types";
 import {
 	deleteFile,
 	getFileDownloadUrl,

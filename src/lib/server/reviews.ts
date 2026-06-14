@@ -1,19 +1,19 @@
 import { env } from "@/env.ts";
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
+import { SUPPORTED_FILE_EXTENSIONS } from "@/features/settings/file-types";
+import { getSetting } from "@/features/settings/server/settings";
+import { SUBMISSION_TYPE_TO_KEY } from "@/features/settings/types";
 import {
 	checkAndTriggerReviewCompletion,
 	validateAssignmentTransition,
 } from "@/features/workflow/server/workflow";
 import type { ReviewDecision, ReviewMode } from "@/generated/prisma/enums";
 import { fileToBuffer } from "@/lib/server/form-upload";
-import { getSetting } from "@/lib/server/settings";
 import {
 	UploadValidationError,
 	validateUpload,
 } from "@/lib/server/validate-upload";
-import { SUPPORTED_FILE_EXTENSIONS } from "@/lib/settings/file-types";
-import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import { logger } from "@/logger.ts";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";

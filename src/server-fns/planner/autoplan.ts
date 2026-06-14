@@ -1,9 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { getSetting } from "@/features/settings/server/settings";
 import { createJobProgress, getJobProgress } from "@/lib/server/job-progress";
 import { applyAutoPlan } from "@/lib/server/planner/autoplan";
 import type { AutoPlanProposal } from "@/lib/server/planner/autoplan-types";
-import { getSetting } from "@/lib/server/settings";
 import { prisma } from "@/shared/server/db.server.ts";
 import { adminMiddleware } from "@/shared/server/middleware/auth";
 import { ensureQueueAndSend } from "@/shared/server/queue";

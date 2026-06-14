@@ -17,6 +17,7 @@ import { SurveyQuestionField } from "@/components/forms/survey/survey-question-f
 import { checkEmailAvailableFn } from "@/features/auth/api/auth";
 import { AuthCard } from "@/features/auth/components/auth-card";
 import { TosModal } from "@/features/auth/components/tos-modal";
+import { getRegistrationStatusFn } from "@/features/settings/api/settings";
 import { useMultiStep } from "@/hooks/use-multi-step";
 import { detectCountry } from "@/lib/detect-country";
 import { titleOptions } from "@/lib/labels";
@@ -31,7 +32,6 @@ import {
 	consumeInvitationFn,
 	validateInvitationTokenFn,
 } from "@/server-fns/invitations";
-import { getRegistrationStatusFn } from "@/server-fns/settings";
 import {
 	acceptTosFn,
 	getSurveyQuestionsForRegistrationFn,

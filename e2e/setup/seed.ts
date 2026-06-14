@@ -13,8 +13,8 @@ import {
 	DEFAULT_ORAL_PRESENTATION_CONFIG,
 	DEFAULT_POSTER_CONFIG,
 	DEFAULT_FULL_PAPER_CONFIG,
-} from "../../src/lib/settings/defaults";
-import type { SubmissionTypeConfig } from "../../src/lib/settings/types";
+} from "../../src/features/settings/defaults";
+import type { SubmissionTypeConfig } from "../../src/features/settings/types";
 import {
 	TEST_USER,
 	ADMIN_USER,
@@ -31,7 +31,7 @@ const PROJECT_ROOT = resolve(__dirname, "../..");
 // DATABASE_URL/SMTP_FROM_EMAIL come from the parent process and must win over .env.
 config({ quiet: true, path: resolve(PROJECT_ROOT, ".env") });
 
-// Test environment = app defaults (src/lib/settings/defaults.ts) + the deltas the
+// Test environment = app defaults (src/features/settings/defaults.ts) + the deltas the
 // E2E suite needs (types active, scoring/double-blind on ORAL, reviewer counts).
 const SUBMISSION_TYPE_CONFIGS = {
 	ORAL_PRESENTATION: {

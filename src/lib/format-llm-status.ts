@@ -1,4 +1,4 @@
-import type { AppSettingsMap } from "@/lib/settings/types";
+import type { AppSettingsMap } from "@/features/settings/types";
 
 type LlmHealth = AppSettingsMap["SERVICE_HEALTH_LLM"];
 type DoclingHealth = AppSettingsMap["SERVICE_HEALTH_DOCLING"];

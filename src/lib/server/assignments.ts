@@ -2,6 +2,8 @@ import { addDays, compareAsc, subDays } from "date-fns";
 import { env } from "@/env.ts";
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
+import { getSetting } from "@/features/settings/server/settings";
+import { SUBMISSION_TYPE_TO_KEY } from "@/features/settings/types";
 import { canAssignReviewer } from "@/features/workflow";
 import {
 	checkAndTriggerReviewCompletion,
@@ -12,8 +14,6 @@ import type {
 	AssignmentStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
-import { getSetting } from "@/lib/server/settings";
-import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import { logger } from "@/logger.ts";
 import { formatDate } from "@/shared/lib/format-date";
 import { prisma } from "@/shared/server/db.server";

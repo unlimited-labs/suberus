@@ -10,14 +10,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { SettingsSection } from "@/components/settings/settings-section";
 import {
 	type BrandingSettings,
 	brandingSettingsQueryOptions,
 	deleteAuthBackgroundFn,
 	updateBrandingSettingsFn,
 	uploadAuthBackgroundFn,
-} from "@/server-fns/settings";
+} from "@/features/settings/api/settings";
+import { SettingsSection } from "@/features/settings/components/settings-section";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";

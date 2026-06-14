@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
 import { utcToTzLocalInput } from "@/lib/tz-datetime";
-import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
 import { formatDurationShort } from "@/shared/lib/format-date";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";

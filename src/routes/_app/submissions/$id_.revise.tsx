@@ -9,6 +9,11 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
+	activeSubmissionTypesQueryOptions,
+	submissionValidationQueryOptions,
+} from "@/features/settings/api/settings";
+import { FILE_ACCEPT_ATTRIBUTE } from "@/features/settings/file-types";
+import {
 	mySubmissionsQueryOptions,
 	resubmitSubmissionFn,
 	submissionDetailQueryOptions,
@@ -16,11 +21,6 @@ import {
 	uploadSubmissionFile,
 } from "@/features/submissions/api/submissions";
 import { FileDropzone } from "@/features/submissions/components/form/file-dropzone";
-import { FILE_ACCEPT_ATTRIBUTE } from "@/lib/settings/file-types";
-import {
-	activeSubmissionTypesQueryOptions,
-	submissionValidationQueryOptions,
-} from "@/server-fns/settings";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/ui/button";
 import { Label } from "@/shared/ui/label";

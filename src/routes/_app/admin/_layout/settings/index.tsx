@@ -22,24 +22,12 @@ import {
 import { z } from "zod";
 import { ProgramTab } from "@/components/admin/program";
 import {
-	BrandingSettingsTab,
-	ConferenceSettingsTab,
 	EmailTemplatesTab,
-	InvitationsSettingsTab,
-	RemindersSettingsTab,
-	SubmissionSettingsTab,
-	SubmissionTypesTab,
 	SurveyQuestionsTab,
-	TosContentTab,
 } from "@/components/admin/settings";
 import { toEmailTemplateUI } from "@/components/admin/settings/email-templates-tab";
 import { paymentInstructionsQueryOptions } from "@/features/fee/api/fee";
 import { FeeTab } from "@/features/fee/components/admin/fee-tab";
-import { allTracksQueryOptions } from "@/features/tracks/api/admin-tracks";
-import { TracksTab } from "@/features/tracks/components/admin/tracks-tab";
-import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
-import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
-import { reviewerUsersQueryOptions } from "@/server-fns/reviews/reviewers";
 import {
 	adminSettingQueryOptions,
 	brandingSettingsQueryOptions,
@@ -50,7 +38,19 @@ import {
 	reminderSettingsQueryOptions,
 	submissionTypesConfigQueryOptions,
 	submissionValidationSettingsQueryOptions,
-} from "@/server-fns/settings";
+} from "@/features/settings/api/settings";
+import { BrandingSettingsTab } from "@/features/settings/components/branding/branding-settings-tab";
+import { ConferenceSettingsTab } from "@/features/settings/components/conference/conference-settings-tab";
+import { InvitationsSettingsTab } from "@/features/settings/components/invitations/invitations-settings-tab";
+import { RemindersSettingsTab } from "@/features/settings/components/reminders/reminders-settings-tab";
+import { SubmissionSettingsTab } from "@/features/settings/components/submission/submission-settings-tab";
+import { SubmissionTypesTab } from "@/features/settings/components/submission/submission-types-tab";
+import { TosContentTab } from "@/features/settings/components/tos/tos-content-tab";
+import { allTracksQueryOptions } from "@/features/tracks/api/admin-tracks";
+import { TracksTab } from "@/features/tracks/components/admin/tracks-tab";
+import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
+import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
+import { reviewerUsersQueryOptions } from "@/server-fns/reviews/reviewers";
 import { emailTemplatesQueryOptions } from "@/server-fns/settings/email-templates";
 import {
 	doclingHealthQueryOptions,

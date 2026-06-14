@@ -10,13 +10,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { SettingsSection } from "@/components/settings/settings-section";
-import type { SubmissionTypeConfig } from "@/lib/settings/types";
-import type { ConferenceSettings } from "@/server-fns/settings";
+import type { ConferenceSettings } from "@/features/settings/api/settings";
 import {
 	conferenceSettingsQueryOptions,
 	updateConferenceSettingsFn,
-} from "@/server-fns/settings";
+} from "@/features/settings/api/settings";
+import { SettingsSection } from "@/features/settings/components/settings-section";
+import type { SubmissionTypeConfig } from "@/features/settings/types";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { getDateFormats } from "@/shared/lib/format-date";
 import { Button } from "@/shared/ui/button";

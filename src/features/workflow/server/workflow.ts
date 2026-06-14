@@ -2,6 +2,9 @@ import { createActor } from "xstate";
 import { env } from "@/env";
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
+import { getSetting } from "@/features/settings/server/settings";
+import type { SubmissionTypeConfig } from "@/features/settings/types";
+import { SUBMISSION_TYPE_TO_KEY } from "@/features/settings/types";
 import {
 	type AssignmentEvent,
 	assignmentMachine,
@@ -18,9 +21,6 @@ import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
-import { getSetting } from "@/lib/server/settings";
-import type { SubmissionTypeConfig } from "@/lib/settings/types";
-import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import { logger } from "@/logger.ts";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";

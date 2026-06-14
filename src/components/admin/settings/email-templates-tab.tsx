@@ -2,13 +2,12 @@ import { IconLoader2, IconMail, IconSignature } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-
-import { SettingsSection } from "@/components/settings/settings-section";
-import type { EmailEventType } from "@/generated/prisma/enums";
 import {
 	emailFooterQueryOptions,
 	updateEmailFooterFn,
-} from "@/server-fns/settings";
+} from "@/features/settings/api/settings";
+import { SettingsSection } from "@/features/settings/components/settings-section";
+import type { EmailEventType } from "@/generated/prisma/enums";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
 import { Label } from "@/shared/ui/label";

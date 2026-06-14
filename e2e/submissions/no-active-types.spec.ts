@@ -4,7 +4,7 @@ import {
 	DEFAULT_ORAL_PRESENTATION_CONFIG,
 	DEFAULT_POSTER_CONFIG,
 	DEFAULT_FULL_PAPER_CONFIG,
-} from "../../src/lib/settings/defaults";
+} from "../../src/features/settings/defaults";
 
 const SETTING_KEYS = [
 	"SUBMISSION_TYPE_ORAL_PRESENTATION",

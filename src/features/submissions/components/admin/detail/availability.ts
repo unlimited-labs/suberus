@@ -1,7 +1,6 @@
 import { isPast } from "date-fns";
-
+import type { SubmissionTypeConfig } from "@/features/settings/types";
 import type { getSubmissionForEditor } from "@/features/submissions/server/admin-submissions";
-import type { SubmissionTypeConfig } from "@/lib/settings/types";
 
 // Derived from the editor-submission query payload so these stay in sync with
 // the server shape. `import type` is erased at build — no server/client leak.

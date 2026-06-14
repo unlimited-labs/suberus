@@ -5,12 +5,15 @@ import {
 } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
 import {
+	getSetting,
+	getSubmissionTypeConfigs,
+} from "@/features/settings/server/settings";
+import {
 	deskAcceptSubmission,
 	deskRejectSubmission,
 	validateSubmissionTransition,
 	withdrawSubmission,
 } from "@/features/workflow/server/workflow";
-import { getSetting, getSubmissionTypeConfigs } from "@/lib/server/settings";
 import type {
 	ExhibitorApplicationInput,
 	ExhibitorPresentationInput,

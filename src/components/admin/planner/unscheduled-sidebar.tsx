@@ -1,11 +1,11 @@
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
+import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
 import {
 	allSessionsQueryOptions,
 	unscheduledSubmissionsQueryOptions,
 } from "@/server-fns/planner/sessions";
-import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
 import { BulkReadReader } from "./bulk-read-reader";
 import { usePlannerSelection } from "./planner-context";
 import {

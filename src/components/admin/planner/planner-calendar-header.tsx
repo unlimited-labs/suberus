@@ -2,7 +2,7 @@ import { useIlamyCalendarContext } from "@ilamy/calendar";
 import { IconCalendarStar, IconPlus, IconWand } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
+import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
 import { Button } from "@/shared/ui/button";
 import {
 	Tooltip,

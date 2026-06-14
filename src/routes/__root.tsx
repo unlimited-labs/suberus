@@ -9,7 +9,10 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { type CSSProperties, useEffect } from "react";
-import { getOgMetadataFn, getPrimaryColorFn } from "@/server-fns/settings";
+import {
+	getOgMetadataFn,
+	getPrimaryColorFn,
+} from "@/features/settings/api/settings";
 import { getThemeFn } from "@/shared/lib/theme";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import { SpinnerSvg } from "../shared/components/spinner-svg";

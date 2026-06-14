@@ -1,11 +1,11 @@
 import { IconFileStack } from "@tabler/icons-react";
 import { useState } from "react";
-import { SettingsSection } from "@/components/settings/settings-section";
+import { SettingsSection } from "@/features/settings/components/settings-section";
 import type {
 	SubmissionTypeConfig,
 	SubmissionTypeKey,
-} from "@/lib/settings/types";
-import { SUBMISSION_TYPE_KEYS } from "@/lib/settings/types";
+} from "@/features/settings/types";
+import { SUBMISSION_TYPE_KEYS } from "@/features/settings/types";
 import { Accordion } from "@/shared/ui/accordion";
 import { SubmissionTypeAccordion } from "./submission-type-accordion";
 

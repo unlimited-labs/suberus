@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
 import { allSessionsQueryOptions } from "@/server-fns/planner/sessions";
-import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
 import { computeDefaultStartAt } from "../compute-default-start-at";
 
 export function useNextStartAt(currentDate: Date | null): Date {

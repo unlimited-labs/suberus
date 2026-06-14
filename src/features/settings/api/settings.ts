@@ -2,16 +2,15 @@ import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { env } from "@/env";
-import { getUploadedFile } from "@/lib/server/form-upload";
+import { getDefaultSetting } from "@/features/settings/defaults";
+import { SUPPORTED_FILE_EXTENSIONS } from "@/features/settings/file-types";
 import {
 	getActiveSubmissionTypes,
 	getSetting,
 	getSettings,
 	getSubmissionTypeConfigs,
 	setSetting,
-} from "@/lib/server/settings";
-import { getDefaultSetting } from "@/lib/settings/defaults";
-import { SUPPORTED_FILE_EXTENSIONS } from "@/lib/settings/file-types";
+} from "@/features/settings/server/settings";
 import type {
 	AppSettingsMap,
 	DeadlineReminderSettings,
@@ -19,7 +18,8 @@ import type {
 	RevisionReminderSettings,
 	SubmissionTypeConfig,
 	SubmissionTypeKey,
-} from "@/lib/settings/types";
+} from "@/features/settings/types";
+import { getUploadedFile } from "@/lib/server/form-upload";
 import { zIanaTz } from "@/lib/validations/zod-helpers";
 import { prisma } from "@/shared/server/db.server";
 import {
@@ -677,7 +677,9 @@ export const getAppBrandingFn = createServerFn({ method: "GET" }).handler(
 export const getBrandingSettingsFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(async (): Promise<BrandingSettings> => {
-		const { getAuthBackgroundUrl } = await import("@/lib/server/branding");
+		const { getAuthBackgroundUrl } = await import(
+			"@/features/settings/server/branding"
+		);
 		const [settings, authBackgroundUrl] = await Promise.all([
 			getSettings([
 				"BRANDING_LOGO_URL",
@@ -727,7 +729,7 @@ export const uploadAuthBackgroundFn = createServerFn({ method: "POST" })
 	.inputValidator((data: FormData) => ({ file: getUploadedFile(data) }))
 	.handler(async ({ data }) => {
 		const { uploadAuthBackground, getAuthBackgroundUrl } = await import(
-			"@/lib/server/branding"
+			"@/features/settings/server/branding"
 		);
 		const { fileToBuffer } = await import("@/lib/server/form-upload");
 		const buffer = await fileToBuffer(data.file);
@@ -742,7 +744,9 @@ export const uploadAuthBackgroundFn = createServerFn({ method: "POST" })
 export const deleteAuthBackgroundFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.handler(async () => {
-		const { deleteAuthBackground } = await import("@/lib/server/branding");
+		const { deleteAuthBackground } = await import(
+			"@/features/settings/server/branding"
+		);
 		await deleteAuthBackground();
 		return { success: true };
 	});
@@ -808,7 +812,9 @@ export const getOgMetadataFn = createServerFn({ method: "GET" }).handler(
  */
 export const getAuthPageBrandingFn = createServerFn({ method: "GET" }).handler(
 	async (): Promise<AuthPageBranding> => {
-		const { getAuthBackgroundUrl } = await import("@/lib/server/branding");
+		const { getAuthBackgroundUrl } = await import(
+			"@/features/settings/server/branding"
+		);
 		const [s, authBackgroundUrl] = await Promise.all([
 			getSettings([
 				"CONFERENCE_NAME",

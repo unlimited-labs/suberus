@@ -8,7 +8,6 @@ import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { SettingsSection } from "@/components/settings/settings-section";
 import {
 	changeEmailFn,
 	changePasswordFn,
@@ -25,6 +24,7 @@ import type {
 	PasswordChangeFormData,
 	PersonalInfoFormData,
 } from "@/features/profile/validations";
+import { SettingsSection } from "@/features/settings/components/settings-section";
 import { createAffiliation } from "@/server-fns/affiliations";
 import {
 	activeSurveyQuestionsQueryOptions,

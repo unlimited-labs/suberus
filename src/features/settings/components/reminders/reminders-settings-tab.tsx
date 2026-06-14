@@ -2,12 +2,12 @@ import { IconBell, IconLoader2 } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { SettingsSection } from "@/components/settings/settings-section";
 import {
 	type ReminderSettings,
 	reminderSettingsQueryOptions,
 	updateReminderSettingsFn,
-} from "@/server-fns/settings";
+} from "@/features/settings/api/settings";
+import { SettingsSection } from "@/features/settings/components/settings-section";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";

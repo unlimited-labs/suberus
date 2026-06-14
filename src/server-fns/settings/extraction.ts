@@ -1,12 +1,12 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { getSetting, setSetting } from "@/features/settings/server/settings";
+import type { AppSettingsMap } from "@/features/settings/types";
 import type { ExtractionResult } from "@/lib/server/extraction";
 import { enqueueExtractionJob } from "@/lib/server/extraction-queue";
 import { fileToBuffer, getUploadedFile } from "@/lib/server/form-upload";
 import { getJobProgress } from "@/lib/server/job-progress";
-import { getSetting, setSetting } from "@/lib/server/settings";
-import type { AppSettingsMap } from "@/lib/settings/types";
 import {
 	adminMiddleware,
 	authMiddleware,

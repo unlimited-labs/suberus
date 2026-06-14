@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { SUPPORTED_FILE_EXTENSIONS_DOTTED } from "@/lib/settings/file-types";
+import { SUPPORTED_FILE_EXTENSIONS_DOTTED } from "@/features/settings/file-types";
 import {
 	enqueueExtractionFn,
 	getExtractionResultFn,

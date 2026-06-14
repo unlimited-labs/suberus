@@ -1,4 +1,7 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { adminSettingQueryOptions } from "@/features/settings/api/settings";
+import type { SubmissionTypeConfig } from "@/features/settings/types";
+import { SUBMISSION_TYPE_TO_KEY } from "@/features/settings/types";
 import { editorSubmissionQueryOptions } from "@/features/submissions/api/admin-submissions";
 import {
 	type ActionAvailability,
@@ -14,9 +17,6 @@ import {
 	type PrimaryAction,
 } from "@/features/submissions/components/admin/detail/availability";
 import type { AvailableTrack } from "@/features/submissions/types";
-import type { SubmissionTypeConfig } from "@/lib/settings/types";
-import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
-import { adminSettingQueryOptions } from "@/server-fns/settings";
 
 export interface AdminSubmissionDetailReady {
 	status: "ready";

@@ -2,8 +2,8 @@ import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { env } from "@/env";
+import { getSetting } from "@/features/settings/server/settings";
 import { EmailEventType } from "@/generated/prisma/enums";
-import { getSetting } from "@/lib/server/settings";
 import { sendTestEmail } from "@/shared/server/email";
 import {
 	getEmailTemplates,

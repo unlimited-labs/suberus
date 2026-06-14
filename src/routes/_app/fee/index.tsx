@@ -1,11 +1,11 @@
 import { IconCash, IconCheck, IconInfoCircle } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { SettingsSection } from "@/components/settings/settings-section";
 import {
 	paymentInstructionsQueryOptions,
 	userFeeQueryOptions,
 } from "@/features/fee/api/fee";
+import { SettingsSection } from "@/features/settings/components/settings-section";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";

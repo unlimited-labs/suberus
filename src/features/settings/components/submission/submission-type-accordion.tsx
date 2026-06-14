@@ -3,19 +3,19 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
+	submissionTypesConfigQueryOptions,
+	updateSubmissionTypeConfigFn,
+} from "@/features/settings/api/settings";
+import {
 	SUPPORTED_FILE_EXTENSIONS,
 	type SupportedFileExtension,
-} from "@/lib/settings/file-types";
+} from "@/features/settings/file-types";
 import type {
 	ContentFormat,
 	SubmissionTypeConfig,
 	SubmissionTypeKey,
-} from "@/lib/settings/types";
-import { SUBMISSION_TYPE_DISPLAY_NAMES } from "@/lib/settings/types";
-import {
-	submissionTypesConfigQueryOptions,
-	updateSubmissionTypeConfigFn,
-} from "@/server-fns/settings";
+} from "@/features/settings/types";
+import { SUBMISSION_TYPE_DISPLAY_NAMES } from "@/features/settings/types";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import {
 	AccordionContent,

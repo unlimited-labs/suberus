@@ -8,7 +8,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { SettingsSection } from "@/components/settings/settings-section";
+import { SettingsSection } from "@/features/settings/components/settings-section";
 import type { SurveyQuestionFormValues } from "@/lib/validations/survey";
 import {
 	activeSurveyQuestionsQueryOptions,

@@ -18,10 +18,10 @@ import {
 } from "@tabler/icons-react";
 import { useStore } from "@tanstack/react-form";
 import { useMemo, useState } from "react";
+import { FILE_ACCEPT_ATTRIBUTE } from "@/features/settings/file-types";
 import { FileDropzone } from "@/features/submissions/components/form/file-dropzone";
 import { typeLabels } from "@/features/submissions/labels";
 import type { ReviewDecision, SubmissionType } from "@/generated/prisma/enums";
-import { FILE_ACCEPT_ATTRIBUTE } from "@/lib/settings/file-types";
 import {
 	createReviewSchema,
 	type ReviewFormData,

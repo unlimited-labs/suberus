@@ -1,4 +1,4 @@
-import type { SubmissionTypeConfig } from "@/lib/settings/types";
+import type { SubmissionTypeConfig } from "@/features/settings/types";
 
 import type { Author } from "./authors-input";
 

@@ -1,4 +1,4 @@
-import { getSetting, setSetting } from "@/lib/server/settings";
+import { getSetting, setSetting } from "@/features/settings/server/settings";
 import { prisma } from "@/shared/server/db.server";
 import { getPlannerIncludedTypes } from "./included-types";
 import {

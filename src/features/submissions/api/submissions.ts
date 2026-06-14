@@ -1,6 +1,12 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { SUPPORTED_FILE_EXTENSIONS } from "@/features/settings/file-types";
+import {
+	getActiveSubmissionTypes,
+	getSetting,
+	getSettings,
+} from "@/features/settings/server/settings";
 import {
 	createNewSubmission,
 	getSubmissionById,
@@ -19,12 +25,6 @@ import {
 	type ValidationLimits,
 } from "@/features/submissions/validations";
 import { getUploadedFile } from "@/lib/server/form-upload";
-import {
-	getActiveSubmissionTypes,
-	getSetting,
-	getSettings,
-} from "@/lib/server/settings";
-import { SUPPORTED_FILE_EXTENSIONS } from "@/lib/settings/file-types";
 import { logger } from "@/logger";
 import { prisma } from "@/shared/server/db.server";
 import { authMiddleware } from "@/shared/server/middleware/auth";

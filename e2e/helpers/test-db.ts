@@ -13,7 +13,7 @@ import {
 	SubmissionType,
 	UserRole,
 } from "../../src/generated/prisma/enums";
-import type { AppSettingKey } from "../../src/lib/settings/types";
+import type { AppSettingKey } from "../../src/features/settings/types";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { config } from "dotenv";
 import { resolve, dirname } from "path";

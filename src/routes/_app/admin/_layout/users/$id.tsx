@@ -2,11 +2,11 @@ import { IconArrowLeft, IconUsers } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { UserDetailCard } from "@/components/admin/users/user-detail-card";
-import { adminUserDetailQueryOptions } from "@/server-fns/admin/users";
 import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
-} from "@/server-fns/settings";
+} from "@/features/settings/api/settings";
+import { adminUserDetailQueryOptions } from "@/server-fns/admin/users";
 import { adminSurveyQuestionsQueryOptions } from "@/server-fns/settings/survey";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/ui/button";

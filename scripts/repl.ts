@@ -12,7 +12,7 @@ const MODULE_REGISTRY: Record<string, string> = {
 	submissions: "@/features/submissions/server/submissions",
 	reviews: "@/lib/server/reviews",
 	assignments: "@/lib/server/assignments",
-	settings: "@/lib/server/settings",
+	settings: "@/features/settings/server/settings",
 	"admin-subs": "@/features/submissions/server/admin-submissions",
 	"admin-users": "@/lib/server/admin/users",
 	email: "@/shared/server/email",

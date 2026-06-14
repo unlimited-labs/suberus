@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { getSetting } from "@/lib/server/settings";
+import { getSetting } from "@/features/settings/server/settings";
 import {
 	acceptTos,
 	createSurveyQuestion,

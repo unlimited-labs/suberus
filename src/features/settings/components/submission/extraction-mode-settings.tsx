@@ -1,7 +1,7 @@
 import { IconFileSearch } from "@tabler/icons-react";
-import { SettingsSection } from "@/components/settings/settings-section";
+import { SettingsSection } from "@/features/settings/components/settings-section";
+import type { AppSettingsMap } from "@/features/settings/types";
 import { formatDoclingStatus, formatLlmStatus } from "@/lib/format-llm-status";
-import type { AppSettingsMap } from "@/lib/settings/types";
 import { cn } from "@/shared/lib/utils";
 import { Label } from "@/shared/ui/label";
 import { Switch } from "@/shared/ui/switch";

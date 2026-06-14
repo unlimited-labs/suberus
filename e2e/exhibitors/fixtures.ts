@@ -3,8 +3,8 @@ import { expect, test as base } from "../helpers/base-fixtures";
 import { baseUrlFor } from "../../playwright.config";
 import { dismissViteOverlay } from "../helpers/page-setup";
 import { UserRole } from "../../src/generated/prisma/enums";
-import { DEFAULT_EXHIBITOR_CONFIG } from "../../src/lib/settings/defaults";
-import type { SubmissionTypeConfig } from "../../src/lib/settings/types";
+import { DEFAULT_EXHIBITOR_CONFIG } from "../../src/features/settings/defaults";
+import type { SubmissionTypeConfig } from "../../src/features/settings/types";
 import {
 	createTestUser,
 	deleteTestUser,

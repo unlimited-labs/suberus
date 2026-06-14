@@ -1,7 +1,7 @@
 import { addDays, differenceInCalendarDays } from "date-fns";
 import { env } from "@/env.ts";
+import { getSetting } from "@/features/settings/server/settings";
 import type { EmailEventType } from "@/generated/prisma/enums";
-import { getSetting } from "@/lib/server/settings";
 import { logger } from "@/logger.ts";
 import { formatDate } from "@/shared/lib/format-date";
 import { prisma } from "@/shared/server/db.server";

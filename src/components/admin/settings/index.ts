@@ -1,12 +1,4 @@
-export { BrandingSettingsTab } from "./branding-settings-tab";
-export { ConferenceSettingsTab } from "./conference-settings-tab";
 export { EmailTemplateCard } from "./email-template-card";
 export { EmailTemplateDialog } from "./email-template-dialog";
 export { EmailTemplatesTab } from "./email-templates-tab";
-export { InvitationsSettingsTab } from "./invitations-settings-tab";
-export { RemindersSettingsTab } from "./reminders-settings-tab";
-export { SubmissionSettingsTab } from "./submission-settings-tab";
-export { SubmissionTypeAccordion } from "./submission-type-accordion";
-export { SubmissionTypesTab } from "./submission-types-tab";
 export { SurveyQuestionsTab } from "./survey-questions-tab";
-export { TosContentTab } from "./tos-content-tab";

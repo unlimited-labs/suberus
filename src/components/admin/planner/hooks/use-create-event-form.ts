@@ -2,6 +2,7 @@ import type { EventFormProps } from "@ilamy/calendar";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { addMinutes, differenceInMinutes, isAfter, isValid } from "date-fns";
 import { toast } from "sonner";
+import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
 import { tzLocalInputToUtc, utcToTzLocalInput } from "@/lib/tz-datetime";
 import {
 	type EventFormValues,
@@ -10,7 +11,6 @@ import {
 import { createBreakFn } from "@/server-fns/planner/breaks";
 import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
 import { createSessionFn } from "@/server-fns/planner/sessions";
-import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { usePlannerTools } from "../planner-tools-context";
 

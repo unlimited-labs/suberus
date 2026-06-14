@@ -24,6 +24,10 @@ import {
 	useSuspenseQuery,
 } from "@tanstack/react-query";
 import { useState } from "react";
+import {
+	feeCurrencyQueryOptions,
+	feeTypesQueryOptions,
+} from "@/features/settings/api/settings";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import {
 	type AssignableUserRole,
@@ -37,10 +41,6 @@ import {
 	adminUsersQueryOptions,
 	patchAdminUser,
 } from "@/server-fns/admin/users";
-import {
-	feeCurrencyQueryOptions,
-	feeTypesQueryOptions,
-} from "@/server-fns/settings";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";

@@ -9,6 +9,7 @@ import {
 	isAfter,
 } from "date-fns";
 import { useState } from "react";
+import { getAppBrandingFn } from "@/features/settings/api/settings";
 import type {
 	PublicProgramBreak,
 	PublicProgramSession,
@@ -18,7 +19,6 @@ import {
 	publicConferenceInfoQueryOptions,
 	publicProgramQueryOptions,
 } from "@/server-fns/planner/schedule";
-import { getAppBrandingFn } from "@/server-fns/settings";
 import { cn } from "@/shared/lib/utils";
 import { Input } from "@/shared/ui/input";
 

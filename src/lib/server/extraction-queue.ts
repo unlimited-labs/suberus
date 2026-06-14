@@ -1,8 +1,8 @@
-import { SUPPORTED_FILE_EXTENSIONS } from "@/lib/settings/file-types";
+import { SUPPORTED_FILE_EXTENSIONS } from "@/features/settings/file-types";
+import { getSetting } from "@/features/settings/server/settings";
 import { ensureQueueAndSend } from "@/shared/server/queue";
 import { generateExtractionFileKey, uploadFile } from "@/shared/server/storage";
 import { createJobProgress } from "./job-progress";
-import { getSetting } from "./settings";
 import { validateUpload } from "./validate-upload";
 
 /**

@@ -4,17 +4,17 @@ import {
 	DEFAULT_ORAL_PRESENTATION_CONFIG,
 	DEFAULT_POSTER_CONFIG,
 	getDefaultSetting,
-} from "@/lib/settings/defaults";
+} from "@/features/settings/defaults";
 import {
 	SUPPORTED_FILE_EXTENSIONS,
 	type SupportedFileExtension,
-} from "@/lib/settings/file-types";
+} from "@/features/settings/file-types";
 import {
 	type AppSettingsMap,
 	SUBMISSION_TYPE_KEYS,
 	type SubmissionTypeConfig,
 	type SubmissionTypeKey,
-} from "@/lib/settings/types";
+} from "@/features/settings/types";
 import { prisma } from "@/shared/server/db.server";
 
 /**

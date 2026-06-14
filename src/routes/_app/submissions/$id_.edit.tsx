@@ -7,6 +7,11 @@ import {
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
+	activeSubmissionTypesQueryOptions,
+	submissionGuidelinesQueryOptions,
+	submissionValidationQueryOptions,
+} from "@/features/settings/api/settings";
+import {
 	mySubmissionsQueryOptions,
 	submissionDetailQueryOptions,
 	submitDraftFn,
@@ -18,11 +23,6 @@ import {
 	type SubmissionFormData,
 } from "@/features/submissions/components/form/submission-form";
 import { activeTracksQueryOptions } from "@/features/tracks/api/tracks";
-import {
-	activeSubmissionTypesQueryOptions,
-	submissionGuidelinesQueryOptions,
-	submissionValidationQueryOptions,
-} from "@/server-fns/settings";
 import { extractionSettingsQueryOptions } from "@/server-fns/settings/extraction";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/ui/button";

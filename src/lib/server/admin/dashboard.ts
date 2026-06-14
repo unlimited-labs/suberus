@@ -1,12 +1,12 @@
 import { differenceInCalendarDays, startOfDay, subDays } from "date-fns";
+import { getSetting } from "@/features/settings/server/settings";
+import type { AppSettingsMap } from "@/features/settings/types";
 import type {
 	AssignmentStatus,
 	SubmissionStatus,
 	SubmissionType,
 	UserRole,
 } from "@/generated/prisma/enums";
-import { getSetting } from "@/lib/server/settings";
-import type { AppSettingsMap } from "@/lib/settings/types";
 import { prisma } from "@/shared/server/db.server";
 import { checkSmtpHealth, type SmtpHealthResult } from "@/shared/server/email";
 import { checkS3Health, type S3HealthResult } from "@/shared/server/storage";

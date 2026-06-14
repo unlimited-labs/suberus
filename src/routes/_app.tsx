@@ -1,9 +1,9 @@
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import type { CSSProperties } from "react";
 import { useEffect } from "react";
-import { APP_SETTINGS_DEFAULTS } from "@/lib/settings/defaults";
-import type { AppBranding } from "@/server-fns/settings";
-import { getAppBrandingFn } from "@/server-fns/settings";
+import type { AppBranding } from "@/features/settings/api/settings";
+import { getAppBrandingFn } from "@/features/settings/api/settings";
+import { APP_SETTINGS_DEFAULTS } from "@/features/settings/defaults";
 import { AppLayout } from "@/shared/components/layout/app-layout";
 import { SpinnerSvg } from "@/shared/components/spinner-svg";
 import { DateFormatProvider } from "@/shared/hooks/use-date-format";
