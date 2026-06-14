@@ -1,8 +1,8 @@
 import { IconShieldOff } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { adminRouteMiddleware } from "@/features/auth/server/middleware";
 import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
-import { adminRouteMiddleware } from "@/shared/server/middleware/auth";
 
 export const Route = createFileRoute("/_app/admin/_layout")({
 	server: {

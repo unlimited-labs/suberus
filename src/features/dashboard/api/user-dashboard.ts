@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
+import { authMiddleware } from "@/features/auth/server/middleware";
 import { getUserDashboardMetrics } from "@/features/dashboard/server/user-dashboard";
-import { authMiddleware } from "@/shared/server/middleware/auth";
 
 export const getUserDashboard = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])

@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
+import { adminMiddleware } from "@/features/auth/server/middleware";
 import { getReviewerUsers } from "@/features/reviews/server/reviewers";
-import { adminMiddleware } from "@/shared/server/middleware/auth";
 
 export const reviewerUsersQueryOptions = () =>
 	queryOptions({

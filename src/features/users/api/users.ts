@@ -2,6 +2,10 @@ import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
+	adminMiddleware,
+	adminOnlyMiddleware,
+} from "@/features/auth/server/middleware";
+import {
 	adminCheckDeletable,
 	adminDeleteUser,
 	adminUpdateProfile,
@@ -11,10 +15,6 @@ import {
 	patchUser,
 } from "@/features/users/server/users";
 import type { UserRole } from "@/generated/prisma/enums";
-import {
-	adminMiddleware,
-	adminOnlyMiddleware,
-} from "@/shared/server/middleware/auth";
 
 const getUsersSchema = z.object({
 	search: z.string().optional(),

@@ -1,13 +1,13 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { adminOnlyMiddleware } from "@/features/auth/server/middleware";
 import {
 	cancelInvitation,
 	createInvitation,
 	getInvitations,
 	resendInvitation,
 } from "@/features/invitations/server/invitations";
-import { adminOnlyMiddleware } from "@/shared/server/middleware/auth";
 
 export const adminInvitationsQueryOptions = () =>
 	queryOptions({

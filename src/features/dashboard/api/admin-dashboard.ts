@@ -1,8 +1,8 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { adminMiddleware } from "@/features/auth/server/middleware";
 import { getAdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
-import { adminMiddleware } from "@/shared/server/middleware/auth";
 
 export const getAdminDashboard = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])

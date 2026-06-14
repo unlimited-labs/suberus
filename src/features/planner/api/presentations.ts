@@ -1,12 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { adminMiddleware } from "@/features/auth/server/middleware";
 import {
 	createPresentation,
 	deletePresentation,
 	reorderPresentations,
 	updatePresentationDuration,
 } from "@/features/planner/server/presentations";
-import { adminMiddleware } from "@/shared/server/middleware/auth";
 
 export const createPresentationFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])

@@ -2,16 +2,16 @@ import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
+	adminMiddleware,
+	authMiddleware,
+} from "@/features/auth/server/middleware";
+import {
 	createBreak,
 	deleteBreak,
 	listBreaks,
 	updateBreak,
 } from "@/features/planner/server/breaks";
 import { zDateString } from "@/shared/lib/validations/zod-helpers";
-import {
-	adminMiddleware,
-	authMiddleware,
-} from "@/shared/server/middleware/auth";
 
 export const allBreaksQueryOptions = () =>
 	queryOptions({

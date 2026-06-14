@@ -4,12 +4,12 @@ import { getRequestHeaders } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { auth } from "@/features/auth/server/auth.server";
+import { authMiddleware } from "@/features/auth/server/middleware";
 import {
 	getPersonalInfo,
 	updateContactInfo,
 	updatePersonalInfo,
 } from "@/features/profile/server/profile";
-import { authMiddleware } from "@/shared/server/middleware/auth";
 
 const orcidRegex = /^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/;
 

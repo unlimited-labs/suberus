@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { authMiddleware } from "@/features/auth/server/middleware";
 import { SUPPORTED_FILE_EXTENSIONS } from "@/features/settings/file-types";
 import {
 	getActiveSubmissionTypes,
@@ -27,7 +28,6 @@ import {
 import { logger } from "@/logger";
 import { prisma } from "@/shared/server/db.server";
 import { getUploadedFile } from "@/shared/server/form-upload";
-import { authMiddleware } from "@/shared/server/middleware/auth";
 
 function isPrismaKnownError(
 	err: unknown,

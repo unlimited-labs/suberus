@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
+import { authMiddleware } from "@/features/auth/server/middleware";
 import { getActiveTracks } from "@/features/tracks/server/tracks";
-import { authMiddleware } from "@/shared/server/middleware/auth";
 
 export const activeTracksQueryOptions = () =>
 	queryOptions({

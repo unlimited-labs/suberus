@@ -1,6 +1,10 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import {
+	adminMiddleware,
+	authMiddleware,
+} from "@/features/auth/server/middleware";
 import { getSetting } from "@/features/settings/server/settings";
 import {
 	acceptTos,
@@ -12,10 +16,6 @@ import {
 	updateSurveyQuestion,
 	upsertSurveyAnswers,
 } from "@/features/survey/server/survey";
-import {
-	adminMiddleware,
-	authMiddleware,
-} from "@/shared/server/middleware/auth";
 
 export const activeSurveyQuestionsQueryOptions = () =>
 	queryOptions({

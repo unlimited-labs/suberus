@@ -1,16 +1,16 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import {
+	adminMiddleware,
+	authMiddleware,
+} from "@/features/auth/server/middleware";
 import type { ExtractionResult } from "@/features/extraction/server/extraction";
 import { enqueueExtractionJob } from "@/features/extraction/server/extraction-queue";
 import { getSetting, setSetting } from "@/features/settings/server/settings";
 import type { AppSettingsMap } from "@/features/settings/types";
 import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
 import { getJobProgress } from "@/shared/server/job-progress";
-import {
-	adminMiddleware,
-	authMiddleware,
-} from "@/shared/server/middleware/auth";
 
 // --- Public (auth-required) ---
 

@@ -1,13 +1,13 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { adminMiddleware } from "@/features/auth/server/middleware";
 import {
 	createTrack,
 	deleteTrack,
 	getAllTracks,
 	updateTrack,
 } from "@/features/tracks/server/admin-tracks";
-import { adminMiddleware } from "@/shared/server/middleware/auth";
 
 export const allTracksQueryOptions = () =>
 	queryOptions({

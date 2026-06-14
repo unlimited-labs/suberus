@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { format } from "date-fns";
 import * as XLSX from "xlsx";
+import { adminRequestMiddleware } from "@/features/auth/server/middleware";
 import { getSetting } from "@/features/settings/server/settings";
 import { formatSurveyAnswerValue } from "@/features/survey/labels";
 import { getSurveyQuestions } from "@/features/survey/server/survey";
@@ -8,7 +9,6 @@ import { formatSubmissionRoles } from "@/features/users/labels";
 import { getUsers } from "@/features/users/server/users";
 import type { UserRole } from "@/generated/prisma/enums";
 import { formatDateTime } from "@/shared/lib/format-date";
-import { adminRequestMiddleware } from "@/shared/server/middleware/auth";
 import { neutralizeFormula } from "@/shared/server/spreadsheet-safe";
 
 export const Route = createFileRoute("/api/admin/users/export")({

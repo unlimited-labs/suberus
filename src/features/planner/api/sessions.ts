@@ -2,6 +2,10 @@ import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
+	adminMiddleware,
+	authMiddleware,
+} from "@/features/auth/server/middleware";
+import {
 	assignChair,
 	continueSeries,
 	createSession,
@@ -15,10 +19,6 @@ import {
 	updateSession,
 } from "@/features/planner/server/sessions";
 import { zDateString } from "@/shared/lib/validations/zod-helpers";
-import {
-	adminMiddleware,
-	authMiddleware,
-} from "@/shared/server/middleware/auth";
 
 export const allSessionsQueryOptions = () =>
 	queryOptions({

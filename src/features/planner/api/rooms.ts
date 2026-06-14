@@ -2,15 +2,15 @@ import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
+	adminMiddleware,
+	authMiddleware,
+} from "@/features/auth/server/middleware";
+import {
 	createRoom,
 	deleteRoom,
 	getAllRooms,
 	updateRoom,
 } from "@/features/planner/server/rooms";
-import {
-	adminMiddleware,
-	authMiddleware,
-} from "@/shared/server/middleware/auth";
 
 export const allRoomsQueryOptions = () =>
 	queryOptions({

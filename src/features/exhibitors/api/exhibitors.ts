@@ -2,6 +2,10 @@ import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
+	adminMiddleware,
+	authMiddleware,
+} from "@/features/auth/server/middleware";
+import {
 	becomeExhibitor,
 	decideExhibitor,
 	getExhibitorDetail,
@@ -14,10 +18,6 @@ import {
 } from "@/features/exhibitors/server/exhibitors";
 import { exhibitorApplicationSchema } from "@/features/exhibitors/validations";
 import { getSubmissionTypeConfigs } from "@/features/settings/server/settings";
-import {
-	adminMiddleware,
-	authMiddleware,
-} from "@/shared/server/middleware/auth";
 
 export const exhibitorSignupAvailableFn = createServerFn({
 	method: "GET",

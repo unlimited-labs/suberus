@@ -2,6 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { env } from "@/env";
+import { adminMiddleware } from "@/features/auth/server/middleware";
 import { getSetting } from "@/features/settings/server/settings";
 import { EmailEventType } from "@/generated/prisma/enums";
 import { sendTestEmail } from "@/shared/server/email";
@@ -9,7 +10,6 @@ import {
 	getEmailTemplates,
 	updateEmailTemplate,
 } from "@/shared/server/email-templates";
-import { adminMiddleware } from "@/shared/server/middleware/auth";
 
 const emailEventTypeEnum = z.enum(EmailEventType);
 

@@ -2,6 +2,7 @@ import { IconAlertTriangle, IconBuildingStore } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { exhibitorRouteMiddleware } from "@/features/auth/server/middleware";
 import {
 	exhibitorPanelConfigQueryOptions,
 	myExhibitorQueryOptions,
@@ -10,7 +11,6 @@ import { ExhibitorApplicationForm } from "@/features/exhibitors/components/exhib
 import { ExhibitorStatusCard } from "@/features/exhibitors/components/exhibitor-status-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useSession } from "@/shared/hooks/use-session";
-import { exhibitorRouteMiddleware } from "@/shared/server/middleware/auth";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 
 export const Route = createFileRoute("/_app/exhibitor/")({

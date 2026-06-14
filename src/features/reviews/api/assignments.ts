@@ -2,6 +2,10 @@ import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
+	adminMiddleware,
+	authMiddleware,
+} from "@/features/auth/server/middleware";
+import {
 	type AssignmentWithReviewer,
 	type AvailableReviewer,
 	assignReviewer,
@@ -11,10 +15,6 @@ import {
 	getSubmissionAssignments,
 	type ReviewerAssignment,
 } from "@/features/reviews/server/assignments";
-import {
-	adminMiddleware,
-	authMiddleware,
-} from "@/shared/server/middleware/auth";
 
 export type { AssignmentWithReviewer, AvailableReviewer, ReviewerAssignment };
 

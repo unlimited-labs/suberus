@@ -1,10 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { authMiddleware } from "@/features/auth/server/middleware";
 import {
 	consumeInvitation,
 	validateInvitationToken,
 } from "@/features/invitations/server/invitations";
-import { authMiddleware } from "@/shared/server/middleware/auth";
 
 export const validateInvitationTokenFn = createServerFn({ method: "GET" })
 	.inputValidator(z.object({ token: z.string() }))

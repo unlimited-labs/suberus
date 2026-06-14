@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { adminMiddleware } from "@/features/auth/server/middleware";
 import {
 	bulkAssignReviewer,
 	bulkChangeStatus,
@@ -12,7 +13,6 @@ import {
 	getSubmissionForEditor,
 	updateSubmissionTrack,
 } from "@/features/submissions/server/admin-submissions";
-import { adminMiddleware } from "@/shared/server/middleware/auth";
 
 const submissionTypeEnum = z.enum(["ABSTRACT", "FULL_PAPER", "POSTER"]);
 const submissionStatusEnum = z.enum([

@@ -8,6 +8,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { compareDesc, differenceInCalendarDays, isAfter } from "date-fns";
 import { useEffect } from "react";
+import { redirectExhibitorRouteMiddleware } from "@/features/auth/server/middleware";
 import {
 	activeSubmissionTypesQueryOptions,
 	submissionDeadlineQueryOptions,
@@ -18,7 +19,6 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { useSession } from "@/shared/hooks/use-session";
 import { cn } from "@/shared/lib/utils";
-import { redirectExhibitorRouteMiddleware } from "@/shared/server/middleware/auth";
 import { Button } from "@/shared/ui/button";
 import {
 	Tooltip,

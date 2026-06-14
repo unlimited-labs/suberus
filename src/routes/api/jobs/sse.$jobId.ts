@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { authRequestMiddleware } from "@/features/auth/server/middleware";
 import { prisma } from "@/shared/server/db.server.ts";
-import { authRequestMiddleware } from "@/shared/server/middleware/auth";
 
 export const Route = createFileRoute("/api/jobs/sse/$jobId")({
 	server: {

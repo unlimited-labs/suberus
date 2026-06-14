@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { authRequestMiddleware } from "@/features/auth/server/middleware";
 import type { UserRole } from "@/generated/prisma/enums";
 import { checkFileAccess } from "@/shared/server/files";
-import { authRequestMiddleware } from "@/shared/server/middleware/auth";
 import {
 	contentDispositionAttachment,
 	getFileContent,

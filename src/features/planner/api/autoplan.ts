@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { adminMiddleware } from "@/features/auth/server/middleware";
 import { applyAutoPlan } from "@/features/planner/server/autoplan";
 import type { AutoPlanProposal } from "@/features/planner/server/autoplan-types";
 import { getSetting } from "@/features/settings/server/settings";
@@ -8,7 +9,6 @@ import {
 	createJobProgress,
 	getJobProgress,
 } from "@/shared/server/job-progress";
-import { adminMiddleware } from "@/shared/server/middleware/auth";
 import { ensureQueueAndSend } from "@/shared/server/queue";
 
 export const startAutoPlanFn = createServerFn({ method: "POST" })
