@@ -1,8 +1,8 @@
 import { auth } from "@/features/auth/server/auth.server";
+import type { InstallFormData } from "@/features/install/validations";
 import { APP_SETTINGS_DEFAULTS } from "@/features/settings/defaults";
-import type { InstallFormData } from "@/lib/validations/install";
 import { prisma } from "@/shared/server/db.server";
-import { DEFAULT_EMAIL_TEMPLATES } from "../../../prisma/default-email-templates";
+import { DEFAULT_EMAIL_TEMPLATES } from "../../../../prisma/default-email-templates";
 
 let cachedInstalled = false;
 

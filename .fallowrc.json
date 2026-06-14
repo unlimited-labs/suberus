@@ -29,7 +29,7 @@
   },
   // Added incrementally, one feature-zone per migration PR. Migrated so far
   // (autoDiscover finds them): submissions, profile, tracks, fee, workflow,
-  // activity-log, auth, settings, survey, email-templates. The
+  // activity-log, auth, settings, survey, email-templates, install. The
   // other allow-list names are forward references that activate as those features
   // migrate. `shared` zone is declared ahead of its files. coverage.requireAllFiles
   // is intentionally left off until the last feature lands (un-migrated src/lib
@@ -52,7 +52,7 @@
           "shared", "workflow", "settings", "activity-log", "auth", "survey",
           "submissions", "reviews", "planner", "extraction", "exhibitors",
           "fee", "profile", "users", "invitations", "dashboard", "tracks",
-          "email-templates"
+          "email-templates", "install"
         ]
       },
       {
@@ -95,6 +95,10 @@
       {
         "from": "email-templates",
         "allow": ["shared", "settings"]
+      },
+      {
+        "from": "install",
+        "allow": ["shared", "settings", "auth"]
       }
     ]
   }

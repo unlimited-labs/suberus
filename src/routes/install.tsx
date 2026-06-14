@@ -7,11 +7,11 @@ import {
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { AuthLayout } from "@/features/auth/components/auth-layout";
-import { installSchema } from "@/lib/validations/install";
 import {
 	checkInstallStatusFn,
 	performInstallFn,
-} from "@/server-fns/settings/install";
+} from "@/features/install/api/install";
+import { installSchema } from "@/features/install/validations";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 
 export const Route = createFileRoute("/install")({

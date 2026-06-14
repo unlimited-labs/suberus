@@ -1,6 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
-import { isSystemInstalled, performInstall } from "@/lib/server/install";
-import { installSchema } from "@/lib/validations/install";
+import {
+	isSystemInstalled,
+	performInstall,
+} from "@/features/install/server/install";
+import { installSchema } from "@/features/install/validations";
 
 export const checkInstallStatusFn = createServerFn({ method: "GET" }).handler(
 	async () => {
