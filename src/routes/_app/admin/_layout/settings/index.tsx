@@ -36,9 +36,9 @@ import { toEmailTemplateUI } from "@/components/admin/settings/email-templates-t
 import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { paymentInstructionsQueryOptions } from "@/features/fee/api/fee";
-import { FeeTab } from "@/features/fee/components/fee-tab";
+import { FeeTab } from "@/features/fee/components/admin/fee-tab";
 import { allTracksQueryOptions } from "@/features/tracks/api/tracks";
-import { TracksTab } from "@/features/tracks/components/tracks-tab";
+import { TracksTab } from "@/features/tracks/components/admin/tracks-tab";
 import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
 import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
 import { reviewerUsersQueryOptions } from "@/server-fns/reviews/reviewers";
