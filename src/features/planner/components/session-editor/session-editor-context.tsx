@@ -12,7 +12,7 @@ import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
 import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
 import { adminUsersQueryOptions } from "@/features/users/api/users";
 import type { AdminUser } from "@/features/users/server/users";
-import { formatDurationMin } from "@/lib/tz-datetime";
+import { formatDurationMin } from "@/shared/lib/tz-datetime";
 import { useEditableTitle } from "../hooks/use-editable-title";
 import type { PlannerSession } from "../types";
 import { useSessionEditorMutations } from "./use-session-editor-mutations";

@@ -15,7 +15,7 @@ import {
 } from "@tanstack/react-table";
 import { useState } from "react";
 import { z } from "zod";
-import { useTablePagination } from "@/hooks/use-table-pagination";
+import { useTablePagination } from "@/shared/hooks/use-table-pagination";
 import { usePersistedState } from "@/shared/hooks/use-persisted-state";
 import {
 	Table,

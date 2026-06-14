@@ -3,8 +3,11 @@ import { z } from "zod";
 import { applyAutoPlan } from "@/features/planner/server/autoplan";
 import type { AutoPlanProposal } from "@/features/planner/server/autoplan-types";
 import { getSetting } from "@/features/settings/server/settings";
-import { createJobProgress, getJobProgress } from "@/lib/server/job-progress";
 import { prisma } from "@/shared/server/db.server.ts";
+import {
+	createJobProgress,
+	getJobProgress,
+} from "@/shared/server/job-progress";
 import { adminMiddleware } from "@/shared/server/middleware/auth";
 import { ensureQueueAndSend } from "@/shared/server/queue";
 

@@ -1,4 +1,4 @@
-import { FormField } from "@/components/forms/composable/form-field";
+import { FormField } from "@/shared/components/composable/form-field";
 import { useFieldError } from "@/shared/hooks/use-field-error";
 import { cn } from "@/shared/lib/utils";
 import { Textarea } from "@/shared/ui/textarea";

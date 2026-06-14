@@ -5,7 +5,7 @@ import {
 	IconMail,
 } from "@tabler/icons-react";
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
-import { formatLlmStatus } from "@/lib/format-llm-status";
+import { formatLlmStatus } from "@/shared/lib/format-llm-status";
 import { cn } from "@/shared/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 

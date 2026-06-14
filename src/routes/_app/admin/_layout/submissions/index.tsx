@@ -5,7 +5,6 @@ import {
 	useSuspenseQuery,
 } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { DataTable, DataTableToolbar } from "@/components/admin/data-table";
 import { adminSubmissionsQueryOptions } from "@/features/submissions/api/admin-submissions";
 import { submissionColumns } from "@/features/submissions/components/admin/columns";
 import { SubmissionExportButton } from "@/features/submissions/components/admin/export-button";
@@ -13,6 +12,7 @@ import { SubmissionBulkActions } from "@/features/submissions/components/admin/s
 import { SubmissionMobileCard } from "@/features/submissions/components/admin/submission-mobile-card";
 import { activeTracksQueryOptions } from "@/features/tracks/api/tracks";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { DataTable, DataTableToolbar } from "@/shared/ui/data-table";
 
 export const Route = createFileRoute("/_app/admin/_layout/submissions/")({
 	loader: async ({ context }) => {

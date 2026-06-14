@@ -1,5 +1,5 @@
 import { env } from "@/env";
-import { createHealthCache } from "@/lib/server/health-cache";
+import { createHealthCache } from "@/shared/lib/health-cache";
 
 export interface PlannerHealthResult {
 	status: "healthy" | "unavailable";

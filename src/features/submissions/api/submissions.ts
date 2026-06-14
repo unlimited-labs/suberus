@@ -24,9 +24,9 @@ import {
 	DEFAULT_VALIDATION_LIMITS,
 	type ValidationLimits,
 } from "@/features/submissions/validations";
-import { getUploadedFile } from "@/lib/server/form-upload";
 import { logger } from "@/logger";
 import { prisma } from "@/shared/server/db.server";
+import { getUploadedFile } from "@/shared/server/form-upload";
 import { authMiddleware } from "@/shared/server/middleware/auth";
 
 function isPrismaKnownError(
@@ -194,7 +194,7 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 		// Dynamic import to avoid loading storage module when not needed
 		const { uploadFile, generateSubmissionFileKey, generateAuthorFileName } =
 			await import("@/shared/server/storage");
-		const { fileToBuffer } = await import("@/lib/server/form-upload");
+		const { fileToBuffer } = await import("@/shared/server/form-upload");
 		const { prisma } = await import("@/shared/server/db.server");
 
 		// Verify submission belongs to user
@@ -219,7 +219,7 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 		// Validate the real file type by magic number against the allowed
 		// extensions for this submission's type — never trust the client mime.
 		const { validateUpload, UploadValidationError } = await import(
-			"@/lib/server/validate-upload"
+			"@/shared/server/validate-upload"
 		);
 		const activeTypes = await getActiveSubmissionTypes();
 		const typeConfig = activeTypes.find(

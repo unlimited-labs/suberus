@@ -1,9 +1,9 @@
 import type { Job, PgBoss } from "pg-boss";
 import { runAutoPlan } from "@/features/planner/server/autoplan";
 import type { InputJsonValue } from "@/generated/prisma/internal/prismaNamespace.ts";
-import { completeJob, failJob } from "@/lib/server/job-progress";
 import { logger } from "@/logger.ts";
 import { prisma } from "@/shared/server/db.server.ts";
+import { completeJob, failJob } from "@/shared/server/job-progress";
 
 export interface AutoplanJobData {
 	jobId: string;

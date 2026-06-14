@@ -1,6 +1,6 @@
-import { PasswordFieldsGroup } from "@/components/forms/composable/password-fields-group";
 import type { PasswordChangeFormData } from "@/features/profile/validations";
 import { passwordChangeSchema } from "@/features/profile/validations";
+import { PasswordFieldsGroup } from "@/shared/components/composable/password-fields-group";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 
 interface PasswordChangeSectionProps {

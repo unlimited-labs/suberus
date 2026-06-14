@@ -3,9 +3,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AuthCard } from "@/features/auth/components/auth-card";
-import { forgotPasswordSchema } from "@/lib/validations/auth";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { forgetPassword } from "@/shared/lib/auth-client";
+import { forgotPasswordSchema } from "@/shared/lib/validations/auth";
 
 export const Route = createFileRoute("/_auth/forgot-password")({
 	component: ForgotPasswordPage,

@@ -20,8 +20,8 @@ import {
 } from "@/features/settings/api/settings";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import type { AppSettingsMap } from "@/features/settings/types";
-import { formatLlmStatus } from "@/lib/format-llm-status";
 import { getErrorMessage } from "@/shared/lib/error-message";
+import { formatLlmStatus } from "@/shared/lib/format-llm-status";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";

@@ -19,9 +19,9 @@ import type {
 	SubmissionTypeConfig,
 	SubmissionTypeKey,
 } from "@/features/settings/types";
-import { getUploadedFile } from "@/lib/server/form-upload";
-import { zIanaTz } from "@/lib/validations/zod-helpers";
+import { zIanaTz } from "@/shared/lib/validations/zod-helpers";
 import { prisma } from "@/shared/server/db.server";
+import { getUploadedFile } from "@/shared/server/form-upload";
 import {
 	adminMiddleware,
 	authMiddleware,
@@ -731,7 +731,7 @@ export const uploadAuthBackgroundFn = createServerFn({ method: "POST" })
 		const { uploadAuthBackground, getAuthBackgroundUrl } = await import(
 			"@/features/settings/server/branding"
 		);
-		const { fileToBuffer } = await import("@/lib/server/form-upload");
+		const { fileToBuffer } = await import("@/shared/server/form-upload");
 		const buffer = await fileToBuffer(data.file);
 		await uploadAuthBackground(buffer);
 		const url = await getAuthBackgroundUrl();

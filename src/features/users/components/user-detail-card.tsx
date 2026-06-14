@@ -39,9 +39,9 @@ import {
 	roleLabels,
 } from "@/features/users/labels";
 import type { AdminUserDetail } from "@/features/users/server/users";
-import { useAdminAuth } from "@/hooks/use-admin-auth";
-import { titleLabels } from "@/lib/labels/title";
+import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { titleLabels } from "@/shared/lib/labels/title";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";

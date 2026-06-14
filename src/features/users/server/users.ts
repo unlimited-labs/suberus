@@ -11,8 +11,8 @@ import type {
 	SubmissionType,
 	UserRole,
 } from "@/generated/prisma/enums";
-import { upsertAffiliation } from "@/lib/server/affiliations";
 import { logger } from "@/logger.ts";
+import { upsertAffiliation } from "@/shared/server/affiliations";
 import { prisma } from "@/shared/server/db.server";
 
 export type SubmissionInvolvementRole = "author" | "coauthor";

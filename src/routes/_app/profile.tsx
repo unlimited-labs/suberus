@@ -29,9 +29,9 @@ import {
 	activeSurveyQuestionsQueryOptions,
 	userSurveyAnswersQueryOptions,
 } from "@/features/survey/api/survey";
-import { createAffiliation } from "@/server-fns/affiliations";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useSession } from "@/shared/hooks/use-session";
+import { createAffiliation } from "@/shared/server/affiliations-fn";
 
 export const Route = createFileRoute("/_app/profile")({
 	loader: async ({ context }) => {

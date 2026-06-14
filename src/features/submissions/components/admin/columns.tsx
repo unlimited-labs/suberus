@@ -1,12 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
-	createActionsColumn,
-	createSelectColumn,
-	DataTableColumnHeader,
-	facetedFilterFn,
-} from "@/components/admin/data-table";
-import {
 	type SubmissionTodo,
 	statusFilterOptions,
 	statusLabels,
@@ -24,6 +18,12 @@ import {
 import type { AdminSubmission } from "@/features/submissions/server/admin-submissions";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Badge } from "@/shared/ui/badge";
+import {
+	createActionsColumn,
+	createSelectColumn,
+	DataTableColumnHeader,
+	facetedFilterFn,
+} from "@/shared/ui/data-table";
 import {
 	Tooltip,
 	TooltipContent,

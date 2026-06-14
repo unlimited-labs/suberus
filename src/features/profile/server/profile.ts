@@ -1,9 +1,9 @@
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
 import { SUPPORTED_IMAGE_EXTENSIONS } from "@/features/settings/file-types";
-import { validateUpload } from "@/lib/server/validate-upload";
 import { prisma } from "@/shared/server/db.server";
 import { deleteFile, uploadFile } from "@/shared/server/storage";
+import { validateUpload } from "@/shared/server/validate-upload";
 
 /** Avatar images are capped at 5MB (matches the upload UI). */
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024;

@@ -6,10 +6,6 @@ import {
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { compareAsc, differenceInCalendarDays } from "date-fns";
-import {
-	DataTableColumnHeader,
-	facetedFilterFn,
-} from "@/components/admin/data-table";
 import type { ReviewerAssignment } from "@/features/reviews/api/assignments";
 import {
 	assignmentStatusFilterOptions,
@@ -21,6 +17,7 @@ import type { AssignmentStatus } from "@/generated/prisma/enums";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { DataTableColumnHeader, facetedFilterFn } from "@/shared/ui/data-table";
 
 function DeadlineCell({
 	deadline,

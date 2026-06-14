@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { RowSelectionState, Table } from "@tanstack/react-table";
 import { useState } from "react";
-import { BulkActionDialog } from "@/components/admin/data-table";
 import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
@@ -15,8 +14,9 @@ import {
 	assignableRoleOptions,
 } from "@/features/users/labels";
 import type { AdminUser } from "@/features/users/server/users";
-import { useAdminAuth } from "@/hooks/use-admin-auth";
+import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
 import { Button } from "@/shared/ui/button";
+import { BulkActionDialog } from "@/shared/ui/data-table";
 import {
 	Select,
 	SelectContent,

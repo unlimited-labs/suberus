@@ -1,12 +1,12 @@
 import { IconMailForward, IconX } from "@tabler/icons-react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { DataTableColumnHeader } from "@/components/admin/data-table";
 import { invitationStatusConfig } from "@/features/invitations/labels";
 import type { AdminInvitation } from "@/features/invitations/server/invitations";
 import { roleLabels } from "@/features/users/labels";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { DataTableColumnHeader } from "@/shared/ui/data-table";
 
 interface InvitationColumnsOptions {
 	onResend: (id: string) => void;

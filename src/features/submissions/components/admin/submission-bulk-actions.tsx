@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import type { Table } from "@tanstack/react-table";
 import { useState } from "react";
 import { toast } from "sonner";
-import { BulkActionDialog } from "@/components/admin/data-table";
 import { reviewerUsersQueryOptions } from "@/features/reviews/api/reviewers";
 import {
 	bulkAssignReviewerFn,
@@ -15,6 +14,7 @@ import type { AvailableTrack } from "@/features/submissions/types";
 import type { SubmissionStatus } from "@/generated/prisma/enums";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
+import { BulkActionDialog } from "@/shared/ui/data-table";
 import {
 	Select,
 	SelectContent,

@@ -4,7 +4,7 @@ import {
 	findAffiliationById,
 	findAffiliations,
 	upsertAffiliation,
-} from "@/lib/server/affiliations";
+} from "@/shared/server/affiliations";
 
 const getAffiliationsSchema = z.object({
 	q: z.string().optional(),

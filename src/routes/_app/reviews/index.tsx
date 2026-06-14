@@ -1,7 +1,6 @@
 import { IconClipboardCheck } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { DataTable, DataTableToolbar } from "@/components/admin/data-table";
 import {
 	myAssignmentsQueryOptions,
 	type ReviewerAssignment,
@@ -9,6 +8,7 @@ import {
 import { reviewColumns } from "@/features/reviews/components/review-columns";
 import { ReviewMobileCard } from "@/features/reviews/components/review-mobile-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { DataTable, DataTableToolbar } from "@/shared/ui/data-table";
 
 export const Route = createFileRoute("/_app/reviews/")({
 	loader: async ({ context }) => {

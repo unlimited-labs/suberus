@@ -6,7 +6,7 @@ import { addMinutes } from "date-fns";
 import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
 import { allSessionsQueryOptions } from "@/features/planner/api/sessions";
 import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
-import { tzLocalInputToUtc } from "@/lib/tz-datetime";
+import { tzLocalInputToUtc } from "@/shared/lib/tz-datetime";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,

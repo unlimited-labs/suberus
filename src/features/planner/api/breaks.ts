@@ -7,7 +7,7 @@ import {
 	listBreaks,
 	updateBreak,
 } from "@/features/planner/server/breaks";
-import { zDateString } from "@/lib/validations/zod-helpers";
+import { zDateString } from "@/shared/lib/validations/zod-helpers";
 import {
 	adminMiddleware,
 	authMiddleware,

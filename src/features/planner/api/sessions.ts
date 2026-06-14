@@ -14,7 +14,7 @@ import {
 	splitSession,
 	updateSession,
 } from "@/features/planner/server/sessions";
-import { zDateString } from "@/lib/validations/zod-helpers";
+import { zDateString } from "@/shared/lib/validations/zod-helpers";
 import {
 	adminMiddleware,
 	authMiddleware,

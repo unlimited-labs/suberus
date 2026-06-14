@@ -1,4 +1,4 @@
-import { generateWithLlm } from "@/lib/server/llm";
+import { generateWithLlm } from "@/shared/server/llm";
 import type { ExtractionResult } from "./extraction";
 import {
 	MAX_TOKEN_ESTIMATE,

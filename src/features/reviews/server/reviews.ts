@@ -9,19 +9,19 @@ import {
 	validateAssignmentTransition,
 } from "@/features/workflow/server/workflow";
 import type { ReviewDecision, ReviewMode } from "@/generated/prisma/enums";
-import { fileToBuffer } from "@/lib/server/form-upload";
-import {
-	UploadValidationError,
-	validateUpload,
-} from "@/lib/server/validate-upload";
 import { logger } from "@/logger.ts";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
+import { fileToBuffer } from "@/shared/server/form-upload";
 import {
 	deleteFile,
 	generateReviewFileKey,
 	uploadFile,
 } from "@/shared/server/storage";
+import {
+	UploadValidationError,
+	validateUpload,
+} from "@/shared/server/validate-upload";
 
 /** Review submission data */
 export interface ReviewSubmitData {

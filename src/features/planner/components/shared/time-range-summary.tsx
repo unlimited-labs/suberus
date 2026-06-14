@@ -1,6 +1,6 @@
 import { IconClock } from "@tabler/icons-react";
 import type { ReactNode } from "react";
-import { formatClockTime } from "@/lib/tz-datetime";
+import { formatClockTime } from "@/shared/lib/tz-datetime";
 
 interface Props {
 	start: Date;

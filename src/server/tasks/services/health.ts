@@ -9,8 +9,10 @@ export default defineTask({
 	async run() {
 		logger.info("[task:services:health] started");
 
-		const { checkLlmHealth } = await import("@/lib/server/llm");
-		const { checkDoclingHealth } = await import("@/lib/server/docling");
+		const { checkLlmHealth } = await import("@/shared/server/llm");
+		const { checkDoclingHealth } = await import(
+			"@/features/extraction/server/docling"
+		);
 		const { checkPlannerHealth } = await import(
 			"@/features/planner/server/health"
 		);

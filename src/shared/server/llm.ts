@@ -1,5 +1,5 @@
 import { env } from "@/env";
-import { createHealthCache } from "./health-cache";
+import { createHealthCache } from "@/shared/lib/health-cache";
 
 export interface LlmHealthResult {
 	status: "healthy" | "unavailable";

@@ -3,7 +3,7 @@ import {
 	sendDeadlineReminders,
 	sendReviewerReminders,
 	sendRevisionReminders,
-} from "@/lib/server/reminders";
+} from "@/features/submissions/server/reminders";
 import { logger } from "@/logger";
 
 export default defineTask({

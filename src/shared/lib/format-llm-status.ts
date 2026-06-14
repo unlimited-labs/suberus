@@ -1,7 +1,13 @@
-import type { AppSettingsMap } from "@/features/settings/types";
-
-type LlmHealth = AppSettingsMap["SERVICE_HEALTH_LLM"];
-type DoclingHealth = AppSettingsMap["SERVICE_HEALTH_DOCLING"];
+// Structural health shapes (kept minimal so this isomorphic formatter has no
+// feature dependency). Compatible with settings' SERVICE_HEALTH_* entries.
+interface LlmHealth {
+	status: "healthy" | "unavailable";
+	gpu?: boolean;
+	models?: string[];
+}
+interface DoclingHealth {
+	status: "healthy" | "unavailable";
+}
 
 export function formatLlmStatus(health: LlmHealth): string {
 	if (health.status !== "healthy") return "LLM unavailable";

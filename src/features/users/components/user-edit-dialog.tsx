@@ -1,8 +1,6 @@
 import { IconBuilding, IconMail } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-
-import { BillingFieldsGroup } from "@/components/forms/composable/billing-fields-group";
 import { checkEmailAvailableFn } from "@/features/auth/api/auth";
 import type { AdminUserEditFormData } from "@/features/profile/validations";
 import { adminUserEditSchema } from "@/features/profile/validations";
@@ -12,8 +10,9 @@ import {
 	updateAdminUserProfile,
 } from "@/features/users/api/users";
 import type { AdminUser } from "@/features/users/server/users";
-import { titleOptions } from "@/lib/labels/title";
+import { BillingFieldsGroup } from "@/shared/components/composable/billing-fields-group";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import { titleOptions } from "@/shared/lib/labels/title";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,

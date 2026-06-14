@@ -5,8 +5,8 @@ import type { ExtractionResult } from "@/features/extraction/server/extraction";
 import { enqueueExtractionJob } from "@/features/extraction/server/extraction-queue";
 import { getSetting, setSetting } from "@/features/settings/server/settings";
 import type { AppSettingsMap } from "@/features/settings/types";
-import { fileToBuffer, getUploadedFile } from "@/lib/server/form-upload";
-import { getJobProgress } from "@/lib/server/job-progress";
+import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
+import { getJobProgress } from "@/shared/server/job-progress";
 import {
 	adminMiddleware,
 	authMiddleware,

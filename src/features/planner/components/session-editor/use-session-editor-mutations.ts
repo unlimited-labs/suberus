@@ -16,7 +16,7 @@ import {
 	addMinutes,
 	formatDurationMin,
 	tzLocalInputToUtc,
-} from "@/lib/tz-datetime";
+} from "@/shared/lib/tz-datetime";
 import { useInvalidatePlannerQueries } from "../hooks/use-invalidate-planner-queries";
 import { useMutationRun } from "../hooks/use-mutation-run";
 

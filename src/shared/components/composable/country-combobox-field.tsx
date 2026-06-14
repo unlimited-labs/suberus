@@ -1,20 +1,18 @@
-import { FormField } from "@/components/forms/composable/form-field";
-import { PasswordInput } from "@/components/forms/password-input";
+import { FormField } from "@/shared/components/composable/form-field";
 import { useFieldError } from "@/shared/hooks/use-field-error";
+import { CountryCombobox } from "@/shared/ui/country-combobox";
 
-interface FormPasswordFieldProps {
+interface FormCountryComboboxFieldProps {
 	label: string;
-	placeholder?: string;
 	disabled?: boolean;
 	description?: string;
 }
 
-export function FormPasswordField({
+export function FormCountryComboboxField({
 	label,
-	placeholder,
 	disabled,
 	description,
-}: FormPasswordFieldProps) {
+}: FormCountryComboboxFieldProps) {
 	const { field, errors, hasError } = useFieldError();
 
 	return (
@@ -25,13 +23,9 @@ export function FormPasswordField({
 			errors={errors}
 			description={description}
 		>
-			<PasswordInput
-				id={field.name}
-				aria-invalid={hasError}
-				value={field.state.value}
-				onBlur={field.handleBlur}
+			<CountryCombobox
+				value={field.state.value || ""}
 				onChange={field.handleChange}
-				placeholder={placeholder}
 				disabled={disabled}
 			/>
 		</FormField>

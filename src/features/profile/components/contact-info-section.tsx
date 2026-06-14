@@ -8,9 +8,9 @@ import {
 import { useStore } from "@tanstack/react-form";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { BillingFieldsGroup } from "@/components/forms/composable/billing-fields-group";
 import type { ContactInfoFormData } from "@/features/profile/validations";
 import { contactInfoSchema } from "@/features/profile/validations";
+import { BillingFieldsGroup } from "@/shared/components/composable/billing-fields-group";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { sendVerificationEmail } from "@/shared/lib/auth-client";
 import { Alert, AlertDescription } from "@/shared/ui/alert";

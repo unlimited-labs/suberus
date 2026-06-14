@@ -2,7 +2,6 @@ import { IconDownload, IconUsers } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { DataTable, DataTableToolbar } from "@/components/admin/data-table";
 import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
@@ -17,6 +16,7 @@ import { UserBulkActions } from "@/features/users/components/user-bulk-actions";
 import { UserMobileCard } from "@/features/users/components/user-mobile-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/ui/button";
+import { DataTable, DataTableToolbar } from "@/shared/ui/data-table";
 
 export const Route = createFileRoute("/_app/admin/_layout/users/")({
 	loader: async ({ context }) => {

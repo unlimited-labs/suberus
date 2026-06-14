@@ -12,10 +12,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { AffiliationSelect } from "@/components/forms/affiliation-select";
 import { checkEmailAvailableFn } from "@/features/auth/api/auth";
 import { AuthCard } from "@/features/auth/components/auth-card";
 import { TosModal } from "@/features/auth/components/tos-modal";
+import { useMultiStep } from "@/features/auth/hooks/use-multi-step";
 import {
 	becomeExhibitorFn,
 	exhibitorSignupAvailableFn,
@@ -34,13 +34,13 @@ import {
 import { SurveyQuestionField } from "@/features/survey/components/survey-question-field";
 import { surveyAnswerRequiredError } from "@/features/survey/validations";
 import { roleLabels } from "@/features/users/labels";
-import { useMultiStep } from "@/hooks/use-multi-step";
-import { detectCountry } from "@/lib/detect-country";
-import { titleOptions } from "@/lib/labels";
-import { registerBase, registerSchema } from "@/lib/validations/auth";
+import { AffiliationSelect } from "@/shared/components/affiliation-select";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { signUp } from "@/shared/lib/auth-client";
+import { detectCountry } from "@/shared/lib/detect-country";
+import { titleOptions } from "@/shared/lib/labels/title";
 import { cn } from "@/shared/lib/utils";
+import { registerBase, registerSchema } from "@/shared/lib/validations/auth";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";

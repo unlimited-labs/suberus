@@ -1,5 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
+import type { listExhibitorsFn } from "@/features/exhibitors/api/exhibitors";
+import { exhibitorStatusBadge } from "@/features/exhibitors/labels";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
 import {
 	createActionsColumn,
 	DataTable,
@@ -7,12 +12,7 @@ import {
 	DataTableToolbar,
 	type FilterOption,
 	facetedFilterFn,
-} from "@/components/admin/data-table";
-import type { listExhibitorsFn } from "@/features/exhibitors/api/exhibitors";
-import { exhibitorStatusBadge } from "@/features/exhibitors/labels";
-import { useDateFormat } from "@/shared/hooks/use-date-format";
-import { cn } from "@/shared/lib/utils";
-import { Badge } from "@/shared/ui/badge";
+} from "@/shared/ui/data-table";
 import { ExhibitorMobileCard } from "./exhibitor-mobile-card";
 
 export type AdminExhibitorRow = Awaited<

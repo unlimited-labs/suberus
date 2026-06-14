@@ -7,7 +7,7 @@ import {
 	submitReview,
 	uploadReviewAttachment,
 } from "@/features/reviews/server/reviews";
-import { getUploadedFile } from "@/lib/server/form-upload";
+import { getUploadedFile } from "@/shared/server/form-upload";
 import { authMiddleware } from "@/shared/server/middleware/auth";
 
 const reviewDecisionEnum = z.enum([

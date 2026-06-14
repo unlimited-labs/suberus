@@ -1,10 +1,10 @@
 import { PromisePool } from "@supercharge/promise-pool";
 import { differenceInMinutes } from "date-fns";
 import { env } from "@/env";
-import { setJobCurrent, setJobStage } from "@/lib/server/job-progress";
-import { generateWithLlm } from "@/lib/server/llm";
 import { logger } from "@/logger.ts";
 import { prisma } from "@/shared/server/db.server";
+import { setJobCurrent, setJobStage } from "@/shared/server/job-progress";
+import { generateWithLlm } from "@/shared/server/llm";
 import {
 	type AutoPlanProposal,
 	AutoPlanProposalSchema,

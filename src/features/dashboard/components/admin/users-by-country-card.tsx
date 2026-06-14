@@ -4,8 +4,8 @@ import * as Flags from "country-flag-icons/react/3x2";
 import MapLibreGL from "maplibre-gl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
-import { COUNTRY_CENTROIDS } from "@/lib/country-centroids";
 import { useTheme } from "@/shared/components/theme-provider";
+import { COUNTRY_CENTROIDS } from "@/shared/lib/country-centroids";
 import {
 	Card,
 	CardAction,

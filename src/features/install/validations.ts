@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { zIanaTz } from "@/lib/validations/zod-helpers";
+import { zIanaTz } from "@/shared/lib/validations/zod-helpers";
 
 const installBase = z.object({
 	conferenceName: z.string().min(1, "Conference name is required").max(200),

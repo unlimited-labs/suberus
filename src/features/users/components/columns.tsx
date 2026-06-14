@@ -1,13 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { Column, ColumnDef } from "@tanstack/react-table";
 import {
-	createActionsColumn,
-	createSelectColumn,
-	DataTableColumnHeader,
-	type FilterOption,
-	facetedFilterFn,
-} from "@/components/admin/data-table";
-import {
 	formatSurveyAnswerValue,
 	parseMultiSelect,
 } from "@/features/survey/labels";
@@ -22,6 +15,13 @@ import type { SurveyQuestionType } from "@/generated/prisma/enums";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
+import {
+	createActionsColumn,
+	createSelectColumn,
+	DataTableColumnHeader,
+	type FilterOption,
+	facetedFilterFn,
+} from "@/shared/ui/data-table";
 import { SubmissionsColumnHeader } from "./submissions-column-header";
 
 export interface SurveyListColumn {

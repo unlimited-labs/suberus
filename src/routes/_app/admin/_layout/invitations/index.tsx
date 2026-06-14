@@ -3,7 +3,6 @@ import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { DataTable, DataTableToolbar } from "@/components/admin/data-table";
 import {
 	adminInvitationsQueryOptions,
 	cancelInvitationFn,
@@ -14,6 +13,7 @@ import { InvitationMobileCard } from "@/features/invitations/components/invitati
 import { InviteUserDialog } from "@/features/invitations/components/invite-user-dialog";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/ui/button";
+import { DataTable, DataTableToolbar } from "@/shared/ui/data-table";
 
 export const Route = createFileRoute("/_app/admin/_layout/invitations/")({
 	loader: async ({ context }) => {

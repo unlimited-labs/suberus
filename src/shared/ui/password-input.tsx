@@ -1,5 +1,5 @@
 import { IconLock } from "@tabler/icons-react";
-import { usePasswordVisibility } from "@/hooks/use-password-visibility";
+import { usePasswordVisibility } from "@/shared/hooks/use-password-visibility";
 import { cn } from "@/shared/lib/utils";
 import { Input } from "@/shared/ui/input";
 

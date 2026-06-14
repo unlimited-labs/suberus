@@ -10,8 +10,8 @@ import {
 	eventFormSchema,
 } from "@/features/planner/validations";
 import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
-import { tzLocalInputToUtc, utcToTzLocalInput } from "@/lib/tz-datetime";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import { tzLocalInputToUtc, utcToTzLocalInput } from "@/shared/lib/tz-datetime";
 import { usePlannerTools } from "../planner-tools-context";
 
 function toDate(raw: unknown): Date | null {

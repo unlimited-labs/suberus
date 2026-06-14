@@ -7,11 +7,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { PasswordFieldsGroup } from "@/components/forms/composable/password-fields-group";
 import { AuthCard } from "@/features/auth/components/auth-card";
-import { resetPasswordSchema } from "@/lib/validations/auth";
+import { PasswordFieldsGroup } from "@/shared/components/composable/password-fields-group";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { resetPassword } from "@/shared/lib/auth-client";
+import { resetPasswordSchema } from "@/shared/lib/validations/auth";
 
 const searchSchema = z.object({
 	token: z.string().optional(),

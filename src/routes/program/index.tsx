@@ -18,7 +18,7 @@ import type {
 	PublicProgramSession,
 } from "@/features/planner/server/schedule";
 import { getAppBrandingFn } from "@/features/settings/api/settings";
-import { formatClockTime, sameDayInTz } from "@/lib/tz-datetime";
+import { formatClockTime, sameDayInTz } from "@/shared/lib/tz-datetime";
 import { cn } from "@/shared/lib/utils";
 import { Input } from "@/shared/ui/input";
 

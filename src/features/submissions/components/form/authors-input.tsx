@@ -25,7 +25,7 @@ import {
 	IconTrash,
 } from "@tabler/icons-react";
 import { useCallback, useState } from "react";
-import { AffiliationSelect } from "@/components/forms/affiliation-select";
+import { AffiliationSelect } from "@/shared/components/affiliation-select";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";

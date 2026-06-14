@@ -1,8 +1,8 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
-import { utcToTzLocalInput } from "@/lib/tz-datetime";
 import { formatDurationShort } from "@/shared/lib/format-date";
+import { utcToTzLocalInput } from "@/shared/lib/tz-datetime";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { SheetHeader, SheetTitle } from "@/shared/ui/sheet";

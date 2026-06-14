@@ -1,11 +1,11 @@
 import { SUPPORTED_IMAGE_EXTENSIONS } from "@/features/settings/file-types";
 import { getSetting, setSetting } from "@/features/settings/server/settings";
-import { validateUpload } from "@/lib/server/validate-upload";
 import {
 	deleteFile,
 	getFileDownloadUrl,
 	uploadFile,
 } from "@/shared/server/storage";
+import { validateUpload } from "@/shared/server/validate-upload";
 
 /** Branding/avatar images are capped at 5MB (matches the upload UI). */
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;

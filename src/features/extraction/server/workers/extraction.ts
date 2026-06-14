@@ -5,8 +5,12 @@ import {
 	extractFromDocx,
 	extractFromPdf,
 } from "@/features/extraction/server/extraction";
-import { completeJob, failJob, setJobStage } from "@/lib/server/job-progress";
 import { logger } from "@/logger.ts";
+import {
+	completeJob,
+	failJob,
+	setJobStage,
+} from "@/shared/server/job-progress";
 import { deleteFile, getFileBuffer } from "@/shared/server/storage";
 
 export interface ExtractionJobData {

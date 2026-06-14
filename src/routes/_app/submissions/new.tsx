@@ -29,10 +29,13 @@ import {
 	type SubmissionFormData,
 } from "@/features/submissions/components/form/submission-form";
 import { activeTracksQueryOptions } from "@/features/tracks/api/tracks";
-import { extractZodIssueMessage, logClientError } from "@/lib/log-client-error";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useSession } from "@/shared/hooks/use-session";
 import { sendVerificationEmail } from "@/shared/lib/auth-client";
+import {
+	extractZodIssueMessage,
+	logClientError,
+} from "@/shared/lib/log-client-error";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 
