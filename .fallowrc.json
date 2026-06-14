@@ -6,9 +6,19 @@
     // Framework-auto-loaded entry points fallow can't see (no nitro plugin):
     "src/start.ts", // TanStack Start createStart instance
     "src/server/plugins/**/*.ts", // nitro definePlugin (run at startup)
-    "src/server/tasks/**/*.ts" // nitro defineTask (scheduledTasks, see vite.config.ts)
+    "src/server/tasks/**/*.ts", // nitro defineTask (scheduledTasks, see vite.config.ts)
+    // Design-system primitives (full shadcn/Radix surface) + tool-owned integrations
+    // are roots: their exports are public API, their deps stay reachable (mirrors
+    // knip's ui ignore without the false unused-dep cascade).
+    "src/shared/ui/**/*.{ts,tsx}",
+    "src/integrations/**/*.{ts,tsx}"
   ],
   "ignoreExportsUsedInFile": true,
+  // Non-project dirs (agent skills) excluded from analysis.
+  "ignorePatterns": [".agents/**"],
+  // Known-good deps consumed via Tailwind/CLI, not TS imports (fallow sees CSS
+  // @imports, so the used @fontsource fonts need no ignore).
+  "ignoreDependencies": ["tw-animate-css", "vibe-rules", "shadcn"],
   "duplicates": {
     // Hide pair-only clones; focus on widespread copy-paste
     // worth refactoring. Lower to 2 to report every duplicate pair.
