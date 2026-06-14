@@ -1,4 +1,3 @@
-import type { Session, User } from "better-auth/types";
 import latinize from "latinize";
 import { env } from "@/env";
 import { logActivity } from "@/features/activity-log/server/activity-log";
@@ -22,11 +21,6 @@ import { sendEmail } from "@/shared/server/email";
 interface CreateSubmissionResult {
 	id: string;
 	success: boolean;
-}
-
-export interface AuthSession {
-	session: Session;
-	user: User & { id: string };
 }
 
 /** Latinized, lowercased "first last" key for name-based author matching */

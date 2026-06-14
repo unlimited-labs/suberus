@@ -1,10 +1,7 @@
 // State machines
 
 // Actions/Metadata
-export {
-	createSubmissionTransitionMetadata,
-	getTransitionDescription,
-} from "./actions";
+export { getTransitionDescription } from "./actions";
 // Guards
 export { canAssignReviewer, getAutoTransitionEvent } from "./guards";
 export { assignmentMachine } from "./machines/assignment.machine";

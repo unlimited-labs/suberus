@@ -1,41 +1,4 @@
-import type {
-	ReviewDecision,
-	SubmissionStatus,
-} from "@/generated/prisma/enums";
-
-/**
- * Action metadata generators for audit trail
- * These functions create metadata objects for ActivityLog
- */
-
-export interface StatusChangeMetadata {
-	event: string;
-	reason?: string;
-	reviewDecision?: ReviewDecision;
-	editorDecision?: string;
-	round?: number;
-	assignmentId?: string;
-	reviewerId?: string;
-	[key: string]: unknown;
-}
-
-/** Generate metadata for submission transition */
-export function createSubmissionTransitionMetadata(
-	event: string,
-	options?: {
-		reason?: string;
-		reviewDecision?: ReviewDecision;
-		editorDecision?: string;
-		round?: number;
-		assignmentId?: string;
-		reviewerId?: string;
-	},
-): StatusChangeMetadata {
-	return {
-		event,
-		...options,
-	};
-}
+import type { SubmissionStatus } from "@/generated/prisma/enums";
 
 /** Map status transition to human-readable description */
 export function getTransitionDescription(

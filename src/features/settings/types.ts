@@ -179,21 +179,5 @@ export const SUBMISSION_TYPE_DISPLAY_NAMES: Record<SubmissionTypeKey, string> =
 		SUBMISSION_TYPE_EXHIBITOR: "Exhibitor",
 	};
 
-/** Helper to extract SubmissionType from key */
-export function getSubmissionTypeFromKey(
-	key: SubmissionTypeKey,
-): "ABSTRACT" | "POSTER" | "FULL_PAPER" | "EXHIBITOR" {
-	switch (key) {
-		case "SUBMISSION_TYPE_ORAL_PRESENTATION":
-			return "ABSTRACT";
-		case "SUBMISSION_TYPE_POSTER":
-			return "POSTER";
-		case "SUBMISSION_TYPE_FULL_PAPER":
-			return "FULL_PAPER";
-		case "SUBMISSION_TYPE_EXHIBITOR":
-			return "EXHIBITOR";
-	}
-}
-
 /** Type-safe key derived from AppSettingsMap (single source of truth) */
 export type AppSettingKey = keyof AppSettingsMap;

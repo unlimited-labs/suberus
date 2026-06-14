@@ -128,19 +128,6 @@ export const submitEditorDecisionFn = createServerFn({ method: "POST" })
 		);
 	});
 
-/** Manual transition to REVIEWS_COMPLETE (editor) */
-export const transitionToReviewsCompleteFn = createServerFn({ method: "POST" })
-	.middleware([adminMiddleware])
-	.inputValidator(z.object({ submissionId: z.uuid() }))
-	.handler(async ({ data, context }): Promise<TransitionResult> => {
-		return executeSubmissionTransition(
-			data.submissionId,
-			{ type: "MANUAL_TRANSITION_TO_REVIEWS_COMPLETE" },
-			context.user.id,
-			"Editor manually transitioned to reviews complete",
-		);
-	});
-
 /** Manual transition to AWAITING_DECISION (editor) */
 export const transitionToAwaitingDecisionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])

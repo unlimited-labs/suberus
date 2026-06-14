@@ -174,20 +174,6 @@ export function isLowConfidence(result: ExtractionResult): boolean {
 	return false;
 }
 
-// --- Language detection ---
-
-export function detectLanguage(text: string): "pl" | "en" | "other" {
-	const polishCount = (text.match(/[ąęćźżółśń]/gi) || []).length;
-	if (text.length > 0 && polishCount / text.length > 0.005) return "pl";
-	const stopCount = (
-		text.match(
-			/\b(jest|nie|się|jak|dla|lub|oraz|może|tylko|przez|które|tego)\b/gi,
-		) || []
-	).length;
-	if (stopCount > 3) return "pl";
-	return "en";
-}
-
 /**
  * Merge heuristic and AI results. Strategy:
  *   - Title: heuristic preferred, AI fallback

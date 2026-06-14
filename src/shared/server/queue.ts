@@ -59,12 +59,3 @@ export async function ensureQueueAndSend(
 	logger.info(`[pg-boss] sent job ${jobId} to ${name}`);
 	return jobId;
 }
-
-export async function stopBoss(): Promise<void> {
-	if (_initPromise) {
-		const boss = await _initPromise;
-		await boss.stop({ graceful: true, timeout: 10_000 });
-		_initPromise = null;
-		logger.info("[pg-boss] stopped");
-	}
-}

@@ -237,52 +237,6 @@ export async function validateSubmissionTransition(
 }
 
 /**
- * Get valid events for a submission in current state
- */
-export async function getValidSubmissionEvents(
-	submissionId: string,
-): Promise<string[]> {
-	const submission = await prisma.submission.findUniqueOrThrow({
-		where: { id: submissionId },
-	});
-
-	const context = await buildSubmissionContext(submissionId);
-
-	const actor = createActor(submissionMachine, {
-		snapshot: submissionMachine.resolveState({
-			value: submission.status,
-			context,
-		}),
-	});
-
-	actor.start();
-	const snapshot = actor.getSnapshot();
-	actor.stop();
-
-	// In xstate v5, check which events can be sent using snapshot.can()
-	const allEvents = [
-		"SUBMIT",
-		"ASSIGN_REVIEWER",
-		"WITHDRAW",
-		"DESK_REJECT",
-		"ALL_REVIEWS_COMPLETE",
-		"MANUAL_TRANSITION_TO_REVIEWS_COMPLETE",
-		"MANUAL_TRANSITION_TO_AWAITING_DECISION",
-		"EDITOR_ACCEPT",
-		"EDITOR_CONDITIONAL",
-		"EDITOR_REVISE",
-		"EDITOR_REJECT",
-		"EDITOR_OVERRIDE",
-		"CONFIRM_CONDITIONS_MET",
-		"RESUBMIT",
-	] as const;
-
-	return allEvents.filter((eventType) =>
-		snapshot.can({ type: eventType } as SubmissionEvent),
-	);
-}
-
-/**
  * Validate an assignment transition without executing it.
  * Used when custom DB work (e.g., review creation) must be atomic with the status change.
  */

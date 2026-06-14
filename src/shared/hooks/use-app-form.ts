@@ -11,7 +11,7 @@ import { FormSwitchField } from "@/shared/components/composable/switch-field";
 import { FormTextareaField } from "@/shared/components/composable/textarea-field";
 import { fieldContext, formContext } from "./form-context";
 
-export const { useAppForm, withForm, withFieldGroup } = createFormHook({
+export const { useAppForm, withFieldGroup } = createFormHook({
 	fieldComponents: {
 		InputField: FormInputField,
 		IconInputField: FormIconInputField,

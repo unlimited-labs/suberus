@@ -1,11 +1,9 @@
 import type { UserRole } from "@/generated/prisma/enums";
-import { logger } from "@/logger.ts";
 import { prisma } from "@/shared/server/db.server";
 import {
 	isReviewFileAuthorized,
 	isSubmissionFileAuthorized,
 } from "@/shared/server/file-access-rules";
-import { deleteFile } from "@/shared/server/storage";
 
 /** Check if a user has access to download a file */
 export async function checkFileAccess(
@@ -108,32 +106,4 @@ export async function checkFileAccess(
 	}
 
 	return { authorized: false, file };
-}
-
-/** Delete all files (S3 + DB) for a submission */
-export async function deleteSubmissionFiles(
-	submissionId: string,
-): Promise<void> {
-	const versions = await prisma.submissionVersion.findMany({
-		where: { submissionId },
-		include: { file: true },
-	});
-
-	for (const version of versions) {
-		if (version.file) {
-			// Remove S3 object
-			await deleteFile(version.file.storageKey).catch((err) => {
-				logger.error(
-					`[files] failed to delete S3 object ${version.file?.storageKey}:`,
-					err,
-				);
-			});
-			// Unlink from version first, then delete file record
-			await prisma.submissionVersion.update({
-				where: { id: version.id },
-				data: { fileId: null },
-			});
-			await prisma.file.delete({ where: { id: version.file.id } });
-		}
-	}
 }

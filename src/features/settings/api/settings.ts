@@ -152,16 +152,6 @@ export const setSettingFn = createServerFn({ method: "POST" })
 	});
 
 /**
- * Get multiple settings (admin only)
- */
-export const getSettingsFn = createServerFn({ method: "GET" })
-	.middleware([adminMiddleware])
-	.inputValidator(z.object({ keys: z.array(z.string()) }))
-	.handler(async ({ data }) => {
-		return getSettings(data.keys as Array<keyof AppSettingsMap>);
-	});
-
-/**
  * Get all submission type configs (admin only)
  */
 export const getSubmissionTypeConfigsFn = createServerFn({ method: "GET" })
@@ -473,16 +463,6 @@ export const updateConferenceSettingsFn = createServerFn({ method: "POST" })
 	});
 
 /**
- * Get conference name (public - requires auth)
- */
-export const getConferenceNameFn = createServerFn({ method: "GET" })
-	.middleware([authMiddleware])
-	.handler(async () => {
-		const name = await getSetting("CONFERENCE_NAME");
-		return { conferenceName: name };
-	});
-
-/**
  * Update submission validation settings (admin only)
  */
 export const updateSubmissionValidationSettingsFn = createServerFn({
@@ -600,12 +580,6 @@ export const getRegistrationStatusFn = createServerFn({
 	const deadlinePassed = deadline ? new Date(deadline) < new Date() : false;
 	return { closed: locked || deadlinePassed, locked, deadlinePassed };
 });
-
-export const registrationStatusQueryOptions = () =>
-	queryOptions({
-		queryKey: ["settings", "registration-status"],
-		queryFn: () => getRegistrationStatusFn(),
-	});
 
 /** Branding settings shape */
 export interface BrandingSettings {
