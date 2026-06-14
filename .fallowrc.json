@@ -106,9 +106,9 @@
       {
         // CORE feature. allowTypeOnly:[submissions] = the type-only `Author`
         // import in use-document-extraction (erased at build) — deferred edge,
-        // resolve by lifting Author to shared types. Also a known deferred warn:
-        // shared/server/queue.ts dynamic-imports this feature's worker
-        // (backwards shared->core); resolve by inverting worker registration.
+        // resolve by lifting Author to shared types. (The shared/queue->worker
+        // back-edge was RESOLVED — workers register via src/server/pg-boss-workers,
+        // an untracked composition module imported by queue.ts's initBoss.)
         "from": "extraction",
         "allow": ["shared", "settings"],
         "allowTypeOnly": ["submissions"]
@@ -122,11 +122,11 @@
         "allow": ["shared", "workflow", "settings", "activity-log"]
       },
       {
-        // APP feature (no feature imports planner). Deferred warns (kept visible):
-        // (a) shared/components/layout/sidebar -> planner/api/schedule (backwards
-        //     shared->planner; resolve via props/context).
-        // (b) shared/server/queue.ts -> planner worker (backwards; resolve via the
-        //     pg-boss worker-registration inversion follow-up, w/ extraction).
+        // APP feature (no feature imports planner). Deferred warn (kept visible):
+        // shared/components/layout/sidebar -> planner/api/schedule (backwards
+        // shared->planner; resolve via props/context). (The shared/queue->autoplan
+        // worker back-edge was RESOLVED via src/server/pg-boss-workers, an untracked
+        // composition module imported by queue.ts's initBoss.)
         "from": "planner",
         "allow": ["shared", "settings", "auth"]
       },
