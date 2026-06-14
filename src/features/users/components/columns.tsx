@@ -11,14 +11,14 @@ import {
 	formatSurveyAnswerValue,
 	parseMultiSelect,
 } from "@/features/survey/labels";
-import type { SurveyQuestionType } from "@/generated/prisma/enums";
 import {
 	feeFilterOptions,
 	formatSubmissionRole,
 	roleFilterOptions,
 	roleLabels,
-} from "@/lib/labels/user";
-import type { AdminUser } from "@/lib/server/admin/users";
+} from "@/features/users/labels";
+import type { AdminUser } from "@/features/users/server/users";
+import type { SurveyQuestionType } from "@/generated/prisma/enums";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";

@@ -4,7 +4,7 @@ import {
 	statusVariants,
 	typeLabels,
 } from "@/features/submissions/labels";
-import type { AdminUserSubmission } from "@/lib/server/admin/users";
+import type { AdminUserSubmission } from "@/features/users/server/users";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Badge } from "@/shared/ui/badge";
 

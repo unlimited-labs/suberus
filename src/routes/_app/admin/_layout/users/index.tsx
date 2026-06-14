@@ -4,17 +4,17 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { DataTable, DataTableToolbar } from "@/components/admin/data-table";
 import {
-	buildUserColumns,
-	type SurveyListColumn,
-} from "@/components/admin/users/columns";
-import { UserBulkActions } from "@/components/admin/users/user-bulk-actions";
-import { UserMobileCard } from "@/components/admin/users/user-mobile-card";
-import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
 } from "@/features/settings/api/settings";
 import { adminSurveyQuestionsQueryOptions } from "@/features/survey/api/survey";
-import { adminUsersQueryOptions } from "@/server-fns/admin/users";
+import { adminUsersQueryOptions } from "@/features/users/api/users";
+import {
+	buildUserColumns,
+	type SurveyListColumn,
+} from "@/features/users/components/columns";
+import { UserBulkActions } from "@/features/users/components/user-bulk-actions";
+import { UserMobileCard } from "@/features/users/components/user-mobile-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/ui/button";
 

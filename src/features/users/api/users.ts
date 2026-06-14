@@ -1,7 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import type { UserRole } from "@/generated/prisma/enums";
 import {
 	adminCheckDeletable,
 	adminDeleteUser,
@@ -10,7 +9,8 @@ import {
 	fetchUserById,
 	fetchUsers,
 	patchUser,
-} from "@/lib/server/admin/users";
+} from "@/features/users/server/users";
+import type { UserRole } from "@/generated/prisma/enums";
 import {
 	adminMiddleware,
 	adminOnlyMiddleware,

@@ -28,19 +28,19 @@ import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
 } from "@/features/settings/api/settings";
-import { useAdminAuth } from "@/hooks/use-admin-auth";
-import {
-	type AssignableUserRole,
-	assignableRoleOptions,
-	roleLabels,
-	titleLabels,
-} from "@/lib/labels";
-import type { AdminUserDetail } from "@/lib/server/admin/users";
 import {
 	adminUserDetailQueryOptions,
 	adminUsersQueryOptions,
 	patchAdminUser,
-} from "@/server-fns/admin/users";
+} from "@/features/users/api/users";
+import {
+	type AssignableUserRole,
+	assignableRoleOptions,
+	roleLabels,
+} from "@/features/users/labels";
+import type { AdminUserDetail } from "@/features/users/server/users";
+import { useAdminAuth } from "@/hooks/use-admin-auth";
+import { titleLabels } from "@/lib/labels/title";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";

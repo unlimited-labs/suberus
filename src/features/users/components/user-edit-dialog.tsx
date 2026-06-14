@@ -6,13 +6,13 @@ import { BillingFieldsGroup } from "@/components/forms/composable/billing-fields
 import { checkEmailAvailableFn } from "@/features/auth/api/auth";
 import type { AdminUserEditFormData } from "@/features/profile/validations";
 import { adminUserEditSchema } from "@/features/profile/validations";
-import { titleOptions } from "@/lib/labels";
-import type { AdminUser } from "@/lib/server/admin/users";
 import {
 	adminUserDetailQueryOptions,
 	adminUsersQueryOptions,
 	updateAdminUserProfile,
-} from "@/server-fns/admin/users";
+} from "@/features/users/api/users";
+import type { AdminUser } from "@/features/users/server/users";
+import { titleOptions } from "@/lib/labels/title";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { Button } from "@/shared/ui/button";
 import {

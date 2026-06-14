@@ -2,12 +2,12 @@ import { IconAlertTriangle } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import type { AdminUser } from "@/lib/server/admin/users";
 import {
 	adminUsersQueryOptions,
 	checkAdminUserDeletable,
 	deleteAdminUser,
-} from "@/server-fns/admin/users";
+} from "@/features/users/api/users";
+import type { AdminUser } from "@/features/users/server/users";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,

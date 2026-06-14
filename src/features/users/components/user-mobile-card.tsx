@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { formatSurveyAnswerValue } from "@/features/survey/labels";
-import { formatSubmissionRole, roleLabels } from "@/lib/labels/user";
-import type { AdminUser } from "@/lib/server/admin/users";
+import { formatSubmissionRole, roleLabels } from "@/features/users/labels";
+import type { AdminUser } from "@/features/users/server/users";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";

@@ -14,7 +14,7 @@ const MODULE_REGISTRY: Record<string, string> = {
 	assignments: "@/features/reviews/server/assignments",
 	settings: "@/features/settings/server/settings",
 	"admin-subs": "@/features/submissions/server/admin-submissions",
-	"admin-users": "@/lib/server/admin/users",
+	"admin-users": "@/features/users/server/users",
 	email: "@/shared/server/email",
 	reminders: "@/lib/server/reminders",
 	dashboard: "@/lib/server/admin/dashboard",

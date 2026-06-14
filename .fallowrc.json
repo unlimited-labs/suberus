@@ -29,7 +29,7 @@
   },
   // Added incrementally, one feature-zone per migration PR. Migrated so far
   // (autoDiscover finds them): submissions, profile, tracks, fee, workflow,
-  // activity-log, auth, settings, survey, email-templates, install, extraction, reviews, planner, exhibitors. The
+  // activity-log, auth, settings, survey, email-templates, install, extraction, reviews, planner, exhibitors, users. The
   // other allow-list names are forward references that activate as those features
   // migrate. `shared` zone is declared ahead of its files. coverage.requireAllFiles
   // is intentionally left off until the last feature lands (un-migrated src/lib
@@ -134,6 +134,15 @@
         // to shared. shared/components/layout/sidebar -> exhibitors/api (backwards shared->core).
         "from": "exhibitors",
         "allow": ["shared", "activity-log", "settings", "workflow"]
+      },
+      {
+        // APP feature (admin user mgmt; a hub). Forced APP — imports app features.
+        // Deferred sibling warns (kept visible, NOT in allow): OUT users->submissions
+        // (linkCoAuthorsByEmail + submission typeLabels/statusLabels), users->profile
+        // (adminUserEditSchema). IN planner->users (chair picker adminUsersQueryOptions),
+        // invitations->users (roleLabels). Resolve by lifting shared bits before error flip.
+        "from": "users",
+        "allow": ["shared", "activity-log", "survey", "settings", "auth"]
       }
     ]
   }

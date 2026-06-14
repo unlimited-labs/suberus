@@ -6,16 +6,16 @@ import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
 } from "@/features/settings/api/settings";
-import { useAdminAuth } from "@/hooks/use-admin-auth";
-import {
-	type AssignableUserRole,
-	assignableRoleOptions,
-} from "@/lib/labels/user";
-import type { AdminUser } from "@/lib/server/admin/users";
 import {
 	adminUsersQueryOptions,
 	bulkAdminAction,
-} from "@/server-fns/admin/users";
+} from "@/features/users/api/users";
+import {
+	type AssignableUserRole,
+	assignableRoleOptions,
+} from "@/features/users/labels";
+import type { AdminUser } from "@/features/users/server/users";
+import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { Button } from "@/shared/ui/button";
 import {
 	Select,

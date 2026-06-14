@@ -29,10 +29,10 @@ import {
 } from "@/features/survey/api/survey";
 import { SurveyQuestionField } from "@/features/survey/components/survey-question-field";
 import { surveyAnswerRequiredError } from "@/features/survey/validations";
+import { roleLabels } from "@/features/users/labels";
 import { useMultiStep } from "@/hooks/use-multi-step";
 import { detectCountry } from "@/lib/detect-country";
 import { titleOptions } from "@/lib/labels";
-import { roleLabels } from "@/lib/labels/user";
 import { registerBase, registerSchema } from "@/lib/validations/auth";
 import {
 	consumeInvitationFn,
