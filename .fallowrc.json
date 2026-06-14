@@ -11,7 +11,13 @@
     // are roots: their exports are public API, their deps stay reachable (mirrors
     // knip's ui ignore without the false unused-dep cascade).
     "src/shared/ui/**/*.{ts,tsx}",
-    "src/integrations/**/*.{ts,tsx}"
+    "src/integrations/**/*.{ts,tsx}",
+    // Inert feature public-API barrels (ARCHITECTURE: "Public API via index.ts");
+    // consumers import subpaths, but the barrel is the declared surface. Only the
+    // two that nothing imports — listing all feature barrels would transitively
+    // mark their re-exported surface as used and hide real dead code.
+    "src/features/dashboard/index.ts",
+    "src/features/extraction/index.ts"
   ],
   "ignoreExportsUsedInFile": true,
   // Non-app dirs excluded: agent skills + the standalone Starlight docs project
