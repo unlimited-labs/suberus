@@ -1,9 +1,9 @@
 import { SUPPORTED_FILE_EXTENSIONS } from "@/features/settings/file-types";
 import { getSetting } from "@/features/settings/server/settings";
+import { createJobProgress } from "@/lib/server/job-progress";
+import { validateUpload } from "@/lib/server/validate-upload";
 import { ensureQueueAndSend } from "@/shared/server/queue";
 import { generateExtractionFileKey, uploadFile } from "@/shared/server/storage";
-import { createJobProgress } from "./job-progress";
-import { validateUpload } from "./validate-upload";
 
 /**
  * Stage a file in object storage and enqueue an extraction job.

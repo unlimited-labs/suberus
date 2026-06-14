@@ -24,6 +24,11 @@ import { ProgramTab } from "@/components/admin/program";
 import { EmailTemplatesTab } from "@/features/email-templates";
 import { emailTemplatesQueryOptions } from "@/features/email-templates/api/email-templates";
 import { toEmailTemplateUI } from "@/features/email-templates/components/admin/email-templates-tab";
+import {
+	doclingHealthQueryOptions,
+	extractionAdminSettingsQueryOptions,
+	llmHealthQueryOptions,
+} from "@/features/extraction/api/extraction";
 import { paymentInstructionsQueryOptions } from "@/features/fee/api/fee";
 import { FeeTab } from "@/features/fee/components/admin/fee-tab";
 import {
@@ -51,11 +56,6 @@ import { TracksTab } from "@/features/tracks/components/admin/tracks-tab";
 import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
 import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
 import { reviewerUsersQueryOptions } from "@/server-fns/reviews/reviewers";
-import {
-	doclingHealthQueryOptions,
-	extractionAdminSettingsQueryOptions,
-	llmHealthQueryOptions,
-} from "@/server-fns/settings/extraction";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 

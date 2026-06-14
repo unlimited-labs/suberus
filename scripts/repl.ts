@@ -22,6 +22,7 @@ const MODULE_REGISTRY: Record<string, string> = {
 	"admin-tracks": "@/features/tracks/server/admin-tracks",
 	fees: "@/features/fee/server/fee",
 	survey: "@/features/survey/server/survey",
+	extraction: "@/features/extraction/server/extraction",
 	invitations: "@/lib/server/admin/invitations",
 	profiles: "@/features/profile/server/profile",
 };

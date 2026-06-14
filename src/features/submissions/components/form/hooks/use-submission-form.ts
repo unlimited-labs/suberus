@@ -1,11 +1,10 @@
 import { useStore } from "@tanstack/react-form";
 import { useEffect, useMemo, useRef, useState } from "react";
-
+import { useDocumentExtraction } from "@/features/extraction/hooks/use-document-extraction";
 import type { AvailableTrack } from "@/features/submissions/types";
 import { getAffiliationById } from "@/server-fns/affiliations";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { useSession } from "@/shared/hooks/use-session";
-
 import {
 	buildContentSchema,
 	buildSubmissionFormSchema,
@@ -17,7 +16,6 @@ import type {
 	ValidationSettings,
 } from "../submission-form-types";
 import { computeSubmissionProgress } from "../submission-progress";
-import { useDocumentExtraction } from "../use-document-extraction";
 
 interface UseSubmissionFormArgs {
 	onSubmit: (data: SubmissionFormData) => Promise<void>;

@@ -1,10 +1,10 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import type { ExtractionResult } from "@/features/extraction/server/extraction";
+import { enqueueExtractionJob } from "@/features/extraction/server/extraction-queue";
 import { getSetting, setSetting } from "@/features/settings/server/settings";
 import type { AppSettingsMap } from "@/features/settings/types";
-import type { ExtractionResult } from "@/lib/server/extraction";
-import { enqueueExtractionJob } from "@/lib/server/extraction-queue";
 import { fileToBuffer, getUploadedFile } from "@/lib/server/form-upload";
 import { getJobProgress } from "@/lib/server/job-progress";
 import {

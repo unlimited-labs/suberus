@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { extractionSettingsQueryOptions } from "@/features/extraction/api/extraction";
 import {
 	activeSubmissionTypesQueryOptions,
 	submissionGuidelinesQueryOptions,
@@ -23,7 +24,6 @@ import {
 	type SubmissionFormData,
 } from "@/features/submissions/components/form/submission-form";
 import { activeTracksQueryOptions } from "@/features/tracks/api/tracks";
-import { extractionSettingsQueryOptions } from "@/server-fns/settings/extraction";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/ui/button";
 

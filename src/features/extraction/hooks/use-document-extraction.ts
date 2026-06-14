@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { SUPPORTED_FILE_EXTENSIONS_DOTTED } from "@/features/settings/file-types";
 import {
 	enqueueExtractionFn,
 	getExtractionResultFn,
-} from "@/server-fns/settings/extraction";
+} from "@/features/extraction/api/extraction";
+import { SUPPORTED_FILE_EXTENSIONS_DOTTED } from "@/features/settings/file-types";
+import type { Author } from "@/features/submissions/components/form/authors-input";
 import { useJobSSE } from "@/shared/hooks/use-job-sse";
-import type { Author } from "./authors-input";
 
 interface UseDocumentExtractionOptions {
 	enabled: boolean;

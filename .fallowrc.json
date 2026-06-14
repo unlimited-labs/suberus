@@ -29,7 +29,7 @@
   },
   // Added incrementally, one feature-zone per migration PR. Migrated so far
   // (autoDiscover finds them): submissions, profile, tracks, fee, workflow,
-  // activity-log, auth, settings, survey, email-templates, install. The
+  // activity-log, auth, settings, survey, email-templates, install, extraction. The
   // other allow-list names are forward references that activate as those features
   // migrate. `shared` zone is declared ahead of its files. coverage.requireAllFiles
   // is intentionally left off until the last feature lands (un-migrated src/lib
@@ -57,7 +57,7 @@
       },
       {
         "from": "submissions",
-        "allow": ["shared", "workflow", "settings", "activity-log", "auth"],
+        "allow": ["shared", "workflow", "settings", "activity-log", "auth", "extraction"],
         "allowTypeOnly": ["workflow", "settings"]
       },
       {
@@ -86,7 +86,7 @@
       },
       {
         "from": "settings",
-        "allow": ["shared"]
+        "allow": ["shared", "extraction"]
       },
       {
         "from": "survey",
@@ -99,6 +99,16 @@
       {
         "from": "install",
         "allow": ["shared", "settings", "auth"]
+      },
+      {
+        // CORE feature. allowTypeOnly:[submissions] = the type-only `Author`
+        // import in use-document-extraction (erased at build) — deferred edge,
+        // resolve by lifting Author to shared types. Also a known deferred warn:
+        // shared/server/queue.ts dynamic-imports this feature's worker
+        // (backwards shared->core); resolve by inverting worker registration.
+        "from": "extraction",
+        "allow": ["shared", "settings"],
+        "allowTypeOnly": ["submissions"]
       }
     ]
   }

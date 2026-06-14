@@ -1,3 +1,4 @@
+import { generateWithLlm } from "@/lib/server/llm";
 import type { ExtractionResult } from "./extraction";
 import {
 	MAX_TOKEN_ESTIMATE,
@@ -5,7 +6,6 @@ import {
 	TOKEN_OVERHEAD,
 	TOKENS_PER_AUTHOR,
 } from "./extraction-patterns";
-import { generateWithLlm } from "./llm";
 
 // Short field names: ~30% fewer output tokens
 // t=title, a=authors, fn=firstName, ln=lastName, e=email, af=affiliationName, k=keywords

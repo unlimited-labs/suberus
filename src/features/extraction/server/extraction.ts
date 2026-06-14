@@ -1,4 +1,5 @@
-import { checkDoclingHealth, getDoclingMarkdown } from "./docling";
+import { checkDoclingHealth, getDoclingMarkdown } from "@/lib/server/docling";
+import { checkLlmHealth } from "@/lib/server/llm";
 import { parseDocx } from "./docx-parser";
 import { extractFromZones } from "./extraction-heuristic";
 import { extractWithLlm } from "./extraction-llm";
@@ -9,7 +10,6 @@ import {
 	SUSPICIOUS_NAME_CHARS,
 } from "./extraction-patterns";
 import { classifyZones } from "./extraction-zones";
-import { checkLlmHealth } from "./llm";
 
 export interface ExtractedAuthor {
 	firstName: string;

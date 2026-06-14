@@ -5,6 +5,7 @@ import {
 	IconTags,
 	IconUsers,
 } from "@tabler/icons-react";
+import { ExtractionOverlay } from "@/features/extraction/components/extraction-overlay";
 import type { AvailableTrack } from "@/features/submissions/types";
 import { Button } from "@/shared/ui/button";
 import { Field, FieldError } from "@/shared/ui/field";
@@ -15,9 +16,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/shared/ui/select";
-
 import { AuthorsInput } from "./authors-input";
-import { ExtractionOverlay } from "./extraction-overlay";
 import { FileUploadSection } from "./file-upload-section";
 import { useSubmissionForm } from "./hooks/use-submission-form";
 import { KeywordsInput } from "./keywords-input";

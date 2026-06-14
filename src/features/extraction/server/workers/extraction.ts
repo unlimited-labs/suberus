@@ -4,10 +4,10 @@ import {
 	type ExtractionResult,
 	extractFromDocx,
 	extractFromPdf,
-} from "@/lib/server/extraction";
+} from "@/features/extraction/server/extraction";
 import { completeJob, failJob, setJobStage } from "@/lib/server/job-progress";
 import { logger } from "@/logger.ts";
-import { deleteFile, getFileBuffer } from "../storage";
+import { deleteFile, getFileBuffer } from "@/shared/server/storage";
 
 export interface ExtractionJobData {
 	jobId: string;

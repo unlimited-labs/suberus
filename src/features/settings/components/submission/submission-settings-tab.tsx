@@ -8,6 +8,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
+	type ExtractionSettings,
+	extractionAdminSettingsQueryOptions,
+	updateExtractionSettingsFn,
+} from "@/features/extraction/api/extraction";
+import { ExtractionModeSettings } from "@/features/extraction/components/extraction-mode-settings";
+import {
 	reviewGuidelinesQueryOptions,
 	type SubmissionValidationSettings,
 	submissionGuidelinesQueryOptions,
@@ -19,11 +25,6 @@ import {
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import { FILE_TYPE_OPTIONS } from "@/features/settings/file-types";
 import type { AppSettingsMap } from "@/features/settings/types";
-import {
-	type ExtractionSettings,
-	extractionAdminSettingsQueryOptions,
-	updateExtractionSettingsFn,
-} from "@/server-fns/settings/extraction";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -32,7 +33,6 @@ import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Switch } from "@/shared/ui/switch";
 import { Textarea } from "@/shared/ui/textarea";
-import { ExtractionModeSettings } from "./extraction-mode-settings";
 
 interface SubmissionSettingsTabProps {
 	initialData: SubmissionValidationSettings;
