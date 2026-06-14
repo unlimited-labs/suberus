@@ -37,7 +37,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { paymentInstructionsQueryOptions } from "@/features/fee/api/fee";
 import { FeeTab } from "@/features/fee/components/admin/fee-tab";
-import { allTracksQueryOptions } from "@/features/tracks/api/tracks";
+import { allTracksQueryOptions } from "@/features/tracks/api/admin-tracks";
 import { TracksTab } from "@/features/tracks/components/admin/tracks-tab";
 import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
 import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";

@@ -12,8 +12,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { deleteTrackFn, updateTrackFn } from "@/features/tracks/api/tracks";
-import type { TrackWithStats } from "@/features/tracks/server/tracks";
+import {
+	deleteTrackFn,
+	updateTrackFn,
+} from "@/features/tracks/api/admin-tracks";
+import type { TrackWithStats } from "@/features/tracks/server/admin-tracks";
 import { getErrorMessage } from "@/lib/error-message";
 
 interface TracksListProps {
