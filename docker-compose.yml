@@ -31,7 +31,7 @@ services:
       
   # Garage S3-compatible storage
   garage:
-    image: dxflrs/garage:v2.2.0
+    image: dxflrs/garage:v2.3.0
     container_name: suberus-garage
     restart: unless-stopped
     ports:
