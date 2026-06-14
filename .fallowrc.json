@@ -60,6 +60,10 @@
       {
         "from": "tracks",
         "allow": ["shared", "auth"]
+      },
+      {
+        "from": "fee",
+        "allow": ["shared", "settings", "auth"]
       }
     ]
   }

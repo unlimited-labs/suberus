@@ -25,7 +25,6 @@ import {
 	BrandingSettingsTab,
 	ConferenceSettingsTab,
 	EmailTemplatesTab,
-	FeeTab,
 	InvitationsSettingsTab,
 	RemindersSettingsTab,
 	SubmissionSettingsTab,
@@ -36,9 +35,10 @@ import {
 import { toEmailTemplateUI } from "@/components/admin/settings/email-templates-tab";
 import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { paymentInstructionsQueryOptions } from "@/features/fee/api/fee";
+import { FeeTab } from "@/features/fee/components/fee-tab";
 import { allTracksQueryOptions } from "@/features/tracks/api/tracks";
 import { TracksTab } from "@/features/tracks/components/tracks-tab";
-import { paymentInstructionsQueryOptions } from "@/server-fns/fee";
 import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
 import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
 import { reviewerUsersQueryOptions } from "@/server-fns/reviews/reviewers";

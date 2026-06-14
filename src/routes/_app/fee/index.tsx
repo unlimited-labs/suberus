@@ -6,11 +6,11 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Markdown } from "@/components/ui/markdown";
-import { useDateFormat } from "@/hooks/use-date-format";
 import {
 	paymentInstructionsQueryOptions,
 	userFeeQueryOptions,
-} from "@/server-fns/fee";
+} from "@/features/fee/api/fee";
+import { useDateFormat } from "@/hooks/use-date-format";
 
 export const Route = createFileRoute("/_app/fee/")({
 	loader: async ({ context }) => {
