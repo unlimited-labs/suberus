@@ -21,13 +21,13 @@ async function initBoss(): Promise<PgBoss> {
 		await boss.createQueue(q).catch(() => {});
 	}
 
-	// Worker registration is indirected through the app-server layer
-	// (`src/server/pg-boss-workers`, an untracked composition module) so this
-	// shared infra file never imports feature code — keeps the shared→feature
-	// boundary clean. Dynamic import keeps the heavy worker code lazy (loaded on
-	// first enqueue, same as before) and in THIS module instance, so the single
-	// lazy boss owns its workers (a nitro plugin would be a separate bundle).
-	const { registerAllWorkers } = await import("@/server/pg-boss-workers");
+	// Worker registration is indirected through the app-shell composition root
+	// (`src/pg-boss-workers`, an untracked module) so this shared infra file never
+	// imports feature code — keeps the shared→feature boundary clean. Dynamic import
+	// keeps the heavy worker code lazy (loaded on first enqueue, same as before) and
+	// in THIS module instance, so the single lazy boss owns its workers (a nitro
+	// plugin would be a separate bundle — its singleton wouldn't reach this initBoss).
+	const { registerAllWorkers } = await import("@/pg-boss-workers");
 	await registerAllWorkers(boss);
 
 	return boss;

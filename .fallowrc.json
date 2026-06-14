@@ -107,7 +107,7 @@
         // CORE feature. allowTypeOnly:[submissions] = the type-only `Author`
         // import in use-document-extraction (erased at build) — deferred edge,
         // resolve by lifting Author to shared types. (The shared/queue->worker
-        // back-edge was RESOLVED — workers register via src/server/pg-boss-workers,
+        // back-edge was RESOLVED — workers register via src/pg-boss-workers,
         // an untracked composition module imported by queue.ts's initBoss.)
         "from": "extraction",
         "allow": ["shared", "settings"],
@@ -125,7 +125,7 @@
         // APP feature (no feature imports planner). Deferred warn (kept visible):
         // shared/components/layout/sidebar -> planner/api/schedule (backwards
         // shared->planner; resolve via props/context). (The shared/queue->autoplan
-        // worker back-edge was RESOLVED via src/server/pg-boss-workers, an untracked
+        // worker back-edge was RESOLVED via src/pg-boss-workers, an untracked
         // composition module imported by queue.ts's initBoss.)
         "from": "planner",
         "allow": ["shared", "settings", "auth"]
