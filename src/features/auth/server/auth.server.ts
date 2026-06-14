@@ -6,11 +6,10 @@ import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { PrismaClient, UserRole } from "@/generated/prisma/client";
 import "dotenv/config";
 import { env } from "@/env";
-import { applyInvitationRole } from "@/features/invitations/server/invitations";
 import { getSetting } from "@/features/settings/server/settings";
-import { linkCoAuthorsByEmail } from "@/features/submissions/server/submissions";
 import { logger } from "@/logger.ts";
 import { sendEmail } from "@/shared/server/email";
+import { emitDomainEvent } from "@/shared/server/events";
 
 const connectionString = env.DATABASE_URL;
 const adapter = new PrismaPg({ connectionString });
@@ -197,8 +196,10 @@ export const auth = betterAuth({
 			update: {
 				after: async (user) => {
 					if (!user.emailVerified) return;
-					await linkCoAuthorsByEmail(user.email, user.id);
-					await applyInvitationRole(user.id, user.email);
+					await emitDomainEvent("userEmailVerified", {
+						userId: user.id,
+						email: user.email,
+					});
 					// Log self-service email verification (idempotent — checks if already logged)
 					const { prisma: dbClient } = await import(
 						"@/shared/server/db.server"

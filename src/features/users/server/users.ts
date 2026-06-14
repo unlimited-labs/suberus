@@ -4,7 +4,6 @@ import {
 	logActivityTx,
 } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
-import { linkCoAuthorsByEmail } from "@/features/submissions/server/submissions";
 import type { Prisma } from "@/generated/prisma/client";
 import type {
 	SubmissionStatus,
@@ -14,6 +13,7 @@ import type {
 import { logger } from "@/logger.ts";
 import { upsertAffiliation } from "@/shared/server/affiliations";
 import { prisma } from "@/shared/server/db.server";
+import { emitDomainEvent } from "@/shared/server/events";
 
 export type SubmissionInvolvementRole = "author" | "coauthor";
 
@@ -732,7 +732,7 @@ export async function verifyUserEmail(
 		select: { email: true },
 	});
 
-	await linkCoAuthorsByEmail(user.email, userId);
+	await emitDomainEvent("userEmailVerified", { userId, email: user.email });
 
 	await logActivity({
 		type: "USER_EMAIL_VERIFIED",

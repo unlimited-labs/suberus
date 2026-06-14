@@ -1,9 +1,23 @@
 import nodemailer from "nodemailer";
 import { env } from "@/env.ts";
-import { getSetting } from "@/features/settings/server/settings";
 import type { EmailEventType } from "@/generated/prisma/enums";
 import { logger } from "@/logger.ts";
+import { ensureServerComposition } from "@/shared/server/composition";
 import { prisma } from "@/shared/server/db.server";
+
+/** Resolves the configured email footer (or null). Injected by the settings
+ * slice via the app-shell composition, so this transport imports no feature. */
+type EmailFooterProvider = () => Promise<string | null>;
+let footerProvider: EmailFooterProvider | null = null;
+
+export function setEmailFooterProvider(fn: EmailFooterProvider): void {
+	footerProvider = fn;
+}
+
+async function resolveEmailFooter(): Promise<string | null> {
+	await ensureServerComposition();
+	return footerProvider ? footerProvider() : null;
+}
 
 function escapeHtml(str: string): string {
 	return str
@@ -55,17 +69,12 @@ export async function sendEmail(
 		}
 
 		// Append global email footer if configured
-		const footer = await getSetting("EMAIL_FOOTER_TEXT");
+		const footer = await resolveEmailFooter();
 		if (footer) {
-			const conferenceName = await getSetting("CONFERENCE_NAME");
-			const resolved = footer.replace(
-				/\{\{conferenceName\}\}/g,
-				conferenceName,
-			);
 			if (template.isHtml) {
-				body += `<hr><p>${escapeHtml(resolved)}</p>`;
+				body += `<hr><p>${escapeHtml(footer)}</p>`;
 			} else {
-				body += `\n\n---\n${resolved}`;
+				body += `\n\n---\n${footer}`;
 			}
 		}
 
@@ -150,14 +159,12 @@ export async function sendTestEmail(
 		resolvedBody = resolvedBody.replace(regex, () => bodyValue);
 	}
 
-	const footer = await getSetting("EMAIL_FOOTER_TEXT");
+	const footer = await resolveEmailFooter();
 	if (footer) {
-		const conferenceName = await getSetting("CONFERENCE_NAME");
-		const resolved = footer.replace(/\{\{conferenceName\}\}/g, conferenceName);
 		if (isHtml) {
-			resolvedBody += `<hr><p>${escapeHtml(resolved)}</p>`;
+			resolvedBody += `<hr><p>${escapeHtml(footer)}</p>`;
 		} else {
-			resolvedBody += `\n\n---\n${resolved}`;
+			resolvedBody += `\n\n---\n${footer}`;
 		}
 	}
 
