@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dialog";
 import type { AdminUserEditFormData } from "@/features/profile/validations";
 import { adminUserEditSchema } from "@/features/profile/validations";
-import { useAppForm } from "@/hooks/use-app-form";
 import { titleOptions } from "@/lib/labels";
 import type { AdminUser } from "@/lib/server/admin/users";
 import {
@@ -23,6 +22,7 @@ import {
 	updateAdminUserProfile,
 } from "@/server-fns/admin/users";
 import { checkEmailAvailableFn } from "@/server-fns/auth";
+import { useAppForm } from "@/shared/hooks/use-app-form";
 
 interface UserEditDialogProps {
 	user: AdminUser;

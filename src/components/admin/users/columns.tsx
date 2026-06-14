@@ -9,7 +9,6 @@ import {
 } from "@/components/admin/data-table";
 import { Badge } from "@/components/ui/badge";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
-import { useDateFormat } from "@/hooks/use-date-format";
 import { formatSurveyAnswerValue, parseMultiSelect } from "@/lib/labels/survey";
 import {
 	feeFilterOptions,
@@ -18,6 +17,7 @@ import {
 	roleLabels,
 } from "@/lib/labels/user";
 import type { AdminUser } from "@/lib/server/admin/users";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { cn } from "@/shared/lib/utils";
 import { SubmissionsColumnHeader } from "./submissions-column-header";
 

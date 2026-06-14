@@ -1,4 +1,4 @@
-import { withFieldGroup } from "@/hooks/use-app-form";
+import { withFieldGroup } from "@/shared/hooks/use-app-form";
 
 // Reusable password + confirmation pair. The "passwords match" rule lives here
 // once (field-level validator) instead of being duplicated across every auth

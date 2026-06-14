@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/timeline";
 import type { UserSubmissionStatusHistory } from "@/features/submissions/api/submissions";
 import type { SubmissionStatus } from "@/generated/prisma/enums";
-import { useDateFormat } from "@/hooks/use-date-format";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 
 interface TimelineEventProps {
 	event: UserSubmissionStatusHistory;

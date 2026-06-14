@@ -33,7 +33,6 @@ import {
 	TosContentTab,
 } from "@/components/admin/settings";
 import { toEmailTemplateUI } from "@/components/admin/settings/email-templates-tab";
-import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { paymentInstructionsQueryOptions } from "@/features/fee/api/fee";
 import { FeeTab } from "@/features/fee/components/admin/fee-tab";
@@ -60,6 +59,7 @@ import {
 	llmHealthQueryOptions,
 } from "@/server-fns/settings/extraction";
 import { adminSurveyQuestionsQueryOptions } from "@/server-fns/settings/survey";
+import { PageHeader } from "@/shared/components/layout/page-header";
 
 const searchSchema = z.object({
 	tab: z.string().optional(),

@@ -23,7 +23,6 @@ import { COUNTRIES } from "@/components/ui/country-combobox";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useAppForm } from "@/hooks/use-app-form";
 import { useMultiStep } from "@/hooks/use-multi-step";
 import { signUp } from "@/lib/auth-client";
 import { detectCountry } from "@/lib/detect-country";
@@ -47,6 +46,7 @@ import {
 	getTosContentForRegistrationFn,
 	saveUserSurveyAnswersFn,
 } from "@/server-fns/settings/survey";
+import { useAppForm } from "@/shared/hooks/use-app-form";
 import { cn } from "@/shared/lib/utils";
 
 const searchSchema = z.object({

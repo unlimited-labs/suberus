@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useJobSSE } from "@/hooks/use-job-sse";
 import { SUPPORTED_FILE_EXTENSIONS_DOTTED } from "@/lib/settings/file-types";
 import {
 	enqueueExtractionFn,
 	getExtractionResultFn,
 } from "@/server-fns/settings/extraction";
+import { useJobSSE } from "@/shared/hooks/use-job-sse";
 import type { Author } from "./authors-input";
 
 interface UseDocumentExtractionOptions {

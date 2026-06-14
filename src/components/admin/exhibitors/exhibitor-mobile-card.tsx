@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { useDateFormat } from "@/hooks/use-date-format";
 import { exhibitorStatusBadge } from "@/lib/labels/exhibitor";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { cn } from "@/shared/lib/utils";
 import type { AdminExhibitorRow } from "./exhibitors-table";
 

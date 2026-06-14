@@ -23,8 +23,8 @@ import {
 	statusLabels,
 	statusVariants,
 } from "@/features/submissions/labels";
-import { useDateFormat } from "@/hooks/use-date-format";
 import { activityLabels } from "@/lib/labels/activity";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 export type ActivityHistoryEntry = {
 	activityType: string;
 	createdAt: Date;

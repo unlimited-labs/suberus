@@ -1,6 +1,6 @@
 import type { PaginationState } from "@tanstack/react-table";
 import { z } from "zod";
-import { usePersistedState } from "@/hooks/use-persisted-state";
+import { usePersistedState } from "@/shared/hooks/use-persisted-state";
 
 const DEFAULT_PAGE_SIZE = 20;
 

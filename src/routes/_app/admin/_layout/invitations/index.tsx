@@ -7,13 +7,13 @@ import { DataTable, DataTableToolbar } from "@/components/admin/data-table";
 import { createInvitationColumns } from "@/components/admin/invitations/columns";
 import { InvitationMobileCard } from "@/components/admin/invitations/invitation-mobile-card";
 import { InviteUserDialog } from "@/components/admin/invitations/invite-user-dialog";
-import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import {
 	adminInvitationsQueryOptions,
 	cancelInvitationFn,
 	resendInvitationFn,
 } from "@/server-fns/admin/invitations";
+import { PageHeader } from "@/shared/components/layout/page-header";
 
 export const Route = createFileRoute("/_app/admin/_layout/invitations/")({
 	loader: async ({ context }) => {

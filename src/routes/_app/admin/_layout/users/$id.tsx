@@ -2,7 +2,6 @@ import { IconArrowLeft, IconUsers } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { UserDetailCard } from "@/components/admin/users/user-detail-card";
-import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { adminUserDetailQueryOptions } from "@/server-fns/admin/users";
 import {
@@ -10,6 +9,7 @@ import {
 	feeTypesQueryOptions,
 } from "@/server-fns/settings";
 import { adminSurveyQuestionsQueryOptions } from "@/server-fns/settings/survey";
+import { PageHeader } from "@/shared/components/layout/page-header";
 
 export const Route = createFileRoute("/_app/admin/_layout/users/$id")({
 	loader: async ({ params, context }) => {

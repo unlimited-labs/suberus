@@ -6,7 +6,7 @@ import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
-import { useDateFormat } from "@/hooks/use-date-format";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 
 interface SubmissionsTableProps {
 	submissions: UserSubmission[];

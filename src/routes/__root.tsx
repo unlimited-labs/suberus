@@ -11,12 +11,12 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { type CSSProperties, useEffect } from "react";
 import { getOgMetadataFn, getPrimaryColorFn } from "@/server-fns/settings";
 import { getThemeFn } from "@/shared/lib/theme";
-import { SpinnerSvg } from "../components/spinner-svg";
-import { ThemeProvider } from "../components/theme-provider";
 import { Button } from "../components/ui/button";
 import { Toaster } from "../components/ui/sonner";
 import { TooltipProvider } from "../components/ui/tooltip";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
+import { SpinnerSvg } from "../shared/components/spinner-svg";
+import { ThemeProvider } from "../shared/components/theme-provider";
 import appCss from "../styles.css?url";
 
 interface MyRouterContext {

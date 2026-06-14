@@ -1,7 +1,7 @@
 import { PasswordFieldsGroup } from "@/components/forms/composable/password-fields-group";
 import type { PasswordChangeFormData } from "@/features/profile/validations";
 import { passwordChangeSchema } from "@/features/profile/validations";
-import { useAppForm } from "@/hooks/use-app-form";
+import { useAppForm } from "@/shared/hooks/use-app-form";
 
 interface PasswordChangeSectionProps {
 	onSave: (data: PasswordChangeFormData) => Promise<void>;

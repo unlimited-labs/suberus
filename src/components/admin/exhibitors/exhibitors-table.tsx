@@ -9,9 +9,9 @@ import {
 	facetedFilterFn,
 } from "@/components/admin/data-table";
 import { Badge } from "@/components/ui/badge";
-import { useDateFormat } from "@/hooks/use-date-format";
 import { exhibitorStatusBadge } from "@/lib/labels/exhibitor";
 import type { listExhibitorsFn } from "@/server-fns/exhibitors";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { cn } from "@/shared/lib/utils";
 import { ExhibitorMobileCard } from "./exhibitor-mobile-card";
 

@@ -16,19 +16,19 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { type ComponentType, useState } from "react";
 import { toast } from "sonner";
-import { PageHeader } from "@/components/layout/page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { useJobSSE } from "@/hooks/use-job-sse";
 import type { AutoplanStage } from "@/lib/server/planner/autoplan-types";
 import {
 	applyAutoPlanFn,
 	getAutoPlanJobFn,
 	startAutoPlanFn,
 } from "@/server-fns/planner/autoplan";
+import { PageHeader } from "@/shared/components/layout/page-header";
+import { useJobSSE } from "@/shared/hooks/use-job-sse";
 import { cn } from "@/shared/lib/utils";
 
 export const Route = createFileRoute(

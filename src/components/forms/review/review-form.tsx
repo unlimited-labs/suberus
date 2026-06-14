@@ -25,12 +25,12 @@ import { Markdown } from "@/components/ui/markdown";
 import { FileDropzone } from "@/features/submissions/components/form/file-dropzone";
 import { typeLabels } from "@/features/submissions/labels";
 import type { ReviewDecision, SubmissionType } from "@/generated/prisma/enums";
-import { useAppForm } from "@/hooks/use-app-form";
 import { FILE_ACCEPT_ATTRIBUTE } from "@/lib/settings/file-types";
 import {
 	createReviewSchema,
 	type ReviewFormData,
 } from "@/lib/validations/review";
+import { useAppForm } from "@/shared/hooks/use-app-form";
 import { cn, formatFileSize } from "@/shared/lib/utils";
 
 interface SubmissionAuthor {

@@ -44,7 +44,6 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
-import { useDateFormat } from "@/hooks/use-date-format";
 import {
 	type AssignableUserRole,
 	assignableRoleOptions,
@@ -61,6 +60,7 @@ import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
 } from "@/server-fns/settings";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { UserDeleteDialog } from "./user-delete-dialog";
 import { UserEditDialog } from "./user-edit-dialog";
 import { UserSubmissionsSection } from "./user-submissions-section";

@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { BrandLogo } from "./brand-logo";
+import { BrandLogo } from "@/shared/components/layout/brand-logo";
 
 interface AuthLayoutProps {
 	children: ReactNode;

@@ -9,9 +9,9 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { PasswordFieldsGroup } from "@/components/forms/composable/password-fields-group";
 import { AuthCard } from "@/components/layout/auth-card";
-import { useAppForm } from "@/hooks/use-app-form";
 import { resetPassword } from "@/lib/auth-client";
 import { resetPasswordSchema } from "@/lib/validations/auth";
+import { useAppForm } from "@/shared/hooks/use-app-form";
 
 const searchSchema = z.object({
 	token: z.string().optional(),

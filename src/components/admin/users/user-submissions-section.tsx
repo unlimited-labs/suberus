@@ -5,8 +5,8 @@ import {
 	statusVariants,
 	typeLabels,
 } from "@/features/submissions/labels";
-import { useDateFormat } from "@/hooks/use-date-format";
 import type { AdminUserSubmission } from "@/lib/server/admin/users";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 
 interface UserSubmissionsSectionProps {
 	submissions: AdminUserSubmission[];

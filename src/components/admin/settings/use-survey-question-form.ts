@@ -1,9 +1,9 @@
 import { useMemo } from "react";
-import { useAppForm } from "@/hooks/use-app-form";
 import {
 	type SurveyQuestionFormValues,
 	surveyQuestionFormSchema,
 } from "@/lib/validations/survey";
+import { useAppForm } from "@/shared/hooks/use-app-form";
 import type { SurveyQuestion } from "./survey-question-fields";
 
 /** Map a persisted question (or nothing, for add) to form values. */

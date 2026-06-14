@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { updateSubmissionTrackFn } from "@/features/submissions/api/admin-submissions";
 import { statusLabels, statusVariants } from "@/features/submissions/labels";
-import { useDateFormat } from "@/hooks/use-date-format";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 
 import type { EditorSubmission, EditorSubmissionData } from "./availability";
 

@@ -25,7 +25,6 @@ import { PlannerToolsProvider } from "@/components/admin/planner/planner-tools-c
 import { PublishButton } from "@/components/admin/planner/publish-button";
 import { SessionEditorSheet } from "@/components/admin/planner/session-editor-sheet";
 import { UnscheduledSidebar } from "@/components/admin/planner/unscheduled-sidebar";
-import { PageHeader } from "@/components/layout/page-header";
 import { allBreaksQueryOptions } from "@/server-fns/planner/breaks";
 import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
 import {
@@ -38,6 +37,7 @@ import {
 } from "@/server-fns/planner/sessions";
 import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
 import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
+import { PageHeader } from "@/shared/components/layout/page-header";
 
 export const Route = createFileRoute("/_app/admin/_layout/program-planner/")({
 	loader: async ({ context }) => {

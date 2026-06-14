@@ -3,7 +3,7 @@ import type * as React from "react";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { useFieldContext } from "@/hooks/form-context";
+import { useFieldContext } from "@/shared/hooks/form-context";
 
 interface FormCheckboxFieldProps {
 	label: string | React.ReactNode;

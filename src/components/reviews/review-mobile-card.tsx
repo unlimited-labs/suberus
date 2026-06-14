@@ -9,12 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { typeLabels } from "@/features/submissions/labels";
-import { useDateFormat } from "@/hooks/use-date-format";
 import {
 	assignmentStatusLabels,
 	assignmentStatusVariants,
 } from "@/lib/labels/assignment";
 import type { ReviewerAssignment } from "@/server-fns/reviews/assignments";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 
 export function ReviewMobileCard(assignment: ReviewerAssignment) {
 	const { formatDate } = useDateFormat();

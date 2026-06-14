@@ -9,7 +9,7 @@ import {
 	typeLabels,
 } from "@/features/submissions/labels";
 import type { AdminSubmission } from "@/features/submissions/server/admin-submissions";
-import { useDateFormat } from "@/hooks/use-date-format";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 
 export function SubmissionMobileCard(submission: AdminSubmission) {
 	const { formatDate } = useDateFormat();

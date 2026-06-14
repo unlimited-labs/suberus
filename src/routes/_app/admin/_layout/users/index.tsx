@@ -9,7 +9,6 @@ import {
 } from "@/components/admin/users/columns";
 import { UserBulkActions } from "@/components/admin/users/user-bulk-actions";
 import { UserMobileCard } from "@/components/admin/users/user-mobile-card";
-import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { adminUsersQueryOptions } from "@/server-fns/admin/users";
 import {
@@ -17,6 +16,7 @@ import {
 	feeTypesQueryOptions,
 } from "@/server-fns/settings";
 import { adminSurveyQuestionsQueryOptions } from "@/server-fns/settings/survey";
+import { PageHeader } from "@/shared/components/layout/page-header";
 
 export const Route = createFileRoute("/_app/admin/_layout/users/")({
 	loader: async ({ context }) => {

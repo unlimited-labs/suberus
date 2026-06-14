@@ -12,7 +12,6 @@ import {
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { PageHeader } from "@/components/layout/page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,7 +24,6 @@ import {
 	type SubmissionFormData,
 } from "@/features/submissions/components/form/submission-form";
 import { activeTracksQueryOptions } from "@/features/tracks/api/tracks";
-import { useSession } from "@/hooks/use-session";
 import { sendVerificationEmail } from "@/lib/auth-client";
 import { extractZodIssueMessage, logClientError } from "@/lib/log-client-error";
 import {
@@ -35,6 +33,8 @@ import {
 } from "@/server-fns/settings";
 import { extractionSettingsQueryOptions } from "@/server-fns/settings/extraction";
 import { userDashboardQueryOptions } from "@/server-fns/user-dashboard";
+import { PageHeader } from "@/shared/components/layout/page-header";
+import { useSession } from "@/shared/hooks/use-session";
 
 export const Route = createFileRoute("/_app/submissions/new")({
 	loader: async ({ context }) => {

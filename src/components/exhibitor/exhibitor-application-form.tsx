@@ -33,7 +33,6 @@ import {
 	type Author,
 	AuthorsInput,
 } from "@/features/submissions/components/form/authors-input";
-import { useAppForm } from "@/hooks/use-app-form";
 import { exhibitorPresentationSchema } from "@/lib/validations/exhibitor";
 import {
 	type getMyExhibitorFn,
@@ -41,6 +40,7 @@ import {
 	saveExhibitorApplicationFn,
 	withdrawMyExhibitorFn,
 } from "@/server-fns/exhibitors";
+import { useAppForm } from "@/shared/hooks/use-app-form";
 
 type MyExhibitor = NonNullable<Awaited<ReturnType<typeof getMyExhibitorFn>>>;
 

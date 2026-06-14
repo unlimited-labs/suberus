@@ -3,12 +3,12 @@ import { toast } from "sonner";
 import { SurveyQuestionField } from "@/components/forms/survey/survey-question-field";
 import { Field, FieldError } from "@/components/ui/field";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
-import { useAppForm } from "@/hooks/use-app-form";
 import { surveyAnswerRequiredError } from "@/lib/validations/survey";
 import {
 	saveUserSurveyAnswersFn,
 	userSurveyAnswersQueryOptions,
 } from "@/server-fns/settings/survey";
+import { useAppForm } from "@/shared/hooks/use-app-form";
 
 interface SurveyQuestion {
 	id: string;

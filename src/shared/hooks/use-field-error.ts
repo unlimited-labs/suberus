@@ -1,6 +1,6 @@
 import { useStore } from "@tanstack/react-form";
 
-import { useFieldContext } from "@/hooks/form-context";
+import { useFieldContext } from "@/shared/hooks/form-context";
 
 /**
  * Shared field-error state for composable form fields: resolves the current

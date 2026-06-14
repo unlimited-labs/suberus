@@ -10,9 +10,9 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from "@/components/ui/sheet";
-import { useSession } from "@/hooks/use-session";
 import { exhibitorSignupAvailableQueryOptions } from "@/server-fns/exhibitors";
 import { scheduleStateQueryOptions } from "@/server-fns/planner/schedule";
+import { useSession } from "@/shared/hooks/use-session";
 import { getNavigationForRole } from "@/shared/lib/navigation";
 import { cn } from "@/shared/lib/utils";
 import { BrandLogo } from "./brand-logo";

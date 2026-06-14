@@ -1,6 +1,6 @@
 import { IconHexagonLetterS } from "@tabler/icons-react";
 import type { ReactNode } from "react";
-import { EmailVerificationBanner } from "@/components/email-verification-banner";
+import { EmailVerificationBanner } from "@/shared/components/email-verification-banner";
 import { cn } from "@/shared/lib/utils";
 import { MobileSidebar, Sidebar } from "./sidebar";
 

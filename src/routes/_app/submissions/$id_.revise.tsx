@@ -8,7 +8,6 @@ import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,6 +24,7 @@ import {
 	activeSubmissionTypesQueryOptions,
 	submissionValidationQueryOptions,
 } from "@/server-fns/settings";
+import { PageHeader } from "@/shared/components/layout/page-header";
 
 export const Route = createFileRoute("/_app/submissions/$id_/revise")({
 	loader: async ({ params, context }) => {

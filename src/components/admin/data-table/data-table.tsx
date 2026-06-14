@@ -23,8 +23,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { usePersistedState } from "@/hooks/use-persisted-state";
 import { useTablePagination } from "@/hooks/use-table-pagination";
+import { usePersistedState } from "@/shared/hooks/use-persisted-state";
 import { DataTablePagination } from "./data-table-pagination";
 
 const columnVisibilitySchema = z.record(

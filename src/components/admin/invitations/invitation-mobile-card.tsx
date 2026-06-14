@@ -2,10 +2,10 @@ import { IconMailForward, IconX } from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useDateFormat } from "@/hooks/use-date-format";
 import { invitationStatusConfig } from "@/lib/labels/invitation-status";
 import { roleLabels } from "@/lib/labels/user";
 import type { AdminInvitation } from "@/lib/server/admin/invitations";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 
 interface InvitationMobileCardProps {
 	invitation: AdminInvitation;

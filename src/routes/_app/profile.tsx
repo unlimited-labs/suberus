@@ -8,7 +8,6 @@ import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { PageHeader } from "@/components/layout/page-header";
 import { SettingsSection } from "@/components/settings/settings-section";
 import {
 	changeEmailFn,
@@ -26,12 +25,13 @@ import type {
 	PasswordChangeFormData,
 	PersonalInfoFormData,
 } from "@/features/profile/validations";
-import { useSession } from "@/hooks/use-session";
 import { createAffiliation } from "@/server-fns/affiliations";
 import {
 	activeSurveyQuestionsQueryOptions,
 	userSurveyAnswersQueryOptions,
 } from "@/server-fns/settings/survey";
+import { PageHeader } from "@/shared/components/layout/page-header";
+import { useSession } from "@/shared/hooks/use-session";
 
 export const Route = createFileRoute("/_app/profile")({
 	loader: async ({ context }) => {

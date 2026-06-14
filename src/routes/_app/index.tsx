@@ -8,10 +8,10 @@ import {
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { PageHeader } from "@/components/layout/page-header";
-import { useSession } from "@/hooks/use-session";
 import { redirectExhibitorRouteMiddleware } from "@/lib/server/middleware/auth";
 import { userDashboardQueryOptions } from "@/server-fns/user-dashboard";
+import { PageHeader } from "@/shared/components/layout/page-header";
+import { useSession } from "@/shared/hooks/use-session";
 
 const searchSchema = z.object({
 	verified: z.literal(true).optional(),

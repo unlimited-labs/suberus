@@ -1,6 +1,6 @@
 import { FormField } from "@/components/forms/composable/form-field";
 import { CountryCombobox } from "@/components/ui/country-combobox";
-import { useFieldError } from "@/hooks/use-field-error";
+import { useFieldError } from "@/shared/hooks/use-field-error";
 
 interface FormCountryComboboxFieldProps {
 	label: string;

@@ -2,13 +2,13 @@ import { IconClipboardCheck } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { DataTable, DataTableToolbar } from "@/components/admin/data-table";
-import { PageHeader } from "@/components/layout/page-header";
 import { reviewColumns } from "@/components/reviews/review-columns";
 import { ReviewMobileCard } from "@/components/reviews/review-mobile-card";
 import {
 	myAssignmentsQueryOptions,
 	type ReviewerAssignment,
 } from "@/server-fns/reviews/assignments";
+import { PageHeader } from "@/shared/components/layout/page-header";
 
 export const Route = createFileRoute("/_app/reviews/")({
 	loader: async ({ context }) => {

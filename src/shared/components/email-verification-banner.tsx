@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertAction, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { useSession } from "@/hooks/use-session";
 import { sendVerificationEmail } from "@/lib/auth-client";
+import { useSession } from "@/shared/hooks/use-session";
 
 const RESEND_COOLDOWN = 60;
 const DISMISS_KEY = "email-verification-banner-dismissed";

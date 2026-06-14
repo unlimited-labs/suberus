@@ -9,8 +9,8 @@ import { ReviewProgress } from "@/components/admin/dashboard/review-progress";
 import { SubmissionChart } from "@/components/admin/dashboard/submission-chart";
 import { SystemHealthCard } from "@/components/admin/dashboard/system-health-card";
 import { UsersByCountryCard } from "@/components/admin/dashboard/users-by-country-card";
-import { PageHeader } from "@/components/layout/page-header";
 import { adminDashboardQueryOptions } from "@/server-fns/admin/dashboard";
+import { PageHeader } from "@/shared/components/layout/page-header";
 
 export const Route = createFileRoute("/_app/admin/_layout/dashboard/")({
 	loader: async ({ context }) => {

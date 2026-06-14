@@ -8,12 +8,12 @@ import { isValid } from "date-fns";
 import type { CSSProperties } from "react";
 import { useEffect } from "react";
 import { AuthLayout } from "@/components/layout/auth-layout";
-import { SpinnerSvg } from "@/components/spinner-svg";
-import { useSession } from "@/hooks/use-session";
 import { APP_SETTINGS_DEFAULTS } from "@/lib/settings/defaults";
 import type { AuthPageBranding } from "@/server-fns/settings";
 import { getAuthPageBrandingFn } from "@/server-fns/settings";
 import { checkInstallStatusFn } from "@/server-fns/settings/install";
+import { SpinnerSvg } from "@/shared/components/spinner-svg";
+import { useSession } from "@/shared/hooks/use-session";
 import { formatDate } from "@/shared/lib/format-date";
 
 const defaults: AuthPageBranding = {

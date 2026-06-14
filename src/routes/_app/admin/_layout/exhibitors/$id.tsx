@@ -4,19 +4,19 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { DecideExhibitorDialog } from "@/components/admin/exhibitors/decide-exhibitor-dialog";
-import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { statusLabels, statusVariants } from "@/features/submissions/labels";
-import { useDateFormat } from "@/hooks/use-date-format";
 import { exhibitorStatusBadge } from "@/lib/labels/exhibitor";
 import {
 	exhibitorDetailQueryOptions,
 	listExhibitorsQueryOptions,
 	setExhibitorPackageFn,
 } from "@/server-fns/exhibitors";
+import { PageHeader } from "@/shared/components/layout/page-header";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { getErrorMessage } from "@/shared/lib/error-message";
 
 export const Route = createFileRoute("/_app/admin/_layout/exhibitors/$id")({

@@ -8,7 +8,6 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { compareDesc, differenceInCalendarDays, isAfter } from "date-fns";
 import { useEffect } from "react";
-import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,
@@ -18,13 +17,14 @@ import {
 } from "@/components/ui/tooltip";
 import { mySubmissionsQueryOptions } from "@/features/submissions/api/submissions";
 import { SubmissionsTable } from "@/features/submissions/components/submissions-table";
-import { useDateFormat } from "@/hooks/use-date-format";
-import { useSession } from "@/hooks/use-session";
 import { redirectExhibitorRouteMiddleware } from "@/lib/server/middleware/auth";
 import {
 	activeSubmissionTypesQueryOptions,
 	submissionDeadlineQueryOptions,
 } from "@/server-fns/settings";
+import { PageHeader } from "@/shared/components/layout/page-header";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { useSession } from "@/shared/hooks/use-session";
 import { cn } from "@/shared/lib/utils";
 
 export const Route = createFileRoute("/_app/submissions/")({

@@ -1,7 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { addMinutes } from "date-fns";
 import { toast } from "sonner";
-import { useAppForm } from "@/hooks/use-app-form";
 import {
 	type SessionFormValues,
 	sessionFormSchema,
@@ -9,6 +8,7 @@ import {
 import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
 import { createSessionWithPresentationsFn } from "@/server-fns/planner/sessions";
 import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
+import { useAppForm } from "@/shared/hooks/use-app-form";
 
 interface UseCreateSessionFormArgs {
 	submissionIds: string[];

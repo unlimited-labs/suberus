@@ -2,11 +2,11 @@ import { IconClock } from "@tabler/icons-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useDateFormat } from "@/hooks/use-date-format";
 import {
 	assignmentStatusLabels,
 	assignmentStatusVariants,
 } from "@/lib/labels/assignment";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { cn } from "@/shared/lib/utils";
 
 import { type EditorAssignment, isOverdue } from "./availability";

@@ -1,6 +1,6 @@
 import { FormField } from "@/components/forms/composable/form-field";
 import { PasswordInput } from "@/components/forms/password-input";
-import { useFieldError } from "@/hooks/use-field-error";
+import { useFieldError } from "@/shared/hooks/use-field-error";
 
 interface FormPasswordFieldProps {
 	label: string;

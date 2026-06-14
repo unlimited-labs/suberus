@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import type { UserSubmissionReview } from "@/features/submissions/api/submissions";
-import { useDateFormat } from "@/hooks/use-date-format";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { cn, formatFileSize } from "@/shared/lib/utils";
 
 interface ReviewsCardProps {

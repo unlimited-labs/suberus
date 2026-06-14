@@ -4,7 +4,7 @@ import type {
 	UserSubmissionVersion,
 } from "@/features/submissions/api/submissions";
 import { VersionSelector } from "@/features/submissions/components/version-selector";
-import { useDateFormat } from "@/hooks/use-date-format";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { TYPE_LABELS } from "./constants";
 
 interface InfoItemProps {

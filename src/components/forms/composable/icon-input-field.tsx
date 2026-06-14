@@ -2,7 +2,7 @@ import type * as React from "react";
 
 import { FormField } from "@/components/forms/composable/form-field";
 import { IconInput } from "@/components/forms/icon-input";
-import { useFieldError } from "@/hooks/use-field-error";
+import { useFieldError } from "@/shared/hooks/use-field-error";
 
 interface FormIconInputFieldProps {
 	label: string;

@@ -1,7 +1,6 @@
 import { IconCash, IconCheck, IconInfoCircle } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { PageHeader } from "@/components/layout/page-header";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +9,8 @@ import {
 	paymentInstructionsQueryOptions,
 	userFeeQueryOptions,
 } from "@/features/fee/api/fee";
-import { useDateFormat } from "@/hooks/use-date-format";
+import { PageHeader } from "@/shared/components/layout/page-header";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 
 export const Route = createFileRoute("/_app/fee/")({
 	loader: async ({ context }) => {

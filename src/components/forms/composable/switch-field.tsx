@@ -3,7 +3,7 @@ import type * as React from "react";
 
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
-import { useFieldContext } from "@/hooks/form-context";
+import { useFieldContext } from "@/shared/hooks/form-context";
 
 interface FormSwitchFieldProps {
 	label: string | React.ReactNode;

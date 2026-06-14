@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useDateFormat } from "@/hooks/use-date-format";
 import { assignmentStatusVariants } from "@/lib/labels/assignment";
 import {
 	type AssignmentWithReviewer,
@@ -32,6 +31,7 @@ import {
 	getAvailableReviewersFn,
 	getSubmissionAssignmentsFn,
 } from "@/server-fns/reviews/assignments";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 
 interface AssignReviewerDialogProps {
 	submissionId: string;

@@ -3,7 +3,6 @@ import { countries } from "countries-list";
 import * as Flags from "country-flag-icons/react/3x2";
 import MapLibreGL from "maplibre-gl";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useTheme } from "@/components/theme-provider";
 import {
 	Card,
 	CardAction,
@@ -16,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { COUNTRY_CENTROIDS } from "@/lib/country-centroids";
 import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
+import { useTheme } from "@/shared/components/theme-provider";
 
 interface UsersByCountryCardProps {
 	data: AdminDashboardMetrics["usersByCountry"] | undefined;

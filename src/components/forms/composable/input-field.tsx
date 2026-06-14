@@ -1,6 +1,6 @@
 import { FormField } from "@/components/forms/composable/form-field";
 import { Input } from "@/components/ui/input";
-import { useFieldError } from "@/hooks/use-field-error";
+import { useFieldError } from "@/shared/hooks/use-field-error";
 
 interface FormInputFieldProps {
 	label: string;

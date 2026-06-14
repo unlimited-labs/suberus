@@ -7,12 +7,12 @@ import {
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { AuthLayout } from "@/components/layout/auth-layout";
-import { useAppForm } from "@/hooks/use-app-form";
 import { installSchema } from "@/lib/validations/install";
 import {
 	checkInstallStatusFn,
 	performInstallFn,
 } from "@/server-fns/settings/install";
+import { useAppForm } from "@/shared/hooks/use-app-form";
 
 export const Route = createFileRoute("/install")({
 	beforeLoad: async () => {

@@ -9,7 +9,6 @@ import {
 } from "@tabler/icons-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { useTheme } from "@/components/theme-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
@@ -21,8 +20,9 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useSession } from "@/hooks/use-session";
 import { signOut } from "@/lib/auth-client";
+import { useTheme } from "@/shared/components/theme-provider";
+import { useSession } from "@/shared/hooks/use-session";
 
 function getInitials(
 	firstName: string | null,
