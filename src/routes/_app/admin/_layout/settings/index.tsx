@@ -20,7 +20,6 @@ import {
 	useSearch,
 } from "@tanstack/react-router";
 import { z } from "zod";
-import { ProgramTab } from "@/components/admin/program";
 import { EmailTemplatesTab } from "@/features/email-templates";
 import { emailTemplatesQueryOptions } from "@/features/email-templates/api/email-templates";
 import { toEmailTemplateUI } from "@/features/email-templates/components/admin/email-templates-tab";
@@ -31,6 +30,9 @@ import {
 } from "@/features/extraction/api/extraction";
 import { paymentInstructionsQueryOptions } from "@/features/fee/api/fee";
 import { FeeTab } from "@/features/fee/components/admin/fee-tab";
+import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
+import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
+import { ProgramTab } from "@/features/planner/components/program";
 import { reviewerUsersQueryOptions } from "@/features/reviews/api/reviewers";
 import {
 	adminSettingQueryOptions,
@@ -54,8 +56,6 @@ import { adminSurveyQuestionsQueryOptions } from "@/features/survey/api/survey";
 import { SurveyQuestionsTab } from "@/features/survey/components/admin/survey-questions-tab";
 import { allTracksQueryOptions } from "@/features/tracks/api/admin-tracks";
 import { TracksTab } from "@/features/tracks/components/admin/tracks-tab";
-import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
-import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 

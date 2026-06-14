@@ -2,41 +2,41 @@ import { IconCalendar } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
-import { BreakEditorSheet } from "@/components/admin/planner/break-editor-sheet";
-import { CapacityStrip } from "@/components/admin/planner/capacity-strip";
-import { computeHiddenWeekdays } from "@/components/admin/planner/compute-hidden-weekdays";
-import { CreateSessionDialog } from "@/components/admin/planner/create-session-dialog";
-import { useNextStartAt } from "@/components/admin/planner/hooks/use-next-start-at";
-import { usePlannerCalendarHandlers } from "@/components/admin/planner/hooks/use-planner-calendar-handlers";
-import { usePlannerEvents } from "@/components/admin/planner/hooks/use-planner-events";
-import { usePlannerMutations } from "@/components/admin/planner/hooks/use-planner-mutations";
-import { useRoomVisibility } from "@/components/admin/planner/hooks/use-room-visibility";
-import { IssuesPanel } from "@/components/admin/planner/issues-panel";
-import { MobilePlanner } from "@/components/admin/planner/mobile-planner";
-import { MobileQueueOverlay } from "@/components/admin/planner/mobile-queue-overlay";
-import { NoRoomsPlaceholder } from "@/components/admin/planner/no-rooms-placeholder";
-import { OutsideRangeBanner } from "@/components/admin/planner/outside-range-banner";
-import { PlannerCalendar } from "@/components/admin/planner/planner-calendar";
-import {
-	PlannerSelectionProvider,
-	usePlannerSelection,
-} from "@/components/admin/planner/planner-context";
-import { PlannerToolsProvider } from "@/components/admin/planner/planner-tools-context";
-import { PublishButton } from "@/components/admin/planner/publish-button";
-import { SessionEditorSheet } from "@/components/admin/planner/session-editor-sheet";
-import { UnscheduledSidebar } from "@/components/admin/planner/unscheduled-sidebar";
-import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
-import { allBreaksQueryOptions } from "@/server-fns/planner/breaks";
-import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
+import { allBreaksQueryOptions } from "@/features/planner/api/breaks";
+import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
 import {
 	scheduleCapacityQueryOptions,
 	scheduleStateQueryOptions,
-} from "@/server-fns/planner/schedule";
+} from "@/features/planner/api/schedule";
 import {
 	allSessionsQueryOptions,
 	unscheduledSubmissionsQueryOptions,
-} from "@/server-fns/planner/sessions";
-import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
+} from "@/features/planner/api/sessions";
+import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
+import { BreakEditorSheet } from "@/features/planner/components/break-editor-sheet";
+import { CapacityStrip } from "@/features/planner/components/capacity-strip";
+import { computeHiddenWeekdays } from "@/features/planner/components/compute-hidden-weekdays";
+import { CreateSessionDialog } from "@/features/planner/components/create-session-dialog";
+import { useNextStartAt } from "@/features/planner/components/hooks/use-next-start-at";
+import { usePlannerCalendarHandlers } from "@/features/planner/components/hooks/use-planner-calendar-handlers";
+import { usePlannerEvents } from "@/features/planner/components/hooks/use-planner-events";
+import { usePlannerMutations } from "@/features/planner/components/hooks/use-planner-mutations";
+import { useRoomVisibility } from "@/features/planner/components/hooks/use-room-visibility";
+import { IssuesPanel } from "@/features/planner/components/issues-panel";
+import { MobilePlanner } from "@/features/planner/components/mobile-planner";
+import { MobileQueueOverlay } from "@/features/planner/components/mobile-queue-overlay";
+import { NoRoomsPlaceholder } from "@/features/planner/components/no-rooms-placeholder";
+import { OutsideRangeBanner } from "@/features/planner/components/outside-range-banner";
+import { PlannerCalendar } from "@/features/planner/components/planner-calendar";
+import {
+	PlannerSelectionProvider,
+	usePlannerSelection,
+} from "@/features/planner/components/planner-context";
+import { PlannerToolsProvider } from "@/features/planner/components/planner-tools-context";
+import { PublishButton } from "@/features/planner/components/publish-button";
+import { SessionEditorSheet } from "@/features/planner/components/session-editor-sheet";
+import { UnscheduledSidebar } from "@/features/planner/components/unscheduled-sidebar";
+import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
 import { PageHeader } from "@/shared/components/layout/page-header";
 
 export const Route = createFileRoute("/_app/admin/_layout/program-planner/")({

@@ -16,12 +16,12 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { type ComponentType, useState } from "react";
 import { toast } from "sonner";
-import type { AutoplanStage } from "@/lib/server/planner/autoplan-types";
 import {
 	applyAutoPlanFn,
 	getAutoPlanJobFn,
 	startAutoPlanFn,
-} from "@/server-fns/planner/autoplan";
+} from "@/features/planner/api/autoplan";
+import type { AutoplanStage } from "@/features/planner/server/autoplan-types";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useJobSSE } from "@/shared/hooks/use-job-sse";
 import { cn } from "@/shared/lib/utils";

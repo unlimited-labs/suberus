@@ -29,7 +29,7 @@
   },
   // Added incrementally, one feature-zone per migration PR. Migrated so far
   // (autoDiscover finds them): submissions, profile, tracks, fee, workflow,
-  // activity-log, auth, settings, survey, email-templates, install, extraction, reviews. The
+  // activity-log, auth, settings, survey, email-templates, install, extraction, reviews, planner. The
   // other allow-list names are forward references that activate as those features
   // migrate. `shared` zone is declared ahead of its files. coverage.requireAllFiles
   // is intentionally left off until the last feature lands (un-migrated src/lib
@@ -117,6 +117,15 @@
         // resolve by lifting FileDropzone to shared/components.
         "from": "reviews",
         "allow": ["shared", "workflow", "settings", "activity-log"]
+      },
+      {
+        // APP feature (no feature imports planner). Deferred warns (kept visible):
+        // (a) shared/components/layout/sidebar -> planner/api/schedule (backwards
+        //     shared->planner; resolve via props/context).
+        // (b) shared/server/queue.ts -> planner worker (backwards; resolve via the
+        //     pg-boss worker-registration inversion follow-up, w/ extraction).
+        "from": "planner",
+        "allow": ["shared", "settings", "auth"]
       }
     ]
   }

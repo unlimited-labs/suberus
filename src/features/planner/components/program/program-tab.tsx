@@ -1,0 +1,304 @@
+import {
+	IconBuildingCommunity,
+	IconClock,
+	IconColorSwatch,
+	IconDownload,
+	IconLoader2,
+	IconPlus,
+} from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import { useState } from "react";
+import { toast } from "sonner";
+import { importProgramTracksFromIntakeFn } from "@/features/planner/api/tracks";
+import type { RoomWithStats } from "@/features/planner/server/rooms";
+import type { ProgramTrackWithStats } from "@/features/planner/server/tracks";
+import type { ConferenceSettings } from "@/features/settings/api/settings";
+import {
+	conferenceSettingsQueryOptions,
+	updateConferenceSettingsFn,
+} from "@/features/settings/api/settings";
+import { SettingsSection } from "@/features/settings/components/settings-section";
+import type { AppSettingsMap } from "@/features/settings/types";
+import { formatLlmStatus } from "@/lib/format-llm-status";
+import { getErrorMessage } from "@/shared/lib/error-message";
+import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
+import { Switch } from "@/shared/ui/switch";
+import { ProgramTrackDialog } from "./program-track-dialog";
+import { ProgramTracksList } from "./program-tracks-list";
+import { RoomDialog } from "./room-dialog";
+import { RoomsList } from "./rooms-list";
+
+interface ProgramTabProps {
+	initialRooms: RoomWithStats[];
+	initialProgramTracks: ProgramTrackWithStats[];
+	initialConferenceSettings: ConferenceSettings;
+	llmHealth: AppSettingsMap["SERVICE_HEALTH_LLM"];
+	onRoomsUpdate: () => void;
+	onProgramTracksUpdate: () => void;
+}
+
+export function ProgramTab({
+	initialRooms,
+	initialProgramTracks,
+	initialConferenceSettings,
+	llmHealth,
+	onRoomsUpdate,
+	onProgramTracksUpdate,
+}: ProgramTabProps) {
+	const llmAvailable = llmHealth.status === "healthy";
+	const queryClient = useQueryClient();
+	const router = useRouter();
+	const [roomDialogOpen, setRoomDialogOpen] = useState(false);
+	const [editingRoom, setEditingRoom] = useState<RoomWithStats | null>(null);
+	const [trackDialogOpen, setTrackDialogOpen] = useState(false);
+	const [editingTrack, setEditingTrack] =
+		useState<ProgramTrackWithStats | null>(null);
+	const [importing, setImporting] = useState(false);
+	const [plannerData, setPlannerData] = useState(initialConferenceSettings);
+	const [plannerSaving, setPlannerSaving] = useState(false);
+
+	const handleImport = async () => {
+		setImporting(true);
+		try {
+			const { created, skipped } = await importProgramTracksFromIntakeFn();
+			if (created === 0) {
+				toast.info("No new tracks to import", {
+					description: `${skipped} intake track(s) already present`,
+				});
+			} else {
+				toast.success(`Imported ${created} track(s)`, {
+					description:
+						skipped > 0 ? `${skipped} skipped as duplicates` : undefined,
+				});
+				onProgramTracksUpdate();
+			}
+		} catch (e) {
+			toast.error(getErrorMessage(e, "Failed to import"));
+		} finally {
+			setImporting(false);
+		}
+	};
+
+	const handlePlannerSave = async () => {
+		setPlannerSaving(true);
+		try {
+			await updateConferenceSettingsFn({ data: plannerData });
+			await queryClient.invalidateQueries({
+				queryKey: conferenceSettingsQueryOptions().queryKey,
+			});
+			await router.invalidate();
+			toast.success("Planner settings saved");
+		} catch (error) {
+			toast.error(getErrorMessage(error, "Failed to save"));
+		} finally {
+			setPlannerSaving(false);
+		}
+	};
+
+	const openRoomEdit = (room: RoomWithStats) => {
+		setEditingRoom(room);
+		setRoomDialogOpen(true);
+	};
+	const closeRoomDialog = () => {
+		setRoomDialogOpen(false);
+		setEditingRoom(null);
+	};
+
+	const openTrackEdit = (track: ProgramTrackWithStats) => {
+		setEditingTrack(track);
+		setTrackDialogOpen(true);
+	};
+	const closeTrackDialog = () => {
+		setTrackDialogOpen(false);
+		setEditingTrack(null);
+	};
+
+	return (
+		<div className="space-y-6">
+			<SettingsSection
+				icon={IconClock}
+				title="Planner"
+				description="Settings used by the program planner to organize presentations into sessions across rooms and days"
+			>
+				<div className="grid gap-6 sm:grid-cols-2">
+					<div className="space-y-2">
+						<Label htmlFor="dayStart">Planner visible hours</Label>
+						<div className="flex items-center gap-2">
+							<Input
+								id="dayStart"
+								type="time"
+								value={plannerData.dayStart}
+								onChange={(e) =>
+									setPlannerData((prev) => ({
+										...prev,
+										dayStart: e.target.value,
+									}))
+								}
+								className="w-32"
+							/>
+							<span className="text-muted-foreground">-</span>
+							<Input
+								id="dayEnd"
+								type="time"
+								value={plannerData.dayEnd}
+								onChange={(e) =>
+									setPlannerData((prev) => ({
+										...prev,
+										dayEnd: e.target.value,
+									}))
+								}
+								className="w-32"
+							/>
+						</div>
+						<p className="text-xs text-muted-foreground">
+							Visible window in the planner grid.
+						</p>
+					</div>
+					<div className="space-y-2">
+						<Label htmlFor="defaultPresentationMin">
+							Default presentation length
+						</Label>
+						<div className="flex items-center gap-2">
+							<Input
+								id="defaultPresentationMin"
+								type="number"
+								min={5}
+								max={480}
+								step={5}
+								value={plannerData.defaultPresentationMin}
+								onChange={(e) =>
+									setPlannerData((prev) => ({
+										...prev,
+										defaultPresentationMin: Number(e.target.value) || 15,
+									}))
+								}
+								className="w-24"
+							/>
+							<span className="text-sm text-muted-foreground">minutes</span>
+						</div>
+						<p className="text-xs text-muted-foreground">
+							Pre-filled when creating sessions and dropping submissions.
+						</p>
+					</div>
+				</div>
+				<div className="mt-6 space-y-2 border-t pt-6">
+					<div className="flex items-center justify-between gap-4">
+						<div className="space-y-0.5">
+							<Label htmlFor="autoplanEnabled">
+								Enable autoplanner (requires LLM access)
+							</Label>
+							<p className="text-sm text-muted-foreground">
+								Lets admins cluster accepted abstracts into sessions and
+								generate session titles via the LLM service.
+							</p>
+						</div>
+						<Switch
+							id="autoplanEnabled"
+							checked={plannerData.autoplanEnabled}
+							disabled={!llmAvailable}
+							onCheckedChange={(v) =>
+								setPlannerData((prev) => ({ ...prev, autoplanEnabled: v }))
+							}
+						/>
+					</div>
+					<div className="flex items-center gap-1.5">
+						<div
+							className={cn(
+								"size-1.5 rounded-full",
+								llmAvailable ? "bg-green-500" : "bg-red-500",
+							)}
+						/>
+						<span className="text-[11px] text-muted-foreground">
+							{formatLlmStatus(llmHealth)}
+						</span>
+					</div>
+					{!llmAvailable && (
+						<p className="text-xs text-amber-700 dark:text-amber-400">
+							LLM API is not available. Configure LLM_API_URL and ensure the
+							service is running to enable autoplanning.
+						</p>
+					)}
+				</div>
+				<div className="mt-6 flex justify-end">
+					<Button onClick={handlePlannerSave} disabled={plannerSaving}>
+						{plannerSaving && (
+							<IconLoader2 className="mr-2 size-4 animate-spin" />
+						)}
+						Save
+					</Button>
+				</div>
+			</SettingsSection>
+
+			<SettingsSection
+				icon={IconBuildingCommunity}
+				title="Rooms"
+				description="Physical locations where sessions take place. Order controls column placement in the planner."
+			>
+				<div className="mb-4 flex justify-end">
+					<Button
+						onClick={() => setRoomDialogOpen(true)}
+						data-testid="create-room"
+					>
+						<IconPlus className="mr-2 size-4" />
+						Create Room
+					</Button>
+				</div>
+				<RoomsList
+					rooms={initialRooms}
+					onEdit={openRoomEdit}
+					onUpdate={onRoomsUpdate}
+				/>
+			</SettingsSection>
+
+			<SettingsSection
+				icon={IconColorSwatch}
+				title="Program Tracks"
+				description="Optional color tags for grouping related sessions (e.g. a multi-part series). Sessions can exist without a track."
+			>
+				<div className="mb-4 flex justify-end gap-2">
+					<Button
+						variant="outline"
+						onClick={handleImport}
+						disabled={importing}
+						data-testid="import-program-tracks-from-intake"
+					>
+						<IconDownload className="mr-2 size-4" />
+						Import from intake
+					</Button>
+					<Button
+						onClick={() => setTrackDialogOpen(true)}
+						data-testid="create-program-track"
+					>
+						<IconPlus className="mr-2 size-4" />
+						Create Program Track
+					</Button>
+				</div>
+				<ProgramTracksList
+					tracks={initialProgramTracks}
+					onEdit={openTrackEdit}
+					onUpdate={onProgramTracksUpdate}
+				/>
+			</SettingsSection>
+
+			<RoomDialog
+				key={editingRoom?.id ?? "new-room"}
+				open={roomDialogOpen}
+				onOpenChange={closeRoomDialog}
+				room={editingRoom ?? undefined}
+				onSuccess={onRoomsUpdate}
+			/>
+
+			<ProgramTrackDialog
+				key={editingTrack?.id ?? "new-track"}
+				open={trackDialogOpen}
+				onOpenChange={closeTrackDialog}
+				track={editingTrack ?? undefined}
+				onSuccess={onProgramTracksUpdate}
+			/>
+		</div>
+	);
+}

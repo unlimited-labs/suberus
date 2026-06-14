@@ -24,7 +24,9 @@ async function initBoss(): Promise<PgBoss> {
 	const { registerExtractionWorker } = await import(
 		"@/features/extraction/server/workers/extraction"
 	);
-	const { registerAutoplanWorker } = await import("./workers/autoplan");
+	const { registerAutoplanWorker } = await import(
+		"@/features/planner/server/workers/autoplan"
+	);
 	await registerExtractionWorker(boss);
 	await registerAutoplanWorker(boss);
 

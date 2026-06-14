@@ -9,16 +9,16 @@ import {
 	isAfter,
 } from "date-fns";
 import { useState } from "react";
-import { getAppBrandingFn } from "@/features/settings/api/settings";
-import type {
-	PublicProgramBreak,
-	PublicProgramSession,
-} from "@/lib/server/planner/schedule";
-import { formatClockTime, sameDayInTz } from "@/lib/tz-datetime";
 import {
 	publicConferenceInfoQueryOptions,
 	publicProgramQueryOptions,
-} from "@/server-fns/planner/schedule";
+} from "@/features/planner/api/schedule";
+import type {
+	PublicProgramBreak,
+	PublicProgramSession,
+} from "@/features/planner/server/schedule";
+import { getAppBrandingFn } from "@/features/settings/api/settings";
+import { formatClockTime, sameDayInTz } from "@/lib/tz-datetime";
 import { cn } from "@/shared/lib/utils";
 import { Input } from "@/shared/ui/input";
 
