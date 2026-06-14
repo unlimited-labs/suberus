@@ -14,8 +14,9 @@
     "src/integrations/**/*.{ts,tsx}"
   ],
   "ignoreExportsUsedInFile": true,
-  // Non-project dirs (agent skills) excluded from analysis.
-  "ignorePatterns": [".agents/**"],
+  // Non-app dirs excluded: agent skills + the standalone Starlight docs project
+  // (own package.json/lockfile; its Astro deps must not read as root unused-deps).
+  "ignorePatterns": [".agents/**", "docs/**"],
   // Known-good deps consumed via Tailwind/CLI, not TS imports (fallow sees CSS
   // @imports, so the used @fontsource fonts need no ignore).
   "ignoreDependencies": ["tw-animate-css", "vibe-rules", "shadcn"],
