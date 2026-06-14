@@ -1,5 +1,15 @@
 import { createActor } from "xstate";
 import { env } from "@/env";
+import {
+	type AssignmentEvent,
+	assignmentMachine,
+	getAutoTransitionEvent,
+	getTransitionDescription,
+	type SubmissionContext,
+	type SubmissionEvent,
+	submissionMachine,
+	type TransitionResult,
+} from "@/features/workflow";
 import type {
 	AssignmentStatus,
 	ReviewDecision,
@@ -11,16 +21,6 @@ import { logActivity } from "@/lib/server/activity-log";
 import { getSetting } from "@/lib/server/settings";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
-import {
-	type AssignmentEvent,
-	assignmentMachine,
-	getAutoTransitionEvent,
-	getTransitionDescription,
-	type SubmissionContext,
-	type SubmissionEvent,
-	submissionMachine,
-	type TransitionResult,
-} from "@/lib/workflow";
 import { logger } from "@/logger.ts";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";

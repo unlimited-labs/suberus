@@ -1,9 +1,9 @@
+import type { SubmissionEvent } from "@/features/workflow";
 import type {
 	ReviewDecision,
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
-import type { SubmissionEvent } from "@/lib/workflow";
 
 export const statusLabels: Record<SubmissionStatus, string> = {
 	DRAFT: "Draft",

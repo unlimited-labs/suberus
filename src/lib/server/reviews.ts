@@ -1,4 +1,8 @@
 import { env } from "@/env.ts";
+import {
+	checkAndTriggerReviewCompletion,
+	validateAssignmentTransition,
+} from "@/features/workflow/server/workflow";
 import type { ReviewDecision, ReviewMode } from "@/generated/prisma/enums";
 import { activityDetail } from "@/lib/activity-log";
 import { logActivity } from "@/lib/server/activity-log";
@@ -8,10 +12,6 @@ import {
 	UploadValidationError,
 	validateUpload,
 } from "@/lib/server/validate-upload";
-import {
-	checkAndTriggerReviewCompletion,
-	validateAssignmentTransition,
-} from "@/lib/server/workflow";
 import { SUPPORTED_FILE_EXTENSIONS } from "@/lib/settings/file-types";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import { logger } from "@/logger.ts";

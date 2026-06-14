@@ -338,7 +338,7 @@ test.describe("Auto-transition config edge cases", () => {
 		}
 
 		const { checkAndTriggerReviewCompletion } = await import(
-			"../../src/lib/server/workflow"
+			"../../src/features/workflow/server/workflow"
 		);
 		await checkAndTriggerReviewCompletion(id, reviewerUserId);
 

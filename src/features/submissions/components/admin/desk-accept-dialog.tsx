@@ -1,7 +1,7 @@
 import { IconInfoCircle, IconLoader2 } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { deskAcceptFn } from "@/server-fns/workflow";
+import { deskAcceptFn } from "@/features/workflow/api/workflow";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";

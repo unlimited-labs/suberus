@@ -1,5 +1,11 @@
 import { addDays, compareAsc, subDays } from "date-fns";
 import { env } from "@/env.ts";
+import { canAssignReviewer } from "@/features/workflow";
+import {
+	checkAndTriggerReviewCompletion,
+	executeAssignmentTransition,
+	executeSubmissionTransition,
+} from "@/features/workflow/server/workflow";
 import type {
 	AssignmentStatus,
 	SubmissionType,
@@ -7,13 +13,7 @@ import type {
 import { activityDetail } from "@/lib/activity-log";
 import { logActivity } from "@/lib/server/activity-log";
 import { getSetting } from "@/lib/server/settings";
-import {
-	checkAndTriggerReviewCompletion,
-	executeAssignmentTransition,
-	executeSubmissionTransition,
-} from "@/lib/server/workflow";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
-import { canAssignReviewer } from "@/lib/workflow";
 import { logger } from "@/logger.ts";
 import { formatDate } from "@/shared/lib/format-date";
 import { prisma } from "@/shared/server/db.server";

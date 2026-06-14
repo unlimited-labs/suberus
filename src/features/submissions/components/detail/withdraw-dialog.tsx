@@ -7,7 +7,7 @@ import {
 	mySubmissionsQueryOptions,
 	submissionDetailQueryOptions,
 } from "@/features/submissions/api/submissions";
-import { withdrawSubmissionFn } from "@/server-fns/workflow";
+import { withdrawSubmissionFn } from "@/features/workflow/api/workflow";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import {

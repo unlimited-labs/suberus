@@ -1,13 +1,13 @@
 import { env } from "@/env";
-import { activityDetail } from "@/lib/activity-log";
-import { logActivity, logActivityTx } from "@/lib/server/activity-log";
-import { getSetting, getSubmissionTypeConfigs } from "@/lib/server/settings";
 import {
 	deskAcceptSubmission,
 	deskRejectSubmission,
 	validateSubmissionTransition,
 	withdrawSubmission,
-} from "@/lib/server/workflow";
+} from "@/features/workflow/server/workflow";
+import { activityDetail } from "@/lib/activity-log";
+import { logActivity, logActivityTx } from "@/lib/server/activity-log";
+import { getSetting, getSubmissionTypeConfigs } from "@/lib/server/settings";
 import type {
 	ExhibitorApplicationInput,
 	ExhibitorPresentationInput,

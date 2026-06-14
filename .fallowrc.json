@@ -27,11 +27,12 @@
     // "error" once a feature is fully decoupled (see dev-docs/ARCHITECTURE.md).
     "boundary-violation": "warn"
   },
-  // Added incrementally, one feature-zone per migration PR. Only `submissions`
-  // is migrated so far (autoDiscover finds it); the other allow-list names are
-  // forward references that activate as those features migrate. `shared` zone is
-  // declared ahead of its files. coverage.requireAllFiles is intentionally left
-  // off until the last feature lands (un-migrated src/lib would drown it).
+  // Added incrementally, one feature-zone per migration PR. Migrated so far
+  // (autoDiscover finds them): submissions, profile, tracks, fee, workflow. The
+  // other allow-list names are forward references that activate as those features
+  // migrate. `shared` zone is declared ahead of its files. coverage.requireAllFiles
+  // is intentionally left off until the last feature lands (un-migrated src/lib
+  // would drown it).
   "boundaries": {
     "zones": [
       { "name": "routes", "patterns": ["src/routes/**"] },
@@ -64,6 +65,10 @@
       {
         "from": "fee",
         "allow": ["shared", "settings", "auth"]
+      },
+      {
+        "from": "workflow",
+        "allow": ["shared", "settings", "activity-log"]
       }
     ]
   }

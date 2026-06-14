@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import type { TransitionResult } from "@/features/workflow";
 import {
 	confirmConditionsMet,
 	deskAcceptSubmission,
@@ -8,8 +9,7 @@ import {
 	overrideDecision,
 	submitEditorDecision,
 	withdrawSubmission,
-} from "@/lib/server/workflow";
-import type { TransitionResult } from "@/lib/workflow";
+} from "@/features/workflow/server/workflow";
 import { prisma } from "@/shared/server/db.server";
 import {
 	adminMiddleware,

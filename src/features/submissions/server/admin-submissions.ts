@@ -3,6 +3,9 @@ import {
 	type SubmissionTodo,
 	statusChangeOptions,
 } from "@/features/submissions/labels";
+import type { SubmissionEvent } from "@/features/workflow";
+import { hasMinReviewers } from "@/features/workflow/guards";
+import { executeSubmissionTransition } from "@/features/workflow/server/workflow";
 import type {
 	EmailEventType,
 	SubmissionStatus,
@@ -12,9 +15,6 @@ import { activityDetail } from "@/lib/activity-log";
 import { logActivity, logActivityTx } from "@/lib/server/activity-log";
 import { assignReviewer } from "@/lib/server/assignments";
 import { getSubmissionTypeConfigs } from "@/lib/server/settings";
-import { executeSubmissionTransition } from "@/lib/server/workflow";
-import type { SubmissionEvent } from "@/lib/workflow";
-import { hasMinReviewers } from "@/lib/workflow/guards";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
 import { deleteFile } from "@/shared/server/storage";
@@ -274,7 +274,7 @@ export interface AdminSubmission {
 /**
  * Derive the next admin action ("TODO") for a submission.
  * Shares thresholds with the workflow state machine via `hasMinReviewers`
- * (see src/lib/workflow/guards.ts) so the two can't drift. `overdue` and
+ * (see src/features/workflow/guards.ts) so the two can't drift. `overdue` and
  * `payment` are intentionally outside the machine's domain and live only here.
  */
 export function computeSubmissionTodo(args: {
