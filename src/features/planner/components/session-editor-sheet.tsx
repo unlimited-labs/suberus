@@ -4,15 +4,18 @@ import { PresentationsSection } from "./session-editor/presentations-section";
 import { SessionEditorProvider } from "./session-editor/session-editor-context";
 import { SessionEditorFooter } from "./session-editor/session-editor-footer";
 import { SessionEditorHeader } from "./session-editor/session-editor-header";
+import type { ChairCandidate } from "./types";
 
 interface SessionEditorSheetProps {
 	sessionId: string | null;
 	onClose: () => void;
+	users: ChairCandidate[];
 }
 
 export function SessionEditorSheet({
 	sessionId,
 	onClose,
+	users,
 }: SessionEditorSheetProps) {
 	return (
 		<Sheet
@@ -31,6 +34,7 @@ export function SessionEditorSheet({
 					<SessionEditorProvider
 						sessionId={sessionId}
 						onClose={onClose}
+						users={users}
 						fallback={
 							<div className="flex flex-1 items-center justify-center p-8">
 								<p className="text-sm text-muted-foreground">

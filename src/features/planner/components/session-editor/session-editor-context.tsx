@@ -1,4 +1,4 @@
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import {
 	createContext,
 	type ReactNode,
@@ -10,11 +10,9 @@ import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
 import { allSessionsQueryOptions } from "@/features/planner/api/sessions";
 import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
 import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
-import { adminUsersQueryOptions } from "@/features/users/api/users";
-import type { AdminUser } from "@/features/users/server/users";
 import { formatDurationMin } from "@/shared/lib/tz-datetime";
 import { useEditableTitle } from "../hooks/use-editable-title";
-import type { PlannerSession } from "../types";
+import type { ChairCandidate, PlannerSession } from "../types";
 import { useSessionEditorMutations } from "./use-session-editor-mutations";
 
 type Mutations = ReturnType<typeof useSessionEditorMutations>;
@@ -25,7 +23,7 @@ interface SessionEditorContextValue {
 	tz: string | undefined;
 	rooms: Array<{ id: string; name: string; order: number }>;
 	tracks: NonNullable<PlannerSession["track"]>[];
-	users: AdminUser[] | undefined;
+	users: ChairCandidate[];
 	sortedPresentations: PlannerSession["presentations"];
 	sessionDurationMin: number;
 	usedMin: number;
@@ -43,6 +41,8 @@ interface ProviderProps {
 	onClose: () => void;
 	children: ReactNode;
 	fallback: ReactNode;
+	/** Chair candidates, fetched by the route (planner stays off the users slice). */
+	users: ChairCandidate[];
 }
 
 export function SessionEditorProvider({
@@ -50,12 +50,12 @@ export function SessionEditorProvider({
 	onClose,
 	children,
 	fallback,
+	users,
 }: ProviderProps) {
 	const { data: sessions } = useSuspenseQuery(allSessionsQueryOptions());
 	const { data: tracks } = useSuspenseQuery(allProgramTracksQueryOptions());
 	const { data: rooms } = useSuspenseQuery(allRoomsQueryOptions());
 	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
-	const { data: users } = useQuery(adminUsersQueryOptions());
 	const tz = settings.timezone || undefined;
 	const mutations = useSessionEditorMutations(sessionId);
 

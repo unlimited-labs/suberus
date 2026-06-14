@@ -1,5 +1,5 @@
 import { IconCalendar } from "@tabler/icons-react";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 import { allBreaksQueryOptions } from "@/features/planner/api/breaks";
@@ -37,6 +37,7 @@ import { PublishButton } from "@/features/planner/components/publish-button";
 import { SessionEditorSheet } from "@/features/planner/components/session-editor-sheet";
 import { UnscheduledSidebar } from "@/features/planner/components/unscheduled-sidebar";
 import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
+import { adminUsersQueryOptions } from "@/features/users/api/users";
 import { PageHeader } from "@/shared/components/layout/page-header";
 
 export const Route = createFileRoute("/_app/admin/_layout/program-planner/")({
@@ -68,6 +69,9 @@ function ProgramPlannerContent() {
 	const { data: sessions } = useSuspenseQuery(allSessionsQueryOptions());
 	const { data: breaks } = useSuspenseQuery(allBreaksQueryOptions());
 	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
+	// Chair candidates for the session editor (fetched here so planner stays off
+	// the users slice).
+	const { data: chairCandidates } = useQuery(adminUsersQueryOptions());
 
 	const {
 		selectedSessionId,
@@ -188,6 +192,7 @@ function ProgramPlannerContent() {
 			<SessionEditorSheet
 				sessionId={selectedSessionId}
 				onClose={clearSelection}
+				users={chairCandidates ?? []}
 			/>
 			<BreakEditorSheet breakId={selectedBreakId} onClose={clearSelection} />
 			{creationSubmissionIds && (
