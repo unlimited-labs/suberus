@@ -2,11 +2,11 @@ import nodemailer from "nodemailer";
 import { env } from "@/env.ts";
 import type { EmailEventType } from "@/generated/prisma/enums";
 import { logger } from "@/logger.ts";
-import { ensureServerComposition } from "@/shared/server/composition";
 import { prisma } from "@/shared/server/db.server";
 
-/** Resolves the configured email footer (or null). Injected by the settings
- * slice via the app-shell composition, so this transport imports no feature. */
+/** Resolves the configured email footer (or null). Injected at startup by the
+ * settings slice via the register-composition plugin, so this transport imports
+ * no feature. */
 type EmailFooterProvider = () => Promise<string | null>;
 let footerProvider: EmailFooterProvider | null = null;
 
@@ -14,9 +14,8 @@ export function setEmailFooterProvider(fn: EmailFooterProvider): void {
 	footerProvider = fn;
 }
 
-async function resolveEmailFooter(): Promise<string | null> {
-	await ensureServerComposition();
-	return footerProvider ? footerProvider() : null;
+function resolveEmailFooter(): Promise<string | null> {
+	return footerProvider ? footerProvider() : Promise.resolve(null);
 }
 
 function escapeHtml(str: string): string {
