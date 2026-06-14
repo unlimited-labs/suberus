@@ -5,7 +5,7 @@ import {
 	FieldDescription,
 	FieldError,
 	FieldLabel,
-} from "@/components/ui/field";
+} from "@/shared/ui/field";
 
 interface FormFieldProps {
 	label: string;

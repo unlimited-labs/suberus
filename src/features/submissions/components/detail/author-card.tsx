@@ -1,7 +1,7 @@
 import { IconStarFilled } from "@tabler/icons-react";
-import { Badge } from "@/components/ui/badge";
 import type { UserSubmissionAuthor } from "@/features/submissions/api/submissions";
 import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
 
 interface AuthorCardProps {
 	author: UserSubmissionAuthor;

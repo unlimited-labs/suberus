@@ -2,19 +2,19 @@ import { IconExternalLink, IconMenu2 } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { Button } from "@/components/ui/button";
+import { exhibitorSignupAvailableQueryOptions } from "@/server-fns/exhibitors";
+import { scheduleStateQueryOptions } from "@/server-fns/planner/schedule";
+import { useSession } from "@/shared/hooks/use-session";
+import { getNavigationForRole } from "@/shared/lib/navigation";
+import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
 import {
 	Sheet,
 	SheetContent,
 	SheetDescription,
 	SheetTitle,
 	SheetTrigger,
-} from "@/components/ui/sheet";
-import { exhibitorSignupAvailableQueryOptions } from "@/server-fns/exhibitors";
-import { scheduleStateQueryOptions } from "@/server-fns/planner/schedule";
-import { useSession } from "@/shared/hooks/use-session";
-import { getNavigationForRole } from "@/shared/lib/navigation";
-import { cn } from "@/shared/lib/utils";
+} from "@/shared/ui/sheet";
 import { BrandLogo } from "./brand-logo";
 import { UserMenu } from "./user-menu";
 

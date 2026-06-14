@@ -1,9 +1,9 @@
-import * as React from "react"
+import type * as React from "react"
 import { Dialog as DialogPrimitive } from "radix-ui"
 import { IconX } from "@tabler/icons-react"
 
 import { cn } from "@/shared/lib/utils"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/shared/ui/button"
 
 function Dialog({
   ...props

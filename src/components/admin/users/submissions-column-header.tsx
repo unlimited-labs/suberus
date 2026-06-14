@@ -8,22 +8,6 @@ import {
 } from "@tabler/icons-react";
 import type { Column, Table } from "@tanstack/react-table";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
 import { typeFilterOptions } from "@/features/submissions/labels";
 import {
 	submissionDraftFilterOptions,
@@ -31,6 +15,18 @@ import {
 } from "@/lib/labels/user";
 import type { AdminUser } from "@/lib/server/admin/users";
 import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Checkbox } from "@/shared/ui/checkbox";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
+import { Separator } from "@/shared/ui/separator";
 
 interface FilterSectionProps {
 	title: string;

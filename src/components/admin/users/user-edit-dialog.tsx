@@ -3,15 +3,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { BillingFieldsGroup } from "@/components/forms/composable/billing-fields-group";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import type { AdminUserEditFormData } from "@/features/profile/validations";
 import { adminUserEditSchema } from "@/features/profile/validations";
 import { titleOptions } from "@/lib/labels";
@@ -23,6 +14,15 @@ import {
 } from "@/server-fns/admin/users";
 import { checkEmailAvailableFn } from "@/server-fns/auth";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import { Button } from "@/shared/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/shared/ui/dialog";
 
 interface UserEditDialogProps {
 	user: AdminUser;

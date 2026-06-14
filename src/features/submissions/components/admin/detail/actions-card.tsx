@@ -8,15 +8,15 @@ import {
 	IconX,
 } from "@tabler/icons-react";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/shared/ui/dropdown-menu";
 
 import type { ActionAvailability, PrimaryAction } from "./availability";
 import type { SubmissionDialogKind } from "./detail-dialogs";

@@ -16,13 +16,6 @@ import { AffiliationSelect } from "@/components/forms/affiliation-select";
 import { SurveyQuestionField } from "@/components/forms/survey/survey-question-field";
 import { AuthCard } from "@/components/layout/auth-card";
 import { TosModal } from "@/components/tos-modal";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { COUNTRIES } from "@/components/ui/country-combobox";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useMultiStep } from "@/hooks/use-multi-step";
 import { signUp } from "@/lib/auth-client";
 import { detectCountry } from "@/lib/detect-country";
@@ -48,6 +41,13 @@ import {
 } from "@/server-fns/settings/survey";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { cn } from "@/shared/lib/utils";
+import { Alert, AlertDescription } from "@/shared/ui/alert";
+import { Button } from "@/shared/ui/button";
+import { Checkbox } from "@/shared/ui/checkbox";
+import { COUNTRIES } from "@/shared/ui/country-combobox";
+import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
+import { Input } from "@/shared/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
 
 const searchSchema = z.object({
 	token: z.string().optional(),

@@ -1,7 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { SurveyQuestionField } from "@/components/forms/survey/survey-question-field";
-import { Field, FieldError } from "@/components/ui/field";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
 import { surveyAnswerRequiredError } from "@/lib/validations/survey";
 import {
@@ -9,6 +8,7 @@ import {
 	userSurveyAnswersQueryOptions,
 } from "@/server-fns/settings/survey";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import { Field, FieldError } from "@/shared/ui/field";
 
 interface SurveyQuestion {
 	id: string;

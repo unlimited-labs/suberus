@@ -12,12 +12,6 @@ import {
 	IconUserPlus,
 	IconX,
 } from "@tabler/icons-react";
-import { Badge } from "@/components/ui/badge";
-import {
-	TimelineContent,
-	TimelineIndicator,
-	TimelineItem,
-} from "@/components/ui/timeline";
 import {
 	reviewDecisionColors,
 	statusLabels,
@@ -25,6 +19,12 @@ import {
 } from "@/features/submissions/labels";
 import { activityLabels } from "@/lib/labels/activity";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { Badge } from "@/shared/ui/badge";
+import {
+	TimelineContent,
+	TimelineIndicator,
+	TimelineItem,
+} from "@/shared/ui/timeline";
 export type ActivityHistoryEntry = {
 	activityType: string;
 	createdAt: Date;

@@ -1,7 +1,9 @@
 import { IconLoader2 } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { createInvitationFn } from "@/server-fns/admin/invitations";
+import { getErrorMessage } from "@/shared/lib/error-message";
+import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -9,18 +11,16 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@/shared/ui/dialog";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
-import { createInvitationFn } from "@/server-fns/admin/invitations";
-import { getErrorMessage } from "@/shared/lib/error-message";
+} from "@/shared/ui/select";
 
 interface InviteUserDialogProps {
 	open: boolean;

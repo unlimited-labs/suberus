@@ -7,19 +7,18 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { updateSubmissionTrackFn } from "@/features/submissions/api/admin-submissions";
+import { statusLabels, statusVariants } from "@/features/submissions/labels";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
-import { updateSubmissionTrackFn } from "@/features/submissions/api/admin-submissions";
-import { statusLabels, statusVariants } from "@/features/submissions/labels";
-import { useDateFormat } from "@/shared/hooks/use-date-format";
+} from "@/shared/ui/select";
 
 import type { EditorSubmission, EditorSubmissionData } from "./availability";
 

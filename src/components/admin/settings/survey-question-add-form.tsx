@@ -1,8 +1,8 @@
-import { FieldError } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import type { SurveyQuestionFormValues } from "@/lib/validations/survey";
+import { FieldError } from "@/shared/ui/field";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
+import { Switch } from "@/shared/ui/switch";
 import {
 	isSelectType,
 	OptionsEditor,

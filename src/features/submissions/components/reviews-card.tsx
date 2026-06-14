@@ -4,16 +4,16 @@ import {
 	IconPaperclip,
 	IconStarFilled,
 } from "@tabler/icons-react";
+import type { UserSubmissionReview } from "@/features/submissions/api/submissions";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { cn, formatFileSize } from "@/shared/lib/utils";
 import {
 	Accordion,
 	AccordionContent,
 	AccordionItem,
 	AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
-import type { UserSubmissionReview } from "@/features/submissions/api/submissions";
-import { useDateFormat } from "@/shared/hooks/use-date-format";
-import { cn, formatFileSize } from "@/shared/lib/utils";
+} from "@/shared/ui/accordion";
+import { Badge } from "@/shared/ui/badge";
 
 interface ReviewsCardProps {
 	reviews: UserSubmissionReview[];

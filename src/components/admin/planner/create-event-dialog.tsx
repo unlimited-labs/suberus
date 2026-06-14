@@ -3,7 +3,11 @@ import { IconClock, IconLayoutGrid } from "@tabler/icons-react";
 import { useStore } from "@tanstack/react-form";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { addMinutes } from "date-fns";
-import { Button } from "@/components/ui/button";
+import { tzLocalInputToUtc } from "@/lib/tz-datetime";
+import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
+import { allSessionsQueryOptions } from "@/server-fns/planner/sessions";
+import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
+import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -11,14 +15,10 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog";
-import { Field, FieldError } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { tzLocalInputToUtc } from "@/lib/tz-datetime";
-import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
-import { allSessionsQueryOptions } from "@/server-fns/planner/sessions";
-import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
+} from "@/shared/ui/dialog";
+import { Field, FieldError } from "@/shared/ui/field";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
 import { useCreateEventForm } from "./hooks/use-create-event-form";
 import { RoomSelect } from "./shared/room-select";
 import { TimeRangeSummary } from "./shared/time-range-summary";

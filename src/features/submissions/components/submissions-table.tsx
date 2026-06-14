@@ -1,12 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import type { UserSubmission } from "@/features/submissions/api/submissions";
 import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent } from "@/shared/ui/card";
 
 interface SubmissionsTableProps {
 	submissions: UserSubmission[];

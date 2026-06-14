@@ -9,10 +9,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import type { SurveyQuestionFormValues } from "@/lib/validations/survey";
 import {
 	activeSurveyQuestionsQueryOptions,
@@ -23,6 +19,10 @@ import {
 	updateSurveyQuestionFn,
 } from "@/server-fns/settings/survey";
 import { getErrorMessage } from "@/shared/lib/error-message";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Label } from "@/shared/ui/label";
+import { Switch } from "@/shared/ui/switch";
 import { SurveyQuestionAddForm } from "./survey-question-add-form";
 import { SurveyQuestionDeleteDialog } from "./survey-question-delete-dialog";
 import { SurveyQuestionDialog } from "./survey-question-dialog";

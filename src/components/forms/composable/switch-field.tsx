@@ -1,9 +1,8 @@
 import { useStore } from "@tanstack/react-form";
 import type * as React from "react";
-
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { Switch } from "@/components/ui/switch";
 import { useFieldContext } from "@/shared/hooks/form-context";
+import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
+import { Switch } from "@/shared/ui/switch";
 
 interface FormSwitchFieldProps {
 	label: string | React.ReactNode;

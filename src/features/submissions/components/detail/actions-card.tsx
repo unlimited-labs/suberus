@@ -3,13 +3,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import {
 	mySubmissionsQueryOptions,
 	submissionDetailQueryOptions,
 	submitDraftFn,
 } from "@/features/submissions/api/submissions";
 import type { SubmissionStatus } from "@/generated/prisma/enums";
+import { Button } from "@/shared/ui/button";
 import { WithdrawDialog } from "./withdraw-dialog";
 
 interface ActionsCardProps {

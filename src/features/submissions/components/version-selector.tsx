@@ -5,7 +5,7 @@ import {
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
+} from "@/shared/ui/select";
 
 interface VersionSelectorProps {
 	versions: Array<{ id: string; version: number }>;

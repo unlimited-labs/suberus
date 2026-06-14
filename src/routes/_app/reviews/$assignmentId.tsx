@@ -4,7 +4,6 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useRef } from "react";
 import { toast } from "sonner";
 import { ReviewForm } from "@/components/forms/review/review-form";
-import { Button } from "@/components/ui/button";
 import type { ReviewFormData } from "@/lib/validations/review";
 import {
 	assignmentForReviewQueryOptions,
@@ -15,6 +14,7 @@ import { myAssignmentsQueryOptions } from "@/server-fns/reviews/assignments";
 import { reviewGuidelinesQueryOptions } from "@/server-fns/settings";
 import { userDashboardQueryOptions } from "@/server-fns/user-dashboard";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { Button } from "@/shared/ui/button";
 
 export const Route = createFileRoute("/_app/reviews/$assignmentId")({
 	loader: async ({ params, context }) => {

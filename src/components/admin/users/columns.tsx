@@ -7,7 +7,6 @@ import {
 	type FilterOption,
 	facetedFilterFn,
 } from "@/components/admin/data-table";
-import { Badge } from "@/components/ui/badge";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
 import { formatSurveyAnswerValue, parseMultiSelect } from "@/lib/labels/survey";
 import {
@@ -19,6 +18,7 @@ import {
 import type { AdminUser } from "@/lib/server/admin/users";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
 import { SubmissionsColumnHeader } from "./submissions-column-header";
 
 export interface SurveyListColumn {

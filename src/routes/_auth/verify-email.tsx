@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { AuthCard } from "@/components/layout/auth-card";
-import { Button } from "@/components/ui/button";
 import { sendVerificationEmail } from "@/lib/auth-client";
+import { Button } from "@/shared/ui/button";
 
 const searchSchema = z.object({
 	email: z.string().optional(),

@@ -24,25 +24,6 @@ import {
 	useSuspenseQuery,
 } from "@tanstack/react-query";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import {
 	type AssignableUserRole,
@@ -61,6 +42,25 @@ import {
 	feeTypesQueryOptions,
 } from "@/server-fns/settings";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/shared/ui/dialog";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/shared/ui/select";
+import { Separator } from "@/shared/ui/separator";
 import { UserDeleteDialog } from "./user-delete-dialog";
 import { UserEditDialog } from "./user-edit-dialog";
 import { UserSubmissionsSection } from "./user-submissions-section";

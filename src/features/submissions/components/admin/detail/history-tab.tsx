@@ -1,7 +1,7 @@
 import { IconHistory } from "@tabler/icons-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Timeline } from "@/components/ui/timeline";
 import { ActivityHistoryEvent } from "@/features/submissions/components/admin/activity-history-event";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Timeline } from "@/shared/ui/timeline";
 
 import type { EditorActivity } from "./availability";
 

@@ -1,12 +1,12 @@
 import { FormField } from "@/components/forms/composable/form-field";
+import { useFieldError } from "@/shared/hooks/use-field-error";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
-import { useFieldError } from "@/shared/hooks/use-field-error";
+} from "@/shared/ui/select";
 
 interface SelectOption {
 	value: string;

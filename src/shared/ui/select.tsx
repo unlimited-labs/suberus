@@ -1,4 +1,4 @@
-import * as React from "react"
+import type * as React from "react"
 import { Select as SelectPrimitive } from "radix-ui"
 import { IconCheck, IconChevronDown, IconChevronUp, IconSelector } from "@tabler/icons-react"
 

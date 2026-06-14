@@ -1,10 +1,6 @@
 import { IconFilter } from "@tabler/icons-react";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
+import { Checkbox } from "@/shared/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 
 interface Room {
 	id: string;

@@ -3,14 +3,6 @@ import type { Table } from "@tanstack/react-table";
 import { useState } from "react";
 import { toast } from "sonner";
 import { BulkActionDialog } from "@/components/admin/data-table";
-import { Button } from "@/components/ui/button";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import {
 	bulkAssignReviewerFn,
 	bulkChangeStatusFn,
@@ -22,6 +14,14 @@ import type { AvailableTrack } from "@/features/submissions/types";
 import type { SubmissionStatus } from "@/generated/prisma/enums";
 import { reviewerUsersQueryOptions } from "@/server-fns/reviews/reviewers";
 import { getErrorMessage } from "@/shared/lib/error-message";
+import { Button } from "@/shared/ui/button";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/shared/ui/select";
 
 interface SubmissionBulkActionsProps {
 	table: Table<AdminSubmission>;

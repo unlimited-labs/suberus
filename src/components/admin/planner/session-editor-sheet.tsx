@@ -1,4 +1,4 @@
-import { Sheet, SheetContent, SheetDescription } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription } from "@/shared/ui/sheet";
 import { ChairsSection } from "./session-editor/chairs-section";
 import { PresentationsSection } from "./session-editor/presentations-section";
 import { SessionEditorProvider } from "./session-editor/session-editor-context";

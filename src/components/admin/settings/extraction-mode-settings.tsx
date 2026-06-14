@@ -1,10 +1,10 @@
 import { IconFileSearch } from "@tabler/icons-react";
 import { SettingsSection } from "@/components/settings/settings-section";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { formatDoclingStatus, formatLlmStatus } from "@/lib/format-llm-status";
 import type { AppSettingsMap } from "@/lib/settings/types";
 import { cn } from "@/shared/lib/utils";
+import { Label } from "@/shared/ui/label";
+import { Switch } from "@/shared/ui/switch";
 import { EngineToggle } from "./engine-toggle";
 
 interface ExtractionModeSettingsProps {

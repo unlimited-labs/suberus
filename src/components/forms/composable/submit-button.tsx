@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button";
 import { useFormContext } from "@/shared/hooks/form-context";
+import { Button } from "@/shared/ui/button";
 
 interface FormSubmitButtonProps {
 	label: string;

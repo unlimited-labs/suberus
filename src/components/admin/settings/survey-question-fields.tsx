@@ -1,15 +1,15 @@
 import { IconPlus, IconX } from "@tabler/icons-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import type { SurveyQuestionType } from "@/generated/prisma/enums";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
-import type { SurveyQuestionType } from "@/generated/prisma/enums";
+} from "@/shared/ui/select";
 
 export interface SurveyQuestion {
 	id: string;

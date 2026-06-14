@@ -1,13 +1,12 @@
 import { IconClock } from "@tabler/icons-react";
-
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	assignmentStatusLabels,
 	assignmentStatusVariants,
 } from "@/lib/labels/assignment";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 import { type EditorAssignment, isOverdue } from "./availability";
 

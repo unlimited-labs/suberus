@@ -9,7 +9,10 @@ import {
 } from "@tabler/icons-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { signOut } from "@/lib/auth-client";
+import { useTheme } from "@/shared/components/theme-provider";
+import { useSession } from "@/shared/hooks/use-session";
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -19,10 +22,7 @@ import {
 	DropdownMenuSubContent,
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { signOut } from "@/lib/auth-client";
-import { useTheme } from "@/shared/components/theme-provider";
-import { useSession } from "@/shared/hooks/use-session";
+} from "@/shared/ui/dropdown-menu";
 
 function getInitials(
 	firstName: string | null,

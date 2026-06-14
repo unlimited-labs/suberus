@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/shared/ui/alert";
+import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -8,7 +8,7 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/shared/ui/dialog";
 
 interface BulkActionDialogProps {
 	open: boolean;

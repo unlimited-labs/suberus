@@ -1,11 +1,7 @@
 import { IconAlertTriangle } from "@tabler/icons-react";
 import { areIntervalsOverlapping } from "date-fns";
 import { useMemo } from "react";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { usePlannerSelection } from "./planner-context";
 import type { PlannerSession } from "./types";
 

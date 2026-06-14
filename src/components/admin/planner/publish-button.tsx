@@ -9,21 +9,6 @@ import {
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
 	publishScheduleDraftFn,
 	publishScheduleFn,
@@ -32,6 +17,21 @@ import {
 	unpublishScheduleFn,
 } from "@/server-fns/planner/schedule";
 import { getErrorMessage } from "@/shared/lib/error-message";
+import { Button } from "@/shared/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/shared/ui/dialog";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/shared/ui/tooltip";
 import { useInvalidatePlannerQueries } from "./hooks/use-invalidate-planner-queries";
 import { usePlannerSelection } from "./planner-context";
 

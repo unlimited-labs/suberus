@@ -1,16 +1,12 @@
 import { IconFilter, IconFilterFilled } from "@tabler/icons-react";
 import type { Column } from "@tanstack/react-table";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Checkbox } from "@/shared/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
+import { Separator } from "@/shared/ui/separator";
 
 export interface FilterOption {
 	label: string;

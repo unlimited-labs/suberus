@@ -6,7 +6,6 @@ import {
 } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import {
 	mySubmissionsQueryOptions,
 	submissionDetailQueryOptions,
@@ -26,6 +25,7 @@ import {
 } from "@/server-fns/settings";
 import { extractionSettingsQueryOptions } from "@/server-fns/settings/extraction";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { Button } from "@/shared/ui/button";
 
 export const Route = createFileRoute("/_app/submissions/$id_/edit")({
 	loader: async ({ params, context }) => {

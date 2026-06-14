@@ -1,4 +1,5 @@
-import { Button } from "@/components/ui/button";
+import type { SurveyQuestionFormValues } from "@/lib/validations/survey";
+import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -6,10 +7,9 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog";
-import { FieldError } from "@/components/ui/field";
-import { Separator } from "@/components/ui/separator";
-import type { SurveyQuestionFormValues } from "@/lib/validations/survey";
+} from "@/shared/ui/dialog";
+import { FieldError } from "@/shared/ui/field";
+import { Separator } from "@/shared/ui/separator";
 import {
 	isSelectType,
 	OptionsEditor,

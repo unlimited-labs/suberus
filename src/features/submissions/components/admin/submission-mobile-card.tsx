@@ -1,6 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import {
 	statusLabels,
 	todoBadgeVariant,
@@ -10,6 +8,8 @@ import {
 } from "@/features/submissions/labels";
 import type { AdminSubmission } from "@/features/submissions/server/admin-submissions";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent } from "@/shared/ui/card";
 
 export function SubmissionMobileCard(submission: AdminSubmission) {
 	const { formatDate } = useDateFormat();

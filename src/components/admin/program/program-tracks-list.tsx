@@ -1,4 +1,6 @@
-import { Badge } from "@/components/ui/badge";
+import type { ProgramTrackWithStats } from "@/lib/server/planner/tracks";
+import { deleteProgramTrackFn } from "@/server-fns/planner/tracks";
+import { Badge } from "@/shared/ui/badge";
 import {
 	Table,
 	TableBody,
@@ -6,9 +8,7 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@/components/ui/table";
-import type { ProgramTrackWithStats } from "@/lib/server/planner/tracks";
-import { deleteProgramTrackFn } from "@/server-fns/planner/tracks";
+} from "@/shared/ui/table";
 import { RowActions } from "./row-actions";
 import { useConfirmDelete } from "./use-confirm-delete";
 

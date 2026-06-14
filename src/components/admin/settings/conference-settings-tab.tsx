@@ -11,19 +11,6 @@ import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { TimezoneCombobox } from "@/components/ui/timezone-combobox";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import type { ConferenceSettings } from "@/server-fns/settings";
 import {
@@ -32,6 +19,19 @@ import {
 } from "@/server-fns/settings";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { getDateFormats } from "@/shared/lib/format-date";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/shared/ui/select";
+import { Switch } from "@/shared/ui/switch";
+import { TimezoneCombobox } from "@/shared/ui/timezone-combobox";
 import { ExhibitorsSettingsSection } from "./exhibitors-settings-section";
 
 interface ConferenceSettingsTabProps {

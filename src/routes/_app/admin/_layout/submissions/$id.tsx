@@ -7,9 +7,6 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { editorSubmissionQueryOptions } from "@/features/submissions/api/admin-submissions";
 import {
 	ActionsCard,
@@ -26,6 +23,9 @@ import { useSubmissionTransitions } from "@/features/submissions/hooks/use-submi
 import { typeLabels } from "@/features/submissions/labels";
 import { activeTracksQueryOptions } from "@/features/tracks/api/tracks";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
 export const Route = createFileRoute("/_app/admin/_layout/submissions/$id")({
 	loader: async ({ params, context }) => {

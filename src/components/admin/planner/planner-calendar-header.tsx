@@ -2,14 +2,14 @@ import { useIlamyCalendarContext } from "@ilamy/calendar";
 import { IconCalendarStar, IconPlus, IconWand } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
+import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
+import { Button } from "@/shared/ui/button";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { conferenceSettingsQueryOptions } from "@/server-fns/settings";
+} from "@/shared/ui/tooltip";
 import { CalendarNavGroup } from "./header/calendar-nav-group";
 import { CalendarViewSwitcher } from "./header/calendar-view-switcher";
 import { usePlannerTools } from "./planner-tools-context";

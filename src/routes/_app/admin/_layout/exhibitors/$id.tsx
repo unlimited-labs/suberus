@@ -4,10 +4,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { DecideExhibitorDialog } from "@/components/admin/exhibitors/decide-exhibitor-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { statusLabels, statusVariants } from "@/features/submissions/labels";
 import { exhibitorStatusBadge } from "@/lib/labels/exhibitor";
 import {
@@ -18,6 +14,10 @@ import {
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { getErrorMessage } from "@/shared/lib/error-message";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Input } from "@/shared/ui/input";
 
 export const Route = createFileRoute("/_app/admin/_layout/exhibitors/$id")({
 	loader: async ({ params, context }) => {

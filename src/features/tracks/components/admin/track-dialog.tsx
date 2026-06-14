@@ -1,25 +1,6 @@
 import { IconLoader2 } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import {
 	createTrackFn,
 	updateTrackFn,
@@ -27,6 +8,25 @@ import {
 import type { TrackWithStats } from "@/features/tracks/server/admin-tracks";
 import type { ReviewerUser } from "@/lib/server/reviewers";
 import { getErrorMessage } from "@/shared/lib/error-message";
+import { Button } from "@/shared/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/shared/ui/dialog";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/shared/ui/select";
+import { Switch } from "@/shared/ui/switch";
 
 interface TrackDialogProps {
 	open: boolean;

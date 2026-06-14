@@ -1,7 +1,7 @@
 import { IconChevronDown, IconChevronUp, IconX } from "@tabler/icons-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
 import { useSessionEditor } from "./session-editor-context";
 
 export function PresentationsSection() {

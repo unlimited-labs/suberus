@@ -1,8 +1,8 @@
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ExhibitorStatus } from "@/generated/prisma/enums";
 import { exhibitorStatusBadge } from "@/lib/labels/exhibitor";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 interface ExhibitorStatusCardProps {
 	status: ExhibitorStatus;

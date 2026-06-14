@@ -1,4 +1,4 @@
-import * as React from "react"
+import type * as React from "react"
 import { Command as CommandPrimitive } from "cmdk"
 import { IconSearch, IconCheck } from "@tabler/icons-react"
 
@@ -9,11 +9,11 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/shared/ui/dialog"
 import {
   InputGroup,
   InputGroupAddon,
-} from "@/components/ui/input-group"
+} from "@/shared/ui/input-group"
 
 function Command({
   className,

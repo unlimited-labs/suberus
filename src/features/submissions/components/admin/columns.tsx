@@ -6,13 +6,6 @@ import {
 	DataTableColumnHeader,
 	facetedFilterFn,
 } from "@/components/admin/data-table";
-import { Badge } from "@/components/ui/badge";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
 	type SubmissionTodo,
 	statusFilterOptions,
@@ -30,6 +23,13 @@ import {
 } from "@/features/submissions/labels";
 import type { AdminSubmission } from "@/features/submissions/server/admin-submissions";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { Badge } from "@/shared/ui/badge";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/shared/ui/tooltip";
 
 function DateCell({ date }: { date: Date | string }) {
 	const { formatDate } = useDateFormat();

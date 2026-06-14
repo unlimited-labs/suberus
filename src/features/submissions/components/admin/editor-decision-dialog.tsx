@@ -7,9 +7,11 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { reviewDecisionColors } from "@/features/submissions/labels";
+import { submitEditorDecisionFn } from "@/server-fns/workflow";
+import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -17,12 +19,9 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { reviewDecisionColors } from "@/features/submissions/labels";
-import { submitEditorDecisionFn } from "@/server-fns/workflow";
-import { cn } from "@/shared/lib/utils";
+} from "@/shared/ui/dialog";
+import { Label } from "@/shared/ui/label";
+import { Textarea } from "@/shared/ui/textarea";
 
 interface EditorDecisionDialogProps {
 	submissionId: string;

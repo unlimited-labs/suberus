@@ -1,7 +1,7 @@
 import { IconWriting } from "@tabler/icons-react";
 import type { z } from "zod";
 
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
 
 import { FileUploadSection } from "./file-upload-section";
 import type { SubmissionFormApi } from "./hooks/use-submission-form";

@@ -9,7 +9,6 @@ import {
 	isAfter,
 } from "date-fns";
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import type {
 	PublicProgramBreak,
 	PublicProgramSession,
@@ -21,6 +20,7 @@ import {
 } from "@/server-fns/planner/schedule";
 import { getAppBrandingFn } from "@/server-fns/settings";
 import { cn } from "@/shared/lib/utils";
+import { Input } from "@/shared/ui/input";
 
 export const Route = createFileRoute("/program/")({
 	loader: async ({ context }) => {

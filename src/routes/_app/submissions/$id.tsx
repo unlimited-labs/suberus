@@ -9,15 +9,6 @@ import {
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { submissionDetailQueryOptions } from "@/features/submissions/api/submissions";
 import {
 	ActionsCard,
@@ -29,6 +20,15 @@ import {
 import { EditorDecisionCard } from "@/features/submissions/components/editor-decision-card";
 import { ReviewsCard } from "@/features/submissions/components/reviews-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/shared/ui/select";
 
 export const Route = createFileRoute("/_app/submissions/$id")({
 	loader: async ({ params, context }) => {

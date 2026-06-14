@@ -1,7 +1,7 @@
 import { IconEdit, IconMail, IconMailOff } from "@tabler/icons-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import type { EmailTemplateUI } from "./email-templates-tab";
 
 interface EmailTemplateCardProps {

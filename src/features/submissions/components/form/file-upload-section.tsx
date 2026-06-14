@@ -1,4 +1,4 @@
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldLabel } from "@/shared/ui/field";
 import { FileDropzone } from "./file-dropzone";
 
 interface FileUploadSectionProps {

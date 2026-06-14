@@ -1,14 +1,14 @@
 import { IconDotsVertical, IconEdit, IconEye } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef, Row } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/shared/ui/button";
+import { Checkbox } from "@/shared/ui/checkbox";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/shared/ui/dropdown-menu";
 
 export function createSelectColumn<T>(): ColumnDef<T> {
 	return {

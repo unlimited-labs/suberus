@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { formatSurveyAnswerValue } from "@/lib/labels/survey";
 import { formatSubmissionRole, roleLabels } from "@/lib/labels/user";
 import type { AdminUser } from "@/lib/server/admin/users";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent } from "@/shared/ui/card";
 import type { SurveyListColumn } from "./columns";
 
 export function UserMobileCard({

@@ -1,7 +1,6 @@
 import type * as React from "react";
-
-import { Input } from "@/components/ui/input";
 import { cn } from "@/shared/lib/utils";
+import { Input } from "@/shared/ui/input";
 
 interface IconInputProps extends React.ComponentProps<typeof Input> {
 	icon: React.ReactNode;

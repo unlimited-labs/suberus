@@ -5,15 +5,15 @@ import {
 	IconSelector,
 } from "@tabler/icons-react";
 import type { Column } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/shared/lib/utils";
+} from "@/shared/ui/dropdown-menu";
 import {
 	DataTableColumnFilter,
 	type FilterOption,

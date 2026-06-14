@@ -3,16 +3,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import {
 	type ReminderSettings,
 	reminderSettingsQueryOptions,
 	updateReminderSettingsFn,
 } from "@/server-fns/settings";
 import { getErrorMessage } from "@/shared/lib/error-message";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
+import { Switch } from "@/shared/ui/switch";
 
 interface RemindersSettingsTabProps {
 	initialData: ReminderSettings;

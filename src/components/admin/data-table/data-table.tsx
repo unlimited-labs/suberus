@@ -15,6 +15,8 @@ import {
 } from "@tanstack/react-table";
 import { useState } from "react";
 import { z } from "zod";
+import { useTablePagination } from "@/hooks/use-table-pagination";
+import { usePersistedState } from "@/shared/hooks/use-persisted-state";
 import {
 	Table,
 	TableBody,
@@ -22,9 +24,7 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@/components/ui/table";
-import { useTablePagination } from "@/hooks/use-table-pagination";
-import { usePersistedState } from "@/shared/hooks/use-persisted-state";
+} from "@/shared/ui/table";
 import { DataTablePagination } from "./data-table-pagination";
 
 const columnVisibilitySchema = z.record(

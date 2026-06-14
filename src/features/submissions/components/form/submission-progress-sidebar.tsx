@@ -3,9 +3,8 @@ import {
 	IconCircleCheck,
 	IconInfoCircle,
 } from "@tabler/icons-react";
-
-import { Markdown } from "@/components/ui/markdown";
 import { cn } from "@/shared/lib/utils";
+import { Markdown } from "@/shared/ui/markdown";
 import type { ValidationSettings } from "./submission-form-types";
 import type { SubmissionProgress } from "./submission-progress";
 

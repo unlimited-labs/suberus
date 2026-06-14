@@ -1,18 +1,6 @@
 import { IconCheck, IconLoader2 } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import type { ProgramTrackWithStats } from "@/lib/server/planner/tracks";
 import {
 	createProgramTrackFn,
@@ -20,6 +8,18 @@ import {
 } from "@/server-fns/planner/tracks";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/shared/ui/dialog";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
 
 const SERIES_RE = /^(.+?)\s+(\d+)$/;
 

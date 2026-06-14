@@ -6,13 +6,13 @@ import {
 } from "@tabler/icons-react";
 import type { PaginationState, Table } from "@tanstack/react-table";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
-} from "@/components/ui/select";
+} from "@/shared/ui/select";
 
 interface DataTablePaginationProps<TData> {
 	table: Table<TData>;

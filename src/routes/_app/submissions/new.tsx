@@ -12,8 +12,6 @@ import {
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import {
 	createSubmission,
 	mySubmissionsQueryOptions,
@@ -35,6 +33,8 @@ import { extractionSettingsQueryOptions } from "@/server-fns/settings/extraction
 import { userDashboardQueryOptions } from "@/server-fns/user-dashboard";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useSession } from "@/shared/hooks/use-session";
+import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { Button } from "@/shared/ui/button";
 
 export const Route = createFileRoute("/_app/submissions/new")({
 	loader: async ({ context }) => {

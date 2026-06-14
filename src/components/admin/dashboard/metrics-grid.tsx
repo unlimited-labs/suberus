@@ -4,8 +4,8 @@ import {
 	IconMessageCircle,
 	IconUsers,
 } from "@tabler/icons-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { MetricSparkline } from "./metric-sparkline";
 
 interface MetricsGridProps {

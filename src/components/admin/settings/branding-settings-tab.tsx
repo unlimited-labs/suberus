@@ -11,12 +11,6 @@ import { useRouter } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	type BrandingSettings,
 	brandingSettingsQueryOptions,
@@ -25,6 +19,12 @@ import {
 	uploadAuthBackgroundFn,
 } from "@/server-fns/settings";
 import { getErrorMessage } from "@/shared/lib/error-message";
+import { Button } from "@/shared/ui/button";
+import { Checkbox } from "@/shared/ui/checkbox";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
+import { Slider } from "@/shared/ui/slider";
+import { Textarea } from "@/shared/ui/textarea";
 
 interface BrandingSettingsTabProps {
 	initialData: BrandingSettings;

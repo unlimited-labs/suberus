@@ -7,9 +7,6 @@ import {
 	IconUsers,
 	IconWriting,
 } from "@tabler/icons-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type {
 	UserSubmissionAuthor,
 	UserSubmissionFile,
@@ -17,6 +14,9 @@ import type {
 } from "@/features/submissions/api/submissions";
 import { SubmissionTimeline } from "@/features/submissions/components/submission-timeline";
 import { formatFileSize } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
 interface ContentTabsProps {
 	title: string;

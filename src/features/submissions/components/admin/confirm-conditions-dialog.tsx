@@ -1,6 +1,6 @@
 import { IconAlertTriangle, IconFileCheck } from "@tabler/icons-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -8,8 +8,8 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/shared/ui/dialog";
+import { Textarea } from "@/shared/ui/textarea";
 
 interface ConfirmConditionsDialogProps {
 	open: boolean;

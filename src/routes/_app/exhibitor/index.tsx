@@ -4,7 +4,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { ExhibitorApplicationForm } from "@/components/exhibitor/exhibitor-application-form";
 import { ExhibitorStatusCard } from "@/components/exhibitor/exhibitor-status-card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { exhibitorRouteMiddleware } from "@/lib/server/middleware/auth";
 import {
 	exhibitorPanelConfigQueryOptions,
@@ -12,6 +11,7 @@ import {
 } from "@/server-fns/exhibitors";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useSession } from "@/shared/hooks/use-session";
+import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 
 export const Route = createFileRoute("/_app/exhibitor/")({
 	server: {

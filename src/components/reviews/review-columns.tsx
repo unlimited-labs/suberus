@@ -10,8 +10,6 @@ import {
 	DataTableColumnHeader,
 	facetedFilterFn,
 } from "@/components/admin/data-table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { typeFilterOptions, typeLabels } from "@/features/submissions/labels";
 import type { AssignmentStatus } from "@/generated/prisma/enums";
 import {
@@ -21,6 +19,8 @@ import {
 } from "@/lib/labels/assignment";
 import type { ReviewerAssignment } from "@/server-fns/reviews/assignments";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 
 function DeadlineCell({
 	deadline,

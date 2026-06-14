@@ -1,6 +1,6 @@
 import { IconPlus, IconUser, IconX } from "@tabler/icons-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import {
 	Command,
 	CommandEmpty,
@@ -8,13 +8,9 @@ import {
 	CommandInput,
 	CommandItem,
 	CommandList,
-} from "@/components/ui/command";
-import { Label } from "@/components/ui/label";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@/shared/ui/command";
+import { Label } from "@/shared/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { useSessionEditor } from "./session-editor-context";
 
 type Chair = {

@@ -1,13 +1,9 @@
 import { IconFilter, IconFilterFilled, IconX } from "@tabler/icons-react";
 import type { Column } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
 import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 
 interface DataTableTextFilterProps<TData, TValue> {
 	column: Column<TData, TValue>;

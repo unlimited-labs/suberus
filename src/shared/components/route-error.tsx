@@ -1,6 +1,6 @@
 import { IconAlertTriangle } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 
 export function RouteError() {
 	const router = useRouter();

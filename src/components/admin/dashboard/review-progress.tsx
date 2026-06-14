@@ -1,8 +1,8 @@
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
+import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Progress } from "@/shared/ui/progress";
 
 interface ReviewProgressProps {
 	data: AdminDashboardMetrics["reviews"] | undefined;

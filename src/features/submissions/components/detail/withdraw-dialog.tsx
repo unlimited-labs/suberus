@@ -3,9 +3,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import {
+	mySubmissionsQueryOptions,
+	submissionDetailQueryOptions,
+} from "@/features/submissions/api/submissions";
+import { withdrawSubmissionFn } from "@/server-fns/workflow";
+import { Alert, AlertDescription } from "@/shared/ui/alert";
+import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -13,14 +17,9 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-	mySubmissionsQueryOptions,
-	submissionDetailQueryOptions,
-} from "@/features/submissions/api/submissions";
-import { withdrawSubmissionFn } from "@/server-fns/workflow";
+} from "@/shared/ui/dialog";
+import { Label } from "@/shared/ui/label";
+import { Textarea } from "@/shared/ui/textarea";
 
 interface WithdrawDialogProps {
 	submissionId: string;

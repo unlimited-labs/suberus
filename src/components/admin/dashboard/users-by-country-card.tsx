@@ -3,19 +3,19 @@ import { countries } from "countries-list";
 import * as Flags from "country-flag-icons/react/3x2";
 import MapLibreGL from "maplibre-gl";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { COUNTRY_CENTROIDS } from "@/lib/country-centroids";
+import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
+import { useTheme } from "@/shared/components/theme-provider";
 import {
 	Card,
 	CardAction,
 	CardContent,
 	CardHeader,
 	CardTitle,
-} from "@/components/ui/card";
-import { MapControls, Map as MapView, useMap } from "@/components/ui/map";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { COUNTRY_CENTROIDS } from "@/lib/country-centroids";
-import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
-import { useTheme } from "@/shared/components/theme-provider";
+} from "@/shared/ui/card";
+import { MapControls, Map as MapView, useMap } from "@/shared/ui/map";
+import { Skeleton } from "@/shared/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
 interface UsersByCountryCardProps {
 	data: AdminDashboardMetrics["usersByCountry"] | undefined;

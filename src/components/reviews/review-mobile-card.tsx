@@ -5,9 +5,6 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { differenceInCalendarDays } from "date-fns";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { typeLabels } from "@/features/submissions/labels";
 import {
 	assignmentStatusLabels,
@@ -15,6 +12,9 @@ import {
 } from "@/lib/labels/assignment";
 import type { ReviewerAssignment } from "@/server-fns/reviews/assignments";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent } from "@/shared/ui/card";
 
 export function ReviewMobileCard(assignment: ReviewerAssignment) {
 	const { formatDate } = useDateFormat();

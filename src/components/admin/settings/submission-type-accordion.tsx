@@ -2,25 +2,6 @@ import { IconLoader2, IconPlus, IconTrash } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-
-import {
-	AccordionContent,
-	AccordionItem,
-	AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import {
 	SUPPORTED_FILE_EXTENSIONS,
 	type SupportedFileExtension,
@@ -36,6 +17,24 @@ import {
 	updateSubmissionTypeConfigFn,
 } from "@/server-fns/settings";
 import { getErrorMessage } from "@/shared/lib/error-message";
+import {
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@/shared/ui/accordion";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Checkbox } from "@/shared/ui/checkbox";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/shared/ui/select";
+import { Switch } from "@/shared/ui/switch";
 
 const reviewModeLabels = {
 	OPEN: "Open",

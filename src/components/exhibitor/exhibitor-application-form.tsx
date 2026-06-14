@@ -11,24 +11,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
-import { Field, FieldError } from "@/components/ui/field";
 import {
 	type Author,
 	AuthorsInput,
@@ -41,6 +23,24 @@ import {
 	withdrawMyExhibitorFn,
 } from "@/server-fns/exhibitors";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import { Alert, AlertDescription } from "@/shared/ui/alert";
+import { Button } from "@/shared/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/shared/ui/card";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/shared/ui/dialog";
+import { Field, FieldError } from "@/shared/ui/field";
 
 type MyExhibitor = NonNullable<Awaited<ReturnType<typeof getMyExhibitorFn>>>;
 

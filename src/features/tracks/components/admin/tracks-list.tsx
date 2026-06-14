@@ -1,9 +1,15 @@
 import { IconEdit, IconLoader2, IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import {
+	deleteTrackFn,
+	updateTrackFn,
+} from "@/features/tracks/api/admin-tracks";
+import type { TrackWithStats } from "@/features/tracks/server/admin-tracks";
+import { getErrorMessage } from "@/shared/lib/error-message";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Switch } from "@/shared/ui/switch";
 import {
 	Table,
 	TableBody,
@@ -11,13 +17,7 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@/components/ui/table";
-import {
-	deleteTrackFn,
-	updateTrackFn,
-} from "@/features/tracks/api/admin-tracks";
-import type { TrackWithStats } from "@/features/tracks/server/admin-tracks";
-import { getErrorMessage } from "@/shared/lib/error-message";
+} from "@/shared/ui/table";
 
 interface TracksListProps {
 	tracks: TrackWithStats[];

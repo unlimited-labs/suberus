@@ -2,8 +2,13 @@ import { IconAlertTriangle } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-
-import { Button } from "@/components/ui/button";
+import type { AdminUser } from "@/lib/server/admin/users";
+import {
+	adminUsersQueryOptions,
+	checkAdminUserDeletable,
+	deleteAdminUser,
+} from "@/server-fns/admin/users";
+import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -11,13 +16,7 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog";
-import type { AdminUser } from "@/lib/server/admin/users";
-import {
-	adminUsersQueryOptions,
-	checkAdminUserDeletable,
-	deleteAdminUser,
-} from "@/server-fns/admin/users";
+} from "@/shared/ui/dialog";
 
 interface UserDeleteDialogProps {
 	user: AdminUser;

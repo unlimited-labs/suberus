@@ -26,10 +26,10 @@ import {
 } from "@tabler/icons-react";
 import { useCallback, useState } from "react";
 import { AffiliationSelect } from "@/components/forms/affiliation-select";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
 
 export interface Author {
 	firstName: string;

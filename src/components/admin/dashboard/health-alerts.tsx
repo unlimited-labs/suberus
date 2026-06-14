@@ -4,10 +4,10 @@ import {
 	IconInfoCircle,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { pluralize } from "@/lib/format-llm-status";
 import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
+import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { Button } from "@/shared/ui/button";
 
 interface HealthAlertsProps {
 	data: AdminDashboardMetrics["health"] | undefined;

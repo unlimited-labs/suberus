@@ -2,8 +2,13 @@ import { IconAlertTriangle } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-
-import { Button } from "@/components/ui/button";
+import {
+	adminSubmissionsQueryOptions,
+	checkSubmissionDeletableFn,
+	deleteSubmissionFn,
+	editorSubmissionQueryOptions,
+} from "@/features/submissions/api/admin-submissions";
+import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -11,13 +16,7 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog";
-import {
-	adminSubmissionsQueryOptions,
-	checkSubmissionDeletableFn,
-	deleteSubmissionFn,
-	editorSubmissionQueryOptions,
-} from "@/features/submissions/api/admin-submissions";
+} from "@/shared/ui/dialog";
 
 interface SubmissionDeleteDialogProps {
 	submissionId: string;

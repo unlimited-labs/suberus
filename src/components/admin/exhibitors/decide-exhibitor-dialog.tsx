@@ -5,9 +5,10 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
-
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { decideExhibitorFn } from "@/server-fns/exhibitors";
+import { getErrorMessage } from "@/shared/lib/error-message";
+import { Alert, AlertDescription } from "@/shared/ui/alert";
+import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -15,11 +16,9 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { decideExhibitorFn } from "@/server-fns/exhibitors";
-import { getErrorMessage } from "@/shared/lib/error-message";
+} from "@/shared/ui/dialog";
+import { Label } from "@/shared/ui/label";
+import { Textarea } from "@/shared/ui/textarea";
 
 const copy = {
 	APPROVED: {

@@ -5,16 +5,16 @@ import {
 	IconTags,
 	IconUsers,
 } from "@tabler/icons-react";
-import { Button } from "@/components/ui/button";
-import { Field, FieldError } from "@/components/ui/field";
+import type { AvailableTrack } from "@/features/submissions/types";
+import { Button } from "@/shared/ui/button";
+import { Field, FieldError } from "@/shared/ui/field";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
-import type { AvailableTrack } from "@/features/submissions/types";
+} from "@/shared/ui/select";
 
 import { AuthorsInput } from "./authors-input";
 import { ExtractionOverlay } from "./extraction-overlay";

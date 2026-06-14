@@ -8,11 +8,11 @@ import {
 	type FilterOption,
 	facetedFilterFn,
 } from "@/components/admin/data-table";
-import { Badge } from "@/components/ui/badge";
 import { exhibitorStatusBadge } from "@/lib/labels/exhibitor";
 import type { listExhibitorsFn } from "@/server-fns/exhibitors";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
 import { ExhibitorMobileCard } from "./exhibitor-mobile-card";
 
 export type AdminExhibitorRow = Awaited<

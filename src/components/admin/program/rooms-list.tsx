@@ -4,8 +4,10 @@ import {
 	IconExternalLink,
 } from "@tabler/icons-react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import type { RoomWithStats } from "@/lib/server/planner/rooms";
+import { deleteRoomFn, updateRoomFn } from "@/server-fns/planner/rooms";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import {
 	Table,
 	TableBody,
@@ -13,9 +15,7 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@/components/ui/table";
-import type { RoomWithStats } from "@/lib/server/planner/rooms";
-import { deleteRoomFn, updateRoomFn } from "@/server-fns/planner/rooms";
+} from "@/shared/ui/table";
 import { RowActions } from "./row-actions";
 import { useConfirmDelete } from "./use-confirm-delete";
 

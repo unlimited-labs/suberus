@@ -10,14 +10,14 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { activityLabels } from "@/lib/labels/activity";
 import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
 import { getMoreActivity } from "@/server-fns/admin/dashboard";
 import { formatRelativeTime } from "@/shared/lib/format-date";
 import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 type ActivityEvent = AdminDashboardMetrics["recentActivity"][number];
 

@@ -1,5 +1,5 @@
 import { IconEdit, IconLoader2, IconTrash } from "@tabler/icons-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 
 interface RowActionsProps {
 	isBusy: boolean;

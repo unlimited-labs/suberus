@@ -4,15 +4,15 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { SettingsSection } from "@/components/settings/settings-section";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import type { EmailEventType } from "@/generated/prisma/enums";
 import {
 	emailFooterQueryOptions,
 	updateEmailFooterFn,
 } from "@/server-fns/settings";
 import { getErrorMessage } from "@/shared/lib/error-message";
+import { Button } from "@/shared/ui/button";
+import { Label } from "@/shared/ui/label";
+import { Textarea } from "@/shared/ui/textarea";
 import { EmailTemplateCard } from "./email-template-card";
 import { EmailTemplateDialog } from "./email-template-dialog";
 

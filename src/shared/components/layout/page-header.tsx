@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from "react";
-import { Separator } from "@/components/ui/separator";
+import { Separator } from "@/shared/ui/separator";
 
 interface PageHeaderProps {
 	icon?: ComponentType<{ className?: string }>;

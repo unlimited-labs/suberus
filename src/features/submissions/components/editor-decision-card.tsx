@@ -1,13 +1,13 @@
+import type { UserSubmissionDecision } from "@/features/submissions/api/submissions";
+import type { EditorDecisionType } from "@/generated/prisma/enums";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 import {
 	Accordion,
 	AccordionContent,
 	AccordionItem,
 	AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
-import type { UserSubmissionDecision } from "@/features/submissions/api/submissions";
-import type { EditorDecisionType } from "@/generated/prisma/enums";
-import { useDateFormat } from "@/shared/hooks/use-date-format";
+} from "@/shared/ui/accordion";
+import { Badge } from "@/shared/ui/badge";
 
 interface EditorDecisionCardProps {
 	decision: UserSubmissionDecision;

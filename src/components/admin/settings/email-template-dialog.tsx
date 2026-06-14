@@ -2,8 +2,14 @@ import { IconLoader2, IconSend } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import {
+	emailTemplatesQueryOptions,
+	sendTestEmailFn,
+	updateEmailTemplateFn,
+} from "@/server-fns/settings/email-templates";
+import { getErrorMessage } from "@/shared/lib/error-message";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -11,22 +17,12 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-	emailTemplatesQueryOptions,
-	sendTestEmailFn,
-	updateEmailTemplateFn,
-} from "@/server-fns/settings/email-templates";
-import { getErrorMessage } from "@/shared/lib/error-message";
+} from "@/shared/ui/dialog";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
+import { Switch } from "@/shared/ui/switch";
+import { Textarea } from "@/shared/ui/textarea";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import type { EmailTemplateUI } from "./email-templates-tab";
 
 const PLACEHOLDER_DESCRIPTIONS: Record<string, string> = {

@@ -8,13 +8,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SettingsSection } from "@/components/settings/settings-section";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import { FILE_TYPE_OPTIONS } from "@/lib/settings/file-types";
 import type { AppSettingsMap } from "@/lib/settings/types";
 import {
@@ -32,6 +25,13 @@ import {
 	updateExtractionSettingsFn,
 } from "@/server-fns/settings/extraction";
 import { getErrorMessage } from "@/shared/lib/error-message";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Checkbox } from "@/shared/ui/checkbox";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
+import { Switch } from "@/shared/ui/switch";
+import { Textarea } from "@/shared/ui/textarea";
 import { ExtractionModeSettings } from "./extraction-mode-settings";
 
 interface SubmissionSettingsTabProps {

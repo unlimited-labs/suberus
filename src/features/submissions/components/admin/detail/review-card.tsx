@@ -1,9 +1,8 @@
 import { IconDownload } from "@tabler/icons-react";
-
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { reviewDecisionColors } from "@/features/submissions/labels";
 import { formatFileSize } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 import type { EditorReview } from "./availability";
 

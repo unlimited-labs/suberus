@@ -1,12 +1,8 @@
 import { IconCut, IconRepeat, IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
-import { SheetFooter } from "@/components/ui/sheet";
+import { Button } from "@/shared/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
+import { SheetFooter } from "@/shared/ui/sheet";
 import { useSessionEditor } from "./session-editor-context";
 
 export function SessionEditorFooter() {

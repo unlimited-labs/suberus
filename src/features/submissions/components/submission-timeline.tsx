@@ -1,6 +1,6 @@
 import { compareAsc } from "date-fns";
-import { Timeline } from "@/components/ui/timeline";
 import type { UserSubmissionStatusHistory } from "@/features/submissions/api/submissions";
+import { Timeline } from "@/shared/ui/timeline";
 import { TimelineEvent } from "./timeline-event";
 
 interface SubmissionTimelineProps {

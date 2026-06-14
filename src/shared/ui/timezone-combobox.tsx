@@ -1,6 +1,6 @@
 import { IconCheck, IconClock, IconSelector } from "@tabler/icons-react";
 import { Fragment, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import {
 	Command,
 	CommandEmpty,
@@ -9,12 +9,12 @@ import {
 	CommandItem,
 	CommandList,
 	CommandSeparator,
-} from "@/components/ui/command";
+} from "@/shared/ui/command";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@/shared/ui/popover";
 import { cn } from "@/shared/lib/utils";
 
 const TIMEZONES_BY_REGION: Array<{ region: string; zones: string[] }> = (() => {

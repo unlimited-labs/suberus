@@ -1,5 +1,5 @@
 import { IconSearch, IconX } from "@tabler/icons-react";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/shared/ui/input";
 
 interface Props {
 	value: string;

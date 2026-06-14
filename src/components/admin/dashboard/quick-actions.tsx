@@ -6,8 +6,8 @@ import {
 	IconUsers,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 export function QuickActions() {
 	return (

@@ -2,7 +2,7 @@ import { IconColumns3 } from "@tabler/icons-react";
 import type { Table } from "@tanstack/react-table";
 import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
@@ -10,7 +10,7 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/shared/ui/dropdown-menu";
 
 interface DataTableViewOptionsProps<TData> {
 	table: Table<TData>;

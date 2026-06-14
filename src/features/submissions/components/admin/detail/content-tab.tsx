@@ -6,10 +6,10 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VersionSelector } from "@/features/submissions/components/version-selector";
 import { cn, formatFileSize } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 import {
 	type EditorAuthor,

@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { exhibitorStatusBadge } from "@/lib/labels/exhibitor";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent } from "@/shared/ui/card";
 import type { AdminExhibitorRow } from "./exhibitors-table";
 
 export function ExhibitorMobileCard({

@@ -1,14 +1,14 @@
 import { IconGavel } from "@tabler/icons-react";
 import { useState } from "react";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/shared/ui/card";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
+} from "@/shared/ui/select";
 
 import {
 	type EditorReview,

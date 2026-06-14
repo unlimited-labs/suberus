@@ -1,14 +1,14 @@
 import type { Table } from "@tanstack/react-table";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
+} from "@/shared/ui/select";
 
 export interface BulkAction<TData> {
 	value: string;

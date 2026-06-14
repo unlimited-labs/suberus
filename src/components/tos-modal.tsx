@@ -5,8 +5,8 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog";
-import { Markdown } from "@/components/ui/markdown";
+} from "@/shared/ui/dialog";
+import { Markdown } from "@/shared/ui/markdown";
 
 interface TosModalProps {
 	open: boolean;

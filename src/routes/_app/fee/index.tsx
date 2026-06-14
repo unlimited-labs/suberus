@@ -2,15 +2,15 @@ import { IconCash, IconCheck, IconInfoCircle } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { SettingsSection } from "@/components/settings/settings-section";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Markdown } from "@/components/ui/markdown";
 import {
 	paymentInstructionsQueryOptions,
 	userFeeQueryOptions,
 } from "@/features/fee/api/fee";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { Badge } from "@/shared/ui/badge";
+import { Markdown } from "@/shared/ui/markdown";
 
 export const Route = createFileRoute("/_app/fee/")({
 	loader: async ({ context }) => {
