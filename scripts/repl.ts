@@ -17,7 +17,7 @@ const MODULE_REGISTRY: Record<string, string> = {
 	"admin-users": "@/features/users/server/users",
 	email: "@/shared/server/email",
 	reminders: "@/lib/server/reminders",
-	dashboard: "@/lib/server/admin/dashboard",
+	dashboard: "@/features/dashboard/server/admin-dashboard",
 	tracks: "@/features/tracks/server/tracks",
 	"admin-tracks": "@/features/tracks/server/admin-tracks",
 	fees: "@/features/fee/server/fee",

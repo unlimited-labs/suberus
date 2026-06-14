@@ -12,6 +12,7 @@ import {
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { userDashboardQueryOptions } from "@/features/dashboard/api/user-dashboard";
 import { extractionSettingsQueryOptions } from "@/features/extraction/api/extraction";
 import {
 	activeSubmissionTypesQueryOptions,
@@ -29,7 +30,6 @@ import {
 } from "@/features/submissions/components/form/submission-form";
 import { activeTracksQueryOptions } from "@/features/tracks/api/tracks";
 import { extractZodIssueMessage, logClientError } from "@/lib/log-client-error";
-import { userDashboardQueryOptions } from "@/server-fns/user-dashboard";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useSession } from "@/shared/hooks/use-session";
 import { sendVerificationEmail } from "@/shared/lib/auth-client";

@@ -11,8 +11,8 @@ import {
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { activityLabels } from "@/features/activity-log/labels";
-import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
-import { getMoreActivity } from "@/server-fns/admin/dashboard";
+import { getMoreActivity } from "@/features/dashboard/api/admin-dashboard";
+import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
 import { formatRelativeTime } from "@/shared/lib/format-date";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";

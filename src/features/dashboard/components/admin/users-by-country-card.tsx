@@ -3,8 +3,8 @@ import { countries } from "countries-list";
 import * as Flags from "country-flag-icons/react/3x2";
 import MapLibreGL from "maplibre-gl";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
 import { COUNTRY_CENTROIDS } from "@/lib/country-centroids";
-import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
 import { useTheme } from "@/shared/components/theme-provider";
 import {
 	Card,

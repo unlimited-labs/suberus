@@ -8,7 +8,7 @@ import {
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { userDashboardQueryOptions } from "@/server-fns/user-dashboard";
+import { userDashboardQueryOptions } from "@/features/dashboard/api/user-dashboard";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useSession } from "@/shared/hooks/use-session";
 import { redirectExhibitorRouteMiddleware } from "@/shared/server/middleware/auth";

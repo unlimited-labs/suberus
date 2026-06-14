@@ -3,6 +3,7 @@ import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useRef } from "react";
 import { toast } from "sonner";
+import { userDashboardQueryOptions } from "@/features/dashboard/api/user-dashboard";
 import {
 	assignmentForReviewQueryOptions,
 	submitReviewFn,
@@ -12,7 +13,6 @@ import { myAssignmentsQueryOptions } from "@/features/reviews/api/assignments";
 import { ReviewForm } from "@/features/reviews/components/review-form";
 import type { ReviewFormData } from "@/features/reviews/validations";
 import { reviewGuidelinesQueryOptions } from "@/features/settings/api/settings";
-import { userDashboardQueryOptions } from "@/server-fns/user-dashboard";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/ui/button";
 

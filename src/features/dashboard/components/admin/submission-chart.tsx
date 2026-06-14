@@ -1,5 +1,5 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
-import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
+import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 interface SubmissionChartProps {

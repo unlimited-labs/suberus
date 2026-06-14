@@ -4,7 +4,7 @@ import {
 	IconMessageCircle,
 	IconUsers,
 } from "@tabler/icons-react";
-import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
+import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { MetricSparkline } from "./metric-sparkline";
 

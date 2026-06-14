@@ -1,5 +1,5 @@
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
-import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
+import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
 import { Badge } from "@/shared/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Progress } from "@/shared/ui/progress";

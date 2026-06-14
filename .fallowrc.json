@@ -27,13 +27,15 @@
     // "error" once a feature is fully decoupled (see dev-docs/ARCHITECTURE.md).
     "boundary-violation": "warn"
   },
-  // Added incrementally, one feature-zone per migration PR. Migrated so far
-  // (autoDiscover finds them): submissions, profile, tracks, fee, workflow,
-  // activity-log, auth, settings, survey, email-templates, install, extraction, reviews, planner, exhibitors, users, invitations. The
-  // other allow-list names are forward references that activate as those features
-  // migrate. `shared` zone is declared ahead of its files. coverage.requireAllFiles
-  // is intentionally left off until the last feature lands (un-migrated src/lib
-  // would drown it).
+  // Added incrementally, one feature-zone per migration PR. ALL FEATURES NOW MIGRATED
+  // (autoDiscover finds them): submissions, profile, tracks, fee, workflow, activity-log,
+  // auth, settings, survey, email-templates, install, extraction, reviews, planner,
+  // exhibitors, users, invitations, dashboard. `shared` zone is declared ahead of its
+  // files. coverage.requireAllFiles still OFF — turn ON once the remaining un-migrated
+  // `src/lib/*` carry-over utils are placed (format-llm-status, country-centroids,
+  // health-cache, validate-upload, form-upload, job-progress, reminders, affiliations,
+  // zod-helpers, etc.). Before flipping boundary-violation warn->error: resolve the
+  // deferred edges below + the pg-boss worker-registration inversion.
   //
   // auth deferred edges (kept at warn until resolved): backwards core->app edges
   // auth -> submissions (linkCoAuthorsByEmail) and auth -> invitations
@@ -152,6 +154,12 @@
         // backwards core->app (lives in auth's allow comment, not here).
         "from": "invitations",
         "allow": ["shared", "activity-log", "settings"]
+      },
+      {
+        // APP feature (admin metrics/health + participant home metrics). Clean LEAF —
+        // aggregates via direct prisma queries, imports NO other app feature. No deferred warns.
+        "from": "dashboard",
+        "allow": ["shared", "settings", "activity-log"]
       }
     ]
   }
