@@ -8,12 +8,12 @@ import {
 } from "@tabler/icons-react";
 import type { Column, Table } from "@tanstack/react-table";
 import { useState } from "react";
-import { typeFilterOptions } from "@/features/submissions/labels";
 import {
 	submissionDraftFilterOptions,
 	submissionRoleFilterOptions,
 } from "@/features/users/labels";
 import type { AdminUser } from "@/features/users/server/users";
+import { typeFilterOptions } from "@/shared/lib/labels/submission";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";

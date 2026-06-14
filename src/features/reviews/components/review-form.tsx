@@ -23,10 +23,10 @@ import {
 	type ReviewFormData,
 } from "@/features/reviews/validations";
 import { FILE_ACCEPT_ATTRIBUTE } from "@/features/settings/file-types";
-import { typeLabels } from "@/features/submissions/labels";
 import type { ReviewDecision, SubmissionType } from "@/generated/prisma/enums";
 import { FileDropzone } from "@/shared/components/file-dropzone";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import { typeLabels } from "@/shared/lib/labels/submission";
 import { cn, formatFileSize } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";

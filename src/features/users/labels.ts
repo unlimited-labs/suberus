@@ -1,17 +1,11 @@
-import { typeLabels } from "@/features/submissions/labels";
 import type {
 	SubmissionInvolvementRole,
 	SubmissionRoleSummary,
 } from "@/features/users/server/users";
 import type { UserRole } from "@/generated/prisma/enums";
+import { typeLabels } from "@/shared/lib/labels/submission";
 
-export const roleLabels: Record<UserRole, string> = {
-	ADMIN: "Administrator",
-	EDITOR: "Editor",
-	REVIEWER: "Reviewer",
-	AUTHOR: "Author",
-	EXHIBITOR: "Exhibitor",
-};
+export { roleLabels } from "@/shared/lib/labels/user-role";
 
 export const roleFilterOptions = [
 	{ label: "Administrator", value: "ADMIN" },

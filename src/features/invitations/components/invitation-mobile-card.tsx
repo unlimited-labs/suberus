@@ -1,8 +1,8 @@
 import { IconMailForward, IconX } from "@tabler/icons-react";
 import { invitationStatusConfig } from "@/features/invitations/labels";
 import type { AdminInvitation } from "@/features/invitations/server/invitations";
-import { roleLabels } from "@/features/users/labels";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { roleLabels } from "@/shared/lib/labels/user-role";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";

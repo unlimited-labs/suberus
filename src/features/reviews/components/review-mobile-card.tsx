@@ -10,8 +10,8 @@ import {
 	assignmentStatusLabels,
 	assignmentStatusVariants,
 } from "@/features/reviews/labels";
-import { typeLabels } from "@/features/submissions/labels";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { typeLabels } from "@/shared/lib/labels/submission";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";

@@ -12,9 +12,9 @@ import {
 	assignmentStatusLabels,
 	assignmentStatusVariants,
 } from "@/features/reviews/labels";
-import { typeFilterOptions, typeLabels } from "@/features/submissions/labels";
 import type { AssignmentStatus } from "@/generated/prisma/enums";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { typeFilterOptions, typeLabels } from "@/shared/lib/labels/submission";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { DataTableColumnHeader, facetedFilterFn } from "@/shared/ui/data-table";

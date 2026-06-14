@@ -4,9 +4,9 @@ import { env } from "@/env.ts";
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
 import { getSetting } from "@/features/settings/server/settings";
-import { roleLabels } from "@/features/users/labels";
 import type { InvitationStatus, UserRole } from "@/generated/prisma/enums";
 import { logger } from "@/logger.ts";
+import { roleLabels } from "@/shared/lib/labels/user-role";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
 

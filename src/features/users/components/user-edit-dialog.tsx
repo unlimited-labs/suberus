@@ -2,8 +2,6 @@ import { IconBuilding, IconMail } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { checkEmailAvailableFn } from "@/features/auth/api/auth";
-import type { AdminUserEditFormData } from "@/features/profile/validations";
-import { adminUserEditSchema } from "@/features/profile/validations";
 import {
 	adminUserDetailQueryOptions,
 	adminUsersQueryOptions,
@@ -13,6 +11,8 @@ import type { AdminUser } from "@/features/users/server/users";
 import { BillingFieldsGroup } from "@/shared/components/composable/billing-fields-group";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { titleOptions } from "@/shared/lib/labels/title";
+import type { AdminUserEditFormData } from "@/shared/lib/validations/user";
+import { adminUserEditSchema } from "@/shared/lib/validations/user";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
