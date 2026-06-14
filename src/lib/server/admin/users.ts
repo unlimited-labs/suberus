@@ -1,4 +1,9 @@
 import { compareDesc } from "date-fns";
+import {
+	logActivity,
+	logActivityTx,
+} from "@/features/activity-log/server/activity-log";
+import { activityDetail } from "@/features/activity-log/types";
 import { linkCoAuthorsByEmail } from "@/features/submissions/server/submissions";
 import type { Prisma } from "@/generated/prisma/client";
 import type {
@@ -6,8 +11,6 @@ import type {
 	SubmissionType,
 	UserRole,
 } from "@/generated/prisma/enums";
-import { activityDetail } from "@/lib/activity-log";
-import { logActivity, logActivityTx } from "@/lib/server/activity-log";
 import { upsertAffiliation } from "@/lib/server/affiliations";
 import { logger } from "@/logger.ts";
 import { prisma } from "@/shared/server/db.server";

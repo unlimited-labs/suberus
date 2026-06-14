@@ -1,5 +1,5 @@
-import { activityDetail } from "@/lib/activity-log";
-import { logActivity } from "@/lib/server/activity-log";
+import { logActivity } from "@/features/activity-log/server/activity-log";
+import { activityDetail } from "@/features/activity-log/types";
 import { validateUpload } from "@/lib/server/validate-upload";
 import { SUPPORTED_IMAGE_EXTENSIONS } from "@/lib/settings/file-types";
 import { prisma } from "@/shared/server/db.server";

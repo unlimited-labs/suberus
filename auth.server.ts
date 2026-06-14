@@ -153,8 +153,8 @@ export const auth = betterAuth({
 		user: {
 			create: {
 				after: async (user) => {
-					const { logActivity } = await import("@/lib/server/activity-log")
-					const { activityDetail } = await import("@/lib/activity-log")
+					const { logActivity } = await import("@/features/activity-log/server/activity-log")
+					const { activityDetail } = await import("@/features/activity-log/types")
 					await logActivity({
 						type: "USER_REGISTERED",
 						userId: user.id,
@@ -196,7 +196,7 @@ export const auth = betterAuth({
 						where: { userId: user.id, type: "USER_EMAIL_VERIFIED" },
 					})
 					if (!alreadyLogged) {
-						const { logActivity } = await import("@/lib/server/activity-log")
+						const { logActivity } = await import("@/features/activity-log/server/activity-log")
 						await logActivity({
 							type: "USER_EMAIL_VERIFIED",
 							userId: user.id,

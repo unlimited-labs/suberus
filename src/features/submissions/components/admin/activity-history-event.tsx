@@ -12,12 +12,12 @@ import {
 	IconUserPlus,
 	IconX,
 } from "@tabler/icons-react";
+import { activityLabels } from "@/features/activity-log/labels";
 import {
 	reviewDecisionColors,
 	statusLabels,
 	statusVariants,
 } from "@/features/submissions/labels";
-import { activityLabels } from "@/lib/labels/activity";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Badge } from "@/shared/ui/badge";
 import {

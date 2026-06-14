@@ -1,11 +1,11 @@
 import { env } from "@/env.ts";
+import { logActivity } from "@/features/activity-log/server/activity-log";
+import { activityDetail } from "@/features/activity-log/types";
 import {
 	checkAndTriggerReviewCompletion,
 	validateAssignmentTransition,
 } from "@/features/workflow/server/workflow";
 import type { ReviewDecision, ReviewMode } from "@/generated/prisma/enums";
-import { activityDetail } from "@/lib/activity-log";
-import { logActivity } from "@/lib/server/activity-log";
 import { fileToBuffer } from "@/lib/server/form-upload";
 import { getSetting } from "@/lib/server/settings";
 import {

@@ -1,5 +1,10 @@
 import { env } from "@/env";
 import {
+	logActivity,
+	logActivityTx,
+} from "@/features/activity-log/server/activity-log";
+import { activityDetail } from "@/features/activity-log/types";
+import {
 	type SubmissionTodo,
 	statusChangeOptions,
 } from "@/features/submissions/labels";
@@ -11,8 +16,6 @@ import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
-import { activityDetail } from "@/lib/activity-log";
-import { logActivity, logActivityTx } from "@/lib/server/activity-log";
 import { assignReviewer } from "@/lib/server/assignments";
 import { getSubmissionTypeConfigs } from "@/lib/server/settings";
 import { prisma } from "@/shared/server/db.server";

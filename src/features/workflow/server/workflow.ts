@@ -1,5 +1,7 @@
 import { createActor } from "xstate";
 import { env } from "@/env";
+import { logActivity } from "@/features/activity-log/server/activity-log";
+import { activityDetail } from "@/features/activity-log/types";
 import {
 	type AssignmentEvent,
 	assignmentMachine,
@@ -16,8 +18,6 @@ import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
-import { activityDetail } from "@/lib/activity-log";
-import { logActivity } from "@/lib/server/activity-log";
 import { getSetting } from "@/lib/server/settings";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";

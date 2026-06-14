@@ -1,10 +1,10 @@
 import { randomBytes } from "node:crypto";
 import { addHours, format } from "date-fns";
 import { env } from "@/env.ts";
+import { logActivity } from "@/features/activity-log/server/activity-log";
+import { activityDetail } from "@/features/activity-log/types";
 import type { InvitationStatus, UserRole } from "@/generated/prisma/enums";
-import { activityDetail } from "@/lib/activity-log";
 import { roleLabels } from "@/lib/labels/user";
-import { logActivity } from "@/lib/server/activity-log";
 import { getSetting } from "@/lib/server/settings";
 import { logger } from "@/logger.ts";
 import { prisma } from "@/shared/server/db.server";
