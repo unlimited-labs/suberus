@@ -1,6 +1,6 @@
 import type { SubmissionTypeConfig } from "@/features/settings/types";
 
-import type { Author } from "./authors-input";
+import type { Author } from "@/shared/types/author";
 
 /** Active submission type from settings */
 export interface ActiveSubmissionType {

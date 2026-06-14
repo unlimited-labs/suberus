@@ -1,5 +1,5 @@
+import { FileDropzone } from "@/shared/components/file-dropzone";
 import { Field, FieldDescription, FieldLabel } from "@/shared/ui/field";
-import { FileDropzone } from "./file-dropzone";
 
 interface FileUploadSectionProps {
 	value: File | null;

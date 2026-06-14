@@ -5,8 +5,8 @@ import {
 	getExtractionResultFn,
 } from "@/features/extraction/api/extraction";
 import { SUPPORTED_FILE_EXTENSIONS_DOTTED } from "@/features/settings/file-types";
-import type { Author } from "@/features/submissions/components/form/authors-input";
 import { useJobSSE } from "@/shared/hooks/use-job-sse";
+import type { Author } from "@/shared/types/author";
 
 interface UseDocumentExtractionOptions {
 	enabled: boolean;

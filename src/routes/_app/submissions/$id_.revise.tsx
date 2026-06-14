@@ -20,7 +20,7 @@ import {
 	submitConditionalRevisionFn,
 	uploadSubmissionFile,
 } from "@/features/submissions/api/submissions";
-import { FileDropzone } from "@/features/submissions/components/form/file-dropzone";
+import { FileDropzone } from "@/shared/components/file-dropzone";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/ui/button";
 import { Label } from "@/shared/ui/label";

@@ -18,11 +18,9 @@ import {
 	withdrawMyExhibitorFn,
 } from "@/features/exhibitors/api/exhibitors";
 import { exhibitorPresentationSchema } from "@/features/exhibitors/validations";
-import {
-	type Author,
-	AuthorsInput,
-} from "@/features/submissions/components/form/authors-input";
+import { AuthorsInput } from "@/shared/components/authors-input";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import type { Author } from "@/shared/types/author";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import {

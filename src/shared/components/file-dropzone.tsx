@@ -1,13 +1,14 @@
 import { IconFile, IconUpload, IconX } from "@tabler/icons-react";
 import { type DragEvent, useCallback, useState } from "react";
-import { FILE_ACCEPT_ATTRIBUTE } from "@/features/settings/file-types";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 
 interface FileDropzoneProps {
 	value?: File | null;
 	onChange: (file: File | null) => void;
-	accept?: string;
+	/** Comma-separated `accept` attribute, e.g. ".pdf,.docx". Owner-supplied so
+	 * this dropzone stays domain-agnostic. */
+	accept: string;
 	maxSize?: number; // in MB
 	className?: string;
 }
@@ -15,7 +16,7 @@ interface FileDropzoneProps {
 export function FileDropzone({
 	value,
 	onChange,
-	accept = FILE_ACCEPT_ATTRIBUTE,
+	accept,
 	maxSize = 10,
 	className,
 }: FileDropzoneProps) {

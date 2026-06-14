@@ -27,18 +27,12 @@ import {
 import { useCallback, useState } from "react";
 import { AffiliationSelect } from "@/shared/components/affiliation-select";
 import { cn } from "@/shared/lib/utils";
+import type { Author } from "@/shared/types/author";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 
-export interface Author {
-	firstName: string;
-	lastName: string;
-	email: string;
-	affiliationId: string | null;
-	affiliationName: string;
-	isPresenter: boolean;
-}
+export type { Author };
 
 interface AuthorsInputProps {
 	value: Author[];
