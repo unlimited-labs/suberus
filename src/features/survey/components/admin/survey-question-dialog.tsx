@@ -1,4 +1,4 @@
-import type { SurveyQuestionFormValues } from "@/lib/validations/survey";
+import type { SurveyQuestionFormValues } from "@/features/survey/validations";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,

@@ -2,12 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { format } from "date-fns";
 import * as XLSX from "xlsx";
 import { getSetting } from "@/features/settings/server/settings";
+import { formatSurveyAnswerValue } from "@/features/survey/labels";
+import { getSurveyQuestions } from "@/features/survey/server/survey";
 import type { UserRole } from "@/generated/prisma/enums";
-import { formatSurveyAnswerValue } from "@/lib/labels/survey";
 import { formatSubmissionRoles } from "@/lib/labels/user";
 import { getUsers } from "@/lib/server/admin/users";
 import { neutralizeFormula } from "@/lib/server/spreadsheet-safe";
-import { getSurveyQuestions } from "@/lib/server/survey";
 import { formatDateTime } from "@/shared/lib/format-date";
 import { adminRequestMiddleware } from "@/shared/server/middleware/auth";
 

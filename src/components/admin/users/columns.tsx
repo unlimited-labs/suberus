@@ -7,8 +7,11 @@ import {
 	type FilterOption,
 	facetedFilterFn,
 } from "@/components/admin/data-table";
+import {
+	formatSurveyAnswerValue,
+	parseMultiSelect,
+} from "@/features/survey/labels";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
-import { formatSurveyAnswerValue, parseMultiSelect } from "@/lib/labels/survey";
 import {
 	feeFilterOptions,
 	formatSubmissionRole,

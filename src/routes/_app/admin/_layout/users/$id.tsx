@@ -6,8 +6,8 @@ import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
 } from "@/features/settings/api/settings";
+import { adminSurveyQuestionsQueryOptions } from "@/features/survey/api/survey";
 import { adminUserDetailQueryOptions } from "@/server-fns/admin/users";
-import { adminSurveyQuestionsQueryOptions } from "@/server-fns/settings/survey";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/ui/button";
 

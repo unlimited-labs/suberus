@@ -13,17 +13,23 @@ import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { AffiliationSelect } from "@/components/forms/affiliation-select";
-import { SurveyQuestionField } from "@/components/forms/survey/survey-question-field";
 import { checkEmailAvailableFn } from "@/features/auth/api/auth";
 import { AuthCard } from "@/features/auth/components/auth-card";
 import { TosModal } from "@/features/auth/components/tos-modal";
 import { getRegistrationStatusFn } from "@/features/settings/api/settings";
+import {
+	acceptTosFn,
+	getSurveyQuestionsForRegistrationFn,
+	getTosContentForRegistrationFn,
+	saveUserSurveyAnswersFn,
+} from "@/features/survey/api/survey";
+import { SurveyQuestionField } from "@/features/survey/components/survey-question-field";
+import { surveyAnswerRequiredError } from "@/features/survey/validations";
 import { useMultiStep } from "@/hooks/use-multi-step";
 import { detectCountry } from "@/lib/detect-country";
 import { titleOptions } from "@/lib/labels";
 import { roleLabels } from "@/lib/labels/user";
 import { registerBase, registerSchema } from "@/lib/validations/auth";
-import { surveyAnswerRequiredError } from "@/lib/validations/survey";
 import {
 	becomeExhibitorFn,
 	exhibitorSignupAvailableFn,
@@ -32,12 +38,6 @@ import {
 	consumeInvitationFn,
 	validateInvitationTokenFn,
 } from "@/server-fns/invitations";
-import {
-	acceptTosFn,
-	getSurveyQuestionsForRegistrationFn,
-	getTosContentForRegistrationFn,
-	saveUserSurveyAnswersFn,
-} from "@/server-fns/settings/survey";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { signUp } from "@/shared/lib/auth-client";
 import { cn } from "@/shared/lib/utils";

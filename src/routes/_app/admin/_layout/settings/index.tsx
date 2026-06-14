@@ -21,10 +21,7 @@ import {
 } from "@tanstack/react-router";
 import { z } from "zod";
 import { ProgramTab } from "@/components/admin/program";
-import {
-	EmailTemplatesTab,
-	SurveyQuestionsTab,
-} from "@/components/admin/settings";
+import { EmailTemplatesTab } from "@/components/admin/settings";
 import { toEmailTemplateUI } from "@/components/admin/settings/email-templates-tab";
 import { paymentInstructionsQueryOptions } from "@/features/fee/api/fee";
 import { FeeTab } from "@/features/fee/components/admin/fee-tab";
@@ -46,6 +43,8 @@ import { RemindersSettingsTab } from "@/features/settings/components/reminders/r
 import { SubmissionSettingsTab } from "@/features/settings/components/submission/submission-settings-tab";
 import { SubmissionTypesTab } from "@/features/settings/components/submission/submission-types-tab";
 import { TosContentTab } from "@/features/settings/components/tos/tos-content-tab";
+import { adminSurveyQuestionsQueryOptions } from "@/features/survey/api/survey";
+import { SurveyQuestionsTab } from "@/features/survey/components/admin/survey-questions-tab";
 import { allTracksQueryOptions } from "@/features/tracks/api/admin-tracks";
 import { TracksTab } from "@/features/tracks/components/admin/tracks-tab";
 import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
@@ -57,7 +56,6 @@ import {
 	extractionAdminSettingsQueryOptions,
 	llmHealthQueryOptions,
 } from "@/server-fns/settings/extraction";
-import { adminSurveyQuestionsQueryOptions } from "@/server-fns/settings/survey";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 

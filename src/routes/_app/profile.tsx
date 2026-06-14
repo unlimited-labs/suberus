@@ -25,11 +25,11 @@ import type {
 	PersonalInfoFormData,
 } from "@/features/profile/validations";
 import { SettingsSection } from "@/features/settings/components/settings-section";
-import { createAffiliation } from "@/server-fns/affiliations";
 import {
 	activeSurveyQuestionsQueryOptions,
 	userSurveyAnswersQueryOptions,
-} from "@/server-fns/settings/survey";
+} from "@/features/survey/api/survey";
+import { createAffiliation } from "@/server-fns/affiliations";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useSession } from "@/shared/hooks/use-session";
 

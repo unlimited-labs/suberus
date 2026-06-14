@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import {
 	type SurveyQuestionFormValues,
 	surveyQuestionFormSchema,
-} from "@/lib/validations/survey";
+} from "@/features/survey/validations";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import type { SurveyQuestion } from "./survey-question-fields";
 

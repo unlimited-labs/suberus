@@ -1,7 +1,7 @@
 import { IconClipboardList } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { formatSurveyAnswerValue } from "@/lib/labels/survey";
-import { adminSurveyQuestionsQueryOptions } from "@/server-fns/settings/survey";
+import { adminSurveyQuestionsQueryOptions } from "@/features/survey/api/survey";
+import { formatSurveyAnswerValue } from "@/features/survey/labels";
 
 interface UserSurveySectionProps {
 	surveyAnswers: { questionId: string; value: string }[];

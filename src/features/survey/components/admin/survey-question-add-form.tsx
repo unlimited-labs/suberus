@@ -1,4 +1,4 @@
-import type { SurveyQuestionFormValues } from "@/lib/validations/survey";
+import type { SurveyQuestionFormValues } from "@/features/survey/validations";
 import { FieldError } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";

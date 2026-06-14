@@ -11,7 +11,7 @@ import {
 	reorderSurveyQuestions,
 	updateSurveyQuestion,
 	upsertSurveyAnswers,
-} from "@/lib/server/survey";
+} from "@/features/survey/server/survey";
 import {
 	adminMiddleware,
 	authMiddleware,
