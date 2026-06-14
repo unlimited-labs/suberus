@@ -20,6 +20,10 @@ import {
 	becomeExhibitorFn,
 	exhibitorSignupAvailableFn,
 } from "@/features/exhibitors/api/exhibitors";
+import {
+	consumeInvitationFn,
+	validateInvitationTokenFn,
+} from "@/features/invitations/api/invitations";
 import { getRegistrationStatusFn } from "@/features/settings/api/settings";
 import {
 	acceptTosFn,
@@ -34,10 +38,6 @@ import { useMultiStep } from "@/hooks/use-multi-step";
 import { detectCountry } from "@/lib/detect-country";
 import { titleOptions } from "@/lib/labels";
 import { registerBase, registerSchema } from "@/lib/validations/auth";
-import {
-	consumeInvitationFn,
-	validateInvitationTokenFn,
-} from "@/server-fns/invitations";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { signUp } from "@/shared/lib/auth-client";
 import { cn } from "@/shared/lib/utils";

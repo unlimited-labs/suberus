@@ -4,14 +4,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { DataTable, DataTableToolbar } from "@/components/admin/data-table";
-import { createInvitationColumns } from "@/components/admin/invitations/columns";
-import { InvitationMobileCard } from "@/components/admin/invitations/invitation-mobile-card";
-import { InviteUserDialog } from "@/components/admin/invitations/invite-user-dialog";
 import {
 	adminInvitationsQueryOptions,
 	cancelInvitationFn,
 	resendInvitationFn,
-} from "@/server-fns/admin/invitations";
+} from "@/features/invitations/api/admin-invitations";
+import { createInvitationColumns } from "@/features/invitations/components/columns";
+import { InvitationMobileCard } from "@/features/invitations/components/invitation-mobile-card";
+import { InviteUserDialog } from "@/features/invitations/components/invite-user-dialog";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/ui/button";
 

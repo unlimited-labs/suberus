@@ -24,7 +24,7 @@ const MODULE_REGISTRY: Record<string, string> = {
 	survey: "@/features/survey/server/survey",
 	extraction: "@/features/extraction/server/extraction",
 	planner: "@/features/planner/server/schedule",
-	invitations: "@/lib/server/admin/invitations",
+	invitations: "@/features/invitations/server/invitations",
 	profiles: "@/features/profile/server/profile",
 };
 

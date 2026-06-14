@@ -3,7 +3,7 @@ import { z } from "zod";
 import {
 	consumeInvitation,
 	validateInvitationToken,
-} from "@/lib/server/admin/invitations";
+} from "@/features/invitations/server/invitations";
 import { authMiddleware } from "@/shared/server/middleware/auth";
 
 export const validateInvitationTokenFn = createServerFn({ method: "GET" })

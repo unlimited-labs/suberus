@@ -29,15 +29,16 @@
   },
   // Added incrementally, one feature-zone per migration PR. Migrated so far
   // (autoDiscover finds them): submissions, profile, tracks, fee, workflow,
-  // activity-log, auth, settings, survey, email-templates, install, extraction, reviews, planner, exhibitors, users. The
+  // activity-log, auth, settings, survey, email-templates, install, extraction, reviews, planner, exhibitors, users, invitations. The
   // other allow-list names are forward references that activate as those features
   // migrate. `shared` zone is declared ahead of its files. coverage.requireAllFiles
   // is intentionally left off until the last feature lands (un-migrated src/lib
   // would drown it).
   //
-  // auth deferred edges (kept at warn until resolved): auth -> submissions
-  // (linkCoAuthorsByEmail) is a backwards core->app edge; settings/invitations
-  // are still in src/lib (untracked) so getSetting/applyInvitationRole carry over.
+  // auth deferred edges (kept at warn until resolved): backwards core->app edges
+  // auth -> submissions (linkCoAuthorsByEmail) and auth -> invitations
+  // (applyInvitationRole, now a TRACKED warn since invitations migrated). auth
+  // deliberately does NOT allow either, so they stay visible.
   "boundaries": {
     "zones": [
       { "name": "routes", "patterns": ["src/routes/**"] },
@@ -143,6 +144,14 @@
         // invitations->users (roleLabels). Resolve by lifting shared bits before error flip.
         "from": "users",
         "allow": ["shared", "activity-log", "survey", "settings", "auth"]
+      },
+      {
+        // APP feature (admin invite mgmt + participant accept-on-register). Forced APP
+        // — imports users (roleLabels). Deferred warns (kept visible, NOT in allow):
+        // invitations->users (roleLabels) sibling; auth->invitations (applyInvitationRole)
+        // backwards core->app (lives in auth's allow comment, not here).
+        "from": "invitations",
+        "allow": ["shared", "activity-log", "settings"]
       }
     ]
   }

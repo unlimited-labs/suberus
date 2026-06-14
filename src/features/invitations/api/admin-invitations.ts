@@ -6,7 +6,7 @@ import {
 	createInvitation,
 	getInvitations,
 	resendInvitation,
-} from "@/lib/server/admin/invitations";
+} from "@/features/invitations/server/invitations";
 import { adminOnlyMiddleware } from "@/shared/server/middleware/auth";
 
 export const adminInvitationsQueryOptions = () =>

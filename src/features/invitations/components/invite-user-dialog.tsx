@@ -1,7 +1,7 @@
 import { IconLoader2 } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { createInvitationFn } from "@/server-fns/admin/invitations";
+import { createInvitationFn } from "@/features/invitations/api/admin-invitations";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
 import {

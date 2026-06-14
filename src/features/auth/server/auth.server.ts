@@ -6,9 +6,9 @@ import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { PrismaClient, UserRole } from "@/generated/prisma/client";
 import "dotenv/config";
 import { env } from "@/env";
+import { applyInvitationRole } from "@/features/invitations/server/invitations";
 import { getSetting } from "@/features/settings/server/settings";
 import { linkCoAuthorsByEmail } from "@/features/submissions/server/submissions";
-import { applyInvitationRole } from "@/lib/server/admin/invitations";
 import { logger } from "@/logger.ts";
 import { sendEmail } from "@/shared/server/email";
 
