@@ -5,8 +5,8 @@
     "src/main.{ts,tsx,js,jsx}",
     // Framework-auto-loaded entry points fallow can't see (no nitro plugin):
     "src/start.ts", // TanStack Start createStart instance
-    "server/plugins/**/*.ts", // nitro definePlugin (run at startup)
-    "server/tasks/**/*.ts" // nitro defineTask (scheduledTasks, see vite.config.ts)
+    "src/server/plugins/**/*.ts", // nitro definePlugin (run at startup)
+    "src/server/tasks/**/*.ts" // nitro defineTask (scheduledTasks, see vite.config.ts)
   ],
   "ignoreExportsUsedInFile": true,
   "duplicates": {
