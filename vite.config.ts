@@ -32,7 +32,7 @@ const rollupConfig = {
 
 const nitroConfig: NitroPluginConfig = {
 	rollupConfig,
-	serverDir: "server",
+	serverDir: "src/server",
 	...(outputDir ? { output: { dir: outputDir } } : {}),
 	experimental: { tasks: true, vite: {} },
 	scheduledTasks: {

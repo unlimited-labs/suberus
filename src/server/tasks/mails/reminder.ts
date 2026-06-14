@@ -1,10 +1,10 @@
 import { defineTask } from "nitro/task";
-import { logger } from "@/logger";
 import {
 	sendDeadlineReminders,
 	sendReviewerReminders,
 	sendRevisionReminders,
 } from "@/lib/server/reminders";
+import { logger } from "@/logger";
 
 export default defineTask({
 	meta: {
