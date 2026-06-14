@@ -21,7 +21,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { getErrorMessage } from "@/lib/error-message";
 import {
 	SUPPORTED_FILE_EXTENSIONS,
 	type SupportedFileExtension,
@@ -36,6 +35,7 @@ import {
 	submissionTypesConfigQueryOptions,
 	updateSubmissionTypeConfigFn,
 } from "@/server-fns/settings";
+import { getErrorMessage } from "@/shared/lib/error-message";
 
 const reviewModeLabels = {
 	OPEN: "Open",

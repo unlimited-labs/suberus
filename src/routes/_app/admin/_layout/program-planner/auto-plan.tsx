@@ -24,12 +24,12 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useJobSSE } from "@/hooks/use-job-sse";
 import type { AutoplanStage } from "@/lib/server/planner/autoplan-types";
-import { cn } from "@/lib/utils";
 import {
 	applyAutoPlanFn,
 	getAutoPlanJobFn,
 	startAutoPlanFn,
 } from "@/server-fns/planner/autoplan";
+import { cn } from "@/shared/lib/utils";
 
 export const Route = createFileRoute(
 	"/_app/admin/_layout/program-planner/auto-plan",

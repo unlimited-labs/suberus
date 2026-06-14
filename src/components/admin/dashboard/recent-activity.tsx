@@ -13,11 +13,11 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatRelativeTime } from "@/lib/format-date";
 import { activityLabels } from "@/lib/labels/activity";
 import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
-import { cn } from "@/lib/utils";
 import { getMoreActivity } from "@/server-fns/admin/dashboard";
+import { formatRelativeTime } from "@/shared/lib/format-date";
+import { cn } from "@/shared/lib/utils";
 
 type ActivityEvent = AdminDashboardMetrics["recentActivity"][number];
 

@@ -21,8 +21,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { reviewDecisionColors } from "@/features/submissions/labels";
-import { cn } from "@/lib/utils";
 import { submitEditorDecisionFn } from "@/server-fns/workflow";
+import { cn } from "@/shared/lib/utils";
 
 interface EditorDecisionDialogProps {
 	submissionId: string;

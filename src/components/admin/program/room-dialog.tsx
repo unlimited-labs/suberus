@@ -13,9 +13,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { getErrorMessage } from "@/lib/error-message";
 import type { RoomWithStats } from "@/lib/server/planner/rooms";
 import { createRoomFn, updateRoomFn } from "@/server-fns/planner/rooms";
+import { getErrorMessage } from "@/shared/lib/error-message";
 
 interface RoomDialogProps {
 	open: boolean;

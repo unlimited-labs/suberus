@@ -27,11 +27,11 @@ import { typeLabels } from "@/features/submissions/labels";
 import type { ReviewDecision, SubmissionType } from "@/generated/prisma/enums";
 import { useAppForm } from "@/hooks/use-app-form";
 import { FILE_ACCEPT_ATTRIBUTE } from "@/lib/settings/file-types";
-import { cn, formatFileSize } from "@/lib/utils";
 import {
 	createReviewSchema,
 	type ReviewFormData,
 } from "@/lib/validations/review";
+import { cn, formatFileSize } from "@/shared/lib/utils";
 
 interface SubmissionAuthor {
 	firstName: string;

@@ -18,7 +18,7 @@ import {
 	roleLabels,
 } from "@/lib/labels/user";
 import type { AdminUser } from "@/lib/server/admin/users";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { SubmissionsColumnHeader } from "./submissions-column-header";
 
 export interface SurveyListColumn {

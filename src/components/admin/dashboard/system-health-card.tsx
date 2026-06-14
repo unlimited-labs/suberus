@@ -7,7 +7,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatLlmStatus } from "@/lib/format-llm-status";
 import type { AdminDashboardMetrics } from "@/lib/server/admin/dashboard";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 interface SystemHealthCardProps {
 	s3: AdminDashboardMetrics["s3"] | undefined;

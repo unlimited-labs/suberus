@@ -19,8 +19,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { getErrorMessage } from "@/lib/error-message";
 import { createInvitationFn } from "@/server-fns/admin/invitations";
+import { getErrorMessage } from "@/shared/lib/error-message";
 
 interface InviteUserDialogProps {
 	open: boolean;

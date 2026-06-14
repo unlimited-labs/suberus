@@ -8,11 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Markdown } from "@/components/ui/markdown";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { getErrorMessage } from "@/lib/error-message";
 import {
 	adminSettingQueryOptions,
 	updateTosContentFn,
 } from "@/server-fns/settings";
+import { getErrorMessage } from "@/shared/lib/error-message";
 
 interface TosContentTabProps {
 	initialContent: string;

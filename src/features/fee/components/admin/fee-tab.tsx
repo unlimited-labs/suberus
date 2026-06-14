@@ -14,12 +14,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { paymentInstructionsQueryOptions } from "@/features/fee/api/fee";
-import { getErrorMessage } from "@/lib/error-message";
 import {
 	feeTypesQueryOptions,
 	updateFeeInstructionsFn,
 	updateFeeTypesFn,
 } from "@/server-fns/settings";
+import { getErrorMessage } from "@/shared/lib/error-message";
 
 interface FeeType {
 	id: string;

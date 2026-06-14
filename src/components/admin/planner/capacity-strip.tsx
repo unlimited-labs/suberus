@@ -1,7 +1,7 @@
 import { IconGauge } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { formatDurationShort } from "@/lib/format-date";
 import { scheduleCapacityQueryOptions } from "@/server-fns/planner/schedule";
+import { formatDurationShort } from "@/shared/lib/format-date";
 
 export function CapacityStrip() {
 	const { data: cap } = useSuspenseQuery(scheduleCapacityQueryOptions());

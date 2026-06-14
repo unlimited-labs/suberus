@@ -11,8 +11,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useDateFormat } from "@/hooks/use-date-format";
 import { exhibitorStatusBadge } from "@/lib/labels/exhibitor";
-import { cn } from "@/lib/utils";
 import type { listExhibitorsFn } from "@/server-fns/exhibitors";
+import { cn } from "@/shared/lib/utils";
 import { ExhibitorMobileCard } from "./exhibitor-mobile-card";
 
 export type AdminExhibitorRow = Awaited<

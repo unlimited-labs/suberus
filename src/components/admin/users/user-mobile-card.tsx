@@ -5,7 +5,7 @@ import { useDateFormat } from "@/hooks/use-date-format";
 import { formatSurveyAnswerValue } from "@/lib/labels/survey";
 import { formatSubmissionRole, roleLabels } from "@/lib/labels/user";
 import type { AdminUser } from "@/lib/server/admin/users";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import type { SurveyListColumn } from "./columns";
 
 export function UserMobileCard({

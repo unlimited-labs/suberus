@@ -1,6 +1,6 @@
 import { useIlamyCalendarContext } from "@ilamy/calendar";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { CapacityBar } from "./session-card/capacity-bar";
 import { ChairStack } from "./session-card/chair-stack";
 

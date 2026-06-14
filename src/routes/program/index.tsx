@@ -15,12 +15,12 @@ import type {
 	PublicProgramSession,
 } from "@/lib/server/planner/schedule";
 import { formatClockTime, sameDayInTz } from "@/lib/tz-datetime";
-import { cn } from "@/lib/utils";
 import {
 	publicConferenceInfoQueryOptions,
 	publicProgramQueryOptions,
 } from "@/server-fns/planner/schedule";
 import { getAppBrandingFn } from "@/server-fns/settings";
+import { cn } from "@/shared/lib/utils";
 
 export const Route = createFileRoute("/program/")({
 	loader: async ({ context }) => {

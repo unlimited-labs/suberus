@@ -17,7 +17,7 @@ import {
 	updateTrackFn,
 } from "@/features/tracks/api/admin-tracks";
 import type { TrackWithStats } from "@/features/tracks/server/admin-tracks";
-import { getErrorMessage } from "@/lib/error-message";
+import { getErrorMessage } from "@/shared/lib/error-message";
 
 interface TracksListProps {
 	tracks: TrackWithStats[];

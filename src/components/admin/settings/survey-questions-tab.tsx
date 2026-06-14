@@ -13,7 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { getErrorMessage } from "@/lib/error-message";
 import type { SurveyQuestionFormValues } from "@/lib/validations/survey";
 import {
 	activeSurveyQuestionsQueryOptions,
@@ -23,6 +22,7 @@ import {
 	reorderSurveyQuestionsFn,
 	updateSurveyQuestionFn,
 } from "@/server-fns/settings/survey";
+import { getErrorMessage } from "@/shared/lib/error-message";
 import { SurveyQuestionAddForm } from "./survey-question-add-form";
 import { SurveyQuestionDeleteDialog } from "./survey-question-delete-dialog";
 import { SurveyQuestionDialog } from "./survey-question-dialog";

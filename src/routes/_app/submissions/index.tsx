@@ -21,11 +21,11 @@ import { SubmissionsTable } from "@/features/submissions/components/submissions-
 import { useDateFormat } from "@/hooks/use-date-format";
 import { useSession } from "@/hooks/use-session";
 import { redirectExhibitorRouteMiddleware } from "@/lib/server/middleware/auth";
-import { cn } from "@/lib/utils";
 import {
 	activeSubmissionTypesQueryOptions,
 	submissionDeadlineQueryOptions,
 } from "@/server-fns/settings";
+import { cn } from "@/shared/lib/utils";
 
 export const Route = createFileRoute("/_app/submissions/")({
 	server: {

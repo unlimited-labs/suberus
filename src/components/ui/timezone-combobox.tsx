@@ -15,7 +15,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 const TIMEZONES_BY_REGION: Array<{ region: string; zones: string[] }> = (() => {
 	const all = Intl.supportedValuesOf("timeZone").toSorted((a, b) =>

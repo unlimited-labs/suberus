@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { getErrorMessage } from "@/lib/error-message";
 import { deskRejectFn } from "@/server-fns/workflow";
+import { getErrorMessage } from "@/shared/lib/error-message";
 
 interface DeskRejectDialogProps {
 	submissionId: string;

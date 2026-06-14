@@ -21,12 +21,12 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { getErrorMessage } from "@/lib/error-message";
 import {
 	emailTemplatesQueryOptions,
 	sendTestEmailFn,
 	updateEmailTemplateFn,
 } from "@/server-fns/settings/email-templates";
+import { getErrorMessage } from "@/shared/lib/error-message";
 import type { EmailTemplateUI } from "./email-templates-tab";
 
 const PLACEHOLDER_DESCRIPTIONS: Record<string, string> = {

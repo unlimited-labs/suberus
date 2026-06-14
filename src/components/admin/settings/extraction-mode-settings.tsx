@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { formatDoclingStatus, formatLlmStatus } from "@/lib/format-llm-status";
 import type { AppSettingsMap } from "@/lib/settings/types";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { EngineToggle } from "./engine-toggle";
 
 interface ExtractionModeSettingsProps {

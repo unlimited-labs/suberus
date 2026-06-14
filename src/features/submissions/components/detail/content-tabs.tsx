@@ -16,7 +16,7 @@ import type {
 	UserSubmissionStatusHistory,
 } from "@/features/submissions/api/submissions";
 import { SubmissionTimeline } from "@/features/submissions/components/submission-timeline";
-import { formatFileSize } from "@/lib/utils";
+import { formatFileSize } from "@/shared/lib/utils";
 
 interface ContentTabsProps {
 	title: string;

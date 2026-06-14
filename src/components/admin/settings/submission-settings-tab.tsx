@@ -15,7 +15,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { getErrorMessage } from "@/lib/error-message";
 import { FILE_TYPE_OPTIONS } from "@/lib/settings/file-types";
 import type { AppSettingsMap } from "@/lib/settings/types";
 import {
@@ -32,6 +31,7 @@ import {
 	extractionAdminSettingsQueryOptions,
 	updateExtractionSettingsFn,
 } from "@/server-fns/settings/extraction";
+import { getErrorMessage } from "@/shared/lib/error-message";
 import { ExtractionModeSettings } from "./extraction-mode-settings";
 
 interface SubmissionSettingsTabProps {

@@ -1,7 +1,7 @@
 import { FormField } from "@/components/forms/composable/form-field";
 import { Textarea } from "@/components/ui/textarea";
 import { useFieldError } from "@/hooks/use-field-error";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 interface FormTextareaFieldProps {
 	label: string;

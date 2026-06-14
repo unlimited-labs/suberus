@@ -3,7 +3,7 @@ import { IconDownload } from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { reviewDecisionColors } from "@/features/submissions/labels";
-import { formatFileSize } from "@/lib/utils";
+import { formatFileSize } from "@/shared/lib/utils";
 
 import type { EditorReview } from "./availability";
 

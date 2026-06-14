@@ -6,13 +6,13 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { getErrorMessage } from "@/lib/error-message";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import { exhibitorSignupAvailableQueryOptions } from "@/server-fns/exhibitors";
 import {
 	submissionTypesConfigQueryOptions,
 	updateSubmissionTypeConfigFn,
 } from "@/server-fns/settings";
+import { getErrorMessage } from "@/shared/lib/error-message";
 
 interface ExhibitorsSettingsSectionProps {
 	initialConfig: SubmissionTypeConfig;

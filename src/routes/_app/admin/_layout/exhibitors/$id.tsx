@@ -11,13 +11,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { statusLabels, statusVariants } from "@/features/submissions/labels";
 import { useDateFormat } from "@/hooks/use-date-format";
-import { getErrorMessage } from "@/lib/error-message";
 import { exhibitorStatusBadge } from "@/lib/labels/exhibitor";
 import {
 	exhibitorDetailQueryOptions,
 	listExhibitorsQueryOptions,
 	setExhibitorPackageFn,
 } from "@/server-fns/exhibitors";
+import { getErrorMessage } from "@/shared/lib/error-message";
 
 export const Route = createFileRoute("/_app/admin/_layout/exhibitors/$id")({
 	loader: async ({ params, context }) => {

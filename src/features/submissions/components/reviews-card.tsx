@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import type { UserSubmissionReview } from "@/features/submissions/api/submissions";
 import { useDateFormat } from "@/hooks/use-date-format";
-import { cn, formatFileSize } from "@/lib/utils";
+import { cn, formatFileSize } from "@/shared/lib/utils";
 
 interface ReviewsCardProps {
 	reviews: UserSubmissionReview[];

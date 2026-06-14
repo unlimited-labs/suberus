@@ -6,8 +6,8 @@ import {
 	useContext,
 	useEffect,
 } from "react";
-import type { Theme } from "@/lib/theme";
-import { setThemeFn } from "@/lib/theme";
+import type { Theme } from "@/shared/lib/theme";
+import { setThemeFn } from "@/shared/lib/theme";
 
 interface ThemeContextValue {
 	theme: Theme;

@@ -5,7 +5,7 @@ import {
 	IconSparkles,
 } from "@tabler/icons-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 import type { ActiveSubmissionType } from "./submission-form-types";
 

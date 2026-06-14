@@ -1,5 +1,5 @@
 import type { CalendarView } from "@ilamy/calendar";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 interface Props {
 	current: CalendarView;

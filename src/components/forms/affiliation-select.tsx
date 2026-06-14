@@ -1,12 +1,12 @@
 import { IconBuilding, IconLoader2 } from "@tabler/icons-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
-import { cn } from "@/lib/utils";
 import {
 	createAffiliation,
 	getAffiliationById,
 	getAffiliations,
 } from "@/server-fns/affiliations";
+import { cn } from "@/shared/lib/utils";
 
 interface Affiliation {
 	id: string;

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { getErrorMessage } from "@/lib/error-message";
+import { getErrorMessage } from "@/shared/lib/error-message";
 
 interface UseConfirmDeleteOptions {
 	onDelete: (id: string) => Promise<void>;

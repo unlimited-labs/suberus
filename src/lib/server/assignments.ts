@@ -6,7 +6,6 @@ import type {
 	SubmissionType,
 } from "@/generated/prisma/enums";
 import { activityDetail } from "@/lib/activity-log";
-import { formatDate } from "@/lib/format-date";
 import { logActivity } from "@/lib/server/activity-log";
 import { sendEmail } from "@/lib/server/email";
 import { getSetting } from "@/lib/server/settings";
@@ -18,6 +17,7 @@ import {
 import { SUBMISSION_TYPE_TO_KEY } from "@/lib/settings/types";
 import { canAssignReviewer } from "@/lib/workflow";
 import { logger } from "@/logger.ts";
+import { formatDate } from "@/shared/lib/format-date";
 
 /** Reviewer data for assignment UI */
 export interface AvailableReviewer {

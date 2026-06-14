@@ -24,7 +24,6 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { getErrorMessage } from "@/lib/error-message";
 import {
 	publishScheduleDraftFn,
 	publishScheduleFn,
@@ -32,6 +31,7 @@ import {
 	scheduleStateQueryOptions,
 	unpublishScheduleFn,
 } from "@/server-fns/planner/schedule";
+import { getErrorMessage } from "@/shared/lib/error-message";
 import { useInvalidatePlannerQueries } from "./hooks/use-invalidate-planner-queries";
 import { usePlannerSelection } from "./planner-context";
 

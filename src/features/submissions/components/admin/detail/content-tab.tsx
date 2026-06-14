@@ -9,7 +9,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VersionSelector } from "@/features/submissions/components/version-selector";
-import { cn, formatFileSize } from "@/lib/utils";
+import { cn, formatFileSize } from "@/shared/lib/utils";
 
 import {
 	type EditorAuthor,

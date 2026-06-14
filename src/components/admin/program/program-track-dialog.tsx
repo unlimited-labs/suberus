@@ -13,13 +13,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getErrorMessage } from "@/lib/error-message";
 import type { ProgramTrackWithStats } from "@/lib/server/planner/tracks";
-import { cn } from "@/lib/utils";
 import {
 	createProgramTrackFn,
 	updateProgramTrackFn,
 } from "@/server-fns/planner/tracks";
+import { getErrorMessage } from "@/shared/lib/error-message";
+import { cn } from "@/shared/lib/utils";
 
 const SERIES_RE = /^(.+?)\s+(\d+)$/;
 

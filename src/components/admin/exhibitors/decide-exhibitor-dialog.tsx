@@ -18,8 +18,8 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { getErrorMessage } from "@/lib/error-message";
 import { decideExhibitorFn } from "@/server-fns/exhibitors";
+import { getErrorMessage } from "@/shared/lib/error-message";
 
 const copy = {
 	APPROVED: {

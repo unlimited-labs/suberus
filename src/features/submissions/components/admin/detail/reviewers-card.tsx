@@ -7,7 +7,7 @@ import {
 	assignmentStatusLabels,
 	assignmentStatusVariants,
 } from "@/lib/labels/assignment";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 import { type EditorAssignment, isOverdue } from "./availability";
 

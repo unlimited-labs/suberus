@@ -24,14 +24,14 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { TimezoneCombobox } from "@/components/ui/timezone-combobox";
-import { getErrorMessage } from "@/lib/error-message";
-import { getDateFormats } from "@/lib/format-date";
 import type { SubmissionTypeConfig } from "@/lib/settings/types";
 import type { ConferenceSettings } from "@/server-fns/settings";
 import {
 	conferenceSettingsQueryOptions,
 	updateConferenceSettingsFn,
 } from "@/server-fns/settings";
+import { getErrorMessage } from "@/shared/lib/error-message";
+import { getDateFormats } from "@/shared/lib/format-date";
 import { ExhibitorsSettingsSection } from "./exhibitors-settings-section";
 
 interface ConferenceSettingsTabProps {

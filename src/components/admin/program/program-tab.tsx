@@ -15,18 +15,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { getErrorMessage } from "@/lib/error-message";
 import { formatLlmStatus } from "@/lib/format-llm-status";
 import type { RoomWithStats } from "@/lib/server/planner/rooms";
 import type { ProgramTrackWithStats } from "@/lib/server/planner/tracks";
 import type { AppSettingsMap } from "@/lib/settings/types";
-import { cn } from "@/lib/utils";
 import { importProgramTracksFromIntakeFn } from "@/server-fns/planner/tracks";
 import type { ConferenceSettings } from "@/server-fns/settings";
 import {
 	conferenceSettingsQueryOptions,
 	updateConferenceSettingsFn,
 } from "@/server-fns/settings";
+import { getErrorMessage } from "@/shared/lib/error-message";
+import { cn } from "@/shared/lib/utils";
 import { ProgramTrackDialog } from "./program-track-dialog";
 import { ProgramTracksList } from "./program-tracks-list";
 import { RoomDialog } from "./room-dialog";

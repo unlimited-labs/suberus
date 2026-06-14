@@ -20,8 +20,8 @@ import { statusChangeOptions } from "@/features/submissions/labels";
 import type { AdminSubmission } from "@/features/submissions/server/admin-submissions";
 import type { AvailableTrack } from "@/features/submissions/types";
 import type { SubmissionStatus } from "@/generated/prisma/enums";
-import { getErrorMessage } from "@/lib/error-message";
 import { reviewerUsersQueryOptions } from "@/server-fns/reviews/reviewers";
+import { getErrorMessage } from "@/shared/lib/error-message";
 
 interface SubmissionBulkActionsProps {
 	table: Table<AdminSubmission>;

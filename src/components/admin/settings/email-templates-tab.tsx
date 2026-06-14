@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { EmailEventType } from "@/generated/prisma/enums";
-import { getErrorMessage } from "@/lib/error-message";
 import {
 	emailFooterQueryOptions,
 	updateEmailFooterFn,
 } from "@/server-fns/settings";
+import { getErrorMessage } from "@/shared/lib/error-message";
 import { EmailTemplateCard } from "./email-template-card";
 import { EmailTemplateDialog } from "./email-template-dialog";
 

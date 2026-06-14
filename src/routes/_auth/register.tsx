@@ -29,7 +29,6 @@ import { signUp } from "@/lib/auth-client";
 import { detectCountry } from "@/lib/detect-country";
 import { titleOptions } from "@/lib/labels";
 import { roleLabels } from "@/lib/labels/user";
-import { cn } from "@/lib/utils";
 import { registerBase, registerSchema } from "@/lib/validations/auth";
 import { surveyAnswerRequiredError } from "@/lib/validations/survey";
 import { checkEmailAvailableFn } from "@/server-fns/auth";
@@ -48,6 +47,7 @@ import {
 	getTosContentForRegistrationFn,
 	saveUserSurveyAnswersFn,
 } from "@/server-fns/settings/survey";
+import { cn } from "@/shared/lib/utils";
 
 const searchSchema = z.object({
 	token: z.string().optional(),

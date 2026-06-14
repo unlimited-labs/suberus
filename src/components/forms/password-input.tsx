@@ -2,7 +2,7 @@ import { IconLock } from "@tabler/icons-react";
 
 import { Input } from "@/components/ui/input";
 import { usePasswordVisibility } from "@/hooks/use-password-visibility";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 interface PasswordInputProps {
 	id?: string;

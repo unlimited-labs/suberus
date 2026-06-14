@@ -10,11 +10,11 @@ import { useEffect } from "react";
 import { AuthLayout } from "@/components/layout/auth-layout";
 import { SpinnerSvg } from "@/components/spinner-svg";
 import { useSession } from "@/hooks/use-session";
-import { formatDate } from "@/lib/format-date";
 import { APP_SETTINGS_DEFAULTS } from "@/lib/settings/defaults";
 import type { AuthPageBranding } from "@/server-fns/settings";
 import { getAuthPageBrandingFn } from "@/server-fns/settings";
 import { checkInstallStatusFn } from "@/server-fns/settings/install";
+import { formatDate } from "@/shared/lib/format-date";
 
 const defaults: AuthPageBranding = {
 	conferenceName: APP_SETTINGS_DEFAULTS.CONFERENCE_NAME,

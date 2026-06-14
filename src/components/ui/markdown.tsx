@@ -1,5 +1,5 @@
 import parse from "html-react-parser";
-import { renderMarkdown } from "@/lib/markdown";
+import { renderMarkdown } from "@/shared/lib/markdown";
 
 interface MarkdownProps {
 	content: string;

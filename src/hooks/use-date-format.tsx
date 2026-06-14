@@ -3,7 +3,7 @@ import {
 	formatDate as fmtDate,
 	formatDateTime as fmtDateTime,
 	formatTime as fmtTime,
-} from "@/lib/format-date";
+} from "@/shared/lib/format-date";
 
 interface DateFormatContextValue {
 	dateFormat: string;

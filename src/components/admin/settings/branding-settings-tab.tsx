@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
-import { getErrorMessage } from "@/lib/error-message";
 import {
 	type BrandingSettings,
 	brandingSettingsQueryOptions,
@@ -25,6 +24,7 @@ import {
 	updateBrandingSettingsFn,
 	uploadAuthBackgroundFn,
 } from "@/server-fns/settings";
+import { getErrorMessage } from "@/shared/lib/error-message";
 
 interface BrandingSettingsTabProps {
 	initialData: BrandingSettings;

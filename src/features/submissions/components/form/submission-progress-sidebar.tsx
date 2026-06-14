@@ -5,7 +5,7 @@ import {
 } from "@tabler/icons-react";
 
 import { Markdown } from "@/components/ui/markdown";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import type { ValidationSettings } from "./submission-form-types";
 import type { SubmissionProgress } from "./submission-progress";
 
