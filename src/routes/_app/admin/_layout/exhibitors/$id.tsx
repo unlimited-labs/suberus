@@ -3,14 +3,14 @@ import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { DecideExhibitorDialog } from "@/components/admin/exhibitors/decide-exhibitor-dialog";
-import { statusLabels, statusVariants } from "@/features/submissions/labels";
-import { exhibitorStatusBadge } from "@/lib/labels/exhibitor";
 import {
 	exhibitorDetailQueryOptions,
 	listExhibitorsQueryOptions,
 	setExhibitorPackageFn,
-} from "@/server-fns/exhibitors";
+} from "@/features/exhibitors/api/exhibitors";
+import { DecideExhibitorDialog } from "@/features/exhibitors/components/admin/decide-exhibitor-dialog";
+import { exhibitorStatusBadge } from "@/features/exhibitors/labels";
+import { statusLabels, statusVariants } from "@/features/submissions/labels";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { getErrorMessage } from "@/shared/lib/error-message";

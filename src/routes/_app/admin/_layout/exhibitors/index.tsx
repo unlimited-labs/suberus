@@ -1,8 +1,8 @@
 import { IconBuildingStore } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { ExhibitorsTable } from "@/components/admin/exhibitors/exhibitors-table";
-import { listExhibitorsQueryOptions } from "@/server-fns/exhibitors";
+import { listExhibitorsQueryOptions } from "@/features/exhibitors/api/exhibitors";
+import { ExhibitorsTable } from "@/features/exhibitors/components/admin/exhibitors-table";
 import { PageHeader } from "@/shared/components/layout/page-header";
 
 export const Route = createFileRoute("/_app/admin/_layout/exhibitors/")({

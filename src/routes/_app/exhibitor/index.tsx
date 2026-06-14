@@ -2,12 +2,12 @@ import { IconAlertTriangle, IconBuildingStore } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { ExhibitorApplicationForm } from "@/components/exhibitor/exhibitor-application-form";
-import { ExhibitorStatusCard } from "@/components/exhibitor/exhibitor-status-card";
 import {
 	exhibitorPanelConfigQueryOptions,
 	myExhibitorQueryOptions,
-} from "@/server-fns/exhibitors";
+} from "@/features/exhibitors/api/exhibitors";
+import { ExhibitorApplicationForm } from "@/features/exhibitors/components/exhibitor-application-form";
+import { ExhibitorStatusCard } from "@/features/exhibitors/components/exhibitor-status-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useSession } from "@/shared/hooks/use-session";
 import { exhibitorRouteMiddleware } from "@/shared/server/middleware/auth";

@@ -5,7 +5,7 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { decideExhibitorFn } from "@/server-fns/exhibitors";
+import { decideExhibitorFn } from "@/features/exhibitors/api/exhibitors";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";

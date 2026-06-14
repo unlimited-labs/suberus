@@ -8,8 +8,8 @@ import {
 	type FilterOption,
 	facetedFilterFn,
 } from "@/components/admin/data-table";
-import { exhibitorStatusBadge } from "@/lib/labels/exhibitor";
-import type { listExhibitorsFn } from "@/server-fns/exhibitors";
+import type { listExhibitorsFn } from "@/features/exhibitors/api/exhibitors";
+import { exhibitorStatusBadge } from "@/features/exhibitors/labels";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";

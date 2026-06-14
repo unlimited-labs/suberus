@@ -2,13 +2,13 @@ import { IconBuildingStore, IconLoader2 } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
+import { exhibitorSignupAvailableQueryOptions } from "@/features/exhibitors/api/exhibitors";
 import {
 	submissionTypesConfigQueryOptions,
 	updateSubmissionTypeConfigFn,
 } from "@/features/settings/api/settings";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import type { SubmissionTypeConfig } from "@/features/settings/types";
-import { exhibitorSignupAvailableQueryOptions } from "@/server-fns/exhibitors";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
 import { Label } from "@/shared/ui/label";

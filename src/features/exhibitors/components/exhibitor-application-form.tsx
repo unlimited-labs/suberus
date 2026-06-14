@@ -12,16 +12,16 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import {
-	type Author,
-	AuthorsInput,
-} from "@/features/submissions/components/form/authors-input";
-import { exhibitorPresentationSchema } from "@/lib/validations/exhibitor";
-import {
 	type getMyExhibitorFn,
 	myExhibitorQueryOptions,
 	saveExhibitorApplicationFn,
 	withdrawMyExhibitorFn,
-} from "@/server-fns/exhibitors";
+} from "@/features/exhibitors/api/exhibitors";
+import { exhibitorPresentationSchema } from "@/features/exhibitors/validations";
+import {
+	type Author,
+	AuthorsInput,
+} from "@/features/submissions/components/form/authors-input";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";

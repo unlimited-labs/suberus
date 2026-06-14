@@ -16,6 +16,10 @@ import { AffiliationSelect } from "@/components/forms/affiliation-select";
 import { checkEmailAvailableFn } from "@/features/auth/api/auth";
 import { AuthCard } from "@/features/auth/components/auth-card";
 import { TosModal } from "@/features/auth/components/tos-modal";
+import {
+	becomeExhibitorFn,
+	exhibitorSignupAvailableFn,
+} from "@/features/exhibitors/api/exhibitors";
 import { getRegistrationStatusFn } from "@/features/settings/api/settings";
 import {
 	acceptTosFn,
@@ -30,10 +34,6 @@ import { detectCountry } from "@/lib/detect-country";
 import { titleOptions } from "@/lib/labels";
 import { roleLabels } from "@/lib/labels/user";
 import { registerBase, registerSchema } from "@/lib/validations/auth";
-import {
-	becomeExhibitorFn,
-	exhibitorSignupAvailableFn,
-} from "@/server-fns/exhibitors";
 import {
 	consumeInvitationFn,
 	validateInvitationTokenFn,

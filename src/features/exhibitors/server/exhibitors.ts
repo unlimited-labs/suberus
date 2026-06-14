@@ -4,6 +4,10 @@ import {
 	logActivityTx,
 } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
+import type {
+	ExhibitorApplicationInput,
+	ExhibitorPresentationInput,
+} from "@/features/exhibitors/validations";
 import {
 	getSetting,
 	getSubmissionTypeConfigs,
@@ -14,10 +18,6 @@ import {
 	validateSubmissionTransition,
 	withdrawSubmission,
 } from "@/features/workflow/server/workflow";
-import type {
-	ExhibitorApplicationInput,
-	ExhibitorPresentationInput,
-} from "@/lib/validations/exhibitor";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
 

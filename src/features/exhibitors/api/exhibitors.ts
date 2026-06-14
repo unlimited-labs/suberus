@@ -1,7 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { getSubmissionTypeConfigs } from "@/features/settings/server/settings";
 import {
 	becomeExhibitor,
 	decideExhibitor,
@@ -12,8 +11,9 @@ import {
 	saveExhibitorApplication,
 	setExhibitorPackage,
 	withdrawOwnExhibitor,
-} from "@/lib/server/exhibitors";
-import { exhibitorApplicationSchema } from "@/lib/validations/exhibitor";
+} from "@/features/exhibitors/server/exhibitors";
+import { exhibitorApplicationSchema } from "@/features/exhibitors/validations";
+import { getSubmissionTypeConfigs } from "@/features/settings/server/settings";
 import {
 	adminMiddleware,
 	authMiddleware,
