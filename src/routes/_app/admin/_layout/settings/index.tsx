@@ -21,8 +21,9 @@ import {
 } from "@tanstack/react-router";
 import { z } from "zod";
 import { ProgramTab } from "@/components/admin/program";
-import { EmailTemplatesTab } from "@/components/admin/settings";
-import { toEmailTemplateUI } from "@/components/admin/settings/email-templates-tab";
+import { EmailTemplatesTab } from "@/features/email-templates";
+import { emailTemplatesQueryOptions } from "@/features/email-templates/api/email-templates";
+import { toEmailTemplateUI } from "@/features/email-templates/components/admin/email-templates-tab";
 import { paymentInstructionsQueryOptions } from "@/features/fee/api/fee";
 import { FeeTab } from "@/features/fee/components/admin/fee-tab";
 import {
@@ -50,7 +51,6 @@ import { TracksTab } from "@/features/tracks/components/admin/tracks-tab";
 import { allRoomsQueryOptions } from "@/server-fns/planner/rooms";
 import { allProgramTracksQueryOptions } from "@/server-fns/planner/tracks";
 import { reviewerUsersQueryOptions } from "@/server-fns/reviews/reviewers";
-import { emailTemplatesQueryOptions } from "@/server-fns/settings/email-templates";
 import {
 	doclingHealthQueryOptions,
 	extractionAdminSettingsQueryOptions,

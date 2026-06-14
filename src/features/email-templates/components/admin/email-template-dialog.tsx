@@ -6,7 +6,7 @@ import {
 	emailTemplatesQueryOptions,
 	sendTestEmailFn,
 	updateEmailTemplateFn,
-} from "@/server-fns/settings/email-templates";
+} from "@/features/email-templates/api/email-templates";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
