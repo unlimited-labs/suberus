@@ -1,12 +1,7 @@
-import {
-	IconCalendar,
-	IconFileText,
-	IconLock,
-	IconPlus,
-} from "@tabler/icons-react";
+import { IconFileText } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { compareDesc, differenceInCalendarDays, isAfter } from "date-fns";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { compareDesc } from "date-fns";
 import { useEffect } from "react";
 import { redirectExhibitorRouteMiddleware } from "@/features/auth/server/middleware";
 import {
@@ -14,18 +9,14 @@ import {
 	submissionDeadlineQueryOptions,
 } from "@/features/settings/api/settings";
 import { mySubmissionsQueryOptions } from "@/features/submissions/api/submissions";
+import { NewSubmissionButton } from "@/features/submissions/components/list/new-submission-button";
+import { SubmissionsDeadlineBanner } from "@/features/submissions/components/list/submissions-deadline-banner";
+import { SubmissionsEmptyState } from "@/features/submissions/components/list/submissions-empty-state";
+import { useSubmissionAccess } from "@/features/submissions/components/list/use-submission-access";
 import { SubmissionsTable } from "@/features/submissions/components/submissions-table";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { useSession } from "@/shared/hooks/use-session";
-import { cn } from "@/shared/lib/utils";
-import { Button } from "@/shared/ui/button";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/shared/ui/tooltip";
 
 export const Route = createFileRoute("/_app/submissions/")({
 	server: {
@@ -54,30 +45,13 @@ function SubmissionsPage() {
 
 	const { data: submissions } = useSuspenseQuery(mySubmissionsQueryOptions());
 	const {
-		data: { deadline, locked, canBypass },
-	} = useSuspenseQuery(submissionDeadlineQueryOptions());
-	const { data: activeTypes } = useSuspenseQuery(
-		activeSubmissionTypesQueryOptions(),
-	);
+		deadline,
+		deadlineUrgent,
+		deadlineCritical,
+		canSubmit,
+		disabledReason,
+	} = useSubmissionAccess();
 	const { formatDate } = useDateFormat();
-	const daysLeft = deadline
-		? differenceInCalendarDays(new Date(deadline), new Date())
-		: null;
-	const deadlineUrgent = daysLeft !== null && daysLeft <= 7;
-	const deadlineCritical = daysLeft !== null && daysLeft <= 3;
-	const deadlineOpen =
-		canBypass || (deadline ? isAfter(new Date(deadline), new Date()) : true);
-	const hasActiveTypes = activeTypes.length > 0;
-	const canSubmit = (canBypass || !locked) && deadlineOpen && hasActiveTypes;
-
-	const disabledReason =
-		!canBypass && locked
-			? "Submissions have been closed by the administrator"
-			: !deadlineOpen
-				? "The submission deadline has passed"
-				: !hasActiveTypes
-					? "No submission types are currently active"
-					: "";
 
 	// Sort submissions by newest first (updatedAt DESC)
 	const sortedSubmissions = [...submissions].sort((a, b) =>
@@ -89,76 +63,21 @@ function SubmissionsPage() {
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconFileText} title="Submissions">
-				{canSubmit ? (
-					<Link to="/submissions/new">
-						<Button className="gap-2">
-							<IconPlus className="size-4" />
-							New Submission
-						</Button>
-					</Link>
-				) : (
-					<TooltipProvider>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<span
-									data-testid="new-submission-disabled"
-									className="inline-block cursor-not-allowed"
-								>
-									<Button className="gap-2 pointer-events-none" disabled>
-										<IconPlus className="size-4" />
-										New Submission
-									</Button>
-								</span>
-							</TooltipTrigger>
-							<TooltipContent>{disabledReason}</TooltipContent>
-						</Tooltip>
-					</TooltipProvider>
-				)}
+				<NewSubmissionButton
+					canSubmit={canSubmit}
+					disabledReason={disabledReason}
+				/>
 			</PageHeader>
 			{deadline && (
-				<div
-					data-testid="submission-deadline"
-					className="flex items-center gap-2 border-b border-border px-6 py-2 text-sm"
-				>
-					<IconCalendar className="size-4 text-muted-foreground" />
-					<span className="text-muted-foreground">Submission deadline:</span>
-					<span
-						data-testid="submission-deadline-date"
-						className={cn(
-							"font-medium",
-							deadlineUrgent && "text-red-700 dark:text-red-400",
-							deadlineCritical && "font-bold",
-						)}
-					>
-						{formatDate(deadline)}
-					</span>
-				</div>
+				<SubmissionsDeadlineBanner
+					formattedDeadline={formatDate(deadline)}
+					urgent={deadlineUrgent}
+					critical={deadlineCritical}
+				/>
 			)}
 			<div className="flex-1 p-6 overflow-auto">
 				{sortedSubmissions.length === 0 ? (
-					<div className="rounded-lg border border-border/50 p-8 text-center">
-						{canSubmit ? (
-							<>
-								<IconFileText className="mx-auto size-12 text-muted-foreground/50" />
-								<p className="mt-4 text-muted-foreground">
-									You don't have any submissions yet
-								</p>
-								<Link to="/submissions/new">
-									<Button className="mt-4 gap-2">
-										<IconPlus className="size-4" />
-										Create your first submission
-									</Button>
-								</Link>
-							</>
-						) : (
-							<>
-								<IconLock className="mx-auto size-12 text-muted-foreground/50" />
-								<p className="mt-4 text-muted-foreground">
-									Submissions are closed
-								</p>
-							</>
-						)}
-					</div>
+					<SubmissionsEmptyState canSubmit={canSubmit} />
 				) : (
 					<SubmissionsTable submissions={sortedSubmissions} />
 				)}
