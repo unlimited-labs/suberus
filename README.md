@@ -9,6 +9,12 @@
 
 ### **Abstract & peer-review management for scientific conferences**
 
+[![TanStack Start](https://img.shields.io/badge/TanStack-Start-EF4444?logo=react&logoColor=white)](https://tanstack.com/start)
+[![Node.js](https://img.shields.io/badge/Node.js-22+-5FA04E?logo=node.js&logoColor=white)](https://nodejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18+-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![Prisma](https://img.shields.io/badge/Prisma-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 </div>
 
@@ -31,6 +37,8 @@ Suberus runs the full lifecycle of a conference call for submissions: authors su
 
 **Prerequisites:** Node.js 22+, pnpm, and Docker (managed via [proto](https://moonrepo.dev/proto) — run `proto install` to get the pinned toolchain).
 
+> **Note:** PostgreSQL must have the [`pgvector`](https://github.com/pgvector/pgvector) extension available — it backs submission embeddings (semantic search / similarity). The Docker image ships with it; a self-managed PostgreSQL needs `pgvector` installed and `CREATE EXTENSION vector` enabled, or migrations will fail.
+
 ```bash
 # 1. Install dependencies
 pnpm install
@@ -52,8 +60,7 @@ Suberus follows a **feature-first** layout: each feature is a vertical slice und
 
 ```
 src/
-├── features/        # vertical slices (submissions, workflow, planner,
-│                    #   settings, exhibitors, activity-log, …)
+├── features/        # vertical slices (submissions, workflow, planner, settings, exhibitors, activity-log, …)
 ├── shared/          # cross-cutting building blocks
 ├── routes/          # TanStack Router file-based routes
 └── lib/             # low-level helpers
