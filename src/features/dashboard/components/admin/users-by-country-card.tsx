@@ -5,7 +5,7 @@ import MapLibreGL from "maplibre-gl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
 import { useTheme } from "@/shared/components/theme-provider";
-import { COUNTRY_CENTROIDS } from "@/shared/lib/country-centroids";
+import { COUNTRY_CENTROIDS } from "@/features/dashboard/country-centroids";
 import {
 	Card,
 	CardAction,
