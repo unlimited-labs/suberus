@@ -34,6 +34,11 @@ sidebar.
 If **System health** shows email (SMTP) or storage (S3) as failing, notifications
 and file uploads may be broken. Fix the underlying service before the call gets
 busy — check the relevant environment configuration.
+
+A **yellow** LLM indicator means the service is reachable but the configured model
+(`LLM_MODEL` / `LLM_EMBEDDING_MODEL`) is not one the API reports — AI features stay
+disabled until you correct the model name. When green, the indicator shows the model
+in use; when red or yellow, it shows the connection error or the available models.
 </Aside>
 
 ## "A new version is available" banner

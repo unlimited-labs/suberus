@@ -32,6 +32,7 @@ export default defineTask({
 				message: llm.message,
 				gpu: llm.gpu,
 				models: llm.models,
+				model: llm.model,
 				checkedAt,
 			}),
 			setSetting("SERVICE_HEALTH_DOCLING", {

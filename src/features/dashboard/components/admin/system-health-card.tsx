@@ -16,7 +16,7 @@ interface SystemHealthCardProps {
 	docling: AdminDashboardMetrics["docling"] | undefined;
 }
 
-type ServiceStatus = "healthy" | "unavailable" | "error";
+type ServiceStatus = "healthy" | "unavailable" | "misconfigured" | "error";
 
 interface ServiceRow {
 	icon: React.ComponentType<{ className?: string }>;
@@ -30,6 +30,10 @@ const STATUS_STYLES: Record<ServiceStatus, { dot: string; label: string }> = {
 	unavailable: {
 		dot: "bg-blue-500",
 		label: "text-blue-600 dark:text-blue-400",
+	},
+	misconfigured: {
+		dot: "bg-yellow-500",
+		label: "text-yellow-600 dark:text-yellow-500",
 	},
 	error: { dot: "bg-red-500", label: "text-red-600 dark:text-red-400" },
 };

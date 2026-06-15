@@ -209,19 +209,29 @@ export function ProgramTab({
 						<div
 							className={cn(
 								"size-1.5 rounded-full",
-								llmAvailable ? "bg-green-500" : "bg-red-500",
+								llmHealth.status === "healthy"
+									? "bg-green-500"
+									: llmHealth.status === "misconfigured"
+										? "bg-yellow-500"
+										: "bg-red-500",
 							)}
 						/>
 						<span className="text-[11px] text-muted-foreground">
 							{formatLlmStatus(llmHealth)}
 						</span>
 					</div>
-					{!llmAvailable && (
+					{llmHealth.status === "misconfigured" ? (
+						<p className="text-xs text-amber-700 dark:text-amber-400">
+							LLM service is reachable but the configured model is invalid.{" "}
+							{llmHealth.message} Autoplanning stays disabled until the model
+							name is corrected.
+						</p>
+					) : !llmAvailable ? (
 						<p className="text-xs text-amber-700 dark:text-amber-400">
 							LLM API is not available. Configure LLM_API_URL and ensure the
 							service is running to enable autoplanning.
 						</p>
-					)}
+					) : null}
 				</div>
 				<div className="mt-6 flex justify-end">
 					<Button onClick={handlePlannerSave} disabled={plannerSaving}>

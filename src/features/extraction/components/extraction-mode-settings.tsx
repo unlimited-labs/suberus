@@ -32,7 +32,6 @@ export function ExtractionModeSettings({
 	doclingHealth,
 }: ExtractionModeSettingsProps) {
 	const llmAvailable = llmHealth.status === "healthy";
-	const doclingAvailable = doclingHealth.status === "healthy";
 
 	return (
 		<SettingsSection
@@ -70,7 +69,7 @@ export function ExtractionModeSettings({
 							onCheckedChange={onHeuristicChange}
 							footer={
 								<StatusBadge
-									available={doclingAvailable}
+									status={doclingHealth.status}
 									label={formatDoclingStatus(doclingHealth)}
 								/>
 							}
@@ -84,13 +83,15 @@ export function ExtractionModeSettings({
 							onCheckedChange={onAiChange}
 							disabled={!llmAvailable}
 							warning={
-								!llmAvailable
-									? "LLM API is not available. Configure LLM_API_URL environment variable and ensure the service is running."
-									: undefined
+								llmHealth.status === "misconfigured"
+									? `LLM service is reachable but the configured model is invalid. ${llmHealth.message} AI extraction stays disabled until the model name is corrected.`
+									: !llmAvailable
+										? "LLM API is not available. Configure LLM_API_URL environment variable and ensure the service is running."
+										: undefined
 							}
 							footer={
 								<StatusBadge
-									available={llmAvailable}
+									status={llmHealth.status}
 									label={formatLlmStatus(llmHealth)}
 								/>
 							}
@@ -109,20 +110,21 @@ export function ExtractionModeSettings({
 }
 
 function StatusBadge({
-	available,
+	status,
 	label,
 }: {
-	available: boolean;
+	status: "healthy" | "unavailable" | "misconfigured";
 	label: string;
 }) {
+	const dot =
+		status === "healthy"
+			? "bg-green-500"
+			: status === "misconfigured"
+				? "bg-yellow-500"
+				: "bg-red-500";
 	return (
 		<div className="flex items-center gap-1.5">
-			<div
-				className={cn(
-					"size-1.5 rounded-full",
-					available ? "bg-green-500" : "bg-red-500",
-				)}
-			/>
+			<div className={cn("size-1.5 rounded-full", dot)} />
 			<span className="text-[11px] text-muted-foreground">{label}</span>
 		</div>
 	);

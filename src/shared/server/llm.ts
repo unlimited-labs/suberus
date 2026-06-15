@@ -2,11 +2,13 @@ import { env } from "@/env";
 import { createHealthCache } from "@/shared/lib/health-cache";
 
 export interface LlmHealthResult {
-	status: "healthy" | "unavailable";
+	status: "healthy" | "unavailable" | "misconfigured";
 	message: string;
 	/** true = GPU detected, false = CPU only, undefined = unknown */
 	gpu?: boolean;
 	models?: string[];
+	/** the configured chat model actually in use (when healthy) */
+	model?: string;
 }
 
 const healthCache = createHealthCache<LlmHealthResult>(60_000);
@@ -58,12 +60,16 @@ export async function checkLlmHealth(): Promise<LlmHealthResult> {
 
 			if (missing.length > 0) {
 				result = {
-					status: "unavailable",
+					status: "misconfigured",
 					message: `Configured model not reported by API: ${missing.join(", ")}. Available: ${models.join(", ") || "(none)"}`,
 					models,
 				};
 			} else {
-				result = { status: "healthy", message: "Connected", models };
+				result = {
+					status: "healthy",
+					message: "Connected",
+					model: env.LLM_MODEL,
+				};
 				result.gpu = await detectGpu();
 			}
 		}

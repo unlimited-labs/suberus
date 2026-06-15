@@ -95,10 +95,11 @@ export type AppSettingsMap = {
 
 	// Service health (written by scheduled task)
 	SERVICE_HEALTH_LLM: {
-		status: "healthy" | "unavailable";
+		status: "healthy" | "unavailable" | "misconfigured";
 		message: string;
 		gpu?: boolean;
 		models?: string[];
+		model?: string;
 		checkedAt: string;
 	};
 	SERVICE_HEALTH_DOCLING: {

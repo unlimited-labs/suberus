@@ -34,10 +34,11 @@ Extraction works on **DOCX uploads only** — PDFs are not auto-extracted.
 
 ## Keeping it healthy
 
-| Check | Where | What to do if it's red |
+| Check | Where | What to do |
 |---|---|---|
-| **Docling** (structure engine) | Dashboard › System health / Submissions config | Ensure the Docling service is running. |
-| **LLM** (AI engine) | Dashboard › System health / Submissions config | Configure `LLM_API_URL` and ensure the service is reachable; otherwise AI extraction stays disabled. |
+| **Docling** (structure engine) | Dashboard › System health / Submissions config | If red, ensure the Docling service is running. |
+| **LLM** (AI engine) — red | Dashboard › System health / Submissions config | Service unreachable. Configure `LLM_API_URL` and ensure the service is running; AI extraction stays disabled. |
+| **LLM** (AI engine) — yellow | Dashboard › System health / Submissions config | Service is reachable but the configured model (`LLM_MODEL` / `LLM_EMBEDDING_MODEL`) is not reported by the API. Correct the model name to one shown in the indicator's available-models list; AI extraction stays disabled until then. |
 
 ## Related
 
