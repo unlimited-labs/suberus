@@ -1,4 +1,4 @@
-import { useStore } from "@tanstack/react-form";
+import { useSelector } from "@tanstack/react-store";
 import type * as React from "react";
 import { useFieldContext } from "@/shared/hooks/form-context";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
@@ -18,7 +18,7 @@ export function FormSwitchField({
 	testId,
 }: FormSwitchFieldProps) {
 	const field = useFieldContext<boolean>();
-	const submissionAttempts = useStore(
+	const submissionAttempts = useSelector(
 		field.form.store,
 		(s) => s.submissionAttempts,
 	);

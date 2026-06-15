@@ -1,5 +1,5 @@
-import { useStore } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
+import { useSelector } from "@tanstack/react-store";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useMultiStep } from "@/features/auth/hooks/use-multi-step";
@@ -171,7 +171,7 @@ export function useRegisterForm({
 		},
 	});
 
-	const needInvoice = useStore(form.store, (s) => s.values.needInvoice);
+	const needInvoice = useSelector(form.store, (s) => s.values.needInvoice);
 
 	// Run the current step's field-level validators (incl. async email check)
 	// and reveal any errors by marking the fields blurred.

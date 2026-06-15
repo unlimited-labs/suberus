@@ -74,7 +74,7 @@ export const updateSurveyQuestionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.inputValidator(
 		z.object({
-			id: z.string().uuid(),
+			id: z.uuid(),
 			label: z.string().min(1).optional(),
 			orderIndex: z.number().int().min(0).optional(),
 			isActive: z.boolean().optional(),
@@ -94,7 +94,7 @@ export const updateSurveyQuestionFn = createServerFn({ method: "POST" })
 
 export const deleteSurveyQuestionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ id: z.string().uuid() }))
+	.inputValidator(z.object({ id: z.uuid() }))
 	.handler(async ({ data }) => {
 		await deleteSurveyQuestion(data.id);
 		return { success: true };
@@ -102,7 +102,7 @@ export const deleteSurveyQuestionFn = createServerFn({ method: "POST" })
 
 export const reorderSurveyQuestionsFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ orderedIds: z.array(z.string().uuid()) }))
+	.inputValidator(z.object({ orderedIds: z.array(z.uuid()) }))
 	.handler(async ({ data }) => {
 		await reorderSurveyQuestions(data.orderedIds);
 		return { success: true };
@@ -127,7 +127,7 @@ export const saveUserSurveyAnswersFn = createServerFn({ method: "POST" })
 	.inputValidator(
 		z.object({
 			answers: z.array(
-				z.object({ questionId: z.string().uuid(), value: z.string().max(500) }),
+				z.object({ questionId: z.uuid(), value: z.string().max(500) }),
 			),
 		}),
 	)

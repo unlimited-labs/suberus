@@ -1,4 +1,4 @@
-import { useStore } from "@tanstack/react-form";
+import { useSelector } from "@tanstack/react-store";
 
 import { useFieldContext } from "@/shared/hooks/form-context";
 
@@ -9,8 +9,8 @@ import { useFieldContext } from "@/shared/hooks/form-context";
  */
 export function useFieldError<T = string>() {
 	const field = useFieldContext<T>();
-	const errors = useStore(field.store, (s) => s.meta.errors);
-	const submissionAttempts = useStore(
+	const errors = useSelector(field.store, (s) => s.meta.errors);
+	const submissionAttempts = useSelector(
 		field.form.store,
 		(s) => s.submissionAttempts,
 	);

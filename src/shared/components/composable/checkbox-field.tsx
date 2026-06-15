@@ -1,4 +1,4 @@
-import { useStore } from "@tanstack/react-form";
+import { useSelector } from "@tanstack/react-store";
 import type * as React from "react";
 import { useFieldContext } from "@/shared/hooks/form-context";
 import { Checkbox } from "@/shared/ui/checkbox";
@@ -16,7 +16,7 @@ export function FormCheckboxField({
 	className,
 }: FormCheckboxFieldProps) {
 	const field = useFieldContext<boolean>();
-	const submissionAttempts = useStore(
+	const submissionAttempts = useSelector(
 		field.form.store,
 		(s) => s.submissionAttempts,
 	);

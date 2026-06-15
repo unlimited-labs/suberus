@@ -212,7 +212,7 @@ function RevisionForm({
 	const [comment, setComment] = useState("");
 	const [file, setFile] = useState<File | null>(null);
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.SyntheticEvent) => {
 		e.preventDefault();
 		await onSubmit({ title, content, comment, file });
 	};

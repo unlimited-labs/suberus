@@ -5,7 +5,7 @@ import {
 	IconMailX,
 	IconRefresh,
 } from "@tabler/icons-react";
-import { useStore } from "@tanstack/react-form";
+import { useSelector } from "@tanstack/react-store";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { ContactInfoFormData } from "@/features/profile/validations";
@@ -77,7 +77,7 @@ export function ContactInfoSection({
 		},
 	});
 
-	const email = useStore(form.store, (s) => s.values.email);
+	const email = useSelector(form.store, (s) => s.values.email);
 	const emailChanged = email !== currentEmail;
 
 	return (

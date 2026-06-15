@@ -37,7 +37,7 @@ export function InviteUserDialog({
 	const [role, setRole] = useState<"EDITOR" | "REVIEWER" | "ADMIN">("REVIEWER");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.SyntheticEvent) => {
 		e.preventDefault();
 		if (!email.trim()) {
 			toast.error("Email is required");

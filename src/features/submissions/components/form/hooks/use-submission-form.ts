@@ -1,4 +1,4 @@
-import { useStore } from "@tanstack/react-form";
+import { useSelector } from "@tanstack/react-store";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDocumentExtraction } from "@/features/extraction/hooks/use-document-extraction";
 import type { AvailableTrack } from "@/features/submissions/types";
@@ -195,8 +195,8 @@ export function useSubmissionForm({
 		}
 	}, [user, initialData?.authors, form]);
 
-	const values = useStore(form.store, (state) => state.values);
-	const submissionAttempts = useStore(
+	const values = useSelector(form.store, (state) => state.values);
+	const submissionAttempts = useSelector(
 		form.store,
 		(state) => state.submissionAttempts,
 	);

@@ -1,7 +1,7 @@
 import type { EventFormProps } from "@ilamy/calendar";
 import { IconClock, IconLayoutGrid } from "@tabler/icons-react";
-import { useStore } from "@tanstack/react-form";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSelector } from "@tanstack/react-store";
 import { addMinutes } from "date-fns";
 import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
 import { allSessionsQueryOptions } from "@/features/planner/api/sessions";
@@ -45,17 +45,17 @@ export function CreateEventDialog({
 		onClose,
 	});
 
-	const type = useStore(form.store, (s) => s.values.type);
-	const startInput = useStore(form.store, (s) => s.values.startInput);
-	const presentationCount = useStore(
+	const type = useSelector(form.store, (s) => s.values.type);
+	const startInput = useSelector(form.store, (s) => s.values.startInput);
+	const presentationCount = useSelector(
 		form.store,
 		(s) => s.values.presentationCount,
 	);
-	const minutesPerPresentation = useStore(
+	const minutesPerPresentation = useSelector(
 		form.store,
 		(s) => s.values.minutesPerPresentation,
 	);
-	const breakDurationMin = useStore(
+	const breakDurationMin = useSelector(
 		form.store,
 		(s) => s.values.breakDurationMin,
 	);

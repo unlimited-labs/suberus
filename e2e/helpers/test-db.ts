@@ -622,7 +622,7 @@ export async function createTestUser(
 	const db = getPrisma();
 
 	// Create unique affiliation (avoid conflicts in parallel tests)
-	const uniqueId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+	const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 	const affiliationName = options.affiliationName || `E2E Test Affiliation ${uniqueId}`;
 	const affiliation = await db.affiliation.create({
 		data: { name: affiliationName },

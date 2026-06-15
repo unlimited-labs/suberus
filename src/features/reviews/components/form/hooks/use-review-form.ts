@@ -1,4 +1,4 @@
-import { useStore } from "@tanstack/react-form";
+import { useSelector } from "@tanstack/react-store";
 import { useMemo } from "react";
 import {
 	createReviewSchema,
@@ -53,7 +53,7 @@ export function useReviewForm({
 		},
 	});
 
-	const values = useStore(form.store, (state) => state.values);
+	const values = useSelector(form.store, (state) => state.values);
 
 	// Progress indicators
 	const hasDecision = !!values.decision;

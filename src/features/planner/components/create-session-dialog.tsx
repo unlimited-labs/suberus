@@ -1,5 +1,5 @@
-import { useStore } from "@tanstack/react-form";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSelector } from "@tanstack/react-store";
 import { addMinutes } from "date-fns";
 import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
 import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
@@ -48,7 +48,7 @@ export function CreateSessionDialog({
 		onCreated,
 	});
 
-	const slotMin = useStore(form.store, (s) => s.values.slotMin);
+	const slotMin = useSelector(form.store, (s) => s.values.slotMin);
 	const durationMin = submissionIds.length * slotMin;
 	const endAt = addMinutes(defaultStartAt, durationMin);
 

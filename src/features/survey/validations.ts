@@ -23,14 +23,14 @@ export const surveyQuestionFormSchema = z
 			value.type === "SINGLE_SELECT" || value.type === "MULTI_SELECT";
 		if (isSelect && value.options.filter((o) => o.trim()).length < 2) {
 			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
+				code: "custom",
 				path: ["options"],
 				message: "Select questions require at least 2 options",
 			});
 		}
 		if (value.showInUsersList && !value.fieldName.trim()) {
 			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
+				code: "custom",
 				path: ["fieldName"],
 				message: "Field name is required to show in users list",
 			});

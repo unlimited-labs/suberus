@@ -47,7 +47,7 @@ export const enqueueExtractionFn = createServerFn({ method: "POST" })
 
 export const getExtractionResultFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
-	.inputValidator(z.object({ jobId: z.string().uuid() }))
+	.inputValidator(z.object({ jobId: z.uuid() }))
 	.handler(async ({ data }) => {
 		const job = await getJobProgress(data.jobId);
 		if (!job) return { notFound: true as const };

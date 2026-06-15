@@ -1,4 +1,4 @@
-import { useStore } from "@tanstack/react-form";
+import { useSelector } from "@tanstack/react-store";
 
 import { withFieldGroup } from "@/shared/hooks/use-app-form";
 
@@ -40,7 +40,7 @@ export const BillingFieldsGroup = withFieldGroup({
 		countryLabel = "Country",
 		disabled = false,
 	}) {
-		const needInvoice = useStore(group.store, (s) => s.values.needInvoice);
+		const needInvoice = useSelector(group.store, (s) => s.values.needInvoice);
 
 		return (
 			<>
