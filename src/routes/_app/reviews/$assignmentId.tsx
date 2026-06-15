@@ -10,7 +10,7 @@ import {
 	uploadReviewAttachmentFn,
 } from "@/features/reviews/api";
 import { myAssignmentsQueryOptions } from "@/features/reviews/api/assignments";
-import { ReviewForm } from "@/features/reviews/components/review-form";
+import { ReviewForm } from "@/features/reviews/components/form/review-form";
 import type { ReviewFormData } from "@/features/reviews/validations";
 import { reviewGuidelinesQueryOptions } from "@/features/settings/api/settings";
 import { PageHeader } from "@/shared/components/layout/page-header";
