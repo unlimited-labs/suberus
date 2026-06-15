@@ -49,6 +49,13 @@ export const env = createEnv({
 		// Build metadata (injected at build time via Docker ARG/ENV)
 		GIT_COMMIT: z.string().default("unknown"),
 		BUILD_DATE: z.string().default("unknown"),
+
+		// How often the client polls /api/version for a backend redeploy (ms).
+		VERSION_POLL_INTERVAL_MS: z.coerce
+			.number()
+			.int()
+			.positive()
+			.default(60_000),
 	},
 
 	/**

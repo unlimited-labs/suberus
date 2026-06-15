@@ -1,6 +1,11 @@
 import { StartClient } from "@tanstack/react-start/client";
 import { StrictMode, startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
+import { installFetchVersionWatch } from "@/shared/lib/version-skew";
+
+// Watch server-fn responses for a backend redeploy (version skew) so an open
+// tab can prompt the user to refresh instead of silently calling a renamed fn.
+installFetchVersionWatch();
 
 // Dev-only, opt-in via VITE_REACT_SCAN="true": stream react-scan render/commit
 // events to the local ingest route as JSONL. The import.meta.env.DEV guard is a

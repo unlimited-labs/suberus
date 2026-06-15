@@ -17,12 +17,20 @@ export const PG_BASE = "postgresql://suberus:suberus_dev_password@localhost:5432
 export const dbNameFor = (i: number) => `suberus_e2e_${i}`;
 export const dbUrlFor = (i: number) => `${PG_BASE}/${dbNameFor(i)}`;
 export const fromAddrFor = (i: number) => `noreply-w${i}@suberus.local`;
+// Fixed build id so the running E2E server reports a concrete version via
+// /api/version and stamps `x-app-version` on server-fn responses (read from
+// process.env at runtime — no rebuild needed), letting the version-skew tests
+// exercise the real header path instead of the dormant "unknown" default.
+export const E2E_GIT_COMMIT = "e2ecommit";
 export const envFor = (i: number) => ({
 	PORT: String(portFor(i)),
 	E2E: "true",
 	DATABASE_URL: dbUrlFor(i),
 	APP_BASE_URL: baseUrlFor(i),
 	SMTP_FROM_EMAIL: fromAddrFor(i),
+	GIT_COMMIT: E2E_GIT_COMMIT,
+	// Poll fast so the version-skew poll path is testable without long waits.
+	VERSION_POLL_INTERVAL_MS: "500",
 });
 
 // Role-authenticated project: storageState comes from the `role` option (resolved

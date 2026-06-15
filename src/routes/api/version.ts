@@ -12,6 +12,7 @@ export const Route = createFileRoute("/api/version")({
 				Response.json({
 					commit: env.GIT_COMMIT,
 					builtAt: env.BUILD_DATE,
+					pollMs: env.VERSION_POLL_INTERVAL_MS,
 				}),
 		},
 	},

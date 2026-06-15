@@ -10,6 +10,7 @@ import { getAppBrandingFn } from "@/features/settings/api/settings";
 import { APP_SETTINGS_DEFAULTS } from "@/features/settings/defaults";
 import { AppLayout } from "@/shared/components/layout/app-layout";
 import { SpinnerSvg } from "@/shared/components/spinner-svg";
+import { VersionSkewBanner } from "@/shared/components/version-skew-banner";
 import { DateFormatProvider } from "@/shared/hooks/use-date-format";
 import { useSession } from "@/shared/hooks/use-session";
 
@@ -127,6 +128,7 @@ function AppLayoutRoute() {
 					<Outlet />
 				</AppLayout>
 			</DateFormatProvider>
+			<VersionSkewBanner />
 		</div>
 	);
 }
