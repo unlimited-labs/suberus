@@ -6,7 +6,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
-    "build:docker": "tsx scripts/docker.ts",
+    "build:docker": "dotenv -e .env -- tsx scripts/docker.ts",
     "preview": "node --env-file=.env .output/server/index.mjs",
     "test": "vitest run",
     "test:watch": "vitest",

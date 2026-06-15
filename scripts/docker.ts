@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 
-const REGISTRY = "registry.wimiip.eu";
+const REGISTRY = process.env.REGISTRY;
+if (!REGISTRY) throw new Error("REGISTRY env var required (set in .env)");
 const IMAGE_NAME = "suberus/app";
 const TAG = new Date().toISOString().slice(0, 10).replace(/-/g, "");
 

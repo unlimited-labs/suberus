@@ -1,6 +1,4 @@
-variable "REGISTRY" {
-  default = "registry.wimiip.eu"
-}
+variable "REGISTRY" {}
 
 variable "IMAGE_NAME" {
   default = "suberus/app"
