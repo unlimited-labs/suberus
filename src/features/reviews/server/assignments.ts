@@ -1,4 +1,4 @@
-import { addDays, compareAsc, subDays } from "date-fns";
+import { addDays, subDays } from "date-fns";
 import { env } from "@/env.ts";
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
@@ -18,6 +18,7 @@ import { logger } from "@/logger.ts";
 import { formatDate } from "@/shared/lib/format-date";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
+import { compareAssignmentUrgency } from "./assignment-urgency";
 
 /** Reviewer data for assignment UI */
 export interface AvailableReviewer {
@@ -471,21 +472,8 @@ export async function getReviewerAssignments(
 	}
 
 	// Sort by urgency
-	result.sort((a, b) => {
-		const now = new Date();
-		if (a.status === "COMPLETED" && b.status !== "COMPLETED") return 1;
-		if (b.status === "COMPLETED" && a.status !== "COMPLETED") return -1;
-
-		const aOverdue = a.status === "OVERDUE" || (a.deadline && a.deadline < now);
-		const bOverdue = b.status === "OVERDUE" || (b.deadline && b.deadline < now);
-		if (aOverdue && !bOverdue) return -1;
-		if (!aOverdue && bOverdue) return 1;
-
-		if (!a.deadline && !b.deadline) return 0;
-		if (!a.deadline) return 1;
-		if (!b.deadline) return -1;
-		return compareAsc(a.deadline, b.deadline);
-	});
+	const now = new Date();
+	result.sort((a, b) => compareAssignmentUrgency(a, b, now));
 
 	return { assignments: result, total: result.length };
 }
