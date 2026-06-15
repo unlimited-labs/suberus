@@ -498,7 +498,7 @@ export async function getSubmissionById(
 				};
 			});
 
-		// In OPEN mode, authors can see reviewer identities (WORKFLOW.md)
+		// In OPEN mode, authors can see reviewer identities
 		const configKey = SUBMISSION_TYPE_TO_KEY[submission.type];
 		const config = await getSetting(configKey);
 		const isOpenReview = config.reviewMode === "OPEN";

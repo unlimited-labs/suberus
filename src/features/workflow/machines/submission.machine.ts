@@ -5,7 +5,7 @@ import type { SubmissionContext, SubmissionEvent } from "../types";
 /**
  * Submission workflow state machine
  *
- * Handles all submission status transitions according to WORKFLOW.md
+ * Handles all submission status transitions
  * - DRAFT → SUBMITTED → UNDER_REVIEW → REVIEWS_COMPLETE → terminal states
  * - Supports both auto-transition (abstracts) and manual transition (papers)
  * - Editor decision required for papers, reviewer decision for abstracts

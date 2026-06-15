@@ -319,7 +319,7 @@ export async function cancelAssignment(
 
 /** Mark overdue assignments (called by cron job) */
 export async function markOverdueAssignments(): Promise<number> {
-	// Grace period: mark overdue 1 day after deadline (per WORKFLOW.md)
+	// Grace period: mark overdue 1 day after deadline
 	const oneDayAgo = subDays(new Date(), 1);
 
 	const overdueAssignments = await prisma.reviewAssignment.findMany({
