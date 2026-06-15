@@ -95,6 +95,7 @@
         "src/integrations/**",
         "src/routeTree.gen.ts",
         "*.ts",
+        "*.mjs",
         "e2e/**",
         "docs/**",
         "scripts/**",

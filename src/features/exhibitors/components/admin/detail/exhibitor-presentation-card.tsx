@@ -1,4 +1,4 @@
-import { statusLabels, statusVariants } from "@/features/submissions/labels";
+import { statusLabels, statusVariants } from "@/shared/lib/labels/submission";
 import { Badge } from "@/shared/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import type { ExhibitorDetail } from "./types";

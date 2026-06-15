@@ -2,34 +2,37 @@ import { useNavigate } from "@tanstack/react-router";
 import { useSelector } from "@tanstack/react-store";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { detectCountry } from "@/features/auth/detect-country";
 import { useMultiStep } from "@/features/auth/hooks/use-multi-step";
-import { becomeExhibitorFn } from "@/features/exhibitors/api/exhibitors";
-import { consumeInvitationFn } from "@/features/invitations/api/invitations";
+import { registerSchema } from "@/features/auth/validations";
 import { getRegistrationStatusFn } from "@/features/settings/api/settings";
-import {
-	acceptTosFn,
-	type getSurveyQuestionsForRegistrationFn,
-	type getTosContentForRegistrationFn,
-	saveUserSurveyAnswersFn,
-} from "@/features/survey/api/survey";
+import type { SurveyQuestionData } from "@/shared/components/survey-question-field";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { signUp } from "@/shared/lib/auth-client";
-import { detectCountry } from "@/features/auth/detect-country";
-import { registerSchema } from "@/features/auth/validations";
 import { COUNTRIES } from "@/shared/ui/country-combobox";
 
-export type RegisterSurveyQuestions = Awaited<
-	ReturnType<typeof getSurveyQuestionsForRegistrationFn>
->;
-export type RegisterTosContent = Awaited<
-	ReturnType<typeof getTosContentForRegistrationFn>
->;
+export type RegisterSurveyQuestions = SurveyQuestionData[];
+export type RegisterTosContent = string;
+
+/**
+ * Post-signup side effects, injected by the register route (composition tier)
+ * so the auth feature does not import survey / exhibitors / invitations APIs.
+ */
+export interface RegisterEffects {
+	consumeInvitation: (token: string) => Promise<unknown>;
+	saveSurveyAnswers: (
+		answers: { questionId: string; value: string }[],
+	) => Promise<unknown>;
+	acceptTos: () => Promise<unknown>;
+	becomeExhibitor: () => Promise<unknown>;
+}
 
 interface UseRegisterFormArgs {
 	surveyQuestions: RegisterSurveyQuestions;
 	tosContent: RegisterTosContent;
 	invitation: { email: string; role: string } | null;
 	token: string | undefined;
+	effects: RegisterEffects;
 }
 
 type RegisterField =
@@ -66,6 +69,7 @@ export function useRegisterForm({
 	tosContent,
 	invitation,
 	token,
+	effects,
 }: UseRegisterFormArgs) {
 	const navigate = useNavigate();
 	const [accountType, setAccountType] = useState<"participant" | "exhibitor">(
@@ -132,7 +136,7 @@ export function useRegisterForm({
 			// Consume invitation token if present
 			if (token) {
 				try {
-					await consumeInvitationFn({ data: { token } });
+					await effects.consumeInvitation(token);
 				} catch {
 					// Invitation may have already been consumed - not critical
 				}
@@ -144,8 +148,8 @@ export function useRegisterForm({
 				const answers = Object.entries(value.surveyAnswers).map(
 					([questionId, val]) => ({ questionId, value: val }),
 				);
-				promises.push(saveUserSurveyAnswersFn({ data: { answers } }));
-				if (tosContent) promises.push(acceptTosFn());
+				promises.push(effects.saveSurveyAnswers(answers));
+				if (tosContent) promises.push(effects.acceptTos());
 				await Promise.all(promises);
 			} catch {
 				// Account created successfully — survey/ToS can be updated in settings
@@ -153,7 +157,7 @@ export function useRegisterForm({
 
 			if (accountType === "exhibitor") {
 				try {
-					await becomeExhibitorFn();
+					await effects.becomeExhibitor();
 					// Full page load so the client session picks up the new role
 					window.location.assign("/exhibitor");
 					return;

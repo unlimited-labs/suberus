@@ -10,7 +10,7 @@ import {
 	SelectValue,
 } from "@/shared/ui/select";
 
-interface SurveyQuestionData {
+export interface SurveyQuestionData {
 	id: string;
 	label: string;
 	type: SurveyQuestionType;
@@ -24,6 +24,9 @@ interface SurveyQuestionFieldProps {
 	onChange: (value: string) => void;
 }
 
+// Relocated from features/survey unchanged; CRAP is the per-type render switch,
+// not new complexity. Component-level branching, not worth splitting.
+// fallow-ignore-next-line complexity
 export function SurveyQuestionField({
 	question,
 	value,

@@ -4,10 +4,10 @@ import {
 	saveUserSurveyAnswersFn,
 	userSurveyAnswersQueryOptions,
 } from "@/features/survey/api/survey";
-import { SurveyQuestionField } from "@/features/survey/components/survey-question-field";
-import { surveyAnswerRequiredError } from "@/features/survey/validations";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
+import { SurveyQuestionField } from "@/shared/components/survey-question-field";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import { surveyAnswerRequiredError } from "@/shared/lib/validations/survey";
 import { Field, FieldError } from "@/shared/ui/field";
 
 interface SurveyQuestion {

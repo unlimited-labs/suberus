@@ -3,9 +3,9 @@ import type {
 	RegisterSurveyQuestions,
 	RegisterTosContent,
 } from "@/features/auth/hooks/use-register-form";
-import { SurveyQuestionField } from "@/features/survey/components/survey-question-field";
-import { surveyAnswerRequiredError } from "@/features/survey/validations";
 import { registerBase } from "@/features/auth/validations";
+import { SurveyQuestionField } from "@/shared/components/survey-question-field";
+import { surveyAnswerRequiredError } from "@/shared/lib/validations/survey";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
 

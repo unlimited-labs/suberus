@@ -7,12 +7,20 @@ import { RegisterStep2 } from "@/features/auth/components/register/register-step
 import { RegisterStep3 } from "@/features/auth/components/register/register-step-3";
 import { TosModal } from "@/features/auth/components/tos-modal";
 import { useRegisterForm } from "@/features/auth/hooks/use-register-form";
-import { exhibitorSignupAvailableFn } from "@/features/exhibitors/api/exhibitors";
-import { validateInvitationTokenFn } from "@/features/invitations/api/invitations";
+import {
+	becomeExhibitorFn,
+	exhibitorSignupAvailableFn,
+} from "@/features/exhibitors/api/exhibitors";
+import {
+	consumeInvitationFn,
+	validateInvitationTokenFn,
+} from "@/features/invitations/api/invitations";
 import { getRegistrationStatusFn } from "@/features/settings/api/settings";
 import {
+	acceptTosFn,
 	getSurveyQuestionsForRegistrationFn,
 	getTosContentForRegistrationFn,
+	saveUserSurveyAnswersFn,
 } from "@/features/survey/api/survey";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -119,7 +127,19 @@ function RegisterForm() {
 		isFirst,
 		isLast,
 		handleSubmit,
-	} = useRegisterForm({ surveyQuestions, tosContent, invitation, token });
+	} = useRegisterForm({
+		surveyQuestions,
+		tosContent,
+		invitation,
+		token,
+		effects: {
+			consumeInvitation: (t) => consumeInvitationFn({ data: { token: t } }),
+			saveSurveyAnswers: (answers) =>
+				saveUserSurveyAnswersFn({ data: { answers } }),
+			acceptTos: () => acceptTosFn(),
+			becomeExhibitor: () => becomeExhibitorFn(),
+		},
+	});
 
 	return (
 		<AuthCard

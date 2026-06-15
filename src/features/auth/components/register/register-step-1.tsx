@@ -6,10 +6,10 @@ import {
 } from "@tabler/icons-react";
 import { checkEmailAvailableFn } from "@/features/auth/api/auth";
 import type { RegisterFormApi } from "@/features/auth/hooks/use-register-form";
-import { roleLabels } from "@/features/users/labels";
+import { registerBase } from "@/features/auth/validations";
 import { AffiliationSelect } from "@/shared/components/affiliation-select";
 import { titleOptions } from "@/shared/lib/labels/title";
-import { registerBase } from "@/features/auth/validations";
+import { roleLabels } from "@/shared/lib/labels/user-role";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
