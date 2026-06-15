@@ -42,14 +42,14 @@ const sessionCreateSchema = z.object({
 
 export const createSessionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(sessionCreateSchema)
+	.validator(sessionCreateSchema)
 	.handler(async ({ data }) => {
 		return createSession(data);
 	});
 
 export const updateSessionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			id: z.uuid(),
 			title: z.string().min(1).max(300).optional(),
@@ -66,14 +66,14 @@ export const updateSessionFn = createServerFn({ method: "POST" })
 
 export const deleteSessionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ id: z.uuid() }))
+	.validator(z.object({ id: z.uuid() }))
 	.handler(async ({ data }) => {
 		await deleteSession(data.id);
 	});
 
 export const moveSessionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			id: z.uuid(),
 			startAt: zDateString,
@@ -88,14 +88,14 @@ export const moveSessionFn = createServerFn({ method: "POST" })
 
 export const assignChairFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ sessionId: z.uuid(), userId: z.uuid() }))
+	.validator(z.object({ sessionId: z.uuid(), userId: z.uuid() }))
 	.handler(async ({ data }) => {
 		await assignChair(data.sessionId, data.userId);
 	});
 
 export const removeChairFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ sessionId: z.uuid(), userId: z.uuid() }))
+	.validator(z.object({ sessionId: z.uuid(), userId: z.uuid() }))
 	.handler(async ({ data }) => {
 		await removeChair(data.sessionId, data.userId);
 	});
@@ -116,7 +116,7 @@ export const createSessionWithPresentationsFn = createServerFn({
 	method: "POST",
 })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			title: z.string().max(300).optional(),
 			trackId: z.uuid().nullable().optional(),
@@ -133,14 +133,14 @@ export const createSessionWithPresentationsFn = createServerFn({
 
 export const continueSeriesFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ sessionId: z.uuid() }))
+	.validator(z.object({ sessionId: z.uuid() }))
 	.handler(async ({ data }) => {
 		return continueSeries(data.sessionId);
 	});
 
 export const splitSessionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			sessionId: z.uuid(),
 			afterSlotOrder: z.number().int().min(0),

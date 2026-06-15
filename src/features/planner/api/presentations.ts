@@ -10,7 +10,7 @@ import {
 
 export const createPresentationFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			sessionId: z.uuid(),
 			submissionId: z.uuid(),
@@ -23,14 +23,14 @@ export const createPresentationFn = createServerFn({ method: "POST" })
 
 export const deletePresentationFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ id: z.uuid() }))
+	.validator(z.object({ id: z.uuid() }))
 	.handler(async ({ data }) => {
 		await deletePresentation(data.id);
 	});
 
 export const updatePresentationDurationFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			id: z.uuid(),
 			durationMin: z.number().int().positive().max(600),
@@ -42,7 +42,7 @@ export const updatePresentationDurationFn = createServerFn({ method: "POST" })
 
 export const reorderPresentationsFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			sessionId: z.uuid(),
 			orderedIds: z.array(z.uuid()).min(1),

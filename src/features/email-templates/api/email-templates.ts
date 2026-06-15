@@ -29,7 +29,7 @@ export const getEmailTemplatesFn = createServerFn({ method: "GET" })
 /** Update an email template (admin only) */
 export const updateEmailTemplateFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			eventType: emailEventTypeEnum,
 			subject: z.string().min(1).max(200),
@@ -47,7 +47,7 @@ export const updateEmailTemplateFn = createServerFn({ method: "POST" })
 /** Send a test email to the current admin (admin only) */
 export const sendTestEmailFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			subject: z.string().min(1),
 			body: z.string().min(1),

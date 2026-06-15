@@ -32,7 +32,7 @@ const submissionStatusEnum = z.enum([
 /** Get all submissions for admin view */
 export const getAdminSubmissionsFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z
 			.object({
 				search: z.string().optional(),
@@ -48,7 +48,7 @@ export const getAdminSubmissionsFn = createServerFn({ method: "GET" })
 /** Get submission details for editor */
 export const getSubmissionForEditorFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ submissionId: z.uuid() }))
+	.validator(z.object({ submissionId: z.uuid() }))
 	.handler(async ({ data }) => {
 		return getSubmissionForEditor(data.submissionId);
 	});
@@ -56,7 +56,7 @@ export const getSubmissionForEditorFn = createServerFn({ method: "GET" })
 /** Update submission track assignment */
 export const updateSubmissionTrackFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			submissionId: z.uuid(),
 			trackId: z.uuid().nullable(),
@@ -73,7 +73,7 @@ export const updateSubmissionTrackFn = createServerFn({ method: "POST" })
 /** Bulk update track assignment for multiple submissions */
 export const bulkUpdateSubmissionTrackFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			submissionIds: z.array(z.uuid()).min(1),
 			trackId: z.uuid().nullable(),
@@ -86,7 +86,7 @@ export const bulkUpdateSubmissionTrackFn = createServerFn({ method: "POST" })
 /** Bulk change submission status via workflow transitions */
 export const bulkChangeStatusFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			submissionIds: z.array(z.uuid()).min(1),
 			status: submissionStatusEnum,
@@ -111,7 +111,7 @@ export const editorSubmissionQueryOptions = (submissionId: string) =>
 /** Bulk assign reviewer to submissions */
 export const bulkAssignReviewerFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			submissionIds: z.array(z.uuid()).min(1),
 			reviewerId: z.uuid(),
@@ -128,7 +128,7 @@ export const bulkAssignReviewerFn = createServerFn({ method: "POST" })
 /** Check warnings before deleting a submission */
 export const checkSubmissionDeletableFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ submissionId: z.uuid() }))
+	.validator(z.object({ submissionId: z.uuid() }))
 	.handler(async ({ data }) => {
 		return checkSubmissionDeleteWarnings(data.submissionId);
 	});
@@ -136,7 +136,7 @@ export const checkSubmissionDeletableFn = createServerFn({ method: "GET" })
 /** Delete a submission */
 export const deleteSubmissionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ submissionId: z.uuid() }))
+	.validator(z.object({ submissionId: z.uuid() }))
 	.handler(async ({ data, context }) => {
 		return deleteSubmission(data.submissionId, context.user.id);
 	});

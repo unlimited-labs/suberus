@@ -27,7 +27,7 @@ export const getAllProgramTracksFn = createServerFn({ method: "GET" })
 
 export const createProgramTrackFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			name: z.string().min(1).max(200),
 			color: z
@@ -43,7 +43,7 @@ export const createProgramTrackFn = createServerFn({ method: "POST" })
 
 export const updateProgramTrackFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			id: z.uuid(),
 			name: z.string().min(1).max(200).optional(),
@@ -61,7 +61,7 @@ export const updateProgramTrackFn = createServerFn({ method: "POST" })
 
 export const deleteProgramTrackFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ id: z.uuid() }))
+	.validator(z.object({ id: z.uuid() }))
 	.handler(async ({ data }) => {
 		await deleteProgramTrack(data.id);
 	});

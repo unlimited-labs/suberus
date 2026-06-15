@@ -31,7 +31,7 @@ const roomLinkSchema = z
 
 export const createRoomFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			name: z.string().min(1).max(200),
 			description: z.string().max(1000).nullable().optional(),
@@ -48,7 +48,7 @@ export const createRoomFn = createServerFn({ method: "POST" })
 
 export const updateRoomFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			id: z.uuid(),
 			name: z.string().min(1).max(200).optional(),
@@ -67,7 +67,7 @@ export const updateRoomFn = createServerFn({ method: "POST" })
 
 export const deleteRoomFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ id: z.uuid() }))
+	.validator(z.object({ id: z.uuid() }))
 	.handler(async ({ data }) => {
 		await deleteRoom(data.id);
 	});

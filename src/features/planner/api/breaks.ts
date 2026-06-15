@@ -27,7 +27,7 @@ export const listBreaksFn = createServerFn({ method: "GET" })
 
 export const createBreakFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			title: z.string().min(1).max(200),
 			roomId: z.uuid().nullable().optional(),
@@ -41,7 +41,7 @@ export const createBreakFn = createServerFn({ method: "POST" })
 
 export const updateBreakFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			id: z.uuid(),
 			title: z.string().min(1).max(200).optional(),
@@ -57,7 +57,7 @@ export const updateBreakFn = createServerFn({ method: "POST" })
 
 export const deleteBreakFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ id: z.uuid() }))
+	.validator(z.object({ id: z.uuid() }))
 	.handler(async ({ data }) => {
 		await deleteBreak(data.id);
 	});

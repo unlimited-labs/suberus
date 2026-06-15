@@ -13,7 +13,7 @@ export const checkInstallStatusFn = createServerFn({ method: "GET" }).handler(
 );
 
 export const performInstallFn = createServerFn({ method: "POST" })
-	.inputValidator(installSchema)
+	.validator(installSchema)
 	.handler(async ({ data }) => {
 		await performInstall(data);
 		return { success: true };

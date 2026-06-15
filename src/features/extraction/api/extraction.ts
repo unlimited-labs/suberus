@@ -39,7 +39,7 @@ export const extractionSettingsQueryOptions = () =>
 
 export const enqueueExtractionFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.inputValidator((data: FormData) => ({ file: getUploadedFile(data) }))
+	.validator((data: FormData) => ({ file: getUploadedFile(data) }))
 	.handler(async ({ data, context }) => {
 		const buffer = await fileToBuffer(data.file);
 		return enqueueExtractionJob(buffer, data.file.name, context.user.id);
@@ -47,7 +47,7 @@ export const enqueueExtractionFn = createServerFn({ method: "POST" })
 
 export const getExtractionResultFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
-	.inputValidator(z.object({ jobId: z.uuid() }))
+	.validator(z.object({ jobId: z.uuid() }))
 	.handler(async ({ data }) => {
 		const job = await getJobProgress(data.jobId);
 		if (!job) return { notFound: true as const };
@@ -81,7 +81,7 @@ export const extractionAdminSettingsQueryOptions = () =>
 
 export const updateExtractionSettingsFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			enabled: z.boolean(),
 			heuristic: z.boolean(),

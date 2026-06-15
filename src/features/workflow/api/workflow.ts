@@ -41,7 +41,7 @@ async function exhibitorGuard(
 /** Withdraw submission (author) */
 export const withdrawSubmissionFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			submissionId: z.uuid(),
 			reason: z.string().optional(),
@@ -67,7 +67,7 @@ export const withdrawSubmissionFn = createServerFn({ method: "POST" })
 /** Desk accept submission (editor) */
 export const deskAcceptFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			submissionId: z.uuid(),
 			reason: z.string().min(1, "Reason is required"),
@@ -86,7 +86,7 @@ export const deskAcceptFn = createServerFn({ method: "POST" })
 /** Desk reject submission (editor) */
 export const deskRejectFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			submissionId: z.uuid(),
 			reason: z.string().min(1, "Reason is required"),
@@ -105,7 +105,7 @@ export const deskRejectFn = createServerFn({ method: "POST" })
 /** Submit editor decision (editor) */
 export const submitEditorDecisionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			submissionId: z.uuid(),
 			decision: z.enum([
@@ -131,7 +131,7 @@ export const submitEditorDecisionFn = createServerFn({ method: "POST" })
 /** Manual transition to AWAITING_DECISION (editor) */
 export const transitionToAwaitingDecisionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ submissionId: z.uuid() }))
+	.validator(z.object({ submissionId: z.uuid() }))
 	.handler(async ({ data, context }): Promise<TransitionResult> => {
 		return executeSubmissionTransition(
 			data.submissionId,
@@ -144,7 +144,7 @@ export const transitionToAwaitingDecisionFn = createServerFn({ method: "POST" })
 /** Editor override — reopen decision from terminal state (editor) */
 export const editorOverrideFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			submissionId: z.uuid(),
 			reasoning: z.string().min(1, "Reasoning is required"),
@@ -159,7 +159,7 @@ export const editorOverrideFn = createServerFn({ method: "POST" })
 /** Confirm conditions met — promote CONDITIONALLY_ACCEPTED to ACCEPTED (editor) */
 export const confirmConditionsMetFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			submissionId: z.uuid(),
 			reasoning: z.string().min(1, "Reasoning is required"),

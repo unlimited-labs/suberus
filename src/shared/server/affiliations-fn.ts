@@ -11,7 +11,7 @@ const getAffiliationsSchema = z.object({
 });
 
 export const getAffiliations = createServerFn({ method: "GET" })
-	.inputValidator(getAffiliationsSchema)
+	.validator(getAffiliationsSchema)
 	.handler(async ({ data }) => {
 		return findAffiliations(data.q ?? "");
 	});
@@ -21,7 +21,7 @@ const getAffiliationByIdSchema = z.object({
 });
 
 export const getAffiliationById = createServerFn({ method: "GET" })
-	.inputValidator(getAffiliationByIdSchema)
+	.validator(getAffiliationByIdSchema)
 	.handler(async ({ data }) => {
 		return findAffiliationById(data.id);
 	});
@@ -31,7 +31,7 @@ const createAffiliationSchema = z.object({
 });
 
 export const createAffiliation = createServerFn({ method: "POST" })
-	.inputValidator(createAffiliationSchema)
+	.validator(createAffiliationSchema)
 	.handler(async ({ data }) => {
 		return upsertAffiliation(data.name.trim());
 	});

@@ -127,7 +127,7 @@ export const emailFooterQueryOptions = () =>
  */
 export const getSettingFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ key: z.string() }))
+	.validator(z.object({ key: z.string() }))
 	.handler(async ({ data }) => {
 		return getSetting(data.key as keyof AppSettingsMap);
 	});
@@ -137,7 +137,7 @@ export const getSettingFn = createServerFn({ method: "GET" })
  */
 export const setSettingFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			key: z.string(),
 			value: z.unknown(),
@@ -165,7 +165,7 @@ export const getSubmissionTypeConfigsFn = createServerFn({ method: "GET" })
  */
 export const updateSubmissionTypeConfigFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			type: z.enum([
 				"SUBMISSION_TYPE_ORAL_PRESENTATION",
@@ -299,7 +299,7 @@ export const getEmailFooterFn = createServerFn({ method: "GET" })
  */
 export const updateEmailFooterFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ value: z.string() }))
+	.validator(z.object({ value: z.string() }))
 	.handler(async ({ data }) => {
 		await setSetting("EMAIL_FOOTER_TEXT", data.value);
 		return { success: true };
@@ -310,7 +310,7 @@ export const updateEmailFooterFn = createServerFn({ method: "POST" })
  */
 export const updateSubmissionGuidelinesFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ value: z.string() }))
+	.validator(z.object({ value: z.string() }))
 	.handler(async ({ data }) => {
 		await setSetting("SUBMISSION_GUIDELINES", data.value);
 		return { success: true };
@@ -321,7 +321,7 @@ export const updateSubmissionGuidelinesFn = createServerFn({ method: "POST" })
  */
 export const updateReviewGuidelinesFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ value: z.string() }))
+	.validator(z.object({ value: z.string() }))
 	.handler(async ({ data }) => {
 		await setSetting("REVIEW_GUIDELINES", data.value);
 		return { success: true };
@@ -431,7 +431,7 @@ export const getConferenceSettingsFn = createServerFn({ method: "GET" })
  */
 export const updateConferenceSettingsFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(conferenceSettingsSchema)
+	.validator(conferenceSettingsSchema)
 	.handler(async ({ data }) => {
 		await Promise.all([
 			setSetting("CONFERENCE_NAME", data.name),
@@ -469,7 +469,7 @@ export const updateSubmissionValidationSettingsFn = createServerFn({
 	method: "POST",
 })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			minTitleLength: z.number().int().min(1).max(500),
 			maxTitleLength: z.number().int().min(10).max(1000),
@@ -683,7 +683,7 @@ export const getBrandingSettingsFn = createServerFn({ method: "GET" })
  */
 export const updateBrandingSettingsFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(brandingSchema)
+	.validator(brandingSchema)
 	.handler(async ({ data }) => {
 		await setSetting("BRANDING_LOGO_URL", data.logoUrl);
 		await setSetting("BRANDING_FAVICON_URL", data.faviconUrl);
@@ -700,7 +700,7 @@ export const updateBrandingSettingsFn = createServerFn({ method: "POST" })
  */
 export const uploadAuthBackgroundFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator((data: FormData) => ({ file: getUploadedFile(data) }))
+	.validator((data: FormData) => ({ file: getUploadedFile(data) }))
 	.handler(async ({ data }) => {
 		const { uploadAuthBackground, getAuthBackgroundUrl } = await import(
 			"@/features/settings/server/branding"
@@ -827,7 +827,7 @@ export const getAuthPageBrandingFn = createServerFn({ method: "GET" }).handler(
  */
 export const updateFeeInstructionsFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ content: z.string().min(1) }))
+	.validator(z.object({ content: z.string().min(1) }))
 	.handler(async ({ data }) => {
 		await setSetting("FEE_PAYMENT_INSTRUCTIONS", data.content);
 		return { success: true };
@@ -838,7 +838,7 @@ export const updateFeeInstructionsFn = createServerFn({ method: "POST" })
  */
 export const updateTosContentFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ content: z.string().min(1) }))
+	.validator(z.object({ content: z.string().min(1) }))
 	.handler(async ({ data }) => {
 		await setSetting("TOS_CONTENT", data.content);
 		return { success: true };
@@ -895,7 +895,7 @@ const reminderSettingsSchema = z.object({
  */
 export const updateReminderSettingsFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(reminderSettingsSchema)
+	.validator(reminderSettingsSchema)
 	.handler(async ({ data }) => {
 		await setSetting("REMINDER_REVIEWER_SETTINGS", data.reviewer);
 		await setSetting("REMINDER_REVISION_SETTINGS", data.revision);
@@ -946,7 +946,7 @@ const feeTypeItemSchema = z.object({
  */
 export const updateFeeTypesFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ feeTypes: z.array(feeTypeItemSchema).min(1) }))
+	.validator(z.object({ feeTypes: z.array(feeTypeItemSchema).min(1) }))
 	.handler(async ({ data }) => {
 		await setSetting("FEE_TYPES", data.feeTypes);
 		return { success: true };

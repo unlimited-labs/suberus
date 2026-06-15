@@ -27,7 +27,7 @@ export const startAutoPlanFn = createServerFn({ method: "POST" })
 
 export const getAutoPlanJobFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ jobId: z.uuid() }))
+	.validator(z.object({ jobId: z.uuid() }))
 	.handler(async ({ data }) => {
 		const job = await getJobProgress(data.jobId);
 		if (!job) return { notFound: true as const };
@@ -52,7 +52,7 @@ export const getAutoPlanJobFn = createServerFn({ method: "GET" })
 
 export const applyAutoPlanFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ jobId: z.uuid() }))
+	.validator(z.object({ jobId: z.uuid() }))
 	.handler(async ({ data }) => {
 		return applyAutoPlan(data.jobId);
 	});

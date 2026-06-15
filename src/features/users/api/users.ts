@@ -24,7 +24,7 @@ const getUsersSchema = z.object({
 
 export const getAdminUsers = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.inputValidator(getUsersSchema)
+	.validator(getUsersSchema)
 	.handler(async ({ data }) => {
 		const role = data.role
 			? (data.role.split(",") as Array<
@@ -48,7 +48,7 @@ const getUserByIdSchema = z.object({
 
 export const getAdminUserById = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.inputValidator(getUserByIdSchema)
+	.validator(getUserByIdSchema)
 	.handler(async ({ data }) => {
 		const user = await fetchUserById(data.id);
 		return user ?? null;
@@ -91,7 +91,7 @@ const patchUserSchema = z.object({
 
 export const patchAdminUser = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(patchUserSchema)
+	.validator(patchUserSchema)
 	.handler(async ({ data, context }) => {
 		return patchUser(data, {
 			id: context.user.id,
@@ -110,7 +110,7 @@ const bulkActionSchema = z.object({
 
 export const bulkAdminAction = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(bulkActionSchema)
+	.validator(bulkActionSchema)
 	.handler(async ({ data, context }) => {
 		return executeBulkAction(data, {
 			id: context.user.id,
@@ -141,7 +141,7 @@ const adminEditProfileSchema = z.object({
 
 export const updateAdminUserProfile = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
-	.inputValidator(adminEditProfileSchema)
+	.validator(adminEditProfileSchema)
 	.handler(async ({ data }) => {
 		const { id, ...profileData } = data;
 		return adminUpdateProfile(id, profileData);
@@ -151,14 +151,14 @@ const userIdSchema = z.object({ id: z.string() });
 
 export const checkAdminUserDeletable = createServerFn({ method: "GET" })
 	.middleware([adminOnlyMiddleware])
-	.inputValidator(userIdSchema)
+	.validator(userIdSchema)
 	.handler(async ({ data }) => {
 		return adminCheckDeletable(data.id);
 	});
 
 export const deleteAdminUser = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
-	.inputValidator(userIdSchema)
+	.validator(userIdSchema)
 	.handler(async ({ data, context }) => {
 		return adminDeleteUser(data.id, context.user.id);
 	});

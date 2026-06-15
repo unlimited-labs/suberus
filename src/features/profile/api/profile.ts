@@ -26,7 +26,7 @@ export const getPersonalInfoFn = createServerFn({ method: "GET" })
 
 export const updatePersonalInfoFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			firstName: z.string().min(2).max(50),
 			lastName: z.string().min(2).max(50),
@@ -49,7 +49,7 @@ export const updatePersonalInfoFn = createServerFn({ method: "POST" })
 // Contact info
 export const updateContactInfoFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			needInvoice: z.boolean().optional(),
 			address: z.string().max(500).optional(),
@@ -64,7 +64,7 @@ export const updateContactInfoFn = createServerFn({ method: "POST" })
 // Email change (better-auth)
 export const changeEmailFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			newEmail: z.email(),
 		}),
@@ -82,7 +82,7 @@ export const changeEmailFn = createServerFn({ method: "POST" })
 // Password change (better-auth)
 export const changePasswordFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			currentPassword: z.string(),
 			newPassword: z.string().min(10),

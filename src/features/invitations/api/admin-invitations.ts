@@ -28,7 +28,7 @@ const createInvitationSchema = z.object({
 
 export const createInvitationFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
-	.inputValidator(createInvitationSchema)
+	.validator(createInvitationSchema)
 	.handler(async ({ data, context }) => {
 		return createInvitation(data.email, data.role, context.user.id);
 	});
@@ -37,14 +37,14 @@ const idSchema = z.object({ id: z.string() });
 
 export const cancelInvitationFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
-	.inputValidator(idSchema)
+	.validator(idSchema)
 	.handler(async ({ data, context }) => {
 		return cancelInvitation(data.id, context.user.id);
 	});
 
 export const resendInvitationFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
-	.inputValidator(idSchema)
+	.validator(idSchema)
 	.handler(async ({ data }) => {
 		return resendInvitation(data.id);
 	});

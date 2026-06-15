@@ -35,7 +35,7 @@ export const assignmentForReviewQueryOptions = (assignmentId: string) =>
 /** Get assignment details for review form (reviewer) */
 export const getAssignmentForReviewFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
-	.inputValidator(z.object({ assignmentId: z.uuid() }))
+	.validator(z.object({ assignmentId: z.uuid() }))
 	.handler(async ({ data, context }) => {
 		return getAssignmentForReview(data.assignmentId, context.user.id);
 	});
@@ -43,7 +43,7 @@ export const getAssignmentForReviewFn = createServerFn({ method: "GET" })
 /** Submit a review (reviewer) */
 export const submitReviewFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.inputValidator(submitReviewSchema)
+	.validator(submitReviewSchema)
 	.handler(
 		async ({
 			data,
@@ -64,7 +64,7 @@ export const submitReviewFn = createServerFn({ method: "POST" })
 /** Upload a file attachment for a review */
 export const uploadReviewAttachmentFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.inputValidator((data: FormData) =>
+	.validator((data: FormData) =>
 		z
 			.object({ reviewId: z.uuid(), file: z.instanceof(File) })
 			.parse({ reviewId: data.get("reviewId"), file: getUploadedFile(data) }),

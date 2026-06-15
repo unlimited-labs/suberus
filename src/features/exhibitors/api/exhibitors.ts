@@ -33,7 +33,7 @@ export const getMyExhibitorFn = createServerFn({ method: "GET" })
 
 export const saveExhibitorApplicationFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.inputValidator(exhibitorApplicationSchema)
+	.validator(exhibitorApplicationSchema)
 	.handler(({ context, data }) =>
 		saveExhibitorApplication(context.user.id, data),
 	);
@@ -76,7 +76,7 @@ export const listExhibitorsFn = createServerFn({ method: "GET" })
 
 export const getExhibitorFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ id: z.uuid() }))
+	.validator(z.object({ id: z.uuid() }))
 	.handler(async ({ data }) => {
 		const row = await getExhibitorDetail(data.id);
 		if (!row) return null;
@@ -85,7 +85,7 @@ export const getExhibitorFn = createServerFn({ method: "GET" })
 
 export const setExhibitorPackageFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			id: z.uuid(),
 			package: z.string().max(200).nullable(),
@@ -95,7 +95,7 @@ export const setExhibitorPackageFn = createServerFn({ method: "POST" })
 
 export const decideExhibitorFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			id: z.uuid(),
 			decision: z.enum(["APPROVED", "REJECTED"]),

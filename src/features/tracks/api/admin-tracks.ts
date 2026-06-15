@@ -29,7 +29,7 @@ export const getAllTracksFn = createServerFn({ method: "GET" })
  */
 export const createTrackFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			name: z.string().min(1).max(200),
 			supervisorId: z.uuid().optional(),
@@ -44,7 +44,7 @@ export const createTrackFn = createServerFn({ method: "POST" })
  */
 export const updateTrackFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			id: z.uuid(),
 			name: z.string().min(1).max(200).optional(),
@@ -62,7 +62,7 @@ export const updateTrackFn = createServerFn({ method: "POST" })
  */
 export const deleteTrackFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			id: z.uuid(),
 		}),

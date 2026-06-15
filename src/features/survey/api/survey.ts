@@ -45,7 +45,7 @@ export const getSurveyQuestionsFn = createServerFn({ method: "GET" })
 
 export const createSurveyQuestionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			label: z.string().min(1),
 			orderIndex: z.number().int().min(0),
@@ -72,7 +72,7 @@ export const createSurveyQuestionFn = createServerFn({ method: "POST" })
 
 export const updateSurveyQuestionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			id: z.uuid(),
 			label: z.string().min(1).optional(),
@@ -94,7 +94,7 @@ export const updateSurveyQuestionFn = createServerFn({ method: "POST" })
 
 export const deleteSurveyQuestionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ id: z.uuid() }))
+	.validator(z.object({ id: z.uuid() }))
 	.handler(async ({ data }) => {
 		await deleteSurveyQuestion(data.id);
 		return { success: true };
@@ -102,7 +102,7 @@ export const deleteSurveyQuestionFn = createServerFn({ method: "POST" })
 
 export const reorderSurveyQuestionsFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ orderedIds: z.array(z.uuid()) }))
+	.validator(z.object({ orderedIds: z.array(z.uuid()) }))
 	.handler(async ({ data }) => {
 		await reorderSurveyQuestions(data.orderedIds);
 		return { success: true };
@@ -124,7 +124,7 @@ export const getUserSurveyAnswersFn = createServerFn({ method: "GET" })
 
 export const saveUserSurveyAnswersFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			answers: z.array(
 				z.object({ questionId: z.uuid(), value: z.string().max(500) }),

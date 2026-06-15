@@ -27,7 +27,7 @@ export const myAssignmentsQueryOptions = () =>
 /** Get available reviewers for a submission (editor) */
 export const getAvailableReviewersFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ submissionId: z.uuid() }))
+	.validator(z.object({ submissionId: z.uuid() }))
 	.handler(async ({ data }): Promise<AvailableReviewer[]> => {
 		return getAvailableReviewers(data.submissionId);
 	});
@@ -35,7 +35,7 @@ export const getAvailableReviewersFn = createServerFn({ method: "GET" })
 /** Get assignments for a submission (editor) */
 export const getSubmissionAssignmentsFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			submissionId: z.uuid(),
 			round: z.number().int().positive().optional(),
@@ -48,7 +48,7 @@ export const getSubmissionAssignmentsFn = createServerFn({ method: "GET" })
 /** Assign reviewer to submission (editor) */
 export const assignReviewerFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			submissionId: z.uuid(),
 			reviewerId: z.uuid(),
@@ -76,7 +76,7 @@ export const assignReviewerFn = createServerFn({ method: "POST" })
 /** Cancel assignment (editor) */
 export const cancelAssignmentFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			assignmentId: z.uuid(),
 			reason: z.string().optional(),
@@ -94,7 +94,7 @@ export const cancelAssignmentFn = createServerFn({ method: "POST" })
 /** Get reviewer's own assignments */
 export const getMyAssignmentsFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
-	.inputValidator(
+	.validator(
 		z
 			.object({
 				status: z

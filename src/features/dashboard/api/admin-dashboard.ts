@@ -12,7 +12,7 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
 
 export const getMoreActivity = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.inputValidator(z.object({ cursor: z.string().optional() }))
+	.validator(z.object({ cursor: z.string().optional() }))
 	.handler(async ({ data }) => {
 		const { prisma } = await import("@/shared/server/db.server");
 		const items = await prisma.activityLog.findMany({

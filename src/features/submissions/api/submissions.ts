@@ -89,7 +89,7 @@ async function getValidationLimits(): Promise<ValidationLimits> {
 
 export const createSubmission = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.inputValidator(inputSchema)
+	.validator(inputSchema)
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
 		const [submissionDeadline, submissionsLocked, lateAllowed] =
 			await Promise.all([
@@ -177,7 +177,7 @@ export const createSubmission = createServerFn({ method: "POST" })
 /** File upload endpoint for FILE-based submissions */
 export const uploadSubmissionFile = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.inputValidator((data: FormData) =>
+	.validator((data: FormData) =>
 		z
 			.object({
 				submissionId: z.uuid(),
@@ -313,7 +313,7 @@ export const getMySubmissionsFn = createServerFn({ method: "GET" })
 /** Get single submission by ID (must belong to current user) */
 export const getSubmissionByIdFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
-	.inputValidator(z.object({ submissionId: z.uuid() }))
+	.validator(z.object({ submissionId: z.uuid() }))
 	.handler(async ({ data, context }): Promise<SubmissionDetail | null> => {
 		return getSubmissionById(data.submissionId, context.user.id);
 	});
@@ -321,7 +321,7 @@ export const getSubmissionByIdFn = createServerFn({ method: "GET" })
 /** Resubmit a submission with revisions */
 export const resubmitSubmissionFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			submissionId: z.uuid(),
 			title: z.string(),
@@ -349,7 +349,7 @@ export const resubmitSubmissionFn = createServerFn({ method: "POST" })
 /** Submit a revised version while conditionally accepted (no new review round) */
 export const submitConditionalRevisionFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			submissionId: z.uuid(),
 			title: z.string(),
@@ -377,7 +377,7 @@ export const submitConditionalRevisionFn = createServerFn({ method: "POST" })
 /** Update a draft/submitted submission */
 export const updateDraftSubmissionFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.inputValidator(
+	.validator(
 		z.object({
 			submissionId: z.uuid(),
 			type: z.enum(["ABSTRACT", "POSTER", "FULL_PAPER"]),
@@ -455,7 +455,7 @@ export const updateDraftSubmissionFn = createServerFn({ method: "POST" })
 /** Submit a draft (DRAFT → SUBMITTED) */
 export const submitDraftFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.inputValidator(z.object({ submissionId: z.uuid() }))
+	.validator(z.object({ submissionId: z.uuid() }))
 	.handler(
 		async ({
 			data,
