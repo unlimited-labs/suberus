@@ -1,0 +1,54 @@
+---
+title: Suberus Admin Manual
+description: Configure and run your conference with Suberus — a guide for administrators.
+template: splash
+hero:
+  tagline: Everything an administrator needs to configure and run a conference in Suberus.
+  actions:
+    - text: Quick start
+      link: /configuration/quick-start/
+      icon: right-arrow
+      variant: primary
+    - text: 'Managing: quick start'
+      link: /managing/quick-start/
+      icon: open-book
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Who this manual is for
+
+This guide is written for **conference administrators** — the people who set up the
+event, open the call for submissions, assign reviewers, and decide what gets
+accepted. You don't need to be a developer. Where a technical term is unavoidable,
+it is explained the first time it appears.
+
+The manual has three parts:
+
+<CardGrid>
+	<Card title="Configuration" icon="setting">
+		Get the conference ready: identity, submission types, review rules, emails,
+		fees, branding. Start with the **[Quick start](/configuration/quick-start/)**.
+	</Card>
+	<Card title="Managing the conference" icon="open-book">
+		Day-to-day work once submissions arrive: assign reviewers, make decisions,
+		manage users. Start with the **[Quick start](/managing/quick-start/)**.
+	</Card>
+	<Card title="Program Planner" icon="rocket">
+		Schedule accepted presentations into sessions and publish the program — by
+		hand or with the autoplanner. Start with the
+		**[Overview](/planner/overview/)**.
+	</Card>
+</CardGrid>
+
+## How to read it
+
+Each page is split into two kinds of content:
+
+- **How-to** — numbered steps for a task ("how to enable a submission type").
+- **Reference** — a table that explains every field on a screen: what it does,
+  what to enter, and any pitfalls.
+
+Each page opens with a screenshot of the screen it describes, captured from a
+sample conference, so you can match what you see in your own installation.

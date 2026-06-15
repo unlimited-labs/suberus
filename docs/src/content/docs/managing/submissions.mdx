@@ -1,0 +1,118 @@
+---
+title: Submissions
+description: Triage submissions, assign reviewers, make decisions, and act in bulk.
+sidebar:
+  order: 3
+---
+
+import { Aside, Steps, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+**Submissions** is where most of the conference work happens. The list gives you a
+filterable table of everything submitted; opening one shows its full content,
+history, and every action available for its current state.
+
+<Aside type="note" title="Where to find it">
+**Submissions** in the admin sidebar. Click any row to open the submission detail.
+</Aside>
+
+![Submissions list](../../../assets/screenshots/18-managing-submissions-list.png)
+
+## The list
+
+| Column | What it shows |
+|---|---|
+| **Title** | The submission title (searchable). |
+| **Type** | Oral Presentation, Poster, Full Paper, or Exhibitor. |
+| **Status** | Current workflow state (e.g. `SUBMITTED`, `UNDER_REVIEW`, `ACCEPTED`). |
+| **Author** | The submitting author. |
+| **Round** | The current review round number. |
+| **TODO** | Flags submissions that need your attention. |
+| **Submitted** | The date the submission was created. Sortable. |
+| **Last updated** | The date the submission last changed. Sortable, hidden by default — enable it in the **Columns** menu. |
+
+Use the search box (by title), column filters, and the **Export** button to download
+the list. Select rows with the checkboxes to reveal **bulk actions**. Use the
+**Columns** menu to show or hide columns — your choice is remembered in this browser
+and restored next time you open the page.
+
+### Bulk actions
+
+Select submissions, choose an action, and **Apply**:
+
+| Action | What it does | Notes |
+|---|---|---|
+| **Change status** | Moves the selected submissions to a chosen status. | Some transitions are rejected if a submission isn't in a valid state for them. **Exhibitor** presentations are skipped — decide them via the **[Exhibitors](/managing/exhibitors/)** approve/reject flow. |
+| **Assign reviewer** | Assigns one reviewer to all selected submissions. | **Exhibitor** presentations are skipped — they are never peer-reviewed. |
+| **Assign to track** | Assigns the selected submissions to a conference track. | **Only Oral Presentation (abstract) submissions** can be assigned to tracks. |
+
+## The submission detail
+
+Opening a submission shows its content, version history, authors, reviews, and the
+**audit history**. The **Details** panel also shows the **submitter** — the user who
+created the submission — as a link to their profile. The action buttons available
+depend on the current status.
+
+| Action | When available | What it does |
+|---|---|---|
+| **Assign reviewer** | `SUBMITTED`, `RESUBMITTED`, or to add/replace reviewers during review (not for **Exhibitor** presentations — they are never peer-reviewed) | Creates a review assignment (with an optional custom deadline) and moves the submission to `UNDER_REVIEW`. The reviewer is emailed. |
+| **Desk accept** | `SUBMITTED` (not for **Exhibitor** presentations — approve via the **[Exhibitors](/managing/exhibitors/)** flow instead) | Accepts without review (e.g. invited speakers). Requires a reason; the author is notified. |
+| **Desk reject** | `SUBMITTED` (not for **Exhibitor** presentations — reject via the **[Exhibitors](/managing/exhibitors/)** flow instead) | Rejects without review (e.g. out of scope). Requires a reason; the author is notified. |
+| **Editor decision** | After reviews (`REVIEWS_COMPLETE` / `AWAITING_DECISION`) | Records your decision — **Accept**, **Conditionally accept**, **Revise & resubmit**, or **Reject** — with reasoning and a letter to the author. |
+| **Confirm conditions met** | `CONDITIONALLY_ACCEPTED` | Promotes a conditional acceptance to **Accepted** once the author meets the conditions. Requires reasoning (audit trail). The confirmation dialog tells you whether the author has **uploaded a revised version** since the decision; if not, it warns you so you don't confirm prematurely. Review any uploaded version with the **version selector** on the Content tab. |
+| **Override / reopen** | `ACCEPTED`, `CONDITIONALLY_ACCEPTED`, `REJECTED` (not for **Exhibitor** presentations — exhibitor decisions are final) | Reopens a finalised decision back to `AWAITING_DECISION`. Requires reasoning. |
+| **Delete** | Any | Permanently removes the submission. Use with care. |
+
+<Aside type="caution" title="Decisions are auditable, not silent">
+Desk actions, decisions, condition confirmations, and overrides all require a
+**reason** and are recorded immutably in the activity log. The author is notified
+by email for decisions.
+</Aside>
+
+## How to take a submission through review
+
+<Steps>
+
+1. Open a `SUBMITTED` submission.
+
+2. **Assign reviewer(s)** — one for talks/posters, two or more for papers. Set a
+   custom deadline if needed. Status becomes `UNDER_REVIEW`.
+
+3. Wait for reviews. When all are in, the status advances automatically
+   (`REVIEWS_COMPLETE`).
+
+4. Make the **Editor decision** (or let the reviewer's recommendation apply
+   automatically for talks/posters, depending on the type's configuration).
+
+5. If you chose **Revise & resubmit**, the author resubmits and you reassign
+   reviewers for the next round.
+
+6. If the decision is **Conditionally accept**, the author can upload a revised
+   version to satisfy the minor conditions — this does **not** start a new review
+   round. Review the new version with the **version selector** on the Content tab,
+   then **Confirm conditions met** to finalise as **Accepted**.
+
+</Steps>
+
+<Aside type="note" title="Conditional acceptance vs. revise & resubmit">
+**Conditionally accepted** is for *minor* fixes: the author uploads a revised
+(camera-ready) version, no new reviewers are involved, the round number does not
+change, and you confirm the conditions yourself. **Revise & resubmit** is for
+substantive changes: it increments the round and goes back through review.
+</Aside>
+
+![Submission content with version selector](../../../assets/screenshots/19-managing-submission-versions.png)
+
+<Aside type="tip">
+How many reviewers a type needs and whether **you** or the **reviewer** decides is
+set on **[Submission Types](/configuration/submission-types/)**.
+</Aside>
+
+## Related
+
+<CardGrid>
+	<LinkCard title="Reviews" href="/managing/reviews/" description="The reviewer assignment lifecycle and reassignment." />
+	<LinkCard title="Submission Types" href="/configuration/submission-types/" description="Reviewers required and who decides, per type." />
+	<LinkCard title="Activity log" href="/managing/activity-log/" description="The immutable record of every decision." />
+	<LinkCard title="Extraction" href="/managing/extraction/" description="Automatic metadata extraction from uploads." />
+	<LinkCard title="Program Planner" href="/planner/overview/" description="Accepted presentations flow into the schedule." />
+</CardGrid>
