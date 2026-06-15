@@ -9,7 +9,7 @@
  * fallback and the extraction job fails. No retries, no blocking.
  */
 import { env } from "@/env";
-import { createHealthCache } from "@/shared/lib/health-cache";
+import { createHealthCache } from "@/shared/server/health-cache";
 
 export interface DoclingHealthResult {
 	status: "healthy" | "unavailable";
