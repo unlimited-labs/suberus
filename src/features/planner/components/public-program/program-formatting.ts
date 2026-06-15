@@ -17,26 +17,40 @@ export function formatLongDate(dateStr: string): string {
 	return format(new Date(dateStr), "MMMM d, yyyy");
 }
 
+function sharesStartTime(group: TimeGroup, item: ProgramItem): boolean {
+	return (
+		new Date(group.startAt).getTime() === new Date(item.data.startAt).getTime()
+	);
+}
+
+/** Add an item to an existing time group, extending the group's end if it runs later. */
+function appendToGroup(group: TimeGroup, item: ProgramItem): void {
+	if (item.kind === "session") group.sessions.push(item.data);
+	else group.breaks.push(item.data);
+
+	if (isAfter(new Date(item.data.endAt), new Date(group.endAt))) {
+		group.endAt = item.data.endAt;
+	}
+}
+
+function startNewGroup(item: ProgramItem): TimeGroup {
+	return {
+		startAt: item.data.startAt,
+		endAt: item.data.endAt,
+		sessions: item.kind === "session" ? [item.data] : [],
+		breaks: item.kind === "break" ? [item.data] : [],
+	};
+}
+
 /** Group items by start time — parallel sessions share a time header. */
 export function buildTimeGroups(items: ProgramItem[]): TimeGroup[] {
 	const groups: TimeGroup[] = [];
 	for (const it of items) {
-		const key = new Date(it.data.startAt).getTime();
 		const last = groups[groups.length - 1];
-		if (last && new Date(last.startAt).getTime() === key) {
-			if (it.kind === "session") last.sessions.push(it.data);
-			else last.breaks.push(it.data);
-			// Extend group end if this item ends later
-			if (isAfter(new Date(it.data.endAt), new Date(last.endAt))) {
-				last.endAt = it.data.endAt;
-			}
+		if (last && sharesStartTime(last, it)) {
+			appendToGroup(last, it);
 		} else {
-			groups.push({
-				startAt: it.data.startAt,
-				endAt: it.data.endAt,
-				sessions: it.kind === "session" ? [it.data] : [],
-				breaks: it.kind === "break" ? [it.data] : [],
-			});
+			groups.push(startNewGroup(it));
 		}
 	}
 	return groups;
