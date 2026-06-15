@@ -1,10 +1,11 @@
 import { useSelector } from "@tanstack/react-store";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useDocumentExtraction } from "@/features/extraction/hooks/use-document-extraction";
 import type { AvailableTrack } from "@/features/submissions/types";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { useSession } from "@/shared/hooks/use-session";
-import { getAffiliationById } from "@/shared/server/affiliations-fn";
+import type { Author } from "@/shared/types/author";
+import { buildSubmissionDefaultValues } from "../submission-form-defaults";
 import {
 	buildContentSchema,
 	buildSubmissionFormSchema,
@@ -16,6 +17,7 @@ import type {
 	ValidationSettings,
 } from "../submission-form-types";
 import { computeSubmissionProgress } from "../submission-progress";
+import { useFirstAuthorAutofill } from "./use-first-author-autofill";
 
 interface UseSubmissionFormArgs {
 	onSubmit: (data: SubmissionFormData) => Promise<void>;
@@ -48,8 +50,6 @@ export function useSubmissionForm({
 }: UseSubmissionFormArgs) {
 	const [isSavingDraft, setIsSavingDraft] = useState(false);
 	const { user } = useSession();
-	const hasAutoFilledRef = useRef(false);
-	const isFetchingAffiliationRef = useRef(false);
 
 	const defaultType = typeConfigs[0]?.type || "ABSTRACT";
 	const defaultConfig = typeConfigs[0]?.config;
@@ -72,25 +72,11 @@ export function useSubmissionForm({
 	}, [guidelines, validationSettings]);
 
 	const form = useAppForm({
-		defaultValues: {
-			type: initialData?.type || defaultType,
-			title: initialData?.title || "",
-			content: initialData?.content || "",
-			authors: initialData?.authors || [
-				{
-					firstName: "",
-					lastName: "",
-					email: "",
-					affiliationId: null,
-					affiliationName: "",
-					isPresenter: true,
-				},
-			],
-			keywords: initialData?.keywords || [],
-			file: initialData?.file || null,
-			contentFormat: defaultConfig?.contentFormat || "TEXT",
-			trackId: initialData?.trackId || null,
-		} satisfies SubmissionFormData,
+		defaultValues: buildSubmissionDefaultValues(
+			initialData,
+			defaultType,
+			defaultConfig,
+		),
 		validators: {
 			onChange: submissionSchema,
 			onSubmit: submissionSchema,
@@ -100,100 +86,17 @@ export function useSubmissionForm({
 		},
 	});
 
-	// Auto-fill first author with user data (only for new submissions)
-	useEffect(() => {
-		if (initialData?.authors) return;
-		if (!user) return;
-
-		const authors = form.state.values.authors;
-		const firstAuthor = authors[0];
-		const isEmpty =
-			!firstAuthor?.firstName && !firstAuthor?.lastName && !firstAuthor?.email;
-		const needsAffiliation =
-			firstAuthor &&
-			!firstAuthor.affiliationName &&
-			user.affiliationId &&
-			!isFetchingAffiliationRef.current;
-
-		// Case 1: First auto-fill - user data is available and first author is empty
-		if (isEmpty && !hasAutoFilledRef.current) {
-			hasAutoFilledRef.current = true;
-
-			if (user.affiliationId) {
-				isFetchingAffiliationRef.current = true;
-				getAffiliationById({ data: { id: user.affiliationId } })
-					.then((affiliation) => {
-						form.setFieldValue("authors", [
-							{
-								firstName: user.firstName ?? "",
-								lastName: user.lastName ?? "",
-								email: user.email ?? "",
-								affiliationId: user.affiliationId ?? null,
-								affiliationName: affiliation?.name ?? "",
-								isPresenter: true,
-							},
-							...authors.slice(1),
-						]);
-					})
-					.catch(() => {
-						form.setFieldValue("authors", [
-							{
-								firstName: user.firstName ?? "",
-								lastName: user.lastName ?? "",
-								email: user.email ?? "",
-								affiliationId: user.affiliationId ?? null,
-								affiliationName: "",
-								isPresenter: true,
-							},
-							...authors.slice(1),
-						]);
-					})
-					.finally(() => {
-						isFetchingAffiliationRef.current = false;
-					});
-			} else {
-				form.setFieldValue("authors", [
-					{
-						firstName: user.firstName ?? "",
-						lastName: user.lastName ?? "",
-						email: user.email ?? "",
-						affiliationId: null,
-						affiliationName: "",
-						isPresenter: true,
-					},
-					...authors.slice(1),
-				]);
-			}
-		}
-		// Case 2: User was already filled but affiliationId became available later
-		else if (
-			needsAffiliation &&
-			hasAutoFilledRef.current &&
-			user.affiliationId
-		) {
-			const affiliationId = user.affiliationId;
-			isFetchingAffiliationRef.current = true;
-			getAffiliationById({ data: { id: affiliationId } })
-				.then((affiliation) => {
-					if (affiliation) {
-						const currentAuthors = form.state.values.authors;
-						const updatedAuthors = [...currentAuthors];
-						updatedAuthors[0] = {
-							...updatedAuthors[0],
-							affiliationId: affiliationId,
-							affiliationName: affiliation.name,
-						};
-						form.setFieldValue("authors", updatedAuthors);
-					}
-				})
-				.catch(() => {
-					// Silently fail - AffiliationSelect has its own fallback
-				})
-				.finally(() => {
-					isFetchingAffiliationRef.current = false;
-				});
-		}
-	}, [user, initialData?.authors, form]);
+	const getAuthors = useCallback(() => form.state.values.authors, [form]);
+	const setAuthors = useCallback(
+		(authors: Author[]) => form.setFieldValue("authors", authors),
+		[form],
+	);
+	const { markAutoFilled } = useFirstAuthorAutofill({
+		user,
+		hasInitialAuthors: !!initialData?.authors,
+		getAuthors,
+		setAuthors,
+	});
 
 	const values = useSelector(form.store, (state) => state.values);
 	const submissionAttempts = useSelector(
@@ -224,7 +127,7 @@ export function useSubmissionForm({
 			if (title) form.setFieldValue("title", title);
 			if (authors) {
 				form.setFieldValue("authors", authors);
-				hasAutoFilledRef.current = true;
+				markAutoFilled();
 			}
 			if (keywords) form.setFieldValue("keywords", keywords);
 		},

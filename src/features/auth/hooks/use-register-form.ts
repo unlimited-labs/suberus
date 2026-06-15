@@ -59,6 +59,80 @@ const STEP_FIELDS: Record<number, RegisterField[]> = {
 	3: ["acceptTerms"],
 };
 
+type RegisterNavigate = (opts: { to: "/" }) => void;
+
+/**
+ * Defense-in-depth: invited users bypass the closed gate; everyone else is
+ * re-checked against the live registration status right before submit.
+ */
+async function ensureRegistrationOpen(
+	token: string | undefined,
+): Promise<boolean> {
+	if (token) return true;
+	const status = await getRegistrationStatusFn();
+	if (status.closed) {
+		toast.error("Registration is currently closed");
+		return false;
+	}
+	return true;
+}
+
+async function consumeInvitationQuietly(
+	effects: RegisterEffects,
+	token: string,
+): Promise<void> {
+	try {
+		await effects.consumeInvitation(token);
+	} catch {
+		// Invitation may have already been consumed — not critical.
+	}
+}
+
+/** Non-blocking: the account already exists, so survey/ToS can be retried in settings. */
+async function persistSurveyAndTos(
+	surveyAnswers: Record<string, string>,
+	tosContent: RegisterTosContent,
+	effects: RegisterEffects,
+): Promise<void> {
+	try {
+		const answers = Object.entries(surveyAnswers).map(
+			([questionId, value]) => ({
+				questionId,
+				value,
+			}),
+		);
+		const promises: Promise<unknown>[] = [effects.saveSurveyAnswers(answers)];
+		if (tosContent) promises.push(effects.acceptTos());
+		await Promise.all(promises);
+	} catch {
+		// Account created successfully — survey/ToS can be updated in settings.
+	}
+}
+
+async function finishRegistration(
+	accountType: "participant" | "exhibitor",
+	effects: RegisterEffects,
+	navigate: RegisterNavigate,
+): Promise<void> {
+	if (accountType === "exhibitor") {
+		try {
+			await effects.becomeExhibitor();
+			// Full page load so the client session picks up the new role.
+			window.location.assign("/exhibitor");
+			return;
+		} catch {
+			toast.error(
+				"Could not register as exhibitor — your account was created as a regular participant",
+			);
+			navigate({ to: "/" });
+			return;
+		}
+	}
+
+	toast.success("Account created! Check your email to verify.");
+	navigate({ to: "/" });
+}
+
 /**
  * Owns the multi-step registration form: form instance, account-type and ToS
  * dialog state, per-step validation (incl. async email + dynamic survey fields),
@@ -107,14 +181,7 @@ export function useRegisterForm({
 			onSubmit: registerSchema,
 		},
 		onSubmit: async ({ value }) => {
-			// Defense-in-depth: re-check registration status before submit
-			if (!token) {
-				const status = await getRegistrationStatusFn();
-				if (status.closed) {
-					toast.error("Registration is currently closed");
-					return;
-				}
-			}
+			if (!(await ensureRegistrationOpen(token))) return;
 
 			const result = await signUp.email({
 				email: value.email,
@@ -133,45 +200,9 @@ export function useRegisterForm({
 				return;
 			}
 
-			// Consume invitation token if present
-			if (token) {
-				try {
-					await effects.consumeInvitation(token);
-				} catch {
-					// Invitation may have already been consumed - not critical
-				}
-			}
-
-			// Save survey answers + ToS acceptance (non-blocking)
-			try {
-				const promises: Promise<unknown>[] = [];
-				const answers = Object.entries(value.surveyAnswers).map(
-					([questionId, val]) => ({ questionId, value: val }),
-				);
-				promises.push(effects.saveSurveyAnswers(answers));
-				if (tosContent) promises.push(effects.acceptTos());
-				await Promise.all(promises);
-			} catch {
-				// Account created successfully — survey/ToS can be updated in settings
-			}
-
-			if (accountType === "exhibitor") {
-				try {
-					await effects.becomeExhibitor();
-					// Full page load so the client session picks up the new role
-					window.location.assign("/exhibitor");
-					return;
-				} catch {
-					toast.error(
-						"Could not register as exhibitor — your account was created as a regular participant",
-					);
-					navigate({ to: "/" });
-					return;
-				}
-			}
-
-			toast.success("Account created! Check your email to verify.");
-			navigate({ to: "/" });
+			if (token) await consumeInvitationQuietly(effects, token);
+			await persistSurveyAndTos(value.surveyAnswers, tosContent, effects);
+			await finishRegistration(accountType, effects, navigate);
 		},
 	});
 
