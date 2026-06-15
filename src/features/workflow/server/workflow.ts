@@ -529,6 +529,51 @@ export async function checkAndTriggerReviewCompletion(
 	return result;
 }
 
+/** Cancel every active (PENDING/OVERDUE) reviewer assignment for a submission. */
+async function cancelActiveReviewAssignments(
+	submissionId: string,
+	userId: string,
+): Promise<void> {
+	const activeAssignments = await prisma.reviewAssignment.findMany({
+		where: {
+			submissionId,
+			status: { in: ["PENDING", "OVERDUE"] },
+		},
+	});
+
+	for (const assignment of activeAssignments) {
+		await executeAssignmentTransition(
+			assignment.id,
+			{ type: "CANCEL" },
+			userId,
+		);
+	}
+}
+
+/** Notify the caretaker editor that a (previously handled) submission was withdrawn. */
+async function notifyCaretakerOfWithdrawal(
+	submissionId: string,
+): Promise<void> {
+	const [submission, caretaker] = await Promise.all([
+		prisma.submission.findUniqueOrThrow({
+			where: { id: submissionId },
+			include: { authors: { where: { isPresenter: true }, take: 1 } },
+		}),
+		getCaretakerEditor(submissionId),
+	]);
+
+	if (!caretaker) return;
+
+	const presenter = submission.authors[0];
+	void sendEmail("SUBMISSION_WITHDRAWN", caretaker.email, {
+		authorName: presenter
+			? `${presenter.firstName} ${presenter.lastName}`
+			: "Author",
+		submissionTitle: submission.title,
+		submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${submissionId}`,
+	});
+}
+
 /**
  * Withdraw a submission (author or admin/editor action)
  */
@@ -577,45 +622,13 @@ export async function withdrawSubmission(
 			detail: activityDetail("SUBMISSION_WITHDRAWN", { reason }),
 		});
 
-		// Cancel all active reviewer assignments
-		const activeAssignments = await prisma.reviewAssignment.findMany({
-			where: {
-				submissionId,
-				status: { in: ["PENDING", "OVERDUE"] },
-			},
-		});
-
-		for (const assignment of activeAssignments) {
-			await executeAssignmentTransition(
-				assignment.id,
-				{ type: "CANCEL" },
-				userId,
-			);
-		}
+		await cancelActiveReviewAssignments(submissionId, userId);
 
 		// Only notify caretaker editor when submission was handled (beyond DRAFT/SUBMITTED)
 		const wasHandled =
 			result.fromState !== "DRAFT" && result.fromState !== "SUBMITTED";
-
 		if (wasHandled) {
-			const [submission, caretaker] = await Promise.all([
-				prisma.submission.findUniqueOrThrow({
-					where: { id: submissionId },
-					include: { authors: { where: { isPresenter: true }, take: 1 } },
-				}),
-				getCaretakerEditor(submissionId),
-			]);
-
-			if (caretaker) {
-				const presenter = submission.authors[0];
-				void sendEmail("SUBMISSION_WITHDRAWN", caretaker.email, {
-					authorName: presenter
-						? `${presenter.firstName} ${presenter.lastName}`
-						: "Author",
-					submissionTitle: submission.title,
-					submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${submissionId}`,
-				});
-			}
+			await notifyCaretakerOfWithdrawal(submissionId);
 		}
 	}
 
