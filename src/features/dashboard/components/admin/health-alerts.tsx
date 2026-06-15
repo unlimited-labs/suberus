@@ -5,7 +5,7 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
-import { pluralize } from "@/shared/lib/format-llm-status";
+import { pluralize } from "@/shared/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 

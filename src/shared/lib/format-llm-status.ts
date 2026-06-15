@@ -28,11 +28,3 @@ export function formatDoclingStatus(health: DoclingHealth): string {
 	if (health.status !== "healthy") return "Docling unavailable";
 	return "Docling connected";
 }
-
-export function pluralize(
-	count: number,
-	singular: string,
-	plural?: string,
-): string {
-	return count === 1 ? singular : (plural ?? `${singular}s`);
-}
