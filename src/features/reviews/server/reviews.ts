@@ -178,12 +178,115 @@ export async function getAssignmentForReview(
 	};
 }
 
-/** Submit a review */
-export async function submitReview(
+function isValidScore(score: number | undefined): boolean {
+	return score !== undefined && score >= 1 && score <= 5;
+}
+
+function findInvalidScoreError(
+	criteriaNames: string[],
+	scores: Record<string, number>,
+): string | null {
+	for (const name of criteriaNames) {
+		if (!isValidScore(scores[name])) {
+			return `Score for "${name}" is required (1-5)`;
+		}
+	}
+	return null;
+}
+
+/** Validate scores against criteria and return the normalized score map. */
+function validateScores(
+	criteriaNames: string[],
+	scores: Record<string, number> | undefined,
+): { error: string } | { scores: Record<string, number> } {
+	if (!scores || criteriaNames.length === 0) {
+		return { error: "Scores are required when scoring is enabled" };
+	}
+	const invalid = findInvalidScoreError(criteriaNames, scores);
+	if (invalid) return { error: invalid };
+	return {
+		scores: Object.fromEntries(
+			criteriaNames.map((name) => [name, scores[name]]),
+		),
+	};
+}
+
+function validateConfidence(level: number | undefined): string | null {
+	if (!level || level < 1 || level > 5) {
+		return "Confidence level is required (1-5)";
+	}
+	return null;
+}
+
+/** Validate the scores field against config; returns the normalized value or an error. */
+function validateScoresField(
+	config: { enableScoring: boolean; scoringCriteria: { name: string }[] },
+	scores: Record<string, number> | undefined,
+): { error: string } | { value: Record<string, number> | undefined } {
+	if (!config.enableScoring) return { value: undefined };
+	const criteriaNames = config.scoringCriteria.map((c) => c.name);
+	const result = validateScores(criteriaNames, scores);
+	if ("error" in result) return { error: result.error };
+	return { value: result.scores };
+}
+
+/** Validate the confidence field against config; returns the value or an error. */
+function validateConfidenceField(
+	config: { enableConfidenceLevel: boolean },
+	level: number | undefined,
+): { error: string } | { value: number | undefined } {
+	if (!config.enableConfidenceLevel) return { value: undefined };
+	const error = validateConfidence(level);
+	if (error) return { error };
+	return { value: level };
+}
+
+function formatReviewerName(reviewer: {
+	firstName: string | null;
+	lastName: string | null;
+	email: string;
+}): string {
+	return (
+		`${reviewer.firstName ?? ""} ${reviewer.lastName ?? ""}`.trim() ||
+		reviewer.email
+	);
+}
+
+/** Notify the assigning editor that a review was submitted. */
+async function notifyEditorReviewSubmitted(
+	assignment: {
+		assignedBy: string | null;
+		submissionId: string;
+		submission: { title: string };
+	},
+	reviewerId: string,
+): Promise<void> {
+	if (!assignment.assignedBy) return;
+
+	const editor = await prisma.user.findUnique({
+		where: { id: assignment.assignedBy },
+		select: { email: true },
+	});
+	if (!editor) return;
+
+	const reviewer = await prisma.user.findUniqueOrThrow({
+		where: { id: reviewerId },
+		select: { firstName: true, lastName: true, email: true },
+	});
+
+	void sendEmail("REVIEW_SUBMITTED", editor.email, {
+		submissionTitle: assignment.submission.title,
+		reviewerName: formatReviewerName(reviewer),
+		submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${assignment.submissionId}`,
+	});
+}
+
+/** Load the assignment and authorize the reviewer + workflow transition. */
+async function loadAssignmentForSubmit(
 	assignmentId: string,
 	reviewerId: string,
-	data: ReviewSubmitData,
-): Promise<{ success: boolean; reviewId?: string; error?: string }> {
+	decision: ReviewDecision,
+) {
 	const assignment = await prisma.reviewAssignment.findUnique({
 		where: { id: assignmentId },
 		include: {
@@ -192,73 +295,58 @@ export async function submitReview(
 		},
 	});
 
-	if (!assignment) {
-		return { success: false, error: "Assignment not found" };
-	}
-
+	if (!assignment) return { error: "Assignment not found" };
 	if (assignment.reviewerId !== reviewerId) {
-		return { success: false, error: "Not assigned to this reviewer" };
+		return { error: "Not assigned to this reviewer" };
 	}
 
 	// Validate transition through xstate (single source of truth)
 	const validation = await validateAssignmentTransition(assignmentId, {
 		type: "COMPLETE",
-		decision: data.decision,
+		decision,
 	});
-	if (!validation.valid) {
-		return { success: false, error: validation.error };
-	}
+	if (!validation.valid) return { error: validation.error };
+
+	return { assignment };
+}
+
+/** Submit a review */
+export async function submitReview(
+	assignmentId: string,
+	reviewerId: string,
+	data: ReviewSubmitData,
+): Promise<{ success: boolean; reviewId?: string; error?: string }> {
+	const loaded = await loadAssignmentForSubmit(
+		assignmentId,
+		reviewerId,
+		data.decision,
+	);
+	if ("error" in loaded) return { success: false, error: loaded.error };
+	const { assignment } = loaded;
 
 	// Load config for server-side validation of scores/confidence
 	const configKey = SUBMISSION_TYPE_TO_KEY[assignment.submission.type];
 	const config = await getSetting(configKey);
 
-	// Validate scores when scoring is enabled
-	let validatedScores: Record<string, number> | undefined;
-	if (config.enableScoring) {
-		const criteriaNames = config.scoringCriteria.map(
-			(c: { name: string }) => c.name,
-		);
-		if (!data.scores || criteriaNames.length === 0) {
-			return {
-				success: false,
-				error: "Scores are required when scoring is enabled",
-			};
-		}
-		for (const name of criteriaNames) {
-			const score = data.scores[name];
-			if (score === undefined || score < 1 || score > 5) {
-				return {
-					success: false,
-					error: `Score for "${name}" is required (1-5)`,
-				};
-			}
-		}
-		const scores = data.scores;
-		validatedScores = Object.fromEntries(
-			criteriaNames.map((name) => [name, scores[name]]),
-		);
+	const scoresResult = validateScoresField(config, data.scores);
+	if ("error" in scoresResult) {
+		return { success: false, error: scoresResult.error };
 	}
 
-	// Validate confidence level when enabled
-	let validatedConfidence: number | undefined;
-	if (config.enableConfidenceLevel) {
-		if (
-			!data.confidenceLevel ||
-			data.confidenceLevel < 1 ||
-			data.confidenceLevel > 5
-		) {
-			return { success: false, error: "Confidence level is required (1-5)" };
-		}
-		validatedConfidence = data.confidenceLevel;
+	const confidenceResult = validateConfidenceField(
+		config,
+		data.confidenceLevel,
+	);
+	if ("error" in confidenceResult) {
+		return { success: false, error: confidenceResult.error };
 	}
 
 	const reviewData = {
 		decision: data.decision,
 		comments: data.comments,
 		privateNotes: data.privateNotes,
-		scores: validatedScores,
-		confidenceLevel: validatedConfidence,
+		scores: scoresResult.value,
+		confidenceLevel: confidenceResult.value,
 	};
 
 	// Atomic: review create/update + assignment completion in one transaction
@@ -301,27 +389,7 @@ export async function submitReview(
 	await checkAndTriggerReviewCompletion(assignment.submissionId, reviewerId);
 
 	// Notify editor(s) that a review was submitted
-	if (assignment.assignedBy) {
-		const editor = await prisma.user.findUnique({
-			where: { id: assignment.assignedBy },
-			select: { email: true },
-		});
-
-		if (editor) {
-			const reviewer = await prisma.user.findUniqueOrThrow({
-				where: { id: reviewerId },
-				select: { firstName: true, lastName: true, email: true },
-			});
-
-			void sendEmail("REVIEW_SUBMITTED", editor.email, {
-				submissionTitle: assignment.submission.title,
-				reviewerName:
-					`${reviewer.firstName ?? ""} ${reviewer.lastName ?? ""}`.trim() ||
-					reviewer.email,
-				submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${assignment.submissionId}`,
-			});
-		}
-	}
+	await notifyEditorReviewSubmitted(assignment, reviewerId);
 
 	await logActivity({
 		type: "REVIEW_SUBMITTED",
