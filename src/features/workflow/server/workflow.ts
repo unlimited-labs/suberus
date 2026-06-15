@@ -24,6 +24,13 @@ import type {
 import { logger } from "@/logger.ts";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
+import {
+	countCompletedReviews,
+	DECISION_EMAIL_EVENT,
+	DECISION_LETTER_TEXT,
+	isReviewRoundComplete,
+	reviewersDisagree,
+} from "./review-completion";
 
 /**
  * Get the caretaker editor for a submission — the editor who most recently assigned a reviewer.
@@ -354,6 +361,69 @@ export async function executeAssignmentTransition(
 	};
 }
 
+/** Notify the caretaker editor that the current review round is complete. */
+async function notifyCaretakerReviewsComplete(
+	submissionId: string,
+	submissionTitle: string,
+	disagree: boolean,
+): Promise<void> {
+	const caretaker = await getCaretakerEditor(submissionId);
+	if (!caretaker) return;
+
+	void sendEmail("ALL_REVIEWS_COMPLETE", caretaker.email, {
+		submissionTitle,
+		submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${submissionId}`,
+		note: disagree
+			? "Reviewers disagree on the decision. Manual editor decision is required."
+			: "",
+	});
+}
+
+/** For types requiring an editor decision, auto-advance to AWAITING_DECISION. */
+async function advanceToAwaitingDecision(
+	submissionId: string,
+	triggeredBy?: string,
+): Promise<void> {
+	await executeSubmissionTransition(
+		submissionId,
+		{ type: "MANUAL_TRANSITION_TO_AWAITING_DECISION" },
+		triggeredBy,
+		"Auto-transitioned to awaiting decision after reviews complete",
+	);
+}
+
+/** Auto-apply a unanimous reviewer decision and notify the author. */
+async function applyUnanimousDecision(
+	submissionId: string,
+	decision: ReviewDecision,
+	submissionTitle: string,
+	triggeredBy?: string,
+): Promise<TransitionResult> {
+	const autoResult = await executeSubmissionTransition(
+		submissionId,
+		{ type: getAutoTransitionEvent(decision) },
+		triggeredBy,
+		`Auto-applied unanimous reviewer decision: ${decision}`,
+	);
+
+	if (!autoResult.success) return autoResult;
+
+	const presenter = await prisma.submissionAuthor.findFirst({
+		where: { submissionId, isPresenter: true },
+	});
+
+	if (presenter) {
+		void sendEmail(DECISION_EMAIL_EVENT[decision], presenter.email, {
+			authorName: `${presenter.firstName} ${presenter.lastName}`,
+			submissionTitle,
+			letterToAuthor: DECISION_LETTER_TEXT[decision],
+			submissionUrl: `${env.APP_BASE_URL}/submissions/${submissionId}`,
+		});
+	}
+
+	return autoResult;
+}
+
 /**
  * Check if all reviews are complete and trigger auto-transition if configured
  */
@@ -403,131 +473,60 @@ export async function checkAndTriggerReviewCompletion(
 	};
 
 	// Re-check status after lock (could have changed between lock release and re-read)
-	if (submission.status !== "UNDER_REVIEW") {
-		return null;
-	}
+	if (submission.status !== "UNDER_REVIEW") return null;
 
 	const config = await getSubmissionConfig(submission.type);
+	const counts = countCompletedReviews(submission.reviewAssignments);
 
-	const assignedCount = submission.reviewAssignments.length;
-	const completedCount = submission.reviewAssignments.filter(
-		(a) => a.status === "COMPLETED",
-	).length;
-
-	// Check if all reviews are complete
-	if (
-		completedCount < assignedCount ||
-		assignedCount < config.requiredReviewers
-	) {
-		return null;
-	}
+	if (!isReviewRoundComplete(counts, config.requiredReviewers)) return null;
 
 	// Auto-transition: always advance when all reviews complete
-	{
-		logger.info(
-			`[workflow] all reviews complete for submission ${submissionId}, auto-transitioning`,
-		);
-		const result = await executeSubmissionTransition(
-			submissionId,
-			{ type: "ALL_REVIEWS_COMPLETE" },
-			triggeredBy,
-			"All reviews completed - auto-transition",
-		);
+	logger.info(
+		`[workflow] all reviews complete for submission ${submissionId}, auto-transitioning`,
+	);
+	const result = await executeSubmissionTransition(
+		submissionId,
+		{ type: "ALL_REVIEWS_COMPLETE" },
+		triggeredBy,
+		"All reviews completed - auto-transition",
+	);
 
-		if (!result.success) {
-			return result;
-		}
+	if (!result.success) return result;
 
-		// Determine if reviewers disagree (relevant for !requiresEditorDecision)
-		let reviewersDisagree = false;
-		if (!config.requiresEditorDecision) {
-			const decisions = submission.reviews.map((r) => r.decision);
-			reviewersDisagree =
-				decisions.length > 1 && !decisions.every((d) => d === decisions[0]);
-		}
+	const decisions = submission.reviews.map((r) => r.decision);
+	// Disagreement is only relevant when no editor decision is required.
+	const disagree =
+		!config.requiresEditorDecision && reviewersDisagree(decisions);
 
-		// Notify caretaker editor
-		const caretaker = await getCaretakerEditor(submissionId);
-		if (caretaker) {
-			void sendEmail("ALL_REVIEWS_COMPLETE", caretaker.email, {
-				submissionTitle: submission.title,
-				submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${submissionId}`,
-				note: reviewersDisagree
-					? "Reviewers disagree on the decision. Manual editor decision is required."
-					: "",
-			});
-		}
+	await notifyCaretakerReviewsComplete(
+		submissionId,
+		submission.title,
+		disagree,
+	);
 
-		// For types with editor decision, auto-transition to AWAITING_DECISION
-		if (config.requiresEditorDecision) {
-			await executeSubmissionTransition(
-				submissionId,
-				{ type: "MANUAL_TRANSITION_TO_AWAITING_DECISION" },
-				triggeredBy,
-				"Auto-transitioned to awaiting decision after reviews complete",
-			);
-		}
-
-		// For types without editor decision, auto-apply only if reviewers are unanimous
-		if (!config.requiresEditorDecision) {
-			const decisions = submission.reviews.map((r) => r.decision);
-
-			if (decisions.length > 0 && !reviewersDisagree) {
-				const autoEvent = getAutoTransitionEvent(decisions[0]);
-				const autoResult = await executeSubmissionTransition(
-					submissionId,
-					{ type: autoEvent },
-					triggeredBy,
-					`Auto-applied unanimous reviewer decision: ${decisions[0]}`,
-				);
-
-				// Send decision email to author after auto-apply
-				if (autoResult.success) {
-					const decisionEmailMap = {
-						ACCEPT: "DECISION_ACCEPTED",
-						ACCEPT_WITH_MINOR_REVISIONS: "DECISION_CONDITIONALLY_ACCEPTED",
-						REVISE_AND_RESUBMIT: "DECISION_REVISE_REQUIRED",
-						REJECT: "DECISION_REJECTED",
-					} as const;
-
-					const decisionLetterMap: Record<ReviewDecision, string> = {
-						ACCEPT:
-							"Based on the reviewer's recommendation, your submission has been accepted.",
-						ACCEPT_WITH_MINOR_REVISIONS:
-							"Based on the reviewer's recommendation, your submission has been conditionally accepted. Please address the minor revisions outlined in the review.",
-						REVISE_AND_RESUBMIT:
-							"Based on the reviewer's recommendation, your submission requires revisions. Please review the feedback and resubmit.",
-						REJECT:
-							"After careful review, your submission has not been accepted.",
-					};
-
-					const emailEvent = decisionEmailMap[decisions[0]];
-					const presenter = await prisma.submissionAuthor.findFirst({
-						where: { submissionId, isPresenter: true },
-					});
-
-					if (presenter) {
-						void sendEmail(emailEvent, presenter.email, {
-							authorName: `${presenter.firstName} ${presenter.lastName}`,
-							submissionTitle: submission.title,
-							letterToAuthor: decisionLetterMap[decisions[0]],
-							submissionUrl: `${env.APP_BASE_URL}/submissions/${submissionId}`,
-						});
-					}
-				}
-
-				return autoResult;
-			}
-
-			if (reviewersDisagree) {
-				logger.info(
-					`[workflow] reviewers disagree for submission ${submissionId}, leaving at REVIEWS_COMPLETE for editor`,
-				);
-			}
-		}
-
+	// Types with an editor decision auto-advance to AWAITING_DECISION.
+	if (config.requiresEditorDecision) {
+		await advanceToAwaitingDecision(submissionId, triggeredBy);
 		return result;
 	}
+
+	// Types without an editor decision auto-apply only a unanimous reviewer decision.
+	if (decisions.length > 0 && !disagree) {
+		return applyUnanimousDecision(
+			submissionId,
+			decisions[0],
+			submission.title,
+			triggeredBy,
+		);
+	}
+
+	if (disagree) {
+		logger.info(
+			`[workflow] reviewers disagree for submission ${submissionId}, leaving at REVIEWS_COMPLETE for editor`,
+		);
+	}
+
+	return result;
 }
 
 /**
