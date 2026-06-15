@@ -6,6 +6,7 @@ import { logActivity } from "@/features/activity-log/server/activity-log";
 import { auth } from "@/features/auth/server/auth.server";
 import { authMiddleware } from "@/features/auth/server/middleware";
 import {
+	getContactInfo,
 	getPersonalInfo,
 	updateContactInfo,
 	updatePersonalInfo,
@@ -47,6 +48,16 @@ export const updatePersonalInfoFn = createServerFn({ method: "POST" })
 	});
 
 // Contact info
+export const contactInfoQueryOptions = () =>
+	queryOptions({
+		queryKey: ["profile", "contact-info"],
+		queryFn: () => getContactInfoFn(),
+	});
+
+export const getContactInfoFn = createServerFn({ method: "GET" })
+	.middleware([authMiddleware])
+	.handler(async ({ context }) => getContactInfo(context.user.id));
+
 export const updateContactInfoFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.validator(

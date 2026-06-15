@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import {
 	changeEmailFn,
 	changePasswordFn,
+	contactInfoQueryOptions,
 	personalInfoQueryOptions,
 	updateContactInfoFn,
 	updatePersonalInfoFn,
@@ -37,6 +38,7 @@ export const Route = createFileRoute("/_app/profile")({
 	loader: async ({ context }) => {
 		await Promise.all([
 			context.queryClient.ensureQueryData(personalInfoQueryOptions()),
+			context.queryClient.ensureQueryData(contactInfoQueryOptions()),
 			context.queryClient.ensureQueryData(activeSurveyQuestionsQueryOptions()),
 			context.queryClient.ensureQueryData(userSurveyAnswersQueryOptions()),
 		]);
@@ -48,6 +50,7 @@ function SettingsPage() {
 	const { user, refetch: refetchSession } = useSession();
 	const queryClient = useQueryClient();
 	const { data: personalInfo } = useSuspenseQuery(personalInfoQueryOptions());
+	const { data: contactInfo } = useSuspenseQuery(contactInfoQueryOptions());
 	const { data: surveyQuestions } = useSuspenseQuery(
 		activeSurveyQuestionsQueryOptions(),
 	);
@@ -108,7 +111,10 @@ function SettingsPage() {
 					country: data.country,
 				},
 			});
-			await refetchSession();
+			await Promise.all([
+				queryClient.invalidateQueries(contactInfoQueryOptions()),
+				refetchSession(),
+			]);
 			if (data.email === user.email) {
 				toast.success("Contact information updated successfully");
 			}
@@ -160,9 +166,9 @@ function SettingsPage() {
 						<ContactInfoSection
 							initialData={{
 								email: user.email,
-								needInvoice: user.needInvoice,
-								address: user.address ?? "",
-								country: user.country ?? "",
+								needInvoice: contactInfo.needInvoice,
+								address: contactInfo.address,
+								country: contactInfo.country,
 							}}
 							onSave={handleContactInfoSave}
 							currentEmail={user.email}

@@ -2,16 +2,15 @@ import { useMemo } from "react";
 import type { UserRole } from "@/generated/prisma/enums";
 import { authClient } from "@/shared/lib/auth-client";
 
+// Mirrors the get-session payload. Fields marked `returned: false` in
+// auth.server (title, needInvoice, address, country) are intentionally absent —
+// the app reads those from the DB via the profile slice queries.
 export interface SessionUser {
 	id: string;
 	email: string;
 	firstName: string | null;
 	lastName: string | null;
-	title: string | null;
 	affiliationId: string | null;
-	needInvoice: boolean;
-	address: string | null;
-	country: string | null;
 	role: UserRole;
 	image: string | null;
 	emailVerified: boolean;
@@ -25,11 +24,7 @@ interface BetterAuthUser {
 	email: string;
 	name: string | null;
 	firstName: string | null;
-	title: string | null;
 	affiliationId: string | null;
-	needInvoice: boolean;
-	address: string | null;
-	country: string | null;
 	role: UserRole;
 	image: string | null;
 	emailVerified: boolean;

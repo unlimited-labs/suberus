@@ -3,13 +3,14 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
-import { PrismaClient, UserRole } from "@/generated/prisma/client";
-import "dotenv/config";
 import { env } from "@/env";
 import { getSetting } from "@/features/settings/server/settings";
+import { PrismaClient, UserRole } from "@/generated/prisma/client";
 import { logger } from "@/logger.ts";
 import { sendEmail } from "@/shared/server/email";
 import { emitDomainEvent } from "@/shared/server/events";
+
+import "dotenv/config";
 
 const connectionString = env.DATABASE_URL;
 const adapter = new PrismaPg({ connectionString });
@@ -89,10 +90,14 @@ export const auth = betterAuth({
 				required: false,
 				input: true,
 			},
+			// returned: false — these are write-only via the auth API (registration
+			// + admin edit); the app reads them from the DB (profile slice queries),
+			// so they don't need to bloat every get-session response.
 			title: {
 				type: "string",
 				required: false,
 				input: true,
+				returned: false,
 			},
 			affiliationId: {
 				type: "string",
@@ -103,16 +108,19 @@ export const auth = betterAuth({
 				type: "string",
 				required: false,
 				input: true,
+				returned: false,
 			},
 			country: {
 				type: "string",
 				required: false,
 				input: true,
+				returned: false,
 			},
 			needInvoice: {
 				type: "boolean",
 				required: false,
 				input: true,
+				returned: false,
 			},
 			role: {
 				type: Object.keys(UserRole) as (keyof typeof UserRole)[],

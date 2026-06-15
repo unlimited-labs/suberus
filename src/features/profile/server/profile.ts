@@ -55,6 +55,22 @@ export async function updatePersonalInfo(
 	return result;
 }
 
+export async function getContactInfo(userId: string) {
+	const user = await prisma.user.findUniqueOrThrow({
+		where: { id: userId },
+		select: {
+			needInvoice: true,
+			address: true,
+			country: true,
+		},
+	});
+	return {
+		needInvoice: user.needInvoice,
+		address: user.address ?? "",
+		country: user.country ?? "",
+	};
+}
+
 export async function updateContactInfo(
 	userId: string,
 	data: {
