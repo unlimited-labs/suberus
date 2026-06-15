@@ -53,6 +53,90 @@ export const Route = createFileRoute("/_app/submissions/new")({
 
 const RESEND_COOLDOWN = 60;
 
+function getCreateSubmissionErrorMessage(e: unknown): string {
+	if (e instanceof Error && e.message === "Request timed out") {
+		return "Submission took too long. Check your submissions list before retrying — it may have gone through.";
+	}
+	return extractZodIssueMessage(e) ?? "Something went wrong. Please try again.";
+}
+
+function submissionResultErrorMessage(result: {
+	error?: string;
+	issues?: { message: string }[];
+}): string {
+	if (result.issues && result.issues.length > 0)
+		return result.issues[0].message;
+	return result.error ?? "";
+}
+
+async function runCreateSubmission(
+	data: SubmissionFormData,
+	isDraft: boolean,
+): Promise<{ id: string } | null> {
+	let result: Awaited<ReturnType<typeof createSubmission>>;
+	try {
+		result = await Promise.race([
+			createSubmission({
+				data: {
+					type: data.type,
+					title: data.title,
+					content: data.content,
+					authors: data.authors,
+					keywords: data.keywords,
+					contentFormat: data.contentFormat,
+					trackId: data.trackId,
+					isDraft,
+				},
+			}),
+			new Promise<never>((_, reject) =>
+				setTimeout(() => reject(new Error("Request timed out")), 60_000),
+			),
+		]);
+	} catch (e) {
+		await logClientError("[submission] createSubmission failed", e);
+		toast.error(getCreateSubmissionErrorMessage(e));
+		return null;
+	}
+
+	if (!result.success) {
+		toast.error(submissionResultErrorMessage(result));
+		return null;
+	}
+	return { id: result.id };
+}
+
+async function uploadSubmissionFileSafe(
+	file: File,
+	submissionId: string,
+	isDraft: boolean,
+): Promise<void> {
+	try {
+		const formData = new FormData();
+		formData.append("file", file);
+		formData.append("submissionId", submissionId);
+		formData.append("versionNumber", "1");
+
+		const uploadResult = await uploadSubmissionFile({ data: formData });
+		if (!uploadResult.success) {
+			toast.error(
+				`${isDraft ? "Draft saved" : "Submission created"} but file upload failed: ${uploadResult.error}`,
+			);
+		}
+	} catch (e) {
+		await logClientError("[submission] file upload failed", e);
+		toast.error("File upload failed");
+	}
+}
+
+async function uploadFileIfNeeded(
+	data: SubmissionFormData,
+	submissionId: string,
+	isDraft: boolean,
+): Promise<void> {
+	if (data.contentFormat !== "FILE" || !data.file) return;
+	await uploadSubmissionFileSafe(data.file, submissionId, isDraft);
+}
+
 function NewSubmissionPage() {
 	const { data: typeConfigs } = useSuspenseQuery(
 		activeSubmissionTypesQueryOptions(),
@@ -106,69 +190,10 @@ function NewSubmissionPage() {
 		data: SubmissionFormData,
 		isDraft: boolean,
 	) => {
-		let result: Awaited<ReturnType<typeof createSubmission>>;
-		try {
-			result = await Promise.race([
-				createSubmission({
-					data: {
-						type: data.type,
-						title: data.title,
-						content: data.content,
-						authors: data.authors,
-						keywords: data.keywords,
-						contentFormat: data.contentFormat,
-						trackId: data.trackId,
-						isDraft,
-					},
-				}),
-				new Promise<never>((_, reject) =>
-					setTimeout(() => reject(new Error("Request timed out")), 60_000),
-				),
-			]);
-		} catch (e) {
-			await logClientError("[submission] createSubmission failed", e);
-			if (e instanceof Error && e.message === "Request timed out") {
-				toast.error(
-					"Submission took too long. Check your submissions list before retrying — it may have gone through.",
-				);
-			} else {
-				toast.error(
-					extractZodIssueMessage(e) ??
-						"Something went wrong. Please try again.",
-				);
-			}
-			return;
-		}
+		const created = await runCreateSubmission(data, isDraft);
+		if (!created) return;
 
-		if (!result.success) {
-			if (result.issues && result.issues.length > 0) {
-				toast.error(result.issues[0].message);
-			} else {
-				toast.error(result.error);
-			}
-			return;
-		}
-
-		// If FILE format with file, upload it
-		if (data.contentFormat === "FILE" && data.file) {
-			try {
-				const formData = new FormData();
-				formData.append("file", data.file);
-				formData.append("submissionId", result.id);
-				formData.append("versionNumber", "1");
-
-				const uploadResult = await uploadSubmissionFile({ data: formData });
-
-				if (!uploadResult.success) {
-					toast.error(
-						`${isDraft ? "Draft saved" : "Submission created"} but file upload failed: ${uploadResult.error}`,
-					);
-				}
-			} catch (e) {
-				await logClientError("[submission] file upload failed", e);
-				toast.error("File upload failed");
-			}
-		}
+		await uploadFileIfNeeded(data, created.id, isDraft);
 
 		toast.success(isDraft ? "Draft saved" : "Submission created successfully");
 		await Promise.all([
@@ -179,7 +204,7 @@ function NewSubmissionPage() {
 				queryKey: userDashboardQueryOptions().queryKey,
 			}),
 		]);
-		navigate({ to: "/submissions/$id", params: { id: result.id } });
+		navigate({ to: "/submissions/$id", params: { id: created.id } });
 	};
 
 	const handleSubmit = async (data: SubmissionFormData) => {
