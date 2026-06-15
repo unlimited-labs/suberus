@@ -1,4 +1,4 @@
-import { differenceInCalendarDays, startOfDay, subDays } from "date-fns";
+import { startOfDay, subDays } from "date-fns";
 import { getSetting } from "@/features/settings/server/settings";
 import type { AppSettingsMap } from "@/features/settings/types";
 import type {
@@ -10,6 +10,15 @@ import type {
 import { prisma } from "@/shared/server/db.server";
 import { checkSmtpHealth, type SmtpHealthResult } from "@/shared/server/email";
 import { checkS3Health, type S3HealthResult } from "@/shared/server/storage";
+import {
+	bucketCounts,
+	bucketSums,
+	completionRate,
+	formatPersonName,
+	sumFeeAmounts,
+	TREND_DAYS,
+	tallyGroups,
+} from "./admin-dashboard-transforms";
 
 export interface AdminDashboardMetrics {
 	users: {
@@ -63,33 +72,6 @@ export interface AdminDashboardMetrics {
 	smtp: SmtpHealthResult;
 	llm: AppSettingsMap["SERVICE_HEALTH_LLM"];
 	docling: AppSettingsMap["SERVICE_HEALTH_DOCLING"];
-}
-
-const TREND_DAYS = 14;
-
-function dayIndex(date: Date, windowStart: Date): number {
-	// differenceInCalendarDays is DST-safe (counts calendar boundaries, not 24h spans).
-	const idx = differenceInCalendarDays(date, windowStart);
-	return Math.min(Math.max(idx, 0), TREND_DAYS - 1);
-}
-
-function bucketCounts(dates: Date[], windowStart: Date): number[] {
-	const buckets = new Array<number>(TREND_DAYS).fill(0);
-	for (const date of dates) {
-		buckets[dayIndex(date, windowStart)] += 1;
-	}
-	return buckets;
-}
-
-function bucketSums(
-	rows: Array<{ date: Date; amount: number }>,
-	windowStart: Date,
-): number[] {
-	const buckets = new Array<number>(TREND_DAYS).fill(0);
-	for (const row of rows) {
-		buckets[dayIndex(row.date, windowStart)] += row.amount;
-	}
-	return buckets;
 }
 
 export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics> {
@@ -223,66 +205,52 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		}),
 	]);
 
-	// Transform users by role
-	const byRole: Record<UserRole, number> = {
-		AUTHOR: 0,
-		REVIEWER: 0,
-		EDITOR: 0,
-		ADMIN: 0,
-		EXHIBITOR: 0,
-	};
-	for (const group of usersGroupedByRole) {
-		byRole[group.role] = group._count;
-	}
+	const byRole = tallyGroups<(typeof usersGroupedByRole)[number], UserRole>(
+		{ AUTHOR: 0, REVIEWER: 0, EDITOR: 0, ADMIN: 0, EXHIBITOR: 0 },
+		usersGroupedByRole,
+		(g) => g.role,
+	);
 
-	// Transform submissions by status
-	const byStatus: Record<SubmissionStatus, number> = {
-		DRAFT: 0,
-		SUBMITTED: 0,
-		UNDER_REVIEW: 0,
-		REVIEWS_COMPLETE: 0,
-		AWAITING_DECISION: 0,
-		REVISE_REQUIRED: 0,
-		RESUBMITTED: 0,
-		ACCEPTED: 0,
-		CONDITIONALLY_ACCEPTED: 0,
-		REJECTED: 0,
-		WITHDRAWN: 0,
-	};
-	for (const group of submissionsGroupedByStatus) {
-		byStatus[group.status] = group._count;
-	}
+	const byStatus = tallyGroups<
+		(typeof submissionsGroupedByStatus)[number],
+		SubmissionStatus
+	>(
+		{
+			DRAFT: 0,
+			SUBMITTED: 0,
+			UNDER_REVIEW: 0,
+			REVIEWS_COMPLETE: 0,
+			AWAITING_DECISION: 0,
+			REVISE_REQUIRED: 0,
+			RESUBMITTED: 0,
+			ACCEPTED: 0,
+			CONDITIONALLY_ACCEPTED: 0,
+			REJECTED: 0,
+			WITHDRAWN: 0,
+		},
+		submissionsGroupedByStatus,
+		(g) => g.status,
+	);
 
-	// Transform submissions by type
-	const byType: Record<SubmissionType, number> = {
-		ABSTRACT: 0,
-		FULL_PAPER: 0,
-		POSTER: 0,
-		EXHIBITOR: 0,
-	};
-	for (const group of submissionsGroupedByType) {
-		byType[group.type] = group._count;
-	}
+	const byType = tallyGroups<
+		(typeof submissionsGroupedByType)[number],
+		SubmissionType
+	>(
+		{ ABSTRACT: 0, FULL_PAPER: 0, POSTER: 0, EXHIBITOR: 0 },
+		submissionsGroupedByType,
+		(g) => g.type,
+	);
 
-	// Transform review assignments by status
-	const byAssignmentStatus: Record<AssignmentStatus, number> = {
-		PENDING: 0,
-		COMPLETED: 0,
-		CANCELLED: 0,
-		OVERDUE: 0,
-	};
-	for (const group of reviewAssignmentsGroupedByStatus) {
-		byAssignmentStatus[group.status] = group._count;
-	}
+	const byAssignmentStatus = tallyGroups<
+		(typeof reviewAssignmentsGroupedByStatus)[number],
+		AssignmentStatus
+	>(
+		{ PENDING: 0, COMPLETED: 0, CANCELLED: 0, OVERDUE: 0 },
+		reviewAssignmentsGroupedByStatus,
+		(g) => g.status,
+	);
 
-	// Calculate completion rate
-	const completionRate =
-		totalAssignments > 0 ? (completedAssignments / totalAssignments) * 100 : 0;
-
-	// Calculate total fees collected (convert Decimal to number)
-	const totalCollected = paidFees.reduce((sum, fee) => {
-		return sum + (fee.amount ? Number(fee.amount) : 0);
-	}, 0);
+	const totalCollected = sumFeeAmounts(paidFees);
 
 	// Build daily trend series (last 14 days, oldest -> newest)
 	const trends = {
@@ -328,7 +296,7 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		reviews: {
 			totalAssignments,
 			byStatus: byAssignmentStatus,
-			completionRate,
+			completionRate: completionRate(completedAssignments, totalAssignments),
 		},
 		fees: {
 			totalCollected,
@@ -346,15 +314,9 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 			type: item.type,
 			userId: item.userId,
 			submissionId: item.submissionId,
-			performerName: item.performer
-				? `${item.performer.firstName ?? ""} ${item.performer.lastName ?? ""}`.trim() ||
-					null
-				: null,
+			performerName: formatPersonName(item.performer),
 			submissionTitle: item.submission?.title ?? null,
-			userName: item.user
-				? `${item.user.firstName ?? ""} ${item.user.lastName ?? ""}`.trim() ||
-					null
-				: null,
+			userName: formatPersonName(item.user),
 			detail: item.detail as Record<
 				string,
 				string | number | boolean | null
