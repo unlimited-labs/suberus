@@ -11,19 +11,13 @@ import {
 	IconSparkles,
 	IconWand,
 } from "@tabler/icons-react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { format } from "date-fns";
-import { type ComponentType, useState } from "react";
-import { toast } from "sonner";
-import {
-	applyAutoPlanFn,
-	getAutoPlanJobFn,
-	startAutoPlanFn,
-} from "@/features/planner/api/autoplan";
+import type { ComponentType } from "react";
+import type { getAutoPlanJobFn } from "@/features/planner/api/autoplan";
+import { useAutoPlanState } from "@/features/planner/components/hooks/use-auto-plan-state";
 import type { AutoplanStage } from "@/features/planner/server/autoplan-types";
 import { PageHeader } from "@/shared/components/layout/page-header";
-import { useJobSSE } from "@/shared/hooks/use-job-sse";
 import { cn } from "@/shared/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Badge } from "@/shared/ui/badge";
@@ -82,52 +76,18 @@ function formatDateRange(startAt: string, endAt: string): string {
 }
 
 function AutoPlanPage() {
-	const navigate = useNavigate();
-	const queryClient = useQueryClient();
-	const [jobId, setJobId] = useState<string | null>(null);
-
-	const start = useMutation({
-		mutationFn: () => startAutoPlanFn(),
-		onSuccess: (res) => setJobId(res.jobId),
-	});
-
-	const sse = useJobSSE(jobId);
-
-	// Only fetch full proposal data when job completes
-	const jobResult = useQuery({
-		queryKey: ["autoplan-job", jobId],
-		queryFn: () =>
-			jobId ? getAutoPlanJobFn({ data: { jobId } }) : Promise.resolve(null),
-		enabled: jobId !== null && sse.status === "done",
-	});
-
-	const apply = useMutation({
-		mutationFn: (id: string) => applyAutoPlanFn({ data: { jobId: id } }),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["programSessions"] });
-			queryClient.invalidateQueries({ queryKey: ["unscheduledSubmissions"] });
-			toast.success("Auto-plan applied");
-			navigate({ to: "/admin/program-planner" });
-		},
-	});
-
-	const data =
-		jobResult.data && !jobResult.data.notFound ? jobResult.data : null;
-	const running =
-		start.isPending || sse.status === "running" || sse.status === "pending";
-	const done = sse.status === "done" && data?.proposal && !data.appliedAt;
-	const errorMsg =
-		sse.status === "error"
-			? (sse.error ?? "Unknown error")
-			: apply.error
-				? apply.error.message
-				: start.error
-					? start.error.message
-					: null;
-
-	function goBack() {
-		navigate({ to: "/admin/program-planner" });
-	}
+	const {
+		jobId,
+		sse,
+		running,
+		errorMsg,
+		proposal,
+		startPending,
+		generate,
+		applyPlan,
+		applying,
+		goBack,
+	} = useAutoPlanState();
 
 	return (
 		<div className="flex h-full flex-col">
@@ -140,11 +100,11 @@ function AutoPlanPage() {
 
 			<div className="flex-1 overflow-y-auto">
 				<div className="mx-auto max-w-5xl px-8 py-10">
-					{!jobId && !start.isPending && !errorMsg && (
+					{!jobId && !startPending && !errorMsg && (
 						<IntroView
-							onGenerate={() => start.mutate()}
+							onGenerate={generate}
 							onCancel={goBack}
-							pending={start.isPending}
+							pending={startPending}
 						/>
 					)}
 
@@ -162,12 +122,12 @@ function AutoPlanPage() {
 						<ErrorView message={errorMsg} onBack={goBack} />
 					)}
 
-					{done && data.proposal && (
+					{proposal && (
 						<ResultsView
-							proposal={data.proposal}
+							proposal={proposal}
 							onDiscard={goBack}
-							onApply={() => jobId && apply.mutate(jobId)}
-							applying={apply.isPending}
+							onApply={applyPlan}
+							applying={applying}
 						/>
 					)}
 				</div>
@@ -267,6 +227,60 @@ function ProgressView({
 	);
 }
 
+type StageStatus = "pending" | "running" | "done";
+
+interface StageStyle {
+	container: string;
+	iconWrap: string;
+	statusText: string;
+	statusDot: string;
+	label: string;
+	strip: string;
+}
+
+const STAGE_STYLES: Record<StageStatus, StageStyle> = {
+	pending: {
+		container: "border-dashed opacity-60",
+		iconWrap: "bg-muted text-muted-foreground/70",
+		statusText: "text-muted-foreground/60",
+		statusDot: "bg-muted-foreground/30",
+		label: "text-muted-foreground",
+		strip: "bg-muted/30",
+	},
+	running: {
+		container:
+			"border-primary/60 shadow-md shadow-primary/10 ring-2 ring-primary/20",
+		iconWrap:
+			"bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm shadow-primary/40",
+		statusText: "text-primary",
+		statusDot: "animate-pulse bg-primary",
+		label: "",
+		strip: "bg-primary/15",
+	},
+	done: {
+		container: "border-primary/30 bg-primary/[0.03]",
+		iconWrap: "bg-primary/15 text-primary ring-1 ring-primary/20",
+		statusText: "text-primary/70",
+		statusDot: "bg-primary",
+		label: "",
+		strip: "bg-primary/40",
+	},
+};
+
+function StageIcon({
+	status,
+	icon: Icon,
+}: {
+	status: StageStatus;
+	icon: ComponentType<{ className?: string }>;
+}) {
+	if (status === "running")
+		return <IconLoader2 className="h-5 w-5 animate-spin" />;
+	if (status === "done")
+		return <IconCheck className="h-5 w-5" strokeWidth={3} />;
+	return <Icon className="h-5 w-5" />;
+}
+
 function StageCard({
 	spec,
 	status,
@@ -274,21 +288,18 @@ function StageCard({
 	total,
 }: {
 	spec: StageSpec;
-	status: "pending" | "running" | "done";
+	status: StageStatus;
 	current: number;
 	total: number;
 }) {
-	const Icon = spec.icon;
+	const st = STAGE_STYLES[status];
 	const pct = status === "running" && total > 0 ? (current / total) * 100 : 0;
 
 	return (
 		<div
 			className={cn(
 				"group relative flex h-44 flex-col overflow-hidden rounded-xl border bg-card p-5 transition-all duration-300",
-				status === "pending" && "border-dashed opacity-60",
-				status === "running" &&
-					"border-primary/60 shadow-md shadow-primary/10 ring-2 ring-primary/20",
-				status === "done" && "border-primary/30 bg-primary/[0.03]",
+				st.container,
 			)}
 		>
 			{/* Top: icon + status dot */}
@@ -300,51 +311,27 @@ function StageCard({
 					<span
 						className={cn(
 							"relative flex h-12 w-12 items-center justify-center rounded-xl transition-all",
-							status === "pending" && "bg-muted text-muted-foreground/70",
-							status === "running" &&
-								"bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm shadow-primary/40",
-							status === "done" &&
-								"bg-primary/15 text-primary ring-1 ring-primary/20",
+							st.iconWrap,
 						)}
 					>
-						{status === "running" ? (
-							<IconLoader2 className="h-5 w-5 animate-spin" />
-						) : status === "done" ? (
-							<IconCheck className="h-5 w-5" strokeWidth={3} />
-						) : (
-							<Icon className="h-5 w-5" />
-						)}
+						<StageIcon status={status} icon={spec.icon} />
 					</span>
 				</div>
 
 				<span
 					className={cn(
 						"flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider",
-						status === "pending" && "text-muted-foreground/60",
-						status === "running" && "text-primary",
-						status === "done" && "text-primary/70",
+						st.statusText,
 					)}
 				>
-					<span
-						className={cn(
-							"h-1.5 w-1.5 rounded-full",
-							status === "pending" && "bg-muted-foreground/30",
-							status === "running" && "animate-pulse bg-primary",
-							status === "done" && "bg-primary",
-						)}
-					/>
+					<span className={cn("h-1.5 w-1.5 rounded-full", st.statusDot)} />
 					{status}
 				</span>
 			</div>
 
 			{/* Middle: label + description */}
 			<div className="mt-4 flex-1 space-y-1">
-				<div
-					className={cn(
-						"text-sm font-semibold leading-tight",
-						status === "pending" && "text-muted-foreground",
-					)}
-				>
+				<div className={cn("text-sm font-semibold leading-tight", st.label)}>
 					{spec.label}
 				</div>
 				<div className="text-xs text-muted-foreground">
@@ -355,14 +342,7 @@ function StageCard({
 			</div>
 
 			{/* Bottom: progress strip */}
-			<div
-				className={cn(
-					"-mx-5 -mb-5 mt-3 h-1 overflow-hidden",
-					status === "pending" && "bg-muted/30",
-					status === "done" && "bg-primary/40",
-					status === "running" && "bg-primary/15",
-				)}
-			>
+			<div className={cn("-mx-5 -mb-5 mt-3 h-1 overflow-hidden", st.strip)}>
 				{status === "running" &&
 					(total > 0 ? (
 						<div
