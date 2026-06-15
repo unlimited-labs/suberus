@@ -13,15 +13,35 @@
 			"**/index.html",
 			"**/vite.config.ts",
 			"!**/src/routeTree.gen.ts",
-			//"**/src/styles.css",
-			"!**/src/shared/ui/**/*"
+			"!**/src/shared/ui/**/*",
+			"!**/*.svg"
 		]
 	},
 	"formatter": {
 		"enabled": true,
 		"indentStyle": "tab"
 	},
-	"assist": { "actions": { "source": { "organizeImports": "on" } } },
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": {
+					"level": "on",
+					"options": {
+						"sortBareImports": true,
+						"groups": [
+							{
+								"kind": "!bare"
+							},
+							":BLANK_LINE:",
+							{
+								"kind": "bare"
+							}
+						]
+					}
+				}
+			}
+		}
+	},
 	"css": {
 		"parser": {
 			"tailwindDirectives": true
@@ -30,7 +50,7 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true,
+			"preset": "recommended",
 			"suspicious": {
 				"noArrayIndexKey": "off"
 			}
