@@ -15,7 +15,6 @@
   "ignoreDependencies": [
     "@fontsource*",
     "tw-animate-css",
-    "vibe-rules",
     "shadcn"
   ],
   "ignoreBinaries": ["openssl"],
