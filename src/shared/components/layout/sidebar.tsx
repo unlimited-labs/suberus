@@ -2,7 +2,7 @@ import { IconExternalLink, IconMenu2 } from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useSession } from "@/shared/hooks/use-session";
-import { getNavigationForRole } from "@/shared/lib/navigation";
+import { getNavigationForRole } from "@/shared/components/layout/navigation";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import {
