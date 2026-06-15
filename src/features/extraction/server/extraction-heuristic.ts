@@ -35,6 +35,19 @@ export function extractFromZones(classified: ClassifiedPara[]): {
 	};
 }
 
+/** Trim trailing punctuation and drop a trailing "e-mail: ..." suffix. */
+function stripEmailSuffix(raw: string): string {
+	const text = raw.replace(/[;,]\s*$/, "").trim();
+	const emailIdx = text.search(/e-?mail\s*:/i);
+	if (emailIdx > 0) {
+		return text
+			.slice(0, emailIdx)
+			.replace(/[;,]\s*$/, "")
+			.trim();
+	}
+	return text;
+}
+
 export function parseAffiliations(
 	paras: ClassifiedPara[],
 ): Map<string, string> {
@@ -57,24 +70,10 @@ export function parseAffiliations(
 
 		const match = text.match(/^(\d+|\*|†|‡|§)[).\s]*(.+)/);
 		if (match) {
-			let affText = match[2].replace(/[;,]\s*$/, "").trim();
-			const emailIdx = affText.search(/e-?mail\s*:/i);
-			if (emailIdx > 0)
-				affText = affText
-					.slice(0, emailIdx)
-					.replace(/[;,]\s*$/, "")
-					.trim();
-			map.set(match[1], affText);
+			map.set(match[1], stripEmailSuffix(match[2]));
 		} else if (INSTITUTION_RE.test(text)) {
 			// Unmarked affiliation — assign sequential number
-			let affText = text.replace(/[;,]\s*$/, "").trim();
-			const emailIdx = affText.search(/e-?mail\s*:/i);
-			if (emailIdx > 0)
-				affText = affText
-					.slice(0, emailIdx)
-					.replace(/[;,]\s*$/, "")
-					.trim();
-			map.set(`_unmarked_${unmarkedIndex++}`, affText);
+			map.set(`_unmarked_${unmarkedIndex++}`, stripEmailSuffix(text));
 		}
 	}
 	return map;
@@ -98,6 +97,22 @@ export function extractEmails(paras: ClassifiedPara[]): string[] {
 	return [...new Set(matches.map((e) => e.toLowerCase()))];
 }
 
+/** Link a segment to its affiliation via markers, falling back to a shared one. */
+function resolveAffiliation(
+	seg: AuthorSegment,
+	affiliations: Map<string, string>,
+	sharedAff: string | undefined,
+): string | undefined {
+	if (seg.markers.length > 0 && affiliations.size > 0) {
+		const joined = seg.markers
+			.map((m) => affiliations.get(m))
+			.filter(Boolean)
+			.join("; ");
+		if (joined.length > 0) return joined;
+	}
+	return sharedAff;
+}
+
 export function extractAuthors(
 	paras: ClassifiedPara[],
 	affiliations: Map<string, string>,
@@ -109,28 +124,47 @@ export function extractAuthors(
 	const sharedAff = affValues.length === 1 ? affValues[0] : undefined;
 
 	for (const { para } of paras) {
-		const segments = extractAuthorSegments(para);
-
-		for (const seg of segments) {
+		for (const seg of extractAuthorSegments(para)) {
 			const parsed = parseName(seg.name);
 			if (!parsed) continue;
 
-			let affiliationName: string | undefined;
-			if (seg.markers.length > 0 && affiliations.size > 0) {
-				affiliationName = seg.markers
-					.map((m) => affiliations.get(m))
-					.filter(Boolean)
-					.join("; ");
-				if (affiliationName.length === 0) affiliationName = undefined;
-			}
-			if (!affiliationName && sharedAff) affiliationName = sharedAff;
-
-			const email = emails[authors.length];
-			authors.push({ ...parsed, email, affiliationName });
+			const affiliationName = resolveAffiliation(seg, affiliations, sharedAff);
+			authors.push({
+				...parsed,
+				email: emails[authors.length],
+				affiliationName,
+			});
 		}
 	}
 
 	return authors;
+}
+
+/** Merge consecutive superscript runs into markers: "1,2" → ["1","2"]. */
+function parseMarkers(runText: string): string[] {
+	return runText
+		.replace(/[)*,\s]/g, " ")
+		.split(/\s+/)
+		.filter((m) => m.length > 0);
+}
+
+/**
+ * A new author starts when text follows a superscript without a leading
+ * comma/semicolon and begins with an uppercase letter.
+ * Handles "Karbowniczek^1^ Pradeep" (space-separated) alongside the
+ * comma-separated "Korpala^1,2^, Bzowski^3^" case.
+ */
+function startsNewAuthor(
+	prevWasSuperscript: boolean,
+	currentName: string,
+	text: string,
+): boolean {
+	return (
+		prevWasSuperscript &&
+		currentName.trim().length > 0 &&
+		!/^[,;]/.test(text.trimStart()) &&
+		/[A-ZÀ-ŽĄ-Ż]/.test(text.trim()[0] ?? "")
+	);
 }
 
 export function extractAuthorSegments(para: DocParagraph): AuthorSegment[] {
@@ -142,66 +176,42 @@ export function extractAuthorSegments(para: DocParagraph): AuthorSegment[] {
 	let currentMarkers: string[] = [];
 	let prevWasSuperscript = false;
 
+	const flush = () => {
+		if (currentName.trim().length > 0) {
+			segments.push({ name: cleanName(currentName), markers: currentMarkers });
+		}
+		currentName = "";
+		currentMarkers = [];
+	};
+
 	for (const run of runs) {
 		if (run.superscript) {
-			// Merge consecutive superscript runs: [SUP]1[/SUP][SUP],2[/SUP] → markers ["1","2"]
-			const markers = run.text
-				.replace(/[)*,\s]/g, " ")
-				.split(/\s+/)
-				.filter((m) => m.length > 0);
-			currentMarkers.push(...markers);
+			currentMarkers.push(...parseMarkers(run.text));
 			prevWasSuperscript = true;
-		} else {
-			const text = run.text;
-
-			// Skip whitespace-only runs but keep prevWasSuperscript state
-			if (text.trim().length === 0) {
-				currentName += text;
-				continue;
-			}
-
-			// If previous was superscript and this text doesn't start with comma/semicolon,
-			// check if it looks like a new author name starts here.
-			// Handles: "Karbowniczek^1^ Pradeep" (space-separated, no comma)
-			// and: "Korpala^1,2^, Bzowski^3^" (comma-separated, normal case)
-			if (
-				prevWasSuperscript &&
-				currentName.trim().length > 0 &&
-				!text.trimStart().startsWith(",") &&
-				!text.trimStart().startsWith(";") &&
-				/[A-ZÀ-ŽĄ-Ż]/.test(text.trim()[0] ?? "")
-			) {
-				segments.push({
-					name: cleanName(currentName),
-					markers: currentMarkers,
-				});
-				currentName = "";
-				currentMarkers = [];
-			}
-
-			// Split on commas within the run
-			const parts = text.split(",");
-			for (let i = 0; i < parts.length; i++) {
-				if (i > 0) {
-					if (currentName.trim().length > 0) {
-						segments.push({
-							name: cleanName(currentName),
-							markers: currentMarkers,
-						});
-					}
-					currentName = "";
-					currentMarkers = [];
-				}
-				currentName += parts[i];
-			}
-			prevWasSuperscript = false;
+			continue;
 		}
+
+		const text = run.text;
+		// Skip whitespace-only runs but keep prevWasSuperscript state
+		if (text.trim().length === 0) {
+			currentName += text;
+			continue;
+		}
+
+		if (startsNewAuthor(prevWasSuperscript, currentName, text)) {
+			flush();
+		}
+
+		// Split on commas within the run
+		const parts = text.split(",");
+		for (let i = 0; i < parts.length; i++) {
+			if (i > 0) flush();
+			currentName += parts[i];
+		}
+		prevWasSuperscript = false;
 	}
 
-	if (currentName.trim().length > 0) {
-		segments.push({ name: cleanName(currentName), markers: currentMarkers });
-	}
-
+	flush();
 	return segments;
 }
 
