@@ -1,24 +1,21 @@
 import { IconCalendar, IconSearch, IconX } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-	addMinutes,
-	compareAsc,
-	eachDayOfInterval,
-	format,
-	isAfter,
-} from "date-fns";
+import { addMinutes } from "date-fns";
 import { useState } from "react";
 import {
 	publicConferenceInfoQueryOptions,
 	publicProgramQueryOptions,
 } from "@/features/planner/api/schedule";
-import type {
-	PublicProgramBreak,
-	PublicProgramSession,
-} from "@/features/planner/server/schedule";
+import {
+	dayLabelParts,
+	formatLongDate,
+} from "@/features/planner/components/public-program/program-formatting";
+import type { TimeGroup } from "@/features/planner/components/public-program/program-types";
+import { useProgramSchedule } from "@/features/planner/components/public-program/use-program-schedule";
+import type { PublicProgramSession } from "@/features/planner/server/schedule";
 import { getAppBrandingFn } from "@/features/settings/api/settings";
-import { formatClockTime, sameDayInTz } from "@/shared/lib/tz-datetime";
+import { formatClockTime } from "@/shared/lib/tz-datetime";
 import { cn } from "@/shared/lib/utils";
 import { Input } from "@/shared/ui/input";
 
@@ -44,33 +41,6 @@ export const Route = createFileRoute("/program/")({
 	component: ProgramPage,
 });
 
-function dayLabelParts(date: Date): {
-	weekday: string;
-	dayNum: string;
-	month: string;
-} {
-	return {
-		weekday: format(date, "EEEE"),
-		dayNum: format(date, "dd"),
-		month: format(date, "MMMM"),
-	};
-}
-
-function formatLongDate(dateStr: string): string {
-	return format(new Date(dateStr), "MMMM d, yyyy");
-}
-
-type ProgramItem =
-	| { kind: "session"; data: PublicProgramSession }
-	| { kind: "break"; data: PublicProgramBreak };
-
-type TimeGroup = {
-	startAt: Date | string;
-	endAt: Date | string;
-	sessions: PublicProgramSession[];
-	breaks: PublicProgramBreak[];
-};
-
 function ProgramPage() {
 	const { data: program } = useSuspenseQuery(publicProgramQueryOptions());
 	const { data: settings } = useSuspenseQuery(
@@ -78,75 +48,14 @@ function ProgramPage() {
 	);
 	const [search, setSearch] = useState("");
 	const [activeDay, setActiveDay] = useState(0);
+	const { tz, days, q, activeItems, groups } = useProgramSchedule({
+		program,
+		settings,
+		search,
+		activeDay,
+	});
 
 	if (!program) return <EmptyState />;
-
-	const tz = settings.timezone || undefined;
-	const days =
-		settings.startDate && settings.endDate
-			? eachDayOfInterval({
-					start: new Date(settings.startDate),
-					end: new Date(settings.endDate),
-				})
-			: [];
-
-	const q = search.toLowerCase().trim();
-
-	const sessionMatches = (s: PublicProgramSession): boolean => {
-		if (!q) return true;
-		if (s.title.toLowerCase().includes(q)) return true;
-		if (s.track?.name.toLowerCase().includes(q)) return true;
-		return s.presentations.some(
-			(p) =>
-				p.submissionTitle.toLowerCase().includes(q) ||
-				p.authors.some(
-					(a) =>
-						a.firstName.toLowerCase().includes(q) ||
-						a.lastName.toLowerCase().includes(q),
-				),
-		);
-	};
-
-	const itemsForDay = (day: Date): ProgramItem[] => {
-		const sessions = program.sessions
-			.filter((s) => sameDayInTz(new Date(s.startAt), day, tz))
-			.filter(sessionMatches);
-		const breaks = program.breaks.filter((b) =>
-			sameDayInTz(new Date(b.startAt), day, tz),
-		);
-		const all: ProgramItem[] = [
-			...sessions.map((s) => ({ kind: "session" as const, data: s })),
-			...breaks.map((b) => ({ kind: "break" as const, data: b })),
-		];
-		return all.sort((a, b) =>
-			compareAsc(new Date(a.data.startAt), new Date(b.data.startAt)),
-		);
-	};
-
-	const activeItems =
-		days.length > 0 ? itemsForDay(days[activeDay]) : itemsForDay(new Date());
-
-	// Group items by start time — parallel sessions share a time header
-	const groups: TimeGroup[] = [];
-	for (const it of activeItems) {
-		const key = new Date(it.data.startAt).getTime();
-		const last = groups[groups.length - 1];
-		if (last && new Date(last.startAt).getTime() === key) {
-			if (it.kind === "session") last.sessions.push(it.data);
-			else last.breaks.push(it.data);
-			// Extend group end if this item ends later
-			if (isAfter(new Date(it.data.endAt), new Date(last.endAt))) {
-				last.endAt = it.data.endAt;
-			}
-		} else {
-			groups.push({
-				startAt: it.data.startAt,
-				endAt: it.data.endAt,
-				sessions: it.kind === "session" ? [it.data] : [],
-				breaks: it.kind === "break" ? [it.data] : [],
-			});
-		}
-	}
 
 	return (
 		<div
