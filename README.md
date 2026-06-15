@@ -54,20 +54,21 @@ pnpm dev
 
 The app is served at **http://localhost:3001**.
 
-## Project structure
 
-Suberus follows a **feature-first** layout: each feature is a vertical slice under `src/features/`, with a thin shared layer in `src/shared/`.
+## Trusted by
 
-```
-src/
-├── features/        # vertical slices (submissions, workflow, planner, settings, exhibitors, activity-log, …)
-├── shared/          # cross-cutting building blocks
-├── routes/          # TanStack Router file-based routes
-└── lib/             # low-level helpers
-docs/                # end-user admin manual (Starlight, own lockfile)
-dev-docs/            # internal engineering docs
-```
+Conferences and institutions running on Suberus:
 
+<div align="center">
+
+| |                                                                                                      |
+|:---:|:----------------------------------------------------------------------------------------------------:|
+| <img src=".github/assets/institutions/pjmicro2026.svg" alt="15th Polish-Japanese Joint Seminar on Micro and Nano Analysis" height="120" /> | <img src=".github/assets/institutions/autometform2026.png" alt="AutoMetForm & ConFair 2026" height="120" /> |
+| <a href="https://pjmicro.agh.edu.pl/">**15th Polish–Japanese Joint Seminar on Micro and Nano Analysis**</a> |            <a href="https://www.autometform.pwr.edu.pl/">**AutoMetForm & ConFair 2026**</a>             |
+
+</div>
+
+> _Using Suberus for your conference? Open a PR adding your logo to `.github/assets/institutions/`._
 
 ## Documentation
 - **Admin manual** — Starlight site available at [docs.suberus.app](https://docs.suberus.app) or in `docs/`
