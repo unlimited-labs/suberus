@@ -15,7 +15,7 @@ import type { TimeGroup } from "@/features/planner/components/public-program/pro
 import { useProgramSchedule } from "@/features/planner/components/public-program/use-program-schedule";
 import type { PublicProgramSession } from "@/features/planner/server/schedule";
 import { getAppBrandingFn } from "@/features/settings/api/settings";
-import { formatClockTime } from "@/shared/lib/tz-datetime";
+import { formatClockTime } from "@/features/planner/tz-datetime";
 import { cn } from "@/shared/lib/utils";
 import { Input } from "@/shared/ui/input";
 

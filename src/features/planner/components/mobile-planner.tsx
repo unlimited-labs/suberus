@@ -6,7 +6,7 @@ import {
 } from "@tabler/icons-react";
 import { addDays } from "date-fns";
 import { useMemo, useState } from "react";
-import { formatDayLabel, sameDayInTz } from "@/shared/lib/tz-datetime";
+import { formatDayLabel, sameDayInTz } from "@/features/planner/tz-datetime";
 import { MobileBreakRow } from "./mobile/mobile-break-row";
 import { MobileSessionRow } from "./mobile/mobile-session-row";
 import { buildPlannerItems } from "./mobile/planner-item";

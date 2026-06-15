@@ -1,6 +1,6 @@
 import type { IlamyResourceCalendarProps } from "@ilamy/calendar";
 import { useMemo } from "react";
-import { formatDurationMin } from "@/shared/lib/tz-datetime";
+import { formatDurationMin } from "@/features/planner/tz-datetime";
 import type { BreakEventData } from "../break-event-card";
 import type { SessionEventData } from "../session-event-card";
 import type { PlannerBreak, PlannerSession } from "../types";

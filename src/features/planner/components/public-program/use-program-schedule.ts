@@ -4,7 +4,7 @@ import type {
 	PublicProgram,
 	PublicProgramSession,
 } from "@/features/planner/server/schedule";
-import { sameDayInTz } from "@/shared/lib/tz-datetime";
+import { sameDayInTz } from "@/features/planner/tz-datetime";
 import { buildTimeGroups } from "./program-formatting";
 import type { ProgramItem } from "./program-types";
 

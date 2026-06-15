@@ -10,7 +10,7 @@ import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
 import { allSessionsQueryOptions } from "@/features/planner/api/sessions";
 import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
 import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
-import { formatDurationMin } from "@/shared/lib/tz-datetime";
+import { formatDurationMin } from "@/features/planner/tz-datetime";
 import { useEditableTitle } from "../hooks/use-editable-title";
 import type { ChairCandidate, PlannerSession } from "../types";
 import { useSessionEditorMutations } from "./use-session-editor-mutations";
