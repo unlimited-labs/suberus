@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { AuthCard } from "@/features/auth/components/auth-card";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { forgetPassword } from "@/shared/lib/auth-client";
-import { forgotPasswordSchema } from "@/shared/lib/validations/auth";
+import { forgotPasswordSchema } from "@/features/auth/validations";
 
 export const Route = createFileRoute("/_auth/forgot-password")({
 	component: ForgotPasswordPage,

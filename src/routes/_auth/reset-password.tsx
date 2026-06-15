@@ -11,7 +11,7 @@ import { AuthCard } from "@/features/auth/components/auth-card";
 import { PasswordFieldsGroup } from "@/shared/components/composable/password-fields-group";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { resetPassword } from "@/shared/lib/auth-client";
-import { resetPasswordSchema } from "@/shared/lib/validations/auth";
+import { resetPasswordSchema } from "@/features/auth/validations";
 
 const searchSchema = z.object({
 	token: z.string().optional(),

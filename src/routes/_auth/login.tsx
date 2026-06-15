@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { AuthCard } from "@/features/auth/components/auth-card";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { signIn } from "@/shared/lib/auth-client";
-import { loginSchema } from "@/shared/lib/validations/auth";
+import { loginSchema } from "@/features/auth/validations";
 
 export const Route = createFileRoute("/_auth/login")({
 	component: LoginPage,

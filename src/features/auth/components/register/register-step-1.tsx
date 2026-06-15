@@ -9,7 +9,7 @@ import type { RegisterFormApi } from "@/features/auth/hooks/use-register-form";
 import { roleLabels } from "@/features/users/labels";
 import { AffiliationSelect } from "@/shared/components/affiliation-select";
 import { titleOptions } from "@/shared/lib/labels/title";
-import { registerBase } from "@/shared/lib/validations/auth";
+import { registerBase } from "@/features/auth/validations";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";

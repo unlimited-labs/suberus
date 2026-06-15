@@ -1,5 +1,5 @@
 import type { RegisterFormApi } from "@/features/auth/hooks/use-register-form";
-import { registerBase } from "@/shared/lib/validations/auth";
+import { registerBase } from "@/features/auth/validations";
 
 interface RegisterStep2Props {
 	form: RegisterFormApi;

@@ -5,7 +5,7 @@ import type {
 } from "@/features/auth/hooks/use-register-form";
 import { SurveyQuestionField } from "@/features/survey/components/survey-question-field";
 import { surveyAnswerRequiredError } from "@/features/survey/validations";
-import { registerBase } from "@/shared/lib/validations/auth";
+import { registerBase } from "@/features/auth/validations";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
 

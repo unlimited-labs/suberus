@@ -15,7 +15,7 @@ import {
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { signUp } from "@/shared/lib/auth-client";
 import { detectCountry } from "@/shared/lib/detect-country";
-import { registerSchema } from "@/shared/lib/validations/auth";
+import { registerSchema } from "@/features/auth/validations";
 import { COUNTRIES } from "@/shared/ui/country-combobox";
 
 export type RegisterSurveyQuestions = Awaited<
