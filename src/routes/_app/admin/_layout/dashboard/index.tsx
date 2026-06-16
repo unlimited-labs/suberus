@@ -29,22 +29,22 @@ function AdminDashboard() {
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconDashboard} title="Admin Dashboard" />
 			<div className="flex-1 overflow-auto p-6 space-y-6">
-				<HealthAlerts data={data?.health} s3={data?.s3} smtp={data?.smtp} />
+				<HealthAlerts data={data.health} s3={data.s3} smtp={data.smtp} />
 				<MetricsGrid metrics={data} isLoading={false} />
 				<div className="grid gap-6 lg:grid-cols-2">
-					<SubmissionChart data={data?.submissions} />
-					<ReviewProgress data={data?.reviews} />
+					<SubmissionChart data={data.submissions} />
+					<ReviewProgress data={data.reviews} />
 				</div>
-				<UsersByCountryCard data={data?.usersByCountry} />
+				<UsersByCountryCard data={data.usersByCountry} />
 				<div className="grid gap-6 lg:grid-cols-2">
-					<RecentActivity events={data?.recentActivity} />
+					<RecentActivity events={data.recentActivity} />
 					<QuickActions />
 				</div>
 				<SystemHealthCard
-					s3={data?.s3}
-					smtp={data?.smtp}
-					llm={data?.llm}
-					docling={data?.docling}
+					s3={data.s3}
+					smtp={data.smtp}
+					llm={data.llm}
+					docling={data.docling}
 				/>
 			</div>
 		</div>

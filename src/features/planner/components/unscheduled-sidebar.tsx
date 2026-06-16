@@ -1,10 +1,11 @@
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useCallback, useMemo, useState } from "react";
+import { type ComponentProps, useCallback, useMemo, useState } from "react";
 import {
 	allSessionsQueryOptions,
 	unscheduledSubmissionsQueryOptions,
 } from "@/features/planner/api/sessions";
+import { resolveGroupCollapse } from "@/features/planner/components/unscheduled-sidebar-helpers";
 import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
 import { BulkReadReader } from "./bulk-read-reader";
 import { usePlannerSelection } from "./planner-context";
@@ -25,6 +26,78 @@ import { useSubmissionSelection } from "./unscheduled/use-submission-selection";
 import { useToggleSet } from "./unscheduled/use-toggle-set";
 
 type ListMode = "unscheduled" | "scheduled";
+
+type SubmissionGroup = ReturnType<typeof groupSubmissions>[number];
+type ToggleSet = { set: ReadonlySet<string>; toggle: (key: string) => void };
+type GroupRenderProps = Omit<
+	ComponentProps<typeof UnscheduledGroup>,
+	"group" | "isCollapsed" | "onToggle"
+>;
+
+function ScheduledBody(props: ComponentProps<typeof ScheduledList>) {
+	return (
+		<div className="flex-1 overflow-y-auto">
+			<ScheduledList {...props} />
+		</div>
+	);
+}
+
+function UnscheduledBody({
+	groups,
+	collapsed,
+	groupProps,
+	search,
+	mode,
+	onModeChange,
+	selectionSize,
+	onCreateSession,
+	onClear,
+}: {
+	groups: SubmissionGroup[];
+	collapsed: ToggleSet;
+	groupProps: GroupRenderProps;
+	search: string;
+	mode: GroupingMode;
+	onModeChange: (mode: GroupingMode) => void;
+	selectionSize: number;
+	onCreateSession: () => void;
+	onClear: () => void;
+}) {
+	return (
+		<>
+			<GroupingTabs mode={mode} onChange={onModeChange} />
+			<div className="flex-1 overflow-y-auto">
+				{groups.length === 0 ? (
+					<UnscheduledEmpty hasSearch={Boolean(search)} />
+				) : (
+					groups.map((group, gIdx) => {
+						const { toggleKey, isCollapsed } = resolveGroupCollapse(
+							gIdx,
+							group.key,
+							collapsed.set,
+						);
+						return (
+							<UnscheduledGroup
+								key={group.key}
+								group={group}
+								isCollapsed={isCollapsed}
+								onToggle={() => collapsed.toggle(toggleKey)}
+								{...groupProps}
+							/>
+						);
+					})
+				)}
+			</div>
+			{selectionSize > 0 && (
+				<SelectionBar
+					count={selectionSize}
+					onCreateSession={onCreateSession}
+					onClear={onClear}
+				/>
+			)}
+		</>
+	);
+}
 
 export function UnscheduledSidebar() {
 	const { openCreateFromSelection, selectSession } = usePlannerSelection();
@@ -127,6 +200,19 @@ export function UnscheduledSidebar() {
 		);
 	}
 
+	const groupProps: GroupRenderProps = {
+		selectMode,
+		showTypeBadge,
+		selectedIds: selection.selected,
+		expandedIds: expanded.set,
+		draggingId,
+		onToggleSelect: selection.toggle,
+		onToggleExpand: expanded.toggle,
+		onOpenReader: handleOpenReader,
+		onDragStart: handleDragStart,
+		onDragEnd: handleDragEnd,
+	};
+
 	return (
 		<>
 			<div
@@ -143,52 +229,23 @@ export function UnscheduledSidebar() {
 					onCollapse={() => setOpen(false)}
 				/>
 				<SidebarSearch value={search} onChange={setSearch} />
-				{!isScheduled && <GroupingTabs mode={mode} onChange={setMode} />}
 
-				<div className="flex-1 overflow-y-auto">
-					{isScheduled ? (
-						<ScheduledList
-							sessions={sessions}
-							search={search}
-							timezone={settings.timezone || undefined}
-							onOpenSession={selectSession}
-						/>
-					) : groups.length === 0 ? (
-						<UnscheduledEmpty hasSearch={Boolean(search)} />
-					) : (
-						groups.map((group, gIdx) => {
-							// First group defaults to expanded; others default to collapsed.
-							// Toggle state inverts the default.
-							const toggleKey = gIdx === 0 ? group.key : `open:${group.key}`;
-							const isCollapsed =
-								gIdx === 0
-									? collapsed.set.has(toggleKey)
-									: !collapsed.set.has(toggleKey);
-							return (
-								<UnscheduledGroup
-									key={group.key}
-									group={group}
-									isCollapsed={isCollapsed}
-									onToggle={() => collapsed.toggle(toggleKey)}
-									selectMode={selectMode}
-									showTypeBadge={showTypeBadge}
-									selectedIds={selection.selected}
-									expandedIds={expanded.set}
-									draggingId={draggingId}
-									onToggleSelect={selection.toggle}
-									onToggleExpand={expanded.toggle}
-									onOpenReader={handleOpenReader}
-									onDragStart={handleDragStart}
-									onDragEnd={handleDragEnd}
-								/>
-							);
-						})
-					)}
-				</div>
-
-				{!isScheduled && selection.selected.size > 0 && (
-					<SelectionBar
-						count={selection.selected.size}
+				{isScheduled ? (
+					<ScheduledBody
+						sessions={sessions}
+						search={search}
+						timezone={settings.timezone || undefined}
+						onOpenSession={selectSession}
+					/>
+				) : (
+					<UnscheduledBody
+						groups={groups}
+						collapsed={collapsed}
+						groupProps={groupProps}
+						search={search}
+						mode={mode}
+						onModeChange={setMode}
+						selectionSize={selection.selected.size}
 						onCreateSession={handleCreateSession}
 						onClear={selection.clear}
 					/>
