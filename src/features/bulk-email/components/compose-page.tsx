@@ -40,7 +40,7 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 
 	return (
 		<div className="flex h-full flex-col">
-			<PageHeader icon={IconMailForward} title="Bulk Email">
+			<PageHeader icon={IconMailForward} title="Email campaigns">
 				<Badge variant="secondary" data-testid="campaign-status">
 					{campaign.status}
 				</Badge>

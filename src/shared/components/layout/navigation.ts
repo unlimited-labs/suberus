@@ -79,7 +79,7 @@ export const navigationSections: NavSection[] = [
 			},
 			{ name: "Submissions", href: "/admin/submissions", icon: IconFileStack },
 			{
-				name: "Bulk Email",
+				name: "Email campaigns",
 				href: "/admin/bulk-email",
 				icon: IconMailForward,
 			},

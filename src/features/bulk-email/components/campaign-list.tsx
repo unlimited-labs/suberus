@@ -21,7 +21,7 @@ export function CampaignList() {
 
 	return (
 		<div className="mx-auto max-w-5xl space-y-4 p-4">
-			<h1 className="text-2xl font-semibold">Bulk email history</h1>
+			<h1 className="text-2xl font-semibold">Email campaigns</h1>
 
 			{campaigns.length === 0 ? (
 				<p className="text-sm text-muted-foreground">
