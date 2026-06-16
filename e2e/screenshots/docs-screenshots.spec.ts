@@ -603,7 +603,16 @@ test.describe("docs screenshots", () => {
 			},
 		});
 		await page.goto(`/admin/bulk-email/${campaign.id}`);
-		await shot(page, "33-managing-email-campaigns.png", { height: 1700 });
+		// Fixed clip (not the auto-trim path) so the footer action buttons are
+		// included — the leaf-bottom heuristic stops at the placeholder chips.
+		await page.setViewportSize({ width: 1440, height: 1240 });
+		await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+		await page.waitForTimeout(600);
+		await page.screenshot({
+			path: path.join(SHOTS_DIR, "33-managing-email-campaigns.png"),
+			clip: { x: 0, y: 0, width: 1440, height: 1180 },
+		});
+		await page.setViewportSize({ width: 1440, height: 900 });
 	});
 
 	// ---- Part 3: Program Planner --------------------------------------------------
