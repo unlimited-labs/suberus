@@ -1,6 +1,5 @@
 import { toast } from "sonner";
 import { Badge } from "@/shared/ui/badge";
-import { Label } from "@/shared/ui/label";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import { PLACEHOLDER_KEYS } from "../lib/placeholders";
 
@@ -14,7 +13,6 @@ const DESCRIPTIONS: Record<(typeof PLACEHOLDER_KEYS)[number], string> = {
 export function PlaceholderHelp() {
 	return (
 		<div className="space-y-2" data-testid="placeholder-help">
-			<Label>Placeholders</Label>
 			<div className="flex flex-wrap gap-1.5">
 				{PLACEHOLDER_KEYS.map((key) => {
 					const token = `{{${key}}}`;
@@ -23,7 +21,7 @@ export function PlaceholderHelp() {
 							<TooltipTrigger asChild>
 								<Badge
 									variant="outline"
-									className="cursor-pointer font-mono text-xs"
+									className="cursor-pointer font-mono text-xs hover:bg-muted"
 									data-testid={`placeholder-${key}`}
 									onClick={() => {
 										navigator.clipboard.writeText(token);

@@ -26,8 +26,10 @@ export function FormatSelector({
 	disabled,
 }: FormatSelectorProps) {
 	return (
-		<div className="space-y-2">
-			<Label htmlFor="format-select">Format</Label>
+		<div className="flex items-center gap-2">
+			<Label htmlFor="format-select" className="text-muted-foreground">
+				Format
+			</Label>
 			<Select
 				value={value}
 				onValueChange={(v) => onChange(v as EmailCampaignFormat)}
@@ -36,7 +38,7 @@ export function FormatSelector({
 				<SelectTrigger
 					id="format-select"
 					data-testid="format-select"
-					className="w-[220px]"
+					className="h-8 w-[150px]"
 				>
 					<SelectValue />
 				</SelectTrigger>

@@ -1,5 +1,6 @@
-import { useJobSSE } from "@/shared/hooks/use-job-sse";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { IconProgressCheck } from "@tabler/icons-react";
+import type { JobSSEState } from "@/shared/hooks/use-job-sse";
+import { Panel } from "@/shared/ui/panel";
 import { Progress } from "@/shared/ui/progress";
 
 interface CampaignProgressCardProps {
@@ -10,13 +11,10 @@ interface CampaignProgressCardProps {
 		totalRecipients: number;
 	};
 	jobId: string | null;
+	job: JobSSEState;
 }
 
-function progressValue(job: {
-	status: string | null;
-	current: number;
-	total: number;
-}): number {
+function progressValue(job: JobSSEState): number {
 	if (job.status === "done") return 100;
 	return job.total > 0 ? Math.round((job.current / job.total) * 100) : 0;
 }
@@ -25,25 +23,30 @@ function progressValue(job: {
 export function CampaignProgressCard({
 	campaign,
 	jobId,
+	job,
 }: CampaignProgressCardProps) {
-	const job = useJobSSE(jobId);
 	if (!jobId || campaign.status === "DRAFT") return null;
 
+	// While running, the SSE counters track per-recipient progress live. On
+	// completion the shared job row is normalised to 1/1, so fall back to the
+	// persisted campaign counts (refreshed by the done-triggered refetch).
+	const useLive = job.status === "running" && job.total > 0;
+	const processed = useLive
+		? job.current
+		: campaign.sentCount + campaign.failedCount;
+	const total = useLive ? job.total : campaign.totalRecipients;
+
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>Sending progress</CardTitle>
-			</CardHeader>
-			<CardContent className="space-y-2" data-testid="campaign-progress">
+		<Panel title="Sending progress" icon={IconProgressCheck}>
+			<div className="space-y-2" data-testid="campaign-progress">
 				<Progress value={progressValue(job)} />
 				<p className="text-sm text-muted-foreground">
-					{campaign.sentCount + campaign.failedCount} /{" "}
-					{campaign.totalRecipients} processed
+					{processed} / {total} processed
 					{job.error ? (
 						<span className="ml-2 text-destructive">{job.error}</span>
 					) : null}
 				</p>
-			</CardContent>
-		</Card>
+			</div>
+		</Panel>
 	);
 }

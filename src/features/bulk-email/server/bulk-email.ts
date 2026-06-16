@@ -65,6 +65,46 @@ export async function createDraftCampaign(
 	return { campaignId: campaign.id };
 }
 
+/**
+ * Clones a campaign into a fresh DRAFT: same subject/format/body and the exact
+ * recipient snapshot (names/titles as they were), reset to PENDING. Lets an
+ * admin re-send or tweak a finished campaign without rebuilding it. Returns the
+ * new campaign id.
+ */
+export async function duplicateCampaign(
+	id: string,
+	createdById: string,
+): Promise<{ campaignId: string }> {
+	const src = await prisma.emailCampaign.findUnique({
+		where: { id },
+		include: {
+			recipients: {
+				select: {
+					userId: true,
+					email: true,
+					firstName: true,
+					lastName: true,
+					titles: true,
+				},
+			},
+		},
+	});
+	if (!src) throw new Response("Campaign not found", { status: 404 });
+
+	const campaign = await prisma.emailCampaign.create({
+		data: {
+			createdById,
+			subject: src.subject,
+			format: src.format,
+			bodySource: src.bodySource,
+			totalRecipients: src.recipients.length,
+			recipients: { create: src.recipients },
+		},
+	});
+
+	return { campaignId: campaign.id };
+}
+
 /** Cap on recipient rows hydrated into the composer (the true total lives in
  * `totalRecipients`); keeps the payload + DOM bounded for huge campaigns. */
 export const RECIPIENT_PREVIEW_LIMIT = 200;
@@ -83,7 +123,7 @@ export async function getCampaign(id: string) {
 					status: true,
 					error: true,
 				},
-				orderBy: { email: "asc" },
+				orderBy: [{ email: "asc" }, { id: "asc" }],
 				take: RECIPIENT_PREVIEW_LIMIT,
 			},
 		},

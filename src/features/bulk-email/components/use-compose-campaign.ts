@@ -1,10 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
 	bulkEmailCampaignQueryOptions,
+	bulkEmailCampaignsQueryOptions,
 	deleteBulkEmailCampaign,
+	duplicateBulkEmailCampaign,
 	type getBulkEmailCampaign,
 	previewBulkEmail,
 	saveBulkEmailDraft,
@@ -12,6 +14,7 @@ import {
 	sendBulkEmailTest,
 } from "@/features/bulk-email/api/bulk-email";
 import type { EmailCampaignFormat } from "@/generated/prisma/enums";
+import { useJobSSE } from "@/shared/hooks/use-job-sse";
 import { getErrorMessage } from "@/shared/lib/error-message";
 
 type Campaign = Awaited<ReturnType<typeof getBulkEmailCampaign>>;
@@ -94,6 +97,40 @@ export function useComposeCampaign(campaign: Campaign) {
 		onError: (e) => toast.error(getErrorMessage(e, "Failed to delete draft")),
 	});
 
+	const copyMutation = useMutation({
+		mutationFn: () => duplicateBulkEmailCampaign({ data: { id: campaign.id } }),
+		onSuccess: (r) => {
+			toast.success("Copied to a new draft");
+			queryClient.invalidateQueries({
+				queryKey: bulkEmailCampaignsQueryOptions().queryKey,
+			});
+			navigate({
+				to: "/admin/bulk-email/$id",
+				params: { id: r.campaignId },
+			});
+		},
+		onError: (e) => toast.error(getErrorMessage(e, "Failed to copy campaign")),
+	});
+
+	// Live send progress. The worker advances campaign.status (SENDING → final)
+	// and the per-recipient counts server-side; refetch the campaign on every
+	// progress tick (status change OR a new processed count) so the header badge,
+	// the sent/failed totals and each recipient's SENT/FAILED mark update live
+	// alongside the progress bar instead of freezing at the send-time snapshot.
+	const job = useJobSSE(jobId);
+	const lastSyncedCurrent = useRef(-1);
+	useEffect(() => {
+		if (!jobId) return;
+		const terminal = job.status === "done" || job.status === "error";
+		if (job.status !== "running" && !terminal) return;
+		// Sync once per processed-count tick (and always on the terminal event).
+		if (job.current === lastSyncedCurrent.current && !terminal) return;
+		lastSyncedCurrent.current = job.current;
+		void queryClient.invalidateQueries({
+			queryKey: bulkEmailCampaignQueryOptions(campaign.id).queryKey,
+		});
+	}, [job.status, job.current, jobId, campaign.id, queryClient]);
+
 	return {
 		isDraft,
 		subject,
@@ -112,6 +149,9 @@ export function useComposeCampaign(campaign: Campaign) {
 		isSending: sendMutation.isPending,
 		remove: removeMutation.mutate,
 		isRemoving: removeMutation.isPending,
+		copy: copyMutation.mutate,
+		isCopying: copyMutation.isPending,
 		jobId,
+		job,
 	};
 }

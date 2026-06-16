@@ -603,16 +603,16 @@ test.describe("docs screenshots", () => {
 			},
 		});
 		await page.goto(`/admin/bulk-email/${campaign.id}`);
-		// Fixed clip (not the auto-trim path) so the footer action buttons are
-		// included — the leaf-bottom heuristic stops at the placeholder chips.
-		await page.setViewportSize({ width: 1440, height: 1240 });
+		// Fixed clip (not the auto-trim path): the two-column composer puts the
+		// action buttons in the right inspector rail, so a height that clears the
+		// taller editor card captures the whole layout without trailing whitespace.
+		await page.setViewportSize({ width: 1440, height: 960 });
 		await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
 		await page.waitForTimeout(600);
 		await page.screenshot({
 			path: path.join(SHOTS_DIR, "33-managing-email-campaigns.png"),
-			clip: { x: 0, y: 0, width: 1440, height: 1180 },
+			clip: { x: 0, y: 0, width: 1440, height: 900 },
 		});
-		await page.setViewportSize({ width: 1440, height: 900 });
 	});
 
 	// ---- Part 3: Program Planner --------------------------------------------------
