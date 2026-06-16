@@ -6,6 +6,7 @@ import viteReact, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { type NitroPluginConfig, nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 import checker from "vite-plugin-checker";
+import zodCompiler from "zod-compiler/vite";
 
 // const isDev = process.env.NODE_ENV !== "production";
 const isE2E = process.env.E2E === "true";
@@ -64,6 +65,7 @@ const config = defineConfig({
 			// 	command: "check",
 			// },
 		}),
+		zodCompiler(),
 	],
 });
 
