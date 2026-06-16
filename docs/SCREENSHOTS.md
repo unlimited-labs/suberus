@@ -63,6 +63,7 @@ Settings tabs deep-link via `?tab=<id>`.
 - [x] **25** — `planner/overview.mdx` — *Program Planner calendar* (rooms × days) — `/admin/program-planner`
 - [x] **26** — `managing/extraction.mdx` — *Extraction status on a submission* (DOCX) — `/admin/submissions/<id>`
 - [x] **27** — `managing/activity-log.mdx` — *Activity history on a submission* — `/admin/submissions/<id>` → history section
+- [x] **33** — `managing/bulk-email.mdx` — *Email campaigns composer* (recipients, format, body, placeholders) — `/admin/bulk-email/<id>`
 
 ---
 

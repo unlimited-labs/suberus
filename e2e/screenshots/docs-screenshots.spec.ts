@@ -580,6 +580,32 @@ test.describe("docs screenshots", () => {
 		await shot(page, "27-managing-activity-history.png", { height: 1000 });
 	});
 
+	test("33 email campaigns composer", async ({ page }) => {
+		const db = getPrisma();
+		const recipients = [
+			{ email: "sofia.rossi@example.org", firstName: "Sofia", lastName: "Rossi", titles: "Crystal Plasticity FEM of Ti-6Al-4V Lattice Structures" },
+			{ email: "lukas.weber@example.org", firstName: "Lukas", lastName: "Weber", titles: "High-Throughput DFT Screening of High-Entropy Alloys" },
+			{ email: "kenji.tanaka@example.org", firstName: "Kenji", lastName: "Tanaka", titles: "Digital Twin of an Industrial Heat-Treatment Line" },
+			{ email: "anna.nowak@example.org", firstName: "Anna", lastName: "Nowak", titles: "Molecular Dynamics Study of Hydrogen Embrittlement in Ferrite" },
+		];
+		const campaign = await db.emailCampaign.create({
+			data: {
+				subject: "ICCMS 2026 — programme update for {{firstName}}",
+				format: "MARKDOWN",
+				bodySource:
+					"Dear **{{firstName}} {{lastName}}**,\n\n" +
+					"Thank you for your submission _{{title}}_. The final programme is now " +
+					"online and your presentation slot has been confirmed.\n\n" +
+					"See you in Krakow!\n\nThe ICCMS 2026 Organising Committee",
+				status: "DRAFT",
+				totalRecipients: recipients.length,
+				recipients: { create: recipients },
+			},
+		});
+		await page.goto(`/admin/bulk-email/${campaign.id}`);
+		await shot(page, "33-managing-email-campaigns.png", { height: 1700 });
+	});
+
 	// ---- Part 3: Program Planner --------------------------------------------------
 
 	test("28 session editor", async ({ page }) => {
