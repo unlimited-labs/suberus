@@ -4,6 +4,11 @@ import {
 	logActivityTx,
 } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
+import {
+	canDecideExhibitor,
+	type ExhibitorDecision,
+	exhibitorDecisionEventType,
+} from "@/features/exhibitors/server/exhibitor-decision-helpers";
 import type {
 	ExhibitorApplicationInput,
 	ExhibitorPresentationInput,
@@ -390,10 +395,43 @@ export async function setExhibitorPackage(
 	});
 }
 
+/** Desk-accept or desk-reject the exhibitor's linked presentation through the workflow. */
+async function applyExhibitorDeskDecision(
+	submissionId: string,
+	decision: ExhibitorDecision,
+	adminUserId: string,
+	reason: string,
+): Promise<void> {
+	const result =
+		decision === "APPROVED"
+			? await deskAcceptSubmission(submissionId, adminUserId, reason)
+			: await deskRejectSubmission(submissionId, adminUserId, reason);
+	if (!result.success) {
+		throw new Error(result.error ?? "Failed to decide linked presentation");
+	}
+}
+
+async function sendExhibitorDecisionEmail(
+	exhibitor: {
+		companyName: string | null;
+		user: { email: string; firstName: string | null };
+	},
+	eventType: "EXHIBITOR_APPROVED" | "EXHIBITOR_REJECTED",
+	reason: string,
+): Promise<void> {
+	const conferenceName = await getSetting("CONFERENCE_NAME");
+	void sendEmail(eventType, exhibitor.user.email, {
+		firstName: exhibitor.user.firstName ?? exhibitor.user.email,
+		companyName: exhibitor.companyName ?? "",
+		reason,
+		conferenceName,
+	});
+}
+
 /** Admin decision; desk-accepts/rejects the linked presentation through the workflow */
 export async function decideExhibitor(
 	id: string,
-	decision: "APPROVED" | "REJECTED",
+	decision: ExhibitorDecision,
 	reason: string,
 	adminUserId: string,
 ): Promise<void> {
@@ -402,27 +440,20 @@ export async function decideExhibitor(
 		include: { user: { select: { email: true, firstName: true } } },
 	});
 
-	if (exhibitor.status !== "PENDING" || !exhibitor.appliedAt) {
+	if (!canDecideExhibitor(exhibitor)) {
 		throw new Error("Only pending, completed applications can be decided");
 	}
 
 	if (exhibitor.submissionId) {
-		const result =
-			decision === "APPROVED"
-				? await deskAcceptSubmission(
-						exhibitor.submissionId,
-						adminUserId,
-						reason,
-					)
-				: await deskRejectSubmission(
-						exhibitor.submissionId,
-						adminUserId,
-						reason,
-					);
-		if (!result.success) {
-			throw new Error(result.error ?? "Failed to decide linked presentation");
-		}
+		await applyExhibitorDeskDecision(
+			exhibitor.submissionId,
+			decision,
+			adminUserId,
+			reason,
+		);
 	}
+
+	const eventType = exhibitorDecisionEventType(decision);
 
 	await prisma.exhibitor.update({
 		where: { id },
@@ -430,25 +461,12 @@ export async function decideExhibitor(
 	});
 
 	await logActivity({
-		type: decision === "APPROVED" ? "EXHIBITOR_APPROVED" : "EXHIBITOR_REJECTED",
+		type: eventType,
 		userId: exhibitor.userId,
 		performedBy: adminUserId,
 		submissionId: exhibitor.submissionId ?? undefined,
-		detail:
-			decision === "APPROVED"
-				? activityDetail("EXHIBITOR_APPROVED", { reason })
-				: activityDetail("EXHIBITOR_REJECTED", { reason }),
+		detail: activityDetail(eventType, { reason }),
 	});
 
-	const conferenceName = await getSetting("CONFERENCE_NAME");
-	void sendEmail(
-		decision === "APPROVED" ? "EXHIBITOR_APPROVED" : "EXHIBITOR_REJECTED",
-		exhibitor.user.email,
-		{
-			firstName: exhibitor.user.firstName ?? exhibitor.user.email,
-			companyName: exhibitor.companyName ?? "",
-			reason,
-			conferenceName,
-		},
-	);
+	await sendExhibitorDecisionEmail(exhibitor, eventType, reason);
 }

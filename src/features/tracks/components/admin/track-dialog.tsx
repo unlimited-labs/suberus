@@ -6,6 +6,12 @@ import {
 	createTrackFn,
 	updateTrackFn,
 } from "@/features/tracks/api/admin-tracks";
+import {
+	initialTrackForm,
+	normalizeSupervisorId,
+	trackDialogLabels,
+	validateTrackName,
+} from "@/features/tracks/components/admin/track-form-helpers";
 import type { TrackWithStats } from "@/features/tracks/server/admin-tracks";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
@@ -36,29 +42,18 @@ interface TrackDialogProps {
 	onSuccess: () => void;
 }
 
-export function TrackDialog({
-	open,
-	onOpenChange,
-	track,
-	reviewers,
-	onSuccess,
-}: TrackDialogProps) {
+function useTrackForm(track: TrackWithStats | undefined, onSaved: () => void) {
 	const isEdit = !!track;
-	const [name, setName] = useState(track?.name || "");
-	const [supervisorId, setSupervisorId] = useState<string | undefined>(
-		track?.supervisorId || undefined,
-	);
-	const [isActive, setIsActive] = useState(track?.isActive ?? true);
+	const initial = initialTrackForm(track);
+	const [name, setName] = useState(initial.name);
+	const [supervisorId, setSupervisorId] = useState(initial.supervisorId);
+	const [isActive, setIsActive] = useState(initial.isActive);
 	const [isSaving, setIsSaving] = useState(false);
 
 	const handleSave = async () => {
-		if (!name.trim()) {
-			toast.error("Track name is required");
-			return;
-		}
-
-		if (name.length > 200) {
-			toast.error("Track name must be at most 200 characters");
+		const nameError = validateTrackName(name);
+		if (nameError) {
+			toast.error(nameError);
 			return;
 		}
 
@@ -69,24 +64,16 @@ export function TrackDialog({
 					data: {
 						id: track.id,
 						name,
-						supervisorId:
-							supervisorId === "none" ? null : (supervisorId ?? null),
+						supervisorId: normalizeSupervisorId(supervisorId),
 						isActive,
 					},
 				});
 				toast.success("Track updated");
 			} else {
-				await createTrackFn({
-					data: {
-						name,
-						supervisorId,
-					},
-				});
+				await createTrackFn({ data: { name, supervisorId } });
 				toast.success("Track created");
 			}
-			onSuccess();
-			onOpenChange(false);
-			// Reset form
+			onSaved();
 			setName("");
 			setSupervisorId(undefined);
 			setIsActive(true);
@@ -97,69 +84,128 @@ export function TrackDialog({
 		}
 	};
 
+	return {
+		isEdit,
+		name,
+		setName,
+		supervisorId,
+		setSupervisorId,
+		isActive,
+		setIsActive,
+		isSaving,
+		handleSave,
+	};
+}
+
+function TrackFormFields({
+	isEdit,
+	name,
+	onNameChange,
+	supervisorId,
+	onSupervisorChange,
+	isActive,
+	onActiveChange,
+	reviewers,
+}: {
+	isEdit: boolean;
+	name: string;
+	onNameChange: (value: string) => void;
+	supervisorId: string | undefined;
+	onSupervisorChange: (value: string | undefined) => void;
+	isActive: boolean;
+	onActiveChange: (value: boolean) => void;
+	reviewers: ReviewerUser[];
+}) {
+	return (
+		<div className="space-y-4">
+			<div className="space-y-2">
+				<Label htmlFor="name">Name *</Label>
+				<Input
+					id="name"
+					value={name}
+					onChange={(e) => onNameChange(e.target.value)}
+					placeholder="Track name"
+					maxLength={200}
+				/>
+			</div>
+
+			<div className="space-y-2">
+				<Label htmlFor="supervisor">Supervisor</Label>
+				<Select
+					value={supervisorId || "none"}
+					onValueChange={(v) =>
+						onSupervisorChange(v === "none" ? undefined : v)
+					}
+				>
+					<SelectTrigger id="supervisor">
+						<SelectValue placeholder="No supervisor" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="none">None</SelectItem>
+						{reviewers.map((reviewer) => (
+							<SelectItem key={reviewer.id} value={reviewer.id}>
+								{reviewer.name} ({reviewer.email})
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</div>
+
+			{isEdit && (
+				<div className="flex items-center justify-between">
+					<Label htmlFor="active">Active</Label>
+					<Switch
+						id="active"
+						checked={isActive}
+						onCheckedChange={onActiveChange}
+					/>
+				</div>
+			)}
+		</div>
+	);
+}
+
+export function TrackDialog({
+	open,
+	onOpenChange,
+	track,
+	reviewers,
+	onSuccess,
+}: TrackDialogProps) {
+	const form = useTrackForm(track, () => {
+		onSuccess();
+		onOpenChange(false);
+	});
+	const labels = trackDialogLabels(form.isEdit);
+
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>{isEdit ? "Edit Track" : "Create Track"}</DialogTitle>
-					<DialogDescription>
-						{isEdit ? "Update track details" : "Create a new conference track"}
-					</DialogDescription>
+					<DialogTitle>{labels.title}</DialogTitle>
+					<DialogDescription>{labels.description}</DialogDescription>
 				</DialogHeader>
 
-				<div className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor="name">Name *</Label>
-						<Input
-							id="name"
-							value={name}
-							onChange={(e) => setName(e.target.value)}
-							placeholder="Track name"
-							maxLength={200}
-						/>
-					</div>
-
-					<div className="space-y-2">
-						<Label htmlFor="supervisor">Supervisor</Label>
-						<Select
-							value={supervisorId || "none"}
-							onValueChange={(v) =>
-								setSupervisorId(v === "none" ? undefined : v)
-							}
-						>
-							<SelectTrigger id="supervisor">
-								<SelectValue placeholder="No supervisor" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="none">None</SelectItem>
-								{reviewers.map((reviewer) => (
-									<SelectItem key={reviewer.id} value={reviewer.id}>
-										{reviewer.name} ({reviewer.email})
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-
-					{isEdit && (
-						<div className="flex items-center justify-between">
-							<Label htmlFor="active">Active</Label>
-							<Switch
-								id="active"
-								checked={isActive}
-								onCheckedChange={setIsActive}
-							/>
-						</div>
-					)}
-				</div>
+				<TrackFormFields
+					isEdit={form.isEdit}
+					name={form.name}
+					onNameChange={form.setName}
+					supervisorId={form.supervisorId}
+					onSupervisorChange={form.setSupervisorId}
+					isActive={form.isActive}
+					onActiveChange={form.setIsActive}
+					reviewers={reviewers}
+				/>
 
 				<DialogFooter>
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
 						Cancel
 					</Button>
-					<Button onClick={handleSave} disabled={isSaving}>
-						{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
-						{isEdit ? "Save" : "Create"}
+					<Button onClick={form.handleSave} disabled={form.isSaving}>
+						{form.isSaving && (
+							<IconLoader2 className="mr-2 size-4 animate-spin" />
+						)}
+						{labels.submitLabel}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
