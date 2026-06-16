@@ -7,6 +7,7 @@ import {
 	getAutoPlanJobFn,
 	startAutoPlanFn,
 } from "@/features/planner/api/autoplan";
+import { deriveAutoPlanState } from "@/features/planner/components/hooks/derive-auto-plan-state";
 import { useJobSSE } from "@/shared/hooks/use-job-sse";
 
 /**
@@ -44,22 +45,14 @@ export function useAutoPlanState() {
 		},
 	});
 
-	const data =
-		jobResult.data && !jobResult.data.notFound ? jobResult.data : null;
-	const running =
-		start.isPending || sse.status === "running" || sse.status === "pending";
-	const proposal =
-		sse.status === "done" && data?.proposal && !data.appliedAt
-			? data.proposal
-			: null;
-	const errorMsg =
-		sse.status === "error"
-			? (sse.error ?? "Unknown error")
-			: apply.error
-				? apply.error.message
-				: start.error
-					? start.error.message
-					: null;
+	const { running, proposal, errorMsg } = deriveAutoPlanState({
+		jobData: jobResult.data ?? undefined,
+		startPending: start.isPending,
+		sseStatus: sse.status,
+		sseError: sse.error,
+		applyError: apply.error,
+		startError: start.error,
+	});
 
 	function goBack() {
 		navigate({ to: "/admin/program-planner" });
