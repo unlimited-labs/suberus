@@ -3,13 +3,11 @@ import { format } from "date-fns";
 import * as XLSX from "xlsx";
 import { adminRequestMiddleware } from "@/features/auth/server/middleware";
 import { getSetting } from "@/features/settings/server/settings";
-import { formatSurveyAnswerValue } from "@/features/survey/labels";
 import { getSurveyQuestions } from "@/features/survey/server/survey";
-import { formatSubmissionRoles } from "@/features/users/labels";
+import { buildUserExportRow } from "@/features/users/server/user-export-row";
 import { getUsers } from "@/features/users/server/users";
 import type { UserRole } from "@/generated/prisma/enums";
 import { formatDateTime } from "@/shared/lib/format-date";
-import { neutralizeFormula } from "@/shared/server/spreadsheet-safe";
 
 export const Route = createFileRoute("/api/admin/users/export")({
 	server: {
@@ -43,36 +41,9 @@ export const Route = createFileRoute("/api/admin/users/export")({
 				const fmtDate = (date: Date | null | undefined) =>
 					date ? formatDateTime(date, dateFormat, timeFormat) : "";
 
-				const rows = users.map((u) => {
-					const answerByQuestion = new Map(
-						u.surveyAnswers.map((a) => [a.questionId, a.value]),
-					);
-					const surveyColumns: Record<string, string> = {};
-					for (const q of questions) {
-						surveyColumns[q.fieldName ?? q.label] = neutralizeFormula(
-							formatSurveyAnswerValue(q.type, answerByQuestion.get(q.id) ?? ""),
-						);
-					}
-
-					return {
-						"First Name": neutralizeFormula(u.firstName ?? ""),
-						"Last Name": neutralizeFormula(u.lastName ?? ""),
-						Email: neutralizeFormula(u.email),
-						Title: neutralizeFormula(u.title ?? ""),
-						Affiliation: neutralizeFormula(u.affiliation ?? ""),
-						Role: u.role,
-						Submissions: formatSubmissionRoles(u.submissionRoles),
-						Status: u.isActive ? "Active" : "Inactive",
-						"Fee Status": u.fee?.paid ? "Paid" : "Unpaid",
-						"Fee Type": u.fee?.type ?? "",
-						"Fee Paid At": fmtDate(u.fee?.paidAt),
-						"Need Invoice": u.needInvoice ? "True" : "False",
-						"Invoice details": neutralizeFormula(u.address ?? ""),
-						"Registration Date": fmtDate(u.createdAt),
-						"Last Login": fmtDate(u.lastLoginAt),
-						...surveyColumns,
-					};
-				});
+				const rows = users.map((u) =>
+					buildUserExportRow(u, questions, fmtDate),
+				);
 
 				const ws = XLSX.utils.json_to_sheet(rows);
 				const wb = XLSX.utils.book_new();

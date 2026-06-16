@@ -1,0 +1,56 @@
+import type { UserRole } from "@/generated/prisma/enums";
+
+export interface PatchUserData {
+	id: string;
+	role?: UserRole;
+	isActive?: boolean;
+	allowLateSubmission?: boolean;
+	markFeePaid?: boolean;
+	feeType?: string;
+	feeAmount?: number;
+	feeCurrency?: string;
+	unmarkFeePaid?: boolean;
+	verifyEmail?: boolean;
+}
+
+export interface FeePayment {
+	feeType: string;
+	amount: number;
+	currency: string;
+}
+
+/**
+ * Returns the fee payment payload only when a mark-fee-paid request carries all
+ * required fields; otherwise null. Keeps the four-field guard out of the patch
+ * orchestrator and makes it unit-testable.
+ */
+export function extractFeePayment(data: PatchUserData): FeePayment | null {
+	if (
+		data.markFeePaid &&
+		data.feeType &&
+		data.feeAmount !== undefined &&
+		data.feeCurrency
+	) {
+		return {
+			feeType: data.feeType,
+			amount: data.feeAmount,
+			currency: data.feeCurrency,
+		};
+	}
+	return null;
+}
+
+/** Human-readable summary of which fields a patch touched, for the audit log. */
+export function summarizeUserChanges(data: PatchUserData): string {
+	return [
+		data.role !== undefined && `role=${data.role}`,
+		data.isActive !== undefined && `active=${data.isActive}`,
+		data.allowLateSubmission !== undefined &&
+			`allowLateSubmission=${data.allowLateSubmission}`,
+		data.markFeePaid && "feePaid",
+		data.unmarkFeePaid && "feeUnpaid",
+		data.verifyEmail && "emailVerified",
+	]
+		.filter(Boolean)
+		.join(", ");
+}

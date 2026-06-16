@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { type QueryClient, queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { authMiddleware } from "@/features/auth/server/middleware";
@@ -488,6 +488,21 @@ export const submissionDetailQueryOptions = (submissionId: string) =>
 		queryKey: ["submissions", "detail", submissionId],
 		queryFn: () => getSubmissionByIdFn({ data: { submissionId } }),
 	});
+
+/** Invalidates the caches a submission mutation affects (its detail + my list). */
+export function invalidateSubmissionCaches(
+	queryClient: QueryClient,
+	submissionId: string,
+): Promise<unknown> {
+	return Promise.all([
+		queryClient.invalidateQueries({
+			queryKey: submissionDetailQueryOptions(submissionId).queryKey,
+		}),
+		queryClient.invalidateQueries({
+			queryKey: mySubmissionsQueryOptions().queryKey,
+		}),
+	]);
+}
 
 // Re-export types for use in components
 export type {

@@ -14,6 +14,13 @@ import { logger } from "@/logger.ts";
 import { upsertAffiliation } from "@/shared/server/affiliations";
 import { prisma } from "@/shared/server/db.server";
 import { emitDomainEvent } from "@/shared/server/events";
+import {
+	extractFeePayment,
+	type PatchUserData,
+	summarizeUserChanges,
+} from "./patch-user-helpers";
+
+export type { PatchUserData } from "./patch-user-helpers";
 
 export type SubmissionInvolvementRole = "author" | "coauthor";
 
@@ -850,19 +857,6 @@ export async function fetchUserById(
 	return getUserById(id);
 }
 
-export interface PatchUserData {
-	id: string;
-	role?: UserRole;
-	isActive?: boolean;
-	allowLateSubmission?: boolean;
-	markFeePaid?: boolean;
-	feeType?: string;
-	feeAmount?: number;
-	feeCurrency?: string;
-	unmarkFeePaid?: boolean;
-	verifyEmail?: boolean;
-}
-
 export async function patchUser(
 	data: PatchUserData,
 	performer: RoleChangePerformer,
@@ -892,21 +886,9 @@ export async function patchUser(
 		);
 	}
 
-	if (
-		data.markFeePaid &&
-		data.feeType &&
-		data.feeAmount !== undefined &&
-		data.feeCurrency
-	) {
-		await markFeePaid(
-			{
-				userId: data.id,
-				feeType: data.feeType,
-				amount: data.feeAmount,
-				currency: data.feeCurrency,
-			},
-			performedBy,
-		);
+	const feePayment = extractFeePayment(data);
+	if (feePayment) {
+		await markFeePaid({ userId: data.id, ...feePayment }, performedBy);
 	}
 
 	if (data.unmarkFeePaid) {
@@ -917,18 +899,7 @@ export async function patchUser(
 		await verifyUserEmail(data.id, performedBy);
 	}
 
-	const changes = [
-		data.role !== undefined && `role=${data.role}`,
-		data.isActive !== undefined && `active=${data.isActive}`,
-		data.allowLateSubmission !== undefined &&
-			`allowLateSubmission=${data.allowLateSubmission}`,
-		data.markFeePaid && "feePaid",
-		data.unmarkFeePaid && "feeUnpaid",
-		data.verifyEmail && "emailVerified",
-	]
-		.filter(Boolean)
-		.join(", ");
-	logger.info(`[admin] patchUser ${data.id}: ${changes}`);
+	logger.info(`[admin] patchUser ${data.id}: ${summarizeUserChanges(data)}`);
 
 	return getUserById(data.id);
 }

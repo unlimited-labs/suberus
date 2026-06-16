@@ -4,10 +4,7 @@ import {
 	IconGavel,
 	IconLoader2,
 	IconTrash,
-	IconUsers,
-	IconX,
 } from "@tabler/icons-react";
-
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import {
@@ -17,7 +14,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-
+import { buildSecondaryActions } from "./actions-card-items";
 import type { ActionAvailability, PrimaryAction } from "./availability";
 import type { SubmissionDialogKind } from "./detail-dialogs";
 
@@ -29,6 +26,54 @@ interface ActionsCardProps {
 	onOpenDialog: (kind: SubmissionDialogKind) => void;
 }
 
+interface PrimaryActionButtonProps {
+	primaryAction: PrimaryAction;
+	isTransitioning: boolean;
+	onTransition: () => void;
+	onOpenDialog: (kind: SubmissionDialogKind) => void;
+}
+
+function PrimaryActionButton({
+	primaryAction,
+	isTransitioning,
+	onTransition,
+	onOpenDialog,
+}: PrimaryActionButtonProps) {
+	if (primaryAction === "transition") {
+		return (
+			<Button
+				className="w-full"
+				onClick={onTransition}
+				disabled={isTransitioning}
+			>
+				{isTransitioning ? (
+					<IconLoader2 className="mr-2 size-4 animate-spin" />
+				) : (
+					<IconGavel className="mr-2 size-4" />
+				)}
+				Ready for Decision
+			</Button>
+		);
+	}
+	if (primaryAction === "decision") {
+		return (
+			<Button className="w-full" onClick={() => onOpenDialog("decision")}>
+				<IconGavel className="mr-2 size-4" />
+				Make Decision
+			</Button>
+		);
+	}
+	return (
+		<Button
+			className="w-full"
+			onClick={() => onOpenDialog("confirmConditions")}
+		>
+			<IconCheck className="mr-2 size-4" />
+			Confirm Conditions Met
+		</Button>
+	);
+}
+
 export function ActionsCard({
 	availability,
 	primaryAction,
@@ -36,15 +81,7 @@ export function ActionsCard({
 	onTransition,
 	onOpenDialog,
 }: ActionsCardProps) {
-	const {
-		canAssignReviewers,
-		canDeskAccept,
-		canDeskReject,
-		canTransitionToAwaitingDecision,
-		canMakeDecision,
-		canConfirmConditions,
-		canOverrideDecision,
-	} = availability;
+	const secondaryActions = buildSecondaryActions(availability, primaryAction);
 
 	return (
 		<Card>
@@ -52,34 +89,13 @@ export function ActionsCard({
 				<CardTitle className="text-base">Actions</CardTitle>
 			</CardHeader>
 			<CardContent className="space-y-2">
-				{primaryAction === "transition" && (
-					<Button
-						className="w-full"
-						onClick={onTransition}
-						disabled={isTransitioning}
-					>
-						{isTransitioning ? (
-							<IconLoader2 className="mr-2 size-4 animate-spin" />
-						) : (
-							<IconGavel className="mr-2 size-4" />
-						)}
-						Ready for Decision
-					</Button>
-				)}
-				{primaryAction === "decision" && (
-					<Button className="w-full" onClick={() => onOpenDialog("decision")}>
-						<IconGavel className="mr-2 size-4" />
-						Make Decision
-					</Button>
-				)}
-				{primaryAction === "conditions" && (
-					<Button
-						className="w-full"
-						onClick={() => onOpenDialog("confirmConditions")}
-					>
-						<IconCheck className="mr-2 size-4" />
-						Confirm Conditions Met
-					</Button>
+				{primaryAction && (
+					<PrimaryActionButton
+						primaryAction={primaryAction}
+						isTransitioning={isTransitioning}
+						onTransition={onTransition}
+						onOpenDialog={onOpenDialog}
+					/>
 				)}
 
 				<DropdownMenu>
@@ -94,54 +110,22 @@ export function ActionsCard({
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="start">
-						{canAssignReviewers && (
-							<DropdownMenuItem onSelect={() => onOpenDialog("assign")}>
-								<IconUsers className="mr-2 size-4" />
-								Assign Reviewer
-							</DropdownMenuItem>
-						)}
-						{canDeskAccept && (
-							<DropdownMenuItem onSelect={() => onOpenDialog("deskAccept")}>
-								<IconCheck className="mr-2 size-4" />
-								Desk Accept
-							</DropdownMenuItem>
-						)}
-						{canDeskReject && (
-							<DropdownMenuItem onSelect={() => onOpenDialog("deskReject")}>
-								<IconX className="mr-2 size-4" />
-								Desk Reject
-							</DropdownMenuItem>
-						)}
-						{canTransitionToAwaitingDecision &&
-							primaryAction !== "transition" && (
-								<DropdownMenuItem
-									onSelect={onTransition}
-									disabled={isTransitioning}
-								>
-									<IconGavel className="mr-2 size-4" />
-									Ready for Decision
-								</DropdownMenuItem>
-							)}
-						{canMakeDecision && primaryAction !== "decision" && (
-							<DropdownMenuItem onSelect={() => onOpenDialog("decision")}>
-								<IconGavel className="mr-2 size-4" />
-								Make Decision
-							</DropdownMenuItem>
-						)}
-						{canConfirmConditions && primaryAction !== "conditions" && (
+						{secondaryActions.map(({ id, label, icon: Icon, select }) => (
 							<DropdownMenuItem
-								onSelect={() => onOpenDialog("confirmConditions")}
+								key={id}
+								onSelect={
+									select.type === "transition"
+										? onTransition
+										: () => onOpenDialog(select.kind)
+								}
+								disabled={
+									select.type === "transition" ? isTransitioning : undefined
+								}
 							>
-								<IconCheck className="mr-2 size-4" />
-								Confirm Conditions Met
+								<Icon className="mr-2 size-4" />
+								{label}
 							</DropdownMenuItem>
-						)}
-						{canOverrideDecision && (
-							<DropdownMenuItem onSelect={() => onOpenDialog("override")}>
-								<IconGavel className="mr-2 size-4" />
-								Override Decision
-							</DropdownMenuItem>
-						)}
+						))}
 						<DropdownMenuSeparator />
 						<DropdownMenuItem
 							variant="destructive"

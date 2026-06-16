@@ -1,13 +1,11 @@
-import {
-	IconBrain,
-	IconDatabase,
-	IconFileText,
-	IconMail,
-} from "@tabler/icons-react";
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
-import { formatLlmStatus } from "@/shared/lib/format-llm-status";
 import { cn } from "@/shared/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import {
+	buildServiceRows,
+	type ServiceRow as ServiceRowData,
+	STATUS_STYLES,
+} from "./system-health-rows";
 
 interface SystemHealthCardProps {
 	s3: AdminDashboardMetrics["s3"] | undefined;
@@ -16,27 +14,26 @@ interface SystemHealthCardProps {
 	docling: AdminDashboardMetrics["docling"] | undefined;
 }
 
-type ServiceStatus = "healthy" | "unavailable" | "misconfigured" | "error";
-
-interface ServiceRow {
-	icon: React.ComponentType<{ className?: string }>;
-	name: string;
-	status: ServiceStatus;
-	detail: string;
+function ServiceRow({ service }: { service: ServiceRowData }) {
+	const styles = STATUS_STYLES[service.status];
+	return (
+		<div className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
+			<service.icon className="size-5 shrink-0 text-muted-foreground" />
+			<div className="min-w-0 flex-1">
+				<div className="flex items-center gap-2">
+					<span className={cn("size-2 shrink-0 rounded-full", styles.dot)} />
+					<span className="text-sm font-medium">{service.name}</span>
+					<span className={cn("text-xs font-medium capitalize", styles.label)}>
+						{service.status}
+					</span>
+				</div>
+				<p className="mt-1 truncate text-xs text-muted-foreground">
+					{service.detail}
+				</p>
+			</div>
+		</div>
+	);
 }
-
-const STATUS_STYLES: Record<ServiceStatus, { dot: string; label: string }> = {
-	healthy: { dot: "bg-green-500", label: "text-green-600 dark:text-green-400" },
-	unavailable: {
-		dot: "bg-blue-500",
-		label: "text-blue-600 dark:text-blue-400",
-	},
-	misconfigured: {
-		dot: "bg-yellow-500",
-		label: "text-yellow-600 dark:text-yellow-500",
-	},
-	error: { dot: "bg-red-500", label: "text-red-600 dark:text-red-400" },
-};
 
 export function SystemHealthCard({
 	s3,
@@ -44,43 +41,7 @@ export function SystemHealthCard({
 	llm,
 	docling,
 }: SystemHealthCardProps) {
-	const services: ServiceRow[] = [
-		{
-			icon: IconBrain,
-			name: "LLM",
-			status: llm?.status ?? "unavailable",
-			detail: llm ? formatLlmStatus(llm) : "Unknown",
-		},
-		{
-			icon: IconFileText,
-			name: "Docling",
-			status: docling?.status ?? "unavailable",
-			detail:
-				docling?.status === "healthy"
-					? "PDF & DOCX to markdown conversion"
-					: (docling?.message ?? "Unknown"),
-		},
-		{
-			icon: IconDatabase,
-			name: "Storage",
-			status: s3?.status ?? "error",
-			detail: s3
-				? s3.status === "healthy"
-					? `${s3.endpoint}/${s3.bucket}`
-					: s3.message
-				: "Unknown",
-		},
-		{
-			icon: IconMail,
-			name: "Email",
-			status: smtp?.status ?? "error",
-			detail: smtp
-				? smtp.status === "healthy"
-					? `${smtp.host}:${smtp.port}`
-					: smtp.message
-				: "Unknown",
-		},
-	];
+	const services = buildServiceRows({ s3, smtp, llm, docling });
 
 	return (
 		<Card>
@@ -89,36 +50,9 @@ export function SystemHealthCard({
 			</CardHeader>
 			<CardContent>
 				<div className="grid gap-3 sm:grid-cols-2">
-					{services.map((service) => {
-						const styles = STATUS_STYLES[service.status];
-						return (
-							<div
-								key={service.name}
-								className="flex items-center gap-3 rounded-lg border border-border bg-card p-3"
-							>
-								<service.icon className="size-5 shrink-0 text-muted-foreground" />
-								<div className="min-w-0 flex-1">
-									<div className="flex items-center gap-2">
-										<span
-											className={cn("size-2 shrink-0 rounded-full", styles.dot)}
-										/>
-										<span className="text-sm font-medium">{service.name}</span>
-										<span
-											className={cn(
-												"text-xs font-medium capitalize",
-												styles.label,
-											)}
-										>
-											{service.status}
-										</span>
-									</div>
-									<p className="mt-1 truncate text-xs text-muted-foreground">
-										{service.detail}
-									</p>
-								</div>
-							</div>
-						);
-					})}
+					{services.map((service) => (
+						<ServiceRow key={service.name} service={service} />
+					))}
 				</div>
 			</CardContent>
 		</Card>

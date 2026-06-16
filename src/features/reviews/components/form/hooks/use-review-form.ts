@@ -1,10 +1,13 @@
 import { useSelector } from "@tanstack/react-store";
 import { useMemo } from "react";
 import {
+	buildReviewDefaults,
+	computeReviewProgress,
+} from "@/features/reviews/components/form/review-form-helpers";
+import {
 	createReviewSchema,
 	type ReviewFormData,
 } from "@/features/reviews/validations";
-import type { ReviewDecision } from "@/generated/prisma/enums";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 
 interface UseReviewFormArgs {
@@ -30,20 +33,8 @@ export function useReviewForm({
 		[enableConfidenceLevel, scoringCriteria],
 	);
 
-	// Build initial scores from criteria
-	const initialScores: Record<string, number> = {};
-	for (const c of scoringCriteria) {
-		initialScores[c.name] = initialData?.scores?.[c.name] ?? 3;
-	}
-
 	const form = useAppForm({
-		defaultValues: {
-			decision: initialData?.decision || ("ACCEPT" as ReviewDecision),
-			scores: initialScores,
-			confidenceLevel: initialData?.confidenceLevel || 3,
-			comments: initialData?.comments || "",
-			privateNotes: initialData?.privateNotes || "",
-		},
+		defaultValues: buildReviewDefaults(initialData, scoringCriteria),
 		validators: {
 			onChange: reviewSchema,
 			onSubmit: reviewSchema,
@@ -55,20 +46,13 @@ export function useReviewForm({
 
 	const values = useSelector(form.store, (state) => state.values);
 
-	// Progress indicators
-	const hasDecision = !!values.decision;
-	const hasScores =
-		scoringCriteria.length === 0 ||
-		scoringCriteria.every((c) => (values.scores[c.name] ?? 0) > 0);
-	const hasConfidence = !enableConfidenceLevel || values.confidenceLevel > 0;
-	const hasComments = true;
-	const allComplete = hasDecision && hasScores && hasConfidence && hasComments;
+	const { allComplete, ...progress } = computeReviewProgress(
+		values,
+		scoringCriteria,
+		enableConfidenceLevel,
+	);
 
-	return {
-		form,
-		progress: { hasDecision, hasScores, hasConfidence, hasComments },
-		allComplete,
-	};
+	return { form, progress, allComplete };
 }
 
 export type ReviewFormApi = ReturnType<typeof useReviewForm>["form"];

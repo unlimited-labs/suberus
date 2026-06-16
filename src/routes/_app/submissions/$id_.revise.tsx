@@ -4,22 +4,19 @@ import {
 	IconFileText,
 	IconSend,
 } from "@tabler/icons-react";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { toast } from "sonner";
 import {
 	activeSubmissionTypesQueryOptions,
 	submissionValidationQueryOptions,
 } from "@/features/settings/api/settings";
-import { FILE_ACCEPT_ATTRIBUTE } from "@/features/settings/file-types";
+import { submissionDetailQueryOptions } from "@/features/submissions/api/submissions";
 import {
-	mySubmissionsQueryOptions,
-	resubmitSubmissionFn,
-	submissionDetailQueryOptions,
-	submitConditionalRevisionFn,
-	uploadSubmissionFile,
-} from "@/features/submissions/api/submissions";
+	isRevisableSubmission,
+	prepareRevisionView,
+} from "@/features/submissions/components/revise/revise-helpers";
+import { useReviseSubmission } from "@/features/submissions/components/revise/use-revise-submission";
 import { FileDropzone } from "@/shared/components/file-dropzone";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/ui/button";
@@ -48,126 +45,61 @@ function ReviseSubmissionPage() {
 	const { data: validationSettings } = useSuspenseQuery(
 		submissionValidationQueryOptions(),
 	);
-	const navigate = useNavigate();
-	const queryClient = useQueryClient();
-	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const canRevise =
-		data?.submission.status === "REVISE_REQUIRED" ||
-		data?.submission.status === "CONDITIONALLY_ACCEPTED";
+	const view = prepareRevisionView(data, typeConfigs, validationSettings);
+	const { isSubmitting, submitRevision } = useReviseSubmission({
+		id,
+		isConditional: view.isConditional,
+		isFileFormat: view.isFileFormat,
+	});
 
-	if (!data || data.submission.role === "coauthor" || !canRevise) {
-		return (
-			<div className="flex h-full flex-col">
-				<PageHeader icon={IconFileText} title="Cannot Revise" />
-				<div className="flex-1 p-6 flex items-center justify-center">
-					<div className="text-center">
-						<p className="text-muted-foreground mb-4">
-							{!data
-								? "Submission not found"
-								: "Submission is not in a revisable state"}
-						</p>
-						<Link to="/submissions/$id" params={{ id }}>
-							<Button variant="outline" className="gap-2">
-								<IconArrowLeft className="size-4" />
-								Back to Submission
-							</Button>
-						</Link>
-					</div>
-				</div>
-			</div>
-		);
+	if (!data) return <CannotReviseScreen kind="not-found" id={id} />;
+	if (!isRevisableSubmission(data.submission)) {
+		return <CannotReviseScreen kind="not-revisable" id={id} />;
 	}
-
-	const { submission, versions } = data;
-	const isConditional = submission.status === "CONDITIONALLY_ACCEPTED";
-	const currentVersion = versions.find(
-		(v) => v.version === submission.currentVersion,
-	);
-
-	// Determine content format from type config
-	const typeConfig = typeConfigs.find((t) => t.type === submission.type);
-	const contentFormat = typeConfig?.config.contentFormat ?? "TEXT";
-	const isFileFormat = contentFormat === "FILE";
-
-	// File type settings - use type-specific config with dot prefix (matching submission-form.tsx)
-	const allowedExtensions = typeConfig?.config.allowedExtensions || [];
-	const acceptString =
-		allowedExtensions.length > 0
-			? allowedExtensions.map((ext: string) => `.${ext}`).join(",")
-			: FILE_ACCEPT_ATTRIBUTE;
-	const maxFileSize = validationSettings.maxFileSize ?? 10;
 
 	return (
 		<RevisionForm
 			submissionId={id}
-			title={currentVersion?.title ?? submission.title}
-			content={currentVersion?.content ?? submission.content}
-			currentFile={currentVersion?.file ?? null}
-			isFileFormat={isFileFormat}
-			acceptString={acceptString}
-			maxFileSize={maxFileSize}
+			title={view.title}
+			content={view.content}
+			currentFile={view.currentFile}
+			isFileFormat={view.isFileFormat}
+			acceptString={view.acceptString}
+			maxFileSize={view.maxFileSize}
 			isSubmitting={isSubmitting}
-			isConditional={isConditional}
-			onSubmit={async (formData) => {
-				setIsSubmitting(true);
-				try {
-					const submitFn = isConditional
-						? submitConditionalRevisionFn
-						: resubmitSubmissionFn;
-					const result = await submitFn({
-						data: {
-							submissionId: id,
-							title: formData.title,
-							content: formData.content,
-							comment: formData.comment || undefined,
-						},
-					});
-
-					if (!result.success) {
-						toast.error(result.error ?? "Resubmission failed");
-						return;
-					}
-
-					// Upload file if FILE format with new file
-					if (isFileFormat && formData.file) {
-						try {
-							const uploadData = new FormData();
-							uploadData.append("file", formData.file);
-							uploadData.append("submissionId", id);
-							uploadData.append("versionNumber", String(result.versionNumber));
-
-							const uploadResult = await uploadSubmissionFile({
-								data: uploadData,
-							});
-
-							if (!uploadResult.success) {
-								toast.error(
-									`Revision saved but file upload failed: ${uploadResult.error}`,
-								);
-							}
-						} catch {
-							toast.error("File upload failed");
-						}
-					}
-
-					toast.success("Revision submitted successfully");
-					await Promise.all([
-						queryClient.invalidateQueries({
-							queryKey: submissionDetailQueryOptions(id).queryKey,
-						}),
-						queryClient.invalidateQueries({
-							queryKey: mySubmissionsQueryOptions().queryKey,
-						}),
-					]);
-					navigate({ to: "/submissions/$id", params: { id } });
-				} catch {
-					toast.error("Resubmission failed");
-				} finally {
-					setIsSubmitting(false);
-				}
-			}}
+			isConditional={view.isConditional}
+			onSubmit={submitRevision}
 		/>
+	);
+}
+
+function CannotReviseScreen({
+	kind,
+	id,
+}: {
+	kind: "not-found" | "not-revisable";
+	id: string;
+}) {
+	return (
+		<div className="flex h-full flex-col">
+			<PageHeader icon={IconFileText} title="Cannot Revise" />
+			<div className="flex-1 p-6 flex items-center justify-center">
+				<div className="text-center">
+					<p className="text-muted-foreground mb-4">
+						{kind === "not-found"
+							? "Submission not found"
+							: "Submission is not in a revisable state"}
+					</p>
+					<Link to="/submissions/$id" params={{ id }}>
+						<Button variant="outline" className="gap-2">
+							<IconArrowLeft className="size-4" />
+							Back to Submission
+						</Button>
+					</Link>
+				</div>
+			</div>
+		</div>
 	);
 }
 

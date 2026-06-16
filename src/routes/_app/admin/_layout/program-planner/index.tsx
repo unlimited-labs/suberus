@@ -13,29 +13,29 @@ import {
 	unscheduledSubmissionsQueryOptions,
 } from "@/features/planner/api/sessions";
 import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
-import { BreakEditorSheet } from "@/features/planner/components/break-editor-sheet";
 import { CapacityStrip } from "@/features/planner/components/capacity-strip";
+import {
+	computeConferenceRange,
+	isOutsideConferenceRange,
+} from "@/features/planner/components/compute-conference-range";
 import { computeHiddenWeekdays } from "@/features/planner/components/compute-hidden-weekdays";
-import { CreateSessionDialog } from "@/features/planner/components/create-session-dialog";
+import { DesktopPlannerArea } from "@/features/planner/components/desktop-planner-area";
 import { useNextStartAt } from "@/features/planner/components/hooks/use-next-start-at";
 import { usePlannerCalendarHandlers } from "@/features/planner/components/hooks/use-planner-calendar-handlers";
 import { usePlannerEvents } from "@/features/planner/components/hooks/use-planner-events";
 import { usePlannerMutations } from "@/features/planner/components/hooks/use-planner-mutations";
 import { useRoomVisibility } from "@/features/planner/components/hooks/use-room-visibility";
 import { IssuesPanel } from "@/features/planner/components/issues-panel";
-import { MobilePlanner } from "@/features/planner/components/mobile-planner";
+import { MobilePlannerArea } from "@/features/planner/components/mobile-planner-area";
 import { MobileQueueOverlay } from "@/features/planner/components/mobile-queue-overlay";
 import { NoRoomsPlaceholder } from "@/features/planner/components/no-rooms-placeholder";
 import { OutsideRangeBanner } from "@/features/planner/components/outside-range-banner";
-import { PlannerCalendar } from "@/features/planner/components/planner-calendar";
 import {
 	PlannerSelectionProvider,
 	usePlannerSelection,
 } from "@/features/planner/components/planner-context";
-import { PlannerToolsProvider } from "@/features/planner/components/planner-tools-context";
+import { PlannerOverlays } from "@/features/planner/components/planner-overlays";
 import { PublishButton } from "@/features/planner/components/publish-button";
-import { SessionEditorSheet } from "@/features/planner/components/session-editor-sheet";
-import { UnscheduledSidebar } from "@/features/planner/components/unscheduled-sidebar";
 import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
 import { adminUsersQueryOptions } from "@/features/users/api/users";
 import { PageHeader } from "@/shared/components/layout/page-header";
@@ -73,22 +73,9 @@ function ProgramPlannerContent() {
 	// the users slice).
 	const { data: chairCandidates } = useQuery(adminUsersQueryOptions());
 
-	const {
-		selectedSessionId,
-		selectedBreakId,
-		clearSelection,
-		creationSubmissionIds,
-		closeCreateFromSelection,
-		mobileQueueOpen,
-		setMobileQueueOpen,
-	} = usePlannerSelection();
+	const { mobileQueueOpen, setMobileQueueOpen } = usePlannerSelection();
 
-	const confStart = settings.conferenceStartDate
-		? new Date(settings.conferenceStartDate)
-		: null;
-	const confEnd = settings.conferenceEndDate
-		? new Date(settings.conferenceEndDate)
-		: null;
+	const { confStart, confEnd, tz } = computeConferenceRange(settings);
 
 	const roomVisibility = useRoomVisibility(rooms);
 
@@ -116,18 +103,16 @@ function ProgramPlannerContent() {
 	} = usePlannerCalendarHandlers(confStart);
 	const defaultStartAt = useNextStartAt(currentDate);
 
-	const isOutsideRange =
-		currentDate !== null &&
-		confStart !== null &&
-		confEnd !== null &&
-		(currentDate < confStart || currentDate > confEnd);
+	const isOutsideRange = isOutsideConferenceRange(
+		currentDate,
+		confStart,
+		confEnd,
+	);
 
 	const closeMobileQueue = useCallback(
 		() => setMobileQueueOpen(false),
 		[setMobileQueueOpen],
 	);
-
-	const tz = settings.timezone || undefined;
 
 	if (rooms.length === 0) return <NoRoomsPlaceholder />;
 
@@ -144,67 +129,46 @@ function ProgramPlannerContent() {
 				)}
 				<CapacityStrip />
 				<IssuesPanel sessions={sessions} />
-				<div className="flex min-h-0 flex-1 md:hidden">
-					<div className="flex-1 overflow-auto">
-						<MobilePlanner
-							sessions={sessions}
-							breaks={breaks}
-							conferenceStart={confStart}
-							conferenceEnd={confEnd}
-							timezone={tz}
-							initialDate={currentDate ?? confStart ?? new Date()}
-						/>
-					</div>
-				</div>
+				<MobilePlannerArea
+					sessions={sessions}
+					breaks={breaks}
+					conferenceStart={confStart}
+					conferenceEnd={confEnd}
+					timezone={tz}
+					currentDate={currentDate}
+				/>
 				{mobileQueueOpen && <MobileQueueOverlay onClose={closeMobileQueue} />}
-				<div className="hidden min-h-0 flex-1 md:flex">
-					<UnscheduledSidebar />
-					<div className="flex-1 overflow-auto p-4">
-						<PlannerToolsProvider
-							rooms={rooms}
-							room={roomVisibility}
-							defaultStartAt={defaultStartAt}
-							onCreated={invalidate}
-							onSubmissionDrop={handleSubmissionDrop}
-							onJumpToConferenceStart={confStart ? returnToConference : null}
-						>
-							<PlannerCalendar
-								calendarKey={`${calendarKey}:${roomVisibility.hiddenRoomsKey}`}
-								resources={resources}
-								events={events}
-								initialDate={currentDate ?? confStart ?? undefined}
-								initialView={currentView}
-								timezone={tz}
-								timeFormat={settings.timeFormat}
-								dayStart={settings.dayStart}
-								dayEnd={settings.dayEnd}
-								hiddenDays={hiddenWeekdays}
-								onDateChange={setCurrentDate}
-								onViewChange={setCurrentView}
-								onEventUpdate={handleEventUpdate}
-								onEventClick={handleEventClick}
-							/>
-						</PlannerToolsProvider>
-					</div>
-				</div>
+				<DesktopPlannerArea
+					rooms={rooms}
+					room={roomVisibility}
+					defaultStartAt={defaultStartAt}
+					onCreated={invalidate}
+					onSubmissionDrop={handleSubmissionDrop}
+					currentDate={currentDate}
+					confStart={confStart}
+					returnToConference={returnToConference}
+					calendarKey={`${calendarKey}:${roomVisibility.hiddenRoomsKey}`}
+					resources={resources}
+					events={events}
+					initialView={currentView}
+					timezone={tz}
+					timeFormat={settings.timeFormat}
+					dayStart={settings.dayStart}
+					dayEnd={settings.dayEnd}
+					hiddenDays={hiddenWeekdays}
+					onDateChange={setCurrentDate}
+					onViewChange={setCurrentView}
+					onEventUpdate={handleEventUpdate}
+					onEventClick={handleEventClick}
+				/>
 			</div>
 
-			<SessionEditorSheet
-				sessionId={selectedSessionId}
-				onClose={clearSelection}
+			<PlannerOverlays
 				users={chairCandidates ?? []}
+				defaultStartAt={defaultStartAt}
+				timezone={tz}
+				onSessionCreated={handleSessionCreated}
 			/>
-			<BreakEditorSheet breakId={selectedBreakId} onClose={clearSelection} />
-			{creationSubmissionIds && (
-				<CreateSessionDialog
-					open={true}
-					submissionIds={creationSubmissionIds}
-					defaultStartAt={defaultStartAt}
-					timezone={tz}
-					onClose={closeCreateFromSelection}
-					onCreated={handleSessionCreated}
-				/>
-			)}
 		</>
 	);
 }
