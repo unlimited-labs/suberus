@@ -1,3 +1,4 @@
+import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { Badge } from "@/shared/ui/badge";
 
 export interface RecipientRow {
@@ -26,6 +27,15 @@ function statusVariant(status: string): "default" | "destructive" | null {
 	return null;
 }
 
+function initials(r: RecipientRow): string {
+	const fromName = `${r.firstName?.[0] ?? ""}${r.lastName?.[0] ?? ""}`;
+	return (fromName || r.email[0] || "?").toUpperCase();
+}
+
+function displayName(r: RecipientRow): string {
+	return [r.firstName, r.lastName].filter(Boolean).join(" ") || r.email;
+}
+
 export function RecipientSummary({
 	recipients,
 	totalRecipients,
@@ -33,38 +43,56 @@ export function RecipientSummary({
 	failedCount,
 }: RecipientSummaryProps) {
 	const hiddenCount = totalRecipients - recipients.length;
-	const renderBadge = (status: string) => {
-		const variant = statusVariant(status);
-		return variant ? <Badge variant={variant}>{status}</Badge> : null;
-	};
 
 	return (
-		<div className="space-y-2" data-testid="recipient-summary">
-			<div className="flex items-center gap-3 text-sm">
-				<span className="font-medium" data-testid="recipient-count">
-					{totalRecipients} recipients
+		<div className="space-y-3 text-sm" data-testid="recipient-summary">
+			<p>
+				<span
+					className="font-medium tabular-nums"
+					data-testid="recipient-count"
+				>
+					{totalRecipients}
+				</span>{" "}
+				<span className="text-muted-foreground">
+					{totalRecipients === 1 ? "recipient" : "recipients"}
 				</span>
 				{sentCount > 0 ? (
-					<span className="text-muted-foreground">{sentCount} sent</span>
+					<span className="text-muted-foreground"> · {sentCount} sent</span>
 				) : null}
 				{failedCount > 0 ? (
-					<span className="text-destructive">{failedCount} failed</span>
+					<span className="text-destructive"> · {failedCount} failed</span>
 				) : null}
-			</div>
-			<ul className="max-h-48 space-y-1 overflow-auto rounded-md border border-border p-2 text-sm">
-				{recipients.map((r) => (
-					<li key={r.id} className="flex items-center justify-between gap-2">
-						<span className="truncate">
-							{[r.firstName, r.lastName].filter(Boolean).join(" ") || r.email}
-							<span className="ml-2 text-xs text-muted-foreground">
-								{r.email}
-							</span>
-						</span>
-						{renderBadge(r.status)}
-					</li>
-				))}
+			</p>
+
+			<ul className="-mx-1 max-h-64 space-y-0.5 overflow-auto px-1">
+				{recipients.map((r) => {
+					const variant = statusVariant(r.status);
+					return (
+						<li
+							key={r.id}
+							className="flex items-center gap-2.5 rounded-md py-1"
+						>
+							<Avatar size="sm">
+								<AvatarFallback className="text-[10px] font-medium">
+									{initials(r)}
+								</AvatarFallback>
+							</Avatar>
+							<div className="min-w-0 flex-1 leading-tight">
+								<p className="truncate text-sm">{displayName(r)}</p>
+								<p className="truncate text-xs text-muted-foreground">
+									{r.email}
+								</p>
+							</div>
+							{variant ? (
+								<Badge variant={variant} className="shrink-0 text-[10px]">
+									{r.status}
+								</Badge>
+							) : null}
+						</li>
+					);
+				})}
 				{hiddenCount > 0 ? (
-					<li className="pt-1 text-center text-xs text-muted-foreground">
+					<li className="px-1 pt-1.5 text-xs text-muted-foreground">
 						+ {hiddenCount} more not shown
 					</li>
 				) : null}

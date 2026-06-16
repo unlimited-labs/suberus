@@ -1,24 +1,21 @@
 import {
+	IconBraces,
 	IconDeviceFloppy,
 	IconFlask,
 	IconMailForward,
 	IconSend,
 	IconTrash,
+	IconUsers,
 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { bulkEmailCampaignQueryOptions } from "@/features/bulk-email/api/bulk-email";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import {
-	Card,
-	CardContent,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { Panel } from "@/shared/ui/panel";
+import { Separator } from "@/shared/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Textarea } from "@/shared/ui/textarea";
 import { CampaignProgressCard } from "./campaign-progress-card";
@@ -32,6 +29,14 @@ interface ComposePageProps {
 	campaignId: string;
 }
 
+function statusVariant(
+	status: string,
+): "default" | "secondary" | "destructive" {
+	if (status === "FAILED") return "destructive";
+	if (status === "DRAFT") return "secondary";
+	return "default";
+}
+
 export function ComposePage({ campaignId }: ComposePageProps) {
 	const { data: campaign } = useSuspenseQuery(
 		bulkEmailCampaignQueryOptions(campaignId),
@@ -41,123 +46,144 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconMailForward} title="Email campaigns">
-				<Badge variant="secondary" data-testid="campaign-status">
+				<Badge
+					variant={statusVariant(campaign.status)}
+					data-testid="campaign-status"
+				>
 					{campaign.status}
 				</Badge>
 			</PageHeader>
 
-			<div className="flex-1 overflow-auto p-4 sm:p-8">
-				<div className="mx-auto max-w-5xl space-y-6">
-					<Card>
-						<CardHeader>
-							<CardTitle>Recipients</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<RecipientSummary
-								recipients={campaign.recipients}
-								totalRecipients={campaign.totalRecipients}
-								sentCount={campaign.sentCount}
-								failedCount={campaign.failedCount}
-							/>
-						</CardContent>
-					</Card>
-
-					<CampaignProgressCard campaign={campaign} jobId={compose.jobId} />
-
-					<Card>
-						<CardHeader>
-							<CardTitle>Compose</CardTitle>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							<div className="space-y-2">
-								<Label htmlFor="campaign-subject">Subject</Label>
-								<Input
-									id="campaign-subject"
-									data-testid="campaign-subject"
-									value={compose.subject}
-									onChange={(e) => compose.setSubject(e.target.value)}
-									disabled={!compose.isDraft}
-								/>
-							</div>
-
-							<Tabs defaultValue="body">
-								<div className="mb-3 flex items-end justify-between gap-3">
-									<FormatSelector
-										value={compose.format}
-										onChange={compose.setFormat}
-										disabled={!compose.isDraft}
-									/>
-									<TabsList className="rounded-lg border border-border bg-muted p-1">
-										<TabsTrigger value="body" className="px-4 py-1.5">
-											Body
-										</TabsTrigger>
-										<TabsTrigger value="preview" className="px-4 py-1.5">
-											Preview
-										</TabsTrigger>
-									</TabsList>
+			<div className="flex-1 overflow-auto p-6">
+				<div className="mx-auto w-full max-w-7xl">
+					<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+						{/* Editor */}
+						<Panel variant="elevated">
+							<div className="space-y-6 p-6 sm:p-8">
+								<div>
+									<h1 className="text-2xl font-semibold tracking-tight">
+										Compose
+									</h1>
+									<p className="mt-1 text-sm text-muted-foreground">
+										Write your message and preview it before sending.
+									</p>
 								</div>
 
-								<TabsContent value="body" className="mt-0">
-									<Textarea
-										id="campaign-body"
-										data-testid="campaign-body"
-										value={compose.bodySource}
-										onChange={(e) => compose.setBodySource(e.target.value)}
+								<div className="border-t" />
+
+								<div className="space-y-1.5">
+									<Label htmlFor="campaign-subject">Subject</Label>
+									<Input
+										id="campaign-subject"
+										data-testid="campaign-subject"
+										value={compose.subject}
+										onChange={(e) => compose.setSubject(e.target.value)}
 										disabled={!compose.isDraft}
-										className="h-96 font-mono text-sm"
 									/>
-								</TabsContent>
+								</div>
 
-								<TabsContent value="preview" className="mt-0">
-									<PreviewIframe
-										body={compose.preview.body}
-										isHtml={compose.preview.isHtml}
-										isLoading={compose.isPreviewLoading}
-									/>
-								</TabsContent>
-							</Tabs>
+								<Tabs defaultValue="body">
+									<div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+										<FormatSelector
+											value={compose.format}
+											onChange={compose.setFormat}
+											disabled={!compose.isDraft}
+										/>
+										<TabsList>
+											<TabsTrigger value="body">Body</TabsTrigger>
+											<TabsTrigger value="preview">Preview</TabsTrigger>
+										</TabsList>
+									</div>
 
-							<PlaceholderHelp />
-						</CardContent>
-						<CardFooter className="flex flex-wrap gap-2">
-							<Button
-								variant="outline"
-								data-testid="save-draft-btn"
-								onClick={() => compose.save()}
-								disabled={!compose.isDraft || compose.isSaving}
-							>
-								<IconDeviceFloppy className="mr-2 size-4" />
-								Save draft
-							</Button>
-							<Button
-								variant="secondary"
-								data-testid="test-send-btn"
-								onClick={() => compose.sendTest()}
-								disabled={compose.isTesting}
-							>
-								<IconFlask className="mr-2 size-4" />
-								Test (send to me)
-							</Button>
-							<Button
-								data-testid="send-campaign-btn"
-								onClick={() => compose.send()}
-								disabled={!compose.isDraft || compose.isSending}
-							>
-								<IconSend className="mr-2 size-4" />
-								Send
-							</Button>
-							<Button
-								variant="destructive"
-								className="ml-auto"
-								data-testid="delete-campaign-btn"
-								onClick={() => compose.remove()}
-								disabled={!compose.isDraft || compose.isRemoving}
-							>
-								<IconTrash className="mr-2 size-4" />
-								Delete draft
-							</Button>
-						</CardFooter>
-					</Card>
+									<TabsContent value="body" className="mt-0">
+										<Textarea
+											id="campaign-body"
+											data-testid="campaign-body"
+											value={compose.bodySource}
+											onChange={(e) => compose.setBodySource(e.target.value)}
+											disabled={!compose.isDraft}
+											className="h-[28rem] resize-none font-mono text-sm leading-relaxed"
+										/>
+									</TabsContent>
+
+									<TabsContent value="preview" className="mt-0">
+										<PreviewIframe
+											body={compose.preview.body}
+											isHtml={compose.preview.isHtml}
+											isLoading={compose.isPreviewLoading}
+										/>
+									</TabsContent>
+								</Tabs>
+							</div>
+						</Panel>
+
+						{/* Inspector */}
+						<aside className="space-y-4 lg:sticky lg:top-0 lg:self-start">
+							<Panel title="Recipients" icon={IconUsers}>
+								<RecipientSummary
+									recipients={campaign.recipients}
+									totalRecipients={campaign.totalRecipients}
+									sentCount={campaign.sentCount}
+									failedCount={campaign.failedCount}
+								/>
+							</Panel>
+
+							<CampaignProgressCard
+								campaign={campaign}
+								jobId={compose.jobId}
+								job={compose.job}
+							/>
+
+							<Panel title="Placeholders" icon={IconBraces}>
+								<PlaceholderHelp />
+							</Panel>
+
+							<Panel title="Send" icon={IconSend}>
+								<div className="space-y-3 text-sm">
+									<Button
+										className="w-full"
+										data-testid="send-campaign-btn"
+										onClick={() => compose.send()}
+										disabled={!compose.isDraft || compose.isSending}
+									>
+										<IconSend className="mr-2 size-4" />
+										Send campaign
+									</Button>
+									<div className="grid grid-cols-2 gap-2">
+										<Button
+											variant="outline"
+											data-testid="save-draft-btn"
+											onClick={() => compose.save()}
+											disabled={!compose.isDraft || compose.isSaving}
+										>
+											<IconDeviceFloppy className="mr-2 size-4" />
+											Save draft
+										</Button>
+										<Button
+											variant="secondary"
+											data-testid="test-send-btn"
+											onClick={() => compose.sendTest()}
+											disabled={compose.isTesting}
+										>
+											<IconFlask className="mr-2 size-4" />
+											Send test
+										</Button>
+									</div>
+									<Separator />
+									<Button
+										variant="ghost"
+										className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+										data-testid="delete-campaign-btn"
+										onClick={() => compose.remove()}
+										disabled={!compose.isDraft || compose.isRemoving}
+									>
+										<IconTrash className="mr-2 size-4" />
+										Delete draft
+									</Button>
+								</div>
+							</Panel>
+						</aside>
+					</div>
 				</div>
 			</div>
 		</div>

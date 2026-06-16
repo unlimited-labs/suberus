@@ -94,6 +94,16 @@ test.describe("Admin - Bulk Email", () => {
 				)
 				.toBe("SENT:2")
 
+			// The composer reflects completion live (SSE → query refetch): the
+			// header badge flips to SENT and the progress bar finishes.
+			await expect(page.getByTestId("campaign-status")).toHaveText("SENT", {
+				timeout: 15000,
+			})
+			await expect(page.getByTestId("campaign-progress")).toContainText(
+				"2 / 2 processed",
+				{ timeout: 15000 },
+			)
+
 			// Alice's email: firstName + title substituted.
 			const aliceHtml = await expectEmailHtml(withTitle.email, runId)
 			expect(aliceHtml).toContain("Alice")
