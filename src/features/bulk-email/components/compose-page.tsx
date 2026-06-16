@@ -1,5 +1,6 @@
 import {
 	IconBraces,
+	IconCopy,
 	IconDeviceFloppy,
 	IconFlask,
 	IconMailForward,
@@ -138,48 +139,74 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 								<PlaceholderHelp />
 							</Panel>
 
-							<Panel title="Send" icon={IconSend}>
+							<Panel title="Actions" icon={IconSend}>
 								<div className="space-y-3 text-sm">
-									<Button
-										className="w-full"
-										data-testid="send-campaign-btn"
-										onClick={() => compose.send()}
-										disabled={!compose.isDraft || compose.isSending}
-									>
-										<IconSend className="mr-2 size-4" />
-										Send campaign
-									</Button>
-									<div className="grid grid-cols-2 gap-2">
-										<Button
-											variant="outline"
-											data-testid="save-draft-btn"
-											onClick={() => compose.save()}
-											disabled={!compose.isDraft || compose.isSaving}
-										>
-											<IconDeviceFloppy className="mr-2 size-4" />
-											Save draft
-										</Button>
-										<Button
-											variant="secondary"
-											data-testid="test-send-btn"
-											onClick={() => compose.sendTest()}
-											disabled={compose.isTesting}
-										>
-											<IconFlask className="mr-2 size-4" />
-											Send test
-										</Button>
-									</div>
-									<Separator />
-									<Button
-										variant="ghost"
-										className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
-										data-testid="delete-campaign-btn"
-										onClick={() => compose.remove()}
-										disabled={!compose.isDraft || compose.isRemoving}
-									>
-										<IconTrash className="mr-2 size-4" />
-										Delete draft
-									</Button>
+									{compose.isDraft ? (
+										<>
+											<Button
+												className="w-full"
+												data-testid="send-campaign-btn"
+												onClick={() => compose.send()}
+												disabled={compose.isSending}
+											>
+												<IconSend className="mr-2 size-4" />
+												Send campaign
+											</Button>
+											<div className="grid grid-cols-2 gap-2">
+												<Button
+													variant="outline"
+													data-testid="save-draft-btn"
+													onClick={() => compose.save()}
+													disabled={compose.isSaving}
+												>
+													<IconDeviceFloppy className="mr-2 size-4" />
+													Save draft
+												</Button>
+												<Button
+													variant="secondary"
+													data-testid="test-send-btn"
+													onClick={() => compose.sendTest()}
+													disabled={compose.isTesting}
+												>
+													<IconFlask className="mr-2 size-4" />
+													Send test
+												</Button>
+											</div>
+											<Separator />
+											<Button
+												variant="ghost"
+												className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+												data-testid="delete-campaign-btn"
+												onClick={() => compose.remove()}
+												disabled={compose.isRemoving}
+											>
+												<IconTrash className="mr-2 size-4" />
+												Delete draft
+											</Button>
+										</>
+									) : (
+										<>
+											<Button
+												className="w-full"
+												data-testid="copy-campaign-btn"
+												onClick={() => compose.copy()}
+												disabled={compose.isCopying}
+											>
+												<IconCopy className="mr-2 size-4" />
+												Copy to new draft
+											</Button>
+											<Button
+												variant="secondary"
+												className="w-full"
+												data-testid="test-send-btn"
+												onClick={() => compose.sendTest()}
+												disabled={compose.isTesting}
+											>
+												<IconFlask className="mr-2 size-4" />
+												Send test
+											</Button>
+										</>
+									)}
 								</div>
 							</Panel>
 						</aside>

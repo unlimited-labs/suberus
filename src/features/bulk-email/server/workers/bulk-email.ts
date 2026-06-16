@@ -168,9 +168,11 @@ async function processCampaign(campaignId: string): Promise<void> {
 
 	await beginSending(campaign);
 
+	// Same order as the composer's Recipients panel (getCampaign) so the
+	// SENT/FAILED marks light up top-to-bottom as the send progresses.
 	const pending = await prisma.emailCampaignRecipient.findMany({
 		where: { campaignId, status: "PENDING" },
-		orderBy: { id: "asc" },
+		orderBy: [{ email: "asc" }, { id: "asc" }],
 	});
 	const content = {
 		subject: campaign.subject,

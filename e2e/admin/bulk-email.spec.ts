@@ -115,6 +115,22 @@ test.describe("Admin - Bulk Email", () => {
 			expect(bobHtml).toContain("Bob")
 			expect(bobHtml).not.toContain("{{title}}")
 
+			// "Copy to new draft" clones the sent campaign into a fresh, editable
+			// DRAFT prefilled with the same content and recipients.
+			await page.getByTestId("copy-campaign-btn").click()
+			await page.waitForURL(
+				(url) =>
+					/\/admin\/bulk-email\/[0-9a-f-]+$/.test(url.pathname) &&
+					!url.pathname.endsWith(campaignId),
+				{ timeout: 15000 },
+			)
+			expect(page.url().split("/").pop()).not.toBe(campaignId)
+			await expect(page.getByTestId("campaign-status")).toHaveText("DRAFT")
+			await expect(page.getByTestId("campaign-subject")).toHaveValue(
+				`Hello {{firstName}} ${runId}`,
+			)
+			await expect(page.getByTestId("recipient-count")).toHaveText("2")
+
 			// History list shows the campaign.
 			await page.goto("/admin/bulk-email")
 			await expect(page.getByTestId("campaign-list")).toContainText(runId)

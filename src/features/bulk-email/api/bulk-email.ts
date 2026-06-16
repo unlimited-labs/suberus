@@ -5,6 +5,7 @@ import { adminMiddleware } from "@/features/auth/server/middleware";
 import {
 	createDraftCampaign,
 	deleteCampaign,
+	duplicateCampaign,
 	finalizeAndEnqueue,
 	getCampaign,
 	listCampaigns,
@@ -90,6 +91,13 @@ export const deleteBulkEmailCampaign = createServerFn({ method: "POST" })
 	.handler(async ({ data }) => {
 		await deleteCampaign(data.id);
 		return { success: true };
+	});
+
+export const duplicateBulkEmailCampaign = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(idSchema)
+	.handler(async ({ data, context }) => {
+		return duplicateCampaign(data.id, context.user.id);
 	});
 
 export const bulkEmailCampaignQueryOptions = (id: string) =>
