@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-start";
 import { setResponseHeader } from "@tanstack/react-start/server";
 import { env } from "@/env";
-import { loggingMiddleware } from "@/logger";
+import { loggingMiddleware } from "@/logging-middleware";
 import { VERSION_HEADER } from "@/shared/lib/version-skew";
 
 // Protect server functions from CSRF. Defaults (Sec-Fetch-Site: same-origin,
