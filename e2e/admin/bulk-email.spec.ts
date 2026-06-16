@@ -161,12 +161,14 @@ test.describe("Admin - Bulk Email", () => {
 			await adminUsersPage.clickApply()
 			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
 
-			await page.getByLabel("MJML").check()
+			await page.getByTestId("format-select").click()
+			await page.getByRole("option", { name: "MJML" }).click()
 			await page
 				.getByTestId("campaign-body")
 				.fill(
 					"<mjml><mj-body><mj-section><mj-column><mj-text>Hello MJML World</mj-text></mj-column></mj-section></mj-body></mjml>",
 				)
+			await page.getByRole("tab", { name: "Preview" }).click()
 
 			const frame = page.frameLocator('[data-testid="email-preview"] iframe')
 			await expect(frame.getByText("Hello MJML World")).toBeVisible({ timeout: 15000 })
