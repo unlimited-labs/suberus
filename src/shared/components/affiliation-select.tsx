@@ -1,5 +1,11 @@
 import { IconBuilding, IconLoader2 } from "@tabler/icons-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	type AffiliationKeyAction,
+	affiliationAriaProps,
+	computeAffiliationDropdownState,
+	resolveAffiliationKeyAction,
+} from "@/shared/components/affiliation-select-helpers";
 import { useDebounce } from "@/shared/hooks/use-debounce";
 import { cn } from "@/shared/lib/utils";
 import {
@@ -24,6 +30,154 @@ interface AffiliationSelectProps {
 	placeholder?: string;
 }
 
+function AffiliationOption({
+	index,
+	label,
+	isHighlighted,
+	isSelected,
+	onHighlight,
+	onSelect,
+}: {
+	index: number;
+	label: string;
+	isHighlighted: boolean;
+	isSelected: boolean;
+	onHighlight: () => void;
+	onSelect: () => void;
+}) {
+	return (
+		<div
+			id={`affiliation-option-${index}`}
+			role="option"
+			tabIndex={-1}
+			aria-selected={isHighlighted}
+			className={cn(
+				"relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
+				isHighlighted && "bg-accent text-accent-foreground",
+				isSelected && "font-medium",
+			)}
+			onMouseEnter={onHighlight}
+			onMouseDown={(e) => {
+				e.preventDefault(); // Prevent blur
+				onSelect();
+			}}
+		>
+			{label}
+		</div>
+	);
+}
+
+function AffiliationDropdown({
+	affiliations,
+	showCreate,
+	highlightedIndex,
+	selectedId,
+	createLabel,
+	onHighlight,
+	onSelect,
+	onCreate,
+}: {
+	affiliations: Affiliation[];
+	showCreate: boolean;
+	highlightedIndex: number;
+	selectedId: string | null;
+	createLabel: string;
+	onHighlight: (index: number) => void;
+	onSelect: (affiliation: Affiliation) => void;
+	onCreate: () => void;
+}) {
+	return (
+		<div
+			id="affiliation-listbox"
+			role="listbox"
+			className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+		>
+			{affiliations.map((affiliation, index) => (
+				<AffiliationOption
+					key={affiliation.id}
+					index={index}
+					label={affiliation.name}
+					isHighlighted={highlightedIndex === index}
+					isSelected={selectedId === affiliation.id}
+					onHighlight={() => onHighlight(index)}
+					onSelect={() => onSelect(affiliation)}
+				/>
+			))}
+			{showCreate && (
+				<AffiliationOption
+					index={affiliations.length}
+					label={createLabel}
+					isHighlighted={highlightedIndex === affiliations.length}
+					isSelected={false}
+					onHighlight={() => onHighlight(affiliations.length)}
+					onSelect={onCreate}
+				/>
+			)}
+		</div>
+	);
+}
+
+function AffiliationInput({
+	inputRef,
+	value,
+	open,
+	highlightedIndex,
+	affiliationId,
+	hasError,
+	isLoading,
+	placeholder,
+	onValueChange,
+	onFocus,
+	onBlur,
+	onKeyDown,
+}: {
+	inputRef: React.RefObject<HTMLInputElement | null>;
+	value: string;
+	open: boolean;
+	highlightedIndex: number;
+	affiliationId: string | null;
+	hasError?: boolean;
+	isLoading: boolean;
+	placeholder: string;
+	onValueChange: (value: string) => void;
+	onFocus: () => void;
+	onBlur: () => void;
+	onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+}) {
+	return (
+		<div className="relative">
+			<IconBuilding className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+			<input
+				ref={inputRef}
+				type="text"
+				role="combobox"
+				aria-label="Affiliation"
+				aria-expanded={open}
+				aria-autocomplete="list"
+				{...affiliationAriaProps(open, highlightedIndex)}
+				data-affiliation-id={affiliationId || undefined}
+				className={cn(
+					"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 pl-9 text-sm shadow-sm transition-colors",
+					"file:border-0 file:bg-transparent file:text-sm file:font-medium",
+					"placeholder:text-muted-foreground",
+					"focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+					"disabled:cursor-not-allowed disabled:opacity-50",
+					hasError && "border-destructive",
+				)}
+				placeholder={placeholder}
+				value={value}
+				onChange={(e) => onValueChange(e.target.value)}
+				onFocus={onFocus}
+				onBlur={onBlur}
+				onKeyDown={onKeyDown}
+			/>
+			{isLoading && (
+				<IconLoader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+			)}
+		</div>
+	);
+}
+
 export function AffiliationSelect({
 	value,
 	displayValue = "",
@@ -39,7 +193,6 @@ export function AffiliationSelect({
 	const [affiliations, setAffiliations] = useState<Affiliation[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 
-	const containerRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const isCreatingRef = useRef(false);
 	const isSelectingRef = useRef(false);
@@ -100,13 +253,13 @@ export function AffiliationSelect({
 		}
 	}, [debouncedInput, fetchAffiliations]);
 
-	const hasExactMatch = affiliations.some(
-		(a) => a.name.toLowerCase() === inputValue.trim().toLowerCase(),
-	);
-	const showCreate = !!inputValue.trim() && !hasExactMatch && !isLoading;
-	const totalItems = affiliations.length + (showCreate ? 1 : 0);
-	const showDropdown =
-		open && (affiliations.length > 0 || showCreate || isLoading);
+	const { showCreate, totalItems, showDropdown } =
+		computeAffiliationDropdownState({
+			affiliations,
+			inputValue,
+			isLoading,
+			open,
+		});
 
 	const handleSelect = useCallback(
 		(affiliation: Affiliation) => {
@@ -157,136 +310,92 @@ export function AffiliationSelect({
 		}, 200);
 	}, [inputValue, value, handleCreate]);
 
-	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-		if (!open && e.key !== "Escape") {
-			if (inputValue.trim()) setOpen(true);
-			return;
-		}
-
-		switch (e.key) {
-			case "ArrowDown":
-				e.preventDefault();
-				setHighlightedIndex((prev) => (prev < totalItems - 1 ? prev + 1 : 0));
-				break;
-			case "ArrowUp":
-				e.preventDefault();
-				setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : totalItems - 1));
-				break;
-			case "Enter":
-				e.preventDefault();
-				if (highlightedIndex >= 0 && highlightedIndex < affiliations.length) {
-					handleSelect(affiliations[highlightedIndex]);
-				} else if (showCreate && highlightedIndex === affiliations.length) {
-					handleCreate(inputValue.trim());
-				}
-				break;
-			case "Escape":
+	const handleValueChange = useCallback(
+		(val: string) => {
+			setInputValue(val);
+			if (!val.trim()) {
+				onChange(null, "");
+				setAffiliations([]);
 				setOpen(false);
-				setHighlightedIndex(-1);
-				inputRef.current?.blur();
-				break;
-		}
+			} else {
+				setOpen(true);
+			}
+			setHighlightedIndex(-1);
+		},
+		[onChange],
+	);
+
+	const handleFocus = useCallback(() => {
+		if (inputValue.trim()) setOpen(true);
+	}, [inputValue]);
+
+	const applyKeyAction: Record<
+		AffiliationKeyAction["type"],
+		(
+			action: AffiliationKeyAction,
+			e: React.KeyboardEvent<HTMLInputElement>,
+		) => void
+	> = {
+		none: () => {},
+		open: () => setOpen(true),
+		navigate: (action, e) => {
+			e.preventDefault();
+			if (action.type === "navigate") setHighlightedIndex(action.index);
+		},
+		select: (action, e) => {
+			e.preventDefault();
+			if (action.type === "select") handleSelect(affiliations[action.index]);
+		},
+		create: (_action, e) => {
+			e.preventDefault();
+			handleCreate(inputValue.trim());
+		},
+		close: () => {
+			setOpen(false);
+			setHighlightedIndex(-1);
+			inputRef.current?.blur();
+		},
+	};
+
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		const action = resolveAffiliationKeyAction(e.key, {
+			open,
+			hasQuery: !!inputValue.trim(),
+			highlightedIndex,
+			totalItems,
+			affiliationsLength: affiliations.length,
+			showCreate,
+		});
+		applyKeyAction[action.type](action, e);
 	};
 
 	return (
-		<div ref={containerRef} className={cn("relative", className)}>
-			<div className="relative">
-				<IconBuilding className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-				<input
-					ref={inputRef}
-					type="text"
-					role="combobox"
-					aria-label="Affiliation"
-					aria-expanded={open}
-					aria-autocomplete="list"
-					aria-controls={open ? "affiliation-listbox" : undefined}
-					aria-activedescendant={
-						highlightedIndex >= 0
-							? `affiliation-option-${highlightedIndex}`
-							: undefined
-					}
-					data-affiliation-id={value || undefined}
-					className={cn(
-						"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 pl-9 text-sm shadow-sm transition-colors",
-						"file:border-0 file:bg-transparent file:text-sm file:font-medium",
-						"placeholder:text-muted-foreground",
-						"focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-						"disabled:cursor-not-allowed disabled:opacity-50",
-						hasError && "border-destructive",
-					)}
-					placeholder={placeholder}
-					value={inputValue}
-					onChange={(e) => {
-						const val = e.target.value;
-						setInputValue(val);
-						if (!val.trim()) {
-							onChange(null, "");
-							setAffiliations([]);
-							setOpen(false);
-						} else {
-							setOpen(true);
-						}
-						setHighlightedIndex(-1);
-					}}
-					onFocus={() => {
-						if (inputValue.trim()) setOpen(true);
-					}}
-					onBlur={handleBlur}
-					onKeyDown={handleKeyDown}
-				/>
-				{isLoading && (
-					<IconLoader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
-				)}
-			</div>
+		<div className={cn("relative", className)}>
+			<AffiliationInput
+				inputRef={inputRef}
+				value={inputValue}
+				open={open}
+				highlightedIndex={highlightedIndex}
+				affiliationId={value}
+				hasError={hasError}
+				isLoading={isLoading}
+				placeholder={placeholder}
+				onValueChange={handleValueChange}
+				onFocus={handleFocus}
+				onBlur={handleBlur}
+				onKeyDown={handleKeyDown}
+			/>
 			{showDropdown && (
-				<div
-					id="affiliation-listbox"
-					role="listbox"
-					className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
-				>
-					{affiliations.map((affiliation, index) => (
-						<div
-							key={affiliation.id}
-							id={`affiliation-option-${index}`}
-							role="option"
-							tabIndex={-1}
-							aria-selected={highlightedIndex === index}
-							className={cn(
-								"relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
-								highlightedIndex === index &&
-									"bg-accent text-accent-foreground",
-								value === affiliation.id && "font-medium",
-							)}
-							onMouseEnter={() => setHighlightedIndex(index)}
-							onMouseDown={(e) => {
-								e.preventDefault(); // Prevent blur
-								handleSelect(affiliation);
-							}}
-						>
-							{affiliation.name}
-						</div>
-					))}
-					{showCreate && (
-						<div
-							id={`affiliation-option-${affiliations.length}`}
-							role="option"
-							tabIndex={-1}
-							aria-selected={highlightedIndex === affiliations.length}
-							className={cn(
-								"relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
-								highlightedIndex === affiliations.length &&
-									"bg-accent text-accent-foreground",
-							)}
-							onMouseEnter={() => setHighlightedIndex(affiliations.length)}
-							onMouseDown={(e) => {
-								e.preventDefault(); // Prevent blur
-								handleCreate(inputValue.trim());
-							}}
-						>
-							Create &quot;{inputValue.trim()}&quot;
-						</div>
-					)}
-				</div>
+				<AffiliationDropdown
+					affiliations={affiliations}
+					showCreate={showCreate}
+					highlightedIndex={highlightedIndex}
+					selectedId={value}
+					createLabel={`Create "${inputValue.trim()}"`}
+					onHighlight={setHighlightedIndex}
+					onSelect={handleSelect}
+					onCreate={() => handleCreate(inputValue.trim())}
+				/>
 			)}
 		</div>
 	);

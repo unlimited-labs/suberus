@@ -5,6 +5,12 @@ import {
 	IconStarFilled,
 } from "@tabler/icons-react";
 import type { UserSubmissionReview } from "@/features/submissions/api/submissions";
+import {
+	computeReviewSummary,
+	computeReviewsAggregate,
+	getScoreColor,
+	scoreGridClassName,
+} from "@/features/submissions/components/reviews-card-helpers";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { cn, formatFileSize } from "@/shared/lib/utils";
 import {
@@ -18,39 +24,6 @@ import { Badge } from "@/shared/ui/badge";
 interface ReviewsCardProps {
 	reviews: UserSubmissionReview[];
 	round?: number;
-}
-
-function getScoreColor(score: number): {
-	bar: string;
-	text: string;
-	bg: string;
-} {
-	if (score >= 4.5) {
-		return {
-			bar: "bg-emerald-500",
-			text: "text-emerald-600 dark:text-emerald-400",
-			bg: "bg-emerald-500/10 border-emerald-500/20",
-		};
-	}
-	if (score >= 3.5) {
-		return {
-			bar: "bg-sky-500",
-			text: "text-sky-600 dark:text-sky-400",
-			bg: "bg-sky-500/10 border-sky-500/20",
-		};
-	}
-	if (score >= 2.5) {
-		return {
-			bar: "bg-amber-500",
-			text: "text-amber-600 dark:text-amber-400",
-			bg: "bg-amber-500/10 border-amber-500/20",
-		};
-	}
-	return {
-		bar: "bg-red-500",
-		text: "text-red-600 dark:text-red-400",
-		bg: "bg-red-500/10 border-red-500/20",
-	};
 }
 
 interface ScoreBarProps {
@@ -86,19 +59,158 @@ function ScoreBar({ label, score, maxScore = 5 }: ScoreBarProps) {
 	);
 }
 
+function ReviewTriggerHeader({
+	reviewerName,
+	hasScores,
+	reviewAvg,
+	scoreText,
+	hasComments,
+	hasAttachment,
+}: {
+	reviewerName: string;
+	hasScores: boolean;
+	reviewAvg: number;
+	scoreText: string;
+	hasComments: boolean;
+	hasAttachment: boolean;
+}) {
+	return (
+		<div className="flex items-center gap-3 flex-wrap">
+			<span className="font-medium text-foreground">{reviewerName}</span>
+			{hasScores && (
+				<Badge variant="outline" className={cn("font-semibold", scoreText)}>
+					{reviewAvg.toFixed(1)}/5
+				</Badge>
+			)}
+			{hasComments && (
+				<IconMessageCircle className="size-3.5 text-muted-foreground" />
+			)}
+			{hasAttachment && (
+				<IconPaperclip className="size-3.5 text-muted-foreground" />
+			)}
+		</div>
+	);
+}
+
+function ReviewScores({ scoreEntries }: { scoreEntries: [string, number][] }) {
+	if (scoreEntries.length === 0) return null;
+	return (
+		<div
+			className={cn(
+				"grid grid-cols-1 gap-3",
+				scoreGridClassName(scoreEntries.length),
+			)}
+		>
+			{scoreEntries.map(([name, score]) => (
+				<ScoreBar key={name} label={name} score={score} />
+			))}
+		</div>
+	);
+}
+
+function ReviewComments({
+	comments,
+	hasScores,
+}: {
+	comments: string | null;
+	hasScores: boolean;
+}) {
+	if (comments) {
+		return (
+			<div className={cn(hasScores && "pt-3 border-t")}>
+				<p className="text-sm font-medium text-muted-foreground mb-2">
+					Comments
+				</p>
+				<div className="text-sm text-foreground leading-relaxed bg-background/50 p-3 rounded-lg border">
+					{comments}
+				</div>
+			</div>
+		);
+	}
+	if (!hasScores) {
+		return (
+			<p className="text-sm text-muted-foreground italic">
+				No detailed feedback provided.
+			</p>
+		);
+	}
+	return null;
+}
+
+function ReviewAttachment({
+	attachment,
+}: {
+	attachment: UserSubmissionReview["attachment"];
+}) {
+	if (!attachment) return null;
+	return (
+		<div className="pt-3 border-t">
+			<p className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
+				<IconPaperclip className="size-3.5" />
+				Attachment
+			</p>
+			<a
+				href={`/api/files/${attachment.id}`}
+				className="inline-flex items-center gap-2 text-sm text-primary hover:underline bg-background/50 p-2 rounded-lg border"
+			>
+				<IconDownload className="size-4" />
+				{attachment.originalName}
+				<span className="text-xs text-muted-foreground">
+					({formatFileSize(attachment.size)})
+				</span>
+			</a>
+		</div>
+	);
+}
+
+function ReviewItem({
+	review,
+	formatDateTime,
+}: {
+	review: UserSubmissionReview;
+	formatDateTime: (date: Date) => string;
+}) {
+	const { scoreEntries, reviewAvg, createdAt, hasComments, hasAttachment } =
+		computeReviewSummary(review);
+	const hasScores = scoreEntries.length > 0;
+	const scoreConfig = getScoreColor(reviewAvg);
+
+	return (
+		<AccordionItem
+			value={review.id}
+			className="border border-border rounded-xl bg-muted hover:bg-muted/80 transition-colors shadow-sm"
+		>
+			<AccordionTrigger className="px-4 py-3 hover:no-underline">
+				<ReviewTriggerHeader
+					reviewerName={review.reviewerName}
+					hasScores={hasScores}
+					reviewAvg={reviewAvg}
+					scoreText={scoreConfig.text}
+					hasComments={hasComments}
+					hasAttachment={hasAttachment}
+				/>
+			</AccordionTrigger>
+			<AccordionContent className="px-4 pb-4 pt-1">
+				<div className="space-y-4">
+					<ReviewScores scoreEntries={scoreEntries} />
+					<ReviewComments comments={review.comments} hasScores={hasScores} />
+					<ReviewAttachment attachment={review.attachment} />
+					<div className="text-xs text-muted-foreground pt-2">
+						{formatDateTime(createdAt)}
+					</div>
+				</div>
+			</AccordionContent>
+		</AccordionItem>
+	);
+}
+
 export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 	const { formatDateTime } = useDateFormat();
 	if (reviews.length === 0) {
 		return null;
 	}
 
-	const allScores = reviews.flatMap((r) =>
-		r.scores ? Object.values(r.scores) : [],
-	);
-	const hasScores = allScores.length > 0;
-	const avgScore = hasScores
-		? allScores.reduce((sum, s) => sum + s, 0) / allScores.length
-		: 0;
+	const { hasScores, avgScore } = computeReviewsAggregate(reviews);
 	const avgColorConfig = getScoreColor(avgScore);
 
 	return (
@@ -142,122 +254,13 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 
 				{/* Reviews */}
 				<Accordion type="single" collapsible className="space-y-3">
-					{reviews.map((review) => {
-						const scoreEntries = review.scores
-							? Object.entries(review.scores)
-							: [];
-						const reviewAvg =
-							scoreEntries.length > 0
-								? scoreEntries.reduce((sum, [, v]) => sum + v, 0) /
-									scoreEntries.length
-								: 0;
-						const scoreConfig = getScoreColor(reviewAvg);
-						const createdAt =
-							typeof review.createdAt === "string"
-								? new Date(review.createdAt)
-								: review.createdAt;
-						const hasComments = !!review.comments;
-						const hasAttachment = !!review.attachment;
-
-						return (
-							<AccordionItem
-								key={review.id}
-								value={review.id}
-								className="border border-border rounded-xl bg-muted hover:bg-muted/80 transition-colors shadow-sm"
-							>
-								<AccordionTrigger className="px-4 py-3 hover:no-underline">
-									<div className="flex items-center gap-3 flex-wrap">
-										<span className="font-medium text-foreground">
-											{review.reviewerName}
-										</span>
-										{scoreEntries.length > 0 && (
-											<Badge
-												variant="outline"
-												className={cn("font-semibold", scoreConfig.text)}
-											>
-												{reviewAvg.toFixed(1)}/5
-											</Badge>
-										)}
-										{hasComments && (
-											<IconMessageCircle className="size-3.5 text-muted-foreground" />
-										)}
-										{hasAttachment && (
-											<IconPaperclip className="size-3.5 text-muted-foreground" />
-										)}
-									</div>
-								</AccordionTrigger>
-								<AccordionContent className="px-4 pb-4 pt-1">
-									<div className="space-y-4">
-										{/* Scores */}
-										{scoreEntries.length > 0 && (
-											<div
-												className={cn(
-													"grid grid-cols-1 gap-3",
-													scoreEntries.length >= 4
-														? "md:grid-cols-4"
-														: scoreEntries.length >= 2
-															? "md:grid-cols-2"
-															: "",
-												)}
-											>
-												{scoreEntries.map(([name, score]) => (
-													<ScoreBar key={name} label={name} score={score} />
-												))}
-											</div>
-										)}
-
-										{/* Comments */}
-										{review.comments && (
-											<div
-												className={cn(
-													scoreEntries.length > 0 ? "pt-3 border-t" : "",
-												)}
-											>
-												<p className="text-sm font-medium text-muted-foreground mb-2">
-													Comments
-												</p>
-												<div className="text-sm text-foreground leading-relaxed bg-background/50 p-3 rounded-lg border">
-													{review.comments}
-												</div>
-											</div>
-										)}
-
-										{/* No content fallback */}
-										{!review.comments && scoreEntries.length === 0 && (
-											<p className="text-sm text-muted-foreground italic">
-												No detailed feedback provided.
-											</p>
-										)}
-
-										{/* Attachment */}
-										{review.attachment && (
-											<div className="pt-3 border-t">
-												<p className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
-													<IconPaperclip className="size-3.5" />
-													Attachment
-												</p>
-												<a
-													href={`/api/files/${review.attachment.id}`}
-													className="inline-flex items-center gap-2 text-sm text-primary hover:underline bg-background/50 p-2 rounded-lg border"
-												>
-													<IconDownload className="size-4" />
-													{review.attachment.originalName}
-													<span className="text-xs text-muted-foreground">
-														({formatFileSize(review.attachment.size)})
-													</span>
-												</a>
-											</div>
-										)}
-
-										{/* Review Date */}
-										<div className="text-xs text-muted-foreground pt-2">
-											{formatDateTime(createdAt)}
-										</div>
-									</div>
-								</AccordionContent>
-							</AccordionItem>
-						);
-					})}
+					{reviews.map((review) => (
+						<ReviewItem
+							key={review.id}
+							review={review}
+							formatDateTime={formatDateTime}
+						/>
+					))}
 				</Accordion>
 			</div>
 		</div>

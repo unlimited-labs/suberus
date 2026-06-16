@@ -1,0 +1,131 @@
+export interface AffiliationDropdownState {
+	hasExactMatch: boolean;
+	showCreate: boolean;
+	totalItems: number;
+	showDropdown: boolean;
+}
+
+/**
+ * Derives the combobox's open/create state from the current query and results:
+ * whether an exact match exists, whether to offer "create", the navigable item
+ * count, and whether the dropdown should render. Pure, so the matrix is testable.
+ */
+export function computeAffiliationDropdownState({
+	affiliations,
+	inputValue,
+	isLoading,
+	open,
+}: {
+	affiliations: { name: string }[];
+	inputValue: string;
+	isLoading: boolean;
+	open: boolean;
+}): AffiliationDropdownState {
+	const trimmed = inputValue.trim();
+	const hasExactMatch = affiliations.some(
+		(a) => a.name.toLowerCase() === trimmed.toLowerCase(),
+	);
+	const showCreate = !!trimmed && !hasExactMatch && !isLoading;
+	const totalItems = affiliations.length + (showCreate ? 1 : 0);
+	const showDropdown =
+		open && (affiliations.length > 0 || showCreate || isLoading);
+	return { hasExactMatch, showCreate, totalItems, showDropdown };
+}
+
+export type AffiliationKeyAction =
+	| { type: "none" }
+	| { type: "open" }
+	| { type: "navigate"; index: number }
+	| { type: "select"; index: number }
+	| { type: "create" }
+	| { type: "close" };
+
+/** Next highlighted option index for arrow navigation, wrapping at both ends. */
+export function nextHighlightedIndex(
+	prev: number,
+	totalItems: number,
+	direction: "down" | "up",
+): number {
+	if (direction === "down") return prev < totalItems - 1 ? prev + 1 : 0;
+	return prev > 0 ? prev - 1 : totalItems - 1;
+}
+
+function resolveEnterAction(
+	highlightedIndex: number,
+	affiliationsLength: number,
+	showCreate: boolean,
+): AffiliationKeyAction {
+	if (highlightedIndex >= 0 && highlightedIndex < affiliationsLength) {
+		return { type: "select", index: highlightedIndex };
+	}
+	if (showCreate && highlightedIndex === affiliationsLength) {
+		return { type: "create" };
+	}
+	return { type: "none" };
+}
+
+export interface AffiliationKeyContext {
+	open: boolean;
+	hasQuery: boolean;
+	highlightedIndex: number;
+	totalItems: number;
+	affiliationsLength: number;
+	showCreate: boolean;
+}
+
+/**
+ * Maps a keydown to a combobox action: open when closed, arrow navigation,
+ * Enter selection/creation, or Escape close. Pure, so the keyboard contract is
+ * unit-testable and the component handler is a branch-free dispatcher.
+ */
+export function resolveAffiliationKeyAction(
+	key: string,
+	ctx: AffiliationKeyContext,
+): AffiliationKeyAction {
+	if (!ctx.open && key !== "Escape") {
+		return ctx.hasQuery ? { type: "open" } : { type: "none" };
+	}
+	switch (key) {
+		case "ArrowDown":
+			return {
+				type: "navigate",
+				index: nextHighlightedIndex(
+					ctx.highlightedIndex,
+					ctx.totalItems,
+					"down",
+				),
+			};
+		case "ArrowUp":
+			return {
+				type: "navigate",
+				index: nextHighlightedIndex(ctx.highlightedIndex, ctx.totalItems, "up"),
+			};
+		case "Enter":
+			return resolveEnterAction(
+				ctx.highlightedIndex,
+				ctx.affiliationsLength,
+				ctx.showCreate,
+			);
+		case "Escape":
+			return { type: "close" };
+		default:
+			return { type: "none" };
+	}
+}
+
+/** Combobox aria props that reference the listbox and active option ids. */
+export function affiliationAriaProps(
+	open: boolean,
+	highlightedIndex: number,
+): {
+	"aria-controls": string | undefined;
+	"aria-activedescendant": string | undefined;
+} {
+	return {
+		"aria-controls": open ? "affiliation-listbox" : undefined,
+		"aria-activedescendant":
+			highlightedIndex >= 0
+				? `affiliation-option-${highlightedIndex}`
+				: undefined,
+	};
+}
