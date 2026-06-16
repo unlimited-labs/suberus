@@ -178,6 +178,32 @@ test.describe("Admin - Bulk Email", () => {
 		}
 	})
 
+	test("deletes a draft campaign", async ({ page, testRun, adminUsersPage }) => {
+		const runId = testRun.testRunId
+		const rcpt = await makeRecipient(runId, "erin", "Erin")
+
+		try {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+			await adminUsersPage.selectUser({ ...rcpt, firstName: "Erin", lastName: "Recipient" })
+			await adminUsersPage.selectBulkAction("Send email")
+			await adminUsersPage.clickApply()
+			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
+			const campaignId = page.url().split("/").pop() as string
+
+			await page.getByTestId("delete-campaign-btn").click()
+			await expect(page).toHaveURL("/admin/bulk-email")
+
+			const db = getPrisma()
+			const deleted = await db.emailCampaign.findUnique({
+				where: { id: campaignId },
+			})
+			expect(deleted).toBeNull()
+		} finally {
+			await deleteTestUser(rcpt.id)
+		}
+	})
+
 	test("non-admin cannot reach the bulk-email page", async ({ page }) => {
 		// Drop the admin storageState session, then sign in as a plain author.
 		await loginAs(page, TEST_USER, { clearCookies: true })

@@ -1,4 +1,10 @@
-import { IconMailForward } from "@tabler/icons-react";
+import {
+	IconDeviceFloppy,
+	IconFlask,
+	IconMailForward,
+	IconSend,
+	IconTrash,
+} from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { bulkEmailCampaignQueryOptions } from "@/features/bulk-email/api/bulk-email";
 import { PageHeader } from "@/shared/components/layout/page-header";
@@ -74,15 +80,13 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 								/>
 							</div>
 
-							<FormatSelector
-								value={compose.format}
-								onChange={compose.setFormat}
-								disabled={!compose.isDraft}
-							/>
-
 							<Tabs defaultValue="body">
-								<div className="mb-3 flex items-center justify-between">
-									<Label className="text-muted-foreground">Message</Label>
+								<div className="mb-3 flex items-end justify-between gap-3">
+									<FormatSelector
+										value={compose.format}
+										onChange={compose.setFormat}
+										disabled={!compose.isDraft}
+									/>
 									<TabsList className="rounded-lg border border-border bg-muted p-1">
 										<TabsTrigger value="body" className="px-4 py-1.5">
 											Body
@@ -122,6 +126,7 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 								onClick={() => compose.save()}
 								disabled={!compose.isDraft || compose.isSaving}
 							>
+								<IconDeviceFloppy className="mr-2 size-4" />
 								Save draft
 							</Button>
 							<Button
@@ -130,6 +135,7 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 								onClick={() => compose.sendTest()}
 								disabled={compose.isTesting}
 							>
+								<IconFlask className="mr-2 size-4" />
 								Test (send to me)
 							</Button>
 							<Button
@@ -137,7 +143,18 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 								onClick={() => compose.send()}
 								disabled={!compose.isDraft || compose.isSending}
 							>
+								<IconSend className="mr-2 size-4" />
 								Send
+							</Button>
+							<Button
+								variant="destructive"
+								className="ml-auto"
+								data-testid="delete-campaign-btn"
+								onClick={() => compose.remove()}
+								disabled={!compose.isDraft || compose.isRemoving}
+							>
+								<IconTrash className="mr-2 size-4" />
+								Delete draft
 							</Button>
 						</CardFooter>
 					</Card>

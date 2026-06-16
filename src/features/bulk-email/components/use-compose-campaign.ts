@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
 	bulkEmailCampaignQueryOptions,
+	deleteBulkEmailCampaign,
 	type getBulkEmailCampaign,
 	previewBulkEmail,
 	saveBulkEmailDraft,
@@ -25,6 +27,7 @@ function useDebounced<T>(value: T, delayMs: number): T {
 
 export function useComposeCampaign(campaign: Campaign) {
 	const queryClient = useQueryClient();
+	const navigate = useNavigate();
 	const isDraft = campaign.status === "DRAFT";
 
 	const [subject, setSubject] = useState(campaign.subject);
@@ -82,6 +85,15 @@ export function useComposeCampaign(campaign: Campaign) {
 		onError: (e) => toast.error(getErrorMessage(e, "Failed to send campaign")),
 	});
 
+	const removeMutation = useMutation({
+		mutationFn: () => deleteBulkEmailCampaign({ data: { id: campaign.id } }),
+		onSuccess: () => {
+			toast.success("Draft deleted");
+			navigate({ to: "/admin/bulk-email" });
+		},
+		onError: (e) => toast.error(getErrorMessage(e, "Failed to delete draft")),
+	});
+
 	return {
 		isDraft,
 		subject,
@@ -98,6 +110,8 @@ export function useComposeCampaign(campaign: Campaign) {
 		isTesting: testMutation.isPending,
 		send: sendMutation.mutate,
 		isSending: sendMutation.isPending,
+		remove: removeMutation.mutate,
+		isRemoving: removeMutation.isPending,
 		jobId,
 	};
 }

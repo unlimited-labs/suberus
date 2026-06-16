@@ -4,6 +4,7 @@ import { z } from "zod";
 import { adminMiddleware } from "@/features/auth/server/middleware";
 import {
 	createDraftCampaign,
+	deleteCampaign,
 	finalizeAndEnqueue,
 	getCampaign,
 	listCampaigns,
@@ -81,6 +82,14 @@ export const sendBulkEmailCampaign = createServerFn({ method: "POST" })
 	.validator(idSchema)
 	.handler(async ({ data, context }) => {
 		return finalizeAndEnqueue(data.id, context.user.id);
+	});
+
+export const deleteBulkEmailCampaign = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(idSchema)
+	.handler(async ({ data }) => {
+		await deleteCampaign(data.id);
+		return { success: true };
 	});
 
 export const bulkEmailCampaignQueryOptions = (id: string) =>

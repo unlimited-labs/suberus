@@ -1,3 +1,7 @@
+import { toast } from "sonner";
+import { Badge } from "@/shared/ui/badge";
+import { Label } from "@/shared/ui/label";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import { PLACEHOLDER_KEYS } from "../lib/placeholders";
 
 const DESCRIPTIONS: Record<(typeof PLACEHOLDER_KEYS)[number], string> = {
@@ -6,19 +10,37 @@ const DESCRIPTIONS: Record<(typeof PLACEHOLDER_KEYS)[number], string> = {
 	title: "Recipient's submission titles (comma-separated)",
 };
 
-/** Lists the placeholders an admin can drop into the subject or body. */
+/** Clickable placeholder chips — click copies the `{{token}}` to the clipboard. */
 export function PlaceholderHelp() {
 	return (
-		<div className="space-y-1 text-sm" data-testid="placeholder-help">
-			<p className="font-medium">Placeholders</p>
-			<ul className="space-y-0.5 text-muted-foreground">
-				{PLACEHOLDER_KEYS.map((key) => (
-					<li key={key}>
-						<code className="rounded bg-muted px-1 py-0.5 text-xs">{`{{${key}}}`}</code>{" "}
-						— {DESCRIPTIONS[key]}
-					</li>
-				))}
-			</ul>
+		<div className="space-y-2" data-testid="placeholder-help">
+			<Label>Placeholders</Label>
+			<div className="flex flex-wrap gap-1.5">
+				{PLACEHOLDER_KEYS.map((key) => {
+					const token = `{{${key}}}`;
+					return (
+						<Tooltip key={key}>
+							<TooltipTrigger asChild>
+								<Badge
+									variant="outline"
+									className="cursor-pointer font-mono text-xs"
+									data-testid={`placeholder-${key}`}
+									onClick={() => {
+										navigator.clipboard.writeText(token);
+										toast.success("Copied to clipboard");
+									}}
+								>
+									{token}
+								</Badge>
+							</TooltipTrigger>
+							<TooltipContent>{DESCRIPTIONS[key]}</TooltipContent>
+						</Tooltip>
+					);
+				})}
+			</div>
+			<p className="text-xs text-muted-foreground">
+				Click to copy · hover for description
+			</p>
 		</div>
 	);
 }

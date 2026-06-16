@@ -92,6 +92,16 @@ export async function getCampaign(id: string) {
 	return campaign;
 }
 
+/** Deletes a campaign and (via cascade) its recipient rows. */
+export async function deleteCampaign(id: string): Promise<void> {
+	const campaign = await prisma.emailCampaign.findUnique({
+		where: { id },
+		select: { id: true },
+	});
+	if (!campaign) throw new Response("Campaign not found", { status: 404 });
+	await prisma.emailCampaign.delete({ where: { id } });
+}
+
 export async function listCampaigns() {
 	return prisma.emailCampaign.findMany({
 		select: {
