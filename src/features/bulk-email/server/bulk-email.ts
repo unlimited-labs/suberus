@@ -65,6 +65,10 @@ export async function createDraftCampaign(
 	return { campaignId: campaign.id };
 }
 
+/** Cap on recipient rows hydrated into the composer (the true total lives in
+ * `totalRecipients`); keeps the payload + DOM bounded for huge campaigns. */
+export const RECIPIENT_PREVIEW_LIMIT = 200;
+
 export async function getCampaign(id: string) {
 	const campaign = await prisma.emailCampaign.findUnique({
 		where: { id },
@@ -80,6 +84,7 @@ export async function getCampaign(id: string) {
 					error: true,
 				},
 				orderBy: { email: "asc" },
+				take: RECIPIENT_PREVIEW_LIMIT,
 			},
 		},
 	});

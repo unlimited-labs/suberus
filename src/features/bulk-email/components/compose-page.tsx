@@ -49,6 +49,7 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 						<CardContent>
 							<RecipientSummary
 								recipients={campaign.recipients}
+								totalRecipients={campaign.totalRecipients}
 								sentCount={campaign.sentCount}
 								failedCount={campaign.failedCount}
 							/>
@@ -80,16 +81,19 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 							/>
 
 							<Tabs defaultValue="body">
-								<TabsList className="rounded-lg border border-border bg-muted p-1">
-									<TabsTrigger value="body" className="px-3 py-1.5">
-										Body
-									</TabsTrigger>
-									<TabsTrigger value="preview" className="px-3 py-1.5">
-										Preview
-									</TabsTrigger>
-								</TabsList>
+								<div className="mb-3 flex items-center justify-between">
+									<Label className="text-muted-foreground">Message</Label>
+									<TabsList className="rounded-lg border border-border bg-muted p-1">
+										<TabsTrigger value="body" className="px-4 py-1.5">
+											Body
+										</TabsTrigger>
+										<TabsTrigger value="preview" className="px-4 py-1.5">
+											Preview
+										</TabsTrigger>
+									</TabsList>
+								</div>
 
-								<TabsContent value="body" className="mt-3">
+								<TabsContent value="body" className="mt-0">
 									<Textarea
 										id="campaign-body"
 										data-testid="campaign-body"
@@ -100,7 +104,7 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 									/>
 								</TabsContent>
 
-								<TabsContent value="preview" className="mt-3">
+								<TabsContent value="preview" className="mt-0">
 									<PreviewIframe
 										body={compose.preview.body}
 										isHtml={compose.preview.isHtml}
