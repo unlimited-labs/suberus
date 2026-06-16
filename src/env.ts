@@ -28,6 +28,9 @@ export const env = createEnv({
 		SMTP_PASSWORD: z.string().optional(),
 		SMTP_FROM_EMAIL: z.email(),
 
+		// Pause between each email when sending a bulk campaign (seconds).
+		BULK_EMAIL_DELAY_SECONDS: z.coerce.number().nonnegative().default(5),
+
 		// LLM API (optional, for AI-assisted document extraction)
 		// OpenAI-compatible endpoint (Ollama /v1, llama.cpp, vLLM, etc.)
 		LLM_API_URL: z.url().optional(),

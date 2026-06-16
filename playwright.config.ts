@@ -31,6 +31,8 @@ export const envFor = (i: number) => ({
 	GIT_COMMIT: E2E_GIT_COMMIT,
 	// Poll fast so the version-skew poll path is testable without long waits.
 	VERSION_POLL_INTERVAL_MS: "500",
+	// No inter-email pause so bulk-email campaigns finish quickly in tests.
+	BULK_EMAIL_DELAY_SECONDS: "0",
 });
 
 // Role-authenticated project: storageState comes from the `role` option (resolved

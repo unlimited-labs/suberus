@@ -1,4 +1,5 @@
 import type { PgBoss } from "pg-boss";
+import { registerBulkEmailWorker } from "@/features/bulk-email/server/workers/bulk-email";
 import { registerExtractionWorker } from "@/features/extraction/server/workers/extraction";
 import { registerAutoplanWorker } from "@/features/planner/server/workers/autoplan";
 
@@ -6,4 +7,5 @@ import { registerAutoplanWorker } from "@/features/planner/server/workers/autopl
 export async function registerAllWorkers(boss: PgBoss): Promise<void> {
 	await registerExtractionWorker(boss);
 	await registerAutoplanWorker(boss);
+	await registerBulkEmailWorker(boss);
 }

@@ -1,6 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import type { RowSelectionState, Table } from "@tanstack/react-table";
 import { useState } from "react";
+import { toast } from "sonner";
+import { createBulkEmailDraft } from "@/features/bulk-email/api/bulk-email";
 import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
@@ -15,6 +18,7 @@ import {
 } from "@/features/users/labels";
 import type { AdminUser } from "@/features/users/server/users";
 import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
+import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
 import { BulkActionDialog } from "@/shared/ui/data-table";
 import {
@@ -41,6 +45,7 @@ interface BulkActionPayload {
 
 export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 	const queryClient = useQueryClient();
+	const navigate = useNavigate();
 	const { canChangeRoles, canAssignAdminRole } = useAdminAuth();
 	const roleOptions = assignableRoleOptions(canAssignAdminRole);
 	const selectedCount = Object.keys(rowSelection).length;
@@ -76,6 +81,16 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 		},
 	});
 
+	const emailDraftMutation = useMutation({
+		mutationFn: (userIds: string[]) =>
+			createBulkEmailDraft({ data: { userIds } }),
+		onSuccess: ({ campaignId }) => {
+			navigate({ to: "/admin/bulk-email/$id", params: { id: campaignId } });
+		},
+		onError: (e) =>
+			toast.error(getErrorMessage(e, "Failed to start bulk email")),
+	});
+
 	if (selectedCount === 0) return null;
 
 	const handleApply = () => {
@@ -83,6 +98,8 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 			setFeeDialogOpen(true);
 		} else if (selectedAction === "change_role") {
 			setRoleDialogOpen(true);
+		} else if (selectedAction === "send_email") {
+			emailDraftMutation.mutate(selectedRows.map((row) => row.original.id));
 		}
 	};
 
@@ -107,9 +124,14 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 		});
 	};
 
+	// Shares the bulk-action toolbar shape with submission-bulk-actions.tsx and
+	// data-table-bulk-actions.tsx (a pre-existing 3-way pattern). Deduping these
+	// belongs in one coordinated refactor of all three, not this feature.
+	// fallow-ignore-next-line code-duplication
 	const actions = [
 		{ value: "mark_fee", label: "Mark fee paid" },
 		...(canChangeRoles ? [{ value: "change_role", label: "Change role" }] : []),
+		{ value: "send_email", label: "Send email" },
 	];
 
 	return (

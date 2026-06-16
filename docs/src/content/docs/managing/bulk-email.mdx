@@ -1,0 +1,84 @@
+---
+title: Bulk Email
+description: Compose and send a one-off email to selected users, with a live preview and per-recipient placeholders.
+sidebar:
+  order: 6
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+**Bulk Email** lets you write a message once and send it to many users at the same
+time — an announcement, a deadline nudge, anything ad-hoc that isn't covered by the
+automatic [email templates](/configuration/email-templates/). You choose the
+recipients from the **Users** list, compose the body as plain text, Markdown, or
+MJML, preview the rendered result, send a test to yourself, then queue the send.
+
+<Aside type="note" title="Where to find it">
+**Bulk Email** in the admin sidebar shows the send history. To start a new message,
+go to **Users**, select recipients, and choose **Send email** from the bulk actions.
+</Aside>
+
+🖼️ [Screenshot placeholder: Bulk Email composer with recipients, format selector, body and preview]
+
+## How to send a bulk email
+
+1. Open **Users**, tick the people you want to email, and pick **Send email** from
+   the bulk-actions dropdown, then **Apply**. This creates a draft and opens the
+   composer with those recipients attached.
+2. Write a **Subject** and **Body**, choosing a **Format** (see below). The preview
+   updates as you type.
+3. Click **Test (send to me)** to receive the message at your own address, with
+   placeholders filled from random sample data — useful to check formatting.
+4. Click **Send**. The campaign is queued and delivered one recipient at a time; a
+   progress bar shows how many have been processed.
+
+## Fields
+
+| Field | What it does |
+|---|---|
+| **Recipients** | The users you selected in the Users list. Their name and submission titles are captured when the draft is created, so later profile edits don't change what gets sent. |
+| **Subject** | The email subject line. Supports placeholders (plain text — never HTML). |
+| **Format** | **Plain text** (sent as-is), **Markdown** (rendered to HTML), or **MJML** (responsive email markup, compiled to HTML). |
+| **Body** | The message source, in the chosen format. Supports placeholders. |
+| **Preview** | The rendered email. HTML formats render in a sandboxed frame; plain text shows verbatim. |
+| **Save draft** | Stores your edits without sending. You can return to the draft later. |
+| **Test (send to me)** | Sends one copy to your own address with sample placeholder values. |
+| **Send** | Renders the final body, queues the campaign, and starts delivery. |
+
+## Placeholders
+
+Drop these tokens into the subject or body; each is replaced per recipient when the
+email is sent:
+
+| Placeholder | Replaced with |
+|---|---|
+| `{{firstName}}` | The recipient's first name. |
+| `{{lastName}}` | The recipient's last name. |
+| `{{title}}` | The recipient's submission titles, comma-separated. Empty for users with no submissions. |
+
+## Delivery & throttling
+
+Emails are sent through a background queue with a pause between each one (set by the
+`BULK_EMAIL_DELAY_SECONDS` environment variable, default **5 seconds**) to avoid
+overwhelming the mail server. The send is **resumable**: if the server restarts
+mid-campaign, it continues with the recipients that haven't been sent yet rather
+than starting over.
+
+<Aside type="caution">
+There is no "unsend". Always use **Test (send to me)** first, and double-check the
+recipient count before clicking **Send**.
+</Aside>
+
+## History
+
+The **Bulk Email** page lists past campaigns with their status, sent/total counts,
+and date. Open one to see its content and the per-recipient delivery result
+(sent / failed).
+
+## Related
+
+<CardGrid>
+	<LinkCard title="Users" href="/managing/users/" description="Select the recipients for a bulk email." />
+	<LinkCard title="Email Templates" href="/configuration/email-templates/" description="Automatic transactional emails." />
+	<LinkCard title="Reminders" href="/configuration/reminders/" description="Scheduled reviewer and deadline nudges." />
+</CardGrid>

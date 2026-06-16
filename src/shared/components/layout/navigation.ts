@@ -8,6 +8,7 @@ import {
 	IconDashboard,
 	IconFileStack,
 	IconFileText,
+	IconMailForward,
 	IconMailPlus,
 	IconUser,
 	IconUsers,
@@ -77,6 +78,11 @@ export const navigationSections: NavSection[] = [
 				roles: ["ADMIN"],
 			},
 			{ name: "Submissions", href: "/admin/submissions", icon: IconFileStack },
+			{
+				name: "Bulk Email",
+				href: "/admin/bulk-email",
+				icon: IconMailForward,
+			},
 			{
 				name: "Exhibitors",
 				href: "/admin/exhibitors",

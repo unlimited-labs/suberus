@@ -71,6 +71,7 @@ export default defineConfig({
 						{ label: 'Submissions', slug: 'managing/submissions' },
 						{ label: 'Reviews', slug: 'managing/reviews' },
 						{ label: 'Users', slug: 'managing/users' },
+						{ label: 'Bulk Email', slug: 'managing/bulk-email' },
 						{ label: 'Exhibitors', slug: 'managing/exhibitors' },
 						{ label: 'Invitations', slug: 'managing/invitations' },
 						{ label: 'Extraction', slug: 'managing/extraction' },

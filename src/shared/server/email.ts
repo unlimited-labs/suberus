@@ -42,6 +42,43 @@ const transporter = nodemailer.createTransport({
 		: {}),
 });
 
+/** In E2E mode, tag mail to `*-<runId>@e2e.local` so Mailpit can isolate per run. */
+function e2eHeaders(to: string): Record<string, string> | undefined {
+	if (!env.E2E) return undefined;
+	const testRunIdMatch = to.match(/^[^-]+-([^@]+)@e2e\.local$/);
+	return testRunIdMatch?.[1]
+		? { "X-Test-Run-Id": testRunIdMatch[1] }
+		: undefined;
+}
+
+export interface RawEmail {
+	to: string;
+	subject: string;
+	html?: string;
+	text?: string;
+	cc?: string[];
+	bcc?: string[];
+}
+
+/**
+ * Low-level send over the pooled transport. Unlike {@link sendEmail}, this
+ * THROWS on failure so callers (e.g. the bulk-email worker) can record
+ * per-recipient status. The caller owns subject/body rendering.
+ */
+export async function sendRawEmail(mail: RawEmail): Promise<void> {
+	const headers = e2eHeaders(mail.to);
+	await transporter.sendMail({
+		from: env.SMTP_FROM_EMAIL,
+		to: mail.to,
+		cc: mail.cc?.length ? mail.cc : undefined,
+		bcc: mail.bcc?.length ? mail.bcc : undefined,
+		subject: mail.subject,
+		...(mail.html !== undefined ? { html: mail.html } : {}),
+		...(mail.text !== undefined ? { text: mail.text } : {}),
+		headers,
+	});
+}
+
 export async function sendEmail(
 	eventType: EmailEventType,
 	to: string,
@@ -77,15 +114,6 @@ export async function sendEmail(
 			}
 		}
 
-		// Add test run ID header in E2E mode for test isolation
-		const headers: Record<string, string> = {};
-		if (env.E2E) {
-			const testRunIdMatch = to.match(/^[^-]+-([^@]+)@e2e\.local$/);
-			if (testRunIdMatch?.[1]) {
-				headers["X-Test-Run-Id"] = testRunIdMatch[1];
-			}
-		}
-
 		await transporter.sendMail({
 			from: env.SMTP_FROM_EMAIL,
 			to,
@@ -93,7 +121,7 @@ export async function sendEmail(
 			bcc: template.bccEmails.length > 0 ? template.bccEmails : undefined,
 			subject,
 			[template.isHtml ? "html" : "text"]: body,
-			headers: Object.keys(headers).length > 0 ? headers : undefined,
+			headers: e2eHeaders(to),
 		});
 		logger.info(`[email] sent ${eventType} to ${to}`);
 	} catch (error) {

@@ -2,7 +2,7 @@ import { PgBoss } from "pg-boss";
 import { env } from "@/env.ts";
 import { logger } from "@/logger.ts";
 
-const QUEUES = ["extraction", "autoplan"] as const;
+const QUEUES = ["extraction", "autoplan", "bulk-email"] as const;
 
 let _initPromise: Promise<PgBoss> | null = null;
 
@@ -43,9 +43,16 @@ export function getBoss(): Promise<PgBoss> {
 	return _initPromise;
 }
 
+export interface QueueSendOptions {
+	retryLimit?: number;
+	retryDelay?: number;
+	expireInSeconds?: number;
+}
+
 export async function ensureQueueAndSend(
 	name: string,
 	data: object,
+	options?: QueueSendOptions,
 ): Promise<string | null> {
 	logger.info(`[pg-boss] ensureQueueAndSend: ${name}`);
 	const boss = await getBoss();
@@ -55,7 +62,7 @@ export async function ensureQueueAndSend(
 		logger.info(`[pg-boss] queue ${name} not found, creating...`);
 		await boss.createQueue(name);
 	}
-	const jobId = await boss.send(name, data);
+	const jobId = await boss.send(name, data, options ?? {});
 	logger.info(`[pg-boss] sent job ${jobId} to ${name}`);
 	return jobId;
 }

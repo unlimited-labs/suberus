@@ -789,3 +789,58 @@ model AutoplanProposal {
 
   @@map("autoplan_proposals")
 }
+
+enum EmailCampaignFormat {
+  PLAIN
+  MARKDOWN
+  MJML
+}
+
+enum EmailCampaignStatus {
+  DRAFT
+  QUEUED
+  SENDING
+  SENT
+  FAILED
+}
+
+model EmailCampaign {
+  id              String              @id @default(uuid()) @db.Uuid
+  subject         String              @default("")
+  format          EmailCampaignFormat @default(MARKDOWN)
+  bodySource      String              @default("") @map("body_source")
+  renderedHtml    String?             @map("rendered_html")
+  status          EmailCampaignStatus @default(DRAFT)
+  totalRecipients Int                 @default(0) @map("total_recipients")
+  sentCount       Int                 @default(0) @map("sent_count")
+  failedCount     Int                 @default(0) @map("failed_count")
+  jobProgressId   String?             @map("job_progress_id") @db.Uuid
+  createdById     String?             @map("created_by_id") @db.Uuid
+  createdAt       DateTime            @default(now()) @map("created_at")
+  sentAt          DateTime?           @map("sent_at")
+
+  recipients EmailCampaignRecipient[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("email_campaign")
+}
+
+model EmailCampaignRecipient {
+  id         String    @id @default(uuid()) @db.Uuid
+  campaignId String    @map("campaign_id") @db.Uuid
+  userId     String?   @map("user_id") @db.Uuid
+  email      String
+  firstName  String?   @map("first_name")
+  lastName   String?   @map("last_name")
+  titles     String    @default("")
+  status     String    @default("PENDING")
+  error      String?
+  sentAt     DateTime? @map("sent_at")
+
+  campaign EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, userId])
+  @@index([campaignId, status])
+  @@map("email_campaign_recipient")
+}
