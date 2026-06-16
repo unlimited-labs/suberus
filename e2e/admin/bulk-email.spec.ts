@@ -230,6 +230,247 @@ test.describe("Admin - Bulk Email", () => {
 		}
 	})
 
+	test("saves a draft and persists subject, body and format across reload", async ({
+		page,
+		testRun,
+		adminUsersPage,
+	}) => {
+		const runId = testRun.testRunId
+		const rcpt = await makeRecipient(runId, "frank", "Frank")
+		const body = "Saved **body** for {{firstName}}"
+
+		try {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+			await adminUsersPage.selectUser({ ...rcpt, firstName: "Frank", lastName: "Recipient" })
+			await adminUsersPage.selectBulkAction("Send email")
+			await adminUsersPage.clickApply()
+			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
+			const campaignId = page.url().split("/").pop() as string
+
+			await page.getByTestId("campaign-subject").fill(`Draft ${runId}`)
+			await page.getByTestId("campaign-body").fill(body)
+			// Change the format too, to prove it is part of the saved draft.
+			await page.getByTestId("format-select").click()
+			await page.getByRole("option", { name: "MJML" }).click()
+			await page.getByTestId("save-draft-btn").click()
+			await expect(page.getByText("Draft saved")).toBeVisible()
+
+			// The save is persisted as a DRAFT.
+			const db = getPrisma()
+			await expect
+				.poll(async () => {
+					const c = await db.emailCampaign.findUnique({
+						where: { id: campaignId },
+						select: { status: true, format: true, subject: true },
+					})
+					return `${c?.status}|${c?.format}|${c?.subject}`
+				})
+				.toBe(`DRAFT|MJML|Draft ${runId}`)
+
+			// Reload rehydrates the composer from the saved draft.
+			await page.reload()
+			await expect(page.getByTestId("campaign-subject")).toHaveValue(
+				`Draft ${runId}`,
+			)
+			await expect(page.getByTestId("campaign-body")).toHaveValue(body)
+			await expect(page.getByTestId("format-select")).toContainText("MJML")
+			await expect(page.getByTestId("campaign-status")).toHaveText("DRAFT")
+		} finally {
+			await deleteTestUser(rcpt.id)
+			await clearMailpit(runId)
+		}
+	})
+
+	test("a sent campaign is read-only and copies into an editable draft", async ({
+		page,
+		testRun,
+	}) => {
+		const runId = testRun.testRunId
+		const db = getPrisma()
+		const body =
+			"<mjml><mj-body><mj-section><mj-column><mj-text>Hi {{firstName}}</mj-text></mj-column></mj-section></mj-body></mjml>"
+		const campaign = await db.emailCampaign.create({
+			data: {
+				subject: `Sent ${runId}`,
+				format: "MJML",
+				bodySource: body,
+				status: "SENT",
+				sentAt: new Date(),
+				totalRecipients: 2,
+				sentCount: 2,
+				recipients: {
+					create: [
+						{ email: `gina-${runId}@e2e.local`, firstName: "Gina", status: "SENT" },
+						{ email: `hank-${runId}@e2e.local`, firstName: "Hank", status: "SENT" },
+					],
+				},
+			},
+		})
+
+		try {
+			await page.goto(`/admin/bulk-email/${campaign.id}`)
+
+			// Read-only: SENT badge, disabled editor, no draft-only actions.
+			await expect(page.getByTestId("campaign-status")).toHaveText("SENT")
+			await expect(page.getByTestId("campaign-subject")).toBeDisabled()
+			await expect(page.getByTestId("campaign-body")).toBeDisabled()
+			await expect(page.getByTestId("send-campaign-btn")).toHaveCount(0)
+			await expect(page.getByTestId("save-draft-btn")).toHaveCount(0)
+			await expect(page.getByTestId("delete-campaign-btn")).toHaveCount(0)
+			// Per-recipient delivery is reflected.
+			await expect(page.getByTestId("recipient-summary")).toContainText("2 sent")
+			await expect(page.getByTestId("recipient-summary")).toContainText("SENT")
+
+			// Copy clones content, format and recipients into a fresh DRAFT.
+			await page.getByTestId("copy-campaign-btn").click()
+			await page.waitForURL(
+				(url) =>
+					/\/admin\/bulk-email\/[0-9a-f-]+$/.test(url.pathname) &&
+					!url.pathname.endsWith(campaign.id),
+				{ timeout: 15000 },
+			)
+			const copyId = page.url().split("/").pop() as string
+
+			await expect(page.getByTestId("campaign-status")).toHaveText("DRAFT")
+			await expect(page.getByTestId("campaign-subject")).toHaveValue(`Sent ${runId}`)
+			await expect(page.getByTestId("campaign-body")).toHaveValue(body)
+			await expect(page.getByTestId("format-select")).toContainText("MJML")
+			await expect(page.getByTestId("recipient-count")).toHaveText("2")
+			// The clone is editable again.
+			await expect(page.getByTestId("campaign-subject")).toBeEnabled()
+			await expect(page.getByTestId("send-campaign-btn")).toBeVisible()
+
+			await db.emailCampaign.delete({ where: { id: copyId } }).catch(() => {})
+		} finally {
+			await db.emailCampaign.delete({ where: { id: campaign.id } }).catch(() => {})
+			await clearMailpit(runId)
+		}
+	})
+
+	test("renders Markdown and Plain previews", async ({
+		page,
+		testRun,
+		adminUsersPage,
+	}) => {
+		const runId = testRun.testRunId
+		const rcpt = await makeRecipient(runId, "mia", "Mia")
+
+		try {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+			await adminUsersPage.selectUser({ ...rcpt, firstName: "Mia", lastName: "Recipient" })
+			await adminUsersPage.selectBulkAction("Send email")
+			await adminUsersPage.clickApply()
+			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
+
+			// Markdown (default): bold renders as <strong> inside the preview frame.
+			await page.getByTestId("campaign-body").fill("Hello **bold world**")
+			await page.getByRole("tab", { name: "Preview" }).click()
+			const frame = page.frameLocator('[data-testid="email-preview"] iframe')
+			await expect(frame.locator("strong")).toHaveText("bold world", {
+				timeout: 15000,
+			})
+
+			// Plain: preview shows the source verbatim (no markdown rendering).
+			await page.getByRole("tab", { name: "Body" }).click()
+			await page.getByTestId("format-select").click()
+			await page.getByRole("option", { name: "Plain text" }).click()
+			await page.getByTestId("campaign-body").fill("Just **raw** text")
+			await page.getByRole("tab", { name: "Preview" }).click()
+			await expect(page.getByTestId("email-preview")).toContainText(
+				"Just **raw** text",
+			)
+		} finally {
+			await deleteTestUser(rcpt.id)
+			await clearMailpit(runId)
+		}
+	})
+
+	test("placeholder chips copy the token to the clipboard", async ({
+		page,
+		context,
+		testRun,
+		adminUsersPage,
+	}) => {
+		const runId = testRun.testRunId
+		const rcpt = await makeRecipient(runId, "nora", "Nora")
+		await context.grantPermissions(["clipboard-read", "clipboard-write"])
+
+		try {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+			await adminUsersPage.selectUser({ ...rcpt, firstName: "Nora", lastName: "Recipient" })
+			await adminUsersPage.selectBulkAction("Send email")
+			await adminUsersPage.clickApply()
+			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
+
+			await page.getByTestId("placeholder-firstName").click()
+			await expect(page.getByText("Copied to clipboard")).toBeVisible()
+			const copied = await page.evaluate(() => navigator.clipboard.readText())
+			expect(copied).toBe("{{firstName}}")
+		} finally {
+			await deleteTestUser(rcpt.id)
+			await clearMailpit(runId)
+		}
+	})
+
+	test("records failed deliveries and marks the campaign FAILED", async ({
+		page,
+		testRun,
+	}) => {
+		const runId = testRun.testRunId
+		const db = getPrisma()
+		// Empty recipient addresses make the SMTP send throw, so every delivery
+		// fails deterministically (no Mailpit dependency) → status FAILED.
+		const campaign = await db.emailCampaign.create({
+			data: {
+				subject: `Fail ${runId}`,
+				format: "PLAIN",
+				bodySource: "Hi {{firstName}}",
+				status: "DRAFT",
+				totalRecipients: 2,
+				recipients: {
+					create: [
+						{ email: "", firstName: "Ivy", status: "PENDING" },
+						{ email: "", firstName: "Jack", status: "PENDING" },
+					],
+				},
+			},
+		})
+
+		try {
+			await page.goto(`/admin/bulk-email/${campaign.id}`)
+			await page.getByTestId("send-campaign-btn").click()
+
+			await expect
+				.poll(
+					async () => {
+						const c = await db.emailCampaign.findUnique({
+							where: { id: campaign.id },
+							select: { status: true, failedCount: true },
+						})
+						return `${c?.status}:${c?.failedCount}`
+					},
+					{ timeout: 30000 },
+				)
+				.toBe("FAILED:2")
+
+			// Header badge → FAILED; the Recipients panel shows the failed count
+			// and per-recipient FAILED marks.
+			await expect(page.getByTestId("campaign-status")).toHaveText("FAILED", {
+				timeout: 15000,
+			})
+			await expect(page.getByTestId("recipient-summary")).toContainText(
+				"2 failed",
+			)
+			await expect(page.getByTestId("recipient-summary")).toContainText("FAILED")
+		} finally {
+			await db.emailCampaign.delete({ where: { id: campaign.id } }).catch(() => {})
+			await clearMailpit(runId)
+		}
+	})
+
 	test("non-admin cannot reach the bulk-email page", async ({ page }) => {
 		// Drop the admin storageState session, then sign in as a plain author.
 		await loginAs(page, TEST_USER, { clearCookies: true })
