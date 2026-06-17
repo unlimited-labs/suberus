@@ -112,6 +112,7 @@ export default defineConfig<TestOptions>({
 		roleProject("mobile-profile", /e2e\/profile\/.*\.spec\.ts/, { role: "user", device: "mobile" }),
 		roleProject("chromium-settings", /e2e\/settings\/.*\.spec\.ts/, { role: "user" }),
 		roleProject("chromium-reviews-admin", /e2e\/reviews\/admin-submissions\.spec\.ts/, { role: "admin" }),
+		roleProject("chromium-reviews-diff", /e2e\/reviews\/version-diff\.spec\.ts/, { role: "admin" }),
 		roleProject("chromium-reviews-author-links", /e2e\/reviews\/author-profile-links\.spec\.ts/, { role: "admin" }),
 		roleProject("chromium-reviewer", /e2e\/reviews\/reviewer\.spec\.ts/, { role: "reviewer" }),
 		roleProject("chromium-reminder-settings", /e2e\/reminders\/reminder-settings\.spec\.ts/, { role: "admin" }),

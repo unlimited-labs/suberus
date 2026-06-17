@@ -18,6 +18,7 @@ export { ADMIN_USER, REVIEWER_USER, TEST_USER };
 
 // Re-export test-db helpers for Prisma seeding in tests
 export {
+	addSubmissionVersions,
 	createSubmission,
 	createSubmissionWithAssignment,
 	createSubmissionWithReview,

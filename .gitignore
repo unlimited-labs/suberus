@@ -60,3 +60,6 @@ dev-docs/
 skills-lock.json
 .fallow/
 /nul
+
+# Local research POC (not shipped)
+poc/

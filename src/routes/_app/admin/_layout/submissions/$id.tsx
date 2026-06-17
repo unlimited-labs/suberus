@@ -124,6 +124,7 @@ function SubmissionDetailPage() {
 
 								<TabsContent value="content" className="space-y-4">
 									<ContentTab
+										submissionId={submission.id}
 										authors={authors}
 										versions={versions}
 										submission={submission}

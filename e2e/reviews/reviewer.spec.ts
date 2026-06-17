@@ -1,5 +1,5 @@
 import path from "path";
-import { test, expect, createSubmissionWithAssignment } from "./fixtures";
+import { test, expect, createSubmissionWithAssignment, addSubmissionVersions } from "./fixtures";
 
 // Tests use reviewer storageState from playwright.config.ts
 
@@ -362,5 +362,64 @@ test.describe("Reviewer - Attachment", () => {
 
 		// Assert - redirected to reviews list
 		await page.waitForURL("/reviews");
+	});
+});
+
+test.describe("Reviewer - Revision diff", () => {
+	test("shows 'Changes since previous version' with a content redline", async ({
+		page,
+		reviewerAssignmentsPage,
+		testRun,
+		cleanup,
+	}) => {
+		// Arrange — an assigned submission that has an earlier version to diff against.
+		const { submissionId, title } = await createSubmissionWithAssignment({
+			testRunId: testRun.testRunId,
+			title: "Reviewer Revision Diff Test",
+		});
+		cleanup.track(submissionId);
+		await addSubmissionVersions(submissionId, [
+			{
+				title,
+				content:
+					"The model presents an approach to nucleation. Cooling at 45 C/s was sampled.",
+			},
+			{
+				title,
+				content:
+					"The model proposes a novel approach to nucleation. Cooling at 30 C/s was sampled. A validation set was added.",
+			},
+		]);
+
+		// Act
+		await reviewerAssignmentsPage.openReviewForm(title);
+		const toggle = page.getByTestId("reviewer-diff-toggle");
+		await expect(toggle).toBeVisible();
+		await toggle.click();
+
+		// Assert — inline redline with at least one insertion and deletion.
+		await expect(page.getByTestId("text-diff").first()).toBeVisible();
+		await expect(page.getByTestId("diff-ins").first()).toBeVisible();
+		await expect(page.getByTestId("diff-del").first()).toBeVisible();
+	});
+
+	test("no diff panel when there is no previous version", async ({
+		page,
+		reviewerAssignmentsPage,
+		testRun,
+		cleanup,
+	}) => {
+		const { submissionId, title } = await createSubmissionWithAssignment({
+			testRunId: testRun.testRunId,
+			title: "Reviewer No Diff Test",
+		});
+		cleanup.track(submissionId);
+		// Single version only → nothing to diff against.
+		await addSubmissionVersions(submissionId, [
+			{ title, content: "Only one version of this submission exists." },
+		]);
+
+		await reviewerAssignmentsPage.openReviewForm(title);
+		await expect(page.getByTestId("reviewer-diff-toggle")).toHaveCount(0);
 	});
 });

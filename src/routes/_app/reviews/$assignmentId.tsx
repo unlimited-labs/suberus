@@ -127,6 +127,7 @@ function ReviewFormPage() {
 						authors: submission.authors,
 						content: submission.content,
 						file: submission.file,
+						previousVersion: submission.previousVersion,
 					}}
 					reviewMode={config.reviewMode}
 					guidelines={reviewGuidelines}

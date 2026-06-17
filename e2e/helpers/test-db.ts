@@ -233,6 +233,42 @@ export async function createSubmission(options: CreateSubmissionOptions): Promis
 	};
 }
 
+/**
+ * Seed SubmissionVersion rows for an existing submission and point
+ * `currentVersionId` at the last one. `createSubmission` creates no version
+ * rows, so use this when a test needs the version diff (>=2 versions).
+ * Does not touch `currentRound` (keeps it consistent with any assignment).
+ */
+export async function addSubmissionVersions(
+	submissionId: string,
+	versions: Array<{ title: string; content: string; comment?: string }>,
+): Promise<string[]> {
+	const db = getPrisma();
+	const ids: string[] = [];
+	let lastId: string | null = null;
+	for (let i = 0; i < versions.length; i++) {
+		const v = versions[i];
+		const row = await db.submissionVersion.create({
+			data: {
+				submissionId,
+				version: i + 1,
+				title: v.title,
+				content: v.content,
+				comment: v.comment ?? null,
+			},
+		});
+		ids.push(row.id);
+		lastId = row.id;
+	}
+	if (lastId) {
+		await db.submission.update({
+			where: { id: submissionId },
+			data: { currentVersionId: lastId },
+		});
+	}
+	return ids;
+}
+
 // Create submission with reviewer assignment
 export interface CreateSubmissionWithAssignmentOptions extends CreateSubmissionOptions {
 	reviewerId?: string; // defaults to reviewer user

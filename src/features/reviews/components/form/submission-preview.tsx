@@ -11,6 +11,7 @@ import type { SubmissionType } from "@/generated/prisma/enums";
 import { typeLabels } from "@/shared/lib/labels/submission";
 import { cn, formatFileSize } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
+import { RevisionDiffPanel } from "./revision-diff-panel";
 
 interface SubmissionAuthor {
 	firstName: string;
@@ -32,6 +33,7 @@ interface SubmissionPreviewProps {
 			mimeType: string;
 			size: number;
 		} | null;
+		previousVersion?: { title: string; content: string } | null;
 	};
 	reviewMode: "OPEN" | "SINGLE_BLIND" | "DOUBLE_BLIND";
 }
@@ -41,6 +43,7 @@ export function SubmissionPreview({
 	reviewMode,
 }: SubmissionPreviewProps) {
 	const [contentExpanded, setContentExpanded] = useState(false);
+	const previous = submission.previousVersion;
 
 	return (
 		<>
@@ -94,6 +97,15 @@ export function SubmissionPreview({
 					</div>
 				)}
 			</div>
+
+			{/* Changes since previous version (round-over-round revision diff) */}
+			{previous && (
+				<RevisionDiffPanel
+					previous={previous}
+					title={submission.title}
+					content={submission.content ?? ""}
+				/>
+			)}
 
 			{/* Submission Content Section */}
 			{(submission.content || submission.file) && (

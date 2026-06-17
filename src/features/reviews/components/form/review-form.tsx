@@ -31,6 +31,7 @@ interface ReviewFormProps {
 			mimeType: string;
 			size: number;
 		} | null;
+		previousVersion?: { title: string; content: string } | null;
 	};
 	reviewMode: "OPEN" | "SINGLE_BLIND" | "DOUBLE_BLIND";
 	guidelines?: string;

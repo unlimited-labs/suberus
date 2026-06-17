@@ -1,6 +1,7 @@
 import {
 	IconDownload,
 	IconFile,
+	IconGitCompare,
 	IconStarFilled,
 	IconUserCircle,
 } from "@tabler/icons-react";
@@ -9,8 +10,8 @@ import { useState } from "react";
 import { VersionSelector } from "@/features/submissions/components/version-selector";
 import { cn, formatFileSize } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-
 import {
 	type EditorAuthor,
 	type EditorSubmission,
@@ -19,6 +20,7 @@ import {
 } from "./availability";
 
 interface ContentTabProps {
+	submissionId: string;
 	authors: EditorAuthor[];
 	versions: EditorVersion[];
 	submission: Pick<
@@ -27,7 +29,12 @@ interface ContentTabProps {
 	>;
 }
 
-export function ContentTab({ authors, versions, submission }: ContentTabProps) {
+export function ContentTab({
+	submissionId,
+	authors,
+	versions,
+	submission,
+}: ContentTabProps) {
 	const [selectedVersion, setSelectedVersion] = useState<number | null>(null);
 	const {
 		effectiveVersion,
@@ -115,13 +122,24 @@ export function ContentTab({ authors, versions, submission }: ContentTabProps) {
 				<CardHeader className="flex flex-row items-start justify-between gap-4">
 					<CardTitle className="text-base">Content</CardTitle>
 					{versions.length > 1 && (
-						<div className="w-44">
-							<VersionSelector
-								versions={versions}
-								currentVersion={submission.currentVersionNumber}
-								selectedVersion={effectiveVersion}
-								onVersionChange={setSelectedVersion}
-							/>
+						<div className="flex items-end gap-2">
+							<Button asChild variant="outline" size="sm" className="gap-2">
+								<Link
+									to="/admin/submissions/$id/compare"
+									params={{ id: submissionId }}
+								>
+									<IconGitCompare className="size-4" />
+									Compare versions
+								</Link>
+							</Button>
+							<div className="w-44">
+								<VersionSelector
+									versions={versions}
+									currentVersion={submission.currentVersionNumber}
+									selectedVersion={effectiveVersion}
+									onVersionChange={setSelectedVersion}
+								/>
+							</div>
 						</div>
 					)}
 				</CardHeader>

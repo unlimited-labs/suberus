@@ -33,6 +33,17 @@ export interface ReviewSubmitData {
 }
 
 /** Get assignment details for review form */
+/** The version immediately preceding the current one, for a round-over-round diff. */
+function resolvePreviousVersion(
+	versions: { version: number; title: string; content: string }[],
+	currentVersionNumber: number | undefined,
+): { title: string; content: string } | null {
+	if (currentVersionNumber === undefined) return null;
+	// `versions` is ordered version-desc, so the first one below current is the previous.
+	const previous = versions.find((v) => v.version < currentVersionNumber);
+	return previous ? { title: previous.title, content: previous.content } : null;
+}
+
 export async function getAssignmentForReview(
 	assignmentId: string,
 	reviewerId: string,
@@ -62,6 +73,8 @@ export async function getAssignmentForReview(
 			mimeType: string;
 			size: number;
 		} | null;
+		/** Immediately-preceding version (round-over-round diff), if any. */
+		previousVersion: { title: string; content: string } | null;
 	};
 	config: {
 		reviewMode: ReviewMode;
@@ -106,6 +119,10 @@ export async function getAssignmentForReview(
 							},
 						},
 					},
+					versions: {
+						select: { version: true, title: true, content: true },
+						orderBy: { version: "desc" },
+					},
 				},
 			},
 			review: true,
@@ -146,6 +163,10 @@ export async function getAssignmentForReview(
 							isPresenter: a.isPresenter,
 						})),
 			file: assignment.submission.currentVersion?.file ?? null,
+			previousVersion: resolvePreviousVersion(
+				assignment.submission.versions,
+				assignment.submission.currentVersion?.version,
+			),
 		},
 		config: {
 			reviewMode: config.reviewMode,
