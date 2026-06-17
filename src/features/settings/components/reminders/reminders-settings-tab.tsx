@@ -104,6 +104,10 @@ export function RemindersSettingsTab({
 							}
 						/>
 					</div>
+					<p className="text-xs text-muted-foreground">
+						Sent to reviewers who still have a review pending, counting down to
+						their review deadline.
+					</p>
 					<div className="space-y-2">
 						<Label htmlFor="reviewer-days">Days before deadline</Label>
 						<Input
@@ -138,6 +142,10 @@ export function RemindersSettingsTab({
 							}
 						/>
 					</div>
+					<p className="text-xs text-muted-foreground">
+						Sent to authors asked to revise &amp; resubmit, repeated every few
+						days until they upload a revision or the limit is reached.
+					</p>
 					<div className="grid gap-4 sm:grid-cols-2">
 						<div className="space-y-2">
 							<Label htmlFor="revision-interval">Interval (days)</Label>
@@ -199,6 +207,10 @@ export function RemindersSettingsTab({
 							}
 						/>
 					</div>
+					<p className="text-xs text-muted-foreground">
+						Sent to authors with an unsubmitted draft or an outstanding
+						revision, counting down to the submission deadline.
+					</p>
 					<div className="space-y-2">
 						<Label htmlFor="deadline-days">Days before deadline</Label>
 						<Input
