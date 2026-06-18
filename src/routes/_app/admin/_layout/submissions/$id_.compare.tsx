@@ -8,7 +8,9 @@ import {
 	defaultComparePair,
 	VersionCompare,
 } from "@/features/submissions/components/diff/version-compare";
+import { typeLabels } from "@/features/submissions/labels";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 
 const searchSchema = z.object({
@@ -72,10 +74,13 @@ function CompareVersionsPage() {
 			</PageHeader>
 
 			<div className="flex-1 overflow-auto p-6">
-				<div className="mx-auto max-w-6xl space-y-4">
-					<h1 className="text-lg font-semibold leading-snug text-foreground">
-						{submission.title}
-					</h1>
+				<div className="mx-auto max-w-6xl space-y-6">
+					<div className="space-y-2">
+						<Badge variant="outline">{typeLabels[submission.type]}</Badge>
+						<h1 className="text-xl font-semibold leading-snug text-foreground">
+							{submission.title}
+						</h1>
+					</div>
 
 					<VersionCompare
 						versions={versions}

@@ -16,6 +16,7 @@ import {
 } from "@/shared/lib/text-diff";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { SideBySideDiffView } from "./side-by-side-diff-view";
 import { VersionCompareSelector } from "./version-compare-selector";
 
@@ -36,6 +37,27 @@ export function defaultComparePair(
 
 const fileIdOf = (v: EditorVersion) => v.file?.id ?? null;
 const fileNameOf = (v: EditorVersion) => v.file?.originalName ?? "no file";
+
+/** A titled card panel matching the submission detail tabs (Authors/Content). */
+function Panel({
+	title,
+	action,
+	children,
+}: {
+	title: string;
+	action?: React.ReactNode;
+	children: React.ReactNode;
+}) {
+	return (
+		<Card>
+			<CardHeader className="flex flex-row items-center justify-between gap-4">
+				<CardTitle className="text-base">{title}</CardTitle>
+				{action}
+			</CardHeader>
+			<CardContent>{children}</CardContent>
+		</Card>
+	);
+}
 
 function LayoutToggle({
 	layout,
@@ -70,7 +92,7 @@ function LayoutToggle({
 	);
 }
 
-function ComparingHeader({
+function ComparingSummary({
 	baseLabel,
 	compareLabel,
 	insertions,
@@ -87,7 +109,7 @@ function ComparingHeader({
 }) {
 	return (
 		<div
-			className="sticky top-0 z-10 flex flex-wrap items-center gap-x-2 gap-y-1 border-b bg-background/95 py-2 text-sm backdrop-blur"
+			className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm"
 			data-testid="diff-comparing-header"
 			aria-live="polite"
 		>
@@ -114,7 +136,7 @@ function ComparingHeader({
 	);
 }
 
-function FileComparison({
+function FileRows({
 	baseLabel,
 	compareLabel,
 	baseName,
@@ -128,10 +150,7 @@ function FileComparison({
 	isFileChanged: boolean;
 }) {
 	return (
-		<section className="space-y-1 text-sm">
-			<h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-				Attached file
-			</h3>
+		<div className="space-y-2 text-sm">
 			<div className="flex items-center gap-2 text-muted-foreground">
 				<IconFile className="size-4 shrink-0" />
 				<span className="truncate">
@@ -150,7 +169,7 @@ function FileComparison({
 					the originals can be downloaded from the Content tab.
 				</p>
 			)}
-		</section>
+		</div>
 	);
 }
 
@@ -177,35 +196,32 @@ function ContentDiff({
 	return <TextDiffView segments={segments} emptyLabel="Content unchanged." />;
 }
 
-function Section({
-	title,
-	children,
-}: {
-	title: string;
-	children: React.ReactNode;
-}) {
-	return (
-		<section className="space-y-1">
-			<h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-				{title}
-			</h3>
-			{children}
-		</section>
-	);
-}
-
-function VersionCompareBody({
-	baseV,
-	compareV,
-	base,
-	compare,
-	layout,
-}: {
-	baseV: EditorVersion;
-	compareV: EditorVersion;
+interface VersionCompareProps {
+	versions: EditorVersion[];
+	currentVersionNumber: number;
 	base: number;
 	compare: number;
 	layout: CompareLayout;
+	onBaseChange: (version: number) => void;
+	onCompareChange: (version: number) => void;
+	onLayoutChange: (layout: CompareLayout) => void;
+}
+
+function VersionCompareBody({
+	sorted,
+	baseV,
+	compareV,
+	currentVersionNumber,
+	base,
+	compare,
+	layout,
+	onBaseChange,
+	onCompareChange,
+	onLayoutChange,
+}: VersionCompareProps & {
+	sorted: EditorVersion[];
+	baseV: EditorVersion;
+	compareV: EditorVersion;
 }) {
 	const { formatDate } = useDateFormat();
 	const titleSegments = useMemo(
@@ -224,70 +240,74 @@ function VersionCompareBody({
 	const compareLabel = `v${compare} (${formatDate(compareV.createdAt)})`;
 
 	return (
-		<div className="space-y-5">
-			<ComparingHeader
-				baseLabel={baseLabel}
-				compareLabel={compareLabel}
-				insertions={stats.insertions}
-				deletions={stats.deletions}
-				samePair={samePair}
-				isFileChanged={isFileChanged}
-			/>
-			{samePair && (
-				<p className="text-sm text-muted-foreground">
-					Select two different versions to see a diff.
-				</p>
-			)}
-			<Section title="Title">
+		<div className="space-y-6">
+			<Card>
+				<CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+					<div className="sm:max-w-md sm:flex-1">
+						<VersionCompareSelector
+							versions={sorted}
+							currentVersion={currentVersionNumber}
+							base={base}
+							compare={compare}
+							onBaseChange={onBaseChange}
+							onCompareChange={onCompareChange}
+						/>
+					</div>
+					<LayoutToggle layout={layout} onLayoutChange={onLayoutChange} />
+				</CardHeader>
+				<CardContent className="space-y-2">
+					<ComparingSummary
+						baseLabel={baseLabel}
+						compareLabel={compareLabel}
+						insertions={stats.insertions}
+						deletions={stats.deletions}
+						samePair={samePair}
+						isFileChanged={isFileChanged}
+					/>
+					{samePair && (
+						<p className="text-sm text-muted-foreground">
+							Select two different versions to see a diff.
+						</p>
+					)}
+				</CardContent>
+			</Card>
+
+			<Panel title="Title">
 				<TextDiffView segments={titleSegments} emptyLabel="Title unchanged." />
-			</Section>
-			<FileComparison
-				baseLabel={baseLabel}
-				compareLabel={compareLabel}
-				baseName={fileNameOf(baseV)}
-				compareName={fileNameOf(compareV)}
-				isFileChanged={isFileChanged}
-			/>
+			</Panel>
+
+			<Panel title="Attached file">
+				<FileRows
+					baseLabel={baseLabel}
+					compareLabel={compareLabel}
+					baseName={fileNameOf(baseV)}
+					compareName={fileNameOf(compareV)}
+					isFileChanged={isFileChanged}
+				/>
+			</Panel>
+
 			{compareV.comment && (
-				<Section title={`Author's note for v${compare}`}>
+				<Panel title={`Author's note for v${compare}`}>
 					<p className="whitespace-pre-wrap break-words text-sm text-muted-foreground">
 						{compareV.comment}
 					</p>
-				</Section>
+				</Panel>
 			)}
-			<Section title="Content">
+
+			<Panel title="Content">
 				<ContentDiff
 					layout={layout}
 					segments={contentSegments}
 					baseLabel={baseLabel}
 					compareLabel={compareLabel}
 				/>
-			</Section>
+			</Panel>
 		</div>
 	);
 }
 
-interface VersionCompareProps {
-	versions: EditorVersion[];
-	currentVersionNumber: number;
-	base: number;
-	compare: number;
-	layout: CompareLayout;
-	onBaseChange: (version: number) => void;
-	onCompareChange: (version: number) => void;
-	onLayoutChange: (layout: CompareLayout) => void;
-}
-
-export function VersionCompare({
-	versions,
-	currentVersionNumber,
-	base,
-	compare,
-	layout,
-	onBaseChange,
-	onCompareChange,
-	onLayoutChange,
-}: VersionCompareProps) {
+export function VersionCompare(props: VersionCompareProps) {
+	const { versions, base, compare } = props;
 	const sorted = useMemo(
 		() => [...versions].sort((a, b) => a.version - b.version),
 		[versions],
@@ -297,34 +317,20 @@ export function VersionCompare({
 
 	if (sorted.length < 2 || !baseV || !compareV) {
 		return (
-			<p className="text-sm text-muted-foreground">
-				This submission has only one version — nothing to compare yet.
-			</p>
+			<Card>
+				<CardContent className="py-8 text-center text-sm text-muted-foreground">
+					This submission has only one version — nothing to compare yet.
+				</CardContent>
+			</Card>
 		);
 	}
 
 	return (
-		<div className="space-y-5">
-			<div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-				<div className="sm:max-w-md sm:flex-1">
-					<VersionCompareSelector
-						versions={sorted}
-						currentVersion={currentVersionNumber}
-						base={base}
-						compare={compare}
-						onBaseChange={onBaseChange}
-						onCompareChange={onCompareChange}
-					/>
-				</div>
-				<LayoutToggle layout={layout} onLayoutChange={onLayoutChange} />
-			</div>
-			<VersionCompareBody
-				baseV={baseV}
-				compareV={compareV}
-				base={base}
-				compare={compare}
-				layout={layout}
-			/>
-		</div>
+		<VersionCompareBody
+			{...props}
+			sorted={sorted}
+			baseV={baseV}
+			compareV={compareV}
+		/>
 	);
 }
