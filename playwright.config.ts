@@ -59,10 +59,11 @@ export default defineConfig<TestOptions>({
 	forbidOnly: false,
 	retries: 2,
 	workers: E2E_WORKERS,
-	reporter:
-		process.env.CI || process.env.CLAUDE
-			? [["line"], ["html", { open: "never" }]]
-			: "list",
+	reporter: [
+	  ['line'],
+	  ['json', { outputFile: 'test-results/results.json' }], 
+	  ['html', { open: 'never' }]
+	],
 	globalSetup: "./e2e/setup/global-setup.ts",
 	globalTeardown: "./e2e/setup/global-teardown.ts",
 	use: {

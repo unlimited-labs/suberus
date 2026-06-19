@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="WEB_MODULE" version="4">
   <component name="NewModuleRootManager">
-    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/.agents" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude" />
+      <excludeFolder url="file://$MODULE_DIR$/.fallow" />
+      <excludeFolder url="file://$MODULE_DIR$/.output" />
+      <excludeFolder url="file://$MODULE_DIR$/.output-e2e" />
+      <excludeFolder url="file://$MODULE_DIR$/.tanstack" />
+      <excludeFolder url="file://$MODULE_DIR$/dev-volumes" />
+      <excludeFolder url="file://$MODULE_DIR$/graphify-out" />
+      <excludeFolder url="file://$MODULE_DIR$/kpt2025-demo" />
+      <excludeFolder url="file://$MODULE_DIR$/mf2024-demo" />
+      <excludeFolder url="file://$MODULE_DIR$/playwright-report" />
+    </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>

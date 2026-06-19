@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+	"test:e2e:live": "unbuffer pnpm test:e2e --reporter=line 2>&1 | tee /tmp/e2e-live.log", 
     "test:e2e:ui": "playwright test --ui",
     "format": "biome format",
     "lint": "biome lint --fix",
