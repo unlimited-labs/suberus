@@ -59,7 +59,11 @@ export function buildRevisionRequest(
 
 interface RevisionTypeConfig {
 	type: string;
-	config: { contentFormat: string; allowedExtensions: string[] };
+	config: {
+		contentFormat: string;
+		allowedExtensions: string[];
+		maxFileSizeMb?: number;
+	};
 }
 
 /** The subset of the submission-detail payload the revision view reads. */
@@ -90,15 +94,14 @@ export interface RevisionView {
 }
 
 /**
- * Resolves everything the revision form renders from the submission detail, type
- * config and validation settings: which version's title/content/file to seed,
- * the file-accept attribute, max size, and the conditional/file-format flags.
- * Null-safe so it can run before the page's not-revisable guard.
+ * Resolves everything the revision form renders from the submission detail and
+ * type config: which version's title/content/file to seed, the file-accept
+ * attribute, max size (from the type config), and the conditional/file-format
+ * flags. Null-safe so it can run before the page's not-revisable guard.
  */
 export function prepareRevisionView(
 	data: RevisionViewData | null,
 	typeConfigs: RevisionTypeConfig[],
-	validationSettings: { maxFileSize?: number | null },
 ): RevisionView {
 	const submission = data?.submission;
 	const typeConfig = submission
@@ -115,6 +118,6 @@ export function prepareRevisionView(
 		content: currentVersion?.content ?? submission?.content ?? "",
 		currentFile: currentVersion?.file ?? null,
 		acceptString: buildAcceptString(typeConfig?.config.allowedExtensions ?? []),
-		maxFileSize: validationSettings.maxFileSize ?? 10,
+		maxFileSize: typeConfig?.config.maxFileSizeMb ?? 10,
 	};
 }

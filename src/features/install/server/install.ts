@@ -99,17 +99,16 @@ export async function performInstall(data: InstallFormData): Promise<void> {
 		"MAX_ABSTRACT_LENGTH",
 		"MIN_KEYWORDS",
 		"MAX_KEYWORDS",
-		"MAX_FILE_SIZE_MB",
 		"MAX_AUTHORS",
 		"ENABLE_KEYWORDS",
-		"ALLOWED_FILE_TYPES",
 	] as const;
 
 	for (const key of validationKeys) {
+		const value = APP_SETTINGS_DEFAULTS[key] as unknown as object;
 		await prisma.appSetting.upsert({
 			where: { key },
-			update: { value: APP_SETTINGS_DEFAULTS[key] as object },
-			create: { key, value: APP_SETTINGS_DEFAULTS[key] as object },
+			update: { value },
+			create: { key, value },
 		});
 	}
 

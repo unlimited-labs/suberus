@@ -115,12 +115,16 @@ const detail = {
 
 const fileType = {
 	type: "PAPER",
-	config: { contentFormat: "FILE", allowedExtensions: ["pdf"] },
+	config: {
+		contentFormat: "FILE",
+		allowedExtensions: ["pdf"],
+		maxFileSizeMb: 25,
+	},
 };
 
 describe("prepareRevisionView", () => {
 	it("seeds from the current version and resolves file-format settings", () => {
-		const view = prepareRevisionView(detail, [fileType], { maxFileSize: 25 });
+		const view = prepareRevisionView(detail, [fileType]);
 		expect(view).toEqual({
 			isConditional: false,
 			isFileFormat: true,
@@ -136,7 +140,6 @@ describe("prepareRevisionView", () => {
 		const view = prepareRevisionView(
 			{ ...detail, submission: { ...detail.submission, currentVersion: 9 } },
 			[],
-			{ maxFileSize: null },
 		);
 		expect(view.title).toBe("Sub title");
 		expect(view.content).toBe("Sub content");
@@ -156,13 +159,12 @@ describe("prepareRevisionView", () => {
 				},
 			},
 			[fileType],
-			{},
 		);
 		expect(view.isConditional).toBe(true);
 	});
 
 	it("returns safe defaults for null data", () => {
-		const view = prepareRevisionView(null, [], {});
+		const view = prepareRevisionView(null, []);
 		expect(view).toEqual({
 			isConditional: false,
 			isFileFormat: false,

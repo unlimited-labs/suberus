@@ -54,15 +54,6 @@ export function useSubmissionSettings({
 		setData((prev) => ({ ...prev, [field]: value }));
 	};
 
-	const toggleFileType = (type: string) => {
-		setData((prev) => ({
-			...prev,
-			allowedFileTypes: prev.allowedFileTypes.includes(type)
-				? prev.allowedFileTypes.filter((t) => t !== type)
-				: [...prev.allowedFileTypes, type],
-		}));
-	};
-
 	const handleSave = async () => {
 		setIsSaving(true);
 		try {
@@ -118,7 +109,6 @@ export function useSubmissionSettings({
 		extractionAi,
 		setExtractionAi,
 		handleChange,
-		toggleFileType,
 		handleSave,
 	};
 }

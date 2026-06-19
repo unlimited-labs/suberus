@@ -13,6 +13,8 @@ export interface SubmissionTypeConfig {
 	allowExhibitorPresentation: boolean;
 	contentFormat: ContentFormat;
 	allowedExtensions: SupportedFileExtension[];
+	/** Max upload size in MB for this type's submission file (FILE format only). */
+	maxFileSizeMb: number;
 	requiredReviewers: number;
 	reviewMode: ReviewMode;
 	reviewDeadlineDays: number;
@@ -70,8 +72,6 @@ export type AppSettingsMap = {
 	MAX_TITLE_LENGTH: number;
 	MIN_ABSTRACT_LENGTH: number;
 	MAX_ABSTRACT_LENGTH: number;
-	MAX_FILE_SIZE_MB: number;
-	ALLOWED_FILE_TYPES: string[];
 	MAX_AUTHORS: number;
 	ENABLE_KEYWORDS: boolean;
 	MIN_KEYWORDS: number;

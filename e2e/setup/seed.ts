@@ -167,10 +167,8 @@ async function seed() {
 			"MAX_ABSTRACT_LENGTH",
 			"MIN_KEYWORDS",
 			"MAX_KEYWORDS",
-			"MAX_FILE_SIZE_MB",
 			"MAX_AUTHORS",
 			"ENABLE_KEYWORDS",
-			"ALLOWED_FILE_TYPES",
 		] as const;
 
 		for (const key of VALIDATION_KEYS) {

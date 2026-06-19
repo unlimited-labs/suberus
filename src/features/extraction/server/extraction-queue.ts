@@ -1,3 +1,4 @@
+import { env } from "@/env.ts";
 import { SUPPORTED_FILE_EXTENSIONS } from "@/features/settings/file-types";
 import { getSetting } from "@/features/settings/server/settings";
 import { createJobProgress } from "@/shared/server/job-progress";
@@ -17,10 +18,9 @@ export async function enqueueExtractionJob(
 	fileName: string,
 	createdById?: string,
 ): Promise<{ jobId: string }> {
-	const maxFileSizeMb = await getSetting("MAX_FILE_SIZE_MB");
 	const detected = await validateUpload(buffer, {
 		allowedExtensions: SUPPORTED_FILE_EXTENSIONS,
-		maxBytes: maxFileSizeMb * 1024 * 1024,
+		maxBytes: env.MAX_UPLOAD_SIZE_MB * 1024 * 1024,
 	});
 
 	const [heuristic, ai] = await Promise.all([

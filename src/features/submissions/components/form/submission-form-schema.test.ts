@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-
 import {
 	buildContentSchema,
 	buildSubmissionFormSchema,
@@ -14,8 +13,6 @@ const settings: ValidationSettings = {
 	maxAbstractLength: 2000,
 	minKeywords: 3,
 	maxKeywords: 5,
-	maxFileSize: 10_000_000,
-	allowedFileTypes: ["pdf"],
 	enableKeywords: true,
 };
 

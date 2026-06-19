@@ -492,7 +492,7 @@ export async function uploadReviewAttachment(
 	const buffer = await fileToBuffer(upload);
 
 	// Validate by magic number — reviewers may attach a PDF or DOCX only.
-	const maxBytes = (await getSetting("MAX_FILE_SIZE_MB")) * 1024 * 1024;
+	const maxBytes = env.MAX_UPLOAD_SIZE_MB * 1024 * 1024;
 	let detected: { ext: string; mime: string };
 	try {
 		detected = await validateUpload(buffer, {

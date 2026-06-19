@@ -35,6 +35,7 @@ const submissionTypeConfigSchema = z.object({
 	allowExhibitorPresentation: z.boolean(),
 	contentFormat: z.enum(["TEXT", "FILE"]),
 	allowedExtensions: z.array(z.enum(SUPPORTED_FILE_EXTENSIONS)),
+	maxFileSizeMb: z.number().int().min(1).max(100),
 	requiredReviewers: z.number().int().min(0).max(10),
 	reviewMode: z.enum(["OPEN", "SINGLE_BLIND", "DOUBLE_BLIND"]),
 	reviewDeadlineDays: z.number().int().min(1).max(90),
@@ -336,9 +337,7 @@ export interface SubmissionValidationSettings {
 	maxAbstractLength: number;
 	minKeywords: number;
 	maxKeywords: number;
-	maxFileSize: number;
 	enableKeywords: boolean;
-	allowedFileTypes: string[];
 }
 
 /**
@@ -356,9 +355,7 @@ export const getSubmissionValidationSettingsFn = createServerFn({
 			"MAX_ABSTRACT_LENGTH",
 			"MIN_KEYWORDS",
 			"MAX_KEYWORDS",
-			"MAX_FILE_SIZE_MB",
 			"ENABLE_KEYWORDS",
-			"ALLOWED_FILE_TYPES",
 		]);
 		return {
 			minTitleLength: settings.MIN_TITLE_LENGTH,
@@ -367,9 +364,7 @@ export const getSubmissionValidationSettingsFn = createServerFn({
 			maxAbstractLength: settings.MAX_ABSTRACT_LENGTH,
 			minKeywords: settings.MIN_KEYWORDS,
 			maxKeywords: settings.MAX_KEYWORDS,
-			maxFileSize: settings.MAX_FILE_SIZE_MB,
 			enableKeywords: settings.ENABLE_KEYWORDS,
-			allowedFileTypes: settings.ALLOWED_FILE_TYPES,
 		};
 	});
 
@@ -478,9 +473,7 @@ export const updateSubmissionValidationSettingsFn = createServerFn({
 			maxAbstractLength: z.number().int().min(100).max(50000),
 			minKeywords: z.number().int().min(0).max(20),
 			maxKeywords: z.number().int().min(1).max(20),
-			maxFileSize: z.number().int().min(1).max(100),
 			enableKeywords: z.boolean(),
-			allowedFileTypes: z.array(z.string()),
 		}),
 	)
 	.handler(async ({ data }) => {
@@ -510,9 +503,7 @@ export const updateSubmissionValidationSettingsFn = createServerFn({
 		await setSetting("MAX_ABSTRACT_LENGTH", data.maxAbstractLength);
 		await setSetting("MIN_KEYWORDS", data.minKeywords);
 		await setSetting("MAX_KEYWORDS", data.maxKeywords);
-		await setSetting("MAX_FILE_SIZE_MB", data.maxFileSize);
 		await setSetting("ENABLE_KEYWORDS", data.enableKeywords);
-		await setSetting("ALLOWED_FILE_TYPES", data.allowedFileTypes);
 
 		return { success: true };
 	});
@@ -532,8 +523,6 @@ export const getSubmissionValidationForFormFn = createServerFn({
 			"MAX_ABSTRACT_LENGTH",
 			"MIN_KEYWORDS",
 			"MAX_KEYWORDS",
-			"MAX_FILE_SIZE_MB",
-			"ALLOWED_FILE_TYPES",
 			"ENABLE_KEYWORDS",
 		]);
 		return {
@@ -543,8 +532,6 @@ export const getSubmissionValidationForFormFn = createServerFn({
 			maxAbstractLength: settings.MAX_ABSTRACT_LENGTH,
 			minKeywords: settings.MIN_KEYWORDS,
 			maxKeywords: settings.MAX_KEYWORDS,
-			maxFileSize: settings.MAX_FILE_SIZE_MB,
-			allowedFileTypes: settings.ALLOWED_FILE_TYPES,
 			enableKeywords: settings.ENABLE_KEYWORDS,
 		};
 	});

@@ -7,6 +7,7 @@ import type {
 	SubmissionTypeConfig,
 } from "@/features/settings/types";
 import { Checkbox } from "@/shared/ui/checkbox";
+import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import {
 	Select,
@@ -83,6 +84,26 @@ export function TypeFormatSection({
 							At least one extension is required
 						</p>
 					)}
+
+					<div className="space-y-2 pt-2">
+						<Label
+							htmlFor={`max-file-size-${config.contentFormat}`}
+							className="text-sm"
+						>
+							Max file size (MB)
+						</Label>
+						<Input
+							id={`max-file-size-${config.contentFormat}`}
+							type="number"
+							min={1}
+							max={100}
+							value={config.maxFileSizeMb}
+							onChange={(e) =>
+								onChange("maxFileSizeMb", parseInt(e.target.value, 10) || 10)
+							}
+							className="max-w-32"
+						/>
+					</div>
 				</div>
 			)}
 		</div>

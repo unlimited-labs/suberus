@@ -5,7 +5,6 @@ import type { SubmissionValidationSettings } from "@/features/settings/api/setti
 import type { AppSettingsMap } from "@/features/settings/types";
 import { Button } from "@/shared/ui/button";
 import { ContentValidationSection } from "./content-validation-section";
-import { FilesSection } from "./files-section";
 import { ReviewGuidelinesSection } from "./review-guidelines-section";
 import { SubmissionGuidelinesSection } from "./submission-guidelines-section";
 import { useSubmissionSettings } from "./use-submission-settings";
@@ -41,7 +40,6 @@ export function SubmissionSettingsTab({
 		extractionAi,
 		setExtractionAi,
 		handleChange,
-		toggleFileType,
 		handleSave,
 	} = useSubmissionSettings({
 		initialData,
@@ -53,12 +51,6 @@ export function SubmissionSettingsTab({
 	return (
 		<div className="space-y-6">
 			<ContentValidationSection data={data} onChange={handleChange} />
-
-			<FilesSection
-				data={data}
-				onChange={handleChange}
-				onToggleFileType={toggleFileType}
-			/>
 
 			<SubmissionGuidelinesSection
 				value={submissionGuidelines}

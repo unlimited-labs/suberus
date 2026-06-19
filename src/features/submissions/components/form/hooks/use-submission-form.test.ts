@@ -34,6 +34,7 @@ const config = (
 	allowExhibitorPresentation: false,
 	contentFormat: "TEXT",
 	allowedExtensions: ["pdf"],
+	maxFileSizeMb: 10,
 	requiredReviewers: 2,
 	reviewMode: "DOUBLE_BLIND",
 	reviewDeadlineDays: 14,
@@ -65,8 +66,6 @@ const validationSettings: ValidationSettings = {
 	maxAbstractLength: 2000,
 	minKeywords: 3,
 	maxKeywords: 5,
-	maxFileSize: 10_000_000,
-	allowedFileTypes: ["pdf"],
 	enableKeywords: true,
 };
 

@@ -1,8 +1,6 @@
 import { IconWriting } from "@tabler/icons-react";
 import type { z } from "zod";
-
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
-
 import { FileUploadSection } from "./file-upload-section";
 import type { SubmissionFormApi } from "./hooks/use-submission-form";
 import type { ValidationSettings } from "./submission-form-types";
@@ -16,6 +14,7 @@ interface SubmissionContentSectionProps {
 	submissionAttempts: number;
 	acceptString: string;
 	allowedExtensions: string[];
+	maxFileSizeMb: number;
 }
 
 export function SubmissionContentSection({
@@ -27,6 +26,7 @@ export function SubmissionContentSection({
 	submissionAttempts,
 	acceptString,
 	allowedExtensions,
+	maxFileSizeMb,
 }: SubmissionContentSectionProps) {
 	return (
 		<div className="space-y-4">
@@ -92,7 +92,7 @@ export function SubmissionContentSection({
 								value={field.state.value}
 								onChange={field.handleChange}
 								accept={acceptString}
-								maxSize={validationSettings.maxFileSize}
+								maxSize={maxFileSizeMb}
 								allowedExtensions={allowedExtensions}
 							/>
 						)}

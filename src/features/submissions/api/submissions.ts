@@ -255,7 +255,7 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 			typeConfig && typeConfig.allowedExtensions.length > 0
 				? typeConfig.allowedExtensions
 				: SUPPORTED_FILE_EXTENSIONS;
-		const maxBytes = (await getSetting("MAX_FILE_SIZE_MB")) * 1024 * 1024;
+		const maxBytes = (typeConfig?.maxFileSizeMb ?? 10) * 1024 * 1024;
 
 		let detected: { ext: string; mime: string };
 		try {

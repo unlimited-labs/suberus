@@ -7,10 +7,7 @@ import {
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-	activeSubmissionTypesQueryOptions,
-	submissionValidationQueryOptions,
-} from "@/features/settings/api/settings";
+import { activeSubmissionTypesQueryOptions } from "@/features/settings/api/settings";
 import { submissionDetailQueryOptions } from "@/features/submissions/api/submissions";
 import {
 	isRevisableSubmission,
@@ -30,7 +27,6 @@ export const Route = createFileRoute("/_app/submissions/$id_/revise")({
 				submissionDetailQueryOptions(params.id),
 			),
 			context.queryClient.ensureQueryData(activeSubmissionTypesQueryOptions()),
-			context.queryClient.ensureQueryData(submissionValidationQueryOptions()),
 		]);
 	},
 	component: ReviseSubmissionPage,
@@ -42,11 +38,8 @@ function ReviseSubmissionPage() {
 	const { data: typeConfigs } = useSuspenseQuery(
 		activeSubmissionTypesQueryOptions(),
 	);
-	const { data: validationSettings } = useSuspenseQuery(
-		submissionValidationQueryOptions(),
-	);
 
-	const view = prepareRevisionView(data, typeConfigs, validationSettings);
+	const view = prepareRevisionView(data, typeConfigs);
 	const { isSubmitting, submitRevision } = useReviseSubmission({
 		id,
 		isConditional: view.isConditional,

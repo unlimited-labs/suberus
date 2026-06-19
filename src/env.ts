@@ -31,6 +31,11 @@ export const env = createEnv({
 		// Pause between each email when sending a bulk campaign (seconds).
 		BULK_EMAIL_DELAY_SECONDS: z.coerce.number().nonnegative().default(5),
 
+		// Hard upload-size cap (MB) for files not bound to a submission type:
+		// review attachments and extraction-for-autofill. Per-type submission
+		// limits live in each submission type's config.
+		MAX_UPLOAD_SIZE_MB: z.coerce.number().int().positive().default(10),
+
 		// LLM API (optional, for AI-assisted document extraction)
 		// OpenAI-compatible endpoint (Ollama /v1, llama.cpp, vLLM, etc.)
 		LLM_API_URL: z.url().optional(),

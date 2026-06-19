@@ -1,5 +1,4 @@
 import type { SubmissionTypeConfig } from "@/features/settings/types";
-
 import type { Author } from "@/shared/types/author";
 
 /** Active submission type from settings */
@@ -17,8 +16,6 @@ export interface ValidationSettings {
 	maxAbstractLength: number;
 	minKeywords: number;
 	maxKeywords: number;
-	maxFileSize: number;
-	allowedFileTypes: string[];
 	enableKeywords: boolean;
 }
 

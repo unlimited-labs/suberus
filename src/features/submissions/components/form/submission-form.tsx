@@ -62,6 +62,7 @@ export function SubmissionForm(props: SubmissionFormProps) {
 		isFileFormat,
 		allowedExtensions,
 		acceptString,
+		maxFileSizeMb,
 		progress,
 		isExtracting,
 		elapsedSeconds,
@@ -118,7 +119,7 @@ export function SubmissionForm(props: SubmissionFormProps) {
 													handleFileWithExtraction(file, field.handleChange)
 												}
 												accept={acceptString}
-												maxSize={validationSettings.maxFileSize}
+												maxSize={maxFileSizeMb}
 												allowedExtensions={allowedExtensions}
 											/>
 										)}
@@ -137,6 +138,7 @@ export function SubmissionForm(props: SubmissionFormProps) {
 								submissionAttempts={submissionAttempts}
 								acceptString={acceptString}
 								allowedExtensions={allowedExtensions}
+								maxFileSizeMb={maxFileSizeMb}
 							/>
 
 							<div className="border-t" />

@@ -115,6 +115,7 @@ export function useSubmissionForm({
 
 	const allowedExtensions = currentTypeConfig?.config.allowedExtensions || [];
 	const acceptString = allowedExtensions.map((ext) => `.${ext}`).join(",");
+	const maxFileSizeMb = currentTypeConfig?.config.maxFileSizeMb ?? 10;
 
 	const {
 		isExtracting,
@@ -179,6 +180,7 @@ export function useSubmissionForm({
 		isFileFormat,
 		allowedExtensions,
 		acceptString,
+		maxFileSizeMb,
 		progress,
 		isExtracting,
 		elapsedSeconds,
