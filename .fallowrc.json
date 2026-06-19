@@ -60,7 +60,7 @@
           "shared", "workflow", "settings", "activity-log", "auth", "survey",
           "submissions", "reviews", "planner", "extraction", "exhibitors",
           "fee", "profile", "users", "invitations", "dashboard", "tracks",
-          "email-templates", "install"
+          "email-templates", "install", "submission-diff"
         ]
       },
       { "from": "workflow", "allow": ["shared", "settings", "activity-log", "auth"] },
