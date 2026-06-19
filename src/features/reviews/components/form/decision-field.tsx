@@ -1,5 +1,6 @@
 import { IconScale } from "@tabler/icons-react";
 import { cn } from "@/shared/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Field, FieldError } from "@/shared/ui/field";
 import type { ReviewFormApi } from "./hooks/use-review-form";
 import { decisionOptions } from "./review-form-options";
@@ -11,78 +12,82 @@ interface DecisionFieldProps {
 
 export function DecisionField({ form, readOnly }: DecisionFieldProps) {
 	return (
-		<div className="space-y-4">
-			<div className="flex items-center gap-3">
-				<IconScale className="size-5 text-muted-foreground" />
-				<h2 className="text-lg font-semibold text-foreground">Decision</h2>
-			</div>
-			<form.Field name="decision">
-				{(field) => {
-					const hasError =
-						field.state.meta.isBlurred && field.state.meta.errors.length > 0;
-					return (
-						<Field data-invalid={hasError}>
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-								{decisionOptions.map((option) => {
-									const Icon = option.icon;
-									const isSelected = field.state.value === option.value;
-									return (
-										<button
-											key={option.value}
-											type="button"
-											disabled={readOnly}
-											onClick={() => field.handleChange(option.value)}
-											className={cn(
-												"flex flex-col gap-2 p-4 rounded-lg border-2 transition-all text-left",
-												readOnly && "cursor-default",
-												isSelected
-													? "border-primary bg-primary/5"
-													: readOnly
-														? "border-border opacity-60"
-														: "border-border hover:border-primary/50",
-											)}
-										>
-											<div className="flex items-center gap-2">
-												<div
-													className={cn(
-														"flex-shrink-0 p-1.5 rounded-md",
-														isSelected ? "bg-primary/10" : "bg-muted",
-													)}
-												>
-													<Icon
+		<Card>
+			<CardHeader>
+				<CardTitle className="flex items-center gap-2 text-base">
+					<IconScale className="size-5 text-muted-foreground" />
+					Decision
+				</CardTitle>
+			</CardHeader>
+			<CardContent>
+				<form.Field name="decision">
+					{(field) => {
+						const hasError =
+							field.state.meta.isBlurred && field.state.meta.errors.length > 0;
+						return (
+							<Field data-invalid={hasError}>
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+									{decisionOptions.map((option) => {
+										const Icon = option.icon;
+										const isSelected = field.state.value === option.value;
+										return (
+											<button
+												key={option.value}
+												type="button"
+												disabled={readOnly}
+												onClick={() => field.handleChange(option.value)}
+												className={cn(
+													"flex flex-col gap-2 p-4 rounded-lg border-2 transition-all text-left",
+													readOnly && "cursor-default",
+													isSelected
+														? "border-primary bg-primary/5"
+														: readOnly
+															? "border-border opacity-60"
+															: "border-border hover:border-primary/50",
+												)}
+											>
+												<div className="flex items-center gap-2">
+													<div
 														className={cn(
-															"size-4",
+															"flex-shrink-0 p-1.5 rounded-md",
+															isSelected ? "bg-primary/10" : "bg-muted",
+														)}
+													>
+														<Icon
+															className={cn(
+																"size-4",
+																isSelected
+																	? "text-primary"
+																	: "text-muted-foreground",
+															)}
+														/>
+													</div>
+													<span
+														className={cn(
+															"font-medium text-sm",
 															isSelected
-																? "text-primary"
+																? "text-foreground"
 																: "text-muted-foreground",
 														)}
-													/>
+													>
+														{option.label}
+													</span>
 												</div>
-												<span
-													className={cn(
-														"font-medium text-sm",
-														isSelected
-															? "text-foreground"
-															: "text-muted-foreground",
-													)}
-												>
-													{option.label}
-												</span>
-											</div>
-											<p className="text-xs text-muted-foreground pl-8">
-												{option.description}
-											</p>
-										</button>
-									);
-								})}
-							</div>
-							<FieldError
-								errors={hasError ? field.state.meta.errors : undefined}
-							/>
-						</Field>
-					);
-				}}
-			</form.Field>
-		</div>
+												<p className="text-xs text-muted-foreground pl-8">
+													{option.description}
+												</p>
+											</button>
+										);
+									})}
+								</div>
+								<FieldError
+									errors={hasError ? field.state.meta.errors : undefined}
+								/>
+							</Field>
+						);
+					}}
+				</form.Field>
+			</CardContent>
+		</Card>
 	);
 }

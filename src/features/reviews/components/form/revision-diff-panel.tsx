@@ -1,80 +1,70 @@
-import {
-	IconChevronDown,
-	IconChevronUp,
-	IconGitCompare,
-} from "@tabler/icons-react";
-import { useState } from "react";
+import { IconGitCompare } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 import { TextDiffView } from "@/shared/components/diff/text-diff-view";
-import { diffText, hasChanges } from "@/shared/lib/text-diff";
+import { diffText } from "@/shared/lib/text-diff";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 interface RevisionDiffPanelProps {
 	previous: { title: string; content: string };
 	title: string;
 	content: string;
-}
-
-function ToggleChevron({ expanded }: { expanded: boolean }) {
-	return expanded ? (
-		<IconChevronUp className="size-4 text-muted-foreground" />
-	) : (
-		<IconChevronDown className="size-4 text-muted-foreground" />
-	);
+	assignmentId: string;
 }
 
 /**
- * Collapsible "Changes since previous version" panel on the review form — an
- * inline redline of title + content against the previous version. Renders
- * nothing when neither changed. Title/content only (blind-safe: no authors).
+ * "Changes since previous version" — an always-visible inline redline of title +
+ * content against the previous version, plus a link to the full compare page.
+ * Renders whenever a previous version exists (even with no text change — the file
+ * may have changed, which only the compare page surfaces). Blind-safe: title/content
+ * only, no authors.
  */
 export function RevisionDiffPanel({
 	previous,
 	title,
 	content,
+	assignmentId,
 }: RevisionDiffPanelProps) {
-	const [expanded, setExpanded] = useState(false);
 	const titleDiff = diffText(previous.title, title);
 	const contentDiff = diffText(previous.content, content);
 
-	const changed = hasChanges(titleDiff) || hasChanges(contentDiff);
-	if (!changed) return null;
-
 	return (
-		<div className="mb-6 border rounded-lg overflow-hidden">
-			<button
-				type="button"
-				onClick={() => setExpanded(!expanded)}
-				className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
-				data-testid="reviewer-diff-toggle"
-			>
-				<div className="flex items-center gap-2">
+		<Card>
+			<CardHeader className="flex flex-row items-center justify-between gap-4">
+				<CardTitle className="flex items-center gap-2 text-base">
 					<IconGitCompare className="size-5 text-muted-foreground" />
-					<span className="font-medium text-sm text-foreground">
-						Changes since previous version
-					</span>
+					Changes since previous version
+				</CardTitle>
+				<Button asChild variant="outline" size="sm" className="gap-2">
+					<Link
+						to="/reviews/$assignmentId/compare"
+						params={{ assignmentId }}
+						data-testid="reviewer-compare-link"
+					>
+						<IconGitCompare className="size-4" />
+						Compare versions
+					</Link>
+				</Button>
+			</CardHeader>
+			<CardContent className="space-y-4">
+				<div className="space-y-1">
+					<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+						Title
+					</p>
+					<TextDiffView segments={titleDiff} emptyLabel="Title unchanged." />
 				</div>
-				<ToggleChevron expanded={expanded} />
-			</button>
-			{expanded && (
-				<div className="px-4 pb-4 space-y-4">
-					<div className="space-y-1">
-						<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-							Title
-						</p>
-						<TextDiffView segments={titleDiff} emptyLabel="Title unchanged." />
-					</div>
-					<div className="space-y-1">
-						<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-							Content
-						</p>
-						<div className="bg-muted/30 p-4 rounded-lg border max-h-96 overflow-auto">
-							<TextDiffView
-								segments={contentDiff}
-								emptyLabel="Content unchanged."
-							/>
-						</div>
+				<div className="space-y-1">
+					<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+						Content
+					</p>
+					<div className="max-h-96 overflow-auto rounded-lg border border-border bg-muted/30 p-4">
+						<TextDiffView
+							segments={contentDiff}
+							emptyLabel="Content unchanged."
+						/>
 					</div>
 				</div>
-			)}
-		</div>
+			</CardContent>
+		</Card>
 	);
 }

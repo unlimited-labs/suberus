@@ -6,6 +6,7 @@ import {
 	IconStar,
 } from "@tabler/icons-react";
 import { cn } from "@/shared/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Markdown } from "@/shared/ui/markdown";
 
 interface ReviewProgress {
@@ -30,14 +31,14 @@ export function ReviewSidebar({
 
 	return (
 		<>
-			{/* Progress Sidebar */}
+			{/* Progress Sidebar (desktop) */}
 			<div className="hidden lg:block">
 				<div className="sticky top-0 space-y-4">
-					<div className="rounded-2xl bg-card shadow-2xl overflow-hidden">
-						<div className="p-6 border-b border-border">
-							<h3 className="font-semibold text-foreground">Review Progress</h3>
-						</div>
-						<div className="p-6 space-y-4">
+					<Card>
+						<CardHeader>
+							<CardTitle className="text-base">Review Progress</CardTitle>
+						</CardHeader>
+						<CardContent className="space-y-4">
 							<ProgressItem
 								label="Decision"
 								completed={hasDecision}
@@ -60,17 +61,14 @@ export function ReviewSidebar({
 								completed={hasComments}
 								icon={IconMessageCircle}
 							/>
-						</div>
-					</div>
+						</CardContent>
+					</Card>
 
-					{/* Guidelines Card */}
-					<div className="rounded-2xl bg-card shadow-2xl overflow-hidden">
-						<div className="p-6 border-b border-border">
-							<h3 className="font-semibold text-foreground">
-								Review Guidelines
-							</h3>
-						</div>
-						<div className="p-6 text-sm text-muted-foreground">
+					<Card>
+						<CardHeader>
+							<CardTitle className="text-base">Review Guidelines</CardTitle>
+						</CardHeader>
+						<CardContent className="text-sm text-muted-foreground">
 							{guidelines ? (
 								<Markdown content={guidelines} />
 							) : (
@@ -82,20 +80,18 @@ export function ReviewSidebar({
 									<p>• Minimum 50 characters for comments</p>
 								</div>
 							)}
-						</div>
-					</div>
+						</CardContent>
+					</Card>
 				</div>
 			</div>
 
 			{/* Mobile Progress */}
 			<div className="lg:hidden">
-				<div className="rounded-2xl bg-card shadow-2xl overflow-hidden">
-					<div className="p-4 border-b border-border">
-						<h3 className="font-semibold text-foreground text-sm">
-							Review Progress
-						</h3>
-					</div>
-					<div className="p-4 grid grid-cols-2 gap-3">
+				<Card>
+					<CardHeader>
+						<CardTitle className="text-sm">Review Progress</CardTitle>
+					</CardHeader>
+					<CardContent className="grid grid-cols-2 gap-3">
 						<ProgressItem
 							label="Decision"
 							completed={hasDecision}
@@ -122,8 +118,8 @@ export function ReviewSidebar({
 							icon={IconMessageCircle}
 							compact
 						/>
-					</div>
-				</div>
+					</CardContent>
+				</Card>
 			</div>
 		</>
 	);

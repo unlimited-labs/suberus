@@ -1,6 +1,9 @@
 import { IconLock, IconMessageCircle } from "@tabler/icons-react";
 import type { ReviewFormData } from "@/features/reviews/validations";
 import type { SubmissionType } from "@/generated/prisma/enums";
+import { typeLabels } from "@/shared/lib/labels/submission";
+import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { AttachmentSection } from "./attachment-section";
 import { ConfidenceField } from "./confidence-field";
 import { DecisionField } from "./decision-field";
@@ -71,56 +74,54 @@ export function ReviewForm({
 	});
 
 	return (
-		<div className="mx-auto w-full max-w-7xl">
-			<div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-				{/* Main Form */}
-				<div className="overflow-hidden rounded-2xl bg-card shadow-2xl">
-					<div className="p-8">
-						<SubmissionPreview
-							submission={submission}
-							reviewMode={reviewMode}
-							assignmentId={assignmentId}
-						/>
+		<div className="mx-auto w-full max-w-6xl space-y-6">
+			<div className="space-y-2">
+				<Badge variant="outline">
+					{typeLabels[submission.type as SubmissionType] ?? submission.type}
+				</Badge>
+				<h1 className="text-xl font-semibold leading-snug text-foreground">
+					{submission.title}
+				</h1>
+			</div>
 
-						<form
-							onSubmit={(e) => {
-								e.preventDefault();
-								e.stopPropagation();
-								void form.handleSubmit();
-							}}
-							className="space-y-6"
-						>
-							<DecisionField form={form} readOnly={readOnly} />
+			<div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+				<div className="space-y-6 lg:col-span-2">
+					<SubmissionPreview
+						submission={submission}
+						reviewMode={reviewMode}
+						assignmentId={assignmentId}
+					/>
 
-							{scoringCriteria.length > 0 && (
-								<>
-									<div className="border-t" />
-									<ScoringCriteriaField
-										form={form}
-										readOnly={readOnly}
-										scoringCriteria={scoringCriteria}
-									/>
-								</>
-							)}
+					<form
+						onSubmit={(e) => {
+							e.preventDefault();
+							e.stopPropagation();
+							void form.handleSubmit();
+						}}
+						className="space-y-6"
+					>
+						<DecisionField form={form} readOnly={readOnly} />
 
-							{enableConfidenceLevel && (
-								<>
-									<div className="border-t" />
-									<ConfidenceField form={form} readOnly={readOnly} />
-								</>
-							)}
+						{scoringCriteria.length > 0 && (
+							<ScoringCriteriaField
+								form={form}
+								readOnly={readOnly}
+								scoringCriteria={scoringCriteria}
+							/>
+						)}
 
-							<div className="border-t" />
+						{enableConfidenceLevel && (
+							<ConfidenceField form={form} readOnly={readOnly} />
+						)}
 
-							{/* Comments Section */}
-							<div className="space-y-4">
-								<div className="flex items-center gap-3">
+						<Card>
+							<CardHeader>
+								<CardTitle className="flex items-center gap-2 text-base">
 									<IconMessageCircle className="size-5 text-muted-foreground" />
-									<h2 className="text-lg font-semibold text-foreground">
-										Comments to Authors
-									</h2>
-								</div>
-
+									Comments to Authors
+								</CardTitle>
+							</CardHeader>
+							<CardContent>
 								<form.AppField name="comments">
 									{(field) => (
 										<field.TextareaField
@@ -133,30 +134,25 @@ export function ReviewForm({
 										/>
 									)}
 								</form.AppField>
-							</div>
+							</CardContent>
+						</Card>
 
-							{enableReviewAttachment && (
-								<>
-									<div className="border-t" />
-									<AttachmentSection
-										readOnly={readOnly}
-										onAttachmentChange={onAttachmentChange}
-										existingAttachment={existingAttachment}
-									/>
-								</>
-							)}
+						{enableReviewAttachment && (
+							<AttachmentSection
+								readOnly={readOnly}
+								onAttachmentChange={onAttachmentChange}
+								existingAttachment={existingAttachment}
+							/>
+						)}
 
-							<div className="border-t" />
-
-							{/* Private Notes Section */}
-							<div className="space-y-4">
-								<div className="flex items-center gap-3">
+						<Card>
+							<CardHeader>
+								<CardTitle className="flex items-center gap-2 text-base">
 									<IconLock className="size-5 text-muted-foreground" />
-									<h2 className="text-lg font-semibold text-foreground">
-										Private Notes
-									</h2>
-								</div>
-
+									Private Notes
+								</CardTitle>
+							</CardHeader>
+							<CardContent>
 								<form.AppField name="privateNotes">
 									{(field) => (
 										<field.TextareaField
@@ -169,35 +165,36 @@ export function ReviewForm({
 										/>
 									)}
 								</form.AppField>
-							</div>
+							</CardContent>
+						</Card>
 
-							{/* Submit Section */}
-							{!readOnly && (
-								<div className="pt-4">
-									<form.AppForm>
-										<form.SubmitButton
-											label="Submit Review"
-											submittingLabel="Submitting Review..."
-											disabled={!allComplete}
-											className="w-full h-12 text-base font-semibold"
-										/>
-									</form.AppForm>
-									{!allComplete && (
-										<p className="text-xs text-muted-foreground text-center mt-2">
-											Complete all required sections to submit
-										</p>
-									)}
-								</div>
-							)}
-						</form>
-					</div>
+						{!readOnly && (
+							<div className="pt-2">
+								<form.AppForm>
+									<form.SubmitButton
+										label="Submit Review"
+										submittingLabel="Submitting Review..."
+										disabled={!allComplete}
+										className="h-12 w-full text-base font-semibold"
+									/>
+								</form.AppForm>
+								{!allComplete && (
+									<p className="mt-2 text-center text-xs text-muted-foreground">
+										Complete all required sections to submit
+									</p>
+								)}
+							</div>
+						)}
+					</form>
 				</div>
 
-				<ReviewSidebar
-					progress={progress}
-					enableConfidenceLevel={enableConfidenceLevel}
-					guidelines={guidelines}
-				/>
+				<div className="space-y-6">
+					<ReviewSidebar
+						progress={progress}
+						enableConfidenceLevel={enableConfidenceLevel}
+						guidelines={guidelines}
+					/>
+				</div>
 			</div>
 		</div>
 	);

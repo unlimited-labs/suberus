@@ -55,8 +55,10 @@ test.describe("Reviewer - Review Form", () => {
 		// Act
 		await reviewerAssignmentsPage.openReviewForm(title);
 
-		// Assert
-		await expect(page.getByRole("heading", { name: "Decision" })).toBeVisible();
+		// Assert — section titles are now shadcn CardTitle (data-slot), not headings.
+		await expect(
+			page.locator('[data-slot="card-title"]').filter({ hasText: "Decision" }),
+		).toBeVisible();
 		await expect(page.getByText("Comments to Authors")).toBeVisible();
 		await expect(page.getByText("Private Notes")).toBeVisible();
 		await expect(page.getByRole("button", { name: "Submit Review" })).toBeVisible();
@@ -80,7 +82,12 @@ test.describe("Reviewer - Review Form", () => {
 		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Assert
-		await expect(page.getByRole("heading", { name: "Review Progress", exact: true })).toBeVisible();
+		await expect(
+			page
+				.locator('[data-slot="card-title"]')
+				.filter({ hasText: "Review Progress" })
+				.first(),
+		).toBeVisible();
 	});
 
 	test("review form shows review guidelines on desktop", async ({ page, reviewerAssignmentsPage, testRun, cleanup }, testInfo) => {
@@ -100,8 +107,12 @@ test.describe("Reviewer - Review Form", () => {
 		// Act
 		await reviewerAssignmentsPage.openReviewForm(title);
 
-		// Assert - look for the sidebar heading, not the submission title
-		await expect(page.getByRole("heading", { name: "Review Guidelines", exact: true })).toBeVisible();
+		// Assert - look for the sidebar card title, not the submission title
+		await expect(
+			page
+				.locator('[data-slot="card-title"]')
+				.filter({ hasText: "Review Guidelines" }),
+		).toBeVisible();
 	});
 
 	test("can select different decision options", async ({ page, reviewerAssignmentsPage, reviewFormPage, testRun, cleanup }) => {
@@ -113,7 +124,9 @@ test.describe("Reviewer - Review Form", () => {
 		cleanup.track(submissionId);
 
 		await reviewerAssignmentsPage.openReviewForm(title);
-		await expect(page.getByRole("heading", { name: "Decision", exact: true })).toBeVisible({ timeout: 10000 });
+		await expect(
+			page.locator('[data-slot="card-title"]').filter({ hasText: "Decision" }),
+		).toBeVisible({ timeout: 10000 });
 
 		// Act & Assert - select each decision
 		await reviewFormPage.selectDecision("Accept");
@@ -189,7 +202,11 @@ test.describe("Reviewer - Scoring", () => {
 		await expect(page.getByText("Clarity")).toBeVisible();
 		await expect(page.getByText("Significance")).toBeVisible();
 		await expect(page.getByText("Methodology")).toBeVisible();
-		await expect(page.getByRole("heading", { name: "Confidence Level" })).toBeVisible();
+		await expect(
+			page
+				.locator('[data-slot="card-title"]')
+				.filter({ hasText: "Confidence Level" }),
+		).toBeVisible();
 	});
 
 	test("can set scores using buttons", async ({ page, reviewerAssignmentsPage, testRun, cleanup }) => {
@@ -226,7 +243,7 @@ test.describe("Reviewer - Double-blind Mode", () => {
 
 		// Assert
 		await expect(page.getByText(/Double-blind review.*author information hidden/i)).toBeVisible();
-		await expect(page.locator('[data-slot="card-title"]').filter({ hasText: "Authors" })).not.toBeVisible();
+		await expect(page.locator('[data-slot="card-title"]').filter({ hasText: /^Authors$/ })).not.toBeVisible();
 	});
 });
 
@@ -245,7 +262,9 @@ test.describe("Reviewer - Attachment", () => {
 		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Assert
-		await expect(page.getByRole("heading", { name: "Attachment", exact: true })).toBeVisible();
+		await expect(
+			page.locator('[data-slot="card-title"]').filter({ hasText: "Attachment" }),
+		).toBeVisible();
 		await expect(page.getByText("Upload a PDF or DOCX file")).toBeVisible();
 	});
 
@@ -393,17 +412,50 @@ test.describe("Reviewer - Revision diff", () => {
 
 		// Act
 		await reviewerAssignmentsPage.openReviewForm(title);
-		const toggle = page.getByTestId("reviewer-diff-toggle");
-		await expect(toggle).toBeVisible();
-		await toggle.click();
 
-		// Assert — inline redline with at least one insertion and deletion.
+		// Assert — the redline is always visible (no collapsible), with at least
+		// one insertion and deletion.
+		await expect(
+			page
+				.locator('[data-slot="card-title"]')
+				.filter({ hasText: "Changes since previous version" }),
+		).toBeVisible();
 		await expect(page.getByTestId("text-diff").first()).toBeVisible();
 		await expect(page.getByTestId("diff-ins").first()).toBeVisible();
 		await expect(page.getByTestId("diff-del").first()).toBeVisible();
 	});
 
-	test("no diff panel when there is no previous version", async ({
+	test("Changes card + Compare link stay visible on a file-only revision", async ({
+		page,
+		reviewerAssignmentsPage,
+		testRun,
+		cleanup,
+	}) => {
+		// Arrange — two versions with IDENTICAL title+content (e.g. only the file
+		// changed). The card must still render so the reviewer can reach Compare.
+		const { submissionId, title } = await createSubmissionWithAssignment({
+			testRunId: testRun.testRunId,
+			title: "Reviewer File-Only Revision Test",
+		});
+		cleanup.track(submissionId);
+		const sameContent = "Unchanged abstract text for both versions.";
+		await addSubmissionVersions(submissionId, [
+			{ title, content: sameContent },
+			{ title, content: sameContent },
+		]);
+
+		await reviewerAssignmentsPage.openReviewForm(title);
+
+		await expect(
+			page
+				.locator('[data-slot="card-title"]')
+				.filter({ hasText: "Changes since previous version" }),
+		).toBeVisible();
+		await expect(page.getByTestId("reviewer-compare-link")).toBeVisible();
+		await expect(page.getByText("Content unchanged.")).toBeVisible();
+	});
+
+	test("no Changes card when there is no previous version", async ({
 		page,
 		reviewerAssignmentsPage,
 		testRun,
@@ -420,7 +472,12 @@ test.describe("Reviewer - Revision diff", () => {
 		]);
 
 		await reviewerAssignmentsPage.openReviewForm(title);
-		await expect(page.getByTestId("reviewer-diff-toggle")).toHaveCount(0);
+		await expect(
+			page
+				.locator('[data-slot="card-title"]')
+				.filter({ hasText: "Changes since previous version" }),
+		).toHaveCount(0);
+		await expect(page.getByTestId("reviewer-compare-link")).toHaveCount(0);
 	});
 });
 
