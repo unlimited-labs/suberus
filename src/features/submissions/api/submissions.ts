@@ -180,24 +180,35 @@ export const createSubmission = createServerFn({ method: "POST" })
 	});
 
 /**
- * Best-effort kick-off of version-diff normalization for a DOCX upload. Kept out
- * of the upload handler so the handler stays under the complexity threshold;
+ * Best-effort kick-off of version-diff normalization for a DOCX revision (v2+).
+ * Normalizes the new version AND its predecessor so the lazy redline has both
+ * sides; a v1 / single-version submission is never normalized (no diff to make).
+ * Kept out of the upload handler so it stays under the complexity threshold;
  * never throws (the worker is idempotent + content-addressed).
  */
 async function maybeEnqueueDocxNormalize(
 	ext: string,
 	input: {
+		submissionId: string;
+		currentVersionNumber: number;
 		storageKey: string;
 		fileName: string;
 		fileId: string;
-		versionId: string;
 	},
 ): Promise<void> {
-	if (ext !== "docx") return;
-	const { enqueueVersionNormalize } = await import(
-		"@/features/submission-diff/server/enqueue"
+	if (ext !== "docx" || input.currentVersionNumber <= 1) return;
+	const { enqueueRevisionNormalize } = await import(
+		"@/features/submission-diff/server/enqueue-revision"
 	);
-	await enqueueVersionNormalize(input).catch(() => {});
+	await enqueueRevisionNormalize({
+		submissionId: input.submissionId,
+		currentVersionNumber: input.currentVersionNumber,
+		current: {
+			storageKey: input.storageKey,
+			fileName: input.fileName,
+			fileId: input.fileId,
+		},
+	}).catch(() => {});
 }
 
 /** File upload endpoint for FILE-based submissions */
@@ -327,10 +338,11 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 			});
 
 			await maybeEnqueueDocxNormalize(detected.ext, {
+				submissionId: data.submissionId,
+				currentVersionNumber: submission.currentVersion.version,
 				storageKey,
 				fileName,
 				fileId: file.id,
-				versionId: submission.currentVersion.id,
 			});
 		}
 

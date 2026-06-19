@@ -110,39 +110,3 @@ export async function resolveHtmlKeyForVersion(
 	});
 	return artifact?.htmlKey ?? null;
 }
-
-/**
- * After a version is normalized, build the redline against the immediately
- * preceding version (when it too has a normalized artifact). No-op when there is
- * no previous version or it isn't normalized yet.
- */
-export async function diffAgainstPrevious(
-	versionId: string,
-	newHtmlKey: string,
-): Promise<DiffVersionsResult | null> {
-	const current = await prisma.submissionVersion.findUnique({
-		where: { id: versionId },
-		select: { submissionId: true, version: true },
-	});
-	if (!current) return null;
-
-	const previous = await prisma.submissionVersion.findFirst({
-		where: {
-			submissionId: current.submissionId,
-			version: { lt: current.version },
-		},
-		orderBy: { version: "desc" },
-		select: { id: true },
-	});
-	if (!previous) return null;
-
-	const oldHtmlKey = await resolveHtmlKeyForVersion(previous.id);
-	if (!oldHtmlKey) return null;
-
-	return diffVersionArtifacts({
-		oldVersionId: previous.id,
-		oldHtmlKey,
-		newVersionId: versionId,
-		newHtmlKey,
-	});
-}

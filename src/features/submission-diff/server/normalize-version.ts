@@ -12,8 +12,6 @@ export interface NormalizeInput {
 	fileName: string;
 	/** File row id, for lazy sha256 backfill (optional). */
 	fileId?: string;
-	/** Version being normalized — enables auto-diff against the previous version. */
-	versionId?: string;
 }
 
 export interface NormalizeResult {
