@@ -9,6 +9,7 @@ import {
 	executeSubmissionTransition,
 	getCaretakerEditor,
 } from "@/features/workflow/server/workflow";
+import type { Prisma } from "@/generated/prisma/client";
 import type {
 	EditorDecisionType,
 	SubmissionStatus,
@@ -17,6 +18,7 @@ import type {
 import { logger } from "@/logger.ts";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
+import type { Author } from "@/shared/types/author";
 
 interface CreateSubmissionResult {
 	id: string;
@@ -40,6 +42,162 @@ export async function linkCoAuthorsByEmail(
 		where: { email: { equals: email, mode: "insensitive" }, userId: null },
 		data: { userId },
 	});
+}
+
+/**
+ * Replace a submission's canonical authors (delete + recreate), repoint
+ * `presenterId`, and link co-authors to verified user accounts. Shared by draft edit
+ * and revision resubmit. Affiliations are upserted dedupe-by-name and
+ * sequentially to avoid an intra-transaction race on the unique constraint.
+ * Caller MUST run this inside a transaction.
+ */
+async function replaceSubmissionAuthors(
+	tx: Prisma.TransactionClient,
+	submissionId: string,
+	authorsInput: Author[],
+): Promise<void> {
+	const uniqueAffiliationNames = Array.from(
+		new Set(
+			authorsInput
+				.filter((a) => !a.affiliationId)
+				.map((a) => a.affiliationName),
+		),
+	);
+	const affiliationByName = new Map<string, string>();
+	for (const name of uniqueAffiliationNames) {
+		const affiliation = await tx.affiliation.upsert({
+			where: { name },
+			update: {},
+			create: { name },
+		});
+		affiliationByName.set(name, affiliation.id);
+	}
+	const authorAffiliations = authorsInput.map((a) => {
+		if (a.affiliationId) return a.affiliationId;
+		const id = affiliationByName.get(a.affiliationName);
+		if (!id) {
+			throw new Error(`Affiliation upsert missing for "${a.affiliationName}"`);
+		}
+		return id;
+	});
+
+	// Clear presenter reference before deleting authors (FK constraint)
+	await tx.submission.update({
+		where: { id: submissionId },
+		data: { presenterId: null },
+	});
+
+	await tx.submissionAuthor.deleteMany({ where: { submissionId } });
+
+	const authors = await Promise.all(
+		authorsInput.map(async (author, index) =>
+			tx.submissionAuthor.create({
+				data: {
+					submissionId,
+					firstName: author.firstName,
+					lastName: author.lastName,
+					email: author.email,
+					affiliationId: authorAffiliations[index],
+					orderIndex: index,
+					isPresenter: author.isPresenter,
+				},
+			}),
+		),
+	);
+
+	const presenter = authors.find((a) => a.isPresenter);
+	if (presenter) {
+		await tx.submission.update({
+			where: { id: submissionId },
+			data: { presenterId: presenter.id },
+		});
+	}
+
+	// Link co-authors to existing verified users
+	const coAuthorEmails = authorsInput.map((a) => a.email);
+	const matchedUsers = await tx.user.findMany({
+		where: {
+			email: { in: coAuthorEmails, mode: "insensitive" },
+			emailVerified: true,
+		},
+		select: { id: true, email: true },
+	});
+	for (const matchedUser of matchedUsers) {
+		await tx.submissionAuthor.updateMany({
+			where: {
+				submissionId,
+				email: { equals: matchedUser.email, mode: "insensitive" },
+				userId: null,
+			},
+			data: { userId: matchedUser.id },
+		});
+	}
+}
+
+/**
+ * Replace a submission's canonical keywords (delete + upsert). Returns the
+ * canonical, de-duplicated keyword names. Caller MUST run inside a transaction.
+ */
+async function replaceSubmissionKeywords(
+	tx: Prisma.TransactionClient,
+	submissionId: string,
+	keywords: string[],
+): Promise<string[]> {
+	await tx.submissionKeyword.deleteMany({ where: { submissionId } });
+
+	const uniqueKeywordNames = Array.from(new Set(keywords));
+	const keywordIds: string[] = [];
+	const names: string[] = [];
+	for (const name of uniqueKeywordNames) {
+		const keyword = await tx.keyword.upsert({
+			where: { name },
+			update: {},
+			create: { name },
+		});
+		keywordIds.push(keyword.id);
+		names.push(keyword.name);
+	}
+
+	await Promise.all(
+		keywordIds.map((keywordId) =>
+			tx.submissionKeyword.create({
+				data: { submissionId, keywordId },
+			}),
+		),
+	);
+
+	return names;
+}
+
+/**
+ * Freeze the author composition + keyword set onto a version for history/diff.
+ * Snapshots are immutable; affiliation and presenter are denormalized so later
+ * renames/repointing never rewrite history. Caller MUST run inside a transaction.
+ */
+async function writeVersionSnapshot(
+	tx: Prisma.TransactionClient,
+	versionId: string,
+	authors: Author[],
+	keywordNames: string[],
+): Promise<void> {
+	if (authors.length > 0) {
+		await tx.submissionVersionAuthor.createMany({
+			data: authors.map((a, index) => ({
+				versionId,
+				firstName: a.firstName,
+				lastName: a.lastName,
+				email: a.email,
+				affiliation: a.affiliationName,
+				orderIndex: index,
+				isPresenter: a.isPresenter,
+			})),
+		});
+	}
+	if (keywordNames.length > 0) {
+		await tx.submissionVersionKeyword.createMany({
+			data: keywordNames.map((name) => ({ versionId, name })),
+		});
+	}
 }
 
 export async function createNewSubmission(
@@ -208,6 +366,14 @@ export async function createNewSubmission(
 					},
 				});
 			}),
+		);
+
+		// Freeze version-1 author/keyword snapshot for future history/diff
+		await writeVersionSnapshot(
+			tx,
+			version.id,
+			data.authors,
+			keywordRecords.map((k) => k.name),
 		);
 
 		// Create activity log entry
@@ -436,15 +602,8 @@ export async function getSubmissionById(
 								size: true,
 							},
 						},
-						submission: {
-							include: {
-								authors: {
-									include: { affiliation: true },
-									orderBy: { orderIndex: "asc" },
-								},
-								keywords: { include: { keyword: true } },
-							},
-						},
+						authorsSnapshot: { orderBy: { orderIndex: "asc" } },
+						keywordsSnapshot: true,
 					},
 					orderBy: { version: "asc" },
 				},
@@ -583,8 +742,21 @@ export async function getSubmissionById(
 			title: v.title,
 			content: v.content,
 			comment: v.comment,
-			authors, // All versions share same author structure for simplicity
-			keywords,
+			// Per-version frozen snapshot; fall back to current for legacy rows
+			authors:
+				v.authorsSnapshot.length > 0
+					? v.authorsSnapshot.map((a) => ({
+							firstName: a.firstName,
+							lastName: a.lastName,
+							email: a.email,
+							affiliation: a.affiliation,
+							isPresenter: a.isPresenter,
+						}))
+					: authors,
+			keywords:
+				v.keywordsSnapshot.length > 0
+					? v.keywordsSnapshot.map((k) => k.name)
+					: keywords,
 			file: v.file
 				? {
 						id: v.file.id,
@@ -628,6 +800,8 @@ export interface ResubmitSubmissionInput {
 	title: string;
 	content: string;
 	comment?: string;
+	authors: Author[];
+	keywords: string[];
 }
 
 /** Resubmit a submission (creates new version, transitions REVISE_REQUIRED → RESUBMITTED) */
@@ -679,6 +853,15 @@ export async function resubmitSubmission(
 				currentVersionId: version.id,
 			},
 		});
+
+		// Update canonical author/keyword composition + freeze this version's snapshot
+		await replaceSubmissionAuthors(tx, submissionId, data.authors);
+		const keywordNames = await replaceSubmissionKeywords(
+			tx,
+			submissionId,
+			data.keywords,
+		);
+		await writeVersionSnapshot(tx, version.id, data.authors, keywordNames);
 
 		await tx.activityLog.create({
 			data: {
@@ -794,6 +977,15 @@ export async function submitConditionalRevision(
 			},
 		});
 
+		// Update canonical author/keyword composition + freeze this version's snapshot
+		await replaceSubmissionAuthors(tx, submissionId, data.authors);
+		const keywordNames = await replaceSubmissionKeywords(
+			tx,
+			submissionId,
+			data.keywords,
+		);
+		await writeVersionSnapshot(tx, version.id, data.authors, keywordNames);
+
 		await tx.activityLog.create({
 			data: {
 				type: "SUBMISSION_REVISION_UPLOADED",
@@ -864,19 +1056,6 @@ export async function updateDraftSubmission(
 	}
 
 	await prisma.$transaction(async (tx) => {
-		// Upsert affiliations
-		const authorAffiliations = await Promise.all(
-			data.authors.map(async (author) => {
-				if (author.affiliationId) return author.affiliationId;
-				const affiliation = await tx.affiliation.upsert({
-					where: { name: author.affiliationName },
-					update: {},
-					create: { name: author.affiliationName },
-				});
-				return affiliation.id;
-			}),
-		);
-
 		// Update submission core fields
 		await tx.submission.update({
 			where: { id: submissionId },
@@ -896,82 +1075,29 @@ export async function updateDraftSubmission(
 			});
 		}
 
-		// Clear presenter reference before deleting authors (FK constraint)
-		await tx.submission.update({
-			where: { id: submissionId },
-			data: { presenterId: null },
-		});
-
-		// Replace authors: delete old, create new
-		await tx.submissionAuthor.deleteMany({
-			where: { submissionId },
-		});
-
-		const authors = await Promise.all(
-			data.authors.map(async (author, index) => {
-				return tx.submissionAuthor.create({
-					data: {
-						submissionId,
-						firstName: author.firstName,
-						lastName: author.lastName,
-						email: author.email,
-						affiliationId: authorAffiliations[index],
-						orderIndex: index,
-						isPresenter: author.isPresenter,
-					},
-				});
-			}),
+		// Replace canonical author/keyword composition
+		await replaceSubmissionAuthors(tx, submissionId, data.authors);
+		const keywordNames = await replaceSubmissionKeywords(
+			tx,
+			submissionId,
+			data.keywords,
 		);
 
-		// Update presenter reference
-		const presenter = authors.find((a) => a.isPresenter);
-		if (presenter) {
-			await tx.submission.update({
-				where: { id: submissionId },
-				data: { presenterId: presenter.id },
+		// Keep the (single, pre-review) version's snapshot in sync with the edit
+		if (submission.currentVersion) {
+			await tx.submissionVersionAuthor.deleteMany({
+				where: { versionId: submission.currentVersion.id },
 			});
-		}
-
-		// Link co-authors to existing users
-		const coAuthorEmails = data.authors.map((a) => a.email);
-		const matchedUsers = await tx.user.findMany({
-			where: {
-				email: { in: coAuthorEmails, mode: "insensitive" },
-				emailVerified: true,
-			},
-			select: { id: true, email: true },
-		});
-		for (const matchedUser of matchedUsers) {
-			await tx.submissionAuthor.updateMany({
-				where: {
-					submissionId,
-					email: { equals: matchedUser.email, mode: "insensitive" },
-					userId: null,
-				},
-				data: { userId: matchedUser.id },
+			await tx.submissionVersionKeyword.deleteMany({
+				where: { versionId: submission.currentVersion.id },
 			});
+			await writeVersionSnapshot(
+				tx,
+				submission.currentVersion.id,
+				data.authors,
+				keywordNames,
+			);
 		}
-
-		// Replace keywords
-		await tx.submissionKeyword.deleteMany({ where: { submissionId } });
-
-		const keywordRecords = await Promise.all(
-			data.keywords.map(async (keyword) => {
-				return tx.keyword.upsert({
-					where: { name: keyword },
-					update: {},
-					create: { name: keyword },
-				});
-			}),
-		);
-
-		await Promise.all(
-			keywordRecords.map(async (keyword) => {
-				return tx.submissionKeyword.create({
-					data: { submissionId, keywordId: keyword.id },
-				});
-			}),
-		);
 	});
 
 	logger.info(`[submission] updated draft ${submissionId}`);

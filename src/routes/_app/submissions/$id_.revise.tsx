@@ -3,19 +3,31 @@ import {
 	IconFile,
 	IconFileText,
 	IconSend,
+	IconTags,
+	IconUsers,
 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { activeSubmissionTypesQueryOptions } from "@/features/settings/api/settings";
+import { extractionSettingsQueryOptions } from "@/features/extraction/api/extraction";
+import { ExtractionOverlay } from "@/features/extraction/components/extraction-overlay";
+import { useDocumentExtraction } from "@/features/extraction/hooks/use-document-extraction";
+import {
+	activeSubmissionTypesQueryOptions,
+	submissionValidationQueryOptions,
+} from "@/features/settings/api/settings";
 import { submissionDetailQueryOptions } from "@/features/submissions/api/submissions";
+import { KeywordsInput } from "@/features/submissions/components/form/keywords-input";
 import {
 	isRevisableSubmission,
 	prepareRevisionView,
+	revisionReady,
 } from "@/features/submissions/components/revise/revise-helpers";
 import { useReviseSubmission } from "@/features/submissions/components/revise/use-revise-submission";
+import { AuthorsInput } from "@/shared/components/authors-input";
 import { FileDropzone } from "@/shared/components/file-dropzone";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import type { Author } from "@/shared/types/author";
 import { Button } from "@/shared/ui/button";
 import { Label } from "@/shared/ui/label";
 import { Textarea } from "@/shared/ui/textarea";
@@ -27,6 +39,8 @@ export const Route = createFileRoute("/_app/submissions/$id_/revise")({
 				submissionDetailQueryOptions(params.id),
 			),
 			context.queryClient.ensureQueryData(activeSubmissionTypesQueryOptions()),
+			context.queryClient.ensureQueryData(submissionValidationQueryOptions()),
+			context.queryClient.ensureQueryData(extractionSettingsQueryOptions()),
 		]);
 	},
 	component: ReviseSubmissionPage,
@@ -38,8 +52,18 @@ function ReviseSubmissionPage() {
 	const { data: typeConfigs } = useSuspenseQuery(
 		activeSubmissionTypesQueryOptions(),
 	);
+	const { data: validationSettings } = useSuspenseQuery(
+		submissionValidationQueryOptions(),
+	);
+	const { data: extractionSettings } = useSuspenseQuery(
+		extractionSettingsQueryOptions(),
+	);
 
-	const view = prepareRevisionView(data, typeConfigs);
+	const view = prepareRevisionView(data, typeConfigs, {
+		enableKeywords: validationSettings.enableKeywords,
+		maxKeywords: validationSettings.maxKeywords,
+		extractionEnabled: extractionSettings.enabled,
+	});
 	const { isSubmitting, submitRevision } = useReviseSubmission({
 		id,
 		isConditional: view.isConditional,
@@ -56,10 +80,15 @@ function ReviseSubmissionPage() {
 			submissionId={id}
 			title={view.title}
 			content={view.content}
+			initialAuthors={view.authors}
+			initialKeywords={view.keywords}
 			currentFile={view.currentFile}
 			isFileFormat={view.isFileFormat}
 			acceptString={view.acceptString}
 			maxFileSize={view.maxFileSize}
+			enableKeywords={view.enableKeywords}
+			maxKeywords={view.maxKeywords}
+			extractionEnabled={view.extractionEnabled}
 			isSubmitting={isSubmitting}
 			isConditional={view.isConditional}
 			onSubmit={submitRevision}
@@ -100,6 +129,8 @@ interface RevisionFormProps {
 	submissionId: string;
 	title: string;
 	content: string;
+	initialAuthors: Author[];
+	initialKeywords: string[];
 	currentFile: {
 		id: string;
 		fileName: string;
@@ -110,6 +141,9 @@ interface RevisionFormProps {
 	isFileFormat: boolean;
 	acceptString: string;
 	maxFileSize: number;
+	enableKeywords: boolean;
+	maxKeywords: number;
+	extractionEnabled: boolean;
 	isSubmitting: boolean;
 	isConditional: boolean;
 	onSubmit: (data: {
@@ -117,6 +151,8 @@ interface RevisionFormProps {
 		content: string;
 		comment: string;
 		file: File | null;
+		authors: Author[];
+		keywords: string[];
 	}) => Promise<void>;
 }
 
@@ -124,10 +160,15 @@ function RevisionForm({
 	submissionId,
 	title: initialTitle,
 	content: initialContent,
+	initialAuthors,
+	initialKeywords,
 	currentFile,
 	isFileFormat,
 	acceptString,
 	maxFileSize,
+	enableKeywords,
+	maxKeywords,
+	extractionEnabled,
 	isSubmitting,
 	isConditional,
 	onSubmit,
@@ -136,10 +177,25 @@ function RevisionForm({
 	const [content, setContent] = useState(initialContent);
 	const [comment, setComment] = useState("");
 	const [file, setFile] = useState<File | null>(null);
+	const [authors, setAuthors] = useState<Author[]>(initialAuthors);
+	const [keywords, setKeywords] = useState<string[]>(initialKeywords);
+
+	// A newly uploaded document re-extracts and overwrites the metadata fields so
+	// a changed title / author composition / keywords are picked up on revision.
+	const { isExtracting, elapsedSeconds, handleFileChange } =
+		useDocumentExtraction({
+			enabled: extractionEnabled,
+			skipExtraction: false,
+			onExtracted: ({ title: t, authors: a, keywords: k }) => {
+				if (t) setTitle(t);
+				if (a) setAuthors(a);
+				if (k) setKeywords(k);
+			},
+		});
 
 	const handleSubmit = async (e: React.SyntheticEvent) => {
 		e.preventDefault();
-		await onSubmit({ title, content, comment, file });
+		await onSubmit({ title, content, comment, file, authors, keywords });
 	};
 
 	return (
@@ -173,7 +229,11 @@ function RevisionForm({
 
 						{/* Content / File */}
 						{isFileFormat ? (
-							<div className="space-y-3">
+							<div className="relative space-y-3">
+								<ExtractionOverlay
+									isExtracting={isExtracting}
+									elapsedSeconds={elapsedSeconds}
+								/>
 								<Label>Document *</Label>
 								{currentFile && !file && (
 									<div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
@@ -190,7 +250,7 @@ function RevisionForm({
 								)}
 								<FileDropzone
 									value={file}
-									onChange={setFile}
+									onChange={(f) => handleFileChange(f, setFile)}
 									accept={acceptString}
 									maxSize={maxFileSize}
 								/>
@@ -210,6 +270,36 @@ function RevisionForm({
 									rows={12}
 									className="resize-none"
 								/>
+							</div>
+						)}
+
+						{/* Authors */}
+						<div className="space-y-4">
+							<div className="flex items-center gap-3">
+								<IconUsers className="size-5 text-muted-foreground" />
+								<h2 className="text-lg font-semibold text-foreground">
+									Authors
+								</h2>
+							</div>
+							<AuthorsInput value={authors} onChange={setAuthors} />
+						</div>
+
+						{/* Keywords */}
+						{enableKeywords && (
+							<div className="space-y-4">
+								<div className="flex items-center gap-3">
+									<IconTags className="size-5 text-muted-foreground" />
+									<h2 className="text-lg font-semibold text-foreground">
+										Keywords
+									</h2>
+								</div>
+								<div className="rounded-lg border bg-muted/30 p-3">
+									<KeywordsInput
+										value={keywords}
+										onChange={setKeywords}
+										maxKeywords={maxKeywords}
+									/>
+								</div>
 							</div>
 						)}
 
@@ -234,7 +324,9 @@ function RevisionForm({
 						{/* Submit */}
 						<Button
 							type="submit"
-							disabled={isSubmitting || !title.trim()}
+							disabled={
+								isSubmitting || isExtracting || !revisionReady(title, authors)
+							}
 							className="w-full gap-2"
 						>
 							<IconSend className="size-4" />

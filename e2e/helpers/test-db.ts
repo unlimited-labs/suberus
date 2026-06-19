@@ -112,6 +112,141 @@ export interface CreateSubmissionOptions {
 	trackId?: string;
 }
 
+interface SnapshotAuthor {
+	firstName: string;
+	lastName: string;
+	email: string;
+	affiliation: string;
+	orderIndex: number;
+	isPresenter: boolean;
+}
+
+/** Create the primary + extra authors for a submission, set the presenter, and
+ *  return the snapshot used to seed version 1. No-op when withAuthor is false. */
+// fallow-ignore-next-line complexity -- linear test-factory setup (optional fields + extras loop); CRAP from estimated 0 coverage
+async function seedSubmissionAuthors(
+	submissionId: string,
+	options: CreateSubmissionOptions,
+): Promise<SnapshotAuthor[]> {
+	if (options.withAuthor === false) return [];
+	const db = getPrisma();
+	const snapshot: SnapshotAuthor[] = [];
+
+	const ad = options.authorData;
+	const affiliationName = ad?.affiliationName ?? "Test University";
+	const affiliation = await db.affiliation.upsert({
+		where: { name: affiliationName },
+		update: {},
+		create: { name: affiliationName },
+	});
+	const primaryEmail = ad?.email ?? `author-${submissionId.slice(0, 8)}@test.com`;
+	const author = await db.submissionAuthor.create({
+		data: {
+			submissionId,
+			email: primaryEmail,
+			firstName: ad?.firstName ?? "Test",
+			lastName: ad?.lastName ?? "Author",
+			affiliationId: affiliation.id,
+			orderIndex: 1,
+			isPresenter: true,
+		},
+	});
+	snapshot.push({
+		firstName: author.firstName,
+		lastName: author.lastName,
+		email: primaryEmail,
+		affiliation: affiliationName,
+		orderIndex: 1,
+		isPresenter: true,
+	});
+	await db.submission.update({
+		where: { id: submissionId },
+		data: { presenterId: author.id },
+	});
+
+	for (const [i, extra] of (options.extraAuthors ?? []).entries()) {
+		const extraAffName = extra.affiliationName ?? "Test University";
+		const extraAff = await db.affiliation.upsert({
+			where: { name: extraAffName },
+			update: {},
+			create: { name: extraAffName },
+		});
+		const extraEmail =
+			extra.email ?? `extra-author-${i}-${submissionId.slice(0, 8)}@test.com`;
+		await db.submissionAuthor.create({
+			data: {
+				submissionId,
+				email: extraEmail,
+				firstName: extra.firstName,
+				lastName: extra.lastName,
+				affiliationId: extraAff.id,
+				orderIndex: i + 2,
+				isPresenter: extra.isPresenter ?? false,
+				userId: extra.userId ?? null,
+			},
+		});
+		snapshot.push({
+			firstName: extra.firstName,
+			lastName: extra.lastName,
+			email: extraEmail,
+			affiliation: extraAffName,
+			orderIndex: i + 2,
+			isPresenter: extra.isPresenter ?? false,
+		});
+	}
+	return snapshot;
+}
+
+/** Attach canonical SubmissionKeyword rows to a submission. */
+async function seedSubmissionKeywords(
+	submissionId: string,
+	keywords: string[] | undefined,
+): Promise<void> {
+	if (!keywords?.length) return;
+	const db = getPrisma();
+	for (const keyword of keywords) {
+		const kw = await db.keyword.upsert({
+			where: { name: keyword },
+			update: {},
+			create: { name: keyword },
+		});
+		await db.submissionKeyword.create({
+			data: { submissionId, keywordId: kw.id },
+		});
+	}
+}
+
+/** Seed version 1 with the frozen author/keyword snapshot and point
+ *  currentVersionId at it — mirrors real createNewSubmission so a single resubmit
+ *  produces version 2. addSubmissionVersions replaces this for custom histories. */
+async function seedInitialVersion(
+	submissionId: string,
+	title: string,
+	content: string,
+	snapshotAuthors: SnapshotAuthor[],
+	keywords: string[] | undefined,
+): Promise<void> {
+	const db = getPrisma();
+	const version = await db.submissionVersion.create({
+		data: {
+			submissionId,
+			version: 1,
+			title,
+			content,
+			authorsSnapshot: snapshotAuthors.length
+				? { create: snapshotAuthors }
+				: undefined,
+			keywordsSnapshot: keywords?.length
+				? { create: keywords.map((name) => ({ name })) }
+				: undefined,
+		},
+	});
+	await db.submission.update({
+		where: { id: submissionId },
+		data: { currentVersionId: version.id },
+	});
+}
+
 export async function createSubmission(options: CreateSubmissionOptions): Promise<{
 	id: string;
 	title: string;
@@ -138,75 +273,15 @@ export async function createSubmission(options: CreateSubmissionOptions): Promis
 		},
 	});
 
-	// Add author if requested
-	if (options.withAuthor !== false) {
-		const ad = options.authorData;
-		const affiliationName = ad?.affiliationName ?? "Test University";
-		const affiliation = await db.affiliation.upsert({
-			where: { name: affiliationName },
-			update: {},
-			create: { name: affiliationName },
-		});
-
-		const author = await db.submissionAuthor.create({
-			data: {
-				submissionId: submission.id,
-				email: ad?.email ?? `author-${submission.id.slice(0, 8)}@test.com`,
-				firstName: ad?.firstName ?? "Test",
-				lastName: ad?.lastName ?? "Author",
-				affiliationId: affiliation.id,
-				orderIndex: 1,
-				isPresenter: true,
-			},
-		});
-
-		await db.submission.update({
-			where: { id: submission.id },
-			data: { presenterId: author.id },
-		});
-
-		// Add extra authors
-		if (options.extraAuthors) {
-			for (let i = 0; i < options.extraAuthors.length; i++) {
-				const extra = options.extraAuthors[i];
-				const extraAffName = extra.affiliationName ?? "Test University";
-				const extraAff = await db.affiliation.upsert({
-					where: { name: extraAffName },
-					update: {},
-					create: { name: extraAffName },
-				});
-				await db.submissionAuthor.create({
-					data: {
-						submissionId: submission.id,
-						email: extra.email ?? `extra-author-${i}-${submission.id.slice(0, 8)}@test.com`,
-						firstName: extra.firstName,
-						lastName: extra.lastName,
-						affiliationId: extraAff.id,
-						orderIndex: i + 2,
-						isPresenter: extra.isPresenter ?? false,
-						userId: extra.userId ?? null,
-					},
-				});
-			}
-		}
-	}
-
-	// Add keywords if provided
-	if (options.keywords?.length) {
-		for (const keyword of options.keywords) {
-			const kw = await db.keyword.upsert({
-				where: { name: keyword },
-				update: {},
-				create: { name: keyword },
-			});
-			await db.submissionKeyword.create({
-				data: {
-					submissionId: submission.id,
-					keywordId: kw.id,
-				},
-			});
-		}
-	}
+	const snapshotAuthors = await seedSubmissionAuthors(submission.id, options);
+	await seedSubmissionKeywords(submission.id, options.keywords);
+	await seedInitialVersion(
+		submission.id,
+		prefixedTitle,
+		submission.content,
+		snapshotAuthors,
+		options.keywords,
+	);
 
 	// Add activity log entry
 	if (options.status && options.status !== SubmissionStatus.DRAFT) {
@@ -234,9 +309,10 @@ export async function createSubmission(options: CreateSubmissionOptions): Promis
 }
 
 /**
- * Seed SubmissionVersion rows for an existing submission and point
- * `currentVersionId` at the last one. `createSubmission` creates no version
- * rows, so use this when a test needs the version diff (>=2 versions).
+ * Replace a submission's version history with the given list (numbered from 1)
+ * and point `currentVersionId` at the last one. `createSubmission` now seeds a
+ * version 1, so this first clears existing versions to avoid a unique-version
+ * collision and to give the test full control over the history it asserts on.
  * Does not touch `currentRound` (keeps it consistent with any assignment).
  */
 export async function addSubmissionVersions(
@@ -244,6 +320,12 @@ export async function addSubmissionVersions(
 	versions: Array<{ title: string; content: string; comment?: string }>,
 ): Promise<string[]> {
 	const db = getPrisma();
+	// Drop the FK + any auto-seeded versions (cascades to snapshots) before rebuild
+	await db.submission.update({
+		where: { id: submissionId },
+		data: { currentVersionId: null },
+	});
+	await db.submissionVersion.deleteMany({ where: { submissionId } });
 	const ids: string[] = [];
 	let lastId: string | null = null;
 	for (let i = 0; i < versions.length; i++) {
@@ -780,21 +862,14 @@ export async function createSubmissionWithFile(
 		},
 	});
 
-	// Create SubmissionVersion and link file
-	const version = await db.submissionVersion.create({
-		data: {
-			submissionId: submission.id,
-			version: 1,
-			title: submission.title,
-			content: options.content ?? "",
-			fileId: file.id,
-		},
+	// Attach the file to the version createSubmission already seeded (and which
+	// currentVersionId already points at), rather than creating a second v1.
+	const version = await db.submissionVersion.findFirstOrThrow({
+		where: { submissionId: submission.id, version: 1 },
 	});
-
-	// Set current version
-	await db.submission.update({
-		where: { id: submission.id },
-		data: { currentVersionId: version.id },
+	await db.submissionVersion.update({
+		where: { id: version.id },
+		data: { fileId: file.id },
 	});
 
 	return {

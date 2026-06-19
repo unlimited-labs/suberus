@@ -1,11 +1,17 @@
 import { FILE_ACCEPT_ATTRIBUTE } from "@/features/settings/file-types";
-import type { UserSubmissionFile } from "@/features/submissions/server/submissions";
+import type {
+	UserSubmissionAuthor,
+	UserSubmissionFile,
+} from "@/features/submissions/server/submissions";
+import type { Author } from "@/shared/types/author";
 
 export interface RevisionFormData {
 	title: string;
 	content: string;
 	comment: string;
 	file: File | null;
+	authors: Author[];
+	keywords: string[];
 }
 
 export interface RevisionRequest {
@@ -13,6 +19,20 @@ export interface RevisionRequest {
 	title: string;
 	content: string;
 	comment: string | undefined;
+	authors: Author[];
+	keywords: string[];
+}
+
+/** Map the read-model author shape to the editable form author shape. */
+function toFormAuthors(authors: UserSubmissionAuthor[]): Author[] {
+	return authors.map((a) => ({
+		firstName: a.firstName,
+		lastName: a.lastName,
+		email: a.email,
+		affiliationId: null,
+		affiliationName: a.affiliation,
+		isPresenter: a.isPresenter,
+	}));
 }
 
 /** A submission is revisable only from these editor-requested states. */
@@ -27,6 +47,24 @@ export function isRevisableSubmission(submission: {
 }): boolean {
 	return (
 		submission.role !== "coauthor" && canReviseSubmission(submission.status)
+	);
+}
+
+/**
+ * Whether a revision is ready to submit: a non-empty title and a valid author
+ * composition (at least one author, exactly one presenter, and every author has
+ * the required fields). Mirrors the initial-submission author rules.
+ */
+export function revisionReady(title: string, authors: Author[]): boolean {
+	if (!title.trim()) return false;
+	if (authors.length === 0) return false;
+	if (authors.filter((a) => a.isPresenter).length !== 1) return false;
+	return authors.every(
+		(a) =>
+			a.firstName.trim() !== "" &&
+			a.lastName.trim() !== "" &&
+			a.email.trim() !== "" &&
+			a.affiliationName.trim() !== "",
 	);
 }
 
@@ -47,13 +85,15 @@ export function buildAcceptString(allowedExtensions: string[]): string {
 /** Normalizes form fields into the resubmit/conditional-revision request body. */
 export function buildRevisionRequest(
 	submissionId: string,
-	formData: Pick<RevisionFormData, "title" | "content" | "comment">,
+	formData: RevisionFormData,
 ): RevisionRequest {
 	return {
 		submissionId,
 		title: formData.title,
 		content: formData.content,
 		comment: formData.comment || undefined,
+		authors: formData.authors,
+		keywords: formData.keywords,
 	};
 }
 
@@ -74,13 +114,24 @@ interface RevisionViewData {
 		title: string;
 		content: string;
 		currentVersion: number;
+		authors: UserSubmissionAuthor[];
+		keywords: string[];
 	};
 	versions: {
 		version: number;
 		title: string;
 		content: string;
 		file: UserSubmissionFile | null;
+		authors: UserSubmissionAuthor[];
+		keywords: string[];
 	}[];
+}
+
+/** Keyword/extraction settings the revision form needs, mirrored from the new-submission form. */
+export interface RevisionViewSettings {
+	enableKeywords: boolean;
+	maxKeywords: number;
+	extractionEnabled: boolean;
 }
 
 export interface RevisionView {
@@ -91,17 +142,45 @@ export interface RevisionView {
 	currentFile: UserSubmissionFile | null;
 	acceptString: string;
 	maxFileSize: number;
+	authors: Author[];
+	keywords: string[];
+	enableKeywords: boolean;
+	maxKeywords: number;
+	extractionEnabled: boolean;
+}
+
+/** Title/content/file/authors/keywords to seed, taken from the current version's
+ *  frozen snapshot and falling back to the submission-level set. */
+// fallow-ignore-next-line complexity -- nullish-fallback chains read clearly; CRAP inflated by estimated 0 coverage (covered by revise-helpers.test.ts)
+function resolveRevisionSeed(
+	currentVersion: RevisionViewData["versions"][number] | undefined,
+	submission: RevisionViewData["submission"] | undefined,
+): Pick<
+	RevisionView,
+	"title" | "content" | "currentFile" | "authors" | "keywords"
+> {
+	return {
+		title: currentVersion?.title ?? submission?.title ?? "",
+		content: currentVersion?.content ?? submission?.content ?? "",
+		currentFile: currentVersion?.file ?? null,
+		authors: toFormAuthors(
+			currentVersion?.authors ?? submission?.authors ?? [],
+		),
+		keywords: currentVersion?.keywords ?? submission?.keywords ?? [],
+	};
 }
 
 /**
  * Resolves everything the revision form renders from the submission detail and
- * type config: which version's title/content/file to seed, the file-accept
- * attribute, max size (from the type config), and the conditional/file-format
- * flags. Null-safe so it can run before the page's not-revisable guard.
+ * type config: the seeded title/content/file/authors/keywords, the file-accept
+ * attribute, max size (from the type config), the keyword/extraction settings,
+ * and the conditional/file-format flags. Null-safe so it can run before the
+ * page's not-revisable guard.
  */
 export function prepareRevisionView(
 	data: RevisionViewData | null,
 	typeConfigs: RevisionTypeConfig[],
+	settings: RevisionViewSettings,
 ): RevisionView {
 	const submission = data?.submission;
 	const typeConfig = submission
@@ -114,10 +193,11 @@ export function prepareRevisionView(
 	return {
 		isConditional: submission?.status === "CONDITIONALLY_ACCEPTED",
 		isFileFormat: resolveIsFileFormat(typeConfig),
-		title: currentVersion?.title ?? submission?.title ?? "",
-		content: currentVersion?.content ?? submission?.content ?? "",
-		currentFile: currentVersion?.file ?? null,
 		acceptString: buildAcceptString(typeConfig?.config.allowedExtensions ?? []),
 		maxFileSize: typeConfig?.config.maxFileSizeMb ?? 10,
+		...resolveRevisionSeed(currentVersion, submission),
+		enableKeywords: settings.enableKeywords,
+		maxKeywords: settings.maxKeywords,
+		extractionEnabled: settings.extractionEnabled,
 	};
 }

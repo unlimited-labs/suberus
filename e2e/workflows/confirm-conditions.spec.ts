@@ -1,6 +1,6 @@
 import { test, expect } from "../helpers/base-fixtures";
 import { waitForDialogToClose } from "../helpers/dialog";
-import { createSubmissionWithDecision } from "../helpers/test-db";
+import { createSubmissionWithDecision, getPrisma } from "../helpers/test-db";
 import { EditorDecisionType } from "../../src/generated/prisma/enums";
 import { ADMIN_USER, TEST_USER } from "../helpers/test-users";
 import { loginAs } from "../helpers/auth";
@@ -92,12 +92,32 @@ test.describe("Confirm Conditions Met", () => {
 			.locator("#content")
 			.fill("Revised abstract content addressing the minor conditions. ".repeat(5));
 		await page.locator("#comment").fill("Fixed typos per reviewer notes");
+		// A conditional revision may also change tags — persisted + snapshotted
+		const condKeyword = "cond-kw";
+		const keywordInput = page.getByTestId("keywords-section").locator("input");
+		await keywordInput.fill(condKeyword);
+		await keywordInput.press("Enter");
 		await page.getByRole("button", { name: "Upload Revised Version" }).click();
 
 		// Assert — back on detail, status unchanged (action still offered)
 		await expect(page).toHaveURL(new RegExp(`/submissions/${submissionId}$`), {
 			timeout: 15000,
 		});
+
+		// The conditional upload froze a version snapshot with the changed tag
+		const db = getPrisma();
+		const newVersion = await db.submissionVersion.findFirst({
+			where: { submissionId },
+			orderBy: { version: "desc" },
+			include: {
+				authorsSnapshot: { select: { firstName: true } },
+				keywordsSnapshot: { select: { name: true } },
+			},
+		});
+		expect(newVersion?.authorsSnapshot.length ?? 0).toBeGreaterThan(0);
+		expect(newVersion?.keywordsSnapshot.map((k) => k.name)).toContain(
+			condKeyword,
+		);
 		await expect(
 			page.getByRole("button", { name: "Upload Revised Version" }),
 		).toBeVisible({ timeout: 10000 });

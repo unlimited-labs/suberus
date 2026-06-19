@@ -6,7 +6,6 @@ import {
 } from "@tabler/icons-react";
 import { useMemo } from "react";
 import { FileRedlineView } from "@/features/submission-diff/components/file-redline-view";
-import type { EditorVersion } from "@/features/submissions/components/admin/detail/availability";
 import { TextDiffView } from "@/shared/components/diff/text-diff-view";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import {
@@ -19,9 +18,37 @@ import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { SideBySideDiffView } from "./side-by-side-diff-view";
+import {
+	authorsToText,
+	type CompareAuthor,
+	keywordsToText,
+} from "./version-compare-format";
 import { VersionCompareSelector } from "./version-compare-selector";
 
 export type CompareLayout = "split" | "inline";
+
+/**
+ * The version shape the comparison renders. Authors/keywords are optional so
+ * blind-review callers (which must not leak author identities) can omit them;
+ * they only render when `showMetadata` is set.
+ */
+export interface CompareVersion {
+	id: string;
+	version: number;
+	title: string;
+	content: string;
+	comment: string | null;
+	createdAt: Date;
+	file: {
+		id: string;
+		fileName: string;
+		originalName: string;
+		mimeType: string;
+		size: number;
+	} | null;
+	authors?: CompareAuthor[];
+	keywords?: string[];
+}
 
 /** Default pair: previous → current (falls back to oldest → current). */
 export function defaultComparePair(
@@ -36,8 +63,8 @@ export function defaultComparePair(
 	return { base: below[0] ?? oldest, compare: current };
 }
 
-const fileIdOf = (v: EditorVersion) => v.file?.id ?? null;
-const fileNameOf = (v: EditorVersion) => v.file?.originalName ?? "no file";
+const fileIdOf = (v: CompareVersion) => v.file?.id ?? null;
+const fileNameOf = (v: CompareVersion) => v.file?.originalName ?? "no file";
 
 /** A titled card panel matching the submission detail tabs (Authors/Content). */
 function Panel({
@@ -198,7 +225,7 @@ function ContentDiff({
 }
 
 interface VersionCompareProps {
-	versions: EditorVersion[];
+	versions: CompareVersion[];
 	currentVersionNumber: number;
 	base: number;
 	compare: number;
@@ -206,8 +233,14 @@ interface VersionCompareProps {
 	onBaseChange: (version: number) => void;
 	onCompareChange: (version: number) => void;
 	onLayoutChange: (layout: CompareLayout) => void;
+	/**
+	 * Render the Authors/Keywords diff panels. Off by default so blind-review
+	 * callers never surface author identities; the editor view opts in.
+	 */
+	showMetadata?: boolean;
 }
 
+// fallow-ignore-next-line complexity -- presentational diff body (cyclomatic 5); CRAP from estimated 0 coverage on a render component
 function VersionCompareBody({
 	sorted,
 	baseV,
@@ -219,10 +252,11 @@ function VersionCompareBody({
 	onBaseChange,
 	onCompareChange,
 	onLayoutChange,
+	showMetadata,
 }: VersionCompareProps & {
-	sorted: EditorVersion[];
-	baseV: EditorVersion;
-	compareV: EditorVersion;
+	sorted: CompareVersion[];
+	baseV: CompareVersion;
+	compareV: CompareVersion;
 }) {
 	const { formatDate } = useDateFormat();
 	const titleSegments = useMemo(
@@ -232,6 +266,19 @@ function VersionCompareBody({
 	const contentSegments = useMemo(
 		() => diffText(baseV.content, compareV.content),
 		[baseV.content, compareV.content],
+	);
+	const authorSegments = useMemo(
+		() =>
+			diffText(authorsToText(baseV.authors), authorsToText(compareV.authors)),
+		[baseV.authors, compareV.authors],
+	);
+	const keywordSegments = useMemo(
+		() =>
+			diffText(
+				keywordsToText(baseV.keywords),
+				keywordsToText(compareV.keywords),
+			),
+		[baseV.keywords, compareV.keywords],
 	);
 
 	const stats = diffStats(contentSegments);
@@ -277,6 +324,24 @@ function VersionCompareBody({
 				<TextDiffView segments={titleSegments} emptyLabel="Title unchanged." />
 			</Panel>
 
+			{showMetadata && (
+				<Panel title="Authors">
+					<TextDiffView
+						segments={authorSegments}
+						emptyLabel="Authors unchanged."
+					/>
+				</Panel>
+			)}
+
+			{showMetadata && (
+				<Panel title="Keywords">
+					<TextDiffView
+						segments={keywordSegments}
+						emptyLabel="Keywords unchanged."
+					/>
+				</Panel>
+			)}
+
 			<Panel title="Attached file">
 				<FileRows
 					baseLabel={baseLabel}
@@ -321,8 +386,8 @@ function FileChangesPanel({
 	samePair,
 	isFileChanged,
 }: {
-	baseV: EditorVersion;
-	compareV: EditorVersion;
+	baseV: CompareVersion;
+	compareV: CompareVersion;
 	samePair: boolean;
 	isFileChanged: boolean;
 }) {

@@ -85,6 +85,8 @@ chosen versions and layout live in the page URL, so a comparison can be shared.
 | **Base (older)** / **Compare (newer)** | The two versions being compared. Defaults to the previous version → the current one; change either picker to compare any pair. |
 | **Comparing v_A → v_B** | A sticky header naming the two versions and their dates, the inserted/deleted character counts, and a **File changed / File unchanged** badge. |
 | **Title** | Inline redline of the title. Insertions are underlined, deletions struck through (colour is never the only cue). |
+| **Authors** | Inline redline of the author composition (name, e-mail, affiliation, and who presents) between the two versions — so a changed **author line-up** is visible at a glance. Shown to editors only. |
+| **Keywords** | Inline redline of the keyword/tag set between the two versions. Shown to editors only. |
 | **Attached file** | The file name on each side. (An inline redline of the file *contents* is planned for a later release.) |
 | **Author's note for v_B** | The comment the author left when submitting that version, if any. |
 | **Content** | Side-by-side (or inline) redline of the abstract/content text. |
@@ -121,6 +123,15 @@ chosen versions and layout live in the page URL, so a comparison can be shared.
 (camera-ready) version, no new reviewers are involved, the round number does not
 change, and you confirm the conditions yourself. **Revise & resubmit** is for
 substantive changes: it increments the round and goes back through review.
+</Aside>
+
+<Aside type="note" title="What a revision can change">
+When an author uploads a revision (either path), they may also update the
+**title**, **author composition**, and **keywords/tags** — not just the document.
+For file-based types, uploading a new document **re-extracts** the title, authors,
+and keywords from it, so a changed line-up is picked up automatically. Each version
+keeps its own frozen snapshot of these, which is what the **Authors** and
+**Keywords** rows of the [version comparison](#comparing-versions) diff against.
 </Aside>
 
 ![Submission content with version selector](../../../assets/screenshots/19-managing-submission-versions.png)

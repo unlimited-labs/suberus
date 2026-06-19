@@ -499,6 +499,14 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 			mimeType: string;
 			size: number;
 		} | null;
+		authors: Array<{
+			firstName: string;
+			lastName: string;
+			email: string;
+			affiliation: string;
+			isPresenter: boolean;
+		}>;
+		keywords: string[];
 	}>;
 	submitter: {
 		id: string;
@@ -573,6 +581,8 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 							size: true,
 						},
 					},
+					authorsSnapshot: { orderBy: { orderIndex: "asc" } },
+					keywordsSnapshot: true,
 				},
 				orderBy: { version: "asc" },
 			},
@@ -651,6 +661,14 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 			comment: v.comment,
 			createdAt: v.createdAt,
 			file: v.file,
+			authors: v.authorsSnapshot.map((a) => ({
+				firstName: a.firstName,
+				lastName: a.lastName,
+				email: a.email,
+				affiliation: a.affiliation,
+				isPresenter: a.isPresenter,
+			})),
+			keywords: v.keywordsSnapshot.map((k) => k.name),
 		})),
 		submitter: {
 			id: submission.user.id,

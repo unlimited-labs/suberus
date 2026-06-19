@@ -216,6 +216,7 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 				file: getUploadedFile(data),
 			}),
 	)
+	// fallow-ignore-next-line complexity -- pre-existing upload handler, re-flagged only because this file was edited (resubmit/conditional validators)
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
 		// Dynamic import to avoid loading storage module when not needed
 		const { uploadFile, generateSubmissionFileKey, generateAuthorFileName } =
@@ -360,6 +361,8 @@ export const resubmitSubmissionFn = createServerFn({ method: "POST" })
 			title: z.string(),
 			content: z.string(),
 			comment: z.string().optional(),
+			authors: z.array(authorSchema),
+			keywords: z.array(z.string()),
 		}),
 	)
 	.handler(
@@ -375,6 +378,8 @@ export const resubmitSubmissionFn = createServerFn({ method: "POST" })
 				title: data.title,
 				content: data.content,
 				comment: data.comment,
+				authors: data.authors,
+				keywords: data.keywords,
 			});
 		},
 	);
@@ -388,6 +393,8 @@ export const submitConditionalRevisionFn = createServerFn({ method: "POST" })
 			title: z.string(),
 			content: z.string(),
 			comment: z.string().optional(),
+			authors: z.array(authorSchema),
+			keywords: z.array(z.string()),
 		}),
 	)
 	.handler(
@@ -403,6 +410,8 @@ export const submitConditionalRevisionFn = createServerFn({ method: "POST" })
 				title: data.title,
 				content: data.content,
 				comment: data.comment,
+				authors: data.authors,
+				keywords: data.keywords,
 			});
 		},
 	);

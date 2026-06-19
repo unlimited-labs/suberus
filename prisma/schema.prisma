@@ -189,10 +189,45 @@ model SubmissionVersion {
   file                 File?       @relation(fields: [fileId], references: [id])
   submission           Submission  @relation("SubmissionVersions", fields: [submissionId], references: [id], onDelete: Cascade)
   currentForSubmission Submission? @relation("CurrentVersion")
+  authorsSnapshot      SubmissionVersionAuthor[]
+  keywordsSnapshot     SubmissionVersionKeyword[]
 
   @@unique([submissionId, version])
   @@index([submissionId])
   @@map("submission_versions")
+}
+
+/// Frozen, per-version snapshot of the author composition (skład autorski) as it
+/// was at the time the version was created. History/diff only — never mutated.
+/// Affiliation and presenter are denormalized so renames/repointing don't rewrite
+/// history. Current/canonical authors stay on SubmissionAuthor.
+model SubmissionVersionAuthor {
+  id          String            @id @default(uuid()) @db.Uuid
+  versionId   String            @db.Uuid
+  firstName   String
+  lastName    String
+  email       String
+  affiliation String
+  orderIndex  Int               @default(0)
+  isPresenter Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+  version     SubmissionVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+
+  @@index([versionId])
+  @@map("submission_version_authors")
+}
+
+/// Frozen, per-version snapshot of the keyword/tag set. History/diff only.
+model SubmissionVersionKeyword {
+  id        String            @id @default(uuid()) @db.Uuid
+  versionId String            @db.Uuid
+  name      String
+  createdAt DateTime          @default(now())
+  version   SubmissionVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+
+  @@unique([versionId, name])
+  @@index([versionId])
+  @@map("submission_version_keywords")
 }
 
 model SubmissionAuthor {

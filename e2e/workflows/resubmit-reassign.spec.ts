@@ -73,6 +73,13 @@ test.describe("Resubmission Auto-Reassign Reviewers", () => {
 				"We have addressed all reviewer concerns in this revised version. " +
 				"Additional details and clarifications have been added throughout the manuscript.",
 		)
+
+		// Change a tag: revisions may now edit keywords (persisted + snapshotted)
+		const revisedKeyword = "revisedtag"
+		const keywordInput = page.getByTestId("keywords-section").locator("input")
+		await keywordInput.fill(revisedKeyword)
+		await keywordInput.press("Enter")
+
 		await page.getByRole("button", { name: /Submit Revision/i }).click()
 
 		// Wait for redirect to submission detail
@@ -84,6 +91,30 @@ test.describe("Resubmission Auto-Reassign Reviewers", () => {
 			select: { status: true, currentRound: true },
 		})
 		expect(updatedSubmission?.currentRound).toBe(2)
+
+		// Verify the new version froze an author + keyword snapshot, and the
+		// canonical keyword set picked up the changed tag.
+		const newVersion = await db.submissionVersion.findFirst({
+			where: { submissionId },
+			orderBy: { version: "desc" },
+			select: {
+				id: true,
+				authorsSnapshot: { select: { firstName: true } },
+				keywordsSnapshot: { select: { name: true } },
+			},
+		})
+		expect(newVersion?.authorsSnapshot.length ?? 0).toBeGreaterThan(0)
+		expect(newVersion?.keywordsSnapshot.map((k) => k.name)).toContain(
+			revisedKeyword,
+		)
+
+		const canonicalKeywords = await db.submissionKeyword.findMany({
+			where: { submissionId },
+			select: { keyword: { select: { name: true } } },
+		})
+		expect(canonicalKeywords.map((k) => k.keyword.name)).toContain(
+			revisedKeyword,
+		)
 
 		// Verify round 2 assignments were auto-created
 		const round2Assignments = await db.reviewAssignment.findMany({

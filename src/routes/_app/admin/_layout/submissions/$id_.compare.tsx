@@ -88,6 +88,7 @@ function CompareVersionsPage() {
 						base={base}
 						compare={compare}
 						layout={layout}
+						showMetadata
 						onBaseChange={(n) => setParam({ base: n })}
 						onCompareChange={(n) => setParam({ compare: n })}
 						onLayoutChange={(l) => setParam({ view: l })}
