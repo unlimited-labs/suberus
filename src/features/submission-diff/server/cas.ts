@@ -11,9 +11,14 @@ export function figureKey(sha: string): string {
 	return `${PREFIX}/figures/${sha}.png`;
 }
 
-/** CAS key for a normalized/redline HTML blob (content-addressed by its sha). */
+/** CAS key for a normalized HTML blob (content-addressed by its sha). */
 export function htmlKey(sha: string): string {
 	return `${PREFIX}/html/${sha}.html`;
+}
+
+/** CAS key for a redline (diff) HTML blob (content-addressed by its sha). */
+export function redlineKey(sha: string): string {
+	return `${PREFIX}/redline/${sha}.html`;
 }
 
 /** Upload bytes to `key` only if absent — content-addressed, so writes are idempotent. */
@@ -42,8 +47,14 @@ export async function linkFigure(sha: string, bytes: Buffer): Promise<void> {
 	});
 }
 
-/** Persist sanitized HTML to CAS (content-addressed by its own sha). Returns the key. */
+/** Persist normalized HTML to CAS (content-addressed by its own sha). Returns the key. */
 export async function persistHtml(html: string): Promise<string> {
 	const buf = Buffer.from(html, "utf8");
 	return putIfAbsent(htmlKey(sha256(buf)), buf, "text/html; charset=utf-8");
+}
+
+/** Persist redline HTML to CAS (content-addressed by its own sha). Returns the key. */
+export async function persistRedline(html: string): Promise<string> {
+	const buf = Buffer.from(html, "utf8");
+	return putIfAbsent(redlineKey(sha256(buf)), buf, "text/html; charset=utf-8");
 }

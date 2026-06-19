@@ -1,5 +1,6 @@
 import type { Job, PgBoss } from "pg-boss";
 import { logger } from "@/logger.ts";
+import { diffAgainstPrevious } from "../diff-version";
 import {
 	type NormalizeInput,
 	normalizeSubmissionFile,
@@ -18,6 +19,17 @@ async function handleSubmissionDiff(
 			logger.info(
 				`[submission-diff] ${job.id}: artifact ${result.artifactId} cached=${result.cached} figures=${result.figures}`,
 			);
+			if (job.data.versionId) {
+				const diff = await diffAgainstPrevious(
+					job.data.versionId,
+					result.htmlKey,
+				);
+				if (diff) {
+					logger.info(
+						`[submission-diff] ${job.id}: redline ${diff.diffArtifactId} +${diff.insertions} -${diff.deletions}`,
+					);
+				}
+			}
 		} catch (error) {
 			const message =
 				error instanceof Error ? error.message : "Unknown normalize error";

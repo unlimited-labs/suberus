@@ -186,7 +186,12 @@ export const createSubmission = createServerFn({ method: "POST" })
  */
 async function maybeEnqueueDocxNormalize(
 	ext: string,
-	input: { storageKey: string; fileName: string; fileId: string },
+	input: {
+		storageKey: string;
+		fileName: string;
+		fileId: string;
+		versionId: string;
+	},
 ): Promise<void> {
 	if (ext !== "docx") return;
 	const { enqueueVersionNormalize } = await import(
@@ -324,6 +329,7 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 				storageKey,
 				fileName,
 				fileId: file.id,
+				versionId: submission.currentVersion.id,
 			});
 		}
 
