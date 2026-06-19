@@ -7,13 +7,16 @@ content-addressed. The service does NOT sanitize — DOMPurify-on-jsdom runs in 
 Node worker (Phase 0 established that the sanitizer must be bound to a DOM).
 
 Endpoints:
-  GET  /          -> health + toolchain versions
-  POST /normalize -> application/zip:
+  GET  /             -> health + toolchain versions (unversioned)
+  POST /v1/normalize -> application/zip:
                        document.html  (figure refs rewritten -> figures/<sha256>.png)
                        figures/<sha256>.png  (content-addressed, rasterized)
                        meta.json  (pandoc/libreoffice versions + normalizerConfigHash
                                    + schemaVersion + pandoc stderr warnings, for the
                                    artifact cache key)
+
+Functional endpoints are versioned under /v1 so a future contract change can ship /v2
+while older app deploys keep calling /v1. Health stays unversioned at /.
 
 Concurrency: each LibreOffice invocation gets an isolated -env:UserInstallation
 profile (gotcha C5 — shared profiles corrupt under concurrent convert).
@@ -30,7 +33,7 @@ import uuid
 import zipfile
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Response, UploadFile
+from fastapi import APIRouter, FastAPI, HTTPException, Response, UploadFile
 from PIL import Image
 
 # Bundle schema version — bump when the bundle layout or normalize recipe changes
@@ -55,6 +58,7 @@ RASTER_VIA_PILLOW = {".jpg", ".jpeg", ".gif", ".bmp", ".tif", ".tiff", ".webp"}
 RASTER_VIA_SOFFICE = {".emf", ".wmf", ".svg", ".eps", ".pict", ".pdf"}
 
 app = FastAPI()
+v1 = APIRouter(prefix="/v1")
 
 
 def _run(cmd: list[str], **kw) -> subprocess.CompletedProcess:
@@ -159,7 +163,7 @@ def health():
     }
 
 
-@app.post("/normalize")
+@v1.post("/normalize")
 async def normalize(file: UploadFile):
     contents = await file.read()
     if not contents:
@@ -194,6 +198,9 @@ async def normalize(file: UploadFile):
         media_type="application/zip",
         headers={"Content-Disposition": 'attachment; filename="bundle.zip"'},
     )
+
+
+app.include_router(v1)
 
 
 if __name__ == "__main__":

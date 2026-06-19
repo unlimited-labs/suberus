@@ -30,7 +30,7 @@ export async function normalizeDocx(
 ): Promise<Buffer> {
 	const form = new FormData();
 	form.append("file", new Blob([new Uint8Array(bytes)]), fileName);
-	const res = await fetch(`${baseUrl()}/normalize`, {
+	const res = await fetch(`${baseUrl()}/v1/normalize`, {
 		method: "POST",
 		body: form,
 	});

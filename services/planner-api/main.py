@@ -2,9 +2,12 @@
 Planner API: constrained k-means clustering for conference session assignment.
 
 Endpoints:
-  GET  /           → health check
-  POST /cluster    → given N items with embeddings, partition into K clusters
+  GET  /            → health check (unversioned)
+  POST /v1/cluster  → given N items with embeddings, partition into K clusters
                       each of size in [ceil(N/K) - tol, ceil(N/K) + tol]
+
+Functional endpoints are versioned under /v1 so a future contract change can ship /v2
+while older app deploys keep calling /v1. Health stays unversioned at /.
 
 Stateless. Expects embeddings as input (TS side owns pgvector cache).
 """
@@ -14,11 +17,12 @@ import os
 from typing import Annotated
 
 import numpy as np
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, FastAPI, HTTPException
 from k_means_constrained import KMeansConstrained
 from pydantic import BaseModel, Field
 
 app = FastAPI(title="Suberus Planner API")
+v1 = APIRouter(prefix="/v1")
 
 
 class Item(BaseModel):
@@ -49,7 +53,7 @@ def health() -> dict[str, str]:
     return {"status": "healthy"}
 
 
-@app.post("/cluster", response_model=ClusterResponse)
+@v1.post("/cluster", response_model=ClusterResponse)
 def cluster(req: Annotated[ClusterRequest, ...]) -> ClusterResponse:
     n = len(req.items)
     k = req.session_count
@@ -109,6 +113,9 @@ def cluster(req: Annotated[ClusterRequest, ...]) -> ClusterResponse:
         size_min=size_min,
         size_max=size_max,
     )
+
+
+app.include_router(v1)
 
 
 if __name__ == "__main__":

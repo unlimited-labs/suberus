@@ -2,15 +2,18 @@
 Minimal Docling document conversion server (DOCX/PDF -> markdown/JSON/DocTags/bundle).
 
 Endpoints:
-  GET  /           -> health check
-  POST /           -> markdown output
-  POST /json       -> docling JSON structure
-  POST /doctags    -> DocTags output
-  POST /bundle     -> application/zip: document.md (figure refs -> figures/<sha256>.png),
-                      content-addressed figures/*.png, document.json (no inline base64),
-                      meta.json (docling/schema versions for cache keying).
-                      Used by the submission version-diff feature; opt-in so the default
-                      extraction path stays lean (figures are NOT rendered for /, /json).
+  GET  /              -> health check (unversioned)
+  POST /v1/markdown   -> markdown output
+  POST /v1/json       -> docling JSON structure
+  POST /v1/doctags    -> DocTags output
+  POST /v1/bundle     -> application/zip: document.md (figure refs -> figures/<sha256>.png),
+                         content-addressed figures/*.png, document.json (no inline base64),
+                         meta.json (docling/schema versions for cache keying).
+                         Used by the submission version-diff feature; opt-in so the default
+                         extraction path stays lean (figures are NOT rendered for markdown/json).
+
+Functional endpoints are versioned under /v1 so a future contract change can ship /v2
+while older app deploys keep calling /v1. Health stays unversioned at /.
 """
 
 import base64
@@ -28,7 +31,7 @@ from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import EasyOcrOptions, PdfPipelineOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption
 from docling_core.types.doc import ImageRefMode
-from fastapi import FastAPI, HTTPException, Response, UploadFile
+from fastapi import APIRouter, FastAPI, HTTPException, Response, UploadFile
 
 easyocr_path = os.getenv("EASYOCR_MODULE_PATH")
 easyocr_options = EasyOcrOptions(download_enabled=True)
@@ -78,6 +81,7 @@ def get_image_converter() -> DocumentConverter:
 
 
 app = FastAPI()
+v1 = APIRouter(prefix="/v1")
 
 
 async def _to_temp(file: UploadFile) -> str:
@@ -104,19 +108,19 @@ def health():
     return {"status": "healthy"}
 
 
-@app.post("/")
+@v1.post("/markdown")
 async def to_markdown(file: UploadFile):
     doc = await convert_upload(file)
     return {"markdown": doc.export_to_markdown()}
 
 
-@app.post("/json")
+@v1.post("/json")
 async def to_json(file: UploadFile):
     doc = await convert_upload(file)
     return doc.model_dump(mode="json")
 
 
-@app.post("/doctags")
+@v1.post("/doctags")
 async def to_doctags(file: UploadFile):
     doc = await convert_upload(file)
     return {"doctags": doc.export_to_document_tokens()}
@@ -125,7 +129,7 @@ async def to_doctags(file: UploadFile):
 _DATA_URI_RE = re.compile(r"data:image/[^;]+;base64,([A-Za-z0-9+/=]+)")
 
 
-@app.post("/bundle")
+@v1.post("/bundle")
 async def to_bundle(file: UploadFile):
     """Convert WITH figure rendering and return a zip bundle for the diff pipeline."""
     tmp_path = await _to_temp(file)
@@ -183,6 +187,9 @@ def _safe_version(pkg: str) -> str | None:
         return _pkg_version(pkg)
     except Exception:
         return None
+
+
+app.include_router(v1)
 
 
 if __name__ == "__main__":

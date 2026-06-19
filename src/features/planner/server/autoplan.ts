@@ -76,7 +76,7 @@ async function callClusterApi(
 	sessionCount: number,
 ): Promise<ClusterApiResponse> {
 	if (!env.PLANNER_API_URL) throw new Error("PLANNER_API_URL not configured");
-	const res = await fetch(`${env.PLANNER_API_URL}/cluster`, {
+	const res = await fetch(`${env.PLANNER_API_URL}/v1/cluster`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({

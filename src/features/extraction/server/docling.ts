@@ -18,6 +18,12 @@ export interface DoclingHealthResult {
 
 const healthCache = createHealthCache<boolean>(60_000);
 
+/** Base URL without trailing slash. Health probes hit the root; functional
+ * endpoints are versioned under `/v1` (see services/docling-api). */
+function baseUrl(): string {
+	return (env.DOCLING_URL ?? "").replace(/\/+$/, "");
+}
+
 async function isDoclingHealthy(): Promise<boolean> {
 	if (!env.DOCLING_URL) return false;
 
@@ -76,7 +82,7 @@ export async function getDoclingMarkdown(
 		const form = new FormData();
 		form.append("file", new Blob([new Uint8Array(buffer)]), fileName);
 
-		const response = await fetch(env.DOCLING_URL, {
+		const response = await fetch(`${baseUrl()}/v1/markdown`, {
 			method: "POST",
 			body: form,
 			signal: AbortSignal.timeout(120_000),
