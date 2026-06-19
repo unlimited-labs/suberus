@@ -85,7 +85,7 @@ export async function diffVersionArtifacts(
 }
 
 /** Resolve a version's current normalized-HTML key, if it has one under the live toolchain. */
-async function resolveHtmlKeyForVersion(
+export async function resolveHtmlKeyForVersion(
 	versionId: string,
 ): Promise<string | null> {
 	const version = await prisma.submissionVersion.findUnique({

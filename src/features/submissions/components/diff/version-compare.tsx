@@ -5,6 +5,7 @@ import {
 	IconLayoutRows,
 } from "@tabler/icons-react";
 import { useMemo } from "react";
+import { FileRedlineView } from "@/features/submission-diff/components/file-redline-view";
 import type { EditorVersion } from "@/features/submissions/components/admin/detail/availability";
 import { TextDiffView } from "@/shared/components/diff/text-diff-view";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
@@ -165,8 +166,8 @@ function FileRows({
 			</div>
 			{isFileChanged && (
 				<p className="text-xs text-muted-foreground/80">
-					An inline redline of the file contents is coming in a later iteration;
-					the originals can be downloaded from the Content tab.
+					See the inline redline of the file contents below; the originals can
+					be downloaded from the Content tab.
 				</p>
 			)}
 		</div>
@@ -302,7 +303,34 @@ function VersionCompareBody({
 					compareLabel={compareLabel}
 				/>
 			</Panel>
+
+			<FileChangesPanel
+				baseV={baseV}
+				compareV={compareV}
+				samePair={samePair}
+				isFileChanged={isFileChanged}
+			/>
 		</div>
+	);
+}
+
+/** File-level redline panel — shown only when the attached file actually changed. */
+function FileChangesPanel({
+	baseV,
+	compareV,
+	samePair,
+	isFileChanged,
+}: {
+	baseV: EditorVersion;
+	compareV: EditorVersion;
+	samePair: boolean;
+	isFileChanged: boolean;
+}) {
+	if (samePair || !isFileChanged) return null;
+	return (
+		<Panel title="File changes (redline)">
+			<FileRedlineView oldVersionId={baseV.id} newVersionId={compareV.id} />
+		</Panel>
 	);
 }
 
