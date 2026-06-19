@@ -2,7 +2,7 @@ import { UserRole } from "@/generated/prisma/enums";
 import { prisma } from "@/shared/server/db.server";
 import { getFileBuffer } from "@/shared/server/storage";
 import { diffVersionArtifacts, resolveHtmlKeyForVersion } from "./diff-version";
-import { rewriteFigureSrcs } from "./figure-refs";
+import { inlineFigures } from "./figure-inline";
 import { renderMathInHtml } from "./render-math";
 
 const PRIVILEGED_ROLES: UserRole[] = [UserRole.ADMIN, UserRole.EDITOR];
@@ -82,8 +82,8 @@ export interface VersionRedline {
 /**
  * Redline HTML for a version pair (defaults to the previous version), for the
  * Compare surface. Returns null when access is denied, there is no previous
- * version, or either side isn't normalized yet. Figure refs are rewritten to the
- * auth-gated proxy route.
+ * version, or either side isn't normalized yet. Figures are inlined as `data:`
+ * URIs so the redline iframe is fully self-contained.
  */
 export async function getVersionRedline(
 	input: { newVersionId: string; oldVersionId?: string },
@@ -115,7 +115,7 @@ export async function getVersionRedline(
 	});
 	const redlineHtml = (await getFileBuffer(diff.redlineKey)).toString("utf8");
 	return {
-		html: renderMathInHtml(rewriteFigureSrcs(redlineHtml)),
+		html: renderMathInHtml(await inlineFigures(redlineHtml)),
 		insertions: diff.insertions,
 		deletions: diff.deletions,
 	};
