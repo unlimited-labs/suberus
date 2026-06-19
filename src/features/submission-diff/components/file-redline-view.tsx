@@ -3,7 +3,8 @@ import { versionRedlineQueryOptions } from "@/features/submission-diff/api";
 
 /** Wrap the sanitized redline fragment in a minimal self-contained document. */
 function wrapRedline(html: string): string {
-	return `<!doctype html><html><head><meta charset="utf-8"><style>
+	return `<!doctype html><html><head><meta charset="utf-8">
+	<link rel="stylesheet" href="/katex/katex.min.css"><style>
 		body{font:14px/1.6 system-ui,-apple-system,sans-serif;margin:0;padding:12px;color:#0f172a}
 		img{max-width:100%;height:auto}
 		ins{background:#dcfce7;text-decoration:none}

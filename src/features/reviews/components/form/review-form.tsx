@@ -160,7 +160,6 @@ export function ReviewForm({
 											rows={4}
 											placeholder="Internal notes visible only to editors and admins..."
 											className="text-foreground"
-											description="Only visible to editors and administrators"
 											disabled={readOnly}
 										/>
 									)}

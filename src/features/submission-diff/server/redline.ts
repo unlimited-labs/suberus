@@ -3,6 +3,7 @@ import { prisma } from "@/shared/server/db.server";
 import { getFileBuffer } from "@/shared/server/storage";
 import { diffVersionArtifacts, resolveHtmlKeyForVersion } from "./diff-version";
 import { rewriteFigureSrcs } from "./figure-refs";
+import { renderMathInHtml } from "./render-math";
 
 const PRIVILEGED_ROLES: UserRole[] = [UserRole.ADMIN, UserRole.EDITOR];
 
@@ -114,7 +115,7 @@ export async function getVersionRedline(
 	});
 	const redlineHtml = (await getFileBuffer(diff.redlineKey)).toString("utf8");
 	return {
-		html: rewriteFigureSrcs(redlineHtml),
+		html: renderMathInHtml(rewriteFigureSrcs(redlineHtml)),
 		insertions: diff.insertions,
 		deletions: diff.deletions,
 	};
