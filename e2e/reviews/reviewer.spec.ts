@@ -423,3 +423,127 @@ test.describe("Reviewer - Revision diff", () => {
 		await expect(page.getByTestId("reviewer-diff-toggle")).toHaveCount(0);
 	});
 });
+
+test.describe("Reviewer - Compare page", () => {
+	const twoVersions = (title: string) => [
+		{
+			title,
+			content:
+				"The model presents an approach to nucleation. Cooling at 45 C/s was sampled.",
+		},
+		{
+			title,
+			content:
+				"The model proposes a novel approach to nucleation. Cooling at 30 C/s was sampled. A validation set was added.",
+		},
+	];
+
+	test("opens the side-by-side compare page from the review form", async ({
+		page,
+		reviewerAssignmentsPage,
+		testRun,
+		cleanup,
+	}) => {
+		// Arrange — assigned submission with two versions to compare.
+		const { submissionId, title } = await createSubmissionWithAssignment({
+			testRunId: testRun.testRunId,
+			title: "Reviewer Compare Page Test",
+		});
+		cleanup.track(submissionId);
+		await addSubmissionVersions(submissionId, twoVersions(title));
+
+		// Act — open the review form, follow the "Compare versions" link.
+		await reviewerAssignmentsPage.openReviewForm(title);
+		await page.getByTestId("reviewer-compare-link").click();
+		await page.waitForURL(/\/reviews\/[a-f0-9-]+\/compare/);
+
+		// Assert — side-by-side panels: deletions on the left, insertions on the right.
+		const header = page.getByTestId("diff-comparing-header");
+		await expect(header).toContainText("Comparing v1");
+		await expect(header).toContainText("v2");
+		await expect(page.getByTestId("side-by-side-diff")).toBeVisible();
+		await expect(
+			page.getByTestId("diff-side-old").getByTestId("diff-del").first(),
+		).toBeVisible();
+		await expect(
+			page.getByTestId("diff-side-new").getByTestId("diff-ins").first(),
+		).toBeVisible();
+	});
+
+	test("switches between side-by-side and inline layouts", async ({
+		page,
+		reviewerAssignmentsPage,
+		testRun,
+		cleanup,
+	}) => {
+		const { submissionId, title } = await createSubmissionWithAssignment({
+			testRunId: testRun.testRunId,
+			title: "Reviewer Compare Layout Test",
+		});
+		cleanup.track(submissionId);
+		await addSubmissionVersions(submissionId, twoVersions(title));
+
+		await reviewerAssignmentsPage.openReviewForm(title);
+		await page.getByTestId("reviewer-compare-link").click();
+		await page.waitForURL(/\/compare/);
+
+		await expect(page.getByTestId("side-by-side-diff")).toBeVisible();
+
+		await page.getByTestId("diff-layout-inline").click();
+		await expect(page.getByTestId("text-diff").first()).toBeVisible();
+		await expect(page.getByTestId("side-by-side-diff")).toHaveCount(0);
+	});
+
+	test("lets the reviewer pick a different base version", async ({
+		page,
+		reviewerAssignmentsPage,
+		testRun,
+		cleanup,
+	}) => {
+		const { submissionId, title } = await createSubmissionWithAssignment({
+			testRunId: testRun.testRunId,
+			title: "Reviewer Compare Picker Test",
+		});
+		cleanup.track(submissionId);
+		await addSubmissionVersions(submissionId, [
+			{ title, content: "First version content alpha." },
+			{ title, content: "Second version content beta." },
+			{ title, content: "Third version content gamma." },
+		]);
+
+		await reviewerAssignmentsPage.openReviewForm(title);
+		await page.getByTestId("reviewer-compare-link").click();
+		await page.waitForURL(/\/compare/);
+
+		// Default pair is previous -> current (v2 -> v3).
+		await expect(page.getByTestId("diff-comparing-header")).toContainText(
+			"Comparing v2",
+		);
+
+		// Switch the base picker to v1; header updates to v1 -> v3.
+		await page.getByTestId("diff-base-select").click();
+		await page.getByRole("option", { name: /Version 1/ }).click();
+		await expect(page.getByTestId("diff-comparing-header")).toContainText(
+			"Comparing v1",
+		);
+	});
+
+	test("Compare link is hidden when there is only one version", async ({
+		page,
+		reviewerAssignmentsPage,
+		testRun,
+		cleanup,
+	}) => {
+		const { submissionId, title } = await createSubmissionWithAssignment({
+			testRunId: testRun.testRunId,
+			title: "Reviewer Single Version Compare Test",
+		});
+		cleanup.track(submissionId);
+		await addSubmissionVersions(submissionId, [
+			{ title, content: "Only one version of this submission exists." },
+		]);
+
+		await reviewerAssignmentsPage.openReviewForm(title);
+		await expect(page.getByTestId("reviewer-compare-link")).toHaveCount(0);
+	});
+});

@@ -75,6 +75,27 @@ export async function getAssignmentForReview(
 		} | null;
 		/** Immediately-preceding version (round-over-round diff), if any. */
 		previousVersion: { title: string; content: string } | null;
+		currentVersionNumber: number;
+		/**
+		 * All versions for the side-by-side compare page. Blind-safe: only
+		 * versioned fields (title/content/file); `comment` (author's note) is
+		 * dropped to avoid leaking author identity in blind review.
+		 */
+		versions: Array<{
+			id: string;
+			version: number;
+			title: string;
+			content: string;
+			comment: string | null;
+			createdAt: Date;
+			file: {
+				id: string;
+				fileName: string;
+				originalName: string;
+				mimeType: string;
+				size: number;
+			} | null;
+		}>;
 	};
 	config: {
 		reviewMode: ReviewMode;
@@ -120,7 +141,22 @@ export async function getAssignmentForReview(
 						},
 					},
 					versions: {
-						select: { version: true, title: true, content: true },
+						select: {
+							id: true,
+							version: true,
+							title: true,
+							content: true,
+							createdAt: true,
+							file: {
+								select: {
+									id: true,
+									fileName: true,
+									originalName: true,
+									mimeType: true,
+									size: true,
+								},
+							},
+						},
 						orderBy: { version: "desc" },
 					},
 				},
@@ -167,6 +203,16 @@ export async function getAssignmentForReview(
 				assignment.submission.versions,
 				assignment.submission.currentVersion?.version,
 			),
+			currentVersionNumber: assignment.submission.currentVersion?.version ?? 1,
+			versions: assignment.submission.versions.map((v) => ({
+				id: v.id,
+				version: v.version,
+				title: v.title,
+				content: v.content,
+				comment: null,
+				createdAt: v.createdAt,
+				file: v.file,
+			})),
 		},
 		config: {
 			reviewMode: config.reviewMode,

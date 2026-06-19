@@ -4,13 +4,16 @@ import {
 	IconDownload,
 	IconFile,
 	IconFileText,
+	IconGitCompare,
 	IconStarFilled,
 } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import type { SubmissionType } from "@/generated/prisma/enums";
 import { typeLabels } from "@/shared/lib/labels/submission";
 import { cn, formatFileSize } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import { RevisionDiffPanel } from "./revision-diff-panel";
 
 interface SubmissionAuthor {
@@ -36,11 +39,13 @@ interface SubmissionPreviewProps {
 		previousVersion?: { title: string; content: string } | null;
 	};
 	reviewMode: "OPEN" | "SINGLE_BLIND" | "DOUBLE_BLIND";
+	assignmentId: string;
 }
 
 export function SubmissionPreview({
 	submission,
 	reviewMode,
+	assignmentId,
 }: SubmissionPreviewProps) {
 	const [contentExpanded, setContentExpanded] = useState(false);
 	const previous = submission.previousVersion;
@@ -100,11 +105,25 @@ export function SubmissionPreview({
 
 			{/* Changes since previous version (round-over-round revision diff) */}
 			{previous && (
-				<RevisionDiffPanel
-					previous={previous}
-					title={submission.title}
-					content={submission.content ?? ""}
-				/>
+				<div className="mb-6 space-y-3">
+					<div className="flex justify-end">
+						<Button asChild variant="outline" size="sm" className="gap-2">
+							<Link
+								to="/reviews/$assignmentId/compare"
+								params={{ assignmentId }}
+								data-testid="reviewer-compare-link"
+							>
+								<IconGitCompare className="size-4" />
+								Compare versions
+							</Link>
+						</Button>
+					</div>
+					<RevisionDiffPanel
+						previous={previous}
+						title={submission.title}
+						content={submission.content ?? ""}
+					/>
+				</div>
 			)}
 
 			{/* Submission Content Section */}

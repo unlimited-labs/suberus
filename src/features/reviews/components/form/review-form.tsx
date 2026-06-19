@@ -19,6 +19,7 @@ interface SubmissionAuthor {
 interface ReviewFormProps {
 	onSubmit: (data: ReviewFormData) => Promise<void>;
 	initialData?: Partial<ReviewFormData>;
+	assignmentId: string;
 	submission: {
 		title: string;
 		type: SubmissionType | string;
@@ -51,6 +52,7 @@ interface ReviewFormProps {
 export function ReviewForm({
 	onSubmit,
 	initialData,
+	assignmentId,
 	submission,
 	reviewMode,
 	guidelines,
@@ -77,6 +79,7 @@ export function ReviewForm({
 						<SubmissionPreview
 							submission={submission}
 							reviewMode={reviewMode}
+							assignmentId={assignmentId}
 						/>
 
 						<form

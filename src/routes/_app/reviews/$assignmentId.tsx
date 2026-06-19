@@ -120,6 +120,7 @@ function ReviewFormPage() {
 			<div className="flex-1 p-6 overflow-auto">
 				<ReviewForm
 					readOnly={isReadOnly}
+					assignmentId={assignment.id}
 					onSubmit={handleSubmit}
 					submission={{
 						title: submission.title,
