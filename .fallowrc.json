@@ -49,7 +49,8 @@
       { "name": "dashboard", "patterns": ["src/features/dashboard/**"] },
       { "name": "tracks", "patterns": ["src/features/tracks/**"] },
       { "name": "email-templates", "patterns": ["src/features/email-templates/**"] },
-      { "name": "install", "patterns": ["src/features/install/**"] }
+      { "name": "install", "patterns": ["src/features/install/**"] },
+      { "name": "submission-diff", "patterns": ["src/features/submission-diff/**"] }
     ],
     "rules": [
       { "from": "shared", "allow": [] },
@@ -82,7 +83,8 @@
       { "from": "dashboard", "allow": ["shared", "settings", "activity-log", "auth"] },
       { "from": "tracks", "allow": ["shared", "auth", "reviews"] },
       { "from": "email-templates", "allow": ["shared", "settings", "auth"] },
-      { "from": "install", "allow": ["shared", "settings", "auth"] }
+      { "from": "install", "allow": ["shared", "settings", "auth"] },
+      { "from": "submission-diff", "allow": ["shared", "settings", "auth"] }
     ],
     "coverage": {
       "requireAllFiles": true,

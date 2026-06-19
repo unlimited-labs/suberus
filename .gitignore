@@ -63,3 +63,7 @@ skills-lock.json
 
 # Local research POC (not shipped)
 poc/
+
+# Python bytecode (sidecar services)
+__pycache__/
+*.pyc

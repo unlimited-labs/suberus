@@ -2,7 +2,12 @@ import { PgBoss } from "pg-boss";
 import { env } from "@/env.ts";
 import { logger } from "@/logger.ts";
 
-const QUEUES = ["extraction", "autoplan", "bulk-email"] as const;
+const QUEUES = [
+	"extraction",
+	"autoplan",
+	"bulk-email",
+	"submission-diff",
+] as const;
 
 let _initPromise: Promise<PgBoss> | null = null;
 

@@ -41,6 +41,9 @@ export const env = createEnv({
 		// Docling API (optional, enhances LLM extraction with better markdown)
 		DOCLING_URL: z.url().optional(),
 
+		// docx-api (optional, DOCX->HTML normalize bundle for the version-diff pipeline)
+		DOCX_API_URL: z.url().optional(),
+
 		// Planner API (optional, enables auto session clustering)
 		PLANNER_API_URL: z.url().optional(),
 		LLM_CONCURRENCY: z.coerce.number().int().positive().default(4),

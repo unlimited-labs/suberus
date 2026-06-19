@@ -121,32 +121,32 @@ model Keyword {
 }
 
 model Submission {
-  id                String              @id @default(uuid()) @db.Uuid
-  sequentialNumber  Int                 @unique @default(autoincrement())
+  id                String               @id @default(uuid()) @db.Uuid
+  sequentialNumber  Int                  @unique @default(autoincrement())
   type              SubmissionType
   title             String
   content           String
-  status            SubmissionStatus    @default(DRAFT)
-  currentRound      Int                 @default(1)
-  userId            String              @db.Uuid
-  trackId           String?             @db.Uuid
-  presenterId       String?             @db.Uuid
-  currentVersionId  String?             @unique @db.Uuid
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  status            SubmissionStatus     @default(DRAFT)
+  currentRound      Int                  @default(1)
+  userId            String               @db.Uuid
+  trackId           String?              @db.Uuid
+  presenterId       String?              @db.Uuid
+  currentVersionId  String?              @unique @db.Uuid
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
   editorDecisions   EditorDecision[]
   reviewAssignments ReviewAssignment[]
   reviews           Review[]
-  authors           SubmissionAuthor[]  @relation("SubmissionAuthors")
+  authors           SubmissionAuthor[]   @relation("SubmissionAuthors")
   presentationSlot  PresentationSlot?
   embedding         SubmissionEmbedding?
   keywords          SubmissionKeyword[]
   activityLog       ActivityLog[]
-  versions          SubmissionVersion[] @relation("SubmissionVersions")
-  currentVersion    SubmissionVersion?  @relation("CurrentVersion", fields: [currentVersionId], references: [id])
-  presenterAuthor   SubmissionAuthor?   @relation("PresenterAuthor", fields: [presenterId], references: [id])
-  track             ConferenceTrack?    @relation(fields: [trackId], references: [id])
-  user              User                @relation("SubmissionOwner", fields: [userId], references: [id])
+  versions          SubmissionVersion[]  @relation("SubmissionVersions")
+  currentVersion    SubmissionVersion?   @relation("CurrentVersion", fields: [currentVersionId], references: [id])
+  presenterAuthor   SubmissionAuthor?    @relation("PresenterAuthor", fields: [presenterId], references: [id])
+  track             ConferenceTrack?     @relation(fields: [trackId], references: [id])
+  user              User                 @relation("SubmissionOwner", fields: [userId], references: [id])
   exhibitor         Exhibitor?
 
   @@index([userId])
@@ -396,6 +396,9 @@ model File {
   uploadedById       String?             @db.Uuid
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
+  // sha256 of the stored bytes; content-addressing + "file unchanged" detection
+  // for the version-diff pipeline. Nullable: backfilled lazily on first access.
+  sha256             String?             @db.Char(64)
   uploadedBy         User?               @relation(fields: [uploadedById], references: [id])
   submissionVersions SubmissionVersion[]
 
@@ -404,7 +407,67 @@ model File {
   @@index([type])
   @@index([storageKey])
   @@index([entityType, entityId, createdAt])
+  @@index([sha256])
   @@map("files")
+}
+
+/// Kind of source artifact normalized for diffing. PDF deferred post-v1.
+enum ArtifactKind {
+  DOCX
+}
+
+/// Immutable normalized-HTML artifact for one source file under one toolchain.
+/// Content-addressed: the unique key is the full toolchain fingerprint
+/// (sourceSha256 + kind + pandoc/normalizer/schema versions), so identical
+/// source bytes under the same toolchain dedupe across versions/submissions.
+/// NEVER regenerated on read; a toolchain bump produces a NEW row (the old one
+/// is kept — immutable-forever). The HTML itself lives in Garage at `htmlKey`,
+/// never in a column (avoids a wide-column seq-scan cliff).
+model SubmissionVersionArtifact {
+  id                   String       @id @default(uuid()) @db.Uuid
+  sourceSha256         String       @db.Char(64)
+  kind                 ArtifactKind
+  pandocVersion        String
+  normalizerConfigHash String       @db.Char(64)
+  schemaVersion        Int
+  htmlKey              String
+  warnings             String?
+  createdAt            DateTime     @default(now())
+
+  @@unique([sourceSha256, kind, pandocVersion, normalizerConfigHash, schemaVersion])
+  @@map("submission_version_artifacts")
+}
+
+/// Immutable redline between two normalized artifacts. Content-addressed by the
+/// pair of artifact HTML shas, so identical content pairs dedupe regardless of
+/// which versions requested them. `oldVersionId`/`newVersionId` are the displayed
+/// pair (plain columns, no relation — keeps SubmissionVersion decoupled).
+model VersionDiffArtifact {
+  id             String   @id @default(uuid()) @db.Uuid
+  oldArtifactSha String   @db.Char(64)
+  newArtifactSha String   @db.Char(64)
+  oldVersionId   String   @db.Uuid
+  newVersionId   String   @db.Uuid
+  redlineKey     String
+  insCount       Int      @default(0)
+  delCount       Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  @@unique([oldArtifactSha, newArtifactSha])
+  @@index([oldVersionId, newVersionId])
+  @@map("version_diff_artifacts")
+}
+
+/// Reference-counted content-addressed blob (rasterized figures shared across
+/// artifacts). Never `deleteFile` a `cas/` object without decrementing refCount
+/// to 0 first — shared figures would vanish from other diffs.
+model Blob {
+  sha256    String   @id @db.Char(64)
+  size      Int
+  refCount  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@map("blobs")
 }
 
 model Session {
@@ -469,18 +532,18 @@ model SentReminder {
 }
 
 model SurveyQuestion {
-  id         String             @id @default(uuid()) @db.Uuid
-  label      String
-  type       SurveyQuestionType @default(CHECKBOX)
-  options    Json?
-  isRequired Boolean            @default(false)
-  orderIndex Int                @default(0)
-  isActive   Boolean            @default(true)
-  showInUsersList Boolean       @default(false)
-  fieldName  String?
-  createdAt  DateTime           @default(now())
-  updatedAt  DateTime           @updatedAt
-  answers    SurveyAnswer[]
+  id              String             @id @default(uuid()) @db.Uuid
+  label           String
+  type            SurveyQuestionType @default(CHECKBOX)
+  options         Json?
+  isRequired      Boolean            @default(false)
+  orderIndex      Int                @default(0)
+  isActive        Boolean            @default(true)
+  showInUsersList Boolean            @default(false)
+  fieldName       String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  answers         SurveyAnswer[]
 
   @@index([isActive, orderIndex])
   @@map("survey_questions")
@@ -503,20 +566,20 @@ model SurveyAnswer {
 }
 
 model Invitation {
-  id          String           @id @default(uuid()) @db.Uuid
-  email       String
-  role        UserRole
-  token       String           @unique
-  status      InvitationStatus @default(PENDING)
-  expiresAt   DateTime
-  createdById String           @db.Uuid
-  usedById    String?          @unique @db.Uuid
-  usedAt      DateTime?
+  id            String           @id @default(uuid()) @db.Uuid
+  email         String
+  role          UserRole
+  token         String           @unique
+  status        InvitationStatus @default(PENDING)
+  expiresAt     DateTime
+  createdById   String           @db.Uuid
+  usedById      String?          @unique @db.Uuid
+  usedAt        DateTime?
   roleAppliedAt DateTime?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  createdBy   User             @relation("InvitationCreator", fields: [createdById], references: [id])
-  usedBy      User?            @relation("InvitationUser", fields: [usedById], references: [id])
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  createdBy     User             @relation("InvitationCreator", fields: [createdById], references: [id])
+  usedBy        User?            @relation("InvitationUser", fields: [usedById], references: [id])
 
   @@index([email])
   @@index([token])
@@ -760,12 +823,12 @@ model Exhibitor {
 }
 
 model JobProgress {
-  id        String   @id @default(uuid()) @db.Uuid
-  queue     String
-  status    String   @default("pending") // pending | running | done | error
-  stage     String   @default("queued")
-  current   Int      @default(0)
-  total     Int      @default(0)
+  id          String   @id @default(uuid()) @db.Uuid
+  queue       String
+  status      String   @default("pending") // pending | running | done | error
+  stage       String   @default("queued")
+  current     Int      @default(0)
+  total       Int      @default(0)
   error       String?
   result      Json?
   createdById String?  @map("created_by_id") @db.Uuid

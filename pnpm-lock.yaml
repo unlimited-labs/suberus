@@ -101,6 +101,9 @@ importers:
       '@types/archiver':
         specifier: ^8.0.0
         version: 8.0.0
+      adm-zip:
+        specifier: ^0.5.17
+        version: 0.5.17
       archiver:
         specifier: ^8.0.0
         version: 8.0.0
@@ -137,6 +140,9 @@ importers:
       diff-match-patch:
         specifier: ^1.0.5
         version: 1.0.5
+      dompurify:
+        specifier: ^3.4.11
+        version: 3.4.11
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
@@ -149,6 +155,9 @@ importers:
       html-react-parser:
         specifier: ^6.1.3
         version: 6.1.3(@types/react@19.2.17)(react@19.2.7)
+      jsdom:
+        specifier: ^29.1.1
+        version: 29.1.1(@noble/hashes@2.2.0)
       latinize:
         specifier: ^2.0.0
         version: 2.0.0
@@ -246,6 +255,9 @@ importers:
       '@types/diff-match-patch':
         specifier: ^1.0.36
         version: 1.0.36
+      '@types/jsdom':
+        specifier: ^28.0.3
+        version: 28.0.3
       '@types/latinize':
         specifier: ^0.2.18
         version: 0.2.18
@@ -273,9 +285,6 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^6.0.2
         version: 6.0.2(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.2)(rolldown@1.0.3)(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0)))(babel-plugin-react-compiler@1.0.0)(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0))
-      adm-zip:
-        specifier: ^0.5.17
-        version: 0.5.17
       babel-plugin-react-compiler:
         specifier: ^1.0.0
         version: 1.0.0
@@ -288,9 +297,6 @@ importers:
       fallow:
         specifier: ^2.96.0
         version: 2.96.0
-      jsdom:
-        specifier: ^29.1.1
-        version: 29.1.1(@noble/hashes@2.2.0)
       lefthook:
         specifier: ^2.1.9
         version: 2.1.9
@@ -3074,8 +3080,8 @@ packages:
   '@radix-ui/rect@1.1.2':
     resolution: {integrity: sha512-xnXE7wG13PI+cxieVssYXlQJuYVRhH9NBoxt3KNwzghDIA69GMm7d4wXRouHIYjE+KvS6U/MsMO73NdS2MH9ZA==}
 
-  '@react-grab/cli@0.1.44':
-    resolution: {integrity: sha512-gMDYY2rw6OWajCcDlXSIgs2LC432YJXSb3Lm5yM187uhRgBYddoEVULi36h+IolX3r7jSb3ew7vn9FfI8NSo0A==}
+  '@react-grab/cli@0.1.47':
+    resolution: {integrity: sha512-Cc7d8mSwvoV8gpeTQbE8dMPdeXIyO6w+yIhzgi3jY06i03WLNhb/6jIxNBNF1cVRI7ujnFQXZA66BbnBNTpBSw==}
     hasBin: true
 
   '@reduxjs/toolkit@2.11.2':
@@ -3942,6 +3948,9 @@ packages:
   '@types/geojson@7946.0.16':
     resolution: {integrity: sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==}
 
+  '@types/jsdom@28.0.3':
+    resolution: {integrity: sha512-/HQ2uFoetFTXuye8vzIcHw2z6Fwi7Hi/qcgC+RoS9NCyewiqxhVGqlG+ViGB6lkax481R6dmhf1I7lIGlzJStQ==}
+
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
@@ -3985,6 +3994,12 @@ packages:
 
   '@types/supercluster@7.1.3':
     resolution: {integrity: sha512-Z0pOY34GDFl3Q6hUFYf3HkTwKEE02e7QgtJppBt+beEAxnyOpJua+voGFvxINBHa06GwLFFym7gRPY2SiKIfIA==}
+
+  '@types/tough-cookie@4.0.5':
+    resolution: {integrity: sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==}
+
+  '@types/trusted-types@2.0.7':
+    resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
 
   '@types/use-sync-external-store@0.0.6':
     resolution: {integrity: sha512-zFDAD+tlpf2r4asuHEj0XH6pY6i0g5NeAHPn+15wk3BV6JA69eERFXC1gyGThDkVa1zCyKr5jox1+2LbV/AMLg==}
@@ -4132,6 +4147,10 @@ packages:
 
   agent-install@0.0.5:
     resolution: {integrity: sha512-nHlms9BkP8ZiY79HrwCGiA2DcNaXrAaJrCM/BEqQ7MEsSKyCk+2A76xPGylIfASZSZE0SaU3T0bNSg4rBPIJAQ==}
+    hasBin: true
+
+  agent-install@0.0.6:
+    resolution: {integrity: sha512-7NRMZ/ZDz2vHevQTgJsocBFpakB1/Wx5ip19YSJuj4VOXpraWztTerViNtdSyARKZT9e2yVwUUB5JXXCE7mNrA==}
     hasBin: true
 
   ajv-formats@3.0.1:
@@ -4942,6 +4961,9 @@ packages:
   domhandler@6.0.1:
     resolution: {integrity: sha512-gYzvtM72ZtxQO0T048kd6HWSbbGCNOUwcnfQ01cqIJ4X2IYKFFHZ5mKvrQETcFXxsRObZulDaKmy//R7TPtsBg==}
     engines: {node: '>=20.19.0'}
+
+  dompurify@3.4.11:
+    resolution: {integrity: sha512-zhlUV12GsaRzMsf9q5M254YhA4+VuF0fG+QFqu6aYpoGlKtz+w8//jBcGVYBgQkR5GHjUomejY84AV+/uPbWdw==}
 
   domutils@2.8.0:
     resolution: {integrity: sha512-w96Cjofp72M5IIhpjgobBimYEfoPjx1Vx0BSX9P30WBdZW2WIKU0T1Bd0kz2eNZ9ikjKgHbEyKx8BB6H1L3h3A==}
@@ -7074,8 +7096,8 @@ packages:
     peerDependencies:
       react: ^19.2.7
 
-  react-grab@0.1.44:
-    resolution: {integrity: sha512-bDEwBdI90ljq2lhUtPqmWis/HwYB/CvfT0m5i+P9F83Pt0Ot8o9XL8v00s9jcWzdQUlsFDzmq2FO2CHUe8JY8A==}
+  react-grab@0.1.47:
+    resolution: {integrity: sha512-1GNy24KMJ4CY1IxorYO9mydItGi0L1HkQB19uYU3t0BMsJB0K+D/QYiaBz+rugRynyY8LzmXIuOcon1TykLlCg==}
     hasBin: true
     peerDependencies:
       react: '>=17.0.0'
@@ -10831,9 +10853,9 @@ snapshots:
 
   '@radix-ui/rect@1.1.2': {}
 
-  '@react-grab/cli@0.1.44':
+  '@react-grab/cli@0.1.47':
     dependencies:
-      agent-install: 0.0.5
+      agent-install: 0.0.6
       commander: 14.0.3
       ignore: 7.0.5
       ora: 9.4.0
@@ -11650,6 +11672,13 @@ snapshots:
 
   '@types/geojson@7946.0.16': {}
 
+  '@types/jsdom@28.0.3':
+    dependencies:
+      '@types/node': 25.9.3
+      '@types/tough-cookie': 4.0.5
+      parse5: 8.0.1
+      undici-types: 7.24.6
+
   '@types/json-schema@7.0.15': {}
 
   '@types/latinize@0.2.18': {}
@@ -11686,7 +11715,7 @@ snapshots:
 
   '@types/readdir-glob@1.1.5':
     dependencies:
-      '@types/node': 25.9.2
+      '@types/node': 25.9.3
 
   '@types/relateurl@0.2.33': {}
 
@@ -11701,6 +11730,11 @@ snapshots:
   '@types/supercluster@7.1.3':
     dependencies:
       '@types/geojson': 7946.0.16
+
+  '@types/tough-cookie@4.0.5': {}
+
+  '@types/trusted-types@2.0.7':
+    optional: true
 
   '@types/use-sync-external-store@0.0.6': {}
 
@@ -11825,6 +11859,15 @@ snapshots:
   agent-base@7.1.4: {}
 
   agent-install@0.0.5:
+    dependencies:
+      '@iarna/toml': 2.2.5
+      commander: 14.0.3
+      jsonc-parser: 3.3.1
+      picocolors: 1.1.1
+      prompts: 2.4.2
+      yaml: 2.9.0
+
+  agent-install@0.0.6:
     dependencies:
       '@iarna/toml': 2.2.5
       commander: 14.0.3
@@ -12594,6 +12637,10 @@ snapshots:
   domhandler@6.0.1:
     dependencies:
       domelementtype: 3.0.0
+
+  dompurify@3.4.11:
+    optionalDependencies:
+      '@types/trusted-types': 2.0.7
 
   domutils@2.8.0:
     dependencies:
@@ -15196,9 +15243,9 @@ snapshots:
       react: 19.2.7
       scheduler: 0.27.0
 
-  react-grab@0.1.44(react@19.2.7):
+  react-grab@0.1.47(react@19.2.7):
     dependencies:
-      '@react-grab/cli': 0.1.44
+      '@react-grab/cli': 0.1.47
       bippy: 0.5.41(react@19.2.7)
     optionalDependencies:
       react: 19.2.7
@@ -15251,7 +15298,7 @@ snapshots:
       react: 19.2.7
       react-doctor: 0.5.6(eslint@10.4.1(jiti@2.7.0))
       react-dom: 19.2.7(react@19.2.7)
-      react-grab: 0.1.44(react@19.2.7)
+      react-grab: 0.1.47(react@19.2.7)
     optionalDependencies:
       esbuild: 0.28.0
       unplugin: 3.0.0
