@@ -26,6 +26,7 @@ Suberus runs the full lifecycle of a conference call for submissions: authors su
 
 - **Multiple submission types** — abstracts, full papers, posters, and exhibitor presentations, each with independent configuration. Enable any combination per conference.
 - **Configurable review workflow** — single- or multi-reviewer flows, reviewer-decides vs. editor-decides, multi-round revise-and-resubmit, with full version history. State transitions are validated through an [XState](https://stately.ai/docs) machine.
+- **Version comparison (diff)** — compare any two versions of a submission with a highlighted redline of the title, authors, keywords and content, plus a side-by-side document diff of the uploaded files (figures and equations included) with synced scrolling — no downloading into Word. Editors and assigned reviewers see exactly what changed between rounds.
 - **Blind review** — OPEN / SINGLE BLIND / DOUBLE BLIND per submission type.
 - **Editorial control** — desk accept/reject, decision overrides with reasoning, bulk decisions, custom scoring criteria.
 - **Program planner** — schedule accepted submissions into sessions, with drag-and-drop and an autoplan helper.

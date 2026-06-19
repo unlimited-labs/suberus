@@ -315,22 +315,69 @@ test.describe("docs screenshots", () => {
 			userId: authorUser(3),
 		});
 
-		// Full paper with two versions → version selector on the Content tab
+		// Full paper with two versions → version selector on the Content tab and,
+		// crucially, the version-compare showcase. v1 → v2 changes the title,
+		// content, keywords and author line-up so the side-by-side diff has a real,
+		// highlighted redline to display (this is the product's headline feature).
 		const mv = await createSubmissionWithFile({
 			title: "Coupled CFD-FEM Model of Laser Powder Bed Fusion",
 			type: SubmissionType.FULL_PAPER,
 			status: SubmissionStatus.AWAITING_DECISION,
 			authorData: author(4),
 			userId: authorUser(4),
-			keywords: ["L-PBF", "multiphysics"],
+			content:
+				"We present a coupled CFD-FEM framework for laser powder bed fusion that resolves melt-pool hydrodynamics and the surrounding thermal field on a shared mesh. The model captures Marangoni convection and recoil pressure, and predicts the as-built temperature history used for residual-stress analysis.",
+			keywords: ["L-PBF", "multiphysics", "thermal modelling"],
+			extraAuthors: [
+				{
+					firstName: "Mara",
+					lastName: "Lindholm",
+					affiliationName: "KTH Royal Institute of Technology",
+					isPresenter: false,
+				},
+			],
+		});
+		// Evolve v1's frozen author snapshot for v2 (adds one co-author → an
+		// inserted author line in the diff).
+		const v1 = await db.submissionVersion.findFirstOrThrow({
+			where: { submissionId: mv.id, version: 1 },
+			include: { authorsSnapshot: { orderBy: { orderIndex: "asc" } } },
+		});
+		const v2Authors = v1.authorsSnapshot.map((a) => ({
+			firstName: a.firstName,
+			lastName: a.lastName,
+			email: a.email,
+			affiliation: a.affiliation,
+			orderIndex: a.orderIndex,
+			isPresenter: a.isPresenter,
+		}));
+		v2Authors.push({
+			firstName: "Tomas",
+			lastName: "Novak",
+			email: `novak-${mv.id.slice(0, 8)}@test.com`,
+			affiliation: "Brno University of Technology",
+			orderIndex: v2Authors.length + 1,
+			isPresenter: false,
 		});
 		const v2 = await db.submissionVersion.create({
 			data: {
 				submissionId: mv.id,
 				version: 2,
-				title: "Coupled CFD-FEM Model of Laser Powder Bed Fusion",
-				content: "Revised manuscript addressing reviewer comments.",
+				title:
+					"Coupled CFD-FEM Model of Laser Powder Bed Fusion: A Multiphysics Study",
+				content:
+					"We present a coupled CFD-FEM framework for laser powder bed fusion that resolves melt-pool hydrodynamics and the surrounding thermal field on a shared mesh. The model captures Marangoni convection, recoil pressure and evaporative cooling, and predicts the as-built temperature history used for residual-stress analysis. A grid-independence study confirms the melt-pool depth is resolved to within 3%.",
+				comment:
+					"Revised after first-round reviews: clarified the melt-pool boundary condition, added evaporative cooling, and included a grid-independence study.",
 				fileId: mv.fileId,
+				authorsSnapshot: { create: v2Authors },
+				keywordsSnapshot: {
+					create: [
+						{ name: "L-PBF" },
+						{ name: "multiphysics" },
+						{ name: "melt-pool dynamics" },
+					],
+				},
 			},
 		});
 		await db.submission.update({ where: { id: mv.id }, data: { currentVersionId: v2.id } });
@@ -534,6 +581,17 @@ test.describe("docs screenshots", () => {
 	test("19 submission detail with version selector", async ({ page }) => {
 		await page.goto(`/admin/submissions/${ctx.multiVersionId}`);
 		await shot(page, "19-managing-submission-versions.png");
+	});
+
+	test("34 submission version compare (side-by-side)", async ({ page }) => {
+		await page.goto(
+			`/admin/submissions/${ctx.multiVersionId}/compare?view=split`,
+		);
+		await page
+			.getByTestId("diff-comparing-header")
+			.waitFor({ timeout: 10000 })
+			.catch(() => {});
+		await shot(page, "34-managing-submission-compare.png", { height: 2400 });
 	});
 
 	test("20 assign reviewer dialog", async ({ page }) => {

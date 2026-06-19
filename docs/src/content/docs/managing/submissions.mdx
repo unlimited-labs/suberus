@@ -80,18 +80,25 @@ left, the newer on the right) on desktop, and a single **inline** redline on
 narrow screens; a **Side-by-side / Inline** toggle switches between them. The
 chosen versions and layout live in the page URL, so a comparison can be shared.
 
+Every field panel follows the same model: it **always shows the field's text**
+(never a bare "unchanged" note) and **highlights any change** — insertions
+underlined, deletions struck through (colour is never the only cue). The
+**Side-by-side / Inline** toggle drives all of them: side-by-side reconstructs
+the old and new value in two columns, inline shows one unified redline.
+
 | Field | What it shows |
 |---|---|
 | **Base (older)** / **Compare (newer)** | The two versions being compared. Defaults to the previous version → the current one; change either picker to compare any pair. |
-| **Comparing v_A → v_B** | A sticky header naming the two versions and their dates, the inserted/deleted character counts, and a **File changed / File unchanged** badge. |
-| **Title** | Inline redline of the title. Insertions are underlined, deletions struck through (colour is never the only cue). |
-| **Authors** | Inline redline of the author composition (name, e-mail, affiliation, and who presents) between the two versions — so a changed **author line-up** is visible at a glance. Shown to editors only. |
-| **Keywords** | Inline redline of the keyword/tag set between the two versions. Shown to editors only. |
-| **Attached file** | The file name on each side. (An inline redline of the file *contents* is planned for a later release.) |
+| **Comparing v_A → v_B** | A sticky header naming the two versions and their dates, with a **File changed / File unchanged** badge. If two different versions are completely identical, a banner says so. |
+| **Title** | The title text, with any change highlighted. |
+| **Authors** | The author composition (name, e-mail, affiliation, and who presents), with a changed **author line-up** highlighted. Shown to editors only. |
+| **Keywords** | The keyword/tag set, with any change highlighted. Shown to editors only. |
+| **Attached file** | The file name on each side, with a **File changed / File unchanged** indication. |
 | **Author's note for v_B** | The comment the author left when submitting that version, if any. |
-| **Content** | Side-by-side (or inline) redline of the abstract/content text. |
+| **Content** | The abstract/content text, with any change highlighted. Shown only when the submission has abstract/content text (hidden for file-only submissions). |
+| **File contents** | Shown when the attached file changed. **Side-by-side** reconstructs each version's document in its own panel (with **synced scrolling**, so both sides stay aligned); **Inline** shows a single unified redline of the document. Changed **figures** are framed and labelled (removed / added); equations are rendered. |
 
-🖼️ [Screenshot placeholder: side-by-side version comparison page]
+![Side-by-side version comparison with highlighted title, author, keyword and content changes](../../../assets/screenshots/34-managing-submission-compare.png)
 
 ## How to take a submission through review
 

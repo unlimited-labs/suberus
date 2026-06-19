@@ -73,6 +73,33 @@ async function resolvePair(
 	return { oldVersionId, ...keys };
 }
 
+/** Authorize the caller for the new version, then resolve the normalized pair. */
+async function authorizeAndResolvePair(
+	input: { newVersionId: string; oldVersionId?: string },
+	userId: string,
+	role: UserRole,
+): Promise<ResolvedPair | null> {
+	const newVersion = await prisma.submissionVersion.findUnique({
+		where: { id: input.newVersionId },
+		select: { submissionId: true, version: true },
+	});
+	if (!newVersion) return null;
+	if (!(await canSeeSubmission(newVersion.submissionId, userId, role))) {
+		return null;
+	}
+	return resolvePair(
+		newVersion.submissionId,
+		newVersion.version,
+		input.newVersionId,
+		input.oldVersionId,
+	);
+}
+
+/** Inline figures + render math so an HTML fragment is a self-contained document. */
+async function selfContain(html: string): Promise<string> {
+	return renderMathInHtml(await inlineFigures(html));
+}
+
 export interface VersionRedline {
 	html: string;
 	insertions: number;
@@ -90,21 +117,7 @@ export async function getVersionRedline(
 	userId: string,
 	role: UserRole,
 ): Promise<VersionRedline | null> {
-	const newVersion = await prisma.submissionVersion.findUnique({
-		where: { id: input.newVersionId },
-		select: { submissionId: true, version: true },
-	});
-	if (!newVersion) return null;
-	if (!(await canSeeSubmission(newVersion.submissionId, userId, role))) {
-		return null;
-	}
-
-	const pair = await resolvePair(
-		newVersion.submissionId,
-		newVersion.version,
-		input.newVersionId,
-		input.oldVersionId,
-	);
+	const pair = await authorizeAndResolvePair(input, userId, role);
 	if (!pair) return null;
 
 	const diff = await diffVersionArtifacts({
@@ -115,7 +128,7 @@ export async function getVersionRedline(
 	});
 	const redlineHtml = (await getFileBuffer(diff.redlineKey)).toString("utf8");
 	return {
-		html: renderMathInHtml(await inlineFigures(redlineHtml)),
+		html: await selfContain(redlineHtml),
 		insertions: diff.insertions,
 		deletions: diff.deletions,
 	};

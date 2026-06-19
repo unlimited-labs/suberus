@@ -10,7 +10,6 @@ import { TextDiffView } from "@/shared/components/diff/text-diff-view";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import {
 	type DiffSegment,
-	diffStats,
 	diffText,
 	fileChanged,
 } from "@/shared/lib/text-diff";
@@ -123,16 +122,10 @@ function LayoutToggle({
 function ComparingSummary({
 	baseLabel,
 	compareLabel,
-	insertions,
-	deletions,
-	samePair,
 	isFileChanged,
 }: {
 	baseLabel: string;
 	compareLabel: string;
-	insertions: number;
-	deletions: number;
-	samePair: boolean;
 	isFileChanged: boolean;
 }) {
 	return (
@@ -145,15 +138,6 @@ function ComparingSummary({
 			<span className="font-medium">
 				Comparing {baseLabel} → {compareLabel}
 			</span>
-			{!samePair && (
-				<span className="text-muted-foreground">
-					<span className="text-emerald-600 dark:text-emerald-400">
-						+{insertions}
-					</span>{" "}
-					<span className="text-red-600 dark:text-red-400">−{deletions}</span>{" "}
-					chars in content
-				</span>
-			)}
 			<Badge
 				variant={isFileChanged ? "default" : "secondary"}
 				className="ml-auto"
@@ -201,17 +185,30 @@ function FileRows({
 	);
 }
 
-function ContentDiff({
+/**
+ * One field's diff, sharing the File-contents model: it always shows the text
+ * (not a muted "unchanged" note) and highlights any change, and it follows the
+ * Side-by-side / Inline toggle — split reconstructs old vs new in two columns,
+ * inline shows the unified redline. `emptyLabel` is used only when the field is
+ * genuinely empty on both versions.
+ */
+function FieldDiff({
 	layout,
 	segments,
 	baseLabel,
 	compareLabel,
+	emptyLabel,
 }: {
 	layout: CompareLayout;
 	segments: DiffSegment[];
 	baseLabel: string;
 	compareLabel: string;
+	emptyLabel: string;
 }) {
+	const hasText = segments.some((s) => s.value.length > 0);
+	if (!hasText) {
+		return <p className="text-sm text-muted-foreground">{emptyLabel}</p>;
+	}
 	if (layout === "split") {
 		return (
 			<SideBySideDiffView
@@ -221,7 +218,7 @@ function ContentDiff({
 			/>
 		);
 	}
-	return <TextDiffView segments={segments} emptyLabel="Content unchanged." />;
+	return <TextDiffView segments={segments} />;
 }
 
 interface VersionCompareProps {
@@ -281,9 +278,18 @@ function VersionCompareBody({
 		[baseV.keywords, compareV.keywords],
 	);
 
-	const stats = diffStats(contentSegments);
 	const isFileChanged = fileChanged(fileIdOf(baseV), fileIdOf(compareV));
 	const samePair = base === compare;
+	const hasFieldChange = [
+		titleSegments,
+		contentSegments,
+		authorSegments,
+		keywordSegments,
+	].some((segs) => segs.some((s) => s.type !== "equal"));
+	// Two distinct versions whose every compared field — and the attached file —
+	// is unchanged: surface that explicitly instead of letting the reader hunt for
+	// a diff that isn't there.
+	const identical = !samePair && !hasFieldChange && !isFileChanged;
 	const baseLabel = `v${base} (${formatDate(baseV.createdAt)})`;
 	const compareLabel = `v${compare} (${formatDate(compareV.createdAt)})`;
 
@@ -307,9 +313,6 @@ function VersionCompareBody({
 					<ComparingSummary
 						baseLabel={baseLabel}
 						compareLabel={compareLabel}
-						insertions={stats.insertions}
-						deletions={stats.deletions}
-						samePair={samePair}
 						isFileChanged={isFileChanged}
 					/>
 					{samePair && (
@@ -317,27 +320,48 @@ function VersionCompareBody({
 							Select two different versions to see a diff.
 						</p>
 					)}
+					{identical && (
+						<div
+							className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground"
+							data-testid="diff-identical"
+						>
+							These two versions are identical — nothing changed between{" "}
+							{baseLabel} and {compareLabel}.
+						</div>
+					)}
 				</CardContent>
 			</Card>
 
 			<Panel title="Title">
-				<TextDiffView segments={titleSegments} emptyLabel="Title unchanged." />
+				<FieldDiff
+					layout={layout}
+					segments={titleSegments}
+					baseLabel={baseLabel}
+					compareLabel={compareLabel}
+					emptyLabel="No title."
+				/>
 			</Panel>
 
 			{showMetadata && (
 				<Panel title="Authors">
-					<TextDiffView
+					<FieldDiff
+						layout={layout}
 						segments={authorSegments}
-						emptyLabel="Authors unchanged."
+						baseLabel={baseLabel}
+						compareLabel={compareLabel}
+						emptyLabel="No authors."
 					/>
 				</Panel>
 			)}
 
 			{showMetadata && (
 				<Panel title="Keywords">
-					<TextDiffView
+					<FieldDiff
+						layout={layout}
 						segments={keywordSegments}
-						emptyLabel="Keywords unchanged."
+						baseLabel={baseLabel}
+						compareLabel={compareLabel}
+						emptyLabel="No keywords."
 					/>
 				</Panel>
 			)}
@@ -360,41 +384,61 @@ function VersionCompareBody({
 				</Panel>
 			)}
 
-			<Panel title="Content">
-				<ContentDiff
-					layout={layout}
-					segments={contentSegments}
-					baseLabel={baseLabel}
-					compareLabel={compareLabel}
-				/>
-			</Panel>
+			{(baseV.content || compareV.content) && (
+				<Panel title="Content">
+					<FieldDiff
+						layout={layout}
+						segments={contentSegments}
+						baseLabel={baseLabel}
+						compareLabel={compareLabel}
+						emptyLabel="No content."
+					/>
+				</Panel>
+			)}
 
 			<FileChangesPanel
 				baseV={baseV}
 				compareV={compareV}
 				samePair={samePair}
 				isFileChanged={isFileChanged}
+				layout={layout}
+				baseLabel={baseLabel}
+				compareLabel={compareLabel}
 			/>
 		</div>
 	);
 }
 
-/** File-level redline panel — shown only when the attached file actually changed. */
+/** File-level diff panel — shown only when the attached file actually changed. */
 function FileChangesPanel({
 	baseV,
 	compareV,
 	samePair,
 	isFileChanged,
+	layout,
+	baseLabel,
+	compareLabel,
 }: {
 	baseV: CompareVersion;
 	compareV: CompareVersion;
 	samePair: boolean;
 	isFileChanged: boolean;
+	layout: CompareLayout;
+	baseLabel: string;
+	compareLabel: string;
 }) {
 	if (samePair || !isFileChanged) return null;
 	return (
-		<Panel title="File changes (redline)">
-			<FileRedlineView oldVersionId={baseV.id} newVersionId={compareV.id} />
+		<Panel
+			title={layout === "split" ? "File contents" : "File changes (redline)"}
+		>
+			<FileRedlineView
+				oldVersionId={baseV.id}
+				newVersionId={compareV.id}
+				layout={layout}
+				oldLabel={baseLabel}
+				newLabel={compareLabel}
+			/>
 		</Panel>
 	);
 }
