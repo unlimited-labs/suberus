@@ -2,25 +2,40 @@ import { useQuery } from "@tanstack/react-query";
 import { type Ref, type RefObject, useRef } from "react";
 import { versionRedlineQueryOptions } from "@/features/submission-diff/api";
 
-/** Wrap a sanitized HTML fragment in a minimal self-contained document. */
+/**
+ * Wrap a sanitized HTML fragment in a self-contained "document page". Styling
+ * ports the POC presentation substrate (poc/s1-inline-diff): a centred paper
+ * sheet, boxed changed equations (`.matheq`) instead of struck KaTeX, and
+ * framed changed figures with a label. CSS-only — the iframe is script-less.
+ */
 function wrapDoc(html: string): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="/katex/katex.min.css"><style>
-		body{font:14px/1.6 system-ui,-apple-system,sans-serif;margin:0;padding:12px;color:#0f172a}
+		*{box-sizing:border-box}
+		body{font:15px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;margin:0;padding:24px 16px;background:#f6f7f9;color:#1a1d21}
+		.page{max-width:820px;margin:0 auto;padding:32px 40px;background:#fff;border:1px solid #e3e6ea;border-radius:10px}
+		@media(max-width:768px){body{padding:0}.page{padding:20px 16px;border-radius:0;border-left:none;border-right:none}}
 		img{max-width:100%;height:auto}
-		ins{background:#dcfce7;text-decoration:none}
-		del{background:#fee2e2;text-decoration:line-through}
+		h1,h2,h3{line-height:1.25}
 		table{border-collapse:collapse}
 		td,th{border:1px solid #e2e8f0;padding:4px 8px}
+		ins{background:#d6f5df;text-decoration:none;border-radius:2px;box-shadow:0 0 0 1px #aee5bf}
+		del{background:#ffdce0;color:#9a2530;text-decoration:line-through;border-radius:2px;box-shadow:0 0 0 1px #f5b3bb}
+		/* Box a changed equation instead of striking it through (depends on the
+		   server tagging the wrapper .matheq). */
+		ins.matheq,del.matheq{display:inline-block;padding:4px 8px;margin:2px;text-decoration:none;border-radius:6px;box-shadow:none}
+		ins.matheq{box-shadow:0 0 0 2px #1a7f37}
+		del.matheq{box-shadow:0 0 0 2px #b3202d}
 		/* Box a changed figure instead of striking it through, with a label. */
-		del:has(img),ins:has(img){display:block;padding:8px;margin:12px 0;border:3px solid;border-radius:10px;text-decoration:none}
-		del:has(img) img,ins:has(img) img{display:block}
-		del:has(img){border-color:#dc2626;background:#fef2f2}
-		ins:has(img){border-color:#16a34a;background:#f0fdf4}
+		del:has(img),ins:has(img){display:block;padding:8px;margin:12px 0;border:4px solid;border-radius:10px;text-decoration:none;box-shadow:none}
+		del:has(img) img,ins:has(img) img{display:block;width:100%;border-radius:4px}
+		del:has(img){border-color:#b3202d;background:#ffeef0}
+		ins:has(img){border-color:#1a7f37;background:#e9f9ee}
 		del:has(img)::before,ins:has(img)::before{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
-		del:has(img)::before{content:"− removed figure";color:#dc2626}
-		ins:has(img)::before{content:"+ added figure";color:#16a34a}
-	</style></head><body>${html}</body></html>`;
+		del:has(img)::before{content:"− removed figure";color:#b3202d}
+		ins:has(img)::before{content:"+ added figure";color:#1a7f37}
+	</style></head><body><div class="page">${html}</div></body></html>`;
 }
 
 /**

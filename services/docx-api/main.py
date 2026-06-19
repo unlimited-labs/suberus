@@ -38,7 +38,7 @@ from PIL import Image
 
 # Bundle schema version — bump when the bundle layout or normalize recipe changes
 # (participates in the artifact cache key so historical diffs aren't silently mutated).
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 # Pinned pandoc recipe. `--sandbox` blocks pandoc IO; `--wrap=none` keeps diff-friendly
 # lines; raw HTML is dropped so author-supplied markup can't smuggle script through.
@@ -47,6 +47,7 @@ PANDOC_ARGS = ["-f", "docx+styles", "-t", "html", "--sandbox", "--wrap=none"]
 NORMALIZER_CONFIG = {
     "pandocArgs": PANDOC_ARGS,
     "figures": "all->png",
+    "imgDims": "style->attr@px",
     "schemaVersion": SCHEMA_VERSION,
 }
 NORMALIZER_CONFIG_HASH = hashlib.sha256(
@@ -119,6 +120,56 @@ def _to_png_bytes(src: Path, workdir: Path) -> bytes:
 
 _SRC_RE = re.compile(r'src="([^"]+)"')
 
+# Pandoc emits figure size as an inline `style="width:Xin;height:Yin"`. The node
+# sanitizer strips `style` (it's an XSS vector) but keeps `width`/`height`
+# attributes, so figures otherwise lose their intended size and render full-bleed.
+# Hoist the dimensions into unitless-px attributes here, before the bundle leaves,
+# so they survive sanitization and the redline reproduces the document faithfully.
+_IMG_RE = re.compile(r"<img\b[^>]*>", re.I)
+_STYLE_RE = re.compile(r'style="([^"]*)"', re.I)
+_PX_PER_UNIT = {
+    "px": 1.0,
+    "in": 96.0,
+    "cm": 96.0 / 2.54,
+    "mm": 96.0 / 25.4,
+    "pt": 96.0 / 72.0,
+    "pc": 16.0,
+}
+
+
+def _style_dim_px(prop: str, style: str) -> int | None:
+    m = re.search(rf"\b{prop}\s*:\s*([\d.]+)\s*([a-z%]*)", style, re.I)
+    if not m:
+        return None
+    unit = (m.group(2) or "px").lower()
+    if unit not in _PX_PER_UNIT:  # e.g. "%" — not expressible as a px attribute
+        return None
+    try:
+        return round(float(m.group(1)) * _PX_PER_UNIT[unit])
+    except ValueError:
+        return None
+
+
+def _hoist_img_dims(html: str) -> str:
+    def repl(m: re.Match) -> str:
+        tag = m.group(0)
+        style_m = _STYLE_RE.search(tag)
+        if not style_m:
+            return tag
+        style = style_m.group(1)
+        adds: list[str] = []
+        for prop in ("width", "height"):
+            if re.search(rf"\b{prop}\s*=", tag, re.I):
+                continue  # respect an explicit attribute already present
+            px = _style_dim_px(prop, style)
+            if px is not None:
+                adds.append(f'{prop}="{px}"')
+        if not adds:
+            return tag
+        return "<img " + " ".join(adds) + tag[4:]
+
+    return _IMG_RE.sub(repl, html)
+
 
 def _normalize(docx_path: Path, workdir: Path) -> tuple[str, dict[str, bytes], str]:
     media_dir = workdir / "media"
@@ -130,7 +181,7 @@ def _normalize(docx_path: Path, workdir: Path) -> tuple[str, dict[str, bytes], s
     if proc.returncode != 0:
         raise HTTPException(500, f"pandoc failed: {proc.stderr.decode(errors='replace')[:300]}")
     warnings = proc.stderr.decode(errors="replace").strip()
-    html = html_path.read_text(encoding="utf-8")
+    html = _hoist_img_dims(html_path.read_text(encoding="utf-8"))
 
     figures: dict[str, bytes] = {}
 

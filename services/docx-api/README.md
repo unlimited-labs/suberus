@@ -42,9 +42,11 @@ rather than mutating historical artifacts (immutable-forever).
 
 - `PANDOC_VERSION` is an `ARG` (default 3.5) — pin deliberately; it is recorded in
   every artifact's cache key.
-- Figure sizing: Pandoc emits image dimensions in `style="width..height.."`, which
-  the Node sanitizer's allowlist strips. B2 render must restore size via width/height
-  attrs or the rasterized PNG's natural size (do **not** re-allow `style`).
+- Figure sizing: Pandoc emits image dimensions in `style="width..height.."` (inches),
+  which the Node sanitizer's allowlist strips. `_hoist_img_dims` converts them to
+  unitless-px `width`/`height` attributes (which survive sanitization) before the
+  bundle leaves — do **not** re-allow `style`. Recorded in `NORMALIZER_CONFIG`
+  (`imgDims`), so the cache key changes when this recipe changes.
 - LibreOffice concurrency: each rasterization uses an isolated
   `-env:UserInstallation` profile (gotcha C5). The worker should still cap
   `localConcurrency` for this queue.

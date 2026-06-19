@@ -26,10 +26,19 @@ function protectMath(html: string, tokens: Map<string, string>): string {
 	});
 }
 
+const WRAPPED_MATH_RE = /<(del|ins)\b([^>]*)>(xeqx[0-9a-f]{64}x)<\/\1>/g;
+
 function restoreMath(html: string, tokens: Map<string, string>): string {
-	// A token wrapped in <del>/<ins> restores to the struck/added equation; the
-	// wrapper is preserved by the plain global replace.
-	return html.replace(MATH_TOKEN_RE, (token) => tokens.get(token) ?? token);
+	// A token that htmldiff wrapped on its own in <del>/<ins> is a changed
+	// equation: tag the wrapper `matheq` so the render substrate boxes the whole
+	// formula instead of striking it through (which would mangle the KaTeX).
+	const tagged = html.replace(
+		WRAPPED_MATH_RE,
+		(_m, tag, attrs, token) =>
+			`<${tag} class="matheq"${attrs}>${tokens.get(token) ?? token}</${tag}>`,
+	);
+	// Remaining bare tokens: unchanged equations, or ones diffed alongside text.
+	return tagged.replace(MATH_TOKEN_RE, (token) => tokens.get(token) ?? token);
 }
 
 /** Reparse through parse5 to force a balanced, well-formed tree. */
