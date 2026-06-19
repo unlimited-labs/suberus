@@ -1,5 +1,6 @@
 import {
 	IconArrowLeft,
+	IconDownload,
 	IconFile,
 	IconFileText,
 	IconSend,
@@ -236,7 +237,7 @@ function RevisionForm({
 								/>
 								<Label>Document *</Label>
 								{currentFile && !file && (
-									<div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
+									<div className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-muted/30">
 										<IconFile className="size-5 text-primary" />
 										<div className="flex-1 min-w-0">
 											<p className="text-sm font-medium truncate">
@@ -246,6 +247,20 @@ function RevisionForm({
 												Current file
 											</p>
 										</div>
+										<Button
+											variant="outline"
+											size="sm"
+											className="gap-2"
+											asChild
+										>
+											<a
+												href={`/api/files/${currentFile.id}`}
+												data-testid="file-download-button"
+											>
+												<IconDownload className="size-4" />
+												Download
+											</a>
+										</Button>
 									</div>
 								)}
 								<FileDropzone
