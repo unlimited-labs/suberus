@@ -179,6 +179,22 @@ export const createSubmission = createServerFn({ method: "POST" })
 		}
 	});
 
+/**
+ * Best-effort kick-off of version-diff normalization for a DOCX upload. Kept out
+ * of the upload handler so the handler stays under the complexity threshold;
+ * never throws (the worker is idempotent + content-addressed).
+ */
+async function maybeEnqueueDocxNormalize(
+	ext: string,
+	input: { storageKey: string; fileName: string; fileId: string },
+): Promise<void> {
+	if (ext !== "docx") return;
+	const { enqueueVersionNormalize } = await import(
+		"@/features/submission-diff/server/enqueue"
+	);
+	await enqueueVersionNormalize(input).catch(() => {});
+}
+
 /** File upload endpoint for FILE-based submissions */
 export const uploadSubmissionFile = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
@@ -302,6 +318,12 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 			await prisma.submissionVersion.update({
 				where: { id: submission.currentVersion.id },
 				data: { fileId: file.id },
+			});
+
+			await maybeEnqueueDocxNormalize(detected.ext, {
+				storageKey,
+				fileName,
+				fileId: file.id,
 			});
 		}
 

@@ -73,7 +73,7 @@
       { "from": "exhibitors", "allow": ["shared", "activity-log", "settings", "workflow", "auth"] },
       {
         "from": "submissions",
-        "allow": ["shared", "workflow", "settings", "activity-log", "auth", "extraction", "reviews"]
+        "allow": ["shared", "workflow", "settings", "activity-log", "auth", "extraction", "reviews", "submission-diff"]
       },
       { "from": "planner", "allow": ["shared", "settings", "auth"] },
       { "from": "fee", "allow": ["shared", "settings", "auth"] },
