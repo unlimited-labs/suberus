@@ -37,6 +37,19 @@ test.describe.serial("Submission deadline & lock", () => {
 		).toBeVisible()
 	})
 
+	test("stays open on the deadline day itself", async ({ page }) => {
+		// Deadline = today; submissions must remain open until the day ends
+		await setAppSetting("SUBMISSION_DEADLINE", dateInDays(0))
+		await setAppSetting("SUBMISSIONS_LOCKED", false)
+
+		await loginAs(page, TEST_USER)
+		await page.goto("/submissions")
+
+		await expect(
+			page.getByRole("button", { name: "New Submission" }),
+		).toBeEnabled()
+	})
+
 	test("allows submissions when no deadline is set", async ({ page }) => {
 		await setAppSetting("SUBMISSION_DEADLINE", "")
 

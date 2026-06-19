@@ -23,6 +23,7 @@ import type {
 	SubmissionTypeConfig,
 	SubmissionTypeKey,
 } from "@/features/settings/types";
+import { isDeadlinePassed } from "@/shared/lib/deadline";
 import { zIanaTz } from "@/shared/lib/validations/zod-helpers";
 import { prisma } from "@/shared/server/db.server";
 import { getUploadedFile } from "@/shared/server/form-upload";
@@ -554,9 +555,10 @@ export const getSubmissionValidationForFormFn = createServerFn({
 export const getSubmissionDeadlineFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.handler(async ({ context }) => {
-		const [deadline, locked, canBypass] = await Promise.all([
+		const [deadline, locked, timezone, canBypass] = await Promise.all([
 			getSetting("SUBMISSION_DEADLINE"),
 			getSetting("SUBMISSIONS_LOCKED"),
+			getSetting("CONFERENCE_TIMEZONE"),
 			prisma.user
 				.findUnique({
 					where: { id: context.user.id },
@@ -564,7 +566,7 @@ export const getSubmissionDeadlineFn = createServerFn({ method: "GET" })
 				})
 				.then((u) => u?.allowLateSubmission ?? false),
 		]);
-		return { deadline, locked, canBypass };
+		return { deadline, locked, canBypass, timezone };
 	});
 
 /**
@@ -573,11 +575,14 @@ export const getSubmissionDeadlineFn = createServerFn({ method: "GET" })
 export const getRegistrationStatusFn = createServerFn({
 	method: "GET",
 }).handler(async () => {
-	const [deadline, locked] = await Promise.all([
+	const [deadline, locked, timezone] = await Promise.all([
 		getSetting("REGISTRATION_DEADLINE"),
 		getSetting("REGISTRATION_LOCKED"),
+		getSetting("CONFERENCE_TIMEZONE"),
 	]);
-	const deadlinePassed = deadline ? new Date(deadline) < new Date() : false;
+	const deadlinePassed = deadline
+		? isDeadlinePassed(deadline, timezone, new Date())
+		: false;
 	return { closed: locked || deadlinePassed, locked, deadlinePassed };
 });
 

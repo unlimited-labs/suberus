@@ -59,8 +59,8 @@ them. Set them deliberately.
 |---|---|---|
 | **Conference Start** | First day of the event. | Date picker. |
 | **Conference End** | Last day of the event. | Date picker. |
-| **Submission Deadline** | After this date the system **stops accepting new submissions** automatically. | Leave empty for no limit. |
-| **Registration Deadline** | After this date **public registration is blocked**. Invitation-based registration still works. | Leave empty for no limit. |
+| **Submission Deadline** | Authors can submit **through the end of this day**; the system **stops accepting new submissions** once it ends. | Leave empty for no limit. End of day is measured in the **Conference Timezone** (UTC if unset). |
+| **Registration Deadline** | **Public registration stays open through the end of this day**, then is blocked. Invitation-based registration still works. | Leave empty for no limit. End of day is measured in the **Conference Timezone** (UTC if unset). |
 | **Close submissions** | Switch that **immediately** blocks all new submissions, regardless of the deadline. | Use to close the call early or in an emergency. |
 | **Close registration** | Switch that **immediately** blocks public registration. Invited users can still register. | Independent of the deadline. |
 | **Review Deadline** | The date by which reviewers should submit reviews. | Informational/notification date for reviewers. |
@@ -78,7 +78,7 @@ deadline and the **Close submissions** switch — for that user only.
 |---|---|---|
 | **Date Format** | How dates are displayed throughout the app. | Pick from the list (e.g. day/month/year vs month/day/year). |
 | **Time Format** | Clock style for all times. | **24h** (14:30) or **12h** (2:30 PM). |
-| **Conference Timezone** | The zone all session start/end times are shown in. | Times are stored in UTC and displayed here. Detected from your browser when the conference is first set up; change it any time. |
+| **Conference Timezone** | The zone all session start/end times are shown in, and the zone in which submission/registration **deadline days** end. | Times are stored in UTC and displayed here. Detected from your browser when the conference is first set up; change it any time. |
 
 ## Exhibitors
 

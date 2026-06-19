@@ -1,7 +1,9 @@
-import { differenceInCalendarDays, isAfter } from "date-fns";
+import { differenceInCalendarDays } from "date-fns";
+import { isDeadlinePassed } from "@/shared/lib/deadline";
 
 export interface SubmissionAccessInput {
 	deadline: string | null;
+	timezone: string;
 	locked: boolean;
 	canBypass: boolean;
 	activeTypeCount: number;
@@ -42,7 +44,7 @@ function resolveDisabledReason(flags: {
 export function deriveSubmissionAccess(
 	input: SubmissionAccessInput,
 ): SubmissionAccess {
-	const { deadline, locked, canBypass, activeTypeCount, now } = input;
+	const { deadline, timezone, locked, canBypass, activeTypeCount, now } = input;
 
 	const daysLeft = deadline
 		? differenceInCalendarDays(new Date(deadline), now)
@@ -50,7 +52,7 @@ export function deriveSubmissionAccess(
 	const deadlineUrgent = daysLeft !== null && daysLeft <= 7;
 	const deadlineCritical = daysLeft !== null && daysLeft <= 3;
 	const deadlineOpen =
-		canBypass || (deadline ? isAfter(new Date(deadline), now) : true);
+		canBypass || (deadline ? !isDeadlinePassed(deadline, timezone, now) : true);
 	const hasActiveTypes = activeTypeCount > 0;
 	const canSubmit = (canBypass || !locked) && deadlineOpen && hasActiveTypes;
 

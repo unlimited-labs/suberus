@@ -26,6 +26,7 @@ import {
 	type ValidationLimits,
 } from "@/features/submissions/validations";
 import { logger } from "@/logger";
+import { isDeadlinePassed } from "@/shared/lib/deadline";
 import { prisma } from "@/shared/server/db.server";
 import { getUploadedFile } from "@/shared/server/form-upload";
 
@@ -91,10 +92,11 @@ export const createSubmission = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.validator(inputSchema)
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
-		const [submissionDeadline, submissionsLocked, lateAllowed] =
+		const [submissionDeadline, submissionsLocked, timezone, lateAllowed] =
 			await Promise.all([
 				getSetting("SUBMISSION_DEADLINE"),
 				getSetting("SUBMISSIONS_LOCKED"),
+				getSetting("CONFERENCE_TIMEZONE"),
 				prisma.user
 					.findUnique({
 						where: { id: context.user.id },
@@ -109,7 +111,10 @@ export const createSubmission = createServerFn({ method: "POST" })
 					error: "Submissions are currently closed by the administrator",
 				};
 			}
-			if (submissionDeadline && new Date(submissionDeadline) < new Date()) {
+			if (
+				submissionDeadline &&
+				isDeadlinePassed(submissionDeadline, timezone, new Date())
+			) {
 				return {
 					success: false,
 					error: "The submission deadline has passed",

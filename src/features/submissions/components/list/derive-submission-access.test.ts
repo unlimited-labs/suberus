@@ -8,6 +8,7 @@ const now = new Date("2026-04-01T00:00:00Z");
 
 const base: SubmissionAccessInput = {
 	deadline: "2026-04-20T00:00:00Z",
+	timezone: "",
 	locked: false,
 	canBypass: false,
 	activeTypeCount: 2,
@@ -44,6 +45,26 @@ describe("deriveSubmissionAccess", () => {
 		const a = deriveSubmissionAccess({
 			...base,
 			deadline: "2026-03-01T00:00:00Z",
+		});
+		expect(a.canSubmit).toBe(false);
+		expect(a.disabledReason).toBe("The submission deadline has passed");
+	});
+
+	it("stays open all day on the deadline day", () => {
+		const a = deriveSubmissionAccess({
+			...base,
+			deadline: "2026-04-15",
+			now: new Date("2026-04-15T23:30:00Z"),
+		});
+		expect(a.canSubmit).toBe(true);
+		expect(a.disabledReason).toBe("");
+	});
+
+	it("closes at the start of the day after the deadline", () => {
+		const a = deriveSubmissionAccess({
+			...base,
+			deadline: "2026-04-15",
+			now: new Date("2026-04-16T00:00:00Z"),
 		});
 		expect(a.canSubmit).toBe(false);
 		expect(a.disabledReason).toBe("The submission deadline has passed");

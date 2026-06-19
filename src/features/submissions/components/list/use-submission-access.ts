@@ -11,7 +11,7 @@ import { deriveSubmissionAccess } from "./derive-submission-access";
  */
 export function useSubmissionAccess() {
 	const {
-		data: { deadline, locked, canBypass },
+		data: { deadline, locked, canBypass, timezone },
 	} = useSuspenseQuery(submissionDeadlineQueryOptions());
 	const { data: activeTypes } = useSuspenseQuery(
 		activeSubmissionTypesQueryOptions(),
@@ -19,6 +19,7 @@ export function useSubmissionAccess() {
 
 	const access = deriveSubmissionAccess({
 		deadline,
+		timezone,
 		locked,
 		canBypass,
 		activeTypeCount: activeTypes.length,
