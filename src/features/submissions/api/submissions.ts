@@ -180,13 +180,13 @@ export const createSubmission = createServerFn({ method: "POST" })
 	});
 
 /**
- * Best-effort kick-off of version-diff normalization for a DOCX revision (v2+).
- * Normalizes the new version AND its predecessor so the lazy redline has both
- * sides; a v1 / single-version submission is never normalized (no diff to make).
- * Kept out of the upload handler so it stays under the complexity threshold;
- * never throws (the worker is idempotent + content-addressed).
+ * Best-effort kick-off of version-diff normalization for a diffable revision
+ * (DOCX or PDF, v2+). Normalizes the new version AND its predecessor so the lazy
+ * redline has both sides; a v1 / single-version submission is never normalized
+ * (no diff to make). Kept out of the upload handler so it stays under the
+ * complexity threshold; never throws (the worker is idempotent + content-addressed).
  */
-async function maybeEnqueueDocxNormalize(
+async function maybeEnqueueDiffNormalize(
 	ext: string,
 	input: {
 		submissionId: string;
@@ -196,7 +196,9 @@ async function maybeEnqueueDocxNormalize(
 		fileId: string;
 	},
 ): Promise<void> {
-	if (ext !== "docx" || input.currentVersionNumber <= 1) return;
+	if ((ext !== "docx" && ext !== "pdf") || input.currentVersionNumber <= 1) {
+		return;
+	}
 	const { enqueueRevisionNormalize } = await import(
 		"@/features/submission-diff/server/enqueue-revision"
 	);
@@ -337,7 +339,7 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 				data: { fileId: file.id },
 			});
 
-			await maybeEnqueueDocxNormalize(detected.ext, {
+			await maybeEnqueueDiffNormalize(detected.ext, {
 				submissionId: data.submissionId,
 				currentVersionNumber: submission.currentVersion.version,
 				storageKey,

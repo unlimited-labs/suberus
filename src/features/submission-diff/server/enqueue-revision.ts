@@ -1,5 +1,6 @@
 import { prisma } from "@/shared/server/db.server";
 import { enqueueVersionNormalize } from "./enqueue";
+import { fileKind } from "./file-kind";
 import type { NormalizeInput } from "./normalize-version";
 
 export interface RevisionNormalizeInput {
@@ -9,16 +10,14 @@ export interface RevisionNormalizeInput {
 	current: NormalizeInput;
 }
 
-/** A normalizable predecessor: present, with a DOCX file. */
-function isDocxFileName(name: string): boolean {
-	return name.toLowerCase().endsWith(".docx");
-}
-
 /**
- * On a DOCX revision (v2+) upload, enqueue normalization of the new version AND
- * its immediate predecessor. The lazy redline needs BOTH sides normalized, and a
- * v1 is never normalized on its own — we only normalize once a diff is meaningful.
- * Idempotent: the content-addressed cache short-circuits an already-normalized file.
+ * On a diffable revision (v2+) upload, enqueue normalization of the new version
+ * AND its immediate predecessor. The lazy redline needs BOTH sides normalized,
+ * and a v1 is never normalized on its own — we only normalize once a diff is
+ * meaningful. Each side is normalized in its own format (the predecessor may be a
+ * different diffable format than the current revision); a cross-format pair simply
+ * yields no structural redline downstream. Idempotent: the content-addressed cache
+ * short-circuits an already-normalized file.
  */
 export async function enqueueRevisionNormalize(
 	input: RevisionNormalizeInput,
@@ -36,7 +35,7 @@ export async function enqueueRevisionNormalize(
 		},
 	});
 	const file = previous?.file;
-	if (!file || !isDocxFileName(file.fileName)) return;
+	if (!file || !fileKind(file.fileName)) return;
 
 	await enqueueVersionNormalize({
 		storageKey: file.storageKey,
