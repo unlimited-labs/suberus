@@ -34,6 +34,13 @@ const rollupConfig = {
 const nitroConfig: NitroPluginConfig = {
 	rollupConfig,
 	serverDir: "src/server",
+	// Keep jsdom EXTERNAL (traced into output node_modules, exploded), not inlined.
+	// jsdom reads its UA default-stylesheet.css from disk via __dirname at runtime
+	// (a v27+ regression); once a bundler inlines jsdom into one file that path
+	// breaks → ENOENT crashes the version-diff normalize worker (and pg-boss init).
+	// Nitro 3 bundles deps by default; the `jsdom*` full-trace copies all package
+	// files (incl. the CSS asset) into .output/server/node_modules.
+	traceDeps: ["jsdom*"],
 	...(outputDir ? { output: { dir: outputDir } } : {}),
 	experimental: { tasks: true, vite: {} },
 	scheduledTasks: {
