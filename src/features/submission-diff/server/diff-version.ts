@@ -2,7 +2,7 @@ import { ArtifactKind } from "@/generated/prisma/enums";
 import { prisma } from "@/shared/server/db.server";
 import { getFileBuffer } from "@/shared/server/storage";
 import { persistRedline } from "./cas";
-import { diffHtml, diffStats } from "./diff";
+import { diffHtml, redlineStats } from "./diff";
 
 const HTML_SHA_RE = /([0-9a-f]{64})\.html$/;
 
@@ -59,7 +59,7 @@ export async function diffVersionArtifacts(
 		getFileBuffer(input.newHtmlKey),
 	]);
 	const redline = diffHtml(oldBuf.toString("utf8"), newBuf.toString("utf8"));
-	const stats = diffStats(redline);
+	const stats = redlineStats(redline);
 	const redlineKey = await persistRedline(redline);
 
 	const created = await prisma.versionDiffArtifact.create({

@@ -1,5 +1,6 @@
 import type { DiffSegment } from "@/shared/lib/text-diff";
 import { cn } from "@/shared/lib/utils";
+import { DiffDel, DiffIns } from "./diff-marks";
 
 interface TextDiffViewProps {
 	segments: DiffSegment[];
@@ -44,29 +45,9 @@ export function TextDiffView({
 					return <span key={i}>{seg.value}</span>;
 				}
 				if (seg.type === "insert") {
-					return (
-						<ins
-							key={i}
-							data-testid="diff-ins"
-							className="rounded-sm bg-emerald-500/15 text-emerald-700 underline decoration-emerald-600/70 decoration-2 dark:text-emerald-300"
-						>
-							<span className="sr-only"> inserted: </span>
-							{seg.value}
-							<span className="sr-only"> (end inserted) </span>
-						</ins>
-					);
+					return <DiffIns key={i}>{seg.value}</DiffIns>;
 				}
-				return (
-					<del
-						key={i}
-						data-testid="diff-del"
-						className="rounded-sm bg-red-500/15 text-red-700 line-through dark:text-red-300"
-					>
-						<span className="sr-only"> deleted: </span>
-						{seg.value}
-						<span className="sr-only"> (end deleted) </span>
-					</del>
-				);
+				return <DiffDel key={i}>{seg.value}</DiffDel>;
 			})}
 		</div>
 	);

@@ -1,27 +1,20 @@
 import { IconArrowLeft, IconGitCompare } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { z } from "zod";
 import { assignmentForReviewQueryOptions } from "@/features/reviews/api";
 import {
-	type CompareLayout,
-	defaultComparePair,
-	VersionCompare,
-} from "@/features/submissions/components/diff/version-compare";
+	compareSearchSchema,
+	resolveCompare,
+} from "@/features/submissions/components/diff/compare-route";
+import { VersionCompare } from "@/features/submissions/components/diff/version-compare";
 import type { SubmissionType } from "@/generated/prisma/enums";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { typeLabels } from "@/shared/lib/labels/submission";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 
-const searchSchema = z.object({
-	base: z.coerce.number().int().positive().optional(),
-	compare: z.coerce.number().int().positive().optional(),
-	view: z.enum(["split", "inline"]).optional(),
-});
-
 export const Route = createFileRoute("/_app/reviews/$assignmentId_/compare")({
-	validateSearch: searchSchema,
+	validateSearch: compareSearchSchema,
 	loader: async ({ params, context }) => {
 		await context.queryClient.ensureQueryData(
 			assignmentForReviewQueryOptions(params.assignmentId),
@@ -29,20 +22,6 @@ export const Route = createFileRoute("/_app/reviews/$assignmentId_/compare")({
 	},
 	component: ReviewerComparePage,
 });
-
-/** Resolve the active pair + layout from search params, defaulting sensibly. */
-function resolveCompare(
-	search: { base?: number; compare?: number; view?: CompareLayout },
-	versions: Array<{ version: number }>,
-	current: number,
-): { base: number; compare: number; layout: CompareLayout } {
-	const fallback = defaultComparePair(versions, current);
-	return {
-		base: search.base ?? fallback.base,
-		compare: search.compare ?? fallback.compare,
-		layout: search.view ?? "split",
-	};
-}
 
 function ReviewerComparePage() {
 	const { assignmentId } = Route.useParams();

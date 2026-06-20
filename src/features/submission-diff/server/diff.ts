@@ -61,7 +61,7 @@ export interface DiffStats {
 }
 
 /** Count redline insertion/deletion runs (block-level <ins>/<del> wrappers). */
-export function diffStats(redline: string): DiffStats {
+export function redlineStats(redline: string): DiffStats {
 	return {
 		insertions: (redline.match(/<ins\b/g) ?? []).length,
 		deletions: (redline.match(/<del\b/g) ?? []).length,

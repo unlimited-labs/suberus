@@ -1,6 +1,6 @@
 import { parseFragment, serialize } from "parse5";
 import { describe, expect, it } from "vitest";
-import { diffHtml, diffStats } from "./diff";
+import { diffHtml, redlineStats } from "./diff";
 
 describe("diffHtml", () => {
 	it("marks inserted and deleted words", () => {
@@ -45,9 +45,9 @@ describe("diffHtml", () => {
 	});
 });
 
-describe("diffStats", () => {
+describe("redlineStats", () => {
 	it("counts ins/del runs", () => {
 		const redline = "<p><del>a</del><ins>b</ins> and <ins>c</ins></p>";
-		expect(diffStats(redline)).toEqual({ insertions: 2, deletions: 1 });
+		expect(redlineStats(redline)).toEqual({ insertions: 2, deletions: 1 });
 	});
 });
