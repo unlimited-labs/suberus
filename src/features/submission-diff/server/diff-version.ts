@@ -1,3 +1,4 @@
+import type { ArtifactKind } from "@/generated/prisma/enums";
 import { prisma } from "@/shared/server/db.server";
 import { getFileBuffer } from "@/shared/server/storage";
 import { persistRedline } from "./cas";
@@ -104,6 +105,8 @@ export async function diffVersionArtifacts(
 
 export interface ResolvedHtml {
 	htmlKey: string;
+	/** Source kind (DOCX/PDF) — a kind mismatch between sides = format change. */
+	kind: ArtifactKind;
 	/** Toolchain fingerprint — both sides of a diff MUST share it (gotcha C3). */
 	toolchain: string;
 }
@@ -143,6 +146,7 @@ export async function resolveHtmlKeyForVersion(
 	if (!artifact) return null;
 	return {
 		htmlKey: artifact.htmlKey,
+		kind,
 		toolchain: `${artifact.pandocVersion}|${artifact.normalizerConfigHash}|${artifact.schemaVersion}`,
 	};
 }

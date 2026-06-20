@@ -40,28 +40,47 @@ async function previousVersionId(
 }
 
 /**
- * Both versions' normalized-HTML keys, or null if either isn't normalized or the
- * two were produced by different toolchains (C3 — never diff across pandoc/
- * normalizer versions, which would surface spurious differences).
+ * Classify a version pair's normalized artifacts:
+ *  - `unavailable`: a side isn't normalized yet, or both are the same format but
+ *    different toolchains (transient during a toolchain bump — re-normalization
+ *    will reconcile them; never diff across toolchains, gotcha C3).
+ *  - `format-changed`: both normalized but in different formats (e.g. DOCX -> PDF)
+ *    — no structural redline is possible across extractors (the two HTML trees
+ *    differ everywhere), so the caller surfaces an explicit notice + text diff.
+ *  - `ready`: both normalized, same format + toolchain.
  */
-async function bothHtmlKeys(
+type PairKeys =
+	| { status: "ready"; oldHtmlKey: string; newHtmlKey: string }
+	| { status: "format-changed" }
+	| { status: "unavailable" };
+
+async function classifyPair(
 	oldVersionId: string,
 	newVersionId: string,
-): Promise<{ oldHtmlKey: string; newHtmlKey: string } | null> {
+): Promise<PairKeys> {
 	const [oldRes, newRes] = await Promise.all([
 		resolveHtmlKeyForVersion(oldVersionId),
 		resolveHtmlKeyForVersion(newVersionId),
 	]);
-	if (!oldRes || !newRes) return null;
-	if (oldRes.toolchain !== newRes.toolchain) return null;
-	return { oldHtmlKey: oldRes.htmlKey, newHtmlKey: newRes.htmlKey };
+	if (!oldRes || !newRes) return { status: "unavailable" };
+	if (oldRes.kind !== newRes.kind) return { status: "format-changed" };
+	if (oldRes.toolchain !== newRes.toolchain) return { status: "unavailable" };
+	return {
+		status: "ready",
+		oldHtmlKey: oldRes.htmlKey,
+		newHtmlKey: newRes.htmlKey,
+	};
 }
 
-interface ResolvedPair {
-	oldVersionId: string;
-	oldHtmlKey: string;
-	newHtmlKey: string;
-}
+type ResolvedPair =
+	| {
+			status: "ready";
+			oldVersionId: string;
+			oldHtmlKey: string;
+			newHtmlKey: string;
+	  }
+	| { status: "format-changed" }
+	| { status: "unavailable" };
 
 /** Whether `versionId` belongs to `submissionId`. */
 async function versionInSubmission(
@@ -80,7 +99,7 @@ async function resolvePair(
 	currentVersion: number,
 	newVersionId: string,
 	explicitOldVersionId?: string,
-): Promise<ResolvedPair | null> {
+): Promise<ResolvedPair> {
 	// IDOR guard: only the new version is authorized by the caller. A caller-
 	// supplied oldVersionId must belong to the SAME submission, else a reviewer
 	// could diff against an unrelated submission's content. The implicit branch
@@ -89,15 +108,20 @@ async function resolvePair(
 		explicitOldVersionId &&
 		!(await versionInSubmission(explicitOldVersionId, submissionId))
 	) {
-		return null;
+		return { status: "unavailable" };
 	}
 	const oldVersionId =
 		explicitOldVersionId ??
 		(await previousVersionId(submissionId, currentVersion));
-	if (!oldVersionId) return null;
-	const keys = await bothHtmlKeys(oldVersionId, newVersionId);
-	if (!keys) return null;
-	return { oldVersionId, ...keys };
+	if (!oldVersionId) return { status: "unavailable" };
+	const keys = await classifyPair(oldVersionId, newVersionId);
+	if (keys.status !== "ready") return keys;
+	return {
+		status: "ready",
+		oldVersionId,
+		oldHtmlKey: keys.oldHtmlKey,
+		newHtmlKey: keys.newHtmlKey,
+	};
 }
 
 /** Authorize the caller for the new version, then resolve the normalized pair. */
@@ -105,14 +129,14 @@ async function authorizeAndResolvePair(
 	input: { newVersionId: string; oldVersionId?: string },
 	userId: string,
 	role: UserRole,
-): Promise<ResolvedPair | null> {
+): Promise<ResolvedPair> {
 	const newVersion = await prisma.submissionVersion.findUnique({
 		where: { id: input.newVersionId },
 		select: { submissionId: true, version: true },
 	});
-	if (!newVersion) return null;
+	if (!newVersion) return { status: "unavailable" };
 	if (!(await canSeeSubmission(newVersion.submissionId, userId, role))) {
-		return null;
+		return { status: "unavailable" };
 	}
 	return resolvePair(
 		newVersion.submissionId,
@@ -138,25 +162,33 @@ async function selfContain(html: string): Promise<string> {
 	return renderMathInHtml(await inlineFigures(html));
 }
 
-export interface VersionRedline {
-	html: string;
-	insertions: number;
-	deletions: number;
-}
+/**
+ * The Compare surface's redline outcome:
+ *  - `ready`: a structural redline is available.
+ *  - `format-changed`: both versions are normalized but in different formats
+ *    (DOCX -> PDF) — no structural redline across extractors; the UI shows a
+ *    notice and the text diff still reflects content changes.
+ *  - `unavailable`: access denied, no previous version, or a side isn't
+ *    normalized yet (transient — normalization is async).
+ */
+export type VersionRedlineResult =
+	| { status: "ready"; html: string; insertions: number; deletions: number }
+	| { status: "format-changed" }
+	| { status: "unavailable" };
 
 /**
  * Redline HTML for a version pair (defaults to the previous version), for the
- * Compare surface. Returns null when access is denied, there is no previous
- * version, or either side isn't normalized yet. Figures are inlined as `data:`
- * URIs so the redline iframe is fully self-contained.
+ * Compare surface. Figures are inlined as `data:` URIs so the redline iframe is
+ * fully self-contained. A format change between versions is reported explicitly
+ * (not as `unavailable`) so the UI can distinguish it from "not processed yet".
  */
 export async function getVersionRedline(
 	input: { newVersionId: string; oldVersionId?: string },
 	userId: string,
 	role: UserRole,
-): Promise<VersionRedline | null> {
+): Promise<VersionRedlineResult> {
 	const pair = await authorizeAndResolvePair(input, userId, role);
-	if (!pair) return null;
+	if (pair.status !== "ready") return pair;
 
 	const diff = await diffVersionArtifacts({
 		oldVersionId: pair.oldVersionId,
@@ -166,6 +198,7 @@ export async function getVersionRedline(
 	});
 	const redlineHtml = (await getFileBuffer(diff.redlineKey)).toString("utf8");
 	return {
+		status: "ready",
 		html: await selfContain(redlineHtml),
 		insertions: diff.insertions,
 		deletions: diff.deletions,

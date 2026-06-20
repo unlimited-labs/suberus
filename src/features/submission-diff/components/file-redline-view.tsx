@@ -159,8 +159,18 @@ const LOADING = (
 );
 const UNAVAILABLE = (
 	<p className="text-sm text-muted-foreground">
-		No file-level redline — these versions have no uploaded DOCX, or it hasn't
-		been processed yet.
+		No file-level redline — these versions have no supported file (DOCX/PDF), or
+		it hasn't been processed yet.
+	</p>
+);
+const FORMAT_CHANGED = (
+	<p
+		className="text-sm text-muted-foreground"
+		data-testid="file-redline-format-changed"
+	>
+		The file format changed between these versions (e.g. DOCX → PDF), so a
+		structural file redline isn't available. The Content comparison above
+		reflects the text changes.
 	</p>
 );
 
@@ -214,7 +224,8 @@ function InlineRedline({
 	);
 
 	if (isPending) return LOADING;
-	if (!data) return UNAVAILABLE;
+	if (!data || data.status === "unavailable") return UNAVAILABLE;
+	if (data.status === "format-changed") return FORMAT_CHANGED;
 
 	return (
 		<div className="space-y-2" data-testid="file-redline">
@@ -241,7 +252,8 @@ function SplitDocuments({
 	const { oldRef, newRef, onOldLoad, onNewLoad } = useSyncedScroll();
 
 	if (isPending) return LOADING;
-	if (!data) return UNAVAILABLE;
+	if (!data || data.status === "unavailable") return UNAVAILABLE;
+	if (data.status === "format-changed") return FORMAT_CHANGED;
 
 	return (
 		<div className="space-y-2" data-testid="file-redline">
