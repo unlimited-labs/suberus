@@ -1,5 +1,5 @@
 import type { ArtifactKind } from "@/generated/prisma/enums";
-import { prisma } from "@/shared/server/db.server";
+import { isUniqueViolation, prisma } from "@/shared/server/db.server";
 import { getFileBuffer } from "@/shared/server/storage";
 import { linkFigure, persistHtml } from "./cas";
 import { doclingApiHealth, normalizePdf } from "./docling-api-client";
@@ -51,7 +51,7 @@ export interface NormalizeResult {
  * (pandoc), PDF through docling (extraction + md->HTML); the kind is derived
  * from the file name and downstream (parse/sanitize/CAS/persist) is shared.
  *
- *   getFileBuffer -> sidecar normalize -> parse bundle -> CAS figures (+Blob)
+ *   getFileBuffer -> sidecar normalize -> parse bundle -> CAS figures (+CasObject)
  *   -> DOMPurify-on-jsdom -> persist HTML -> SubmissionVersionArtifact
  *
  * Cache: keyed by the full toolchain fingerprint (source sha + kind + pandoc/
@@ -111,16 +111,35 @@ export async function normalizeSubmissionFile(
 		await linkFigure(sha, figureBytes);
 	}
 	const htmlKey = await persistHtml(trustedHtml);
+	const figureShas = [...bundle.figures.keys()];
 
-	const created = await prisma.submissionVersionArtifact.create({
-		data: { ...key, htmlKey, warnings: bundle.meta.warnings },
-	});
-
-	return {
-		artifactId: created.id,
-		cached: false,
-		sourceSha256,
-		htmlKey,
-		figures: bundle.figures.size,
-	};
+	try {
+		const created = await prisma.submissionVersionArtifact.create({
+			data: { ...key, htmlKey, figureShas, warnings: bundle.meta.warnings },
+		});
+		return {
+			artifactId: created.id,
+			cached: false,
+			sourceSha256,
+			htmlKey,
+			figures: bundle.figures.size,
+		};
+	} catch (e) {
+		// Concurrent normalize of the same source+toolchain raced us to the row.
+		if (!isUniqueViolation(e)) throw e;
+		const existingRow =
+			await prisma.submissionVersionArtifact.findUniqueOrThrow({
+				where: {
+					sourceSha256_kind_pandocVersion_normalizerConfigHash_schemaVersion:
+						key,
+				},
+			});
+		return {
+			artifactId: existingRow.id,
+			cached: true,
+			sourceSha256,
+			htmlKey: existingRow.htmlKey,
+			figures: 0,
+		};
+	}
 }

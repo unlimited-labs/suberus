@@ -1,5 +1,5 @@
 import type { ArtifactKind } from "@/generated/prisma/enums";
-import { prisma } from "@/shared/server/db.server";
+import { isUniqueViolation, prisma } from "@/shared/server/db.server";
 import { getFileBuffer } from "@/shared/server/storage";
 import { persistRedline } from "./cas";
 import { redlineStats } from "./diff";
@@ -81,26 +81,46 @@ export async function diffVersionArtifacts(
 	const stats = redlineStats(redline);
 	const redlineKey = await persistRedline(redline);
 
-	const created = await prisma.versionDiffArtifact.create({
-		data: {
-			oldArtifactSha,
-			newArtifactSha,
-			diffVersion,
-			oldVersionId: input.oldVersionId,
-			newVersionId: input.newVersionId,
+	try {
+		const created = await prisma.versionDiffArtifact.create({
+			data: {
+				oldArtifactSha,
+				newArtifactSha,
+				diffVersion,
+				oldVersionId: input.oldVersionId,
+				newVersionId: input.newVersionId,
+				redlineKey,
+				insCount: stats.insertions,
+				delCount: stats.deletions,
+			},
+		});
+		return {
+			diffArtifactId: created.id,
+			cached: false,
 			redlineKey,
-			insCount: stats.insertions,
-			delCount: stats.deletions,
-		},
-	});
-
-	return {
-		diffArtifactId: created.id,
-		cached: false,
-		redlineKey,
-		insertions: stats.insertions,
-		deletions: stats.deletions,
-	};
+			insertions: stats.insertions,
+			deletions: stats.deletions,
+		};
+	} catch (e) {
+		// Concurrent first-Compare of the same pair raced us to the row.
+		if (!isUniqueViolation(e)) throw e;
+		const existingRow = await prisma.versionDiffArtifact.findUniqueOrThrow({
+			where: {
+				oldArtifactSha_newArtifactSha_diffVersion: {
+					oldArtifactSha,
+					newArtifactSha,
+					diffVersion,
+				},
+			},
+		});
+		return {
+			diffArtifactId: existingRow.id,
+			cached: true,
+			redlineKey: existingRow.redlineKey,
+			insertions: existingRow.insCount,
+			deletions: existingRow.delCount,
+		};
+	}
 }
 
 export interface ResolvedHtml {

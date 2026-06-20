@@ -20,3 +20,13 @@ export const prisma = globalThis.__prisma || new PrismaClient({ adapter });
 if (env.NODE_ENV !== "production") {
 	globalThis.__prisma = prisma;
 }
+
+/** True for a Prisma unique-constraint violation (P2002) — for find-then-create races. */
+export function isUniqueViolation(e: unknown): boolean {
+	return (
+		typeof e === "object" &&
+		e !== null &&
+		"code" in e &&
+		(e as { code?: unknown }).code === "P2002"
+	);
+}

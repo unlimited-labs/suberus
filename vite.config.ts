@@ -47,6 +47,8 @@ const nitroConfig: NitroPluginConfig = {
 		"*/5 * * * *": isE2E
 			? []
 			: ["mails:reminder", "assignments:overdue", "services:health"],
+		// Daily GC of orphaned version-diff CAS objects (off in E2E).
+		"30 3 * * *": isE2E ? [] : ["cas:reaper"],
 	},
 };
 

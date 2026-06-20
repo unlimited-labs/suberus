@@ -467,10 +467,13 @@ model SubmissionVersionArtifact {
   normalizerConfigHash String       @db.Char(64)
   schemaVersion        Int
   htmlKey              String
+  /// CAS shas of the figures this artifact references (figure liveness for the reaper).
+  figureShas           String[]
   warnings             String?
   createdAt            DateTime     @default(now())
 
   @@unique([sourceSha256, kind, pandocVersion, normalizerConfigHash, schemaVersion])
+  @@index([sourceSha256, kind, createdAt(sort: Desc)])
   @@map("submission_version_artifacts")
 }
 
@@ -493,20 +496,19 @@ model VersionDiffArtifact {
   createdAt      DateTime @default(now())
 
   @@unique([oldArtifactSha, newArtifactSha, diffVersion])
-  @@index([oldVersionId, newVersionId])
   @@map("version_diff_artifacts")
 }
 
-/// Reference-counted content-addressed blob (rasterized figures shared across
-/// artifacts). Never `deleteFile` a `cas/` object without decrementing refCount
-/// to 0 first — shared figures would vanish from other diffs.
-model Blob {
-  sha256    String   @id @db.Char(64)
+/// Inventory of every content-addressed object in the `version-diff/` CAS prefix
+/// (figures, normalized HTML, redlines). The reaper (`cas:reaper` task) computes
+/// the live set from artifact/diff rows and deletes any CasObject not referenced
+/// past a grace window — mark-and-sweep, so a missed write never leaks forever.
+model CasObject {
+  key       String   @id
   size      Int
-  refCount  Int      @default(0)
   createdAt DateTime @default(now())
 
-  @@map("blobs")
+  @@map("cas_objects")
 }
 
 model Session {

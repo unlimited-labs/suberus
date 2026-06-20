@@ -34,27 +34,44 @@ async function putIfAbsent(
 }
 
 /**
- * Store a rasterized figure in CAS and ref-count its Blob. Called once per unique
- * figure sha when a NEW artifact is created, so refCount = number of artifacts
- * referencing the figure (safe shared-figure deletion in a later phase).
+ * Inventory a CAS object so the reaper can see it. Upserted eagerly (right after
+ * the S3 put), so even a later failed artifact/diff create leaves a sweepable row
+ * instead of an invisible orphan blob — mark-and-sweep, not ref-counting.
  */
-export async function linkFigure(sha: string, bytes: Buffer): Promise<void> {
-	await putIfAbsent(figureKey(sha), bytes, "image/png");
-	await prisma.blob.upsert({
-		where: { sha256: sha },
-		create: { sha256: sha, size: bytes.length, refCount: 1 },
-		update: { refCount: { increment: 1 } },
+async function trackCasObject(key: string, size: number): Promise<void> {
+	await prisma.casObject.upsert({
+		where: { key },
+		create: { key, size },
+		update: {},
 	});
+}
+
+/** Store a rasterized figure in CAS and inventory it for the reaper. */
+export async function linkFigure(sha: string, bytes: Buffer): Promise<void> {
+	const key = await putIfAbsent(figureKey(sha), bytes, "image/png");
+	await trackCasObject(key, bytes.length);
 }
 
 /** Persist normalized HTML to CAS (content-addressed by its own sha). Returns the key. */
 export async function persistHtml(html: string): Promise<string> {
 	const buf = Buffer.from(html, "utf8");
-	return putIfAbsent(htmlKey(sha256(buf)), buf, "text/html; charset=utf-8");
+	const key = await putIfAbsent(
+		htmlKey(sha256(buf)),
+		buf,
+		"text/html; charset=utf-8",
+	);
+	await trackCasObject(key, buf.length);
+	return key;
 }
 
 /** Persist redline HTML to CAS (content-addressed by its own sha). Returns the key. */
 export async function persistRedline(html: string): Promise<string> {
 	const buf = Buffer.from(html, "utf8");
-	return putIfAbsent(redlineKey(sha256(buf)), buf, "text/html; charset=utf-8");
+	const key = await putIfAbsent(
+		redlineKey(sha256(buf)),
+		buf,
+		"text/html; charset=utf-8",
+	);
+	await trackCasObject(key, buf.length);
+	return key;
 }
