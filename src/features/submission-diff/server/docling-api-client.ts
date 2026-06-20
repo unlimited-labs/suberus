@@ -1,4 +1,5 @@
 import { env } from "@/env";
+import { requestOrThrow, SIDECAR_TIMEOUT_MS } from "./http";
 
 function baseUrl(): string {
 	if (!env.DOCLING_URL) {
@@ -17,10 +18,12 @@ export interface DoclingApiHealth {
 
 /** Toolchain versions for the artifact cache key (cheap, no conversion). */
 export async function doclingApiHealth(): Promise<DoclingApiHealth> {
-	const res = await fetch(`${baseUrl()}/`);
-	if (!res.ok) {
-		throw new Error(`docling-api health failed: ${res.status}`);
-	}
+	const res = await requestOrThrow(
+		`${baseUrl()}/`,
+		{},
+		"docling-api health",
+		SIDECAR_TIMEOUT_MS.health,
+	);
 	return (await res.json()) as DoclingApiHealth;
 }
 
@@ -31,15 +34,11 @@ export async function normalizePdf(
 ): Promise<Buffer> {
 	const form = new FormData();
 	form.append("file", new Blob([new Uint8Array(bytes)]), fileName);
-	const res = await fetch(`${baseUrl()}/v1/bundle`, {
-		method: "POST",
-		body: form,
-	});
-	if (!res.ok) {
-		const detail = await res.text().catch(() => "");
-		throw new Error(
-			`docling-api bundle failed: ${res.status} ${detail.slice(0, 200)}`,
-		);
-	}
+	const res = await requestOrThrow(
+		`${baseUrl()}/v1/bundle`,
+		{ method: "POST", body: form },
+		"docling-api bundle",
+		SIDECAR_TIMEOUT_MS.normalize,
+	);
 	return Buffer.from(await res.arrayBuffer());
 }

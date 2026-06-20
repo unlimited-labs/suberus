@@ -1,4 +1,5 @@
 import { env } from "@/env";
+import { requestOrThrow, SIDECAR_TIMEOUT_MS } from "./http";
 
 function baseUrl(): string {
 	if (!env.DOCX_API_URL) {
@@ -17,10 +18,12 @@ export interface DocxApiHealth {
 
 /** Toolchain versions for the artifact cache key (cheap, no conversion). */
 export async function docxApiHealth(): Promise<DocxApiHealth> {
-	const res = await fetch(`${baseUrl()}/`);
-	if (!res.ok) {
-		throw new Error(`docx-api health failed: ${res.status}`);
-	}
+	const res = await requestOrThrow(
+		`${baseUrl()}/`,
+		{},
+		"docx-api health",
+		SIDECAR_TIMEOUT_MS.health,
+	);
 	return (await res.json()) as DocxApiHealth;
 }
 
@@ -31,16 +34,12 @@ export async function normalizeDocx(
 ): Promise<Buffer> {
 	const form = new FormData();
 	form.append("file", new Blob([new Uint8Array(bytes)]), fileName);
-	const res = await fetch(`${baseUrl()}/v1/normalize`, {
-		method: "POST",
-		body: form,
-	});
-	if (!res.ok) {
-		const detail = await res.text().catch(() => "");
-		throw new Error(
-			`docx-api normalize failed: ${res.status} ${detail.slice(0, 200)}`,
-		);
-	}
+	const res = await requestOrThrow(
+		`${baseUrl()}/v1/normalize`,
+		{ method: "POST", body: form },
+		"docx-api normalize",
+		SIDECAR_TIMEOUT_MS.normalize,
+	);
 	return Buffer.from(await res.arrayBuffer());
 }
 
@@ -53,17 +52,16 @@ export async function diffHtmlPair(
 	htmlA: string,
 	htmlB: string,
 ): Promise<string> {
-	const res = await fetch(`${baseUrl()}/v1/diff`, {
-		method: "POST",
-		headers: { "content-type": "application/json" },
-		body: JSON.stringify({ htmlA, htmlB }),
-	});
-	if (!res.ok) {
-		const detail = await res.text().catch(() => "");
-		throw new Error(
-			`docx-api diff failed: ${res.status} ${detail.slice(0, 200)}`,
-		);
-	}
+	const res = await requestOrThrow(
+		`${baseUrl()}/v1/diff`,
+		{
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ htmlA, htmlB }),
+		},
+		"docx-api diff",
+		SIDECAR_TIMEOUT_MS.diff,
+	);
 	const data = (await res.json()) as { redline: string };
 	return data.redline;
 }

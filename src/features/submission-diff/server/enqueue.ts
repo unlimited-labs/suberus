@@ -10,5 +10,10 @@ const SUBMISSION_DIFF_QUEUE = "submission-diff";
 export async function enqueueVersionNormalize(
 	input: NormalizeInput,
 ): Promise<string | null> {
-	return ensureQueueAndSend(SUBMISSION_DIFF_QUEUE, input, { retryLimit: 2 });
+	// expireInSeconds lets pg-boss reclaim a handler that hung past the sidecar
+	// timeout (defence-in-depth with the AbortSignal in http.ts) and retry it.
+	return ensureQueueAndSend(SUBMISSION_DIFF_QUEUE, input, {
+		retryLimit: 2,
+		expireInSeconds: 300,
+	});
 }
