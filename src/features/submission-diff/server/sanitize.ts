@@ -10,6 +10,12 @@ import { JSDOM } from "jsdom";
  * window. The instance is created lazily so importing this module never
  * constructs a jsdom window at load time (keeps it out of the SSR import path).
  *
+ * Why jsdom and not a lighter DOM (linkedom/happy-dom): DOMPurify only sanitizes
+ * correctly against jsdom's complete DOM. linkedom lacks
+ * `implementation.createHTMLDocument` + `NodeFilter` → `isSupported` is false and
+ * it no-ops. happy-dom reports `isSupported: true` but silently lets `onerror`,
+ * `object/embed`, `form/input` through (partial XSS bypass). Proven 2026-06-20.
+ *
  * Authoritative final gate: run this AFTER htmldiff + math-restore + parse5
  * rebalance, so a vector smuggled into `<ins>`/`<del>` is still removed (C2).
  */
@@ -23,9 +29,18 @@ function getPurifier(): Purifier {
 		const { window } = new JSDOM("");
 		// jsdom's window satisfies DOMPurify's WindowLike at runtime; the static
 		// types don't overlap, so narrow to the factory's own parameter type.
-		purifier = createDOMPurify(
+		const p = createDOMPurify(
 			window as unknown as Parameters<typeof createDOMPurify>[0],
 		);
+		// Fail loud, not silent: an unbound/incompatible DOMPurify returns input
+		// UNSANITISED (C1). Never pass untrusted HTML through this XSS gate
+		// unchanged — crash instead.
+		if (!p.isSupported) {
+			throw new Error(
+				"sanitizeDiffHtml: DOMPurify is not supported on this DOM backend",
+			);
+		}
+		purifier = p;
 	}
 	return purifier;
 }
