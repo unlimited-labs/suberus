@@ -2,7 +2,9 @@ import { ArtifactKind } from "@/generated/prisma/enums";
 import { prisma } from "@/shared/server/db.server";
 import { getFileBuffer } from "@/shared/server/storage";
 import { persistRedline } from "./cas";
-import { diffHtml, redlineStats } from "./diff";
+import { redlineStats } from "./diff";
+import { diffHtmlPair, docxApiHealth } from "./docx-api-client";
+import { sanitizeDiffHtml } from "./sanitize";
 
 const HTML_SHA_RE = /([0-9a-f]{64})\.html$/;
 
@@ -29,9 +31,11 @@ export interface DiffVersionsResult {
 }
 
 /**
- * ETAP2: build (or reuse) the immutable redline between two normalized
- * artifacts. Content-addressed by the pair of normalized-HTML shas, so the same
- * content pair never re-diffs regardless of which versions requested it.
+ * ETAP2: build (or reuse) the immutable redline between two normalized artifacts.
+ * Content-addressed by the pair of normalized-HTML shas AND the xmldiff version,
+ * so a diff-engine bump never silently mutates a historical redline. The redline
+ * is produced by the docx-api sidecar (xmldiff) and DOMPurify-sanitized here —
+ * the sidecar output is untrusted; this sanitize is the authoritative gate (C2).
  */
 export async function diffVersionArtifacts(
 	input: DiffVersionsInput,
@@ -39,9 +43,19 @@ export async function diffVersionArtifacts(
 	const oldArtifactSha = shaFromHtmlKey(input.oldHtmlKey);
 	const newArtifactSha = shaFromHtmlKey(input.newHtmlKey);
 
+	const health = await docxApiHealth();
+	if (!health.xmldiffVersion) {
+		throw new Error("docx-api health is missing xmldiffVersion");
+	}
+	const diffVersion = health.xmldiffVersion;
+
 	const existing = await prisma.versionDiffArtifact.findUnique({
 		where: {
-			oldArtifactSha_newArtifactSha: { oldArtifactSha, newArtifactSha },
+			oldArtifactSha_newArtifactSha_diffVersion: {
+				oldArtifactSha,
+				newArtifactSha,
+				diffVersion,
+			},
 		},
 	});
 	if (existing) {
@@ -58,7 +72,11 @@ export async function diffVersionArtifacts(
 		getFileBuffer(input.oldHtmlKey),
 		getFileBuffer(input.newHtmlKey),
 	]);
-	const redline = diffHtml(oldBuf.toString("utf8"), newBuf.toString("utf8"));
+	const raw = await diffHtmlPair(
+		oldBuf.toString("utf8"),
+		newBuf.toString("utf8"),
+	);
+	const redline = sanitizeDiffHtml(raw);
 	const stats = redlineStats(redline);
 	const redlineKey = await persistRedline(redline);
 
@@ -66,6 +84,7 @@ export async function diffVersionArtifacts(
 		data: {
 			oldArtifactSha,
 			newArtifactSha,
+			diffVersion,
 			oldVersionId: input.oldVersionId,
 			newVersionId: input.newVersionId,
 			redlineKey,

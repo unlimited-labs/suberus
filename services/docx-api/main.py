@@ -33,8 +33,21 @@ import uuid
 import zipfile
 from pathlib import Path
 
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _pkg_version
+
 from fastapi import APIRouter, FastAPI, HTTPException, Response, UploadFile
 from PIL import Image
+from pydantic import BaseModel
+
+import diffhtml
+
+
+def _xmldiff_version() -> str | None:
+    try:
+        return _pkg_version("xmldiff")
+    except PackageNotFoundError:
+        return None
 
 # Hard ceiling on an accepted upload (anti-DoS: zip-bomb / pathological DOCX). Not
 # the per-type business limit (the app enforces that at upload) — just a bound on
@@ -230,6 +243,7 @@ def health():
         "status": "healthy",
         "pandocVersion": _pandoc_version(),
         "libreofficeVersion": _libreoffice_version(),
+        "xmldiffVersion": _xmldiff_version(),
         "schemaVersion": SCHEMA_VERSION,
         "normalizerConfigHash": NORMALIZER_CONFIG_HASH,
     }
@@ -274,6 +288,21 @@ async def normalize(file: UploadFile):
         media_type="application/zip",
         headers={"Content-Disposition": 'attachment; filename="bundle.zip"'},
     )
+
+
+class DiffRequest(BaseModel):
+    htmlA: str
+    htmlB: str
+
+
+@v1.post("/diff")
+def diff(req: DiffRequest):
+    """Structural redline between two already-normalized HTML fragments. Output is
+    UNTRUSTED — the Node worker DOMPurify-sanitizes it before persisting."""
+    total = len(req.htmlA) + len(req.htmlB)
+    if total > MAX_NORMALIZE_BYTES:
+        raise HTTPException(413, "Input HTML exceeds the diff size limit")
+    return {"redline": diffhtml.diff_html(req.htmlA, req.htmlB)}
 
 
 app.include_router(v1)

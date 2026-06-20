@@ -474,13 +474,16 @@ model SubmissionVersionArtifact {
 }
 
 /// Immutable redline between two normalized artifacts. Content-addressed by the
-/// pair of artifact HTML shas, so identical content pairs dedupe regardless of
-/// which versions requested them. `oldVersionId`/`newVersionId` are the displayed
-/// pair (plain columns, no relation — keeps SubmissionVersion decoupled).
+/// pair of artifact HTML shas PLUS the xmldiff engine version, so identical content
+/// pairs dedupe regardless of which versions requested them, and a diff-engine bump
+/// yields a new row instead of silently mutating a historical redline.
+/// `oldVersionId`/`newVersionId` are the displayed pair (plain columns, no relation
+/// — keeps SubmissionVersion decoupled).
 model VersionDiffArtifact {
   id             String   @id @default(uuid()) @db.Uuid
   oldArtifactSha String   @db.Char(64)
   newArtifactSha String   @db.Char(64)
+  diffVersion    String
   oldVersionId   String   @db.Uuid
   newVersionId   String   @db.Uuid
   redlineKey     String
@@ -488,7 +491,7 @@ model VersionDiffArtifact {
   delCount       Int      @default(0)
   createdAt      DateTime @default(now())
 
-  @@unique([oldArtifactSha, newArtifactSha])
+  @@unique([oldArtifactSha, newArtifactSha, diffVersion])
   @@index([oldVersionId, newVersionId])
   @@map("version_diff_artifacts")
 }

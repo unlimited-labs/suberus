@@ -1,23 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { diffHtml } from "./diff";
 import { mapFigureSrcs } from "./figure-refs";
 
-const mathSpan = (tex: string) =>
-	`<p>Energy <span class="math inline">\\(${tex}\\)</span> holds.</p>`;
-
-describe("diffHtml math", () => {
-	it("tags a changed equation's wrapper .matheq so it renders boxed, not struck", () => {
-		const redline = diffHtml(mathSpan("E=mc^2"), mathSpan("E=mc^3"));
-		expect(redline).toMatch(/<del[^>]*class="matheq"/);
-		expect(redline).toMatch(/<ins[^>]*class="matheq"/);
-	});
-
-	it("leaves an unchanged equation untagged (no spurious diff)", () => {
-		const redline = diffHtml(mathSpan("E=mc^2"), mathSpan("E=mc^2"));
-		expect(redline).not.toContain("matheq");
-		expect(redline).not.toMatch(/<(del|ins)\b/);
-	});
-});
+// The redline itself (structural tree diff, math protection, moves) is produced
+// by the docx-api sidecar — see services/docx-api/test_diffhtml.py.
 
 describe("mapFigureSrcs", () => {
 	const sha = "a".repeat(64);

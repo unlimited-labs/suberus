@@ -16,8 +16,10 @@ import { JSDOM } from "jsdom";
  * it no-ops. happy-dom reports `isSupported: true` but silently lets `onerror`,
  * `object/embed`, `form/input` through (partial XSS bypass). Proven 2026-06-20.
  *
- * Authoritative final gate: run this AFTER htmldiff + math-restore + parse5
- * rebalance, so a vector smuggled into `<ins>`/`<del>` is still removed (C2).
+ * Authoritative gate: the redline is produced by the docx-api sidecar (xmldiff)
+ * and is UNTRUSTED — run this over its output so a vector smuggled into
+ * `<ins>`/`<del>` (or anywhere) is removed before persisting/rendering (C2). It is
+ * also the gate for each normalized artifact before it is stored.
  */
 
 type Purifier = ReturnType<typeof createDOMPurify>;

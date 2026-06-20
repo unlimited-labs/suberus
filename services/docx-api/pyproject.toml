@@ -8,6 +8,8 @@ dependencies = [
     "uvicorn[standard]",
     "python-multipart",
     "Pillow",
+    "xmldiff",
+    "lxml",
 ]
 
 # Runtime also requires the system binaries `pandoc` (pinned) and `soffice`

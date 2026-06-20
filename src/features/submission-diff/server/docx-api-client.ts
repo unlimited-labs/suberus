@@ -10,6 +10,7 @@ function baseUrl(): string {
 export interface DocxApiHealth {
 	pandocVersion: string | null;
 	libreofficeVersion: string | null;
+	xmldiffVersion: string | null;
 	normalizerConfigHash: string;
 	schemaVersion: number;
 }
@@ -41,4 +42,28 @@ export async function normalizeDocx(
 		);
 	}
 	return Buffer.from(await res.arrayBuffer());
+}
+
+/**
+ * Structural redline between two normalized HTML fragments (xmldiff in the
+ * sidecar). The result is UNTRUSTED HTML — the caller MUST DOMPurify-sanitize it
+ * before persisting/rendering.
+ */
+export async function diffHtmlPair(
+	htmlA: string,
+	htmlB: string,
+): Promise<string> {
+	const res = await fetch(`${baseUrl()}/v1/diff`, {
+		method: "POST",
+		headers: { "content-type": "application/json" },
+		body: JSON.stringify({ htmlA, htmlB }),
+	});
+	if (!res.ok) {
+		const detail = await res.text().catch(() => "");
+		throw new Error(
+			`docx-api diff failed: ${res.status} ${detail.slice(0, 200)}`,
+		);
+	}
+	const data = (await res.json()) as { redline: string };
+	return data.redline;
 }

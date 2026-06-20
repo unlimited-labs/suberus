@@ -18,11 +18,13 @@ RUN pip install --no-cache-dir \
         "fastapi==0.115.*" \
         "uvicorn[standard]==0.32.*" \
         "python-multipart==0.0.*" \
-        "Pillow==11.*"
+        "Pillow==11.*" \
+        "xmldiff==3.0.*" \
+        "lxml>=5,<7"
 
 RUN adduser --disabled-password --gecos "" appuser
 WORKDIR /app
-COPY --chown=appuser:appuser main.py .
+COPY --chown=appuser:appuser main.py diffhtml.py ./
 USER appuser
 
 ENV PORT=8101
