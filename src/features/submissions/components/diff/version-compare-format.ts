@@ -7,22 +7,19 @@ export interface CompareAuthor {
 	isPresenter: boolean;
 }
 
-/**
- * Render an author list as one line per author so it can be word-diffed, e.g.
- * "Ann Vo <ann@x.io> (MIT) ★ presenter". Empty/undefined → "" (an empty diff).
- */
-export function authorsToText(authors: CompareAuthor[] | undefined): string {
-	if (!authors || authors.length === 0) return "";
-	return authors
-		.map((a) => {
-			const aff = a.affiliation ? ` (${a.affiliation})` : "";
-			const star = a.isPresenter ? " ★ presenter" : "";
-			return `${a.firstName} ${a.lastName} <${a.email}>${aff}${star}`;
-		})
-		.join("\n");
+/** Display line for one author, e.g. "Ann Vo — MIT ★". */
+export function authorLine(a: CompareAuthor): string {
+	const aff = a.affiliation ? ` — ${a.affiliation}` : "";
+	const star = a.isPresenter ? " ★" : "";
+	return `${a.firstName} ${a.lastName}${aff}${star}`.trim();
 }
 
-/** Render a keyword set as one keyword per line for word-diffing. */
-export function keywordsToText(keywords: string[] | undefined): string {
-	return (keywords ?? []).join("\n");
+/** Two author snapshots are equal iff every displayed field matches. */
+export function authorsEqual(a: CompareAuthor, b: CompareAuthor): boolean {
+	return (
+		a.firstName === b.firstName &&
+		a.lastName === b.lastName &&
+		a.affiliation === b.affiliation &&
+		a.isPresenter === b.isPresenter
+	);
 }

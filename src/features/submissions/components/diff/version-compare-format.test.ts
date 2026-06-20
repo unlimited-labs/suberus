@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
-	authorsToText,
+	authorLine,
+	authorsEqual,
 	type CompareAuthor,
-	keywordsToText,
 } from "./version-compare-format";
 
 const ann: CompareAuthor = {
@@ -13,51 +13,32 @@ const ann: CompareAuthor = {
 	isPresenter: true,
 };
 
-describe("authorsToText", () => {
-	it("returns empty string for undefined or empty", () => {
-		expect(authorsToText(undefined)).toBe("");
-		expect(authorsToText([])).toBe("");
-	});
-
+describe("authorLine", () => {
 	it("formats a presenter with affiliation and a star marker", () => {
-		expect(authorsToText([ann])).toBe("Ann Vo <ann@x.io> (MIT) ★ presenter");
+		expect(authorLine(ann)).toBe("Ann Vo — MIT ★");
 	});
 
-	it("omits the affiliation parentheses when affiliation is blank", () => {
-		expect(authorsToText([{ ...ann, affiliation: "" }])).toBe(
-			"Ann Vo <ann@x.io> ★ presenter",
+	it("omits the affiliation dash when affiliation is blank", () => {
+		expect(authorLine({ ...ann, affiliation: "", isPresenter: false })).toBe(
+			"Ann Vo",
 		);
 	});
 
 	it("omits the star for a non-presenter", () => {
-		expect(authorsToText([{ ...ann, isPresenter: false }])).toBe(
-			"Ann Vo <ann@x.io> (MIT)",
-		);
-	});
-
-	it("renders one author per line, preserving order", () => {
-		const bo: CompareAuthor = {
-			firstName: "Bo",
-			lastName: "Li",
-			email: "bo@x.io",
-			affiliation: "ETH",
-			isPresenter: false,
-		};
-		expect(authorsToText([ann, bo])).toBe(
-			"Ann Vo <ann@x.io> (MIT) ★ presenter\nBo Li <bo@x.io> (ETH)",
-		);
+		expect(authorLine({ ...ann, isPresenter: false })).toBe("Ann Vo — MIT");
 	});
 });
 
-describe("keywordsToText", () => {
-	it("returns empty string for undefined or empty", () => {
-		expect(keywordsToText(undefined)).toBe("");
-		expect(keywordsToText([])).toBe("");
+describe("authorsEqual", () => {
+	it("is true for identical snapshots", () => {
+		expect(authorsEqual(ann, { ...ann })).toBe(true);
 	});
 
-	it("joins keywords one per line", () => {
-		expect(keywordsToText(["alpha", "beta", "gamma"])).toBe(
-			"alpha\nbeta\ngamma",
-		);
+	it("is false when an affiliation changes", () => {
+		expect(authorsEqual(ann, { ...ann, affiliation: "ETH" })).toBe(false);
+	});
+
+	it("is false when the presenter flag changes", () => {
+		expect(authorsEqual(ann, { ...ann, isPresenter: false })).toBe(false);
 	});
 });

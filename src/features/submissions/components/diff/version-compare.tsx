@@ -8,6 +8,7 @@ import { useMemo } from "react";
 import { FileRedlineView } from "@/features/submission-diff/components/file-redline-view";
 import { TextDiffView } from "@/shared/components/diff/text-diff-view";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { diffList, listChanged } from "@/shared/lib/list-diff";
 import {
 	type DiffSegment,
 	diffText,
@@ -16,12 +17,9 @@ import {
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { AuthorsDiff, KeywordsDiff } from "./metadata-diff";
 import { SideBySideDiffView } from "./side-by-side-diff-view";
-import {
-	authorsToText,
-	type CompareAuthor,
-	keywordsToText,
-} from "./version-compare-format";
+import { authorsEqual, type CompareAuthor } from "./version-compare-format";
 import { VersionCompareSelector } from "./version-compare-selector";
 
 export type CompareLayout = "split" | "inline";
@@ -264,28 +262,26 @@ function VersionCompareBody({
 		() => diffText(baseV.content, compareV.content),
 		[baseV.content, compareV.content],
 	);
-	const authorSegments = useMemo(
-		() =>
-			diffText(authorsToText(baseV.authors), authorsToText(compareV.authors)),
-		[baseV.authors, compareV.authors],
-	);
-	const keywordSegments = useMemo(
-		() =>
-			diffText(
-				keywordsToText(baseV.keywords),
-				keywordsToText(compareV.keywords),
-			),
-		[baseV.keywords, compareV.keywords],
-	);
 
 	const isFileChanged = fileChanged(fileIdOf(baseV), fileIdOf(compareV));
 	const samePair = base === compare;
-	const hasFieldChange = [
-		titleSegments,
-		contentSegments,
-		authorSegments,
-		keywordSegments,
-	].some((segs) => segs.some((s) => s.type !== "equal"));
+	const metadataChanged =
+		showMetadata &&
+		(listChanged(
+			diffList(
+				baseV.authors ?? [],
+				compareV.authors ?? [],
+				(a) => a.email,
+				authorsEqual,
+			),
+		) ||
+			listChanged(
+				diffList(baseV.keywords ?? [], compareV.keywords ?? [], (k) => k),
+			));
+	const hasFieldChange =
+		[titleSegments, contentSegments].some((segs) =>
+			segs.some((s) => s.type !== "equal"),
+		) || metadataChanged;
 	// Two distinct versions whose every compared field — and the attached file —
 	// is unchanged: surface that explicitly instead of letting the reader hunt for
 	// a diff that isn't there.
@@ -344,11 +340,9 @@ function VersionCompareBody({
 
 			{showMetadata && (
 				<Panel title="Authors">
-					<FieldDiff
-						layout={layout}
-						segments={authorSegments}
-						baseLabel={baseLabel}
-						compareLabel={compareLabel}
+					<AuthorsDiff
+						base={baseV.authors ?? []}
+						compare={compareV.authors ?? []}
 						emptyLabel="No authors."
 					/>
 				</Panel>
@@ -356,11 +350,9 @@ function VersionCompareBody({
 
 			{showMetadata && (
 				<Panel title="Keywords">
-					<FieldDiff
-						layout={layout}
-						segments={keywordSegments}
-						baseLabel={baseLabel}
-						compareLabel={compareLabel}
+					<KeywordsDiff
+						base={baseV.keywords ?? []}
+						compare={compareV.keywords ?? []}
 						emptyLabel="No keywords."
 					/>
 				</Panel>

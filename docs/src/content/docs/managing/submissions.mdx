@@ -83,16 +83,19 @@ chosen versions and layout live in the page URL, so a comparison can be shared.
 Every field panel follows the same model: it **always shows the field's text**
 (never a bare "unchanged" note) and **highlights any change** — insertions
 underlined, deletions struck through (colour is never the only cue). The
-**Side-by-side / Inline** toggle drives all of them: side-by-side reconstructs
-the old and new value in two columns, inline shows one unified redline.
+**Side-by-side / Inline** toggle drives the text fields (Title, Content, File
+contents): side-by-side reconstructs the old and new value in two columns, inline
+shows one unified redline. **Authors** and **Keywords** are compared *structurally*
+instead — each entry is tagged **added**, **removed**, **moved**, or **changed**
+(see below), so the toggle does not affect them.
 
 | Field | What it shows |
 |---|---|
 | **Base (older)** / **Compare (newer)** | The two versions being compared. Defaults to the previous version → the current one; change either picker to compare any pair. |
 | **Comparing v_A → v_B** | A sticky header naming the two versions and their dates, with a **File changed / File unchanged** badge. If two different versions are completely identical, a banner says so. |
 | **Title** | The title text, with any change highlighted. |
-| **Authors** | The author composition (name, e-mail, affiliation, and who presents), with a changed **author line-up** highlighted. Shown to editors only. |
-| **Keywords** | The keyword/tag set, with any change highlighted. Shown to editors only. |
+| **Authors** | The author composition (name, affiliation, and who presents), compared **per author** (matched by e-mail): each line is tagged **added**, **removed**, **moved** (re-ordered), or **changed** (e.g. a new affiliation, with the previous value struck through). Shown to editors only. |
+| **Keywords** | The keyword/tag set, compared **per keyword**: each tag is tagged **added**, **removed**, or **moved**. Shown to editors only. |
 | **Attached file** | The file name on each side, with a **File changed / File unchanged** indication. |
 | **Author's note for v_B** | The comment the author left when submitting that version, if any. |
 | **Content** | The abstract/content text, with any change highlighted. Shown only when the submission has abstract/content text (hidden for file-only submissions). |
