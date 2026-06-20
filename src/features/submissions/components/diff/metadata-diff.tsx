@@ -9,9 +9,9 @@ import {
 
 /**
  * Structural metadata diff: authors (keyed by email) and keywords (keyed by
- * value) rendered as added / removed / moved / changed rows, instead of a
- * word-diffed text blob. The status label is text (not colour-only) for WCAG
- * 1.4.1; rows carry `data-diff-status` for tests.
+ * value) rendered as added / removed / changed rows, instead of a word-diffed
+ * text blob. The status label is text (not colour-only) for WCAG 1.4.1; rows
+ * carry `data-diff-status` for tests.
  */
 
 const STATUS_STYLE: Record<ListDiffStatus, { label: string; row: string }> = {
@@ -20,7 +20,6 @@ const STATUS_STYLE: Record<ListDiffStatus, { label: string; row: string }> = {
 		label: "removed",
 		row: "text-red-700 line-through opacity-80 dark:text-red-300",
 	},
-	moved: { label: "moved", row: "text-amber-700 dark:text-amber-300" },
 	changed: { label: "changed", row: "text-amber-700 dark:text-amber-300" },
 	unchanged: { label: "", row: "text-muted-foreground" },
 };

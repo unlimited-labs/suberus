@@ -13,10 +13,10 @@ describe("diffList (strings)", () => {
 		]);
 	});
 
-	it("flags a moved item (same value, new position)", () => {
+	it("treats pure reordering as unchanged (order is not signalled)", () => {
 		const out = diffList(["a", "b", "c"], ["c", "a", "b"], id);
-		expect(out[0]).toEqual({ status: "moved", item: "c" });
-		expect(out.filter((e) => e.status === "removed")).toHaveLength(0);
+		expect(out.every((e) => e.status === "unchanged")).toBe(true);
+		expect(listChanged(out)).toBe(false);
 	});
 
 	it("reports no change for identical lists", () => {

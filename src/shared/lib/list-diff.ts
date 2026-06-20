@@ -1,17 +1,13 @@
 /**
  * Structural diff of two ordered lists keyed by identity — added / removed /
- * moved / changed / unchanged — instead of diffing a flattened text blob. Used
- * for version-compare metadata (authors keyed by email, keywords by value) so a
- * reviewer sees "author X added, keyword Y removed, author Z moved" rather than a
- * wall of word-level changes.
+ * changed / unchanged — instead of diffing a flattened text blob. Used for
+ * version-compare metadata (authors keyed by email, keywords by value) so a
+ * reviewer sees "author X added, keyword Y removed" rather than a wall of
+ * word-level changes. Pure reordering is not signalled (it doesn't matter to a
+ * reviewer).
  */
 
-export type ListDiffStatus =
-	| "added"
-	| "removed"
-	| "moved"
-	| "changed"
-	| "unchanged";
+export type ListDiffStatus = "added" | "removed" | "changed" | "unchanged";
 
 export interface ListDiffEntry<T> {
 	status: ListDiffStatus;
@@ -38,13 +34,12 @@ export function diffList<T>(
 	});
 	const newKeys = new Set(newList.map(key));
 
-	const entries: ListDiffEntry<T>[] = newList.map((item, i) => {
+	const entries: ListDiffEntry<T>[] = newList.map((item) => {
 		const k = key(item);
 		const oi = oldIndex.get(k);
 		if (oi === undefined) return { status: "added", item };
 		const old = oldList[oi];
 		if (!equal(old, item)) return { status: "changed", item, previous: old };
-		if (oi !== i) return { status: "moved", item };
 		return { status: "unchanged", item };
 	});
 
