@@ -1,9 +1,9 @@
-import { ArtifactKind } from "@/generated/prisma/enums";
 import { prisma } from "@/shared/server/db.server";
 import { getFileBuffer } from "@/shared/server/storage";
 import { persistRedline } from "./cas";
 import { redlineStats } from "./diff";
 import { diffHtmlPair, docxApiHealth } from "./docx-api-client";
+import { fileKind } from "./file-kind";
 import { sanitizeDiffHtml } from "./sanitize";
 
 const HTML_SHA_RE = /([0-9a-f]{64})\.html$/;
@@ -122,12 +122,16 @@ export async function resolveHtmlKeyForVersion(
 ): Promise<ResolvedHtml | null> {
 	const version = await prisma.submissionVersion.findUnique({
 		where: { id: versionId },
-		select: { file: { select: { sha256: true } } },
+		select: { file: { select: { sha256: true, fileName: true } } },
 	});
-	const sourceSha256 = version?.file?.sha256;
-	if (!sourceSha256) return null;
+	const file = version?.file;
+	if (!file?.sha256) return null;
+	// Derive kind from the file (a source maps to exactly one format) so the read
+	// is deterministic and the cross-format guard stays explicit.
+	const kind = fileKind(file.fileName);
+	if (!kind) return null;
 	const artifact = await prisma.submissionVersionArtifact.findFirst({
-		where: { sourceSha256, kind: ArtifactKind.DOCX },
+		where: { sourceSha256: file.sha256, kind },
 		orderBy: { createdAt: "desc" },
 		select: {
 			htmlKey: true,
