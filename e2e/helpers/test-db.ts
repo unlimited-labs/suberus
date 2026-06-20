@@ -351,6 +351,85 @@ export async function addSubmissionVersions(
 	return ids;
 }
 
+/**
+ * Replace a submission's history with file-backed PDF versions and synchronously
+ * normalize each, so the lazy file redline is ready the moment the Compare page
+ * opens. Normalizing inline (not via the pg-boss worker) keeps the test
+ * deterministic — no polling for an async job. Requires the docling + docx-api
+ * sidecars to be up (the caller should skip the test when they are not).
+ */
+export async function seedNormalizedPdfVersions(
+	submissionId: string,
+	versions: Array<{
+		fixturePath: string;
+		fileName: string;
+		title: string;
+		content: string;
+	}>,
+): Promise<string[]> {
+	const fs = await import("fs");
+	const path = await import("path");
+	const db = getPrisma();
+	const { testUserId } = await getTestUserIds();
+	const { uploadFile, generateSubmissionFileKey } = await import(
+		"../../src/shared/server/storage"
+	);
+	const { normalizeSubmissionFile } = await import(
+		"../../src/features/submission-diff/server/normalize-version"
+	);
+
+	await db.submission.update({
+		where: { id: submissionId },
+		data: { currentVersionId: null },
+	});
+	await db.submissionVersion.deleteMany({ where: { submissionId } });
+
+	const ids: string[] = [];
+	let lastId: string | null = null;
+	for (let i = 0; i < versions.length; i++) {
+		const v = versions[i];
+		const buf = fs.readFileSync(path.resolve(v.fixturePath));
+		const storageKey = generateSubmissionFileKey(submissionId, i + 1, v.fileName);
+		await uploadFile(buf, storageKey, "application/pdf");
+		const file = await db.file.create({
+			data: {
+				entityType: "SUBMISSION_VERSION",
+				entityId: submissionId,
+				type: "SUBMISSION_MAIN",
+				storageKey,
+				fileName: v.fileName,
+				originalName: v.fileName,
+				mimeType: "application/pdf",
+				size: buf.length,
+				uploadedById: testUserId,
+			},
+		});
+		const row = await db.submissionVersion.create({
+			data: {
+				submissionId,
+				version: i + 1,
+				title: v.title,
+				content: v.content,
+				fileId: file.id,
+			},
+		});
+		ids.push(row.id);
+		lastId = row.id;
+		await normalizeSubmissionFile({
+			storageKey,
+			fileName: v.fileName,
+			fileId: file.id,
+		});
+	}
+	if (lastId) {
+		await db.submission.update({
+			where: { id: submissionId },
+			data: { currentVersionId: lastId },
+		});
+	}
+	return ids;
+}
+
 // Create submission with reviewer assignment
 export interface CreateSubmissionWithAssignmentOptions extends CreateSubmissionOptions {
 	reviewerId?: string; // defaults to reviewer user

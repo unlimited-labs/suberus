@@ -25,6 +25,7 @@ export {
 	deleteSubmission,
 	getTestUserIds,
 	getPrisma,
+	seedNormalizedPdfVersions,
 } from "../helpers/test-db";
 
 // Re-export base fixtures types

@@ -1,7 +1,32 @@
-import { test, expect, createSubmission, addSubmissionVersions } from "./fixtures";
+import {
+	test,
+	expect,
+	createSubmission,
+	addSubmissionVersions,
+	seedNormalizedPdfVersions,
+} from "./fixtures";
 import { SubmissionStatus } from "../../src/generated/prisma/enums";
 
 // Tests use admin storageState (see playwright.config.ts roleProject).
+
+/**
+ * The PDF file-redline path runs the real docling + docx-api sidecars. Skip the
+ * file-redline test when they aren't reachable (e.g. a CI without the dev stack)
+ * rather than fail — the rest of the compare-page suite is sidecar-independent.
+ */
+async function sidecarsHealthy(): Promise<boolean> {
+	const urls = [process.env.DOCLING_URL, process.env.DOCX_API_URL];
+	try {
+		for (const url of urls) {
+			if (!url) return false;
+			const res = await fetch(`${url.replace(/\/+$/, "")}/`);
+			if (!res.ok) return false;
+		}
+		return true;
+	} catch {
+		return false;
+	}
+}
 
 test.describe("Version compare page", () => {
 	test("compares two versions side-by-side from the Content tab", async ({
@@ -136,5 +161,54 @@ test.describe("Version compare page", () => {
 		await expect(
 			page.getByRole("link", { name: /Compare versions/i }),
 		).toHaveCount(0);
+	});
+
+	test("renders the PDF file redline on the compare page", async ({
+		adminSubmissionDetailPage,
+		page,
+		testRun,
+		cleanup,
+	}) => {
+		test.skip(
+			!(await sidecarsHealthy()),
+			"docling/docx-api sidecars not running",
+		);
+
+		const { id } = await createSubmission({
+			testRunId: testRun.testRunId,
+			title: "PDF Redline Test",
+			status: SubmissionStatus.SUBMITTED,
+		});
+		cleanup.track(id);
+		// Two PDF versions differing by one word (twelve -> fifteen); normalized
+		// inline so the lazy file redline is ready when the page opens.
+		await seedNormalizedPdfVersions(id, [
+			{
+				fixturePath: "e2e/reviews/fixtures/redline-v1.pdf",
+				fileName: "grain-study-v1.pdf",
+				title: "Grain growth study",
+				content: "Mean grain size increased by twelve percent.",
+			},
+			{
+				fixturePath: "e2e/reviews/fixtures/redline-v2.pdf",
+				fileName: "grain-study-v2.pdf",
+				title: "Grain growth study",
+				content: "Mean grain size increased by fifteen percent.",
+			},
+		]);
+
+		await adminSubmissionDetailPage.goto(id);
+		await page.getByRole("link", { name: /Compare versions/i }).click();
+		await page.waitForURL(/\/compare/);
+
+		// Inline layout → one unified file-redline frame.
+		await page.getByTestId("diff-layout-inline").click();
+		await expect(page.getByTestId("file-redline")).toBeVisible();
+
+		// The redline (sandboxed same-origin iframe) shows the changed word as an
+		// insertion and the old word struck through.
+		const frame = page.frameLocator('[data-testid="file-redline"] iframe');
+		await expect(frame.locator("ins")).toContainText("fifteen");
+		await expect(frame.locator("del")).toContainText("twelve");
 	});
 });
