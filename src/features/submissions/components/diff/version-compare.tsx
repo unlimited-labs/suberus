@@ -235,7 +235,7 @@ interface VersionCompareProps {
 	showMetadata?: boolean;
 }
 
-// fallow-ignore-next-line complexity -- presentational diff body (cyclomatic 5); CRAP from estimated 0 coverage on a render component
+// fallow-ignore-next-line complexity -- presentational render body, coverage-driven CRAP
 function VersionCompareBody({
 	sorted,
 	baseV,

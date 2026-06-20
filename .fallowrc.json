@@ -13,7 +13,7 @@
     "src/features/extraction/index.ts"
   ],
   "ignoreExportsUsedInFile": true,
-  "ignorePatterns": [".agents/**", "docs/**", "scripts/repl.ts", "public/**"],
+  "ignorePatterns": [".agents/**", "docs/**", "scripts/repl.ts", "public/**", "poc/**"],
   // Known-good deps not TS imports
   "ignoreDependencies": ["tw-animate-css", "shadcn"],
   "duplicates": {

@@ -123,7 +123,7 @@ interface SnapshotAuthor {
 
 /** Create the primary + extra authors for a submission, set the presenter, and
  *  return the snapshot used to seed version 1. No-op when withAuthor is false. */
-// fallow-ignore-next-line complexity -- linear test-factory setup (optional fields + extras loop); CRAP from estimated 0 coverage
+// fallow-ignore-next-line complexity -- linear test factory, coverage-driven CRAP
 async function seedSubmissionAuthors(
 	submissionId: string,
 	options: CreateSubmissionOptions,

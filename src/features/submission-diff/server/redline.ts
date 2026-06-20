@@ -3,6 +3,11 @@ import { prisma } from "@/shared/server/db.server";
 import { getFileBuffer } from "@/shared/server/storage";
 import { diffVersionArtifacts, resolveHtmlKeyForVersion } from "./diff-version";
 import { inlineFigures } from "./figure-inline";
+import {
+	chooseOldVersionId,
+	classifyResolvedPair,
+	type PairKeys,
+} from "./redline-resolve";
 import { renderMathInHtml } from "./render-math";
 
 const PRIVILEGED_ROLES: UserRole[] = [UserRole.ADMIN, UserRole.EDITOR];
@@ -39,21 +44,6 @@ async function previousVersionId(
 	return previous?.id ?? null;
 }
 
-/**
- * Classify a version pair's normalized artifacts:
- *  - `unavailable`: a side isn't normalized yet, or both are the same format but
- *    different toolchains (transient during a toolchain bump — re-normalization
- *    will reconcile them; never diff across toolchains, gotcha C3).
- *  - `format-changed`: both normalized but in different formats (e.g. DOCX -> PDF)
- *    — no structural redline is possible across extractors (the two HTML trees
- *    differ everywhere), so the caller surfaces an explicit notice + text diff.
- *  - `ready`: both normalized, same format + toolchain.
- */
-type PairKeys =
-	| { status: "ready"; oldHtmlKey: string; newHtmlKey: string }
-	| { status: "format-changed" }
-	| { status: "unavailable" };
-
 async function classifyPair(
 	oldVersionId: string,
 	newVersionId: string,
@@ -62,14 +52,7 @@ async function classifyPair(
 		resolveHtmlKeyForVersion(oldVersionId),
 		resolveHtmlKeyForVersion(newVersionId),
 	]);
-	if (!oldRes || !newRes) return { status: "unavailable" };
-	if (oldRes.kind !== newRes.kind) return { status: "format-changed" };
-	if (oldRes.toolchain !== newRes.toolchain) return { status: "unavailable" };
-	return {
-		status: "ready",
-		oldHtmlKey: oldRes.htmlKey,
-		newHtmlKey: newRes.htmlKey,
-	};
+	return classifyResolvedPair(oldRes, newRes);
 }
 
 type ResolvedPair =
@@ -100,19 +83,19 @@ async function resolvePair(
 	newVersionId: string,
 	explicitOldVersionId?: string,
 ): Promise<ResolvedPair> {
-	// IDOR guard: only the new version is authorized by the caller. A caller-
-	// supplied oldVersionId must belong to the SAME submission, else a reviewer
-	// could diff against an unrelated submission's content. The implicit branch
-	// (previousVersionId) is already scoped by submissionId.
-	if (
-		explicitOldVersionId &&
-		!(await versionInSubmission(explicitOldVersionId, submissionId))
-	) {
-		return { status: "unavailable" };
-	}
-	const oldVersionId =
-		explicitOldVersionId ??
-		(await previousVersionId(submissionId, currentVersion));
+	// IDOR guard lives in chooseOldVersionId: a caller-supplied oldVersionId is
+	// honoured only when it belongs to THIS submission, else a reviewer could diff
+	// against an unrelated submission's content. The implicit previous version is
+	// already submission-scoped.
+	const oldVersionId = chooseOldVersionId({
+		explicitOldVersionId,
+		explicitBelongsToSubmission: explicitOldVersionId
+			? await versionInSubmission(explicitOldVersionId, submissionId)
+			: false,
+		implicitPreviousId: explicitOldVersionId
+			? null
+			: await previousVersionId(submissionId, currentVersion),
+	});
 	if (!oldVersionId) return { status: "unavailable" };
 	const keys = await classifyPair(oldVersionId, newVersionId);
 	if (keys.status !== "ready") return keys;

@@ -229,7 +229,7 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 				file: getUploadedFile(data),
 			}),
 	)
-	// fallow-ignore-next-line complexity -- pre-existing upload handler, re-flagged only because this file was edited (resubmit/conditional validators)
+	// fallow-ignore-next-line complexity -- pre-existing upload handler, re-flagged on edit
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
 		// Dynamic import to avoid loading storage module when not needed
 		const { uploadFile, generateSubmissionFileKey, generateAuthorFileName } =
