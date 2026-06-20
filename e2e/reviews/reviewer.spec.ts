@@ -1,7 +1,22 @@
 import path from "path";
-import { test, expect, createSubmissionWithAssignment, addSubmissionVersions } from "./fixtures";
+import { test, expect, createSubmissionWithAssignment, addSubmissionVersions, seedNormalizedPdfVersions } from "./fixtures";
 
 // Tests use reviewer storageState from playwright.config.ts
+
+/** The file-redline seed normalizes via the docling + docx-api sidecars; skip when down. */
+async function sidecarsHealthy(): Promise<boolean> {
+	const urls = [process.env.DOCLING_URL, process.env.DOCX_API_URL];
+	try {
+		for (const url of urls) {
+			if (!url) return false;
+			const res = await fetch(`${url.replace(/\/+$/, "")}/`);
+			if (!res.ok) return false;
+		}
+		return true;
+	} catch {
+		return false;
+	}
+}
 
 test.describe("Reviewer - My Assignments Page", () => {
 	test("displays reviews heading", async ({ reviewerAssignmentsPage, page }) => {
@@ -244,6 +259,31 @@ test.describe("Reviewer - Double-blind Mode", () => {
 		// Assert
 		await expect(page.getByText(/Double-blind review.*author information hidden/i)).toBeVisible();
 		await expect(page.locator('[data-slot="card-title"]').filter({ hasText: /^Authors$/ })).not.toBeVisible();
+	});
+
+	test("neutralizes the author-derived file name on the compare page", async ({ page, reviewerAssignmentsPage, testRun, cleanup }) => {
+		test.skip(!(await sidecarsHealthy()), "docling/docx-api sidecars not running");
+		// Arrange — a double-blind submission whose files were stored under the
+		// author's name (Firstname_Lastname.ext); the reviewer must never see it.
+		const { submissionId, title } = await createSubmissionWithAssignment({
+			testRunId: testRun.testRunId,
+			title: "Double Blind Filename Test",
+		});
+		cleanup.track(submissionId);
+		await seedNormalizedPdfVersions(submissionId, [
+			{ fixturePath: "e2e/reviews/fixtures/redline-v1.pdf", fileName: "Kowalski_Jan.pdf", title, content: "Mean grain size increased by twelve percent." },
+			{ fixturePath: "e2e/reviews/fixtures/redline-v2.pdf", fileName: "Kowalski_Jan.pdf", title, content: "Mean grain size increased by fifteen percent." },
+		]);
+
+		// Act — open the reviewer compare page.
+		await reviewerAssignmentsPage.openReviewForm(title);
+		await page.getByTestId("reviewer-compare-link").click();
+		await page.waitForURL(/\/compare/);
+
+		// Assert — the attached-file rows show neutral names, never the surname.
+		await expect(page.getByText("Kowalski")).toHaveCount(0);
+		await expect(page.getByText(/v1\.pdf/)).toBeVisible();
+		await expect(page.getByText(/v2\.pdf/)).toBeVisible();
 	});
 });
 

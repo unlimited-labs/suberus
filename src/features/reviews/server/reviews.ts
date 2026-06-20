@@ -44,6 +44,32 @@ function resolvePreviousVersion(
 	return previous ? { title: previous.title, content: previous.content } : null;
 }
 
+type ReviewFile = {
+	id: string;
+	fileName: string;
+	originalName: string;
+	mimeType: string;
+	size: number;
+} | null;
+
+/**
+ * Replace the author-derived file name (uploads are stored as `Firstname_Lastname.ext`)
+ * with a neutral `v{n}.{ext}` so a double-blind reviewer can't read the author's
+ * identity off the file label. No-op outside blind review.
+ */
+function blindFile(
+	file: ReviewFile,
+	version: number,
+	blind: boolean,
+): ReviewFile {
+	if (!file || !blind) return file;
+	const dot = file.originalName.lastIndexOf(".");
+	// Keep the extension (with its dot), drop the author-derived stem.
+	const ext = dot > 0 ? file.originalName.slice(dot) : "";
+	const name = `v${version}${ext}`;
+	return { ...file, fileName: name, originalName: name };
+}
+
 export async function getAssignmentForReview(
 	assignmentId: string,
 	reviewerId: string,
@@ -173,6 +199,9 @@ export async function getAssignmentForReview(
 	// Get config for submission type
 	const configKey = SUBMISSION_TYPE_TO_KEY[assignment.submission.type];
 	const config = await getSetting(configKey);
+	const isBlind = config.reviewMode === "DOUBLE_BLIND";
+	const currentVersionNumber =
+		assignment.submission.currentVersion?.version ?? 1;
 
 	return {
 		assignment: {
@@ -189,21 +218,24 @@ export async function getAssignmentForReview(
 				assignment.submission.currentVersion?.content ??
 				assignment.submission.content,
 			type: assignment.submission.type,
-			authors:
-				config.reviewMode === "DOUBLE_BLIND"
-					? []
-					: assignment.submission.authors.map((a) => ({
-							firstName: a.firstName,
-							lastName: a.lastName,
-							affiliationName: a.affiliation?.name ?? null,
-							isPresenter: a.isPresenter,
-						})),
-			file: assignment.submission.currentVersion?.file ?? null,
+			authors: isBlind
+				? []
+				: assignment.submission.authors.map((a) => ({
+						firstName: a.firstName,
+						lastName: a.lastName,
+						affiliationName: a.affiliation?.name ?? null,
+						isPresenter: a.isPresenter,
+					})),
+			file: blindFile(
+				assignment.submission.currentVersion?.file ?? null,
+				currentVersionNumber,
+				isBlind,
+			),
 			previousVersion: resolvePreviousVersion(
 				assignment.submission.versions,
 				assignment.submission.currentVersion?.version,
 			),
-			currentVersionNumber: assignment.submission.currentVersion?.version ?? 1,
+			currentVersionNumber,
 			versions: assignment.submission.versions.map((v) => ({
 				id: v.id,
 				version: v.version,
@@ -211,7 +243,7 @@ export async function getAssignmentForReview(
 				content: v.content,
 				comment: null,
 				createdAt: v.createdAt,
-				file: v.file,
+				file: blindFile(v.file, v.version, isBlind),
 			})),
 		},
 		config: {
