@@ -97,11 +97,14 @@ const CONFIG = {
 		"width",
 		"height",
 	],
-	// Allow http(s)/mailto, fragments, root-relative, and scheme-less RELATIVE
-	// paths (e.g. the content-addressed `figures/<sha>.png` refs). The final
-	// `[^:]*$` alternative matches any value with no colon → relative paths pass
-	// while `javascript:`/`data:` (which contain a colon) are rejected.
-	ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):|[#/]|[^:]*$)/i,
+	// Diff-substrate URIs: allow ONLY fragments, root-relative, and scheme-less
+	// RELATIVE paths (the content-addressed `figures/<sha>.png` refs). Any value
+	// with a colon — `https:`/`mailto:`/`data:`/`javascript:` — is rejected. This
+	// blocks an author embedding an EXTERNAL `<img src="https://tracker">` that
+	// would phone home from the reviewer's browser and de-anonymize blind review
+	// (C11). Figures are inlined as same-document `data:` URIs at read time, AFTER
+	// this gate, so no colon-bearing URI ever needs to survive here.
+	ALLOWED_URI_REGEXP: /^(?:[#/]|[^:]*$)/i,
 	FORBID_TAGS: [
 		"script",
 		"style",

@@ -44,6 +44,16 @@ describe("sanitizeDiffHtml", () => {
 			forbidden: ["data:text/html", "<script"],
 		},
 		{
+			name: "external tracking img (blind-review de-anon, C11)",
+			html: `<p>ok</p><img src="https://tracker.example/p?sub=42">`,
+			forbidden: ["https://tracker", "tracker.example"],
+		},
+		{
+			name: "external anchor href (C11)",
+			html: `<a href="https://tracker.example/x">link</a>`,
+			forbidden: ["https://tracker", "tracker.example"],
+		},
+		{
 			name: "form/input phishing",
 			html: `<form action="https://evil"><input name="pw"></form><p>ok</p>`,
 			forbidden: ["<form", "<input"],

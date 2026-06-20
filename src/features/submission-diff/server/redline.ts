@@ -58,12 +58,34 @@ interface ResolvedPair {
 	newHtmlKey: string;
 }
 
+/** Whether `versionId` belongs to `submissionId`. */
+async function versionInSubmission(
+	versionId: string,
+	submissionId: string,
+): Promise<boolean> {
+	const version = await prisma.submissionVersion.findUnique({
+		where: { id: versionId },
+		select: { submissionId: true },
+	});
+	return version?.submissionId === submissionId;
+}
+
 async function resolvePair(
 	submissionId: string,
 	currentVersion: number,
 	newVersionId: string,
 	explicitOldVersionId?: string,
 ): Promise<ResolvedPair | null> {
+	// IDOR guard: only the new version is authorized by the caller. A caller-
+	// supplied oldVersionId must belong to the SAME submission, else a reviewer
+	// could diff against an unrelated submission's content. The implicit branch
+	// (previousVersionId) is already scoped by submissionId.
+	if (
+		explicitOldVersionId &&
+		!(await versionInSubmission(explicitOldVersionId, submissionId))
+	) {
+		return null;
+	}
 	const oldVersionId =
 		explicitOldVersionId ??
 		(await previousVersionId(submissionId, currentVersion));
@@ -95,7 +117,18 @@ async function authorizeAndResolvePair(
 	);
 }
 
-/** Inline figures + render math so an HTML fragment is a self-contained document. */
+/**
+ * Inline figures + render math so an HTML fragment is a self-contained document.
+ *
+ * Security note (gotcha C2/#8): the input `html` is already the authoritative-gate
+ * output (sanitized at diff time). We do NOT re-sanitize after this step — both
+ * additions are trusted-by-construction: `inlineFigures` injects only our own
+ * content-addressed PNG bytes as same-document `data:` URIs, and `renderMathInHtml`
+ * runs KaTeX with `trust:false` (which neutralizes `\href`/`\htmlData`) and emits
+ * MathML the strict diff allowlist would otherwise strip. The hard boundary for this
+ * stage is the script-less sandboxed iframe + its `default-src 'none'` CSP, not a
+ * second DOMPurify pass.
+ */
 async function selfContain(html: string): Promise<string> {
 	return renderMathInHtml(await inlineFigures(html));
 }

@@ -10,6 +10,7 @@ import { versionRedlineQueryOptions } from "@/features/submission-diff/api";
  */
 function wrapDoc(html: string): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
+	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'self' 'unsafe-inline'; font-src 'self'">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="/katex/katex.min.css"><style>
 		*{box-sizing:border-box}
