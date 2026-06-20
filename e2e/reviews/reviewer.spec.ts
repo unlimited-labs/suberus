@@ -518,7 +518,7 @@ test.describe("Reviewer - Compare page", () => {
 		const header = page.getByTestId("diff-comparing-header");
 		await expect(header).toContainText("Comparing v1");
 		await expect(header).toContainText("v2");
-		await expect(page.getByTestId("side-by-side-diff")).toBeVisible();
+		await expect(page.getByTestId("side-by-side-diff").first()).toBeVisible();
 		await expect(
 			page.getByTestId("diff-side-old").getByTestId("diff-del").first(),
 		).toBeVisible();
@@ -544,7 +544,7 @@ test.describe("Reviewer - Compare page", () => {
 		await page.getByTestId("reviewer-compare-link").click();
 		await page.waitForURL(/\/compare/);
 
-		await expect(page.getByTestId("side-by-side-diff")).toBeVisible();
+		await expect(page.getByTestId("side-by-side-diff").first()).toBeVisible();
 
 		await page.getByTestId("diff-layout-inline").click();
 		await expect(page.getByTestId("text-diff").first()).toBeVisible();

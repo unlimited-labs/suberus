@@ -39,7 +39,7 @@ test.describe("Version compare page", () => {
 		const header = page.getByTestId("diff-comparing-header");
 		await expect(header).toContainText("Comparing v1");
 		await expect(header).toContainText("v2");
-		await expect(page.getByTestId("side-by-side-diff")).toBeVisible();
+		await expect(page.getByTestId("side-by-side-diff").first()).toBeVisible();
 		await expect(
 			page.getByTestId("diff-side-old").getByTestId("diff-del").first(),
 		).toBeVisible();
@@ -73,7 +73,7 @@ test.describe("Version compare page", () => {
 		await page.waitForURL(/\/compare/);
 
 		// Default is side-by-side.
-		await expect(page.getByTestId("side-by-side-diff")).toBeVisible();
+		await expect(page.getByTestId("side-by-side-diff").first()).toBeVisible();
 
 		// Switch to inline → unified redline, no split panels.
 		await page.getByTestId("diff-layout-inline").click();

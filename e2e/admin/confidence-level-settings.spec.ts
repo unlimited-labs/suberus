@@ -105,7 +105,7 @@ test.describe.serial("Admin - Confidence Level", () => {
 		await expect(page.getByRole("button", { name: "Submit Review" })).toBeVisible({ timeout: 15000 });
 
 		// Assert
-		await expect(page.getByRole("heading", { name: "Confidence Level" })).not.toBeVisible();
+		await expect(page.locator('[data-slot="card-title"]').filter({ hasText: "Confidence Level" })).not.toBeVisible();
 	});
 
 	test("review form shows confidence when enabled", async ({ page }, testInfo) => {
@@ -134,7 +134,7 @@ test.describe.serial("Admin - Confidence Level", () => {
 		await expect(page.getByRole("button", { name: "Submit Review" })).toBeVisible({ timeout: 15000 });
 
 		// Assert
-		await expect(page.getByRole("heading", { name: "Confidence Level" })).toBeVisible();
+		await expect(page.locator('[data-slot="card-title"]').filter({ hasText: "Confidence Level" })).toBeVisible();
 	});
 
 	test("can submit review without confidence when disabled", async ({ page }, testInfo) => {

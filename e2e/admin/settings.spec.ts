@@ -197,7 +197,6 @@ test.describe("Admin Settings - Submission Validation", () => {
 		await expect(page.getByLabel("Min length (characters)").first()).toBeVisible()
 		await expect(page.getByText("For TEXT format submissions")).toBeVisible()
 		await expect(adminSettingsPage.getEnableKeywordsSwitch()).toBeVisible()
-		await expect(page.getByRole("heading", { name: "Files" })).toBeVisible()
 	})
 
 	test("shows title length inputs", async ({ adminSettingsPage }) => {
@@ -287,10 +286,15 @@ test.describe("Admin Settings - Submission Validation", () => {
 		await expect(page.getByText("Submission settings saved")).toBeVisible({ timeout: 5000 })
 	})
 
-	test("shows file settings", async ({ adminSettingsPage, page }) => {
+	test("shows file settings", async ({ adminSettingsPage, page }, testInfo) => {
+		// File settings moved to the per-type FILE format section (commit 05f71c4
+		// dropped the global Files section). Full Paper defaults to FILE format.
+		await adminSettingsPage.switchToTypesTab(testInfo)
+		await adminSettingsPage.expandSubmissionType("Full Paper")
+
 		// Assert
 		await expect(adminSettingsPage.getMaxFileSizeInput()).toBeVisible()
-		await expect(page.getByText("Allowed file types")).toBeVisible()
+		await expect(page.getByText("Allowed file extensions")).toBeVisible()
 	})
 
 	test("does not show max authors setting", async ({ page }) => {

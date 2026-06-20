@@ -64,11 +64,14 @@ test.describe.serial("Admin - Date/Time Format", () => {
 		await page.reload();
 		await adminSettingsPage.switchToConferenceTab(testInfo);
 
-		// Assert - the select should show the previously saved MM/DD/YYYY format label
+		// Assert - the select should show the previously saved MM/DD/YYYY format label.
+		// The page renders the preview in UTC (Playwright timezoneId), so build the
+		// expected date in UTC too — otherwise the local vs UTC date boundary flips
+		// the day near midnight UTC and the comparison is off by one.
 		const now = new Date();
-		const mm = String(now.getMonth() + 1).padStart(2, "0");
-		const dd = String(now.getDate()).padStart(2, "0");
-		const yyyy = now.getFullYear();
+		const mm = String(now.getUTCMonth() + 1).padStart(2, "0");
+		const dd = String(now.getUTCDate()).padStart(2, "0");
+		const yyyy = now.getUTCFullYear();
 		await expect(adminSettingsPage.getDateFormatSelect()).toContainText(`${mm}/${dd}/${yyyy}`);
 	});
 

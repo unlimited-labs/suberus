@@ -494,7 +494,9 @@ export class ReviewFormPage {
 	}
 
 	async isConfidenceLevelVisible(): Promise<boolean> {
-		const heading = this.page.getByRole("heading", { name: "Confidence Level" });
+		const heading = this.page
+			.locator('[data-slot="card-title"]')
+			.filter({ hasText: "Confidence Level" });
 		return heading.isVisible().catch(() => false);
 	}
 

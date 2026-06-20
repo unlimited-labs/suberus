@@ -326,7 +326,7 @@ test.describe("Review Form Validation", () => {
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
 	
 		// Assert form loaded
-		await expect(page.getByRole("heading", { name: "Decision", exact: true })).toBeVisible({ timeout: 10000 });
+		await expect(page.locator('[data-slot="card-title"]').filter({ hasText: "Decision" })).toBeVisible({ timeout: 10000 });
 
 		// Act - fill form
 		await page.getByRole("button", { name: /Accept Recommends accepting/i }).click();

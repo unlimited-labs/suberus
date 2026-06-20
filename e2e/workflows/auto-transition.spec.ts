@@ -118,7 +118,7 @@ test.describe("Auto-transition After Reviews", () => {
 
 		// Wait for form to fully load
 		await expect(
-			page.getByRole("heading", { name: "Decision", exact: true }),
+			page.locator('[data-slot="card-title"]').filter({ hasText: "Decision" }),
 		).toBeVisible({ timeout: 10000 });
 
 		// Select Accept decision
