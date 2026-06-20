@@ -36,6 +36,37 @@ from pathlib import Path
 from fastapi import APIRouter, FastAPI, HTTPException, Response, UploadFile
 from PIL import Image
 
+# Hard ceiling on an accepted upload (anti-DoS: zip-bomb / pathological DOCX). Not
+# the per-type business limit (the app enforces that at upload) — just a bound on
+# what this sidecar hands to pandoc/LibreOffice.
+MAX_NORMALIZE_BYTES = int(os.getenv("DOCX_API_MAX_MB", "50")) * 1024 * 1024
+# Per-subprocess wall-clock caps so a crafted file can't hang a worker forever.
+PANDOC_TIMEOUT_S = int(os.getenv("DOCX_API_PANDOC_TIMEOUT_S", "120"))
+SOFFICE_TIMEOUT_S = int(os.getenv("DOCX_API_SOFFICE_TIMEOUT_S", "90"))
+
+
+def _run(
+    cmd: list[str], *, timeout: float | None = None, **kw
+) -> subprocess.CompletedProcess:
+    return subprocess.run(cmd, capture_output=True, timeout=timeout, **kw)
+
+
+def _pandoc_version() -> str | None:
+    try:
+        out = _run(["pandoc", "--version"], timeout=10).stdout.decode(errors="replace")
+        return out.splitlines()[0].split()[1] if out else None
+    except Exception:
+        return None
+
+
+def _libreoffice_version() -> str | None:
+    try:
+        out = _run(["soffice", "--version"], timeout=30).stdout.decode(errors="replace")
+        return out.splitlines()[0].strip() if out else None
+    except Exception:
+        return None
+
+
 # Bundle schema version — bump when the bundle layout or normalize recipe changes
 # (participates in the artifact cache key so historical diffs aren't silently mutated).
 SCHEMA_VERSION = 2
@@ -44,11 +75,15 @@ SCHEMA_VERSION = 2
 # lines; raw HTML is dropped so author-supplied markup can't smuggle script through.
 PANDOC_ARGS = ["-f", "docx+styles", "-t", "html", "--sandbox", "--wrap=none"]
 
+# libreofficeVersion folds into the hash so an LO upgrade that changes figure
+# rasterization invalidates the cache (gotcha C4 — else figures silently mutate
+# while the artifact key stays stable).
 NORMALIZER_CONFIG = {
     "pandocArgs": PANDOC_ARGS,
     "figures": "all->png",
     "imgDims": "style->attr@px",
     "schemaVersion": SCHEMA_VERSION,
+    "libreofficeVersion": _libreoffice_version(),
 }
 NORMALIZER_CONFIG_HASH = hashlib.sha256(
     json.dumps(NORMALIZER_CONFIG, sort_keys=True).encode()
@@ -62,33 +97,16 @@ app = FastAPI()
 v1 = APIRouter(prefix="/v1")
 
 
-def _run(cmd: list[str], **kw) -> subprocess.CompletedProcess:
-    return subprocess.run(cmd, capture_output=True, **kw)
-
-
-def _pandoc_version() -> str | None:
-    try:
-        out = _run(["pandoc", "--version"]).stdout.decode(errors="replace")
-        return out.splitlines()[0].split()[1] if out else None
-    except Exception:
-        return None
-
-
-def _libreoffice_version() -> str | None:
-    try:
-        out = _run(["soffice", "--version"]).stdout.decode(errors="replace")
-        return out.splitlines()[0].strip() if out else None
-    except Exception:
-        return None
-
-
 def _soffice_to_png(src: Path, outdir: Path) -> Path:
     """Rasterize a vector image to PNG via LibreOffice with an isolated profile."""
     profile = f"file:///tmp/lo_{uuid.uuid4().hex}"
-    proc = _run([
-        "soffice", "--headless", "--convert-to", "png", "--outdir", str(outdir),
-        f"-env:UserInstallation={profile}", str(src),
-    ])
+    try:
+        proc = _run([
+            "soffice", "--headless", "--convert-to", "png", "--outdir", str(outdir),
+            f"-env:UserInstallation={profile}", str(src),
+        ], timeout=SOFFICE_TIMEOUT_S)
+    except subprocess.TimeoutExpired:
+        raise HTTPException(504, f"LibreOffice timed out rasterizing {src.name}")
     png = outdir / (src.stem + ".png")
     if not png.exists():
         raise HTTPException(
@@ -174,10 +192,13 @@ def _hoist_img_dims(html: str) -> str:
 def _normalize(docx_path: Path, workdir: Path) -> tuple[str, dict[str, bytes], str]:
     media_dir = workdir / "media"
     html_path = workdir / "document.html"
-    proc = _run([
-        "pandoc", str(docx_path), *PANDOC_ARGS,
-        "--extract-media", str(media_dir), "-o", str(html_path),
-    ])
+    try:
+        proc = _run([
+            "pandoc", str(docx_path), *PANDOC_ARGS,
+            "--extract-media", str(media_dir), "-o", str(html_path),
+        ], timeout=PANDOC_TIMEOUT_S)
+    except subprocess.TimeoutExpired:
+        raise HTTPException(504, "pandoc timed out")
     if proc.returncode != 0:
         raise HTTPException(500, f"pandoc failed: {proc.stderr.decode(errors='replace')[:300]}")
     warnings = proc.stderr.decode(errors="replace").strip()
@@ -219,6 +240,10 @@ async def normalize(file: UploadFile):
     contents = await file.read()
     if not contents:
         raise HTTPException(400, "No file uploaded")
+    if len(contents) > MAX_NORMALIZE_BYTES:
+        raise HTTPException(
+            413, f"File exceeds the {MAX_NORMALIZE_BYTES // (1024 * 1024)}MB normalize limit"
+        )
 
     with tempfile.TemporaryDirectory() as tmp:
         workdir = Path(tmp)

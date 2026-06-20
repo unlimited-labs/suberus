@@ -33,8 +33,10 @@ async function handleSubmissionDiff(
 export async function registerSubmissionDiffWorker(
 	boss: PgBoss,
 ): Promise<void> {
-	// localConcurrency 1: LibreOffice rasterization in docx-api serializes (C5),
-	// so there is no gain from concurrent normalize jobs per instance.
+	// localConcurrency 1: one normalize in flight per instance. Cross-instance
+	// concurrency is SAFE because each docx-api LibreOffice call uses an isolated
+	// per-invocation profile (C5) — the cap is not what serializes; it just keeps
+	// pandoc + LibreOffice subprocesses from piling up on one box.
 	await boss.work<SubmissionDiffJobData>(
 		SUBMISSION_DIFF_QUEUE,
 		{ localConcurrency: 1 },

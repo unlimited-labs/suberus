@@ -39,17 +39,22 @@ async function previousVersionId(
 	return previous?.id ?? null;
 }
 
-/** Both versions' normalized-HTML keys, or null if either isn't normalized. */
+/**
+ * Both versions' normalized-HTML keys, or null if either isn't normalized or the
+ * two were produced by different toolchains (C3 — never diff across pandoc/
+ * normalizer versions, which would surface spurious differences).
+ */
 async function bothHtmlKeys(
 	oldVersionId: string,
 	newVersionId: string,
 ): Promise<{ oldHtmlKey: string; newHtmlKey: string } | null> {
-	const [oldHtmlKey, newHtmlKey] = await Promise.all([
+	const [oldRes, newRes] = await Promise.all([
 		resolveHtmlKeyForVersion(oldVersionId),
 		resolveHtmlKeyForVersion(newVersionId),
 	]);
-	if (!oldHtmlKey || !newHtmlKey) return null;
-	return { oldHtmlKey, newHtmlKey };
+	if (!oldRes || !newRes) return null;
+	if (oldRes.toolchain !== newRes.toolchain) return null;
+	return { oldHtmlKey: oldRes.htmlKey, newHtmlKey: newRes.htmlKey };
 }
 
 interface ResolvedPair {

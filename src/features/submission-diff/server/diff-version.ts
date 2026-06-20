@@ -3,7 +3,6 @@ import { prisma } from "@/shared/server/db.server";
 import { getFileBuffer } from "@/shared/server/storage";
 import { persistRedline } from "./cas";
 import { diffHtml, diffStats } from "./diff";
-import { docxApiHealth } from "./docx-api-client";
 
 const HTML_SHA_RE = /([0-9a-f]{64})\.html$/;
 
@@ -84,29 +83,43 @@ export async function diffVersionArtifacts(
 	};
 }
 
-/** Resolve a version's current normalized-HTML key, if it has one under the live toolchain. */
+export interface ResolvedHtml {
+	htmlKey: string;
+	/** Toolchain fingerprint — both sides of a diff MUST share it (gotcha C3). */
+	toolchain: string;
+}
+
+/**
+ * Resolve a version's normalized-HTML artifact (newest toolchain wins).
+ *
+ * Read-decoupled from the sidecar: the artifact row already carries its own
+ * toolchain, so a read NEVER calls `docxApiHealth()`. A down docx-api must not
+ * break viewing an already-computed redline (the artifact is immutable). On a
+ * toolchain bump the revision-upload flow re-normalizes both sides, so the
+ * newest artifact per version is the comparable one.
+ */
 export async function resolveHtmlKeyForVersion(
 	versionId: string,
-): Promise<string | null> {
+): Promise<ResolvedHtml | null> {
 	const version = await prisma.submissionVersion.findUnique({
 		where: { id: versionId },
 		select: { file: { select: { sha256: true } } },
 	});
 	const sourceSha256 = version?.file?.sha256;
 	if (!sourceSha256) return null;
-	const health = await docxApiHealth();
-	if (!health.pandocVersion) return null;
-	const artifact = await prisma.submissionVersionArtifact.findUnique({
-		where: {
-			sourceSha256_kind_pandocVersion_normalizerConfigHash_schemaVersion: {
-				sourceSha256,
-				kind: ArtifactKind.DOCX,
-				pandocVersion: health.pandocVersion,
-				normalizerConfigHash: health.normalizerConfigHash,
-				schemaVersion: health.schemaVersion,
-			},
+	const artifact = await prisma.submissionVersionArtifact.findFirst({
+		where: { sourceSha256, kind: ArtifactKind.DOCX },
+		orderBy: { createdAt: "desc" },
+		select: {
+			htmlKey: true,
+			pandocVersion: true,
+			normalizerConfigHash: true,
+			schemaVersion: true,
 		},
-		select: { htmlKey: true },
 	});
-	return artifact?.htmlKey ?? null;
+	if (!artifact) return null;
+	return {
+		htmlKey: artifact.htmlKey,
+		toolchain: `${artifact.pandocVersion}|${artifact.normalizerConfigHash}|${artifact.schemaVersion}`,
+	};
 }
