@@ -446,9 +446,10 @@ model File {
   @@map("files")
 }
 
-/// Kind of source artifact normalized for diffing. PDF deferred post-v1.
+/// Kind of source artifact normalized for diffing.
 enum ArtifactKind {
   DOCX
+  PDF
 }
 
 /// Immutable normalized-HTML artifact for one source file under one toolchain.
