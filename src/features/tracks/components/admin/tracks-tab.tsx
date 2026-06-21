@@ -3,7 +3,7 @@ import { useState } from "react";
 import type { ReviewerUser } from "@/features/reviews/server/reviewers";
 import type { TrackWithStats } from "@/features/tracks/server/admin-tracks";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { SectionCard } from "@/shared/ui/section-card";
 import { TrackDialog } from "./track-dialog";
 import { TracksList } from "./tracks-list";
 
@@ -33,29 +33,22 @@ export function TracksTab({
 
 	return (
 		<div className="space-y-6">
-			<Card>
-				<CardHeader>
-					<div className="flex items-center justify-between">
-						<div>
-							<CardTitle>Conference Tracks</CardTitle>
-							<p className="text-sm text-muted-foreground">
-								Thematic paths that group presentations by subject area
-							</p>
-						</div>
-						<Button onClick={() => setDialogOpen(true)}>
-							<IconPlus className="mr-2 size-4" />
-							Create Track
-						</Button>
-					</div>
-				</CardHeader>
-				<CardContent>
-					<TracksList
-						tracks={initialTracks}
-						onEdit={handleEdit}
-						onUpdate={onUpdate}
-					/>
-				</CardContent>
-			</Card>
+			<SectionCard
+				title="Conference Tracks"
+				description="Thematic paths that group presentations by subject area"
+				action={
+					<Button onClick={() => setDialogOpen(true)}>
+						<IconPlus className="mr-2 size-4" />
+						Create Track
+					</Button>
+				}
+			>
+				<TracksList
+					tracks={initialTracks}
+					onEdit={handleEdit}
+					onUpdate={onUpdate}
+				/>
+			</SectionCard>
 
 			<TrackDialog
 				key={editingTrack?.id ?? "new"}

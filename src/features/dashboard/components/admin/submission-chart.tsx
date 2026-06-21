@@ -1,6 +1,6 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { SectionCard } from "@/shared/ui/section-card";
 
 interface SubmissionChartProps {
 	data: AdminDashboardMetrics["submissions"] | undefined;
@@ -37,16 +37,11 @@ const STATUS_LABELS: Record<string, string> = {
 export function SubmissionChart({ data }: SubmissionChartProps) {
 	if (!data) {
 		return (
-			<Card>
-				<CardHeader>
-					<CardTitle>Submissions by Status</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="flex h-[300px] items-center justify-center">
-						<p className="text-muted-foreground">Loading...</p>
-					</div>
-				</CardContent>
-			</Card>
+			<SectionCard title="Submissions by Status">
+				<div className="flex h-[300px] items-center justify-center">
+					<p className="text-muted-foreground">Loading...</p>
+				</div>
+			</SectionCard>
 		);
 	}
 
@@ -60,59 +55,49 @@ export function SubmissionChart({ data }: SubmissionChartProps) {
 
 	if (chartData.length === 0) {
 		return (
-			<Card>
-				<CardHeader>
-					<CardTitle>Submissions by Status</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="flex h-[300px] items-center justify-center">
-						<p className="text-muted-foreground">No submissions yet</p>
-					</div>
-				</CardContent>
-			</Card>
+			<SectionCard title="Submissions by Status">
+				<div className="flex h-[300px] items-center justify-center">
+					<p className="text-muted-foreground">No submissions yet</p>
+				</div>
+			</SectionCard>
 		);
 	}
 
 	const total = chartData.reduce((sum, item) => sum + item.value, 0);
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>Submissions by Status</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<ResponsiveContainer width="100%" height={300}>
-					<PieChart>
-						<Pie
-							data={chartData}
-							cx="50%"
-							cy="50%"
-							labelLine={false}
-							label={({ name, percent }) =>
-								`${name}: ${((percent ?? 0) * 100).toFixed(0)}%`
-							}
-							outerRadius={80}
-							fill="#8884d8"
-							dataKey="value"
-						>
-							{chartData.map((entry) => (
-								<Cell
-									key={entry.status}
-									fill={STATUS_COLORS[entry.status] || "#6b7280"}
-								/>
-							))}
-						</Pie>
-						<Tooltip
-							formatter={(value) => {
-								const num = Number(value ?? 0);
-								const percent = ((num / total) * 100).toFixed(1);
-								return `${num} (${percent}%)`;
-							}}
-							labelFormatter={() => "Count"}
-						/>
-					</PieChart>
-				</ResponsiveContainer>
-			</CardContent>
-		</Card>
+		<SectionCard title="Submissions by Status">
+			<ResponsiveContainer width="100%" height={300}>
+				<PieChart>
+					<Pie
+						data={chartData}
+						cx="50%"
+						cy="50%"
+						labelLine={false}
+						label={({ name, percent }) =>
+							`${name}: ${((percent ?? 0) * 100).toFixed(0)}%`
+						}
+						outerRadius={80}
+						fill="#8884d8"
+						dataKey="value"
+					>
+						{chartData.map((entry) => (
+							<Cell
+								key={entry.status}
+								fill={STATUS_COLORS[entry.status] || "#6b7280"}
+							/>
+						))}
+					</Pie>
+					<Tooltip
+						formatter={(value) => {
+							const num = Number(value ?? 0);
+							const percent = ((num / total) * 100).toFixed(1);
+							return `${num} (${percent}%)`;
+						}}
+						labelFormatter={() => "Count"}
+					/>
+				</PieChart>
+			</ResponsiveContainer>
+		</SectionCard>
 	);
 }

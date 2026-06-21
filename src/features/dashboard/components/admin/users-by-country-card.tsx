@@ -3,17 +3,11 @@ import { countries } from "countries-list";
 import * as Flags from "country-flag-icons/react/3x2";
 import MapLibreGL from "maplibre-gl";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { COUNTRY_CENTROIDS } from "@/features/dashboard/country-centroids";
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
 import { useTheme } from "@/shared/components/theme-provider";
-import { COUNTRY_CENTROIDS } from "@/features/dashboard/country-centroids";
-import {
-	Card,
-	CardAction,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@/shared/ui/card";
 import { MapControls, Map as MapView, useMap } from "@/shared/ui/map";
+import { SectionCard } from "@/shared/ui/section-card";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
@@ -303,67 +297,54 @@ export function UsersByCountryCard({ data }: UsersByCountryCardProps) {
 
 	if (!data) {
 		return (
-			<Card>
-				<CardHeader>
-					<CardTitle>Users by Country</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<Skeleton className="h-[300px] w-full md:h-[400px]" />
-				</CardContent>
-			</Card>
+			<SectionCard title="Users by Country">
+				<Skeleton className="h-[300px] w-full md:h-[400px]" />
+			</SectionCard>
 		);
 	}
 
 	if (data.length === 0) {
 		return (
-			<Card>
-				<CardHeader>
-					<CardTitle>Users by Country</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="flex h-[300px] items-center justify-center md:h-[400px]">
-						<p className="text-muted-foreground">No country data available</p>
-					</div>
-				</CardContent>
-			</Card>
+			<SectionCard title="Users by Country">
+				<div className="flex h-[300px] items-center justify-center md:h-[400px]">
+					<p className="text-muted-foreground">No country data available</p>
+				</div>
+			</SectionCard>
 		);
 	}
 
 	return (
-		<Card>
-			<Tabs
-				value={view}
-				onValueChange={(v) => setView(v === "list" ? "list" : "map")}
+		<Tabs
+			value={view}
+			onValueChange={(v) => setView(v === "list" ? "list" : "map")}
+		>
+			<SectionCard
+				title="Users by Country"
+				action={
+					<TabsList>
+						<TabsTrigger value="map">
+							<IconMap />
+							<span className="hidden sm:inline">Map</span>
+						</TabsTrigger>
+						<TabsTrigger value="list">
+							<IconList />
+							<span className="hidden sm:inline">List</span>
+						</TabsTrigger>
+					</TabsList>
+				}
 			>
-				<CardHeader>
-					<CardTitle>Users by Country</CardTitle>
-					<CardAction>
-						<TabsList>
-							<TabsTrigger value="map">
-								<IconMap />
-								<span className="hidden sm:inline">Map</span>
-							</TabsTrigger>
-							<TabsTrigger value="list">
-								<IconList />
-								<span className="hidden sm:inline">List</span>
-							</TabsTrigger>
-						</TabsList>
-					</CardAction>
-				</CardHeader>
-				<CardContent>
-					<TabsContent value="map">
-						<div className="h-[300px] md:h-[400px]">
-							<MapView center={MAP_CENTER} zoom={1.5} theme={resolvedTheme}>
-								<MapControls showZoom showFullscreen position="bottom-right" />
-								<BubbleLayer data={data} />
-							</MapView>
-						</div>
-					</TabsContent>
-					<TabsContent value="list">
-						<CountryList data={data} />
-					</TabsContent>
-				</CardContent>
-			</Tabs>
-		</Card>
+				<TabsContent value="map">
+					<div className="h-[300px] md:h-[400px]">
+						<MapView center={MAP_CENTER} zoom={1.5} theme={resolvedTheme}>
+							<MapControls showZoom showFullscreen position="bottom-right" />
+							<BubbleLayer data={data} />
+						</MapView>
+					</div>
+				</TabsContent>
+				<TabsContent value="list">
+					<CountryList data={data} />
+				</TabsContent>
+			</SectionCard>
+		</Tabs>
 	);
 }

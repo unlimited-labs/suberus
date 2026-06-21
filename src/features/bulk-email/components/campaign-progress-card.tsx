@@ -1,7 +1,7 @@
 import { IconProgressCheck } from "@tabler/icons-react";
 import type { JobSSEState } from "@/shared/hooks/use-job-sse";
-import { Panel } from "@/shared/ui/panel";
 import { Progress } from "@/shared/ui/progress";
+import { SectionCard } from "@/shared/ui/section-card";
 
 interface CampaignProgressCardProps {
 	campaign: {
@@ -37,7 +37,11 @@ export function CampaignProgressCard({
 	const total = useLive ? job.total : campaign.totalRecipients;
 
 	return (
-		<Panel title="Sending progress" icon={IconProgressCheck}>
+		<SectionCard
+			variant="elevated"
+			title="Sending progress"
+			icon={IconProgressCheck}
+		>
 			<div className="space-y-2" data-testid="campaign-progress">
 				<Progress value={progressValue(job)} />
 				<p className="text-sm text-muted-foreground">
@@ -47,6 +51,6 @@ export function CampaignProgressCard({
 					) : null}
 				</p>
 			</div>
-		</Panel>
+		</SectionCard>
 	);
 }

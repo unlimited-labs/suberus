@@ -1,8 +1,8 @@
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
 import { Badge } from "@/shared/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Progress } from "@/shared/ui/progress";
+import { SectionCard } from "@/shared/ui/section-card";
 
 interface ReviewProgressProps {
 	data: AdminDashboardMetrics["reviews"] | undefined;
@@ -16,16 +16,11 @@ const PROGRESS_COLORS = {
 export function ReviewProgress({ data }: ReviewProgressProps) {
 	if (!data) {
 		return (
-			<Card>
-				<CardHeader>
-					<CardTitle>Review Progress</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="flex h-[300px] items-center justify-center">
-						<p className="text-muted-foreground">Loading...</p>
-					</div>
-				</CardContent>
-			</Card>
+			<SectionCard title="Review Progress">
+				<div className="flex h-[300px] items-center justify-center">
+					<p className="text-muted-foreground">Loading...</p>
+				</div>
+			</SectionCard>
 		);
 	}
 
@@ -45,54 +40,49 @@ export function ReviewProgress({ data }: ReviewProgressProps) {
 	];
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>Review Progress</CardTitle>
-			</CardHeader>
-			<CardContent className="space-y-4">
-				<div className="flex items-center justify-center">
-					<ResponsiveContainer width="50%" height={150}>
-						<PieChart>
-							<Pie
-								data={chartData}
-								cx="50%"
-								cy="50%"
-								innerRadius={40}
-								outerRadius={60}
-								dataKey="value"
-								strokeWidth={0}
-							>
-								{chartData.map((entry) => (
-									<Cell key={entry.name} fill={entry.fill} />
-								))}
-							</Pie>
-						</PieChart>
-					</ResponsiveContainer>
-					<div className="text-center ml-4">
-						<p className="text-3xl font-bold">{completionRate.toFixed(0)}%</p>
-						<p className="text-sm text-muted-foreground">Completion Rate</p>
-					</div>
+		<SectionCard title="Review Progress" contentClassName="space-y-4">
+			<div className="flex items-center justify-center">
+				<ResponsiveContainer width="50%" height={150}>
+					<PieChart>
+						<Pie
+							data={chartData}
+							cx="50%"
+							cy="50%"
+							innerRadius={40}
+							outerRadius={60}
+							dataKey="value"
+							strokeWidth={0}
+						>
+							{chartData.map((entry) => (
+								<Cell key={entry.name} fill={entry.fill} />
+							))}
+						</Pie>
+					</PieChart>
+				</ResponsiveContainer>
+				<div className="text-center ml-4">
+					<p className="text-3xl font-bold">{completionRate.toFixed(0)}%</p>
+					<p className="text-sm text-muted-foreground">Completion Rate</p>
 				</div>
+			</div>
 
-				<Progress value={completionRate} className="h-2" />
+			<Progress value={completionRate} className="h-2" />
 
-				<div className="grid grid-cols-2 gap-4 pt-2">
-					<div className="text-center">
-						<p className="text-2xl font-semibold">{byStatus.PENDING}</p>
-						<p className="text-xs text-muted-foreground">Pending</p>
-					</div>
-					<div className="text-center">
-						<p className="text-2xl font-semibold">{byStatus.COMPLETED}</p>
-						<p className="text-xs text-muted-foreground">Completed</p>
-					</div>
+			<div className="grid grid-cols-2 gap-4 pt-2">
+				<div className="text-center">
+					<p className="text-2xl font-semibold">{byStatus.PENDING}</p>
+					<p className="text-xs text-muted-foreground">Pending</p>
 				</div>
+				<div className="text-center">
+					<p className="text-2xl font-semibold">{byStatus.COMPLETED}</p>
+					<p className="text-xs text-muted-foreground">Completed</p>
+				</div>
+			</div>
 
-				{byStatus.OVERDUE > 0 && (
-					<div className="flex justify-center pt-2">
-						<Badge variant="destructive">{byStatus.OVERDUE} Overdue</Badge>
-					</div>
-				)}
-			</CardContent>
-		</Card>
+			{byStatus.OVERDUE > 0 && (
+				<div className="flex justify-center pt-2">
+					<Badge variant="destructive">{byStatus.OVERDUE} Overdue</Badge>
+				</div>
+			)}
+		</SectionCard>
 	);
 }

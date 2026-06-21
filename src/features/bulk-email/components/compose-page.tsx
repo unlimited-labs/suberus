@@ -15,7 +15,7 @@ import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
-import { Panel } from "@/shared/ui/panel";
+import { SectionCard } from "@/shared/ui/section-card";
 import { Separator } from "@/shared/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Textarea } from "@/shared/ui/textarea";
@@ -59,7 +59,7 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 				<div className="mx-auto w-full max-w-7xl">
 					<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
 						{/* Editor */}
-						<Panel variant="elevated">
+						<div className="rounded-2xl bg-card overflow-hidden shadow-2xl">
 							<div className="space-y-6 p-6 sm:p-8">
 								<div>
 									<h1 className="text-2xl font-semibold tracking-tight">
@@ -116,18 +116,22 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 									</TabsContent>
 								</Tabs>
 							</div>
-						</Panel>
+						</div>
 
 						{/* Inspector */}
 						<aside className="space-y-4 lg:sticky lg:top-0 lg:self-start">
-							<Panel title="Recipients" icon={IconUsers}>
+							<SectionCard
+								variant="outlined"
+								title="Recipients"
+								icon={IconUsers}
+							>
 								<RecipientSummary
 									recipients={campaign.recipients}
 									totalRecipients={campaign.totalRecipients}
 									sentCount={campaign.sentCount}
 									failedCount={campaign.failedCount}
 								/>
-							</Panel>
+							</SectionCard>
 
 							<CampaignProgressCard
 								campaign={campaign}
@@ -135,11 +139,15 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 								job={compose.job}
 							/>
 
-							<Panel title="Placeholders" icon={IconBraces}>
+							<SectionCard
+								variant="outlined"
+								title="Placeholders"
+								icon={IconBraces}
+							>
 								<PlaceholderHelp />
-							</Panel>
+							</SectionCard>
 
-							<Panel title="Actions" icon={IconSend}>
+							<SectionCard variant="outlined" title="Actions" icon={IconSend}>
 								<div className="space-y-3 text-sm">
 									{compose.isDraft ? (
 										<>
@@ -208,7 +216,7 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 										</>
 									)}
 								</div>
-							</Panel>
+							</SectionCard>
 						</aside>
 					</div>
 				</div>

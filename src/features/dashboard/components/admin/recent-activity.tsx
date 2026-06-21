@@ -16,7 +16,7 @@ import { formatRelativeTime } from "@/shared/lib/format-date";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { SectionCard } from "@/shared/ui/section-card";
 
 interface RecentActivityProps {
 	events: AdminDashboardMetrics["recentActivity"] | undefined;
@@ -112,44 +112,34 @@ export function RecentActivity({ events }: RecentActivityProps) {
 
 	if (!allEvents || allEvents.length === 0) {
 		return (
-			<Card>
-				<CardHeader>
-					<CardTitle>Recent Activity</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="flex h-[300px] items-center justify-center">
-						<p className="text-muted-foreground">No recent activity</p>
-					</div>
-				</CardContent>
-			</Card>
+			<SectionCard title="Recent Activity">
+				<div className="flex h-[300px] items-center justify-center">
+					<p className="text-muted-foreground">No recent activity</p>
+				</div>
+			</SectionCard>
 		);
 	}
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>Recent Activity</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<div className="max-h-[400px] space-y-3 overflow-y-auto">
-					{allEvents.map((event) => (
-						<ActivityEventRow key={event.id} event={event} />
-					))}
-				</div>
+		<SectionCard title="Recent Activity">
+			<div className="max-h-[400px] space-y-3 overflow-y-auto">
+				{allEvents.map((event) => (
+					<ActivityEventRow key={event.id} event={event} />
+				))}
+			</div>
 
-				{hasMore && (
-					<Button
-						variant="outline"
-						size="sm"
-						className="mt-3 w-full"
-						onClick={handleShowMore}
-						disabled={loading}
-					>
-						{loading && <IconLoader2 className="mr-2 size-4 animate-spin" />}
-						Show more
-					</Button>
-				)}
-			</CardContent>
-		</Card>
+			{hasMore && (
+				<Button
+					variant="outline"
+					size="sm"
+					className="mt-3 w-full"
+					onClick={handleShowMore}
+					disabled={loading}
+				>
+					{loading && <IconLoader2 className="mr-2 size-4 animate-spin" />}
+					Show more
+				</Button>
+			)}
+		</SectionCard>
 	);
 }
