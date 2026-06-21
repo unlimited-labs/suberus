@@ -12,6 +12,19 @@ import {
   CardTitle,
 } from "@/shared/ui/card"
 
+/**
+ * Surface treatment. `default` is the flat shadcn Card (rounded-xl + ring);
+ * `outlined`/`elevated` mirror the old `Panel` (rounded-2xl + shadow) so the
+ * hand-rolled detail/form panels migrate without a visual regression.
+ */
+type SectionCardVariant = "default" | "outlined" | "elevated"
+
+const VARIANT_CLASS: Record<SectionCardVariant, string> = {
+  default: "",
+  outlined: "rounded-2xl border border-border/50 shadow-xl ring-0",
+  elevated: "rounded-2xl shadow-2xl ring-0",
+}
+
 interface BaseSectionCardProps {
   /** Header label. Accepts a node so callers can inline a badge next to the text. */
   title: ReactNode
@@ -21,6 +34,7 @@ interface BaseSectionCardProps {
   description?: ReactNode
   /** Right-aligned header slot (buttons, links). Never toggles collapse. */
   action?: ReactNode
+  variant?: SectionCardVariant
   size?: "default" | "sm"
   className?: string
   headerClassName?: string
@@ -51,6 +65,7 @@ function StaticSectionCard({
   icon,
   description,
   action,
+  variant = "default",
   size,
   className,
   headerClassName,
@@ -58,7 +73,7 @@ function StaticSectionCard({
   children,
 }: BaseSectionCardProps) {
   return (
-    <Card size={size} className={className}>
+    <Card size={size} className={cn(VARIANT_CLASS[variant], className)}>
       <CardHeader className={headerClassName}>
         <CardTitle className="flex items-center gap-2 text-base">
           <HeaderTitle icon={icon} title={title} />
@@ -77,6 +92,7 @@ function CollapsibleSectionCard({
   description,
   action,
   defaultOpen = true,
+  variant = "default",
   size,
   className,
   headerClassName,
@@ -87,7 +103,7 @@ function CollapsibleSectionCard({
 
   return (
     <CollapsiblePrimitive.Root open={open} onOpenChange={setOpen} asChild>
-      <Card size={size} className={className}>
+      <Card size={size} className={cn(VARIANT_CLASS[variant], className)}>
         <CardHeader
           className={cn(
             "flex flex-row items-start justify-between gap-4",
