@@ -1,6 +1,6 @@
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
 import { cn } from "@/shared/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { SectionCard } from "@/shared/ui/section-card";
 import {
 	buildServiceRows,
 	type ServiceRow as ServiceRowData,
@@ -44,17 +44,12 @@ export function SystemHealthCard({
 	const services = buildServiceRows({ s3, smtp, llm, docling });
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>System Health</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<div className="grid gap-3 sm:grid-cols-2">
-					{services.map((service) => (
-						<ServiceRow key={service.name} service={service} />
-					))}
-				</div>
-			</CardContent>
-		</Card>
+		<SectionCard title="System Health">
+			<div className="grid gap-3 sm:grid-cols-2">
+				{services.map((service) => (
+					<ServiceRow key={service.name} service={service} />
+				))}
+			</div>
+		</SectionCard>
 	);
 }

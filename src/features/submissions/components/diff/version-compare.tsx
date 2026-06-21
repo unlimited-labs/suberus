@@ -16,7 +16,8 @@ import {
 } from "@/shared/lib/text-diff";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Card, CardContent, CardHeader } from "@/shared/ui/card";
+import { SectionCard } from "@/shared/ui/section-card";
 import { AuthorsDiff, KeywordsDiff } from "./metadata-diff";
 import { SideBySideDiffView } from "./side-by-side-diff-view";
 import { authorsEqual, type CompareAuthor } from "./version-compare-format";
@@ -62,27 +63,6 @@ export function defaultComparePair(
 
 const fileIdOf = (v: CompareVersion) => v.file?.id ?? null;
 const fileNameOf = (v: CompareVersion) => v.file?.originalName ?? "no file";
-
-/** A titled card panel matching the submission detail tabs (Authors/Content). */
-function Panel({
-	title,
-	action,
-	children,
-}: {
-	title: string;
-	action?: React.ReactNode;
-	children: React.ReactNode;
-}) {
-	return (
-		<Card>
-			<CardHeader className="flex flex-row items-center justify-between gap-4">
-				<CardTitle className="text-base">{title}</CardTitle>
-				{action}
-			</CardHeader>
-			<CardContent>{children}</CardContent>
-		</Card>
-	);
-}
 
 function LayoutToggle({
 	layout,
@@ -328,7 +308,7 @@ function VersionCompareBody({
 				</CardContent>
 			</Card>
 
-			<Panel title="Title">
+			<SectionCard title="Title">
 				<FieldDiff
 					layout={layout}
 					segments={titleSegments}
@@ -336,29 +316,29 @@ function VersionCompareBody({
 					compareLabel={compareLabel}
 					emptyLabel="No title."
 				/>
-			</Panel>
+			</SectionCard>
 
 			{showMetadata && (
-				<Panel title="Authors">
+				<SectionCard title="Authors">
 					<AuthorsDiff
 						base={baseV.authors ?? []}
 						compare={compareV.authors ?? []}
 						emptyLabel="No authors."
 					/>
-				</Panel>
+				</SectionCard>
 			)}
 
 			{showMetadata && (
-				<Panel title="Keywords">
+				<SectionCard title="Keywords">
 					<KeywordsDiff
 						base={baseV.keywords ?? []}
 						compare={compareV.keywords ?? []}
 						emptyLabel="No keywords."
 					/>
-				</Panel>
+				</SectionCard>
 			)}
 
-			<Panel title="Attached file">
+			<SectionCard title="Attached file">
 				<FileRows
 					baseLabel={baseLabel}
 					compareLabel={compareLabel}
@@ -366,18 +346,18 @@ function VersionCompareBody({
 					compareName={fileNameOf(compareV)}
 					isFileChanged={isFileChanged}
 				/>
-			</Panel>
+			</SectionCard>
 
 			{compareV.comment && (
-				<Panel title={`Author's note for v${compare}`}>
+				<SectionCard title={`Author's note for v${compare}`}>
 					<p className="whitespace-pre-wrap break-words text-sm text-muted-foreground">
 						{compareV.comment}
 					</p>
-				</Panel>
+				</SectionCard>
 			)}
 
 			{(baseV.content || compareV.content) && (
-				<Panel title="Content">
+				<SectionCard title="Content">
 					<FieldDiff
 						layout={layout}
 						segments={contentSegments}
@@ -385,7 +365,7 @@ function VersionCompareBody({
 						compareLabel={compareLabel}
 						emptyLabel="No content."
 					/>
-				</Panel>
+				</SectionCard>
 			)}
 
 			<FileChangesPanel
@@ -421,7 +401,7 @@ function FileChangesPanel({
 }) {
 	if (samePair || !isFileChanged) return null;
 	return (
-		<Panel
+		<SectionCard
 			title={layout === "split" ? "File contents" : "File changes (redline)"}
 		>
 			<FileRedlineView
@@ -431,7 +411,7 @@ function FileChangesPanel({
 				oldLabel={baseLabel}
 				newLabel={compareLabel}
 			/>
-		</Panel>
+		</SectionCard>
 	);
 }
 
