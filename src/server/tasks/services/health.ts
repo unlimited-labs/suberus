@@ -1,5 +1,9 @@
 import { defineTask } from "nitro/task";
+import { checkDoclingHealth } from "@/features/extraction/server/docling";
+import { checkPlannerHealth } from "@/features/planner/server/health";
+import { setSetting } from "@/features/settings/server/settings";
 import { logger } from "@/logger";
+import { checkLlmHealth } from "@/shared/server/llm";
 
 export default defineTask({
 	meta: {
@@ -8,15 +12,6 @@ export default defineTask({
 	},
 	async run() {
 		logger.info("[task:services:health] started");
-
-		const { checkLlmHealth } = await import("@/shared/server/llm");
-		const { checkDoclingHealth } = await import(
-			"@/features/extraction/server/docling"
-		);
-		const { checkPlannerHealth } = await import(
-			"@/features/planner/server/health"
-		);
-		const { setSetting } = await import("@/features/settings/server/settings");
 
 		const [llm, docling, planner] = await Promise.all([
 			checkLlmHealth(),

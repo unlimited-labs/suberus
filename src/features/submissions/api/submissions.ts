@@ -8,6 +8,7 @@ import {
 	getSetting,
 	getSettings,
 } from "@/features/settings/server/settings";
+import { enqueueRevisionNormalize } from "@/features/submission-diff/server/enqueue-revision";
 import {
 	createNewSubmission,
 	getSubmissionById,
@@ -28,7 +29,17 @@ import {
 import { logger } from "@/logger";
 import { isDeadlinePassed } from "@/shared/lib/deadline";
 import { prisma } from "@/shared/server/db.server";
-import { getUploadedFile } from "@/shared/server/form-upload";
+import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
+import {
+	deleteFile,
+	generateAuthorFileName,
+	generateSubmissionFileKey,
+	uploadFile,
+} from "@/shared/server/storage";
+import {
+	UploadValidationError,
+	validateUpload,
+} from "@/shared/server/validate-upload";
 
 function isPrismaKnownError(
 	err: unknown,
@@ -199,9 +210,6 @@ async function maybeEnqueueDiffNormalize(
 	if ((ext !== "docx" && ext !== "pdf") || input.currentVersionNumber <= 1) {
 		return;
 	}
-	const { enqueueRevisionNormalize } = await import(
-		"@/features/submission-diff/server/enqueue-revision"
-	);
 	await enqueueRevisionNormalize({
 		submissionId: input.submissionId,
 		currentVersionNumber: input.currentVersionNumber,
@@ -231,12 +239,6 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 	)
 	// fallow-ignore-next-line complexity -- pre-existing upload handler, re-flagged on edit
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
-		// Dynamic import to avoid loading storage module when not needed
-		const { uploadFile, generateSubmissionFileKey, generateAuthorFileName } =
-			await import("@/shared/server/storage");
-		const { fileToBuffer } = await import("@/shared/server/form-upload");
-		const { prisma } = await import("@/shared/server/db.server");
-
 		// Verify submission belongs to user
 		const submission = await prisma.submission.findFirst({
 			where: { id: data.submissionId, userId: context.user.id },
@@ -258,9 +260,6 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 
 		// Validate the real file type by magic number against the allowed
 		// extensions for this submission's type — never trust the client mime.
-		const { validateUpload, UploadValidationError } = await import(
-			"@/shared/server/validate-upload"
-		);
 		const activeTypes = await getActiveSubmissionTypes();
 		const typeConfig = activeTypes.find(
 			(t) => t.type === submission.type,
@@ -325,10 +324,7 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 					select: { storageKey: true },
 				});
 				if (oldFile) {
-					const { deleteFile: deleteS3File } = await import(
-						"@/shared/server/storage"
-					);
-					await deleteS3File(oldFile.storageKey).catch(() => {});
+					await deleteFile(oldFile.storageKey).catch(() => {});
 					await prisma.file.delete({
 						where: { id: submission.currentVersion.fileId },
 					});

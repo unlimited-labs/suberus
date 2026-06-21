@@ -4,6 +4,8 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { env } from "@/env";
+import { logActivity } from "@/features/activity-log/server/activity-log";
+import { activityDetail } from "@/features/activity-log/types";
 import { getSetting } from "@/features/settings/server/settings";
 import { PrismaClient, UserRole } from "@/generated/prisma/client";
 import { logger } from "@/logger.ts";
@@ -160,12 +162,6 @@ export const auth = betterAuth({
 		user: {
 			create: {
 				after: async (user) => {
-					const { logActivity } = await import(
-						"@/features/activity-log/server/activity-log"
-					);
-					const { activityDetail } = await import(
-						"@/features/activity-log/types"
-					);
 					await logActivity({
 						type: "USER_REGISTERED",
 						userId: user.id,
@@ -184,10 +180,7 @@ export const auth = betterAuth({
 					if (contactEmail) {
 						let affiliationName = "";
 						if (extUser.affiliationId) {
-							const { prisma: dbClient } = await import(
-								"@/shared/server/db.server"
-							);
-							const affiliation = await dbClient.affiliation.findUnique({
+							const affiliation = await prisma.affiliation.findUnique({
 								where: { id: extUser.affiliationId },
 								select: { name: true },
 							});
@@ -209,16 +202,10 @@ export const auth = betterAuth({
 						email: user.email,
 					});
 					// Log self-service email verification (idempotent — checks if already logged)
-					const { prisma: dbClient } = await import(
-						"@/shared/server/db.server"
-					);
-					const alreadyLogged = await dbClient.activityLog.findFirst({
+					const alreadyLogged = await prisma.activityLog.findFirst({
 						where: { userId: user.id, type: "USER_EMAIL_VERIFIED" },
 					});
 					if (!alreadyLogged) {
-						const { logActivity } = await import(
-							"@/features/activity-log/server/activity-log"
-						);
 						await logActivity({
 							type: "USER_EMAIL_VERIFIED",
 							userId: user.id,

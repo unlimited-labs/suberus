@@ -9,6 +9,11 @@ import {
 import { getDefaultSetting } from "@/features/settings/defaults";
 import { SUPPORTED_FILE_EXTENSIONS } from "@/features/settings/file-types";
 import {
+	deleteAuthBackground,
+	getAuthBackgroundUrl,
+	uploadAuthBackground,
+} from "@/features/settings/server/branding";
+import {
 	getActiveSubmissionTypes,
 	getSetting,
 	getSettings,
@@ -26,7 +31,7 @@ import type {
 import { isDeadlinePassed } from "@/shared/lib/deadline";
 import { zIanaTz } from "@/shared/lib/validations/zod-helpers";
 import { prisma } from "@/shared/server/db.server";
-import { getUploadedFile } from "@/shared/server/form-upload";
+import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
 
 // Schema for submission type config
 const submissionTypeConfigSchema = z.object({
@@ -643,9 +648,6 @@ export const getAppBrandingFn = createServerFn({ method: "GET" }).handler(
 export const getBrandingSettingsFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(async (): Promise<BrandingSettings> => {
-		const { getAuthBackgroundUrl } = await import(
-			"@/features/settings/server/branding"
-		);
 		const [settings, authBackgroundUrl] = await Promise.all([
 			getSettings([
 				"BRANDING_LOGO_URL",
@@ -694,10 +696,6 @@ export const uploadAuthBackgroundFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator((data: FormData) => ({ file: getUploadedFile(data) }))
 	.handler(async ({ data }) => {
-		const { uploadAuthBackground, getAuthBackgroundUrl } = await import(
-			"@/features/settings/server/branding"
-		);
-		const { fileToBuffer } = await import("@/shared/server/form-upload");
 		const buffer = await fileToBuffer(data.file);
 		await uploadAuthBackground(buffer);
 		const url = await getAuthBackgroundUrl();
@@ -710,9 +708,6 @@ export const uploadAuthBackgroundFn = createServerFn({ method: "POST" })
 export const deleteAuthBackgroundFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.handler(async () => {
-		const { deleteAuthBackground } = await import(
-			"@/features/settings/server/branding"
-		);
 		await deleteAuthBackground();
 		return { success: true };
 	});
@@ -778,9 +773,6 @@ export const getOgMetadataFn = createServerFn({ method: "GET" }).handler(
  */
 export const getAuthPageBrandingFn = createServerFn({ method: "GET" }).handler(
 	async (): Promise<AuthPageBranding> => {
-		const { getAuthBackgroundUrl } = await import(
-			"@/features/settings/server/branding"
-		);
 		const [s, authBackgroundUrl] = await Promise.all([
 			getSettings([
 				"CONFERENCE_NAME",
