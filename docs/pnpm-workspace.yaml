@@ -1,3 +1,7 @@
+# Security pin: esbuild >=0.28.1 fixes dev-server arbitrary file read on Windows (Dependabot).
+overrides:
+  esbuild: 0.28.1
+
 allowBuilds:
   esbuild: true
   sharp: true
