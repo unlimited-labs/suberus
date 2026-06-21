@@ -1,5 +1,5 @@
 import { Badge } from "@/shared/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { SectionCard } from "@/shared/ui/section-card";
 import { InfoRow } from "./info-row";
 import type { ExhibitorDetail } from "./types";
 
@@ -11,11 +11,8 @@ export function ExhibitorContactCard({ user }: ExhibitorContactCardProps) {
 	const contactName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
 
 	return (
-		<Card data-testid="exhibitor-contact">
-			<CardHeader>
-				<CardTitle>Contact</CardTitle>
-			</CardHeader>
-			<CardContent className="space-y-3 text-sm">
+		<div data-testid="exhibitor-contact">
+			<SectionCard title="Contact" contentClassName="space-y-3 text-sm">
 				<InfoRow label="Name">{contactName || "—"}</InfoRow>
 				<InfoRow label="Email">{user.email}</InfoRow>
 				<InfoRow label="Fee">
@@ -30,7 +27,7 @@ export function ExhibitorContactCard({ user }: ExhibitorContactCardProps) {
 						<Badge variant="destructive">Unpaid</Badge>
 					)}
 				</InfoRow>
-			</CardContent>
-		</Card>
+			</SectionCard>
+		</div>
 	);
 }

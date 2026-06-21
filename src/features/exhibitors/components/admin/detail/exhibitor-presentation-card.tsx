@@ -1,6 +1,6 @@
 import { statusLabels, statusVariants } from "@/shared/lib/labels/submission";
 import { Badge } from "@/shared/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { SectionCard } from "@/shared/ui/section-card";
 import type { ExhibitorDetail } from "./types";
 
 interface ExhibitorPresentationCardProps {
@@ -11,18 +11,18 @@ export function ExhibitorPresentationCard({
 	submission,
 }: ExhibitorPresentationCardProps) {
 	return (
-		<Card data-testid="exhibitor-presentation">
-			<CardHeader>
-				<CardTitle className="flex flex-wrap items-center justify-between gap-2">
-					Presentation
-					{submission && (
+		<div data-testid="exhibitor-presentation">
+			<SectionCard
+				title="Presentation"
+				contentClassName="space-y-4 text-sm"
+				action={
+					submission && (
 						<Badge variant={statusVariants[submission.status]}>
 							{statusLabels[submission.status]}
 						</Badge>
-					)}
-				</CardTitle>
-			</CardHeader>
-			<CardContent className="space-y-4 text-sm">
+					)
+				}
+			>
 				{submission ? (
 					<>
 						<p className="font-medium">{submission.title}</p>
@@ -59,7 +59,7 @@ export function ExhibitorPresentationCard({
 				) : (
 					<p className="text-muted-foreground">No presentation</p>
 				)}
-			</CardContent>
-		</Card>
+			</SectionCard>
+		</div>
 	);
 }

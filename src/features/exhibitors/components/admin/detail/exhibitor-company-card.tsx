@@ -6,8 +6,8 @@ import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
+import { SectionCard } from "@/shared/ui/section-card";
 import { InfoRow, notProvided } from "./info-row";
 import type { ExhibitorDetail } from "./types";
 
@@ -74,14 +74,12 @@ export function ExhibitorCompanyCard({
 	const badge = exhibitorStatusBadge(exhibitor.status, exhibitor.appliedAt);
 
 	return (
-		<Card data-testid="exhibitor-company">
-			<CardHeader>
-				<CardTitle className="flex flex-wrap items-center justify-between gap-2">
-					Company
-					<Badge variant={badge.variant}>{badge.label}</Badge>
-				</CardTitle>
-			</CardHeader>
-			<CardContent className="space-y-3 text-sm">
+		<div data-testid="exhibitor-company">
+			<SectionCard
+				title="Company"
+				action={<Badge variant={badge.variant}>{badge.label}</Badge>}
+				contentClassName="space-y-3 text-sm"
+			>
 				<InfoRow label="Name">{exhibitor.companyName || notProvided}</InfoRow>
 				<InfoRow label="Website">
 					{exhibitor.website ? (
@@ -118,7 +116,7 @@ export function ExhibitorCompanyCard({
 						<span className="text-muted-foreground">Not applied yet</span>
 					)}
 				</InfoRow>
-			</CardContent>
-		</Card>
+			</SectionCard>
+		</div>
 	);
 }

@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { TextDiffView } from "@/shared/components/diff/text-diff-view";
 import { diffText } from "@/shared/lib/text-diff";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { SectionCard } from "@/shared/ui/section-card";
 
 interface RevisionDiffPanelProps {
 	previous: { title: string; content: string };
@@ -29,12 +29,11 @@ export function RevisionDiffPanel({
 	const contentDiff = diffText(previous.content, content);
 
 	return (
-		<Card>
-			<CardHeader className="flex flex-row items-center justify-between gap-4">
-				<CardTitle className="flex items-center gap-2 text-base">
-					<IconGitCompare className="size-5 text-muted-foreground" />
-					Changes since previous version
-				</CardTitle>
+		<SectionCard
+			title="Changes since previous version"
+			icon={IconGitCompare}
+			contentClassName="space-y-4"
+			action={
 				<Button asChild variant="outline" size="sm" className="gap-2">
 					<Link
 						to="/reviews/$assignmentId/compare"
@@ -45,26 +44,25 @@ export function RevisionDiffPanel({
 						Compare versions
 					</Link>
 				</Button>
-			</CardHeader>
-			<CardContent className="space-y-4">
-				<div className="space-y-1">
-					<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-						Title
-					</p>
-					<TextDiffView segments={titleDiff} emptyLabel="Title unchanged." />
+			}
+		>
+			<div className="space-y-1">
+				<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+					Title
+				</p>
+				<TextDiffView segments={titleDiff} emptyLabel="Title unchanged." />
+			</div>
+			<div className="space-y-1">
+				<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+					Content
+				</p>
+				<div className="max-h-96 overflow-auto rounded-lg border border-border bg-muted/30 p-4">
+					<TextDiffView
+						segments={contentDiff}
+						emptyLabel="Content unchanged."
+					/>
 				</div>
-				<div className="space-y-1">
-					<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-						Content
-					</p>
-					<div className="max-h-96 overflow-auto rounded-lg border border-border bg-muted/30 p-4">
-						<TextDiffView
-							segments={contentDiff}
-							emptyLabel="Content unchanged."
-						/>
-					</div>
-				</div>
-			</CardContent>
-		</Card>
+			</div>
+		</SectionCard>
 	);
 }

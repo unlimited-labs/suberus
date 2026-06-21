@@ -1,13 +1,7 @@
 import { IconInfoCircle, IconLoader2, IconSend } from "@tabler/icons-react";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/shared/ui/card";
+import { SectionCard } from "@/shared/ui/section-card";
 import { ExhibitorCompanySection } from "./exhibitor-company-section";
 import { ExhibitorPresentationSection } from "./exhibitor-presentation-section";
 import {
@@ -37,14 +31,12 @@ export function ExhibitorApplicationForm({
 	} = useExhibitorApplicationForm({ exhibitor, allowPresentation });
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>Exhibitor Application</CardTitle>
-				<CardDescription>
-					Represent your company at the conference
-				</CardDescription>
-			</CardHeader>
-			<CardContent className="space-y-6">
+		<>
+			<SectionCard
+				title="Exhibitor Application"
+				description="Represent your company at the conference"
+				contentClassName="space-y-6"
+			>
 				{isLocked && (
 					<Alert>
 						<IconInfoCircle className="size-4" />
@@ -121,13 +113,13 @@ export function ExhibitorApplicationForm({
 						</div>
 					)}
 				</form>
-			</CardContent>
+			</SectionCard>
 
 			<WithdrawExhibitorDialog
 				open={withdrawOpen}
 				onOpenChange={setWithdrawOpen}
 				hasPresentation={Boolean(submission)}
 			/>
-		</Card>
+		</>
 	);
 }

@@ -6,7 +6,8 @@ import {
 	presenterBadgeClassName,
 } from "@/shared/components/author-card-styles";
 import { cn, formatFileSize } from "@/shared/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Card, CardContent } from "@/shared/ui/card";
+import { SectionCard } from "@/shared/ui/section-card";
 import { RevisionDiffPanel } from "./revision-diff-panel";
 
 interface SubmissionAuthor {
@@ -77,23 +78,18 @@ export function SubmissionPreview({
 
 function AuthorsCard({ authors }: { authors: SubmissionAuthor[] }) {
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="text-base">Authors</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<div
-					className={cn(
-						"grid grid-cols-1 gap-2",
-						authors.length > 1 && "sm:grid-cols-2",
-					)}
-				>
-					{authors.map((author, index) => (
-						<AuthorRow key={index} author={author} index={index} />
-					))}
-				</div>
-			</CardContent>
-		</Card>
+		<SectionCard title="Authors">
+			<div
+				className={cn(
+					"grid grid-cols-1 gap-2",
+					authors.length > 1 && "sm:grid-cols-2",
+				)}
+			>
+				{authors.map((author, index) => (
+					<AuthorRow key={index} author={author} index={index} />
+				))}
+			</div>
+		</SectionCard>
 	);
 }
 
@@ -147,40 +143,35 @@ function ContentCard({
 	content?: string;
 }) {
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="text-base">Submission Content</CardTitle>
-			</CardHeader>
-			<CardContent className="space-y-3">
-				{file && (
-					<div className="flex items-center gap-4 rounded-lg border border-border bg-muted/30 p-3">
-						<div className="shrink-0 rounded-md bg-primary/10 p-2">
-							<IconFile className="size-5 text-primary" />
-						</div>
-						<div className="min-w-0 flex-1">
-							<p className="truncate text-sm font-medium text-foreground">
-								{file.originalName}
-							</p>
-							<p className="text-xs text-muted-foreground">
-								{formatFileSize(file.size)}
-							</p>
-						</div>
-						<a
-							href={`/api/files/${file.id}`}
-							data-testid="file-download-button"
-							className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
-						>
-							<IconDownload className="size-4" />
-							Download
-						</a>
+		<SectionCard title="Submission Content" contentClassName="space-y-3">
+			{file && (
+				<div className="flex items-center gap-4 rounded-lg border border-border bg-muted/30 p-3">
+					<div className="shrink-0 rounded-md bg-primary/10 p-2">
+						<IconFile className="size-5 text-primary" />
 					</div>
-				)}
-				{content && (
-					<div className="max-h-96 overflow-auto whitespace-pre-line break-words rounded-lg border border-border bg-muted/30 p-4 text-sm leading-relaxed text-foreground">
-						{content}
+					<div className="min-w-0 flex-1">
+						<p className="truncate text-sm font-medium text-foreground">
+							{file.originalName}
+						</p>
+						<p className="text-xs text-muted-foreground">
+							{formatFileSize(file.size)}
+						</p>
 					</div>
-				)}
-			</CardContent>
-		</Card>
+					<a
+						href={`/api/files/${file.id}`}
+						data-testid="file-download-button"
+						className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+					>
+						<IconDownload className="size-4" />
+						Download
+					</a>
+				</div>
+			)}
+			{content && (
+				<div className="max-h-96 overflow-auto whitespace-pre-line break-words rounded-lg border border-border bg-muted/30 p-4 text-sm leading-relaxed text-foreground">
+					{content}
+				</div>
+			)}
+		</SectionCard>
 	);
 }

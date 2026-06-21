@@ -2,7 +2,7 @@ import { exhibitorStatusBadge } from "@/features/exhibitors/labels";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { SectionCard } from "@/shared/ui/section-card";
 import type { ExhibitorDetail } from "./types";
 
 interface ExhibitorDecisionCardProps {
@@ -24,11 +24,8 @@ export function ExhibitorDecisionCard({
 		: null;
 
 	return (
-		<Card data-testid="exhibitor-decision">
-			<CardHeader>
-				<CardTitle>Decision</CardTitle>
-			</CardHeader>
-			<CardContent className="space-y-3 text-sm">
+		<div data-testid="exhibitor-decision">
+			<SectionCard title="Decision" contentClassName="space-y-3 text-sm">
 				{canDecide ? (
 					<div className="flex flex-col gap-2 sm:flex-row">
 						<Button data-testid="exhibitor-approve" onClick={onApprove}>
@@ -58,7 +55,7 @@ export function ExhibitorDecisionCard({
 						)}
 					</div>
 				)}
-			</CardContent>
-		</Card>
+			</SectionCard>
+		</div>
 	);
 }

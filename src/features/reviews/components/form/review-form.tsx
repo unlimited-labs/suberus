@@ -3,7 +3,7 @@ import type { ReviewFormData } from "@/features/reviews/validations";
 import type { SubmissionType } from "@/generated/prisma/enums";
 import { typeLabels } from "@/shared/lib/labels/submission";
 import { Badge } from "@/shared/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { SectionCard } from "@/shared/ui/section-card";
 import { AttachmentSection } from "./attachment-section";
 import { ConfidenceField } from "./confidence-field";
 import { DecisionField } from "./decision-field";
@@ -114,28 +114,20 @@ export function ReviewForm({
 							<ConfidenceField form={form} readOnly={readOnly} />
 						)}
 
-						<Card>
-							<CardHeader>
-								<CardTitle className="flex items-center gap-2 text-base">
-									<IconMessageCircle className="size-5 text-muted-foreground" />
-									Comments to Authors
-								</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<form.AppField name="comments">
-									{(field) => (
-										<field.TextareaField
-											label="Review Comments"
-											rows={10}
-											placeholder="Provide detailed feedback on the submission's strengths, weaknesses, and suggestions for improvement..."
-											className="text-foreground"
-											description="These comments will be visible to the authors"
-											disabled={readOnly}
-										/>
-									)}
-								</form.AppField>
-							</CardContent>
-						</Card>
+						<SectionCard title="Comments to Authors" icon={IconMessageCircle}>
+							<form.AppField name="comments">
+								{(field) => (
+									<field.TextareaField
+										label="Review Comments"
+										rows={10}
+										placeholder="Provide detailed feedback on the submission's strengths, weaknesses, and suggestions for improvement..."
+										className="text-foreground"
+										description="These comments will be visible to the authors"
+										disabled={readOnly}
+									/>
+								)}
+							</form.AppField>
+						</SectionCard>
 
 						{enableReviewAttachment && (
 							<AttachmentSection
@@ -145,27 +137,19 @@ export function ReviewForm({
 							/>
 						)}
 
-						<Card>
-							<CardHeader>
-								<CardTitle className="flex items-center gap-2 text-base">
-									<IconLock className="size-5 text-muted-foreground" />
-									Private Notes
-								</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<form.AppField name="privateNotes">
-									{(field) => (
-										<field.TextareaField
-											label="Confidential Notes (Optional)"
-											rows={4}
-											placeholder="Internal notes visible only to editors and admins..."
-											className="text-foreground"
-											disabled={readOnly}
-										/>
-									)}
-								</form.AppField>
-							</CardContent>
-						</Card>
+						<SectionCard title="Private Notes" icon={IconLock}>
+							<form.AppField name="privateNotes">
+								{(field) => (
+									<field.TextareaField
+										label="Confidential Notes (Optional)"
+										rows={4}
+										placeholder="Internal notes visible only to editors and admins..."
+										className="text-foreground"
+										disabled={readOnly}
+									/>
+								)}
+							</form.AppField>
+						</SectionCard>
 
 						{!readOnly && (
 							<div className="pt-2">

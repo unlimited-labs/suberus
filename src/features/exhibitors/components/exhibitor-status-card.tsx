@@ -2,7 +2,7 @@ import { exhibitorStatusBadge } from "@/features/exhibitors/labels";
 import type { ExhibitorStatus } from "@/generated/prisma/enums";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Badge } from "@/shared/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { SectionCard } from "@/shared/ui/section-card";
 
 interface ExhibitorStatusCardProps {
 	status: ExhibitorStatus;
@@ -21,14 +21,12 @@ export function ExhibitorStatusCard({
 	const badge = exhibitorStatusBadge(status, appliedAt);
 
 	return (
-		<Card data-testid="exhibitor-status">
-			<CardHeader>
-				<CardTitle className="flex flex-wrap items-center justify-between gap-2">
-					Application status
-					<Badge variant={badge.variant}>{badge.label}</Badge>
-				</CardTitle>
-			</CardHeader>
-			<CardContent className="space-y-3">
+		<div data-testid="exhibitor-status">
+			<SectionCard
+				title="Application status"
+				action={<Badge variant={badge.variant}>{badge.label}</Badge>}
+				contentClassName="space-y-3"
+			>
 				{(appliedAt || decidedAt) && (
 					<div className="flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:gap-6">
 						{appliedAt && (
@@ -57,7 +55,7 @@ export function ExhibitorStatusCard({
 						Package: <span className="text-foreground">{packageName}</span>
 					</p>
 				)}
-			</CardContent>
-		</Card>
+			</SectionCard>
+		</div>
 	);
 }

@@ -8,6 +8,7 @@ import {
 import { cn } from "@/shared/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Markdown } from "@/shared/ui/markdown";
+import { SectionCard } from "@/shared/ui/section-card";
 
 interface ReviewProgress {
 	hasDecision: boolean;
@@ -34,54 +35,47 @@ export function ReviewSidebar({
 			{/* Progress Sidebar (desktop) */}
 			<div className="hidden lg:block">
 				<div className="sticky top-0 space-y-4">
-					<Card>
-						<CardHeader>
-							<CardTitle className="text-base">Review Progress</CardTitle>
-						</CardHeader>
-						<CardContent className="space-y-4">
+					<SectionCard title="Review Progress" contentClassName="space-y-4">
+						<ProgressItem
+							label="Decision"
+							completed={hasDecision}
+							icon={IconScale}
+						/>
+						<ProgressItem
+							label="Evaluation Scores"
+							completed={hasScores}
+							icon={IconStar}
+						/>
+						{enableConfidenceLevel && (
 							<ProgressItem
-								label="Decision"
-								completed={hasDecision}
-								icon={IconScale}
+								label="Confidence Level"
+								completed={hasConfidence}
+								icon={IconCircle}
 							/>
-							<ProgressItem
-								label="Evaluation Scores"
-								completed={hasScores}
-								icon={IconStar}
-							/>
-							{enableConfidenceLevel && (
-								<ProgressItem
-									label="Confidence Level"
-									completed={hasConfidence}
-									icon={IconCircle}
-								/>
-							)}
-							<ProgressItem
-								label="Comments"
-								completed={hasComments}
-								icon={IconMessageCircle}
-							/>
-						</CardContent>
-					</Card>
+						)}
+						<ProgressItem
+							label="Comments"
+							completed={hasComments}
+							icon={IconMessageCircle}
+						/>
+					</SectionCard>
 
-					<Card>
-						<CardHeader>
-							<CardTitle className="text-base">Review Guidelines</CardTitle>
-						</CardHeader>
-						<CardContent className="text-sm text-muted-foreground">
-							{guidelines ? (
-								<Markdown content={guidelines} />
-							) : (
-								<div className="space-y-3">
-									<p>• Provide constructive, specific feedback</p>
-									<p>• Support claims with evidence from the work</p>
-									<p>• Be respectful and professional</p>
-									<p>• Consider the work's contribution to the field</p>
-									<p>• Minimum 50 characters for comments</p>
-								</div>
-							)}
-						</CardContent>
-					</Card>
+					<SectionCard
+						title="Review Guidelines"
+						contentClassName="text-sm text-muted-foreground"
+					>
+						{guidelines ? (
+							<Markdown content={guidelines} />
+						) : (
+							<div className="space-y-3">
+								<p>• Provide constructive, specific feedback</p>
+								<p>• Support claims with evidence from the work</p>
+								<p>• Be respectful and professional</p>
+								<p>• Consider the work's contribution to the field</p>
+								<p>• Minimum 50 characters for comments</p>
+							</div>
+						)}
+					</SectionCard>
 				</div>
 			</div>
 
