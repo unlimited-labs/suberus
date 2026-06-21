@@ -6,7 +6,6 @@ import {
 	IconStar,
 } from "@tabler/icons-react";
 import { cn } from "@/shared/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Markdown } from "@/shared/ui/markdown";
 import { SectionCard } from "@/shared/ui/section-card";
 
@@ -81,39 +80,38 @@ export function ReviewSidebar({
 
 			{/* Mobile Progress */}
 			<div className="lg:hidden">
-				<Card>
-					<CardHeader>
-						<CardTitle className="text-sm">Review Progress</CardTitle>
-					</CardHeader>
-					<CardContent className="grid grid-cols-2 gap-3">
+				<SectionCard
+					size="sm"
+					title={<span className="text-sm">Review Progress</span>}
+					contentClassName="grid grid-cols-2 gap-3"
+				>
+					<ProgressItem
+						label="Decision"
+						completed={hasDecision}
+						icon={IconScale}
+						compact
+					/>
+					<ProgressItem
+						label="Scores"
+						completed={hasScores}
+						icon={IconStar}
+						compact
+					/>
+					{enableConfidenceLevel && (
 						<ProgressItem
-							label="Decision"
-							completed={hasDecision}
-							icon={IconScale}
+							label="Confidence"
+							completed={hasConfidence}
+							icon={IconCircle}
 							compact
 						/>
-						<ProgressItem
-							label="Scores"
-							completed={hasScores}
-							icon={IconStar}
-							compact
-						/>
-						{enableConfidenceLevel && (
-							<ProgressItem
-								label="Confidence"
-								completed={hasConfidence}
-								icon={IconCircle}
-								compact
-							/>
-						)}
-						<ProgressItem
-							label="Comments"
-							completed={hasComments}
-							icon={IconMessageCircle}
-							compact
-						/>
-					</CardContent>
-				</Card>
+					)}
+					<ProgressItem
+						label="Comments"
+						completed={hasComments}
+						icon={IconMessageCircle}
+						compact
+					/>
+				</SectionCard>
 			</div>
 		</>
 	);
