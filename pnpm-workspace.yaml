@@ -1,9 +1,6 @@
 # Security pins for transitive CVEs (Dependabot). Each forces a patched version that the
 # parent ranges have not yet re-resolved to. Drop an entry once the parent ships the fix.
-# kysely: 0.28.17 is bugfix-only (JSON-path injection fix) and stays <0.29, so the
-# @better-auth/kysely-adapter resolves fine (we use the Prisma adapter; kysely is a dead path).
 overrides:
-  kysely: 0.28.17
   'undici@^7.0.0': 7.28.0
   hono: 4.12.25
   shell-quote: 1.8.4
