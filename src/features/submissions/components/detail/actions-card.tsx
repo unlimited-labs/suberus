@@ -10,6 +10,7 @@ import {
 } from "@/features/submissions/api/submissions";
 import type { SubmissionStatus } from "@/generated/prisma/enums";
 import { Button } from "@/shared/ui/button";
+import { SectionCard } from "@/shared/ui/section-card";
 import { WithdrawDialog } from "./withdraw-dialog";
 
 interface ActionsCardProps {
@@ -146,12 +147,15 @@ export function ActionsCard({
 
 	return (
 		<>
-			<div className="rounded-2xl bg-card shadow-xl p-6 border border-border/50">
-				{showTitle && (
-					<h3 className="font-semibold text-foreground mb-4">Actions</h3>
-				)}
-				<div className="space-y-2">{actions}</div>
-			</div>
+			{showTitle ? (
+				<SectionCard variant="outlined" title="Actions">
+					<div className="space-y-2">{actions}</div>
+				</SectionCard>
+			) : (
+				<div className="rounded-2xl bg-card shadow-xl p-6 border border-border/50">
+					<div className="space-y-2">{actions}</div>
+				</div>
+			)}
 			<WithdrawDialog
 				submissionId={submissionId}
 				submissionTitle={submissionTitle}

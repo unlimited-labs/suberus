@@ -1,13 +1,8 @@
 import type { UserSubmissionDecision } from "@/features/submissions/api/submissions";
 import type { EditorDecisionType } from "@/generated/prisma/enums";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
-import {
-	Accordion,
-	AccordionContent,
-	AccordionItem,
-	AccordionTrigger,
-} from "@/shared/ui/accordion";
 import { Badge } from "@/shared/ui/badge";
+import { SectionCard } from "@/shared/ui/section-card";
 
 interface EditorDecisionCardProps {
 	decision: UserSubmissionDecision;
@@ -113,54 +108,37 @@ export function EditorDecisionCard({
 	collapsible = false,
 	defaultCollapsed = true,
 }: EditorDecisionCardProps) {
+	const decisionBadge = (
+		<Badge variant={decisionColors[decision.decision]}>
+			{decisionLabels[decision.decision]}
+		</Badge>
+	);
+
 	if (collapsible) {
 		return (
-			<div
-				id="decision-section"
-				className="rounded-2xl bg-card shadow-2xl border border-border/50"
-			>
-				<Accordion
-					type="single"
+			<div id="decision-section">
+				<SectionCard
+					variant="elevated"
 					collapsible
-					defaultValue={defaultCollapsed ? undefined : "decision"}
+					defaultOpen={!defaultCollapsed}
+					title="Editorial Decision"
+					action={decisionBadge}
 				>
-					<AccordionItem value="decision" className="border-0">
-						<AccordionTrigger className="px-8 py-6 hover:no-underline">
-							<div className="flex items-center gap-3 flex-wrap">
-								<h2 className="text-xl font-semibold text-foreground">
-									Editorial Decision
-								</h2>
-								<Badge variant={decisionColors[decision.decision]}>
-									{decisionLabels[decision.decision]}
-								</Badge>
-							</div>
-						</AccordionTrigger>
-						<AccordionContent className="px-8 pb-8">
-							<DecisionContent decision={decision} />
-						</AccordionContent>
-					</AccordionItem>
-				</Accordion>
+					<DecisionContent decision={decision} />
+				</SectionCard>
 			</div>
 		);
 	}
 
 	return (
-		<div
-			id="decision-section"
-			className="rounded-2xl bg-card shadow-2xl border p-8"
-		>
-			<div className="space-y-4">
-				{/* Header */}
-				<div className="flex items-center justify-between flex-wrap gap-3">
-					<h2 className="text-xl font-semibold text-foreground">
-						Editorial Decision
-					</h2>
-					<Badge variant={decisionColors[decision.decision]}>
-						{decisionLabels[decision.decision]}
-					</Badge>
-				</div>
+		<div id="decision-section">
+			<SectionCard
+				variant="elevated"
+				title="Editorial Decision"
+				action={decisionBadge}
+			>
 				<DecisionContent decision={decision} />
-			</div>
+			</SectionCard>
 		</div>
 	);
 }

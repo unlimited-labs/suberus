@@ -1,8 +1,7 @@
 import { IconHistory } from "@tabler/icons-react";
 import { ActivityHistoryEvent } from "@/features/submissions/components/admin/activity-history-event";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { SectionCard } from "@/shared/ui/section-card";
 import { Timeline } from "@/shared/ui/timeline";
-
 import type { EditorActivity } from "./availability";
 
 interface HistoryTabProps {
@@ -11,24 +10,16 @@ interface HistoryTabProps {
 
 export function HistoryTab({ activityHistory }: HistoryTabProps) {
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="flex items-center gap-2 text-base">
-					<IconHistory className="size-4" />
-					Activity History
-				</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<Timeline>
-					{activityHistory.map((entry, index) => (
-						<ActivityHistoryEvent
-							key={`${entry.activityType}-${index}`}
-							entry={entry}
-							isLast={index === activityHistory.length - 1}
-						/>
-					))}
-				</Timeline>
-			</CardContent>
-		</Card>
+		<SectionCard title="Activity History" icon={IconHistory}>
+			<Timeline>
+				{activityHistory.map((entry, index) => (
+					<ActivityHistoryEvent
+						key={`${entry.activityType}-${index}`}
+						entry={entry}
+						isLast={index === activityHistory.length - 1}
+					/>
+				))}
+			</Timeline>
+		</SectionCard>
 	);
 }

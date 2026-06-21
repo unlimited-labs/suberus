@@ -1,5 +1,6 @@
 import { compareAsc } from "date-fns";
 import type { UserSubmissionStatusHistory } from "@/features/submissions/api/submissions";
+import { SectionCard } from "@/shared/ui/section-card";
 import { Timeline } from "@/shared/ui/timeline";
 import { TimelineEvent } from "./timeline-event";
 
@@ -32,10 +33,7 @@ export function SubmissionTimeline({
 	}
 
 	return (
-		<div className="rounded-2xl bg-card shadow-2xl border p-8">
-			<h2 className="text-xl font-semibold text-foreground mb-6">
-				Submission History
-			</h2>
+		<SectionCard variant="elevated" title="Submission History">
 			<Timeline>
 				{sortedHistory.map((event, index) => (
 					<TimelineEvent
@@ -45,6 +43,6 @@ export function SubmissionTimeline({
 					/>
 				))}
 			</Timeline>
-		</div>
+		</SectionCard>
 	);
 }

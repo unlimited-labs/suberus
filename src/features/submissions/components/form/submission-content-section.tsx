@@ -1,6 +1,7 @@
 import { IconWriting } from "@tabler/icons-react";
 import type { z } from "zod";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
+import { SectionCard } from "@/shared/ui/section-card";
 import { FileUploadSection } from "./file-upload-section";
 import type { SubmissionFormApi } from "./hooks/use-submission-form";
 import type { ValidationSettings } from "./submission-form-types";
@@ -29,12 +30,7 @@ export function SubmissionContentSection({
 	maxFileSizeMb,
 }: SubmissionContentSectionProps) {
 	return (
-		<div className="space-y-4">
-			<div className="flex items-center gap-3">
-				<IconWriting className="size-5 text-muted-foreground" />
-				<h2 className="text-lg font-semibold text-foreground">Content</h2>
-			</div>
-
+		<SectionCard title="Content" icon={IconWriting}>
 			<div className="space-y-4">
 				<form.AppField name="title">
 					{(field) => (
@@ -99,6 +95,6 @@ export function SubmissionContentSection({
 					</form.Field>
 				)}
 			</div>
-		</div>
+		</SectionCard>
 	);
 }

@@ -2,6 +2,7 @@ import { IconEdit, IconFilter, IconMessageCircle } from "@tabler/icons-react";
 import { useState } from "react";
 import { ReviewsCard } from "@/features/submissions/components/reviews-card";
 import type { SubmissionDetail } from "@/features/submissions/server/submissions";
+import { SectionCard } from "@/shared/ui/section-card";
 import {
 	Select,
 	SelectContent,
@@ -74,17 +75,15 @@ export function SubmissionReviewsSection({
 				return (
 					<div key={round} className="space-y-4">
 						{versionComment && (
-							<div className="rounded-2xl bg-card shadow-2xl border p-6">
-								<div className="flex items-center gap-3 mb-3">
-									<IconEdit className="size-5 text-muted-foreground" />
-									<h3 className="text-sm font-semibold text-foreground">
-										Author's revision notes – Version {round}
-									</h3>
-								</div>
+							<SectionCard
+								variant="elevated"
+								icon={IconEdit}
+								title={`Author's revision notes – Version ${round}`}
+							>
 								<div className="text-sm text-foreground leading-relaxed bg-muted/50 p-3 rounded-lg border">
 									{versionComment.comment}
 								</div>
-							</div>
+							</SectionCard>
 						)}
 						<ReviewsCard reviews={roundReviews} round={round} />
 					</div>

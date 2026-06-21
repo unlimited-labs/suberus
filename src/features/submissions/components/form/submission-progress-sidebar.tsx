@@ -5,6 +5,7 @@ import {
 } from "@tabler/icons-react";
 import { cn } from "@/shared/lib/utils";
 import { Markdown } from "@/shared/ui/markdown";
+import { SectionCard } from "@/shared/ui/section-card";
 import type { ValidationSettings } from "./submission-form-types";
 import type { SubmissionProgress } from "./submission-progress";
 
@@ -52,8 +53,7 @@ export function SubmissionProgressSidebar({
 		<div className="hidden lg:block">
 			<div className="sticky space-y-4">
 				{/* Progress Card */}
-				<div className="rounded-2xl bg-card shadow-xl p-6 border border-border/50">
-					<h3 className="font-semibold text-foreground mb-4">Progress</h3>
+				<SectionCard title="Progress" variant="outlined">
 					<div className="space-y-3">
 						<ProgressRow done={progress.hasType} label="Submission Type" />
 						<ProgressRow done={progress.hasContent} label="Content" />
@@ -62,14 +62,14 @@ export function SubmissionProgressSidebar({
 							<ProgressRow done={progress.hasKeywords} label="Keywords" />
 						)}
 					</div>
-				</div>
+				</SectionCard>
 
 				{/* Guidelines Card */}
-				<div className="rounded-2xl bg-card shadow-xl p-6 border border-border/50">
-					<div className="flex items-center gap-2 mb-4">
-						<IconInfoCircle className="size-5 text-muted-foreground" />
-						<h3 className="font-semibold text-foreground">Guidelines</h3>
-					</div>
+				<SectionCard
+					title="Guidelines"
+					icon={IconInfoCircle}
+					variant="outlined"
+				>
 					{renderedGuidelines ? (
 						<Markdown
 							content={renderedGuidelines}
@@ -98,7 +98,7 @@ export function SubmissionProgressSidebar({
 							)}
 						</div>
 					)}
-				</div>
+				</SectionCard>
 			</div>
 		</div>
 	);

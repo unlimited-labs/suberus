@@ -5,6 +5,7 @@ import type {
 } from "@/features/submissions/api/submissions";
 import { VersionSelector } from "@/features/submissions/components/version-selector";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { SectionCard } from "@/shared/ui/section-card";
 import { TYPE_LABELS } from "./constants";
 
 interface InfoItemProps {
@@ -46,8 +47,7 @@ export function InfoCard({
 	const { formatDate } = useDateFormat();
 
 	return (
-		<div className="rounded-2xl bg-card shadow-xl p-6 border border-border/50">
-			<h3 className="font-semibold text-foreground mb-4">Information</h3>
+		<SectionCard variant="outlined" title="Information">
 			<div className="space-y-4">
 				<InfoItem
 					icon={<IconCategory className="size-4 text-muted-foreground" />}
@@ -86,6 +86,6 @@ export function InfoCard({
 					value={formatDate(submission.updatedAt)}
 				/>
 			</div>
-		</div>
+		</SectionCard>
 	);
 }

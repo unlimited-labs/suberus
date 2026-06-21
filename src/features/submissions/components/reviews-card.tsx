@@ -20,6 +20,7 @@ import {
 	AccordionTrigger,
 } from "@/shared/ui/accordion";
 import { Badge } from "@/shared/ui/badge";
+import { SectionCard } from "@/shared/ui/section-card";
 
 interface ReviewsCardProps {
 	reviews: UserSubmissionReview[];
@@ -214,55 +215,50 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 	const avgColorConfig = getScoreColor(avgScore);
 
 	return (
-		<div
-			id="reviews-section"
-			className="rounded-2xl bg-card shadow-2xl border p-8"
-		>
-			<div className="space-y-4">
-				{/* Header */}
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-3">
-						<IconMessageCircle className="size-5 text-muted-foreground" />
-						<h2 className="text-lg font-semibold text-foreground">
-							Reviews – Round {round}
-						</h2>
-					</div>
+		<div id="reviews-section">
+			<SectionCard
+				variant="elevated"
+				icon={IconMessageCircle}
+				title={`Reviews – Round ${round}`}
+				action={
 					<span className="text-sm text-muted-foreground">
 						{reviews.length} {reviews.length === 1 ? "review" : "reviews"}
 					</span>
-				</div>
-
-				{/* Average Score Card — only when scoring is enabled */}
-				{hasScores && (
-					<div
-						className={cn(
-							"flex items-center justify-between p-4 rounded-xl border",
-							avgColorConfig.bg,
-						)}
-					>
-						<div className="flex items-center gap-2">
-							<IconStarFilled className="size-4 text-muted-foreground" />
-							<span className="text-sm text-muted-foreground">
-								Average score
+				}
+			>
+				<div className="space-y-4">
+					{/* Average Score Card — only when scoring is enabled */}
+					{hasScores && (
+						<div
+							className={cn(
+								"flex items-center justify-between p-4 rounded-xl border",
+								avgColorConfig.bg,
+							)}
+						>
+							<div className="flex items-center gap-2">
+								<IconStarFilled className="size-4 text-muted-foreground" />
+								<span className="text-sm text-muted-foreground">
+									Average score
+								</span>
+							</div>
+							<span className={cn("text-xl font-bold", avgColorConfig.text)}>
+								{avgScore.toFixed(2)}/5
 							</span>
 						</div>
-						<span className={cn("text-xl font-bold", avgColorConfig.text)}>
-							{avgScore.toFixed(2)}/5
-						</span>
-					</div>
-				)}
+					)}
 
-				{/* Reviews */}
-				<Accordion type="single" collapsible className="space-y-3">
-					{reviews.map((review) => (
-						<ReviewItem
-							key={review.id}
-							review={review}
-							formatDateTime={formatDateTime}
-						/>
-					))}
-				</Accordion>
-			</div>
+					{/* Reviews */}
+					<Accordion type="single" collapsible className="space-y-3">
+						{reviews.map((review) => (
+							<ReviewItem
+								key={review.id}
+								review={review}
+								formatDateTime={formatDateTime}
+							/>
+						))}
+					</Accordion>
+				</div>
+			</SectionCard>
 		</div>
 	);
 }

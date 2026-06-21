@@ -6,7 +6,6 @@ import {
 	IconTrash,
 } from "@tabler/icons-react";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -14,6 +13,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
+import { SectionCard } from "@/shared/ui/section-card";
 import { buildSecondaryActions } from "./actions-card-items";
 import type { ActionAvailability, PrimaryAction } from "./availability";
 import type { SubmissionDialogKind } from "./detail-dialogs";
@@ -84,59 +84,54 @@ export function ActionsCard({
 	const secondaryActions = buildSecondaryActions(availability, primaryAction);
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="text-base">Actions</CardTitle>
-			</CardHeader>
-			<CardContent className="space-y-2">
-				{primaryAction && (
-					<PrimaryActionButton
-						primaryAction={primaryAction}
-						isTransitioning={isTransitioning}
-						onTransition={onTransition}
-						onOpenDialog={onOpenDialog}
-					/>
-				)}
+		<SectionCard title="Actions" contentClassName="space-y-2">
+			{primaryAction && (
+				<PrimaryActionButton
+					primaryAction={primaryAction}
+					isTransitioning={isTransitioning}
+					onTransition={onTransition}
+					onOpenDialog={onOpenDialog}
+				/>
+			)}
 
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button
-							variant="outline"
-							className="w-full justify-between"
-							data-testid="submission-actions-trigger"
-						>
-							{primaryAction ? "More actions" : "Actions"}
-							<IconChevronDown className="size-4" />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="start">
-						{secondaryActions.map(({ id, label, icon: Icon, select }) => (
-							<DropdownMenuItem
-								key={id}
-								onSelect={
-									select.type === "transition"
-										? onTransition
-										: () => onOpenDialog(select.kind)
-								}
-								disabled={
-									select.type === "transition" ? isTransitioning : undefined
-								}
-							>
-								<Icon className="mr-2 size-4" />
-								{label}
-							</DropdownMenuItem>
-						))}
-						<DropdownMenuSeparator />
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
+					<Button
+						variant="outline"
+						className="w-full justify-between"
+						data-testid="submission-actions-trigger"
+					>
+						{primaryAction ? "More actions" : "Actions"}
+						<IconChevronDown className="size-4" />
+					</Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align="start">
+					{secondaryActions.map(({ id, label, icon: Icon, select }) => (
 						<DropdownMenuItem
-							variant="destructive"
-							onSelect={() => onOpenDialog("delete")}
+							key={id}
+							onSelect={
+								select.type === "transition"
+									? onTransition
+									: () => onOpenDialog(select.kind)
+							}
+							disabled={
+								select.type === "transition" ? isTransitioning : undefined
+							}
 						>
-							<IconTrash className="mr-2 size-4" />
-							Delete
+							<Icon className="mr-2 size-4" />
+							{label}
 						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-			</CardContent>
-		</Card>
+					))}
+					<DropdownMenuSeparator />
+					<DropdownMenuItem
+						variant="destructive"
+						onSelect={() => onOpenDialog("delete")}
+					>
+						<IconTrash className="mr-2 size-4" />
+						Delete
+					</DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>
+		</SectionCard>
 	);
 }
