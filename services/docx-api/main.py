@@ -92,7 +92,9 @@ def _libreoffice_version() -> str | None:
 #     <ol type> but drops the delimiter).
 # v5: recover DIRECT paragraph alignment on style-less elements too (bare <p>) — a
 #     centered title/author block with no style hook now centers (corpus audit gap).
-SCHEMA_VERSION = 5
+# v6: re-insert a Title/Subtitle paragraph pandoc drops as doc metadata (builtin
+#     "Title" style) so the title isn't missing entirely (corpus audit gap).
+SCHEMA_VERSION = 6
 
 # Pinned pandoc recipe. `--sandbox` blocks pandoc IO; `--wrap=none` keeps diff-friendly
 # lines; raw HTML is dropped so author-supplied markup can't smuggle script through.

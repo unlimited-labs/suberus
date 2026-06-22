@@ -173,6 +173,31 @@ def test_direct_align_recovered_on_styleless_bare_p(tmp_path):
     assert not any(c in segs["plain left body"] for c in ("ta-center", "ta-right", "ta-justify"))
 
 
+def test_builtin_title_reinserted_when_pandoc_drops_it(tmp_path):
+    # Pandoc eats a "Title"-named-style paragraph as metadata; we re-insert it.
+    styles = _styles_xml().replace(
+        "</w:styles>",
+        '<w:style w:type="paragraph" w:styleId="TT"><w:name w:val="Title"/>'
+        '<w:pPr><w:jc w:val="center"/></w:pPr><w:rPr><w:b/><w:sz w:val="32"/></w:rPr>'
+        "</w:style></w:styles>",
+    )
+    document = _document_xml().replace(
+        "<w:body>",
+        '<w:body><w:p><w:pPr><w:pStyle w:val="TT"/></w:pPr><w:r><w:t>My Dropped Title</w:t></w:r></w:p>',
+    )
+    docx = _make_docx(tmp_path, styles=styles, document=document)
+    # pandoc HTML WITHOUT the title (it was dropped) — annotate must re-insert it.
+    out, css = stylecss.annotate("<p>some body</p>", docx)
+    assert "My Dropped Title" in out
+    assert 'data-custom-style="Title"' in out
+    # styled via the real Title style (centered, 16pt) so it isn't a bare line.
+    assert "text-align:center" in css and "font-size:16pt" in css
+
+    # No duplicate if the title IS already present in the body HTML.
+    out2, _ = stylecss.annotate("<h1>My Dropped Title</h1>", docx)
+    assert out2.count("My Dropped Title") == 1
+
+
 def test_malformed_docx_degrades_gracefully(tmp_path):
     bad = tmp_path / "bad.docx"
     bad.write_bytes(b"not a zip")

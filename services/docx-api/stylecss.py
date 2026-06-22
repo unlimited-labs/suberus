@@ -318,6 +318,52 @@ def _heading_styles(doc_root: ET.Element, styles: _Styles) -> dict[str, str]:
     return out
 
 
+_TITLE_STYLE_NAMES = {"title", "subtitle"}
+
+
+def _local(tag: object) -> str:
+    if isinstance(tag, str) and tag.startswith("{"):
+        return tag.split("}", 1)[1]
+    return tag if isinstance(tag, str) else ""
+
+
+def _esc(s: str) -> str:
+    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def _title_paras(doc_root: ET.Element, styles: _Styles) -> list[tuple[str, str, str]]:
+    """Paragraphs whose style NAME is "Title"/"Subtitle". Pandoc maps these to document
+    METADATA and (without --standalone) DROPS them from the HTML body — so the title
+    vanishes entirely. Return (style-name, escaped-inner-html, normalized-plain) so the
+    caller can re-insert any pandoc omitted, styled via the real Title style."""
+    out: list[tuple[str, str, str]] = []
+    for p in doc_root.iter(_q("p")):
+        ppr = p.find(_q("pPr"))
+        ps = ppr.find(_q("pStyle")) if ppr is not None else None
+        sid = ps.get(_q("val")) if ps is not None else None
+        name = styles.name_of.get(sid) if sid else None
+        if not name or name.strip().lower() not in _TITLE_STYLE_NAMES:
+            continue
+        html_parts: list[str] = []
+        plain_parts: list[str] = []
+        for node in p.iter():
+            ln = _local(node.tag)
+            if ln == "t":
+                html_parts.append(_esc(node.text or ""))
+                plain_parts.append(node.text or "")
+            elif ln == "br":
+                html_parts.append("<br>")
+                plain_parts.append(" ")
+            elif ln == "tab":
+                html_parts.append(" ")
+                plain_parts.append(" ")
+        inner = "".join(html_parts).strip()
+        plain = _norm("".join(plain_parts))
+        if plain:
+            out.append((name, inner, plain))
+    return out
+
+
 def _read(docx_path: str):
     try:
         with zipfile.ZipFile(docx_path) as z:
@@ -330,9 +376,10 @@ def _read(docx_path: str):
             except (KeyError, ET.ParseError):
                 pass  # no list numbering — nothing to recover
             direct_nt, direct_t = _direct_aligns(doc, styles)
-            return styles, direct_nt, direct_t, paren, _heading_styles(doc, styles)
+            heads = _heading_styles(doc, styles)
+            return styles, direct_nt, direct_t, paren, heads, _title_paras(doc, styles)
     except (KeyError, zipfile.BadZipFile, ET.ParseError):
-        return None, {}, {}, set(), {}
+        return None, {}, {}, set(), {}, []
 
 
 def annotate(html: str, docx_path: str) -> tuple[str, str]:
@@ -340,13 +387,30 @@ def annotate(html: str, docx_path: str) -> tuple[str, str]:
     override where the paragraph is directly aligned) and return `(html, css)`.
     `css` defines one rule per style actually used. On any failure the html is
     returned unchanged with empty css (degrades to the base typography)."""
-    styles, direct_nt, direct_t, paren_lists, heading_styles = _read(docx_path)
+    styles, direct_nt, direct_t, paren_lists, heading_styles, titles = _read(docx_path)
     if styles is None:
         return html, ""
     try:
         frag = lhtml.fragment_fromstring(html, create_parent="cssroot")
     except Exception:
         return html, ""
+
+    # Re-insert a Title/Subtitle pandoc dropped as metadata (builtin "Title" style),
+    # if its text isn't already in the body. Tagged data-custom-style so it picks up
+    # the real Title style's formatting via the cs-class pass below.
+    if titles:
+        existing = _norm(frag.text_content())
+        missing = [(n, inner) for (n, inner, plain) in titles if plain not in existing]
+        if missing:
+            prep = "".join(
+                f'<div data-custom-style="{n.replace("&", "&amp;").replace(chr(34), "&quot;")}">'
+                f"<p>{inner}</p></div>"
+                for n, inner in missing
+            )
+            try:
+                frag = lhtml.fragment_fromstring(prep + html, create_parent="cssroot")
+            except Exception:
+                pass
 
     headings = {"h1", "h2", "h3", "h4", "h5", "h6"}
     align_tags = headings | {"p", "div"}
