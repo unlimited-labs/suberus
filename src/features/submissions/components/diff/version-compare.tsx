@@ -1,5 +1,6 @@
 import {
 	IconColumns,
+	IconDownload,
 	IconFile,
 	IconGitCompare,
 	IconLayoutRows,
@@ -126,37 +127,69 @@ function ComparingSummary({
 	);
 }
 
+function FileRow({
+	label,
+	name,
+	fileId,
+	testId,
+}: {
+	label: string;
+	name: string;
+	fileId?: string;
+	testId: string;
+}) {
+	return (
+		<div className="flex items-center gap-2 text-muted-foreground">
+			<IconFile className="size-4 shrink-0" />
+			<span className="truncate">
+				{label}: {name}
+			</span>
+			{fileId && (
+				<Button variant="outline" size="sm" className="ml-auto gap-2" asChild>
+					<a href={`/api/files/${fileId}`} data-testid={testId}>
+						<IconDownload className="size-4" />
+						Download
+					</a>
+				</Button>
+			)}
+		</div>
+	);
+}
+
 function FileRows({
 	baseLabel,
 	compareLabel,
 	baseName,
 	compareName,
+	baseFileId,
+	compareFileId,
 	isFileChanged,
 }: {
 	baseLabel: string;
 	compareLabel: string;
 	baseName: string;
 	compareName: string;
+	baseFileId?: string;
+	compareFileId?: string;
 	isFileChanged: boolean;
 }) {
 	return (
 		<div className="space-y-2 text-sm">
-			<div className="flex items-center gap-2 text-muted-foreground">
-				<IconFile className="size-4 shrink-0" />
-				<span className="truncate">
-					{baseLabel}: {baseName}
-				</span>
-			</div>
-			<div className="flex items-center gap-2 text-muted-foreground">
-				<IconFile className="size-4 shrink-0" />
-				<span className="truncate">
-					{compareLabel}: {compareName}
-				</span>
-			</div>
+			<FileRow
+				label={baseLabel}
+				name={baseName}
+				fileId={baseFileId}
+				testId="compare-download-base"
+			/>
+			<FileRow
+				label={compareLabel}
+				name={compareName}
+				fileId={compareFileId}
+				testId="compare-download-compare"
+			/>
 			{isFileChanged && (
 				<p className="text-xs text-muted-foreground/80">
-					See the inline redline of the file contents below; the originals can
-					be downloaded from the Content tab.
+					See the inline redline of the file contents below.
 				</p>
 			)}
 		</div>
@@ -350,6 +383,8 @@ function VersionCompareBody({
 					compareLabel={compareLabel}
 					baseName={fileNameOf(baseV)}
 					compareName={fileNameOf(compareV)}
+					baseFileId={baseV.file?.id}
+					compareFileId={compareV.file?.id}
 					isFileChanged={isFileChanged}
 				/>
 			</SectionCard>
