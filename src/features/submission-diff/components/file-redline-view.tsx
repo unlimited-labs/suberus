@@ -40,6 +40,17 @@ function wrapDoc(html: string): string {
 		del:has(img)::before,ins:has(img)::before{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
 		del:has(img)::before{content:"− removed figure";color:#b3202d}
 		ins:has(img)::before{content:"+ added figure";color:#1a7f37}
+		/* Box a changed *display* equation with a label. An inline <ins>/<del>
+		   wrapping a block KaTeX display paints no visible background, so the
+		   add/remove marker would otherwise be invisible (it shows fine in split
+		   only because of the panel header). */
+		del:has(.katex-display),ins:has(.katex-display){display:block;padding:8px 12px;margin:12px 0;border:4px solid;border-radius:10px;text-decoration:none;box-shadow:none}
+		del:has(.katex-display){border-color:#b3202d;background:#ffeef0;color:inherit}
+		ins:has(.katex-display){border-color:#1a7f37;background:#e9f9ee}
+		del:has(.katex-display) .katex-display,ins:has(.katex-display) .katex-display{margin:0}
+		del:has(.katex-display)::before,ins:has(.katex-display)::before{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+		del:has(.katex-display)::before{content:"− removed equation";color:#b3202d}
+		ins:has(.katex-display)::before{content:"+ added equation";color:#1a7f37}
 	</style></head><body><div class="page">${html}</div></body></html>`;
 }
 
