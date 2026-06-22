@@ -130,11 +130,20 @@ test.describe.serial("Admin Branding Settings", () => {
 		// Act
 		await page.goto("/");
 
-		// Assert — desktop uses aside img[alt='Suberus'], mobile uses header img[alt='Logo']
-		const logo =
-			testInfo.project.name === "mobile-admin"
-				? page.locator("img[alt='Logo']")
-				: page.locator("aside img[alt='Suberus']");
+		// Assert — desktop shows the logo in the sidebar <aside>; on mobile that sidebar
+		// is hidden and the logo moves to the top header bar, where BrandLogo's alt is the
+		// conference name (alt="Suberus" is only the sidebar lockup).
+		let logoSelector: string;
+		if (testInfo.project.name === "mobile-admin") {
+			const setting = await db.appSetting.findUnique({
+				where: { key: "CONFERENCE_NAME" },
+			});
+			const conferenceName = (setting?.value as string) || "Conference Name";
+			logoSelector = `img[alt="${conferenceName}"]`;
+		} else {
+			logoSelector = "aside img[alt='Suberus']";
+		}
+		const logo = page.locator(logoSelector);
 		await expect(logo).toBeVisible();
 		await expect(logo).toHaveAttribute("src", /\/logo\.png/);
 	});
