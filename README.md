@@ -66,6 +66,8 @@ Conferences and institutions running on Suberus:
 |:---:|:----------------------------------------------------------------------------------------------------:|
 | <img src=".github/assets/institutions/pjmicro2026.svg" alt="15th Polish-Japanese Joint Seminar on Micro and Nano Analysis" height="120" /> | <img src=".github/assets/institutions/autometform2026.png" alt="AutoMetForm & ConFair 2026" height="120" /> |
 | <a href="https://pjmicro.agh.edu.pl/">**15th Polish–Japanese Joint Seminar on Micro and Nano Analysis**</a> |            <a href="https://www.autometform.pwr.edu.pl/">**AutoMetForm & ConFair 2026**</a>             |
+| <img src=".github/assets/institutions/kpt2027.svg" alt="KomPlasTech & NeuroMet 2027" height="120" /> | |
+| <a href="https://komplastech.agh.edu.pl/">**KomPlasTech & NeuroMet 2027**</a>     |
 
 </div>
 
