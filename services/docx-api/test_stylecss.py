@@ -155,6 +155,24 @@ def test_builtin_heading_recovered_for_bare_h_tag(tmp_path):
     assert any("font-size:11pt" in line and m.group(1) in line for line in css.splitlines())
 
 
+def test_direct_align_recovered_on_styleless_bare_p(tmp_path):
+    # Many templates put a centered title/author in a bare <p> (no pStyle) with a
+    # DIRECT jc=center that pandoc drops. The text-only map must still center it.
+    document = _document_xml().replace(
+        "</w:body>",
+        '<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:t>Bare Centered Title</w:t></w:r></w:p>'
+        '<w:p><w:r><w:t>plain left body</w:t></w:r></w:p></w:body>',
+    )
+    out, _ = stylecss.annotate(
+        "<p>Bare Centered Title</p><p>plain left body</p>",
+        _make_docx(tmp_path, document=document),
+    )
+    segs = {n: f"<p{s}" for s in out.split("<p")[1:]
+            for n in ("Bare Centered Title", "plain left body") if n in s}
+    assert "ta-center" in segs["Bare Centered Title"]  # styleless title centered
+    assert not any(c in segs["plain left body"] for c in ("ta-center", "ta-right", "ta-justify"))
+
+
 def test_malformed_docx_degrades_gracefully(tmp_path):
     bad = tmp_path / "bad.docx"
     bad.write_bytes(b"not a zip")

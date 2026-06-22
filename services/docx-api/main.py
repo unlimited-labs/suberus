@@ -90,7 +90,9 @@ def _libreoffice_version() -> str | None:
 #     table-width into classes, and tag ")"-delimited ordered lists (.ol-paren +
 #     .olp-<type>) from numbering.xml so the Word "a)" marker renders (pandoc emits
 #     <ol type> but drops the delimiter).
-SCHEMA_VERSION = 4
+# v5: recover DIRECT paragraph alignment on style-less elements too (bare <p>) — a
+#     centered title/author block with no style hook now centers (corpus audit gap).
+SCHEMA_VERSION = 5
 
 # Pinned pandoc recipe. `--sandbox` blocks pandoc IO; `--wrap=none` keeps diff-friendly
 # lines; raw HTML is dropped so author-supplied markup can't smuggle script through.

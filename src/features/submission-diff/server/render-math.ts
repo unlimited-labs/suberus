@@ -42,20 +42,43 @@ function decodeEntities(s: string): string {
 	return out;
 }
 
+const ESCAPE: Array<[RegExp, string]> = [
+	[/&/g, "&amp;"],
+	[/</g, "&lt;"],
+	[/>/g, "&gt;"],
+];
+
+/**
+ * Plain-text fallback for a span that ISN'T valid TeX — e.g. an inline run mis-tagged
+ * as math whose body is actually HTML (`&nbsp;<em>ε̇</em>`). Better to show the bare
+ * symbol than KaTeX's red error box. Decode entities, drop tags/nbsp, re-escape.
+ */
+function plainFallback(body: string): string {
+	const text = decodeEntities(body)
+		.replace(/&nbsp;/g, " ")
+		.replace(/<[^>]*>/g, "")
+		.trim();
+	let out = text;
+	for (const [re, ch] of ESCAPE) out = out.replace(re, ch);
+	return out;
+}
+
 /** Render every math span in a (sanitized) HTML fragment to static KaTeX markup. */
 export function renderMathInHtml(html: string): string {
-	return html.replace(MATH_SPAN_RE, (whole, kind, body) => {
+	return html.replace(MATH_SPAN_RE, (_whole, kind, body) => {
 		const tex = stripDelimiters(decodeEntities(body));
 		try {
+			// throwOnError:true so a non-TeX body falls through to the plain-text
+			// fallback instead of rendering KaTeX's red error markup into the document.
 			return katex.renderToString(tex, {
 				displayMode: kind === "display",
-				throwOnError: false,
+				throwOnError: true,
 				strict: "ignore",
 				trust: false,
 				output: "htmlAndMathml",
 			});
 		} catch {
-			return whole; // leave the original span if KaTeX can't render it
+			return plainFallback(body);
 		}
 	});
 }

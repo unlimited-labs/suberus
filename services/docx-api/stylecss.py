@@ -197,12 +197,21 @@ class _Styles:
         return out
 
 
-def _direct_aligns(doc_root: ET.Element, styles: _Styles) -> dict[tuple[str, str], str]:
-    """Map (style-name, normalized-text) -> css align for paragraphs that carry a
-    DIRECT `<w:jc>` (formatting Pandoc drops). Ambiguous keys (same key, different
-    alignment) are discarded so we never guess."""
-    out: dict[tuple[str, str], str] = {}
-    bad: set[tuple[str, str]] = set()
+def _direct_aligns(
+    doc_root: ET.Element, styles: _Styles
+) -> tuple[dict[tuple[str, str], str], dict[str, str]]:
+    """Recover DIRECT paragraph alignment (a `<w:jc>` on the paragraph itself —
+    formatting Pandoc drops). Returns two text-keyed maps, both dropping ambiguous
+    keys so we never guess:
+      - by_name_text: (style-name, text) -> align, precise, for `data-custom-style`
+        elements where we know the style name.
+      - by_text: text -> align, for elements Pandoc emits with NO style hook (a bare
+        `<p>` for a Normal/unstyled centered title/author block — the common gap).
+    """
+    by_nt: dict[tuple[str, str], str] = {}
+    bad_nt: set[tuple[str, str]] = set()
+    by_t: dict[str, str] = {}
+    bad_t: set[str] = set()
     for p in doc_root.iter(_q("p")):
         ppr = p.find(_q("pPr"))
         if ppr is None:
@@ -210,24 +219,30 @@ def _direct_aligns(doc_root: ET.Element, styles: _Styles) -> dict[tuple[str, str
         jc = ppr.find(_q("jc"))
         if jc is None or jc.get(_q("val")) not in _ALIGN:
             continue
-        pstyle = ppr.find(_q("pStyle"))
-        sid = pstyle.get(_q("val")) if pstyle is not None else None
-        name = styles.name_of.get(sid) if sid else None
-        if not name:
-            continue
+        align = _ALIGN[jc.get(_q("val"))]
         text = _norm("".join(t.text or "" for t in p.iter(_q("t"))))
         if not text:
             continue
-        key = (name, text)
-        align = _ALIGN[jc.get(_q("val"))]
-        if key in bad:
-            continue
-        if key in out and out[key] != align:
-            del out[key]
-            bad.add(key)
-            continue
-        out[key] = align
-    return out
+        if text in bad_t:
+            pass
+        elif text in by_t and by_t[text] != align:
+            del by_t[text]
+            bad_t.add(text)
+        else:
+            by_t[text] = align
+        pstyle = ppr.find(_q("pStyle"))
+        sid = pstyle.get(_q("val")) if pstyle is not None else None
+        name = styles.name_of.get(sid) if sid else None
+        if name:
+            key = (name, text)
+            if key in bad_nt:
+                continue
+            if key in by_nt and by_nt[key] != align:
+                del by_nt[key]
+                bad_nt.add(key)
+                continue
+            by_nt[key] = align
+    return by_nt, by_t
 
 
 _PLACEHOLDER_RE = re.compile(r"%\d+")
@@ -314,9 +329,10 @@ def _read(docx_path: str):
                 paren = _paren_list_texts(doc, numbering)
             except (KeyError, ET.ParseError):
                 pass  # no list numbering — nothing to recover
-            return styles, _direct_aligns(doc, styles), paren, _heading_styles(doc, styles)
+            direct_nt, direct_t = _direct_aligns(doc, styles)
+            return styles, direct_nt, direct_t, paren, _heading_styles(doc, styles)
     except (KeyError, zipfile.BadZipFile, ET.ParseError):
-        return None, {}, set(), {}
+        return None, {}, {}, set(), {}
 
 
 def annotate(html: str, docx_path: str) -> tuple[str, str]:
@@ -324,7 +340,7 @@ def annotate(html: str, docx_path: str) -> tuple[str, str]:
     override where the paragraph is directly aligned) and return `(html, css)`.
     `css` defines one rule per style actually used. On any failure the html is
     returned unchanged with empty css (degrades to the base typography)."""
-    styles, direct, paren_lists, heading_styles = _read(docx_path)
+    styles, direct_nt, direct_t, paren_lists, heading_styles = _read(docx_path)
     if styles is None:
         return html, ""
     try:
@@ -333,6 +349,7 @@ def annotate(html: str, docx_path: str) -> tuple[str, str]:
         return html, ""
 
     headings = {"h1", "h2", "h3", "h4", "h5", "h6"}
+    align_tags = headings | {"p", "div"}
     used: dict[str, str] = {}
     for el in frag.iter():
         tag = el.tag if isinstance(el.tag, str) else ""
@@ -358,14 +375,21 @@ def annotate(html: str, docx_path: str) -> tuple[str, str]:
         # real style by text so the author <h1> renders at its true size, not base 1.5em.
         if not name and tag in headings:
             name = heading_styles.get(_norm(el.text_content()))
-        if not name:
+        txt = _norm(el.text_content())
+        # Direct paragraph alignment pandoc dropped: precise (name,text) when we know
+        # the style, else text-only — the latter recovers a bare <p> centered title/
+        # author block that carries no style hook at all (the common header-centering gap).
+        align = direct_nt.get((name, txt)) if name else None
+        if not align and tag in align_tags:
+            align = direct_t.get(txt)
+        if not name and not align:
             continue
-        cls = _cls(name)
-        used[name] = cls
         classes = (el.get("class") or "").split()
-        if cls not in classes:
-            classes.append(cls)
-        align = direct.get((name, _norm(el.text_content())))
+        if name:
+            cls = _cls(name)
+            used[name] = cls
+            if cls not in classes:
+                classes.append(cls)
         if align:
             ta = f"ta-{align}"
             if ta not in classes:

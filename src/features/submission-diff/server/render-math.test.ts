@@ -32,4 +32,15 @@ describe("renderMathInHtml", () => {
 		const html = `<p>no math here <del>old</del><ins>new</ins></p>`;
 		expect(renderMathInHtml(html)).toBe(html);
 	});
+
+	it("falls back to clean plain text for a non-TeX span (no KaTeX red error)", () => {
+		// An inline run mis-tagged as math whose body is actually HTML markup.
+		const out = renderMathInHtml(
+			`<p><span class="math inline">&nbsp;&lt;em&gt;ε̇&lt;/em&gt;</span> rate</p>`,
+		);
+		expect(out).not.toContain("katex-error"); // no red error box
+		expect(out).not.toContain('class="math inline"'); // span consumed
+		expect(out).not.toContain("&lt;em&gt;"); // tags stripped, not shown literally
+		expect(out).toContain("ε̇"); // the bare symbol survives
+	});
 });
