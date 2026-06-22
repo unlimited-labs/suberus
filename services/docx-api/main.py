@@ -31,10 +31,10 @@ import subprocess
 import tempfile
 import uuid
 import zipfile
-from pathlib import Path
-
+from functools import lru_cache
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _pkg_version
+from pathlib import Path
 
 from fastapi import APIRouter, FastAPI, HTTPException, Response, UploadFile
 from PIL import Image
@@ -66,6 +66,7 @@ def _run(
     return subprocess.run(cmd, capture_output=True, timeout=timeout, **kw)
 
 
+@lru_cache(maxsize=1)
 def _pandoc_version() -> str | None:
     try:
         out = _run(["pandoc", "--version"], timeout=10).stdout.decode(errors="replace")
@@ -74,6 +75,7 @@ def _pandoc_version() -> str | None:
         return None
 
 
+@lru_cache(maxsize=1)
 def _libreoffice_version() -> str | None:
     try:
         out = _run(["soffice", "--version"], timeout=30).stdout.decode(errors="replace")
@@ -84,20 +86,7 @@ def _libreoffice_version() -> str | None:
 
 # Bundle schema version — bump when the bundle layout or normalize recipe changes
 # (participates in the artifact cache key so historical diffs aren't silently mutated).
-# v3: pre-pandoc MathType OLE -> LaTeX math-span conversion (mathtype.py).
-# v4: Word-faithful rendering — emit styles.css (per-style fidelity from styles.xml
-#     + direct paragraph alignment from document.xml), hoist inline block alignment/
-#     table-width into classes, and tag ")"-delimited ordered lists (.ol-paren +
-#     .olp-<type>) from numbering.xml so the Word "a)" marker renders (pandoc emits
-#     <ol type> but drops the delimiter).
-# v5: recover DIRECT paragraph alignment on style-less elements too (bare <p>) — a
-#     centered title/author block with no style hook now centers (corpus audit gap).
-# v6: re-insert a Title/Subtitle paragraph pandoc drops as doc metadata (builtin
-#     "Title" style) so the title isn't missing entirely (corpus audit gap).
-# v7: `--mathjax` so pandoc keeps ALL native equations as TeX in the math span
-#     (without it, simple OMML came out as <sub>/<sup> HTML that KaTeX can't parse
-#     and degraded to plain text); now the Node KaTeX pass renders them uniformly.
-SCHEMA_VERSION = 7
+SCHEMA_VERSION = 1
 
 # Pinned pandoc recipe. `--sandbox` blocks pandoc IO; `--wrap=none` keeps diff-friendly
 # lines; `--mathjax` keeps native math as raw TeX (`\(…\)`/`\[…\]`) in the math span so

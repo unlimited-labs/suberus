@@ -82,6 +82,17 @@ These need Pandoc + LibreOffice, so run them in the pinned test image:
 (`run-tests.sh` builds the `test` Docker stage — same pinned toolchain + pytest +
 python-docx — and mounts this dir so golden updates write back.)
 
+## Code quality (lint + complexity)
+
+`fallow` is TS/JS-only, so Python uses **ruff** + **radon** (config in
+`pyproject.toml`, advisory, not in `run-tests.sh`):
+
+```bash
+uvx ruff check .
+uvx radon cc -s -n C .
+uvx radon mi .
+```
+
 ## Notes / TODO
 
 - `PANDOC_VERSION` is an `ARG` (default 3.5) — pin deliberately; it is recorded in

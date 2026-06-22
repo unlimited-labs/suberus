@@ -19,5 +19,22 @@ dependencies = [
 # stage (see Dockerfile) which has the pinned toolchain.
 test = ["pytest", "python-docx"]
 
+# Lint + complexity (Python "fallow-equivalent"). Advisory; run via uvx. See README.
+dev = ["ruff", "radon"]
+
 # Runtime also requires the system binaries `pandoc` (pinned) and `soffice`
 # (LibreOffice) on PATH — see Dockerfile. Not Python packages.
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["test_fixtures"]
+
+[tool.ruff.lint]
+select = ["F", "I", "C901"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15
+
+[tool.ruff.lint.isort]
+known-first-party = ["main", "diffhtml", "mathtype", "stylecss", "htmlesc", "ooxml"]

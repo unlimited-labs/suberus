@@ -34,12 +34,8 @@ from xml.etree import ElementTree as ET
 
 from lxml import html as lhtml
 
-_W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
-
-
-def _q(tag: str) -> str:
-    return f"{{{_W}}}{tag}"
-
+from htmlesc import esc_attr, esc_text
+from ooxml import AmbiguityMap, iter_paragraphs, local_name, norm_text, paragraph_text, q
 
 # Word `w:jc` -> CSS text-align. "both"/"distribute" are Word's justify; unknown
 # values are dropped rather than guessed.
@@ -62,15 +58,11 @@ def _cls(name: str) -> str:
     return "cs" + hashlib.sha256(name.encode("utf-8")).hexdigest()[:10]
 
 
-def _norm(text: str | None) -> str:
-    return " ".join((text or "").split())
-
-
 def _truthy(el: ET.Element | None) -> bool:
     """A boolean toggle like <w:b/> is on unless explicitly w:val="0"/"false"."""
     if el is None:
         return False
-    return el.get(_q("val")) not in ("0", "false", "none")
+    return el.get(q("val")) not in ("0", "false", "none")
 
 
 def _font_family(raw: str | None) -> str | None:
@@ -87,27 +79,32 @@ def _clamp(value: float, lo: float, hi: float) -> float:
     return max(lo, min(hi, value))
 
 
+# rPr child -> resolved key, for boolean toggles and `w:val` scalars.
+_TOGGLE_RPR = (("b", "bold"), ("i", "italic"), ("u", "underline"), ("caps", "caps"))
+_VAL_RPR = (("sz", "sz"), ("color", "color"))
+
+
 class _Styles:
     """Parsed styles.xml: docDefaults + each style's pPr/rPr and basedOn chain."""
 
     def __init__(self, root: ET.Element):
         self.by_id: dict[str, dict] = {}
         self.name_of: dict[str, str] = {}  # styleId -> human name (pandoc's key)
-        dd = root.find(_q("docDefaults"))
-        self.def_ppr = dd.find(f"{_q('pPrDefault')}/{_q('pPr')}") if dd is not None else None
-        self.def_rpr = dd.find(f"{_q('rPrDefault')}/{_q('rPr')}") if dd is not None else None
-        for s in root.findall(_q("style")):
-            sid = s.get(_q("styleId"))
+        dd = root.find(q("docDefaults"))
+        self.def_ppr = dd.find(f"{q('pPrDefault')}/{q('pPr')}") if dd is not None else None
+        self.def_rpr = dd.find(f"{q('rPrDefault')}/{q('rPr')}") if dd is not None else None
+        for s in root.findall(q("style")):
+            sid = s.get(q("styleId"))
             if not sid:
                 continue
-            name_el = s.find(_q("name"))
-            name = name_el.get(_q("val")) if name_el is not None else sid
-            based = s.find(_q("basedOn"))
+            name_el = s.find(q("name"))
+            name = name_el.get(q("val")) if name_el is not None else sid
+            based = s.find(q("basedOn"))
             self.by_id[sid] = {
                 "name": name,
-                "basedOn": based.get(_q("val")) if based is not None else None,
-                "pPr": s.find(_q("pPr")),
-                "rPr": s.find(_q("rPr")),
+                "basedOn": based.get(q("val")) if based is not None else None,
+                "pPr": s.find(q("pPr")),
+                "rPr": s.find(q("rPr")),
             }
             self.name_of[sid] = name
 
@@ -128,34 +125,28 @@ class _Styles:
         p: dict = {}
         for ppr, rpr in layers:
             if ppr is not None:
-                jc = ppr.find(_q("jc"))
+                jc = ppr.find(q("jc"))
                 if jc is not None:
-                    p["align"] = jc.get(_q("val"))
-                spacing = ppr.find(_q("spacing"))
+                    p["align"] = jc.get(q("val"))
+                spacing = ppr.find(q("spacing"))
                 if spacing is not None:
-                    if spacing.get(_q("before")) is not None:
-                        p["mt"] = spacing.get(_q("before"))
-                    if spacing.get(_q("after")) is not None:
-                        p["mb"] = spacing.get(_q("after"))
+                    if spacing.get(q("before")) is not None:
+                        p["mt"] = spacing.get(q("before"))
+                    if spacing.get(q("after")) is not None:
+                        p["mb"] = spacing.get(q("after"))
             if rpr is not None:
-                if rpr.find(_q("b")) is not None:
-                    p["bold"] = _truthy(rpr.find(_q("b")))
-                if rpr.find(_q("i")) is not None:
-                    p["italic"] = _truthy(rpr.find(_q("i")))
-                if rpr.find(_q("u")) is not None:
-                    p["underline"] = _truthy(rpr.find(_q("u")))
-                if rpr.find(_q("caps")) is not None:
-                    p["caps"] = _truthy(rpr.find(_q("caps")))
-                sz = rpr.find(_q("sz"))
-                if sz is not None:
-                    p["sz"] = sz.get(_q("val"))
-                fonts = rpr.find(_q("rFonts"))
+                for tag, key in _TOGGLE_RPR:
+                    el = rpr.find(q(tag))
+                    if el is not None:
+                        p[key] = _truthy(el)
+                for tag, key in _VAL_RPR:
+                    el = rpr.find(q(tag))
+                    if el is not None:
+                        p[key] = el.get(q("val"))
+                fonts = rpr.find(q("rFonts"))
                 if fonts is not None:
-                    p["font"] = (fonts.get(_q("ascii")) or fonts.get(_q("hAnsi"))
-                                 or fonts.get(_q("cs")))
-                color = rpr.find(_q("color"))
-                if color is not None:
-                    p["color"] = color.get(_q("val"))
+                    p["font"] = (fonts.get(q("ascii")) or fonts.get(q("hAnsi"))
+                                 or fonts.get(q("cs")))
         return p
 
     def declarations(self, name: str) -> list[str]:
@@ -208,41 +199,22 @@ def _direct_aligns(
       - by_text: text -> align, for elements Pandoc emits with NO style hook (a bare
         `<p>` for a Normal/unstyled centered title/author block — the common gap).
     """
-    by_nt: dict[tuple[str, str], str] = {}
-    bad_nt: set[tuple[str, str]] = set()
-    by_t: dict[str, str] = {}
-    bad_t: set[str] = set()
-    for p in doc_root.iter(_q("p")):
-        ppr = p.find(_q("pPr"))
+    by_nt = AmbiguityMap()
+    by_t = AmbiguityMap()
+    for p, name, text in iter_paragraphs(doc_root, styles.name_of):
+        ppr = p.find(q("pPr"))
         if ppr is None:
             continue
-        jc = ppr.find(_q("jc"))
-        if jc is None or jc.get(_q("val")) not in _ALIGN:
+        jc = ppr.find(q("jc"))
+        if jc is None or jc.get(q("val")) not in _ALIGN:
             continue
-        align = _ALIGN[jc.get(_q("val"))]
-        text = _norm("".join(t.text or "" for t in p.iter(_q("t"))))
         if not text:
             continue
-        if text in bad_t:
-            pass
-        elif text in by_t and by_t[text] != align:
-            del by_t[text]
-            bad_t.add(text)
-        else:
-            by_t[text] = align
-        pstyle = ppr.find(_q("pStyle"))
-        sid = pstyle.get(_q("val")) if pstyle is not None else None
-        name = styles.name_of.get(sid) if sid else None
+        align = _ALIGN[jc.get(q("val"))]
+        by_t.add(text, align)
         if name:
-            key = (name, text)
-            if key in bad_nt:
-                continue
-            if key in by_nt and by_nt[key] != align:
-                del by_nt[key]
-                bad_nt.add(key)
-                continue
-            by_nt[key] = align
-    return by_nt, by_t
+            by_nt.add((name, text), align)
+    return by_nt.as_dict(), by_t.as_dict()
 
 
 _PLACEHOLDER_RE = re.compile(r"%\d+")
@@ -257,35 +229,35 @@ def _paren_list_texts(doc_root: ET.Element, numbering: ET.Element) -> set[str]:
     the right `<ol>` is tagged without correlating pandoc's output to numId."""
     # numId -> abstractNumId
     num2abs: dict[str, str] = {}
-    for n in numbering.findall(_q("num")):
-        a = n.find(_q("abstractNumId"))
-        if a is not None and n.get(_q("numId")):
-            num2abs[n.get(_q("numId"))] = a.get(_q("val"))
+    for n in numbering.findall(q("num")):
+        a = n.find(q("abstractNumId"))
+        if a is not None and n.get(q("numId")):
+            num2abs[n.get(q("numId"))] = a.get(q("val"))
     # abstractNumId -> {ilvl: lvlText}
     abs2lvl: dict[str, dict[str, str | None]] = {}
-    for an in numbering.findall(_q("abstractNum")):
+    for an in numbering.findall(q("abstractNum")):
         levels: dict[str, str | None] = {}
-        for lvl in an.findall(_q("lvl")):
-            t = lvl.find(_q("lvlText"))
-            levels[lvl.get(_q("ilvl"))] = t.get(_q("val")) if t is not None else None
-        abs2lvl[an.get(_q("abstractNumId"))] = levels
+        for lvl in an.findall(q("lvl")):
+            t = lvl.find(q("lvlText"))
+            levels[lvl.get(q("ilvl"))] = t.get(q("val")) if t is not None else None
+        abs2lvl[an.get(q("abstractNumId"))] = levels
 
     out: set[str] = set()
-    for p in doc_root.iter(_q("p")):
-        ppr = p.find(_q("pPr"))
-        numpr = ppr.find(_q("numPr")) if ppr is not None else None
+    for p in doc_root.iter(q("p")):
+        ppr = p.find(q("pPr"))
+        numpr = ppr.find(q("numPr")) if ppr is not None else None
         if numpr is None:
             continue
-        ilvl_el = numpr.find(_q("ilvl"))
-        nid_el = numpr.find(_q("numId"))
-        ilvl = ilvl_el.get(_q("val")) if ilvl_el is not None else "0"
-        nid = nid_el.get(_q("val")) if nid_el is not None else None
+        ilvl_el = numpr.find(q("ilvl"))
+        nid_el = numpr.find(q("numId"))
+        ilvl = ilvl_el.get(q("val")) if ilvl_el is not None else "0"
+        nid = nid_el.get(q("val")) if nid_el is not None else None
         lvl_text = abs2lvl.get(num2abs.get(nid, ""), {}).get(ilvl)
         if not lvl_text:
             continue
         delim = _PLACEHOLDER_RE.sub("", lvl_text).strip()
         if delim == ")":
-            text = _norm("".join(t.text or "" for t in p.iter(_q("t"))))
+            text = paragraph_text(p)
             if text:
                 out.add(text)
     return out
@@ -298,37 +270,15 @@ def _heading_styles(doc_root: ET.Element, styles: _Styles) -> dict[str, str]:
     via `data-custom-style`. We recover the real style (e.g. an 11pt author line vs a
     14pt title) by matching the heading's text back to its source paragraph. Ambiguous
     texts (same text, different style) are dropped so we never guess."""
-    out: dict[str, str] = {}
-    bad: set[str] = set()
-    for p in doc_root.iter(_q("p")):
-        ppr = p.find(_q("pPr"))
-        pstyle = ppr.find(_q("pStyle")) if ppr is not None else None
-        sid = pstyle.get(_q("val")) if pstyle is not None else None
-        name = styles.name_of.get(sid) if sid else None
-        if not name:
+    out = AmbiguityMap()
+    for _p, name, text in iter_paragraphs(doc_root, styles.name_of):
+        if not name or not text:
             continue
-        text = _norm("".join(t.text or "" for t in p.iter(_q("t"))))
-        if not text or text in bad:
-            continue
-        if text in out and out[text] != name:
-            del out[text]
-            bad.add(text)
-            continue
-        out[text] = name
-    return out
+        out.add(text, name)
+    return out.as_dict()
 
 
 _TITLE_STYLE_NAMES = {"title", "subtitle"}
-
-
-def _local(tag: object) -> str:
-    if isinstance(tag, str) and tag.startswith("{"):
-        return tag.split("}", 1)[1]
-    return tag if isinstance(tag, str) else ""
-
-
-def _esc(s: str) -> str:
-    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
 def _title_paras(doc_root: ET.Element, styles: _Styles) -> list[tuple[str, str, str]]:
@@ -337,19 +287,15 @@ def _title_paras(doc_root: ET.Element, styles: _Styles) -> list[tuple[str, str, 
     vanishes entirely. Return (style-name, escaped-inner-html, normalized-plain) so the
     caller can re-insert any pandoc omitted, styled via the real Title style."""
     out: list[tuple[str, str, str]] = []
-    for p in doc_root.iter(_q("p")):
-        ppr = p.find(_q("pPr"))
-        ps = ppr.find(_q("pStyle")) if ppr is not None else None
-        sid = ps.get(_q("val")) if ps is not None else None
-        name = styles.name_of.get(sid) if sid else None
+    for p, name, _text in iter_paragraphs(doc_root, styles.name_of):
         if not name or name.strip().lower() not in _TITLE_STYLE_NAMES:
             continue
         html_parts: list[str] = []
         plain_parts: list[str] = []
         for node in p.iter():
-            ln = _local(node.tag)
+            ln = local_name(node.tag)
             if ln == "t":
-                html_parts.append(_esc(node.text or ""))
+                html_parts.append(esc_text(node.text))
                 plain_parts.append(node.text or "")
             elif ln == "br":
                 html_parts.append("<br>")
@@ -358,7 +304,7 @@ def _title_paras(doc_root: ET.Element, styles: _Styles) -> list[tuple[str, str, 
                 html_parts.append(" ")
                 plain_parts.append(" ")
         inner = "".join(html_parts).strip()
-        plain = _norm("".join(plain_parts))
+        plain = norm_text("".join(plain_parts))
         if plain:
             out.append((name, inner, plain))
     return out
@@ -382,6 +328,66 @@ def _read(docx_path: str):
         return None, {}, {}, set(), {}, []
 
 
+_HEADINGS = {"h1", "h2", "h3", "h4", "h5", "h6"}
+_ALIGN_TAGS = _HEADINGS | {"p", "div"}
+
+
+def _reinsert_titles(html: str, frag, titles: list[tuple[str, str, str]]):
+    """Re-insert a Title/Subtitle pandoc dropped as metadata, if not already in the
+    body. Tagged data-custom-style for the cs-class pass. Returns the fragment."""
+    if not titles:
+        return frag
+    existing = norm_text(frag.text_content())
+    missing = [(n, inner) for (n, inner, plain) in titles if plain not in existing]
+    if not missing:
+        return frag
+    prep = "".join(
+        f'<div data-custom-style="{esc_attr(n)}"><p>{inner}</p></div>'
+        for n, inner in missing
+    )
+    try:
+        return lhtml.fragment_fromstring(prep + html, create_parent="cssroot")
+    except Exception:
+        return frag
+
+
+def _tag_paren_list(el, paren_lists: set[str]) -> None:
+    """Tag a ")"-delimited ordered list (Word "a)") so the CSS renders the paren
+    pandoc dropped. Match the <li> text, flag its parent <ol>."""
+    if not paren_lists or norm_text(el.text_content()) not in paren_lists:
+        return
+    ol = el.getparent()
+    if ol is None or ol.tag != "ol":
+        return
+    cls = (ol.get("class") or "").split()
+    if "ol-paren" not in cls:
+        cls.append("ol-paren")
+    # Encode the numbering style as a class (case-sensitive, unlike a `[type=a]`
+    # attr selector which collides a/A in HTML) so the CSS renders the right glyph.
+    # pandoc's type is one of 1/a/A/i/I.
+    t = ol.get("type") or "1"
+    if t in ("1", "a", "A", "i", "I"):
+        olp = f"olp-{t}"
+        if olp not in cls:
+            cls.append(olp)
+    ol.set("class", " ".join(cls))
+
+
+def _assign_classes(el, name: str | None, align: str | None, used: dict[str, str]) -> None:
+    """Add the `cs<hash>` style class (recording it in `used`) and/or `ta-*` align class."""
+    classes = (el.get("class") or "").split()
+    if name:
+        cls = _cls(name)
+        used[name] = cls
+        if cls not in classes:
+            classes.append(cls)
+    if align:
+        ta = f"ta-{align}"
+        if ta not in classes:
+            classes.append(ta)
+    el.set("class", " ".join(classes))
+
+
 def annotate(html: str, docx_path: str) -> tuple[str, str]:
     """Tag custom-styled elements with a stable `cs<hash>` class (plus a `ta-*`
     override where the paragraph is directly aligned) and return `(html, css)`.
@@ -395,70 +401,28 @@ def annotate(html: str, docx_path: str) -> tuple[str, str]:
     except Exception:
         return html, ""
 
-    # Re-insert a Title/Subtitle pandoc dropped as metadata (builtin "Title" style),
-    # if its text isn't already in the body. Tagged data-custom-style so it picks up
-    # the real Title style's formatting via the cs-class pass below.
-    if titles:
-        existing = _norm(frag.text_content())
-        missing = [(n, inner) for (n, inner, plain) in titles if plain not in existing]
-        if missing:
-            prep = "".join(
-                f'<div data-custom-style="{n.replace("&", "&amp;").replace(chr(34), "&quot;")}">'
-                f"<p>{inner}</p></div>"
-                for n, inner in missing
-            )
-            try:
-                frag = lhtml.fragment_fromstring(prep + html, create_parent="cssroot")
-            except Exception:
-                pass
+    frag = _reinsert_titles(html, frag, titles)
 
-    headings = {"h1", "h2", "h3", "h4", "h5", "h6"}
-    align_tags = headings | {"p", "div"}
     used: dict[str, str] = {}
     for el in frag.iter():
         tag = el.tag if isinstance(el.tag, str) else ""
-        # Tag a ")"-delimited ordered list (Word "a)") so the CSS renders the paren
-        # pandoc dropped. Match the <li> text, flag its parent <ol>.
-        if tag == "li" and paren_lists and _norm(el.text_content()) in paren_lists:
-            ol = el.getparent()
-            if ol is not None and ol.tag == "ol":
-                cls = (ol.get("class") or "").split()
-                if "ol-paren" not in cls:
-                    cls.append("ol-paren")
-                # Encode the numbering style as a class (case-sensitive, unlike a
-                # `[type=a]` attr selector which collides a/A in HTML) so the CSS
-                # renders the right glyph. pandoc's type is one of 1/a/A/i/I.
-                t = (ol.get("type") or "1")
-                if t in ("1", "a", "A", "i", "I"):
-                    olp = f"olp-{t}"
-                    if olp not in cls:
-                        cls.append(olp)
-                ol.set("class", " ".join(cls))
+        if tag == "li":
+            _tag_paren_list(el, paren_lists)
         name = el.get("data-custom-style")
         # Builtin heading styles lose their name (pandoc -> bare <hN>); recover the
         # real style by text so the author <h1> renders at its true size, not base 1.5em.
-        if not name and tag in headings:
-            name = heading_styles.get(_norm(el.text_content()))
-        txt = _norm(el.text_content())
+        if not name and tag in _HEADINGS:
+            name = heading_styles.get(norm_text(el.text_content()))
+        txt = norm_text(el.text_content())
         # Direct paragraph alignment pandoc dropped: precise (name,text) when we know
         # the style, else text-only — the latter recovers a bare <p> centered title/
         # author block that carries no style hook at all (the common header-centering gap).
         align = direct_nt.get((name, txt)) if name else None
-        if not align and tag in align_tags:
+        if not align and tag in _ALIGN_TAGS:
             align = direct_t.get(txt)
         if not name and not align:
             continue
-        classes = (el.get("class") or "").split()
-        if name:
-            cls = _cls(name)
-            used[name] = cls
-            if cls not in classes:
-                classes.append(cls)
-        if align:
-            ta = f"ta-{align}"
-            if ta not in classes:
-                classes.append(ta)
-        el.set("class", " ".join(classes))
+        _assign_classes(el, name, align, used)
 
     out = (frag.text or "") + "".join(
         lhtml.tostring(c, encoding="unicode") for c in frag

@@ -18,8 +18,12 @@ instead of garbling the TeX. They are restored to KaTeX-ready spans afterwards.
 import hashlib
 import re
 
-from lxml import etree, html as lhtml
+from lxml import etree
+from lxml import html as lhtml
 from xmldiff import formatting, main
+
+from htmlesc import esc_attr as _attr_esc
+from htmlesc import esc_text as _esc
 
 DIFF_NS = "http://namespaces.shoobx.com/diff"
 DIFF = f"{{{DIFF_NS}}}"
@@ -38,14 +42,6 @@ def _protect_math(html: str, tokens: dict[str, str]) -> str:
         return f'<mathtok h="{sha}"></mathtok>'
 
     return _MATH_SPAN_RE.sub(repl, html)
-
-
-def _esc(s: str | None) -> str:
-    return (s or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-
-
-def _attr_esc(s: str) -> str:
-    return _esc(s).replace('"', "&quot;")
 
 
 def _open_tag(tag: str, el: etree._Element) -> str:

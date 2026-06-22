@@ -26,6 +26,8 @@ from dataclasses import dataclass, field
 import olefile
 from lxml import etree
 
+from htmlesc import esc_text
+
 # OOXML namespaces used to locate MathType OLE objects.
 NS = {
     "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
@@ -166,69 +168,96 @@ class _Parser:
                 if top:
                     continue
                 return Run(items)
-            if rtype == 19:   # ENCODING_DEF
-                self._rd_str(); continue
-            if rtype == 17:   # FONT_DEF
-                self._rd(); self._rd_str(); continue
-            if rtype == 18:   # EQN_PREFS
-                self._read_eqn_prefs(); continue
-            if rtype == 16:   # COLOR_DEF
-                raise UnsupportedMtef("color")
-            opts = self._rd() if rtype in (1, 2, 3, 4, 5, 6) else 0
+            opts = self._rd() if rtype in _OPTS_RECORDS else 0  # opts byte: types 1–6 only
             if opts & 0x08:
                 self._skip_nudge()
-            if rtype in (10, 11, 12, 13, 14):  # typesize shortcuts, no payload
-                continue
-            if rtype == 9:    # SIZE
-                self._rd_sint(); continue
-            if rtype == 15:   # COLOR ref
-                self._rd_sint(); continue
-            if rtype == 2:    # CHAR
-                self._rd_sint()  # typeface
-                mt = None
-                if not (opts & 0x20):  # mtefOPT_CHAR_ENC_NO_MTCODE
-                    lo, hi = self._rd(), self._rd()
-                    mt = lo | (hi << 8)
-                if opts & 0x04:  # 8-bit font position
-                    self._rd()
-                if opts & 0x10:  # 16-bit font position
-                    self._rd(); self._rd()
-                if opts & 0x01:  # embellishment list — would change the glyph; skip eqn
-                    raise UnsupportedMtef("char embellishment (accent)")
-                if mt:
-                    items.append(Char(mt))
-                continue
-            if rtype == 1:    # LINE (a slot)
-                if opts & 0x01:        # mtefOPT_LINE_NULL: empty slot
-                    items.append(Run([])); continue
-                if opts & 0x02:        # mtefOPT_LP_RULER: a RULER record follows
-                    self._read_ruler()
-                if opts & 0x04:        # mtefOPT_LINE_LSPACE
-                    self._rd_sint()
-                items.append(self.parse_run()); continue
-            if rtype == 7:    # RULER (standalone)
-                self._read_ruler(); continue
-            if rtype == 8:    # FONT_STYLE_DEF
-                self._rd(); self._rd(); continue
-            if rtype == 3:    # TMPL
-                sel = self._rd()
-                var = self._rd()
-                if var & 0x80:
-                    var = (var & 0x7F) | (self._rd() << 8)
-                self._rd()  # template options byte (present for every template)
-                sub = self.parse_run()
-                slots = [it for it in sub.items if isinstance(it, Run)]
-                items.append(Tmpl(sel, var, slots)); continue
-            if rtype in (4, 5):  # PILE / MATRIX — multi-line layout, skip eqn
-                raise UnsupportedMtef("pile/matrix")
-            raise UnsupportedMtef(f"record type {rtype}")
+            handler = _DISPATCH.get(rtype)
+            if handler is None:
+                raise UnsupportedMtef(f"record type {rtype}")
+            handler(self, opts, items)
         return Run(items)
+
+    # Per-record handlers, dispatched by tag byte; uniform (opts, items) signature.
+    def _h_char(self, opts: int, items: list) -> None:
+        self._rd_sint()  # typeface
+        mt = None
+        if not (opts & 0x20):  # mtefOPT_CHAR_ENC_NO_MTCODE
+            lo, hi = self._rd(), self._rd()
+            mt = lo | (hi << 8)
+        if opts & 0x04:  # 8-bit font position
+            self._rd()
+        if opts & 0x10:  # 16-bit font position
+            self._rd(); self._rd()
+        if opts & 0x01:  # embellishment list — would change the glyph; skip eqn
+            raise UnsupportedMtef("char embellishment (accent)")
+        if mt:
+            items.append(Char(mt))
+
+    def _h_line(self, opts: int, items: list) -> None:
+        if opts & 0x01:        # mtefOPT_LINE_NULL: empty slot
+            items.append(Run([])); return
+        if opts & 0x02:        # mtefOPT_LP_RULER: a RULER record follows
+            self._read_ruler()
+        if opts & 0x04:        # mtefOPT_LINE_LSPACE
+            self._rd_sint()
+        items.append(self.parse_run())
+
+    def _h_tmpl(self, opts: int, items: list) -> None:
+        sel = self._rd()
+        var = self._rd()
+        if var & 0x80:
+            var = (var & 0x7F) | (self._rd() << 8)
+        self._rd()  # template options byte (present for every template)
+        sub = self.parse_run()
+        slots = [it for it in sub.items if isinstance(it, Run)]
+        items.append(Tmpl(sel, var, slots))
+
+    def _h_size(self, opts: int, items: list) -> None:  # SIZE / COLOR ref
+        self._rd_sint()
+
+    def _h_ruler(self, opts: int, items: list) -> None:
+        self._read_ruler()
+
+    def _h_font_style_def(self, opts: int, items: list) -> None:
+        self._rd(); self._rd()
+
+    def _h_encoding_def(self, opts: int, items: list) -> None:
+        self._rd_str()
+
+    def _h_font_def(self, opts: int, items: list) -> None:
+        self._rd(); self._rd_str()
+
+    def _h_eqn_prefs(self, opts: int, items: list) -> None:
+        self._read_eqn_prefs()
+
+    def _h_color_def(self, opts: int, items: list) -> None:
+        raise UnsupportedMtef("color")
+
+    def _h_pile(self, opts: int, items: list) -> None:  # PILE / MATRIX
+        raise UnsupportedMtef("pile/matrix")
+
+    def _h_nop(self, opts: int, items: list) -> None:  # typesize shortcuts 10–14
+        pass
 
     def _read_ruler(self) -> None:
         count = self._rd()
         for _ in range(count):
             self._rd()        # tab-stop type
             self._rd_sint()   # offset
+
+
+# Record types carrying an options byte. Tag byte -> handler; absent tags (incl. 6)
+# are unsupported.
+_OPTS_RECORDS = frozenset({1, 2, 3, 4, 5, 6})
+_DISPATCH = {
+    1: _Parser._h_line, 2: _Parser._h_char, 3: _Parser._h_tmpl,
+    4: _Parser._h_pile, 5: _Parser._h_pile,
+    7: _Parser._h_ruler, 8: _Parser._h_font_style_def, 9: _Parser._h_size,
+    10: _Parser._h_nop, 11: _Parser._h_nop, 12: _Parser._h_nop,
+    13: _Parser._h_nop, 14: _Parser._h_nop,
+    15: _Parser._h_size, 16: _Parser._h_color_def,
+    17: _Parser._h_font_def, 18: _Parser._h_eqn_prefs, 19: _Parser._h_encoding_def,
+}
 
 
 # --- AST -> LaTeX ------------------------------------------------------------
@@ -401,10 +430,6 @@ def convert_mathtype_oles(docx_bytes: bytes) -> tuple[bytes, list[ConvertedEquat
         zin.close()
 
 
-def _esc_html(s: str) -> str:
-    return (s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
-
-
 def apply_sentinels(html: str, equations: list[ConvertedEquation]) -> str:
     """Replace each sentinel token in pandoc's HTML with a math span the Node KaTeX
     pass renders. Mirrors pandoc's native-math output: HTML-escaped TeX inside
@@ -415,7 +440,7 @@ def apply_sentinels(html: str, equations: list[ConvertedEquation]) -> str:
         eq = by_idx.get(int(m.group(1)))
         if eq is None:
             return ""
-        body = _esc_html(eq.latex)
+        body = esc_text(eq.latex)
         if eq.display:
             return f'<span class="math display">\\[{body}\\]</span>'
         return f'<span class="math inline">\\({body}\\)</span>'
