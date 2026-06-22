@@ -1,6 +1,6 @@
 import { IconFile, IconGitCompare } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import { KeywordsDiff } from "@/features/submissions/components/diff/metadata-diff";
+import { KeywordsDiff } from "@/shared/components/diff/keywords-diff";
 import { TextDiffView } from "@/shared/components/diff/text-diff-view";
 import { diffText, fileChanged } from "@/shared/lib/text-diff";
 import { Button } from "@/shared/ui/button";

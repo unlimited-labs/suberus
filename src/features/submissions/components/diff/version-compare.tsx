@@ -6,6 +6,7 @@ import {
 } from "@tabler/icons-react";
 import { useMemo } from "react";
 import { FileRedlineView } from "@/features/submission-diff/components/file-redline-view";
+import { KeywordsDiff } from "@/shared/components/diff/keywords-diff";
 import { TextDiffView } from "@/shared/components/diff/text-diff-view";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { diffList, listChanged } from "@/shared/lib/list-diff";
@@ -17,7 +18,7 @@ import {
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/ui/card";
 import { SectionCard } from "@/shared/ui/section-card";
-import { AuthorsDiff, KeywordsDiff } from "./metadata-diff";
+import { AuthorsDiff } from "./metadata-diff";
 import { SideBySideDiffView } from "./side-by-side-diff-view";
 import { authorsEqual, type CompareAuthor } from "./version-compare-format";
 import { VersionCompareSelector } from "./version-compare-selector";

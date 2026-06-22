@@ -67,6 +67,8 @@ const inputSchema = z.object({
 	file: z.instanceof(File).nullish(),
 });
 
+type CreateSubmissionInput = z.infer<typeof inputSchema>;
+
 /** Parse the create-submission multipart payload (JSON fields + optional file). */
 function parseCreateSubmissionFormData(data: FormData) {
 	const authorsRaw = data.get("authors");
@@ -121,39 +123,106 @@ async function getValidationLimits(): Promise<ValidationLimits> {
 	}
 }
 
+/**
+ * Submission-window gate: returns an error message when submitting is blocked
+ * (admin lock, or deadline passed), or null when allowed. Users flagged for late
+ * submission bypass both checks. Drafts still go through the caller's own path.
+ */
+async function checkSubmissionWindow(userId: string): Promise<string | null> {
+	const [submissionDeadline, submissionsLocked, timezone, lateAllowed] =
+		await Promise.all([
+			getSetting("SUBMISSION_DEADLINE"),
+			getSetting("SUBMISSIONS_LOCKED"),
+			getSetting("CONFERENCE_TIMEZONE"),
+			prisma.user
+				.findUnique({
+					where: { id: userId },
+					select: { allowLateSubmission: true },
+				})
+				.then((u) => u?.allowLateSubmission ?? false),
+		]);
+	if (lateAllowed) return null;
+	if (submissionsLocked) {
+		return "Submissions are currently closed by the administrator";
+	}
+	if (
+		submissionDeadline &&
+		isDeadlinePassed(submissionDeadline, timezone, new Date())
+	) {
+		return "The submission deadline has passed";
+	}
+	return null;
+}
+
+/** Validate a non-draft payload against the dynamic schema; failure result or null. */
+async function validateSubmissionInput(
+	data: CreateSubmissionInput,
+): Promise<SubmissionResult | null> {
+	const limits = await getValidationLimits();
+	const result = createDynamicSubmissionSchema(limits).safeParse(data);
+	if (result.success) return null;
+	return {
+		success: false,
+		error: "Validation failed",
+		issues: result.error.issues.map((issue) => ({
+			path: issue.path.map(String),
+			message: issue.message,
+		})),
+	};
+}
+
+/**
+ * Create a FILE-format submission. FILE submissions must carry a file before
+ * they can be submitted, so we create as a draft, attach the file, then submit —
+ * a FILE submission is never SUBMITTED without a file (drafts stay file-less).
+ */
+async function createFileSubmission(
+	data: CreateSubmissionInput,
+	userId: string,
+): Promise<SubmissionResult> {
+	if (!data.isDraft && !data.file) {
+		return {
+			success: false,
+			error: "A file is required.",
+			issues: [{ path: ["file"], message: "A file is required." }],
+		};
+	}
+	// Validate the file upfront so an invalid upload never creates a record.
+	if (data.file) {
+		const config = await getSetting(SUBMISSION_TYPE_TO_KEY[data.type]);
+		const valid = await validateUploadFile(data.file, config);
+		if (!valid.ok) return { success: false, error: valid.error };
+	}
+	const submission = await createNewSubmission(data, userId, true);
+	if (data.file) {
+		const attached = await attachFileToVersion({
+			submissionId: submission.id,
+			versionNumber: 1,
+			file: data.file,
+			userId,
+		});
+		if (!attached.success) {
+			return { success: false, error: attached.error };
+		}
+	}
+	if (!data.isDraft) {
+		const submitted = await submitDraft(submission.id, userId);
+		if (!submitted.success) {
+			return {
+				success: false,
+				error: submitted.error ?? "Failed to submit submission.",
+			};
+		}
+	}
+	return { success: true, id: submission.id };
+}
+
 export const createSubmission = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.validator(parseCreateSubmissionFormData)
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
-		const [submissionDeadline, submissionsLocked, timezone, lateAllowed] =
-			await Promise.all([
-				getSetting("SUBMISSION_DEADLINE"),
-				getSetting("SUBMISSIONS_LOCKED"),
-				getSetting("CONFERENCE_TIMEZONE"),
-				prisma.user
-					.findUnique({
-						where: { id: context.user.id },
-						select: { allowLateSubmission: true },
-					})
-					.then((u) => u?.allowLateSubmission ?? false),
-			]);
-		if (!lateAllowed) {
-			if (submissionsLocked) {
-				return {
-					success: false,
-					error: "Submissions are currently closed by the administrator",
-				};
-			}
-			if (
-				submissionDeadline &&
-				isDeadlinePassed(submissionDeadline, timezone, new Date())
-			) {
-				return {
-					success: false,
-					error: "The submission deadline has passed",
-				};
-			}
-		}
+		const windowError = await checkSubmissionWindow(context.user.id);
+		if (windowError) return { success: false, error: windowError };
 
 		const activeTypes = await getActiveSubmissionTypes();
 		if (!activeTypes.some((t) => t.type === data.type)) {
@@ -164,67 +233,14 @@ export const createSubmission = createServerFn({ method: "POST" })
 		}
 
 		if (!data.isDraft) {
-			const limits = await getValidationLimits();
-			const dynamicSchema = createDynamicSubmissionSchema(limits);
-			const result = dynamicSchema.safeParse(data);
-			if (!result.success) {
-				return {
-					success: false,
-					error: "Validation failed",
-					issues: result.error.issues.map((issue) => ({
-						path: issue.path.map(String),
-						message: issue.message,
-					})),
-				};
-			}
+			const invalid = await validateSubmissionInput(data);
+			if (invalid) return invalid;
 		}
 
 		try {
-			// FILE submissions must carry a file before they can be submitted.
-			// Create as a draft, attach the file, then submit — so a FILE
-			// submission is never SUBMITTED without a file (drafts stay file-less).
 			if (data.contentFormat === "FILE") {
-				if (!data.isDraft && !data.file) {
-					return {
-						success: false,
-						error: "A file is required.",
-						issues: [{ path: ["file"], message: "A file is required." }],
-					};
-				}
-				// Validate the file upfront so an invalid upload never creates a record.
-				if (data.file) {
-					const config = await getSetting(SUBMISSION_TYPE_TO_KEY[data.type]);
-					const valid = await validateUploadFile(data.file, config);
-					if (!valid.ok) return { success: false, error: valid.error };
-				}
-				const submission = await createNewSubmission(
-					data,
-					context.user.id,
-					true,
-				);
-				if (data.file) {
-					const attached = await attachFileToVersion({
-						submissionId: submission.id,
-						versionNumber: 1,
-						file: data.file,
-						userId: context.user.id,
-					});
-					if (!attached.success) {
-						return { success: false, error: attached.error };
-					}
-				}
-				if (!data.isDraft) {
-					const submitted = await submitDraft(submission.id, context.user.id);
-					if (!submitted.success) {
-						return {
-							success: false,
-							error: submitted.error ?? "Failed to submit submission.",
-						};
-					}
-				}
-				return { success: true, id: submission.id };
+				return await createFileSubmission(data, context.user.id);
 			}
-
 			const submission = await createNewSubmission(
 				data,
 				context.user.id,
