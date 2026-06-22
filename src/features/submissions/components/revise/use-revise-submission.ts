@@ -6,48 +6,39 @@ import {
 	invalidateSubmissionCaches,
 	resubmitSubmissionFn,
 	submitConditionalRevisionFn,
-	uploadSubmissionFile,
 } from "@/features/submissions/api/submissions";
 import { buildRevisionRequest, type RevisionFormData } from "./revise-helpers";
 
 interface UseReviseSubmissionArgs {
 	id: string;
 	isConditional: boolean;
-	isFileFormat: boolean;
-}
-
-/** Uploads a revised file; surfaces its own toast on failure. No-op without a file. */
-async function uploadRevisionFile(
-	id: string,
-	versionNumber: number,
-	file: File | null,
-): Promise<void> {
-	if (!file) return;
-	try {
-		const uploadData = new FormData();
-		uploadData.append("file", file);
-		uploadData.append("submissionId", id);
-		uploadData.append("versionNumber", String(versionNumber));
-		const uploadResult = await uploadSubmissionFile({ data: uploadData });
-		if (!uploadResult.success) {
-			toast.error(
-				`Revision saved but file upload failed: ${uploadResult.error}`,
-			);
-		}
-	} catch {
-		toast.error("File upload failed");
-	}
 }
 
 function notifyResubmitError(error?: string) {
 	toast.error(error ?? "Resubmission failed");
 }
 
-/** Owns the resubmit / conditional-revision flow: submit, optional file upload, cache invalidation, navigation. */
+/** Builds the revision multipart payload (JSON fields + the new file). */
+function buildRevisionFormData(
+	id: string,
+	formData: RevisionFormData,
+): FormData {
+	const req = buildRevisionRequest(id, formData);
+	const fd = new FormData();
+	fd.append("submissionId", req.submissionId);
+	fd.append("title", req.title);
+	fd.append("content", req.content);
+	if (req.comment) fd.append("comment", req.comment);
+	fd.append("authors", JSON.stringify(req.authors));
+	fd.append("keywords", JSON.stringify(req.keywords));
+	if (formData.file) fd.append("file", formData.file);
+	return fd;
+}
+
+/** Owns the resubmit / conditional-revision flow: submit (file travels with it), cache invalidation, navigation. */
 export function useReviseSubmission({
 	id,
 	isConditional,
-	isFileFormat,
 }: UseReviseSubmissionArgs) {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
@@ -60,16 +51,12 @@ export function useReviseSubmission({
 		setIsSubmitting(true);
 		try {
 			const result = await submitFn({
-				data: buildRevisionRequest(id, formData),
+				data: buildRevisionFormData(id, formData),
 			});
 
 			if (!result.success) {
 				notifyResubmitError(result.error);
 				return;
-			}
-
-			if (isFileFormat) {
-				await uploadRevisionFile(id, result.versionNumber, formData.file);
 			}
 
 			toast.success("Revision submitted successfully");

@@ -8,6 +8,7 @@ import {
 	getSetting,
 	getSettings,
 } from "@/features/settings/server/settings";
+import { SUBMISSION_TYPE_TO_KEY } from "@/features/settings/types";
 import { enqueueRevisionNormalize } from "@/features/submission-diff/server/enqueue-revision";
 import {
 	createNewSubmission,
@@ -61,8 +62,29 @@ const inputSchema = z.object({
 	contentFormat: z.enum(["TEXT", "FILE"]),
 	trackId: z.uuid().nullish(),
 	isDraft: z.boolean().optional(),
-	// File upload handled separately via FormData
+	// File travels with the create call (FormData) so a FILE submission can be
+	// validated + attached atomically; optional for drafts.
+	file: z.instanceof(File).nullish(),
 });
+
+/** Parse the create-submission multipart payload (JSON fields + optional file). */
+function parseCreateSubmissionFormData(data: FormData) {
+	const authorsRaw = data.get("authors");
+	const keywordsRaw = data.get("keywords");
+	const trackId = data.get("trackId");
+	const file = data.get("file");
+	return inputSchema.parse({
+		type: data.get("type"),
+		title: data.get("title"),
+		content: data.get("content"),
+		authors: JSON.parse(typeof authorsRaw === "string" ? authorsRaw : "[]"),
+		keywords: JSON.parse(typeof keywordsRaw === "string" ? keywordsRaw : "[]"),
+		contentFormat: data.get("contentFormat"),
+		trackId: typeof trackId === "string" && trackId.length > 0 ? trackId : null,
+		isDraft: data.get("isDraft") === "true",
+		file: file instanceof File ? file : null,
+	});
+}
 
 export type SubmissionResult =
 	| { success: true; id: string }
@@ -101,7 +123,7 @@ async function getValidationLimits(): Promise<ValidationLimits> {
 
 export const createSubmission = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.validator(inputSchema)
+	.validator(parseCreateSubmissionFormData)
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
 		const [submissionDeadline, submissionsLocked, timezone, lateAllowed] =
 			await Promise.all([
@@ -158,6 +180,51 @@ export const createSubmission = createServerFn({ method: "POST" })
 		}
 
 		try {
+			// FILE submissions must carry a file before they can be submitted.
+			// Create as a draft, attach the file, then submit — so a FILE
+			// submission is never SUBMITTED without a file (drafts stay file-less).
+			if (data.contentFormat === "FILE") {
+				if (!data.isDraft && !data.file) {
+					return {
+						success: false,
+						error: "A file is required.",
+						issues: [{ path: ["file"], message: "A file is required." }],
+					};
+				}
+				// Validate the file upfront so an invalid upload never creates a record.
+				if (data.file) {
+					const config = await getSetting(SUBMISSION_TYPE_TO_KEY[data.type]);
+					const valid = await validateUploadFile(data.file, config);
+					if (!valid.ok) return { success: false, error: valid.error };
+				}
+				const submission = await createNewSubmission(
+					data,
+					context.user.id,
+					true,
+				);
+				if (data.file) {
+					const attached = await attachFileToVersion({
+						submissionId: submission.id,
+						versionNumber: 1,
+						file: data.file,
+						userId: context.user.id,
+					});
+					if (!attached.success) {
+						return { success: false, error: attached.error };
+					}
+				}
+				if (!data.isDraft) {
+					const submitted = await submitDraft(submission.id, context.user.id);
+					if (!submitted.success) {
+						return {
+							success: false,
+							error: submitted.error ?? "Failed to submit submission.",
+						};
+					}
+				}
+				return { success: true, id: submission.id };
+			}
+
 			const submission = await createNewSubmission(
 				data,
 				context.user.id,
@@ -221,7 +288,157 @@ async function maybeEnqueueDiffNormalize(
 	}).catch(() => {});
 }
 
-/** File upload endpoint for FILE-based submissions */
+/**
+ * Magic-number validation of an uploaded file against a submission type's config.
+ * Use it to reject before mutating any record; `attachFileToVersion` revalidates
+ * on the actual upload path.
+ */
+async function validateUploadFile(
+	file: File,
+	config: { allowedExtensions: string[]; maxFileSizeMb?: number },
+): Promise<{ ok: true } | { ok: false; error: string }> {
+	const allowedExtensions =
+		config.allowedExtensions.length > 0
+			? config.allowedExtensions
+			: SUPPORTED_FILE_EXTENSIONS;
+	const maxBytes = (config.maxFileSizeMb ?? 10) * 1024 * 1024;
+	try {
+		await validateUpload(await fileToBuffer(file), {
+			allowedExtensions,
+			maxBytes,
+		});
+		return { ok: true };
+	} catch (error) {
+		if (error instanceof UploadValidationError) {
+			return { ok: false, error: error.message };
+		}
+		throw error;
+	}
+}
+
+/**
+ * Validates an uploaded buffer (by magic number) and attaches it to the
+ * submission's current version: uploads to S3, creates the File record, swaps
+ * out any previous file, and kicks off diff normalization. Shared by the
+ * create, revise, and re-upload server fns so the file path lives in one place.
+ */
+// fallow-ignore-next-line complexity -- single owner of the upload pipeline; extracted from uploadSubmissionFile
+async function attachFileToVersion(params: {
+	submissionId: string;
+	versionNumber: number;
+	file: File;
+	userId: string;
+}): Promise<SubmissionResult> {
+	const { submissionId, versionNumber, file, userId } = params;
+
+	// Verify submission belongs to user
+	const submission = await prisma.submission.findFirst({
+		where: { id: submissionId, userId },
+		include: {
+			currentVersion: true,
+			authors: {
+				select: { firstName: true, lastName: true },
+				orderBy: { orderIndex: "asc" },
+			},
+		},
+	});
+
+	if (!submission) {
+		return { success: false, error: "Submission not found" };
+	}
+
+	const fileName = file.name;
+	const buffer = await fileToBuffer(file);
+
+	// Validate the real file type by magic number against the allowed
+	// extensions for this submission's type — never trust the client mime.
+	const activeTypes = await getActiveSubmissionTypes();
+	const typeConfig = activeTypes.find(
+		(t) => t.type === submission.type,
+	)?.config;
+	const allowedExtensions =
+		typeConfig && typeConfig.allowedExtensions.length > 0
+			? typeConfig.allowedExtensions
+			: SUPPORTED_FILE_EXTENSIONS;
+	const maxBytes = (typeConfig?.maxFileSizeMb ?? 10) * 1024 * 1024;
+
+	let detected: { ext: string; mime: string };
+	try {
+		detected = await validateUpload(buffer, { allowedExtensions, maxBytes });
+	} catch (error) {
+		if (error instanceof UploadValidationError) {
+			return { success: false, error: error.message };
+		}
+		throw error;
+	}
+
+	// Display name shown in the system reflects the authors, not the uploaded
+	// file name. The S3 key and fileName keep the real uploaded name.
+	const dotIndex = fileName.lastIndexOf(".");
+	const uploadedExt =
+		dotIndex >= 0 ? fileName.slice(dotIndex + 1) : detected.ext;
+	const displayName =
+		submission.authors.length > 0
+			? generateAuthorFileName(submission.authors, uploadedExt)
+			: fileName;
+
+	const storageKey = generateSubmissionFileKey(
+		submissionId,
+		versionNumber,
+		fileName,
+	);
+
+	// Upload to S3 with the detected (trustworthy) mime type
+	await uploadFile(buffer, storageKey, detected.mime);
+
+	// Create file record
+	const fileRecord = await prisma.file.create({
+		data: {
+			entityType: "SUBMISSION_VERSION",
+			entityId: submission.currentVersion?.id ?? submission.id,
+			type: "SUBMISSION_MAIN",
+			storageKey,
+			fileName,
+			originalName: displayName,
+			mimeType: detected.mime,
+			size: buffer.length,
+			uploadedById: userId,
+		},
+	});
+
+	// Update submission version with file reference
+	if (submission.currentVersion) {
+		// Delete old file if re-uploading
+		if (submission.currentVersion.fileId) {
+			const oldFile = await prisma.file.findUnique({
+				where: { id: submission.currentVersion.fileId },
+				select: { storageKey: true },
+			});
+			if (oldFile) {
+				await deleteFile(oldFile.storageKey).catch(() => {});
+				await prisma.file.delete({
+					where: { id: submission.currentVersion.fileId },
+				});
+			}
+		}
+		await prisma.submissionVersion.update({
+			where: { id: submission.currentVersion.id },
+			data: { fileId: fileRecord.id },
+		});
+
+		await maybeEnqueueDiffNormalize(detected.ext, {
+			submissionId,
+			currentVersionNumber: submission.currentVersion.version,
+			storageKey,
+			fileName,
+			fileId: fileRecord.id,
+		});
+	}
+
+	return { success: true, id: fileRecord.id };
+}
+
+/** File upload endpoint for FILE-based submissions (re-upload on an existing draft). */
 export const uploadSubmissionFile = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.validator((data: FormData) =>
@@ -237,114 +454,13 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 				file: getUploadedFile(data),
 			}),
 	)
-	// fallow-ignore-next-line complexity -- pre-existing upload handler, re-flagged on edit
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
-		// Verify submission belongs to user
-		const submission = await prisma.submission.findFirst({
-			where: { id: data.submissionId, userId: context.user.id },
-			include: {
-				currentVersion: true,
-				authors: {
-					select: { firstName: true, lastName: true },
-					orderBy: { orderIndex: "asc" },
-				},
-			},
+		return attachFileToVersion({
+			submissionId: data.submissionId,
+			versionNumber: data.versionNumber,
+			file: data.file,
+			userId: context.user.id,
 		});
-
-		if (!submission) {
-			return { success: false, error: "Submission not found" };
-		}
-
-		const fileName = data.file.name;
-		const buffer = await fileToBuffer(data.file);
-
-		// Validate the real file type by magic number against the allowed
-		// extensions for this submission's type — never trust the client mime.
-		const activeTypes = await getActiveSubmissionTypes();
-		const typeConfig = activeTypes.find(
-			(t) => t.type === submission.type,
-		)?.config;
-		const allowedExtensions =
-			typeConfig && typeConfig.allowedExtensions.length > 0
-				? typeConfig.allowedExtensions
-				: SUPPORTED_FILE_EXTENSIONS;
-		const maxBytes = (typeConfig?.maxFileSizeMb ?? 10) * 1024 * 1024;
-
-		let detected: { ext: string; mime: string };
-		try {
-			detected = await validateUpload(buffer, { allowedExtensions, maxBytes });
-		} catch (error) {
-			if (error instanceof UploadValidationError) {
-				return { success: false, error: error.message };
-			}
-			throw error;
-		}
-
-		// Display name shown in the system reflects the authors, not the uploaded
-		// file name. The S3 key and fileName keep the real uploaded name.
-		const dotIndex = fileName.lastIndexOf(".");
-		const uploadedExt =
-			dotIndex >= 0 ? fileName.slice(dotIndex + 1) : detected.ext;
-		const displayName =
-			submission.authors.length > 0
-				? generateAuthorFileName(submission.authors, uploadedExt)
-				: fileName;
-
-		// Generate storage key
-		const storageKey = generateSubmissionFileKey(
-			data.submissionId,
-			data.versionNumber,
-			fileName,
-		);
-
-		// Upload to S3 with the detected (trustworthy) mime type
-		await uploadFile(buffer, storageKey, detected.mime);
-
-		// Create file record
-		const file = await prisma.file.create({
-			data: {
-				entityType: "SUBMISSION_VERSION",
-				entityId: submission.currentVersion?.id ?? submission.id,
-				type: "SUBMISSION_MAIN",
-				storageKey,
-				fileName,
-				originalName: displayName,
-				mimeType: detected.mime,
-				size: buffer.length,
-				uploadedById: context.user.id,
-			},
-		});
-
-		// Update submission version with file reference
-		if (submission.currentVersion) {
-			// Delete old file if re-uploading
-			if (submission.currentVersion.fileId) {
-				const oldFile = await prisma.file.findUnique({
-					where: { id: submission.currentVersion.fileId },
-					select: { storageKey: true },
-				});
-				if (oldFile) {
-					await deleteFile(oldFile.storageKey).catch(() => {});
-					await prisma.file.delete({
-						where: { id: submission.currentVersion.fileId },
-					});
-				}
-			}
-			await prisma.submissionVersion.update({
-				where: { id: submission.currentVersion.id },
-				data: { fileId: file.id },
-			});
-
-			await maybeEnqueueDiffNormalize(detected.ext, {
-				submissionId: data.submissionId,
-				currentVersionNumber: submission.currentVersion.version,
-				storageKey,
-				fileName,
-				fileId: file.id,
-			});
-		}
-
-		return { success: true, id: file.id };
 	});
 
 /** Get current user's submissions */
@@ -362,69 +478,132 @@ export const getSubmissionByIdFn = createServerFn({ method: "GET" })
 		return getSubmissionById(data.submissionId, context.user.id);
 	});
 
+const revisionInputSchema = z.object({
+	submissionId: z.uuid(),
+	title: z.string(),
+	content: z.string(),
+	comment: z.string().optional(),
+	authors: z.array(authorSchema),
+	keywords: z.array(z.string()),
+	// A revision always carries its new file (FormData); required for FILE types.
+	file: z.instanceof(File).nullish(),
+});
+
+/** Parse the revision multipart payload (JSON fields + new file). */
+function parseRevisionFormData(data: FormData) {
+	const authorsRaw = data.get("authors");
+	const keywordsRaw = data.get("keywords");
+	const comment = data.get("comment");
+	const file = data.get("file");
+	return revisionInputSchema.parse({
+		submissionId: data.get("submissionId"),
+		title: data.get("title"),
+		content: data.get("content"),
+		comment:
+			typeof comment === "string" && comment.length > 0 ? comment : undefined,
+		authors: JSON.parse(typeof authorsRaw === "string" ? authorsRaw : "[]"),
+		keywords: JSON.parse(typeof keywordsRaw === "string" ? keywordsRaw : "[]"),
+		file: file instanceof File ? file : null,
+	});
+}
+
+type RevisionResult = {
+	success: boolean;
+	versionNumber: number;
+	error?: string;
+};
+
+/**
+ * Gates a revision on its file: FILE-format submissions require a valid new file
+ * (validated upfront so we never transition to a file-less/invalid revision),
+ * then runs the version-creating `run()` and attaches the file to it.
+ */
+async function reviseWithFile(
+	submissionId: string,
+	userId: string,
+	file: File | null,
+	run: () => Promise<RevisionResult>,
+): Promise<RevisionResult> {
+	const submission = await prisma.submission.findFirst({
+		where: { id: submissionId, userId },
+		select: { type: true },
+	});
+	if (!submission) {
+		return { success: false, versionNumber: 0, error: "Submission not found" };
+	}
+
+	const config = await getSetting(SUBMISSION_TYPE_TO_KEY[submission.type]);
+	if (config.contentFormat === "FILE") {
+		if (!file) {
+			return { success: false, versionNumber: 0, error: "A file is required." };
+		}
+		const valid = await validateUploadFile(file, config);
+		if (!valid.ok) {
+			return { success: false, versionNumber: 0, error: valid.error };
+		}
+	}
+
+	const result = await run();
+	if (!result.success) return result;
+
+	if (file) {
+		const attached = await attachFileToVersion({
+			submissionId,
+			versionNumber: result.versionNumber,
+			file,
+			userId,
+		});
+		if (!attached.success) {
+			return {
+				success: false,
+				versionNumber: result.versionNumber,
+				error: attached.error,
+			};
+		}
+	}
+
+	return result;
+}
+
 /** Resubmit a submission with revisions */
 export const resubmitSubmissionFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.validator(
-		z.object({
-			submissionId: z.uuid(),
-			title: z.string(),
-			content: z.string(),
-			comment: z.string().optional(),
-			authors: z.array(authorSchema),
-			keywords: z.array(z.string()),
-		}),
-	)
-	.handler(
-		async ({
-			data,
-			context,
-		}): Promise<{
-			success: boolean;
-			versionNumber: number;
-			error?: string;
-		}> => {
-			return resubmitSubmission(data.submissionId, context.user.id, {
-				title: data.title,
-				content: data.content,
-				comment: data.comment,
-				authors: data.authors,
-				keywords: data.keywords,
-			});
-		},
-	);
+	.validator(parseRevisionFormData)
+	.handler(async ({ data, context }): Promise<RevisionResult> => {
+		return reviseWithFile(
+			data.submissionId,
+			context.user.id,
+			data.file ?? null,
+			() =>
+				resubmitSubmission(data.submissionId, context.user.id, {
+					title: data.title,
+					content: data.content,
+					comment: data.comment,
+					authors: data.authors,
+					keywords: data.keywords,
+				}),
+		);
+	});
 
 /** Submit a revised version while conditionally accepted (no new review round) */
 export const submitConditionalRevisionFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.validator(
-		z.object({
-			submissionId: z.uuid(),
-			title: z.string(),
-			content: z.string(),
-			comment: z.string().optional(),
-			authors: z.array(authorSchema),
-			keywords: z.array(z.string()),
-		}),
-	)
-	.handler(
-		async ({
-			data,
-			context,
-		}): Promise<{
-			success: boolean;
-			versionNumber: number;
-			error?: string;
-		}> => {
-			return submitConditionalRevision(data.submissionId, context.user.id, {
-				title: data.title,
-				content: data.content,
-				comment: data.comment,
-				authors: data.authors,
-				keywords: data.keywords,
-			});
-		},
-	);
+	.validator(parseRevisionFormData)
+	.handler(async ({ data, context }): Promise<RevisionResult> => {
+		return reviseWithFile(
+			data.submissionId,
+			context.user.id,
+			data.file ?? null,
+			() =>
+				submitConditionalRevision(data.submissionId, context.user.id, {
+					title: data.title,
+					content: data.content,
+					comment: data.comment,
+					authors: data.authors,
+					keywords: data.keywords,
+				}),
+		);
+	});
 
 /** Update a draft/submitted submission */
 export const updateDraftSubmissionFn = createServerFn({ method: "POST" })

@@ -237,10 +237,11 @@ test.describe.serial("File Upload — server-side magic-number validation", () =
 		test.slow();
 		await submitSpoofedFile(submissionPage, testRun.testRunId, "spoofed.pdf");
 
-		// Server refused the upload despite the .pdf name
+		// Server refused the upload despite the .pdf name; nothing was created.
 		await expect(
-			submissionPage.page.getByText(/file upload failed/i),
+			submissionPage.page.getByText(/unrecognized file format/i),
 		).toBeVisible({ timeout: 60000 });
+		await expect(submissionPage.page).toHaveURL(/\/submissions\/new/);
 	});
 
 	test("rejects an image disguised as .pdf", async ({
@@ -250,8 +251,10 @@ test.describe.serial("File Upload — server-side magic-number validation", () =
 		test.slow();
 		await submitSpoofedFile(submissionPage, testRun.testRunId, "image.pdf");
 
+		// Server refused the upload despite the .pdf name; nothing was created.
 		await expect(
-			submissionPage.page.getByText(/file upload failed/i),
+			submissionPage.page.getByText(/is not allowed/i),
 		).toBeVisible({ timeout: 60000 });
+		await expect(submissionPage.page).toHaveURL(/\/submissions\/new/);
 	});
 });

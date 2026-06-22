@@ -68,7 +68,6 @@ function ReviseSubmissionPage() {
 	const { isSubmitting, submitRevision } = useReviseSubmission({
 		id,
 		isConditional: view.isConditional,
-		isFileFormat: view.isFileFormat,
 	});
 
 	if (!data) return <CannotReviseScreen kind="not-found" id={id} />;
@@ -270,9 +269,7 @@ function RevisionForm({
 									maxSize={maxFileSize}
 								/>
 								<p className="text-xs text-muted-foreground">
-									{currentFile
-										? "Upload a new file to replace the current one, or leave empty to keep the existing file."
-										: `Accepted formats: ${acceptString.replace(/\./g, "").toUpperCase()}`}
+									{`A revised document is required. Accepted formats: ${acceptString.replace(/\./g, "").toUpperCase()}`}
 								</p>
 							</div>
 						) : (
@@ -340,7 +337,10 @@ function RevisionForm({
 						<Button
 							type="submit"
 							disabled={
-								isSubmitting || isExtracting || !revisionReady(title, authors)
+								isSubmitting ||
+								isExtracting ||
+								!revisionReady(title, authors) ||
+								(isFileFormat && !file)
 							}
 							className="w-full gap-2"
 						>

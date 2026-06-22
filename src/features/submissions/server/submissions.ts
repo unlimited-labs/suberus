@@ -1112,6 +1112,7 @@ export async function submitDraft(
 ): Promise<{ success: boolean; error?: string }> {
 	const submission = await prisma.submission.findFirst({
 		where: { id: submissionId, userId },
+		include: { currentVersion: { select: { fileId: true } } },
 	});
 
 	if (!submission) {
@@ -1120,6 +1121,12 @@ export async function submitDraft(
 
 	if (submission.status !== "DRAFT") {
 		return { success: false, error: "Submission is not a draft" };
+	}
+
+	// FILE submissions must have a file attached before they can be submitted.
+	const config = await getSetting(SUBMISSION_TYPE_TO_KEY[submission.type]);
+	if (config.contentFormat === "FILE" && !submission.currentVersion?.fileId) {
+		return { success: false, error: "A file is required before submitting." };
 	}
 
 	const result = await executeSubmissionTransition(

@@ -68,6 +68,28 @@ describe("buildSubmissionFormSchema", () => {
 			expect(result.success, `empty ${field} should fail`).toBe(false);
 		}
 	});
+
+	it("requires a file for FILE submissions", () => {
+		const result = schema.safeParse({ ...base, contentFormat: "FILE" });
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(result.error.issues.some((i) => i.path[0] === "file")).toBe(true);
+		}
+	});
+
+	it("accepts a FILE submission that has a file", () => {
+		const file = new File(["data"], "paper.pdf", { type: "application/pdf" });
+		expect(
+			schema.safeParse({ ...base, contentFormat: "FILE", file }).success,
+		).toBe(true);
+	});
+
+	it("relaxes the file requirement when one already exists (editing a FILE draft)", () => {
+		const editSchema = buildSubmissionFormSchema(settings, true);
+		expect(
+			editSchema.safeParse({ ...base, contentFormat: "FILE" }).success,
+		).toBe(true);
+	});
 });
 
 describe("buildContentSchema", () => {

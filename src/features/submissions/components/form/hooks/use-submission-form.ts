@@ -29,6 +29,8 @@ interface UseSubmissionFormArgs {
 	extractionEnabled?: boolean;
 	/** Active tracks loaded by the route; rendered only when track selection applies. */
 	availableTracks: AvailableTrack[];
+	/** A file is already attached server-side (editing a FILE draft) — relaxes the file requirement. */
+	hasExistingFile?: boolean;
 }
 
 type SubmissionType = "ABSTRACT" | "POSTER" | "FULL_PAPER";
@@ -47,20 +49,23 @@ export function useSubmissionForm({
 	guidelines,
 	extractionEnabled,
 	availableTracks,
+	hasExistingFile = false,
 }: UseSubmissionFormArgs) {
 	const [isSavingDraft, setIsSavingDraft] = useState(false);
 	const { user } = useSession();
 
-	const defaultType = typeConfigs[0]?.type || "ABSTRACT";
-	const defaultConfig = typeConfigs[0]?.config;
+	// Seed from the edited submission's type (initialData) when present, so the
+	// form's contentFormat matches it — not the first active type.
+	const initialType = initialData?.type ?? typeConfigs[0]?.type ?? "ABSTRACT";
+	const initialConfig =
+		typeConfigs.find((t) => t.type === initialType)?.config ??
+		typeConfigs[0]?.config;
 
-	const [selectedType, setSelectedType] = useState<SubmissionType>(
-		initialData?.type || defaultType,
-	);
+	const [selectedType, setSelectedType] = useState<SubmissionType>(initialType);
 
 	const submissionSchema = useMemo(
-		() => buildSubmissionFormSchema(validationSettings),
-		[validationSettings],
+		() => buildSubmissionFormSchema(validationSettings, hasExistingFile),
+		[validationSettings, hasExistingFile],
 	);
 	const contentSchema = useMemo(
 		() => buildContentSchema(validationSettings),
@@ -74,8 +79,8 @@ export function useSubmissionForm({
 	const form = useAppForm({
 		defaultValues: buildSubmissionDefaultValues(
 			initialData,
-			defaultType,
-			defaultConfig,
+			initialType,
+			initialConfig,
 		),
 		validators: {
 			onChange: submissionSchema,

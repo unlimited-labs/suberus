@@ -154,6 +154,7 @@ export function FileDropzone({
 						variant="ghost"
 						onClick={handleRemove}
 						aria-label="Remove file"
+						data-testid="remove-file-button"
 					>
 						<IconX className="size-4" />
 					</Button>

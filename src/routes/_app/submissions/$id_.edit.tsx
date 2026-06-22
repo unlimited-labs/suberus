@@ -96,6 +96,12 @@ function EditSubmissionPage() {
 
 	const isDraft = submission.status === "DRAFT";
 
+	// A FILE draft may already have a file attached (uploaded on an earlier save);
+	// relax the form's file requirement so a metadata-only edit isn't blocked.
+	const hasExistingFile = data.versions.some(
+		(v) => v.version === submission.currentVersion && v.file !== null,
+	);
+
 	const initialData: Partial<SubmissionFormData> = {
 		type: submission.type,
 		title: submission.title,
@@ -214,6 +220,7 @@ function EditSubmissionPage() {
 					guidelines={submissionGuidelines}
 					extractionEnabled={extractionSettings.enabled}
 					availableTracks={availableTracks}
+					hasExistingFile={hasExistingFile}
 				/>
 			</div>
 		</div>

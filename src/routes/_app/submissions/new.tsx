@@ -22,7 +22,6 @@ import {
 import {
 	createSubmission,
 	mySubmissionsQueryOptions,
-	uploadSubmissionFile,
 } from "@/features/submissions/api/submissions";
 import {
 	SubmissionForm,
@@ -73,21 +72,25 @@ async function runCreateSubmission(
 	data: SubmissionFormData,
 	isDraft: boolean,
 ): Promise<{ id: string } | null> {
+	// FormData so the file (for FILE types) travels with the create call and is
+	// validated + attached atomically server-side.
+	const formData = new FormData();
+	formData.append("type", data.type);
+	formData.append("title", data.title);
+	formData.append("content", data.content);
+	formData.append("authors", JSON.stringify(data.authors));
+	formData.append("keywords", JSON.stringify(data.keywords));
+	formData.append("contentFormat", data.contentFormat);
+	if (data.trackId) formData.append("trackId", data.trackId);
+	formData.append("isDraft", String(isDraft));
+	if (data.contentFormat === "FILE" && data.file) {
+		formData.append("file", data.file);
+	}
+
 	let result: Awaited<ReturnType<typeof createSubmission>>;
 	try {
 		result = await Promise.race([
-			createSubmission({
-				data: {
-					type: data.type,
-					title: data.title,
-					content: data.content,
-					authors: data.authors,
-					keywords: data.keywords,
-					contentFormat: data.contentFormat,
-					trackId: data.trackId,
-					isDraft,
-				},
-			}),
+			createSubmission({ data: formData }),
 			new Promise<never>((_, reject) =>
 				setTimeout(() => reject(new Error("Request timed out")), 60_000),
 			),
@@ -103,38 +106,6 @@ async function runCreateSubmission(
 		return null;
 	}
 	return { id: result.id };
-}
-
-async function uploadSubmissionFileSafe(
-	file: File,
-	submissionId: string,
-	isDraft: boolean,
-): Promise<void> {
-	try {
-		const formData = new FormData();
-		formData.append("file", file);
-		formData.append("submissionId", submissionId);
-		formData.append("versionNumber", "1");
-
-		const uploadResult = await uploadSubmissionFile({ data: formData });
-		if (!uploadResult.success) {
-			toast.error(
-				`${isDraft ? "Draft saved" : "Submission created"} but file upload failed: ${uploadResult.error}`,
-			);
-		}
-	} catch (e) {
-		await logClientError("[submission] file upload failed", e);
-		toast.error("File upload failed");
-	}
-}
-
-async function uploadFileIfNeeded(
-	data: SubmissionFormData,
-	submissionId: string,
-	isDraft: boolean,
-): Promise<void> {
-	if (data.contentFormat !== "FILE" || !data.file) return;
-	await uploadSubmissionFileSafe(data.file, submissionId, isDraft);
 }
 
 function NewSubmissionPage() {
@@ -192,8 +163,6 @@ function NewSubmissionPage() {
 	) => {
 		const created = await runCreateSubmission(data, isDraft);
 		if (!created) return;
-
-		await uploadFileIfNeeded(data, created.id, isDraft);
 
 		toast.success(isDraft ? "Draft saved" : "Submission created successfully");
 		await Promise.all([

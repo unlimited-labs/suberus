@@ -40,6 +40,8 @@ interface SubmissionFormProps {
 	guidelines?: string;
 	extractionEnabled?: boolean;
 	availableTracks: AvailableTrack[];
+	/** A file is already attached server-side (editing a FILE draft) — relaxes the file requirement. */
+	hasExistingFile?: boolean;
 }
 
 export function SubmissionForm(props: SubmissionFormProps) {
