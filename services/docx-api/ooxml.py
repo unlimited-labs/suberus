@@ -57,11 +57,5 @@ class AmbiguityMap:
             return
         self._d[key] = value
 
-    def get(self, key, default=None):
-        return self._d.get(key, default)
-
-    def __contains__(self, key) -> bool:
-        return key in self._d
-
     def as_dict(self) -> dict:
         return self._d
