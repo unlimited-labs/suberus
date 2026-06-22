@@ -33,3 +33,39 @@ export async function requestOrThrow(
 	}
 	return res;
 }
+
+/** Resolve a sidecar base URL from its configured value, stripping trailing slashes. */
+export function sidecarBase(url: string | undefined, envName: string): string {
+	if (!url) throw new Error(`${envName} is not configured`);
+	return url.replace(/\/+$/, "");
+}
+
+/** GET the sidecar's `/` health doc (cheap, no conversion). */
+export async function sidecarHealth<T>(base: string, name: string): Promise<T> {
+	const res = await requestOrThrow(
+		`${base}/`,
+		{},
+		`${name} health`,
+		SIDECAR_TIMEOUT_MS.health,
+	);
+	return (await res.json()) as T;
+}
+
+/** POST a file to a sidecar endpoint and return the response body bytes. */
+export async function sidecarNormalize(
+	base: string,
+	endpoint: string,
+	errorPrefix: string,
+	bytes: Buffer,
+	fileName: string,
+): Promise<Buffer> {
+	const form = new FormData();
+	form.append("file", new Blob([new Uint8Array(bytes)]), fileName);
+	const res = await requestOrThrow(
+		`${base}${endpoint}`,
+		{ method: "POST", body: form },
+		errorPrefix,
+		SIDECAR_TIMEOUT_MS.normalize,
+	);
+	return Buffer.from(await res.arrayBuffer());
+}

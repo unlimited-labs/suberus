@@ -1,11 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-	type DiffSegment,
-	diffStats,
-	diffText,
-	fileChanged,
-	hasChanges,
-} from "./text-diff";
+import { type DiffSegment, diffText, fileChanged } from "./text-diff";
 
 const join = (segments: DiffSegment[], type: DiffSegment["type"]) =>
 	segments
@@ -29,14 +23,12 @@ describe("diffText", () => {
 	it("returns a single equal segment for identical text", () => {
 		const segs = diffText("hello world", "hello world");
 		expect(segs).toEqual([{ type: "equal", value: "hello world" }]);
-		expect(hasChanges(segs)).toBe(false);
 	});
 
 	it("marks a replaced word with both a deletion and an insertion", () => {
 		const oldText = "The model presents an approach.";
 		const newText = "The model proposes an approach.";
 		const segs = diffText(oldText, newText);
-		expect(hasChanges(segs)).toBe(true);
 		expect(join(segs, "delete").length).toBeGreaterThan(0);
 		expect(join(segs, "insert").length).toBeGreaterThan(0);
 		// Unchanged surrounding context is preserved verbatim.
@@ -64,17 +56,6 @@ describe("diffText", () => {
 		expect(diffText("", "")).toEqual([]);
 		expect(join(diffText("", "added"), "insert")).toBe("added");
 		expect(join(diffText("removed", ""), "delete")).toBe("removed");
-	});
-});
-
-describe("diffStats", () => {
-	it("counts inserted and deleted characters", () => {
-		const segs: DiffSegment[] = [
-			{ type: "equal", value: "ab" },
-			{ type: "delete", value: "XYZ" },
-			{ type: "insert", value: "12" },
-		];
-		expect(diffStats(segs)).toEqual({ insertions: 2, deletions: 3 });
 	});
 });
 

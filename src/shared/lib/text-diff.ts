@@ -7,11 +7,6 @@ export interface DiffSegment {
 	value: string;
 }
 
-export interface DiffStats {
-	insertions: number;
-	deletions: number;
-}
-
 /**
  * Character-level diff with semantic cleanup (Google-Docs-style readable chunks).
  * Uses diff-match-patch rather than jsdiff: on document-scale input jsdiff's
@@ -33,22 +28,6 @@ export function diffText(oldText: string, newText: string): DiffSegment[] {
 					: "equal",
 		value,
 	}));
-}
-
-/** Count of changed characters, split by direction. */
-export function diffStats(segments: DiffSegment[]): DiffStats {
-	let insertions = 0;
-	let deletions = 0;
-	for (const seg of segments) {
-		if (seg.type === "insert") insertions += seg.value.length;
-		else if (seg.type === "delete") deletions += seg.value.length;
-	}
-	return { insertions, deletions };
-}
-
-/** Whether a diff contains any insertion or deletion. */
-export function hasChanges(segments: DiffSegment[]): boolean {
-	return segments.some((s) => s.type !== "equal");
 }
 
 /**

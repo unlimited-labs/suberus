@@ -1,12 +1,7 @@
 import { env } from "@/env";
-import { requestOrThrow, SIDECAR_TIMEOUT_MS } from "./http";
+import { sidecarBase, sidecarHealth, sidecarNormalize } from "./http";
 
-function baseUrl(): string {
-	if (!env.DOCLING_URL) {
-		throw new Error("DOCLING_URL is not configured");
-	}
-	return env.DOCLING_URL.replace(/\/+$/, "");
-}
+const base = () => sidecarBase(env.DOCLING_URL, "DOCLING_URL");
 
 export interface DoclingApiHealth {
 	/** The pandoc that converts docling markdown -> HTML (the artifact-key column). */
@@ -17,28 +12,17 @@ export interface DoclingApiHealth {
 }
 
 /** Toolchain versions for the artifact cache key (cheap, no conversion). */
-export async function doclingApiHealth(): Promise<DoclingApiHealth> {
-	const res = await requestOrThrow(
-		`${baseUrl()}/`,
-		{},
-		"docling-api health",
-		SIDECAR_TIMEOUT_MS.health,
-	);
-	return (await res.json()) as DoclingApiHealth;
+export function doclingApiHealth(): Promise<DoclingApiHealth> {
+	return sidecarHealth<DoclingApiHealth>(base(), "docling-api");
 }
 
 /** POST a PDF to docling-api and return the zip bundle bytes (document.html + figures). */
-export async function normalizePdf(
-	bytes: Buffer,
-	fileName: string,
-): Promise<Buffer> {
-	const form = new FormData();
-	form.append("file", new Blob([new Uint8Array(bytes)]), fileName);
-	const res = await requestOrThrow(
-		`${baseUrl()}/v1/bundle`,
-		{ method: "POST", body: form },
+export function normalizePdf(bytes: Buffer, fileName: string): Promise<Buffer> {
+	return sidecarNormalize(
+		base(),
+		"/v1/bundle",
 		"docling-api bundle",
-		SIDECAR_TIMEOUT_MS.normalize,
+		bytes,
+		fileName,
 	);
-	return Buffer.from(await res.arrayBuffer());
 }

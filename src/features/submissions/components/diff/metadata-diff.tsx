@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { SplitColumns } from "@/shared/components/diff/split-columns";
 import { diffList, type ListDiffStatus } from "@/shared/lib/list-diff";
 import { cn } from "@/shared/lib/utils";
 import type { CompareLayout } from "./version-compare";
@@ -73,44 +74,6 @@ function KeywordPill({
 				</span>
 			)}
 		</li>
-	);
-}
-
-/**
- * Two-column container mirroring `SideBySideDiffView`: base on the left, compare
- * on the right, each carrying the `diff-side-old` / `diff-side-new` testids and
- * the shared `side-by-side-diff` container so the layout-toggle e2e assertions
- * stay valid across every field.
- */
-function SplitColumns({
-	oldLabel,
-	newLabel,
-	oldChildren,
-	newChildren,
-}: {
-	oldLabel: string;
-	newLabel: string;
-	oldChildren: ReactNode;
-	newChildren: ReactNode;
-}) {
-	return (
-		<div data-testid="side-by-side-diff" className="grid gap-4 md:grid-cols-2">
-			<div data-testid="diff-side-old" className="space-y-2">
-				<div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-					{oldLabel}
-				</div>
-				{oldChildren}
-			</div>
-			<div
-				data-testid="diff-side-new"
-				className="space-y-2 md:border-l md:pl-4"
-			>
-				<div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-					{newLabel}
-				</div>
-				{newChildren}
-			</div>
-		</div>
 	);
 }
 

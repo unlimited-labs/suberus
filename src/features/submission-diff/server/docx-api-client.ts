@@ -1,12 +1,13 @@
 import { env } from "@/env";
-import { requestOrThrow, SIDECAR_TIMEOUT_MS } from "./http";
+import {
+	requestOrThrow,
+	SIDECAR_TIMEOUT_MS,
+	sidecarBase,
+	sidecarHealth,
+	sidecarNormalize,
+} from "./http";
 
-function baseUrl(): string {
-	if (!env.DOCX_API_URL) {
-		throw new Error("DOCX_API_URL is not configured");
-	}
-	return env.DOCX_API_URL.replace(/\/+$/, "");
-}
+const base = () => sidecarBase(env.DOCX_API_URL, "DOCX_API_URL");
 
 export interface DocxApiHealth {
 	pandocVersion: string | null;
@@ -17,30 +18,22 @@ export interface DocxApiHealth {
 }
 
 /** Toolchain versions for the artifact cache key (cheap, no conversion). */
-export async function docxApiHealth(): Promise<DocxApiHealth> {
-	const res = await requestOrThrow(
-		`${baseUrl()}/`,
-		{},
-		"docx-api health",
-		SIDECAR_TIMEOUT_MS.health,
-	);
-	return (await res.json()) as DocxApiHealth;
+export function docxApiHealth(): Promise<DocxApiHealth> {
+	return sidecarHealth<DocxApiHealth>(base(), "docx-api");
 }
 
 /** POST a DOCX to docx-api and return the zip bundle bytes. */
-export async function normalizeDocx(
+export function normalizeDocx(
 	bytes: Buffer,
 	fileName: string,
 ): Promise<Buffer> {
-	const form = new FormData();
-	form.append("file", new Blob([new Uint8Array(bytes)]), fileName);
-	const res = await requestOrThrow(
-		`${baseUrl()}/v1/normalize`,
-		{ method: "POST", body: form },
+	return sidecarNormalize(
+		base(),
+		"/v1/normalize",
 		"docx-api normalize",
-		SIDECAR_TIMEOUT_MS.normalize,
+		bytes,
+		fileName,
 	);
-	return Buffer.from(await res.arrayBuffer());
 }
 
 /**
@@ -53,7 +46,7 @@ export async function diffHtmlPair(
 	htmlB: string,
 ): Promise<string> {
 	const res = await requestOrThrow(
-		`${baseUrl()}/v1/diff`,
+		`${base()}/v1/diff`,
 		{
 			method: "POST",
 			headers: { "content-type": "application/json" },

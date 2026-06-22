@@ -1,6 +1,6 @@
 import { DiffDel, DiffIns } from "@/shared/components/diff/diff-marks";
+import { SplitColumns } from "@/shared/components/diff/split-columns";
 import type { DiffSegment } from "@/shared/lib/text-diff";
-import { cn } from "@/shared/lib/utils";
 
 interface SideBySideDiffViewProps {
 	segments: DiffSegment[];
@@ -26,14 +26,11 @@ export function SideBySideDiffView({
 	const newSegments = segments.filter((s) => s.type !== "delete");
 
 	return (
-		<div
-			data-testid="side-by-side-diff"
-			className={cn("grid gap-4 md:grid-cols-2", className)}
-		>
-			<div data-testid="diff-side-old" className="space-y-2">
-				<div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-					{oldLabel}
-				</div>
+		<SplitColumns
+			className={className}
+			oldLabel={oldLabel}
+			newLabel={newLabel}
+			oldChildren={
 				<div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
 					{oldSegments.map((seg, i) =>
 						seg.type === "delete" ? (
@@ -43,14 +40,8 @@ export function SideBySideDiffView({
 						),
 					)}
 				</div>
-			</div>
-			<div
-				data-testid="diff-side-new"
-				className="space-y-2 md:border-l md:pl-4"
-			>
-				<div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-					{newLabel}
-				</div>
+			}
+			newChildren={
 				<div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
 					{newSegments.map((seg, i) =>
 						seg.type === "insert" ? (
@@ -60,7 +51,7 @@ export function SideBySideDiffView({
 						),
 					)}
 				</div>
-			</div>
-		</div>
+			}
+		/>
 	);
 }
