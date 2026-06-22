@@ -53,6 +53,35 @@ anything it can't decode confidently (MTEF v3, matrices, accents, unknown glyphs
 as its fallback image. Recorded in `NORMALIZER_CONFIG` (`mathtype`) + `SCHEMA_VERSION`, so
 enabling it re-extracts artifacts under a new cache key rather than mutating history.
 
+## Regression baseline (golden tests)
+
+`test_baseline.py` / `test_diff_baseline.py` run representative `.docx` fixtures
+through the **real** pipeline (`_normalize` + `diff_html`) and pin the output —
+so a stack change (Pandoc/LibreOffice bump, schema change, dep update) shows up
+as a reviewable golden diff instead of silently altering conversions.
+
+- **Generated fixtures** (`test_fixtures/docs/`, via `test_fixtures/generate_fixtures.py`):
+  text formatting/alignment/fonts, lists (incl. paren-delimited), tables (`<th>`,
+  merges, centered cells), images, native Word equations (OMML), an embedded
+  real MathType OLE, headings/Title recovery, and a v1/v2 kitchen-sink for the
+  redline.
+- **Human-supplied fixtures** (`test_fixtures/real/` — see its README): autoshapes/
+  text boxes, EMF/WMF vector images, real MathType/Word equations. Tests skip
+  until the files exist.
+- Goldens live in `test_fixtures/golden/` (`*.html` with figure SHAs canonicalized
+  to ordinals, `*.css`, `*.figures.json` manifest, `*.redline.html`).
+
+These need Pandoc + LibreOffice, so run them in the pinned test image:
+
+```bash
+./run-tests.sh                          # run against committed goldens
+./run-tests.sh -e UPDATE_BASELINE=1     # refresh goldens after an intentional change, then review the diff
+./run-tests.sh gen                      # regenerate the generated .docx fixtures
+```
+
+(`run-tests.sh` builds the `test` Docker stage — same pinned toolchain + pytest +
+python-docx — and mounts this dir so golden updates write back.)
+
 ## Notes / TODO
 
 - `PANDOC_VERSION` is an `ARG` (default 3.5) — pin deliberately; it is recorded in

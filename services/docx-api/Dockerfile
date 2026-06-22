@@ -32,3 +32,14 @@ ENV PORT=8101
 EXPOSE 8101
 
 CMD ["python", "main.py"]
+
+# --------------------------------------------------------------------------- #
+# Test image: same pinned toolchain (Pandoc + LibreOffice) + test/gen deps.    #
+# Runs as root so golden updates write back through a mounted volume.          #
+#   docker build --target test -t suberus-docx-api-test .                      #
+#   docker run --rm -v "$PWD:/app" -w /app suberus-docx-api-test pytest -q     #
+# --------------------------------------------------------------------------- #
+FROM runtime AS test
+USER root
+RUN pip install --no-cache-dir "pytest==8.*" "python-docx==1.*"
+CMD ["pytest", "-q"]

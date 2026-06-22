@@ -13,5 +13,11 @@ dependencies = [
     "olefile",
 ]
 
+[project.optional-dependencies]
+# Test + fixture-generation deps. The baseline tests also need the system
+# binaries `pandoc` and `soffice` (LibreOffice) — run them in the `test` Docker
+# stage (see Dockerfile) which has the pinned toolchain.
+test = ["pytest", "python-docx"]
+
 # Runtime also requires the system binaries `pandoc` (pinned) and `soffice`
 # (LibreOffice) on PATH — see Dockerfile. Not Python packages.
