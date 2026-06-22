@@ -98,6 +98,10 @@ const CONFIG = {
 		"title",
 		"width",
 		"height",
+		// Ordered-list numbering style/start (e.g. pandoc's `<ol type="a">`) — safe
+		// attributes; without them a lettered Word list renders as plain "1.".
+		"type",
+		"start",
 	],
 	// Diff-substrate URIs: allow ONLY fragments, root-relative, and scheme-less
 	// RELATIVE paths (the content-addressed `figures/<sha>.png` refs). Any value

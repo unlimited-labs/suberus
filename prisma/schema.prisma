@@ -467,6 +467,9 @@ model SubmissionVersionArtifact {
   normalizerConfigHash String       @db.Char(64)
   schemaVersion        Int
   htmlKey              String
+  /// CAS key of the per-style CSS derived from the DOCX's own styles.xml (Word-faithful
+  /// rendering). Null for artifacts with no custom styles or pre-v4 normalizers.
+  cssKey               String?
   /// CAS shas of the figures this artifact references (figure liveness for the reaper).
   figureShas           String[]
   warnings             String?

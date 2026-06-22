@@ -21,6 +21,11 @@ export function redlineKey(sha: string): string {
 	return `${PREFIX}/redline/${sha}.html`;
 }
 
+/** CAS key for a per-style CSS blob (content-addressed by its sha). */
+export function cssKey(sha: string): string {
+	return `${PREFIX}/css/${sha}.css`;
+}
+
 /** Upload bytes to `key` only if absent — content-addressed, so writes are idempotent. */
 async function putIfAbsent(
 	key: string,
@@ -59,6 +64,22 @@ export async function persistHtml(html: string): Promise<string> {
 		htmlKey(sha256(buf)),
 		buf,
 		"text/html; charset=utf-8",
+	);
+	await trackCasObject(key, buf.length);
+	return key;
+}
+
+/**
+ * Persist per-style CSS to CAS (content-addressed). Returns the key, or null for
+ * empty CSS (a document with no custom styles) so the artifact stores no key.
+ */
+export async function persistCss(css: string): Promise<string | null> {
+	if (!css.trim()) return null;
+	const buf = Buffer.from(css, "utf8");
+	const key = await putIfAbsent(
+		cssKey(sha256(buf)),
+		buf,
+		"text/css; charset=utf-8",
 	);
 	await trackCasObject(key, buf.length);
 	return key;

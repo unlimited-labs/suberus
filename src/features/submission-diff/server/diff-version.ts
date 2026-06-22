@@ -125,6 +125,8 @@ export async function diffVersionArtifacts(
 
 export interface ResolvedHtml {
 	htmlKey: string;
+	/** CAS key of this version's per-style CSS (null when it has no custom styles). */
+	cssKey: string | null;
 	/** Source kind (DOCX/PDF) — a kind mismatch between sides = format change. */
 	kind: ArtifactKind;
 	/** Toolchain fingerprint — both sides of a diff MUST share it (gotcha C3). */
@@ -158,6 +160,7 @@ export async function resolveHtmlKeyForVersion(
 		orderBy: { createdAt: "desc" },
 		select: {
 			htmlKey: true,
+			cssKey: true,
 			pandocVersion: true,
 			normalizerConfigHash: true,
 			schemaVersion: true,
@@ -166,6 +169,7 @@ export async function resolveHtmlKeyForVersion(
 	if (!artifact) return null;
 	return {
 		htmlKey: artifact.htmlKey,
+		cssKey: artifact.cssKey,
 		kind,
 		toolchain: `${artifact.pandocVersion}|${artifact.normalizerConfigHash}|${artifact.schemaVersion}`,
 	};

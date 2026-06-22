@@ -18,6 +18,8 @@ export interface BundleMeta {
 
 export interface ParsedBundle {
 	html: string;
+	/** Per-style CSS derived from the DOCX's styles.xml ("" when absent/no styles). */
+	css: string;
 	/** sha256 (hex) -> PNG bytes, keyed by the bundle's `figures/<sha>.png` names. */
 	figures: Map<string, Buffer>;
 	meta: BundleMeta;
@@ -35,13 +37,15 @@ export function parseBundle(zip: Buffer): ParsedBundle {
 	}
 	const html = htmlEntry.getData().toString("utf8");
 	const meta = JSON.parse(metaEntry.getData().toString("utf8")) as BundleMeta;
+	// styles.css is optional (pre-v4 bundles / no custom styles): default to "".
+	const css = z.getEntry("styles.css")?.getData().toString("utf8") ?? "";
 
 	const figures = new Map<string, Buffer>();
 	for (const entry of z.getEntries()) {
 		const match = FIGURE_RE.exec(entry.entryName);
 		if (match) figures.set(match[1], entry.getData());
 	}
-	return { html, figures, meta };
+	return { html, css, figures, meta };
 }
 
 /**

@@ -4,6 +4,7 @@ import { chooseOldVersionId, classifyResolvedPair } from "./redline-resolve";
 
 const res = (over: Partial<ResolvedHtml> = {}): ResolvedHtml => ({
 	htmlKey: "version-diff/html/a.html",
+	cssKey: null,
 	kind: "DOCX",
 	toolchain: "pandoc|cfg|1",
 	...over,
@@ -31,12 +32,13 @@ describe("classifyResolvedPair", () => {
 	it("ready with both html keys when kind + toolchain match", () => {
 		const out = classifyResolvedPair(
 			res({ htmlKey: "old.html" }),
-			res({ htmlKey: "new.html" }),
+			res({ htmlKey: "new.html", cssKey: "new.css" }),
 		);
 		expect(out).toEqual({
 			status: "ready",
 			oldHtmlKey: "old.html",
 			newHtmlKey: "new.html",
+			newCssKey: "new.css",
 		});
 	});
 });

@@ -14,7 +14,14 @@ import type { ResolvedHtml } from "./diff-version";
  *  - `ready`: both normalized, same format + toolchain.
  */
 export type PairKeys =
-	| { status: "ready"; oldHtmlKey: string; newHtmlKey: string }
+	| {
+			status: "ready";
+			oldHtmlKey: string;
+			newHtmlKey: string;
+			/** CSS of the newer version — styles the combined redline (classes are
+			 * stable across versions, so one sheet covers both sides). */
+			newCssKey: string | null;
+	  }
 	| { status: "format-changed" }
 	| { status: "unavailable" };
 
@@ -29,6 +36,7 @@ export function classifyResolvedPair(
 		status: "ready",
 		oldHtmlKey: oldRes.htmlKey,
 		newHtmlKey: newRes.htmlKey,
+		newCssKey: newRes.cssKey,
 	};
 }
 

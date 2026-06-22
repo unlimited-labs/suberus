@@ -61,6 +61,7 @@ type ResolvedPair =
 			oldVersionId: string;
 			oldHtmlKey: string;
 			newHtmlKey: string;
+			newCssKey: string | null;
 	  }
 	| { status: "format-changed" }
 	| { status: "unavailable" };
@@ -104,6 +105,7 @@ async function resolvePair(
 		oldVersionId,
 		oldHtmlKey: keys.oldHtmlKey,
 		newHtmlKey: keys.newHtmlKey,
+		newCssKey: keys.newCssKey,
 	};
 }
 
@@ -155,7 +157,15 @@ async function selfContain(html: string): Promise<string> {
  *    normalized yet (transient — normalization is async).
  */
 export type VersionRedlineResult =
-	| { status: "ready"; html: string; insertions: number; deletions: number }
+	| {
+			status: "ready";
+			html: string;
+			/** Per-style CSS (Word-faithful rendering); "" when the doc has no custom
+			 * styles. Trusted-by-construction — injected into the iframe's <style>. */
+			css: string;
+			insertions: number;
+			deletions: number;
+	  }
 	| { status: "format-changed" }
 	| { status: "unavailable" };
 
@@ -180,9 +190,13 @@ export async function getVersionRedline(
 		newHtmlKey: pair.newHtmlKey,
 	});
 	const redlineHtml = (await getFileBuffer(diff.redlineKey)).toString("utf8");
+	const css = pair.newCssKey
+		? (await getFileBuffer(pair.newCssKey)).toString("utf8")
+		: "";
 	return {
 		status: "ready",
 		html: await selfContain(redlineHtml),
+		css,
 		insertions: diff.insertions,
 		deletions: diff.deletions,
 	};

@@ -92,6 +92,31 @@ describe("sanitizeDiffHtml", () => {
 		expect(out).not.toContain("style=");
 	});
 
+	it("keeps fidelity classes (cs<hash>/ta-*) on styled elements", () => {
+		const out = sanitizeDiffHtml(
+			`<div data-custom-style="Title" class="cse402653c2a ta-center"><p>T</p></div>`,
+		);
+		expect(out).toContain("cse402653c2a");
+		expect(out).toContain("ta-center");
+	});
+
+	it("still drops a style attr on a styled block (alignment goes via class, not style)", () => {
+		const out = sanitizeDiffHtml(
+			`<div class="tbl-full" style="text-align:center"><p>x</p></div>`,
+		);
+		expect(out).toContain("tbl-full");
+		expect(out).not.toContain("style=");
+	});
+
+	it("keeps ol type/start (lettered Word lists render as a./b. not 1.)", () => {
+		const out = sanitizeDiffHtml(
+			`<ol type="a" start="2" class="ol-paren"><li>x</li></ol>`,
+		);
+		expect(out).toContain('type="a"');
+		expect(out).toContain('start="2"');
+		expect(out).toContain("ol-paren");
+	});
+
 	it("kills a vector smuggled inside <ins> (C2: sanitize is the last gate)", () => {
 		const out = sanitizeDiffHtml(
 			`<p>clean</p><ins><img src=x onerror="alert(1)"> added</ins>`,

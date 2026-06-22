@@ -42,6 +42,7 @@ from pydantic import BaseModel
 
 import diffhtml
 import mathtype
+import stylecss
 
 
 def _xmldiff_version() -> str | None:
@@ -84,7 +85,12 @@ def _libreoffice_version() -> str | None:
 # Bundle schema version — bump when the bundle layout or normalize recipe changes
 # (participates in the artifact cache key so historical diffs aren't silently mutated).
 # v3: pre-pandoc MathType OLE -> LaTeX math-span conversion (mathtype.py).
-SCHEMA_VERSION = 3
+# v4: Word-faithful rendering — emit styles.css (per-style fidelity from styles.xml
+#     + direct paragraph alignment from document.xml), hoist inline block alignment/
+#     table-width into classes, and tag ")"-delimited ordered lists (.ol-paren +
+#     .olp-<type>) from numbering.xml so the Word "a)" marker renders (pandoc emits
+#     <ol type> but drops the delimiter).
+SCHEMA_VERSION = 4
 
 # Pinned pandoc recipe. `--sandbox` blocks pandoc IO; `--wrap=none` keeps diff-friendly
 # lines; raw HTML is dropped so author-supplied markup can't smuggle script through.
@@ -98,6 +104,8 @@ NORMALIZER_CONFIG = {
     "figures": "all->png",
     "imgDims": "style->attr@px",
     "mathtype": "ole-mtef-v5->latex-span",
+    "blockStyles": "align+tblwidth->class",
+    "styleCss": "styles.xml+document.xml->classed-css",
     "schemaVersion": SCHEMA_VERSION,
     "libreofficeVersion": _libreoffice_version(),
 }
@@ -205,7 +213,45 @@ def _hoist_img_dims(html: str) -> str:
     return _IMG_RE.sub(repl, html)
 
 
-def _normalize(docx_path: Path, workdir: Path) -> tuple[str, dict[str, bytes], str]:
+# Pandoc emits figure/cell alignment and table width as inline `style` (e.g. a
+# centered figure table: `<td style="text-align: center;">`, `<table
+# style="width:100%;">`). The Node sanitizer strips `style`, so — as with image
+# dims — hoist these into allowlisted classes that survive: `text-align:*` -> `ta-*`,
+# table `width:100%` -> `tbl-full`. (Paragraph-level direct alignment that pandoc
+# drops entirely is recovered separately in stylecss from document.xml.)
+_BLOCK_OPEN_RE = re.compile(r"<(p|div|td|th|h[1-6]|caption|table)\b([^>]*)>", re.I)
+_TEXTALIGN_RE = re.compile(r"text-align\s*:\s*(center|right|justify)", re.I)
+_WIDTH_FULL_RE = re.compile(r"width\s*:\s*100\s*%", re.I)
+_CLASS_RE = re.compile(r'\bclass="([^"]*)"', re.I)
+
+
+def _hoist_block_styles(html: str) -> str:
+    def repl(m: re.Match) -> str:
+        tag, attrs = m.group(1).lower(), m.group(2)
+        style_m = _STYLE_RE.search(attrs)
+        if not style_m:
+            return m.group(0)
+        style = style_m.group(1)
+        adds: list[str] = []
+        align = _TEXTALIGN_RE.search(style)
+        if align:
+            adds.append(f"ta-{align.group(1).lower()}")
+        if tag == "table" and _WIDTH_FULL_RE.search(style):
+            adds.append("tbl-full")
+        if not adds:
+            return m.group(0)
+        cls_m = _CLASS_RE.search(attrs)
+        if cls_m:
+            merged = f'{cls_m.group(1)} {" ".join(adds)}'
+            attrs = _CLASS_RE.sub(f'class="{merged}"', attrs, count=1)
+        else:
+            attrs = f'{attrs} class="{" ".join(adds)}"'
+        return f"<{tag}{attrs}>"
+
+    return _BLOCK_OPEN_RE.sub(repl, html)
+
+
+def _normalize(docx_path: Path, workdir: Path) -> tuple[str, dict[str, bytes], str, str]:
     media_dir = workdir / "media"
     html_path = workdir / "document.html"
 
@@ -231,6 +277,7 @@ def _normalize(docx_path: Path, workdir: Path) -> tuple[str, dict[str, bytes], s
         raise HTTPException(500, f"pandoc failed: {proc.stderr.decode(errors='replace')[:300]}")
     warnings = proc.stderr.decode(errors="replace").strip()
     html = _hoist_img_dims(html_path.read_text(encoding="utf-8"))
+    html = _hoist_block_styles(html)
     # Post-pandoc: swap each equation sentinel for a `<span class="math …">` the Node
     # worker's KaTeX pass renders (same shape pandoc emits for native Word equations).
     html = mathtype.apply_sentinels(html, equations)
@@ -252,7 +299,13 @@ def _normalize(docx_path: Path, workdir: Path) -> tuple[str, dict[str, bytes], s
         return f'src="figures/{sha}.png"'
 
     html = _SRC_RE.sub(replace, html)
-    return html, figures, warnings
+    # Per-style CSS + direct-alignment recovery from the DOCX's own style tables, so
+    # the redline reproduces the document's title/heading/body formatting that
+    # pandoc's semantic HTML discards. Tags styled elements with `cs<hash>`/`ta-*`
+    # classes; the CSS is trusted-by-construction (generated from validated XML
+    # values), delivered separately from the sanitized HTML.
+    html, style_css = stylecss.annotate(html, str(docx_path))
+    return html, figures, warnings, style_css
 
 
 @app.get("/")
@@ -282,7 +335,7 @@ async def normalize(file: UploadFile):
         docx_path = workdir / (Path(file.filename or "doc.docx").name)
         docx_path.write_bytes(contents)
 
-        html, figures, warnings = _normalize(docx_path, workdir)
+        html, figures, warnings, style_css = _normalize(docx_path, workdir)
 
         meta = {
             "filename": file.filename,
@@ -297,6 +350,7 @@ async def normalize(file: UploadFile):
         buf = io.BytesIO()
         with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
             z.writestr("document.html", html)
+            z.writestr("styles.css", style_css)
             z.writestr("meta.json", json.dumps(meta, ensure_ascii=False))
             for sha, raw in figures.items():
                 z.writestr(f"figures/{sha}.png", raw)

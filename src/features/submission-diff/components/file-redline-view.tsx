@@ -3,28 +3,59 @@ import { type Ref, type RefObject, useRef } from "react";
 import { versionRedlineQueryOptions } from "@/features/submission-diff/api";
 
 /**
- * Wrap a sanitized HTML fragment in a self-contained "document page". Styling
- * ports the POC presentation substrate (poc/s1-inline-diff): a centred paper
- * sheet, boxed changed equations (`.matheq`) instead of struck KaTeX, and
- * framed changed figures with a label. CSS-only — the iframe is script-less.
+ * Wrap a sanitized HTML fragment in a self-contained "document page". A serif,
+ * justified base approximates an academic paper; `styleCss` (the per-document CSS
+ * the sidecar derives from the DOCX's own styles.xml) layers the document's real
+ * formatting — centered title/authors/abstract, heading sizes, fonts — on top.
+ * Boxed changed equations (`.matheq`) and framed changed figures port the POC
+ * substrate. CSS-only — the iframe is script-less.
+ *
+ * `styleCss` is trusted-by-construction (generated server-side from validated
+ * styles.xml values, class-keyed), so it is injected directly into <style> and
+ * NOT run through the HTML sanitizer (which sanitizes HTML, not CSS).
  */
-function wrapDoc(html: string): string {
+function wrapDoc(html: string, styleCss = ""): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
 	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'self' 'unsafe-inline'; font-src 'self'">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="/katex/katex.min.css"><style>
 		*{box-sizing:border-box}
-		body{font:15px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;margin:0;padding:24px 16px;background:#f6f7f9;color:#1a1d21}
-		.page{max-width:820px;margin:0 auto;padding:32px 40px;background:#fff;border:1px solid #e3e6ea;border-radius:10px}
-		@media(max-width:768px){body{padding:0}.page{padding:20px 16px;border-radius:0;border-left:none;border-right:none}}
+		body{font:16px/1.5 "Times New Roman",Tinos,"Liberation Serif","DejaVu Serif",Georgia,serif;margin:0;padding:24px 16px;background:#f6f7f9;color:#1a1d21}
+		/* Academic-paper defaults; the per-document styles.xml CSS below overrides per element. */
+		.page{max-width:820px;margin:0 auto;padding:32px 40px;background:#fff;border:1px solid #e3e6ea;border-radius:10px;text-align:justify}
+		@media(max-width:768px){body{padding:0}.page{padding:20px 16px;border-radius:0;border-left:none;border-right:none}table{display:block;overflow-x:auto}}
 		/* Cap embedded raster size so an oversized image (e.g. a MathType equation
 		   pasted as a large picture) can't dominate the page. width:auto + height:auto
 		   scales proportionally within both bounds — a max-height with a fixed width
 		   attribute would distort. max-height is tunable. */
 		img{max-width:100%;max-height:20rem;width:auto;height:auto}
-		h1,h2,h3{line-height:1.25}
+		h1{font-size:1.5em;font-weight:700;text-align:center;margin:.2em 0 .5em}
+		h1,h2,h3,h4,h5,h6{line-height:1.25}
+		p,div[data-custom-style]{margin:0 0 .7em}
+		caption,figcaption{text-align:center;font-size:.95em;margin-top:.4em}
+		p>img,div>img{display:block;margin:0 auto}
 		table{border-collapse:collapse}
+		.tbl-full{width:100%;margin:0 auto}
 		td,th{border:1px solid #e2e8f0;padding:4px 8px}
+		/* Direct paragraph alignment (ta-*) must beat a style's own alignment
+		   (cs-* below), mirroring Word's direct-formatting precedence. */
+		.ta-center{text-align:center!important}
+		.ta-right{text-align:right!important}
+		.ta-justify{text-align:justify!important}
+		/* Word ")"-delimited ordered lists (e.g. "a)"). Pandoc emits <ol type> but
+		   drops the delimiter; the sidecar tags such lists .ol-paren (from numbering.xml)
+		   and we render the marker with ")" per numbering style. */
+		ol.ol-paren{list-style-position:inside;padding-left:0}
+		ol.ol-paren>li::marker{content:counter(list-item,decimal) ") "}
+		ol.olp-a>li::marker{content:counter(list-item,lower-alpha) ") "}
+		ol.olp-A>li::marker{content:counter(list-item,upper-alpha) ") "}
+		ol.olp-i>li::marker{content:counter(list-item,lower-roman) ") "}
+		ol.olp-I>li::marker{content:counter(list-item,upper-roman) ") "}
+		/* A centered ")"-list item (figure sub-caption) keeps its marker beside the
+		   centered text — Word centers number+text together — instead of leaving the
+		   marker pinned to the list indent (a big gap). Only when actually centered. */
+		ol.ol-paren>li:has(.ta-center){text-align:center}
+		ol.ol-paren>li:has(.ta-center) div,ol.ol-paren>li:has(.ta-center) p{display:inline}
 		ins{background:#d6f5df;text-decoration:none;border-radius:2px;box-shadow:0 0 0 1px #aee5bf}
 		del{background:#ffdce0;color:#9a2530;text-decoration:line-through;border-radius:2px;box-shadow:0 0 0 1px #f5b3bb}
 		/* xmldiff wraps a wholly inserted/removed BLOCK in an (inline) <ins>/<del>;
@@ -58,6 +89,8 @@ function wrapDoc(html: string): string {
 		del:has(.katex-display)::before,ins:has(.katex-display)::before{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
 		del:has(.katex-display)::before{content:"− removed equation";color:#b3202d}
 		ins:has(.katex-display)::before{content:"+ added equation";color:#1a7f37}
+		/* Per-document styles derived from the DOCX's own styles.xml (Word-faithful). */
+		${styleCss}
 	</style></head><body><div class="page">${html}</div></body></html>`;
 }
 
@@ -77,11 +110,14 @@ const stripDeletions = (redline: string): string =>
 function DocFrame({
 	title,
 	html,
+	css,
 	ref,
 	onLoad,
 }: {
 	title: string;
 	html: string;
+	/** Per-document styles.xml CSS (Word-faithful rendering); "" when none. */
+	css?: string;
 	ref?: Ref<HTMLIFrameElement>;
 	onLoad?: () => void;
 }) {
@@ -91,7 +127,7 @@ function DocFrame({
 			onLoad={onLoad}
 			title={title}
 			sandbox="allow-same-origin"
-			srcDoc={wrapDoc(html)}
+			srcDoc={wrapDoc(html, css)}
 			className="h-[60vh] w-full rounded-lg border border-border bg-white"
 		/>
 	);
@@ -232,7 +268,7 @@ function InlineRedline({
 
 	return (
 		<div className="space-y-2" data-testid="file-redline">
-			<DocFrame title="File redline" html={data.html} />
+			<DocFrame title="File redline" html={data.html} css={data.css} />
 		</div>
 	);
 }
@@ -272,6 +308,7 @@ function SplitDocuments({
 						onLoad={onOldLoad}
 						title={`File ${oldLabel}`}
 						html={stripInsertions(data.html)}
+						css={data.css}
 					/>
 				</div>
 				<div className="space-y-2">
@@ -283,6 +320,7 @@ function SplitDocuments({
 						onLoad={onNewLoad}
 						title={`File ${newLabel}`}
 						html={stripDeletions(data.html)}
+						css={data.css}
 					/>
 				</div>
 			</div>
