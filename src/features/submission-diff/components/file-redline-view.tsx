@@ -27,6 +27,13 @@ function wrapDoc(html: string): string {
 		td,th{border:1px solid #e2e8f0;padding:4px 8px}
 		ins{background:#d6f5df;text-decoration:none;border-radius:2px;box-shadow:0 0 0 1px #aee5bf}
 		del{background:#ffdce0;color:#9a2530;text-decoration:line-through;border-radius:2px;box-shadow:0 0 0 1px #f5b3bb}
+		/* xmldiff wraps a wholly inserted/removed BLOCK in an (inline) <ins>/<del>;
+		   an inline element paints no visible background around block children, so
+		   such block-level changes would render unmarked. Promote any ins/del that
+		   directly wraps block content to a visible coloured band. The figure and
+		   equation rules below are more specific and override this for their cases. */
+		ins:has(>div),ins:has(>p),ins:has(>table),ins:has(>ul),ins:has(>ol),ins:has(>h1),ins:has(>h2),ins:has(>h3),ins:has(>h4),ins:has(>h5),ins:has(>h6),ins:has(>blockquote){display:block;margin:8px 0;padding:4px 12px;border-radius:6px;border-left:4px solid #1a7f37;background:#e9f9ee;box-shadow:none}
+		del:has(>div),del:has(>p),del:has(>table),del:has(>ul),del:has(>ol),del:has(>h1),del:has(>h2),del:has(>h3),del:has(>h4),del:has(>h5),del:has(>h6),del:has(>blockquote){display:block;margin:8px 0;padding:4px 12px;border-radius:6px;border-left:4px solid #b3202d;background:#ffeef0;color:inherit;text-decoration:none;box-shadow:none}
 		/* Box a changed equation instead of striking it through (depends on the
 		   server tagging the wrapper .matheq). */
 		ins.matheq,del.matheq{display:inline-block;padding:4px 8px;margin:2px;text-decoration:none;border-radius:6px;box-shadow:none}
