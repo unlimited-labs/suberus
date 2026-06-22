@@ -141,21 +141,17 @@ def _to_png_bytes(src: Path, workdir: Path) -> bytes:
     ext = src.suffix.lower()
     if ext in RASTER_PASSTHROUGH:
         return src.read_bytes()
-    if ext in RASTER_VIA_PILLOW:
-        buf = io.BytesIO()
-        with Image.open(src) as im:
-            im.convert("RGBA").save(buf, format="PNG")
-        return buf.getvalue()
     if ext in RASTER_VIA_SOFFICE:
         return _soffice_to_png(src, workdir / "raster").read_bytes()
-    # Unknown: best-effort Pillow, else skip rasterization (keep original bytes).
     try:
         buf = io.BytesIO()
         with Image.open(src) as im:
             im.convert("RGBA").save(buf, format="PNG")
         return buf.getvalue()
     except Exception:
-        return src.read_bytes()
+        if ext in RASTER_VIA_PILLOW:
+            raise  # a known raster type failing is an error, not an unknown to skip
+        return src.read_bytes()  # unknown ext: keep original bytes
 
 
 _SRC_RE = re.compile(r'src="([^"]+)"')
