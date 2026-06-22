@@ -1,5 +1,6 @@
 import { IconLock, IconMessageCircle } from "@tabler/icons-react";
 import type { ReviewFormData } from "@/features/reviews/validations";
+import type { ContentFormat } from "@/features/settings/types";
 import type { SubmissionType } from "@/generated/prisma/enums";
 import { typeLabels } from "@/shared/lib/labels/submission";
 import { Badge } from "@/shared/ui/badge";
@@ -35,8 +36,22 @@ interface ReviewFormProps {
 			mimeType: string;
 			size: number;
 		} | null;
-		previousVersion?: { title: string; content: string } | null;
+		keywords?: string[];
+		previousVersion?: {
+			title: string;
+			content: string;
+			file?: {
+				id: string;
+				fileName: string;
+				originalName: string;
+				mimeType: string;
+				size: number;
+			} | null;
+			keywords?: string[];
+		} | null;
 	};
+	/** Whether this submission type carries its content as text or an uploaded file. */
+	contentFormat?: ContentFormat;
 	reviewMode: "OPEN" | "SINGLE_BLIND" | "DOUBLE_BLIND";
 	guidelines?: string;
 	scoringCriteria?: { name: string; description: string }[];
@@ -57,6 +72,7 @@ export function ReviewForm({
 	initialData,
 	assignmentId,
 	submission,
+	contentFormat,
 	reviewMode,
 	guidelines,
 	scoringCriteria = [],
@@ -88,6 +104,7 @@ export function ReviewForm({
 				<div className="space-y-6 lg:col-span-2">
 					<SubmissionPreview
 						submission={submission}
+						contentFormat={contentFormat}
 						reviewMode={reviewMode}
 						assignmentId={assignmentId}
 					/>

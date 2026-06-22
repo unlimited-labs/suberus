@@ -3,6 +3,7 @@ import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
 import { SUPPORTED_FILE_EXTENSIONS } from "@/features/settings/file-types";
 import { getSetting } from "@/features/settings/server/settings";
+import type { ContentFormat } from "@/features/settings/types";
 import { SUBMISSION_TYPE_TO_KEY } from "@/features/settings/types";
 import {
 	checkAndTriggerReviewCompletion,
@@ -35,13 +36,31 @@ export interface ReviewSubmitData {
 /** Get assignment details for review form */
 /** The version immediately preceding the current one, for a round-over-round diff. */
 function resolvePreviousVersion(
-	versions: { version: number; title: string; content: string }[],
+	versions: Array<{
+		version: number;
+		title: string;
+		content: string;
+		file: ReviewFile;
+		keywords: string[];
+	}>,
 	currentVersionNumber: number | undefined,
-): { title: string; content: string } | null {
+): {
+	title: string;
+	content: string;
+	file: ReviewFile;
+	keywords: string[];
+} | null {
 	if (currentVersionNumber === undefined) return null;
 	// `versions` is ordered version-desc, so the first one below current is the previous.
 	const previous = versions.find((v) => v.version < currentVersionNumber);
-	return previous ? { title: previous.title, content: previous.content } : null;
+	return previous
+		? {
+				title: previous.title,
+				content: previous.content,
+				file: previous.file,
+				keywords: previous.keywords,
+			}
+		: null;
 }
 
 type ReviewFile = {
@@ -99,8 +118,21 @@ export async function getAssignmentForReview(
 			mimeType: string;
 			size: number;
 		} | null;
+		/** Current version's keywords (snapshot, falling back to live keywords). */
+		keywords: string[];
 		/** Immediately-preceding version (round-over-round diff), if any. */
-		previousVersion: { title: string; content: string } | null;
+		previousVersion: {
+			title: string;
+			content: string;
+			file: {
+				id: string;
+				fileName: string;
+				originalName: string;
+				mimeType: string;
+				size: number;
+			} | null;
+			keywords: string[];
+		} | null;
 		currentVersionNumber: number;
 		/**
 		 * All versions for the side-by-side compare page. Blind-safe: only
@@ -125,6 +157,7 @@ export async function getAssignmentForReview(
 	};
 	config: {
 		reviewMode: ReviewMode;
+		contentFormat: ContentFormat;
 		enableScoring: boolean;
 		scoringCriteria: { name: string; description: string }[];
 		enableConfidenceLevel: boolean;
@@ -164,8 +197,10 @@ export async function getAssignmentForReview(
 									size: true,
 								},
 							},
+							keywordsSnapshot: { select: { name: true } },
 						},
 					},
+					keywords: { include: { keyword: { select: { name: true } } } },
 					versions: {
 						select: {
 							id: true,
@@ -182,6 +217,7 @@ export async function getAssignmentForReview(
 									size: true,
 								},
 							},
+							keywordsSnapshot: { select: { name: true } },
 						},
 						orderBy: { version: "desc" },
 					},
@@ -202,6 +238,21 @@ export async function getAssignmentForReview(
 	const isBlind = config.reviewMode === "DOUBLE_BLIND";
 	const currentVersionNumber =
 		assignment.submission.currentVersion?.version ?? 1;
+
+	// Legacy versions predate per-version keyword snapshots; fall back to the
+	// submission's live keywords (mirrors the submissions server detail query).
+	const liveKeywords = assignment.submission.keywords.map(
+		(k) => k.keyword.name,
+	);
+	const keywordsOf = (snapshot: { name: string }[]): string[] =>
+		snapshot.length > 0 ? snapshot.map((k) => k.name) : liveKeywords;
+	const currentKeywords = keywordsOf(
+		assignment.submission.currentVersion?.keywordsSnapshot ?? [],
+	);
+	const enrichedVersions = assignment.submission.versions.map((v) => ({
+		...v,
+		keywords: keywordsOf(v.keywordsSnapshot),
+	}));
 
 	return {
 		assignment: {
@@ -231,12 +282,13 @@ export async function getAssignmentForReview(
 				currentVersionNumber,
 				isBlind,
 			),
+			keywords: currentKeywords,
 			previousVersion: resolvePreviousVersion(
-				assignment.submission.versions,
+				enrichedVersions,
 				assignment.submission.currentVersion?.version,
 			),
 			currentVersionNumber,
-			versions: assignment.submission.versions.map((v) => ({
+			versions: enrichedVersions.map((v) => ({
 				id: v.id,
 				version: v.version,
 				title: v.title,
@@ -248,6 +300,7 @@ export async function getAssignmentForReview(
 		},
 		config: {
 			reviewMode: config.reviewMode,
+			contentFormat: config.contentFormat,
 			enableScoring: config.enableScoring,
 			scoringCriteria: config.scoringCriteria,
 			enableConfidenceLevel: config.enableConfidenceLevel,

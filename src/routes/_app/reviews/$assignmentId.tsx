@@ -128,8 +128,10 @@ function ReviewFormPage() {
 						authors: submission.authors,
 						content: submission.content,
 						file: submission.file,
+						keywords: submission.keywords,
 						previousVersion: submission.previousVersion,
 					}}
+					contentFormat={config.contentFormat}
 					reviewMode={config.reviewMode}
 					guidelines={reviewGuidelines}
 					scoringCriteria={config.enableScoring ? config.scoringCriteria : []}

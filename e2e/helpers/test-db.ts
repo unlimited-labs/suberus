@@ -323,9 +323,16 @@ export async function addSubmissionVersions(
 		comment?: string;
 		authors?: SnapshotAuthor[];
 		keywords?: string[];
+		/**
+		 * Attach a synthetic File row to this version (FILE-format submissions).
+		 * No bytes are uploaded — callers that exercise the file-change notice only
+		 * read the file id, so this stays free of S3/sidecar dependencies.
+		 */
+		file?: { fileName: string; mimeType?: string };
 	}>,
 ): Promise<string[]> {
 	const db = getPrisma();
+	const { testUserId } = await getTestUserIds();
 	// Drop the FK + any auto-seeded versions (cascades to snapshots) before rebuild
 	await db.submission.update({
 		where: { id: submissionId },
@@ -336,6 +343,23 @@ export async function addSubmissionVersions(
 	let lastId: string | null = null;
 	for (let i = 0; i < versions.length; i++) {
 		const v = versions[i];
+		let fileId: string | undefined;
+		if (v.file) {
+			const file = await db.file.create({
+				data: {
+					entityType: "SUBMISSION_VERSION",
+					entityId: submissionId,
+					type: "SUBMISSION_MAIN",
+					storageKey: `e2e/${submissionId}/v${i + 1}/${v.file.fileName}`,
+					fileName: v.file.fileName,
+					originalName: v.file.fileName,
+					mimeType: v.file.mimeType ?? "application/pdf",
+					size: 1,
+					uploadedById: testUserId,
+				},
+			});
+			fileId = file.id;
+		}
 		const row = await db.submissionVersion.create({
 			data: {
 				submissionId,
@@ -343,6 +367,7 @@ export async function addSubmissionVersions(
 				title: v.title,
 				content: v.content,
 				comment: v.comment ?? null,
+				fileId,
 				authorsSnapshot: v.authors?.length
 					? { create: v.authors }
 					: undefined,

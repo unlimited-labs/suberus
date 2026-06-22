@@ -495,6 +495,59 @@ test.describe("Reviewer - Revision diff", () => {
 		await expect(page.getByText("Content unchanged.")).toBeVisible();
 	});
 
+	test("FILE submission shows a file-change notice + keyword diff, never 'Content unchanged.'", async ({
+		page,
+		reviewerAssignmentsPage,
+		testRun,
+		cleanup,
+	}) => {
+		// Arrange — a FILE-format type (FULL_PAPER) whose two versions carry
+		// different files and different keywords. The text body is irrelevant for
+		// file submissions, so the panel must NOT diff it.
+		const { submissionId, title } = await createSubmissionWithAssignment({
+			testRunId: testRun.testRunId,
+			title: "Reviewer File Revision Diff Test",
+			type: "FULL_PAPER",
+		});
+		cleanup.track(submissionId);
+		const body = "File-based submission; the text body is not the source of truth.";
+		await addSubmissionVersions(submissionId, [
+			{
+				title,
+				content: body,
+				keywords: ["nucleation"],
+				file: { fileName: "v1.pdf" },
+			},
+			{
+				title,
+				content: body,
+				keywords: ["nucleation", "validation"],
+				file: { fileName: "v2.pdf" },
+			},
+		]);
+
+		// Act
+		await reviewerAssignmentsPage.openReviewForm(title);
+
+		// Assert — the misleading text-content verdict must never appear for files.
+		await expect(page.getByText("Content unchanged.")).toHaveCount(0);
+		// The submission is clearly declared as file-based.
+		await expect(page.getByTestId("submission-content-format")).toHaveText(
+			"File submission",
+		);
+		// A file-change notice replaces the text diff.
+		const notice = page.getByTestId("reviewer-file-change-notice");
+		await expect(notice).toBeVisible();
+		await expect(notice).toHaveAttribute("data-changed", "true");
+		// Keyword changes surface in the main review window.
+		await expect(
+			page
+				.getByTestId("keywords-diff")
+				.locator('[data-diff-status="added"]'),
+		).toContainText("validation");
+		await expect(page.getByTestId("reviewer-compare-link")).toBeVisible();
+	});
+
 	test("no Changes card when there is no previous version", async ({
 		page,
 		reviewerAssignmentsPage,

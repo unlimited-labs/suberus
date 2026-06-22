@@ -1,4 +1,5 @@
 import { IconDownload, IconFile, IconStarFilled } from "@tabler/icons-react";
+import type { ContentFormat } from "@/features/settings/types";
 import type { SubmissionType } from "@/generated/prisma/enums";
 import {
 	affiliationDisplay,
@@ -6,6 +7,7 @@ import {
 	presenterBadgeClassName,
 } from "@/shared/components/author-card-styles";
 import { cn, formatFileSize } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
 import { Card, CardContent } from "@/shared/ui/card";
 import { SectionCard } from "@/shared/ui/section-card";
 import { RevisionDiffPanel } from "./revision-diff-panel";
@@ -32,19 +34,32 @@ interface SubmissionPreviewProps {
 		authors: SubmissionAuthor[];
 		content?: string;
 		file?: SubmissionFile | null;
-		previousVersion?: { title: string; content: string } | null;
+		keywords?: string[];
+		previousVersion?: {
+			title: string;
+			content: string;
+			file?: SubmissionFile | null;
+			keywords?: string[];
+		} | null;
 	};
+	/** Whether this submission type carries its content as text or an uploaded file. */
+	contentFormat?: ContentFormat;
 	reviewMode: "OPEN" | "SINGLE_BLIND" | "DOUBLE_BLIND";
 	assignmentId: string;
 }
 
 export function SubmissionPreview({
 	submission,
+	contentFormat,
 	reviewMode,
 	assignmentId,
 }: SubmissionPreviewProps) {
 	const previous = submission.previousVersion;
 	const isDoubleBlind = reviewMode === "DOUBLE_BLIND";
+	// Authoritative type comes from config; fall back to file presence when absent.
+	const isFileSubmission = contentFormat
+		? contentFormat === "FILE"
+		: !!submission.file;
 
 	return (
 		<>
@@ -62,13 +77,20 @@ export function SubmissionPreview({
 				)
 			)}
 
-			<ContentCard file={submission.file} content={submission.content} />
+			<ContentCard
+				file={submission.file}
+				content={submission.content}
+				isFileSubmission={isFileSubmission}
+			/>
 
 			{previous && (
 				<RevisionDiffPanel
 					previous={previous}
 					title={submission.title}
 					content={submission.content ?? ""}
+					file={submission.file}
+					keywords={submission.keywords ?? []}
+					isFileSubmission={isFileSubmission}
 					assignmentId={assignmentId}
 				/>
 			)}
@@ -138,12 +160,22 @@ function AuthorRow({
 function ContentCard({
 	file,
 	content,
+	isFileSubmission,
 }: {
 	file?: SubmissionFile | null;
 	content?: string;
+	isFileSubmission: boolean;
 }) {
 	return (
-		<SectionCard title="Submission Content" contentClassName="space-y-3">
+		<SectionCard
+			title="Submission Content"
+			contentClassName="space-y-3"
+			action={
+				<Badge variant="secondary" data-testid="submission-content-format">
+					{isFileSubmission ? "File submission" : "Text submission"}
+				</Badge>
+			}
+		>
 			{file && (
 				<div className="flex items-center gap-4 rounded-lg border border-border bg-muted/30 p-3">
 					<div className="shrink-0 rounded-md bg-primary/10 p-2">
