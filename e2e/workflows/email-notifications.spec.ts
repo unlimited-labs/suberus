@@ -9,6 +9,7 @@ import { clearMailpitForAddress, waitForEmail, getMailpitMessage } from "../help
 import { TEST_USER, ADMIN_USER, REVIEWER_USER, CONTACT_EMAIL } from "../helpers/test-users";
 import { loginAs } from "../helpers/auth";
 import { runSubmissionAction } from "../helpers/submission-actions";
+import { waitForDialogToClose } from "../helpers/dialog";
 
 async function addKeyword(page: Page, keyword: string) {
 	const keywordInput = page.locator("input.min-w-\\[120px\\]");
@@ -237,10 +238,7 @@ test.describe("Workflow Emails", () => {
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 		await page.getByLabel(/Reason/i).fill("Out of scope - E2E email test");
 		await page.getByRole("button", { name: /Reject Submission/i }).click();
-		await Promise.race([
-			page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15000 }),
-			page.locator("[data-sonner-toast]").waitFor({ state: "visible", timeout: 15000 }),
-		]);
+		await waitForDialogToClose(page);
 
 		// Assert
 		const email = await waitForEmail(TEST_USER.email, "Submission Decision", 30000);

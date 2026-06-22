@@ -112,7 +112,7 @@ export interface CreateSubmissionOptions {
 	trackId?: string;
 }
 
-interface SnapshotAuthor {
+export interface SnapshotAuthor {
 	firstName: string;
 	lastName: string;
 	email: string;
@@ -317,7 +317,13 @@ export async function createSubmission(options: CreateSubmissionOptions): Promis
  */
 export async function addSubmissionVersions(
 	submissionId: string,
-	versions: Array<{ title: string; content: string; comment?: string }>,
+	versions: Array<{
+		title: string;
+		content: string;
+		comment?: string;
+		authors?: SnapshotAuthor[];
+		keywords?: string[];
+	}>,
 ): Promise<string[]> {
 	const db = getPrisma();
 	// Drop the FK + any auto-seeded versions (cascades to snapshots) before rebuild
@@ -337,6 +343,12 @@ export async function addSubmissionVersions(
 				title: v.title,
 				content: v.content,
 				comment: v.comment ?? null,
+				authorsSnapshot: v.authors?.length
+					? { create: v.authors }
+					: undefined,
+				keywordsSnapshot: v.keywords?.length
+					? { create: v.keywords.map((name) => ({ name })) }
+					: undefined,
 			},
 		});
 		ids.push(row.id);
@@ -1008,6 +1020,38 @@ export async function setAppSetting(key: AppSettingKey, value: unknown): Promise
 		update: { value: value as object },
 		create: { key, value: value as object },
 	});
+}
+
+/**
+ * Snapshot the current values of the given app settings and return a `restore`
+ * closure for `afterAll` cleanup: keys absent at snapshot time are deleted, the
+ * rest are upserted back to their original value.
+ */
+export async function snapshotAppSettings(
+	keys: readonly AppSettingKey[],
+): Promise<{ restore: () => Promise<void> }> {
+	const db = getPrisma();
+	const original = new Map<AppSettingKey, unknown>();
+	for (const key of keys) {
+		const setting = await db.appSetting.findUnique({ where: { key } });
+		original.set(key, setting?.value ?? null);
+	}
+	return {
+		async restore() {
+			const restoreDb = getPrisma();
+			for (const [key, value] of original) {
+				if (value === null) {
+					await restoreDb.appSetting.deleteMany({ where: { key } });
+				} else {
+					await restoreDb.appSetting.upsert({
+						where: { key },
+						update: { value: value as object },
+						create: { key, value: value as object },
+					});
+				}
+			}
+		},
+	};
 }
 
 /** Clean up sent reminders for a specific entity */

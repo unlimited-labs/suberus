@@ -65,6 +65,13 @@ async function goToAdminSubmissionTypes(adminPage: Page) {
 	await expect(adminPage.getByText("Oral Presentation")).toBeVisible();
 }
 
+// Helper: open a submission type's accordion ready for editing (Content Format visible)
+async function openSubmissionTypeForEditing(adminPage: Page, typeName: RegExp) {
+	await goToAdminSubmissionTypes(adminPage);
+	await adminPage.getByRole("button", { name: typeName }).first().click();
+	await expect(adminPage.getByText("Content Format")).toBeVisible();
+}
+
 // Helper: Save validation settings
 async function saveValidationSettings(adminPage: Page) {
 	await adminPage.getByRole("button", { name: "Save All Settings" }).click();
@@ -150,9 +157,7 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 		userPage,
 	}) => {
 		// Arrange - Admin: Disable POSTER
-		await goToAdminSubmissionTypes(adminPage);
-		await adminPage.getByRole("button", { name: /Poster/i }).first().click();
-		await expect(adminPage.getByText("Content Format")).toBeVisible();
+		await openSubmissionTypeForEditing(adminPage, /Poster/i);
 		const activeSwitch = adminPage.getByRole("switch").first();
 		const wasActive = await activeSwitch.getAttribute("aria-checked");
 		if (wasActive === "true") {
@@ -322,9 +327,7 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 		// Arrange - Admin: Set ORAL_PRESENTATION to FILE format with a 5 MB cap.
 		// Max file size is now a per-type setting living under the FILE format's
 		// allowed extensions (on the Submission Types tab), not a global setting.
-		await goToAdminSubmissionTypes(adminPage);
-		await adminPage.getByRole("button", { name: /Oral Presentation/i }).first().click();
-		await expect(adminPage.getByText("Content Format")).toBeVisible();
+		await openSubmissionTypeForEditing(adminPage, /Oral Presentation/i);
 		const contentFormatSelect = adminPage.locator("button").filter({ hasText: /Text \(Abstract\)|File Upload/i });
 		const currentFormat = await contentFormatSelect.textContent();
 		const wasTextFormat = currentFormat?.includes("Text");
@@ -393,9 +396,7 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 		userPage,
 	}) => {
 		// Arrange - Admin: Set ORAL_PRESENTATION to FILE format
-		await goToAdminSubmissionTypes(adminPage);
-		await adminPage.getByRole("button", { name: /Oral Presentation/i }).first().click();
-		await expect(adminPage.getByText("Content Format")).toBeVisible();
+		await openSubmissionTypeForEditing(adminPage, /Oral Presentation/i);
 		const contentFormatSelect = adminPage.locator("button").filter({ hasText: /Text \(Abstract\)|File Upload/i });
 		const currentFormat = await contentFormatSelect.textContent();
 		const wasTextFormat = currentFormat?.includes("Text");

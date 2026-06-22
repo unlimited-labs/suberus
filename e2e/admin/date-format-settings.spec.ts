@@ -1,36 +1,19 @@
 import { expect, test } from "../helpers/base-fixtures";
 import { AdminSettingsPage } from "./fixtures";
-import { getPrisma } from "../helpers/test-db";
+import { snapshotAppSettings } from "../helpers/test-db";
 
 const FORMAT_KEYS = ["DATE_FORMAT", "TIME_FORMAT"] as const;
-type FormatKey = (typeof FORMAT_KEYS)[number];
 
 test.describe.serial("Admin - Date/Time Format", () => {
 	let adminSettingsPage: AdminSettingsPage;
-	let originalValues: Map<FormatKey, string | null>;
+	let restoreSettings: () => Promise<void>;
 
 	test.beforeAll(async () => {
-		const db = getPrisma();
-		originalValues = new Map();
-		for (const key of FORMAT_KEYS) {
-			const setting = await db.appSetting.findUnique({ where: { key } });
-			originalValues.set(key, (setting?.value as string) ?? null);
-		}
+		({ restore: restoreSettings } = await snapshotAppSettings(FORMAT_KEYS));
 	});
 
 	test.afterAll(async () => {
-		const db = getPrisma();
-		for (const [key, value] of originalValues) {
-			if (value === null) {
-				await db.appSetting.deleteMany({ where: { key } });
-			} else {
-				await db.appSetting.upsert({
-					where: { key },
-					update: { value },
-					create: { key, value },
-				});
-			}
-		}
+		await restoreSettings();
 	});
 
 	test.beforeEach(async ({ page }, testInfo) => {

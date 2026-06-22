@@ -143,12 +143,7 @@ test.describe("Confirm Conditions Met", () => {
 			.locator("#confirm-conditions-reason")
 			.fill("Revised version resolves the conditions");
 		await page.getByRole("button", { name: "Confirm Accepted" }).click();
-		await Promise.race([
-			page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15000 }),
-			page
-				.locator("[data-sonner-toast]")
-				.waitFor({ state: "visible", timeout: 15000 }),
-		]);
+		await waitForDialogToClose(page);
 		await page.reload();
 		await expect(
 			page.locator('[data-testid="submission-status"]'),

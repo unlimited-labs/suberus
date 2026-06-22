@@ -10,6 +10,7 @@ import { SubmissionStatus } from "../../src/generated/prisma/enums";
 import { TEST_USER, ADMIN_USER, REVIEWER_USER } from "../helpers/test-users";
 import { loginAs } from "../helpers/auth";
 import { runSubmissionAction } from "../helpers/submission-actions";
+import { openReviewFromAssignmentList } from "../helpers/reviews";
 
 /**
  * Complete end-to-end workflow tests.
@@ -320,11 +321,8 @@ test.describe("Review Form Validation", () => {
 		await loginAs(page, REVIEWER_USER, { clearCookies: true });
 		await page.goto("/reviews");
 	
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
-	
+		await openReviewFromAssignmentList(page, title);
+
 		// Assert form loaded
 		await expect(page.locator('[data-slot="card-title"]').filter({ hasText: "Decision" })).toBeVisible({ timeout: 10000 });
 

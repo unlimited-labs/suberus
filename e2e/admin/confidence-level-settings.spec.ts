@@ -1,8 +1,34 @@
+import type { Page } from "@playwright/test";
 import { test, expect, AdminSettingsPage } from "./fixtures";
 import { getPrisma, setAppSetting, createSubmissionWithAssignment } from "../helpers/test-db";
 import { deleteSubmission } from "../helpers/test-db";
 import { loginAs } from "../helpers/auth";
 import { REVIEWER_USER } from "../helpers/test-users";
+import { skipOnMobile } from "../helpers/skip-on-mobile";
+
+const ORAL_PRESENTATION_KEY = "SUBMISSION_TYPE_ORAL_PRESENTATION";
+
+/** Toggle the confidence-level flag on the ORAL_PRESENTATION type config in the DB. */
+async function setConfidenceLevelEnabled(enabled: boolean) {
+	const db = getPrisma();
+	const setting = await db.appSetting.findUnique({
+		where: { key: ORAL_PRESENTATION_KEY },
+	});
+	const config = setting?.value as Record<string, unknown>;
+	await setAppSetting(ORAL_PRESENTATION_KEY, {
+		...config,
+		enableConfidenceLevel: enabled,
+	});
+}
+
+/** Sign in as a reviewer and open the review form for an assignment. */
+async function loginReviewerAndOpenReview(page: Page, assignmentId: string) {
+	await loginAs(page, REVIEWER_USER, { clearCookies: true });
+	await page.goto(`/reviews/${assignmentId}`);
+	await expect(
+		page.getByRole("button", { name: "Submit Review" }),
+	).toBeVisible({ timeout: 15000 });
+}
 
 test.describe.serial("Admin - Confidence Level", () => {
 	let adminSettingsPage: AdminSettingsPage;
@@ -81,18 +107,10 @@ test.describe.serial("Admin - Confidence Level", () => {
 
 	test("review form hides confidence when disabled", async ({ page }, testInfo) => {
 		// Skip on mobile - review form tests only need desktop
-		test.skip(testInfo.project.name === "mobile-admin", "Review form tested on desktop only");
+		skipOnMobile(testInfo, "Review form tested on desktop only");
 
 		// Arrange - ensure disabled via DB (serial, previous test disabled it)
-		const db = getPrisma();
-		const setting = await db.appSetting.findUnique({
-			where: { key: "SUBMISSION_TYPE_ORAL_PRESENTATION" },
-		});
-		const config = setting?.value as Record<string, unknown>;
-		await setAppSetting("SUBMISSION_TYPE_ORAL_PRESENTATION", {
-			...config,
-			enableConfidenceLevel: false,
-		});
+		await setConfidenceLevelEnabled(false);
 
 		const { submissionId, assignmentId } = await createSubmissionWithAssignment({
 			title: "Confidence Hidden Test",
@@ -100,9 +118,7 @@ test.describe.serial("Admin - Confidence Level", () => {
 		trackedSubmissionIds.push(submissionId);
 
 		// Act - login as reviewer
-		await loginAs(page, REVIEWER_USER, { clearCookies: true });
-		await page.goto(`/reviews/${assignmentId}`);
-		await expect(page.getByRole("button", { name: "Submit Review" })).toBeVisible({ timeout: 15000 });
+		await loginReviewerAndOpenReview(page, assignmentId);
 
 		// Assert
 		await expect(page.locator('[data-slot="card-title"]').filter({ hasText: "Confidence Level" })).not.toBeVisible();
@@ -110,18 +126,10 @@ test.describe.serial("Admin - Confidence Level", () => {
 
 	test("review form shows confidence when enabled", async ({ page }, testInfo) => {
 		// Skip on mobile - review form tests only need desktop
-		test.skip(testInfo.project.name === "mobile-admin", "Review form tested on desktop only");
+		skipOnMobile(testInfo, "Review form tested on desktop only");
 
 		// Arrange - enable confidence via DB
-		const db = getPrisma();
-		const setting = await db.appSetting.findUnique({
-			where: { key: "SUBMISSION_TYPE_ORAL_PRESENTATION" },
-		});
-		const config = setting?.value as Record<string, unknown>;
-		await setAppSetting("SUBMISSION_TYPE_ORAL_PRESENTATION", {
-			...config,
-			enableConfidenceLevel: true,
-		});
+		await setConfidenceLevelEnabled(true);
 
 		const { submissionId, assignmentId } = await createSubmissionWithAssignment({
 			title: "Confidence Shown Test",
@@ -129,9 +137,7 @@ test.describe.serial("Admin - Confidence Level", () => {
 		trackedSubmissionIds.push(submissionId);
 
 		// Act - login as reviewer
-		await loginAs(page, REVIEWER_USER, { clearCookies: true });
-		await page.goto(`/reviews/${assignmentId}`);
-		await expect(page.getByRole("button", { name: "Submit Review" })).toBeVisible({ timeout: 15000 });
+		await loginReviewerAndOpenReview(page, assignmentId);
 
 		// Assert
 		await expect(page.locator('[data-slot="card-title"]').filter({ hasText: "Confidence Level" })).toBeVisible();
@@ -139,18 +145,10 @@ test.describe.serial("Admin - Confidence Level", () => {
 
 	test("can submit review without confidence when disabled", async ({ page }, testInfo) => {
 		// Skip on mobile - review form tests only need desktop
-		test.skip(testInfo.project.name === "mobile-admin", "Review form tested on desktop only");
+		skipOnMobile(testInfo, "Review form tested on desktop only");
 
 		// Arrange - disable confidence via DB
-		const db = getPrisma();
-		const setting = await db.appSetting.findUnique({
-			where: { key: "SUBMISSION_TYPE_ORAL_PRESENTATION" },
-		});
-		const config = setting?.value as Record<string, unknown>;
-		await setAppSetting("SUBMISSION_TYPE_ORAL_PRESENTATION", {
-			...config,
-			enableConfidenceLevel: false,
-		});
+		await setConfidenceLevelEnabled(false);
 
 		const { submissionId, assignmentId } = await createSubmissionWithAssignment({
 			title: "Submit No Confidence Test",
@@ -158,9 +156,7 @@ test.describe.serial("Admin - Confidence Level", () => {
 		trackedSubmissionIds.push(submissionId);
 
 		// Act - login as reviewer
-		await loginAs(page, REVIEWER_USER, { clearCookies: true });
-		await page.goto(`/reviews/${assignmentId}`);
-		await expect(page.getByRole("button", { name: "Submit Review" })).toBeVisible({ timeout: 15000 });
+		await loginReviewerAndOpenReview(page, assignmentId);
 
 		// Fill required fields - decision
 		await page
@@ -188,6 +184,7 @@ test.describe.serial("Admin - Confidence Level", () => {
 		await expect(page).toHaveURL(/\/reviews$/);
 
 		// Verify review in DB
+		const db = getPrisma();
 		const review = await db.review.findFirst({
 			where: { assignmentId },
 		});

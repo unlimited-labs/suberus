@@ -1,5 +1,5 @@
 import { test, expect } from "../helpers/base-fixtures"
-import { getPrisma } from "../helpers/test-db"
+import { getPrisma, snapshotAppSettings } from "../helpers/test-db"
 
 const BRANDING_KEYS = [
 	"CONFERENCE_NAME",
@@ -36,16 +36,11 @@ async function seedBrandingData() {
 
 test.describe("Auth Page Branding", { tag: "@serial" }, () => {
 	test.describe.configure({ mode: "serial" });
-	let originalValues: Map<BrandingKey, string | null>
+	let restoreSettings: () => Promise<void>
 
 	test.beforeAll(async () => {
 		// Arrange — store original values for cleanup
-		const db = getPrisma()
-		originalValues = new Map()
-		for (const key of BRANDING_KEYS) {
-			const setting = await db.appSetting.findUnique({ where: { key } })
-			originalValues.set(key, (setting?.value as string) ?? null)
-		}
+		;({ restore: restoreSettings } = await snapshotAppSettings(BRANDING_KEYS))
 	})
 
 	test.beforeEach(async () => {
@@ -55,18 +50,7 @@ test.describe("Auth Page Branding", { tag: "@serial" }, () => {
 
 	test.afterAll(async () => {
 		// Restore original values (best-effort per-worker)
-		const db = getPrisma()
-		for (const [key, value] of originalValues) {
-			if (value === null) {
-				await db.appSetting.deleteMany({ where: { key } })
-			} else {
-				await db.appSetting.upsert({
-					where: { key },
-					update: { value },
-					create: { key, value },
-				})
-			}
-		}
+		await restoreSettings()
 	})
 
 	test("login page shows conference name in mobile header", async ({ page }) => {

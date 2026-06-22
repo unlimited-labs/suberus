@@ -1,4 +1,5 @@
-import { test, expect } from "../helpers/base-fixtures";
+import type { Page } from "@playwright/test";
+import { test, expect, type CleanupContext } from "../helpers/base-fixtures";
 import {
 	createSubmission,
 	createSubmissionWithAssignment,
@@ -17,6 +18,8 @@ import {
 	expectActionAvailable,
 	runSubmissionAction,
 } from "../helpers/submission-actions";
+import { waitForDialogToClose } from "../helpers/dialog";
+import { openReviewFromAssignmentList } from "../helpers/reviews";
 
 /**
  * E2E tests for auto-transition after reviews and editor decision from REVIEWS_COMPLETE.
@@ -91,6 +94,26 @@ async function createSubmissionAtReviewsComplete(
 	return { id, title: prefixedTitle };
 }
 
+/**
+ * Seed a submission at REVIEWS_COMPLETE, sign in as admin, open its detail page
+ * and wait for the status badge. Returns the submission id.
+ */
+async function seedAndOpenAtReviewsComplete(
+	page: Page,
+	testRunId: string,
+	title: string,
+	cleanup: CleanupContext,
+): Promise<string> {
+	const { id } = await createSubmissionAtReviewsComplete(testRunId, title);
+	cleanup.track(id);
+	await loginAs(page, ADMIN_USER, { clearCookies: true });
+	await page.goto(`/admin/submissions/${id}`);
+	await expect(
+		page.locator('[data-testid="submission-status"]'),
+	).toBeVisible({ timeout: 10000 });
+	return id;
+}
+
 test.describe("Auto-transition After Reviews", () => {
 	test("reviewer completes review on poster → submission auto-transitions to accepted", async ({
 		page,
@@ -111,10 +134,7 @@ test.describe("Auto-transition After Reviews", () => {
 		await loginAs(page, REVIEWER_USER, { clearCookies: true });
 		await page.goto("/reviews");
 
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
+		await openReviewFromAssignmentList(page, title);
 
 		// Wait for form to fully load
 		await expect(
@@ -174,18 +194,12 @@ test.describe("Editor Decision from REVIEWS_COMPLETE", () => {
 		cleanup,
 	}) => {
 		// Arrange - ABSTRACT at REVIEWS_COMPLETE (requiresEditorDecision=true)
-		const { id } = await createSubmissionAtReviewsComplete(
+		await seedAndOpenAtReviewsComplete(
+			page,
 			testRun.testRunId,
 			"Make Decision Button Test",
+			cleanup,
 		);
-		cleanup.track(id);
-
-		// Act
-		await loginAs(page, ADMIN_USER, { clearCookies: true });
-		await page.goto(`/admin/submissions/${id}`);
-		await expect(
-			page.locator('[data-testid="submission-status"]'),
-		).toBeVisible({ timeout: 10000 });
 
 		// Assert - both actions available (Make Decision lives in the Actions menu,
 		// Ready for Decision is the contextual primary button)
@@ -199,17 +213,12 @@ test.describe("Editor Decision from REVIEWS_COMPLETE", () => {
 		cleanup,
 	}) => {
 		// Arrange
-		const { id } = await createSubmissionAtReviewsComplete(
+		await seedAndOpenAtReviewsComplete(
+			page,
 			testRun.testRunId,
 			"Direct Decision Accept",
+			cleanup,
 		);
-		cleanup.track(id);
-
-		await loginAs(page, ADMIN_USER, { clearCookies: true });
-		await page.goto(`/admin/submissions/${id}`);
-		await expect(
-			page.locator('[data-testid="submission-status"]'),
-		).toBeVisible({ timeout: 10000 });
 
 		// Act - Make decision directly (skip AWAITING_DECISION step)
 		await runSubmissionAction(page, "Make Decision");
@@ -226,14 +235,7 @@ test.describe("Editor Decision from REVIEWS_COMPLETE", () => {
 			.fill("Congratulations!");
 		await page.getByRole("button", { name: "Submit Decision" }).click();
 
-		await Promise.race([
-			page
-				.getByRole("dialog")
-				.waitFor({ state: "hidden", timeout: 15000 }),
-			page
-				.locator("[data-sonner-toast]")
-				.waitFor({ state: "visible", timeout: 15000 }),
-		]);
+		await waitForDialogToClose(page);
 
 		// Assert
 		await page.reload();
@@ -248,17 +250,12 @@ test.describe("Editor Decision from REVIEWS_COMPLETE", () => {
 		cleanup,
 	}) => {
 		// Arrange
-		const { id } = await createSubmissionAtReviewsComplete(
+		await seedAndOpenAtReviewsComplete(
+			page,
 			testRun.testRunId,
 			"Direct Decision Reject",
+			cleanup,
 		);
-		cleanup.track(id);
-
-		await loginAs(page, ADMIN_USER, { clearCookies: true });
-		await page.goto(`/admin/submissions/${id}`);
-		await expect(
-			page.locator('[data-testid="submission-status"]'),
-		).toBeVisible({ timeout: 10000 });
 
 		// Act - Reject directly from REVIEWS_COMPLETE
 		await runSubmissionAction(page, "Make Decision");
@@ -275,14 +272,7 @@ test.describe("Editor Decision from REVIEWS_COMPLETE", () => {
 			.fill("We regret to inform you.");
 		await page.getByRole("button", { name: "Submit Decision" }).click();
 
-		await Promise.race([
-			page
-				.getByRole("dialog")
-				.waitFor({ state: "hidden", timeout: 15000 }),
-			page
-				.locator("[data-sonner-toast]")
-				.waitFor({ state: "visible", timeout: 15000 }),
-		]);
+		await waitForDialogToClose(page);
 
 		// Assert
 		await page.reload();

@@ -13,6 +13,7 @@ import {
 	openAdminSubmissionDetail,
 } from "./fixtures";
 import { SubmissionStatus } from "../../src/generated/prisma/enums";
+import { openReviewFromAssignmentList } from "../helpers/reviews";
 
 /**
  * Integration tests for the review workflow.
@@ -193,10 +194,7 @@ test.describe("Review Workflow - Reviewer Actions", () => {
 		await assignmentsPage.goto();
 
 		// Act
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/);
+		await openReviewFromAssignmentList(page, title);
 
 		const reviewForm = new ReviewFormPage(page);
 
@@ -223,10 +221,7 @@ test.describe("Review Workflow - Reviewer Actions", () => {
 		const assignmentsPage = new ReviewerAssignmentsPage(page);
 		await assignmentsPage.goto();
 
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/);
+		await openReviewFromAssignmentList(page, title);
 
 		// Assert
 		await expect(page.getByRole("button", { name: /Accept Recommends accepting/i })).toBeVisible();
@@ -253,10 +248,7 @@ test.describe("Review Workflow - Reviewer Actions", () => {
 		const assignmentsPage = new ReviewerAssignmentsPage(page);
 		await assignmentsPage.goto();
 
-		const assignmentRow = page.locator("tr").filter({ hasText: title });
-		await expect(assignmentRow).toBeVisible({ timeout: 10000 });
-		await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
-		await page.waitForURL(/\/reviews\/[a-f0-9-]+/);
+		await openReviewFromAssignmentList(page, title);
 
 		// Assert — form loads with default values and submit is enabled
 		const reviewForm = new ReviewFormPage(page);
