@@ -324,6 +324,9 @@ function VersionCompareBody({
 						base={baseV.authors ?? []}
 						compare={compareV.authors ?? []}
 						emptyLabel="No authors."
+						layout={layout}
+						oldLabel={baseLabel}
+						newLabel={compareLabel}
 					/>
 				</SectionCard>
 			)}
@@ -334,6 +337,9 @@ function VersionCompareBody({
 						base={baseV.keywords ?? []}
 						compare={compareV.keywords ?? []}
 						emptyLabel="No keywords."
+						layout={layout}
+						oldLabel={baseLabel}
+						newLabel={compareLabel}
 					/>
 				</SectionCard>
 			)}

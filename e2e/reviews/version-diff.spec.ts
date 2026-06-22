@@ -106,6 +106,82 @@ test.describe("Version compare page", () => {
 		await expect(page.getByTestId("side-by-side-diff")).toHaveCount(0);
 	});
 
+	test("Authors and Keywords follow the side-by-side / inline toggle", async ({
+		adminSubmissionDetailPage,
+		page,
+		testRun,
+		cleanup,
+	}) => {
+		// Arrange — two versions whose authors AND keywords differ, so the metadata
+		// panels have something to diff in either layout.
+		const { id } = await createSubmission({
+			testRunId: testRun.testRunId,
+			title: "Compare Metadata Layout Test",
+			status: SubmissionStatus.SUBMITTED,
+		});
+		cleanup.track(id);
+		await addSubmissionVersions(id, [
+			{
+				title: "v1",
+				content: "First version content alpha.",
+				authors: [
+					{
+						firstName: "Alice",
+						lastName: "Adams",
+						email: "alice@example.com",
+						affiliation: "MIT",
+						orderIndex: 0,
+						isPresenter: true,
+					},
+				],
+				keywords: ["alpha", "beta"],
+			},
+			{
+				title: "v2",
+				content: "Second version content beta.",
+				authors: [
+					{
+						firstName: "Alice",
+						lastName: "Adams",
+						email: "alice@example.com",
+						affiliation: "Stanford", // changed affiliation
+						orderIndex: 0,
+						isPresenter: true,
+					},
+					{
+						firstName: "Bob",
+						lastName: "Brown",
+						email: "bob@example.com",
+						affiliation: "CERN",
+						orderIndex: 1,
+						isPresenter: false,
+					},
+				],
+				keywords: ["alpha", "gamma"], // beta removed, gamma added
+			},
+		]);
+
+		await adminSubmissionDetailPage.goto(id);
+		await page.getByRole("link", { name: /Compare versions/i }).click();
+		await page.waitForURL(/\/compare/);
+
+		// Default split: Authors/Keywords each render two columns (base + compare),
+		// so the structural-diff lists appear twice — like Title/Content do.
+		await expect(page.getByText("Bob Brown — CERN")).toBeVisible();
+		await expect(page.getByTestId("authors-diff")).toHaveCount(2);
+		await expect(page.getByTestId("keywords-diff")).toHaveCount(2);
+
+		// Inline: the toggle now collapses metadata to the unified single list too.
+		await page.getByTestId("diff-layout-inline").click();
+		await expect(page.getByTestId("authors-diff")).toHaveCount(1);
+		await expect(page.getByTestId("keywords-diff")).toHaveCount(1);
+
+		// Back to split restores the two-column metadata.
+		await page.getByTestId("diff-layout-split").click();
+		await expect(page.getByTestId("authors-diff")).toHaveCount(2);
+		await expect(page.getByTestId("keywords-diff")).toHaveCount(2);
+	});
+
 	test("lets the user pick a different base version", async ({
 		adminSubmissionDetailPage,
 		page,
