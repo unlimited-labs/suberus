@@ -94,11 +94,16 @@ def _libreoffice_version() -> str | None:
 #     centered title/author block with no style hook now centers (corpus audit gap).
 # v6: re-insert a Title/Subtitle paragraph pandoc drops as doc metadata (builtin
 #     "Title" style) so the title isn't missing entirely (corpus audit gap).
-SCHEMA_VERSION = 6
+# v7: `--mathjax` so pandoc keeps ALL native equations as TeX in the math span
+#     (without it, simple OMML came out as <sub>/<sup> HTML that KaTeX can't parse
+#     and degraded to plain text); now the Node KaTeX pass renders them uniformly.
+SCHEMA_VERSION = 7
 
 # Pinned pandoc recipe. `--sandbox` blocks pandoc IO; `--wrap=none` keeps diff-friendly
-# lines; raw HTML is dropped so author-supplied markup can't smuggle script through.
-PANDOC_ARGS = ["-f", "docx+styles", "-t", "html", "--sandbox", "--wrap=none"]
+# lines; `--mathjax` keeps native math as raw TeX (`\(…\)`/`\[…\]`) in the math span so
+# the Node KaTeX pass renders it; raw HTML is dropped so author-supplied markup can't
+# smuggle script through.
+PANDOC_ARGS = ["-f", "docx+styles", "-t", "html", "--sandbox", "--wrap=none", "--mathjax"]
 
 # libreofficeVersion folds into the hash so an LO upgrade that changes figure
 # rasterization invalidates the cache (gotcha C4 — else figures silently mutate
