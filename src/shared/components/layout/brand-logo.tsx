@@ -5,6 +5,8 @@ interface BrandLogoProps {
 	logoDarkInvert: boolean;
 	alt: string;
 	className?: string;
+	/** Use the horizontal logo lockup (wordmark beside mark) for the fallback. */
+	horizontal?: boolean;
 }
 
 export function BrandLogo({
@@ -12,6 +14,7 @@ export function BrandLogo({
 	logoDarkInvert,
 	alt,
 	className,
+	horizontal = false,
 }: BrandLogoProps) {
 	if (logoUrl) {
 		return (
@@ -25,11 +28,13 @@ export function BrandLogo({
 			/>
 		);
 	}
+	const light = horizontal ? "/logo_horizontal.svg" : "/logo.svg";
+	const dark = horizontal ? "/logo_horizontal_dark.svg" : "/logo_dark.svg";
 	return (
 		<>
-			<img src="/logo.svg" alt={alt} className={cn(className, "dark:hidden")} />
+			<img src={light} alt={alt} className={cn(className, "dark:hidden")} />
 			<img
-				src="/logo_dark.svg"
+				src={dark}
 				alt={alt}
 				className={cn(className, "hidden dark:block")}
 			/>

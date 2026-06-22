@@ -1,7 +1,6 @@
-import { IconHexagonLetterS } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import { EmailVerificationBanner } from "@/shared/components/email-verification-banner";
-import { cn } from "@/shared/lib/utils";
+import { BrandLogo } from "./brand-logo";
 import { MobileSidebar, Sidebar } from "./sidebar";
 
 interface AppLayoutProps {
@@ -34,7 +33,7 @@ export function AppLayout({
 			/>
 			<div className="flex flex-1 flex-col overflow-hidden">
 				{/* Mobile header with hamburger */}
-				<div className="flex h-14 items-center px-4 md:hidden">
+				<div className="flex h-14 items-center px-3 md:hidden">
 					<MobileSidebar
 						conferenceName={conferenceName}
 						logoUrl={logoUrl}
@@ -42,26 +41,13 @@ export function AppLayout({
 						scheduleStatus={scheduleStatus}
 						exhibitorsEnabled={exhibitorsEnabled}
 					/>
-					<div className="ml-3 flex items-center gap-3">
-						{logoUrl ? (
-							<img
-								src={logoUrl}
-								alt="Logo"
-								className={cn(
-									"h-7 w-auto object-contain",
-									logoDarkInvert && "dark:invert dark:grayscale",
-								)}
-							/>
-						) : (
-							<IconHexagonLetterS className="size-7 text-primary" />
-						)}
-						<span className="font-serif text-2xl font-semibold tracking-tight">
-							Suberus
-						</span>
-						<span className="border-l-4 border-primary pl-3 text-sm font-semibold uppercase tracking-widest">
-							{conferenceName}
-						</span>
-					</div>
+					<BrandLogo
+						horizontal
+						logoUrl={logoUrl}
+						logoDarkInvert={logoDarkInvert}
+						alt={conferenceName}
+						className="ml-2 h-12 w-auto object-contain"
+					/>
 				</div>
 				{/* Content card */}
 				<main className="flex flex-1 flex-col overflow-auto bg-background shadow-lg md:m-2 md:rounded-2xl">
