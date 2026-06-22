@@ -2,7 +2,6 @@ import {
 	IconColumns,
 	IconDownload,
 	IconFile,
-	IconGitCompare,
 	IconLayoutRows,
 } from "@tabler/icons-react";
 import { useMemo } from "react";
@@ -15,7 +14,6 @@ import {
 	diffText,
 	fileChanged,
 } from "@/shared/lib/text-diff";
-import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/ui/card";
 import { SectionCard } from "@/shared/ui/section-card";
@@ -94,35 +92,6 @@ function LayoutToggle({
 				<IconLayoutRows className="size-4" />
 				Inline
 			</Button>
-		</div>
-	);
-}
-
-function ComparingSummary({
-	baseLabel,
-	compareLabel,
-	isFileChanged,
-}: {
-	baseLabel: string;
-	compareLabel: string;
-	isFileChanged: boolean;
-}) {
-	return (
-		<div
-			className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm"
-			data-testid="diff-comparing-header"
-			aria-live="polite"
-		>
-			<IconGitCompare className="size-4 text-muted-foreground" />
-			<span className="font-medium">
-				Comparing {baseLabel} → {compareLabel}
-			</span>
-			<Badge
-				variant={isFileChanged ? "default" : "secondary"}
-				className="ml-auto"
-			>
-				{isFileChanged ? "File changed" : "File unchanged"}
-			</Badge>
 		</div>
 	);
 }
@@ -319,11 +288,6 @@ function VersionCompareBody({
 					<LayoutToggle layout={layout} onLayoutChange={onLayoutChange} />
 				</CardHeader>
 				<CardContent className="space-y-2">
-					<ComparingSummary
-						baseLabel={baseLabel}
-						compareLabel={compareLabel}
-						isFileChanged={isFileChanged}
-					/>
 					{samePair && (
 						<p className="text-sm text-muted-foreground">
 							Select two different versions to see a diff.

@@ -135,25 +135,6 @@ function useSyncedScroll() {
 	};
 }
 
-/** "+N −M changed blocks" summary shared by both layouts. */
-function ChangeCounts({
-	insertions,
-	deletions,
-}: {
-	insertions: number;
-	deletions: number;
-}) {
-	return (
-		<p className="text-sm text-muted-foreground">
-			<span className="text-emerald-600 dark:text-emerald-400">
-				+{insertions}
-			</span>{" "}
-			<span className="text-red-600 dark:text-red-400">−{deletions}</span>{" "}
-			changed blocks
-		</p>
-	);
-}
-
 const LOADING = (
 	<p className="text-sm text-muted-foreground">Loading file redline…</p>
 );
@@ -229,7 +210,6 @@ function InlineRedline({
 
 	return (
 		<div className="space-y-2" data-testid="file-redline">
-			<ChangeCounts insertions={data.insertions} deletions={data.deletions} />
 			<DocFrame title="File redline" html={data.html} />
 		</div>
 	);
@@ -257,7 +237,6 @@ function SplitDocuments({
 
 	return (
 		<div className="space-y-2" data-testid="file-redline">
-			<ChangeCounts insertions={data.insertions} deletions={data.deletions} />
 			<div
 				className="grid gap-4 md:grid-cols-2"
 				data-testid="file-redline-split"

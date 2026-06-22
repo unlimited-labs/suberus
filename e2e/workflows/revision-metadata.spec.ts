@@ -100,7 +100,7 @@ test.describe("Revision metadata (authors / keywords / extraction)", () => {
 		// --- Editor compare: Authors + Keywords diff are shown ---
 		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${submissionId}/compare`);
-		await expect(page.getByTestId("diff-comparing-header")).toBeVisible({
+		await expect(page.getByTestId("diff-base-select")).toBeVisible({
 			timeout: 15000,
 		});
 		await expect(page.getByText("Authors", { exact: true })).toBeVisible();
@@ -115,7 +115,7 @@ test.describe("Revision metadata (authors / keywords / extraction)", () => {
 		});
 		await loginAs(page, REVIEWER_USER, { clearCookies: true });
 		await page.goto(`/reviews/${assignment.id}/compare`);
-		await expect(page.getByTestId("diff-comparing-header")).toBeVisible({
+		await expect(page.getByTestId("diff-base-select")).toBeVisible({
 			timeout: 15000,
 		});
 		await expect(page.getByText("Authors", { exact: true })).toHaveCount(0);

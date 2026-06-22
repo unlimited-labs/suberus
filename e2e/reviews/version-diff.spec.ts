@@ -61,9 +61,10 @@ test.describe("Version compare page", () => {
 		await page.waitForURL(/\/admin\/submissions\/[a-f0-9-]+\/compare/);
 
 		// Assert — side-by-side panels with insertions on the right, deletions on the left.
-		const header = page.getByTestId("diff-comparing-header");
-		await expect(header).toContainText("Comparing v1");
-		await expect(header).toContainText("v2");
+		await expect(page.getByTestId("diff-base-select")).toContainText("Version 1");
+		await expect(page.getByTestId("diff-compare-select")).toContainText(
+			"Version 2",
+		);
 		await expect(page.getByTestId("side-by-side-diff").first()).toBeVisible();
 		await expect(
 			page.getByTestId("diff-side-old").getByTestId("diff-del").first(),
@@ -205,16 +206,12 @@ test.describe("Version compare page", () => {
 		await page.waitForURL(/\/compare/);
 
 		// Default pair is previous -> current (v2 -> v3).
-		await expect(page.getByTestId("diff-comparing-header")).toContainText(
-			"Comparing v2",
-		);
+		await expect(page.getByTestId("diff-base-select")).toContainText("Version 2");
 
-		// Switch the base picker to v1; header updates to v1 -> v3.
+		// Switch the base picker to v1; the base picker updates to v1.
 		await page.getByTestId("diff-base-select").click();
 		await page.getByRole("option", { name: /Version 1/ }).click();
-		await expect(page.getByTestId("diff-comparing-header")).toContainText(
-			"Comparing v1",
-		);
+		await expect(page.getByTestId("diff-base-select")).toContainText("Version 1");
 	});
 
 	test("Compare button is hidden when there is only one version", async ({

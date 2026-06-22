@@ -588,7 +588,7 @@ test.describe("docs screenshots", () => {
 			`/admin/submissions/${ctx.multiVersionId}/compare?view=split`,
 		);
 		await page
-			.getByTestId("diff-comparing-header")
+			.getByTestId("diff-base-select")
 			.waitFor({ timeout: 10000 })
 			.catch(() => {});
 		await shot(page, "34-managing-submission-compare.png", { height: 2400 });
