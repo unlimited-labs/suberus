@@ -10,6 +10,7 @@ dependencies = [
     "Pillow",
     "xmldiff",
     "lxml",
+    "olefile",
 ]
 
 # Runtime also requires the system binaries `pandoc` (pinned) and `soffice`

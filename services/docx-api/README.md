@@ -38,6 +38,21 @@ Determinism: same DOCX + same pinned toolchain → same `document.html` and figu
 shas. A `PANDOC_VERSION` bump changes `meta.pandocVersion` → the worker re-extracts
 rather than mutating historical artifacts (immutable-forever).
 
+## MathType equations (pre-pandoc conversion)
+
+Pandoc converts native Office Math (OMML) but **drops MathType equations**, which Word
+stores as OLE objects (`word/embeddings/oleObject*.bin`, ProgID `Equation.DSMT4`/
+`Equation.3`); they survive only as an oversized fallback image. `mathtype.py` runs
+**before** pandoc: it decodes each OLE's MTEF v5 binary to LaTeX (clean-room, pure
+Python via `olefile` + an MTEF reader — see
+[the spec](https://rtf2latex2e.sourceforge.net/MTEF5.html)) and rewrites the equation
+run into a sentinel token. After pandoc, the sentinel becomes a
+`<span class="math …">\(…\)</span>` span — the same shape pandoc emits for native
+equations — which the Node worker's KaTeX pass renders. Conversion is **lossless-or-skip**:
+anything it can't decode confidently (MTEF v3, matrices, accents, unknown glyphs) is left
+as its fallback image. Recorded in `NORMALIZER_CONFIG` (`mathtype`) + `SCHEMA_VERSION`, so
+enabling it re-extracts artifacts under a new cache key rather than mutating history.
+
 ## Notes / TODO
 
 - `PANDOC_VERSION` is an `ARG` (default 3.5) — pin deliberately; it is recorded in

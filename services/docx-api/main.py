@@ -41,6 +41,7 @@ from PIL import Image
 from pydantic import BaseModel
 
 import diffhtml
+import mathtype
 
 
 def _xmldiff_version() -> str | None:
@@ -82,7 +83,8 @@ def _libreoffice_version() -> str | None:
 
 # Bundle schema version — bump when the bundle layout or normalize recipe changes
 # (participates in the artifact cache key so historical diffs aren't silently mutated).
-SCHEMA_VERSION = 2
+# v3: pre-pandoc MathType OLE -> LaTeX math-span conversion (mathtype.py).
+SCHEMA_VERSION = 3
 
 # Pinned pandoc recipe. `--sandbox` blocks pandoc IO; `--wrap=none` keeps diff-friendly
 # lines; raw HTML is dropped so author-supplied markup can't smuggle script through.
@@ -95,6 +97,7 @@ NORMALIZER_CONFIG = {
     "pandocArgs": PANDOC_ARGS,
     "figures": "all->png",
     "imgDims": "style->attr@px",
+    "mathtype": "ole-mtef-v5->latex-span",
     "schemaVersion": SCHEMA_VERSION,
     "libreofficeVersion": _libreoffice_version(),
 }
@@ -205,6 +208,18 @@ def _hoist_img_dims(html: str) -> str:
 def _normalize(docx_path: Path, workdir: Path) -> tuple[str, dict[str, bytes], str]:
     media_dir = workdir / "media"
     html_path = workdir / "document.html"
+
+    # Pre-pandoc: convert decodable MathType OLE equations into sentinel tokens so
+    # pandoc (which drops OLE objects) doesn't leave them as oversized fallback images.
+    # Undecodable equations are left untouched and flow through as before.
+    equations: list[mathtype.ConvertedEquation] = []
+    try:
+        converted_docx, equations = mathtype.convert_mathtype_oles(docx_path.read_bytes())
+        if equations:
+            docx_path.write_bytes(converted_docx)
+    except Exception:
+        equations = []  # never let equation conversion block normalization
+
     try:
         proc = _run([
             "pandoc", str(docx_path), *PANDOC_ARGS,
@@ -216,6 +231,9 @@ def _normalize(docx_path: Path, workdir: Path) -> tuple[str, dict[str, bytes], s
         raise HTTPException(500, f"pandoc failed: {proc.stderr.decode(errors='replace')[:300]}")
     warnings = proc.stderr.decode(errors="replace").strip()
     html = _hoist_img_dims(html_path.read_text(encoding="utf-8"))
+    # Post-pandoc: swap each equation sentinel for a `<span class="math …">` the Node
+    # worker's KaTeX pass renders (same shape pandoc emits for native Word equations).
+    html = mathtype.apply_sentinels(html, equations)
 
     figures: dict[str, bytes] = {}
 

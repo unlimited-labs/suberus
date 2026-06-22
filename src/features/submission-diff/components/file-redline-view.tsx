@@ -17,7 +17,11 @@ function wrapDoc(html: string): string {
 		body{font:15px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;margin:0;padding:24px 16px;background:#f6f7f9;color:#1a1d21}
 		.page{max-width:820px;margin:0 auto;padding:32px 40px;background:#fff;border:1px solid #e3e6ea;border-radius:10px}
 		@media(max-width:768px){body{padding:0}.page{padding:20px 16px;border-radius:0;border-left:none;border-right:none}}
-		img{max-width:100%;height:auto}
+		/* Cap embedded raster size so an oversized image (e.g. a MathType equation
+		   pasted as a large picture) can't dominate the page. width:auto + height:auto
+		   scales proportionally within both bounds — a max-height with a fixed width
+		   attribute would distort. max-height is tunable. */
+		img{max-width:100%;max-height:20rem;width:auto;height:auto}
 		h1,h2,h3{line-height:1.25}
 		table{border-collapse:collapse}
 		td,th{border:1px solid #e2e8f0;padding:4px 8px}
@@ -30,7 +34,7 @@ function wrapDoc(html: string): string {
 		del.matheq{box-shadow:0 0 0 2px #b3202d}
 		/* Box a changed figure instead of striking it through, with a label. */
 		del:has(img),ins:has(img){display:block;padding:8px;margin:12px 0;border:4px solid;border-radius:10px;text-decoration:none;box-shadow:none}
-		del:has(img) img,ins:has(img) img{display:block;width:100%;border-radius:4px}
+		del:has(img) img,ins:has(img) img{display:block;max-width:100%;border-radius:4px}
 		del:has(img){border-color:#b3202d;background:#ffeef0}
 		ins:has(img){border-color:#1a7f37;background:#e9f9ee}
 		del:has(img)::before,ins:has(img)::before{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
