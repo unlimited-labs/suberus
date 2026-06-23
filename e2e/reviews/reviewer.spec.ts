@@ -3,9 +3,9 @@ import { test, expect, createSubmissionWithAssignment, addSubmissionVersions, se
 
 // Tests use reviewer storageState from playwright.config.ts
 
-/** The file-redline seed normalizes via the docling + docx-api sidecars; skip when down. */
+/** The file-redline seed normalizes via the pdf-api + docx-api sidecars; skip when down. */
 async function sidecarsHealthy(): Promise<boolean> {
-	const urls = [process.env.DOCLING_URL, process.env.DOCX_API_URL];
+	const urls = [process.env.PDF_API_URL, process.env.DOCX_API_URL];
 	try {
 		for (const url of urls) {
 			if (!url) return false;
@@ -262,7 +262,7 @@ test.describe("Reviewer - Double-blind Mode", () => {
 	});
 
 	test("neutralizes the author-derived file name on the compare page", async ({ page, reviewerAssignmentsPage, testRun, cleanup }) => {
-		test.skip(!(await sidecarsHealthy()), "docling/docx-api sidecars not running");
+		test.skip(!(await sidecarsHealthy()), "pdf-api/docx-api sidecars not running");
 		// Arrange — a double-blind submission whose files were stored under the
 		// author's name (Firstname_Lastname.ext); the reviewer must never see it.
 		const { submissionId, title } = await createSubmissionWithAssignment({

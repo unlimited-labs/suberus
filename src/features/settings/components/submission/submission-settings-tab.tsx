@@ -15,7 +15,7 @@ interface SubmissionSettingsTabProps {
 	initialReviewGuidelines: string;
 	initialExtraction: ExtractionSettings;
 	llmHealth: AppSettingsMap["SERVICE_HEALTH_LLM"];
-	doclingHealth: AppSettingsMap["SERVICE_HEALTH_DOCLING"];
+	pdfApiHealth: AppSettingsMap["SERVICE_HEALTH_PDF_API"];
 }
 
 export function SubmissionSettingsTab({
@@ -24,7 +24,7 @@ export function SubmissionSettingsTab({
 	initialReviewGuidelines,
 	initialExtraction,
 	llmHealth,
-	doclingHealth,
+	pdfApiHealth,
 }: SubmissionSettingsTabProps) {
 	const {
 		data,
@@ -70,7 +70,7 @@ export function SubmissionSettingsTab({
 				ai={extractionAi}
 				onAiChange={setExtractionAi}
 				llmHealth={llmHealth}
-				doclingHealth={doclingHealth}
+				pdfApiHealth={pdfApiHealth}
 			/>
 
 			<div className="flex justify-end border-t pt-6">

@@ -7,7 +7,7 @@ interface LlmHealth {
 	models?: string[];
 	model?: string;
 }
-interface DoclingHealth {
+interface PdfApiHealthInfo {
 	status: "healthy" | "unavailable";
 }
 
@@ -24,7 +24,7 @@ export function formatLlmStatus(health: LlmHealth): string {
 	return parts.join(" · ");
 }
 
-export function formatDoclingStatus(health: DoclingHealth): string {
-	if (health.status !== "healthy") return "Docling unavailable";
-	return "Docling connected";
+export function formatPdfApiStatus(health: PdfApiHealthInfo): string {
+	if (health.status !== "healthy") return "PDF API unavailable";
+	return "PDF API connected";
 }

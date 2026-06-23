@@ -44,7 +44,7 @@ function AdminDashboard() {
 					s3={data.s3}
 					smtp={data.smtp}
 					llm={data.llm}
-					docling={data.docling}
+					pdfApi={data.pdfApi}
 				/>
 			</div>
 		</div>

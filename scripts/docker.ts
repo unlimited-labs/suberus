@@ -27,5 +27,6 @@ docker("buildx", "bake", "--push");
 console.log(`\n=== Done ===`);
 console.log(`  Runtime : ${REGISTRY}/${IMAGE_NAME}:${TAG}`);
 console.log(`  Migrate : ${REGISTRY}/${IMAGE_NAME}:migrate-${TAG}`);
-console.log(`  Docling : ${REGISTRY}/suberus/docling:${TAG}`);
+console.log(`  PDF API : ${REGISTRY}/suberus/pdf-api:${TAG}`);
+console.log(`  DOCX API: ${REGISTRY}/suberus/docx-api:${TAG}`);
 console.log(`  Planner : ${REGISTRY}/suberus/planner:${TAG}`);

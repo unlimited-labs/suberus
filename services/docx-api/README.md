@@ -1,7 +1,7 @@
 # docx-api
 
 DOCX → normalized-HTML + rasterized-figure **bundle** for the submission
-version-diff pipeline (Track B). Sibling of `docling-api` (which handles PDF).
+version-diff pipeline (Track B). Sibling of `pdf-api` (which handles PDF).
 
 The Node `submission-diff` worker calls `POST /normalize` per submission version,
 then content-addresses the figures into Garage, sanitizes the HTML with

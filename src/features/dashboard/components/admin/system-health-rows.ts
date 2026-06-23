@@ -39,15 +39,15 @@ export const STATUS_STYLES: Record<
 type S3Metrics = AdminDashboardMetrics["s3"] | undefined;
 type SmtpMetrics = AdminDashboardMetrics["smtp"] | undefined;
 type LlmMetrics = AdminDashboardMetrics["llm"] | undefined;
-type DoclingMetrics = AdminDashboardMetrics["docling"] | undefined;
+type PdfApiMetrics = AdminDashboardMetrics["pdfApi"] | undefined;
 
 function llmDetail(llm: LlmMetrics): string {
 	return llm ? formatLlmStatus(llm) : "Unknown";
 }
 
-function doclingDetail(docling: DoclingMetrics): string {
-	if (docling?.status === "healthy") return "PDF & DOCX to markdown conversion";
-	return docling?.message ?? "Unknown";
+function pdfApiDetail(pdfApi: PdfApiMetrics): string {
+	if (pdfApi?.status === "healthy") return "PDF & DOCX to markdown conversion";
+	return pdfApi?.message ?? "Unknown";
 }
 
 function s3Detail(s3: S3Metrics): string {
@@ -64,12 +64,12 @@ export function buildServiceRows({
 	s3,
 	smtp,
 	llm,
-	docling,
+	pdfApi,
 }: {
 	s3: S3Metrics;
 	smtp: SmtpMetrics;
 	llm: LlmMetrics;
-	docling: DoclingMetrics;
+	pdfApi: PdfApiMetrics;
 }): ServiceRow[] {
 	return [
 		{
@@ -80,9 +80,9 @@ export function buildServiceRows({
 		},
 		{
 			icon: IconFileText,
-			name: "Docling",
-			status: docling?.status ?? "unavailable",
-			detail: doclingDetail(docling),
+			name: "PDF API",
+			status: pdfApi?.status ?? "unavailable",
+			detail: pdfApiDetail(pdfApi),
 		},
 		{
 			icon: IconDatabase,

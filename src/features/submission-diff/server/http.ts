@@ -1,6 +1,6 @@
 /**
  * Shared sidecar fetch: bounded by an AbortSignal timeout and a uniform
- * ok-check. A hung sidecar (e.g. docling inference on a pathological PDF) would
+ * ok-check. A hung sidecar (e.g. pdf-api inference on a pathological PDF) would
  * otherwise wedge the normalize worker forever; the timeout frees it so pg-boss
  * can expire + retry the job.
  */

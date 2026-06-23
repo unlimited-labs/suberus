@@ -43,8 +43,8 @@ export const env = createEnv({
 		LLM_MODEL: z.string().optional(),
 		LLM_EMBEDDING_MODEL: z.string().optional(),
 
-		// Docling API (optional, enhances LLM extraction with better markdown)
-		DOCLING_URL: z.url().optional(),
+		// PDF API (docling-powered; optional, enhances LLM extraction with better markdown)
+		PDF_API_URL: z.url().optional(),
 
 		// docx-api (optional, DOCX->HTML normalize bundle for the version-diff pipeline)
 		DOCX_API_URL: z.url().optional(),

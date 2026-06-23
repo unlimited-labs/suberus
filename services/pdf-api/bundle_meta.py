@@ -24,7 +24,7 @@ SCHEMA_VERSION = 1
 # keeps diff-friendly lines. Math stays as `<span class="math">` spans (pandoc's
 # default HTML math), which the diff protects atomically and KaTeX renders.
 PANDOC_ARGS = ["-f", "markdown", "-t", "html", "--sandbox", "--wrap=none"]
-PANDOC_TIMEOUT_S = int(os.getenv("DOCLING_API_PANDOC_TIMEOUT_S", "120"))
+PANDOC_TIMEOUT_S = int(os.getenv("PDF_API_PANDOC_TIMEOUT_S", "120"))
 
 
 class PandocError(RuntimeError):

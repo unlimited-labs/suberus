@@ -71,19 +71,19 @@ export interface AdminDashboardMetrics {
 	s3: S3HealthResult;
 	smtp: SmtpHealthResult;
 	llm: AppSettingsMap["SERVICE_HEALTH_LLM"];
-	docling: AppSettingsMap["SERVICE_HEALTH_DOCLING"];
+	pdfApi: AppSettingsMap["SERVICE_HEALTH_PDF_API"];
 }
 
 export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics> {
 	const sevenDaysAgo = subDays(new Date(), 7);
 	const trendWindowStart = subDays(startOfDay(new Date()), TREND_DAYS - 1);
 
-	const [s3Health, smtpHealth, llmHealth, doclingHealth, feeCurrency] =
+	const [s3Health, smtpHealth, llmHealth, pdfApiHealth, feeCurrency] =
 		await Promise.all([
 			checkS3Health(),
 			checkSmtpHealth(),
 			getSetting("SERVICE_HEALTH_LLM"),
-			getSetting("SERVICE_HEALTH_DOCLING"),
+			getSetting("SERVICE_HEALTH_PDF_API"),
 			getSetting("FEE_CURRENCY"),
 		]);
 
@@ -330,6 +330,6 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		s3: s3Health,
 		smtp: smtpHealth,
 		llm: llmHealth,
-		docling: doclingHealth,
+		pdfApi: pdfApiHealth,
 	};
 }

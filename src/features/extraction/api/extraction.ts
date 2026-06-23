@@ -110,16 +110,16 @@ export const llmHealthQueryOptions = () =>
 		refetchInterval: 5 * 60_000,
 	});
 
-export const getDoclingHealthFn = createServerFn({ method: "GET" })
+export const getPdfApiHealthFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(
-		async (): Promise<AppSettingsMap["SERVICE_HEALTH_DOCLING"]> =>
-			getSetting("SERVICE_HEALTH_DOCLING"),
+		async (): Promise<AppSettingsMap["SERVICE_HEALTH_PDF_API"]> =>
+			getSetting("SERVICE_HEALTH_PDF_API"),
 	);
 
-export const doclingHealthQueryOptions = () =>
+export const pdfApiHealthQueryOptions = () =>
 	queryOptions({
-		queryKey: ["admin", "docling-health"],
-		queryFn: () => getDoclingHealthFn(),
+		queryKey: ["admin", "pdf-api-health"],
+		queryFn: () => getPdfApiHealthFn(),
 		refetchInterval: 5 * 60_000,
 	});

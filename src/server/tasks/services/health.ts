@@ -1,5 +1,5 @@
 import { defineTask } from "nitro/task";
-import { checkDoclingHealth } from "@/features/extraction/server/docling";
+import { checkPdfApiHealth } from "@/features/extraction/server/pdf-api";
 import { checkPlannerHealth } from "@/features/planner/server/health";
 import { setSetting } from "@/features/settings/server/settings";
 import { logger } from "@/logger";
@@ -8,14 +8,14 @@ import { checkLlmHealth } from "@/shared/server/llm";
 export default defineTask({
 	meta: {
 		name: "services:health",
-		description: "Check health of external services (LLM, Docling, Planner)",
+		description: "Check health of external services (LLM, PDF API, Planner)",
 	},
 	async run() {
 		logger.info("[task:services:health] started");
 
-		const [llm, docling, planner] = await Promise.all([
+		const [llm, pdfApi, planner] = await Promise.all([
 			checkLlmHealth(),
-			checkDoclingHealth(),
+			checkPdfApiHealth(),
 			checkPlannerHealth(),
 		]);
 
@@ -30,9 +30,9 @@ export default defineTask({
 				model: llm.model,
 				checkedAt,
 			}),
-			setSetting("SERVICE_HEALTH_DOCLING", {
-				status: docling.status,
-				message: docling.message,
+			setSetting("SERVICE_HEALTH_PDF_API", {
+				status: pdfApi.status,
+				message: pdfApi.message,
 				checkedAt,
 			}),
 			setSetting("SERVICE_HEALTH_PLANNER", {
@@ -43,12 +43,12 @@ export default defineTask({
 		]);
 
 		logger.info(
-			`[task:services:health] done — llm=${llm.status} docling=${docling.status} planner=${planner.status}`,
+			`[task:services:health] done — llm=${llm.status} pdf-api=${pdfApi.status} planner=${planner.status}`,
 		);
 		return {
 			result: {
 				llm: llm.status,
-				docling: docling.status,
+				pdfApi: pdfApi.status,
 				planner: planner.status,
 			},
 		};

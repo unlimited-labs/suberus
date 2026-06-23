@@ -11,7 +11,7 @@ interface SystemHealthCardProps {
 	s3: AdminDashboardMetrics["s3"] | undefined;
 	smtp: AdminDashboardMetrics["smtp"] | undefined;
 	llm: AdminDashboardMetrics["llm"] | undefined;
-	docling: AdminDashboardMetrics["docling"] | undefined;
+	pdfApi: AdminDashboardMetrics["pdfApi"] | undefined;
 }
 
 function ServiceRow({ service }: { service: ServiceRowData }) {
@@ -39,9 +39,9 @@ export function SystemHealthCard({
 	s3,
 	smtp,
 	llm,
-	docling,
+	pdfApi,
 }: SystemHealthCardProps) {
-	const services = buildServiceRows({ s3, smtp, llm, docling });
+	const services = buildServiceRows({ s3, smtp, llm, pdfApi });
 
 	return (
 		<SectionCard title="System Health">
