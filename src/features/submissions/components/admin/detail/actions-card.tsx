@@ -3,8 +3,11 @@ import {
 	IconChevronDown,
 	IconGavel,
 	IconLoader2,
+	IconPencil,
 	IconTrash,
 } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
+import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
 import { Button } from "@/shared/ui/button";
 import {
 	DropdownMenu,
@@ -19,6 +22,7 @@ import type { ActionAvailability, PrimaryAction } from "./availability";
 import type { SubmissionDialogKind } from "./detail-dialogs";
 
 interface ActionsCardProps {
+	submissionId: string;
 	availability: ActionAvailability;
 	primaryAction: PrimaryAction | null;
 	isTransitioning: boolean;
@@ -75,6 +79,7 @@ function PrimaryActionButton({
 }
 
 export function ActionsCard({
+	submissionId,
 	availability,
 	primaryAction,
 	isTransitioning,
@@ -82,6 +87,7 @@ export function ActionsCard({
 	onOpenDialog,
 }: ActionsCardProps) {
 	const secondaryActions = buildSecondaryActions(availability, primaryAction);
+	const { isOnlyAdmin } = useAdminAuth();
 
 	return (
 		<SectionCard title="Actions" contentClassName="space-y-2">
@@ -123,6 +129,18 @@ export function ActionsCard({
 						</DropdownMenuItem>
 					))}
 					<DropdownMenuSeparator />
+					{isOnlyAdmin && (
+						<DropdownMenuItem asChild>
+							<Link
+								to="/admin/submissions/$id/edit"
+								params={{ id: submissionId }}
+								data-testid="submission-edit-action"
+							>
+								<IconPencil className="mr-2 size-4" />
+								Edit submission
+							</Link>
+						</DropdownMenuItem>
+					)}
 					<DropdownMenuItem
 						variant="destructive"
 						onSelect={() => onOpenDialog("delete")}
