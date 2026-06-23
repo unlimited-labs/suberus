@@ -38,7 +38,7 @@ test.describe("Extraction Queue", () => {
 		await extractionPage.gotoFullPaperForm();
 		await extractionPage.uploadFile(SAMPLE_PDF);
 
-		// PDF extraction takes longer (docling + LLM)
+		// PDF extraction takes longer (pdf-api + LLM)
 		await expect(extractionPage.titleInput).not.toHaveValue("", {
 			timeout: 60_000,
 		});

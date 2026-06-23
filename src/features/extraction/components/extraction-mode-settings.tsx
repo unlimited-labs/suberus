@@ -2,8 +2,8 @@ import { IconFileSearch } from "@tabler/icons-react";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import type { AppSettingsMap } from "@/features/settings/types";
 import {
-	formatDoclingStatus,
 	formatLlmStatus,
+	formatPdfApiStatus,
 } from "@/shared/lib/format-llm-status";
 import { cn } from "@/shared/lib/utils";
 import { Label } from "@/shared/ui/label";
@@ -18,7 +18,7 @@ interface ExtractionModeSettingsProps {
 	ai: boolean;
 	onAiChange: (enabled: boolean) => void;
 	llmHealth: AppSettingsMap["SERVICE_HEALTH_LLM"];
-	doclingHealth: AppSettingsMap["SERVICE_HEALTH_DOCLING"];
+	pdfApiHealth: AppSettingsMap["SERVICE_HEALTH_PDF_API"];
 }
 
 export function ExtractionModeSettings({
@@ -29,7 +29,7 @@ export function ExtractionModeSettings({
 	ai,
 	onAiChange,
 	llmHealth,
-	doclingHealth,
+	pdfApiHealth,
 }: ExtractionModeSettingsProps) {
 	const llmAvailable = llmHealth.status === "healthy";
 
@@ -69,8 +69,8 @@ export function ExtractionModeSettings({
 							onCheckedChange={onHeuristicChange}
 							footer={
 								<StatusBadge
-									status={doclingHealth.status}
-									label={formatDoclingStatus(doclingHealth)}
+									status={pdfApiHealth.status}
+									label={formatPdfApiStatus(pdfApiHealth)}
 								/>
 							}
 						/>

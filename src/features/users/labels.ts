@@ -54,14 +54,22 @@ export const submissionRoleFilterOptions = [
 
 export const submissionDraftFilterOptions = [
 	{ label: "Submitted", value: "submitted" },
+	{ label: "Accepted", value: "accepted" },
 	{ label: "Draft", value: "draft" },
 ] as const;
+
+const submissionStatusSuffix: Record<SubmissionRoleSummary["status"], string> =
+	{
+		draft: " (draft)",
+		accepted: " (accepted)",
+		submitted: "",
+	};
 
 /** Single badge label, e.g. "Poster · coauthor ×3 (draft)". */
 export function formatSubmissionRole(role: SubmissionRoleSummary): string {
 	const count = role.count > 1 ? ` ×${role.count}` : "";
-	const draft = role.draft ? " (draft)" : "";
-	return `${typeLabels[role.type]} · ${submissionRoleLabels[role.role]}${count}${draft}`;
+	const suffix = submissionStatusSuffix[role.status];
+	return `${typeLabels[role.type]} · ${submissionRoleLabels[role.role]}${count}${suffix}`;
 }
 
 /** Comma-joined summary of all involvements (used in XLSX export). */

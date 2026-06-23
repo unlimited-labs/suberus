@@ -1,7 +1,7 @@
 import {
-	checkDoclingHealth,
-	getDoclingMarkdown,
-} from "@/features/extraction/server/docling";
+	checkPdfApiHealth,
+	getPdfApiMarkdown,
+} from "@/features/extraction/server/pdf-api";
 import { checkLlmHealth } from "@/shared/server/llm";
 import { parseDocx } from "./docx-parser";
 import { extractFromZones } from "./extraction-heuristic";
@@ -57,8 +57,8 @@ export async function extractFromDocx(
 
 	async function getLlmInput(): Promise<string> {
 		if (fileName) {
-			const doclingMd = await getDoclingMarkdown(buffer, fileName);
-			if (doclingMd) return cutAtAbstract(doclingMd);
+			const pdfApiMd = await getPdfApiMarkdown(buffer, fileName);
+			if (pdfApiMd) return cutAtAbstract(pdfApiMd);
 		}
 		return classified
 			.filter((c) => c.zone !== "BODY")
@@ -84,7 +84,7 @@ export async function extractFromDocx(
 	}
 
 	if (config.ai) {
-		await onStage?.("docling", 2);
+		await onStage?.("pdf-api", 2);
 		const llmInput = await getLlmInput();
 		await onStage?.("ai", 2);
 		const aiResult = await tryLlmExtraction(llmInput);
@@ -102,19 +102,19 @@ export async function extractFromPdf(
 ): Promise<ExtractionResult> {
 	if (!config.ai) return {};
 
-	const health = await checkDoclingHealth();
+	const health = await checkPdfApiHealth();
 	if (health.status !== "healthy") {
 		throw new Error(
-			`PDF extraction unavailable: docling service is ${health.message}`,
+			`PDF extraction unavailable: pdf-api service is ${health.message}`,
 		);
 	}
 
-	await onStage?.("docling", 2);
-	const doclingMd = await getDoclingMarkdown(buffer, fileName);
-	if (!doclingMd) return {};
+	await onStage?.("pdf-api", 2);
+	const pdfApiMd = await getPdfApiMarkdown(buffer, fileName);
+	if (!pdfApiMd) return {};
 
 	await onStage?.("ai", 2);
-	const llmInput = cutAtAbstract(doclingMd);
+	const llmInput = cutAtAbstract(pdfApiMd);
 	const aiResult = await tryLlmExtraction(llmInput);
 	return aiResult ?? {};
 }
@@ -135,7 +135,7 @@ async function tryLlmExtraction(
 // --- Confidence check ---
 //
 // Determines whether LLM fallback should trigger.
-// LOW confidence → LLM is called with docling markdown (or XML header text).
+// LOW confidence → LLM is called with pdf-api markdown (or XML header text).
 //
 // Rules (ANY triggers LOW):
 //   1. No title found                          — fundamental extraction failure

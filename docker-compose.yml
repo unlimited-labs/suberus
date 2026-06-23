@@ -76,10 +76,10 @@ services:
     networks:
       - suberus-network
 
-  # Docling document parser (optional, enhances AI extraction)
-  docling:
-    build: ./services/docling-api
-    container_name: suberus-docling
+  # pdf-api: PDF/DOCX document parser (docling-powered; enhances AI extraction + PDF version-diff)
+  pdf-api:
+    build: ./services/pdf-api
+    container_name: suberus-pdf-api
     restart: unless-stopped
     ports:
       - "8100:8100"

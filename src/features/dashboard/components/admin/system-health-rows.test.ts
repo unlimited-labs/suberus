@@ -19,11 +19,16 @@ const healthy: Args = {
 		model: "gemma",
 		checkedAt: "",
 	} as AdminDashboardMetrics["llm"],
-	docling: {
+	pdfApi: {
 		status: "healthy",
 		message: "",
 		checkedAt: "",
-	} as AdminDashboardMetrics["docling"],
+	} as AdminDashboardMetrics["pdfApi"],
+	docxApi: {
+		status: "healthy",
+		message: "",
+		checkedAt: "",
+	} as AdminDashboardMetrics["docxApi"],
 };
 
 function row(rows: ReturnType<typeof buildServiceRows>, name: string) {
@@ -33,11 +38,12 @@ function row(rows: ReturnType<typeof buildServiceRows>, name: string) {
 }
 
 describe("buildServiceRows", () => {
-	it("returns the four services in order", () => {
+	it("returns the five services in order", () => {
 		const rows = buildServiceRows(healthy);
 		expect(rows.map((r) => r.name)).toEqual([
 			"LLM",
-			"Docling",
+			"PDF API",
+			"DOCX API",
 			"Storage",
 			"Email",
 		]);
@@ -47,9 +53,10 @@ describe("buildServiceRows", () => {
 		const rows = buildServiceRows(healthy);
 		expect(row(rows, "Storage").detail).toBe("https://s3.example/papers");
 		expect(row(rows, "Email").detail).toBe("mail.example:587");
-		expect(row(rows, "Docling").detail).toBe(
+		expect(row(rows, "PDF API").detail).toBe(
 			"PDF & DOCX to markdown conversion",
 		);
+		expect(row(rows, "DOCX API").detail).toBe("DOCX structural redline");
 		expect(row(rows, "LLM").detail).toBe("LLM connected · GPU · gemma");
 	});
 
@@ -58,13 +65,15 @@ describe("buildServiceRows", () => {
 			s3: undefined,
 			smtp: undefined,
 			llm: undefined,
-			docling: undefined,
+			pdfApi: undefined,
+			docxApi: undefined,
 		});
 		expect(row(rows, "LLM").status).toBe("unavailable");
-		expect(row(rows, "Docling").status).toBe("unavailable");
+		expect(row(rows, "PDF API").status).toBe("unavailable");
+		expect(row(rows, "DOCX API").status).toBe("unavailable");
 		expect(row(rows, "Storage").status).toBe("error");
 		expect(row(rows, "Email").status).toBe("error");
-		for (const name of ["LLM", "Docling", "Storage", "Email"]) {
+		for (const name of ["LLM", "PDF API", "DOCX API", "Storage", "Email"]) {
 			expect(row(rows, name).detail).toBe("Unknown");
 		}
 	});
@@ -84,15 +93,15 @@ describe("buildServiceRows", () => {
 		expect(row(rows, "Email").detail).toBe("auth failed");
 	});
 
-	it("surfaces docling message when not healthy", () => {
+	it("surfaces pdf-api message when not healthy", () => {
 		const rows = buildServiceRows({
 			...healthy,
-			docling: {
+			pdfApi: {
 				status: "unavailable",
 				message: "service down",
 				checkedAt: "",
-			} as AdminDashboardMetrics["docling"],
+			} as AdminDashboardMetrics["pdfApi"],
 		});
-		expect(row(rows, "Docling").detail).toBe("service down");
+		expect(row(rows, "PDF API").detail).toBe("service down");
 	});
 });

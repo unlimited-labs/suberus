@@ -10,12 +10,12 @@ import { SubmissionStatus } from "../../src/generated/prisma/enums";
 // Tests use admin storageState (see playwright.config.ts roleProject).
 
 /**
- * The PDF file-redline path runs the real docling + docx-api sidecars. Skip the
+ * The PDF file-redline path runs the real pdf-api + docx-api sidecars. Skip the
  * file-redline test when they aren't reachable (e.g. a CI without the dev stack)
  * rather than fail — the rest of the compare-page suite is sidecar-independent.
  */
 async function sidecarsHealthy(): Promise<boolean> {
-	const urls = [process.env.DOCLING_URL, process.env.DOCX_API_URL];
+	const urls = [process.env.PDF_API_URL, process.env.DOCX_API_URL];
 	try {
 		for (const url of urls) {
 			if (!url) return false;
@@ -244,7 +244,7 @@ test.describe("Version compare page", () => {
 	}) => {
 		test.skip(
 			!(await sidecarsHealthy()),
-			"docling/docx-api sidecars not running",
+			"pdf-api/docx-api sidecars not running",
 		);
 
 		const { id } = await createSubmission({

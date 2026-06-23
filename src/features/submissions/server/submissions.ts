@@ -1055,52 +1055,94 @@ export async function updateDraftSubmission(
 		};
 	}
 
-	await prisma.$transaction(async (tx) => {
-		// Update submission core fields
-		await tx.submission.update({
-			where: { id: submissionId },
-			data: {
-				type: data.type,
-				title: data.title,
-				content: data.content,
-				trackId: data.trackId || null,
-			},
-		});
-
-		// Update version
-		if (submission.currentVersion) {
-			await tx.submissionVersion.update({
-				where: { id: submission.currentVersion.id },
-				data: { title: data.title, content: data.content },
-			});
-		}
-
-		// Replace canonical author/keyword composition
-		await replaceSubmissionAuthors(tx, submissionId, data.authors);
-		const keywordNames = await replaceSubmissionKeywords(
-			tx,
-			submissionId,
-			data.keywords,
-		);
-
-		// Keep the (single, pre-review) version's snapshot in sync with the edit
-		if (submission.currentVersion) {
-			await tx.submissionVersionAuthor.deleteMany({
-				where: { versionId: submission.currentVersion.id },
-			});
-			await tx.submissionVersionKeyword.deleteMany({
-				where: { versionId: submission.currentVersion.id },
-			});
-			await writeVersionSnapshot(
-				tx,
-				submission.currentVersion.id,
-				data.authors,
-				keywordNames,
-			);
-		}
-	});
+	await prisma.$transaction((tx) =>
+		applyInPlaceSubmissionEdit(tx, submission, data),
+	);
 
 	logger.info(`[submission] updated draft ${submissionId}`);
+
+	return { success: true };
+}
+
+/**
+ * In-place edit of a submission's current version: core fields, version
+ * title/content, canonical authors/keywords, and the current version's frozen
+ * snapshot. Does NOT create a new version. Caller MUST run inside a transaction.
+ */
+async function applyInPlaceSubmissionEdit(
+	tx: Prisma.TransactionClient,
+	submission: { id: string; currentVersion: { id: string } | null },
+	data: CreateSubmissionInput,
+): Promise<void> {
+	await tx.submission.update({
+		where: { id: submission.id },
+		data: {
+			type: data.type,
+			title: data.title,
+			content: data.content,
+			trackId: data.trackId || null,
+		},
+	});
+
+	if (submission.currentVersion) {
+		await tx.submissionVersion.update({
+			where: { id: submission.currentVersion.id },
+			data: { title: data.title, content: data.content },
+		});
+	}
+
+	await replaceSubmissionAuthors(tx, submission.id, data.authors);
+	const keywordNames = await replaceSubmissionKeywords(
+		tx,
+		submission.id,
+		data.keywords,
+	);
+
+	if (submission.currentVersion) {
+		await tx.submissionVersionAuthor.deleteMany({
+			where: { versionId: submission.currentVersion.id },
+		});
+		await tx.submissionVersionKeyword.deleteMany({
+			where: { versionId: submission.currentVersion.id },
+		});
+		await writeVersionSnapshot(
+			tx,
+			submission.currentVersion.id,
+			data.authors,
+			keywordNames,
+		);
+	}
+}
+
+/**
+ * Admin/editor in-place edit at ANY stage and for any status — no ownership or
+ * DRAFT gate. Mutates the current version; never creates a new version.
+ */
+export async function adminEditSubmission(
+	submissionId: string,
+	adminUserId: string,
+	data: CreateSubmissionInput,
+): Promise<{ success: boolean; error?: string }> {
+	const submission = await prisma.submission.findFirst({
+		where: { id: submissionId },
+		include: { currentVersion: true },
+	});
+
+	if (!submission) {
+		return { success: false, error: "Submission not found" };
+	}
+
+	await prisma.$transaction((tx) =>
+		applyInPlaceSubmissionEdit(tx, submission, data),
+	);
+
+	await logActivity({
+		type: "SUBMISSION_EDITED",
+		submissionId,
+		performedBy: adminUserId,
+	});
+
+	logger.info(`[submission] admin edited ${submissionId}`);
 
 	return { success: true };
 }

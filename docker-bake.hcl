@@ -17,7 +17,7 @@ variable "BUILD_DATE" {
 }
 
 group "default" {
-  targets = ["app", "migrate", "docling", "planner"]
+  targets = ["app", "migrate", "pdf-api", "docx-api", "planner"]
 }
 
 target "app" {
@@ -47,15 +47,27 @@ target "migrate" {
   cache-to   = ["type=registry,ref=${REGISTRY}/${IMAGE_NAME}:migrate-cache,mode=max"]
 }
 
-target "docling" {
-  context    = "./services/docling-api"
+target "pdf-api" {
+  context    = "./services/pdf-api"
   dockerfile = "Dockerfile"
   tags = [
-    "${REGISTRY}/suberus/docling:${TAG}",
-    "${REGISTRY}/suberus/docling:latest",
+    "${REGISTRY}/suberus/pdf-api:${TAG}",
+    "${REGISTRY}/suberus/pdf-api:latest",
   ]
-  cache-from = ["type=registry,ref=${REGISTRY}/suberus/docling:cache"]
-  cache-to   = ["type=registry,ref=${REGISTRY}/suberus/docling:cache,mode=max"]
+  cache-from = ["type=registry,ref=${REGISTRY}/suberus/pdf-api:cache"]
+  cache-to   = ["type=registry,ref=${REGISTRY}/suberus/pdf-api:cache,mode=max"]
+}
+
+
+target "docx-api" {
+  context    = "./services/docx-api"
+  dockerfile = "Dockerfile"
+  tags = [
+    "${REGISTRY}/suberus/docx-api:${TAG}",
+    "${REGISTRY}/suberus/docx-api:latest",
+  ]
+  cache-from = ["type=registry,ref=${REGISTRY}/suberus/docx-api:cache"]
+  cache-to   = ["type=registry,ref=${REGISTRY}/suberus/docx-api:cache,mode=max"]
 }
 
 target "planner" {

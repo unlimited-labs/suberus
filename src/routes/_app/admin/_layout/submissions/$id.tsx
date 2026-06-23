@@ -148,6 +148,7 @@ function SubmissionDetailPage() {
 
 						<div className="space-y-4">
 							<ActionsCard
+								submissionId={submission.id}
 								availability={availability}
 								primaryAction={primaryAction}
 								isTransitioning={isTransitioning}

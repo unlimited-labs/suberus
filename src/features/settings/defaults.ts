@@ -129,7 +129,12 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 		message: "Not checked yet",
 		checkedAt: "",
 	},
-	SERVICE_HEALTH_DOCLING: {
+	SERVICE_HEALTH_PDF_API: {
+		status: "unavailable",
+		message: "Not checked yet",
+		checkedAt: "",
+	},
+	SERVICE_HEALTH_DOCX_API: {
 		status: "unavailable",
 		message: "Not checked yet",
 		checkedAt: "",

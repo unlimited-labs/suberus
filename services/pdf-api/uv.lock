@@ -1422,7 +1422,7 @@ wheels = [
 ]
 
 [[package]]
-name = "suberus-docling-api"
+name = "suberus-pdf-api"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

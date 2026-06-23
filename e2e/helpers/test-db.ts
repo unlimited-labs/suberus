@@ -392,7 +392,7 @@ export async function addSubmissionVersions(
  * Replace a submission's history with file-backed PDF versions and synchronously
  * normalize each, so the lazy file redline is ready the moment the Compare page
  * opens. Normalizing inline (not via the pg-boss worker) keeps the test
- * deterministic — no polling for an async job. Requires the docling + docx-api
+ * deterministic — no polling for an async job. Requires the pdf-api + docx-api
  * sidecars to be up (the caller should skip the test when they are not).
  */
 export async function seedNormalizedPdfVersions(

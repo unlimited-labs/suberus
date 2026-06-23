@@ -102,7 +102,12 @@ export type AppSettingsMap = {
 		model?: string;
 		checkedAt: string;
 	};
-	SERVICE_HEALTH_DOCLING: {
+	SERVICE_HEALTH_PDF_API: {
+		status: "healthy" | "unavailable";
+		message: string;
+		checkedAt: string;
+	};
+	SERVICE_HEALTH_DOCX_API: {
 		status: "healthy" | "unavailable";
 		message: string;
 		checkedAt: string;

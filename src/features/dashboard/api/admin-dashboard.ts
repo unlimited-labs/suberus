@@ -16,7 +16,8 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
 				s3: undefined,
 				smtp: undefined,
 				llm: undefined,
-				docling: undefined,
+				pdfApi: undefined,
+				docxApi: undefined,
 			};
 		}
 		return metrics;

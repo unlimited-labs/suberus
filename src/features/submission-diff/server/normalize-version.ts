@@ -2,10 +2,10 @@ import type { ArtifactKind } from "@/generated/prisma/enums";
 import { isUniqueViolation, prisma } from "@/shared/server/db.server";
 import { getFileBuffer } from "@/shared/server/storage";
 import { linkFigure, persistCss, persistHtml } from "./cas";
-import { doclingApiHealth, normalizePdf } from "./docling-api-client";
 import { docxApiHealth, normalizeDocx } from "./docx-api-client";
 import { fileKind } from "./file-kind";
 import { artifactKey, parseBundle, sha256 } from "./normalize";
+import { normalizePdf, pdfApiHealth } from "./pdf-api-client";
 import { sanitizeDiffHtml } from "./sanitize";
 
 /** Cache-key fields a sidecar health reports (common subset of both sidecars). */
@@ -20,10 +20,10 @@ interface Sidecar {
 	normalize(bytes: Buffer, fileName: string): Promise<Buffer>;
 }
 
-/** Route a source kind to its normalize sidecar (DOCX -> docx-api, PDF -> docling). */
+/** Route a source kind to its normalize sidecar (DOCX -> docx-api, PDF -> pdf-api). */
 function pickSidecar(kind: ArtifactKind): Sidecar {
 	if (kind === "PDF") {
-		return { health: doclingApiHealth, normalize: normalizePdf };
+		return { health: pdfApiHealth, normalize: normalizePdf };
 	}
 	return { health: docxApiHealth, normalize: normalizeDocx };
 }
@@ -48,7 +48,7 @@ export interface NormalizeResult {
 /**
  * ETAP1: normalize one submission version's file into an immutable, sanitized
  * HTML artifact with content-addressed figures. DOCX goes through docx-api
- * (pandoc), PDF through docling (extraction + md->HTML); the kind is derived
+ * (pandoc), PDF through pdf-api (extraction + md->HTML); the kind is derived
  * from the file name and downstream (parse/sanitize/CAS/persist) is shared.
  *
  *   getFileBuffer -> sidecar normalize -> parse bundle -> CAS figures (+CasObject)

@@ -1,7 +1,10 @@
 import { type QueryClient, queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { authMiddleware } from "@/features/auth/server/middleware";
+import {
+	adminOnlyMiddleware,
+	authMiddleware,
+} from "@/features/auth/server/middleware";
 import { SUPPORTED_FILE_EXTENSIONS } from "@/features/settings/file-types";
 import {
 	getActiveSubmissionTypes,
@@ -344,12 +347,14 @@ async function attachFileToVersion(params: {
 	versionNumber: number;
 	file: File;
 	userId: string;
+	/** Admins edit any submission; skip the owner check. */
+	enforceOwnership?: boolean;
 }): Promise<SubmissionResult> {
 	const { submissionId, versionNumber, file, userId } = params;
+	const enforceOwnership = params.enforceOwnership ?? true;
 
-	// Verify submission belongs to user
 	const submission = await prisma.submission.findFirst({
-		where: { id: submissionId, userId },
+		where: { id: submissionId, ...(enforceOwnership ? { userId } : {}) },
 		include: {
 			currentVersion: true,
 			authors: {
@@ -476,6 +481,32 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 			versionNumber: data.versionNumber,
 			file: data.file,
 			userId: context.user.id,
+		});
+	});
+
+/** Admin-only file replacement — any submission, no owner check. */
+export const adminUploadSubmissionFile = createServerFn({ method: "POST" })
+	.middleware([adminOnlyMiddleware])
+	.validator((data: FormData) =>
+		z
+			.object({
+				submissionId: z.uuid(),
+				versionNumber: z.coerce.number().int().positive(),
+				file: z.instanceof(File),
+			})
+			.parse({
+				submissionId: data.get("submissionId"),
+				versionNumber: data.get("versionNumber"),
+				file: getUploadedFile(data),
+			}),
+	)
+	.handler(async ({ data, context }): Promise<SubmissionResult> => {
+		return attachFileToVersion({
+			submissionId: data.submissionId,
+			versionNumber: data.versionNumber,
+			file: data.file,
+			userId: context.user.id,
+			enforceOwnership: false,
 		});
 	});
 

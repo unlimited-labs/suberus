@@ -14,6 +14,7 @@ export const activityLabels: Record<string, string> = {
 	SUBMISSION_RESUBMITTED: "Submission resubmitted",
 	SUBMISSION_REVISION_UPLOADED: "Revised version uploaded",
 	SUBMISSION_TRACK_CHANGED: "Track changed",
+	SUBMISSION_EDITED: "Edited by admin",
 	REVIEW_ASSIGNED: "Reviewer assigned",
 	REVIEW_SUBMITTED: "Review submitted",
 	REVIEW_CANCELLED: "Review cancelled",

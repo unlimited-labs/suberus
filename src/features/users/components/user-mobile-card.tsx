@@ -48,10 +48,13 @@ export function UserMobileCard({
 						<div className="mt-3 flex flex-wrap gap-1">
 							{user.submissionRoles.map((r) => (
 								<Badge
-									key={`${r.type}-${r.role}-${r.draft}`}
+									key={`${r.type}-${r.role}-${r.status}`}
 									variant="outline"
 									className={cn(
-										r.draft && "border-dashed text-muted-foreground",
+										r.status === "draft" &&
+											"border-dashed text-muted-foreground",
+										r.status === "accepted" &&
+											"border-green-600 text-green-600",
 									)}
 								>
 									{formatSubmissionRole(r)}

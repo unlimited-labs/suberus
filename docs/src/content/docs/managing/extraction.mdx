@@ -36,7 +36,7 @@ Extraction works on **DOCX uploads only** — PDFs are not auto-extracted.
 
 | Check | Where | What to do |
 |---|---|---|
-| **Docling** (structure engine) | Dashboard › System health / Submissions config | If red, ensure the Docling service is running. |
+| **PDF API** (structure engine) | Dashboard › System health / Submissions config | If red, ensure the PDF API service is running. |
 | **LLM** (AI engine) — red | Dashboard › System health / Submissions config | Service unreachable. Configure `LLM_API_URL` and ensure the service is running; AI extraction stays disabled. |
 | **LLM** (AI engine) — yellow | Dashboard › System health / Submissions config | Service is reachable but the configured model (`LLM_MODEL` / `LLM_EMBEDDING_MODEL`) is not reported by the API. Correct the model name to one shown in the indicator's available-models list; AI extraction stays disabled until then. |
 
@@ -44,5 +44,5 @@ Extraction works on **DOCX uploads only** — PDFs are not auto-extracted.
 
 <CardGrid>
 	<LinkCard title="Submissions (configuration)" href="/configuration/submissions/" description="Enable extraction and choose engines." />
-	<LinkCard title="Dashboard" href="/managing/dashboard/" description="See LLM / Docling health at a glance." />
+	<LinkCard title="Dashboard" href="/managing/dashboard/" description="See LLM / PDF API health at a glance." />
 </CardGrid>

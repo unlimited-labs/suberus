@@ -1,4 +1,5 @@
 import { env } from "@/env";
+import { createHealthCache } from "@/shared/server/health-cache";
 import {
 	requestOrThrow,
 	SIDECAR_TIMEOUT_MS,
@@ -8,6 +9,52 @@ import {
 } from "./http";
 
 const base = () => sidecarBase(env.DOCX_API_URL, "DOCX_API_URL");
+
+export interface DocxApiHealthResult {
+	status: "healthy" | "unavailable";
+	message: string;
+}
+
+const healthCache = createHealthCache<DocxApiHealthResult>(60_000);
+
+/** Liveness probe for the scheduled health task (GET root, parses `status`). */
+export async function checkDocxApiHealth(): Promise<DocxApiHealthResult> {
+	if (!env.DOCX_API_URL) {
+		return { status: "unavailable", message: "DOCX_API_URL not configured" };
+	}
+
+	const cached = healthCache.get();
+	if (cached) return cached;
+
+	let result: DocxApiHealthResult;
+	try {
+		const response = await fetch(`${base()}/`, {
+			signal: AbortSignal.timeout(SIDECAR_TIMEOUT_MS.health),
+		});
+		if (!response.ok) {
+			result = {
+				status: "unavailable",
+				message: `docx-api returned ${response.status}`,
+			};
+		} else {
+			const data = (await response.json().catch(() => ({}))) as {
+				status?: string;
+			};
+			result =
+				data.status === "healthy"
+					? { status: "healthy", message: "Connected" }
+					: {
+							status: "unavailable",
+							message: "docx-api did not report healthy status",
+						};
+		}
+	} catch {
+		result = { status: "unavailable", message: "Cannot reach docx-api" };
+	}
+
+	healthCache.set(result);
+	return result;
+}
 
 export interface DocxApiHealth {
 	pandocVersion: string | null;

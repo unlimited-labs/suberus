@@ -1,5 +1,5 @@
 """
-Minimal Docling document conversion server (DOCX/PDF -> markdown/JSON/DocTags/bundle).
+Minimal pdf-api document conversion server (docling-powered; DOCX/PDF -> markdown/JSON/DocTags/bundle).
 
 Endpoints:
   GET  /              -> health check (unversioned)

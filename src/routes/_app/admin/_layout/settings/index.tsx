@@ -25,9 +25,9 @@ import { EmailTemplatesTab } from "@/features/email-templates";
 import { emailTemplatesQueryOptions } from "@/features/email-templates/api/email-templates";
 import { toEmailTemplateUI } from "@/features/email-templates/components/admin/email-templates-tab";
 import {
-	doclingHealthQueryOptions,
 	extractionAdminSettingsQueryOptions,
 	llmHealthQueryOptions,
+	pdfApiHealthQueryOptions,
 } from "@/features/extraction/api/extraction";
 import { paymentInstructionsQueryOptions } from "@/features/fee/api/fee";
 import { FeeTab } from "@/features/fee/components/admin/fee-tab";
@@ -102,7 +102,7 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 				extractionAdminSettingsQueryOptions(),
 			),
 			context.queryClient.ensureQueryData(llmHealthQueryOptions()),
-			context.queryClient.ensureQueryData(doclingHealthQueryOptions()),
+			context.queryClient.ensureQueryData(pdfApiHealthQueryOptions()),
 			context.queryClient.ensureQueryData(allRoomsQueryOptions()),
 			context.queryClient.ensureQueryData(allProgramTracksQueryOptions()),
 		]);
@@ -176,7 +176,7 @@ function AdminSettingsPage() {
 		extractionAdminSettingsQueryOptions(),
 	);
 	const { data: llmHealth } = useSuspenseQuery(llmHealthQueryOptions());
-	const { data: doclingHealth } = useSuspenseQuery(doclingHealthQueryOptions());
+	const { data: pdfApiHealth } = useSuspenseQuery(pdfApiHealthQueryOptions());
 	const { data: rooms } = useSuspenseQuery(allRoomsQueryOptions());
 	const { data: programTracks } = useSuspenseQuery(
 		allProgramTracksQueryOptions(),
@@ -226,7 +226,7 @@ function AdminSettingsPage() {
 								initialReviewGuidelines={reviewGuidelines as string}
 								initialExtraction={extractionSettings}
 								llmHealth={llmHealth}
-								doclingHealth={doclingHealth}
+								pdfApiHealth={pdfApiHealth}
 							/>
 						</TabsContent>
 
