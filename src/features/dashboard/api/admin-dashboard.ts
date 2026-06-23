@@ -7,8 +7,19 @@ import { prisma } from "@/shared/server/db.server";
 
 export const getAdminDashboard = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.handler(async () => {
-		return getAdminDashboardMetrics();
+	.handler(async ({ context }) => {
+		const metrics = await getAdminDashboardMetrics();
+		// System health (infra status + alerts) is admin-only; strip for editors.
+		if (context.user.role !== "ADMIN") {
+			return {
+				...metrics,
+				s3: undefined,
+				smtp: undefined,
+				llm: undefined,
+				docling: undefined,
+			};
+		}
+		return metrics;
 	});
 
 export const getMoreActivity = createServerFn({ method: "GET" })

@@ -11,6 +11,7 @@ import { SubmissionChart } from "@/features/dashboard/components/admin/submissio
 import { SystemHealthCard } from "@/features/dashboard/components/admin/system-health-card";
 import { UsersByCountryCard } from "@/features/dashboard/components/admin/users-by-country-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
 
 export const Route = createFileRoute("/_app/admin/_layout/dashboard/")({
 	loader: async ({ context }) => {
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/_app/admin/_layout/dashboard/")({
 });
 
 function AdminDashboard() {
+	const { isOnlyAdmin } = useAdminAuth();
 	const { data } = useSuspenseQuery({
 		...adminDashboardQueryOptions(),
 		refetchInterval: 60000, // 60s refresh
@@ -40,12 +42,14 @@ function AdminDashboard() {
 					<RecentActivity events={data.recentActivity} />
 					<QuickActions />
 				</div>
-				<SystemHealthCard
-					s3={data.s3}
-					smtp={data.smtp}
-					llm={data.llm}
-					docling={data.docling}
-				/>
+				{isOnlyAdmin && (
+					<SystemHealthCard
+						s3={data.s3}
+						smtp={data.smtp}
+						llm={data.llm}
+						docling={data.docling}
+					/>
+				)}
 			</div>
 		</div>
 	);

@@ -20,6 +20,7 @@ import {
 	useSearch,
 } from "@tanstack/react-router";
 import { z } from "zod";
+import { adminOnlyRouteMiddleware } from "@/features/auth/server/middleware";
 import { EmailTemplatesTab } from "@/features/email-templates";
 import { emailTemplatesQueryOptions } from "@/features/email-templates/api/email-templates";
 import { toEmailTemplateUI } from "@/features/email-templates/components/admin/email-templates-tab";
@@ -64,6 +65,9 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_app/admin/_layout/settings/")({
+	server: {
+		middleware: [adminOnlyRouteMiddleware],
+	},
 	validateSearch: searchSchema,
 	loader: async ({ context }) => {
 		await Promise.all([

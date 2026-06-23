@@ -3,6 +3,7 @@ import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { adminOnlyRouteMiddleware } from "@/features/auth/server/middleware";
 import {
 	adminInvitationsQueryOptions,
 	cancelInvitationFn,
@@ -16,6 +17,9 @@ import { Button } from "@/shared/ui/button";
 import { DataTable, DataTableToolbar } from "@/shared/ui/data-table";
 
 export const Route = createFileRoute("/_app/admin/_layout/invitations/")({
+	server: {
+		middleware: [adminOnlyRouteMiddleware],
+	},
 	loader: async ({ context }) => {
 		await context.queryClient.ensureQueryData(adminInvitationsQueryOptions());
 	},

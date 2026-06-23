@@ -68,10 +68,11 @@ export interface AdminDashboardMetrics {
 		reviewsCompleted: number[];
 		feesCollected: number[];
 	};
-	s3: S3HealthResult;
-	smtp: SmtpHealthResult;
-	llm: AppSettingsMap["SERVICE_HEALTH_LLM"];
-	docling: AppSettingsMap["SERVICE_HEALTH_DOCLING"];
+	// System-health fields are stripped for non-admins (see getAdminDashboard).
+	s3?: S3HealthResult;
+	smtp?: SmtpHealthResult;
+	llm?: AppSettingsMap["SERVICE_HEALTH_LLM"];
+	docling?: AppSettingsMap["SERVICE_HEALTH_DOCLING"];
 }
 
 export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics> {

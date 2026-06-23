@@ -4,6 +4,7 @@ import { z } from "zod";
 import { env } from "@/env";
 import {
 	adminMiddleware,
+	adminOnlyMiddleware,
 	authMiddleware,
 } from "@/features/auth/server/middleware";
 import { getDefaultSetting } from "@/features/settings/defaults";
@@ -143,7 +144,7 @@ export const getSettingFn = createServerFn({ method: "GET" })
  * Set a single setting (admin only)
  */
 export const setSettingFn = createServerFn({ method: "POST" })
-	.middleware([adminMiddleware])
+	.middleware([adminOnlyMiddleware])
 	.validator(
 		z.object({
 			key: z.string(),
@@ -171,7 +172,7 @@ export const getSubmissionTypeConfigsFn = createServerFn({ method: "GET" })
  * Update a submission type config (admin only)
  */
 export const updateSubmissionTypeConfigFn = createServerFn({ method: "POST" })
-	.middleware([adminMiddleware])
+	.middleware([adminOnlyMiddleware])
 	.validator(
 		z.object({
 			type: z.enum([
@@ -305,7 +306,7 @@ export const getEmailFooterFn = createServerFn({ method: "GET" })
  * Update email footer text (admin only)
  */
 export const updateEmailFooterFn = createServerFn({ method: "POST" })
-	.middleware([adminMiddleware])
+	.middleware([adminOnlyMiddleware])
 	.validator(z.object({ value: z.string() }))
 	.handler(async ({ data }) => {
 		await setSetting("EMAIL_FOOTER_TEXT", data.value);
@@ -316,7 +317,7 @@ export const updateEmailFooterFn = createServerFn({ method: "POST" })
  * Update submission guidelines (admin only)
  */
 export const updateSubmissionGuidelinesFn = createServerFn({ method: "POST" })
-	.middleware([adminMiddleware])
+	.middleware([adminOnlyMiddleware])
 	.validator(z.object({ value: z.string() }))
 	.handler(async ({ data }) => {
 		await setSetting("SUBMISSION_GUIDELINES", data.value);
@@ -327,7 +328,7 @@ export const updateSubmissionGuidelinesFn = createServerFn({ method: "POST" })
  * Update review guidelines (admin only)
  */
 export const updateReviewGuidelinesFn = createServerFn({ method: "POST" })
-	.middleware([adminMiddleware])
+	.middleware([adminOnlyMiddleware])
 	.validator(z.object({ value: z.string() }))
 	.handler(async ({ data }) => {
 		await setSetting("REVIEW_GUIDELINES", data.value);
@@ -431,7 +432,7 @@ export const getConferenceSettingsFn = createServerFn({ method: "GET" })
  * Update conference settings (admin only)
  */
 export const updateConferenceSettingsFn = createServerFn({ method: "POST" })
-	.middleware([adminMiddleware])
+	.middleware([adminOnlyMiddleware])
 	.validator(conferenceSettingsSchema)
 	.handler(async ({ data }) => {
 		await Promise.all([
@@ -469,7 +470,7 @@ export const updateConferenceSettingsFn = createServerFn({ method: "POST" })
 export const updateSubmissionValidationSettingsFn = createServerFn({
 	method: "POST",
 })
-	.middleware([adminMiddleware])
+	.middleware([adminOnlyMiddleware])
 	.validator(
 		z.object({
 			minTitleLength: z.number().int().min(1).max(500),
@@ -676,7 +677,7 @@ export const getBrandingSettingsFn = createServerFn({ method: "GET" })
  * Update branding settings (admin only)
  */
 export const updateBrandingSettingsFn = createServerFn({ method: "POST" })
-	.middleware([adminMiddleware])
+	.middleware([adminOnlyMiddleware])
 	.validator(brandingSchema)
 	.handler(async ({ data }) => {
 		await setSetting("BRANDING_LOGO_URL", data.logoUrl);
@@ -693,7 +694,7 @@ export const updateBrandingSettingsFn = createServerFn({ method: "POST" })
  * Upload auth background image (admin only)
  */
 export const uploadAuthBackgroundFn = createServerFn({ method: "POST" })
-	.middleware([adminMiddleware])
+	.middleware([adminOnlyMiddleware])
 	.validator((data: FormData) => ({ file: getUploadedFile(data) }))
 	.handler(async ({ data }) => {
 		const buffer = await fileToBuffer(data.file);
@@ -706,7 +707,7 @@ export const uploadAuthBackgroundFn = createServerFn({ method: "POST" })
  * Delete auth background image (admin only)
  */
 export const deleteAuthBackgroundFn = createServerFn({ method: "POST" })
-	.middleware([adminMiddleware])
+	.middleware([adminOnlyMiddleware])
 	.handler(async () => {
 		await deleteAuthBackground();
 		return { success: true };
@@ -810,7 +811,7 @@ export const getAuthPageBrandingFn = createServerFn({ method: "GET" }).handler(
  * Update fee payment instructions (admin only)
  */
 export const updateFeeInstructionsFn = createServerFn({ method: "POST" })
-	.middleware([adminMiddleware])
+	.middleware([adminOnlyMiddleware])
 	.validator(z.object({ content: z.string().min(1) }))
 	.handler(async ({ data }) => {
 		await setSetting("FEE_PAYMENT_INSTRUCTIONS", data.content);
@@ -821,7 +822,7 @@ export const updateFeeInstructionsFn = createServerFn({ method: "POST" })
  * Update Terms of Service content (admin only)
  */
 export const updateTosContentFn = createServerFn({ method: "POST" })
-	.middleware([adminMiddleware])
+	.middleware([adminOnlyMiddleware])
 	.validator(z.object({ content: z.string().min(1) }))
 	.handler(async ({ data }) => {
 		await setSetting("TOS_CONTENT", data.content);
@@ -878,7 +879,7 @@ const reminderSettingsSchema = z.object({
  * Update reminder settings (admin only)
  */
 export const updateReminderSettingsFn = createServerFn({ method: "POST" })
-	.middleware([adminMiddleware])
+	.middleware([adminOnlyMiddleware])
 	.validator(reminderSettingsSchema)
 	.handler(async ({ data }) => {
 		await setSetting("REMINDER_REVIEWER_SETTINGS", data.reviewer);
@@ -929,7 +930,7 @@ const feeTypeItemSchema = z.object({
  * Update fee types (admin only)
  */
 export const updateFeeTypesFn = createServerFn({ method: "POST" })
-	.middleware([adminMiddleware])
+	.middleware([adminOnlyMiddleware])
 	.validator(z.object({ feeTypes: z.array(feeTypeItemSchema).min(1) }))
 	.handler(async ({ data }) => {
 		await setSetting("FEE_TYPES", data.feeTypes);

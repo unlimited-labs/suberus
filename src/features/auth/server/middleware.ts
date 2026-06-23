@@ -27,6 +27,15 @@ async function requireAdminOnly() {
 	return user;
 }
 
+/** Route-side auth: redirect (not 403) unauthenticated users to login. */
+async function requireRouteUser() {
+	const session = await auth.api.getSession({ headers: getRequestHeaders() });
+	if (!session?.user) {
+		throw redirect({ to: "/login" });
+	}
+	return session.user;
+}
+
 export const authMiddleware = createMiddleware({ type: "function" }).server(
 	async ({ next }) => {
 		const user = await requireAuth();
@@ -51,48 +60,41 @@ export const adminOnlyMiddleware = createMiddleware({
 /** Route middleware - redirects unauthenticated users to login */
 export const authRouteMiddleware = createMiddleware().server(
 	async ({ next }) => {
-		const session = await auth.api.getSession({
-			headers: getRequestHeaders(),
-		});
-		if (!session?.user) {
-			throw redirect({ to: "/login" });
-		}
-		return next({ context: { user: session.user } });
+		const user = await requireRouteUser();
+		return next({ context: { user } });
 	},
 );
 
 /** Route middleware - redirects non-admin users to dashboard */
 export const adminRouteMiddleware = createMiddleware().server(
 	async ({ next }) => {
-		const session = await auth.api.getSession({
-			headers: getRequestHeaders(),
-		});
-		if (!session?.user) {
-			throw redirect({ to: "/login" });
-		}
-		if (
-			!session.user.role ||
-			!["ADMIN", "EDITOR"].includes(session.user.role)
-		) {
+		const user = await requireRouteUser();
+		if (!user.role || !["ADMIN", "EDITOR"].includes(user.role)) {
 			throw redirect({ to: "/" });
 		}
-		return next({ context: { user: session.user } });
+		return next({ context: { user } });
+	},
+);
+
+/** Route middleware - redirects non-ADMIN users (incl. editors) to the admin dashboard */
+export const adminOnlyRouteMiddleware = createMiddleware().server(
+	async ({ next }) => {
+		const user = await requireRouteUser();
+		if (user.role !== "ADMIN") {
+			throw redirect({ to: "/admin/dashboard" });
+		}
+		return next({ context: { user } });
 	},
 );
 
 /** Route middleware - exhibitor panel; redirects non-exhibitor users to dashboard */
 export const exhibitorRouteMiddleware = createMiddleware().server(
 	async ({ next }) => {
-		const session = await auth.api.getSession({
-			headers: getRequestHeaders(),
-		});
-		if (!session?.user) {
-			throw redirect({ to: "/login" });
-		}
-		if (session.user.role !== "EXHIBITOR") {
+		const user = await requireRouteUser();
+		if (user.role !== "EXHIBITOR") {
 			throw redirect({ to: "/" });
 		}
-		return next({ context: { user: session.user } });
+		return next({ context: { user } });
 	},
 );
 

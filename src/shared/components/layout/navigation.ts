@@ -93,9 +93,14 @@ export const navigationSections: NavSection[] = [
 				name: "Program Planner",
 				href: "/admin/program-planner",
 				icon: IconCalendar,
+				roles: ["ADMIN", "EDITOR"],
+			},
+			{
+				name: "Configuration",
+				href: "/admin/settings",
+				icon: IconAdjustments,
 				roles: ["ADMIN"],
 			},
-			{ name: "Configuration", href: "/admin/settings", icon: IconAdjustments },
 		],
 	},
 ];
