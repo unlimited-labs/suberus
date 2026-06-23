@@ -4,7 +4,7 @@ DOCX → normalized-HTML + rasterized-figure **bundle** for the submission
 version-diff pipeline (Track B). Sibling of `pdf-api` (which handles PDF).
 
 The Node `submission-diff` worker calls `POST /normalize` per submission version,
-then content-addresses the figures into Garage, sanitizes the HTML with
+then content-addresses the figures into S3-compatible storage, sanitizes the HTML with
 DOMPurify-on-jsdom, and persists a `SubmissionVersionArtifact`. **This service does
 not sanitize** — sanitization must run in the Node worker (Phase 0 finding).
 

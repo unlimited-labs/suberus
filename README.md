@@ -43,7 +43,7 @@ Suberus runs the full lifecycle of a conference call for submissions: authors su
 ```bash
 # 1. Install dependencies
 pnpm install
-# 2. Start infrastructure (PostgreSQL, Garage storage, Mailpit)
+# 2. Start infrastructure (PostgreSQL, S3-compatible storage, Mailpit)
 docker compose up -d
 # 3. Configure environment
 cp .env.example .env   # then fill in DB, storage, and SMTP values

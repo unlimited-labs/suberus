@@ -12,27 +12,26 @@ import latinize from "latinize";
 import { env } from "@/env";
 import { logger } from "@/logger.ts";
 
-// Environment variables for Garage S3
-const GARAGE_ENDPOINT = env.GARAGE_ENDPOINT;
-const GARAGE_ACCESS_KEY_ID = env.GARAGE_ACCESS_KEY_ID;
-const GARAGE_SECRET_ACCESS_KEY = env.GARAGE_SECRET_ACCESS_KEY;
-const GARAGE_BUCKET = env.GARAGE_BUCKET;
+// S3-compatible object storage env (GARAGE_* honored as deprecated aliases)
+const S3_ENDPOINT = env.S3_ENDPOINT ?? env.GARAGE_ENDPOINT;
+const S3_ACCESS_KEY_ID = env.S3_ACCESS_KEY_ID ?? env.GARAGE_ACCESS_KEY_ID;
+const S3_SECRET_ACCESS_KEY =
+	env.S3_SECRET_ACCESS_KEY ?? env.GARAGE_SECRET_ACCESS_KEY;
+const S3_BUCKET = env.S3_BUCKET ?? env.GARAGE_BUCKET;
 
 // Validate required environment variables
 function validateEnv(): void {
-	if (!GARAGE_ENDPOINT) {
-		throw new Error("GARAGE_ENDPOINT environment variable is required");
+	if (!S3_ENDPOINT) {
+		throw new Error("S3_ENDPOINT environment variable is required");
 	}
-	if (!GARAGE_ACCESS_KEY_ID) {
-		throw new Error("GARAGE_ACCESS_KEY_ID environment variable is required");
+	if (!S3_ACCESS_KEY_ID) {
+		throw new Error("S3_ACCESS_KEY_ID environment variable is required");
 	}
-	if (!GARAGE_SECRET_ACCESS_KEY) {
-		throw new Error(
-			"GARAGE_SECRET_ACCESS_KEY environment variable is required",
-		);
+	if (!S3_SECRET_ACCESS_KEY) {
+		throw new Error("S3_SECRET_ACCESS_KEY environment variable is required");
 	}
-	if (!GARAGE_BUCKET) {
-		throw new Error("GARAGE_BUCKET environment variable is required");
+	if (!S3_BUCKET) {
+		throw new Error("S3_BUCKET environment variable is required");
 	}
 }
 
@@ -43,20 +42,20 @@ function getS3Client(): S3Client {
 	if (!_s3Client) {
 		validateEnv();
 		_s3Client = new S3Client({
-			endpoint: GARAGE_ENDPOINT,
-			region: "garage", // Garage uses "garage" as region
+			endpoint: S3_ENDPOINT,
+			region: env.S3_REGION,
 			credentials: {
-				accessKeyId: GARAGE_ACCESS_KEY_ID as string,
-				secretAccessKey: GARAGE_SECRET_ACCESS_KEY as string,
+				accessKeyId: S3_ACCESS_KEY_ID as string,
+				secretAccessKey: S3_SECRET_ACCESS_KEY as string,
 			},
-			forcePathStyle: true, // Required for Garage/MinIO
+			forcePathStyle: true, // Required for path-style S3 backends (Garage/MinIO)
 		});
 	}
 	return _s3Client;
 }
 
 /**
- * Upload a file to Garage S3
+ * Upload a file to S3-compatible storage
  * @param buffer - File content as Buffer
  * @param key - Storage key (path in bucket)
  * @param mimeType - File MIME type
@@ -70,7 +69,7 @@ export async function uploadFile(
 	const client = getS3Client();
 
 	const command = new PutObjectCommand({
-		Bucket: GARAGE_BUCKET,
+		Bucket: S3_BUCKET,
 		Key: key,
 		Body: buffer,
 		ContentType: mimeType,
@@ -94,7 +93,7 @@ export async function getFileDownloadUrl(
 	const client = getS3Client();
 
 	const command = new GetObjectCommand({
-		Bucket: GARAGE_BUCKET,
+		Bucket: S3_BUCKET,
 		Key: key,
 	});
 
@@ -112,7 +111,7 @@ export async function getFileContent(key: string): Promise<{
 	const client = getS3Client();
 
 	const command = new GetObjectCommand({
-		Bucket: GARAGE_BUCKET,
+		Bucket: S3_BUCKET,
 		Key: key,
 	});
 
@@ -134,7 +133,7 @@ export async function getFileBuffer(key: string): Promise<Buffer> {
 	const client = getS3Client();
 
 	const command = new GetObjectCommand({
-		Bucket: GARAGE_BUCKET,
+		Bucket: S3_BUCKET,
 		Key: key,
 	});
 
@@ -145,14 +144,14 @@ export async function getFileBuffer(key: string): Promise<Buffer> {
 }
 
 /**
- * Delete a file from Garage S3
+ * Delete a file from S3-compatible storage
  * @param key - Storage key
  */
 export async function deleteFile(key: string): Promise<void> {
 	const client = getS3Client();
 
 	const command = new DeleteObjectCommand({
-		Bucket: GARAGE_BUCKET,
+		Bucket: S3_BUCKET,
 		Key: key,
 	});
 
@@ -161,7 +160,7 @@ export async function deleteFile(key: string): Promise<void> {
 }
 
 /**
- * Check if a file exists in Garage S3
+ * Check if a file exists in S3-compatible storage
  * @param key - Storage key
  * @returns true if the file exists
  */
@@ -170,7 +169,7 @@ export async function fileExists(key: string): Promise<boolean> {
 
 	try {
 		const command = new HeadObjectCommand({
-			Bucket: GARAGE_BUCKET,
+			Bucket: S3_BUCKET,
 			Key: key,
 		});
 		await client.send(command);
@@ -254,14 +253,14 @@ export interface S3HealthResult {
 }
 
 export async function checkS3Health(): Promise<S3HealthResult> {
-	const endpoint = GARAGE_ENDPOINT ?? "";
-	const bucket = GARAGE_BUCKET ?? "";
+	const endpoint = S3_ENDPOINT ?? "";
+	const bucket = S3_BUCKET ?? "";
 
 	if (
-		!GARAGE_ENDPOINT ||
-		!GARAGE_ACCESS_KEY_ID ||
-		!GARAGE_SECRET_ACCESS_KEY ||
-		!GARAGE_BUCKET
+		!S3_ENDPOINT ||
+		!S3_ACCESS_KEY_ID ||
+		!S3_SECRET_ACCESS_KEY ||
+		!S3_BUCKET
 	) {
 		return {
 			status: "error",

@@ -29,7 +29,7 @@ function pickSidecar(kind: ArtifactKind): Sidecar {
 }
 
 export interface NormalizeInput {
-	/** Garage storage key of the source file (DOCX or PDF). */
+	/** S3-compatible storage key of the source file (DOCX or PDF). */
 	storageKey: string;
 	fileName: string;
 	/** File row id, for lazy sha256 backfill (optional). */
