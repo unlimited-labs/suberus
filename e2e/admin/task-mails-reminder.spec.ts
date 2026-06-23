@@ -5,6 +5,7 @@ import {
 	createSubmissionWithDecision,
 	createSentReminder,
 	cleanupSentReminders,
+	countSentReminders,
 	setAppSetting,
 	getTestUserIds,
 } from "../helpers/test-db"
@@ -169,10 +170,12 @@ test.describe.serial("Task: mails:reminder", () => {
 		await createSentReminder({ userId: testUserId, reminderType: "REVISION_REMINDER", entityId: submissionId, reminderIndex: 1 })
 
 		// Act
-		const { result } = await runReminderTask(page)
+		await runReminderTask(page)
 
-		// Assert — no new revision reminders (maxCount reached)
-		expect(result.revisionReminders).toBe(0)
+		// Assert — scoped to THIS submission: no new reminder created (maxCount reached).
+		// The task's revisionReminders count is global and the shared worker DB may hold
+		// other REVISE_REQUIRED submissions that legitimately receive reminders.
+		expect(await countSentReminders(submissionId, "REVISION_REMINDER")).toBe(2)
 		const email = await waitForEmail(TEST_USER.email, testRun.testRunId, 3000)
 		expect(email).toBeNull()
 

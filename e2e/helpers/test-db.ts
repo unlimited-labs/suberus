@@ -1085,6 +1085,17 @@ export async function cleanupSentReminders(entityId: string): Promise<void> {
 	await db.sentReminder.deleteMany({ where: { entityId } });
 }
 
+/** Count sent reminders for an entity (scopes assertions to one submission) */
+export async function countSentReminders(
+	entityId: string,
+	reminderType?: EmailEventType,
+): Promise<number> {
+	const db = getPrisma();
+	return db.sentReminder.count({
+		where: { entityId, ...(reminderType && { reminderType }) },
+	});
+}
+
 /** Create a sent reminder record (for test arrangement) */
 export async function createSentReminder(opts: {
 	userId: string;

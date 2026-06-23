@@ -35,12 +35,15 @@ test.describe("Extraction Queue", () => {
 	test("PDF upload triggers extraction and fills title", async ({
 		extractionPage,
 	}) => {
+		// PDF is AI-only (pdf-api markdown → real LLM). The LLM client alone allows
+		// up to 60s; the default 30s test budget silently capped the wait below the
+		// pipeline's real latency. Lift the test budget so the whole round-trip fits.
+		test.setTimeout(150_000);
 		await extractionPage.gotoFullPaperForm();
 		await extractionPage.uploadFile(SAMPLE_PDF);
 
-		// PDF extraction takes longer (pdf-api + LLM)
 		await expect(extractionPage.titleInput).not.toHaveValue("", {
-			timeout: 60_000,
+			timeout: 120_000,
 		});
 	});
 

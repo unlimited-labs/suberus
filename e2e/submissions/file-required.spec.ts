@@ -152,6 +152,9 @@ test.describe.serial("File requirement", () => {
 		});
 
 		await page.goto(`/submissions/${seeded.id}/revise`);
+		// Gate on the form rendering before asserting the button — the app-shell
+		// session spinner can hold the page past the default 5s under parallel load.
+		await expect(page.getByLabel("Title")).toBeVisible({ timeout: 10000 });
 
 		const submitButton = page.getByRole("button", { name: "Submit Revision" });
 		await expect(submitButton).toBeVisible();
