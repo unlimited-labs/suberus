@@ -32,7 +32,6 @@ export function TypeReviewSection({
 }: TypeReviewSectionProps) {
 	return (
 		<>
-			{/* Reviewers */}
 			<div className="space-y-2">
 				<Label>Required reviewers</Label>
 				<Input
@@ -46,7 +45,6 @@ export function TypeReviewSection({
 				/>
 			</div>
 
-			{/* Review mode */}
 			<div className="grid gap-4 sm:grid-cols-2">
 				<div className="space-y-2">
 					<Label>Review mode</Label>
@@ -83,7 +81,6 @@ export function TypeReviewSection({
 				</div>
 			</div>
 
-			{/* Decision settings */}
 			<div className="space-y-4">
 				<div className="flex items-center justify-between">
 					<div className="space-y-0.5">

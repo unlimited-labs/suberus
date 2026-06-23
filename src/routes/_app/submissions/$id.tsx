@@ -68,7 +68,6 @@ function SubmissionDetailPage() {
 			<div className="flex-1 p-6 overflow-auto">
 				<div className="mx-auto w-full max-w-7xl">
 					<div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-						{/* Main Content */}
 						<div className="space-y-6">
 							<ContentTabs
 								title={displayData.title}
@@ -91,7 +90,6 @@ function SubmissionDetailPage() {
 							)}
 						</div>
 
-						{/* Desktop Sidebar */}
 						<div className="hidden lg:block">
 							<div className="sticky top-0 space-y-4">
 								<StatusCard status={submission.status} />
@@ -111,7 +109,6 @@ function SubmissionDetailPage() {
 							</div>
 						</div>
 
-						{/* Mobile Sidebar */}
 						<MobileSidebar
 							submission={submission}
 							versions={versions}

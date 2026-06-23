@@ -32,7 +32,7 @@ export function RegisterStep1({
 }: RegisterStep1Props) {
 	return (
 		<div className="animate-in fade-in slide-in-from-right-4 space-y-3 duration-300">
-			{/* Account type (only when exhibitor signup is active) */}
+			{/* Account type */}
 			{exhibitorSignupAvailable && !invitation && (
 				<Field>
 					<FieldLabel>Account type</FieldLabel>
@@ -89,7 +89,6 @@ export function RegisterStep1({
 				</Field>
 			)}
 
-			{/* Invitation banner */}
 			{invitation && (
 				<Alert className="border-primary/30 bg-primary/5">
 					<IconInfoCircle className="size-4 text-primary" />
@@ -102,7 +101,6 @@ export function RegisterStep1({
 				</Alert>
 			)}
 
-			{/* Email */}
 			{invitation ? (
 				<Field>
 					<FieldLabel>E-mail *</FieldLabel>
@@ -140,7 +138,6 @@ export function RegisterStep1({
 				</form.AppField>
 			)}
 
-			{/* Password fields */}
 			<div className="grid gap-2 sm:grid-cols-2">
 				<form.AppField
 					name="password"
@@ -169,7 +166,6 @@ export function RegisterStep1({
 				</form.AppField>
 			</div>
 
-			{/* Name fields */}
 			<div className="grid gap-2 sm:grid-cols-2">
 				<form.AppField
 					name="firstName"
@@ -186,7 +182,6 @@ export function RegisterStep1({
 				</form.AppField>
 			</div>
 
-			{/* Title + Affiliation */}
 			<div className="grid gap-2 sm:grid-cols-[100px_1fr]">
 				<form.AppField name="title">
 					{(field) => (

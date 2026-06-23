@@ -76,14 +76,12 @@ export function SubmissionForm(props: SubmissionFormProps) {
 	return (
 		<div className="mx-auto w-full max-w-7xl">
 			<div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-				{/* Main Form */}
 				<div className="relative overflow-hidden rounded-2xl bg-card shadow-2xl">
 					<ExtractionOverlay
 						isExtracting={isExtracting}
 						elapsedSeconds={elapsedSeconds}
 					/>
 					<div className="p-8">
-						{/* Header */}
 						<div className="mb-8">
 							<h1 className="text-2xl font-semibold tracking-tight">
 								{initialData ? "Edit Submission" : "New Submission"}
@@ -109,7 +107,7 @@ export function SubmissionForm(props: SubmissionFormProps) {
 								onSelect={selectType}
 							/>
 
-							{/* File upload (above content when extraction enabled) */}
+							{/* File upload */}
 							{isFileFormat && extractionEnabled && (
 								<>
 									<div className="border-t" />
@@ -145,7 +143,6 @@ export function SubmissionForm(props: SubmissionFormProps) {
 
 							<div className="border-t" />
 
-							{/* Authors Section */}
 							<div className="space-y-4">
 								<div className="flex items-center gap-3">
 									<IconUsers className="size-5 text-muted-foreground" />
@@ -175,7 +172,6 @@ export function SubmissionForm(props: SubmissionFormProps) {
 								</form.Field>
 							</div>
 
-							{/* Keywords Section */}
 							{validationSettings.enableKeywords && (
 								<>
 									<div className="border-t" />
@@ -216,7 +212,6 @@ export function SubmissionForm(props: SubmissionFormProps) {
 								</>
 							)}
 
-							{/* Session Selection (Oral Presentation only) */}
 							{selectedType === "ABSTRACT" &&
 								currentTypeConfig?.config.enableTrackSelection &&
 								activeTracks.length > 0 && (
@@ -257,7 +252,6 @@ export function SubmissionForm(props: SubmissionFormProps) {
 									</>
 								)}
 
-							{/* Submit */}
 							<div className="flex items-center justify-between pt-4 border-t gap-3">
 								<p className="text-xs text-muted-foreground hidden sm:block">
 									By submitting, you agree to the conference guidelines

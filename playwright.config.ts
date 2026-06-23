@@ -96,7 +96,6 @@ export default defineConfig<TestOptions>({
 		roleProject("chromium-admin", /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|task-mails-reminder|planner\/).*\.spec\.ts/, { role: "admin" }),
 		roleProject("mobile-admin", /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|task-mails-reminder|planner\/).*\.spec\.ts/, { role: "admin", device: "mobile" }),
 
-		// Planner - desktop only for now
 		roleProject("chromium-planner", /e2e\/admin\/planner\/.*\.spec\.ts/, { role: "admin", testIgnore: /mobile-planner\.spec\.ts/ }),
 
 		// Docs screenshot capture - no-op unless DOCS_SHOTS=1 (see e2e/screenshots/)

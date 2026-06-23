@@ -19,7 +19,6 @@ export function TypeFeatureTogglesSection({
 }: TypeFeatureTogglesSectionProps) {
 	return (
 		<>
-			{/* Confidence Level */}
 			<div className="flex items-center justify-between">
 				<div className="space-y-0.5">
 					<Label htmlFor="enableConfidenceLevel">Enable confidence level</Label>
@@ -36,7 +35,6 @@ export function TypeFeatureTogglesSection({
 				/>
 			</div>
 
-			{/* Review Attachment */}
 			<div className="flex items-center justify-between">
 				<div className="space-y-0.5">
 					<Label htmlFor="enableReviewAttachment">
@@ -55,7 +53,7 @@ export function TypeFeatureTogglesSection({
 				/>
 			</div>
 
-			{/* Track Selection (Oral Presentation only) */}
+			{/* Track selection */}
 			{typeKey === "SUBMISSION_TYPE_ORAL_PRESENTATION" && (
 				<div className="flex items-center justify-between">
 					<div className="space-y-0.5">

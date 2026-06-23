@@ -24,7 +24,6 @@ export function MobileSidebar({
 }: MobileSidebarProps) {
 	return (
 		<div data-testid="submission-sidebar" className="lg:hidden space-y-6">
-			{/* Mobile Status */}
 			<div className="rounded-2xl bg-card shadow-xl border border-border/50 p-6">
 				<div className="flex items-center justify-between flex-wrap gap-3">
 					<div>
@@ -39,7 +38,6 @@ export function MobileSidebar({
 				</div>
 			</div>
 
-			{/* Mobile Version Selector */}
 			{versions.length > 1 && (
 				<div className="rounded-2xl bg-card shadow-xl border border-border/50 p-6">
 					<VersionSelector
@@ -51,7 +49,6 @@ export function MobileSidebar({
 				</div>
 			)}
 
-			{/* Mobile Actions */}
 			{!isReadOnly && (
 				<ActionsCard
 					submissionId={submission.id}

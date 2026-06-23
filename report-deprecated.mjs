@@ -57,7 +57,6 @@ function reasonFromComment(commentText) {
 	return reason || "(no message)";
 }
 
-/** Recover the @deprecated reason text from the symbol's declaration JSDoc. */
 async function recoverReason(project, fileName, pos) {
 	try {
 		const symbol = await project.checker.getSymbolAtPosition({ uri: fileNameToDocumentURI(fileName) }, pos);
@@ -76,7 +75,6 @@ async function recoverReason(project, fileName, pos) {
 	return undefined;
 }
 
-/** Run the native compiler and return a sorted, de-duplicated list of usages. */
 async function collectUsages() {
 	const api = new API({ cwd: ROOT });
 	const snapshot = await api.updateSnapshot({ openProject: path.join(ROOT, "tsconfig.json") });

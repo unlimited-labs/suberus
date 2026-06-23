@@ -34,7 +34,6 @@ import { zIanaTz } from "@/shared/lib/validations/zod-helpers";
 import { prisma } from "@/shared/server/db.server";
 import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
 
-// Schema for submission type config
 const submissionTypeConfigSchema = z.object({
 	isActive: z.boolean(),
 	includeInPlanner: z.boolean(),
@@ -483,7 +482,6 @@ export const updateSubmissionValidationSettingsFn = createServerFn({
 		}),
 	)
 	.handler(async ({ data }) => {
-		// Validate min <= max
 		if (data.minTitleLength > data.maxTitleLength) {
 			throw new Response("Min title length cannot exceed max title length", {
 				status: 400,
@@ -888,7 +886,7 @@ export const updateReminderSettingsFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
-// ── Fee types & currency ──────────────────────────────────────
+// Fee types & currency
 
 export const feeTypesQueryOptions = () =>
 	queryOptions({

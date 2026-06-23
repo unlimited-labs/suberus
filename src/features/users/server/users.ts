@@ -216,7 +216,6 @@ function buildUserSubmissions(user: UserWithDetail): AdminUserSubmission[] {
 export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 	const where: Prisma.UserWhereInput = {};
 
-	// Search filter
 	if (data.search) {
 		where.OR = [
 			{ email: { contains: data.search, mode: "insensitive" } },
@@ -226,12 +225,10 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 		];
 	}
 
-	// Role filter
 	if (data.role && data.role.length > 0) {
 		where.role = { in: data.role };
 	}
 
-	// Fee paid filter
 	if (data.feePaid !== undefined) {
 		if (data.feePaid) {
 			where.fee = { paid: true };
@@ -429,7 +426,6 @@ export async function bulkChangeRole(
 		}
 	}
 
-	// Fetch old roles for audit trail
 	const oldUsers = await prisma.user.findMany({
 		where: { id: { in: data.userIds } },
 		select: { id: true, role: true },
@@ -710,7 +706,6 @@ export async function updateUserProfile(
 		country: data.country || null,
 	};
 
-	// Handle email change
 	if (data.email !== currentUser.email) {
 		const existing = await prisma.user.findUnique({
 			where: { email: data.email },
@@ -722,7 +717,6 @@ export async function updateUserProfile(
 		updateData.emailVerified = false;
 	}
 
-	// Handle affiliation
 	if (data.affiliation) {
 		const affiliation = await upsertAffiliation(data.affiliation);
 		updateData.affiliation = { connect: { id: affiliation.id } };

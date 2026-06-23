@@ -153,7 +153,6 @@ function RegisterForm() {
 				</p>
 			}
 		>
-			{/* Mobile step indicator */}
 			<div className="mb-4 flex gap-2 lg:hidden">
 				{STEPS.map((step) => (
 					<div
@@ -198,7 +197,6 @@ function RegisterForm() {
 					)}
 				</div>
 
-				{/* Navigation buttons */}
 				<div className="mt-4 flex gap-2">
 					{!isFirst && (
 						<Button
@@ -234,7 +232,6 @@ function RegisterForm() {
 				</div>
 			</form>
 
-			{/* Login link */}
 			<p className="mt-3 text-center text-sm text-muted-foreground">
 				Already have an account?{" "}
 				<Link to="/login" className="font-medium text-primary hover:underline">

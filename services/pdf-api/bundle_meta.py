@@ -39,7 +39,6 @@ def safe_version(pkg: str) -> str | None:
 
 
 def pandoc_version() -> str | None:
-    """Version of the pandoc that converts docling markdown -> HTML for /bundle."""
     try:
         out = subprocess.run(
             ["pandoc", "--version"], capture_output=True, timeout=10
@@ -74,7 +73,6 @@ NORMALIZER_CONFIG_HASH = hashlib.sha256(
 
 
 def fingerprint() -> dict:
-    """Toolchain fingerprint shared by `/` health and the bundle meta."""
     return {
         "pandocVersion": pandoc_version(),
         "doclingVersion": NORMALIZER_CONFIG["doclingVersion"],
@@ -118,8 +116,7 @@ def build_meta(
         "libreofficeVersion": None,
         "normalizerConfigHash": NORMALIZER_CONFIG_HASH,
         "schemaVersion": SCHEMA_VERSION,
-        # Diagnostics (docling versions are already folded into the hash above;
-        # doclingDocSchema is docling's per-document schema string, not the column).
+        # Diagnostics (versions folded into hash; doclingDocSchema is per-document, not the column).
         "doclingVersion": NORMALIZER_CONFIG["doclingVersion"],
         "doclingCoreVersion": NORMALIZER_CONFIG["doclingCoreVersion"],
         "doclingDocSchema": docling_doc_schema,

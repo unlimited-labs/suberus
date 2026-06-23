@@ -88,7 +88,6 @@ export const DEFAULT_EXHIBITOR_CONFIG: SubmissionTypeConfig = {
 
 /** Default values for all app settings */
 export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
-	// Conference settings
 	CONFERENCE_NAME: "Conference Name",
 	CONFERENCE_SUBTITLE: "",
 	CONFERENCE_DATE_START: "",
@@ -108,7 +107,6 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	CONFERENCE_DEFAULT_PRESENTATION_MIN: 15,
 	PLANNER_AUTOPLAN_ENABLED: false,
 
-	// Submission settings
 	MIN_TITLE_LENGTH: 10,
 	MAX_TITLE_LENGTH: 200,
 	MIN_ABSTRACT_LENGTH: 500,
@@ -118,12 +116,10 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	MIN_KEYWORDS: 3,
 	MAX_KEYWORDS: 5,
 
-	// Extraction settings
 	EXTRACTION_ENABLED: false,
 	EXTRACTION_HEURISTIC: true,
 	EXTRACTION_AI: false,
 
-	// Service health (written by scheduled task)
 	SERVICE_HEALTH_LLM: {
 		status: "unavailable",
 		message: "Not checked yet",
@@ -145,13 +141,11 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 		checkedAt: "",
 	},
 
-	// Submission type configs
 	SUBMISSION_TYPE_ORAL_PRESENTATION: DEFAULT_ORAL_PRESENTATION_CONFIG,
 	SUBMISSION_TYPE_POSTER: DEFAULT_POSTER_CONFIG,
 	SUBMISSION_TYPE_FULL_PAPER: DEFAULT_FULL_PAPER_CONFIG,
 	SUBMISSION_TYPE_EXHIBITOR: DEFAULT_EXHIBITOR_CONFIG,
 
-	// Fee settings
 	FEE_PAYMENT_INSTRUCTIONS:
 		"# Payment Instructions\n\nPlease contact the conference organizer for payment details.",
 	FEE_CURRENCY: "EUR",
@@ -160,7 +154,6 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 		{ id: "student", name: "Student Fee", amount: 100 },
 	],
 
-	// Branding settings
 	BRANDING_LOGO_URL: "",
 	BRANDING_FAVICON_URL: "",
 	BRANDING_PRIMARY_COLOR: "#3b82f6",
@@ -170,32 +163,25 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	BRANDING_AUTH_BG_OVERLAY: 60,
 	BRANDING_LOGO_DARK_INVERT: true,
 
-	// Reminder settings
 	REMINDER_REVIEWER_SETTINGS: { enabled: false, daysBefore: [3, 1] },
 	REMINDER_REVISION_SETTINGS: { enabled: false, intervalDays: 7, maxCount: 3 },
 	REMINDER_DEADLINE_SETTINGS: { enabled: false, daysBefore: [7, 3, 1] },
 
-	// Guidelines
 	SUBMISSION_GUIDELINES:
 		"- Title should be concise and descriptive\n- Abstract minimum {{minAbstractLength}} characters\n- At least one author required\n- Add {{minKeywords}}-{{maxKeywords}} relevant keywords",
 	REVIEW_GUIDELINES:
 		"- Provide constructive, specific feedback\n- Support claims with evidence from the work\n- Be respectful and professional\n- Consider the work's contribution to the field\n- Minimum 50 characters for comments",
 
-	// Email footer
 	EMAIL_FOOTER_TEXT: "Best regards,\n{{conferenceName}}",
 
-	// Terms of Service
 	TOS_CONTENT:
 		"# Terms of Service\n\nPlease configure Terms of Service in the admin panel.",
 
-	// Display format
 	DATE_FORMAT: "DD.MM.YYYY",
 	TIME_FORMAT: "24h",
 
-	// Invitations
 	INVITATION_VALIDITY_HOURS: 72,
 
-	// Schedule planner
 	SCHEDULE_STATE: { status: "DRAFT" },
 };
 

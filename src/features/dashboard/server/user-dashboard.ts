@@ -12,22 +12,18 @@ export async function getUserDashboardMetrics(
 ): Promise<UserDashboardMetrics> {
 	const [mySubmissions, underReview, accepted, pendingReviews] =
 		await Promise.all([
-			// Total submissions
 			prisma.submission.count({
 				where: { userId },
 			}),
-			// Under review
 			prisma.submission.count({
 				where: { userId, status: "UNDER_REVIEW" },
 			}),
-			// Accepted (including conditionally accepted)
 			prisma.submission.count({
 				where: {
 					userId,
 					status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] },
 				},
 			}),
-			// Pending reviews
 			prisma.reviewAssignment.count({
 				where: { reviewerId: userId, status: "PENDING" },
 			}),

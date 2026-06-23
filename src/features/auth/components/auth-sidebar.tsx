@@ -1,5 +1,4 @@
 import { IconCheck } from "@tabler/icons-react";
-
 import { cn } from "@/shared/lib/utils";
 
 interface Step {
@@ -33,7 +32,6 @@ export function AuthSidebar({
 				width === "narrow" ? "w-64" : "w-72",
 			)}
 		>
-			{/* Background image with overlay */}
 			<div
 				className="absolute inset-0 bg-cover bg-center opacity-40"
 				style={{
@@ -42,7 +40,6 @@ export function AuthSidebar({
 			/>
 			<div className="absolute inset-0 bg-linear-to-br from-primary/90 via-primary/70 to-primary/90" />
 
-			{/* Conference info */}
 			<div className="relative z-10 space-y-3">
 				<h2 className="text-2xl font-bold tracking-tight">{conferenceName}</h2>
 				{(conferenceDate || conferenceLocation) && (
@@ -53,7 +50,6 @@ export function AuthSidebar({
 				)}
 			</div>
 
-			{/* Step indicators (optional) */}
 			{steps && steps.length > 0 ? (
 				<div className="relative z-10 space-y-2">
 					{steps.map((step) => (

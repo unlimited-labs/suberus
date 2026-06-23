@@ -31,7 +31,6 @@ export function ReviewSidebar({
 
 	return (
 		<>
-			{/* Progress Sidebar (desktop) */}
 			<div className="hidden lg:block">
 				<div className="sticky top-0 space-y-4">
 					<SectionCard title="Review Progress" contentClassName="space-y-4">
@@ -78,7 +77,6 @@ export function ReviewSidebar({
 				</div>
 			</div>
 
-			{/* Mobile Progress */}
 			<div className="lg:hidden">
 				<SectionCard
 					size="sm"

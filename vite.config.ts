@@ -8,7 +8,6 @@ import { defineConfig } from "vite";
 import checker from "vite-plugin-checker";
 import zodCompiler from "zod-compiler/vite";
 
-// const isDev = process.env.NODE_ENV !== "production";
 const isE2E = process.env.E2E === "true";
 
 // Optional build-output isolation: when set, Nitro writes the build here instead
@@ -65,14 +64,10 @@ const config = defineConfig({
 		tanstackStart(),
 		viteReact(),
 		babel({ presets: [reactCompilerPreset()] }),
-		// Force check TS errors on build
 		checker({
 			typescript: {
 				tsconfigPath: "./tsconfig.json",
 			},
-			// biome: {
-			// 	command: "check",
-			// },
 		}),
 		zodCompiler(),
 	],

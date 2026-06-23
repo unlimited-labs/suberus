@@ -42,7 +42,6 @@ def test_kitchen_sink_redline():
     html_b = _normalize("kitchen-sink-v2.docx")
     redline = diffhtml.diff_html(html_a, html_b)
 
-    # Intent: each kind of change is represented.
     assert "<del" in redline and "<ins" in redline, "word change should produce del/ins"
     assert 'class="moved"' in redline, "the reordered paragraph should be badged moved"
     assert 'class="matheq"' in redline, "the changed equation should be an atomic matheq"

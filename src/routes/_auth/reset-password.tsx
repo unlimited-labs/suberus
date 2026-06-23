@@ -8,10 +8,10 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { AuthCard } from "@/features/auth/components/auth-card";
+import { resetPasswordSchema } from "@/features/auth/validations";
 import { PasswordFieldsGroup } from "@/shared/components/composable/password-fields-group";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { resetPassword } from "@/shared/lib/auth-client";
-import { resetPasswordSchema } from "@/features/auth/validations";
 
 const searchSchema = z.object({
 	token: z.string().optional(),
@@ -60,7 +60,6 @@ function ResetPasswordPage() {
 		},
 	});
 
-	// No token or token error
 	if (!token || tokenError) {
 		return (
 			<AuthCard centered>
@@ -89,7 +88,6 @@ function ResetPasswordPage() {
 		);
 	}
 
-	// Success
 	if (isSuccess) {
 		return (
 			<AuthCard centered>
@@ -117,7 +115,6 @@ function ResetPasswordPage() {
 		);
 	}
 
-	// Form
 	return (
 		<AuthCard title="Reset password" subtitle="Enter your new password below">
 			<form

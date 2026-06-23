@@ -199,12 +199,10 @@ export function AffiliationSelect({
 
 	const debouncedInput = useDebounce(inputValue, 300);
 
-	// Sync displayValue externally
 	useEffect(() => {
 		setInputValue(displayValue);
 	}, [displayValue]);
 
-	// Fetch affiliation by ID on mount
 	const onChangeRef = useRef(onChange);
 	onChangeRef.current = onChange;
 	const isFetchingRef = useRef(false);

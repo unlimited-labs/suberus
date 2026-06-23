@@ -49,7 +49,6 @@ export interface AssignmentWithReviewer {
 export async function getAvailableReviewers(
 	submissionId: string,
 ): Promise<AvailableReviewer[]> {
-	// Get submission to check authors (avoid assigning author as reviewer)
 	const submission = await prisma.submission.findUniqueOrThrow({
 		where: { id: submissionId },
 		include: {
@@ -58,7 +57,6 @@ export async function getAvailableReviewers(
 		},
 	});
 
-	// Get emails and user IDs of authors
 	const authorEmails = submission.authors.map((a) => a.email.toLowerCase());
 	const authorUserIds = submission.authors
 		.map((a) => a.userId)
@@ -71,7 +69,6 @@ export async function getAvailableReviewers(
 		)
 		.map((a) => a.reviewerId);
 
-	// Query eligible reviewers (REVIEWER, EDITOR, ADMIN roles)
 	const reviewers = await prisma.user.findMany({
 		where: {
 			role: { in: ["REVIEWER", "EDITOR", "ADMIN"] },
@@ -174,11 +171,9 @@ export async function assignReviewer(
 		};
 	}
 
-	// Get config
 	const configKey = SUBMISSION_TYPE_TO_KEY[submission.type];
 	const config = await getSetting(configKey);
 
-	// Validate can assign more reviewers
 	const currentCount = submission.reviewAssignments.length;
 	if (!canAssignReviewer(submission.status)) {
 		logger.warn(
@@ -190,7 +185,6 @@ export async function assignReviewer(
 		};
 	}
 
-	// Check if reviewer already assigned
 	const existingAssignment = submission.reviewAssignments.find(
 		(a) => a.reviewerId === reviewerId,
 	);
@@ -204,11 +198,9 @@ export async function assignReviewer(
 		};
 	}
 
-	// Calculate deadline
 	const deadline =
 		customDeadline ?? addDays(new Date(), config.reviewDeadlineDays);
 
-	// Create assignment
 	const assignment = await prisma.reviewAssignment.create({
 		data: {
 			submissionId,
@@ -221,7 +213,6 @@ export async function assignReviewer(
 		},
 	});
 
-	// Check if we should transition to UNDER_REVIEW
 	const newCount = currentCount + 1;
 	if (
 		newCount >= config.requiredReviewers &&
@@ -235,7 +226,6 @@ export async function assignReviewer(
 		);
 	}
 
-	// Send assignment notification to reviewer
 	const [reviewer, dateFormat] = await Promise.all([
 		prisma.user.findUniqueOrThrow({
 			where: { id: reviewerId },
@@ -410,7 +400,6 @@ export async function getReviewerAssignments(
 		orderBy: [{ deadline: "asc" }, { assignedAt: "desc" }],
 	});
 
-	// Fetch review mode configs for all submission types
 	const configKeys = [
 		...new Set(
 			assignments.map((a) => SUBMISSION_TYPE_TO_KEY[a.submission.type]),
@@ -471,7 +460,6 @@ export async function getReviewerAssignments(
 		);
 	}
 
-	// Sort by urgency
 	const now = new Date();
 	result.sort((a, b) => compareAssignmentUrgency(a, b, now));
 

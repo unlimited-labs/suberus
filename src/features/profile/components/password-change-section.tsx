@@ -37,7 +37,6 @@ export function PasswordChangeSection({
 			}}
 			className="space-y-4"
 		>
-			{/* Current Password */}
 			<form.AppField name="currentPassword">
 				{(field) => (
 					<field.PasswordField
@@ -47,7 +46,6 @@ export function PasswordChangeSection({
 				)}
 			</form.AppField>
 
-			{/* New Password fields */}
 			<PasswordFieldsGroup
 				form={form}
 				fields={{ password: "newPassword", confirm: "confirmNewPassword" }}
@@ -58,7 +56,6 @@ export function PasswordChangeSection({
 				twoColumn
 			/>
 
-			{/* Save button */}
 			<div className="flex justify-end pt-2">
 				<form.AppForm>
 					<form.SubmitButton

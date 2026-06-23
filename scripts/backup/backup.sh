@@ -48,13 +48,11 @@ pg_psql -At -c \
   > "$work/db-storage-keys.txt" \
   || die "failed to export storageKeys for consistency check"
 
-# 2. S3 mirror
 log "mirroring bucket $RCLONE_REMOTE:$GARAGE_BUCKET (exclude: $S3_EXCLUDE)"
 rclone_cmd sync "$RCLONE_REMOTE:$GARAGE_BUCKET" "$work/storage" --exclude "$S3_EXCLUDE"
 obj_count=$(find "$work/storage" -type f | wc -l | tr -d ' ')
 log "mirrored $obj_count object(s)"
 
-# 3. Manifest
 git_sha=$(cd "$REPO_ROOT" && git rev-parse HEAD 2>/dev/null || echo unknown)
 last_migration=$(ls "$REPO_ROOT/prisma/migrations" 2>/dev/null | grep -E '^[0-9]' | tail -1 || echo unknown)
 pg_version=$(pg_psql -At -c 'SHOW server_version' 2>/dev/null || echo unknown)
@@ -78,7 +76,6 @@ log "manifest written"
 CONSISTENCY_REPORT="$work/consistency-report.txt" \
   bash "$LIB_DIR/verify-consistency.sh" "$work"
 
-# 5. restic backup
 log "uploading restic snapshot"
 restic_cmd backup "$work" \
   --tag suberus --tag db+s3 \

@@ -44,12 +44,10 @@ export function FeeTab({
 	const [feeTypes, setFeeTypes] = useState<FeeType[]>(initialFeeTypes);
 	const [isSavingTypes, setIsSavingTypes] = useState(false);
 
-	// Inline editing state
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [editName, setEditName] = useState("");
 	const [editAmount, setEditAmount] = useState("");
 
-	// New fee type form
 	const [showAddForm, setShowAddForm] = useState(false);
 	const [newName, setNewName] = useState("");
 	const [newAmount, setNewAmount] = useState("");
@@ -137,7 +135,6 @@ export function FeeTab({
 				description="Manage fee types and their amounts"
 			>
 				<div className="space-y-4">
-					{/* Fee types list */}
 					<div className="rounded-md border">
 						<div className="grid grid-cols-[1fr_auto_auto] gap-2 border-b bg-muted/50 px-4 py-2 text-xs font-medium text-muted-foreground">
 							<span>Name</span>
@@ -219,7 +216,6 @@ export function FeeTab({
 						))}
 					</div>
 
-					{/* Add fee type form */}
 					{showAddForm ? (
 						<div className="flex items-end gap-2">
 							<div className="flex-1 space-y-1">

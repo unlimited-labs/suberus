@@ -1,8 +1,8 @@
 import { IconExternalLink, IconMenu2 } from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { useSession } from "@/shared/hooks/use-session";
 import { getNavigationForRole } from "@/shared/components/layout/navigation";
+import { useSession } from "@/shared/hooks/use-session";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import {
@@ -57,7 +57,6 @@ function SidebarContent({
 
 	return (
 		<div className="flex h-full flex-col">
-			{/* Logo & Conference */}
 			<div className="px-4 py-4">
 				<Link to="/" className="block">
 					<BrandLogo
@@ -74,7 +73,6 @@ function SidebarContent({
 				</div>
 			</div>
 
-			{/* Navigation */}
 			<nav className="flex-1 overflow-auto p-3">
 				{sections.map((section, sectionIndex) => (
 					<div key={sectionIndex} className={cn(sectionIndex > 0 && "mt-4")}>
@@ -123,7 +121,6 @@ function SidebarContent({
 				))}
 			</nav>
 
-			{/* User at bottom */}
 			<div className="p-3">
 				<UserMenu />
 			</div>

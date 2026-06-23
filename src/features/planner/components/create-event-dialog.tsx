@@ -87,7 +87,6 @@ export function CreateEventDialog({
 					}}
 					className="space-y-4"
 				>
-					{/* Type toggle */}
 					<form.Field name="type">
 						{(field) => (
 							<div className="grid grid-cols-2 gap-2">
@@ -115,7 +114,6 @@ export function CreateEventDialog({
 						)}
 					</form.Field>
 
-					{/* Start time */}
 					<form.Field name="startInput">
 						{(field) => (
 							<div className="space-y-2">
@@ -131,7 +129,6 @@ export function CreateEventDialog({
 						)}
 					</form.Field>
 
-					{/* Duration controls */}
 					{type === "session" ? (
 						<div className="grid grid-cols-2 gap-4">
 							<form.Field name="presentationCount">
@@ -194,7 +191,6 @@ export function CreateEventDialog({
 						}
 					/>
 
-					{/* Title */}
 					<form.Field
 						name="title"
 						validators={{

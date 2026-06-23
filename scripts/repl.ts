@@ -3,10 +3,6 @@ import path from "node:path";
 import chalk from "chalk";
 import { consola } from "consola";
 
-// ---------------------------------------------------------------------------
-// Module registry
-// ---------------------------------------------------------------------------
-
 const MODULE_REGISTRY: Record<string, string> = {
 	workflow: "@/features/workflow/server/workflow",
 	submissions: "@/features/submissions/server/submissions",
@@ -29,10 +25,6 @@ const MODULE_REGISTRY: Record<string, string> = {
 };
 
 const DEFAULT_TIMEOUT_MS = 30_000;
-
-// ---------------------------------------------------------------------------
-// CLI arg parsing
-// ---------------------------------------------------------------------------
 
 type CliArgs =
 	| { mode: "interactive" }
@@ -159,10 +151,6 @@ function printUsage() {
 	);
 }
 
-// ---------------------------------------------------------------------------
-// JSON serialization (handles BigInt, Date, functions, circular refs)
-// ---------------------------------------------------------------------------
-
 function jsonStringify(value: unknown): string {
 	const seen = new WeakSet();
 	return JSON.stringify(
@@ -184,10 +172,6 @@ function jsonStringify(value: unknown): string {
 function outputJson(data: unknown) {
 	process.stdout.write(jsonStringify(data) + "\n");
 }
-
-// ---------------------------------------------------------------------------
-// Core initialization (shared between modes)
-// ---------------------------------------------------------------------------
 
 interface Core {
 	db: Awaited<typeof import("@/shared/server/db.server.ts")>["prisma"] & Record<string, unknown>;
@@ -313,10 +297,6 @@ async function initCore(opts: { silent: boolean }): Promise<Core> {
 	return { db: db as Core["db"], enums: Enums, load, getTableNames, getEnumMap, getModelSchema, getAllModelSchemas };
 }
 
-// ---------------------------------------------------------------------------
-// Discovery mode
-// ---------------------------------------------------------------------------
-
 async function runDiscovery(core: Core, command: string, target?: string) {
 	switch (command) {
 		case "tables":
@@ -354,10 +334,6 @@ async function runDiscovery(core: Core, command: string, target?: string) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// Expression evaluation (non-interactive)
-// ---------------------------------------------------------------------------
-
 // biome-ignore lint/complexity/noBannedTypes: AsyncFunction constructor requires Function type
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor as new (...args: string[]) => Function;
 
@@ -376,18 +352,15 @@ async function evalWithTimeout(fn: () => Promise<unknown>, timeoutMs: number): P
 }
 
 async function runExec(core: Core, expressions: string[], preloadModules: string[], raw: boolean, timeoutMs: number) {
-	// Build eval context with shared $ bag
 	const shared: Record<string, unknown> = {};
 	const context: Record<string, unknown> = { db: core.db, load: core.load, $: shared };
 
-	// Spread enums
 	for (const [key, value] of Object.entries(core.enums)) {
 		if (typeof value === "object" && value !== null) {
 			context[key] = value;
 		}
 	}
 
-	// Pre-load requested modules
 	for (const name of preloadModules) {
 		if (!MODULE_REGISTRY[name]) {
 			outputJson({ ok: false, error: `Unknown module: "${name}". Available: ${Object.keys(MODULE_REGISTRY).join(", ")}` });
@@ -438,19 +411,11 @@ async function runExec(core: Core, expressions: string[], preloadModules: string
 	}
 }
 
-// ---------------------------------------------------------------------------
-// Stdin reader
-// ---------------------------------------------------------------------------
-
 async function readStdin(): Promise<string> {
 	const chunks: Buffer[] = [];
 	for await (const chunk of process.stdin) chunks.push(Buffer.from(chunk));
 	return Buffer.concat(chunks).toString("utf-8").trim();
 }
-
-// ---------------------------------------------------------------------------
-// Interactive REPL
-// ---------------------------------------------------------------------------
 
 function printBanner() {
 	console.log(chalk.cyan.bold("\n  Suberus REPL"));
@@ -547,10 +512,6 @@ async function runInteractive(core: Core) {
 		process.exit(0);
 	});
 }
-
-// ---------------------------------------------------------------------------
-// Main
-// ---------------------------------------------------------------------------
 
 async function main() {
 	const args = parseArgs(process.argv.slice(2));

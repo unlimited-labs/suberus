@@ -6,7 +6,6 @@
     "src/start.ts", // TanStack Start
     "src/server/plugins/**/*.ts", // nitro plugins
     "src/server/tasks/**/*.ts", // nitro tasks
-    // Design-system primitives
     "src/shared/ui/**/*.{ts,tsx}",
     "src/integrations/**/*.{ts,tsx}",
     "src/features/dashboard/index.ts",
@@ -17,7 +16,7 @@
   // Known-good deps not TS imports
   "ignoreDependencies": ["tw-animate-css", "shadcn"],
   "duplicates": {
-    // Hide pair-only clones; focus on widespread copy-paste worth refactoring. Lower to 2 to report every duplicate pair.
+    // 3+ occurrences; lower to 2 to report every duplicate pair.
     "minOccurrences": 3
   },
   "rules": {
@@ -27,7 +26,6 @@
   // Feature-first vertical slices. Each feature is its own zone, so a sibling app-feature import fails.
 	// `shared` is the floor (imports nothing above it);
 	// `routes` compose anything;
-	// `core` features may be imported by app features but never import an app feature.
   "boundaries": {
     "zones": [
       { "name": "routes", "patterns": ["src/routes/**"] },

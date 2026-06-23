@@ -53,7 +53,6 @@ function SubmissionsPage() {
 	} = useSubmissionAccess();
 	const { formatDate } = useDateFormat();
 
-	// Sort submissions by newest first (updatedAt DESC)
 	const sortedSubmissions = [...submissions].sort((a, b) =>
 		compareDesc(new Date(a.updatedAt), new Date(b.updatedAt)),
 	);

@@ -31,7 +31,6 @@ function DecisionContent({ decision }: { decision: UserSubmissionDecision }) {
 	const { formatDateTime } = useDateFormat();
 	return (
 		<div className="space-y-4">
-			{/* Reasoning */}
 			<div>
 				<p className="text-sm font-medium text-muted-foreground mb-2">
 					Reasoning:
@@ -41,7 +40,6 @@ function DecisionContent({ decision }: { decision: UserSubmissionDecision }) {
 				</p>
 			</div>
 
-			{/* Letter to Author */}
 			<div className="pt-3 border-t">
 				<p className="text-sm font-medium text-muted-foreground mb-2">
 					Letter to Author:
@@ -51,7 +49,6 @@ function DecisionContent({ decision }: { decision: UserSubmissionDecision }) {
 				</div>
 			</div>
 
-			{/* Revisions Required */}
 			{decision.revisionsRequired && decision.revisionsRequired.length > 0 && (
 				<div className="pt-2 border-t">
 					<p className="text-sm font-medium text-muted-foreground mb-3">
@@ -73,7 +70,6 @@ function DecisionContent({ decision }: { decision: UserSubmissionDecision }) {
 				</div>
 			)}
 
-			{/* Conditions */}
 			{decision.conditions && decision.conditions.length > 0 && (
 				<div className="pt-2 border-t">
 					<p className="text-sm font-medium text-muted-foreground mb-3">
@@ -95,7 +91,6 @@ function DecisionContent({ decision }: { decision: UserSubmissionDecision }) {
 				</div>
 			)}
 
-			{/* Decision Date */}
 			<div className="text-xs text-muted-foreground pt-2 border-t">
 				Decision date: {formatDateTime(decision.createdAt)}
 			</div>

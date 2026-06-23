@@ -78,7 +78,6 @@ def cluster(req: Annotated[ClusterRequest, ...]) -> ClusterResponse:
             f"infeasible: {k} clusters with max size {size_max} allows <={k * size_max} items, have {n}",
         )
 
-    # Validate embedding dims consistent
     dim = len(req.items[0].embedding)
     for it in req.items:
         if len(it.embedding) != dim:

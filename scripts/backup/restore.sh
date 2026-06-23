@@ -57,23 +57,19 @@ echo "----- manifest.json -----" >&2; cat "$data_dir/manifest.json" >&2; echo >&
 [[ -f "$data_dir/consistency-report.txt" ]] && \
   { echo "----- consistency-report.txt -----" >&2; cat "$data_dir/consistency-report.txt" >&2; }
 
-# 2. Confirmation (destructive)
 log "TARGET bucket=$TARGET_BUCKET  db=$TARGET_DB  (container=$PG_CONTAINER)"
 if [[ "$ASSUME_YES" != "1" ]]; then
   read -r -p "This OVERWRITES the target bucket and database. Type 'restore' to proceed: " ans
   [[ "$ans" == "restore" ]] || die "aborted by user"
 fi
 
-# 3. Restore S3
 log "restoring storage → $RCLONE_REMOTE:$TARGET_BUCKET"
 rclone_cmd sync "$data_dir/storage" "$RCLONE_REMOTE:$TARGET_BUCKET"
 
-# 4. Restore DB
 log "restoring database → $TARGET_DB"
 docker exec -i "$PG_CONTAINER" pg_restore -U "$PG_USER" -d "$TARGET_DB" \
   --clean --if-exists --no-owner < "$data_dir/db.dump"
 
-# 5. Verify + sanity counts
 log "verifying restored state"
 VERIFY_PG_DB="$TARGET_DB" VERIFY_BUCKET="$TARGET_BUCKET" \
   bash "$LIB_DIR/verify-consistency.sh" --live || warn "post-restore consistency check reported issues"

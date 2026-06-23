@@ -58,7 +58,6 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 			<div className="flex-1 overflow-auto p-6">
 				<div className="mx-auto w-full max-w-7xl">
 					<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-						{/* Editor */}
 						<div className="rounded-2xl bg-card overflow-hidden shadow-2xl">
 							<div className="space-y-6 p-6 sm:p-8">
 								<div>
@@ -118,7 +117,6 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 							</div>
 						</div>
 
-						{/* Inspector */}
 						<aside className="space-y-4 lg:sticky lg:top-0 lg:self-start">
 							<SectionCard
 								variant="outlined"

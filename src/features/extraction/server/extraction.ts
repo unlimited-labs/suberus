@@ -150,13 +150,9 @@ async function tryLlmExtraction(
 // without knowing expected count, which is not available from heuristics.
 
 export function isLowConfidence(result: ExtractionResult): boolean {
-	// Rule 1: no title
 	if (!result.title) return true;
-	// Rule 2: title too long (probably a paragraph)
 	if (result.title.length > MAX_TITLE_LENGTH) return true;
-	// Rule 3: no authors
 	if (!result.authors || result.authors.length === 0) return true;
-	// Rule 4: parsing artifacts in names
 	if (
 		result.authors.some(
 			(a) =>
@@ -165,9 +161,7 @@ export function isLowConfidence(result: ExtractionResult): boolean {
 		)
 	)
 		return true;
-	// Rule 5: no affiliations at all
 	if (result.authors.every((a) => !a.affiliationName)) return true;
-	// Rule 6: any author missing a valid email
 	if (result.authors.some((a) => !a.email || !EMAIL_RE_STRICT.test(a.email)))
 		return true;
 
@@ -197,9 +191,7 @@ export function mergeResults(
 	let authors = heuristic.authors;
 
 	if (authors && authors.length > 0 && ai.authors && ai.authors.length > 0) {
-		// Enrich each heuristic author with matching AI data
 		authors = authors.map((hAuthor) => {
-			// Find matching AI author by name similarity
 			const aiMatch = ai.authors?.find(
 				(a) =>
 					a.lastName.toLowerCase() === hAuthor.lastName.toLowerCase() &&
@@ -212,9 +204,7 @@ export function mergeResults(
 			return {
 				firstName: hAuthor.firstName,
 				lastName: hAuthor.lastName,
-				// Fill missing email from AI
 				email: hAuthor.email || aiMatch.email,
-				// Fill missing affiliation from AI
 				affiliationName: hAuthor.affiliationName || aiMatch.affiliationName,
 			};
 		});

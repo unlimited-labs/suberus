@@ -109,11 +109,7 @@ export function SubmissionsColumnHeader({
 		draft: (columns.draft?.getFilterValue() as string[] | undefined) ?? [],
 	});
 
-	// The popover lives in a portal and does not re-render from the table's
-	// filter-state change while open, so the checkboxes would only reflect a
-	// toggle after reopening. We keep a local mirror of the selection (drives
-	// the checkboxes, re-renders immediately) and re-sync it from the columns
-	// whenever the popover opens (so an external Reset stays consistent).
+	// Popover is portaled and won't re-render with the table — mirror selection locally.
 	const [selection, setSelection] =
 		useState<Record<Dimension, string[]>>(readSelection);
 
@@ -184,8 +180,7 @@ export function SubmissionsColumnHeader({
 
 			<Popover
 				onOpenChange={(open) => {
-					// Re-sync from the source of truth when opening, so an external
-					// Reset (toolbar) is reflected.
+					// Re-sync with current filter state on open
 					if (open) setSelection(readSelection());
 				}}
 			>

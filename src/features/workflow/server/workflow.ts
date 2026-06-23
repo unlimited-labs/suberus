@@ -69,7 +69,6 @@ async function getSubmissionConfig(
 async function buildSubmissionContext(
 	submissionId: string,
 ): Promise<SubmissionContext> {
-	// Fetch submission with assignments, then filter by currentRound
 	const submissionWithRelations = await prisma.submission.findUniqueOrThrow({
 		where: { id: submissionId },
 		include: {
@@ -77,7 +76,6 @@ async function buildSubmissionContext(
 		},
 	});
 
-	// Filter to current round in memory
 	const currentRound = submissionWithRelations.currentRound;
 	const submission = {
 		...submissionWithRelations,
@@ -119,7 +117,6 @@ export async function executeSubmissionTransition(
 
 	const context = await buildSubmissionContext(submissionId);
 
-	// Create actor with current state
 	const actor = createActor(submissionMachine, {
 		snapshot: submissionMachine.resolveState({
 			value: submission.status,
@@ -129,10 +126,8 @@ export async function executeSubmissionTransition(
 
 	actor.start();
 
-	// Check if transition is valid using xstate v5 API
 	const currentSnapshot = actor.getSnapshot();
 
-	// Check if the event can be sent from current state
 	if (!currentSnapshot.can(event)) {
 		actor.stop();
 		logger.warn(
@@ -147,19 +142,15 @@ export async function executeSubmissionTransition(
 		};
 	}
 
-	// Send the event to get the next state
 	actor.send(event);
 	const nextSnapshot = actor.getSnapshot();
 	const newState = String(nextSnapshot.value) as SubmissionStatus;
 
-	// Execute transition in database
 	await prisma.$transaction(async (tx) => {
-		// Update submission status
 		const updateData: { status: SubmissionStatus; currentRound?: number } = {
 			status: newState,
 		};
 
-		// Handle round increment for RESUBMIT
 		if (event.type === "RESUBMIT") {
 			updateData.currentRound = submission.currentRound + 1;
 		}
@@ -169,7 +160,6 @@ export async function executeSubmissionTransition(
 			data: updateData,
 		});
 
-		// Create status history entry
 		const description = getTransitionDescription(
 			submission.status,
 			newState,
@@ -309,7 +299,6 @@ export async function executeAssignmentTransition(
 
 	const currentSnapshot = actor.getSnapshot();
 
-	// Check if transition is valid using xstate v5 API
 	if (!currentSnapshot.can(event)) {
 		actor.stop();
 		logger.warn(
@@ -324,12 +313,10 @@ export async function executeAssignmentTransition(
 		};
 	}
 
-	// Send the event to get the next state
 	actor.send(event);
 	const nextSnapshot = actor.getSnapshot();
 	const newState = String(nextSnapshot.value) as AssignmentStatus;
 
-	// Update assignment in database
 	const updateData: {
 		status: AssignmentStatus;
 		completedAt?: Date;
@@ -442,7 +429,6 @@ export async function checkAndTriggerReviewCompletion(
 
 		// Row already locked by another concurrent call — let that one handle the transition
 		if (!locked) return null;
-		// Only trigger from UNDER_REVIEW
 		if (locked.status !== "UNDER_REVIEW") return null;
 
 		return locked;
@@ -450,7 +436,6 @@ export async function checkAndTriggerReviewCompletion(
 
 	if (!lockedSubmission) return null;
 
-	// Fetch full submission data after acquiring lock
 	const submissionWithRelations = await prisma.submission.findUniqueOrThrow({
 		where: { id: submissionId },
 		include: {
@@ -582,7 +567,6 @@ export async function withdrawSubmission(
 	userId: string,
 	reason?: string,
 ): Promise<TransitionResult> {
-	// Verify authorization: owner or admin/editor (co-authors can only view)
 	const [submission, user] = await Promise.all([
 		prisma.submission.findUniqueOrThrow({
 			where: { id: submissionId },
@@ -658,7 +642,6 @@ export async function deskAcceptSubmission(
 			},
 		});
 
-		// Create editor decision record for audit trail
 		await prisma.editorDecision.create({
 			data: {
 				submissionId,
@@ -715,7 +698,6 @@ export async function deskRejectSubmission(
 			},
 		});
 
-		// Create editor decision record for audit trail
 		await prisma.editorDecision.create({
 			data: {
 				submissionId,
@@ -763,7 +745,6 @@ export async function submitEditorDecision(
 	reasoning?: string,
 	letterToAuthor?: string,
 ): Promise<TransitionResult> {
-	// Fetch submission with all reviews and filter by currentRound in memory
 	const submissionWithRelations = await prisma.submission.findUniqueOrThrow({
 		where: { id: submissionId },
 		include: {
@@ -778,7 +759,6 @@ export async function submitEditorDecision(
 		),
 	};
 
-	// Map decision to event
 	const eventMap = {
 		ACCEPT: "EDITOR_ACCEPT",
 		CONDITIONALLY_ACCEPT: "EDITOR_CONDITIONAL",
@@ -809,7 +789,6 @@ export async function submitEditorDecision(
 			},
 		});
 
-		// Send decision email to author
 		const decisionEmailMap = {
 			ACCEPT: "DECISION_ACCEPTED",
 			CONDITIONALLY_ACCEPT: "DECISION_CONDITIONALLY_ACCEPTED",
@@ -915,7 +894,6 @@ export async function confirmConditionsMet(
 			},
 		});
 
-		// Create editor decision record
 		const currentRoundReviews = submission.reviews.filter(
 			(r) => r.round === submission.currentRound,
 		);
@@ -930,7 +908,6 @@ export async function confirmConditionsMet(
 			},
 		});
 
-		// Send acceptance email to presenter
 		const presenter = submission.authors[0];
 		if (presenter) {
 			void sendEmail("DECISION_ACCEPTED", presenter.email, {

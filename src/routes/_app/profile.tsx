@@ -65,7 +65,6 @@ function SettingsPage() {
 
 	if (!user) return null;
 
-	// Personal Info handlers
 	const handlePersonalInfoSave = async (data: PersonalInfoFormData) => {
 		try {
 			let affiliationId: string | undefined;
@@ -96,7 +95,6 @@ function SettingsPage() {
 		}
 	};
 
-	// Contact Info handlers
 	const handleContactInfoSave = async (data: ContactInfoFormData) => {
 		try {
 			if (data.email !== user.email) {
@@ -124,7 +122,6 @@ function SettingsPage() {
 		}
 	};
 
-	// Password change handler
 	const handlePasswordChange = async (data: PasswordChangeFormData) => {
 		try {
 			await changePasswordFn({

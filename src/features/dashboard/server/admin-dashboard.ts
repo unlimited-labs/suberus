@@ -120,63 +120,46 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		trendReviewsCompleted,
 		trendFees,
 	] = await Promise.all([
-		// Users by role
 		prisma.user.groupBy({
 			by: ["role"],
 			_count: true,
 		}),
-		// Total users
 		prisma.user.count(),
-		// Verified users
 		prisma.user.count({ where: { emailVerified: true } }),
-		// Recent signups (last 7 days)
 		prisma.user.count({
 			where: { createdAt: { gte: sevenDaysAgo } },
 		}),
-		// Submissions by status
 		prisma.submission.groupBy({
 			by: ["status"],
 			_count: true,
 		}),
-		// Submissions by type
 		prisma.submission.groupBy({
 			by: ["type"],
 			_count: true,
 		}),
-		// Total submissions
 		prisma.submission.count(),
-		// Recent submissions
 		prisma.submission.count({
 			where: { createdAt: { gte: sevenDaysAgo } },
 		}),
-		// Review assignments by status
 		prisma.reviewAssignment.groupBy({
 			by: ["status"],
 			_count: true,
 		}),
-		// Total assignments
 		prisma.reviewAssignment.count(),
-		// Completed assignments
 		prisma.reviewAssignment.count({ where: { status: "COMPLETED" } }),
-		// Paid fees
 		prisma.fee.findMany({
 			where: { paid: true },
 			select: { amount: true },
 		}),
-		// Unpaid submitters (users with >=1 submission and no paid fee)
 		prisma.user.count({
 			where: {
 				submissions: { some: {} },
 				OR: [{ fee: null }, { fee: { paid: false } }],
 			},
 		}),
-		// Overdue reviews
 		prisma.reviewAssignment.count({ where: { status: "OVERDUE" } }),
-		// Pending decisions
 		prisma.submission.count({ where: { status: "AWAITING_DECISION" } }),
-		// Unverified users
 		prisma.user.count({ where: { emailVerified: false } }),
-		// Recent activity
 		prisma.activityLog.findMany({
 			take: 20,
 			orderBy: { createdAt: "desc" },
@@ -186,28 +169,23 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 				performer: { select: { id: true, firstName: true, lastName: true } },
 			},
 		}),
-		// Users by country
 		prisma.user.groupBy({
 			by: ["country"],
 			_count: true,
 			where: { country: { not: null } },
 		}),
-		// Trend: new signups per day (last 14 days)
 		prisma.user.findMany({
 			where: { createdAt: { gte: trendWindowStart } },
 			select: { createdAt: true },
 		}),
-		// Trend: new submissions per day (last 14 days)
 		prisma.submission.findMany({
 			where: { createdAt: { gte: trendWindowStart } },
 			select: { createdAt: true },
 		}),
-		// Trend: completed reviews per day (last 14 days)
 		prisma.reviewAssignment.findMany({
 			where: { completedAt: { gte: trendWindowStart } },
 			select: { completedAt: true },
 		}),
-		// Trend: fees collected per day (last 14 days)
 		prisma.fee.findMany({
 			where: { paid: true, paidAt: { gte: trendWindowStart } },
 			select: { paidAt: true, amount: true },
@@ -261,7 +239,6 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 
 	const totalCollected = sumFeeAmounts(paidFees);
 
-	// Build daily trend series (last 14 days, oldest -> newest)
 	const trends = {
 		users: bucketCounts(
 			trendUsers.map((u) => u.createdAt),

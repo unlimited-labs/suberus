@@ -55,9 +55,6 @@ def _save(doc: Document, name: str) -> None:
     print(f"  wrote docs/{name}")
 
 
-# --------------------------------------------------------------------------- #
-# 1. text-formatting.docx                                                      #
-# --------------------------------------------------------------------------- #
 def gen_text_formatting() -> None:
     doc = Document()
     doc.add_heading("Text formatting", level=1)
@@ -92,9 +89,6 @@ def gen_text_formatting() -> None:
     _save(doc, "text-formatting.docx")
 
 
-# --------------------------------------------------------------------------- #
-# 2. lists.docx                                                               #
-# --------------------------------------------------------------------------- #
 def _add_paren_numbering(doc: Document) -> tuple[int, int]:
     """Append two paren-delimited ("a)" / "i)") abstract numberings to the
     document's numbering part. Returns the (lowerLetter, lowerRoman) numIds."""
@@ -166,9 +160,6 @@ def gen_lists() -> None:
     _save(doc, "lists.docx")
 
 
-# --------------------------------------------------------------------------- #
-# 3. tables.docx                                                              #
-# --------------------------------------------------------------------------- #
 def _mark_header_row(row) -> None:
     trPr = row._tr.get_or_add_trPr()
     trPr.append(parse_xml(f'<w:tblHeader {nsdecls("w")} w:val="true"/>'))
@@ -188,7 +179,6 @@ def gen_tables() -> None:
     for r in range(1, 3):
         for c in range(3):
             t.cell(r, c).text = f"r{r}c{c}"
-    # Centered cell.
     centered = t.cell(1, 1)
     centered.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
@@ -206,9 +196,6 @@ def gen_tables() -> None:
     _save(doc, "tables.docx")
 
 
-# --------------------------------------------------------------------------- #
-# 4. images.docx                                                              #
-# --------------------------------------------------------------------------- #
 def _png_bytes(color: tuple[int, int, int], size=(120, 80)) -> io.BytesIO:
     buf = io.BytesIO()
     Image.new("RGB", size, color).save(buf, format="PNG")
@@ -237,9 +224,6 @@ def gen_images() -> None:
     _save(doc, "images.docx")
 
 
-# --------------------------------------------------------------------------- #
-# 5. equations-omml.docx (native Word equations)                              #
-# --------------------------------------------------------------------------- #
 def _omath_run(text: str) -> str:
     return f"<m:r><m:t>{text}</m:t></m:r>"
 
@@ -266,7 +250,6 @@ def gen_equations_omml() -> None:
     doc = Document()
     doc.add_heading("Native Word equations (OMML)", level=1)
 
-    # Quadratic-formula numerator/denominator with sqrt.
     sqrt = (
         "<m:rad><m:deg/><m:e>"
         + _ssup(_omath_run("b"), _omath_run("2"))
@@ -280,7 +263,6 @@ def gen_equations_omml() -> None:
     doc.add_paragraph("Fraction (inline):")
     _add_equation(doc, _frac(_omath_run("g"), _omath_run("4")), display=False)
 
-    # Definite integral via n-ary.
     nary = (
         '<m:nary><m:naryPr><m:chr m:val="∫"/></m:naryPr>'
         f"<m:sub>{_omath_run('a')}</m:sub><m:sup>{_omath_run('b')}</m:sup>"
@@ -289,7 +271,6 @@ def gen_equations_omml() -> None:
     doc.add_paragraph("Definite integral (display):")
     _add_equation(doc, nary, display=True)
 
-    # Greek + sub/superscript.
     greek = _ssup(_omath_run("α"), _omath_run("2")) + _omath_run("+β")
     doc.add_paragraph("Greek with superscript (inline):")
     _add_equation(doc, greek, display=False)
@@ -297,9 +278,6 @@ def gen_equations_omml() -> None:
     _save(doc, "equations-omml.docx")
 
 
-# --------------------------------------------------------------------------- #
-# 6. mathtype.docx (embed the real MathType OLE .bin)                          #
-# --------------------------------------------------------------------------- #
 def gen_mathtype() -> None:
     """Build a full, valid DOCX (so pandoc accepts it) embedding the real
     Equation.DSMT4 OLE object on its own paragraph."""
@@ -356,9 +334,6 @@ def gen_mathtype() -> None:
     print("  wrote docs/mathtype.docx")
 
 
-# --------------------------------------------------------------------------- #
-# 7. headings.docx                                                            #
-# --------------------------------------------------------------------------- #
 def gen_headings() -> None:
     doc = Document()
     doc.add_paragraph("Generic Paper Title", style="Title")
@@ -372,9 +347,6 @@ def gen_headings() -> None:
     _save(doc, "headings.docx")
 
 
-# --------------------------------------------------------------------------- #
-# 8. kitchen-sink v1 / v2 (for the normalize -> diff golden)                   #
-# --------------------------------------------------------------------------- #
 def _kitchen(doc: Document, *, word: str, gamma_first: bool, exp: str, cell: str) -> None:
     doc.add_heading("Kitchen sink", level=1)
     doc.add_paragraph(f"The quick {word} brown fox jumps over the lazy dog.")

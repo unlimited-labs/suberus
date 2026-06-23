@@ -47,7 +47,6 @@ export interface DeadlineReminderSettings {
 
 /** Type map: AppSettingKey → value type */
 export type AppSettingsMap = {
-	// Conference settings
 	CONFERENCE_NAME: string;
 	CONFERENCE_SUBTITLE: string;
 	CONFERENCE_DATE_START: string;
@@ -67,7 +66,6 @@ export type AppSettingsMap = {
 	CONFERENCE_DEFAULT_PRESENTATION_MIN: number;
 	PLANNER_AUTOPLAN_ENABLED: boolean;
 
-	// Submission settings
 	MIN_TITLE_LENGTH: number;
 	MAX_TITLE_LENGTH: number;
 	MIN_ABSTRACT_LENGTH: number;
@@ -77,23 +75,19 @@ export type AppSettingsMap = {
 	MIN_KEYWORDS: number;
 	MAX_KEYWORDS: number;
 
-	// Submission type configs
 	SUBMISSION_TYPE_ORAL_PRESENTATION: SubmissionTypeConfig;
 	SUBMISSION_TYPE_POSTER: SubmissionTypeConfig;
 	SUBMISSION_TYPE_FULL_PAPER: SubmissionTypeConfig;
 	SUBMISSION_TYPE_EXHIBITOR: SubmissionTypeConfig;
 
-	// Fee settings
 	FEE_PAYMENT_INSTRUCTIONS: string;
 	FEE_CURRENCY: "EUR" | "USD" | "PLN";
 	FEE_TYPES: Array<{ id: string; name: string; amount: number }>;
 
-	// Extraction settings
 	EXTRACTION_ENABLED: boolean;
 	EXTRACTION_HEURISTIC: boolean;
 	EXTRACTION_AI: boolean;
 
-	// Service health (written by scheduled task)
 	SERVICE_HEALTH_LLM: {
 		status: "healthy" | "unavailable" | "misconfigured";
 		message: string;
@@ -118,7 +112,6 @@ export type AppSettingsMap = {
 		checkedAt: string;
 	};
 
-	// Branding settings
 	BRANDING_LOGO_URL: string;
 	BRANDING_FAVICON_URL: string;
 	BRANDING_PRIMARY_COLOR: string;
@@ -128,29 +121,22 @@ export type AppSettingsMap = {
 	BRANDING_AUTH_BG_OVERLAY: number;
 	BRANDING_LOGO_DARK_INVERT: boolean;
 
-	// Reminder settings
 	REMINDER_REVIEWER_SETTINGS: ReviewerReminderSettings;
 	REMINDER_REVISION_SETTINGS: RevisionReminderSettings;
 	REMINDER_DEADLINE_SETTINGS: DeadlineReminderSettings;
 
-	// Guidelines
 	SUBMISSION_GUIDELINES: string;
 	REVIEW_GUIDELINES: string;
 
-	// Email footer
 	EMAIL_FOOTER_TEXT: string;
 
-	// Terms of Service
 	TOS_CONTENT: string;
 
-	// Display format
 	DATE_FORMAT: string;
 	TIME_FORMAT: "24h" | "12h";
 
-	// Invitations
 	INVITATION_VALIDITY_HOURS: number;
 
-	// Schedule planner
 	SCHEDULE_STATE: {
 		status: "DRAFT" | "DRAFT_PUBLISHED" | "PUBLISHED";
 		publishedAt?: string;

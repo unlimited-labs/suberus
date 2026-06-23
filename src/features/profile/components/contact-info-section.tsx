@@ -89,7 +89,6 @@ export function ContactInfoSection({
 			}}
 			className="space-y-4"
 		>
-			{/* Email */}
 			<form.AppField name="email">
 				{(field) => (
 					<field.IconInputField
@@ -101,7 +100,6 @@ export function ContactInfoSection({
 				)}
 			</form.AppField>
 
-			{/* Email verification status */}
 			{!emailChanged && (
 				<div className="flex items-center gap-2">
 					{emailVerified ? (
@@ -135,7 +133,6 @@ export function ContactInfoSection({
 				</div>
 			)}
 
-			{/* Email change warning */}
 			{emailChanged && (
 				<Alert>
 					<IconAlertCircle className="size-4" />
@@ -147,7 +144,6 @@ export function ContactInfoSection({
 				</Alert>
 			)}
 
-			{/* Pending email verification notice */}
 			{!emailChanged && pendingEmail && (
 				<Alert>
 					<IconMail className="size-4" />
@@ -159,7 +155,6 @@ export function ContactInfoSection({
 				</Alert>
 			)}
 
-			{/* Invoice / billing details */}
 			<BillingFieldsGroup
 				form={form}
 				fields={{
@@ -170,7 +165,6 @@ export function ContactInfoSection({
 				disabled={isLoading}
 			/>
 
-			{/* Save button */}
 			<div className="flex justify-end pt-2">
 				<form.AppForm>
 					<form.SubmitButton

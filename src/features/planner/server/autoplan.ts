@@ -46,8 +46,6 @@ interface ClusterApiResponse {
 const reportStage = (jobId: string, stage: AutoplanStage, total: number) =>
 	setJobStage(jobId, stage, total);
 
-// --- LLM output cleanup ---
-
 function cleanLlmTitle(raw: string): string {
 	return raw
 		.trim()
@@ -55,8 +53,6 @@ function cleanLlmTitle(raw: string): string {
 		.replace(/\n.*$/s, "")
 		.trim();
 }
-
-// --- Error aggregation ---
 
 function summarizeErrors(errors: unknown[]): string {
 	const counts = new Map<string, number>();
@@ -68,8 +64,6 @@ function summarizeErrors(errors: unknown[]): string {
 		.map(([msg, n]) => (n > 1 ? `${msg} (×${n})` : msg))
 		.join("; ");
 }
-
-// --- External cluster API ---
 
 async function callClusterApi(
 	items: { id: string; embedding: number[] }[],

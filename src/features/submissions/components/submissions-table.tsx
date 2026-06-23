@@ -60,7 +60,6 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 
 	return (
 		<>
-			{/* Desktop Table */}
 			<div className="hidden md:block rounded-md border border-border/50">
 				<div className="relative w-full overflow-auto">
 					<table className="w-full caption-bottom text-sm">
@@ -144,7 +143,6 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 				</div>
 			</div>
 
-			{/* Mobile Cards */}
 			<div className="md:hidden space-y-3">
 				{submissions.map((submission) => (
 					<Link

@@ -82,7 +82,6 @@ export function createDynamicSubmissionSchema(limits: ValidationLimits) {
 		trackId: z.uuid().nullish(),
 	});
 
-	// Add content length validation for TEXT format
 	return baseSchema
 		.refine(
 			(data) => {
@@ -135,7 +134,6 @@ export const createSubmissionSchema = z.object({
 		)
 		.min(1, "At least one keyword is required")
 		.max(5, "Maximum 5 keywords allowed"),
-	// Content format determines what is required
 	contentFormat: z.enum(["TEXT", "FILE"]),
 	trackId: z.uuid().nullable().optional(),
 });

@@ -263,7 +263,6 @@ async function seedOne(
 	authorName: { firstName: string; lastName: string; email: string },
 	reviewerId: string,
 ): Promise<string> {
-	// Submission (current title = revised v2 title).
 	const submission = await prisma.submission.create({
 		data: {
 			userId: authorId,
@@ -275,7 +274,6 @@ async function seedOne(
 		},
 	});
 
-	// Author + presenter.
 	const affiliation = await prisma.affiliation.upsert({
 		where: { name: "Demo Institute of Materials" },
 		update: {},
@@ -300,7 +298,6 @@ async function seedOne(
 
 	await attachKeywords(submission.id, spec.keywords);
 
-	// v1 (original) + optional file.
 	await createVersion(submission.id, 1, spec.v1, authorId);
 
 	// Fake completed round-1 review.
@@ -331,7 +328,6 @@ async function seedOne(
 		},
 	});
 
-	// v2 ("corrections") + optional revised file, set as current.
 	const v2 = await createVersion(submission.id, 2, spec.v2, authorId);
 	await prisma.submission.update({
 		where: { id: submission.id },

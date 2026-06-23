@@ -87,7 +87,6 @@ export function RemindersSettingsTab({
 			description="Configure automatic email reminders"
 		>
 			<div className="space-y-6">
-				{/* Reviewer Reminders */}
 				<div className="space-y-4">
 					<div className="flex items-center justify-between">
 						<Label htmlFor="reviewer-enabled" className="font-medium">
@@ -125,7 +124,6 @@ export function RemindersSettingsTab({
 
 				<hr className="border-border/50" />
 
-				{/* Revision Reminders */}
 				<div className="space-y-4">
 					<div className="flex items-center justify-between">
 						<Label htmlFor="revision-enabled" className="font-medium">
@@ -190,7 +188,6 @@ export function RemindersSettingsTab({
 
 				<hr className="border-border/50" />
 
-				{/* Deadline Reminders */}
 				<div className="space-y-4">
 					<div className="flex items-center justify-between">
 						<Label htmlFor="deadline-enabled" className="font-medium">

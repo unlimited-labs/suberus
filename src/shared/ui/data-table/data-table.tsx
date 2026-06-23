@@ -104,7 +104,6 @@ export function DataTable<TData, TValue>({
 		<div className="space-y-4">
 			<div>{toolbar?.(table, rowSelection)}</div>
 
-			{/* Desktop Table */}
 			<div className="hidden md:block rounded-md border border-border/50">
 				<Table>
 					<TableHeader>
@@ -155,7 +154,6 @@ export function DataTable<TData, TValue>({
 				</Table>
 			</div>
 
-			{/* Mobile Cards */}
 			{mobileCard && (
 				<div className="md:hidden space-y-3">
 					{table.getRowModel().rows?.length ? (

@@ -109,7 +109,6 @@ async def _to_temp(file: UploadFile) -> str:
 
 
 async def convert_upload(file: UploadFile):
-    """Save upload to temp file, convert with docling, return document."""
     tmp_path = await _to_temp(file)
     try:
         return converter.convert(tmp_path).document
@@ -175,9 +174,8 @@ async def to_bundle(file: UploadFile):
             if m:
                 img["uri"] = externalize(m.group(1))
 
-    # Convert to the HTML the diff pipeline actually consumes (Node parseBundle
-    # reads document.html; md/json are kept for diagnostics). A pandoc failure is a
-    # hard error (the job retries) — never a silently empty document.html.
+    # Convert to the HTML the diff pipeline actually consumes; md/json kept for diagnostics.
+    # A pandoc failure is a hard error (the job retries) — never a silently empty document.html.
     try:
         html, warnings = bundle_meta.md_to_html(md)
     except bundle_meta.PandocError as e:

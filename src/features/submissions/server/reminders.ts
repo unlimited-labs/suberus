@@ -137,7 +137,6 @@ export async function sendRevisionReminders(): Promise<number> {
 	let sentCount = 0;
 
 	for (const submission of submissions) {
-		// Count already sent reminders for this submission
 		const alreadySentCount = await prisma.sentReminder.count({
 			where: {
 				userId: submission.user.id,
@@ -213,7 +212,6 @@ export async function sendDeadlineReminders(): Promise<number> {
 		const days = settings.daysBefore[i];
 		const daysUntilDeadline = differenceInCalendarDays(deadline, now);
 
-		// Only send if we're within the daysBefore window
 		if (daysUntilDeadline > days) continue;
 
 		const submissions = await prisma.submission.findMany({

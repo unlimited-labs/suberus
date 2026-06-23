@@ -227,7 +227,6 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 				}
 			>
 				<div className="space-y-4">
-					{/* Average Score Card — only when scoring is enabled */}
 					{hasScores && (
 						<div
 							className={cn(
@@ -247,7 +246,6 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 						</div>
 					)}
 
-					{/* Reviews */}
 					<Accordion type="single" collapsible className="space-y-3">
 						{reviews.map((review) => (
 							<ReviewItem

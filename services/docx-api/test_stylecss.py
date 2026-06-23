@@ -76,12 +76,10 @@ HTML = (
 
 def test_style_css_reflects_styles_xml(tmp_path):
     out, css = stylecss.annotate(HTML, _make_docx(tmp_path))
-    # Title: center + bold + 14pt (sz 28) + Times New Roman serif.
     assert "text-align:center" in css
     assert "font-weight:700" in css
     assert "font-size:14pt" in css
     assert 'font-family:"Times New Roman", serif' in css
-    # Body style is justified (Word jc="both").
     assert "text-align:justify" in css
 
 

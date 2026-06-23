@@ -24,7 +24,6 @@ export function RegisterStep3({
 }: RegisterStep3Props) {
 	return (
 		<div className="animate-in fade-in slide-in-from-right-4 space-y-3 duration-300">
-			{/* Dynamic survey questions */}
 			{surveyQuestions.length > 0 && (
 				<div className="space-y-3 rounded-lg border border-border/50 bg-muted/30 p-3">
 					{surveyQuestions.map((question) => (
@@ -58,7 +57,6 @@ export function RegisterStep3({
 				</div>
 			)}
 
-			{/* Terms acceptance */}
 			{tosContent && (
 				<form.Field
 					name="acceptTerms"

@@ -21,13 +21,11 @@ export function AuthLayout({
 		<div className="relative flex min-h-svh w-full items-center justify-center overflow-hidden bg-background">
 			{backgroundImageUrl ? (
 				<>
-					{/* Custom background image */}
 					<div
 						data-testid="auth-background-image"
 						className="pointer-events-none fixed inset-0 bg-cover bg-center bg-no-repeat"
 						style={{ backgroundImage: `url(${backgroundImageUrl})` }}
 					/>
-					{/* Dark overlay */}
 					<div
 						className="pointer-events-none fixed inset-0"
 						style={{ backgroundColor: `rgba(0,0,0,${overlayOpacity / 100})` }}
@@ -35,7 +33,6 @@ export function AuthLayout({
 				</>
 			) : (
 				<>
-					{/* Gradient background */}
 					<div
 						className="pointer-events-none fixed inset-0"
 						style={{
@@ -47,7 +44,6 @@ export function AuthLayout({
 						}}
 					/>
 
-					{/* Noise texture overlay */}
 					<div
 						className="pointer-events-none fixed inset-0 opacity-[0.015] dark:opacity-[0.03]"
 						style={{
@@ -57,7 +53,6 @@ export function AuthLayout({
 						}}
 					/>
 
-					{/* Subtle grid pattern */}
 					<div
 						className="pointer-events-none fixed inset-0 opacity-[0.02] dark:opacity-[0.04]"
 						style={{
@@ -71,7 +66,6 @@ export function AuthLayout({
 				</>
 			)}
 
-			{/* Conference branding - top left */}
 			<header className="fixed left-0 top-0 z-20 p-5 sm:p-6 lg:p-8">
 				<Link to="/" className="group block">
 					<div className="flex items-center gap-3">
@@ -85,11 +79,9 @@ export function AuthLayout({
 				</Link>
 			</header>
 
-			{/* Decorative elements */}
 			<div className="pointer-events-none fixed -right-32 -top-32 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
 			<div className="pointer-events-none fixed -bottom-32 -left-32 h-80 w-80 rounded-full bg-accent/10 blur-3xl" />
 
-			{/* Centered form container with entrance animation */}
 			<main className="relative z-10 w-full px-4 py-20 sm:px-6 lg:px-8">
 				<div className="animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
 					{children}

@@ -43,9 +43,7 @@ function FeePage() {
 							delay={0}
 						>
 							<div className="space-y-6">
-								{/* Payment Confirmed Banner */}
 								<div className="relative overflow-hidden rounded-xl border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-50 to-green-50 p-6 transition-all duration-500 dark:from-emerald-950/20 dark:to-green-950/20">
-									{/* Decorative background pattern */}
 									<div className="absolute inset-0 opacity-[0.03]">
 										<svg
 											className="h-full w-full"
@@ -97,9 +95,7 @@ function FeePage() {
 									</div>
 								</div>
 
-								{/* Fee Details Grid */}
 								<div className="grid gap-4 sm:grid-cols-2">
-									{/* Fee Type */}
 									<div className="group relative overflow-hidden rounded-lg border border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-all duration-300 hover:border-border hover:shadow-md">
 										<div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-primary to-primary/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 										<div className="mb-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -110,7 +106,6 @@ function FeePage() {
 										</div>
 									</div>
 
-									{/* Amount */}
 									{fee.amount !== null && fee.currency && (
 										<div className="group relative overflow-hidden rounded-lg border border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-all duration-300 hover:border-border hover:shadow-md">
 											<div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-primary to-primary/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
@@ -128,7 +123,6 @@ function FeePage() {
 										</div>
 									)}
 
-									{/* Payment Date */}
 									{fee.paidAt && (
 										<div className="group relative overflow-hidden rounded-lg border border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-all duration-300 hover:border-border hover:shadow-md sm:col-span-2">
 											<div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-emerald-500 to-emerald-500/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
@@ -156,7 +150,6 @@ function FeePage() {
 						</Alert>
 					)}
 
-					{/* Payment Instructions */}
 					<SettingsSection
 						icon={IconInfoCircle}
 						title="Payment Instructions"
@@ -169,7 +162,6 @@ function FeePage() {
 						/>
 					</SettingsSection>
 
-					{/* Bottom spacing */}
 					<div className="h-12" />
 				</div>
 			</div>

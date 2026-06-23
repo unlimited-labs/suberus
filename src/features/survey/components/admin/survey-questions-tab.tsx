@@ -62,7 +62,6 @@ function SurveyQuestionRow({
 			data-testid="question-row"
 			className="flex items-center gap-2 rounded-lg border border-border/50 bg-muted/20 p-2.5"
 		>
-			{/* Reorder arrows */}
 			<div className="flex flex-col">
 				<Button
 					variant="ghost"
@@ -84,7 +83,6 @@ function SurveyQuestionRow({
 				</Button>
 			</div>
 
-			{/* Label + badges */}
 			<button
 				type="button"
 				onClick={onEdit}
@@ -108,7 +106,6 @@ function SurveyQuestionRow({
 				</div>
 			</button>
 
-			{/* Actions */}
 			<Button
 				variant="ghost"
 				size="icon-sm"
@@ -303,7 +300,6 @@ export function SurveyQuestionsTab({
 				description="Configure questions shown to users during registration and in their settings"
 			>
 				<div className="space-y-4">
-					{/* Question list */}
 					{questions.length === 0 ? (
 						<p className="text-sm text-muted-foreground">
 							No survey questions configured.

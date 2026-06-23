@@ -158,7 +158,6 @@ export function AssignReviewerDialog({
 				</DialogHeader>
 
 				<div className="space-y-6 py-4">
-					{/* Current Assignments */}
 					<div className="space-y-3">
 						<div className="flex items-center justify-between">
 							<Label className="text-base">
@@ -229,7 +228,6 @@ export function AssignReviewerDialog({
 						)}
 					</div>
 
-					{/* Custom Deadline */}
 					<div className="space-y-2">
 						<Label htmlFor="deadline">Review deadline</Label>
 						<Input
@@ -241,7 +239,6 @@ export function AssignReviewerDialog({
 						/>
 					</div>
 
-					{/* Available Reviewers */}
 					<div className="space-y-3">
 						<Label className="text-base">Available Reviewers</Label>
 

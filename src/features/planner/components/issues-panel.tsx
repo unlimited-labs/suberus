@@ -14,7 +14,6 @@ interface Issue {
 function detectIssues(sessions: PlannerSession[]): Issue[] {
 	const issues: Issue[] = [];
 
-	// No room assigned
 	for (const s of sessions) {
 		if (!s.roomId) {
 			issues.push({
@@ -25,7 +24,6 @@ function detectIssues(sessions: PlannerSession[]): Issue[] {
 		}
 	}
 
-	// Room overlaps
 	const roomSessions = sessions.filter((s) => s.roomId);
 	for (let i = 0; i < roomSessions.length; i++) {
 		for (let j = i + 1; j < roomSessions.length; j++) {

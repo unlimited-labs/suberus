@@ -9,13 +9,11 @@
     "types": ["vite/client"],
     "esModuleInterop": true,
 
-    /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": false,
     "noEmit": true,
 
-    /* Linting */
     "skipLibCheck": true,
     "strict": true,
     "noUnusedLocals": true,
@@ -24,7 +22,6 @@
     "noUncheckedSideEffectImports": true,
 		"noImplicitAny": true,
 
-		/* Paths */
     "paths": {
       "@/*": ["./src/*"]
     }

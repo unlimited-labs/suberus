@@ -109,7 +109,6 @@ export async function deleteSubmission(
 		.map((v) => v.file)
 		.filter((f): f is { id: string; storageKey: string } => f !== null);
 
-	// Also collect review attachment files
 	const reviewIds = submission.reviews.map((r) => r.id);
 	const reviewFiles =
 		reviewIds.length > 0
@@ -318,7 +317,6 @@ export function computeSubmissionTodo(args: {
 		case "ACCEPTED":
 			return feePaid ? { kind: "NONE" } : { kind: "PAYMENT_REMINDER" };
 		default:
-			// REJECTED, WITHDRAWN
 			return { kind: "NONE" };
 	}
 }
@@ -412,7 +410,6 @@ export async function getAdminSubmissions(
 	const now = new Date();
 
 	const result: AdminSubmission[] = submissions.map((s) => {
-		// Get presenter name or owner name
 		const presenterName = s.presenterAuthor
 			? `${s.presenterAuthor.firstName} ${s.presenterAuthor.lastName}`.trim()
 			: `${s.user.firstName ?? ""} ${s.user.lastName ?? ""}`.trim();

@@ -14,8 +14,8 @@ import {
 import type { TimeGroup } from "@/features/planner/components/public-program/program-types";
 import { useProgramSchedule } from "@/features/planner/components/public-program/use-program-schedule";
 import type { PublicProgramSession } from "@/features/planner/server/schedule";
-import { getAppBrandingFn } from "@/features/settings/api/settings";
 import { formatClockTime } from "@/features/planner/tz-datetime";
+import { getAppBrandingFn } from "@/features/settings/api/settings";
 import { cn } from "@/shared/lib/utils";
 import { Input } from "@/shared/ui/input";
 
@@ -62,7 +62,6 @@ function ProgramPage() {
 			className="h-screen overflow-y-auto bg-[#f5f1e8] text-stone-900 selection:bg-stone-900 selection:text-[#f5f1e8] dark:bg-stone-950 dark:text-stone-100"
 			style={{ fontFamily: "var(--font-futuristic-body)" }}
 		>
-			{/* Masthead */}
 			<header className="border-b-[3px] border-double border-stone-900 dark:border-stone-300">
 				<div className="mx-auto max-w-6xl px-5 pt-8 pb-6 sm:px-10 sm:pt-12 sm:pb-8">
 					<div className="flex items-baseline justify-end border-b border-stone-400 pb-2 dark:border-stone-700">
@@ -103,7 +102,6 @@ function ProgramPage() {
 				</div>
 			</header>
 
-			{/* Day nav + search */}
 			<section className="sticky top-0 z-20 border-b border-stone-300 bg-[#f5f1e8]/95 backdrop-blur dark:border-stone-800 dark:bg-stone-950/95">
 				<div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-10 sm:py-4">
 					{days.length > 0 && (
@@ -184,7 +182,6 @@ function ProgramPage() {
 				</div>
 			</section>
 
-			{/* Body */}
 			<main className="mx-auto max-w-6xl px-5 py-8 sm:px-10 sm:py-12">
 				{activeItems.length === 0 ? (
 					<p
@@ -260,7 +257,6 @@ function TimeSlot({
 
 	return (
 		<section>
-			{/* Slot header */}
 			<div className="mb-6 border-b border-stone-300 pb-3 dark:border-stone-800">
 				<span
 					className="text-sm uppercase tracking-[0.2em] text-stone-600 tabular-nums dark:text-stone-400"
@@ -324,7 +320,6 @@ function SessionArticle({
 
 	return (
 		<article className="relative">
-			{/* Session header */}
 			<header className="mb-4">
 				<div className="flex flex-wrap items-center gap-x-2 gap-y-1">
 					{trackColor && (
@@ -379,7 +374,7 @@ function SessionArticle({
 				)}
 			</header>
 
-			{/* Presentations — numbered list, always visible in full */}
+			{/* Presentations: always render in full (not collapsed) */}
 			{session.presentations.length > 0 && (
 				<ol className="border-t border-stone-300 dark:border-stone-800">
 					{session.presentations.map((p, i) => {

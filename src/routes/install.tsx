@@ -76,7 +76,6 @@ function InstallPage() {
 						className="flex flex-1 flex-col"
 					>
 						<div className="flex-1 space-y-3">
-							{/* Conference Name */}
 							<form.AppField name="conferenceName">
 								{(field) => (
 									<field.IconInputField
@@ -86,7 +85,6 @@ function InstallPage() {
 								)}
 							</form.AppField>
 
-							{/* Separator */}
 							<div className="relative py-1">
 								<div className="absolute inset-0 flex items-center">
 									<span className="w-full border-t" />
@@ -98,7 +96,6 @@ function InstallPage() {
 								</div>
 							</div>
 
-							{/* Email */}
 							<form.AppField name="email">
 								{(field) => (
 									<field.IconInputField
@@ -109,17 +106,14 @@ function InstallPage() {
 								)}
 							</form.AppField>
 
-							{/* Password */}
 							<form.AppField name="password">
 								{(field) => <field.PasswordField label="Password" />}
 							</form.AppField>
 
-							{/* Confirm Password */}
 							<form.AppField name="confirmPassword">
 								{(field) => <field.PasswordField label="Confirm Password" />}
 							</form.AppField>
 
-							{/* First Name */}
 							<form.AppField name="firstName">
 								{(field) => (
 									<field.IconInputField
@@ -129,7 +123,6 @@ function InstallPage() {
 								)}
 							</form.AppField>
 
-							{/* Last Name */}
 							<form.AppField name="lastName">
 								{(field) => (
 									<field.IconInputField
@@ -139,7 +132,6 @@ function InstallPage() {
 								)}
 							</form.AppField>
 
-							{/* Affiliation */}
 							<form.AppField name="affiliation">
 								{(field) => (
 									<field.IconInputField
@@ -150,7 +142,6 @@ function InstallPage() {
 							</form.AppField>
 						</div>
 
-						{/* Submit */}
 						<div className="mt-5">
 							<form.AppForm>
 								<form.SubmitButton

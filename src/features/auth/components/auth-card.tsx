@@ -63,13 +63,11 @@ export function AuthCard({
 					centered && "items-center justify-center",
 				)}
 			>
-				{/* Mobile header */}
 				<div className="mb-4 lg:hidden">
 					<h1 className="text-lg font-bold">{conferenceName}</h1>
 					{mobileHeaderExtra}
 				</div>
 
-				{/* Desktop header */}
 				{title && (
 					<div className="mb-4 hidden lg:block">
 						<h1 className="text-xl font-semibold tracking-tight">{title}</h1>

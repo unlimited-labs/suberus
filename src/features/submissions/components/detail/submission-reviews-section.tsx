@@ -22,7 +22,6 @@ export function SubmissionReviewsSection({
 }: SubmissionReviewsSectionProps) {
 	const [selectedRound, setSelectedRound] = useState<string>("all");
 
-	// Reviews grouped by round
 	const rounds = [...new Set(reviews.map((r) => r.round))].sort(
 		(a, b) => b - a,
 	);

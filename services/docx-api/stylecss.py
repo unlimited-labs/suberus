@@ -191,14 +191,7 @@ class _Styles:
 def _direct_aligns(
     doc_root: ET.Element, styles: _Styles
 ) -> tuple[dict[tuple[str, str], str], dict[str, str]]:
-    """Recover DIRECT paragraph alignment (a `<w:jc>` on the paragraph itself —
-    formatting Pandoc drops). Returns two text-keyed maps, both dropping ambiguous
-    keys so we never guess:
-      - by_name_text: (style-name, text) -> align, precise, for `data-custom-style`
-        elements where we know the style name.
-      - by_text: text -> align, for elements Pandoc emits with NO style hook (a bare
-        `<p>` for a Normal/unstyled centered title/author block — the common gap).
-    """
+    """Direct paragraph alignment (jc) Pandoc drops: HeadId->align and text->align maps."""
     by_nt = AmbiguityMap()
     by_t = AmbiguityMap()
     for p, name, text in iter_paragraphs(doc_root, styles.name_of):
@@ -227,13 +220,11 @@ def _paren_list_texts(doc_root: ET.Element, numbering: ET.Element) -> set[str]:
     numbering.xml's `lvlText` (e.g. "%1)"). Browsers render "a." by default, so we
     only need to flag the ")"-delimited lists for a CSS override. Matched by text so
     the right `<ol>` is tagged without correlating pandoc's output to numId."""
-    # numId -> abstractNumId
     num2abs: dict[str, str] = {}
     for n in numbering.findall(q("num")):
         a = n.find(q("abstractNumId"))
         if a is not None and n.get(q("numId")):
             num2abs[n.get(q("numId"))] = a.get(q("val"))
-    # abstractNumId -> {ilvl: lvlText}
     abs2lvl: dict[str, dict[str, str | None]] = {}
     for an in numbering.findall(q("abstractNum")):
         levels: dict[str, str | None] = {}
@@ -333,8 +324,7 @@ _ALIGN_TAGS = _HEADINGS | {"p", "div"}
 
 
 def _reinsert_titles(html: str, frag, titles: list[tuple[str, str, str]]):
-    """Re-insert a Title/Subtitle pandoc dropped as metadata, if not already in the
-    body. Tagged data-custom-style for the cs-class pass. Returns the fragment."""
+    """Re-insert a Title/Subtitle Pandoc dropped, tagged data-custom-style for the cs-class pass."""
     if not titles:
         return frag
     existing = norm_text(frag.text_content())
@@ -374,7 +364,6 @@ def _tag_paren_list(el, paren_lists: set[str]) -> None:
 
 
 def _assign_classes(el, name: str | None, align: str | None, used: dict[str, str]) -> None:
-    """Add the `cs<hash>` style class (recording it in `used`) and/or `ta-*` align class."""
     classes = (el.get("class") or "").split()
     if name:
         cls = _cls(name)
@@ -409,14 +398,10 @@ def annotate(html: str, docx_path: str) -> tuple[str, str]:
         if tag == "li":
             _tag_paren_list(el, paren_lists)
         name = el.get("data-custom-style")
-        # Builtin heading styles lose their name (pandoc -> bare <hN>); recover the
-        # real style by text so the author <h1> renders at its true size, not base 1.5em.
+        # Recover real style for bare <hN> (pandoc drops custom-style name on builtins).
         if not name and tag in _HEADINGS:
             name = heading_styles.get(norm_text(el.text_content()))
         txt = norm_text(el.text_content())
-        # Direct paragraph alignment pandoc dropped: precise (name,text) when we know
-        # the style, else text-only — the latter recovers a bare <p> centered title/
-        # author block that carries no style hook at all (the common header-centering gap).
         align = direct_nt.get((name, txt)) if name else None
         if not align and tag in _ALIGN_TAGS:
             align = direct_t.get(txt)

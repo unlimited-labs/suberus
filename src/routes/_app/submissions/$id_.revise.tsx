@@ -215,7 +215,6 @@ function RevisionForm({
 			<div className="flex-1 overflow-auto p-6">
 				<div className="mx-auto max-w-3xl">
 					<form onSubmit={handleSubmit} className="space-y-6">
-						{/* Title */}
 						<div className="space-y-2">
 							<Label htmlFor="title">Title</Label>
 							<input
@@ -227,7 +226,6 @@ function RevisionForm({
 							/>
 						</div>
 
-						{/* Content / File */}
 						{isFileFormat ? (
 							<div className="relative space-y-3">
 								<ExtractionOverlay
@@ -285,7 +283,6 @@ function RevisionForm({
 							</div>
 						)}
 
-						{/* Authors */}
 						<div className="space-y-4">
 							<div className="flex items-center gap-3">
 								<IconUsers className="size-5 text-muted-foreground" />
@@ -296,7 +293,6 @@ function RevisionForm({
 							<AuthorsInput value={authors} onChange={setAuthors} />
 						</div>
 
-						{/* Keywords */}
 						{enableKeywords && (
 							<div className="space-y-4">
 								<div className="flex items-center gap-3">
@@ -315,7 +311,6 @@ function RevisionForm({
 							</div>
 						)}
 
-						{/* Revision Comment */}
 						<div className="space-y-2">
 							<Label htmlFor="comment">
 								Revision Notes{" "}
@@ -333,7 +328,6 @@ function RevisionForm({
 							/>
 						</div>
 
-						{/* Submit */}
 						<Button
 							type="submit"
 							disabled={

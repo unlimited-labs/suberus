@@ -175,7 +175,6 @@ export const auth = betterAuth({
 						firstName: extUser.firstName ?? user.email,
 						conferenceName: await getSetting("CONFERENCE_NAME"),
 					});
-					// Notify admin about new registration
 					const contactEmail = await getSetting("CONTACT_EMAIL");
 					if (contactEmail) {
 						let affiliationName = "";

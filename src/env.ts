@@ -29,7 +29,6 @@ export const env = createEnv({
 		GARAGE_SECRET_ACCESS_KEY: z.string().optional(),
 		GARAGE_BUCKET: z.string().optional(),
 
-		// Mail configuration
 		SMTP_HOST: z.string(),
 		SMTP_PORT: z.coerce.number(),
 		SMTP_SECURE: z.stringbool().default(false),

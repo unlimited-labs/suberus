@@ -35,7 +35,6 @@ export function PersonalInfoSection({
 			}}
 			className="space-y-4"
 		>
-			{/* Name fields */}
 			<div className="grid gap-3 sm:grid-cols-2">
 				<form.AppField name="firstName">
 					{(field) => (
@@ -58,7 +57,6 @@ export function PersonalInfoSection({
 				</form.AppField>
 			</div>
 
-			{/* Title + Affiliation */}
 			<div className="grid gap-3 sm:grid-cols-[120px_1fr]">
 				<form.AppField name="title">
 					{(field) => (
@@ -82,7 +80,6 @@ export function PersonalInfoSection({
 				</form.AppField>
 			</div>
 
-			{/* ORCID */}
 			<form.AppField name="orcid">
 				{(field) => (
 					<field.IconInputField
@@ -94,7 +91,6 @@ export function PersonalInfoSection({
 				)}
 			</form.AppField>
 
-			{/* Save button */}
 			<div className="flex justify-end pt-2">
 				<form.AppForm>
 					<form.SubmitButton

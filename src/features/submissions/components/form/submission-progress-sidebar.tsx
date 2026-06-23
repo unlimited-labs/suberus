@@ -52,7 +52,6 @@ export function SubmissionProgressSidebar({
 	return (
 		<div className="hidden lg:block">
 			<div className="sticky space-y-4">
-				{/* Progress Card */}
 				<SectionCard title="Progress" variant="outlined">
 					<div className="space-y-3">
 						<ProgressRow done={progress.hasType} label="Submission Type" />
@@ -64,7 +63,6 @@ export function SubmissionProgressSidebar({
 					</div>
 				</SectionCard>
 
-				{/* Guidelines Card */}
 				<SectionCard
 					title="Guidelines"
 					icon={IconInfoCircle}

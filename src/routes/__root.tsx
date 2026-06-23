@@ -138,7 +138,6 @@ function NotFoundPage() {
 }
 
 function RootComponent() {
-	// Remove loader after component load
 	useEffect(() => {
 		document.getElementById("__loader")?.remove();
 	}, []);

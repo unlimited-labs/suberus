@@ -89,7 +89,6 @@ def char_to_latex(mtcode: int) -> str:
     raise UnsupportedMtef(f"unmapped char U+{mtcode:04X}")
 
 
-# --- MTEF v5 AST -------------------------------------------------------------
 @dataclass
 class Run:
     items: list = field(default_factory=list)
@@ -260,7 +259,6 @@ _DISPATCH = {
 }
 
 
-# --- AST -> LaTeX ------------------------------------------------------------
 def _latex(n) -> str:
     if isinstance(n, Run):
         return "".join(_latex(x) for x in n.items)
@@ -340,7 +338,6 @@ def mtef_from_ole(ole_bytes: bytes) -> bytes:
     return raw[cb_hdr:]
 
 
-# --- DOCX rewrite ------------------------------------------------------------
 @dataclass
 class ConvertedEquation:
     idx: int

@@ -14,7 +14,6 @@ export function TypeGeneralSection({
 }: TypeGeneralSectionProps) {
 	return (
 		<>
-			{/* Active */}
 			<div className="flex items-center justify-between">
 				<div className="space-y-0.5">
 					<Label>Active</Label>
@@ -28,7 +27,6 @@ export function TypeGeneralSection({
 				/>
 			</div>
 
-			{/* Program planner inclusion */}
 			<div className="flex items-center justify-between">
 				<div className="space-y-0.5">
 					<Label>Include in program planner</Label>

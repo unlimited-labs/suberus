@@ -137,7 +137,6 @@ export function EditorDecisionDialog({
 				</DialogHeader>
 
 				<div className="space-y-6 py-4">
-					{/* Reviews Summary */}
 					{reviews.length > 0 && (
 						<div className="space-y-3">
 							<Label className="text-base">Reviewer Recommendations</Label>
@@ -169,7 +168,6 @@ export function EditorDecisionDialog({
 						</div>
 					)}
 
-					{/* Decision Selection */}
 					<div className="space-y-3">
 						<Label className="text-base">Your Decision</Label>
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -201,7 +199,6 @@ export function EditorDecisionDialog({
 						</div>
 					</div>
 
-					{/* Reasoning */}
 					<div className="space-y-2">
 						<Label htmlFor="reasoning">
 							Internal Reasoning{" "}
@@ -218,7 +215,6 @@ export function EditorDecisionDialog({
 						/>
 					</div>
 
-					{/* Letter to Author */}
 					<div className="space-y-2">
 						<Label htmlFor="letter">
 							Letter to Author{" "}
