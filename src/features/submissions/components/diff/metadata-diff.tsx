@@ -30,14 +30,13 @@ function Row({
 }) {
 	const s = STATUS_STYLE[status];
 	return (
-		<li
-			className={cn("flex items-baseline gap-2 text-sm", s.row)}
-			data-diff-status={status}
-		>
-			<span className="w-16 shrink-0 text-xs font-medium uppercase tracking-wide opacity-80">
-				{s.label}
-			</span>
+		<li className={cn("text-sm", s.row)} data-diff-status={status}>
 			<span className="break-words">{children}</span>
+			{s.label && (
+				<span className="ml-2 text-xs font-medium uppercase tracking-wide opacity-70">
+					{s.label}
+				</span>
+			)}
 		</li>
 	);
 }
