@@ -14,7 +14,16 @@ export const env = createEnv({
 		DATABASE_URL: z.url(),
 		APP_BASE_URL: z.url(),
 
-		// Garage S3 storage (optional - only needed for FILE-based submissions)
+		// S3-compatible object storage (optional - only for FILE-based submissions)
+		S3_ENDPOINT: z.url().optional(),
+		S3_ACCESS_KEY_ID: z.string().optional(),
+		S3_SECRET_ACCESS_KEY: z.string().optional(),
+		S3_BUCKET: z.string().optional(),
+		// Region: "garage" by default (Garage's fixed region); set to your
+		// backend's real region for AWS S3 / other providers.
+		S3_REGION: z.string().default("garage"),
+
+		// Deprecated GARAGE_* aliases — still honored as fallbacks in storage.ts.
 		GARAGE_ENDPOINT: z.url().optional(),
 		GARAGE_ACCESS_KEY_ID: z.string().optional(),
 		GARAGE_SECRET_ACCESS_KEY: z.string().optional(),

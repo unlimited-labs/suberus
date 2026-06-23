@@ -457,7 +457,7 @@ enum ArtifactKind {
 /// (sourceSha256 + kind + pandoc/normalizer/schema versions), so identical
 /// source bytes under the same toolchain dedupe across versions/submissions.
 /// NEVER regenerated on read; a toolchain bump produces a NEW row (the old one
-/// is kept — immutable-forever). The HTML itself lives in Garage at `htmlKey`,
+/// is kept — immutable-forever). The HTML itself lives in S3-compatible storage at `htmlKey`,
 /// never in a column (avoids a wide-column seq-scan cliff).
 model SubmissionVersionArtifact {
   id                   String       @id @default(uuid()) @db.Uuid
