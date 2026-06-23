@@ -1,6 +1,7 @@
 import {
 	IconBrain,
 	IconDatabase,
+	IconFileDiff,
 	IconFileText,
 	IconMail,
 } from "@tabler/icons-react";
@@ -40,6 +41,7 @@ type S3Metrics = AdminDashboardMetrics["s3"] | undefined;
 type SmtpMetrics = AdminDashboardMetrics["smtp"] | undefined;
 type LlmMetrics = AdminDashboardMetrics["llm"] | undefined;
 type PdfApiMetrics = AdminDashboardMetrics["pdfApi"] | undefined;
+type DocxApiMetrics = AdminDashboardMetrics["docxApi"] | undefined;
 
 function llmDetail(llm: LlmMetrics): string {
 	return llm ? formatLlmStatus(llm) : "Unknown";
@@ -48,6 +50,11 @@ function llmDetail(llm: LlmMetrics): string {
 function pdfApiDetail(pdfApi: PdfApiMetrics): string {
 	if (pdfApi?.status === "healthy") return "PDF & DOCX to markdown conversion";
 	return pdfApi?.message ?? "Unknown";
+}
+
+function docxApiDetail(docxApi: DocxApiMetrics): string {
+	if (docxApi?.status === "healthy") return "DOCX structural redline";
+	return docxApi?.message ?? "Unknown";
 }
 
 function s3Detail(s3: S3Metrics): string {
@@ -65,11 +72,13 @@ export function buildServiceRows({
 	smtp,
 	llm,
 	pdfApi,
+	docxApi,
 }: {
 	s3: S3Metrics;
 	smtp: SmtpMetrics;
 	llm: LlmMetrics;
 	pdfApi: PdfApiMetrics;
+	docxApi: DocxApiMetrics;
 }): ServiceRow[] {
 	return [
 		{
@@ -83,6 +92,12 @@ export function buildServiceRows({
 			name: "PDF API",
 			status: pdfApi?.status ?? "unavailable",
 			detail: pdfApiDetail(pdfApi),
+		},
+		{
+			icon: IconFileDiff,
+			name: "DOCX API",
+			status: docxApi?.status ?? "unavailable",
+			detail: docxApiDetail(docxApi),
 		},
 		{
 			icon: IconDatabase,

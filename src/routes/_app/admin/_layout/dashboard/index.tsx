@@ -45,6 +45,7 @@ function AdminDashboard() {
 					smtp={data.smtp}
 					llm={data.llm}
 					pdfApi={data.pdfApi}
+					docxApi={data.docxApi}
 				/>
 			</div>
 		</div>
