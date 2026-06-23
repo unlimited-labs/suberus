@@ -50,6 +50,13 @@ test.describe("Admin Users - Submissions column", () => {
 			status: SubmissionStatus.DRAFT,
 			title: `subcol-draft-${ts}`,
 		})
+		// member has an ACCEPTED poster (owner)
+		await createSubmission({
+			userId: member.id,
+			type: SubmissionType.POSTER,
+			status: SubmissionStatus.ACCEPTED,
+			title: `subcol-accepted-${ts}`,
+		})
 	})
 
 	test.afterAll(async () => {
@@ -74,6 +81,7 @@ test.describe("Admin Users - Submissions column", () => {
 		await expect(cell).toContainText("author")
 		await expect(cell).toContainText("coauthor")
 		await expect(cell).toContainText("(draft)")
+		await expect(cell).toContainText("(accepted)")
 	})
 
 	test("user with no submissions shows a dash", async ({ adminUsersPage }) => {
@@ -101,6 +109,30 @@ test.describe("Admin Users - Submissions column", () => {
 
 		// The crux: after clicking, the option must show as checked.
 		await expect(authorOption).toHaveAttribute("aria-checked", "true")
+	})
+
+	test("Accepted status filter keeps users with accepted submissions", async ({
+		adminUsersPage,
+	}) => {
+		const page = adminUsersPage.page
+		await adminUsersPage.goto()
+		await adminUsersPage.waitForLoad()
+		await adminUsersPage.search("SubCol")
+
+		await page.getByTestId("submissions-filter-trigger").click()
+		const acceptedOption = page.getByTestId("submission-filter-accepted")
+		await expect(acceptedOption).toBeVisible()
+		await acceptedOption.click()
+		await expect(acceptedOption).toHaveAttribute("aria-checked", "true")
+
+		// member owns an accepted poster → stays visible; owner/empty have none → filtered out.
+		const memberRow = page
+			.locator("tr")
+			.filter({ has: page.locator(`text="${member.email}"`) })
+		await expect(memberRow).toBeVisible()
+		await expect(
+			page.locator("tr").filter({ has: page.locator(`text="${empty.email}"`) }),
+		).toHaveCount(0)
 	})
 
 	test("role + type filters narrow the list (AND)", async ({ adminUsersPage }) => {

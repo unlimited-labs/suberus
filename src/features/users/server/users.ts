@@ -24,10 +24,13 @@ export type { PatchUserData } from "./patch-user-helpers";
 
 export type SubmissionInvolvementRole = "author" | "coauthor";
 
+/** Coarse status bucket for a submission involvement (drives the Status filter). */
+export type SubmissionRoleStatus = "draft" | "submitted" | "accepted";
+
 export interface SubmissionRoleSummary {
 	type: SubmissionType;
 	role: SubmissionInvolvementRole;
-	draft: boolean;
+	status: SubmissionRoleStatus;
 	count: number;
 }
 
@@ -107,6 +110,12 @@ type UserWithSubmissionRoles = Prisma.UserGetPayload<{
  * Aggregate a user's submission involvements into (type, role, draft) buckets.
  * Author = owns the submission; coauthor = listed as author on someone else's.
  */
+function roleStatus(status: SubmissionStatus): SubmissionRoleStatus {
+	if (status === "DRAFT") return "draft";
+	if (status === "ACCEPTED") return "accepted";
+	return "submitted";
+}
+
 function buildSubmissionRoles(
 	user: UserWithSubmissionRoles,
 ): SubmissionRoleSummary[] {
@@ -115,23 +124,23 @@ function buildSubmissionRoles(
 	const add = (
 		type: SubmissionType,
 		role: SubmissionInvolvementRole,
-		draft: boolean,
+		status: SubmissionRoleStatus,
 	) => {
-		const key = `${type}|${role}|${draft}`;
+		const key = `${type}|${role}|${status}`;
 		const existing = buckets.get(key);
 		if (existing) {
 			existing.count += 1;
 		} else {
-			buckets.set(key, { type, role, draft, count: 1 });
+			buckets.set(key, { type, role, status, count: 1 });
 		}
 	};
 
 	for (const s of user.submissions) {
-		add(s.type, "author", s.status === "DRAFT");
+		add(s.type, "author", roleStatus(s.status));
 	}
 	for (const sa of user.submissionAuthors) {
 		if (sa.submission.userId === user.id) continue; // own submission → already counted as author
-		add(sa.submission.type, "coauthor", sa.submission.status === "DRAFT");
+		add(sa.submission.type, "coauthor", roleStatus(sa.submission.status));
 	}
 
 	return Array.from(buckets.values());

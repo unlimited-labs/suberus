@@ -159,9 +159,12 @@ const baseUserColumns: ColumnDef<AdminUser>[] = [
 				<div data-testid="user-submissions" className="flex flex-wrap gap-1">
 					{roles.map((r) => (
 						<Badge
-							key={`${r.type}-${r.role}-${r.draft}`}
+							key={`${r.type}-${r.role}-${r.status}`}
 							variant="outline"
-							className={cn(r.draft && "border-dashed text-muted-foreground")}
+							className={cn(
+								r.status === "draft" && "border-dashed text-muted-foreground",
+								r.status === "accepted" && "border-green-600 text-green-600",
+							)}
 						>
 							{formatSubmissionRole(r)}
 						</Badge>
@@ -192,15 +195,9 @@ const baseUserColumns: ColumnDef<AdminUser>[] = [
 	},
 	{
 		id: "submissionDraft",
-		accessorFn: (row) => [
-			...new Set(
-				row.submissionRoles.map((r) => (r.draft ? "draft" : "submitted")),
-			),
-		],
+		accessorFn: (row) => [...new Set(row.submissionRoles.map((r) => r.status))],
 		getUniqueValues: (row) => [
-			...new Set(
-				row.submissionRoles.map((r) => (r.draft ? "draft" : "submitted")),
-			),
+			...new Set(row.submissionRoles.map((r) => r.status)),
 		],
 		filterFn: "arrIncludesSome",
 		enableHiding: false,
