@@ -94,7 +94,9 @@ services:
 
   # docx-api: DOCX -> normalized-HTML + rasterized-figure bundle (version-diff)
   docx-api:
-    build: ./services/docx-api
+    build:
+      context: ./services/docx-api
+      target: runtime
     container_name: suberus-docx-api
     restart: unless-stopped
     ports:
