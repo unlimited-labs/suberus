@@ -6,5 +6,5 @@ import { marked } from "marked";
  * @returns HTML string
  */
 export function renderMarkdown(content: string): string {
-	return marked.parse(content, { async: false });
+	return marked.parse(content, { async: false, breaks: true });
 }
