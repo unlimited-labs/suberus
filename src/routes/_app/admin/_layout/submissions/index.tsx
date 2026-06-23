@@ -51,12 +51,12 @@ function AdminSubmissionsPage() {
 					getRowId={(row) => row.id}
 					rowDataTestId="submission-row"
 					storageKey="admin-submissions"
-					initialColumnVisibility={{ updatedAt: false }}
+					initialColumnVisibility={{ updatedAt: false, search: false }}
 					mobileCard={SubmissionMobileCard}
 					toolbar={(table) => (
 						<DataTableToolbar
 							table={table}
-							searchKey="title"
+							searchKey="search"
 							searchPlaceholder="Search submissions..."
 							columnLabels={columnLabels}
 							actions={

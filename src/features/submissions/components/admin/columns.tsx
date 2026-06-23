@@ -65,6 +65,13 @@ function TodoCell({ todo }: { todo: SubmissionTodo }) {
 export const submissionColumns: ColumnDef<AdminSubmission>[] = [
 	createSelectColumn<AdminSubmission>(),
 	{
+		id: "search",
+		accessorFn: (row) => `${row.title} ${row.ownerName} ${row.ownerEmail}`,
+		filterFn: "includesString",
+		enableSorting: false,
+		enableHiding: false,
+	},
+	{
 		accessorKey: "sequentialNumber",
 		header: ({ column }) => (
 			<DataTableColumnHeader column={column} title="No." />
@@ -138,12 +145,17 @@ export const submissionColumns: ColumnDef<AdminSubmission>[] = [
 		filterFn: facetedFilterFn,
 	},
 	{
-		accessorKey: "ownerName",
+		id: "ownerName",
+		accessorFn: (row) => `${row.ownerName} ${row.ownerEmail}`,
 		header: ({ column }) => (
-			<DataTableColumnHeader column={column} title="Author" />
+			<DataTableColumnHeader
+				column={column}
+				title="Author"
+				textFilter={{ placeholder: "Search..." }}
+			/>
 		),
 		cell: ({ row }) => {
-			const name = row.getValue("ownerName") as string;
+			const name = row.original.ownerName;
 			const email = row.original.ownerEmail;
 			return (
 				<div className="flex flex-col">
@@ -152,6 +164,7 @@ export const submissionColumns: ColumnDef<AdminSubmission>[] = [
 				</div>
 			);
 		},
+		filterFn: "includesString",
 	},
 	{
 		accessorKey: "currentRound",

@@ -45,4 +45,113 @@ test.describe("Admin Submissions - Search", () => {
 		await expect(alphaRow).toBeVisible();
 		await expect(betaRow).toBeVisible();
 	});
+
+	test("the search box also matches author name and email", async ({
+		page,
+		testRun,
+	}) => {
+		const prefix = testRun.testRunId;
+
+		// Author name/email carry the run id so the search term stays run-scoped.
+		await createSubmission({
+			testRunId: prefix,
+			title: "By Hopper",
+			authorData: {
+				firstName: "Grace",
+				lastName: `Hopper${prefix}`,
+				email: `grace.${prefix}@navy.mil`,
+			},
+		});
+		await createSubmission({
+			testRunId: prefix,
+			title: "By Turing",
+			authorData: {
+				firstName: "Alan",
+				lastName: `Turing${prefix}`,
+				email: `alan.${prefix}@bletchley.uk`,
+			},
+		});
+
+		await page.goto("/admin/submissions");
+
+		const search = page.getByTestId("data-table-search");
+		const hopperRow = page
+			.getByTestId("submission-row")
+			.filter({ visible: true, hasText: `Hopper${prefix}` });
+		const turingRow = page
+			.getByTestId("submission-row")
+			.filter({ visible: true, hasText: `Turing${prefix}` });
+
+		// Match by author name — only Hopper's submission remains.
+		await search.fill(`Hopper${prefix}`);
+		await expect(search).toHaveValue(`Hopper${prefix}`);
+		await expect(hopperRow).toBeVisible();
+		await expect(turingRow).toBeHidden();
+
+		// Match by author email — only Turing's submission remains.
+		await search.fill(`alan.${prefix}@`);
+		await expect(hopperRow).toBeHidden();
+		await expect(turingRow).toBeVisible();
+	});
+});
+
+test.describe("Admin Submissions - Author column filter", () => {
+	test.beforeEach(({}, testInfo) => {
+		test.skip(
+			testInfo.project.name.includes("mobile"),
+			"Per-column header filter is desktop-only (cards have no headers)",
+		);
+	});
+
+	test("the Author column popover filters by name or email", async ({
+		page,
+		testRun,
+	}) => {
+		const prefix = testRun.testRunId;
+
+		await createSubmission({
+			testRunId: prefix,
+			title: "Col Hopper",
+			authorData: {
+				firstName: "Grace",
+				lastName: `Hopper${prefix}`,
+				email: `grace.${prefix}@navy.mil`,
+			},
+		});
+		await createSubmission({
+			testRunId: prefix,
+			title: "Col Turing",
+			authorData: {
+				firstName: "Alan",
+				lastName: `Turing${prefix}`,
+				email: `alan.${prefix}@bletchley.uk`,
+			},
+		});
+
+		await page.goto("/admin/submissions");
+
+		// Narrow to this run via the global box first, then refine with the column filter.
+		const search = page.getByTestId("data-table-search");
+		await search.fill(prefix);
+
+		const hopperRow = page
+			.getByTestId("submission-row")
+			.filter({ visible: true, hasText: `Hopper${prefix}` });
+		const turingRow = page
+			.getByTestId("submission-row")
+			.filter({ visible: true, hasText: `Turing${prefix}` });
+		await expect(hopperRow).toBeVisible();
+		await expect(turingRow).toBeVisible();
+
+		// Open the Author column's filter popover and search by email.
+		const authorHeader = page
+			.getByRole("columnheader")
+			.filter({ hasText: "Author" });
+		await authorHeader.getByRole("button", { name: "Filter" }).click();
+		const columnFilter = page.getByPlaceholder("Search...", { exact: true });
+		await columnFilter.fill(`grace.${prefix}@`);
+
+		await expect(hopperRow).toBeVisible();
+		await expect(turingRow).toBeHidden();
+	});
 });
