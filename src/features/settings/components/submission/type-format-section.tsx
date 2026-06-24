@@ -6,9 +6,9 @@ import type {
 	ContentFormat,
 	SubmissionTypeConfig,
 } from "@/features/settings/types";
-import { Checkbox } from "@/shared/ui/checkbox";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
 import {
 	Select,
 	SelectContent,
@@ -26,13 +26,13 @@ const CONTENT_FORMATS = [
 interface TypeFormatSectionProps {
 	config: SubmissionTypeConfig;
 	onChange: SubmissionTypeConfigHandleChange;
-	onToggleExtension: (ext: SupportedFileExtension) => void;
+	onSelectExtension: (ext: SupportedFileExtension) => void;
 }
 
 export function TypeFormatSection({
 	config,
 	onChange,
-	onToggleExtension,
+	onSelectExtension,
 }: TypeFormatSectionProps) {
 	return (
 		<div className="space-y-3">
@@ -61,15 +61,17 @@ export function TypeFormatSection({
 			{/* File extensions (only for FILE format) */}
 			{config.contentFormat === "FILE" && (
 				<div className="space-y-2 pl-0 sm:pl-4 pt-2">
-					<Label className="text-sm">Allowed file extensions</Label>
-					<div className="flex flex-wrap gap-3">
+					<Label className="text-sm">Allowed file extension</Label>
+					<RadioGroup
+						value={config.allowedExtensions[0] ?? ""}
+						onValueChange={(value) =>
+							onSelectExtension(value as SupportedFileExtension)
+						}
+						className="flex flex-wrap gap-3"
+					>
 						{SUPPORTED_FILE_EXTENSIONS.map((ext) => (
-							<div key={ext} className="flex items-center gap-2 cursor-pointer">
-								<Checkbox
-									id={`ext-${ext}`}
-									checked={config.allowedExtensions.includes(ext)}
-									onCheckedChange={() => onToggleExtension(ext)}
-								/>
+							<div key={ext} className="flex items-center gap-2">
+								<RadioGroupItem id={`ext-${ext}`} value={ext} />
 								<Label
 									htmlFor={`ext-${ext}`}
 									className="text-sm uppercase cursor-pointer"
@@ -78,10 +80,10 @@ export function TypeFormatSection({
 								</Label>
 							</div>
 						))}
-					</div>
+					</RadioGroup>
 					{config.allowedExtensions.length === 0 && (
 						<p className="text-xs text-destructive">
-							At least one extension is required
+							Select an allowed file extension
 						</p>
 					)}
 

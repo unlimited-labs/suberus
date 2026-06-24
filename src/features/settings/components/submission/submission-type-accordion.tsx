@@ -32,7 +32,7 @@ export function SubmissionTypeAccordion({
 		isSaving,
 		displayName,
 		handleChange,
-		toggleExtension,
+		selectExtension,
 		addCriterion,
 		removeCriterion,
 		updateCriterion,
@@ -62,7 +62,7 @@ export function SubmissionTypeAccordion({
 					<TypeFormatSection
 						config={config}
 						onChange={handleChange}
-						onToggleExtension={toggleExtension}
+						onSelectExtension={selectExtension}
 					/>
 
 					<TypeReviewSection config={config} onChange={handleChange} />

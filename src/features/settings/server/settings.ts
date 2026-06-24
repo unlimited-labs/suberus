@@ -51,8 +51,11 @@ function normalizeAllowedExtensions(
 		(ext): ext is SupportedFileExtension =>
 			(SUPPORTED_FILE_EXTENSIONS as readonly string[]).includes(ext),
 	);
-	if (supported.length === config.allowedExtensions.length) return config;
-	return { ...config, allowedExtensions: supported };
+	// ponytail: single extension per type — collapse legacy multi-value configs
+	// to the first element on read, so old ["pdf","docx"] data needs no migration.
+	const single = supported.slice(0, 1);
+	if (single.length === config.allowedExtensions.length) return config;
+	return { ...config, allowedExtensions: single };
 }
 
 function normalizeSubmissionTypeConfig(

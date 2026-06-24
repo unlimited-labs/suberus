@@ -1,4 +1,3 @@
-import { SUPPORTED_FILE_EXTENSIONS } from "./file-types";
 import type { AppSettingsMap, SubmissionTypeConfig } from "./types";
 
 /** Default config for Oral Presentation (TEXT-based) */
@@ -47,7 +46,7 @@ export const DEFAULT_FULL_PAPER_CONFIG: SubmissionTypeConfig = {
 	includeInPlanner: false,
 	allowExhibitorPresentation: false,
 	contentFormat: "FILE",
-	allowedExtensions: [...SUPPORTED_FILE_EXTENSIONS],
+	allowedExtensions: ["docx"],
 	maxFileSizeMb: 10,
 	requiredReviewers: 2,
 	reviewMode: "DOUBLE_BLIND",

@@ -32,14 +32,14 @@ test.describe("Admin Settings - Submission Types", () => {
 		await expect(page.getByText("Review mode")).toBeVisible()
 	})
 
-	test("shows file extensions checkboxes for FILE format", async ({ adminSettingsPage, page }) => {
+	test("shows file extension radios for FILE format", async ({ adminSettingsPage, page }) => {
 		// Act
 		await adminSettingsPage.expandSubmissionType("Full Paper")
 
 		// Assert
-		await expect(page.getByText("Allowed file extensions")).toBeVisible()
-		await expect(page.getByText("pdf", { exact: true })).toBeVisible()
-		await expect(page.getByText("docx", { exact: true })).toBeVisible()
+		await expect(page.getByText("Allowed file extension")).toBeVisible()
+		await expect(adminSettingsPage.getFileExtensionRadio("pdf")).toBeVisible()
+		await expect(adminSettingsPage.getFileExtensionRadio("docx")).toBeVisible()
 	})
 
 	test("can change content format", async ({ adminSettingsPage, page }) => {
@@ -50,7 +50,7 @@ test.describe("Admin Settings - Submission Types", () => {
 		await adminSettingsPage.selectContentFormat("File Upload")
 
 		// Assert
-		await expect(page.getByText("Allowed file extensions")).toBeVisible({ timeout: 5000 })
+		await expect(page.getByText("Allowed file extension")).toBeVisible({ timeout: 5000 })
 	})
 
 	test("can toggle active state", async ({ adminSettingsPage }) => {
@@ -90,7 +90,7 @@ test.describe("Admin Settings - Submission Types", () => {
 			const currentFormat = await formatSelect.textContent()
 			if (currentFormat?.includes("Text")) {
 				await adminSettingsPage.selectContentFormat("File Upload")
-				await expect(page.getByText("Allowed file extensions")).toBeVisible()
+				await expect(page.getByText("Allowed file extension")).toBeVisible()
 			}
 
 			// Assert — Save button must be visible (not clipped by parent overflow)
@@ -101,18 +101,15 @@ test.describe("Admin Settings - Submission Types", () => {
 		})
 	}
 
-	test("validates FILE format requires at least one extension", async ({ adminSettingsPage, page }) => {
-		// Arrange
-		await adminSettingsPage.expandSubmissionType("Full Paper")
-		await expect(page.getByText("Allowed file extensions")).toBeVisible()
+	test("validates FILE format requires an extension", async ({ adminSettingsPage, page }) => {
+		// Arrange — a TEXT type switched to FILE starts with no extension selected
+		await adminSettingsPage.expandSubmissionType("Poster")
+		await adminSettingsPage.selectContentFormat("File Upload")
+		await expect(page.getByText("Allowed file extension")).toBeVisible()
 
-		// Act
-		await adminSettingsPage.getFileExtensionCheckbox("pdf").uncheck()
-		await adminSettingsPage.getFileExtensionCheckbox("docx").uncheck()
-
-		// Assert
+		// Assert — empty-state message shown before any radio is picked
 		await expect(
-			page.getByText("At least one extension is required"),
+			page.getByText("Select an allowed file extension"),
 		).toBeVisible()
 
 		// Act
@@ -294,7 +291,7 @@ test.describe("Admin Settings - Submission Validation", () => {
 
 		// Assert
 		await expect(adminSettingsPage.getMaxFileSizeInput()).toBeVisible()
-		await expect(page.getByText("Allowed file extensions")).toBeVisible()
+		await expect(page.getByText("Allowed file extension")).toBeVisible()
 	})
 
 	test("does not show max authors setting", async ({ page }) => {

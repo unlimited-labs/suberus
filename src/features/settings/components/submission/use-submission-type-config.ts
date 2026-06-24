@@ -36,17 +36,8 @@ export function useSubmissionTypeConfig({
 		onChange({ ...config, [field]: value });
 	};
 
-	const toggleExtension = (ext: SupportedFileExtension) => {
-		const current = config.allowedExtensions;
-		if (current.includes(ext)) {
-			handleChange(
-				"allowedExtensions",
-				current.filter((e) => e !== ext),
-			);
-		} else {
-			handleChange("allowedExtensions", [...current, ext]);
-		}
-	};
+	const selectExtension = (ext: SupportedFileExtension) =>
+		handleChange("allowedExtensions", [ext]);
 
 	const addCriterion = () => {
 		handleChange("scoringCriteria", [
@@ -103,7 +94,7 @@ export function useSubmissionTypeConfig({
 		isSaving,
 		displayName,
 		handleChange,
-		toggleExtension,
+		selectExtension,
 		addCriterion,
 		removeCriterion,
 		updateCriterion,

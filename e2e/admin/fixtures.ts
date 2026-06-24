@@ -323,8 +323,8 @@ export class AdminSettingsPage {
 		await this.page.getByRole("option", { name: format }).click()
 	}
 
-	getFileExtensionCheckbox(ext: "pdf" | "doc" | "docx") {
-		return this.page.getByLabel(ext, { exact: ext === "doc" })
+	getFileExtensionRadio(ext: "pdf" | "docx") {
+		return this.page.getByRole("radio", { name: ext })
 	}
 
 	async switchToConferenceTab(testInfo?: { project: { name: string } }) {
