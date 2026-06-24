@@ -34,5 +34,7 @@ Files per format: `abstract.*` (blank, grey hints) and `abstract-example.*`
 
 - `docx/` round-trips through Suberus's DOCX extractor: title, authors,
   affiliations and keywords are auto-filled on upload. `verify_roundtrip.py`
-  checks it.
+  checks it — and, when `pdf-api` is reachable and an example PDF is built,
+  also checks that the PDF header (docling markdown the LLM reads) carries the
+  title, author surnames, e-mails and keywords.
 - PDFs are build artifacts (git-ignored in `tex/` and `typst/`).
