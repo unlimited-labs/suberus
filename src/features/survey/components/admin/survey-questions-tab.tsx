@@ -1,8 +1,27 @@
 import {
-	IconArrowDown,
-	IconArrowUp,
+	closestCenter,
+	DndContext,
+	type DragEndEvent,
+	DragOverlay,
+	type DragStartEvent,
+	KeyboardSensor,
+	PointerSensor,
+	useSensor,
+	useSensors,
+} from "@dnd-kit/core";
+import {
+	arrayMove,
+	SortableContext,
+	sortableKeyboardCoordinates,
+	useSortable,
+	verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
 	IconClipboardList,
+	IconGripVertical,
 	IconPencil,
+	IconPlus,
 	IconTrash,
 } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -19,17 +38,18 @@ import {
 } from "@/features/survey/api/survey";
 import type { SurveyQuestionFormValues } from "@/features/survey/validations";
 import { getErrorMessage } from "@/shared/lib/error-message";
+import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Label } from "@/shared/ui/label";
 import { Switch } from "@/shared/ui/switch";
-import { SurveyQuestionAddForm } from "./survey-question-add-form";
 import { SurveyQuestionDeleteDialog } from "./survey-question-delete-dialog";
 import { SurveyQuestionDialog } from "./survey-question-dialog";
 import {
 	isSelectType,
 	type SurveyQuestion,
 	TYPE_LABELS,
+	TYPE_META,
 } from "./survey-question-fields";
 
 interface SurveyQuestionsTabProps {
@@ -38,54 +58,63 @@ interface SurveyQuestionsTabProps {
 
 interface SurveyQuestionRowProps {
 	question: SurveyQuestion;
-	index: number;
-	total: number;
 	isBusy: boolean;
-	onMove: (dir: "up" | "down") => void;
 	onEdit: () => void;
 	onToggleActive: (active: boolean) => void;
 	onDelete: () => void;
+	isDragOverlay?: boolean;
 }
 
 function SurveyQuestionRow({
 	question,
-	index,
-	total,
 	isBusy,
-	onMove,
 	onEdit,
 	onToggleActive,
 	onDelete,
+	isDragOverlay = false,
 }: SurveyQuestionRowProps) {
+	const {
+		attributes,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+		isDragging,
+	} = useSortable({ id: question.id, animateLayoutChanges: () => false });
+	const TypeIcon = TYPE_META[question.type].icon;
+
 	return (
 		<div
+			ref={isDragOverlay ? undefined : setNodeRef}
+			style={
+				isDragOverlay
+					? undefined
+					: { transform: CSS.Transform.toString(transform), transition }
+			}
 			data-testid="question-row"
-			className="flex items-center gap-2 rounded-lg border border-border/50 bg-muted/20 p-2.5"
+			className={cn(
+				"flex items-center gap-3 rounded-lg border bg-card p-3",
+				isDragging && "opacity-50",
+				isDragOverlay && "shadow-lg",
+			)}
 		>
-			<div className="flex flex-col">
-				<Button
-					variant="ghost"
-					size="icon-sm"
-					disabled={index === 0 || isBusy}
-					onClick={() => onMove("up")}
-					aria-label="Move up"
-				>
-					<IconArrowUp className="size-3.5" />
-				</Button>
-				<Button
-					variant="ghost"
-					size="icon-sm"
-					disabled={index === total - 1 || isBusy}
-					onClick={() => onMove("down")}
-					aria-label="Move down"
-				>
-					<IconArrowDown className="size-3.5" />
-				</Button>
+			<button
+				type="button"
+				className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
+				aria-label="Reorder question"
+				{...(isDragOverlay ? {} : attributes)}
+				{...(isDragOverlay ? {} : listeners)}
+			>
+				<IconGripVertical className="size-4" />
+			</button>
+
+			<div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+				<TypeIcon className="size-5" />
 			</div>
 
 			<button
 				type="button"
-				onClick={onEdit}
+				onClick={() => !isDragOverlay && onEdit()}
 				className="min-w-0 flex-1 text-left"
 			>
 				<p className="truncate text-sm font-medium">{question.label}</p>
@@ -109,7 +138,7 @@ function SurveyQuestionRow({
 			<Button
 				variant="ghost"
 				size="icon-sm"
-				onClick={onEdit}
+				onClick={() => !isDragOverlay && onEdit()}
 				disabled={isBusy}
 				aria-label="Edit question"
 			>
@@ -132,7 +161,7 @@ function SurveyQuestionRow({
 			<Button
 				variant="ghost"
 				size="icon-sm"
-				onClick={onDelete}
+				onClick={() => !isDragOverlay && onDelete()}
 				disabled={isBusy}
 				className="text-destructive hover:text-destructive"
 				aria-label="Delete question"
@@ -149,9 +178,20 @@ export function SurveyQuestionsTab({
 	const queryClient = useQueryClient();
 	const [questions, setQuestions] =
 		useState<SurveyQuestion[]>(initialQuestions);
-	const [editing, setEditing] = useState<SurveyQuestion | null>(null);
+	// null = closed; { question: null } = add; { question } = edit.
+	const [dialog, setDialog] = useState<{
+		question: SurveyQuestion | null;
+	} | null>(null);
 	const [deleting, setDeleting] = useState<SurveyQuestion | null>(null);
 	const [busyId, setBusyId] = useState<string | null>(null);
+	const [activeId, setActiveId] = useState<string | null>(null);
+
+	const sensors = useSensors(
+		useSensor(PointerSensor),
+		useSensor(KeyboardSensor, {
+			coordinateGetter: sortableKeyboardCoordinates,
+		}),
+	);
 
 	const invalidateSurvey = () =>
 		Promise.all([
@@ -182,6 +222,7 @@ export function SurveyQuestionsTab({
 			});
 			setQuestions((prev) => [...prev, created]);
 			await invalidateSurvey();
+			setDialog(null);
 			toast.success("Question added");
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to add question"));
@@ -189,9 +230,11 @@ export function SurveyQuestionsTab({
 		}
 	};
 
-	const handleEditSave = async (values: SurveyQuestionFormValues) => {
-		if (!editing) return;
-		const id = editing.id;
+	const handleEditSave = async (
+		question: SurveyQuestion,
+		values: SurveyQuestionFormValues,
+	) => {
+		const id = question.id;
 		const cleanOptions = isSelectType(values.type)
 			? values.options.filter((o) => o.trim()).map((o) => o.trim())
 			: null;
@@ -228,7 +271,7 @@ export function SurveyQuestionsTab({
 				),
 			);
 			await invalidateSurvey();
-			setEditing(null);
+			setDialog(null);
 			toast.success("Question updated");
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to update question"));
@@ -270,16 +313,17 @@ export function SurveyQuestionsTab({
 		}
 	};
 
-	const handleMove = async (index: number, direction: "up" | "down") => {
-		const newIndex = direction === "up" ? index - 1 : index + 1;
-		if (newIndex < 0 || newIndex >= questions.length) return;
+	const handleDragEnd = async (event: DragEndEvent) => {
+		setActiveId(null);
+		const { active, over } = event;
+		if (!over || active.id === over.id) return;
 
-		const reordered = [...questions];
-		[reordered[index], reordered[newIndex]] = [
-			reordered[newIndex],
-			reordered[index],
-		];
+		const oldIndex = questions.findIndex((q) => q.id === active.id);
+		const newIndex = questions.findIndex((q) => q.id === over.id);
+		if (oldIndex === -1 || newIndex === -1) return;
 
+		const previous = questions;
+		const reordered = arrayMove(questions, oldIndex, newIndex);
 		setQuestions(reordered);
 
 		try {
@@ -290,10 +334,15 @@ export function SurveyQuestionsTab({
 				queryKey: adminSurveyQuestionsQueryOptions().queryKey,
 			});
 		} catch {
-			setQuestions(questions);
+			setQuestions(previous);
 			toast.error("Failed to reorder questions");
 		}
 	};
+
+	const handleDragStart = (event: DragStartEvent) =>
+		setActiveId(event.active.id.toString());
+
+	const activeQuestion = questions.find((q) => q.id === activeId) ?? null;
 
 	return (
 		<div className="space-y-6">
@@ -308,36 +357,74 @@ export function SurveyQuestionsTab({
 							No survey questions configured.
 						</p>
 					) : (
-						<div className="space-y-2">
-							{questions.map((question, index) => (
-								<SurveyQuestionRow
-									key={question.id}
-									question={question}
-									index={index}
-									total={questions.length}
-									isBusy={busyId === question.id}
-									onMove={(dir) => handleMove(index, dir)}
-									onEdit={() => setEditing(question)}
-									onToggleActive={(active) =>
-										handleToggleActive(question.id, active)
-									}
-									onDelete={() => setDeleting(question)}
-								/>
-							))}
-						</div>
+						<DndContext
+							sensors={sensors}
+							collisionDetection={closestCenter}
+							onDragStart={handleDragStart}
+							onDragEnd={handleDragEnd}
+							onDragCancel={() => setActiveId(null)}
+						>
+							<SortableContext
+								items={questions.map((q) => q.id)}
+								strategy={verticalListSortingStrategy}
+							>
+								<div className="space-y-2">
+									{questions.map((question) => (
+										<SurveyQuestionRow
+											key={question.id}
+											question={question}
+											isBusy={busyId === question.id}
+											onEdit={() => setDialog({ question })}
+											onToggleActive={(active) =>
+												handleToggleActive(question.id, active)
+											}
+											onDelete={() => setDeleting(question)}
+										/>
+									))}
+								</div>
+							</SortableContext>
+							<DragOverlay dropAnimation={null}>
+								{activeQuestion && (
+									<SurveyQuestionRow
+										question={activeQuestion}
+										isBusy={false}
+										onEdit={() => {}}
+										onToggleActive={() => {}}
+										onDelete={() => {}}
+										isDragOverlay
+									/>
+								)}
+							</DragOverlay>
+						</DndContext>
 					)}
 
-					<SurveyQuestionAddForm onCreate={handleCreate} />
+					<button
+						type="button"
+						data-testid="add-question-button"
+						onClick={() => setDialog({ question: null })}
+						className={cn(
+							"flex w-full items-center justify-center gap-2 rounded-lg py-3",
+							"border border-dashed border-border/60 text-sm font-medium text-muted-foreground",
+							"transition-all hover:border-primary hover:bg-primary/5 hover:text-primary",
+						)}
+					>
+						<IconPlus className="size-4" />
+						Add question
+					</button>
 				</div>
 			</SettingsSection>
 
 			<SurveyQuestionDialog
-				question={editing}
-				open={editing !== null}
+				question={dialog?.question ?? null}
+				open={dialog !== null}
 				onOpenChange={(open) => {
-					if (!open) setEditing(null);
+					if (!open) setDialog(null);
 				}}
-				onSave={handleEditSave}
+				onSave={(values) =>
+					dialog?.question
+						? handleEditSave(dialog.question, values)
+						: handleCreate(values)
+				}
 			/>
 
 			<SurveyQuestionDeleteDialog

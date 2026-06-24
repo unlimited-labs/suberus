@@ -1,5 +1,44 @@
+import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
 import { getPrisma } from "../helpers/test-db";
+
+type AddOptions = {
+	label: string;
+	type?: "Checkbox" | "Text" | "Single select" | "Multi select";
+	options?: string[];
+	showInList?: string;
+};
+
+const TYPE_TESTID: Record<NonNullable<AddOptions["type"]>, string> = {
+	Checkbox: "type-option-CHECKBOX",
+	Text: "type-option-TEXT",
+	"Single select": "type-option-SINGLE_SELECT",
+	"Multi select": "type-option-MULTI_SELECT",
+};
+
+/** Open the add dialog, fill it in, submit, and wait for the success toast. */
+async function addQuestion(page: Page, opts: AddOptions) {
+	await page.getByTestId("add-question-button").click();
+	const dialog = page.getByRole("dialog");
+	await dialog.getByLabel("Question label").fill(opts.label);
+
+	if (opts.type && opts.type !== "Checkbox") {
+		await dialog.getByTestId(TYPE_TESTID[opts.type]).click();
+	}
+
+	for (let i = 0; i < (opts.options?.length ?? 0); i++) {
+		await dialog.getByRole("button", { name: "Add option" }).click();
+		await dialog.getByPlaceholder(`Option ${i + 1}`).fill(opts.options![i]);
+	}
+
+	if (opts.showInList) {
+		await dialog.getByLabel("Show in users list").click();
+		await dialog.getByLabel("Field name").fill(opts.showInList);
+	}
+
+	await dialog.getByRole("button", { name: "Add", exact: true }).click();
+	await expect(page.getByText("Question added")).toBeVisible();
+}
 
 test.describe("Admin Settings - Survey Questions", () => {
 	test.beforeEach(async ({ adminSettingsPage }, testInfo) => {
@@ -26,11 +65,9 @@ test.describe("Admin Settings - Survey Questions", () => {
 		const newLabel = testRun.prefix("Do you need parking?");
 
 		// Act
-		await page.getByPlaceholder("New question label...").fill(newLabel);
-		await page.getByRole("button", { name: "Add" }).click();
+		await addQuestion(page, { label: newLabel });
 
 		// Assert
-		await expect(page.getByText("Question added")).toBeVisible();
 		await expect(page.getByText(newLabel)).toBeVisible();
 
 		// Cleanup
@@ -49,9 +86,7 @@ test.describe("Admin Settings - Survey Questions", () => {
 		await db.surveyAnswer.deleteMany({ where: { question: { label: { in: [originalLabel, updatedLabel] } } } });
 		await db.surveyQuestion.deleteMany({ where: { label: { in: [originalLabel, updatedLabel] } } });
 
-		await page.getByPlaceholder("New question label...").fill(originalLabel);
-		await page.getByRole("button", { name: "Add" }).click();
-		await expect(page.getByText("Question added")).toBeVisible();
+		await addQuestion(page, { label: originalLabel });
 
 		// Act — open edit dialog, change label, save
 		const row = page.getByTestId("question-row").filter({ hasText: originalLabel });
@@ -76,9 +111,7 @@ test.describe("Admin Settings - Survey Questions", () => {
 		await db.surveyAnswer.deleteMany({ where: { question: { label: tempLabel } } });
 		await db.surveyQuestion.deleteMany({ where: { label: tempLabel } });
 
-		await page.getByPlaceholder("New question label...").fill(tempLabel);
-		await page.getByRole("button", { name: "Add" }).click();
-		await expect(page.getByText("Question added")).toBeVisible();
+		await addQuestion(page, { label: tempLabel });
 
 		// Arrange — find the switch on the new question's row
 		const row = page.getByTestId("question-row").filter({ hasText: tempLabel });
@@ -108,9 +141,7 @@ test.describe("Admin Settings - Survey Questions", () => {
 		await db.surveyQuestion.deleteMany({ where: { label: deleteLabel } });
 
 		// Arrange — create a question to delete
-		await page.getByPlaceholder("New question label...").fill(deleteLabel);
-		await page.getByRole("button", { name: "Add" }).click();
-		await expect(page.getByText("Question added")).toBeVisible();
+		await addQuestion(page, { label: deleteLabel });
 
 		// Act — open the row's delete confirmation, then confirm
 		const row = page.getByTestId("question-row").filter({ hasText: deleteLabel });
@@ -131,9 +162,7 @@ test.describe("Admin Settings - Survey Questions", () => {
 		await db.surveyAnswer.deleteMany({ where: { question: { label: keepLabel } } });
 		await db.surveyQuestion.deleteMany({ where: { label: keepLabel } });
 
-		await page.getByPlaceholder("New question label...").fill(keepLabel);
-		await page.getByRole("button", { name: "Add" }).click();
-		await expect(page.getByText("Question added")).toBeVisible();
+		await addQuestion(page, { label: keepLabel });
 
 		// Act — open the confirmation, then cancel
 		const row = page.getByTestId("question-row").filter({ hasText: keepLabel });
@@ -150,23 +179,41 @@ test.describe("Admin Settings - Survey Questions", () => {
 		await db.surveyQuestion.deleteMany({ where: { label: keepLabel } });
 	});
 
-	test("admin reorders questions with up/down arrows", async ({ page }) => {
-		// Arrange — second row always has "Move up" enabled
-		const secondRow = page.getByTestId("question-row").nth(1);
-		await expect(secondRow.getByRole("button", { name: "Move up" })).toBeEnabled({ timeout: 10000 });
+	test("admin reorders questions by dragging", async ({ page, testRun }) => {
+		// Arrange — two own questions appended at the end (A before B), so the drag
+		// never mutates seeded order; DB cleanup restores state regardless.
+		const labelA = testRun.prefix("Reorder A");
+		const labelB = testRun.prefix("Reorder B");
+		const db = getPrisma();
+		await db.surveyQuestion.deleteMany({ where: { label: { in: [labelA, labelB] } } });
+		try {
+			await addQuestion(page, { label: labelA });
+			await addQuestion(page, { label: labelB });
 
-		// Act — move second question up (retry if server race condition)
-		await expect(async () => {
-			await secondRow.getByRole("button", { name: "Move up" }).click();
-			await expect(page.getByText("Failed to reorder").first()).not.toBeVisible();
-		}).toPass({ timeout: 10000 });
+			const rowA = page.getByTestId("question-row").filter({ hasText: labelA });
+			const rowB = page.getByTestId("question-row").filter({ hasText: labelB });
+			const yOf = async (row: Locator) => (await row.boundingBox())!.y;
+			expect(await yOf(rowB)).toBeGreaterThan(await yOf(rowA));
 
-		// Cleanup — move it back down to restore original order
-		const firstRow = page.getByTestId("question-row").nth(0);
-		await expect(async () => {
-			await firstRow.getByRole("button", { name: "Move down" }).click();
+			// dnd-kit pointer sensor: press B's handle, nudge to activate, then walk
+			// the cursor well above A's top in small steps so closestCenter swaps them.
+			const a = (await rowA.boundingBox())!;
+			const handle = await rowB.getByLabel("Reorder question").boundingBox();
+			if (!handle) throw new Error("missing handle box");
+			await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
+			await page.mouse.down();
+			await page.mouse.move(handle.x + handle.width / 2, handle.y + 6, { steps: 4 });
+			await page.mouse.move(a.x + a.width / 2, a.y - 6, { steps: 24 });
+			await page.mouse.up();
+
+			// Assert — B is now above A, no reorder error
 			await expect(page.getByText("Failed to reorder").first()).not.toBeVisible();
-		}).toPass({ timeout: 10000 });
+			await expect(async () => {
+				expect(await yOf(rowB)).toBeLessThan(await yOf(rowA));
+			}).toPass({ timeout: 5000 });
+		} finally {
+			await db.surveyQuestion.deleteMany({ where: { label: { in: [labelA, labelB] } } });
+		}
 	});
 
 	test("admin sees type badges on seeded questions", async ({ page }) => {
@@ -193,14 +240,9 @@ test.describe("Admin Settings - Survey Questions", () => {
 		await db.surveyQuestion.deleteMany({ where: { label: newLabel } });
 
 		// Act
-		const addSection = page.getByTestId("add-question-section");
-		await addSection.getByPlaceholder("New question label...").fill(newLabel);
-		await addSection.getByRole("combobox").click();
-		await page.getByRole("option", { name: "Text" }).click();
-		await addSection.getByRole("button", { name: "Add", exact: true }).click();
+		await addQuestion(page, { label: newLabel, type: "Text" });
 
 		// Assert
-		await expect(page.getByText("Question added")).toBeVisible();
 		const row = page.getByTestId("question-row").filter({ hasText: newLabel });
 		await expect(row.getByText("Text", { exact: true })).toBeVisible();
 
@@ -217,23 +259,13 @@ test.describe("Admin Settings - Survey Questions", () => {
 		await db.surveyQuestion.deleteMany({ where: { label: newLabel } });
 
 		// Act
-		const addSection = page.getByTestId("add-question-section");
-		await addSection.getByPlaceholder("New question label...").fill(newLabel);
-		await addSection.getByRole("combobox").click();
-		await page.getByRole("option", { name: "Single Select" }).click();
-
-		// Add options
-		await addSection.getByRole("button", { name: "Add option" }).click();
-		await addSection.getByPlaceholder("Option 1").fill("Option A");
-		await addSection.getByRole("button", { name: "Add option" }).click();
-		await addSection.getByPlaceholder("Option 2").fill("Option B");
-		await addSection.getByRole("button", { name: "Add option" }).click();
-		await addSection.getByPlaceholder("Option 3").fill("Option C");
-
-		await addSection.getByRole("button", { name: "Add", exact: true }).click();
+		await addQuestion(page, {
+			label: newLabel,
+			type: "Single select",
+			options: ["Option A", "Option B", "Option C"],
+		});
 
 		// Assert
-		await expect(page.getByText("Question added")).toBeVisible();
 		const row = page.getByTestId("question-row").filter({ hasText: newLabel });
 		await expect(row.getByText("Single", { exact: true })).toBeVisible();
 
@@ -250,21 +282,13 @@ test.describe("Admin Settings - Survey Questions", () => {
 		await db.surveyQuestion.deleteMany({ where: { label: newLabel } });
 
 		// Act
-		const addSection = page.getByTestId("add-question-section");
-		await addSection.getByPlaceholder("New question label...").fill(newLabel);
-		await addSection.getByRole("combobox").click();
-		await page.getByRole("option", { name: "Multi Select" }).click();
-
-		// Add options
-		await addSection.getByRole("button", { name: "Add option" }).click();
-		await addSection.getByPlaceholder("Option 1").fill("Day 1");
-		await addSection.getByRole("button", { name: "Add option" }).click();
-		await addSection.getByPlaceholder("Option 2").fill("Day 2");
-
-		await addSection.getByRole("button", { name: "Add", exact: true }).click();
+		await addQuestion(page, {
+			label: newLabel,
+			type: "Multi select",
+			options: ["Day 1", "Day 2"],
+		});
 
 		// Assert
-		await expect(page.getByText("Question added")).toBeVisible();
 		const row = page.getByTestId("question-row").filter({ hasText: newLabel });
 		await expect(row.getByText("Multi", { exact: true })).toBeVisible();
 
@@ -281,16 +305,10 @@ test.describe("Admin Settings - Survey Questions", () => {
 		await db.surveyAnswer.deleteMany({ where: { question: { label } } });
 		await db.surveyQuestion.deleteMany({ where: { label } });
 
-		const addSection = page.getByTestId("add-question-section");
-		await addSection.getByPlaceholder("New question label...").fill(label);
-
-		// Act — toggle on + fill field name
-		await addSection.getByLabel("Show in users list").click();
-		await addSection.getByLabel("Field name").fill(fieldName);
-		await addSection.getByRole("button", { name: "Add", exact: true }).click();
+		// Act — add with show-in-list + field name
+		await addQuestion(page, { label, showInList: fieldName });
 
 		// Assert — UI + persisted state
-		await expect(page.getByText("Question added")).toBeVisible();
 		await expect(
 			page
 				.getByTestId("question-row")
@@ -314,9 +332,7 @@ test.describe("Admin Settings - Survey Questions", () => {
 		await db.surveyAnswer.deleteMany({ where: { question: { label } } });
 		await db.surveyQuestion.deleteMany({ where: { label } });
 
-		await page.getByPlaceholder("New question label...").fill(label);
-		await page.getByRole("button", { name: "Add", exact: true }).click();
-		await expect(page.getByText("Question added")).toBeVisible();
+		await addQuestion(page, { label });
 
 		// Act — open edit dialog, enable show in list + field name, save
 		const row = page.getByTestId("question-row").filter({ hasText: label });
@@ -349,16 +365,17 @@ test.describe("Admin Settings - Survey Questions", () => {
 		const db = getPrisma();
 		await db.surveyQuestion.deleteMany({ where: { label } });
 
-		const addSection = page.getByTestId("add-question-section");
-		await addSection.getByPlaceholder("New question label...").fill(label);
+		await page.getByTestId("add-question-button").click();
+		const dialog = page.getByRole("dialog");
+		await dialog.getByLabel("Question label").fill(label);
 
-		// Act — toggle on but leave field name empty
-		await addSection.getByLabel("Show in users list").click();
-		await addSection.getByRole("button", { name: "Add", exact: true }).click();
+		// Act — toggle on but leave field name empty, then submit
+		await dialog.getByLabel("Show in users list").click();
+		await dialog.getByRole("button", { name: "Add", exact: true }).click();
 
 		// Assert — inline field error (TanStack Form), not persisted
 		await expect(
-			addSection.getByText("Field name is required to show in users list"),
+			dialog.getByText("Field name is required to show in users list"),
 		).toBeVisible();
 		expect(await db.surveyQuestion.count({ where: { label } })).toBe(0);
 	});
@@ -370,16 +387,13 @@ test.describe("Admin Settings - Survey Questions", () => {
 		await db.surveyAnswer.deleteMany({ where: { question: { label: tempLabel } } });
 		await db.surveyQuestion.deleteMany({ where: { label: tempLabel } });
 
-		await page.getByPlaceholder("New question label...").fill(tempLabel);
-		await page.getByRole("button", { name: "Add" }).click();
-		await expect(page.getByText("Question added")).toBeVisible();
+		await addQuestion(page, { label: tempLabel });
 
-		// Act — open edit dialog, change type to TEXT, save
+		// Act — open edit dialog, change type to TEXT via the visual picker, save
 		const editRow = page.getByTestId("question-row").filter({ hasText: tempLabel });
 		await editRow.getByRole("button", { name: "Edit question" }).click();
 		const dialog = page.getByRole("dialog");
-		await dialog.getByRole("combobox").first().click();
-		await page.getByRole("option", { name: "Text" }).click();
+		await dialog.getByTestId("type-option-TEXT").click();
 		await dialog.getByRole("button", { name: "Save" }).click();
 
 		// Assert
