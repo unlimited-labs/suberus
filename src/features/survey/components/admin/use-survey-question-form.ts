@@ -15,6 +15,7 @@ export function toSurveyQuestionFormValues(
 		type: question?.type ?? "CHECKBOX",
 		isRequired: question?.isRequired ?? false,
 		options: Array.isArray(question?.options) ? question.options : [],
+		allowOther: question?.allowOther ?? false,
 		showInUsersList: question?.showInUsersList ?? false,
 		fieldName: question?.fieldName ?? "",
 	};

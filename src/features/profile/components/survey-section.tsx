@@ -15,6 +15,7 @@ interface SurveyQuestion {
 	label: string;
 	type: SurveyQuestionType;
 	options: string[] | null;
+	allowOther: boolean;
 	isRequired: boolean;
 }
 

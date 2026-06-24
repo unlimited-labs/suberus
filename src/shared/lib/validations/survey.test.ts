@@ -52,6 +52,36 @@ describe("surveyAnswerRequiredError", () => {
 			),
 		).toBe("Please select at least one option");
 	});
+
+	it("treats a SINGLE_SELECT 'Other' with no typed text as unanswered", () => {
+		expect(
+			surveyAnswerRequiredError(
+				{ type: "SINGLE_SELECT", isRequired: true },
+				"__other__:",
+			),
+		).toBe("This field is required");
+		expect(
+			surveyAnswerRequiredError(
+				{ type: "SINGLE_SELECT", isRequired: true },
+				"__other__:nuts",
+			),
+		).toBeUndefined();
+	});
+
+	it("ignores an empty MULTI_SELECT 'Other' entry", () => {
+		expect(
+			surveyAnswerRequiredError(
+				{ type: "MULTI_SELECT", isRequired: true },
+				JSON.stringify(["__other__:"]),
+			),
+		).toBe("Please select at least one option");
+		expect(
+			surveyAnswerRequiredError(
+				{ type: "MULTI_SELECT", isRequired: true },
+				JSON.stringify(["__other__:nuts"]),
+			),
+		).toBeUndefined();
+	});
 });
 
 describe("surveyQuestionFormSchema", () => {
@@ -60,6 +90,7 @@ describe("surveyQuestionFormSchema", () => {
 		type: "TEXT" as const,
 		isRequired: false,
 		options: [] as string[],
+		allowOther: false,
 		showInUsersList: false,
 		fieldName: "",
 	};

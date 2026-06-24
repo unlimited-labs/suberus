@@ -30,6 +30,7 @@ export async function createSurveyQuestion(
 	orderIndex: number,
 	type?: SurveyQuestionType,
 	options?: string[],
+	allowOther?: boolean,
 	isRequired?: boolean,
 	showInUsersList?: boolean,
 	fieldName?: string | null,
@@ -40,6 +41,7 @@ export async function createSurveyQuestion(
 			orderIndex,
 			...(type && { type }),
 			...(options && { options }),
+			...(allowOther !== undefined && { allowOther }),
 			...(isRequired !== undefined && { isRequired }),
 			...(showInUsersList !== undefined && { showInUsersList }),
 			...(fieldName !== undefined && { fieldName: fieldName || null }),
@@ -59,6 +61,7 @@ export async function updateSurveyQuestion(
 		isActive?: boolean;
 		type?: SurveyQuestionType;
 		options?: string[] | null;
+		allowOther?: boolean;
 		isRequired?: boolean;
 		showInUsersList?: boolean;
 		fieldName?: string | null;

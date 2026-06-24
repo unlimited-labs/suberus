@@ -53,6 +53,7 @@ export const createSurveyQuestionFn = createServerFn({ method: "POST" })
 				.enum(["CHECKBOX", "TEXT", "SINGLE_SELECT", "MULTI_SELECT"])
 				.optional(),
 			options: z.array(z.string().min(1)).optional(),
+			allowOther: z.boolean().optional(),
 			isRequired: z.boolean().optional(),
 			showInUsersList: z.boolean().optional(),
 			fieldName: z.string().nullable().optional(),
@@ -64,6 +65,7 @@ export const createSurveyQuestionFn = createServerFn({ method: "POST" })
 			data.orderIndex,
 			data.type,
 			data.options,
+			data.allowOther,
 			data.isRequired,
 			data.showInUsersList,
 			data.fieldName,
@@ -82,6 +84,7 @@ export const updateSurveyQuestionFn = createServerFn({ method: "POST" })
 				.enum(["CHECKBOX", "TEXT", "SINGLE_SELECT", "MULTI_SELECT"])
 				.optional(),
 			options: z.array(z.string().min(1)).nullable().optional(),
+			allowOther: z.boolean().optional(),
 			isRequired: z.boolean().optional(),
 			showInUsersList: z.boolean().optional(),
 			fieldName: z.string().nullable().optional(),

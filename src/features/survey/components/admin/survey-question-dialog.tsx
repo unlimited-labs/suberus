@@ -100,25 +100,32 @@ function SurveyQuestionDialogForm({
 			<form.Subscribe selector={(s) => s.values.type}>
 				{(type) =>
 					isSelectType(type) ? (
-						<form.Field name="options">
-							{(field) => (
-								<div className="space-y-1">
-									<OptionsEditor
-										options={field.state.value}
-										onChange={field.handleChange}
-									/>
-									<form.Subscribe selector={(s) => s.submissionAttempts}>
-										{(attempts) => (
-											<FieldError
-												errors={
-													attempts > 0 ? field.state.meta.errors : undefined
-												}
-											/>
-										)}
-									</form.Subscribe>
-								</div>
-							)}
-						</form.Field>
+						<div className="space-y-3">
+							<form.Field name="options">
+								{(field) => (
+									<div className="space-y-1">
+										<OptionsEditor
+											options={field.state.value}
+											onChange={field.handleChange}
+										/>
+										<form.Subscribe selector={(s) => s.submissionAttempts}>
+											{(attempts) => (
+												<FieldError
+													errors={
+														attempts > 0 ? field.state.meta.errors : undefined
+													}
+												/>
+											)}
+										</form.Subscribe>
+									</div>
+								)}
+							</form.Field>
+							<form.AppField name="allowOther">
+								{(field) => (
+									<field.SwitchField label="Allow 'Other' (free text)" />
+								)}
+							</form.AppField>
+						</div>
 					) : null
 				}
 			</form.Subscribe>

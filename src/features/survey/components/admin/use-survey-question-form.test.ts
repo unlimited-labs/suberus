@@ -7,6 +7,7 @@ const question: SurveyQuestion = {
 	label: "Diet",
 	type: "SINGLE_SELECT",
 	options: ["vegan", "vegetarian"],
+	allowOther: true,
 	isRequired: true,
 	orderIndex: 0,
 	isActive: true,
@@ -21,6 +22,7 @@ describe("toSurveyQuestionFormValues", () => {
 			type: "SINGLE_SELECT",
 			isRequired: true,
 			options: ["vegan", "vegetarian"],
+			allowOther: true,
 			showInUsersList: true,
 			fieldName: "diet",
 		});
@@ -32,6 +34,7 @@ describe("toSurveyQuestionFormValues", () => {
 			type: "CHECKBOX",
 			isRequired: false,
 			options: [],
+			allowOther: false,
 			showInUsersList: false,
 			fieldName: "",
 		};

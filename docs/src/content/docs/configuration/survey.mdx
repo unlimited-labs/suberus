@@ -26,7 +26,8 @@ an inline form at the bottom adds new ones.
 1. In the add form, type the question **Label**.
 
 2. Choose a **Type** (see the table below). For *Single Select* / *Multi Select*,
-   add the **options**.
+   add the **options**. Edit a select question (pencil) to switch on
+   **Allow 'Other'** if answers won't always fit the preset options.
 
 3. Set whether it's **Required** and whether to **show it in the users list**
    (and, if so, the short column name).
@@ -43,7 +44,8 @@ an inline form at the bottom adds new ones.
 | **Label** | The question text users see. | Required. |
 | **Type** | The kind of answer. | **Checkbox** (yes/no), **Text** (free text), **Single Select** (one of many), **Multi Select** (several of many). |
 | **Options** | The choices for select questions. | Required for *Single/Multi Select*; add/remove rows. Ignored for Checkbox/Text. |
-| **Required** | Whether users must answer. | On/Off. |
+| **Allow 'Other'** | Adds an *Other* choice with a free-text box for answers the options don't cover (e.g. allergies). | Edit dialog only; *Single/Multi Select* only. Other answers appear as `Other: …` in the users list and export. |
+| **Required** | Whether users must answer. | On/Off. *Other* selected with an empty text box counts as unanswered. |
 | **Show in users list** | Surfaces the answer as a column in *Managing › Users*. | On/Off. |
 | **Field name** | The short column header used when shown in the list. | Appears only when *Show in users list* is on. Keep it short. |
 | **Active** | Whether the question is currently shown to users. | Toggle per question in the list. Turn off to retire without deleting. |

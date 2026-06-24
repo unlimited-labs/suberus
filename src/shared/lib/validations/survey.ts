@@ -15,6 +15,7 @@ export const surveyQuestionFormSchema = z
 		type: z.enum(["CHECKBOX", "TEXT", "SINGLE_SELECT", "MULTI_SELECT"]),
 		isRequired: z.boolean(),
 		options: z.array(z.string()),
+		allowOther: z.boolean(),
 		showInUsersList: z.boolean(),
 		fieldName: z.string(),
 	})
@@ -40,6 +41,18 @@ export const surveyQuestionFormSchema = z
 export type SurveyQuestionFormValues = z.infer<typeof surveyQuestionFormSchema>;
 
 /**
+ * "Other" free-text answer codec for SINGLE_SELECT / MULTI_SELECT questions with
+ * `allowOther`. The answer is stored in the normal value field, marked with a
+ * reserved prefix so it is unambiguously distinguishable from preset options
+ * (and from a real option that happens to share the text). `__other__:` empty
+ * means "Other selected, nothing typed yet" — treated as unanswered.
+ */
+export const OTHER_PREFIX = "__other__:";
+export const isOtherValue = (v: string) => v.startsWith(OTHER_PREFIX);
+export const otherText = (v: string) => v.slice(OTHER_PREFIX.length);
+export const makeOther = (text: string) => OTHER_PREFIX + text;
+
+/**
  * Validates a survey answer against the question's `isRequired` flag.
  * Returns an error message when a required question is unanswered, otherwise
  * `undefined`. Shared by the registration form and the profile survey section
@@ -61,12 +74,18 @@ export function surveyAnswerRequiredError(
 		case "CHECKBOX":
 			return undefined;
 		case "MULTI_SELECT":
-			return parseSelected(value).length > 0
+			return parseSelected(value).filter(isAnswered).length > 0
 				? undefined
 				: "Please select at least one option";
 		default:
-			return value.trim().length > 0 ? undefined : "This field is required";
+			return isAnswered(value) ? undefined : "This field is required";
 	}
+}
+
+/** An "Other" entry with no typed text (`__other__:`) does not count as answered. */
+function isAnswered(value: string): boolean {
+	const text = isOtherValue(value) ? otherText(value) : value;
+	return text.trim().length > 0;
 }
 
 function parseSelected(value: string): string[] {

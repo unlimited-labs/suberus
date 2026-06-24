@@ -581,6 +581,7 @@ model SurveyQuestion {
   label           String
   type            SurveyQuestionType @default(CHECKBOX)
   options         Json?
+  allowOther      Boolean            @default(false)
   isRequired      Boolean            @default(false)
   orderIndex      Int                @default(0)
   isActive        Boolean            @default(true)

@@ -1,4 +1,9 @@
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
+import {
+	isOtherValue,
+	makeOther,
+	otherText,
+} from "@/shared/lib/validations/survey";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
@@ -15,8 +20,13 @@ export interface SurveyQuestionData {
 	label: string;
 	type: SurveyQuestionType;
 	options: string[] | null;
+	allowOther: boolean;
 	isRequired: boolean;
 }
+
+/** UI-only Select value for the "Other" item; the stored value uses the codec. */
+const OTHER_SENTINEL = "__other_select__";
+const OTHER_INPUT_MAX = 200;
 
 interface SurveyQuestionFieldProps {
 	question: SurveyQuestionData;
@@ -75,13 +85,19 @@ export function SurveyQuestionField({
 
 		case "SINGLE_SELECT": {
 			const options = question.options ?? [];
+			const other = isOtherValue(value);
 			return (
 				<div className="space-y-1.5">
 					<Label htmlFor={`survey-${question.id}`} className="text-sm">
 						{question.label}
 						{requiredMark}
 					</Label>
-					<Select value={value} onValueChange={onChange}>
+					<Select
+						value={other ? OTHER_SENTINEL : value}
+						onValueChange={(v) =>
+							onChange(v === OTHER_SENTINEL ? makeOther("") : v)
+						}
+					>
 						<SelectTrigger id={`survey-${question.id}`} className="h-9">
 							<SelectValue placeholder="Select an option..." />
 						</SelectTrigger>
@@ -91,14 +107,27 @@ export function SurveyQuestionField({
 									{option}
 								</SelectItem>
 							))}
+							{question.allowOther && (
+								<SelectItem value={OTHER_SENTINEL}>Other</SelectItem>
+							)}
 						</SelectContent>
 					</Select>
+					{other && (
+						<Input
+							value={otherText(value)}
+							onChange={(e) => onChange(makeOther(e.target.value))}
+							maxLength={OTHER_INPUT_MAX}
+							placeholder="Please specify..."
+						/>
+					)}
 				</div>
 			);
 		}
 
 		case "MULTI_SELECT": {
 			const selected: string[] = value ? safeParseArray(value) : [];
+			const setSelected = (next: string[]) => onChange(JSON.stringify(next));
+			const otherEntry = selected.find(isOtherValue);
 			return (
 				<div className="space-y-1.5">
 					<Label className="text-sm">
@@ -112,10 +141,11 @@ export function SurveyQuestionField({
 									id={`survey-${question.id}-${option}`}
 									checked={selected.includes(option)}
 									onCheckedChange={(checked) => {
-										const next = checked
-											? [...selected, option]
-											: selected.filter((s) => s !== option);
-										onChange(JSON.stringify(next));
+										setSelected(
+											checked
+												? [...selected, option]
+												: selected.filter((s) => s !== option),
+										);
 									}}
 								/>
 								<Label
@@ -126,6 +156,43 @@ export function SurveyQuestionField({
 								</Label>
 							</div>
 						))}
+						{question.allowOther && (
+							<div className="space-y-1.5">
+								<div className="flex items-center gap-2">
+									<Checkbox
+										id={`survey-${question.id}-other`}
+										checked={otherEntry !== undefined}
+										onCheckedChange={(checked) => {
+											setSelected(
+												checked
+													? [...selected, makeOther("")]
+													: selected.filter((s) => !isOtherValue(s)),
+											);
+										}}
+									/>
+									<Label
+										htmlFor={`survey-${question.id}-other`}
+										className="cursor-pointer text-sm font-normal"
+									>
+										Other
+									</Label>
+								</div>
+								{otherEntry !== undefined && (
+									<Input
+										value={otherText(otherEntry)}
+										onChange={(e) =>
+											setSelected(
+												selected.map((s) =>
+													isOtherValue(s) ? makeOther(e.target.value) : s,
+												),
+											)
+										}
+										maxLength={OTHER_INPUT_MAX}
+										placeholder="Please specify..."
+									/>
+								)}
+							</div>
+						)}
 					</div>
 				</div>
 			);
