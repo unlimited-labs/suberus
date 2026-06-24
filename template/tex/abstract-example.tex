@@ -1,0 +1,82 @@
+% Filled example -- mirrors docx/abstract-example.docx.
+% Build:  latexmk -pdf abstract-example.tex      (runs pdflatex + biber)
+\documentclass{confabs}
+
+\title{Microstructure Evolution in Hot-Rolled Steel During Multi-Pass
+Deformation}
+\author{Anna Kowalska\textsuperscript{1,*}, Jan Nowak\textsuperscript{2},
+Maria Lewandowska\textsuperscript{1}}
+\affiliation{1}{AGH University of Krakow, Faculty of Metals Engineering,
+al.\ Mickiewicza 30, 30-059 Krakow, Poland}
+\affiliation{2}{\L{}ukasiewicz Research Network, Institute for Ferrous
+Metallurgy, K.\ Miarki 12, 44-100 Gliwice, Poland}
+\email{a.kowalska@agh.edu.pl, j.nowak@imz.pl, m.lewandowska@agh.edu.pl}
+\keywords{hot rolling, microstructure, recrystallization, finite element
+modelling, steel}
+
+\begin{document}
+\maketitle
+
+Grain refinement during thermomechanical processing controls the strength and
+toughness of structural steels~\cite{humphreys2004}, yet industrial multi-pass
+schedules retain strain between passes in a way that single-pass
+Johnson--Mehl--Avrami--Kolmogorov (JMAK) calibrations do not
+capture~\cite{sellars1979}. This work quantifies how inter-pass time and
+temperature govern recrystallization in low-carbon steel. Plane-strain
+compression specimens were deformed between \SI{900}{\celsius} and
+\SI{1100}{\celsius} following the four-pass schedule of Table~\ref{tab:schedule},
+then interrupted-quenched for metallography.
+
+\begin{table}[h]
+  \centering
+  \caption{Four-pass plane-strain compression schedule.}
+  \label{tab:schedule}
+  \begin{tabular}{c S[table-format=4.0] S[table-format=1.2] S[table-format=2.0]}
+    \toprule
+    {Pass} & {Temperature (\si{\celsius})} & {Strain, $\varepsilon$ (--)} &
+    {Inter-pass time (s)} \\
+    \midrule
+    1 & 1100 & 0.30 & 10 \\
+    2 & 1050 & 0.30 & 5  \\
+    3 & 1000 & 0.25 & 3  \\
+    4 & 950  & 0.25 & {--} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Figure~\ref{fig:kinetics} shows the recrystallized fraction as a function of
+inter-pass time at two temperatures. Above \SI{1000}{\celsius} the kinetics are
+dominated by inter-pass time rather than peak strain; a JMAK law fitted to
+single-pass data over-predicts grain refinement in the multi-pass case by up to
+\SI{18}{\percent}~\cite{sellars1979}.
+
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[
+      width=0.86\linewidth, height=6.2cm,
+      xlabel={Inter-pass time, $t$ (s)},
+      ylabel={Recrystallized fraction, $X$ (\%)},
+      xmin=0, xmax=10, ymin=0, ymax=100,
+      grid=both, major grid style={gray!25}, minor grid style={gray!10},
+      legend pos=north west, legend cell align=left,
+      tick label style={font=\footnotesize}, label style={font=\small}]
+      \addplot[red, thick, smooth, domain=0:10, samples=120]
+        {100*(1-exp(-6.5*(x/10)^1.6))};
+      \addlegendentry{\SI{1100}{\celsius}}
+      \addplot[blue, thick, smooth, domain=0:10, samples=120]
+        {100*(1-exp(-3.2*(x/10)^1.6))};
+      \addlegendentry{\SI{1000}{\celsius}}
+    \end{axis}
+  \end{tikzpicture}
+  \caption{Recrystallized fraction $X(t)$ versus inter-pass time at
+  \SI{1000}{\celsius} and \SI{1100}{\celsius}.}
+  \label{fig:kinetics}
+\end{figure}
+
+A retained-strain correction to the JMAK law reconciles laboratory and
+industrial bar-mill data, improving grain-size prediction across the
+schedule~\cite{kowalska2021}.
+
+\printbibliography[title={References}]
+\end{document}

@@ -1,0 +1,52 @@
+% Blank template -- fill in and submit. Grey text marks placeholders to replace.
+% Build:  latexmk -pdf abstract.tex            (runs pdflatex + biber)
+\documentclass{confabs}
+
+\newcommand{\hint}[1]{{\color{gray}#1}}
+
+\title{Title of the Abstract \hint{(bold, centred; max 2 lines)}}
+\author{Given Name Surname\textsuperscript{1,*}, Given Name
+Surname\textsuperscript{2}}
+\affiliation{1}{Department, Institution, City, Country}
+\affiliation{2}{Department, Institution, City, Country}
+\email{presenting@author.org, co.author@institution.org \hint{(in author order)}}
+\keywords{keyword one, keyword two, keyword three \hint{(3--6, comma-separated)}}
+
+\begin{document}
+\maketitle
+
+\hint{Write your abstract as continuous text (justified, single spacing). State
+the problem, the method, the key results and the conclusion in one flowing
+narrative -- no section headings. The presenting author is marked with
+\textsuperscript{*}. You may include one table and one figure, and cite
+references in order as~\cite{ref-article} and~\cite{ref-book}. Keep the whole
+document to two pages.}
+
+\begin{table}[h]
+  \centering
+  \caption{Caption above the table.}
+  \begin{tabular}{l c c}
+    \toprule
+    Column & Column & Column \\
+    \midrule
+    & & \\
+    & & \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\hint{Continue the narrative: present and interpret the results and refer to the
+figure as Figure~\ref{fig:placeholder}.}
+
+\begin{figure}[h]
+  \centering
+  \framebox[0.86\linewidth][c]{%
+    \parbox[c][4.5cm][c]{0.8\linewidth}{\centering\hint{Insert figure / chart here}}}
+  \caption{Caption below the figure.}
+  \label{fig:placeholder}
+\end{figure}
+
+\hint{Close with the conclusion in the same paragraph flow.}
+
+\printbibliography[title={References}]
+\end{document}
