@@ -15,6 +15,8 @@ export interface SubmissionTypeConfig {
 	allowedExtensions: SupportedFileExtension[];
 	/** Max upload size in MB for this type's submission file (FILE format only). */
 	maxFileSizeMb: number;
+	/** Max submissions of this type a single user may have active. 0 = unlimited. Excludes co-authored submissions and DRAFT/WITHDRAWN/REJECTED. */
+	maxSubmissionsPerUser: number;
 	requiredReviewers: number;
 	reviewMode: ReviewMode;
 	reviewDeadlineDays: number;

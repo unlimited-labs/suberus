@@ -57,7 +57,11 @@ export function SubmissionTypeAccordion({
 			</AccordionTrigger>
 			<AccordionContent className="pb-4">
 				<div className="space-y-6">
-					<TypeGeneralSection config={config} onChange={handleChange} />
+					<TypeGeneralSection
+						typeKey={typeKey}
+						config={config}
+						onChange={handleChange}
+					/>
 
 					<TypeFormatSection
 						config={config}

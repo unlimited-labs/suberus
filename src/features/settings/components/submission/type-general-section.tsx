@@ -1,14 +1,20 @@
-import type { SubmissionTypeConfig } from "@/features/settings/types";
+import type {
+	SubmissionTypeConfig,
+	SubmissionTypeKey,
+} from "@/features/settings/types";
+import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Switch } from "@/shared/ui/switch";
 import type { SubmissionTypeConfigHandleChange } from "./use-submission-type-config";
 
 interface TypeGeneralSectionProps {
+	typeKey: SubmissionTypeKey;
 	config: SubmissionTypeConfig;
 	onChange: SubmissionTypeConfigHandleChange;
 }
 
 export function TypeGeneralSection({
+	typeKey,
 	config,
 	onChange,
 }: TypeGeneralSectionProps) {
@@ -40,6 +46,29 @@ export function TypeGeneralSection({
 					onCheckedChange={(checked) => onChange("includeInPlanner", checked)}
 				/>
 			</div>
+
+			{typeKey !== "SUBMISSION_TYPE_EXHIBITOR" && (
+				<div className="space-y-2">
+					<Label>Max submissions per user</Label>
+					<Input
+						data-testid="settings-max-submissions-per-user"
+						type="number"
+						min={0}
+						max={1000}
+						value={config.maxSubmissionsPerUser}
+						onChange={(e) =>
+							onChange(
+								"maxSubmissionsPerUser",
+								parseInt(e.target.value, 10) || 0,
+							)
+						}
+					/>
+					<p className="text-xs italic text-muted-foreground/70">
+						0 = unlimited. Counts only submissions a user owns (co-authorship
+						doesn't count); drafts, withdrawn and rejected don't count.
+					</p>
+				</div>
+			)}
 		</>
 	);
 }

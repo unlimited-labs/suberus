@@ -19,6 +19,8 @@ import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { Markdown } from "@/shared/ui/markdown";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Textarea } from "@/shared/ui/textarea";
 
 interface FeeType {
@@ -272,14 +274,33 @@ export function FeeTab({
 				<div className="space-y-4">
 					<div className="space-y-2">
 						<Label htmlFor="instructions">Instructions Content</Label>
-						<Textarea
-							id="instructions"
-							value={content}
-							onChange={(e) => setContent(e.target.value)}
-							rows={15}
-							placeholder="# Payment Instructions&#10;&#10;Enter payment details here..."
-							className="font-mono text-sm"
-						/>
+						<Tabs defaultValue="edit">
+							<TabsList>
+								<TabsTrigger value="edit">Edit</TabsTrigger>
+								<TabsTrigger value="preview">Preview</TabsTrigger>
+							</TabsList>
+							<TabsContent value="edit">
+								<Textarea
+									id="instructions"
+									value={content}
+									onChange={(e) => setContent(e.target.value)}
+									rows={15}
+									placeholder="# Payment Instructions&#10;&#10;Enter payment details here..."
+									className="font-mono text-sm"
+								/>
+							</TabsContent>
+							<TabsContent value="preview">
+								<div className="min-h-[22rem] rounded-md border p-4">
+									{content.trim() ? (
+										<Markdown content={content} />
+									) : (
+										<p className="text-sm text-muted-foreground">
+											Nothing to preview yet
+										</p>
+									)}
+								</div>
+							</TabsContent>
+						</Tabs>
 						<p className="text-xs text-muted-foreground">
 							Supports Markdown formatting (headings, lists, links, bold,
 							italic)

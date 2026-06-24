@@ -14,6 +14,7 @@ import {
 import { SUBMISSION_TYPE_TO_KEY } from "@/features/settings/types";
 import { enqueueRevisionNormalize } from "@/features/submission-diff/server/enqueue-revision";
 import {
+	checkSubmissionLimit,
 	createNewSubmission,
 	getSubmissionById,
 	getSubmissionsForUser,
@@ -238,6 +239,9 @@ export const createSubmission = createServerFn({ method: "POST" })
 		if (!data.isDraft) {
 			const invalid = await validateSubmissionInput(data);
 			if (invalid) return invalid;
+
+			const limitError = await checkSubmissionLimit(context.user.id, data.type);
+			if (limitError) return { success: false, error: limitError };
 		}
 
 		try {

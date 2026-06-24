@@ -41,6 +41,7 @@ const submissionTypeConfigSchema = z.object({
 	contentFormat: z.enum(["TEXT", "FILE"]),
 	allowedExtensions: z.array(z.enum(SUPPORTED_FILE_EXTENSIONS)).max(1),
 	maxFileSizeMb: z.number().int().min(1).max(100),
+	maxSubmissionsPerUser: z.number().int().min(0).max(1000),
 	requiredReviewers: z.number().int().min(0).max(10),
 	reviewMode: z.enum(["OPEN", "SINGLE_BLIND", "DOUBLE_BLIND"]),
 	reviewDeadlineDays: z.number().int().min(1).max(90),

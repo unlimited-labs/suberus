@@ -1147,6 +1147,35 @@ export async function adminEditSubmission(
 	return { success: true };
 }
 
+/** Statuses that do NOT consume a per-user submission slot. */
+const LIMIT_EXEMPT_STATUSES: SubmissionStatus[] = [
+	"DRAFT",
+	"WITHDRAWN",
+	"REJECTED",
+];
+
+/**
+ * Per-user, per-type submission cap (admin-configurable, 0 = unlimited).
+ * Counts only submissions the user OWNS (Submission.userId) — co-authorships are
+ * unrestricted. EXHIBITOR is not capped (separate flow). Returns an error message
+ * when the user is at/over the limit, or null when allowed.
+ */
+export async function checkSubmissionLimit(
+	userId: string,
+	type: SubmissionType,
+): Promise<string | null> {
+	const { maxSubmissionsPerUser: max } = await getSetting(
+		SUBMISSION_TYPE_TO_KEY[type],
+	);
+	if (!max || max <= 0) return null; // unlimited
+	const current = await prisma.submission.count({
+		where: { userId, type, status: { notIn: LIMIT_EXEMPT_STATUSES } },
+	});
+	return current >= max
+		? `You have reached the maximum of ${max} submission(s) for this type.`
+		: null;
+}
+
 /** Submit a draft (transition DRAFT → SUBMITTED) */
 export async function submitDraft(
 	submissionId: string,
@@ -1163,6 +1192,11 @@ export async function submitDraft(
 
 	if (submission.status !== "DRAFT") {
 		return { success: false, error: "Submission is not a draft" };
+	}
+
+	const limitError = await checkSubmissionLimit(userId, submission.type);
+	if (limitError) {
+		return { success: false, error: limitError };
 	}
 
 	// FILE submissions must have a file attached before they can be submitted.

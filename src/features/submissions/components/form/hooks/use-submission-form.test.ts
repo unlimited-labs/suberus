@@ -35,6 +35,7 @@ const config = (
 	contentFormat: "TEXT",
 	allowedExtensions: ["pdf"],
 	maxFileSizeMb: 10,
+	maxSubmissionsPerUser: 0,
 	requiredReviewers: 2,
 	reviewMode: "DOUBLE_BLIND",
 	reviewDeadlineDays: 14,
