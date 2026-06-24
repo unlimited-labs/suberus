@@ -21,41 +21,36 @@ export function UserAccountSection({
 	onVerifyEmail,
 }: UserAccountSectionProps) {
 	return (
-		<div className="space-y-3">
-			<h3 className="text-sm font-medium text-muted-foreground">
-				Account Information
-			</h3>
-			<div className="grid gap-3 sm:grid-cols-2">
-				<div className="flex items-center gap-2">
-					<IconCalendar className="size-4 text-muted-foreground" />
-					<span>Created: {fmtDate(user.createdAt)}</span>
-				</div>
-				<div className="flex items-center gap-2">
-					<IconClock className="size-4 text-muted-foreground" />
-					<span>Last login: {fmtDate(user.lastLoginAt)}</span>
-				</div>
-				<div className="flex items-center gap-2">
-					{user.emailVerified ? (
-						<>
-							<IconMailCheck className="size-4 text-green-600" />
-							<span className="text-green-600">Email verified</span>
-						</>
-					) : (
-						<>
-							<IconMailX className="size-4 text-yellow-600" />
-							<span className="text-yellow-600">Email not verified</span>
-							<Button
-								variant="outline"
-								size="sm"
-								className="ml-2 h-7"
-								onClick={onVerifyEmail}
-								disabled={isPending}
-							>
-								Verify
-							</Button>
-						</>
-					)}
-				</div>
+		<div className="grid gap-3 sm:grid-cols-2">
+			<div className="flex items-center gap-2">
+				<IconCalendar className="size-4 text-muted-foreground" />
+				<span>Created: {fmtDate(user.createdAt)}</span>
+			</div>
+			<div className="flex items-center gap-2">
+				<IconClock className="size-4 text-muted-foreground" />
+				<span>Last login: {fmtDate(user.lastLoginAt)}</span>
+			</div>
+			<div className="flex items-center gap-2">
+				{user.emailVerified ? (
+					<>
+						<IconMailCheck className="size-4 text-green-600" />
+						<span className="text-green-600">Email verified</span>
+					</>
+				) : (
+					<>
+						<IconMailX className="size-4 text-yellow-600" />
+						<span className="text-yellow-600">Email not verified</span>
+						<Button
+							variant="outline"
+							size="sm"
+							className="ml-2 h-7"
+							onClick={onVerifyEmail}
+							disabled={isPending}
+						>
+							Verify
+						</Button>
+					</>
+				)}
 			</div>
 		</div>
 	);

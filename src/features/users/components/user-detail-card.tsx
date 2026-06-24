@@ -1,11 +1,15 @@
-import { IconTrash } from "@tabler/icons-react";
+import {
+	IconCash,
+	IconFileText,
+	IconMail,
+	IconUserCircle,
+} from "@tabler/icons-react";
 import { assignableRoleOptions } from "@/features/users/labels";
 import type { AdminUserDetail } from "@/features/users/server/users";
 import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Separator } from "@/shared/ui/separator";
+import { SectionCard } from "@/shared/ui/section-card";
 import { useUserDetailMutations } from "./use-user-detail-mutations";
 import { UserAccountSection } from "./user-account-section";
 import { UserContactSection } from "./user-contact-section";
@@ -67,62 +71,63 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 
 	return (
 		<>
-			<Card>
+			<div className="space-y-6">
 				<UserDetailHeader
 					user={user}
 					canEditProfiles={canEditProfiles}
 					canChangeThisRole={canChangeThisRole}
+					canDeleteUsers={canDeleteUsers}
 					isPending={isPending}
 					onEdit={() => setEditDialogOpen(true)}
 					onChangeRole={() => setRoleDialogOpen(true)}
 					onToggleActive={handleToggleActive}
 					onToggleLateSubmission={handleToggleLateSubmission}
+					onDelete={() => setDeleteDialogOpen(true)}
 				/>
-				<CardContent className="space-y-6">
+
+				<SectionCard icon={IconMail} title="Contact Information">
 					<UserContactSection user={user} />
+				</SectionCard>
 
-					<Separator />
-
+				<SectionCard icon={IconUserCircle} title="Account Information">
 					<UserAccountSection
 						user={user}
 						fmtDate={fmtDate}
 						isPending={isPending}
 						onVerifyEmail={handleVerifyEmail}
 					/>
+				</SectionCard>
 
-					<Separator />
-
+				<SectionCard icon={IconFileText} title="Submissions">
 					<UserSubmissionsSection submissions={user.submissions} />
+				</SectionCard>
 
-					<Separator />
+				<UserSurveySection surveyAnswers={user.surveyAnswers} />
 
-					<UserSurveySection surveyAnswers={user.surveyAnswers} />
-
+				<SectionCard
+					icon={IconCash}
+					title="Fee Status"
+					action={
+						!user.fee?.paid && (
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => setFeeDialogOpen(true)}
+							>
+								<IconCash className="mr-2 size-4" />
+								Mark as Paid
+							</Button>
+						)
+					}
+				>
 					<UserFeeStatusSection
 						fee={user.fee}
 						fmtDate={fmtDate}
 						isPending={isPending}
-						onMark={() => setFeeDialogOpen(true)}
 						onUnmark={handleUnmarkFeePaid}
 					/>
-
-					{canDeleteUsers && (
-						<>
-							<Separator />
-							<div className="flex justify-end">
-								<Button
-									variant="destructive"
-									size="sm"
-									onClick={() => setDeleteDialogOpen(true)}
-								>
-									<IconTrash className="mr-2 size-4" />
-									Delete User
-								</Button>
-							</div>
-						</>
-					)}
-				</CardContent>
-			</Card>
+				</SectionCard>
+			</div>
 
 			{canEditProfiles && (
 				<UserEditDialog

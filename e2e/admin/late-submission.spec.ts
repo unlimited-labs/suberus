@@ -19,13 +19,17 @@ test.describe("Allow late submission toggle", () => {
 		const detailPage = new UserDetailPage(page);
 		await detailPage.goto(testUser.id);
 
+		// The toggle lives in the header "Actions menu" dropdown. Selecting a menu
+		// item closes the dropdown, so reopen it before each assertion/click.
 		const toggle = page.getByTestId("toggle-late-submission");
+		await detailPage.openActions();
 		await expect(toggle).toBeVisible({ timeout: 10000 });
-		// Default off → button offers to allow
+		// Default off → item offers to allow
 		await expect(toggle).toHaveText(/Allow late submission/);
 
 		// Act — enable
 		await toggle.click();
+		await detailPage.openActions();
 		await expect(toggle).toHaveText(/Disallow late submission/);
 
 		// Assert — persisted + audited
@@ -46,6 +50,7 @@ test.describe("Allow late submission toggle", () => {
 
 		// Act — disable
 		await toggle.click();
+		await detailPage.openActions();
 		await expect(toggle).toHaveText(/Allow late submission/);
 
 		const after = await db.user.findUnique({

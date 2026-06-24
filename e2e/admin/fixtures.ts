@@ -134,6 +134,7 @@ export class AdminUsersPage {
 export class UserDetailPage {
 	readonly page: Page
 	readonly backButton: Locator
+	readonly actionsMenuButton: Locator
 	readonly changeRoleButton: Locator
 	readonly deactivateButton: Locator
 	readonly activateButton: Locator
@@ -151,9 +152,12 @@ export class UserDetailPage {
 	constructor(page: Page) {
 		this.page = page
 		this.backButton = page.getByRole("link", { name: "Back" })
-		this.changeRoleButton = page.getByRole("button", { name: "Change Role" })
-		this.deactivateButton = page.getByRole("button", { name: "Deactivate" })
-		this.activateButton = page.getByRole("button", { name: "Activate" })
+		// Header actions now live behind the "Actions menu" dropdown — open it
+		// with openActions() before clicking/asserting any of these menu items.
+		this.actionsMenuButton = page.getByRole("button", { name: "Actions menu" })
+		this.changeRoleButton = page.getByRole("menuitem", { name: "Change Role" })
+		this.deactivateButton = page.getByRole("menuitem", { name: "Deactivate" })
+		this.activateButton = page.getByRole("menuitem", { name: "Activate" })
 		this.markAsPaidButton = page.getByRole("button", { name: "Mark as Paid" })
 		this.feeStatusPaid = page.getByText("Fee Paid")
 		this.feeStatusUnpaid = page.getByText("Fee Unpaid")
@@ -161,13 +165,18 @@ export class UserDetailPage {
 		this.emailNotVerified = page.getByText("Email not verified")
 		this.verifyEmailButton = page.getByRole("button", { name: "Verify" })
 		this.unmarkButton = page.getByRole("button", { name: "Unmark" })
-		this.editProfileButton = page.getByRole("button", { name: "Edit Profile" })
-		this.deleteUserButton = page.getByRole("button", { name: "Delete User" })
+		this.editProfileButton = page.getByRole("menuitem", { name: "Edit Profile" })
+		this.deleteUserButton = page.getByRole("menuitem", { name: "Delete User" })
 		this.submissionRows = page.getByTestId("user-submission-row")
 	}
 
 	async goto(userId: string) {
 		await this.page.goto(`/admin/users/${userId}`)
+	}
+
+	/** Open the header "Actions menu" dropdown that holds edit/role/activate/late/delete. */
+	async openActions() {
+		await this.actionsMenuButton.click()
 	}
 
 	async selectRole(role: string) {

@@ -253,6 +253,7 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.openUserDetail(TEST_USER)
 
 			// Assert
+			await userDetailPage.openActions()
 			await expect(userDetailPage.changeRoleButton).toBeVisible()
 		})
 
@@ -263,6 +264,7 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.openUserDetail(TEST_USER)
 
 			// Assert
+			await userDetailPage.openActions()
 			await expect(
 				userDetailPage.deactivateButton.or(userDetailPage.activateButton)
 			).toBeVisible()
@@ -623,6 +625,7 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.openUserDetail(TEST_USER)
 
 			// Act
+			await userDetailPage.openActions()
 			await userDetailPage.changeRoleButton.click()
 
 			// Assert
@@ -637,6 +640,7 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.openUserDetail(TEST_USER)
 
 			// Act
+			await userDetailPage.openActions()
 			await userDetailPage.changeRoleButton.click()
 			await userDetailPage.cancelDialog()
 
@@ -683,19 +687,25 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.openUserDetail(TEST_USER)
 
-			// Act & Assert (toggle + cleanup - direction depends on current state)
+			// Act & Assert (toggle + cleanup - direction depends on current state).
+			// Each menu item selection closes the dropdown, so reopen between steps.
+			await userDetailPage.openActions()
 			const deactivateVisible = await userDetailPage.deactivateButton.isVisible()
 			if (deactivateVisible) {
 				await userDetailPage.deactivateButton.click()
+				await userDetailPage.openActions()
 				await expect(userDetailPage.activateButton).toBeVisible({ timeout: 5000 })
 				// Cleanup: restore original state
 				await userDetailPage.activateButton.click()
+				await userDetailPage.openActions()
 				await expect(userDetailPage.deactivateButton).toBeVisible({ timeout: 5000 })
 			} else {
 				await userDetailPage.activateButton.click()
+				await userDetailPage.openActions()
 				await expect(userDetailPage.deactivateButton).toBeVisible({ timeout: 5000 })
 				// Cleanup: restore original state
 				await userDetailPage.deactivateButton.click()
+				await userDetailPage.openActions()
 				await expect(userDetailPage.activateButton).toBeVisible({ timeout: 5000 })
 			}
 
@@ -762,6 +772,7 @@ test.describe("Admin Users Management", () => {
 			await userDetailPage.goto(testUserId)
 
 			// Assert
+			await userDetailPage.openActions()
 			await expect(userDetailPage.editProfileButton).toBeVisible({ timeout: 10000 })
 		})
 
@@ -770,6 +781,7 @@ test.describe("Admin Users Management", () => {
 			const { getTestUserIds } = await import("../helpers/test-db")
 			const { testUserId } = await getTestUserIds()
 			await userDetailPage.goto(testUserId)
+			await userDetailPage.openActions()
 			await expect(userDetailPage.editProfileButton).toBeVisible({ timeout: 10000 })
 
 			// Act
@@ -796,7 +808,8 @@ test.describe("Admin Users Management", () => {
 
 			try {
 				await userDetailPage.goto(tempUser.id)
-				await expect(userDetailPage.editProfileButton).toBeVisible({ timeout: 10000 })
+				await userDetailPage.openActions()
+			await expect(userDetailPage.editProfileButton).toBeVisible({ timeout: 10000 })
 
 				// Act
 				await userDetailPage.editProfileButton.click()
@@ -811,8 +824,8 @@ test.describe("Admin Users Management", () => {
 
 				// Assert
 				await expect(page.getByText("Profile updated")).toBeVisible({ timeout: 5000 })
-				await expect(page.locator("[data-slot='card-title']")).toContainText("EditAfter")
-				await expect(page.locator("[data-slot='card-title']")).toContainText("ProfileAfter")
+				await expect(page.locator("[data-slot='card-title']").first()).toContainText("EditAfter")
+				await expect(page.locator("[data-slot='card-title']").first()).toContainText("ProfileAfter")
 			} finally {
 				await deleteTestUser(tempUser.id)
 			}
@@ -823,6 +836,7 @@ test.describe("Admin Users Management", () => {
 			const { getTestUserIds } = await import("../helpers/test-db")
 			const { testUserId } = await getTestUserIds()
 			await userDetailPage.goto(testUserId)
+			await userDetailPage.openActions()
 			await expect(userDetailPage.editProfileButton).toBeVisible({ timeout: 10000 })
 
 			// Act
@@ -835,7 +849,7 @@ test.describe("Admin Users Management", () => {
 
 			// Assert
 			await expect(dialog).not.toBeVisible()
-			await expect(page.locator("[data-slot='card-title']")).toContainText(TEST_USER.firstName)
+			await expect(page.locator("[data-slot='card-title']").first()).toContainText(TEST_USER.firstName)
 		})
 
 		test("duplicate email shows inline field error, not just a toast", async ({ page, userDetailPage }) => {
@@ -850,7 +864,8 @@ test.describe("Admin Users Management", () => {
 
 			try {
 				await userDetailPage.goto(tempUser.id)
-				await expect(userDetailPage.editProfileButton).toBeVisible({ timeout: 10000 })
+				await userDetailPage.openActions()
+			await expect(userDetailPage.editProfileButton).toBeVisible({ timeout: 10000 })
 				await userDetailPage.editProfileButton.click()
 				const dialog = page.getByRole("dialog")
 				await dialog.waitFor({ state: "visible" })
@@ -885,6 +900,7 @@ test.describe("Admin Users Management", () => {
 			await userDetailPage.goto(testUserId)
 
 			// Assert
+			await userDetailPage.openActions()
 			await expect(userDetailPage.deleteUserButton).toBeVisible({ timeout: 10000 })
 		})
 
@@ -904,6 +920,7 @@ test.describe("Admin Users Management", () => {
 
 			try {
 				await userDetailPage.goto(tempUser.id)
+				await userDetailPage.openActions()
 				await expect(userDetailPage.deleteUserButton).toBeVisible({ timeout: 10000 })
 
 				// Act
@@ -930,6 +947,7 @@ test.describe("Admin Users Management", () => {
 			})
 
 			await userDetailPage.goto(tempUser.id)
+			await userDetailPage.openActions()
 			await expect(userDetailPage.deleteUserButton).toBeVisible({ timeout: 10000 })
 
 			// Act
@@ -954,7 +972,8 @@ test.describe("Admin Users Management", () => {
 			await userDetailPage.goto(testUserId)
 			await expect(userDetailPage.getUserEmail()).toBeVisible({ timeout: 10000 })
 
-			// Assert — profile edit / delete stay admin-only
+			// Assert — profile edit / delete stay admin-only (absent from the actions menu)
+			await userDetailPage.openActions()
 			await expect(userDetailPage.editProfileButton).not.toBeVisible()
 			await expect(userDetailPage.deleteUserButton).not.toBeVisible()
 		})
@@ -969,6 +988,7 @@ test.describe("Admin Users Management", () => {
 			await expect(userDetailPage.getUserEmail()).toBeVisible({ timeout: 10000 })
 
 			// Act — open the change-role dialog (editors may change non-admin roles)
+			await userDetailPage.openActions()
 			await expect(userDetailPage.changeRoleButton).toBeVisible()
 			await userDetailPage.changeRoleButton.click()
 			await page.getByRole("combobox").click()
@@ -988,6 +1008,7 @@ test.describe("Admin Users Management", () => {
 			await expect(userDetailPage.getUserEmail()).toBeVisible({ timeout: 10000 })
 
 			// Assert — no role-change control is offered for an admin target
+			await userDetailPage.openActions()
 			await expect(userDetailPage.changeRoleButton).not.toBeVisible()
 		})
 	})
