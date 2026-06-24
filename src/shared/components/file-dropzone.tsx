@@ -1,4 +1,4 @@
-import { IconFile, IconUpload, IconX } from "@tabler/icons-react";
+import { IconDownload, IconFile, IconUpload, IconX } from "@tabler/icons-react";
 import { type DragEvent, useCallback, useState } from "react";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -92,6 +92,16 @@ export function FileDropzone({
 		setError(null);
 	}, [onChange]);
 
+	const handleDownload = useCallback(() => {
+		if (!value) return;
+		const url = URL.createObjectURL(value);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = value.name;
+		a.click();
+		URL.revokeObjectURL(url);
+	}, [value]);
+
 	return (
 		<div className={cn("space-y-3", className)}>
 			{!value ? (
@@ -152,9 +162,21 @@ export function FileDropzone({
 						type="button"
 						size="icon-sm"
 						variant="ghost"
+						onClick={handleDownload}
+						aria-label="Download file"
+						data-testid="download-file-button"
+						className="cursor-pointer"
+					>
+						<IconDownload className="size-4" />
+					</Button>
+					<Button
+						type="button"
+						size="icon-sm"
+						variant="ghost"
 						onClick={handleRemove}
 						aria-label="Remove file"
 						data-testid="remove-file-button"
+						className="cursor-pointer"
 					>
 						<IconX className="size-4" />
 					</Button>
