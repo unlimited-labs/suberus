@@ -23,18 +23,3 @@ Files per format: `abstract.*` (blank, grey hints) and `abstract-example.*`
 - **Body** — continuous prose, no section headings. Table caption above, figure
   caption below; references numbered `[1]`, cited in order of appearance.
 - A4, 2.5 cm margins, Times, two pages max.
-
-## Edit
-
-- **Word** — type into the `.docx`.
-- **LaTeX** — `\title/\author/\affiliation/\email/\keywords` in the preamble.
-- **Typst** — arguments of `#show: abstract-doc.with(...)`.
-
-## Notes
-
-- `docx/` round-trips through Suberus's DOCX extractor: title, authors,
-  affiliations and keywords are auto-filled on upload. `verify_roundtrip.py`
-  checks it — and, when `pdf-api` is reachable and an example PDF is built,
-  also checks that the PDF header (docling markdown the LLM reads) carries the
-  title, author surnames, e-mails and keywords.
-- PDFs are build artifacts (git-ignored in `tex/` and `typst/`).
