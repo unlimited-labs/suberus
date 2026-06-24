@@ -156,10 +156,7 @@ function FeePage() {
 						description="Important information about conference fee payment"
 						delay={100}
 					>
-						<Markdown
-							content={instructions}
-							className="prose-sm sm:prose-base"
-						/>
+						<Markdown content={instructions} />
 					</SettingsSection>
 
 					<div className="h-12" />
