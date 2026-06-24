@@ -10,7 +10,7 @@ import { SettingsSection } from "@/features/settings/components/settings-section
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
 import { Label } from "@/shared/ui/label";
-import { Markdown } from "@/shared/ui/markdown";
+import { Markdown, MarkdownHint } from "@/shared/ui/markdown";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Textarea } from "@/shared/ui/textarea";
 
@@ -75,10 +75,7 @@ export function TosContentTab({ initialContent }: TosContentTabProps) {
 								</div>
 							</TabsContent>
 						</Tabs>
-						<p className="text-xs text-muted-foreground">
-							Supports Markdown formatting (headings, lists, links, bold,
-							italic)
-						</p>
+						<MarkdownHint />
 					</div>
 
 					<div className="flex justify-end">

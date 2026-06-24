@@ -2,6 +2,7 @@ import { IconBook } from "@tabler/icons-react";
 import type { Dispatch, SetStateAction } from "react";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import { Badge } from "@/shared/ui/badge";
+import { MarkdownHint } from "@/shared/ui/markdown";
 import { Textarea } from "@/shared/ui/textarea";
 
 const submissionGuidelinesPlaceholders = [
@@ -49,6 +50,7 @@ export function SubmissionGuidelinesSection({
 					className="font-mono text-sm"
 					placeholder="- Title should be concise..."
 				/>
+				<MarkdownHint />
 			</div>
 		</SettingsSection>
 	);
