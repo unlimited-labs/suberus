@@ -12,6 +12,7 @@ import {
 	deleteSurveyQuestion,
 	getSurveyQuestions,
 	getUserSurveyAnswers,
+	importSurveyTemplate,
 	reorderSurveyQuestions,
 	updateSurveyQuestion,
 	upsertSurveyAnswers,
@@ -102,6 +103,11 @@ export const deleteSurveyQuestionFn = createServerFn({ method: "POST" })
 		await deleteSurveyQuestion(data.id);
 		return { success: true };
 	});
+
+export const importSurveyTemplateFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(z.object({ templateId: z.string().min(1) }))
+	.handler(async ({ data }) => importSurveyTemplate(data.templateId));
 
 export const reorderSurveyQuestionsFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])

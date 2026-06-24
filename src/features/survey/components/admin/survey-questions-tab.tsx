@@ -20,6 +20,7 @@ import {
 	IconGripVertical,
 	IconPencil,
 	IconPlus,
+	IconTemplate,
 	IconTrash,
 } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -31,6 +32,7 @@ import {
 	adminSurveyQuestionsQueryOptions,
 	createSurveyQuestionFn,
 	deleteSurveyQuestionFn,
+	importSurveyTemplateFn,
 	reorderSurveyQuestionsFn,
 	updateSurveyQuestionFn,
 } from "@/features/survey/api/survey";
@@ -49,6 +51,7 @@ import {
 	TYPE_LABELS,
 	TYPE_META,
 } from "./survey-question-fields";
+import { SurveyTemplateDialog } from "./survey-template-dialog";
 
 interface SurveyQuestionsTabProps {
 	initialQuestions: SurveyQuestion[];
@@ -175,6 +178,8 @@ export function SurveyQuestionsTab({
 	} | null>(null);
 	const [deleting, setDeleting] = useState<SurveyQuestion | null>(null);
 	const [busyId, setBusyId] = useState<string | null>(null);
+	const [templateOpen, setTemplateOpen] = useState(false);
+	const [importing, setImporting] = useState(false);
 
 	const sensors = useSensors(
 		useSensor(PointerSensor),
@@ -217,6 +222,21 @@ export function SurveyQuestionsTab({
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to add question"));
 			throw new Error("create failed");
+		}
+	};
+
+	const handleImport = async (templateId: string) => {
+		setImporting(true);
+		try {
+			const created = await importSurveyTemplateFn({ data: { templateId } });
+			setQuestions((prev) => [...prev, ...created]);
+			await invalidateSurvey();
+			setTemplateOpen(false);
+			toast.success("Template imported");
+		} catch (error) {
+			toast.error(getErrorMessage(error, "Failed to import template"));
+		} finally {
+			setImporting(false);
 		}
 	};
 
@@ -368,19 +388,34 @@ export function SurveyQuestionsTab({
 						</DndContext>
 					)}
 
-					<button
-						type="button"
-						data-testid="add-question-button"
-						onClick={() => setDialog({ question: null })}
-						className={cn(
-							"flex w-full items-center justify-center gap-2 rounded-lg py-3",
-							"border border-dashed border-border/60 text-sm font-medium text-muted-foreground",
-							"transition-all hover:border-primary hover:bg-primary/5 hover:text-primary",
-						)}
-					>
-						<IconPlus className="size-4" />
-						Add question
-					</button>
+					<div className="flex flex-col gap-2 sm:flex-row">
+						<button
+							type="button"
+							data-testid="add-question-button"
+							onClick={() => setDialog({ question: null })}
+							className={cn(
+								"flex flex-1 items-center justify-center gap-2 rounded-lg py-3",
+								"border border-dashed border-border/60 text-sm font-medium text-muted-foreground",
+								"transition-all hover:border-primary hover:bg-primary/5 hover:text-primary",
+							)}
+						>
+							<IconPlus className="size-4" />
+							Add question
+						</button>
+						<button
+							type="button"
+							data-testid="import-template-button"
+							onClick={() => setTemplateOpen(true)}
+							className={cn(
+								"flex flex-1 items-center justify-center gap-2 rounded-lg py-3",
+								"border border-dashed border-border/60 text-sm font-medium text-muted-foreground",
+								"transition-all hover:border-primary hover:bg-primary/5 hover:text-primary",
+							)}
+						>
+							<IconTemplate className="size-4" />
+							Import template
+						</button>
+					</div>
 				</div>
 			</SettingsSection>
 
@@ -395,6 +430,15 @@ export function SurveyQuestionsTab({
 						? handleEditSave(dialog.question, values)
 						: handleCreate(values)
 				}
+			/>
+
+			<SurveyTemplateDialog
+				open={templateOpen}
+				onOpenChange={(open) => {
+					if (!importing) setTemplateOpen(open);
+				}}
+				onImport={handleImport}
+				isBusy={importing}
 			/>
 
 			<SurveyQuestionDeleteDialog

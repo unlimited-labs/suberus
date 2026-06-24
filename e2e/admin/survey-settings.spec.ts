@@ -380,6 +380,32 @@ test.describe("Admin Settings - Survey Questions", () => {
 		expect(await db.surveyQuestion.count({ where: { label } })).toBe(0);
 	});
 
+	test("admin imports a question template", async ({ page }) => {
+		// Arrange — clean up any leftovers from previous retries
+		const importedLabel = "Dietary requirements";
+		const db = getPrisma();
+		await db.surveyAnswer.deleteMany({ where: { question: { label: importedLabel } } });
+		await db.surveyQuestion.deleteMany({ where: { label: importedLabel } });
+
+		// Act — open the template picker and import the dietary template
+		await page.getByTestId("import-template-button").click();
+		const dialog = page.getByRole("dialog");
+		await dialog.getByTestId("template-card").filter({ hasText: "Dietary" }).click();
+
+		// Assert — toast + imported MULTI_SELECT question appears + persisted options
+		await expect(page.getByText("Template imported")).toBeVisible();
+		const row = page.getByTestId("question-row").filter({ hasText: importedLabel });
+		await expect(row.getByText("Multi", { exact: true })).toBeVisible();
+		const saved = await db.surveyQuestion.findFirst({ where: { label: importedLabel } });
+		expect(saved?.type).toBe("MULTI_SELECT");
+		expect(saved?.allowOther).toBe(true);
+		expect(saved?.options).toContain("Vegan");
+
+		// Cleanup
+		await db.surveyAnswer.deleteMany({ where: { question: { label: importedLabel } } });
+		await db.surveyQuestion.deleteMany({ where: { label: importedLabel } });
+	});
+
 	test("admin edits question type", async ({ page, testRun }) => {
 		// Arrange — create a temp question to avoid modifying seeded data
 		const tempLabel = testRun.prefix("Type change question");

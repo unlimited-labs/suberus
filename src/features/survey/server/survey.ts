@@ -1,3 +1,4 @@
+import { getSurveyTemplate } from "@/features/survey/templates";
 import type { SurveyQuestion } from "@/generated/prisma/client";
 import { Prisma } from "@/generated/prisma/client";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
@@ -88,6 +89,31 @@ export async function deleteSurveyQuestion(id: string) {
 		prisma.surveyAnswer.deleteMany({ where: { questionId: id } }),
 		prisma.surveyQuestion.delete({ where: { id } }),
 	]);
+}
+
+/**
+ * Import a predefined template: create its questions appended after existing ones.
+ */
+export async function importSurveyTemplate(templateId: string) {
+	const template = getSurveyTemplate(templateId);
+	if (!template) throw new Error(`Unknown template: ${templateId}`);
+
+	const count = await prisma.surveyQuestion.count();
+	const created = await prisma.$transaction(
+		template.questions.map((q, i) =>
+			prisma.surveyQuestion.create({
+				data: {
+					label: q.label,
+					orderIndex: count + i,
+					type: q.type,
+					...(q.options && { options: q.options }),
+					allowOther: q.allowOther ?? false,
+					isRequired: q.isRequired ?? false,
+				},
+			}),
+		),
+	);
+	return created.map(typeSurveyQuestion);
 }
 
 /**
