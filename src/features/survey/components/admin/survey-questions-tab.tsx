@@ -46,6 +46,7 @@ import { Switch } from "@/shared/ui/switch";
 import { SurveyQuestionDeleteDialog } from "./survey-question-delete-dialog";
 import { SurveyQuestionDialog } from "./survey-question-dialog";
 import {
+	AUDIENCE_LABELS,
 	isSelectType,
 	type SurveyQuestion,
 	TYPE_LABELS,
@@ -55,11 +56,13 @@ import { SurveyTemplateDialog } from "./survey-template-dialog";
 
 interface SurveyQuestionsTabProps {
 	initialQuestions: SurveyQuestion[];
+	exhibitorsEnabled: boolean;
 }
 
 interface SurveyQuestionRowProps {
 	question: SurveyQuestion;
 	isBusy: boolean;
+	exhibitorsEnabled: boolean;
 	onEdit: () => void;
 	onToggleActive: (active: boolean) => void;
 	onDelete: () => void;
@@ -68,6 +71,7 @@ interface SurveyQuestionRowProps {
 function SurveyQuestionRow({
 	question,
 	isBusy,
+	exhibitorsEnabled,
 	onEdit,
 	onToggleActive,
 	onDelete,
@@ -126,6 +130,11 @@ function SurveyQuestionRow({
 							In list: {question.fieldName ?? question.label}
 						</Badge>
 					)}
+					{exhibitorsEnabled && question.audience !== "ALL" && (
+						<Badge variant="outline" className="text-[10px]">
+							{AUDIENCE_LABELS[question.audience]}
+						</Badge>
+					)}
 				</div>
 			</button>
 
@@ -168,6 +177,7 @@ function SurveyQuestionRow({
 
 export function SurveyQuestionsTab({
 	initialQuestions,
+	exhibitorsEnabled,
 }: SurveyQuestionsTabProps) {
 	const queryClient = useQueryClient();
 	const [questions, setQuestions] =
@@ -212,6 +222,7 @@ export function SurveyQuestionsTab({
 					isRequired: values.isRequired,
 					showInUsersList: values.showInUsersList,
 					fieldName: values.showInUsersList ? values.fieldName.trim() : null,
+					audience: values.audience,
 					...(cleanOptions && { options: cleanOptions }),
 				},
 			});
@@ -262,6 +273,7 @@ export function SurveyQuestionsTab({
 					options: cleanOptions,
 					showInUsersList: values.showInUsersList,
 					fieldName: cleanFieldName,
+					audience: values.audience,
 				},
 			});
 			setQuestions((prev) =>
@@ -276,6 +288,7 @@ export function SurveyQuestionsTab({
 								options: cleanOptions,
 								showInUsersList: values.showInUsersList,
 								fieldName: cleanFieldName,
+								audience: values.audience,
 							}
 						: q,
 				),
@@ -376,6 +389,7 @@ export function SurveyQuestionsTab({
 											key={question.id}
 											question={question}
 											isBusy={busyId === question.id}
+											exhibitorsEnabled={exhibitorsEnabled}
 											onEdit={() => setDialog({ question })}
 											onToggleActive={(active) =>
 												handleToggleActive(question.id, active)
@@ -422,6 +436,7 @@ export function SurveyQuestionsTab({
 			<SurveyQuestionDialog
 				question={dialog?.question ?? null}
 				open={dialog !== null}
+				exhibitorsEnabled={exhibitorsEnabled}
 				onOpenChange={(open) => {
 					if (!open) setDialog(null);
 				}}

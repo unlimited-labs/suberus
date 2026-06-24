@@ -302,7 +302,10 @@ function AdminSettingsPage() {
 						</TabsContent>
 
 						<TabsContent value="survey">
-							<SurveyQuestionsTab initialQuestions={surveyQuestions} />
+							<SurveyQuestionsTab
+								initialQuestions={surveyQuestions}
+								exhibitorsEnabled={submissionTypes.EXHIBITOR.isActive}
+							/>
 						</TabsContent>
 
 						<TabsContent value="tos">

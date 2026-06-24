@@ -1,8 +1,20 @@
 import { getSurveyTemplate } from "@/features/survey/templates";
 import type { SurveyQuestion } from "@/generated/prisma/client";
 import { Prisma } from "@/generated/prisma/client";
-import type { SurveyQuestionType } from "@/generated/prisma/enums";
+import type {
+	SurveyAudience,
+	SurveyQuestionType,
+} from "@/generated/prisma/enums";
 import { prisma } from "@/shared/server/db.server";
+
+/**
+ * Audiences a viewer is allowed to see. Exhibitors (role EXHIBITOR) see ALL +
+ * EXHIBITORS; everyone else — authors, staff, and guests at registration — sees
+ * ALL + PARTICIPANTS. (Users become exhibitors via self-service after sign-up.)
+ */
+export function visibleAudiences(role?: string | null): SurveyAudience[] {
+	return role === "EXHIBITOR" ? ["ALL", "EXHIBITORS"] : ["ALL", "PARTICIPANTS"];
+}
 
 type TypedSurveyQuestion = Omit<SurveyQuestion, "options"> & {
 	options: string[] | null;
@@ -15,9 +27,15 @@ function typeSurveyQuestion(q: SurveyQuestion): TypedSurveyQuestion {
 /**
  * Get survey questions, optionally filtered by active status.
  */
-export async function getSurveyQuestions(activeOnly = false) {
+export async function getSurveyQuestions(
+	activeOnly = false,
+	audiences?: SurveyAudience[],
+) {
 	const questions = await prisma.surveyQuestion.findMany({
-		where: activeOnly ? { isActive: true } : undefined,
+		where: {
+			...(activeOnly && { isActive: true }),
+			...(audiences && { audience: { in: audiences } }),
+		},
 		orderBy: { orderIndex: "asc" },
 	});
 	return questions.map(typeSurveyQuestion);
@@ -35,6 +53,7 @@ export async function createSurveyQuestion(
 	isRequired?: boolean,
 	showInUsersList?: boolean,
 	fieldName?: string | null,
+	audience?: SurveyAudience,
 ) {
 	const created = await prisma.surveyQuestion.create({
 		data: {
@@ -46,6 +65,7 @@ export async function createSurveyQuestion(
 			...(isRequired !== undefined && { isRequired }),
 			...(showInUsersList !== undefined && { showInUsersList }),
 			...(fieldName !== undefined && { fieldName: fieldName || null }),
+			...(audience && { audience }),
 		},
 	});
 	return typeSurveyQuestion(created);
@@ -66,6 +86,7 @@ export async function updateSurveyQuestion(
 		isRequired?: boolean;
 		showInUsersList?: boolean;
 		fieldName?: string | null;
+		audience?: SurveyAudience;
 	},
 ) {
 	const { options, fieldName, ...rest } = data;

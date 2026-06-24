@@ -13,6 +13,7 @@ const question: SurveyQuestion = {
 	isActive: true,
 	showInUsersList: true,
 	fieldName: "diet",
+	audience: "EXHIBITORS",
 };
 
 describe("toSurveyQuestionFormValues", () => {
@@ -20,6 +21,7 @@ describe("toSurveyQuestionFormValues", () => {
 		expect(toSurveyQuestionFormValues(question)).toEqual({
 			label: "Diet",
 			type: "SINGLE_SELECT",
+			audience: "EXHIBITORS",
 			isRequired: true,
 			options: ["vegan", "vegetarian"],
 			allowOther: true,
@@ -32,6 +34,7 @@ describe("toSurveyQuestionFormValues", () => {
 		const defaults = {
 			label: "",
 			type: "CHECKBOX",
+			audience: "ALL",
 			isRequired: false,
 			options: [],
 			allowOther: false,

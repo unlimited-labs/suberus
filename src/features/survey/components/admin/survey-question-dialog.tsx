@@ -12,6 +12,7 @@ import {
 } from "@/shared/ui/dialog";
 import { FieldError } from "@/shared/ui/field";
 import {
+	AudiencePicker,
 	isSelectType,
 	OptionsEditor,
 	type SurveyQuestion,
@@ -25,6 +26,8 @@ interface SurveyQuestionDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	onSave: (values: SurveyQuestionFormValues) => Promise<void>;
+	/** Show the audience picker only when the exhibitors feature is enabled. */
+	exhibitorsEnabled: boolean;
 }
 
 export function SurveyQuestionDialog({
@@ -32,6 +35,7 @@ export function SurveyQuestionDialog({
 	open,
 	onOpenChange,
 	onSave,
+	exhibitorsEnabled,
 }: SurveyQuestionDialogProps) {
 	const isEdit = question !== null;
 	return (
@@ -49,6 +53,7 @@ export function SurveyQuestionDialog({
 						key={question?.id ?? "new"}
 						question={question}
 						isEdit={isEdit}
+						exhibitorsEnabled={exhibitorsEnabled}
 						onSave={onSave}
 						onCancel={() => onOpenChange(false)}
 					/>
@@ -69,11 +74,13 @@ function SectionLabel({ children }: { children: string }) {
 function SurveyQuestionDialogForm({
 	question,
 	isEdit,
+	exhibitorsEnabled,
 	onSave,
 	onCancel,
 }: {
 	question: SurveyQuestion | null;
 	isEdit: boolean;
+	exhibitorsEnabled: boolean;
 	onSave: (values: SurveyQuestionFormValues) => Promise<void>;
 	onCancel: () => void;
 }) {
@@ -90,7 +97,7 @@ function SurveyQuestionDialogForm({
 			}}
 			className="grid gap-6 md:grid-cols-[1fr_minmax(260px,320px)]"
 		>
-			<div className="space-y-5">
+			<div className="space-y-4">
 				<div className="space-y-2">
 					<SectionLabel>Content</SectionLabel>
 					<form.AppField name="label">
@@ -149,15 +156,25 @@ function SurveyQuestionDialogForm({
 					}
 				</form.Subscribe>
 
-				<div className="space-y-2">
-					<SectionLabel>Behavior</SectionLabel>
+				{exhibitorsEnabled && (
+					<div className="space-y-2">
+						<SectionLabel>Audience</SectionLabel>
+						<form.Field name="audience">
+							{(field) => (
+								<AudiencePicker
+									value={field.state.value}
+									onChange={field.handleChange}
+								/>
+							)}
+						</form.Field>
+					</div>
+				)}
+
+				<div className="space-y-3">
+					<SectionLabel>Settings</SectionLabel>
 					<form.AppField name="isRequired">
 						{(field) => <field.SwitchField label="Required" />}
 					</form.AppField>
-				</div>
-
-				<div className="space-y-2">
-					<SectionLabel>Users list</SectionLabel>
 					<form.AppField name="showInUsersList">
 						{(field) => <field.SwitchField label="Show in users list" />}
 					</form.AppField>

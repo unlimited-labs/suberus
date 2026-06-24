@@ -13,6 +13,7 @@ export function toSurveyQuestionFormValues(
 	return {
 		label: question?.label ?? "",
 		type: question?.type ?? "CHECKBOX",
+		audience: question?.audience ?? "ALL",
 		isRequired: question?.isRequired ?? false,
 		options: Array.isArray(question?.options) ? question.options : [],
 		allowOther: question?.allowOther ?? false,

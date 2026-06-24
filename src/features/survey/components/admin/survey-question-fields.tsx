@@ -25,7 +25,10 @@ import {
 	IconX,
 } from "@tabler/icons-react";
 import type { ComponentType } from "react";
-import type { SurveyQuestionType } from "@/generated/prisma/enums";
+import type {
+	SurveyAudience,
+	SurveyQuestionType,
+} from "@/generated/prisma/enums";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -42,7 +45,15 @@ export interface SurveyQuestion {
 	isActive: boolean;
 	showInUsersList: boolean;
 	fieldName: string | null;
+	audience: SurveyAudience;
 }
+
+/** Audience labels for the editor picker and list badges. */
+export const AUDIENCE_LABELS: Record<SurveyAudience, string> = {
+	ALL: "Everyone",
+	PARTICIPANTS: "Participants",
+	EXHIBITORS: "Exhibitors",
+};
 
 /** Short labels for the list row badges (also asserted by E2E). */
 export const TYPE_LABELS: Record<SurveyQuestionType, string> = {
@@ -93,7 +104,7 @@ const TYPE_ORDER: readonly SurveyQuestionType[] = [
 export const isSelectType = (type: SurveyQuestionType) =>
 	type === "SINGLE_SELECT" || type === "MULTI_SELECT";
 
-/** Visual type picker: 2×2 grid of icon cards, replaces the plain dropdown. */
+/** Visual type picker: compact single row of icon cards (icon + label). */
 export function TypePicker({
 	value,
 	onChange,
@@ -102,7 +113,10 @@ export function TypePicker({
 	onChange: (v: SurveyQuestionType) => void;
 }) {
 	return (
-		<div className="grid grid-cols-2 gap-2" data-testid="type-picker">
+		<div
+			className="grid grid-cols-2 gap-2 sm:grid-cols-4"
+			data-testid="type-picker"
+		>
 			{TYPE_ORDER.map((type) => {
 				const meta = TYPE_META[type];
 				const Icon = meta.icon;
@@ -113,9 +127,10 @@ export function TypePicker({
 						type="button"
 						data-testid={`type-option-${type}`}
 						aria-pressed={selected}
+						title={meta.description}
 						onClick={() => onChange(type)}
 						className={cn(
-							"flex items-start gap-2.5 rounded-lg border p-3 text-left transition-colors",
+							"flex flex-col items-center gap-1 rounded-lg border p-2 text-center transition-colors",
 							selected
 								? "border-primary bg-primary/5 ring-1 ring-primary"
 								: "border-border bg-card hover:border-primary/40 hover:bg-muted/40",
@@ -123,18 +138,56 @@ export function TypePicker({
 					>
 						<Icon
 							className={cn(
-								"mt-0.5 size-5 shrink-0",
+								"size-5 shrink-0",
 								selected ? "text-primary" : "text-muted-foreground",
 							)}
 						/>
-						<span className="min-w-0">
-							<span className="block text-sm font-medium leading-tight">
-								{meta.label}
-							</span>
-							<span className="mt-0.5 block text-xs text-muted-foreground leading-snug">
-								{meta.description}
-							</span>
+						<span className="text-xs font-medium leading-tight">
+							{meta.label}
 						</span>
+					</button>
+				);
+			})}
+		</div>
+	);
+}
+
+const AUDIENCE_ORDER: readonly SurveyAudience[] = [
+	"ALL",
+	"PARTICIPANTS",
+	"EXHIBITORS",
+];
+
+/** Compact segmented control choosing who a question is shown to. */
+export function AudiencePicker({
+	value,
+	onChange,
+}: {
+	value: SurveyAudience;
+	onChange: (v: SurveyAudience) => void;
+}) {
+	return (
+		<div
+			className="flex gap-1 rounded-lg border border-border bg-card p-1"
+			data-testid="audience-picker"
+		>
+			{AUDIENCE_ORDER.map((audience) => {
+				const selected = value === audience;
+				return (
+					<button
+						key={audience}
+						type="button"
+						data-testid={`audience-option-${audience}`}
+						aria-pressed={selected}
+						onClick={() => onChange(audience)}
+						className={cn(
+							"flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+							selected
+								? "bg-primary text-primary-foreground"
+								: "text-muted-foreground hover:bg-muted/60",
+						)}
+					>
+						{AUDIENCE_LABELS[audience]}
 					</button>
 				);
 			})}
@@ -229,20 +282,23 @@ export function OptionsEditor({
 					items={options.map((_, i) => i.toString())}
 					strategy={verticalListSortingStrategy}
 				>
-					{options.map((opt, i) => (
-						<SortableOption
-							key={i}
-							id={i.toString()}
-							index={i}
-							value={opt}
-							onChange={(v) => {
-								const next = [...options];
-								next[i] = v;
-								onChange(next);
-							}}
-							onRemove={() => onChange(options.filter((_, j) => j !== i))}
-						/>
-					))}
+					{/* Cap height so long option lists scroll instead of growing the dialog. */}
+					<div className="max-h-44 space-y-1.5 overflow-y-auto">
+						{options.map((opt, i) => (
+							<SortableOption
+								key={i}
+								id={i.toString()}
+								index={i}
+								value={opt}
+								onChange={(v) => {
+									const next = [...options];
+									next[i] = v;
+									onChange(next);
+								}}
+								onRemove={() => onChange(options.filter((_, j) => j !== i))}
+							/>
+						))}
+					</div>
 				</SortableContext>
 			</DndContext>
 			<Button

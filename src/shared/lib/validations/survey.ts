@@ -13,6 +13,7 @@ export const surveyQuestionFormSchema = z
 	.object({
 		label: z.string().trim().min(1, "Label is required"),
 		type: z.enum(["CHECKBOX", "TEXT", "SINGLE_SELECT", "MULTI_SELECT"]),
+		audience: z.enum(["ALL", "PARTICIPANTS", "EXHIBITORS"]),
 		isRequired: z.boolean(),
 		options: z.array(z.string()),
 		allowOther: z.boolean(),

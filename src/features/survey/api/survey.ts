@@ -16,6 +16,7 @@ import {
 	reorderSurveyQuestions,
 	updateSurveyQuestion,
 	upsertSurveyAnswers,
+	visibleAudiences,
 } from "@/features/survey/server/survey";
 
 export const activeSurveyQuestionsQueryOptions = () =>
@@ -58,6 +59,7 @@ export const createSurveyQuestionFn = createServerFn({ method: "POST" })
 			isRequired: z.boolean().optional(),
 			showInUsersList: z.boolean().optional(),
 			fieldName: z.string().nullable().optional(),
+			audience: z.enum(["ALL", "PARTICIPANTS", "EXHIBITORS"]).optional(),
 		}),
 	)
 	.handler(async ({ data }) => {
@@ -70,6 +72,7 @@ export const createSurveyQuestionFn = createServerFn({ method: "POST" })
 			data.isRequired,
 			data.showInUsersList,
 			data.fieldName,
+			data.audience,
 		);
 	});
 
@@ -89,6 +92,7 @@ export const updateSurveyQuestionFn = createServerFn({ method: "POST" })
 			isRequired: z.boolean().optional(),
 			showInUsersList: z.boolean().optional(),
 			fieldName: z.string().nullable().optional(),
+			audience: z.enum(["ALL", "PARTICIPANTS", "EXHIBITORS"]).optional(),
 		}),
 	)
 	.handler(async ({ data }) => {
@@ -121,8 +125,8 @@ export const reorderSurveyQuestionsFn = createServerFn({ method: "POST" })
 
 export const getActiveSurveyQuestionsFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
-	.handler(async () => {
-		return getSurveyQuestions(true);
+	.handler(async ({ context }) => {
+		return getSurveyQuestions(true, visibleAudiences(context.user.role));
 	});
 
 export const getUserSurveyAnswersFn = createServerFn({ method: "GET" })
@@ -157,7 +161,7 @@ export const acceptTosFn = createServerFn({ method: "POST" })
 export const getSurveyQuestionsForRegistrationFn = createServerFn({
 	method: "GET",
 }).handler(async () => {
-	return getSurveyQuestions(true);
+	return getSurveyQuestions(true, visibleAudiences());
 });
 
 export const getTosContentForRegistrationFn = createServerFn({
