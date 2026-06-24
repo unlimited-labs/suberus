@@ -1,4 +1,7 @@
-import { setAppSetting } from "../helpers/test-db";
+import {
+	setAppSetting,
+	setFullPaperAllowedExtensions,
+} from "../helpers/test-db";
 import { test, expect, SAMPLE_DOCX, SAMPLE_PDF } from "./fixtures";
 
 test.describe("Extraction Progress", () => {
@@ -17,11 +20,18 @@ test.describe("Extraction Progress", () => {
 		extractionPage,
 	}) => {
 		// PDF extraction takes ~3s, long enough to observe the timer
-		await extractionPage.gotoFullPaperForm();
-		await extractionPage.uploadFile(SAMPLE_PDF);
+		// Full Paper is DOCX-only by default; switch it to PDF for this test
+		// (single allowed extension per type — can't accept both at once).
+		const { restore } = await setFullPaperAllowedExtensions(["pdf"]);
+		try {
+			await extractionPage.gotoFullPaperForm();
+			await extractionPage.uploadFile(SAMPLE_PDF);
 
-		await extractionPage.waitForExtractionStart();
-		await expect(extractionPage.extractionElapsed).toBeVisible();
+			await extractionPage.waitForExtractionStart();
+			await expect(extractionPage.extractionElapsed).toBeVisible();
+		} finally {
+			await restore();
+		}
 	});
 
 	test("extraction overlay disappears after completion", async ({

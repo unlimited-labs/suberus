@@ -19,6 +19,11 @@ let sharedRoomId: string;
 let sharedSubmissionIds: string[] = [];
 
 test.describe.serial("Autoplan — queue happy path", () => {
+	// Proposal generation hits real LLM endpoints (see file header) and the
+	// "Proposal ready" expects already allow 180s; lift the per-test budget to
+	// match so the default 30s cap doesn't kill the run before the LLM responds.
+	test.describe.configure({ timeout: 240_000 });
+
 	test.beforeAll(async () => {
 		// Enable autoplanner (default is false)
 		await setAppSetting("PLANNER_AUTOPLAN_ENABLED", true);

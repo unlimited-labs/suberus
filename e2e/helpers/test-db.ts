@@ -1079,6 +1079,27 @@ export async function snapshotAppSettings(
 	};
 }
 
+/**
+ * Override the Full Paper type's accepted file extensions (default seed is
+ * DOCX-only since the single-extension change). Extraction tests need PDF too,
+ * to exercise the slower PDF pipeline. Returns a `restore` for afterAll.
+ */
+export async function setFullPaperAllowedExtensions(
+	extensions: readonly string[],
+): Promise<{ restore: () => Promise<void> }> {
+	const db = getPrisma();
+	const snap = await snapshotAppSettings(["SUBMISSION_TYPE_FULL_PAPER"]);
+	const existing = await db.appSetting.findUnique({
+		where: { key: "SUBMISSION_TYPE_FULL_PAPER" },
+	});
+	const cfg = (existing?.value ?? {}) as Record<string, unknown>;
+	await setAppSetting("SUBMISSION_TYPE_FULL_PAPER", {
+		...cfg,
+		allowedExtensions: extensions,
+	});
+	return snap;
+}
+
 /** Clean up sent reminders for a specific entity */
 export async function cleanupSentReminders(entityId: string): Promise<void> {
 	const db = getPrisma();
@@ -1155,6 +1176,94 @@ export async function getUserSurveyAnswers(userId: string) {
 export async function deleteUserSurveyAnswers(userId: string): Promise<void> {
 	const db = getPrisma();
 	await db.surveyAnswer.deleteMany({ where: { userId } });
+}
+
+/**
+ * Re-assert the survey questions the global seed creates (keep in sync with
+ * `e2e/setup/seed.ts`). The seeded questions are GLOBAL rows shared by every
+ * project on a worker DB; a sibling spec can leave one missing/inactive, which
+ * silently drops it from the profile survey. Idempotent: creates what's gone,
+ * reactivates what's off — so survey-dependent specs start from a known state.
+ * Also re-answers the required SINGLE_SELECT for `userId` (when given) so the
+ * profile form's required-gate passes; admin list specs can omit it.
+ */
+export async function ensureSeededSurveyQuestions(
+	userId?: string,
+): Promise<void> {
+	const db = getPrisma();
+	const seeded: Array<{
+		label: string;
+		orderIndex: number;
+		type: "CHECKBOX" | "TEXT" | "SINGLE_SELECT" | "MULTI_SELECT";
+		isRequired?: boolean;
+		allowOther?: boolean;
+		options?: string[];
+	}> = [
+		{
+			label: "Please send me an Invitation Letter for a Visa Application.",
+			orderIndex: 0,
+			type: "CHECKBOX",
+		},
+		{ label: "I need a certificate of attendance.", orderIndex: 1, type: "CHECKBOX" },
+		{ label: "Dietary requirements", orderIndex: 2, type: "TEXT" },
+		{
+			label: "Preferred session format",
+			orderIndex: 3,
+			type: "SINGLE_SELECT",
+			isRequired: true,
+			allowOther: true,
+			options: ["Oral", "Poster", "Workshop"],
+		},
+		{
+			label: "Which days will you attend?",
+			orderIndex: 4,
+			type: "MULTI_SELECT",
+			allowOther: true,
+			options: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+		},
+	];
+
+	let requiredQuestionId: string | null = null;
+	for (const q of seeded) {
+		const existing = await db.surveyQuestion.findFirst({
+			where: { label: q.label },
+		});
+		const id =
+			existing?.id ??
+			(
+				await db.surveyQuestion.create({
+					data: {
+						label: q.label,
+						orderIndex: q.orderIndex,
+						type: q.type,
+						isActive: true,
+						isRequired: q.isRequired ?? false,
+						allowOther: q.allowOther ?? false,
+						...(q.options && { options: q.options }),
+					},
+				})
+			).id;
+		if (existing && !existing.isActive) {
+			await db.surveyQuestion.update({
+				where: { id },
+				data: { isActive: true },
+			});
+		}
+		if (q.isRequired) requiredQuestionId = id;
+	}
+
+	// Seed pre-answers the required question for the test user so the profile
+	// survey's required-gate is satisfied on load.
+	if (requiredQuestionId && userId) {
+		const answered = await db.surveyAnswer.findFirst({
+			where: { userId, questionId: requiredQuestionId },
+		});
+		if (!answered) {
+			await db.surveyAnswer.create({
+				data: { userId, questionId: requiredQuestionId, value: "Poster" },
+			});
+		}
+	}
 }
 
 // ============================================================================

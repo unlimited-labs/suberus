@@ -1,6 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
-import { getPrisma } from "../helpers/test-db";
+import { ensureSeededSurveyQuestions, getPrisma } from "../helpers/test-db";
 
 type AddOptions = {
 	label: string;
@@ -42,6 +42,10 @@ async function addQuestion(page: Page, opts: AddOptions) {
 
 test.describe("Admin Settings - Survey Questions", () => {
 	test.beforeEach(async ({ adminSettingsPage }, testInfo) => {
+		// Seeded survey questions are global worker-DB rows shared across projects;
+		// a sibling can leave one missing/inactive. Re-assert before asserting on them.
+		await ensureSeededSurveyQuestions();
+
 		// Arrange
 		await adminSettingsPage.goto();
 		await adminSettingsPage.switchToSurveyTab(testInfo);

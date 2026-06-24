@@ -1,6 +1,7 @@
 import { test, expect, createUniqueSubmission } from "./fixtures";
 import {
 	createSubmission,
+	deleteSubmission,
 	getPrisma,
 	getTestUserIds,
 	setAppSetting,
@@ -24,6 +25,18 @@ test.describe.serial("Submission limit per user per type", () => {
 
 	test.afterAll(async () => {
 		await restore();
+	});
+
+	// The per-user cap counts ALL of a user's active ABSTRACTs globally; sibling
+	// submission specs share TEST_USER and may leave some behind. Start each test
+	// from a clean slate so the count this block controls is the only one present.
+	test.beforeEach(async () => {
+		const { testUserId } = await getTestUserIds();
+		const existing = await getPrisma().submission.findMany({
+			where: { userId: testUserId, type: SubmissionType.ABSTRACT },
+			select: { id: true },
+		});
+		for (const s of existing) await deleteSubmission(s.id);
 	});
 
 	/** Set the Oral Presentation (ABSTRACT) cap, keeping the type active + TEXT. */

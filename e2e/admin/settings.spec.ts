@@ -37,7 +37,7 @@ test.describe("Admin Settings - Submission Types", () => {
 		await adminSettingsPage.expandSubmissionType("Full Paper")
 
 		// Assert
-		await expect(page.getByText("Allowed file extension")).toBeVisible()
+		await expect(page.getByText("Allowed file extension", { exact: true })).toBeVisible()
 		await expect(adminSettingsPage.getFileExtensionRadio("pdf")).toBeVisible()
 		await expect(adminSettingsPage.getFileExtensionRadio("docx")).toBeVisible()
 	})
@@ -50,7 +50,7 @@ test.describe("Admin Settings - Submission Types", () => {
 		await adminSettingsPage.selectContentFormat("File Upload")
 
 		// Assert
-		await expect(page.getByText("Allowed file extension")).toBeVisible({ timeout: 5000 })
+		await expect(page.getByText("Allowed file extension", { exact: true })).toBeVisible({ timeout: 5000 })
 	})
 
 	test("can toggle active state", async ({ adminSettingsPage }) => {
@@ -90,7 +90,7 @@ test.describe("Admin Settings - Submission Types", () => {
 			const currentFormat = await formatSelect.textContent()
 			if (currentFormat?.includes("Text")) {
 				await adminSettingsPage.selectContentFormat("File Upload")
-				await expect(page.getByText("Allowed file extension")).toBeVisible()
+				await expect(page.getByText("Allowed file extension", { exact: true })).toBeVisible()
 			}
 
 			// Assert — Save button must be visible (not clipped by parent overflow)
@@ -105,7 +105,7 @@ test.describe("Admin Settings - Submission Types", () => {
 		// Arrange — a TEXT type switched to FILE starts with no extension selected
 		await adminSettingsPage.expandSubmissionType("Poster")
 		await adminSettingsPage.selectContentFormat("File Upload")
-		await expect(page.getByText("Allowed file extension")).toBeVisible()
+		await expect(page.getByText("Allowed file extension", { exact: true })).toBeVisible()
 
 		// Assert — empty-state message shown before any radio is picked
 		await expect(
@@ -291,7 +291,7 @@ test.describe("Admin Settings - Submission Validation", () => {
 
 		// Assert
 		await expect(adminSettingsPage.getMaxFileSizeInput()).toBeVisible()
-		await expect(page.getByText("Allowed file extension")).toBeVisible()
+		await expect(page.getByText("Allowed file extension", { exact: true })).toBeVisible()
 	})
 
 	test("does not show max authors setting", async ({ page }) => {

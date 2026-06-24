@@ -41,15 +41,15 @@ test.describe.serial("File requirement", () => {
 
 		// Upload a valid file...
 		const fileInput = submissionPage.page.locator('input[type="file"]');
-		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.pdf"));
+		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.docx"));
 		await expect(
-			submissionPage.page.getByText("document.pdf"),
+			submissionPage.page.getByText("document.docx"),
 		).toBeVisible();
 
 		// ...then remove it before submitting.
 		await submissionPage.page.getByTestId("remove-file-button").click();
 		await expect(
-			submissionPage.page.getByText("document.pdf"),
+			submissionPage.page.getByText("document.docx"),
 		).toBeHidden();
 
 		await submissionPage.submitButton.click();
@@ -69,14 +69,14 @@ test.describe.serial("File requirement", () => {
 		await submissionPage.fillTitle(`${testRun.testRunId}_Spoofed Remove Paper`);
 		await submissionPage.fillAuthor(0, VALID_SUBMISSION.authors[0]);
 
-		// spoofed.pdf has a valid .pdf name but invalid content — the client accepts it.
+		// spoofed.docx has a valid .docx name but invalid content — the client accepts it.
 		const fileInput = submissionPage.page.locator('input[type="file"]');
-		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "spoofed.pdf"));
-		await expect(submissionPage.page.getByText("spoofed.pdf")).toBeVisible();
+		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "spoofed.docx"));
+		await expect(submissionPage.page.getByText("spoofed.docx")).toBeVisible();
 
 		// Remove it before submitting → no file remains.
 		await submissionPage.page.getByTestId("remove-file-button").click();
-		await expect(submissionPage.page.getByText("spoofed.pdf")).toBeHidden();
+		await expect(submissionPage.page.getByText("spoofed.docx")).toBeHidden();
 
 		await submissionPage.submitButton.click();
 
@@ -162,8 +162,8 @@ test.describe.serial("File requirement", () => {
 		await expect(submitButton).toBeDisabled();
 
 		const fileInput = page.locator('input[type="file"]');
-		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.pdf"));
-		await expect(page.getByText("document.pdf").first()).toBeVisible();
+		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.docx"));
+		await expect(page.getByText("document.docx").first()).toBeVisible();
 
 		await expect(submitButton).toBeEnabled();
 	});

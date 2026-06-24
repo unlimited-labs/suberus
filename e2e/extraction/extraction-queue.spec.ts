@@ -1,5 +1,8 @@
 import path from "path";
-import { setAppSetting } from "../helpers/test-db";
+import {
+	setAppSetting,
+	setFullPaperAllowedExtensions,
+} from "../helpers/test-db";
 import {
 	test,
 	expect,
@@ -39,12 +42,19 @@ test.describe("Extraction Queue", () => {
 		// up to 60s; the default 30s test budget silently capped the wait below the
 		// pipeline's real latency. Lift the test budget so the whole round-trip fits.
 		test.setTimeout(150_000);
-		await extractionPage.gotoFullPaperForm();
-		await extractionPage.uploadFile(SAMPLE_PDF);
+		// Full Paper is DOCX-only by default; switch it to PDF for this test
+		// (single allowed extension per type — can't accept both at once).
+		const { restore } = await setFullPaperAllowedExtensions(["pdf"]);
+		try {
+			await extractionPage.gotoFullPaperForm();
+			await extractionPage.uploadFile(SAMPLE_PDF);
 
-		await expect(extractionPage.titleInput).not.toHaveValue("", {
-			timeout: 120_000,
-		});
+			await expect(extractionPage.titleInput).not.toHaveValue("", {
+				timeout: 120_000,
+			});
+		} finally {
+			await restore();
+		}
 	});
 
 	test("DOCX extraction fills author fields", async ({ extractionPage }) => {

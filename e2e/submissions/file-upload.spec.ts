@@ -50,7 +50,9 @@ test.describe.serial("File Upload", () => {
 		await expect(submissionPage.contentInput).toBeVisible();
 	});
 
-	test("valid PDF accepted", async ({ submissionPage }) => {
+	test("PDF rejected (Full Paper accepts DOCX only)", async ({
+		submissionPage,
+	}) => {
 		// Arrange
 		await submissionPage.goto();
 		await submissionPage.selectType("FULL_PAPER");
@@ -59,9 +61,9 @@ test.describe.serial("File Upload", () => {
 		const fileInput = submissionPage.page.locator('input[type="file"]');
 		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.pdf"));
 
-		// Assert - file name shown in dropzone
+		// Assert - client rejects by extension; only DOCX is allowed
 		await expect(
-			submissionPage.page.getByText("document.pdf"),
+			submissionPage.page.getByText(/File type \.pdf not accepted/i),
 		).toBeVisible();
 	});
 
@@ -123,11 +125,11 @@ test.describe.serial("File Upload", () => {
 			`${testRun.testRunId}_File Upload Test Paper`,
 		);
 
-		// Upload PDF
+		// Upload DOCX
 		const fileInput = submissionPage.page.locator('input[type="file"]');
-		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.pdf"));
+		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.docx"));
 		await expect(
-			submissionPage.page.getByText("document.pdf"),
+			submissionPage.page.getByText("document.docx"),
 		).toBeVisible();
 
 		// Fill author
@@ -160,7 +162,7 @@ test.describe.serial("File Upload", () => {
 		);
 
 		const fileInput = submissionPage.page.locator('input[type="file"]');
-		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.pdf"));
+		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.docx"));
 
 		await submissionPage.fillAuthor(0, VALID_SUBMISSION.authors[0]);
 		await submissionPage.addKeyword("file-detail");
@@ -172,7 +174,7 @@ test.describe.serial("File Upload", () => {
 
 		// Assert - file info visible on detail page (doesn't depend on load event)
 		await expect(
-			submissionPage.page.getByText("document.pdf"),
+			submissionPage.page.getByText("document.docx"),
 		).toBeVisible({ timeout: 60000 });
 		await expect(
 			submissionPage.page.getByTestId("file-download-button"),
@@ -203,7 +205,7 @@ test.describe.serial("File Upload", () => {
 
 /**
  * Security: the client `accept` filter only checks the file name extension, so
- * a malicious file named `.pdf` slips past it. The server must reject by magic
+ * a malicious file named `.docx` slips past it. The server must reject by magic
  * number (real content), not by the forgeable name/mime. These tests upload
  * spoofed files that the client accepts but the server must refuse.
  */
@@ -217,7 +219,7 @@ test.describe.serial("File Upload — server-side magic-number validation", () =
 		await submissionPage.selectType("FULL_PAPER");
 		await submissionPage.fillTitle(`${testRunId}_${fixture}`);
 
-		// Client accepts it because the name ends in `.pdf`
+		// Client accepts it because the name ends in `.docx`
 		const fileInput = submissionPage.page.locator('input[type="file"]');
 		await fileInput.setInputFiles(path.join(FIXTURES_DIR, fixture));
 		await expect(submissionPage.page.getByText(fixture)).toBeVisible();
@@ -230,12 +232,12 @@ test.describe.serial("File Upload — server-side magic-number validation", () =
 		await submissionPage.submit();
 	}
 
-	test("rejects text content disguised as .pdf", async ({
+	test("rejects text content disguised as .docx", async ({
 		submissionPage,
 		testRun,
 	}) => {
 		test.slow();
-		await submitSpoofedFile(submissionPage, testRun.testRunId, "spoofed.pdf");
+		await submitSpoofedFile(submissionPage, testRun.testRunId, "spoofed.docx");
 
 		// Server refused the upload despite the .pdf name; nothing was created.
 		await expect(
@@ -244,12 +246,12 @@ test.describe.serial("File Upload — server-side magic-number validation", () =
 		await expect(submissionPage.page).toHaveURL(/\/submissions\/new/);
 	});
 
-	test("rejects an image disguised as .pdf", async ({
+	test("rejects an image disguised as .docx", async ({
 		submissionPage,
 		testRun,
 	}) => {
 		test.slow();
-		await submitSpoofedFile(submissionPage, testRun.testRunId, "image.pdf");
+		await submitSpoofedFile(submissionPage, testRun.testRunId, "image.docx");
 
 		// Server refused the upload despite the .pdf name; nothing was created.
 		await expect(

@@ -1,10 +1,20 @@
 import { test, expect } from "../helpers/base-fixtures";
+import {
+	ensureSeededSurveyQuestions,
+	getTestUserIds,
+} from "../helpers/test-db";
 
 test.describe("User Settings - Survey", () => {
 	// Survey save sends ALL answers — parallel tests overwrite each other
 	test.describe.configure({ mode: "serial" });
 
 	test.beforeEach(async ({ page }) => {
+		// The seeded survey questions are global rows shared across projects on a
+		// worker DB; a sibling spec can leave one missing/inactive (e.g. "Dietary
+		// requirements" vanished under load). Re-assert them before each test.
+		const { testUserId } = await getTestUserIds();
+		await ensureSeededSurveyQuestions(testUserId);
+
 		// Arrange — navigate to profile
 		await page.goto("/profile");
 		await expect(
