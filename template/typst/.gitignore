@@ -1,0 +1,2 @@
+# compiled output (reproducible via `typst compile`)
+*.pdf
