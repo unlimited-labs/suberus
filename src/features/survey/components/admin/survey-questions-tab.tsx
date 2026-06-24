@@ -2,8 +2,6 @@ import {
 	closestCenter,
 	DndContext,
 	type DragEndEvent,
-	DragOverlay,
-	type DragStartEvent,
 	KeyboardSensor,
 	PointerSensor,
 	useSensor,
@@ -62,7 +60,6 @@ interface SurveyQuestionRowProps {
 	onEdit: () => void;
 	onToggleActive: (active: boolean) => void;
 	onDelete: () => void;
-	isDragOverlay?: boolean;
 }
 
 function SurveyQuestionRow({
@@ -71,7 +68,6 @@ function SurveyQuestionRow({
 	onEdit,
 	onToggleActive,
 	onDelete,
-	isDragOverlay = false,
 }: SurveyQuestionRowProps) {
 	const {
 		attributes,
@@ -80,30 +76,25 @@ function SurveyQuestionRow({
 		transform,
 		transition,
 		isDragging,
-	} = useSortable({ id: question.id, animateLayoutChanges: () => false });
+	} = useSortable({ id: question.id });
 	const TypeIcon = TYPE_META[question.type].icon;
 
 	return (
 		<div
-			ref={isDragOverlay ? undefined : setNodeRef}
-			style={
-				isDragOverlay
-					? undefined
-					: { transform: CSS.Transform.toString(transform), transition }
-			}
+			ref={setNodeRef}
+			style={{ transform: CSS.Transform.toString(transform), transition }}
 			data-testid="question-row"
 			className={cn(
 				"flex items-center gap-3 rounded-lg border bg-card p-3",
-				isDragging && "opacity-50",
-				isDragOverlay && "shadow-lg",
+				isDragging && "relative z-10 opacity-80 shadow-lg",
 			)}
 		>
 			<button
 				type="button"
 				className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
 				aria-label="Reorder question"
-				{...(isDragOverlay ? {} : attributes)}
-				{...(isDragOverlay ? {} : listeners)}
+				{...attributes}
+				{...listeners}
 			>
 				<IconGripVertical className="size-4" />
 			</button>
@@ -114,7 +105,7 @@ function SurveyQuestionRow({
 
 			<button
 				type="button"
-				onClick={() => !isDragOverlay && onEdit()}
+				onClick={onEdit}
 				className="min-w-0 flex-1 text-left"
 			>
 				<p className="truncate text-sm font-medium">{question.label}</p>
@@ -138,7 +129,7 @@ function SurveyQuestionRow({
 			<Button
 				variant="ghost"
 				size="icon-sm"
-				onClick={() => !isDragOverlay && onEdit()}
+				onClick={onEdit}
 				disabled={isBusy}
 				aria-label="Edit question"
 			>
@@ -161,7 +152,7 @@ function SurveyQuestionRow({
 			<Button
 				variant="ghost"
 				size="icon-sm"
-				onClick={() => !isDragOverlay && onDelete()}
+				onClick={onDelete}
 				disabled={isBusy}
 				className="text-destructive hover:text-destructive"
 				aria-label="Delete question"
@@ -184,7 +175,6 @@ export function SurveyQuestionsTab({
 	} | null>(null);
 	const [deleting, setDeleting] = useState<SurveyQuestion | null>(null);
 	const [busyId, setBusyId] = useState<string | null>(null);
-	const [activeId, setActiveId] = useState<string | null>(null);
 
 	const sensors = useSensors(
 		useSensor(PointerSensor),
@@ -314,7 +304,6 @@ export function SurveyQuestionsTab({
 	};
 
 	const handleDragEnd = async (event: DragEndEvent) => {
-		setActiveId(null);
 		const { active, over } = event;
 		if (!over || active.id === over.id) return;
 
@@ -339,11 +328,6 @@ export function SurveyQuestionsTab({
 		}
 	};
 
-	const handleDragStart = (event: DragStartEvent) =>
-		setActiveId(event.active.id.toString());
-
-	const activeQuestion = questions.find((q) => q.id === activeId) ?? null;
-
 	return (
 		<div className="space-y-6">
 			<SettingsSection
@@ -360,9 +344,7 @@ export function SurveyQuestionsTab({
 						<DndContext
 							sensors={sensors}
 							collisionDetection={closestCenter}
-							onDragStart={handleDragStart}
 							onDragEnd={handleDragEnd}
-							onDragCancel={() => setActiveId(null)}
 						>
 							<SortableContext
 								items={questions.map((q) => q.id)}
@@ -383,18 +365,6 @@ export function SurveyQuestionsTab({
 									))}
 								</div>
 							</SortableContext>
-							<DragOverlay dropAnimation={null}>
-								{activeQuestion && (
-									<SurveyQuestionRow
-										question={activeQuestion}
-										isBusy={false}
-										onEdit={() => {}}
-										onToggleActive={() => {}}
-										onDelete={() => {}}
-										isDragOverlay
-									/>
-								)}
-							</DragOverlay>
 						</DndContext>
 					)}
 
