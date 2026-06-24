@@ -11,6 +11,7 @@ interface AppLayoutProps {
 	logoDarkInvert: boolean;
 	scheduleStatus?: string;
 	exhibitorsEnabled: boolean;
+	feeEnabled: boolean;
 }
 
 export function AppLayout({
@@ -21,6 +22,7 @@ export function AppLayout({
 	logoDarkInvert,
 	scheduleStatus,
 	exhibitorsEnabled,
+	feeEnabled,
 }: AppLayoutProps) {
 	return (
 		<div className="flex h-screen bg-sidebar">
@@ -30,6 +32,7 @@ export function AppLayout({
 				logoDarkInvert={logoDarkInvert}
 				scheduleStatus={scheduleStatus}
 				exhibitorsEnabled={exhibitorsEnabled}
+				feeEnabled={feeEnabled}
 			/>
 			<div className="flex flex-1 flex-col overflow-hidden">
 				<div className="flex h-14 items-center px-3 md:hidden">
@@ -39,6 +42,7 @@ export function AppLayout({
 						logoDarkInvert={logoDarkInvert}
 						scheduleStatus={scheduleStatus}
 						exhibitorsEnabled={exhibitorsEnabled}
+						feeEnabled={feeEnabled}
 					/>
 					<BrandLogo
 						horizontal

@@ -24,6 +24,7 @@ interface SidebarProps {
 	 * the planner/exhibitors features. */
 	scheduleStatus?: string;
 	exhibitorsEnabled: boolean;
+	feeEnabled: boolean;
 }
 
 function SidebarContent({
@@ -32,6 +33,7 @@ function SidebarContent({
 	logoDarkInvert,
 	scheduleStatus,
 	exhibitorsEnabled,
+	feeEnabled,
 }: SidebarProps) {
 	const location = useLocation();
 	const { user } = useSession();
@@ -48,11 +50,12 @@ function SidebarContent({
 					items: section.items.filter(
 						(item) =>
 							(!item.requiresPublishedSchedule || programVisible) &&
-							(!item.requiresExhibitorsEnabled || exhibitorsEnabled),
+							(!item.requiresExhibitorsEnabled || exhibitorsEnabled) &&
+							(!item.requiresFeeEnabled || feeEnabled),
 					),
 				}))
 				.filter((section) => section.items.length > 0),
-		[role, programVisible, exhibitorsEnabled],
+		[role, programVisible, exhibitorsEnabled, feeEnabled],
 	);
 
 	return (

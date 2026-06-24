@@ -149,6 +149,7 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	SUBMISSION_TYPE_FULL_PAPER: DEFAULT_FULL_PAPER_CONFIG,
 	SUBMISSION_TYPE_EXHIBITOR: DEFAULT_EXHIBITOR_CONFIG,
 
+	FEE_ENABLED: true,
 	FEE_PAYMENT_INSTRUCTIONS:
 		"# Payment Instructions\n\nPlease contact the conference organizer for payment details.",
 	FEE_CURRENCY: "EUR",

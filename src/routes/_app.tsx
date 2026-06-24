@@ -6,7 +6,10 @@ import { authRouteMiddleware } from "@/features/auth/server/middleware";
 import { exhibitorSignupAvailableQueryOptions } from "@/features/exhibitors/api/exhibitors";
 import { scheduleStateQueryOptions } from "@/features/planner/api/schedule";
 import type { AppBranding } from "@/features/settings/api/settings";
-import { getAppBrandingFn } from "@/features/settings/api/settings";
+import {
+	feeEnabledQueryOptions,
+	getAppBrandingFn,
+} from "@/features/settings/api/settings";
 import { APP_SETTINGS_DEFAULTS } from "@/features/settings/defaults";
 import { AppLayout } from "@/shared/components/layout/app-layout";
 import { SpinnerSvg } from "@/shared/components/spinner-svg";
@@ -89,6 +92,7 @@ function AppLayoutRoute() {
 	const { data: exhibitorsEnabled } = useQuery(
 		exhibitorSignupAvailableQueryOptions(),
 	);
+	const { data: feeEnabled } = useQuery(feeEnabledQueryOptions());
 
 	useEffect(() => {
 		if (!isPending && !user) {
@@ -124,6 +128,7 @@ function AppLayoutRoute() {
 					logoDarkInvert={branding.logoDarkInvert}
 					scheduleStatus={scheduleState?.status}
 					exhibitorsEnabled={exhibitorsEnabled === true}
+					feeEnabled={feeEnabled !== false}
 				>
 					<Outlet />
 				</AppLayout>

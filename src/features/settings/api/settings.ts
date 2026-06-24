@@ -889,6 +889,21 @@ export const updateReminderSettingsFn = createServerFn({ method: "POST" })
 
 // Fee types & currency
 
+export const feeEnabledQueryOptions = () =>
+	queryOptions({
+		queryKey: ["settings", "fee-enabled"],
+		queryFn: () => getFeeEnabledFn(),
+	});
+
+/**
+ * Get whether the fee feature is enabled (requires auth — gates the user Fee nav item)
+ */
+export const getFeeEnabledFn = createServerFn({ method: "GET" })
+	.middleware([authMiddleware])
+	.handler(async () => {
+		return getSetting("FEE_ENABLED");
+	});
+
 export const feeTypesQueryOptions = () =>
 	queryOptions({
 		queryKey: ["settings", "fee-types"],

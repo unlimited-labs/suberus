@@ -82,6 +82,7 @@ export type AppSettingsMap = {
 	SUBMISSION_TYPE_FULL_PAPER: SubmissionTypeConfig;
 	SUBMISSION_TYPE_EXHIBITOR: SubmissionTypeConfig;
 
+	FEE_ENABLED: boolean;
 	FEE_PAYMENT_INSTRUCTIONS: string;
 	FEE_CURRENCY: "EUR" | "USD" | "PLN";
 	FEE_TYPES: Array<{ id: string; name: string; amount: number }>;

@@ -10,7 +10,10 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { paymentInstructionsQueryOptions } from "@/features/fee/api/fee";
 import {
+	adminSettingQueryOptions,
+	feeEnabledQueryOptions,
 	feeTypesQueryOptions,
+	setSettingFn,
 	updateFeeInstructionsFn,
 	updateFeeTypesFn,
 } from "@/features/settings/api/settings";
@@ -20,6 +23,7 @@ import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Markdown, MarkdownHint } from "@/shared/ui/markdown";
+import { Switch } from "@/shared/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Textarea } from "@/shared/ui/textarea";
 
@@ -30,17 +34,20 @@ interface FeeType {
 }
 
 interface FeeTabProps {
+	initialEnabled: boolean;
 	initialInstructions: string;
 	initialFeeTypes: FeeType[];
 	currency: string;
 }
 
 export function FeeTab({
+	initialEnabled,
 	initialInstructions,
 	initialFeeTypes,
 	currency,
 }: FeeTabProps) {
 	const queryClient = useQueryClient();
+	const [enabled, setEnabled] = useState(initialEnabled);
 	const [content, setContent] = useState(initialInstructions);
 	const [isSavingInstructions, setIsSavingInstructions] = useState(false);
 	const [feeTypes, setFeeTypes] = useState<FeeType[]>(initialFeeTypes);
@@ -53,6 +60,25 @@ export function FeeTab({
 	const [showAddForm, setShowAddForm] = useState(false);
 	const [newName, setNewName] = useState("");
 	const [newAmount, setNewAmount] = useState("");
+
+	const handleToggleEnabled = async (checked: boolean) => {
+		setEnabled(checked);
+		try {
+			await setSettingFn({ data: { key: "FEE_ENABLED", value: checked } });
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: adminSettingQueryOptions("FEE_ENABLED").queryKey,
+				}),
+				queryClient.invalidateQueries({
+					queryKey: feeEnabledQueryOptions().queryKey,
+				}),
+			]);
+			toast.success(checked ? "Fee enabled" : "Fee disabled");
+		} catch (error) {
+			setEnabled(!checked);
+			toast.error(getErrorMessage(error, "Failed to update fee setting"));
+		}
+	};
 
 	const handleSaveInstructions = async () => {
 		setIsSavingInstructions(true);
@@ -131,6 +157,23 @@ export function FeeTab({
 
 	return (
 		<div className="space-y-6">
+			<SettingsSection
+				icon={IconCash}
+				title="Fee"
+				description="Show the Fee page to participants"
+			>
+				<div className="flex items-center justify-between">
+					<Label htmlFor="fee-enabled" className="font-medium">
+						Fee enabled
+					</Label>
+					<Switch
+						id="fee-enabled"
+						checked={enabled}
+						onCheckedChange={handleToggleEnabled}
+					/>
+				</div>
+			</SettingsSection>
+
 			<SettingsSection
 				icon={IconCash}
 				title="Fee Types"

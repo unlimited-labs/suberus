@@ -96,6 +96,9 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			context.queryClient.ensureQueryData(
 				adminSettingQueryOptions("INVITATION_VALIDITY_HOURS"),
 			),
+			context.queryClient.ensureQueryData(
+				adminSettingQueryOptions("FEE_ENABLED"),
+			),
 			context.queryClient.ensureQueryData(feeTypesQueryOptions()),
 			context.queryClient.ensureQueryData(feeCurrencyQueryOptions()),
 			context.queryClient.ensureQueryData(
@@ -169,6 +172,9 @@ function AdminSettingsPage() {
 	);
 	const { data: invitationValidityHours } = useSuspenseQuery(
 		adminSettingQueryOptions("INVITATION_VALIDITY_HOURS"),
+	);
+	const { data: feeEnabled } = useSuspenseQuery(
+		adminSettingQueryOptions("FEE_ENABLED"),
 	);
 	const { data: feeTypes } = useSuspenseQuery(feeTypesQueryOptions());
 	const { data: feeCurrency } = useSuspenseQuery(feeCurrencyQueryOptions());
@@ -278,6 +284,7 @@ function AdminSettingsPage() {
 
 						<TabsContent value="fee">
 							<FeeTab
+								initialEnabled={feeEnabled as boolean}
 								initialInstructions={feeInstructions}
 								initialFeeTypes={
 									feeTypes as Array<{

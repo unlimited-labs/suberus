@@ -24,6 +24,7 @@ export interface NavItem {
 	external?: boolean; // open in new tab
 	requiresPublishedSchedule?: boolean; // only show when program is published
 	requiresExhibitorsEnabled?: boolean; // only show when the exhibitors feature is on
+	requiresFeeEnabled?: boolean; // only show when the fee feature is on
 }
 
 export interface NavSection {
@@ -55,7 +56,12 @@ export const navigationSections: NavSection[] = [
 				icon: IconBuildingStore,
 				roles: ["EXHIBITOR"],
 			},
-			{ name: "Fee", href: "/fee", icon: IconCash },
+			{
+				name: "Fee",
+				href: "/fee",
+				icon: IconCash,
+				requiresFeeEnabled: true,
+			},
 			{
 				name: "Reviews",
 				href: "/reviews",
