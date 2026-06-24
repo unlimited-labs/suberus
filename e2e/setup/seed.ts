@@ -216,6 +216,7 @@ async function seed() {
 				orderIndex: 3,
 				isActive: true,
 				isRequired: true,
+				allowOther: true,
 				options: ["Oral", "Poster", "Workshop"],
 			},
 		});
@@ -238,6 +239,7 @@ async function seed() {
 				orderIndex: 4,
 				isActive: true,
 				isRequired: false,
+				allowOther: true,
 				options: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
 			},
 		});
