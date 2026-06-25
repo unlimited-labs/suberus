@@ -57,7 +57,7 @@ Settings tabs deep-link via `?tab=<id>`.
 - [x] **19** — `managing/submissions.mdx` — *Submission detail — Content tab with version selector* — `/admin/submissions/<id>`
 - [x] **20** — `managing/reviews.mdx` — *Assign reviewer dialog* (open) — `/admin/submissions/<id>` → Assign reviewer
 - [x] **21** — `managing/users.mdx` — *Users list* (columns + survey columns) — `/admin/users`
-- [x] **22** — `managing/users.mdx` — *User detail actions* (incl. Allow late submission) — `/admin/users/<id>`
+- [x] **22** — `managing/users.mdx` — *User detail* (header + ⋯ actions, contact/account/fee cards) — `/admin/users/<id>`
 - [x] **23** — `managing/users.mdx` — *User submissions panel* — `/admin/users/<id>`
 - [x] **24** — `managing/invitations.mdx` — *Invitations list* — `/admin/invitations`
 - [x] **25** — `planner/overview.mdx` — *Program Planner calendar* (rooms × days) — `/admin/program-planner`
@@ -82,6 +82,6 @@ Settings tabs deep-link via `?tab=<id>`.
 - **03 (installer):** only reachable before the system is installed; capture on a fresh DB / e2e instance.
 - **14 (ToS):** switch to the **Preview** tab, not Edit.
 - **19, 20, 26, 27:** open a specific submission (version selector / open dialog / DOCX upload / history section).
-- **22, 23:** open a specific user; **22** needs the action area (incl. *Allow late submission*).
+- **22, 23:** open a specific user; **22** shows the header + info cards (actions live in the **⋯** menu), **23** the submissions panel.
 - **30 (autoplan):** needs the LLM + clustering services reachable (`LLM_API_URL`, `PLANNER_API_URL`); the test skips itself if either is down. Captures the *result preview*, not the transient stage screen.
 - **32 (public program):** publishes the schedule via the `setSchedulePublished(true)` helper, captures `/program`, then restores draft.
