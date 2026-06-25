@@ -44,6 +44,8 @@ Settings tabs deep-link via `?tab=<id>`.
 - [x] **13** — `configuration/survey.mdx` — *Survey tab* (question list) — `/admin/settings?tab=survey`
 - [x] **14** — `configuration/terms-of-service.mdx` — *Terms of Service tab, **Preview** mode* — `/admin/settings?tab=tos`
 - [x] **15** — `configuration/invitations.mdx` — *Invitations tab* (validity hours) — `/admin/settings?tab=invitations`
+- [x] **38** — `configuration/conference.mdx` — *Exhibitors section on the Conference tab* (3 toggles) — `/admin/settings?tab=conference` *(needs exhibitors enabled — done in seed)*
+- [x] **40** — `configuration/survey.mdx` — *Import template dialog* — `/admin/settings?tab=survey` → **Import template**
 
 *(`configuration/roles-and-permissions.mdx` has no screenshot — tables only.)*
 
@@ -65,6 +67,12 @@ Settings tabs deep-link via `?tab=<id>`.
 - [x] **27** — `managing/activity-log.mdx` — *Activity history on a submission* — `/admin/submissions/<id>` → history section
 - [x] **33** — `managing/bulk-email.mdx` — *Email campaigns composer* (recipients, format, body, placeholders) — `/admin/bulk-email/<id>`
 - [x] **34** — `managing/submissions.mdx` — *Version compare — side-by-side, highlighted diff* — `/admin/submissions/<id>/compare?view=split`
+- [x] **35** — `managing/exhibitors.mdx` — *Exhibitors list* — `/admin/exhibitors`
+- [x] **36** — `managing/exhibitors.mdx` — *Exhibitor detail* (Company/Package, Contact, Decision) — `/admin/exhibitors/<id>`
+- [x] **37** — `managing/exhibitors.mdx` — *Approve dialog with reason* — `/admin/exhibitors/<id>` → **Approve**
+- [x] **39** — `managing/reviews.mdx` — *Reviewer Compare versions page, side-by-side* — `/reviews/<assignmentId>/compare?view=split` *(reviewer-authenticated)*
+- [x] **41** — `managing/bulk-email.mdx` — *Recipient selection — rows ticked, Bulk actions → Send email* — `/admin/users`
+- [x] **42** — `managing/exhibitors.mdx` — *Registration account-type choice* (Participant / Author vs Exhibitor) — `/register` *(guest context; needs exhibitors enabled)*
 
 ---
 
@@ -85,3 +93,6 @@ Settings tabs deep-link via `?tab=<id>`.
 - **22, 23:** open a specific user; **22** shows the header + info cards (actions live in the **⋯** menu), **23** the submissions panel.
 - **30 (autoplan):** needs the LLM + clustering services reachable (`LLM_API_URL`, `PLANNER_API_URL`); the test skips itself if either is down. Captures the *result preview*, not the transient stage screen.
 - **32 (public program):** publishes the schedule via the `setSchedulePublished(true)` helper, captures `/program`, then restores draft.
+- **35–38 (exhibitors):** the seed enables the exhibitor feature (`SUBMISSION_TYPE_EXHIBITOR.isActive`) and creates a few applications; **37** opens the Approve dialog but does **not** confirm (the exhibitor stays pending). **38** element-shoots the *Exhibitors* card on the Conference tab.
+- **39 (reviewer compare):** runs in a **reviewer-authenticated** context (`e2e/.auth/reviewer-<worker>.json`), not admin; the seed gives the reviewer an assignment on the two-version paper.
+- **01 (login) & 42 (registration):** guest-only screens — the manual context must pass `storageState: { cookies: [], origins: [] }`, otherwise the project's admin session redirects `/login` and `/register` to the app.

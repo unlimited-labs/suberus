@@ -1,25 +1,72 @@
 ---
 title: Exhibitors
-description: Review exhibitor applications and approve or reject them.
+description: Let companies register as exhibitors, then review and decide their applications.
 sidebar:
   order: 6
 ---
 
-import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { Aside, CardGrid, LinkCard, Steps } from '@astrojs/starlight/components';
 
-The **Exhibitors** screen lists every exhibitor account. From here you review
-company applications, open the optional presentation they submitted, and approve
-or reject completed applications.
+Exhibitors are the companies and sponsors who join your conference to represent
+themselves — a stand, a sponsor slot — rather than to submit research. Suberus handles
+them as a **separate kind of account** with their own application and a single
+approve/reject decision. They never enter peer review: an exhibitor, and the company
+presentation they may bring, live entirely on the Exhibitors screen rather than in the
+normal submission workflow.
 
-<Aside type="note" title="Where to find it">
-**Exhibitors** in the admin sidebar. Click a row to open an exhibitor's detail.
-The entry only appears when **Enable exhibitors** is on — switch it in the
-**Exhibitors** section of **[Configuration › Conference](/configuration/conference/)**.
+It's an opt-in feature with a few moving parts, so here's the whole flow before the
+screen-by-screen reference.
+
+## Turning it on
+
+Exhibitors stay hidden until you enable them. Flip **Enable exhibitors** in the
+**Exhibitors** section of **[Configuration › Conference](/configuration/conference/)** —
+two further options there let exhibitors attach a presentation and push approved
+presentations into the program planner.
+
+With the feature on, the public **registration** form grows an **account-type** choice:
+every new visitor picks whether they're joining as a **Participant / Author** or as an
+**Exhibitor**.
+
+![Account-type choice on the registration form](../../../assets/screenshots/42-managing-exhibitor-registration-choice.png)
+
+<Aside type="note">
+The choice shows only while exhibitors are enabled, and never for people arriving through
+an [invitation](/managing/invitations/) — their role is already decided.
 </Aside>
 
-🖼️ [Screenshot placeholder: Exhibitors list]
+## What happens next
 
-## The list
+<Steps>
+
+1. **The company registers** as an Exhibitor and signs in to its own panel.
+
+2. **It submits an application** — company name, website, and description — and, where you
+   allow it, attaches an optional **company presentation**.
+
+3. **You declare the package** — what was agreed with the company (see
+   [Declaring the package](#declaring-the-package)).
+
+4. **You approve or reject** the completed application with a reason. Approval also
+   accepts the attached presentation; rejection rejects it. Either way the exhibitor is
+   emailed.
+
+</Steps>
+
+Approved presentations can join the [program planner](/planner/overview/) when that option
+is on, and an exhibitor's conference fee is marked on their
+[user page](/managing/users/) just like anyone else's.
+
+## The Exhibitors screen
+
+<Aside type="note" title="Where to find it">
+**Exhibitors** in the admin sidebar (it appears once the feature is on). Click a row to
+open an exhibitor's detail.
+</Aside>
+
+![Exhibitors list](../../../assets/screenshots/35-managing-exhibitors-list.png)
+
+Every exhibitor account shows up here, one row each:
 
 | Column | What it shows |
 |---|---|
@@ -30,9 +77,9 @@ The entry only appears when **Enable exhibitors** is on — switch it in the
 | **Presentation** | The title of the linked presentation, or *No presentation*. |
 | **Fee** | The fee type when the conference fee is marked paid; "—" otherwise. |
 
-Exhibitors who have not submitted their application yet are shown muted — there
-is nothing to decide for them. Your column choices are remembered in this browser
-and restored next time you open the page.
+Accounts that haven't submitted an application yet are shown muted — there's nothing to
+decide for them. Your column choices are remembered in this browser and restored next
+time you open the page.
 
 ## The exhibitor detail
 
@@ -45,36 +92,33 @@ Opening an exhibitor shows four sections:
 | **Presentation** | When the exhibitor submitted one: title, submission status badge, authors (presenter marked), and the abstract. Otherwise *No presentation*. |
 | **Decision** | Approve/reject buttons, the recorded decision, or a note that no decision is possible yet. |
 
-🖼️ [Screenshot placeholder: Exhibitor detail]
+![Exhibitor detail](../../../assets/screenshots/36-managing-exhibitor-detail.png)
 
 ## Declaring the package
 
 The **Package** row in the Company section is filled in by you, the organizer —
 exhibitors cannot enter it themselves. Type what was agreed with the company
-(e.g. *Gold*) and click **Save**. You can set or change it at any time,
-including after the application has been decided. Clearing the field and saving
-removes the package.
+(e.g. *Gold*) and click **Save**. You can set or change it at any time, including after
+the application has been decided. Clearing the field and saving removes the package.
 
-The exhibitor sees the declared package read-only in the status card of their
-panel; nothing is shown there until you set it.
-
-🖼️ [Screenshot placeholder: Package field with Save button]
+The exhibitor sees the declared package read-only in the status card of their panel;
+nothing is shown there until you set it. The **Package** field and its **Save** button
+sit in the Company section shown above.
 
 ## Deciding an application
 
-Only **pending, completed** applications can be decided. While the application is
-not submitted, the Decision section shows *Application not completed — no decision
-possible*.
+Only **pending, completed** applications can be decided. While the application is not
+submitted, the Decision section shows *Application not completed — no decision possible*.
 
 | Action | What it does |
 |---|---|
 | **Approve** | Approves the application, automatically accepts the linked presentation (if any), and emails the exhibitor. Requires a reason (min. 3 characters). |
 | **Reject** | Rejects the application, automatically rejects the linked presentation (if any), and emails the exhibitor. Requires a reason (min. 3 characters). |
 
-🖼️ [Screenshot placeholder: Decision dialog with reason]
+![Approve dialog with reason](../../../assets/screenshots/37-managing-exhibitor-decision.png)
 
-After a decision the section shows the outcome badge together with who decided and
-when. Decisions cannot be undone.
+After a decision the section shows the outcome badge together with who decided and when.
+Decisions cannot be undone.
 
 <Aside type="caution">
 The reason you enter is recorded in the **[activity log](/managing/activity-log/)**

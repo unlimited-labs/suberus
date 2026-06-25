@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import { unified } from '@astrojs/markdown-remark';
 import starlight from '@astrojs/starlight';
+import starlightImageZoom from 'starlight-image-zoom';
 import remarkGfm from 'remark-gfm';
 
 // https://astro.build/config
@@ -14,8 +15,11 @@ export default defineConfig({
 		'/managing/program/': '/planner/overview/',
 	},
 	markdown: {
-		// remark-gfm enables GFM tables inside .mdx pages; since @astrojs/mdx 6 the
-		// MDX pipeline inherits plugins from `markdown.processor` (unified) directly.
+		// Starlight injects remark plugins via Astro's (now-deprecated)
+		// `markdown.remarkPlugins`. Setting our own `unified` processor forces the
+		// unified pipeline so those plugins actually run (the native `satteri`
+		// default would silently drop them). The deprecation notice itself comes
+		// from Starlight 0.40 and only disappears with Starlight 0.41 + Astro 7.
 		processor: unified({ remarkPlugins: [remarkGfm] }),
 	},
 	integrations: [
@@ -30,6 +34,8 @@ export default defineConfig({
 				replacesTitle: true,
 			},
 			customCss: ['./src/styles/custom.css'],
+			// Click any screenshot to open it full-screen (zoom/lightbox).
+			plugins: [starlightImageZoom()],
 			tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 3 },
 			// Show "Last updated" (from Git history) and prev/next pagination on every page.
 			lastUpdated: true,
