@@ -1,10 +1,12 @@
-import { IconMail } from "@tabler/icons-react";
+import { IconFingerprint, IconMail } from "@tabler/icons-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { AuthCard } from "@/features/auth/components/auth-card";
-import { useAppForm } from "@/shared/hooks/use-app-form";
-import { signIn } from "@/shared/lib/auth-client";
 import { loginSchema } from "@/features/auth/validations";
+import { useAppForm } from "@/shared/hooks/use-app-form";
+import { authClient, signIn } from "@/shared/lib/auth-client";
+import { Button } from "@/shared/ui/button";
 
 export const Route = createFileRoute("/_auth/login")({
 	component: LoginPage,
@@ -12,6 +14,31 @@ export const Route = createFileRoute("/_auth/login")({
 
 function LoginPage() {
 	const navigate = useNavigate();
+
+	const signInWithPasskey = useCallback(
+		async (opts?: { autoFill?: boolean }) => {
+			const res = await authClient.signIn.passkey(opts);
+			if (res?.error) {
+				// autoFill stays pending until the user picks a passkey; its abort/cancel
+				// is not a real failure, so only surface errors from the explicit button.
+				if (!opts?.autoFill) {
+					toast.error(res.error.message ?? "Passkey sign-in failed");
+				}
+				return;
+			}
+			toast.success("Logged in successfully");
+			navigate({ to: "/" });
+		},
+		[navigate],
+	);
+
+	// Conditional UI: offer passkeys in the e-mail field's autofill dropdown.
+	useEffect(() => {
+		if (typeof PublicKeyCredential === "undefined") return;
+		void PublicKeyCredential.isConditionalMediationAvailable?.().then((ok) => {
+			if (ok) void signInWithPasskey({ autoFill: true });
+		});
+	}, [signInWithPasskey]);
 
 	const form = useAppForm({
 		defaultValues: {
@@ -57,6 +84,7 @@ function LoginPage() {
 								label="E-mail"
 								type="email"
 								icon={<IconMail className="size-4" />}
+								autoComplete="username webauthn"
 							/>
 						)}
 					</form.AppField>
@@ -79,7 +107,7 @@ function LoginPage() {
 					</div>
 				</div>
 
-				<div className="mt-4">
+				<div className="mt-4 space-y-3">
 					<form.AppForm>
 						<form.SubmitButton
 							label="Sign in"
@@ -87,6 +115,17 @@ function LoginPage() {
 							className="h-9 w-full"
 						/>
 					</form.AppForm>
+
+					<Button
+						type="button"
+						variant="outline"
+						className="h-9 w-full"
+						data-testid="passkey-signin"
+						onClick={() => void signInWithPasskey()}
+					>
+						<IconFingerprint className="size-4" />
+						Sign in with passkey
+					</Button>
 				</div>
 			</form>
 

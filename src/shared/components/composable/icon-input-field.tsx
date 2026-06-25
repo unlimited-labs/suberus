@@ -1,5 +1,4 @@
 import type * as React from "react";
-
 import { FormField } from "@/shared/components/composable/form-field";
 import { useFieldError } from "@/shared/hooks/use-field-error";
 import { IconInput } from "@/shared/ui/icon-input";
@@ -11,6 +10,7 @@ interface FormIconInputFieldProps {
 	placeholder?: string;
 	disabled?: boolean;
 	description?: string;
+	autoComplete?: string;
 }
 
 export function FormIconInputField({
@@ -20,6 +20,7 @@ export function FormIconInputField({
 	placeholder,
 	disabled,
 	description,
+	autoComplete,
 }: FormIconInputFieldProps) {
 	const { field, errors, hasError } = useFieldError();
 
@@ -41,6 +42,7 @@ export function FormIconInputField({
 				onChange={(e) => field.handleChange(e.target.value)}
 				placeholder={placeholder}
 				disabled={disabled}
+				autoComplete={autoComplete}
 			/>
 		</FormField>
 	);

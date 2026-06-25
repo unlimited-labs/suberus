@@ -164,7 +164,7 @@ test.describe("Review Workflow - Reviewer Actions", () => {
 		await page.goto("/login");
 		await page.getByLabel("E-mail").fill(REVIEWER_USER.email);
 		await page.getByLabel("Password").fill(REVIEWER_USER.password);
-		await page.getByRole("button", { name: "Sign in" }).click();
+		await page.getByRole("button", { name: "Sign in", exact: true }).click();
 		await page.waitForURL("/");
 
 		const assignmentsPage = new ReviewerAssignmentsPage(page);
@@ -187,7 +187,7 @@ test.describe("Review Workflow - Reviewer Actions", () => {
 		await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 });
 		await page.getByLabel("E-mail").fill(REVIEWER_USER.email);
 		await page.getByLabel("Password").fill(REVIEWER_USER.password);
-		await page.getByRole("button", { name: "Sign in" }).click();
+		await page.getByRole("button", { name: "Sign in", exact: true }).click();
 		await page.waitForURL("/", { timeout: 30000 });
 
 		const assignmentsPage = new ReviewerAssignmentsPage(page);
@@ -215,7 +215,7 @@ test.describe("Review Workflow - Reviewer Actions", () => {
 		await page.goto("/login");
 		await page.getByLabel("E-mail").fill(REVIEWER_USER.email);
 		await page.getByLabel("Password").fill(REVIEWER_USER.password);
-		await page.getByRole("button", { name: "Sign in" }).click();
+		await page.getByRole("button", { name: "Sign in", exact: true }).click();
 		await page.waitForURL("/");
 
 		const assignmentsPage = new ReviewerAssignmentsPage(page);
@@ -242,7 +242,7 @@ test.describe("Review Workflow - Reviewer Actions", () => {
 		await page.goto("/login");
 		await page.getByLabel("E-mail").fill(REVIEWER_USER.email);
 		await page.getByLabel("Password").fill(REVIEWER_USER.password);
-		await page.getByRole("button", { name: "Sign in" }).click();
+		await page.getByRole("button", { name: "Sign in", exact: true }).click();
 		await page.waitForURL("/");
 
 		const assignmentsPage = new ReviewerAssignmentsPage(page);

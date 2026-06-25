@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { passkey } from "@better-auth/passkey";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
@@ -33,7 +34,22 @@ export const auth = betterAuth({
 	database: prismaAdapter(prisma, {
 		provider: "postgresql",
 	}),
-	plugins: [tanstackStartCookies()],
+	plugins: [
+		tanstackStartCookies(),
+		// rpName is only a label (shown in the OS passkey prompt); credential isolation
+		// is by rpID = the instance's domain, so a shared name never collides across tenants.
+		passkey({
+			rpID: new URL(env.APP_BASE_URL).hostname,
+			rpName: "Suberus",
+			origin: new URL(env.APP_BASE_URL).origin,
+			authenticatorSelection: {
+				// Allow any authenticator, but require a discoverable credential +
+				// user-verification gesture so mobile biometrics give usernameless login.
+				residentKey: "required",
+				userVerification: "required",
+			},
+		}),
+	],
 	advanced: {
 		database: {
 			generateId: () => randomUUID(),

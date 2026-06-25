@@ -23,7 +23,7 @@ export class LoginPage {
 		this.page = page
 		this.emailInput = page.getByLabel("E-mail")
 		this.passwordInput = page.getByLabel("Password")
-		this.submitButton = page.getByRole("button", { name: "Sign in" })
+		this.submitButton = page.getByRole("button", { name: "Sign in", exact: true })
 		this.heading = page.getByRole("heading", { name: "Sign in" })
 		this.registerLink = page.getByRole("link", { name: "Create one" })
 		this.forgotPasswordLink = page.getByRole("link", { name: "Forgot password?" })

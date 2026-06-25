@@ -50,6 +50,7 @@ model User {
   activityActions      ActivityLog[]         @relation("ActivityPerformer")
   submissions          Submission[]          @relation("SubmissionOwner")
   sessions             Session[]
+  passkeys             Passkey[]
   programSessionChairs ProgramSessionChair[]
   supervisedTracks     ConferenceTrack[]     @relation("TrackSupervisor")
   surveyAnswers        SurveyAnswer[]
@@ -560,6 +561,24 @@ model Verification {
 
   @@index([identifier])
   @@map("user_verifications")
+}
+
+model Passkey {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String?
+  publicKey    String
+  userId       String    @db.Uuid
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentialID String
+  counter      Int
+  deviceType   String
+  backedUp     Boolean
+  transports   String?
+  createdAt    DateTime? @default(now())
+  aaguid       String?
+
+  @@index([userId])
+  @@map("passkey")
 }
 
 model SentReminder {

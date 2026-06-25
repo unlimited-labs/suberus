@@ -17,6 +17,7 @@ import {
 	updatePersonalInfoFn,
 } from "@/features/profile/api/profile";
 import { ContactInfoSection } from "@/features/profile/components/contact-info-section";
+import { PasskeySection } from "@/features/profile/components/passkey-section";
 import { PasswordChangeSection } from "@/features/profile/components/password-change-section";
 import { PersonalInfoSection } from "@/features/profile/components/personal-info-section";
 import { SurveySection } from "@/features/profile/components/survey-section";
@@ -177,10 +178,11 @@ function SettingsPage() {
 					<SettingsSection
 						icon={IconLock}
 						title="Security"
-						description="Change your password"
+						description="Change your password and manage passkeys"
 						delay={200}
 					>
 						<PasswordChangeSection onSave={handlePasswordChange} />
+						<PasskeySection />
 					</SettingsSection>
 
 					{surveyQuestions.length > 0 && (
