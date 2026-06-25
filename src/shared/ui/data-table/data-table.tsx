@@ -156,8 +156,11 @@ export function DataTable<TData, TValue>({
 
 			{mobileCard && (
 				<div className="md:hidden space-y-3">
-					{table.getRowModel().rows?.length ? (
-						table.getRowModel().rows.map((row) => (
+					{/* Cards render the full filtered/sorted set (no pagination) — mobile
+					    scrolls instead of paging. ponytail: unbounded card render; add a
+					    mobile "load more" cap if a list ever returns thousands of rows. */}
+					{table.getSortedRowModel().rows?.length ? (
+						table.getSortedRowModel().rows.map((row) => (
 							<div key={row.id} data-testid={rowDataTestId}>
 								{mobileCard(row.original)}
 							</div>
@@ -170,7 +173,10 @@ export function DataTable<TData, TValue>({
 				</div>
 			)}
 
-			<DataTablePagination table={table} pagination={pagination} />
+			{/* Pagination drives the desktop table only; mobile cards show everything. */}
+			<div className="hidden md:block">
+				<DataTablePagination table={table} pagination={pagination} />
+			</div>
 		</div>
 	);
 }

@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { EmailVerificationBanner } from "@/shared/components/email-verification-banner";
-import { BrandLogo } from "./brand-logo";
 import { MobileSidebar, Sidebar } from "./sidebar";
 
 interface AppLayoutProps {
@@ -43,13 +42,6 @@ export function AppLayout({
 						scheduleStatus={scheduleStatus}
 						exhibitorsEnabled={exhibitorsEnabled}
 						feeEnabled={feeEnabled}
-					/>
-					<BrandLogo
-						horizontal
-						logoUrl={logoUrl}
-						logoDarkInvert={logoDarkInvert}
-						alt={conferenceName}
-						className="ml-2 h-12 w-auto object-contain"
 					/>
 				</div>
 				<main className="flex flex-1 flex-col overflow-auto bg-background shadow-lg md:m-2 md:rounded-2xl">

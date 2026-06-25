@@ -43,13 +43,13 @@ export function DataTableToolbar<TData>({
 		<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 			<div className="flex flex-1 flex-wrap items-center gap-2">
 				{searchKey && (
-					<div className="relative">
+					<div className="relative w-full sm:w-auto">
 						<IconSearch className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 						<Input
 							placeholder={searchPlaceholder}
 							value={searchValue}
 							onChange={(event) => handleSearchChange(event.target.value)}
-							className="h-8 w-[150px] pl-8 pr-8 lg:w-[250px]"
+							className="h-8 w-full pl-8 pr-8 sm:w-[150px] lg:w-[250px]"
 							data-testid="data-table-search"
 						/>
 						{searchValue && (

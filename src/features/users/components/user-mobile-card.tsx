@@ -1,84 +1,58 @@
 import { Link } from "@tanstack/react-router";
-import { formatSurveyAnswerValue } from "@/features/survey/labels";
 import { formatSubmissionRole, roleLabels } from "@/features/users/labels";
 import type { AdminUser } from "@/features/users/server/users";
-import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Card, CardContent } from "@/shared/ui/card";
-import type { SurveyListColumn } from "./columns";
 
-export function UserMobileCard({
-	user,
-	surveyColumns = [],
-}: {
-	user: AdminUser;
-	surveyColumns?: SurveyListColumn[];
-}) {
-	const { formatDate } = useDateFormat();
+export function UserMobileCard({ user }: { user: AdminUser }) {
 	return (
-		<Link to="/admin/users/$id" params={{ id: user.id }}>
-			<Card>
-				<CardContent className="p-4">
-					<div className="flex items-start justify-between">
-						<div>
-							<p className="font-medium">
+		<Link to="/admin/users/$id" params={{ id: user.id }} className="block">
+			<Card className="transition-colors active:bg-accent">
+				<CardContent className="flex flex-col gap-3 p-4">
+					<div className="flex items-start justify-between gap-3">
+						<div className="min-w-0 flex-1">
+							<p className="truncate font-semibold leading-tight">
 								{user.firstName} {user.lastName}
 							</p>
-							<p className="text-sm text-muted-foreground">{user.email}</p>
+							<p className="truncate text-xs text-muted-foreground">
+								{user.email}
+							</p>
 							{user.affiliation && (
-								<p className="text-sm text-muted-foreground">
+								<p className="truncate text-xs text-muted-foreground">
 									{user.affiliation}
 								</p>
 							)}
-							<p className="text-xs text-muted-foreground">
-								Registered {formatDate(user.createdAt)}
-							</p>
 						</div>
-						<div className="text-right">
-							<Badge variant="secondary">{roleLabels[user.role]}</Badge>
-							{user.fee?.paid ? (
-								<p className="mt-1 text-xs text-green-600">Paid</p>
-							) : (
-								<p className="mt-1 text-xs text-red-600">Unpaid</p>
-							)}
-						</div>
+						<Badge variant="secondary" className="shrink-0">
+							{roleLabels[user.role]}
+						</Badge>
 					</div>
-					{user.submissionRoles.length > 0 && (
-						<div className="mt-3 flex flex-wrap gap-1">
-							{user.submissionRoles.map((r) => (
-								<Badge
-									key={`${r.type}-${r.role}-${r.status}`}
-									variant="outline"
-									className={cn(
-										r.status === "draft" &&
-											"border-dashed text-muted-foreground",
-										r.status === "accepted" &&
-											"border-green-600 text-green-600",
-									)}
-								>
-									{formatSubmissionRole(r)}
-								</Badge>
-							))}
-						</div>
-					)}
-					{surveyColumns.length > 0 && (
-						<div className="mt-3 space-y-1">
-							{surveyColumns.map((col) => {
-								const answer = user.surveyAnswers.find(
-									(a) => a.questionId === col.id,
-								);
-								return (
-									<p key={col.id} className="text-xs text-muted-foreground">
-										<span className="font-medium">{col.header}:</span>{" "}
-										{answer
-											? formatSurveyAnswerValue(col.type, answer.value)
-											: "—"}
-									</p>
-								);
-							})}
-						</div>
-					)}
+
+					<div className="flex flex-wrap items-center gap-1.5">
+						<Badge
+							variant="outline"
+							className={cn(
+								user.fee?.paid
+									? "border-green-600 text-green-600"
+									: "border-red-600 text-red-600",
+							)}
+						>
+							{user.fee?.paid ? "Paid" : "Unpaid"}
+						</Badge>
+						{user.submissionRoles.map((r) => (
+							<Badge
+								key={`${r.type}-${r.role}-${r.status}`}
+								variant="outline"
+								className={cn(
+									r.status === "draft" && "border-dashed text-muted-foreground",
+									r.status === "accepted" && "border-green-600 text-green-600",
+								)}
+							>
+								{formatSubmissionRole(r)}
+							</Badge>
+						))}
+					</div>
 				</CardContent>
 			</Card>
 		</Link>

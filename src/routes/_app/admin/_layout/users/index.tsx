@@ -91,9 +91,7 @@ function UsersPage() {
 					getRowId={(row) => row.id}
 					rowDataTestId="user-row"
 					storageKey="admin-users"
-					mobileCard={(u) => (
-						<UserMobileCard user={u} surveyColumns={surveyColumns} />
-					)}
+					mobileCard={(u) => <UserMobileCard user={u} />}
 					initialColumnVisibility={{
 						submissionType: false,
 						submissionRole: false,

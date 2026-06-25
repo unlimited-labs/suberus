@@ -51,7 +51,7 @@ export function DataTableViewOptions<TData>({
 			}}
 		>
 			<DropdownMenuTrigger asChild>
-				<Button variant="outline" size="sm" className="h-8">
+				<Button variant="outline" size="sm" className="hidden h-8 sm:flex">
 					<IconColumns3 className="mr-2 size-4" />
 					Columns
 				</Button>

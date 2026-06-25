@@ -1,6 +1,6 @@
 import { IconExternalLink, IconMenu2 } from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { getNavigationForRole } from "@/shared/components/layout/navigation";
 import { useSession } from "@/shared/hooks/use-session";
 import { cn } from "@/shared/lib/utils";
@@ -34,7 +34,8 @@ function SidebarContent({
 	scheduleStatus,
 	exhibitorsEnabled,
 	feeEnabled,
-}: SidebarProps) {
+	onNavigate,
+}: SidebarProps & { onNavigate?: () => void }) {
 	const location = useLocation();
 	const { user } = useSession();
 	const role = user?.role ?? "AUTHOR";
@@ -105,6 +106,7 @@ function SidebarContent({
 											target="_blank"
 											rel="noopener noreferrer"
 											className={className}
+											onClick={onNavigate}
 										>
 											<item.icon className="size-5" />
 											<span className="flex-1">{item.name}</span>
@@ -113,7 +115,12 @@ function SidebarContent({
 									);
 								}
 								return (
-									<Link key={item.href} to={item.href} className={className}>
+									<Link
+										key={item.href}
+										to={item.href}
+										className={className}
+										onClick={onNavigate}
+									>
 										<item.icon className="size-5" />
 										{item.name}
 									</Link>
@@ -140,8 +147,9 @@ export function Sidebar(props: SidebarProps) {
 }
 
 export function MobileSidebar(props: SidebarProps) {
+	const [open, setOpen] = useState(false);
 	return (
-		<Sheet>
+		<Sheet open={open} onOpenChange={setOpen}>
 			<SheetTrigger asChild>
 				<Button variant="ghost" size="icon" className="md:hidden">
 					<IconMenu2 />
@@ -153,7 +161,7 @@ export function MobileSidebar(props: SidebarProps) {
 				<SheetDescription className="sr-only">
 					Main application navigation.
 				</SheetDescription>
-				<SidebarContent {...props} />
+				<SidebarContent {...props} onNavigate={() => setOpen(false)} />
 			</SheetContent>
 		</Sheet>
 	);

@@ -73,8 +73,10 @@ export class AdminUsersPage {
 	async waitForLoad() {
 		// Wait for heading (works on both desktop table and mobile cards)
 		await expect(this.heading).toBeVisible({ timeout: 10000 })
-		// Wait for table data to actually load (pagination shows non-zero page count)
-		await expect(this.page.getByText(/Page \d+ of [1-9]/)).toBeVisible({ timeout: 15000 })
+		// Wait for the table component to mount (pager renders a non-zero page count).
+		// toBeAttached, not toBeVisible: the pager is hidden on mobile (cards instead),
+		// but still in the DOM once data has loaded.
+		await expect(this.page.getByText(/Page \d+ of [1-9]/)).toBeAttached({ timeout: 15000 })
 	}
 
 	async search(query: string) {
