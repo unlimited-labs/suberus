@@ -88,6 +88,7 @@ describe("surveyQuestionFormSchema", () => {
 	const base = {
 		label: "Dietary needs",
 		type: "TEXT" as const,
+		audience: "ALL" as const,
 		isRequired: false,
 		options: [] as string[],
 		allowOther: false,
