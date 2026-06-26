@@ -103,7 +103,7 @@ export const navigationSections: NavSection[] = [
 				roles: ["ADMIN", "EDITOR"],
 			},
 			{
-				name: "Configuration",
+				name: "Settings",
 				href: "/admin/settings",
 				icon: IconAdjustments,
 				roles: ["ADMIN"],

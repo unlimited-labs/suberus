@@ -50,7 +50,7 @@ export function QuickActions() {
 				>
 					<Link to="/admin/settings">
 						<IconAdjustments className="size-5" />
-						<span className="text-sm">Configuration</span>
+						<span className="text-sm">Settings</span>
 					</Link>
 				</Button>
 				<Button

@@ -192,7 +192,7 @@ function AdminSettingsPage() {
 
 	return (
 		<div className="flex h-full flex-col">
-			<PageHeader icon={IconSettings} title="Configuration" />
+			<PageHeader icon={IconSettings} title="Settings" />
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-5xl">
 					<Tabs

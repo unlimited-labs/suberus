@@ -27,27 +27,27 @@ Settings tabs deep-link via `?tab=<id>`.
 
 ---
 
-## Part 1 — Configuration  (`/admin/settings?tab=…`)
+## Part 1 — Settings  (`/admin/settings?tab=…`)
 
-- [x] **01** — `configuration/quick-start.mdx` — *admin login screen* — `/login`
-- [x] **02** — `configuration/quick-start.mdx` — *Configuration tabs* (top bar) — `/admin/settings`
-- [x] **03** — `configuration/first-time-install.mdx` — *Setup Suberus screen* — `/install` *(fresh instance only)*
-- [x] **04** — `configuration/conference.mdx` — *Conference tab* (3 sections) — `/admin/settings?tab=conference`
-- [x] **05** — `configuration/submissions.mdx` — *Submissions tab* (validation + extraction) — `/admin/settings?tab=submissions`
-- [x] **06** — `configuration/submission-types.mdx` — *Submission Types — three accordions* — `/admin/settings?tab=types`
-- [x] **07** — `configuration/tracks.mdx` — *Tracks tab* (list + Create) — `/admin/settings?tab=tracks`
+- [x] **01** — `settings/quick-start.mdx` — *admin login screen* — `/login`
+- [x] **02** — `settings/quick-start.mdx` — *Settings tabs* (top bar) — `/admin/settings`
+- [x] **03** — `settings/first-time-install.mdx` — *Setup Suberus screen* — `/install` *(fresh instance only)*
+- [x] **04** — `settings/conference.mdx` — *Conference tab* (3 sections) — `/admin/settings?tab=conference`
+- [x] **05** — `settings/submissions.mdx` — *Submissions tab* (validation + extraction) — `/admin/settings?tab=submissions`
+- [x] **06** — `settings/submission-types.mdx` — *Submission Types — three accordions* — `/admin/settings?tab=types`
+- [x] **07** — `settings/tracks.mdx` — *Tracks tab* (list + Create) — `/admin/settings?tab=tracks`
 - [x] **08** — `planner/setup.mdx` — *Program tab* (Planner + Rooms + Program Tracks) — `/admin/settings?tab=program`
-- [x] **09** — `configuration/email-templates.mdx` — *Email Templates tab* (footer + list) — `/admin/settings?tab=emails`
-- [x] **10** — `configuration/branding.mdx` — *Branding tab* — `/admin/settings?tab=branding`
-- [x] **11** — `configuration/fee.mdx` — *Fee tab* (types + instructions) — `/admin/settings?tab=fee`
-- [x] **12** — `configuration/reminders.mdx` — *Reminders tab* (3 groups) — `/admin/settings?tab=reminders`
-- [x] **13** — `configuration/survey.mdx` — *Survey tab* (question list) — `/admin/settings?tab=survey`
-- [x] **14** — `configuration/terms-of-service.mdx` — *Terms of Service tab, **Preview** mode* — `/admin/settings?tab=tos`
-- [x] **15** — `configuration/invitations.mdx` — *Invitations tab* (validity hours) — `/admin/settings?tab=invitations`
-- [x] **38** — `configuration/conference.mdx` — *Exhibitors section on the Conference tab* (3 toggles) — `/admin/settings?tab=conference` *(needs exhibitors enabled — done in seed)*
-- [x] **40** — `configuration/survey.mdx` — *Import template dialog* — `/admin/settings?tab=survey` → **Import template**
+- [x] **09** — `settings/email-templates.mdx` — *Email Templates tab* (footer + list) — `/admin/settings?tab=emails`
+- [x] **10** — `settings/branding.mdx` — *Branding tab* — `/admin/settings?tab=branding`
+- [x] **11** — `settings/fee.mdx` — *Fee tab* (types + instructions) — `/admin/settings?tab=fee`
+- [x] **12** — `settings/reminders.mdx` — *Reminders tab* (3 groups) — `/admin/settings?tab=reminders`
+- [x] **13** — `settings/survey.mdx` — *Survey tab* (question list) — `/admin/settings?tab=survey`
+- [x] **14** — `settings/terms-of-service.mdx` — *Terms of Service tab, **Preview** mode* — `/admin/settings?tab=tos`
+- [x] **15** — `settings/invitations.mdx` — *Invitations tab* (validity hours) — `/admin/settings?tab=invitations`
+- [x] **38** — `settings/conference.mdx` — *Exhibitors section on the Conference tab* (3 toggles) — `/admin/settings?tab=conference` *(needs exhibitors enabled — done in seed)*
+- [x] **40** — `settings/survey.mdx` — *Import template dialog* — `/admin/settings?tab=survey` → **Import template**
 
-*(`configuration/roles-and-permissions.mdx` has no screenshot — tables only.)*
+*(`settings/roles-and-permissions.mdx` has no screenshot — tables only.)*
 
 ---
 

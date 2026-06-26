@@ -57,7 +57,7 @@ test.describe("Admin Dashboard", () => {
 		await expect(mainContent.getByRole("link", { name: "Export Users" })).toBeVisible();
 		await expect(mainContent.getByRole("link", { name: "Manage Users" })).toBeVisible();
 		await expect(mainContent.getByRole("link", { name: "View Submissions" })).toBeVisible();
-		await expect(mainContent.getByRole("link", { name: "Configuration" })).toBeVisible();
+		await expect(mainContent.getByRole("link", { name: "Settings" })).toBeVisible();
 	});
 
 	test("should be mobile responsive", async ({ page }) => {

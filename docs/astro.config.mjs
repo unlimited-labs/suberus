@@ -13,6 +13,21 @@ export default defineConfig({
 	redirects: {
 		'/configuration/program/': '/planner/setup/',
 		'/managing/program/': '/planner/overview/',
+		// Configuration section renamed to Settings (slug parity with /admin/settings).
+		'/configuration/quick-start/': '/settings/quick-start/',
+		'/configuration/first-time-install/': '/settings/first-time-install/',
+		'/configuration/roles-and-permissions/': '/settings/roles-and-permissions/',
+		'/configuration/conference/': '/settings/conference/',
+		'/configuration/submissions/': '/settings/submissions/',
+		'/configuration/submission-types/': '/settings/submission-types/',
+		'/configuration/tracks/': '/settings/tracks/',
+		'/configuration/email-templates/': '/settings/email-templates/',
+		'/configuration/branding/': '/settings/branding/',
+		'/configuration/fee/': '/settings/fee/',
+		'/configuration/reminders/': '/settings/reminders/',
+		'/configuration/survey/': '/settings/survey/',
+		'/configuration/terms-of-service/': '/settings/terms-of-service/',
+		'/configuration/invitations/': '/settings/invitations/',
 	},
 	markdown: {
 		// Starlight injects remark plugins via Astro's (now-deprecated)
@@ -42,31 +57,31 @@ export default defineConfig({
 			pagination: true,
 			sidebar: [
 				{
-					label: 'Configuration',
+					label: 'Settings',
 					items: [
-						{ label: 'Quick start', slug: 'configuration/quick-start' },
+						{ label: 'Quick start', slug: 'settings/quick-start' },
 						{
 							label: 'First-time install',
-							slug: 'configuration/first-time-install',
+							slug: 'settings/first-time-install',
 						},
 						{
 							label: 'Roles & permissions',
-							slug: 'configuration/roles-and-permissions',
+							slug: 'settings/roles-and-permissions',
 						},
-						{ label: 'Conference', slug: 'configuration/conference' },
-						{ label: 'Submissions', slug: 'configuration/submissions' },
-						{ label: 'Submission Types', slug: 'configuration/submission-types' },
-						{ label: 'Tracks', slug: 'configuration/tracks' },
-						{ label: 'Email Templates', slug: 'configuration/email-templates' },
-						{ label: 'Branding', slug: 'configuration/branding' },
-						{ label: 'Fee', slug: 'configuration/fee' },
-						{ label: 'Reminders', slug: 'configuration/reminders' },
-						{ label: 'Survey', slug: 'configuration/survey' },
+						{ label: 'Conference', slug: 'settings/conference' },
+						{ label: 'Submissions', slug: 'settings/submissions' },
+						{ label: 'Submission Types', slug: 'settings/submission-types' },
+						{ label: 'Tracks', slug: 'settings/tracks' },
+						{ label: 'Email Templates', slug: 'settings/email-templates' },
+						{ label: 'Branding', slug: 'settings/branding' },
+						{ label: 'Fee', slug: 'settings/fee' },
+						{ label: 'Reminders', slug: 'settings/reminders' },
+						{ label: 'Survey', slug: 'settings/survey' },
 						{
 							label: 'Terms of Service',
-							slug: 'configuration/terms-of-service',
+							slug: 'settings/terms-of-service',
 						},
-						{ label: 'Invitations', slug: 'configuration/invitations' },
+						{ label: 'Invitations', slug: 'settings/invitations' },
 					],
 				},
 				{

@@ -82,7 +82,7 @@ class AdminSettingsPage {
 	async goto() {
 		await this.page.goto("/admin/settings");
 		await this.page
-			.getByRole("heading", { name: "Configuration" })
+			.getByRole("heading", { name: "Settings" })
 			.waitFor({ state: "visible", timeout: 30000 });
 	}
 

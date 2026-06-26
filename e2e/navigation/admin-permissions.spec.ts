@@ -1,11 +1,11 @@
 import { test, expect, loginAsAdmin, loginAsEditor } from "./fixtures"
 
 // Admin vs Editor divide: editors keep Program Planner + Email campaigns but lose
-// Invitations, Configuration, and System Health. Guards are server-side (route
+// Invitations, Settings, and System Health. Guards are server-side (route
 // middleware) — direct URLs redirect editors back to the admin dashboard.
 
 test.describe("Admin vs Editor permissions", () => {
-	test("editor sees Program Planner + Email campaigns, not Invitations/Configuration", async ({
+	test("editor sees Program Planner + Email campaigns, not Invitations/Settings", async ({
 		page,
 	}) => {
 		await loginAsEditor(page)
@@ -20,7 +20,7 @@ test.describe("Admin vs Editor permissions", () => {
 			page.getByRole("link", { name: "Invitations" }),
 		).not.toBeVisible()
 		await expect(
-			page.getByRole("link", { name: "Configuration" }),
+			page.getByRole("link", { name: "Settings" }),
 		).not.toBeVisible()
 	})
 
@@ -28,7 +28,7 @@ test.describe("Admin vs Editor permissions", () => {
 		await loginAsAdmin(page)
 
 		await expect(page.getByRole("link", { name: "Invitations" })).toBeVisible()
-		await expect(page.getByRole("link", { name: "Configuration" })).toBeVisible()
+		await expect(page.getByRole("link", { name: "Settings" })).toBeVisible()
 		await expect(
 			page.getByRole("link", { name: "Program Planner" }),
 		).toBeVisible()
@@ -40,7 +40,7 @@ test.describe("Admin vs Editor permissions", () => {
 		await expect(page).toHaveURL(/\/admin\/dashboard/)
 	})
 
-	test("editor is redirected away from Configuration", async ({ page }) => {
+	test("editor is redirected away from Settings", async ({ page }) => {
 		await loginAsEditor(page)
 		await page.goto("/admin/settings")
 		await expect(page).toHaveURL(/\/admin\/dashboard/)
