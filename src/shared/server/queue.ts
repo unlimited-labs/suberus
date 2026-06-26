@@ -7,6 +7,7 @@ const QUEUES = [
 	"autoplan",
 	"bulk-email",
 	"submission-diff",
+	"document-generate",
 ] as const;
 
 let _initPromise: Promise<PgBoss> | null = null;

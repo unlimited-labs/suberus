@@ -7,6 +7,7 @@ import {
 	IconCash,
 	IconClipboardCheck,
 	IconDashboard,
+	IconFileCertificate,
 	IconFileStack,
 	IconFileText,
 	IconMailForward,
@@ -26,6 +27,7 @@ export interface NavItem {
 	requiresPublishedSchedule?: boolean; // only show when program is published
 	requiresExhibitorsEnabled?: boolean; // only show when the exhibitors feature is on
 	requiresFeeEnabled?: boolean; // only show when the fee feature is on
+	requiresDocuments?: boolean; // only show when the user has ≥1 generated document
 }
 
 export interface NavSection {
@@ -69,6 +71,12 @@ export const navigationSections: NavSection[] = [
 				icon: IconClipboardCheck,
 				roles: ["REVIEWER", "EDITOR", "ADMIN"],
 			},
+			{
+				name: "My Documents",
+				href: "/documents",
+				icon: IconFileCertificate,
+				requiresDocuments: true,
+			},
 			{ name: "Profile", href: "/profile", icon: IconUser },
 		],
 	},
@@ -89,6 +97,11 @@ export const navigationSections: NavSection[] = [
 				name: "Email campaigns",
 				href: "/admin/bulk-email",
 				icon: IconMailForward,
+			},
+			{
+				name: "Documents",
+				href: "/admin/documents",
+				icon: IconFileCertificate,
 			},
 			{
 				name: "Exhibitors",

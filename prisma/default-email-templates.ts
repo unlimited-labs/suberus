@@ -260,4 +260,15 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 		availablePlaceholders: ["firstName", "companyName", "reason", "conferenceName"],
 		description: "Sent to the exhibitor when the organizer rejects the application",
 	},
+	{
+		eventType: "DOCUMENT_GENERATED",
+		subject: "A new document is available — {{conferenceName}}",
+		body: 'Dear {{firstName}},\n\nA new document ("{{documentName}}") has been added to your account.\n\nYou can view and download it here:\n{{documentsUrl}}\n\n{{conferenceName}}',
+		isEnabled: true,
+		isHtml: false,
+		ccEmails: [],
+		bccEmails: [],
+		availablePlaceholders: ["firstName", "documentName", "documentsUrl", "conferenceName"],
+		description: "Sent to a participant when an organizer generates a document for them",
+	},
 ];

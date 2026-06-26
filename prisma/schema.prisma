@@ -58,6 +58,7 @@ model User {
   usedInvitation       Invitation?           @relation("InvitationUser")
   exhibitor            Exhibitor?            @relation("ExhibitorUser")
   decidedExhibitors    Exhibitor[]           @relation("ExhibitorDecider")
+  documents            GeneratedDocument[]   @relation("UserDocuments")
   affiliation          Affiliation?          @relation(fields: [affiliationId], references: [id])
 
   @@index([email])
@@ -861,6 +862,7 @@ enum EmailEventType {
   NEW_SUBMISSION_NOTIFY
   EXHIBITOR_APPROVED
   EXHIBITOR_REJECTED
+  DOCUMENT_GENERATED
 }
 
 enum ExhibitorStatus {
@@ -978,4 +980,73 @@ model EmailCampaignRecipient {
   @@unique([campaignId, userId])
   @@index([campaignId, status])
   @@map("email_campaign_recipient")
+}
+
+/// An admin-uploaded .docx template with `{placeholder}` tokens. The source docx
+/// lives in object storage at `storageKey`; `placeholders` are the tags detected
+/// (and validated against the registry) at upload time.
+model DocumentTemplate {
+  id           String              @id @default(uuid()) @db.Uuid
+  name         String
+  description  String?
+  storageKey   String              @unique
+  originalName String
+  size         Int
+  placeholders String[]
+  createdById  String?             @db.Uuid
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  documents    GeneratedDocument[]
+  batches      DocumentBatch[]
+
+  @@index([createdAt])
+  @@map("document_templates")
+}
+
+/// A document generated for one participant from a template. Rendered async by the
+/// `document-generate` worker: PENDING until the PDF is produced and stored at
+/// `storageKey`, then READY (or FAILED with `error`).
+model GeneratedDocument {
+  id            String            @id @default(uuid()) @db.Uuid
+  userId        String            @db.Uuid
+  templateId    String?           @db.Uuid
+  batchId       String?           @db.Uuid
+  name          String
+  status        DocumentStatus    @default(PENDING)
+  storageKey    String?           @unique
+  size          Int?
+  error         String?
+  generatedById String?           @db.Uuid
+  createdAt     DateTime          @default(now())
+  user          User              @relation("UserDocuments", fields: [userId], references: [id], onDelete: Cascade)
+  template      DocumentTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  batch         DocumentBatch?    @relation(fields: [batchId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([batchId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("generated_documents")
+}
+
+/// One bulk-generation run. Progress is derived from its rows' statuses
+/// (`groupBy status where batchId`); `total` is the row count enqueued at start.
+model DocumentBatch {
+  id          String              @id @default(uuid()) @db.Uuid
+  name        String?
+  templateId  String?             @db.Uuid
+  total       Int
+  createdById String?             @db.Uuid
+  createdAt   DateTime            @default(now())
+  template    DocumentTemplate?   @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  documents   GeneratedDocument[]
+
+  @@index([createdAt])
+  @@map("document_batches")
+}
+
+enum DocumentStatus {
+  PENDING
+  READY
+  FAILED
 }

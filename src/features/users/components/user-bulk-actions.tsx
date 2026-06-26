@@ -4,6 +4,7 @@ import type { RowSelectionState, Table } from "@tanstack/react-table";
 import { useState } from "react";
 import { toast } from "sonner";
 import { createBulkEmailDraft } from "@/features/bulk-email/api/bulk-email";
+import { BulkGenerateDialog } from "@/features/documents/components/bulk-generate-dialog";
 import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
@@ -59,6 +60,7 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 	const [selectedAction, setSelectedAction] = useState<string>("");
 	const [feeDialogOpen, setFeeDialogOpen] = useState(false);
 	const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+	const [generateDocsOpen, setGenerateDocsOpen] = useState(false);
 	const [selectedFeeTypeId, setSelectedFeeTypeId] = useState<string>(
 		feeTypes[0]?.id ?? "",
 	);
@@ -100,6 +102,8 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 			setRoleDialogOpen(true);
 		} else if (selectedAction === "send_email") {
 			emailDraftMutation.mutate(selectedRows.map((row) => row.original.id));
+		} else if (selectedAction === "generate_document") {
+			setGenerateDocsOpen(true);
 		}
 	};
 
@@ -132,6 +136,7 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 		{ value: "mark_fee", label: "Mark fee paid" },
 		...(canChangeRoles ? [{ value: "change_role", label: "Change role" }] : []),
 		{ value: "send_email", label: "Send email" },
+		{ value: "generate_document", label: "Generate document" },
 	];
 
 	return (
@@ -206,6 +211,16 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 					</SelectContent>
 				</Select>
 			</BulkActionDialog>
+
+			<BulkGenerateDialog
+				open={generateDocsOpen}
+				onOpenChange={(o) => {
+					setGenerateDocsOpen(o);
+					if (!o) setSelectedAction("");
+				}}
+				userIds={selectedRows.map((row) => row.original.id)}
+				onDone={() => table.resetRowSelection()}
+			/>
 		</>
 	);
 }

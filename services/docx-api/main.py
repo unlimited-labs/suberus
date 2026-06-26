@@ -137,6 +137,25 @@ def _soffice_to_png(src: Path, outdir: Path) -> Path:
     return png
 
 
+def _soffice_to_pdf(src: Path, outdir: Path) -> Path:
+    """Convert a DOCX to PDF via LibreOffice with an isolated profile (gotcha C5 —
+    shared profiles corrupt under concurrent convert)."""
+    profile = f"file:///tmp/lo_{uuid.uuid4().hex}"
+    try:
+        proc = _run([
+            "soffice", "--headless", "--convert-to", "pdf", "--outdir", str(outdir),
+            f"-env:UserInstallation={profile}", str(src),
+        ], timeout=SOFFICE_TIMEOUT_S)
+    except subprocess.TimeoutExpired:
+        raise HTTPException(504, f"LibreOffice timed out converting {src.name}")
+    pdf = outdir / (src.stem + ".pdf")
+    if not pdf.exists():
+        raise HTTPException(
+            500, f"LibreOffice failed to convert {src.name}: {proc.stderr.decode(errors='replace')[:200]}"
+        )
+    return pdf
+
+
 def _to_png_bytes(src: Path, workdir: Path) -> bytes:
     ext = src.suffix.lower()
     if ext in RASTER_PASSTHROUGH:
@@ -369,6 +388,32 @@ def diff(req: DiffRequest):
     if total > MAX_NORMALIZE_BYTES:
         raise HTTPException(413, "Input HTML exceeds the diff size limit")
     return {"redline": diffhtml.diff_html(req.htmlA, req.htmlB)}
+
+
+@v1.post("/render-pdf")
+async def render_pdf(file: UploadFile):
+    """Render an uploaded DOCX to PDF via LibreOffice headless. Used by the document
+    generator (the docx is produced by the Node worker from a template + data)."""
+    contents = await file.read()
+    if not contents:
+        raise HTTPException(400, "No file uploaded")
+    if len(contents) > MAX_NORMALIZE_BYTES:
+        raise HTTPException(
+            413, f"File exceeds the {MAX_NORMALIZE_BYTES // (1024 * 1024)}MB limit"
+        )
+
+    with tempfile.TemporaryDirectory() as tmp:
+        workdir = Path(tmp)
+        docx_path = workdir / (Path(file.filename or "doc.docx").name)
+        docx_path.write_bytes(contents)
+        pdf_path = _soffice_to_pdf(docx_path, workdir / "out")
+        pdf_bytes = pdf_path.read_bytes()
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": 'attachment; filename="document.pdf"'},
+    )
 
 
 app.include_router(v1)

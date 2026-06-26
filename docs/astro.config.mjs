@@ -93,6 +93,7 @@ export default defineConfig({
 						{ label: 'Reviews', slug: 'managing/reviews' },
 						{ label: 'Users', slug: 'managing/users' },
 						{ label: 'Email campaigns', slug: 'managing/bulk-email' },
+						{ label: 'Documents', slug: 'managing/documents' },
 						{ label: 'Exhibitors', slug: 'managing/exhibitors' },
 						{ label: 'Invitations', slug: 'managing/invitations' },
 						{ label: 'Extraction', slug: 'managing/extraction' },
