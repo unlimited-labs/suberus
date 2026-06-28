@@ -131,7 +131,12 @@ export async function processDocumentGeneration(
 			user: { select: { email: true, firstName: true } },
 		},
 	});
-	if (!doc) throw new Error(`GeneratedDocument ${documentId} not found`);
+	if (!doc) {
+		logger.info(
+			`[document-generate] ${documentId} gone before render — skipped`,
+		);
+		return;
+	}
 	if (!doc.template) throw new Error("Template was deleted before generation");
 
 	const { values } = await resolvePlaceholders(doc.userId);
@@ -152,7 +157,6 @@ export async function processDocumentGeneration(
 
 	// Sign when enabled. A signing failure fails the job (retry/FAILED) — we never
 	// silently deliver an unsigned doc when signing is on.
-	// ponytail: per-render S3 fetch of the small P12; cache if it shows in profiles.
 	const signing = await loadSigningMaterial();
 	let signed = false;
 	if (signing) {
