@@ -46,7 +46,7 @@ export function LogoGraphicsSection({
 						id="logoUrl"
 						value={data.logoUrl}
 						onChange={(e) => onChange("logoUrl", e.target.value)}
-						placeholder="https://example.com/logo.png"
+						placeholder="https://"
 					/>
 					{logoPreview && (
 						<div
@@ -76,7 +76,7 @@ export function LogoGraphicsSection({
 						id="faviconUrl"
 						value={data.faviconUrl}
 						onChange={(e) => onChange("faviconUrl", e.target.value)}
-						placeholder="https://example.com/favicon.ico"
+						placeholder="https://"
 					/>
 					{faviconPreview && (
 						<div
