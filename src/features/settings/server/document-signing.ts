@@ -17,6 +17,17 @@ function signingKey(): Buffer {
 	return createHash("sha256").update(env.AUTH_SECRET).digest();
 }
 
+/** Decode the stored P12 bytes and unseal its password. */
+function decodeP12(cfg: DocumentSigningSettings): {
+	p12: Buffer;
+	password: string;
+} {
+	return {
+		p12: Buffer.from(cfg.p12Base64, "base64"),
+		password: open(signingKey(), cfg.passwordSealed),
+	};
+}
+
 export async function getSigningConfig(): Promise<DocumentSigningSettings | null> {
 	return getSetting("DOCUMENT_SIGNING");
 }
@@ -131,8 +142,7 @@ export async function setAppearance(patch: {
 export async function getPublicCertPem(): Promise<string | null> {
 	const cfg = await getSigningConfig();
 	if (!cfg?.p12Base64) return null;
-	const p12 = Buffer.from(cfg.p12Base64, "base64");
-	const password = open(signingKey(), cfg.passwordSealed);
+	const { p12, password } = decodeP12(cfg);
 	const { certPem } = await inspectCertificate(p12, password);
 	return certPem;
 }
@@ -147,9 +157,7 @@ export async function loadSigningMaterial(): Promise<{
 	// Legacy rows (P12 in S3, pre-DB-storage) have no p12Base64 → treat as
 	// unconfigured; regenerating the cert repopulates it.
 	if (!cfg?.enabled || !cfg.p12Base64) return null;
-	const p12 = Buffer.from(cfg.p12Base64, "base64");
-	const password = open(signingKey(), cfg.passwordSealed);
-	return { cfg, p12, password };
+	return { cfg, ...decodeP12(cfg) };
 }
 
 export async function verifyDocument(pdf: Buffer): Promise<VerifyResult> {
