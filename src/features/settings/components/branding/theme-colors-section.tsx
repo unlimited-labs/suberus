@@ -1,7 +1,8 @@
-import { IconPalette } from "@tabler/icons-react";
+import { IconLoader2, IconPalette, IconRestore } from "@tabler/icons-react";
 import type { BrandingSettings } from "@/features/settings/api/settings";
-import { SettingsSaveButton } from "@/features/settings/components/settings-save-button";
 import { SettingsSection } from "@/features/settings/components/settings-section";
+import { APP_SETTINGS_DEFAULTS } from "@/features/settings/defaults";
+import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import type { BrandingSettingsHandleChange } from "./use-branding-settings";
@@ -19,6 +20,11 @@ export function ThemeColorsSection({
 	onSave,
 	isSaving,
 }: ThemeColorsSectionProps) {
+	const handleReset = () => {
+		onChange("primaryColor", APP_SETTINGS_DEFAULTS.BRANDING_PRIMARY_COLOR);
+		onChange("secondaryColor", APP_SETTINGS_DEFAULTS.BRANDING_SECONDARY_COLOR);
+	};
+
 	return (
 		<SettingsSection
 			icon={IconPalette}
@@ -64,7 +70,22 @@ export function ThemeColorsSection({
 					</div>
 				</div>
 			</div>
-			<SettingsSaveButton onSave={onSave} isSaving={isSaving} />
+			<div className="mt-6 flex items-center justify-between">
+				<Button
+					type="button"
+					variant="ghost"
+					size="sm"
+					onClick={handleReset}
+					disabled={isSaving}
+				>
+					<IconRestore className="mr-2 size-4" />
+					Reset to defaults
+				</Button>
+				<Button onClick={onSave} disabled={isSaving}>
+					{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
+					Save
+				</Button>
+			</div>
 		</SettingsSection>
 	);
 }
