@@ -17,16 +17,10 @@ async function openTemplateEditor(
 }
 
 test.describe("Admin Settings - Email Templates", () => {
-	test.beforeEach(async ({ adminSettingsPage }, testInfo) => {
+	test.beforeEach(async ({ adminSettingsPage }) => {
 		// Arrange
 		await adminSettingsPage.goto();
-		if (testInfo.project.name === "mobile-admin") {
-			await adminSettingsPage.page.getByRole("tab").nth(5).click();
-		} else {
-			await adminSettingsPage.page
-				.getByRole("tab", { name: /Email Templates/i })
-				.click();
-		}
+		await adminSettingsPage.page.getByTestId("settings-tab-emails").click();
 		await expect(
 			adminSettingsPage.page.getByRole("heading", {
 				name: "Email Templates",
@@ -191,16 +185,10 @@ test.describe("Admin Settings - Email Templates", () => {
 });
 
 test.describe("Admin Settings - Email Footer", () => {
-	test.beforeEach(async ({ adminSettingsPage }, testInfo) => {
+	test.beforeEach(async ({ adminSettingsPage }) => {
 		// Arrange
 		await adminSettingsPage.goto();
-		if (testInfo.project.name === "mobile-admin") {
-			await adminSettingsPage.page.getByRole("tab").nth(5).click();
-		} else {
-			await adminSettingsPage.page
-				.getByRole("tab", { name: /Email Templates/i })
-				.click();
-		}
+		await adminSettingsPage.page.getByTestId("settings-tab-emails").click();
 		await expect(
 			adminSettingsPage.page.getByRole("heading", {
 				name: "Email Templates",
@@ -233,16 +221,10 @@ test.describe("Admin Settings - Email Footer", () => {
 test.describe("Admin Settings - Placeholder Tooltips & Test Email", () => {
 	test.describe.configure({ mode: "serial" });
 
-	test.beforeEach(async ({ adminSettingsPage }, testInfo) => {
+	test.beforeEach(async ({ adminSettingsPage }) => {
 		// Arrange
 		await adminSettingsPage.goto();
-		if (testInfo.project.name === "mobile-admin") {
-			await adminSettingsPage.page.getByRole("tab").nth(5).click();
-		} else {
-			await adminSettingsPage.page
-				.getByRole("tab", { name: /Email Templates/i })
-				.click();
-		}
+		await adminSettingsPage.page.getByTestId("settings-tab-emails").click();
 		await expect(
 			adminSettingsPage.page.getByRole("heading", {
 				name: "Email Templates",

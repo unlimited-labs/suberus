@@ -119,6 +119,8 @@ export class AdminUsersPage {
 		await expect(row).toBeVisible({ timeout: 10000 })
 		await row.getByRole("button", { name: "Actions menu" }).click()
 		await this.page.getByRole("menuitem", { name: "View" }).click()
+		// Wait for the list to unmount; its rows share the "Actions menu" name.
+		await expect(this.page.getByTestId("user-row")).toHaveCount(0)
 	}
 
 	async getRowByEmail(user: { email: string; firstName: string; lastName: string }) {
@@ -232,16 +234,10 @@ export class BulkActionDialog {
 
 export class AdminSettingsPage {
 	readonly page: Page
-	readonly conferenceTab: Locator
-	readonly submissionsTab: Locator
-	readonly typesTab: Locator
 	readonly saveAllButton: Locator
 
 	constructor(page: Page) {
 		this.page = page
-		this.conferenceTab = page.getByRole("tab", { name: /Conference/i })
-		this.submissionsTab = page.getByRole("tab", { name: /Submissions$/i })
-		this.typesTab = page.getByRole("tab", { name: /Submission Types/i })
 		this.saveAllButton = page.getByRole("button", { name: "Save All Settings" })
 	}
 
@@ -254,25 +250,13 @@ export class AdminSettingsPage {
 		return this.page.getByRole("tab", { name: new RegExp(name, "i") })
 	}
 
-	async switchToSubmissionsTab(testInfo?: { project: { name: string } }) {
-		if (testInfo?.project.name === "mobile-admin") {
-			// Mobile uses nth() because tab names may be truncated
-			const tabs = this.page.getByRole("tab")
-			await tabs.nth(1).click()
-		} else {
-			await this.submissionsTab.click()
-		}
+	async switchToSubmissionsTab(_testInfo?: { project: { name: string } }) {
+		await this.page.getByTestId("settings-tab-submissions").click()
 		await expect(this.page.getByRole("heading", { name: "Content Validation" })).toBeVisible()
 	}
 
-	async switchToTypesTab(testInfo?: { project: { name: string } }) {
-		if (testInfo?.project.name === "mobile-admin") {
-			// Mobile uses nth() because tab names may be truncated
-			const tabs = this.page.getByRole("tab")
-			await tabs.nth(2).click()
-		} else {
-			await this.typesTab.click()
-		}
+	async switchToTypesTab(_testInfo?: { project: { name: string } }) {
+		await this.page.getByTestId("settings-tab-types").click()
 		await expect(this.page.getByText("Oral Presentation")).toBeVisible()
 	}
 
@@ -338,12 +322,8 @@ export class AdminSettingsPage {
 		return this.page.getByRole("radio", { name: ext })
 	}
 
-	async switchToConferenceTab(testInfo?: { project: { name: string } }) {
-		if (testInfo?.project.name === "mobile-admin") {
-			await this.page.getByRole("tab").nth(0).click()
-		} else {
-			await this.conferenceTab.click()
-		}
+	async switchToConferenceTab(_testInfo?: { project: { name: string } }) {
+		await this.page.getByTestId("settings-tab-conference").click()
 		await expect(this.page.getByRole("heading", { name: "Basic Information" })).toBeVisible()
 	}
 
@@ -361,45 +341,29 @@ export class AdminSettingsPage {
 
 	// --- Survey tab ---
 
-	async switchToSurveyTab(testInfo?: { project: { name: string } }) {
-		if (testInfo?.project.name === "mobile-admin") {
-			await this.page.getByRole("tab").nth(9).click()
-		} else {
-			await this.page.getByRole("tab", { name: /Survey/i }).click()
-		}
+	async switchToSurveyTab(_testInfo?: { project: { name: string } }) {
+		await this.page.getByTestId("settings-tab-survey").click()
 		await expect(this.page.getByRole("heading", { name: "Survey Questions" })).toBeVisible()
 	}
 
 	// --- Terms of Service tab ---
 
-	async switchToTosTab(testInfo?: { project: { name: string } }) {
-		if (testInfo?.project.name === "mobile-admin") {
-			await this.page.getByRole("tab").nth(10).click()
-		} else {
-			await this.page.getByRole("tab", { name: /Terms of Service/i }).click()
-		}
+	async switchToTosTab(_testInfo?: { project: { name: string } }) {
+		await this.page.getByTestId("settings-tab-tos").click()
 		await expect(this.page.getByRole("heading", { name: "Terms of Service" })).toBeVisible()
 	}
 
 	// --- Branding tab ---
 
-	async switchToBrandingTab(testInfo?: { project: { name: string } }) {
-		if (testInfo?.project.name === "mobile-admin") {
-			await this.page.getByRole("tab").nth(6).click()
-		} else {
-			await this.page.getByRole("tab", { name: /Branding/i }).click()
-		}
+	async switchToBrandingTab(_testInfo?: { project: { name: string } }) {
+		await this.page.getByTestId("settings-tab-branding").click()
 		await expect(this.page.getByRole("heading", { name: "Logo & Graphics" })).toBeVisible()
 	}
 
 	// --- Fee tab ---
 
-	async switchToFeeTab(testInfo?: { project: { name: string } }) {
-		if (testInfo?.project.name === "mobile-admin") {
-			await this.page.getByRole("tab").nth(7).click()
-		} else {
-			await this.page.getByRole("tab", { name: /^Fee$/i }).click()
-		}
+	async switchToFeeTab(_testInfo?: { project: { name: string } }) {
+		await this.page.getByTestId("settings-tab-fee").click()
 		await expect(this.page.getByRole("heading", { name: "Fee Types" })).toBeVisible()
 	}
 
