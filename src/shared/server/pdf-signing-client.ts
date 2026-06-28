@@ -3,6 +3,7 @@
 // never request-derived — not an SSRF surface.
 import { env } from "@/env";
 import { docxApiAuthHeaders } from "@/shared/server/docx-api-auth";
+import { requestOrThrow, sidecarBase } from "@/shared/server/sidecar-http";
 
 // HTTP client for the docx-api sidecar's signing endpoints (pyHanko). The app
 // owns the cert lifecycle; the sidecar is stateless and receives the P12 +
@@ -11,9 +12,17 @@ import { docxApiAuthHeaders } from "@/shared/server/docx-api-auth";
 const GEN_TIMEOUT_MS = 30_000;
 const SIGN_TIMEOUT_MS = 60_000;
 
-function base(): string {
-	if (!env.DOCX_API_URL) throw new Error("DOCX_API_URL is not configured");
-	return env.DOCX_API_URL.replace(/\/+$/, "");
+function post(
+	path: string,
+	body: BodyInit,
+	timeoutMs: number,
+): Promise<Response> {
+	return requestOrThrow(
+		`${sidecarBase(env.DOCX_API_URL, "DOCX_API_URL")}${path}`,
+		{ method: "POST", body, headers: docxApiAuthHeaders() },
+		`docx-api ${path}`,
+		timeoutMs,
+	);
 }
 
 export interface CertMetadata {
@@ -24,34 +33,6 @@ export interface CertMetadata {
 	validFrom: string;
 	validUntil: string;
 	serial: string;
-}
-
-async function post(
-	path: string,
-	body: BodyInit,
-	timeoutMs: number,
-): Promise<Response> {
-	let res: Response;
-	try {
-		res = await fetch(`${base()}${path}`, {
-			method: "POST",
-			body,
-			headers: docxApiAuthHeaders(),
-			signal: AbortSignal.timeout(timeoutMs),
-		});
-	} catch (e) {
-		if (e instanceof Error && e.name === "TimeoutError") {
-			throw new Error(`docx-api ${path} timed out after ${timeoutMs}ms`);
-		}
-		throw e;
-	}
-	if (!res.ok) {
-		const detail = await res.text().catch(() => "");
-		throw new Error(
-			`docx-api ${path} failed: ${res.status} ${detail.slice(0, 300)}`.trim(),
-		);
-	}
-	return res;
 }
 
 export async function generateCertificate(opts: {

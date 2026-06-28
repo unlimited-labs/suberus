@@ -12,7 +12,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/shared/server/db.server";
 import { ensureQueueAndSend } from "@/shared/server/queue";
 
-export interface BulkSkip {
+interface BulkSkip {
 	userId: string;
 	name: string;
 	missing: string[];
