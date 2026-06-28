@@ -131,10 +131,7 @@ export function BulkGenerateDialog({
 				{step === "template" && (
 					<div className="space-y-2 py-2">
 						<Label>Template</Label>
-						<Select
-							value={templateId ?? undefined}
-							onValueChange={setTemplateId}
-						>
+						<Select value={templateId ?? ""} onValueChange={setTemplateId}>
 							<SelectTrigger data-testid="bulk-template-select">
 								<SelectValue placeholder="Select a template…" />
 							</SelectTrigger>

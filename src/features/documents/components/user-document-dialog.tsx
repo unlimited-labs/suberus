@@ -100,10 +100,7 @@ export function UserDocumentDialog({
 				<div className="space-y-4 py-2">
 					<div className="space-y-1.5">
 						<Label>Template</Label>
-						<Select
-							value={templateId ?? undefined}
-							onValueChange={setTemplateId}
-						>
+						<Select value={templateId ?? ""} onValueChange={setTemplateId}>
 							<SelectTrigger data-testid="document-template-select">
 								<SelectValue placeholder="Select a template…" />
 							</SelectTrigger>
