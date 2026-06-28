@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import { unified } from '@astrojs/markdown-remark';
 import starlight from '@astrojs/starlight';
+import starlightImageZoom from 'starlight-image-zoom';
 import remarkGfm from 'remark-gfm';
 
 // https://astro.build/config
@@ -12,10 +13,28 @@ export default defineConfig({
 	redirects: {
 		'/configuration/program/': '/planner/setup/',
 		'/managing/program/': '/planner/overview/',
+		// Configuration section renamed to Settings (slug parity with /admin/settings).
+		'/configuration/quick-start/': '/settings/quick-start/',
+		'/configuration/first-time-install/': '/settings/first-time-install/',
+		'/configuration/roles-and-permissions/': '/settings/roles-and-permissions/',
+		'/configuration/conference/': '/settings/conference/',
+		'/configuration/submissions/': '/settings/submissions/',
+		'/configuration/submission-types/': '/settings/submission-types/',
+		'/configuration/tracks/': '/settings/tracks/',
+		'/configuration/email-templates/': '/settings/email-templates/',
+		'/configuration/branding/': '/settings/branding/',
+		'/configuration/fee/': '/settings/fee/',
+		'/configuration/reminders/': '/settings/reminders/',
+		'/configuration/survey/': '/settings/survey/',
+		'/configuration/terms-of-service/': '/settings/terms-of-service/',
+		'/configuration/invitations/': '/settings/invitations/',
 	},
 	markdown: {
-		// remark-gfm enables GFM tables inside .mdx pages; since @astrojs/mdx 6 the
-		// MDX pipeline inherits plugins from `markdown.processor` (unified) directly.
+		// Starlight injects remark plugins via Astro's (now-deprecated)
+		// `markdown.remarkPlugins`. Setting our own `unified` processor forces the
+		// unified pipeline so those plugins actually run (the native `satteri`
+		// default would silently drop them). The deprecation notice itself comes
+		// from Starlight 0.40 and only disappears with Starlight 0.41 + Astro 7.
 		processor: unified({ remarkPlugins: [remarkGfm] }),
 	},
 	integrations: [
@@ -30,37 +49,40 @@ export default defineConfig({
 				replacesTitle: true,
 			},
 			customCss: ['./src/styles/custom.css'],
+			// Click any screenshot to open it full-screen (zoom/lightbox).
+			plugins: [starlightImageZoom()],
 			tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 3 },
 			// Show "Last updated" (from Git history) and prev/next pagination on every page.
 			lastUpdated: true,
 			pagination: true,
 			sidebar: [
 				{
-					label: 'Configuration',
+					label: 'Settings',
 					items: [
-						{ label: 'Quick start', slug: 'configuration/quick-start' },
+						{ label: 'Quick start', slug: 'settings/quick-start' },
 						{
 							label: 'First-time install',
-							slug: 'configuration/first-time-install',
+							slug: 'settings/first-time-install',
 						},
 						{
 							label: 'Roles & permissions',
-							slug: 'configuration/roles-and-permissions',
+							slug: 'settings/roles-and-permissions',
 						},
-						{ label: 'Conference', slug: 'configuration/conference' },
-						{ label: 'Submissions', slug: 'configuration/submissions' },
-						{ label: 'Submission Types', slug: 'configuration/submission-types' },
-						{ label: 'Tracks', slug: 'configuration/tracks' },
-						{ label: 'Email Templates', slug: 'configuration/email-templates' },
-						{ label: 'Branding', slug: 'configuration/branding' },
-						{ label: 'Fee', slug: 'configuration/fee' },
-						{ label: 'Reminders', slug: 'configuration/reminders' },
-						{ label: 'Survey', slug: 'configuration/survey' },
+						{ label: 'Conference', slug: 'settings/conference' },
+						{ label: 'Submissions', slug: 'settings/submissions' },
+						{ label: 'Submission Types', slug: 'settings/submission-types' },
+						{ label: 'Tracks', slug: 'settings/tracks' },
+						{ label: 'Email Templates', slug: 'settings/email-templates' },
+						{ label: 'Branding', slug: 'settings/branding' },
+						{ label: 'Fee', slug: 'settings/fee' },
+						{ label: 'Reminders', slug: 'settings/reminders' },
+						{ label: 'Survey', slug: 'settings/survey' },
+						{ label: 'Documents', slug: 'settings/documents' },
 						{
 							label: 'Terms of Service',
-							slug: 'configuration/terms-of-service',
+							slug: 'settings/terms-of-service',
 						},
-						{ label: 'Invitations', slug: 'configuration/invitations' },
+						{ label: 'Invitations', slug: 'settings/invitations' },
 					],
 				},
 				{
@@ -72,6 +94,7 @@ export default defineConfig({
 						{ label: 'Reviews', slug: 'managing/reviews' },
 						{ label: 'Users', slug: 'managing/users' },
 						{ label: 'Email campaigns', slug: 'managing/bulk-email' },
+						{ label: 'Documents', slug: 'managing/documents' },
 						{ label: 'Exhibitors', slug: 'managing/exhibitors' },
 						{ label: 'Invitations', slug: 'managing/invitations' },
 						{ label: 'Extraction', slug: 'managing/extraction' },

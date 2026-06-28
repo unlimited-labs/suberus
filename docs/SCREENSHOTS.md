@@ -27,25 +27,27 @@ Settings tabs deep-link via `?tab=<id>`.
 
 ---
 
-## Part 1 — Configuration  (`/admin/settings?tab=…`)
+## Part 1 — Settings  (`/admin/settings?tab=…`)
 
-- [x] **01** — `configuration/quick-start.mdx` — *admin login screen* — `/login`
-- [x] **02** — `configuration/quick-start.mdx` — *Configuration tabs* (top bar) — `/admin/settings`
-- [x] **03** — `configuration/first-time-install.mdx` — *Setup Suberus screen* — `/install` *(fresh instance only)*
-- [x] **04** — `configuration/conference.mdx` — *Conference tab* (3 sections) — `/admin/settings?tab=conference`
-- [x] **05** — `configuration/submissions.mdx` — *Submissions tab* (validation + extraction) — `/admin/settings?tab=submissions`
-- [x] **06** — `configuration/submission-types.mdx` — *Submission Types — three accordions* — `/admin/settings?tab=types`
-- [x] **07** — `configuration/tracks.mdx` — *Tracks tab* (list + Create) — `/admin/settings?tab=tracks`
+- [x] **01** — `settings/quick-start.mdx` — *admin login screen* — `/login`
+- [x] **02** — `settings/quick-start.mdx` — *Settings tabs* (top bar) — `/admin/settings`
+- [x] **03** — `settings/first-time-install.mdx` — *Setup Suberus screen* — `/install` *(fresh instance only)*
+- [x] **04** — `settings/conference.mdx` — *Conference tab* (3 sections) — `/admin/settings?tab=conference`
+- [x] **05** — `settings/submissions.mdx` — *Submissions tab* (validation + extraction) — `/admin/settings?tab=submissions`
+- [x] **06** — `settings/submission-types.mdx` — *Submission Types — three accordions* — `/admin/settings?tab=types`
+- [x] **07** — `settings/tracks.mdx` — *Tracks tab* (list + Create) — `/admin/settings?tab=tracks`
 - [x] **08** — `planner/setup.mdx` — *Program tab* (Planner + Rooms + Program Tracks) — `/admin/settings?tab=program`
-- [x] **09** — `configuration/email-templates.mdx` — *Email Templates tab* (footer + list) — `/admin/settings?tab=emails`
-- [x] **10** — `configuration/branding.mdx` — *Branding tab* — `/admin/settings?tab=branding`
-- [x] **11** — `configuration/fee.mdx` — *Fee tab* (types + instructions) — `/admin/settings?tab=fee`
-- [x] **12** — `configuration/reminders.mdx` — *Reminders tab* (3 groups) — `/admin/settings?tab=reminders`
-- [x] **13** — `configuration/survey.mdx` — *Survey tab* (question list) — `/admin/settings?tab=survey`
-- [x] **14** — `configuration/terms-of-service.mdx` — *Terms of Service tab, **Preview** mode* — `/admin/settings?tab=tos`
-- [x] **15** — `configuration/invitations.mdx` — *Invitations tab* (validity hours) — `/admin/settings?tab=invitations`
+- [x] **09** — `settings/email-templates.mdx` — *Email Templates tab* (footer + list) — `/admin/settings?tab=emails`
+- [x] **10** — `settings/branding.mdx` — *Branding tab* — `/admin/settings?tab=branding`
+- [x] **11** — `settings/fee.mdx` — *Fee tab* (types + instructions) — `/admin/settings?tab=fee`
+- [x] **12** — `settings/reminders.mdx` — *Reminders tab* (3 groups) — `/admin/settings?tab=reminders`
+- [x] **13** — `settings/survey.mdx` — *Survey tab* (question list) — `/admin/settings?tab=survey`
+- [x] **14** — `settings/terms-of-service.mdx` — *Terms of Service tab, **Preview** mode* — `/admin/settings?tab=tos`
+- [x] **15** — `settings/invitations.mdx` — *Invitations tab* (validity hours) — `/admin/settings?tab=invitations`
+- [x] **38** — `settings/conference.mdx` — *Exhibitors section on the Conference tab* (3 toggles) — `/admin/settings?tab=conference` *(needs exhibitors enabled — done in seed)*
+- [x] **40** — `settings/survey.mdx` — *Import template dialog* — `/admin/settings?tab=survey` → **Import template**
 
-*(`configuration/roles-and-permissions.mdx` has no screenshot — tables only.)*
+*(`settings/roles-and-permissions.mdx` has no screenshot — tables only.)*
 
 ---
 
@@ -57,7 +59,7 @@ Settings tabs deep-link via `?tab=<id>`.
 - [x] **19** — `managing/submissions.mdx` — *Submission detail — Content tab with version selector* — `/admin/submissions/<id>`
 - [x] **20** — `managing/reviews.mdx` — *Assign reviewer dialog* (open) — `/admin/submissions/<id>` → Assign reviewer
 - [x] **21** — `managing/users.mdx` — *Users list* (columns + survey columns) — `/admin/users`
-- [x] **22** — `managing/users.mdx` — *User detail actions* (incl. Allow late submission) — `/admin/users/<id>`
+- [x] **22** — `managing/users.mdx` — *User detail* (header + ⋯ actions, contact/account/fee cards) — `/admin/users/<id>`
 - [x] **23** — `managing/users.mdx` — *User submissions panel* — `/admin/users/<id>`
 - [x] **24** — `managing/invitations.mdx` — *Invitations list* — `/admin/invitations`
 - [x] **25** — `planner/overview.mdx` — *Program Planner calendar* (rooms × days) — `/admin/program-planner`
@@ -65,6 +67,17 @@ Settings tabs deep-link via `?tab=<id>`.
 - [x] **27** — `managing/activity-log.mdx` — *Activity history on a submission* — `/admin/submissions/<id>` → history section
 - [x] **33** — `managing/bulk-email.mdx` — *Email campaigns composer* (recipients, format, body, placeholders) — `/admin/bulk-email/<id>`
 - [x] **34** — `managing/submissions.mdx` — *Version compare — side-by-side, highlighted diff* — `/admin/submissions/<id>/compare?view=split`
+- [x] **35** — `managing/exhibitors.mdx` — *Exhibitors list* — `/admin/exhibitors`
+- [x] **36** — `managing/exhibitors.mdx` — *Exhibitor detail* (Company/Package, Contact, Decision) — `/admin/exhibitors/<id>`
+- [x] **37** — `managing/exhibitors.mdx` — *Approve dialog with reason* — `/admin/exhibitors/<id>` → **Approve**
+- [x] **39** — `managing/reviews.mdx` — *Reviewer Compare versions page, side-by-side* — `/reviews/<assignmentId>/compare?view=split` *(reviewer-authenticated)*
+- [x] **41** — `managing/bulk-email.mdx` — *Recipient selection — rows ticked, Bulk actions → Send email* — `/admin/users`
+- [x] **42** — `managing/exhibitors.mdx` — *Registration account-type choice* (Participant / Author vs Exhibitor) — `/register` *(guest context; needs exhibitors enabled)*
+- [x] **43** — `managing/documents.mdx` — *Documents → Templates tab* (templates + placeholder chips) — `/admin/documents`
+- [x] **44** — `managing/documents.mdx` — *Add-document dialog* (resolution preview, missing field) — `/admin/users/:id` → **Add document**
+- [x] **45** — `managing/documents.mdx` — *Generated documents tab* (status filters + table) — `/admin/documents?tab=generated`
+- [x] **46** — `managing/documents.mdx` — *Bulk generate dialog* (review: resolvable vs skipped) — `/admin/users` → Bulk actions → Generate document
+- [x] **47** — `managing/documents.mdx` — *Participant My Documents* — `/documents` *(user-authenticated context)*
 
 ---
 
@@ -82,6 +95,9 @@ Settings tabs deep-link via `?tab=<id>`.
 - **03 (installer):** only reachable before the system is installed; capture on a fresh DB / e2e instance.
 - **14 (ToS):** switch to the **Preview** tab, not Edit.
 - **19, 20, 26, 27:** open a specific submission (version selector / open dialog / DOCX upload / history section).
-- **22, 23:** open a specific user; **22** needs the action area (incl. *Allow late submission*).
+- **22, 23:** open a specific user; **22** shows the header + info cards (actions live in the **⋯** menu), **23** the submissions panel.
 - **30 (autoplan):** needs the LLM + clustering services reachable (`LLM_API_URL`, `PLANNER_API_URL`); the test skips itself if either is down. Captures the *result preview*, not the transient stage screen.
 - **32 (public program):** publishes the schedule via the `setSchedulePublished(true)` helper, captures `/program`, then restores draft.
+- **35–38 (exhibitors):** the seed enables the exhibitor feature (`SUBMISSION_TYPE_EXHIBITOR.isActive`) and creates a few applications; **37** opens the Approve dialog but does **not** confirm (the exhibitor stays pending). **38** element-shoots the *Exhibitors* card on the Conference tab.
+- **39 (reviewer compare):** runs in a **reviewer-authenticated** context (`e2e/.auth/reviewer-<worker>.json`), not admin; the seed gives the reviewer an assignment on the two-version paper.
+- **01 (login) & 42 (registration):** guest-only screens — the manual context must pass `storageState: { cookies: [], origins: [] }`, otherwise the project's admin session redirects `/login` and `/register` to the app.

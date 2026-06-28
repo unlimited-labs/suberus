@@ -22,7 +22,9 @@ Concurrency: each LibreOffice invocation gets an isolated -env:UserInstallation
 profile (gotcha C5 — shared profiles corrupt under concurrent convert).
 """
 
+import base64
 import hashlib
+import hmac
 import io
 import json
 import os
@@ -36,12 +38,24 @@ from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _pkg_version
 from pathlib import Path
 
-from fastapi import APIRouter, FastAPI, HTTPException, Response, UploadFile
+from fastapi import (
+    APIRouter,
+    Depends,
+    FastAPI,
+    File,
+    Form,
+    Header,
+    HTTPException,
+    Response,
+    UploadFile,
+)
+from fastapi.concurrency import run_in_threadpool
 from PIL import Image
 from pydantic import BaseModel
 
 import diffhtml
 import mathtype
+import signing
 import stylecss
 
 
@@ -58,6 +72,44 @@ MAX_NORMALIZE_BYTES = int(os.getenv("DOCX_API_MAX_MB", "50")) * 1024 * 1024
 # Per-subprocess wall-clock caps so a crafted file can't hang a worker forever.
 PANDOC_TIMEOUT_S = int(os.getenv("DOCX_API_PANDOC_TIMEOUT_S", "120"))
 SOFFICE_TIMEOUT_S = int(os.getenv("DOCX_API_SOFFICE_TIMEOUT_S", "90"))
+
+# Shared-secret gate on /v1/*. The sidecar handles the org signing key + P12
+# password, so it must not be an open oracle for anyone who can reach the port.
+# When unset (local dev / E2E) auth is disabled; set it in any shared/prod env and
+# the Node clients send a matching bearer token.
+DOCX_API_TOKEN = os.getenv("DOCX_API_TOKEN")
+
+# A DOCX is a zip; a small upload can inflate to gigabytes inside pandoc/LibreOffice
+# (decompression bomb). The input-byte cap above does not bound the *uncompressed*
+# size — these do. The container also runs under a mem_limit as the hard backstop.
+MAX_UNCOMPRESSED_BYTES = (
+    int(os.getenv("DOCX_API_MAX_UNCOMPRESSED_MB", "500")) * 1024 * 1024
+)
+MAX_INFLATION_RATIO = int(os.getenv("DOCX_API_MAX_INFLATION_RATIO", "200"))
+
+
+def require_token(authorization: str | None = Header(default=None)) -> None:
+    if not DOCX_API_TOKEN:
+        return
+    expected = f"Bearer {DOCX_API_TOKEN}"
+    if not authorization or not hmac.compare_digest(authorization, expected):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+def reject_zip_bomb(contents: bytes) -> None:
+    """Reject a DOCX whose uncompressed size or inflation ratio looks like a bomb,
+    before any subprocess touches it. Also asserts the upload is a real zip/DOCX.
+    Central-directory sizes can be forged, so this pairs with the container
+    mem_limit (the real ceiling) rather than standing alone."""
+    try:
+        with zipfile.ZipFile(io.BytesIO(contents)) as z:
+            total = sum(info.file_size for info in z.infolist())
+    except zipfile.BadZipFile:
+        raise HTTPException(400, "Uploaded file is not a valid DOCX (zip)")
+    if total > MAX_UNCOMPRESSED_BYTES:
+        raise HTTPException(413, "DOCX uncompressed size exceeds the limit")
+    if contents and total / len(contents) > MAX_INFLATION_RATIO:
+        raise HTTPException(413, "DOCX compression ratio looks like a zip bomb")
 
 
 def _run(
@@ -116,7 +168,7 @@ RASTER_VIA_PILLOW = {".jpg", ".jpeg", ".gif", ".bmp", ".tif", ".tiff", ".webp"}
 RASTER_VIA_SOFFICE = {".emf", ".wmf", ".svg", ".eps", ".pict", ".pdf"}
 
 app = FastAPI()
-v1 = APIRouter(prefix="/v1")
+v1 = APIRouter(prefix="/v1", dependencies=[Depends(require_token)])
 
 
 def _soffice_to_png(src: Path, outdir: Path) -> Path:
@@ -135,6 +187,25 @@ def _soffice_to_png(src: Path, outdir: Path) -> Path:
             500, f"LibreOffice failed to rasterize {src.name}: {proc.stderr.decode(errors='replace')[:200]}"
         )
     return png
+
+
+def _soffice_to_pdf(src: Path, outdir: Path) -> Path:
+    """Convert a DOCX to PDF via LibreOffice with an isolated profile (gotcha C5 —
+    shared profiles corrupt under concurrent convert)."""
+    profile = f"file:///tmp/lo_{uuid.uuid4().hex}"
+    try:
+        proc = _run([
+            "soffice", "--headless", "--convert-to", "pdf", "--outdir", str(outdir),
+            f"-env:UserInstallation={profile}", str(src),
+        ], timeout=SOFFICE_TIMEOUT_S)
+    except subprocess.TimeoutExpired:
+        raise HTTPException(504, f"LibreOffice timed out converting {src.name}")
+    pdf = outdir / (src.stem + ".pdf")
+    if not pdf.exists():
+        raise HTTPException(
+            500, f"LibreOffice failed to convert {src.name}: {proc.stderr.decode(errors='replace')[:200]}"
+        )
+    return pdf
 
 
 def _to_png_bytes(src: Path, workdir: Path) -> bytes:
@@ -323,6 +394,7 @@ async def normalize(file: UploadFile):
         raise HTTPException(
             413, f"File exceeds the {MAX_NORMALIZE_BYTES // (1024 * 1024)}MB normalize limit"
         )
+    reject_zip_bomb(contents)
 
     with tempfile.TemporaryDirectory() as tmp:
         workdir = Path(tmp)
@@ -369,6 +441,132 @@ def diff(req: DiffRequest):
     if total > MAX_NORMALIZE_BYTES:
         raise HTTPException(413, "Input HTML exceeds the diff size limit")
     return {"redline": diffhtml.diff_html(req.htmlA, req.htmlB)}
+
+
+@v1.post("/render-pdf")
+async def render_pdf(file: UploadFile):
+    """Render an uploaded DOCX to PDF via LibreOffice headless. Used by the document
+    generator (the docx is produced by the Node worker from a template + data)."""
+    contents = await file.read()
+    if not contents:
+        raise HTTPException(400, "No file uploaded")
+    if len(contents) > MAX_NORMALIZE_BYTES:
+        raise HTTPException(
+            413, f"File exceeds the {MAX_NORMALIZE_BYTES // (1024 * 1024)}MB limit"
+        )
+    reject_zip_bomb(contents)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        workdir = Path(tmp)
+        docx_path = workdir / (Path(file.filename or "doc.docx").name)
+        docx_path.write_bytes(contents)
+        pdf_path = _soffice_to_pdf(docx_path, workdir / "out")
+        pdf_bytes = pdf_path.read_bytes()
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": 'attachment; filename="document.pdf"'},
+    )
+
+
+# --- Digital signature (document generator) ------------------------------------
+# The Node app owns the cert lifecycle and keeps this sidecar stateless: the P12 +
+# password ride along on every sign request.
+
+
+class GenCertRequest(BaseModel):
+    commonName: str
+    org: str = ""
+    validDays: int = 1825  # ~5 years
+
+
+@v1.post("/gen-cert")
+def gen_cert(req: GenCertRequest):
+    """Generate a self-signed signing certificate as a password-protected P12."""
+    if not req.commonName.strip():
+        raise HTTPException(400, "commonName is required")
+    p12, password, metadata, cert_pem = signing.gen_self_signed_p12(
+        req.commonName.strip(), req.org.strip(), req.validDays
+    )
+    return {
+        "p12Base64": base64.b64encode(p12).decode(),
+        "password": password,
+        "metadata": metadata,
+        "certPem": cert_pem,
+    }
+
+
+@v1.post("/inspect-cert")
+async def inspect_cert(p12: UploadFile, password: str = Form("")):
+    """Validate an uploaded P12 and return its certificate metadata + public PEM."""
+    data = await p12.read()
+    if not data:
+        raise HTTPException(400, "No P12 uploaded")
+    try:
+        metadata, cert_pem = signing.inspect_p12(data, password)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return {"metadata": metadata, "certPem": cert_pem}
+
+
+@v1.post("/sign-pdf")
+async def sign_pdf(
+    file: UploadFile,
+    p12: UploadFile = File(...),
+    password: str = Form(""),
+    reason: str = Form(""),
+    location: str = Form(""),
+    corner: str = Form("bottom-right"),
+    qrUrl: str = Form(""),
+    timestampUrl: str = Form(""),
+    certify: str = Form("false"),
+):
+    """Apply a PAdES signature (visible seal) to an uploaded PDF."""
+    pdf_bytes = await file.read()
+    p12_bytes = await p12.read()
+    if not pdf_bytes:
+        raise HTTPException(400, "No PDF uploaded")
+    if not p12_bytes:
+        raise HTTPException(400, "No P12 uploaded")
+    if len(pdf_bytes) > MAX_NORMALIZE_BYTES:
+        raise HTTPException(413, "PDF exceeds the size limit")
+    try:
+        # Offload to a worker thread: pyHanko's sync sign_pdf calls asyncio.run()
+        # internally, which fails inside FastAPI's running event loop.
+        signed = await run_in_threadpool(
+            signing.sign_pdf,
+            pdf_bytes,
+            p12_bytes,
+            password,
+            {
+                "reason": reason,
+                "location": location,
+                "corner": corner,
+                "qr_url": qrUrl or None,
+                "timestamp_url": timestampUrl or None,
+                "certify": certify.lower() == "true",
+            },
+        )
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return Response(
+        content=signed,
+        media_type="application/pdf",
+        headers={"Content-Disposition": 'attachment; filename="signed.pdf"'},
+    )
+
+
+@v1.post("/verify-pdf")
+async def verify_pdf(file: UploadFile):
+    """Verify a PDF's signature (trust anchor = the embedded signer cert)."""
+    pdf_bytes = await file.read()
+    if not pdf_bytes:
+        raise HTTPException(400, "No PDF uploaded")
+    if len(pdf_bytes) > MAX_NORMALIZE_BYTES:
+        raise HTTPException(413, "PDF exceeds the size limit")
+    # Offload: validate_pdf_signature also wraps an async path with asyncio.run().
+    return await run_in_threadpool(signing.verify_pdf, pdf_bytes)
 
 
 app.include_router(v1)

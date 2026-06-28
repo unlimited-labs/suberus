@@ -12,6 +12,7 @@ import {
 	IconPresentation,
 	IconScale,
 	IconSettings,
+	IconShieldCheck,
 } from "@tabler/icons-react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import {
@@ -35,6 +36,7 @@ import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
 import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
 import { ProgramTab } from "@/features/planner/components/program";
 import { reviewerUsersQueryOptions } from "@/features/reviews/api/reviewers";
+import { documentSigningQueryOptions } from "@/features/settings/api/document-signing";
 import {
 	adminSettingQueryOptions,
 	brandingSettingsQueryOptions,
@@ -48,6 +50,7 @@ import {
 } from "@/features/settings/api/settings";
 import { BrandingSettingsTab } from "@/features/settings/components/branding/branding-settings-tab";
 import { ConferenceSettingsTab } from "@/features/settings/components/conference/conference-settings-tab";
+import { DocumentSigningTab } from "@/features/settings/components/documents/document-signing-tab";
 import { InvitationsSettingsTab } from "@/features/settings/components/invitations/invitations-settings-tab";
 import { RemindersSettingsTab } from "@/features/settings/components/reminders/reminders-settings-tab";
 import { SubmissionSettingsTab } from "@/features/settings/components/submission/submission-settings-tab";
@@ -108,6 +111,7 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			context.queryClient.ensureQueryData(pdfApiHealthQueryOptions()),
 			context.queryClient.ensureQueryData(allRoomsQueryOptions()),
 			context.queryClient.ensureQueryData(allProgramTracksQueryOptions()),
+			context.queryClient.ensureQueryData(documentSigningQueryOptions()),
 		]);
 	},
 	component: AdminSettingsPage,
@@ -124,6 +128,7 @@ const tabs = [
 	{ id: "fee", label: "Fee", icon: IconCash },
 	{ id: "reminders", label: "Reminders", icon: IconBell },
 	{ id: "survey", label: "Survey", icon: IconClipboardList },
+	{ id: "documents", label: "Documents", icon: IconShieldCheck },
 	{ id: "tos", label: "Terms of Service", icon: IconScale },
 	{ id: "invitations", label: "Invitations", icon: IconMailPlus },
 ];
@@ -192,7 +197,7 @@ function AdminSettingsPage() {
 
 	return (
 		<div className="flex h-full flex-col">
-			<PageHeader icon={IconSettings} title="Configuration" />
+			<PageHeader icon={IconSettings} title="Settings" />
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-5xl">
 					<Tabs
@@ -306,6 +311,10 @@ function AdminSettingsPage() {
 								initialQuestions={surveyQuestions}
 								exhibitorsEnabled={submissionTypes.EXHIBITOR.isActive}
 							/>
+						</TabsContent>
+
+						<TabsContent value="documents">
+							<DocumentSigningTab conferenceName={conferenceSettings.name} />
 						</TabsContent>
 
 						<TabsContent value="tos">

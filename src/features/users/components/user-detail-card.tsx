@@ -4,6 +4,8 @@ import {
 	IconMail,
 	IconUserCircle,
 } from "@tabler/icons-react";
+import { useState } from "react";
+import { UserDocumentsSection } from "@/features/documents/components/user-documents-section";
 import { assignableRoleOptions } from "@/features/users/labels";
 import type { AdminUserDetail } from "@/features/users/server/users";
 import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
@@ -67,6 +69,8 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 		handleVerifyEmail,
 	} = useUserDetailMutations(user);
 
+	const [documentDialogOpen, setDocumentDialogOpen] = useState(false);
+
 	const userName = `${user.firstName} ${user.lastName}`;
 
 	return (
@@ -82,6 +86,7 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 					onChangeRole={() => setRoleDialogOpen(true)}
 					onToggleActive={handleToggleActive}
 					onToggleLateSubmission={handleToggleLateSubmission}
+					onGenerateDocument={() => setDocumentDialogOpen(true)}
 					onDelete={() => setDeleteDialogOpen(true)}
 				/>
 
@@ -103,6 +108,13 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 				</SectionCard>
 
 				<UserSurveySection surveyAnswers={user.surveyAnswers} />
+
+				<UserDocumentsSection
+					userId={user.id}
+					userName={userName}
+					addOpen={documentDialogOpen}
+					onAddOpenChange={setDocumentDialogOpen}
+				/>
 
 				<SectionCard
 					icon={IconCash}

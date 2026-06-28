@@ -17,7 +17,7 @@ export const startAutoPlanFn = createServerFn({ method: "POST" })
 		const enabled = await getSetting("PLANNER_AUTOPLAN_ENABLED");
 		if (!enabled) {
 			throw new Error(
-				"Autoplanner is disabled. Enable it in Configuration/Program/Planner.",
+				"Autoplanner is disabled. Enable it in Settings/Program/Planner.",
 			);
 		}
 		const jobId = await createJobProgress("autoplan", context.user.id);

@@ -11,6 +11,9 @@ dependencies = [
     "xmldiff",
     "lxml",
     "olefile",
+    "pyHanko[image-support]",
+    "qrcode",
+    "cryptography",
 ]
 
 [project.optional-dependencies]

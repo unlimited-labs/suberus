@@ -14,6 +14,7 @@ import { logger } from "@/logger.ts";
 import { upsertAffiliation } from "@/shared/server/affiliations";
 import { prisma } from "@/shared/server/db.server";
 import { emitDomainEvent } from "@/shared/server/events";
+import { deleteFile } from "@/shared/server/storage";
 import {
 	extractFeePayment,
 	type PatchUserData,
@@ -804,6 +805,13 @@ export async function deleteUser(
 		});
 	}
 
+	// Generated-document PDFs cascade-delete by row but not in object storage;
+	// collect their keys now so we can purge them after the user is gone.
+	const documentKeys = await prisma.generatedDocument.findMany({
+		where: { userId, storageKey: { not: null } },
+		select: { storageKey: true },
+	});
+
 	await prisma.$transaction(async (tx) => {
 		await tx.submissionAuthor.updateMany({
 			where: { userId },
@@ -842,6 +850,11 @@ export async function deleteUser(
 
 		await tx.user.delete({ where: { id: userId } });
 	});
+
+	// Best-effort purge of the orphaned PDFs (rows already cascade-deleted).
+	for (const { storageKey } of documentKeys) {
+		if (storageKey) await deleteFile(storageKey).catch(() => {});
+	}
 
 	return { success: true };
 }

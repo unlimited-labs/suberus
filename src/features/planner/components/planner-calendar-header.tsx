@@ -104,7 +104,7 @@ export function PlannerCalendarHeader() {
 						<TooltipContent>
 							{autoplanEnabled
 								? "Cluster accepted abstracts into sessions via LLM"
-								: "Enable autoplanner in Configuration/Program/Planner"}
+								: "Enable autoplanner in Settings/Program/Planner"}
 						</TooltipContent>
 					</Tooltip>
 					<Button

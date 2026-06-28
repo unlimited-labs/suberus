@@ -1,4 +1,5 @@
 import { env } from "@/env";
+import { docxApiAuthHeaders } from "@/shared/server/docx-api-auth";
 import { createHealthCache } from "@/shared/server/health-cache";
 import {
 	requestOrThrow,
@@ -80,6 +81,7 @@ export function normalizeDocx(
 		"docx-api normalize",
 		bytes,
 		fileName,
+		docxApiAuthHeaders(),
 	);
 }
 
@@ -96,7 +98,7 @@ export async function diffHtmlPair(
 		`${base()}/v1/diff`,
 		{
 			method: "POST",
-			headers: { "content-type": "application/json" },
+			headers: { "content-type": "application/json", ...docxApiAuthHeaders() },
 			body: JSON.stringify({ htmlA, htmlB }),
 		},
 		"docx-api diff",

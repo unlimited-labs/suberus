@@ -42,7 +42,7 @@ test.describe.serial("Exhibitor feature isolation", () => {
 		await adminPage.goto("/admin/dashboard");
 		const adminNav = adminPage.getByRole("navigation");
 		await expect(
-			adminNav.getByRole("link", { name: "Configuration" }),
+			adminNav.getByRole("link", { name: "Settings" }),
 		).toBeVisible();
 		await expect(
 			adminNav.getByRole("link", { name: "Exhibitors", exact: true }),

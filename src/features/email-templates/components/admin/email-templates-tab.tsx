@@ -52,6 +52,7 @@ const eventTypeLabels: Record<EmailEventType, string> = {
 	NEW_SUBMISSION_NOTIFY: "New Submission (Admin)",
 	EXHIBITOR_APPROVED: "Exhibitor Approved",
 	EXHIBITOR_REJECTED: "Exhibitor Rejected",
+	DOCUMENT_GENERATED: "Document Generated",
 };
 
 /** Map Prisma EmailTemplate to UI shape */

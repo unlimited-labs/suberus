@@ -47,6 +47,34 @@ export interface DeadlineReminderSettings {
 	daysBefore: number[]; // e.g. [7, 3, 1] → send 7, 3, 1 day before deadline
 }
 
+/** Digital signature config for generated documents (stored as JSON in AppSetting).
+ * null = signing was never configured. The password-protected P12 and its sealed
+ * password are stored TOGETHER here (per database) so they can never drift out of
+ * sync — see the comment on `p12Base64`. Neither is ever sent to the client. */
+export interface DocumentSigningSettings {
+	enabled: boolean;
+	source: "self-signed" | "uploaded";
+	subject: string;
+	fingerprintSha256: string;
+	validFrom: string;
+	validUntil: string;
+	/** secret-box ciphertext of the P12 password (never sent to the client). */
+	passwordSealed: string;
+	/** base64 of the password-protected P12 (private key + cert), never sent to the
+	 * client. Stored here instead of a shared S3 key so the cert and its password
+	 * stay atomic per-DB — a single global S3 object would be clobbered by any other
+	 * environment/tenant sharing the bucket, desyncing it from this row's password. */
+	p12Base64: string;
+	timestampEnabled: boolean;
+	timestampUrl: string;
+	// Visible seal appearance
+	sealReason: string;
+	sealCorner: "bottom-right" | "bottom-left" | "top-right" | "top-left";
+	sealQrEnabled: boolean;
+	/** Certifying (DocMDP) signature locks the PDF against further edits. */
+	certifying: boolean;
+}
+
 /** Type map: AppSettingKey → value type */
 export type AppSettingsMap = {
 	CONFERENCE_NAME: string;
@@ -145,6 +173,8 @@ export type AppSettingsMap = {
 		publishedAt?: string;
 		publishedBy?: string;
 	};
+
+	DOCUMENT_SIGNING: DocumentSigningSettings | null;
 };
 
 /** Keys for submission type configs */

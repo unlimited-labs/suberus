@@ -3,6 +3,7 @@ import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import type { CSSProperties } from "react";
 import { useEffect } from "react";
 import { authRouteMiddleware } from "@/features/auth/server/middleware";
+import { myDocumentsCountQueryOptions } from "@/features/documents/api/documents";
 import { exhibitorSignupAvailableQueryOptions } from "@/features/exhibitors/api/exhibitors";
 import { scheduleStateQueryOptions } from "@/features/planner/api/schedule";
 import type { AppBranding } from "@/features/settings/api/settings";
@@ -93,6 +94,7 @@ function AppLayoutRoute() {
 		exhibitorSignupAvailableQueryOptions(),
 	);
 	const { data: feeEnabled } = useQuery(feeEnabledQueryOptions());
+	const { data: documentsCount } = useQuery(myDocumentsCountQueryOptions());
 
 	useEffect(() => {
 		if (!isPending && !user) {
@@ -129,6 +131,7 @@ function AppLayoutRoute() {
 					scheduleStatus={scheduleState?.status}
 					exhibitorsEnabled={exhibitorsEnabled === true}
 					feeEnabled={feeEnabled !== false}
+					hasDocuments={(documentsCount ?? 0) > 0}
 				>
 					<Outlet />
 				</AppLayout>

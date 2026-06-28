@@ -7,9 +7,9 @@ sidebar:
 
 import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-The **Users** screen lists everyone registered. From here you change roles, activate
-or deactivate accounts, mark fees as paid, and review the answers people gave to
-your registration survey.
+Everyone who registers for your conference turns up on the **Users** screen. Open
+a row to change someone's role, activate or deactivate their account, mark a fee
+paid, or read how they answered your registration survey.
 
 <Aside type="note" title="Where to find it">
 **Users** in the admin sidebar. Click a row to open a user's detail.
@@ -36,23 +36,47 @@ are remembered in this browser and restored next time you open the page.
 
 <Aside type="tip" title="Surfacing survey answers">
 Which survey answers appear as columns here is controlled per question on the
-**[Survey](/configuration/survey/)** tab via *Show in users list*.
+**[Survey](/settings/survey/)** tab via *Show in users list*.
 </Aside>
+
+### On mobile
+
+On a phone the list becomes a stack of **cards** instead of a table. Each card
+shows the name, **role**, email, affiliation, a **Paid / Unpaid** fee badge, and
+the user's submission-role badges; tap a card to open the user. Search is
+full-width and every match scrolls in one list (no paging). The **Columns**
+picker is hidden — switch to a wider screen to choose columns.
 
 ## The user detail
 
-Opening a user shows their profile, submissions, survey answers, and management
-actions:
+Opening a user shows their profile in titled cards — **Contact Information**,
+**Account Information**, **Submissions**, survey answers, and **Fee Status**.
+Management actions live in the **⋯** menu at the top right of the header card.
+
+![User detail](../../../assets/screenshots/22-managing-user-detail.png)
+
+### Header & actions
+
+The header shows the user's avatar, name (with academic title), and a **role**
+badge. An **Inactive** badge appears when the account is deactivated and a **Late
+submission** badge when late submissions are allowed. The **⋯** menu holds:
 
 | Action | What it does |
 |---|---|
-| **Change role** | Promote/demote between Author, Reviewer, Editor, Admin. Reviewers (and above) can be assigned to review. Editors can change roles but cannot grant **Admin** or change an existing admin; no one can change their own role. **Exhibitor** accounts cannot be changed to or from manually — see **[Roles & permissions](/configuration/roles-and-permissions/)**. |
-| **Activate / deactivate** | Block or restore account access without deleting the user. |
-| **Allow / disallow late submission** | Let this user create new submissions even after the submission deadline has passed and while submissions are locked. Off by default; affects only this user. |
-| **Mark fee paid / unpaid** | Record payment status (per fee type / currency from **[Fee](/configuration/fee/)**). |
-| **View survey answers** | See everything the user submitted in the registration survey. |
+| **Edit Profile** | Edit the user's name, title, affiliation, and other profile fields. |
+| **Change Role** | Promote/demote between Author, Reviewer, Editor, Admin. Reviewers (and above) can be assigned to review. Editors can change roles but cannot grant **Admin** or change an existing admin; no one can change their own role. **Exhibitor** accounts cannot be changed to or from manually — see **[Roles & permissions](/settings/roles-and-permissions/)**. |
+| **Activate / Deactivate** | Block or restore account access without deleting the user. |
+| **Allow / Disallow late submission** | Let this user create new submissions even after the submission deadline has passed and while submissions are locked. Off by default; affects only this user. |
+| **Delete User** | Permanently removes the user. Destructive and irreversible — prefer **Deactivate**. Shown only if you may delete users. |
 
-![User detail with management actions](../../../assets/screenshots/22-managing-user-detail.png)
+### Information cards
+
+| Card | What it shows |
+|---|---|
+| **Contact Information** | Email (click to send mail), affiliation, ORCID, country, and address — each shown only when set. |
+| **Account Information** | Registration and last-login dates, plus email-verification status. If the address isn't verified, a **Verify** button sends a fresh verification email. |
+| **Fee Status** | A green **Fee Paid** callout (type, amount, currency, and paid-on date, with **Unmark**) or a red **Fee Unpaid** callout. When unpaid, **Mark as Paid** records payment (fee type / currency from **[Fee](/settings/fee/)**). |
+| **Survey Responses** | The user's answers to your registration **[Survey](/settings/survey/)**. |
 
 ### Submissions panel
 
@@ -81,7 +105,7 @@ user is not — prefer deactivation unless you're sure.
 
 <CardGrid>
 	<LinkCard title="Invitations" href="/managing/invitations/" description="Invite reviewers and co-organisers." />
-	<LinkCard title="Survey" href="/configuration/survey/" description="Define the questions and which answers show here." />
-	<LinkCard title="Fee" href="/configuration/fee/" description="Fee types and currency behind the Fee column." />
-	<LinkCard title="Roles & permissions" href="/configuration/roles-and-permissions/" description="What each role can do." />
+	<LinkCard title="Survey" href="/settings/survey/" description="Define the questions and which answers show here." />
+	<LinkCard title="Fee" href="/settings/fee/" description="Fee types and currency behind the Fee column." />
+	<LinkCard title="Roles & permissions" href="/settings/roles-and-permissions/" description="What each role can do." />
 </CardGrid>

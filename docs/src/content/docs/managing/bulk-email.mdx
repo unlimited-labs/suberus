@@ -9,7 +9,7 @@ import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 **Email campaigns** lets you write a message once and send it to many users at the same
 time — an announcement, a deadline nudge, anything ad-hoc that isn't covered by the
-automatic [email templates](/configuration/email-templates/). You choose the
+automatic [email templates](/settings/email-templates/). You choose the
 recipients from the **Users** list, compose the body as plain text, Markdown, or
 MJML, preview the rendered result, send a test to yourself, then queue the send.
 
@@ -18,19 +18,29 @@ MJML, preview the rendered result, send a test to yourself, then queue the send.
 go to **Users**, select recipients, and choose **Send email** from the bulk actions.
 </Aside>
 
+## Choosing the recipients
+
+A campaign always starts from the **Users** list — there's no separate recipient
+picker. Search or filter for the people you want, tick their checkboxes (or use the
+header checkbox to take everyone on the current page), then open the **Bulk actions**
+menu and choose **Send email**. Click **Apply** and Suberus creates the draft, opening
+the composer with exactly those users attached.
+
+![Selecting recipients from the Users list](../../../assets/screenshots/41-managing-bulk-email-recipients.png)
+
+Each recipient's name and submission titles are captured at that moment, so editing a
+profile afterwards won't change what an already-queued campaign sends.
+
+## Composing and sending
+
 ![Email campaigns composer](../../../assets/screenshots/33-managing-email-campaigns.png)
 
-## How to send a bulk email
-
-1. Open **Users**, tick the people you want to email, and pick **Send email** from
-   the bulk-actions dropdown, then **Apply**. This creates a draft and opens the
-   composer with those recipients attached.
-2. Write a **Subject** and **Body**, choosing a **Format** (see below). The preview
+1. Write a **Subject** and **Body**, choosing a **Format** (see below). The preview
    updates as you type.
-3. Click **Send test** to receive the message at your own address, with
-   placeholders filled from random sample data — useful to check formatting.
-4. Click **Send campaign**. The campaign is queued and delivered one recipient at a
-   time; a progress bar shows how many have been processed.
+2. Click **Send test** to receive the message at your own address, placeholders filled
+   from random sample data — a quick way to check the formatting.
+3. Click **Send campaign**. It's queued and delivered one recipient at a time, with a
+   progress bar showing how many have been processed.
 
 ## Fields
 
@@ -81,6 +91,6 @@ and date. Open one to see its content and the per-recipient delivery result
 
 <CardGrid>
 	<LinkCard title="Users" href="/managing/users/" description="Select the recipients for a bulk email." />
-	<LinkCard title="Email Templates" href="/configuration/email-templates/" description="Automatic transactional emails." />
-	<LinkCard title="Reminders" href="/configuration/reminders/" description="Scheduled reviewer and deadline nudges." />
+	<LinkCard title="Email Templates" href="/settings/email-templates/" description="Automatic transactional emails." />
+	<LinkCard title="Reminders" href="/settings/reminders/" description="Scheduled reviewer and deadline nudges." />
 </CardGrid>

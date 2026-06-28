@@ -187,6 +187,8 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	INVITATION_VALIDITY_HOURS: 72,
 
 	SCHEDULE_STATE: { status: "DRAFT" },
+
+	DOCUMENT_SIGNING: null,
 };
 
 /** Get default value for a setting key */

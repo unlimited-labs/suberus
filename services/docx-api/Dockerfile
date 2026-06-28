@@ -21,11 +21,14 @@ RUN pip install --no-cache-dir \
         "Pillow==11.*" \
         "xmldiff==3.0.*" \
         "lxml>=5,<7" \
-        "olefile==0.47.*"
+        "olefile==0.47.*" \
+        "pyHanko[image-support]==0.35.*" \
+        "qrcode==8.*" \
+        "cryptography>=43"
 
 RUN adduser --disabled-password --gecos "" appuser
 WORKDIR /app
-COPY --chown=appuser:appuser main.py diffhtml.py mathtype.py stylecss.py htmlesc.py ooxml.py ./
+COPY --chown=appuser:appuser main.py diffhtml.py mathtype.py stylecss.py htmlesc.py ooxml.py signing.py ./
 USER appuser
 
 ENV PORT=8101

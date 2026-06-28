@@ -28,8 +28,11 @@ import {
 	setSchedulePublished,
 } from "../helpers/test-db";
 import { runSubmissionAction } from "../helpers/submission-actions";
+import { DEFAULT_EXHIBITOR_CONFIG } from "../../src/features/settings/defaults";
 import {
+	AssignmentStatus,
 	EditorDecisionType,
+	ExhibitorStatus,
 	InvitationStatus,
 	SubmissionStatus,
 	SubmissionType,
@@ -108,7 +111,147 @@ const ctx = {
 	decidedId: "",
 	docxId: "",
 	profileUserId: "",
+	exhibitorPendingId: "",
+	reviewerAssignmentId: "",
 };
+
+/**
+ * Idempotently seed the exhibitor feature + a reviewer assignment used by the
+ * Part 4 shots. Kept separate from the main arrangement so it self-heals on a DB
+ * seeded by an older version of this script (where these rows wouldn't exist).
+ */
+async function ensureDocsExtras(adminUserId: string, reviewerUserId: string) {
+	const db = getPrisma();
+	await setAppSetting("SUBMISSION_TYPE_EXHIBITOR", {
+		...DEFAULT_EXHIBITOR_CONFIG,
+		isActive: true,
+		allowExhibitorPresentation: true,
+		includeInPlanner: true,
+	});
+	const exhibitorPeople: Array<[string, string, string, string, string, ExhibitorStatus, string | null]> = [
+		["NanoFab Solutions", "https://nanofab.example.com", "Hannah", "Berg", "Cleanroom tooling and precision nanofabrication services for materials research.", ExhibitorStatus.PENDING, null],
+		["Helmholtz Instruments", "https://hzi-instruments.example.com", "Marco", "Conti", "Electron microscopy and in-situ characterisation instruments.", ExhibitorStatus.APPROVED, "Gold"],
+		["Quantum Optics Ltd", "https://quantum-optics.example.com", "Priya", "Nair", "Lasers and photonics for spectroscopy and additive manufacturing.", ExhibitorStatus.PENDING, null],
+	];
+	for (const [company, website, firstName, lastName, description, status, pkg] of exhibitorPeople) {
+		if (await db.exhibitor.findFirst({ where: { companyName: company } })) continue;
+		const u = await createTestUser({
+			email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@exhibitor.example.org`,
+			firstName,
+			lastName,
+			affiliationName: company,
+			role: UserRole.EXHIBITOR,
+		});
+		await db.exhibitor.create({
+			data: {
+				userId: u.id,
+				companyName: company,
+				website,
+				description,
+				package: pkg,
+				status,
+				appliedAt: day(12, "10:00"),
+				...(status === ExhibitorStatus.APPROVED
+					? { decidedAt: day(13, "09:00"), decidedById: adminUserId }
+					: {}),
+			},
+		});
+	}
+
+	// Reviewer can open the version-compare page only with an assignment on the
+	// multi-version paper — seed one for the reviewer service account.
+	const mv = await db.submission.findFirst({
+		where: { title: "Coupled CFD-FEM Model of Laser Powder Bed Fusion" },
+	});
+	if (mv && !(await db.reviewAssignment.findFirst({ where: { submissionId: mv.id, reviewerId: reviewerUserId } }))) {
+		await db.reviewAssignment.create({
+			data: {
+				submissionId: mv.id,
+				reviewerId: reviewerUserId,
+				round: 1,
+				status: AssignmentStatus.COMPLETED,
+				deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+				assignedBy: adminUserId,
+				startedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+				completedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+				orderIndex: 0,
+			},
+		});
+	}
+}
+
+/**
+ * Idempotently seed document templates + a spread of generated documents
+ * (READY/PENDING/FAILED, incl. some for the e2e "user" account so the
+ * participant My Documents shot is populated). DB-only — no real rendering.
+ */
+async function ensureDocsDocuments(adminUserId: string, testUserId: string) {
+	const db = getPrisma();
+	const upsertTemplate = async (
+		name: string,
+		description: string | null,
+		placeholders: string[],
+		originalName: string,
+		size: number,
+	) => {
+		const existing = await db.documentTemplate.findFirst({ where: { name } });
+		if (existing) return existing;
+		return db.documentTemplate.create({
+			data: {
+				name,
+				description,
+				storageKey: `documents/templates/docs-${name.replace(/\W+/g, "-").toLowerCase()}/${originalName}`,
+				originalName,
+				size,
+				placeholders,
+				createdById: adminUserId,
+			},
+		});
+	};
+
+	const visa = await upsertTemplate(
+		"Visa invitation letter",
+		"Official invitation for participants applying for an entry visa.",
+		["firstName", "lastName", "affiliation", "abstractTitle", "date"],
+		"visa-invitation.docx",
+		8540,
+	);
+	const cert = await upsertTemplate(
+		"Certificate of participation",
+		null,
+		["firstName", "lastName", "date"],
+		"certificate.docx",
+		8575,
+	);
+
+	if ((await db.generatedDocument.count()) > 0) return;
+
+	const byEmail = (email: string) =>
+		db.user.findUnique({ where: { email } });
+	const sofia = await byEmail("sofia.rossi@example.org");
+	const lukas = await byEmail("lukas.weber@example.org");
+	const kenji = await byEmail("kenji.tanaka@example.org");
+
+	const rows: Array<{
+		userId: string;
+		templateId: string;
+		name: string;
+		status: "READY" | "PENDING" | "FAILED";
+		storageKey?: string;
+		size?: number;
+		error?: string;
+	}> = [
+		{ userId: testUserId, templateId: cert.id, name: "Certificate of participation", status: "READY", storageKey: "documents/generated/docs-1.pdf", size: 18234 },
+		{ userId: testUserId, templateId: visa.id, name: "Visa invitation letter", status: "READY", storageKey: "documents/generated/docs-2.pdf", size: 21002 },
+	];
+	if (sofia) rows.push({ userId: sofia.id, templateId: visa.id, name: "Visa invitation letter", status: "READY", storageKey: "documents/generated/docs-3.pdf", size: 20891 });
+	if (lukas) rows.push({ userId: lukas.id, templateId: cert.id, name: "Certificate of participation", status: "PENDING" });
+	if (kenji) rows.push({ userId: kenji.id, templateId: visa.id, name: "Visa invitation letter", status: "FAILED", error: "LibreOffice timed out converting the document" });
+
+	await db.generatedDocument.createMany({
+		data: rows.map((r) => ({ ...r, generatedById: adminUserId })),
+	});
+}
 
 /** Resolve ctx ids from the DB by title (survives worker restarts). */
 async function resolveCtx() {
@@ -125,6 +268,12 @@ async function resolveCtx() {
 	const profileUser = await db.user.findUnique({ where: { email: "sofia.rossi@example.org" } });
 	if (!profileUser) throw new Error("ctx profile user not found");
 	ctx.profileUserId = profileUser.id;
+	const pendingExhibitor = await db.exhibitor.findFirst({ where: { companyName: "NanoFab Solutions" } });
+	if (!pendingExhibitor) throw new Error("ctx pending exhibitor not found");
+	ctx.exhibitorPendingId = pendingExhibitor.id;
+	const reviewerAssignment = await db.reviewAssignment.findFirst({ where: { submissionId: ctx.multiVersionId } });
+	if (!reviewerAssignment) throw new Error("ctx reviewer assignment not found");
+	ctx.reviewerAssignmentId = reviewerAssignment.id;
 }
 
 test.describe("docs screenshots", () => {
@@ -144,6 +293,8 @@ test.describe("docs screenshots", () => {
 			where: { email: "maria.kowalska@example.org" },
 		});
 		if (arranged) {
+			await ensureDocsExtras(adminUserId, reviewerUserId);
+			await ensureDocsDocuments(adminUserId, testUserId);
 			await resolveCtx();
 			return;
 		}
@@ -510,13 +661,20 @@ test.describe("docs screenshots", () => {
 			});
 		}
 
+		await ensureDocsExtras(adminUserId, reviewerUserId);
+		await ensureDocsDocuments(adminUserId, testUserId);
 		await resolveCtx();
 	});
 
 	// ---- Part 1: Configuration --------------------------------------------------
 
 	test("01 login screen", async ({ browser, baseURL }) => {
-		const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+		// Force a guest session — the project storageState would otherwise leave us
+		// logged in as admin, and /login redirects authenticated users to the app.
+		const context = await browser.newContext({
+			viewport: { width: 1440, height: 900 },
+			storageState: { cookies: [], origins: [] },
+		});
 		const page = await context.newPage();
 		await page.goto(`${baseURL}/login`);
 		await shot(page, "01-configuration-login.png", { full: false });
@@ -550,6 +708,7 @@ test.describe("docs screenshots", () => {
 		["12", "reminders", "12-configuration-reminders.png", 1600],
 		["13", "survey", "13-configuration-survey.png", 1700],
 		["15", "invitations", "15-configuration-invitations.png", 1000],
+		["16", "documents", "16-settings-documents.png", 1400],
 	];
 	for (const [num, tab, file, height] of settingsTabs) {
 		test(`${num} settings tab ${tab}`, async ({ page }) => {
@@ -729,5 +888,144 @@ test.describe("docs screenshots", () => {
 		} finally {
 			await setSchedulePublished(false);
 		}
+	});
+
+	// ---- Part 4: Exhibitors, reviewer compare, survey templates -------------------
+
+	test("35 exhibitors list", async ({ page }) => {
+		await page.goto("/admin/exhibitors");
+		await shot(page, "35-managing-exhibitors-list.png", { height: 1600 });
+	});
+
+	test("36+37 exhibitor detail and decision dialog", async ({ page }) => {
+		await page.goto(`/admin/exhibitors/${ctx.exhibitorPendingId}`);
+		await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+		await shot(page, "36-managing-exhibitor-detail.png", { height: 1500 });
+		// Open (but don't confirm) the decision dialog so the exhibitor stays PENDING.
+		await page.getByTestId("exhibitor-approve").click();
+		await expect(page.getByRole("dialog")).toBeVisible();
+		await page
+			.getByTestId("decide-exhibitor-reason")
+			.fill("Strong fit for the materials-characterisation track — approved for a Gold booth.");
+		await page.waitForTimeout(300);
+		await shot(page, "37-managing-exhibitor-decision.png", { full: false });
+	});
+
+	test("38 conference exhibitors section", async ({ page }) => {
+		await page.goto("/admin/settings?tab=conference");
+		await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+		const section = page
+			.getByTestId("settings-exhibitors-enabled")
+			.locator("xpath=ancestor::section[1]");
+		await section.scrollIntoViewIfNeeded();
+		await page.waitForTimeout(500);
+		await section.screenshot({
+			path: path.join(SHOTS_DIR, "38-configuration-exhibitors-section.png"),
+		});
+	});
+
+	test("39 reviewer version compare (side-by-side)", async ({ browser, baseURL }, testInfo) => {
+		const context = await browser.newContext({
+			viewport: { width: 1440, height: 900 },
+			baseURL,
+			storageState: `e2e/.auth/reviewer-${testInfo.parallelIndex}.json`,
+		});
+		const page = await context.newPage();
+		await page.goto(`${baseURL}/reviews/${ctx.reviewerAssignmentId}/compare?view=split`);
+		await page.getByTestId("diff-base-select").waitFor({ timeout: 10000 }).catch(() => {});
+		await shot(page, "39-reviewing-compare.png", { height: 2400 });
+		await context.close();
+	});
+
+	test("40 survey import template dialog", async ({ page }) => {
+		await page.goto("/admin/settings?tab=survey");
+		await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+		await page.getByTestId("import-template-button").click();
+		await expect(page.getByRole("dialog")).toBeVisible();
+		await page.waitForTimeout(400);
+		await shot(page, "40-configuration-survey-template.png", { full: false });
+	});
+
+	test("41 bulk-email recipient selection", async ({ page }) => {
+		await page.goto("/admin/users");
+		await page.getByText(/Page \d+ of [1-9]/).first().waitFor({ timeout: 15000 }).catch(() => {});
+		const rows = page.getByTestId("user-row");
+		for (const i of [0, 1, 2]) await rows.nth(i).getByRole("checkbox").check();
+		await page.getByRole("combobox").filter({ hasText: "Bulk actions" }).click();
+		await page.getByRole("option", { name: "Send email" }).waitFor({ timeout: 5000 }).catch(() => {});
+		await page.waitForTimeout(300);
+		await shot(page, "41-managing-bulk-email-recipients.png", { full: false });
+	});
+
+	test("42 exhibitor registration choice", async ({ browser, baseURL }) => {
+		// Unauthenticated: the account-type choice only renders on the public register
+		// form, and only while exhibitor signup is enabled (seed turns it on).
+		const context = await browser.newContext({
+			viewport: { width: 1440, height: 900 },
+			storageState: { cookies: [], origins: [] },
+		});
+		const page = await context.newPage();
+		await page.goto(`${baseURL}/register`);
+		await page.getByTestId("register-account-type-exhibitor").waitFor({ timeout: 10000 });
+		await page.getByRole("radiogroup").first().scrollIntoViewIfNeeded();
+		await shot(page, "42-managing-exhibitor-registration-choice.png", { full: false });
+		await context.close();
+	});
+
+	// ---- Part 5: Documents --------------------------------------------------------
+
+	test("43 documents templates", async ({ page }) => {
+		await page.goto("/admin/documents");
+		await shot(page, "43-managing-documents-templates.png", { height: 1100 });
+	});
+
+	test("44 documents generate dialog", async ({ page }) => {
+		const db = getPrisma();
+		// Maria (reviewer) has no accepted abstract → {abstractTitle} shows Missing.
+		const maria = await db.user.findUniqueOrThrow({
+			where: { email: "maria.kowalska@example.org" },
+		});
+		await page.goto(`/admin/users/${maria.id}`);
+		await page.getByTestId("add-document-button").click();
+		await page.getByTestId("document-template-select").click();
+		await page.getByRole("option", { name: "Visa invitation letter" }).click();
+		await expect(page.getByTestId("resolution-row").first()).toBeVisible();
+		await page.waitForTimeout(400);
+		await shot(page, "44-managing-documents-generate.png", { full: false });
+	});
+
+	test("45 documents generated list", async ({ page }) => {
+		await page.goto("/admin/documents?tab=generated");
+		await page.waitForTimeout(500);
+		await shot(page, "45-managing-documents-generated.png", { height: 1100 });
+	});
+
+	test("46 documents bulk action", async ({ page }) => {
+		await page.goto("/admin/users");
+		await page.getByText(/Page \d+ of [1-9]/).first().waitFor({ timeout: 15000 }).catch(() => {});
+		const rows = page.getByTestId("user-row");
+		for (const i of [0, 1, 2]) await rows.nth(i).getByRole("checkbox").check();
+		await page.getByRole("combobox").filter({ hasText: "Bulk actions" }).click();
+		await page.getByRole("option", { name: "Generate document" }).click();
+		await page.getByRole("button", { name: "Apply" }).click();
+		await page.getByTestId("bulk-template-select").click();
+		await page.getByRole("option", { name: "Visa invitation letter" }).click();
+		await page.getByTestId("bulk-review-button").click();
+		await expect(page.getByText(/will be generated/)).toBeVisible();
+		await page.waitForTimeout(300);
+		await shot(page, "46-managing-documents-bulk.png", { full: false });
+	});
+
+	test("47 my documents (participant)", async ({ browser, baseURL }, testInfo) => {
+		const context = await browser.newContext({
+			viewport: { width: 1440, height: 900 },
+			baseURL,
+			storageState: `e2e/.auth/user-${testInfo.parallelIndex}.json`,
+		});
+		const page = await context.newPage();
+		await page.goto(`${baseURL}/documents`);
+		await page.waitForTimeout(500);
+		await shot(page, "47-managing-documents-my.png", { height: 1000 });
+		await context.close();
 	});
 });

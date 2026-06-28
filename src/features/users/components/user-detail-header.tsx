@@ -3,6 +3,7 @@ import {
 	IconClockX,
 	IconDotsVertical,
 	IconEdit,
+	IconFilePlus,
 	IconTrash,
 	IconUserCheck,
 	IconUserCog,
@@ -33,6 +34,7 @@ interface UserDetailHeaderProps {
 	onChangeRole: () => void;
 	onToggleActive: () => void;
 	onToggleLateSubmission: () => void;
+	onGenerateDocument: () => void;
 	onDelete: () => void;
 }
 
@@ -53,6 +55,7 @@ export function UserDetailHeader({
 	onChangeRole,
 	onToggleActive,
 	onToggleLateSubmission,
+	onGenerateDocument,
 	onDelete,
 }: UserDetailHeaderProps) {
 	return (
@@ -128,6 +131,13 @@ export function UserDetailHeader({
 										Allow late submission
 									</>
 								)}
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={onGenerateDocument}
+								data-testid="generate-document-action"
+							>
+								<IconFilePlus className="mr-2 size-4" />
+								Generate document
 							</DropdownMenuItem>
 							{canDeleteUsers && (
 								<>
