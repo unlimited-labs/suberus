@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { adminRequestMiddleware } from "@/features/auth/server/middleware";
+import { isUuid } from "@/shared/lib/uuid";
 import { prisma } from "@/shared/server/db.server";
 import {
 	contentDispositionAttachment,
@@ -8,8 +9,6 @@ import {
 
 const DOCX_MIME =
 	"application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-const uuidRegex =
-	/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Streams a template's original .docx (admin/editor only). */
 export const Route = createFileRoute("/api/documents/templates/$id")({
@@ -18,7 +17,7 @@ export const Route = createFileRoute("/api/documents/templates/$id")({
 		handlers: {
 			GET: async ({ params }) => {
 				const { id } = params;
-				if (!uuidRegex.test(id)) {
+				if (!isUuid(id)) {
 					return new Response("Invalid template ID", { status: 400 });
 				}
 

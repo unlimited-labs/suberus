@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { authRequestMiddleware } from "@/features/auth/server/middleware";
+import { isUuid } from "@/shared/lib/uuid";
 import { prisma } from "@/shared/server/db.server";
 import {
 	contentDispositionAttachment,
@@ -7,8 +8,6 @@ import {
 } from "@/shared/server/storage";
 
 const ADMIN_ROLES = ["ADMIN", "EDITOR"];
-const uuidRegex =
-	/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Streams a generated document (PDF) through the app — same model as
@@ -22,7 +21,7 @@ export const Route = createFileRoute("/api/documents/$id")({
 		handlers: {
 			GET: async ({ params, context }) => {
 				const { id } = params;
-				if (!uuidRegex.test(id)) {
+				if (!isUuid(id)) {
 					return new Response("Invalid document ID", { status: 400 });
 				}
 

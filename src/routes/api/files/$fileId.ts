@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { authRequestMiddleware } from "@/features/auth/server/middleware";
 import type { UserRole } from "@/generated/prisma/enums";
+import { isUuid } from "@/shared/lib/uuid";
 import { checkFileAccess } from "@/shared/server/files";
 import {
 	contentDispositionAttachment,
@@ -14,10 +15,7 @@ export const Route = createFileRoute("/api/files/$fileId")({
 			GET: async ({ params, context }) => {
 				const { fileId } = params;
 
-				// Validate UUID format
-				const uuidRegex =
-					/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-				if (!uuidRegex.test(fileId)) {
+				if (!isUuid(fileId)) {
 					return new Response("Invalid file ID", { status: 400 });
 				}
 
