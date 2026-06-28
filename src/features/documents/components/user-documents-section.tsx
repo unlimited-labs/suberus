@@ -83,6 +83,7 @@ export function UserDocumentsSection({
 							size={d.size}
 							status={d.status}
 							error={d.error}
+							signed={d.signed}
 							downloadHref={
 								d.status === "READY" && d.hasFile
 									? `/api/documents/${d.id}`

@@ -1,11 +1,16 @@
-import { IconAlertTriangle, IconFileCertificate } from "@tabler/icons-react";
+import {
+	IconAlertTriangle,
+	IconFileCertificate,
+	IconShieldCheck,
+} from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { authRouteMiddleware } from "@/features/auth/server/middleware";
 import { myDocumentsQueryOptions } from "@/features/documents/api/documents";
 import { MyDocumentCard } from "@/features/documents/components/my-document-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import { EmptyState } from "@/shared/ui/empty-state";
 import { SectionCard } from "@/shared/ui/section-card";
 import { Skeleton } from "@/shared/ui/skeleton";
@@ -33,6 +38,18 @@ function MyDocumentsPage() {
 				{documents.length > 0 && (
 					<Badge variant="secondary">{documents.length}</Badge>
 				)}
+				<Button
+					asChild
+					variant="ghost"
+					size="sm"
+					className="ml-auto"
+					data-testid="verify-document-link"
+				>
+					<Link to="/verify-document">
+						<IconShieldCheck className="mr-2 size-4" />
+						Verify a document
+					</Link>
+				</Button>
 			</PageHeader>
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-5xl">
@@ -63,6 +80,7 @@ function MyDocumentsPage() {
 										name={d.name}
 										createdAt={d.createdAt}
 										downloadHref={`/api/documents/${d.id}`}
+										signed={d.signed}
 									/>
 								))}
 							</div>

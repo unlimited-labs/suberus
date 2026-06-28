@@ -1,4 +1,8 @@
-import { IconDownload, IconRosetteDiscountCheck } from "@tabler/icons-react";
+import {
+	IconDownload,
+	IconRosetteDiscountCheck,
+	IconShieldCheck,
+} from "@tabler/icons-react";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Button } from "@/shared/ui/button";
 
@@ -6,6 +10,7 @@ interface MyDocumentCardProps {
 	name: string;
 	createdAt: Date;
 	downloadHref: string;
+	signed?: boolean;
 }
 
 /**
@@ -17,6 +22,7 @@ export function MyDocumentCard({
 	name,
 	createdAt,
 	downloadHref,
+	signed = false,
 }: MyDocumentCardProps) {
 	const { formatDateTime } = useDateFormat();
 
@@ -29,6 +35,16 @@ export function MyDocumentCard({
 				<div className="flex size-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 ring-4 ring-emerald-50 dark:bg-emerald-500/20 dark:text-emerald-300 dark:ring-emerald-500/10">
 					<IconRosetteDiscountCheck className="size-7" />
 				</div>
+				{signed && (
+					<span
+						className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-emerald-600/90 px-2 py-0.5 text-xs font-medium text-white"
+						data-testid="document-signed-badge"
+						title="Digitally signed"
+					>
+						<IconShieldCheck className="size-3.5" />
+						Signed
+					</span>
+				)}
 			</div>
 			<div className="flex flex-1 flex-col gap-3 p-4">
 				<div className="min-w-0 flex-1">

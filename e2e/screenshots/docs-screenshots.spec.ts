@@ -708,6 +708,7 @@ test.describe("docs screenshots", () => {
 		["12", "reminders", "12-configuration-reminders.png", 1600],
 		["13", "survey", "13-configuration-survey.png", 1700],
 		["15", "invitations", "15-configuration-invitations.png", 1000],
+		["16", "documents", "16-settings-documents.png", 1400],
 	];
 	for (const [num, tab, file, height] of settingsTabs) {
 		test(`${num} settings tab ${tab}`, async ({ page }) => {

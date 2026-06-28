@@ -3,10 +3,12 @@ import { env } from "@/env";
 import { activityDetail } from "@/features/activity-log/types";
 import { renderDocxToPdf } from "@/features/documents/server/docx-pdf-client";
 import { resolvePlaceholders } from "@/features/documents/server/resolve";
+import { loadSigningMaterial } from "@/features/settings/server/document-signing";
 import { getSetting } from "@/features/settings/server/settings";
 import { logger } from "@/logger";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
+import { signPdf } from "@/shared/server/pdf-signing-client";
 import { ensureQueueAndSend } from "@/shared/server/queue";
 import {
 	getFileBuffer,
@@ -143,17 +145,46 @@ export async function processDocumentGeneration(
 		templateBuffer,
 		values,
 	);
-	const pdf = await renderDocxToPdf(
+	let pdf = await renderDocxToPdf(
 		filledDocx,
 		`${sanitizeFileName(doc.name) || "document"}.docx`,
 	);
+
+	// Sign when enabled. A signing failure fails the job (retry/FAILED) — we never
+	// silently deliver an unsigned doc when signing is on.
+	// ponytail: per-render S3 fetch of the small P12; cache if it shows in profiles.
+	const signing = await loadSigningMaterial();
+	let signed = false;
+	if (signing) {
+		const { cfg } = signing;
+		pdf = await signPdf(pdf, {
+			p12: signing.p12,
+			password: signing.password,
+			reason:
+				cfg.sealReason || `Issued by ${await getSetting("CONFERENCE_NAME")}`,
+			location: await getSetting("CONFERENCE_NAME"),
+			corner: cfg.sealCorner,
+			qrUrl: cfg.sealQrEnabled
+				? `${new URL(env.APP_BASE_URL).origin}/verify-document`
+				: undefined,
+			timestampUrl: cfg.timestampEnabled ? cfg.timestampUrl : undefined,
+			certify: cfg.certifying,
+		});
+		signed = true;
+	}
 
 	const storageKey = `documents/generated/${doc.userId}/${doc.id}.pdf`;
 	await uploadFile(pdf, storageKey, "application/pdf");
 
 	await prisma.generatedDocument.update({
 		where: { id: doc.id },
-		data: { status: "READY", storageKey, size: pdf.length, error: null },
+		data: {
+			status: "READY",
+			storageKey,
+			size: pdf.length,
+			signed,
+			error: null,
+		},
 	});
 	logger.info(`[document-generate] ${doc.id} ready (${pdf.length} bytes)`);
 

@@ -1018,6 +1018,7 @@ model GeneratedDocument {
   status        DocumentStatus    @default(PENDING)
   storageKey    String?           @unique
   size          Int?
+  signed        Boolean           @default(false)
   error         String?
   generatedById String?           @db.Uuid
   createdAt     DateTime          @default(now())

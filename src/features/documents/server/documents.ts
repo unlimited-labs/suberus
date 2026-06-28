@@ -18,6 +18,7 @@ export interface DocumentRow {
 	error: string | null;
 	createdAt: Date;
 	size: number | null;
+	signed: boolean;
 	hasFile: boolean;
 	participant: { id: string; name: string; email: string };
 	templateName: string | null;
@@ -32,6 +33,7 @@ const rowSelect = {
 	error: true,
 	createdAt: true,
 	size: true,
+	signed: true,
 	storageKey: true,
 	user: { select: { id: true, firstName: true, lastName: true, email: true } },
 	template: { select: { name: true } },
@@ -44,6 +46,7 @@ function toRow(d: {
 	error: string | null;
 	createdAt: Date;
 	size: number | null;
+	signed: boolean;
 	storageKey: string | null;
 	user: {
 		id: string;
@@ -60,6 +63,7 @@ function toRow(d: {
 		error: d.error,
 		createdAt: d.createdAt,
 		size: d.size,
+		signed: d.signed,
 		hasFile: Boolean(d.storageKey),
 		participant: {
 			id: d.user.id,
@@ -117,13 +121,14 @@ export interface MyDocument {
 	name: string;
 	createdAt: Date;
 	size: number | null;
+	signed: boolean;
 }
 
 /** Participant-facing: only READY documents are downloadable/visible. */
 export async function listMyDocuments(userId: string): Promise<MyDocument[]> {
 	return prisma.generatedDocument.findMany({
 		where: { userId, status: "READY" },
-		select: { id: true, name: true, createdAt: true, size: true },
+		select: { id: true, name: true, createdAt: true, size: true, signed: true },
 		orderBy: { createdAt: "desc" },
 	});
 }

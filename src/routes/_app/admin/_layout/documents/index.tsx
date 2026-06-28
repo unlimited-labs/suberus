@@ -1,14 +1,23 @@
-import { IconFileCertificate, IconFiles } from "@tabler/icons-react";
+import {
+	IconDownload,
+	IconExternalLink,
+	IconFileCertificate,
+	IconFiles,
+	IconShieldCheck,
+} from "@tabler/icons-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import {
 	createFileRoute,
 	useNavigate,
 	useSearch,
 } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { adminRouteMiddleware } from "@/features/auth/server/middleware";
 import { documentTemplatesQueryOptions } from "@/features/documents/api/documents";
 import { GeneratedDocumentsTab } from "@/features/documents/components/generated-documents-tab";
 import { TemplatesTab } from "@/features/documents/components/templates-tab";
+import { documentSigningQueryOptions } from "@/features/settings/api/document-signing";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
@@ -20,10 +29,55 @@ export const Route = createFileRoute("/_app/admin/_layout/documents/")({
 	},
 	validateSearch: searchSchema,
 	loader: async ({ context }) => {
-		await context.queryClient.ensureQueryData(documentTemplatesQueryOptions());
+		await Promise.all([
+			context.queryClient.ensureQueryData(documentTemplatesQueryOptions()),
+			context.queryClient.ensureQueryData(documentSigningQueryOptions()),
+		]);
 	},
 	component: AdminDocumentsPage,
 });
+
+function SigningBanner() {
+	const { data: signing } = useSuspenseQuery(documentSigningQueryOptions());
+	const [verifyUrl, setVerifyUrl] = useState("/verify-document");
+	useEffect(() => {
+		setVerifyUrl(`${window.location.origin}/verify-document`);
+	}, []);
+	if (!signing?.enabled) return null;
+	return (
+		<div className="mb-6 rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-4 text-sm">
+			<div className="flex items-center gap-2 font-medium text-emerald-700 dark:text-emerald-400">
+				<IconShieldCheck className="size-5" />
+				Generated documents are digitally signed
+			</div>
+			<p className="mt-1 text-muted-foreground">
+				Any PDF reader (Adobe, Foxit…) verifies the signature automatically. A
+				self-signed certificate shows as “valid — identity not trusted” until
+				the recipient imports the public certificate; or anyone can confirm
+				authenticity on the verification page below.
+			</p>
+			<div className="mt-3 flex flex-wrap items-center gap-3">
+				<a
+					href={verifyUrl}
+					target="_blank"
+					rel="noreferrer"
+					className="inline-flex items-center gap-1.5 font-medium text-emerald-700 hover:underline dark:text-emerald-400"
+					data-testid="verify-page-link"
+				>
+					<IconExternalLink className="size-4" />
+					{verifyUrl}
+				</a>
+				<a
+					href="/api/documents/signing-cert"
+					className="inline-flex items-center gap-1.5 text-muted-foreground hover:underline"
+				>
+					<IconDownload className="size-4" />
+					Download public certificate
+				</a>
+			</div>
+		</div>
+	);
+}
 
 const tabs = [
 	{ id: "templates", label: "Templates", icon: IconFileCertificate },
@@ -40,6 +94,7 @@ function AdminDocumentsPage() {
 			<PageHeader icon={IconFileCertificate} title="Documents" />
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-5xl">
+					<SigningBanner />
 					<Tabs
 						value={activeTab}
 						onValueChange={(value) =>

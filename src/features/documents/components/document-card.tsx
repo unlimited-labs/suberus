@@ -1,4 +1,4 @@
-import { IconDownload, IconTrash } from "@tabler/icons-react";
+import { IconDownload, IconShieldCheck, IconTrash } from "@tabler/icons-react";
 import {
 	DocumentIconTile,
 	DocumentStatusBadge,
@@ -14,6 +14,8 @@ interface DocumentCardProps {
 	size: number | null;
 	status: DocumentStatus;
 	error?: string | null;
+	/** Digitally signed — shows a "signed" marker next to the name. */
+	signed?: boolean;
 	/** Download endpoint; when absent the download action is hidden. */
 	downloadHref?: string;
 	/** Render the download as a labelled button (user-facing primary action). */
@@ -37,6 +39,7 @@ export function DocumentCard({
 	size,
 	status,
 	error,
+	signed = false,
 	downloadHref,
 	prominentDownload = false,
 	showStatus = true,
@@ -54,7 +57,16 @@ export function DocumentCard({
 		>
 			<DocumentIconTile status={status} />
 			<div className="min-w-0 flex-1">
-				<p className="truncate text-sm font-medium">{name}</p>
+				<p className="flex items-center gap-1.5 truncate text-sm font-medium">
+					{name}
+					{signed && (
+						<IconShieldCheck
+							className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400"
+							data-testid="document-signed-badge"
+							aria-label="Digitally signed"
+						/>
+					)}
+				</p>
 				<p className="text-xs text-muted-foreground">
 					{formatDateTime(createdAt)} · {formatBytes(size)}
 				</p>
