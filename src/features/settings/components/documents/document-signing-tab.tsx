@@ -23,6 +23,14 @@ import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/shared/ui/dialog";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import {
@@ -94,14 +102,34 @@ function CertificateSection({
 	const [busy, setBusy] = useState(false);
 	const fileRef = useRef<HTMLInputElement>(null);
 	const [p12Password, setP12Password] = useState("");
+	// When a cert already exists, replacing it is a rotation: confirm first, then
+	// re-sign previously-signed documents with the new cert.
+	const [confirm, setConfirm] = useState<null | "generate" | "upload">(null);
 
 	const expiresInDays = cfg ? daysUntil(cfg.validUntil) : null;
 
-	const generate = async () => {
-		if (!commonName.trim()) {
-			toast.error("Common name is required");
-			return;
+	const resignAfterRotation = async () => {
+		try {
+			const res = await fetch("/api/documents/resign", { method: "POST" });
+			if (!res.ok) throw new Error(String(res.status));
+			const { count } = (await res.json()) as { count: number };
+			if (count > 0) {
+				toast.success(
+					`Re-signing ${count} previously signed document(s) with the new certificate`,
+				);
+			}
+		} catch (e) {
+			toast.error(
+				getErrorMessage(
+					e,
+					"Certificate rotated, but re-signing failed to start",
+				),
+			);
 		}
+	};
+
+	const doGenerate = async () => {
+		const wasRotation = Boolean(cfg);
 		setBusy(true);
 		try {
 			await generateSigningCertFn({
@@ -109,19 +137,22 @@ function CertificateSection({
 			});
 			await onChanged();
 			toast.success("Certificate generated");
+			if (wasRotation) await resignAfterRotation();
 		} catch (e) {
 			toast.error(getErrorMessage(e, "Failed to generate certificate"));
 		} finally {
 			setBusy(false);
+			setConfirm(null);
 		}
 	};
 
-	const upload = async () => {
+	const doUpload = async () => {
 		const file = fileRef.current?.files?.[0];
 		if (!file) {
 			toast.error("Choose a .p12 file");
 			return;
 		}
+		const wasRotation = Boolean(cfg);
 		setBusy(true);
 		try {
 			const form = new FormData();
@@ -132,11 +163,37 @@ function CertificateSection({
 			toast.success("Certificate uploaded");
 			if (fileRef.current) fileRef.current.value = "";
 			setP12Password("");
+			if (wasRotation) await resignAfterRotation();
 		} catch (e) {
 			toast.error(getErrorMessage(e, "Failed to upload certificate"));
 		} finally {
 			setBusy(false);
+			setConfirm(null);
 		}
+	};
+
+	const generate = () => {
+		if (!commonName.trim()) {
+			toast.error("Common name is required");
+			return;
+		}
+		if (cfg) {
+			setConfirm("generate");
+			return;
+		}
+		void doGenerate();
+	};
+
+	const upload = () => {
+		if (!fileRef.current?.files?.[0]) {
+			toast.error("Choose a .p12 file");
+			return;
+		}
+		if (cfg) {
+			setConfirm("upload");
+			return;
+		}
+		void doUpload();
 	};
 
 	const toggleEnabled = async (enabled: boolean) => {
@@ -322,6 +379,58 @@ function CertificateSection({
 					</div>
 				</div>
 			</div>
+
+			<Dialog
+				open={confirm !== null}
+				onOpenChange={(o) => {
+					if (!busy && !o) setConfirm(null);
+				}}
+			>
+				<DialogContent data-testid="rotate-cert-dialog">
+					<DialogHeader>
+						<DialogTitle>Replace the signing certificate?</DialogTitle>
+						<DialogDescription asChild>
+							<div className="space-y-2">
+								<p>
+									This invalidates verification of every document signed with
+									the current certificate — including copies participants have{" "}
+									<strong className="text-foreground">
+										already downloaded
+									</strong>
+									, which cannot be recalled.
+								</p>
+								<p>
+									Documents still stored here will be{" "}
+									<strong className="text-foreground">
+										re-signed with the new certificate
+									</strong>{" "}
+									and the participants re-notified. Already-distributed copies
+									stay unverifiable until you re-share the re-issued ones.
+								</p>
+							</div>
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => setConfirm(null)}
+							disabled={busy}
+						>
+							Cancel
+						</Button>
+						<Button
+							onClick={() =>
+								confirm === "generate" ? doGenerate() : doUpload()
+							}
+							disabled={busy}
+							data-testid="rotate-cert-confirm"
+						>
+							{busy && <IconLoader2 className="mr-2 size-4 animate-spin" />}
+							Replace &amp; re-sign
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</SettingsSection>
 	);
 }
@@ -336,7 +445,6 @@ function AppearanceSection({
 	const [reason, setReason] = useState(cfg.sealReason);
 	const [corner, setCorner] = useState(cfg.sealCorner);
 	const [qr, setQr] = useState(cfg.sealQrEnabled);
-	const [logo, setLogo] = useState(cfg.sealLogoEnabled);
 	const [certifying, setCertifying] = useState(cfg.certifying);
 	const [busy, setBusy] = useState(false);
 
@@ -348,7 +456,6 @@ function AppearanceSection({
 					sealReason: reason,
 					sealCorner: corner,
 					sealQrEnabled: qr,
-					sealLogoEnabled: logo,
 					certifying,
 				},
 			});
@@ -401,12 +508,6 @@ function AppearanceSection({
 					<Switch id="seal-qr" checked={qr} onCheckedChange={setQr} />
 					<Label htmlFor="seal-qr" className="font-normal">
 						Embed a QR code linking to the verification page
-					</Label>
-				</div>
-				<div className="flex items-center gap-3 text-sm">
-					<Switch id="seal-logo" checked={logo} onCheckedChange={setLogo} />
-					<Label htmlFor="seal-logo" className="font-normal">
-						Embed the branding logo in the seal
 					</Label>
 				</div>
 				<div className="flex items-center gap-3 text-sm">

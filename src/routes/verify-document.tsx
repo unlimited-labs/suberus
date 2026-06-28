@@ -54,7 +54,12 @@ function VerifyDocumentPage() {
 		}
 	};
 
-	const authentic = result?.signed && result.valid && result.intact;
+	const cryptoOk = result?.signed && result.valid && result.intact;
+	// Trust is bound to THIS conference's current certificate, not the cert
+	// embedded in the uploaded PDF — otherwise any self-signed forgery with a
+	// spoofed subject would read as "Authentic".
+	const authentic = cryptoOk && result.matchesConfiguredCert;
+	const intactButForeign = cryptoOk && !result.matchesConfiguredCert;
 
 	return (
 		<div className="mx-auto flex min-h-screen max-w-xl flex-col justify-center gap-6 px-4 py-10">
@@ -108,9 +113,11 @@ function VerifyDocumentPage() {
 							<span className="font-semibold" data-testid="verify-verdict">
 								{authentic
 									? "Authentic"
-									: result.signed
-										? "Signature could not be confirmed"
-										: "Not digitally signed"}
+									: intactButForeign
+										? "Not issued by this conference"
+										: result.signed
+											? "Signature could not be confirmed"
+											: "Not digitally signed"}
 							</span>
 						</div>
 						{authentic && (
@@ -130,18 +137,34 @@ function VerifyDocumentPage() {
 										</div>
 									)}
 								</dl>
-								{result.matchesConfiguredCert && (
-									<p
-										className="mt-3 flex items-center gap-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-400"
-										data-testid="verify-matches-cert"
-									>
-										<IconShieldCheck className="size-4" />
-										Matches this conference's certificate
-									</p>
-								)}
+								<p
+									className="mt-3 flex items-center gap-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-400"
+									data-testid="verify-matches-cert"
+								>
+									<IconShieldCheck className="size-4" />
+									Matches this conference's certificate
+								</p>
 							</>
 						)}
-						{!authentic && (
+						{intactButForeign && (
+							<div
+								className="mt-2 space-y-1 text-sm text-muted-foreground"
+								data-testid="verify-foreign"
+							>
+								<p>
+									This PDF carries a valid, unaltered signature, but it was{" "}
+									<strong className="text-foreground">not</strong> signed with
+									this conference's certificate. Do not trust it as an official
+									document.
+								</p>
+								{result.signerSubject && (
+									<p className="break-all">
+										Claimed signer (unverified): {result.signerSubject}
+									</p>
+								)}
+							</div>
+						)}
+						{!authentic && !intactButForeign && (
 							<p className="mt-2 text-sm text-muted-foreground">
 								{result.reason}
 							</p>

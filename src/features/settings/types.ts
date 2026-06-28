@@ -65,7 +65,6 @@ export interface DocumentSigningSettings {
 	sealReason: string;
 	sealCorner: "bottom-right" | "bottom-left" | "top-right" | "top-left";
 	sealQrEnabled: boolean;
-	sealLogoEnabled: boolean;
 	/** Certifying (DocMDP) signature locks the PDF against further edits. */
 	certifying: boolean;
 }

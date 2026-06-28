@@ -61,7 +61,18 @@ export const setSigningEnabledFn = createServerFn({ method: "POST" })
 export const setSigningTimestampFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.validator(
-		z.object({ enabled: z.boolean(), url: z.string().trim().max(300) }),
+		z.object({
+			enabled: z.boolean(),
+			// Flows to the sidecar's HTTPTimeStamper → outbound request. Restrict to
+			// http(s) so it can't be pointed at file:// or other schemes (SSRF).
+			url: z
+				.string()
+				.trim()
+				.max(300)
+				.refine((u) => u === "" || /^https?:\/\//i.test(u), {
+					message: "Timestamp URL must be an http(s) URL.",
+				}),
+		}),
 	)
 	.handler(({ data }) => setTimestamp(data.enabled, data.url));
 
@@ -77,7 +88,6 @@ export const setSigningAppearanceFn = createServerFn({ method: "POST" })
 				"top-left",
 			]),
 			sealQrEnabled: z.boolean(),
-			sealLogoEnabled: z.boolean(),
 			certifying: z.boolean(),
 		}),
 	)

@@ -1,4 +1,5 @@
 import { env } from "@/env";
+import { docxApiAuthHeaders } from "@/shared/server/docx-api-auth";
 
 // HTTP client for the docx-api sidecar's signing endpoints (pyHanko). The app
 // owns the cert lifecycle; the sidecar is stateless and receives the P12 +
@@ -32,6 +33,7 @@ async function post(
 		res = await fetch(`${base()}${path}`, {
 			method: "POST",
 			body,
+			headers: docxApiAuthHeaders(),
 			signal: AbortSignal.timeout(timeoutMs),
 		});
 	} catch (e) {
@@ -98,7 +100,6 @@ export interface SignOptions {
 	qrUrl?: string;
 	timestampUrl?: string;
 	certify?: boolean;
-	logo?: Buffer;
 }
 
 export async function signPdf(pdf: Buffer, opts: SignOptions): Promise<Buffer> {
@@ -112,9 +113,6 @@ export async function signPdf(pdf: Buffer, opts: SignOptions): Promise<Buffer> {
 	form.append("qrUrl", opts.qrUrl ?? "");
 	form.append("timestampUrl", opts.timestampUrl ?? "");
 	form.append("certify", opts.certify ? "true" : "false");
-	if (opts.logo) {
-		form.append("logo", new Blob([new Uint8Array(opts.logo)]), "logo.png");
-	}
 	const res = await post("/v1/sign-pdf", form, SIGN_TIMEOUT_MS);
 	return Buffer.from(await res.arrayBuffer());
 }

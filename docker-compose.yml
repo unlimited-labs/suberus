@@ -93,6 +93,9 @@ services:
       - suberus-network
 
   # docx-api: DOCX -> normalized-HTML + rasterized-figure bundle (version-diff)
+  # + PDF signing (pyHanko). Holds the org signing key/password at request time,
+  # so it is bound to loopback (not 0.0.0.0) and gated by DOCX_API_TOKEN. Set the
+  # token in any shared/prod env; the Node app sends it as a bearer token.
   docx-api:
     build:
       context: ./services/docx-api
@@ -100,7 +103,12 @@ services:
     container_name: suberus-docx-api
     restart: unless-stopped
     ports:
-      - "8101:8101"
+      - "127.0.0.1:8101:8101"
+    environment:
+      DOCX_API_TOKEN: ${DOCX_API_TOKEN:-}
+    # Hard ceiling so a decompression bomb that slips past reject_zip_bomb can OOM
+    # this container instead of the host.
+    mem_limit: 2g
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8101/')"]
       interval: 30s

@@ -1,7 +1,5 @@
-import { env } from "@/env";
 import { SUPPORTED_IMAGE_EXTENSIONS } from "@/features/settings/file-types";
 import { getSetting, setSetting } from "@/features/settings/server/settings";
-import { logger } from "@/logger";
 import {
 	deleteFile,
 	getFileDownloadUrl,
@@ -55,34 +53,4 @@ export async function getAuthBackgroundUrl(): Promise<string> {
 	const key = await getSetting("BRANDING_AUTH_BACKGROUND_KEY");
 	if (!key) return "";
 	return getFileDownloadUrl(key);
-}
-
-/**
- * Seal logo bytes for the signed-document stamp: the custom BRANDING_LOGO_URL,
- * or the built-in default mark when branding is default (matches BrandLogo's
- * on-screen fallback). Returns undefined on any fetch/size failure — a missing
- * logo must never fail signing. The docx-api rasterizes SVG to PNG.
- */
-export async function getSealLogoBytes(): Promise<Buffer | undefined> {
-	const configured = await getSetting("BRANDING_LOGO_URL");
-	const raw = configured || "/logo.svg";
-	const url = /^https?:\/\//i.test(raw)
-		? raw
-		: new URL(raw, env.APP_BASE_URL).toString();
-	try {
-		const res = await fetch(url);
-		if (!res.ok) {
-			logger.warn(`[seal-logo] fetch ${url} -> ${res.status}`);
-			return undefined;
-		}
-		const buf = Buffer.from(await res.arrayBuffer());
-		if (buf.length > MAX_IMAGE_BYTES) {
-			logger.warn(`[seal-logo] ${url} exceeds size limit`);
-			return undefined;
-		}
-		return buf;
-	} catch (e) {
-		logger.warn(`[seal-logo] fetch failed: ${String(e)}`);
-		return undefined;
-	}
 }

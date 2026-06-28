@@ -4,6 +4,7 @@ import {
 	DOCUMENT_GENERATE_QUEUE,
 } from "@/features/documents/server/generate";
 import { resolvePlaceholders } from "@/features/documents/server/resolve";
+import { getSigningConfig } from "@/features/settings/server/document-signing";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/shared/server/db.server";
 import { ensureQueueAndSend } from "@/shared/server/queue";
@@ -132,6 +133,39 @@ export async function startBulk(opts: {
 	}
 
 	return { batchId: batch.id, total: docs.length };
+}
+
+/**
+ * After a certificate rotation, every previously-signed document was signed with
+ * the now-replaced cert, so it no longer matches the conference's current cert on
+ * the public verifier. Reset each signed doc to PENDING and re-enqueue it by id:
+ * the worker re-renders from the template and re-signs with the CURRENT cert,
+ * overwriting the same (deterministic) storage key — so no orphan rows are left.
+ * No-op unless signing is currently enabled (re-rendering with signing off would
+ * silently strip signatures and re-notify participants for nothing).
+ */
+export async function resignSignedDocuments(): Promise<{ count: number }> {
+	const signing = await getSigningConfig();
+	if (!signing?.enabled) return { count: 0 };
+
+	const docs = await prisma.generatedDocument.findMany({
+		where: { signed: true },
+		select: { id: true },
+	});
+	if (docs.length === 0) return { count: 0 };
+
+	await prisma.generatedDocument.updateMany({
+		where: { id: { in: docs.map((d) => d.id) } },
+		data: { status: "PENDING", signed: false, error: null },
+	});
+	for (const d of docs) {
+		await ensureQueueAndSend(
+			DOCUMENT_GENERATE_QUEUE,
+			{ documentId: d.id },
+			ENQUEUE_OPTS,
+		);
+	}
+	return { count: docs.length };
 }
 
 // Re-export so callers needing a single generation use the same module surface.

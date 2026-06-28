@@ -25,8 +25,6 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.x509.oid import NameOID
-from PIL import Image
-from pyhanko.pdf_utils.images import PdfImage
 from pyhanko.pdf_utils.incremental_writer import IncrementalPdfFileWriter
 from pyhanko.pdf_utils.reader import PdfFileReader
 from pyhanko.sign import fields, signers
@@ -146,7 +144,7 @@ def _seal_box(corner: str, page_w: float, page_h: float) -> tuple[int, int, int,
 
 def sign_pdf(pdf_bytes: bytes, p12_bytes: bytes, password: str, opts: dict) -> bytes:
     """Apply a PAdES signature with a visible seal. opts: reason, location, corner,
-    qr_url, logo_png, certify, timestamp_url."""
+    qr_url, certify, timestamp_url."""
     with tempfile.NamedTemporaryFile(suffix=".p12", delete=False) as f:
         f.write(p12_bytes)
         p12_path = f.name
@@ -162,21 +160,14 @@ def sign_pdf(pdf_bytes: bytes, p12_bytes: bytes, password: str, opts: dict) -> b
 
     reason = opts.get("reason") or ""
     qr_url = opts.get("qr_url")
-    logo_png = opts.get("logo_png")
 
     stamp_text = "Digitally signed by\n%(signer)s\n%(ts)s"
     if reason:
         stamp_text = f"{reason}\n{stamp_text}"
-    style_kwargs = {"stamp_text": stamp_text}
-    if logo_png:
-        style_kwargs["background"] = PdfImage(Image.open(io.BytesIO(logo_png)))
-        style_kwargs["background_opacity"] = 0.15
     if qr_url:
-        stamp_style = QRStampStyle(stamp_text=f"{stamp_text}\n%(url)s", **{
-            k: v for k, v in style_kwargs.items() if k != "stamp_text"
-        })
+        stamp_style = QRStampStyle(stamp_text=f"{stamp_text}\n%(url)s")
     else:
-        stamp_style = TextStampStyle(**style_kwargs)
+        stamp_style = TextStampStyle(stamp_text=stamp_text)
 
     page_w, page_h = _first_page_size(pdf_bytes)
     box = _seal_box(opts.get("corner") or "bottom-right", page_w, page_h)

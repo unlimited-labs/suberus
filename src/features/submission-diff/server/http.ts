@@ -58,12 +58,13 @@ export async function sidecarNormalize(
 	errorPrefix: string,
 	bytes: Buffer,
 	fileName: string,
+	headers?: Record<string, string>,
 ): Promise<Buffer> {
 	const form = new FormData();
 	form.append("file", new Blob([new Uint8Array(bytes)]), fileName);
 	const res = await requestOrThrow(
 		`${base}${endpoint}`,
-		{ method: "POST", body: form },
+		{ method: "POST", body: form, headers },
 		errorPrefix,
 		SIDECAR_TIMEOUT_MS.normalize,
 	);

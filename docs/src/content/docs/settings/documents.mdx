@@ -49,7 +49,10 @@ own certificate from a trusted authority for out-of-the-box “trusted”.
 - **In any PDF reader** (Adobe, Foxit, …) — the signature is checked
   automatically and appears in the reader's signature panel.
 - **On the verification page** — anyone can open **`/verify-document`**, upload
-  the PDF, and instantly see **“Authentic — signed by …”** or a tamper warning.
+  the PDF, and instantly see one of: **“Authentic”** (signed with *this
+  conference's current certificate* and unaltered), **“Not issued by this
+  conference”** (a valid signature, but from a different certificate — e.g. a
+  forgery or a document signed before a certificate change), or a tamper warning.
   No reader configuration needed. When the seal's **QR code** is enabled it links
   straight to this page. The link is also shown to admins on the
   **[Documents](/managing/documents/)** screen when signing is on.
@@ -65,7 +68,6 @@ own certificate from a trusted authority for out-of-the-box “trusted”.
 | **Reason / issuer text** | Text shown in the visible seal. | Defaults to “Issued by *conference*”. |
 | **Stamp position** | Which page corner the visible seal is drawn in. | Bottom-right / bottom-left / top-right / top-left. |
 | **Embed a QR code** | Adds a QR in the seal linking to the verification page. | On by default. |
-| **Embed the branding logo** | Draws your logo faintly behind the seal text. Uses your [branding](/settings/branding/) logo (PNG, JPG or SVG); falls back to the default logo when no custom branding is set. | Off by default. |
 | **Certifying signature (DocMDP)** | Locks the PDF against further edits after signing. | Off by default (a normal approval signature). |
 | **Trusted timestamp (RFC 3161)** | Adds a timestamp from a public authority, proving *when* it was signed and keeping it verifiable after the certificate expires. | Off by default. Free TSAs: `https://freetsa.org/tsr`, `http://timestamp.digicert.com`. |
 
@@ -74,9 +76,18 @@ Watch the **expiry warning** on the certificate card — when a certificate is
 close to expiring, regenerate it so document generation doesn't start failing.
 </Aside>
 
+<Aside type="caution" title="Replacing a certificate re-signs documents">
+Because verification is bound to your **current** certificate, replacing it
+(regenerate or upload a new `.p12`) makes every document signed with the old one
+read as **“Not issued by this conference”** — including copies recipients have
+already downloaded, which can't be recalled. You'll be asked to confirm; on
+confirm, documents still stored here are **re-signed with the new certificate**
+and the recipients re-notified. Re-share those re-issued copies.
+</Aside>
+
 ## Related
 
 <CardGrid>
 	<LinkCard title="Documents (managing)" href="/managing/documents/" description="Templates, single and bulk document generation." />
-	<LinkCard title="Branding" href="/settings/branding/" description="The logo embedded in the signature seal." />
+	<LinkCard title="Branding" href="/settings/branding/" description="Logo, colors and login-page branding." />
 </CardGrid>

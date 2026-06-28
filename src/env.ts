@@ -56,12 +56,19 @@ export const env = createEnv({
 
 		// docx-api (optional, DOCX->HTML normalize bundle for the version-diff pipeline)
 		DOCX_API_URL: z.url().optional(),
+		// Shared secret sent as a bearer token to the docx-api sidecar. The sidecar
+		// holds the org signing key + P12 password, so set this in any shared/prod
+		// env; when unset the sidecar leaves /v1 open (local dev / E2E only).
+		DOCX_API_TOKEN: z.string().optional(),
 
 		// Planner API (optional, enables auto session clustering)
 		PLANNER_API_URL: z.url().optional(),
 		LLM_CONCURRENCY: z.coerce.number().int().positive().default(4),
 
-		AUTH_SECRET: z.string(),
+		// Also derives the at-rest encryption key for the P12 signing password
+		// (sha256 of this). Enforce real entropy — a weak secret weakens both the
+		// session signer and the stored signing-cert password.
+		AUTH_SECRET: z.string().min(32),
 
 		E2E: z.stringbool().default(false),
 

@@ -24,9 +24,9 @@ profile (gotcha C5 — shared profiles corrupt under concurrent convert).
 
 import base64
 import hashlib
+import hmac
 import io
 import json
-import logging
 import os
 import re
 import subprocess
@@ -38,7 +38,17 @@ from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _pkg_version
 from pathlib import Path
 
-from fastapi import APIRouter, FastAPI, File, Form, HTTPException, Response, UploadFile
+from fastapi import (
+    APIRouter,
+    Depends,
+    FastAPI,
+    File,
+    Form,
+    Header,
+    HTTPException,
+    Response,
+    UploadFile,
+)
 from fastapi.concurrency import run_in_threadpool
 from PIL import Image
 from pydantic import BaseModel
@@ -47,8 +57,6 @@ import diffhtml
 import mathtype
 import signing
 import stylecss
-
-log = logging.getLogger("docx-api")
 
 
 def _xmldiff_version() -> str | None:
@@ -64,6 +72,44 @@ MAX_NORMALIZE_BYTES = int(os.getenv("DOCX_API_MAX_MB", "50")) * 1024 * 1024
 # Per-subprocess wall-clock caps so a crafted file can't hang a worker forever.
 PANDOC_TIMEOUT_S = int(os.getenv("DOCX_API_PANDOC_TIMEOUT_S", "120"))
 SOFFICE_TIMEOUT_S = int(os.getenv("DOCX_API_SOFFICE_TIMEOUT_S", "90"))
+
+# Shared-secret gate on /v1/*. The sidecar handles the org signing key + P12
+# password, so it must not be an open oracle for anyone who can reach the port.
+# When unset (local dev / E2E) auth is disabled; set it in any shared/prod env and
+# the Node clients send a matching bearer token.
+DOCX_API_TOKEN = os.getenv("DOCX_API_TOKEN")
+
+# A DOCX is a zip; a small upload can inflate to gigabytes inside pandoc/LibreOffice
+# (decompression bomb). The input-byte cap above does not bound the *uncompressed*
+# size — these do. The container also runs under a mem_limit as the hard backstop.
+MAX_UNCOMPRESSED_BYTES = (
+    int(os.getenv("DOCX_API_MAX_UNCOMPRESSED_MB", "500")) * 1024 * 1024
+)
+MAX_INFLATION_RATIO = int(os.getenv("DOCX_API_MAX_INFLATION_RATIO", "200"))
+
+
+def require_token(authorization: str | None = Header(default=None)) -> None:
+    if not DOCX_API_TOKEN:
+        return
+    expected = f"Bearer {DOCX_API_TOKEN}"
+    if not authorization or not hmac.compare_digest(authorization, expected):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+def reject_zip_bomb(contents: bytes) -> None:
+    """Reject a DOCX whose uncompressed size or inflation ratio looks like a bomb,
+    before any subprocess touches it. Also asserts the upload is a real zip/DOCX.
+    Central-directory sizes can be forged, so this pairs with the container
+    mem_limit (the real ceiling) rather than standing alone."""
+    try:
+        with zipfile.ZipFile(io.BytesIO(contents)) as z:
+            total = sum(info.file_size for info in z.infolist())
+    except zipfile.BadZipFile:
+        raise HTTPException(400, "Uploaded file is not a valid DOCX (zip)")
+    if total > MAX_UNCOMPRESSED_BYTES:
+        raise HTTPException(413, "DOCX uncompressed size exceeds the limit")
+    if contents and total / len(contents) > MAX_INFLATION_RATIO:
+        raise HTTPException(413, "DOCX compression ratio looks like a zip bomb")
 
 
 def _run(
@@ -122,7 +168,7 @@ RASTER_VIA_PILLOW = {".jpg", ".jpeg", ".gif", ".bmp", ".tif", ".tiff", ".webp"}
 RASTER_VIA_SOFFICE = {".emf", ".wmf", ".svg", ".eps", ".pict", ".pdf"}
 
 app = FastAPI()
-v1 = APIRouter(prefix="/v1")
+v1 = APIRouter(prefix="/v1", dependencies=[Depends(require_token)])
 
 
 def _soffice_to_png(src: Path, outdir: Path) -> Path:
@@ -177,22 +223,6 @@ def _to_png_bytes(src: Path, workdir: Path) -> bytes:
         if ext in RASTER_VIA_PILLOW:
             raise  # a known raster type failing is an error, not an unknown to skip
         return src.read_bytes()  # unknown ext: keep original bytes
-
-
-def _logo_to_png(raw: bytes) -> bytes:
-    """Normalize seal-logo bytes (PNG/JPG/SVG) to PNG. SVG is rasterized via
-    LibreOffice (PIL can't read it); rasters go through Pillow."""
-    head = raw[:1024].lstrip().lower()
-    is_svg = head[:4] == b"<svg" or (head[:5] == b"<?xml" and b"<svg" in head)
-    with tempfile.TemporaryDirectory() as d:
-        if is_svg:
-            src = Path(d) / "logo.svg"
-            src.write_bytes(raw)
-            return _soffice_to_png(src, Path(d)).read_bytes()
-        buf = io.BytesIO()
-        with Image.open(io.BytesIO(raw)) as im:
-            im.convert("RGBA").save(buf, format="PNG")
-        return buf.getvalue()
 
 
 _SRC_RE = re.compile(r'src="([^"]+)"')
@@ -364,6 +394,7 @@ async def normalize(file: UploadFile):
         raise HTTPException(
             413, f"File exceeds the {MAX_NORMALIZE_BYTES // (1024 * 1024)}MB normalize limit"
         )
+    reject_zip_bomb(contents)
 
     with tempfile.TemporaryDirectory() as tmp:
         workdir = Path(tmp)
@@ -423,6 +454,7 @@ async def render_pdf(file: UploadFile):
         raise HTTPException(
             413, f"File exceeds the {MAX_NORMALIZE_BYTES // (1024 * 1024)}MB limit"
         )
+    reject_zip_bomb(contents)
 
     with tempfile.TemporaryDirectory() as tmp:
         workdir = Path(tmp)
@@ -489,7 +521,6 @@ async def sign_pdf(
     qrUrl: str = Form(""),
     timestampUrl: str = Form(""),
     certify: str = Form("false"),
-    logo: UploadFile | None = File(None),
 ):
     """Apply a PAdES signature (visible seal) to an uploaded PDF."""
     pdf_bytes = await file.read()
@@ -500,12 +531,6 @@ async def sign_pdf(
         raise HTTPException(400, "No P12 uploaded")
     if len(pdf_bytes) > MAX_NORMALIZE_BYTES:
         raise HTTPException(413, "PDF exceeds the size limit")
-    logo_png = None
-    if logo is not None:
-        try:
-            logo_png = _logo_to_png(await logo.read())
-        except Exception as e:
-            log.warning("seal logo conversion failed, skipping: %s", e)
     try:
         # Offload to a worker thread: pyHanko's sync sign_pdf calls asyncio.run()
         # internally, which fails inside FastAPI's running event loop.
@@ -521,7 +546,6 @@ async def sign_pdf(
                 "qr_url": qrUrl or None,
                 "timestamp_url": timestampUrl or None,
                 "certify": certify.lower() == "true",
-                "logo_png": logo_png,
             },
         )
     except ValueError as e:

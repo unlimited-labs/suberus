@@ -3,7 +3,6 @@ import { env } from "@/env";
 import { activityDetail } from "@/features/activity-log/types";
 import { renderDocxToPdf } from "@/features/documents/server/docx-pdf-client";
 import { resolvePlaceholders } from "@/features/documents/server/resolve";
-import { getSealLogoBytes } from "@/features/settings/server/branding";
 import { loadSigningMaterial } from "@/features/settings/server/document-signing";
 import { getSetting } from "@/features/settings/server/settings";
 import { logger } from "@/logger";
@@ -158,7 +157,6 @@ export async function processDocumentGeneration(
 	let signed = false;
 	if (signing) {
 		const { cfg } = signing;
-		const logo = cfg.sealLogoEnabled ? await getSealLogoBytes() : undefined;
 		pdf = await signPdf(pdf, {
 			p12: signing.p12,
 			password: signing.password,
@@ -171,7 +169,6 @@ export async function processDocumentGeneration(
 				: undefined,
 			timestampUrl: cfg.timestampEnabled ? cfg.timestampUrl : undefined,
 			certify: cfg.certifying,
-			logo,
 		});
 		signed = true;
 	}

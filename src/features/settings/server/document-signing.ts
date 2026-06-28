@@ -48,7 +48,6 @@ function appearanceDefaults(
 	| "sealReason"
 	| "sealCorner"
 	| "sealQrEnabled"
-	| "sealLogoEnabled"
 	| "certifying"
 > {
 	return {
@@ -57,7 +56,6 @@ function appearanceDefaults(
 		sealReason: prev?.sealReason ?? "",
 		sealCorner: prev?.sealCorner ?? "bottom-right",
 		sealQrEnabled: prev?.sealQrEnabled ?? true,
-		sealLogoEnabled: prev?.sealLogoEnabled ?? false,
 		certifying: prev?.certifying ?? false,
 	};
 }
@@ -127,7 +125,6 @@ export async function setAppearance(patch: {
 	sealReason: string;
 	sealCorner: DocumentSigningSettings["sealCorner"];
 	sealQrEnabled: boolean;
-	sealLogoEnabled: boolean;
 	certifying: boolean;
 }): Promise<SafeSigningConfig> {
 	return updateConfig(patch);

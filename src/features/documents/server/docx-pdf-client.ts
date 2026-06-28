@@ -1,4 +1,5 @@
 import { env } from "@/env";
+import { docxApiAuthHeaders } from "@/shared/server/docx-api-auth";
 
 /** Wall-clock cap so a wedged LibreOffice can't hang the generate worker forever
  * (the sidecar's own SOFFICE_TIMEOUT_S is 90s; give the HTTP call some headroom). */
@@ -22,6 +23,7 @@ export async function renderDocxToPdf(
 		res = await fetch(`${base()}/v1/render-pdf`, {
 			method: "POST",
 			body: form,
+			headers: docxApiAuthHeaders(),
 			signal: AbortSignal.timeout(RENDER_PDF_TIMEOUT_MS),
 		});
 	} catch (e) {

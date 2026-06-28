@@ -31,6 +31,10 @@ async function uploadTemplate(page: Page, name: string, file: string) {
 test.describe("Admin - Document signing", () => {
 	test.describe.configure({ mode: "serial" });
 
+	// Captured in the first test (signed with the generated cert) and re-verified
+	// after a cert rotation in a later test — must then read as not-this-conference.
+	let signedPdf: Buffer | null = null;
+
 	test.beforeAll(async ({}, testInfo) => {
 		test.skip(!(await docxApiHealthy()), "docx-api sidecar (pyHanko) unavailable");
 		// Start clean so the cert-status assertions reflect this run.
@@ -111,6 +115,7 @@ test.describe("Admin - Document signing", () => {
 		const resp = await page.request.get(`/api/documents/${doc?.id}`);
 		expect(resp.ok()).toBe(true);
 		const pdf = await resp.body();
+		signedPdf = pdf;
 		const ascii = pdf.toString("latin1");
 		expect(ascii).toContain("/ByteRange");
 		expect(ascii).toContain("ETSI.CAdES.detached");
@@ -139,6 +144,8 @@ test.describe("Admin - Document signing", () => {
 			.setInputFiles(path.join(FIXTURES, "e2e-signing.p12"));
 		await page.getByLabel("Password").fill("e2epass");
 		await page.getByTestId("upload-cert-button").click();
+		// A cert already exists (previous test), so uploading is a rotation: confirm.
+		await page.getByTestId("rotate-cert-confirm").click();
 
 		const status = page.getByTestId("signing-cert-status");
 		await expect(status).toBeVisible({ timeout: 30000 });
@@ -146,5 +153,27 @@ test.describe("Admin - Document signing", () => {
 		await expect(page.getByTestId("signing-cert-subject")).toContainText(
 			"E2E Uploaded Cert",
 		);
+	});
+
+	test("a document signed with the old cert is not trusted after rotation", async ({
+		page,
+	}) => {
+		// The cert was rotated in the previous test. The PDF captured earlier carries
+		// the OLD signature, so the public verifier must NOT call it authentic — its
+		// signer fingerprint no longer matches the conference's current certificate.
+		expect(signedPdf).not.toBeNull();
+		await page.goto("/verify-document");
+		await page.getByTestId("verify-file-input").setInputFiles({
+			name: "old-signed.pdf",
+			mimeType: "application/pdf",
+			buffer: signedPdf as Buffer,
+		});
+		await page.getByTestId("verify-submit").click();
+		await expect(page.getByTestId("verify-verdict")).toHaveText(
+			"Not issued by this conference",
+			{ timeout: 30000 },
+		);
+		await expect(page.getByTestId("verify-foreign")).toBeVisible();
+		await expect(page.getByTestId("verify-matches-cert")).toBeHidden();
 	});
 });
