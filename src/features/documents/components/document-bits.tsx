@@ -1,4 +1,5 @@
 import { type Icon, IconFileCertificate } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 import {
 	PLACEHOLDER_LABELS,
 	type PlaceholderKey,
@@ -6,6 +7,23 @@ import {
 import type { DocumentStatus } from "@/generated/prisma/enums";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
+
+/** Shown in generate dialogs when the conference has no templates yet. */
+export function NoTemplatesHint() {
+	return (
+		<p className="text-xs text-muted-foreground">
+			No templates yet.{" "}
+			<Link
+				to="/admin/documents"
+				search={{ tab: "templates" }}
+				className="font-medium text-primary hover:underline"
+			>
+				Upload one in Documents → Templates
+			</Link>{" "}
+			first.
+		</p>
+	);
+}
 
 export function PlaceholderChips({ placeholders }: { placeholders: string[] }) {
 	if (placeholders.length === 0) {

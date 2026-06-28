@@ -13,7 +13,10 @@ import {
 	generateDocumentFn,
 	previewResolutionQueryOptions,
 } from "@/features/documents/api/documents";
-import { placeholderLabel } from "@/features/documents/components/document-bits";
+import {
+	NoTemplatesHint,
+	placeholderLabel,
+} from "@/features/documents/components/document-bits";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
 import {
@@ -112,11 +115,7 @@ export function UserDocumentDialog({
 								))}
 							</SelectContent>
 						</Select>
-						{templates.length === 0 && (
-							<p className="text-xs text-muted-foreground">
-								No templates yet — upload one under Documents first.
-							</p>
-						)}
+						{templates.length === 0 && <NoTemplatesHint />}
 					</div>
 
 					{templateId && preview && (

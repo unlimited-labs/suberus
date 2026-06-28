@@ -17,14 +17,19 @@ import { SectionCard } from "@/shared/ui/section-card";
 interface UserDocumentsSectionProps {
 	userId: string;
 	userName: string;
+	/** Add-document dialog open state, controlled by the parent so the header
+	 *  action menu can open it too. */
+	addOpen: boolean;
+	onAddOpenChange: (open: boolean) => void;
 }
 
 export function UserDocumentsSection({
 	userId,
 	userName,
+	addOpen,
+	onAddOpenChange,
 }: UserDocumentsSectionProps) {
 	const queryClient = useQueryClient();
-	const [addOpen, setAddOpen] = useState(false);
 	const [deletingId, setDeletingId] = useState<string | null>(null);
 	const [busy, setBusy] = useState(false);
 
@@ -59,7 +64,7 @@ export function UserDocumentsSection({
 				<Button
 					variant="outline"
 					size="sm"
-					onClick={() => setAddOpen(true)}
+					onClick={() => onAddOpenChange(true)}
 					data-testid="add-document-button"
 				>
 					<IconFilePlus className="mr-2 size-4" />
@@ -98,7 +103,7 @@ export function UserDocumentsSection({
 
 			<UserDocumentDialog
 				open={addOpen}
-				onOpenChange={setAddOpen}
+				onOpenChange={onAddOpenChange}
 				userId={userId}
 				userName={userName}
 			/>

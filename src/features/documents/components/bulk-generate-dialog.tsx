@@ -8,7 +8,10 @@ import {
 	previewBulkFn,
 	startBulkFn,
 } from "@/features/documents/api/documents";
-import { placeholderLabel } from "@/features/documents/components/document-bits";
+import {
+	NoTemplatesHint,
+	placeholderLabel,
+} from "@/features/documents/components/document-bits";
 import type { BulkPreview } from "@/features/documents/server/bulk";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Badge } from "@/shared/ui/badge";
@@ -143,11 +146,7 @@ export function BulkGenerateDialog({
 								))}
 							</SelectContent>
 						</Select>
-						{templates.length === 0 && (
-							<p className="text-xs text-muted-foreground">
-								No templates yet — upload one under Documents first.
-							</p>
-						)}
+						{templates.length === 0 && <NoTemplatesHint />}
 					</div>
 				)}
 
