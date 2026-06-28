@@ -36,6 +36,26 @@ import {
 	TableRow,
 } from "@/shared/ui/table";
 
+/** FAILED reason: truncated by default, click to reveal the full stored error. */
+function FailureReason({ error }: { error: string }) {
+	const [open, setOpen] = useState(false);
+	return (
+		<button
+			type="button"
+			onClick={() => setOpen((o) => !o)}
+			title={open ? "Click to collapse" : "Click to see the full error"}
+			data-testid="doc-error"
+			className={`mt-0.5 block text-left text-xs text-destructive ${
+				open
+					? "max-w-md whitespace-pre-wrap break-words"
+					: "max-w-48 cursor-pointer truncate"
+			}`}
+		>
+			{error}
+		</button>
+	);
+}
+
 export function GeneratedDocumentsTab() {
 	const queryClient = useQueryClient();
 	const { formatDateTime } = useDateFormat();
@@ -150,9 +170,7 @@ export function GeneratedDocumentsTab() {
 										</span>
 									</div>
 									{d.status === "FAILED" && d.error && (
-										<p className="mt-0.5 truncate text-xs text-destructive">
-											{d.error}
-										</p>
+										<FailureReason error={d.error} />
 									)}
 								</div>
 								<div className="flex shrink-0 flex-col items-center gap-1">
@@ -218,9 +236,7 @@ export function GeneratedDocumentsTab() {
 										<TableCell>
 											<DocumentStatusBadge status={d.status} />
 											{d.status === "FAILED" && d.error && (
-												<p className="mt-0.5 max-w-48 truncate text-xs text-destructive">
-													{d.error}
-												</p>
+												<FailureReason error={d.error} />
 											)}
 										</TableCell>
 										<TableCell className="text-sm text-muted-foreground">
