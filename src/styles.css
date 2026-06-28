@@ -274,6 +274,9 @@
 	.maplibregl-popup-tip {
 		@apply hidden!;
 	}
+	* {
+		border-color: color-mix(in oklch, var(--border) 50%, transparent);
+	}
 }
 
 /* Thin scrollbar styling */
