@@ -32,6 +32,8 @@ Suberus runs the full lifecycle of a conference call for submissions: authors su
 - **Program planner** — schedule accepted submissions into sessions, with drag-and-drop and an autoplan helper.
 - **Exhibitor flow** — company applications and presentations on a separate, non-reviewed track.
 - **Email templates** — database-stored, placeholder-driven notifications for every workflow event.
+- **Document generator** — issue per-participant PDFs (certificates, invitations, invoices) from uploaded DOCX templates with placeholder substitution; generate one at a time or in bulk, with participants downloading theirs from a certificate gallery.
+- **Digital signatures** — generated PDFs are signed ([PAdES](https://en.wikipedia.org/wiki/PAdES)) with a self-signed or uploaded certificate, and anyone can confirm authenticity on a public document-verification page.
 - **Immutable audit trail** — every user, submission, review, and decision event is logged.
 
 ## Quick start
