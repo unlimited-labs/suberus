@@ -1,11 +1,7 @@
-import {
-	IconLoader2,
-	IconShieldCheck,
-	IconShieldX,
-	IconUpload,
-} from "@tabler/icons-react";
+import { IconLoader2, IconUpload } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
+import { VerifyResultPanel } from "@/features/documents/components/verify-result-panel";
 import { verifyDocumentFn } from "@/features/settings/api/document-signing";
 import { getAppBrandingFn } from "@/features/settings/api/settings";
 import { getErrorMessage } from "@/shared/lib/error-message";
@@ -54,13 +50,6 @@ function VerifyDocumentPage() {
 		}
 	};
 
-	const cryptoOk = result?.signed && result.valid && result.intact;
-	// Trust is bound to THIS conference's current certificate, not the cert
-	// embedded in the uploaded PDF — otherwise any self-signed forgery with a
-	// spoofed subject would read as "Authentic".
-	const authentic = cryptoOk && result.matchesConfiguredCert;
-	const intactButForeign = cryptoOk && !result.matchesConfiguredCert;
-
 	return (
 		<div className="mx-auto flex min-h-screen max-w-xl flex-col justify-center gap-6 px-4 py-10">
 			<div className="text-center">
@@ -95,82 +84,7 @@ function VerifyDocumentPage() {
 
 				{error && <p className="text-sm text-destructive">{error}</p>}
 
-				{result && (
-					<div
-						data-testid="verify-result"
-						className={
-							authentic
-								? "rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-4"
-								: "rounded-xl border border-amber-500/40 bg-amber-500/5 p-4"
-						}
-					>
-						<div className="flex items-center gap-2">
-							{authentic ? (
-								<IconShieldCheck className="size-6 text-emerald-600 dark:text-emerald-400" />
-							) : (
-								<IconShieldX className="size-6 text-amber-600 dark:text-amber-400" />
-							)}
-							<span className="font-semibold" data-testid="verify-verdict">
-								{authentic
-									? "Authentic"
-									: intactButForeign
-										? "Not issued by this conference"
-										: result.signed
-											? "Signature could not be confirmed"
-											: "Not digitally signed"}
-							</span>
-						</div>
-						{authentic && (
-							<>
-								<dl className="mt-3 grid gap-1 text-sm">
-									<div>
-										<dt className="text-muted-foreground">Signed by</dt>
-										<dd className="break-all">{result.signerSubject}</dd>
-									</div>
-									{result.signedAt && (
-										<div>
-											<dt className="text-muted-foreground">Signed at</dt>
-											<dd>
-												{new Date(result.signedAt).toLocaleString()}
-												{result.timestamped && " (trusted timestamp)"}
-											</dd>
-										</div>
-									)}
-								</dl>
-								<p
-									className="mt-3 flex items-center gap-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-400"
-									data-testid="verify-matches-cert"
-								>
-									<IconShieldCheck className="size-4" />
-									Matches this conference's certificate
-								</p>
-							</>
-						)}
-						{intactButForeign && (
-							<div
-								className="mt-2 space-y-1 text-sm text-muted-foreground"
-								data-testid="verify-foreign"
-							>
-								<p>
-									This PDF carries a valid, unaltered signature, but it was{" "}
-									<strong className="text-foreground">not</strong> signed with
-									this conference's certificate. Do not trust it as an official
-									document.
-								</p>
-								{result.signerSubject && (
-									<p className="break-all">
-										Claimed signer (unverified): {result.signerSubject}
-									</p>
-								)}
-							</div>
-						)}
-						{!authentic && !intactButForeign && (
-							<p className="mt-2 text-sm text-muted-foreground">
-								{result.reason}
-							</p>
-						)}
-					</div>
-				)}
+				{result && <VerifyResultPanel result={result} />}
 			</div>
 		</div>
 	);
