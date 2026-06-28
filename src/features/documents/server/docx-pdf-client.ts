@@ -8,22 +8,20 @@ import { docxApiAuthHeaders } from "@/shared/server/docx-api-auth";
  * (the sidecar's own SOFFICE_TIMEOUT_S is 90s; give the HTTP call some headroom). */
 const RENDER_PDF_TIMEOUT_MS = 120_000;
 
-function base(): string {
-	if (!env.DOCX_API_URL) throw new Error("DOCX_API_URL is not configured");
-	return env.DOCX_API_URL.replace(/\/+$/, "");
-}
-
 /** POST a filled DOCX to the docx-api sidecar; returns the rendered PDF bytes. */
 export async function renderDocxToPdf(
 	docx: Buffer,
 	fileName: string,
 ): Promise<Buffer> {
+	if (!env.DOCX_API_URL) throw new Error("DOCX_API_URL is not configured");
+	const base = env.DOCX_API_URL.replace(/\/+$/, "");
+
 	const form = new FormData();
 	form.append("file", new Blob([new Uint8Array(docx)]), fileName);
 
 	let res: Response;
 	try {
-		res = await fetch(`${base()}/v1/render-pdf`, {
+		res = await fetch(`${base}/v1/render-pdf`, {
 			method: "POST",
 			body: form,
 			headers: docxApiAuthHeaders(),
