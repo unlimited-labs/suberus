@@ -145,6 +145,8 @@ export type AppSettingsMap = {
 
 	BRANDING_LOGO_URL: string;
 	BRANDING_FAVICON_URL: string;
+	BRANDING_LOGO_KEY: string;
+	BRANDING_FAVICON_KEY: string;
 	BRANDING_PRIMARY_COLOR: string;
 	BRANDING_SECONDARY_COLOR: string;
 	BRANDING_FOOTER_TEXT: string;

@@ -10,17 +10,8 @@ interface BrandingSettingsTabProps {
 }
 
 export function BrandingSettingsTab({ initialData }: BrandingSettingsTabProps) {
-	const {
-		data,
-		isSaving,
-		bgUploading,
-		bgRemoving,
-		bgInputRef,
-		handleChange,
-		handleSave,
-		handleBgUpload,
-		handleBgRemove,
-	} = useBrandingSettings(initialData);
+	const { data, isSaving, handleChange, handleSave, bg, logo, favicon } =
+		useBrandingSettings(initialData);
 
 	return (
 		<div className="space-y-6">
@@ -29,6 +20,8 @@ export function BrandingSettingsTab({ initialData }: BrandingSettingsTabProps) {
 				onChange={handleChange}
 				onSave={handleSave}
 				isSaving={isSaving}
+				logo={logo}
+				favicon={favicon}
 			/>
 
 			<AuthBackgroundSection
@@ -36,11 +29,7 @@ export function BrandingSettingsTab({ initialData }: BrandingSettingsTabProps) {
 				onChange={handleChange}
 				onSave={handleSave}
 				isSaving={isSaving}
-				bgUploading={bgUploading}
-				bgRemoving={bgRemoving}
-				bgInputRef={bgInputRef}
-				onUpload={handleBgUpload}
-				onRemove={handleBgRemove}
+				upload={bg}
 			/>
 
 			<ThemeColorsSection

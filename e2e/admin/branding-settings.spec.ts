@@ -259,3 +259,69 @@ test.describe.serial("Auth Background Image", () => {
 		await page.context().addCookies(savedState.cookies);
 	});
 });
+
+test.describe.serial("Logo & Favicon upload", () => {
+	let adminSettingsPage: AdminSettingsPage;
+	let restoreSettings: () => Promise<void>;
+
+	test.beforeAll(async () => {
+		({ restore: restoreSettings } = await snapshotAppSettings([
+			"BRANDING_LOGO_KEY",
+			"BRANDING_FAVICON_KEY",
+		]));
+	});
+
+	test.afterAll(async () => {
+		await restoreSettings();
+	});
+
+	test.beforeEach(async ({ page }, testInfo) => {
+		adminSettingsPage = new AdminSettingsPage(page);
+		await adminSettingsPage.goto();
+		await adminSettingsPage.switchToBrandingTab(testInfo);
+	});
+
+	test("can upload and remove a logo", async ({ page }) => {
+		// Act — upload
+		await adminSettingsPage.getLogoFileInput().setInputFiles(BG_FIXTURE_1);
+
+		// Assert — uploaded preview shows, served through the app
+		await expect(page.getByText("Logo uploaded")).toBeVisible({ timeout: 15000 });
+		const logoImg = adminSettingsPage.getLogoPreview().locator("img");
+		await expect(logoImg).toHaveAttribute("src", /\/api\/branding\/logo/);
+		// The /api/branding/* route must actually stream the image (not 404).
+		await expect
+			.poll(() => logoImg.evaluate((el: HTMLImageElement) => el.naturalWidth), {
+				timeout: 15000,
+			})
+			.toBeGreaterThan(0);
+
+		// Act — remove
+		await adminSettingsPage.getLogoRemoveButton().click();
+
+		// Assert
+		await expect(page.getByText("Logo removed")).toBeVisible({ timeout: 15000 });
+	});
+
+	test("can upload and remove a favicon", async ({ page }) => {
+		// Act — upload
+		await adminSettingsPage.getFaviconFileInput().setInputFiles(BG_FIXTURE_1);
+
+		// Assert — preview streams through the app route (not 404)
+		await expect(page.getByText("Favicon uploaded")).toBeVisible({ timeout: 15000 });
+		const faviconImg = page.getByTestId("favicon-preview").locator("img");
+		await expect(faviconImg).toHaveAttribute("src", /\/api\/branding\/favicon/);
+		await expect
+			.poll(
+				() => faviconImg.evaluate((el: HTMLImageElement) => el.naturalWidth),
+				{ timeout: 15000 },
+			)
+			.toBeGreaterThan(0);
+
+		// Act — remove
+		await adminSettingsPage.getFaviconRemoveButton().click();
+
+		// Assert
+		await expect(page.getByText("Favicon removed")).toBeVisible({ timeout: 15000 });
+	});
+});

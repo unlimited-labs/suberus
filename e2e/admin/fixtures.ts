@@ -462,6 +462,28 @@ export class AdminSettingsPage {
 		return this.page.locator("input[aria-label='Upload auth background']")
 	}
 
+	// --- Logo & Favicon upload ---
+
+	getLogoFileInput() {
+		return this.page.locator("input[aria-label='Upload logo']")
+	}
+
+	getLogoRemoveButton() {
+		return this.page.getByTestId("logo-remove")
+	}
+
+	getLogoPreview() {
+		return this.page.getByTestId("logo-preview")
+	}
+
+	getFaviconFileInput() {
+		return this.page.locator("input[aria-label='Upload favicon']")
+	}
+
+	getFaviconRemoveButton() {
+		return this.page.getByTestId("favicon-remove")
+	}
+
 	async loginAsAdmin(testRunId: string) {
 		const { DEFAULT_PASSWORD } = await import("../helpers/test-users")
 		await loginAs(this.page, { email: `admin-${testRunId}@e2e.local`, password: DEFAULT_PASSWORD })

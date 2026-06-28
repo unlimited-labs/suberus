@@ -1,107 +1,22 @@
-import {
-	IconLoader2,
-	IconPhotoUp,
-	IconTrash,
-	IconUpload,
-} from "@tabler/icons-react";
-import type { RefObject } from "react";
+import { IconPhotoUp } from "@tabler/icons-react";
 import type { BrandingSettings } from "@/features/settings/api/settings";
 import { SettingsSaveButton } from "@/features/settings/components/settings-save-button";
 import { SettingsSection } from "@/features/settings/components/settings-section";
-import { Button } from "@/shared/ui/button";
 import { Label } from "@/shared/ui/label";
 import { Slider } from "@/shared/ui/slider";
+import { ImageUploadControl } from "./image-upload-control";
 import {
-	ACCEPTED_IMAGE_TYPES,
 	type BrandingSettingsHandleChange,
+	type ImageUpload,
 	MAX_BG_SIZE_MB,
 } from "./use-branding-settings";
-
-interface BgUploadButtonProps {
-	bgInputRef: RefObject<HTMLInputElement | null>;
-	onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-	bgUploading: boolean;
-	bgRemoving: boolean;
-	hasImage: boolean;
-}
-
-function BgUploadButton({
-	bgInputRef,
-	onUpload,
-	bgUploading,
-	bgRemoving,
-	hasImage,
-}: BgUploadButtonProps) {
-	return (
-		<>
-			<input
-				ref={bgInputRef}
-				type="file"
-				accept={ACCEPTED_IMAGE_TYPES.join(",")}
-				onChange={onUpload}
-				className="hidden"
-				aria-label="Upload auth background"
-			/>
-			<Button
-				variant="outline"
-				size="sm"
-				onClick={() => bgInputRef.current?.click()}
-				disabled={bgUploading || bgRemoving}
-				data-testid="auth-background-upload"
-			>
-				{bgUploading ? (
-					<IconLoader2 className="mr-2 size-4 animate-spin" />
-				) : (
-					<IconUpload className="mr-2 size-4" />
-				)}
-				{hasImage ? "Replace image" : "Upload image"}
-			</Button>
-		</>
-	);
-}
-
-interface BgRemoveButtonProps {
-	show: boolean;
-	bgUploading: boolean;
-	bgRemoving: boolean;
-	onRemove: () => void;
-}
-
-function BgRemoveButton({
-	show,
-	bgUploading,
-	bgRemoving,
-	onRemove,
-}: BgRemoveButtonProps) {
-	if (!show) return null;
-	return (
-		<Button
-			variant="ghost"
-			size="sm"
-			onClick={onRemove}
-			disabled={bgUploading || bgRemoving}
-			data-testid="auth-background-remove"
-		>
-			{bgRemoving ? (
-				<IconLoader2 className="mr-2 size-4 animate-spin" />
-			) : (
-				<IconTrash className="mr-2 size-4" />
-			)}
-			Remove
-		</Button>
-	);
-}
 
 interface AuthBackgroundSectionProps {
 	data: BrandingSettings;
 	onChange: BrandingSettingsHandleChange;
 	onSave: () => void;
 	isSaving: boolean;
-	bgUploading: boolean;
-	bgRemoving: boolean;
-	bgInputRef: RefObject<HTMLInputElement | null>;
-	onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-	onRemove: () => void;
+	upload: ImageUpload;
 }
 
 export function AuthBackgroundSection({
@@ -109,11 +24,7 @@ export function AuthBackgroundSection({
 	onChange,
 	onSave,
 	isSaving,
-	bgUploading,
-	bgRemoving,
-	bgInputRef,
-	onUpload,
-	onRemove,
+	upload,
 }: AuthBackgroundSectionProps) {
 	const hasImage = Boolean(data.authBackgroundUrl);
 
@@ -138,21 +49,12 @@ export function AuthBackgroundSection({
 					</div>
 				)}
 
-				<div className="flex flex-wrap gap-2">
-					<BgUploadButton
-						bgInputRef={bgInputRef}
-						onUpload={onUpload}
-						bgUploading={bgUploading}
-						bgRemoving={bgRemoving}
-						hasImage={hasImage}
-					/>
-					<BgRemoveButton
-						show={hasImage}
-						bgUploading={bgUploading}
-						bgRemoving={bgRemoving}
-						onRemove={onRemove}
-					/>
-				</div>
+				<ImageUploadControl
+					upload={upload}
+					hasImage={hasImage}
+					testIdPrefix="auth-background"
+					ariaLabel="Upload auth background"
+				/>
 
 				{hasImage && (
 					<div className="space-y-2">

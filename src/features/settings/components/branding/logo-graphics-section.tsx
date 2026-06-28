@@ -5,13 +5,20 @@ import { SettingsSection } from "@/features/settings/components/settings-section
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
-import type { BrandingSettingsHandleChange } from "./use-branding-settings";
+import { ImageUploadControl } from "./image-upload-control";
+import {
+	type BrandingSettingsHandleChange,
+	type ImageUpload,
+	MAX_BG_SIZE_MB,
+} from "./use-branding-settings";
 
 interface LogoGraphicsSectionProps {
 	data: BrandingSettings;
 	onChange: BrandingSettingsHandleChange;
 	onSave: () => void;
 	isSaving: boolean;
+	logo: ImageUpload;
+	favicon: ImageUpload;
 }
 
 export function LogoGraphicsSection({
@@ -19,7 +26,13 @@ export function LogoGraphicsSection({
 	onChange,
 	onSave,
 	isSaving,
+	logo,
+	favicon,
 }: LogoGraphicsSectionProps) {
+	// Uploaded file takes precedence over the typed URL.
+	const logoPreview = data.logoUploadUrl || data.logoUrl;
+	const faviconPreview = data.faviconUploadUrl || data.faviconUrl;
+
 	return (
 		<SettingsSection
 			icon={IconPhoto}
@@ -35,10 +48,13 @@ export function LogoGraphicsSection({
 						onChange={(e) => onChange("logoUrl", e.target.value)}
 						placeholder="https://example.com/logo.png"
 					/>
-					{data.logoUrl && (
-						<div className="mt-2 rounded-lg border border-border/50 bg-muted/30 p-4">
+					{logoPreview && (
+						<div
+							className="mt-2 rounded-lg border border-border/50 bg-muted/30 p-4"
+							data-testid="logo-preview"
+						>
 							<img
-								src={data.logoUrl}
+								src={logoPreview}
 								alt="Logo preview"
 								className="max-h-16 object-contain"
 								onError={(e) => {
@@ -47,6 +63,12 @@ export function LogoGraphicsSection({
 							/>
 						</div>
 					)}
+					<ImageUploadControl
+						upload={logo}
+						hasImage={Boolean(data.logoUploadUrl)}
+						testIdPrefix="logo"
+						ariaLabel="Upload logo"
+					/>
 				</div>
 				<div className="space-y-2">
 					<Label htmlFor="faviconUrl">Favicon URL</Label>
@@ -56,7 +78,32 @@ export function LogoGraphicsSection({
 						onChange={(e) => onChange("faviconUrl", e.target.value)}
 						placeholder="https://example.com/favicon.ico"
 					/>
+					{faviconPreview && (
+						<div
+							className="mt-2 rounded-lg border border-border/50 bg-muted/30 p-4"
+							data-testid="favicon-preview"
+						>
+							<img
+								src={faviconPreview}
+								alt="Favicon preview"
+								className="max-h-12 object-contain"
+								onError={(e) => {
+									e.currentTarget.style.display = "none";
+								}}
+							/>
+						</div>
+					)}
+					<ImageUploadControl
+						upload={favicon}
+						hasImage={Boolean(data.faviconUploadUrl)}
+						testIdPrefix="favicon"
+						ariaLabel="Upload favicon"
+					/>
 				</div>
+				<p className="text-xs text-muted-foreground">
+					Upload accepted formats: JPG, PNG, WebP. Max size: {MAX_BG_SIZE_MB}MB.
+					An uploaded file takes precedence over the URL.
+				</p>
 				<div className="flex items-center gap-2">
 					<Checkbox
 						id="logoDarkInvert"

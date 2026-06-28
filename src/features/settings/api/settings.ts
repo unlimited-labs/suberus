@@ -11,8 +11,14 @@ import { getDefaultSetting } from "@/features/settings/defaults";
 import { SUPPORTED_FILE_EXTENSIONS } from "@/features/settings/file-types";
 import {
 	deleteAuthBackground,
+	deleteBrandingFavicon,
+	deleteBrandingLogo,
 	getAuthBackgroundUrl,
+	getBrandingFaviconUrl,
+	getBrandingLogoUrl,
 	uploadAuthBackground,
+	uploadBrandingFavicon,
+	uploadBrandingLogo,
 } from "@/features/settings/server/branding";
 import {
 	getActiveSubmissionTypes,
@@ -582,6 +588,10 @@ export const getRegistrationStatusFn = createServerFn({
 export interface BrandingSettings {
 	logoUrl: string;
 	faviconUrl: string;
+	/** Presigned URL of an uploaded logo; takes precedence over logoUrl. Empty if none. */
+	logoUploadUrl: string;
+	/** Presigned URL of an uploaded favicon; takes precedence over faviconUrl. Empty if none. */
+	faviconUploadUrl: string;
 	primaryColor: string;
 	secondaryColor: string;
 	footerText: string;
@@ -615,21 +625,27 @@ const brandingSchema = z.object({
  */
 export const getAppBrandingFn = createServerFn({ method: "GET" }).handler(
 	async (): Promise<AppBranding> => {
-		const settings = await getSettings([
-			"CONFERENCE_NAME",
-			"BRANDING_LOGO_URL",
-			"BRANDING_FAVICON_URL",
-			"BRANDING_PRIMARY_COLOR",
-			"BRANDING_SECONDARY_COLOR",
-			"BRANDING_FOOTER_TEXT",
-			"BRANDING_LOGO_DARK_INVERT",
-			"DATE_FORMAT",
-			"TIME_FORMAT",
+		const [settings, logoUploadUrl, faviconUploadUrl] = await Promise.all([
+			getSettings([
+				"CONFERENCE_NAME",
+				"BRANDING_LOGO_URL",
+				"BRANDING_FAVICON_URL",
+				"BRANDING_PRIMARY_COLOR",
+				"BRANDING_SECONDARY_COLOR",
+				"BRANDING_FOOTER_TEXT",
+				"BRANDING_LOGO_DARK_INVERT",
+				"DATE_FORMAT",
+				"TIME_FORMAT",
+			]),
+			getBrandingLogoUrl(),
+			getBrandingFaviconUrl(),
 		]);
 		return {
 			conferenceName: settings.CONFERENCE_NAME,
-			logoUrl: settings.BRANDING_LOGO_URL,
-			faviconUrl: settings.BRANDING_FAVICON_URL,
+			logoUrl: logoUploadUrl || settings.BRANDING_LOGO_URL,
+			faviconUrl: faviconUploadUrl || settings.BRANDING_FAVICON_URL,
+			logoUploadUrl: "",
+			faviconUploadUrl: "",
 			primaryColor: settings.BRANDING_PRIMARY_COLOR,
 			secondaryColor: settings.BRANDING_SECONDARY_COLOR,
 			footerText: settings.BRANDING_FOOTER_TEXT,
@@ -648,21 +664,26 @@ export const getAppBrandingFn = createServerFn({ method: "GET" }).handler(
 export const getBrandingSettingsFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(async (): Promise<BrandingSettings> => {
-		const [settings, authBackgroundUrl] = await Promise.all([
-			getSettings([
-				"BRANDING_LOGO_URL",
-				"BRANDING_FAVICON_URL",
-				"BRANDING_PRIMARY_COLOR",
-				"BRANDING_SECONDARY_COLOR",
-				"BRANDING_FOOTER_TEXT",
-				"BRANDING_AUTH_BG_OVERLAY",
-				"BRANDING_LOGO_DARK_INVERT",
-			]),
-			getAuthBackgroundUrl(),
-		]);
+		const [settings, authBackgroundUrl, logoUploadUrl, faviconUploadUrl] =
+			await Promise.all([
+				getSettings([
+					"BRANDING_LOGO_URL",
+					"BRANDING_FAVICON_URL",
+					"BRANDING_PRIMARY_COLOR",
+					"BRANDING_SECONDARY_COLOR",
+					"BRANDING_FOOTER_TEXT",
+					"BRANDING_AUTH_BG_OVERLAY",
+					"BRANDING_LOGO_DARK_INVERT",
+				]),
+				getAuthBackgroundUrl(),
+				getBrandingLogoUrl(),
+				getBrandingFaviconUrl(),
+			]);
 		return {
 			logoUrl: settings.BRANDING_LOGO_URL,
 			faviconUrl: settings.BRANDING_FAVICON_URL,
+			logoUploadUrl,
+			faviconUploadUrl,
 			primaryColor: settings.BRANDING_PRIMARY_COLOR,
 			secondaryColor: settings.BRANDING_SECONDARY_COLOR,
 			footerText: settings.BRANDING_FOOTER_TEXT,
@@ -709,6 +730,48 @@ export const deleteAuthBackgroundFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.handler(async () => {
 		await deleteAuthBackground();
+		return { success: true };
+	});
+
+/**
+ * Upload branding logo (admin only)
+ */
+export const uploadBrandingLogoFn = createServerFn({ method: "POST" })
+	.middleware([adminOnlyMiddleware])
+	.validator((data: FormData) => ({ file: getUploadedFile(data) }))
+	.handler(async ({ data }) => {
+		await uploadBrandingLogo(await fileToBuffer(data.file));
+		return { url: await getBrandingLogoUrl() };
+	});
+
+/**
+ * Delete branding logo (admin only)
+ */
+export const deleteBrandingLogoFn = createServerFn({ method: "POST" })
+	.middleware([adminOnlyMiddleware])
+	.handler(async () => {
+		await deleteBrandingLogo();
+		return { success: true };
+	});
+
+/**
+ * Upload branding favicon (admin only)
+ */
+export const uploadBrandingFaviconFn = createServerFn({ method: "POST" })
+	.middleware([adminOnlyMiddleware])
+	.validator((data: FormData) => ({ file: getUploadedFile(data) }))
+	.handler(async ({ data }) => {
+		await uploadBrandingFavicon(await fileToBuffer(data.file));
+		return { url: await getBrandingFaviconUrl() };
+	});
+
+/**
+ * Delete branding favicon (admin only)
+ */
+export const deleteBrandingFaviconFn = createServerFn({ method: "POST" })
+	.middleware([adminOnlyMiddleware])
+	.handler(async () => {
+		await deleteBrandingFavicon();
 		return { success: true };
 	});
 
@@ -773,7 +836,7 @@ export const getOgMetadataFn = createServerFn({ method: "GET" }).handler(
  */
 export const getAuthPageBrandingFn = createServerFn({ method: "GET" }).handler(
 	async (): Promise<AuthPageBranding> => {
-		const [s, authBackgroundUrl] = await Promise.all([
+		const [s, authBackgroundUrl, logoUploadUrl] = await Promise.all([
 			getSettings([
 				"CONFERENCE_NAME",
 				"BRANDING_LOGO_URL",
@@ -788,10 +851,11 @@ export const getAuthPageBrandingFn = createServerFn({ method: "GET" }).handler(
 				"DATE_FORMAT",
 			]),
 			getAuthBackgroundUrl(),
+			getBrandingLogoUrl(),
 		]);
 		return {
 			conferenceName: s.CONFERENCE_NAME,
-			logoUrl: s.BRANDING_LOGO_URL,
+			logoUrl: logoUploadUrl || s.BRANDING_LOGO_URL,
 			primaryColor: s.BRANDING_PRIMARY_COLOR,
 			secondaryColor: s.BRANDING_SECONDARY_COLOR,
 			conferenceStartDate: s.CONFERENCE_DATE_START,
