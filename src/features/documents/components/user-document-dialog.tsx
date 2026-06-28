@@ -89,7 +89,7 @@ export function UserDocumentDialog({
 				onOpenChange(o);
 			}}
 		>
-			<DialogContent>
+			<DialogContent className="sm:max-w-xl">
 				<DialogHeader>
 					<DialogTitle>Add document for {userName}</DialogTitle>
 					<DialogDescription>

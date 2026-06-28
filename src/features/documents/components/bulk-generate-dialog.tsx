@@ -114,7 +114,7 @@ export function BulkGenerateDialog({
 				onOpenChange(o);
 			}}
 		>
-			<DialogContent className="max-w-lg">
+			<DialogContent className="sm:max-w-xl">
 				<DialogHeader>
 					<DialogTitle>Generate documents</DialogTitle>
 					<DialogDescription>
