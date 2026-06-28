@@ -1,4 +1,4 @@
-import { type Icon, IconFileCertificate } from "@tabler/icons-react";
+import { IconFileCertificate } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import {
 	PLACEHOLDER_LABELS,
@@ -109,11 +109,9 @@ export function DocumentStatusBadge({ status }: { status: DocumentStatus }) {
  */
 export function DocumentIconTile({
 	status,
-	icon: TileIcon = IconFileCertificate,
 	className,
 }: {
 	status?: DocumentStatus;
-	icon?: Icon;
 	className?: string;
 }) {
 	return (
@@ -124,7 +122,7 @@ export function DocumentIconTile({
 				className,
 			)}
 		>
-			<TileIcon className="size-5" />
+			<IconFileCertificate className="size-5" />
 		</div>
 	);
 }
