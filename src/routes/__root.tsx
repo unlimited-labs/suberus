@@ -13,6 +13,7 @@ import {
 	getOgMetadataFn,
 	getPrimaryColorFn,
 } from "@/features/settings/api/settings";
+import { APP_SETTINGS_DEFAULTS } from "@/features/settings/defaults";
 import { getThemeFn } from "@/shared/lib/theme";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import { SpinnerSvg } from "../shared/components/spinner-svg";
@@ -144,6 +145,23 @@ function RootComponent() {
 	return <Outlet />;
 }
 
+function buildBrandVars(primaryColor: string): CSSProperties | undefined {
+	if (
+		!primaryColor ||
+		primaryColor === "var(--primary)" ||
+		primaryColor === APP_SETTINGS_DEFAULTS.BRANDING_PRIMARY_COLOR
+	) {
+		return undefined;
+	}
+	return {
+		"--primary": primaryColor,
+		"--ring": primaryColor,
+		"--sidebar-primary": primaryColor,
+		"--sidebar-ring": primaryColor,
+		"--chart-1": primaryColor,
+	} as CSSProperties;
+}
+
 function RootDocument({ children }: { children: React.ReactNode }) {
 	const { primaryColor, theme } = Route.useLoaderData();
 
@@ -151,6 +169,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 		<html
 			lang="en"
 			className={theme === "dark" ? "dark" : ""}
+			style={buildBrandVars(primaryColor)}
 			suppressHydrationWarning
 		>
 			<head>

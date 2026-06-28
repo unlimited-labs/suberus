@@ -62,17 +62,6 @@ function buildCssVarOverrides(branding: AppBranding): CSSProperties {
 	const vars: Record<string, string> = {};
 
 	if (
-		branding.primaryColor &&
-		branding.primaryColor !== defaults.primaryColor
-	) {
-		vars["--primary"] = branding.primaryColor;
-		vars["--ring"] = branding.primaryColor;
-		vars["--sidebar-primary"] = branding.primaryColor;
-		vars["--sidebar-ring"] = branding.primaryColor;
-		vars["--chart-1"] = branding.primaryColor;
-	}
-
-	if (
 		branding.secondaryColor &&
 		branding.secondaryColor !== defaults.secondaryColor
 	) {

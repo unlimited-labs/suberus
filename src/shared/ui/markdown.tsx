@@ -13,7 +13,7 @@ interface MarkdownProps {
 export function Markdown({ content, className = "" }: MarkdownProps) {
 	return (
 		<div
-			className={`prose prose-sm prose-slate dark:prose-invert max-w-none prose-headings:font-semibold prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-pre:bg-slate-100 dark:prose-pre:bg-slate-800 ${className}`}
+			className={`prose prose-sm prose-slate dark:prose-invert max-w-none prose-headings:font-semibold prose-a:text-primary prose-pre:bg-muted ${className}`}
 		>
 			{parse(renderMarkdown(content))}
 		</div>

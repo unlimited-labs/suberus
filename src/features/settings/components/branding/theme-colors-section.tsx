@@ -64,16 +64,6 @@ export function ThemeColorsSection({
 					</div>
 				</div>
 			</div>
-			<div className="mt-4 flex gap-3">
-				<div
-					className="size-12 rounded-lg shadow-sm"
-					style={{ backgroundColor: data.primaryColor }}
-				/>
-				<div
-					className="size-12 rounded-lg shadow-sm"
-					style={{ backgroundColor: data.secondaryColor }}
-				/>
-			</div>
 			<SettingsSaveButton onSave={onSave} isSaving={isSaving} />
 		</SettingsSection>
 	);

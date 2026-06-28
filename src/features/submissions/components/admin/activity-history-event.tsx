@@ -170,7 +170,7 @@ const detailRenderers: Record<string, DetailRenderer> = {
 				{decision && (
 					<Badge
 						className={
-							reviewDecisionColors[decision] ?? "bg-gray-100 text-gray-800"
+							reviewDecisionColors[decision] ?? "bg-muted text-muted-foreground"
 						}
 					>
 						{decision.replace(/_/g, " ")}

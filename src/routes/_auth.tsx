@@ -76,14 +76,6 @@ function buildCssVarOverrides(branding: AuthPageBranding): CSSProperties {
 	const vars: Record<string, string> = {};
 
 	if (
-		branding.primaryColor &&
-		branding.primaryColor !== defaults.primaryColor
-	) {
-		vars["--primary"] = branding.primaryColor;
-		vars["--ring"] = branding.primaryColor;
-	}
-
-	if (
 		branding.secondaryColor &&
 		branding.secondaryColor !== defaults.secondaryColor
 	) {

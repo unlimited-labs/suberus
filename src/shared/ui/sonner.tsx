@@ -5,6 +5,7 @@ import {
 	OctagonXIcon,
 	TriangleAlertIcon,
 } from "lucide-react";
+import type { CSSProperties } from "react";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 import { useTheme } from "@/shared/components/theme-provider";
 
@@ -14,6 +15,11 @@ function Toaster({ ...props }: ToasterProps) {
 	return (
 		<Sonner
 			theme={theme as ToasterProps["theme"]}
+			style={
+				{
+					"--normal-bg": "color-mix(in oklab, var(--primary) 5%, var(--popover))",
+				} as CSSProperties
+			}
 			icons={{
 				success: <CircleCheckIcon className="size-4" />,
 				info: <InfoIcon className="size-4" />,
