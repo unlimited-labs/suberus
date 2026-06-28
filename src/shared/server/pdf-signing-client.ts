@@ -1,3 +1,6 @@
+// fallow-ignore-file security-sink
+// Outbound fetch origin is env.DOCX_API_URL (internal sidecar, operator config),
+// never request-derived — not an SSRF surface.
 import { env } from "@/env";
 import { docxApiAuthHeaders } from "@/shared/server/docx-api-auth";
 

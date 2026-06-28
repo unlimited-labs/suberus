@@ -1,8 +1,5 @@
 import { activityDetail } from "@/features/activity-log/types";
-import {
-	createGeneratedDocument,
-	DOCUMENT_GENERATE_QUEUE,
-} from "@/features/documents/server/generate";
+import { DOCUMENT_GENERATE_QUEUE } from "@/features/documents/server/generate";
 import { resolvePlaceholders } from "@/features/documents/server/resolve";
 import { getSigningConfig } from "@/features/settings/server/document-signing";
 import type { Prisma } from "@/generated/prisma/client";
@@ -167,9 +164,6 @@ export async function resignSignedDocuments(): Promise<{ count: number }> {
 	}
 	return { count: docs.length };
 }
-
-// Re-export so callers needing a single generation use the same module surface.
-export { createGeneratedDocument };
 
 export interface BatchProgress {
 	total: number;

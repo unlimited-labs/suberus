@@ -33,6 +33,9 @@ async function initBoss(): Promise<PgBoss> {
 	// keeps the heavy worker code lazy (loaded on first enqueue, same as before) and
 	// in THIS module instance, so the single lazy boss owns its workers (a nitro
 	// plugin would be a separate bundle — its singleton wouldn't reach this initBoss).
+	// Cycle (queue→workers→feature→queue) closes only through this lazy import; runtime
+	// load is deferred so there's no init-order hazard.
+	// fallow-ignore-next-line circular-dependency
 	const { registerAllWorkers } = await import("@/pg-boss-workers");
 	await registerAllWorkers(boss);
 

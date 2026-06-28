@@ -13,9 +13,6 @@ import {
 import { open, seal } from "@/shared/server/secret-box";
 import type { DocumentSigningSettings } from "../types";
 
-/** Free public RFC3161 TSA prefilled when the operator enables timestamping. */
-export const DEFAULT_TSA_URL = "https://freetsa.org/tsr";
-
 function signingKey(): Buffer {
 	return createHash("sha256").update(env.AUTH_SECRET).digest();
 }
