@@ -91,7 +91,7 @@ function CertificateSection({
 	formatDate,
 	onChanged,
 }: {
-	cfg: Omit<DocumentSigningSettings, "passwordSealed"> | null;
+	cfg: Omit<DocumentSigningSettings, "passwordSealed" | "p12Base64"> | null;
 	conferenceName: string;
 	formatDate: (d: Date) => string;
 	onChanged: () => Promise<void>;
@@ -439,7 +439,7 @@ function AppearanceSection({
 	cfg,
 	onChanged,
 }: {
-	cfg: Omit<DocumentSigningSettings, "passwordSealed">;
+	cfg: Omit<DocumentSigningSettings, "passwordSealed" | "p12Base64">;
 	onChanged: () => Promise<void>;
 }) {
 	const [reason, setReason] = useState(cfg.sealReason);
@@ -535,7 +535,7 @@ function TimestampSection({
 	cfg,
 	onChanged,
 }: {
-	cfg: Omit<DocumentSigningSettings, "passwordSealed">;
+	cfg: Omit<DocumentSigningSettings, "passwordSealed" | "p12Base64">;
 	onChanged: () => Promise<void>;
 }) {
 	const [enabled, setEnabled] = useState(cfg.timestampEnabled);

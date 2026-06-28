@@ -48,8 +48,9 @@ export interface DeadlineReminderSettings {
 }
 
 /** Digital signature config for generated documents (stored as JSON in AppSetting).
- * null = signing was never configured. The P12 bytes live in S3; only metadata +
- * the sealed (encrypted) P12 password live here. */
+ * null = signing was never configured. The password-protected P12 and its sealed
+ * password are stored TOGETHER here (per database) so they can never drift out of
+ * sync — see the comment on `p12Base64`. Neither is ever sent to the client. */
 export interface DocumentSigningSettings {
 	enabled: boolean;
 	source: "self-signed" | "uploaded";
@@ -59,6 +60,11 @@ export interface DocumentSigningSettings {
 	validUntil: string;
 	/** secret-box ciphertext of the P12 password (never sent to the client). */
 	passwordSealed: string;
+	/** base64 of the password-protected P12 (private key + cert), never sent to the
+	 * client. Stored here instead of a shared S3 key so the cert and its password
+	 * stay atomic per-DB — a single global S3 object would be clobbered by any other
+	 * environment/tenant sharing the bucket, desyncing it from this row's password. */
+	p12Base64: string;
 	timestampEnabled: boolean;
 	timestampUrl: string;
 	// Visible seal appearance

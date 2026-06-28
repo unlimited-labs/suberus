@@ -11,11 +11,8 @@ import {
 	verifyPdf,
 } from "@/shared/server/pdf-signing-client";
 import { open, seal } from "@/shared/server/secret-box";
-import { getFileBuffer, uploadFile } from "@/shared/server/storage";
 import type { DocumentSigningSettings } from "../types";
 
-/** Public S3 storage is private here — same access control as templates. */
-const P12_KEY = "documents/signing/cert.p12";
 /** Free public RFC3161 TSA prefilled when the operator enables timestamping. */
 export const DEFAULT_TSA_URL = "https://freetsa.org/tsr";
 
@@ -27,14 +24,17 @@ export async function getSigningConfig(): Promise<DocumentSigningSettings | null
 	return getSetting("DOCUMENT_SIGNING");
 }
 
-/** Client-facing view: never expose the sealed P12 password. */
-export type SafeSigningConfig = Omit<DocumentSigningSettings, "passwordSealed">;
+/** Client-facing view: never expose the sealed P12 password or the P12 itself. */
+export type SafeSigningConfig = Omit<
+	DocumentSigningSettings,
+	"passwordSealed" | "p12Base64"
+>;
 
 export function sanitize(
 	cfg: DocumentSigningSettings | null,
 ): SafeSigningConfig | null {
 	if (!cfg) return null;
-	const { passwordSealed: _omit, ...safe } = cfg;
+	const { passwordSealed: _pw, p12Base64: _p12, ...safe } = cfg;
 	return safe;
 }
 
@@ -66,7 +66,6 @@ async function persistCert(
 	metadata: CertMetadata,
 	source: "self-signed" | "uploaded",
 ): Promise<SafeSigningConfig> {
-	await uploadFile(p12, P12_KEY, "application/x-pkcs12");
 	const prev = await getSigningConfig();
 	const cfg: DocumentSigningSettings = {
 		enabled: prev?.enabled ?? false,
@@ -76,6 +75,7 @@ async function persistCert(
 		validFrom: metadata.validFrom,
 		validUntil: metadata.validUntil,
 		passwordSealed: seal(signingKey(), password),
+		p12Base64: p12.toString("base64"),
 		...appearanceDefaults(prev),
 	};
 	await setSetting("DOCUMENT_SIGNING", cfg);
@@ -133,8 +133,8 @@ export async function setAppearance(patch: {
 /** Public certificate PEM for the "download .cer" button (no private key). */
 export async function getPublicCertPem(): Promise<string | null> {
 	const cfg = await getSigningConfig();
-	if (!cfg) return null;
-	const p12 = await getFileBuffer(P12_KEY);
+	if (!cfg?.p12Base64) return null;
+	const p12 = Buffer.from(cfg.p12Base64, "base64");
 	const password = open(signingKey(), cfg.passwordSealed);
 	const { certPem } = await inspectCertificate(p12, password);
 	return certPem;
@@ -147,8 +147,10 @@ export async function loadSigningMaterial(): Promise<{
 	password: string;
 } | null> {
 	const cfg = await getSigningConfig();
-	if (!cfg?.enabled) return null;
-	const p12 = await getFileBuffer(P12_KEY);
+	// Legacy rows (P12 in S3, pre-DB-storage) have no p12Base64 → treat as
+	// unconfigured; regenerating the cert repopulates it.
+	if (!cfg?.enabled || !cfg.p12Base64) return null;
+	const p12 = Buffer.from(cfg.p12Base64, "base64");
 	const password = open(signingKey(), cfg.passwordSealed);
 	return { cfg, p12, password };
 }
