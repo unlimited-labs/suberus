@@ -1,9 +1,4 @@
-import {
-	IconDownload,
-	IconFileCertificate,
-	IconFilePlus,
-	IconTrash,
-} from "@tabler/icons-react";
+import { IconFileCertificate, IconFilePlus } from "@tabler/icons-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -11,22 +6,12 @@ import {
 	adminUserDocumentsQueryOptions,
 	deleteDocumentFn,
 } from "@/features/documents/api/documents";
-import {
-	DocumentStatusBadge,
-	formatBytes,
-} from "@/features/documents/components/document-bits";
+import { ConfirmDeleteDialog } from "@/features/documents/components/confirm-delete-dialog";
+import { DocumentCard } from "@/features/documents/components/document-card";
 import { UserDocumentDialog } from "@/features/documents/components/user-document-dialog";
-import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/shared/ui/dialog";
+import { EmptyState } from "@/shared/ui/empty-state";
 import { SectionCard } from "@/shared/ui/section-card";
 
 interface UserDocumentsSectionProps {
@@ -39,7 +24,6 @@ export function UserDocumentsSection({
 	userName,
 }: UserDocumentsSectionProps) {
 	const queryClient = useQueryClient();
-	const { formatDateTime } = useDateFormat();
 	const [addOpen, setAddOpen] = useState(false);
 	const [deletingId, setDeletingId] = useState<string | null>(null);
 	const [busy, setBusy] = useState(false);
@@ -84,51 +68,29 @@ export function UserDocumentsSection({
 			}
 		>
 			{documents.length === 0 ? (
-				<p className="text-sm text-muted-foreground">
-					No documents generated for this participant yet.
-				</p>
+				<EmptyState
+					icon={IconFileCertificate}
+					title="No documents yet"
+					description="Generate a document for this participant from one of your templates."
+				/>
 			) : (
 				<div className="space-y-2">
 					{documents.map((d) => (
-						<div
+						<DocumentCard
 							key={d.id}
-							data-testid="user-document-row"
-							className="flex items-center gap-3 rounded-lg border bg-card p-3"
-						>
-							<div className="min-w-0 flex-1">
-								<p className="truncate text-sm font-medium">{d.name}</p>
-								<p className="text-xs text-muted-foreground">
-									{formatDateTime(d.createdAt)} · {formatBytes(d.size)}
-								</p>
-								{d.status === "FAILED" && d.error && (
-									<p className="mt-0.5 truncate text-xs text-destructive">
-										{d.error}
-									</p>
-								)}
-							</div>
-							<DocumentStatusBadge status={d.status} />
-							{d.status === "READY" && d.hasFile && (
-								<Button
-									asChild
-									variant="ghost"
-									size="icon-sm"
-									aria-label="Download"
-								>
-									<a href={`/api/documents/${d.id}`}>
-										<IconDownload className="size-4" />
-									</a>
-								</Button>
-							)}
-							<Button
-								variant="ghost"
-								size="icon-sm"
-								onClick={() => setDeletingId(d.id)}
-								className="text-destructive hover:text-destructive"
-								aria-label="Delete document"
-							>
-								<IconTrash className="size-4" />
-							</Button>
-						</div>
+							name={d.name}
+							createdAt={d.createdAt}
+							size={d.size}
+							status={d.status}
+							error={d.error}
+							downloadHref={
+								d.status === "READY" && d.hasFile
+									? `/api/documents/${d.id}`
+									: undefined
+							}
+							onDelete={() => setDeletingId(d.id)}
+							testId="user-document-row"
+						/>
 					))}
 				</div>
 			)}
@@ -140,38 +102,16 @@ export function UserDocumentsSection({
 				userName={userName}
 			/>
 
-			<Dialog
+			<ConfirmDeleteDialog
 				open={deletingId !== null}
 				onOpenChange={(o) => {
-					if (!o && !busy) setDeletingId(null);
+					if (!o) setDeletingId(null);
 				}}
-			>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Delete document?</DialogTitle>
-						<DialogDescription>
-							This removes the generated file. The participant will no longer
-							see it.
-						</DialogDescription>
-					</DialogHeader>
-					<DialogFooter>
-						<Button
-							variant="outline"
-							onClick={() => setDeletingId(null)}
-							disabled={busy}
-						>
-							Cancel
-						</Button>
-						<Button
-							variant="destructive"
-							onClick={handleDelete}
-							disabled={busy}
-						>
-							Delete
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+				busy={busy}
+				title="Delete document?"
+				description="This removes the generated file. The participant will no longer see it."
+				onConfirm={handleDelete}
+			/>
 		</SectionCard>
 	);
 }

@@ -1,8 +1,10 @@
+import { type Icon, IconFileCertificate } from "@tabler/icons-react";
 import {
 	PLACEHOLDER_LABELS,
 	type PlaceholderKey,
 } from "@/features/documents/lib/placeholders";
 import type { DocumentStatus } from "@/generated/prisma/enums";
+import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 
 export function PlaceholderChips({ placeholders }: { placeholders: string[] }) {
@@ -26,21 +28,86 @@ export function placeholderLabel(key: string): string {
 	return PLACEHOLDER_LABELS[key as PlaceholderKey] ?? key;
 }
 
-const STATUS_META: Record<
-	DocumentStatus,
-	{ label: string; variant: "secondary" | "default" | "destructive" }
-> = {
-	PENDING: { label: "Generating…", variant: "secondary" },
-	READY: { label: "Ready", variant: "default" },
-	FAILED: { label: "Failed", variant: "destructive" },
+/**
+ * Single source of truth for per-status colour: the icon tile, the inline
+ * dot, and the soft badge. Status is never conveyed by colour alone — the
+ * label and dot always accompany it (a11y).
+ */
+interface StatusAccent {
+	label: string;
+	/** Icon-tile background + foreground. */
+	tile: string;
+	/** Inline status dot colour. */
+	dot: string;
+	/** Soft badge background + text. */
+	badge: string;
+	/** Subtle pulse while work is in flight. */
+	pulse?: boolean;
+}
+
+export const STATUS_ACCENT: Record<DocumentStatus, StatusAccent> = {
+	PENDING: {
+		label: "Generating…",
+		tile: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
+		dot: "bg-amber-500",
+		badge:
+			"border-transparent bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
+		pulse: true,
+	},
+	READY: {
+		label: "Ready",
+		tile: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
+		dot: "bg-emerald-500",
+		badge:
+			"border-transparent bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
+	},
+	FAILED: {
+		label: "Failed",
+		tile: "bg-destructive/10 text-destructive",
+		dot: "bg-destructive",
+		badge: "border-transparent bg-destructive/10 text-destructive",
+	},
 };
 
 export function DocumentStatusBadge({ status }: { status: DocumentStatus }) {
-	const meta = STATUS_META[status];
+	const accent = STATUS_ACCENT[status];
 	return (
-		<Badge variant={meta.variant} data-testid={`doc-status-${status}`}>
-			{meta.label}
+		<Badge className={accent.badge} data-testid={`doc-status-${status}`}>
+			<span
+				className={cn(
+					"size-1.5 rounded-full",
+					accent.dot,
+					accent.pulse && "animate-pulse",
+				)}
+			/>
+			{accent.label}
 		</Badge>
+	);
+}
+
+/**
+ * Rounded icon tile fronting a document/template card. Colour follows the
+ * document status; omit `status` for the neutral (template) treatment.
+ */
+export function DocumentIconTile({
+	status,
+	icon: TileIcon = IconFileCertificate,
+	className,
+}: {
+	status?: DocumentStatus;
+	icon?: Icon;
+	className?: string;
+}) {
+	return (
+		<div
+			className={cn(
+				"flex size-11 shrink-0 items-center justify-center rounded-xl",
+				status ? STATUS_ACCENT[status].tile : "bg-muted text-muted-foreground",
+				className,
+			)}
+		>
+			<TileIcon className="size-5" />
+		</div>
 	);
 }
 

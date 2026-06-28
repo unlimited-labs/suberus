@@ -1,9 +1,4 @@
-import {
-	IconDownload,
-	IconFiles,
-	IconSearch,
-	IconTrash,
-} from "@tabler/icons-react";
+import { IconDownload, IconFiles, IconTrash } from "@tabler/icons-react";
 import {
 	useQuery,
 	useQueryClient,
@@ -16,30 +11,22 @@ import {
 	deleteDocumentFn,
 	documentTemplatesQueryOptions,
 } from "@/features/documents/api/documents";
+import { ConfirmDeleteDialog } from "@/features/documents/components/confirm-delete-dialog";
 import {
+	DocumentIconTile,
 	DocumentStatusBadge,
 	formatBytes,
 } from "@/features/documents/components/document-bits";
+import {
+	DocumentFilters,
+	type StatusFilter,
+} from "@/features/documents/components/document-filters";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/shared/ui/dialog";
-import { Input } from "@/shared/ui/input";
+import { EmptyState } from "@/shared/ui/empty-state";
 import { SectionCard } from "@/shared/ui/section-card";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/shared/ui/select";
+import { Skeleton } from "@/shared/ui/skeleton";
 import {
 	Table,
 	TableBody,
@@ -48,8 +35,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/shared/ui/table";
-
-type StatusFilter = "ALL" | "PENDING" | "READY" | "FAILED";
 
 export function GeneratedDocumentsTab() {
 	const queryClient = useQueryClient();
@@ -62,13 +47,16 @@ export function GeneratedDocumentsTab() {
 
 	const { data: templates } = useSuspenseQuery(documentTemplatesQueryOptions());
 
+	const hasFilters =
+		search.trim() !== "" || status !== "ALL" || templateId !== "ALL";
+
 	const filters = {
 		search: search.trim() || undefined,
 		status: status === "ALL" ? undefined : status,
 		templateId: templateId === "ALL" ? undefined : templateId,
 	};
 
-	const { data: documents = [] } = useQuery({
+	const { data: documents = [], isLoading } = useQuery({
 		...adminDocumentsQueryOptions(filters),
 		refetchInterval: (query) =>
 			query.state.data?.some((d) => d.status === "PENDING") ? 2000 : false,
@@ -96,156 +84,191 @@ export function GeneratedDocumentsTab() {
 			description="Every document issued to participants, across the conference."
 			contentClassName="space-y-4"
 		>
-			<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-				<div className="relative flex-1">
-					<IconSearch className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-					<Input
-						value={search}
-						onChange={(e) => setSearch(e.target.value)}
-						placeholder="Search by participant…"
-						className="pl-8"
-						data-testid="documents-search"
-					/>
-				</div>
-				<Select
-					value={status}
-					onValueChange={(v) => setStatus(v as StatusFilter)}
-				>
-					<SelectTrigger className="w-full sm:w-40">
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="ALL">All statuses</SelectItem>
-						<SelectItem value="READY">Ready</SelectItem>
-						<SelectItem value="PENDING">Generating</SelectItem>
-						<SelectItem value="FAILED">Failed</SelectItem>
-					</SelectContent>
-				</Select>
-				<Select value={templateId} onValueChange={setTemplateId}>
-					<SelectTrigger className="w-full sm:w-48">
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="ALL">All templates</SelectItem>
-						{templates.map((t) => (
-							<SelectItem key={t.id} value={t.id}>
-								{t.name}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-			</div>
+			<DocumentFilters
+				search={search}
+				onSearchChange={setSearch}
+				status={status}
+				onStatusChange={setStatus}
+				templateId={templateId}
+				onTemplateChange={setTemplateId}
+				templates={templates}
+			/>
 
-			{documents.length === 0 ? (
-				<div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">
-					No documents match.
+			{isLoading ? (
+				<div className="space-y-2">
+					{[0, 1, 2, 3].map((i) => (
+						<Skeleton key={i} className="h-16 w-full rounded-xl" />
+					))}
 				</div>
+			) : documents.length === 0 ? (
+				<EmptyState
+					icon={IconFiles}
+					title={hasFilters ? "No matching documents" : "No documents yet"}
+					description={
+						hasFilters
+							? "No documents match the current filters. Try clearing them."
+							: "Documents generated for participants will appear here."
+					}
+					action={
+						hasFilters ? (
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => {
+									setSearch("");
+									setStatus("ALL");
+									setTemplateId("ALL");
+								}}
+							>
+								Clear filters
+							</Button>
+						) : undefined
+					}
+				/>
 			) : (
-				<div className="overflow-x-auto rounded-lg border">
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>Participant</TableHead>
-								<TableHead>Document</TableHead>
-								<TableHead>Template</TableHead>
-								<TableHead>Status</TableHead>
-								<TableHead>Created</TableHead>
-								<TableHead className="text-right">Actions</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{documents.map((d) => (
-								<TableRow key={d.id} data-testid="generated-doc-row">
-									<TableCell>
-										<p className="text-sm font-medium">{d.participant.name}</p>
-										<p className="text-xs text-muted-foreground">
-											{d.participant.email}
-										</p>
-									</TableCell>
-									<TableCell>
-										<p className="text-sm">{d.name}</p>
-										<p className="text-xs text-muted-foreground">
-											{formatBytes(d.size)}
-										</p>
-									</TableCell>
-									<TableCell className="text-sm text-muted-foreground">
-										{d.templateName ?? "—"}
-									</TableCell>
-									<TableCell>
+				<>
+					{/* Mobile: cards (avoid horizontal table scroll) */}
+					<div className="space-y-2 md:hidden">
+						{documents.map((d) => (
+							<div
+								key={d.id}
+								data-testid="generated-doc-row"
+								className="flex items-start gap-3 rounded-xl border bg-card p-3"
+							>
+								<DocumentIconTile status={d.status} />
+								<div className="min-w-0 flex-1">
+									<p className="truncate text-sm font-medium">
+										{d.participant.name}
+									</p>
+									<p className="truncate text-xs text-muted-foreground">
+										{d.name} · {formatBytes(d.size)}
+									</p>
+									<div className="mt-1.5 flex items-center gap-2">
 										<DocumentStatusBadge status={d.status} />
-										{d.status === "FAILED" && d.error && (
-											<p className="mt-0.5 max-w-48 truncate text-xs text-destructive">
-												{d.error}
+										<span className="text-xs text-muted-foreground">
+											{formatDateTime(d.createdAt)}
+										</span>
+									</div>
+									{d.status === "FAILED" && d.error && (
+										<p className="mt-0.5 truncate text-xs text-destructive">
+											{d.error}
+										</p>
+									)}
+								</div>
+								<div className="flex shrink-0 flex-col items-center gap-1">
+									{d.status === "READY" && d.hasFile && (
+										<Button
+											asChild
+											variant="ghost"
+											size="icon-sm"
+											aria-label="Download"
+										>
+											<a href={`/api/documents/${d.id}`}>
+												<IconDownload className="size-4" />
+											</a>
+										</Button>
+									)}
+									<Button
+										variant="ghost"
+										size="icon-sm"
+										onClick={() => setDeletingId(d.id)}
+										className="text-destructive hover:text-destructive"
+										aria-label="Delete"
+									>
+										<IconTrash className="size-4" />
+									</Button>
+								</div>
+							</div>
+						))}
+					</div>
+
+					{/* Desktop: table */}
+					<div className="hidden overflow-hidden rounded-xl border md:block">
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>Participant</TableHead>
+									<TableHead>Document</TableHead>
+									<TableHead>Template</TableHead>
+									<TableHead>Status</TableHead>
+									<TableHead>Created</TableHead>
+									<TableHead className="text-right">Actions</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{documents.map((d) => (
+									<TableRow key={d.id} data-testid="generated-doc-row">
+										<TableCell>
+											<p className="text-sm font-medium">
+												{d.participant.name}
 											</p>
-										)}
-									</TableCell>
-									<TableCell className="text-sm text-muted-foreground">
-										{formatDateTime(d.createdAt)}
-									</TableCell>
-									<TableCell className="text-right">
-										<div className="flex justify-end gap-1">
-											{d.status === "READY" && d.hasFile && (
+											<p className="text-xs text-muted-foreground">
+												{d.participant.email}
+											</p>
+										</TableCell>
+										<TableCell>
+											<p className="text-sm">{d.name}</p>
+											<p className="text-xs text-muted-foreground">
+												{formatBytes(d.size)}
+											</p>
+										</TableCell>
+										<TableCell className="text-sm text-muted-foreground">
+											{d.templateName ?? "—"}
+										</TableCell>
+										<TableCell>
+											<DocumentStatusBadge status={d.status} />
+											{d.status === "FAILED" && d.error && (
+												<p className="mt-0.5 max-w-48 truncate text-xs text-destructive">
+													{d.error}
+												</p>
+											)}
+										</TableCell>
+										<TableCell className="text-sm text-muted-foreground">
+											{formatDateTime(d.createdAt)}
+										</TableCell>
+										<TableCell className="text-right">
+											<div className="flex justify-end gap-1">
+												{d.status === "READY" && d.hasFile && (
+													<Button
+														asChild
+														variant="ghost"
+														size="icon-sm"
+														aria-label="Download"
+													>
+														<a href={`/api/documents/${d.id}`}>
+															<IconDownload className="size-4" />
+														</a>
+													</Button>
+												)}
 												<Button
-													asChild
 													variant="ghost"
 													size="icon-sm"
-													aria-label="Download"
+													onClick={() => setDeletingId(d.id)}
+													className="text-destructive hover:text-destructive"
+													aria-label="Delete"
 												>
-													<a href={`/api/documents/${d.id}`}>
-														<IconDownload className="size-4" />
-													</a>
+													<IconTrash className="size-4" />
 												</Button>
-											)}
-											<Button
-												variant="ghost"
-												size="icon-sm"
-												onClick={() => setDeletingId(d.id)}
-												className="text-destructive hover:text-destructive"
-												aria-label="Delete"
-											>
-												<IconTrash className="size-4" />
-											</Button>
-										</div>
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-				</div>
+											</div>
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</div>
+				</>
 			)}
 
-			<Dialog
+			<ConfirmDeleteDialog
 				open={deletingId !== null}
 				onOpenChange={(o) => {
-					if (!o && !busy) setDeletingId(null);
+					if (!o) setDeletingId(null);
 				}}
-			>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Delete document?</DialogTitle>
-						<DialogDescription>
-							This removes the generated file. The participant will no longer
-							see it.
-						</DialogDescription>
-					</DialogHeader>
-					<DialogFooter>
-						<Button
-							variant="outline"
-							onClick={() => setDeletingId(null)}
-							disabled={busy}
-						>
-							Cancel
-						</Button>
-						<Button
-							variant="destructive"
-							onClick={handleDelete}
-							disabled={busy}
-						>
-							Delete
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+				busy={busy}
+				title="Delete document?"
+				description="This removes the generated file. The participant will no longer see it."
+				onConfirm={handleDelete}
+			/>
 		</SectionCard>
 	);
 }

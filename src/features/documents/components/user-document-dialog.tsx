@@ -1,6 +1,7 @@
 import {
 	IconAlertTriangle,
 	IconCheck,
+	IconCircleCheck,
 	IconFilePlus,
 } from "@tabler/icons-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -119,9 +120,15 @@ export function UserDocumentDialog({
 					</div>
 
 					{templateId && preview && (
-						<div className="rounded-md border">
-							<div className="border-b bg-muted/40 px-3 py-2 text-xs font-medium text-muted-foreground">
-								Resolved data
+						<div className="overflow-hidden rounded-xl border">
+							<div className="flex items-center justify-between border-b bg-muted/40 px-3 py-2 text-xs font-medium text-muted-foreground">
+								<span>Resolved data</span>
+								{missing.length > 0 && (
+									<span className="flex items-center gap-1 text-destructive">
+										<IconAlertTriangle className="size-3.5" />
+										{missing.length} missing
+									</span>
+								)}
 							</div>
 							<div className="divide-y">
 								{preview.placeholders.length === 0 && (
@@ -147,8 +154,9 @@ export function UserDocumentDialog({
 													Missing
 												</span>
 											) : (
-												<span className="max-w-[60%] truncate text-right text-xs">
-													{value}
+												<span className="flex max-w-[60%] items-center gap-1.5 truncate text-right text-xs">
+													<IconCircleCheck className="size-3.5 shrink-0 text-emerald-500" />
+													<span className="truncate">{value}</span>
 												</span>
 											)}
 										</div>
@@ -159,7 +167,10 @@ export function UserDocumentDialog({
 					)}
 
 					{templateId && missing.length > 0 && (
-						<p className="flex items-center gap-1.5 text-xs text-destructive">
+						<p
+							className="flex items-center gap-1.5 text-xs text-destructive"
+							role="alert"
+						>
 							<IconAlertTriangle className="size-3.5" />
 							Cannot generate — missing:{" "}
 							{missing.map(placeholderLabel).join(", ")}.

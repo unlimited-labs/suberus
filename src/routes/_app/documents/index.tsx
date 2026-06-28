@@ -1,12 +1,13 @@
-import { IconDownload, IconFileCertificate } from "@tabler/icons-react";
+import { IconAlertTriangle, IconFileCertificate } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { authRouteMiddleware } from "@/features/auth/server/middleware";
 import { myDocumentsQueryOptions } from "@/features/documents/api/documents";
-import { formatBytes } from "@/features/documents/components/document-bits";
+import { DocumentCard } from "@/features/documents/components/document-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
-import { useDateFormat } from "@/shared/hooks/use-date-format";
-import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
+import { EmptyState } from "@/shared/ui/empty-state";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 export const Route = createFileRoute("/_app/documents/")({
 	server: {
@@ -19,50 +20,73 @@ export const Route = createFileRoute("/_app/documents/")({
 });
 
 function MyDocumentsPage() {
-	const { formatDateTime } = useDateFormat();
-	const { data: documents = [] } = useQuery(myDocumentsQueryOptions());
+	const {
+		data: documents = [],
+		isLoading,
+		isError,
+	} = useQuery(myDocumentsQueryOptions());
 
 	return (
 		<div className="flex h-full flex-col">
-			<PageHeader icon={IconFileCertificate} title="My Documents" />
+			<PageHeader icon={IconFileCertificate} title="My Documents">
+				{documents.length > 0 && (
+					<Badge variant="secondary">{documents.length}</Badge>
+				)}
+			</PageHeader>
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-2xl space-y-2">
-					{documents.length === 0 ? (
-						<div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">
-							No documents have been issued to you yet.
-						</div>
+					{isLoading ? (
+						<DocumentListSkeleton />
+					) : isError ? (
+						<EmptyState
+							icon={IconAlertTriangle}
+							title="Couldn't load your documents"
+							description="Something went wrong. Refresh the page to try again."
+						/>
+					) : documents.length === 0 ? (
+						<EmptyState
+							icon={IconFileCertificate}
+							title="No documents yet"
+							description="Documents issued to you by the organisers — certificates, invitation letters and the like — will appear here, ready to download."
+						/>
 					) : (
 						documents.map((d) => (
-							<div
+							<DocumentCard
 								key={d.id}
-								data-testid="my-document-row"
-								className="flex items-center gap-3 rounded-lg border bg-card p-4"
-							>
-								<div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-									<IconFileCertificate className="size-5" />
-								</div>
-								<div className="min-w-0 flex-1">
-									<p className="truncate text-sm font-medium">{d.name}</p>
-									<p className="text-xs text-muted-foreground">
-										{formatDateTime(d.createdAt)} · {formatBytes(d.size)}
-									</p>
-								</div>
-								<Button
-									asChild
-									variant="outline"
-									size="sm"
-									data-testid="download-my-document"
-								>
-									<a href={`/api/documents/${d.id}`}>
-										<IconDownload className="mr-2 size-4" />
-										Download
-									</a>
-								</Button>
-							</div>
+								name={d.name}
+								createdAt={d.createdAt}
+								size={d.size}
+								status="READY"
+								showStatus={false}
+								downloadHref={`/api/documents/${d.id}`}
+								prominentDownload
+								testId="my-document-row"
+								downloadTestId="download-my-document"
+							/>
 						))
 					)}
 				</div>
 			</div>
 		</div>
+	);
+}
+
+function DocumentListSkeleton() {
+	return (
+		<>
+			{[0, 1, 2].map((i) => (
+				<div
+					key={i}
+					className="flex items-center gap-3 rounded-xl border bg-card p-4"
+				>
+					<Skeleton className="size-11 rounded-xl" />
+					<div className="flex-1 space-y-2">
+						<Skeleton className="h-4 w-1/2" />
+						<Skeleton className="h-3 w-1/3" />
+					</div>
+					<Skeleton className="h-9 w-28" />
+				</div>
+			))}
+		</>
 	);
 }

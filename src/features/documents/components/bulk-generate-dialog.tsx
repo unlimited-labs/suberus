@@ -120,6 +120,9 @@ export function BulkGenerateDialog({
 						{step === "review" && "Review who can be generated."}
 						{step === "progress" && "Generating documents…"}
 					</DialogDescription>
+					<p className="text-xs font-medium text-muted-foreground">
+						Step {step === "template" ? 1 : step === "review" ? 2 : 3} of 3
+					</p>
 				</DialogHeader>
 
 				{step === "template" && (
@@ -192,7 +195,7 @@ export function BulkGenerateDialog({
 				)}
 
 				{step === "progress" && progress && (
-					<div className="space-y-3 py-1">
+					<div className="space-y-3 py-1" aria-live="polite">
 						<Progress value={pct} />
 						<div className="flex flex-wrap items-center gap-2 text-sm">
 							<Badge variant="default">{progress.ready} ready</Badge>
