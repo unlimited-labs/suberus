@@ -7,11 +7,20 @@ import io
 from PIL import Image
 
 import signing
+from main import _logo_to_png
+
+PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 
 
 def _make_pdf() -> bytes:
     buf = io.BytesIO()
     Image.new("RGB", (612, 792), "white").save(buf, "PDF")
+    return buf.getvalue()
+
+
+def _make_png() -> bytes:
+    buf = io.BytesIO()
+    Image.new("RGBA", (64, 64), (10, 20, 30, 255)).save(buf, "PNG")
     return buf.getvalue()
 
 
@@ -61,3 +70,31 @@ def test_tamper_breaks_integrity():
 def test_unsigned_pdf_reports_not_signed():
     res = signing.verify_pdf(_make_pdf())
     assert res["signed"] is False
+
+
+def test_logo_to_png_normalizes_raster():
+    out = _logo_to_png(_make_png())
+    assert out[:8] == PNG_MAGIC
+    with Image.open(io.BytesIO(out)) as im:
+        assert im.size == (64, 64)
+
+
+def test_logo_to_png_rasterizes_svg():
+    svg = (
+        b'<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64">'
+        b'<rect width="64" height="64" fill="#102030"/></svg>'
+    )
+    out = _logo_to_png(svg)
+    assert out[:8] == PNG_MAGIC
+    Image.open(io.BytesIO(out)).close()  # decodes
+
+
+def test_sign_with_logo_roundtrip():
+    p12, password, _meta, _pem = signing.gen_self_signed_p12("ICCMS 2026", "Org", 365)
+    signed = signing.sign_pdf(
+        _make_pdf(), p12, password,
+        {"reason": "Issued by ICCMS 2026", "logo_png": _make_png()},
+    )
+    assert signed[:5] == b"%PDF-"
+    res = signing.verify_pdf(signed)
+    assert res["signed"] and res["intact"] and res["valid"]

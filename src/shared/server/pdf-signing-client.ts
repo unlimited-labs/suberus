@@ -98,7 +98,7 @@ export interface SignOptions {
 	qrUrl?: string;
 	timestampUrl?: string;
 	certify?: boolean;
-	logoPng?: Buffer;
+	logo?: Buffer;
 }
 
 export async function signPdf(pdf: Buffer, opts: SignOptions): Promise<Buffer> {
@@ -112,8 +112,8 @@ export async function signPdf(pdf: Buffer, opts: SignOptions): Promise<Buffer> {
 	form.append("qrUrl", opts.qrUrl ?? "");
 	form.append("timestampUrl", opts.timestampUrl ?? "");
 	form.append("certify", opts.certify ? "true" : "false");
-	if (opts.logoPng) {
-		form.append("logo", new Blob([new Uint8Array(opts.logoPng)]), "logo.png");
+	if (opts.logo) {
+		form.append("logo", new Blob([new Uint8Array(opts.logo)]), "logo.png");
 	}
 	const res = await post("/v1/sign-pdf", form, SIGN_TIMEOUT_MS);
 	return Buffer.from(await res.arrayBuffer());

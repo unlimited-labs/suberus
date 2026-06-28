@@ -26,6 +26,7 @@ import base64
 import hashlib
 import io
 import json
+import logging
 import os
 import re
 import subprocess
@@ -46,6 +47,8 @@ import diffhtml
 import mathtype
 import signing
 import stylecss
+
+log = logging.getLogger("docx-api")
 
 
 def _xmldiff_version() -> str | None:
@@ -174,6 +177,22 @@ def _to_png_bytes(src: Path, workdir: Path) -> bytes:
         if ext in RASTER_VIA_PILLOW:
             raise  # a known raster type failing is an error, not an unknown to skip
         return src.read_bytes()  # unknown ext: keep original bytes
+
+
+def _logo_to_png(raw: bytes) -> bytes:
+    """Normalize seal-logo bytes (PNG/JPG/SVG) to PNG. SVG is rasterized via
+    LibreOffice (PIL can't read it); rasters go through Pillow."""
+    head = raw[:1024].lstrip().lower()
+    is_svg = head[:4] == b"<svg" or (head[:5] == b"<?xml" and b"<svg" in head)
+    with tempfile.TemporaryDirectory() as d:
+        if is_svg:
+            src = Path(d) / "logo.svg"
+            src.write_bytes(raw)
+            return _soffice_to_png(src, Path(d)).read_bytes()
+        buf = io.BytesIO()
+        with Image.open(io.BytesIO(raw)) as im:
+            im.convert("RGBA").save(buf, format="PNG")
+        return buf.getvalue()
 
 
 _SRC_RE = re.compile(r'src="([^"]+)"')
@@ -481,7 +500,12 @@ async def sign_pdf(
         raise HTTPException(400, "No P12 uploaded")
     if len(pdf_bytes) > MAX_NORMALIZE_BYTES:
         raise HTTPException(413, "PDF exceeds the size limit")
-    logo_png = await logo.read() if logo is not None else None
+    logo_png = None
+    if logo is not None:
+        try:
+            logo_png = _logo_to_png(await logo.read())
+        except Exception as e:
+            log.warning("seal logo conversion failed, skipping: %s", e)
     try:
         # Offload to a worker thread: pyHanko's sync sign_pdf calls asyncio.run()
         # internally, which fails inside FastAPI's running event loop.
