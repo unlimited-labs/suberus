@@ -157,5 +157,14 @@ export async function loadSigningMaterial(): Promise<{
 }
 
 export async function verifyDocument(pdf: Buffer): Promise<VerifyResult> {
-	return verifyPdf(pdf);
+	const result = await verifyPdf(pdf);
+	// Stronger signal: does the signer cert match THIS conference's certificate?
+	// Informational only — old documents signed with a rotated-out cert still verify.
+	const cfg = await getSigningConfig();
+	const matchesConfiguredCert = Boolean(
+		cfg &&
+			result.signerFingerprintSha256 &&
+			cfg.fingerprintSha256 === result.signerFingerprintSha256,
+	);
+	return { ...result, matchesConfiguredCert };
 }

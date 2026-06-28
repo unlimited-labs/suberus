@@ -114,18 +114,32 @@ function VerifyDocumentPage() {
 							</span>
 						</div>
 						{authentic && (
-							<dl className="mt-3 grid gap-1 text-sm">
-								<div>
-									<dt className="text-muted-foreground">Signed by</dt>
-									<dd className="break-all">{result.signerSubject}</dd>
-								</div>
-								{result.signedAt && (
+							<>
+								<dl className="mt-3 grid gap-1 text-sm">
 									<div>
-										<dt className="text-muted-foreground">Signed at</dt>
-										<dd>{new Date(result.signedAt).toLocaleString()}</dd>
+										<dt className="text-muted-foreground">Signed by</dt>
+										<dd className="break-all">{result.signerSubject}</dd>
 									</div>
+									{result.signedAt && (
+										<div>
+											<dt className="text-muted-foreground">Signed at</dt>
+											<dd>
+												{new Date(result.signedAt).toLocaleString()}
+												{result.timestamped && " (trusted timestamp)"}
+											</dd>
+										</div>
+									)}
+								</dl>
+								{result.matchesConfiguredCert && (
+									<p
+										className="mt-3 flex items-center gap-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-400"
+										data-testid="verify-matches-cert"
+									>
+										<IconShieldCheck className="size-4" />
+										Matches this conference's certificate
+									</p>
 								)}
-							</dl>
+							</>
 						)}
 						{!authentic && (
 							<p className="mt-2 text-sm text-muted-foreground">

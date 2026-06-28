@@ -228,18 +228,27 @@ def verify_pdf(pdf_bytes: bytes) -> dict:
     vc = ValidationContext(
         trust_roots=[signer_cert], allow_fetching=False, revocation_mode="soft-fail"
     )
+    fingerprint = hashlib.sha256(signer_cert.dump()).hexdigest()
     try:
         status = validate_pdf_signature(sig, vc)
     except Exception as e:
         return {"signed": True, "valid": False, "intact": False,
                 "signerSubject": signer_cert.subject.human_friendly,
-                "signedAt": None, "reason": f"Signature could not be validated: {e}"}
+                "signerFingerprintSha256": fingerprint, "signedAt": None,
+                "timestamped": False,
+                "reason": f"Signature could not be validated: {e}"}
     signed_at = sig.self_reported_timestamp
     return {
         "signed": True,
-        "valid": bool(status.bottom_line),
+        # Verdict = the signature is cryptographically sound AND the signer cert is
+        # trusted (we anchor trust on the embedded self-signed cert). Deliberately
+        # NOT status.bottom_line, which also folds in TSA / revocation trust we do
+        # not anchor — an enabled RFC3161 timestamp would otherwise read as invalid.
+        "valid": bool(status.valid and status.trusted),
         "intact": bool(status.intact),
         "signerSubject": signer_cert.subject.human_friendly,
+        "signerFingerprintSha256": fingerprint,
         "signedAt": signed_at.isoformat() if signed_at else None,
+        "timestamped": getattr(status, "timestamp_validity", None) is not None,
         "reason": status.pretty_print_details(),
     }

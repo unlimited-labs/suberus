@@ -126,6 +126,8 @@ test.describe("Admin - Document signing", () => {
 		await expect(page.getByTestId("verify-verdict")).toHaveText("Authentic", {
 			timeout: 30000,
 		});
+		// The signer cert matches the conference's configured certificate.
+		await expect(page.getByTestId("verify-matches-cert")).toBeVisible();
 	});
 
 	test("uploading an own .p12 switches the source to Uploaded", async ({

@@ -124,8 +124,12 @@ export interface VerifyResult {
 	valid: boolean;
 	intact: boolean;
 	signerSubject?: string;
+	signerFingerprintSha256?: string;
 	signedAt?: string | null;
+	timestamped?: boolean;
 	reason: string;
+	/** Set by the app layer: signer cert matches the conference's configured cert. */
+	matchesConfiguredCert?: boolean;
 }
 
 export async function verifyPdf(pdf: Buffer): Promise<VerifyResult> {
