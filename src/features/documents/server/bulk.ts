@@ -1,20 +1,15 @@
 import { activityDetail } from "@/features/activity-log/types";
 import { DOCUMENT_GENERATE_QUEUE } from "@/features/documents/server/generate";
-import { resolvePlaceholders } from "@/features/documents/server/resolve";
+import {
+	displayName,
+	resolvePlaceholders,
+} from "@/features/documents/server/resolve";
 import { getSigningConfig } from "@/features/settings/server/document-signing";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/shared/server/db.server";
 import { ensureQueueAndSend } from "@/shared/server/queue";
 
 const ENQUEUE_OPTS = { retryLimit: 2, retryDelay: 30, expireInSeconds: 600 };
-
-function displayName(u: {
-	firstName: string | null;
-	lastName: string | null;
-	email: string;
-}): string {
-	return [u.firstName, u.lastName].filter(Boolean).join(" ") || u.email;
-}
 
 export interface BulkSkip {
 	userId: string;

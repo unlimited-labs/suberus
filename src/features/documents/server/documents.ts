@@ -1,15 +1,8 @@
 import { activityDetail } from "@/features/activity-log/types";
+import { displayName } from "@/features/documents/server/resolve";
 import type { DocumentStatus } from "@/generated/prisma/enums";
 import { prisma } from "@/shared/server/db.server";
 import { deleteFile } from "@/shared/server/storage";
-
-function displayName(u: {
-	firstName: string | null;
-	lastName: string | null;
-	email: string;
-}): string {
-	return [u.firstName, u.lastName].filter(Boolean).join(" ") || u.email;
-}
 
 export interface DocumentRow {
 	id: string;

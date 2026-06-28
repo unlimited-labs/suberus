@@ -8,6 +8,14 @@ import { prisma } from "@/shared/server/db.server";
 
 export type { ResolvedPlaceholders };
 
+export function displayName(u: {
+	firstName: string | null;
+	lastName: string | null;
+	email: string;
+}): string {
+	return [u.firstName, u.lastName].filter(Boolean).join(" ") || u.email;
+}
+
 /**
  * Resolve every document placeholder for one participant. The caller blocks
  * generation when any *used* placeholder is in `missing`.
