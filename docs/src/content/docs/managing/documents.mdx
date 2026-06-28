@@ -40,7 +40,7 @@ document issued to any participant).
 On the **Templates** tab, click **Upload template**, give it a name (and optional
 description), and choose your `.docx` file.
 
-🖼️ [Screenshot placeholder: Documents → Templates tab with the upload dialog open]
+![The Documents admin page, Templates tab](../../../assets/screenshots/43-managing-documents-templates.png)
 
 Write placeholders in the document as `{key}` — for example `{firstName}` or
 `{abstractTitle}`. On upload, Suberus reads the placeholders and **validates** them: only
@@ -73,8 +73,6 @@ Each template row shows its name, the placeholders it uses, and actions:
 | **Download** | Downloads the original `.docx` you uploaded. |
 | **Delete** | Removes the template. Documents already generated from it are kept. |
 
-🖼️ [Screenshot placeholder: Templates tab listing templates with their placeholder chips]
-
 ## Generating for one participant
 
 Open a participant from **Users**, find the **Documents** section, and click
@@ -82,7 +80,7 @@ Open a participant from **Users**, find the **Documents** section, and click
 placeholder the template uses with the value that will be filled in, or a **Missing**
 flag where the participant has no data for it.
 
-🖼️ [Screenshot placeholder: Add-document dialog showing the resolution preview with one missing field]
+![Add-document dialog with the resolution preview; the accepted-abstract field is missing](../../../assets/screenshots/44-managing-documents-generate.png)
 
 If any value is missing (for example, the participant has no accepted abstract for
 `{abstractTitle}`, or no affiliation set), the **Generate** button stays disabled until
@@ -97,13 +95,11 @@ Bulk generation works like a **bulk email**: it starts from the **Users** list. 
 filter for the participants, tick their checkboxes, open the **Bulk actions** menu and
 choose **Generate document**, then **Apply**.
 
-🖼️ [Screenshot placeholder: Users list — Bulk actions → Generate document]
-
 Pick a template and **Review**. Suberus shows how many will be generated and which are
 **skipped** because they're missing data (and which data). Confirm with **Generate**, and
 a live **progress** view shows ready / pending / failed counts as the batch runs.
 
-🖼️ [Screenshot placeholder: Bulk generate dialog — progress bar with ready/failed counts]
+![Bulk generate dialog: how many participants will be generated, and who is skipped for missing data](../../../assets/screenshots/46-managing-documents-bulk.png)
 
 <Aside type="note">
 Each document renders independently in the background, so a single failure doesn't stop
@@ -117,7 +113,7 @@ participant, template, status, and date. Search by participant, or filter by sta
 template. You can **download** a ready document or **delete** any document (the
 participant will no longer see it — no notification is sent).
 
-🖼️ [Screenshot placeholder: Generated documents tab — table with status filters]
+![Generated documents tab: every issued document with participant, template, status, and date](../../../assets/screenshots/45-managing-documents-generated.png)
 
 ## What the participant sees
 
@@ -125,7 +121,7 @@ When a document becomes **Ready**, the participant receives the **Document gener
 email and a **My Documents** link appears in their sidebar (only once they have at least
 one document). There they can download their PDFs.
 
-🖼️ [Screenshot placeholder: Participant's My Documents page]
+![A participant's My Documents page with downloadable PDFs](../../../assets/screenshots/47-managing-documents-my.png)
 
 ## Related
 

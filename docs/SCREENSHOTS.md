@@ -73,6 +73,11 @@ Settings tabs deep-link via `?tab=<id>`.
 - [x] **39** — `managing/reviews.mdx` — *Reviewer Compare versions page, side-by-side* — `/reviews/<assignmentId>/compare?view=split` *(reviewer-authenticated)*
 - [x] **41** — `managing/bulk-email.mdx` — *Recipient selection — rows ticked, Bulk actions → Send email* — `/admin/users`
 - [x] **42** — `managing/exhibitors.mdx` — *Registration account-type choice* (Participant / Author vs Exhibitor) — `/register` *(guest context; needs exhibitors enabled)*
+- [x] **43** — `managing/documents.mdx` — *Documents → Templates tab* (templates + placeholder chips) — `/admin/documents`
+- [x] **44** — `managing/documents.mdx` — *Add-document dialog* (resolution preview, missing field) — `/admin/users/:id` → **Add document**
+- [x] **45** — `managing/documents.mdx` — *Generated documents tab* (status filters + table) — `/admin/documents?tab=generated`
+- [x] **46** — `managing/documents.mdx` — *Bulk generate dialog* (review: resolvable vs skipped) — `/admin/users` → Bulk actions → Generate document
+- [x] **47** — `managing/documents.mdx` — *Participant My Documents* — `/documents` *(user-authenticated context)*
 
 ---
 

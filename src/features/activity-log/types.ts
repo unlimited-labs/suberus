@@ -59,7 +59,13 @@ export type ActivityDetail =
 	  }
 	| { type: "EXHIBITOR_APPROVED"; reason: string }
 	| { type: "EXHIBITOR_REJECTED"; reason: string }
-	| { type: "EXHIBITOR_WITHDRAWN" };
+	| { type: "EXHIBITOR_WITHDRAWN" }
+	| {
+			type: "DOCUMENT_GENERATED";
+			documentName: string;
+			templateName: string | null;
+	  }
+	| { type: "DOCUMENT_DELETED"; documentName: string };
 
 /** Helper to create a typed activity detail object */
 export function activityDetail<T extends ActivityDetail["type"]>(

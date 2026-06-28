@@ -1,5 +1,6 @@
 import { TemplateHandler } from "easy-template-x";
 import { env } from "@/env";
+import { activityDetail } from "@/features/activity-log/types";
 import { renderDocxToPdf } from "@/features/documents/server/docx-pdf-client";
 import { resolvePlaceholders } from "@/features/documents/server/resolve";
 import { getSetting } from "@/features/settings/server/settings";
@@ -57,6 +58,18 @@ export async function createGeneratedDocument(opts: {
 			status: "PENDING",
 		},
 		select: { id: true },
+	});
+
+	await prisma.activityLog.create({
+		data: {
+			type: "DOCUMENT_GENERATED",
+			userId: opts.userId,
+			performedBy: opts.generatedById,
+			detail: activityDetail("DOCUMENT_GENERATED", {
+				documentName: opts.name?.trim() || template.name,
+				templateName: template.name,
+			}),
+		},
 	});
 
 	await ensureQueueAndSend(

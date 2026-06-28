@@ -32,4 +32,6 @@ export const activityLabels: Record<string, string> = {
 	EXHIBITOR_APPROVED: "Exhibitor approved",
 	EXHIBITOR_REJECTED: "Exhibitor rejected",
 	EXHIBITOR_WITHDRAWN: "Exhibitor withdrawn",
+	DOCUMENT_GENERATED: "Document generated",
+	DOCUMENT_DELETED: "Document deleted",
 };

@@ -182,8 +182,8 @@ export const adminUserDocumentsQueryOptions = (userId: string) =>
 export const deleteDocumentFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(z.object({ id: z.uuid() }))
-	.handler(async ({ data }) => {
-		await deleteDocument(data.id);
+	.handler(async ({ data, context }) => {
+		await deleteDocument(data.id, context.user.id);
 		return { success: true };
 	});
 

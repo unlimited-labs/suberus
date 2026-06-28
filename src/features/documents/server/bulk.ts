@@ -1,8 +1,10 @@
+import { activityDetail } from "@/features/activity-log/types";
 import {
 	createGeneratedDocument,
 	DOCUMENT_GENERATE_QUEUE,
 } from "@/features/documents/server/generate";
 import { resolvePlaceholders } from "@/features/documents/server/resolve";
+import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/shared/server/db.server";
 import { ensureQueueAndSend } from "@/shared/server/queue";
 
@@ -102,6 +104,18 @@ export async function startBulk(opts: {
 			name: template.name,
 			generatedById: opts.createdById,
 			status: "PENDING" as const,
+		})),
+	});
+
+	await prisma.activityLog.createMany({
+		data: resolvableIds.map((userId) => ({
+			type: "DOCUMENT_GENERATED" as const,
+			userId,
+			performedBy: opts.createdById,
+			detail: activityDetail("DOCUMENT_GENERATED", {
+				documentName: template.name,
+				templateName: template.name,
+			}) as Prisma.InputJsonValue,
 		})),
 	});
 

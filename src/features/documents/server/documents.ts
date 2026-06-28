@@ -1,3 +1,4 @@
+import { activityDetail } from "@/features/activity-log/types";
 import type { DocumentStatus } from "@/generated/prisma/enums";
 import { prisma } from "@/shared/server/db.server";
 import { deleteFile } from "@/shared/server/storage";
@@ -133,15 +134,30 @@ export function countMyReadyDocuments(userId: string): Promise<number> {
 	});
 }
 
-/** Admin/Editor: delete a generated document (row + stored PDF). Silent. */
-export async function deleteDocument(id: string): Promise<void> {
+/**
+ * Admin/Editor: delete a generated document (row + stored PDF). Silent to the
+ * participant, but recorded in the activity log.
+ */
+export async function deleteDocument(
+	id: string,
+	performedById?: string,
+): Promise<void> {
 	const doc = await prisma.generatedDocument.findUnique({
 		where: { id },
-		select: { storageKey: true },
+		select: { storageKey: true, userId: true, name: true },
 	});
 	if (!doc) return;
 	if (doc.storageKey) {
 		await deleteFile(doc.storageKey).catch(() => {});
 	}
 	await prisma.generatedDocument.delete({ where: { id } });
+
+	await prisma.activityLog.create({
+		data: {
+			type: "DOCUMENT_DELETED",
+			userId: doc.userId,
+			performedBy: performedById,
+			detail: activityDetail("DOCUMENT_DELETED", { documentName: doc.name }),
+		},
+	});
 }

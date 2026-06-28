@@ -180,6 +180,79 @@ async function ensureDocsExtras(adminUserId: string, reviewerUserId: string) {
 	}
 }
 
+/**
+ * Idempotently seed document templates + a spread of generated documents
+ * (READY/PENDING/FAILED, incl. some for the e2e "user" account so the
+ * participant My Documents shot is populated). DB-only — no real rendering.
+ */
+async function ensureDocsDocuments(adminUserId: string, testUserId: string) {
+	const db = getPrisma();
+	const upsertTemplate = async (
+		name: string,
+		description: string | null,
+		placeholders: string[],
+		originalName: string,
+		size: number,
+	) => {
+		const existing = await db.documentTemplate.findFirst({ where: { name } });
+		if (existing) return existing;
+		return db.documentTemplate.create({
+			data: {
+				name,
+				description,
+				storageKey: `documents/templates/docs-${name.replace(/\W+/g, "-").toLowerCase()}/${originalName}`,
+				originalName,
+				size,
+				placeholders,
+				createdById: adminUserId,
+			},
+		});
+	};
+
+	const visa = await upsertTemplate(
+		"Visa invitation letter",
+		"Official invitation for participants applying for an entry visa.",
+		["firstName", "lastName", "affiliation", "abstractTitle", "date"],
+		"visa-invitation.docx",
+		8540,
+	);
+	const cert = await upsertTemplate(
+		"Certificate of participation",
+		null,
+		["firstName", "lastName", "date"],
+		"certificate.docx",
+		8575,
+	);
+
+	if ((await db.generatedDocument.count()) > 0) return;
+
+	const byEmail = (email: string) =>
+		db.user.findUnique({ where: { email } });
+	const sofia = await byEmail("sofia.rossi@example.org");
+	const lukas = await byEmail("lukas.weber@example.org");
+	const kenji = await byEmail("kenji.tanaka@example.org");
+
+	const rows: Array<{
+		userId: string;
+		templateId: string;
+		name: string;
+		status: "READY" | "PENDING" | "FAILED";
+		storageKey?: string;
+		size?: number;
+		error?: string;
+	}> = [
+		{ userId: testUserId, templateId: cert.id, name: "Certificate of participation", status: "READY", storageKey: "documents/generated/docs-1.pdf", size: 18234 },
+		{ userId: testUserId, templateId: visa.id, name: "Visa invitation letter", status: "READY", storageKey: "documents/generated/docs-2.pdf", size: 21002 },
+	];
+	if (sofia) rows.push({ userId: sofia.id, templateId: visa.id, name: "Visa invitation letter", status: "READY", storageKey: "documents/generated/docs-3.pdf", size: 20891 });
+	if (lukas) rows.push({ userId: lukas.id, templateId: cert.id, name: "Certificate of participation", status: "PENDING" });
+	if (kenji) rows.push({ userId: kenji.id, templateId: visa.id, name: "Visa invitation letter", status: "FAILED", error: "LibreOffice timed out converting the document" });
+
+	await db.generatedDocument.createMany({
+		data: rows.map((r) => ({ ...r, generatedById: adminUserId })),
+	});
+}
+
 /** Resolve ctx ids from the DB by title (survives worker restarts). */
 async function resolveCtx() {
 	const db = getPrisma();
@@ -221,6 +294,7 @@ test.describe("docs screenshots", () => {
 		});
 		if (arranged) {
 			await ensureDocsExtras(adminUserId, reviewerUserId);
+			await ensureDocsDocuments(adminUserId, testUserId);
 			await resolveCtx();
 			return;
 		}
@@ -588,6 +662,7 @@ test.describe("docs screenshots", () => {
 		}
 
 		await ensureDocsExtras(adminUserId, reviewerUserId);
+		await ensureDocsDocuments(adminUserId, testUserId);
 		await resolveCtx();
 	});
 
@@ -893,6 +968,63 @@ test.describe("docs screenshots", () => {
 		await page.getByTestId("register-account-type-exhibitor").waitFor({ timeout: 10000 });
 		await page.getByRole("radiogroup").first().scrollIntoViewIfNeeded();
 		await shot(page, "42-managing-exhibitor-registration-choice.png", { full: false });
+		await context.close();
+	});
+
+	// ---- Part 5: Documents --------------------------------------------------------
+
+	test("43 documents templates", async ({ page }) => {
+		await page.goto("/admin/documents");
+		await shot(page, "43-managing-documents-templates.png", { height: 1100 });
+	});
+
+	test("44 documents generate dialog", async ({ page }) => {
+		const db = getPrisma();
+		// Maria (reviewer) has no accepted abstract → {abstractTitle} shows Missing.
+		const maria = await db.user.findUniqueOrThrow({
+			where: { email: "maria.kowalska@example.org" },
+		});
+		await page.goto(`/admin/users/${maria.id}`);
+		await page.getByTestId("add-document-button").click();
+		await page.getByTestId("document-template-select").click();
+		await page.getByRole("option", { name: "Visa invitation letter" }).click();
+		await expect(page.getByTestId("resolution-row").first()).toBeVisible();
+		await page.waitForTimeout(400);
+		await shot(page, "44-managing-documents-generate.png", { full: false });
+	});
+
+	test("45 documents generated list", async ({ page }) => {
+		await page.goto("/admin/documents?tab=generated");
+		await page.waitForTimeout(500);
+		await shot(page, "45-managing-documents-generated.png", { height: 1100 });
+	});
+
+	test("46 documents bulk action", async ({ page }) => {
+		await page.goto("/admin/users");
+		await page.getByText(/Page \d+ of [1-9]/).first().waitFor({ timeout: 15000 }).catch(() => {});
+		const rows = page.getByTestId("user-row");
+		for (const i of [0, 1, 2]) await rows.nth(i).getByRole("checkbox").check();
+		await page.getByRole("combobox").filter({ hasText: "Bulk actions" }).click();
+		await page.getByRole("option", { name: "Generate document" }).click();
+		await page.getByRole("button", { name: "Apply" }).click();
+		await page.getByTestId("bulk-template-select").click();
+		await page.getByRole("option", { name: "Visa invitation letter" }).click();
+		await page.getByTestId("bulk-review-button").click();
+		await expect(page.getByText(/will be generated/)).toBeVisible();
+		await page.waitForTimeout(300);
+		await shot(page, "46-managing-documents-bulk.png", { full: false });
+	});
+
+	test("47 my documents (participant)", async ({ browser, baseURL }, testInfo) => {
+		const context = await browser.newContext({
+			viewport: { width: 1440, height: 900 },
+			baseURL,
+			storageState: `e2e/.auth/user-${testInfo.parallelIndex}.json`,
+		});
+		const page = await context.newPage();
+		await page.goto(`${baseURL}/documents`);
+		await page.waitForTimeout(500);
+		await shot(page, "47-managing-documents-my.png", { height: 1000 });
 		await context.close();
 	});
 });
