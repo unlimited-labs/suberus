@@ -1,5 +1,8 @@
 import { activityDetail } from "@/features/activity-log/types";
-import { DOCUMENT_GENERATE_QUEUE } from "@/features/documents/server/generate";
+import {
+	DOCUMENT_GENERATE_QUEUE,
+	ENQUEUE_OPTS,
+} from "@/features/documents/server/generate";
 import {
 	displayName,
 	resolvePlaceholders,
@@ -8,8 +11,6 @@ import { getSigningConfig } from "@/features/settings/server/document-signing";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/shared/server/db.server";
 import { ensureQueueAndSend } from "@/shared/server/queue";
-
-const ENQUEUE_OPTS = { retryLimit: 2, retryDelay: 30, expireInSeconds: 600 };
 
 export interface BulkSkip {
 	userId: string;

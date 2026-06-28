@@ -18,7 +18,11 @@ import {
 
 export const DOCUMENT_GENERATE_QUEUE = "document-generate";
 
-const ENQUEUE_OPTS = { retryLimit: 2, retryDelay: 30, expireInSeconds: 600 };
+export const ENQUEUE_OPTS = {
+	retryLimit: 2,
+	retryDelay: 30,
+	expireInSeconds: 600,
+};
 
 /** Template placeholders that the participant can't fill — block list. */
 async function unresolvableFor(
