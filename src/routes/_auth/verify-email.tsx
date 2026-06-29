@@ -1,10 +1,8 @@
 import { IconMail, IconRefresh } from "@tabler/icons-react";
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { z } from "zod";
 import { AuthCard } from "@/features/auth/components/auth-card";
-import { sendVerificationEmail } from "@/shared/lib/auth-client";
+import { useResendVerification } from "@/shared/hooks/use-resend-verification";
 import { Button } from "@/shared/ui/button";
 
 const searchSchema = z.object({
@@ -16,41 +14,10 @@ export const Route = createFileRoute("/_auth/verify-email")({
 	component: VerifyEmailPage,
 });
 
-const RESEND_COOLDOWN = 60;
-
 function VerifyEmailPage() {
 	const { email } = useSearch({ from: "/_auth/verify-email" });
-	const [cooldown, setCooldown] = useState(0);
-	const [isResending, setIsResending] = useState(false);
-
-	useEffect(() => {
-		if (cooldown <= 0) return;
-
-		const timer = setInterval(() => {
-			setCooldown((prev) => prev - 1);
-		}, 1000);
-
-		return () => clearInterval(timer);
-	}, [cooldown]);
-
-	const handleResend = async () => {
-		if (!email || cooldown > 0 || isResending) return;
-
-		setIsResending(true);
-		try {
-			const result = await sendVerificationEmail({ email });
-			if (result.error) {
-				toast.error(result.error.message ?? "Failed to resend email");
-			} else {
-				toast.success("Verification email sent");
-				setCooldown(RESEND_COOLDOWN);
-			}
-		} catch {
-			toast.error("Failed to resend email");
-		} finally {
-			setIsResending(false);
-		}
-	};
+	const { cooldown, isResending, resend, disabled } =
+		useResendVerification(email);
 
 	return (
 		<AuthCard title="Check your email">
@@ -78,8 +45,8 @@ function VerifyEmailPage() {
 				{email && (
 					<Button
 						variant="outline"
-						onClick={handleResend}
-						disabled={cooldown > 0 || isResending}
+						onClick={resend}
+						disabled={disabled}
 						className="gap-2"
 					>
 						<IconRefresh

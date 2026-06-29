@@ -2,8 +2,10 @@ import {
 	IconCash,
 	IconFileText,
 	IconMail,
+	IconPlus,
 	IconUserCircle,
 } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { UserDocumentsSection } from "@/features/documents/components/user-documents-section";
 import { assignableRoleOptions } from "@/features/users/labels";
@@ -103,7 +105,22 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 					/>
 				</SectionCard>
 
-				<SectionCard icon={IconFileText} title="Submissions">
+				<SectionCard
+					icon={IconFileText}
+					title="Submissions"
+					action={
+						<Button variant="outline" size="sm" asChild>
+							<Link
+								to="/admin/users/$id/submissions/new"
+								params={{ id: user.id }}
+								data-testid="add-submission-on-behalf"
+							>
+								<IconPlus className="mr-2 size-4" />
+								Add submission
+							</Link>
+						</Button>
+					}
+				>
 					<UserSubmissionsSection submissions={user.submissions} />
 				</SectionCard>
 

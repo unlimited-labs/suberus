@@ -6,13 +6,11 @@ import {
 	IconRefresh,
 } from "@tabler/icons-react";
 import { useSelector } from "@tanstack/react-store";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import type { ContactInfoFormData } from "@/features/profile/validations";
 import { contactInfoSchema } from "@/features/profile/validations";
 import { BillingFieldsGroup } from "@/shared/components/composable/billing-fields-group";
 import { useAppForm } from "@/shared/hooks/use-app-form";
-import { sendVerificationEmail } from "@/shared/lib/auth-client";
+import { useResendVerification } from "@/shared/hooks/use-resend-verification";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 
 interface ContactInfoSectionProps {
@@ -24,8 +22,6 @@ interface ContactInfoSectionProps {
 	pendingEmail?: string;
 }
 
-const RESEND_COOLDOWN = 60;
-
 export function ContactInfoSection({
 	initialData,
 	onSave,
@@ -34,37 +30,8 @@ export function ContactInfoSection({
 	emailVerified,
 	pendingEmail,
 }: ContactInfoSectionProps) {
-	const [cooldown, setCooldown] = useState(0);
-	const [isResending, setIsResending] = useState(false);
-
-	useEffect(() => {
-		if (cooldown <= 0) return;
-
-		const timer = setInterval(() => {
-			setCooldown((prev) => prev - 1);
-		}, 1000);
-
-		return () => clearInterval(timer);
-	}, [cooldown]);
-
-	const handleResend = async () => {
-		if (cooldown > 0 || isResending) return;
-
-		setIsResending(true);
-		try {
-			const result = await sendVerificationEmail({ email: currentEmail });
-			if (result.error) {
-				toast.error(result.error.message ?? "Failed to send email");
-			} else {
-				toast.success("Verification email sent");
-				setCooldown(RESEND_COOLDOWN);
-			}
-		} catch {
-			toast.error("Failed to send email");
-		} finally {
-			setIsResending(false);
-		}
-	};
+	const { cooldown, isResending, resend, disabled } =
+		useResendVerification(currentEmail);
 
 	const form = useAppForm({
 		defaultValues: initialData,
@@ -115,8 +82,8 @@ export function ContactInfoSection({
 							</span>
 							<button
 								type="button"
-								onClick={handleResend}
-								disabled={cooldown > 0 || isResending}
+								onClick={resend}
+								disabled={disabled}
 								className="ml-2 inline-flex items-center gap-1 text-sm font-medium text-primary underline underline-offset-2 hover:no-underline disabled:opacity-50"
 							>
 								<IconRefresh
