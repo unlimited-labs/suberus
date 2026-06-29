@@ -1,6 +1,5 @@
 import {
 	IconAdjustments,
-	IconBook,
 	IconBuildingStore,
 	IconCalendar,
 	IconCalendarEvent,
@@ -120,12 +119,6 @@ export const navigationSections: NavSection[] = [
 				href: "/admin/settings",
 				icon: IconAdjustments,
 				roles: ["ADMIN"],
-			},
-			{
-				name: "Documentation",
-				href: "https://docs.suberus.app/",
-				icon: IconBook,
-				external: true,
 			},
 		],
 	},
