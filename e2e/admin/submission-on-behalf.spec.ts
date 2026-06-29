@@ -79,6 +79,33 @@ test.describe("Admin creates a submission on behalf of a participant", () => {
 		).toBeVisible()
 	})
 
+	test("the header actions menu opens the on-behalf form", async ({
+		page,
+		userDetailPage,
+		testRun,
+	}) => {
+		const participant = await createTestUser({
+			email: `on-behalf-menu-${testRun.testRunId}@e2e.local`,
+			firstName: "Menu",
+			lastName: "Participant",
+			emailVerified: true,
+			role: "AUTHOR",
+		})
+		createdUserIds.push(participant.id)
+
+		await loginAs(page, EDITOR_USER, { clearCookies: true })
+		await userDetailPage.goto(participant.id)
+		await userDetailPage.openActions()
+		await page.getByTestId("add-submission-action").click()
+
+		await page.waitForURL(
+			`**/admin/users/${participant.id}/submissions/new`,
+		)
+		await expect(page.locator("#author-0-firstName")).toHaveValue("Menu", {
+			timeout: 15000,
+		})
+	})
+
 	test("a regular author cannot open the on-behalf route", async ({
 		page,
 	}) => {
