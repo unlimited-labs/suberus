@@ -5,20 +5,15 @@ import {
 	IconUpload,
 } from "@tabler/icons-react";
 import { useRef, useState } from "react";
+import type { CampaignAttachment } from "@/features/bulk-email/server/attachments";
 import { EMAIL_ATTACHMENT_ACCEPT_ATTRIBUTE } from "@/features/settings/file-types";
 import { cn, formatFileSize } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { useCampaignAttachments } from "./use-campaign-attachments";
 
-interface AttachmentItem {
-	id: string;
-	originalName: string;
-	size: number;
-}
-
 interface AttachmentDropzoneProps {
 	campaignId: string;
-	attachments: AttachmentItem[];
+	attachments: CampaignAttachment[];
 	disabled: boolean;
 }
 
