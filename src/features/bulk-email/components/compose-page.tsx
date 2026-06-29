@@ -167,7 +167,7 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 												className="w-full"
 												data-testid="send-campaign-btn"
 												onClick={() => compose.send()}
-												disabled={compose.isSending}
+												disabled={compose.isSending || !compose.canSend}
 											>
 												<IconSend className="mr-2 size-4" />
 												Send campaign
@@ -186,7 +186,7 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 													variant="secondary"
 													data-testid="test-send-btn"
 													onClick={() => compose.sendTest()}
-													disabled={compose.isTesting}
+													disabled={compose.isTesting || !compose.canSend}
 												>
 													<IconFlask className="mr-2 size-4" />
 													Send test

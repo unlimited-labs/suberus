@@ -198,6 +198,39 @@ test.describe("Admin - Bulk Email", () => {
 		}
 	})
 
+	test("Send and Send test are disabled until subject and body are filled", async ({
+		page,
+		testRun,
+		adminUsersPage,
+	}) => {
+		const runId = testRun.testRunId
+		const rcpt = await makeRecipient(runId, "gwen", "Gwen")
+
+		try {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+			await adminUsersPage.selectUser({ ...rcpt, firstName: "Gwen", lastName: "Recipient" })
+			await adminUsersPage.openBulkEmailComposer()
+
+			// Empty subject + body → both dispatch actions blocked.
+			await expect(page.getByTestId("send-campaign-btn")).toBeDisabled()
+			await expect(page.getByTestId("test-send-btn")).toBeDisabled()
+
+			// Subject alone is not enough.
+			await page.getByTestId("campaign-subject").fill(`Hello ${runId}`)
+			await expect(page.getByTestId("send-campaign-btn")).toBeDisabled()
+			await expect(page.getByTestId("test-send-btn")).toBeDisabled()
+
+			// Both filled → enabled.
+			await page.getByTestId("campaign-body").fill("Hi there")
+			await expect(page.getByTestId("send-campaign-btn")).toBeEnabled()
+			await expect(page.getByTestId("test-send-btn")).toBeEnabled()
+		} finally {
+			await deleteTestUser(rcpt.id)
+			await clearMailpit(runId)
+		}
+	})
+
 	test("deletes a draft campaign", async ({ page, testRun, adminUsersPage }) => {
 		const runId = testRun.testRunId
 		const rcpt = await makeRecipient(runId, "erin", "Erin")

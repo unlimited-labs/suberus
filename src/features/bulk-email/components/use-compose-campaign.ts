@@ -131,8 +131,11 @@ export function useComposeCampaign(campaign: Campaign) {
 		});
 	}, [job.status, job.current, jobId, campaign.id, queryClient]);
 
+	const canSend = subject.trim() !== "" && bodySource.trim() !== "";
+
 	return {
 		isDraft,
+		canSend,
 		subject,
 		setSubject,
 		format,

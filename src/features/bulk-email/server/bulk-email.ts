@@ -222,6 +222,9 @@ export async function sendCampaignTest(
 		},
 	});
 	if (!campaign) throw new Response("Campaign not found", { status: 404 });
+	if (!campaign.subject.trim() || !campaign.bodySource.trim()) {
+		throw new Response("Subject and body are required", { status: 400 });
+	}
 
 	const rendered = await renderEmailContent(
 		campaign.format,
@@ -257,6 +260,9 @@ export async function finalizeAndEnqueue(
 	}
 	if (campaign.totalRecipients === 0) {
 		throw new Response("Campaign has no recipients", { status: 400 });
+	}
+	if (!campaign.subject.trim() || !campaign.bodySource.trim()) {
+		throw new Response("Subject and body are required", { status: 400 });
 	}
 
 	const rendered = await renderEmailContent(
