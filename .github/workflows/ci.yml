@@ -30,10 +30,8 @@ jobs:
 
       - run: pnpm exec biome ci .
 
-      - run: pnpm typecheck
-
-      - run: pnpm test
-
+      # build is the typecheck: vite-plugin-checker gates types and generates
+      # routeTree.gen.ts (a standalone tsc can't). Before test for route imports.
       - run: pnpm build
         env:
           DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
@@ -42,3 +40,5 @@ jobs:
           SMTP_PORT: "1025"
           SMTP_FROM_EMAIL: noreply@suberus.local
           AUTH_SECRET: ci-build-secret-not-used-at-runtime-0000
+
+      - run: pnpm test
