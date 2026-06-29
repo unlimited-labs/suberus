@@ -89,7 +89,7 @@ describe("repl (offline)", () => {
 // Online tests (DB required)
 // ---------------------------------------------------------------------------
 
-describe("repl (online)", () => {
+describe.skipIf(!dotenvVars.DATABASE_URL)("repl (online)", () => {
 	it("--tables returns model names", async () => {
 		const { stdout, code } = await repl(["--tables"]);
 		expect(code).toBe(0);
