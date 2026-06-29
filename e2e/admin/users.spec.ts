@@ -594,7 +594,6 @@ test.describe("Admin Users Management", () => {
 			// Act
 			await adminUsersPage.selectUser(TEST_USER)
 			await adminUsersPage.selectBulkAction("Mark fee paid")
-			await adminUsersPage.clickApply()
 
 			// Assert
 			await expect(adminUsersPage.page.getByRole("dialog")).toBeVisible()
@@ -609,7 +608,6 @@ test.describe("Admin Users Management", () => {
 			// Act
 			await adminUsersPage.selectUser(TEST_USER)
 			await adminUsersPage.selectBulkAction("Change role")
-			await adminUsersPage.clickApply()
 
 			// Assert
 			await expect(adminUsersPage.page.getByRole("dialog")).toBeVisible()

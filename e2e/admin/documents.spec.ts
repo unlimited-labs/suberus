@@ -184,7 +184,6 @@ test.describe("Admin - Document generator", () => {
 		await usersPage.waitForLoad();
 		await usersPage.selectUser(TEST_USER);
 		await usersPage.selectBulkAction("Generate document");
-		await usersPage.clickApply();
 
 		// Dialog: pick template → review → generate → progress.
 		await page.getByTestId("bulk-template-select").click();

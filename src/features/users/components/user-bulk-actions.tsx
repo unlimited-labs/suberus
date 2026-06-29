@@ -20,7 +20,6 @@ import {
 import type { AdminUser } from "@/features/users/server/users";
 import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
 import { getErrorMessage } from "@/shared/lib/error-message";
-import { Button } from "@/shared/ui/button";
 import { BulkActionDialog } from "@/shared/ui/data-table";
 import {
 	Select,
@@ -57,7 +56,6 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 	const { data: feeTypes = [] } = useQuery(feeTypesQueryOptions());
 	const { data: currency = "" } = useQuery(feeCurrencyQueryOptions());
 
-	const [selectedAction, setSelectedAction] = useState<string>("");
 	const [feeDialogOpen, setFeeDialogOpen] = useState(false);
 	const [roleDialogOpen, setRoleDialogOpen] = useState(false);
 	const [generateDocsOpen, setGenerateDocsOpen] = useState(false);
@@ -79,7 +77,6 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 			table.resetRowSelection();
 			setFeeDialogOpen(false);
 			setRoleDialogOpen(false);
-			setSelectedAction("");
 		},
 	});
 
@@ -95,14 +92,14 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 
 	if (selectedCount === 0) return null;
 
-	const handleApply = () => {
-		if (selectedAction === "mark_fee") {
+	const handleSelectAction = (value: string) => {
+		if (value === "mark_fee") {
 			setFeeDialogOpen(true);
-		} else if (selectedAction === "change_role") {
+		} else if (value === "change_role") {
 			setRoleDialogOpen(true);
-		} else if (selectedAction === "send_email") {
+		} else if (value === "send_email") {
 			emailDraftMutation.mutate(selectedRows.map((row) => row.original.id));
-		} else if (selectedAction === "generate_document") {
+		} else if (value === "generate_document") {
 			setGenerateDocsOpen(true);
 		}
 	};
@@ -145,7 +142,7 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 				<span className="text-sm text-muted-foreground">
 					{selectedCount} selected
 				</span>
-				<Select value={selectedAction} onValueChange={setSelectedAction}>
+				<Select value="" onValueChange={handleSelectAction}>
 					<SelectTrigger className="h-8 w-[180px]">
 						<SelectValue placeholder="Bulk actions" />
 					</SelectTrigger>
@@ -157,9 +154,6 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 						))}
 					</SelectContent>
 				</Select>
-				<Button size="sm" onClick={handleApply} disabled={!selectedAction}>
-					Apply
-				</Button>
 			</div>
 
 			<BulkActionDialog
@@ -214,10 +208,7 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 
 			<BulkGenerateDialog
 				open={generateDocsOpen}
-				onOpenChange={(o) => {
-					setGenerateDocsOpen(o);
-					if (!o) setSelectedAction("");
-				}}
+				onOpenChange={setGenerateDocsOpen}
 				userIds={selectedRows.map((row) => row.original.id)}
 				onDone={() => table.resetRowSelection()}
 			/>

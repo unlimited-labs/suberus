@@ -150,7 +150,6 @@ test.describe("Admin - Bulk Email", () => {
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.selectUser({ ...rcpt, firstName: "Carol", lastName: "Recipient" })
 			await adminUsersPage.selectBulkAction("Send email")
-			await adminUsersPage.clickApply()
 			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
 
 			await page.getByTestId("campaign-subject").fill(`Preview ${runId}`)
@@ -180,7 +179,6 @@ test.describe("Admin - Bulk Email", () => {
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.selectUser({ ...rcpt, firstName: "Dave", lastName: "Recipient" })
 			await adminUsersPage.selectBulkAction("Send email")
-			await adminUsersPage.clickApply()
 			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
 
 			await page.getByTestId("format-select").click()
@@ -351,7 +349,6 @@ test.describe("Admin - Bulk Email", () => {
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.selectUser({ ...rcpt, firstName: "Mia", lastName: "Recipient" })
 			await adminUsersPage.selectBulkAction("Send email")
-			await adminUsersPage.clickApply()
 			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
 
 			// Markdown (default): bold renders as <strong> inside the preview frame.
@@ -392,7 +389,6 @@ test.describe("Admin - Bulk Email", () => {
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.selectUser({ ...rcpt, firstName: "Nora", lastName: "Recipient" })
 			await adminUsersPage.selectBulkAction("Send email")
-			await adminUsersPage.clickApply()
 			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
 
 			await page.getByTestId("placeholder-firstName").click()
