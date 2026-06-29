@@ -167,7 +167,7 @@ export class RegisterPage {
 		// Answer the seeded required "Preferred session format" question so the
 		// step gates open (survey isRequired is enforced). No-op if not present.
 		const formatTrigger = this.page
-			.locator("div")
+			.getByTestId("survey-question-field")
 			.filter({ hasText: /^Preferred session format/ })
 			.getByRole("combobox")
 		if (await formatTrigger.isVisible().catch(() => false)) {

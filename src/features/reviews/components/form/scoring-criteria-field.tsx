@@ -26,7 +26,10 @@ export function ScoringCriteriaField({
 						{(field) => {
 							const currentScore = (field.state.value as number) ?? 0;
 							return (
-								<div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-4 py-3">
+								<div
+									className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-4 py-3"
+									data-testid="scoring-criterion"
+								>
 									<div className="flex-1 min-w-0">
 										<p className="text-sm font-medium text-foreground">
 											{criterion.name}

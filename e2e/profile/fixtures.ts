@@ -68,7 +68,7 @@ export class SettingsPage {
 		// Email verification status (in contact section)
 		this.emailVerifiedBadge = contactSection.getByText("Email verified")
 		this.emailNotVerifiedBadge = contactSection.getByText("Email not verified")
-		this.emailResendButton = contactSection.locator("button", { hasText: /resend/i })
+		this.emailResendButton = contactSection.getByRole("button", { name: /resend/i })
 
 		// Password section - use id selectors to avoid ambiguity with similar labels
 		this.currentPasswordInput = page.locator("#currentPassword")

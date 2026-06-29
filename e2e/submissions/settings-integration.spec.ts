@@ -202,9 +202,6 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 	}) => {
 		// Arrange - Admin: Change MIN_ABSTRACT_LENGTH to 200
 		await goToAdminSubmissionSettings(adminPage);
-		adminPage.locator("div").filter({
-			hasText: /^Abstract$/,
-		});
 		const allMinInputs = adminPage.getByLabel("Min length (characters)");
 		const abstractMinInput = allMinInputs.nth(1);
 		const originalMin = await abstractMinInput.inputValue();
@@ -300,9 +297,7 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 				userPage.getByText(/relevant keywords/i)
 			).not.toBeVisible();
 			await expect(
-				userPage.locator(".flex.items-center.gap-3").filter({
-					hasText: "Keywords",
-				})
+				userPage.getByTestId("progress-row-keywords")
 			).not.toBeVisible();
 		}).toPass({ timeout: 15000 });
 

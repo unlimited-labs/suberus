@@ -36,7 +36,10 @@ export function ContentTabs({
 	file,
 }: ContentTabsProps) {
 	return (
-		<div className="rounded-2xl bg-card shadow-2xl border border-border/50 p-8">
+		<div
+			className="rounded-2xl bg-card shadow-2xl border border-border/50 p-8"
+			data-testid="submission-content-card"
+		>
 			<Tabs defaultValue="overview" className="w-full">
 				<TabsList variant="line" className="mb-6">
 					<TabsTrigger value="overview" className="gap-2">
@@ -134,6 +137,7 @@ export function ContentTabs({
 								<div
 									key={`${author.email}-${index}`}
 									className="text-sm flex items-center gap-2 flex-wrap"
+									data-testid="author-row"
 								>
 									<span className="font-medium">
 										{author.firstName} {author.lastName}

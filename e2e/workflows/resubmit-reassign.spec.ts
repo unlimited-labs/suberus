@@ -17,7 +17,7 @@ async function findSubmissionInAdmin(page: import("@playwright/test").Page, titl
 	await expect(searchInput).toBeVisible({ timeout: 10000 })
 	await searchInput.fill(title)
 
-	const row = page.locator("tr").filter({ hasText: title }).first()
+	const row = page.getByTestId("submission-row").filter({ visible: true, hasText: title }).first()
 	await expect(row).toBeVisible({ timeout: 10000 })
 
 	await row.getByRole("button").last().click()

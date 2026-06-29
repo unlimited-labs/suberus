@@ -1,5 +1,4 @@
 import { IconEdit, IconMail, IconMailOff } from "@tabler/icons-react";
-
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import type { EmailTemplateUI } from "./email-templates-tab";
@@ -14,7 +13,10 @@ export function EmailTemplateCard({
 	onEdit,
 }: EmailTemplateCardProps) {
 	return (
-		<div className="flex items-center justify-between rounded-lg border border-border/50 bg-card p-4 transition-colors hover:bg-muted/30">
+		<div
+			className="flex items-center justify-between rounded-lg border border-border/50 bg-card p-4 transition-colors hover:bg-muted/30"
+			data-testid="email-template-card"
+		>
 			<div className="flex items-center gap-3">
 				<div
 					className={`flex size-10 items-center justify-center rounded-lg ${

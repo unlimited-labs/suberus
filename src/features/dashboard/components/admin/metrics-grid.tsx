@@ -16,7 +16,10 @@ interface MetricsGridProps {
 export function MetricsGrid({ metrics, isLoading }: MetricsGridProps) {
 	if (isLoading || !metrics) {
 		return (
-			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+			<div
+				className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+				data-testid="metrics-grid"
+			>
 				{Array.from({ length: 4 }).map((_, i) => (
 					<MetricCardSkeleton key={i} />
 				))}
@@ -27,7 +30,10 @@ export function MetricsGrid({ metrics, isLoading }: MetricsGridProps) {
 	const { users, submissions, reviews, fees, trends } = metrics;
 
 	return (
-		<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+		<div
+			className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+			data-testid="metrics-grid"
+		>
 			<MetricCard
 				icon={IconUsers}
 				title="Total Users"
@@ -82,7 +88,10 @@ function MetricCard({
 	trendColor = "#3b82f6",
 }: MetricCardProps) {
 	return (
-		<div className="relative overflow-hidden rounded-lg border border-border bg-card p-4">
+		<div
+			className="relative overflow-hidden rounded-lg border border-border bg-card p-4"
+			data-testid="metric-card"
+		>
 			{trend && trend.length > 0 && (
 				<MetricSparkline data={trend} color={trendColor} />
 			)}
@@ -91,7 +100,9 @@ function MetricCard({
 					<Icon className="size-4 text-muted-foreground" />
 					<p className="text-sm text-muted-foreground">{title}</p>
 				</div>
-				<p className="text-2xl font-semibold">{value}</p>
+				<p className="text-2xl font-semibold" data-testid="metric-value">
+					{value}
+				</p>
 				<p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
 			</div>
 		</div>

@@ -16,7 +16,7 @@ export class AdminDashboardPage {
 	constructor(page: Page) {
 		this.page = page;
 		this.heading = page.getByRole("heading", { name: "Admin Dashboard" });
-		this.metricsGrid = page.locator(".grid").first();
+		this.metricsGrid = page.getByTestId("metrics-grid").first();
 		this.healthAlerts = page.locator('[role="alert"]').first();
 		this.submissionChart = page.getByText("Submissions by Status");
 		this.reviewProgress = page.getByText("Review Progress");
@@ -35,11 +35,9 @@ export class AdminDashboardPage {
 
 	async getMetricValue(title: string): Promise<string> {
 		const metricCard = this.page
-			.getByText(title)
-			.locator("..")
-			.locator("..")
-			.first();
-		const value = metricCard.locator("p.text-2xl").first();
+			.getByTestId("metric-card")
+			.filter({ hasText: title });
+		const value = metricCard.getByTestId("metric-value");
 		return (await value.textContent()) || "";
 	}
 

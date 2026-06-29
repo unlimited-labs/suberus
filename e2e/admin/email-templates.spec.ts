@@ -8,10 +8,8 @@ async function openTemplateEditor(
 	page: import("@playwright/test").Page,
 	descriptionText: string,
 ) {
-	// Each card is a row with: [icon + text block] ... [edit button]
-	// The text block contains the description. We find the card then click its button.
 	const card = page
-		.locator("div.space-y-3 > div")
+		.getByTestId("email-template-card")
 		.filter({ hasText: descriptionText });
 	await card.getByRole("button").click();
 }

@@ -35,7 +35,7 @@ export class AdminSubmissionsPage {
 
 	/** Tick the row checkbox for a submission identified by its full (prefixed) title. */
 	async selectRow(fullTitle: string) {
-		await this.page.locator("tr").filter({ hasText: fullTitle }).getByRole("checkbox").check()
+		await this.page.getByTestId("submission-row").filter({ visible: true, hasText: fullTitle }).getByLabel("Select row").check()
 	}
 
 	/** Open a bulk action from the toolbar and return the opened dialog. */
@@ -95,7 +95,7 @@ export class AdminUsersPage {
 	}
 
 	async selectAllUsers() {
-		await this.page.locator("thead").getByRole("checkbox").click()
+		await this.page.getByLabel("Select all").click()
 	}
 
 	async openBulkActions() {
@@ -305,8 +305,7 @@ export class AdminSettingsPage {
 	}
 
 	getRequiredReviewersInput() {
-		const container = this.page.locator("div").filter({ hasText: /^Required reviewers$/ })
-		return container.getByRole("spinbutton")
+		return this.page.getByLabel("Required reviewers")
 	}
 
 	getContentFormatSelect() {

@@ -151,7 +151,7 @@ test.describe("User Settings - Survey", () => {
 
 		// Act — open Select dropdown and pick "Poster"
 		const trigger = page
-			.locator("div")
+			.getByTestId("survey-question-field")
 			.filter({ hasText: /^Preferred session format/ })
 			.getByRole("combobox");
 		await trigger.click();
@@ -175,7 +175,7 @@ test.describe("User Settings - Survey", () => {
 			).toBeVisible({ timeout: 15000 });
 			await expect(
 				page
-					.locator("div")
+					.getByTestId("survey-question-field")
 					.filter({ hasText: /^Preferred session format/ })
 					.getByRole("combobox"),
 			).toContainText("Poster");
@@ -259,7 +259,7 @@ test.describe("User Settings - Survey", () => {
 
 		// Act — answer it; save now succeeds (restores the seeded state)
 		const trigger = page
-			.locator("div")
+			.getByTestId("survey-question-field")
 			.filter({ hasText: /^Preferred session format/ })
 			.getByRole("combobox");
 		await trigger.click();
@@ -275,7 +275,7 @@ test.describe("User Settings - Survey", () => {
 	}) => {
 		// Arrange — scope to the single-select question wrapper
 		const wrapper = page
-			.locator("div")
+			.getByTestId("survey-question-field")
 			.filter({ hasText: /^Preferred session format/ });
 		const saveButton = page
 			.locator("section")
@@ -316,7 +316,7 @@ test.describe("User Settings - Survey", () => {
 	}) => {
 		// Arrange — scope to the multi-select question wrapper
 		const wrapper = page
-			.locator("div")
+			.getByTestId("survey-question-field")
 			.filter({ hasText: /^Which days will you attend\?/ });
 		const saveButton = page
 			.locator("section")
@@ -375,7 +375,7 @@ test.describe("User Settings - Survey", () => {
 		).toBeVisible({ timeout: 15000 });
 
 		const wrapper = page
-			.locator("div")
+			.getByTestId("survey-question-field")
 			.filter({ hasText: /^Preferred session format/ });
 		const saveButton = page
 			.locator("section")

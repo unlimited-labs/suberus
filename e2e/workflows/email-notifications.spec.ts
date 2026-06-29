@@ -12,7 +12,7 @@ import { runSubmissionAction } from "../helpers/submission-actions";
 import { waitForDialogToClose } from "../helpers/dialog";
 
 async function addKeyword(page: Page, keyword: string) {
-	const keywordInput = page.locator("input.min-w-\\[120px\\]");
+	const keywordInput = page.getByTestId("keywords-section").locator("input");
 	await expect(keywordInput).toBeVisible();
 	await keywordInput.fill(keyword);
 	await keywordInput.press("Enter");

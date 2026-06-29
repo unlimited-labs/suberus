@@ -214,7 +214,7 @@ test.describe("Submission Detail - Authors in Overview", () => {
 		await page.goto(`/submissions/${id}`);
 
 		// Assert
-		const contentCard = page.locator(".rounded-2xl.bg-card").first();
+		const contentCard = page.getByTestId("submission-content-card");
 		await expect(contentCard.getByText("Authors", { exact: true })).toBeVisible();
 	});
 
@@ -230,7 +230,7 @@ test.describe("Submission Detail - Authors in Overview", () => {
 		await page.goto(`/submissions/${id}`);
 
 		// Assert
-		const authorRow = page.locator(".space-y-1 > div").filter({
+		const authorRow = page.getByTestId("author-row").filter({
 			hasText: "John",
 		});
 		await expect(authorRow.locator("svg")).toBeVisible();
@@ -413,7 +413,7 @@ test.describe("Submission Detail - Edge Cases", () => {
 		await page.goto(`/submissions/${id}`);
 
 		// Assert
-		const contentCard = page.locator(".rounded-2xl.bg-card").first();
+		const contentCard = page.getByTestId("submission-content-card");
 		await expect(contentCard.getByText("Keywords", { exact: true })).toBeVisible();
 		await expect(contentCard.getByText("testing", { exact: true })).toBeVisible();
 	});

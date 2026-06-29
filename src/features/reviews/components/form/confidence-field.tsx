@@ -19,7 +19,7 @@ export function ConfidenceField({ form, readOnly }: ConfidenceFieldProps) {
 						field.state.meta.isBlurred && field.state.meta.errors.length > 0;
 					return (
 						<Field data-invalid={hasError}>
-							<div className="space-y-2">
+							<div className="space-y-2" data-testid="confidence-field">
 								<div className="flex items-center gap-2">
 									{confidenceLevels.map((level) => (
 										<button
