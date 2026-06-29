@@ -23,6 +23,11 @@ export function hasMinReviewers(assigned: number, required: number): boolean {
 	return assigned >= required;
 }
 
+/** Whether the current round has no active (non-cancelled) reviewer assignments */
+export function hasNoActiveReviewers(assigned: number): boolean {
+	return assigned === 0;
+}
+
 /** Whether all assigned reviews are complete and the minimum is met */
 export function allReviewsComplete(
 	assigned: number,

@@ -4,6 +4,7 @@ import type { ReviewDecision, SubmissionType } from "@/generated/prisma/enums";
 export type SubmissionEvent =
 	| { type: "SUBMIT" }
 	| { type: "ASSIGN_REVIEWER" }
+	| { type: "REVERT_NO_REVIEWERS" }
 	| { type: "WITHDRAW" }
 	| { type: "DESK_REJECT"; reason: string }
 	| { type: "DESK_ACCEPT"; reason: string }

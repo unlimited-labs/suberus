@@ -1,5 +1,9 @@
 import { assign, setup } from "xstate";
-import { allReviewsComplete, hasMinReviewers } from "../guards";
+import {
+	allReviewsComplete,
+	hasMinReviewers,
+	hasNoActiveReviewers,
+} from "../guards";
 import type { SubmissionContext, SubmissionEvent } from "../types";
 
 /**
@@ -21,6 +25,11 @@ export const submissionMachine = setup({
 				context.assignedReviewersCount,
 				context.requiredReviewers,
 			),
+		noActiveReviewers: ({ context }) =>
+			hasNoActiveReviewers(context.assignedReviewersCount),
+		revertsToResubmitted: ({ context }) =>
+			hasNoActiveReviewers(context.assignedReviewersCount) &&
+			context.currentRound > 1,
 		allReviewsComplete: ({ context }) =>
 			allReviewsComplete(
 				context.assignedReviewersCount,
@@ -86,6 +95,10 @@ export const submissionMachine = setup({
 					target: "REVIEWS_COMPLETE",
 					guard: "allReviewsComplete",
 				},
+				REVERT_NO_REVIEWERS: [
+					{ target: "RESUBMITTED", guard: "revertsToResubmitted" },
+					{ target: "SUBMITTED", guard: "noActiveReviewers" },
+				],
 				WITHDRAW: "WITHDRAWN",
 			},
 		},
@@ -148,6 +161,8 @@ export const submissionMachine = setup({
 					target: "UNDER_REVIEW",
 					guard: "hasMinReviewers",
 				},
+				DESK_REJECT: "REJECTED",
+				DESK_ACCEPT: "ACCEPTED",
 				WITHDRAW: "WITHDRAWN",
 			},
 		},

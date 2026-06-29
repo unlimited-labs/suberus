@@ -9,6 +9,7 @@ import {
 	checkAndTriggerReviewCompletion,
 	executeAssignmentTransition,
 	executeSubmissionTransition,
+	revertToPreReviewIfNoReviewers,
 } from "@/features/workflow/server/workflow";
 import type {
 	AssignmentStatus,
@@ -303,6 +304,7 @@ export async function cancelAssignment(
 		// Re-check if remaining reviews now satisfy completion criteria
 		// (e.g., requiredReviewers was reduced and cancelled assignment was excess)
 		await checkAndTriggerReviewCompletion(assignment.submissionId, cancelledBy);
+		await revertToPreReviewIfNoReviewers(assignment.submissionId, cancelledBy);
 	}
 
 	return { success: result.success, error: result.error };

@@ -201,6 +201,35 @@ export async function executeSubmissionTransition(
 }
 
 /**
+ * Revert an UNDER_REVIEW submission whose current round has no active reviewers
+ * back to its pre-review state (SUBMITTED on round 1, RESUBMITTED otherwise),
+ * restoring the editor's desk/assignment options. No-op in any other situation.
+ */
+export async function revertToPreReviewIfNoReviewers(
+	submissionId: string,
+	triggeredBy?: string,
+): Promise<TransitionResult | null> {
+	const submission = await prisma.submission.findUniqueOrThrow({
+		where: { id: submissionId },
+		include: { reviewAssignments: true },
+	});
+
+	if (submission.status !== "UNDER_REVIEW") return null;
+
+	const activeThisRound = submission.reviewAssignments.filter(
+		(a) => a.round === submission.currentRound && a.status !== "CANCELLED",
+	).length;
+	if (activeThisRound > 0) return null;
+
+	return executeSubmissionTransition(
+		submissionId,
+		{ type: "REVERT_NO_REVIEWERS" },
+		triggeredBy,
+		"Last reviewer removed — reverted to pre-review state",
+	);
+}
+
+/**
  * Validate a submission transition without executing it.
  * Used when custom DB work (e.g., version creation) must be atomic with the status change.
  */

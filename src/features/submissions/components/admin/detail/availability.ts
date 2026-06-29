@@ -45,12 +45,14 @@ export function getActionAvailability(
 	config: Pick<SubmissionTypeConfig, "requiresEditorDecision">,
 ): ActionAvailability {
 	const isExhibitor = submission.type === "EXHIBITOR";
+	const canDeskDecide =
+		!isExhibitor && ["SUBMITTED", "RESUBMITTED"].includes(submission.status);
 	return {
 		canAssignReviewers:
 			!isExhibitor &&
 			["SUBMITTED", "UNDER_REVIEW", "RESUBMITTED"].includes(submission.status),
-		canDeskAccept: submission.status === "SUBMITTED" && !isExhibitor,
-		canDeskReject: submission.status === "SUBMITTED" && !isExhibitor,
+		canDeskAccept: canDeskDecide,
+		canDeskReject: canDeskDecide,
 		canTransitionToAwaitingDecision:
 			submission.status === "REVIEWS_COMPLETE" && config.requiresEditorDecision,
 		canMakeDecision:

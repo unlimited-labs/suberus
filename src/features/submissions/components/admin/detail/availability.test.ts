@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-
 import {
 	computeReviewProgress,
 	filterReviewsByRound,
@@ -74,6 +73,31 @@ describe("getActionAvailability", () => {
 			getActionAvailability({ type: "ABSTRACT", status: "RESUBMITTED" }, config)
 				.canAssignReviewers,
 		).toBe(true);
+	});
+
+	it("allows desk decisions on RESUBMITTED but not on UNDER_REVIEW", () => {
+		const resubmitted = getActionAvailability(
+			{ type: "ABSTRACT", status: "RESUBMITTED" },
+			config,
+		);
+		expect(resubmitted.canDeskAccept).toBe(true);
+		expect(resubmitted.canDeskReject).toBe(true);
+
+		const underReview = getActionAvailability(
+			{ type: "ABSTRACT", status: "UNDER_REVIEW" },
+			config,
+		);
+		expect(underReview.canDeskAccept).toBe(false);
+		expect(underReview.canDeskReject).toBe(false);
+	});
+
+	it("excludes desk decisions from a RESUBMITTED EXHIBITOR", () => {
+		const a = getActionAvailability(
+			{ type: "EXHIBITOR", status: "RESUBMITTED" },
+			config,
+		);
+		expect(a.canDeskAccept).toBe(false);
+		expect(a.canDeskReject).toBe(false);
 	});
 
 	it("gates transition-to-decision on REVIEWS_COMPLETE AND requiresEditorDecision", () => {
