@@ -56,7 +56,10 @@ function VerifyEmailPage() {
 		<AuthCard title="Check your email">
 			<div className="flex flex-1 flex-col items-center justify-center space-y-6 text-center">
 				<div className="rounded-full bg-primary/10 p-4">
-					<IconMail className="size-12 text-primary" />
+					<IconMail
+						className="size-12 text-primary"
+						data-testid="verify-email-icon"
+					/>
 				</div>
 
 				<div className="space-y-2">

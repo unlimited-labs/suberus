@@ -75,8 +75,8 @@ test.describe("Admin Users - Submissions column", () => {
 		await adminUsersPage.search("Member SubCol")
 
 		const row = adminUsersPage.page
-			.locator("tr")
-			.filter({ has: adminUsersPage.page.locator(`text="${member.email}"`) })
+			.getByTestId("user-row")
+			.filter({ visible: true, has: adminUsersPage.page.locator(`text="${member.email}"`) })
 		const cell = row.getByTestId("user-submissions")
 		await expect(cell).toContainText("author")
 		await expect(cell).toContainText("coauthor")
@@ -90,8 +90,8 @@ test.describe("Admin Users - Submissions column", () => {
 		await adminUsersPage.search("Empty SubCol")
 
 		const row = adminUsersPage.page
-			.locator("tr")
-			.filter({ has: adminUsersPage.page.locator(`text="${empty.email}"`) })
+			.getByTestId("user-row")
+			.filter({ visible: true, has: adminUsersPage.page.locator(`text="${empty.email}"`) })
 		await expect(row.getByTestId("user-submissions")).toHaveText("—")
 	})
 
@@ -127,11 +127,11 @@ test.describe("Admin Users - Submissions column", () => {
 
 		// member owns an accepted poster → stays visible; owner/empty have none → filtered out.
 		const memberRow = page
-			.locator("tr")
-			.filter({ has: page.locator(`text="${member.email}"`) })
+			.getByTestId("user-row")
+			.filter({ visible: true, has: page.locator(`text="${member.email}"`) })
 		await expect(memberRow).toBeVisible()
 		await expect(
-			page.locator("tr").filter({ has: page.locator(`text="${empty.email}"`) }),
+			page.getByTestId("user-row").filter({ visible: true, has: page.locator(`text="${empty.email}"`) }),
 		).toHaveCount(0)
 	})
 
@@ -144,8 +144,8 @@ test.describe("Admin Users - Submissions column", () => {
 		await page.getByTestId("submission-filter-coauthor").click()
 		// member is coauthor of a poster → should remain visible
 		const memberRow = page
-			.locator("tr")
-			.filter({ has: page.locator(`text="${member.email}"`) })
+			.getByTestId("user-row")
+			.filter({ visible: true, has: page.locator(`text="${member.email}"`) })
 		await expect(memberRow).toBeVisible()
 	})
 })

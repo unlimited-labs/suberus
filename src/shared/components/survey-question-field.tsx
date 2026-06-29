@@ -47,7 +47,10 @@ export function SurveyQuestionField({
 	switch (question.type) {
 		case "CHECKBOX":
 			return (
-				<div className="flex items-start gap-3">
+				<div
+					className="flex items-start gap-3"
+					data-testid="survey-question-field"
+				>
 					<Checkbox
 						id={`survey-${question.id}`}
 						checked={value === "true"}
@@ -68,7 +71,7 @@ export function SurveyQuestionField({
 
 		case "TEXT":
 			return (
-				<div className="space-y-1.5">
+				<div className="space-y-1.5" data-testid="survey-question-field">
 					<Label htmlFor={`survey-${question.id}`} className="text-sm">
 						{question.label}
 						{requiredMark}
@@ -87,7 +90,7 @@ export function SurveyQuestionField({
 			const options = question.options ?? [];
 			const other = isOtherValue(value);
 			return (
-				<div className="space-y-1.5">
+				<div className="space-y-1.5" data-testid="survey-question-field">
 					<Label htmlFor={`survey-${question.id}`} className="text-sm">
 						{question.label}
 						{requiredMark}
@@ -129,7 +132,7 @@ export function SurveyQuestionField({
 			const setSelected = (next: string[]) => onChange(JSON.stringify(next));
 			const otherEntry = selected.find(isOtherValue);
 			return (
-				<div className="space-y-1.5">
+				<div className="space-y-1.5" data-testid="survey-question-field">
 					<Label className="text-sm">
 						{question.label}
 						{requiredMark}

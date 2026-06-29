@@ -66,11 +66,7 @@ test.describe("Admin - Bulk Email", () => {
 			await adminUsersPage.selectUser({ ...withTitle, firstName: "Alice", lastName: "Recipient" })
 			await adminUsersPage.selectUser({ ...noTitle, firstName: "Bob", lastName: "Recipient" })
 
-			await adminUsersPage.selectBulkAction("Send email")
-			await adminUsersPage.clickApply()
-
-			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
-			const campaignId = page.url().split("/").pop() as string
+			const campaignId = await adminUsersPage.openBulkEmailComposer()
 
 			await page.getByTestId("campaign-subject").fill(`Hello {{firstName}} ${runId}`)
 			await page
@@ -212,10 +208,7 @@ test.describe("Admin - Bulk Email", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.selectUser({ ...rcpt, firstName: "Erin", lastName: "Recipient" })
-			await adminUsersPage.selectBulkAction("Send email")
-			await adminUsersPage.clickApply()
-			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
-			const campaignId = page.url().split("/").pop() as string
+			const campaignId = await adminUsersPage.openBulkEmailComposer()
 
 			await page.getByTestId("delete-campaign-btn").click()
 			await expect(page).toHaveURL("/admin/bulk-email")
@@ -243,10 +236,7 @@ test.describe("Admin - Bulk Email", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.selectUser({ ...rcpt, firstName: "Frank", lastName: "Recipient" })
-			await adminUsersPage.selectBulkAction("Send email")
-			await adminUsersPage.clickApply()
-			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
-			const campaignId = page.url().split("/").pop() as string
+			const campaignId = await adminUsersPage.openBulkEmailComposer()
 
 			await page.getByTestId("campaign-subject").fill(`Draft ${runId}`)
 			await page.getByTestId("campaign-body").fill(body)
@@ -467,6 +457,108 @@ test.describe("Admin - Bulk Email", () => {
 			await expect(page.getByTestId("recipient-summary")).toContainText("FAILED")
 		} finally {
 			await db.emailCampaign.delete({ where: { id: campaign.id } }).catch(() => {})
+			await clearMailpit(runId)
+		}
+	})
+
+	// Minimal valid PDF: file-type detects it by the leading "%PDF" signature,
+	// so the server-side magic-number check accepts it.
+	const MINIMAL_PDF = Buffer.from("%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n")
+
+	test("attaches a file to a draft and delivers it with the email", async ({
+		page,
+		testRun,
+		adminUsersPage,
+	}) => {
+		const runId = testRun.testRunId
+		const rcpt = await makeRecipient(runId, "olive", "Olive")
+
+		try {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+			await adminUsersPage.selectUser({ ...rcpt, firstName: "Olive", lastName: "Recipient" })
+			const campaignId = await adminUsersPage.openBulkEmailComposer()
+
+			await page.getByTestId("campaign-subject").fill(`Attach ${runId}`)
+			await page.getByTestId("campaign-body").fill("Hi {{firstName}}")
+
+			await page.locator('input[type="file"]').setInputFiles({
+				name: "agenda.pdf",
+				mimeType: "application/pdf",
+				buffer: MINIMAL_PDF,
+			})
+			await expect(page.getByTestId("attachment-list")).toContainText("agenda.pdf")
+
+			const db = getPrisma()
+			await expect
+				.poll(() =>
+					db.file.count({
+						where: { entityType: "EMAIL_CAMPAIGN", entityId: campaignId },
+					}),
+				)
+				.toBe(1)
+
+			await page.getByTestId("send-campaign-btn").click()
+			await expect
+				.poll(
+					async () => {
+						const c = await db.emailCampaign.findUnique({
+							where: { id: campaignId },
+							select: { status: true, sentCount: true },
+						})
+						return `${c?.status}:${c?.sentCount}`
+					},
+					{ timeout: 30000 },
+				)
+				.toBe("SENT:1")
+
+			// The delivered email carries the attachment.
+			const msg = await waitForEmail(rcpt.email, runId, 15000)
+			expect(msg, "no email delivered").toBeTruthy()
+			const full = (await getMailpitMessage((msg as { ID: string }).ID)) as {
+				Attachments?: { FileName: string }[]
+			} | null
+			expect(full?.Attachments?.length ?? 0).toBeGreaterThan(0)
+			expect(full?.Attachments?.[0]?.FileName).toContain("agenda")
+		} finally {
+			await deleteTestUser(rcpt.id)
+			await clearMailpit(runId)
+		}
+	})
+
+	test("removes an attachment from a draft", async ({
+		page,
+		testRun,
+		adminUsersPage,
+	}) => {
+		const runId = testRun.testRunId
+		const rcpt = await makeRecipient(runId, "peter", "Peter")
+
+		try {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+			await adminUsersPage.selectUser({ ...rcpt, firstName: "Peter", lastName: "Recipient" })
+			const campaignId = await adminUsersPage.openBulkEmailComposer()
+
+			await page.locator('input[type="file"]').setInputFiles({
+				name: "report.pdf",
+				mimeType: "application/pdf",
+				buffer: MINIMAL_PDF,
+			})
+			await expect(page.getByTestId("attachment-list")).toContainText("report.pdf")
+
+			await page.getByTestId("attachment-remove-btn").click()
+
+			const db = getPrisma()
+			await expect
+				.poll(() =>
+					db.file.count({
+						where: { entityType: "EMAIL_CAMPAIGN", entityId: campaignId },
+					}),
+				)
+				.toBe(0)
+		} finally {
+			await deleteTestUser(rcpt.id)
 			await clearMailpit(runId)
 		}
 	})

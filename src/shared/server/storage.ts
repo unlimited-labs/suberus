@@ -245,6 +245,14 @@ export function generateReviewFileKey(
 	return `reviews/${reviewId}/${timestamp}-${sanitizeFileName(originalName)}`;
 }
 
+export function generateCampaignAttachmentKey(
+	campaignId: string,
+	originalName: string,
+): string {
+	const timestamp = Date.now();
+	return `campaigns/${campaignId}/${timestamp}-${sanitizeFileName(originalName)}`;
+}
+
 export interface S3HealthResult {
 	status: "healthy" | "error";
 	endpoint: string;

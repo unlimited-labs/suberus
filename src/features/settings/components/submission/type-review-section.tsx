@@ -33,8 +33,9 @@ export function TypeReviewSection({
 	return (
 		<>
 			<div className="space-y-2">
-				<Label>Required reviewers</Label>
+				<Label htmlFor="required-reviewers">Required reviewers</Label>
 				<Input
+					id="required-reviewers"
 					type="number"
 					min={1}
 					max={10}

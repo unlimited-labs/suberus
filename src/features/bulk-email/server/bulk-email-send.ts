@@ -1,5 +1,6 @@
 import type { RawEmail } from "@/shared/server/email";
 import { applyPlaceholders, recipientValues } from "../lib/placeholders";
+import type { MailAttachment } from "./attachments";
 
 export interface MailRecipientInput {
 	email: string;
@@ -14,6 +15,8 @@ export interface CampaignContent {
 	body: string;
 	/** When false the body is sent as plain text. */
 	isHtml: boolean;
+	/** Shared across all recipients; loaded once by the worker. */
+	attachments?: MailAttachment[];
 }
 
 /**
@@ -32,5 +35,8 @@ export function buildRecipientMail(
 		to: recipient.email,
 		subject,
 		...(content.isHtml ? { html: body } : { text: body }),
+		...(content.attachments?.length
+			? { attachments: content.attachments }
+			: {}),
 	};
 }

@@ -7,13 +7,8 @@ import {
 	deleteSubmission,
 } from "../helpers/test-db";
 
-/** Tracks tab is index 3; on mobile, labels are hidden so use nth() */
-async function clickTracksTab(page: Page, testInfo: TestInfo) {
-	if (testInfo.project.name.includes("mobile")) {
-		await page.getByRole("tab").nth(3).click();
-	} else {
-		await page.getByRole("tab", { name: /Tracks/i }).click();
-	}
+async function clickTracksTab(page: Page, _testInfo: TestInfo) {
+	await page.getByTestId("settings-tab-tracks").click();
 }
 
 test.describe.serial("Admin - Conference Tracks", () => {

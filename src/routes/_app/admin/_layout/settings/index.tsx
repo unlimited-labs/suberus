@@ -215,6 +215,7 @@ function AdminSettingsPage() {
 								<TabsTrigger
 									key={tab.id}
 									value={tab.id}
+									data-testid={`settings-tab-${tab.id}`}
 									className="gap-1.5 px-3 py-2 text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
 								>
 									<tab.icon className="size-4" />

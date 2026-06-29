@@ -42,6 +42,7 @@ function ReviewsPage() {
 						columns={reviewColumns}
 						data={assignments as ReviewerAssignment[]}
 						getRowId={(row) => row.id}
+						rowDataTestId="assignment-row"
 						mobileCard={ReviewMobileCard}
 						toolbar={(table) => (
 							<DataTableToolbar

@@ -16,7 +16,10 @@ interface ProgressRowProps {
 
 function ProgressRow({ done, label }: ProgressRowProps) {
 	return (
-		<div className="flex items-center gap-3">
+		<div
+			className="flex items-center gap-3"
+			data-testid={`progress-row-${label.toLowerCase().replace(/\s+/g, "-")}`}
+		>
 			{done ? (
 				<IconCircleCheck className="size-5 text-primary" />
 			) : (

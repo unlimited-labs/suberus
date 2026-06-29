@@ -245,11 +245,9 @@ export class AssignReviewerDialog {
 	}
 
 	async cancelAssignmentByName(name: string) {
-		// Find the assignment row by name in Current Reviewers section
-		const section = this.page.locator("div").filter({
-			has: this.page.getByText("Current Reviewers"),
-		});
-		const assignmentRow = section.locator("div").filter({ hasText: name });
+		const assignmentRow = this.page
+			.getByTestId("current-reviewer-row")
+			.filter({ hasText: name });
 		await assignmentRow.getByRole("button").click();
 	}
 
@@ -395,7 +393,7 @@ export class ReviewerAssignmentsPage {
 	/** Navigate to the assignments list, open a submission's review form, and wait for it to load. */
 	async openReviewForm(submissionTitle: string) {
 		await this.goto();
-		const row = this.page.locator("tr").filter({ hasText: submissionTitle });
+		const row = this.page.getByTestId("assignment-row").filter({ visible: true, hasText: submissionTitle });
 		await baseExpect(row).toBeVisible({ timeout: 10000 });
 		await row.getByRole("link", { name: "Submit Review" }).click();
 		await this.page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: 30000 });
@@ -467,9 +465,8 @@ export class ReviewFormPage {
 	}
 
 	async setScore(criterionName: string, value: number) {
-		// Find the criterion row and click the score button
 		const row = this.page
-			.locator("div")
+			.getByTestId("scoring-criterion")
 			.filter({ hasText: new RegExp(criterionName, "i") })
 			.first();
 		// Score buttons are 1-5
@@ -477,11 +474,10 @@ export class ReviewFormPage {
 	}
 
 	async setConfidenceLevel(value: number) {
-		// Confidence level section
-		const section = this.page.locator("div").filter({
-			hasText: /Confidence Level/i,
-		});
-		await section.getByRole("button", { name: value.toString(), exact: true }).click();
+		await this.page
+			.getByTestId("confidence-field")
+			.getByRole("button", { name: value.toString(), exact: true })
+			.click();
 	}
 
 	async submit() {

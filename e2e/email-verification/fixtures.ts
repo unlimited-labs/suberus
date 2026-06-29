@@ -16,7 +16,7 @@ export class VerifyEmailPage {
 	constructor(page: Page) {
 		this.page = page
 		this.heading = page.getByRole("heading", { name: "Check your email" })
-		this.emailIcon = page.locator("svg.size-12")
+		this.emailIcon = page.getByTestId("verify-email-icon")
 		this.resendButton = page.getByRole("button", { name: /resend/i })
 		this.backToLoginLink = page.getByRole("link", { name: "Back to login" })
 	}

@@ -143,7 +143,10 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 				</div>
 			</div>
 
-			<div className="md:hidden space-y-3">
+			<div
+				className="md:hidden space-y-3"
+				data-testid="mobile-submissions-cards"
+			>
 				{submissions.map((submission) => (
 					<Link
 						key={submission.id}

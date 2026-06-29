@@ -22,8 +22,7 @@ async function addKeyword(page: Page, keyword: string) {
 	const keywordsHeading = page.getByRole("heading", { name: "Keywords", exact: true });
 	await expect(keywordsHeading).toBeVisible({ timeout: 10000 });
 
-	// The keywords input has a specific class: min-w-[120px]
-	const keywordInput = page.locator("input.min-w-\\[120px\\]");
+	const keywordInput = page.getByTestId("keywords-section").locator("input");
 	await expect(keywordInput).toBeVisible();
 	await keywordInput.fill(keyword);
 	await keywordInput.press("Enter");
@@ -37,7 +36,7 @@ async function findSubmissionInAdmin(page: Page, title: string): Promise<string>
 	await expect(searchInput).toBeVisible({ timeout: 10000 });
 	await searchInput.fill(title);
 
-	const row = page.locator("tr").filter({ hasText: title }).first();
+	const row = page.getByTestId("submission-row").filter({ visible: true, hasText: title }).first();
 	await expect(row).toBeVisible({ timeout: 10000 });
 
 	await row.getByRole("button").last().click();

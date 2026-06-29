@@ -3,6 +3,11 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { adminMiddleware } from "@/features/auth/server/middleware";
 import {
+	addCampaignAttachment,
+	type CampaignAttachment,
+	removeCampaignAttachment,
+} from "@/features/bulk-email/server/attachments";
+import {
 	createDraftCampaign,
 	deleteCampaign,
 	duplicateCampaign,
@@ -13,6 +18,8 @@ import {
 	saveDraft,
 	sendCampaignTest,
 } from "@/features/bulk-email/server/bulk-email";
+import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
+import { UploadValidationError } from "@/shared/server/validate-upload";
 
 const formatSchema = z.enum(["PLAIN", "MARKDOWN", "MJML"]);
 
@@ -98,6 +105,53 @@ export const duplicateBulkEmailCampaign = createServerFn({ method: "POST" })
 	.validator(idSchema)
 	.handler(async ({ data, context }) => {
 		return duplicateCampaign(data.id, context.user.id);
+	});
+
+type UploadAttachmentResult =
+	| { success: true; attachment: CampaignAttachment }
+	| { success: false; error: string };
+
+export const uploadBulkEmailAttachment = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator((data: FormData) =>
+		z.object({ campaignId: z.uuid(), file: z.instanceof(File) }).parse({
+			campaignId: data.get("campaignId"),
+			file: getUploadedFile(data),
+		}),
+	)
+	.handler(async ({ data, context }): Promise<UploadAttachmentResult> => {
+		try {
+			const buffer = await fileToBuffer(data.file);
+			const attachment = await addCampaignAttachment(
+				data.campaignId,
+				buffer,
+				data.file.name,
+				context.user.id,
+			);
+			return { success: true, attachment };
+		} catch (error) {
+			if (error instanceof UploadValidationError) {
+				return { success: false, error: error.message };
+			}
+			throw error;
+		}
+	});
+
+const fileIdSchema = z.object({ fileId: z.uuid() });
+
+export const deleteBulkEmailAttachment = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(fileIdSchema)
+	.handler(async ({ data }): Promise<{ success: boolean; error?: string }> => {
+		try {
+			await removeCampaignAttachment(data.fileId);
+			return { success: true };
+		} catch (error) {
+			if (error instanceof UploadValidationError) {
+				return { success: false, error: error.message };
+			}
+			throw error;
+		}
 	});
 
 export const bulkEmailCampaignQueryOptions = (id: string) =>

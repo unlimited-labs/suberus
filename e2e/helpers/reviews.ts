@@ -9,7 +9,7 @@ export async function openReviewFromAssignmentList(
 	title: string,
 	{ waitForUrlTimeout = 30000 }: { waitForUrlTimeout?: number } = {},
 ) {
-	const assignmentRow = page.locator("tr").filter({ hasText: title });
+	const assignmentRow = page.getByTestId("assignment-row").filter({ visible: true, hasText: title });
 	await expect(assignmentRow).toBeVisible({ timeout: 10000 });
 	await assignmentRow.getByRole("link", { name: "Submit Review" }).click();
 	await page.waitForURL(/\/reviews\/[a-f0-9-]+/, { timeout: waitForUrlTimeout });
