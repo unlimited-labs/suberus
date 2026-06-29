@@ -164,8 +164,6 @@ function PreviewBody({
 	isFavorite: boolean;
 	onToggleFavorite: () => void;
 }) {
-	const detail = useQuery(presentationDetailQueryOptions(target.slotId));
-
 	return (
 		<>
 			<DialogHeader className="pr-8 text-left">
@@ -196,38 +194,7 @@ function PreviewBody({
 				<p className={t.session}>{target.sessionTitle}</p>
 			</DialogHeader>
 
-			<div className="max-h-[55vh] space-y-5 overflow-y-auto">
-				{detail.isPending ? (
-					<PreviewSkeleton />
-				) : detail.data ? (
-					<>
-						{detail.data.authors.length > 0 && (
-							<Authors authors={detail.data.authors} t={t} />
-						)}
-						<section className="space-y-2">
-							<h3 className={t.heading} style={t.headingStyle}>
-								Abstract
-							</h3>
-							<div
-								className={cn("whitespace-pre-line break-words", t.abstract)}
-							>
-								{detail.data.content}
-							</div>
-						</section>
-						{detail.data.keywords.length > 0 && (
-							<section className="flex flex-wrap gap-2">
-								{detail.data.keywords.map((k) => (
-									<span key={k} className={t.keyword}>
-										{k}
-									</span>
-								))}
-							</section>
-						)}
-					</>
-				) : (
-					<p className={t.abstract}>Preview is unavailable for this talk.</p>
-				)}
-			</div>
+			<PreviewContent slotId={target.slotId} t={t} />
 
 			<DialogFooter className={cn("sm:justify-between", t.footer)}>
 				<button
@@ -251,6 +218,45 @@ function PreviewBody({
 				</button>
 			</DialogFooter>
 		</>
+	);
+}
+
+function PreviewContent({ slotId, t }: { slotId: string; t: DialogTheme }) {
+	const detail = useQuery(presentationDetailQueryOptions(slotId));
+
+	if (detail.isPending) {
+		return (
+			<div className="max-h-[55vh] space-y-5 overflow-y-auto">
+				<PreviewSkeleton />
+			</div>
+		);
+	}
+	if (!detail.data) {
+		return <p className={t.abstract}>Preview is unavailable for this talk.</p>;
+	}
+
+	const { authors, content, keywords } = detail.data;
+	return (
+		<div className="max-h-[55vh] space-y-5 overflow-y-auto">
+			{authors.length > 0 && <Authors authors={authors} t={t} />}
+			<section className="space-y-2">
+				<h3 className={t.heading} style={t.headingStyle}>
+					Abstract
+				</h3>
+				<div className={cn("whitespace-pre-line break-words", t.abstract)}>
+					{content}
+				</div>
+			</section>
+			{keywords.length > 0 && (
+				<section className="flex flex-wrap gap-2">
+					{keywords.map((k) => (
+						<span key={k} className={t.keyword}>
+							{k}
+						</span>
+					))}
+				</section>
+			)}
+		</div>
 	);
 }
 

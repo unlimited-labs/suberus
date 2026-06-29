@@ -9,10 +9,7 @@ import {
 	toggleFavorite,
 } from "@/features/planner/server/favorites";
 
-export type {
-	PresentationDetail,
-	PresentationDetailAuthor,
-} from "@/features/planner/server/favorites";
+export type { PresentationDetailAuthor } from "@/features/planner/server/favorites";
 
 const slotInput = z.object({ slotId: z.string().uuid() });
 
