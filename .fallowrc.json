@@ -23,6 +23,23 @@
     "unused-dependencies": "warn",
     "boundary-violation": "error"
   },
+  // CRAP here is inflated by estimated zero coverage; both paths are e2e-covered (bulk-email.spec.ts) and CC is trivial.
+  "health": {
+    "thresholdOverrides": [
+      {
+        "files": ["src/features/bulk-email/components/attachment-dropzone.tsx"],
+        "functions": ["AttachmentDropzone"],
+        "maxCrap": 45,
+        "reason": "e2e-covered (attach/remove specs); CC 6, CRAP estimated-coverage artifact"
+      },
+      {
+        "files": ["src/features/bulk-email/server/bulk-email.ts"],
+        "functions": ["sendCampaignTest"],
+        "maxCrap": 31,
+        "reason": "e2e-covered (send-test spec); CC 5, CRAP estimated-coverage artifact"
+      }
+    ]
+  },
   // Feature-first vertical slices. Each feature is its own zone, so a sibling app-feature import fails.
 	// `shared` is the floor (imports nothing above it);
 	// `routes` compose anything;

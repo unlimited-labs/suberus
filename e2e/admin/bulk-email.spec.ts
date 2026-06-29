@@ -66,11 +66,7 @@ test.describe("Admin - Bulk Email", () => {
 			await adminUsersPage.selectUser({ ...withTitle, firstName: "Alice", lastName: "Recipient" })
 			await adminUsersPage.selectUser({ ...noTitle, firstName: "Bob", lastName: "Recipient" })
 
-			await adminUsersPage.selectBulkAction("Send email")
-			await adminUsersPage.clickApply()
-
-			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
-			const campaignId = page.url().split("/").pop() as string
+			const campaignId = await adminUsersPage.openBulkEmailComposer()
 
 			await page.getByTestId("campaign-subject").fill(`Hello {{firstName}} ${runId}`)
 			await page
@@ -212,10 +208,7 @@ test.describe("Admin - Bulk Email", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.selectUser({ ...rcpt, firstName: "Erin", lastName: "Recipient" })
-			await adminUsersPage.selectBulkAction("Send email")
-			await adminUsersPage.clickApply()
-			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
-			const campaignId = page.url().split("/").pop() as string
+			const campaignId = await adminUsersPage.openBulkEmailComposer()
 
 			await page.getByTestId("delete-campaign-btn").click()
 			await expect(page).toHaveURL("/admin/bulk-email")
@@ -243,10 +236,7 @@ test.describe("Admin - Bulk Email", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.selectUser({ ...rcpt, firstName: "Frank", lastName: "Recipient" })
-			await adminUsersPage.selectBulkAction("Send email")
-			await adminUsersPage.clickApply()
-			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
-			const campaignId = page.url().split("/").pop() as string
+			const campaignId = await adminUsersPage.openBulkEmailComposer()
 
 			await page.getByTestId("campaign-subject").fill(`Draft ${runId}`)
 			await page.getByTestId("campaign-body").fill(body)
@@ -487,10 +477,7 @@ test.describe("Admin - Bulk Email", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.selectUser({ ...rcpt, firstName: "Olive", lastName: "Recipient" })
-			await adminUsersPage.selectBulkAction("Send email")
-			await adminUsersPage.clickApply()
-			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
-			const campaignId = page.url().split("/").pop() as string
+			const campaignId = await adminUsersPage.openBulkEmailComposer()
 
 			await page.getByTestId("campaign-subject").fill(`Attach ${runId}`)
 			await page.getByTestId("campaign-body").fill("Hi {{firstName}}")
@@ -551,10 +538,7 @@ test.describe("Admin - Bulk Email", () => {
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.selectUser({ ...rcpt, firstName: "Peter", lastName: "Recipient" })
-			await adminUsersPage.selectBulkAction("Send email")
-			await adminUsersPage.clickApply()
-			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
-			const campaignId = page.url().split("/").pop() as string
+			const campaignId = await adminUsersPage.openBulkEmailComposer()
 
 			await page.locator('input[type="file"]').setInputFiles({
 				name: "report.pdf",

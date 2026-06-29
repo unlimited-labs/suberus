@@ -111,6 +111,14 @@ export class AdminUsersPage {
 		await this.page.getByRole("button", { name: "Apply" }).click()
 	}
 
+	/** Run the "Send email" bulk action and wait for the composer; returns the new campaign id. */
+	async openBulkEmailComposer(): Promise<string> {
+		await this.selectBulkAction("Send email")
+		await this.clickApply()
+		await this.page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
+		return this.page.url().split("/").pop() as string
+	}
+
 	async openUserDetail(user: { email: string; firstName: string; lastName: string }) {
 		// Search by full name for precise match (firstName "Test" alone matches too many e2e users)
 		await this.search(`${user.firstName} ${user.lastName}`)
