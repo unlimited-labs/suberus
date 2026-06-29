@@ -41,7 +41,11 @@ interface DataTableProps<TData, TValue> {
 	) => React.ReactNode;
 	mobileCard?: (row: TData) => React.ReactNode;
 	getRowId?: (row: TData) => string;
-	/** Static data-testid applied to each data row (desktop `<tr>` and mobile card wrapper) */
+	/**
+	 * Static data-testid applied to each data row (desktop `<tr>` and mobile card
+	 * wrapper) — matches twice in the DOM; scope test locators with
+	 * `.filter({ visible: true })`.
+	 */
 	rowDataTestId?: string;
 	/** Initial column visibility, e.g. to hide filter-only helper columns */
 	initialColumnVisibility?: VisibilityState;
