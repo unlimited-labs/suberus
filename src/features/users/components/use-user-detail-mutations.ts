@@ -39,6 +39,7 @@ export function useUserDetailMutations(user: AdminUserDetail) {
 	const [roleDialogOpen, setRoleDialogOpen] = useState(false);
 	const [editDialogOpen, setEditDialogOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+	const [surveyDialogOpen, setSurveyDialogOpen] = useState(false);
 
 	const { data: feeTypes } = useSuspenseQuery(feeTypesQueryOptions());
 	const { data: currency } = useSuspenseQuery(feeCurrencyQueryOptions());
@@ -114,6 +115,8 @@ export function useUserDetailMutations(user: AdminUserDetail) {
 		setEditDialogOpen,
 		deleteDialogOpen,
 		setDeleteDialogOpen,
+		surveyDialogOpen,
+		setSurveyDialogOpen,
 		isPending: mutation.isPending,
 		handleMarkFeePaid,
 		handleUnmarkFeePaid,
