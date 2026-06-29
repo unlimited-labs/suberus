@@ -93,6 +93,7 @@ export interface PublicConferenceInfo {
 	startDate: string;
 	endDate: string;
 	timezone: string;
+	theme: string;
 }
 
 export const publicConferenceInfoQueryOptions = () =>
@@ -110,6 +111,7 @@ export const getPublicConferenceInfoFn = createServerFn({
 		"CONFERENCE_DATE_START",
 		"CONFERENCE_DATE_END",
 		"CONFERENCE_TIMEZONE",
+		"PROGRAM_THEME",
 	]);
 	return {
 		name: s.CONFERENCE_NAME,
@@ -117,5 +119,6 @@ export const getPublicConferenceInfoFn = createServerFn({
 		startDate: s.CONFERENCE_DATE_START,
 		endDate: s.CONFERENCE_DATE_END,
 		timezone: s.CONFERENCE_TIMEZONE,
+		theme: s.PROGRAM_THEME,
 	};
 });

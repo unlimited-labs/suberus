@@ -28,6 +28,7 @@ import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Switch } from "@/shared/ui/switch";
+import { ProgramThemeSection } from "./program-theme-section";
 import { ProgramTrackDialog } from "./program-track-dialog";
 import { ProgramTracksList } from "./program-tracks-list";
 import { RoomDialog } from "./room-dialog";
@@ -358,6 +359,8 @@ export function ProgramTab({
 				initialConferenceSettings={initialConferenceSettings}
 				llmHealth={llmHealth}
 			/>
+
+			<ProgramThemeSection />
 
 			<SettingsSection
 				icon={IconBuildingCommunity}

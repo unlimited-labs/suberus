@@ -2,6 +2,7 @@ import { test, expect } from "./fixtures";
 import {
 	createProgramSession,
 	createRoom,
+	setAppSetting,
 	setConferenceDates,
 	setSchedulePublished,
 } from "../../helpers/test-db";
@@ -58,5 +59,51 @@ test.describe.serial("Public /program", () => {
 		await expect(
 			page.getByText(`${testRun.testRunId}_Draft Session`),
 		).toBeHidden();
+	});
+
+	test.describe("themes", () => {
+		test.afterEach(async () => {
+			await setAppSetting("PROGRAM_THEME", "default");
+		});
+
+		async function publishOneSession(testRunId: string, title: string) {
+			const roomId = await createRoom(testRunId, `Room ${title}`);
+			await createProgramSession({
+				testRunId,
+				title,
+				startAt: isoDay(0, 14),
+				endAt: isoDay(0, 15),
+				roomId,
+			});
+			await setSchedulePublished(true);
+		}
+
+		test("default theme renders, editorial markers absent", async ({
+			publicProgramPage,
+			page,
+			testRun,
+		}) => {
+			await setAppSetting("PROGRAM_THEME", "default");
+			await publishOneSession(testRun.testRunId, "Theme Default Talk");
+
+			await publicProgramPage.goto();
+			await expect(page.getByTestId("program-theme-default")).toBeVisible();
+			await expect(page.getByTestId("program-theme-editorial")).toBeHidden();
+			await expect(publicProgramPage.ribbon).toBeHidden();
+		});
+
+		test("editorial theme renders when selected", async ({
+			publicProgramPage,
+			page,
+			testRun,
+		}) => {
+			await setAppSetting("PROGRAM_THEME", "editorial");
+			await publishOneSession(testRun.testRunId, "Theme Editorial Talk");
+
+			await publicProgramPage.goto();
+			await expect(page.getByTestId("program-theme-editorial")).toBeVisible();
+			await expect(page.getByTestId("program-theme-default")).toBeHidden();
+			await expect(publicProgramPage.ribbon).toBeVisible();
+		});
 	});
 });

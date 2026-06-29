@@ -190,6 +190,8 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 
 	SCHEDULE_STATE: { status: "DRAFT" },
 
+	PROGRAM_THEME: "default",
+
 	DOCUMENT_SIGNING: null,
 };
 

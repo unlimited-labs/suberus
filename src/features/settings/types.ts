@@ -176,6 +176,8 @@ export type AppSettingsMap = {
 		publishedBy?: string;
 	};
 
+	PROGRAM_THEME: string;
+
 	DOCUMENT_SIGNING: DocumentSigningSettings | null;
 };
 
