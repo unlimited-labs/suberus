@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
-
 import type { SubmissionStatus } from "@/generated/prisma/enums";
-
 import { decisionTypeFor } from "./bulk-decision-rules";
 
 describe("decisionTypeFor", () => {
