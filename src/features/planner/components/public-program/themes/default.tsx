@@ -7,7 +7,7 @@ import { Input } from "@/shared/ui/input";
 import { dayLabelParts, formatLongDate } from "../program-formatting";
 import type { TimeGroup } from "../program-types";
 import type { ProgramThemeProps } from "./registry";
-import { Highlight } from "./shared";
+import { Highlight, ProgramAuthLink } from "./shared";
 
 const MARK = "rounded bg-primary/20 text-foreground";
 
@@ -28,6 +28,9 @@ export function DefaultProgram({
 		>
 			<header className="border-b border-border">
 				<div className="mx-auto max-w-5xl px-5 pt-10 pb-6 sm:px-8 sm:pt-14">
+					<div className="mb-4 flex justify-end">
+						<ProgramAuthLink className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary" />
+					</div>
 					{settings.startDate && (
 						<p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">
 							{formatLongDate(settings.startDate)}

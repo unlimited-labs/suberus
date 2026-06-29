@@ -7,7 +7,7 @@ import { Input } from "@/shared/ui/input";
 import { dayLabelParts, formatLongDate } from "../program-formatting";
 import type { TimeGroup } from "../program-types";
 import type { ProgramThemeProps } from "./registry";
-import { Highlight } from "./shared";
+import { Highlight, ProgramAuthLink } from "./shared";
 
 const MARK =
 	"bg-yellow-200/80 text-stone-900 dark:bg-yellow-500/40 dark:text-stone-50";
@@ -30,7 +30,11 @@ export function EditorialProgram({
 		>
 			<header className="border-b-[3px] border-double border-stone-900 dark:border-stone-300">
 				<div className="mx-auto max-w-6xl px-5 pt-8 pb-6 sm:px-10 sm:pt-12 sm:pb-8">
-					<div className="flex items-baseline justify-end border-b border-stone-400 pb-2 dark:border-stone-700">
+					<div className="flex items-baseline justify-between border-b border-stone-400 pb-2 dark:border-stone-700">
+						<ProgramAuthLink
+							className="text-[9px] uppercase tracking-[0.25em] text-stone-600 transition-colors hover:text-stone-900 sm:text-[10px] sm:tracking-[0.3em] dark:text-stone-400 dark:hover:text-stone-100"
+							style={{ fontFamily: "var(--font-sans)" }}
+						/>
 						<span
 							className="text-[9px] uppercase tracking-[0.25em] text-stone-600 sm:text-[10px] sm:tracking-[0.3em] dark:text-stone-400"
 							style={{ fontFamily: "var(--font-sans)" }}
