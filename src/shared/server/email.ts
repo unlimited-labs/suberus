@@ -1,3 +1,4 @@
+import { convert } from "html-to-text";
 import nodemailer from "nodemailer";
 import { env } from "@/env.ts";
 import type { EmailEventType } from "@/generated/prisma/enums";
@@ -31,9 +32,10 @@ const transporter = nodemailer.createTransport({
 	host: env.SMTP_HOST,
 	port: env.SMTP_PORT,
 	secure: env.SMTP_SECURE,
+	// Gate on auth presence so plaintext-only relays (dev/Mailpit) still work.
+	requireTLS: !env.SMTP_SECURE && Boolean(env.SMTP_USER && env.SMTP_PASSWORD),
 	pool: true,
-	maxConnections: 1,
-	maxMessages: Infinity,
+	maxConnections: 5,
 	connectionTimeout: 10_000,
 	greetingTimeout: 10_000,
 	socketTimeout: 15_000,
@@ -41,6 +43,24 @@ const transporter = nodemailer.createTransport({
 		? { auth: { user: env.SMTP_USER, pass: env.SMTP_PASSWORD } }
 		: {}),
 });
+
+function textAlternative(html: string): string {
+	return convert(html, { wordwrap: false });
+}
+
+async function sendWithRetry(send: () => Promise<unknown>): Promise<void> {
+	try {
+		await send();
+	} catch (err) {
+		const msg = err instanceof Error ? err.message : "";
+		const transient =
+			msg.includes("Greeting never received") || msg.includes("ECONN");
+		if (!transient) throw err;
+		logger.warn(`[smtp] transient send error, retrying: ${msg}`);
+		await new Promise((r) => setTimeout(r, 2_000));
+		await send();
+	}
+}
 
 /** In E2E mode, tag mail to `*-<runId>@e2e.local` so Mailpit can isolate per run. */
 function e2eHeaders(to: string): Record<string, string> | undefined {
@@ -68,6 +88,8 @@ export interface RawEmail {
  */
 export async function sendRawEmail(mail: RawEmail): Promise<void> {
 	const headers = e2eHeaders(mail.to);
+	const text =
+		mail.text ?? (mail.html ? textAlternative(mail.html) : undefined);
 	await transporter.sendMail({
 		from: env.SMTP_FROM_EMAIL,
 		to: mail.to,
@@ -75,7 +97,7 @@ export async function sendRawEmail(mail: RawEmail): Promise<void> {
 		bcc: mail.bcc?.length ? mail.bcc : undefined,
 		subject: mail.subject,
 		...(mail.html !== undefined ? { html: mail.html } : {}),
-		...(mail.text !== undefined ? { text: mail.text } : {}),
+		...(text !== undefined ? { text } : {}),
 		...(mail.attachments?.length ? { attachments: mail.attachments } : {}),
 		headers,
 	});
@@ -116,15 +138,19 @@ export async function sendEmail(
 			}
 		}
 
-		await transporter.sendMail({
-			from: env.SMTP_FROM_EMAIL,
-			to,
-			cc: template.ccEmails.length > 0 ? template.ccEmails : undefined,
-			bcc: template.bccEmails.length > 0 ? template.bccEmails : undefined,
-			subject,
-			[template.isHtml ? "html" : "text"]: body,
-			headers: e2eHeaders(to),
-		});
+		await sendWithRetry(() =>
+			transporter.sendMail({
+				from: env.SMTP_FROM_EMAIL,
+				to,
+				cc: template.ccEmails.length > 0 ? template.ccEmails : undefined,
+				bcc: template.bccEmails.length > 0 ? template.bccEmails : undefined,
+				subject,
+				...(template.isHtml
+					? { html: body, text: textAlternative(body) }
+					: { text: body }),
+				headers: e2eHeaders(to),
+			}),
+		);
 		logger.info(`[email] sent ${eventType} to ${to}`);
 	} catch (error) {
 		// Log error but don't throw - email sending should not break the main flow
@@ -201,7 +227,9 @@ export async function sendTestEmail(
 		from: env.SMTP_FROM_EMAIL,
 		to,
 		subject: resolvedSubject,
-		[isHtml ? "html" : "text"]: resolvedBody,
+		...(isHtml
+			? { html: resolvedBody, text: textAlternative(resolvedBody) }
+			: { text: resolvedBody }),
 	};
 
 	// Use a direct transport with retry for one-off test emails
@@ -226,24 +254,10 @@ export async function sendTestEmail(
 	};
 
 	try {
-		await send();
+		await sendWithRetry(send);
 		logger.info(`[email] test sent to ${to}`);
 	} catch (err) {
-		const msg = err instanceof Error ? err.message : "";
-		const transient =
-			msg.includes("Greeting never received") || msg.includes("ECONN");
-		if (!transient) {
-			logger.error("[email] test email failed:", err);
-			throw err;
-		}
-		logger.warn(`[smtp] test email transient error, retrying: ${msg}`);
-		await new Promise((r) => setTimeout(r, 2_000));
-		try {
-			await send();
-			logger.info(`[email] test sent to ${to} (retry)`);
-		} catch (retryErr) {
-			logger.error("[email] test email retry failed:", retryErr);
-			throw retryErr;
-		}
+		logger.error("[email] test email failed:", err);
+		throw err;
 	}
 }
