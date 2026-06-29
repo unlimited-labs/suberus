@@ -5,6 +5,7 @@ import {
 	publicConferenceInfoQueryOptions,
 	publicProgramQueryOptions,
 } from "@/features/planner/api/schedule";
+import { ProgramInteractionProvider } from "@/features/planner/components/public-program/program-interaction";
 import { resolveProgramTheme } from "@/features/planner/components/public-program/themes/registry";
 import { ProgramEmptyState } from "@/features/planner/components/public-program/themes/shared";
 import { useProgramSchedule } from "@/features/planner/components/public-program/use-program-schedule";
@@ -46,13 +47,15 @@ function ProgramPage() {
 	const Theme = resolveProgramTheme(settings.theme).component;
 
 	return (
-		<Theme
-			settings={settings}
-			search={search}
-			setSearch={setSearch}
-			activeDay={activeDay}
-			setActiveDay={setActiveDay}
-			schedule={schedule}
-		/>
+		<ProgramInteractionProvider themeId={settings.theme}>
+			<Theme
+				settings={settings}
+				search={search}
+				setSearch={setSearch}
+				activeDay={activeDay}
+				setActiveDay={setActiveDay}
+				schedule={schedule}
+			/>
+		</ProgramInteractionProvider>
 	);
 }

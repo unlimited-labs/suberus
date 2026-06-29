@@ -52,6 +52,7 @@ model User {
   sessions             Session[]
   passkeys             Passkey[]
   programSessionChairs ProgramSessionChair[]
+  presentationFavorites PresentationFavorite[]
   supervisedTracks     ConferenceTrack[]     @relation("TrackSupervisor")
   surveyAnswers        SurveyAnswer[]
   createdInvitations   Invitation[]          @relation("InvitationCreator")
@@ -731,9 +732,22 @@ model PresentationSlot {
 
   session    ProgramSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   submission Submission     @relation(fields: [submissionId], references: [id], onDelete: Restrict)
+  favorites  PresentationFavorite[]
 
   @@unique([sessionId, order])
   @@map("presentation_slots")
+}
+
+model PresentationFavorite {
+  slotId String @db.Uuid
+  userId String @db.Uuid
+
+  slot PresentationSlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  user User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([slotId, userId])
+  @@index([userId])
+  @@map("presentation_favorites")
 }
 
 model ScheduleBreak {

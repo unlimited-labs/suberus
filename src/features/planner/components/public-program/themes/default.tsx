@@ -1,10 +1,11 @@
-import { IconSearch, IconX } from "@tabler/icons-react";
+import { IconSearch, IconStarFilled, IconX } from "@tabler/icons-react";
 import { addMinutes } from "date-fns";
 import type { PublicProgramSession } from "@/features/planner/server/schedule";
 import { formatClockTime } from "@/features/planner/tz-datetime";
 import { cn } from "@/shared/lib/utils";
 import { Input } from "@/shared/ui/input";
 import { dayLabelParts, formatLongDate } from "../program-formatting";
+import { useProgramInteraction } from "../program-interaction";
 import type { TimeGroup } from "../program-types";
 import type { ProgramThemeProps } from "./registry";
 import { Highlight, ProgramAuthLink } from "./shared";
@@ -207,6 +208,7 @@ function SessionCard({
 	query: string;
 }) {
 	const trackColor = session.track?.color ?? undefined;
+	const { canInteract, isFavorite, openPreview } = useProgramInteraction();
 
 	return (
 		<article className="overflow-hidden rounded-xl border border-border bg-card">
@@ -243,21 +245,59 @@ function SessionCard({
 								.slice(0, i)
 								.reduce((a, prev) => a + prev.durationMin, 0);
 							const presStart = addMinutes(new Date(session.startAt), offset);
+							const favorite = canInteract && isFavorite(p.id);
+							const open = () =>
+								openPreview({
+									slotId: p.id,
+									submissionTitle: p.submissionTitle,
+									sessionTitle: session.title,
+									track: session.track,
+									roomName: session.room?.name ?? null,
+									startAtISO: presStart.toISOString(),
+									tz,
+								});
 							return (
 								<li
 									key={p.id}
-									className="grid grid-cols-[3.5rem_1fr] gap-x-3 py-3"
+									data-testid="presentation-row"
+									className={cn(
+										"grid grid-cols-[3.5rem_1fr] gap-x-3 py-3",
+										canInteract &&
+											"-mx-2 cursor-pointer rounded-md px-2 transition-colors hover:bg-accent",
+									)}
+									{...(canInteract
+										? {
+												role: "button",
+												tabIndex: 0,
+												onClick: open,
+												onKeyDown: (e) => {
+													if (e.key === "Enter" || e.key === " ") {
+														e.preventDefault();
+														open();
+													}
+												},
+											}
+										: {})}
 								>
 									<span className="text-sm font-medium text-muted-foreground tabular-nums">
 										{formatClockTime(presStart, tz)}
 									</span>
 									<div className="min-w-0">
-										<p className="text-sm font-medium leading-snug text-foreground">
-											<Highlight
-												text={p.submissionTitle}
-												query={query}
-												markClassName={MARK}
-											/>
+										<p className="flex items-start gap-1.5 text-sm font-medium leading-snug text-foreground">
+											{favorite && (
+												<IconStarFilled
+													data-testid="favorited-star"
+													className="mt-0.5 size-3.5 shrink-0 text-amber-500"
+													aria-label="Favorited"
+												/>
+											)}
+											<span>
+												<Highlight
+													text={p.submissionTitle}
+													query={query}
+													markClassName={MARK}
+												/>
+											</span>
 										</p>
 										{p.authors.length > 0 && (
 											<p className="mt-0.5 text-sm leading-snug text-muted-foreground">

@@ -1,10 +1,11 @@
-import { IconSearch, IconX } from "@tabler/icons-react";
+import { IconSearch, IconStarFilled, IconX } from "@tabler/icons-react";
 import { addMinutes } from "date-fns";
 import type { PublicProgramSession } from "@/features/planner/server/schedule";
 import { formatClockTime } from "@/features/planner/tz-datetime";
 import { cn } from "@/shared/lib/utils";
 import { Input } from "@/shared/ui/input";
 import { dayLabelParts, formatLongDate } from "../program-formatting";
+import { useProgramInteraction } from "../program-interaction";
 import type { TimeGroup } from "../program-types";
 import type { ProgramThemeProps } from "./registry";
 import { Highlight, ProgramAuthLink } from "./shared";
@@ -286,6 +287,7 @@ function SessionArticle({
 	query: string;
 }) {
 	const trackColor = session.track?.color ?? undefined;
+	const { canInteract, isFavorite, openPreview } = useProgramInteraction();
 
 	return (
 		<article className="relative">
@@ -350,10 +352,39 @@ function SessionArticle({
 							.slice(0, i)
 							.reduce((a, prev) => a + prev.durationMin, 0);
 						const presStart = addMinutes(new Date(session.startAt), offset);
+						const favorite = canInteract && isFavorite(p.id);
+						const open = () =>
+							openPreview({
+								slotId: p.id,
+								submissionTitle: p.submissionTitle,
+								sessionTitle: session.title,
+								track: session.track,
+								roomName: session.room?.name ?? null,
+								startAtISO: presStart.toISOString(),
+								tz,
+							});
 						return (
 							<li
 								key={p.id}
-								className="grid grid-cols-[2.5rem_1fr] gap-x-4 border-b border-stone-200 py-3 last:border-0 dark:border-stone-900"
+								data-testid="presentation-row"
+								className={cn(
+									"grid grid-cols-[2.5rem_1fr] gap-x-4 border-b border-stone-200 py-3 last:border-0 dark:border-stone-900",
+									canInteract &&
+										"cursor-pointer transition-colors hover:bg-stone-900/[0.04] dark:hover:bg-stone-100/[0.04]",
+								)}
+								{...(canInteract
+									? {
+											role: "button",
+											tabIndex: 0,
+											onClick: open,
+											onKeyDown: (e) => {
+												if (e.key === "Enter" || e.key === " ") {
+													e.preventDefault();
+													open();
+												}
+											},
+										}
+									: {})}
 							>
 								<div>
 									<span
@@ -374,17 +405,26 @@ function SessionArticle({
 								</div>
 								<div className="min-w-0">
 									<p
-										className="text-[15px] leading-snug text-stone-900 dark:text-stone-100"
+										className="flex items-start gap-1.5 text-[15px] leading-snug text-stone-900 dark:text-stone-100"
 										style={{
 											fontFamily: "var(--font-futuristic-body)",
 											fontWeight: 600,
 										}}
 									>
-										<Highlight
-											text={p.submissionTitle}
-											query={query}
-											markClassName={MARK}
-										/>
+										{favorite && (
+											<IconStarFilled
+												data-testid="favorited-star"
+												className="mt-0.5 size-3.5 shrink-0 text-amber-500"
+												aria-label="Favorited"
+											/>
+										)}
+										<span>
+											<Highlight
+												text={p.submissionTitle}
+												query={query}
+												markClassName={MARK}
+											/>
+										</span>
 									</p>
 									{p.authors.length > 0 && (
 										<p
