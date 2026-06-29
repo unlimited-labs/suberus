@@ -2,6 +2,8 @@ import { IconFingerprint, IconTrash } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
+import { PasskeyReauthDialog } from "@/features/profile/components/passkey-reauth-dialog";
+import { isStaleSessionError } from "@/features/profile/lib/is-stale-session-error";
 import { authClient } from "@/shared/lib/auth-client";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -11,6 +13,8 @@ const passkeysQueryKey = ["passkeys"] as const;
 export function PasskeySection() {
 	const queryClient = useQueryClient();
 	const [name, setName] = useState("");
+	const [reauthOpen, setReauthOpen] = useState(false);
+	const [pendingName, setPendingName] = useState("");
 
 	const { data: passkeys = [], isLoading } = useQuery({
 		queryKey: passkeysQueryKey,
@@ -32,7 +36,14 @@ export function PasskeySection() {
 				name: deviceName.trim() || undefined,
 			});
 			if (res?.error) {
-				throw new Error(res.error.message ?? "Failed to add passkey");
+				const { error } = res;
+				throw Object.assign(
+					new Error(error.message ?? "Failed to add passkey"),
+					{
+						code: "code" in error ? error.code : undefined,
+						status: error.status,
+					},
+				);
 			}
 		},
 		onSuccess: async () => {
@@ -40,7 +51,14 @@ export function PasskeySection() {
 			toast.success("Passkey added");
 			await invalidate();
 		},
-		onError: (e: Error) => toast.error(e.message),
+		onError: (e: Error & { code?: string; status?: number }) => {
+			if (isStaleSessionError(e)) {
+				setPendingName(name);
+				setReauthOpen(true);
+				return;
+			}
+			toast.error(e.message);
+		},
 	});
 
 	const deleteMutation = useMutation({
@@ -116,6 +134,15 @@ export function PasskeySection() {
 					Add passkey
 				</Button>
 			</div>
+
+			<PasskeyReauthDialog
+				open={reauthOpen}
+				onOpenChange={setReauthOpen}
+				onReauthenticated={() => {
+					setReauthOpen(false);
+					addMutation.mutate(pendingName);
+				}}
+			/>
 		</div>
 	);
 }
