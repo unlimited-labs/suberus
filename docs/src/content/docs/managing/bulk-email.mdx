@@ -42,6 +42,24 @@ profile afterwards won't change what an already-queued campaign sends.
 3. Click **Send campaign**. It's queued and delivered one recipient at a time, with a
    progress bar showing how many have been processed.
 
+## Attachments
+
+While a campaign is still a **draft**, the **Attachments** panel lets you attach files
+that ride along with every email. Drag files onto the drop area (or click **Browse**),
+and they upload immediately. Each recipient — and the **Send test** copy — receives the
+same set of files.
+
+🖼️ [Screenshot placeholder — Attachments panel with a file attached]
+
+- **Limits:** up to **10 MB per file** and **25 MB total** per campaign. The total cap
+  keeps the message within the size most mail servers accept.
+- **Allowed types:** PDF, DOCX, XLSX, PPTX, PNG, JPG, GIF, WebP, ZIP. Files are validated
+  by their actual content (not just the extension), so a renamed or unsupported file is
+  rejected.
+- **Editing:** add or remove attachments only while the campaign is a draft. Once sent,
+  the list is read-only.
+- **Copy to new draft** also copies the attachments into the new draft.
+
 ## Fields
 
 | Field | What it does |
@@ -50,11 +68,12 @@ profile afterwards won't change what an already-queued campaign sends.
 | **Subject** | The email subject line. Supports placeholders (plain text — never HTML). |
 | **Format** | **Plain text** (sent as-is), **Markdown** (rendered to HTML), or **MJML** (responsive email markup, compiled to HTML). |
 | **Body** | The message source, in the chosen format. Supports placeholders. |
+| **Attachments** | Files sent with every email (draft only). Max 10 MB/file, 25 MB total; PDF, Office docs, images, or ZIP. Validated by content. |
 | **Preview** | The rendered email. HTML formats render in a sandboxed frame; plain text shows verbatim. |
 | **Save draft** | Stores your edits without sending. You can return to the draft later. |
 | **Send test** | Sends one copy to your own address with sample placeholder values. |
 | **Send campaign** | Renders the final body, queues the campaign, and starts delivery. |
-| **Copy to new draft** | Shown once a campaign has been sent: clones the subject, body, format, and the exact recipient list into a fresh draft you can edit and resend. |
+| **Copy to new draft** | Shown once a campaign has been sent: clones the subject, body, format, attachments, and the exact recipient list into a fresh draft you can edit and resend. |
 
 ## Placeholders
 

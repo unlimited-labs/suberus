@@ -9,7 +9,8 @@ import {
 	setJobCurrent,
 	setJobStage,
 } from "@/shared/server/job-progress";
-import { buildRecipientMail } from "../bulk-email-send";
+import { loadAttachmentBuffers } from "../attachments";
+import { buildRecipientMail, type CampaignContent } from "../bulk-email-send";
 import {
 	finalCampaignStatus,
 	isResumableCampaignStatus,
@@ -58,7 +59,7 @@ async function recordResult(
 /** Sends to one recipient and records SENT/FAILED. Never throws. */
 async function sendToRecipient(
 	campaignId: string,
-	content: { subject: string; body: string; isHtml: boolean },
+	content: CampaignContent,
 	recipient: Parameters<typeof buildRecipientMail>[1] & { id: string },
 ): Promise<void> {
 	try {
@@ -174,10 +175,14 @@ async function processCampaign(campaignId: string): Promise<void> {
 		where: { campaignId, status: "PENDING" },
 		orderBy: [{ email: "asc" }, { id: "asc" }],
 	});
-	const content = {
+	// ponytail: attachment bytes held in memory once for the whole run (capped at
+	// MAX_CAMPAIGN_ATTACHMENTS_BYTES=25MB); stream from S3 per-recipient if that grows.
+	const attachments = await loadAttachmentBuffers(campaignId);
+	const content: CampaignContent = {
 		subject: campaign.subject,
 		body: campaign.renderedHtml,
 		isHtml: campaign.format !== "PLAIN",
+		...(attachments.length ? { attachments } : {}),
 	};
 	const delayMs = env.BULK_EMAIL_DELAY_SECONDS * 1000;
 

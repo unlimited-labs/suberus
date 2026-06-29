@@ -10,6 +10,12 @@ import {
 	recipientValues,
 	SAMPLE_VALUES,
 } from "../lib/placeholders";
+import {
+	copyCampaignAttachments,
+	deleteCampaignAttachments,
+	listCampaignAttachments,
+	loadAttachmentBuffers,
+} from "./attachments";
 import { renderEmailContent } from "./bulk-email-render";
 import { campaignExpireSeconds } from "./bulk-email-status";
 import { buildRecipientSnapshot } from "./recipient-snapshot";
@@ -102,6 +108,8 @@ export async function duplicateCampaign(
 		},
 	});
 
+	await copyCampaignAttachments(id, campaign.id, createdById);
+
 	return { campaignId: campaign.id };
 }
 
@@ -129,16 +137,18 @@ export async function getCampaign(id: string) {
 		},
 	});
 	if (!campaign) throw new Response("Campaign not found", { status: 404 });
-	return campaign;
+	const attachments = await listCampaignAttachments(id);
+	return { ...campaign, attachments };
 }
 
-/** Deletes a campaign and (via cascade) its recipient rows. */
+/** Deletes a campaign, its S3 attachments, and (via cascade) its recipient rows. */
 export async function deleteCampaign(id: string): Promise<void> {
 	const campaign = await prisma.emailCampaign.findUnique({
 		where: { id },
 		select: { id: true },
 	});
 	if (!campaign) throw new Response("Campaign not found", { status: 404 });
+	await deleteCampaignAttachments(id);
 	await prisma.emailCampaign.delete({ where: { id } });
 }
 
@@ -222,11 +232,13 @@ export async function sendCampaignTest(
 
 	const subject = `[TEST] ${applyPlaceholders(campaign.subject, values, false)}`;
 	const body = applyPlaceholders(rendered.body, values, rendered.isHtml);
+	const attachments = await loadAttachmentBuffers(id);
 
 	await sendRawEmail({
 		to: toEmail,
 		subject,
 		...(rendered.isHtml ? { html: body } : { text: body }),
+		...(attachments.length ? { attachments } : {}),
 	});
 }
 

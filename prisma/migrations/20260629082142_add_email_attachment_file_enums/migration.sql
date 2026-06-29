@@ -1,0 +1,5 @@
+-- AlterEnum
+ALTER TYPE "FileType" ADD VALUE 'EMAIL_ATTACHMENT';
+
+-- AlterEnum
+ALTER TYPE "FileEntityType" ADD VALUE 'EMAIL_CAMPAIGN';

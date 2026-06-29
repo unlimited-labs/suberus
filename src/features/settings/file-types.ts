@@ -14,6 +14,27 @@ export type SupportedFileExtension = (typeof SUPPORTED_FILE_EXTENSIONS)[number];
  */
 export const SUPPORTED_IMAGE_EXTENSIONS = ["jpg", "png", "webp"] as const;
 
+/**
+ * Extensions accepted as bulk-email campaign attachments. All binary formats
+ * with a magic number (validated via `file-type`); text formats are excluded
+ * because the signature validator can't recognize them.
+ */
+export const EMAIL_ATTACHMENT_EXTENSIONS = [
+	"pdf",
+	"docx",
+	"xlsx",
+	"pptx",
+	"png",
+	"jpg",
+	"gif",
+	"webp",
+	"zip",
+] as const;
+
+/** Comma-separated `accept` attribute for the attachment <input type="file">. */
+export const EMAIL_ATTACHMENT_ACCEPT_ATTRIBUTE =
+	EMAIL_ATTACHMENT_EXTENSIONS.map((ext) => `.${ext}`).join(",");
+
 /** Labelled options for settings UIs (checkbox lists). */
 export const FILE_TYPE_OPTIONS = SUPPORTED_FILE_EXTENSIONS.map((value) => ({
 	value,

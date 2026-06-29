@@ -471,6 +471,114 @@ test.describe("Admin - Bulk Email", () => {
 		}
 	})
 
+	// Minimal valid PDF: file-type detects it by the leading "%PDF" signature,
+	// so the server-side magic-number check accepts it.
+	const MINIMAL_PDF = Buffer.from("%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n")
+
+	test("attaches a file to a draft and delivers it with the email", async ({
+		page,
+		testRun,
+		adminUsersPage,
+	}) => {
+		const runId = testRun.testRunId
+		const rcpt = await makeRecipient(runId, "olive", "Olive")
+
+		try {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+			await adminUsersPage.selectUser({ ...rcpt, firstName: "Olive", lastName: "Recipient" })
+			await adminUsersPage.selectBulkAction("Send email")
+			await adminUsersPage.clickApply()
+			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
+			const campaignId = page.url().split("/").pop() as string
+
+			await page.getByTestId("campaign-subject").fill(`Attach ${runId}`)
+			await page.getByTestId("campaign-body").fill("Hi {{firstName}}")
+
+			await page.locator('input[type="file"]').setInputFiles({
+				name: "agenda.pdf",
+				mimeType: "application/pdf",
+				buffer: MINIMAL_PDF,
+			})
+			await expect(page.getByTestId("attachment-list")).toContainText("agenda.pdf")
+
+			const db = getPrisma()
+			await expect
+				.poll(() =>
+					db.file.count({
+						where: { entityType: "EMAIL_CAMPAIGN", entityId: campaignId },
+					}),
+				)
+				.toBe(1)
+
+			await page.getByTestId("send-campaign-btn").click()
+			await expect
+				.poll(
+					async () => {
+						const c = await db.emailCampaign.findUnique({
+							where: { id: campaignId },
+							select: { status: true, sentCount: true },
+						})
+						return `${c?.status}:${c?.sentCount}`
+					},
+					{ timeout: 30000 },
+				)
+				.toBe("SENT:1")
+
+			// The delivered email carries the attachment.
+			const msg = await waitForEmail(rcpt.email, runId, 15000)
+			expect(msg, "no email delivered").toBeTruthy()
+			const full = (await getMailpitMessage((msg as { ID: string }).ID)) as {
+				Attachments?: { FileName: string }[]
+			} | null
+			expect(full?.Attachments?.length ?? 0).toBeGreaterThan(0)
+			expect(full?.Attachments?.[0]?.FileName).toContain("agenda")
+		} finally {
+			await deleteTestUser(rcpt.id)
+			await clearMailpit(runId)
+		}
+	})
+
+	test("removes an attachment from a draft", async ({
+		page,
+		testRun,
+		adminUsersPage,
+	}) => {
+		const runId = testRun.testRunId
+		const rcpt = await makeRecipient(runId, "peter", "Peter")
+
+		try {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+			await adminUsersPage.selectUser({ ...rcpt, firstName: "Peter", lastName: "Recipient" })
+			await adminUsersPage.selectBulkAction("Send email")
+			await adminUsersPage.clickApply()
+			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
+			const campaignId = page.url().split("/").pop() as string
+
+			await page.locator('input[type="file"]').setInputFiles({
+				name: "report.pdf",
+				mimeType: "application/pdf",
+				buffer: MINIMAL_PDF,
+			})
+			await expect(page.getByTestId("attachment-list")).toContainText("report.pdf")
+
+			await page.getByTestId("attachment-remove-btn").click()
+
+			const db = getPrisma()
+			await expect
+				.poll(() =>
+					db.file.count({
+						where: { entityType: "EMAIL_CAMPAIGN", entityId: campaignId },
+					}),
+				)
+				.toBe(0)
+		} finally {
+			await deleteTestUser(rcpt.id)
+			await clearMailpit(runId)
+		}
+	})
+
 	test("non-admin cannot reach the bulk-email page", async ({ page }) => {
 		// Drop the admin storageState session, then sign in as a plain author.
 		await loginAs(page, TEST_USER, { clearCookies: true })

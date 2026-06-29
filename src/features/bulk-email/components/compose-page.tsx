@@ -4,6 +4,7 @@ import {
 	IconDeviceFloppy,
 	IconFlask,
 	IconMailForward,
+	IconPaperclip,
 	IconSend,
 	IconTrash,
 	IconUsers,
@@ -19,6 +20,7 @@ import { SectionCard } from "@/shared/ui/section-card";
 import { Separator } from "@/shared/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Textarea } from "@/shared/ui/textarea";
+import { AttachmentDropzone } from "./attachment-dropzone";
 import { CampaignProgressCard } from "./campaign-progress-card";
 import { FormatSelector } from "./format-selector";
 import { PlaceholderHelp } from "./placeholder-help";
@@ -136,6 +138,18 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 								jobId={compose.jobId}
 								job={compose.job}
 							/>
+
+							<SectionCard
+								variant="outlined"
+								title="Attachments"
+								icon={IconPaperclip}
+							>
+								<AttachmentDropzone
+									campaignId={campaign.id}
+									attachments={campaign.attachments}
+									disabled={!compose.isDraft}
+								/>
+							</SectionCard>
 
 							<SectionCard
 								variant="outlined"

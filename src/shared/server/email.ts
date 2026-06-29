@@ -58,6 +58,7 @@ export interface RawEmail {
 	text?: string;
 	cc?: string[];
 	bcc?: string[];
+	attachments?: { filename: string; content: Buffer }[];
 }
 
 /**
@@ -75,6 +76,7 @@ export async function sendRawEmail(mail: RawEmail): Promise<void> {
 		subject: mail.subject,
 		...(mail.html !== undefined ? { html: mail.html } : {}),
 		...(mail.text !== undefined ? { text: mail.text } : {}),
+		...(mail.attachments?.length ? { attachments: mail.attachments } : {}),
 		headers,
 	});
 }
