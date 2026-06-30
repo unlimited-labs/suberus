@@ -136,6 +136,7 @@ model Submission {
   trackId           String?              @db.Uuid
   presenterId       String?              @db.Uuid
   currentVersionId  String?              @unique @db.Uuid
+  cameraReadyFileId String?              @unique @db.Uuid
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @updatedAt
   editorDecisions   EditorDecision[]
@@ -148,6 +149,7 @@ model Submission {
   activityLog       ActivityLog[]
   versions          SubmissionVersion[]  @relation("SubmissionVersions")
   currentVersion    SubmissionVersion?   @relation("CurrentVersion", fields: [currentVersionId], references: [id])
+  cameraReadyFile   File?                @relation("CameraReady", fields: [cameraReadyFileId], references: [id])
   presenterAuthor   SubmissionAuthor?    @relation("PresenterAuthor", fields: [presenterId], references: [id])
   track             ConferenceTrack?     @relation(fields: [trackId], references: [id])
   user              User                 @relation("SubmissionOwner", fields: [userId], references: [id])
@@ -444,6 +446,7 @@ model File {
   sha256             String?             @db.Char(64)
   uploadedBy         User?               @relation(fields: [uploadedById], references: [id])
   submissionVersions SubmissionVersion[]
+  cameraReadyFor     Submission?         @relation("CameraReady")
 
   @@index([entityType, entityId])
   @@index([uploadedById])
@@ -872,6 +875,7 @@ enum FileType {
   REVIEW_ATTACHMENT
   EXHIBITOR_LOGO
   EMAIL_ATTACHMENT
+  CAMERA_READY
   OTHER
 }
 

@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { adminSubmissionsQueryOptions } from "@/features/submissions/api/admin-submissions";
+import { CameraReadyBulkUploadButton } from "@/features/submissions/components/admin/camera-ready-bulk-button";
 import { submissionColumns } from "@/features/submissions/components/admin/columns";
 import { SubmissionExportButton } from "@/features/submissions/components/admin/export-button";
 import { SubmissionBulkActions } from "@/features/submissions/components/admin/submission-bulk-actions";
@@ -62,6 +63,7 @@ function AdminSubmissionsPage() {
 							actions={
 								<>
 									<SubmissionExportButton table={table} />
+									<CameraReadyBulkUploadButton />
 									<SubmissionBulkActions
 										table={table}
 										availableTracks={availableTracks}

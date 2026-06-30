@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { editorSubmissionQueryOptions } from "@/features/submissions/api/admin-submissions";
+import { CameraReadyCard } from "@/features/submissions/components/admin/camera-ready-card";
 import {
 	ActionsCard,
 	ContentTab,
@@ -167,6 +168,7 @@ function SubmissionDetailPage() {
 								requiredReviewers={config.requiredReviewers}
 								reviewProgress={reviewProgress}
 							/>
+							<CameraReadyCard submissionId={submission.id} />
 						</div>
 					</div>
 				</div>

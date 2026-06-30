@@ -13,6 +13,7 @@ export interface PresentationDetail {
 	content: string;
 	keywords: string[];
 	authors: PresentationDetailAuthor[];
+	cameraReadyUrl: string | null;
 }
 
 export async function getFavoriteSlotIds(userId: string): Promise<string[]> {
@@ -52,6 +53,7 @@ export async function getPresentationDetail(
 			submission: {
 				select: {
 					content: true,
+					cameraReadyFileId: true,
 					authors: {
 						orderBy: { orderIndex: "asc" },
 						select: {
@@ -74,6 +76,9 @@ export async function getPresentationDetail(
 	const { submission } = slot;
 	return {
 		content: submission.content,
+		cameraReadyUrl: submission.cameraReadyFileId
+			? `/api/program/camera-ready/${slotId}`
+			: null,
 		keywords: submission.keywords.map((k) => k.keyword.name),
 		authors: submission.authors.map((a) => ({
 			firstName: a.firstName,

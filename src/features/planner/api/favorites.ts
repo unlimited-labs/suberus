@@ -1,6 +1,8 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeaders } from "@tanstack/react-start/server";
 import { z } from "zod";
+import { auth } from "@/features/auth/server/auth.server";
 import { authMiddleware } from "@/features/auth/server/middleware";
 import {
 	getFavoriteSlotIds,
@@ -29,10 +31,10 @@ export const toggleFavoriteFn = createServerFn({ method: "POST" })
 	.handler(({ context, data }) => toggleFavorite(context.user.id, data.slotId));
 
 export const getPresentationDetailFn = createServerFn({ method: "GET" })
-	.middleware([authMiddleware])
 	.validator(slotInput)
-	.handler(({ context, data }): Promise<PresentationDetail | null> => {
-		const role = context.user.role;
+	.handler(async ({ data }): Promise<PresentationDetail | null> => {
+		const session = await auth.api.getSession({ headers: getRequestHeaders() });
+		const role = session?.user?.role;
 		const canPreviewDraft = role === "ADMIN" || role === "EDITOR";
 		return getPresentationDetail(data.slotId, canPreviewDraft);
 	});

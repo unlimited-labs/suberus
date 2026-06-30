@@ -101,6 +101,7 @@ export function ProgramInteractionProvider({
 			<PresentationPreviewDialog
 				target={selected}
 				themeId={themeId}
+				canInteract={isAuthenticated}
 				onOpenChange={(open) => {
 					if (!open) setSelected(null);
 				}}

@@ -1,22 +1,14 @@
-import { test, expect, isoDay } from "./fixtures";
+import { test, expect, isoDay, resetPlannerProgramDefaults } from "./fixtures";
 import {
 	addPresentationToSession,
 	createProgramSession,
 	createRoom,
 	createSubmission,
-	setAppSetting,
-	setConferenceDates,
 	setSchedulePublished,
 } from "../../helpers/test-db";
 
 test.describe.serial("Public /program — preview & favorites", () => {
-	test.beforeEach(async () => {
-		await setAppSetting("PROGRAM_THEME", "default");
-		await setConferenceDates(
-			isoDay(0, 0).toISOString(),
-			isoDay(30, 23).toISOString(),
-		);
-	});
+	test.beforeEach(resetPlannerProgramDefaults);
 
 	async function seedPresentation(testRunId: string) {
 		const roomId = await createRoom(testRunId, "Fav Room");

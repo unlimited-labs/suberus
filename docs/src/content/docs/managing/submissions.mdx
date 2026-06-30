@@ -154,6 +154,49 @@ How many reviewers a type needs and whether **you** or the **reviewer** decides 
 set on **[Submission Types](/settings/submission-types/)**.
 </Aside>
 
+## Camera-ready files
+
+A **camera-ready file** is the final, print-ready PDF of an accepted talk — typically
+the version you have branded with the conference template, sponsors, and page
+numbering. Once uploaded, it becomes the public **Download camera-ready** button in the
+[public program](/planner/publishing/#preview-camera-ready-download--favourites).
+
+<Aside type="caution" title="Not the author's revision">
+This is different from the *revised (camera-ready) version* an author uploads after a
+**Conditional accept**. That one lives in the submission's version history and feeds the
+review/diff. The file here is **editor-produced**, stored separately, and only surfaces
+on the program. Re-uploading **overwrites** the previous one.
+</Aside>
+
+There are two ways to upload, both for **admins and editors**:
+
+<Steps>
+
+1. **One at a time** — on a submission's detail page, the **Camera-ready** card (right
+   column) shows the current file with **Upload / Replace** and **Remove**. Use this for
+   single corrections.
+
+2. **In bulk** — on the **Submissions** list, **Upload camera-ready** (next to **Export
+   ZIP**) takes a **ZIP** of PDFs. Each file is matched to a submission by its **leading
+   number**, the same numbering as the export (`7.pdf`, `7-branded.pdf`, and `007 (final).pdf`
+   all map to submission **#7**). The usual round trip is: **Export ZIP** → brand each PDF
+   offline (keep the numbers) → re-zip → **Upload camera-ready**. After upload you get a
+   report of how many were stored and which entries were skipped.
+
+</Steps>
+
+| Field / control | Where | Notes |
+|---|---|---|
+| **Upload / Replace** | Submission detail → Camera-ready card | Single PDF, replaces any existing file. |
+| **Remove** | Submission detail → Camera-ready card | Deletes the camera-ready file. |
+| **Upload camera-ready** | Submissions list toolbar | One **ZIP** of PDFs, matched by leading number. |
+| Accepted formats | both | **PDF only** (validated by file content), max **25&nbsp;MB** per file. |
+| Bulk skip reasons | bulk report | `no leading number`, `no matching submission`, `not a PDF`, `exceeds 25MB`. The `submissions.csv` manifest is ignored silently. |
+
+🖼️ [Screenshot placeholder: Camera-ready card on the submission detail page]
+
+🖼️ [Screenshot placeholder: Bulk camera-ready upload dialog with skip report]
+
 ## Related
 
 <CardGrid>

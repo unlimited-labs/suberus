@@ -1,5 +1,10 @@
 import { test as baseAdminTest } from "../fixtures";
-import { cleanupPlannerForRun, createRoom } from "../../helpers/test-db";
+import {
+	cleanupPlannerForRun,
+	createRoom,
+	setAppSetting,
+	setConferenceDates,
+} from "../../helpers/test-db";
 import { ProgramPlannerPage } from "../../pom/program-planner.page";
 import { ProgramSettingsPage } from "../../pom/program-settings.page";
 import { PublicProgramPage } from "../../pom/public-program.page";
@@ -44,4 +49,13 @@ export function isoDay(offsetDays: number, hour: number): Date {
 	d.setUTCDate(d.getUTCDate() + offsetDays);
 	d.setUTCHours(hour, 0, 0, 0);
 	return d;
+}
+
+/** Default-theme program with a 31-day conference window — shared spec setup. */
+export async function resetPlannerProgramDefaults(): Promise<void> {
+	await setAppSetting("PROGRAM_THEME", "default");
+	await setConferenceDates(
+		isoDay(0, 0).toISOString(),
+		isoDay(30, 23).toISOString(),
+	);
 }

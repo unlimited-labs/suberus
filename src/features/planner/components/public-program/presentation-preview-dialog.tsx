@@ -32,12 +32,14 @@ export function PresentationPreviewDialog({
 	target,
 	themeId,
 	onOpenChange,
+	canInteract,
 	isFavorite,
 	onToggleFavorite,
 }: {
 	target: PreviewTarget | null;
 	themeId: string;
 	onOpenChange: (open: boolean) => void;
+	canInteract: boolean;
 	isFavorite: boolean;
 	onToggleFavorite: () => void;
 }) {
@@ -53,6 +55,7 @@ export function PresentationPreviewDialog({
 					<PreviewBody
 						target={target}
 						framed={framed}
+						canInteract={canInteract}
 						isFavorite={isFavorite}
 						onToggleFavorite={onToggleFavorite}
 					/>
@@ -65,11 +68,13 @@ export function PresentationPreviewDialog({
 function PreviewBody({
 	target,
 	framed,
+	canInteract,
 	isFavorite,
 	onToggleFavorite,
 }: {
 	target: PreviewTarget;
 	framed: boolean;
+	canInteract: boolean;
 	isFavorite: boolean;
 	onToggleFavorite: () => void;
 }) {
@@ -109,7 +114,32 @@ function PreviewBody({
 
 			<PreviewContent slotId={target.slotId} />
 
-			<DialogFooter className="sm:justify-between">
+			<PreviewFooter
+				slotId={target.slotId}
+				canInteract={canInteract}
+				isFavorite={isFavorite}
+				onToggleFavorite={onToggleFavorite}
+			/>
+		</>
+	);
+}
+
+function PreviewFooter({
+	slotId,
+	canInteract,
+	isFavorite,
+	onToggleFavorite,
+}: {
+	slotId: string;
+	canInteract: boolean;
+	isFavorite: boolean;
+	onToggleFavorite: () => void;
+}) {
+	const detail = useQuery(presentationDetailQueryOptions(slotId));
+	const cameraReadyUrl = detail.data?.cameraReadyUrl ?? null;
+	return (
+		<DialogFooter className="sm:justify-between">
+			{canInteract && (
 				<button
 					type="button"
 					data-testid="favorite-toggle"
@@ -123,18 +153,19 @@ function PreviewBody({
 					)}
 					{isFavorite ? "Favorited" : "Add to favorites"}
 				</button>
-				{/* ponytail: placeholder, wire when camera-ready download exists */}
-				<button
-					type="button"
-					disabled
-					title="Coming soon"
-					className={cn(BTN, BTN_IDLE)}
+			)}
+			{cameraReadyUrl && (
+				<a
+					href={cameraReadyUrl}
+					download
+					data-testid="camera-ready-download"
+					className={cn(BTN, BTN_IDLE, "sm:ml-auto")}
 				>
 					<IconDownload />
 					Download camera-ready
-				</button>
-			</DialogFooter>
-		</>
+				</a>
+			)}
+		</DialogFooter>
 	);
 }
 

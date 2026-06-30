@@ -63,6 +63,25 @@
         "functions": ["ProgramShell", "SearchBox", "ProgramStickyBar", "FramedHeader"],
         "maxCrap": 57,
         "reason": "e2e-covered (public-program.spec.ts, all 3 themes); CC 5-7 from chrome/layout variant rendering, estimated-coverage artifact"
+      },
+      {
+        "files": ["src/features/planner/components/public-program/presentation-preview-dialog.tsx"],
+        "functions": ["PreviewFooter"],
+        "maxCrap": 75,
+        "reason": "e2e-covered (presentation-favorites.spec.ts favorite toggle; camera-ready.spec.ts download); CC 8 from favorite-state ternaries + 2 optional buttons, estimated-coverage artifact"
+      },
+      // camera-ready upload/serve: CRAP inflated by estimated 0% coverage; matchers unit-tested, paths e2e-covered (camera-ready.spec.ts).
+      {
+        "files": ["src/features/submissions/server/camera-ready.ts"],
+        "functions": ["setCameraReady", "uploadCameraReadyBulkZip"],
+        "maxCrap": 75,
+        "reason": "setCameraReady e2e-covered (camera-ready.spec.ts per-submission upload); bulk matchers unit-tested (camera-ready-match.test.ts), orchestration is a linear guard-continue loop; estimated-coverage artifact"
+      },
+      {
+        "files": ["src/routes/api/program/camera-ready.$slotId.ts"],
+        "functions": ["GET"],
+        "maxCrap": 31,
+        "reason": "e2e-covered (camera-ready.spec.ts fetches the public URL → 200/application/pdf); CC 5 guard-clause route handler, estimated-coverage artifact"
       }
     ]
   },

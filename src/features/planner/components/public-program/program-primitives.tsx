@@ -59,8 +59,7 @@ export function EventDetails({
 	);
 }
 
-function rowActivation(active: boolean, open: () => void) {
-	if (!active) return {};
+function rowActivation(open: () => void) {
 	return {
 		role: "button" as const,
 		tabIndex: 0,
@@ -235,10 +234,10 @@ function PresentationRow({
 			className={cn(
 				"grid gap-x-3 border-b border-border py-3 last:border-0",
 				numbered ? "grid-cols-[2.5rem_1fr]" : "grid-cols-[3.5rem_1fr]",
-				canInteract && "cursor-pointer transition-colors hover:bg-accent",
-				!numbered && canInteract && "-mx-2 rounded-md px-2",
+				"cursor-pointer transition-colors hover:bg-accent",
+				!numbered && "-mx-2 rounded-md px-2",
 			)}
-			{...rowActivation(canInteract, open)}
+			{...rowActivation(open)}
 		>
 			<div>
 				{numbered && (
