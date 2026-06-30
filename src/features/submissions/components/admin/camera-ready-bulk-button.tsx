@@ -74,6 +74,7 @@ export function CameraReadyBulkUploadButton() {
 				<Input
 					type="file"
 					accept=".zip,application/zip"
+					data-testid="camera-ready-bulk-input"
 					onChange={(e) => setFile(e.target.files?.[0] ?? null)}
 				/>
 				<DialogFooter>
