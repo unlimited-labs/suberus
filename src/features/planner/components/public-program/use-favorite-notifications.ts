@@ -45,10 +45,12 @@ export function useFavoriteNotifications(): FavoriteNotificationsState {
 	const enable = useCallback(async () => {
 		const key = env.VITE_VAPID_PUBLIC_KEY;
 		if (!key) return;
+		setEnabled(true);
 		setBusy(true);
 		try {
 			const permission = await Notification.requestPermission();
 			if (permission !== "granted") {
+				setEnabled(false);
 				toast.error("Notifications permission denied", {
 					position: "bottom-center",
 				});
@@ -61,14 +63,17 @@ export function useFavoriteNotifications(): FavoriteNotificationsState {
 			});
 			const keys = sub.toJSON().keys;
 			if (!keys?.p256dh || !keys.auth) {
-				toast.error("Could not enable reminders");
+				setEnabled(false);
+				toast.error("Could not enable reminders", {
+					position: "bottom-center",
+				});
 				return;
 			}
 			await savePushSubscriptionFn({
 				data: { endpoint: sub.endpoint, p256dh: keys.p256dh, auth: keys.auth },
 			});
-			setEnabled(true);
 		} catch {
+			setEnabled(false);
 			toast.error("Could not enable reminders", { position: "bottom-center" });
 		} finally {
 			setBusy(false);
@@ -76,6 +81,7 @@ export function useFavoriteNotifications(): FavoriteNotificationsState {
 	}, []);
 
 	const disable = useCallback(async () => {
+		setEnabled(false);
 		setBusy(true);
 		try {
 			const reg = await navigator.serviceWorker.ready;
@@ -84,8 +90,8 @@ export function useFavoriteNotifications(): FavoriteNotificationsState {
 				await deletePushSubscriptionFn({ data: { endpoint: sub.endpoint } });
 				await sub.unsubscribe();
 			}
-			setEnabled(false);
 		} catch {
+			setEnabled(true);
 			toast.error("Could not disable reminders", { position: "bottom-center" });
 		} finally {
 			setBusy(false);

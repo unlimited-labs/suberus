@@ -60,7 +60,6 @@ export function ProgramAuthLink({
 								e.preventDefault();
 								notifications.toggle(!notifications.enabled);
 							}}
-							disabled={notifications.busy}
 							className="justify-between gap-3"
 							data-testid="program-notifications-item"
 						>
