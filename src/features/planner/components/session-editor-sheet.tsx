@@ -38,6 +38,7 @@ export function SessionEditorSheet({
 				</SheetDescription>
 				{sessionId !== null && (
 					<SessionEditorProvider
+						key={sessionId}
 						sessionId={sessionId}
 						onClose={onClose}
 						users={users}

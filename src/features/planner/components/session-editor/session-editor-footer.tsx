@@ -4,6 +4,7 @@ import {
 	IconRepeat,
 	IconTrash,
 } from "@tabler/icons-react";
+import { useStore } from "@tanstack/react-store";
 import { useState } from "react";
 import { Button } from "@/shared/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
@@ -13,14 +14,14 @@ import { useSessionEditor } from "./session-editor-context";
 export function SessionEditorFooter() {
 	const {
 		sortedPresentations: presentations,
-		draft,
-		saving,
+		form,
 		deleting,
 		mutations,
-		onSave,
 		onDelete,
 	} = useSessionEditor();
 	const [splitOpen, setSplitOpen] = useState(false);
+	const isDirty = useStore(form.store, (s) => s.isDirty);
+	const isSubmitting = useStore(form.store, (s) => s.isSubmitting);
 
 	const handleSplit = (order: number) => {
 		mutations.split(order);
@@ -30,14 +31,15 @@ export function SessionEditorFooter() {
 	return (
 		<SheetFooter className="flex flex-col gap-2 border-t p-4">
 			<Button
+				type="button"
 				size="sm"
-				disabled={!draft.dirty || saving}
-				onClick={onSave}
+				disabled={!isDirty || isSubmitting}
+				onClick={() => form.handleSubmit()}
 				data-testid="session-editor-save"
 				className="w-full"
 			>
 				<IconDeviceFloppy size={14} />
-				Save
+				{isSubmitting ? "Saving…" : "Save"}
 			</Button>
 			<div className="flex gap-2">
 				<Button

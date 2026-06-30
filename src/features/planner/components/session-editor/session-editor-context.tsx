@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useStore } from "@tanstack/react-store";
 import {
 	createContext,
 	type ReactNode,
@@ -11,29 +12,14 @@ import {
 import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
 import { allSessionsQueryOptions } from "@/features/planner/api/sessions";
 import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
-import {
-	addMinutes,
-	formatDurationMin,
-	tzLocalInputToUtc,
-	utcToTzLocalInput,
-} from "@/features/planner/tz-datetime";
+import { formatDurationMin } from "@/features/planner/tz-datetime";
 import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
-import { useEditorDraft } from "../hooks/use-editor-draft";
 import type { ChairCandidate, PlannerSession } from "../types";
+import { useSessionEditorForm } from "./use-session-editor-form";
 import { useSessionEditorMutations } from "./use-session-editor-mutations";
 
 type Mutations = ReturnType<typeof useSessionEditorMutations>;
-
-interface SessionDraft {
-	title: string;
-	startLocal: string;
-	slotCount: number;
-	slotMin: number;
-	roomId: string | null;
-	trackId: string | null;
-}
-
-type Draft = ReturnType<typeof useEditorDraft<SessionDraft>>;
+type SessionForm = ReturnType<typeof useSessionEditorForm>;
 
 interface SessionEditorContextValue {
 	session: PlannerSession;
@@ -43,11 +29,9 @@ interface SessionEditorContextValue {
 	sortedPresentations: PlannerSession["presentations"];
 	sessionDurationMin: number;
 	usedMin: number;
-	draft: Draft;
-	saving: boolean;
+	form: SessionForm;
 	deleting: boolean;
 	mutations: Mutations;
-	onSave: () => Promise<void>;
 	onDelete: () => Promise<void>;
 }
 
@@ -61,38 +45,6 @@ interface ProviderProps {
 	/** Chair candidates, fetched by the route (planner stays off the users slice). */
 	users: ChairCandidate[];
 	dirtyRef?: RefObject<boolean>;
-}
-
-function sessionDraftInitial(
-	session: PlannerSession | undefined,
-	tz: string | undefined,
-	defaultPresentationMin: number,
-): SessionDraft {
-	if (!session) {
-		return {
-			title: "",
-			startLocal: "",
-			slotCount: 1,
-			slotMin: defaultPresentationMin,
-			roomId: null,
-			trackId: null,
-		};
-	}
-	const durationMin = formatDurationMin(
-		new Date(session.startAt),
-		new Date(session.endAt),
-	);
-	const slotMin =
-		[...session.presentations].sort((a, b) => a.order - b.order)[0]
-			?.durationMin ?? defaultPresentationMin;
-	return {
-		title: session.title,
-		startLocal: utcToTzLocalInput(new Date(session.startAt), tz),
-		slotCount: Math.max(1, Math.round(durationMin / Math.max(1, slotMin))),
-		slotMin,
-		roomId: session.roomId,
-		trackId: session.trackId,
-	};
 }
 
 export function SessionEditorProvider({
@@ -111,16 +63,18 @@ export function SessionEditorProvider({
 	const mutations = useSessionEditorMutations(sessionId);
 
 	const session = sessions.find((s) => s.id === sessionId);
-	const draft = useEditorDraft<SessionDraft>(
-		sessionDraftInitial(session, tz, settings.defaultPresentationMin),
-		session?.id ?? null,
+	const form = useSessionEditorForm(
+		session,
+		tz,
+		settings.defaultPresentationMin,
+		mutations,
 	);
-	const [saving, setSaving] = useState(false);
 	const [deleting, setDeleting] = useState(false);
 
+	const isDirty = useStore(form.store, (s) => s.isDirty);
 	useEffect(() => {
-		if (dirtyRef) dirtyRef.current = draft.dirty;
-	}, [dirtyRef, draft.dirty]);
+		if (dirtyRef) dirtyRef.current = isDirty;
+	}, [dirtyRef, isDirty]);
 
 	const value = useMemo<SessionEditorContextValue | null>(() => {
 		if (!session) return null;
@@ -133,25 +87,6 @@ export function SessionEditorProvider({
 			new Date(session.endAt),
 		);
 		const usedMin = sortedPresentations.reduce((s, p) => s + p.durationMin, 0);
-
-		const onSave = async () => {
-			if (!draft.dirty) return;
-			const { title, startLocal, slotCount, slotMin, roomId, trackId } =
-				draft.values;
-			if (!startLocal) return;
-			const startAt = tzLocalInputToUtc(startLocal, tz);
-			const endAt = addMinutes(startAt, Math.max(1, slotCount * slotMin));
-			setSaving(true);
-			const result = await mutations.updateHeader({
-				title,
-				startAt: startAt.toISOString(),
-				endAt: endAt.toISOString(),
-				roomId,
-				trackId,
-			});
-			setSaving(false);
-			if (result !== null) draft.clearDirty();
-		};
 
 		const onDelete = async () => {
 			setDeleting(true);
@@ -168,25 +103,12 @@ export function SessionEditorProvider({
 			sortedPresentations,
 			sessionDurationMin,
 			usedMin,
-			draft,
-			saving,
+			form,
 			deleting,
 			mutations,
-			onSave,
 			onDelete,
 		};
-	}, [
-		session,
-		tz,
-		rooms,
-		tracks,
-		users,
-		draft,
-		saving,
-		deleting,
-		mutations,
-		onClose,
-	]);
+	}, [session, rooms, tracks, users, form, deleting, mutations, onClose]);
 
 	if (!value) return <>{fallback}</>;
 	return <Context.Provider value={value}>{children}</Context.Provider>;

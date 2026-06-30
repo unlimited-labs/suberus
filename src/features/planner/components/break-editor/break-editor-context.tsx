@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useStore } from "@tanstack/react-store";
 import {
 	createContext,
 	type ReactNode,
@@ -10,40 +11,18 @@ import {
 } from "react";
 import { allBreaksQueryOptions } from "@/features/planner/api/breaks";
 import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
-import {
-	addMinutes,
-	formatDurationMin,
-	tzLocalInputToUtc,
-	utcToTzLocalInput,
-} from "@/features/planner/tz-datetime";
 import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
-import { useEditorDraft } from "../hooks/use-editor-draft";
 import type { PlannerBreak } from "../types";
+import { useBreakEditorForm } from "./use-break-editor-form";
 import { useBreakEditorMutations } from "./use-break-editor-mutations";
 
-type Mutations = ReturnType<typeof useBreakEditorMutations>;
-
-interface BreakDraft {
-	title: string;
-	startLocal: string;
-	endLocal: string;
-	durationMin: number;
-	description: string;
-	location: string;
-	locationUrl: string;
-	roomId: string | null;
-}
-
-type Draft = ReturnType<typeof useEditorDraft<BreakDraft>>;
+type BreakForm = ReturnType<typeof useBreakEditorForm>;
 
 interface BreakEditorContextValue {
 	breakItem: PlannerBreak;
 	rooms: Array<{ id: string; name: string; order: number }>;
-	draft: Draft;
-	saving: boolean;
+	form: BreakForm;
 	deleting: boolean;
-	mutations: Mutations;
-	onSave: () => Promise<void>;
 	onDelete: () => Promise<void>;
 }
 
@@ -55,37 +34,6 @@ interface ProviderProps {
 	children: ReactNode;
 	fallback: ReactNode;
 	dirtyRef?: RefObject<boolean>;
-}
-
-function breakDraftInitial(
-	breakItem: PlannerBreak | undefined,
-	tz: string | undefined,
-): BreakDraft {
-	if (!breakItem) {
-		return {
-			title: "",
-			startLocal: "",
-			endLocal: "",
-			durationMin: 0,
-			description: "",
-			location: "",
-			locationUrl: "",
-			roomId: null,
-		};
-	}
-	return {
-		title: breakItem.title,
-		startLocal: utcToTzLocalInput(new Date(breakItem.startAt), tz),
-		endLocal: utcToTzLocalInput(new Date(breakItem.endAt), tz),
-		durationMin: formatDurationMin(
-			new Date(breakItem.startAt),
-			new Date(breakItem.endAt),
-		),
-		description: breakItem.description ?? "",
-		location: breakItem.location ?? "",
-		locationUrl: breakItem.locationUrl ?? "",
-		roomId: breakItem.roomId,
-	};
 }
 
 export function BreakEditorProvider({
@@ -102,52 +50,16 @@ export function BreakEditorProvider({
 	const mutations = useBreakEditorMutations(breakId);
 
 	const breakItem = breaks.find((b) => b.id === breakId);
-	const draft = useEditorDraft<BreakDraft>(
-		breakDraftInitial(breakItem, tz),
-		breakItem?.id ?? null,
-	);
-	const [saving, setSaving] = useState(false);
+	const form = useBreakEditorForm(breakItem, tz, mutations);
 	const [deleting, setDeleting] = useState(false);
 
+	const isDirty = useStore(form.store, (s) => s.isDirty);
 	useEffect(() => {
-		if (dirtyRef) dirtyRef.current = draft.dirty;
-	}, [dirtyRef, draft.dirty]);
+		if (dirtyRef) dirtyRef.current = isDirty;
+	}, [dirtyRef, isDirty]);
 
 	const value = useMemo<BreakEditorContextValue | null>(() => {
 		if (!breakItem) return null;
-
-		const isEvent = breakItem.kind === "EVENT";
-		const onSave = async () => {
-			if (!draft.dirty) return;
-			const {
-				title,
-				startLocal,
-				endLocal,
-				durationMin,
-				description,
-				location,
-				locationUrl,
-				roomId,
-			} = draft.values;
-			if (!startLocal) return;
-			const startAt = tzLocalInputToUtc(startLocal, tz);
-			const endAt =
-				isEvent && endLocal
-					? tzLocalInputToUtc(endLocal, tz)
-					: addMinutes(startAt, Math.max(1, durationMin));
-			setSaving(true);
-			const result = await mutations.updateHeader({
-				title,
-				description: isEvent ? description.trim() || null : null,
-				location: isEvent ? location.trim() || null : null,
-				locationUrl: isEvent ? locationUrl.trim() || null : null,
-				startAt: startAt.toISOString(),
-				endAt: endAt.toISOString(),
-				roomId: isEvent ? null : roomId,
-			});
-			setSaving(false);
-			if (result !== null) draft.clearDirty();
-		};
 
 		const onDelete = async () => {
 			setDeleting(true);
@@ -156,17 +68,8 @@ export function BreakEditorProvider({
 			setDeleting(false);
 		};
 
-		return {
-			breakItem,
-			rooms,
-			draft,
-			saving,
-			deleting,
-			mutations,
-			onSave,
-			onDelete,
-		};
-	}, [breakItem, tz, rooms, draft, saving, deleting, mutations, onClose]);
+		return { breakItem, rooms, form, deleting, onDelete };
+	}, [breakItem, rooms, form, deleting, mutations, onClose]);
 
 	if (!value) return <>{fallback}</>;
 	return <Context.Provider value={value}>{children}</Context.Provider>;
