@@ -112,7 +112,11 @@ export interface PublicProgramSession {
 
 export interface PublicProgramBreak {
 	id: string;
+	kind: "BREAK" | "EVENT";
 	title: string;
+	description: string | null;
+	location: string | null;
+	locationUrl: string | null;
 	startAt: Date;
 	endAt: Date;
 	room: { id: string; name: string } | null;
@@ -191,7 +195,11 @@ export async function getPublicProgram(
 		})),
 		breaks: breaks.map((b) => ({
 			id: b.id,
+			kind: b.kind,
 			title: b.title,
+			description: b.description,
+			location: b.location,
+			locationUrl: b.locationUrl,
 			startAt: b.startAt,
 			endAt: b.endAt,
 			room: b.room,

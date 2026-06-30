@@ -1,3 +1,4 @@
+import type { ScheduleItemKind } from "@/generated/prisma/enums";
 import { prisma } from "@/shared/server/db.server";
 
 export async function listBreaks() {
@@ -8,14 +9,22 @@ export async function listBreaks() {
 }
 
 export async function createBreak(data: {
+	kind?: ScheduleItemKind;
 	title: string;
+	description?: string | null;
+	location?: string | null;
+	locationUrl?: string | null;
 	roomId?: string | null;
 	startAt: Date;
 	endAt: Date;
 }): Promise<{ id: string }> {
 	return prisma.scheduleBreak.create({
 		data: {
+			kind: data.kind ?? "BREAK",
 			title: data.title,
+			description: data.description ?? null,
+			location: data.location ?? null,
+			locationUrl: data.locationUrl ?? null,
 			roomId: data.roomId ?? null,
 			startAt: data.startAt,
 			endAt: data.endAt,
@@ -28,6 +37,9 @@ export async function updateBreak(
 	id: string,
 	data: {
 		title?: string;
+		description?: string | null;
+		location?: string | null;
+		locationUrl?: string | null;
 		roomId?: string | null;
 		startAt?: Date;
 		endAt?: Date;

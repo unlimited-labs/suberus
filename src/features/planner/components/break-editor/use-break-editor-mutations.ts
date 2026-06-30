@@ -4,6 +4,9 @@ import { useMutationRun } from "../hooks/use-mutation-run";
 
 interface BreakHeaderFields {
 	title: string;
+	description: string | null;
+	location: string | null;
+	locationUrl: string | null;
 	startAt: string;
 	endAt: string;
 	roomId: string | null;

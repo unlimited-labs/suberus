@@ -17,10 +17,13 @@ export type SessionItem = {
 
 export type BreakItem = {
 	kind: "break";
+	itemKind: "break" | "event";
 	id: string;
 	startAt: Date;
 	endAt: Date;
 	title: string;
+	description: string | null;
+	location: string | null;
 	roomName: string | null;
 };
 
@@ -47,10 +50,13 @@ export function buildPlannerItems(
 	}));
 	const b: PlannerItem[] = breaks.map((x) => ({
 		kind: "break",
+		itemKind: x.kind === "EVENT" ? "event" : "break",
 		id: x.id,
 		startAt: new Date(x.startAt),
 		endAt: new Date(x.endAt),
 		title: x.title,
+		description: x.description ?? null,
+		location: x.location ?? null,
 		roomName: x.room?.name ?? null,
 	}));
 	return [...s, ...b].sort((a, b) => compareAsc(a.startAt, b.startAt));

@@ -1,6 +1,6 @@
 ---
 title: Manual scheduling
-description: Build and correct the schedule by hand — create sessions and breaks, fill them from the unscheduled sidebar, edit chairs and presentations, and resolve issues.
+description: Build and correct the schedule by hand — create sessions, breaks, and events, fill them from the unscheduled sidebar, edit chairs and presentations, and resolve issues.
 sidebar:
   label: Manual scheduling
   order: 3
@@ -9,7 +9,7 @@ sidebar:
 import { Aside, Steps, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 Manual scheduling is where you place presentations onto the calendar yourself —
-create **sessions** and **breaks**, fill sessions from the **unscheduled sidebar**,
+create **sessions**, **breaks**, and **events**, fill sessions from the **unscheduled sidebar**,
 and fine-tune chairs, ordering, and durations in the **session editor**. It's also
 how you correct anything the autoplanner produced.
 
@@ -49,19 +49,23 @@ rooms on the **[Setup](/planner/setup/)** page before scheduling.
 
 </Steps>
 
-## Creating sessions and breaks
+## Creating sessions, breaks, and events
 
-The **+ New** button opens a create dialog. Toggle between **Session** and
-**Break** at the top.
+The **+ New** button opens a create dialog. Toggle between **Session**,
+**Break**, and **Event** at the top.
 
 | Field | Applies to | What to enter / Notes |
 |---|---|---|
-| **Start** | Both | The start date and time (`datetime-local`). |
+| **Start** | All | The start date and time (`datetime-local`). |
+| **End** | Event | The end date and time (`datetime-local`). Events can run hours (a dinner, a full-day trip). |
 | **Presentations** | Session | Number of slots (the session's capacity). |
 | **Min / talk** | Session | Minutes per slot. Session length = *Presentations × Min / talk*. |
 | **Duration** | Break | Length of the break in minutes. |
-| **Title** | Both | Optional for sessions (auto-named later), **required** for breaks. |
-| **Room** | Both | Which room column it lands in. A break with no room spans all rooms. |
+| **Title** | All | Optional for sessions (auto-named later), **required** for breaks and events. |
+| **Description** | Event | Optional free text shown on the public program. |
+| **Location** | Event | Optional venue name (e.g. a restaurant). |
+| **Link** | Event | Optional URL (e.g. a map link) — the location becomes clickable on the public program. |
+| **Room** | Session, Break | Which room column it lands in. A break with no room spans all rooms. Events are always room-less. |
 | **Track** | Session | An optional program track (colour tag). |
 
 <Aside type="tip">
@@ -121,6 +125,22 @@ Breaks mark non-talk time. Open a break to edit its **title**, **start**,
 nothing is written until you do). Leave the room empty and the break spans **all
 rooms** (a conference-wide coffee or lunch break); set a room and it applies to
 that column only.
+
+## Events
+
+Events are non-talk items with a description and an explicit start–end time — a
+conference **dinner**, a **trip**, **sightseeing**, and the like. They have no
+room and span the full width of the grid. Open an event to edit its **title**,
+**start**, **end**, **description**, **location**, and **link**, then press
+**Save**.
+
+On the public program an event stands out as a **featured card** showing its
+description and a clickable location link, while plain breaks stay thin
+dividers.
+
+🖼️ [Screenshot placeholder: New event in the create dialog]
+
+🖼️ [Screenshot placeholder: Event as a featured card on the public program]
 
 ## Making corrections
 

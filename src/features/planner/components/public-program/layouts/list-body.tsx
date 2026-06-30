@@ -4,7 +4,11 @@ import type {
 } from "@/features/planner/server/schedule";
 import { formatClockTime } from "@/features/planner/tz-datetime";
 import { cn } from "@/shared/lib/utils";
-import { PresentationList, SessionHeader } from "../program-primitives";
+import {
+	EventDetails,
+	PresentationList,
+	SessionHeader,
+} from "../program-primitives";
 import type { TimeGroup } from "../program-types";
 import type { ProgramThemeProps } from "../themes/registry";
 
@@ -46,7 +50,8 @@ function TimeSlot({
 	const end = formatClockTime(new Date(group.endAt), tz);
 	const dash = framed ? "—" : "–";
 
-	if (group.sessions.length === 0 && group.breaks.length > 0) {
+	const hasEvent = group.breaks.some((b) => b.kind === "EVENT");
+	if (group.sessions.length === 0 && group.breaks.length > 0 && !hasEvent) {
 		return (
 			<BreakOnlyRow
 				group={group}
@@ -171,6 +176,9 @@ function BreakCard({
 	dash: string;
 	framed: boolean;
 }) {
+	if (item.kind === "EVENT") {
+		return <EventCard item={item} tz={tz} framed={framed} />;
+	}
 	return (
 		<div
 			className={cn(
@@ -204,6 +212,36 @@ function BreakCard({
 					{item.title}
 				</p>
 			</div>
+		</div>
+	);
+}
+
+function EventCard({
+	item,
+	tz,
+	framed,
+}: {
+	item: PublicProgramBreak;
+	tz?: string;
+	framed: boolean;
+}) {
+	return (
+		<div
+			data-testid={`program-event-${item.id}`}
+			className={cn(
+				"border-l-2 border-[var(--primary)] bg-[var(--prog-mark,var(--muted))]/40 px-5 py-5",
+				framed ? "" : "rounded-[var(--prog-card-radius)]",
+			)}
+		>
+			<EventDetails
+				item={item}
+				tz={tz}
+				titleClass={
+					framed
+						? "font-[var(--prog-font-display)] text-xl sm:text-2xl"
+						: "text-lg font-semibold"
+				}
+			/>
 		</div>
 	);
 }

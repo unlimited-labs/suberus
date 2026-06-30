@@ -3,7 +3,11 @@ import { useState } from "react";
 import type { PublicProgramSession } from "@/features/planner/server/schedule";
 import { formatClockTime } from "@/features/planner/tz-datetime";
 import { cn } from "@/shared/lib/utils";
-import { PresentationList, SessionHeader } from "../program-primitives";
+import {
+	EventDetails,
+	PresentationList,
+	SessionHeader,
+} from "../program-primitives";
 import type { TimeGroup } from "../program-types";
 import type { ProgramThemeProps } from "../themes/registry";
 
@@ -153,20 +157,36 @@ function BreakBand({
 	inset?: boolean;
 }) {
 	const { start, end } = timeRange(group, tz);
+	const events = group.breaks.filter((b) => b.kind === "EVENT");
+	const plainBreaks = group.breaks.filter((b) => b.kind !== "EVENT");
 	return (
 		<div
-			className={cn(
-				"flex items-center gap-3 py-3 sm:gap-5",
-				inset && "border-t border-dashed border-border",
-			)}
+			className={cn("py-3", inset && "border-t border-dashed border-border")}
 		>
-			<span className="font-[var(--prog-font-meta)] text-[10px] uppercase tracking-[0.2em] tabular-nums text-[var(--prog-faint)]">
-				{start} – {end}
-			</span>
-			<span className="text-base text-muted-foreground">
-				{group.breaks.map((b) => b.title).join(" · ")}
-			</span>
-			<span className="h-px flex-1 bg-border" />
+			{plainBreaks.length > 0 && (
+				<div className="flex items-center gap-3 sm:gap-5">
+					<span className="font-[var(--prog-font-meta)] text-[10px] uppercase tracking-[0.2em] tabular-nums text-[var(--prog-faint)]">
+						{start} – {end}
+					</span>
+					<span className="text-base text-muted-foreground">
+						{plainBreaks.map((b) => b.title).join(" · ")}
+					</span>
+					<span className="h-px flex-1 bg-border" />
+				</div>
+			)}
+			{events.map((ev) => (
+				<div
+					key={ev.id}
+					data-testid={`program-event-${ev.id}`}
+					className="mt-2 border-l-2 border-[var(--primary)] bg-[var(--prog-mark,var(--muted))]/40 px-4 py-3 first:mt-0"
+				>
+					<EventDetails
+						item={ev}
+						tz={tz}
+						titleClass="text-base font-semibold"
+					/>
+				</div>
+			))}
 		</div>
 	);
 }

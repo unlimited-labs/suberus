@@ -1,4 +1,8 @@
-import { formatClockTime, formatDurationMin } from "@/features/planner/tz-datetime";
+import { IconCalendarEvent } from "@tabler/icons-react";
+import {
+	formatClockTime,
+	formatDurationMin,
+} from "@/features/planner/tz-datetime";
 import type { BreakItem } from "./planner-item";
 
 interface Props {
@@ -9,6 +13,7 @@ interface Props {
 
 export function MobileBreakRow({ item, timezone, onClick }: Props) {
 	const dur = formatDurationMin(item.startAt, item.endAt);
+	const isEvent = item.itemKind === "event";
 	return (
 		<button
 			type="button"
@@ -23,10 +28,26 @@ export function MobileBreakRow({ item, timezone, onClick }: Props) {
 				<div className="text-[10px] text-muted-foreground">{dur}m</div>
 			</div>
 			<div className="flex-1 min-w-0">
-				<div className="text-sm font-medium">{item.title}</div>
-				{item.roomName && (
-					<div className="text-xs text-muted-foreground">{item.roomName}</div>
+				<div className="flex items-center gap-1.5 text-sm font-medium">
+					{isEvent && <IconCalendarEvent className="size-3.5 shrink-0" />}
+					{item.title}
+				</div>
+				{isEvent && item.description && (
+					<div className="truncate text-xs text-muted-foreground">
+						{item.description}
+					</div>
 				)}
+				{isEvent
+					? item.location && (
+							<div className="text-xs text-muted-foreground">
+								{item.location}
+							</div>
+						)
+					: item.roomName && (
+							<div className="text-xs text-muted-foreground">
+								{item.roomName}
+							</div>
+						)}
 			</div>
 		</button>
 	);

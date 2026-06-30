@@ -1,13 +1,63 @@
-import { IconStarFilled } from "@tabler/icons-react";
+import {
+	IconCalendarEvent,
+	IconMapPin,
+	IconStarFilled,
+} from "@tabler/icons-react";
 import { addMinutes } from "date-fns";
 import type { KeyboardEvent } from "react";
-import type { PublicProgramSession } from "@/features/planner/server/schedule";
+import type {
+	PublicProgramBreak,
+	PublicProgramSession,
+} from "@/features/planner/server/schedule";
 import { formatClockTime } from "@/features/planner/tz-datetime";
 import { cn } from "@/shared/lib/utils";
 import { useProgramInteraction } from "./program-interaction";
 import { Highlight } from "./themes/shared";
 
 export const MARK = "rounded-[1px] bg-[var(--prog-mark)] text-foreground";
+
+export function EventDetails({
+	item,
+	tz,
+	titleClass,
+}: {
+	item: PublicProgramBreak;
+	tz?: string;
+	titleClass: string;
+}) {
+	return (
+		<>
+			<p className="flex items-center gap-2 font-[var(--prog-font-meta)] text-xs uppercase tracking-wide text-[var(--primary)]">
+				<IconCalendarEvent className="size-3.5 shrink-0" />
+				{formatClockTime(new Date(item.startAt), tz)} –{" "}
+				{formatClockTime(new Date(item.endAt), tz)}
+			</p>
+			<p className={cn("mt-1 text-foreground", titleClass)}>{item.title}</p>
+			{item.description && (
+				<p className="mt-2 whitespace-pre-line text-sm text-muted-foreground">
+					{item.description}
+				</p>
+			)}
+			{item.location && (
+				<p className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
+					<IconMapPin className="size-3.5 shrink-0" />
+					{item.locationUrl ? (
+						<a
+							href={item.locationUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="underline underline-offset-2 hover:text-foreground"
+						>
+							{item.location}
+						</a>
+					) : (
+						item.location
+					)}
+				</p>
+			)}
+		</>
+	);
+}
 
 function rowActivation(active: boolean, open: () => void) {
 	if (!active) return {};

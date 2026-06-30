@@ -26,7 +26,11 @@ type Mutations = ReturnType<typeof useBreakEditorMutations>;
 interface BreakDraft {
 	title: string;
 	startLocal: string;
+	endLocal: string;
 	durationMin: number;
+	description: string;
+	location: string;
+	locationUrl: string;
 	roomId: string | null;
 }
 
@@ -58,15 +62,28 @@ function breakDraftInitial(
 	tz: string | undefined,
 ): BreakDraft {
 	if (!breakItem) {
-		return { title: "", startLocal: "", durationMin: 0, roomId: null };
+		return {
+			title: "",
+			startLocal: "",
+			endLocal: "",
+			durationMin: 0,
+			description: "",
+			location: "",
+			locationUrl: "",
+			roomId: null,
+		};
 	}
 	return {
 		title: breakItem.title,
 		startLocal: utcToTzLocalInput(new Date(breakItem.startAt), tz),
+		endLocal: utcToTzLocalInput(new Date(breakItem.endAt), tz),
 		durationMin: formatDurationMin(
 			new Date(breakItem.startAt),
 			new Date(breakItem.endAt),
 		),
+		description: breakItem.description ?? "",
+		location: breakItem.location ?? "",
+		locationUrl: breakItem.locationUrl ?? "",
 		roomId: breakItem.roomId,
 	};
 }
@@ -99,18 +116,34 @@ export function BreakEditorProvider({
 	const value = useMemo<BreakEditorContextValue | null>(() => {
 		if (!breakItem) return null;
 
+		const isEvent = breakItem.kind === "EVENT";
 		const onSave = async () => {
 			if (!draft.dirty) return;
-			const { title, startLocal, durationMin, roomId } = draft.values;
+			const {
+				title,
+				startLocal,
+				endLocal,
+				durationMin,
+				description,
+				location,
+				locationUrl,
+				roomId,
+			} = draft.values;
 			if (!startLocal) return;
 			const startAt = tzLocalInputToUtc(startLocal, tz);
-			const endAt = addMinutes(startAt, Math.max(1, durationMin));
+			const endAt =
+				isEvent && endLocal
+					? tzLocalInputToUtc(endLocal, tz)
+					: addMinutes(startAt, Math.max(1, durationMin));
 			setSaving(true);
 			const result = await mutations.updateHeader({
 				title,
+				description: isEvent ? description.trim() || null : null,
+				location: isEvent ? location.trim() || null : null,
+				locationUrl: isEvent ? locationUrl.trim() || null : null,
 				startAt: startAt.toISOString(),
 				endAt: endAt.toISOString(),
-				roomId,
+				roomId: isEvent ? null : roomId,
 			});
 			setSaving(false);
 			if (result !== null) draft.clearDirty();

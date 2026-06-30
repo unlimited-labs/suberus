@@ -57,7 +57,11 @@ export function usePlannerEvents(
 			resourceId: b.roomId ?? undefined,
 			resourceIds: b.roomId ? undefined : allRoomIds,
 			backgroundColor: "transparent",
-			data: { kind: "break" as const, breakId: b.id } satisfies BreakEventData,
+			data: {
+				kind: "break" as const,
+				breakId: b.id,
+				itemKind: b.kind === "EVENT" ? ("event" as const) : ("break" as const),
+			} satisfies BreakEventData,
 		}));
 
 		return [...sessionEvents, ...breakEvents];

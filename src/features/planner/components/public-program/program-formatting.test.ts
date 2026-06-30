@@ -35,7 +35,11 @@ function breakItem(
 		kind: "break",
 		data: {
 			id,
+			kind: "BREAK",
 			title: id,
+			description: null,
+			location: null,
+			locationUrl: null,
 			startAt: new Date(startAt),
 			endAt: new Date(endAt),
 			room: null,

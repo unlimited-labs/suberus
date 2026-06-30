@@ -1384,12 +1384,20 @@ export async function createScheduleBreak(
 		startAt: Date;
 		endAt: Date;
 		roomId?: string;
+		kind?: "BREAK" | "EVENT";
+		description?: string;
+		location?: string;
+		locationUrl?: string;
 	},
 ): Promise<string> {
 	const db = getPrisma();
 	const br = await db.scheduleBreak.create({
 		data: {
 			title: `${testRunId}_${opts.title}`,
+			kind: opts.kind ?? "BREAK",
+			description: opts.description ?? null,
+			location: opts.location ?? null,
+			locationUrl: opts.locationUrl ?? null,
 			startAt: opts.startAt,
 			endAt: opts.endAt,
 			roomId: opts.roomId ?? null,
