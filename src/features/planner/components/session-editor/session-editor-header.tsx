@@ -1,8 +1,4 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
 import { formatDurationShort } from "@/shared/lib/format-date";
-import { utcToTzLocalInput } from "@/features/planner/tz-datetime";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { SheetHeader, SheetTitle } from "@/shared/ui/sheet";
@@ -11,58 +7,20 @@ import { TrackSelect } from "../shared/track-select";
 import { useSessionEditor } from "./session-editor-context";
 
 export function SessionEditorHeader() {
-	const {
-		session,
-		tz,
-		rooms,
-		tracks,
-		title,
-		sessionDurationMin,
-		sortedPresentations,
-		mutations,
-		onSaveTitle,
-	} = useSessionEditor();
-	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
-	const defaultSlotMin = settings.defaultPresentationMin;
-
-	const initialSlotMin = sortedPresentations[0]?.durationMin ?? defaultSlotMin;
-	const initialSlotCount = Math.max(
-		1,
-		Math.round(sessionDurationMin / Math.max(1, initialSlotMin)),
-	);
-
-	const [slotCount, setSlotCount] = useState(initialSlotCount);
-	const [slotMin, setSlotMin] = useState(initialSlotMin);
-
-	// Re-sync only when the session or its presentations change — NOT when a
-	// committed duration echoes back (initialSlotCount derives from duration),
-	// which would clobber a value the user is typing in the other input.
-	const syncKey = `${session.id}:${initialSlotMin}`;
-	const [lastSyncKey, setLastSyncKey] = useState(syncKey);
-	if (lastSyncKey !== syncKey) {
-		setLastSyncKey(syncKey);
-		setSlotCount(initialSlotCount);
-		setSlotMin(initialSlotMin);
-	}
-
+	const { rooms, tracks, draft, onSave } = useSessionEditor();
+	const { title, startLocal, slotCount, slotMin, roomId, trackId } =
+		draft.values;
 	const computedDuration = slotCount * slotMin;
 
-	const commit = (nextCount: number, nextMin: number) => {
-		const total = Math.max(1, nextCount * nextMin);
-		if (total !== sessionDurationMin) {
-			mutations.updateDuration(total, session);
-		}
-	};
 	return (
 		<SheetHeader className="gap-3 border-b p-4">
 			<SheetTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
 				Session editor
 			</SheetTitle>
 			<Input
-				value={title.value}
-				onChange={(e) => title.set(e.target.value)}
-				onBlur={onSaveTitle}
-				onKeyDown={(e) => e.key === "Enter" && onSaveTitle()}
+				value={title}
+				onChange={(e) => draft.set("title", e.target.value)}
+				onKeyDown={(e) => e.key === "Enter" && onSave()}
 				data-testid="session-editor-title"
 				className="text-base font-medium"
 				placeholder="Session title"
@@ -77,8 +35,8 @@ export function SessionEditorHeader() {
 				<Input
 					id="session-start"
 					type="datetime-local"
-					value={utcToTzLocalInput(new Date(session.startAt), tz)}
-					onChange={(e) => mutations.updateStart(e.target.value, tz, session)}
+					value={startLocal}
+					onChange={(e) => draft.set("startLocal", e.target.value)}
 					data-testid="session-editor-start"
 					className="h-8 text-sm"
 				/>
@@ -98,8 +56,9 @@ export function SessionEditorHeader() {
 						step={1}
 						value={slotCount}
 						data-testid="session-editor-slots-count"
-						onChange={(e) => setSlotCount(Math.max(1, Number(e.target.value)))}
-						onBlur={() => commit(slotCount, slotMin)}
+						onChange={(e) =>
+							draft.set("slotCount", Math.max(1, Number(e.target.value)))
+						}
 						className="h-8 text-sm"
 					/>
 				</div>
@@ -117,8 +76,9 @@ export function SessionEditorHeader() {
 						step={5}
 						value={slotMin}
 						data-testid="session-editor-slots-min"
-						onChange={(e) => setSlotMin(Math.max(1, Number(e.target.value)))}
-						onBlur={() => commit(slotCount, slotMin)}
+						onChange={(e) =>
+							draft.set("slotMin", Math.max(1, Number(e.target.value)))
+						}
 						className="h-8 text-sm"
 					/>
 				</div>
@@ -134,8 +94,8 @@ export function SessionEditorHeader() {
 				<div className="space-y-1">
 					<Label className="text-xs text-muted-foreground">Room</Label>
 					<RoomSelect
-						value={session.roomId}
-						onValueChange={mutations.updateRoom}
+						value={roomId}
+						onValueChange={(v) => draft.set("roomId", v)}
 						rooms={rooms}
 						testId="session-editor-room"
 						triggerClassName="h-8 text-sm"
@@ -144,8 +104,8 @@ export function SessionEditorHeader() {
 				<div className="space-y-1">
 					<Label className="text-xs text-muted-foreground">Track</Label>
 					<TrackSelect
-						value={session.trackId}
-						onValueChange={mutations.updateTrack}
+						value={trackId}
+						onValueChange={(v) => draft.set("trackId", v)}
 						tracks={tracks}
 						testId="session-editor-track"
 						triggerClassName="h-8 text-sm"

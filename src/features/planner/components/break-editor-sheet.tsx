@@ -1,4 +1,5 @@
-import { IconTrash } from "@tabler/icons-react";
+import { IconDeviceFloppy, IconTrash } from "@tabler/icons-react";
+import { useRef } from "react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
@@ -22,8 +23,16 @@ interface BreakEditorSheetProps {
 }
 
 export function BreakEditorSheet({ breakId, onClose }: BreakEditorSheetProps) {
+	const dirtyRef = useRef(false);
+	const requestClose = () => {
+		if (dirtyRef.current && !window.confirm("Discard unsaved changes?")) return;
+		onClose();
+	};
 	return (
-		<Sheet open={breakId !== null} onOpenChange={(open) => !open && onClose()}>
+		<Sheet
+			open={breakId !== null}
+			onOpenChange={(open) => !open && requestClose()}
+		>
 			<SheetContent
 				side="right"
 				data-testid="break-editor"
@@ -36,6 +45,7 @@ export function BreakEditorSheet({ breakId, onClose }: BreakEditorSheetProps) {
 					<BreakEditorProvider
 						breakId={breakId}
 						onClose={onClose}
+						dirtyRef={dirtyRef}
 						fallback={
 							<div className="flex flex-1 items-center justify-center p-8">
 								<p className="text-sm text-muted-foreground">Break not found</p>
@@ -51,15 +61,8 @@ export function BreakEditorSheet({ breakId, onClose }: BreakEditorSheetProps) {
 }
 
 function BreakEditorBody() {
-	const {
-		breakItem,
-		rooms,
-		title,
-		deleting,
-		mutations,
-		onSaveTitle,
-		onDelete,
-	} = useBreakEditor();
+	const { rooms, draft, saving, deleting, onSave, onDelete } = useBreakEditor();
+	const { title, startLocal, durationMin, roomId } = draft.values;
 	return (
 		<>
 			<SheetHeader className="gap-3 border-b p-4">
@@ -67,28 +70,73 @@ function BreakEditorBody() {
 					Break editor
 				</SheetTitle>
 				<Input
-					value={title.value}
-					onChange={(e) => title.set(e.target.value)}
-					onBlur={onSaveTitle}
-					onKeyDown={(e) => e.key === "Enter" && onSaveTitle()}
+					value={title}
+					onChange={(e) => draft.set("title", e.target.value)}
+					onKeyDown={(e) => e.key === "Enter" && onSave()}
 					data-testid="break-editor-title"
 					className="text-base font-medium"
 					placeholder="Break title"
 				/>
 				<div className="space-y-1">
+					<Label
+						htmlFor="break-start"
+						className="text-xs text-muted-foreground"
+					>
+						Start
+					</Label>
+					<Input
+						id="break-start"
+						type="datetime-local"
+						value={startLocal}
+						onChange={(e) => draft.set("startLocal", e.target.value)}
+						data-testid="break-editor-start"
+						className="h-8 text-sm"
+					/>
+				</div>
+				<div className="space-y-1">
+					<Label
+						htmlFor="break-duration"
+						className="text-xs text-muted-foreground"
+					>
+						Duration (min)
+					</Label>
+					<Input
+						id="break-duration"
+						type="number"
+						min={1}
+						step={5}
+						value={durationMin}
+						onChange={(e) =>
+							draft.set("durationMin", Math.max(1, Number(e.target.value)))
+						}
+						data-testid="break-editor-duration"
+						className="h-8 text-sm"
+					/>
+				</div>
+				<div className="space-y-1">
 					<Label className="text-xs text-muted-foreground">
 						Room (optional)
 					</Label>
 					<RoomSelect
-						value={breakItem.roomId}
-						onValueChange={mutations.updateRoom}
+						value={roomId}
+						onValueChange={(v) => draft.set("roomId", v)}
 						rooms={rooms}
 						triggerClassName="h-8 text-sm"
 					/>
 				</div>
 			</SheetHeader>
 
-			<SheetFooter className="mt-auto border-t p-4">
+			<SheetFooter className="mt-auto flex flex-col gap-2 border-t p-4">
+				<Button
+					size="sm"
+					disabled={!draft.dirty || saving}
+					onClick={onSave}
+					data-testid="break-editor-save"
+					className="w-full"
+				>
+					<IconDeviceFloppy size={14} />
+					Save
+				</Button>
 				<Button
 					variant="destructive"
 					size="sm"

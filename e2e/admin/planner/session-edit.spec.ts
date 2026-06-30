@@ -37,7 +37,7 @@ test.describe.serial("Planner — Session editor", () => {
 			`${testRun.testRunId}_Morning Session`,
 		);
 		await titleInput.fill(`${testRun.testRunId}_Renamed`);
-		await titleInput.blur();
+		await plannerPage.page.getByTestId("session-editor-save").click();
 
 		const db = getPrisma();
 		await expect
@@ -73,9 +73,8 @@ test.describe.serial("Planner — Session editor", () => {
 			"session-editor-slots-min",
 		);
 		await slotMinInput.fill("20");
-		await slotMinInput.blur();
 		await slotCountInput.fill("6");
-		await slotCountInput.blur();
+		await plannerPage.page.getByTestId("session-editor-save").click();
 
 		const db = getPrisma();
 		await expect

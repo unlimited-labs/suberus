@@ -1,21 +1,25 @@
 import { useEffect, useState } from "react";
 
-export function useEditableTitle(initial: string, resetKey: string | null) {
-	const [value, setValue] = useState(initial);
+export function useEditorDraft<T>(initial: T, resetKey: string | null) {
+	const [values, setValues] = useState(initial);
 	const [dirty, setDirty] = useState(false);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: reset only when resetKey changes
 	useEffect(() => {
-		setValue(initial);
+		setValues(initial);
 		setDirty(false);
 	}, [resetKey]);
 
 	return {
-		value,
+		values,
 		dirty,
-		set: (next: string) => {
-			setValue(next);
+		set: <K extends keyof T>(key: K, value: T[K]) => {
+			setValues((prev) => ({ ...prev, [key]: value }));
 			setDirty(true);
+		},
+		reset: () => {
+			setValues(initial);
+			setDirty(false);
 		},
 		clearDirty: () => setDirty(false),
 	};

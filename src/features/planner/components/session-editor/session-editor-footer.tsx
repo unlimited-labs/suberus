@@ -1,4 +1,9 @@
-import { IconCut, IconRepeat, IconTrash } from "@tabler/icons-react";
+import {
+	IconCut,
+	IconDeviceFloppy,
+	IconRepeat,
+	IconTrash,
+} from "@tabler/icons-react";
 import { useState } from "react";
 import { Button } from "@/shared/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
@@ -8,8 +13,11 @@ import { useSessionEditor } from "./session-editor-context";
 export function SessionEditorFooter() {
 	const {
 		sortedPresentations: presentations,
+		draft,
+		saving,
 		deleting,
 		mutations,
+		onSave,
 		onDelete,
 	} = useSessionEditor();
 	const [splitOpen, setSplitOpen] = useState(false);
@@ -21,6 +29,16 @@ export function SessionEditorFooter() {
 
 	return (
 		<SheetFooter className="flex flex-col gap-2 border-t p-4">
+			<Button
+				size="sm"
+				disabled={!draft.dirty || saving}
+				onClick={onSave}
+				data-testid="session-editor-save"
+				className="w-full"
+			>
+				<IconDeviceFloppy size={14} />
+				Save
+			</Button>
 			<div className="flex gap-2">
 				<Button
 					variant="outline"

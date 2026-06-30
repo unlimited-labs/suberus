@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { Sheet, SheetContent, SheetDescription } from "@/shared/ui/sheet";
 import { ChairsSection } from "./session-editor/chairs-section";
 import { PresentationsSection } from "./session-editor/presentations-section";
@@ -17,10 +18,15 @@ export function SessionEditorSheet({
 	onClose,
 	users,
 }: SessionEditorSheetProps) {
+	const dirtyRef = useRef(false);
+	const requestClose = () => {
+		if (dirtyRef.current && !window.confirm("Discard unsaved changes?")) return;
+		onClose();
+	};
 	return (
 		<Sheet
 			open={sessionId !== null}
-			onOpenChange={(open) => !open && onClose()}
+			onOpenChange={(open) => !open && requestClose()}
 		>
 			<SheetContent
 				side="right"
@@ -35,6 +41,7 @@ export function SessionEditorSheet({
 						sessionId={sessionId}
 						onClose={onClose}
 						users={users}
+						dirtyRef={dirtyRef}
 						fallback={
 							<div className="flex flex-1 items-center justify-center p-8">
 								<p className="text-sm text-muted-foreground">

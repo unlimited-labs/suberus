@@ -95,13 +95,17 @@ move between submissions, and **Esc** to close.
 
 ## The session editor
 
-Click a session to open the editor (a panel on the right).
+Click a session to open the editor (a panel on the right). The header fields
+(title, start, duration, room, track) are edited together and committed with the
+**Save** button — nothing is written until you press it. Closing the panel with
+unsaved changes asks you to confirm. Chairs, presentations, **Split**, and
+**Continue series** apply immediately.
 
 | Field / action | What it does | Notes |
 |---|---|---|
-| **Title** | The session name shown on the grid and public program. | Saves on blur or Enter. |
-| **Start** | When the session begins. | `datetime-local`, in the conference timezone. |
-| **Slots** × **Min / slot** | Capacity and per-talk length. | Session duration = *Slots × Min / slot*; recalculated when you change either. |
+| **Title** | The session name shown on the grid and public program. | Committed with **Save**. |
+| **Start** | When the session begins. | `datetime-local`, in the conference timezone. Committed with **Save**. |
+| **Slots** × **Min / slot** | Capacity and per-talk length. | Session duration = *Slots × Min / slot*. Committed with **Save**. |
 | **Room** | Which room column the session sits in. | Or *No room* (flagged as an issue). |
 | **Track** | The program track (colour tag). | Optional. |
 | **Chairs** | Who chairs the session. | Up to **3**; search by name or email. A session with **no chair** shows a warning marker and dashed border. |
@@ -112,9 +116,11 @@ Click a session to open the editor (a panel on the right).
 
 ## Breaks
 
-Breaks mark non-talk time. Open a break to edit its **title** and **room**. Leave the
-room empty and the break spans **all rooms** (a conference-wide coffee or lunch
-break); set a room and it applies to that column only.
+Breaks mark non-talk time. Open a break to edit its **title**, **start**,
+**duration**, and **room**, then press **Save** (same as the session editor —
+nothing is written until you do). Leave the room empty and the break spans **all
+rooms** (a conference-wide coffee or lunch break); set a room and it applies to
+that column only.
 
 ## Making corrections
 
