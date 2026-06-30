@@ -24,6 +24,10 @@ if (import.meta.env.DEV && import.meta.env.VITE_REACT_SCAN === "true") {
 	});
 }
 
+if ("serviceWorker" in navigator) {
+	navigator.serviceWorker.register("/sw.js").catch(() => {});
+}
+
 startTransition(() => {
 	hydrateRoot(
 		document,

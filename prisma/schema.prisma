@@ -53,6 +53,7 @@ model User {
   passkeys             Passkey[]
   programSessionChairs ProgramSessionChair[]
   presentationFavorites PresentationFavorite[]
+  pushSubscriptions    PushSubscription[]
   supervisedTracks     ConferenceTrack[]     @relation("TrackSupervisor")
   surveyAnswers        SurveyAnswer[]
   createdInvitations   Invitation[]          @relation("InvitationCreator")
@@ -739,8 +740,9 @@ model PresentationSlot {
 }
 
 model PresentationFavorite {
-  slotId String @db.Uuid
-  userId String @db.Uuid
+  slotId     String    @db.Uuid
+  userId     String    @db.Uuid
+  remindedAt DateTime?
 
   slot PresentationSlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
   user User             @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -748,6 +750,20 @@ model PresentationFavorite {
   @@id([slotId, userId])
   @@index([userId])
   @@map("presentation_favorites")
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscriptions")
 }
 
 model ScheduleBreak {

@@ -43,6 +43,7 @@ const nitroConfig: NitroPluginConfig = {
 	...(outputDir ? { output: { dir: outputDir } } : {}),
 	experimental: { tasks: true, vite: {} },
 	scheduledTasks: {
+		"* * * * *": isE2E ? [] : ["program:reminders"],
 		"*/5 * * * *": isE2E
 			? []
 			: ["mails:reminder", "assignments:overdue", "services:health"],
