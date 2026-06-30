@@ -105,5 +105,19 @@ test.describe.serial("Public /program", () => {
 			await expect(page.getByTestId("program-theme-default")).toBeHidden();
 			await expect(publicProgramPage.ribbon).toBeVisible();
 		});
+
+		test("academic theme renders when selected", async ({
+			publicProgramPage,
+			page,
+			testRun,
+		}) => {
+			await setAppSetting("PROGRAM_THEME", "academic");
+			await publishOneSession(testRun.testRunId, "Theme Academic Talk");
+
+			await publicProgramPage.goto();
+			await expect(page.getByTestId("program-theme-academic")).toBeVisible();
+			await expect(page.getByTestId("program-theme-default")).toBeHidden();
+			await expect(publicProgramPage.ribbon).toBeVisible();
+		});
 	});
 });

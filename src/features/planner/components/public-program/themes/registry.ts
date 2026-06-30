@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import type { PublicConferenceInfo } from "@/features/planner/api/schedule";
 import type { useProgramSchedule } from "../use-program-schedule";
+import { AcademicProgram } from "./academic";
 import { DefaultProgram } from "./default";
 import { EditorialProgram } from "./editorial";
 
@@ -35,6 +36,14 @@ export const PROGRAM_THEMES = {
 		description: "Print-inspired newspaper look with its own fixed palette.",
 		brandingAware: false,
 		component: EditorialProgram,
+	},
+	academic: {
+		id: "academic",
+		name: "Academic",
+		description:
+			"Formal room-by-time timetable grid with a fixed scholarly palette.",
+		brandingAware: false,
+		component: AcademicProgram,
 	},
 } satisfies Record<string, ProgramThemeMeta>;
 

@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@fontsource-variable/crimson-pro";
+@import "@fontsource-variable/source-serif-4";
 @import "@fontsource/spectral/700.css";
 @import "@fontsource/spectral/800.css";
 @import "@fontsource/bebas-neue";
@@ -57,7 +58,7 @@
 	--sidebar-border: oklch(0.9276 0.0058 264.5313);
 	--sidebar-ring: oklch(0.6231 0.188 259.8145);
 	--font-sans: Inter, sans-serif;
-	--font-serif: Source Serif 4, serif;
+	--font-serif: "Source Serif 4 Variable", serif;
 	--font-mono: JetBrains Mono, monospace;
 	--font-editorial-display: "Spectral", serif;
 	--font-editorial-body: "Crimson Pro Variable", serif;
@@ -132,7 +133,7 @@
 	--sidebar-border: oklch(0.3715 0 0);
 	--sidebar-ring: oklch(0.6231 0.188 259.8145);
 	--font-sans: Inter, sans-serif;
-	--font-serif: Source Serif 4, serif;
+	--font-serif: "Source Serif 4 Variable", serif;
 	--font-mono: JetBrains Mono, monospace;
 	--font-editorial-display: "Spectral", serif;
 	--font-editorial-body: "Crimson Pro Variable", serif;
@@ -200,7 +201,7 @@
 
 	--font-sans: Inter, sans-serif;
 	--font-mono: JetBrains Mono, monospace;
-	--font-serif: Source Serif 4, serif;
+	--font-serif: "Source Serif 4 Variable", serif;
 	--font-editorial-display: "Spectral", serif;
 	--font-editorial-body: "Crimson Pro Variable", serif;
 	--font-editorial-accent: "Bebas Neue", sans-serif;

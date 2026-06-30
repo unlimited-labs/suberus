@@ -115,8 +115,45 @@ const EDITORIAL_THEME: DialogTheme = {
 	star: "text-amber-600",
 };
 
+const ACADEMIC_THEME: DialogTheme = {
+	content:
+		"sm:max-w-2xl rounded-none border border-slate-300 bg-[#f8f9fb] text-slate-900 ring-slate-900/10 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100",
+	contentStyle: { fontFamily: "var(--font-serif)" },
+	meta: "font-mono text-[10px] uppercase tracking-[0.2em] text-slate-600 dark:text-slate-400",
+	title: "text-2xl leading-tight",
+	titleStyle: { fontFamily: "var(--font-serif)", fontWeight: 700 },
+	session: "text-sm text-slate-600 dark:text-slate-400",
+	heading: "font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500",
+	abstract: "text-[15px] leading-relaxed text-slate-800 dark:text-slate-200",
+	authorCard:
+		"flex items-start gap-3 border border-slate-300 bg-slate-900/[0.02] p-3 dark:border-slate-700 dark:bg-slate-100/[0.02]",
+	authorCardPresenter: "border-[#1e3a5f]/40 dark:border-slate-500",
+	authorBadge:
+		"flex size-6 shrink-0 items-center justify-center bg-slate-200 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+	authorBadgePresenter:
+		"bg-[#1e3a5f] text-slate-50 dark:bg-slate-200 dark:text-slate-900",
+	authorName: "font-semibold text-slate-900 dark:text-slate-100",
+	presenterTag:
+		"inline-flex items-center gap-1 text-xs font-medium text-[#1e3a5f] dark:text-slate-300",
+	affiliation: "mt-0.5 truncate text-sm text-slate-600 dark:text-slate-400",
+	keyword:
+		"border border-slate-400 px-2 py-0.5 text-xs text-slate-700 dark:border-slate-600 dark:text-slate-300",
+	footer:
+		"rounded-none border-slate-300 bg-slate-900/[0.03] dark:border-slate-700 dark:bg-slate-100/[0.03]",
+	btnBase: cn(BTN, "rounded-none border"),
+	btnIdle:
+		"border-slate-400 bg-transparent text-slate-800 hover:bg-slate-900/5 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-100/5",
+	btnActive:
+		"border-[#1e3a5f] bg-[#1e3a5f] text-slate-50 dark:border-slate-200 dark:bg-slate-100 dark:text-slate-900",
+	btnDisabled:
+		"border-slate-300 text-slate-400 dark:border-slate-700 dark:text-slate-600",
+	star: "text-amber-600",
+};
+
 function dialogTheme(themeId: string): DialogTheme {
-	return themeId === "editorial" ? EDITORIAL_THEME : DEFAULT_THEME;
+	if (themeId === "editorial") return EDITORIAL_THEME;
+	if (themeId === "academic") return ACADEMIC_THEME;
+	return DEFAULT_THEME;
 }
 
 export function PresentationPreviewDialog({
