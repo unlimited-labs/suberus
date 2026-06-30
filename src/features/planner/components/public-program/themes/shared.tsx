@@ -7,9 +7,11 @@ import { cn } from "@/shared/lib/utils";
 export function ProgramAuthLink({
 	className,
 	style,
+	labelClassName,
 }: {
 	className?: string;
 	style?: CSSProperties;
+	labelClassName?: string;
 }) {
 	const { user, isPending, isAuthenticated } = useSession();
 	if (isPending) return null;
@@ -23,9 +25,11 @@ export function ProgramAuthLink({
 				className={linkClass}
 				style={style}
 				data-testid="program-auth-link"
+				aria-label={name}
+				title={name}
 			>
 				<IconUserCircle className="size-[1.2em]" />
-				{name}
+				<span className={labelClassName}>{name}</span>
 			</Link>
 		);
 	}
@@ -35,9 +39,11 @@ export function ProgramAuthLink({
 			className={linkClass}
 			style={style}
 			data-testid="program-auth-link"
+			aria-label="Zaloguj się"
+			title="Zaloguj się"
 		>
 			<IconLogin2 className="size-[1.2em]" />
-			Zaloguj się
+			<span className={labelClassName}>Zaloguj się</span>
 		</Link>
 	);
 }

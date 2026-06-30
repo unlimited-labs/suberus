@@ -1,6 +1,5 @@
 import { IconDownload, IconStar, IconStarFilled } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
-import type { CSSProperties } from "react";
 import {
 	type PresentationDetailAuthor,
 	presentationDetailQueryOptions,
@@ -18,143 +17,16 @@ import {
 import { Skeleton } from "@/shared/ui/skeleton";
 import type { PreviewTarget } from "./program-interaction";
 
-interface DialogTheme {
-	content: string;
-	contentStyle?: CSSProperties;
-	meta: string;
-	metaStyle?: CSSProperties;
-	title: string;
-	titleStyle?: CSSProperties;
-	session: string;
-	heading: string;
-	headingStyle?: CSSProperties;
-	abstract: string;
-	authorCard: string;
-	authorCardPresenter: string;
-	authorBadge: string;
-	authorBadgePresenter: string;
-	authorName: string;
-	presenterTag: string;
-	affiliation: string;
-	keyword: string;
-	footer: string;
-	btnBase: string;
-	btnIdle: string;
-	btnActive: string;
-	btnDisabled: string;
-	star: string;
-}
-
+const META =
+	"font-[var(--prog-font-meta)] text-xs uppercase tracking-[var(--prog-tracking)] text-muted-foreground";
+const HEADING =
+	"font-[var(--prog-font-meta)] text-xs font-semibold uppercase tracking-[var(--prog-tracking)] text-muted-foreground";
+const ABSTRACT = "text-sm leading-relaxed text-foreground";
 const BTN =
-	"inline-flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0";
-
-const DEFAULT_THEME: DialogTheme = {
-	content: "sm:max-w-2xl",
-	meta: "text-xs uppercase tracking-wide text-muted-foreground",
-	title: "text-lg font-semibold leading-snug",
-	session: "text-sm text-muted-foreground",
-	heading:
-		"text-xs font-semibold uppercase tracking-wide text-muted-foreground",
-	abstract: "text-sm leading-relaxed text-foreground",
-	authorCard:
-		"flex items-start gap-3 rounded-lg border border-border/50 bg-card p-3",
-	authorCardPresenter: "border-primary/30 bg-primary/5",
-	authorBadge:
-		"flex size-6 shrink-0 items-center justify-center rounded-md bg-muted/50 text-xs font-semibold text-muted-foreground",
-	authorBadgePresenter: "bg-primary/10 text-primary",
-	authorName: "font-medium text-foreground",
-	presenterTag:
-		"inline-flex items-center gap-1 text-xs font-medium text-primary",
-	affiliation: "mt-0.5 truncate text-sm text-muted-foreground",
-	keyword:
-		"rounded-md bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground",
-	footer: "",
-	btnBase: cn(BTN, "rounded-lg border"),
-	btnIdle: "border-border bg-background text-foreground hover:bg-muted",
-	btnActive:
-		"border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-	btnDisabled: "border-border bg-background text-foreground",
-	star: "text-amber-500",
-};
-
-const EDITORIAL_THEME: DialogTheme = {
-	content:
-		"sm:max-w-2xl rounded-none border border-stone-300 bg-[#f5f1e8] text-stone-900 ring-stone-900/10 dark:border-stone-700 dark:bg-stone-950 dark:text-stone-100",
-	contentStyle: { fontFamily: "var(--font-futuristic-body)" },
-	meta: "text-[10px] uppercase tracking-[0.25em] text-stone-600 dark:text-stone-400",
-	metaStyle: { fontFamily: "var(--font-sans)" },
-	title: "text-2xl leading-tight",
-	titleStyle: { fontFamily: "var(--font-editorial-display)", fontWeight: 700 },
-	session: "text-sm italic text-stone-600 dark:text-stone-400",
-	heading: "text-[10px] uppercase tracking-[0.25em] text-stone-500",
-	headingStyle: { fontFamily: "var(--font-sans)" },
-	abstract: "text-[15px] leading-relaxed text-stone-800 dark:text-stone-200",
-	authorCard:
-		"flex items-start gap-3 border border-stone-300 bg-stone-900/[0.02] p-3 dark:border-stone-700 dark:bg-stone-100/[0.02]",
-	authorCardPresenter: "border-stone-400 dark:border-stone-500",
-	authorBadge:
-		"flex size-6 shrink-0 items-center justify-center bg-stone-200 text-xs font-semibold text-stone-700 dark:bg-stone-800 dark:text-stone-300",
-	authorBadgePresenter:
-		"bg-stone-800 text-stone-50 dark:bg-stone-200 dark:text-stone-900",
-	authorName: "font-semibold text-stone-900 dark:text-stone-100",
-	presenterTag:
-		"inline-flex items-center gap-1 text-xs font-medium text-stone-700 dark:text-stone-300",
-	affiliation:
-		"mt-0.5 truncate text-sm italic text-stone-600 dark:text-stone-400",
-	keyword:
-		"border border-stone-400 px-2 py-0.5 text-xs text-stone-700 dark:border-stone-600 dark:text-stone-300",
-	footer:
-		"rounded-none border-stone-300 bg-stone-900/[0.03] dark:border-stone-700 dark:bg-stone-100/[0.03]",
-	btnBase: cn(BTN, "rounded-none border"),
-	btnIdle:
-		"border-stone-400 bg-transparent text-stone-800 hover:bg-stone-900/5 dark:border-stone-600 dark:text-stone-200 dark:hover:bg-stone-100/5",
-	btnActive:
-		"border-stone-800 bg-stone-900 text-stone-50 dark:border-stone-200 dark:bg-stone-100 dark:text-stone-900",
-	btnDisabled:
-		"border-stone-300 text-stone-400 dark:border-stone-700 dark:text-stone-600",
-	star: "text-amber-600",
-};
-
-const ACADEMIC_THEME: DialogTheme = {
-	content:
-		"sm:max-w-2xl rounded-none border border-slate-300 bg-[#f8f9fb] text-slate-900 ring-slate-900/10 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100",
-	contentStyle: { fontFamily: "var(--font-serif)" },
-	meta: "font-mono text-[10px] uppercase tracking-[0.2em] text-slate-600 dark:text-slate-400",
-	title: "text-2xl leading-tight",
-	titleStyle: { fontFamily: "var(--font-serif)", fontWeight: 700 },
-	session: "text-sm text-slate-600 dark:text-slate-400",
-	heading: "font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500",
-	abstract: "text-[15px] leading-relaxed text-slate-800 dark:text-slate-200",
-	authorCard:
-		"flex items-start gap-3 border border-slate-300 bg-slate-900/[0.02] p-3 dark:border-slate-700 dark:bg-slate-100/[0.02]",
-	authorCardPresenter: "border-[#1e3a5f]/40 dark:border-slate-500",
-	authorBadge:
-		"flex size-6 shrink-0 items-center justify-center bg-slate-200 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300",
-	authorBadgePresenter:
-		"bg-[#1e3a5f] text-slate-50 dark:bg-slate-200 dark:text-slate-900",
-	authorName: "font-semibold text-slate-900 dark:text-slate-100",
-	presenterTag:
-		"inline-flex items-center gap-1 text-xs font-medium text-[#1e3a5f] dark:text-slate-300",
-	affiliation: "mt-0.5 truncate text-sm text-slate-600 dark:text-slate-400",
-	keyword:
-		"border border-slate-400 px-2 py-0.5 text-xs text-slate-700 dark:border-slate-600 dark:text-slate-300",
-	footer:
-		"rounded-none border-slate-300 bg-slate-900/[0.03] dark:border-slate-700 dark:bg-slate-100/[0.03]",
-	btnBase: cn(BTN, "rounded-none border"),
-	btnIdle:
-		"border-slate-400 bg-transparent text-slate-800 hover:bg-slate-900/5 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-100/5",
-	btnActive:
-		"border-[#1e3a5f] bg-[#1e3a5f] text-slate-50 dark:border-slate-200 dark:bg-slate-100 dark:text-slate-900",
-	btnDisabled:
-		"border-slate-300 text-slate-400 dark:border-slate-700 dark:text-slate-600",
-	star: "text-amber-600",
-};
-
-function dialogTheme(themeId: string): DialogTheme {
-	if (themeId === "editorial") return EDITORIAL_THEME;
-	if (themeId === "academic") return ACADEMIC_THEME;
-	return DEFAULT_THEME;
-}
+	"inline-flex items-center justify-center gap-2 rounded-[var(--radius)] border px-3 py-1.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0";
+const BTN_IDLE = "border-border bg-background text-foreground hover:bg-muted";
+const BTN_ACTIVE =
+	"border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80";
 
 export function PresentationPreviewDialog({
 	target,
@@ -169,18 +41,18 @@ export function PresentationPreviewDialog({
 	isFavorite: boolean;
 	onToggleFavorite: () => void;
 }) {
-	const t = dialogTheme(themeId);
+	const framed = themeId !== "default";
 	return (
 		<Dialog open={!!target} onOpenChange={onOpenChange}>
 			<DialogContent
+				data-program-theme={themeId}
 				data-testid="presentation-preview"
-				className={t.content}
-				style={t.contentStyle}
+				className="bg-background text-foreground font-[var(--prog-font-body)] sm:max-w-2xl"
 			>
 				{target && (
 					<PreviewBody
 						target={target}
-						t={t}
+						framed={framed}
 						isFavorite={isFavorite}
 						onToggleFavorite={onToggleFavorite}
 					/>
@@ -192,12 +64,12 @@ export function PresentationPreviewDialog({
 
 function PreviewBody({
 	target,
-	t,
+	framed,
 	isFavorite,
 	onToggleFavorite,
 }: {
 	target: PreviewTarget;
-	t: DialogTheme;
+	framed: boolean;
 	isFavorite: boolean;
 	onToggleFavorite: () => void;
 }) {
@@ -205,8 +77,7 @@ function PreviewBody({
 		<>
 			<DialogHeader className="pr-8 text-left">
 				<div
-					className={cn("flex flex-wrap items-center gap-x-3 gap-y-1", t.meta)}
-					style={t.metaStyle}
+					className={cn("flex flex-wrap items-center gap-x-3 gap-y-1", META)}
 				>
 					{target.track && (
 						<span className="inline-flex items-center gap-1.5">
@@ -225,22 +96,31 @@ function PreviewBody({
 					</span>
 					{target.roomName && <span>{target.roomName}</span>}
 				</div>
-				<DialogTitle className={t.title} style={t.titleStyle}>
+				<DialogTitle
+					className={cn(
+						"font-[var(--prog-font-display)] leading-snug",
+						framed ? "text-2xl font-bold" : "text-lg font-semibold",
+					)}
+				>
 					{target.submissionTitle}
 				</DialogTitle>
-				<p className={t.session}>{target.sessionTitle}</p>
+				<p className="text-sm text-muted-foreground">{target.sessionTitle}</p>
 			</DialogHeader>
 
-			<PreviewContent slotId={target.slotId} t={t} />
+			<PreviewContent slotId={target.slotId} />
 
-			<DialogFooter className={cn("sm:justify-between", t.footer)}>
+			<DialogFooter className="sm:justify-between">
 				<button
 					type="button"
 					data-testid="favorite-toggle"
 					onClick={onToggleFavorite}
-					className={cn(t.btnBase, isFavorite ? t.btnActive : t.btnIdle)}
+					className={cn(BTN, isFavorite ? BTN_ACTIVE : BTN_IDLE)}
 				>
-					{isFavorite ? <IconStarFilled className={t.star} /> : <IconStar />}
+					{isFavorite ? (
+						<IconStarFilled className="text-amber-500" />
+					) : (
+						<IconStar />
+					)}
 					{isFavorite ? "Favorited" : "Add to favorites"}
 				</button>
 				{/* ponytail: placeholder, wire when camera-ready download exists */}
@@ -248,7 +128,7 @@ function PreviewBody({
 					type="button"
 					disabled
 					title="Coming soon"
-					className={cn(t.btnBase, t.btnDisabled)}
+					className={cn(BTN, BTN_IDLE)}
 				>
 					<IconDownload />
 					Download camera-ready
@@ -258,7 +138,7 @@ function PreviewBody({
 	);
 }
 
-function PreviewContent({ slotId, t }: { slotId: string; t: DialogTheme }) {
+function PreviewContent({ slotId }: { slotId: string }) {
 	const detail = useQuery(presentationDetailQueryOptions(slotId));
 
 	if (detail.isPending) {
@@ -269,25 +149,26 @@ function PreviewContent({ slotId, t }: { slotId: string; t: DialogTheme }) {
 		);
 	}
 	if (!detail.data) {
-		return <p className={t.abstract}>Preview is unavailable for this talk.</p>;
+		return <p className={ABSTRACT}>Preview is unavailable for this talk.</p>;
 	}
 
 	const { authors, content, keywords } = detail.data;
 	return (
 		<div className="max-h-[55vh] space-y-5 overflow-y-auto">
-			{authors.length > 0 && <Authors authors={authors} t={t} />}
+			{authors.length > 0 && <Authors authors={authors} />}
 			<section className="space-y-2">
-				<h3 className={t.heading} style={t.headingStyle}>
-					Abstract
-				</h3>
-				<div className={cn("whitespace-pre-line break-words", t.abstract)}>
+				<h3 className={HEADING}>Abstract</h3>
+				<div className={cn("whitespace-pre-line break-words", ABSTRACT)}>
 					{content}
 				</div>
 			</section>
 			{keywords.length > 0 && (
 				<section className="flex flex-wrap gap-2">
 					{keywords.map((k) => (
-						<span key={k} className={t.keyword}>
+						<span
+							key={k}
+							className="rounded-[var(--radius)] bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
+						>
 							{k}
 						</span>
 					))}
@@ -297,18 +178,10 @@ function PreviewContent({ slotId, t }: { slotId: string; t: DialogTheme }) {
 	);
 }
 
-function Authors({
-	authors,
-	t,
-}: {
-	authors: PresentationDetailAuthor[];
-	t: DialogTheme;
-}) {
+function Authors({ authors }: { authors: PresentationDetailAuthor[] }) {
 	return (
 		<section className="space-y-2">
-			<h3 className={t.heading} style={t.headingStyle}>
-				Authors
-			</h3>
+			<h3 className={HEADING}>Authors</h3>
 			<div
 				className={cn(
 					"grid grid-cols-1 gap-2",
@@ -319,31 +192,31 @@ function Authors({
 					<div
 						key={index}
 						className={cn(
-							t.authorCard,
-							author.isPresenter && t.authorCardPresenter,
+							"flex items-start gap-3 rounded-[var(--radius)] border border-border bg-card p-3",
+							author.isPresenter && "border-primary/40 bg-primary/5",
 						)}
 					>
 						<div
 							className={cn(
-								t.authorBadge,
-								author.isPresenter && t.authorBadgePresenter,
+								"flex size-6 shrink-0 items-center justify-center rounded-[var(--radius)] bg-muted text-xs font-semibold text-muted-foreground",
+								author.isPresenter && "bg-primary/10 text-primary",
 							)}
 						>
 							{index + 1}
 						</div>
 						<div className="min-w-0 flex-1">
 							<div className="flex flex-wrap items-center gap-2">
-								<span className={t.authorName}>
+								<span className="font-medium text-foreground">
 									{author.firstName} {author.lastName}
 								</span>
 								{author.isPresenter && (
-									<span className={t.presenterTag}>
+									<span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
 										<IconStarFilled className="size-3" />
 										Presenter
 									</span>
 								)}
 							</div>
-							<p className={t.affiliation}>
+							<p className="mt-0.5 truncate text-sm text-muted-foreground">
 								{affiliationDisplay(author.affiliationName)}
 							</p>
 						</div>

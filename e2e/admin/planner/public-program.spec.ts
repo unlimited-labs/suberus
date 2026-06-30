@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures";
+import { test, expect, isoDay } from "./fixtures";
 import {
 	createProgramSession,
 	createRoom,
@@ -6,13 +6,6 @@ import {
 	setConferenceDates,
 	setSchedulePublished,
 } from "../../helpers/test-db";
-
-function isoDay(offsetDays: number, hour: number): Date {
-	const d = new Date();
-	d.setUTCDate(d.getUTCDate() + offsetDays);
-	d.setUTCHours(hour, 0, 0, 0);
-	return d;
-}
 
 test.describe.serial("Public /program", () => {
 	test.beforeEach(async () => {
@@ -117,7 +110,9 @@ test.describe.serial("Public /program", () => {
 			await publicProgramPage.goto();
 			await expect(page.getByTestId("program-theme-academic")).toBeVisible();
 			await expect(page.getByTestId("program-theme-default")).toBeHidden();
-			await expect(publicProgramPage.ribbon).toBeVisible();
+			await expect(
+				page.getByText(/Conference Programme/i).first(),
+			).toBeVisible();
 		});
 	});
 });

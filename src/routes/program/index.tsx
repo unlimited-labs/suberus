@@ -6,6 +6,7 @@ import {
 	publicProgramQueryOptions,
 } from "@/features/planner/api/schedule";
 import { ProgramInteractionProvider } from "@/features/planner/components/public-program/program-interaction";
+import { ProgramShell } from "@/features/planner/components/public-program/program-shell";
 import { resolveProgramTheme } from "@/features/planner/components/public-program/themes/registry";
 import { ProgramEmptyState } from "@/features/planner/components/public-program/themes/shared";
 import { useProgramSchedule } from "@/features/planner/components/public-program/use-program-schedule";
@@ -44,11 +45,14 @@ function ProgramPage() {
 
 	if (!program) return <ProgramEmptyState />;
 
-	const Theme = resolveProgramTheme(settings.theme).component;
+	const theme = resolveProgramTheme(settings.theme);
 
 	return (
-		<ProgramInteractionProvider themeId={settings.theme}>
-			<Theme
+		<ProgramInteractionProvider themeId={theme.id}>
+			<ProgramShell
+				themeId={theme.id}
+				chrome={theme.chrome}
+				layout={theme.layout}
 				settings={settings}
 				search={search}
 				setSearch={setSearch}

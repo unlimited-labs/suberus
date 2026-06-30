@@ -1,9 +1,5 @@
-import type { ComponentType } from "react";
 import type { PublicConferenceInfo } from "@/features/planner/api/schedule";
 import type { useProgramSchedule } from "../use-program-schedule";
-import { AcademicProgram } from "./academic";
-import { DefaultProgram } from "./default";
-import { EditorialProgram } from "./editorial";
 
 export interface ProgramThemeProps {
 	settings: PublicConferenceInfo;
@@ -14,12 +10,16 @@ export interface ProgramThemeProps {
 	schedule: ReturnType<typeof useProgramSchedule>;
 }
 
+export type ProgramChrome = "minimal" | "framed";
+export type ProgramLayout = "list" | "grid";
+
 export interface ProgramThemeMeta {
 	id: string;
 	name: string;
 	description: string;
 	brandingAware: boolean;
-	component: ComponentType<ProgramThemeProps>;
+	chrome: ProgramChrome;
+	layout: ProgramLayout;
 }
 
 export const PROGRAM_THEMES = {
@@ -28,14 +28,16 @@ export const PROGRAM_THEMES = {
 		name: "Default",
 		description: "Clean layout that follows your branding colours.",
 		brandingAware: true,
-		component: DefaultProgram,
+		chrome: "minimal",
+		layout: "list",
 	},
 	editorial: {
 		id: "editorial",
 		name: "Editorial",
 		description: "Print-inspired newspaper look with its own fixed palette.",
 		brandingAware: false,
-		component: EditorialProgram,
+		chrome: "framed",
+		layout: "list",
 	},
 	academic: {
 		id: "academic",
@@ -43,7 +45,8 @@ export const PROGRAM_THEMES = {
 		description:
 			"Formal room-by-time timetable grid with a fixed scholarly palette.",
 		brandingAware: false,
-		component: AcademicProgram,
+		chrome: "framed",
+		layout: "grid",
 	},
 } satisfies Record<string, ProgramThemeMeta>;
 
