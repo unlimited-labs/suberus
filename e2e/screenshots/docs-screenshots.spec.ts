@@ -19,6 +19,7 @@ import {
 	createSubmissionWithFile,
 	createSubmissionWithReview,
 	createTestUser,
+	ensureSeededSurveyQuestions,
 	getPrisma,
 	getTestUserIds,
 	setAppSetting,
@@ -42,6 +43,11 @@ import { randomUUID } from "crypto";
 import * as path from "path";
 import * as fs from "fs";
 import type { Page } from "@playwright/test";
+import AdmZip from "adm-zip";
+
+const DOCS_PDF = Buffer.from(
+	"%PDF-1.4\n% docs screenshot fixture\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n",
+);
 
 const SHOTS_DIR = path.resolve("docs/src/assets/screenshots");
 
@@ -113,6 +119,7 @@ const ctx = {
 	profileUserId: "",
 	exhibitorPendingId: "",
 	reviewerAssignmentId: "",
+	eventBreakId: "",
 };
 
 /**
@@ -253,6 +260,66 @@ async function ensureDocsDocuments(adminUserId: string, testUserId: string) {
 	});
 }
 
+/**
+ * Idempotently give the "Crystal Plasticity FEM" submission a camera-ready
+ * PDF + an admin favourite on its slot (feeds the camera-ready card, the
+ * public preview dialog's download button, and the favourited-star state),
+ * and seed a published "Event" schedule item (featured card on /program).
+ */
+async function ensureDocsScreenshotExtras(adminUserId: string) {
+	const db = getPrisma();
+	const decided = await db.submission.findFirstOrThrow({
+		where: { title: "Crystal Plasticity FEM of Ti-6Al-4V Lattice Structures" },
+	});
+	if (!decided.cameraReadyFileId) {
+		const { setCameraReady } = await import(
+			"../../src/features/submissions/server/camera-ready"
+		);
+		const result = await setCameraReady(
+			decided.id,
+			DOCS_PDF,
+			"camera-ready.pdf",
+			adminUserId,
+		);
+		if (!result.ok) throw new Error(`camera-ready seed failed: ${result.error}`);
+	}
+	const slot = await db.presentationSlot.findFirstOrThrow({
+		where: { submissionId: decided.id },
+	});
+	const favorite = await db.presentationFavorite.findFirst({
+		where: { slotId: slot.id, userId: adminUserId },
+	});
+	if (!favorite) {
+		await db.presentationFavorite.create({
+			data: { slotId: slot.id, userId: adminUserId },
+		});
+	}
+
+	const dinner = await db.scheduleBreak.findFirst({
+		where: { title: "Conference Dinner", kind: "EVENT" },
+	});
+	ctx.eventBreakId =
+		dinner?.id ??
+		(
+			await db.scheduleBreak.create({
+				data: {
+					title: "Conference Dinner",
+					kind: "EVENT",
+					description:
+						"Join us for a three-course dinner at the historic Sukiennice Hall.",
+					location: "Sukiennice Hall, Krakow",
+					locationUrl: "https://example.org/sukiennice",
+					// Day 14 — the public program's default active day — so the
+					// shot doesn't need to switch day tabs first.
+					startAt: day(14, "16:00"),
+					endAt: day(14, "17:00"),
+				},
+			})
+		).id;
+
+	await ensureSeededSurveyQuestions();
+}
+
 /** Resolve ctx ids from the DB by title (survives worker restarts). */
 async function resolveCtx() {
 	const db = getPrisma();
@@ -295,6 +362,7 @@ test.describe("docs screenshots", () => {
 		if (arranged) {
 			await ensureDocsExtras(adminUserId, reviewerUserId);
 			await ensureDocsDocuments(adminUserId, testUserId);
+			await ensureDocsScreenshotExtras(adminUserId);
 			await resolveCtx();
 			return;
 		}
@@ -663,6 +731,7 @@ test.describe("docs screenshots", () => {
 
 		await ensureDocsExtras(adminUserId, reviewerUserId);
 		await ensureDocsDocuments(adminUserId, testUserId);
+		await ensureDocsScreenshotExtras(adminUserId);
 		await resolveCtx();
 	});
 
@@ -1027,5 +1096,165 @@ test.describe("docs screenshots", () => {
 		await page.waitForTimeout(500);
 		await shot(page, "47-managing-documents-my.png", { height: 1000 });
 		await context.close();
+	});
+
+	// ---- Part 6: Camera-ready, planner events, attachments, survey -----------------
+
+	test("48 bulk-email attachments", async ({ page }) => {
+		const db = getPrisma();
+		const campaign = await db.emailCampaign.create({
+			data: {
+				subject: "ICCMS 2026 — sponsor press kit",
+				format: "MARKDOWN",
+				bodySource: "Please find the press kit attached.",
+				status: "DRAFT",
+				totalRecipients: 0,
+			},
+		});
+		await page.goto(`/admin/bulk-email/${campaign.id}`);
+		const dropzoneInput = page
+			.getByTestId("attachment-dropzone")
+			.locator('input[type="file"]');
+		await dropzoneInput.setInputFiles({
+			name: "press-kit.pdf",
+			mimeType: "application/pdf",
+			buffer: DOCS_PDF,
+		});
+		await expect(page.getByTestId("attachment-list")).toContainText(
+			"press-kit.pdf",
+			{ timeout: 10000 },
+		);
+		await page.waitForTimeout(300);
+		await shot(page, "48-managing-bulk-email-attachments.png", { full: false });
+	});
+
+	test("49 program theme selector", async ({ page }) => {
+		await page.goto("/admin/settings?tab=program");
+		await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+		const select = page.getByTestId("program-theme-select");
+		await select.scrollIntoViewIfNeeded();
+		await page.waitForTimeout(300);
+		const section = select.locator("xpath=ancestor::section[1]");
+		await section.screenshot({
+			path: path.join(SHOTS_DIR, "49-configuration-program-theme.png"),
+		});
+	});
+
+	test("50 presentation preview with favourite", async ({ page }) => {
+		await setSchedulePublished(true);
+		try {
+			await page.goto("/program");
+			await page.getByPlaceholder(/Search talks/i).waitFor({ state: "visible", timeout: 15000 });
+			const row = page
+				.getByTestId("presentation-row")
+				.filter({ hasText: "Crystal Plasticity FEM" });
+			await row.first().click();
+			await expect(page.getByTestId("presentation-preview")).toBeVisible();
+			await page.waitForTimeout(400);
+			await shot(page, "50-program-presentation-preview.png", { full: false });
+		} finally {
+			await setSchedulePublished(false);
+		}
+	});
+
+	test("51 program notifications toggle", async ({ page }) => {
+		await setSchedulePublished(true);
+		try {
+			await page.goto("/program");
+			await page.getByPlaceholder(/Search talks/i).waitFor({ state: "visible", timeout: 15000 });
+			await page.getByTestId("program-auth-link").first().click();
+			await expect(page.getByTestId("program-user-menu")).toBeVisible();
+			await page.waitForTimeout(300);
+			await shot(page, "51-program-notifications-toggle.png", { full: false });
+		} finally {
+			await setSchedulePublished(false);
+		}
+	});
+
+	test("52 planner create event dialog", async ({ page }) => {
+		await page.goto("/admin/program-planner");
+		await page.waitForTimeout(1500); // calendar layout settles
+		await page.getByRole("button", { name: "New" }).click();
+		await expect(page.getByTestId("create-event-dialog")).toBeVisible();
+		await page.getByTestId("create-event-type-event").click();
+		await page.getByTestId("create-event-title").fill("Welcome Reception");
+		await page
+			.getByTestId("create-event-description")
+			.fill("Informal welcome reception with drinks and canapés.");
+		await page.getByTestId("create-event-location").fill("Hotel Stary Terrace, Krakow");
+		await page
+			.getByTestId("create-event-location-url")
+			.fill("https://example.org/hotel-stary");
+		await page.waitForTimeout(300);
+		await shot(page, "52-planner-create-event-dialog.png", { full: false });
+	});
+
+	test("53 program event featured card", async ({ page }) => {
+		await setSchedulePublished(true);
+		try {
+			await page.goto("/program");
+			const card = page.getByTestId(`program-event-${ctx.eventBreakId}`);
+			await card.scrollIntoViewIfNeeded();
+			await page.waitForTimeout(300);
+			await shot(page, "53-program-event-featured-card.png", { full: false });
+		} finally {
+			await setSchedulePublished(false);
+		}
+	});
+
+	test("54 camera-ready card", async ({ page }) => {
+		await page.goto(`/admin/submissions/${ctx.decidedId}`);
+		await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+		const card = page
+			.getByTestId("camera-ready-input")
+			.locator("xpath=ancestor::*[@data-slot='card'][1]");
+		await card.scrollIntoViewIfNeeded();
+		await page.waitForTimeout(300);
+		await card.screenshot({
+			path: path.join(SHOTS_DIR, "54-managing-submission-camera-ready-card.png"),
+		});
+	});
+
+	test("55 bulk camera-ready upload skip report", async ({ page }) => {
+		const db = getPrisma();
+		const { sequentialNumber } = await db.submission.findUniqueOrThrow({
+			where: { id: ctx.submittedId },
+			select: { sequentialNumber: true },
+		});
+		const zip = new AdmZip();
+		zip.addFile(`${sequentialNumber}-branded.pdf`, DOCS_PDF);
+		zip.addFile("notes.txt", Buffer.from("not a submission"));
+		zip.addFile("999999.pdf", DOCS_PDF);
+
+		await page.goto("/admin/submissions");
+		await page.getByRole("button", { name: "Upload camera-ready" }).click();
+		await expect(page.getByRole("dialog")).toBeVisible();
+		await page.getByTestId("camera-ready-bulk-input").setInputFiles({
+			name: "camera-ready.zip",
+			mimeType: "application/zip",
+			buffer: zip.toBuffer(),
+		});
+		await page.getByRole("button", { name: "Upload", exact: true }).click();
+		await expect(
+			page.getByText(/camera-ready file\(s\) uploaded, \d+ skipped/),
+		).toBeVisible({ timeout: 15000 });
+		await page.waitForTimeout(200);
+		await shot(page, "55-managing-camera-ready-bulk-upload.png", { full: false });
+	});
+
+	test("56 on-behalf submission form", async ({ page }) => {
+		await page.goto(`/admin/users/${ctx.profileUserId}`);
+		await page.getByTestId("add-submission-on-behalf").click();
+		await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+		await shot(page, "56-managing-user-add-submission.png", { height: 2000 });
+	});
+
+	test("57 edit survey answers dialog", async ({ page }) => {
+		await page.goto(`/admin/users/${ctx.profileUserId}`);
+		await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+		await page.getByTestId("edit-survey-answers").click();
+		await expect(page.getByRole("dialog")).toBeVisible();
+		await page.waitForTimeout(400);
+		await shot(page, "57-managing-user-edit-survey-answers.png", { full: false });
 	});
 });

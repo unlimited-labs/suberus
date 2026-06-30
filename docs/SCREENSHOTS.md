@@ -88,6 +88,21 @@ Settings tabs deep-link via `?tab=<id>`.
 - [x] **30** — `planner/autoplanner.mdx` — *Auto-plan proposal preview* (session cards + stats) — `/admin/program-planner/auto-plan` → **Generate proposal**
 - [x] **31** — `planner/publishing.mdx` — *Publish dialog* (pre-publish issue checks) — header **Publish**
 - [x] **32** — `planner/publishing.mdx` — *Public program* (parallel sessions, chairs, breaks) — `/program`
+- [x] **52** — `planner/manual-scheduling.mdx` — *New event in the create dialog* — `/admin/program-planner` → **New** → **Event**
+- [x] **53** — `planner/manual-scheduling.mdx` — *Event as a featured card on the public program* — `/program`
+
+---
+
+## Part 6 — Camera-ready, planner events, attachments, survey
+
+- [x] **48** — `managing/bulk-email.mdx` — *Attachments panel with a file attached* — `/admin/bulk-email/<id>` *(DRAFT campaign only)*
+- [x] **49** — `planner/setup.mdx` — *Settings › Program › Appearance theme selector* — `/admin/settings?tab=program`
+- [x] **50** — `planner/publishing.mdx` — *Presentation preview dialog with favourite toggle* — `/program` → click a talk
+- [x] **51** — `planner/publishing.mdx` — *User menu with the Notifications toggle* — `/program` → user menu *(needs VAPID env vars)*
+- [x] **54** — `managing/submissions.mdx` — *Camera-ready card on the submission detail page* — `/admin/submissions/<id>`
+- [x] **55** — `managing/submissions.mdx` — *Bulk camera-ready upload — skip report toast* — `/admin/submissions` → **Upload camera-ready**
+- [x] **56** — `managing/users.mdx` — *On-behalf submission form* — `/admin/users/<id>` → **Add submission**
+- [x] **57** — `managing/users.mdx` — *Edit survey answers dialog* — `/admin/users/<id>` → Survey Responses → **Edit**
 
 ---
 
@@ -101,3 +116,7 @@ Settings tabs deep-link via `?tab=<id>`.
 - **35–38 (exhibitors):** the seed enables the exhibitor feature (`SUBMISSION_TYPE_EXHIBITOR.isActive`) and creates a few applications; **37** opens the Approve dialog but does **not** confirm (the exhibitor stays pending). **38** element-shoots the *Exhibitors* card on the Conference tab.
 - **39 (reviewer compare):** runs in a **reviewer-authenticated** context (`e2e/.auth/reviewer-<worker>.json`), not admin; the seed gives the reviewer an assignment on the two-version paper.
 - **01 (login) & 42 (registration):** guest-only screens — the manual context must pass `storageState: { cookies: [], origins: [] }`, otherwise the project's admin session redirects `/login` and `/register` to the app.
+- **48 (attachments):** the `Attachments` panel only renders interactively while the campaign is `DRAFT`.
+- **49 (program theme):** captures the **Appearance** section only (not the whole tab); doesn't change the selected theme.
+- **50, 51, 53 (public program — preview, notifications, event card):** all toggle `setSchedulePublished(true)` then restore `false` afterwards. **51** needs `VITE_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` set, otherwise the Notifications item is hidden.
+- **55 (bulk camera-ready report):** the skip report is a toast, not an in-dialog panel — the dialog auto-closes on success; the shot captures the page right after the toast appears.
