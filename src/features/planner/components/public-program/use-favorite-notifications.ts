@@ -49,7 +49,9 @@ export function useFavoriteNotifications(): FavoriteNotificationsState {
 		try {
 			const permission = await Notification.requestPermission();
 			if (permission !== "granted") {
-				toast.error("Notifications permission denied");
+				toast.error("Notifications permission denied", {
+					position: "bottom-center",
+				});
 				return;
 			}
 			const reg = await navigator.serviceWorker.ready;
@@ -66,9 +68,8 @@ export function useFavoriteNotifications(): FavoriteNotificationsState {
 				data: { endpoint: sub.endpoint, p256dh: keys.p256dh, auth: keys.auth },
 			});
 			setEnabled(true);
-			toast.success("Reminders enabled");
 		} catch {
-			toast.error("Could not enable reminders");
+			toast.error("Could not enable reminders", { position: "bottom-center" });
 		} finally {
 			setBusy(false);
 		}
@@ -84,9 +85,8 @@ export function useFavoriteNotifications(): FavoriteNotificationsState {
 				await sub.unsubscribe();
 			}
 			setEnabled(false);
-			toast.success("Reminders disabled");
 		} catch {
-			toast.error("Could not disable reminders");
+			toast.error("Could not disable reminders", { position: "bottom-center" });
 		} finally {
 			setBusy(false);
 		}

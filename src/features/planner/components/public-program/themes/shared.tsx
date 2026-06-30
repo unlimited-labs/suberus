@@ -49,10 +49,18 @@ export function ProgramAuthLink({
 					<IconUserCircle className="size-[1.2em]" />
 					<span className={labelClassName}>{name}</span>
 				</DropdownMenuTrigger>
-				<DropdownMenuContent align="end" data-testid="program-user-menu">
+				<DropdownMenuContent
+					align="end"
+					className="w-auto min-w-56"
+					data-testid="program-user-menu"
+				>
 					{notifications.supported && (
 						<DropdownMenuItem
-							onSelect={(e) => e.preventDefault()}
+							onSelect={(e) => {
+								e.preventDefault();
+								notifications.toggle(!notifications.enabled);
+							}}
+							disabled={notifications.busy}
 							className="justify-between gap-3"
 							data-testid="program-notifications-item"
 						>
@@ -62,8 +70,9 @@ export function ProgramAuthLink({
 							</span>
 							<Switch
 								checked={notifications.enabled}
-								disabled={notifications.busy}
-								onCheckedChange={notifications.toggle}
+								aria-hidden
+								tabIndex={-1}
+								className="pointer-events-none"
 								data-testid="program-notifications-switch"
 							/>
 						</DropdownMenuItem>
