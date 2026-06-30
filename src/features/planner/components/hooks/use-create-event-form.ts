@@ -59,6 +59,20 @@ export function useCreateEventForm({
 							endAt: endDate.toISOString(),
 						},
 					});
+				} else if (value.type === "event") {
+					const endDate = tzLocalInputToUtc(value.endInput, timezone);
+					await createBreakFn({
+						data: {
+							kind: "EVENT",
+							title: trimmed,
+							description: value.description.trim() || null,
+							location: value.location.trim() || null,
+							locationUrl: value.locationUrl.trim() || null,
+							roomId: null,
+							startAt: startDate.toISOString(),
+							endAt: endDate.toISOString(),
+						},
+					});
 				} else {
 					const endDate = addMinutes(startDate, value.breakDurationMin);
 					await createBreakFn({

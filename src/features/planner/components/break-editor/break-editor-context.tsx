@@ -1,27 +1,28 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useStore } from "@tanstack/react-store";
 import {
 	createContext,
 	type ReactNode,
+	type RefObject,
 	useContext,
+	useEffect,
 	useMemo,
 	useState,
 } from "react";
 import { allBreaksQueryOptions } from "@/features/planner/api/breaks";
 import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
-import { useEditableTitle } from "../hooks/use-editable-title";
+import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
 import type { PlannerBreak } from "../types";
+import { useBreakEditorForm } from "./use-break-editor-form";
 import { useBreakEditorMutations } from "./use-break-editor-mutations";
 
-type Mutations = ReturnType<typeof useBreakEditorMutations>;
-type Title = ReturnType<typeof useEditableTitle>;
+type BreakForm = ReturnType<typeof useBreakEditorForm>;
 
 interface BreakEditorContextValue {
 	breakItem: PlannerBreak;
 	rooms: Array<{ id: string; name: string; order: number }>;
-	title: Title;
+	form: BreakForm;
 	deleting: boolean;
-	mutations: Mutations;
-	onSaveTitle: () => Promise<void>;
 	onDelete: () => Promise<void>;
 }
 
@@ -32,6 +33,7 @@ interface ProviderProps {
 	onClose: () => void;
 	children: ReactNode;
 	fallback: ReactNode;
+	dirtyRef?: RefObject<boolean>;
 }
 
 export function BreakEditorProvider({
@@ -39,23 +41,25 @@ export function BreakEditorProvider({
 	onClose,
 	children,
 	fallback,
+	dirtyRef,
 }: ProviderProps) {
 	const { data: breaks } = useSuspenseQuery(allBreaksQueryOptions());
 	const { data: rooms } = useSuspenseQuery(allRoomsQueryOptions());
+	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
+	const tz = settings.timezone || undefined;
 	const mutations = useBreakEditorMutations(breakId);
 
 	const breakItem = breaks.find((b) => b.id === breakId);
-	const title = useEditableTitle(breakItem?.title ?? "", breakItem?.id ?? null);
+	const form = useBreakEditorForm(breakItem, tz, mutations);
 	const [deleting, setDeleting] = useState(false);
+
+	const isDirty = useStore(form.store, (s) => s.isDirty);
+	useEffect(() => {
+		if (dirtyRef) dirtyRef.current = isDirty;
+	}, [dirtyRef, isDirty]);
 
 	const value = useMemo<BreakEditorContextValue | null>(() => {
 		if (!breakItem) return null;
-
-		const onSaveTitle = async () => {
-			if (!title.dirty) return;
-			const r = await mutations.updateTitle(title.value);
-			if (r !== null) title.clearDirty();
-		};
 
 		const onDelete = async () => {
 			setDeleting(true);
@@ -64,16 +68,8 @@ export function BreakEditorProvider({
 			setDeleting(false);
 		};
 
-		return {
-			breakItem,
-			rooms,
-			title,
-			deleting,
-			mutations,
-			onSaveTitle,
-			onDelete,
-		};
-	}, [breakItem, rooms, title, deleting, mutations, onClose]);
+		return { breakItem, rooms, form, deleting, onDelete };
+	}, [breakItem, rooms, form, deleting, mutations, onClose]);
 
 	if (!value) return <>{fallback}</>;
 	return <Context.Provider value={value}>{children}</Context.Provider>;

@@ -52,6 +52,8 @@ model User {
   sessions             Session[]
   passkeys             Passkey[]
   programSessionChairs ProgramSessionChair[]
+  presentationFavorites PresentationFavorite[]
+  pushSubscriptions    PushSubscription[]
   supervisedTracks     ConferenceTrack[]     @relation("TrackSupervisor")
   surveyAnswers        SurveyAnswer[]
   createdInvitations   Invitation[]          @relation("InvitationCreator")
@@ -731,18 +733,55 @@ model PresentationSlot {
 
   session    ProgramSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   submission Submission     @relation(fields: [submissionId], references: [id], onDelete: Restrict)
+  favorites  PresentationFavorite[]
 
   @@unique([sessionId, order])
   @@map("presentation_slots")
 }
 
-model ScheduleBreak {
+model PresentationFavorite {
+  slotId     String    @db.Uuid
+  userId     String    @db.Uuid
+  remindedAt DateTime?
+
+  slot PresentationSlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  user User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([slotId, userId])
+  @@index([userId])
+  @@map("presentation_favorites")
+}
+
+model PushSubscription {
   id        String   @id @default(uuid()) @db.Uuid
-  title     String
-  roomId    String?  @db.Uuid
-  startAt   DateTime
-  endAt     DateTime
+  userId    String   @db.Uuid
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
   createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscriptions")
+}
+
+enum ScheduleItemKind {
+  BREAK
+  EVENT
+}
+
+model ScheduleBreak {
+  id          String           @id @default(uuid()) @db.Uuid
+  kind        ScheduleItemKind @default(BREAK)
+  title       String
+  description String?
+  location    String?
+  locationUrl String?
+  roomId      String?          @db.Uuid
+  startAt     DateTime
+  endAt       DateTime
+  createdAt   DateTime         @default(now())
 
   room Room? @relation(fields: [roomId], references: [id], onDelete: SetNull)
 

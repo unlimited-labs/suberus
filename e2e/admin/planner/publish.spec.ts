@@ -1,17 +1,10 @@
-import { test, expect } from "./fixtures";
+import { test, expect, isoDay } from "./fixtures";
 import {
 	createProgramSession,
 	createRoom,
 	setConferenceDates,
 	setSchedulePublished,
 } from "../../helpers/test-db";
-
-function isoDay(offsetDays: number, hour: number): Date {
-	const d = new Date();
-	d.setUTCDate(d.getUTCDate() + offsetDays);
-	d.setUTCHours(hour, 0, 0, 0);
-	return d;
-}
 
 test.describe.serial("Planner — Publish / Unpublish", () => {
 	test.beforeEach(async () => {

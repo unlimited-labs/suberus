@@ -1,5 +1,5 @@
 import type { EventFormProps } from "@ilamy/calendar";
-import { differenceInMinutes, isAfter, isValid } from "date-fns";
+import { addMinutes, differenceInMinutes, isAfter, isValid } from "date-fns";
 import { utcToTzLocalInput } from "@/features/planner/tz-datetime";
 import type { EventFormValues } from "@/features/planner/validations";
 
@@ -53,11 +53,19 @@ export function buildEventFormDefaults(
 		clickedEnd && isAfter(clickedEnd, initialStart)
 			? differenceInMinutes(clickedEnd, initialStart)
 			: null;
+	const initialEnd =
+		clickedEnd && isAfter(clickedEnd, initialStart)
+			? clickedEnd
+			: addMinutes(initialStart, 60);
 
 	return {
 		type: "session",
 		title: "",
 		startInput: utcToTzLocalInput(initialStart, input.timezone),
+		endInput: utcToTzLocalInput(initialEnd, input.timezone),
+		description: "",
+		location: "",
+		locationUrl: "",
 		roomId: resourceId ?? input.rooms[0]?.id ?? null,
 		trackId: null,
 		presentationCount: 4,

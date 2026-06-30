@@ -13,9 +13,9 @@ Before you can schedule anything, the planner needs a few things in place: the
 presentation length**, your **rooms**, and (optionally) **program tracks**.
 
 <Aside type="note" title="Where to find it">
-**Settings › Program** holds the *Planner*, *Rooms*, and *Program Tracks*
-sections (the *Planner* section has its own **Save**; rooms and tracks save as you
-create them). The **conference dates and timezone** live on
+**Settings › Program** holds the *Planner*, *Appearance*, *Rooms*, and *Program
+Tracks* sections (the *Planner* section has its own **Save**; appearance, rooms, and
+tracks save as you change them). The **conference dates and timezone** live on
 **[Settings › Conference](/settings/conference/)**.
 </Aside>
 
@@ -67,6 +67,23 @@ configuration (`LLM_API_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_EMBEDDING_MODEL`,
 `PLANNER_API_URL` environment variables) — they **cannot** be set from the admin UI.
 If the toggle is stuck off, ask your **system administrator** to configure and start
 those services. See **[Autoplanner](/planner/autoplanner/)**.
+</Aside>
+
+## Appearance
+
+The **Appearance** section sets the visual **theme** of the public
+**[program page](/planner/publishing/)** — the layout, fonts, and colours visitors
+see once the schedule is published. The change applies on the next page load.
+
+🖼️ [Screenshot placeholder: Settings › Program › Appearance theme selector]
+
+| Field | What it does | What to enter / Notes |
+|---|---|---|
+| **Theme** | Visual style of the public program page. | **Default** follows your **[branding](/settings/branding/)** primary colour and adapts to light/dark; **Editorial** is a print-inspired newspaper look with its own fixed palette (ignores branding); **Academic** is a formal **room-by-time timetable grid** (rooms as columns, time as rows; uses the full screen width on desktop so conferences with many rooms fit, and collapses to a list on phones) with its own fixed scholarly ink/navy palette (ignores branding). |
+
+<Aside type="tip" title="Adding more themes">
+Themes are defined in code. A developer can add new ones without touching this
+screen — they appear in the **Theme** dropdown automatically.
 </Aside>
 
 ## Rooms

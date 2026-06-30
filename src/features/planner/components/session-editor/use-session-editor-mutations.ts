@@ -12,15 +12,16 @@ import {
 	splitSessionFn,
 	updateSessionFn,
 } from "@/features/planner/api/sessions";
-import {
-	addMinutes,
-	formatDurationMin,
-	tzLocalInputToUtc,
-} from "@/features/planner/tz-datetime";
 import { useInvalidatePlannerQueries } from "../hooks/use-invalidate-planner-queries";
 import { useMutationRun } from "../hooks/use-mutation-run";
 
-type SessionTimes = { startAt: string | Date; endAt: string | Date };
+interface SessionHeaderFields {
+	title: string;
+	startAt: string;
+	endAt: string;
+	roomId: string | null;
+	trackId: string | null;
+}
 
 export function useSessionEditorMutations(sessionId: string) {
 	const invalidate = useInvalidatePlannerQueries();
@@ -28,55 +29,11 @@ export function useSessionEditorMutations(sessionId: string) {
 
 	return {
 		invalidate,
-		updateTitle: (title: string) =>
+		updateHeader: (fields: SessionHeaderFields) =>
 			run(
-				() => updateSessionFn({ data: { id: sessionId, title } }),
+				() => updateSessionFn({ data: { id: sessionId, ...fields } }),
 				"Failed to save",
 			),
-		updateTrack: (trackId: string | null) =>
-			run(
-				() => updateSessionFn({ data: { id: sessionId, trackId } }),
-				"Failed to update track",
-			),
-		updateRoom: (roomId: string | null) =>
-			run(
-				() => updateSessionFn({ data: { id: sessionId, roomId } }),
-				"Failed to update room",
-			),
-		updateStart: (
-			local: string,
-			tz: string | undefined,
-			session: SessionTimes,
-		) => {
-			if (!local) return Promise.resolve(null);
-			const newStart = tzLocalInputToUtc(local, tz);
-			const duration = formatDurationMin(
-				new Date(session.startAt),
-				new Date(session.endAt),
-			);
-			const newEnd = addMinutes(newStart, duration);
-			return run(
-				() =>
-					updateSessionFn({
-						data: {
-							id: sessionId,
-							startAt: newStart.toISOString(),
-							endAt: newEnd.toISOString(),
-						},
-					}),
-				"Failed to update time",
-			);
-		},
-		updateDuration: (minutes: number, session: SessionTimes) => {
-			const newEnd = addMinutes(new Date(session.startAt), minutes);
-			return run(
-				() =>
-					updateSessionFn({
-						data: { id: sessionId, endAt: newEnd.toISOString() },
-					}),
-				"Failed to update duration",
-			);
-		},
 		addChair: (userId: string) =>
 			run(
 				() => assignChairFn({ data: { sessionId, userId } }),

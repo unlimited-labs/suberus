@@ -1,8 +1,11 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useStore } from "@tanstack/react-store";
 import {
 	createContext,
 	type ReactNode,
+	type RefObject,
 	useContext,
+	useEffect,
 	useMemo,
 	useState,
 } from "react";
@@ -11,26 +14,24 @@ import { allSessionsQueryOptions } from "@/features/planner/api/sessions";
 import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
 import { formatDurationMin } from "@/features/planner/tz-datetime";
 import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
-import { useEditableTitle } from "../hooks/use-editable-title";
 import type { ChairCandidate, PlannerSession } from "../types";
+import { useSessionEditorForm } from "./use-session-editor-form";
 import { useSessionEditorMutations } from "./use-session-editor-mutations";
 
 type Mutations = ReturnType<typeof useSessionEditorMutations>;
-type Title = ReturnType<typeof useEditableTitle>;
+type SessionForm = ReturnType<typeof useSessionEditorForm>;
 
 interface SessionEditorContextValue {
 	session: PlannerSession;
-	tz: string | undefined;
 	rooms: Array<{ id: string; name: string; order: number }>;
 	tracks: NonNullable<PlannerSession["track"]>[];
 	users: ChairCandidate[];
 	sortedPresentations: PlannerSession["presentations"];
 	sessionDurationMin: number;
 	usedMin: number;
-	title: Title;
+	form: SessionForm;
 	deleting: boolean;
 	mutations: Mutations;
-	onSaveTitle: () => Promise<void>;
 	onDelete: () => Promise<void>;
 }
 
@@ -43,6 +44,7 @@ interface ProviderProps {
 	fallback: ReactNode;
 	/** Chair candidates, fetched by the route (planner stays off the users slice). */
 	users: ChairCandidate[];
+	dirtyRef?: RefObject<boolean>;
 }
 
 export function SessionEditorProvider({
@@ -51,6 +53,7 @@ export function SessionEditorProvider({
 	children,
 	fallback,
 	users,
+	dirtyRef,
 }: ProviderProps) {
 	const { data: sessions } = useSuspenseQuery(allSessionsQueryOptions());
 	const { data: tracks } = useSuspenseQuery(allProgramTracksQueryOptions());
@@ -60,8 +63,18 @@ export function SessionEditorProvider({
 	const mutations = useSessionEditorMutations(sessionId);
 
 	const session = sessions.find((s) => s.id === sessionId);
-	const title = useEditableTitle(session?.title ?? "", session?.id ?? null);
+	const form = useSessionEditorForm(
+		session,
+		tz,
+		settings.defaultPresentationMin,
+		mutations,
+	);
 	const [deleting, setDeleting] = useState(false);
+
+	const isDirty = useStore(form.store, (s) => s.isDirty);
+	useEffect(() => {
+		if (dirtyRef) dirtyRef.current = isDirty;
+	}, [dirtyRef, isDirty]);
 
 	const value = useMemo<SessionEditorContextValue | null>(() => {
 		if (!session) return null;
@@ -75,12 +88,6 @@ export function SessionEditorProvider({
 		);
 		const usedMin = sortedPresentations.reduce((s, p) => s + p.durationMin, 0);
 
-		const onSaveTitle = async () => {
-			if (!title.dirty) return;
-			await mutations.updateTitle(title.value);
-			title.clearDirty();
-		};
-
 		const onDelete = async () => {
 			setDeleting(true);
 			const result = await mutations.deleteSession();
@@ -90,20 +97,18 @@ export function SessionEditorProvider({
 
 		return {
 			session,
-			tz,
 			rooms,
 			tracks,
 			users,
 			sortedPresentations,
 			sessionDurationMin,
 			usedMin,
-			title,
+			form,
 			deleting,
 			mutations,
-			onSaveTitle,
 			onDelete,
 		};
-	}, [session, tz, rooms, tracks, users, title, deleting, mutations, onClose]);
+	}, [session, rooms, tracks, users, form, deleting, mutations, onClose]);
 
 	if (!value) return <>{fallback}</>;
 	return <Context.Provider value={value}>{children}</Context.Provider>;

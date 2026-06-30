@@ -8,7 +8,10 @@ export const env = createEnv({
 	},
 
 	clientPrefix: "VITE_",
-	client: {},
+	client: {
+		// Mirror of server VAPID_PUBLIC_KEY (private key never reaches the client).
+		VITE_VAPID_PUBLIC_KEY: z.string().optional(),
+	},
 
 	server: {
 		DATABASE_URL: z.url(),
@@ -69,6 +72,11 @@ export const env = createEnv({
 		// (sha256 of this). Enforce real entropy — a weak secret weakens both the
 		// session signer and the stored signing-cert password.
 		AUTH_SECRET: z.string().min(32),
+
+		// Web Push (VAPID). The public key is declared once as
+		// VITE_VAPID_PUBLIC_KEY (client block) and read from there on the server.
+		VAPID_PRIVATE_KEY: z.string().optional(),
+		VAPID_SUBJECT: z.string().optional(),
 
 		E2E: z.stringbool().default(false),
 

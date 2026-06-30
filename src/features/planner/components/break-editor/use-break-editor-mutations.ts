@@ -2,20 +2,25 @@ import { deleteBreakFn, updateBreakFn } from "@/features/planner/api/breaks";
 import { useInvalidatePlannerQueries } from "../hooks/use-invalidate-planner-queries";
 import { useMutationRun } from "../hooks/use-mutation-run";
 
+interface BreakHeaderFields {
+	title: string;
+	description: string | null;
+	location: string | null;
+	locationUrl: string | null;
+	startAt: string;
+	endAt: string;
+	roomId: string | null;
+}
+
 export function useBreakEditorMutations(breakId: string) {
 	const invalidate = useInvalidatePlannerQueries();
 	const run = useMutationRun(invalidate);
 
 	return {
-		updateTitle: (title: string) =>
+		updateHeader: (fields: BreakHeaderFields) =>
 			run(
-				() => updateBreakFn({ data: { id: breakId, title } }),
+				() => updateBreakFn({ data: { id: breakId, ...fields } }),
 				"Failed to save",
-			),
-		updateRoom: (roomId: string | null) =>
-			run(
-				() => updateBreakFn({ data: { id: breakId, roomId } }),
-				"Failed to update room",
 			),
 		deleteBreak: () =>
 			run(

@@ -37,6 +37,32 @@
         "functions": ["sendCampaignTest"],
         "maxCrap": 31,
         "reason": "e2e-covered (send-test spec); CC 5, CRAP estimated-coverage artifact"
+      },
+      // public-program theming components: CRAP inflated by estimated 0% coverage
+      // (e2e-covered via public-program.spec.ts / presentation-favorites.spec.ts, not unit).
+      {
+        "files": ["src/features/planner/components/public-program/program-primitives.tsx"],
+        "functions": ["PresentationRow"],
+        "maxCrap": 133,
+        "reason": "e2e-covered (public-program.spec.ts presentations; presentation-favorites.spec.ts open/favorite); CC 11 from numbered/plain variant + interaction branches, estimated-coverage artifact"
+      },
+      {
+        "files": ["src/features/planner/components/public-program/program-primitives.tsx"],
+        "functions": ["SessionHeader"],
+        "maxCrap": 91,
+        "reason": "e2e-covered (public-program.spec.ts, all 3 themes); CC 9 from optional dot/room/chair rendering, estimated-coverage artifact"
+      },
+      {
+        "files": ["src/features/planner/components/public-program/layouts/list-body.tsx"],
+        "functions": ["TimeSlot", "BreakCard"],
+        "maxCrap": 57,
+        "reason": "e2e-covered (public-program.spec.ts); CC 5-7 from framed/minimal slot rendering, estimated-coverage artifact"
+      },
+      {
+        "files": ["src/features/planner/components/public-program/program-shell.tsx"],
+        "functions": ["ProgramShell", "SearchBox", "ProgramStickyBar", "FramedHeader"],
+        "maxCrap": 57,
+        "reason": "e2e-covered (public-program.spec.ts, all 3 themes); CC 5-7 from chrome/layout variant rendering, estimated-coverage artifact"
       }
     ]
   },

@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures";
+import { test, expect, isoDay } from "./fixtures";
 import {
 	addPresentationToSession,
 	createProgramSession,
@@ -7,13 +7,6 @@ import {
 	setConferenceDates,
 } from "../../helpers/test-db";
 import { SubmissionStatus, SubmissionType } from "../../../src/generated/prisma/enums";
-
-function isoDay(offsetDays: number, hour: number): Date {
-	const d = new Date();
-	d.setUTCDate(d.getUTCDate() + offsetDays);
-	d.setUTCHours(hour, 0, 0, 0);
-	return d;
-}
 
 test.describe.serial("Planner — Presentation assignment", () => {
 	test.beforeEach(async () => {

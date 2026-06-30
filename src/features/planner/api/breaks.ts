@@ -29,7 +29,11 @@ export const createBreakFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(
 		z.object({
+			kind: z.enum(["BREAK", "EVENT"]).optional(),
 			title: z.string().min(1).max(200),
+			description: z.string().max(2000).nullable().optional(),
+			location: z.string().max(200).nullable().optional(),
+			locationUrl: z.url().max(2000).nullable().optional(),
 			roomId: z.uuid().nullable().optional(),
 			startAt: zDateString,
 			endAt: zDateString,
@@ -45,6 +49,9 @@ export const updateBreakFn = createServerFn({ method: "POST" })
 		z.object({
 			id: z.uuid(),
 			title: z.string().min(1).max(200).optional(),
+			description: z.string().max(2000).nullable().optional(),
+			location: z.string().max(200).nullable().optional(),
+			locationUrl: z.url().max(2000).nullable().optional(),
 			roomId: z.uuid().nullable().optional(),
 			startAt: zDateString.optional(),
 			endAt: zDateString.optional(),

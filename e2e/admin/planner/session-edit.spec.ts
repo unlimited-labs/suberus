@@ -1,17 +1,10 @@
-import { test, expect } from "./fixtures";
+import { test, expect, isoDay } from "./fixtures";
 import {
 	createProgramSession,
 	createRoom,
 	getPrisma,
 	setConferenceDates,
 } from "../../helpers/test-db";
-
-function isoDay(offsetDays: number, hour: number): Date {
-	const d = new Date();
-	d.setUTCDate(d.getUTCDate() + offsetDays);
-	d.setUTCHours(hour, 0, 0, 0);
-	return d;
-}
 
 test.describe.serial("Planner — Session editor", () => {
 	test.beforeEach(async () => {
@@ -44,7 +37,7 @@ test.describe.serial("Planner — Session editor", () => {
 			`${testRun.testRunId}_Morning Session`,
 		);
 		await titleInput.fill(`${testRun.testRunId}_Renamed`);
-		await titleInput.blur();
+		await plannerPage.page.getByTestId("session-editor-save").click();
 
 		const db = getPrisma();
 		await expect
@@ -80,9 +73,8 @@ test.describe.serial("Planner — Session editor", () => {
 			"session-editor-slots-min",
 		);
 		await slotMinInput.fill("20");
-		await slotMinInput.blur();
 		await slotCountInput.fill("6");
-		await slotCountInput.blur();
+		await plannerPage.page.getByTestId("session-editor-save").click();
 
 		const db = getPrisma();
 		await expect

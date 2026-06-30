@@ -112,7 +112,11 @@ export interface PublicProgramSession {
 
 export interface PublicProgramBreak {
 	id: string;
+	kind: "BREAK" | "EVENT";
 	title: string;
+	description: string | null;
+	location: string | null;
+	locationUrl: string | null;
 	startAt: Date;
 	endAt: Date;
 	room: { id: string; name: string } | null;
@@ -123,14 +127,20 @@ export interface PublicProgram {
 	breaks: PublicProgramBreak[];
 }
 
+export async function isScheduleVisible(
+	viewerCanPreviewDraft = false,
+): Promise<boolean> {
+	const state = await getSetting("SCHEDULE_STATE");
+	return (
+		state.status === "PUBLISHED" ||
+		(state.status === "DRAFT_PUBLISHED" && viewerCanPreviewDraft)
+	);
+}
+
 export async function getPublicProgram(
 	viewerCanPreviewDraft = false,
 ): Promise<PublicProgram | null> {
-	const state = await getSetting("SCHEDULE_STATE");
-	const isVisible =
-		state.status === "PUBLISHED" ||
-		(state.status === "DRAFT_PUBLISHED" && viewerCanPreviewDraft);
-	if (!isVisible) return null;
+	if (!(await isScheduleVisible(viewerCanPreviewDraft))) return null;
 
 	const [sessions, breaks] = await Promise.all([
 		prisma.programSession.findMany({
@@ -185,7 +195,11 @@ export async function getPublicProgram(
 		})),
 		breaks: breaks.map((b) => ({
 			id: b.id,
+			kind: b.kind,
 			title: b.title,
+			description: b.description,
+			location: b.location,
+			locationUrl: b.locationUrl,
 			startAt: b.startAt,
 			endAt: b.endAt,
 			room: b.room,

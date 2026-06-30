@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@fontsource-variable/crimson-pro";
+@import "@fontsource-variable/source-serif-4";
 @import "@fontsource/spectral/700.css";
 @import "@fontsource/spectral/800.css";
 @import "@fontsource/bebas-neue";
@@ -57,7 +58,7 @@
 	--sidebar-border: oklch(0.9276 0.0058 264.5313);
 	--sidebar-ring: oklch(0.6231 0.188 259.8145);
 	--font-sans: Inter, sans-serif;
-	--font-serif: Source Serif 4, serif;
+	--font-serif: "Source Serif 4 Variable", serif;
 	--font-mono: JetBrains Mono, monospace;
 	--font-editorial-display: "Spectral", serif;
 	--font-editorial-body: "Crimson Pro Variable", serif;
@@ -88,6 +89,17 @@
 	--shadow-offset-x: 0;
 	--shadow-offset-y: 1px;
 	--letter-spacing: 0em;
+	--prog-font-display: var(--font-sans);
+	--prog-font-body: var(--font-sans);
+	--prog-font-meta: var(--font-sans);
+	--prog-mark: color-mix(in oklab, var(--primary) 20%, transparent);
+	--prog-faint: var(--muted-foreground);
+	--prog-rule: var(--border);
+	--prog-rule-width: 1px;
+	--prog-rule-style: solid;
+	--prog-tracking: 0.05em;
+	--prog-card-radius: 0.75rem;
+	--prog-max-width: 64rem;
 }
 
 .dark {
@@ -132,7 +144,7 @@
 	--sidebar-border: oklch(0.3715 0 0);
 	--sidebar-ring: oklch(0.6231 0.188 259.8145);
 	--font-sans: Inter, sans-serif;
-	--font-serif: Source Serif 4, serif;
+	--font-serif: "Source Serif 4 Variable", serif;
 	--font-mono: JetBrains Mono, monospace;
 	--font-editorial-display: "Spectral", serif;
 	--font-editorial-body: "Crimson Pro Variable", serif;
@@ -162,6 +174,104 @@
 	--shadow-offset-y: 1px;
 	--letter-spacing: 0em;
 	--spacing: 0.25rem;
+}
+
+/* Public program theme skins — see features/planner/components/public-program.
+   default = base tokens (branding-aware); editorial/academic pin their own palette. */
+[data-program-theme="editorial"] {
+	--background: #f5f1e8;
+	--foreground: #1c1917;
+	--card: #f5f1e8;
+	--card-foreground: #1c1917;
+	--popover: #f5f1e8;
+	--popover-foreground: #1c1917;
+	--border: #a8a29e;
+	--muted-foreground: #57534e;
+	--primary: #1c1917;
+	--primary-foreground: #f5f1e8;
+	--accent: color-mix(in oklab, #1c1917 4%, #f5f1e8);
+	--accent-foreground: #1c1917;
+	--secondary: #e7e5e4;
+	--secondary-foreground: #1c1917;
+	--radius: 0;
+	--prog-font-display: var(--font-editorial-display);
+	--prog-font-body: var(--font-futuristic-body);
+	--prog-font-meta: var(--font-sans);
+	--prog-mark: color-mix(in oklab, #fef08a 80%, transparent);
+	--prog-faint: #a8a29e;
+	--prog-rule: #1c1917;
+	--prog-rule-width: 3px;
+	--prog-rule-style: double;
+	--prog-tracking: 0.25em;
+	--prog-card-radius: 0;
+	--prog-max-width: 72rem;
+}
+
+.dark [data-program-theme="editorial"] {
+	--background: #0c0a09;
+	--foreground: #f5f5f4;
+	--card: #0c0a09;
+	--card-foreground: #f5f5f4;
+	--popover: #1c1917;
+	--popover-foreground: #f5f5f4;
+	--border: #44403c;
+	--muted-foreground: #a8a29e;
+	--primary: #fafaf9;
+	--primary-foreground: #1c1917;
+	--accent: color-mix(in oklab, #fafaf9 6%, #0c0a09);
+	--accent-foreground: #f5f5f4;
+	--secondary: #292524;
+	--secondary-foreground: #f5f5f4;
+	--prog-mark: color-mix(in oklab, #eab308 40%, transparent);
+	--prog-faint: #57534e;
+	--prog-rule: #d6d3d1;
+}
+
+[data-program-theme="academic"] {
+	--background: #f8f9fb;
+	--foreground: #0f172a;
+	--card: #f8f9fb;
+	--card-foreground: #0f172a;
+	--popover: #f8f9fb;
+	--popover-foreground: #0f172a;
+	--border: #cbd5e1;
+	--muted-foreground: #475569;
+	--primary: #1e3a5f;
+	--primary-foreground: #f8f9fb;
+	--accent: color-mix(in oklab, #1e3a5f 5%, #f8f9fb);
+	--accent-foreground: #1e3a5f;
+	--secondary: #e2e8f0;
+	--secondary-foreground: #0f172a;
+	--radius: 0;
+	--prog-font-display: var(--font-serif);
+	--prog-font-body: var(--font-serif);
+	--prog-font-meta: var(--font-mono);
+	--prog-mark: #e2e8f0;
+	--prog-faint: #94a3b8;
+	--prog-rule: var(--border);
+	--prog-tracking: 0.2em;
+	--prog-card-radius: 0;
+	--prog-max-width: 72rem;
+}
+
+.dark [data-program-theme="academic"] {
+	--background: #020617;
+	--foreground: #f1f5f9;
+	--card: #020617;
+	--card-foreground: #f1f5f9;
+	--popover: #1e293b;
+	--popover-foreground: #f1f5f9;
+	--border: #334155;
+	--muted-foreground: #94a3b8;
+	--primary: #9db8d6;
+	--primary-foreground: #020617;
+	--accent: color-mix(in oklab, #9db8d6 8%, #020617);
+	--accent-foreground: #f1f5f9;
+	--secondary: #1e293b;
+	--secondary-foreground: #f1f5f9;
+	--prog-mark: #334155;
+	--prog-faint: #475569;
+	--prog-rule: var(--border);
 }
 
 @theme inline {
@@ -200,7 +310,7 @@
 
 	--font-sans: Inter, sans-serif;
 	--font-mono: JetBrains Mono, monospace;
-	--font-serif: Source Serif 4, serif;
+	--font-serif: "Source Serif 4 Variable", serif;
 	--font-editorial-display: "Spectral", serif;
 	--font-editorial-body: "Crimson Pro Variable", serif;
 	--font-editorial-accent: "Bebas Neue", sans-serif;
@@ -241,6 +351,17 @@
 
 	--animate-collapsible-down: collapsible-down 0.2s ease-out;
 	--animate-collapsible-up: collapsible-up 0.2s ease-out;
+	--animate-prog-swipe-hint: prog-swipe-hint 1.4s ease-in-out infinite;
+}
+
+@keyframes prog-swipe-hint {
+	0%,
+	100% {
+		transform: translateX(-5px);
+	}
+	50% {
+		transform: translateX(5px);
+	}
 }
 
 @keyframes collapsible-down {

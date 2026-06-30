@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
+import { z } from "zod";
 import { auth } from "@/features/auth/server/auth.server";
 import {
 	adminMiddleware,
@@ -16,7 +17,11 @@ import {
 	publishScheduleDraft,
 	unpublishSchedule,
 } from "@/features/planner/server/schedule";
-import { getSettings } from "@/features/settings/server/settings";
+import {
+	getSetting,
+	getSettings,
+	setSetting,
+} from "@/features/settings/server/settings";
 
 export const scheduleStateQueryOptions = () =>
 	queryOptions({
@@ -72,6 +77,21 @@ export const unpublishScheduleFn = createServerFn({ method: "POST" })
 		await unpublishSchedule();
 	});
 
+export const reminderLeadQueryOptions = () =>
+	queryOptions({
+		queryKey: ["schedule", "reminder-lead"],
+		queryFn: () => getReminderLeadFn(),
+	});
+
+export const getReminderLeadFn = createServerFn({ method: "GET" })
+	.middleware([adminMiddleware])
+	.handler(() => getSetting("PROGRAM_REMINDER_LEAD_MIN"));
+
+export const setReminderLeadFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(z.object({ leadMin: z.number().int().min(1).max(120) }))
+	.handler(({ data }) => setSetting("PROGRAM_REMINDER_LEAD_MIN", data.leadMin));
+
 export const publicProgramQueryOptions = () =>
 	queryOptions({
 		queryKey: ["program", "public"],
@@ -93,6 +113,7 @@ export interface PublicConferenceInfo {
 	startDate: string;
 	endDate: string;
 	timezone: string;
+	theme: string;
 }
 
 export const publicConferenceInfoQueryOptions = () =>
@@ -110,6 +131,7 @@ export const getPublicConferenceInfoFn = createServerFn({
 		"CONFERENCE_DATE_START",
 		"CONFERENCE_DATE_END",
 		"CONFERENCE_TIMEZONE",
+		"PROGRAM_THEME",
 	]);
 	return {
 		name: s.CONFERENCE_NAME,
@@ -117,5 +139,6 @@ export const getPublicConferenceInfoFn = createServerFn({
 		startDate: s.CONFERENCE_DATE_START,
 		endDate: s.CONFERENCE_DATE_END,
 		timezone: s.CONFERENCE_TIMEZONE,
+		theme: s.PROGRAM_THEME,
 	};
 });

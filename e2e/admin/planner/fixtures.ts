@@ -37,3 +37,11 @@ export const test = baseAdminTest.extend<PlannerFixtures>({
 
 export { expect } from "@playwright/test";
 export { loginAsAdmin } from "../fixtures";
+
+/** UTC date `offsetDays` from today, snapped to `hour:00:00`. */
+export function isoDay(offsetDays: number, hour: number): Date {
+	const d = new Date();
+	d.setUTCDate(d.getUTCDate() + offsetDays);
+	d.setUTCHours(hour, 0, 0, 0);
+	return d;
+}

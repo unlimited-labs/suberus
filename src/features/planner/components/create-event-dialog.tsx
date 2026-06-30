@@ -1,8 +1,12 @@
 import type { EventFormProps } from "@ilamy/calendar";
-import { IconClock, IconLayoutGrid } from "@tabler/icons-react";
+import {
+	IconCalendarEvent,
+	IconClock,
+	IconLayoutGrid,
+} from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useSelector } from "@tanstack/react-store";
-import { addMinutes } from "date-fns";
+import { addMinutes, differenceInMinutes } from "date-fns";
 import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
 import { allSessionsQueryOptions } from "@/features/planner/api/sessions";
 import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
@@ -19,6 +23,7 @@ import {
 import { Field, FieldError } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { Textarea } from "@/shared/ui/textarea";
 import { useCreateEventForm } from "./hooks/use-create-event-form";
 import { RoomSelect } from "./shared/room-select";
 import { TimeRangeSummary } from "./shared/time-range-summary";
@@ -47,6 +52,7 @@ export function CreateEventDialog({
 
 	const type = useSelector(form.store, (s) => s.values.type);
 	const startInput = useSelector(form.store, (s) => s.values.startInput);
+	const endInput = useSelector(form.store, (s) => s.values.endInput);
 	const presentationCount = useSelector(
 		form.store,
 		(s) => s.values.presentationCount,
@@ -64,18 +70,33 @@ export function CreateEventDialog({
 	const sessionDurationMin = presentationCount * minutesPerPresentation;
 	const sessionEndDate = addMinutes(startDate, sessionDurationMin);
 	const breakEndDate = addMinutes(startDate, breakDurationMin);
-	const endDate = type === "session" ? sessionEndDate : breakEndDate;
-	const totalMin = type === "session" ? sessionDurationMin : breakDurationMin;
+	const eventEndDate = tzLocalInputToUtc(endInput, timezone);
+	const endDate =
+		type === "session"
+			? sessionEndDate
+			: type === "event"
+				? eventEndDate
+				: breakEndDate;
+	const totalMin =
+		type === "session"
+			? sessionDurationMin
+			: type === "event"
+				? Math.max(0, differenceInMinutes(eventEndDate, startDate))
+				: breakDurationMin;
 
 	return (
 		<Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
 			<DialogContent data-testid="create-event-dialog" className="sm:max-w-sm">
 				<DialogHeader>
 					<DialogTitle>
-						{type === "session" ? "New session" : "New break"}
+						{type === "session"
+							? "New session"
+							: type === "event"
+								? "New event"
+								: "New break"}
 					</DialogTitle>
 					<DialogDescription className="sr-only">
-						Add a new session or break to the program schedule.
+						Add a new session, break, or event to the program schedule.
 					</DialogDescription>
 				</DialogHeader>
 
@@ -89,8 +110,8 @@ export function CreateEventDialog({
 				>
 					<form.Field name="type">
 						{(field) => (
-							<div className="grid grid-cols-2 gap-2">
-								{(["session", "break"] as const).map((t) => (
+							<div className="grid grid-cols-3 gap-2">
+								{(["session", "break", "event"] as const).map((t) => (
 									<button
 										key={t}
 										type="button"
@@ -104,10 +125,16 @@ export function CreateEventDialog({
 									>
 										{t === "session" ? (
 											<IconLayoutGrid size={14} />
+										) : t === "event" ? (
+											<IconCalendarEvent size={14} />
 										) : (
 											<IconClock size={14} />
 										)}
-										{t === "session" ? "Session" : "Break"}
+										{t === "session"
+											? "Session"
+											: t === "event"
+												? "Event"
+												: "Break"}
 									</button>
 								))}
 							</div>
@@ -159,6 +186,27 @@ export function CreateEventDialog({
 								)}
 							</form.Field>
 						</div>
+					) : type === "event" ? (
+						<form.Field name="endInput">
+							{(field) => {
+								const errors = field.state.meta.errors;
+								const hasError = errors.length > 0;
+								return (
+									<Field data-invalid={hasError} className="space-y-2">
+										<Label htmlFor="event-end">End</Label>
+										<Input
+											id="event-end"
+											type="datetime-local"
+											value={field.state.value}
+											onChange={(e) => field.handleChange(e.target.value)}
+											aria-invalid={hasError}
+											data-testid="create-event-end"
+										/>
+										<FieldError errors={hasError ? errors : undefined} />
+									</Field>
+								);
+							}}
+						</form.Field>
 					) : (
 						<form.Field name="breakDurationMin">
 							{(field) => (
@@ -195,7 +243,7 @@ export function CreateEventDialog({
 						name="title"
 						validators={{
 							onSubmit: ({ value }) =>
-								type === "break" && !value.trim()
+								type !== "session" && !value.trim()
 									? "Title is required"
 									: undefined,
 						}}
@@ -216,7 +264,7 @@ export function CreateEventDialog({
 										placeholder={
 											type === "session"
 												? `Session ${sessions.length + 1}`
-												: "Break title"
+												: undefined
 										}
 										data-testid="create-event-title"
 										autoFocus
@@ -227,18 +275,68 @@ export function CreateEventDialog({
 						}}
 					</form.Field>
 
-					<form.Field name="roomId">
-						{(field) => (
-							<div className="space-y-2">
-								<Label>Room</Label>
-								<RoomSelect
-									value={field.state.value}
-									onValueChange={field.handleChange}
-									rooms={rooms}
-								/>
-							</div>
-						)}
-					</form.Field>
+					{type === "event" && (
+						<>
+							<form.Field name="description">
+								{(field) => (
+									<div className="space-y-2">
+										<Label htmlFor="event-description">
+											Description (optional)
+										</Label>
+										<Textarea
+											id="event-description"
+											value={field.state.value}
+											onChange={(e) => field.handleChange(e.target.value)}
+											data-testid="create-event-description"
+											rows={3}
+										/>
+									</div>
+								)}
+							</form.Field>
+							<form.Field name="location">
+								{(field) => (
+									<div className="space-y-2">
+										<Label htmlFor="event-location">Location (optional)</Label>
+										<Input
+											id="event-location"
+											value={field.state.value}
+											onChange={(e) => field.handleChange(e.target.value)}
+											data-testid="create-event-location"
+										/>
+									</div>
+								)}
+							</form.Field>
+							<form.Field name="locationUrl">
+								{(field) => (
+									<div className="space-y-2">
+										<Label htmlFor="event-location-url">Link (optional)</Label>
+										<Input
+											id="event-location-url"
+											type="url"
+											value={field.state.value}
+											onChange={(e) => field.handleChange(e.target.value)}
+											data-testid="create-event-location-url"
+										/>
+									</div>
+								)}
+							</form.Field>
+						</>
+					)}
+
+					{type !== "event" && (
+						<form.Field name="roomId">
+							{(field) => (
+								<div className="space-y-2">
+									<Label>Room</Label>
+									<RoomSelect
+										value={field.state.value}
+										onValueChange={field.handleChange}
+										rooms={rooms}
+									/>
+								</div>
+							)}
+						</form.Field>
+					)}
 
 					{type === "session" && (
 						<form.Field name="trackId">
