@@ -260,7 +260,7 @@ export interface ConferenceSettings {
 const conferenceSettingsSchema = z.object({
 	name: z.string().min(1, "Name required").max(200),
 	location: z.string().max(200),
-	website: z.union([z.literal(""), z.url()]),
+	website: z.union([z.literal(""), z.httpUrl()]),
 	contactEmail: z.union([z.literal(""), z.email()]),
 	conferenceStartDate: z.string(),
 	conferenceEndDate: z.string(),
@@ -275,8 +275,8 @@ const conferenceSettingsSchema = z.object({
 	timeFormat: z.enum(["24h", "12h"]),
 	currency: z.enum(["EUR", "USD", "PLN"]),
 	timezone: zIanaTz,
-	dayStart: z.string().regex(/^\d{2}:\d{2}$/, "Expected HH:mm"),
-	dayEnd: z.string().regex(/^\d{2}:\d{2}$/, "Expected HH:mm"),
+	dayStart: z.iso.time({ precision: -1, error: "Expected HH:mm" }),
+	dayEnd: z.iso.time({ precision: -1, error: "Expected HH:mm" }),
 	defaultPresentationMin: z.number().int().min(5).max(480),
 	autoplanEnabled: z.boolean(),
 });

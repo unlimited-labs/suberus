@@ -34,7 +34,7 @@ const formSchema = z
 		description: z
 			.string()
 			.max(5000, "Description must be at most 5000 characters"),
-		website: z.url("Invalid URL").or(z.literal("")),
+		website: z.httpUrl("Invalid URL").or(z.literal("")),
 		addPresentation: z.boolean(),
 		presentationTitle: z.string(),
 		presentationContent: z.string(),

@@ -78,7 +78,7 @@ export const breakEditSchema = z
 		location: z.string().max(200, "Location is too long"),
 		locationUrl: z.union([
 			z.literal(""),
-			z.url("Link must be a valid URL").max(2000, "Link is too long"),
+			z.httpUrl("Link must be a valid URL").max(2000, "Link is too long"),
 		]),
 		roomId: z.string().nullable(),
 	})
@@ -97,7 +97,7 @@ export const roomSchema = z.object({
 		.min(1, "Room name is required")
 		.max(200, "Name must be at most 200 characters"),
 	description: z.string().max(1000, "Description is too long"),
-	link: z.union([z.literal(""), z.url("Link must be a valid URL")]),
+	link: z.union([z.literal(""), z.httpUrl("Link must be a valid URL")]),
 });
 
 export const trackSchema = z.object({
@@ -112,8 +112,8 @@ export const trackSchema = z.object({
 });
 
 export const plannerSettingsSchema = z.object({
-	dayStart: z.string().regex(/^\d{2}:\d{2}$/, "Use HH:MM"),
-	dayEnd: z.string().regex(/^\d{2}:\d{2}$/, "Use HH:MM"),
+	dayStart: z.iso.time({ precision: -1, error: "Use HH:MM" }),
+	dayEnd: z.iso.time({ precision: -1, error: "Use HH:MM" }),
 	defaultPresentationMin: z
 		.number()
 		.int()

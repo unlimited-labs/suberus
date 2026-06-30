@@ -39,7 +39,7 @@ export const exhibitorApplicationSchema = z.object({
 		.string()
 		.max(5000, "Description must be at most 5000 characters")
 		.optional(),
-	website: z.url("Invalid URL").optional().or(z.literal("")),
+	website: z.httpUrl("Invalid URL").optional().or(z.literal("")),
 	presentation: exhibitorPresentationSchema.optional(),
 });
 

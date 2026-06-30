@@ -13,7 +13,7 @@ import {
 
 export type { PresentationDetailAuthor } from "@/features/planner/server/favorites";
 
-const slotInput = z.object({ slotId: z.string().uuid() });
+const slotInput = z.object({ slotId: z.uuid() });
 
 export const getMyFavoriteSlotsFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])

@@ -25,7 +25,7 @@ export const getAllRoomsFn = createServerFn({ method: "GET" })
 	});
 
 const roomLinkSchema = z
-	.union([z.literal(""), z.url()])
+	.union([z.literal(""), z.httpUrl()])
 	.optional()
 	.nullable();
 
