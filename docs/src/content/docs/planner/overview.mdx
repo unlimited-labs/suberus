@@ -13,6 +13,10 @@ The **Program Planner** turns your accepted presentations into a timetable —
 finally publishes it as a public schedule. You can build the schedule **by hand**,
 let the **autoplanner** draft it for you (it needs the LLM service), or mix both.
 
+This section walks you through it end to end, using **ICCMS 2026** (14–16
+September, Kraków) as a running example: two rooms — *Aula Magna* and *Room 101* —
+and a handful of accepted talks to place.
+
 <Aside type="note" title="Where to find it">
 **Program Planner** in the admin sidebar (`/admin/program-planner`). Its
 prerequisites — visible hours, default presentation length, rooms, and program
@@ -21,20 +25,26 @@ tracks — are configured first on the **[Setup](/planner/setup/)** page.
 
 ![Program Planner calendar](../../../assets/screenshots/25-managing-program-planner.png)
 
-## The lifecycle
+## Build a program, start to finish
+
+Each step below is a page in this section. Follow them in order the first time.
 
 <Steps>
 
-1. **[Set up](/planner/setup/)** the basics: conference dates & timezone, planner
-   visible hours, rooms, and (optionally) program tracks.
+1. **[Set up](/planner/setup/)** the basics — set ICCMS's **dates & timezone**
+   (14–16 September), the planner's **visible hours** (`08:00`–`18:00`), create the
+   **rooms** (*Aula Magna*, *Room 101*), and optionally add **program tracks**.
 
-2. Build the schedule — **[by hand](/planner/manual-scheduling/)**, with the
-   **[autoplanner](/planner/autoplanner/)**, or both.
+2. **[Schedule by hand](/planner/manual-scheduling/)** — draw sessions on the grid
+   and drag accepted talks from the sidebar into them, add breaks and events.
 
-3. Fix anything the **Issues panel** flags (clashes, missing rooms, sessions
+3. *(Optional)* **[Auto-plan](/planner/autoplanner/)** — create empty sessions, then
+   let the LLM group the abstracts and title them, and refine the result by hand.
+
+4. Clear anything the **Issues panel** flags (clashes, missing rooms, sessions
    outside the conference dates).
 
-4. **[Publish](/planner/publishing/)** to make the program public.
+5. **[Publish](/planner/publishing/)** to put the program live at `/program`.
 
 </Steps>
 
