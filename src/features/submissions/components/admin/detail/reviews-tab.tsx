@@ -1,6 +1,5 @@
 import { IconGavel } from "@tabler/icons-react";
 import { useState } from "react";
-
 import { Card, CardContent } from "@/shared/ui/card";
 import {
 	Select,
@@ -9,7 +8,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/shared/ui/select";
-
 import {
 	type EditorReview,
 	filterReviewsByRound,

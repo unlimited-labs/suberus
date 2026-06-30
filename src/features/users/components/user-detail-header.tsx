@@ -4,11 +4,13 @@ import {
 	IconDotsVertical,
 	IconEdit,
 	IconFilePlus,
+	IconPlus,
 	IconTrash,
 	IconUserCheck,
 	IconUserCog,
 	IconUserX,
 } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 import { roleLabels } from "@/features/users/labels";
 import type { AdminUserDetail } from "@/features/users/server/users";
 import { titleLabels } from "@/shared/lib/labels/title";
@@ -131,6 +133,16 @@ export function UserDetailHeader({
 										Allow late submission
 									</>
 								)}
+							</DropdownMenuItem>
+							<DropdownMenuItem asChild>
+								<Link
+									to="/admin/users/$id/submissions/new"
+									params={{ id: user.id }}
+									data-testid="add-submission-action"
+								>
+									<IconPlus className="mr-2 size-4" />
+									Add submission
+								</Link>
 							</DropdownMenuItem>
 							<DropdownMenuItem
 								onClick={onGenerateDocument}

@@ -4,9 +4,7 @@ import {
 	IconFileText,
 	IconSparkles,
 } from "@tabler/icons-react";
-
 import { cn } from "@/shared/lib/utils";
-
 import type { ActiveSubmissionType } from "./submission-form-types";
 
 type SubmissionType = "ABSTRACT" | "POSTER" | "FULL_PAPER";

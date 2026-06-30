@@ -2,10 +2,14 @@ import {
 	IconCash,
 	IconFileText,
 	IconMail,
+	IconPlus,
 	IconUserCircle,
 } from "@tabler/icons-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { UserDocumentsSection } from "@/features/documents/components/user-documents-section";
+import { adminSurveyQuestionsQueryOptions } from "@/features/survey/api/survey";
 import { assignableRoleOptions } from "@/features/users/labels";
 import type { AdminUserDetail } from "@/features/users/server/users";
 import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
@@ -22,6 +26,7 @@ import { UserFeeDialog } from "./user-fee-dialog";
 import { UserFeeStatusSection } from "./user-fee-status-section";
 import { UserRoleDialog } from "./user-role-dialog";
 import { UserSubmissionsSection } from "./user-submissions-section";
+import { UserSurveyDialog } from "./user-survey-dialog";
 import { UserSurveySection } from "./user-survey-section";
 
 interface UserDetailCardProps {
@@ -60,6 +65,8 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 		setEditDialogOpen,
 		deleteDialogOpen,
 		setDeleteDialogOpen,
+		surveyDialogOpen,
+		setSurveyDialogOpen,
 		isPending,
 		handleMarkFeePaid,
 		handleUnmarkFeePaid,
@@ -70,6 +77,11 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 	} = useUserDetailMutations(user);
 
 	const [documentDialogOpen, setDocumentDialogOpen] = useState(false);
+
+	const { data: surveyQuestions } = useSuspenseQuery(
+		adminSurveyQuestionsQueryOptions(),
+	);
+	const activeSurveyQuestions = surveyQuestions.filter((q) => q.isActive);
 
 	const userName = `${user.firstName} ${user.lastName}`;
 
@@ -103,11 +115,29 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 					/>
 				</SectionCard>
 
-				<SectionCard icon={IconFileText} title="Submissions">
+				<SectionCard
+					icon={IconFileText}
+					title="Submissions"
+					action={
+						<Button variant="outline" size="sm" asChild>
+							<Link
+								to="/admin/users/$id/submissions/new"
+								params={{ id: user.id }}
+								data-testid="add-submission-on-behalf"
+							>
+								<IconPlus className="mr-2 size-4" />
+								Add submission
+							</Link>
+						</Button>
+					}
+				>
 					<UserSubmissionsSection submissions={user.submissions} />
 				</SectionCard>
 
-				<UserSurveySection surveyAnswers={user.surveyAnswers} />
+				<UserSurveySection
+					surveyAnswers={user.surveyAnswers}
+					onEdit={() => setSurveyDialogOpen(true)}
+				/>
 
 				<UserDocumentsSection
 					userId={user.id}
@@ -178,6 +208,14 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 				onConfirm={handleChangeRole}
 				isPending={isPending}
 				roleOptions={assignableRoleOptions(canAssignAdminRole)}
+			/>
+			<UserSurveyDialog
+				open={surveyDialogOpen}
+				onOpenChange={setSurveyDialogOpen}
+				userId={user.id}
+				userName={userName}
+				questions={activeSurveyQuestions}
+				initialAnswers={user.surveyAnswers}
 			/>
 		</>
 	);

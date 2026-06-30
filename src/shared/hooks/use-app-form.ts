@@ -1,5 +1,4 @@
 import { createFormHook } from "@tanstack/react-form";
-
 import { FormCheckboxField } from "@/shared/components/composable/checkbox-field";
 import { FormCountryComboboxField } from "@/shared/components/composable/country-combobox-field";
 import { FormIconInputField } from "@/shared/components/composable/icon-input-field";

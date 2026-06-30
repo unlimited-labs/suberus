@@ -1,9 +1,3 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import {
-	saveUserSurveyAnswersFn,
-	userSurveyAnswersQueryOptions,
-} from "@/features/survey/api/survey";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
 import { SurveyQuestionField } from "@/shared/components/survey-question-field";
 import { useAppForm } from "@/shared/hooks/use-app-form";
@@ -24,16 +18,20 @@ interface SurveyAnswer {
 	value: string;
 }
 
-interface SurveySectionProps {
+interface SurveyAnswersFormProps {
 	questions: SurveyQuestion[];
 	initialAnswers: SurveyAnswer[];
+	/** Persists the answers (server call + cache invalidation + toast). */
+	onSave: (answers: SurveyAnswer[]) => Promise<void>;
+	submitLabel?: string;
 }
 
-export function SurveySection({
+export function SurveyAnswersForm({
 	questions,
 	initialAnswers,
-}: SurveySectionProps) {
-	const queryClient = useQueryClient();
+	onSave,
+	submitLabel = "Save changes",
+}: SurveyAnswersFormProps) {
 	const answerMap = new Map(initialAnswers.map((a) => [a.questionId, a.value]));
 
 	const defaultValues: Record<string, string> = {};
@@ -48,15 +46,7 @@ export function SurveySection({
 				questionId,
 				value: val,
 			}));
-			try {
-				await saveUserSurveyAnswersFn({ data: { answers } });
-				await queryClient.invalidateQueries({
-					queryKey: userSurveyAnswersQueryOptions().queryKey,
-				});
-				toast.success("Survey preferences saved");
-			} catch {
-				toast.error("Failed to save survey preferences");
-			}
+			await onSave(answers);
 		},
 	});
 
@@ -116,7 +106,7 @@ export function SurveySection({
 
 			<div className="flex justify-end pt-2">
 				<form.AppForm>
-					<form.SubmitButton label="Save changes" submittingLabel="Saving..." />
+					<form.SubmitButton label={submitLabel} submittingLabel="Saving..." />
 				</form.AppForm>
 			</div>
 		</form>

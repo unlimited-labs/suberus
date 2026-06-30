@@ -1,5 +1,4 @@
 import type { ComponentProps } from "react";
-
 import { AssignReviewerDialog } from "@/features/submissions/components/admin/assign-reviewer-dialog";
 import { ConfirmConditionsDialog } from "@/features/submissions/components/admin/confirm-conditions-dialog";
 import { DeskAcceptDialog } from "@/features/submissions/components/admin/desk-accept-dialog";
@@ -7,7 +6,6 @@ import { DeskRejectDialog } from "@/features/submissions/components/admin/desk-r
 import { EditorDecisionDialog } from "@/features/submissions/components/admin/editor-decision-dialog";
 import { OverrideDecisionDialog } from "@/features/submissions/components/admin/override-decision-dialog";
 import { SubmissionDeleteDialog } from "@/features/submissions/components/admin/submission-delete-dialog";
-
 import type { EditorReview, EditorSubmission } from "./availability";
 
 export type SubmissionDialogKind =

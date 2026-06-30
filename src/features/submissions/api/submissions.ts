@@ -2,6 +2,7 @@ import { type QueryClient, queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
+	adminMiddleware,
 	adminOnlyMiddleware,
 	authMiddleware,
 } from "@/features/auth/server/middleware";
@@ -183,6 +184,7 @@ async function validateSubmissionInput(
 async function createFileSubmission(
 	data: CreateSubmissionInput,
 	userId: string,
+	performedById: string = userId,
 ): Promise<SubmissionResult> {
 	if (!data.isDraft && !data.file) {
 		return {
@@ -197,7 +199,12 @@ async function createFileSubmission(
 		const valid = await validateUploadFile(data.file, config);
 		if (!valid.ok) return { success: false, error: valid.error };
 	}
-	const submission = await createNewSubmission(data, userId, true);
+	const submission = await createNewSubmission(
+		data,
+		userId,
+		true,
+		performedById,
+	);
 	if (data.file) {
 		const attached = await attachFileToVersion({
 			submissionId: submission.id,
@@ -264,6 +271,67 @@ export const createSubmission = createServerFn({ method: "POST" })
 				contentLen: data.content.length,
 				authorsCount: data.authors.length,
 				keywordsCount: data.keywords.length,
+				err,
+			});
+			if (isPrismaKnownError(err) && err.code === "P2002") {
+				return {
+					success: false,
+					error:
+						"A conflicting record exists. Please contact support if this persists.",
+				};
+			}
+			return {
+				success: false,
+				error: "Server error while creating submission. Please try again.",
+			};
+		}
+	});
+
+function parseAdminCreateSubmissionFormData(data: FormData) {
+	return {
+		...parseCreateSubmissionFormData(data),
+		targetUserId: z.uuid().parse(data.get("targetUserId")),
+	};
+}
+
+/** Admin/editor creates a submission owned by `targetUserId`; bypasses window + limit (admins trusted), logs the admin as performer. */
+export const adminCreateSubmission = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(parseAdminCreateSubmissionFormData)
+	.handler(async ({ data, context }): Promise<SubmissionResult> => {
+		const { targetUserId, ...input } = data;
+
+		const activeTypes = await getActiveSubmissionTypes();
+		if (!activeTypes.some((t) => t.type === input.type)) {
+			return {
+				success: false,
+				error: "Selected submission type is not active",
+			};
+		}
+
+		if (!input.isDraft) {
+			const invalid = await validateSubmissionInput(input);
+			if (invalid) return invalid;
+		}
+
+		try {
+			if (input.contentFormat === "FILE") {
+				return await createFileSubmission(input, targetUserId, context.user.id);
+			}
+			const submission = await createNewSubmission(
+				input,
+				targetUserId,
+				input.isDraft,
+				context.user.id,
+			);
+			return { success: true, id: submission.id };
+		} catch (err) {
+			logger.error("[adminCreateSubmission] failed", {
+				adminUserId: context.user.id,
+				targetUserId,
+				type: input.type,
+				contentFormat: input.contentFormat,
+				isDraft: !!input.isDraft,
 				err,
 			});
 			if (isPrismaKnownError(err) && err.code === "P2002") {

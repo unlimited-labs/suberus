@@ -20,7 +20,6 @@ import { ContactInfoSection } from "@/features/profile/components/contact-info-s
 import { PasskeySection } from "@/features/profile/components/passkey-section";
 import { PasswordChangeSection } from "@/features/profile/components/password-change-section";
 import { PersonalInfoSection } from "@/features/profile/components/personal-info-section";
-import { SurveySection } from "@/features/profile/components/survey-section";
 import type {
 	ContactInfoFormData,
 	PasswordChangeFormData,
@@ -29,8 +28,10 @@ import type {
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import {
 	activeSurveyQuestionsQueryOptions,
+	saveUserSurveyAnswersFn,
 	userSurveyAnswersQueryOptions,
 } from "@/features/survey/api/survey";
+import { SurveyAnswersForm } from "@/features/survey/components/survey-answers-form";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useSession } from "@/shared/hooks/use-session";
 import { createAffiliation } from "@/shared/server/affiliations-fn";
@@ -50,6 +51,20 @@ export const Route = createFileRoute("/_app/profile")({
 function SettingsPage() {
 	const { user, refetch: refetchSession } = useSession();
 	const queryClient = useQueryClient();
+
+	const handleSaveSurvey = async (
+		answers: { questionId: string; value: string }[],
+	) => {
+		try {
+			await saveUserSurveyAnswersFn({ data: { answers } });
+			await queryClient.invalidateQueries({
+				queryKey: userSurveyAnswersQueryOptions().queryKey,
+			});
+			toast.success("Survey preferences saved");
+		} catch {
+			toast.error("Failed to save survey preferences");
+		}
+	};
 	const { data: personalInfo } = useSuspenseQuery(personalInfoQueryOptions());
 	const { data: contactInfo } = useSuspenseQuery(contactInfoQueryOptions());
 	const { data: surveyQuestions } = useSuspenseQuery(
@@ -192,9 +207,10 @@ function SettingsPage() {
 							description="Update your conference survey preferences"
 							delay={300}
 						>
-							<SurveySection
+							<SurveyAnswersForm
 								questions={surveyQuestions}
 								initialAnswers={surveyAnswers}
+								onSave={handleSaveSurvey}
 							/>
 						</SettingsSection>
 					)}

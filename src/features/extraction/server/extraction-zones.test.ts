@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-
 import type { DocParagraph, DocRun } from "./docx-parser";
 import {
 	classifyZones,

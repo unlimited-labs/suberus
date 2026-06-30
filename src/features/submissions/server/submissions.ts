@@ -204,6 +204,7 @@ export async function createNewSubmission(
 	data: CreateSubmissionInput,
 	userId: string,
 	isDraft = false,
+	performedById: string = userId,
 ): Promise<CreateSubmissionResult> {
 	// Create submission in transaction
 	const submission = await prisma.$transaction(async (tx) => {
@@ -381,7 +382,7 @@ export async function createNewSubmission(
 			data: {
 				type: "SUBMISSION_CREATED",
 				submissionId: submission.id,
-				performedBy: userId,
+				performedBy: performedById,
 				detail: {
 					type: "SUBMISSION_CREATED",
 					title: data.title,

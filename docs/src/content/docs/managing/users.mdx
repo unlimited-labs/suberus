@@ -67,6 +67,7 @@ submission** badge when late submissions are allowed. The **⋯** menu holds:
 | **Change Role** | Promote/demote between Author, Reviewer, Editor, Admin. Reviewers (and above) can be assigned to review. Editors can change roles but cannot grant **Admin** or change an existing admin; no one can change their own role. **Exhibitor** accounts cannot be changed to or from manually — see **[Roles & permissions](/settings/roles-and-permissions/)**. |
 | **Activate / Deactivate** | Block or restore account access without deleting the user. |
 | **Allow / Disallow late submission** | Let this user create new submissions even after the submission deadline has passed and while submissions are locked. Off by default; affects only this user. |
+| **Add submission** | Open the submission form to enter a submission **on this user's behalf** (same as the button on the Submissions card — see [below](#add-a-submission-on-this-users-behalf)). |
 | **Delete User** | Permanently removes the user. Destructive and irreversible — prefer **Deactivate**. Shown only if you may delete users. |
 
 ### Information cards
@@ -76,7 +77,7 @@ submission** badge when late submissions are allowed. The **⋯** menu holds:
 | **Contact Information** | Email (click to send mail), affiliation, ORCID, country, and address — each shown only when set. |
 | **Account Information** | Registration and last-login dates, plus email-verification status. If the address isn't verified, a **Verify** button sends a fresh verification email. |
 | **Fee Status** | A green **Fee Paid** callout (type, amount, currency, and paid-on date, with **Unmark**) or a red **Fee Unpaid** callout. When unpaid, **Mark as Paid** records payment (fee type / currency from **[Fee](/settings/fee/)**). |
-| **Survey Responses** | The user's answers to your registration **[Survey](/settings/survey/)**. |
+| **Survey Responses** | The user's answers to your registration **[Survey](/settings/survey/)**. Use **Edit** (top-right of the card) to correct or fill in answers on the user's behalf — see [below](#edit-survey-answers). |
 
 ### Submissions panel
 
@@ -95,11 +96,44 @@ are included.
 | **Role** | **Author** (owner) or **Co-author** (listed on someone else's submission). |
 | **Last updated** | When the submission last changed. |
 
+#### Add a submission on this user's behalf
+
+Use **Add submission** (top-right of the Submissions card) when a registered
+participant sent their submission another way (e.g. by email) and you want to
+enter it for them. It opens the normal submission form, pre-filled with the
+participant as the presenting author.
+
+🖼️ [Screenshot placeholder: on-behalf submission form opened from a user's detail]
+
+- The submission is **owned by the participant**, not you — it shows up on their
+  own submissions list and they receive the usual confirmation email.
+- You can submit it outright or **Save draft**; file and text submission types
+  work exactly as on the participant-facing form.
+- It works **even after the submission deadline** has passed or while submissions
+  are locked, and it ignores the per-user submission limit.
+- Available to **Editors and Admins**.
+
 <Aside type="caution">
 Role changes, activation/deactivation, late-submission permission changes, and fee marking are recorded in the
 **[activity log](/managing/activity-log/)**. Deactivating is reversible; deleting a
 user is not — prefer deactivation unless you're sure.
 </Aside>
+
+### Edit survey answers
+
+**Edit** on the Survey Responses card opens a dialog to change or fill in this
+user's survey answers on their behalf. It lists **all active survey questions**
+(not only the ones already answered), pre-filled with the current answers, so you
+can also complete questions the user left blank.
+
+🖼️ [Screenshot placeholder: edit survey answers dialog on a user's detail]
+
+- Every question type works as on the registration form (text, checkbox, single-
+  and multi-select, plus the "Other" option where enabled). Required questions are
+  validated before saving.
+- Saved answers replace the user's own — they appear immediately in the Survey
+  Responses card and in the users-list survey columns / XLSX export.
+- Available to **Editors and Admins**.
 
 ## Related
 

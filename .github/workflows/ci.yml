@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm exec prisma generate
+
+      - run: pnpm exec biome ci .
+
+      # build is the typecheck: vite-plugin-checker gates types and generates
+      # routeTree.gen.ts (a standalone tsc can't). Before test for route imports.
+      - run: pnpm build
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+          APP_BASE_URL: http://localhost:3001
+          SMTP_HOST: localhost
+          SMTP_PORT: "1025"
+          SMTP_FROM_EMAIL: noreply@suberus.local
+          AUTH_SECRET: ci-build-secret-not-used-at-runtime-0000
+
+      - run: pnpm test

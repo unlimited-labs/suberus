@@ -1,19 +1,18 @@
 import { IconAlertTriangle, IconRefresh, IconX } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useResendVerification } from "@/shared/hooks/use-resend-verification";
 import { useSession } from "@/shared/hooks/use-session";
-import { sendVerificationEmail } from "@/shared/lib/auth-client";
 import { Alert, AlertAction, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 
-const RESEND_COOLDOWN = 60;
 const DISMISS_KEY = "email-verification-banner-dismissed";
 
 export function EmailVerificationBanner() {
 	const { user } = useSession();
 	const [isDismissed, setIsDismissed] = useState(false);
-	const [cooldown, setCooldown] = useState(0);
-	const [isResending, setIsResending] = useState(false);
+	const { cooldown, isResending, resend, disabled } = useResendVerification(
+		user?.email,
+	);
 
 	useEffect(() => {
 		const dismissed = sessionStorage.getItem(DISMISS_KEY);
@@ -22,38 +21,9 @@ export function EmailVerificationBanner() {
 		}
 	}, []);
 
-	useEffect(() => {
-		if (cooldown <= 0) return;
-
-		const timer = setInterval(() => {
-			setCooldown((prev) => prev - 1);
-		}, 1000);
-
-		return () => clearInterval(timer);
-	}, [cooldown]);
-
 	if (!user || user.emailVerified || isDismissed) {
 		return null;
 	}
-
-	const handleResend = async () => {
-		if (cooldown > 0 || isResending) return;
-
-		setIsResending(true);
-		try {
-			const result = await sendVerificationEmail({ email: user.email });
-			if (result.error) {
-				toast.error(result.error.message ?? "Failed to send email");
-			} else {
-				toast.success("Verification email sent");
-				setCooldown(RESEND_COOLDOWN);
-			}
-		} catch {
-			toast.error("Failed to send email");
-		} finally {
-			setIsResending(false);
-		}
-	};
 
 	const handleDismiss = () => {
 		sessionStorage.setItem(DISMISS_KEY, "true");
@@ -67,8 +37,8 @@ export function EmailVerificationBanner() {
 				Your email is not verified. Some features may be limited.{" "}
 				<button
 					type="button"
-					onClick={handleResend}
-					disabled={cooldown > 0 || isResending}
+					onClick={resend}
+					disabled={disabled}
 					className="inline-flex items-center gap-1 font-medium underline underline-offset-2 hover:no-underline disabled:opacity-50"
 				>
 					<IconRefresh

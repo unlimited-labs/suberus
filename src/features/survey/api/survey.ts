@@ -149,6 +149,21 @@ export const saveUserSurveyAnswersFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
+export const saveAdminUserSurveyAnswersFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(
+		z.object({
+			userId: z.uuid(),
+			answers: z.array(
+				z.object({ questionId: z.uuid(), value: z.string().max(500) }),
+			),
+		}),
+	)
+	.handler(async ({ data }) => {
+		await upsertSurveyAnswers(data.userId, data.answers);
+		return { success: true };
+	});
+
 export const acceptTosFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.handler(async ({ context }) => {

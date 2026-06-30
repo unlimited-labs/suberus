@@ -1,7 +1,9 @@
 import {
+	IconBook,
 	IconCheck,
 	IconDeviceDesktop,
 	IconDotsVertical,
+	IconExternalLink,
 	IconLogout,
 	IconMoon,
 	IconSun,
@@ -72,6 +74,19 @@ export function UserMenu() {
 						Profile
 					</Link>
 				</DropdownMenuItem>
+				{user.role === "ADMIN" && (
+					<DropdownMenuItem asChild>
+						<a
+							href="https://docs.suberus.app/"
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							<IconBook className="mr-2" />
+							Documentation
+							<IconExternalLink className="ml-auto size-3.5 opacity-60" />
+						</a>
+					</DropdownMenuItem>
+				)}
 				<DropdownMenuSub>
 					<DropdownMenuSubTrigger>
 						{theme === "dark" ? (
