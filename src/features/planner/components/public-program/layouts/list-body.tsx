@@ -1,4 +1,7 @@
-import type { PublicProgramSession } from "@/features/planner/server/schedule";
+import type {
+	PublicProgramBreak,
+	PublicProgramSession,
+} from "@/features/planner/server/schedule";
 import { formatClockTime } from "@/features/planner/tz-datetime";
 import { cn } from "@/shared/lib/utils";
 import { PresentationList, SessionHeader } from "../program-primitives";
@@ -39,41 +42,19 @@ function TimeSlot({
 	query: string;
 	framed: boolean;
 }) {
-	const isBreakOnly = group.sessions.length === 0 && group.breaks.length > 0;
 	const start = formatClockTime(new Date(group.startAt), tz);
 	const end = formatClockTime(new Date(group.endAt), tz);
 	const dash = framed ? "—" : "–";
 
-	if (isBreakOnly) {
+	if (group.sessions.length === 0 && group.breaks.length > 0) {
 		return (
-			<div
-				className={cn("flex items-center", framed ? "gap-3 sm:gap-6" : "gap-4")}
-			>
-				<span className="h-px flex-1 bg-border" />
-				<div className="shrink-0 text-center">
-					<p
-						className={cn(
-							"font-[var(--prog-font-meta)] uppercase tabular-nums text-muted-foreground",
-							framed
-								? "text-[10px] tracking-[0.25em] sm:text-[11px] sm:tracking-[0.3em]"
-								: "text-xs tracking-wide",
-						)}
-					>
-						{start} {dash} {end}
-					</p>
-					<p
-						className={cn(
-							"mt-1 text-foreground",
-							framed
-								? "font-[var(--prog-font-display)] text-xl sm:text-2xl"
-								: "text-base font-medium",
-						)}
-					>
-						{group.breaks.map((b) => b.title).join(" · ")}
-					</p>
-				</div>
-				<span className="h-px flex-1 bg-border" />
-			</div>
+			<BreakOnlyRow
+				group={group}
+				start={start}
+				end={end}
+				dash={dash}
+				framed={framed}
+			/>
 		);
 	}
 
@@ -81,18 +62,7 @@ function TimeSlot({
 
 	return (
 		<section>
-			{framed ? (
-				<div className="mb-6 border-b border-border pb-3">
-					<span className="font-[var(--prog-font-meta)] text-sm uppercase tracking-[0.2em] tabular-nums text-muted-foreground">
-						{start} {dash} {end}
-					</span>
-				</div>
-			) : (
-				<h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary tabular-nums">
-					{start} {dash} {end}
-				</h2>
-			)}
-
+			<SlotHeading start={start} end={end} dash={dash} framed={framed} />
 			<div
 				className={cn(
 					"grid",
@@ -111,43 +81,130 @@ function TimeSlot({
 					),
 				)}
 				{group.breaks.map((b) => (
-					<div
-						key={b.id}
-						className={cn(
-							"flex items-center justify-center border border-dashed border-border text-center",
-							framed
-								? "px-4 py-6 sm:py-10"
-								: "rounded-[var(--prog-card-radius)] px-4 py-8",
-						)}
-					>
-						<div>
-							<p
-								className={cn(
-									"font-[var(--prog-font-meta)] uppercase text-muted-foreground",
-									framed
-										? "text-[10px] tracking-[0.25em] sm:tracking-[0.3em]"
-										: "text-xs tracking-wide",
-								)}
-							>
-								{formatClockTime(new Date(b.startAt), tz)} {dash}{" "}
-								{formatClockTime(new Date(b.endAt), tz)}
-								{b.room && ` · ${b.room.name}`}
-							</p>
-							<p
-								className={cn(
-									"mt-1 text-foreground",
-									framed
-										? "font-[var(--prog-font-display)] text-xl sm:text-2xl"
-										: "text-base font-medium",
-								)}
-							>
-								{b.title}
-							</p>
-						</div>
-					</div>
+					<BreakCard key={b.id} item={b} tz={tz} dash={dash} framed={framed} />
 				))}
 			</div>
 		</section>
+	);
+}
+
+function SlotHeading({
+	start,
+	end,
+	dash,
+	framed,
+}: {
+	start: string;
+	end: string;
+	dash: string;
+	framed: boolean;
+}) {
+	if (framed) {
+		return (
+			<div className="mb-6 border-b border-border pb-3">
+				<span className="font-[var(--prog-font-meta)] text-sm uppercase tracking-[0.2em] tabular-nums text-muted-foreground">
+					{start} {dash} {end}
+				</span>
+			</div>
+		);
+	}
+	return (
+		<h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary tabular-nums">
+			{start} {dash} {end}
+		</h2>
+	);
+}
+
+function BreakOnlyRow({
+	group,
+	start,
+	end,
+	dash,
+	framed,
+}: {
+	group: TimeGroup;
+	start: string;
+	end: string;
+	dash: string;
+	framed: boolean;
+}) {
+	return (
+		<div
+			className={cn("flex items-center", framed ? "gap-3 sm:gap-6" : "gap-4")}
+		>
+			<span className="h-px flex-1 bg-border" />
+			<div className="shrink-0 text-center">
+				<p
+					className={cn(
+						"font-[var(--prog-font-meta)] uppercase tabular-nums text-muted-foreground",
+						framed
+							? "text-[10px] tracking-[0.25em] sm:text-[11px] sm:tracking-[0.3em]"
+							: "text-xs tracking-wide",
+					)}
+				>
+					{start} {dash} {end}
+				</p>
+				<p
+					className={cn(
+						"mt-1 text-foreground",
+						framed
+							? "font-[var(--prog-font-display)] text-xl sm:text-2xl"
+							: "text-base font-medium",
+					)}
+				>
+					{group.breaks.map((b) => b.title).join(" · ")}
+				</p>
+			</div>
+			<span className="h-px flex-1 bg-border" />
+		</div>
+	);
+}
+
+function BreakCard({
+	item,
+	tz,
+	dash,
+	framed,
+}: {
+	item: PublicProgramBreak;
+	tz?: string;
+	dash: string;
+	framed: boolean;
+}) {
+	return (
+		<div
+			className={cn(
+				"flex items-center justify-center border border-dashed border-border text-center",
+				framed
+					? "px-4 py-6 sm:py-10"
+					: "rounded-[var(--prog-card-radius)] px-4 py-8",
+			)}
+		>
+			<div>
+				<p
+					className={cn(
+						"font-[var(--prog-font-meta)] uppercase text-muted-foreground",
+						framed
+							? "text-[10px] tracking-[0.25em] sm:tracking-[0.3em]"
+							: "text-xs tracking-wide",
+					)}
+				>
+					{formatClockTime(new Date(item.startAt), tz)} {dash}{" "}
+					{formatClockTime(new Date(item.endAt), tz)}
+					{item.room && ` · ${item.room.name}`}
+				</p>
+				<p
+					className={cn(
+						"mt-1 text-foreground",
+						framed
+							? "font-[var(--prog-font-display)] text-xl sm:text-2xl"
+							: "text-base font-medium",
+					)}
+				>
+					{item.title}
+				</p>
+			</div>
+		</div>
 	);
 }
 

@@ -62,35 +62,14 @@ export function ProgramShell({
 				<MinimalHeader settings={settings} />
 			)}
 
-			<div
-				className={cn(
-					"sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur",
-					framed && "bg-background/95",
-				)}
-			>
-				<div
-					className={cn(
-						"mx-auto flex max-w-[var(--prog-max-width)] flex-col gap-3 px-5 sm:flex-row sm:items-center sm:justify-between",
-						framed ? "py-2 sm:gap-4 sm:px-10 sm:py-2.5" : "py-3 sm:px-8",
-					)}
-				>
-					{days.length > 0 &&
-						(framed ? (
-							<FramedNav
-								days={days}
-								activeDay={activeDay}
-								setActiveDay={setActiveDay}
-							/>
-						) : (
-							<MinimalNav
-								days={days}
-								activeDay={activeDay}
-								setActiveDay={setActiveDay}
-							/>
-						))}
-					<SearchBox framed={framed} search={search} setSearch={setSearch} />
-				</div>
-			</div>
+			<ProgramStickyBar
+				framed={framed}
+				days={days}
+				activeDay={activeDay}
+				setActiveDay={setActiveDay}
+				search={search}
+				setSearch={setSearch}
+			/>
 
 			<main className={mainClass}>
 				{activeItems.length === 0 ? (
@@ -103,6 +82,54 @@ export function ProgramShell({
 			</main>
 
 			{framed && <FramedFooter themeId={themeId} settings={settings} />}
+		</div>
+	);
+}
+
+function ProgramStickyBar({
+	framed,
+	days,
+	activeDay,
+	setActiveDay,
+	search,
+	setSearch,
+}: {
+	framed: boolean;
+	days: Date[];
+	activeDay: number;
+	setActiveDay: (i: number) => void;
+	search: string;
+	setSearch: (value: string) => void;
+}) {
+	return (
+		<div
+			className={cn(
+				"sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur",
+				framed && "bg-background/95",
+			)}
+		>
+			<div
+				className={cn(
+					"mx-auto flex max-w-[var(--prog-max-width)] flex-col gap-3 px-5 sm:flex-row sm:items-center sm:justify-between",
+					framed ? "py-2 sm:gap-4 sm:px-10 sm:py-2.5" : "py-3 sm:px-8",
+				)}
+			>
+				{days.length > 0 &&
+					(framed ? (
+						<FramedNav
+							days={days}
+							activeDay={activeDay}
+							setActiveDay={setActiveDay}
+						/>
+					) : (
+						<MinimalNav
+							days={days}
+							activeDay={activeDay}
+							setActiveDay={setActiveDay}
+						/>
+					))}
+				<SearchBox framed={framed} search={search} setSearch={setSearch} />
+			</div>
 		</div>
 	);
 }

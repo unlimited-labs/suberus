@@ -1,5 +1,6 @@
 import { IconStarFilled } from "@tabler/icons-react";
 import { addMinutes } from "date-fns";
+import type { KeyboardEvent } from "react";
 import type { PublicProgramSession } from "@/features/planner/server/schedule";
 import { formatClockTime } from "@/features/planner/tz-datetime";
 import { cn } from "@/shared/lib/utils";
@@ -7,6 +8,21 @@ import { useProgramInteraction } from "./program-interaction";
 import { Highlight } from "./themes/shared";
 
 export const MARK = "rounded-[1px] bg-[var(--prog-mark)] text-foreground";
+
+function rowActivation(active: boolean, open: () => void) {
+	if (!active) return {};
+	return {
+		role: "button" as const,
+		tabIndex: 0,
+		onClick: open,
+		onKeyDown: (e: KeyboardEvent) => {
+			if (e.key === "Enter" || e.key === " ") {
+				e.preventDefault();
+				open();
+			}
+		},
+	};
+}
 
 export function SessionHeader({
 	session,
@@ -28,10 +44,6 @@ export function SessionHeader({
 	chairAsLabel?: boolean;
 }) {
 	const trackColor = session.track?.color ?? undefined;
-	const chairLabel = session.chairs.length > 1 ? "Chairs" : "Chair";
-	const chairNames = session.chairs
-		.map((c) => [c.firstName, c.lastName].filter(Boolean).join(" "))
-		.join(", ");
 
 	return (
 		<header className={className}>
@@ -61,21 +73,40 @@ export function SessionHeader({
 			>
 				<Highlight text={session.title} query={query} markClassName={MARK} />
 			</h3>
-			{session.chairs.length > 0 &&
-				(chairAsLabel ? (
-					<p className="mt-1 text-sm text-muted-foreground">
-						<span className="font-[var(--prog-font-meta)] text-[9px] uppercase tracking-[var(--prog-tracking)] text-[var(--prog-faint)]">
-							{chairLabel}
-						</span>{" "}
-						{chairNames}
-					</p>
-				) : (
-					<p className="mt-1 text-sm text-muted-foreground">
-						<span className="font-medium">{chairLabel}: </span>
-						{chairNames}
-					</p>
-				))}
+			{session.chairs.length > 0 && (
+				<ChairLine chairs={session.chairs} asLabel={chairAsLabel} />
+			)}
 		</header>
+	);
+}
+
+function ChairLine({
+	chairs,
+	asLabel,
+}: {
+	chairs: PublicProgramSession["chairs"];
+	asLabel: boolean;
+}) {
+	const label = chairs.length > 1 ? "Chairs" : "Chair";
+	const names = chairs
+		.map((c) => [c.firstName, c.lastName].filter(Boolean).join(" "))
+		.join(", ");
+
+	if (asLabel) {
+		return (
+			<p className="mt-1 text-sm text-muted-foreground">
+				<span className="font-[var(--prog-font-meta)] text-[9px] uppercase tracking-[var(--prog-tracking)] text-[var(--prog-faint)]">
+					{label}
+				</span>{" "}
+				{names}
+			</p>
+		);
+	}
+	return (
+		<p className="mt-1 text-sm text-muted-foreground">
+			<span className="font-medium">{label}: </span>
+			{names}
+		</p>
 	);
 }
 
@@ -92,8 +123,6 @@ export function PresentationList({
 	numbered?: boolean;
 	className?: string;
 }) {
-	const { canInteract, isFavorite, openPreview } = useProgramInteraction();
-
 	if (session.presentations.length === 0) return null;
 
 	return (
@@ -103,95 +132,115 @@ export function PresentationList({
 					.slice(0, i)
 					.reduce((a, prev) => a + prev.durationMin, 0);
 				const presStart = addMinutes(new Date(session.startAt), offset);
-				const favorite = canInteract && isFavorite(p.id);
-				const open = () =>
-					openPreview({
-						slotId: p.id,
-						submissionTitle: p.submissionTitle,
-						sessionTitle: session.title,
-						track: session.track,
-						roomName: session.room?.name ?? null,
-						startAtISO: presStart.toISOString(),
-						tz,
-					});
 				return (
-					<li
+					<PresentationRow
 						key={p.id}
-						data-testid="presentation-row"
-						className={cn(
-							"grid gap-x-3 border-b border-border py-3 last:border-0",
-							numbered ? "grid-cols-[2.5rem_1fr]" : "grid-cols-[3.5rem_1fr]",
-							canInteract && "cursor-pointer transition-colors hover:bg-accent",
-							!numbered && canInteract && "-mx-2 rounded-md px-2",
-						)}
-						{...(canInteract
-							? {
-									role: "button",
-									tabIndex: 0,
-									onClick: open,
-									onKeyDown: (e) => {
-										if (e.key === "Enter" || e.key === " ") {
-											e.preventDefault();
-											open();
-										}
-									},
-								}
-							: {})}
-					>
-						<div>
-							{numbered && (
-								<span className="block font-[var(--prog-font-display)] text-xl leading-none tabular-nums text-[var(--prog-faint)]">
-									{String(i + 1).padStart(2, "0")}
-								</span>
-							)}
-							<span
-								className={cn(
-									"block tabular-nums",
-									numbered
-										? "mt-1 font-[var(--prog-font-meta)] text-[10px] uppercase tracking-[var(--prog-tracking)] text-[var(--prog-faint)]"
-										: "text-sm font-medium text-muted-foreground",
-								)}
-							>
-								{formatClockTime(presStart, tz)}
-							</span>
-						</div>
-						<div className="min-w-0">
-							<p
-								className={cn(
-									"flex items-start gap-1.5 leading-snug text-foreground font-[var(--prog-font-body)]",
-									numbered ? "text-sm font-semibold" : "text-sm font-medium",
-								)}
-							>
-								{favorite && (
-									<IconStarFilled
-										data-testid="favorited-star"
-										className="mt-0.5 size-3.5 shrink-0 text-amber-500"
-										aria-label="Favorited"
-									/>
-								)}
-								<span>
-									<Highlight
-										text={p.submissionTitle}
-										query={query}
-										markClassName={MARK}
-									/>
-								</span>
-							</p>
-							{p.authors.length > 0 && (
-								<p className="mt-0.5 text-[13px] leading-snug text-muted-foreground font-[var(--prog-font-body)]">
-									<Highlight
-										text={p.authors
-											.map((a) => `${a.firstName} ${a.lastName}`)
-											.join(", ")}
-										query={query}
-										markClassName={MARK}
-									/>
-								</p>
-							)}
-						</div>
-					</li>
+						session={session}
+						presentation={p}
+						index={i}
+						presStart={presStart}
+						numbered={numbered}
+						query={query}
+						tz={tz}
+					/>
 				);
 			})}
 		</ol>
+	);
+}
+
+function PresentationRow({
+	session,
+	presentation: p,
+	index,
+	presStart,
+	numbered,
+	query,
+	tz,
+}: {
+	session: PublicProgramSession;
+	presentation: PublicProgramSession["presentations"][number];
+	index: number;
+	presStart: Date;
+	numbered: boolean;
+	query: string;
+	tz?: string;
+}) {
+	const { canInteract, isFavorite, openPreview } = useProgramInteraction();
+	const favorite = canInteract && isFavorite(p.id);
+	const open = () =>
+		openPreview({
+			slotId: p.id,
+			submissionTitle: p.submissionTitle,
+			sessionTitle: session.title,
+			track: session.track,
+			roomName: session.room?.name ?? null,
+			startAtISO: presStart.toISOString(),
+			tz,
+		});
+
+	return (
+		<li
+			data-testid="presentation-row"
+			className={cn(
+				"grid gap-x-3 border-b border-border py-3 last:border-0",
+				numbered ? "grid-cols-[2.5rem_1fr]" : "grid-cols-[3.5rem_1fr]",
+				canInteract && "cursor-pointer transition-colors hover:bg-accent",
+				!numbered && canInteract && "-mx-2 rounded-md px-2",
+			)}
+			{...rowActivation(canInteract, open)}
+		>
+			<div>
+				{numbered && (
+					<span className="block font-[var(--prog-font-display)] text-xl leading-none tabular-nums text-[var(--prog-faint)]">
+						{String(index + 1).padStart(2, "0")}
+					</span>
+				)}
+				<span
+					className={cn(
+						"block tabular-nums",
+						numbered
+							? "mt-1 font-[var(--prog-font-meta)] text-[10px] uppercase tracking-[var(--prog-tracking)] text-[var(--prog-faint)]"
+							: "text-sm font-medium text-muted-foreground",
+					)}
+				>
+					{formatClockTime(presStart, tz)}
+				</span>
+			</div>
+			<div className="min-w-0">
+				<p
+					className={cn(
+						"flex items-start gap-1.5 leading-snug text-foreground font-[var(--prog-font-body)]",
+						numbered ? "text-sm font-semibold" : "text-sm font-medium",
+					)}
+				>
+					{favorite && (
+						<IconStarFilled
+							data-testid="favorited-star"
+							className="mt-0.5 size-3.5 shrink-0 text-amber-500"
+							aria-label="Favorited"
+						/>
+					)}
+					<span>
+						<Highlight
+							text={p.submissionTitle}
+							query={query}
+							markClassName={MARK}
+						/>
+					</span>
+				</p>
+				{p.authors.length > 0 && (
+					<p className="mt-0.5 text-[13px] leading-snug text-muted-foreground font-[var(--prog-font-body)]">
+						<Highlight
+							text={p.authors
+								.map((a) => `${a.firstName} ${a.lastName}`)
+								.join(", ")}
+							query={query}
+							markClassName={MARK}
+						/>
+					</p>
+				)}
+			</div>
+		</li>
 	);
 }
