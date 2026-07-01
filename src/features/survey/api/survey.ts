@@ -176,7 +176,7 @@ export const acceptTosFn = createServerFn({ method: "POST" })
 export const getSurveyQuestionsForRegistrationFn = createServerFn({
 	method: "GET",
 }).handler(async () => {
-	return getSurveyQuestions(true, visibleAudiences());
+	return getSurveyQuestions(true);
 });
 
 export const getTosContentForRegistrationFn = createServerFn({

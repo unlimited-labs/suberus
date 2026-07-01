@@ -116,6 +116,7 @@ function RegisterForm() {
 	} = Route.useLoaderData();
 	const {
 		form,
+		visibleQuestions,
 		accountType,
 		setAccountType,
 		tosOpen,
@@ -190,7 +191,7 @@ function RegisterForm() {
 					{currentStep === 3 && (
 						<RegisterStep3
 							form={form}
-							surveyQuestions={surveyQuestions}
+							surveyQuestions={visibleQuestions}
 							tosContent={tosContent}
 							onOpenTos={() => setTosOpen(true)}
 						/>

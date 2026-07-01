@@ -6,12 +6,15 @@ import { detectCountry } from "@/features/auth/detect-country";
 import { useMultiStep } from "@/features/auth/hooks/use-multi-step";
 import { registerSchema } from "@/features/auth/validations";
 import { getRegistrationStatusFn } from "@/features/settings/api/settings";
+import type { SurveyAudience } from "@/generated/prisma/enums";
 import type { SurveyQuestionData } from "@/shared/components/survey-question-field";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { signUp } from "@/shared/lib/auth-client";
 import { COUNTRIES } from "@/shared/ui/country-combobox";
 
-export type RegisterSurveyQuestions = SurveyQuestionData[];
+export type RegisterSurveyQuestions = (SurveyQuestionData & {
+	audience: SurveyAudience;
+})[];
 export type RegisterTosContent = string;
 
 /**
@@ -155,6 +158,17 @@ export function useRegisterForm({
 	}, []);
 	const [tosOpen, setTosOpen] = useState(false);
 
+	const visibleQuestions = useMemo(
+		() =>
+			surveyQuestions.filter(
+				(q) =>
+					q.audience === "ALL" ||
+					q.audience ===
+						(accountType === "exhibitor" ? "EXHIBITORS" : "PARTICIPANTS"),
+			),
+		[surveyQuestions, accountType],
+	);
+
 	const defaultSurveyAnswers: Record<string, string> = {};
 	for (const q of surveyQuestions) {
 		defaultSurveyAnswers[q.id] = q.type === "CHECKBOX" ? "false" : "";
@@ -201,7 +215,13 @@ export function useRegisterForm({
 			}
 
 			if (token) await consumeInvitationQuietly(effects, token);
-			await persistSurveyAndTos(value.surveyAnswers, tosContent, effects);
+			const visibleIds = new Set(visibleQuestions.map((q) => q.id));
+			const visibleAnswers = Object.fromEntries(
+				Object.entries(value.surveyAnswers).filter(([id]) =>
+					visibleIds.has(id),
+				),
+			);
+			await persistSurveyAndTos(visibleAnswers, tosContent, effects);
 			await finishRegistration(accountType, effects, navigate);
 		},
 	});
@@ -215,7 +235,7 @@ export function useRegisterForm({
 			// Step 3 also gates on any required survey questions (dynamic fields).
 			const surveyFields =
 				step === 3
-					? surveyQuestions
+					? visibleQuestions
 							.filter((q) => q.isRequired)
 							.map((q) => `surveyAnswers.${q.id}` as `surveyAnswers.${string}`)
 					: [];
@@ -231,7 +251,7 @@ export function useRegisterForm({
 			}
 			return ok;
 		},
-		[form, surveyQuestions],
+		[form, visibleQuestions],
 	);
 
 	const { currentStep, next, prev, isFirst, isLast } = useMultiStep({
@@ -248,6 +268,7 @@ export function useRegisterForm({
 
 	return {
 		form,
+		visibleQuestions,
 		accountType,
 		setAccountType,
 		tosOpen,
