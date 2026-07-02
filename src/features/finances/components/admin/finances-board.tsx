@@ -439,16 +439,18 @@ export function FinancesBoard() {
 																	</Select>
 																</span>
 																<span
-																	className={cn(
-																		"text-xs tabular-nums",
-																		vat &&
-																			"rounded bg-muted px-1.5 py-0.5 text-foreground/70",
-																	)}
+																	className="w-24 shrink-0 text-right"
 																	data-testid={`${testIdPrefix}-vatamt-${index}`}
 																>
-																	{vat
-																		? `+ ${formatCurrency(grossVal - netVal, currency)}`
-																		: null}
+																	{vat ? (
+																		<span className="rounded bg-muted px-1.5 py-0.5 text-xs tabular-nums text-foreground/70">
+																			+{" "}
+																			{formatCurrency(
+																				grossVal - netVal,
+																				currency,
+																			)}
+																		</span>
+																	) : null}
 																</span>
 																<span className="flex items-center gap-1.5 text-xs text-muted-foreground">
 																	Gross
