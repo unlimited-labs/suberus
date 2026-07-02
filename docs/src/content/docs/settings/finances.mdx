@@ -1,0 +1,42 @@
+---
+title: Finances
+description: Enable or disable the admin Finances screen.
+sidebar:
+  order: 10
+---
+
+import { Aside, LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+The **Finances** tab holds a single switch that controls whether the
+**[Finances](/managing/finances/)** screen is available in the admin menu.
+
+<Aside type="note" title="Where to find it">
+**[Settings](/admin/settings/) › Finances**.
+</Aside>
+
+| Setting | What it does |
+|---|---|
+| **Finances enabled** | **Off by default.** When on, **Finances** appears in the admin sidebar (ADMIN only). When off, the screen is hidden from the menu. Your saved figures are kept either way. |
+
+🖼️ *[Screenshot placeholder — Settings › Finances tab with the enable switch]*
+
+## VAT rates
+
+While Finances is enabled, a **VAT rates** table appears below the switch. These
+are the rates offered when you enter a cost as **net** or **gross** on the
+Finances board. Two rates ship by default — **8%** and **23%** — and you can add
+or remove your own (any whole number 0–100).
+
+| Action | What it does |
+|---|---|
+| **Add** | Type a rate (%) and click **Add** to append it to the list. |
+| **✕** | Removes a rate. Existing saved costs keep the rate already stored on them. |
+
+🖼️ *[Screenshot placeholder — VAT rates table]*
+
+## Related
+
+<CardGrid>
+	<LinkCard title="Finances" href="/managing/finances/" description="The income/expenses board and simulation this switch reveals." />
+	<LinkCard title="Fee" href="/settings/fee/" description="Fee types, prices, and currency used by the board." />
+</CardGrid>

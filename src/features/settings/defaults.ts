@@ -159,6 +159,13 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 		{ id: "student", name: "Student Fee", amount: 100 },
 	],
 
+	FINANCES_ENABLED: false,
+	FINANCES_VAT_RATES: [
+		{ id: "vat-8", rate: 8 },
+		{ id: "vat-23", rate: 23 },
+	],
+	FINANCES_CONTRACTORS: [],
+
 	BRANDING_LOGO_URL: "",
 	BRANDING_FAVICON_URL: "",
 	BRANDING_LOGO_KEY: "",

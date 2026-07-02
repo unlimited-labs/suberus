@@ -75,6 +75,7 @@ export default defineConfig({
 						{ label: 'Email Templates', slug: 'settings/email-templates' },
 						{ label: 'Branding', slug: 'settings/branding' },
 						{ label: 'Fee', slug: 'settings/fee' },
+						{ label: 'Finances', slug: 'settings/finances' },
 						{ label: 'Reminders', slug: 'settings/reminders' },
 						{ label: 'Survey', slug: 'settings/survey' },
 						{ label: 'Documents', slug: 'settings/documents' },
@@ -90,6 +91,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Quick start', slug: 'managing/quick-start' },
 						{ label: 'Dashboard', slug: 'managing/dashboard' },
+						{ label: 'Finances', slug: 'managing/finances' },
 						{ label: 'Submissions', slug: 'managing/submissions' },
 						{ label: 'Reviews', slug: 'managing/reviews' },
 						{ label: 'Users', slug: 'managing/users' },

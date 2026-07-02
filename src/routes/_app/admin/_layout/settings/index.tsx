@@ -32,6 +32,7 @@ import {
 } from "@/features/extraction/api/extraction";
 import { paymentInstructionsQueryOptions } from "@/features/fee/api/fee";
 import { FeeTab } from "@/features/fee/components/admin/fee-tab";
+import { FinancesSettingsTab } from "@/features/finances/components/admin/finances-settings-tab";
 import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
 import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
 import { ProgramTab } from "@/features/planner/components/program";
@@ -44,6 +45,8 @@ import {
 	emailFooterQueryOptions,
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
+	financesEnabledQueryOptions,
+	financesVatRatesQueryOptions,
 	reminderSettingsQueryOptions,
 	submissionTypesConfigQueryOptions,
 	submissionValidationSettingsQueryOptions,
@@ -104,6 +107,8 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 			),
 			context.queryClient.ensureQueryData(feeTypesQueryOptions()),
 			context.queryClient.ensureQueryData(feeCurrencyQueryOptions()),
+			context.queryClient.ensureQueryData(financesEnabledQueryOptions()),
+			context.queryClient.ensureQueryData(financesVatRatesQueryOptions()),
 			context.queryClient.ensureQueryData(
 				extractionAdminSettingsQueryOptions(),
 			),
@@ -126,6 +131,7 @@ const tabs = [
 	{ id: "emails", label: "Email Templates", icon: IconMail },
 	{ id: "branding", label: "Branding", icon: IconPalette },
 	{ id: "fee", label: "Fee", icon: IconCash },
+	{ id: "finances", label: "Finances", icon: IconCash },
 	{ id: "reminders", label: "Reminders", icon: IconBell },
 	{ id: "survey", label: "Survey", icon: IconClipboardList },
 	{ id: "documents", label: "Documents", icon: IconShieldCheck },
@@ -183,6 +189,12 @@ function AdminSettingsPage() {
 	);
 	const { data: feeTypes } = useSuspenseQuery(feeTypesQueryOptions());
 	const { data: feeCurrency } = useSuspenseQuery(feeCurrencyQueryOptions());
+	const { data: financesEnabled } = useSuspenseQuery(
+		financesEnabledQueryOptions(),
+	);
+	const { data: financesVatRates } = useSuspenseQuery(
+		financesVatRatesQueryOptions(),
+	);
 	const { data: extractionSettings } = useSuspenseQuery(
 		extractionAdminSettingsQueryOptions(),
 	);
@@ -300,6 +312,15 @@ function AdminSettingsPage() {
 									}>
 								}
 								currency={feeCurrency as string}
+							/>
+						</TabsContent>
+
+						<TabsContent value="finances">
+							<FinancesSettingsTab
+								initialEnabled={financesEnabled as boolean}
+								initialVatRates={
+									financesVatRates as Array<{ id: string; rate: number }>
+								}
 							/>
 						</TabsContent>
 

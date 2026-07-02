@@ -25,6 +25,7 @@ interface SidebarProps {
 	scheduleStatus?: string;
 	exhibitorsEnabled: boolean;
 	feeEnabled: boolean;
+	financesEnabled: boolean;
 	/** Whether the signed-in user has ≥1 generated document (gates "My Documents"). */
 	hasDocuments: boolean;
 }
@@ -36,6 +37,7 @@ function SidebarContent({
 	scheduleStatus,
 	exhibitorsEnabled,
 	feeEnabled,
+	financesEnabled,
 	hasDocuments,
 	onNavigate,
 }: SidebarProps & { onNavigate?: () => void }) {
@@ -56,11 +58,19 @@ function SidebarContent({
 							(!item.requiresPublishedSchedule || programVisible) &&
 							(!item.requiresExhibitorsEnabled || exhibitorsEnabled) &&
 							(!item.requiresFeeEnabled || feeEnabled) &&
+							(!item.requiresFinancesEnabled || financesEnabled) &&
 							(!item.requiresDocuments || hasDocuments),
 					),
 				}))
 				.filter((section) => section.items.length > 0),
-		[role, programVisible, exhibitorsEnabled, feeEnabled, hasDocuments],
+		[
+			role,
+			programVisible,
+			exhibitorsEnabled,
+			feeEnabled,
+			financesEnabled,
+			hasDocuments,
+		],
 	);
 
 	return (

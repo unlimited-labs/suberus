@@ -26,6 +26,7 @@ export interface NavItem {
 	requiresPublishedSchedule?: boolean; // only show when program is published
 	requiresExhibitorsEnabled?: boolean; // only show when the exhibitors feature is on
 	requiresFeeEnabled?: boolean; // only show when the fee feature is on
+	requiresFinancesEnabled?: boolean; // only show when the finances feature is on
 	requiresDocuments?: boolean; // only show when the user has ≥1 generated document
 }
 
@@ -113,6 +114,13 @@ export const navigationSections: NavSection[] = [
 				href: "/admin/program-planner",
 				icon: IconCalendar,
 				roles: ["ADMIN", "EDITOR"],
+			},
+			{
+				name: "Finances",
+				href: "/admin/finances",
+				icon: IconCash,
+				roles: ["ADMIN"],
+				requiresFinancesEnabled: true,
 			},
 			{
 				name: "Settings",

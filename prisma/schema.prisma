@@ -428,6 +428,33 @@ model Fee {
   @@map("fees")
 }
 
+enum FinanceEntryKind {
+  INCOME
+  EXPENSE
+}
+
+model FinanceEntry {
+  id            String           @id @default(uuid()) @db.Uuid
+  kind          FinanceEntryKind
+  label         String
+  amount        Decimal          @db.Decimal(10, 2)
+  amountExpr    String?
+  contractor    String?
+  vatRate       Int?
+  amountIsGross Boolean          @default(true)
+  dueDate       DateTime?
+  paid          Boolean          @default(false)
+  ordered       Boolean          @default(false)
+  note          String?
+  date          DateTime?
+  sortOrder     Int              @default(0)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([kind, sortOrder])
+  @@map("finance_entries")
+}
+
 model File {
   id                 String              @id @default(uuid()) @db.Uuid
   entityType         FileEntityType
