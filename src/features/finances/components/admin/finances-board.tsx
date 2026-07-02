@@ -401,8 +401,7 @@ export function FinancesBoard() {
 																		placeholder="0.00"
 																		data-testid={`${testIdPrefix}-net-${index}`}
 																		resultTestId={`${testIdPrefix}-net-eval-${index}`}
-																		className={cn(
-																			"w-28 text-right tabular-nums",
+																		inputClassName={cn(
 																			isGross && "text-muted-foreground",
 																		)}
 																	/>
@@ -466,8 +465,8 @@ export function FinancesBoard() {
 																		placeholder="0.00"
 																		data-testid={`${testIdPrefix}-gross-${index}`}
 																		resultTestId={`${testIdPrefix}-gross-eval-${index}`}
-																		className={cn(
-																			"w-28 text-right font-semibold tabular-nums",
+																		inputClassName={cn(
+																			"font-semibold",
 																			!isGross && "text-muted-foreground",
 																		)}
 																	/>
@@ -546,7 +545,6 @@ export function FinancesBoard() {
 											placeholder="formula (2*250) or value"
 											data-testid={`${testIdPrefix}-amount-${index}`}
 											resultTestId={`${testIdPrefix}-amount-eval-${index}`}
-											className="w-28 text-right tabular-nums"
 										/>
 									)}
 								</form.Field>

@@ -1,6 +1,11 @@
+import { IconMathFunction } from "@tabler/icons-react";
 import type { ComponentProps } from "react";
 import { cn } from "@/shared/lib/utils";
-import { Input } from "@/shared/ui/input";
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupInput,
+} from "@/shared/ui/input-group";
 
 export interface FormulaInputProps
 	extends Omit<ComponentProps<"input">, "value" | "onChange"> {
@@ -10,8 +15,7 @@ export interface FormulaInputProps
 	format?: (value: number) => string;
 	showResult?: boolean;
 	resultTestId?: string;
-	wrapperClassName?: string;
-	resultClassName?: string;
+	inputClassName?: string;
 }
 
 export function FormulaInput({
@@ -21,32 +25,33 @@ export function FormulaInput({
 	format = String,
 	showResult = true,
 	className,
+	inputClassName,
 	resultTestId,
-	wrapperClassName,
-	resultClassName,
 	...props
 }: FormulaInputProps) {
 	const hasValue = value.trim() !== "";
 	return (
-		<div className={cn("flex items-center gap-1", wrapperClassName)}>
-			<Input
+		<InputGroup className={cn("w-44", className)}>
+			<InputGroupAddon>
+				<IconMathFunction className="size-3.5" />
+			</InputGroupAddon>
+			<InputGroupInput
 				type="text"
 				value={value}
 				onChange={(e) => onValueChange(e.target.value)}
-				className={className}
+				className={cn("text-right tabular-nums", inputClassName)}
 				{...props}
 			/>
 			{showResult ? (
-				<span
-					className={cn(
-						"w-24 text-right text-xs tabular-nums text-muted-foreground",
-						resultClassName,
-					)}
-					data-testid={resultTestId}
-				>
-					{hasValue ? `= ${format(evaluate(value))}` : ""}
-				</span>
+				<InputGroupAddon align="inline-end">
+					<span
+						className="text-xs tabular-nums text-muted-foreground"
+						data-testid={resultTestId}
+					>
+						{hasValue ? `= ${format(evaluate(value))}` : ""}
+					</span>
+				</InputGroupAddon>
 			) : null}
-		</div>
+		</InputGroup>
 	);
 }
