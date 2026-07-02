@@ -59,6 +59,9 @@ type Mode = "actual" | "sim";
 
 const fmtEditable = (n: number) => (n ? n.toFixed(2) : "");
 
+const LABEL_CLS =
+	"text-[10px] font-medium uppercase tracking-wide text-muted-foreground";
+
 const AVATAR_COLORS = [
 	"bg-rose-500",
 	"bg-amber-500",
@@ -364,7 +367,7 @@ export function FinancesBoard() {
 												</Button>
 											</div>
 
-											<div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t pt-2">
+											<div className="flex flex-wrap items-start gap-x-3 gap-y-2 border-t pt-2">
 												<form.Subscribe selector={(s) => s.values[name][index]}>
 													{(current) => {
 														const isGross = current?.amountIsGross !== false;
@@ -386,8 +389,8 @@ export function FinancesBoard() {
 														};
 														return (
 															<>
-																<span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-																	Netto
+																<div className="flex flex-col gap-1">
+																	<span className={LABEL_CLS}>Netto</span>
 																	<FormulaInput
 																		value={
 																			isGross
@@ -405,10 +408,10 @@ export function FinancesBoard() {
 																			isGross && "text-muted-foreground",
 																		)}
 																	/>
-																</span>
-																<span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-																	VAT
-																	<div className="inline-flex items-center gap-0.5 rounded-md border p-0.5">
+																</div>
+																<div className="flex flex-col gap-1">
+																	<span className={LABEL_CLS}>VAT</span>
+																	<div className="inline-flex h-8 items-center gap-0.5 rounded-md border p-0.5">
 																		{[null, ...vatRates.map((r) => r.rate)].map(
 																			(rate) => (
 																				<button
@@ -434,23 +437,9 @@ export function FinancesBoard() {
 																			),
 																		)}
 																	</div>
-																</span>
-																<span
-																	className="w-24 shrink-0 text-right"
-																	data-testid={`${testIdPrefix}-vatamt-${index}`}
-																>
-																	{vat ? (
-																		<span className="rounded bg-muted px-1.5 py-0.5 text-xs tabular-nums text-foreground/70">
-																			+{" "}
-																			{formatCurrency(
-																				grossVal - netVal,
-																				currency,
-																			)}
-																		</span>
-																	) : null}
-																</span>
-																<span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-																	Gross
+																</div>
+																<div className="flex flex-col gap-0.5">
+																	<span className={LABEL_CLS}>Gross</span>
 																	<FormulaInput
 																		value={
 																			isGross
@@ -469,53 +458,68 @@ export function FinancesBoard() {
 																			!isGross && "text-muted-foreground",
 																		)}
 																	/>
-																</span>
+																	{vat ? (
+																		<span
+																			className="self-end text-[10px] text-muted-foreground"
+																			data-testid={`${testIdPrefix}-vatamt-${index}`}
+																		>
+																			incl.{" "}
+																			{formatCurrency(
+																				grossVal - netVal,
+																				currency,
+																			)}{" "}
+																			VAT
+																		</span>
+																	) : null}
+																</div>
 															</>
 														);
 													}}
 												</form.Subscribe>
-												<span
-													className={cn(
-														"ml-auto flex items-center gap-1.5 text-xs",
-														overdue
-															? "text-destructive"
-															: "text-muted-foreground",
-													)}
-												>
-													Due
-													<form.Field name={`${name}[${index}].dueDate`}>
-														{(sub) => (
-															<Input
-																type="date"
-																value={sub.state.value ?? ""}
-																onChange={(e) =>
-																	sub.handleChange(e.target.value)
-																}
-																data-testid={`${testIdPrefix}-due-${index}`}
-																className={cn(
-																	"w-40",
-																	overdue &&
-																		"border-destructive text-destructive",
-																)}
-															/>
+												<div className="ml-auto flex flex-col gap-1">
+													<span className={LABEL_CLS}>Due</span>
+													<div
+														className={cn(
+															"flex items-center gap-1.5 text-xs",
+															overdue
+																? "text-destructive"
+																: "text-muted-foreground",
 														)}
-													</form.Field>
-													{days !== null &&
-														(overdue ? (
-															<span
-																className="rounded bg-destructive px-1.5 py-0.5 font-medium text-white"
-																data-testid={`${testIdPrefix}-overdue-${index}`}
-															>
-																{Math.abs(days)}d overdue
-															</span>
-														) : days === 0 && !paid ? (
-															<span className="font-medium text-amber-600">
-																due today
-															</span>
-														) : !paid && days > 0 && days <= 7 ? (
-															<span>in {days}d</span>
-														) : null)}
-												</span>
+													>
+														<form.Field name={`${name}[${index}].dueDate`}>
+															{(sub) => (
+																<Input
+																	type="date"
+																	value={sub.state.value ?? ""}
+																	onChange={(e) =>
+																		sub.handleChange(e.target.value)
+																	}
+																	data-testid={`${testIdPrefix}-due-${index}`}
+																	className={cn(
+																		"w-40",
+																		overdue &&
+																			"border-destructive text-destructive",
+																	)}
+																/>
+															)}
+														</form.Field>
+														{days !== null &&
+															(overdue ? (
+																<span
+																	className="rounded bg-destructive px-1.5 py-0.5 font-medium text-white"
+																	data-testid={`${testIdPrefix}-overdue-${index}`}
+																>
+																	{Math.abs(days)}d overdue
+																</span>
+															) : days === 0 && !paid ? (
+																<span className="font-medium text-amber-600">
+																	due today
+																</span>
+															) : !paid && days > 0 && days <= 7 ? (
+																<span>in {days}d</span>
+															) : null)}
+													</div>
+												</div>
 											</div>
 										</div>
 									);
