@@ -181,6 +181,7 @@ export function FinancesBoard() {
 	);
 
 	const projectedFee = projectFeeIncome(projection);
+	const todayISO = new Date().toISOString().slice(0, 10);
 
 	const renderLedger = (
 		name: "expenses" | "income",
@@ -194,191 +195,259 @@ export function FinancesBoard() {
 				<div className="space-y-2">
 					{field.state.value.map((_row, index) =>
 						withVat ? (
-							<div
+							<form.Subscribe
 								key={index}
-								className="space-y-2 rounded-lg border bg-card p-3"
+								selector={(s) => s.values[name][index]}
 							>
-								<div className="flex flex-wrap items-center gap-2">
-									<form.Field name={`${name}[${index}].label`}>
-										{(sub) => (
-											<Input
-												value={sub.state.value}
-												placeholder={labelPlaceholder}
-												onChange={(e) => sub.handleChange(e.target.value)}
-												data-testid={`${testIdPrefix}-label-${index}`}
-												className="min-w-40 flex-1"
-											/>
-										)}
-									</form.Field>
-									<form.Field name={`${name}[${index}].contractor`}>
-										{(sub) => (
-											<Input
-												type="text"
-												list={contractorListId}
-												value={sub.state.value ?? ""}
-												placeholder="Contractor"
-												onChange={(e) => sub.handleChange(e.target.value)}
-												onBlur={() => {
-													sub.handleBlur();
-													void rememberContractor(sub.state.value ?? "");
-												}}
-												data-testid={`${testIdPrefix}-contractor-${index}`}
-												className="w-40"
-											/>
-										)}
-									</form.Field>
-									<form.Field name={`${name}[${index}].ordered`}>
-										{(sub) => (
-											<StatusChip
-												active={sub.state.value}
-												label="Ordered"
-												activeClass="border-transparent bg-amber-500 text-white"
-												onClick={() => sub.handleChange(!sub.state.value)}
-												testId={`${testIdPrefix}-ordered-${index}`}
-											/>
-										)}
-									</form.Field>
-									<form.Field name={`${name}[${index}].paid`}>
-										{(sub) => (
-											<StatusChip
-												active={sub.state.value}
-												label="Paid"
-												activeClass="border-transparent bg-emerald-600 text-white"
-												onClick={() => sub.handleChange(!sub.state.value)}
-												testId={`${testIdPrefix}-paid-${index}`}
-											/>
-										)}
-									</form.Field>
-									<Button
-										type="button"
-										variant="ghost"
-										size="icon"
-										onClick={() => field.removeValue(index)}
-										aria-label="Remove row"
-										data-testid={`${testIdPrefix}-remove-${index}`}
-										className="ml-auto"
-									>
-										<IconX className="size-4" />
-									</Button>
-								</div>
-
-								<div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-									<form.Subscribe selector={(s) => s.values[name][index]}>
-										{(current) => {
-											const isGross = current?.amountIsGross !== false;
-											const vat = current?.vatRate ?? null;
-											const netVal = current ? netAmount(current) : 0;
-											const grossVal = current ? grossAmount(current) : 0;
-											const setSource = (expr: string, gross: boolean) => {
-												form.setFieldValue(
-													`${name}[${index}].amountExpr`,
-													expr,
-												);
-												form.setFieldValue(
-													`${name}[${index}].amountIsGross`,
-													gross,
-												);
-											};
-											return (
-												<>
-													<span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-														Netto
-														<Input
-															type="text"
-															value={
-																isGross
-																	? fmtEditable(netVal)
-																	: (current?.amountExpr ?? "")
-															}
-															placeholder="0.00"
-															onChange={(e) => setSource(e.target.value, false)}
-															data-testid={`${testIdPrefix}-net-${index}`}
-															className={cn(
-																"w-28 text-right tabular-nums",
-																isGross && "text-muted-foreground",
-															)}
-														/>
-													</span>
-													<span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-														VAT
-														<Select
-															value={vat == null ? "none" : String(vat)}
-															onValueChange={(v) =>
-																form.setFieldValue(
-																	`${name}[${index}].vatRate`,
-																	v === "none" ? null : Number(v),
-																)
-															}
-														>
-															<SelectTrigger
-																className="w-24"
-																data-testid={`${testIdPrefix}-vat-${index}`}
-															>
-																<SelectValue />
-															</SelectTrigger>
-															<SelectContent>
-																<SelectItem value="none">No VAT</SelectItem>
-																{vatRates.map((rate) => (
-																	<SelectItem
-																		key={rate.id}
-																		value={String(rate.rate)}
-																	>
-																		{rate.rate}%
-																	</SelectItem>
-																))}
-															</SelectContent>
-														</Select>
-													</span>
-													<span
-														className={cn(
-															"text-xs tabular-nums",
-															vat &&
-																"rounded bg-muted px-1.5 py-0.5 text-foreground/70",
-														)}
-														data-testid={`${testIdPrefix}-vatamt-${index}`}
-													>
-														{vat
-															? `+ ${formatCurrency(grossVal - netVal, currency)}`
-															: null}
-													</span>
-													<span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-														Gross
-														<Input
-															type="text"
-															value={
-																isGross
-																	? (current?.amountExpr ?? "")
-																	: fmtEditable(grossVal)
-															}
-															placeholder="0.00"
-															onChange={(e) => setSource(e.target.value, true)}
-															data-testid={`${testIdPrefix}-gross-${index}`}
-															className={cn(
-																"w-28 text-right tabular-nums",
-																!isGross && "text-muted-foreground",
-															)}
-														/>
-													</span>
-												</>
-											);
-										}}
-									</form.Subscribe>
-									<span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-										Due
-										<form.Field name={`${name}[${index}].dueDate`}>
-											{(sub) => (
-												<Input
-													type="date"
-													value={sub.state.value ?? ""}
-													onChange={(e) => sub.handleChange(e.target.value)}
-													data-testid={`${testIdPrefix}-due-${index}`}
-													className="w-40"
-												/>
+								{(row) => {
+									const dueDate = row?.dueDate ?? "";
+									const paid = !!row?.paid;
+									const ordered = !!row?.ordered;
+									const overdue = !!dueDate && dueDate < todayISO && !paid;
+									const days = dueDate
+										? Math.round(
+												(Date.parse(dueDate) - Date.parse(todayISO)) /
+													86_400_000,
+											)
+										: null;
+									const accent = overdue
+										? "border-l-destructive"
+										: paid
+											? "border-l-emerald-500"
+											: ordered
+												? "border-l-amber-500"
+												: "border-l-transparent";
+									return (
+										<div
+											className={cn(
+												"space-y-2 rounded-lg border border-l-4 p-3 transition-colors",
+												accent,
+												overdue
+													? "bg-destructive/5"
+													: "bg-card hover:border-muted-foreground/30",
 											)}
-										</form.Field>
-									</span>
-								</div>
-							</div>
+										>
+											<div className="flex flex-wrap items-center gap-2">
+												<form.Field name={`${name}[${index}].label`}>
+													{(sub) => (
+														<Input
+															value={sub.state.value}
+															placeholder={labelPlaceholder}
+															onChange={(e) => sub.handleChange(e.target.value)}
+															data-testid={`${testIdPrefix}-label-${index}`}
+															className="min-w-40 flex-1"
+														/>
+													)}
+												</form.Field>
+												<form.Field name={`${name}[${index}].contractor`}>
+													{(sub) => (
+														<Input
+															type="text"
+															list={contractorListId}
+															value={sub.state.value ?? ""}
+															placeholder="Contractor"
+															onChange={(e) => sub.handleChange(e.target.value)}
+															onBlur={() => {
+																sub.handleBlur();
+																void rememberContractor(sub.state.value ?? "");
+															}}
+															data-testid={`${testIdPrefix}-contractor-${index}`}
+															className="w-40"
+														/>
+													)}
+												</form.Field>
+												<form.Field name={`${name}[${index}].ordered`}>
+													{(sub) => (
+														<StatusChip
+															active={sub.state.value}
+															label="Ordered"
+															activeClass="border-transparent bg-amber-500 text-white"
+															onClick={() => sub.handleChange(!sub.state.value)}
+															testId={`${testIdPrefix}-ordered-${index}`}
+														/>
+													)}
+												</form.Field>
+												<form.Field name={`${name}[${index}].paid`}>
+													{(sub) => (
+														<StatusChip
+															active={sub.state.value}
+															label="Paid"
+															activeClass="border-transparent bg-emerald-600 text-white"
+															onClick={() => sub.handleChange(!sub.state.value)}
+															testId={`${testIdPrefix}-paid-${index}`}
+														/>
+													)}
+												</form.Field>
+												<Button
+													type="button"
+													variant="ghost"
+													size="icon"
+													onClick={() => field.removeValue(index)}
+													aria-label="Remove row"
+													data-testid={`${testIdPrefix}-remove-${index}`}
+													className="ml-auto"
+												>
+													<IconX className="size-4" />
+												</Button>
+											</div>
+
+											<div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t pt-2">
+												<form.Subscribe selector={(s) => s.values[name][index]}>
+													{(current) => {
+														const isGross = current?.amountIsGross !== false;
+														const vat = current?.vatRate ?? null;
+														const netVal = current ? netAmount(current) : 0;
+														const grossVal = current ? grossAmount(current) : 0;
+														const setSource = (
+															expr: string,
+															gross: boolean,
+														) => {
+															form.setFieldValue(
+																`${name}[${index}].amountExpr`,
+																expr,
+															);
+															form.setFieldValue(
+																`${name}[${index}].amountIsGross`,
+																gross,
+															);
+														};
+														return (
+															<>
+																<span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+																	Netto
+																	<Input
+																		type="text"
+																		value={
+																			isGross
+																				? fmtEditable(netVal)
+																				: (current?.amountExpr ?? "")
+																		}
+																		placeholder="0.00"
+																		onChange={(e) =>
+																			setSource(e.target.value, false)
+																		}
+																		data-testid={`${testIdPrefix}-net-${index}`}
+																		className={cn(
+																			"w-28 text-right tabular-nums",
+																			isGross && "text-muted-foreground",
+																		)}
+																	/>
+																</span>
+																<span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+																	VAT
+																	<Select
+																		value={vat == null ? "none" : String(vat)}
+																		onValueChange={(v) =>
+																			form.setFieldValue(
+																				`${name}[${index}].vatRate`,
+																				v === "none" ? null : Number(v),
+																			)
+																		}
+																	>
+																		<SelectTrigger
+																			className="w-24"
+																			data-testid={`${testIdPrefix}-vat-${index}`}
+																		>
+																			<SelectValue />
+																		</SelectTrigger>
+																		<SelectContent>
+																			<SelectItem value="none">
+																				No VAT
+																			</SelectItem>
+																			{vatRates.map((rate) => (
+																				<SelectItem
+																					key={rate.id}
+																					value={String(rate.rate)}
+																				>
+																					{rate.rate}%
+																				</SelectItem>
+																			))}
+																		</SelectContent>
+																	</Select>
+																</span>
+																<span
+																	className={cn(
+																		"text-xs tabular-nums",
+																		vat &&
+																			"rounded bg-muted px-1.5 py-0.5 text-foreground/70",
+																	)}
+																	data-testid={`${testIdPrefix}-vatamt-${index}`}
+																>
+																	{vat
+																		? `+ ${formatCurrency(grossVal - netVal, currency)}`
+																		: null}
+																</span>
+																<span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+																	Gross
+																	<Input
+																		type="text"
+																		value={
+																			isGross
+																				? (current?.amountExpr ?? "")
+																				: fmtEditable(grossVal)
+																		}
+																		placeholder="0.00"
+																		onChange={(e) =>
+																			setSource(e.target.value, true)
+																		}
+																		data-testid={`${testIdPrefix}-gross-${index}`}
+																		className={cn(
+																			"w-28 text-right tabular-nums",
+																			!isGross && "text-muted-foreground",
+																		)}
+																	/>
+																</span>
+															</>
+														);
+													}}
+												</form.Subscribe>
+												<span
+													className={cn(
+														"ml-auto flex items-center gap-1.5 text-xs",
+														overdue
+															? "text-destructive"
+															: "text-muted-foreground",
+													)}
+												>
+													Due
+													<form.Field name={`${name}[${index}].dueDate`}>
+														{(sub) => (
+															<Input
+																type="date"
+																value={sub.state.value ?? ""}
+																onChange={(e) =>
+																	sub.handleChange(e.target.value)
+																}
+																data-testid={`${testIdPrefix}-due-${index}`}
+																className={cn(
+																	"w-40",
+																	overdue &&
+																		"border-destructive text-destructive",
+																)}
+															/>
+														)}
+													</form.Field>
+													{days !== null &&
+														(overdue ? (
+															<span
+																className="rounded bg-destructive px-1.5 py-0.5 font-medium text-white"
+																data-testid={`${testIdPrefix}-overdue-${index}`}
+															>
+																{Math.abs(days)}d overdue
+															</span>
+														) : days === 0 && !paid ? (
+															<span className="font-medium text-amber-600">
+																due today
+															</span>
+														) : !paid && days > 0 && days <= 7 ? (
+															<span>in {days}d</span>
+														) : null)}
+												</span>
+											</div>
+										</div>
+									);
+								}}
+							</form.Subscribe>
 						) : (
 							<div key={index} className="flex flex-wrap items-center gap-2">
 								<form.Field name={`${name}[${index}].label`}>

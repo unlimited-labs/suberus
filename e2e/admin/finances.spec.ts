@@ -25,6 +25,10 @@ test.describe("Finances", () => {
 		await expect(page.getByTestId("expense-gross-0")).toHaveValue("1230.00");
 		await expect(page.getByTestId("expense-vatamt-0")).toContainText("230");
 
+		// Overdue: a past due date on an unpaid expense is flagged
+		await page.getByTestId("expense-due-0").fill("2020-01-01");
+		await expect(page.getByTestId("expense-overdue-0")).toBeVisible();
+
 		// Status chips + due date
 		await page.getByTestId("expense-ordered-0").click();
 		await page.getByTestId("expense-paid-0").click();
@@ -33,6 +37,8 @@ test.describe("Finances", () => {
 			"aria-pressed",
 			"true",
 		);
+		// Future date + paid → no longer overdue
+		await expect(page.getByTestId("expense-overdue-0")).not.toBeVisible();
 
 		// Header switch flips the expenses total between gross and net
 		await page.getByTestId("expense-basis-total").click();
