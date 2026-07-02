@@ -51,6 +51,34 @@ type Mode = "actual" | "sim";
 
 const fmtEditable = (n: number) => (n ? n.toFixed(2) : "");
 
+const AVATAR_COLORS = [
+	"bg-rose-500",
+	"bg-amber-500",
+	"bg-emerald-500",
+	"bg-sky-500",
+	"bg-violet-500",
+	"bg-teal-500",
+];
+const avatarColor = (name: string) =>
+	AVATAR_COLORS[
+		[...name].reduce((sum, c) => sum + c.charCodeAt(0), 0) %
+			AVATAR_COLORS.length
+	];
+
+type ExpenseSort = "manual" | "due" | "amount" | "name";
+type ExpenseFilter = "all" | "unpaid" | "overdue" | "paid";
+
+const expenseComparator =
+	(sort: ExpenseSort) => (a: FinanceRowValue, b: FinanceRowValue) => {
+		if (sort === "due")
+			return (a.dueDate || "9999-99-99").localeCompare(
+				b.dueDate || "9999-99-99",
+			);
+		if (sort === "amount") return grossAmount(b) - grossAmount(a);
+		if (sort === "name") return a.label.localeCompare(b.label);
+		return 0;
+	};
+
 function StatusChip({
 	active,
 	label,
@@ -173,6 +201,8 @@ export function FinancesBoard() {
 
 	const [mode, setMode] = useState<Mode>("actual");
 	const [expenseBasis, setExpenseBasis] = useState<"gross" | "net">("gross");
+	const [expenseFilter, setExpenseFilter] = useState<ExpenseFilter>("all");
+	const [expenseSort, setExpenseSort] = useState<ExpenseSort>("manual");
 	const [projection, setProjection] = useState<FeeProjectionRow[]>(() =>
 		feeSummary.types.map((type) => ({
 			price: type.amount,
@@ -217,6 +247,10 @@ export function FinancesBoard() {
 											: ordered
 												? "border-l-amber-500"
 												: "border-l-transparent";
+									const hiddenByFilter =
+										(expenseFilter === "unpaid" && paid) ||
+										(expenseFilter === "overdue" && !overdue) ||
+										(expenseFilter === "paid" && !paid);
 									return (
 										<div
 											className={cn(
@@ -225,6 +259,7 @@ export function FinancesBoard() {
 												overdue
 													? "bg-destructive/5"
 													: "bg-card hover:border-muted-foreground/30",
+												hiddenByFilter && "hidden",
 											)}
 										>
 											<div className="flex flex-wrap items-center gap-2">
@@ -240,21 +275,41 @@ export function FinancesBoard() {
 													)}
 												</form.Field>
 												<form.Field name={`${name}[${index}].contractor`}>
-													{(sub) => (
-														<Input
-															type="text"
-															list={contractorListId}
-															value={sub.state.value ?? ""}
-															placeholder="Contractor"
-															onChange={(e) => sub.handleChange(e.target.value)}
-															onBlur={() => {
-																sub.handleBlur();
-																void rememberContractor(sub.state.value ?? "");
-															}}
-															data-testid={`${testIdPrefix}-contractor-${index}`}
-															className="w-40"
-														/>
-													)}
+													{(sub) => {
+														const c = (sub.state.value ?? "").trim();
+														return (
+															<div className="flex items-center gap-1.5">
+																<span
+																	className={cn(
+																		"flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold uppercase text-white",
+																		c
+																			? avatarColor(c)
+																			: "bg-muted text-muted-foreground",
+																	)}
+																	aria-hidden
+																>
+																	{c ? c[0] : "?"}
+																</span>
+																<Input
+																	type="text"
+																	list={contractorListId}
+																	value={sub.state.value ?? ""}
+																	placeholder="Contractor"
+																	onChange={(e) =>
+																		sub.handleChange(e.target.value)
+																	}
+																	onBlur={() => {
+																		sub.handleBlur();
+																		void rememberContractor(
+																			sub.state.value ?? "",
+																		);
+																	}}
+																	data-testid={`${testIdPrefix}-contractor-${index}`}
+																	className="w-40"
+																/>
+															</div>
+														);
+													}}
 												</form.Field>
 												<form.Field name={`${name}[${index}].ordered`}>
 													{(sub) => (
@@ -392,7 +447,7 @@ export function FinancesBoard() {
 																		}
 																		data-testid={`${testIdPrefix}-gross-${index}`}
 																		className={cn(
-																			"w-28 text-right tabular-nums",
+																			"w-28 text-right font-semibold tabular-nums",
 																			!isGross && "text-muted-foreground",
 																		)}
 																	/>
@@ -514,6 +569,115 @@ export function FinancesBoard() {
 		</form.Field>
 	);
 
+	const renderExpenseToolbar = () => (
+		<form.Subscribe selector={(s) => s.values.expenses}>
+			{(rows) => {
+				const g = (r: FinanceRowValue) => grossAmount(r);
+				const acc = {
+					unpaid: 0,
+					unpaidSum: 0,
+					overdue: 0,
+					overdueSum: 0,
+					paid: 0,
+					paidSum: 0,
+				};
+				for (const r of rows) {
+					if (r.paid) {
+						acc.paid++;
+						acc.paidSum += g(r);
+					} else {
+						acc.unpaid++;
+						acc.unpaidSum += g(r);
+						if (r.dueDate && r.dueDate < todayISO) {
+							acc.overdue++;
+							acc.overdueSum += g(r);
+						}
+					}
+				}
+				const chip = (
+					key: ExpenseFilter,
+					label: string,
+					count: number,
+					sum: number,
+					activeClass: string,
+				) => (
+					<button
+						type="button"
+						onClick={() => setExpenseFilter(key)}
+						data-testid={`expense-filter-${key}`}
+						className={cn(
+							"rounded-md border px-2.5 py-1 text-xs transition-colors",
+							expenseFilter === key
+								? activeClass
+								: "border-border text-muted-foreground hover:bg-muted",
+						)}
+					>
+						{label} <span className="font-medium tabular-nums">{count}</span>
+						{sum ? ` · ${formatCurrency(sum, currency)}` : ""}
+					</button>
+				);
+				return (
+					<div className="flex flex-wrap items-center gap-2">
+						{chip(
+							"all",
+							"All",
+							rows.length,
+							rows.reduce((s, r) => s + g(r), 0),
+							"border-transparent bg-foreground text-background",
+						)}
+						{chip(
+							"unpaid",
+							"Unpaid",
+							acc.unpaid,
+							acc.unpaidSum,
+							"border-transparent bg-amber-500 text-white",
+						)}
+						{chip(
+							"overdue",
+							"Overdue",
+							acc.overdue,
+							acc.overdueSum,
+							"border-transparent bg-destructive text-white",
+						)}
+						{chip(
+							"paid",
+							"Paid",
+							acc.paid,
+							acc.paidSum,
+							"border-transparent bg-emerald-600 text-white",
+						)}
+						<div className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
+							Sort
+							<Select
+								value={expenseSort}
+								onValueChange={(v) => {
+									const sort = v as ExpenseSort;
+									setExpenseSort(sort);
+									if (sort !== "manual") {
+										form.setFieldValue(
+											"expenses",
+											[...rows].sort(expenseComparator(sort)),
+										);
+									}
+								}}
+							>
+								<SelectTrigger className="w-32" data-testid="expense-sort">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="manual">Manual</SelectItem>
+									<SelectItem value="due">Due date</SelectItem>
+									<SelectItem value="amount">Amount</SelectItem>
+									<SelectItem value="name">Name</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+					</div>
+				);
+			}}
+		</form.Subscribe>
+	);
+
 	return (
 		<form
 			noValidate
@@ -528,19 +692,6 @@ export function FinancesBoard() {
 					<option key={name} value={name} />
 				))}
 			</datalist>
-
-			<div className="flex justify-end">
-				<Tabs value={mode} onValueChange={(value) => setMode(value as Mode)}>
-					<TabsList>
-						<TabsTrigger value="actual" data-testid="finances-mode-actual">
-							Actual
-						</TabsTrigger>
-						<TabsTrigger value="sim" data-testid="finances-mode-sim">
-							Simulation
-						</TabsTrigger>
-					</TabsList>
-				</Tabs>
-			</div>
 
 			<div className="space-y-6">
 				<SectionCard
@@ -565,16 +716,37 @@ export function FinancesBoard() {
 						</div>
 					}
 				>
-					{renderLedger(
-						"expenses",
-						"expense",
-						"Add expense",
-						"Expense name",
-						true,
-					)}
+					<div className="space-y-3">
+						{renderExpenseToolbar()}
+						{renderLedger(
+							"expenses",
+							"expense",
+							"Add expense",
+							"Expense name",
+							true,
+						)}
+					</div>
 				</SectionCard>
 
-				<SectionCard icon={IconTrendingUp} title="Income">
+				<SectionCard
+					icon={IconTrendingUp}
+					title="Income"
+					action={
+						<Tabs
+							value={mode}
+							onValueChange={(value) => setMode(value as Mode)}
+						>
+							<TabsList>
+								<TabsTrigger value="actual" data-testid="finances-mode-actual">
+									Actual
+								</TabsTrigger>
+								<TabsTrigger value="sim" data-testid="finances-mode-sim">
+									Simulation
+								</TabsTrigger>
+							</TabsList>
+						</Tabs>
+					}
+				>
 					<div className="space-y-4">
 						{mode === "actual" ? (
 							<div className="flex items-center justify-between rounded-md border border-border/60 bg-muted/20 px-3 py-2">

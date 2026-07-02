@@ -15,6 +15,10 @@ test.describe("Finances", () => {
 		).toBeVisible({ timeout: 10000 });
 
 		// Add one expense and one income line
+		// Toolbar: filter chips + sort dropdown
+		await expect(page.getByTestId("expense-filter-all")).toBeVisible();
+		await expect(page.getByTestId("expense-sort")).toBeVisible();
+
 		await page.getByTestId("expense-add").click();
 		await page.getByTestId("expense-label-0").fill("Venue E2E");
 		await page.getByTestId("expense-contractor-0").fill("Acme E2E");
