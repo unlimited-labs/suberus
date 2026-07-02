@@ -8,6 +8,7 @@ export interface FormulaInputProps
 	onValueChange: (value: string) => void;
 	evaluate: (expr: string) => number;
 	format?: (value: number) => string;
+	showResult?: boolean;
 	resultTestId?: string;
 	wrapperClassName?: string;
 	resultClassName?: string;
@@ -18,6 +19,7 @@ export function FormulaInput({
 	onValueChange,
 	evaluate,
 	format = String,
+	showResult = true,
 	className,
 	resultTestId,
 	wrapperClassName,
@@ -34,15 +36,17 @@ export function FormulaInput({
 				className={className}
 				{...props}
 			/>
-			<span
-				className={cn(
-					"w-24 text-right text-xs tabular-nums text-muted-foreground",
-					resultClassName,
-				)}
-				data-testid={resultTestId}
-			>
-				{hasValue ? `= ${format(evaluate(value))}` : ""}
-			</span>
+			{showResult ? (
+				<span
+					className={cn(
+						"w-24 text-right text-xs tabular-nums text-muted-foreground",
+						resultClassName,
+					)}
+					data-testid={resultTestId}
+				>
+					{hasValue ? `= ${format(evaluate(value))}` : ""}
+				</span>
+			) : null}
 		</div>
 	);
 }

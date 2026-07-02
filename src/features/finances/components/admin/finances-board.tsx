@@ -388,18 +388,19 @@ export function FinancesBoard() {
 															<>
 																<span className="flex items-center gap-1.5 text-xs text-muted-foreground">
 																	Netto
-																	<Input
-																		type="text"
+																	<FormulaInput
 																		value={
 																			isGross
 																				? fmtEditable(netVal)
 																				: (current?.amountExpr ?? "")
 																		}
+																		onValueChange={(v) => setSource(v, false)}
+																		evaluate={evalAmount}
+																		format={(n) => formatCurrency(n, currency)}
+																		showResult={!isGross}
 																		placeholder="0.00"
-																		onChange={(e) =>
-																			setSource(e.target.value, false)
-																		}
 																		data-testid={`${testIdPrefix}-net-${index}`}
+																		resultTestId={`${testIdPrefix}-net-eval-${index}`}
 																		className={cn(
 																			"w-28 text-right tabular-nums",
 																			isGross && "text-muted-foreground",
@@ -452,18 +453,19 @@ export function FinancesBoard() {
 																</span>
 																<span className="flex items-center gap-1.5 text-xs text-muted-foreground">
 																	Gross
-																	<Input
-																		type="text"
+																	<FormulaInput
 																		value={
 																			isGross
 																				? (current?.amountExpr ?? "")
 																				: fmtEditable(grossVal)
 																		}
+																		onValueChange={(v) => setSource(v, true)}
+																		evaluate={evalAmount}
+																		format={(n) => formatCurrency(n, currency)}
+																		showResult={isGross}
 																		placeholder="0.00"
-																		onChange={(e) =>
-																			setSource(e.target.value, true)
-																		}
 																		data-testid={`${testIdPrefix}-gross-${index}`}
+																		resultTestId={`${testIdPrefix}-gross-eval-${index}`}
 																		className={cn(
 																			"w-28 text-right font-semibold tabular-nums",
 																			!isGross && "text-muted-foreground",

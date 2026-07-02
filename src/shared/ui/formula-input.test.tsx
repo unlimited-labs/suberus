@@ -37,6 +37,19 @@ describe("FormulaInput", () => {
 		expect(getByTestId("result").textContent).toBe("");
 	});
 
+	it("omits the result when showResult is false", () => {
+		const { queryByTestId } = render(
+			<FormulaInput
+				value="2*250"
+				onValueChange={() => {}}
+				evaluate={evaluate}
+				showResult={false}
+				resultTestId="result"
+			/>,
+		);
+		expect(queryByTestId("result")).toBeNull();
+	});
+
 	it("reports typed changes via onValueChange", () => {
 		const onValueChange = vi.fn();
 		const { getByRole } = render(
