@@ -1,14 +1,16 @@
 import {
+	IconCash,
 	IconDownload,
 	IconPlus,
 	IconScale,
+	IconShoppingCart,
 	IconTrendingDown,
 	IconTrendingUp,
 	IconX,
 } from "@tabler/icons-react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useBlocker } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { type ComponentType, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
 	addContractorFn,
@@ -46,6 +48,12 @@ import {
 } from "@/shared/ui/select";
 import { Switch } from "@/shared/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/shared/ui/tooltip";
 
 type Mode = "actual" | "sim";
 
@@ -82,31 +90,39 @@ const expenseComparator =
 function StatusChip({
 	active,
 	label,
+	icon: Icon,
 	activeClass,
 	onClick,
 	testId,
 }: {
 	active: boolean;
 	label: string;
+	icon: ComponentType<{ className?: string }>;
 	activeClass: string;
 	onClick: () => void;
 	testId: string;
 }) {
 	return (
-		<button
-			type="button"
-			onClick={onClick}
-			aria-pressed={active}
-			data-testid={testId}
-			className={cn(
-				"rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
-				active
-					? activeClass
-					: "border-border text-muted-foreground hover:bg-muted",
-			)}
-		>
-			{label}
-		</button>
+		<Tooltip>
+			<TooltipTrigger asChild>
+				<button
+					type="button"
+					onClick={onClick}
+					aria-pressed={active}
+					aria-label={label}
+					data-testid={testId}
+					className={cn(
+						"flex size-8 items-center justify-center rounded-full border transition-colors",
+						active
+							? activeClass
+							: "border-border text-muted-foreground hover:bg-muted",
+					)}
+				>
+					<Icon className="size-4" />
+				</button>
+			</TooltipTrigger>
+			<TooltipContent>{label}</TooltipContent>
+		</Tooltip>
 	);
 }
 
@@ -316,6 +332,7 @@ export function FinancesBoard() {
 														<StatusChip
 															active={sub.state.value}
 															label="Ordered"
+															icon={IconShoppingCart}
 															activeClass="border-transparent bg-amber-500 text-white"
 															onClick={() => sub.handleChange(!sub.state.value)}
 															testId={`${testIdPrefix}-ordered-${index}`}
@@ -327,6 +344,7 @@ export function FinancesBoard() {
 														<StatusChip
 															active={sub.state.value}
 															label="Paid"
+															icon={IconCash}
 															activeClass="border-transparent bg-emerald-600 text-white"
 															onClick={() => sub.handleChange(!sub.state.value)}
 															testId={`${testIdPrefix}-paid-${index}`}
@@ -679,235 +697,242 @@ export function FinancesBoard() {
 	);
 
 	return (
-		<form
-			noValidate
-			onSubmit={(e) => {
-				e.preventDefault();
-				void form.handleSubmit();
-			}}
-			className="space-y-6"
-		>
-			<datalist id={contractorListId}>
-				{contractorOptions.map((name) => (
-					<option key={name} value={name} />
-				))}
-			</datalist>
-
-			<div className="space-y-6">
-				<SectionCard
-					icon={IconTrendingDown}
-					title="Expenses"
-					action={
-						<div className="flex items-center gap-2">
-							<Label
-								htmlFor="expense-basis-total"
-								className="text-xs text-muted-foreground"
-							>
-								Total: {expenseBasis === "net" ? "Net" : "Gross"}
-							</Label>
-							<Switch
-								id="expense-basis-total"
-								checked={expenseBasis === "gross"}
-								onCheckedChange={(checked) =>
-									setExpenseBasis(checked ? "gross" : "net")
-								}
-								data-testid="expense-basis-total"
-							/>
-						</div>
-					}
-				>
-					<div className="space-y-3">
-						{renderExpenseToolbar()}
-						{renderLedger(
-							"expenses",
-							"expense",
-							"Add expense",
-							"Expense name",
-							true,
-						)}
-					</div>
-				</SectionCard>
-
-				<SectionCard
-					icon={IconTrendingUp}
-					title="Income"
-					action={
-						<Tabs
-							value={mode}
-							onValueChange={(value) => setMode(value as Mode)}
-						>
-							<TabsList>
-								<TabsTrigger value="actual" data-testid="finances-mode-actual">
-									Actual
-								</TabsTrigger>
-								<TabsTrigger value="sim" data-testid="finances-mode-sim">
-									Simulation
-								</TabsTrigger>
-							</TabsList>
-						</Tabs>
-					}
-				>
-					<div className="space-y-4">
-						{mode === "actual" ? (
-							<div className="flex items-center justify-between rounded-md border border-border/60 bg-muted/20 px-3 py-2">
-								<span className="text-sm">Registration fees</span>
-								<span
-									className="text-sm font-medium tabular-nums"
-									data-testid="finances-fee-collected"
-								>
-									{formatCurrency(feeSummary.collectedTotal, currency)}
-								</span>
-							</div>
-						) : (
-							<FeeProjection
-								types={feeSummary.types}
-								rows={projection}
-								currency={currency}
-								onChange={setProjection}
-							/>
-						)}
-						{renderLedger(
-							"income",
-							"income",
-							"Add income",
-							"Income source",
-							false,
-						)}
-					</div>
-				</SectionCard>
-			</div>
-
-			<form.Subscribe
-				selector={(s) => ({
-					expenses: s.values.expenses,
-					income: s.values.income,
-				})}
+		<TooltipProvider>
+			<form
+				noValidate
+				onSubmit={(e) => {
+					e.preventDefault();
+					void form.handleSubmit();
+				}}
+				className="space-y-6"
 			>
-				{({ expenses, income }) => {
-					const totalExpenses =
-						expenseBasis === "net" ? sumNet(expenses) : sumGross(expenses);
-					const manualIncome = sumRows(income);
-					const feeIncome =
-						mode === "actual" ? feeSummary.collectedTotal : projectedFee;
-					const totalIncome = manualIncome + feeIncome;
-					const netto = totalIncome - totalExpenses;
+				<datalist id={contractorListId}>
+					{contractorOptions.map((name) => (
+						<option key={name} value={name} />
+					))}
+				</datalist>
 
-					const profit = netto >= 0;
+				<div className="space-y-6">
+					<SectionCard
+						icon={IconTrendingDown}
+						title="Expenses"
+						action={
+							<div className="flex items-center gap-2">
+								<Label
+									htmlFor="expense-basis-total"
+									className="text-xs text-muted-foreground"
+								>
+									Total: {expenseBasis === "net" ? "Net" : "Gross"}
+								</Label>
+								<Switch
+									id="expense-basis-total"
+									checked={expenseBasis === "gross"}
+									onCheckedChange={(checked) =>
+										setExpenseBasis(checked ? "gross" : "net")
+									}
+									data-testid="expense-basis-total"
+								/>
+							</div>
+						}
+					>
+						<div className="space-y-3">
+							{renderExpenseToolbar()}
+							{renderLedger(
+								"expenses",
+								"expense",
+								"Add expense",
+								"Expense name",
+								true,
+							)}
+						</div>
+					</SectionCard>
 
-					return (
-						<div className="space-y-4">
-							<div className="flex flex-wrap items-stretch justify-between gap-4">
-								<div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3">
-									<div className="rounded-lg border bg-muted/30 p-3">
-										<div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-											<IconTrendingDown className="size-3.5" />
-											Expenses ({expenseBasis})
-										</div>
-										<div className="mt-1 text-xl font-semibold tabular-nums">
-											{formatCurrency(totalExpenses, currency)}
-										</div>
-									</div>
-									<div className="rounded-lg border bg-muted/30 p-3">
-										<div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-											<IconTrendingUp className="size-3.5" />
-											Income
-										</div>
-										<div className="mt-1 text-xl font-semibold tabular-nums">
-											{formatCurrency(totalIncome, currency)}
-										</div>
-									</div>
-									<div
-										className={cn(
-											"rounded-lg border p-3",
-											profit
-												? "border-emerald-500/30 bg-emerald-500/5"
-												: "border-destructive/30 bg-destructive/5",
-										)}
+					<SectionCard
+						icon={IconTrendingUp}
+						title="Income"
+						action={
+							<Tabs
+								value={mode}
+								onValueChange={(value) => setMode(value as Mode)}
+							>
+								<TabsList>
+									<TabsTrigger
+										value="actual"
+										data-testid="finances-mode-actual"
 									>
-										<div className="flex items-center justify-between">
+										Actual
+									</TabsTrigger>
+									<TabsTrigger value="sim" data-testid="finances-mode-sim">
+										Simulation
+									</TabsTrigger>
+								</TabsList>
+							</Tabs>
+						}
+					>
+						<div className="space-y-4">
+							{mode === "actual" ? (
+								<div className="flex items-center justify-between rounded-md border border-border/60 bg-muted/20 px-3 py-2">
+									<span className="text-sm">Registration fees</span>
+									<span
+										className="text-sm font-medium tabular-nums"
+										data-testid="finances-fee-collected"
+									>
+										{formatCurrency(feeSummary.collectedTotal, currency)}
+									</span>
+								</div>
+							) : (
+								<FeeProjection
+									types={feeSummary.types}
+									rows={projection}
+									currency={currency}
+									onChange={setProjection}
+								/>
+							)}
+							{renderLedger(
+								"income",
+								"income",
+								"Add income",
+								"Income source",
+								false,
+							)}
+						</div>
+					</SectionCard>
+				</div>
+
+				<form.Subscribe
+					selector={(s) => ({
+						expenses: s.values.expenses,
+						income: s.values.income,
+					})}
+				>
+					{({ expenses, income }) => {
+						const totalExpenses =
+							expenseBasis === "net" ? sumNet(expenses) : sumGross(expenses);
+						const manualIncome = sumRows(income);
+						const feeIncome =
+							mode === "actual" ? feeSummary.collectedTotal : projectedFee;
+						const totalIncome = manualIncome + feeIncome;
+						const netto = totalIncome - totalExpenses;
+
+						const profit = netto >= 0;
+
+						return (
+							<div className="space-y-4">
+								<div className="flex flex-wrap items-stretch justify-between gap-4">
+									<div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3">
+										<div className="rounded-lg border bg-muted/30 p-3">
 											<div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-												<IconScale className="size-3.5" />
-												Net
+												<IconTrendingDown className="size-3.5" />
+												Expenses ({expenseBasis})
 											</div>
-											<Badge
-												variant={profit ? "secondary" : "destructive"}
-												className={cn(
-													profit &&
-														"border-transparent bg-emerald-600 text-white",
-												)}
-											>
-												{profit ? "Profit" : "Loss"}
-											</Badge>
+											<div className="mt-1 text-xl font-semibold tabular-nums">
+												{formatCurrency(totalExpenses, currency)}
+											</div>
+										</div>
+										<div className="rounded-lg border bg-muted/30 p-3">
+											<div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+												<IconTrendingUp className="size-3.5" />
+												Income
+											</div>
+											<div className="mt-1 text-xl font-semibold tabular-nums">
+												{formatCurrency(totalIncome, currency)}
+											</div>
 										</div>
 										<div
 											className={cn(
-												"mt-1 text-2xl font-bold tabular-nums",
-												profit ? "text-emerald-600" : "text-destructive",
+												"rounded-lg border p-3",
+												profit
+													? "border-emerald-500/30 bg-emerald-500/5"
+													: "border-destructive/30 bg-destructive/5",
 											)}
-											data-testid="finances-netto"
 										>
-											{formatCurrency(netto, currency)}
+											<div className="flex items-center justify-between">
+												<div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+													<IconScale className="size-3.5" />
+													Net
+												</div>
+												<Badge
+													variant={profit ? "secondary" : "destructive"}
+													className={cn(
+														profit &&
+															"border-transparent bg-emerald-600 text-white",
+													)}
+												>
+													{profit ? "Profit" : "Loss"}
+												</Badge>
+											</div>
+											<div
+												className={cn(
+													"mt-1 text-2xl font-bold tabular-nums",
+													profit ? "text-emerald-600" : "text-destructive",
+												)}
+												data-testid="finances-netto"
+											>
+												{formatCurrency(netto, currency)}
+											</div>
 										</div>
 									</div>
+									<div className="flex w-40 flex-col gap-2">
+										<form.AppForm>
+											<form.SubmitButton
+												label="Save"
+												submittingLabel="Saving..."
+												className="w-full"
+											/>
+										</form.AppForm>
+										<Button variant="outline" className="w-full" asChild>
+											<Link to="/api/admin/finances/export" target="_blank">
+												<IconDownload className="mr-2 size-4" />
+												Export XLSX
+											</Link>
+										</Button>
+									</div>
 								</div>
-								<div className="flex w-40 flex-col gap-2">
-									<form.AppForm>
-										<form.SubmitButton
-											label="Save"
-											submittingLabel="Saving..."
-											className="w-full"
-										/>
-									</form.AppForm>
-									<Button variant="outline" className="w-full" asChild>
-										<Link to="/api/admin/finances/export" target="_blank">
-											<IconDownload className="mr-2 size-4" />
-											Export XLSX
-										</Link>
-									</Button>
-								</div>
-							</div>
 
-							{mode === "sim" && feeSummary.types.length > 0 && (
-								<div className="rounded-lg border bg-muted/20 p-3">
-									<div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-										Break-even
+								{mode === "sim" && feeSummary.types.length > 0 && (
+									<div className="rounded-lg border bg-muted/20 p-3">
+										<div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+											Break-even
+										</div>
+										<div className="flex flex-wrap gap-2">
+											{feeSummary.types.map((type, index) => {
+												const row = projection[index] ?? {
+													price: type.amount,
+													qty: 0,
+												};
+												const price = Number.isFinite(row.price)
+													? row.price
+													: 0;
+												const qty = Number.isFinite(row.qty) ? row.qty : 0;
+												const otherIncome = totalIncome - price * qty;
+												const units = breakEvenUnits(
+													totalExpenses,
+													otherIncome,
+													price,
+												);
+												return (
+													<div
+														key={type.id}
+														data-testid={`finances-breakeven-${index}`}
+														className="flex items-center gap-1.5 rounded-md border bg-background px-2.5 py-1 text-sm"
+													>
+														<span className="font-medium">{type.name}</span>
+														<span className="text-muted-foreground">
+															{units === null
+																? "never (price ≤ 0)"
+																: `${units} fees`}
+														</span>
+													</div>
+												);
+											})}
+										</div>
 									</div>
-									<div className="flex flex-wrap gap-2">
-										{feeSummary.types.map((type, index) => {
-											const row = projection[index] ?? {
-												price: type.amount,
-												qty: 0,
-											};
-											const price = Number.isFinite(row.price) ? row.price : 0;
-											const qty = Number.isFinite(row.qty) ? row.qty : 0;
-											const otherIncome = totalIncome - price * qty;
-											const units = breakEvenUnits(
-												totalExpenses,
-												otherIncome,
-												price,
-											);
-											return (
-												<div
-													key={type.id}
-													data-testid={`finances-breakeven-${index}`}
-													className="flex items-center gap-1.5 rounded-md border bg-background px-2.5 py-1 text-sm"
-												>
-													<span className="font-medium">{type.name}</span>
-													<span className="text-muted-foreground">
-														{units === null
-															? "never (price ≤ 0)"
-															: `${units} fees`}
-													</span>
-												</div>
-											);
-										})}
-									</div>
-								</div>
-							)}
-						</div>
-					);
-				}}
-			</form.Subscribe>
-		</form>
+								)}
+							</div>
+						);
+					}}
+				</form.Subscribe>
+			</form>
+		</TooltipProvider>
 	);
 }
