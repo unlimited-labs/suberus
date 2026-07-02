@@ -24,8 +24,7 @@ test.describe("Finances", () => {
 		await page.getByTestId("expense-contractor-0").fill("Acme E2E");
 		// Net entered as a formula (=1000); Gross auto-fills from the VAT rate
 		await page.getByTestId("expense-net-0").fill("2*500");
-		await page.getByTestId("expense-vat-0").click();
-		await page.getByRole("option", { name: "23%" }).click();
+		await page.getByTestId("expense-vat-23-0").click();
 		await expect(page.getByTestId("expense-gross-0")).toHaveValue("1230.00");
 		await expect(page.getByTestId("expense-vatamt-0")).toContainText("230");
 
@@ -71,7 +70,10 @@ test.describe("Finances", () => {
 		});
 		await expect(page.getByTestId("expense-gross-0")).toHaveValue("1230.00");
 		await expect(page.getByTestId("income-label-0")).toHaveValue("Grant E2E");
-		await expect(page.getByTestId("expense-vat-0")).toContainText("23%");
+		await expect(page.getByTestId("expense-vat-23-0")).toHaveAttribute(
+			"aria-pressed",
+			"true",
+		);
 		await expect(page.getByTestId("expense-paid-0")).toHaveAttribute(
 			"aria-pressed",
 			"true",

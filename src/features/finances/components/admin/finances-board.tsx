@@ -408,35 +408,32 @@ export function FinancesBoard() {
 																</span>
 																<span className="flex items-center gap-1.5 text-xs text-muted-foreground">
 																	VAT
-																	<Select
-																		value={vat == null ? "none" : String(vat)}
-																		onValueChange={(v) =>
-																			form.setFieldValue(
-																				`${name}[${index}].vatRate`,
-																				v === "none" ? null : Number(v),
-																			)
-																		}
-																	>
-																		<SelectTrigger
-																			className="w-24"
-																			data-testid={`${testIdPrefix}-vat-${index}`}
-																		>
-																			<SelectValue />
-																		</SelectTrigger>
-																		<SelectContent>
-																			<SelectItem value="none">
-																				No VAT
-																			</SelectItem>
-																			{vatRates.map((rate) => (
-																				<SelectItem
-																					key={rate.id}
-																					value={String(rate.rate)}
+																	<div className="inline-flex items-center gap-0.5 rounded-md border p-0.5">
+																		{[null, ...vatRates.map((r) => r.rate)].map(
+																			(rate) => (
+																				<button
+																					key={rate ?? "none"}
+																					type="button"
+																					aria-pressed={vat === rate}
+																					onClick={() =>
+																						form.setFieldValue(
+																							`${name}[${index}].vatRate`,
+																							rate,
+																						)
+																					}
+																					data-testid={`${testIdPrefix}-vat-${rate ?? "none"}-${index}`}
+																					className={cn(
+																						"rounded px-2 py-0.5 text-xs tabular-nums transition-colors",
+																						vat === rate
+																							? "bg-foreground text-background"
+																							: "text-muted-foreground hover:bg-muted",
+																					)}
 																				>
-																					{rate.rate}%
-																				</SelectItem>
-																			))}
-																		</SelectContent>
-																	</Select>
+																					{rate === null ? "—" : `${rate}%`}
+																				</button>
+																			),
+																		)}
+																	</div>
 																</span>
 																<span
 																	className="w-24 shrink-0 text-right"
