@@ -76,3 +76,80 @@ export function breakEvenUnits(
 	if (shortfall <= 0) return 0;
 	return Math.ceil(shortfall / price);
 }
+
+export type ExpenseSort = "manual" | "due" | "amount" | "name";
+export type ExpenseFilter = "all" | "unpaid" | "overdue" | "paid";
+
+const DAY_MS = 86_400_000;
+
+export function dueStatus(
+	dueDate: string | null | undefined,
+	today: string,
+	paid: boolean,
+): { overdue: boolean; days: number | null } {
+	if (!dueDate) return { overdue: false, days: null };
+	const days = Math.round((Date.parse(dueDate) - Date.parse(today)) / DAY_MS);
+	return { overdue: dueDate < today && !paid, days };
+}
+
+export function matchesExpenseFilter(
+	row: FinanceRow,
+	filter: ExpenseFilter,
+	today: string,
+): boolean {
+	const paid = !!row.paid;
+	if (filter === "paid") return paid;
+	if (filter === "unpaid") return !paid;
+	if (filter === "overdue")
+		return !paid && !!row.dueDate && row.dueDate < today;
+	return true;
+}
+
+interface StatBucket {
+	count: number;
+	sum: number;
+}
+
+export function expenseStats(
+	rows: FinanceRow[],
+	today: string,
+): Record<"all" | "unpaid" | "overdue" | "paid", StatBucket> {
+	const stats = {
+		all: { count: 0, sum: 0 },
+		unpaid: { count: 0, sum: 0 },
+		overdue: { count: 0, sum: 0 },
+		paid: { count: 0, sum: 0 },
+	};
+	for (const row of rows) {
+		const gross = grossAmount(row);
+		stats.all.count++;
+		stats.all.sum += gross;
+		if (row.paid) {
+			stats.paid.count++;
+			stats.paid.sum += gross;
+		} else {
+			stats.unpaid.count++;
+			stats.unpaid.sum += gross;
+			if (row.dueDate && row.dueDate < today) {
+				stats.overdue.count++;
+				stats.overdue.sum += gross;
+			}
+		}
+	}
+	return stats;
+}
+
+export function sortExpenses<T extends FinanceRow>(
+	rows: T[],
+	sort: ExpenseSort,
+): T[] {
+	if (sort === "manual") return rows;
+	return [...rows].sort((a, b) => {
+		if (sort === "due")
+			return (a.dueDate || "9999-99-99").localeCompare(
+				b.dueDate || "9999-99-99",
+			);
+		if (sort === "amount") return grossAmount(b) - grossAmount(a);
+		return a.label.localeCompare(b.label);
+	});
+}

@@ -19,12 +19,17 @@ import {
 } from "@/features/finances/api/finances";
 import {
 	breakEvenUnits,
+	dueStatus,
+	type ExpenseFilter,
+	type ExpenseSort,
 	evalAmount,
+	expenseStats,
 	type FeeProjectionRow,
 	type FinanceRow as FinanceRowValue,
 	grossAmount,
 	netAmount,
 	projectFeeIncome,
+	sortExpenses,
 	sumGross,
 	sumNet,
 	sumRows,
@@ -69,20 +74,6 @@ const fmtEditable = (n: number) => (n ? n.toFixed(2) : "");
 
 const LABEL_CLS =
 	"text-[10px] font-medium uppercase tracking-wide text-muted-foreground";
-
-type ExpenseSort = "manual" | "due" | "amount" | "name";
-type ExpenseFilter = "all" | "unpaid" | "overdue" | "paid";
-
-const expenseComparator =
-	(sort: ExpenseSort) => (a: FinanceRowValue, b: FinanceRowValue) => {
-		if (sort === "due")
-			return (a.dueDate || "9999-99-99").localeCompare(
-				b.dueDate || "9999-99-99",
-			);
-		if (sort === "amount") return grossAmount(b) - grossAmount(a);
-		if (sort === "name") return a.label.localeCompare(b.label);
-		return 0;
-	};
 
 function StatusChip({
 	active,
@@ -244,16 +235,13 @@ export function FinancesBoard() {
 								selector={(s) => s.values[name][index]}
 							>
 								{(row) => {
-									const dueDate = row?.dueDate ?? "";
 									const paid = !!row?.paid;
 									const ordered = !!row?.ordered;
-									const overdue = !!dueDate && dueDate < todayISO && !paid;
-									const days = dueDate
-										? Math.round(
-												(Date.parse(dueDate) - Date.parse(todayISO)) /
-													86_400_000,
-											)
-										: null;
+									const { overdue, days } = dueStatus(
+										row?.dueDate,
+										todayISO,
+										paid,
+									);
 									const accent = overdue
 										? "border-l-destructive"
 										: paid
@@ -574,28 +562,7 @@ export function FinancesBoard() {
 	const renderExpenseToolbar = () => (
 		<form.Subscribe selector={(s) => s.values.expenses}>
 			{(rows) => {
-				const g = (r: FinanceRowValue) => grossAmount(r);
-				const acc = {
-					unpaid: 0,
-					unpaidSum: 0,
-					overdue: 0,
-					overdueSum: 0,
-					paid: 0,
-					paidSum: 0,
-				};
-				for (const r of rows) {
-					if (r.paid) {
-						acc.paid++;
-						acc.paidSum += g(r);
-					} else {
-						acc.unpaid++;
-						acc.unpaidSum += g(r);
-						if (r.dueDate && r.dueDate < todayISO) {
-							acc.overdue++;
-							acc.overdueSum += g(r);
-						}
-					}
-				}
+				const stats = expenseStats(rows, todayISO);
 				const chip = (
 					key: ExpenseFilter,
 					label: string,
@@ -623,29 +590,29 @@ export function FinancesBoard() {
 						{chip(
 							"all",
 							"All",
-							rows.length,
-							rows.reduce((s, r) => s + g(r), 0),
+							stats.all.count,
+							stats.all.sum,
 							"border-transparent bg-foreground text-background",
 						)}
 						{chip(
 							"unpaid",
 							"Unpaid",
-							acc.unpaid,
-							acc.unpaidSum,
+							stats.unpaid.count,
+							stats.unpaid.sum,
 							"border-transparent bg-amber-500 text-white",
 						)}
 						{chip(
 							"overdue",
 							"Overdue",
-							acc.overdue,
-							acc.overdueSum,
+							stats.overdue.count,
+							stats.overdue.sum,
 							"border-transparent bg-destructive text-white",
 						)}
 						{chip(
 							"paid",
 							"Paid",
-							acc.paid,
-							acc.paidSum,
+							stats.paid.count,
+							stats.paid.sum,
 							"border-transparent bg-emerald-600 text-white",
 						)}
 						<div className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -656,10 +623,7 @@ export function FinancesBoard() {
 									const sort = v as ExpenseSort;
 									setExpenseSort(sort);
 									if (sort !== "manual") {
-										form.setFieldValue(
-											"expenses",
-											[...rows].sort(expenseComparator(sort)),
-										);
+										form.setFieldValue("expenses", sortExpenses(rows, sort));
 									}
 								}}
 							>

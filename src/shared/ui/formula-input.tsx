@@ -18,10 +18,10 @@ export interface FormulaInputProps
 	inputClassName?: string;
 }
 
-const isFormula = (value: string) =>
+export const isFormula = (value: string) =>
 	/[+*/^%()]/.test(value) || /\d\s*-/.test(value);
 
-const sanitizeMath = (raw: string) =>
+export const sanitizeMath = (raw: string) =>
 	raw.replace(/,/g, ".").replace(/[^0-9+\-*/().%^\s]/g, "");
 
 export function FormulaInput({

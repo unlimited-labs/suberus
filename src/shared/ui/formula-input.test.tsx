@@ -1,7 +1,28 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { FormulaInput } from "./formula-input";
+import { FormulaInput, isFormula, sanitizeMath } from "./formula-input";
+
+describe("isFormula", () => {
+	it("is true for expressions with operators/parens", () => {
+		expect(isFormula("2*250")).toBe(true);
+		expect(isFormula("(1+2)")).toBe(true);
+		expect(isFormula("10-3")).toBe(true);
+	});
+	it("is false for plain values and empty", () => {
+		expect(isFormula("500")).toBe(false);
+		expect(isFormula("1000.5")).toBe(false);
+		expect(isFormula("")).toBe(false);
+	});
+});
+
+describe("sanitizeMath", () => {
+	it("drops letters and converts commas to dots", () => {
+		expect(sanitizeMath("12a*3,5")).toBe("12*3.5");
+		expect(sanitizeMath("abc")).toBe("");
+		expect(sanitizeMath("(100+20)*3")).toBe("(100+20)*3");
+	});
+});
 
 const evaluate = (expr: string) => {
 	const map: Record<string, number> = { "2*250": 500, "100+20": 120 };
