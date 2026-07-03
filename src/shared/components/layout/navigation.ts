@@ -144,3 +144,21 @@ export function getNavigationForRole(role: UserRole): NavSection[] {
 		}))
 		.filter((section) => section.items.length > 0);
 }
+
+export interface NavGates {
+	programVisible: boolean;
+	exhibitorsEnabled: boolean;
+	feeEnabled: boolean;
+	financesEnabled: boolean;
+	hasDocuments: boolean;
+}
+
+export function isNavItemVisible(item: NavItem, gates: NavGates): boolean {
+	return (
+		(!item.requiresPublishedSchedule || gates.programVisible) &&
+		(!item.requiresExhibitorsEnabled || gates.exhibitorsEnabled) &&
+		(!item.requiresFeeEnabled || gates.feeEnabled) &&
+		(!item.requiresFinancesEnabled || gates.financesEnabled) &&
+		(!item.requiresDocuments || gates.hasDocuments)
+	);
+}

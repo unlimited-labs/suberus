@@ -1,7 +1,10 @@
 import { IconExternalLink, IconMenu2 } from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { getNavigationForRole } from "@/shared/components/layout/navigation";
+import {
+	getNavigationForRole,
+	isNavItemVisible,
+} from "@/shared/components/layout/navigation";
 import { useSession } from "@/shared/hooks/use-session";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -48,30 +51,28 @@ function SidebarContent({
 	const programVisible =
 		scheduleStatus === "PUBLISHED" ||
 		(scheduleStatus === "DRAFT_PUBLISHED" && canSeeDraft);
-	const sections = useMemo(
-		() =>
-			getNavigationForRole(role)
-				.map((section) => ({
-					...section,
-					items: section.items.filter(
-						(item) =>
-							(!item.requiresPublishedSchedule || programVisible) &&
-							(!item.requiresExhibitorsEnabled || exhibitorsEnabled) &&
-							(!item.requiresFeeEnabled || feeEnabled) &&
-							(!item.requiresFinancesEnabled || financesEnabled) &&
-							(!item.requiresDocuments || hasDocuments),
-					),
-				}))
-				.filter((section) => section.items.length > 0),
-		[
-			role,
+	const sections = useMemo(() => {
+		const gates = {
 			programVisible,
 			exhibitorsEnabled,
 			feeEnabled,
 			financesEnabled,
 			hasDocuments,
-		],
-	);
+		};
+		return getNavigationForRole(role)
+			.map((section) => ({
+				...section,
+				items: section.items.filter((item) => isNavItemVisible(item, gates)),
+			}))
+			.filter((section) => section.items.length > 0);
+	}, [
+		role,
+		programVisible,
+		exhibitorsEnabled,
+		feeEnabled,
+		financesEnabled,
+		hasDocuments,
+	]);
 
 	return (
 		<div className="flex h-full flex-col">
