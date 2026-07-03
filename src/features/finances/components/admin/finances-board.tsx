@@ -35,6 +35,14 @@ import { formatCurrency } from "@/shared/lib/format-currency";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/shared/ui/dialog";
 import { FormulaInput } from "@/shared/ui/formula-input";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
@@ -208,6 +216,7 @@ export function FinancesBoard() {
 	const [expenseBasis, setExpenseBasis] = useState<"gross" | "net">("gross");
 	const [expenseFilter, setExpenseFilter] = useState<ExpenseFilter>("all");
 	const [expenseSort, setExpenseSort] = useState<ExpenseSort>("manual");
+	const [confirmRemove, setConfirmRemove] = useState<null | (() => void)>(null);
 	const [projection, setProjection] = useState<FeeProjectionRow[]>(() =>
 		feeSummary.types.map((type) => ({
 			price: type.amount,
@@ -324,7 +333,11 @@ export function FinancesBoard() {
 													type="button"
 													variant="ghost"
 													size="icon"
-													onClick={() => field.removeValue(index)}
+													onClick={() =>
+														setConfirmRemove(
+															() => () => field.removeValue(index),
+														)
+													}
 													aria-label="Remove row"
 													data-testid={`${testIdPrefix}-remove-${index}`}
 													className="ml-auto"
@@ -521,7 +534,9 @@ export function FinancesBoard() {
 									type="button"
 									variant="ghost"
 									size="icon"
-									onClick={() => field.removeValue(index)}
+									onClick={() =>
+										setConfirmRemove(() => () => field.removeValue(index))
+									}
 									aria-label="Remove row"
 									data-testid={`${testIdPrefix}-remove-${index}`}
 								>
@@ -902,6 +917,36 @@ export function FinancesBoard() {
 					}}
 				</form.Subscribe>
 			</form>
+
+			<Dialog
+				open={confirmRemove !== null}
+				onOpenChange={(open) => !open && setConfirmRemove(null)}
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Remove this row?</DialogTitle>
+						<DialogDescription>
+							The line will be removed from the list. The change is stored when
+							you press Save.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setConfirmRemove(null)}>
+							Cancel
+						</Button>
+						<Button
+							variant="destructive"
+							data-testid="finances-remove-confirm"
+							onClick={() => {
+								confirmRemove?.();
+								setConfirmRemove(null);
+							}}
+						>
+							Remove
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</TooltipProvider>
 	);
 }

@@ -87,9 +87,11 @@ test.describe("Finances", () => {
 			page.locator('#finance-contractors option[value="Acme E2E"]'),
 		).toHaveCount(1);
 
-		// Cleanup — clear the ledger so re-runs start empty
+		// Cleanup — clear the ledger so re-runs start empty (confirm dialog per row)
 		await page.getByTestId("expense-remove-0").click();
+		await page.getByTestId("finances-remove-confirm").click();
 		await page.getByTestId("income-remove-0").click();
+		await page.getByTestId("finances-remove-confirm").click();
 		await page.getByRole("button", { name: "Save" }).click();
 		await expect(page.getByText("Saved")).toBeVisible({ timeout: 10000 });
 	});
