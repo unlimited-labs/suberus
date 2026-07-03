@@ -27,6 +27,7 @@ import {
 	type FeeProjectionRow,
 	type FinanceRow as FinanceRowValue,
 	grossAmount,
+	matchesExpenseFilter,
 	netAmount,
 	projectFeeIncome,
 	sortExpenses,
@@ -34,7 +35,10 @@ import {
 	sumNet,
 	sumRows,
 } from "@/features/finances/calc";
+import { DueCell } from "@/features/finances/components/admin/due-cell";
+import { ExpenseToolbar } from "@/features/finances/components/admin/expense-toolbar";
 import { FeeProjection } from "@/features/finances/components/admin/fee-projection";
+import { MoneyCells } from "@/features/finances/components/admin/money-cells";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { formatCurrency } from "@/shared/lib/format-currency";
 import { cn } from "@/shared/lib/utils";
@@ -52,13 +56,6 @@ import { FormulaInput } from "@/shared/ui/formula-input";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { SectionCard } from "@/shared/ui/section-card";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/shared/ui/select";
 import { Switch } from "@/shared/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import {
@@ -71,9 +68,6 @@ import {
 type Mode = "actual" | "sim";
 
 const fmtEditable = (n: number) => (n ? n.toFixed(2) : "");
-
-const LABEL_CLS =
-	"text-[10px] font-medium uppercase tracking-wide text-muted-foreground";
 
 function StatusChip({
 	active,
@@ -249,10 +243,9 @@ export function FinancesBoard() {
 											: ordered
 												? "border-l-amber-500"
 												: "border-l-transparent";
-									const hiddenByFilter =
-										(expenseFilter === "unpaid" && paid) ||
-										(expenseFilter === "overdue" && !overdue) ||
-										(expenseFilter === "paid" && !paid);
+									const hidden =
+										!!row &&
+										!matchesExpenseFilter(row, expenseFilter, todayISO);
 									return (
 										<div
 											className={cn(
@@ -261,7 +254,7 @@ export function FinancesBoard() {
 												overdue
 													? "bg-destructive/5"
 													: "bg-card hover:border-muted-foreground/30",
-												hiddenByFilter && "hidden",
+												hidden && "hidden",
 											)}
 										>
 											<div className="flex flex-wrap items-center gap-2">
@@ -355,138 +348,50 @@ export function FinancesBoard() {
 															);
 														};
 														return (
-															<>
-																<div className="flex flex-col gap-1">
-																	<span className={LABEL_CLS}>Netto</span>
-																	<FormulaInput
-																		value={
-																			isGross
-																				? fmtEditable(netVal)
-																				: (current?.amountExpr ?? "")
-																		}
-																		onValueChange={(v) => setSource(v, false)}
-																		evaluate={evalAmount}
-																		format={(n) => formatCurrency(n, currency)}
-																		showResult={!isGross}
-																		placeholder="0.00"
-																		data-testid={`${testIdPrefix}-net-${index}`}
-																		resultTestId={`${testIdPrefix}-net-eval-${index}`}
-																		inputClassName={cn(
-																			isGross && "text-muted-foreground",
-																		)}
-																	/>
-																</div>
-																<div className="flex flex-col gap-1">
-																	<span className={LABEL_CLS}>VAT</span>
-																	<div className="inline-flex h-8 items-center gap-0.5 rounded-md border p-0.5">
-																		{[null, ...vatRates.map((r) => r.rate)].map(
-																			(rate) => (
-																				<button
-																					key={rate ?? "none"}
-																					type="button"
-																					aria-pressed={vat === rate}
-																					onClick={() =>
-																						form.setFieldValue(
-																							`${name}[${index}].vatRate`,
-																							rate,
-																						)
-																					}
-																					data-testid={`${testIdPrefix}-vat-${rate ?? "none"}-${index}`}
-																					className={cn(
-																						"rounded px-2 py-0.5 text-xs tabular-nums transition-colors",
-																						vat === rate
-																							? "bg-foreground text-background"
-																							: "text-muted-foreground hover:bg-muted",
-																					)}
-																				>
-																					{rate === null ? "—" : `${rate}%`}
-																				</button>
-																			),
-																		)}
-																	</div>
-																</div>
-																<div className="flex flex-col gap-0.5">
-																	<span className={LABEL_CLS}>Gross</span>
-																	<FormulaInput
-																		value={
-																			isGross
-																				? (current?.amountExpr ?? "")
-																				: fmtEditable(grossVal)
-																		}
-																		onValueChange={(v) => setSource(v, true)}
-																		evaluate={evalAmount}
-																		format={(n) => formatCurrency(n, currency)}
-																		showResult={isGross}
-																		placeholder="0.00"
-																		data-testid={`${testIdPrefix}-gross-${index}`}
-																		resultTestId={`${testIdPrefix}-gross-eval-${index}`}
-																		inputClassName={cn(
-																			"font-semibold",
-																			!isGross && "text-muted-foreground",
-																		)}
-																	/>
-																	{vat ? (
-																		<span
-																			className="self-end text-[10px] text-muted-foreground"
-																			data-testid={`${testIdPrefix}-vatamt-${index}`}
-																		>
-																			incl.{" "}
-																			{formatCurrency(
-																				grossVal - netVal,
-																				currency,
-																			)}{" "}
-																			VAT
-																		</span>
-																	) : null}
-																</div>
-															</>
+															<MoneyCells
+																netValue={
+																	isGross
+																		? fmtEditable(netVal)
+																		: (current?.amountExpr ?? "")
+																}
+																grossValue={
+																	isGross
+																		? (current?.amountExpr ?? "")
+																		: fmtEditable(grossVal)
+																}
+																showNetResult={!isGross}
+																showGrossResult={isGross}
+																vat={vat}
+																vatRates={vatRates}
+																vatAmount={grossVal - netVal}
+																currency={currency}
+																testIdPrefix={testIdPrefix}
+																index={index}
+																onNetChange={(v) => setSource(v, false)}
+																onGrossChange={(v) => setSource(v, true)}
+																onVatChange={(rate) =>
+																	form.setFieldValue(
+																		`${name}[${index}].vatRate`,
+																		rate,
+																	)
+																}
+															/>
 														);
 													}}
 												</form.Subscribe>
-												<div className="ml-auto flex flex-col gap-1">
-													<span className={LABEL_CLS}>Due</span>
-													<div
-														className={cn(
-															"flex items-center gap-1.5 text-xs",
-															overdue
-																? "text-destructive"
-																: "text-muted-foreground",
-														)}
-													>
-														<form.Field name={`${name}[${index}].dueDate`}>
-															{(sub) => (
-																<Input
-																	type="date"
-																	value={sub.state.value ?? ""}
-																	onChange={(e) =>
-																		sub.handleChange(e.target.value)
-																	}
-																	data-testid={`${testIdPrefix}-due-${index}`}
-																	className={cn(
-																		"w-40",
-																		overdue &&
-																			"border-destructive text-destructive",
-																	)}
-																/>
-															)}
-														</form.Field>
-														{days !== null &&
-															(overdue ? (
-																<span
-																	className="rounded bg-destructive px-1.5 py-0.5 font-medium text-white"
-																	data-testid={`${testIdPrefix}-overdue-${index}`}
-																>
-																	{Math.abs(days)}d overdue
-																</span>
-															) : days === 0 && !paid ? (
-																<span className="font-medium text-amber-600">
-																	due today
-																</span>
-															) : !paid && days > 0 && days <= 7 ? (
-																<span>in {days}d</span>
-															) : null)}
-													</div>
-												</div>
+												<form.Field name={`${name}[${index}].dueDate`}>
+													{(sub) => (
+														<DueCell
+															value={sub.state.value ?? ""}
+															onChange={sub.handleChange}
+															overdue={overdue}
+															days={days}
+															paid={paid}
+															testIdPrefix={testIdPrefix}
+															index={index}
+														/>
+													)}
+												</form.Field>
 											</div>
 										</div>
 									);
@@ -559,91 +464,6 @@ export function FinancesBoard() {
 		</form.Field>
 	);
 
-	const renderExpenseToolbar = () => (
-		<form.Subscribe selector={(s) => s.values.expenses}>
-			{(rows) => {
-				const stats = expenseStats(rows, todayISO);
-				const chip = (
-					key: ExpenseFilter,
-					label: string,
-					count: number,
-					sum: number,
-					activeClass: string,
-				) => (
-					<button
-						type="button"
-						onClick={() => setExpenseFilter(key)}
-						data-testid={`expense-filter-${key}`}
-						className={cn(
-							"rounded-md border px-2.5 py-1 text-xs transition-colors",
-							expenseFilter === key
-								? activeClass
-								: "border-border text-muted-foreground hover:bg-muted",
-						)}
-					>
-						{label} <span className="font-medium tabular-nums">{count}</span>
-						{sum ? ` · ${formatCurrency(sum, currency)}` : ""}
-					</button>
-				);
-				return (
-					<div className="flex flex-wrap items-center gap-2">
-						{chip(
-							"all",
-							"All",
-							stats.all.count,
-							stats.all.sum,
-							"border-transparent bg-foreground text-background",
-						)}
-						{chip(
-							"unpaid",
-							"Unpaid",
-							stats.unpaid.count,
-							stats.unpaid.sum,
-							"border-transparent bg-amber-500 text-white",
-						)}
-						{chip(
-							"overdue",
-							"Overdue",
-							stats.overdue.count,
-							stats.overdue.sum,
-							"border-transparent bg-destructive text-white",
-						)}
-						{chip(
-							"paid",
-							"Paid",
-							stats.paid.count,
-							stats.paid.sum,
-							"border-transparent bg-emerald-600 text-white",
-						)}
-						<div className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
-							Sort
-							<Select
-								value={expenseSort}
-								onValueChange={(v) => {
-									const sort = v as ExpenseSort;
-									setExpenseSort(sort);
-									if (sort !== "manual") {
-										form.setFieldValue("expenses", sortExpenses(rows, sort));
-									}
-								}}
-							>
-								<SelectTrigger className="w-32" data-testid="expense-sort">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="manual">Manual</SelectItem>
-									<SelectItem value="due">Due date</SelectItem>
-									<SelectItem value="amount">Amount</SelectItem>
-									<SelectItem value="name">Name</SelectItem>
-								</SelectContent>
-							</Select>
-						</div>
-					</div>
-				);
-			}}
-		</form.Subscribe>
-	);
-
 	return (
 		<TooltipProvider>
 			<form
@@ -684,7 +504,26 @@ export function FinancesBoard() {
 						}
 					>
 						<div className="space-y-3">
-							{renderExpenseToolbar()}
+							<form.Subscribe selector={(s) => s.values.expenses}>
+								{(rows) => (
+									<ExpenseToolbar
+										stats={expenseStats(rows, todayISO)}
+										filter={expenseFilter}
+										onFilter={setExpenseFilter}
+										sort={expenseSort}
+										onSort={(sort) => {
+											setExpenseSort(sort);
+											if (sort !== "manual") {
+												form.setFieldValue(
+													"expenses",
+													sortExpenses(rows, sort),
+												);
+											}
+										}}
+										currency={currency}
+									/>
+								)}
+							</form.Subscribe>
 							{renderLedger(
 								"expenses",
 								"expense",
