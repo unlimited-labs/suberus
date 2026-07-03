@@ -62,20 +62,6 @@ const fmtEditable = (n: number) => (n ? n.toFixed(2) : "");
 const LABEL_CLS =
 	"text-[10px] font-medium uppercase tracking-wide text-muted-foreground";
 
-const AVATAR_COLORS = [
-	"bg-rose-500",
-	"bg-amber-500",
-	"bg-emerald-500",
-	"bg-sky-500",
-	"bg-violet-500",
-	"bg-teal-500",
-];
-const avatarColor = (name: string) =>
-	AVATAR_COLORS[
-		[...name].reduce((sum, c) => sum + c.charCodeAt(0), 0) %
-			AVATAR_COLORS.length
-	];
-
 type ExpenseSort = "manual" | "due" | "amount" | "name";
 type ExpenseFilter = "all" | "unpaid" | "overdue" | "paid";
 
@@ -294,41 +280,21 @@ export function FinancesBoard() {
 													)}
 												</form.Field>
 												<form.Field name={`${name}[${index}].contractor`}>
-													{(sub) => {
-														const c = (sub.state.value ?? "").trim();
-														return (
-															<div className="flex items-center gap-1.5">
-																<span
-																	className={cn(
-																		"flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold uppercase text-white",
-																		c
-																			? avatarColor(c)
-																			: "bg-muted text-muted-foreground",
-																	)}
-																	aria-hidden
-																>
-																	{c ? c[0] : "?"}
-																</span>
-																<Input
-																	type="text"
-																	list={contractorListId}
-																	value={sub.state.value ?? ""}
-																	placeholder="Contractor"
-																	onChange={(e) =>
-																		sub.handleChange(e.target.value)
-																	}
-																	onBlur={() => {
-																		sub.handleBlur();
-																		void rememberContractor(
-																			sub.state.value ?? "",
-																		);
-																	}}
-																	data-testid={`${testIdPrefix}-contractor-${index}`}
-																	className="w-40"
-																/>
-															</div>
-														);
-													}}
+													{(sub) => (
+														<Input
+															type="text"
+															list={contractorListId}
+															value={sub.state.value ?? ""}
+															placeholder="Contractor"
+															onChange={(e) => sub.handleChange(e.target.value)}
+															onBlur={() => {
+																sub.handleBlur();
+																void rememberContractor(sub.state.value ?? "");
+															}}
+															data-testid={`${testIdPrefix}-contractor-${index}`}
+															className="w-40"
+														/>
+													)}
 												</form.Field>
 												<form.Field name={`${name}[${index}].ordered`}>
 													{(sub) => (
