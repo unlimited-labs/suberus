@@ -116,6 +116,10 @@ export type AppSettingsMap = {
 	FEE_CURRENCY: "EUR" | "USD" | "PLN";
 	FEE_TYPES: Array<{ id: string; name: string; amount: number }>;
 
+	FINANCES_ENABLED: boolean;
+	FINANCES_VAT_RATES: Array<{ id: string; rate: number }>;
+	FINANCES_CONTRACTORS: string[];
+
 	EXTRACTION_ENABLED: boolean;
 	EXTRACTION_HEURISTIC: boolean;
 	EXTRACTION_AI: boolean;

@@ -92,10 +92,11 @@ export default defineConfig<TestOptions>({
 		roleProject("admin-date-format-settings", /e2e\/admin\/date-format-settings\.spec\.ts/, { role: "admin" }),
 		roleProject("admin-fee-settings", /e2e\/admin\/fee-settings\.spec\.ts/, { role: "admin" }),
 		roleProject("admin-fee-enabled", /e2e\/admin\/fee-enabled\.spec\.ts/, { role: "admin" }),
+		roleProject("admin-finances-enabled", /e2e\/admin\/finances-enabled\.spec\.ts/, { role: "admin" }),
 
 		// Admin (excludes settings + planner + task-mails, which have own projects)
-		roleProject("chromium-admin", /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|fee-enabled|task-mails-reminder|planner\/).*\.spec\.ts/, { role: "admin" }),
-		roleProject("mobile-admin", /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|fee-enabled|task-mails-reminder|planner\/).*\.spec\.ts/, { role: "admin", device: "mobile" }),
+		roleProject("chromium-admin", /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|fee-enabled|finances-enabled|task-mails-reminder|planner\/).*\.spec\.ts/, { role: "admin" }),
+		roleProject("mobile-admin", /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|fee-enabled|finances-enabled|task-mails-reminder|planner\/).*\.spec\.ts/, { role: "admin", device: "mobile" }),
 
 		roleProject("chromium-planner", /e2e\/admin\/planner\/.*\.spec\.ts/, { role: "admin", testIgnore: /mobile-planner\.spec\.ts/ }),
 

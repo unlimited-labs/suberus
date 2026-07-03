@@ -26,6 +26,7 @@ export interface NavItem {
 	requiresPublishedSchedule?: boolean; // only show when program is published
 	requiresExhibitorsEnabled?: boolean; // only show when the exhibitors feature is on
 	requiresFeeEnabled?: boolean; // only show when the fee feature is on
+	requiresFinancesEnabled?: boolean; // only show when the finances feature is on
 	requiresDocuments?: boolean; // only show when the user has ≥1 generated document
 }
 
@@ -115,6 +116,13 @@ export const navigationSections: NavSection[] = [
 				roles: ["ADMIN", "EDITOR"],
 			},
 			{
+				name: "Finances",
+				href: "/admin/finances",
+				icon: IconCash,
+				roles: ["ADMIN"],
+				requiresFinancesEnabled: true,
+			},
+			{
 				name: "Settings",
 				href: "/admin/settings",
 				icon: IconAdjustments,
@@ -135,4 +143,30 @@ export function getNavigationForRole(role: UserRole): NavSection[] {
 			),
 		}))
 		.filter((section) => section.items.length > 0);
+}
+
+export interface NavGates {
+	programVisible: boolean;
+	exhibitorsEnabled: boolean;
+	feeEnabled: boolean;
+	financesEnabled: boolean;
+	hasDocuments: boolean;
+}
+
+export function isNavItemVisible(item: NavItem, gates: NavGates): boolean {
+	return (
+		(!item.requiresPublishedSchedule || gates.programVisible) &&
+		(!item.requiresExhibitorsEnabled || gates.exhibitorsEnabled) &&
+		(!item.requiresFeeEnabled || gates.feeEnabled) &&
+		(!item.requiresFinancesEnabled || gates.financesEnabled) &&
+		(!item.requiresDocuments || gates.hasDocuments)
+	);
+}
+
+export function isNavItemActive(item: NavItem, pathname: string): boolean {
+	if (item.external) return false;
+	return (
+		pathname === item.href ||
+		(item.href !== "/" && pathname.startsWith(item.href))
+	);
 }

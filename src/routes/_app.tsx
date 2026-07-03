@@ -9,6 +9,7 @@ import { scheduleStateQueryOptions } from "@/features/planner/api/schedule";
 import type { AppBranding } from "@/features/settings/api/settings";
 import {
 	feeEnabledQueryOptions,
+	financesEnabledQueryOptions,
 	getAppBrandingFn,
 } from "@/features/settings/api/settings";
 import { APP_SETTINGS_DEFAULTS } from "@/features/settings/defaults";
@@ -85,6 +86,7 @@ function AppLayoutRoute() {
 		exhibitorSignupAvailableQueryOptions(),
 	);
 	const { data: feeEnabled } = useQuery(feeEnabledQueryOptions());
+	const { data: financesEnabled } = useQuery(financesEnabledQueryOptions());
 	const { data: documentsCount } = useQuery(myDocumentsCountQueryOptions());
 
 	useEffect(() => {
@@ -122,6 +124,7 @@ function AppLayoutRoute() {
 					scheduleStatus={scheduleState?.status}
 					exhibitorsEnabled={exhibitorsEnabled === true}
 					feeEnabled={feeEnabled !== false}
+					financesEnabled={financesEnabled === true}
 					hasDocuments={(documentsCount ?? 0) > 0}
 				>
 					<Outlet />

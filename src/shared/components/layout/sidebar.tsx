@@ -1,7 +1,12 @@
-import { IconExternalLink, IconMenu2 } from "@tabler/icons-react";
+import { IconMenu2 } from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { getNavigationForRole } from "@/shared/components/layout/navigation";
+import { NavLink } from "@/shared/components/layout/nav-link";
+import {
+	getNavigationForRole,
+	isNavItemActive,
+	isNavItemVisible,
+} from "@/shared/components/layout/navigation";
 import { useSession } from "@/shared/hooks/use-session";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -25,6 +30,7 @@ interface SidebarProps {
 	scheduleStatus?: string;
 	exhibitorsEnabled: boolean;
 	feeEnabled: boolean;
+	financesEnabled: boolean;
 	/** Whether the signed-in user has ≥1 generated document (gates "My Documents"). */
 	hasDocuments: boolean;
 }
@@ -36,6 +42,7 @@ function SidebarContent({
 	scheduleStatus,
 	exhibitorsEnabled,
 	feeEnabled,
+	financesEnabled,
 	hasDocuments,
 	onNavigate,
 }: SidebarProps & { onNavigate?: () => void }) {
@@ -46,22 +53,28 @@ function SidebarContent({
 	const programVisible =
 		scheduleStatus === "PUBLISHED" ||
 		(scheduleStatus === "DRAFT_PUBLISHED" && canSeeDraft);
-	const sections = useMemo(
-		() =>
-			getNavigationForRole(role)
-				.map((section) => ({
-					...section,
-					items: section.items.filter(
-						(item) =>
-							(!item.requiresPublishedSchedule || programVisible) &&
-							(!item.requiresExhibitorsEnabled || exhibitorsEnabled) &&
-							(!item.requiresFeeEnabled || feeEnabled) &&
-							(!item.requiresDocuments || hasDocuments),
-					),
-				}))
-				.filter((section) => section.items.length > 0),
-		[role, programVisible, exhibitorsEnabled, feeEnabled, hasDocuments],
-	);
+	const sections = useMemo(() => {
+		const gates = {
+			programVisible,
+			exhibitorsEnabled,
+			feeEnabled,
+			financesEnabled,
+			hasDocuments,
+		};
+		return getNavigationForRole(role)
+			.map((section) => ({
+				...section,
+				items: section.items.filter((item) => isNavItemVisible(item, gates)),
+			}))
+			.filter((section) => section.items.length > 0);
+	}, [
+		role,
+		programVisible,
+		exhibitorsEnabled,
+		feeEnabled,
+		financesEnabled,
+		hasDocuments,
+	]);
 
 	return (
 		<div className="flex h-full flex-col">
@@ -90,46 +103,14 @@ function SidebarContent({
 							</p>
 						)}
 						<div className="flex flex-col gap-1">
-							{section.items.map((item) => {
-								const isActive =
-									!item.external &&
-									(location.pathname === item.href ||
-										(item.href !== "/" &&
-											location.pathname.startsWith(item.href)));
-								const className = cn(
-									"flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-									isActive
-										? "bg-sidebar-primary text-sidebar-primary-foreground"
-										: "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-								);
-								if (item.external) {
-									return (
-										<a
-											key={item.href}
-											href={item.href}
-											target="_blank"
-											rel="noopener noreferrer"
-											className={className}
-											onClick={onNavigate}
-										>
-											<item.icon className="size-5" />
-											<span className="flex-1">{item.name}</span>
-											<IconExternalLink className="size-3.5 opacity-60" />
-										</a>
-									);
-								}
-								return (
-									<Link
-										key={item.href}
-										to={item.href}
-										className={className}
-										onClick={onNavigate}
-									>
-										<item.icon className="size-5" />
-										{item.name}
-									</Link>
-								);
-							})}
+							{section.items.map((item) => (
+								<NavLink
+									key={item.href}
+									item={item}
+									active={isNavItemActive(item, location.pathname)}
+									onNavigate={onNavigate}
+								/>
+							))}
 						</div>
 					</div>
 				))}

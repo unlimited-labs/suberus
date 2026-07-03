@@ -1,0 +1,140 @@
+---
+title: Finances
+description: Track conference income and expenses on one board, and run what-if simulations of fee revenue and break-even.
+sidebar:
+  order: 3
+---
+
+import { Aside, CardGrid, LinkCard, Steps } from '@astrojs/starlight/components';
+
+The **Finances** screen is a single board where you record what the conference
+earns and spends, and watch the **bottom line** update as you type. It is not an
+accounting system — think of it as a shared, always-live worksheet for the
+organizer. One side lists **expenses**, the other **income**, and a **Simulation**
+mode lets you project fee revenue and find your break-even before a single number
+is final.
+
+<Aside type="note" title="Where to find it">
+**Finances** in the admin sidebar. The screen is **ADMIN-only** — editors don't see it.
+It appears only while the feature is enabled on **[Settings › Finances](/settings/finances/)**.
+</Aside>
+
+🖼️ *[Screenshot placeholder — Finances board: expenses left, income right, net total at the bottom]*
+
+## The board
+
+The screen splits in two: **Expenses** on the left, **Income** on the right. Each
+side is a free list of lines you add yourself — there are **no fixed categories**,
+because every conference is different. Name a line whatever fits (*Venue*,
+*Catering*, *NCN grant*, *Acme sponsorship*).
+
+<Steps>
+
+1. Click **Add expense** / **Add income** to append a line.
+
+2. Type a **name** and an **amount**. All amounts use the conference fee currency
+   (set on **[Settings › Fee](/settings/fee/)**).
+
+3. The **Σ Expenses**, **Σ Income** and **Net** totals at the bottom update
+   immediately. Net turns **green** when positive, **red** when you're under water.
+
+4. Click **Save** to save the board. Your lines are there next time you open it.
+
+</Steps>
+
+<Aside type="tip">
+Nothing is saved until you press **Save** — so you can freely try a line, watch
+the net move, and remove it again without touching the stored figures.
+</Aside>
+
+<Aside type="caution" title="Unsaved changes are guarded">
+If you edit a line and try to leave the page (or close the tab) before saving,
+the app warns you so you don't lose the changes. Saving — or confirming the
+prompt — clears the warning.
+</Aside>
+
+### Export to Excel
+
+**Export XLSX**, under the **Save** button, downloads the current board as a
+spreadsheet: every income and expense line (including the collected registration
+fees), plus a totals block — **Income**, **Expenses**, and **Net**. The export
+reflects the **saved** figures, not an unsaved simulation.
+
+### Registration fees are counted for you
+
+At the top of the income side sits one **read-only** line, **Registration fees** —
+the total already collected from paid registration fees. It is computed from the
+system, not typed, and you cannot edit or delete it. Everything below it (grants,
+sponsorships, anything else) you enter by hand.
+
+## Each line
+
+| Field | What it holds |
+|---|---|
+| **Name** | Free text — whatever the line is (no preset category). Required to save. |
+| **Contractor** (expenses) | Who you paid. Type a new name, or pick from the suggestions of contractors you've used before — the field remembers past entries so you can reuse them. Optional. |
+| **Amount** | A number **or a formula** — type `500` or `2*250`, and the evaluated result (`= 500`) shows next to the field. Supports `+ - * / ( )`, `%`, `^`. The formula text is saved, so it's still there when you reopen. Blank or invalid counts as 0. |
+| **✕** | Removes the line (a confirmation dialog asks first). |
+
+### VAT on expenses — Netto / Gross
+
+Each **expense** line has separate **Netto** and **Gross** amount fields plus a
+**VAT** rate (from **[Settings › Finances](/settings/finances/)**, or *No VAT*):
+
+- Type into **either** Netto **or** Gross — the other fills in automatically from
+  the VAT rate. The field you type in is the source (it keeps your number or
+  formula) and shows its evaluated result (`= 1 000`); the other is shown computed
+  and slightly greyed.
+- Pick the **VAT** rate from the segmented pills (**—** for no VAT, then your
+  configured rates). The **VAT amount** (gross − net) shows read-only beside them.
+- Formulas work in whichever field you edit; *No VAT* makes Netto = Gross.
+
+Income lines have no VAT — a single **Amount** field.
+
+A **Gross / Net** switch in the **Expenses** header controls whether the
+**Expenses** total (and the expense side of **Net**) is summed as gross or net —
+so mixing net- and gross-entered costs still totals correctly.
+
+### Status & due date
+
+Each expense card also carries:
+
+- **Ordered** and **Paid** — click the chips to toggle (they light up when on).
+- **Due** — an optional due date (`type="date"`).
+
+A **colored left bar** signals status at a glance: **red** when overdue, **green**
+when paid, **amber** when ordered but not yet paid. Past-due unpaid expenses also
+show a red **"Nd overdue"** badge and tint the card; upcoming ones show a subtle
+**"in Nd"** / **"due today"** hint.
+
+These are saved with the expense and included in the Excel export (Ordered / Paid
+/ Due columns).
+
+## Simulation
+
+Switch the toggle to **Simulation** to turn the board into a *what-if*. The
+read-only registration-fees line is replaced by an editable **fee projection**,
+and a **break-even** readout appears under the totals.
+
+| Control | What it does |
+|---|---|
+| **Fee projection** | One row per fee type (from **[Settings › Fee](/settings/fee/)**): a **price** and a **quantity**, prefilled from your real prices and the count already paid. Edit either — raise a price, assume more attendees — and the projected income (and net) recompute live. |
+| **Break-even** | For each fee type, how many of that fee at its price would cover total expenses given all other income. Shows *never (price ≤ 0)* when the price can't close the gap. |
+
+Simulation is a **throwaway scratchpad**: the projection and its numbers are never
+saved. Your recorded expense and income lines stay exactly as you left them.
+
+🖼️ *[Screenshot placeholder — Simulation mode: fee projection rows and the break-even readout]*
+
+<Aside type="caution">
+Amounts are shown in a single currency — the one set on **[Settings › Fee](/settings/fee/)**.
+Finances does not convert between currencies.
+</Aside>
+
+## Related
+
+<CardGrid>
+	<LinkCard title="Fee" href="/settings/fee/" description="Set the fee types, prices, and currency the board and simulation use." />
+	<LinkCard title="Users" href="/managing/users/" description="Mark a participant's registration fee as paid — it feeds the collected total." />
+	<LinkCard title="Dashboard" href="/managing/dashboard/" description="At-a-glance conference metrics, including fees collected." />
+</CardGrid>

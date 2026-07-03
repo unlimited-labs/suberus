@@ -968,6 +968,18 @@ export const getFeeEnabledFn = createServerFn({ method: "GET" })
 		return getSetting("FEE_ENABLED");
 	});
 
+export const financesEnabledQueryOptions = () =>
+	queryOptions({
+		queryKey: ["settings", "finances-enabled"],
+		queryFn: () => getFinancesEnabledFn(),
+	});
+
+export const getFinancesEnabledFn = createServerFn({ method: "GET" })
+	.middleware([authMiddleware])
+	.handler(async () => {
+		return getSetting("FINANCES_ENABLED");
+	});
+
 export const feeTypesQueryOptions = () =>
 	queryOptions({
 		queryKey: ["settings", "fee-types"],
@@ -1012,5 +1024,30 @@ export const updateFeeTypesFn = createServerFn({ method: "POST" })
 	.validator(z.object({ feeTypes: z.array(feeTypeItemSchema).min(1) }))
 	.handler(async ({ data }) => {
 		await setSetting("FEE_TYPES", data.feeTypes);
+		return { success: true };
+	});
+
+export const financesVatRatesQueryOptions = () =>
+	queryOptions({
+		queryKey: ["settings", "finances-vat-rates"],
+		queryFn: () => getFinancesVatRatesFn(),
+	});
+
+export const getFinancesVatRatesFn = createServerFn({ method: "GET" })
+	.middleware([authMiddleware])
+	.handler(async () => {
+		return getSetting("FINANCES_VAT_RATES");
+	});
+
+const vatRateItemSchema = z.object({
+	id: z.string().min(1),
+	rate: z.number().min(0).max(100),
+});
+
+export const updateFinancesVatRatesFn = createServerFn({ method: "POST" })
+	.middleware([adminOnlyMiddleware])
+	.validator(z.object({ vatRates: z.array(vatRateItemSchema) }))
+	.handler(async ({ data }) => {
+		await setSetting("FINANCES_VAT_RATES", data.vatRates);
 		return { success: true };
 	});

@@ -11,6 +11,7 @@ interface AppLayoutProps {
 	scheduleStatus?: string;
 	exhibitorsEnabled: boolean;
 	feeEnabled: boolean;
+	financesEnabled: boolean;
 	hasDocuments: boolean;
 }
 
@@ -23,6 +24,7 @@ export function AppLayout({
 	scheduleStatus,
 	exhibitorsEnabled,
 	feeEnabled,
+	financesEnabled,
 	hasDocuments,
 }: AppLayoutProps) {
 	return (
@@ -34,6 +36,7 @@ export function AppLayout({
 				scheduleStatus={scheduleStatus}
 				exhibitorsEnabled={exhibitorsEnabled}
 				feeEnabled={feeEnabled}
+				financesEnabled={financesEnabled}
 				hasDocuments={hasDocuments}
 			/>
 			<div className="flex flex-1 flex-col overflow-hidden">
@@ -45,6 +48,7 @@ export function AppLayout({
 						scheduleStatus={scheduleStatus}
 						exhibitorsEnabled={exhibitorsEnabled}
 						feeEnabled={feeEnabled}
+						financesEnabled={financesEnabled}
 						hasDocuments={hasDocuments}
 					/>
 				</div>
