@@ -162,3 +162,11 @@ export function isNavItemVisible(item: NavItem, gates: NavGates): boolean {
 		(!item.requiresDocuments || gates.hasDocuments)
 	);
 }
+
+export function isNavItemActive(item: NavItem, pathname: string): boolean {
+	if (item.external) return false;
+	return (
+		pathname === item.href ||
+		(item.href !== "/" && pathname.startsWith(item.href))
+	);
+}

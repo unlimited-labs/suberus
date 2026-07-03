@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isNavItemVisible, type NavItem } from "./navigation";
+import { isNavItemActive, isNavItemVisible, type NavItem } from "./navigation";
 
 const OFF = {
 	programVisible: false,
@@ -43,5 +43,23 @@ describe("isNavItemVisible", () => {
 		expect(
 			isNavItemVisible(both, { ...OFF, feeEnabled: true, hasDocuments: true }),
 		).toBe(true);
+	});
+});
+
+describe("isNavItemActive", () => {
+	it("matches exact path and sub-paths, but never external", () => {
+		expect(isNavItemActive(item({ href: "/admin" }), "/admin")).toBe(true);
+		expect(isNavItemActive(item({ href: "/admin" }), "/admin/users")).toBe(
+			true,
+		);
+		expect(isNavItemActive(item({ href: "/admin" }), "/other")).toBe(false);
+		expect(isNavItemActive(item({ href: "/x", external: true }), "/x")).toBe(
+			false,
+		);
+	});
+
+	it("matches root only exactly, not as a prefix", () => {
+		expect(isNavItemActive(item({ href: "/" }), "/")).toBe(true);
+		expect(isNavItemActive(item({ href: "/" }), "/admin")).toBe(false);
 	});
 });
