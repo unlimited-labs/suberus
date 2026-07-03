@@ -33,7 +33,6 @@ import {
 	sortExpenses,
 	sumGross,
 	sumNet,
-	sumRows,
 } from "@/features/finances/calc";
 import { DueCell } from "@/features/finances/components/admin/due-cell";
 import { ExpenseToolbar } from "@/features/finances/components/admin/expense-toolbar";
@@ -595,7 +594,7 @@ export function FinancesBoard() {
 					{({ expenses, income }) => {
 						const totalExpenses =
 							expenseBasis === "net" ? sumNet(expenses) : sumGross(expenses);
-						const manualIncome = sumRows(income);
+						const manualIncome = sumNet(income);
 						const feeIncome =
 							mode === "actual" ? feeSummary.collectedTotal : projectedFee;
 						const totalIncome = manualIncome + feeIncome;

@@ -12,7 +12,7 @@ export interface FormulaInputProps
 	value: string;
 	onValueChange: (value: string) => void;
 	evaluate: (expr: string) => number;
-	format?: (value: number) => string;
+	format: (value: number) => string;
 	showResult?: boolean;
 	resultTestId?: string;
 	inputClassName?: string;
@@ -28,7 +28,7 @@ export function FormulaInput({
 	value,
 	onValueChange,
 	evaluate,
-	format = String,
+	format,
 	showResult = true,
 	className,
 	inputClassName,

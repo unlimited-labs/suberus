@@ -52,6 +52,7 @@ describe("FormulaInput", () => {
 				value="500"
 				onValueChange={() => {}}
 				evaluate={evaluate}
+				format={String}
 				resultTestId="result"
 			/>,
 		);
@@ -64,6 +65,7 @@ describe("FormulaInput", () => {
 				value="2*250"
 				onValueChange={() => {}}
 				evaluate={evaluate}
+				format={String}
 				showResult={false}
 				resultTestId="result"
 			/>,
@@ -74,7 +76,12 @@ describe("FormulaInput", () => {
 	it("strips letters and converts commas before reporting changes", () => {
 		const onValueChange = vi.fn();
 		const { getByRole } = render(
-			<FormulaInput value="" onValueChange={onValueChange} evaluate={evaluate} />,
+			<FormulaInput
+				value=""
+				onValueChange={onValueChange}
+				evaluate={evaluate}
+				format={String}
+			/>,
 		);
 		fireEvent.change(getByRole("textbox"), {
 			target: { value: "12a*3,5" },

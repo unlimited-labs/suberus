@@ -53,10 +53,6 @@ export interface FeeProjectionRow {
 	qty: number;
 }
 
-export function sumRows(rows: FinanceRow[]): number {
-	return rows.reduce((sum, row) => sum + evalAmount(row.amountExpr), 0);
-}
-
 export function projectFeeIncome(rows: FeeProjectionRow[]): number {
 	return rows.reduce((sum, row) => {
 		const price = Number.isFinite(row.price) ? row.price : 0;

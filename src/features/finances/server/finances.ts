@@ -50,10 +50,6 @@ export async function listFinanceEntries(): Promise<FinanceEntryDto[]> {
 	}));
 }
 
-export function getVatRates() {
-	return getSetting("FINANCES_VAT_RATES");
-}
-
 export async function getContractorSuggestions(): Promise<string[]> {
 	const [rows, saved] = await Promise.all([
 		prisma.financeEntry.findMany({

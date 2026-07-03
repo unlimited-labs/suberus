@@ -6,11 +6,11 @@ import {
 	addContractor,
 	getContractorSuggestions,
 	getFeeSummary,
-	getVatRates,
 	listFinanceEntries,
 	saveFinanceEntries,
 } from "@/features/finances/server/finances";
 import { saveFinancesSchema } from "@/features/finances/validations";
+import { getSetting } from "@/features/settings/server/settings";
 
 export const listFinancesFn = createServerFn({ method: "GET" })
 	.middleware([adminOnlyMiddleware])
@@ -18,7 +18,7 @@ export const listFinancesFn = createServerFn({ method: "GET" })
 		const [entries, feeSummary, vatRates, contractors] = await Promise.all([
 			listFinanceEntries(),
 			getFeeSummary(),
-			getVatRates(),
+			getSetting("FINANCES_VAT_RATES"),
 			getContractorSuggestions(),
 		]);
 		return { entries, feeSummary, vatRates, contractors };

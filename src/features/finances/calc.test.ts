@@ -12,7 +12,6 @@ import {
 	sortExpenses,
 	sumGross,
 	sumNet,
-	sumRows,
 } from "@/features/finances/calc";
 
 const row = (over: Partial<FinanceRow>): FinanceRow => ({
@@ -34,21 +33,6 @@ describe("evalAmount", () => {
 		expect(evalAmount("2*")).toBe(0);
 		expect(evalAmount("abc")).toBe(0);
 		expect(evalAmount("-5")).toBe(0);
-	});
-});
-
-describe("sumRows", () => {
-	it("sums evaluated expressions", () => {
-		expect(
-			sumRows([
-				{ label: "a", amountExpr: "100" },
-				{ label: "b", amountExpr: "2*125.25" },
-			]),
-		).toBe(350.5);
-	});
-
-	it("is 0 for an empty ledger", () => {
-		expect(sumRows([])).toBe(0);
 	});
 });
 
