@@ -68,4 +68,42 @@ test.describe("Finances enabled toggle", () => {
 		});
 		await expect(financesLink(page)).not.toBeVisible();
 	});
+
+	test("adds and removes VAT rates while enabled, then restores off", async ({
+		page,
+	}) => {
+		const settingsPage = new AdminSettingsPage(page);
+		await settingsPage.goto();
+		await openTab(page);
+
+		await financesSwitch(page).click();
+		await expect(page.getByText("Finances enabled")).toBeVisible({
+			timeout: 10000,
+		});
+		await expect(page.getByTestId("vat-row-8")).toBeVisible();
+		await expect(page.getByTestId("vat-row-23")).toBeVisible();
+
+		// Add a new rate
+		await page.getByTestId("vat-new-rate").fill("5");
+		await page.getByTestId("vat-add").click();
+		await expect(page.getByTestId("vat-row-5")).toBeVisible();
+		await expect(page.getByText("VAT rates saved")).toBeVisible({
+			timeout: 10000,
+		});
+
+		// Reject a duplicate rate
+		await page.getByTestId("vat-new-rate").fill("23");
+		await page.getByTestId("vat-add").click();
+		await expect(page.getByText("That rate already exists")).toBeVisible();
+
+		// Remove the added rate
+		await page.getByRole("button", { name: "Remove 5% VAT" }).click();
+		await expect(page.getByTestId("vat-row-5")).toHaveCount(0);
+
+		// Restore default (off)
+		await financesSwitch(page).click();
+		await expect(page.getByText("Finances disabled")).toBeVisible({
+			timeout: 10000,
+		});
+	});
 });
