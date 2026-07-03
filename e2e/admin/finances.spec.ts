@@ -1,3 +1,4 @@
+import * as XLSX from "xlsx";
 import { expect, test } from "./fixtures";
 
 /**
@@ -178,5 +179,83 @@ test.describe("Finances", () => {
 
 		await page.getByTestId("sim-qty-0").fill("100");
 		await expect(page.getByTestId("finances-netto")).toBeVisible();
+	});
+
+	test("XLSX export has correct columns, VAT math, formula eval and neutralizes injection", async ({
+		page,
+	}) => {
+		// Seed one expense (net formula + 23% VAT, injection-triggering label +
+		// contractor, ordered/paid, due) and one income (formula, no VAT)
+		await page.getByTestId("expense-add").click();
+		await page.getByTestId("expense-label-0").fill("=1+2 Venue E2E");
+		await page.getByTestId("expense-contractor-0").fill("@Acme E2E");
+		await page.getByTestId("expense-net-0").fill("2*500");
+		await page.getByTestId("expense-vat-23-0").click();
+		await expect(page.getByTestId("expense-gross-0")).toHaveValue("1230.00");
+		await page.getByTestId("expense-ordered-0").click();
+		await page.getByTestId("expense-paid-0").click();
+		await page.getByTestId("expense-due-0").fill("2026-08-01");
+
+		await page.getByTestId("income-add").click();
+		await page.getByTestId("income-label-0").fill("Export Inc E2E");
+		await page.getByTestId("income-amount-0").fill("2*250");
+
+		await page.getByRole("button", { name: "Save" }).click();
+		await expect(page.getByText("Saved")).toBeVisible({ timeout: 10000 });
+
+		// Download + parse the XLSX
+		const response = await page.request.get("/api/admin/finances/export");
+		expect(response.status()).toBe(200);
+		expect(response.headers()["content-type"]).toContain("spreadsheetml");
+
+		const wb = XLSX.read(await response.body(), { type: "buffer" });
+		const sheet = wb.Sheets.Finances;
+		expect(sheet).toBeDefined();
+		const rows = XLSX.utils.sheet_to_json<Record<string, string | number>>(sheet);
+
+		// Expense row — injection neutralized, VAT net↔gross math
+		const expenseRow = rows.find((r) => r.Type === "Expense");
+		expect(expenseRow).toBeDefined();
+		expect(expenseRow?.Item).toBe("'=1+2 Venue E2E");
+		expect(expenseRow?.Contractor).toBe("'@Acme E2E");
+		expect(expenseRow?.Net).toBe(1000);
+		expect(expenseRow?.["VAT %"]).toBe(23);
+		expect(expenseRow?.VAT).toBe(230);
+		expect(expenseRow?.Gross).toBe(1230);
+		expect(expenseRow?.Ordered).toBe("yes");
+		expect(expenseRow?.Paid).toBe("yes");
+		expect(expenseRow?.Due).toBe("2026-08-01");
+		expect(expenseRow?.Currency).toBeTruthy();
+
+		// Income row — formula evaluated into the export, no VAT
+		const incomeRow = rows.find((r) => r.Item === "Export Inc E2E");
+		expect(incomeRow).toBeDefined();
+		expect(incomeRow?.Net).toBe(500);
+		expect(incomeRow?.Gross).toBe(500);
+		expect(incomeRow?.VAT).toBe(0);
+
+		// Registration-fee auto-line is present
+		expect(
+			rows.some((r) => r.Type === "Income" && r.Item === "Registration fees"),
+		).toBe(true);
+
+		// Totals identity — Net = Income − Expenses, expenses total is our gross
+		const totalIncome = rows.find((r) => r.Type === "Total" && r.Item === "Income");
+		const totalExpenses = rows.find(
+			(r) => r.Type === "Total" && r.Item === "Expenses",
+		);
+		const totalNet = rows.find((r) => r.Type === "Total" && r.Item === "Net");
+		expect(totalExpenses?.Gross).toBe(1230);
+		expect(totalNet?.Gross).toBe(
+			Number(totalIncome?.Gross) - Number(totalExpenses?.Gross),
+		);
+
+		// Cleanup
+		await page.getByTestId("expense-remove-0").click();
+		await page.getByTestId("finances-remove-confirm").click();
+		await page.getByTestId("income-remove-0").click();
+		await page.getByTestId("finances-remove-confirm").click();
+		await page.getByRole("button", { name: "Save" }).click();
+		await expect(page.getByText("Saved")).toBeVisible({ timeout: 10000 });
 	});
 });

@@ -7,6 +7,7 @@ import {
 	getFeeSummary,
 	listFinanceEntries,
 } from "@/features/finances/server/finances";
+import { neutralizeFormula } from "@/shared/server/spreadsheet-safe";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -43,8 +44,8 @@ export const Route = createFileRoute("/api/admin/finances/export")({
 					due: string = "",
 				) => ({
 					Type: type,
-					Item: item,
-					Contractor: contractor,
+					Item: neutralizeFormula(item),
+					Contractor: neutralizeFormula(contractor),
 					Net: round2(net),
 					"VAT %": vatRate ?? "",
 					VAT: round2(gross - net),
