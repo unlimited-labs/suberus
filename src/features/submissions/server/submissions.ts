@@ -1,6 +1,10 @@
 import latinize from "latinize";
 import { env } from "@/env";
-import { logActivity } from "@/features/activity-log/server/activity-log";
+import {
+	logActivity,
+	logActivityTx,
+} from "@/features/activity-log/server/activity-log";
+import { activityDetail } from "@/features/activity-log/types";
 import { assignReviewer } from "@/features/reviews/server/assignments";
 import { getSetting } from "@/features/settings/server/settings";
 import { SUBMISSION_TYPE_TO_KEY } from "@/features/settings/types";
@@ -378,18 +382,15 @@ export async function createNewSubmission(
 		);
 
 		// Create activity log entry
-		await tx.activityLog.create({
-			data: {
-				type: "SUBMISSION_CREATED",
-				submissionId: submission.id,
-				performedBy: performedById,
-				detail: {
-					type: "SUBMISSION_CREATED",
-					title: data.title,
-					submissionType: data.type,
-					isDraft,
-				},
-			},
+		await logActivityTx(tx, {
+			type: "SUBMISSION_CREATED",
+			submissionId: submission.id,
+			performedBy: performedById,
+			detail: activityDetail("SUBMISSION_CREATED", {
+				title: data.title,
+				submissionType: data.type,
+				isDraft,
+			}),
 		});
 
 		return submission;
@@ -864,20 +865,17 @@ export async function resubmitSubmission(
 		);
 		await writeVersionSnapshot(tx, version.id, data.authors, keywordNames);
 
-		await tx.activityLog.create({
-			data: {
-				type: "SUBMISSION_RESUBMITTED",
-				submissionId,
-				performedBy: userId,
-				detail: {
-					type: "SUBMISSION_RESUBMITTED",
-					fromStatus: "REVISE_REQUIRED",
-					toStatus: "RESUBMITTED",
-					round: nextRound,
-					event: "RESUBMIT",
-					reason: data.comment || "Author resubmitted revised version",
-				},
-			},
+		await logActivityTx(tx, {
+			type: "SUBMISSION_RESUBMITTED",
+			submissionId,
+			performedBy: userId,
+			detail: activityDetail("SUBMISSION_RESUBMITTED", {
+				fromStatus: "REVISE_REQUIRED",
+				toStatus: "RESUBMITTED",
+				round: nextRound,
+				event: "RESUBMIT",
+				reason: data.comment || "Author resubmitted revised version",
+			}),
 		});
 
 		return version;
@@ -987,16 +985,13 @@ export async function submitConditionalRevision(
 		);
 		await writeVersionSnapshot(tx, version.id, data.authors, keywordNames);
 
-		await tx.activityLog.create({
-			data: {
-				type: "SUBMISSION_REVISION_UPLOADED",
-				submissionId,
-				performedBy: userId,
-				detail: {
-					type: "SUBMISSION_REVISION_UPLOADED",
-					version: nextVersion,
-				},
-			},
+		await logActivityTx(tx, {
+			type: "SUBMISSION_REVISION_UPLOADED",
+			submissionId,
+			performedBy: userId,
+			detail: activityDetail("SUBMISSION_REVISION_UPLOADED", {
+				version: nextVersion,
+			}),
 		});
 
 		return version;

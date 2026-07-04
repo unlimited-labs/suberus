@@ -1,6 +1,9 @@
 import { createActor } from "xstate";
 import { env } from "@/env";
-import { logActivity } from "@/features/activity-log/server/activity-log";
+import {
+	logActivity,
+	logActivityTx,
+} from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
 import { getSetting } from "@/features/settings/server/settings";
 import type { SubmissionTypeConfig } from "@/features/settings/types";
@@ -166,23 +169,20 @@ export async function executeSubmissionTransition(
 			event.type,
 		);
 
-		await tx.activityLog.create({
-			data: {
-				type: "SUBMISSION_STATUS_CHANGED",
-				submissionId,
-				performedBy: triggeredBy,
-				detail: {
-					type: "SUBMISSION_STATUS_CHANGED",
-					fromStatus: submission.status,
-					toStatus: newState,
-					round:
-						event.type === "RESUBMIT"
-							? submission.currentRound + 1
-							: submission.currentRound,
-					event: event.type,
-					reason: reason || description,
-				},
-			},
+		await logActivityTx(tx, {
+			type: "SUBMISSION_STATUS_CHANGED",
+			submissionId,
+			performedBy: triggeredBy,
+			detail: activityDetail("SUBMISSION_STATUS_CHANGED", {
+				fromStatus: submission.status,
+				toStatus: newState,
+				round:
+					event.type === "RESUBMIT"
+						? submission.currentRound + 1
+						: submission.currentRound,
+				event: event.type,
+				reason: reason || description,
+			}),
 		});
 	});
 

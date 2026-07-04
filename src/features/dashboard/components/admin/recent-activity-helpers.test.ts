@@ -1,5 +1,7 @@
 import { IconCash, IconFileText, IconUser } from "@tabler/icons-react";
 import { describe, expect, it } from "vitest";
+import { activityLabels } from "@/features/activity-log/labels";
+import { ActivityType } from "@/generated/prisma/enums";
 import {
 	type ActivityEvent,
 	getEventColor,
@@ -16,6 +18,7 @@ const event = (
 	type,
 	userId: null,
 	submissionId: null,
+	performerId: null,
 	performerName: null,
 	submissionTitle: null,
 	userName: null,
@@ -52,7 +55,7 @@ describe("getEventDescription", () => {
 		expect(getEventDescription(event("SUBMISSION_STATUS_CHANGED"))).toBeNull();
 	});
 
-	it("renders status and role transitions", () => {
+	it("renders status and role transitions with friendly labels", () => {
 		expect(
 			getEventDescription(
 				event("SUBMISSION_STATUS_CHANGED", {
@@ -60,12 +63,12 @@ describe("getEventDescription", () => {
 					toStatus: "UNDER_REVIEW",
 				}),
 			),
-		).toBe("SUBMITTED → UNDER_REVIEW");
+		).toBe("Submitted → Under Review");
 		expect(
 			getEventDescription(
 				event("USER_ROLE_CHANGED", { fromRole: "AUTHOR", toRole: "REVIEWER" }),
 			),
-		).toBe("AUTHOR → REVIEWER");
+		).toBe("Author → Reviewer");
 	});
 
 	it("renders a decision and a fee amount with currency", () => {
@@ -74,9 +77,57 @@ describe("getEventDescription", () => {
 		).toBe("ACCEPT");
 		expect(
 			getEventDescription(
+				event("REVIEW_SUBMITTED", { decision: "REVISE_AND_RESUBMIT" }),
+			),
+		).toBe("REVISE AND RESUBMIT");
+		expect(
+			getEventDescription(
 				event("FEE_MARKED_PAID", { amount: 100, currency: "PLN" }),
 			),
 		).toBe("100 PLN");
+	});
+
+	it("covers detail-bearing types across entities", () => {
+		expect(
+			getEventDescription(
+				event("SUBMISSION_REVISION_UPLOADED", { version: 2 }),
+			),
+		).toBe("Version 2");
+		expect(
+			getEventDescription(
+				event("DECISION_DESK_REJECT", { reason: "Out of scope" }),
+			),
+		).toBe("Out of scope");
+		expect(
+			getEventDescription(event("USER_TOGGLED_ACTIVE", { isActive: false })),
+		).toBe("Deactivated");
+		expect(
+			getEventDescription(
+				event("USER_PROFILE_UPDATED", { fields: ["firstName", "country"] }),
+			),
+		).toBe("Updated: firstName, country");
+		expect(
+			getEventDescription(
+				event("INVITATION_CREATED", { email: "a@b.co", role: "REVIEWER" }),
+			),
+		).toBe("a@b.co · Reviewer");
+		expect(
+			getEventDescription(event("EXHIBITOR_APPLIED", { companyName: "ACME" })),
+		).toBe("ACME");
+		expect(
+			getEventDescription(
+				event("DOCUMENT_GENERATED", { documentName: "Certificate.pdf" }),
+			),
+		).toBe("Certificate.pdf");
+	});
+
+	it("shows the author for a deleted submission", () => {
+		expect(
+			getEventDescription({
+				...event("SUBMISSION_DELETED", { title: "Paper", sequentialNumber: 7 }),
+				userName: "Ada",
+			}),
+		).toBe("Author: Ada");
 	});
 
 	it("returns null for partial or unhandled details", () => {
@@ -118,9 +169,25 @@ describe("resolveActivitySubject", () => {
 		).toEqual({ kind: "name", name: "Ada" });
 	});
 
+	it("shows the deleted submission title snapshot (non-linkable)", () => {
+		expect(
+			resolveActivitySubject(
+				event("SUBMISSION_DELETED", { title: "Paper", sequentialNumber: 7 }),
+			),
+		).toEqual({ kind: "name", name: "#7 Paper" });
+	});
+
 	it("is none when nothing is linkable", () => {
 		expect(resolveActivitySubject(event("SOMETHING"))).toEqual({
 			kind: "none",
 		});
+	});
+});
+
+describe("activityLabels", () => {
+	it("has a non-empty label for every ActivityType", () => {
+		for (const type of Object.values(ActivityType)) {
+			expect(activityLabels[type]?.length ?? 0).toBeGreaterThan(0);
+		}
 	});
 });

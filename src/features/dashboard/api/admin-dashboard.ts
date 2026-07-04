@@ -50,6 +50,7 @@ export const getMoreActivity = createServerFn({ method: "GET" })
 			type: item.type,
 			userId: item.userId,
 			submissionId: item.submissionId,
+			performerId: item.performer?.id ?? null,
 			performerName: item.performer
 				? `${item.performer.firstName ?? ""} ${item.performer.lastName ?? ""}`.trim() ||
 					null
@@ -61,7 +62,7 @@ export const getMoreActivity = createServerFn({ method: "GET" })
 				: null,
 			detail: item.detail as Record<
 				string,
-				string | number | boolean | null
+				string | number | boolean | string[] | null
 			> | null,
 			createdAt: item.createdAt,
 		}));

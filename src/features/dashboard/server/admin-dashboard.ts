@@ -55,10 +55,11 @@ export interface AdminDashboardMetrics {
 		type: string;
 		userId: string | null;
 		submissionId: string | null;
+		performerId: string | null;
 		performerName: string | null;
 		submissionTitle: string | null;
 		userName: string | null;
-		detail: Record<string, string | number | boolean | null> | null;
+		detail: Record<string, string | number | boolean | string[] | null> | null;
 		createdAt: Date;
 	}>;
 	usersByCountry: Array<{ country: string; count: number }>;
@@ -300,12 +301,13 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 			type: item.type,
 			userId: item.userId,
 			submissionId: item.submissionId,
+			performerId: item.performer?.id ?? null,
 			performerName: formatPersonName(item.performer),
 			submissionTitle: item.submission?.title ?? null,
 			userName: formatPersonName(item.user),
 			detail: item.detail as Record<
 				string,
-				string | number | boolean | null
+				string | number | boolean | string[] | null
 			> | null,
 			createdAt: item.createdAt,
 		})),

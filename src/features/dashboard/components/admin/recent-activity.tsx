@@ -12,6 +12,7 @@ import {
 	resolveActivitySubject,
 } from "@/features/dashboard/components/admin/recent-activity-helpers";
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { formatRelativeTime } from "@/shared/lib/format-date";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
@@ -53,12 +54,30 @@ function ActivityEventSubject({ subject }: { subject: ActivitySubject }) {
 	return null;
 }
 
+function PerformerByline({ event }: { event: ActivityEvent }) {
+	if (!event.performerName) return "System";
+	if (!event.performerId) return `by ${event.performerName}`;
+	return (
+		<>
+			by{" "}
+			<Link
+				to="/admin/users/$id"
+				params={{ id: event.performerId }}
+				className="hover:underline"
+			>
+				{event.performerName}
+			</Link>
+		</>
+	);
+}
+
 function ActivityEventRow({ event }: { event: ActivityEvent }) {
 	const Icon = getEventIcon(event.type);
 	const colorClass = getEventColor(event.type);
 	const label = activityLabels[event.type] ?? event.type;
 	const description = getEventDescription(event);
 	const subject = resolveActivitySubject(event);
+	const { formatDateTime } = useDateFormat();
 
 	return (
 		<div className="flex items-start gap-3 border-b pb-3 last:border-b-0">
@@ -70,7 +89,10 @@ function ActivityEventRow({ event }: { event: ActivityEvent }) {
 					<Badge variant="outline" className="shrink-0 text-xs">
 						{label}
 					</Badge>
-					<span className="text-xs text-muted-foreground">
+					<span
+						className="text-xs text-muted-foreground"
+						title={formatDateTime(event.createdAt)}
+					>
 						{formatRelativeTime(event.createdAt)}
 					</span>
 				</div>
@@ -82,7 +104,7 @@ function ActivityEventRow({ event }: { event: ActivityEvent }) {
 				)}
 
 				<span className="text-xs text-muted-foreground">
-					{event.performerName ? `by ${event.performerName}` : "System"}
+					<PerformerByline event={event} />
 				</span>
 			</div>
 		</div>
