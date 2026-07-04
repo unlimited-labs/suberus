@@ -8,8 +8,31 @@ import {
 	IconUserMinus,
 } from "@tabler/icons-react";
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
+import { statusLabels } from "@/shared/lib/labels/submission";
+import { roleLabels } from "@/shared/lib/labels/user-role";
 
 export type ActivityEvent = AdminDashboardMetrics["recentActivity"][number];
+
+function str(value: unknown): string | undefined {
+	return value == null ? undefined : String(value);
+}
+
+function statusLabel(value: unknown): string | undefined {
+	const raw = str(value);
+	return raw
+		? (statusLabels[raw as keyof typeof statusLabels] ?? raw)
+		: undefined;
+}
+
+function roleLabel(value: unknown): string | undefined {
+	const raw = str(value);
+	return raw ? (roleLabels[raw as keyof typeof roleLabels] ?? raw) : undefined;
+}
+
+function humanize(value: unknown): string | undefined {
+	const raw = str(value);
+	return raw?.replace(/_/g, " ");
+}
 
 /** Icon for an activity event, by exact type then entity-prefix family. */
 export function getEventIcon(type: string) {
@@ -55,6 +78,11 @@ export type ActivitySubject =
  * mutually-exclusive precedence is unit-testable.
  */
 export function resolveActivitySubject(event: ActivityEvent): ActivitySubject {
+	if (event.type === "SUBMISSION_DELETED" && event.detail?.title) {
+		const seq = event.detail.sequentialNumber;
+		const title = String(event.detail.title);
+		return { kind: "name", name: seq != null ? `#${seq} ${title}` : title };
+	}
 	if (event.submissionId && event.submissionTitle) {
 		return {
 			kind: "submission",
@@ -72,33 +100,63 @@ export function resolveActivitySubject(event: ActivityEvent): ActivitySubject {
 	return { kind: "none" };
 }
 
-/** Short detail line for an event (status/role transition, decision, fee). */
-export function getEventDescription(event: ActivityEvent): string | null {
-	const detail = event.detail;
-	if (!detail) return null;
+type DescriptionRenderer = (event: ActivityEvent) => string | null;
 
-	switch (event.type) {
-		case "SUBMISSION_STATUS_CHANGED":
-			if (detail.fromStatus && detail.toStatus) {
-				return `${String(detail.fromStatus)} → ${String(detail.toStatus)}`;
-			}
-			return null;
-		case "USER_ROLE_CHANGED":
-			if (detail.fromRole && detail.toRole) {
-				return `${String(detail.fromRole)} → ${String(detail.toRole)}`;
-			}
-			return null;
-		case "DECISION_SUBMITTED":
-			if (detail.decision) {
-				return String(detail.decision);
-			}
-			return null;
-		case "FEE_MARKED_PAID":
-			if (detail.amount != null) {
-				return `${String(detail.amount)} ${detail.currency ? String(detail.currency) : ""}`.trim();
-			}
-			return null;
-		default:
-			return null;
-	}
+const arrow = (
+	from: string | undefined,
+	to: string | undefined,
+): string | null => (from && to ? `${from} → ${to}` : null);
+
+const statusArrow: DescriptionRenderer = (e) =>
+	arrow(statusLabel(e.detail?.fromStatus), statusLabel(e.detail?.toStatus));
+const reasonOf: DescriptionRenderer = (e) => str(e.detail?.reason) ?? null;
+const decisionOf: DescriptionRenderer = (e) =>
+	humanize(e.detail?.decision) ?? null;
+const emailOf: DescriptionRenderer = (e) => str(e.detail?.email) ?? null;
+const documentOf: DescriptionRenderer = (e) =>
+	str(e.detail?.documentName) ?? null;
+
+const descriptionRenderers: Record<string, DescriptionRenderer> = {
+	SUBMISSION_DELETED: (e) => (e.userName ? `Author: ${e.userName}` : null),
+	SUBMISSION_STATUS_CHANGED: statusArrow,
+	SUBMISSION_RESUBMITTED: statusArrow,
+	USER_ROLE_CHANGED: (e) =>
+		arrow(roleLabel(e.detail?.fromRole), roleLabel(e.detail?.toRole)),
+	SUBMISSION_REVISION_UPLOADED: (e) =>
+		e.detail?.version != null ? `Version ${e.detail.version}` : null,
+	SUBMISSION_WITHDRAWN: reasonOf,
+	DECISION_DESK_REJECT: reasonOf,
+	DECISION_DESK_ACCEPT: reasonOf,
+	DECISION_OVERRIDE: (e) => str(e.detail?.reasoning) ?? null,
+	REVIEW_SUBMITTED: decisionOf,
+	DECISION_SUBMITTED: decisionOf,
+	USER_TOGGLED_ACTIVE: (e) =>
+		e.detail ? (e.detail.isActive ? "Activated" : "Deactivated") : null,
+	USER_TOGGLED_LATE_SUBMISSION: (e) =>
+		e.detail ? (e.detail.allowLateSubmission ? "Enabled" : "Disabled") : null,
+	USER_PROFILE_UPDATED: (e) =>
+		Array.isArray(e.detail?.fields) && e.detail.fields.length > 0
+			? `Updated: ${e.detail.fields.join(", ")}`
+			: null,
+	INVITATION_CREATED: (e) => {
+		const email = str(e.detail?.email);
+		if (!email) return null;
+		const role = roleLabel(e.detail?.role);
+		return role ? `${email} · ${role}` : email;
+	},
+	INVITATION_USED: emailOf,
+	USER_REGISTERED: emailOf,
+	USER_DELETED: emailOf,
+	EXHIBITOR_APPLIED: (e) => str(e.detail?.companyName) ?? null,
+	DOCUMENT_GENERATED: documentOf,
+	DOCUMENT_DELETED: documentOf,
+	FEE_MARKED_PAID: (e) =>
+		e.detail?.amount != null
+			? `${String(e.detail.amount)} ${e.detail.currency ? String(e.detail.currency) : ""}`.trim()
+			: null,
+};
+
+/** Short detail line for an event: transition, decision, reason, snapshot. */
+export function getEventDescription(event: ActivityEvent): string | null {
+	return descriptionRenderers[event.type]?.(event) ?? null;
 }

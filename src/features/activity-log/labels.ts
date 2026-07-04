@@ -1,4 +1,6 @@
-export const activityLabels: Record<string, string> = {
+import type { ActivityType } from "@/generated/prisma/enums";
+
+const labels = {
 	USER_REGISTERED: "User registered",
 	USER_EMAIL_VERIFIED: "Email verified",
 	USER_PROFILE_UPDATED: "Profile updated",
@@ -15,6 +17,7 @@ export const activityLabels: Record<string, string> = {
 	SUBMISSION_REVISION_UPLOADED: "Revised version uploaded",
 	SUBMISSION_TRACK_CHANGED: "Track changed",
 	SUBMISSION_EDITED: "Edited by admin",
+	SUBMISSION_DELETED: "Submission deleted",
 	REVIEW_ASSIGNED: "Reviewer assigned",
 	REVIEW_SUBMITTED: "Review submitted",
 	REVIEW_CANCELLED: "Review cancelled",
@@ -34,4 +37,6 @@ export const activityLabels: Record<string, string> = {
 	EXHIBITOR_WITHDRAWN: "Exhibitor withdrawn",
 	DOCUMENT_GENERATED: "Document generated",
 	DOCUMENT_DELETED: "Document deleted",
-};
+} satisfies Record<ActivityType, string>;
+
+export const activityLabels: Record<string, string> = labels;

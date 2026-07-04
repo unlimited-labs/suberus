@@ -1,84 +1,74 @@
-import type { SubmissionStatus, UserRole } from "@/generated/prisma/enums";
+import type {
+	ActivityType,
+	SubmissionStatus,
+	UserRole,
+} from "@/generated/prisma/enums";
 
-// Discriminated union for detail field per ActivityType
-export type ActivityDetail =
-	| { type: "USER_REGISTERED"; email: string }
-	| { type: "USER_EMAIL_VERIFIED" }
-	| { type: "USER_PROFILE_UPDATED"; fields: string[] }
-	| { type: "USER_PASSWORD_CHANGED" }
-	| { type: "USER_ROLE_CHANGED"; fromRole: UserRole; toRole: UserRole }
-	| { type: "USER_TOGGLED_ACTIVE"; isActive: boolean }
-	| { type: "USER_TOGGLED_LATE_SUBMISSION"; allowLateSubmission: boolean }
-	| { type: "USER_DELETED"; email: string }
-	| {
-			type: "SUBMISSION_CREATED";
-			title: string;
-			submissionType: string;
-			isDraft: boolean;
-	  }
-	| { type: "SUBMISSION_DRAFT_SUBMITTED" }
-	| {
-			type: "SUBMISSION_STATUS_CHANGED";
-			fromStatus: SubmissionStatus | null;
-			toStatus: SubmissionStatus;
-			round: number | null;
-			event: string;
-			reason?: string;
-	  }
-	| { type: "SUBMISSION_WITHDRAWN"; reason?: string }
-	| { type: "SUBMISSION_RESUBMITTED"; round: number }
-	| { type: "SUBMISSION_REVISION_UPLOADED"; version: number }
-	| { type: "SUBMISSION_TRACK_CHANGED"; trackId: string | null }
-	| { type: "SUBMISSION_DELETED"; title: string; sequentialNumber: number }
-	| { type: "REVIEW_ASSIGNED"; assignmentId: string; deadline?: string }
-	| { type: "REVIEW_SUBMITTED"; decision: string }
-	| { type: "REVIEW_CANCELLED"; assignmentId: string }
-	| { type: "REVIEW_OVERDUE"; assignmentId: string }
-	| {
-			type: "DECISION_SUBMITTED";
-			decision: string;
-			reasoning?: string;
-	  }
-	| { type: "DECISION_DESK_REJECT"; reason: string }
-	| { type: "DECISION_DESK_ACCEPT"; reason: string }
-	| { type: "DECISION_OVERRIDE"; reasoning: string }
-	| { type: "INVITATION_CREATED"; email: string; role: UserRole }
-	| { type: "INVITATION_USED"; email: string }
-	| { type: "INVITATION_CANCELLED" }
-	| {
-			type: "FEE_MARKED_PAID";
-			feeType: string;
-			amount: number;
-			currency: string;
-	  }
-	| { type: "FEE_MARKED_UNPAID" }
-	| {
-			type: "EXHIBITOR_APPLIED";
-			companyName: string;
-			hasPresentation: boolean;
-	  }
-	| { type: "EXHIBITOR_APPROVED"; reason: string }
-	| { type: "EXHIBITOR_REJECTED"; reason: string }
-	| { type: "EXHIBITOR_WITHDRAWN" }
-	| {
-			type: "DOCUMENT_GENERATED";
-			documentName: string;
-			templateName: string | null;
-	  }
-	| { type: "DOCUMENT_DELETED"; documentName: string };
+type AssertExhaustive<T extends Record<ActivityType, object>> = T;
 
-/** Helper to create a typed activity detail object */
-export function activityDetail<T extends ActivityDetail["type"]>(
+type NoDetail = Record<never, never>;
+
+type StatusChange = {
+	fromStatus: SubmissionStatus | null;
+	toStatus: SubmissionStatus;
+	round: number | null;
+	event: string;
+	reason?: string;
+};
+
+// AssertExhaustive forces a shape for every ActivityType (missing key = compile error).
+type DetailShapes = AssertExhaustive<{
+	USER_REGISTERED: { email: string };
+	USER_EMAIL_VERIFIED: NoDetail;
+	USER_PROFILE_UPDATED: { fields: string[] };
+	USER_PASSWORD_CHANGED: NoDetail;
+	USER_ROLE_CHANGED: { fromRole: UserRole; toRole: UserRole };
+	USER_TOGGLED_ACTIVE: { isActive: boolean };
+	USER_TOGGLED_LATE_SUBMISSION: { allowLateSubmission: boolean };
+	USER_DELETED: { email: string };
+	SUBMISSION_CREATED: {
+		title: string;
+		submissionType: string;
+		isDraft: boolean;
+	};
+	SUBMISSION_DRAFT_SUBMITTED: NoDetail;
+	SUBMISSION_STATUS_CHANGED: StatusChange;
+	SUBMISSION_WITHDRAWN: { reason?: string };
+	SUBMISSION_RESUBMITTED: StatusChange;
+	SUBMISSION_REVISION_UPLOADED: { version: number };
+	SUBMISSION_TRACK_CHANGED: { trackId: string | null };
+	SUBMISSION_EDITED: NoDetail;
+	SUBMISSION_DELETED: { title: string; sequentialNumber: number };
+	REVIEW_ASSIGNED: { assignmentId: string; deadline?: string };
+	REVIEW_SUBMITTED: { decision: string };
+	REVIEW_CANCELLED: { assignmentId: string };
+	REVIEW_OVERDUE: { assignmentId: string };
+	DECISION_SUBMITTED: { decision: string; reasoning?: string };
+	DECISION_DESK_REJECT: { reason: string };
+	DECISION_DESK_ACCEPT: { reason: string };
+	DECISION_OVERRIDE: { reasoning: string };
+	INVITATION_CREATED: { email: string; role: UserRole };
+	INVITATION_USED: { email: string };
+	INVITATION_CANCELLED: NoDetail;
+	FEE_MARKED_PAID: { feeType: string; amount: number; currency: string };
+	FEE_MARKED_UNPAID: NoDetail;
+	EXHIBITOR_APPLIED: { companyName: string; hasPresentation: boolean };
+	EXHIBITOR_APPROVED: { reason: string };
+	EXHIBITOR_REJECTED: { reason: string };
+	EXHIBITOR_WITHDRAWN: NoDetail;
+	DOCUMENT_GENERATED: { documentName: string; templateName: string | null };
+	DOCUMENT_DELETED: { documentName: string };
+}>;
+
+// Discriminated union for the detail field per ActivityType.
+export type ActivityDetail = {
+	[K in ActivityType]: { type: K } & DetailShapes[K];
+}[ActivityType];
+
+/** Helper to create a typed activity detail object. */
+export function activityDetail<T extends ActivityType>(
 	type: T,
-	...args: Omit<Extract<ActivityDetail, { type: T }>, "type"> extends Record<
-		string,
-		never
-	>
-		? []
-		: [Omit<Extract<ActivityDetail, { type: T }>, "type">]
-): object {
-	if (args.length === 0) {
-		return { type } as object;
-	}
-	return { type, ...args[0] } as object;
+	...args: keyof DetailShapes[T] extends never ? [] : [DetailShapes[T]]
+): Extract<ActivityDetail, { type: T }> {
+	return { type, ...args[0] } as Extract<ActivityDetail, { type: T }>;
 }

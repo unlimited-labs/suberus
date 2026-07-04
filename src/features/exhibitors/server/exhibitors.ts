@@ -244,20 +244,17 @@ export async function saveExhibitorApplication(
 				where: { id: submissionId },
 				data: { status: "WITHDRAWN" },
 			});
-			await tx.activityLog.create({
-				data: {
-					type: "SUBMISSION_STATUS_CHANGED",
-					submissionId,
-					performedBy: userId,
-					detail: {
-						type: "SUBMISSION_STATUS_CHANGED",
-						fromStatus: "SUBMITTED",
-						toStatus: "WITHDRAWN",
-						round: removedSubmissionRound,
-						event: "WITHDRAW",
-						reason: "Presentation removed by exhibitor",
-					},
-				},
+			await logActivityTx(tx, {
+				type: "SUBMISSION_STATUS_CHANGED",
+				submissionId,
+				performedBy: userId,
+				detail: activityDetail("SUBMISSION_STATUS_CHANGED", {
+					fromStatus: "SUBMITTED",
+					toStatus: "WITHDRAWN",
+					round: removedSubmissionRound,
+					event: "WITHDRAW",
+					reason: "Presentation removed by exhibitor",
+				}),
 			});
 			submissionId = null;
 		}
@@ -460,13 +457,24 @@ export async function decideExhibitor(
 		data: { status: decision, decidedAt: new Date(), decidedById: adminUserId },
 	});
 
-	await logActivity({
-		type: eventType,
+	const base = {
 		userId: exhibitor.userId,
 		performedBy: adminUserId,
 		submissionId: exhibitor.submissionId ?? undefined,
-		detail: activityDetail(eventType, { reason }),
-	});
+	};
+	await logActivity(
+		eventType === "EXHIBITOR_APPROVED"
+			? {
+					...base,
+					type: "EXHIBITOR_APPROVED",
+					detail: activityDetail("EXHIBITOR_APPROVED", { reason }),
+				}
+			: {
+					...base,
+					type: "EXHIBITOR_REJECTED",
+					detail: activityDetail("EXHIBITOR_REJECTED", { reason }),
+				},
+	);
 
 	await sendExhibitorDecisionEmail(exhibitor, eventType, reason);
 }
