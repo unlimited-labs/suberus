@@ -376,7 +376,7 @@ export class AdminSettingsPage {
 	}
 
 	getTimeFormatRadio(value: "24h" | "12h") {
-		return this.page.locator(`#time-${value}`)
+		return this.page.getByRole("radio", { name: value })
 	}
 
 	// --- Confidence Level (Submission Types tab) ---

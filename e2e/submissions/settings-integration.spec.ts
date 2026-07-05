@@ -329,7 +329,7 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 		if (wasTextFormat) {
 			await contentFormatSelect.click();
 			await adminPage.getByRole("option", { name: "File Upload" }).click();
-			await adminPage.getByLabel("pdf").check();
+			await adminPage.getByRole("radio", { name: "pdf" }).check();
 		}
 
 		const maxFileSizeInput = adminPage.getByLabel("Max file size (MB)");
@@ -398,7 +398,7 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 		if (wasTextFormat) {
 			await contentFormatSelect.click();
 			await adminPage.getByRole("option", { name: "File Upload" }).click();
-			await adminPage.getByLabel("pdf").check();
+			await adminPage.getByRole("radio", { name: "pdf" }).check();
 			await adminPage.getByRole("button", { name: "Save" }).click();
 			await expect(
 				adminPage.getByText(/"Oral Presentation" settings saved/i)
