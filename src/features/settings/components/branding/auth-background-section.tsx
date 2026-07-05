@@ -61,7 +61,9 @@ export function AuthBackgroundSection({
 						<Label>Overlay darkness: {data.authBgOverlay}%</Label>
 						<Slider
 							value={[data.authBgOverlay]}
-							onValueChange={([v]) => onChange("authBgOverlay", v)}
+							onValueChange={(v) =>
+								onChange("authBgOverlay", Array.isArray(v) ? v[0] : v)
+							}
 							min={0}
 							max={100}
 							step={5}
