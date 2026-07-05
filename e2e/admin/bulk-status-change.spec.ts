@@ -42,6 +42,8 @@ test.describe.serial("Admin - Bulk Status Change", () => {
 		// Select "Accepted"
 		await dialog.getByRole("combobox").click();
 		await page.getByRole("option", { name: "Accepted", exact: true }).click();
+		// Guard: trigger must show the label "Accepted", not the enum value "ACCEPTED" (Base UI value!=label regression)
+		await expect(dialog.getByRole("combobox")).toContainText("Accepted");
 
 		// Confirm
 		await dialog.getByRole("button", { name: "Save" }).click();

@@ -34,6 +34,8 @@ test.describe("Fee Marking", () => {
 		await page
 			.getByRole("option", { name: /Full Conference Fee/ })
 			.click();
+		// Guard: Select trigger must show the fee NAME, not its stored id (Base UI value!=label regression)
+		await expect(page.getByRole("combobox")).toContainText("Full Conference Fee");
 		await detailPage.confirmDialog();
 
 		// Assert — admin sees paid status with amount
