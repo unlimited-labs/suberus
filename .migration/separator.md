@@ -4,7 +4,7 @@
 
 ## Changed
 
-- `src/shared/ui/separator.tsx` — rewired to `@base-ui/react/separator` (bare component, no `.Root`), type `SeparatorPrimitive.Props`. Dropped the `decorative` prop entirely (Base UI has no equivalent; no consumer passed it). Dropped the dead `"use client"` directive (no-op in this Vite/TanStack Start stack; other migrated wrappers don't carry it). Kept `orientation` and the `data-horizontal:`/`data-vertical:` classes (Base UI emits `data-orientation`, same variant handling as slider). Leftover scan clean.
+- `src/shared/ui/separator.tsx` — rewired to `@base-ui/react/separator` (bare component, no `.Root`), type `SeparatorPrimitive.Props`. Dropped the `decorative` prop entirely (Base UI has no equivalent; no consumer passed it). Dropped the dead `"use client"` directive (no-op in this Vite/TanStack Start stack; other migrated wrappers don't carry it). Kept `orientation` and the `data-horizontal:`/`data-vertical:` classes. NOTE: those Tailwind variants require `@custom-variant data-horizontal/vertical` (added to `src/styles.css` — the project was missing them, so separators/sliders rendered 0px in their cross-axis under BOTH radix and base-ui until this). Leftover scan clean.
 
 ## Left alone
 

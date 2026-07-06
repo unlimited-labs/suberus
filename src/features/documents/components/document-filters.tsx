@@ -64,7 +64,10 @@ export function DocumentFilters({
 				</SelectContent>
 			</Select>
 			<Select
-				items={templates.map((t) => ({ value: t.id, label: t.name }))}
+				items={[
+					{ value: "ALL", label: "All templates" },
+					...templates.map((t) => ({ value: t.id, label: t.name })),
+				]}
 				value={templateId}
 				onValueChange={onTemplateChange}
 			>
