@@ -59,7 +59,7 @@ export function CountryCombobox({
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent
-				className="w-[--radix-popover-trigger-width] p-0"
+				className="w-(--anchor-width) p-0"
 				align="start"
 			>
 				<Command>
