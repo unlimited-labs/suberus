@@ -1,14 +1,11 @@
-import type * as React from "react";
-import { RadioGroup as RadioGroupPrimitive } from "radix-ui";
+import { Radio as RadioPrimitive } from "@base-ui/react/radio";
+import { RadioGroup as RadioGroupPrimitive } from "@base-ui/react/radio-group";
 
 import { cn } from "@/shared/lib/utils";
 
-function RadioGroup({
-	className,
-	...props
-}: React.ComponentProps<typeof RadioGroupPrimitive.Root>) {
+function RadioGroup({ className, ...props }: RadioGroupPrimitive.Props) {
 	return (
-		<RadioGroupPrimitive.Root
+		<RadioGroupPrimitive
 			data-slot="radio-group"
 			className={cn("grid gap-2 w-full", className)}
 			{...props}
@@ -16,12 +13,9 @@ function RadioGroup({
 	);
 }
 
-function RadioGroupItem({
-	className,
-	...props
-}: React.ComponentProps<typeof RadioGroupPrimitive.Item>) {
+function RadioGroupItem({ className, ...props }: RadioPrimitive.Root.Props) {
 	return (
-		<RadioGroupPrimitive.Item
+		<RadioPrimitive.Root
 			data-slot="radio-group-item"
 			className={cn(
 				"border-input text-primary dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 flex size-4 rounded-full focus-visible:ring-3 aria-invalid:ring-3 group/radio-group-item peer relative aspect-square shrink-0 border outline-none after:absolute after:-inset-x-3 after:-inset-y-2 disabled:cursor-not-allowed disabled:opacity-50",
@@ -29,7 +23,7 @@ function RadioGroupItem({
 			)}
 			{...props}
 		>
-			<RadioGroupPrimitive.Indicator
+			<RadioPrimitive.Indicator
 				data-slot="radio-group-indicator"
 				className="group-aria-invalid/radio-group-item:text-destructive text-primary flex size-4 items-center justify-center"
 			>
@@ -40,8 +34,8 @@ function RadioGroupItem({
 				>
 					<circle cx="4" cy="4" r="4" />
 				</svg>
-			</RadioGroupPrimitive.Indicator>
-		</RadioGroupPrimitive.Item>
+			</RadioPrimitive.Indicator>
+		</RadioPrimitive.Root>
 	);
 }
 

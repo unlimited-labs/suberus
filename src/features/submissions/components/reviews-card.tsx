@@ -246,7 +246,7 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 						</div>
 					)}
 
-					<Accordion type="single" collapsible className="space-y-3">
+					<Accordion className="space-y-3">
 						{reviews.map((review) => (
 							<ReviewItem
 								key={review.id}

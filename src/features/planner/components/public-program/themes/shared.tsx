@@ -56,8 +56,8 @@ export function ProgramAuthLink({
 				>
 					{notifications.supported && (
 						<DropdownMenuItem
-							onSelect={(e) => {
-								e.preventDefault();
+							closeOnClick={false}
+							onClick={() => {
 								notifications.toggle(!notifications.enabled);
 							}}
 							className="justify-between gap-3"
@@ -86,7 +86,7 @@ export function ProgramAuthLink({
 					<DropdownMenuItem
 						className="gap-2"
 						data-testid="program-logout-item"
-						onSelect={async () => {
+						onClick={async () => {
 							await authClient.signOut();
 							window.location.reload();
 						}}

@@ -39,6 +39,7 @@ export function FormSelectField({
 			description={description}
 		>
 			<Select
+				items={options}
 				value={field.state.value || ""}
 				onValueChange={(value) => field.handleChange(value)}
 				disabled={disabled}

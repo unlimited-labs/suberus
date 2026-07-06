@@ -199,7 +199,7 @@ test.describe("Submission Detail - Authors in Overview", () => {
 		await page.goto(`/submissions/${id}`);
 
 		// Assert
-		await expect(page.getByRole("tab", { name: /Overview/i })).toHaveAttribute("data-state", "active");
+		await expect(page.getByRole("tab", { name: /Overview/i })).toHaveAttribute("aria-selected", "true");
 		await expect(page.getByText("John Doe")).toBeVisible();
 	});
 
@@ -351,9 +351,9 @@ test.describe("Submission Detail - Tabs Visibility", () => {
 
 		// Assert
 		const overviewTab = page.getByRole("tab", { name: /Overview/i });
-		await expect(overviewTab).toHaveAttribute("data-state", "active");
-		const tabState = await overviewTab.getAttribute("data-state");
-		expect(tabState).toBe("active");
+		await expect(overviewTab).toHaveAttribute("aria-selected", "true");
+		const tabState = await overviewTab.getAttribute("data-active");
+		expect(tabState).not.toBeNull();
 	});
 
 	test("tabs work correctly in dark mode", async ({ page, testRun, cleanup }, testInfo) => {
@@ -375,10 +375,10 @@ test.describe("Submission Detail - Tabs Visibility", () => {
 		await historyTab.click();
 
 		// Assert
-		await expect(historyTab).toHaveAttribute("data-state", "active");
+		await expect(historyTab).toHaveAttribute("aria-selected", "true");
 		const overviewTab = page.getByRole("tab", { name: /Overview/i });
 		await overviewTab.click();
-		await expect(overviewTab).toHaveAttribute("data-state", "active");
+		await expect(overviewTab).toHaveAttribute("aria-selected", "true");
 	});
 });
 

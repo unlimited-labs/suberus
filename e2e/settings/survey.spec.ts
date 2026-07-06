@@ -34,9 +34,7 @@ test.describe("User Settings - Survey", () => {
 
 	test("user toggles survey answers", async ({ page }) => {
 		// Arrange
-		const visaCheckbox = page.getByLabel(
-			"Please send me an Invitation Letter for a Visa Application.",
-		);
+		const visaCheckbox = page.getByRole("checkbox", { name: "Please send me an Invitation Letter for a Visa Application." });
 
 		// Act
 		await visaCheckbox.check();
@@ -53,9 +51,7 @@ test.describe("User Settings - Survey", () => {
 
 	test("user saves survey answers", async ({ page }) => {
 		// Arrange
-		const visaCheckbox = page.getByLabel(
-			"Please send me an Invitation Letter for a Visa Application.",
-		);
+		const visaCheckbox = page.getByRole("checkbox", { name: "Please send me an Invitation Letter for a Visa Application." });
 
 		// Act
 		await visaCheckbox.check();
@@ -71,9 +67,7 @@ test.describe("User Settings - Survey", () => {
 
 	test("saved answers persist after page reload", async ({ page }) => {
 		// Arrange — check and save
-		const visaCheckbox = page.getByLabel(
-			"Please send me an Invitation Letter for a Visa Application.",
-		);
+		const visaCheckbox = page.getByRole("checkbox", { name: "Please send me an Invitation Letter for a Visa Application." });
 		await visaCheckbox.check();
 		await page
 			.locator("section")
@@ -89,17 +83,13 @@ test.describe("User Settings - Survey", () => {
 				page.getByRole("heading", { name: "Profile" }),
 			).toBeVisible({ timeout: 15000 });
 			await expect(
-				page.getByLabel(
-					"Please send me an Invitation Letter for a Visa Application.",
-				),
+				page.getByRole("checkbox", { name: "Please send me an Invitation Letter for a Visa Application." }),
 			).toBeChecked();
 		}).toPass({ timeout: 30000 });
 
 		// Cleanup — uncheck and save
 		await page
-			.getByLabel(
-				"Please send me an Invitation Letter for a Visa Application.",
-			)
+			.getByRole("checkbox", { name: "Please send me an Invitation Letter for a Visa Application." })
 			.uncheck();
 		await page
 			.locator("section")
@@ -187,8 +177,8 @@ test.describe("User Settings - Survey", () => {
 		await expect(page.getByText("Which days will you attend?")).toBeVisible();
 
 		// Act — check Monday and Wednesday
-		await page.getByLabel("Monday").check();
-		await page.getByLabel("Wednesday").check();
+		await page.getByRole("checkbox", { name: "Monday" }).check();
+		await page.getByRole("checkbox", { name: "Wednesday" }).check();
 		await page
 			.locator("section")
 			.filter({ hasText: "Survey" })
@@ -205,14 +195,14 @@ test.describe("User Settings - Survey", () => {
 			await expect(
 				page.getByRole("heading", { name: "Profile" }),
 			).toBeVisible({ timeout: 15000 });
-			await expect(page.getByLabel("Monday")).toBeChecked();
-			await expect(page.getByLabel("Wednesday")).toBeChecked();
-			await expect(page.getByLabel("Tuesday")).not.toBeChecked();
+			await expect(page.getByRole("checkbox", { name: "Monday" })).toBeChecked();
+			await expect(page.getByRole("checkbox", { name: "Wednesday" })).toBeChecked();
+			await expect(page.getByRole("checkbox", { name: "Tuesday" })).not.toBeChecked();
 		}).toPass({ timeout: 30000 });
 
 		// Cleanup
-		await page.getByLabel("Monday").uncheck();
-		await page.getByLabel("Wednesday").uncheck();
+		await page.getByRole("checkbox", { name: "Monday" }).uncheck();
+		await page.getByRole("checkbox", { name: "Wednesday" }).uncheck();
 		await page
 			.locator("section")
 			.filter({ hasText: "Survey" })
@@ -324,7 +314,7 @@ test.describe("User Settings - Survey", () => {
 			.getByRole("button", { name: "Save changes" });
 
 		// Act — check "Other" and type a free-text answer
-		await page.getByLabel("Other").check();
+		await page.getByRole("checkbox", { name: "Other" }).check();
 		await wrapper.getByPlaceholder("Please specify...").fill("Saturday");
 		await saveButton.click();
 
@@ -338,14 +328,14 @@ test.describe("User Settings - Survey", () => {
 			await expect(
 				page.getByRole("heading", { name: "Profile" }),
 			).toBeVisible({ timeout: 15000 });
-			await expect(page.getByLabel("Other")).toBeChecked();
+			await expect(page.getByRole("checkbox", { name: "Other" })).toBeChecked();
 			await expect(wrapper.getByPlaceholder("Please specify...")).toHaveValue(
 				"Saturday",
 			);
 		}).toPass({ timeout: 30000 });
 
 		// Cleanup
-		await page.getByLabel("Other").uncheck();
+		await page.getByRole("checkbox", { name: "Other" }).uncheck();
 		await saveButton.click();
 		await expect(page.getByText("Survey preferences saved")).toBeVisible();
 	});

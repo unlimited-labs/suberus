@@ -148,6 +148,16 @@ test.describe.serial("Submission - Track Selection", () => {
 			}),
 		).not.toBeVisible();
 
+		// Guard: selecting a track shows its NAME in the trigger, not its stored cuid (Base UI value!=label regression)
+		await page
+			.getByRole("option", { name: `${testRun.testRunId}_Active Track` })
+			.click();
+		await expect(
+			page
+				.getByRole("combobox")
+				.filter({ hasText: `${testRun.testRunId}_Active Track` }),
+		).toBeVisible();
+
 		// Cleanup
 		await deleteTrack(activeTrackId);
 		await deleteTrack(inactiveTrackId);

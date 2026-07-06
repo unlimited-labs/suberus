@@ -56,7 +56,14 @@ export function UserFeeDialog({
 					</DialogDescription>
 				</DialogHeader>
 				<div className="space-y-3 py-4">
-					<Select value={selectedFeeTypeId} onValueChange={onFeeTypeChange}>
+					<Select
+						items={feeTypes.map((type) => ({
+							value: type.id,
+							label: `${type.name} — ${type.amount.toFixed(2)} ${currency}`,
+						}))}
+						value={selectedFeeTypeId}
+						onValueChange={onFeeTypeChange}
+					>
 						<SelectTrigger>
 							<SelectValue placeholder="Select fee type" />
 						</SelectTrigger>

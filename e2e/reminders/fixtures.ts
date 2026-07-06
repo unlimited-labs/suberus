@@ -14,12 +14,12 @@ export class RemindersSettingsHelper {
 
 	async switchToRemindersTab() {
 		await this.page.getByRole("tab", { name: /Reminders/i }).click()
-		await expect(this.page.getByLabel("Reviewer reminders")).toBeVisible()
+		await expect(this.page.getByRole("switch", { name: "Reviewer reminders" })).toBeVisible()
 	}
 
 	// --- Reviewer ---
 	getReviewerEnabledSwitch(): Locator {
-		return this.page.locator("#reviewer-enabled")
+		return this.page.getByRole("switch", { name: "Reviewer reminders" })
 	}
 
 	getReviewerDaysInput(): Locator {
@@ -28,7 +28,7 @@ export class RemindersSettingsHelper {
 
 	// --- Revision ---
 	getRevisionEnabledSwitch(): Locator {
-		return this.page.locator("#revision-enabled")
+		return this.page.getByRole("switch", { name: "Revision reminders" })
 	}
 
 	getRevisionIntervalInput(): Locator {
@@ -41,7 +41,7 @@ export class RemindersSettingsHelper {
 
 	// --- Deadline ---
 	getDeadlineEnabledSwitch(): Locator {
-		return this.page.locator("#deadline-enabled")
+		return this.page.getByRole("switch", { name: "Deadline reminders" })
 	}
 
 	getDeadlineDaysInput(): Locator {

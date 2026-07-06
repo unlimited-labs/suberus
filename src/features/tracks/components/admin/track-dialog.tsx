@@ -132,6 +132,13 @@ function TrackFormFields({
 			<div className="space-y-2">
 				<Label htmlFor="supervisor">Supervisor</Label>
 				<Select
+					items={[
+						{ value: "none", label: "None" },
+						...reviewers.map((reviewer) => ({
+							value: reviewer.id,
+							label: `${reviewer.name} (${reviewer.email})`,
+						})),
+					]}
 					value={supervisorId || "none"}
 					onValueChange={(v) =>
 						onSupervisorChange(v === "none" ? undefined : v)

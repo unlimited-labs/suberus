@@ -33,6 +33,10 @@ export function VersionSelector({
 				<span className="text-xs text-muted-foreground">Version</span>
 			</div>
 			<Select
+				items={versions.map((v) => ({
+					value: v.version.toString(),
+					label: `Version ${v.version}${v.version === currentVersion ? " (current)" : ""}`,
+				}))}
 				value={selectedVersion.toString()}
 				onValueChange={(value) => onVersionChange(Number(value))}
 			>

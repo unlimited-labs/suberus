@@ -150,7 +150,7 @@ export class RegisterPage {
 	// Step 3: Survey
 	async fillStep3(data: { acceptTerms: boolean; checkSurveyQuestions?: string[] }) {
 		// Wait for step 3 to be visible; retry Continue click if async validation race
-		const termsCheckbox = this.page.getByLabel(/I agree to the/)
+		const termsCheckbox = this.page.getByRole("checkbox", { name: /I agree to the/ })
 		try {
 			await termsCheckbox.waitFor({ state: "visible", timeout: 5000 })
 		} catch {
@@ -176,7 +176,7 @@ export class RegisterPage {
 		}
 
 		if (data.acceptTerms) {
-			await this.page.getByLabel(/I agree to the/).check()
+			await this.page.getByRole("checkbox", { name: /I agree to the/ }).check()
 		}
 	}
 

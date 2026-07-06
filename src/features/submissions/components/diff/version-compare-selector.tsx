@@ -44,11 +44,16 @@ export function VersionCompareSelector({
 	onBaseChange,
 	onCompareChange,
 }: VersionCompareSelectorProps) {
+	const versionItems = versions.map((v) => ({
+		value: v.version.toString(),
+		label: `Version ${v.version}${v.version === currentVersion ? " (current)" : ""}`,
+	}));
 	return (
 		<div className="flex items-end gap-2">
 			<div className="flex-1 space-y-1">
 				<span className="text-xs text-muted-foreground">Base (older)</span>
 				<Select
+					items={versionItems}
 					value={base.toString()}
 					onValueChange={(value) => onBaseChange(Number(value))}
 				>
@@ -66,6 +71,7 @@ export function VersionCompareSelector({
 			<div className="flex-1 space-y-1">
 				<span className="text-xs text-muted-foreground">Compare (newer)</span>
 				<Select
+					items={versionItems}
 					value={compare.toString()}
 					onValueChange={(value) => onCompareChange(Number(value))}
 				>

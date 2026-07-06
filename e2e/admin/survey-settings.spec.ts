@@ -32,7 +32,7 @@ async function addQuestion(page: Page, opts: AddOptions) {
 	}
 
 	if (opts.showInList) {
-		await dialog.getByLabel("Show in users list").click();
+		await dialog.getByRole("switch", { name: "Show in users list" }).click();
 		await dialog.getByLabel("Field name").fill(opts.showInList);
 	}
 
@@ -342,7 +342,7 @@ test.describe("Admin Settings - Survey Questions", () => {
 		const row = page.getByTestId("question-row").filter({ hasText: label });
 		await row.getByRole("button", { name: "Edit question" }).click();
 		const dialog = page.getByRole("dialog");
-		await dialog.getByLabel("Show in users list").click();
+		await dialog.getByRole("switch", { name: "Show in users list" }).click();
 		await dialog.getByLabel("Field name").fill(fieldName);
 		await dialog.getByRole("button", { name: "Save" }).click();
 
@@ -374,7 +374,7 @@ test.describe("Admin Settings - Survey Questions", () => {
 		await dialog.getByLabel("Question label").fill(label);
 
 		// Act — toggle on but leave field name empty, then submit
-		await dialog.getByLabel("Show in users list").click();
+		await dialog.getByRole("switch", { name: "Show in users list" }).click();
 		await dialog.getByRole("button", { name: "Add", exact: true }).click();
 
 		// Assert — inline field error (TanStack Form), not persisted

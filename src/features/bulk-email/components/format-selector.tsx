@@ -31,6 +31,7 @@ export function FormatSelector({
 				Format
 			</Label>
 			<Select
+				items={OPTIONS}
 				value={value}
 				onValueChange={(v) => onChange(v as EmailCampaignFormat)}
 				disabled={disabled}

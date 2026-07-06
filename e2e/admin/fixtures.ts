@@ -300,7 +300,7 @@ export class AdminSettingsPage {
 	}
 
 	getEnableKeywordsSwitch() {
-		return this.page.getByLabel("Enable keywords")
+		return this.page.getByRole("switch", { name: "Enable keywords" })
 	}
 
 	getMaxFileSizeInput() {
@@ -376,13 +376,13 @@ export class AdminSettingsPage {
 	}
 
 	getTimeFormatRadio(value: "24h" | "12h") {
-		return this.page.locator(`#time-${value}`)
+		return this.page.getByRole("radio", { name: value })
 	}
 
 	// --- Confidence Level (Submission Types tab) ---
 
 	getEnableConfidenceLevelSwitch() {
-		return this.page.getByLabel("Enable confidence level")
+		return this.page.getByRole("switch", { name: "Enable confidence level" })
 	}
 
 	getLogoUrlInput() {

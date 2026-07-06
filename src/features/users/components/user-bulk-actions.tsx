@@ -142,7 +142,7 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 				<span className="text-sm text-muted-foreground">
 					{selectedCount} selected
 				</span>
-				<Select value="" onValueChange={handleSelectAction}>
+				<Select items={actions} value="" onValueChange={handleSelectAction}>
 					<SelectTrigger className="h-8 w-[180px]">
 						<SelectValue placeholder="Bulk actions" />
 					</SelectTrigger>
@@ -164,7 +164,14 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 				onConfirm={handleMarkFeesPaid}
 				isLoading={mutation.isPending}
 			>
-				<Select value={selectedFeeTypeId} onValueChange={setSelectedFeeTypeId}>
+				<Select
+					items={feeTypes.map((type) => ({
+						value: type.id,
+						label: `${type.name} — ${type.amount.toFixed(2)} ${currency}`,
+					}))}
+					value={selectedFeeTypeId}
+					onValueChange={setSelectedFeeTypeId}
+				>
 					<SelectTrigger>
 						<SelectValue placeholder="Select fee type" />
 					</SelectTrigger>
@@ -187,6 +194,7 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 				isLoading={mutation.isPending}
 			>
 				<Select
+					items={roleOptions}
 					value={selectedRole}
 					onValueChange={(v) => {
 						const found = roleOptions.find((opt) => opt.value === v);

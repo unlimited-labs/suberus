@@ -50,6 +50,10 @@ export function TypeReviewSection({
 				<div className="space-y-2">
 					<Label>Review mode</Label>
 					<Select
+						items={Object.entries(reviewModeLabels).map(([value, label]) => ({
+							value,
+							label,
+						}))}
 						value={config.reviewMode}
 						onValueChange={(value) => {
 							const found = REVIEW_MODES.find((m) => m === value);

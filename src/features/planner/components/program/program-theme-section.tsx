@@ -44,6 +44,10 @@ export function ProgramThemeSection() {
 			<div className="max-w-sm space-y-2">
 				<Label htmlFor="program-theme">Theme</Label>
 				<Select
+					items={PROGRAM_THEME_LIST.map((t) => ({
+						value: t.id,
+						label: t.name,
+					}))}
 					value={current}
 					onValueChange={(value) => mutation.mutate(value)}
 					disabled={mutation.isPending}

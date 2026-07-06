@@ -115,7 +115,7 @@ export function ActionsCard({
 					{secondaryActions.map(({ id, label, icon: Icon, select }) => (
 						<DropdownMenuItem
 							key={id}
-							onSelect={
+							onClick={
 								select.type === "transition"
 									? onTransition
 									: () => onOpenDialog(select.kind)
@@ -143,7 +143,7 @@ export function ActionsCard({
 					)}
 					<DropdownMenuItem
 						variant="destructive"
-						onSelect={() => onOpenDialog("delete")}
+						onClick={() => onOpenDialog("delete")}
 					>
 						<IconTrash className="mr-2 size-4" />
 						Delete

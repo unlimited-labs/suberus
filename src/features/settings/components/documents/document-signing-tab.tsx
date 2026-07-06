@@ -487,6 +487,10 @@ function AppearanceSection({
 				<div className="space-y-2">
 					<Label htmlFor="corner">Stamp position</Label>
 					<Select
+						items={CORNERS.map((c) => ({
+							value: c,
+							label: c.replace("-", " "),
+						}))}
 						value={corner}
 						onValueChange={(v) =>
 							setCorner(v as DocumentSigningSettings["sealCorner"])

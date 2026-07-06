@@ -88,6 +88,11 @@ export function InviteUserDialog({
 					<div className="space-y-2">
 						<Label htmlFor="invite-role">Role</Label>
 						<Select
+							items={[
+								{ value: "REVIEWER", label: "Reviewer" },
+								{ value: "EDITOR", label: "Editor" },
+								{ value: "ADMIN", label: "Administrator" },
+							]}
 							value={role}
 							onValueChange={(v) => {
 								const inviteRoles = [

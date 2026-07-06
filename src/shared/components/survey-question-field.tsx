@@ -96,6 +96,12 @@ export function SurveyQuestionField({
 						{requiredMark}
 					</Label>
 					<Select
+						items={[
+							...options.map((option) => ({ value: option, label: option })),
+							...(question.allowOther
+								? [{ value: OTHER_SENTINEL, label: "Other" }]
+								: []),
+						]}
 						value={other ? OTHER_SENTINEL : value}
 						onValueChange={(v) =>
 							onChange(v === OTHER_SENTINEL ? makeOther("") : v)

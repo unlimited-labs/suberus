@@ -385,7 +385,7 @@ test.describe("Admin Notification Emails", () => {
 		await page.getByRole("button", { name: "Continue" }).click();
 
 		// Step 3 — terms
-		const termsCheckbox = page.getByLabel(/I agree to the/);
+		const termsCheckbox = page.getByRole("checkbox", { name: /I agree to the/ });
 		try {
 			await termsCheckbox.waitFor({ state: "visible", timeout: 5000 });
 		} catch {

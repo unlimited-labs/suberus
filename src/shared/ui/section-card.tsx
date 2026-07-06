@@ -1,7 +1,7 @@
 import { type Icon, IconChevronDown } from "@tabler/icons-react"
 import { useState } from "react"
 import type { ReactNode } from "react"
-import { Collapsible as CollapsiblePrimitive } from "radix-ui"
+import { Collapsible as CollapsiblePrimitive } from "@base-ui/react/collapsible"
 import { cn } from "@/shared/lib/utils"
 import {
   Card,
@@ -102,8 +102,11 @@ function CollapsibleSectionCard({
   const [open, setOpen] = useState(defaultOpen)
 
   return (
-    <CollapsiblePrimitive.Root open={open} onOpenChange={setOpen} asChild>
-      <Card size={size} className={cn(VARIANT_CLASS[variant], className)}>
+    <CollapsiblePrimitive.Root
+      open={open}
+      onOpenChange={setOpen}
+      render={<Card size={size} className={cn(VARIANT_CLASS[variant], className)} />}
+    >
         <CardHeader
           className={cn(
             "flex flex-row items-start justify-between gap-4",
@@ -113,16 +116,15 @@ function CollapsibleSectionCard({
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <CollapsiblePrimitive.Trigger className="group/section-trigger flex items-center gap-2 rounded-lg text-left text-base font-medium outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
               <HeaderTitle icon={icon} title={title} />
-              <IconChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]/section-trigger:rotate-180" />
+              <IconChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-panel-open/section-trigger:rotate-180" />
             </CollapsiblePrimitive.Trigger>
             {description ? <CardDescription>{description}</CardDescription> : null}
           </div>
           {action ? <div className="shrink-0">{action}</div> : null}
         </CardHeader>
-        <CollapsiblePrimitive.Content className="overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
+        <CollapsiblePrimitive.Panel className="overflow-hidden data-open:animate-collapsible-down data-closed:animate-collapsible-up">
           <CardContent className={contentClassName}>{children}</CardContent>
-        </CollapsiblePrimitive.Content>
-      </Card>
+        </CollapsiblePrimitive.Panel>
     </CollapsiblePrimitive.Root>
   )
 }

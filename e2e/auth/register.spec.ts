@@ -183,7 +183,7 @@ test.describe("Register Page - Step 2: Invoice", () => {
 		await registerPage.clickContinue()
 
 		// Assert
-		await expect(registerPage.page.getByLabel(/I agree to the/)).toBeVisible()
+		await expect(registerPage.page.getByRole("checkbox", { name: /I agree to the/ })).toBeVisible()
 		await expect(registerPage.createAccountButton).toBeVisible()
 	})
 })
@@ -215,7 +215,7 @@ test.describe("Register Page - Step 3: Survey", () => {
 
 	test("blocks account creation when a required survey question is unanswered", async ({ registerPage }) => {
 		// Arrange — accept terms but leave the required "Preferred session format" empty
-		await registerPage.page.getByLabel(/I agree to the/).check()
+		await registerPage.page.getByRole("checkbox", { name: /I agree to the/ }).check()
 
 		// Act
 		await registerPage.clickCreateAccount()
@@ -228,10 +228,12 @@ test.describe("Register Page - Step 3: Survey", () => {
 
 	test("dynamic survey checkboxes are toggleable", async ({ registerPage }) => {
 		// Arrange — questions seeded in global setup
-		const visaCheckbox = registerPage.page.getByLabel(
-			"Please send me an Invitation Letter for a Visa Application."
-		)
-		const certificateCheckbox = registerPage.page.getByLabel("I need a certificate of attendance.")
+		const visaCheckbox = registerPage.page.getByRole("checkbox", {
+			name: "Please send me an Invitation Letter for a Visa Application.",
+		})
+		const certificateCheckbox = registerPage.page.getByRole("checkbox", {
+			name: "I need a certificate of attendance.",
+		})
 		await expect(visaCheckbox).not.toBeChecked()
 		await expect(certificateCheckbox).not.toBeChecked()
 
@@ -406,7 +408,7 @@ test.describe("Register Page - Country Auto-Detection", () => {
 		await registerPage.clickContinue()
 
 		// Assert — should proceed to step 3 (terms checkbox visible)
-		await expect(registerPage.page.getByLabel(/I agree to the/)).toBeVisible()
+		await expect(registerPage.page.getByRole("checkbox", { name: /I agree to the/ })).toBeVisible()
 	})
 })
 

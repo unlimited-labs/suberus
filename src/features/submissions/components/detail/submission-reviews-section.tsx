@@ -51,7 +51,17 @@ export function SubmissionReviewsSection({
 				{rounds.length > 1 && (
 					<div className="flex items-center gap-2">
 						<IconFilter className="size-4 text-muted-foreground" />
-						<Select value={selectedRound} onValueChange={setSelectedRound}>
+						<Select
+							items={[
+								{ value: "all", label: "All rounds" },
+								...rounds.map((round) => ({
+									value: round.toString(),
+									label: `Round ${round}`,
+								})),
+							]}
+							value={selectedRound}
+							onValueChange={setSelectedRound}
+						>
 							<SelectTrigger className="w-[140px]">
 								<SelectValue />
 							</SelectTrigger>

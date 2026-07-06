@@ -229,6 +229,13 @@ export function SubmissionForm(props: SubmissionFormProps) {
 											<form.Field name="trackId">
 												{(field) => (
 													<Select
+														items={[
+															{ value: "none", label: "None" },
+															...activeTracks.map((s) => ({
+																value: s.id,
+																label: s.name,
+															})),
+														]}
 														value={field.state.value || "none"}
 														onValueChange={(v) =>
 															field.handleChange(v === "none" ? null : v)
