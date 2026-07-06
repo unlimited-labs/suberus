@@ -56,7 +56,7 @@ export class SettingsPage {
 		// Contact info section - scope within the section with "Contact & Invoice" heading
 		const contactSection = page.locator("section").filter({ has: page.getByRole("heading", { name: "Contact & Invoice Information" }) })
 		this.emailInput = page.getByLabel("Email *")
-		this.needInvoiceCheckbox = page.getByLabel("I need an invoice for my organization")
+		this.needInvoiceCheckbox = page.getByRole("checkbox", { name: "I need an invoice for my organization" })
 		this.addressInput = page.getByLabel("Billing details (organization)")
 		// Country combobox within contact section
 		this.countryButton = contactSection.getByRole("combobox")

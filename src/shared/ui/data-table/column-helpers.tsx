@@ -15,10 +15,8 @@ export function createSelectColumn<T>(): ColumnDef<T> {
 		id: "select",
 		header: ({ table }) => (
 			<Checkbox
-				checked={
-					table.getIsAllPageRowsSelected() ||
-					(table.getIsSomePageRowsSelected() && "indeterminate")
-				}
+				checked={table.getIsAllPageRowsSelected()}
+				indeterminate={table.getIsSomePageRowsSelected()}
 				onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
 				aria-label="Select all"
 			/>
