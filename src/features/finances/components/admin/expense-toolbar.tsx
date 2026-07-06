@@ -68,7 +68,16 @@ export function ExpenseToolbar({
 			))}
 			<div className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
 				Sort
-				<Select value={sort} onValueChange={(v) => onSort(v as ExpenseSort)}>
+				<Select
+					items={[
+						{ value: "manual", label: "Manual" },
+						{ value: "due", label: "Due date" },
+						{ value: "amount", label: "Amount" },
+						{ value: "name", label: "Name" },
+					]}
+					value={sort}
+					onValueChange={(v) => onSort(v as ExpenseSort)}
+				>
 					<SelectTrigger className="w-32" data-testid="expense-sort">
 						<SelectValue />
 					</SelectTrigger>

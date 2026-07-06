@@ -60,7 +60,7 @@ export function DataTableBulkActions<TData>({
 			<span className="text-sm text-muted-foreground">
 				{selectedCount} selected
 			</span>
-			<Select value={selectedAction} onValueChange={setSelectedAction}>
+			<Select items={actions} value={selectedAction} onValueChange={setSelectedAction}>
 				<SelectTrigger className="h-8 w-[180px]">
 					<SelectValue placeholder="Bulk actions" />
 				</SelectTrigger>

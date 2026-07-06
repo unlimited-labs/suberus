@@ -22,7 +22,11 @@ export function TemplateStep({
 	return (
 		<div className="space-y-2 py-2">
 			<Label>Template</Label>
-			<Select value={templateId ?? ""} onValueChange={onSelect}>
+			<Select
+				items={templates.map((t) => ({ value: t.id, label: t.name }))}
+				value={templateId ?? ""}
+				onValueChange={onSelect}
+			>
 				<SelectTrigger data-testid="bulk-template-select">
 					<SelectValue placeholder="Select a template…" />
 				</SelectTrigger>

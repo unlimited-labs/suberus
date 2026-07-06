@@ -31,6 +31,10 @@ export function TrackSelect({
 }: Props) {
 	return (
 		<Select
+			items={[
+				{ value: NONE, label: "No track" },
+				...tracks.map((t) => ({ value: t.id, label: t.name })),
+			]}
 			value={value ?? NONE}
 			onValueChange={(v) => onValueChange(v === NONE ? null : v)}
 		>

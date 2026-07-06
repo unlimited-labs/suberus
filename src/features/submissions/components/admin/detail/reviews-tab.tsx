@@ -43,6 +43,14 @@ export function ReviewsTab({
 			{allReviewRounds.length > 1 && (
 				<div className="flex items-center gap-2">
 					<Select
+						items={[
+							{ value: "current", label: `Current round (${currentRound})` },
+							{ value: "all", label: "All rounds" },
+							...allReviewRounds.map((round) => ({
+								value: round.toString(),
+								label: `Round ${round}`,
+							})),
+						]}
 						value={selectedReviewRound}
 						onValueChange={setSelectedReviewRound}
 					>

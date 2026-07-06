@@ -32,6 +32,10 @@ export function RoomSelect({
 }: Props) {
 	return (
 		<Select
+			items={[
+				{ value: NONE, label: placeholder },
+				...rooms.map((r) => ({ value: r.id, label: r.name })),
+			]}
 			value={value ?? NONE}
 			onValueChange={(v) => onValueChange(v === NONE ? null : v)}
 		>

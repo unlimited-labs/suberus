@@ -91,6 +91,10 @@ export function DetailsCard({
 						Track
 					</p>
 					<Select
+						items={[
+							{ value: "none", label: "None" },
+							...availableTracks.map((s) => ({ value: s.id, label: s.name })),
+						]}
 						value={submission.trackId || "none"}
 						onValueChange={async (value) => {
 							try {

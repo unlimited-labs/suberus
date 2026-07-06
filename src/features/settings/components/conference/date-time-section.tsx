@@ -39,6 +39,7 @@ export function DateTimeSection({
 				<div className="space-y-2">
 					<Label htmlFor="dateFormat">Date Format</Label>
 					<Select
+						items={getDateFormats()}
 						value={data.dateFormat}
 						onValueChange={(value) => onChange("dateFormat", value)}
 					>

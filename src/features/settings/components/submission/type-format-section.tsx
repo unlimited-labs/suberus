@@ -43,6 +43,10 @@ export function TypeFormatSection({
 				</p>
 			</div>
 			<Select
+				items={[
+					{ value: "TEXT", label: "Text (Abstract)" },
+					{ value: "FILE", label: "File Upload" },
+				]}
 				value={config.contentFormat}
 				onValueChange={(value) => {
 					const found = CONTENT_FORMATS.find((f) => f === value);

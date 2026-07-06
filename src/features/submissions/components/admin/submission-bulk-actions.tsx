@@ -164,7 +164,11 @@ export function SubmissionBulkActions({
 				<span className="text-sm text-muted-foreground">
 					{selectedCount} selected
 				</span>
-				<Select value={selectedAction} onValueChange={setSelectedAction}>
+				<Select
+					items={actions}
+					value={selectedAction}
+					onValueChange={setSelectedAction}
+				>
 					<SelectTrigger className="h-8 w-[180px]">
 						<SelectValue placeholder="Bulk actions" />
 					</SelectTrigger>
@@ -191,6 +195,7 @@ export function SubmissionBulkActions({
 				errors={errors}
 			>
 				<Select
+					items={statusChangeOptions}
 					value={selectedStatus}
 					onValueChange={(v) => setSelectedStatus(v as SubmissionStatus)}
 				>
@@ -219,7 +224,14 @@ export function SubmissionBulkActions({
 				loadingLabel="Assigning..."
 				confirmDisabled={!selectedReviewer}
 			>
-				<Select value={selectedReviewer} onValueChange={setSelectedReviewer}>
+				<Select
+					items={reviewers.map((reviewer) => ({
+						value: reviewer.id,
+						label: reviewer.name,
+					}))}
+					value={selectedReviewer}
+					onValueChange={setSelectedReviewer}
+				>
 					<SelectTrigger>
 						<SelectValue placeholder="Select reviewer" />
 					</SelectTrigger>
@@ -249,7 +261,17 @@ export function SubmissionBulkActions({
 				confirmLabel="Assign"
 				loadingLabel="Assigning..."
 			>
-				<Select value={selectedTrack} onValueChange={setSelectedTrack}>
+				<Select
+					items={[
+						{ value: "none", label: "None" },
+						...availableTracks.map((track) => ({
+							value: track.id,
+							label: track.name,
+						})),
+					]}
+					value={selectedTrack}
+					onValueChange={setSelectedTrack}
+				>
 					<SelectTrigger>
 						<SelectValue placeholder="Select track" />
 					</SelectTrigger>

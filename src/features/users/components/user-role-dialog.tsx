@@ -48,6 +48,7 @@ export function UserRoleDialog({
 				</DialogHeader>
 				<div className="py-4">
 					<Select
+						items={roleOptions}
 						value={selectedRole}
 						onValueChange={(v) => {
 							const found = roleOptions.find((opt) => opt.value === v);

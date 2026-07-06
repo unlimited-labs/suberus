@@ -44,6 +44,12 @@ export function DocumentFilters({
 				/>
 			</div>
 			<Select
+				items={[
+					{ value: "ALL", label: "All statuses" },
+					{ value: "READY", label: "Ready" },
+					{ value: "PENDING", label: "Generating" },
+					{ value: "FAILED", label: "Failed" },
+				]}
 				value={status}
 				onValueChange={(v) => onStatusChange(v as StatusFilter)}
 			>
@@ -57,7 +63,11 @@ export function DocumentFilters({
 					<SelectItem value="FAILED">Failed</SelectItem>
 				</SelectContent>
 			</Select>
-			<Select value={templateId} onValueChange={onTemplateChange}>
+			<Select
+				items={templates.map((t) => ({ value: t.id, label: t.name }))}
+				value={templateId}
+				onValueChange={onTemplateChange}
+			>
 				<SelectTrigger
 					className="w-full sm:w-48"
 					aria-label="Filter by template"
