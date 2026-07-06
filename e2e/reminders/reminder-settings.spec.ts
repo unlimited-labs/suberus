@@ -27,9 +27,9 @@ test.describe("Admin Settings - Reminders", () => {
 		await remindersSettings.switchToRemindersTab()
 
 		// Assert
-		await expect(page.getByLabel("Reviewer reminders")).toBeVisible()
-		await expect(page.getByLabel("Revision reminders")).toBeVisible()
-		await expect(page.getByLabel("Deadline reminders")).toBeVisible()
+		await expect(page.getByRole("switch", { name: "Reviewer reminders" })).toBeVisible()
+		await expect(page.getByRole("switch", { name: "Revision reminders" })).toBeVisible()
+		await expect(page.getByRole("switch", { name: "Deadline reminders" })).toBeVisible()
 	})
 
 	test("disables inputs when toggle is off", async ({ remindersSettings }) => {

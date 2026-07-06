@@ -49,7 +49,7 @@ test.describe.serial("Deadline & lock settings in admin panel", () => {
 	}) => {
 		await adminSettingsPage.goto()
 
-		const lockSwitch = page.getByLabel("Close submissions")
+		const lockSwitch = page.getByRole("switch", { name: "Close submissions" })
 		await expect(lockSwitch).toBeVisible()
 		await expect(lockSwitch).not.toBeChecked()
 
@@ -66,7 +66,7 @@ test.describe.serial("Deadline & lock settings in admin panel", () => {
 	}) => {
 		await adminSettingsPage.goto()
 
-		const lockSwitch = page.getByLabel("Close registration")
+		const lockSwitch = page.getByRole("switch", { name: "Close registration" })
 		await expect(lockSwitch).toBeVisible()
 		await expect(lockSwitch).not.toBeChecked()
 
@@ -83,14 +83,14 @@ test.describe.serial("Deadline & lock settings in admin panel", () => {
 	}) => {
 		await adminSettingsPage.goto()
 
-		await page.getByLabel("Close submissions").click()
-		await expect(page.getByLabel("Close submissions")).toBeChecked()
+		await page.getByRole("switch", { name: "Close submissions" }).click()
+		await expect(page.getByRole("switch", { name: "Close submissions" })).toBeChecked()
 
 		await saveDatesSection(page)
 
 		// Reload and verify persisted
 		await adminSettingsPage.goto()
-		await expect(page.getByLabel("Close submissions")).toBeChecked()
+		await expect(page.getByRole("switch", { name: "Close submissions" })).toBeChecked()
 
 		// Clean up via DB
 		await setAppSetting("SUBMISSIONS_LOCKED", false)

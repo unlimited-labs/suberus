@@ -127,7 +127,7 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 			await expect(page.getByRole("heading", { name: "Content Validation" })).toBeVisible();
 
 			// Ensure keywords enabled
-			const keywordsSwitch = page.getByLabel("Enable keywords");
+			const keywordsSwitch = page.getByRole("switch", { name: "Enable keywords" });
 			if (!(await keywordsSwitch.isChecked())) {
 				await keywordsSwitch.click();
 			}
@@ -280,7 +280,7 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 	}) => {
 		// Arrange - Admin: Disable keywords
 		await goToAdminSubmissionSettings(adminPage);
-		const enableKeywordsSwitch = adminPage.getByLabel("Enable keywords");
+		const enableKeywordsSwitch = adminPage.getByRole("switch", { name: "Enable keywords" });
 		const wasEnabled = await enableKeywordsSwitch.isChecked();
 		if (wasEnabled) {
 			await enableKeywordsSwitch.click();
@@ -307,7 +307,7 @@ test.describe.serial("Admin Settings Integration with Submission Form", () => {
 		await expect(
 			adminPage.getByRole("heading", { name: "Content Validation" })
 		).toBeVisible();
-		const restoreSwitch = adminPage.getByLabel("Enable keywords");
+		const restoreSwitch = adminPage.getByRole("switch", { name: "Enable keywords" });
 		const isNowEnabled = await restoreSwitch.isChecked();
 		if (!isNowEnabled) {
 			await restoreSwitch.click();

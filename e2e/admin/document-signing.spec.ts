@@ -80,10 +80,7 @@ test.describe("Admin - Document signing", () => {
 		// Enable signing and confirm it persists across a reload.
 		await page.getByTestId("signing-enabled-switch").click();
 		await page.reload();
-		await expect(page.getByTestId("signing-enabled-switch")).toHaveAttribute(
-			"data-state",
-			"checked",
-		);
+		await expect(page.getByTestId("signing-enabled-switch")).toHaveAttribute("aria-checked", "true");
 
 		// Generate a document for the test participant.
 		const docName = testRun.prefix("Signed");

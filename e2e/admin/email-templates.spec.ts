@@ -64,7 +64,7 @@ test.describe("Admin Settings - Email Templates", () => {
 		await expect(dialog.getByLabel("Body")).toBeVisible();
 		await expect(dialog.getByLabel("CC", { exact: true })).toBeVisible();
 		await expect(dialog.getByLabel("BCC", { exact: true })).toBeVisible();
-		await expect(dialog.getByLabel("Active")).toBeVisible();
+		await expect(dialog.getByRole("switch", { name: "Active" })).toBeVisible();
 		await expect(dialog.getByText("Available placeholders")).toBeVisible();
 	});
 
@@ -122,7 +122,7 @@ test.describe("Admin Settings - Email Templates", () => {
 		const dialog = page.getByRole("dialog");
 		await expect(dialog).toBeVisible();
 
-		await dialog.getByLabel("Active").click();
+		await dialog.getByRole("switch", { name: "Active" }).click();
 		await dialog.getByRole("button", { name: "Save" }).click();
 
 		// Assert
