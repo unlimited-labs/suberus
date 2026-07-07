@@ -111,10 +111,18 @@ function SettingsPage() {
 		}
 	};
 
-	const handleContactInfoSave = async (data: ContactInfoFormData) => {
+	const handleContactInfoSave = async (
+		data: ContactInfoFormData,
+		currentPassword?: string,
+	) => {
 		try {
 			if (data.email !== user.email) {
-				await changeEmailFn({ data: { newEmail: data.email } });
+				await changeEmailFn({
+					data: {
+						newEmail: data.email,
+						currentPassword: currentPassword ?? "",
+					},
+				});
 				setPendingEmail(data.email);
 				toast.success("Verification email sent to your new address");
 			}
@@ -133,7 +141,11 @@ function SettingsPage() {
 				toast.success("Contact information updated successfully");
 			}
 		} catch (error) {
-			toast.error("Failed to update contact information");
+			const message =
+				error instanceof Error && error.message === "Incorrect password"
+					? error.message
+					: "Failed to update contact information";
+			toast.error(message);
 			throw error;
 		}
 	};

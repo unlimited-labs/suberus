@@ -6,6 +6,8 @@ import {
 	IconRefresh,
 } from "@tabler/icons-react";
 import { useSelector } from "@tanstack/react-store";
+import { useState } from "react";
+import { EmailChangeConfirmDialog } from "@/features/profile/components/email-change-confirm-dialog";
 import type { ContactInfoFormData } from "@/features/profile/validations";
 import { contactInfoSchema } from "@/features/profile/validations";
 import { BillingFieldsGroup } from "@/shared/components/composable/billing-fields-group";
@@ -15,7 +17,10 @@ import { Alert, AlertDescription } from "@/shared/ui/alert";
 
 interface ContactInfoSectionProps {
 	initialData: ContactInfoFormData;
-	onSave: (data: ContactInfoFormData) => Promise<void>;
+	onSave: (
+		data: ContactInfoFormData,
+		currentPassword?: string,
+	) => Promise<void>;
 	isLoading?: boolean;
 	currentEmail: string;
 	emailVerified: boolean;
@@ -33,6 +38,11 @@ export function ContactInfoSection({
 	const { cooldown, isResending, resend, disabled } =
 		useResendVerification(currentEmail);
 
+	const [pendingSave, setPendingSave] = useState<ContactInfoFormData | null>(
+		null,
+	);
+	const [isConfirming, setIsConfirming] = useState(false);
+
 	const form = useAppForm({
 		defaultValues: initialData,
 		validators: {
@@ -40,12 +50,29 @@ export function ContactInfoSection({
 			onSubmit: contactInfoSchema,
 		},
 		onSubmit: async ({ value }) => {
+			if (value.email !== currentEmail) {
+				setPendingSave(value);
+				return;
+			}
 			await onSave(value);
 		},
 	});
 
 	const email = useSelector(form.store, (s) => s.values.email);
 	const emailChanged = email !== currentEmail;
+
+	const confirmEmailChange = async (password: string) => {
+		if (!pendingSave) return;
+		setIsConfirming(true);
+		try {
+			await onSave(pendingSave, password);
+			setPendingSave(null);
+		} catch {
+			// onSave surfaces the error toast; keep the dialog open for retry.
+		} finally {
+			setIsConfirming(false);
+		}
+	};
 
 	return (
 		<form
@@ -142,6 +169,15 @@ export function ContactInfoSection({
 					/>
 				</form.AppForm>
 			</div>
+
+			<EmailChangeConfirmDialog
+				open={pendingSave !== null}
+				onOpenChange={(next) => {
+					if (!next) setPendingSave(null);
+				}}
+				onConfirm={confirmEmailChange}
+				isSubmitting={isConfirming}
+			/>
 		</form>
 	);
 }

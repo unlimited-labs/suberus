@@ -32,6 +32,10 @@ export class SettingsPage {
 	readonly newPasswordInput: Locator
 	readonly confirmPasswordInput: Locator
 	readonly changePasswordBtn: Locator
+	// Email-change confirm dialog
+	readonly emailChangeDialog: Locator
+	readonly emailChangeDialogPassword: Locator
+	readonly emailChangeDialogConfirm: Locator
 
 	constructor(page: Page) {
 		this.page = page
@@ -76,6 +80,11 @@ export class SettingsPage {
 		this.confirmPasswordInput = page.locator("#confirmNewPassword")
 		// Button text changes during submit, so match either state
 		this.changePasswordBtn = page.getByRole("button", { name: /change password/i })
+
+		// Email-change confirm dialog
+		this.emailChangeDialog = page.getByTestId("email-change-confirm-dialog")
+		this.emailChangeDialogPassword = page.getByTestId("email-change-confirm-password")
+		this.emailChangeDialogConfirm = page.getByTestId("email-change-confirm-submit")
 	}
 
 	async goto() {
@@ -134,6 +143,15 @@ export class SettingsPage {
 
 	async saveContactInfo() {
 		await this.saveContactBtn.click()
+	}
+
+	async changeEmail(newEmail: string, password: string) {
+		await this.emailInput.clear()
+		await this.emailInput.fill(newEmail)
+		await this.saveContactBtn.click()
+		await this.emailChangeDialog.waitFor({ state: "visible" })
+		await this.emailChangeDialogPassword.fill(password)
+		await this.emailChangeDialogConfirm.click()
 	}
 
 	async fillPasswordChange(data: {

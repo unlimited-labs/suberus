@@ -78,14 +78,29 @@ export const changeEmailFn = createServerFn({ method: "POST" })
 	.validator(
 		z.object({
 			newEmail: z.email(),
+			currentPassword: z.string().min(1),
 		}),
 	)
 	.handler(async ({ data }) => {
+		const headers = getRequestHeaders();
+		let passwordOk = false;
+		try {
+			const res = await auth.api.verifyPassword({
+				body: { password: data.currentPassword },
+				headers,
+			});
+			passwordOk = res.status;
+		} catch {
+			passwordOk = false;
+		}
+		if (!passwordOk) {
+			throw new Error("Incorrect password");
+		}
 		await auth.api.changeEmail({
 			body: {
 				newEmail: data.newEmail,
 			},
-			headers: getRequestHeaders(),
+			headers,
 		});
 		return { success: true };
 	});
