@@ -1,8 +1,8 @@
 import {
 	type CalendarEvent,
 	type CalendarView,
-	IlamyResourceCalendar,
-	type IlamyResourceCalendarProps,
+	IlamyCalendar,
+	type IlamyCalendarProps,
 	type WeekDays,
 } from "@ilamy/calendar";
 import { useCallback } from "react";
@@ -13,13 +13,12 @@ import { PlannerEventRenderer } from "./planner-event-renderer";
 interface Resource {
 	id: string;
 	title: string;
-	position: number;
 }
 
 interface Props {
 	calendarKey: string | number;
 	resources: Resource[];
-	events: NonNullable<IlamyResourceCalendarProps["events"]>;
+	events: NonNullable<IlamyCalendarProps["events"]>;
 	initialDate: Date | undefined;
 	initialView: CalendarView;
 	timezone: string | undefined;
@@ -51,9 +50,9 @@ function parseHour(v: string, fallback: number) {
 
 const hideCurrentTimeIndicator = () => null;
 
-const renderEvent: NonNullable<IlamyResourceCalendarProps["renderEvent"]> = (
-	event,
-) => <PlannerEventRenderer event={event} />;
+const renderEvent: NonNullable<IlamyCalendarProps["renderEvent"]> = (event) => (
+	<PlannerEventRenderer event={event} />
+);
 
 const headerComponent = <PlannerCalendarHeader />;
 
@@ -80,15 +79,15 @@ export function PlannerCalendar({
 	};
 
 	const handleDateChange = useCallback<
-		NonNullable<IlamyResourceCalendarProps["onDateChange"]>
+		NonNullable<IlamyCalendarProps["onDateChange"]>
 	>((date) => onDateChange(date.toDate()), [onDateChange]);
 
 	const handleViewChange = useCallback<
-		NonNullable<IlamyResourceCalendarProps["onViewChange"]>
+		NonNullable<IlamyCalendarProps["onViewChange"]>
 	>((view) => onViewChange(view), [onViewChange]);
 
 	const renderEventForm = useCallback<
-		NonNullable<IlamyResourceCalendarProps["renderEventForm"]>
+		NonNullable<IlamyCalendarProps["renderEventForm"]>
 	>(
 		(props) =>
 			props.open ? <CreateEventDialog {...props} timezone={timezone} /> : null,
@@ -97,7 +96,7 @@ export function PlannerCalendar({
 
 	return (
 		<div className="size-full">
-			<IlamyResourceCalendar
+			<IlamyCalendar
 				key={calendarKey}
 				resources={resources}
 				events={events}

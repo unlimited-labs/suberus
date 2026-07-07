@@ -1,11 +1,11 @@
-import type { IlamyResourceCalendarProps } from "@ilamy/calendar";
+import type { IlamyCalendarProps } from "@ilamy/calendar";
 import { useMemo } from "react";
 import { formatDurationMin } from "@/features/planner/tz-datetime";
 import type { BreakEventData } from "../break-event-card";
 import type { SessionEventData } from "../session-event-card";
 import type { PlannerBreak, PlannerSession } from "../types";
 
-type PlannerEvent = NonNullable<IlamyResourceCalendarProps["events"]>[number];
+type PlannerEvent = NonNullable<IlamyCalendarProps["events"]>[number];
 
 type RoomInput = { id: string; name: string; order: number };
 
@@ -15,7 +15,7 @@ export function usePlannerEvents(
 	breaks: PlannerBreak[],
 ) {
 	const resources = useMemo(
-		() => rooms.map((r) => ({ id: r.id, title: r.name, position: r.order })),
+		() => rooms.map((r) => ({ id: r.id, title: r.name })),
 		[rooms],
 	);
 
