@@ -13,8 +13,7 @@ export function SubmissionTimeline({
 	statusHistory,
 	compact = false,
 }: SubmissionTimelineProps) {
-	// Sort history chronologically (oldest first)
-	const sortedHistory = [...statusHistory].sort((a, b) =>
+	const sortedHistory = statusHistory.toSorted((a, b) =>
 		compareAsc(new Date(a.timestamp), new Date(b.timestamp)),
 	);
 

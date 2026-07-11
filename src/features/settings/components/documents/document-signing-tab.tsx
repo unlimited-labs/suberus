@@ -85,6 +85,31 @@ function daysUntil(iso: string): number {
 	return Math.floor((new Date(iso).getTime() - Date.now()) / 86_400_000);
 }
 
+const resignAfterRotation = async () => {
+	try {
+		const res = await fetch("/api/documents/resign", { method: "POST" });
+		if (!res.ok) {
+			toast.error(
+				getErrorMessage(
+					new Error(String(res.status)),
+					"Certificate rotated, but re-signing failed to start",
+				),
+			);
+			return;
+		}
+		const { count } = (await res.json()) as { count: number };
+		if (count > 0) {
+			toast.success(
+				`Re-signing ${count} previously signed document(s) with the new certificate`,
+			);
+		}
+	} catch (e) {
+		toast.error(
+			getErrorMessage(e, "Certificate rotated, but re-signing failed to start"),
+		);
+	}
+};
+
 function CertificateSection({
 	cfg,
 	conferenceName,
@@ -107,34 +132,6 @@ function CertificateSection({
 	const [confirm, setConfirm] = useState<null | "generate" | "upload">(null);
 
 	const expiresInDays = cfg ? daysUntil(cfg.validUntil) : null;
-
-	const resignAfterRotation = async () => {
-		try {
-			const res = await fetch("/api/documents/resign", { method: "POST" });
-			if (!res.ok) {
-				toast.error(
-					getErrorMessage(
-						new Error(String(res.status)),
-						"Certificate rotated, but re-signing failed to start",
-					),
-				);
-				return;
-			}
-			const { count } = (await res.json()) as { count: number };
-			if (count > 0) {
-				toast.success(
-					`Re-signing ${count} previously signed document(s) with the new certificate`,
-				);
-			}
-		} catch (e) {
-			toast.error(
-				getErrorMessage(
-					e,
-					"Certificate rotated, but re-signing failed to start",
-				),
-			);
-		}
-	};
 
 	const doGenerate = async () => {
 		const wasRotation = Boolean(cfg);

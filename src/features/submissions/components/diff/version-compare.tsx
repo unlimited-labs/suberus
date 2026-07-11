@@ -54,8 +54,7 @@ export function defaultComparePair(
 	current: number,
 ): { base: number; compare: number } {
 	const below = versions
-		.map((v) => v.version)
-		.filter((n) => n < current)
+		.flatMap((v) => (v.version < current ? [v.version] : []))
 		.sort((a, b) => b - a);
 	const oldest = Math.min(...versions.map((v) => v.version));
 	return { base: below[0] ?? oldest, compare: current };
@@ -424,7 +423,7 @@ function FileChangesPanel({
 export function VersionCompare(props: VersionCompareProps) {
 	const { versions, base, compare } = props;
 	const sorted = useMemo(
-		() => [...versions].sort((a, b) => a.version - b.version),
+		() => versions.toSorted((a, b) => a.version - b.version),
 		[versions],
 	);
 	const baseV = sorted.find((v) => v.version === base);

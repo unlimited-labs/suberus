@@ -1,18 +1,31 @@
 {
-	"$schema": "https://react.doctor/schema/config.json",
-	"ignore": {
-		"files": [".venv/**", "poc/**", "src/generated/**"],
-		"overrides": [
-			{
-				"files": ["src/shared/ui/data-table/data-table.tsx"],
-				"rules": ["react-hooks-js/incompatible-library"]
-			},
-			{
-				"files": [
-					"src/features/submission-diff/components/file-redline-view.tsx"
-				],
-				"rules": ["react-doctor/effect-needs-cleanup"]
-			}
-		]
-	}
+  "$schema": "https://react.doctor/schema/config.json",
+  "ignore": {
+    "files": [
+      ".venv/**",
+      "poc/**",
+      "src/generated/**"
+    ],
+    "overrides": [
+      {
+        "files": [
+          "src/shared/ui/data-table/data-table.tsx"
+        ],
+        "rules": [
+          "react-hooks-js/incompatible-library"
+        ]
+      },
+      {
+        "files": [
+          "src/features/submission-diff/components/file-redline-view.tsx"
+        ],
+        "rules": [
+          "react-doctor/effect-needs-cleanup"
+        ]
+      }
+    ]
+  },
+  "rules": {
+    "react-doctor/no-prevent-default": "off"
+  }
 }

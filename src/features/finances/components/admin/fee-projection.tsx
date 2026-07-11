@@ -3,6 +3,8 @@ import type { FeeTypeSummary } from "@/features/finances/server/finances";
 import { formatCurrency } from "@/shared/lib/format-currency";
 import { Input } from "@/shared/ui/input";
 
+const parse = (raw: string) => (raw === "" ? Number.NaN : Number(raw));
+
 export function FeeProjection({
 	types,
 	rows,
@@ -17,8 +19,6 @@ export function FeeProjection({
 	const update = (index: number, patch: Partial<FeeProjectionRow>) => {
 		onChange(rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
 	};
-
-	const parse = (raw: string) => (raw === "" ? Number.NaN : Number(raw));
 
 	return (
 		<div className="space-y-2 rounded-md border border-border/60 bg-muted/20 p-3">

@@ -108,18 +108,22 @@ function StatusChip({
 }
 
 const cleanRows = (rows: FinanceRowValue[]) =>
-	rows
-		.filter((row) => row.label.trim() !== "")
-		.map((row) => ({
-			label: row.label.trim(),
-			amountExpr: (row.amountExpr ?? "").trim(),
-			contractor: (row.contractor ?? "").trim(),
-			vatRate: row.vatRate ?? null,
-			amountIsGross: row.amountIsGross ?? true,
-			dueDate: row.dueDate ?? "",
-			paid: row.paid ?? false,
-			ordered: row.ordered ?? false,
-		}));
+	rows.flatMap((row) => {
+		const label = row.label.trim();
+		if (label === "") return [];
+		return [
+			{
+				label,
+				amountExpr: (row.amountExpr ?? "").trim(),
+				contractor: (row.contractor ?? "").trim(),
+				vatRate: row.vatRate ?? null,
+				amountIsGross: row.amountIsGross ?? true,
+				dueDate: row.dueDate ?? "",
+				paid: row.paid ?? false,
+				ordered: row.ordered ?? false,
+			},
+		];
+	});
 
 export function FinancesBoard() {
 	const { data } = useSuspenseQuery(financesQueryOptions());
@@ -144,30 +148,38 @@ export function FinancesBoard() {
 
 	const defaultValues = useMemo(
 		() => ({
-			expenses: data.entries
-				.filter((entry) => entry.kind === "EXPENSE")
-				.map((entry) => ({
-					label: entry.label,
-					amountExpr: entry.amountExpr,
-					contractor: entry.contractor ?? "",
-					vatRate: entry.vatRate,
-					amountIsGross: entry.amountIsGross,
-					dueDate: entry.dueDate,
-					paid: entry.paid,
-					ordered: entry.ordered,
-				})),
-			income: data.entries
-				.filter((entry) => entry.kind === "INCOME")
-				.map((entry) => ({
-					label: entry.label,
-					amountExpr: entry.amountExpr,
-					contractor: "",
-					vatRate: null as number | null,
-					amountIsGross: true,
-					dueDate: "",
-					paid: false,
-					ordered: false,
-				})),
+			expenses: data.entries.flatMap((entry) =>
+				entry.kind === "EXPENSE"
+					? [
+							{
+								label: entry.label,
+								amountExpr: entry.amountExpr,
+								contractor: entry.contractor ?? "",
+								vatRate: entry.vatRate,
+								amountIsGross: entry.amountIsGross,
+								dueDate: entry.dueDate,
+								paid: entry.paid,
+								ordered: entry.ordered,
+							},
+						]
+					: [],
+			),
+			income: data.entries.flatMap((entry) =>
+				entry.kind === "INCOME"
+					? [
+							{
+								label: entry.label,
+								amountExpr: entry.amountExpr,
+								contractor: "",
+								vatRate: null as number | null,
+								amountIsGross: true,
+								dueDate: "",
+								paid: false,
+								ordered: false,
+							},
+						]
+					: [],
+			),
 		}),
 		[data.entries],
 	);

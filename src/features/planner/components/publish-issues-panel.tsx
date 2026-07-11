@@ -43,6 +43,7 @@ export function PublishIssuesPanel({
 					>
 						{issues.map((issue, i) => {
 							const targetId = issue.sessionIds[0];
+							const key = `${issue.kind}:${issue.sessionIds.join(":")}:${issue.message}`;
 							const body = (
 								<>
 									<IconAlertTriangle
@@ -61,10 +62,7 @@ export function PublishIssuesPanel({
 							);
 							if (targetId) {
 								return (
-									<li
-										key={`${issue.kind}-${i}`}
-										data-testid={`publish-issue-${i}`}
-									>
+									<li key={key} data-testid={`publish-issue-${i}`}>
 										<button
 											type="button"
 											onClick={() => onSelectIssue(targetId)}
@@ -77,7 +75,7 @@ export function PublishIssuesPanel({
 							}
 							return (
 								<li
-									key={`${issue.kind}-${i}`}
+									key={key}
 									data-testid={`publish-issue-${i}`}
 									className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm dark:border-amber-800 dark:bg-amber-950"
 								>

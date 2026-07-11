@@ -93,10 +93,9 @@ export function DocumentCard({
 						asChild
 						variant="ghost"
 						size="icon-sm"
-						aria-label="Download"
 						data-testid={downloadTestId}
 					>
-						<a href={downloadHref}>
+						<a href={downloadHref} aria-label="Download">
 							<IconDownload className="size-4" />
 						</a>
 					</Button>

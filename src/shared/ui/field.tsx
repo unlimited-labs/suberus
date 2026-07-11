@@ -177,9 +177,10 @@ function FieldError({
       return null
     }
 
-    const messages = errors
-      .map((e) => (typeof e === "string" ? e : e?.message))
-      .filter(Boolean)
+    const messages = errors.flatMap((e) => {
+      const message = typeof e === "string" ? e : e?.message
+      return message ? [message] : []
+    })
 
     const uniqueMessages = [...new Set(messages)]
 
@@ -193,8 +194,8 @@ function FieldError({
 
     return (
       <ul className="ml-4 flex list-disc flex-col gap-1">
-        {uniqueMessages.map((msg, index) => (
-          <li key={index}>{msg}</li>
+        {uniqueMessages.map((msg) => (
+          <li key={msg}>{msg}</li>
         ))}
       </ul>
     )

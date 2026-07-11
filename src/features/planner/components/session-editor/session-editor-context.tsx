@@ -79,7 +79,7 @@ export function SessionEditorProvider({
 	const value = useMemo<SessionEditorContextValue | null>(() => {
 		if (!session) return null;
 
-		const sortedPresentations = [...session.presentations].sort(
+		const sortedPresentations = session.presentations.toSorted(
 			(a, b) => a.order - b.order,
 		);
 		const sessionDurationMin = formatDurationMin(

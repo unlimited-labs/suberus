@@ -4,6 +4,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import {
 	createRootRouteWithContext,
 	HeadContent,
+	Link,
 	Outlet,
 	Scripts,
 } from "@tanstack/react-router";
@@ -132,7 +133,9 @@ function NotFoundPage() {
 				The page you are looking for does not exist or has been moved.
 			</p>
 			<Button asChild>
-				<a href="/">Go to Dashboard</a>
+				<Link to="/" preload="intent">
+					Go to Dashboard
+				</Link>
 			</Button>
 		</div>
 	);

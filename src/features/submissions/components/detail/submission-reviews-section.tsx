@@ -29,14 +29,11 @@ export function SubmissionReviewsSection({
 		selectedRound === "all"
 			? reviews
 			: reviews.filter((r) => r.round === Number(selectedRound));
-	const groupedByRound = rounds
-		.filter((round) =>
-			selectedRound === "all" ? true : round === Number(selectedRound),
-		)
-		.map((round) => ({
-			round,
-			reviews: filteredReviews.filter((r) => r.round === round),
-		}));
+	const groupedByRound = rounds.flatMap((round) =>
+		selectedRound === "all" || round === Number(selectedRound)
+			? [{ round, reviews: filteredReviews.filter((r) => r.round === round) }]
+			: [],
+	);
 
 	return (
 		<div className="space-y-4">

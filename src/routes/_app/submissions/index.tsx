@@ -53,7 +53,7 @@ function SubmissionsPage() {
 	} = useSubmissionAccess();
 	const { formatDate } = useDateFormat();
 
-	const sortedSubmissions = [...submissions].sort((a, b) =>
+	const sortedSubmissions = submissions.toSorted((a, b) =>
 		compareDesc(new Date(a.updatedAt), new Date(b.updatedAt)),
 	);
 

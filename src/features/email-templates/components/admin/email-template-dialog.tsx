@@ -80,14 +80,14 @@ export function EmailTemplateDialog({
 					eventType: data.eventType,
 					subject: data.subject,
 					body: data.body,
-					ccEmails: data.cc
-						.split(",")
-						.map((e) => e.trim())
-						.filter(Boolean),
-					bccEmails: data.bcc
-						.split(",")
-						.map((e) => e.trim())
-						.filter(Boolean),
+					ccEmails: data.cc.split(",").flatMap((e) => {
+						const trimmed = e.trim();
+						return trimmed ? [trimmed] : [];
+					}),
+					bccEmails: data.bcc.split(",").flatMap((e) => {
+						const trimmed = e.trim();
+						return trimmed ? [trimmed] : [];
+					}),
 					isEnabled: data.isEnabled,
 				},
 			});

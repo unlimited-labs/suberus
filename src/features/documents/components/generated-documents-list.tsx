@@ -40,8 +40,8 @@ function FailureReason({ error }: { error: string }) {
 function DownloadButton({ d }: { d: DocumentRow }) {
 	if (d.status !== "READY" || !d.hasFile) return null;
 	return (
-		<Button asChild variant="ghost" size="icon-sm" aria-label="Download">
-			<a href={`/api/documents/${d.id}`}>
+		<Button asChild variant="ghost" size="icon-sm">
+			<a href={`/api/documents/${d.id}`} aria-label="Download">
 				<IconDownload className="size-4" />
 			</a>
 		</Button>

@@ -9,6 +9,7 @@ export function ResolutionPreviewCard({
 	preview: ResolutionPreview;
 }) {
 	const missing = preview.missing;
+	const missingSet = new Set(missing);
 	return (
 		<>
 			<div className="overflow-hidden rounded-xl border">
@@ -29,7 +30,7 @@ export function ResolutionPreviewCard({
 					)}
 					{preview.placeholders.map((p) => {
 						const value = preview.values[p] ?? "";
-						const isMissing = missing.includes(p);
+						const isMissing = missingSet.has(p);
 						return (
 							<div
 								key={p}

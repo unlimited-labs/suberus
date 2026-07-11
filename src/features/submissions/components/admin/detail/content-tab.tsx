@@ -53,7 +53,7 @@ export function ContentTab({
 				>
 					{authors.map((author, index) => (
 						<div
-							key={`${author.email}-${index}`}
+							key={author.email}
 							data-testid={`submission-author-${index}`}
 							className={cn(
 								"flex items-start gap-3 rounded-lg border p-3 transition-colors",

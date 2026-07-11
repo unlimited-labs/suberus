@@ -135,6 +135,7 @@ export function SurveyQuestionField({
 
 		case "MULTI_SELECT": {
 			const selected: string[] = value ? safeParseArray(value) : [];
+			const selectedSet = new Set(selected);
 			const setSelected = (next: string[]) => onChange(JSON.stringify(next));
 			const otherEntry = selected.find(isOtherValue);
 			return (
@@ -148,7 +149,7 @@ export function SurveyQuestionField({
 							<div key={option} className="flex items-center gap-2">
 								<Checkbox
 									id={`survey-${question.id}-${option}`}
-									checked={selected.includes(option)}
+									checked={selectedSet.has(option)}
 									onCheckedChange={(checked) => {
 										setSelected(
 											checked

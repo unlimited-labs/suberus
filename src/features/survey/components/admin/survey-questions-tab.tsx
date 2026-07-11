@@ -59,6 +59,12 @@ interface SurveyQuestionsTabProps {
 	exhibitorsEnabled: boolean;
 }
 
+const trimOptions = (options: string[]) =>
+	options.flatMap((option) => {
+		const trimmed = option.trim();
+		return trimmed ? [trimmed] : [];
+	});
+
 interface SurveyQuestionRowProps {
 	question: SurveyQuestion;
 	isBusy: boolean;
@@ -210,7 +216,7 @@ export function SurveyQuestionsTab({
 
 	const handleCreate = async (values: SurveyQuestionFormValues) => {
 		const cleanOptions = isSelectType(values.type)
-			? values.options.filter((o) => o.trim()).map((o) => o.trim())
+			? trimOptions(values.options)
 			: undefined;
 		try {
 			const created = await createSurveyQuestionFn({
@@ -256,7 +262,7 @@ export function SurveyQuestionsTab({
 	) => {
 		const id = question.id;
 		const cleanOptions = isSelectType(values.type)
-			? values.options.filter((o) => o.trim()).map((o) => o.trim())
+			? trimOptions(values.options)
 			: null;
 		const cleanFieldName = values.showInUsersList
 			? values.fieldName.trim()

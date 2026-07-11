@@ -2,7 +2,13 @@ import { IconList, IconMap, IconWorld } from "@tabler/icons-react";
 import { countries } from "countries-list";
 import * as Flags from "country-flag-icons/react/3x2";
 import MapLibreGL from "maplibre-gl";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+	useSyncExternalStore,
+} from "react";
 import { COUNTRY_CENTROIDS } from "@/features/dashboard/country-centroids";
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
 import { useTheme } from "@/shared/components/theme-provider";
@@ -103,21 +109,21 @@ function buildGeoJson(
 	return { type: "FeatureCollection", features };
 }
 
+const DARK_SCHEME_QUERY = "(prefers-color-scheme: dark)";
+
+function subscribeToSystemDark(onChange: () => void) {
+	const mql = window.matchMedia(DARK_SCHEME_QUERY);
+	mql.addEventListener("change", onChange);
+	return () => mql.removeEventListener("change", onChange);
+}
+
 function useResolvedAppTheme(): "light" | "dark" {
 	const { theme } = useTheme();
-	const [systemDark, setSystemDark] = useState(
-		() =>
-			typeof window !== "undefined" &&
-			window.matchMedia("(prefers-color-scheme: dark)").matches,
+	const systemDark = useSyncExternalStore(
+		subscribeToSystemDark,
+		() => window.matchMedia(DARK_SCHEME_QUERY).matches,
+		() => false,
 	);
-
-	useEffect(() => {
-		if (theme !== "system") return;
-		const mql = window.matchMedia("(prefers-color-scheme: dark)");
-		const onChange = (e: MediaQueryListEvent) => setSystemDark(e.matches);
-		mql.addEventListener("change", onChange);
-		return () => mql.removeEventListener("change", onChange);
-	}, [theme]);
 
 	if (theme === "system") return systemDark ? "dark" : "light";
 	return theme;

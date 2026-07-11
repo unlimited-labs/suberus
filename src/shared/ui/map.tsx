@@ -2,16 +2,17 @@ import MapLibreGL, { type PopupOptions, type MarkerOptions } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
   createContext,
-  forwardRef,
   useCallback,
   useContext,
   useEffect,
+  useEffectEvent,
   useId,
   useImperativeHandle,
   useMemo,
   useRef,
   useState,
   type ReactNode,
+  type Ref,
 } from "react";
 import { createPortal } from "react-dom";
 import { X, Minus, Plus, Locate, Maximize, Loader2 } from "lucide-react";
@@ -146,6 +147,7 @@ type MapProps = {
    * to enable controlled mode where the map viewport is driven by your state.
    */
   onViewportChange?: (viewport: MapViewport) => void;
+  ref?: Ref<MapRef>;
 } & Omit<MapLibreGL.MapOptions, "container" | "style">;
 
 type MapRef = MapLibreGL.Map;
@@ -160,23 +162,21 @@ const DefaultLoader = () => (
   </div>
 );
 
-const Map = forwardRef<MapRef, MapProps>(function MapComponent(
-  {
-    children,
-    className,
-    theme: themeProp,
-    styles,
-    projection,
-    viewport,
-    onViewportChange,
-    ...props
-  },
-  ref
-) {
+function MapComponent({
+  children,
+  className,
+  theme: themeProp,
+  styles,
+  projection,
+  viewport,
+  onViewportChange,
+  ref,
+  ...props
+}: MapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [mapInstance, setMapInstance] = useState<MapLibreGL.Map | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isStyleLoaded, setIsStyleLoaded] = useState(false);
+  const [loadedStyle, setLoadedStyle] = useState<MapStyleOption | null>(null);
   const currentStyleRef = useRef<MapStyleOption | null>(null);
   const styleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const internalUpdateRef = useRef(false);
@@ -197,6 +197,10 @@ const Map = forwardRef<MapRef, MapProps>(function MapComponent(
     [styles]
   );
 
+  const desiredStyle =
+    resolvedTheme === "dark" ? mapStyles.dark : mapStyles.light;
+  const isStyleLoaded = loadedStyle === desiredStyle;
+
   // Expose the map instance to the parent component
   useImperativeHandle(ref, () => mapInstance as MapLibreGL.Map, [mapInstance]);
 
@@ -211,13 +215,11 @@ const Map = forwardRef<MapRef, MapProps>(function MapComponent(
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const initialStyle =
-      resolvedTheme === "dark" ? mapStyles.dark : mapStyles.light;
-    currentStyleRef.current = initialStyle;
+    currentStyleRef.current = desiredStyle;
 
     const map = new MapLibreGL.Map({
       container: containerRef.current,
-      style: initialStyle,
+      style: desiredStyle,
       renderWorldCopies: false,
       attributionControl: {
         compact: true,
@@ -232,7 +234,7 @@ const Map = forwardRef<MapRef, MapProps>(function MapComponent(
       // This is a workaround to avoid race conditions with the style loading
       // else we have to force update every layer on setStyle change
       styleTimeoutRef.current = setTimeout(() => {
-        setIsStyleLoaded(true);
+        setLoadedStyle(currentStyleRef.current);
         if (projection) {
           map.setProjection(projection);
         }
@@ -258,7 +260,7 @@ const Map = forwardRef<MapRef, MapProps>(function MapComponent(
       map.off("move", handleMove);
       map.remove();
       setIsLoaded(false);
-      setIsStyleLoaded(false);
+      setLoadedStyle(null);
       setMapInstance(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -294,19 +296,14 @@ const Map = forwardRef<MapRef, MapProps>(function MapComponent(
 
   // Handle style change
   useEffect(() => {
-    if (!mapInstance || !resolvedTheme) return;
-
-    const newStyle =
-      resolvedTheme === "dark" ? mapStyles.dark : mapStyles.light;
-
-    if (currentStyleRef.current === newStyle) return;
+    if (!mapInstance) return;
+    if (currentStyleRef.current === desiredStyle) return;
 
     clearStyleTimeout();
-    currentStyleRef.current = newStyle;
-    setIsStyleLoaded(false);
+    currentStyleRef.current = desiredStyle;
 
-    mapInstance.setStyle(newStyle, { diff: true });
-  }, [mapInstance, resolvedTheme, mapStyles, clearStyleTimeout]);
+    mapInstance.setStyle(desiredStyle, { diff: true });
+  }, [mapInstance, desiredStyle, clearStyleTimeout]);
 
   const contextValue = useMemo(
     () => ({
@@ -328,7 +325,7 @@ const Map = forwardRef<MapRef, MapProps>(function MapComponent(
       </div>
     </MapContext.Provider>
   );
-});
+}
 
 type MarkerContextValue = {
   marker: MapLibreGL.Marker;
@@ -1137,20 +1134,24 @@ function MapRoute({
     }
   }, [isLoaded, map, layerId, color, width, opacity, dashArray]);
 
+  const onClickEvent = useEffectEvent(() => onClick?.());
+  const onMouseEnterEvent = useEffectEvent(() => onMouseEnter?.());
+  const onMouseLeaveEvent = useEffectEvent(() => onMouseLeave?.());
+
   // Handle click and hover events
   useEffect(() => {
     if (!isLoaded || !map || !interactive) return;
 
     const handleClick = () => {
-      onClick?.();
+      onClickEvent();
     };
     const handleMouseEnter = () => {
       map.getCanvas().style.cursor = "pointer";
-      onMouseEnter?.();
+      onMouseEnterEvent();
     };
     const handleMouseLeave = () => {
       map.getCanvas().style.cursor = "";
-      onMouseLeave?.();
+      onMouseLeaveEvent();
     };
 
     map.on("click", layerId, handleClick);
@@ -1162,15 +1163,7 @@ function MapRoute({
       map.off("mouseenter", layerId, handleMouseEnter);
       map.off("mouseleave", layerId, handleMouseLeave);
     };
-  }, [
-    isLoaded,
-    map,
-    layerId,
-    onClick,
-    onMouseEnter,
-    onMouseLeave,
-    interactive,
-  ]);
+  }, [isLoaded, map, layerId, interactive]);
 
   return null;
 }
@@ -1373,44 +1366,29 @@ function MapClusterLayer<
     pointColor,
   ]);
 
-  // Handle click events
-  useEffect(() => {
-    if (!isLoaded || !map) return;
-
-    // Cluster click handler - zoom into cluster
-    const handleClusterClick = async (
-      e: MapLibreGL.MapMouseEvent & {
-        features?: MapLibreGL.MapGeoJSONFeature[];
-      }
+  const clusterClickEvent = useEffectEvent(
+    async (
+      targetMap: MapLibreGL.Map,
+      clusterId: number,
+      coordinates: [number, number],
+      pointCount: number
     ) => {
-      const features = map.queryRenderedFeatures(e.point, {
-        layers: [clusterLayerId],
-      });
-      if (!features.length) return;
-
-      const feature = features[0];
-      const clusterId = feature.properties?.cluster_id as number;
-      const pointCount = feature.properties?.point_count as number;
-      const coordinates = (feature.geometry as GeoJSON.Point).coordinates as [
-        number,
-        number
-      ];
-
       if (onClusterClick) {
         onClusterClick(clusterId, coordinates, pointCount);
-      } else {
-        // Default behavior: zoom to cluster expansion zoom
-        const source = map.getSource(sourceId) as MapLibreGL.GeoJSONSource;
-        const zoom = await source.getClusterExpansionZoom(clusterId);
-        map.easeTo({
-          center: coordinates,
-          zoom,
-        });
+        return;
       }
-    };
+      // Default behavior: zoom to cluster expansion zoom
+      const source = targetMap.getSource(sourceId) as MapLibreGL.GeoJSONSource;
+      const zoom = await source.getClusterExpansionZoom(clusterId);
+      targetMap.easeTo({
+        center: coordinates,
+        zoom,
+      });
+    }
+  );
 
-    // Unclustered point click handler
-    const handlePointClick = (
+  const pointClickEvent = useEffectEvent(
+    (
       e: MapLibreGL.MapMouseEvent & {
         features?: MapLibreGL.MapGeoJSONFeature[];
       }
@@ -1431,6 +1409,48 @@ function MapClusterLayer<
         feature as unknown as GeoJSON.Feature<GeoJSON.Point, P>,
         coordinates
       );
+    }
+  );
+
+  const pointCursorEvent = useEffectEvent((canvas: HTMLCanvasElement) => {
+    if (onPointClick) {
+      canvas.style.cursor = "pointer";
+    }
+  });
+
+  // Handle click events
+  useEffect(() => {
+    if (!isLoaded || !map) return;
+
+    // Cluster click handler - zoom into cluster
+    const handleClusterClick = (
+      e: MapLibreGL.MapMouseEvent & {
+        features?: MapLibreGL.MapGeoJSONFeature[];
+      }
+    ) => {
+      const features = map.queryRenderedFeatures(e.point, {
+        layers: [clusterLayerId],
+      });
+      if (!features.length) return;
+
+      const feature = features[0];
+      const clusterId = feature.properties?.cluster_id as number;
+      const pointCount = feature.properties?.point_count as number;
+      const coordinates = (feature.geometry as GeoJSON.Point).coordinates as [
+        number,
+        number
+      ];
+
+      void clusterClickEvent(map, clusterId, coordinates, pointCount);
+    };
+
+    // Unclustered point click handler
+    const handlePointClick = (
+      e: MapLibreGL.MapMouseEvent & {
+        features?: MapLibreGL.MapGeoJSONFeature[];
+      }
+    ) => {
+      pointClickEvent(e);
     };
 
     // Cursor style handlers
@@ -1441,9 +1461,7 @@ function MapClusterLayer<
       map.getCanvas().style.cursor = "";
     };
     const handleMouseEnterPoint = () => {
-      if (onPointClick) {
-        map.getCanvas().style.cursor = "pointer";
-      }
+      pointCursorEvent(map.getCanvas());
     };
     const handleMouseLeavePoint = () => {
       map.getCanvas().style.cursor = "";
@@ -1464,21 +1482,13 @@ function MapClusterLayer<
       map.off("mouseenter", unclusteredLayerId, handleMouseEnterPoint);
       map.off("mouseleave", unclusteredLayerId, handleMouseLeavePoint);
     };
-  }, [
-    isLoaded,
-    map,
-    clusterLayerId,
-    unclusteredLayerId,
-    sourceId,
-    onClusterClick,
-    onPointClick,
-  ]);
+  }, [isLoaded, map, clusterLayerId, unclusteredLayerId]);
 
   return null;
 }
 
 export {
-  Map,
+  MapComponent as Map,
   useMap,
   MapMarker,
   MarkerContent,

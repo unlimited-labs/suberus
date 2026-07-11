@@ -3,7 +3,10 @@ import { useNavigate } from "@tanstack/react-router";
 import type { RowSelectionState, Table } from "@tanstack/react-table";
 import { useState } from "react";
 import { toast } from "sonner";
-import { createBulkEmailDraft } from "@/features/bulk-email/api/bulk-email";
+import {
+	bulkEmailCampaignsQueryOptions,
+	createBulkEmailDraft,
+} from "@/features/bulk-email/api/bulk-email";
 import { BulkGenerateDialog } from "@/features/documents/components/bulk-generate-dialog";
 import {
 	feeCurrencyQueryOptions,
@@ -84,6 +87,9 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 		mutationFn: (userIds: string[]) =>
 			createBulkEmailDraft({ data: { userIds } }),
 		onSuccess: ({ campaignId }) => {
+			queryClient.invalidateQueries({
+				queryKey: bulkEmailCampaignsQueryOptions().queryKey,
+			});
 			navigate({ to: "/admin/bulk-email/$id", params: { id: campaignId } });
 		},
 		onError: (e) =>

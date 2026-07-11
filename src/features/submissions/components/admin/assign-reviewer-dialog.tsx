@@ -239,6 +239,7 @@ export function AssignReviewerDialog({
 							value={customDeadline}
 							onChange={(e) => setCustomDeadline(e.target.value)}
 							min={format(new Date(), "yyyy-MM-dd")}
+							suppressHydrationWarning
 						/>
 					</div>
 

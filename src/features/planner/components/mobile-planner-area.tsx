@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { MobilePlanner } from "@/features/planner/components/mobile-planner";
 
 interface MobilePlannerAreaProps
@@ -13,12 +14,13 @@ export function MobilePlannerArea({
 	currentDate,
 	...props
 }: MobilePlannerAreaProps) {
+	const [today] = useState(() => new Date());
 	return (
 		<div className="flex min-h-0 flex-1 md:hidden">
 			<div className="flex-1 overflow-auto">
 				<MobilePlanner
 					{...props}
-					initialDate={currentDate ?? props.conferenceStart ?? new Date()}
+					initialDate={currentDate ?? props.conferenceStart ?? today}
 				/>
 			</div>
 		</div>

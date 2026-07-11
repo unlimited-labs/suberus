@@ -187,16 +187,6 @@ function EditSubmissionPage() {
 		navigate({ to: "/submissions/$id", params: { id } });
 	};
 
-	const handleSaveDraft = isDraft
-		? async (formData: SubmissionFormData) => {
-				const saved = await saveSubmission(formData, true);
-				if (!saved) return;
-				toast.success("Draft saved");
-				await invalidateSubmissionCaches(queryClient, id);
-				navigate({ to: "/submissions/$id", params: { id } });
-			}
-		: undefined;
-
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader
@@ -213,7 +203,17 @@ function EditSubmissionPage() {
 			<div className="flex-1 overflow-auto p-6">
 				<SubmissionForm
 					onSubmit={handleSubmit}
-					onSaveDraft={handleSaveDraft}
+					onSaveDraft={
+						isDraft
+							? async (formData: SubmissionFormData) => {
+									const saved = await saveSubmission(formData, true);
+									if (!saved) return;
+									toast.success("Draft saved");
+									await invalidateSubmissionCaches(queryClient, id);
+									navigate({ to: "/submissions/$id", params: { id } });
+								}
+							: undefined
+					}
 					initialData={initialData}
 					typeConfigs={typeConfigs}
 					validationSettings={validationSettings}

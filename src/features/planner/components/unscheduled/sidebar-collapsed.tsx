@@ -23,6 +23,7 @@ export function SidebarCollapsed({ count, onExpand }: Props) {
 			<button
 				type="button"
 				onClick={onExpand}
+				aria-label="Expand unscheduled submissions panel"
 				className="mt-2 rounded p-1 text-muted-foreground hover:bg-muted"
 			>
 				<IconChevronRight size={14} />

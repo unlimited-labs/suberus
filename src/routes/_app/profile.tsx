@@ -48,6 +48,21 @@ export const Route = createFileRoute("/_app/profile")({
 	component: SettingsPage,
 });
 
+const handlePasswordChange = async (data: PasswordChangeFormData) => {
+	try {
+		await changePasswordFn({
+			data: {
+				currentPassword: data.currentPassword,
+				newPassword: data.newPassword,
+			},
+		});
+		toast.success("Password changed successfully");
+	} catch (error) {
+		toast.error("Failed to change password");
+		throw error;
+	}
+};
+
 function SettingsPage() {
 	const { user, refetch: refetchSession } = useSession();
 	const queryClient = useQueryClient();
@@ -146,21 +161,6 @@ function SettingsPage() {
 					? error.message
 					: "Failed to update contact information";
 			toast.error(message);
-			throw error;
-		}
-	};
-
-	const handlePasswordChange = async (data: PasswordChangeFormData) => {
-		try {
-			await changePasswordFn({
-				data: {
-					currentPassword: data.currentPassword,
-					newPassword: data.newPassword,
-				},
-			});
-			toast.success("Password changed successfully");
-		} catch (error) {
-			toast.error("Failed to change password");
 			throw error;
 		}
 	};

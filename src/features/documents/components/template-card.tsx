@@ -47,13 +47,8 @@ export function TemplateCard({
 				{formatDate(createdAt)}
 			</span>
 			<div className="flex shrink-0 items-center gap-1">
-				<Button
-					asChild
-					variant="ghost"
-					size="icon-sm"
-					aria-label="Download original"
-				>
-					<a href={downloadHref}>
+				<Button asChild variant="ghost" size="icon-sm">
+					<a href={downloadHref} aria-label="Download original">
 						<IconDownload className="size-4" />
 					</a>
 				</Button>

@@ -34,10 +34,10 @@ export function RemindersSettingsTab({
 }: RemindersSettingsTabProps) {
 	const queryClient = useQueryClient();
 	const [data, setData] = useState(initialData);
-	const [reviewerDaysText, setReviewerDaysText] = useState(
+	const [reviewerDaysText, setReviewerDaysText] = useState(() =>
 		formatDaysBefore(initialData.reviewer.daysBefore),
 	);
-	const [deadlineDaysText, setDeadlineDaysText] = useState(
+	const [deadlineDaysText, setDeadlineDaysText] = useState(() =>
 		formatDaysBefore(initialData.deadline.daysBefore),
 	);
 	const [isSaving, setIsSaving] = useState(false);

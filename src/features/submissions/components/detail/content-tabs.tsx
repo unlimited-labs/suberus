@@ -133,9 +133,9 @@ export function ContentTabs({
 							</p>
 						</div>
 						<div className="space-y-1">
-							{authors.map((author, index) => (
+							{authors.map((author) => (
 								<div
-									key={`${author.email}-${index}`}
+									key={author.email}
 									className="text-sm flex items-center gap-2 flex-wrap"
 									data-testid="author-row"
 								>

@@ -103,7 +103,7 @@ export function IssuesPanel({ sessions }: IssuesPanelProps) {
 								/>
 							);
 							const targetId = issue.sessionIds[0];
-							const key = `${issue.type}-${i}`;
+							const key = `${issue.type}:${issue.sessionIds.join(":")}`;
 							if (targetId) {
 								return (
 									<li key={key} data-testid={`issue-item-${i}`}>

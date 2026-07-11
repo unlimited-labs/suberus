@@ -1,6 +1,6 @@
 import { IconFingerprint, IconTrash } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { PasskeyReauthDialog } from "@/features/profile/components/passkey-reauth-dialog";
 import { isStaleSessionError } from "@/features/profile/lib/is-stale-session-error";
@@ -14,7 +14,7 @@ export function PasskeySection() {
 	const queryClient = useQueryClient();
 	const [name, setName] = useState("");
 	const [reauthOpen, setReauthOpen] = useState(false);
-	const [pendingName, setPendingName] = useState("");
+	const pendingNameRef = useRef("");
 
 	const { data: passkeys = [], isLoading } = useQuery({
 		queryKey: passkeysQueryKey,
@@ -53,7 +53,7 @@ export function PasskeySection() {
 		},
 		onError: (e: Error & { code?: string; status?: number }) => {
 			if (isStaleSessionError(e)) {
-				setPendingName(name);
+				pendingNameRef.current = name;
 				setReauthOpen(true);
 				return;
 			}
@@ -140,7 +140,7 @@ export function PasskeySection() {
 				onOpenChange={setReauthOpen}
 				onReauthenticated={() => {
 					setReauthOpen(false);
-					addMutation.mutate(pendingName);
+					addMutation.mutate(pendingNameRef.current);
 				}}
 			/>
 		</div>

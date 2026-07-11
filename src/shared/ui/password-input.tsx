@@ -24,7 +24,7 @@ export function PasswordInput({
 	disabled,
 	"aria-invalid": ariaInvalid,
 }: PasswordInputProps) {
-	const { type, toggle, Icon } = usePasswordVisibility();
+	const { visible, type, toggle, Icon } = usePasswordVisibility();
 
 	return (
 		<div className="relative">
@@ -43,6 +43,7 @@ export function PasswordInput({
 			<button
 				type="button"
 				onClick={toggle}
+				aria-label={visible ? "Hide password" : "Show password"}
 				className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
 			>
 				<Icon className="size-4" />

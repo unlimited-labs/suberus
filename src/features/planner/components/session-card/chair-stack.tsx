@@ -22,17 +22,23 @@ export function ChairStack({ chairs }: { chairs: Chair[] }) {
 			</span>
 		);
 	}
+	const seen = new Map<string, number>();
 	return (
 		<div className="flex shrink-0 -space-x-1">
-			{chairs.slice(0, 3).map((c, i) => (
-				<span
-					key={`${c.firstName}-${c.lastName}-${i}`}
-					className="inline-flex size-5 items-center justify-center rounded-full border border-background bg-muted text-[9px] font-semibold text-muted-foreground"
-					title={`${c.firstName ?? ""} ${c.lastName ?? ""}`.trim()}
-				>
-					{initials(c.firstName, c.lastName)}
-				</span>
-			))}
+			{chairs.slice(0, 3).map((c) => {
+				const name = `${c.firstName}-${c.lastName}`;
+				const dup = seen.get(name) ?? 0;
+				seen.set(name, dup + 1);
+				return (
+					<span
+						key={dup ? `${name}-${dup}` : name}
+						className="inline-flex size-5 items-center justify-center rounded-full border border-background bg-muted text-[9px] font-semibold text-muted-foreground"
+						title={`${c.firstName ?? ""} ${c.lastName ?? ""}`.trim()}
+					>
+						{initials(c.firstName, c.lastName)}
+					</span>
+				);
+			})}
 		</div>
 	);
 }

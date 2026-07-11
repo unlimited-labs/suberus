@@ -13,6 +13,8 @@ import { ReviewSidebar } from "./review-sidebar";
 import { ScoringCriteriaField } from "./scoring-criteria-field";
 import { SubmissionPreview } from "./submission-preview";
 
+const EMPTY_SCORING_CRITERIA: { name: string; description: string }[] = [];
+
 interface SubmissionAuthor {
 	firstName: string;
 	lastName: string;
@@ -75,7 +77,7 @@ export function ReviewForm({
 	contentFormat,
 	reviewMode,
 	guidelines,
-	scoringCriteria = [],
+	scoringCriteria = EMPTY_SCORING_CRITERIA,
 	enableConfidenceLevel = true,
 	enableReviewAttachment = false,
 	onAttachmentChange,

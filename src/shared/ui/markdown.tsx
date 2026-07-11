@@ -34,6 +34,7 @@ export function MarkdownHint({ className = "" }: { className?: string }) {
 				target="_blank"
 				rel="noopener noreferrer"
 				title="Markdown syntax guide"
+				aria-label="Markdown syntax guide"
 				className="inline-flex hover:text-foreground"
 			>
 				<IconExternalLink className="size-3.5" />

@@ -221,7 +221,7 @@ function Authors({ authors }: { authors: PresentationDetailAuthor[] }) {
 			>
 				{authors.map((author, index) => (
 					<div
-						key={index}
+						key={author.orderIndex}
 						className={cn(
 							"flex items-start gap-3 rounded-[var(--radius)] border border-border bg-card p-3",
 							author.isPresenter && "border-primary/40 bg-primary/5",

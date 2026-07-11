@@ -64,7 +64,7 @@ export function RoomsList({ rooms, onEdit, onUpdate }: RoomsListProps) {
 		);
 	}
 
-	const sorted = [...rooms].sort(
+	const sorted = rooms.toSorted(
 		(a, b) => a.order - b.order || a.name.localeCompare(b.name),
 	);
 

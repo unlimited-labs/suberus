@@ -24,7 +24,7 @@ import {
 	IconSquareCheck,
 	IconX,
 } from "@tabler/icons-react";
-import type { ComponentType } from "react";
+import { type ComponentType, useState } from "react";
 import type {
 	SurveyAudience,
 	SurveyQuestionType,
@@ -252,6 +252,18 @@ export function OptionsEditor({
 	options: string[];
 	onChange: (options: string[]) => void;
 }) {
+	const [ids, setIds] = useState<string[]>(() =>
+		options.map(() => crypto.randomUUID()),
+	);
+	const itemIds =
+		ids.length === options.length
+			? ids
+			: Array.from(
+					{ length: options.length },
+					(_, i) => ids[i] ?? crypto.randomUUID(),
+				);
+	if (itemIds !== ids) setIds(itemIds);
+
 	const sensors = useSensors(
 		useSensor(PointerSensor),
 		useSensor(KeyboardSensor, {
@@ -262,7 +274,10 @@ export function OptionsEditor({
 	const handleDragEnd = (event: DragEndEvent) => {
 		const { active, over } = event;
 		if (over && active.id !== over.id) {
-			onChange(arrayMove(options, Number(active.id), Number(over.id)));
+			const from = itemIds.indexOf(String(active.id));
+			const to = itemIds.indexOf(String(over.id));
+			setIds(arrayMove(itemIds, from, to));
+			onChange(arrayMove(options, from, to));
 		}
 	};
 
@@ -271,23 +286,18 @@ export function OptionsEditor({
 			<Label className="text-xs font-medium text-muted-foreground">
 				Options
 			</Label>
-			{/* Index ids: keying inputs by value remounts them on every keystroke,
-			    and duplicates collide while two empty options exist. */}
 			<DndContext
 				sensors={sensors}
 				collisionDetection={closestCenter}
 				onDragEnd={handleDragEnd}
 			>
-				<SortableContext
-					items={options.map((_, i) => i.toString())}
-					strategy={verticalListSortingStrategy}
-				>
+				<SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
 					{/* Cap height so long option lists scroll instead of growing the dialog. */}
 					<div className="max-h-44 space-y-1.5 overflow-y-auto">
 						{options.map((opt, i) => (
 							<SortableOption
-								key={i}
-								id={i.toString()}
+								key={itemIds[i]}
+								id={itemIds[i]}
 								index={i}
 								value={opt}
 								onChange={(v) => {
@@ -295,7 +305,10 @@ export function OptionsEditor({
 									next[i] = v;
 									onChange(next);
 								}}
-								onRemove={() => onChange(options.filter((_, j) => j !== i))}
+								onRemove={() => {
+									setIds(itemIds.filter((_, j) => j !== i));
+									onChange(options.filter((_, j) => j !== i));
+								}}
 							/>
 						))}
 					</div>

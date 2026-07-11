@@ -16,6 +16,11 @@ const getDismissedSnapshot = () =>
 	sessionStorage.getItem(DISMISS_KEY) === "true";
 const getServerDismissedSnapshot = () => false;
 
+const handleDismiss = () => {
+	sessionStorage.setItem(DISMISS_KEY, "true");
+	window.dispatchEvent(new Event(DISMISS_EVENT));
+};
+
 export function EmailVerificationBanner() {
 	const { user } = useSession();
 	const isDismissed = useSyncExternalStore(
@@ -30,11 +35,6 @@ export function EmailVerificationBanner() {
 	if (!user || user.emailVerified || isDismissed) {
 		return null;
 	}
-
-	const handleDismiss = () => {
-		sessionStorage.setItem(DISMISS_KEY, "true");
-		window.dispatchEvent(new Event(DISMISS_EVENT));
-	};
 
 	return (
 		<Alert className="rounded-none border-x-0 border-t-0 border-yellow-500 bg-yellow-500/10">

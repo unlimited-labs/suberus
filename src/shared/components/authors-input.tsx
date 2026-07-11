@@ -282,6 +282,22 @@ export function AuthorsInput({
 	className,
 }: AuthorsInputProps) {
 	const [activeId, setActiveId] = useState<string | null>(null);
+	const [itemIds, setItemIds] = useState<string[]>(() =>
+		value.map(() => crypto.randomUUID()),
+	);
+	let ids = itemIds;
+	if (ids.length !== value.length) {
+		ids =
+			ids.length < value.length
+				? [
+						...ids,
+						...Array.from({ length: value.length - ids.length }, () =>
+							crypto.randomUUID(),
+						),
+					]
+				: ids.slice(0, value.length);
+		setItemIds(ids);
+	}
 	const sensors = useSensors(
 		useSensor(PointerSensor),
 		useSensor(KeyboardSensor, {
@@ -310,6 +326,7 @@ export function AuthorsInput({
 				newAuthors[0].isPresenter = true;
 			}
 
+			setItemIds((prev) => prev.filter((_, i) => i !== index));
 			onChange(newAuthors);
 		},
 		[value, onChange],
@@ -346,6 +363,7 @@ export function AuthorsInput({
 			if (over && active.id !== over.id) {
 				const oldIndex = Number(active.id);
 				const newIndex = Number(over.id);
+				setItemIds((prev) => arrayMove(prev, oldIndex, newIndex));
 				onChange(arrayMove(value, oldIndex, newIndex));
 			}
 
@@ -376,7 +394,7 @@ export function AuthorsInput({
 				>
 					{value.map((author, index) => (
 						<SortableAuthorItem
-							key={index}
+							key={ids[index]}
 							author={author}
 							index={index}
 							updateAuthor={updateAuthor}

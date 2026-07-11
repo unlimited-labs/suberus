@@ -64,6 +64,7 @@ function VerifyDocumentPage() {
 					type="file"
 					accept="application/pdf,.pdf"
 					ref={fileRef}
+					aria-label="PDF document to verify"
 					data-testid="verify-file-input"
 					className="block w-full text-sm file:mr-3 file:rounded-md file:border file:border-border file:bg-muted file:px-3 file:py-1.5 file:text-sm"
 				/>

@@ -48,14 +48,18 @@ function UsersPage() {
 
 	const surveyColumns = useMemo<SurveyListColumn[]>(
 		() =>
-			surveyQuestions
-				.filter((q) => q.showInUsersList)
-				.map((q) => ({
-					id: q.id,
-					header: q.fieldName ?? q.label,
-					type: q.type,
-					options: q.options ?? undefined,
-				})),
+			surveyQuestions.flatMap((q) =>
+				q.showInUsersList
+					? [
+							{
+								id: q.id,
+								header: q.fieldName ?? q.label,
+								type: q.type,
+								options: q.options ?? undefined,
+							},
+						]
+					: [],
+			),
 		[surveyQuestions],
 	);
 

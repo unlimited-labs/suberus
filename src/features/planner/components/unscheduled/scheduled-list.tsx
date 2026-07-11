@@ -19,24 +19,22 @@ export function ScheduledList({
 	onOpenSession,
 }: Props) {
 	const q = search.trim().toLowerCase();
-	const filteredSessions = sessions
-		.map((s) => {
-			const presentations = q
-				? s.presentations.filter((p) => {
-						const authors = p.authors
-							.map((a) => `${a.firstName} ${a.lastName}`)
-							.join(" ")
-							.toLowerCase();
-						return (
-							p.submissionTitle.toLowerCase().includes(q) ||
-							authors.includes(q) ||
-							s.title.toLowerCase().includes(q)
-						);
-					})
-				: s.presentations;
-			return { ...s, presentations };
-		})
-		.filter((s) => s.presentations.length > 0);
+	const filteredSessions = sessions.flatMap((s) => {
+		const presentations = q
+			? s.presentations.filter((p) => {
+					const authors = p.authors
+						.map((a) => `${a.firstName} ${a.lastName}`)
+						.join(" ")
+						.toLowerCase();
+					return (
+						p.submissionTitle.toLowerCase().includes(q) ||
+						authors.includes(q) ||
+						s.title.toLowerCase().includes(q)
+					);
+				})
+			: s.presentations;
+		return presentations.length > 0 ? [{ ...s, presentations }] : [];
+	});
 
 	if (filteredSessions.length === 0) {
 		return (
