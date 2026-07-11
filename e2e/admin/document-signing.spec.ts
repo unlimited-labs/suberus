@@ -139,7 +139,7 @@ test.describe("Admin - Document signing", () => {
 		await page
 			.getByTestId("signing-p12-file")
 			.setInputFiles(path.join(FIXTURES, "e2e-signing.p12"));
-		await page.getByLabel("Password").fill("e2epass");
+		await page.getByLabel("Password", { exact: true }).fill("e2epass");
 		await page.getByTestId("upload-cert-button").click();
 		// A cert already exists (previous test), so uploading is a rotation: confirm.
 		await page.getByTestId("rotate-cert-confirm").click();

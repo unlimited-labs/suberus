@@ -11,7 +11,7 @@ export async function loginAs(
 	await page.goto("/login")
 	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 })
 	await page.getByLabel("E-mail").fill(user.email)
-	const passwordInput = page.getByLabel("Password")
+	const passwordInput = page.getByLabel("Password", { exact: true })
 	await passwordInput.fill(user.password)
 	await passwordInput.press("Enter")
 	await page.waitForURL("/", { timeout: 30000 })

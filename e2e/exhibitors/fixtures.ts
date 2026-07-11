@@ -62,7 +62,7 @@ export async function loginAsExhibitor(
 	await page.goto("/login");
 	await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 });
 	await page.getByLabel("E-mail").fill(email);
-	const passwordInput = page.getByLabel("Password");
+	const passwordInput = page.getByLabel("Password", { exact: true });
 	await passwordInput.fill(password);
 	await passwordInput.press("Enter");
 	await page.waitForURL(/\/exhibitor/, { timeout: 30000 });

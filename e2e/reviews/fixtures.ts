@@ -59,7 +59,7 @@ export async function loginAsTestUser(page: Page) {
 export async function loginAsAdminViaForm(page: Page) {
 	await page.goto("/login");
 	await page.getByLabel("E-mail").fill(ADMIN_USER.email);
-	await page.getByLabel("Password").fill(ADMIN_USER.password);
+	await page.getByLabel("Password", { exact: true }).fill(ADMIN_USER.password);
 	await page.getByRole("button", { name: "Sign in", exact: true }).click();
 	await page.waitForURL("/");
 }

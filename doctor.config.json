@@ -5,7 +5,9 @@
       ".venv/**",
       ".claude/**",
       "poc/**",
-      "src/generated/**"
+      "src/generated/**",
+      "playwright-report/**",
+      "test-results/**"
     ],
     "overrides": [
       {
@@ -113,6 +115,14 @@
         ],
         "rules": [
           "react-doctor/control-has-associated-label"
+        ]
+      },
+      {
+        "files": [
+          "package.json"
+        ],
+        "rules": [
+          "deslop/unused-dependency"
         ]
       }
     ]

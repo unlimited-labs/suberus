@@ -204,10 +204,7 @@ test.describe("Admin - Submission Activity History", () => {
 		await expect(page.getByText("Review submitted")).toBeVisible();
 
 		// Verify chronological order: "Reviewer assigned" appears before "Review submitted"
-		const historyContent = await page
-			.locator('[role="list"]')
-			.first()
-			.textContent();
+		const historyContent = await page.getByRole("list").first().textContent();
 		const assignIdx = historyContent?.indexOf("Reviewer assigned") ?? -1;
 		const submitIdx = historyContent?.indexOf("Review submitted") ?? -1;
 		expect(assignIdx).toBeGreaterThan(-1);

@@ -163,7 +163,7 @@ test.describe("Review Workflow - Reviewer Actions", () => {
 		// Login as reviewer
 		await page.goto("/login");
 		await page.getByLabel("E-mail").fill(REVIEWER_USER.email);
-		await page.getByLabel("Password").fill(REVIEWER_USER.password);
+		await page.getByLabel("Password", { exact: true }).fill(REVIEWER_USER.password);
 		await page.getByRole("button", { name: "Sign in", exact: true }).click();
 		await page.waitForURL("/");
 
@@ -186,7 +186,7 @@ test.describe("Review Workflow - Reviewer Actions", () => {
 		await page.goto("/login");
 		await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 });
 		await page.getByLabel("E-mail").fill(REVIEWER_USER.email);
-		await page.getByLabel("Password").fill(REVIEWER_USER.password);
+		await page.getByLabel("Password", { exact: true }).fill(REVIEWER_USER.password);
 		await page.getByRole("button", { name: "Sign in", exact: true }).click();
 		await page.waitForURL("/", { timeout: 30000 });
 
@@ -214,7 +214,7 @@ test.describe("Review Workflow - Reviewer Actions", () => {
 		// Login as reviewer
 		await page.goto("/login");
 		await page.getByLabel("E-mail").fill(REVIEWER_USER.email);
-		await page.getByLabel("Password").fill(REVIEWER_USER.password);
+		await page.getByLabel("Password", { exact: true }).fill(REVIEWER_USER.password);
 		await page.getByRole("button", { name: "Sign in", exact: true }).click();
 		await page.waitForURL("/");
 
@@ -241,7 +241,7 @@ test.describe("Review Workflow - Reviewer Actions", () => {
 		// Login as reviewer
 		await page.goto("/login");
 		await page.getByLabel("E-mail").fill(REVIEWER_USER.email);
-		await page.getByLabel("Password").fill(REVIEWER_USER.password);
+		await page.getByLabel("Password", { exact: true }).fill(REVIEWER_USER.password);
 		await page.getByRole("button", { name: "Sign in", exact: true }).click();
 		await page.waitForURL("/");
 
