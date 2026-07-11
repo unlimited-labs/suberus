@@ -35,12 +35,6 @@ export const EMAIL_ATTACHMENT_EXTENSIONS = [
 export const EMAIL_ATTACHMENT_ACCEPT_ATTRIBUTE =
 	EMAIL_ATTACHMENT_EXTENSIONS.map((ext) => `.${ext}`).join(",");
 
-/** Labelled options for settings UIs (checkbox lists). */
-export const FILE_TYPE_OPTIONS = SUPPORTED_FILE_EXTENSIONS.map((value) => ({
-	value,
-	label: value.toUpperCase(),
-}));
-
 /** Comma-separated `accept` attribute for <input type="file">, e.g. ".pdf,.docx". */
 export const FILE_ACCEPT_ATTRIBUTE = SUPPORTED_FILE_EXTENSIONS.map(
 	(ext) => `.${ext}`,

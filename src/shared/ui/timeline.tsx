@@ -8,9 +8,7 @@ interface TimelineProps {
 
 export function Timeline({ children, className }: TimelineProps) {
 	return (
-		<div className={cn("relative space-y-4", className)} role="list">
-			{children}
-		</div>
+		<ul className={cn("relative space-y-4", className)}>{children}</ul>
 	);
 }
 
@@ -26,13 +24,12 @@ export function TimelineItem({
 	isLast = false,
 }: TimelineItemProps) {
 	return (
-		<div className={cn("relative flex gap-4", className)} role="listitem">
-			{/* Vertical connecting line */}
+		<li className={cn("relative flex gap-4", className)}>
 			{!isLast && (
 				<div className="absolute left-[11px] top-6 bottom-0 w-[2px] bg-border" />
 			)}
 			{children}
-		</div>
+		</li>
 	);
 }
 

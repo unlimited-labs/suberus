@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const AUTOPLAN_STAGES = [
+const AUTOPLAN_STAGES = [
 	"loading",
 	"embedding",
 	"clustering",

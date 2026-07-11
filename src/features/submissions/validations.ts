@@ -110,7 +110,7 @@ export function createDynamicSubmissionSchema(limits: ValidationLimits) {
 }
 
 // Legacy static schemas (kept for backwards compatibility)
-export const createSubmissionSchema = z.object({
+const createSubmissionSchema = z.object({
 	type: z.enum(["ABSTRACT", "POSTER", "FULL_PAPER"]),
 	title: z
 		.string()

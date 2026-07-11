@@ -22,3 +22,5 @@ allowBuilds:
   msw: true
   prisma: true
 onlyBuiltDependencies: lefthook
+
+minimumReleaseAge: 10080

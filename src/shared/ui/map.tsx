@@ -295,11 +295,14 @@ function MapComponent({
     if (!mapInstance) return;
     if (currentStyleRef.current === desiredStyle) return;
 
-    clearStyleTimeout();
+    if (styleTimeoutRef.current) {
+      clearTimeout(styleTimeoutRef.current);
+      styleTimeoutRef.current = null;
+    }
     currentStyleRef.current = desiredStyle;
 
     mapInstance.setStyle(desiredStyle, { diff: true });
-  }, [mapInstance, desiredStyle, clearStyleTimeout]);
+  }, [mapInstance, desiredStyle]);
 
   const contextValue = {
     map: mapInstance,

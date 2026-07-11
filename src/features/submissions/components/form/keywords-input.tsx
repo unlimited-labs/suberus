@@ -1,5 +1,5 @@
 import { IconX } from "@tabler/icons-react";
-import { type ChangeEvent, type KeyboardEvent, useRef, useState } from "react";
+import { type ChangeEvent, type KeyboardEvent, useState } from "react";
 import { cn } from "@/shared/lib/utils";
 
 interface KeywordsInputProps {
@@ -20,7 +20,6 @@ export function KeywordsInput({
 	const [inputValue, setInputValue] = useState("");
 	const [error, setError] = useState<string | null>(null);
 	const [isFocused, setIsFocused] = useState(false);
-	const inputRef = useRef<HTMLInputElement>(null);
 
 	const addKeyword = (keyword: string) => {
 		const trimmed = keyword.trim().toLowerCase();
@@ -73,10 +72,6 @@ export function KeywordsInput({
 		setError(null);
 	};
 
-	const handleContainerClick = () => {
-		inputRef.current?.focus();
-	};
-
 	const handleBlur = () => {
 		setIsFocused(false);
 		if (inputValue.trim()) {
@@ -86,10 +81,7 @@ export function KeywordsInput({
 
 	return (
 		<div data-testid="keywords-section" className={cn("space-y-2", className)}>
-			{/* biome-ignore lint/a11y/useKeyWithClickEvents: click focuses inner input */}
-			{/* biome-ignore lint/a11y/noStaticElementInteractions: visual wrapper for input */}
-			<div
-				onClick={handleContainerClick}
+			<label
 				className={cn(
 					"flex flex-wrap items-center gap-1.5 min-h-10 px-3 py-2 rounded-md border bg-background transition-colors cursor-text",
 					isFocused
@@ -118,7 +110,6 @@ export function KeywordsInput({
 					</span>
 				))}
 				<input
-					ref={inputRef}
 					type="text"
 					value={inputValue}
 					onChange={handleInputChange}
@@ -129,7 +120,7 @@ export function KeywordsInput({
 					disabled={value.length >= maxKeywords}
 					className="flex-1 min-w-[120px] bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed"
 				/>
-			</div>
+			</label>
 
 			{error && (
 				<p className="text-xs text-destructive" role="alert">

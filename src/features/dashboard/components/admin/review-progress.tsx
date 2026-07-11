@@ -1,17 +1,16 @@
-import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
+import { lazy, Suspense } from "react";
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
 import { Badge } from "@/shared/ui/badge";
 import { Progress } from "@/shared/ui/progress";
 import { SectionCard } from "@/shared/ui/section-card";
 
+const ReviewCompletionPie = lazy(() =>
+	import("./charts").then((m) => ({ default: m.ReviewCompletionPie })),
+);
+
 interface ReviewProgressProps {
 	data: AdminDashboardMetrics["reviews"] | undefined;
 }
-
-const PROGRESS_COLORS = {
-	completed: "#22c55e",
-	remaining: "#e5e7eb",
-};
 
 export function ReviewProgress({ data }: ReviewProgressProps) {
 	if (!data) {
@@ -26,39 +25,15 @@ export function ReviewProgress({ data }: ReviewProgressProps) {
 
 	const { byStatus, completionRate, totalAssignments } = data;
 
-	const chartData = [
-		{
-			name: "Completed",
-			value: byStatus.COMPLETED,
-			fill: PROGRESS_COLORS.completed,
-		},
-		{
-			name: "Remaining",
-			value: totalAssignments - byStatus.COMPLETED,
-			fill: PROGRESS_COLORS.remaining,
-		},
-	];
-
 	return (
 		<SectionCard title="Review Progress" contentClassName="space-y-4">
 			<div className="flex items-center justify-center">
-				<ResponsiveContainer width="50%" height={150}>
-					<PieChart>
-						<Pie
-							data={chartData}
-							cx="50%"
-							cy="50%"
-							innerRadius={40}
-							outerRadius={60}
-							dataKey="value"
-							strokeWidth={0}
-						>
-							{chartData.map((entry) => (
-								<Cell key={entry.name} fill={entry.fill} />
-							))}
-						</Pie>
-					</PieChart>
-				</ResponsiveContainer>
+				<Suspense fallback={<div className="h-[150px] w-1/2" />}>
+					<ReviewCompletionPie
+						completed={byStatus.COMPLETED}
+						total={totalAssignments}
+					/>
+				</Suspense>
 				<div className="text-center ml-4">
 					<p className="text-3xl font-bold">{completionRate.toFixed(0)}%</p>
 					<p className="text-sm text-muted-foreground">Completion Rate</p>

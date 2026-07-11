@@ -1,24 +1,14 @@
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { lazy, Suspense } from "react";
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
 import { SectionCard } from "@/shared/ui/section-card";
+
+const SubmissionStatusPie = lazy(() =>
+	import("./charts").then((m) => ({ default: m.SubmissionStatusPie })),
+);
 
 interface SubmissionChartProps {
 	data: AdminDashboardMetrics["submissions"] | undefined;
 }
-
-const STATUS_COLORS: Record<string, string> = {
-	ACCEPTED: "#22c55e",
-	CONDITIONALLY_ACCEPTED: "#86efac",
-	REJECTED: "#ef4444",
-	UNDER_REVIEW: "#eab308",
-	SUBMITTED: "#3b82f6",
-	AWAITING_DECISION: "#f97316",
-	REVIEWS_COMPLETE: "#8b5cf6",
-	REVISE_REQUIRED: "#f59e0b",
-	RESUBMITTED: "#06b6d4",
-	DRAFT: "#6b7280",
-	WITHDRAWN: "#9ca3af",
-};
 
 const STATUS_LABELS: Record<string, string> = {
 	ACCEPTED: "Accepted",
@@ -67,37 +57,9 @@ export function SubmissionChart({ data }: SubmissionChartProps) {
 
 	return (
 		<SectionCard title="Submissions by Status">
-			<ResponsiveContainer width="100%" height={300}>
-				<PieChart>
-					<Pie
-						data={chartData}
-						cx="50%"
-						cy="50%"
-						labelLine={false}
-						label={({ name, percent }) =>
-							`${name}: ${((percent ?? 0) * 100).toFixed(0)}%`
-						}
-						outerRadius={80}
-						fill="#8884d8"
-						dataKey="value"
-					>
-						{chartData.map((entry) => (
-							<Cell
-								key={entry.status}
-								fill={STATUS_COLORS[entry.status] || "#6b7280"}
-							/>
-						))}
-					</Pie>
-					<Tooltip
-						formatter={(value) => {
-							const num = Number(value ?? 0);
-							const percent = ((num / total) * 100).toFixed(1);
-							return `${num} (${percent}%)`;
-						}}
-						labelFormatter={() => "Count"}
-					/>
-				</PieChart>
-			</ResponsiveContainer>
+			<Suspense fallback={<div className="h-[300px]" />}>
+				<SubmissionStatusPie data={chartData} total={total} />
+			</Suspense>
 		</SectionCard>
 	);
 }

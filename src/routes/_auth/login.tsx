@@ -12,10 +12,7 @@ export const Route = createFileRoute("/_auth/login")({
 	component: LoginPage,
 });
 
-async function signInWithPasskey(
-	navigate: ReturnType<typeof useNavigate>,
-	opts?: { autoFill?: boolean },
-) {
+async function signInWithPasskey(opts?: { autoFill?: boolean }) {
 	const res = await authClient.signIn.passkey(opts);
 	if (res?.error) {
 		// autoFill stays pending until the user picks a passkey; its abort/cancel
@@ -23,10 +20,10 @@ async function signInWithPasskey(
 		if (!opts?.autoFill) {
 			toast.error(res.error.message ?? "Passkey sign-in failed");
 		}
-		return;
+		return false;
 	}
 	toast.success("Logged in successfully");
-	navigate({ to: "/" });
+	return true;
 }
 
 function LoginPage() {
@@ -35,9 +32,13 @@ function LoginPage() {
 	// Conditional UI: offer passkeys in the e-mail field's autofill dropdown.
 	useEffect(() => {
 		if (typeof PublicKeyCredential === "undefined") return;
-		void PublicKeyCredential.isConditionalMediationAvailable?.().then((ok) => {
-			if (ok) void signInWithPasskey(navigate, { autoFill: true });
-		});
+		void PublicKeyCredential.isConditionalMediationAvailable?.().then(
+			async (ok) => {
+				if (ok && (await signInWithPasskey({ autoFill: true }))) {
+					navigate({ to: "/" });
+				}
+			},
+		);
 	}, [navigate]);
 
 	const form = useAppForm({
@@ -121,7 +122,9 @@ function LoginPage() {
 						variant="outline"
 						className="h-9 w-full"
 						data-testid="passkey-signin"
-						onClick={() => void signInWithPasskey(navigate)}
+						onClick={async () => {
+							if (await signInWithPasskey()) navigate({ to: "/" });
+						}}
 					>
 						<IconFingerprint className="size-4" />
 						Sign in with passkey
