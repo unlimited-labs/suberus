@@ -46,9 +46,8 @@ export function useSubmissionTransitions(submissionId: string) {
 			}
 		} catch {
 			toast.error("Transition failed");
-		} finally {
-			setIsTransitioning(false);
 		}
+		setIsTransitioning(false);
 	}
 
 	const handleTransitionToAwaitingDecision = () =>

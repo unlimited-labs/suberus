@@ -20,15 +20,16 @@ const initialState: JobSSEState = {
 
 export function useJobSSE(jobId: string | null): JobSSEState {
 	const [state, setState] = useState<JobSSEState>(initialState);
+	const [prevJobId, setPrevJobId] = useState(jobId);
 	const esRef = useRef<EventSource | null>(null);
 
-	useEffect(() => {
-		if (!jobId) {
-			setState(initialState);
-			return;
-		}
+	if (jobId !== prevJobId) {
+		setPrevJobId(jobId);
+		setState(initialState);
+	}
 
-		setState({ ...initialState });
+	useEffect(() => {
+		if (!jobId) return;
 
 		const es = new EventSource(`/api/jobs/sse/${jobId}`);
 		esRef.current = es;

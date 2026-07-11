@@ -62,10 +62,9 @@ function useImageUpload(
 			toast.success(`${label} uploaded`);
 		} catch {
 			toast.error(`Failed to upload ${label.toLowerCase()}`);
-		} finally {
-			setUploading(false);
-			if (inputRef.current) inputRef.current.value = "";
 		}
+		setUploading(false);
+		if (inputRef.current) inputRef.current.value = "";
 	};
 
 	const onRemove = async () => {
@@ -77,9 +76,8 @@ function useImageUpload(
 			toast.success(`${label} removed`);
 		} catch {
 			toast.error(`Failed to remove ${label.toLowerCase()}`);
-		} finally {
-			setRemoving(false);
 		}
+		setRemoving(false);
 	};
 
 	return { uploading, removing, inputRef, onUpload, onRemove };
@@ -117,9 +115,8 @@ export function useBrandingSettings(initialData: BrandingSettings) {
 			toast.success("Branding settings saved");
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to save branding settings"));
-		} finally {
-			setIsSaving(false);
 		}
+		setIsSaving(false);
 	};
 
 	const bg = useImageUpload(

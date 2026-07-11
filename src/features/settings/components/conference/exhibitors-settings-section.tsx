@@ -52,9 +52,8 @@ export function ExhibitorsSettingsSection({
 			toast.success("Exhibitor settings saved");
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to save"));
-		} finally {
-			setIsSaving(false);
 		}
+		setIsSaving(false);
 	};
 
 	return (

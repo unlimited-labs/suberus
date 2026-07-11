@@ -37,10 +37,13 @@ export function usePersistedState<T>(
 
 	const defaultRef = useRef(defaultValue);
 	const mergeRef = useRef(options?.merge);
-	mergeRef.current = options?.merge;
 	const schemaRef = useRef(options?.schema);
-	schemaRef.current = options?.schema;
 	const hydrated = useRef(false);
+
+	useEffect(() => {
+		mergeRef.current = options?.merge;
+		schemaRef.current = options?.schema;
+	});
 
 	useEffect(() => {
 		if (!key) return;

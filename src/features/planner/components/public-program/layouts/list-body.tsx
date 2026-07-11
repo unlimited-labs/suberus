@@ -24,7 +24,7 @@ export function ListBody({
 		<div className={framed ? "space-y-16" : "space-y-10"}>
 			{groups.map((group, gi) => (
 				<TimeSlot
-					key={`${new Date(group.startAt).getTime()}-${gi}`}
+					key={`${group.startAt}-${gi}`}
 					group={group}
 					tz={tz}
 					query={q}

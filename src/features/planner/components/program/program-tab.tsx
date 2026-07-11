@@ -230,9 +230,8 @@ function ProgramTracksSection({
 			}
 		} catch (e) {
 			toast.error(getErrorMessage(e, "Failed to import"));
-		} finally {
-			setImporting(false);
 		}
+		setImporting(false);
 	};
 
 	return (

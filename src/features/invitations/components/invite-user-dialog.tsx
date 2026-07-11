@@ -59,9 +59,8 @@ export function InviteUserDialog({
 					? "User with this email already exists"
 					: msg,
 			);
-		} finally {
-			setIsSubmitting(false);
 		}
+		setIsSubmitting(false);
 	};
 
 	return (

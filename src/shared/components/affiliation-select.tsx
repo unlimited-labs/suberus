@@ -154,7 +154,8 @@ function AffiliationInput({
 				aria-label="Affiliation"
 				aria-expanded={open}
 				aria-autocomplete="list"
-				{...affiliationAriaProps(open, highlightedIndex)}
+				aria-controls="affiliation-listbox"
+				{...affiliationAriaProps(highlightedIndex)}
 				data-affiliation-id={affiliationId || undefined}
 				className={cn(
 					"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 pl-9 text-sm shadow-sm transition-colors",
@@ -190,8 +191,10 @@ export function AffiliationSelect({
 	const [inputValue, setInputValue] = useState(displayValue);
 	const [open, setOpen] = useState(false);
 	const [highlightedIndex, setHighlightedIndex] = useState(-1);
-	const [affiliations, setAffiliations] = useState<Affiliation[]>([]);
-	const [isLoading, setIsLoading] = useState(false);
+	const [searchResults, setSearchResults] = useState<{
+		query: string;
+		items: Affiliation[];
+	}>({ query: "", items: [] });
 
 	const inputRef = useRef<HTMLInputElement>(null);
 	const isCreatingRef = useRef(false);
@@ -199,12 +202,16 @@ export function AffiliationSelect({
 
 	const debouncedInput = useDebounce(inputValue, 300);
 
-	useEffect(() => {
+	const [prevDisplayValue, setPrevDisplayValue] = useState(displayValue);
+	if (prevDisplayValue !== displayValue) {
+		setPrevDisplayValue(displayValue);
 		setInputValue(displayValue);
-	}, [displayValue]);
+	}
 
 	const onChangeRef = useRef(onChange);
-	onChangeRef.current = onChange;
+	useEffect(() => {
+		onChangeRef.current = onChange;
+	});
 	const isFetchingRef = useRef(false);
 
 	useEffect(() => {
@@ -227,29 +234,31 @@ export function AffiliationSelect({
 			});
 	}, [initValueId, displayValue, inputValue]);
 
-	const fetchAffiliations = useCallback(async (query: string) => {
-		if (!query.trim()) {
-			setAffiliations([]);
+	useEffect(() => {
+		if (!debouncedInput.trim() || searchResults.query === debouncedInput) {
 			return;
 		}
-		setIsLoading(true);
-		try {
-			const data = await getAffiliations({ data: { q: query } });
-			setAffiliations(data);
-		} catch {
-			// Silently fail
-		} finally {
-			setIsLoading(false);
-		}
-	}, []);
+		let stale = false;
+		getAffiliations({ data: { q: debouncedInput } })
+			.then((items) => {
+				if (!stale) setSearchResults({ query: debouncedInput, items });
+			})
+			.catch(() => {
+				if (!stale) {
+					setSearchResults((prev) => ({
+						query: debouncedInput,
+						items: prev.items,
+					}));
+				}
+			});
+		return () => {
+			stale = true;
+		};
+	}, [debouncedInput, searchResults.query]);
 
-	useEffect(() => {
-		if (debouncedInput.trim()) {
-			fetchAffiliations(debouncedInput);
-		} else {
-			setAffiliations([]);
-		}
-	}, [debouncedInput, fetchAffiliations]);
+	const affiliations = debouncedInput.trim() ? searchResults.items : [];
+	const isLoading =
+		!!debouncedInput.trim() && searchResults.query !== debouncedInput;
 
 	const { showCreate, totalItems, showDropdown } =
 		computeAffiliationDropdownState({
@@ -284,9 +293,8 @@ export function AffiliationSelect({
 				setHighlightedIndex(-1);
 			} catch {
 				// Silently fail
-			} finally {
-				isCreatingRef.current = false;
 			}
+			isCreatingRef.current = false;
 		},
 		[onChange],
 	);
@@ -313,14 +321,14 @@ export function AffiliationSelect({
 			setInputValue(val);
 			if (!val.trim()) {
 				onChange(null, "");
-				setAffiliations([]);
+				setSearchResults({ query: debouncedInput, items: [] });
 				setOpen(false);
 			} else {
 				setOpen(true);
 			}
 			setHighlightedIndex(-1);
 		},
-		[onChange],
+		[onChange, debouncedInput],
 	);
 
 	const handleFocus = useCallback(() => {

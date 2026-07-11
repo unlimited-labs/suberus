@@ -33,9 +33,8 @@ export function TosContentTab({ initialContent }: TosContentTabProps) {
 			toast.success("Terms of Service saved");
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to save Terms of Service"));
-		} finally {
-			setIsSaving(false);
 		}
+		setIsSaving(false);
 	};
 
 	return (

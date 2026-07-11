@@ -50,9 +50,8 @@ export function DataTableBulkActions<TData>({
 			onActionComplete?.();
 		} catch (_error) {
 			toast.error("Action failed");
-		} finally {
-			setIsLoading(false);
 		}
+		setIsLoading(false);
 	};
 
 	return (

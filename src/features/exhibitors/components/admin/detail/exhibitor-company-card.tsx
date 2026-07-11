@@ -35,9 +35,8 @@ function PackageEditor({
 			onSaved();
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to save package"));
-		} finally {
-			setIsSaving(false);
 		}
+		setIsSaving(false);
 	};
 
 	return (

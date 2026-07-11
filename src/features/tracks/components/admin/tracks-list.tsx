@@ -49,9 +49,8 @@ export function TracksList({ tracks, onEdit, onUpdate }: TracksListProps) {
 			onUpdate();
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to delete track"));
-		} finally {
-			setDeletingId(null);
 		}
+		setDeletingId(null);
 	};
 
 	const handleToggleActive = async (id: string, currentActive: boolean) => {
@@ -67,9 +66,8 @@ export function TracksList({ tracks, onEdit, onUpdate }: TracksListProps) {
 			onUpdate();
 		} catch (_error) {
 			toast.error("Failed to update track");
-		} finally {
-			setTogglingId(null);
 		}
+		setTogglingId(null);
 	};
 
 	if (tracks.length === 0) {

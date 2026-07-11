@@ -7,7 +7,7 @@ import {
 } from "@tabler/icons-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { addDays, format } from "date-fns";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import {
 	type AssignmentWithReviewer,
@@ -62,11 +62,14 @@ export function AssignReviewerDialog({
 		null,
 	);
 	const [customDeadline, setCustomDeadline] = useState("");
+	const [prevOpen, setPrevOpen] = useState(false);
+	const [prevDeadlineDays, setPrevDeadlineDays] = useState(reviewDeadlineDays);
 
-	// Initialize deadline when dialog opens
-	useEffect(() => {
+	if (open !== prevOpen || reviewDeadlineDays !== prevDeadlineDays) {
+		setPrevOpen(open);
+		setPrevDeadlineDays(reviewDeadlineDays);
 		if (open) setCustomDeadline(computeDefaultDeadline(reviewDeadlineDays));
-	}, [open, reviewDeadlineDays]);
+	}
 
 	const { data: availableReviewers = [], isLoading } = useQuery<
 		AvailableReviewer[]
@@ -122,9 +125,8 @@ export function AssignReviewerDialog({
 			}
 		} catch (_error) {
 			toast.error("Failed to assign reviewer");
-		} finally {
-			setAssigningReviewerId(null);
 		}
+		setAssigningReviewerId(null);
 	}
 
 	async function handleCancel(assignmentId: string) {

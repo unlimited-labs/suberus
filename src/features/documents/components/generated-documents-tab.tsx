@@ -63,9 +63,8 @@ export function GeneratedDocumentsTab() {
 			toast.success("Document deleted");
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to delete"));
-		} finally {
-			setBusy(false);
 		}
+		setBusy(false);
 	};
 
 	return (

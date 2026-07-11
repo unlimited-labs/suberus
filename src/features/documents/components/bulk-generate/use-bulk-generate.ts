@@ -42,9 +42,8 @@ export function useBulkGenerate(userIds: string[], onDone?: () => void) {
 			setStep("review");
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to check participants"));
-		} finally {
-			setBusy(false);
 		}
+		setBusy(false);
 	};
 
 	const start = async () => {
@@ -59,9 +58,8 @@ export function useBulkGenerate(userIds: string[], onDone?: () => void) {
 			onDone?.();
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to start generation"));
-		} finally {
-			setBusy(false);
 		}
+		setBusy(false);
 	};
 
 	const done = progress ? progress.ready + progress.failed : 0;

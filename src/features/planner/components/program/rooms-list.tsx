@@ -50,9 +50,8 @@ export function RoomsList({ rooms, onEdit, onUpdate }: RoomsListProps) {
 			onUpdate();
 		} catch {
 			toast.error("Failed to reorder");
-		} finally {
-			setPendingId(null);
 		}
+		setPendingId(null);
 	};
 
 	if (rooms.length === 0) {

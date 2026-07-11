@@ -112,9 +112,8 @@ export function EditorDecisionDialog({
 			}
 		} catch (_error) {
 			toast.error("Failed to submit decision");
-		} finally {
-			setIsSubmitting(false);
 		}
+		setIsSubmitting(false);
 	};
 
 	const handleOpenChange = (isOpen: boolean) => {

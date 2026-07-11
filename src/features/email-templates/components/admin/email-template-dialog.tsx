@@ -99,9 +99,8 @@ export function EmailTemplateDialog({
 			onOpenChange(false);
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to save template"));
-		} finally {
-			setIsSaving(false);
 		}
+		setIsSaving(false);
 	};
 
 	const handleSendTest = async () => {
@@ -120,9 +119,8 @@ export function EmailTemplateDialog({
 			toast.error(
 				`Failed to send test email: ${getErrorMessage(err, "Unknown error")}`,
 			);
-		} finally {
-			setIsSendingTest(false);
 		}
+		setIsSendingTest(false);
 	};
 
 	const busy = isSaving || isSendingTest;

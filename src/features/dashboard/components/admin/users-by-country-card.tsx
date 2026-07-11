@@ -131,11 +131,14 @@ function BubbleLayer({
 	const { map, isLoaded } = useMap();
 	const popupRef = useRef<MapLibreGL.Popup | null>(null);
 	const mapRef = useRef(map);
-	mapRef.current = map;
 
 	const geojson = useMemo(() => buildGeoJson(data), [data]);
 	const geojsonRef = useRef(geojson);
-	geojsonRef.current = geojson;
+
+	useEffect(() => {
+		mapRef.current = map;
+		geojsonRef.current = geojson;
+	});
 
 	useEffect(() => {
 		if (!isLoaded || !map) return;

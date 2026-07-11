@@ -113,16 +113,11 @@ export function resolveAffiliationKeyAction(
 	}
 }
 
-/** Combobox aria props that reference the listbox and active option ids. */
-export function affiliationAriaProps(
-	open: boolean,
-	highlightedIndex: number,
-): {
-	"aria-controls": string | undefined;
+/** Combobox aria props that reference the active option id. */
+export function affiliationAriaProps(highlightedIndex: number): {
 	"aria-activedescendant": string | undefined;
 } {
 	return {
-		"aria-controls": open ? "affiliation-listbox" : undefined,
 		"aria-activedescendant":
 			highlightedIndex >= 0
 				? `affiliation-option-${highlightedIndex}`

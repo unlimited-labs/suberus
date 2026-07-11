@@ -59,9 +59,8 @@ export function DeskRejectDialog({
 			}
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to reject submission"));
-		} finally {
-			setIsSubmitting(false);
 		}
+		setIsSubmitting(false);
 	};
 
 	const handleOpenChange = (isOpen: boolean) => {

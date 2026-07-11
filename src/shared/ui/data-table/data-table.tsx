@@ -63,6 +63,7 @@ export function DataTable<TData, TValue>({
 	initialColumnVisibility,
 	storageKey,
 }: DataTableProps<TData, TValue>) {
+	"use no memo";
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 	const [columnVisibility, setColumnVisibility] =
 		usePersistedState<VisibilityState>(

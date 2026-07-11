@@ -1,6 +1,6 @@
 import { IconLoader2 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createElement, useState } from "react";
 import { activityLabels } from "@/features/activity-log/labels";
 import { getMoreActivity } from "@/features/dashboard/api/admin-dashboard";
 import {
@@ -72,7 +72,6 @@ function PerformerByline({ event }: { event: ActivityEvent }) {
 }
 
 function ActivityEventRow({ event }: { event: ActivityEvent }) {
-	const Icon = getEventIcon(event.type);
 	const colorClass = getEventColor(event.type);
 	const label = activityLabels[event.type] ?? event.type;
 	const description = getEventDescription(event);
@@ -82,7 +81,7 @@ function ActivityEventRow({ event }: { event: ActivityEvent }) {
 	return (
 		<div className="flex items-start gap-3 border-b pb-3 last:border-b-0">
 			<div className={cn("mt-0.5", colorClass)}>
-				<Icon className="size-4" />
+				{createElement(getEventIcon(event.type), { className: "size-4" })}
 			</div>
 			<div className="min-w-0 flex-1">
 				<div className="flex items-center gap-2">
@@ -127,9 +126,11 @@ export function RecentActivity({ events }: RecentActivityProps) {
 			});
 			setExtraEvents((prev) => [...prev, ...more]);
 			setHasMore(more.length === PAGE_SIZE);
-		} finally {
+		} catch (error) {
 			setLoading(false);
+			throw error;
 		}
+		setLoading(false);
 	}
 
 	if (!allEvents || allEvents.length === 0) {

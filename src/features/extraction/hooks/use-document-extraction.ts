@@ -87,7 +87,11 @@ export function useDocumentExtraction({
 					data: { jobId },
 				});
 
-				if (response.notFound || response.status !== "done") return;
+				if (response.notFound || response.status !== "done") {
+					setIsExtracting(false);
+					setJobId(null);
+					return;
+				}
 
 				const result = response.result as {
 					title?: string;
@@ -100,7 +104,11 @@ export function useDocumentExtraction({
 					keywords?: string[];
 				} | null;
 
-				if (!result) return;
+				if (!result) {
+					setIsExtracting(false);
+					setJobId(null);
+					return;
+				}
 
 				const extracted: Parameters<typeof onExtractedRef.current>[0] = {};
 				if (result.title) extracted.title = result.title;
@@ -112,10 +120,9 @@ export function useDocumentExtraction({
 				onExtractedRef.current(extracted);
 			} catch (error) {
 				console.error("[extraction] Failed to fetch result:", error);
-			} finally {
-				setIsExtracting(false);
-				setJobId(null);
 			}
+			setIsExtracting(false);
+			setJobId(null);
 		};
 
 		void fetchResult();

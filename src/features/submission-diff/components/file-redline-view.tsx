@@ -162,34 +162,32 @@ function useSyncedScroll() {
 		otherRef: RefObject<HTMLIFrameElement | null>,
 	) => {
 		const echoSide = side === "old" ? "new" : "old";
-		return () => {
-			const self = selfRef.current?.contentWindow;
-			if (!self) return;
-			self.addEventListener(
-				"scroll",
-				() => {
-					// Ignore the echo: the mirrored scroll on the side we just drove.
-					if (driver.current === echoSide) return;
-					const from = self.document.scrollingElement;
-					const to = otherRef.current?.contentWindow?.document.scrollingElement;
-					if (!from || !to) return;
-					driver.current = side;
-					mirrorScroll(from, to);
-					clearTimeout(release.current);
-					release.current = setTimeout(() => {
-						driver.current = null;
-					}, 100);
-				},
-				{ passive: true },
-			);
-		};
+		const self = selfRef.current?.contentWindow;
+		if (!self) return;
+		self.addEventListener(
+			"scroll",
+			() => {
+				// Ignore the echo: the mirrored scroll on the side we just drove.
+				if (driver.current === echoSide) return;
+				const from = self.document.scrollingElement;
+				const to = otherRef.current?.contentWindow?.document.scrollingElement;
+				if (!from || !to) return;
+				driver.current = side;
+				mirrorScroll(from, to);
+				clearTimeout(release.current);
+				release.current = setTimeout(() => {
+					driver.current = null;
+				}, 100);
+			},
+			{ passive: true },
+		);
 	};
 
 	return {
 		oldRef,
 		newRef,
-		onOldLoad: bind("old", oldRef, newRef),
-		onNewLoad: bind("new", newRef, oldRef),
+		onOldLoad: () => bind("old", oldRef, newRef),
+		onNewLoad: () => bind("new", newRef, oldRef),
 	};
 }
 

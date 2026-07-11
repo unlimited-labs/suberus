@@ -143,19 +143,10 @@ describe("resolveAffiliationKeyAction", () => {
 });
 
 describe("affiliationAriaProps", () => {
-	it("references the listbox only when open", () => {
-		expect(affiliationAriaProps(true, -1)["aria-controls"]).toBe(
-			"affiliation-listbox",
-		);
-		expect(affiliationAriaProps(false, -1)["aria-controls"]).toBeUndefined();
-	});
-
 	it("references the active option only when one is highlighted", () => {
-		expect(affiliationAriaProps(true, 2)["aria-activedescendant"]).toBe(
+		expect(affiliationAriaProps(2)["aria-activedescendant"]).toBe(
 			"affiliation-option-2",
 		);
-		expect(
-			affiliationAriaProps(true, -1)["aria-activedescendant"],
-		).toBeUndefined();
+		expect(affiliationAriaProps(-1)["aria-activedescendant"]).toBeUndefined();
 	});
 });

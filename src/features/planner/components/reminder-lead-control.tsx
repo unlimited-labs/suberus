@@ -1,6 +1,6 @@
 import { IconBell } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import {
 	reminderLeadQueryOptions,
@@ -12,10 +12,12 @@ export function ReminderLeadControl() {
 	const queryClient = useQueryClient();
 	const { data } = useQuery(reminderLeadQueryOptions());
 	const [value, setValue] = useState("");
+	const [prevData, setPrevData] = useState<typeof data>(undefined);
 
-	useEffect(() => {
+	if (data !== prevData) {
+		setPrevData(data);
 		if (data != null) setValue(String(data));
-	}, [data]);
+	}
 
 	const { mutate, isPending } = useMutation({
 		mutationFn: (leadMin: number) => setReminderLeadFn({ data: { leadMin } }),

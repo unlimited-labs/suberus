@@ -69,9 +69,8 @@ export function ContactInfoSection({
 			setPendingSave(null);
 		} catch {
 			// onSave surfaces the error toast; keep the dialog open for retry.
-		} finally {
-			setIsConfirming(false);
 		}
+		setIsConfirming(false);
 	};
 
 	return (

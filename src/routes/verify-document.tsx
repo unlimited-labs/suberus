@@ -45,9 +45,8 @@ function VerifyDocumentPage() {
 			setResult(await verifyDocumentFn({ data: form }));
 		} catch (e) {
 			setError(getErrorMessage(e, "Could not verify the document."));
-		} finally {
-			setBusy(false);
 		}
+		setBusy(false);
 	};
 
 	return (

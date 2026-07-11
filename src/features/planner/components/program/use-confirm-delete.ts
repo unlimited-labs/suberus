@@ -34,9 +34,8 @@ export function useConfirmDelete({
 			onMutated();
 		} catch (error) {
 			toast.error(getErrorMessage(error, fallbackErrorMessage));
-		} finally {
-			setPendingId(null);
 		}
+		setPendingId(null);
 	};
 
 	return {

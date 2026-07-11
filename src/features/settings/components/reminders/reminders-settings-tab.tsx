@@ -75,9 +75,8 @@ export function RemindersSettingsTab({
 			toast.success("Reminder settings saved");
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to save"));
-		} finally {
-			setIsSaving(false);
 		}
+		setIsSaving(false);
 	};
 
 	return (

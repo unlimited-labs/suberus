@@ -67,9 +67,8 @@ export function WithdrawDialog({
 			}
 		} catch {
 			toast.error("Withdraw failed");
-		} finally {
-			setIsSubmitting(false);
 		}
+		setIsSubmitting(false);
 	};
 
 	return (

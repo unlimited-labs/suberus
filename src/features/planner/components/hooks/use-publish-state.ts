@@ -45,9 +45,8 @@ export function usePublishState() {
 			setDialogOpen(false);
 		} catch (e) {
 			toast.error(getErrorMessage(e, "Failed to publish"));
-		} finally {
-			setBusy(null);
 		}
+		setBusy(null);
 	};
 
 	const unpublish = async () => {
@@ -58,9 +57,8 @@ export function usePublishState() {
 			toast.success("Program unpublished");
 		} catch (e) {
 			toast.error(getErrorMessage(e, "Failed to unpublish"));
-		} finally {
-			setBusy(null);
 		}
+		setBusy(null);
 	};
 
 	return {

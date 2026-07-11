@@ -79,9 +79,8 @@ function useTrackForm(track: TrackWithStats | undefined, onSaved: () => void) {
 			setIsActive(true);
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to save track"));
-		} finally {
-			setIsSaving(false);
 		}
+		setIsSaving(false);
 	};
 
 	return {

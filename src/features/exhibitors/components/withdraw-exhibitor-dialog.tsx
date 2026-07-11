@@ -42,9 +42,8 @@ export function WithdrawExhibitorDialog({
 			});
 		} catch (error) {
 			toast.error(error instanceof Error ? error.message : "Withdraw failed");
-		} finally {
-			setIsSubmitting(false);
 		}
+		setIsSubmitting(false);
 	};
 
 	return (

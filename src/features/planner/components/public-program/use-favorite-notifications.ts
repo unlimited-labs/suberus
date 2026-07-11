@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { env } from "@/env";
 import {
@@ -23,24 +23,32 @@ export interface FavoriteNotificationsState {
 	toggle: (next: boolean) => void;
 }
 
+const emptySubscribe = () => () => {};
+
+const getSupportedSnapshot = () =>
+	"serviceWorker" in navigator &&
+	"PushManager" in window &&
+	"Notification" in window &&
+	!!env.VITE_VAPID_PUBLIC_KEY;
+
+const getServerSupportedSnapshot = () => false;
+
 export function useFavoriteNotifications(): FavoriteNotificationsState {
-	const [supported, setSupported] = useState(false);
+	const supported = useSyncExternalStore(
+		emptySubscribe,
+		getSupportedSnapshot,
+		getServerSupportedSnapshot,
+	);
 	const [enabled, setEnabled] = useState(false);
 	const [busy, setBusy] = useState(false);
 
 	useEffect(() => {
-		const ok =
-			"serviceWorker" in navigator &&
-			"PushManager" in window &&
-			"Notification" in window &&
-			!!env.VITE_VAPID_PUBLIC_KEY;
-		setSupported(ok);
-		if (!ok) return;
+		if (!supported) return;
 		navigator.serviceWorker.ready
 			.then((reg) => reg.pushManager.getSubscription())
 			.then((sub) => setEnabled(!!sub))
 			.catch(() => {});
-	}, []);
+	}, [supported]);
 
 	const enable = useCallback(async () => {
 		const key = env.VITE_VAPID_PUBLIC_KEY;
@@ -54,6 +62,7 @@ export function useFavoriteNotifications(): FavoriteNotificationsState {
 				toast.error("Notifications permission denied", {
 					position: "bottom-center",
 				});
+				setBusy(false);
 				return;
 			}
 			const reg = await navigator.serviceWorker.ready;
@@ -67,6 +76,7 @@ export function useFavoriteNotifications(): FavoriteNotificationsState {
 				toast.error("Could not enable reminders", {
 					position: "bottom-center",
 				});
+				setBusy(false);
 				return;
 			}
 			await savePushSubscriptionFn({
@@ -75,9 +85,8 @@ export function useFavoriteNotifications(): FavoriteNotificationsState {
 		} catch {
 			setEnabled(false);
 			toast.error("Could not enable reminders", { position: "bottom-center" });
-		} finally {
-			setBusy(false);
 		}
+		setBusy(false);
 	}, []);
 
 	const disable = useCallback(async () => {
@@ -93,9 +102,8 @@ export function useFavoriteNotifications(): FavoriteNotificationsState {
 		} catch {
 			setEnabled(true);
 			toast.error("Could not disable reminders", { position: "bottom-center" });
-		} finally {
-			setBusy(false);
 		}
+		setBusy(false);
 	}, []);
 
 	const toggle = useCallback(

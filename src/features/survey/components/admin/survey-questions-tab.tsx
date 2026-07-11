@@ -246,9 +246,8 @@ export function SurveyQuestionsTab({
 			toast.success("Template imported");
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to import template"));
-		} finally {
-			setImporting(false);
 		}
+		setImporting(false);
 	};
 
 	const handleEditSave = async (
@@ -314,9 +313,8 @@ export function SurveyQuestionsTab({
 			);
 		} catch {
 			toast.error("Failed to update question");
-		} finally {
-			setBusyId(null);
 		}
+		setBusyId(null);
 	};
 
 	const handleConfirmDelete = async () => {
@@ -331,9 +329,8 @@ export function SurveyQuestionsTab({
 			toast.success("Question deleted");
 		} catch {
 			toast.error("Failed to delete question");
-		} finally {
-			setBusyId(null);
 		}
+		setBusyId(null);
 	};
 
 	const handleDragEnd = async (event: DragEndEvent) => {

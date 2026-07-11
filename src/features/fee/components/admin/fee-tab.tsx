@@ -90,9 +90,8 @@ export function FeeTab({
 			toast.success("Fee payment instructions saved");
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to save fee instructions"));
-		} finally {
-			setIsSavingInstructions(false);
 		}
+		setIsSavingInstructions(false);
 	};
 
 	const handleSaveFeeTypes = async (types: FeeType[]) => {
@@ -106,9 +105,8 @@ export function FeeTab({
 			toast.success("Fee types saved");
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to save fee types"));
-		} finally {
-			setIsSavingTypes(false);
 		}
+		setIsSavingTypes(false);
 	};
 
 	const handleAdd = () => {

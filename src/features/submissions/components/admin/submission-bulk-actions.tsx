@@ -81,9 +81,8 @@ export function SubmissionBulkActions({
 			}
 		} catch (error) {
 			setErrors([getErrorMessage(error, "Failed to change status")]);
-		} finally {
-			setIsLoading(false);
 		}
+		setIsLoading(false);
 	};
 
 	const handleAssignReviewer = async () => {
@@ -105,9 +104,8 @@ export function SubmissionBulkActions({
 			}
 		} catch (error) {
 			setErrors([getErrorMessage(error, "Failed to assign reviewer")]);
-		} finally {
-			setIsLoading(false);
 		}
+		setIsLoading(false);
 	};
 
 	const handleAssignTrack = async () => {
@@ -129,6 +127,7 @@ export function SubmissionBulkActions({
 				setErrors([
 					`The following submissions are not ABSTRACT type and cannot be assigned to tracks: ${titles}`,
 				]);
+				setIsLoading(false);
 				return;
 			}
 
@@ -147,9 +146,8 @@ export function SubmissionBulkActions({
 			onSuccess?.();
 		} catch (error) {
 			setErrors([getErrorMessage(error, "Failed to assign track")]);
-		} finally {
-			setIsLoading(false);
 		}
+		setIsLoading(false);
 	};
 
 	const actions = [

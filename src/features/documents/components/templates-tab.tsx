@@ -59,9 +59,8 @@ export function TemplatesTab() {
 			toast.success("Template deleted");
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to delete template"));
-		} finally {
-			setBusy(false);
 		}
+		setBusy(false);
 	};
 
 	return (

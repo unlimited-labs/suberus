@@ -80,7 +80,7 @@ export function GridBody({
 						</div>
 						{groups.map((group, gi) => (
 							<GridRow
-								key={`${new Date(group.startAt).getTime()}-${gi}`}
+								key={`${group.startAt}-${gi}`}
 								group={group}
 								cols={cols}
 								gridTemplateColumns={gridTemplateColumns}
@@ -270,7 +270,7 @@ function MobileRoomTimeline({
 				if (sessions.length === 0 && !hasBreak) return null;
 				const { start, end } = timeRange(group, tz);
 				return (
-					<div key={`${new Date(group.startAt).getTime()}-${gi}`}>
+					<div key={`${group.startAt}-${gi}`}>
 						{sessions.length > 0 && (
 							<>
 								<div className="mb-2 font-[var(--prog-font-meta)] text-[11px] uppercase tracking-[0.15em] tabular-nums text-[var(--prog-faint)]">

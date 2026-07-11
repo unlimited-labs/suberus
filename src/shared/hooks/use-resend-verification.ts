@@ -27,9 +27,8 @@ export function useResendVerification(email: string | undefined) {
 			}
 		} catch {
 			toast.error("Failed to send email");
-		} finally {
-			setIsResending(false);
 		}
+		setIsResending(false);
 	};
 
 	return {

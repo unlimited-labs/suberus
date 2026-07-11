@@ -48,9 +48,8 @@ export function TemplateUploadDialog({
 			onOpenChange(false);
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to upload template"));
-		} finally {
-			setBusy(false);
 		}
+		setBusy(false);
 	};
 
 	return (

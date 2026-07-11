@@ -1,25 +1,31 @@
 import { IconAlertTriangle, IconRefresh, IconX } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { useResendVerification } from "@/shared/hooks/use-resend-verification";
 import { useSession } from "@/shared/hooks/use-session";
 import { Alert, AlertAction, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 
 const DISMISS_KEY = "email-verification-banner-dismissed";
+const DISMISS_EVENT = "email-verification-banner-dismiss";
+
+const subscribeDismissed = (onChange: () => void) => {
+	window.addEventListener(DISMISS_EVENT, onChange);
+	return () => window.removeEventListener(DISMISS_EVENT, onChange);
+};
+const getDismissedSnapshot = () =>
+	sessionStorage.getItem(DISMISS_KEY) === "true";
+const getServerDismissedSnapshot = () => false;
 
 export function EmailVerificationBanner() {
 	const { user } = useSession();
-	const [isDismissed, setIsDismissed] = useState(false);
+	const isDismissed = useSyncExternalStore(
+		subscribeDismissed,
+		getDismissedSnapshot,
+		getServerDismissedSnapshot,
+	);
 	const { cooldown, isResending, resend, disabled } = useResendVerification(
 		user?.email,
 	);
-
-	useEffect(() => {
-		const dismissed = sessionStorage.getItem(DISMISS_KEY);
-		if (dismissed === "true") {
-			setIsDismissed(true);
-		}
-	}, []);
 
 	if (!user || user.emailVerified || isDismissed) {
 		return null;
@@ -27,7 +33,7 @@ export function EmailVerificationBanner() {
 
 	const handleDismiss = () => {
 		sessionStorage.setItem(DISMISS_KEY, "true");
-		setIsDismissed(true);
+		window.dispatchEvent(new Event(DISMISS_EVENT));
 	};
 
 	return (

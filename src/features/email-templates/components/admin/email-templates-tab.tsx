@@ -118,9 +118,8 @@ export function EmailTemplatesTab({
 			toast.success("Email footer saved");
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to save footer"));
-		} finally {
-			setIsSavingFooter(false);
 		}
+		setIsSavingFooter(false);
 	};
 
 	return (

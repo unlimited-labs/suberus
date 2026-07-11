@@ -56,6 +56,7 @@ export function useReviseSubmission({
 
 			if (!result.success) {
 				notifyResubmitError(result.error);
+				setIsSubmitting(false);
 				return;
 			}
 
@@ -64,9 +65,8 @@ export function useReviseSubmission({
 			navigate({ to: "/submissions/$id", params: { id } });
 		} catch {
 			notifyResubmitError();
-		} finally {
-			setIsSubmitting(false);
 		}
+		setIsSubmitting(false);
 	};
 
 	return { isSubmitting, submitRevision };

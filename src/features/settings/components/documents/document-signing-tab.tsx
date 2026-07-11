@@ -111,7 +111,15 @@ function CertificateSection({
 	const resignAfterRotation = async () => {
 		try {
 			const res = await fetch("/api/documents/resign", { method: "POST" });
-			if (!res.ok) throw new Error(String(res.status));
+			if (!res.ok) {
+				toast.error(
+					getErrorMessage(
+						new Error(String(res.status)),
+						"Certificate rotated, but re-signing failed to start",
+					),
+				);
+				return;
+			}
 			const { count } = (await res.json()) as { count: number };
 			if (count > 0) {
 				toast.success(
@@ -140,10 +148,9 @@ function CertificateSection({
 			if (wasRotation) await resignAfterRotation();
 		} catch (e) {
 			toast.error(getErrorMessage(e, "Failed to generate certificate"));
-		} finally {
-			setBusy(false);
-			setConfirm(null);
 		}
+		setBusy(false);
+		setConfirm(null);
 	};
 
 	const doUpload = async () => {
@@ -166,10 +173,9 @@ function CertificateSection({
 			if (wasRotation) await resignAfterRotation();
 		} catch (e) {
 			toast.error(getErrorMessage(e, "Failed to upload certificate"));
-		} finally {
-			setBusy(false);
-			setConfirm(null);
 		}
+		setBusy(false);
+		setConfirm(null);
 	};
 
 	const generate = () => {
@@ -203,9 +209,8 @@ function CertificateSection({
 			await onChanged();
 		} catch (e) {
 			toast.error(getErrorMessage(e, "Failed to update"));
-		} finally {
-			setBusy(false);
 		}
+		setBusy(false);
 	};
 
 	return (
@@ -463,9 +468,8 @@ function AppearanceSection({
 			toast.success("Appearance saved");
 		} catch (e) {
 			toast.error(getErrorMessage(e, "Failed to save"));
-		} finally {
-			setBusy(false);
 		}
+		setBusy(false);
 	};
 
 	return (
@@ -554,9 +558,8 @@ function TimestampSection({
 			toast.success("Timestamp settings saved");
 		} catch (e) {
 			toast.error(getErrorMessage(e, "Failed to save"));
-		} finally {
-			setBusy(false);
 		}
+		setBusy(false);
 	};
 
 	return (

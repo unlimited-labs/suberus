@@ -80,9 +80,8 @@ export function DecideExhibitorDialog({
 			setReason("");
 		} catch (error) {
 			toast.error(getErrorMessage(error, text.error));
-		} finally {
-			setIsSubmitting(false);
 		}
+		setIsSubmitting(false);
 	};
 
 	const handleOpenChange = (isOpen: boolean) => {

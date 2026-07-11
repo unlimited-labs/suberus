@@ -11,7 +11,7 @@ import {
 	useNavigate,
 	useSearch,
 } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { z } from "zod";
 import { adminRouteMiddleware } from "@/features/auth/server/middleware";
 import { documentTemplatesQueryOptions } from "@/features/documents/api/documents";
@@ -37,12 +37,17 @@ export const Route = createFileRoute("/_app/admin/_layout/documents/")({
 	component: AdminDocumentsPage,
 });
 
+const emptySubscribe = () => () => {};
+const getVerifyUrlSnapshot = () => `${window.location.origin}/verify-document`;
+const getServerVerifyUrlSnapshot = () => "/verify-document";
+
 function SigningBanner() {
 	const { data: signing } = useSuspenseQuery(documentSigningQueryOptions());
-	const [verifyUrl, setVerifyUrl] = useState("/verify-document");
-	useEffect(() => {
-		setVerifyUrl(`${window.location.origin}/verify-document`);
-	}, []);
+	const verifyUrl = useSyncExternalStore(
+		emptySubscribe,
+		getVerifyUrlSnapshot,
+		getServerVerifyUrlSnapshot,
+	);
 	if (!signing?.enabled) return null;
 	return (
 		<div className="mb-6 rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-4 text-sm">

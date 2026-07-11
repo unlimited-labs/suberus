@@ -58,9 +58,8 @@ export function ActionsCard({
 			}
 		} catch {
 			toast.error("Submit failed");
-		} finally {
-			setIsLoading(false);
 		}
+		setIsLoading(false);
 	};
 
 	const renderActions = () => {

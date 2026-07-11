@@ -68,9 +68,8 @@ export function UserDocumentDialog({
 			onOpenChange(false);
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to generate document"));
-		} finally {
-			setBusy(false);
 		}
+		setBusy(false);
 	};
 
 	return (

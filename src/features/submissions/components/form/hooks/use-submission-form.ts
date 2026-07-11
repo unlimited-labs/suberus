@@ -168,9 +168,11 @@ export function useSubmissionForm({
 		setIsSavingDraft(true);
 		try {
 			await onSaveDraft(form.state.values);
-		} finally {
+		} catch (error) {
 			setIsSavingDraft(false);
+			throw error;
 		}
+		setIsSavingDraft(false);
 	};
 
 	return {

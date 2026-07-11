@@ -90,9 +90,8 @@ export function useSubmissionSettings({
 			toast.success("Submission settings saved");
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to save settings"));
-		} finally {
-			setIsSaving(false);
 		}
+		setIsSaving(false);
 	};
 
 	return {

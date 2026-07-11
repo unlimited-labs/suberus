@@ -37,9 +37,8 @@ export function useConferenceSettings(initialData: ConferenceSettings) {
 			toast.success("Conference settings saved");
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to save"));
-		} finally {
-			setIsSaving(false);
 		}
+		setIsSaving(false);
 	};
 
 	return { data, isSaving, handleChange, handleToggle, handleSave };
