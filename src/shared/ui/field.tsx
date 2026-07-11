@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/shared/lib/utils"
@@ -168,7 +167,7 @@ function FieldError({
 }: React.ComponentProps<"div"> & {
   errors?: Array<string | { message?: string } | undefined>
 }) {
-  const content = useMemo(() => {
+  const resolveContent = () => {
     if (children) {
       return children
     }
@@ -199,7 +198,9 @@ function FieldError({
         ))}
       </ul>
     )
-  }, [children, errors])
+  }
+
+  const content = resolveContent()
 
   if (!content) {
     return null

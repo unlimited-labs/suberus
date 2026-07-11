@@ -1,5 +1,5 @@
 import { IconDownload, IconFile, IconUpload, IconX } from "@tabler/icons-react";
-import { type DragEvent, useCallback, useState } from "react";
+import { type DragEvent, useState } from "react";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 
@@ -23,76 +23,65 @@ export function FileDropzone({
 	const [isDragging, setIsDragging] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	const validateFile = useCallback(
-		(file: File): boolean => {
-			setError(null);
+	const validateFile = (file: File): boolean => {
+		setError(null);
 
-			// Check file size
-			const sizeMB = file.size / 1024 / 1024;
-			if (sizeMB > maxSize) {
-				setError(`File size exceeds ${maxSize}MB limit`);
+		const sizeMB = file.size / 1024 / 1024;
+		if (sizeMB > maxSize) {
+			setError(`File size exceeds ${maxSize}MB limit`);
+			return false;
+		}
+
+		if (accept) {
+			const acceptedTypes = accept.split(",").map((t) => t.trim());
+			const fileExt = `.${file.name.split(".").pop()?.toLowerCase()}`;
+			if (!acceptedTypes.includes(fileExt)) {
+				setError(`File type ${fileExt} not accepted`);
 				return false;
 			}
+		}
 
-			// Check file type
-			if (accept) {
-				const acceptedTypes = accept.split(",").map((t) => t.trim());
-				const fileExt = `.${file.name.split(".").pop()?.toLowerCase()}`;
-				if (!acceptedTypes.includes(fileExt)) {
-					setError(`File type ${fileExt} not accepted`);
-					return false;
-				}
+		return true;
+	};
+
+	const handleDrop = (e: DragEvent<HTMLLabelElement>) => {
+		e.preventDefault();
+		setIsDragging(false);
+
+		const files = e.dataTransfer.files;
+		if (files.length > 0) {
+			const file = files[0];
+			if (validateFile(file)) {
+				onChange(file);
 			}
+		}
+	};
 
-			return true;
-		},
-		[accept, maxSize],
-	);
-
-	const handleDrop = useCallback(
-		(e: DragEvent<HTMLLabelElement>) => {
-			e.preventDefault();
-			setIsDragging(false);
-
-			const files = e.dataTransfer.files;
-			if (files.length > 0) {
-				const file = files[0];
-				if (validateFile(file)) {
-					onChange(file);
-				}
-			}
-		},
-		[onChange, validateFile],
-	);
-
-	const handleDragOver = useCallback((e: DragEvent<HTMLLabelElement>) => {
+	const handleDragOver = (e: DragEvent<HTMLLabelElement>) => {
 		e.preventDefault();
 		setIsDragging(true);
-	}, []);
+	};
 
-	const handleDragLeave = useCallback(() => {
+	const handleDragLeave = () => {
 		setIsDragging(false);
-	}, []);
+	};
 
-	const handleFileSelect = useCallback(
-		(e: React.ChangeEvent<HTMLInputElement>) => {
-			const files = e.target.files;
-			if (files && files.length > 0) {
-				const file = files[0];
-				if (validateFile(file)) {
-					onChange(file);
-				}
+	const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const files = e.target.files;
+		if (files && files.length > 0) {
+			const file = files[0];
+			if (validateFile(file)) {
+				onChange(file);
 			}
-		},
-		[onChange, validateFile],
-	);
+		}
+	};
 
-	const handleRemove = useCallback(() => {
+	const handleRemove = () => {
 		onChange(null);
 		setError(null);
-	}, [onChange]);
+	};
 
-	const handleDownload = useCallback(() => {
+	const handleDownload = () => {
 		if (!value) return;
 		const url = URL.createObjectURL(value);
 		const a = document.createElement("a");
@@ -100,7 +89,7 @@ export function FileDropzone({
 		a.download = value.name;
 		a.click();
 		URL.revokeObjectURL(url);
-	}, [value]);
+	};
 
 	return (
 		<div className={cn("space-y-3", className)}>

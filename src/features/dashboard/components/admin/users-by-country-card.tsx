@@ -2,13 +2,7 @@ import { IconList, IconMap, IconWorld } from "@tabler/icons-react";
 import { countries } from "countries-list";
 import * as Flags from "country-flag-icons/react/3x2";
 import MapLibreGL from "maplibre-gl";
-import {
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-	useSyncExternalStore,
-} from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { COUNTRY_CENTROIDS } from "@/features/dashboard/country-centroids";
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
 import { useTheme } from "@/shared/components/theme-provider";
@@ -138,7 +132,7 @@ function BubbleLayer({
 	const popupRef = useRef<MapLibreGL.Popup | null>(null);
 	const mapRef = useRef(map);
 
-	const geojson = useMemo(() => buildGeoJson(data), [data]);
+	const geojson = buildGeoJson(data);
 	const geojsonRef = useRef(geojson);
 
 	useEffect(() => {
@@ -278,7 +272,7 @@ function CountryList({
 }: {
 	data: AdminDashboardMetrics["usersByCountry"];
 }) {
-	const rows = useMemo(() => aggregateByCountry(data), [data]);
+	const rows = aggregateByCountry(data);
 
 	return (
 		<div className="max-h-[300px] space-y-1 overflow-y-auto md:max-h-[400px]">

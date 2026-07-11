@@ -6,7 +6,6 @@ import {
 	type RefObject,
 	useContext,
 	useEffect,
-	useMemo,
 	useState,
 } from "react";
 import { allBreaksQueryOptions } from "@/features/planner/api/breaks";
@@ -58,20 +57,22 @@ export function BreakEditorProvider({
 		if (dirtyRef) dirtyRef.current = isDirty;
 	}, [dirtyRef, isDirty]);
 
-	const value = useMemo<BreakEditorContextValue | null>(() => {
-		if (!breakItem) return null;
+	if (!breakItem) return <>{fallback}</>;
 
-		const onDelete = async () => {
-			setDeleting(true);
-			const r = await mutations.deleteBreak();
-			if (r !== null) onClose();
-			setDeleting(false);
-		};
+	const onDelete = async () => {
+		setDeleting(true);
+		const r = await mutations.deleteBreak();
+		if (r !== null) onClose();
+		setDeleting(false);
+	};
 
-		return { breakItem, rooms, form, deleting, onDelete };
-	}, [breakItem, rooms, form, deleting, mutations, onClose]);
-
-	if (!value) return <>{fallback}</>;
+	const value: BreakEditorContextValue = {
+		breakItem,
+		rooms,
+		form,
+		deleting,
+		onDelete,
+	};
 	return <Context.Provider value={value}>{children}</Context.Provider>;
 }
 

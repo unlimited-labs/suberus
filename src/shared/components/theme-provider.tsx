@@ -1,11 +1,5 @@
 import { useRouter } from "@tanstack/react-router";
-import {
-	createContext,
-	type ReactNode,
-	useCallback,
-	useContext,
-	useEffect,
-} from "react";
+import { createContext, type ReactNode, useContext, useEffect } from "react";
 import type { Theme } from "@/shared/lib/theme";
 import { setThemeFn } from "@/shared/lib/theme";
 
@@ -45,15 +39,10 @@ export function ThemeProvider({
 		return () => mql.removeEventListener("change", onChange);
 	}, [theme]);
 
-	const setTheme = useCallback(
-		(newTheme: Theme) => {
-			// Instant feedback
-			resolveAndApply(newTheme);
-			// Persist to cookie + SSR catch-up
-			setThemeFn({ data: newTheme }).then(() => router.invalidate());
-		},
-		[router],
-	);
+	const setTheme = (newTheme: Theme) => {
+		resolveAndApply(newTheme);
+		setThemeFn({ data: newTheme }).then(() => router.invalidate());
+	};
 
 	return <ThemeContext value={{ theme, setTheme }}>{children}</ThemeContext>;
 }

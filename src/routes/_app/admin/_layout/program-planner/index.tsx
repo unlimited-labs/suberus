@@ -1,7 +1,6 @@
 import { IconCalendar } from "@tabler/icons-react";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useMemo } from "react";
 import { allBreaksQueryOptions } from "@/features/planner/api/breaks";
 import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
 import {
@@ -86,10 +85,7 @@ function ProgramPlannerContent() {
 		breaks,
 	);
 
-	const hiddenWeekdays = useMemo(
-		() => computeHiddenWeekdays(confStart, confEnd),
-		[confStart, confEnd],
-	);
+	const hiddenWeekdays = computeHiddenWeekdays(confStart, confEnd);
 	const { invalidate, handleSubmissionDrop, handleEventUpdate } =
 		usePlannerMutations(settings.defaultPresentationMin);
 	const {
@@ -110,10 +106,7 @@ function ProgramPlannerContent() {
 		confEnd,
 	);
 
-	const closeMobileQueue = useCallback(
-		() => setMobileQueueOpen(false),
-		[setMobileQueueOpen],
-	);
+	const closeMobileQueue = () => setMobileQueueOpen(false);
 
 	if (rooms.length === 0) return <NoRoomsPlaceholder />;
 

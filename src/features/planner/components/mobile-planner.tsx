@@ -5,7 +5,7 @@ import {
 	IconLayoutList,
 } from "@tabler/icons-react";
 import { addDays } from "date-fns";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { formatDayLabel, sameDayInTz } from "@/features/planner/tz-datetime";
 import { MobileBreakRow } from "./mobile/mobile-break-row";
 import { MobileSessionRow } from "./mobile/mobile-session-row";
@@ -34,14 +34,10 @@ export function MobilePlanner({
 		usePlannerSelection();
 	const [cursor, setCursor] = useState<Date>(initialDate);
 
-	const allItems = useMemo(
-		() => buildPlannerItems(sessions, breaks),
-		[sessions, breaks],
-	);
+	const allItems = buildPlannerItems(sessions, breaks);
 
-	const dayItems = useMemo(
-		() => allItems.filter((i) => sameDayInTz(i.startAt, cursor, timezone)),
-		[allItems, cursor, timezone],
+	const dayItems = allItems.filter((i) =>
+		sameDayInTz(i.startAt, cursor, timezone),
 	);
 
 	const shiftDay = (delta: number) => {

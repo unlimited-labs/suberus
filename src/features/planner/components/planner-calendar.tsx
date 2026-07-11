@@ -5,7 +5,6 @@ import {
 	type IlamyCalendarProps,
 	type WeekDays,
 } from "@ilamy/calendar";
-import { useCallback } from "react";
 import { CreateEventDialog } from "./create-event-dialog";
 import { PlannerCalendarHeader } from "./planner-calendar-header";
 import { PlannerEventRenderer } from "./planner-event-renderer";
@@ -78,21 +77,18 @@ export function PlannerCalendar({
 		endTime: parseHour(dayEnd, 18),
 	};
 
-	const handleDateChange = useCallback<
-		NonNullable<IlamyCalendarProps["onDateChange"]>
-	>((date) => onDateChange(date.toDate()), [onDateChange]);
+	const handleDateChange: NonNullable<IlamyCalendarProps["onDateChange"]> = (
+		date,
+	) => onDateChange(date.toDate());
 
-	const handleViewChange = useCallback<
-		NonNullable<IlamyCalendarProps["onViewChange"]>
-	>((view) => onViewChange(view), [onViewChange]);
+	const handleViewChange: NonNullable<IlamyCalendarProps["onViewChange"]> = (
+		view,
+	) => onViewChange(view);
 
-	const renderEventForm = useCallback<
-		NonNullable<IlamyCalendarProps["renderEventForm"]>
-	>(
-		(props) =>
-			props.open ? <CreateEventDialog {...props} timezone={timezone} /> : null,
-		[timezone],
-	);
+	const renderEventForm: NonNullable<IlamyCalendarProps["renderEventForm"]> = (
+		props,
+	) =>
+		props.open ? <CreateEventDialog {...props} timezone={timezone} /> : null;
 
 	return (
 		<div className="size-full">

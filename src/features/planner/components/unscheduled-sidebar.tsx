@@ -1,6 +1,6 @@
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { type ComponentProps, useCallback, useMemo, useState } from "react";
+import { type ComponentProps, useState } from "react";
 import {
 	allSessionsQueryOptions,
 	unscheduledSubmissionsQueryOptions,
@@ -116,39 +116,25 @@ export function UnscheduledSidebar() {
 	const [draggingId, setDraggingId] = useState<string | null>(null);
 	const [readerStart, setReaderStart] = useState<number | null>(null);
 
-	const showTypeBadge = useMemo(
-		() => new Set(submissions.map((s) => s.type)).size > 1,
-		[submissions],
-	);
+	const showTypeBadge = new Set(submissions.map((s) => s.type)).size > 1;
 
-	const filtered = useMemo(
-		() => submissions.filter((s) => matchesSearch(s, search.trim())),
-		[submissions, search],
-	);
+	const filtered = submissions.filter((s) => matchesSearch(s, search.trim()));
 
-	const groups = useMemo(
-		() => groupSubmissions(filtered, mode),
-		[filtered, mode],
-	);
+	const groups = groupSubmissions(filtered, mode);
 
-	const flatIds = useMemo(
-		() => groups.flatMap((g) => g.submissions.map((s) => s.id)),
-		[groups],
-	);
+	const flatIds = groups.flatMap((g) => g.submissions.map((s) => s.id));
 
 	const selection = useSubmissionSelection(flatIds);
 
-	const handleCreateSession = useCallback(
-		() => openCreateFromSelection(Array.from(selection.selected)),
-		[openCreateFromSelection, selection.selected],
-	);
+	const handleCreateSession = () =>
+		openCreateFromSelection(Array.from(selection.selected));
 
-	const handleToggleSelectMode = useCallback(() => {
+	const handleToggleSelectMode = () => {
 		setSelectMode((prev) => {
 			if (prev) selection.clear();
 			return !prev;
 		});
-	}, [selection.clear]);
+	};
 
 	useHotkey("S", handleToggleSelectMode, { enabled: open });
 	useHotkey(
@@ -160,26 +146,23 @@ export function UnscheduledSidebar() {
 		{ enabled: open && selectMode },
 	);
 
-	const handleDragStart = useCallback((id: string) => setDraggingId(id), []);
-	const handleDragEnd = useCallback(() => setDraggingId(null), []);
+	const handleDragStart = (id: string) => setDraggingId(id);
+	const handleDragEnd = () => setDraggingId(null);
 
-	const handleOpenReader = useCallback(
-		(id: string) => {
-			const index = submissions.findIndex((s) => s.id === id);
-			if (index >= 0) setReaderStart(index);
-		},
-		[submissions],
-	);
+	const handleOpenReader = (id: string) => {
+		const index = submissions.findIndex((s) => s.id === id);
+		if (index >= 0) setReaderStart(index);
+	};
 
-	const scheduledCount = useMemo(
-		() => sessions.reduce((n, s) => n + s.presentations.length, 0),
-		[sessions],
+	const scheduledCount = sessions.reduce(
+		(n, s) => n + s.presentations.length,
+		0,
 	);
 	const hasItems =
 		listMode === "scheduled" ? scheduledCount > 0 : submissions.length > 0;
 	const isScheduled = listMode === "scheduled";
 
-	const handleToggleListMode = useCallback(() => {
+	const handleToggleListMode = () => {
 		setListMode((prev) => {
 			const next: ListMode = prev === "scheduled" ? "unscheduled" : "scheduled";
 			if (next === "scheduled") {
@@ -189,7 +172,7 @@ export function UnscheduledSidebar() {
 			setSearch("");
 			return next;
 		});
-	}, [selection]);
+	};
 
 	if (!open) {
 		return (

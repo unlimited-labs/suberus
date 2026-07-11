@@ -1,11 +1,5 @@
 import { IconX } from "@tabler/icons-react";
-import {
-	type ChangeEvent,
-	type KeyboardEvent,
-	useCallback,
-	useRef,
-	useState,
-} from "react";
+import { type ChangeEvent, type KeyboardEvent, useRef, useState } from "react";
 import { cn } from "@/shared/lib/utils";
 
 interface KeywordsInputProps {
@@ -28,80 +22,67 @@ export function KeywordsInput({
 	const [isFocused, setIsFocused] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
 
-	const addKeyword = useCallback(
-		(keyword: string) => {
-			const trimmed = keyword.trim().toLowerCase();
+	const addKeyword = (keyword: string) => {
+		const trimmed = keyword.trim().toLowerCase();
 
-			if (!trimmed) {
-				return;
+		if (!trimmed) {
+			return;
+		}
+
+		if (value.length >= maxKeywords) {
+			setError(`Maximum ${maxKeywords} keywords allowed`);
+			return;
+		}
+
+		if (value.includes(trimmed)) {
+			setError("Keyword already added");
+			return;
+		}
+
+		onChange([...value, trimmed]);
+		setInputValue("");
+		setError(null);
+	};
+
+	const removeKeyword = (keyword: string) => {
+		onChange(value.filter((k) => k !== keyword));
+		setError(null);
+	};
+
+	const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			addKeyword(inputValue);
+		} else if (e.key === "Backspace" && !inputValue && value.length > 0) {
+			removeKeyword(value[value.length - 1]);
+		}
+	};
+
+	const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+		const val = e.target.value;
+		if (val.includes(",")) {
+			const tokens = val.split(",");
+			const lastToken = tokens.pop() ?? "";
+			for (const t of tokens) {
+				addKeyword(t);
 			}
-
-			if (value.length >= maxKeywords) {
-				setError(`Maximum ${maxKeywords} keywords allowed`);
-				return;
-			}
-
-			if (value.includes(trimmed)) {
-				setError("Keyword already added");
-				return;
-			}
-
-			onChange([...value, trimmed]);
-			setInputValue("");
-			setError(null);
-		},
-		[value, onChange, maxKeywords],
-	);
-
-	const removeKeyword = useCallback(
-		(keyword: string) => {
-			onChange(value.filter((k) => k !== keyword));
-			setError(null);
-		},
-		[value, onChange],
-	);
-
-	const handleKeyDown = useCallback(
-		(e: KeyboardEvent<HTMLInputElement>) => {
-			if (e.key === "Enter") {
-				e.preventDefault();
-				addKeyword(inputValue);
-			} else if (e.key === "Backspace" && !inputValue && value.length > 0) {
-				removeKeyword(value[value.length - 1]);
-			}
-		},
-		[inputValue, value, addKeyword, removeKeyword],
-	);
-
-	const handleInputChange = useCallback(
-		(e: ChangeEvent<HTMLInputElement>) => {
-			const val = e.target.value;
-			if (val.includes(",")) {
-				const tokens = val.split(",");
-				const lastToken = tokens.pop() ?? "";
-				for (const t of tokens) {
-					addKeyword(t);
-				}
-				setInputValue(lastToken);
-			} else {
-				setInputValue(val);
-			}
-			setError(null);
-		},
-		[addKeyword],
-	);
+			setInputValue(lastToken);
+		} else {
+			setInputValue(val);
+		}
+		setError(null);
+	};
 
 	const handleContainerClick = () => {
 		inputRef.current?.focus();
 	};
 
-	const handleBlur = useCallback(() => {
+	const handleBlur = () => {
 		setIsFocused(false);
-		// Convert remaining text to keyword on blur
 		if (inputValue.trim()) {
 			addKeyword(inputValue);
 		}
-	}, [inputValue, addKeyword]);
+	};
 
 	return (
 		<div data-testid="keywords-section" className={cn("space-y-2", className)}>

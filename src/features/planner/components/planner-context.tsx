@@ -1,11 +1,4 @@
-import {
-	createContext,
-	type ReactNode,
-	useCallback,
-	useContext,
-	useMemo,
-	useState,
-} from "react";
+import { createContext, type ReactNode, useContext, useState } from "react";
 
 type SelectedEvent =
 	| { kind: "session"; id: string }
@@ -42,48 +35,27 @@ export function PlannerSelectionProvider({
 	>(null);
 	const [mobileQueueOpen, setMobileQueueOpen] = useState(false);
 
-	const selectSession = useCallback(
-		(id: string) => setSelected({ kind: "session", id }),
-		[],
-	);
-	const selectBreak = useCallback(
-		(id: string) => setSelected({ kind: "break", id }),
-		[],
-	);
-	const clearSelection = useCallback(() => setSelected(null), []);
-	const openCreateFromSelection = useCallback((ids: string[]) => {
+	const selectSession = (id: string) => setSelected({ kind: "session", id });
+	const selectBreak = (id: string) => setSelected({ kind: "break", id });
+	const clearSelection = () => setSelected(null);
+	const openCreateFromSelection = (ids: string[]) => {
 		setCreationSubmissionIds(ids);
 		setMobileQueueOpen(false);
-	}, []);
-	const closeCreateFromSelection = useCallback(
-		() => setCreationSubmissionIds(null),
-		[],
-	);
+	};
+	const closeCreateFromSelection = () => setCreationSubmissionIds(null);
 
-	const value = useMemo<PlannerSelectionState>(
-		() => ({
-			selectedSessionId: selected?.kind === "session" ? selected.id : null,
-			selectedBreakId: selected?.kind === "break" ? selected.id : null,
-			selectSession,
-			selectBreak,
-			clearSelection,
-			creationSubmissionIds,
-			openCreateFromSelection,
-			closeCreateFromSelection,
-			mobileQueueOpen,
-			setMobileQueueOpen,
-		}),
-		[
-			selected,
-			selectSession,
-			selectBreak,
-			clearSelection,
-			creationSubmissionIds,
-			openCreateFromSelection,
-			closeCreateFromSelection,
-			mobileQueueOpen,
-		],
-	);
+	const value: PlannerSelectionState = {
+		selectedSessionId: selected?.kind === "session" ? selected.id : null,
+		selectedBreakId: selected?.kind === "break" ? selected.id : null,
+		selectSession,
+		selectBreak,
+		clearSelection,
+		creationSubmissionIds,
+		openCreateFromSelection,
+		closeCreateFromSelection,
+		mobileQueueOpen,
+		setMobileQueueOpen,
+	};
 
 	return (
 		<PlannerSelectionContext.Provider value={value}>

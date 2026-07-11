@@ -1,6 +1,6 @@
 import { IconFingerprint, IconMail } from "@tabler/icons-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import { AuthCard } from "@/features/auth/components/auth-card";
 import { loginSchema } from "@/features/auth/validations";
@@ -12,33 +12,33 @@ export const Route = createFileRoute("/_auth/login")({
 	component: LoginPage,
 });
 
+async function signInWithPasskey(
+	navigate: ReturnType<typeof useNavigate>,
+	opts?: { autoFill?: boolean },
+) {
+	const res = await authClient.signIn.passkey(opts);
+	if (res?.error) {
+		// autoFill stays pending until the user picks a passkey; its abort/cancel
+		// is not a real failure, so only surface errors from the explicit button.
+		if (!opts?.autoFill) {
+			toast.error(res.error.message ?? "Passkey sign-in failed");
+		}
+		return;
+	}
+	toast.success("Logged in successfully");
+	navigate({ to: "/" });
+}
+
 function LoginPage() {
 	const navigate = useNavigate();
-
-	const signInWithPasskey = useCallback(
-		async (opts?: { autoFill?: boolean }) => {
-			const res = await authClient.signIn.passkey(opts);
-			if (res?.error) {
-				// autoFill stays pending until the user picks a passkey; its abort/cancel
-				// is not a real failure, so only surface errors from the explicit button.
-				if (!opts?.autoFill) {
-					toast.error(res.error.message ?? "Passkey sign-in failed");
-				}
-				return;
-			}
-			toast.success("Logged in successfully");
-			navigate({ to: "/" });
-		},
-		[navigate],
-	);
 
 	// Conditional UI: offer passkeys in the e-mail field's autofill dropdown.
 	useEffect(() => {
 		if (typeof PublicKeyCredential === "undefined") return;
 		void PublicKeyCredential.isConditionalMediationAvailable?.().then((ok) => {
-			if (ok) void signInWithPasskey({ autoFill: true });
+			if (ok) void signInWithPasskey(navigate, { autoFill: true });
 		});
-	}, [signInWithPasskey]);
+	}, [navigate]);
 
 	const form = useAppForm({
 		defaultValues: {
@@ -121,7 +121,7 @@ function LoginPage() {
 						variant="outline"
 						className="h-9 w-full"
 						data-testid="passkey-signin"
-						onClick={() => void signInWithPasskey()}
+						onClick={() => void signInWithPasskey(navigate)}
 					>
 						<IconFingerprint className="size-4" />
 						Sign in with passkey

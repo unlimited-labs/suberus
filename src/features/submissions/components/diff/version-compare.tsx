@@ -4,7 +4,6 @@ import {
 	IconFile,
 	IconLayoutRows,
 } from "@tabler/icons-react";
-import { useMemo } from "react";
 import { FileRedlineView } from "@/features/submission-diff/components/file-redline-view";
 import { KeywordsDiff } from "@/shared/components/diff/keywords-diff";
 import { TextDiffView } from "@/shared/components/diff/text-diff-view";
@@ -236,14 +235,8 @@ function VersionCompareBody({
 	compareV: CompareVersion;
 }) {
 	const { formatDate } = useDateFormat();
-	const titleSegments = useMemo(
-		() => diffText(baseV.title, compareV.title),
-		[baseV.title, compareV.title],
-	);
-	const contentSegments = useMemo(
-		() => diffText(baseV.content, compareV.content),
-		[baseV.content, compareV.content],
-	);
+	const titleSegments = diffText(baseV.title, compareV.title);
+	const contentSegments = diffText(baseV.content, compareV.content);
 
 	const isFileChanged = fileChanged(fileIdOf(baseV), fileIdOf(compareV));
 	const samePair = base === compare;
@@ -422,10 +415,7 @@ function FileChangesPanel({
 
 export function VersionCompare(props: VersionCompareProps) {
 	const { versions, base, compare } = props;
-	const sorted = useMemo(
-		() => versions.toSorted((a, b) => a.version - b.version),
-		[versions],
-	);
+	const sorted = versions.toSorted((a, b) => a.version - b.version);
 	const baseV = sorted.find((v) => v.version === base);
 	const compareV = sorted.find((v) => v.version === compare);
 

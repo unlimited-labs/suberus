@@ -1,5 +1,5 @@
 import { IconCheck, IconClock, IconSelector } from "@tabler/icons-react";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useState } from "react";
 import { Button } from "@/shared/ui/button";
 import {
 	Command,
@@ -47,7 +47,7 @@ export function TimezoneCombobox({
 	disabled,
 }: TimezoneComboboxProps) {
 	const [open, setOpen] = useState(false);
-	const groups = useMemo(() => TIMEZONES_BY_REGION, []);
+	const groups = TIMEZONES_BY_REGION;
 
 	return (
 		<Popover open={open} onOpenChange={setOpen}>

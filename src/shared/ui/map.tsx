@@ -2,7 +2,6 @@ import MapLibreGL, { type PopupOptions, type MarkerOptions } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useEffectEvent,
@@ -189,13 +188,10 @@ function MapComponent({
     onViewportChangeRef.current = onViewportChange;
   });
 
-  const mapStyles = useMemo(
-    () => ({
-      dark: styles?.dark ?? defaultStyles.dark,
-      light: styles?.light ?? defaultStyles.light,
-    }),
-    [styles]
-  );
+  const mapStyles = {
+    dark: styles?.dark ?? defaultStyles.dark,
+    light: styles?.light ?? defaultStyles.light,
+  };
 
   const desiredStyle =
     resolvedTheme === "dark" ? mapStyles.dark : mapStyles.light;
@@ -204,12 +200,12 @@ function MapComponent({
   // Expose the map instance to the parent component
   useImperativeHandle(ref, () => mapInstance as MapLibreGL.Map, [mapInstance]);
 
-  const clearStyleTimeout = useCallback(() => {
+  const clearStyleTimeout = () => {
     if (styleTimeoutRef.current) {
       clearTimeout(styleTimeoutRef.current);
       styleTimeoutRef.current = null;
     }
-  }, []);
+  };
 
   // Initialize the map
   useEffect(() => {
@@ -305,13 +301,10 @@ function MapComponent({
     mapInstance.setStyle(desiredStyle, { diff: true });
   }, [mapInstance, desiredStyle, clearStyleTimeout]);
 
-  const contextValue = useMemo(
-    () => ({
-      map: mapInstance,
-      isLoaded: isLoaded && isStyleLoaded,
-    }),
-    [mapInstance, isLoaded, isStyleLoaded]
-  );
+  const contextValue = {
+    map: mapInstance,
+    isLoaded: isLoaded && isStyleLoaded,
+  };
 
   return (
     <MapContext.Provider value={contextValue}>
@@ -781,19 +774,19 @@ function MapControls({
   const { map } = useMap();
   const [waitingForLocation, setWaitingForLocation] = useState(false);
 
-  const handleZoomIn = useCallback(() => {
+  const handleZoomIn = () => {
     map?.zoomTo(map.getZoom() + 1, { duration: 300 });
-  }, [map]);
+  };
 
-  const handleZoomOut = useCallback(() => {
+  const handleZoomOut = () => {
     map?.zoomTo(map.getZoom() - 1, { duration: 300 });
-  }, [map]);
+  };
 
-  const handleResetBearing = useCallback(() => {
+  const handleResetBearing = () => {
     map?.resetNorthPitch({ duration: 300 });
-  }, [map]);
+  };
 
-  const handleLocate = useCallback(() => {
+  const handleLocate = () => {
     setWaitingForLocation(true);
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -816,9 +809,9 @@ function MapControls({
         }
       );
     }
-  }, [map, onLocate]);
+  };
 
-  const handleFullscreen = useCallback(() => {
+  const handleFullscreen = () => {
     const container = map?.getContainer();
     if (!container) return;
     if (document.fullscreenElement) {
@@ -826,7 +819,7 @@ function MapControls({
     } else {
       container.requestFullscreen();
     }
-  }, [map]);
+  };
 
   return (
     <div

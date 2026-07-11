@@ -1,5 +1,5 @@
 import { IconBuilding, IconLoader2 } from "@tabler/icons-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	type AffiliationKeyAction,
 	affiliationAriaProps,
@@ -268,38 +268,30 @@ export function AffiliationSelect({
 			open,
 		});
 
-	const handleSelect = useCallback(
-		(affiliation: Affiliation) => {
-			isSelectingRef.current = true;
+	const handleSelect = (affiliation: Affiliation) => {
+		isSelectingRef.current = true;
+		onChange(affiliation.id, affiliation.name);
+		setInputValue(affiliation.name);
+		setOpen(false);
+		setHighlightedIndex(-1);
+		inputRef.current?.blur();
+	};
+
+	const handleCreate = async (name: string) => {
+		if (isCreatingRef.current) return;
+		isCreatingRef.current = true;
+		isSelectingRef.current = true;
+		try {
+			const affiliation = await createAffiliation({ data: { name } });
 			onChange(affiliation.id, affiliation.name);
 			setInputValue(affiliation.name);
 			setOpen(false);
 			setHighlightedIndex(-1);
-			inputRef.current?.blur();
-		},
-		[onChange],
-	);
+		} catch {}
+		isCreatingRef.current = false;
+	};
 
-	const handleCreate = useCallback(
-		async (name: string) => {
-			if (isCreatingRef.current) return;
-			isCreatingRef.current = true;
-			isSelectingRef.current = true;
-			try {
-				const affiliation = await createAffiliation({ data: { name } });
-				onChange(affiliation.id, affiliation.name);
-				setInputValue(affiliation.name);
-				setOpen(false);
-				setHighlightedIndex(-1);
-			} catch {
-				// Silently fail
-			}
-			isCreatingRef.current = false;
-		},
-		[onChange],
-	);
-
-	const handleBlur = useCallback(() => {
+	const handleBlur = () => {
 		// Delay to allow click events on dropdown items to fire
 		setTimeout(() => {
 			if (isSelectingRef.current) {
@@ -308,32 +300,28 @@ export function AffiliationSelect({
 			}
 			const trimmed = inputValue.trim();
 			if (trimmed && !value) {
-				// Auto-create on blur if no selection was made
 				handleCreate(trimmed);
 			}
 			setOpen(false);
 			setHighlightedIndex(-1);
 		}, 200);
-	}, [inputValue, value, handleCreate]);
+	};
 
-	const handleValueChange = useCallback(
-		(val: string) => {
-			setInputValue(val);
-			if (!val.trim()) {
-				onChange(null, "");
-				setSearchResults({ query: debouncedInput, items: [] });
-				setOpen(false);
-			} else {
-				setOpen(true);
-			}
-			setHighlightedIndex(-1);
-		},
-		[onChange, debouncedInput],
-	);
+	const handleValueChange = (val: string) => {
+		setInputValue(val);
+		if (!val.trim()) {
+			onChange(null, "");
+			setSearchResults({ query: debouncedInput, items: [] });
+			setOpen(false);
+		} else {
+			setOpen(true);
+		}
+		setHighlightedIndex(-1);
+	};
 
-	const handleFocus = useCallback(() => {
+	const handleFocus = () => {
 		if (inputValue.trim()) setOpen(true);
-	}, [inputValue]);
+	};
 
 	const applyKeyAction: Record<
 		AffiliationKeyAction["type"],

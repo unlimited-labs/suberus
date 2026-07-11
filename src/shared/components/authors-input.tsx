@@ -24,7 +24,7 @@ import {
 	IconStarFilled,
 	IconTrash,
 } from "@tabler/icons-react";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { AffiliationSelect } from "@/shared/components/affiliation-select";
 import {
 	affiliationDisplay,
@@ -305,7 +305,7 @@ export function AuthorsInput({
 		}),
 	);
 
-	const addAuthor = useCallback(() => {
+	const addAuthor = () => {
 		const newAuthor: Author = {
 			firstName: "",
 			lastName: "",
@@ -316,65 +316,53 @@ export function AuthorsInput({
 		};
 
 		onChange([...value, newAuthor]);
-	}, [value, onChange]);
+	};
 
-	const removeAuthor = useCallback(
-		(index: number) => {
-			const newAuthors = value.filter((_, i) => i !== index);
+	const removeAuthor = (index: number) => {
+		const newAuthors = value.filter((_, i) => i !== index);
 
-			if (value[index].isPresenter && newAuthors.length > 0) {
-				newAuthors[0].isPresenter = true;
-			}
+		if (value[index].isPresenter && newAuthors.length > 0) {
+			newAuthors[0].isPresenter = true;
+		}
 
-			setItemIds((prev) => prev.filter((_, i) => i !== index));
-			onChange(newAuthors);
-		},
-		[value, onChange],
-	);
+		setItemIds((prev) => prev.filter((_, i) => i !== index));
+		onChange(newAuthors);
+	};
 
-	const updateAuthor = useCallback(
-		(index: number, updates: Partial<Author>) => {
-			const newAuthors = [...value];
-			newAuthors[index] = { ...newAuthors[index], ...updates };
-			onChange(newAuthors);
-		},
-		[value, onChange],
-	);
+	const updateAuthor = (index: number, updates: Partial<Author>) => {
+		const newAuthors = [...value];
+		newAuthors[index] = { ...newAuthors[index], ...updates };
+		onChange(newAuthors);
+	};
 
-	const setPresenter = useCallback(
-		(index: number) => {
-			const newAuthors = value.map((author, i) => ({
-				...author,
-				isPresenter: i === index,
-			}));
-			onChange(newAuthors);
-		},
-		[value, onChange],
-	);
+	const setPresenter = (index: number) => {
+		const newAuthors = value.map((author, i) => ({
+			...author,
+			isPresenter: i === index,
+		}));
+		onChange(newAuthors);
+	};
 
-	const handleDragStart = useCallback((event: DragStartEvent) => {
+	const handleDragStart = (event: DragStartEvent) => {
 		setActiveId(event.active.id.toString());
-	}, []);
+	};
 
-	const handleDragEnd = useCallback(
-		(event: DragEndEvent) => {
-			const { active, over } = event;
+	const handleDragEnd = (event: DragEndEvent) => {
+		const { active, over } = event;
 
-			if (over && active.id !== over.id) {
-				const oldIndex = Number(active.id);
-				const newIndex = Number(over.id);
-				setItemIds((prev) => arrayMove(prev, oldIndex, newIndex));
-				onChange(arrayMove(value, oldIndex, newIndex));
-			}
+		if (over && active.id !== over.id) {
+			const oldIndex = Number(active.id);
+			const newIndex = Number(over.id);
+			setItemIds((prev) => arrayMove(prev, oldIndex, newIndex));
+			onChange(arrayMove(value, oldIndex, newIndex));
+		}
 
-			setActiveId(null);
-		},
-		[value, onChange],
-	);
-
-	const handleDragCancel = useCallback(() => {
 		setActiveId(null);
-	}, []);
+	};
+
+	const handleDragCancel = () => {
+		setActiveId(null);
+	};
 
 	const activeIndex = activeId !== null ? Number(activeId) : -1;
 	const activeAuthor = activeIndex >= 0 ? value[activeIndex] : null;

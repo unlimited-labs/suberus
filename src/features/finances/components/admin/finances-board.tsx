@@ -10,7 +10,7 @@ import {
 } from "@tabler/icons-react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useBlocker } from "@tanstack/react-router";
-import { type ComponentType, useMemo, useState } from "react";
+import { type ComponentType, useState } from "react";
 import { toast } from "sonner";
 import {
 	addContractorFn,
@@ -146,43 +146,40 @@ export function FinancesBoard() {
 		setContractorOptions(await addContractorFn({ data: { name: trimmed } }));
 	};
 
-	const defaultValues = useMemo(
-		() => ({
-			expenses: data.entries.flatMap((entry) =>
-				entry.kind === "EXPENSE"
-					? [
-							{
-								label: entry.label,
-								amountExpr: entry.amountExpr,
-								contractor: entry.contractor ?? "",
-								vatRate: entry.vatRate,
-								amountIsGross: entry.amountIsGross,
-								dueDate: entry.dueDate,
-								paid: entry.paid,
-								ordered: entry.ordered,
-							},
-						]
-					: [],
-			),
-			income: data.entries.flatMap((entry) =>
-				entry.kind === "INCOME"
-					? [
-							{
-								label: entry.label,
-								amountExpr: entry.amountExpr,
-								contractor: "",
-								vatRate: null as number | null,
-								amountIsGross: true,
-								dueDate: "",
-								paid: false,
-								ordered: false,
-							},
-						]
-					: [],
-			),
-		}),
-		[data.entries],
-	);
+	const defaultValues = {
+		expenses: data.entries.flatMap((entry) =>
+			entry.kind === "EXPENSE"
+				? [
+						{
+							label: entry.label,
+							amountExpr: entry.amountExpr,
+							contractor: entry.contractor ?? "",
+							vatRate: entry.vatRate,
+							amountIsGross: entry.amountIsGross,
+							dueDate: entry.dueDate,
+							paid: entry.paid,
+							ordered: entry.ordered,
+						},
+					]
+				: [],
+		),
+		income: data.entries.flatMap((entry) =>
+			entry.kind === "INCOME"
+				? [
+						{
+							label: entry.label,
+							amountExpr: entry.amountExpr,
+							contractor: "",
+							vatRate: null as number | null,
+							amountIsGross: true,
+							dueDate: "",
+							paid: false,
+							ordered: false,
+						},
+					]
+				: [],
+		),
+	};
 
 	const form = useAppForm({
 		defaultValues,

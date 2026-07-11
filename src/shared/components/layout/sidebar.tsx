@@ -1,6 +1,6 @@
 import { IconMenu2 } from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { NavLink } from "@/shared/components/layout/nav-link";
 import {
 	getNavigationForRole,
@@ -53,28 +53,19 @@ function SidebarContent({
 	const programVisible =
 		scheduleStatus === "PUBLISHED" ||
 		(scheduleStatus === "DRAFT_PUBLISHED" && canSeeDraft);
-	const sections = useMemo(() => {
-		const gates = {
-			programVisible,
-			exhibitorsEnabled,
-			feeEnabled,
-			financesEnabled,
-			hasDocuments,
-		};
-		return getNavigationForRole(role)
-			.map((section) => ({
-				...section,
-				items: section.items.filter((item) => isNavItemVisible(item, gates)),
-			}))
-			.filter((section) => section.items.length > 0);
-	}, [
-		role,
+	const gates = {
 		programVisible,
 		exhibitorsEnabled,
 		feeEnabled,
 		financesEnabled,
 		hasDocuments,
-	]);
+	};
+	const sections = getNavigationForRole(role)
+		.map((section) => ({
+			...section,
+			items: section.items.filter((item) => isNavItemVisible(item, gates)),
+		}))
+		.filter((section) => section.items.length > 0);
 
 	return (
 		<div className="flex h-full flex-col">

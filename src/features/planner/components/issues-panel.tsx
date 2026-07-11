@@ -1,6 +1,5 @@
 import { IconAlertTriangle } from "@tabler/icons-react";
 import { areIntervalsOverlapping } from "date-fns";
-import { useMemo } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { usePlannerSelection } from "./planner-context";
 import type { PlannerSession } from "./types";
@@ -53,7 +52,7 @@ interface IssuesPanelProps {
 
 export function IssuesPanel({ sessions }: IssuesPanelProps) {
 	const { selectSession } = usePlannerSelection();
-	const issues = useMemo(() => detectIssues(sessions), [sessions]);
+	const issues = detectIssues(sessions);
 
 	if (issues.length === 0) return null;
 

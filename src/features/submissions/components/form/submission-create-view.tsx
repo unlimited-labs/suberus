@@ -1,6 +1,5 @@
 import { IconFileText, IconLock } from "@tabler/icons-react";
 import { type QueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
 import { toast } from "sonner";
 import { extractionSettingsQueryOptions } from "@/features/extraction/api/extraction";
 import {
@@ -61,24 +60,20 @@ export function SubmissionCreateView(props: SubmissionCreateViewProps) {
 	);
 	const { user } = useSession();
 
-	const initialData = useMemo(
-		() =>
-			onBehalf
-				? {
-						authors: [
-							{
-								firstName: onBehalf.firstName ?? "",
-								lastName: onBehalf.lastName ?? "",
-								email: onBehalf.email,
-								affiliationId: onBehalf.affiliationId,
-								affiliationName: onBehalf.affiliationName ?? "",
-								isPresenter: true,
-							} satisfies Author,
-						],
-					}
-				: undefined,
-		[onBehalf],
-	);
+	const initialData = onBehalf
+		? {
+				authors: [
+					{
+						firstName: onBehalf.firstName ?? "",
+						lastName: onBehalf.lastName ?? "",
+						email: onBehalf.email,
+						affiliationId: onBehalf.affiliationId,
+						affiliationName: onBehalf.affiliationName ?? "",
+						isPresenter: true,
+					} satisfies Author,
+				],
+			}
+		: undefined;
 
 	const createAndUploadFile = async (
 		data: SubmissionFormData,

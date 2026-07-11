@@ -1,7 +1,7 @@
 import { IconMailPlus } from "@tabler/icons-react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { adminOnlyRouteMiddleware } from "@/features/auth/server/middleware";
 import {
@@ -34,48 +34,35 @@ function InvitationsPage() {
 		adminInvitationsQueryOptions(),
 	);
 
-	const invalidate = useCallback(
-		() =>
-			queryClient.invalidateQueries({
-				queryKey: adminInvitationsQueryOptions().queryKey,
-			}),
-		[queryClient],
-	);
+	const invalidate = () =>
+		queryClient.invalidateQueries({
+			queryKey: adminInvitationsQueryOptions().queryKey,
+		});
 
-	const handleResend = useCallback(
-		async (id: string) => {
-			try {
-				await resendInvitationFn({ data: { id } });
-				toast.success("Invitation resent");
-				invalidate();
-			} catch {
-				toast.error("Failed to resend invitation");
-			}
-		},
-		[invalidate],
-	);
+	const handleResend = async (id: string) => {
+		try {
+			await resendInvitationFn({ data: { id } });
+			toast.success("Invitation resent");
+			invalidate();
+		} catch {
+			toast.error("Failed to resend invitation");
+		}
+	};
 
-	const handleCancel = useCallback(
-		async (id: string) => {
-			try {
-				await cancelInvitationFn({ data: { id } });
-				toast.success("Invitation cancelled");
-				invalidate();
-			} catch {
-				toast.error("Failed to cancel invitation");
-			}
-		},
-		[invalidate],
-	);
+	const handleCancel = async (id: string) => {
+		try {
+			await cancelInvitationFn({ data: { id } });
+			toast.success("Invitation cancelled");
+			invalidate();
+		} catch {
+			toast.error("Failed to cancel invitation");
+		}
+	};
 
-	const columns = useMemo(
-		() =>
-			createInvitationColumns({
-				onResend: handleResend,
-				onCancel: handleCancel,
-			}),
-		[handleResend, handleCancel],
-	);
+	const columns = createInvitationColumns({
+		onResend: handleResend,
+		onCancel: handleCancel,
+	});
 
 	return (
 		<div className="flex h-full flex-col">

@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, useContext, useMemo } from "react";
+import { createContext, type ReactNode, useContext } from "react";
 import type { RoomVisibility } from "./hooks/use-room-visibility";
 
 interface Room {
@@ -35,24 +35,14 @@ export function PlannerToolsProvider({
 	onJumpToConferenceStart,
 	children,
 }: ProviderProps) {
-	const value = useMemo<PlannerToolsValue>(
-		() => ({
-			rooms,
-			room,
-			defaultStartAt,
-			onCreated,
-			onSubmissionDrop,
-			onJumpToConferenceStart,
-		}),
-		[
-			rooms,
-			room,
-			defaultStartAt,
-			onCreated,
-			onSubmissionDrop,
-			onJumpToConferenceStart,
-		],
-	);
+	const value: PlannerToolsValue = {
+		rooms,
+		room,
+		defaultStartAt,
+		onCreated,
+		onSubmissionDrop,
+		onJumpToConferenceStart,
+	};
 
 	return <Context.Provider value={value}>{children}</Context.Provider>;
 }

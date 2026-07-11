@@ -1,7 +1,6 @@
 import { IconDownload, IconUsers } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
 import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
@@ -46,37 +45,27 @@ function UsersPage() {
 		adminSurveyQuestionsQueryOptions(),
 	);
 
-	const surveyColumns = useMemo<SurveyListColumn[]>(
-		() =>
-			surveyQuestions.flatMap((q) =>
-				q.showInUsersList
-					? [
-							{
-								id: q.id,
-								header: q.fieldName ?? q.label,
-								type: q.type,
-								options: q.options ?? undefined,
-							},
-						]
-					: [],
-			),
-		[surveyQuestions],
+	const surveyColumns: SurveyListColumn[] = surveyQuestions.flatMap((q) =>
+		q.showInUsersList
+			? [
+					{
+						id: q.id,
+						header: q.fieldName ?? q.label,
+						type: q.type,
+						options: q.options ?? undefined,
+					},
+				]
+			: [],
 	);
 
-	const columns = useMemo(
-		() => buildUserColumns(surveyColumns),
-		[surveyColumns],
-	);
+	const columns = buildUserColumns(surveyColumns);
 
-	const dynamicColumnLabels = useMemo(
-		() => ({
-			...columnLabels,
-			...Object.fromEntries(
-				surveyColumns.map((c) => [`survey-${c.id}`, c.header]),
-			),
-		}),
-		[surveyColumns],
-	);
+	const dynamicColumnLabels = {
+		...columnLabels,
+		...Object.fromEntries(
+			surveyColumns.map((c) => [`survey-${c.id}`, c.header]),
+		),
+	};
 
 	return (
 		<div className="flex h-full flex-col">

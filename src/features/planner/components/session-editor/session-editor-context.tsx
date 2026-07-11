@@ -6,7 +6,6 @@ import {
 	type RefObject,
 	useContext,
 	useEffect,
-	useMemo,
 	useState,
 } from "react";
 import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
@@ -76,41 +75,37 @@ export function SessionEditorProvider({
 		if (dirtyRef) dirtyRef.current = isDirty;
 	}, [dirtyRef, isDirty]);
 
-	const value = useMemo<SessionEditorContextValue | null>(() => {
-		if (!session) return null;
+	if (!session) return <>{fallback}</>;
 
-		const sortedPresentations = session.presentations.toSorted(
-			(a, b) => a.order - b.order,
-		);
-		const sessionDurationMin = formatDurationMin(
-			new Date(session.startAt),
-			new Date(session.endAt),
-		);
-		const usedMin = sortedPresentations.reduce((s, p) => s + p.durationMin, 0);
+	const sortedPresentations = session.presentations.toSorted(
+		(a, b) => a.order - b.order,
+	);
+	const sessionDurationMin = formatDurationMin(
+		new Date(session.startAt),
+		new Date(session.endAt),
+	);
+	const usedMin = sortedPresentations.reduce((s, p) => s + p.durationMin, 0);
 
-		const onDelete = async () => {
-			setDeleting(true);
-			const result = await mutations.deleteSession();
-			setDeleting(false);
-			if (result !== null) onClose();
-		};
+	const onDelete = async () => {
+		setDeleting(true);
+		const result = await mutations.deleteSession();
+		setDeleting(false);
+		if (result !== null) onClose();
+	};
 
-		return {
-			session,
-			rooms,
-			tracks,
-			users,
-			sortedPresentations,
-			sessionDurationMin,
-			usedMin,
-			form,
-			deleting,
-			mutations,
-			onDelete,
-		};
-	}, [session, rooms, tracks, users, form, deleting, mutations, onClose]);
-
-	if (!value) return <>{fallback}</>;
+	const value: SessionEditorContextValue = {
+		session,
+		rooms,
+		tracks,
+		users,
+		sortedPresentations,
+		sessionDurationMin,
+		usedMin,
+		form,
+		deleting,
+		mutations,
+		onDelete,
+	};
 	return <Context.Provider value={value}>{children}</Context.Provider>;
 }
 

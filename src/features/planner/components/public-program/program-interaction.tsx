@@ -1,11 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-	createContext,
-	type ReactNode,
-	useContext,
-	useMemo,
-	useState,
-} from "react";
+import { createContext, type ReactNode, useContext, useState } from "react";
 import { toast } from "sonner";
 import {
 	favoriteSlotsQueryOptions,
@@ -62,10 +56,7 @@ export function ProgramInteractionProvider({
 		enabled: isAuthenticated,
 	});
 
-	const favorites = useMemo(
-		() => new Set(favoritesQuery.data ?? []),
-		[favoritesQuery.data],
-	);
+	const favorites = new Set(favoritesQuery.data ?? []);
 
 	const { mutate } = useMutation({
 		mutationFn: (slotId: string) => toggleFavoriteFn({ data: { slotId } }),
@@ -85,15 +76,12 @@ export function ProgramInteractionProvider({
 		onSettled: () => queryClient.invalidateQueries({ queryKey: favoritesKey }),
 	});
 
-	const value = useMemo<ProgramInteractionValue>(
-		() => ({
-			canInteract: isAuthenticated,
-			isFavorite: (slotId) => favorites.has(slotId),
-			toggleFavorite: (slotId) => mutate(slotId),
-			openPreview: (target) => setSelected(target),
-		}),
-		[isAuthenticated, favorites, mutate],
-	);
+	const value: ProgramInteractionValue = {
+		canInteract: isAuthenticated,
+		isFavorite: (slotId) => favorites.has(slotId),
+		toggleFavorite: (slotId) => mutate(slotId),
+		openPreview: (target) => setSelected(target),
+	};
 
 	return (
 		<ProgramInteractionContext.Provider value={value}>
