@@ -15,6 +15,7 @@ export interface CampaignContent {
 	body: string;
 	/** When false the body is sent as plain text. */
 	isHtml: boolean;
+	replyTo?: string;
 	/** Shared across all recipients; loaded once by the worker. */
 	attachments?: MailAttachment[];
 }
@@ -35,6 +36,7 @@ export function buildRecipientMail(
 		to: recipient.email,
 		subject,
 		...(content.isHtml ? { html: body } : { text: body }),
+		...(content.replyTo ? { replyTo: content.replyTo } : {}),
 		...(content.attachments?.length
 			? { attachments: content.attachments }
 			: {}),

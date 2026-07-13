@@ -36,6 +36,7 @@ export function useComposeCampaign(campaign: Campaign) {
 	const [subject, setSubject] = useState(campaign.subject);
 	const [format, setFormat] = useState<EmailCampaignFormat>(campaign.format);
 	const [bodySource, setBodySource] = useState(campaign.bodySource);
+	const [replyTo, setReplyTo] = useState(campaign.replyTo ?? "");
 	const [jobId, setJobId] = useState<string | null>(campaign.jobProgressId);
 
 	const debouncedBody = useDebounced(bodySource, 400);
@@ -55,7 +56,7 @@ export function useComposeCampaign(campaign: Campaign) {
 
 	const persist = () =>
 		saveBulkEmailDraft({
-			data: { id: campaign.id, subject, format, bodySource },
+			data: { id: campaign.id, subject, format, bodySource, replyTo },
 		});
 
 	const saveMutation = useMutation({
@@ -142,6 +143,8 @@ export function useComposeCampaign(campaign: Campaign) {
 		setFormat,
 		bodySource,
 		setBodySource,
+		replyTo,
+		setReplyTo,
 		preview,
 		isPreviewLoading: format !== "PLAIN" && previewQuery.isFetching,
 		save: saveMutation.mutate,

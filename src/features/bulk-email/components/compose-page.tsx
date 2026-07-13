@@ -84,6 +84,19 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 									/>
 								</div>
 
+								<div className="space-y-1.5">
+									<Label htmlFor="campaign-reply-to">Reply-To (optional)</Label>
+									<Input
+										id="campaign-reply-to"
+										type="email"
+										placeholder="replies@example.com"
+										data-testid="campaign-reply-to"
+										value={compose.replyTo}
+										onChange={(e) => compose.setReplyTo(e.target.value)}
+										disabled={!compose.isDraft}
+									/>
+								</div>
+
 								<Tabs defaultValue="body">
 									<div className="mb-3 flex flex-wrap items-center justify-between gap-3">
 										<FormatSelector

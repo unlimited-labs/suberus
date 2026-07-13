@@ -1021,6 +1021,7 @@ model EmailCampaign {
   subject         String              @default("")
   format          EmailCampaignFormat @default(MARKDOWN)
   bodySource      String              @default("") @map("body_source")
+  replyTo         String?             @map("reply_to")
   renderedHtml    String?             @map("rendered_html")
   status          EmailCampaignStatus @default(DRAFT)
   totalRecipients Int                 @default(0) @map("total_recipients")

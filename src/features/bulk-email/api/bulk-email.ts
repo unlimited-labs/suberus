@@ -54,6 +54,7 @@ const saveDraftSchema = z.object({
 	subject: z.string(),
 	format: formatSchema,
 	bodySource: z.string(),
+	replyTo: z.union([z.email(), z.literal("")]).optional(),
 });
 
 export const saveBulkEmailDraft = createServerFn({ method: "POST" })

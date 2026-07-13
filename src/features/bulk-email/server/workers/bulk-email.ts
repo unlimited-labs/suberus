@@ -182,6 +182,7 @@ async function processCampaign(campaignId: string): Promise<void> {
 		subject: campaign.subject,
 		body: campaign.renderedHtml,
 		isHtml: campaign.format !== "PLAIN",
+		...(campaign.replyTo ? { replyTo: campaign.replyTo } : {}),
 		...(attachments.length ? { attachments } : {}),
 	};
 	const delayMs = env.BULK_EMAIL_DELAY_SECONDS * 1000;

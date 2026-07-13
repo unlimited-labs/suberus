@@ -2,6 +2,7 @@ import { loginAs } from "../helpers/auth"
 import {
 	clearMailpit,
 	getMailpitMessage,
+	mailpit,
 	waitForEmail,
 } from "../helpers/mailpit"
 import {
@@ -160,6 +161,52 @@ test.describe("Admin - Bulk Email", () => {
 			const msg = await waitForEmail("admin@e2e.local", runId, 15000)
 			expect(msg).toBeTruthy()
 			expect(msg?.Subject).toContain("[TEST]")
+		} finally {
+			await deleteTestUser(rcpt.id)
+			await clearMailpit(runId)
+		}
+	})
+
+	test("sets the Reply-To header when a reply-to address is filled", async ({
+		page,
+		testRun,
+		adminUsersPage,
+	}) => {
+		const runId = testRun.testRunId
+		const replyToAddr = "organizer@example.com"
+		const rcpt = await makeRecipient(runId, "erin", "Erin")
+
+		try {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+			await adminUsersPage.selectUser({ ...rcpt, firstName: "Erin", lastName: "Recipient" })
+
+			const campaignId = await adminUsersPage.openBulkEmailComposer()
+
+			await page.getByTestId("campaign-subject").fill(`Reply-To ${runId}`)
+			await page.getByTestId("campaign-body").fill("Hi {{firstName}}")
+			await page.getByTestId("campaign-reply-to").fill(replyToAddr)
+
+			await page.getByTestId("send-campaign-btn").click()
+
+			const db = getPrisma()
+			await expect
+				.poll(
+					async () => {
+						const c = await db.emailCampaign.findUnique({
+							where: { id: campaignId },
+							select: { status: true, replyTo: true },
+						})
+						return `${c?.status}:${c?.replyTo}`
+					},
+					{ timeout: 30000 },
+				)
+				.toBe(`SENT:${replyToAddr}`)
+
+			const msg = await waitForEmail(rcpt.email, runId, 15000)
+			expect(msg, `no email delivered to ${rcpt.email}`).toBeTruthy()
+			const headers = await mailpit.getMessageHeaders((msg as { ID: string }).ID)
+			expect(headers["Reply-To"]?.[0]).toBe(replyToAddr)
 		} finally {
 			await deleteTestUser(rcpt.id)
 			await clearMailpit(runId)

@@ -35,9 +35,10 @@ profile afterwards won't change what an already-queued campaign sends.
 
 ![Email campaigns composer](../../../assets/screenshots/33-managing-email-campaigns.png)
 
-1. Write a **Subject** and **Body**, choosing a **Format** (see below). The preview
-   updates as you type. **Send test** and **Send campaign** stay disabled until both
-   the subject and body are filled in.
+1. Write a **Subject** and **Body**, choosing a **Format** (see below). Optionally set
+   a **Reply-To** address so replies reach you (or the organizer) instead of the
+   platform's sending mailbox. The preview updates as you type. **Send test** and
+   **Send campaign** stay disabled until both the subject and body are filled in.
 2. Click **Send test** to receive the message at your own address, placeholders filled
    from random sample data — a quick way to check the formatting.
 3. Click **Send campaign**. It's queued and delivered one recipient at a time, with a
@@ -67,6 +68,7 @@ same set of files.
 |---|---|
 | **Recipients** | The users you selected in the Users list. Their name and submission titles are captured when the draft is created, so later profile edits don't change what gets sent. |
 | **Subject** | The email subject line. Supports placeholders (plain text — never HTML). |
+| **Reply-To** | Optional. A single email address. If set, replies go here instead of the platform's sending mailbox. Leave blank for the default. |
 | **Format** | **Plain text** (sent as-is), **Markdown** (rendered to HTML), or **MJML** (responsive email markup, compiled to HTML). |
 | **Body** | The message source, in the chosen format. Supports placeholders. |
 | **Attachments** | Files sent with every email (draft only). Max 10 MB/file, 25 MB total; PDF, Office docs, images, or ZIP. Validated by content. |
@@ -74,7 +76,7 @@ same set of files.
 | **Save draft** | Stores your edits without sending. You can return to the draft later. |
 | **Send test** | Sends one copy to your own address with sample placeholder values. |
 | **Send campaign** | Renders the final body, queues the campaign, and starts delivery. |
-| **Copy to new draft** | Shown once a campaign has been sent: clones the subject, body, format, attachments, and the exact recipient list into a fresh draft you can edit and resend. |
+| **Copy to new draft** | Shown once a campaign has been sent: clones the subject, body, format, Reply-To, attachments, and the exact recipient list into a fresh draft you can edit and resend. |
 
 ## Placeholders
 

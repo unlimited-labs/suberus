@@ -24,6 +24,7 @@ export interface SaveDraftInput {
 	subject: string;
 	format: EmailCampaignFormat;
 	bodySource: string;
+	replyTo?: string | null;
 }
 
 /**
@@ -103,6 +104,7 @@ export async function duplicateCampaign(
 			subject: src.subject,
 			format: src.format,
 			bodySource: src.bodySource,
+			replyTo: src.replyTo,
 			totalRecipients: src.recipients.length,
 			recipients: { create: src.recipients },
 		},
@@ -189,6 +191,7 @@ export async function saveDraft(
 			subject: data.subject,
 			format: data.format,
 			bodySource: data.bodySource,
+			replyTo: data.replyTo || null,
 		},
 	});
 }
@@ -241,6 +244,7 @@ export async function sendCampaignTest(
 		to: toEmail,
 		subject,
 		...(rendered.isHtml ? { html: body } : { text: body }),
+		...(campaign.replyTo ? { replyTo: campaign.replyTo } : {}),
 		...(attachments.length ? { attachments } : {}),
 	});
 }
