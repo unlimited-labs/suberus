@@ -1,3 +1,4 @@
+import { getSetting } from "@/features/settings/server/settings";
 import { prisma } from "@/shared/server/db.server";
 import { isScheduleVisible } from "./schedule";
 
@@ -7,6 +8,8 @@ export interface PresentationDetailAuthor {
 	affiliationName: string | null;
 	isPresenter: boolean;
 	orderIndex: number;
+	orcid: string | null;
+	email: string | null;
 }
 
 export interface PresentationDetail {
@@ -44,35 +47,42 @@ export async function toggleFavorite(
 export async function getPresentationDetail(
 	slotId: string,
 	viewerCanPreviewDraft = false,
+	viewerIsAuthenticated = false,
 ): Promise<PresentationDetail | null> {
 	if (!(await isScheduleVisible(viewerCanPreviewDraft))) return null;
 
-	const slot = await prisma.presentationSlot.findUnique({
-		where: { id: slotId },
-		select: {
-			submission: {
-				select: {
-					content: true,
-					cameraReadyFileId: true,
-					authors: {
-						orderBy: { orderIndex: "asc" },
-						select: {
-							firstName: true,
-							lastName: true,
-							isPresenter: true,
-							orderIndex: true,
-							affiliation: { select: { name: true } },
+	const [showAuthorInfo, slot] = await Promise.all([
+		getSetting("PROGRAM_SHOW_AUTHOR_INFO"),
+		prisma.presentationSlot.findUnique({
+			where: { id: slotId },
+			select: {
+				submission: {
+					select: {
+						content: true,
+						cameraReadyFileId: true,
+						authors: {
+							orderBy: { orderIndex: "asc" },
+							select: {
+								firstName: true,
+								email: true,
+								lastName: true,
+								isPresenter: true,
+								orderIndex: true,
+								affiliation: { select: { name: true } },
+								user: { select: { orcid: true } },
+							},
 						},
-					},
-					keywords: {
-						select: { keyword: { select: { name: true } } },
+						keywords: {
+							select: { keyword: { select: { name: true } } },
+						},
 					},
 				},
 			},
-		},
-	});
+		}),
+	]);
 	if (!slot) return null;
 
+	const includeAuthorInfo = showAuthorInfo && viewerIsAuthenticated;
 	const { submission } = slot;
 	return {
 		content: submission.content,
@@ -86,6 +96,8 @@ export async function getPresentationDetail(
 			affiliationName: a.affiliation?.name ?? null,
 			isPresenter: a.isPresenter,
 			orderIndex: a.orderIndex,
+			orcid: includeAuthorInfo ? (a.user?.orcid ?? null) : null,
+			email: includeAuthorInfo ? a.email : null,
 		})),
 	};
 }

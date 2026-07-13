@@ -217,16 +217,16 @@ function PresentationRow({
 }) {
 	const { canInteract, isFavorite, openPreview } = useProgramInteraction();
 	const favorite = canInteract && isFavorite(p.id);
-	const open = () =>
-		openPreview({
-			slotId: p.id,
-			submissionTitle: p.submissionTitle,
-			sessionTitle: session.title,
-			track: session.track,
-			roomName: session.room?.name ?? null,
-			startAtISO: presStart.toISOString(),
-			tz,
-		});
+	const target = {
+		slotId: p.id,
+		submissionTitle: p.submissionTitle,
+		sessionTitle: session.title,
+		track: session.track,
+		roomName: session.room?.name ?? null,
+		startAtISO: presStart.toISOString(),
+		tz,
+	};
+	const open = () => openPreview(target);
 
 	return (
 		<li
@@ -278,18 +278,63 @@ function PresentationRow({
 						/>
 					</span>
 				</p>
-				{p.authors.length > 0 && (
-					<p className="mt-0.5 text-[13px] leading-snug text-muted-foreground font-[var(--prog-font-body)]">
-						<Highlight
-							text={p.authors
-								.map((a) => `${a.firstName} ${a.lastName}`)
-								.join(", ")}
-							query={query}
-							markClassName={MARK}
-						/>
-					</p>
-				)}
+				<RowAuthors
+					authors={p.authors}
+					query={query}
+					onSelect={(orderIndex) =>
+						openPreview(target, { authorOrderIndex: orderIndex })
+					}
+				/>
 			</div>
 		</li>
+	);
+}
+
+function RowAuthors({
+	authors,
+	query,
+	onSelect,
+}: {
+	authors: PublicProgramSession["presentations"][number]["authors"];
+	query: string;
+	onSelect: (orderIndex: number) => void;
+}) {
+	const { showAuthorInfo } = useProgramInteraction();
+	if (authors.length === 0) return null;
+	return (
+		<p className="mt-0.5 text-[13px] leading-snug text-muted-foreground font-[var(--prog-font-body)]">
+			{showAuthorInfo ? (
+				authors.map((a, i) => (
+					<span key={a.orderIndex}>
+						{i > 0 && ", "}
+						<button
+							type="button"
+							data-testid="author-name"
+							aria-label={`Author info: ${a.firstName} ${a.lastName}`}
+							className="cursor-pointer underline-offset-2 hover:underline focus-visible:underline"
+							onClick={(e) => {
+								e.stopPropagation();
+								onSelect(a.orderIndex);
+							}}
+							onKeyDown={(e) => {
+								if (e.key === "Enter" || e.key === " ") e.stopPropagation();
+							}}
+						>
+							<Highlight
+								text={`${a.firstName} ${a.lastName}`}
+								query={query}
+								markClassName={MARK}
+							/>
+						</button>
+					</span>
+				))
+			) : (
+				<Highlight
+					text={authors.map((a) => `${a.firstName} ${a.lastName}`).join(", ")}
+					query={query}
+					markClassName={MARK}
+				/>
+			)}
+		</p>
 	);
 }

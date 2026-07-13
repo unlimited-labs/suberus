@@ -48,7 +48,10 @@ function ProgramPage() {
 	const theme = resolveProgramTheme(settings.theme);
 
 	return (
-		<ProgramInteractionProvider themeId={theme.id}>
+		<ProgramInteractionProvider
+			themeId={theme.id}
+			showAuthorInfo={settings.showAuthorInfo}
+		>
 			<ProgramShell
 				themeId={theme.id}
 				chrome={theme.chrome}

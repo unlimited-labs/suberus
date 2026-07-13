@@ -182,6 +182,7 @@ export type AppSettingsMap = {
 	};
 
 	PROGRAM_THEME: string;
+	PROGRAM_SHOW_AUTHOR_INFO: boolean;
 
 	DOCUMENT_SIGNING: DocumentSigningSettings | null;
 };

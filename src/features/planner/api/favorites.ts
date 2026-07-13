@@ -36,7 +36,7 @@ export const getPresentationDetailFn = createServerFn({ method: "GET" })
 		const session = await auth.api.getSession({ headers: getRequestHeaders() });
 		const role = session?.user?.role;
 		const canPreviewDraft = role === "ADMIN" || role === "EDITOR";
-		return getPresentationDetail(data.slotId, canPreviewDraft);
+		return getPresentationDetail(data.slotId, canPreviewDraft, !!session?.user);
 	});
 
 export const presentationDetailQueryOptions = (slotId: string) =>

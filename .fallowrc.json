@@ -44,7 +44,7 @@
         "files": ["src/features/planner/components/public-program/program-primitives.tsx"],
         "functions": ["PresentationRow"],
         "maxCrap": 133,
-        "reason": "e2e-covered (public-program.spec.ts presentations; presentation-favorites.spec.ts open/favorite); CC 11 from numbered/plain variant + interaction branches, estimated-coverage artifact"
+        "reason": "e2e-covered (public-program.spec.ts presentations + author-info; presentation-favorites.spec.ts open/favorite); CC 10 after RowAuthors extraction, numbered/plain variant + interaction branches, estimated-coverage artifact"
       },
       {
         "files": ["src/features/planner/components/public-program/program-primitives.tsx"],
@@ -66,9 +66,19 @@
       },
       {
         "files": ["src/features/planner/components/public-program/presentation-preview-dialog.tsx"],
-        "functions": ["PreviewFooter"],
         "maxCrap": 75,
-        "reason": "e2e-covered (presentation-favorites.spec.ts favorite toggle; camera-ready.spec.ts download); CC 8 from favorite-state ternaries + 2 optional buttons, estimated-coverage artifact"
+        "reason": "e2e-covered (public-program.spec.ts author-info talk/author view switch; presentation-favorites.spec.ts favorite toggle; camera-ready.spec.ts download); CC 5-8 favorite/author-view/card branching, estimated-coverage artifact"
+      },
+      {
+        "files": ["src/features/planner/components/public-program/program-interaction.tsx"],
+        "functions": ["ProgramInteractionProvider"],
+        "maxCrap": 75,
+        "reason": "e2e-covered (every public-program interaction spec routes through the provider); CC 8 provider glue null-coalescing + auth-gated author info, estimated-coverage artifact"
+      },
+      {
+        "files": ["src/features/planner/server/favorites.ts"],
+        "maxCrap": 60,
+        "reason": "e2e-covered (public-program.spec.ts author-info signed-in/anonymous/off paths; presentation-favorites.spec.ts); CC 5-7 visibility guards + optional-chain/ternary field mapping, estimated-coverage artifact"
       },
       // camera-ready upload/serve: CRAP inflated by estimated 0% coverage; matchers unit-tested, paths e2e-covered (camera-ready.spec.ts).
       {

@@ -1,5 +1,12 @@
-import { IconDownload, IconStar, IconStarFilled } from "@tabler/icons-react";
+import {
+	IconArrowLeft,
+	IconChevronRight,
+	IconDownload,
+	IconStar,
+	IconStarFilled,
+} from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import {
 	type PresentationDetailAuthor,
 	presentationDetailQueryOptions,
@@ -35,6 +42,8 @@ export function PresentationPreviewDialog({
 	canInteract,
 	isFavorite,
 	onToggleFavorite,
+	showAuthorInfo = false,
+	initialAuthorOrderIndex = null,
 }: {
 	target: PreviewTarget | null;
 	themeId: string;
@@ -42,6 +51,8 @@ export function PresentationPreviewDialog({
 	canInteract: boolean;
 	isFavorite: boolean;
 	onToggleFavorite: () => void;
+	showAuthorInfo?: boolean;
+	initialAuthorOrderIndex?: number | null;
 }) {
 	const framed = themeId !== "default";
 	return (
@@ -58,6 +69,8 @@ export function PresentationPreviewDialog({
 						canInteract={canInteract}
 						isFavorite={isFavorite}
 						onToggleFavorite={onToggleFavorite}
+						showAuthorInfo={showAuthorInfo}
+						initialAuthorOrderIndex={initialAuthorOrderIndex}
 					/>
 				)}
 			</DialogContent>
@@ -65,54 +78,66 @@ export function PresentationPreviewDialog({
 	);
 }
 
+const PANEL = "grid gap-4 duration-300 ease-out motion-reduce:animate-none";
+
 function PreviewBody({
 	target,
 	framed,
 	canInteract,
 	isFavorite,
 	onToggleFavorite,
+	showAuthorInfo,
+	initialAuthorOrderIndex,
 }: {
 	target: PreviewTarget;
 	framed: boolean;
 	canInteract: boolean;
 	isFavorite: boolean;
 	onToggleFavorite: () => void;
+	showAuthorInfo: boolean;
+	initialAuthorOrderIndex: number | null;
 }) {
-	return (
-		<>
-			<DialogHeader className="pr-8 text-left">
-				<div
-					className={cn("flex flex-wrap items-center gap-x-3 gap-y-1", META)}
-				>
-					{target.track && (
-						<span className="inline-flex items-center gap-1.5">
-							<span
-								className="size-2 rounded-full"
-								style={{
-									backgroundColor: target.track.color ?? "var(--primary)",
-								}}
-								aria-hidden
-							/>
-							{target.track.name}
-						</span>
-					)}
-					<span className="tabular-nums">
-						{formatClockTime(new Date(target.startAtISO), target.tz)}
-					</span>
-					{target.roomName && <span>{target.roomName}</span>}
-				</div>
-				<DialogTitle
-					className={cn(
-						"font-[var(--prog-font-display)] leading-snug",
-						framed ? "text-2xl font-bold" : "text-lg font-semibold",
-					)}
-				>
-					{target.submissionTitle}
-				</DialogTitle>
-				<p className="text-sm text-muted-foreground">{target.sessionTitle}</p>
-			</DialogHeader>
+	const [view, setView] = useState<{
+		authorIndex: number | null;
+		slide: "talk" | "author" | null;
+	}>({ authorIndex: initialAuthorOrderIndex, slide: null });
+	const openAuthor = (orderIndex: number) =>
+		setView({ authorIndex: orderIndex, slide: "author" });
 
-			<PreviewContent slotId={target.slotId} />
+	if (view.authorIndex !== null) {
+		return (
+			<div
+				key={`author-${view.authorIndex}`}
+				className={cn(
+					PANEL,
+					view.slide === "author" &&
+						"animate-in fade-in-0 slide-in-from-right-8",
+				)}
+			>
+				<AuthorBody
+					slotId={target.slotId}
+					orderIndex={view.authorIndex}
+					framed={framed}
+					onBack={() => setView({ authorIndex: null, slide: "talk" })}
+				/>
+			</div>
+		);
+	}
+
+	return (
+		<div
+			key="talk"
+			className={cn(
+				PANEL,
+				view.slide === "talk" && "animate-in fade-in-0 slide-in-from-left-8",
+			)}
+		>
+			<TalkHeader target={target} framed={framed} />
+
+			<PreviewContent
+				slotId={target.slotId}
+				onSelectAuthor={showAuthorInfo ? openAuthor : undefined}
+			/>
 
 			<PreviewFooter
 				slotId={target.slotId}
@@ -120,7 +145,47 @@ function PreviewBody({
 				isFavorite={isFavorite}
 				onToggleFavorite={onToggleFavorite}
 			/>
-		</>
+		</div>
+	);
+}
+
+function TalkHeader({
+	target,
+	framed,
+}: {
+	target: PreviewTarget;
+	framed: boolean;
+}) {
+	return (
+		<DialogHeader className="pr-8 text-left">
+			<div className={cn("flex flex-wrap items-center gap-x-3 gap-y-1", META)}>
+				{target.track && (
+					<span className="inline-flex items-center gap-1.5">
+						<span
+							className="size-2 rounded-full"
+							style={{
+								backgroundColor: target.track.color ?? "var(--primary)",
+							}}
+							aria-hidden
+						/>
+						{target.track.name}
+					</span>
+				)}
+				<span className="tabular-nums">
+					{formatClockTime(new Date(target.startAtISO), target.tz)}
+				</span>
+				{target.roomName && <span>{target.roomName}</span>}
+			</div>
+			<DialogTitle
+				className={cn(
+					"font-[var(--prog-font-display)] leading-snug",
+					framed ? "text-2xl font-bold" : "text-lg font-semibold",
+				)}
+			>
+				{target.submissionTitle}
+			</DialogTitle>
+			<p className="text-sm text-muted-foreground">{target.sessionTitle}</p>
+		</DialogHeader>
 	);
 }
 
@@ -169,7 +234,13 @@ function PreviewFooter({
 	);
 }
 
-function PreviewContent({ slotId }: { slotId: string }) {
+function PreviewContent({
+	slotId,
+	onSelectAuthor,
+}: {
+	slotId: string;
+	onSelectAuthor?: (orderIndex: number) => void;
+}) {
 	const detail = useQuery(presentationDetailQueryOptions(slotId));
 
 	if (detail.isPending) {
@@ -186,7 +257,9 @@ function PreviewContent({ slotId }: { slotId: string }) {
 	const { authors, content, keywords } = detail.data;
 	return (
 		<div className="max-h-[55vh] space-y-5 overflow-y-auto">
-			{authors.length > 0 && <Authors authors={authors} />}
+			{authors.length > 0 && (
+				<Authors authors={authors} onSelect={onSelectAuthor} />
+			)}
 			<section className="space-y-2">
 				<h3 className={HEADING}>Abstract</h3>
 				<div className={cn("whitespace-pre-line break-words", ABSTRACT)}>
@@ -209,7 +282,13 @@ function PreviewContent({ slotId }: { slotId: string }) {
 	);
 }
 
-function Authors({ authors }: { authors: PresentationDetailAuthor[] }) {
+function Authors({
+	authors,
+	onSelect,
+}: {
+	authors: PresentationDetailAuthor[];
+	onSelect?: (orderIndex: number) => void;
+}) {
 	return (
 		<section className="space-y-2">
 			<h3 className={HEADING}>Authors</h3>
@@ -219,42 +298,162 @@ function Authors({ authors }: { authors: PresentationDetailAuthor[] }) {
 					authors.length > 1 && "sm:grid-cols-2",
 				)}
 			>
-				{authors.map((author, index) => (
-					<div
-						key={author.orderIndex}
-						className={cn(
-							"flex items-start gap-3 rounded-[var(--radius)] border border-border bg-card p-3",
-							author.isPresenter && "border-primary/40 bg-primary/5",
-						)}
-					>
-						<div
+				{authors.map((author, index) => {
+					const cardClass = cn(
+						"flex items-start gap-3 rounded-[var(--radius)] border border-border bg-card p-3",
+						author.isPresenter && "border-primary/40 bg-primary/5",
+					);
+					const inner = (
+						<>
+							<div
+								className={cn(
+									"flex size-6 shrink-0 items-center justify-center rounded-[var(--radius)] bg-muted text-xs font-semibold text-muted-foreground",
+									author.isPresenter && "bg-primary/10 text-primary",
+								)}
+							>
+								{index + 1}
+							</div>
+							<div className="min-w-0 flex-1">
+								<div className="flex flex-wrap items-center gap-2">
+									<span className="font-medium text-foreground">
+										{author.firstName} {author.lastName}
+									</span>
+									{author.isPresenter && (
+										<span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+											<IconStarFilled className="size-3" />
+											Presenter
+										</span>
+									)}
+								</div>
+								<p className="mt-0.5 truncate text-sm text-muted-foreground">
+									{affiliationDisplay(author.affiliationName)}
+								</p>
+							</div>
+						</>
+					);
+					if (!onSelect) {
+						return (
+							<div key={author.orderIndex} className={cardClass}>
+								{inner}
+							</div>
+						);
+					}
+					return (
+						<button
+							key={author.orderIndex}
+							type="button"
+							data-testid="author-card-button"
+							aria-label={`Author info: ${author.firstName} ${author.lastName}`}
+							onClick={() => onSelect(author.orderIndex)}
 							className={cn(
-								"flex size-6 shrink-0 items-center justify-center rounded-[var(--radius)] bg-muted text-xs font-semibold text-muted-foreground",
-								author.isPresenter && "bg-primary/10 text-primary",
+								cardClass,
+								"group cursor-pointer text-left transition-colors hover:border-primary/60 hover:bg-accent",
 							)}
 						>
-							{index + 1}
-						</div>
-						<div className="min-w-0 flex-1">
-							<div className="flex flex-wrap items-center gap-2">
-								<span className="font-medium text-foreground">
-									{author.firstName} {author.lastName}
-								</span>
-								{author.isPresenter && (
-									<span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
-										<IconStarFilled className="size-3" />
-										Presenter
-									</span>
-								)}
-							</div>
-							<p className="mt-0.5 truncate text-sm text-muted-foreground">
-								{affiliationDisplay(author.affiliationName)}
-							</p>
-						</div>
-					</div>
-				))}
+							{inner}
+							<IconChevronRight className="size-4 shrink-0 self-center text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+						</button>
+					);
+				})}
 			</div>
 		</section>
+	);
+}
+
+function AuthorBody({
+	slotId,
+	orderIndex,
+	framed,
+	onBack,
+}: {
+	slotId: string;
+	orderIndex: number;
+	framed: boolean;
+	onBack: () => void;
+}) {
+	const detail = useQuery(presentationDetailQueryOptions(slotId));
+	const author =
+		detail.data?.authors.find((a) => a.orderIndex === orderIndex) ?? null;
+
+	return (
+		<div data-testid="author-info" className="grid gap-4">
+			<DialogHeader className="pr-8 text-left">
+				<button
+					type="button"
+					data-testid="author-back"
+					onClick={onBack}
+					className={cn(BTN, BTN_IDLE, "self-start")}
+				>
+					<IconArrowLeft />
+					Back to talk
+				</button>
+				<span className={META}>Author</span>
+				<DialogTitle
+					className={cn(
+						"font-[var(--prog-font-display)] leading-snug",
+						framed ? "text-2xl font-bold" : "text-lg font-semibold",
+					)}
+				>
+					{author ? `${author.firstName} ${author.lastName}` : "Author"}
+				</DialogTitle>
+			</DialogHeader>
+			{detail.isPending ? (
+				<PreviewSkeleton />
+			) : !author ? (
+				<p className={ABSTRACT}>Author info is unavailable.</p>
+			) : (
+				<AuthorDetails author={author} />
+			)}
+		</div>
+	);
+}
+
+function AuthorDetails({ author }: { author: PresentationDetailAuthor }) {
+	return (
+		<div className="space-y-4">
+			{author.isPresenter && (
+				<span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+					<IconStarFilled className="size-3" />
+					Presenter
+				</span>
+			)}
+			<section className="space-y-1">
+				<h3 className={HEADING}>Affiliation</h3>
+				<p className={ABSTRACT}>{affiliationDisplay(author.affiliationName)}</p>
+			</section>
+			{author.email && (
+				<section className="space-y-1">
+					<h3 className={HEADING}>Email</h3>
+					<a
+						data-testid="author-email"
+						href={`mailto:${author.email}`}
+						className="break-all text-sm text-foreground underline-offset-4 hover:underline"
+					>
+						{author.email}
+					</a>
+				</section>
+			)}
+			{author.orcid && (
+				<section className="space-y-1">
+					<h3 className={HEADING}>ORCID</h3>
+					<a
+						data-testid="author-orcid"
+						href={`https://orcid.org/${author.orcid}`}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="inline-flex items-center gap-2 text-sm text-foreground underline-offset-4 hover:underline"
+					>
+						<span
+							aria-hidden
+							className="flex size-4 items-center justify-center rounded-full bg-[#A6CE39] text-[8px] font-bold text-white"
+						>
+							iD
+						</span>
+						{author.orcid}
+					</a>
+				</section>
+			)}
+		</div>
 	);
 }
 

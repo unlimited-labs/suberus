@@ -20,9 +20,13 @@ export interface PreviewTarget {
 
 interface ProgramInteractionValue {
 	canInteract: boolean;
+	showAuthorInfo: boolean;
 	isFavorite: (slotId: string) => boolean;
 	toggleFavorite: (slotId: string) => void;
-	openPreview: (target: PreviewTarget) => void;
+	openPreview: (
+		target: PreviewTarget,
+		opts?: { authorOrderIndex?: number },
+	) => void;
 }
 
 const ProgramInteractionContext = createContext<ProgramInteractionValue | null>(
@@ -41,14 +45,20 @@ export function useProgramInteraction(): ProgramInteractionValue {
 
 export function ProgramInteractionProvider({
 	themeId,
+	showAuthorInfo = false,
 	children,
 }: {
 	themeId: string;
+	showAuthorInfo?: boolean;
 	children: ReactNode;
 }) {
 	const { isAuthenticated } = useSession();
+	const authorInfoEnabled = showAuthorInfo && isAuthenticated;
 	const queryClient = useQueryClient();
-	const [selected, setSelected] = useState<PreviewTarget | null>(null);
+	const [selected, setSelected] = useState<{
+		target: PreviewTarget;
+		authorOrderIndex: number | null;
+	} | null>(null);
 
 	const favoritesKey = favoriteSlotsQueryOptions().queryKey;
 	const favoritesQuery = useQuery({
@@ -78,24 +88,28 @@ export function ProgramInteractionProvider({
 
 	const value: ProgramInteractionValue = {
 		canInteract: isAuthenticated,
+		showAuthorInfo: authorInfoEnabled,
 		isFavorite: (slotId) => favorites.has(slotId),
 		toggleFavorite: (slotId) => mutate(slotId),
-		openPreview: (target) => setSelected(target),
+		openPreview: (target, opts) =>
+			setSelected({ target, authorOrderIndex: opts?.authorOrderIndex ?? null }),
 	};
 
 	return (
 		<ProgramInteractionContext.Provider value={value}>
 			{children}
 			<PresentationPreviewDialog
-				target={selected}
+				target={selected?.target ?? null}
 				themeId={themeId}
 				canInteract={isAuthenticated}
+				showAuthorInfo={authorInfoEnabled}
+				initialAuthorOrderIndex={selected?.authorOrderIndex ?? null}
 				onOpenChange={(open) => {
 					if (!open) setSelected(null);
 				}}
-				isFavorite={selected ? favorites.has(selected.slotId) : false}
+				isFavorite={selected ? favorites.has(selected.target.slotId) : false}
 				onToggleFavorite={() => {
-					if (selected) mutate(selected.slotId);
+					if (selected) mutate(selected.target.slotId);
 				}}
 			/>
 		</ProgramInteractionContext.Provider>

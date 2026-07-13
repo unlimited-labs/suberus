@@ -15,11 +15,15 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/shared/ui/select";
+import { Switch } from "@/shared/ui/switch";
 import { PROGRAM_THEME_LIST } from "../public-program/themes/registry";
 
 export function ProgramThemeSection() {
 	const queryClient = useQueryClient();
 	const { data: theme } = useQuery(adminSettingQueryOptions("PROGRAM_THEME"));
+	const { data: showAuthorInfo } = useQuery(
+		adminSettingQueryOptions("PROGRAM_SHOW_AUTHOR_INFO"),
+	);
 
 	const mutation = useMutation({
 		mutationFn: (value: string) =>
@@ -29,6 +33,18 @@ export function ProgramThemeSection() {
 				queryKey: ["settings", "admin", "PROGRAM_THEME"],
 			});
 			toast.success("Program theme updated");
+		},
+		onError: (error) => toast.error(getErrorMessage(error)),
+	});
+
+	const authorInfoMutation = useMutation({
+		mutationFn: (value: boolean) =>
+			setSettingFn({ data: { key: "PROGRAM_SHOW_AUTHOR_INFO", value } }),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({
+				queryKey: ["settings", "admin", "PROGRAM_SHOW_AUTHOR_INFO"],
+			});
+			toast.success("Author info setting updated");
 		},
 		onError: (error) => toast.error(getErrorMessage(error)),
 	});
@@ -66,6 +82,22 @@ export function ProgramThemeSection() {
 				<p className="text-sm text-muted-foreground">
 					{PROGRAM_THEME_LIST.find((t) => t.id === current)?.description}
 				</p>
+			</div>
+			<div className="mt-6 flex items-center justify-between gap-4 border-t pt-6">
+				<div className="space-y-0.5">
+					<Label htmlFor="show-author-info">Show author info</Label>
+					<p className="text-sm text-muted-foreground">
+						Makes author names on the public program clickable, showing
+						affiliation and ORCID in the talk preview.
+					</p>
+				</div>
+				<Switch
+					id="show-author-info"
+					data-testid="show-author-info-toggle"
+					checked={showAuthorInfo ?? false}
+					disabled={authorInfoMutation.isPending}
+					onCheckedChange={(v) => authorInfoMutation.mutate(v === true)}
+				/>
 			</div>
 		</SettingsSection>
 	);
