@@ -66,62 +66,95 @@ function withinBuffer(a: Talk, b: Talk, bufferMs: number): boolean {
 	);
 }
 
-/** Rule A: a shared author cannot have two talks in different sessions within `bufferMin` of each other. */
-export function detectAuthorTimeClashes(
-	sessions: ConflictSession[],
-	bufferMin: number,
-): ScheduleIssue[] {
-	const talks = buildTalks(sessions);
-	const bufferMs = bufferMin * 60_000;
+interface AuthorIndex {
+	byAuthor: Map<string, Talk[]>;
+	person: Map<string, ConflictAuthor>;
+}
 
+function indexTalksByAuthor(talks: Talk[]): AuthorIndex {
 	const byAuthor = new Map<string, Talk[]>();
-	const authorPerson = new Map<string, ConflictAuthor>();
+	const person = new Map<string, ConflictAuthor>();
 	for (const t of talks) {
 		for (const au of t.authors) {
 			const k = authorKey(au);
-			if (!authorPerson.has(k)) authorPerson.set(k, au);
+			if (!person.has(k)) person.set(k, au);
 			const arr = byAuthor.get(k);
 			if (arr) arr.push(t);
 			else byAuthor.set(k, [t]);
 		}
 	}
+	return { byAuthor, person };
+}
 
-	const pairs = new Map<string, { a: Talk; b: Talk; authors: Set<string> }>();
-	for (const [k, list] of byAuthor) {
+interface ClashPair {
+	a: Talk;
+	b: Talk;
+	authors: Set<string>;
+}
+
+function addClash(
+	pairs: Map<string, ClashPair>,
+	a: Talk,
+	b: Talk,
+	author: string,
+): void {
+	const pk = a.key < b.key ? `${a.key}|${b.key}` : `${b.key}|${a.key}`;
+	const entry = pairs.get(pk);
+	if (entry) entry.authors.add(author);
+	else pairs.set(pk, { a, b, authors: new Set([author]) });
+}
+
+function collectClashesFrom(
+	sorted: Talk[],
+	i: number,
+	author: string,
+	bufferMs: number,
+	pairs: Map<string, ClashPair>,
+): void {
+	const a = sorted[i];
+	for (let j = i + 1; j < sorted.length; j++) {
+		const b = sorted[j];
+		if (b.start.getTime() >= a.end.getTime() + bufferMs) break;
+		if (a.sessionId === b.sessionId) continue;
+		if (withinBuffer(a, b, bufferMs)) addClash(pairs, a, b, author);
+	}
+}
+
+/** Rule A: a shared author cannot have two talks in different sessions within `bufferMin` of each other. */
+export function detectAuthorTimeClashes(
+	sessions: ConflictSession[],
+	bufferMin: number,
+): ScheduleIssue[] {
+	const { byAuthor, person } = indexTalksByAuthor(buildTalks(sessions));
+	const bufferMs = bufferMin * 60_000;
+
+	const pairs = new Map<string, ClashPair>();
+	for (const [author, list] of byAuthor) {
 		if (list.length < 2) continue;
 		list.sort((x, y) => x.start.getTime() - y.start.getTime());
 		for (let i = 0; i < list.length; i++) {
-			const a = list[i];
-			for (let j = i + 1; j < list.length; j++) {
-				const b = list[j];
-				if (b.start.getTime() >= a.end.getTime() + bufferMs) break;
-				if (a.sessionId === b.sessionId) continue;
-				if (!withinBuffer(a, b, bufferMs)) continue;
-				const pk = a.key < b.key ? `${a.key}|${b.key}` : `${b.key}|${a.key}`;
-				const entry = pairs.get(pk);
-				if (entry) entry.authors.add(k);
-				else pairs.set(pk, { a, b, authors: new Set([k]) });
-			}
+			collectClashesFrom(list, i, author, bufferMs, pairs);
 		}
 	}
 
 	return [...pairs.values()].map(({ a, b, authors }) => ({
 		kind: "AUTHOR_TIME_CLASH",
 		message: `${[...authors]
-			.map((k) => personName(authorPerson.get(k)))
+			.map((k) => personName(person.get(k)))
 			.join(", ")} has near-overlapping talks "${a.title}" and "${b.title}"`,
 		sessionIds: [a.sessionId, b.sessionId],
 	}));
 }
 
-/** Rule B: a presenter must not present in two time-overlapping (parallel) sessions. */
-export function detectPresenterParallelSessions(
+interface PresenterSession {
+	session: ConflictSession;
+	presenter: ConflictAuthor;
+}
+
+function indexSessionsByPresenter(
 	sessions: ConflictSession[],
-): ScheduleIssue[] {
-	const byPresenter = new Map<
-		string,
-		{ session: ConflictSession; presenter: ConflictAuthor }[]
-	>();
+): Map<string, PresenterSession[]> {
+	const byPresenter = new Map<string, PresenterSession[]>();
 	for (const s of sessions) {
 		const seen = new Set<string>();
 		for (const p of s.presentations) {
@@ -135,9 +168,15 @@ export function detectPresenterParallelSessions(
 			else byPresenter.set(k, [{ session: s, presenter }]);
 		}
 	}
+	return byPresenter;
+}
 
+/** Rule B: a presenter must not present in two time-overlapping (parallel) sessions. */
+export function detectPresenterParallelSessions(
+	sessions: ConflictSession[],
+): ScheduleIssue[] {
 	const issues: ScheduleIssue[] = [];
-	for (const entries of byPresenter.values()) {
+	for (const entries of indexSessionsByPresenter(sessions).values()) {
 		for (let i = 0; i < entries.length; i++) {
 			for (let j = i + 1; j < entries.length; j++) {
 				if (!overlaps(entries[i].session, entries[j].session)) continue;
