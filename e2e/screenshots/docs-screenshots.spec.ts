@@ -650,6 +650,32 @@ test.describe("docs screenshots", () => {
 			data: { title: "Lunch Break", startAt: day(14, "12:30"), endAt: day(14, "13:30"), roomId: null },
 		});
 
+		// Parallel-session pair sharing a co-author (Elena Ricci) → the
+		// "Co-author double-booked" pre-publish check (docs/planner/publishing).
+		const sharedCoauthor = {
+			firstName: "Elena",
+			lastName: "Ricci",
+			email: "elena.ricci@example.org",
+			affiliationName: "Politecnico di Milano",
+			isPresenter: false,
+		};
+		const clashA = await createSubmission({
+			title: "Bayesian Calibration of Grain-Growth Models",
+			status: SubmissionStatus.ACCEPTED,
+			authorData: author(1),
+			userId: authorUser(1),
+			extraAuthors: [sharedCoauthor],
+		});
+		const clashB = await createSubmission({
+			title: "Stochastic Models of Microstructure Evolution",
+			status: SubmissionStatus.ACCEPTED,
+			authorData: author(3),
+			userId: authorUser(3),
+			extraAuthors: [sharedCoauthor],
+		});
+		await mkSession("Uncertainty Quantification", day(15, "14:00"), day(15, "15:30"), aula.id, tData.id, [clashA.id]);
+		await mkSession("Stochastic Microstructure Models", day(15, "14:00"), day(15, "15:30"), r101.id, tModel.id, [clashB.id]);
+
 		// --- invitations --------------------------------------------------------------
 		const hours = (h: number) => new Date(Date.now() + h * 3600 * 1000);
 		await db.invitation.create({
@@ -946,6 +972,22 @@ test.describe("docs screenshots", () => {
 		await page.getByTestId("publish-issues-list").waitFor({ state: "visible", timeout: 10000 }).catch(() => {});
 		await page.waitForTimeout(500);
 		await shot(page, "31-planner-publish-dialog.png", { full: false });
+	});
+
+	test("54 co-author conflict check", async ({ page }) => {
+		await page.goto("/admin/program-planner");
+		await page.waitForTimeout(1500);
+		await page.getByTestId("publish-button").click();
+		await expect(page.getByTestId("publish-dialog")).toBeVisible();
+		const coauthorIssue = page
+			.getByTestId("publish-issues-list")
+			.getByText(/Co-author double-booked/i)
+			.first();
+		await coauthorIssue.scrollIntoViewIfNeeded();
+		await page.waitForTimeout(300);
+		await page.getByTestId("publish-dialog").screenshot({
+			path: path.join(SHOTS_DIR, "54-planner-coauthor-conflict.png"),
+		});
 	});
 
 	test("32 public program", async ({ page }) => {
