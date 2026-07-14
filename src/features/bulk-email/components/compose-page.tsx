@@ -14,8 +14,6 @@ import { bulkEmailCampaignQueryOptions } from "@/features/bulk-email/api/bulk-em
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
 import { SectionCard } from "@/shared/ui/section-card";
 import { Separator } from "@/shared/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
@@ -73,37 +71,39 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 
 								<div className="border-t" />
 
-								<div className="space-y-1.5">
-									<Label htmlFor="campaign-subject">Subject</Label>
-									<Input
-										id="campaign-subject"
-										data-testid="campaign-subject"
-										value={compose.subject}
-										onChange={(e) => compose.setSubject(e.target.value)}
-										disabled={!compose.isDraft}
-									/>
-								</div>
+								<compose.form.AppField name="subject">
+									{(field) => (
+										<field.InputField
+											label="Subject"
+											testId="campaign-subject"
+											disabled={!compose.isDraft}
+										/>
+									)}
+								</compose.form.AppField>
 
-								<div className="space-y-1.5">
-									<Label htmlFor="campaign-reply-to">Reply-To (optional)</Label>
-									<Input
-										id="campaign-reply-to"
-										type="email"
-										placeholder="replies@example.com"
-										data-testid="campaign-reply-to"
-										value={compose.replyTo}
-										onChange={(e) => compose.setReplyTo(e.target.value)}
-										disabled={!compose.isDraft}
-									/>
-								</div>
+								<compose.form.AppField name="replyTo">
+									{(field) => (
+										<field.InputField
+											label="Reply-To (optional)"
+											type="email"
+											placeholder="replies@example.com"
+											testId="campaign-reply-to"
+											disabled={!compose.isDraft}
+										/>
+									)}
+								</compose.form.AppField>
 
 								<Tabs defaultValue="body">
 									<div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-										<FormatSelector
-											value={compose.format}
-											onChange={compose.setFormat}
-											disabled={!compose.isDraft}
-										/>
+										<compose.form.Field name="format">
+											{(field) => (
+												<FormatSelector
+													value={field.state.value}
+													onChange={field.handleChange}
+													disabled={!compose.isDraft}
+												/>
+											)}
+										</compose.form.Field>
 										<TabsList>
 											<TabsTrigger value="body">Body</TabsTrigger>
 											<TabsTrigger value="preview">Preview</TabsTrigger>
@@ -111,14 +111,19 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 									</div>
 
 									<TabsContent value="body" className="mt-0">
-										<Textarea
-											id="campaign-body"
-											data-testid="campaign-body"
-											value={compose.bodySource}
-											onChange={(e) => compose.setBodySource(e.target.value)}
-											disabled={!compose.isDraft}
-											className="h-[28rem] resize-none font-mono text-sm leading-relaxed"
-										/>
+										<compose.form.AppField name="bodySource">
+											{(field) => (
+												<Textarea
+													id="campaign-body"
+													data-testid="campaign-body"
+													value={field.state.value}
+													onChange={(e) => field.handleChange(e.target.value)}
+													onBlur={field.handleBlur}
+													disabled={!compose.isDraft}
+													className="h-[28rem] resize-none font-mono text-sm leading-relaxed"
+												/>
+											)}
+										</compose.form.AppField>
 									</TabsContent>
 
 									<TabsContent value="preview" className="mt-0">

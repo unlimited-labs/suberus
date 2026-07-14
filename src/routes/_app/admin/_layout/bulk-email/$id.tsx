@@ -13,5 +13,5 @@ export const Route = createFileRoute("/_app/admin/_layout/bulk-email/$id")({
 
 function BulkEmailComposeRoute() {
 	const { id } = Route.useParams();
-	return <ComposePage campaignId={id} />;
+	return <ComposePage key={id} campaignId={id} />;
 }

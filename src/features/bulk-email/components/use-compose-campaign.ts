@@ -1,3 +1,4 @@
+import { useStore } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
@@ -10,12 +11,17 @@ import {
 	type getBulkEmailCampaign,
 	previewBulkEmail,
 	saveBulkEmailDraft,
+	saveDraftSchema,
 	sendBulkEmailCampaign,
 	sendBulkEmailTest,
 } from "@/features/bulk-email/api/bulk-email";
-import type { EmailCampaignFormat } from "@/generated/prisma/enums";
+import { useAppForm } from "@/shared/hooks/use-app-form";
 import { useJobSSE } from "@/shared/hooks/use-job-sse";
 import { getErrorMessage } from "@/shared/lib/error-message";
+
+const composeSchema = saveDraftSchema
+	.omit({ id: true })
+	.required({ replyTo: true });
 
 type Campaign = Awaited<ReturnType<typeof getBulkEmailCampaign>>;
 
@@ -33,12 +39,20 @@ export function useComposeCampaign(campaign: Campaign) {
 	const navigate = useNavigate();
 	const isDraft = campaign.status === "DRAFT";
 
-	const [subject, setSubject] = useState(campaign.subject);
-	const [format, setFormat] = useState<EmailCampaignFormat>(campaign.format);
-	const [bodySource, setBodySource] = useState(campaign.bodySource);
-	const [replyTo, setReplyTo] = useState(campaign.replyTo ?? "");
+	const form = useAppForm({
+		defaultValues: {
+			subject: campaign.subject,
+			format: campaign.format,
+			bodySource: campaign.bodySource,
+			replyTo: campaign.replyTo ?? "",
+		},
+		validators: { onChange: composeSchema },
+	});
+
 	const [jobId, setJobId] = useState<string | null>(campaign.jobProgressId);
 
+	const format = useStore(form.store, (s) => s.values.format);
+	const bodySource = useStore(form.store, (s) => s.values.bodySource);
 	const debouncedBody = useDebounced(bodySource, 400);
 
 	const previewQuery = useQuery({
@@ -54,14 +68,21 @@ export function useComposeCampaign(campaign: Campaign) {
 			? { body: bodySource, isHtml: false }
 			: (previewQuery.data ?? { body: "", isHtml: true });
 
-	const persist = () =>
-		saveBulkEmailDraft({
+	const persist = () => {
+		const { subject, format, bodySource, replyTo } = form.state.values;
+		return saveBulkEmailDraft({
 			data: { id: campaign.id, subject, format, bodySource, replyTo },
 		});
+	};
 
 	const saveMutation = useMutation({
 		mutationFn: persist,
-		onSuccess: () => toast.success("Draft saved"),
+		onSuccess: () => {
+			toast.success("Draft saved");
+			queryClient.invalidateQueries({
+				queryKey: bulkEmailCampaignQueryOptions(campaign.id).queryKey,
+			});
+		},
 		onError: (e) => toast.error(getErrorMessage(e, "Failed to save draft")),
 	});
 
@@ -93,6 +114,9 @@ export function useComposeCampaign(campaign: Campaign) {
 		mutationFn: () => deleteBulkEmailCampaign({ data: { id: campaign.id } }),
 		onSuccess: () => {
 			toast.success("Draft deleted");
+			queryClient.invalidateQueries({
+				queryKey: bulkEmailCampaignsQueryOptions().queryKey,
+			});
 			navigate({ to: "/admin/bulk-email" });
 		},
 		onError: (e) => toast.error(getErrorMessage(e, "Failed to delete draft")),
@@ -132,19 +156,18 @@ export function useComposeCampaign(campaign: Campaign) {
 		});
 	}, [job.status, job.current, jobId, campaign.id, queryClient]);
 
-	const canSend = subject.trim() !== "" && bodySource.trim() !== "";
+	const canSend = useStore(
+		form.store,
+		(s) =>
+			s.values.subject.trim() !== "" &&
+			s.values.bodySource.trim() !== "" &&
+			s.isValid,
+	);
 
 	return {
 		isDraft,
 		canSend,
-		subject,
-		setSubject,
-		format,
-		setFormat,
-		bodySource,
-		setBodySource,
-		replyTo,
-		setReplyTo,
+		form,
 		preview,
 		isPreviewLoading: format !== "PLAIN" && previewQuery.isFetching,
 		save: saveMutation.mutate,

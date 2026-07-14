@@ -49,7 +49,7 @@ export const listBulkEmailCampaigns = createServerFn({ method: "GET" })
 		return listCampaigns();
 	});
 
-const saveDraftSchema = z.object({
+export const saveDraftSchema = z.object({
 	id: z.string(),
 	subject: z.string(),
 	format: formatSchema,

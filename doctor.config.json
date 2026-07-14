@@ -28,6 +28,14 @@
       },
       {
         "files": [
+          "src/features/bulk-email/components/use-compose-campaign.ts"
+        ],
+        "rules": [
+          "react-doctor/exhaustive-deps"
+        ]
+      },
+      {
+        "files": [
           "src/server-composition.ts",
           "src/server/plugins/**",
           "src/server/tasks/**",
