@@ -327,8 +327,10 @@ function findBreakRoomConflicts(
 }
 
 export async function getScheduleIssues(): Promise<ScheduleIssue[]> {
-	const { sessions, breaks } = await loadIssueData();
-	const bufferMin = await getSetting("PLANNER_AUTHOR_BUFFER_MIN");
+	const [{ sessions, breaks }, bufferMin] = await Promise.all([
+		loadIssueData(),
+		getSetting("PLANNER_AUTHOR_BUFFER_MIN"),
+	]);
 	return [
 		...findSessionsWithoutChair(sessions),
 		...findOverbookedSessions(sessions),
