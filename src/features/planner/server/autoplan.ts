@@ -5,6 +5,7 @@ import { logger } from "@/logger.ts";
 import { prisma } from "@/shared/server/db.server";
 import { setJobCurrent, setJobStage } from "@/shared/server/job-progress";
 import { generateWithLlm } from "@/shared/server/llm";
+import { assignClustersToSessions } from "./autoplan-assign";
 import {
 	type AutoPlanProposal,
 	AutoPlanProposalSchema,
@@ -13,6 +14,7 @@ import {
 	type ProposedSession,
 } from "./autoplan-types";
 import { embedSubmissions } from "./embeddings";
+import { authorKey } from "./schedule-issues";
 
 const LABEL_MAX_ABSTRACT_CHARS = 1500;
 const LABEL_MAX_TOKENS = 60;
@@ -26,6 +28,7 @@ type AutoplanSubmission = {
 	id: string;
 	title: string;
 	content: string;
+	authors: { userId: string | null; email: string }[];
 };
 
 type AutoplanSession = {
@@ -97,7 +100,12 @@ async function loadAutoplanInputs(jobId: string): Promise<{
 
 	const submissions = await prisma.submission.findMany({
 		where: { status: "ACCEPTED", type: "ABSTRACT" },
-		select: { id: true, title: true, content: true },
+		select: {
+			id: true,
+			title: true,
+			content: true,
+			authors: { select: { userId: true, email: true } },
+		},
 		orderBy: { createdAt: "asc" },
 	});
 
@@ -166,23 +174,35 @@ async function labelCluster(
 	return cleanLlmTitle(raw);
 }
 
+function clusterAuthorKeys(
+	clusters: ClusterApiResponse["clusters"],
+	submissionMap: Map<string, AutoplanSubmission>,
+): Set<string>[] {
+	return clusters.map((c) => {
+		const keys = new Set<string>();
+		for (const id of c.member_ids) {
+			const sub = submissionMap.get(id);
+			if (!sub) continue;
+			for (const au of sub.authors) keys.add(authorKey(au));
+		}
+		return keys;
+	});
+}
+
 async function labelClusters(
 	jobId: string,
-	cluster: ClusterApiResponse,
+	orderedClusters: ClusterApiResponse["clusters"],
 	sessions: AutoplanSession[],
+	assign: number[],
 	submissionMap: Map<string, AutoplanSubmission>,
 ): Promise<ProposedSession[]> {
-	await reportStage(jobId, "labeling", cluster.clusters.length);
-
-	const orderedClusters = cluster.clusters
-		.slice()
-		.sort((a, b) => a.session_index - b.session_index);
+	await reportStage(jobId, "labeling", orderedClusters.length);
 
 	let labeled = 0;
 	const { results, errors } = await PromisePool.for(orderedClusters)
 		.withConcurrency(env.LLM_CONCURRENCY)
 		.process(async (c, i): Promise<ProposedSession> => {
-			const sess = sessions[i];
+			const sess = sessions[assign[i]];
 			const members = c.member_ids
 				.map((id) => submissionMap.get(id))
 				.filter((s): s is AutoplanSubmission => s !== undefined);
@@ -226,10 +246,18 @@ export async function runAutoPlan(jobId: string): Promise<AutoPlanProposal> {
 	const cluster = await clusterSubmissions(jobId, submissions, sessions.length);
 
 	const submissionMap = new Map(submissions.map((s) => [s.id, s]));
+	const orderedClusters = cluster.clusters
+		.slice()
+		.sort((a, b) => a.session_index - b.session_index);
+	const assign = assignClustersToSessions(
+		clusterAuthorKeys(orderedClusters, submissionMap),
+		sessions,
+	);
 	const proposedSessions = await labelClusters(
 		jobId,
-		cluster,
+		orderedClusters,
 		sessions,
+		assign,
 		submissionMap,
 	);
 
