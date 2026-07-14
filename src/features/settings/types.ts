@@ -95,6 +95,7 @@ export type AppSettingsMap = {
 	CONFERENCE_DAY_END: string; // "HH:mm" (24h), e.g. "18:00"
 	CONFERENCE_DEFAULT_PRESENTATION_MIN: number;
 	PLANNER_AUTOPLAN_ENABLED: boolean;
+	PLANNER_AUTHOR_BUFFER_MIN: number;
 	PROGRAM_REMINDER_LEAD_MIN: number;
 
 	MIN_TITLE_LENGTH: number;

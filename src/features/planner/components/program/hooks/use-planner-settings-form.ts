@@ -20,6 +20,7 @@ export function usePlannerSettingsForm(initial: ConferenceSettings) {
 			dayEnd: initial.dayEnd,
 			defaultPresentationMin: initial.defaultPresentationMin,
 			autoplanEnabled: initial.autoplanEnabled,
+			authorBufferMin: initial.authorBufferMin,
 		},
 		validators: {
 			onChange: plannerSettingsSchema,

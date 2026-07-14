@@ -150,6 +150,32 @@ function PlannerSettingsSection({
 							Pre-filled when creating sessions and dropping submissions.
 						</p>
 					</div>
+					<div className="space-y-2">
+						<Label htmlFor="authorBufferMin">Author conflict buffer</Label>
+						<div className="flex items-center gap-2">
+							<form.Field name="authorBufferMin">
+								{(field) => (
+									<Input
+										id="authorBufferMin"
+										type="number"
+										min={0}
+										max={240}
+										step={5}
+										value={field.state.value}
+										onChange={(e) =>
+											field.handleChange(Number(e.target.value) || 0)
+										}
+										className="w-24"
+									/>
+								)}
+							</form.Field>
+							<span className="text-sm text-muted-foreground">minutes</span>
+						</div>
+						<p className="text-xs text-muted-foreground">
+							Flags a co-author scheduled in two talks less than this far apart.
+							Set 0 to require only that their talks don't overlap.
+						</p>
+					</div>
 				</div>
 				<div className="mt-6 space-y-2 border-t pt-6">
 					<div className="flex items-center justify-between gap-4">

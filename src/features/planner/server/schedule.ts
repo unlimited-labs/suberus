@@ -1,5 +1,9 @@
 import { getSetting, setSetting } from "@/features/settings/server/settings";
 import { prisma } from "@/shared/server/db.server";
+import {
+	detectAuthorTimeClashes,
+	detectPresenterParallelSessions,
+} from "./author-conflicts";
 import { getPlannerIncludedTypes } from "./included-types";
 import {
 	findPairwiseOverlapIssues,
@@ -222,6 +226,7 @@ async function loadIssueData() {
 					include: {
 						submission: {
 							select: {
+								id: true,
 								title: true,
 								status: true,
 								authors: {
@@ -230,6 +235,7 @@ async function loadIssueData() {
 										firstName: true,
 										lastName: true,
 										email: true,
+										isPresenter: true,
 									},
 								},
 							},
@@ -322,11 +328,14 @@ function findBreakRoomConflicts(
 
 export async function getScheduleIssues(): Promise<ScheduleIssue[]> {
 	const { sessions, breaks } = await loadIssueData();
+	const bufferMin = await getSetting("PLANNER_AUTHOR_BUFFER_MIN");
 	return [
 		...findSessionsWithoutChair(sessions),
 		...findOverbookedSessions(sessions),
 		...findNonAcceptedSubmissions(sessions),
 		...findPairwiseOverlapIssues(sessions),
+		...detectAuthorTimeClashes(sessions, bufferMin),
+		...detectPresenterParallelSessions(sessions),
 		...findBreakRoomConflicts(sessions, breaks),
 	];
 }

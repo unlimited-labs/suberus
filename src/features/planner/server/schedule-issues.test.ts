@@ -94,7 +94,7 @@ describe("detectChairOverlap", () => {
 });
 
 describe("findPairwiseOverlapIssues", () => {
-	it("reports chair, room and author conflicts for an overlapping pair", () => {
+	it("reports chair and room conflicts for an overlapping pair", () => {
 		const a = session({
 			id: "a",
 			roomId: "r1",
@@ -110,25 +110,7 @@ describe("findPairwiseOverlapIssues", () => {
 			presentations: [presentation([{ userId: "au1", email: "au1@e.com" }])],
 		});
 		const kinds = findPairwiseOverlapIssues([a, b]).map((i) => i.kind);
-		expect(kinds).toEqual([
-			"CHAIR_OVERLAP",
-			"ROOM_DOUBLE_BOOKED",
-			"AUTHOR_OVERLAP",
-		]);
-	});
-
-	it("matches authors by email when userId is null", () => {
-		const common = { userId: null, email: "shared@e.com" };
-		const a = session({ id: "a", presentations: [presentation([common])] });
-		const b = session({
-			id: "b",
-			startAt: new Date("2026-01-01T10:30:00Z"),
-			endAt: new Date("2026-01-01T11:30:00Z"),
-			presentations: [presentation([common])],
-		});
-		expect(findPairwiseOverlapIssues([a, b]).map((i) => i.kind)).toEqual([
-			"AUTHOR_OVERLAP",
-		]);
+		expect(kinds).toEqual(["CHAIR_OVERLAP", "ROOM_DOUBLE_BOOKED"]);
 	});
 
 	it("reports nothing for non-overlapping sessions", () => {
