@@ -255,6 +255,7 @@ export interface ConferenceSettings {
 	dayEnd: string;
 	defaultPresentationMin: number;
 	autoplanEnabled: boolean;
+	authorBufferMin: number;
 }
 
 const conferenceSettingsSchema = z.object({
@@ -279,6 +280,7 @@ const conferenceSettingsSchema = z.object({
 	dayEnd: z.iso.time({ precision: -1, error: "Expected HH:mm" }),
 	defaultPresentationMin: z.number().int().min(5).max(480),
 	autoplanEnabled: z.boolean(),
+	authorBufferMin: z.number().int().min(0).max(240),
 });
 
 /**
@@ -408,6 +410,7 @@ export const getConferenceSettingsFn = createServerFn({ method: "GET" })
 			"CONFERENCE_DAY_END",
 			"CONFERENCE_DEFAULT_PRESENTATION_MIN",
 			"PLANNER_AUTOPLAN_ENABLED",
+			"PLANNER_AUTHOR_BUFFER_MIN",
 		]);
 		return {
 			name: settings.CONFERENCE_NAME,
@@ -431,6 +434,7 @@ export const getConferenceSettingsFn = createServerFn({ method: "GET" })
 			dayEnd: settings.CONFERENCE_DAY_END,
 			defaultPresentationMin: settings.CONFERENCE_DEFAULT_PRESENTATION_MIN,
 			autoplanEnabled: settings.PLANNER_AUTOPLAN_ENABLED,
+			authorBufferMin: settings.PLANNER_AUTHOR_BUFFER_MIN,
 		};
 	});
 
@@ -466,6 +470,7 @@ export const updateConferenceSettingsFn = createServerFn({ method: "POST" })
 				data.defaultPresentationMin,
 			),
 			setSetting("PLANNER_AUTOPLAN_ENABLED", data.autoplanEnabled),
+			setSetting("PLANNER_AUTHOR_BUFFER_MIN", data.authorBufferMin),
 		]);
 		return { success: true };
 	});

@@ -6,7 +6,8 @@ const ISSUE_LABELS: Record<string, string> = {
 	SLOT_DURATION_OVERFLOW: "Presentations exceed session duration",
 	ROOM_DOUBLE_BOOKED: "Room double-booked",
 	CHAIR_OVERLAP: "Chair in overlapping sessions",
-	AUTHOR_OVERLAP: "Author in overlapping sessions",
+	AUTHOR_TIME_CLASH: "Co-author double-booked",
+	PRESENTER_PARALLEL_SESSION: "Presenter in parallel sessions",
 	NON_ACCEPTED_SUBMISSION: "Non-accepted submission in program",
 	SESSION_OUT_OF_BOUNDS: "Session outside conference dates",
 };

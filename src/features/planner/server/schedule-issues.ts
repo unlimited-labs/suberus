@@ -2,7 +2,8 @@
 
 export type IssueKind =
 	| "CHAIR_OVERLAP"
-	| "AUTHOR_OVERLAP"
+	| "AUTHOR_TIME_CLASH"
+	| "PRESENTER_PARALLEL_SESSION"
 	| "ROOM_DOUBLE_BOOKED"
 	| "SLOT_DURATION_OVERFLOW"
 	| "SESSION_WITHOUT_CHAIR"
@@ -23,13 +24,13 @@ export function overlaps(
 	return a.startAt < b.endAt && a.endAt > b.startAt;
 }
 
-interface NamedPerson {
+export interface NamedPerson {
 	firstName: string | null;
 	lastName: string | null;
 	email: string;
 }
 
-function personName(p: NamedPerson | null | undefined): string {
+export function personName(p: NamedPerson | null | undefined): string {
 	if (!p) return "Unknown";
 	const first = (p.firstName ?? "").trim();
 	const last = (p.lastName ?? "").trim();
@@ -58,25 +59,16 @@ export interface OverlapSession {
 }
 
 type ChairSet = Set<string>;
-type AuthorMap = Map<string, NamedPerson>;
 
 function buildChairSet(s: OverlapSession): ChairSet {
 	return new Set(s.chairs.map((c) => c.userId));
 }
 
-function authorKey(au: { userId: string | null; email: string }): string {
+export function authorKey(au: {
+	userId: string | null;
+	email: string;
+}): string {
 	return au.userId ?? `email:${au.email}`;
-}
-
-function buildAuthorMap(s: OverlapSession): AuthorMap {
-	const m: AuthorMap = new Map();
-	for (const p of s.presentations) {
-		for (const au of p.submission.authors) {
-			const key = authorKey(au);
-			if (!m.has(key)) m.set(key, au);
-		}
-	}
-	return m;
 }
 
 export function detectChairOverlap(
@@ -112,36 +104,11 @@ export function detectRoomDoubleBooking(
 	};
 }
 
-export function detectAuthorOverlap(
-	a: OverlapSession,
-	b: OverlapSession,
-	authorsOfA: AuthorMap,
-): ScheduleIssue | null {
-	const clashes: string[] = [];
-	const seen = new Set<string>();
-	for (const p of b.presentations) {
-		for (const au of p.submission.authors) {
-			const key = authorKey(au);
-			if (authorsOfA.has(key) && !seen.has(key)) {
-				seen.add(key);
-				clashes.push(personName(au));
-			}
-		}
-	}
-	if (clashes.length === 0) return null;
-	return {
-		kind: "AUTHOR_OVERLAP",
-		message: `${clashes.join(", ")} presenting in overlapping sessions "${a.title}" and "${b.title}"`,
-		sessionIds: [a.id, b.id],
-	};
-}
-
-/** All chair / room / author conflicts across overlapping session pairs. */
+/** Chair / room conflicts across overlapping session pairs (author clashes: author-conflicts.ts). */
 export function findPairwiseOverlapIssues(
 	sessions: OverlapSession[],
 ): ScheduleIssue[] {
 	const chairSets = sessions.map(buildChairSet);
-	const authorMaps = sessions.map(buildAuthorMap);
 
 	const issues: ScheduleIssue[] = [];
 	for (let i = 0; i < sessions.length; i++) {
@@ -152,7 +119,6 @@ export function findPairwiseOverlapIssues(
 			const found = [
 				detectChairOverlap(a, b, chairSets[i]),
 				detectRoomDoubleBooking(a, b),
-				detectAuthorOverlap(a, b, authorMaps[i]),
 			];
 			for (const issue of found) {
 				if (issue) issues.push(issue);

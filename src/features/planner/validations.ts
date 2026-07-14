@@ -120,6 +120,11 @@ export const plannerSettingsSchema = z.object({
 		.min(5, "At least 5 minutes")
 		.max(480, "At most 480 minutes"),
 	autoplanEnabled: z.boolean(),
+	authorBufferMin: z
+		.number()
+		.int()
+		.min(0, "At least 0 minutes")
+		.max(240, "At most 240 minutes"),
 });
 
 export type SessionFormValues = z.infer<typeof sessionFormSchema>;
