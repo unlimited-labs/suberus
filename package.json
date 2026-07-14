@@ -27,7 +27,8 @@
     "seed:diff-demo": "dotenv -e .env -- tsx scripts/seed-diff-demo.ts",
     "vapid:generate": "tsx scripts/generate-vapid-keys.ts",
     "rand": "openssl rand -base64 32",
-    "update:shadcn:win": "Get-ChildItem -Path src/components/ui/ -Filter *.tsx | ForEach-Object { $baseName = [System.IO.Path]::GetFileNameWithoutExtension($_.Name); pnpx shadcn@latest add -y -o $baseName; }"
+    "update:shadcn:win": "Get-ChildItem -Path src/components/ui/ -Filter *.tsx | ForEach-Object { $baseName = [System.IO.Path]::GetFileNameWithoutExtension($_.Name); pnpx shadcn@latest add -y -o $baseName; }",
+    "doctor": "npx react-doctor@latest"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1075.0",
