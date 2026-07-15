@@ -11,6 +11,7 @@ import type {
 } from "@/features/planner/server/schedule";
 import { formatClockTime } from "@/features/planner/tz-datetime";
 import { cn } from "@/shared/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import { useProgramInteraction } from "./program-interaction";
 import { Highlight } from "./themes/shared";
 
@@ -270,13 +271,28 @@ function PresentationRow({
 							aria-label="Favorited"
 						/>
 					)}
-					<span>
-						<Highlight
-							text={p.submissionTitle}
-							query={query}
-							markClassName={MARK}
-						/>
-					</span>
+					{p.cancelled ? (
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<span className="text-[var(--prog-faint)] line-through decoration-2">
+									<Highlight
+										text={p.submissionTitle}
+										query={query}
+										markClassName={MARK}
+									/>
+								</span>
+							</TooltipTrigger>
+							<TooltipContent>Cancelled</TooltipContent>
+						</Tooltip>
+					) : (
+						<span>
+							<Highlight
+								text={p.submissionTitle}
+								query={query}
+								markClassName={MARK}
+							/>
+						</span>
+					)}
 				</p>
 				<RowAuthors
 					authors={p.authors}

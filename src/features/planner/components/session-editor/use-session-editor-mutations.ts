@@ -2,6 +2,7 @@ import { toast } from "sonner";
 import {
 	deletePresentationFn,
 	reorderPresentationsFn,
+	setPresentationCancelledFn,
 	updatePresentationDurationFn,
 } from "@/features/planner/api/presentations";
 import {
@@ -50,6 +51,11 @@ export function useSessionEditorMutations(sessionId: string) {
 			run(
 				() => updatePresentationDurationFn({ data: { id, durationMin } }),
 				"Failed to update duration",
+			),
+		setCancelled: (id: string, cancelled: boolean) =>
+			run(
+				() => setPresentationCancelledFn({ data: { id, cancelled } }),
+				"Failed to update",
 			),
 		reorderPresentations: (orderedIds: string[]) =>
 			run(

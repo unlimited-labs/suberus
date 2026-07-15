@@ -1,4 +1,10 @@
-import { IconChevronDown, IconChevronUp, IconX } from "@tabler/icons-react";
+import {
+	IconBan,
+	IconChevronDown,
+	IconChevronUp,
+	IconX,
+} from "@tabler/icons-react";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
@@ -71,7 +77,12 @@ export function PresentationsSection() {
 								</Button>
 							</div>
 							<div className="min-w-0 flex-1">
-								<p className="line-clamp-2 text-sm leading-snug">
+								<p
+									className={cn(
+										"line-clamp-2 text-sm leading-snug",
+										p.cancelled && "text-muted-foreground line-through",
+									)}
+								>
 									{p.submissionTitle}
 								</p>
 								<p className="mt-0.5 truncate text-xs text-muted-foreground">
@@ -100,6 +111,21 @@ export function PresentationsSection() {
 								/>
 								<span className="text-[10px] text-muted-foreground">min</span>
 							</div>
+							<Button
+								variant="ghost"
+								size="icon-sm"
+								data-testid={`presentation-cancel-${p.id}`}
+								aria-pressed={p.cancelled}
+								aria-label={
+									p.cancelled
+										? `Restore ${p.submissionTitle}`
+										: `Cancel ${p.submissionTitle}`
+								}
+								className={cn(p.cancelled && "text-destructive")}
+								onClick={() => mutations.setCancelled(p.id, !p.cancelled)}
+							>
+								<IconBan size={12} />
+							</Button>
 							<Button
 								variant="ghost"
 								size="icon-sm"

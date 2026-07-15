@@ -109,6 +109,7 @@ export interface PublicProgramSession {
 		id: string;
 		order: number;
 		durationMin: number;
+		cancelled: boolean;
 		submissionTitle: string;
 		authors: Array<{ firstName: string; lastName: string; orderIndex: number }>;
 	}>;
@@ -193,6 +194,7 @@ export async function getPublicProgram(
 				id: p.id,
 				order: p.order,
 				durationMin: p.durationMin,
+				cancelled: p.cancelled,
 				submissionTitle: p.submission.title,
 				authors: p.submission.authors,
 			})),

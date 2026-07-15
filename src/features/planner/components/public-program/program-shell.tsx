@@ -2,6 +2,7 @@ import { IconSearch, IconX } from "@tabler/icons-react";
 import type { CSSProperties } from "react";
 import { cn } from "@/shared/lib/utils";
 import { Input } from "@/shared/ui/input";
+import { TooltipProvider } from "@/shared/ui/tooltip";
 import { GridBody } from "./layouts/grid-body";
 import { ListBody } from "./layouts/list-body";
 import { dayLabelParts, formatLongDate } from "./program-formatting";
@@ -51,38 +52,40 @@ export function ProgramShell({
 				: "mx-auto max-w-[var(--prog-max-width)] px-5 py-8 sm:px-8";
 
 	return (
-		<div
-			data-program-theme={themeId}
-			data-testid={`program-theme-${themeId}`}
-			className="h-screen overflow-y-auto bg-background text-foreground font-[var(--prog-font-body)] selection:bg-primary selection:text-primary-foreground"
-		>
-			{framed ? (
-				<FramedHeader themeId={themeId} settings={settings} />
-			) : (
-				<MinimalHeader settings={settings} />
-			)}
-
-			<ProgramStickyBar
-				framed={framed}
-				days={days}
-				activeDay={activeDay}
-				setActiveDay={setActiveDay}
-				search={search}
-				setSearch={setSearch}
-			/>
-
-			<main className={mainClass}>
-				{activeItems.length === 0 ? (
-					<EmptyState framed={framed} searching={!!q} />
-				) : layout === "grid" ? (
-					<GridBody schedule={schedule} />
+		<TooltipProvider>
+			<div
+				data-program-theme={themeId}
+				data-testid={`program-theme-${themeId}`}
+				className="h-screen overflow-y-auto bg-background text-foreground font-[var(--prog-font-body)] selection:bg-primary selection:text-primary-foreground"
+			>
+				{framed ? (
+					<FramedHeader themeId={themeId} settings={settings} />
 				) : (
-					<ListBody schedule={schedule} framed={framed} />
+					<MinimalHeader settings={settings} />
 				)}
-			</main>
 
-			{framed && <FramedFooter themeId={themeId} settings={settings} />}
-		</div>
+				<ProgramStickyBar
+					framed={framed}
+					days={days}
+					activeDay={activeDay}
+					setActiveDay={setActiveDay}
+					search={search}
+					setSearch={setSearch}
+				/>
+
+				<main className={mainClass}>
+					{activeItems.length === 0 ? (
+						<EmptyState framed={framed} searching={!!q} />
+					) : layout === "grid" ? (
+						<GridBody schedule={schedule} />
+					) : (
+						<ListBody schedule={schedule} framed={framed} />
+					)}
+				</main>
+
+				{framed && <FramedFooter themeId={themeId} settings={settings} />}
+			</div>
+		</TooltipProvider>
 	);
 }
 
