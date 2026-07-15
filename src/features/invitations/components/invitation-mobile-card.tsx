@@ -1,5 +1,8 @@
 import { IconMailForward, IconX } from "@tabler/icons-react";
-import { invitationStatusConfig } from "@/features/invitations/labels";
+import {
+	invitationStatusConfig,
+	isInvitationActionable,
+} from "@/features/invitations/labels";
 import type { AdminInvitation } from "@/features/invitations/server/invitations";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { roleLabels } from "@/shared/lib/labels/user-role";
@@ -41,7 +44,7 @@ export function InvitationMobileCard({
 						<Badge variant={status.variant}>{status.label}</Badge>
 					</div>
 				</div>
-				{invitation.status === "PENDING" && (
+				{isInvitationActionable(invitation.status) && (
 					<div className="mt-2 flex gap-2">
 						<Button
 							variant="outline"

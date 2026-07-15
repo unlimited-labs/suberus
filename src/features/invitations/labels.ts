@@ -1,3 +1,11 @@
+import type { InvitationStatus } from "@/generated/prisma/enums";
+
+/** EXPIRED is actionable because resend revives it. UI affordance only — the
+ * server guards these actions itself. */
+export function isInvitationActionable(status: InvitationStatus): boolean {
+	return status === "PENDING" || status === "EXPIRED";
+}
+
 export const invitationStatusConfig: Record<
 	string,
 	{

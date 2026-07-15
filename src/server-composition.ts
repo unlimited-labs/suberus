@@ -1,4 +1,3 @@
-import { registerInvitationEventHandlers } from "@/features/invitations/server/event-handlers";
 import { registerSettingsEmailFooter } from "@/features/settings/server/email-footer";
 import { registerSubmissionEventHandlers } from "@/features/submissions/server/event-handlers";
 
@@ -14,6 +13,5 @@ export function registerServerComposition(): void {
 	if (registered) return;
 	registered = true;
 	registerSubmissionEventHandlers();
-	registerInvitationEventHandlers();
 	registerSettingsEmailFooter();
 }

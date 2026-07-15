@@ -32,18 +32,32 @@ set on the **[Invitations configuration](/settings/invitations/)** tab.
 
 </Steps>
 
-## Managing pending invitations
+## Managing invitations
 
-The list shows each invitation and its status. For each you can:
+The list shows each invitation and its status. **Pending** and **Expired**
+invitations can still be acted on; **Used** and **Cancelled** ones are final and
+offer no actions.
 
 | Action | What it does |
 |---|---|
-| **Resend** | Sends the invitation email again (e.g. if it expired or was missed). |
+| **Resend** | Issues a **new link** and emails it again (e.g. if it expired or was missed). The previous link stops working immediately, and an expired invitation becomes valid again for the configured window. |
 | **Cancel** | Invalidates the invitation so its link no longer works. |
+
+<Aside type="note" title="What the invited person gets">
+Their account is created with the role you chose — **as soon as they register**,
+without waiting for them to confirm their email address. They still receive the
+usual confirmation email, which stays required for things like creating a
+submission.
+</Aside>
 
 <Aside type="tip">
 Invited users can register through their link even after **registration is closed**
 or the **registration deadline** has passed — see **[Conference](/settings/conference/)**.
+</Aside>
+
+<Aside type="caution">
+You cannot invite an address that **already has an account**. Change an existing
+person's role in **[Users](/managing/users/)** instead.
 </Aside>
 
 ## Related

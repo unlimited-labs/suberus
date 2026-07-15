@@ -103,10 +103,11 @@ export function RegisterStep1({
 
 			{invitation ? (
 				<Field>
-					<FieldLabel>E-mail *</FieldLabel>
+					<FieldLabel htmlFor="invited-email">E-mail *</FieldLabel>
 					<div className="relative">
 						<IconMail className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
 						<Input
+							id="invited-email"
 							type="email"
 							value={invitation.email}
 							readOnly

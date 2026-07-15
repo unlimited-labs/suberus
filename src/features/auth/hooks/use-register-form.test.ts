@@ -30,7 +30,7 @@ const mockSignUpEmail = vi.mocked(signUp.email);
 
 function effects(): RegisterEffects {
 	return {
-		consumeInvitation: vi.fn().mockResolvedValue(undefined),
+		consumeInvitation: vi.fn().mockResolvedValue({ success: true }),
 		saveSurveyAnswers: vi.fn().mockResolvedValue(undefined),
 		acceptTos: vi.fn().mockResolvedValue(undefined),
 		becomeExhibitor: vi.fn().mockResolvedValue(undefined),

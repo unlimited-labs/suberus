@@ -80,9 +80,10 @@ export class RegisterPage {
 		await this.page.goto("/register")
 	}
 
-	// Step 1: Author Information
+	// Step 1: Author Information. Omit `email` for invited flows — the field is
+	// readOnly and pre-filled from the invitation.
 	async fillStep1(data: {
-		email: string
+		email?: string
 		password: string
 		confirmPassword: string
 		firstName: string
@@ -90,7 +91,7 @@ export class RegisterPage {
 		affiliation: string
 		title?: string
 	}) {
-		await this.page.getByLabel("E-mail *").fill(data.email)
+		if (data.email) await this.page.getByLabel("E-mail *").fill(data.email)
 		await this.page.getByLabel("Password *", { exact: true }).fill(data.password)
 		await this.page.getByLabel("Confirm Password *").fill(data.confirmPassword)
 		await this.page.getByLabel("First name *").fill(data.firstName)
