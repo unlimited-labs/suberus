@@ -8,7 +8,8 @@ from pathlib import Path
 
 import pytest
 
-import main
+from core.libreoffice import soffice_to_pdf
+from core.security import reject_zip_bomb
 
 HERE = Path(__file__).parent
 DOCS = HERE / "test_fixtures" / "docs"
@@ -25,7 +26,7 @@ def test_soffice_to_pdf_produces_pdf():
         work = Path(tmp)
         local = work / docx.name
         shutil.copyfile(docx, local)
-        pdf = main._soffice_to_pdf(local, work / "out")
+        pdf = soffice_to_pdf(local, work / "out")
         assert pdf.exists()
         assert pdf.read_bytes()[:5] == b"%PDF-"
 
@@ -34,11 +35,11 @@ def test_reject_zip_bomb():
     from fastapi import HTTPException
 
     # A real DOCX passes.
-    main.reject_zip_bomb((DOCS / "text-formatting.docx").read_bytes())
+    reject_zip_bomb((DOCS / "text-formatting.docx").read_bytes())
 
     # Non-zip input is refused (also covers "not a DOCX").
     with pytest.raises(HTTPException) as exc:
-        main.reject_zip_bomb(b"not a zip at all")
+        reject_zip_bomb(b"not a zip at all")
     assert exc.value.status_code == 400
 
     # A tiny highly-compressible zip blows the inflation-ratio guard.
@@ -49,5 +50,5 @@ def test_reject_zip_bomb():
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr("bomb.txt", b"0" * (5 * 1024 * 1024))
     with pytest.raises(HTTPException) as exc:
-        main.reject_zip_bomb(buf.getvalue())
+        reject_zip_bomb(buf.getvalue())
     assert exc.value.status_code == 413
