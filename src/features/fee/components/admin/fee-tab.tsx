@@ -33,6 +33,10 @@ interface FeeType {
 	amount: number;
 }
 
+function parseAmount(value: string) {
+	return value.trim() === "" ? 0 : Number.parseFloat(value);
+}
+
 interface FeeTabProps {
 	initialEnabled: boolean;
 	initialInstructions: string;
@@ -111,7 +115,7 @@ export function FeeTab({
 
 	const handleAdd = () => {
 		const name = newName.trim();
-		const amount = Number.parseFloat(newAmount);
+		const amount = parseAmount(newAmount);
 		if (!name || Number.isNaN(amount) || amount < 0) {
 			toast.error("Name and valid amount required");
 			return;
@@ -132,7 +136,7 @@ export function FeeTab({
 
 	const handleSaveEdit = () => {
 		const name = editName.trim();
-		const amount = Number.parseFloat(editAmount);
+		const amount = parseAmount(editAmount);
 		if (!name || Number.isNaN(amount) || amount < 0) {
 			toast.error("Name and valid amount required");
 			return;
