@@ -159,6 +159,16 @@ async function checkSubmissionWindow(userId: string): Promise<string | null> {
 	return null;
 }
 
+/** Server-side twin of SubmissionEmailGate, which only guards the create view. */
+async function checkEmailVerified(userId: string): Promise<string | null> {
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+		select: { emailVerified: true },
+	});
+	if (user?.emailVerified) return null;
+	return "You need to verify your email address before creating submissions";
+}
+
 /** Validate a non-draft payload against the dynamic schema; failure result or null. */
 async function validateSubmissionInput(
 	data: CreateSubmissionInput,
@@ -232,6 +242,9 @@ export const createSubmission = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.validator(parseCreateSubmissionFormData)
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
+		const unverified = await checkEmailVerified(context.user.id);
+		if (unverified) return { success: false, error: unverified };
+
 		const windowError = await checkSubmissionWindow(context.user.id);
 		if (windowError) return { success: false, error: windowError };
 
@@ -741,6 +754,9 @@ export const updateDraftSubmissionFn = createServerFn({ method: "POST" })
 		}),
 	)
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
+		const unverified = await checkEmailVerified(context.user.id);
+		if (unverified) return { success: false, error: unverified };
+
 		const activeTypes = await getActiveSubmissionTypes();
 		if (!activeTypes.some((t) => t.type === data.type)) {
 			return {
@@ -811,6 +827,9 @@ export const submitDraftFn = createServerFn({ method: "POST" })
 			data,
 			context,
 		}): Promise<{ success: boolean; error?: string }> => {
+			const unverified = await checkEmailVerified(context.user.id);
+			if (unverified) return { success: false, error: unverified };
+
 			try {
 				return await submitDraft(data.submissionId, context.user.id);
 			} catch (err) {
