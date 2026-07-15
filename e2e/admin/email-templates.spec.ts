@@ -285,4 +285,36 @@ test.describe("Admin Settings - Placeholder Tooltips & Test Email", () => {
 		expect(emailDetails!.Text).toContain(`${ADMIN_USER.firstName} ${ADMIN_USER.lastName}`);
 		expect(emailDetails!.Text).toContain("Example Submission Title");
 	});
+
+	test("appends the configured footer to a delivered email", async ({ page }) => {
+		// Arrange
+		const footerText = "Best regards, the {{conferenceName}} Committee";
+		await setAppSetting(
+			"EMAIL_FOOTER_TEXT" as Parameters<typeof setAppSetting>[0],
+			footerText,
+		);
+		await clearMailpitForAddress(ADMIN_USER.email);
+
+		try {
+			await openTemplateEditor(page, "Sent when a new submission is created");
+			const dialog = page.getByRole("dialog");
+			await expect(dialog).toBeVisible();
+
+			// Act
+			await dialog.getByRole("button", { name: "Send Test" }).click();
+			await expect(page.getByText(/test email sent/i)).toBeVisible({ timeout: 15000 });
+
+			// Assert - footer reached the delivered mail, conferenceName interpolated
+			const email = await waitForEmail(ADMIN_USER.email, "[TEST]", 10000);
+			expect(email).not.toBeNull();
+			const emailDetails = await getMailpitMessage(email!.ID);
+			expect(emailDetails!.Text).toContain("Best regards, the");
+			expect(emailDetails!.Text).not.toContain("{{conferenceName}}");
+		} finally {
+			await setAppSetting(
+				"EMAIL_FOOTER_TEXT" as Parameters<typeof setAppSetting>[0],
+				"",
+			);
+		}
+	});
 });

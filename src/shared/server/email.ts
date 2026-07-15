@@ -5,18 +5,20 @@ import type { EmailEventType } from "@/generated/prisma/enums";
 import { logger } from "@/logger.ts";
 import { prisma } from "@/shared/server/db.server";
 
-/** Resolves the configured email footer (or null). Injected at startup by the
- * settings slice via the register-composition plugin, so this transport imports
- * no feature. */
-type EmailFooterProvider = () => Promise<string | null>;
-let footerProvider: EmailFooterProvider | null = null;
-
-export function setEmailFooterProvider(fn: EmailFooterProvider): void {
-	footerProvider = fn;
+/** Reads a string app-setting straight from the shared KV table, treating unset
+ * and empty as null. Deliberately stateless: the bundler emits more than one
+ * copy of this module, so any module-level provider registered at startup is
+ * null in the other copy (which is what actually sends most mail). */
+async function emailSetting(key: string): Promise<string | null> {
+	const row = await prisma.appSetting.findUnique({ where: { key } });
+	return typeof row?.value === "string" ? row.value || null : null;
 }
 
-function resolveEmailFooter(): Promise<string | null> {
-	return footerProvider ? footerProvider() : Promise.resolve(null);
+async function resolveEmailFooter(): Promise<string | null> {
+	const footer = await emailSetting("EMAIL_FOOTER_TEXT");
+	if (!footer) return null;
+	const conferenceName = await emailSetting("CONFERENCE_NAME");
+	return footer.replace(/\{\{conferenceName\}\}/g, conferenceName ?? "");
 }
 
 function escapeHtml(str: string): string {
