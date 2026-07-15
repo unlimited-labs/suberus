@@ -5,7 +5,7 @@ import {
 	createSubmissionWithReview,
 } from "../helpers/test-db";
 import { SubmissionStatus } from "../../src/generated/prisma/enums";
-import { clearMailpitForAddress, waitForEmail, getMailpitMessage } from "../helpers/mailpit";
+import { clearMailpitForAddress, waitForEmail, getMailpitMessage, mailpit } from "../helpers/mailpit";
 import { TEST_USER, ADMIN_USER, REVIEWER_USER, CONTACT_EMAIL } from "../helpers/test-users";
 import { loginAs } from "../helpers/auth";
 import { runSubmissionAction } from "../helpers/submission-actions";
@@ -295,6 +295,10 @@ test.describe("Admin Notification Emails", () => {
 		expect(emailDetails!.Text).toContain(submissionTitle);
 		expect(emailDetails!.Text).toContain("Test User");
 		expect(emailDetails!.Text).toMatch(/\/admin\/submissions\/[a-f0-9-]+/);
+
+		// System mail is sent from a no-reply address; CONTACT_EMAIL steers replies.
+		const headers = await mailpit.getMessageHeaders(email!.ID);
+		expect(headers["Reply-To"]?.[0]).toBe(CONTACT_EMAIL);
 	});
 
 	test("admin NOT notified on draft save", async ({ page, testRun }) => {

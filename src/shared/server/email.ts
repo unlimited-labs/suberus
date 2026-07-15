@@ -14,6 +14,11 @@ async function emailSetting(key: string): Promise<string | null> {
 	return typeof row?.value === "string" ? row.value || null : null;
 }
 
+/** `from` is a no-reply relay, so replies need steering to a real mailbox. */
+function resolveReplyTo(): Promise<string | null> {
+	return emailSetting("CONTACT_EMAIL");
+}
+
 async function resolveEmailFooter(): Promise<string | null> {
 	const footer = await emailSetting("EMAIL_FOOTER_TEXT");
 	if (!footer) return null;
@@ -93,12 +98,13 @@ export async function sendRawEmail(mail: RawEmail): Promise<void> {
 	const headers = e2eHeaders(mail.to);
 	const text =
 		mail.text ?? (mail.html ? textAlternative(mail.html) : undefined);
+	const replyTo = mail.replyTo || (await resolveReplyTo());
 	await transporter.sendMail({
 		from: env.SMTP_FROM_EMAIL,
 		to: mail.to,
 		cc: mail.cc?.length ? mail.cc : undefined,
 		bcc: mail.bcc?.length ? mail.bcc : undefined,
-		...(mail.replyTo ? { replyTo: mail.replyTo } : {}),
+		...(replyTo ? { replyTo } : {}),
 		subject: mail.subject,
 		...(mail.html !== undefined ? { html: mail.html } : {}),
 		...(text !== undefined ? { text } : {}),
@@ -142,12 +148,15 @@ export async function sendEmail(
 			}
 		}
 
+		const replyTo = await resolveReplyTo();
+
 		await sendWithRetry(() =>
 			transporter.sendMail({
 				from: env.SMTP_FROM_EMAIL,
 				to,
 				cc: template.ccEmails.length > 0 ? template.ccEmails : undefined,
 				bcc: template.bccEmails.length > 0 ? template.bccEmails : undefined,
+				...(replyTo ? { replyTo } : {}),
 				subject,
 				...(template.isHtml
 					? { html: body, text: textAlternative(body) }
@@ -227,9 +236,12 @@ export async function sendTestEmail(
 		}
 	}
 
+	const replyTo = await resolveReplyTo();
+
 	const mailOptions = {
 		from: env.SMTP_FROM_EMAIL,
 		to,
+		...(replyTo ? { replyTo } : {}),
 		subject: resolvedSubject,
 		...(isHtml
 			? { html: resolvedBody, text: textAlternative(resolvedBody) }
