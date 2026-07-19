@@ -166,7 +166,7 @@ async function checkEmailVerified(userId: string): Promise<string | null> {
 		select: { emailVerified: true },
 	});
 	if (user?.emailVerified) return null;
-	return "You need to verify your email address before creating submissions";
+	return "You need to verify your email address before working on submissions";
 }
 
 /** Validate a non-draft payload against the dynamic schema; failure result or null. */
@@ -561,6 +561,25 @@ export const uploadSubmissionFile = createServerFn({ method: "POST" })
 			}),
 	)
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
+		const unverified = await checkEmailVerified(context.user.id);
+		if (unverified) return { success: false, error: unverified };
+
+		// Not in attachFileToVersion: the revise paths share it and legitimately
+		// attach to non-DRAFT submissions.
+		const submission = await prisma.submission.findFirst({
+			where: { id: data.submissionId, userId: context.user.id },
+			select: { status: true },
+		});
+		if (!submission) {
+			return { success: false, error: "Submission not found" };
+		}
+		if (submission.status !== "DRAFT") {
+			return {
+				success: false,
+				error: "Can only edit submissions in DRAFT status",
+			};
+		}
+
 		return attachFileToVersion({
 			submissionId: data.submissionId,
 			versionNumber: data.versionNumber,
