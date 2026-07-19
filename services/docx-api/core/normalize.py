@@ -38,6 +38,7 @@ def normalize(docx_path: Path, workdir: Path) -> tuple[str, dict[str, bytes], st
     html = mathtype.apply_sentinels(html, equations)
 
     figures: dict[str, bytes] = {}
+    workdir_root = workdir.resolve()
 
     def replace(match: re.Match) -> str:
         ref = match.group(1)
@@ -46,7 +47,11 @@ def normalize(docx_path: Path, workdir: Path) -> tuple[str, dict[str, bytes], st
         src = (workdir / ref).resolve()
         if not src.is_file():
             src = (html_path.parent / ref).resolve()
-        if not src.is_file():
+        # `ref` comes from pandoc's output, not from us. Today pandoc resolves images
+        # strictly inside the archive, so an absolute/`../` ref never reaches here — but
+        # to_png_bytes falls back to raw read_bytes(), so without containment a future
+        # pandoc would silently turn a crafted DOCX into an arbitrary host-file read.
+        if not src.is_file() or not src.is_relative_to(workdir_root):
             return match.group(0)
         png = to_png_bytes(src, workdir)
         sha = hashlib.sha256(png).hexdigest()

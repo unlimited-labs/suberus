@@ -20,8 +20,8 @@ router = APIRouter(prefix="/v1", dependencies=[Depends(require_token)])
 
 
 @router.post("/normalize")
-async def normalize_endpoint(file: UploadFile):
-    contents = await file.read()
+def normalize_endpoint(file: UploadFile):
+    contents = file.file.read()
     if not contents:
         raise HTTPException(400, "No file uploaded")
     if len(contents) > config.MAX_NORMALIZE_BYTES:

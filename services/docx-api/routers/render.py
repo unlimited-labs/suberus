@@ -14,8 +14,8 @@ router = APIRouter(prefix="/v1", dependencies=[Depends(require_token)])
 
 
 @router.post("/render-pdf")
-async def render_pdf(file: UploadFile):
-    contents = await file.read()
+def render_pdf(file: UploadFile):
+    contents = file.file.read()
     if not contents:
         raise HTTPException(400, "No file uploaded")
     if len(contents) > MAX_NORMALIZE_BYTES:

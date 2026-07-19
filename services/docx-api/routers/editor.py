@@ -16,14 +16,14 @@ router = APIRouter(prefix="/v1", dependencies=[Depends(require_token)])
 
 
 @router.post("/ast")
-async def ast(file: UploadFile):
+def ast(file: UploadFile):
     """Convert a DOCX to the Pandoc JSON AST (`docx+styles`) for structured mapping —
     editor slots / Typst emission walk this tree. Word paragraph styles survive as
     Div `custom-style` attributes (the semantic role: title/abstract/figure-caption).
     Media is NOT extracted; the AST carries figure paths — pair with /normalize for
     bytes. Native OMML equations become `Math` nodes; MathType OLE is not pre-converted
     here (that path is HTML-sentinel specific)."""
-    contents = await file.read()
+    contents = file.file.read()
     if not contents:
         raise HTTPException(400, "No file uploaded")
     if len(contents) > MAX_NORMALIZE_BYTES:
