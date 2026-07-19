@@ -1,6 +1,7 @@
 import { test, expect, ADMIN_USER, TEST_USER, UNVERIFIED_USER, ADMIN_VERIFY_TEST_USER, EDITOR_USER } from "./fixtures"
 import { loginAs } from "../helpers/auth"
 import { SubmissionStatus } from "../../src/generated/prisma/enums"
+import { randomUUID } from "crypto"
 
 // Desktop tests - skip on mobile since mobile shows cards instead of table
 // Note: Authentication is handled via storageState in playwright.config.ts
@@ -759,6 +760,61 @@ test.describe("Admin Users Management", () => {
 			// Assert
 			await expect(userDetailPage.emailVerified).toBeVisible({ timeout: 5000 })
 			await expect(userDetailPage.verifyEmailButton).not.toBeVisible()
+		})
+
+		test("verifying email links the user to co-author records", async ({
+			adminUsersPage,
+			userDetailPage,
+		}) => {
+			// Arrange — a submission listing the user by email, not yet linked
+			const { createSubmission, deleteSubmission, getPrisma } = await import(
+				"../helpers/test-db"
+			)
+			const db = getPrisma()
+			await db.user.updateMany({
+				where: { email: ADMIN_VERIFY_TEST_USER.email },
+				data: { emailVerified: false },
+			})
+			const submission = await createSubmission({
+				testRunId: `e2e_${randomUUID().slice(0, 8)}`,
+				title: "CoAuthor Link On Verify",
+				extraAuthors: [
+					{
+						firstName: ADMIN_VERIFY_TEST_USER.firstName,
+						lastName: ADMIN_VERIFY_TEST_USER.lastName,
+						email: ADMIN_VERIFY_TEST_USER.email,
+					},
+				],
+			})
+
+			try {
+				await adminUsersPage.goto()
+				await adminUsersPage.waitForLoad()
+				await adminUsersPage.openUserDetail(ADMIN_VERIFY_TEST_USER)
+
+				// Act
+				await userDetailPage.verifyEmailButton.click()
+				await expect(userDetailPage.emailVerified).toBeVisible({ timeout: 5000 })
+
+				// Assert — the co-author row now points at the account
+				await expect
+					.poll(
+						async () =>
+							(
+								await db.submissionAuthor.findFirst({
+									where: {
+										submissionId: submission.id,
+										email: ADMIN_VERIFY_TEST_USER.email,
+									},
+									select: { userId: true },
+								})
+							)?.userId ?? null,
+						{ timeout: 5000 },
+					)
+					.not.toBeNull()
+			} finally {
+				await deleteSubmission(submission.id).catch(() => {})
+			}
 		})
 	})
 

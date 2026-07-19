@@ -37,17 +37,6 @@ function normalizeName(firstName: string, lastName: string): string {
 		.replace(/\s+/g, " ");
 }
 
-/** Link co-author records to a user account by email (case-insensitive, only where userId is null) */
-export async function linkCoAuthorsByEmail(
-	email: string,
-	userId: string,
-): Promise<void> {
-	await prisma.submissionAuthor.updateMany({
-		where: { email: { equals: email, mode: "insensitive" }, userId: null },
-		data: { userId },
-	});
-}
-
 /**
  * Replace a submission's canonical authors (delete + recreate), repoint
  * `presenterId`, and link co-authors to verified user accounts. Shared by draft edit

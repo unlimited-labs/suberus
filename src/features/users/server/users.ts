@@ -13,7 +13,7 @@ import type {
 import { logger } from "@/logger.ts";
 import { upsertAffiliation } from "@/shared/server/affiliations";
 import { prisma } from "@/shared/server/db.server";
-import { emitDomainEvent } from "@/shared/server/events";
+import { linkCoAuthorsByEmail } from "@/shared/server/link-coauthors";
 import { deleteFile } from "@/shared/server/storage";
 import {
 	extractFeePayment,
@@ -743,7 +743,7 @@ export async function verifyUserEmail(
 		select: { email: true },
 	});
 
-	await emitDomainEvent("userEmailVerified", { userId, email: user.email });
+	await linkCoAuthorsByEmail(user.email, userId);
 
 	await logActivity({
 		type: "USER_EMAIL_VERIFIED",

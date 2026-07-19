@@ -11,7 +11,7 @@ import { getSetting } from "@/features/settings/server/settings";
 import { PrismaClient, UserRole } from "@/generated/prisma/client";
 import { logger } from "@/logger.ts";
 import { sendEmail } from "@/shared/server/email";
-import { emitDomainEvent } from "@/shared/server/events";
+import { linkCoAuthorsByEmail } from "@/shared/server/link-coauthors";
 
 import "dotenv/config";
 
@@ -212,10 +212,7 @@ export const auth = betterAuth({
 			update: {
 				after: async (user) => {
 					if (!user.emailVerified) return;
-					await emitDomainEvent("userEmailVerified", {
-						userId: user.id,
-						email: user.email,
-					});
+					await linkCoAuthorsByEmail(user.email, user.id);
 					// Log self-service email verification (idempotent — checks if already logged)
 					const alreadyLogged = await prisma.activityLog.findFirst({
 						where: { userId: user.id, type: "USER_EMAIL_VERIFIED" },
