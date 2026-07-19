@@ -126,8 +126,6 @@ test.describe("Fee Settings", () => {
 
 		// Cleanup
 		await page.getByRole("button", { name: "Delete Free Pass" }).click();
-		await expect(page.getByText("Fee types saved")).toBeVisible({
-			timeout: 10000,
-		});
+		await expect(page.getByText("Free Pass")).not.toBeVisible();
 	});
 });
