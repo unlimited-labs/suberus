@@ -44,6 +44,7 @@ const eventTypeLabels: Record<EmailEventType, string> = {
 	REVISION_RECEIVED: "Revision Received",
 	DEADLINE_APPROACHING: "Deadline Approaching",
 	ACCOUNT_CREATED: "Account Created",
+	ACCOUNT_CREATED_BY_ADMIN: "Account Created by Organizer",
 	PASSWORD_RESET: "Password Reset",
 	EMAIL_VERIFICATION: "Email Verification",
 	INVITATION: "Invitation",

@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "EmailEventType" ADD VALUE 'ACCOUNT_CREATED_BY_ADMIN';

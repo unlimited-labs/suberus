@@ -46,6 +46,12 @@ export const adminUserEditSchema = personalInfoSchema.extend(
 	contactInfoSchema.shape,
 );
 
+export const adminUserCreateSchema = personalInfoSchema
+	.omit({ orcid: true })
+	.extend(contactInfoSchema.shape)
+	.extend({ surveyAnswers: z.record(z.string(), z.string()) });
+
 export type PersonalInfoFormData = z.infer<typeof personalInfoSchema>;
+export type AdminUserCreateFormData = z.infer<typeof adminUserCreateSchema>;
 export type ContactInfoFormData = z.infer<typeof contactInfoSchema>;
 export type AdminUserEditFormData = z.infer<typeof adminUserEditSchema>;
