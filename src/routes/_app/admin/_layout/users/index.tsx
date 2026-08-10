@@ -1,6 +1,7 @@
-import { IconDownload, IconUsers } from "@tabler/icons-react";
+import { IconDownload, IconUserPlus, IconUsers } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
@@ -12,6 +13,7 @@ import {
 	type SurveyListColumn,
 } from "@/features/users/components/columns";
 import { UserBulkActions } from "@/features/users/components/user-bulk-actions";
+import { UserCreateDialog } from "@/features/users/components/user-create-dialog";
 import { UserMobileCard } from "@/features/users/components/user-mobile-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/ui/button";
@@ -40,6 +42,7 @@ const columnLabels: Record<string, string> = {
 };
 
 function UsersPage() {
+	const [createOpen, setCreateOpen] = useState(false);
 	const { data: users } = useSuspenseQuery(adminUsersQueryOptions());
 	const { data: surveyQuestions } = useSuspenseQuery(
 		adminSurveyQuestionsQueryOptions(),
@@ -70,6 +73,14 @@ function UsersPage() {
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconUsers} title="Users">
+				<Button
+					size="sm"
+					onClick={() => setCreateOpen(true)}
+					data-testid="add-user-button"
+				>
+					<IconUserPlus className="mr-2 size-4" />
+					Add User
+				</Button>
 				<Button variant="outline" size="sm" asChild>
 					<Link to="/api/admin/users/export" target="_blank">
 						<IconDownload className="mr-2 size-4" />
@@ -103,6 +114,7 @@ function UsersPage() {
 					)}
 				/>
 			</div>
+			<UserCreateDialog open={createOpen} onOpenChange={setCreateOpen} />
 		</div>
 	);
 }

@@ -12,13 +12,13 @@ from pathlib import Path
 
 import pytest
 
+import config
 import diffhtml
-import main
+from core.normalize import normalize
 from test_baseline import (
     DOCS,
     GOLDEN,
     PANDOC,
-    UPDATE,
     _check_json,
     _check_text,
 )
@@ -33,7 +33,7 @@ def _normalize(name: str) -> str:
         work = Path(tmp)
         local = work / name
         shutil.copyfile(DOCS / name, local)
-        html, _figures, _warnings, _css = main._normalize(local, work)
+        html, _figures, _warnings, _css = normalize(local, work)
         return html
 
 
@@ -48,4 +48,4 @@ def test_kitchen_sink_redline():
 
     _check_text(GOLDEN / "kitchen-sink.redline.html", redline)
     # Pin the schema version so a normalizer-schema bump surfaces as a diff.
-    _check_json(GOLDEN / "kitchen-sink.meta.json", {"schemaVersion": main.SCHEMA_VERSION})
+    _check_json(GOLDEN / "kitchen-sink.meta.json", {"schemaVersion": config.SCHEMA_VERSION})

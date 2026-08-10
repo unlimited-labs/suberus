@@ -44,10 +44,13 @@ export async function getInvitations(): Promise<AdminInvitation[]> {
 }
 
 export async function createInvitation(
-	email: string,
+	rawEmail: string,
 	role: UserRole,
 	createdById: string,
 ): Promise<{ success: boolean }> {
+	// better-auth lower-cases the address at sign-up, so invitations must match
+	// that form or the redeemer's email never equals the invited one.
+	const email = rawEmail.trim().toLowerCase();
 	const existingUser = await prisma.user.findUnique({ where: { email } });
 	if (existingUser) {
 		throw new Error("User with this email already exists");
@@ -93,6 +96,13 @@ export async function cancelInvitation(
 	id: string,
 	performedBy?: string,
 ): Promise<{ success: boolean }> {
+	// USED/CANCELLED are terminal: cancelling a redeemed invitation would
+	// overwrite the audit trail of who used it and when.
+	const existing = await prisma.invitation.findUnique({ where: { id } });
+	if (existing?.status !== "PENDING" && existing?.status !== "EXPIRED") {
+		throw new Response("Invalid invitation", { status: 400 });
+	}
+
 	await prisma.invitation.update({
 		where: { id },
 		data: { status: "CANCELLED" },
@@ -111,13 +121,20 @@ export async function cancelInvitation(
 export async function resendInvitation(
 	id: string,
 ): Promise<{ success: boolean }> {
+	const existing = await prisma.invitation.findUnique({ where: { id } });
+	if (existing?.status !== "PENDING" && existing?.status !== "EXPIRED") {
+		throw new Response("Invalid invitation", { status: 400 });
+	}
+
 	const token = randomBytes(32).toString("hex");
 	const validityHours = await getSetting("INVITATION_VALIDITY_HOURS");
 	const expiresAt = addHours(new Date(), validityHours);
 
+	// Revives a lazily-expired row: without the status reset the fresh token is
+	// emailed but validateInvitationToken rejects it as non-PENDING.
 	const invitation = await prisma.invitation.update({
 		where: { id },
-		data: { token, expiresAt },
+		data: { token, expiresAt, status: "PENDING" },
 	});
 
 	const conferenceName = await getSetting("CONFERENCE_NAME");
@@ -144,21 +161,50 @@ export async function validateInvitationToken(
 	return { email: invitation.email, role: invitation.role };
 }
 
+/**
+ * Returns a result instead of throwing: a Response thrown from a server fn
+ * resolves the client promise in TanStack Start, so the caller could never see
+ * the failure and the invitee would silently keep the default role.
+ */
 export async function consumeInvitation(
 	token: string,
 	userId: string,
 ): Promise<{ success: boolean }> {
 	const invitation = await prisma.invitation.findUnique({ where: { token } });
-	if (invitation?.status !== "PENDING") {
-		throw new Response("Invalid invitation", { status: 400 });
+	if (invitation?.status !== "PENDING" || invitation.expiresAt < new Date()) {
+		return { success: false };
 	}
 
-	await prisma.invitation.update({
-		where: { id: invitation.id },
-		data: { status: "USED", usedById: userId, usedAt: new Date() },
+	// The invited role is granted here, so the redeemer must be the invitee:
+	// without this check any authenticated user holding a leaked token could
+	// consume an ADMIN invitation and escalate their own role.
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+		select: { email: true },
 	});
+	if (user?.email.toLowerCase() !== invitation.email.toLowerCase()) {
+		return { success: false };
+	}
 
-	logger.info(`[invitation] consumed by user ${userId}`);
+	await prisma.$transaction([
+		prisma.invitation.update({
+			where: { id: invitation.id },
+			data: {
+				status: "USED",
+				usedById: userId,
+				usedAt: new Date(),
+				roleAppliedAt: new Date(),
+			},
+		}),
+		prisma.user.update({
+			where: { id: userId },
+			data: { role: invitation.role },
+		}),
+	]);
+
+	logger.info(
+		`[invitation] consumed by user ${userId} role=${invitation.role}`,
+	);
 
 	await logActivity({
 		type: "INVITATION_USED",
@@ -167,29 +213,4 @@ export async function consumeInvitation(
 	});
 
 	return { success: true };
-}
-
-export async function applyInvitationRole(
-	userId: string,
-	email: string,
-): Promise<void> {
-	// Apply the invited role exactly once. This runs from the user-update hook,
-	// which fires on every profile change after verification; without the
-	// roleAppliedAt guard an admin-issued demotion would be silently reverted
-	// the next time the user edits their profile.
-	const invitation = await prisma.invitation.findFirst({
-		where: { email, status: "USED", usedById: userId, roleAppliedAt: null },
-	});
-	if (!invitation) return;
-
-	await prisma.$transaction(async (tx) => {
-		await tx.user.update({
-			where: { id: userId },
-			data: { role: invitation.role },
-		});
-		await tx.invitation.update({
-			where: { id: invitation.id },
-			data: { roleAppliedAt: new Date() },
-		});
-	});
 }

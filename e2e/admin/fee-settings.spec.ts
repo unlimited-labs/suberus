@@ -103,4 +103,29 @@ test.describe("Fee Settings", () => {
 		});
 		await expect(page.getByText("Premium Pass")).not.toBeVisible();
 	});
+
+	test("admin creates free fee type with blank amount", async ({
+		page,
+	}, testInfo) => {
+		// Arrange
+		const settingsPage = new AdminSettingsPage(page);
+		await settingsPage.goto();
+		await settingsPage.switchToFeeTab(testInfo);
+
+		// Act — add fee type without an amount
+		await page.getByRole("button", { name: "Add Fee Type" }).click();
+		await page.getByLabel("Name").fill("Free Pass");
+		await page.getByRole("button", { name: "Add" }).click();
+
+		// Assert — blank amount saved as 0
+		await expect(page.getByText("Fee types saved")).toBeVisible({
+			timeout: 10000,
+		});
+		await expect(page.getByText("Free Pass")).toBeVisible();
+		await expect(page.getByText("0.00", { exact: true })).toBeVisible();
+
+		// Cleanup
+		await page.getByRole("button", { name: "Delete Free Pass" }).click();
+		await expect(page.getByText("Free Pass")).not.toBeVisible();
+	});
 });

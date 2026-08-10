@@ -26,6 +26,7 @@ export interface ProgramSessionDetail {
 		submissionId: string;
 		order: number;
 		durationMin: number;
+		cancelled: boolean;
 		submissionTitle: string;
 		authors: Array<{ firstName: string; lastName: string; orderIndex: number }>;
 	}>;
@@ -87,6 +88,7 @@ export async function listSessions(range?: {
 			submissionId: p.submissionId,
 			order: p.order,
 			durationMin: p.durationMin,
+			cancelled: p.cancelled,
 			submissionTitle: p.submission.title,
 			authors: p.submission.authors,
 		})),

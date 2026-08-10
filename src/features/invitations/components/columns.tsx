@@ -1,6 +1,9 @@
 import { IconMailForward, IconX } from "@tabler/icons-react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { invitationStatusConfig } from "@/features/invitations/labels";
+import {
+	invitationStatusConfig,
+	isInvitationActionable,
+} from "@/features/invitations/labels";
 import type { AdminInvitation } from "@/features/invitations/server/invitations";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { roleLabels } from "@/shared/lib/labels/user-role";
@@ -85,7 +88,7 @@ export function createInvitationColumns(
 			id: "actions",
 			cell: ({ row }) => {
 				const invitation = row.original;
-				if (invitation.status !== "PENDING") return null;
+				if (!isInvitationActionable(invitation.status)) return null;
 
 				return (
 					<div className="flex gap-1">

@@ -80,6 +80,13 @@ export async function updatePresentationDuration(
 	});
 }
 
+export async function setPresentationCancelled(
+	id: string,
+	cancelled: boolean,
+): Promise<void> {
+	await prisma.presentationSlot.update({ where: { id }, data: { cancelled } });
+}
+
 export async function deletePresentation(id: string): Promise<void> {
 	const presentation = await prisma.presentationSlot.findUnique({
 		where: { id },

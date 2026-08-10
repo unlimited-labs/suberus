@@ -938,6 +938,28 @@ test.describe("docs screenshots", () => {
 		await shot(page, "28-planner-session-editor.png");
 	});
 
+	test("58 cancelled presentation in session editor", async ({ page }) => {
+		await page.goto("/admin/program-planner");
+		await page.waitForTimeout(1500); // calendar layout settles
+		// The "ML Interatomic Potentials" session has two talks — cancel one so the
+		// shot shows a struck-through row next to a live one.
+		await page
+			.getByTestId("session-card-title")
+			.filter({ hasText: "ML Interatomic Potentials" })
+			.first()
+			.click();
+		await expect(page.getByTestId("session-editor")).toBeVisible();
+		const toggle = page
+			.getByTestId(/^presentation-cancel-/)
+			.first();
+		await toggle.click();
+		await page.waitForTimeout(500);
+		await shot(page, "58-planner-cancelled-presentation.png");
+		// Restore so other shots (public program, preview) see no cancelled talk.
+		await toggle.click();
+		await page.waitForTimeout(300);
+	});
+
 	test("29 reading mode", async ({ page }) => {
 		await page.goto("/admin/program-planner");
 		await page.waitForTimeout(1500);

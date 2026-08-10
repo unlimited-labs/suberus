@@ -11,7 +11,7 @@ import {
 	deleteTestUser,
 	getPrisma,
 } from "../helpers/test-db"
-import { TEST_USER } from "../helpers/test-users"
+import { CONTACT_EMAIL, TEST_USER } from "../helpers/test-users"
 import { expect, test } from "./fixtures"
 
 // Desktop only — selection + composer are a desktop table/form layout.
@@ -207,6 +207,51 @@ test.describe("Admin - Bulk Email", () => {
 			expect(msg, `no email delivered to ${rcpt.email}`).toBeTruthy()
 			const headers = await mailpit.getMessageHeaders((msg as { ID: string }).ID)
 			expect(headers["Reply-To"]?.[0]).toBe(replyToAddr)
+		} finally {
+			await deleteTestUser(rcpt.id)
+			await clearMailpit(runId)
+		}
+	})
+
+	test("falls back to the conference Contact Email when reply-to is blank", async ({
+		page,
+		testRun,
+		adminUsersPage,
+	}) => {
+		const runId = testRun.testRunId
+		const rcpt = await makeRecipient(runId, "frank", "Frank")
+
+		try {
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+			await adminUsersPage.selectUser({ ...rcpt, firstName: "Frank", lastName: "Recipient" })
+
+			const campaignId = await adminUsersPage.openBulkEmailComposer()
+
+			await page.getByTestId("campaign-subject").fill(`Reply-To fallback ${runId}`)
+			await page.getByTestId("campaign-body").fill("Hi {{firstName}}")
+			// Reply-To deliberately left blank.
+
+			await page.getByTestId("send-campaign-btn").click()
+
+			const db = getPrisma()
+			await expect
+				.poll(
+					async () => {
+						const c = await db.emailCampaign.findUnique({
+							where: { id: campaignId },
+							select: { status: true, replyTo: true },
+						})
+						return `${c?.status}:${c?.replyTo}`
+					},
+					{ timeout: 30000 },
+				)
+				.toBe("SENT:null")
+
+			const msg = await waitForEmail(rcpt.email, runId, 15000)
+			expect(msg, `no email delivered to ${rcpt.email}`).toBeTruthy()
+			const headers = await mailpit.getMessageHeaders((msg as { ID: string }).ID)
+			expect(headers["Reply-To"]?.[0]).toBe(CONTACT_EMAIL)
 		} finally {
 			await deleteTestUser(rcpt.id)
 			await clearMailpit(runId)

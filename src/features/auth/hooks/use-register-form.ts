@@ -22,7 +22,7 @@ export type RegisterTosContent = string;
  * so the auth feature does not import survey / exhibitors / invitations APIs.
  */
 export interface RegisterEffects {
-	consumeInvitation: (token: string) => Promise<unknown>;
+	consumeInvitation: (token: string) => Promise<{ success: boolean }>;
 	saveSurveyAnswers: (
 		answers: { questionId: string; value: string }[],
 	) => Promise<unknown>;
@@ -80,14 +80,19 @@ async function ensureRegistrationOpen(
 	return true;
 }
 
-async function consumeInvitationQuietly(
+async function redeemInvitation(
 	effects: RegisterEffects,
 	token: string,
 ): Promise<void> {
-	try {
-		await effects.consumeInvitation(token);
-	} catch {
-		// Invitation may have already been consumed — not critical.
+	const applied = await effects
+		.consumeInvitation(token)
+		.then((result) => result.success)
+		.catch(() => false);
+
+	if (!applied) {
+		toast.error(
+			"Your account was created, but the invitation could not be applied — please contact the organizers",
+		);
 	}
 }
 
@@ -214,7 +219,7 @@ export function useRegisterForm({
 				return;
 			}
 
-			if (token) await consumeInvitationQuietly(effects, token);
+			if (token) await redeemInvitation(effects, token);
 			const visibleIds = new Set(visibleQuestions.map((q) => q.id));
 			const visibleAnswers = Object.fromEntries(
 				Object.entries(value.surveyAnswers).filter(([id]) =>

@@ -40,4 +40,4 @@ select = ["F", "I", "C901"]
 max-complexity = 15
 
 [tool.ruff.lint.isort]
-known-first-party = ["main", "diffhtml", "mathtype", "stylecss", "htmlesc", "ooxml"]
+known-first-party = ["main", "config", "core", "routers", "omml", "signing", "diffhtml", "mathtype", "stylecss", "htmlesc", "ooxml"]

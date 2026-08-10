@@ -138,4 +138,118 @@ test.describe("Admin Invitations", () => {
 			page.locator("[data-sonner-toast]").getByText(/invitation resent/i),
 		).toBeVisible({ timeout: 10000 })
 	})
+
+	test("resend rotates the token: the old link dies, the new one works", async ({
+		page,
+		browser,
+		testEmail,
+	}) => {
+		test.slow()
+		// Arrange
+		await sendInvitation(page, testEmail)
+		const db = getPrisma()
+		const before = await db.invitation.findFirst({ where: { email: testEmail } })
+		expect(before).not.toBeNull()
+
+		// Act
+		const item = invitationItem(page, testEmail)
+		await item.getByRole("button", { name: "Resend" }).click()
+		await expect(
+			page.locator("[data-sonner-toast]").getByText(/invitation resent/i),
+		).toBeVisible({ timeout: 10000 })
+
+		// Assert - same row, rotated token, still redeemable
+		const after = await db.invitation.findFirst({ where: { email: testEmail } })
+		expect(after?.id).toBe(before?.id)
+		expect(after?.token).not.toBe(before?.token)
+		expect(after?.status).toBe("PENDING")
+		expect(after?.expiresAt.getTime()).toBeGreaterThan(
+			before?.expiresAt.getTime() as number,
+		)
+
+		// The links themselves, from a signed-out context. newContext() does NOT
+		// inherit the per-worker baseURL, and would silently hit worker 0's server.
+		// newContext() inherits the project's admin storageState (and would land on
+		// the dashboard, since /register redirects signed-in users), and not the
+		// per-worker baseURL. Both must be overridden to get a true visitor.
+		const ctx = await browser.newContext({
+			baseURL: new URL(page.url()).origin,
+			storageState: { cookies: [], origins: [] },
+		})
+		const anon = await ctx.newPage()
+		try {
+			await anon.goto(`/register?token=${after?.token}`)
+			await expect(anon.getByText("You've been invited as")).toBeVisible()
+
+			await anon.goto(`/register?token=${before?.token}`)
+			await expect(anon.getByText("You've been invited as")).not.toBeVisible()
+		} finally {
+			await ctx.close()
+		}
+	})
+
+	test("expired invitation can be resent, and the new link works", async ({
+		page,
+		browser,
+		testEmail,
+	}) => {
+		test.slow()
+		// Arrange
+		await sendInvitation(page, testEmail)
+		const db = getPrisma()
+		const seeded = await db.invitation.findFirst({ where: { email: testEmail } })
+		await db.invitation.update({
+			where: { id: seeded?.id as string },
+			data: { expiresAt: new Date(Date.now() - 1000) },
+		})
+
+		// Act — the list load lazily sweeps PENDING -> EXPIRED
+		await page.goto("/admin/invitations")
+		const item = invitationItem(page, testEmail)
+		await expect(item.getByText("Expired")).toBeVisible({ timeout: 10000 })
+		await item.getByRole("button", { name: "Resend" }).click()
+		await expect(
+			page.locator("[data-sonner-toast]").getByText(/invitation resent/i),
+		).toBeVisible({ timeout: 10000 })
+
+		// Assert — revived, not just re-mailed with a dead token
+		const after = await db.invitation.findFirst({ where: { email: testEmail } })
+		expect(after?.status).toBe("PENDING")
+		expect(after?.expiresAt.getTime()).toBeGreaterThan(Date.now())
+
+		// newContext() inherits the project's admin storageState (and would land on
+		// the dashboard, since /register redirects signed-in users), and not the
+		// per-worker baseURL. Both must be overridden to get a true visitor.
+		const ctx = await browser.newContext({
+			baseURL: new URL(page.url()).origin,
+			storageState: { cookies: [], origins: [] },
+		})
+		const anon = await ctx.newPage()
+		try {
+			await anon.goto(`/register?token=${after?.token}`)
+			await expect(anon.getByText("You've been invited as")).toBeVisible()
+		} finally {
+			await ctx.close()
+		}
+	})
+
+	test("used invitation offers no actions", async ({ page, testEmail }) => {
+		// Arrange
+		await sendInvitation(page, testEmail)
+		const db = getPrisma()
+		const seeded = await db.invitation.findFirst({ where: { email: testEmail } })
+		await db.invitation.update({
+			where: { id: seeded?.id as string },
+			data: { status: "USED", usedAt: new Date() },
+		})
+
+		// Act
+		await page.goto("/admin/invitations")
+		const item = invitationItem(page, testEmail)
+
+		// Assert — terminal state, nothing to resend or cancel
+		await expect(item.getByText("Used")).toBeVisible({ timeout: 10000 })
+		await expect(item.getByRole("button", { name: "Resend" })).not.toBeVisible()
+		await expect(item.getByRole("button", { name: "Cancel" })).not.toBeVisible()
+	})
 })

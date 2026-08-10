@@ -24,7 +24,7 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
-import main
+from core.normalize import normalize
 
 HERE = Path(__file__).parent
 DOCS = HERE / "test_fixtures" / "docs"
@@ -63,7 +63,7 @@ def _normalize_fixture(docx_path: Path):
         work = Path(tmp)
         local = work / docx_path.name
         shutil.copyfile(docx_path, local)
-        return main._normalize(local, work)
+        return normalize(local, work)
 
 
 def _canon(html: str):

@@ -36,12 +36,8 @@
       },
       {
         "files": [
-          "src/server-composition.ts",
           "src/server/plugins/**",
           "src/server/tasks/**",
-          "src/features/invitations/server/event-handlers.ts",
-          "src/features/submissions/server/event-handlers.ts",
-          "src/features/settings/server/email-footer.ts",
           "src/features/planner/server/health.ts",
           "src/features/planner/server/reminders.ts",
           "src/features/submission-diff/server/reaper.ts"

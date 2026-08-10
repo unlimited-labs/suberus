@@ -759,6 +759,7 @@ model PresentationSlot {
   submissionId String   @unique @db.Uuid
   order        Int
   durationMin  Int
+  cancelled    Boolean  @default(false)
   createdAt    DateTime @default(now())
 
   session    ProgramSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
@@ -930,6 +931,7 @@ enum EmailEventType {
   REVISION_RECEIVED
   DEADLINE_APPROACHING
   ACCOUNT_CREATED
+  ACCOUNT_CREATED_BY_ADMIN
   PASSWORD_RESET
   EMAIL_VERIFICATION
   INVITATION

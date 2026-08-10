@@ -5,6 +5,7 @@ import {
 	createPresentation,
 	deletePresentation,
 	reorderPresentations,
+	setPresentationCancelled,
 	updatePresentationDuration,
 } from "@/features/planner/server/presentations";
 
@@ -38,6 +39,13 @@ export const updatePresentationDurationFn = createServerFn({ method: "POST" })
 	)
 	.handler(async ({ data }) => {
 		await updatePresentationDuration(data.id, data.durationMin);
+	});
+
+export const setPresentationCancelledFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(z.object({ id: z.uuid(), cancelled: z.boolean() }))
+	.handler(async ({ data }) => {
+		await setPresentationCancelled(data.id, data.cancelled);
 	});
 
 export const reorderPresentationsFn = createServerFn({ method: "POST" })

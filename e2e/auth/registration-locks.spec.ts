@@ -86,4 +86,83 @@ test.describe.serial("Registration deadline & lock", () => {
 		await db.invitation.delete({ where: { id: invitation.id } })
 		await setAppSetting("REGISTRATION_LOCKED", false)
 	})
+
+	test("invited user completes registration while locked, keeping the role", async ({
+		page,
+	}) => {
+		test.slow()
+		await setAppSetting("REGISTRATION_LOCKED", true)
+
+		const db = getPrisma()
+		const { ADMIN_USER } = await import("../helpers/test-users")
+		const admin = await db.user.findUnique({ where: { email: ADMIN_USER.email } })
+		const email = `invite-locked-${Date.now()}@e2e.local`
+		const invitation = await db.invitation.create({
+			data: {
+				email,
+				role: "EDITOR",
+				token: `locked-submit-${Date.now()}`,
+				status: "PENDING",
+				expiresAt: new Date(Date.now() + 72 * 60 * 60 * 1000),
+				createdById: admin!.id,
+			},
+		})
+
+		try {
+			const { RegisterPage } = await import("./fixtures")
+			const registerPage = new RegisterPage(page)
+			await page.goto(`/register?token=${invitation.token}`)
+
+			// Rendering the form is not enough — ensureRegistrationOpen re-checks the
+			// lock at submit time and only the token short-circuits it.
+			await registerPage.fillStep1({
+				password: "ValidPassword123!",
+				confirmPassword: "ValidPassword123!",
+				firstName: "Locked",
+				lastName: "Invitee",
+				affiliation: "Test University",
+			})
+			await registerPage.clickContinue()
+			await registerPage.fillStep2({ country: "Poland", address: "Org\n1 St" })
+			await registerPage.clickContinue()
+			await registerPage.fillStep3({ acceptTerms: true })
+			await registerPage.clickCreateAccount()
+
+			await expect(page).toHaveURL("/", { timeout: 15000 })
+			await expect
+				.poll(
+					async () =>
+						(
+							await db.user.findUnique({
+								where: { email },
+								select: { role: true },
+							})
+						)?.role,
+					{ timeout: 10000 },
+				)
+				.toBe("EDITOR")
+		} finally {
+			await db.invitation.deleteMany({ where: { email } })
+			const user = await db.user.findUnique({ where: { email } })
+			if (user) {
+				await db.activityLog.deleteMany({ where: { userId: user.id } })
+				await db.session.deleteMany({ where: { userId: user.id } })
+				await db.account.deleteMany({ where: { userId: user.id } })
+				await db.user.delete({ where: { id: user.id } })
+			}
+			await setAppSetting("REGISTRATION_LOCKED", false)
+		}
+	})
+
+	test("invalid token does not open the gate while locked", async ({ page }) => {
+		await setAppSetting("REGISTRATION_LOCKED", true)
+
+		await page.goto("/register?token=definitely-not-a-real-token")
+
+		await expect(
+			page.getByRole("heading", { name: "Registration Closed" }),
+		).toBeVisible()
+
+		await setAppSetting("REGISTRATION_LOCKED", false)
+	})
 })

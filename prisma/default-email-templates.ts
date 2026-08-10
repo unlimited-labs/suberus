@@ -217,6 +217,23 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 		description: "Sent when a new user account is created",
 	},
 	{
+		eventType: "ACCOUNT_CREATED_BY_ADMIN",
+		subject: "An account has been created for you — {{conferenceName}}",
+		body: "Dear {{firstName}},\n\nAn account has been created for you at {{conferenceName}}.\n\nYour login: {{email}}\n\nSet your password here (link valid for 7 days):\n{{setPasswordUrl}}\n\n{{conferenceName}}",
+		isEnabled: true,
+		isHtml: false,
+		ccEmails: [],
+		bccEmails: [],
+		availablePlaceholders: [
+			"firstName",
+			"email",
+			"setPasswordUrl",
+			"conferenceName",
+		],
+		description:
+			"Sent when an organizer creates a user account from the admin panel",
+	},
+	{
 		eventType: "NEW_REGISTRATION_NOTIFY",
 		subject: "New Registration: {{firstName}} {{lastName}}",
 		body: "A new user has registered.\n\nName: {{firstName}} {{lastName}}\nAffiliation: {{affiliation}}",

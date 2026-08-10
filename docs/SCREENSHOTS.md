@@ -89,6 +89,7 @@ Settings tabs deep-link via `?tab=<id>`.
 - [x] **31** — `planner/publishing.mdx` — *Publish dialog* (pre-publish issue checks) — header **Publish**
 - [ ] **54** — `planner/publishing.mdx` — *Co-author double-booked check* (publish dialog, co-author across parallel sessions) — header **Publish**
 - [x] **32** — `planner/publishing.mdx` — *Public program* (parallel sessions, chairs, breaks) — `/program`
+- [x] **58** — `planner/manual-scheduling.mdx` — *Cancelled presentation in the session editor* (⊘ toggle, struck-through row) — open a session → cancel a talk
 - [x] **52** — `planner/manual-scheduling.mdx` — *New event in the create dialog* — `/admin/program-planner` → **New** → **Event**
 - [x] **53** — `planner/manual-scheduling.mdx` — *Event as a featured card on the public program* — `/program`
 

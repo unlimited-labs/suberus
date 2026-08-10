@@ -28,7 +28,9 @@ RUN pip install --no-cache-dir \
 
 RUN adduser --disabled-password --gecos "" appuser
 WORKDIR /app
-COPY --chown=appuser:appuser main.py diffhtml.py mathtype.py stylecss.py htmlesc.py ooxml.py signing.py ./
+COPY --chown=appuser:appuser main.py config.py omml.py diffhtml.py mathtype.py stylecss.py htmlesc.py ooxml.py signing.py ./
+COPY --chown=appuser:appuser core/ ./core/
+COPY --chown=appuser:appuser routers/ ./routers/
 USER appuser
 
 ENV PORT=8101
