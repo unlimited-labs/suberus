@@ -5,7 +5,10 @@ import {
 	adminMiddleware,
 	adminOnlyMiddleware,
 } from "@/features/auth/server/middleware";
-import { createUserByAdmin } from "@/features/users/server/create-user";
+import {
+	createUserByAdmin,
+	resendSetPasswordLink,
+} from "@/features/users/server/create-user";
 import {
 	adminCheckDeletable,
 	adminDeleteUser,
@@ -96,6 +99,13 @@ export const createAdminUser = createServerFn({ method: "POST" })
 	.validator(createUserSchema)
 	.handler(async ({ data, context }) => {
 		return createUserByAdmin(data, context.user.id);
+	});
+
+export const resendSetPasswordEmail = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(getUserByIdSchema)
+	.handler(async ({ data }) => {
+		return resendSetPasswordLink(data.id);
 	});
 
 const patchUserSchema = z.object({

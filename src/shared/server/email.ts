@@ -113,17 +113,19 @@ export async function sendRawEmail(mail: RawEmail): Promise<void> {
 	});
 }
 
+/** Never throws (most callers are fire-and-forget notifications); returns
+ * whether the mail reached the transport, for callers that report to a user. */
 export async function sendEmail(
 	eventType: EmailEventType,
 	to: string,
 	variables: Record<string, string>,
-): Promise<void> {
+): Promise<boolean> {
 	try {
 		const template = await prisma.emailTemplate.findUnique({
 			where: { eventType },
 		});
 
-		if (!template?.isEnabled) return;
+		if (!template?.isEnabled) return false;
 
 		let subject = template.subject;
 		let body = template.body;
@@ -165,9 +167,10 @@ export async function sendEmail(
 			}),
 		);
 		logger.info(`[email] sent ${eventType} to ${to}`);
+		return true;
 	} catch (error) {
-		// Log error but don't throw - email sending should not break the main flow
 		logger.error(`Failed to send email (${eventType}):`, error);
+		return false;
 	}
 }
 

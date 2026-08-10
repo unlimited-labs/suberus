@@ -68,6 +68,8 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 		surveyDialogOpen,
 		setSurveyDialogOpen,
 		isPending,
+		isResendPending,
+		handleResendSetPassword,
 		handleMarkFeePaid,
 		handleUnmarkFeePaid,
 		handleChangeRole,
@@ -94,6 +96,8 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 					canChangeThisRole={canChangeThisRole}
 					canDeleteUsers={canDeleteUsers}
 					isPending={isPending}
+					isResendPending={isResendPending}
+					onResendSetPassword={handleResendSetPassword}
 					onEdit={() => setEditDialogOpen(true)}
 					onChangeRole={() => setRoleDialogOpen(true)}
 					onToggleActive={handleToggleActive}

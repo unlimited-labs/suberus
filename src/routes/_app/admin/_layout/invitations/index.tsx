@@ -41,8 +41,14 @@ function InvitationsPage() {
 
 	const handleResend = async (id: string) => {
 		try {
-			await resendInvitationFn({ data: { id } });
-			toast.success("Invitation resent");
+			const { success } = await resendInvitationFn({ data: { id } });
+			if (success) {
+				toast.success("Invitation resent");
+			} else {
+				toast.error(
+					"Could not send the invitation email — check SMTP and that the “Invitation” template is enabled",
+				);
+			}
 			invalidate();
 		} catch {
 			toast.error("Failed to resend invitation");

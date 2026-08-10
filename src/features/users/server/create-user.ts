@@ -32,7 +32,7 @@ export interface CreateUserByAdminInput {
 export async function createUserByAdmin(
 	input: CreateUserByAdminInput,
 	performedBy: string,
-): Promise<{ id: string }> {
+): Promise<{ id: string; emailSent: boolean }> {
 	// better-auth lowercases the email at sign-in, so a mixed-case row would
 	// never match on login.
 	const email = input.email.trim().toLowerCase();
@@ -43,19 +43,6 @@ export async function createUserByAdmin(
 	});
 	if (existing) {
 		throw new Response("Email already in use", { status: 409 });
-	}
-
-	// The set-password link is the account's only way in, and sendEmail is
-	// silent when the template is off — refuse rather than strand the user.
-	const template = await prisma.emailTemplate.findUnique({
-		where: { eventType: "ACCOUNT_CREATED_BY_ADMIN" },
-		select: { isEnabled: true },
-	});
-	if (!template?.isEnabled) {
-		throw new Response(
-			"The “Account Created by Organizer” email template is disabled — enable it in Settings before adding users",
-			{ status: 409 },
-		);
 	}
 
 	const affiliationName = input.affiliation?.trim();
@@ -113,16 +100,35 @@ export async function createUserByAdmin(
 
 	await linkCoAuthorsByEmail(email, user.id);
 
-	await sendSetPasswordEmail(user.id, email, input.firstName);
+	const emailSent = await sendSetPasswordEmail(user.id, email, input.firstName);
 
-	return user;
+	return { ...user, emailSent };
+}
+
+export async function resendSetPasswordLink(
+	userId: string,
+): Promise<{ emailSent: boolean }> {
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+		select: { email: true, firstName: true },
+	});
+	if (!user) {
+		throw new Response("User not found", { status: 404 });
+	}
+
+	const emailSent = await sendSetPasswordEmail(
+		userId,
+		user.email,
+		user.firstName ?? "",
+	);
+	return { emailSent };
 }
 
 async function sendSetPasswordEmail(
 	userId: string,
 	email: string,
 	firstName: string,
-): Promise<void> {
+): Promise<boolean> {
 	const token = randomBytes(24).toString("hex");
 	// `reset-password:<token>` is the identifier better-auth's reset endpoint
 	// looks the token up under (better-auth 1.6.x, api/routes/password.mjs).
@@ -134,7 +140,7 @@ async function sendSetPasswordEmail(
 		},
 	});
 
-	await sendEmail("ACCOUNT_CREATED_BY_ADMIN", email, {
+	return sendEmail("ACCOUNT_CREATED_BY_ADMIN", email, {
 		firstName,
 		email,
 		setPasswordUrl: `${env.APP_BASE_URL}/reset-password?token=${token}`,

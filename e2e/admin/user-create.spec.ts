@@ -107,6 +107,61 @@ test.describe("Admin creates a user", () => {
 		await loginAs(page, { email, password: NEW_PASSWORD })
 	})
 
+	test("resends the set-password link from the user detail page", async ({
+		page,
+		userDetailPage,
+	}) => {
+		// Arrange - a freshly created account has had exactly one such email
+		const email = `resend-${randomUUID().slice(0, 8)}@e2e-test.local`
+		const dialog = await openCreateDialog(page)
+		await fillRequiredFields(dialog, page, email)
+		await dialog.getByRole("button", { name: /Create user/i }).click()
+		await dialog.waitFor({ state: "hidden", timeout: 15000 })
+
+		const db = getPrisma()
+		const user = await db.user.findUniqueOrThrow({ where: { email } })
+		createdUserIds.push(user.id)
+		expect(await waitForEmail(email, "account has been created")).not.toBeNull()
+
+		// Act
+		await userDetailPage.goto(user.id)
+		await userDetailPage.openActions()
+		await userDetailPage.resendSetPasswordButton.click()
+
+		// Assert - honest toast plus a second, working set-password link
+		await expect(
+			page.locator("[data-sonner-toast]").getByText(/set-password link sent/i),
+		).toBeVisible({ timeout: 15000 })
+
+		await expect
+			.poll(
+				async () => {
+					const { messages } = await mailpit.searchMessages({
+						query: `from:${workerFrom()} to:${email}`,
+					})
+					return messages.length
+				},
+				{ timeout: 15000 },
+			)
+			.toBe(2)
+
+		const { messages } = await mailpit.searchMessages({
+			query: `from:${workerFrom()} to:${email}`,
+		})
+		const latest = await mailpit.getMessageSummary(messages[0].ID)
+		const link = latest.Text.match(/https?:\/\/\S*reset-password\?token=\S+/)?.[0]
+		expect(link).toBeTruthy()
+
+		await page.context().clearCookies()
+		await page.goto(link!)
+		await page.getByLabel("New Password", { exact: true }).fill(NEW_PASSWORD)
+		await page.getByLabel("Confirm Password", { exact: true }).fill(NEW_PASSWORD)
+		await page.getByRole("button", { name: /reset password/i }).click()
+		await expect(
+			page.getByRole("heading", { name: /password reset successful/i }),
+		).toBeVisible({ timeout: 15000 })
+	})
+
 	test("rejects an email that already exists", async ({ page }) => {
 		// Arrange
 		const db = getPrisma()

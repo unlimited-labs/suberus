@@ -22,6 +22,9 @@ vi.mock("@/features/settings/server/settings", () => ({
 }));
 vi.mock("@/shared/server/email", () => ({ sendEmail: vi.fn() }));
 
+const { sendEmail } = await import("@/shared/server/email");
+const sendEmailMock = vi.mocked(sendEmail);
+
 const {
 	cancelInvitation,
 	consumeInvitation,
@@ -203,6 +206,15 @@ describe("resendInvitation", () => {
 				data: expect.objectContaining({ status: "PENDING" }),
 			}),
 		);
+	});
+
+	it("reports a swallowed send failure instead of a bare success", async () => {
+		prismaMock.invitation.update.mockResolvedValue({ ...invitation });
+		sendEmailMock.mockResolvedValueOnce(false);
+
+		await expect(resendInvitation("inv-1")).resolves.toEqual({
+			success: false,
+		});
 	});
 
 	it("refuses to resurrect a used invitation", async () => {

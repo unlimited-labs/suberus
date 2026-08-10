@@ -80,12 +80,18 @@ export function UserCreateDialog({
 					),
 				},
 			}),
-		onSuccess: () => {
+		onSuccess: ({ emailSent }) => {
 			queryClient.invalidateQueries({
 				queryKey: adminUsersQueryOptions().queryKey,
 			});
 			close();
-			toast.success("User created — a set-password email has been sent");
+			if (emailSent) {
+				toast.success("User created — a set-password email has been sent");
+			} else {
+				toast.warning(
+					"User created, but the set-password email could not be sent — check SMTP and that the “Account Created by Organizer” template is enabled, then resend it from the user's page",
+				);
+			}
 		},
 		onError: (error) => {
 			toast.error(getErrorMessage(error, "Failed to create user"));

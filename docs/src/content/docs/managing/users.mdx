@@ -75,6 +75,11 @@ their own password, valid for 7 days. You never see or set their password. If th
 link expires, they can use **Forgot password** on the login screen. Edit the
 wording on **[Email templates](/settings/email-templates/)**.
 
+If the e-mail cannot be sent (mail server down, or the **Account Created by
+Organizer** template disabled), the account is still created and you get a
+warning instead of a confirmation. Fix the cause, then use **Resend set-password
+link** in the **⋯** menu on the user detail.
+
 <Aside type="tip" title="Add User or Invitation?">
 **Add User** is for people whose details you already have — you type them in and
 the account exists. An **[Invitation](/managing/invitations/)** sends a
@@ -102,6 +107,7 @@ submission** badge when late submissions are allowed. The **⋯** menu holds:
 | **Change Role** | Promote/demote between Author, Reviewer, Editor, Admin. Reviewers (and above) can be assigned to review. Editors can change roles but cannot grant **Admin** or change an existing admin; no one can change their own role. **Exhibitor** accounts cannot be changed to or from manually — see **[Roles & permissions](/settings/roles-and-permissions/)**. |
 | **Activate / Deactivate** | Block or restore account access without deleting the user. |
 | **Allow / Disallow late submission** | Let this user create new submissions even after the submission deadline has passed and while submissions are locked. Off by default; affects only this user. |
+| **Resend set-password link** | Sends the **Account Created by Organizer** e-mail again with a fresh link (valid 7 days). Use it when the first one never arrived, expired, or was lost. |
 | **Add submission** | Open the submission form to enter a submission **on this user's behalf** (same as the button on the Submissions card — see [below](#add-a-submission-on-this-users-behalf)). |
 | **Delete User** | Permanently removes the user. Destructive and irreversible — prefer **Deactivate**. Shown only if you may delete users. |
 
