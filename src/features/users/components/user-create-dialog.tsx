@@ -84,8 +84,7 @@ export function UserCreateDialog({
 			queryClient.invalidateQueries({
 				queryKey: adminUsersQueryOptions().queryKey,
 			});
-			form.reset();
-			onOpenChange(false);
+			close();
 			toast.success("User created — a set-password email has been sent");
 		},
 		onError: (error) => {
@@ -113,8 +112,16 @@ export function UserCreateDialog({
 		},
 	});
 
+	function close() {
+		form.reset();
+		onOpenChange(false);
+	}
+
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog
+			open={open}
+			onOpenChange={(next) => (next ? onOpenChange(true) : close())}
+		>
 			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
 				<DialogHeader>
 					<DialogTitle>Add User</DialogTitle>
@@ -219,11 +226,7 @@ export function UserCreateDialog({
 					)}
 
 					<DialogFooter>
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => onOpenChange(false)}
-						>
+						<Button type="button" variant="outline" onClick={close}>
 							Cancel
 						</Button>
 						<form.AppForm>

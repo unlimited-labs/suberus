@@ -112,9 +112,9 @@ test.describe("Admin creates a user", () => {
 		const db = getPrisma()
 		const existing = await db.user.findFirstOrThrow({ where: { role: "ADMIN" } })
 
-		// Act
+		// Act - mixed case, since the server lowercases before its own check
 		const dialog = await openCreateDialog(page)
-		await fillRequiredFields(dialog, page, existing.email)
+		await fillRequiredFields(dialog, page, existing.email.toUpperCase())
 		await dialog.getByRole("button", { name: /Create user/i }).click()
 
 		// Assert

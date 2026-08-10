@@ -4,7 +4,6 @@ import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
 import { auth } from "@/features/auth/server/auth.server";
 import { getSetting } from "@/features/settings/server/settings";
-import { upsertSurveyAnswers } from "@/features/survey/server/survey";
 import { upsertAffiliation } from "@/shared/server/affiliations";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
@@ -46,43 +45,64 @@ export async function createUserByAdmin(
 		throw new Response("Email already in use", { status: 409 });
 	}
 
+	// The set-password link is the account's only way in, and sendEmail is
+	// silent when the template is off — refuse rather than strand the user.
+	const template = await prisma.emailTemplate.findUnique({
+		where: { eventType: "ACCOUNT_CREATED_BY_ADMIN" },
+		select: { isEnabled: true },
+	});
+	if (!template?.isEnabled) {
+		throw new Response(
+			"The “Account Created by Organizer” email template is disabled — enable it in Settings before adding users",
+			{ status: 409 },
+		);
+	}
+
 	const affiliationName = input.affiliation?.trim();
 	const affiliation = affiliationName
 		? await upsertAffiliation(affiliationName)
 		: null;
 
-	const user = await prisma.user.create({
-		data: {
-			email,
-			firstName: input.firstName,
-			lastName: input.lastName,
-			title: input.title || null,
-			affiliationId: affiliation?.id ?? null,
-			needInvoice: input.needInvoice,
-			address: input.address || null,
-			country: input.country || null,
-			role: "AUTHOR",
-			isActive: true,
-			emailVerified: true,
-		},
-		select: { id: true },
-	});
-
 	const authContext = await auth.$context;
-	await prisma.account.create({
-		data: {
-			userId: user.id,
-			accountId: user.id,
-			providerId: "credential",
-			password: await authContext.password.hash(
-				randomBytes(24).toString("base64url"),
-			),
-		},
-	});
+	const passwordHash = await authContext.password.hash(
+		randomBytes(24).toString("base64url"),
+	);
 
-	if (input.answers.length > 0) {
-		await upsertSurveyAnswers(user.id, input.answers);
-	}
+	const user = await prisma.$transaction(async (tx) => {
+		const created = await tx.user.create({
+			data: {
+				email,
+				firstName: input.firstName,
+				lastName: input.lastName,
+				title: input.title || null,
+				affiliationId: affiliation?.id ?? null,
+				needInvoice: input.needInvoice,
+				address: input.address || null,
+				country: input.country || null,
+				role: "AUTHOR",
+				isActive: true,
+				emailVerified: true,
+			},
+			select: { id: true },
+		});
+
+		await tx.account.create({
+			data: {
+				userId: created.id,
+				accountId: created.id,
+				providerId: "credential",
+				password: passwordHash,
+			},
+		});
+
+		if (input.answers.length > 0) {
+			await tx.surveyAnswer.createMany({
+				data: input.answers.map((a) => ({ ...a, userId: created.id })),
+			});
+		}
+
+		return created;
+	});
 
 	await logActivity({
 		type: "USER_REGISTERED",
