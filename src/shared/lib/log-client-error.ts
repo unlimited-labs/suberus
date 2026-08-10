@@ -65,8 +65,7 @@ export async function logClientError(label: string, e: unknown): Promise<void> {
 			kind: "Error",
 			name: e.name,
 			message: e.message,
-			stack: e.stack,
-			cause: e.cause,
+			...(import.meta.env.DEV ? { stack: e.stack, cause: e.cause } : {}),
 		});
 		return;
 	}
