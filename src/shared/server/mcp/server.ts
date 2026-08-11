@@ -1,0 +1,80 @@
+import {
+	createMcpHandler,
+	hostHeaderValidationResponse,
+	McpServer,
+	originValidationResponse,
+} from "@modelcontextprotocol/server";
+import type { McpActor, McpTool } from "@/shared/server/mcp/define-tool";
+
+export interface McpHandlerConfig {
+	name: string;
+	version: string;
+	tools: readonly McpTool[];
+	allowedHostnames: string[];
+	allowedOrigins: string[];
+	resolveActor: (request: Request) => Promise<McpActor | null>;
+}
+
+export async function runTool(
+	tool: McpTool,
+	input: unknown,
+	actor: McpActor,
+): Promise<{ content: [{ type: "text"; text: string }]; isError?: true }> {
+	try {
+		const result = await tool.handler(input, actor);
+		return { content: [{ type: "text", text: JSON.stringify(result) }] };
+	} catch (error) {
+		// The users/* service layer signals domain failures by throwing a Response
+		// (404/409/403). Unwrapped, those surface to the agent as an opaque
+		// transport error instead of something it can act on.
+		if (error instanceof Response) {
+			return {
+				content: [
+					{ type: "text", text: `${error.status}: ${await error.text()}` },
+				],
+				isError: true,
+			};
+		}
+		throw error;
+	}
+}
+
+export function createSuberusMcpHandler(config: McpHandlerConfig) {
+	const handler = createMcpHandler(async (ctx) => {
+		const server = new McpServer({
+			name: config.name,
+			version: config.version,
+		});
+
+		const actor = ctx.requestInfo
+			? await config.resolveActor(ctx.requestInfo)
+			: null;
+		if (!actor) return server;
+
+		for (const tool of config.tools) {
+			if (!tool.roles.includes(actor.role)) continue;
+			server.registerTool(
+				tool.name,
+				{
+					title: tool.title,
+					description: tool.description,
+					inputSchema: tool.input,
+					annotations: {
+						readOnlyHint: tool.readOnly ?? false,
+						destructiveHint: tool.destructive ?? false,
+					},
+				},
+				async (input) => runTool(tool, input, actor),
+			);
+		}
+
+		return server;
+	});
+
+	return async (request: Request): Promise<Response> => {
+		const rejected =
+			hostHeaderValidationResponse(request, config.allowedHostnames) ??
+			originValidationResponse(request, config.allowedOrigins);
+		return rejected ?? handler.fetch(request);
+	};
+}
