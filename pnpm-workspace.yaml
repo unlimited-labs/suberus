@@ -24,3 +24,8 @@ allowBuilds:
 onlyBuiltDependencies: lefthook
 
 minimumReleaseAge: 10080
+# Pinned to exact RC versions; the age guard adds nothing over an exact pin, and
+# the RC line ships faster than the window. Drop once 1.7 reaches GA.
+minimumReleaseAgeExclude:
+  - better-auth
+  - '@better-auth/*'
