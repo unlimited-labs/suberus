@@ -1,3 +1,5 @@
+import { hasRequestId } from "@/shared/errors/sanitize";
+
 interface ZodIssueLike {
 	message: string;
 	path?: Array<string | number>;
@@ -57,7 +59,10 @@ export function getErrorMessage(
 				// not JSON — fall through to raw message
 			}
 		}
-		return trimmed || fallback;
+		const message = trimmed || fallback;
+		return hasRequestId(error)
+			? `${message} (Reference: ${error.requestId})`
+			: message;
 	}
 	if (typeof error === "string" && error.trim()) return error;
 	return fallback;

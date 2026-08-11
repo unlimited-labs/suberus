@@ -6,6 +6,7 @@ import {
 	extractFromPdf,
 } from "@/features/extraction/server/extraction";
 import { logger } from "@/logger.ts";
+import { clientSafeMessage } from "@/shared/errors/sanitize";
 import {
 	completeJob,
 	failJob,
@@ -59,7 +60,7 @@ async function processExtractionJob(
 		const message =
 			error instanceof Error ? error.message : "Unknown extraction error";
 		logger.error(`[extraction-worker] ${jobId}: ${message}`);
-		await failJob(jobId, message);
+		await failJob(jobId, clientSafeMessage(error));
 		throw error;
 	}
 }

@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-start";
 import { setResponseHeader } from "@tanstack/react-start/server";
 import { env } from "@/env";
+import { errorSanitizeMiddleware } from "@/error-middleware";
 import { loggingMiddleware } from "@/logging-middleware";
 import { VERSION_HEADER } from "@/shared/lib/version-skew";
 
@@ -28,4 +29,5 @@ export const startInstance = createStart(() => ({
 		versionHeaderMiddleware,
 		loggingMiddleware,
 	],
+	functionMiddleware: [errorSanitizeMiddleware],
 }));

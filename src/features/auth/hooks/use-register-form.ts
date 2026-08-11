@@ -83,7 +83,7 @@ async function ensureRegistrationOpen(
 async function redeemInvitation(
 	effects: RegisterEffects,
 	token: string,
-): Promise<void> {
+): Promise<boolean> {
 	const applied = await effects
 		.consumeInvitation(token)
 		.then((result) => result.success)
@@ -94,6 +94,7 @@ async function redeemInvitation(
 			"Your account was created, but the invitation could not be applied — please contact the organizers",
 		);
 	}
+	return applied;
 }
 
 /** Non-blocking: the account already exists, so survey/ToS can be retried in settings. */
@@ -121,6 +122,7 @@ async function finishRegistration(
 	accountType: "participant" | "exhibitor",
 	effects: RegisterEffects,
 	navigate: RegisterNavigate,
+	roleGranted: boolean,
 ): Promise<void> {
 	if (accountType === "exhibitor") {
 		try {
@@ -138,6 +140,12 @@ async function finishRegistration(
 	}
 
 	toast.success("Account created! Check your email to verify.");
+	// An invited role was just written to the user row; the client session still
+	// carries the default one until a full page load.
+	if (roleGranted) {
+		window.location.assign("/");
+		return;
+	}
 	navigate({ to: "/" });
 }
 
@@ -219,7 +227,9 @@ export function useRegisterForm({
 				return;
 			}
 
-			if (token) await redeemInvitation(effects, token);
+			const roleGranted = token
+				? await redeemInvitation(effects, token)
+				: false;
 			const visibleIds = new Set(visibleQuestions.map((q) => q.id));
 			const visibleAnswers = Object.fromEntries(
 				Object.entries(value.surveyAnswers).filter(([id]) =>
@@ -227,7 +237,7 @@ export function useRegisterForm({
 				),
 			);
 			await persistSurveyAndTos(visibleAnswers, tosContent, effects);
-			await finishRegistration(accountType, effects, navigate);
+			await finishRegistration(accountType, effects, navigate, roleGranted);
 		},
 	});
 

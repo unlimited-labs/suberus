@@ -1,3 +1,5 @@
+import { logger } from "@/logger";
+
 /**
  * Shared sidecar fetch: bounded by an AbortSignal timeout and a uniform
  * ok-check. A hung sidecar (e.g. pdf-api inference on a pathological PDF) would
@@ -21,9 +23,10 @@ export async function requestOrThrow(
 	}
 	if (!res.ok) {
 		const detail = await res.text().catch(() => "");
-		throw new Error(
-			`${errorPrefix} failed: ${res.status} ${detail.slice(0, 200)}`.trim(),
-		);
+		// Upstream bodies carry pandoc/LibreOffice stderr and container paths —
+		// log them, never put them in a message that can reach a browser.
+		logger.error(`${errorPrefix} failed: ${res.status}`, detail.slice(0, 2000));
+		throw new Error(`${errorPrefix} failed (${res.status})`);
 	}
 	return res;
 }

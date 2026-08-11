@@ -2,6 +2,7 @@ import type { Job, PgBoss } from "pg-boss";
 import { runAutoPlan } from "@/features/planner/server/autoplan";
 import type { InputJsonValue } from "@/generated/prisma/internal/prismaNamespace.ts";
 import { logger } from "@/logger.ts";
+import { clientSafeMessage } from "@/shared/errors/sanitize";
 import { prisma } from "@/shared/server/db.server.ts";
 import { completeJob, failJob } from "@/shared/server/job-progress";
 
@@ -27,7 +28,7 @@ async function handleAutoplanJob(jobs: Job<AutoplanJobData>[]): Promise<void> {
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err);
 			logger.error(`[autoplan-worker] job ${jobId} failed:`, msg);
-			await failJob(jobId, msg);
+			await failJob(jobId, clientSafeMessage(err));
 			throw err;
 		}
 	}

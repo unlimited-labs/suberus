@@ -42,6 +42,7 @@ export async function completeJob(
 	});
 }
 
+/** `error` is streamed to the job owner over SSE — pass only client-safe text. */
 export async function failJob(jobId: string, error: string): Promise<void> {
 	await prisma.jobProgress.update({
 		where: { id: jobId },

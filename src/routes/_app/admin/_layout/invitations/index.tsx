@@ -42,14 +42,14 @@ function InvitationsPage() {
 	const handleResend = async (id: string) => {
 		try {
 			const { success } = await resendInvitationFn({ data: { id } });
-			if (success) {
-				toast.success("Invitation resent");
-			} else {
+			invalidate();
+			if (!success) {
 				toast.error(
 					"Could not send the invitation email — check SMTP and that the “Invitation” template is enabled",
 				);
+				return;
 			}
-			invalidate();
+			toast.success("Invitation resent");
 		} catch {
 			toast.error("Failed to resend invitation");
 		}
@@ -57,9 +57,13 @@ function InvitationsPage() {
 
 	const handleCancel = async (id: string) => {
 		try {
-			await cancelInvitationFn({ data: { id } });
-			toast.success("Invitation cancelled");
+			const { success } = await cancelInvitationFn({ data: { id } });
 			invalidate();
+			if (!success) {
+				toast.error("Failed to cancel invitation");
+				return;
+			}
+			toast.success("Invitation cancelled");
 		} catch {
 			toast.error("Failed to cancel invitation");
 		}
