@@ -15,12 +15,17 @@ vi.mock("@/shared/server/db.server", () => ({ prisma: prismaMock }));
 vi.mock("@/features/activity-log/server/activity-log", () => ({
 	logActivity: vi.fn(),
 }));
-vi.mock("@/logger.ts", () => ({ logger: { info: vi.fn(), error: vi.fn() } }));
+vi.mock("@/logger.ts", () => ({
+	logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
 vi.mock("@/env.ts", () => ({ env: { APP_BASE_URL: "http://localhost" } }));
 vi.mock("@/features/settings/server/settings", () => ({
 	getSetting: vi.fn().mockResolvedValue(72),
 }));
 vi.mock("@/shared/server/email", () => ({ sendEmail: vi.fn() }));
+
+const { sendEmail } = await import("@/shared/server/email");
+const sendEmailMock = vi.mocked(sendEmail);
 
 const {
 	cancelInvitation,
@@ -40,7 +45,10 @@ const invitation = {
 beforeEach(() => {
 	vi.clearAllMocks();
 	prismaMock.invitation.findUnique.mockResolvedValue({ ...invitation });
-	prismaMock.user.findUnique.mockResolvedValue({ email: invitation.email });
+	prismaMock.user.findUnique.mockResolvedValue({
+		email: invitation.email,
+		role: "AUTHOR",
+	});
 	prismaMock.$transaction.mockResolvedValue([]);
 });
 
@@ -83,6 +91,23 @@ describe("consumeInvitation", () => {
 		expect(prismaMock.user.update).not.toHaveBeenCalled();
 	});
 
+	it("burns the token but keeps a role an admin already set", async () => {
+		prismaMock.user.findUnique.mockResolvedValue({
+			email: invitation.email,
+			role: "ADMIN",
+		});
+
+		await expect(consumeInvitation("tok", "user-1")).resolves.toEqual({
+			success: false,
+		});
+		expect(prismaMock.user.update).not.toHaveBeenCalled();
+		expect(prismaMock.invitation.update).toHaveBeenCalledWith(
+			expect.objectContaining({
+				data: expect.objectContaining({ status: "USED" }),
+			}),
+		);
+	});
+
 	it("rejects an expired invitation", async () => {
 		prismaMock.invitation.findUnique.mockResolvedValue({
 			...invitation,
@@ -112,7 +137,10 @@ describe("consumeInvitation", () => {
 			...invitation,
 			email: "Invitee@X.com",
 		});
-		prismaMock.user.findUnique.mockResolvedValue({ email: "invitee@x.com" });
+		prismaMock.user.findUnique.mockResolvedValue({
+			email: "invitee@x.com",
+			role: "AUTHOR",
+		});
 
 		await consumeInvitation("tok", "user-1");
 
@@ -165,9 +193,9 @@ describe("cancelInvitation", () => {
 			status: "USED",
 		});
 
-		await expect(cancelInvitation("inv-1", "admin-1")).rejects.toBeInstanceOf(
-			Response,
-		);
+		await expect(cancelInvitation("inv-1", "admin-1")).resolves.toEqual({
+			success: false,
+		});
 		expect(prismaMock.invitation.update).not.toHaveBeenCalled();
 	});
 
@@ -205,13 +233,24 @@ describe("resendInvitation", () => {
 		);
 	});
 
+	it("reports a swallowed send failure instead of a bare success", async () => {
+		prismaMock.invitation.update.mockResolvedValue({ ...invitation });
+		sendEmailMock.mockResolvedValueOnce(false);
+
+		await expect(resendInvitation("inv-1")).resolves.toEqual({
+			success: false,
+		});
+	});
+
 	it("refuses to resurrect a used invitation", async () => {
 		prismaMock.invitation.findUnique.mockResolvedValue({
 			...invitation,
 			status: "USED",
 		});
 
-		await expect(resendInvitation("inv-1")).rejects.toBeInstanceOf(Response);
+		await expect(resendInvitation("inv-1")).resolves.toEqual({
+			success: false,
+		});
 		expect(prismaMock.invitation.update).not.toHaveBeenCalled();
 	});
 });

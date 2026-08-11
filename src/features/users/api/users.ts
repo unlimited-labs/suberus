@@ -6,6 +6,10 @@ import {
 	adminOnlyMiddleware,
 } from "@/features/auth/server/middleware";
 import {
+	createUserByAdmin,
+	resendSetPasswordLink,
+} from "@/features/users/server/create-user";
+import {
 	adminCheckDeletable,
 	adminDeleteUser,
 	adminUpdateProfile,
@@ -74,6 +78,34 @@ export const adminUserDetailQueryOptions = (id: string) =>
 				throw e;
 			}
 		},
+	});
+
+const createUserSchema = z.object({
+	email: z.email(),
+	firstName: z.string().min(1).max(50),
+	lastName: z.string().min(1).max(50),
+	title: z.string().optional(),
+	affiliation: z.string().max(200).optional(),
+	needInvoice: z.boolean(),
+	address: z.string().max(500),
+	country: z.string(),
+	answers: z.array(
+		z.object({ questionId: z.uuid(), value: z.string().max(500) }),
+	),
+});
+
+export const createAdminUser = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(createUserSchema)
+	.handler(async ({ data, context }) => {
+		return createUserByAdmin(data, context.user.id);
+	});
+
+export const resendSetPasswordEmail = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(getUserByIdSchema)
+	.handler(async ({ data }) => {
+		return resendSetPasswordLink(data.id);
 	});
 
 const patchUserSchema = z.object({

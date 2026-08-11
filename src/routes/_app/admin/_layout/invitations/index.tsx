@@ -44,7 +44,9 @@ function InvitationsPage() {
 			const { success } = await resendInvitationFn({ data: { id } });
 			invalidate();
 			if (!success) {
-				toast.error("Failed to resend invitation");
+				toast.error(
+					"Could not send the invitation email — check SMTP and that the “Invitation” template is enabled",
+				);
 				return;
 			}
 			toast.success("Invitation resent");

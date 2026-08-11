@@ -141,14 +141,14 @@ export async function resendInvitation(
 	const registrationUrl = `${env.APP_BASE_URL}/register?token=${token}`;
 	const roleName = roleLabels[invitation.role];
 
-	await sendEmail("INVITATION", invitation.email, {
+	const emailSent = await sendEmail("INVITATION", invitation.email, {
 		conferenceName,
 		roleName,
 		registrationUrl,
 		expiresAt: format(expiresAt, "MMMM d, yyyy, hh:mm a"),
 	});
 
-	return { success: true };
+	return { success: emailSent };
 }
 
 export async function validateInvitationToken(

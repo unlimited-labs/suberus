@@ -30,7 +30,8 @@ paid, or read how they answered your registration survey.
 | **Registration Date** | When the user registered (sortable). |
 | *(Survey columns)* | Any survey answers you chose to **show in the users list** appear as extra columns. Each can be sorted and filtered like the built-in columns — choice and checkbox questions get a multi-select filter, free-text questions get a search box. |
 
-Search by name, toggle columns, and use **Export XLSX** to download the full list
+Use **Add User** (top right) to create an account yourself — see
+[below](#add-a-user-yourself). Search by name, toggle columns, and use **Export XLSX** to download the full list
 (including survey answers). Select rows for **bulk actions**. Your column choices
 are remembered in this browser and restored next time you open the page.
 
@@ -46,6 +47,45 @@ shows the name, **role**, email, affiliation, a **Paid / Unpaid** fee badge, and
 the user's submission-role badges; tap a card to open the user. Search is
 full-width and every match scrolls in one list (no paging). The **Columns**
 picker is hidden — switch to a wider screen to choose columns.
+
+## Add a user yourself
+
+**Add User** (top right of the Users list, available to Admins and Editors) creates
+a participant account on the spot — useful for someone who registered by e-mail,
+phone, or at the desk. The account is **active immediately**: no invitation, no
+waiting for the person to sign up.
+
+🖼️ [Screenshot placeholder: Add User dialog]
+
+| Field | Notes |
+|---|---|
+| **First name**, **Last name** | Required. |
+| **Title** | Academic title (Dr, Prof, …). Optional. |
+| **Affiliation** | Institution/organisation. A new name is added to the affiliation list automatically. |
+| **Email** | Required, must not already belong to an account. This is the person's login. |
+| **Needs invoice for organization** | Ticking it reveals the billing details field. |
+| **Country** | Optional. |
+| *(Survey questions)* | The same registration survey the person would have filled in themselves. Required questions must be answered here too. |
+
+The new user always gets the **Author** role; change it afterwards from the user
+detail if they should be a Reviewer or Editor.
+
+They receive one e-mail — **Account Created by Organizer** — with a link to set
+their own password, valid for 7 days. You never see or set their password. If the
+link expires, they can use **Forgot password** on the login screen. Edit the
+wording on **[Email templates](/settings/email-templates/)**.
+
+If the e-mail cannot be sent (mail server down, or the **Account Created by
+Organizer** template disabled), the account is still created and you get a
+warning instead of a confirmation. Fix the cause, then use **Resend set-password
+link** in the **⋯** menu on the user detail.
+
+<Aside type="tip" title="Add User or Invitation?">
+**Add User** is for people whose details you already have — you type them in and
+the account exists. An **[Invitation](/managing/invitations/)** sends a
+registration link instead, letting the person fill in their own details, and is
+the only way to hand out a Reviewer, Editor, or Admin role up front.
+</Aside>
 
 ## The user detail
 
@@ -67,6 +107,7 @@ submission** badge when late submissions are allowed. The **⋯** menu holds:
 | **Change Role** | Promote/demote between Author, Reviewer, Editor, Admin. Reviewers (and above) can be assigned to review. Editors can change roles but cannot grant **Admin** or change an existing admin; no one can change their own role. **Exhibitor** accounts cannot be changed to or from manually — see **[Roles & permissions](/settings/roles-and-permissions/)**. |
 | **Activate / Deactivate** | Block or restore account access without deleting the user. |
 | **Allow / Disallow late submission** | Let this user create new submissions even after the submission deadline has passed and while submissions are locked. Off by default; affects only this user. |
+| **Resend set-password link** | Sends the **Account Created by Organizer** e-mail again with a fresh link (valid 7 days). Use it when the first one never arrived, expired, or was lost. |
 | **Add submission** | Open the submission form to enter a submission **on this user's behalf** (same as the button on the Submissions card — see [below](#add-a-submission-on-this-users-behalf)). |
 | **Delete User** | Permanently removes the user. Destructive and irreversible — prefer **Deactivate**. Shown only if you may delete users. |
 

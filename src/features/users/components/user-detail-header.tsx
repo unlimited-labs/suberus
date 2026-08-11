@@ -4,6 +4,7 @@ import {
 	IconDotsVertical,
 	IconEdit,
 	IconFilePlus,
+	IconMailForward,
 	IconPlus,
 	IconTrash,
 	IconUserCheck,
@@ -32,6 +33,8 @@ interface UserDetailHeaderProps {
 	canChangeThisRole: boolean;
 	canDeleteUsers: boolean;
 	isPending: boolean;
+	isResendPending: boolean;
+	onResendSetPassword: () => void;
 	onEdit: () => void;
 	onChangeRole: () => void;
 	onToggleActive: () => void;
@@ -53,6 +56,8 @@ export function UserDetailHeader({
 	canChangeThisRole,
 	canDeleteUsers,
 	isPending,
+	isResendPending,
+	onResendSetPassword,
 	onEdit,
 	onChangeRole,
 	onToggleActive,
@@ -143,6 +148,14 @@ export function UserDetailHeader({
 									<IconPlus className="mr-2 size-4" />
 									Add submission
 								</Link>
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={onResendSetPassword}
+								disabled={isResendPending}
+								data-testid="resend-set-password"
+							>
+								<IconMailForward className="mr-2 size-4" />
+								Resend set-password link
 							</DropdownMenuItem>
 							<DropdownMenuItem
 								onClick={onGenerateDocument}

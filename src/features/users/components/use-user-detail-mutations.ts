@@ -4,6 +4,7 @@ import {
 	useSuspenseQuery,
 } from "@tanstack/react-query";
 import { useState } from "react";
+import { toast } from "sonner";
 import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
@@ -12,6 +13,7 @@ import {
 	adminUserDetailQueryOptions,
 	adminUsersQueryOptions,
 	patchAdminUser,
+	resendSetPasswordEmail,
 } from "@/features/users/api/users";
 import type { AssignableUserRole } from "@/features/users/labels";
 import type { AdminUserDetail } from "@/features/users/server/users";
@@ -69,6 +71,22 @@ export function useUserDetailMutations(user: AdminUserDetail) {
 		},
 	});
 
+	const resendMutation = useMutation({
+		mutationFn: () => resendSetPasswordEmail({ data: { id: user.id } }),
+		onSuccess: ({ emailSent }) => {
+			if (emailSent) {
+				toast.success("Set-password link sent");
+			} else {
+				toast.error(
+					"Could not send the email — check SMTP and that the “Account Created by Organizer” template is enabled",
+				);
+			}
+		},
+		onError: () => {
+			toast.error("Failed to send set-password link");
+		},
+	});
+
 	const handleMarkFeePaid = () => {
 		if (!selectedFeeType) return;
 		mutation.mutate({
@@ -118,6 +136,8 @@ export function useUserDetailMutations(user: AdminUserDetail) {
 		surveyDialogOpen,
 		setSurveyDialogOpen,
 		isPending: mutation.isPending,
+		isResendPending: resendMutation.isPending,
+		handleResendSetPassword: () => resendMutation.mutate(),
 		handleMarkFeePaid,
 		handleUnmarkFeePaid,
 		handleChangeRole,

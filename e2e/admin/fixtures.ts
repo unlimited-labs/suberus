@@ -153,6 +153,7 @@ export class UserDetailPage {
 	readonly verifyEmailButton: Locator
 	readonly unmarkButton: Locator
 	readonly editProfileButton: Locator
+	readonly resendSetPasswordButton: Locator
 	readonly deleteUserButton: Locator
 	readonly submissionRows: Locator
 
@@ -173,6 +174,7 @@ export class UserDetailPage {
 		this.verifyEmailButton = page.getByRole("button", { name: "Verify" })
 		this.unmarkButton = page.getByRole("button", { name: "Unmark" })
 		this.editProfileButton = page.getByRole("menuitem", { name: "Edit Profile" })
+		this.resendSetPasswordButton = page.getByTestId("resend-set-password")
 		this.deleteUserButton = page.getByRole("menuitem", { name: "Delete User" })
 		this.submissionRows = page.getByTestId("user-submission-row")
 	}
