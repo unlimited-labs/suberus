@@ -100,7 +100,7 @@ export async function cancelInvitation(
 	// overwrite the audit trail of who used it and when.
 	const existing = await prisma.invitation.findUnique({ where: { id } });
 	if (existing?.status !== "PENDING" && existing?.status !== "EXPIRED") {
-		throw new Response("Invalid invitation", { status: 400 });
+		return { success: false };
 	}
 
 	await prisma.invitation.update({
@@ -123,7 +123,7 @@ export async function resendInvitation(
 ): Promise<{ success: boolean }> {
 	const existing = await prisma.invitation.findUnique({ where: { id } });
 	if (existing?.status !== "PENDING" && existing?.status !== "EXPIRED") {
-		throw new Response("Invalid invitation", { status: 400 });
+		return { success: false };
 	}
 
 	const token = randomBytes(32).toString("hex");
@@ -180,9 +180,23 @@ export async function consumeInvitation(
 	// consume an ADMIN invitation and escalate their own role.
 	const user = await prisma.user.findUnique({
 		where: { id: userId },
-		select: { email: true },
+		select: { email: true, role: true },
 	});
 	if (user?.email.toLowerCase() !== invitation.email.toLowerCase()) {
+		return { success: false };
+	}
+
+	// createInvitation rejects addresses that already have an account, so a
+	// legitimate redeemer is always a fresh AUTHOR. Anything else means the role
+	// was set by an admin after the invite went out — burn the token, keep the role.
+	if (user.role !== "AUTHOR") {
+		await prisma.invitation.update({
+			where: { id: invitation.id },
+			data: { status: "USED", usedById: userId, usedAt: new Date() },
+		});
+		logger.warn(
+			`[invitation] not applied: user ${userId} already holds role ${user.role}`,
+		);
 		return { success: false };
 	}
 

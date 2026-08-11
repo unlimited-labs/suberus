@@ -5,25 +5,32 @@ import type { EmailEventType } from "@/generated/prisma/enums";
 import { logger } from "@/logger.ts";
 import { prisma } from "@/shared/server/db.server";
 
-/** Reads a string app-setting straight from the shared KV table, treating unset
- * and empty as null. Deliberately stateless: the bundler emits more than one
- * copy of this module, so any module-level provider registered at startup is
- * null in the other copy (which is what actually sends most mail). */
+/** Reads a string app-setting straight from the shared KV table; null means the
+ * row is unset, an empty string means an admin deliberately cleared it.
+ * Deliberately stateless: the bundler emits more than one copy of this module,
+ * so any module-level provider registered at startup is null in the other copy
+ * (which is what actually sends most mail). */
 async function emailSetting(key: string): Promise<string | null> {
 	const row = await prisma.appSetting.findUnique({ where: { key } });
-	return typeof row?.value === "string" ? row.value || null : null;
+	return typeof row?.value === "string" ? row.value : null;
 }
 
 /** `from` is a no-reply relay, so replies need steering to a real mailbox. */
-function resolveReplyTo(): Promise<string | null> {
-	return emailSetting("CONTACT_EMAIL");
+async function resolveReplyTo(): Promise<string | null> {
+	return (await emailSetting("CONTACT_EMAIL")) || null;
 }
 
-async function resolveEmailFooter(): Promise<string | null> {
-	const footer = await emailSetting("EMAIL_FOOTER_TEXT");
-	if (!footer) return null;
-	const conferenceName = await emailSetting("CONFERENCE_NAME");
-	return footer.replace(/\{\{conferenceName\}\}/g, conferenceName ?? "");
+// ponytail: mirrors APP_SETTINGS_DEFAULTS — shared/ may not import the settings feature.
+const DEFAULT_EMAIL_FOOTER = "Best regards,\n{{conferenceName}}";
+const DEFAULT_CONFERENCE_NAME = "Conference Name";
+
+async function resolveEmailFooter(): Promise<string> {
+	const footer =
+		(await emailSetting("EMAIL_FOOTER_TEXT")) ?? DEFAULT_EMAIL_FOOTER;
+	if (!footer) return "";
+	const conferenceName =
+		(await emailSetting("CONFERENCE_NAME")) || DEFAULT_CONFERENCE_NAME;
+	return footer.replace(/\{\{conferenceName\}\}/g, conferenceName);
 }
 
 function escapeHtml(str: string): string {

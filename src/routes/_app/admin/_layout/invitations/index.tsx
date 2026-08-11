@@ -41,9 +41,13 @@ function InvitationsPage() {
 
 	const handleResend = async (id: string) => {
 		try {
-			await resendInvitationFn({ data: { id } });
-			toast.success("Invitation resent");
+			const { success } = await resendInvitationFn({ data: { id } });
 			invalidate();
+			if (!success) {
+				toast.error("Failed to resend invitation");
+				return;
+			}
+			toast.success("Invitation resent");
 		} catch {
 			toast.error("Failed to resend invitation");
 		}
@@ -51,9 +55,13 @@ function InvitationsPage() {
 
 	const handleCancel = async (id: string) => {
 		try {
-			await cancelInvitationFn({ data: { id } });
-			toast.success("Invitation cancelled");
+			const { success } = await cancelInvitationFn({ data: { id } });
 			invalidate();
+			if (!success) {
+				toast.error("Failed to cancel invitation");
+				return;
+			}
+			toast.success("Invitation cancelled");
 		} catch {
 			toast.error("Failed to cancel invitation");
 		}

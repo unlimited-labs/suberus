@@ -11,9 +11,23 @@ export function hasRequestId(error: unknown): error is ClientError {
 	);
 }
 
-// Prisma messages embed the failing model, field and argument values.
+// Infrastructure messages embed hosts, buckets, container paths and query
+// arguments. Deliberately thrown errors are plain `new Error(message)`: no
+// `code`, no `$metadata`, not a native subclass.
+// ponytail: denylist, so an exotic library error without those markers still
+// leaks. Sealing it means marking all ~100 deliberate throws instead.
 function isInternalError(error: Error): boolean {
-	return error.name.startsWith("PrismaClient");
+	if (error.name.startsWith("PrismaClient")) return true;
+	if (
+		error instanceof TypeError ||
+		error instanceof RangeError ||
+		error instanceof ReferenceError ||
+		error instanceof SyntaxError
+	) {
+		return true;
+	}
+	const extras = error as { code?: unknown; $metadata?: unknown };
+	return typeof extras.code === "string" || extras.$metadata !== undefined;
 }
 
 export function clientSafeMessage(error: unknown): string {

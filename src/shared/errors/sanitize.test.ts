@@ -32,6 +32,28 @@ describe("toClientError", () => {
 		expect(hasRequestId(safe) && safe.requestId).toBe("abc123");
 	});
 
+	it("replaces infrastructure errors carrying a syscall code", () => {
+		const error = Object.assign(
+			new Error("connect ECONNREFUSED 10.0.0.7:3900"),
+			{ code: "ECONNREFUSED" },
+		);
+		const safe = toClientError(error, "abc123");
+		expect(safe.message).toBe(GENERIC_ERROR_MESSAGE);
+		expect(hasRequestId(safe) && safe.requestId).toBe("abc123");
+	});
+
+	it("replaces AWS SDK errors", () => {
+		const error = Object.assign(new Error("NoSuchBucket: submissions-prod"), {
+			$metadata: { httpStatusCode: 404 },
+		});
+		expect(toClientError(error, "abc123").message).toBe(GENERIC_ERROR_MESSAGE);
+	});
+
+	it("replaces native error subclasses", () => {
+		const safe = toClientError(new TypeError("fetch failed"), "abc123");
+		expect(safe.message).toBe(GENERIC_ERROR_MESSAGE);
+	});
+
 	it("replaces non-Error throws", () => {
 		const safe = toClientError({ secret: "s3cret" }, "abc123");
 		expect(safe.message).toBe(GENERIC_ERROR_MESSAGE);
