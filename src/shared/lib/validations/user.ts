@@ -1,11 +1,12 @@
 import { z } from "zod";
 
 // ORCID format: 0000-0000-0000-000X (where X can be 0-9 or X)
-const orcidRegex = /^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/;
+export const orcidRegex = /^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/;
 
 /**
  * User personal/contact data schemas. Shared because the same fields are edited
  * both self-service (profile) and by admins (users), so neither slice owns them.
+ * Admin-facing schemas are composed from these in `features/users/validations.ts`.
  */
 export const personalInfoSchema = z.object({
 	title: z.string().optional(),
@@ -41,17 +42,5 @@ export const contactInfoSchema = z.object({
 	country: z.string(),
 });
 
-// Admin user edit combines personal + contact fields in a single form.
-export const adminUserEditSchema = personalInfoSchema.extend(
-	contactInfoSchema.shape,
-);
-
-export const adminUserCreateSchema = personalInfoSchema
-	.omit({ orcid: true })
-	.extend(contactInfoSchema.shape)
-	.extend({ surveyAnswers: z.record(z.string(), z.string()) });
-
 export type PersonalInfoFormData = z.infer<typeof personalInfoSchema>;
-export type AdminUserCreateFormData = z.infer<typeof adminUserCreateSchema>;
 export type ContactInfoFormData = z.infer<typeof contactInfoSchema>;
-export type AdminUserEditFormData = z.infer<typeof adminUserEditSchema>;

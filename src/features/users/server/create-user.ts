@@ -1,9 +1,11 @@
 import { randomBytes } from "node:crypto";
+import type { z } from "zod";
 import { env } from "@/env";
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
 import { auth } from "@/features/auth/server/auth.server";
 import { getSetting } from "@/features/settings/server/settings";
+import type { userCreateInput } from "@/features/users/validations";
 import { upsertAffiliation } from "@/shared/server/affiliations";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
@@ -11,17 +13,7 @@ import { linkCoAuthorsByEmail } from "@/shared/server/link-coauthors";
 
 const SET_PASSWORD_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
-export interface CreateUserByAdminInput {
-	email: string;
-	firstName: string;
-	lastName: string;
-	title?: string;
-	affiliation?: string;
-	needInvoice: boolean;
-	address: string;
-	country: string;
-	answers: { questionId: string; value: string }[];
-}
+export type CreateUserByAdminInput = z.infer<typeof userCreateInput>;
 
 /**
  * Deliberately bypasses `auth.api.signUpEmail`: it always sends the verification
@@ -100,7 +92,9 @@ export async function createUserByAdmin(
 
 	await linkCoAuthorsByEmail(email, user.id);
 
-	const emailSent = await sendSetPasswordEmail(user.id, email, input.firstName);
+	const emailSent = input.sendSetPasswordEmail
+		? await sendSetPasswordEmail(user.id, email, input.firstName)
+		: false;
 
 	return { ...user, emailSent };
 }

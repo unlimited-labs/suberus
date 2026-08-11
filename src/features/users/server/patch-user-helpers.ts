@@ -1,17 +1,7 @@
-import type { UserRole } from "@/generated/prisma/enums";
+import type { z } from "zod";
+import type { userPatchInput } from "@/features/users/validations";
 
-export interface PatchUserData {
-	id: string;
-	role?: UserRole;
-	isActive?: boolean;
-	allowLateSubmission?: boolean;
-	markFeePaid?: boolean;
-	feeType?: string;
-	feeAmount?: number;
-	feeCurrency?: string;
-	unmarkFeePaid?: boolean;
-	verifyEmail?: boolean;
-}
+export type PatchUserData = z.infer<typeof userPatchInput>;
 
 export interface FeePayment {
 	feeType: string;
