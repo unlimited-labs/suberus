@@ -393,6 +393,9 @@ enum ActivityType {
   // Document
   DOCUMENT_GENERATED
   DOCUMENT_DELETED
+  // MCP
+  MCP_CLIENT_REGISTERED
+  MCP_CLIENT_UPDATED
 }
 
 model ActivityLog {

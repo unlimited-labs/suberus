@@ -4,6 +4,7 @@ import {
 	IconFileText,
 	IconGavel,
 	IconMail,
+	IconPlug,
 	IconUser,
 	IconUserMinus,
 } from "@tabler/icons-react";
@@ -43,6 +44,7 @@ export function getEventIcon(type: string) {
 	if (type.startsWith("DECISION_")) return IconGavel;
 	if (type.startsWith("INVITATION_")) return IconMail;
 	if (type.startsWith("FEE_")) return IconCash;
+	if (type.startsWith("MCP_")) return IconPlug;
 	return IconFileText;
 }
 
@@ -62,6 +64,7 @@ export function getEventColor(type: string): string {
 	if (type.startsWith("DECISION_")) return "text-purple-600";
 	if (type.startsWith("INVITATION_")) return "text-teal-600";
 	if (type.startsWith("FEE_")) return "text-emerald-600";
+	if (type.startsWith("MCP_")) return "text-sky-600";
 
 	return "text-gray-600";
 }
@@ -82,6 +85,10 @@ export function resolveActivitySubject(event: ActivityEvent): ActivitySubject {
 		const seq = event.detail.sequentialNumber;
 		const title = String(event.detail.title);
 		return { kind: "name", name: seq != null ? `#${seq} ${title}` : title };
+	}
+	if (event.type.startsWith("MCP_")) {
+		const name = str(event.detail?.clientName) ?? str(event.detail?.clientId);
+		return name ? { kind: "name", name } : { kind: "none" };
 	}
 	if (event.submissionId && event.submissionTitle) {
 		return {
@@ -116,7 +123,26 @@ const emailOf: DescriptionRenderer = (e) => str(e.detail?.email) ?? null;
 const documentOf: DescriptionRenderer = (e) =>
 	str(e.detail?.documentName) ?? null;
 
+const list = (value: unknown): string | undefined =>
+	Array.isArray(value) && value.length > 0
+		? value.map(String).join(", ")
+		: undefined;
+
+const mcpClientOf: DescriptionRenderer = (e) => {
+	const clientId = str(e.detail?.clientId);
+	if (!clientId) return null;
+	const redirects = list(e.detail?.redirectUris);
+	return redirects ? `${clientId} → ${redirects}` : clientId;
+};
+
 const descriptionRenderers: Record<string, DescriptionRenderer> = {
+	MCP_CLIENT_REGISTERED: mcpClientOf,
+	MCP_CLIENT_UPDATED: (e) => {
+		const base = mcpClientOf(e);
+		const changed = list(e.detail?.changedFields);
+		if (!base) return null;
+		return changed ? `${base} · Changed: ${changed}` : base;
+	},
 	SUBMISSION_DELETED: (e) => (e.userName ? `Author: ${e.userName}` : null),
 	SUBMISSION_STATUS_CHANGED: statusArrow,
 	SUBMISSION_RESUBMITTED: statusArrow,

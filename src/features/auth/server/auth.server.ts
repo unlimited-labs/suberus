@@ -10,6 +10,12 @@ import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { env } from "@/env";
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
+import { recordMcpClientActivity } from "@/features/auth/server/cimd-audit";
+import {
+	mcpClientChangedFields,
+	mcpClientRegisteredDetail,
+	mcpClientUpdatedDetail,
+} from "@/features/auth/server/cimd-audit-rules";
 import { fetchClientMetadataResource } from "@/features/auth/server/cimd-transport";
 import { getSetting } from "@/features/settings/server/settings";
 import { PrismaClient, UserRole } from "@/generated/prisma/client";
@@ -102,10 +108,33 @@ const mcpPlugins = env.MCP_ENABLED
 						env.MCP_CIMD_ALLOWED_ORIGINS.includes(new URL(clientIdUrl).origin)
 					);
 				},
-				onClientCreated: ({ client, clientMetadataDocument }) => {
+				onClientCreated: async ({ client, clientMetadataDocument }) => {
 					logger.info(
 						`[mcp] CIMD client registered: ${client.clientId} (${clientMetadataDocument.client_name ?? "unnamed"})`,
 					);
+					await recordMcpClientActivity({
+						type: "MCP_CLIENT_REGISTERED",
+						detail: mcpClientRegisteredDetail(client, clientMetadataDocument),
+					});
+				},
+				onClientRefreshed: async ({
+					client,
+					previousClient,
+					clientMetadataDocument,
+				}) => {
+					const changedFields = mcpClientChangedFields(previousClient, client);
+					if (changedFields.length === 0) return;
+					logger.info(
+						`[mcp] CIMD client metadata changed: ${client.clientId} (${changedFields.join(", ")})`,
+					);
+					await recordMcpClientActivity({
+						type: "MCP_CLIENT_UPDATED",
+						detail: mcpClientUpdatedDetail(
+							client,
+							clientMetadataDocument,
+							changedFields,
+						),
+					});
 				},
 			}),
 		]

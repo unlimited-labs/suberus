@@ -121,6 +121,28 @@ describe("getEventDescription", () => {
 		).toBe("Certificate.pdf");
 	});
 
+	it("renders an MCP client registration and its metadata changes", () => {
+		expect(
+			getEventDescription(
+				event("MCP_CLIENT_REGISTERED", {
+					clientId: "https://client.example/doc.json",
+					clientName: "Claude",
+					redirectUris: ["https://client.example/cb"],
+				}),
+			),
+		).toBe("https://client.example/doc.json → https://client.example/cb");
+		expect(
+			getEventDescription(
+				event("MCP_CLIENT_UPDATED", {
+					clientId: "https://client.example/doc.json",
+					clientName: null,
+					redirectUris: [],
+					changedFields: ["redirectUris"],
+				}),
+			),
+		).toBe("https://client.example/doc.json · Changed: redirectUris");
+	});
+
 	it("shows the author for a deleted submission", () => {
 		expect(
 			getEventDescription({
@@ -175,6 +197,27 @@ describe("resolveActivitySubject", () => {
 				event("SUBMISSION_DELETED", { title: "Paper", sequentialNumber: 7 }),
 			),
 		).toEqual({ kind: "name", name: "#7 Paper" });
+	});
+
+	it("names an MCP client by its declared name, falling back to the client id", () => {
+		expect(
+			resolveActivitySubject(
+				event("MCP_CLIENT_REGISTERED", {
+					clientId: "https://client.example/doc.json",
+					clientName: "Claude",
+					redirectUris: [],
+				}),
+			),
+		).toEqual({ kind: "name", name: "Claude" });
+		expect(
+			resolveActivitySubject(
+				event("MCP_CLIENT_REGISTERED", {
+					clientId: "https://client.example/doc.json",
+					clientName: null,
+					redirectUris: [],
+				}),
+			),
+		).toEqual({ kind: "name", name: "https://client.example/doc.json" });
 	});
 
 	it("is none when nothing is linkable", () => {
