@@ -1,9 +1,14 @@
 import { Client } from "@modelcontextprotocol/client";
 import { InMemoryTransport } from "@modelcontextprotocol/server";
+import type { APIError } from "better-auth/api";
+import { isInsufficientScopeError } from "better-auth/oauth2";
 import { beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
 import { defineTool, type McpActor } from "@/shared/server/mcp/define-tool";
-import { buildMcpServer } from "@/shared/server/mcp/server";
+import {
+	buildMcpServer,
+	createSuberusMcpHandler,
+} from "@/shared/server/mcp/server";
 
 const editorTool = defineTool({
 	name: "probe_read",
@@ -59,10 +64,11 @@ function firstText(content: unknown): string {
 	);
 }
 
-async function connect(actor: McpActor | null) {
+async function connect(actor: McpActor | null, challenge?: { error: unknown }) {
 	const server = buildMcpServer(
 		{ name: "suberus-test", version: "0", tools },
 		actor,
+		challenge,
 	);
 	const [clientTransport, serverTransport] =
 		InMemoryTransport.createLinkedPair();
@@ -103,29 +109,45 @@ describe("MCP tool registry", () => {
 		expect(listed.map((t) => t.name)).toContain("probe_read");
 	});
 
-	it("hides a tool the token was not granted the scope for", async () => {
+	it("still lists a tool the token was not granted the scope for", async () => {
 		const readOnly = await connect({
 			id: "admin-1",
 			role: "ADMIN",
 			scopes: ["probe:read"],
 		});
 		const { tools: listed } = await readOnly.listTools();
-		expect(listed.map((t) => t.name)).not.toContain("probe_admin");
-		expect(listed.map((t) => t.name)).toContain("probe_read");
-
-		await expect(
-			readOnly.callTool({ name: "probe_admin", arguments: {} }),
-		).rejects.toThrow("Tool probe_admin not found");
+		expect(listed.map((t) => t.name)).toContain("probe_admin");
 	});
 
-	it("registers nothing when the grant carries no matching scope", async () => {
-		const identityOnly = await connect({
-			id: "admin-1",
-			role: "ADMIN",
-			scopes: ["openid"],
+	it("parks an insufficient_scope challenge naming every scope to re-consent to", async () => {
+		const challenge: { error: unknown } = { error: null };
+		const readOnly = await connect(
+			{ id: "admin-1", role: "ADMIN", scopes: ["openid", "probe:read"] },
+			challenge,
+		);
+
+		const result = await readOnly.callTool({
+			name: "probe_admin",
+			arguments: {},
 		});
-		const { tools: listed } = await identityOnly.listTools();
-		expect(listed).toEqual([]);
+
+		expect(result.isError).toBe(true);
+		// The held scopes have to travel with the missing one: better-auth
+		// overwrites the consent row rather than unioning it.
+		expect(isInsufficientScopeError(challenge.error)).toBe(true);
+		expect(
+			(challenge.error as APIError).body?.scope?.split(" ").sort(),
+		).toEqual(["openid", "probe:read", "probe:write"]);
+	});
+
+	it("leaves the challenge unset when every scope is granted", async () => {
+		const challenge: { error: unknown } = { error: null };
+		const granted = await connect(
+			{ id: "admin-1", role: "ADMIN", scopes: ["probe:read", "probe:write"] },
+			challenge,
+		);
+		await granted.callTool({ name: "probe_admin", arguments: {} });
+		expect(challenge.error).toBeNull();
 	});
 
 	it("registers nothing without an authenticated actor", async () => {
@@ -171,6 +193,53 @@ describe("MCP tool registry", () => {
 		await expect(
 			editor.callTool({ name: "probe_admin", arguments: {} }),
 		).rejects.toThrow("Tool probe_admin not found");
+	});
+
+	// The mechanism only works if fetch() resolves after the tool ran; were the
+	// transport to answer with a stream, the parked error would arrive too late
+	// to become a 403 and the caller would see a plain isError result instead.
+	it("re-throws the parked challenge out of the HTTP handler", async () => {
+		const handler = createSuberusMcpHandler({
+			name: "suberus-test",
+			version: "0",
+			tools,
+			allowedHostnames: ["mcp.test"],
+			allowedOrigins: ["https://mcp.test"],
+		});
+
+		const call = (body: unknown) =>
+			handler(
+				new Request("https://mcp.test/api/mcp", {
+					method: "POST",
+					headers: {
+						"content-type": "application/json",
+						accept: "application/json, text/event-stream",
+						host: "mcp.test",
+					},
+					body: JSON.stringify(body),
+				}),
+				{ id: "admin-1", role: "ADMIN", scopes: ["probe:read"] },
+			);
+
+		await call({
+			jsonrpc: "2.0",
+			id: 1,
+			method: "initialize",
+			params: {
+				protocolVersion: "2026-07-28",
+				capabilities: {},
+				clientInfo: { name: "test", version: "0" },
+			},
+		});
+
+		await expect(
+			call({
+				jsonrpc: "2.0",
+				id: 2,
+				method: "tools/call",
+				params: { name: "probe_admin", arguments: {} },
+			}),
+		).rejects.toSatisfy(isInsufficientScopeError);
 	});
 
 	it("advertises read-only and destructive hints", async () => {

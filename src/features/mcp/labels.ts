@@ -6,6 +6,8 @@ const SCOPE_LABELS: Record<string, string> = {
 	offline_access: "Stay connected without asking you again",
 	"users:read": "List and read participant records",
 	"users:write": "Create participants and change their roles, fees and access",
+	"conference:read": "Read conference settings, dates and deadlines",
+	"conference:write": "Change conference settings, dates and deadlines",
 };
 
 export function scopeLabel(scope: string): string {

@@ -9,7 +9,7 @@ import { Aside, Steps } from '@astrojs/starlight/components';
 
 Suberus can expose an **MCP server** — an interface that AI assistants such as
 Claude Code understand. Once connected, you can ask the assistant to list
-participants, look someone up, create an account, or change a role, and it
+participants, create an account, change a role, or move a deadline, and it
 performs those actions in the system through your own account.
 
 <Aside type="caution" title="It acts as you">
@@ -113,27 +113,36 @@ granted; nothing is stored.
 
 ## What the assistant can do
 
-Today the assistant can work with **users**:
+**Users:**
 
 | Action | Access needed | Who can use it |
 |---|---|---|
-| List participants, with search and role/fee filters | Read | Admin, Editor |
-| Open one participant's full record | Read | Admin, Editor |
-| Create a participant account | Write | Admin, Editor |
-| Change role, activation, late-submission, fee or e-mail verification | Write | Admin, Editor |
-| Edit someone's personal and billing details | Write | Admin only |
+| List participants, with search and role/fee filters | Users, read | Admin, Editor |
+| Open one participant's full record | Users, read | Admin, Editor |
+| Create a participant account | Users, write | Admin, Editor |
+| Change role, activation, late-submission, fee or e-mail verification | Users, write | Admin, Editor |
+| Edit someone's personal and billing details | Users, write | Admin only |
+
+**Conference:**
+
+| Action | Access needed | Who can use it |
+|---|---|---|
+| Read every setting on the [Conference tab](/settings/conference/) | Conference, read | Admin, Editor |
+| Change any of them — name, dates, deadlines, locks, formats, programme defaults | Conference, write | Admin only |
 
 Two independent things decide what an assistant may do: **your role** and **the
-access you approved**. The assistant is offered an action only when both allow
-it — an Editor's assistant is never offered the profile-editing action, and an
-assistant you approved for reading only never sees any of the Write actions,
-whatever your role is.
+access you approved**. An Editor's assistant is never offered the
+profile-editing or the settings-changing action, whatever was approved.
+
+If the assistant tries something you did not approve it for, the attempt is
+refused and the assistant is told which access to ask for. It can then send you
+back to the authorization screen — approving there extends what it holds
+without disconnecting anything.
 
 <Aside type="tip" title="Approving read-only access">
-On the authorization screen you can see exactly which of the two the
-application asked for. Approving an assistant that only requested reading is a
-good way to let it answer questions about your participants without ever being
-able to create accounts or change roles.
+On the authorization screen you can see exactly what the application asked for.
+Approving an assistant for reading only is a good way to let it answer
+questions about your conference without ever being able to change it.
 </Aside>
 
 Creating an account sends the usual **set-password e-mail**, exactly as

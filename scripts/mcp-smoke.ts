@@ -1,5 +1,5 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
-import { auth } from "@/features/auth/server/auth.server";
+import { auth, MCP_SCOPES } from "@/features/auth/server/auth.server";
 import { prisma } from "@/shared/server/db.server";
 
 const BASE = process.env.APP_BASE_URL ?? "http://localhost:3001";
@@ -61,14 +61,7 @@ async function ensureClient() {
 			grantTypes: ["authorization_code", "refresh_token"],
 			responseTypes: ["code"],
 			tokenEndpointAuthMethod: "none",
-			scopes: [
-				"openid",
-				"profile",
-				"email",
-				"offline_access",
-				"users:read",
-				"users:write",
-			],
+			scopes: [...MCP_SCOPES],
 			requirePKCE: true,
 		},
 	});
@@ -104,7 +97,11 @@ async function main() {
 		response_type: "code",
 		client_id: clientId,
 		redirect_uri: REDIRECT_URI,
-		scope: process.env.SMOKE_SCOPE ?? "openid profile email users:read users:write",
+		// conference:write is deliberately left out: the last step asserts that
+		// calling a tool without its scope answers a step-up challenge.
+		scope:
+			process.env.SMOKE_SCOPE ??
+			"openid profile email users:read users:write conference:read",
 		state,
 		code_challenge: challenge,
 		code_challenge_method: "S256",
@@ -176,7 +173,11 @@ async function main() {
 		const json = text.startsWith("event:")
 			? JSON.parse(text.slice(text.indexOf("data: ") + 6).split("\n")[0])
 			: JSON.parse(text);
-		return { status: res.status, json };
+		return {
+			status: res.status,
+			json,
+			challenge: res.headers.get("www-authenticate") ?? "",
+		};
 	};
 
 	const init = await rpc("initialize", {
@@ -202,6 +203,24 @@ async function main() {
 		"tools/call users_list returns data",
 		typeof parsed?.total === "number",
 		`total=${parsed?.total}`,
+	);
+
+	step(
+		"an ungranted tool is still listed",
+		names.includes("conference_update"),
+	);
+
+	const stepUp = await rpc("tools/call", {
+		name: "conference_update",
+		arguments: { subtitle: "should not be written" },
+	});
+	step(
+		"calling it answers a step-up challenge",
+		stepUp.status === 403 &&
+			stepUp.challenge.includes('error="insufficient_scope"') &&
+			stepUp.challenge.includes("conference:write") &&
+			stepUp.challenge.includes("users:write"),
+		`HTTP ${stepUp.status} ${stepUp.challenge}`,
 	);
 }
 

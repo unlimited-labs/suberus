@@ -41,20 +41,28 @@ export const MCP_RESOURCE_NAME = "Suberus MCP";
  * protected resource metadata, which is where MCP clients read the scope set
  * to request from.
  *
- * MEASUREMENT IN PROGRESS: no tool is gated on them yet. Gate only once a real
- * client is observed asking for them (read `oauthConsent.scopes`), otherwise
- * gating would hide every tool from a client that requests a fixed scope set.
+ * Every tool declares one of these. A token missing a tool's scope still sees
+ * the tool, and calling it answers RFC 6750 §3.1 `insufficient_scope` so the
+ * client can step up — see shared/server/mcp/server.ts.
  */
 export const MCP_SCOPE_USERS_READ = "users:read";
 export const MCP_SCOPE_USERS_WRITE = "users:write";
+export const MCP_SCOPE_CONFERENCE_READ = "conference:read";
+export const MCP_SCOPE_CONFERENCE_WRITE = "conference:write";
+
+export const MCP_CAPABILITY_SCOPES = [
+	MCP_SCOPE_USERS_READ,
+	MCP_SCOPE_USERS_WRITE,
+	MCP_SCOPE_CONFERENCE_READ,
+	MCP_SCOPE_CONFERENCE_WRITE,
+] as const;
 
 export const MCP_SCOPES = [
 	"openid",
 	"profile",
 	"email",
 	"offline_access",
-	MCP_SCOPE_USERS_READ,
-	MCP_SCOPE_USERS_WRITE,
+	...MCP_CAPABILITY_SCOPES,
 ] as const;
 
 const mcpPlugins = env.MCP_ENABLED

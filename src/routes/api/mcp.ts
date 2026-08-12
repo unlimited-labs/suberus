@@ -3,11 +3,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { env } from "@/env";
 import {
 	auth,
+	MCP_CAPABILITY_SCOPES,
 	MCP_RESOURCE,
-	MCP_SCOPE_USERS_READ,
-	MCP_SCOPE_USERS_WRITE,
 } from "@/features/auth/server/auth.server";
 import { hasAdminRole } from "@/features/auth/server/middleware";
+import { settingsMcpTools } from "@/features/settings/mcp/tools";
 import { usersMcpTools } from "@/features/users/mcp/tools";
 import { prisma } from "@/shared/server/db.server";
 import { createSuberusMcpHandler } from "@/shared/server/mcp/server";
@@ -17,7 +17,7 @@ const baseUrl = new URL(env.APP_BASE_URL);
 const handler = createSuberusMcpHandler({
 	name: "suberus",
 	version: env.GIT_COMMIT,
-	tools: usersMcpTools,
+	tools: [...usersMcpTools, ...settingsMcpTools],
 	allowedHostnames: [baseUrl.hostname],
 	allowedOrigins: [baseUrl.origin],
 });
@@ -51,10 +51,10 @@ async function serve(request: Request): Promise<Response> {
 		},
 		{
 			resource: MCP_RESOURCE,
-			// Advertised, not required: this is the third place a client may read
-			// the scope set from (after the resource metadata and the AS metadata).
-			// requiredScopes stays unset until a real client is seen asking for them.
-			challengeScopes: [MCP_SCOPE_USERS_READ, MCP_SCOPE_USERS_WRITE],
+			// Advertised on the 401, not required to reach the endpoint: a token
+			// short of a scope must still get in far enough for the tool it called
+			// to answer a challenge naming what that one tool needs.
+			challengeScopes: [...MCP_CAPABILITY_SCOPES],
 		},
 	)(request);
 }
