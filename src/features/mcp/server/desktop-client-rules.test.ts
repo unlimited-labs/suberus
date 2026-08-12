@@ -29,7 +29,7 @@ describe("connectCommand", () => {
 
 	it("stays bare without a minted client", () => {
 		expect(connectCommand({ url })).toBe(
-			`claude mcp add --transport http suberus ${url}`,
+			`claude mcp add --scope project --transport http suberus ${url}`,
 		);
 	});
 
@@ -41,7 +41,7 @@ describe("connectCommand", () => {
 				callbackPort: 8080,
 			}),
 		).toBe(
-			`claude mcp add --transport http suberus ${url} --client-id suberus-desktop-abc --callback-port 8080`,
+			`claude mcp add --scope project --transport http suberus ${url} --client-id suberus-desktop-abc --callback-port 8080`,
 		);
 	});
 });

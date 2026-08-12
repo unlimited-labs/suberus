@@ -1,16 +1,20 @@
-import { IconCheck, IconCopy, IconPlugConnected } from "@tabler/icons-react";
+import {
+	IconCheck,
+	IconCopy,
+	IconPlugConnected,
+	IconRefresh,
+	IconTrash,
+} from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
 	mcpConnectionQueryOptions,
 	mintMcpDesktopClient,
+	revokeMcpClient,
 } from "@/features/mcp/api/mcp-connection";
 import { connectCommand } from "@/features/mcp/labels";
-import type {
-	McpAuthorizedClient,
-	McpDesktopClient,
-} from "@/features/mcp/server/connection";
+import type { McpAuthorizedClient } from "@/features/mcp/server/connection";
 import { DEFAULT_CALLBACK_PORT } from "@/features/mcp/validations";
 import { Button } from "@/shared/ui/button";
 import {
@@ -21,7 +25,6 @@ import {
 	DialogTitle,
 } from "@/shared/ui/dialog";
 import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
 import { Skeleton } from "@/shared/ui/skeleton";
 
 interface McpConnectDialogProps {
@@ -33,10 +36,12 @@ function CommandBlock({
 	step,
 	label,
 	value,
+	footer,
 }: {
 	step: number;
 	label: string;
 	value: string;
+	footer?: ReactNode;
 }) {
 	const [copied, setCopied] = useState(false);
 
@@ -83,6 +88,7 @@ function CommandBlock({
 					)}
 				</span>
 			</button>
+			{footer}
 		</div>
 	);
 }
@@ -94,7 +100,17 @@ function ClientRow({
 	client: McpAuthorizedClient;
 	index: number;
 }) {
+	const queryClient = useQueryClient();
 	const label = client.name ?? client.clientId;
+
+	const revoke = useMutation({
+		mutationFn: () => revokeMcpClient({ data: { clientId: client.clientId } }),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: ["mcp", "connection"] });
+			toast.success("Access removed");
+		},
+		onError: () => toast.error("Could not remove the access"),
+	});
 	return (
 		<li
 			className="flex min-w-0 animate-in items-start gap-3 py-2.5 fade-in slide-in-from-bottom-1 duration-300"
@@ -118,72 +134,97 @@ function ClientRow({
 					</p>
 				)}
 			</div>
+			<Button
+				type="button"
+				size="icon"
+				variant="ghost"
+				aria-label={`Remove ${label}`}
+				data-testid="mcp-remove-client"
+				disabled={revoke.isPending}
+				className="size-7 shrink-0 text-muted-foreground hover:text-destructive"
+				onClick={() => revoke.mutate()}
+			>
+				<IconTrash className="size-4" />
+			</Button>
 		</li>
 	);
 }
 
-function CredentialsPanel({
-	desktopClient,
+function CredentialControls({
+	clientId,
+	callbackPort,
 }: {
-	desktopClient: McpDesktopClient | null;
+	clientId: string | undefined;
+	callbackPort: number | undefined;
 }) {
 	const queryClient = useQueryClient();
 	const [port, setPort] = useState(
-		String(desktopClient?.callbackPort ?? DEFAULT_CALLBACK_PORT),
+		String(callbackPort ?? DEFAULT_CALLBACK_PORT),
 	);
+	const minted = useRef(false);
+
+	const refresh = () =>
+		queryClient.invalidateQueries({ queryKey: ["mcp", "connection"] });
 
 	const mint = useMutation({
-		mutationFn: (callbackPort: number) =>
-			mintMcpDesktopClient({ data: { callbackPort } }),
-		onSuccess: async () => {
-			await queryClient.invalidateQueries({ queryKey: ["mcp", "connection"] });
-			toast.success("Credentials ready");
-		},
-		onError: () => toast.error("Could not create the credentials"),
+		mutationFn: (nextPort: number) =>
+			mintMcpDesktopClient({ data: { callbackPort: nextPort } }),
+		onSuccess: refresh,
+		onError: () => toast.error("Could not issue credentials"),
 	});
 
+	// Issued on open so the command is complete the moment the dialog is read.
+	// Minting is idempotent per user, and the ref keeps a re-render from firing
+	// a second write before the query has caught up.
+	useEffect(() => {
+		if (clientId || minted.current || mint.isPending) return;
+		minted.current = true;
+		mint.mutate(Number(port));
+	}, [clientId, mint, port]);
+
+	const busy = mint.isPending;
+
 	return (
-		<div className="min-w-0 space-y-3 rounded-lg border p-3">
-			<div>
-				<div className="font-medium text-sm">Assistant credentials</div>
-				<p className="text-muted-foreground text-sm">
-					{desktopClient
-						? "The command above carries these credentials. Re-issue them if your assistant listens on another port."
-						: "Issue a client the assistant signs in with. Keep the port your assistant listens on."}
-				</p>
-			</div>
-			<div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-				<div className="min-w-0 flex-1 space-y-1.5">
-					<Label htmlFor="mcp-callback-port">Callback port</Label>
-					<Input
-						id="mcp-callback-port"
-						data-testid="mcp-callback-port"
-						type="number"
-						inputMode="numeric"
-						min={1024}
-						max={65535}
-						value={port}
-						onChange={(e) => setPort(e.target.value)}
-					/>
-				</div>
-				<Button
-					type="button"
-					variant={desktopClient ? "outline" : "default"}
-					data-testid="mcp-mint-client"
-					disabled={mint.isPending}
-					onClick={() => mint.mutate(Number(port))}
-					className="w-full sm:w-auto"
-				>
-					{desktopClient ? "Re-issue" : "Create credentials"}
-				</Button>
-			</div>
-			{desktopClient && (
-				<p
-					className="min-w-0 truncate font-mono text-[11px] text-muted-foreground"
+		<div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+			<label
+				className="text-muted-foreground text-xs"
+				htmlFor="mcp-callback-port"
+			>
+				Callback port
+			</label>
+			<Input
+				id="mcp-callback-port"
+				data-testid="mcp-callback-port"
+				type="number"
+				inputMode="numeric"
+				min={1024}
+				max={65535}
+				value={port}
+				onChange={(e) => setPort(e.target.value)}
+				className="h-7 w-[5.5rem] text-xs"
+			/>
+			<Button
+				type="button"
+				size="sm"
+				variant="ghost"
+				className="h-7 px-2 text-xs"
+				data-testid="mcp-mint-client"
+				disabled={busy}
+				onClick={() => {
+					minted.current = true;
+					mint.mutate(Number(port));
+				}}
+			>
+				<IconRefresh className="mr-1 size-3.5" />
+				Re-issue
+			</Button>
+			{clientId && (
+				<span
+					className="w-full truncate font-mono text-[11px] text-muted-foreground"
 					data-testid="mcp-client-id"
 				>
-					{desktopClient.clientId}
-				</p>
+					{clientId}
+				</span>
 			)}
 		</div>
 	);
@@ -260,13 +301,18 @@ export function McpConnectDialog({
 									clientId: data.desktopClient?.clientId,
 									callbackPort: data.desktopClient?.callbackPort,
 								})}
+								footer={
+									<CredentialControls
+										clientId={data.desktopClient?.clientId}
+										callbackPort={data.desktopClient?.callbackPort}
+									/>
+								}
 							/>
 							<CommandBlock
 								step={2}
 								label="Or use the URL directly"
 								value={data.url}
 							/>
-							<CredentialsPanel desktopClient={data.desktopClient} />
 						</div>
 
 						<p className="text-muted-foreground text-sm">

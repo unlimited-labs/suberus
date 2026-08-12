@@ -36,36 +36,42 @@ that assistants use to sign in.
 
 ## Connecting an assistant
 
-Suberus does not let an assistant register itself. You issue it **credentials**
-from the dialog first, and the assistant then signs in with them.
+Suberus does not let an assistant register itself. Opening the dialog issues
+**credentials** for you, and the assistant signs in with them.
 
 <Steps>
 
-1. Open **Connect AI assistant** from the user menu.
+1. Open **Connect AI assistant** from the user menu. Credentials are issued the
+   moment it opens, so the command in step 1 is ready to use.
 
-2. Under **Assistant credentials**, check the **callback port** — the port the
-   assistant listens on while it signs you in. Claude Code's default is `8080`;
-   change it only if that port is already in use on your machine. Choose
-   **Create credentials**.
-
-   The command in step 1 now carries the credentials.
-
-3. Copy the command from step 1 and run it in Claude Code:
+2. Copy that command and run it in Claude Code:
 
    ```bash
-   claude mcp add --transport http suberus https://your-conference.example/api/mcp \
-     --client-id suberus-desktop-… --callback-port 8080
+   claude mcp add --scope project --transport http suberus https://your-conference.example/api/mcp      --client-id suberus-desktop-... --callback-port 8080
    ```
 
-   For other clients, copy the **server URL** from step 2 and configure the
-   client id and the callback address `http://localhost:8080/callback` by hand.
+   `--scope project` writes the server into the project's `.mcp.json`, so
+   everyone working in that repository picks it up. Drop the flag to keep the
+   server to yourself.
 
-4. The assistant opens a browser window. Sign in to Suberus as usual.
+   For other clients, copy the **server URL** from step 2 and set the client id
+   and the callback address `http://localhost:8080/callback` by hand.
 
-5. An **authorization screen** appears naming the application and what it is
+3. The assistant opens a browser window. Sign in to Suberus as usual.
+
+4. An **authorization screen** appears naming the application and what it is
    asking for. Review it and choose **Approve**.
 
 </Steps>
+
+Two small controls sit under the command: the **callback port** — the port the
+assistant listens on while signing you in, `8080` for Claude Code — and
+**Re-issue**, which mints a fresh client id or moves it to another port.
+
+To take access away, use the bin icon next to an entry under **Authorized
+applications**. That drops the approval and every token issued under it; for
+credentials you issued here it deletes the client outright, so the command has
+to be re-issued before the assistant can connect again.
 
 <Aside type="caution" title="The port has to match">
 The credentials are tied to the exact callback address

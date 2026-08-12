@@ -21,7 +21,7 @@ export function connectCommand({
 	clientId?: string;
 	callbackPort?: number;
 }): string {
-	const base = `claude mcp add --transport http suberus ${url}`;
+	const base = `claude mcp add --scope project --transport http suberus ${url}`;
 	if (!clientId || callbackPort == null) return base;
 	return `${base} --client-id ${clientId} --callback-port ${callbackPort}`;
 }

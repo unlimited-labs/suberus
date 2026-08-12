@@ -100,6 +100,33 @@ export async function getMcpConnectionInfo(
  * Idempotent per user — re-minting re-points the existing client at the new
  * callback port instead of accumulating rows.
  */
+/**
+ * Revokes one application's access for this user. Only `oauthClientResource`
+ * has a foreign key on `clientId`; consents and tokens carry it as a plain
+ * column, so they have to be cleared by hand or the grants outlive the client.
+ *
+ * A client this user minted is deleted outright; anything else (one that
+ * registered itself) keeps its row — only this user's grant to it goes.
+ */
+export async function revokeMcpClient(
+	userId: string,
+	clientId: string,
+): Promise<void> {
+	await prisma.oauthAccessToken.deleteMany({ where: { clientId, userId } });
+	await prisma.oauthRefreshToken.deleteMany({ where: { clientId, userId } });
+	await prisma.oauthConsent.deleteMany({ where: { clientId, userId } });
+
+	if (!clientId.startsWith(DESKTOP_CLIENT_ID_PREFIX)) return;
+	const owned = await prisma.oauthClient.findFirst({
+		where: { clientId, userId },
+		select: { clientId: true },
+	});
+	if (!owned) return;
+
+	await prisma.oauthClientResource.deleteMany({ where: { clientId } });
+	await prisma.oauthClient.delete({ where: { clientId } });
+}
+
 export async function mintMcpDesktopClient(
 	userId: string,
 	callbackPort: number,

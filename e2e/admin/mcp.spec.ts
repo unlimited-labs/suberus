@@ -6,6 +6,7 @@ import { ADMIN_USER } from "../helpers/test-users";
 
 const CALLBACK = "http://127.0.0.1:9999/callback";
 const DESKTOP_PREFIX = "suberus-desktop-";
+const DEFAULT_PORT = 8080;
 
 async function clearDesktopClients() {
 	const db = getPrisma();
@@ -57,41 +58,100 @@ test.describe("MCP — connect dialog", () => {
 
 		const dialog = page.getByTestId("mcp-connect-dialog");
 		await expect(dialog.getByTestId("mcp-copy-1")).toContainText(
-			"claude mcp add --transport http",
+			"claude mcp add --scope project --transport http",
 		);
 		await expect(dialog.getByTestId("mcp-copy-2")).toContainText("/api/mcp");
 	});
 
-	test("mints credentials and folds them into the command", async ({
+	test("issues credentials on open and folds them into the command", async ({
 		page,
 	}) => {
 		const db = getPrisma();
 		await openMcpDialog(page);
 
 		const dialog = page.getByTestId("mcp-connect-dialog");
-		await expect(dialog.getByTestId("mcp-copy-1")).not.toContainText(
-			"--client-id",
-		);
-
-		await dialog.getByTestId("mcp-callback-port").fill("8123");
-		await dialog.getByTestId("mcp-mint-client").click();
-
 		await expect(dialog.getByTestId("mcp-client-id")).toContainText(
 			"suberus-desktop-",
 		);
-		const clientId = (await dialog.getByTestId("mcp-client-id").innerText())
-			.trim();
+		const clientId = (
+			await dialog.getByTestId("mcp-client-id").innerText()
+		).trim();
 		await expect(dialog.getByTestId("mcp-copy-1")).toContainText(
-			`--client-id ${clientId} --callback-port 8123`,
+			`--client-id ${clientId}`,
+		);
+		await expect(dialog.getByTestId("mcp-copy-1")).toContainText(
+			"--scope project",
 		);
 
 		// The row is only usable if it carries the loopback DNS callback Claude
 		// Code sends and the link to this instance's MCP resource.
 		const client = await db.oauthClient.findUnique({ where: { clientId } });
-		expect(client?.redirectUris).toEqual(["http://localhost:8123/callback"]);
+		expect(client?.redirectUris).toEqual([
+			`http://localhost:${DEFAULT_PORT}/callback`,
+		]);
 		expect(client?.requirePKCE).toBe(true);
 		expect(client?.tokenEndpointAuthMethod).toBe("none");
 		expect(await db.oauthClientResource.count({ where: { clientId } })).toBe(1);
+	});
+
+	test("re-issues on a different port", async ({ page }) => {
+		await openMcpDialog(page);
+		const dialog = page.getByTestId("mcp-connect-dialog");
+		await expect(dialog.getByTestId("mcp-client-id")).toBeVisible();
+
+		await dialog.getByTestId("mcp-callback-port").fill("8123");
+		await dialog.getByTestId("mcp-mint-client").click();
+
+		await expect(dialog.getByTestId("mcp-copy-1")).toContainText(
+			"--callback-port 8123",
+		);
+	});
+
+	test("revokes an application from the authorized list", async ({ page }) => {
+		const db = getPrisma();
+		const clientId = `${DESKTOP_PREFIX}revoke-${randomUUID().slice(0, 8)}`;
+		const admin = await db.user.findUnique({
+			where: { email: ADMIN_USER.email },
+		});
+		if (!admin) throw new Error("admin user not found");
+
+		await page.goto("/");
+		const resource = `${new URL(page.url()).origin}/api/mcp`;
+		await db.oauthClient.create({
+			data: {
+				clientId,
+				userId: admin.id,
+				name: "Revocable assistant",
+				redirectUris: ["http://localhost:8080/callback"],
+				grantTypes: ["authorization_code"],
+				responseTypes: ["code"],
+				tokenEndpointAuthMethod: "none",
+				scopes: ["users:read"],
+				requirePKCE: true,
+			},
+		});
+		await db.oauthConsent.create({
+			data: {
+				clientId,
+				userId: admin.id,
+				scopes: ["users:read"],
+				resources: [resource],
+				createdAt: new Date(),
+			},
+		});
+
+		await openMcpDialog(page);
+		const row = page
+			.getByTestId("mcp-client-list")
+			.locator("li")
+			.filter({ hasText: "Revocable assistant" });
+		await expect(row).toBeVisible();
+
+		await row.getByTestId("mcp-remove-client").click();
+
+		await expect(row).toBeHidden();
+		expect(await db.oauthConsent.count({ where: { clientId } })).toBe(0);
+		expect(await db.oauthClient.count({ where: { clientId } })).toBe(0);
 	});
 
 	test("keeps its content inside the dialog", async ({ page }) => {
