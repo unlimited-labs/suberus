@@ -105,7 +105,7 @@ Settings tabs deep-link via `?tab=<id>`.
 - [x] **55** — `managing/submissions.mdx` — *Bulk camera-ready upload — skip report toast* — `/admin/submissions` → **Upload camera-ready**
 - [x] **56** — `managing/users.mdx` — *On-behalf submission form* — `/admin/users/<id>` → **Add submission**
 - [x] **57** — `managing/users.mdx` — *Edit survey answers dialog* — `/admin/users/<id>` → Survey Responses → **Edit**
-- [x] **59** — `managing/ai-assistant.mdx` — *Connect an AI assistant dialog* (server URL, register command, assistant credentials, authorized applications) — user menu → **Connect AI assistant** — **stale:** shot predates the *Assistant credentials* panel (callback port + **Create credentials**); recapture when convenient
+- [x] **59** — `managing/ai-assistant.mdx` — *Connect an AI assistant dialog* (register command with credentials, callback port + Re-issue, authorized applications with revoke) — user menu → **Connect AI assistant**
 - [x] **60** — `managing/ai-assistant.mdx` — *Authorization screen* (application name, verified origin, requested access) — `/consent` during an assistant's OAuth flow
 
 ---
