@@ -1,8 +1,12 @@
 import { randomUUID } from "node:crypto";
+import { cimd } from "@better-auth/cimd";
+import { fetchClientMetadataResource } from "@better-auth/cimd/node";
+import { mcp } from "@better-auth/mcp";
 import { passkey } from "@better-auth/passkey";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { jwt } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { env } from "@/env";
 import { logActivity } from "@/features/activity-log/server/activity-log";
@@ -18,6 +22,32 @@ import "dotenv/config";
 const connectionString = env.DATABASE_URL;
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
+
+// mcp() IS the OAuth provider (it wraps oauthProvider), so it must never be
+// combined with a separate oauthProvider(); cimd() contributes unauthenticated
+// client discovery to it, replacing DCR per MCP 2026-07-28.
+const mcpPlugins = env.MCP_ENABLED
+	? [
+			jwt(),
+			mcp({
+				loginPage: "/login",
+				consentPage: "/consent",
+				resource: `${env.APP_BASE_URL}/api/mcp`,
+			}),
+			cimd({
+				fetchClientMetadataResource,
+				metadataProfile: "mcp-2026-07-28",
+				isMetadataDocumentUrlAllowed: (clientIdUrl) =>
+					env.MCP_CIMD_ALLOWED_ORIGINS.length === 0 ||
+					env.MCP_CIMD_ALLOWED_ORIGINS.includes(new URL(clientIdUrl).origin),
+				onClientCreated: ({ client, clientMetadataDocument }) => {
+					logger.info(
+						`[mcp] CIMD client registered: ${client.clientId} (${clientMetadataDocument.client_name ?? "unnamed"})`,
+					);
+				},
+			}),
+		]
+	: [];
 
 export const auth = betterAuth({
 	baseURL: env.APP_BASE_URL,
@@ -49,6 +79,7 @@ export const auth = betterAuth({
 				userVerification: "required",
 			},
 		}),
+		...mcpPlugins,
 	],
 	advanced: {
 		database: {

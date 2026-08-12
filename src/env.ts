@@ -80,6 +80,21 @@ export const env = createEnv({
 
 		E2E: z.stringbool().default(false),
 
+		// Admin MCP server. Off by default: enabling it exposes the OAuth 2.1
+		// authorization endpoints, so each instance opts in explicitly.
+		MCP_ENABLED: z.stringbool().default(false),
+		// Origins allowed to register as MCP clients via a Client ID Metadata
+		// Document. Empty = any origin (registrations are audit-logged either way).
+		MCP_CIMD_ALLOWED_ORIGINS: z
+			.string()
+			.default("")
+			.transform((v) =>
+				v
+					.split(",")
+					.map((o) => o.trim())
+					.filter(Boolean),
+			),
+
 		// Build metadata (injected at build time via Docker ARG/ENV)
 		GIT_COMMIT: z.string().default("unknown"),
 		BUILD_DATE: z.string().default("unknown"),
