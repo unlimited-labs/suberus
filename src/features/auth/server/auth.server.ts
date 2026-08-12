@@ -59,6 +59,17 @@ const mcpPlugins = env.MCP_ENABLED
 				consentPage: "/consent",
 				resource: MCP_RESOURCE,
 				scopes: [...MCP_SCOPES],
+				// claude.ai's metadata document declares jwt-bearer, and registration
+				// rejects any grant outside this list (stricter than RFC 7591 §2,
+				// which lets the server replace values instead). Accepting the
+				// declaration costs nothing: the token endpoint has no handler for it
+				// and still answers unsupported_grant_type.
+				grantTypes: [
+					"authorization_code",
+					"refresh_token",
+					"client_credentials",
+					"urn:ietf:params:oauth:grant-type:jwt-bearer",
+				],
 				// The resource is declared in full because the provider seeds a bare
 				// identifier with `allowedScopes: null`, which its own Prisma schema
 				// stores as a non-null String[] — read back as [], that denies every
@@ -81,9 +92,16 @@ const mcpPlugins = env.MCP_ENABLED
 			cimd({
 				fetchClientMetadataResource,
 				metadataProfile: "mcp-2026-07-28",
-				isMetadataDocumentUrlAllowed: (clientIdUrl) =>
-					env.MCP_CIMD_ALLOWED_ORIGINS.length === 0 ||
-					env.MCP_CIMD_ALLOWED_ORIGINS.includes(new URL(clientIdUrl).origin),
+				// The only hook that sees a registration attempt before it can be
+				// rejected. Without it a refused client leaves no trace: the API error
+				// carries the reason but never the client_id.
+				isMetadataDocumentUrlAllowed: (clientIdUrl) => {
+					logger.info(`[mcp] CIMD registration attempt: ${clientIdUrl}`);
+					return (
+						env.MCP_CIMD_ALLOWED_ORIGINS.length === 0 ||
+						env.MCP_CIMD_ALLOWED_ORIGINS.includes(new URL(clientIdUrl).origin)
+					);
+				},
 				onClientCreated: ({ client, clientMetadataDocument }) => {
 					logger.info(
 						`[mcp] CIMD client registered: ${client.clientId} (${clientMetadataDocument.client_name ?? "unnamed"})`,
