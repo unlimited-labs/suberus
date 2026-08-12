@@ -4,7 +4,11 @@ import {
 	McpServer,
 	originValidationResponse,
 } from "@modelcontextprotocol/server";
-import type { McpActor, McpTool } from "@/shared/server/mcp/define-tool";
+import {
+	type McpActor,
+	type McpTool,
+	mcpActorSchema,
+} from "@/shared/server/mcp/define-tool";
 
 export interface McpHandlerConfig {
 	name: string;
@@ -12,7 +16,6 @@ export interface McpHandlerConfig {
 	tools: readonly McpTool[];
 	allowedHostnames: string[];
 	allowedOrigins: string[];
-	resolveActor: (request: Request) => Promise<McpActor | null>;
 }
 
 export async function runTool(
@@ -40,19 +43,17 @@ export async function runTool(
 }
 
 export function createSuberusMcpHandler(config: McpHandlerConfig) {
-	const handler = createMcpHandler(async (ctx) => {
+	const handler = createMcpHandler((ctx) => {
 		const server = new McpServer({
 			name: config.name,
 			version: config.version,
 		});
 
-		const actor = ctx.requestInfo
-			? await config.resolveActor(ctx.requestInfo)
-			: null;
-		if (!actor) return server;
+		const actor = mcpActorSchema.safeParse(ctx.authInfo?.extra);
+		if (!actor.success) return server;
 
 		for (const tool of config.tools) {
-			if (!tool.roles.includes(actor.role)) continue;
+			if (!tool.roles.includes(actor.data.role)) continue;
 			server.registerTool(
 				tool.name,
 				{
@@ -64,17 +65,21 @@ export function createSuberusMcpHandler(config: McpHandlerConfig) {
 						destructiveHint: tool.destructive ?? false,
 					},
 				},
-				async (input) => runTool(tool, input, actor),
+				async (input) => runTool(tool, input, actor.data),
 			);
 		}
 
 		return server;
 	});
 
-	return async (request: Request): Promise<Response> => {
+	return async (request: Request, actor: McpActor): Promise<Response> => {
 		const rejected =
 			hostHeaderValidationResponse(request, config.allowedHostnames) ??
 			originValidationResponse(request, config.allowedOrigins);
-		return rejected ?? handler.fetch(request);
+		if (rejected) return rejected;
+
+		return handler.fetch(request, {
+			authInfo: { token: "", clientId: "", scopes: [], extra: actor },
+		});
 	};
 }

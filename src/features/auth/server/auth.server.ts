@@ -26,13 +26,26 @@ const prisma = new PrismaClient({ adapter });
 // mcp() IS the OAuth provider (it wraps oauthProvider), so it must never be
 // combined with a separate oauthProvider(); cimd() contributes unauthenticated
 // client discovery to it, replacing DCR per MCP 2026-07-28.
+export const MCP_RESOURCE = `${env.APP_BASE_URL}/api/mcp`;
+
 const mcpPlugins = env.MCP_ENABLED
 	? [
 			jwt(),
 			mcp({
 				loginPage: "/login",
 				consentPage: "/consent",
-				resource: `${env.APP_BASE_URL}/api/mcp`,
+				resource: MCP_RESOURCE,
+				// The resource is declared in full because the provider seeds a bare
+				// identifier with `allowedScopes: null`, which its own Prisma schema
+				// stores as a non-null String[] — read back as [], that denies every
+				// scope. Listing them explicitly keeps the row meaningful.
+				resources: [
+					{
+						identifier: MCP_RESOURCE,
+						name: "Suberus MCP",
+						allowedScopes: ["openid", "profile", "email", "offline_access"],
+					},
+				],
 			}),
 			cimd({
 				fetchClientMetadataResource,
