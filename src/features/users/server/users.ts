@@ -5,7 +5,9 @@ import {
 	logActivityTx,
 } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
+import { getSetting } from "@/features/settings/server/settings";
 import type {
+	feeMarkPaidInput,
 	userBulkActionInput,
 	userProfileUpdateInput,
 	usersListInput,
@@ -24,6 +26,7 @@ import { deleteFile } from "@/shared/server/storage";
 import {
 	extractFeePayment,
 	type PatchUserData,
+	selectFeeType,
 	summarizeUserChanges,
 } from "./patch-user-helpers";
 
@@ -655,6 +658,39 @@ export async function markFeePaid(
 	return { success: true };
 }
 
+/**
+ * Marks a fee paid from the configured fee types, the way the admin screen does
+ * — the amount and currency are never supplied by the caller. With several
+ * types configured and none named, it refuses rather than guessing: this writes
+ * a payment record.
+ */
+export async function markConfiguredFeePaid(
+	{ id, feeType }: z.infer<typeof feeMarkPaidInput>,
+	performedBy?: string,
+): Promise<{ success: boolean; feeType: string; amount: number }> {
+	const [feeTypes, currency] = await Promise.all([
+		getSetting("FEE_TYPES"),
+		getSetting("FEE_CURRENCY"),
+	]);
+	const picked = selectFeeType(feeTypes, feeType);
+	if ("error" in picked) {
+		throw new Response(picked.error, { status: 400 });
+	}
+	const selected = picked.type;
+
+	await markFeePaid(
+		{
+			userId: id,
+			feeType: selected.name,
+			amount: selected.amount,
+			currency,
+		},
+		performedBy,
+	);
+
+	return { success: true, feeType: selected.name, amount: selected.amount };
+}
+
 export async function unmarkFeePaid(
 	userId: string,
 	performedBy?: string,
@@ -902,6 +938,13 @@ export async function patchUser(
 	const feePayment = extractFeePayment(data);
 	if (feePayment) {
 		await markFeePaid({ userId: data.id, ...feePayment }, performedBy);
+	} else if (data.markFeePaid) {
+		// Silently dropping this used to report success while no payment was
+		// recorded — invisible from the outside, and about money.
+		throw new Response(
+			"markFeePaid needs feeType, feeAmount and feeCurrency; omit them and use the mark-fee-paid action to take them from the configured fee types",
+			{ status: 400 },
+		);
 	}
 
 	if (data.unmarkFeePaid) {

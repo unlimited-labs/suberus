@@ -49,6 +49,10 @@ export const userPatchInput = userIdInput.extend({
 	verifyEmail: z.boolean().optional(),
 });
 
+export const feeMarkPaidInput = userIdInput.extend({
+	feeType: z.string().optional(),
+});
+
 export const userBulkActionInput = z.object({
 	action: z.enum(["mark_fee", "change_role"]),
 	userIds: z.array(z.string()).min(1, "No users selected"),

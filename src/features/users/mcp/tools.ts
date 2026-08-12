@@ -7,9 +7,11 @@ import {
 	adminUpdateProfile,
 	fetchUserById,
 	fetchUsers,
+	markConfiguredFeePaid,
 	patchUser,
 } from "@/features/users/server/users";
 import {
+	feeMarkPaidInput,
 	userCreateInput,
 	userIdInput,
 	userPatchInput,
@@ -108,10 +110,24 @@ const updateUserProfile = defineTool({
 	},
 });
 
+const markFeePaidTool = defineTool({
+	name: "users_mark_fee_paid",
+	title: "Mark fee paid",
+	description:
+		"Record a participant's conference fee as paid. The amount and currency come from the configured fee types, so only the type is named — omit it when the conference has a single one. Use users_update with unmarkFeePaid to reverse it.",
+	input: feeMarkPaidInput,
+	roles: ADMIN_AND_EDITOR,
+	scope: MCP_SCOPE_USERS_WRITE,
+	async handler(input, actor) {
+		return markConfiguredFeePaid(input, actor.id);
+	},
+});
+
 export const usersMcpTools: readonly McpTool[] = [
 	listUsers,
 	getUser,
 	createUser,
 	updateUser,
 	updateUserProfile,
+	markFeePaidTool,
 ];

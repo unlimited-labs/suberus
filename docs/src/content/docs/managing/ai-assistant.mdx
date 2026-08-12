@@ -120,7 +120,8 @@ granted; nothing is stored.
 | List participants, with search and role/fee filters | Users, read | Admin, Editor |
 | Open one participant's full record | Users, read | Admin, Editor |
 | Create a participant account | Users, write | Admin, Editor |
-| Change role, activation, late-submission, fee or e-mail verification | Users, write | Admin, Editor |
+| Change role, activation, late-submission or e-mail verification | Users, write | Admin, Editor |
+| Mark someone's [conference fee](/settings/fee/) as paid | Users, write | Admin, Editor |
 | Edit someone's personal and billing details | Users, write | Admin only |
 
 **Conference:**
@@ -144,6 +145,12 @@ On the authorization screen you can see exactly what the application asked for.
 Approving an assistant for reading only is a good way to let it answer
 questions about your conference without ever being able to change it.
 </Aside>
+
+The assistant never sets the amount itself — it names one of the **fee types**
+you configured and the amount and currency are taken from there, exactly as the
+**Mark as paid** button does. With several types configured it asks which one
+rather than guessing. Reversing a payment is not offered as its own action; use
+**Mark as unpaid** on the participant's page.
 
 Creating an account sends the usual **set-password e-mail**, exactly as
 [adding a user by hand](/managing/users/#add-a-user-yourself) does. You can ask

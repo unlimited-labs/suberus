@@ -30,6 +30,35 @@ export function extractFeePayment(data: PatchUserData): FeePayment | null {
 	return null;
 }
 
+export interface ConfiguredFeeType {
+	name: string;
+	amount: number;
+}
+
+/**
+ * Picks the fee type to record a payment against. A name has to match exactly;
+ * without one it only resolves when the conference has a single type, because
+ * guessing here would record the wrong amount.
+ */
+export function selectFeeType(
+	feeTypes: readonly ConfiguredFeeType[],
+	name?: string,
+): { type: ConfiguredFeeType } | { error: string } {
+	if (feeTypes.length === 0) {
+		return { error: "No fee types are configured" };
+	}
+	const names = feeTypes.map((type) => type.name).join(", ");
+	if (!name) {
+		return feeTypes.length === 1
+			? { type: feeTypes[0] }
+			: { error: `Several fee types are configured, name one: ${names}` };
+	}
+	const match = feeTypes.find((type) => type.name === name);
+	return match
+		? { type: match }
+		: { error: `Unknown fee type "${name}". Configured: ${names}` };
+}
+
 /** Human-readable summary of which fields a patch touched, for the audit log. */
 export function summarizeUserChanges(data: PatchUserData): string {
 	return [
