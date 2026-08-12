@@ -9,6 +9,7 @@ const MODULE_REGISTRY: Record<string, string> = {
 	reviews: "@/features/reviews/server/reviews",
 	assignments: "@/features/reviews/server/assignments",
 	settings: "@/features/settings/server/settings",
+	conference: "@/features/settings/server/conference",
 	"admin-subs": "@/features/submissions/server/admin-submissions",
 	"admin-users": "@/features/users/server/users",
 	email: "@/shared/server/email",

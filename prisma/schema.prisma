@@ -396,6 +396,8 @@ enum ActivityType {
   // MCP
   MCP_CLIENT_REGISTERED
   MCP_CLIENT_UPDATED
+  // Settings
+  SETTINGS_CONFERENCE_UPDATED
 }
 
 model ActivityLog {

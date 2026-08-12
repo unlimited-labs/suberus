@@ -39,6 +39,7 @@ const labels = {
 	DOCUMENT_DELETED: "Document deleted",
 	MCP_CLIENT_REGISTERED: "MCP client registered",
 	MCP_CLIENT_UPDATED: "MCP client metadata changed",
+	SETTINGS_CONFERENCE_UPDATED: "Conference settings updated",
 } satisfies Record<ActivityType, string>;
 
 export const activityLabels: Record<string, string> = labels;

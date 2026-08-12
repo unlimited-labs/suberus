@@ -33,11 +33,8 @@ const updateConference = defineTool({
 	roles: ["ADMIN"],
 	scope: MCP_SCOPE_CONFERENCE_WRITE,
 	destructive: true,
-	async handler(input) {
-		const current = await getConferenceSettings();
-		const next = { ...current, ...input };
-		await updateConferenceSettings(next);
-		return next;
+	async handler(input, actor) {
+		return updateConferenceSettings(input, actor.id);
 	},
 });
 

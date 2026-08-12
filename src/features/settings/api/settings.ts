@@ -350,8 +350,8 @@ export const getConferenceSettingsFn = createServerFn({ method: "GET" })
 export const updateConferenceSettingsFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.validator(conferenceSettingsSchema)
-	.handler(async ({ data }) => {
-		await updateConferenceSettings(data);
+	.handler(async ({ data, context }) => {
+		await updateConferenceSettings(data, context.user.id);
 		return { success: true };
 	});
 

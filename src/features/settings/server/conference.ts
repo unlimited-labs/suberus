@@ -1,3 +1,5 @@
+import { logActivity } from "@/features/activity-log/server/activity-log";
+import { activityDetail } from "@/features/activity-log/types";
 import { getSettings, setSetting } from "@/features/settings/server/settings";
 import type { ConferenceSettings } from "@/features/settings/validations";
 
@@ -52,9 +54,23 @@ export async function getConferenceSettings(): Promise<ConferenceSettings> {
 	};
 }
 
+/**
+ * Takes a patch so the MCP tool and the settings form share one path: the form
+ * sends every field, an agent sends only what it is changing.
+ */
 export async function updateConferenceSettings(
-	data: ConferenceSettings,
-): Promise<void> {
+	patch: Partial<ConferenceSettings>,
+	performedBy: string,
+): Promise<ConferenceSettings> {
+	const current = await getConferenceSettings();
+	const data = { ...current, ...patch };
+	const changedFields = Object.keys(data).filter(
+		(key) =>
+			data[key as keyof ConferenceSettings] !==
+			current[key as keyof ConferenceSettings],
+	);
+	if (changedFields.length === 0) return current;
+
 	await Promise.all([
 		setSetting("CONFERENCE_NAME", data.name),
 		setSetting("CONFERENCE_LOCATION", data.location),
@@ -82,4 +98,12 @@ export async function updateConferenceSettings(
 		setSetting("PLANNER_AUTOPLAN_ENABLED", data.autoplanEnabled),
 		setSetting("PLANNER_AUTHOR_BUFFER_MIN", data.authorBufferMin),
 	]);
+
+	await logActivity({
+		type: "SETTINGS_CONFERENCE_UPDATED",
+		performedBy,
+		detail: activityDetail("SETTINGS_CONFERENCE_UPDATED", { changedFields }),
+	});
+
+	return data;
 }

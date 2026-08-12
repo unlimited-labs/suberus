@@ -143,6 +143,7 @@ const descriptionRenderers: Record<string, DescriptionRenderer> = {
 		if (!base) return null;
 		return changed ? `${base} · Changed: ${changed}` : base;
 	},
+	SETTINGS_CONFERENCE_UPDATED: (e) => list(e.detail?.changedFields) ?? null,
 	SUBMISSION_DELETED: (e) => (e.userName ? `Author: ${e.userName}` : null),
 	SUBMISSION_STATUS_CHANGED: statusArrow,
 	SUBMISSION_RESUBMITTED: statusArrow,

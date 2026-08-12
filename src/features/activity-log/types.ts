@@ -66,6 +66,7 @@ type DetailShapes = AssertExhaustive<{
 	DOCUMENT_DELETED: { documentName: string };
 	MCP_CLIENT_REGISTERED: McpClientAudit;
 	MCP_CLIENT_UPDATED: McpClientAudit & { changedFields: string[] };
+	SETTINGS_CONFERENCE_UPDATED: { changedFields: string[] };
 }>;
 
 // Discriminated union for the detail field per ActivityType.
