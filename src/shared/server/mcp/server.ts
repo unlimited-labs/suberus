@@ -42,34 +42,40 @@ export async function runTool(
 	}
 }
 
+export function buildMcpServer(
+	config: Omit<McpHandlerConfig, "allowedHostnames" | "allowedOrigins">,
+	actor: McpActor | null,
+): McpServer {
+	const server = new McpServer({
+		name: config.name,
+		version: config.version,
+	});
+	if (!actor) return server;
+
+	for (const tool of config.tools) {
+		if (!tool.roles.includes(actor.role)) continue;
+		server.registerTool(
+			tool.name,
+			{
+				title: tool.title,
+				description: tool.description,
+				inputSchema: tool.input,
+				annotations: {
+					readOnlyHint: tool.readOnly ?? false,
+					destructiveHint: tool.destructive ?? false,
+				},
+			},
+			async (input) => runTool(tool, input, actor),
+		);
+	}
+
+	return server;
+}
+
 export function createSuberusMcpHandler(config: McpHandlerConfig) {
 	const handler = createMcpHandler((ctx) => {
-		const server = new McpServer({
-			name: config.name,
-			version: config.version,
-		});
-
 		const actor = mcpActorSchema.safeParse(ctx.authInfo?.extra);
-		if (!actor.success) return server;
-
-		for (const tool of config.tools) {
-			if (!tool.roles.includes(actor.data.role)) continue;
-			server.registerTool(
-				tool.name,
-				{
-					title: tool.title,
-					description: tool.description,
-					inputSchema: tool.input,
-					annotations: {
-						readOnlyHint: tool.readOnly ?? false,
-						destructiveHint: tool.destructive ?? false,
-					},
-				},
-				async (input) => runTool(tool, input, actor.data),
-			);
-		}
-
-		return server;
+		return buildMcpServer(config, actor.success ? actor.data : null);
 	});
 
 	return async (request: Request, actor: McpActor): Promise<Response> => {
