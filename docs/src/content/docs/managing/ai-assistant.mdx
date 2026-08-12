@@ -36,8 +36,14 @@ that assistants use to sign in.
 
 ## Connecting an assistant
 
-Suberus does not let an assistant register itself. Opening the dialog issues
-**credentials** for you, and the assistant signs in with them.
+Web-based assistants identify themselves to Suberus on their own, so
+**Claude on the web needs nothing from this dialog** — add the server URL from
+step 2 as a custom connector and approve the authorization screen.
+
+**Claude Code needs credentials from here.** It listens on a local port during
+sign-in but does not publish that port when it identifies itself, so Suberus
+cannot match it against a self-declared address. The dialog issues a client
+tied to the exact port instead.
 
 <Steps>
 
