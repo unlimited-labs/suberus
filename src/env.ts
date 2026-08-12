@@ -84,7 +84,8 @@ export const env = createEnv({
 		// authorization endpoints, so each instance opts in explicitly.
 		MCP_ENABLED: z.stringbool().default(false),
 		// Origins allowed to register as MCP clients via a Client ID Metadata
-		// Document. Empty = any origin (registrations are audit-logged either way).
+		// Document. Empty = any origin. Registrations only reach the application
+		// log, not the ActivityLog table the admin audit screen reads.
 		MCP_CIMD_ALLOWED_ORIGINS: z
 			.string()
 			.default("")

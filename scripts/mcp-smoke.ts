@@ -5,7 +5,23 @@ import { prisma } from "@/shared/server/db.server";
 const BASE = process.env.APP_BASE_URL ?? "http://localhost:3001";
 const RESOURCE = `${BASE}/api/mcp`;
 const REDIRECT_URI = "http://127.0.0.1:9999/callback";
-const ADMIN = { email: "mcp-smoke@e2e.local", password: "smoke-password-123" };
+// Derived, not literal: stable across runs so the account can be reused, and
+// unguessable without this deployment's AUTH_SECRET.
+const ADMIN = {
+	email: "mcp-smoke@e2e.local",
+	password: createHash("sha256")
+		.update(`mcp-smoke:${process.env.AUTH_SECRET ?? ""}`)
+		.digest("base64url")
+		.slice(0, 24),
+};
+
+// This script mints a verified ADMIN account. Pointed at a production DATABASE_URL
+// it would leave a permanent backdoor, so refuse anywhere but local development.
+if (process.env.NODE_ENV === "production" || !BASE.includes("localhost")) {
+	throw new Error(
+		`mcp-smoke is a local development tool; refusing to run against ${BASE}`,
+	);
+}
 
 const b64url = (b: Buffer) => b.toString("base64url");
 

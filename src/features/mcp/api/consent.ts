@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { authMiddleware } from "@/features/auth/server/middleware";
+import { adminMiddleware } from "@/features/auth/server/middleware";
 import { prisma } from "@/shared/server/db.server";
 
 const consentClientInput = z.object({ clientId: z.string() });
@@ -17,7 +17,7 @@ export interface ConsentClient {
 }
 
 export const getConsentClient = createServerFn({ method: "GET" })
-	.middleware([authMiddleware])
+	.middleware([adminMiddleware])
 	.validator(consentClientInput)
 	.handler(async ({ data }): Promise<ConsentClient> => {
 		const client = await prisma.oauthClient.findUnique({

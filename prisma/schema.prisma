@@ -1255,7 +1255,7 @@ model OauthRefreshToken {
   scopes                  String[]
 
   session      Session?           @relation(fields: [sessionId], references: [id], onDelete: SetNull)
-  user         User               @relation(fields: [userId], references: [id])
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessTokens OauthAccessToken[]
 
   @@index([clientId])

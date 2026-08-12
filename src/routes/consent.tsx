@@ -1,6 +1,6 @@
 import { IconAlertTriangle, IconCheck } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { AuthLayout } from "@/features/auth/components/auth-layout";
 import { consentClientQueryOptions } from "@/features/mcp/api/consent";
@@ -51,7 +51,6 @@ async function submitConsent(accept: boolean): Promise<string> {
 }
 
 function ConsentPage() {
-	const router = useRouter();
 	const branding = Route.useRouteContext();
 	const { user, isPending } = useSession();
 	const [error, setError] = useState<string | null>(null);
@@ -81,12 +80,39 @@ function ConsentPage() {
 
 	if (isPending) return null;
 
-	if (!user) {
-		void router.navigate({ to: "/login" });
-		return null;
-	}
+	const appName = client?.name || clientId || "Unknown application";
 
-	const appName = client?.name ?? clientId ?? "Unknown application";
+	if (!user) {
+		// Not redirected: the signed authorization query only exists in this URL,
+		// and /login has no way to carry it back, so a silent redirect would strand
+		// the waiting client. Ask for a fresh attempt instead.
+		return (
+			<AuthLayout
+				logoUrl={branding.logoUrl}
+				backgroundImageUrl={branding.authBackgroundUrl || undefined}
+				overlayOpacity={branding.authBgOverlay}
+				logoDarkInvert={branding.logoDarkInvert}
+			>
+				<Card
+					className="mx-auto w-full max-w-md"
+					data-testid="consent-signed-out"
+				>
+					<CardHeader>
+						<CardTitle className="text-xl">Your session has ended</CardTitle>
+					</CardHeader>
+					<CardContent className="space-y-4">
+						<p className="text-muted-foreground text-sm">
+							Sign in again, then start the connection from your assistant once
+							more — this authorization request can no longer be completed.
+						</p>
+						<Button asChild className="w-full">
+							<Link to="/login">Sign in</Link>
+						</Button>
+					</CardContent>
+				</Card>
+			</AuthLayout>
+		);
+	}
 
 	return (
 		<AuthLayout
