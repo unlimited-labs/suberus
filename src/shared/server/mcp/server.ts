@@ -52,8 +52,12 @@ export function buildMcpServer(
 	});
 	if (!actor) return server;
 
+	const granted = new Set(actor.scopes);
 	for (const tool of config.tools) {
+		// Role and scope are independent gates: what the person may do, and how
+		// much of that they delegated to this application.
 		if (!tool.roles.includes(actor.role)) continue;
+		if (!granted.has(tool.scope)) continue;
 		server.registerTool(
 			tool.name,
 			{

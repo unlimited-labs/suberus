@@ -1,3 +1,7 @@
+import {
+	MCP_SCOPE_USERS_READ,
+	MCP_SCOPE_USERS_WRITE,
+} from "@/features/auth/server/auth.server";
 import { createUserByAdmin } from "@/features/users/server/create-user";
 import {
 	adminUpdateProfile,
@@ -23,6 +27,7 @@ const listUsers = defineTool({
 		"List conference users with optional search, role and fee filters. Returns a trimmed row per user; use users_get for the full record.",
 	input: usersListInput,
 	roles: ADMIN_AND_EDITOR,
+	scope: MCP_SCOPE_USERS_READ,
 	readOnly: true,
 	async handler(input) {
 		const { users, total } = await fetchUsers({ take: 50, ...input });
@@ -52,6 +57,7 @@ const getUser = defineTool({
 		"Fetch one user by id, including submissions, survey answers and fee status.",
 	input: userIdInput,
 	roles: ADMIN_AND_EDITOR,
+	scope: MCP_SCOPE_USERS_READ,
 	readOnly: true,
 	async handler(input) {
 		const user = await fetchUserById(input.id);
@@ -67,6 +73,7 @@ const createUser = defineTool({
 		"Create a participant account. By default sends a set-password email; pass sendSetPasswordEmail=false to create the account silently.",
 	input: userCreateInput,
 	roles: ADMIN_AND_EDITOR,
+	scope: MCP_SCOPE_USERS_WRITE,
 	async handler(input, actor) {
 		return createUserByAdmin(input, actor.id);
 	},
@@ -79,6 +86,7 @@ const updateUser = defineTool({
 		"Change role, active/late-submission flags, fee status or email verification. For name, email and billing details use users_update_profile.",
 	input: userPatchInput,
 	roles: ADMIN_AND_EDITOR,
+	scope: MCP_SCOPE_USERS_WRITE,
 	destructive: true,
 	async handler(input, actor) {
 		return patchUser(input, actor);
@@ -92,6 +100,7 @@ const updateUserProfile = defineTool({
 		"Replace a user's personal and billing details. Every field is overwritten, so send the full record.",
 	input: userProfileUpdateInput,
 	roles: ["ADMIN"],
+	scope: MCP_SCOPE_USERS_WRITE,
 	destructive: true,
 	async handler(input) {
 		const { id, ...profile } = input;

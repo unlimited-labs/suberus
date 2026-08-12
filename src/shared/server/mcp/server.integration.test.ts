@@ -11,6 +11,7 @@ const editorTool = defineTool({
 	description: "readable by editors",
 	input: z.object({ value: z.string().min(2) }),
 	roles: ["ADMIN", "EDITOR"],
+	scope: "probe:read",
 	readOnly: true,
 	async handler(input, actor) {
 		return { echoed: input.value, by: actor.id };
@@ -23,6 +24,7 @@ const adminTool = defineTool({
 	description: "admins only",
 	input: z.object({}),
 	roles: ["ADMIN"],
+	scope: "probe:write",
 	async handler() {
 		return { ok: true };
 	},
@@ -34,6 +36,7 @@ const failingTool = defineTool({
 	description: "always conflicts",
 	input: z.object({}),
 	roles: ["ADMIN", "EDITOR"],
+	scope: "probe:read",
 	async handler(): Promise<never> {
 		throw new Response("Email already in use", { status: 409 });
 	},
@@ -73,7 +76,11 @@ describe("MCP tool registry", () => {
 	let admin: Client;
 
 	beforeEach(async () => {
-		admin = await connect({ id: "admin-1", role: "ADMIN" });
+		admin = await connect({
+			id: "admin-1",
+			role: "ADMIN",
+			scopes: ["probe:read", "probe:write"],
+		});
 	});
 
 	it("exposes every tool an ADMIN may use", async () => {
@@ -86,10 +93,39 @@ describe("MCP tool registry", () => {
 	});
 
 	it("hides admin-only tools from an EDITOR", async () => {
-		const editor = await connect({ id: "editor-1", role: "EDITOR" });
+		const editor = await connect({
+			id: "editor-1",
+			role: "EDITOR",
+			scopes: ["probe:read", "probe:write"],
+		});
 		const { tools: listed } = await editor.listTools();
 		expect(listed.map((t) => t.name)).not.toContain("probe_admin");
 		expect(listed.map((t) => t.name)).toContain("probe_read");
+	});
+
+	it("hides a tool the token was not granted the scope for", async () => {
+		const readOnly = await connect({
+			id: "admin-1",
+			role: "ADMIN",
+			scopes: ["probe:read"],
+		});
+		const { tools: listed } = await readOnly.listTools();
+		expect(listed.map((t) => t.name)).not.toContain("probe_admin");
+		expect(listed.map((t) => t.name)).toContain("probe_read");
+
+		await expect(
+			readOnly.callTool({ name: "probe_admin", arguments: {} }),
+		).rejects.toThrow("Tool probe_admin not found");
+	});
+
+	it("registers nothing when the grant carries no matching scope", async () => {
+		const identityOnly = await connect({
+			id: "admin-1",
+			role: "ADMIN",
+			scopes: ["openid"],
+		});
+		const { tools: listed } = await identityOnly.listTools();
+		expect(listed).toEqual([]);
 	});
 
 	it("registers nothing without an authenticated actor", async () => {
@@ -127,7 +163,11 @@ describe("MCP tool registry", () => {
 	});
 
 	it("makes a tool outside the caller's role uncallable, not just hidden", async () => {
-		const editor = await connect({ id: "editor-1", role: "EDITOR" });
+		const editor = await connect({
+			id: "editor-1",
+			role: "EDITOR",
+			scopes: ["probe:read", "probe:write"],
+		});
 		await expect(
 			editor.callTool({ name: "probe_admin", arguments: {} }),
 		).rejects.toThrow("Tool probe_admin not found");

@@ -44,7 +44,10 @@ async function serve(request: Request): Promise<Response> {
 				return new Response("Forbidden", { status: 403 });
 			}
 
-			return handler(req, { id: user.id, role: user.role });
+			// claims.scope is the space-delimited grant (RFC 9068).
+			const scopes =
+				typeof claims.scope === "string" ? claims.scope.split(" ") : [];
+			return handler(req, { id: user.id, role: user.role, scopes });
 		},
 		{
 			resource: MCP_RESOURCE,

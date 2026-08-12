@@ -3,7 +3,11 @@ import { z } from "zod";
 import { defineTool, type McpActor } from "@/shared/server/mcp/define-tool";
 import { runTool } from "@/shared/server/mcp/server";
 
-const actor: McpActor = { id: "admin-1", role: "ADMIN" };
+const actor: McpActor = {
+	id: "admin-1",
+	role: "ADMIN",
+	scopes: ["probe:all"],
+};
 
 const tool = (impl: () => Promise<unknown>) =>
 	defineTool({
@@ -12,6 +16,7 @@ const tool = (impl: () => Promise<unknown>) =>
 		description: "test tool",
 		input: z.object({}),
 		roles: ["ADMIN"],
+		scope: "probe:all",
 		handler: impl,
 	});
 

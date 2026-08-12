@@ -103,16 +103,26 @@ granted; nothing is stored.
 
 Today the assistant can work with **users**:
 
-| Action | Who can use it |
-|---|---|
-| List participants, with search and role/fee filters | Admin, Editor |
-| Open one participant's full record | Admin, Editor |
-| Create a participant account | Admin, Editor |
-| Change role, activation, late-submission, fee or e-mail verification | Admin, Editor |
-| Edit someone's personal and billing details | Admin only |
+| Action | Access needed | Who can use it |
+|---|---|---|
+| List participants, with search and role/fee filters | Read | Admin, Editor |
+| Open one participant's full record | Read | Admin, Editor |
+| Create a participant account | Write | Admin, Editor |
+| Change role, activation, late-submission, fee or e-mail verification | Write | Admin, Editor |
+| Edit someone's personal and billing details | Write | Admin only |
 
-The assistant only sees the actions your role allows — an Editor's assistant is
-never offered the profile-editing action at all.
+Two independent things decide what an assistant may do: **your role** and **the
+access you approved**. The assistant is offered an action only when both allow
+it — an Editor's assistant is never offered the profile-editing action, and an
+assistant you approved for reading only never sees any of the Write actions,
+whatever your role is.
+
+<Aside type="tip" title="Approving read-only access">
+On the authorization screen you can see exactly which of the two the
+application asked for. Approving an assistant that only requested reading is a
+good way to let it answer questions about your participants without ever being
+able to create accounts or change roles.
+</Aside>
 
 Creating an account sends the usual **set-password e-mail**, exactly as
 [adding a user by hand](/managing/users/#add-a-user-yourself) does. You can ask

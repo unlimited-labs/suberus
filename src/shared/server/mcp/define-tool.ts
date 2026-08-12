@@ -4,6 +4,7 @@ import { UserRole } from "@/generated/prisma/enums";
 export const mcpActorSchema = z.object({
 	id: z.string(),
 	role: z.enum(UserRole),
+	scopes: z.array(z.string()),
 });
 
 export type McpActor = z.infer<typeof mcpActorSchema>;
@@ -14,6 +15,12 @@ export interface McpTool<Input extends z.ZodType = z.ZodType> {
 	description: string;
 	input: Input;
 	roles: readonly UserRole[];
+	/**
+	 * OAuth scope the access token must carry. Role and scope are independent:
+	 * the role is what the person may do, the scope is how much of that they
+	 * delegated to this application. Both have to allow the call.
+	 */
+	scope: string;
 	readOnly?: boolean;
 	destructive?: boolean;
 	// Method shorthand, not an arrow property: bivariant parameter checking is

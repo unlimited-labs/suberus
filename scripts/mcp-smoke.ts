@@ -104,7 +104,7 @@ async function main() {
 		response_type: "code",
 		client_id: clientId,
 		redirect_uri: REDIRECT_URI,
-		scope: "openid profile email users:read users:write",
+		scope: process.env.SMOKE_SCOPE ?? "openid profile email users:read users:write",
 		state,
 		code_challenge: challenge,
 		code_challenge_method: "S256",
