@@ -35,6 +35,7 @@ Suberus runs the full lifecycle of a conference call for submissions: authors su
 - **Document generator** — issue per-participant PDFs (certificates, invitations, invoices) from uploaded DOCX templates with placeholder substitution; generate one at a time or in bulk, with participants downloading theirs from a certificate gallery.
 - **Digital signatures** — generated PDFs are signed ([PAdES](https://en.wikipedia.org/wiki/PAdES)) with a self-signed or uploaded certificate, and anyone can confirm authenticity on a public document-verification page.
 - **Finances** — organizer-only board to track income and expenses (VAT-aware, with spreadsheet-style formula fields) and run break-even what-if simulations against projected registration income, exportable to Excel.
+- **AI assistant (MCP)** — expose the conference over the [Model Context Protocol](https://modelcontextprotocol.io) so assistants such as Claude Code can manage it. OAuth 2.1 authorization server ([better-auth](https://better-auth.com)) with [CIMD](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-client-id-metadata-document-02) client discovery; every tool is gated by both the operator's role and the scopes they approved, so an assistant can be granted read-only access. Off unless `MCP_ENABLED=true`.
 - **Immutable audit trail** — every user, submission, review, and decision event is logged.
 
 ## Quick start
