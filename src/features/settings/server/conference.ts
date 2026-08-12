@@ -54,10 +54,7 @@ export async function getConferenceSettings(): Promise<ConferenceSettings> {
 	};
 }
 
-/**
- * Takes a patch so the MCP tool and the settings form share one path: the form
- * sends every field, an agent sends only what it is changing.
- */
+/** A patch, so the form (all fields) and the MCP tool (some) share one path. */
 export async function updateConferenceSettings(
 	patch: Partial<ConferenceSettings>,
 	performedBy: string,

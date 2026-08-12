@@ -658,12 +658,7 @@ export async function markFeePaid(
 	return { success: true };
 }
 
-/**
- * Marks a fee paid from the configured fee types, the way the admin screen does
- * — the amount and currency are never supplied by the caller. With several
- * types configured and none named, it refuses rather than guessing: this writes
- * a payment record.
- */
+/** Amount and currency come from the configured types, never from the caller. */
 export async function markConfiguredFeePaid(
 	{ id, feeType }: z.infer<typeof feeMarkPaidInput>,
 	performedBy?: string,
@@ -912,9 +907,8 @@ export async function patchUser(
 ): Promise<AdminUserDetail | null> {
 	const performedBy = performer.id;
 
-	// Up front, before anything is written: the mutations below are sequential
-	// and uncoordinated, so rejecting mid-way would leave the earlier ones
-	// committed under a response the caller reads as total failure.
+	// Before any write: the mutations below are sequential and uncoordinated, so
+	// rejecting mid-way would leave the earlier ones committed.
 	const feePayment = extractFeePayment(data);
 	if (data.markFeePaid && !feePayment) {
 		throw new Response(

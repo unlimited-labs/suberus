@@ -32,9 +32,8 @@ const BASE_URL = "http://localhost:3001";
 const RESOURCE = `${BASE_URL}/api/mcp`;
 const CLIENT_ID = "https://client.example/mcp-client.json";
 
-// The document host is never contacted: isPublicRoutableHost is a syntactic
-// check with no DNS lookup, and the fetch transport is an injected seam. That
-// is what makes CIMD testable offline.
+// No host is contacted: isPublicRoutableHost is syntactic and the transport is
+// an injected seam — which is what makes CIMD testable offline.
 const metadataDocument = {
 	client_id: CLIENT_ID,
 	client_name: "Offline CIMD client",
@@ -62,9 +61,8 @@ function makeAuth(allowedOrigins: string[]) {
 		baseURL: BASE_URL,
 		secret: "test-secret-that-is-at-least-32-chars-long",
 		database: prismaAdapter(prisma, { provider: "postgresql" }),
-		// Mirrors auth.server.ts. The oauth_* id columns are @db.Uuid, while the
-		// provider would otherwise mint a random non-UUID string — every insert
-		// into those tables depends on this override.
+		// Mirrors auth.server.ts: oauth_* ids are @db.Uuid, but the provider mints
+		// non-UUID strings without this override.
 		advanced: { database: { generateId: () => randomUUID() } },
 		plugins: [
 			jwt(),
@@ -87,9 +85,8 @@ function makeAuth(allowedOrigins: string[]) {
 				isMetadataDocumentUrlAllowed: (url) =>
 					allowedOrigins.length === 0 ||
 					allowedOrigins.includes(new URL(url).origin),
-				// Imported lazily: cimd-audit reaches the shared prisma singleton
-				// through src/env.ts, which rejects the partial environment that a
-				// run without .env (the skip condition below) leaves behind.
+				// Lazy: this pulls in src/env.ts, which rejects the partial environment
+				// a run without .env leaves behind.
 				onClientCreated: async ({ client, clientMetadataDocument }) => {
 					const { recordMcpClientActivity } = await import(
 						"@/features/auth/server/cimd-audit"

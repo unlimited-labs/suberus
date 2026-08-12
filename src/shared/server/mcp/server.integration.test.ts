@@ -132,8 +132,7 @@ describe("MCP tool registry", () => {
 		});
 
 		expect(result.isError).toBe(true);
-		// The held scopes have to travel with the missing one: better-auth
-		// overwrites the consent row rather than unioning it.
+		// Held scopes travel with the missing one: re-consent overwrites the row.
 		expect(isInsufficientScopeError(challenge.error)).toBe(true);
 		expect(
 			(challenge.error as APIError).body?.scope?.split(" ").sort(),
@@ -195,9 +194,8 @@ describe("MCP tool registry", () => {
 		).rejects.toThrow("Tool probe_admin not found");
 	});
 
-	// The mechanism only works if fetch() resolves after the tool ran; were the
-	// transport to answer with a stream, the parked error would arrive too late
-	// to become a 403 and the caller would see a plain isError result instead.
+	// Only works if fetch() resolves after the tool ran; a streamed answer would
+	// deliver the parked error too late to become a 403.
 	it("re-throws the parked challenge out of the HTTP handler", async () => {
 		const handler = createSuberusMcpHandler({
 			name: "suberus-test",
@@ -242,9 +240,8 @@ describe("MCP tool registry", () => {
 		).rejects.toSatisfy(isInsufficientScopeError);
 	});
 
-	// The SDK compares the Origin header's hostname, so configuring full origins
-	// silently 403s every browser-sent request while header-less CLI clients
-	// keep working — which is exactly how it stayed unnoticed.
+	// The SDK compares Origin's hostname: full origins 403 every browser-sent
+	// request while header-less CLI clients keep working.
 	it("admits a request whose Origin matches the configured hostname", async () => {
 		const handler = createSuberusMcpHandler({
 			name: "suberus-test",

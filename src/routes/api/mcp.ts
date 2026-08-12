@@ -28,9 +28,8 @@ async function serve(request: Request): Promise<Response> {
 		return new Response("MCP server is disabled", { status: 404 });
 	}
 
-	// Without an explicit resource this falls back to the auth base URL, which
-	// both advertises an unreachable metadata URL in the 401 challenge and
-	// validates the token audience against the wrong identifier.
+	// Without an explicit resource this falls back to the auth base URL, giving
+	// an unreachable metadata URL and the wrong audience.
 	return requireMcpAuth(
 		auth,
 		async (req, claims) => {
@@ -45,16 +44,15 @@ async function serve(request: Request): Promise<Response> {
 				return new Response("Forbidden", { status: 403 });
 			}
 
-			// claims.scope is the space-delimited grant (RFC 9068).
+			// Space-delimited grant (RFC 9068).
 			const scopes =
 				typeof claims.scope === "string" ? claims.scope.split(" ") : [];
 			return handler(req, { id: user.id, role: user.role, scopes });
 		},
 		{
 			resource: MCP_RESOURCE,
-			// Advertised on the 401, not required to reach the endpoint: a token
-			// short of a scope must still get in far enough for the tool it called
-			// to answer a challenge naming what that one tool needs.
+			// Advertised, not required: a token short of a scope must still reach the
+			// tool, which answers with the challenge naming what it needs.
 			challengeScopes: [...MCP_CAPABILITY_SCOPES],
 		},
 	)(request);

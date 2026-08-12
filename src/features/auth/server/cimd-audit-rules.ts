@@ -21,8 +21,8 @@ function clamp(value: string): string {
 		: value;
 }
 
-// Registration is unauthenticated, so the document is attacker-controlled:
-// copy only the audited fields and bound every one before it reaches a log row.
+// Registration is unauthenticated: the document is attacker-controlled, so
+// copy only audited fields and bound each before it reaches a log row.
 function snapshot(client: AuditedClient, document: MetadataDocument) {
 	return {
 		clientId: clamp(client.clientId),
@@ -44,11 +44,7 @@ function sameList(a: readonly string[], b: readonly string[]): boolean {
 	return a.length === b.length && a.every((value, index) => value === b[index]);
 }
 
-/**
- * Audit-worthy differences produced by a metadata refresh. An empty result
- * means the refresh is not worth a log row: a client whose document is
- * re-fetched on every authorization would otherwise bury the audit trail.
- */
+/** Empty = not worth a log row; documents are re-fetched on every authorize. */
 export function mcpClientChangedFields(
 	previous: AuditedClient,
 	next: AuditedClient,

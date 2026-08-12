@@ -8,11 +8,7 @@ const consentClientInput = z.object({ clientId: z.string() });
 
 export interface ConsentClient {
 	name: string | null;
-	/**
-	 * Origin of the client_id URL for a CIMD client. This is the one part of a
-	 * client's identity the authorization server verified itself, so it is what
-	 * the consent screen anchors on — never the self-asserted name alone.
-	 */
+	/** The only verified part of a CIMD client's identity — the name is self-asserted. */
 	origin: string | null;
 }
 

@@ -45,8 +45,7 @@ function CommandBlock({
 }) {
 	const [copied, setCopied] = useState(false);
 
-	// navigator.clipboard is undefined outside a secure context (a plain-HTTP
-	// instance), and writeText can still be rejected by permissions.
+	// Undefined outside a secure context, and writeText can still be refused.
 	const copy = () => {
 		if (!navigator.clipboard) {
 			toast.error("Copying needs a secure (HTTPS) connection");
@@ -173,9 +172,8 @@ function CredentialControls({
 		onError: () => toast.error("Could not issue credentials"),
 	});
 
-	// Issued on open so the command is complete the moment the dialog is read.
-	// Minting is idempotent per user, and the ref keeps a re-render from firing
-	// a second write before the query has caught up.
+	// Issued on open so the command is complete when read. Minting is idempotent;
+	// the ref stops a re-render firing a second write before the query catches up.
 	useEffect(() => {
 		if (clientId || minted.current || mint.isPending) return;
 		minted.current = true;

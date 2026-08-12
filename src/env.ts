@@ -81,12 +81,9 @@ export const env = createEnv({
 
 		E2E: z.stringbool().default(false),
 
-		// Admin MCP server. Off by default: enabling it exposes the OAuth 2.1
-		// authorization endpoints, so each instance opts in explicitly.
+		// Off by default: enabling it exposes the OAuth 2.1 endpoints.
 		MCP_ENABLED: z.stringbool().default(false),
-		// Origins allowed to register as MCP clients via a Client ID Metadata
-		// Document. Empty = any origin. Registrations only reach the application
-		// log, not the ActivityLog table the admin audit screen reads.
+		// Origins allowed to register as MCP clients via CIMD. Empty = any.
 		MCP_CIMD_ALLOWED_ORIGINS: z
 			.string()
 			.default("")

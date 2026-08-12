@@ -36,9 +36,8 @@ export interface ConfiguredFeeType {
 }
 
 /**
- * Picks the fee type to record a payment against. A name has to match exactly;
- * without one it only resolves when the conference has a single type, because
- * guessing here would record the wrong amount.
+ * Exact name match; without one it resolves only when a single type exists —
+ * guessing would record the wrong amount.
  */
 export function selectFeeType(
 	feeTypes: readonly ConfiguredFeeType[],

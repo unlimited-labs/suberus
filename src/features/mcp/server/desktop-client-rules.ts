@@ -1,9 +1,8 @@
 export const DESKTOP_CLIENT_ID_PREFIX = "suberus-desktop-";
 
 /**
- * Claude Code builds its loopback callback as `http://localhost:<port>/callback`
- * — the DNS name, never `127.0.0.1`. RFC 8252 §7.3 waives the port only for
- * loopback *IP* literals, so the registered URI has to match this one exactly.
+ * Claude Code uses the DNS name, never `127.0.0.1`, and RFC 8252 §7.3 waives
+ * the port only for IP literals — so the registered URI must match exactly.
  */
 export function desktopRedirectUri(port: number): string {
 	return `http://localhost:${port}/callback`;

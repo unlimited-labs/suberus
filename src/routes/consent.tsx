@@ -37,13 +37,11 @@ async function submitConsent(accept: boolean): Promise<string> {
 	const res = await fetch("/api/auth/oauth2/consent", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
-		// The authorization query reaches this page signed; it must travel back
-		// verbatim, since the provider re-verifies the signature over it.
+		// Signed by the provider and re-verified there — must travel back verbatim.
 		body: JSON.stringify({ accept, oauth_query: window.location.search }),
 	});
 	if (!res.ok) throw new Error(await res.text());
-	// Documented as `redirect_uri`, but a non-navigation caller actually gets
-	// better-auth's redirect envelope. Both shapes are accepted.
+	// Documented as `redirect_uri`; non-navigation callers get the envelope.
 	const data: { redirect_uri?: string; url?: string } = await res.json();
 	const target = data.redirect_uri ?? data.url;
 	if (!target) throw new Error("Authorization server returned no redirect");
@@ -83,9 +81,8 @@ function ConsentPage() {
 	const appName = client?.name || clientId || "Unknown application";
 
 	if (!user) {
-		// Not redirected: the signed authorization query only exists in this URL,
-		// and /login has no way to carry it back, so a silent redirect would strand
-		// the waiting client. Ask for a fresh attempt instead.
+		// No redirect: /login cannot carry the signed query back, so it would
+		// strand the waiting client. Ask for a fresh attempt instead.
 		return (
 			<AuthLayout
 				logoUrl={branding.logoUrl}

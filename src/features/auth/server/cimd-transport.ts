@@ -18,15 +18,12 @@ function toHeaders(raw: NodeJS.Dict<string | string[]>): Headers {
 }
 
 /**
- * Replaces `@better-auth/cimd/node`, whose pinning `lookup` always calls back
- * with `(err, address, family)`. Node >=20 enables autoSelectFamily by default,
- * so `net` passes `all: true` and expects an array — the mismatch surfaces as
- * "Invalid IP address: undefined" and makes every CIMD fetch fail.
- * Remove once upstream honours the `all` option.
+ * Replaces `@better-auth/cimd/node`, whose `lookup` ignores autoSelectFamily's
+ * `all: true` (Node >=20 default) and fails every fetch with "Invalid IP
+ * address: undefined". Remove once upstream honours it.
  *
- * Keeps the contract CIMD requires: resolve once, reject RFC 6890 special-use
- * addresses, pin the approved address for the connection while the hostname
- * stays the Host header and TLS SNI, and never follow redirects.
+ * Same contract: resolve once, reject RFC 6890 addresses, pin the approved one
+ * while hostname stays Host/SNI, never follow redirects.
  */
 export const fetchClientMetadataResource: ClientMetadataResourceFetch = async (
 	input,

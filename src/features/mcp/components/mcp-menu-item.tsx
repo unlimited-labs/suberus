@@ -5,14 +5,9 @@ import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
 import { DropdownMenuItem } from "@/shared/ui/dropdown-menu";
 
 /**
- * Renders the entry only; the dialog it opens has to be a sibling of the
- * dropdown, because clicking an item unmounts the menu's subtree and would take
- * the dialog with it.
- *
- * MCP_ENABLED is server-only, so whether this instance runs an MCP server comes
- * from the connection query rather than an env var mirrored to the client. The
- * entry stays hidden until that answer arrives, so it never flashes on an
- * instance that has the server off.
+ * Entry only — clicking an item unmounts the menu subtree, so the dialog must
+ * be a sibling of the dropdown. MCP_ENABLED is server-only, hence the query;
+ * hidden until it answers so it never flashes where the server is off.
  */
 export function McpMenuItem({ onOpen }: { onOpen: () => void }) {
 	const { isAdmin } = useAdminAuth();

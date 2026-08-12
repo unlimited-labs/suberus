@@ -4,11 +4,7 @@ import {
 } from "@/features/activity-log/server/activity-log";
 import { logger } from "@/logger.ts";
 
-/**
- * The CIMD hooks are best-effort: a rejected callback is logged but does not
- * roll back an otherwise valid registration. Swallowing here keeps that
- * contract explicit instead of relying on the plugin's own catch.
- */
+/** Best-effort: a failed audit must not roll back a valid registration. */
 export async function recordMcpClientActivity(
 	params: LogActivityParams,
 ): Promise<void> {

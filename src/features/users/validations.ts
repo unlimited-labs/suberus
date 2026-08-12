@@ -5,8 +5,8 @@ import {
 	personalInfoSchema,
 } from "@/shared/lib/validations/user";
 
-// Assignable roles exclude EXHIBITOR: that role is granted by the exhibitor
-// flow, never by an admin role change. Filtering still spans every role.
+// EXHIBITOR is granted by the exhibitor flow, never by a role change; the
+// filter below still spans every role.
 export const userRoleSchema = z.enum(["ADMIN", "EDITOR", "REVIEWER", "AUTHOR"]);
 
 export const userRoleFilterSchema = z.enum(UserRole);
@@ -62,9 +62,8 @@ export const userBulkActionInput = z.object({
 	role: userRoleSchema.optional(),
 });
 
-// Form shapes derive from the wire schemas so a field added to a wire schema
-// reaches the dialog, and a renamed one fails to compile, instead of silently
-// dropping at the boundary.
+// Derived from the wire schemas: a renamed field fails to compile instead of
+// silently dropping at the boundary.
 export const adminUserCreateSchema = userCreateInput
 	.omit({ answers: true, sendSetPasswordEmail: true })
 	.extend({ surveyAnswers: z.record(z.string(), z.string()) });

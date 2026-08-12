@@ -49,11 +49,7 @@ async function findDesktopClient(
 	};
 }
 
-/**
- * Applications this user has approved, not every client registered on the
- * instance: the dialog lives in the user menu, so the actionable scope is the
- * caller's own grants.
- */
+/** This user's own grants, not every client registered on the instance. */
 export async function getMcpConnectionInfo(
 	userId: string,
 ): Promise<McpConnectionInfo> {
@@ -92,12 +88,9 @@ export async function getMcpConnectionInfo(
 }
 
 /**
- * Revokes one application's access for this user. Only `oauthClientResource`
- * has a foreign key on `clientId`; consents and tokens carry it as a plain
- * column, so they have to be cleared by hand or the grants outlive the client.
- *
- * A client this user minted is deleted outright; anything else (one that
- * registered itself) keeps its row — only this user's grant to it goes.
+ * Only `oauthClientResource` has an FK on `clientId` — consents and tokens
+ * carry it as a plain column and must be cleared by hand. A client this user
+ * minted is deleted; a self-registered one keeps its row.
  */
 export async function revokeMcpClient(
 	userId: string,
@@ -119,13 +112,9 @@ export async function revokeMcpClient(
 }
 
 /**
- * Pre-registers a public OAuth client for a desktop assistant, replacing the
- * CIMD/DCR path: a configured `oauth.clientId` short-circuits both in the
- * client, and Claude Code's hosted metadata document is rejected here anyway
- * (portless loopback URIs on a DNS name).
- *
- * Idempotent per user — re-minting re-points the existing client at the new
- * callback port instead of accumulating rows.
+ * Replaces CIMD/DCR for desktop assistants: a configured `oauth.clientId`
+ * short-circuits both, and Claude Code's metadata document is rejected here
+ * anyway (portless loopback URIs). Idempotent — re-minting re-points the row.
  */
 export async function mintMcpDesktopClient(
 	userId: string,
@@ -135,9 +124,8 @@ export async function mintMcpDesktopClient(
 		throw new Error("MCP server is disabled on this instance");
 	}
 
-	// The client→resource link is mandatory (enforcePerClientResources), and its
-	// FK targets a row better-auth only seeds when the provider boots, so make
-	// sure it is there before linking.
+	// The link is mandatory (enforcePerClientResources) and its FK targets a row
+	// better-auth only seeds at boot.
 	await prisma.oauthResource.upsert({
 		where: { identifier: MCP_RESOURCE },
 		update: {},

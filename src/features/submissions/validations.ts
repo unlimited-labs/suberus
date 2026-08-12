@@ -17,8 +17,7 @@ export const authorSchema = z.object({
 
 export const submissionIdInput = z.object({ submissionId: z.uuid() });
 
-// EXHIBITOR is deliberately absent: exhibitor entries are decided through the
-// exhibitor flow and never appear on the submissions screen.
+// EXHIBITOR absent: decided through the exhibitor flow, never listed here.
 export const submissionTypeFilterSchema = z.enum([
 	"ABSTRACT",
 	"FULL_PAPER",

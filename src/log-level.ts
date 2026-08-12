@@ -1,7 +1,6 @@
 import { z } from "zod";
 
-// consola's own levels, inlined rather than imported: this is evaluated on the
-// client too, and consola is a server-only dependency.
+// Inlined rather than imported from consola: this is evaluated on the client.
 const LOG_LEVEL_NAMES: Record<string, number> = {
 	silent: -999,
 	fatal: 0,
@@ -14,8 +13,7 @@ const LOG_LEVEL_NAMES: Record<string, number> = {
 	verbose: 999,
 };
 
-// An empty value counts as unset: `LOG_LEVEL=` would otherwise coerce to 0 and
-// silence everything below fatal.
+// Empty counts as unset: `LOG_LEVEL=` would coerce to 0 and silence all but fatal.
 export const logLevel = z
 	.string()
 	.trim()

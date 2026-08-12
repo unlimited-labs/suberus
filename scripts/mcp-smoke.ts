@@ -5,8 +5,7 @@ import { prisma } from "@/shared/server/db.server";
 const BASE = process.env.APP_BASE_URL ?? "http://localhost:3001";
 const RESOURCE = `${BASE}/api/mcp`;
 const REDIRECT_URI = "http://127.0.0.1:9999/callback";
-// Derived, not literal: stable across runs so the account can be reused, and
-// unguessable without this deployment's AUTH_SECRET.
+// Derived: stable across runs, unguessable without this AUTH_SECRET.
 const ADMIN = {
 	email: "mcp-smoke@e2e.local",
 	password: createHash("sha256")
@@ -15,8 +14,8 @@ const ADMIN = {
 		.slice(0, 24),
 };
 
-// This script mints a verified ADMIN account. Pointed at a production DATABASE_URL
-// it would leave a permanent backdoor, so refuse anywhere but local development.
+// Mints a verified ADMIN account — against production it would be a permanent
+// backdoor, so refuse anywhere but localhost.
 if (process.env.NODE_ENV === "production" || !BASE.includes("localhost")) {
 	throw new Error(
 		`mcp-smoke is a local development tool; refusing to run against ${BASE}`,
@@ -97,8 +96,7 @@ async function main() {
 		response_type: "code",
 		client_id: clientId,
 		redirect_uri: REDIRECT_URI,
-		// conference:write is deliberately left out: the last step asserts that
-		// calling a tool without its scope answers a step-up challenge.
+		// conference:write left out on purpose — the last step asserts the challenge.
 		scope:
 			process.env.SMOKE_SCOPE ??
 			"openid profile email users:read users:write conference:read",
@@ -113,8 +111,7 @@ async function main() {
 		headers: { cookie },
 		redirect: "manual",
 	});
-	// better-auth answers a non-navigation caller with a JSON redirect envelope
-	// instead of a Location header.
+	// Non-navigation callers get a JSON envelope, not a Location header.
 	const body = await authorizeRes.text();
 	const location =
 		authorizeRes.headers.get("location") ??

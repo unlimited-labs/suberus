@@ -18,17 +18,13 @@ async function clearDesktopClients() {
 async function openMcpDialog(page: Page) {
 	await page.goto("/");
 
-	// Each step gates on the element it actually needs, never on role="dialog":
-	// the Base UI sheet/menu popups do not set it. Clicks are retried because one
-	// landing before hydration is silently swallowed.
+	// Never gate on role="dialog" — Base UI popups omit it. Clicks are retried
+	// because one landing before hydration is silently swallowed.
 	const userMenu = page.locator('[data-testid="user-menu-trigger"]:visible');
-	// getByRole, not a testid: data-testid does not survive the SheetTrigger
-	// asChild composition on this button (branding-settings.spec.ts uses the same
-	// accessible name for the same reason).
+	// getByRole: data-testid does not survive SheetTrigger's asChild composition.
 	const mobileNav = page.getByRole("button", { name: "Menu" });
-	// The app shows a full-screen spinner until the session resolves. isVisible()
-	// does not retry, so branching before the shell renders would silently take
-	// the desktop path on a phone.
+	// isVisible() does not retry, so branching before the session spinner clears
+	// would silently take the desktop path on a phone.
 	await expect(mobileNav.or(userMenu).first()).toBeVisible();
 	if (await mobileNav.isVisible()) {
 		await expect(async () => {
@@ -37,9 +33,8 @@ async function openMcpDialog(page: Page) {
 		}).toPass({ timeout: 15_000 });
 	}
 
-	// Open the menu, then wait for the entry separately: it only renders once the
-	// connection query answers that MCP is enabled, and retrying the click while
-	// the menu is already open would just toggle it shut again.
+	// Wait for the entry separately: it renders only once the connection query
+	// answers, and re-clicking an open menu would toggle it shut.
 	const menu = page.getByTestId("user-menu-content");
 	await expect(async () => {
 		if (!(await menu.isVisible())) await userMenu.click();
@@ -53,8 +48,7 @@ async function openMcpDialog(page: Page) {
 }
 
 test.describe("MCP — connect dialog", () => {
-	// Minting is idempotent per user, so a client left behind by one test would
-	// change what the next one sees in the command.
+	// Minting is idempotent per user: a leftover client changes the next test.
 	test.beforeEach(clearDesktopClients);
 	test.afterEach(clearDesktopClients);
 
@@ -88,8 +82,7 @@ test.describe("MCP — connect dialog", () => {
 			"--scope project",
 		);
 
-		// The row is only usable if it carries the loopback DNS callback Claude
-		// Code sends and the link to this instance's MCP resource.
+		// Usable only with the loopback DNS callback Claude Code sends.
 		const client = await db.oauthClient.findUnique({ where: { clientId } });
 		expect(client?.redirectUris).toEqual([
 			`http://localhost:${DEFAULT_PORT}/callback`,
@@ -162,8 +155,8 @@ test.describe("MCP — connect dialog", () => {
 	test("keeps its content inside the dialog", async ({ page }) => {
 		await openMcpDialog(page);
 
-		// The register command is a single nowrap line; it used to widen the
-		// dialog's grid track and push every child past the right edge.
+		// The nowrap register command used to widen the grid track and push every
+		// child past the right edge.
 		const overflow = await page
 			.getByTestId("mcp-connect-dialog")
 			.evaluate((el) => el.scrollWidth - el.clientWidth);

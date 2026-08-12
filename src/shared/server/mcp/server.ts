@@ -12,10 +12,9 @@ import {
 } from "@/shared/server/mcp/define-tool";
 
 /**
- * Carries an insufficient_scope error out of a tool handler. The MCP SDK turns
- * every throw from a tool into an `isError` result, so the error can only reach
- * requireMcpAuth — which converts it into the RFC 6750 §3.1 challenge — by
- * being parked here and re-thrown once the handler has returned.
+ * The SDK turns every throw from a tool into an `isError` result, so an
+ * insufficient_scope error reaches requireMcpAuth (which makes it a challenge)
+ * only by being parked here and re-thrown after the handler returns.
  */
 interface ChallengeBox {
 	error: unknown;
@@ -26,9 +25,8 @@ export interface McpHandlerConfig {
 	version: string;
 	tools: readonly McpTool[];
 	allowedHostnames: string[];
-	// Hostnames, not origins: the SDK reduces the Origin header to its hostname
-	// before comparing, so a full origin here can never match and 403s every
-	// browser-sent request. A missing Origin always passes.
+	// Hostnames, not origins: the SDK compares Origin's hostname, so a full
+	// origin never matches and 403s every browser-sent request.
 	allowedOriginHostnames: string[];
 }
 
@@ -41,9 +39,8 @@ export async function runTool(
 		const result = await tool.handler(input, actor);
 		return { content: [{ type: "text", text: JSON.stringify(result) }] };
 	} catch (error) {
-		// The users/* service layer signals domain failures by throwing a Response
-		// (404/409/403). Unwrapped, those surface to the agent as an opaque
-		// transport error instead of something it can act on.
+		// Domain failures arrive as a thrown Response; unwrapped they'd reach the
+		// agent as an opaque transport error.
 		if (error instanceof Response) {
 			return {
 				content: [
@@ -69,10 +66,9 @@ export function buildMcpServer(
 
 	const granted = new Set(actor.scopes);
 	for (const tool of config.tools) {
-		// Role and scope are independent gates: what the person may do, and how
-		// much of that they delegated to this application. Only the role decides
-		// visibility — a tool the actor may use but has not granted stays listed
-		// and answers a step-up challenge, so adding one never needs a reconnect.
+		// Role = what the person may do, scope = how much they delegated. Only the
+		// role hides a tool; an ungranted one stays listed and challenges on call,
+		// so adding a tool never needs a reconnect.
 		if (!tool.roles.includes(actor.role)) continue;
 		const missingScope = !granted.has(tool.scope);
 		server.registerTool(
@@ -88,10 +84,8 @@ export function buildMcpServer(
 			},
 			async (input) => {
 				if (missingScope) {
-					// Every scope already held plus the missing one: better-auth
-					// overwrites oauthConsent.scopes on re-consent instead of unioning
-					// them, so a challenge naming only the missing scope would revoke
-					// everything else the client was granted.
+					// Held scopes travel with the missing one: re-consent overwrites
+					// oauthConsent.scopes instead of unioning.
 					const error = createInsufficientScopeError([
 						...new Set([...actor.scopes, tool.scope]),
 					]);

@@ -15,17 +15,12 @@ export interface McpTool<Input extends z.ZodType = z.ZodType> {
 	description: string;
 	input: Input;
 	roles: readonly UserRole[];
-	/**
-	 * OAuth scope the access token must carry. Role and scope are independent:
-	 * the role is what the person may do, the scope is how much of that they
-	 * delegated to this application. Both have to allow the call.
-	 */
+	/** Scope the token must carry; the actor's role has to allow it too. */
 	scope: string;
 	readOnly?: boolean;
 	destructive?: boolean;
-	// Method shorthand, not an arrow property: bivariant parameter checking is
-	// what lets a concretely-typed tool sit in an McpTool<z.ZodType> registry
-	// without a cast.
+	// Method shorthand, not an arrow: bivariance is what lets a concrete tool
+	// sit in an McpTool<z.ZodType> registry without a cast.
 	handler(input: z.infer<Input>, actor: McpActor): Promise<unknown>;
 }
 

@@ -29,21 +29,13 @@ const connectionString = env.DATABASE_URL;
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
-// mcp() IS the OAuth provider (it wraps oauthProvider), so it must never be
-// combined with a separate oauthProvider(); cimd() contributes unauthenticated
-// client discovery to it, replacing DCR per MCP 2026-07-28.
+// mcp() wraps oauthProvider — never add a second one; cimd() replaces DCR.
 export const MCP_RESOURCE = `${env.APP_BASE_URL}/api/mcp`;
 export const MCP_RESOURCE_NAME = "Suberus MCP";
 /**
- * Identity scopes plus this resource's own capability scopes. The capability
- * ones are what a client can be granted less than: they are not on the
- * authorization-server-only list, so they reach `scopes_supported` in the
- * protected resource metadata, which is where MCP clients read the scope set
- * to request from.
- *
- * Every tool declares one of these. A token missing a tool's scope still sees
- * the tool, and calling it answers RFC 6750 §3.1 `insufficient_scope` so the
- * client can step up — see shared/server/mcp/server.ts.
+ * Capability scopes reach `scopes_supported` (identity ones are filtered out),
+ * which is where clients read what to request. Missing one doesn't hide its
+ * tool — the call answers insufficient_scope; see shared/server/mcp/server.ts.
  */
 export const MCP_SCOPE_USERS_READ = "users:read";
 export const MCP_SCOPE_USERS_WRITE = "users:write";
@@ -75,21 +67,16 @@ const mcpPlugins = env.MCP_ENABLED
 				consentPage: "/consent",
 				resource: MCP_RESOURCE,
 				scopes: [...MCP_SCOPES],
-				// claude.ai's metadata document declares jwt-bearer, and registration
-				// rejects any grant outside this list (stricter than RFC 7591 §2,
-				// which lets the server replace values instead). Accepting the
-				// declaration costs nothing: the token endpoint has no handler for it
-				// and still answers unsupported_grant_type.
+				// claude.ai declares jwt-bearer and registration rejects grants outside
+				// this list; the token endpoint has no handler, so it stays unsupported.
 				grantTypes: [
 					"authorization_code",
 					"refresh_token",
 					"client_credentials",
 					"urn:ietf:params:oauth:grant-type:jwt-bearer",
 				],
-				// The resource is declared in full because the provider seeds a bare
-				// identifier with `allowedScopes: null`, which its own Prisma schema
-				// stores as a non-null String[] — read back as [], that denies every
-				// scope. Listing them explicitly keeps the row meaningful.
+				// Declared in full: a bare identifier seeds `allowedScopes: null`, which
+				// Prisma stores as [] — denying every scope.
 				resources: [
 					{
 						identifier: MCP_RESOURCE,
@@ -97,20 +84,17 @@ const mcpPlugins = env.MCP_ENABLED
 						allowedScopes: [...MCP_SCOPES],
 					},
 				],
-				// insertOnly (the default) would leave the seeded row's allowedScopes
-				// frozen at whatever the first boot wrote, so a scope added here would
-				// never reach the resource that intersects against it.
+				// insertOnly (the default) freezes allowedScopes at first boot, so a new
+				// scope would never reach the resource that intersects against it.
 				resourceSeedMode: "merge",
-				// routes/[.]well-known.$.ts forwards the issuer-suffixed discovery
-				// path into the auth handler; verified serving 200.
+				// routes/[.]well-known.$.ts serves the issuer-suffixed discovery path.
 				silenceWarnings: { oauthAuthServerConfig: true },
 			}),
 			cimd({
 				fetchClientMetadataResource,
 				metadataProfile: "mcp-2026-07-28",
-				// The only hook that sees a registration attempt before it can be
-				// rejected. Without it a refused client leaves no trace: the API error
-				// carries the reason but never the client_id.
+				// Only hook that sees an attempt before rejection; the API error carries
+				// the reason but never the client_id.
 				isMetadataDocumentUrlAllowed: (clientIdUrl) => {
 					logger.info(`[mcp] CIMD registration attempt: ${clientIdUrl}`);
 					return (
@@ -180,9 +164,7 @@ export const auth = betterAuth({
 			},
 		}),
 		...mcpPlugins,
-		// Must stay last: better-auth forwards Set-Cookie to the framework store
-		// from this plugin's after-hook, so any plugin registered later would have
-		// its cookies dropped.
+		// Must stay last: cookies set by plugins registered after it are dropped.
 		tanstackStartCookies(),
 	],
 	advanced: {
