@@ -23,10 +23,14 @@ function CopyRow({ label, value }: { label: string; value: string }) {
 		<div className="space-y-1">
 			<div className="text-muted-foreground text-sm">{label}</div>
 			<div className="flex items-center gap-2">
-				<code className="flex-1 overflow-x-auto rounded bg-muted px-2 py-1.5 font-mono text-xs whitespace-nowrap">
+				{/* min-w-0 is load-bearing: a flex item defaults to min-width:auto, so
+				    without it the nowrap content widens the row past the dialog and
+				    overflow-x-auto never engages. */}
+				<code className="min-w-0 flex-1 overflow-x-auto rounded bg-muted px-2 py-1.5 font-mono text-xs whitespace-nowrap">
 					{value}
 				</code>
 				<Button
+					className="shrink-0"
 					variant="outline"
 					size="icon"
 					aria-label={`Copy ${label}`}

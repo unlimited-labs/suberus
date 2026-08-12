@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto";
 import { cimd } from "@better-auth/cimd";
-import { fetchClientMetadataResource } from "@better-auth/cimd/node";
 import { mcp } from "@better-auth/mcp";
 import { passkey } from "@better-auth/passkey";
 import { PrismaPg } from "@prisma/adapter-pg";
@@ -11,6 +10,7 @@ import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { env } from "@/env";
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
+import { fetchClientMetadataResource } from "@/features/auth/server/cimd-transport";
 import { getSetting } from "@/features/settings/server/settings";
 import { PrismaClient, UserRole } from "@/generated/prisma/client";
 import { logger } from "@/logger.ts";
