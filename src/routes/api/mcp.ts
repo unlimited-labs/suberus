@@ -1,7 +1,12 @@
 import { requireMcpAuth } from "@better-auth/mcp";
 import { createFileRoute } from "@tanstack/react-router";
 import { env } from "@/env";
-import { auth, MCP_RESOURCE } from "@/features/auth/server/auth.server";
+import {
+	auth,
+	MCP_RESOURCE,
+	MCP_SCOPE_USERS_READ,
+	MCP_SCOPE_USERS_WRITE,
+} from "@/features/auth/server/auth.server";
 import { hasAdminRole } from "@/features/auth/server/middleware";
 import { usersMcpTools } from "@/features/users/mcp/tools";
 import { prisma } from "@/shared/server/db.server";
@@ -41,7 +46,13 @@ async function serve(request: Request): Promise<Response> {
 
 			return handler(req, { id: user.id, role: user.role });
 		},
-		{ resource: MCP_RESOURCE },
+		{
+			resource: MCP_RESOURCE,
+			// Advertised, not required: this is the third place a client may read
+			// the scope set from (after the resource metadata and the AS metadata).
+			// requiredScopes stays unset until a real client is seen asking for them.
+			challengeScopes: [MCP_SCOPE_USERS_READ, MCP_SCOPE_USERS_WRITE],
+		},
 	)(request);
 }
 

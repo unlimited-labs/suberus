@@ -4,6 +4,8 @@ const SCOPE_LABELS: Record<string, string> = {
 	profile: "Read your name and account details",
 	email: "Read your email address",
 	offline_access: "Stay connected without asking you again",
+	"users:read": "List and read participant records",
+	"users:write": "Create participants and change their roles, fees and access",
 };
 
 export function scopeLabel(scope: string): string {

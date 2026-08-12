@@ -28,11 +28,27 @@ const prisma = new PrismaClient({ adapter });
 // client discovery to it, replacing DCR per MCP 2026-07-28.
 export const MCP_RESOURCE = `${env.APP_BASE_URL}/api/mcp`;
 export const MCP_RESOURCE_NAME = "Suberus MCP";
+/**
+ * Identity scopes plus this resource's own capability scopes. The capability
+ * ones are what a client can be granted less than: they are not on the
+ * authorization-server-only list, so they reach `scopes_supported` in the
+ * protected resource metadata, which is where MCP clients read the scope set
+ * to request from.
+ *
+ * MEASUREMENT IN PROGRESS: no tool is gated on them yet. Gate only once a real
+ * client is observed asking for them (read `oauthConsent.scopes`), otherwise
+ * gating would hide every tool from a client that requests a fixed scope set.
+ */
+export const MCP_SCOPE_USERS_READ = "users:read";
+export const MCP_SCOPE_USERS_WRITE = "users:write";
+
 export const MCP_SCOPES = [
 	"openid",
 	"profile",
 	"email",
 	"offline_access",
+	MCP_SCOPE_USERS_READ,
+	MCP_SCOPE_USERS_WRITE,
 ] as const;
 
 const mcpPlugins = env.MCP_ENABLED
@@ -42,6 +58,7 @@ const mcpPlugins = env.MCP_ENABLED
 				loginPage: "/login",
 				consentPage: "/consent",
 				resource: MCP_RESOURCE,
+				scopes: [...MCP_SCOPES],
 				// The resource is declared in full because the provider seeds a bare
 				// identifier with `allowedScopes: null`, which its own Prisma schema
 				// stores as a non-null String[] — read back as [], that denies every
@@ -53,6 +70,10 @@ const mcpPlugins = env.MCP_ENABLED
 						allowedScopes: [...MCP_SCOPES],
 					},
 				],
+				// insertOnly (the default) would leave the seeded row's allowedScopes
+				// frozen at whatever the first boot wrote, so a scope added here would
+				// never reach the resource that intersects against it.
+				resourceSeedMode: "merge",
 				// routes/[.]well-known.$.ts forwards the issuer-suffixed discovery
 				// path into the auth handler; verified serving 200.
 				silenceWarnings: { oauthAuthServerConfig: true },
