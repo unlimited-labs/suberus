@@ -27,6 +27,13 @@ const prisma = new PrismaClient({ adapter });
 // combined with a separate oauthProvider(); cimd() contributes unauthenticated
 // client discovery to it, replacing DCR per MCP 2026-07-28.
 export const MCP_RESOURCE = `${env.APP_BASE_URL}/api/mcp`;
+export const MCP_RESOURCE_NAME = "Suberus MCP";
+export const MCP_SCOPES = [
+	"openid",
+	"profile",
+	"email",
+	"offline_access",
+] as const;
 
 const mcpPlugins = env.MCP_ENABLED
 	? [
@@ -42,8 +49,8 @@ const mcpPlugins = env.MCP_ENABLED
 				resources: [
 					{
 						identifier: MCP_RESOURCE,
-						name: "Suberus MCP",
-						allowedScopes: ["openid", "profile", "email", "offline_access"],
+						name: MCP_RESOURCE_NAME,
+						allowedScopes: [...MCP_SCOPES],
 					},
 				],
 				// routes/[.]well-known.$.ts forwards the issuer-suffixed discovery

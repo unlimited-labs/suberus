@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { auth } from "@/features/auth/server/auth.server";
-import { normalizeLoopbackRedirect } from "@/features/auth/server/loopback-redirect";
 
 // better-auth passes `ctx.request?.clone()` to callbacks (e.g.
 // sendVerificationEmail, see better-auth PR #9619). Under concurrent load the
@@ -27,12 +26,10 @@ export const Route = createFileRoute("/api/auth/$")({
 	server: {
 		handlers: {
 			GET: async ({ request }) => {
-				return await auth.handler(await normalizeLoopbackRedirect(request));
+				return await auth.handler(request);
 			},
 			POST: async ({ request }) => {
-				return await auth.handler(
-					await clonableRequest(await normalizeLoopbackRedirect(request)),
-				);
+				return await auth.handler(await clonableRequest(request));
 			},
 		},
 	},

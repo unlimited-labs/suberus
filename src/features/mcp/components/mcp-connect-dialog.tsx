@@ -1,9 +1,18 @@
 import { IconCheck, IconCopy, IconPlugConnected } from "@tabler/icons-react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { mcpConnectionQueryOptions } from "@/features/mcp/api/mcp-connection";
-import type { McpAuthorizedClient } from "@/features/mcp/server/connection";
+import {
+	mcpConnectionQueryOptions,
+	mintMcpDesktopClient,
+} from "@/features/mcp/api/mcp-connection";
+import { connectCommand } from "@/features/mcp/labels";
+import type {
+	McpAuthorizedClient,
+	McpDesktopClient,
+} from "@/features/mcp/server/connection";
+import { DEFAULT_CALLBACK_PORT } from "@/features/mcp/validations";
+import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -11,6 +20,8 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/shared/ui/dialog";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
 import { Skeleton } from "@/shared/ui/skeleton";
 
 interface McpConnectDialogProps {
@@ -29,11 +40,21 @@ function CommandBlock({
 }) {
 	const [copied, setCopied] = useState(false);
 
+	// navigator.clipboard is undefined outside a secure context (a plain-HTTP
+	// instance), and writeText can still be rejected by permissions.
 	const copy = () => {
-		navigator.clipboard.writeText(value);
-		setCopied(true);
-		toast.success("Copied to clipboard");
-		setTimeout(() => setCopied(false), 1500);
+		if (!navigator.clipboard) {
+			toast.error("Copying needs a secure (HTTPS) connection");
+			return;
+		}
+		navigator.clipboard
+			.writeText(value)
+			.then(() => {
+				setCopied(true);
+				toast.success("Copied to clipboard");
+				setTimeout(() => setCopied(false), 1500);
+			})
+			.catch(() => toast.error("Could not copy to clipboard"));
 	};
 
 	return (
@@ -98,6 +119,73 @@ function ClientRow({
 				)}
 			</div>
 		</li>
+	);
+}
+
+function CredentialsPanel({
+	desktopClient,
+}: {
+	desktopClient: McpDesktopClient | null;
+}) {
+	const queryClient = useQueryClient();
+	const [port, setPort] = useState(
+		String(desktopClient?.callbackPort ?? DEFAULT_CALLBACK_PORT),
+	);
+
+	const mint = useMutation({
+		mutationFn: (callbackPort: number) =>
+			mintMcpDesktopClient({ data: { callbackPort } }),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: ["mcp", "connection"] });
+			toast.success("Credentials ready");
+		},
+		onError: () => toast.error("Could not create the credentials"),
+	});
+
+	return (
+		<div className="min-w-0 space-y-3 rounded-lg border p-3">
+			<div>
+				<div className="font-medium text-sm">Assistant credentials</div>
+				<p className="text-muted-foreground text-sm">
+					{desktopClient
+						? "The command above carries these credentials. Re-issue them if your assistant listens on another port."
+						: "Issue a client the assistant signs in with. Keep the port your assistant listens on."}
+				</p>
+			</div>
+			<div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+				<div className="min-w-0 flex-1 space-y-1.5">
+					<Label htmlFor="mcp-callback-port">Callback port</Label>
+					<Input
+						id="mcp-callback-port"
+						data-testid="mcp-callback-port"
+						type="number"
+						inputMode="numeric"
+						min={1024}
+						max={65535}
+						value={port}
+						onChange={(e) => setPort(e.target.value)}
+					/>
+				</div>
+				<Button
+					type="button"
+					variant={desktopClient ? "outline" : "default"}
+					data-testid="mcp-mint-client"
+					disabled={mint.isPending}
+					onClick={() => mint.mutate(Number(port))}
+					className="w-full sm:w-auto"
+				>
+					{desktopClient ? "Re-issue" : "Create credentials"}
+				</Button>
+			</div>
+			{desktopClient && (
+				<p
+					className="min-w-0 truncate font-mono text-[11px] text-muted-foreground"
+					data-testid="mcp-client-id"
+				>
+					{desktopClient.clientId}
+				</p>
+			)}
+		</div>
 	);
 }
 
@@ -167,13 +255,18 @@ export function McpConnectDialog({
 							<CommandBlock
 								step={1}
 								label="Register the server"
-								value={`claude mcp add --transport http suberus ${data.url}`}
+								value={connectCommand({
+									url: data.url,
+									clientId: data.desktopClient?.clientId,
+									callbackPort: data.desktopClient?.callbackPort,
+								})}
 							/>
 							<CommandBlock
 								step={2}
 								label="Or use the URL directly"
 								value={data.url}
 							/>
+							<CredentialsPanel desktopClient={data.desktopClient} />
 						</div>
 
 						<p className="text-muted-foreground text-sm">
