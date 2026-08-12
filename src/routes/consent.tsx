@@ -22,9 +22,12 @@ async function submitConsent(accept: boolean): Promise<string> {
 		body: JSON.stringify({ accept, oauth_query: window.location.search }),
 	});
 	if (!res.ok) throw new Error(await res.text());
-	const data: { redirect_uri?: string } = await res.json();
-	if (!data.redirect_uri) throw new Error("Missing redirect_uri in response");
-	return data.redirect_uri;
+	// Documented as `redirect_uri`, but a non-navigation caller actually gets
+	// better-auth's redirect envelope. Both shapes are accepted.
+	const data: { redirect_uri?: string; url?: string } = await res.json();
+	const target = data.redirect_uri ?? data.url;
+	if (!target) throw new Error("Authorization server returned no redirect");
+	return target;
 }
 
 function ConsentPage() {

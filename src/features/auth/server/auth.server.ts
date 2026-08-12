@@ -46,6 +46,9 @@ const mcpPlugins = env.MCP_ENABLED
 						allowedScopes: ["openid", "profile", "email", "offline_access"],
 					},
 				],
+				// routes/[.]well-known.$.ts forwards the issuer-suffixed discovery
+				// path into the auth handler; verified serving 200.
+				silenceWarnings: { oauthAuthServerConfig: true },
 			}),
 			cimd({
 				fetchClientMetadataResource,
@@ -78,7 +81,6 @@ export const auth = betterAuth({
 		provider: "postgresql",
 	}),
 	plugins: [
-		tanstackStartCookies(),
 		// rpName is only a label (shown in the OS passkey prompt); credential isolation
 		// is by rpID = the instance's domain, so a shared name never collides across tenants.
 		passkey({
@@ -93,6 +95,10 @@ export const auth = betterAuth({
 			},
 		}),
 		...mcpPlugins,
+		// Must stay last: better-auth forwards Set-Cookie to the framework store
+		// from this plugin's after-hook, so any plugin registered later would have
+		// its cookies dropped.
+		tanstackStartCookies(),
 	],
 	advanced: {
 		database: {
