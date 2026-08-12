@@ -1,10 +1,11 @@
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
+import { logLevel } from "./log-level";
 
 export const env = createEnv({
 	shared: {
 		NODE_ENV: z.string().default("development"),
-		LOG_LEVEL: z.coerce.number().default(3),
+		LOG_LEVEL: logLevel,
 	},
 
 	clientPrefix: "VITE_",
