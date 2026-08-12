@@ -15,6 +15,38 @@ export const authorSchema = z.object({
 	isPresenter: z.boolean(),
 });
 
+export const submissionIdInput = z.object({ submissionId: z.uuid() });
+
+// EXHIBITOR is deliberately absent: exhibitor entries are decided through the
+// exhibitor flow and never appear on the submissions screen.
+export const submissionTypeFilterSchema = z.enum([
+	"ABSTRACT",
+	"FULL_PAPER",
+	"POSTER",
+]);
+
+export const submissionStatusFilterSchema = z.enum([
+	"DRAFT",
+	"SUBMITTED",
+	"UNDER_REVIEW",
+	"REVIEWS_COMPLETE",
+	"AWAITING_DECISION",
+	"REVISE_REQUIRED",
+	"RESUBMITTED",
+	"ACCEPTED",
+	"CONDITIONALLY_ACCEPTED",
+	"REJECTED",
+	"WITHDRAWN",
+]);
+
+export const adminSubmissionsListInput = z.object({
+	search: z.string().optional(),
+	type: z.array(submissionTypeFilterSchema).optional(),
+	status: z.array(submissionStatusFilterSchema).optional(),
+	take: z.number().int().min(1).max(200).optional(),
+	skip: z.number().int().min(0).optional(),
+});
+
 /** Validation settings for dynamic schema creation */
 export interface ValidationLimits {
 	minTitleLength: number;

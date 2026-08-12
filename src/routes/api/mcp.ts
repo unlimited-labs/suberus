@@ -8,6 +8,7 @@ import {
 } from "@/features/auth/server/auth.server";
 import { hasAdminRole } from "@/features/auth/server/middleware";
 import { settingsMcpTools } from "@/features/settings/mcp/tools";
+import { submissionsMcpTools } from "@/features/submissions/mcp/tools";
 import { usersMcpTools } from "@/features/users/mcp/tools";
 import { prisma } from "@/shared/server/db.server";
 import { createSuberusMcpHandler } from "@/shared/server/mcp/server";
@@ -17,7 +18,7 @@ const baseUrl = new URL(env.APP_BASE_URL);
 const handler = createSuberusMcpHandler({
 	name: "suberus",
 	version: env.GIT_COMMIT,
-	tools: [...usersMcpTools, ...settingsMcpTools],
+	tools: [...usersMcpTools, ...settingsMcpTools, ...submissionsMcpTools],
 	allowedHostnames: [baseUrl.hostname],
 	allowedOrigins: [baseUrl.origin],
 });

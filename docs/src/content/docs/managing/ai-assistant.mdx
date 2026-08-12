@@ -9,8 +9,9 @@ import { Aside, Steps } from '@astrojs/starlight/components';
 
 Suberus can expose an **MCP server** — an interface that AI assistants such as
 Claude Code understand. Once connected, you can ask the assistant to list
-participants, create an account, change a role, or move a deadline, and it
-performs those actions in the system through your own account.
+participants, look up a submission and its authors, create an account, change a
+role, or move a deadline, and it performs those actions in the system through
+your own account.
 
 <Aside type="caution" title="It acts as you">
 The assistant works with **your permissions**. Whatever you can do in the admin
@@ -124,6 +125,13 @@ granted; nothing is stored.
 | Mark someone's [conference fee](/settings/fee/) as paid | Users, write | Admin, Editor |
 | Edit someone's personal and billing details | Users, write | Admin only |
 
+**Submissions:**
+
+| Action | Access needed | Who can use it |
+|---|---|---|
+| List submissions, with search and type/status filters | Submissions, read | Admin, Editor |
+| Open one submission in full — content, authors and affiliations, every version, reviewer assignments, reviews and history | Submissions, read | Admin, Editor |
+
 **Conference:**
 
 | Action | Access needed | Who can use it |
@@ -145,6 +153,10 @@ On the authorization screen you can see exactly what the application asked for.
 Approving an assistant for reading only is a good way to let it answer
 questions about your conference without ever being able to change it.
 </Aside>
+
+Submissions are **read-only** for now: the assistant can answer questions about
+them and summarise where each one stands, but it cannot change a status, assign
+a reviewer or make a decision.
 
 The assistant never sets the amount itself — it names one of the **fee types**
 you configured and the amount and currency are taken from there, exactly as the

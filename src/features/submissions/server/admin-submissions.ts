@@ -1,3 +1,4 @@
+import type { z } from "zod";
 import { env } from "@/env";
 import {
 	logActivity,
@@ -10,6 +11,7 @@ import {
 	type SubmissionTodo,
 	statusChangeOptions,
 } from "@/features/submissions/labels";
+import type { adminSubmissionsListInput } from "@/features/submissions/validations";
 import type { SubmissionEvent } from "@/features/workflow";
 import { hasMinReviewers } from "@/features/workflow/guards";
 import { executeSubmissionTransition } from "@/features/workflow/server/workflow";
@@ -321,11 +323,7 @@ export function computeSubmissionTodo(args: {
 	}
 }
 
-export interface GetSubmissionsFilters {
-	search?: string;
-	type?: SubmissionType[];
-	status?: SubmissionStatus[];
-}
+export type GetSubmissionsFilters = z.infer<typeof adminSubmissionsListInput>;
 
 export interface GetSubmissionsResponse {
 	submissions: AdminSubmission[];
@@ -376,9 +374,11 @@ export async function getAdminSubmissions(
 ): Promise<GetSubmissionsResponse> {
 	const where = buildSubmissionWhereClause(filters);
 
-	const [submissions, configs] = await Promise.all([
+	const [submissions, total, configs] = await Promise.all([
 		prisma.submission.findMany({
 			where,
+			take: filters.take,
+			skip: filters.skip,
 			include: {
 				user: {
 					select: {
@@ -398,6 +398,7 @@ export async function getAdminSubmissions(
 			},
 			orderBy: { createdAt: "desc" },
 		}),
+		prisma.submission.count({ where }),
 		getSubmissionTypeConfigs(),
 	]);
 
@@ -456,10 +457,7 @@ export async function getAdminSubmissions(
 		};
 	});
 
-	return {
-		submissions: result,
-		total: result.length,
-	};
+	return { submissions: result, total };
 }
 
 /** Get submission details for editor view */
