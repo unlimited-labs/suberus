@@ -1,5 +1,16 @@
 import { prisma } from "@/shared/server/db.server";
 
+// A duplicate name is a user error, but Prisma reports it as P2002 — which the
+// server-fn sanitizer replaces with the generic message, hiding the cause.
+function isDuplicateName(error: unknown): boolean {
+	// name is this model's only unique constraint, so any P2002 is that one.
+	return (
+		error instanceof Error && (error as { code?: unknown }).code === "P2002"
+	);
+}
+
+const DUPLICATE_NAME = "A track with this name already exists";
+
 export interface TrackWithStats {
 	id: string;
 	name: string;
@@ -44,16 +55,19 @@ export async function createTrack(
 	name: string,
 	supervisorId?: string,
 ): Promise<{ id: string }> {
-	const track = await prisma.conferenceTrack.create({
-		data: {
-			name,
-			supervisorId: supervisorId || null,
-			isActive: true,
-		},
-		select: { id: true },
-	});
-
-	return track;
+	try {
+		return await prisma.conferenceTrack.create({
+			data: {
+				name,
+				supervisorId: supervisorId || null,
+				isActive: true,
+			},
+			select: { id: true },
+		});
+	} catch (error) {
+		if (isDuplicateName(error)) throw new Error(DUPLICATE_NAME);
+		throw error;
+	}
 }
 
 /**
@@ -67,10 +81,15 @@ export async function updateTrack(
 		isActive?: boolean;
 	},
 ): Promise<void> {
-	await prisma.conferenceTrack.update({
-		where: { id },
-		data,
-	});
+	try {
+		await prisma.conferenceTrack.update({
+			where: { id },
+			data,
+		});
+	} catch (error) {
+		if (isDuplicateName(error)) throw new Error(DUPLICATE_NAME);
+		throw error;
+	}
 }
 
 /**

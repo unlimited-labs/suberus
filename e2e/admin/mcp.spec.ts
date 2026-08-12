@@ -47,19 +47,31 @@ async function openMcpDialog(page: Page) {
 	await expect(page.getByTestId("mcp-connect-dialog")).toBeVisible();
 }
 
+async function openCliTab(page: Page) {
+	const dialog = page.getByTestId("mcp-connect-dialog");
+	await dialog.getByTestId("mcp-tab-cli").click();
+	await expect(dialog.getByTestId("mcp-copy-command")).toBeVisible();
+	return dialog;
+}
+
 test.describe("MCP — connect dialog", () => {
 	// Minting is idempotent per user: a leftover client changes the next test.
 	test.beforeEach(clearDesktopClients);
 	test.afterEach(clearDesktopClients);
 
-	test("offers the server URL and the register command", async ({ page }) => {
+	test("offers the server URL on Web and the command on CLI", async ({
+		page,
+	}) => {
 		await openMcpDialog(page);
 
 		const dialog = page.getByTestId("mcp-connect-dialog");
-		await expect(dialog.getByTestId("mcp-copy-1")).toContainText(
+		await expect(dialog.getByTestId("mcp-copy-url")).toContainText("/api/mcp");
+		await expect(dialog.getByTestId("mcp-copy-command")).toBeHidden();
+
+		await openCliTab(page);
+		await expect(dialog.getByTestId("mcp-copy-command")).toContainText(
 			"claude mcp add --scope project --transport http",
 		);
-		await expect(dialog.getByTestId("mcp-copy-2")).toContainText("/api/mcp");
 	});
 
 	test("issues credentials on open and folds them into the command", async ({
@@ -68,17 +80,17 @@ test.describe("MCP — connect dialog", () => {
 		const db = getPrisma();
 		await openMcpDialog(page);
 
-		const dialog = page.getByTestId("mcp-connect-dialog");
+		const dialog = await openCliTab(page);
 		await expect(dialog.getByTestId("mcp-client-id")).toContainText(
 			"suberus-desktop-",
 		);
 		const clientId = (
 			await dialog.getByTestId("mcp-client-id").innerText()
 		).trim();
-		await expect(dialog.getByTestId("mcp-copy-1")).toContainText(
+		await expect(dialog.getByTestId("mcp-copy-command")).toContainText(
 			`--client-id ${clientId}`,
 		);
-		await expect(dialog.getByTestId("mcp-copy-1")).toContainText(
+		await expect(dialog.getByTestId("mcp-copy-command")).toContainText(
 			"--scope project",
 		);
 
@@ -94,13 +106,13 @@ test.describe("MCP — connect dialog", () => {
 
 	test("re-issues on a different port", async ({ page }) => {
 		await openMcpDialog(page);
-		const dialog = page.getByTestId("mcp-connect-dialog");
+		const dialog = await openCliTab(page);
 		await expect(dialog.getByTestId("mcp-client-id")).toBeVisible();
 
 		await dialog.getByTestId("mcp-callback-port").fill("8123");
 		await dialog.getByTestId("mcp-mint-client").click();
 
-		await expect(dialog.getByTestId("mcp-copy-1")).toContainText(
+		await expect(dialog.getByTestId("mcp-copy-command")).toContainText(
 			"--callback-port 8123",
 		);
 	});

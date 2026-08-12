@@ -1,7 +1,7 @@
 import { IconPlug } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { mcpConnectionQueryOptions } from "@/features/mcp/api/mcp-connection";
-import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
+import { useSession } from "@/shared/hooks/use-session";
 import { DropdownMenuItem } from "@/shared/ui/dropdown-menu";
 
 /**
@@ -10,7 +10,10 @@ import { DropdownMenuItem } from "@/shared/ui/dropdown-menu";
  * hidden until it answers so it never flashes where the server is off.
  */
 export function McpMenuItem({ onOpen }: { onOpen: () => void }) {
-	const { isAdmin } = useAdminAuth();
+	// useSession, not useAdminAuth: this renders in the shared layout, and
+	// importing the admin hook pulls its chunk into every author's bundle.
+	const { user } = useSession();
+	const isAdmin = user?.role === "ADMIN" || user?.role === "EDITOR";
 
 	const { data } = useQuery({
 		...mcpConnectionQueryOptions(),

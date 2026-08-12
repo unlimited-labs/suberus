@@ -37,21 +37,34 @@ that assistants use to sign in.
 
 ## Connecting an assistant
 
-Web-based assistants identify themselves to Suberus on their own, so
-**Claude on the web needs nothing from this dialog** — add the server URL from
-step 2 as a custom connector and approve the authorization screen.
+The dialog has two tabs, because the two kinds of assistant need different
+things.
 
-**Claude Code needs credentials from here.** It listens on a local port during
-sign-in but does not publish that port when it identifies itself, so Suberus
-cannot match it against a self-declared address. The dialog issues a client
-tied to the exact port instead.
+### Web
+
+**Claude on the web needs nothing but the URL.** It identifies itself to
+Suberus on its own.
 
 <Steps>
 
-1. Open **Connect AI assistant** from the user menu. Credentials are issued the
-   moment it opens, so the command in step 1 is ready to use.
+1. Copy the **server URL** from the **Web** tab.
 
-2. Copy that command and run it in Claude Code:
+2. In Claude, add it as a custom connector.
+
+3. Sign in to Suberus and **Approve** the authorization screen.
+
+</Steps>
+
+### CLI / Desktop
+
+**Claude Code needs credentials from this dialog.** It listens on a local port
+during sign-in but does not publish that port when it identifies itself, so
+Suberus cannot match it against a self-declared address. The **CLI / Desktop**
+tab issues a client tied to the exact port instead — the moment you open it.
+
+<Steps>
+
+1. Copy the command from the **CLI / Desktop** tab and run it:
 
    ```bash
    claude mcp add --scope project --transport http suberus https://your-conference.example/api/mcp      --client-id suberus-desktop-... --callback-port 8080
@@ -61,24 +74,16 @@ tied to the exact port instead.
    everyone working in that repository picks it up. Drop the flag to keep the
    server to yourself.
 
-   For other clients, copy the **server URL** from step 2 and set the client id
-   and the callback address `http://localhost:8080/callback` by hand.
+   For other clients, use the server URL with the client id and the callback
+   address `http://localhost:8080/callback` by hand.
 
-3. The assistant opens a browser window. Sign in to Suberus as usual.
-
-4. An **authorization screen** appears naming the application and what it is
-   asking for. Review it and choose **Approve**.
+2. Sign in to Suberus and **Approve** the authorization screen.
 
 </Steps>
 
-Two small controls sit under the command: the **callback port** — the port the
-assistant listens on while signing you in, `8080` for Claude Code — and
-**Re-issue**, which mints a fresh client id or moves it to another port.
-
-To take access away, use the bin icon next to an entry under **Authorized
-applications**. That drops the approval and every token issued under it; for
-credentials you issued here it deletes the client outright, so the command has
-to be re-issued before the assistant can connect again.
+Under the command sit the **callback port** — the port the assistant listens on
+while signing you in, `8080` for Claude Code — and **Re-issue**, which mints a
+fresh client id or moves it to another port.
 
 <Aside type="caution" title="The port has to match">
 The credentials are tied to the exact callback address
@@ -86,6 +91,13 @@ The credentials are tied to the exact callback address
 port, sign-in fails with *invalid redirect uri*. Set the port in the dialog and
 choose **Re-issue**, then re-run the command with the new `--callback-port`.
 </Aside>
+
+## Taking access away
+
+To take access away, use the bin icon next to an entry under **Authorized
+applications**. That drops the approval and every token issued under it; for
+credentials you issued here it deletes the client outright, so the command has
+to be re-issued before the assistant can connect again.
 
 ![Authorization screen](../../../assets/screenshots/60-managing-mcp-consent.png)
 
