@@ -5,6 +5,14 @@ import { getPrisma } from "../helpers/test-db";
 import { ADMIN_USER } from "../helpers/test-users";
 
 const CALLBACK = "http://127.0.0.1:9999/callback";
+const DESKTOP_PREFIX = "suberus-desktop-";
+
+async function clearDesktopClients() {
+	const db = getPrisma();
+	const where = { clientId: { startsWith: DESKTOP_PREFIX } };
+	await db.oauthClientResource.deleteMany({ where });
+	await db.oauthClient.deleteMany({ where });
+}
 
 async function openMcpDialog(page: Page) {
 	await page.goto("/");
@@ -39,6 +47,11 @@ async function openMcpDialog(page: Page) {
 }
 
 test.describe("MCP — connect dialog", () => {
+	// Minting is idempotent per user, so a client left behind by one test would
+	// change what the next one sees in the command.
+	test.beforeEach(clearDesktopClients);
+	test.afterEach(clearDesktopClients);
+
 	test("offers the server URL and the register command", async ({ page }) => {
 		await openMcpDialog(page);
 
@@ -47,6 +60,38 @@ test.describe("MCP — connect dialog", () => {
 			"claude mcp add --transport http",
 		);
 		await expect(dialog.getByTestId("mcp-copy-2")).toContainText("/api/mcp");
+	});
+
+	test("mints credentials and folds them into the command", async ({
+		page,
+	}) => {
+		const db = getPrisma();
+		await openMcpDialog(page);
+
+		const dialog = page.getByTestId("mcp-connect-dialog");
+		await expect(dialog.getByTestId("mcp-copy-1")).not.toContainText(
+			"--client-id",
+		);
+
+		await dialog.getByTestId("mcp-callback-port").fill("8123");
+		await dialog.getByTestId("mcp-mint-client").click();
+
+		await expect(dialog.getByTestId("mcp-client-id")).toContainText(
+			"suberus-desktop-",
+		);
+		const clientId = (await dialog.getByTestId("mcp-client-id").innerText())
+			.trim();
+		await expect(dialog.getByTestId("mcp-copy-1")).toContainText(
+			`--client-id ${clientId} --callback-port 8123`,
+		);
+
+		// The row is only usable if it carries the loopback DNS callback Claude
+		// Code sends and the link to this instance's MCP resource.
+		const client = await db.oauthClient.findUnique({ where: { clientId } });
+		expect(client?.redirectUris).toEqual(["http://localhost:8123/callback"]);
+		expect(client?.requirePKCE).toBe(true);
+		expect(client?.tokenEndpointAuthMethod).toBe("none");
+		expect(await db.oauthClientResource.count({ where: { clientId } })).toBe(1);
 	});
 
 	test("keeps its content inside the dialog", async ({ page }) => {

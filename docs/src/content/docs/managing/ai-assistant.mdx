@@ -36,24 +36,43 @@ that assistants use to sign in.
 
 ## Connecting an assistant
 
+Suberus does not let an assistant register itself. You issue it **credentials**
+from the dialog first, and the assistant then signs in with them.
+
 <Steps>
 
 1. Open **Connect AI assistant** from the user menu.
 
-2. Copy the command from step 1 and run it in Claude Code:
+2. Under **Assistant credentials**, check the **callback port** — the port the
+   assistant listens on while it signs you in. Claude Code's default is `8080`;
+   change it only if that port is already in use on your machine. Choose
+   **Create credentials**.
+
+   The command in step 1 now carries the credentials.
+
+3. Copy the command from step 1 and run it in Claude Code:
 
    ```bash
-   claude mcp add --transport http suberus https://your-conference.example/api/mcp
+   claude mcp add --transport http suberus https://your-conference.example/api/mcp \
+     --client-id suberus-desktop-… --callback-port 8080
    ```
 
-   For other clients, copy the **server URL** from step 2 instead.
+   For other clients, copy the **server URL** from step 2 and configure the
+   client id and the callback address `http://localhost:8080/callback` by hand.
 
-3. The assistant opens a browser window. Sign in to Suberus as usual.
+4. The assistant opens a browser window. Sign in to Suberus as usual.
 
-4. An **authorization screen** appears naming the application and what it is
+5. An **authorization screen** appears naming the application and what it is
    asking for. Review it and choose **Approve**.
 
 </Steps>
+
+<Aside type="caution" title="The port has to match">
+The credentials are tied to the exact callback address
+`http://localhost:<port>/callback`. If the assistant is started on a different
+port, sign-in fails with *invalid redirect uri*. Set the port in the dialog and
+choose **Re-issue**, then re-run the command with the new `--callback-port`.
+</Aside>
 
 ![Authorization screen](../../../assets/screenshots/60-managing-mcp-consent.png)
 
@@ -63,9 +82,9 @@ assistant** dialog, with the access they hold and the date you approved them.
 
 <Aside type="tip" title="Several conferences">
 One assistant can be connected to several Suberus instances at once. Give each
-one a different name when adding it (`suberus-2026`, `suberus-workshop`). Access
-granted on one instance never works on another — each conference issues its own
-credentials and approves separately.
+one a different name when adding it (`suberus-2026`, `suberus-workshop`) and
+issue credentials separately on each. Access granted on one instance never works
+on another — each conference issues its own credentials and approves separately.
 </Aside>
 
 ## The authorization screen
@@ -73,7 +92,7 @@ credentials and approves separately.
 | What it shows | Why it matters |
 |---|---|
 | **Application name** | The name the application reports about itself. |
-| **Identity verified at** | The address Suberus actually fetched the application's details from. This is the part the system checked itself, so trust it over the name. |
+| **Identity verified at** | The address Suberus actually fetched the application's details from. This is the part the system checked itself, so trust it over the name. Shown only for applications that publish their identity at a URL — credentials you issued yourself have none. |
 | **Acting as** | The account the assistant will use — yours. |
 | **It will be able to** | The access being requested, in plain language. |
 

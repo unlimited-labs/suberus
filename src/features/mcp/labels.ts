@@ -9,3 +9,17 @@ const SCOPE_LABELS: Record<string, string> = {
 export function scopeLabel(scope: string): string {
 	return SCOPE_LABELS[scope] ?? scope;
 }
+
+export function connectCommand({
+	url,
+	clientId,
+	callbackPort,
+}: {
+	url: string;
+	clientId?: string;
+	callbackPort?: number;
+}): string {
+	const base = `claude mcp add --transport http suberus ${url}`;
+	if (!clientId || callbackPort == null) return base;
+	return `${base} --client-id ${clientId} --callback-port ${callbackPort}`;
+}
