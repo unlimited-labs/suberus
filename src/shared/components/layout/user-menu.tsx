@@ -60,7 +60,10 @@ export function UserMenu() {
 	return (
 		<>
 			<DropdownMenu>
-				<DropdownMenuTrigger className="flex w-full items-center gap-3 rounded-lg p-2 hover:bg-sidebar-accent/50 focus:outline-none">
+				<DropdownMenuTrigger
+					data-testid="user-menu-trigger"
+					className="flex w-full items-center gap-3 rounded-lg p-2 hover:bg-sidebar-accent/50 focus:outline-none"
+				>
 					<Avatar size="sm">
 						{user.image && <AvatarImage src={user.image} alt={displayName} />}
 						<AvatarFallback>

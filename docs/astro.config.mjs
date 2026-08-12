@@ -101,6 +101,7 @@ export default defineConfig({
 						{ label: 'Invitations', slug: 'managing/invitations' },
 						{ label: 'Extraction', slug: 'managing/extraction' },
 						{ label: 'Activity log', slug: 'managing/activity-log' },
+						{ label: 'AI assistant (MCP)', slug: 'managing/ai-assistant' },
 					],
 				},
 				{
