@@ -37,12 +37,17 @@ async function openMcpDialog(page: Page) {
 		}).toPass({ timeout: 15_000 });
 	}
 
-	const mcpItem = page.getByTestId("user-menu-mcp");
+	// Open the menu, then wait for the entry separately: it only renders once the
+	// connection query answers that MCP is enabled, and retrying the click while
+	// the menu is already open would just toggle it shut again.
+	const menu = page.getByTestId("user-menu-content");
 	await expect(async () => {
-		if (!(await mcpItem.isVisible())) await userMenu.click();
-		await expect(mcpItem).toBeVisible({ timeout: 1000 });
+		if (!(await menu.isVisible())) await userMenu.click();
+		await expect(menu).toBeVisible({ timeout: 1000 });
 	}).toPass({ timeout: 15_000 });
 
+	const mcpItem = page.getByTestId("user-menu-mcp");
+	await expect(mcpItem).toBeVisible({ timeout: 15_000 });
 	await mcpItem.click();
 	await expect(page.getByTestId("mcp-connect-dialog")).toBeVisible();
 }

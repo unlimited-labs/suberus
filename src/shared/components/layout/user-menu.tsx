@@ -6,7 +6,6 @@ import {
 	IconExternalLink,
 	IconLogout,
 	IconMoon,
-	IconPlug,
 	IconSun,
 	IconUser,
 } from "@tabler/icons-react";
@@ -14,8 +13,8 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { McpConnectDialog } from "@/features/mcp/components/mcp-connect-dialog";
+import { McpMenuItem } from "@/features/mcp/components/mcp-menu-item";
 import { useTheme } from "@/shared/components/theme-provider";
-import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
 import { useSession } from "@/shared/hooks/use-session";
 import { signOut } from "@/shared/lib/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
@@ -43,7 +42,6 @@ export function UserMenu() {
 	const navigate = useNavigate();
 	const { theme, setTheme } = useTheme();
 	const { user } = useSession();
-	const { isAdmin } = useAdminAuth();
 	const [mcpOpen, setMcpOpen] = useState(false);
 
 	const handleSignOut = async () => {
@@ -77,22 +75,19 @@ export function UserMenu() {
 					</div>
 					<IconDotsVertical className="size-4 text-muted-foreground" />
 				</DropdownMenuTrigger>
-				<DropdownMenuContent align="end" side="top" className="w-56">
+				<DropdownMenuContent
+					align="end"
+					side="top"
+					className="w-56"
+					data-testid="user-menu-content"
+				>
 					<DropdownMenuItem asChild>
 						<Link to="/profile">
 							<IconUser className="mr-2" />
 							Profile
 						</Link>
 					</DropdownMenuItem>
-					{isAdmin && (
-						<DropdownMenuItem
-							onClick={() => setMcpOpen(true)}
-							data-testid="user-menu-mcp"
-						>
-							<IconPlug className="mr-2" />
-							Connect AI assistant
-						</DropdownMenuItem>
-					)}
+					<McpMenuItem onOpen={() => setMcpOpen(true)} />
 					{user.role === "ADMIN" && (
 						<DropdownMenuItem asChild>
 							<a

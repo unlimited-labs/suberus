@@ -268,20 +268,6 @@ export function McpConnectDialog({
 					</div>
 				)}
 
-				{data && !data.enabled && (
-					<div
-						className="rounded-lg border border-dashed p-4 text-center"
-						data-testid="mcp-disabled"
-					>
-						<p className="font-medium text-sm">The MCP server is off</p>
-						<p className="mt-1 text-muted-foreground text-sm">
-							An administrator has to set{" "}
-							<code className="font-mono text-xs">MCP_ENABLED=true</code> on
-							this instance before assistants can connect.
-						</p>
-					</div>
-				)}
-
 				{data?.enabled && (
 					<div className="min-w-0 space-y-6">
 						<div className="flex items-center gap-2 text-muted-foreground text-xs">
