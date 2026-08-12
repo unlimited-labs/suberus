@@ -911,6 +911,18 @@ export async function patchUser(
 	performer: RoleChangePerformer,
 ): Promise<AdminUserDetail | null> {
 	const performedBy = performer.id;
+
+	// Up front, before anything is written: the mutations below are sequential
+	// and uncoordinated, so rejecting mid-way would leave the earlier ones
+	// committed under a response the caller reads as total failure.
+	const feePayment = extractFeePayment(data);
+	if (data.markFeePaid && !feePayment) {
+		throw new Response(
+			"markFeePaid needs feeType, feeAmount and feeCurrency; to take them from the configured fee types, use the mark-fee-paid action instead",
+			{ status: 400 },
+		);
+	}
+
 	if (data.role !== undefined) {
 		await changeUserRole({ userId: data.id, role: data.role }, performer);
 	}
@@ -935,16 +947,8 @@ export async function patchUser(
 		);
 	}
 
-	const feePayment = extractFeePayment(data);
 	if (feePayment) {
 		await markFeePaid({ userId: data.id, ...feePayment }, performedBy);
-	} else if (data.markFeePaid) {
-		// Silently dropping this used to report success while no payment was
-		// recorded — invisible from the outside, and about money.
-		throw new Response(
-			"markFeePaid needs feeType, feeAmount and feeCurrency; omit them and use the mark-fee-paid action to take them from the configured fee types",
-			{ status: 400 },
-		);
 	}
 
 	if (data.unmarkFeePaid) {

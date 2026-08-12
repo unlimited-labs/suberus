@@ -20,7 +20,7 @@ const handler = createSuberusMcpHandler({
 	version: env.GIT_COMMIT,
 	tools: [...usersMcpTools, ...settingsMcpTools, ...submissionsMcpTools],
 	allowedHostnames: [baseUrl.hostname],
-	allowedOrigins: [baseUrl.origin],
+	allowedOriginHostnames: [baseUrl.hostname],
 });
 
 async function serve(request: Request): Promise<Response> {

@@ -92,15 +92,6 @@ export async function getMcpConnectionInfo(
 }
 
 /**
- * Pre-registers a public OAuth client for a desktop assistant, replacing the
- * CIMD/DCR path: a configured `oauth.clientId` short-circuits both in the
- * client, and Claude Code's hosted metadata document is rejected here anyway
- * (portless loopback URIs on a DNS name).
- *
- * Idempotent per user — re-minting re-points the existing client at the new
- * callback port instead of accumulating rows.
- */
-/**
  * Revokes one application's access for this user. Only `oauthClientResource`
  * has a foreign key on `clientId`; consents and tokens carry it as a plain
  * column, so they have to be cleared by hand or the grants outlive the client.
@@ -127,6 +118,15 @@ export async function revokeMcpClient(
 	await prisma.oauthClient.delete({ where: { clientId } });
 }
 
+/**
+ * Pre-registers a public OAuth client for a desktop assistant, replacing the
+ * CIMD/DCR path: a configured `oauth.clientId` short-circuits both in the
+ * client, and Claude Code's hosted metadata document is rejected here anyway
+ * (portless loopback URIs on a DNS name).
+ *
+ * Idempotent per user — re-minting re-points the existing client at the new
+ * callback port instead of accumulating rows.
+ */
 export async function mintMcpDesktopClient(
 	userId: string,
 	callbackPort: number,

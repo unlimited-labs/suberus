@@ -26,7 +26,10 @@ export interface McpHandlerConfig {
 	version: string;
 	tools: readonly McpTool[];
 	allowedHostnames: string[];
-	allowedOrigins: string[];
+	// Hostnames, not origins: the SDK reduces the Origin header to its hostname
+	// before comparing, so a full origin here can never match and 403s every
+	// browser-sent request. A missing Origin always passes.
+	allowedOriginHostnames: string[];
 }
 
 export async function runTool(
@@ -54,7 +57,7 @@ export async function runTool(
 }
 
 export function buildMcpServer(
-	config: Omit<McpHandlerConfig, "allowedHostnames" | "allowedOrigins">,
+	config: Omit<McpHandlerConfig, "allowedHostnames" | "allowedOriginHostnames">,
 	actor: McpActor | null,
 	challenge?: ChallengeBox,
 ): McpServer {
@@ -119,7 +122,7 @@ export function createSuberusMcpHandler(config: McpHandlerConfig) {
 	return async (request: Request, actor: McpActor): Promise<Response> => {
 		const rejected =
 			hostHeaderValidationResponse(request, config.allowedHostnames) ??
-			originValidationResponse(request, config.allowedOrigins);
+			originValidationResponse(request, config.allowedOriginHostnames);
 		if (rejected) return rejected;
 
 		const challenge: ChallengeBox = { error: null };

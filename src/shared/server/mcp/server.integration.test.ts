@@ -204,7 +204,7 @@ describe("MCP tool registry", () => {
 			version: "0",
 			tools,
 			allowedHostnames: ["mcp.test"],
-			allowedOrigins: ["https://mcp.test"],
+			allowedOriginHostnames: ["mcp.test"],
 		});
 
 		const call = (body: unknown) =>
@@ -240,6 +240,44 @@ describe("MCP tool registry", () => {
 				params: { name: "probe_admin", arguments: {} },
 			}),
 		).rejects.toSatisfy(isInsufficientScopeError);
+	});
+
+	// The SDK compares the Origin header's hostname, so configuring full origins
+	// silently 403s every browser-sent request while header-less CLI clients
+	// keep working — which is exactly how it stayed unnoticed.
+	it("admits a request whose Origin matches the configured hostname", async () => {
+		const handler = createSuberusMcpHandler({
+			name: "suberus-test",
+			version: "0",
+			tools,
+			allowedHostnames: ["mcp.test"],
+			allowedOriginHostnames: ["mcp.test"],
+		});
+
+		const response = await handler(
+			new Request("https://mcp.test/api/mcp", {
+				method: "POST",
+				headers: {
+					"content-type": "application/json",
+					accept: "application/json, text/event-stream",
+					host: "mcp.test",
+					origin: "https://mcp.test",
+				},
+				body: JSON.stringify({
+					jsonrpc: "2.0",
+					id: 1,
+					method: "initialize",
+					params: {
+						protocolVersion: "2026-07-28",
+						capabilities: {},
+						clientInfo: { name: "test", version: "0" },
+					},
+				}),
+			}),
+			{ id: "admin-1", role: "ADMIN", scopes: ["probe:read"] },
+		);
+
+		expect(response.status).toBe(200);
 	});
 
 	it("advertises read-only and destructive hints", async () => {
