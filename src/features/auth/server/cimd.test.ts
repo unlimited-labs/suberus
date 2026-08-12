@@ -7,7 +7,10 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { jwt } from "better-auth/plugins";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
+import { mcpClientRegisteredDetail } from "@/features/auth/server/cimd-audit-rules";
 import { PrismaClient } from "@/generated/prisma/client";
+
+import "dotenv/config";
 
 function databaseUrl(): string | undefined {
 	if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
@@ -84,6 +87,18 @@ function makeAuth(allowedOrigins: string[]) {
 				isMetadataDocumentUrlAllowed: (url) =>
 					allowedOrigins.length === 0 ||
 					allowedOrigins.includes(new URL(url).origin),
+				// Imported lazily: cimd-audit reaches the shared prisma singleton
+				// through src/env.ts, which rejects the partial environment that a
+				// run without .env (the skip condition below) leaves behind.
+				onClientCreated: async ({ client, clientMetadataDocument }) => {
+					const { recordMcpClientActivity } = await import(
+						"@/features/auth/server/cimd-audit"
+					);
+					await recordMcpClientActivity({
+						type: "MCP_CLIENT_REGISTERED",
+						detail: mcpClientRegisteredDetail(client, clientMetadataDocument),
+					});
+				},
 			}),
 		],
 	});
@@ -118,11 +133,17 @@ describe.skipIf(!DATABASE_URL)("CIMD client discovery (offline)", () => {
 		await cleanupPrisma?.oauthClient.deleteMany({
 			where: { clientId: CLIENT_ID },
 		});
+		await cleanupPrisma?.activityLog.deleteMany({
+			where: { type: "MCP_CLIENT_REGISTERED" },
+		});
 	});
 
 	afterAll(async () => {
 		await cleanupPrisma?.oauthClient.deleteMany({
 			where: { clientId: CLIENT_ID },
+		});
+		await cleanupPrisma?.activityLog.deleteMany({
+			where: { type: "MCP_CLIENT_REGISTERED" },
 		});
 		await cleanupPrisma?.$disconnect();
 	});
@@ -138,6 +159,25 @@ describe.skipIf(!DATABASE_URL)("CIMD client discovery (offline)", () => {
 		expect(client?.name).toBe("Offline CIMD client");
 		expect(client?.clientDiscoveryId).toBe("cimd");
 		expect(client?.redirectUris).toEqual(metadataDocument.redirect_uris);
+		await prisma.$disconnect();
+	});
+
+	it("records the registration in the activity log, with no performer", async () => {
+		const { auth, prisma } = makeAuth([]);
+		await auth.handler(authorizeRequest(CLIENT_ID));
+
+		const entries = await prisma.activityLog.findMany({
+			where: { type: "MCP_CLIENT_REGISTERED" },
+		});
+		expect(entries).toHaveLength(1);
+		expect(entries[0]?.performedBy).toBeNull();
+		expect(entries[0]?.userId).toBeNull();
+		expect(entries[0]?.detail).toEqual({
+			type: "MCP_CLIENT_REGISTERED",
+			clientId: CLIENT_ID,
+			clientName: "Offline CIMD client",
+			redirectUris: metadataDocument.redirect_uris,
+		});
 		await prisma.$disconnect();
 	});
 
