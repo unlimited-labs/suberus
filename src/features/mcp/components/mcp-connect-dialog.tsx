@@ -1,9 +1,9 @@
-import { IconCopy } from "@tabler/icons-react";
+import { IconCheck, IconCopy, IconPlugConnected } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { toast } from "sonner";
 import { mcpConnectionQueryOptions } from "@/features/mcp/api/mcp-connection";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
+import type { McpAuthorizedClient } from "@/features/mcp/server/connection";
 import {
 	Dialog,
 	DialogContent,
@@ -18,32 +18,86 @@ interface McpConnectDialogProps {
 	onOpenChange: (open: boolean) => void;
 }
 
-function CopyRow({ label, value }: { label: string; value: string }) {
+function CommandBlock({
+	step,
+	label,
+	value,
+}: {
+	step: number;
+	label: string;
+	value: string;
+}) {
+	const [copied, setCopied] = useState(false);
+
+	const copy = () => {
+		navigator.clipboard.writeText(value);
+		setCopied(true);
+		toast.success("Copied to clipboard");
+		setTimeout(() => setCopied(false), 1500);
+	};
+
 	return (
-		<div className="space-y-1">
-			<div className="text-muted-foreground text-sm">{label}</div>
+		<div className="min-w-0 space-y-1.5">
 			<div className="flex items-center gap-2">
-				{/* min-w-0 is load-bearing: a flex item defaults to min-width:auto, so
-				    without it the nowrap content widens the row past the dialog and
-				    overflow-x-auto never engages. */}
-				<code className="min-w-0 flex-1 overflow-x-auto rounded bg-muted px-2 py-1.5 font-mono text-xs whitespace-nowrap">
+				<span className="flex size-5 items-center justify-center rounded-full bg-primary/10 font-medium text-[11px] text-primary tabular-nums">
+					{step}
+				</span>
+				<span className="font-medium text-sm">{label}</span>
+			</div>
+			<button
+				type="button"
+				onClick={copy}
+				aria-label={`Copy ${label}`}
+				data-testid={`mcp-copy-${step}`}
+				className="group flex w-full min-w-0 items-center gap-2 rounded-md border bg-muted/50 py-2 pr-2 pl-3 text-left transition-colors hover:border-primary/40 hover:bg-muted"
+			>
+				<code className="min-w-0 flex-1 overflow-x-auto font-mono text-xs whitespace-nowrap">
 					{value}
 				</code>
-				<Button
-					className="shrink-0"
-					variant="outline"
-					size="icon"
-					aria-label={`Copy ${label}`}
-					data-testid={`mcp-copy-${label.toLowerCase().replace(/\s+/g, "-")}`}
-					onClick={() => {
-						navigator.clipboard.writeText(value);
-						toast.success("Copied to clipboard");
-					}}
-				>
-					<IconCopy className="size-4" />
-				</Button>
-			</div>
+				<span className="flex size-7 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors group-hover:bg-background group-hover:text-foreground">
+					{copied ? (
+						<IconCheck className="size-4 text-emerald-600 dark:text-emerald-500" />
+					) : (
+						<IconCopy className="size-4" />
+					)}
+				</span>
+			</button>
 		</div>
+	);
+}
+
+function ClientRow({
+	client,
+	index,
+}: {
+	client: McpAuthorizedClient;
+	index: number;
+}) {
+	const label = client.name ?? client.clientId;
+	return (
+		<li
+			className="flex min-w-0 animate-in items-start gap-3 py-2.5 fade-in slide-in-from-bottom-1 duration-300"
+			style={{ animationDelay: `${index * 60}ms`, animationFillMode: "both" }}
+		>
+			<span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 font-semibold text-primary text-xs uppercase">
+				{label.replace(/^https?:\/\//, "").charAt(0)}
+			</span>
+			<div className="min-w-0 flex-1">
+				<div className="flex items-baseline gap-2">
+					<span className="truncate font-medium text-sm">{label}</span>
+					{client.authorizedAt && (
+						<span className="ml-auto shrink-0 text-[11px] text-muted-foreground tabular-nums">
+							{new Date(client.authorizedAt).toLocaleDateString()}
+						</span>
+					)}
+				</div>
+				{client.scopes.length > 0 && (
+					<p className="truncate font-mono text-[11px] text-muted-foreground">
+						{client.scopes.join(" · ")}
+					</p>
+				)}
+			</div>
+		</li>
 	);
 }
 
@@ -58,75 +112,94 @@ export function McpConnectDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-lg" data-testid="mcp-connect-dialog">
-				<DialogHeader>
-					<DialogTitle>Connect an AI assistant</DialogTitle>
-					<DialogDescription>
-						Manage this conference from an MCP-capable assistant. Every action
-						runs with your account's permissions.
-					</DialogDescription>
+			{/* DialogContent is a grid whose auto track sizes to max-content, so the
+			    nowrap command below stretched it past the dialog. Pinning the track
+			    to minmax(0,1fr) contains any child, not just today's. */}
+			<DialogContent
+				className="grid-cols-[minmax(0,1fr)] sm:max-w-lg"
+				data-testid="mcp-connect-dialog"
+			>
+				<DialogHeader className="min-w-0 flex-row items-start gap-3 space-y-0 text-left">
+					<span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+						<IconPlugConnected className="size-5" />
+					</span>
+					<div className="min-w-0 flex-1">
+						<DialogTitle>Connect an AI assistant</DialogTitle>
+						<DialogDescription>
+							Drive this conference from an MCP-capable assistant. It acts with
+							your account's permissions.
+						</DialogDescription>
+					</div>
 				</DialogHeader>
 
-				{isPending && <Skeleton className="h-40 w-full" />}
+				{isPending && (
+					<div className="space-y-3">
+						<Skeleton className="h-14 w-full" />
+						<Skeleton className="h-14 w-full" />
+					</div>
+				)}
 
 				{data && !data.enabled && (
-					<p
-						className="text-muted-foreground text-sm"
+					<div
+						className="rounded-lg border border-dashed p-4 text-center"
 						data-testid="mcp-disabled"
 					>
-						The MCP server is disabled on this instance. An administrator has to
-						set <code className="font-mono">MCP_ENABLED=true</code> before
-						assistants can connect.
-					</p>
+						<p className="font-medium text-sm">The MCP server is off</p>
+						<p className="mt-1 text-muted-foreground text-sm">
+							An administrator has to set{" "}
+							<code className="font-mono text-xs">MCP_ENABLED=true</code> on
+							this instance before assistants can connect.
+						</p>
+					</div>
 				)}
 
 				{data?.enabled && (
-					<div className="space-y-5">
-						<CopyRow label="Server URL" value={data.url} />
-						<CopyRow
-							label="Claude Code"
-							value={`claude mcp add --transport http suberus ${data.url}`}
-						/>
+					<div className="min-w-0 space-y-6">
+						<div className="flex items-center gap-2 text-muted-foreground text-xs">
+							<span className="relative flex size-2">
+								<span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-60" />
+								<span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+							</span>
+							Server is live
+						</div>
+
+						<div className="min-w-0 space-y-4">
+							<CommandBlock
+								step={1}
+								label="Register the server"
+								value={`claude mcp add --transport http suberus ${data.url}`}
+							/>
+							<CommandBlock
+								step={2}
+								label="Or use the URL directly"
+								value={data.url}
+							/>
+						</div>
+
 						<p className="text-muted-foreground text-sm">
-							On first use your assistant opens a browser window to sign in and
-							ask for your approval. Approved applications are listed below.
+							Your assistant then opens a browser window to sign in and ask for
+							your approval.
 						</p>
 
-						<div className="space-y-2">
-							<div className="font-medium text-sm">Authorized applications</div>
+						<div className="min-w-0 border-t pt-4">
+							<div className="mb-1 font-medium text-sm">
+								Authorized applications
+							</div>
 							{data.clients.length === 0 ? (
 								<p
 									className="text-muted-foreground text-sm"
 									data-testid="mcp-no-clients"
 								>
-									No application has been authorized yet.
+									Nothing authorized yet.
 								</p>
 							) : (
-								<ul className="space-y-2" data-testid="mcp-client-list">
-									{data.clients.map((client) => (
-										<li
+								<ul className="min-w-0 divide-y" data-testid="mcp-client-list">
+									{data.clients.map((client, i) => (
+										<ClientRow
 											key={client.clientId}
-											className="rounded border p-2 text-sm"
-										>
-											<div className="font-medium">
-												{client.name ?? client.clientId}
-											</div>
-											<div className="break-all text-muted-foreground text-xs">
-												{client.clientId}
-											</div>
-											<div className="mt-1 flex flex-wrap items-center gap-1">
-												{client.scopes.map((scope) => (
-													<Badge key={scope} variant="outline">
-														{scope}
-													</Badge>
-												))}
-												{client.authorizedAt && (
-													<span className="ml-auto text-muted-foreground text-xs">
-														{new Date(client.authorizedAt).toLocaleDateString()}
-													</span>
-												)}
-											</div>
-										</li>
+											client={client}
+											index={i}
+										/>
 									))}
 								</ul>
 							)}
