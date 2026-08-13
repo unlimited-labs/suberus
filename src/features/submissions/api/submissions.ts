@@ -15,19 +15,14 @@ import {
 	attachFileToVersion,
 	checkEmailVerified,
 	checkSubmissionWindow,
-	createFileSubmission,
-	getValidationLimits,
-	isPrismaKnownError,
+	createSubmissionOfFormat,
 	type SubmissionResult,
+	toSubmissionError,
 	validateSubmissionInput,
 	validateUploadFile,
 } from "@/features/submissions/server/create-submission";
-
-export type { SubmissionResult };
-
 import {
 	checkSubmissionLimit,
-	createNewSubmission,
 	getSubmissionById,
 	getSubmissionsForUser,
 	resubmitSubmission,
@@ -39,12 +34,14 @@ import {
 } from "@/features/submissions/server/submissions";
 import {
 	authorSchema,
-	createDynamicSubmissionSchema,
 	submissionCreateInput,
+	submissionIdInput,
 } from "@/features/submissions/validations";
 import { logger } from "@/logger";
 import { prisma } from "@/shared/server/db.server";
 import { getUploadedFile } from "@/shared/server/form-upload";
+
+export type { SubmissionResult };
 
 /** Parse the create-submission multipart payload (JSON fields + optional file). */
 function parseCreateSubmissionFormData(data: FormData) {
@@ -92,15 +89,7 @@ export const createSubmission = createServerFn({ method: "POST" })
 		}
 
 		try {
-			if (data.contentFormat === "FILE") {
-				return await createFileSubmission(data, context.user.id);
-			}
-			const submission = await createNewSubmission(
-				data,
-				context.user.id,
-				data.isDraft,
-			);
-			return { success: true, id: submission.id };
+			return await createSubmissionOfFormat(data, context.user.id);
 		} catch (err) {
 			logger.error("[createSubmission] failed", {
 				userId: context.user.id,
@@ -113,17 +102,7 @@ export const createSubmission = createServerFn({ method: "POST" })
 				keywordsCount: data.keywords.length,
 				err,
 			});
-			if (isPrismaKnownError(err) && err.code === "P2002") {
-				return {
-					success: false,
-					error:
-						"A conflicting record exists. Please contact support if this persists.",
-				};
-			}
-			return {
-				success: false,
-				error: "Server error while creating submission. Please try again.",
-			};
+			return toSubmissionError(err, "creating submission");
 		}
 	});
 
@@ -155,16 +134,11 @@ export const adminCreateSubmission = createServerFn({ method: "POST" })
 		}
 
 		try {
-			if (input.contentFormat === "FILE") {
-				return await createFileSubmission(input, targetUserId, context.user.id);
-			}
-			const submission = await createNewSubmission(
+			return await createSubmissionOfFormat(
 				input,
 				targetUserId,
-				input.isDraft,
 				context.user.id,
 			);
-			return { success: true, id: submission.id };
 		} catch (err) {
 			logger.error("[adminCreateSubmission] failed", {
 				adminUserId: context.user.id,
@@ -174,17 +148,7 @@ export const adminCreateSubmission = createServerFn({ method: "POST" })
 				isDraft: !!input.isDraft,
 				err,
 			});
-			if (isPrismaKnownError(err) && err.code === "P2002") {
-				return {
-					success: false,
-					error:
-						"A conflicting record exists. Please contact support if this persists.",
-				};
-			}
-			return {
-				success: false,
-				error: "Server error while creating submission. Please try again.",
-			};
+			return toSubmissionError(err, "creating submission");
 		}
 	});
 
@@ -268,7 +232,7 @@ export const getMySubmissionsFn = createServerFn({ method: "GET" })
 /** Get single submission by ID (must belong to current user) */
 export const getSubmissionByIdFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
-	.validator(z.object({ submissionId: z.uuid() }))
+	.validator(submissionIdInput)
 	.handler(async ({ data, context }): Promise<SubmissionDetail | null> => {
 		return getSubmissionById(data.submissionId, context.user.id);
 	});
@@ -404,17 +368,7 @@ export const submitConditionalRevisionFn = createServerFn({ method: "POST" })
 export const updateDraftSubmissionFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.validator(
-		z.object({
-			submissionId: z.uuid(),
-			type: z.enum(["ABSTRACT", "POSTER", "FULL_PAPER"]),
-			title: z.string(),
-			content: z.string(),
-			authors: z.array(authorSchema),
-			keywords: z.array(z.string()),
-			contentFormat: z.enum(["TEXT", "FILE"]),
-			trackId: z.uuid().nullish(),
-			isDraft: z.boolean().optional(),
-		}),
+		submissionCreateInput.omit({ file: true }).extend(submissionIdInput.shape),
 	)
 	.handler(async ({ data, context }): Promise<SubmissionResult> => {
 		const unverified = await checkEmailVerified(context.user.id);
@@ -429,19 +383,8 @@ export const updateDraftSubmissionFn = createServerFn({ method: "POST" })
 		}
 
 		if (!data.isDraft) {
-			const limits = await getValidationLimits();
-			const dynamicSchema = createDynamicSubmissionSchema(limits);
-			const result = dynamicSchema.safeParse(data);
-			if (!result.success) {
-				return {
-					success: false,
-					error: "Validation failed",
-					issues: result.error.issues.map((issue) => ({
-						path: issue.path.map(String),
-						message: issue.message,
-					})),
-				};
-			}
+			const invalid = await validateSubmissionInput(data);
+			if (invalid) return invalid;
 		}
 
 		try {
@@ -467,24 +410,14 @@ export const updateDraftSubmissionFn = createServerFn({ method: "POST" })
 				keywordsCount: data.keywords.length,
 				err,
 			});
-			if (isPrismaKnownError(err) && err.code === "P2002") {
-				return {
-					success: false,
-					error:
-						"A conflicting record exists. Please contact support if this persists.",
-				};
-			}
-			return {
-				success: false,
-				error: "Server error while updating submission. Please try again.",
-			};
+			return toSubmissionError(err, "updating submission");
 		}
 	});
 
 /** Submit a draft (DRAFT → SUBMITTED) */
 export const submitDraftFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.validator(z.object({ submissionId: z.uuid() }))
+	.validator(submissionIdInput)
 	.handler(
 		async ({
 			data,

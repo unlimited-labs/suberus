@@ -17,8 +17,15 @@ export const authorSchema = z.object({
 
 export const submissionIdInput = z.object({ submissionId: z.uuid() });
 
+// EXHIBITOR absent: decided through the exhibitor flow, never listed here.
+export const submissionTypeFilterSchema = z.enum([
+	"ABSTRACT",
+	"FULL_PAPER",
+	"POSTER",
+]);
+
 export const submissionCreateInput = z.object({
-	type: z.enum(["ABSTRACT", "POSTER", "FULL_PAPER"]),
+	type: submissionTypeFilterSchema,
 	title: z.string(),
 	content: z.string(),
 	authors: z.array(authorSchema),
@@ -41,13 +48,6 @@ export const submissionCreateForUserInput = submissionCreateInput
 		userId: z.uuid(),
 		submit: z.boolean().default(false),
 	});
-
-// EXHIBITOR absent: decided through the exhibitor flow, never listed here.
-export const submissionTypeFilterSchema = z.enum([
-	"ABSTRACT",
-	"FULL_PAPER",
-	"POSTER",
-]);
 
 export const submissionStatusFilterSchema = z.enum([
 	"DRAFT",

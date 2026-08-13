@@ -2,6 +2,7 @@ import {
 	type SubmissionTodo,
 	type TodoKind,
 	todoLabel,
+	todoSortRank,
 	todoTone,
 } from "@/features/submissions/labels";
 import { getAdminSubmissions } from "@/features/submissions/server/admin-submissions";
@@ -31,19 +32,6 @@ export interface ConferenceTodo {
 	totals: { submissions: number; blocking: number; waiting: number };
 }
 
-// Same order the admin screen implies: unblock review first, then decide, then
-// chase money.
-const PRIORITY: TodoKind[] = [
-	"REVIEWER_OVERDUE",
-	"ASSIGN_REVIEWER",
-	"MAKE_DECISION",
-	"VERIFY_CONDITIONS",
-	"PAYMENT_REMINDER",
-	"AWAITING_REVIEWS",
-	"AWAITING_REVISION",
-	"AWAITING_SUBMISSION",
-];
-
 function toGroups(
 	entries: Array<{ todo: SubmissionTodo; item: TodoItem }>,
 	perGroup: number,
@@ -55,10 +43,13 @@ function toGroups(
 		else byKind.set(todo.kind, [item]);
 	}
 
-	return PRIORITY.filter((kind) => byKind.has(kind)).map((kind) => {
-		const items = byKind.get(kind) ?? [];
-		return { kind, count: items.length, items: items.slice(0, perGroup) };
-	});
+	return [...byKind]
+		.sort(([a], [b]) => todoSortRank[a] - todoSortRank[b])
+		.map(([kind, items]) => ({
+			kind,
+			count: items.length,
+			items: items.slice(0, perGroup),
+		}));
 }
 
 /**

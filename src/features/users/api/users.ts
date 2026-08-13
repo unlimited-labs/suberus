@@ -13,8 +13,8 @@ import {
 	adminDeleteUser,
 	adminUpdateProfile,
 	executeBulkAction,
-	fetchUserById,
-	fetchUsers,
+	getUserById,
+	getUsers,
 	patchUser,
 } from "@/features/users/server/users";
 import {
@@ -30,13 +30,13 @@ import type { UserRole } from "@/generated/prisma/enums";
 export const getAdminUsers = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.validator(usersListInput)
-	.handler(async ({ data }) => fetchUsers(data));
+	.handler(async ({ data }) => getUsers(data));
 
 export const getAdminUserById = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.validator(userIdInput)
 	.handler(async ({ data }) => {
-		const user = await fetchUserById(data.id);
+		const user = await getUserById(data.id);
 		return user ?? null;
 	});
 

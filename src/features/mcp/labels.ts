@@ -1,3 +1,5 @@
+import type { McpScope } from "@/features/mcp/scopes";
+
 /** Plain-language descriptions for the OAuth scopes this server issues. */
 const SCOPE_LABELS: Record<string, string> = {
 	openid: "Confirm who you are",
@@ -11,7 +13,7 @@ const SCOPE_LABELS: Record<string, string> = {
 	"submissions:read": "Read submissions, their authors and reviews",
 	"submissions:write": "Create submissions on a participant's behalf",
 	"activity:read": "Read the activity log",
-};
+} satisfies Record<McpScope, string>;
 
 export function scopeLabel(scope: string): string {
 	return SCOPE_LABELS[scope] ?? scope;
@@ -27,6 +29,6 @@ export function connectCommand({
 	callbackPort?: number;
 }): string {
 	const base = `claude mcp add --scope project --transport http suberus ${url}`;
-	if (!clientId || callbackPort == null) return base;
+	if (!clientId || !callbackPort) return base;
 	return `${base} --client-id ${clientId} --callback-port ${callbackPort}`;
 }

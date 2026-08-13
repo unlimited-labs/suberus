@@ -80,36 +80,89 @@ function ConsentPage() {
 
 	const appName = client?.name || clientId || "Unknown application";
 
-	if (!user) {
-		// No redirect: /login cannot carry the signed query back, so it would
-		// strand the waiting client. Ask for a fresh attempt instead.
-		return (
-			<AuthLayout
-				logoUrl={branding.logoUrl}
-				backgroundImageUrl={branding.authBackgroundUrl || undefined}
-				overlayOpacity={branding.authBgOverlay}
-				logoDarkInvert={branding.logoDarkInvert}
-			>
-				<Card
-					className="mx-auto w-full max-w-md"
-					data-testid="consent-signed-out"
+	// No redirect when signed out: /login cannot carry the signed query back, so
+	// it would strand the waiting client. Ask for a fresh attempt instead.
+	const card = !user ? (
+		<Card className="mx-auto w-full max-w-md" data-testid="consent-signed-out">
+			<CardHeader>
+				<CardTitle className="text-xl">Your session has ended</CardTitle>
+			</CardHeader>
+			<CardContent className="space-y-4">
+				<p className="text-muted-foreground text-sm">
+					Sign in again, then start the connection from your assistant once more
+					— this authorization request can no longer be completed.
+				</p>
+				<Button asChild className="w-full">
+					<Link to="/login">Sign in</Link>
+				</Button>
+			</CardContent>
+		</Card>
+	) : (
+		<Card className="mx-auto w-full max-w-md" data-testid="consent-card">
+			<CardHeader className="gap-1">
+				<CardTitle className="text-xl" data-testid="consent-client">
+					Authorize {appName}
+				</CardTitle>
+				{client?.origin && (
+					<p className="text-muted-foreground text-sm">
+						Identity verified at{" "}
+						<span className="font-medium text-foreground">{client.origin}</span>
+					</p>
+				)}
+			</CardHeader>
+
+			<CardContent className="space-y-5">
+				<div className="flex gap-3 rounded-md border border-amber-500/30 bg-amber-500/10 p-3">
+					<IconAlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-500" />
+					<p className="text-sm">
+						This application will act as{" "}
+						<span className="font-medium">{user.email}</span>, with every
+						permission your account holds.
+					</p>
+				</div>
+
+				{scopes.length > 0 && (
+					<div className="space-y-2">
+						<div className="font-medium text-sm">It will be able to</div>
+						<ul className="space-y-1.5">
+							{scopes.map((scope) => (
+								<li key={scope} className="flex items-start gap-2 text-sm">
+									<IconCheck className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+									<span>{scopeLabel(scope)}</span>
+								</li>
+							))}
+						</ul>
+					</div>
+				)}
+
+				{error && (
+					<p className="text-destructive text-sm" data-testid="consent-error">
+						{error}
+					</p>
+				)}
+			</CardContent>
+
+			<CardFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+				<Button
+					className="w-full sm:w-auto"
+					variant="outline"
+					disabled={busy !== null}
+					onClick={() => decide(false)}
+					data-testid="consent-deny"
 				>
-					<CardHeader>
-						<CardTitle className="text-xl">Your session has ended</CardTitle>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						<p className="text-muted-foreground text-sm">
-							Sign in again, then start the connection from your assistant once
-							more — this authorization request can no longer be completed.
-						</p>
-						<Button asChild className="w-full">
-							<Link to="/login">Sign in</Link>
-						</Button>
-					</CardContent>
-				</Card>
-			</AuthLayout>
-		);
-	}
+					{busy === "deny" ? "Cancelling..." : "Deny"}
+				</Button>
+				<Button
+					className="w-full sm:w-auto"
+					disabled={busy !== null}
+					onClick={() => decide(true)}
+					data-testid="consent-approve"
+				>
+					{busy === "approve" ? "Authorizing..." : "Approve"}
+				</Button>
+			</CardFooter>
+		</Card>
+	);
 
 	return (
 		<AuthLayout
@@ -118,72 +171,7 @@ function ConsentPage() {
 			overlayOpacity={branding.authBgOverlay}
 			logoDarkInvert={branding.logoDarkInvert}
 		>
-			<Card className="mx-auto w-full max-w-md" data-testid="consent-card">
-				<CardHeader className="gap-1">
-					<CardTitle className="text-xl" data-testid="consent-client">
-						Authorize {appName}
-					</CardTitle>
-					{client?.origin && (
-						<p className="text-muted-foreground text-sm">
-							Identity verified at{" "}
-							<span className="font-medium text-foreground">
-								{client.origin}
-							</span>
-						</p>
-					)}
-				</CardHeader>
-
-				<CardContent className="space-y-5">
-					<div className="flex gap-3 rounded-md border border-amber-500/30 bg-amber-500/10 p-3">
-						<IconAlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-500" />
-						<p className="text-sm">
-							This application will act as{" "}
-							<span className="font-medium">{user.email}</span>, with every
-							permission your account holds.
-						</p>
-					</div>
-
-					{scopes.length > 0 && (
-						<div className="space-y-2">
-							<div className="font-medium text-sm">It will be able to</div>
-							<ul className="space-y-1.5">
-								{scopes.map((scope) => (
-									<li key={scope} className="flex items-start gap-2 text-sm">
-										<IconCheck className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-										<span>{scopeLabel(scope)}</span>
-									</li>
-								))}
-							</ul>
-						</div>
-					)}
-
-					{error && (
-						<p className="text-destructive text-sm" data-testid="consent-error">
-							{error}
-						</p>
-					)}
-				</CardContent>
-
-				<CardFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-					<Button
-						className="w-full sm:w-auto"
-						variant="outline"
-						disabled={busy !== null}
-						onClick={() => decide(false)}
-						data-testid="consent-deny"
-					>
-						{busy === "deny" ? "Cancelling..." : "Deny"}
-					</Button>
-					<Button
-						className="w-full sm:w-auto"
-						disabled={busy !== null}
-						onClick={() => decide(true)}
-						data-testid="consent-approve"
-					>
-						{busy === "approve" ? "Authorizing..." : "Approve"}
-					</Button>
-				</CardFooter>
-			</Card>
+			{card}
 		</AuthLayout>
 	);
 }

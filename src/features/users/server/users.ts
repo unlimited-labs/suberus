@@ -889,18 +889,6 @@ export async function deleteUser(
 
 // === Admin orchestration layer ===
 
-export async function fetchUsers(
-	filters: UsersFilters,
-): Promise<GetUsersResponse> {
-	return getUsers(filters);
-}
-
-export async function fetchUserById(
-	id: string,
-): Promise<AdminUserDetail | null> {
-	return getUserById(id);
-}
-
 export async function patchUser(
 	data: PatchUserData,
 	performer: RoleChangePerformer,

@@ -16,6 +16,7 @@ import {
 	type SubmissionCreateInput,
 	type ValidationLimits,
 } from "@/features/submissions/validations";
+import { logger } from "@/logger";
 import { isDeadlinePassed } from "@/shared/lib/deadline";
 import { prisma } from "@/shared/server/db.server";
 import { fileToBuffer } from "@/shared/server/form-upload";
@@ -41,13 +42,32 @@ export function isPrismaKnownError(
 	);
 }
 
+export interface SubmissionFailure {
+	success: false;
+	error: string;
+	issues?: Array<{ path: string[]; message: string }>;
+}
+
 export type SubmissionResult =
 	| { success: true; id: string }
-	| {
-			success: false;
-			error: string;
-			issues?: Array<{ path: string[]; message: string }>;
-	  };
+	| SubmissionFailure;
+
+export function toSubmissionError(
+	err: unknown,
+	verb: string,
+): SubmissionFailure {
+	if (isPrismaKnownError(err) && err.code === "P2002") {
+		return {
+			success: false,
+			error:
+				"A conflicting record exists. Please contact support if this persists.",
+		};
+	}
+	return {
+		success: false,
+		error: `Server error while ${verb}. Please try again.`,
+	};
+}
 
 /** Fetches validation limits from database settings */
 export async function getValidationLimits(): Promise<ValidationLimits> {
@@ -70,8 +90,12 @@ export async function getValidationLimits(): Promise<ValidationLimits> {
 			maxKeywords: settings.MAX_KEYWORDS,
 			enableKeywords: settings.ENABLE_KEYWORDS,
 		};
-	} catch {
-		// Fallback to defaults if settings not available
+	} catch (err) {
+		// submissions_requirements reports these to an agent as conference policy,
+		// so a silent fallback would look authoritative.
+		logger.error("[getValidationLimits] settings unreadable, using defaults", {
+			err,
+		});
 		return DEFAULT_VALIDATION_LIMITS;
 	}
 }
@@ -124,7 +148,7 @@ export async function checkEmailVerified(
 /** Validate a non-draft payload against the dynamic schema; failure result or null. */
 export async function validateSubmissionInput(
 	data: SubmissionCreateInput,
-): Promise<SubmissionResult | null> {
+): Promise<SubmissionFailure | null> {
 	const limits = await getValidationLimits();
 	const result = createDynamicSubmissionSchema(limits).safeParse(data);
 	if (result.success) return null;
@@ -187,6 +211,24 @@ export async function createFileSubmission(
 			};
 		}
 	}
+	return { success: true, id: submission.id };
+}
+
+/** The FILE/TEXT fork every create path shares; the gates around it differ. */
+export async function createSubmissionOfFormat(
+	data: SubmissionCreateInput,
+	ownerId: string,
+	performedById: string = ownerId,
+): Promise<SubmissionResult> {
+	if (data.contentFormat === "FILE") {
+		return createFileSubmission(data, ownerId, performedById);
+	}
+	const submission = await createNewSubmission(
+		data,
+		ownerId,
+		data.isDraft,
+		performedById,
+	);
 	return { success: true, id: submission.id };
 }
 

@@ -11,7 +11,7 @@ export const userRoleSchema = z.enum(["ADMIN", "EDITOR", "REVIEWER", "AUTHOR"]);
 
 export const userRoleFilterSchema = z.enum(UserRole);
 
-export const userIdInput = z.object({ id: z.string() });
+export const userIdInput = z.object({ id: z.uuid() });
 
 export const usersListInput = z.object({
 	search: z.string().optional(),

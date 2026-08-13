@@ -4,19 +4,13 @@ import { attachFileToVersion } from "@/features/submissions/server/create-submis
 import { readUploadToken } from "@/features/submissions/server/upload-link";
 import { prisma } from "@/shared/server/db.server";
 
-export async function acceptUpload(
-	token: string,
-	file: File,
-): Promise<{ ok: true } | { ok: false; error: string; status: number }> {
-	const parsed = readUploadToken(token);
-	if (!parsed.ok) {
-		return parsed.error === "expired"
-			? { ok: false, error: "This upload link has expired", status: 410 }
-			: { ok: false, error: "This upload link is not valid", status: 403 };
-	}
-
+/**
+ * Draft only: once it is in review, replacing the file behind everyone's back
+ * must not be possible. A TEXT type has nowhere to show a file either.
+ */
+export async function assertAcceptsFile(submissionId: string) {
 	const submission = await prisma.submission.findUnique({
-		where: { id: parsed.submissionId },
+		where: { id: submissionId },
 		select: {
 			id: true,
 			type: true,
@@ -25,27 +19,30 @@ export async function acceptUpload(
 			currentVersion: { select: { version: true } },
 		},
 	});
-
-	// Draft only: once it is in review, replacing the file behind everyone's
-	// back must not be possible.
-	if (submission?.status !== "DRAFT") {
-		return {
-			ok: false,
-			error: "This submission no longer accepts a file",
-			status: 409,
-		};
+	if (!submission) throw new Response("Submission not found", { status: 404 });
+	if (submission.status !== "DRAFT") {
+		throw new Response("Only a draft accepts a new file", { status: 409 });
 	}
 
-	// A TEXT type has nowhere to show a file; attaching one would leave a record
-	// no screen reads.
 	const config = await getSetting(SUBMISSION_TYPE_TO_KEY[submission.type]);
 	if (config.contentFormat !== "FILE") {
-		return {
-			ok: false,
-			error: "This submission type is written text, not an uploaded file",
+		throw new Response(`${submission.type} is a text type — it takes no file`, {
 			status: 409,
-		};
+		});
 	}
+
+	return submission;
+}
+
+export async function acceptUpload(token: string, file: File): Promise<void> {
+	const parsed = readUploadToken(token);
+	if (!parsed.ok) {
+		throw parsed.error === "expired"
+			? new Response("This upload link has expired", { status: 410 })
+			: new Response("This upload link is not valid", { status: 403 });
+	}
+
+	const submission = await assertAcceptsFile(parsed.submissionId);
 
 	const attached = await attachFileToVersion({
 		submissionId: submission.id,
@@ -56,7 +53,5 @@ export async function acceptUpload(
 		enforceOwnership: false,
 	});
 
-	return attached.success
-		? { ok: true }
-		: { ok: false, error: attached.error, status: 400 };
+	if (!attached.success) throw new Response(attached.error, { status: 400 });
 }

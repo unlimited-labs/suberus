@@ -10,8 +10,8 @@ import { DropdownMenuItem } from "@/shared/ui/dropdown-menu";
  * hidden until it answers so it never flashes where the server is off.
  */
 export function McpMenuItem({ onOpen }: { onOpen: () => void }) {
-	// useSession, not useAdminAuth: this renders in the shared layout, and
-	// importing the admin hook pulls its chunk into every author's bundle.
+	// Not useAdminAuth: this renders in the shared layout and Vite emits that hook
+	// as its own chunk, which e2e/bundle/admin-code-splitting.spec.ts forbids here.
 	const { user } = useSession();
 	const isAdmin = user?.role === "ADMIN" || user?.role === "EDITOR";
 

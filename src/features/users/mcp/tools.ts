@@ -1,12 +1,12 @@
 import {
 	MCP_SCOPE_USERS_READ,
 	MCP_SCOPE_USERS_WRITE,
-} from "@/features/auth/server/auth.server";
+} from "@/features/mcp/scopes";
 import { createUserByAdmin } from "@/features/users/server/create-user";
 import {
 	adminUpdateProfile,
-	fetchUserById,
-	fetchUsers,
+	getUserById,
+	getUsers,
 	markConfiguredFeePaid,
 	patchUser,
 } from "@/features/users/server/users";
@@ -18,9 +18,11 @@ import {
 	userProfileUpdateInput,
 	usersListInput,
 } from "@/features/users/validations";
-import { defineTool, type McpTool } from "@/shared/server/mcp/define-tool";
-
-const ADMIN_AND_EDITOR = ["ADMIN", "EDITOR"] as const;
+import {
+	ADMIN_AND_EDITOR,
+	defineTool,
+	type McpTool,
+} from "@/shared/server/mcp/define-tool";
 
 const listUsers = defineTool({
 	name: "users_list",
@@ -32,7 +34,7 @@ const listUsers = defineTool({
 	scope: MCP_SCOPE_USERS_READ,
 	readOnly: true,
 	async handler(input) {
-		const { users, total } = await fetchUsers({ take: 50, ...input });
+		const { users, total } = await getUsers({ take: 50, ...input });
 		return {
 			total,
 			returned: users.length,
@@ -62,7 +64,7 @@ const getUser = defineTool({
 	scope: MCP_SCOPE_USERS_READ,
 	readOnly: true,
 	async handler(input) {
-		const user = await fetchUserById(input.id);
+		const user = await getUserById(input.id);
 		if (!user) throw new Response("User not found", { status: 404 });
 		return user;
 	},

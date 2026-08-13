@@ -1,13 +1,13 @@
-import { z } from "zod";
-import { UserRole } from "@/generated/prisma/enums";
+import type { z } from "zod";
+import type { UserRole } from "@/generated/prisma/enums";
 
-export const mcpActorSchema = z.object({
-	id: z.string(),
-	role: z.enum(UserRole),
-	scopes: z.array(z.string()),
-});
+export const ADMIN_AND_EDITOR = ["ADMIN", "EDITOR"] as const;
 
-export type McpActor = z.infer<typeof mcpActorSchema>;
+export interface McpActor {
+	id: string;
+	role: UserRole;
+	scopes: string[];
+}
 
 export interface McpTool<Input extends z.ZodType = z.ZodType> {
 	name: string;

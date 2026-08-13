@@ -15,7 +15,7 @@ type AuditedClient = {
 const MAX_REDIRECT_URIS = 10;
 const MAX_FIELD_LENGTH = 500;
 
-function clamp(value: string): string {
+function truncate(value: string): string {
 	return value.length > MAX_FIELD_LENGTH
 		? `${value.slice(0, MAX_FIELD_LENGTH)}…`
 		: value;
@@ -23,13 +23,13 @@ function clamp(value: string): string {
 
 // Registration is unauthenticated: the document is attacker-controlled, so
 // copy only audited fields and bound each before it reaches a log row.
-function snapshot(client: AuditedClient, document: MetadataDocument) {
+function snapshot(clientId: string, document: MetadataDocument) {
 	return {
-		clientId: clamp(client.clientId),
-		clientName: document.client_name ? clamp(document.client_name) : null,
+		clientId: truncate(clientId),
+		clientName: document.client_name ? truncate(document.client_name) : null,
 		redirectUris: (document.redirect_uris ?? [])
 			.slice(0, MAX_REDIRECT_URIS)
-			.map(clamp),
+			.map(truncate),
 	};
 }
 
@@ -37,7 +37,10 @@ export function mcpClientRegisteredDetail(
 	client: AuditedClient,
 	document: MetadataDocument,
 ) {
-	return activityDetail("MCP_CLIENT_REGISTERED", snapshot(client, document));
+	return activityDetail(
+		"MCP_CLIENT_REGISTERED",
+		snapshot(client.clientId, document),
+	);
 }
 
 function sameList(a: readonly string[], b: readonly string[]): boolean {
@@ -64,7 +67,7 @@ export function mcpClientUpdatedDetail(
 	changedFields: string[],
 ) {
 	return activityDetail("MCP_CLIENT_UPDATED", {
-		...snapshot(client, document),
+		...snapshot(client.clientId, document),
 		changedFields,
 	});
 }

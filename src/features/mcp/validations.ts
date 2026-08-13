@@ -9,4 +9,4 @@ export const mcpDesktopClientInput = z.object({
 
 export type McpDesktopClientInput = z.infer<typeof mcpDesktopClientInput>;
 
-export const mcpRevokeClientInput = z.object({ clientId: z.string().min(1) });
+export const mcpClientIdInput = z.object({ clientId: z.string().min(1) });

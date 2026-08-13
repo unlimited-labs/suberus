@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
 	MCP_SCOPE_SUBMISSIONS_READ,
 	MCP_SCOPE_SUBMISSIONS_WRITE,
-} from "@/features/auth/server/auth.server";
+} from "@/features/mcp/scopes";
 import { getActiveSubmissionTypes } from "@/features/settings/server/settings";
 import {
 	getAdminSubmissions,
@@ -20,9 +20,11 @@ import {
 	submissionCreateForUserInput,
 	submissionIdInput,
 } from "@/features/submissions/validations";
-import { defineTool, type McpTool } from "@/shared/server/mcp/define-tool";
-
-const ADMIN_AND_EDITOR = ["ADMIN", "EDITOR"] as const;
+import {
+	ADMIN_AND_EDITOR,
+	defineTool,
+	type McpTool,
+} from "@/shared/server/mcp/define-tool";
 
 const listSubmissions = defineTool({
 	name: "submissions_list",

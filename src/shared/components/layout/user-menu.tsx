@@ -10,9 +10,8 @@ import {
 	IconUser,
 } from "@tabler/icons-react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { toast } from "sonner";
-import { McpConnectDialog } from "@/features/mcp/components/mcp-connect-dialog";
 import { McpMenuItem } from "@/features/mcp/components/mcp-menu-item";
 import { useTheme } from "@/shared/components/theme-provider";
 import { useSession } from "@/shared/hooks/use-session";
@@ -28,6 +27,13 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
+
+// Admin-only and rarely opened: keep it out of every user's layout chunk.
+const McpConnectDialog = lazy(() =>
+	import("@/features/mcp/components/mcp-connect-dialog").then((m) => ({
+		default: m.McpConnectDialog,
+	})),
+);
 
 function getInitials(
 	firstName: string | null,
@@ -135,7 +141,11 @@ export function UserMenu() {
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
-			<McpConnectDialog open={mcpOpen} onOpenChange={setMcpOpen} />
+			{mcpOpen && (
+				<Suspense fallback={null}>
+					<McpConnectDialog open onOpenChange={setMcpOpen} />
+				</Suspense>
+			)}
 		</>
 	);
 }

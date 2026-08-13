@@ -1,33 +1,36 @@
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
 import { getSettings, setSetting } from "@/features/settings/server/settings";
+import type { AppSettingKey } from "@/features/settings/types";
 import type { ConferenceSettings } from "@/features/settings/validations";
 
+const CONFERENCE_KEYS = {
+	name: "CONFERENCE_NAME",
+	location: "CONFERENCE_LOCATION",
+	website: "CONFERENCE_WEBSITE",
+	contactEmail: "CONTACT_EMAIL",
+	conferenceStartDate: "CONFERENCE_DATE_START",
+	conferenceEndDate: "CONFERENCE_DATE_END",
+	submissionDeadline: "SUBMISSION_DEADLINE",
+	submissionsLocked: "SUBMISSIONS_LOCKED",
+	reviewDeadline: "REVIEW_DEADLINE",
+	notificationDate: "NOTIFICATION_DATE",
+	registrationDeadline: "REGISTRATION_DEADLINE",
+	registrationLocked: "REGISTRATION_LOCKED",
+	subtitle: "CONFERENCE_SUBTITLE",
+	dateFormat: "DATE_FORMAT",
+	timeFormat: "TIME_FORMAT",
+	currency: "FEE_CURRENCY",
+	timezone: "CONFERENCE_TIMEZONE",
+	dayStart: "CONFERENCE_DAY_START",
+	dayEnd: "CONFERENCE_DAY_END",
+	defaultPresentationMin: "CONFERENCE_DEFAULT_PRESENTATION_MIN",
+	autoplanEnabled: "PLANNER_AUTOPLAN_ENABLED",
+	authorBufferMin: "PLANNER_AUTHOR_BUFFER_MIN",
+} as const satisfies Record<keyof ConferenceSettings, AppSettingKey>;
+
 export async function getConferenceSettings(): Promise<ConferenceSettings> {
-	const settings = await getSettings([
-		"CONFERENCE_NAME",
-		"CONFERENCE_LOCATION",
-		"CONFERENCE_WEBSITE",
-		"CONTACT_EMAIL",
-		"CONFERENCE_DATE_START",
-		"CONFERENCE_DATE_END",
-		"SUBMISSION_DEADLINE",
-		"SUBMISSIONS_LOCKED",
-		"REVIEW_DEADLINE",
-		"NOTIFICATION_DATE",
-		"REGISTRATION_DEADLINE",
-		"REGISTRATION_LOCKED",
-		"CONFERENCE_SUBTITLE",
-		"DATE_FORMAT",
-		"TIME_FORMAT",
-		"FEE_CURRENCY",
-		"CONFERENCE_TIMEZONE",
-		"CONFERENCE_DAY_START",
-		"CONFERENCE_DAY_END",
-		"CONFERENCE_DEFAULT_PRESENTATION_MIN",
-		"PLANNER_AUTOPLAN_ENABLED",
-		"PLANNER_AUTHOR_BUFFER_MIN",
-	]);
+	const settings = await getSettings(Object.values(CONFERENCE_KEYS));
 	return {
 		name: settings.CONFERENCE_NAME,
 		location: settings.CONFERENCE_LOCATION,
@@ -54,6 +57,13 @@ export async function getConferenceSettings(): Promise<ConferenceSettings> {
 	};
 }
 
+// setSetting's per-key generic cannot see that CONFERENCE_KEYS[field] and
+// data[field] describe the same setting; the map above is what pairs them.
+const writeSetting = setSetting as (
+	key: AppSettingKey,
+	value: unknown,
+) => Promise<void>;
+
 /** A patch, so the form (all fields) and the MCP tool (some) share one path. */
 export async function updateConferenceSettings(
 	patch: Partial<ConferenceSettings>,
@@ -61,40 +71,16 @@ export async function updateConferenceSettings(
 ): Promise<ConferenceSettings> {
 	const current = await getConferenceSettings();
 	const data = { ...current, ...patch };
-	const changedFields = Object.keys(data).filter(
-		(key) =>
-			data[key as keyof ConferenceSettings] !==
-			current[key as keyof ConferenceSettings],
-	);
+	const changedFields = (
+		Object.keys(CONFERENCE_KEYS) as Array<keyof ConferenceSettings>
+	).filter((field) => data[field] !== current[field]);
 	if (changedFields.length === 0) return current;
 
-	await Promise.all([
-		setSetting("CONFERENCE_NAME", data.name),
-		setSetting("CONFERENCE_LOCATION", data.location),
-		setSetting("CONFERENCE_WEBSITE", data.website),
-		setSetting("CONTACT_EMAIL", data.contactEmail),
-		setSetting("CONFERENCE_DATE_START", data.conferenceStartDate),
-		setSetting("CONFERENCE_DATE_END", data.conferenceEndDate),
-		setSetting("SUBMISSION_DEADLINE", data.submissionDeadline),
-		setSetting("SUBMISSIONS_LOCKED", data.submissionsLocked),
-		setSetting("REVIEW_DEADLINE", data.reviewDeadline),
-		setSetting("NOTIFICATION_DATE", data.notificationDate),
-		setSetting("REGISTRATION_DEADLINE", data.registrationDeadline),
-		setSetting("REGISTRATION_LOCKED", data.registrationLocked),
-		setSetting("CONFERENCE_SUBTITLE", data.subtitle),
-		setSetting("DATE_FORMAT", data.dateFormat),
-		setSetting("TIME_FORMAT", data.timeFormat),
-		setSetting("FEE_CURRENCY", data.currency),
-		setSetting("CONFERENCE_TIMEZONE", data.timezone),
-		setSetting("CONFERENCE_DAY_START", data.dayStart),
-		setSetting("CONFERENCE_DAY_END", data.dayEnd),
-		setSetting(
-			"CONFERENCE_DEFAULT_PRESENTATION_MIN",
-			data.defaultPresentationMin,
+	await Promise.all(
+		changedFields.map((field) =>
+			writeSetting(CONFERENCE_KEYS[field], data[field]),
 		),
-		setSetting("PLANNER_AUTOPLAN_ENABLED", data.autoplanEnabled),
-		setSetting("PLANNER_AUTHOR_BUFFER_MIN", data.authorBufferMin),
-	]);
+	);
 
 	await logActivity({
 		type: "SETTINGS_CONFERENCE_UPDATED",

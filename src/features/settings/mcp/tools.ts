@@ -2,13 +2,17 @@ import { z } from "zod";
 import {
 	MCP_SCOPE_CONFERENCE_READ,
 	MCP_SCOPE_CONFERENCE_WRITE,
-} from "@/features/auth/server/auth.server";
+} from "@/features/mcp/scopes";
 import {
 	getConferenceSettings,
 	updateConferenceSettings,
 } from "@/features/settings/server/conference";
 import { conferenceSettingsPatch } from "@/features/settings/validations";
-import { defineTool, type McpTool } from "@/shared/server/mcp/define-tool";
+import {
+	ADMIN_AND_EDITOR,
+	defineTool,
+	type McpTool,
+} from "@/shared/server/mcp/define-tool";
 
 const getConference = defineTool({
 	name: "conference_get",
@@ -16,7 +20,7 @@ const getConference = defineTool({
 	description:
 		"Read every conference setting: identity, important dates, locks, formats and programme defaults.",
 	input: z.object({}),
-	roles: ["ADMIN", "EDITOR"],
+	roles: ADMIN_AND_EDITOR,
 	scope: MCP_SCOPE_CONFERENCE_READ,
 	readOnly: true,
 	async handler() {

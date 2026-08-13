@@ -25,6 +25,7 @@ import {
 	DialogTitle,
 } from "@/shared/ui/dialog";
 import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
@@ -117,7 +118,9 @@ function ClientRow({
 	const revoke = useMutation({
 		mutationFn: () => revokeMcpClient({ data: { clientId: client.clientId } }),
 		onSuccess: async () => {
-			await queryClient.invalidateQueries({ queryKey: ["mcp", "connection"] });
+			await queryClient.invalidateQueries({
+				queryKey: mcpConnectionQueryOptions().queryKey,
+			});
 			toast.success("Access removed");
 		},
 		onError: () => toast.error("Could not remove the access"),
@@ -182,7 +185,9 @@ function CredentialControls({
 	const minted = useRef(false);
 
 	const refresh = () =>
-		queryClient.invalidateQueries({ queryKey: ["mcp", "connection"] });
+		queryClient.invalidateQueries({
+			queryKey: mcpConnectionQueryOptions().queryKey,
+		});
 
 	const mint = useMutation({
 		mutationFn: (nextPort: number) =>
@@ -196,17 +201,17 @@ function CredentialControls({
 	useEffect(() => {
 		if (clientId || minted.current || mint.isPending) return;
 		minted.current = true;
-		mint.mutate(Number(port));
-	}, [clientId, mint, port]);
+		mint.mutate(callbackPort ?? DEFAULT_CALLBACK_PORT);
+	}, [clientId, callbackPort, mint]);
 
 	return (
 		<div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-			<label
+			<Label
 				className="text-muted-foreground text-xs"
 				htmlFor="mcp-callback-port"
 			>
 				Callback port
-			</label>
+			</Label>
 			<Input
 				id="mcp-callback-port"
 				data-testid="mcp-callback-port"

@@ -18,10 +18,13 @@ export const Route = createFileRoute("/api/submissions/upload/$token")({
 					);
 				}
 
-				const result = await acceptUpload(params.token, file);
-				return result.ok
-					? new Response(null, { status: 204 })
-					: new Response(result.error, { status: result.status });
+				try {
+					await acceptUpload(params.token, file);
+				} catch (error) {
+					if (error instanceof Response) return error;
+					throw error;
+				}
+				return new Response(null, { status: 204 });
 			},
 		},
 	},

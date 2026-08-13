@@ -3,8 +3,8 @@ import { env } from "@/env";
 import {
 	MCP_RESOURCE,
 	MCP_RESOURCE_NAME,
-	MCP_SCOPES,
 } from "@/features/auth/server/auth.server";
+import { MCP_SCOPES } from "@/features/mcp/scopes";
 import {
 	callbackPortFromRedirectUri,
 	DESKTOP_CLIENT_ID_PREFIX,
@@ -32,14 +32,18 @@ export interface McpConnectionInfo {
 	clients: McpAuthorizedClient[];
 }
 
-async function findDesktopClient(
-	userId: string,
-): Promise<McpDesktopClient | null> {
-	const client = await prisma.oauthClient.findFirst({
+function findDesktopClient(userId: string) {
+	return prisma.oauthClient.findFirst({
 		where: { userId, clientId: { startsWith: DESKTOP_CLIENT_ID_PREFIX } },
 		orderBy: { createdAt: "desc" },
 		select: { clientId: true, redirectUris: true },
 	});
+}
+
+async function describeDesktopClient(
+	userId: string,
+): Promise<McpDesktopClient | null> {
+	const client = await findDesktopClient(userId);
 	if (!client) return null;
 	return {
 		clientId: client.clientId,
@@ -77,7 +81,7 @@ export async function getMcpConnectionInfo(
 	return {
 		enabled: true,
 		url: MCP_RESOURCE,
-		desktopClient: await findDesktopClient(userId),
+		desktopClient: await describeDesktopClient(userId),
 		clients: consents.map((consent) => ({
 			clientId: consent.clientId,
 			name: namesById.get(consent.clientId) ?? null,
@@ -92,7 +96,7 @@ export async function getMcpConnectionInfo(
  * carry it as a plain column and must be cleared by hand. A client this user
  * minted is deleted; a self-registered one keeps its row.
  */
-export async function revokeMcpClient(
+export async function revokeClient(
 	userId: string,
 	clientId: string,
 ): Promise<void> {
@@ -116,7 +120,7 @@ export async function revokeMcpClient(
  * short-circuits both, and Claude Code's metadata document is rejected here
  * anyway (portless loopback URIs). Idempotent — re-minting re-points the row.
  */
-export async function mintMcpDesktopClient(
+export async function mintDesktopClient(
 	userId: string,
 	callbackPort: number,
 ): Promise<McpDesktopClient> {
@@ -138,11 +142,7 @@ export async function mintMcpDesktopClient(
 		},
 	});
 
-	const existing = await prisma.oauthClient.findFirst({
-		where: { userId, clientId: { startsWith: DESKTOP_CLIENT_ID_PREFIX } },
-		orderBy: { createdAt: "desc" },
-		select: { clientId: true },
-	});
+	const existing = await findDesktopClient(userId);
 
 	const clientId =
 		existing?.clientId ??

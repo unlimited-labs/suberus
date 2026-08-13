@@ -3,12 +3,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { adminMiddleware } from "@/features/auth/server/middleware";
 import {
 	getMcpConnectionInfo,
-	mintMcpDesktopClient as mintDesktopClient,
-	revokeMcpClient as revokeClient,
+	mintDesktopClient,
+	revokeClient,
 } from "@/features/mcp/server/connection";
 import {
+	mcpClientIdInput,
 	mcpDesktopClientInput,
-	mcpRevokeClientInput,
 } from "@/features/mcp/validations";
 
 export const getMcpConnection = createServerFn({ method: "GET" })
@@ -24,7 +24,7 @@ export const mintMcpDesktopClient = createServerFn({ method: "POST" })
 
 export const revokeMcpClient = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(mcpRevokeClientInput)
+	.validator(mcpClientIdInput)
 	.handler(async ({ context, data }) =>
 		revokeClient(context.user.id, data.clientId),
 	);

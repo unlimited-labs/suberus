@@ -5,11 +5,7 @@ import {
 	originValidationResponse,
 } from "@modelcontextprotocol/server";
 import { createInsufficientScopeError } from "better-auth/oauth2";
-import {
-	type McpActor,
-	type McpTool,
-	mcpActorSchema,
-} from "@/shared/server/mcp/define-tool";
+import type { McpActor, McpTool } from "@/shared/server/mcp/define-tool";
 
 /**
  * The SDK turns every throw from a tool into an `isError` result, so an
@@ -20,14 +16,16 @@ interface ChallengeBox {
 	error: unknown;
 }
 
-export interface McpHandlerConfig {
+export interface McpServerConfig {
 	name: string;
 	version: string;
 	tools: readonly McpTool[];
-	allowedHostnames: string[];
+}
+
+export interface McpHandlerConfig extends McpServerConfig {
 	// Hostnames, not origins: the SDK compares Origin's hostname, so a full
 	// origin never matches and 403s every browser-sent request.
-	allowedOriginHostnames: string[];
+	allowedHostnames: string[];
 }
 
 export async function runTool(
@@ -54,7 +52,7 @@ export async function runTool(
 }
 
 export function buildMcpServer(
-	config: Omit<McpHandlerConfig, "allowedHostnames" | "allowedOriginHostnames">,
+	config: McpServerConfig,
 	actor: McpActor | null,
 	challenge?: ChallengeBox,
 ): McpServer {
@@ -103,20 +101,15 @@ export function buildMcpServer(
 export function createSuberusMcpHandler(config: McpHandlerConfig) {
 	const handler = createMcpHandler((ctx) => {
 		const extra = ctx.authInfo?.extra as
-			| { actor?: unknown; challenge?: ChallengeBox }
+			| { actor?: McpActor; challenge?: ChallengeBox }
 			| undefined;
-		const actor = mcpActorSchema.safeParse(extra?.actor);
-		return buildMcpServer(
-			config,
-			actor.success ? actor.data : null,
-			extra?.challenge,
-		);
+		return buildMcpServer(config, extra?.actor ?? null, extra?.challenge);
 	});
 
 	return async (request: Request, actor: McpActor): Promise<Response> => {
 		const rejected =
 			hostHeaderValidationResponse(request, config.allowedHostnames) ??
-			originValidationResponse(request, config.allowedOriginHostnames);
+			originValidationResponse(request, config.allowedHostnames);
 		if (rejected) return rejected;
 
 		const challenge: ChallengeBox = { error: null };

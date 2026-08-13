@@ -202,7 +202,6 @@ describe("MCP tool registry", () => {
 			version: "0",
 			tools,
 			allowedHostnames: ["mcp.test"],
-			allowedOriginHostnames: ["mcp.test"],
 		});
 
 		const call = (body: unknown) =>
@@ -248,7 +247,6 @@ describe("MCP tool registry", () => {
 			version: "0",
 			tools,
 			allowedHostnames: ["mcp.test"],
-			allowedOriginHostnames: ["mcp.test"],
 		});
 
 		const response = await handler(

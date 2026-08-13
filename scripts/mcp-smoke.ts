@@ -1,5 +1,6 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
-import { auth, MCP_SCOPES } from "@/features/auth/server/auth.server";
+import { auth } from "@/features/auth/server/auth.server";
+import { MCP_SCOPES } from "@/features/mcp/scopes";
 import { prisma } from "@/shared/server/db.server";
 
 const BASE = process.env.APP_BASE_URL ?? "http://localhost:3001";

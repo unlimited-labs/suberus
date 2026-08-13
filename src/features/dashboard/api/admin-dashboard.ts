@@ -25,11 +25,8 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
 
 export const getMoreActivity = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.validator(activityLogListInput)
-	.handler(async ({ data }) => {
-		const { entries } = await listActivity(data);
-		return entries;
-	});
+	.validator(activityLogListInput.pick({ cursor: true, take: true }))
+	.handler(async ({ data }) => listActivity(data));
 
 export const adminDashboardQueryOptions = () =>
 	queryOptions({
