@@ -144,6 +144,9 @@ granted; nothing is stored.
 | List submissions, with search and type/status filters | Submissions, read | Admin, Editor |
 | Open one submission in full — content, authors and affiliations, every version, reviewer assignments, reviews and history | Submissions, read | Admin, Editor |
 | Ask what is blocking the conference — everything waiting on a reviewer, a decision, a revision or a payment | Submissions, read | Admin, Editor |
+| Check what each submission type expects — text or file, formats, size and length limits | Submissions, read | Admin, Editor |
+| Register a submission on a participant's behalf | Submissions, write | Admin, Editor |
+| Issue a fresh upload link, or send a finished draft into review | Submissions, write | Admin, Editor |
 
 **Activity log:**
 
@@ -173,9 +176,25 @@ Approving an assistant for reading only is a good way to let it answer
 questions about your conference without ever being able to change it.
 </Aside>
 
-Submissions are **read-only** for now: the assistant can answer questions about
-them and summarise where each one stands, but it cannot change a status, assign
-a reviewer or make a decision.
+The assistant can register a submission for a participant, but it cannot change
+a status, assign a reviewer or make a decision.
+
+<Aside type="note" title="Files travel by link, not through the assistant">
+When a submission type expects a **file**, the assistant cannot carry it: what
+it reads from an attachment is text, not the original PDF or DOCX, and that
+original is the record of the submission. So it creates the submission as a
+**draft** and hands you a one-off **upload link** instead.
+
+Give that link to the author (or open it yourself) and drop the file in — no
+sign-in needed. The link is good for **24 hours**, works only for that one
+submission, and stops working the moment the submission leaves draft. Uploading
+again replaces the file. If it expires or the wrong file goes up, ask the
+assistant for a new link.
+
+The file is checked on arrival the same way as any other upload: the real format
+is read from the file's own bytes, not its name, and rejected if it does not
+match what the type allows.
+</Aside>
 
 The assistant never sets the amount itself — it names one of the **fee types**
 you configured and the amount and currency are taken from there, exactly as the

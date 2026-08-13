@@ -17,6 +17,31 @@ export const authorSchema = z.object({
 
 export const submissionIdInput = z.object({ submissionId: z.uuid() });
 
+export const submissionCreateInput = z.object({
+	type: z.enum(["ABSTRACT", "POSTER", "FULL_PAPER"]),
+	title: z.string(),
+	content: z.string(),
+	authors: z.array(authorSchema),
+	keywords: z.array(z.string()),
+	contentFormat: z.enum(["TEXT", "FILE"]),
+	trackId: z.uuid().nullish(),
+	isDraft: z.boolean().optional(),
+	// Travels with the create call (FormData) so a FILE submission is validated
+	// and attached atomically; optional for drafts.
+	file: z.instanceof(File).nullish(),
+});
+
+export type SubmissionCreateInput = z.infer<typeof submissionCreateInput>;
+
+// The agent never carries the file: bytes reach us through the upload link, so
+// contentFormat comes from the type's config rather than the caller.
+export const submissionCreateForUserInput = submissionCreateInput
+	.omit({ file: true, isDraft: true, contentFormat: true })
+	.extend({
+		userId: z.uuid(),
+		submit: z.boolean().default(false),
+	});
+
 // EXHIBITOR absent: decided through the exhibitor flow, never listed here.
 export const submissionTypeFilterSchema = z.enum([
 	"ABSTRACT",

@@ -1,12 +1,23 @@
 import { z } from "zod";
-import { MCP_SCOPE_SUBMISSIONS_READ } from "@/features/auth/server/auth.server";
+import {
+	MCP_SCOPE_SUBMISSIONS_READ,
+	MCP_SCOPE_SUBMISSIONS_WRITE,
+} from "@/features/auth/server/auth.server";
+import { getActiveSubmissionTypes } from "@/features/settings/server/settings";
 import {
 	getAdminSubmissions,
 	getSubmissionForEditor,
 } from "@/features/submissions/server/admin-submissions";
 import { getConferenceTodo } from "@/features/submissions/server/conference-todo";
 import {
+	createSubmissionForUser,
+	issueUploadLinkForDraft,
+	submitDraftForUser,
+} from "@/features/submissions/server/create-for-user";
+import { getValidationLimits } from "@/features/submissions/server/create-submission";
+import {
 	adminSubmissionsListInput,
+	submissionCreateForUserInput,
 	submissionIdInput,
 } from "@/features/submissions/validations";
 import { defineTool, type McpTool } from "@/shared/server/mcp/define-tool";
@@ -64,8 +75,82 @@ const conferenceTodo = defineTool({
 	},
 });
 
+const requirements = defineTool({
+	name: "submissions_requirements",
+	title: "Submission requirements",
+	description:
+		"What each active submission type expects: whether it is written text or an uploaded file, which file extensions and size are allowed, and the title/abstract/keyword limits. Read this before drafting a submission.",
+	input: z.object({}),
+	roles: ADMIN_AND_EDITOR,
+	scope: MCP_SCOPE_SUBMISSIONS_READ,
+	readOnly: true,
+	async handler() {
+		const [types, limits] = await Promise.all([
+			getActiveSubmissionTypes(),
+			getValidationLimits(),
+		]);
+		return {
+			limits,
+			types: types.map(({ type, label, config }) => ({
+				type,
+				label,
+				contentFormat: config.contentFormat,
+				allowedExtensions: config.allowedExtensions,
+				maxFileSizeMb: config.maxFileSizeMb,
+				maxSubmissionsPerUser: config.maxSubmissionsPerUser,
+				enableTrackSelection: config.enableTrackSelection,
+			})),
+		};
+	},
+});
+
+const createForUser = defineTool({
+	name: "submissions_create_for_user",
+	title: "Create a submission for a participant",
+	description:
+		"Register a submission owned by a participant. For a text type it is complete at once (set submit=true to send it straight into review). For a file type it is created as a draft and the result carries a one-off upload link to hand to the author — the file cannot travel through this conversation. Deadlines and per-type limits are reported in `warnings`, not enforced.",
+	input: submissionCreateForUserInput,
+	roles: ADMIN_AND_EDITOR,
+	scope: MCP_SCOPE_SUBMISSIONS_WRITE,
+	destructive: true,
+	async handler(input, actor) {
+		return createSubmissionForUser(input, actor.id);
+	},
+});
+
+const uploadLink = defineTool({
+	name: "submissions_upload_link",
+	title: "New upload link",
+	description:
+		"Issue a fresh upload link for a draft — after the old one expired, or when the wrong file was sent. Uploading again replaces the attached file.",
+	input: submissionIdInput,
+	roles: ADMIN_AND_EDITOR,
+	scope: MCP_SCOPE_SUBMISSIONS_WRITE,
+	async handler(input) {
+		return issueUploadLinkForDraft(input.submissionId);
+	},
+});
+
+const submitDraftTool = defineTool({
+	name: "submissions_submit_draft",
+	title: "Submit a draft",
+	description:
+		"Send a draft into review on the author's behalf. A file type needs its file attached first.",
+	input: submissionIdInput,
+	roles: ADMIN_AND_EDITOR,
+	scope: MCP_SCOPE_SUBMISSIONS_WRITE,
+	destructive: true,
+	async handler(input, actor) {
+		return submitDraftForUser(input.submissionId, actor.id);
+	},
+});
+
 export const submissionsMcpTools: readonly McpTool[] = [
 	listSubmissions,
 	getSubmission,
 	conferenceTodo,
+	requirements,
+	createForUser,
+	uploadLink,
+	submitDraftTool,
 ];

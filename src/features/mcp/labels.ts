@@ -9,6 +9,7 @@ const SCOPE_LABELS: Record<string, string> = {
 	"conference:read": "Read conference settings, dates and deadlines",
 	"conference:write": "Change conference settings, dates and deadlines",
 	"submissions:read": "Read submissions, their authors and reviews",
+	"submissions:write": "Create submissions on a participant's behalf",
 	"activity:read": "Read the activity log",
 };
 

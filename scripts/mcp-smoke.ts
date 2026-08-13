@@ -99,7 +99,7 @@ async function main() {
 		// conference:write left out on purpose — the last step asserts the challenge.
 		scope:
 			process.env.SMOKE_SCOPE ??
-			"openid profile email users:read users:write conference:read",
+			"openid profile email users:read users:write conference:read submissions:read",
 		state,
 		code_challenge: challenge,
 		code_challenge_method: "S256",
@@ -200,6 +200,18 @@ async function main() {
 		"tools/call users_list returns data",
 		typeof parsed?.total === "number",
 		`total=${parsed?.total}`,
+	);
+
+	const requirements = await rpc("tools/call", {
+		name: "submissions_requirements",
+		arguments: {},
+	});
+	const reqPayload = requirements.json?.result?.content?.[0]?.text ?? "";
+	const reqParsed = reqPayload ? JSON.parse(reqPayload) : null;
+	step(
+		"tools/call submissions_requirements describes the active types",
+		Array.isArray(reqParsed?.types),
+		`types=${(reqParsed?.types ?? []).map((t: { type: string }) => t.type).join(",") || "none"}`,
 	);
 
 	step(
