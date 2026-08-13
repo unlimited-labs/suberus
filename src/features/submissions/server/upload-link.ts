@@ -2,16 +2,15 @@ import { env } from "@/env";
 import {
 	createUploadToken,
 	UPLOAD_LINK_TTL_MS,
-	type UploadTarget,
 	verifyUploadToken,
 } from "@/features/submissions/server/upload-token";
 
 export function issueUploadLink(
-	target: UploadTarget,
+	submissionId: string,
 	ttlMs: number = UPLOAD_LINK_TTL_MS,
 ): { url: string; expiresAt: Date } {
 	const { token, expiresAt } = createUploadToken(
-		target,
+		submissionId,
 		env.AUTH_SECRET,
 		ttlMs,
 	);

@@ -1,3 +1,5 @@
+import { getSetting } from "@/features/settings/server/settings";
+import { SUBMISSION_TYPE_TO_KEY } from "@/features/settings/types";
 import { attachFileToVersion } from "@/features/submissions/server/create-submission";
 import { readUploadToken } from "@/features/submissions/server/upload-link";
 import { prisma } from "@/shared/server/db.server";
@@ -14,9 +16,10 @@ export async function acceptUpload(
 	}
 
 	const submission = await prisma.submission.findUnique({
-		where: { id: parsed.target.submissionId },
+		where: { id: parsed.submissionId },
 		select: {
 			id: true,
+			type: true,
 			status: true,
 			userId: true,
 			currentVersion: { select: { version: true } },
@@ -29,6 +32,17 @@ export async function acceptUpload(
 		return {
 			ok: false,
 			error: "This submission no longer accepts a file",
+			status: 409,
+		};
+	}
+
+	// A TEXT type has nowhere to show a file; attaching one would leave a record
+	// no screen reads.
+	const config = await getSetting(SUBMISSION_TYPE_TO_KEY[submission.type]);
+	if (config.contentFormat !== "FILE") {
+		return {
+			ok: false,
+			error: "This submission type is written text, not an uploaded file",
 			status: 409,
 		};
 	}

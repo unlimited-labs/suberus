@@ -18,7 +18,7 @@ const FIXTURE = path.join(
 function tokenFor(submissionId: string) {
 	const secret = process.env.AUTH_SECRET;
 	if (!secret) throw new Error("AUTH_SECRET is required to mint an upload token");
-	return createUploadToken({ submissionId, versionNumber: 1 }, secret).token;
+	return createUploadToken(submissionId, secret).token;
 }
 
 function multipart(name: string, bytes: Buffer) {
@@ -140,6 +140,36 @@ test.describe("Upload link endpoint", () => {
 
 		expect(response.status()).toBe(400);
 		expect(await response.text()).toContain("'file'");
+	});
+
+	// A text type has nowhere to show a file; the link must not become a way to
+	// smuggle one in.
+	test("a text-format submission is refused", async ({ request, testRun }) => {
+		const db = getPrisma();
+		const existing = await db.appSetting.findUnique({
+			where: { key: "SUBMISSION_TYPE_POSTER" },
+		});
+		const original = (existing?.value ?? {}) as Record<string, unknown>;
+		await setAppSetting("SUBMISSION_TYPE_POSTER", {
+			...original,
+			isActive: true,
+			contentFormat: "TEXT",
+		});
+
+		const submission = await createSubmission({
+			testRunId: testRun.testRunId,
+			title: "Upload endpoint text type",
+			type: "POSTER",
+			status: "DRAFT",
+		});
+
+		const response = await request.post(
+			`/api/submissions/upload/${tokenFor(submission.id)}`,
+			multipart("paper.pdf", readFileSync(FIXTURE)),
+		);
+
+		expect(response.status()).toBe(409);
+		await setAppSetting("SUBMISSION_TYPE_POSTER", original);
 	});
 
 	test("a submission already in review is refused", async ({

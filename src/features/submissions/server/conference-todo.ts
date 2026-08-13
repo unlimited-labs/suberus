@@ -65,6 +65,12 @@ function toGroups(
  * Every submission that needs someone to do something, grouped by what that is.
  * Derived from the same computeSubmissionTodo the admin table renders, so the
  * two can never disagree.
+ *
+ * ponytail: loads every submission, exactly as /admin/submissions already does.
+ * The counts are over the whole conference, so paginating here would report
+ * wrong totals — the upgrade is a SQL aggregate that derives the todo kind in
+ * the query, and it is worth writing only once a conference is big enough for
+ * the admin table to hurt too.
  */
 export async function getConferenceTodo(
 	perGroup = 20,

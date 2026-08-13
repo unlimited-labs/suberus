@@ -1,4 +1,8 @@
-import { getActiveSubmissionTypes } from "@/features/settings/server/settings";
+import {
+	getActiveSubmissionTypes,
+	getSetting,
+} from "@/features/settings/server/settings";
+import { SUBMISSION_TYPE_TO_KEY } from "@/features/settings/types";
 import {
 	checkSubmissionWindow,
 	createFileSubmission,
@@ -109,10 +113,7 @@ export async function createSubmissionForUser(
 		};
 	}
 
-	const upload = issueUploadLink({
-		submissionId: created.id,
-		versionNumber: 1,
-	});
+	const upload = issueUploadLink(created.id);
 	return {
 		id: created.id,
 		status: "DRAFT",
@@ -154,18 +155,19 @@ export async function issueUploadLinkForDraft(
 ): Promise<UploadHandoff> {
 	const submission = await prisma.submission.findUnique({
 		where: { id: submissionId },
-		select: {
-			status: true,
-			currentVersion: { select: { version: true } },
-		},
+		select: { type: true, status: true },
 	});
 	if (!submission) throw new Response("Submission not found", { status: 404 });
 	if (submission.status !== "DRAFT") {
 		throw new Response("Only a draft accepts a new file", { status: 409 });
 	}
 
-	return issueUploadLink({
-		submissionId,
-		versionNumber: submission.currentVersion?.version ?? 1,
-	});
+	const config = await getSetting(SUBMISSION_TYPE_TO_KEY[submission.type]);
+	if (config.contentFormat !== "FILE") {
+		throw new Response(`${submission.type} is a text type — it takes no file`, {
+			status: 409,
+		});
+	}
+
+	return issueUploadLink(submissionId);
 }
