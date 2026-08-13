@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "DOCX/PDF -> markdown/JSON/DocTags conversion service"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "docling>=2.95",
+    "docling>=2.119.0",
     "easyocr",
     "fastapi",
     "uvicorn[standard]",
