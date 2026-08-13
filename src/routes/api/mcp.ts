@@ -1,6 +1,7 @@
 import { requireMcpAuth } from "@better-auth/mcp";
 import { createFileRoute } from "@tanstack/react-router";
 import { env } from "@/env";
+import { activityLogMcpTools } from "@/features/activity-log/mcp/tools";
 import {
 	auth,
 	MCP_CAPABILITY_SCOPES,
@@ -18,7 +19,12 @@ const baseUrl = new URL(env.APP_BASE_URL);
 const handler = createSuberusMcpHandler({
 	name: "suberus",
 	version: env.GIT_COMMIT,
-	tools: [...usersMcpTools, ...settingsMcpTools, ...submissionsMcpTools],
+	tools: [
+		...usersMcpTools,
+		...settingsMcpTools,
+		...submissionsMcpTools,
+		...activityLogMcpTools,
+	],
 	allowedHostnames: [baseUrl.hostname],
 	allowedOriginHostnames: [baseUrl.hostname],
 });

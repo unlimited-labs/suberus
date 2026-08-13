@@ -12,6 +12,7 @@ const MODULE_REGISTRY: Record<string, string> = {
 	conference: "@/features/settings/server/conference",
 	"admin-subs": "@/features/submissions/server/admin-submissions",
 	todo: "@/features/submissions/server/conference-todo",
+	activity: "@/features/activity-log/server/query",
 	"admin-users": "@/features/users/server/users",
 	email: "@/shared/server/email",
 	reminders: "@/features/submissions/server/reminders",
