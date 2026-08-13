@@ -79,6 +79,10 @@ Conferences and institutions running on Suberus:
 ## Documentation
 - **Admin manual** — Starlight site available at [docs.suberus.app](https://docs.suberus.app) or in `docs/`
 
+## Security
+
+Found a vulnerability? Report it privately — see the [security policy](SECURITY.md). Please do not open a public issue.
+
 ## License
 
 Released under the [MIT License](LICENSE).

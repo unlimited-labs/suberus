@@ -1,0 +1,45 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [master]
+    paths-ignore: ["poc/**", "*-demo/**", "docs/**", "**/*.md"]
+  pull_request:
+    branches: [master]
+    paths-ignore: ["poc/**", "*-demo/**", "docs/**", "**/*.md"]
+  schedule:
+    - cron: "0 5 * * 1"
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript, python]
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          config: |
+            paths-ignore:
+              - poc
+              - kpt2025-demo
+              - mf2024-demo
+              - docs
+              - e2e
+
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:${{ matrix.language }}
