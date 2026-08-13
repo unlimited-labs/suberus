@@ -113,6 +113,35 @@ test.describe("Upload link endpoint", () => {
 		expect(response.status()).toBe(400);
 	});
 
+	// The field name is the one thing a caller cannot infer from the URL.
+	test("a wrong field name is answered with the right one", async ({
+		request,
+		testRun,
+	}) => {
+		const submission = await createSubmission({
+			testRunId: testRun.testRunId,
+			title: "Upload endpoint wrong field",
+			type: "FULL_PAPER",
+			status: "DRAFT",
+		});
+
+		const response = await request.post(
+			`/api/submissions/upload/${tokenFor(submission.id)}`,
+			{
+				multipart: {
+					document: {
+						name: "paper.pdf",
+						mimeType: "application/pdf",
+						buffer: readFileSync(FIXTURE),
+					},
+				},
+			},
+		);
+
+		expect(response.status()).toBe(400);
+		expect(await response.text()).toContain("'file'");
+	});
+
 	test("a submission already in review is refused", async ({
 		request,
 		testRun,

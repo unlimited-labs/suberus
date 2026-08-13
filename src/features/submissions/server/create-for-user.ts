@@ -13,20 +13,10 @@ import { issueUploadLink } from "@/features/submissions/server/upload-link";
 import type { SubmissionCreateInput } from "@/features/submissions/validations";
 import { prisma } from "@/shared/server/db.server";
 
+/** Multipart POST target, field name `file`; the token is the whole authority. */
 export interface UploadHandoff {
-	/** Multipart POST target, field name `file`. */
 	url: string;
 	expiresAt: Date;
-	command: string;
-	note: string;
-}
-
-function handoff(link: { url: string; expiresAt: Date }): UploadHandoff {
-	return {
-		...link,
-		command: `curl -F "file=@<path-to-file>" "${link.url}"`,
-		note: "Run this yourself if you can reach the file; otherwise give the command to the operator (on Windows PowerShell 5.1 they must write curl.exe). It carries its own authority, so no sign-in is needed.",
-	};
 }
 
 export interface CreateForUserResult {
@@ -119,9 +109,10 @@ export async function createSubmissionForUser(
 		};
 	}
 
-	const upload = handoff(
-		issueUploadLink({ submissionId: created.id, versionNumber: 1 }),
-	);
+	const upload = issueUploadLink({
+		submissionId: created.id,
+		versionNumber: 1,
+	});
 	return {
 		id: created.id,
 		status: "DRAFT",
@@ -173,10 +164,8 @@ export async function issueUploadLinkForDraft(
 		throw new Response("Only a draft accepts a new file", { status: 409 });
 	}
 
-	return handoff(
-		issueUploadLink({
-			submissionId,
-			versionNumber: submission.currentVersion?.version ?? 1,
-		}),
-	);
+	return issueUploadLink({
+		submissionId,
+		versionNumber: submission.currentVersion?.version ?? 1,
+	});
 }

@@ -181,23 +181,18 @@ a status, assign a reviewer or make a decision.
 
 <Aside type="note" title="How the file gets there">
 When a submission type expects a **file**, the assistant creates the submission
-as a **draft** and receives a short-lived **upload address** with a ready-made
-command for it.
+as a **draft** and receives a short-lived **upload address** for it.
 
 An assistant that can reach the file — Claude Code, working on your machine —
-runs that command itself and the file goes straight from disk to Suberus. One
-that cannot will hand you the command to paste into a terminal. Either way the
-file never travels through the conversation: what an assistant reads from an
-attachment is the text pulled out of a PDF, not the PDF, and the file itself is
-what gets archived.
+sends it there itself, straight from disk. One that cannot will tell you how to
+send it. Either way the file never travels through the conversation: what an
+assistant reads from an attachment is the text pulled out of a PDF, not the PDF,
+and the file itself is what gets archived.
 
 The address lasts **24 hours**, works only for that one submission, needs no
 sign-in, and stops working the moment the submission leaves draft. Uploading
 again replaces the file, so a wrong upload is fixable. If it expires, ask for a
 new one.
-
-On **Windows PowerShell 5.1** the command must start with `curl.exe`; plain
-`curl` there is a different tool that cannot send files.
 </Aside>
 
 

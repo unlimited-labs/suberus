@@ -10,7 +10,12 @@ export const Route = createFileRoute("/api/submissions/upload/$token")({
 				try {
 					file = getUploadedFile(await request.formData());
 				} catch {
-					return new Response("A file is required", { status: 400 });
+					// Names the field: a caller that guessed wrong can fix it from the
+					// response instead of retrying blind.
+					return new Response(
+						"Send the file as multipart/form-data under the field name 'file'",
+						{ status: 400 },
+					);
 				}
 
 				const result = await acceptUpload(params.token, file);
