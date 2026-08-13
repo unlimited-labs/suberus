@@ -56,9 +56,10 @@ export async function createInvitation(
 		throw new Error("User with this email already exists");
 	}
 
-	// Cancel any existing PENDING invitation for same email
+	// EXPIRED too: resendInvitation revives such a row to PENDING, which would
+	// leave two live tokens for one address — possibly with different roles.
 	await prisma.invitation.updateMany({
-		where: { email, status: "PENDING" },
+		where: { email, status: { in: ["PENDING", "EXPIRED"] } },
 		data: { status: "CANCELLED" },
 	});
 

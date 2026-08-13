@@ -54,6 +54,15 @@ describe("toClientError", () => {
 		expect(safe.message).toBe(GENERIC_ERROR_MESSAGE);
 	});
 
+	it("keeps the name of a client-safe error so callers can discriminate", () => {
+		const error = new Error("File is not a PDF");
+		error.name = "UploadValidationError";
+
+		const safe = toClientError(error, "abc123");
+		expect(safe.name).toBe("UploadValidationError");
+		expect(hasRequestId(safe)).toBe(false);
+	});
+
 	it("replaces non-Error throws", () => {
 		const safe = toClientError({ secret: "s3cret" }, "abc123");
 		expect(safe.message).toBe(GENERIC_ERROR_MESSAGE);

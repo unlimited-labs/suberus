@@ -44,6 +44,10 @@ export function toClientError(error: unknown, requestId: string): Error {
 	safe.stack = "";
 	if (message === GENERIC_ERROR_MESSAGE) {
 		(safe as ClientError).requestId = requestId;
+		return safe;
 	}
+	// Carry the discriminator of a message we already judged client-safe. `cause`
+	// stays behind: it usually wraps the infrastructure error this strips.
+	if (error instanceof Error) safe.name = error.name;
 	return safe;
 }

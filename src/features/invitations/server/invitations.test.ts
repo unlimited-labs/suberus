@@ -164,6 +164,20 @@ describe("createInvitation", () => {
 		);
 	});
 
+	it("cancels expired invitations too, so a resend cannot revive a second token", async () => {
+		prismaMock.user.findUnique.mockResolvedValue(null);
+
+		await createInvitation("alice@uni.edu", "EDITOR", "admin-1");
+
+		expect(prismaMock.invitation.updateMany).toHaveBeenCalledWith({
+			where: {
+				email: "alice@uni.edu",
+				status: { in: ["PENDING", "EXPIRED"] },
+			},
+			data: { status: "CANCELLED" },
+		});
+	});
+
 	it("refuses to invite an address that already has an account", async () => {
 		prismaMock.user.findUnique.mockResolvedValue({ id: "u-1" });
 
