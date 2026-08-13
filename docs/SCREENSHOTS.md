@@ -107,7 +107,6 @@ Settings tabs deep-link via `?tab=<id>`.
 - [x] **57** — `managing/users.mdx` — *Edit survey answers dialog* — `/admin/users/<id>` → Survey Responses → **Edit**
 - [x] **59** — `managing/ai-assistant.mdx` — *Connect an AI assistant dialog* (register command with credentials, callback port + Re-issue, authorized applications with revoke) — user menu → **Connect AI assistant**
 - [x] **60** — `managing/ai-assistant.mdx` — *Authorization screen* (application name, verified origin, requested access) — `/consent` during an assistant's OAuth flow
-- [x] **61** — `managing/ai-assistant.mdx` — *Submission upload link* (what the author opens: title, accepted format and size, file picker) — `/upload/<token>`
 
 ---
 
@@ -125,5 +124,4 @@ Settings tabs deep-link via `?tab=<id>`.
 - **49 (program theme):** captures the **Appearance** section only (not the whole tab); doesn't change the selected theme.
 - **50, 51, 53 (public program — preview, notifications, event card):** all toggle `setSchedulePublished(true)` then restore `false` afterwards. **51** needs `VITE_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` set, otherwise the Notifications item is hidden.
 - **55 (bulk camera-ready report):** the skip report is a toast, not an in-dialog panel — the dialog auto-closes on success; the shot captures the page right after the toast appears.
-- **61 (upload link):** needs `AUTH_SECRET` to mint the capability token, and flips `SUBMISSION_TYPE_FULL_PAPER` to a PDF FILE type for the shot (restored afterwards). The page is public — no session is involved.
 - **59, 60 (AI assistant):** need the server started with `MCP_ENABLED=true`; **60** requires an `oauthClient` row and a signed authorize redirect, so capture it from the flow `e2e/admin/mcp.spec.ts` drives rather than by visiting `/consent` directly.

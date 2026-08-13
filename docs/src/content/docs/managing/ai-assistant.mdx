@@ -146,7 +146,7 @@ granted; nothing is stored.
 | Ask what is blocking the conference — everything waiting on a reviewer, a decision, a revision or a payment | Submissions, read | Admin, Editor |
 | Check what each submission type expects — text or file, formats, size and length limits | Submissions, read | Admin, Editor |
 | Register a submission on a participant's behalf | Submissions, write | Admin, Editor |
-| Issue a fresh upload link, or send a finished draft into review | Submissions, write | Admin, Editor |
+| Issue a fresh upload address, or send a finished draft into review | Submissions, write | Admin, Editor |
 
 **Activity log:**
 
@@ -179,24 +179,27 @@ questions about your conference without ever being able to change it.
 The assistant can register a submission for a participant, but it cannot change
 a status, assign a reviewer or make a decision.
 
-<Aside type="note" title="Files travel by link, not through the assistant">
-When a submission type expects a **file**, the assistant cannot carry it: what
-it reads from an attachment is text, not the original PDF or DOCX, and that
-original is the record of the submission. So it creates the submission as a
-**draft** and hands you a one-off **upload link** instead.
+<Aside type="note" title="How the file gets there">
+When a submission type expects a **file**, the assistant creates the submission
+as a **draft** and receives a short-lived **upload address** with a ready-made
+command for it.
 
-Give that link to the author (or open it yourself) and drop the file in — no
-sign-in needed. The link is good for **24 hours**, works only for that one
-submission, and stops working the moment the submission leaves draft. Uploading
-again replaces the file. If it expires or the wrong file goes up, ask the
-assistant for a new link.
+An assistant that can reach the file — Claude Code, working on your machine —
+runs that command itself and the file goes straight from disk to Suberus. One
+that cannot will hand you the command to paste into a terminal. Either way the
+file never travels through the conversation: what an assistant reads from an
+attachment is the text pulled out of a PDF, not the PDF, and the file itself is
+what gets archived.
 
-The file is checked on arrival the same way as any other upload: the real format
-is read from the file's own bytes, not its name, and rejected if it does not
-match what the type allows.
+The address lasts **24 hours**, works only for that one submission, needs no
+sign-in, and stops working the moment the submission leaves draft. Uploading
+again replaces the file, so a wrong upload is fixable. If it expires, ask for a
+new one.
+
+On **Windows PowerShell 5.1** the command must start with `curl.exe`; plain
+`curl` there is a different tool that cannot send files.
 </Aside>
 
-![The upload page an author opens from the link](../../../assets/screenshots/61-managing-submission-upload-link.png)
 
 The assistant never sets the amount itself — it names one of the **fee types**
 you configured and the amount and currency are taken from there, exactly as the

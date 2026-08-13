@@ -9,7 +9,6 @@
  * Shot 03 (installer) needs a separate empty-DB server; set DOCS_INSTALL_URL
  * (e.g. http://127.0.0.1:3055) to a running instance with zero users.
  */
-import { createUploadToken } from "@/features/submissions/server/upload-token";
 import { test, expect } from "../helpers/base-fixtures";
 import {
 	createFee,
@@ -1403,46 +1402,5 @@ test.describe("docs screenshots", () => {
 		await expect(page.getByTestId("consent-card")).toBeVisible();
 		await page.waitForTimeout(400);
 		await shot(page, "60-managing-mcp-consent.png", { full: false });
-	});
-
-	test("61 submission upload link", async ({ page }) => {
-		const db = getPrisma();
-		const secret = process.env.AUTH_SECRET;
-		if (!secret) test.skip(true, "AUTH_SECRET is required to mint a link");
-
-		const paper = await db.appSetting.findUnique({
-			where: { key: "SUBMISSION_TYPE_FULL_PAPER" },
-		});
-		const original = (paper?.value ?? {}) as Record<string, unknown>;
-		await setAppSetting("SUBMISSION_TYPE_FULL_PAPER", {
-			...original,
-			isActive: true,
-			contentFormat: "FILE",
-			allowedExtensions: ["pdf"],
-			maxFileSizeMb: 20,
-		});
-
-		const submission = await createSubmission({
-			title: "Adaptive Mesh Refinement for Coastal Flood Models",
-			type: "FULL_PAPER",
-			status: "DRAFT",
-			withAuthor: true,
-		});
-		const { token } = createUploadToken(
-			{ submissionId: submission.id, versionNumber: 1 },
-			secret as string,
-		);
-
-		await page.goto(`/upload/${token}`);
-		await expect(page.getByTestId("upload-title")).toBeVisible();
-		await page.waitForTimeout(400);
-		await shot(page, "61-managing-submission-upload-link.png", { full: false });
-
-		await db.submission.update({
-			where: { id: submission.id },
-			data: { presenterId: null, currentVersionId: null },
-		});
-		await db.submission.delete({ where: { id: submission.id } });
-		await setAppSetting("SUBMISSION_TYPE_FULL_PAPER", original);
 	});
 });

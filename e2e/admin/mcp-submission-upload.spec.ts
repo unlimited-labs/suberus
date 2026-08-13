@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createUploadToken } from "@/features/submissions/server/upload-token";
@@ -20,7 +21,15 @@ function tokenFor(submissionId: string) {
 	return createUploadToken({ submissionId, versionNumber: 1 }, secret).token;
 }
 
-test.describe("Upload link", () => {
+function multipart(name: string, bytes: Buffer) {
+	return {
+		multipart: {
+			file: { name, mimeType: "application/pdf", buffer: bytes },
+		},
+	};
+}
+
+test.describe("Upload link endpoint", () => {
 	let restore: () => Promise<void>;
 
 	test.beforeAll(async () => {
@@ -41,30 +50,25 @@ test.describe("Upload link", () => {
 		await restore();
 	});
 
-	test("an author uploads the file without signing in", async ({
-		page,
+	// The whole point of the token: a POST with no session attaches the file.
+	test("an unauthenticated POST attaches the file", async ({
+		request,
 		testRun,
 	}) => {
 		const db = getPrisma();
 		const submission = await createSubmission({
 			testRunId: testRun.testRunId,
-			title: "Upload link target",
+			title: "Upload endpoint target",
 			type: "FULL_PAPER",
 			status: "DRAFT",
 			withAuthor: true,
 		});
 
-		// No storageState: the link has to work for someone with no session.
-		await page.context().clearCookies();
-		await page.goto(`/upload/${tokenFor(submission.id)}`);
-
-		await expect(page.getByTestId("upload-title")).toContainText(
-			"Upload link target",
+		const response = await request.post(
+			`/api/submissions/upload/${tokenFor(submission.id)}`,
+			multipart("paper.pdf", readFileSync(FIXTURE)),
 		);
-		await page.getByTestId("upload-input").setInputFiles(FIXTURE);
-		await page.getByTestId("upload-submit").click();
-
-		await expect(page.getByTestId("upload-done")).toBeVisible();
+		expect(response.status()).toBe(204);
 
 		const stored = await db.submission.findUnique({
 			where: { id: submission.id },
@@ -74,18 +78,56 @@ test.describe("Upload link", () => {
 		expect(stored?.currentVersion?.file?.mimeType).toBe("application/pdf");
 	});
 
-	test("a tampered link is refused", async ({ page, testRun }) => {
+	test("a tampered token is refused", async ({ request, testRun }) => {
 		const submission = await createSubmission({
 			testRunId: testRun.testRunId,
-			title: "Upload link tampered",
+			title: "Upload endpoint tampered",
 			type: "FULL_PAPER",
 			status: "DRAFT",
 		});
 		const token = tokenFor(submission.id);
 
-		await page.goto(`/upload/${token.slice(0, -2)}xx`);
+		const response = await request.post(
+			`/api/submissions/upload/${token.slice(0, -2)}xx`,
+			multipart("paper.pdf", readFileSync(FIXTURE)),
+		);
+		expect(response.status()).toBe(403);
+	});
 
-		await expect(page.getByTestId("upload-unavailable")).toBeVisible();
-		await expect(page.getByTestId("upload-input")).toBeHidden();
+	// Content, not extension: renaming a text file to .pdf must not get through.
+	test("a file that is not what it claims is refused", async ({
+		request,
+		testRun,
+	}) => {
+		const submission = await createSubmission({
+			testRunId: testRun.testRunId,
+			title: "Upload endpoint bad content",
+			type: "FULL_PAPER",
+			status: "DRAFT",
+		});
+
+		const response = await request.post(
+			`/api/submissions/upload/${tokenFor(submission.id)}`,
+			multipart("paper.pdf", Buffer.from("plain text pretending to be a pdf")),
+		);
+		expect(response.status()).toBe(400);
+	});
+
+	test("a submission already in review is refused", async ({
+		request,
+		testRun,
+	}) => {
+		const submission = await createSubmission({
+			testRunId: testRun.testRunId,
+			title: "Upload endpoint submitted",
+			type: "FULL_PAPER",
+			status: "SUBMITTED",
+		});
+
+		const response = await request.post(
+			`/api/submissions/upload/${tokenFor(submission.id)}`,
+			multipart("paper.pdf", readFileSync(FIXTURE)),
+		);
+		expect(response.status()).toBe(409);
 	});
 });

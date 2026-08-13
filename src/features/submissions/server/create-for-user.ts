@@ -13,11 +13,27 @@ import { issueUploadLink } from "@/features/submissions/server/upload-link";
 import type { SubmissionCreateInput } from "@/features/submissions/validations";
 import { prisma } from "@/shared/server/db.server";
 
+export interface UploadHandoff {
+	/** Multipart POST target, field name `file`. */
+	url: string;
+	expiresAt: Date;
+	command: string;
+	note: string;
+}
+
+function handoff(link: { url: string; expiresAt: Date }): UploadHandoff {
+	return {
+		...link,
+		command: `curl -F "file=@<path-to-file>" "${link.url}"`,
+		note: "Run this yourself if you can reach the file; otherwise give the command to the operator (on Windows PowerShell 5.1 they must write curl.exe). It carries its own authority, so no sign-in is needed.",
+	};
+}
+
 export interface CreateForUserResult {
 	id: string;
 	status: "DRAFT" | "SUBMITTED";
 	contentFormat: "TEXT" | "FILE";
-	upload?: { url: string; expiresAt: Date };
+	upload?: UploadHandoff;
 	warnings: string[];
 }
 
@@ -68,14 +84,16 @@ export async function createSubmissionForUser(
 		file: null,
 	};
 
-	if (!payload.isDraft) {
-		const invalid = await validateSubmissionInput(payload);
-		if (invalid && !invalid.success) {
-			const issues = (invalid.issues ?? [])
-				.map((issue) => `${issue.path.join(".")} ${issue.message}`)
-				.join("; ");
-			throw new Response(`${invalid.error}: ${issues}`, { status: 400 });
-		}
+	// Always, not just when submitting: a FILE type is necessarily born a draft,
+	// so gating on isDraft would let an agent create something unvalidated and
+	// then push it through submissions_submit_draft. An agent writes the whole
+	// submission in one call, so there is no half-filled draft to preserve.
+	const invalid = await validateSubmissionInput(payload);
+	if (invalid && !invalid.success) {
+		const issues = (invalid.issues ?? [])
+			.map((issue) => `${issue.path.join(".")} ${issue.message}`)
+			.join("; ");
+		throw new Response(`${invalid.error}: ${issues}`, { status: 400 });
 	}
 
 	const created =
@@ -101,10 +119,9 @@ export async function createSubmissionForUser(
 		};
 	}
 
-	const upload = issueUploadLink({
-		submissionId: created.id,
-		versionNumber: 1,
-	});
+	const upload = handoff(
+		issueUploadLink({ submissionId: created.id, versionNumber: 1 }),
+	);
 	return {
 		id: created.id,
 		status: "DRAFT",
@@ -143,7 +160,7 @@ export async function submitDraftForUser(
 
 export async function issueUploadLinkForDraft(
 	submissionId: string,
-): Promise<{ url: string; expiresAt: Date }> {
+): Promise<UploadHandoff> {
 	const submission = await prisma.submission.findUnique({
 		where: { id: submissionId },
 		select: {
@@ -156,8 +173,10 @@ export async function issueUploadLinkForDraft(
 		throw new Response("Only a draft accepts a new file", { status: 409 });
 	}
 
-	return issueUploadLink({
-		submissionId,
-		versionNumber: submission.currentVersion?.version ?? 1,
-	});
+	return handoff(
+		issueUploadLink({
+			submissionId,
+			versionNumber: submission.currentVersion?.version ?? 1,
+		}),
+	);
 }

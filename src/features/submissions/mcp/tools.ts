@@ -108,7 +108,7 @@ const createForUser = defineTool({
 	name: "submissions_create_for_user",
 	title: "Create a submission for a participant",
 	description:
-		"Register a submission owned by a participant. For a text type it is complete at once (set submit=true to send it straight into review). For a file type it is created as a draft and the result carries a one-off upload link to hand to the author — the file cannot travel through this conversation. Deadlines and per-type limits are reported in `warnings`, not enforced.",
+		"Register a submission owned by a participant. A text type is complete at once (submit=true sends it straight into review). A file type is created as a draft, and the result carries `upload.command` — run it yourself if you have the file on disk, since the bytes must not travel through this conversation. Hand `upload.url` to the author instead when you do not; they need no account. Then call submissions_submit_draft. Deadlines and per-type limits are reported in `warnings`, not enforced.",
 	input: submissionCreateForUserInput,
 	roles: ADMIN_AND_EDITOR,
 	scope: MCP_SCOPE_SUBMISSIONS_WRITE,
@@ -122,7 +122,7 @@ const uploadLink = defineTool({
 	name: "submissions_upload_link",
 	title: "New upload link",
 	description:
-		"Issue a fresh upload link for a draft — after the old one expired, or when the wrong file was sent. Uploading again replaces the attached file.",
+		"Issue a fresh upload link for a draft — after the old one expired, or when the wrong file was sent. Returns `command` to run yourself and `url` to hand to the author; either way the new file replaces the old one.",
 	input: submissionIdInput,
 	roles: ADMIN_AND_EDITOR,
 	scope: MCP_SCOPE_SUBMISSIONS_WRITE,

@@ -16,7 +16,7 @@ export function issueUploadLink(
 		ttlMs,
 	);
 	return {
-		url: `${env.APP_BASE_URL.replace(/\/$/, "")}/upload/${token}`,
+		url: `${env.APP_BASE_URL.replace(/\/$/, "")}/api/submissions/upload/${token}`,
 		expiresAt,
 	};
 }
