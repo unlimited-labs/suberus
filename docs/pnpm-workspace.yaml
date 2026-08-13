@@ -1,6 +1,11 @@
-# Security pin: esbuild >=0.28.1 fixes dev-server arbitrary file read on Windows (Dependabot).
+# Security pins for transitive CVEs (Dependabot). Drop an entry once the parent ships the fix.
 overrides:
   esbuild: 0.28.1
+  js-yaml: 4.3.1
+  'nanoid@^3.0.0': 3.3.17
+  postcss: 8.5.23
+  svgo: 4.0.2
+  sharp: 0.35.3
 
 allowBuilds:
   esbuild: true
