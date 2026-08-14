@@ -1,8 +1,12 @@
 import { IconFingerprint, IconMail } from "@tabler/icons-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { AuthCard } from "@/features/auth/components/auth-card";
+import {
+	oauthResumeSearch,
+	resumeOAuthAuthorize,
+} from "@/features/auth/oauth-resume";
 import { loginSchema } from "@/features/auth/validations";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { authClient, signIn } from "@/shared/lib/auth-client";
@@ -29,17 +33,21 @@ async function signInWithPasskey(opts?: { autoFill?: boolean }) {
 function LoginPage() {
 	const navigate = useNavigate();
 
+	const afterSignIn = useCallback(() => {
+		const resume = oauthResumeSearch();
+		if (resume) resumeOAuthAuthorize(resume);
+		else navigate({ to: "/" });
+	}, [navigate]);
+
 	// Conditional UI: offer passkeys in the e-mail field's autofill dropdown.
 	useEffect(() => {
 		if (typeof PublicKeyCredential === "undefined") return;
 		void PublicKeyCredential.isConditionalMediationAvailable?.().then(
 			async (ok) => {
-				if (ok && (await signInWithPasskey({ autoFill: true }))) {
-					navigate({ to: "/" });
-				}
+				if (ok && (await signInWithPasskey({ autoFill: true }))) afterSignIn();
 			},
 		);
-	}, [navigate]);
+	}, [afterSignIn]);
 
 	const form = useAppForm({
 		defaultValues: {
@@ -64,7 +72,7 @@ function LoginPage() {
 			}
 
 			toast.success("Logged in successfully");
-			navigate({ to: "/" });
+			afterSignIn();
 		},
 	});
 
@@ -123,7 +131,7 @@ function LoginPage() {
 						className="h-9 w-full"
 						data-testid="passkey-signin"
 						onClick={async () => {
-							if (await signInWithPasskey()) navigate({ to: "/" });
+							if (await signInWithPasskey()) afterSignIn();
 						}}
 					>
 						<IconFingerprint className="size-4" />

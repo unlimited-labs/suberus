@@ -1,6 +1,6 @@
 import { IconAlertTriangle, IconCheck } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { AuthLayout } from "@/features/auth/components/auth-layout";
 import { consentClientQueryOptions } from "@/features/mcp/api/consent";
@@ -54,9 +54,8 @@ function ConsentPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [busy, setBusy] = useState<"approve" | "deny" | null>(null);
 
-	const params = new URLSearchParams(
-		typeof window === "undefined" ? "" : window.location.search,
-	);
+	const search = typeof window === "undefined" ? "" : window.location.search;
+	const params = new URLSearchParams(search);
 	const clientId = params.get("client_id") ?? "";
 	const scopes = (params.get("scope") ?? "").split(" ").filter(Boolean);
 
@@ -80,20 +79,19 @@ function ConsentPage() {
 
 	const appName = client?.name || clientId || "Unknown application";
 
-	// No redirect when signed out: /login cannot carry the signed query back, so
-	// it would strand the waiting client. Ask for a fresh attempt instead.
 	const card = !user ? (
 		<Card className="mx-auto w-full max-w-md" data-testid="consent-signed-out">
 			<CardHeader>
-				<CardTitle className="text-xl">Your session has ended</CardTitle>
+				<CardTitle className="text-xl">Sign in to continue</CardTitle>
 			</CardHeader>
 			<CardContent className="space-y-4">
 				<p className="text-muted-foreground text-sm">
-					Sign in again, then start the connection from your assistant once more
-					— this authorization request can no longer be completed.
+					Your session has ended. Sign in and this authorization request
+					continues where it left off.
 				</p>
 				<Button asChild className="w-full">
-					<Link to="/login">Sign in</Link>
+					{/* Carries the signed query so /login can re-enter authorize. */}
+					<a href={`/login${search}`}>Sign in</a>
 				</Button>
 			</CardContent>
 		</Card>
