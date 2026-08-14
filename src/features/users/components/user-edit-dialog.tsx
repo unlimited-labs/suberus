@@ -8,11 +8,11 @@ import {
 	updateAdminUserProfile,
 } from "@/features/users/api/users";
 import type { AdminUser } from "@/features/users/server/users";
+import type { AdminUserEditFormData } from "@/features/users/validations";
+import { adminUserEditSchema } from "@/features/users/validations";
 import { BillingFieldsGroup } from "@/shared/components/composable/billing-fields-group";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { titleOptions } from "@/shared/lib/labels/title";
-import type { AdminUserEditFormData } from "@/shared/lib/validations/user";
-import { adminUserEditSchema } from "@/shared/lib/validations/user";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
@@ -37,17 +37,8 @@ export function UserEditDialog({
 	const queryClient = useQueryClient();
 
 	const mutation = useMutation({
-		mutationFn: (data: {
-			firstName: string;
-			lastName: string;
-			title?: string;
-			affiliation?: string;
-			orcid?: string;
-			email: string;
-			needInvoice?: boolean;
-			address?: string;
-			country?: string;
-		}) => updateAdminUserProfile({ data: { id: user.id, ...data } }),
+		mutationFn: (data: AdminUserEditFormData) =>
+			updateAdminUserProfile({ data: { id: user.id, ...data } }),
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: adminUsersQueryOptions().queryKey,
@@ -93,17 +84,7 @@ export function UserEditDialog({
 						return { fields: { email: "Email already in use" } };
 					}
 				}
-				await mutation.mutateAsync({
-					firstName: value.firstName,
-					lastName: value.lastName,
-					title: value.title || undefined,
-					affiliation: value.affiliation || undefined,
-					orcid: value.orcid || undefined,
-					email: value.email,
-					needInvoice: value.needInvoice,
-					address: value.address || undefined,
-					country: value.country || undefined,
-				});
+				await mutation.mutateAsync(value);
 				return null;
 			},
 		},

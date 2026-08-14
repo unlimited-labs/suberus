@@ -1,9 +1,9 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
+import { listActivity } from "@/features/activity-log/server/query";
+import { activityLogListInput } from "@/features/activity-log/validations";
 import { adminMiddleware } from "@/features/auth/server/middleware";
 import { getAdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
-import { prisma } from "@/shared/server/db.server";
 
 export const getAdminDashboard = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
@@ -25,48 +25,8 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
 
 export const getMoreActivity = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.validator(z.object({ cursor: z.string().optional() }))
-	.handler(async ({ data }) => {
-		const items = await prisma.activityLog.findMany({
-			take: 20,
-			...(data.cursor
-				? {
-						skip: 1,
-						cursor: { id: data.cursor },
-					}
-				: {}),
-			orderBy: { createdAt: "desc" },
-			include: {
-				submission: { select: { id: true, title: true } },
-				user: { select: { id: true, firstName: true, lastName: true } },
-				performer: {
-					select: { id: true, firstName: true, lastName: true },
-				},
-			},
-		});
-
-		return items.map((item) => ({
-			id: item.id,
-			type: item.type,
-			userId: item.userId,
-			submissionId: item.submissionId,
-			performerId: item.performer?.id ?? null,
-			performerName: item.performer
-				? `${item.performer.firstName ?? ""} ${item.performer.lastName ?? ""}`.trim() ||
-					null
-				: null,
-			submissionTitle: item.submission?.title ?? null,
-			userName: item.user
-				? `${item.user.firstName ?? ""} ${item.user.lastName ?? ""}`.trim() ||
-					null
-				: null,
-			detail: item.detail as Record<
-				string,
-				string | number | boolean | string[] | null
-			> | null,
-			createdAt: item.createdAt,
-		}));
-	});
+	.validator(activityLogListInput.pick({ cursor: true, take: true }))
+	.handler(async ({ data }) => listActivity(data));
 
 export const adminDashboardQueryOptions = () =>
 	queryOptions({

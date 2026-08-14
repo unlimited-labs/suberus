@@ -6,10 +6,7 @@ import {
 	createSubmissionsZipStream,
 	getSubmissionsForExport,
 } from "@/features/submissions/server/export";
-import type {
-	SubmissionStatus,
-	SubmissionType,
-} from "@/generated/prisma/enums";
+import { adminSubmissionsListInput } from "@/features/submissions/validations";
 
 export const Route = createFileRoute("/api/admin/submissions/export")({
 	server: {
@@ -21,18 +18,16 @@ export const Route = createFileRoute("/api/admin/submissions/export")({
 				const typeParam = url.searchParams.get("type");
 				const statusParam = url.searchParams.get("status");
 
-				const type = typeParam
-					? (typeParam.split(",") as SubmissionType[])
-					: undefined;
-				const status = statusParam
-					? (statusParam.split(",") as SubmissionStatus[])
-					: undefined;
-
-				const submissions = await getSubmissionsForExport({
+				const filters = adminSubmissionsListInput.safeParse({
 					search,
-					type,
-					status,
+					type: typeParam?.split(","),
+					status: statusParam?.split(","),
 				});
+				if (!filters.success) {
+					return new Response("Invalid type or status filter", { status: 400 });
+				}
+
+				const submissions = await getSubmissionsForExport(filters.data);
 
 				const archive = await createSubmissionsZipStream(submissions);
 				const webStream = Readable.toWeb(archive) as ReadableStream<Uint8Array>;

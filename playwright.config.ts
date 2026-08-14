@@ -33,6 +33,8 @@ export const envFor = (i: number) => ({
 	VERSION_POLL_INTERVAL_MS: "500",
 	// No inter-email pause so bulk-email campaigns finish quickly in tests.
 	BULK_EMAIL_DELAY_SECONDS: "0",
+	// Exercise the admin MCP server and its OAuth provider.
+	MCP_ENABLED: "true",
 });
 
 // Role-authenticated project: storageState comes from the `role` option (resolved

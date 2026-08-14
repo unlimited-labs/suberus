@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	extractFeePayment,
 	type PatchUserData,
+	selectFeeType,
 	summarizeUserChanges,
 } from "./patch-user-helpers";
 
@@ -85,5 +86,39 @@ describe("summarizeUserChanges", () => {
 		expect(summarizeUserChanges({ ...base, allowLateSubmission: false })).toBe(
 			"allowLateSubmission=false",
 		);
+	});
+});
+
+describe("selectFeeType", () => {
+	const full = { name: "Full Conference Fee", amount: 250 };
+	const student = { name: "Student Fee", amount: 100 };
+
+	it("takes the only configured type when none is named", () => {
+		expect(selectFeeType([full])).toEqual({ type: full });
+	});
+
+	it("refuses to guess between several types", () => {
+		const result = selectFeeType([full, student]);
+		expect(result).toEqual({
+			error:
+				"Several fee types are configured, name one: Full Conference Fee, Student Fee",
+		});
+	});
+
+	it("matches a named type", () => {
+		expect(selectFeeType([full, student], "Student Fee")).toEqual({
+			type: student,
+		});
+	});
+
+	it("lists the valid names when the name is unknown", () => {
+		expect(selectFeeType([full, student], "student")).toEqual({
+			error:
+				'Unknown fee type "student". Configured: Full Conference Fee, Student Fee',
+		});
+	});
+
+	it("reports an unconfigured conference", () => {
+		expect(selectFeeType([])).toEqual({ error: "No fee types are configured" });
 	});
 });

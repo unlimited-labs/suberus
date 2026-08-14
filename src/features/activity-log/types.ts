@@ -16,6 +16,12 @@ type StatusChange = {
 	reason?: string;
 };
 
+type McpClientAudit = {
+	clientId: string;
+	clientName: string | null;
+	redirectUris: string[];
+};
+
 // AssertExhaustive forces a shape for every ActivityType (missing key = compile error).
 type DetailShapes = AssertExhaustive<{
 	USER_REGISTERED: { email: string };
@@ -58,6 +64,9 @@ type DetailShapes = AssertExhaustive<{
 	EXHIBITOR_WITHDRAWN: NoDetail;
 	DOCUMENT_GENERATED: { documentName: string; templateName: string | null };
 	DOCUMENT_DELETED: { documentName: string };
+	MCP_CLIENT_REGISTERED: McpClientAudit;
+	MCP_CLIENT_UPDATED: McpClientAudit & { changedFields: string[] };
+	SETTINGS_CONFERENCE_UPDATED: { changedFields: string[] };
 }>;
 
 // Discriminated union for the detail field per ActivityType.

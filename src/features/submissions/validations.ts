@@ -15,6 +15,62 @@ export const authorSchema = z.object({
 	isPresenter: z.boolean(),
 });
 
+export const submissionIdInput = z.object({ submissionId: z.uuid() });
+
+// EXHIBITOR absent: decided through the exhibitor flow, never listed here.
+export const submissionTypeFilterSchema = z.enum([
+	"ABSTRACT",
+	"FULL_PAPER",
+	"POSTER",
+]);
+
+export const submissionCreateInput = z.object({
+	type: submissionTypeFilterSchema,
+	title: z.string(),
+	content: z.string(),
+	authors: z.array(authorSchema),
+	keywords: z.array(z.string()),
+	contentFormat: z.enum(["TEXT", "FILE"]),
+	trackId: z.uuid().nullish(),
+	isDraft: z.boolean().optional(),
+	// Travels with the create call (FormData) so a FILE submission is validated
+	// and attached atomically; optional for drafts.
+	file: z.instanceof(File).nullish(),
+});
+
+export type SubmissionCreateInput = z.infer<typeof submissionCreateInput>;
+
+// The agent never carries the file: bytes reach us through the upload link, so
+// contentFormat comes from the type's config rather than the caller.
+export const submissionCreateForUserInput = submissionCreateInput
+	.omit({ file: true, isDraft: true, contentFormat: true })
+	.extend({
+		userId: z.uuid(),
+		submit: z.boolean().default(false),
+	});
+
+export const submissionStatusFilterSchema = z.enum([
+	"DRAFT",
+	"SUBMITTED",
+	"UNDER_REVIEW",
+	"REVIEWS_COMPLETE",
+	"AWAITING_DECISION",
+	"REVISE_REQUIRED",
+	"RESUBMITTED",
+	"ACCEPTED",
+	"CONDITIONALLY_ACCEPTED",
+	"REJECTED",
+	"WITHDRAWN",
+]);
+
+export const adminSubmissionsListInput = z.object({
+	search: z.string().optional(),
+	type: z.array(submissionTypeFilterSchema).optional(),
+	status: z.array(submissionStatusFilterSchema).optional(),
+	take: z.number().int().min(1).max(200).optional(),
+	skip: z.number().int().min(0).optional(),
+});
+
 /** Validation settings for dynamic schema creation */
 export interface ValidationLimits {
 	minTitleLength: number;

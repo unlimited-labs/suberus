@@ -20,7 +20,9 @@ services:
       - "-c"
       - "max_connections=300"
     volumes:
-      - ./dev-volumes/postgres_data:/var/lib/postgresql
+      # Named, not a bind mount: pg18 rejects PGDATA unless it is 0700/0750, and
+      # a Windows bind mount always presents 0777.
+      - postgres_data:/var/lib/postgresql
     networks:
       - suberus-network
     healthcheck:
@@ -137,3 +139,6 @@ services:
 networks:
   suberus-network:
     driver: bridge
+
+volumes:
+  postgres_data:

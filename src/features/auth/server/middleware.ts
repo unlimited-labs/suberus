@@ -11,9 +11,16 @@ async function requireAuth() {
 	return session.user;
 }
 
+/** Roles that may reach the admin surface — server functions, API routes, MCP. */
+export const ADMIN_ROLES: readonly string[] = ["ADMIN", "EDITOR"];
+
+export function hasAdminRole(role: string | null | undefined): boolean {
+	return role != null && ADMIN_ROLES.includes(role);
+}
+
 async function requireAdmin() {
 	const user = await requireAuth();
-	if (!user.role || !["ADMIN", "EDITOR"].includes(user.role)) {
+	if (!hasAdminRole(user.role)) {
 		throw new Response("Forbidden", { status: 403 });
 	}
 	return user;
@@ -69,7 +76,7 @@ export const authRouteMiddleware = createMiddleware().server(
 export const adminRouteMiddleware = createMiddleware().server(
 	async ({ next }) => {
 		const user = await requireRouteUser();
-		if (!user.role || !["ADMIN", "EDITOR"].includes(user.role)) {
+		if (!hasAdminRole(user.role)) {
 			throw redirect({ to: "/" });
 		}
 		return next({ context: { user } });

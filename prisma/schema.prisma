@@ -62,6 +62,10 @@ model User {
   decidedExhibitors    Exhibitor[]           @relation("ExhibitorDecider")
   documents            GeneratedDocument[]   @relation("UserDocuments")
   affiliation          Affiliation?          @relation(fields: [affiliationId], references: [id])
+  oauthClients         OauthClient[]
+  oauthRefreshTokens   OauthRefreshToken[]
+  oauthAccessTokens    OauthAccessToken[]
+  oauthConsents        OauthConsent[]
 
   @@index([email])
   @@index([role])
@@ -389,6 +393,11 @@ enum ActivityType {
   // Document
   DOCUMENT_GENERATED
   DOCUMENT_DELETED
+  // MCP
+  MCP_CLIENT_REGISTERED
+  MCP_CLIENT_UPDATED
+  // Settings
+  SETTINGS_CONFERENCE_UPDATED
 }
 
 model ActivityLog {
@@ -563,6 +572,9 @@ model Session {
   userId    String   @db.Uuid
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  oauthRefreshTokens OauthRefreshToken[]
+  oauthAccessTokens  OauthAccessToken[]
+
   @@index([userId])
   @@map("user_sessions")
 }
@@ -571,6 +583,7 @@ model Account {
   id                    String    @id @default(uuid()) @db.Uuid
   accountId             String    @db.Uuid
   providerId            String
+  issuer                String
   userId                String    @db.Uuid
   accessToken           String?
   refreshToken          String?
@@ -583,6 +596,7 @@ model Account {
   updatedAt             DateTime  @updatedAt
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([issuer, accountId])
   @@index([userId])
   @@map("accounts")
 }
@@ -1128,4 +1142,184 @@ enum DocumentStatus {
   PENDING
   READY
   FAILED
+}
+
+model Jwks {
+  id         String    @id @default(uuid()) @db.Uuid
+  publicKey  String
+  privateKey String
+  createdAt  DateTime  @default(now())
+  expiresAt  DateTime?
+  alg        String?
+  crv        String?
+
+  @@map("jwks")
+}
+
+model OauthClient {
+  id                               String    @id @default(uuid()) @db.Uuid
+  clientId                         String    @unique
+  clientSecret                     String?
+  clientDiscoveryId                String?
+  disabled                         Boolean?  @default(false)
+  skipConsent                      Boolean?
+  enableEndSession                 Boolean?
+  subjectType                      String?
+  scopes                           String[]
+  clientCredentialsScopes          String[]
+  userId                           String?   @db.Uuid
+  createdAt                        DateTime?
+  updatedAt                        DateTime?
+  name                             String?
+  uri                              String?
+  icon                             String?
+  contacts                         String[]
+  tos                              String?
+  policy                           String?
+  softwareId                       String?
+  softwareVersion                  String?
+  softwareStatement                String?
+  redirectUris                     String[]
+  postLogoutRedirectUris           String[]
+  backchannelLogoutUri             String?
+  backchannelLogoutSessionRequired Boolean?
+  tokenEndpointAuthMethod          String?
+  applicationType                  String?
+  jwks                             String?
+  jwksUri                          String?
+  grantTypes                       String[]
+  responseTypes                    String[]
+  requirePKCE                      Boolean?
+  dpopBoundAccessTokens            Boolean?  @default(false)
+  referenceId                      String?
+  metadata                         Json?
+
+  user      User?                 @relation(fields: [userId], references: [id])
+  resources OauthClientResource[]
+
+  @@index([userId])
+  @@map("oauth_clients")
+}
+
+model OauthResource {
+  id                            String    @id @default(uuid()) @db.Uuid
+  identifier                    String    @unique
+  name                          String
+  accessTokenTtl                Int?
+  refreshTokenTtl               Int?
+  signingAlgorithm              String?
+  signingKeyId                  String?
+  allowedScopes                 String[]
+  customClaims                  Json?
+  dpopBoundAccessTokensRequired Boolean?  @default(false)
+  disabled                      Boolean?  @default(false)
+  createdAt                     DateTime?
+  updatedAt                     DateTime?
+  policyVersion                 Int?      @default(1)
+  metadata                      Json?
+
+  clients OauthClientResource[]
+
+  @@map("oauth_resources")
+}
+
+model OauthClientResource {
+  id         String    @id @default(uuid()) @db.Uuid
+  clientId   String
+  resourceId String
+  metadata   Json?
+  createdAt  DateTime?
+
+  client   OauthClient   @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+  resource OauthResource @relation(fields: [resourceId], references: [identifier], onDelete: Cascade)
+
+  @@unique([clientId, resourceId])
+  @@index([clientId])
+  @@index([resourceId])
+  @@map("oauth_client_resources")
+}
+
+model OauthRefreshToken {
+  id                      String    @id @default(uuid()) @db.Uuid
+  token                   String    @unique
+  clientId                String
+  sessionId               String?   @db.Uuid
+  userId                  String    @db.Uuid
+  referenceId             String?
+  authorizationCodeId     String?
+  resources               String[]
+  requestedUserInfoClaims String[]
+  expiresAt               DateTime?
+  createdAt               DateTime?
+  revoked                 DateTime?
+  rotatedAt               DateTime?
+  rotationReplayResponse  String?
+  rotationReplayExpiresAt DateTime?
+  authTime                DateTime?
+  confirmation            Json?
+  scopes                  String[]
+
+  session      Session?           @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessTokens OauthAccessToken[]
+
+  @@index([clientId])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([authorizationCodeId])
+  @@map("oauth_refresh_tokens")
+}
+
+model OauthAccessToken {
+  id                      String    @id @default(uuid()) @db.Uuid
+  token                   String?   @unique
+  clientId                String
+  sessionId               String?   @db.Uuid
+  userId                  String?   @db.Uuid
+  referenceId             String?
+  authorizationCodeId     String?
+  resources               String[]
+  requestedUserInfoClaims String[]
+  refreshId               String?   @db.Uuid
+  expiresAt               DateTime?
+  createdAt               DateTime?
+  revoked                 DateTime?
+  confirmation            Json?
+  scopes                  String[]
+
+  session Session?           @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  user    User?              @relation(fields: [userId], references: [id])
+  refresh OauthRefreshToken? @relation(fields: [refreshId], references: [id])
+
+  @@index([clientId])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([authorizationCodeId])
+  @@index([refreshId])
+  @@map("oauth_access_tokens")
+}
+
+model OauthConsent {
+  id                      String    @id @default(uuid()) @db.Uuid
+  clientId                String
+  userId                  String?   @db.Uuid
+  referenceId             String?
+  resources               String[]
+  requestedUserInfoClaims String[]
+  scopes                  String[]
+  createdAt               DateTime?
+  updatedAt               DateTime?
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([clientId])
+  @@index([userId])
+  @@map("oauth_consents")
+}
+
+model OauthClientAssertion {
+  id        String   @id @default(uuid()) @db.Uuid
+  expiresAt DateTime
+
+  @@map("oauth_client_assertions")
 }

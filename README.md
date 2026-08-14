@@ -34,7 +34,8 @@ Suberus runs the full lifecycle of a conference call for submissions: authors su
 - **Email templates** — database-stored, placeholder-driven notifications for every workflow event.
 - **Document generator** — issue per-participant PDFs (certificates, invitations, invoices) from uploaded DOCX templates with placeholder substitution; generate one at a time or in bulk, with participants downloading theirs from a certificate gallery.
 - **Digital signatures** — generated PDFs are signed ([PAdES](https://en.wikipedia.org/wiki/PAdES)) with a self-signed or uploaded certificate, and anyone can confirm authenticity on a public document-verification page.
-- **Finances** — organizer-only board to track income and expenses (VAT-aware, with spreadsheet-style formula fields) and run break-even what-if simulations against projected registration income, exportable to Excel.
+- **Finances** — board to track income and expenses (VAT-aware, with spreadsheet-style formula fields) and run break-even what-if simulations against projected registration income.
+- **Integration with AI assistants** — expose the conference over the [Model Context Protocol](https://modelcontextprotocol.io) so assistants such as Claude Code can manage it.
 - **Immutable audit trail** — every user, submission, review, and decision event is logged.
 
 ## Quick start

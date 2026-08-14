@@ -1,17 +1,7 @@
-import type { UserRole } from "@/generated/prisma/enums";
+import type { z } from "zod";
+import type { userPatchInput } from "@/features/users/validations";
 
-export interface PatchUserData {
-	id: string;
-	role?: UserRole;
-	isActive?: boolean;
-	allowLateSubmission?: boolean;
-	markFeePaid?: boolean;
-	feeType?: string;
-	feeAmount?: number;
-	feeCurrency?: string;
-	unmarkFeePaid?: boolean;
-	verifyEmail?: boolean;
-}
+export type PatchUserData = z.infer<typeof userPatchInput>;
 
 export interface FeePayment {
 	feeType: string;
@@ -38,6 +28,34 @@ export function extractFeePayment(data: PatchUserData): FeePayment | null {
 		};
 	}
 	return null;
+}
+
+export interface ConfiguredFeeType {
+	name: string;
+	amount: number;
+}
+
+/**
+ * Exact name match; without one it resolves only when a single type exists —
+ * guessing would record the wrong amount.
+ */
+export function selectFeeType(
+	feeTypes: readonly ConfiguredFeeType[],
+	name?: string,
+): { type: ConfiguredFeeType } | { error: string } {
+	if (feeTypes.length === 0) {
+		return { error: "No fee types are configured" };
+	}
+	const names = feeTypes.map((type) => type.name).join(", ");
+	if (!name) {
+		return feeTypes.length === 1
+			? { type: feeTypes[0] }
+			: { error: `Several fee types are configured, name one: ${names}` };
+	}
+	const match = feeTypes.find((type) => type.name === name);
+	return match
+		? { type: match }
+		: { error: `Unknown fee type "${name}". Configured: ${names}` };
 }
 
 /** Human-readable summary of which fields a patch touched, for the audit log. */

@@ -1,0 +1,214 @@
+---
+title: AI assistant (MCP)
+description: Let an AI assistant manage the conference through the Model Context Protocol.
+sidebar:
+  order: 11
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+Suberus can expose an **MCP server** — an interface that AI assistants such as
+Claude Code understand. Once connected, you can ask the assistant to list
+participants, look up a submission and its authors, create an account, change a
+role, or move a deadline, and it performs those actions in the system through
+your own account.
+
+<Aside type="caution" title="It acts as you">
+The assistant works with **your permissions**. Whatever you can do in the admin
+panel, it can do on your behalf. Only connect assistants you trust, and only on
+an account whose access matches what you actually want automated.
+</Aside>
+
+<Aside type="note" title="Where to find it">
+**Connect AI assistant** in the user menu (bottom-left of the sidebar).
+Available to **Admins** and **Editors**.
+</Aside>
+
+![Connect an AI assistant dialog](../../../assets/screenshots/59-managing-mcp-connect-dialog.png)
+
+## Turning it on
+
+The MCP server is **off by default**. Whoever runs your instance has to set the
+environment variable `MCP_ENABLED=true` and restart it. Until then the
+**Connect AI assistant** entry does not appear in the user menu at all.
+
+This is deliberate: enabling it also exposes the OAuth authorization endpoints
+that assistants use to sign in.
+
+## Connecting an assistant
+
+The dialog has two tabs, because the two kinds of assistant need different
+things.
+
+### Web
+
+**Claude on the web needs nothing but the URL.** It identifies itself to
+Suberus on its own.
+
+<Steps>
+
+1. Copy the **server URL** from the **Web** tab.
+
+2. In Claude, add it as a custom connector.
+
+3. Sign in to Suberus and **Approve** the authorization screen.
+
+</Steps>
+
+### CLI / Desktop
+
+**Claude Code needs credentials from this dialog.** It listens on a local port
+during sign-in but does not publish that port when it identifies itself, so
+Suberus cannot match it against a self-declared address. The **CLI / Desktop**
+tab issues a client tied to the exact port instead — the moment you open it.
+
+<Steps>
+
+1. Copy the command from the **CLI / Desktop** tab and run it:
+
+   ```bash
+   claude mcp add --scope project --transport http suberus https://your-conference.example/api/mcp      --client-id suberus-desktop-... --callback-port 8080
+   ```
+
+   `--scope project` writes the server into the project's `.mcp.json`, so
+   everyone working in that repository picks it up. Drop the flag to keep the
+   server to yourself.
+
+   For other clients, use the server URL with the client id and the callback
+   address `http://localhost:8080/callback` by hand.
+
+2. Sign in to Suberus and **Approve** the authorization screen.
+
+</Steps>
+
+Under the command sit the **callback port** — the port the assistant listens on
+while signing you in, `8080` for Claude Code — and **Re-issue**, which mints a
+fresh client id or moves it to another port.
+
+<Aside type="caution" title="The port has to match">
+The credentials are tied to the exact callback address
+`http://localhost:<port>/callback`. If the assistant is started on a different
+port, sign-in fails with *invalid redirect uri*. Set the port in the dialog and
+choose **Re-issue**, then re-run the command with the new `--callback-port`.
+</Aside>
+
+## Taking access away
+
+To take access away, use the bin icon next to an entry under **Authorized
+applications**. That drops the approval and every token issued under it; for
+credentials you issued here it deletes the client outright, so the command has
+to be re-issued before the assistant can connect again.
+
+![Authorization screen](../../../assets/screenshots/60-managing-mcp-consent.png)
+
+The assistant stores the access it was granted and reconnects on its own next
+time. Approved applications are listed at the bottom of the **Connect AI
+assistant** dialog, with the access they hold and the date you approved them.
+
+<Aside type="tip" title="Several conferences">
+One assistant can be connected to several Suberus instances at once. Give each
+one a different name when adding it (`suberus-2026`, `suberus-workshop`) and
+issue credentials separately on each. Access granted on one instance never works
+on another — each conference issues its own credentials and approves separately.
+</Aside>
+
+## The authorization screen
+
+| What it shows | Why it matters |
+|---|---|
+| **Application name** | The name the application reports about itself. |
+| **Identity verified at** | The address Suberus actually fetched the application's details from. This is the part the system checked itself, so trust it over the name. Shown only for applications that publish their identity at a URL — credentials you issued yourself have none. |
+| **Acting as** | The account the assistant will use — yours. |
+| **It will be able to** | The access being requested, in plain language. |
+
+Choosing **Deny** returns the assistant to where it started with nothing
+granted; nothing is stored.
+
+## What the assistant can do
+
+**Users:**
+
+| Action | Access needed | Who can use it |
+|---|---|---|
+| List participants, with search and role/fee filters | Users, read | Admin, Editor |
+| Open one participant's full record | Users, read | Admin, Editor |
+| Create a participant account | Users, write | Admin, Editor |
+| Change role, activation, late-submission or e-mail verification | Users, write | Admin, Editor |
+| Mark someone's [conference fee](/settings/fee/) as paid | Users, write | Admin, Editor |
+| Edit someone's personal and billing details | Users, write | Admin only |
+
+**Submissions:**
+
+| Action | Access needed | Who can use it |
+|---|---|---|
+| List submissions, with search and type/status filters | Submissions, read | Admin, Editor |
+| Open one submission in full — content, authors and affiliations, every version, reviewer assignments, reviews and history | Submissions, read | Admin, Editor |
+| Ask what is blocking the conference — everything waiting on a reviewer, a decision, a revision or a payment | Submissions, read | Admin, Editor |
+| Check what each submission type expects — text or file, formats, size and length limits | Submissions, read | Admin, Editor |
+| Register a submission on a participant's behalf | Submissions, write | Admin, Editor |
+| Issue a fresh upload address, or send a finished draft into review | Submissions, write | Admin, Editor |
+
+**Activity log:**
+
+| Action | Access needed | Who can use it |
+|---|---|---|
+| Search the [activity log](/managing/activity-log/) by event type, person, submission or date range | Activity, read | Admin, Editor |
+
+**Conference:**
+
+| Action | Access needed | Who can use it |
+|---|---|---|
+| Read every setting on the [Conference tab](/settings/conference/) | Conference, read | Admin, Editor |
+| Change any of them — name, dates, deadlines, locks, formats, programme defaults | Conference, write | Admin only |
+
+Two independent things decide what an assistant may do: **your role** and **the
+access you approved**. An Editor's assistant is never offered the
+profile-editing or the settings-changing action, whatever was approved.
+
+If the assistant tries something you did not approve it for, the attempt is
+refused and the assistant is told which access to ask for. It can then send you
+back to the authorization screen — approving there extends what it holds
+without disconnecting anything.
+
+<Aside type="tip" title="Approving read-only access">
+On the authorization screen you can see exactly what the application asked for.
+Approving an assistant for reading only is a good way to let it answer
+questions about your conference without ever being able to change it.
+</Aside>
+
+The assistant can register a submission for a participant, but it cannot change
+a status, assign a reviewer or make a decision.
+
+<Aside type="note" title="How the file gets there">
+When a submission type expects a **file**, the assistant creates the submission
+as a **draft** and receives a short-lived **upload address** for it.
+
+An assistant that can reach the file — Claude Code, working on your machine —
+sends it there itself, straight from disk. One that cannot will tell you how to
+send it. Either way the file never travels through the conversation: what an
+assistant reads from an attachment is the text pulled out of a PDF, not the PDF,
+and the file itself is what gets archived.
+
+The address lasts **24 hours**, works only for that one submission, needs no
+sign-in, and stops working the moment the submission leaves draft. Uploading
+again replaces the file, so a wrong upload is fixable. If it expires, ask for a
+new one.
+</Aside>
+
+
+The assistant never sets the amount itself — it names one of the **fee types**
+you configured and the amount and currency are taken from there, exactly as the
+**Mark as paid** button does. With several types configured it asks which one
+rather than guessing. Reversing a payment is not offered as its own action; use
+**Mark as unpaid** on the participant's page.
+
+Creating an account sends the usual **set-password e-mail**, exactly as
+[adding a user by hand](/managing/users/#add-a-user-yourself) does. You can ask
+the assistant to skip that e-mail if you would rather deliver the details
+another way.
+
+<Aside type="note" title="Everything is logged">
+Actions the assistant performs are recorded in the
+**[Activity log](/managing/activity-log/)** under your name, the same as if you
+had clicked through the interface.
+</Aside>

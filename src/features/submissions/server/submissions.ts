@@ -1165,7 +1165,9 @@ export async function checkSubmissionLimit(
 export async function submitDraft(
 	submissionId: string,
 	userId: string,
+	options: { enforceLimit?: boolean; performedById?: string } = {},
 ): Promise<{ success: boolean; error?: string }> {
+	const { enforceLimit = true, performedById = userId } = options;
 	const submission = await prisma.submission.findFirst({
 		where: { id: submissionId, userId },
 		include: { currentVersion: { select: { fileId: true } } },
@@ -1179,9 +1181,11 @@ export async function submitDraft(
 		return { success: false, error: "Submission is not a draft" };
 	}
 
-	const limitError = await checkSubmissionLimit(userId, submission.type);
-	if (limitError) {
-		return { success: false, error: limitError };
+	if (enforceLimit) {
+		const limitError = await checkSubmissionLimit(userId, submission.type);
+		if (limitError) {
+			return { success: false, error: limitError };
+		}
 	}
 
 	// FILE submissions must have a file attached before they can be submitted.
@@ -1193,7 +1197,7 @@ export async function submitDraft(
 	const result = await executeSubmissionTransition(
 		submissionId,
 		{ type: "SUBMIT" },
-		userId,
+		performedById,
 		"Author submitted draft",
 	);
 
@@ -1204,7 +1208,7 @@ export async function submitDraft(
 	await logActivity({
 		type: "SUBMISSION_DRAFT_SUBMITTED",
 		submissionId,
-		performedBy: userId,
+		performedBy: performedById,
 	});
 
 	logger.info(`[submission] submitted draft ${submissionId}`);

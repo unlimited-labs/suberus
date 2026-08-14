@@ -1,12 +1,23 @@
 import { randomUUID } from "node:crypto";
+import { cimd } from "@better-auth/cimd";
+import { mcp } from "@better-auth/mcp";
 import { passkey } from "@better-auth/passkey";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { jwt } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { env } from "@/env";
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
+import { recordMcpClientActivity } from "@/features/auth/server/cimd-audit";
+import {
+	mcpClientChangedFields,
+	mcpClientRegisteredDetail,
+	mcpClientUpdatedDetail,
+} from "@/features/auth/server/cimd-audit-rules";
+import { fetchClientMetadataResource } from "@/features/auth/server/cimd-transport";
+import { MCP_SCOPES } from "@/features/mcp/scopes";
 import { getSetting } from "@/features/settings/server/settings";
 import { PrismaClient, UserRole } from "@/generated/prisma/client";
 import { logger } from "@/logger.ts";
@@ -18,6 +29,85 @@ import "dotenv/config";
 const connectionString = env.DATABASE_URL;
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
+
+// mcp() wraps oauthProvider — never add a second one; cimd() replaces DCR.
+export const MCP_RESOURCE = `${env.APP_BASE_URL}/api/mcp`;
+export const MCP_RESOURCE_NAME = "Suberus MCP";
+
+const mcpPlugins = env.MCP_ENABLED
+	? [
+			jwt(),
+			mcp({
+				loginPage: "/login",
+				consentPage: "/consent",
+				resource: MCP_RESOURCE,
+				scopes: [...MCP_SCOPES],
+				// claude.ai declares jwt-bearer and registration rejects grants outside
+				// this list; the token endpoint has no handler, so it stays unsupported.
+				grantTypes: [
+					"authorization_code",
+					"refresh_token",
+					"client_credentials",
+					"urn:ietf:params:oauth:grant-type:jwt-bearer",
+				],
+				// Declared in full: a bare identifier seeds `allowedScopes: null`, which
+				// Prisma stores as [] — denying every scope.
+				resources: [
+					{
+						identifier: MCP_RESOURCE,
+						name: MCP_RESOURCE_NAME,
+						allowedScopes: [...MCP_SCOPES],
+					},
+				],
+				// insertOnly (the default) freezes allowedScopes at first boot, so a new
+				// scope would never reach the resource that intersects against it.
+				resourceSeedMode: "merge",
+				// routes/[.]well-known.$.ts serves the issuer-suffixed discovery path.
+				silenceWarnings: { oauthAuthServerConfig: true },
+			}),
+			cimd({
+				fetchClientMetadataResource,
+				metadataProfile: "mcp-2026-07-28",
+				// Only hook that sees an attempt before rejection; the API error carries
+				// the reason but never the client_id.
+				isMetadataDocumentUrlAllowed: (clientIdUrl) => {
+					logger.info(`[mcp] CIMD registration attempt: ${clientIdUrl}`);
+					return (
+						env.MCP_CIMD_ALLOWED_ORIGINS.length === 0 ||
+						env.MCP_CIMD_ALLOWED_ORIGINS.includes(new URL(clientIdUrl).origin)
+					);
+				},
+				onClientCreated: async ({ client, clientMetadataDocument }) => {
+					logger.info(
+						`[mcp] CIMD client registered: ${client.clientId} (${clientMetadataDocument.client_name ?? "unnamed"})`,
+					);
+					await recordMcpClientActivity({
+						type: "MCP_CLIENT_REGISTERED",
+						detail: mcpClientRegisteredDetail(client, clientMetadataDocument),
+					});
+				},
+				onClientRefreshed: async ({
+					client,
+					previousClient,
+					clientMetadataDocument,
+				}) => {
+					const changedFields = mcpClientChangedFields(previousClient, client);
+					if (changedFields.length === 0) return;
+					logger.info(
+						`[mcp] CIMD client metadata changed: ${client.clientId} (${changedFields.join(", ")})`,
+					);
+					await recordMcpClientActivity({
+						type: "MCP_CLIENT_UPDATED",
+						detail: mcpClientUpdatedDetail(
+							client,
+							clientMetadataDocument,
+							changedFields,
+						),
+					});
+				},
+			}),
+		]
+	: [];
 
 export const auth = betterAuth({
 	baseURL: env.APP_BASE_URL,
@@ -35,7 +125,6 @@ export const auth = betterAuth({
 		provider: "postgresql",
 	}),
 	plugins: [
-		tanstackStartCookies(),
 		// rpName is only a label (shown in the OS passkey prompt); credential isolation
 		// is by rpID = the instance's domain, so a shared name never collides across tenants.
 		passkey({
@@ -49,6 +138,9 @@ export const auth = betterAuth({
 				userVerification: "required",
 			},
 		}),
+		...mcpPlugins,
+		// Must stay last: cookies set by plugins registered after it are dropped.
+		tanstackStartCookies(),
 	],
 	advanced: {
 		database: {

@@ -11,14 +11,14 @@ import {
 	adminUsersQueryOptions,
 	createAdminUser,
 } from "@/features/users/api/users";
+import type { AdminUserCreateFormData } from "@/features/users/validations";
+import { adminUserCreateSchema } from "@/features/users/validations";
 import { BillingFieldsGroup } from "@/shared/components/composable/billing-fields-group";
 import { SurveyQuestionField } from "@/shared/components/survey-question-field";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { titleOptions } from "@/shared/lib/labels/title";
 import { surveyAnswerRequiredError } from "@/shared/lib/validations/survey";
-import type { AdminUserCreateFormData } from "@/shared/lib/validations/user";
-import { adminUserCreateSchema } from "@/shared/lib/validations/user";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,

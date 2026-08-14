@@ -1,9 +1,17 @@
 import { compareDesc } from "date-fns";
+import type { z } from "zod";
 import {
 	logActivity,
 	logActivityTx,
 } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
+import { getSetting } from "@/features/settings/server/settings";
+import type {
+	feeMarkPaidInput,
+	userBulkActionInput,
+	userProfileUpdateInput,
+	usersListInput,
+} from "@/features/users/validations";
 import type { Prisma } from "@/generated/prisma/client";
 import type {
 	SubmissionStatus,
@@ -18,6 +26,7 @@ import { deleteFile } from "@/shared/server/storage";
 import {
 	extractFeePayment,
 	type PatchUserData,
+	selectFeeType,
 	summarizeUserChanges,
 } from "./patch-user-helpers";
 
@@ -81,11 +90,7 @@ export interface AdminUserDetail extends AdminUser {
 	submissions: AdminUserSubmission[];
 }
 
-export interface UsersFilters {
-	search?: string;
-	role?: UserRole[];
-	feePaid?: boolean;
-}
+export type UsersFilters = z.infer<typeof usersListInput>;
 
 export interface GetUsersResponse {
 	users: AdminUser[];
@@ -259,15 +264,20 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 		}
 	}
 
-	const users = await prisma.user.findMany({
-		where,
-		include: {
-			fee: true,
-			affiliation: true,
-			...submissionRolesInclude,
-		},
-		orderBy: { createdAt: "desc" },
-	});
+	const [users, total] = await Promise.all([
+		prisma.user.findMany({
+			where,
+			include: {
+				fee: true,
+				affiliation: true,
+				...submissionRolesInclude,
+			},
+			orderBy: { createdAt: "desc" },
+			take: data.take,
+			skip: data.skip,
+		}),
+		prisma.user.count({ where }),
+	]);
 
 	const mapped: AdminUser[] = users.map((u) => ({
 		id: u.id,
@@ -302,10 +312,7 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 		surveyAnswers: u.surveyAnswers,
 	}));
 
-	return {
-		users: mapped,
-		total: mapped.length,
-	};
+	return { users: mapped, total };
 }
 
 export async function getUserById(id: string): Promise<AdminUserDetail | null> {
@@ -651,6 +658,34 @@ export async function markFeePaid(
 	return { success: true };
 }
 
+/** Amount and currency come from the configured types, never from the caller. */
+export async function markConfiguredFeePaid(
+	{ id, feeType }: z.infer<typeof feeMarkPaidInput>,
+	performedBy?: string,
+): Promise<{ success: boolean; feeType: string; amount: number }> {
+	const [feeTypes, currency] = await Promise.all([
+		getSetting("FEE_TYPES"),
+		getSetting("FEE_CURRENCY"),
+	]);
+	const picked = selectFeeType(feeTypes, feeType);
+	if ("error" in picked) {
+		throw new Response(picked.error, { status: 400 });
+	}
+	const selected = picked.type;
+
+	await markFeePaid(
+		{
+			userId: id,
+			feeType: selected.name,
+			amount: selected.amount,
+			currency,
+		},
+		performedBy,
+	);
+
+	return { success: true, feeType: selected.name, amount: selected.amount };
+}
+
 export async function unmarkFeePaid(
 	userId: string,
 	performedBy?: string,
@@ -672,17 +707,10 @@ export async function unmarkFeePaid(
 	return { success: true };
 }
 
-export interface UpdateUserProfileInput {
-	firstName: string;
-	lastName: string;
-	title?: string;
-	email: string;
-	affiliation?: string;
-	orcid?: string;
-	needInvoice?: boolean;
-	address?: string;
-	country?: string;
-}
+export type UpdateUserProfileInput = Omit<
+	z.infer<typeof userProfileUpdateInput>,
+	"id"
+>;
 
 export async function updateUserProfile(
 	userId: string,
@@ -861,23 +889,22 @@ export async function deleteUser(
 
 // === Admin orchestration layer ===
 
-export async function fetchUsers(
-	filters: UsersFilters,
-): Promise<GetUsersResponse> {
-	return getUsers(filters);
-}
-
-export async function fetchUserById(
-	id: string,
-): Promise<AdminUserDetail | null> {
-	return getUserById(id);
-}
-
 export async function patchUser(
 	data: PatchUserData,
 	performer: RoleChangePerformer,
 ): Promise<AdminUserDetail | null> {
 	const performedBy = performer.id;
+
+	// Before any write: the mutations below are sequential and uncoordinated, so
+	// rejecting mid-way would leave the earlier ones committed.
+	const feePayment = extractFeePayment(data);
+	if (data.markFeePaid && !feePayment) {
+		throw new Response(
+			"markFeePaid needs feeType, feeAmount and feeCurrency; to take them from the configured fee types, use the mark-fee-paid action instead",
+			{ status: 400 },
+		);
+	}
+
 	if (data.role !== undefined) {
 		await changeUserRole({ userId: data.id, role: data.role }, performer);
 	}
@@ -902,7 +929,6 @@ export async function patchUser(
 		);
 	}
 
-	const feePayment = extractFeePayment(data);
 	if (feePayment) {
 		await markFeePaid({ userId: data.id, ...feePayment }, performedBy);
 	}
@@ -920,14 +946,7 @@ export async function patchUser(
 	return getUserById(data.id);
 }
 
-export interface BulkActionData {
-	action: "mark_fee" | "change_role";
-	userIds: string[];
-	feeType?: string;
-	feeAmount?: number;
-	feeCurrency?: string;
-	role?: UserRole;
-}
+export type BulkActionData = z.infer<typeof userBulkActionInput>;
 
 export async function executeBulkAction(
 	data: BulkActionData,

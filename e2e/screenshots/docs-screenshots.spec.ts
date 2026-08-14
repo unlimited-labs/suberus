@@ -343,6 +343,68 @@ async function resolveCtx() {
 	ctx.reviewerAssignmentId = reviewerAssignment.id;
 }
 
+const MCP_CLIENT_ID = "https://assistant.example/mcp-client.json";
+const MCP_CALLBACK = "http://127.0.0.1:9876/callback";
+
+function mcpResource(page: Page) {
+	return `${new URL(page.url() || "http://localhost").origin}/api/mcp`;
+}
+
+function mcpAuthorizeUrl(page: Page) {
+	const params = new URLSearchParams({
+		response_type: "code",
+		client_id: MCP_CLIENT_ID,
+		redirect_uri: MCP_CALLBACK,
+		scope: "openid profile email",
+		state: "docs",
+		code_challenge: "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+		code_challenge_method: "S256",
+		resource: mcpResource(page),
+	});
+	return `/api/auth/oauth2/authorize?${params}`;
+}
+
+/** Register an assistant so the shots show a realistic client, not an empty list. */
+async function seedMcpConsent(page: Page, opts: { withConsent?: boolean } = {}) {
+	const db = getPrisma();
+	await page.goto("/");
+	const resource = mcpResource(page);
+	// The docs arrangement replaces the seeded accounts with a realistic roster,
+	// so admin@e2e.local is gone by now — resolve whoever holds ADMIN instead.
+	const admin = await db.user.findFirst({ where: { role: "ADMIN" } });
+	if (!admin) throw new Error("no ADMIN user in the arranged docs data");
+
+	await db.oauthConsent.deleteMany({ where: { clientId: MCP_CLIENT_ID } });
+	await db.oauthClient.deleteMany({ where: { clientId: MCP_CLIENT_ID } });
+	await db.oauthClient.create({
+		data: {
+			clientId: MCP_CLIENT_ID,
+			name: "Claude Code",
+			redirectUris: [MCP_CALLBACK],
+			grantTypes: ["authorization_code", "refresh_token"],
+			responseTypes: ["code"],
+			tokenEndpointAuthMethod: "none",
+			scopes: ["openid", "profile", "email", "offline_access"],
+			requirePKCE: true,
+		},
+	});
+	await db.oauthClientResource
+		.create({ data: { clientId: MCP_CLIENT_ID, resourceId: resource } })
+		.catch(() => undefined);
+
+	if (opts.withConsent !== false) {
+		await db.oauthConsent.create({
+			data: {
+				clientId: MCP_CLIENT_ID,
+				userId: admin.id,
+				scopes: ["openid", "profile", "email", "offline_access"],
+				resources: [resource],
+				createdAt: new Date(),
+			},
+		});
+	}
+}
+
 test.describe("docs screenshots", () => {
 	test.skip(!process.env.DOCS_SHOTS, "Set DOCS_SHOTS=1 to capture docs screenshots");
 	test.describe.configure({ retries: 0, timeout: 90_000 });
@@ -1320,5 +1382,25 @@ test.describe("docs screenshots", () => {
 		await expect(page.getByRole("dialog")).toBeVisible();
 		await page.waitForTimeout(400);
 		await shot(page, "57-managing-user-edit-survey-answers.png", { full: false });
+	});
+
+	test("59 connect an AI assistant dialog", async ({ page }) => {
+		await seedMcpConsent(page);
+
+		await page.goto("/");
+		await page.locator('[data-testid="user-menu-trigger"]:visible').click();
+		await page.getByTestId("user-menu-mcp").click();
+		await expect(page.getByTestId("mcp-connect-dialog")).toBeVisible();
+		await page.waitForTimeout(400);
+		await shot(page, "59-managing-mcp-connect-dialog.png", { full: false });
+	});
+
+	test("60 assistant authorization screen", async ({ page }) => {
+		await seedMcpConsent(page, { withConsent: false });
+
+		await page.goto(mcpAuthorizeUrl(page));
+		await expect(page.getByTestId("consent-card")).toBeVisible();
+		await page.waitForTimeout(400);
+		await shot(page, "60-managing-mcp-consent.png", { full: false });
 	});
 });

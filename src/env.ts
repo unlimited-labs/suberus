@@ -1,10 +1,11 @@
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
+import { logLevel } from "./log-level";
 
 export const env = createEnv({
 	shared: {
 		NODE_ENV: z.string().default("development"),
-		LOG_LEVEL: z.coerce.number().default(3),
+		LOG_LEVEL: logLevel,
 	},
 
 	clientPrefix: "VITE_",
@@ -79,6 +80,19 @@ export const env = createEnv({
 		VAPID_SUBJECT: z.string().optional(),
 
 		E2E: z.stringbool().default(false),
+
+		// Off by default: enabling it exposes the OAuth 2.1 endpoints.
+		MCP_ENABLED: z.stringbool().default(false),
+		// Origins allowed to register as MCP clients via CIMD. Empty = any.
+		MCP_CIMD_ALLOWED_ORIGINS: z
+			.string()
+			.default("")
+			.transform((v) =>
+				v
+					.split(",")
+					.map((o) => o.trim())
+					.filter(Boolean),
+			),
 
 		// Build metadata (injected at build time via Docker ARG/ENV)
 		GIT_COMMIT: z.string().default("unknown"),

@@ -28,10 +28,16 @@ history is shown on its detail page.
 | **Decision events** | Editor decisions, desk accept/reject, decision overrides. |
 | **Invitation events** | Created, used, cancelled. |
 | **Admin events** | Fee marked paid/unpaid. |
+| **Settings events** | Changes to the [Conference tab](/settings/conference/), listing exactly which fields changed. Recorded whether the change came from the settings screen or from an [AI assistant](/managing/ai-assistant/). |
+| **MCP client events** | An outside application registering itself against the AI assistant connection (with its client ID, declared name and redirect URLs), and any later change to that declared metadata. |
 
 Each entry captures the **event type**, the **target** (submission/user), the
 **performer** (or *system* for automatic actions), structured detail, and a
 **timestamp**.
+
+MCP client registrations have no performer — nobody in Suberus triggers them,
+the outside application does — so they are shown as *system*, with the
+application's name as the subject.
 
 <Aside type="caution" title="Immutable by design">
 Activity records are **never edited or deleted** — that's what makes them
@@ -44,4 +50,5 @@ reason precisely so the log explains *why*, not just *what*.
 <CardGrid>
 	<LinkCard title="Dashboard" href="/managing/dashboard/" description="Recent activity at a glance." />
 	<LinkCard title="Submissions" href="/managing/submissions/" description="Per-submission history and decisions." />
+	<LinkCard title="AI assistant (MCP)" href="/managing/ai-assistant/" description="Which applications connected, and what they may do." />
 </CardGrid>

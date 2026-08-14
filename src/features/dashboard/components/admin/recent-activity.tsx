@@ -113,19 +113,20 @@ function ActivityEventRow({ event }: { event: ActivityEvent }) {
 export function RecentActivity({ events }: RecentActivityProps) {
 	const [extraEvents, setExtraEvents] = useState<ActivityEvent[]>([]);
 	const [loading, setLoading] = useState(false);
-	const [hasMore, setHasMore] = useState((events?.length ?? 0) === PAGE_SIZE);
+	// The seeded first page arrives with the dashboard metrics, so only a full
+	// page tells us there may be more; every later page carries its own cursor.
+	const [cursor, setCursor] = useState<string | null>(
+		events?.length === PAGE_SIZE ? (events.at(-1)?.id ?? null) : null,
+	);
 	const allEvents = [...(events ?? []), ...extraEvents];
 
 	async function handleShowMore() {
-		const lastEvent = allEvents[allEvents.length - 1];
-		if (!lastEvent) return;
+		if (!cursor) return;
 		setLoading(true);
 		try {
-			const more = await getMoreActivity({
-				data: { cursor: lastEvent.id },
-			});
-			setExtraEvents((prev) => [...prev, ...more]);
-			setHasMore(more.length === PAGE_SIZE);
+			const page = await getMoreActivity({ data: { cursor } });
+			setExtraEvents((prev) => [...prev, ...page.entries]);
+			setCursor(page.nextCursor);
 		} catch (error) {
 			setLoading(false);
 			throw error;
@@ -151,7 +152,7 @@ export function RecentActivity({ events }: RecentActivityProps) {
 				))}
 			</div>
 
-			{hasMore && (
+			{cursor && (
 				<Button
 					variant="outline"
 					size="sm"
