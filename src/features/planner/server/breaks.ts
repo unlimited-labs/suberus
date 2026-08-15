@@ -1,8 +1,10 @@
 import type { ScheduleItemKind } from "@/generated/prisma/enums";
 import { prisma } from "@/shared/server/db.server";
+import { assertOrderedTimes, overlapWhere, type TimeRange } from "./time-range";
 
-export async function listBreaks() {
+export async function listBreaks(range?: TimeRange) {
 	return prisma.scheduleBreak.findMany({
+		where: range ? overlapWhere(range) : undefined,
 		include: { room: { select: { id: true, name: true } } },
 		orderBy: { startAt: "asc" },
 	});
@@ -18,6 +20,7 @@ export async function createBreak(data: {
 	startAt: Date;
 	endAt: Date;
 }): Promise<{ id: string }> {
+	assertOrderedTimes(data.startAt, data.endAt);
 	return prisma.scheduleBreak.create({
 		data: {
 			kind: data.kind ?? "BREAK",
@@ -45,6 +48,7 @@ export async function updateBreak(
 		endAt?: Date;
 	},
 ): Promise<void> {
+	assertOrderedTimes(data.startAt, data.endAt);
 	await prisma.scheduleBreak.update({ where: { id }, data });
 }
 

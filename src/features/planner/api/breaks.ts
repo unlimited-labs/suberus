@@ -1,6 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
 import {
 	adminMiddleware,
 	authMiddleware,
@@ -11,7 +10,11 @@ import {
 	listBreaks,
 	updateBreak,
 } from "@/features/planner/server/breaks";
-import { zDateString } from "@/shared/lib/validations/zod-helpers";
+import {
+	breakCreateInput,
+	breakUpdateInput,
+	idInput,
+} from "@/features/planner/validations";
 
 export const allBreaksQueryOptions = () =>
 	queryOptions({
@@ -27,36 +30,14 @@ export const listBreaksFn = createServerFn({ method: "GET" })
 
 export const createBreakFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(
-		z.object({
-			kind: z.enum(["BREAK", "EVENT"]).optional(),
-			title: z.string().min(1).max(200),
-			description: z.string().max(2000).nullable().optional(),
-			location: z.string().max(200).nullable().optional(),
-			locationUrl: z.httpUrl().max(2000).nullable().optional(),
-			roomId: z.uuid().nullable().optional(),
-			startAt: zDateString,
-			endAt: zDateString,
-		}),
-	)
+	.validator(breakCreateInput)
 	.handler(async ({ data }) => {
 		return createBreak(data);
 	});
 
 export const updateBreakFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(
-		z.object({
-			id: z.uuid(),
-			title: z.string().min(1).max(200).optional(),
-			description: z.string().max(2000).nullable().optional(),
-			location: z.string().max(200).nullable().optional(),
-			locationUrl: z.httpUrl().max(2000).nullable().optional(),
-			roomId: z.uuid().nullable().optional(),
-			startAt: zDateString.optional(),
-			endAt: zDateString.optional(),
-		}),
-	)
+	.validator(breakUpdateInput)
 	.handler(async ({ data }) => {
 		const { id, ...rest } = data;
 		await updateBreak(id, rest);
@@ -64,7 +45,7 @@ export const updateBreakFn = createServerFn({ method: "POST" })
 
 export const deleteBreakFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(z.object({ id: z.uuid() }))
+	.validator(idInput)
 	.handler(async ({ data }) => {
 		await deleteBreak(data.id);
 	});

@@ -1,6 +1,8 @@
 import { z } from "zod";
 
-export const zDateString = z.iso.datetime().transform((s) => new Date(s));
+export const zDateString = z.iso
+	.datetime({ offset: true })
+	.transform((s) => new Date(s));
 
 /** IANA timezone string ("" allowed as the unset/fallback value). */
 export const zIanaTz = z.string().refine((tz) => {

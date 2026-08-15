@@ -13,6 +13,8 @@ export const MCP_SCOPE_CONFERENCE_WRITE = "conference:write";
 export const MCP_SCOPE_SUBMISSIONS_READ = "submissions:read";
 export const MCP_SCOPE_SUBMISSIONS_WRITE = "submissions:write";
 export const MCP_SCOPE_ACTIVITY_READ = "activity:read";
+export const MCP_SCOPE_SCHEDULE_READ = "schedule:read";
+export const MCP_SCOPE_SCHEDULE_WRITE = "schedule:write";
 
 export const MCP_CAPABILITY_SCOPES = [
 	MCP_SCOPE_USERS_READ,
@@ -22,6 +24,8 @@ export const MCP_CAPABILITY_SCOPES = [
 	MCP_SCOPE_SUBMISSIONS_READ,
 	MCP_SCOPE_SUBMISSIONS_WRITE,
 	MCP_SCOPE_ACTIVITY_READ,
+	MCP_SCOPE_SCHEDULE_READ,
+	MCP_SCOPE_SCHEDULE_WRITE,
 ] as const;
 
 export const MCP_SCOPES = [

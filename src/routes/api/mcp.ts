@@ -5,6 +5,7 @@ import { activityLogMcpTools } from "@/features/activity-log/mcp/tools";
 import { auth, MCP_RESOURCE } from "@/features/auth/server/auth.server";
 import { hasAdminRole } from "@/features/auth/server/middleware";
 import { MCP_CAPABILITY_SCOPES } from "@/features/mcp/scopes";
+import { plannerMcpTools } from "@/features/planner/mcp/tools";
 import { settingsMcpTools } from "@/features/settings/mcp/tools";
 import { submissionsMcpTools } from "@/features/submissions/mcp/tools";
 import { usersMcpTools } from "@/features/users/mcp/tools";
@@ -21,6 +22,7 @@ const handler = createSuberusMcpHandler({
 		...settingsMcpTools,
 		...submissionsMcpTools,
 		...activityLogMcpTools,
+		...plannerMcpTools,
 	],
 	allowedHostnames: [baseUrl.hostname],
 });

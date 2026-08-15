@@ -1,4 +1,5 @@
 import { prisma } from "@/shared/server/db.server";
+import { getPlannerIncludedTypes } from "./included-types";
 import { computeSessionUsage } from "./session-usage";
 
 export async function createPresentation(data: {
@@ -6,7 +7,20 @@ export async function createPresentation(data: {
 	submissionId: string;
 	durationMin: number;
 }): Promise<{ id: string }> {
+	const includedTypes = await getPlannerIncludedTypes();
 	return prisma.$transaction(async (tx) => {
+		const submission = await tx.submission.findFirst({
+			where: {
+				id: data.submissionId,
+				status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] },
+				type: { in: includedTypes },
+			},
+			select: { id: true },
+		});
+		if (!submission) {
+			throw new Error("Submission is not accepted or not presentable");
+		}
+
 		const session = await tx.programSession.findUnique({
 			where: { id: data.sessionId },
 			select: {

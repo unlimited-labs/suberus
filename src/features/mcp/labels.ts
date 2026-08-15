@@ -13,6 +13,10 @@ const SCOPE_LABELS: Record<string, string> = {
 	"submissions:read": "Read submissions, their authors and reviews",
 	"submissions:write": "Create submissions on a participant's behalf",
 	"activity:read": "Read the activity log",
+	"schedule:read":
+		"Read the programme: rooms, tracks, sessions, presentations and breaks",
+	"schedule:write":
+		"Build and publish the programme, including automatic planning",
 } satisfies Record<McpScope, string>;
 
 export function scopeLabel(scope: string): string {

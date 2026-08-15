@@ -41,7 +41,7 @@ export async function createRoom(data: {
 		data: {
 			name: data.name,
 			description: data.description ?? null,
-			link: data.link ?? null,
+			link: data.link || null,
 			order: data.order ?? 0,
 		},
 		select: { id: true },
@@ -57,7 +57,13 @@ export async function updateRoom(
 		order?: number;
 	},
 ): Promise<void> {
-	await prisma.room.update({ where: { id }, data });
+	await prisma.room.update({
+		where: { id },
+		data: {
+			...data,
+			...(data.link !== undefined ? { link: data.link || null } : {}),
+		},
+	});
 }
 
 export async function deleteRoom(id: string): Promise<void> {

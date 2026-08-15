@@ -1,7 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
-import { z } from "zod";
 import { auth } from "@/features/auth/server/auth.server";
 import {
 	adminMiddleware,
@@ -17,6 +16,7 @@ import {
 	publishScheduleDraft,
 	unpublishSchedule,
 } from "@/features/planner/server/schedule";
+import { reminderLeadInput } from "@/features/planner/validations";
 import {
 	getSetting,
 	getSettings,
@@ -89,7 +89,7 @@ export const getReminderLeadFn = createServerFn({ method: "GET" })
 
 export const setReminderLeadFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(z.object({ leadMin: z.number().int().min(1).max(120) }))
+	.validator(reminderLeadInput)
 	.handler(({ data }) => setSetting("PROGRAM_REMINDER_LEAD_MIN", data.leadMin));
 
 export const publicProgramQueryOptions = () =>

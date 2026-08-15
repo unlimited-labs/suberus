@@ -1,6 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
 import {
 	adminMiddleware,
 	authMiddleware,
@@ -12,6 +11,11 @@ import {
 	importFromConferenceTracks,
 	updateProgramTrack,
 } from "@/features/planner/server/tracks";
+import {
+	idInput,
+	trackCreateInput,
+	trackUpdateInput,
+} from "@/features/planner/validations";
 
 export const allProgramTracksQueryOptions = () =>
 	queryOptions({
@@ -27,33 +31,14 @@ export const getAllProgramTracksFn = createServerFn({ method: "GET" })
 
 export const createProgramTrackFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(
-		z.object({
-			name: z.string().min(1).max(200),
-			color: z
-				.string()
-				.regex(/^#[0-9a-fA-F]{6}$/, "Color must be #RRGGBB")
-				.nullable()
-				.optional(),
-		}),
-	)
+	.validator(trackCreateInput)
 	.handler(async ({ data }) => {
 		return createProgramTrack(data);
 	});
 
 export const updateProgramTrackFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(
-		z.object({
-			id: z.uuid(),
-			name: z.string().min(1).max(200).optional(),
-			color: z
-				.string()
-				.regex(/^#[0-9a-fA-F]{6}$/, "Color must be #RRGGBB")
-				.nullable()
-				.optional(),
-		}),
-	)
+	.validator(trackUpdateInput)
 	.handler(async ({ data }) => {
 		const { id, ...update } = data;
 		await updateProgramTrack(id, update);
@@ -61,7 +46,7 @@ export const updateProgramTrackFn = createServerFn({ method: "POST" })
 
 export const deleteProgramTrackFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(z.object({ id: z.uuid() }))
+	.validator(idInput)
 	.handler(async ({ data }) => {
 		await deleteProgramTrack(data.id);
 	});

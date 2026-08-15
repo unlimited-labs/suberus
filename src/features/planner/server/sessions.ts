@@ -5,6 +5,7 @@ import {
 } from "date-fns";
 import { prisma } from "@/shared/server/db.server";
 import { getPlannerIncludedTypes } from "./included-types";
+import { assertOrderedTimes, overlapWhere, type TimeRange } from "./time-range";
 import { parseSeries } from "./tracks";
 
 export interface ProgramSessionDetail {
@@ -32,17 +33,11 @@ export interface ProgramSessionDetail {
 	}>;
 }
 
-export async function listSessions(range?: {
-	from?: Date;
-	to?: Date;
-}): Promise<ProgramSessionDetail[]> {
+export async function listSessions(
+	range?: TimeRange,
+): Promise<ProgramSessionDetail[]> {
 	const sessions = await prisma.programSession.findMany({
-		where: range
-			? {
-					startAt: range.from ? { gte: range.from } : undefined,
-					endAt: range.to ? { lte: range.to } : undefined,
-				}
-			: undefined,
+		where: range ? overlapWhere(range) : undefined,
 		include: {
 			track: { select: { id: true, name: true, color: true } },
 			room: { select: { id: true, name: true } },
@@ -107,6 +102,7 @@ export async function createSession(data: {
 	startAt: Date;
 	endAt: Date;
 }): Promise<{ id: string }> {
+	assertOrderedTimes(data.startAt, data.endAt);
 	const title = data.title?.trim() || (await defaultSessionTitle());
 	return prisma.programSession.create({
 		data: {
@@ -130,6 +126,7 @@ export async function updateSession(
 		endAt?: Date;
 	},
 ): Promise<void> {
+	assertOrderedTimes(data.startAt, data.endAt);
 	await prisma.programSession.update({ where: { id }, data });
 }
 
@@ -141,6 +138,7 @@ export async function moveSession(
 	id: string,
 	data: { startAt: Date; endAt: Date; roomId?: string | null },
 ): Promise<void> {
+	assertOrderedTimes(data.startAt, data.endAt);
 	await prisma.programSession.update({
 		where: { id },
 		data: {
@@ -350,6 +348,7 @@ export async function createSessionWithPresentations(data: {
 	slotDurationMin: number;
 	submissionIds: string[];
 }): Promise<{ id: string }> {
+	assertOrderedTimes(data.startAt, data.endAt);
 	const [title, includedTypes] = await Promise.all([
 		data.title?.trim()
 			? Promise.resolve(data.title.trim())

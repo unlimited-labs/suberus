@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zDateString } from "@/shared/lib/validations/zod-helpers";
 
 // Client-side schemas mirroring the server validators in
 // server-fns/planner/sessions.ts and server-fns/planner/breaks.ts.
@@ -129,3 +130,139 @@ export const plannerSettingsSchema = z.object({
 
 export type SessionFormValues = z.infer<typeof sessionFormSchema>;
 export type EventFormValues = z.infer<typeof eventFormSchema>;
+
+// Server input schemas below: shared by the server fns in api/ and the MCP tools.
+
+export const idInput = z.object({ id: z.uuid() });
+
+const roomLinkInput = z
+	.union([z.literal(""), z.httpUrl()])
+	.nullable()
+	.optional();
+
+export const roomCreateInput = z.object({
+	name: z.string().min(1).max(200),
+	description: z.string().max(1000).nullable().optional(),
+	link: roomLinkInput,
+	order: z.number().int().nonnegative().optional(),
+});
+
+export const roomUpdateInput = roomCreateInput.partial().extend({
+	id: z.uuid(),
+});
+
+const trackColorInput = z
+	.string()
+	.regex(/^#[0-9a-fA-F]{6}$/, "Color must be #RRGGBB")
+	.nullable()
+	.optional();
+
+export const trackCreateInput = z.object({
+	name: z.string().min(1).max(200),
+	color: trackColorInput,
+});
+
+export const trackUpdateInput = z.object({
+	id: z.uuid(),
+	name: z.string().min(1).max(200).optional(),
+	color: trackColorInput,
+});
+
+export const sessionCreateInput = z.object({
+	title: z.string().max(300).optional(),
+	trackId: z.uuid().nullable().optional(),
+	roomId: z.uuid().nullable().optional(),
+	startAt: zDateString,
+	endAt: zDateString,
+});
+
+export const sessionUpdateInput = z.object({
+	id: z.uuid(),
+	title: z.string().min(1).max(300).optional(),
+	trackId: z.uuid().nullable().optional(),
+	roomId: z.uuid().nullable().optional(),
+	startAt: zDateString.optional(),
+	endAt: zDateString.optional(),
+});
+
+export const sessionMoveInput = z.object({
+	id: z.uuid(),
+	startAt: zDateString,
+	endAt: zDateString,
+	roomId: z.uuid().nullable().optional(),
+});
+
+export const sessionChairInput = z.object({
+	sessionId: z.uuid(),
+	userId: z.uuid(),
+});
+
+export const sessionWithPresentationsInput = sessionCreateInput.extend({
+	slotDurationMin: z.number().int().min(1).max(480),
+	submissionIds: z.array(z.uuid()).min(1),
+});
+
+export const sessionIdInput = z.object({ sessionId: z.uuid() });
+
+export const sessionSplitInput = z.object({
+	sessionId: z.uuid(),
+	afterSlotOrder: z.number().int().min(0),
+});
+
+export const presentationCreateInput = z.object({
+	sessionId: z.uuid(),
+	submissionId: z.uuid(),
+	durationMin: z.number().int().positive().max(600),
+});
+
+export const presentationDurationInput = z.object({
+	id: z.uuid(),
+	durationMin: z.number().int().positive().max(600),
+});
+
+export const presentationCancelInput = z.object({
+	id: z.uuid(),
+	cancelled: z.boolean(),
+});
+
+export const presentationReorderInput = z.object({
+	sessionId: z.uuid(),
+	orderedIds: z.array(z.uuid()).min(1),
+});
+
+export const breakCreateInput = z.object({
+	kind: z.enum(["BREAK", "EVENT"]).optional(),
+	title: z.string().min(1).max(200),
+	description: z.string().max(2000).nullable().optional(),
+	location: z.string().max(200).nullable().optional(),
+	locationUrl: z.httpUrl().max(2000).nullable().optional(),
+	roomId: z.uuid().nullable().optional(),
+	startAt: zDateString,
+	endAt: zDateString,
+});
+
+export const breakUpdateInput = breakCreateInput
+	.omit({ kind: true })
+	.partial()
+	.extend({ id: z.uuid() });
+
+export const reminderLeadInput = z.object({
+	leadMin: z.number().int().min(1).max(120),
+});
+
+export const jobIdInput = z.object({ jobId: z.uuid() });
+
+export const programRangeInput = z
+	.object({
+		day: z.iso.date().optional(),
+		from: zDateString.optional(),
+		to: zDateString.optional(),
+	})
+	.refine((v) => !(v.day && (v.from || v.to)), {
+		message: "Pass either day or from/to, not both",
+		path: ["day"],
+	})
+	.refine((v) => !(v.from && v.to) || v.from < v.to, {
+		message: "from must be before to",
+		path: ["to"],
+	});
