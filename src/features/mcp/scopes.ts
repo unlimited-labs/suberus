@@ -15,6 +15,7 @@ export const MCP_SCOPE_SUBMISSIONS_WRITE = "submissions:write";
 export const MCP_SCOPE_ACTIVITY_READ = "activity:read";
 export const MCP_SCOPE_SCHEDULE_READ = "schedule:read";
 export const MCP_SCOPE_SCHEDULE_WRITE = "schedule:write";
+export const MCP_SCOPE_EMAIL_SEND = "email:send";
 
 export const MCP_CAPABILITY_SCOPES = [
 	MCP_SCOPE_USERS_READ,
@@ -26,6 +27,7 @@ export const MCP_CAPABILITY_SCOPES = [
 	MCP_SCOPE_ACTIVITY_READ,
 	MCP_SCOPE_SCHEDULE_READ,
 	MCP_SCOPE_SCHEDULE_WRITE,
+	MCP_SCOPE_EMAIL_SEND,
 ] as const;
 
 export const MCP_SCOPES = [

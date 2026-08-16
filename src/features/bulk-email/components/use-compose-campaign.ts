@@ -11,15 +11,15 @@ import {
 	type getBulkEmailCampaign,
 	previewBulkEmail,
 	saveBulkEmailDraft,
-	saveDraftSchema,
 	sendBulkEmailCampaign,
 	sendBulkEmailTest,
 } from "@/features/bulk-email/api/bulk-email";
+import { campaignDraftInput } from "@/features/bulk-email/validations";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { useJobSSE } from "@/shared/hooks/use-job-sse";
 import { getErrorMessage } from "@/shared/lib/error-message";
 
-const composeSchema = saveDraftSchema
+const composeSchema = campaignDraftInput
 	.omit({ id: true })
 	.required({ replyTo: true });
 

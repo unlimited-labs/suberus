@@ -6,6 +6,7 @@ export const ADMIN_AND_EDITOR = ["ADMIN", "EDITOR"] as const;
 export interface McpActor {
 	id: string;
 	role: UserRole;
+	email: string;
 	scopes: string[];
 }
 

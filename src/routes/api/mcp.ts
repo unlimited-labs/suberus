@@ -4,6 +4,7 @@ import { env } from "@/env";
 import { activityLogMcpTools } from "@/features/activity-log/mcp/tools";
 import { auth, MCP_RESOURCE } from "@/features/auth/server/auth.server";
 import { hasAdminRole } from "@/features/auth/server/middleware";
+import { bulkEmailMcpTools } from "@/features/bulk-email/mcp/tools";
 import { MCP_CAPABILITY_SCOPES } from "@/features/mcp/scopes";
 import { plannerMcpTools } from "@/features/planner/mcp/tools";
 import { settingsMcpTools } from "@/features/settings/mcp/tools";
@@ -23,6 +24,7 @@ const handler = createSuberusMcpHandler({
 		...submissionsMcpTools,
 		...activityLogMcpTools,
 		...plannerMcpTools,
+		...bulkEmailMcpTools,
 	],
 	allowedHostnames: [baseUrl.hostname],
 });
@@ -40,7 +42,12 @@ async function serve(request: Request): Promise<Response> {
 			const user = claims.sub
 				? await prisma.user.findUnique({
 						where: { id: claims.sub },
-						select: { id: true, role: true, isActive: true },
+						select: {
+							id: true,
+							role: true,
+							email: true,
+							isActive: true,
+						},
 					})
 				: null;
 
@@ -53,7 +60,12 @@ async function serve(request: Request): Promise<Response> {
 				typeof claims.scope === "string"
 					? claims.scope.split(" ").filter(Boolean)
 					: [];
-			return handler(req, { id: user.id, role: user.role, scopes });
+			return handler(req, {
+				id: user.id,
+				role: user.role,
+				email: user.email,
+				scopes,
+			});
 		},
 		{
 			resource: MCP_RESOURCE,

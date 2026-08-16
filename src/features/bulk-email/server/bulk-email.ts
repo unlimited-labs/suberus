@@ -30,12 +30,13 @@ export interface SaveDraftInput {
 /**
  * Creates a DRAFT campaign for the given users, snapshotting each recipient's
  * name and submission titles now (so later profile/submission edits don't
- * change a queued send). Returns the new campaign id.
+ * change a queued send). Ids that resolve to no user are dropped, so the
+ * returned count can be lower than the ids passed in.
  */
 export async function createDraftCampaign(
 	userIds: string[],
 	createdById: string,
-): Promise<{ campaignId: string }> {
+): Promise<{ campaignId: string; totalRecipients: number }> {
 	const uniqueIds = [...new Set(userIds)];
 	const users = await prisma.user.findMany({
 		where: { id: { in: uniqueIds } },
@@ -69,7 +70,7 @@ export async function createDraftCampaign(
 		},
 	});
 
-	return { campaignId: campaign.id };
+	return { campaignId: campaign.id, totalRecipients: snapshots.length };
 }
 
 /**

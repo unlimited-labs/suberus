@@ -100,7 +100,7 @@ async function main() {
 		// conference:write left out on purpose — the last step asserts the challenge.
 		scope:
 			process.env.SMOKE_SCOPE ??
-			"openid profile email users:read users:write conference:read submissions:read schedule:read schedule:write",
+			"openid profile email users:read users:write conference:read submissions:read schedule:read schedule:write email:send",
 		state,
 		code_challenge: challenge,
 		code_challenge_method: "S256",
@@ -191,12 +191,21 @@ async function main() {
 	);
 	step("tools/list returns the users tools", names.length > 0, names.join(", "));
 
+	// An error result carries prose, not JSON; parsing it would abort the run.
+	const toolPayload = (res: Awaited<ReturnType<typeof rpc>>) => {
+		const text = res.json?.result?.content?.[0]?.text ?? "";
+		try {
+			return text ? JSON.parse(text) : null;
+		} catch {
+			return null;
+		}
+	};
+
 	const call = await rpc("tools/call", {
 		name: "users_list",
 		arguments: { take: 5 },
 	});
-	const payload = call.json?.result?.content?.[0]?.text ?? "";
-	const parsed = payload ? JSON.parse(payload) : null;
+	const parsed = toolPayload(call);
 	step(
 		"tools/call users_list returns data",
 		typeof parsed?.total === "number",
@@ -207,8 +216,7 @@ async function main() {
 		name: "submissions_requirements",
 		arguments: {},
 	});
-	const reqPayload = requirements.json?.result?.content?.[0]?.text ?? "";
-	const reqParsed = reqPayload ? JSON.parse(reqPayload) : null;
+	const reqParsed = toolPayload(requirements);
 	step(
 		"tools/call submissions_requirements describes the active types",
 		Array.isArray(reqParsed?.types),
@@ -219,13 +227,23 @@ async function main() {
 		name: "program_get",
 		arguments: {},
 	});
-	const programPayload = program.json?.result?.content?.[0]?.text ?? "";
-	const programParsed = programPayload ? JSON.parse(programPayload) : null;
+	const programParsed = toolPayload(program);
 	step(
 		"tools/call program_get returns the programme",
 		typeof programParsed?.state?.status === "string" &&
 			Array.isArray(programParsed?.rooms),
 		`status=${programParsed?.state?.status} rooms=${programParsed?.rooms?.length}`,
+	);
+
+	const campaigns = await rpc("tools/call", {
+		name: "email_campaign_list",
+		arguments: {},
+	});
+	const campaignsParsed = toolPayload(campaigns);
+	step(
+		"tools/call email_campaign_list returns campaigns",
+		Array.isArray(campaignsParsed),
+		`campaigns=${campaignsParsed?.length}`,
 	);
 
 	step(

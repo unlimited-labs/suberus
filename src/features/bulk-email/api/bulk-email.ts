@@ -18,27 +18,25 @@ import {
 	saveDraft,
 	sendCampaignTest,
 } from "@/features/bulk-email/server/bulk-email";
+import {
+	campaignCreateInput,
+	campaignDraftInput,
+	campaignIdInput,
+	campaignPreviewInput,
+} from "@/features/bulk-email/validations";
 import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
 import { UploadValidationError } from "@/shared/server/validate-upload";
 
-const formatSchema = z.enum(["PLAIN", "MARKDOWN", "MJML"]);
-
-const createDraftSchema = z.object({
-	userIds: z.array(z.string()).min(1, "No recipients selected"),
-});
-
 export const createBulkEmailDraft = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(createDraftSchema)
+	.validator(campaignCreateInput)
 	.handler(async ({ data, context }) => {
 		return createDraftCampaign(data.userIds, context.user.id);
 	});
 
-const idSchema = z.object({ id: z.string() });
-
 export const getBulkEmailCampaign = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.validator(idSchema)
+	.validator(campaignIdInput)
 	.handler(async ({ data }) => {
 		return getCampaign(data.id);
 	});
@@ -49,38 +47,25 @@ export const listBulkEmailCampaigns = createServerFn({ method: "GET" })
 		return listCampaigns();
 	});
 
-export const saveDraftSchema = z.object({
-	id: z.string(),
-	subject: z.string(),
-	format: formatSchema,
-	bodySource: z.string(),
-	replyTo: z.union([z.email(), z.literal("")]).optional(),
-});
-
 export const saveBulkEmailDraft = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(saveDraftSchema)
+	.validator(campaignDraftInput)
 	.handler(async ({ data }) => {
 		const { id, ...rest } = data;
 		await saveDraft(id, rest);
 		return { success: true };
 	});
 
-const previewSchema = z.object({
-	format: formatSchema,
-	bodySource: z.string(),
-});
-
 export const previewBulkEmail = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(previewSchema)
+	.validator(campaignPreviewInput)
 	.handler(async ({ data }) => {
 		return previewContent(data.format, data.bodySource);
 	});
 
 export const sendBulkEmailTest = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(idSchema)
+	.validator(campaignIdInput)
 	.handler(async ({ data, context }) => {
 		await sendCampaignTest(data.id, context.user.email);
 		return { sentTo: context.user.email };
@@ -88,14 +73,14 @@ export const sendBulkEmailTest = createServerFn({ method: "POST" })
 
 export const sendBulkEmailCampaign = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(idSchema)
+	.validator(campaignIdInput)
 	.handler(async ({ data, context }) => {
 		return finalizeAndEnqueue(data.id, context.user.id);
 	});
 
 export const deleteBulkEmailCampaign = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(idSchema)
+	.validator(campaignIdInput)
 	.handler(async ({ data }) => {
 		await deleteCampaign(data.id);
 		return { success: true };
@@ -103,7 +88,7 @@ export const deleteBulkEmailCampaign = createServerFn({ method: "POST" })
 
 export const duplicateBulkEmailCampaign = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(idSchema)
+	.validator(campaignIdInput)
 	.handler(async ({ data, context }) => {
 		return duplicateCampaign(data.id, context.user.id);
 	});

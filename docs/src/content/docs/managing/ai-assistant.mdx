@@ -180,6 +180,24 @@ granted; nothing is stored.
 | Apply an autoplan proposal — this replaces the slots in every session it touches | Programme, write | Admin only |
 | Publish the programme, share it with staff only, or take it down | Programme, write | Admin only |
 
+**E-mail:**
+
+| Action | Access needed | Who can use it |
+|---|---|---|
+| Start a [bulk e-mail](/managing/bulk-email/) addressed to participants it picked out | E-mail, send | Admin, Editor |
+| Write the subject and body, in plain text, Markdown or MJML | E-mail, send | Admin, Editor |
+| Send itself a test copy first | E-mail, send | Admin, Editor |
+| Send the campaign to every recipient on it | E-mail, send | Admin, Editor |
+| List campaigns and follow one — status, delivered and failed counts, per-recipient results | E-mail, send | Admin, Editor |
+
+<Aside type="caution" title="Sending is not undoable">
+The assistant builds the campaign as a **draft** first, so you can open it under
+**Bulk e-mail** and read it — recipients, subject, body — before anything goes
+out. Sending is a separate, explicit step: once it is queued, the messages are
+delivered and cannot be recalled. Attachments cannot be added by an assistant;
+add those in the composer yourself.
+</Aside>
+
 Two independent things decide what an assistant may do: **your role** and **the
 access you approved**. An Editor's assistant is never offered the
 profile-editing or the settings-changing action, whatever was approved.

@@ -6,6 +6,7 @@ import { runTool } from "@/shared/server/mcp/server";
 const actor: McpActor = {
 	id: "admin-1",
 	role: "ADMIN",
+	email: "admin@example.test",
 	scopes: ["probe:all"],
 };
 

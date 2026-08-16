@@ -17,6 +17,8 @@ const SCOPE_LABELS: Record<string, string> = {
 		"Read the programme: rooms, tracks, sessions, presentations and breaks",
 	"schedule:write":
 		"Build and publish the programme, including automatic planning",
+	"email:send":
+		"Compose and send emails to participants you select, and read past campaigns with their recipients",
 } satisfies Record<McpScope, string>;
 
 export function scopeLabel(scope: string): string {

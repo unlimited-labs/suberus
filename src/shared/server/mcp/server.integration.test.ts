@@ -64,10 +64,13 @@ function firstText(content: unknown): string {
 	);
 }
 
-async function connect(actor: McpActor | null, challenge?: { error: unknown }) {
+async function connect(
+	actor: Omit<McpActor, "email"> | null,
+	challenge?: { error: unknown },
+) {
 	const server = buildMcpServer(
 		{ name: "suberus-test", version: "0", tools },
-		actor,
+		actor && { ...actor, email: "admin@example.test" },
 		challenge,
 	);
 	const [clientTransport, serverTransport] =
@@ -215,7 +218,12 @@ describe("MCP tool registry", () => {
 					},
 					body: JSON.stringify(body),
 				}),
-				{ id: "admin-1", role: "ADMIN", scopes: ["probe:read"] },
+				{
+					id: "admin-1",
+					role: "ADMIN",
+					email: "admin@example.test",
+					scopes: ["probe:read"],
+				},
 			);
 
 		await call({
@@ -269,7 +277,12 @@ describe("MCP tool registry", () => {
 					},
 				}),
 			}),
-			{ id: "admin-1", role: "ADMIN", scopes: ["probe:read"] },
+			{
+				id: "admin-1",
+				role: "ADMIN",
+				email: "admin@example.test",
+				scopes: ["probe:read"],
+			},
 		);
 
 		expect(response.status).toBe(200);
