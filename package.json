@@ -16,7 +16,7 @@
     "format": "biome format",
     "lint": "biome lint --fix",
     "report-deprecated": "node report-deprecated.mjs",
-    "prepare": "lefthook install",
+    "prepare": "lefthook install || true",
     "db:generate": "dotenv -e .env -- prisma generate",
     "db:push": "dotenv -e .env -- prisma db push",
     "db:migrate": "dotenv -e .env -- prisma migrate dev --create-only --name",
