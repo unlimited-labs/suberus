@@ -298,7 +298,7 @@ function StageCard({
 	return (
 		<div
 			className={cn(
-				"group relative flex h-44 flex-col overflow-hidden rounded-xl border bg-card p-5 transition-all duration-300",
+				"group relative flex h-44 flex-col overflow-hidden rounded-xl border bg-card p-5 transition-[color,background-color,border-color,box-shadow] duration-300",
 				st.container,
 			)}
 		>
@@ -310,7 +310,7 @@ function StageCard({
 					)}
 					<span
 						className={cn(
-							"relative flex h-12 w-12 items-center justify-center rounded-xl transition-all",
+							"relative flex h-12 w-12 items-center justify-center rounded-xl transition-colors",
 							st.iconWrap,
 						)}
 					>
@@ -346,7 +346,7 @@ function StageCard({
 				{status === "running" &&
 					(total > 0 ? (
 						<div
-							className="h-full bg-gradient-to-r from-primary/60 to-primary transition-all duration-500"
+							className="h-full bg-gradient-to-r from-primary/60 to-primary transition-[width] duration-500"
 							style={{ width: `${pct}%` }}
 						/>
 					) : (

@@ -43,7 +43,7 @@ function FeePage() {
 							delay={0}
 						>
 							<div className="space-y-6">
-								<div className="relative overflow-hidden rounded-xl border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-50 to-green-50 p-6 transition-all duration-500 dark:from-emerald-950/20 dark:to-green-950/20">
+								<div className="relative overflow-hidden rounded-xl border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-50 to-green-50 p-6 transition-colors duration-500 dark:from-emerald-950/20 dark:to-green-950/20">
 									<div className="absolute inset-0 opacity-[0.03]">
 										<svg
 											className="h-full w-full"
@@ -72,7 +72,7 @@ function FeePage() {
 
 									<div className="relative flex items-start justify-between gap-4">
 										<div className="flex items-center gap-4">
-											<div className="flex size-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-600 transition-all duration-500 dark:text-emerald-400">
+											<div className="flex size-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-600 transition-colors duration-500 dark:text-emerald-400">
 												<IconCheck className="size-7" strokeWidth={2.5} />
 											</div>
 											<div>
@@ -87,7 +87,7 @@ function FeePage() {
 
 										<Badge
 											variant="default"
-											className="shrink-0 bg-emerald-500 text-white transition-all hover:bg-emerald-600 dark:bg-emerald-600"
+											className="shrink-0 bg-emerald-500 text-white transition-colors hover:bg-emerald-600 dark:bg-emerald-600"
 										>
 											<IconCheck className="size-3" />
 											Paid
@@ -96,7 +96,7 @@ function FeePage() {
 								</div>
 
 								<div className="grid gap-4 sm:grid-cols-2">
-									<div className="group relative overflow-hidden rounded-lg border border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-all duration-300 hover:border-border hover:shadow-md">
+									<div className="group relative overflow-hidden rounded-lg border border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-[border-color,box-shadow] duration-300 hover:border-border hover:shadow-md">
 										<div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-primary to-primary/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 										<div className="mb-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
 											Fee Type
@@ -107,7 +107,7 @@ function FeePage() {
 									</div>
 
 									{fee.amount !== null && fee.currency && (
-										<div className="group relative overflow-hidden rounded-lg border border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-all duration-300 hover:border-border hover:shadow-md">
+										<div className="group relative overflow-hidden rounded-lg border border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-[border-color,box-shadow] duration-300 hover:border-border hover:shadow-md">
 											<div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-primary to-primary/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 											<div className="mb-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
 												Amount
@@ -124,7 +124,7 @@ function FeePage() {
 									)}
 
 									{fee.paidAt && (
-										<div className="group relative overflow-hidden rounded-lg border border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-all duration-300 hover:border-border hover:shadow-md sm:col-span-2">
+										<div className="group relative overflow-hidden rounded-lg border border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-[border-color,box-shadow] duration-300 hover:border-border hover:shadow-md sm:col-span-2">
 											<div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-emerald-500 to-emerald-500/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 											<div className="mb-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
 												Payment Date

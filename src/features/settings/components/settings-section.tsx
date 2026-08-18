@@ -21,7 +21,7 @@ export function SettingsSection({
 			className="group animate-fade-in-up animate-duration-700"
 			style={{ animationDelay: `${delay}ms` }}
 		>
-			<div className="settings-card relative overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm backdrop-blur-[8px] transition-all duration-300 hover:shadow-lg focus-within:outline-2 focus-within:outline-ring focus-within:outline-offset-2 before:absolute before:left-0 before:right-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-primary before:to-transparent before:opacity-0 before:transition-opacity before:duration-400 hover:before:opacity-30">
+			<div className="settings-card relative overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm backdrop-blur-[8px] transition-shadow duration-300 hover:shadow-lg focus-within:outline-2 focus-within:outline-ring focus-within:outline-offset-2 before:absolute before:left-0 before:right-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-primary before:to-transparent before:opacity-0 before:transition-opacity before:duration-400 hover:before:opacity-30">
 				<div className="absolute right-0 top-0 h-24 w-24 opacity-5">
 					<svg
 						viewBox="0 0 100 100"
