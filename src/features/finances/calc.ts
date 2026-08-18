@@ -1,4 +1,4 @@
-import { Parser } from "expr-eval";
+import { Parser } from "expr-eval-fork";
 
 export interface FinanceRow {
 	label: string;
