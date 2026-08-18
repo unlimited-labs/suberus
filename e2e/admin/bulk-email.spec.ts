@@ -11,6 +11,7 @@ import {
 	deleteTestUser,
 	getPrisma,
 } from "../helpers/test-db"
+import type { Page } from "@playwright/test"
 import { CONTACT_EMAIL, TEST_USER } from "../helpers/test-users"
 import { expect, test } from "./fixtures"
 
@@ -18,6 +19,12 @@ import { expect, test } from "./fixtures"
 test.beforeEach(({}, testInfo) => {
 	test.skip(testInfo.project.name.includes("mobile"), "Desktop only")
 })
+
+/** Send campaign is behind a confirmation dialog (irreversible send). */
+async function sendCampaign(page: Page) {
+	await page.getByTestId("send-campaign-btn").click()
+	await page.getByTestId("confirm-send-campaign-btn").click()
+}
 
 /** Creates an isolated recipient whose email is tagged for mailpit cleanup. */
 async function makeRecipient(
@@ -74,7 +81,7 @@ test.describe("Admin - Bulk Email", () => {
 				.getByTestId("campaign-body")
 				.fill("Hi **{{firstName}}** — your work: {{title}}.")
 
-			await page.getByTestId("send-campaign-btn").click()
+			await sendCampaign(page)
 
 			// Campaign reaches SENT with both recipients delivered.
 			const db = getPrisma()
@@ -187,7 +194,7 @@ test.describe("Admin - Bulk Email", () => {
 			await page.getByTestId("campaign-body").fill("Hi {{firstName}}")
 			await page.getByTestId("campaign-reply-to").fill(replyToAddr)
 
-			await page.getByTestId("send-campaign-btn").click()
+			await sendCampaign(page)
 
 			const db = getPrisma()
 			await expect
@@ -232,7 +239,7 @@ test.describe("Admin - Bulk Email", () => {
 			await page.getByTestId("campaign-body").fill("Hi {{firstName}}")
 			// Reply-To deliberately left blank.
 
-			await page.getByTestId("send-campaign-btn").click()
+			await sendCampaign(page)
 
 			const db = getPrisma()
 			await expect
@@ -552,7 +559,7 @@ test.describe("Admin - Bulk Email", () => {
 
 		try {
 			await page.goto(`/admin/bulk-email/${campaign.id}`)
-			await page.getByTestId("send-campaign-btn").click()
+			await sendCampaign(page)
 
 			await expect
 				.poll(
@@ -619,7 +626,7 @@ test.describe("Admin - Bulk Email", () => {
 				)
 				.toBe(1)
 
-			await page.getByTestId("send-campaign-btn").click()
+			await sendCampaign(page)
 			await expect
 				.poll(
 					async () => {

@@ -10,10 +10,19 @@ import {
 	IconUsers,
 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { bulkEmailCampaignQueryOptions } from "@/features/bulk-email/api/bulk-email";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/shared/ui/dialog";
 import { SectionCard } from "@/shared/ui/section-card";
 import { Separator } from "@/shared/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
@@ -43,6 +52,7 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 		bulkEmailCampaignQueryOptions(campaignId),
 	);
 	const compose = useComposeCampaign(campaign);
+	const [confirmOpen, setConfirmOpen] = useState(false);
 
 	return (
 		<div className="flex h-full flex-col">
@@ -184,7 +194,7 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 											<Button
 												className="w-full"
 												data-testid="send-campaign-btn"
-												onClick={() => compose.send()}
+												onClick={() => setConfirmOpen(true)}
 												disabled={compose.isSending || !compose.canSend}
 											>
 												<IconSend className="mr-2 size-4" />
@@ -251,6 +261,41 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 					</div>
 				</div>
 			</div>
+
+			<Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+				<DialogContent data-testid="confirm-send-campaign-dialog">
+					<DialogHeader>
+						<DialogTitle>Send campaign?</DialogTitle>
+						<DialogDescription>
+							This will send the message to {campaign.totalRecipients}{" "}
+							{campaign.totalRecipients === 1 ? "recipient" : "recipients"}.
+							Once started, the send cannot be stopped. You can close this
+							browser — delivery continues on the server.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => setConfirmOpen(false)}
+						>
+							Cancel
+						</Button>
+						<Button
+							type="button"
+							data-testid="confirm-send-campaign-btn"
+							disabled={compose.isSending}
+							onClick={() => {
+								setConfirmOpen(false);
+								compose.send();
+							}}
+						>
+							<IconSend className="mr-2 size-4" />
+							Send campaign
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }
