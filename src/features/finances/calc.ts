@@ -140,7 +140,7 @@ export function sortExpenses<T extends FinanceRow>(
 	sort: ExpenseSort,
 ): T[] {
 	if (sort === "manual") return rows;
-	return [...rows].sort((a, b) => {
+	return rows.toSorted((a, b) => {
 		if (sort === "due")
 			return (a.dueDate || "9999-99-99").localeCompare(
 				b.dueDate || "9999-99-99",

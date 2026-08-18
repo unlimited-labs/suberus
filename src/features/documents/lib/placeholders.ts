@@ -58,8 +58,7 @@ export function computePlaceholders(
 		lastName: input.lastName?.trim() ?? "",
 		affiliation: input.affiliationName?.trim() ?? "",
 		abstractTitle: input.acceptedTitles
-			.map((t) => t.trim())
-			.filter(Boolean)
+			.flatMap((t) => t.trim() || [])
 			.join(", "),
 		email: input.email.trim(),
 		date: input.date,

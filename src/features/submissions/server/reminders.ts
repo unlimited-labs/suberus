@@ -137,23 +137,21 @@ export async function sendRevisionReminders(): Promise<number> {
 	let sentCount = 0;
 
 	for (const submission of submissions) {
+		const userId = submission.user.id;
+		const reminderKey = {
+			userId,
+			reminderType: "REVISION_REMINDER" as const,
+			entityId: submission.id,
+		};
 		const alreadySentCount = await prisma.sentReminder.count({
-			where: {
-				userId: submission.user.id,
-				reminderType: "REVISION_REMINDER",
-				entityId: submission.id,
-			},
+			where: reminderKey,
 		});
 
 		if (alreadySentCount >= settings.maxCount) continue;
 
 		// Determine the reference date: last sent reminder or status change date
 		const lastReminder = await prisma.sentReminder.findFirst({
-			where: {
-				userId: submission.user.id,
-				reminderType: "REVISION_REMINDER",
-				entityId: submission.id,
-			},
+			where: reminderKey,
 			orderBy: { sentAt: "desc" },
 		});
 
@@ -175,7 +173,7 @@ export async function sendRevisionReminders(): Promise<number> {
 		});
 
 		await recordReminder(
-			submission.user.id,
+			userId,
 			"REVISION_REMINDER",
 			submission.id,
 			alreadySentCount,

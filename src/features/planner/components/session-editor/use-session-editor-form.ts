@@ -31,7 +31,7 @@ function sessionFormDefaults(
 		new Date(session.endAt),
 	);
 	const slotMin =
-		[...session.presentations].sort((a, b) => a.order - b.order)[0]
+		session.presentations.toSorted((a, b) => a.order - b.order)[0]
 			?.durationMin ?? defaultPresentationMin;
 	return {
 		title: session.title,

@@ -105,8 +105,7 @@ function resolveAffiliation(
 ): string | undefined {
 	if (seg.markers.length > 0 && affiliations.size > 0) {
 		const joined = seg.markers
-			.map((m) => affiliations.get(m))
-			.filter(Boolean)
+			.flatMap((m) => affiliations.get(m) ?? [])
 			.join("; ");
 		if (joined.length > 0) return joined;
 	}
