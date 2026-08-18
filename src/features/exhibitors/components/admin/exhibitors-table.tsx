@@ -19,9 +19,12 @@ export type AdminExhibitorRow = Awaited<
 	ReturnType<typeof listExhibitorsFn>
 >[number];
 
+// exhibitorStatusBadge only reads truthiness of appliedAt
+const APPLIED_MARKER = new Date(0);
+
 const statusFilterOptions: FilterOption[] = [
 	exhibitorStatusBadge("PENDING", null),
-	exhibitorStatusBadge("PENDING", new Date()),
+	exhibitorStatusBadge("PENDING", APPLIED_MARKER),
 	exhibitorStatusBadge("APPROVED", null),
 	exhibitorStatusBadge("REJECTED", null),
 	exhibitorStatusBadge("WITHDRAWN", null),
