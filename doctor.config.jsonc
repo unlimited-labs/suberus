@@ -1,0 +1,279 @@
+{
+  "$schema": "https://react.doctor/schema/config.json",
+  "ignore": {
+    "files": [
+      "**/.venv/**",
+      ".claude/**",
+      "poc/**",
+      "src/generated/**",
+      "playwright-report/**",
+      "test-results/**"
+    ],
+    "overrides": [
+      {
+        "files": [
+          "src/shared/ui/data-table/data-table.tsx"
+        ],
+        "rules": [
+          "react-hooks-js/incompatible-library"
+        ]
+      },
+      {
+        "files": [
+          "src/features/submission-diff/components/file-redline-view.tsx"
+        ],
+        "rules": [
+          "react-doctor/effect-needs-cleanup"
+        ]
+      },
+      {
+        "files": [
+          "src/features/bulk-email/components/use-compose-campaign.ts"
+        ],
+        "rules": [
+          "react-doctor/exhaustive-deps"
+        ]
+      },
+      {
+        "files": [
+          "src/server/plugins/**",
+          "src/server/tasks/**",
+          "src/features/planner/server/health.ts",
+          "src/features/planner/server/reminders.ts",
+          "src/features/submission-diff/server/reaper.ts"
+        ],
+        "rules": [
+          "deslop/unused-file"
+        ]
+      },
+      {
+        "files": [
+          "services/docx-api/Dockerfile",
+          "services/pdf-api/Dockerfile",
+          "services/docling-api/Dockerfile"
+        ],
+        "rules": [
+          "react-doctor/plugin-update-trust-risk"
+        ]
+      },
+      {
+        "files": [
+          "src/features/dashboard/components/admin/charts.tsx"
+        ],
+        "rules": [
+          "react-doctor/prefer-dynamic-import"
+        ]
+      },
+      {
+        "files": [
+          "src/shared/ui/map.tsx"
+        ],
+        "rules": [
+          "react-doctor/react-compiler-no-manual-memoization",
+          "react-doctor/effect-needs-cleanup",
+          "react-doctor/no-unguarded-browser-global-in-render-or-hook-init"
+        ]
+      },
+      {
+        "files": [
+          "src/features/planner/components/public-program/use-favorite-notifications.ts"
+        ],
+        "rules": [
+          "react-doctor/effect-needs-cleanup"
+        ]
+      },
+      {
+        "files": [
+          "src/features/settings/components/documents/document-signing-tab.tsx",
+          "src/features/reviews/components/form/attachment-section.tsx"
+        ],
+        "rules": [
+          "react-doctor/no-derived-useState"
+        ]
+      },
+      {
+        "files": [
+          "src/shared/components/diff/text-diff-view.tsx",
+          "src/features/submissions/components/diff/side-by-side-diff-view.tsx",
+          "src/features/submissions/components/editor-decision-card.tsx",
+          "src/features/submissions/components/admin/detail/history-tab.tsx",
+          "src/features/submissions/components/admin/detail/content-tab.tsx",
+          "src/features/reviews/components/form/submission-preview.tsx",
+          "src/features/finances/components/admin/finances-board.tsx"
+        ],
+        "rules": [
+          "react-doctor/no-array-index-as-key"
+        ]
+      },
+      {
+        "files": [
+          "src/shared/components/layout/sidebar.tsx",
+          "src/features/settings/components/submission/submission-types-tab.tsx",
+          "src/features/dashboard/components/admin/submission-chart.tsx"
+        ],
+        "rules": [
+          "react-doctor/js-combine-iterations"
+        ]
+      },
+      {
+        "files": [
+          "src/shared/components/composable/textarea-field.tsx"
+        ],
+        "rules": [
+          "react-doctor/rendering-conditional-render"
+        ]
+      },
+      {
+        "files": [
+          "src/routes/_app/submissions/$id_.revise.tsx"
+        ],
+        "rules": [
+          "react-doctor/control-has-associated-label"
+        ]
+      },
+      {
+        "files": [
+          "package.json"
+        ],
+        "rules": [
+          "deslop/unused-dependency"
+        ]
+      },
+      {
+        // useMutationRun catches and returns null, so the delete never rejects and the
+        // flag always resets; the other two reset on every path (after try/catch).
+        "files": [
+          "src/features/planner/components/break-editor/break-editor-context.tsx",
+          "src/features/planner/components/session-editor/session-editor-context.tsx",
+          "src/features/submissions/components/revise/use-revise-submission.ts",
+          "src/features/planner/components/public-program/use-favorite-notifications.ts"
+        ],
+        "rules": [
+          "react-doctor/no-loading-flag-reset-outside-finally"
+        ]
+      },
+      {
+        // One sets local jobId, the other sends an e-mail — no cached data to invalidate.
+        "files": [
+          "src/features/planner/components/hooks/use-auto-plan-state.ts",
+          "src/features/users/components/use-user-detail-mutations.ts"
+        ],
+        "rules": [
+          "react-doctor/query-mutation-missing-invalidation"
+        ]
+      },
+      {
+        // The effect writes to localStorage; it does not hand data to a parent.
+        "files": [
+          "src/shared/hooks/use-persisted-state.ts"
+        ],
+        "rules": [
+          "react-doctor/no-pass-data-to-parent"
+        ]
+      },
+      {
+        // Client entry — never imported during SSR.
+        "files": [
+          "src/client.tsx"
+        ],
+        "rules": [
+          "react-doctor/no-unguarded-browser-global-at-module-scope"
+        ]
+      },
+      {
+        // Tool capability IS the feature, gated by role n scope; the awaited fetch result
+        // is used by the caller (no early return skips it).
+        "files": [
+          "src/shared/server/mcp/server.ts"
+        ],
+        "rules": [
+          "react-doctor/mcp-tool-capability-risk",
+          "react-doctor/async-defer-await"
+        ]
+      },
+      {
+        // Identity is observable: getAuthors/setAuthors are effect deps in
+        // use-first-author-autofill, defaultValues remounts survey option inputs,
+        // afterSignIn drives the passkey conditional-mediation effect.
+        "files": [
+          "src/features/submissions/components/form/hooks/use-submission-form.ts",
+          "src/features/survey/components/admin/use-survey-question-form.ts",
+          "src/routes/_auth/login.tsx"
+        ],
+        "rules": [
+          "react-doctor/react-compiler-no-manual-memoization"
+        ]
+      },
+      {
+        // Bare duration-* on animate-in classes from tw-animate-css, which is not
+        // imported — the animations are dead no-ops (user decision: leave as is).
+        "files": [
+          "src/features/auth/components/auth-layout.tsx",
+          "src/features/auth/components/register/register-step-1.tsx",
+          "src/features/auth/components/register/register-step-2.tsx",
+          "src/features/auth/components/register/register-step-3.tsx",
+          "src/features/mcp/components/mcp-connect-dialog.tsx",
+          "src/shared/components/route-spinner.tsx"
+        ],
+        "rules": [
+          "react-doctor/no-transition-all"
+        ]
+      },
+      {
+        // Sequential by design: one shared upload mutation, ordered bootstrap steps,
+        // worker/queue registration order, intra-transaction upserts racing on unique
+        // constraints, SMTP pacing, and bulk state-machine transitions.
+        "files": [
+          "src/features/bulk-email/components/use-campaign-attachments.ts",
+          "src/features/documents/server/workers/generate.ts",
+          "src/features/extraction/server/workers/extraction.ts",
+          "src/features/planner/server/workers/autoplan.ts",
+          "src/features/submission-diff/server/workers/normalize.ts",
+          "src/features/submission-diff/server/reaper.ts",
+          "src/shared/server/queue.ts",
+          "src/features/install/server/install.ts",
+          "src/features/exhibitors/server/exhibitors.ts",
+          "src/features/planner/server/autoplan.ts",
+          "src/features/submissions/server/submissions.ts",
+          "src/features/users/server/users.ts",
+          "src/features/planner/server/reminders.ts",
+          "src/features/submissions/server/reminders.ts",
+          "src/features/submissions/server/camera-ready.ts",
+          "src/features/submissions/server/admin-submissions.ts",
+          "src/features/reviews/server/assignments.ts",
+          "src/features/workflow/server/workflow.ts"
+        ],
+        "rules": [
+          "react-doctor/async-await-in-loop"
+        ]
+      },
+      {
+        // Reminder senders run one after another so SMTP is not hit concurrently.
+        "files": [
+          "src/routes/api/admin/tasks/$name.ts",
+          "src/server/tasks/mails/reminder.ts"
+        ],
+        "rules": [
+          "react-doctor/async-parallel",
+          "react-doctor/server-sequential-independent-await"
+        ]
+      },
+      {
+        // Roles are read before updateMany overwrites them — parallel would race.
+        "files": [
+          "src/features/users/server/users.ts"
+        ],
+        "rules": [
+          "react-doctor/server-sequential-independent-await"
+        ]
+      }
+    ]
+  },
+  "rules": {
+    "react-doctor/no-prevent-default": "off",
+    "react-doctor/no-multi-comp": "off",
+    "react-doctor/only-export-components": "off",
+    "react-doctor/no-giant-component": "off",
+    "react-doctor/no-many-boolean-props": "off"
+  }
+}
