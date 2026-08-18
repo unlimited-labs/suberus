@@ -81,6 +81,13 @@ export function useDocumentExtraction({
 		if (handledJobRef.current === jobId) return;
 		handledJobRef.current = jobId;
 
+		let cancelled = false;
+		const finish = () => {
+			if (cancelled) return;
+			setIsExtracting(false);
+			setJobId(null);
+		};
+
 		const fetchResult = async () => {
 			try {
 				const response = await getExtractionResultFn({
@@ -88,8 +95,7 @@ export function useDocumentExtraction({
 				});
 
 				if (response.notFound || response.status !== "done") {
-					setIsExtracting(false);
-					setJobId(null);
+					finish();
 					return;
 				}
 
@@ -105,8 +111,7 @@ export function useDocumentExtraction({
 				} | null;
 
 				if (!result) {
-					setIsExtracting(false);
-					setJobId(null);
+					finish();
 					return;
 				}
 
@@ -117,15 +122,17 @@ export function useDocumentExtraction({
 				if (result.keywords && result.keywords.length > 0)
 					extracted.keywords = result.keywords;
 
-				onExtractedRef.current(extracted);
+				if (!cancelled) onExtractedRef.current(extracted);
 			} catch (error) {
 				console.error("[extraction] Failed to fetch result:", error);
 			}
-			setIsExtracting(false);
-			setJobId(null);
+			finish();
 		};
 
 		void fetchResult();
+		return () => {
+			cancelled = true;
+		};
 	}, [jobId, sseState.status]);
 
 	// Handle SSE error
