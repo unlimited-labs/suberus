@@ -411,10 +411,12 @@ export async function getReviewerAssignments(
 		string,
 		{ reviewMode: "OPEN" | "SINGLE_BLIND" | "DOUBLE_BLIND" }
 	> = {};
-	for (const key of configKeys) {
-		const config = await getSetting(key);
-		configs[key] = { reviewMode: config.reviewMode };
-	}
+	await Promise.all(
+		configKeys.map(async (key) => {
+			const config = await getSetting(key);
+			configs[key] = { reviewMode: config.reviewMode };
+		}),
+	);
 
 	let result: ReviewerAssignment[] = assignments.map((a) => {
 		const configKey = SUBMISSION_TYPE_TO_KEY[a.submission.type];

@@ -45,8 +45,13 @@ export async function previewBulk(
 
 	const resolvableIds: string[] = [];
 	const skipped: BulkSkip[] = [];
-	for (const u of users) {
-		const { missing } = await resolvePlaceholders(u.id);
+	const resolved = await Promise.all(
+		users.map(async (u) => ({
+			u,
+			missing: (await resolvePlaceholders(u.id)).missing,
+		})),
+	);
+	for (const { u, missing } of resolved) {
 		const missingSet = new Set<string>(missing);
 		const blocked = template.placeholders.filter((p) => missingSet.has(p));
 		if (blocked.length > 0) {
@@ -117,13 +122,15 @@ export async function startBulk(opts: {
 		where: { batchId: batch.id },
 		select: { id: true },
 	});
-	for (const d of docs) {
-		await ensureQueueAndSend(
-			DOCUMENT_GENERATE_QUEUE,
-			{ documentId: d.id },
-			ENQUEUE_OPTS,
-		);
-	}
+	await Promise.all(
+		docs.map((d) =>
+			ensureQueueAndSend(
+				DOCUMENT_GENERATE_QUEUE,
+				{ documentId: d.id },
+				ENQUEUE_OPTS,
+			),
+		),
+	);
 
 	return { batchId: batch.id, total: docs.length };
 }
@@ -151,13 +158,15 @@ export async function resignSignedDocuments(): Promise<{ count: number }> {
 		where: { id: { in: docs.map((d) => d.id) } },
 		data: { status: "PENDING", signed: false, error: null },
 	});
-	for (const d of docs) {
-		await ensureQueueAndSend(
-			DOCUMENT_GENERATE_QUEUE,
-			{ documentId: d.id },
-			ENQUEUE_OPTS,
-		);
-	}
+	await Promise.all(
+		docs.map((d) =>
+			ensureQueueAndSend(
+				DOCUMENT_GENERATE_QUEUE,
+				{ documentId: d.id },
+				ENQUEUE_OPTS,
+			),
+		),
+	);
 	return { count: docs.length };
 }
 

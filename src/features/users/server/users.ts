@@ -445,19 +445,21 @@ export async function bulkChangeRole(
 		data: { role: data.role },
 	});
 
-	for (const user of oldUsers) {
-		if (user.role !== data.role && user.role !== "EXHIBITOR") {
-			await logActivity({
-				type: "USER_ROLE_CHANGED",
-				userId: user.id,
-				performedBy: performer.id,
-				detail: activityDetail("USER_ROLE_CHANGED", {
-					fromRole: user.role,
-					toRole: data.role,
+	await Promise.all(
+		oldUsers
+			.filter((u) => u.role !== data.role && u.role !== "EXHIBITOR")
+			.map((user) =>
+				logActivity({
+					type: "USER_ROLE_CHANGED",
+					userId: user.id,
+					performedBy: performer.id,
+					detail: activityDetail("USER_ROLE_CHANGED", {
+						fromRole: user.role,
+						toRole: data.role,
+					}),
 				}),
-			});
-		}
-	}
+			),
+	);
 
 	return { success: true, updated: result.count };
 }
@@ -880,9 +882,11 @@ export async function deleteUser(
 	});
 
 	// Best-effort purge of the orphaned PDFs (rows already cascade-deleted).
-	for (const { storageKey } of documentKeys) {
-		if (storageKey) await deleteFile(storageKey).catch(() => {});
-	}
+	await Promise.all(
+		documentKeys.flatMap(({ storageKey }) =>
+			storageKey ? [deleteFile(storageKey).catch(() => {})] : [],
+		),
+	);
 
 	return { success: true };
 }

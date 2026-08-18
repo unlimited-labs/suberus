@@ -124,14 +124,16 @@ export async function deleteCampaignAttachments(
 		where: { entityType: "EMAIL_CAMPAIGN", entityId: campaignId },
 		select: { id: true, storageKey: true },
 	});
-	for (const file of files) {
-		await deleteFile(file.storageKey).catch((err) => {
-			logger.error(
-				`[bulk-email] failed to delete attachment ${file.storageKey}:`,
-				err,
-			);
-		});
-	}
+	await Promise.all(
+		files.map((file) =>
+			deleteFile(file.storageKey).catch((err) => {
+				logger.error(
+					`[bulk-email] failed to delete attachment ${file.storageKey}:`,
+					err,
+				);
+			}),
+		),
+	);
 	await prisma.file.deleteMany({
 		where: { entityType: "EMAIL_CAMPAIGN", entityId: campaignId },
 	});
@@ -147,24 +149,31 @@ export async function copyCampaignAttachments(
 		where: { entityType: "EMAIL_CAMPAIGN", entityId: srcId },
 		select: { originalName: true, mimeType: true, storageKey: true },
 	});
-	for (const file of files) {
-		const buffer = await getFileBuffer(file.storageKey);
-		const storageKey = generateCampaignAttachmentKey(dstId, file.originalName);
-		await uploadFile(buffer, storageKey, file.mimeType);
-		await prisma.file.create({
-			data: {
-				entityType: "EMAIL_CAMPAIGN",
-				entityId: dstId,
-				type: "EMAIL_ATTACHMENT",
-				storageKey,
-				fileName: file.originalName,
-				originalName: file.originalName,
-				mimeType: file.mimeType,
-				size: buffer.length,
-				uploadedById,
-			},
-		});
-	}
+	// Bounded by MAX_CAMPAIGN_ATTACHMENTS_BYTES (25MB) per campaign, so copying
+	// every attachment concurrently cannot blow up memory.
+	await Promise.all(
+		files.map(async (file) => {
+			const buffer = await getFileBuffer(file.storageKey);
+			const storageKey = generateCampaignAttachmentKey(
+				dstId,
+				file.originalName,
+			);
+			await uploadFile(buffer, storageKey, file.mimeType);
+			await prisma.file.create({
+				data: {
+					entityType: "EMAIL_CAMPAIGN",
+					entityId: dstId,
+					type: "EMAIL_ATTACHMENT",
+					storageKey,
+					fileName: file.originalName,
+					originalName: file.originalName,
+					mimeType: file.mimeType,
+					size: buffer.length,
+					uploadedById,
+				},
+			});
+		}),
+	);
 }
 
 export interface MailAttachment {
