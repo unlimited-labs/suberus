@@ -81,14 +81,7 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 	const sevenDaysAgo = subDays(new Date(), 7);
 	const trendWindowStart = subDays(startOfDay(new Date()), TREND_DAYS - 1);
 
-	const [
-		s3Health,
-		smtpHealth,
-		llmHealth,
-		pdfApiHealth,
-		docxApiHealth,
-		feeCurrency,
-	] = await Promise.all([
+	const healthChecks = Promise.all([
 		checkS3Health(),
 		checkSmtpHealth(),
 		getSetting("SERVICE_HEALTH_LLM"),
@@ -97,30 +90,7 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		getSetting("FEE_CURRENCY"),
 	]);
 
-	const [
-		usersGroupedByRole,
-		totalUsers,
-		verifiedUsers,
-		recentSignups,
-		submissionsGroupedByStatus,
-		submissionsGroupedByType,
-		totalSubmissions,
-		recentSubmissions,
-		reviewAssignmentsGroupedByStatus,
-		totalAssignments,
-		completedAssignments,
-		paidFees,
-		unpaidSubmitters,
-		overdueReviews,
-		pendingDecisions,
-		unverifiedUsers,
-		recentActivity,
-		usersByCountry,
-		trendUsers,
-		trendSubmissions,
-		trendReviewsCompleted,
-		trendFees,
-	] = await Promise.all([
+	const dbMetrics = Promise.all([
 		prisma.user.groupBy({
 			by: ["role"],
 			_count: true,
@@ -192,6 +162,43 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 			select: { paidAt: true, amount: true },
 		}),
 	]);
+
+	// joint await first: neither promise sits unhandled while the other is pending
+	await Promise.all([healthChecks, dbMetrics]);
+
+	const [
+		usersGroupedByRole,
+		totalUsers,
+		verifiedUsers,
+		recentSignups,
+		submissionsGroupedByStatus,
+		submissionsGroupedByType,
+		totalSubmissions,
+		recentSubmissions,
+		reviewAssignmentsGroupedByStatus,
+		totalAssignments,
+		completedAssignments,
+		paidFees,
+		unpaidSubmitters,
+		overdueReviews,
+		pendingDecisions,
+		unverifiedUsers,
+		recentActivity,
+		usersByCountry,
+		trendUsers,
+		trendSubmissions,
+		trendReviewsCompleted,
+		trendFees,
+	] = await dbMetrics;
+
+	const [
+		s3Health,
+		smtpHealth,
+		llmHealth,
+		pdfApiHealth,
+		docxApiHealth,
+		feeCurrency,
+	] = await healthChecks;
 
 	const byRole = tallyGroups<(typeof usersGroupedByRole)[number], UserRole>(
 		{ AUTHOR: 0, REVIEWER: 0, EDITOR: 0, ADMIN: 0, EXHIBITOR: 0 },

@@ -114,11 +114,10 @@ export async function executeSubmissionTransition(
 	triggeredBy?: string,
 	reason?: string,
 ): Promise<TransitionResult> {
-	const submission = await prisma.submission.findUniqueOrThrow({
-		where: { id: submissionId },
-	});
-
-	const context = await buildSubmissionContext(submissionId);
+	const [submission, context] = await Promise.all([
+		prisma.submission.findUniqueOrThrow({ where: { id: submissionId } }),
+		buildSubmissionContext(submissionId),
+	]);
 
 	const actor = createActor(submissionMachine, {
 		snapshot: submissionMachine.resolveState({
@@ -237,11 +236,10 @@ export async function validateSubmissionTransition(
 	submissionId: string,
 	event: SubmissionEvent,
 ): Promise<{ valid: boolean; error?: string }> {
-	const submission = await prisma.submission.findUniqueOrThrow({
-		where: { id: submissionId },
-	});
-
-	const context = await buildSubmissionContext(submissionId);
+	const [submission, context] = await Promise.all([
+		prisma.submission.findUniqueOrThrow({ where: { id: submissionId } }),
+		buildSubmissionContext(submissionId),
+	]);
 
 	const actor = createActor(submissionMachine, {
 		snapshot: submissionMachine.resolveState({

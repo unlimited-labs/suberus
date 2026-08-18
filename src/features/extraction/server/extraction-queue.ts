@@ -18,17 +18,17 @@ export async function enqueueExtractionJob(
 	fileName: string,
 	createdById?: string,
 ): Promise<{ jobId: string }> {
+	// validateUpload stays first: a rejected upload must not leave a job row behind
 	const detected = await validateUpload(buffer, {
 		allowedExtensions: SUPPORTED_FILE_EXTENSIONS,
 		maxBytes: env.MAX_UPLOAD_SIZE_MB * 1024 * 1024,
 	});
 
-	const [heuristic, ai] = await Promise.all([
+	const [heuristic, ai, jobId] = await Promise.all([
 		getSetting("EXTRACTION_HEURISTIC"),
 		getSetting("EXTRACTION_AI"),
+		createJobProgress("extraction", createdById),
 	]);
-
-	const jobId = await createJobProgress("extraction", createdById);
 	const storageKey = generateExtractionFileKey(jobId, fileName);
 	await uploadFile(buffer, storageKey, detected.mime);
 

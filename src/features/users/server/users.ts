@@ -815,13 +815,13 @@ export async function deleteUser(
 	}
 
 	// Prevent deleting last admin
-	const adminCount = await prisma.user.count({
-		where: { role: "ADMIN" },
-	});
-	const targetUser = await prisma.user.findUnique({
-		where: { id: userId },
-		select: { role: true },
-	});
+	const [adminCount, targetUser] = await Promise.all([
+		prisma.user.count({ where: { role: "ADMIN" } }),
+		prisma.user.findUnique({
+			where: { id: userId },
+			select: { role: true },
+		}),
+	]);
 	if (targetUser?.role === "ADMIN" && adminCount <= 1) {
 		throw new Response("Cannot delete the last admin", { status: 400 });
 	}

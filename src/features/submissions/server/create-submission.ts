@@ -325,11 +325,12 @@ export async function attachFileToVersion(params: {
 	}
 
 	const fileName = file.name;
-	const buffer = await fileToBuffer(file);
-
 	// Validate the real file type by magic number against the allowed
 	// extensions for this submission's type — never trust the client mime.
-	const activeTypes = await getActiveSubmissionTypes();
+	const [buffer, activeTypes] = await Promise.all([
+		fileToBuffer(file),
+		getActiveSubmissionTypes(),
+	]);
 	const typeConfig = activeTypes.find(
 		(t) => t.type === submission.type,
 	)?.config;

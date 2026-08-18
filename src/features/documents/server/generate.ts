@@ -143,13 +143,19 @@ export async function processDocumentGeneration(
 	}
 	if (!doc.template) throw new Error("Template was deleted before generation");
 
-	const { values } = await resolvePlaceholders(doc.userId);
-	const blocked = await unresolvableFor(doc.userId, doc.template.placeholders);
+	const [{ values }, blocked] = await Promise.all([
+		resolvePlaceholders(doc.userId),
+		unresolvableFor(doc.userId, doc.template.placeholders),
+	]);
 	if (blocked.length > 0) {
 		throw new Error(`Missing data for ${blocked.join(", ")}`);
 	}
 
-	const templateBuffer = await getFileBuffer(doc.template.storageKey);
+	// Signing material is independent of the render — load it alongside the template.
+	const [templateBuffer, signing] = await Promise.all([
+		getFileBuffer(doc.template.storageKey),
+		loadSigningMaterial(),
+	]);
 	const filledDocx = await new TemplateHandler().process(
 		templateBuffer,
 		values,
@@ -161,7 +167,6 @@ export async function processDocumentGeneration(
 
 	// Sign when enabled. A signing failure fails the job (retry/FAILED) — we never
 	// silently deliver an unsigned doc when signing is on.
-	const signing = await loadSigningMaterial();
 	let signed = false;
 	if (signing) {
 		const { cfg } = signing;

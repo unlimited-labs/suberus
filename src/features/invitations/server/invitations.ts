@@ -64,14 +64,16 @@ export async function createInvitation(
 	});
 
 	const token = randomBytes(32).toString("hex");
-	const validityHours = await getSetting("INVITATION_VALIDITY_HOURS");
+	const [validityHours, conferenceName] = await Promise.all([
+		getSetting("INVITATION_VALIDITY_HOURS"),
+		getSetting("CONFERENCE_NAME"),
+	]);
 	const expiresAt = addHours(new Date(), validityHours);
 
 	await prisma.invitation.create({
 		data: { email, role, token, expiresAt, createdById },
 	});
 
-	const conferenceName = await getSetting("CONFERENCE_NAME");
 	const registrationUrl = `${env.APP_BASE_URL}/register?token=${token}`;
 	const roleName = roleLabels[role];
 
@@ -128,7 +130,10 @@ export async function resendInvitation(
 	}
 
 	const token = randomBytes(32).toString("hex");
-	const validityHours = await getSetting("INVITATION_VALIDITY_HOURS");
+	const [validityHours, conferenceName] = await Promise.all([
+		getSetting("INVITATION_VALIDITY_HOURS"),
+		getSetting("CONFERENCE_NAME"),
+	]);
 	const expiresAt = addHours(new Date(), validityHours);
 
 	// Revives a lazily-expired row: without the status reset the fresh token is
@@ -138,7 +143,6 @@ export async function resendInvitation(
 		data: { token, expiresAt, status: "PENDING" },
 	});
 
-	const conferenceName = await getSetting("CONFERENCE_NAME");
 	const registrationUrl = `${env.APP_BASE_URL}/register?token=${token}`;
 	const roleName = roleLabels[invitation.role];
 

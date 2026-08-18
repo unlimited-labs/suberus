@@ -171,13 +171,15 @@ async function processCampaign(campaignId: string): Promise<void> {
 
 	// Same order as the composer's Recipients panel (getCampaign) so the
 	// SENT/FAILED marks light up top-to-bottom as the send progresses.
-	const pending = await prisma.emailCampaignRecipient.findMany({
-		where: { campaignId, status: "PENDING" },
-		orderBy: [{ email: "asc" }, { id: "asc" }],
-	});
 	// ponytail: attachment bytes held in memory once for the whole run (capped at
 	// MAX_CAMPAIGN_ATTACHMENTS_BYTES=25MB); stream from S3 per-recipient if that grows.
-	const attachments = await loadAttachmentBuffers(campaignId);
+	const [pending, attachments] = await Promise.all([
+		prisma.emailCampaignRecipient.findMany({
+			where: { campaignId, status: "PENDING" },
+			orderBy: [{ email: "asc" }, { id: "asc" }],
+		}),
+		loadAttachmentBuffers(campaignId),
+	]);
 	const content: CampaignContent = {
 		subject: campaign.subject,
 		body: campaign.renderedHtml,

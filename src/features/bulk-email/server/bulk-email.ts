@@ -270,11 +270,10 @@ export async function finalizeAndEnqueue(
 		throw new Response("Subject and body are required", { status: 400 });
 	}
 
-	const rendered = await renderEmailContent(
-		campaign.format,
-		campaign.bodySource,
-	);
-	const jobProgressId = await createJobProgress("bulk-email", createdById);
+	const [rendered, jobProgressId] = await Promise.all([
+		renderEmailContent(campaign.format, campaign.bodySource),
+		createJobProgress("bulk-email", createdById),
+	]);
 
 	await prisma.emailCampaign.update({
 		where: { id },
