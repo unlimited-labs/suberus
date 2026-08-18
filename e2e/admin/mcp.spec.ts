@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { Page } from "@playwright/test";
+import { MCP_SCOPES } from "@/features/mcp/scopes";
 import { expect, test } from "../helpers/base-fixtures";
 import { getPrisma } from "../helpers/test-db";
 import { ADMIN_USER } from "../helpers/test-users";
@@ -173,6 +174,37 @@ test.describe("MCP — connect dialog", () => {
 			.getByTestId("mcp-connect-dialog")
 			.evaluate((el) => el.scrollWidth - el.clientWidth);
 		expect(overflow).toBeLessThanOrEqual(0);
+	});
+});
+
+test.describe("MCP — authorize", () => {
+	test.beforeEach(clearDesktopClients);
+	test.afterEach(clearDesktopClients);
+
+	// A minted client freezes its scopes, so a scope added later would break every
+	// existing CLI install with invalid_scope until an admin reopened the dialog.
+	test("refreshes a stale desktop client's scopes", async ({ page }) => {
+		const db = getPrisma();
+		const clientId = `${DESKTOP_PREFIX}stale-${randomUUID().slice(0, 8)}`;
+		await db.oauthClient.create({
+			data: {
+				clientId,
+				redirectUris: [`http://localhost:${DEFAULT_PORT}/callback`],
+				grantTypes: ["authorization_code"],
+				responseTypes: ["code"],
+				tokenEndpointAuthMethod: "none",
+				scopes: ["users:read"],
+				requirePKCE: true,
+			},
+		});
+
+		await page.request.get(
+			`/api/auth/oauth2/authorize?response_type=code&client_id=${clientId}`,
+			{ maxRedirects: 0 },
+		);
+
+		const client = await db.oauthClient.findUnique({ where: { clientId } });
+		expect(client?.scopes).toEqual([...MCP_SCOPES]);
 	});
 });
 

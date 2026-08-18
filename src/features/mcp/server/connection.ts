@@ -116,6 +116,20 @@ export async function revokeClient(
 }
 
 /**
+ * Minted rows freeze `MCP_SCOPES`, and only the connect dialog re-mints them, so
+ * a newly added scope breaks every existing CLI install with `invalid_scope`
+ * until an admin happens to reopen it. Called on the authorize path instead.
+ */
+export async function syncDesktopClientScopes(clientId: string): Promise<void> {
+	await prisma.oauthClient.updateMany({
+		where: {
+			clientId: { equals: clientId, startsWith: DESKTOP_CLIENT_ID_PREFIX },
+		},
+		data: { scopes: [...MCP_SCOPES] },
+	});
+}
+
+/**
  * Replaces CIMD/DCR for desktop assistants: a configured `oauth.clientId`
  * short-circuits both, and Claude Code's metadata document is rejected here
  * anyway (portless loopback URIs). Idempotent — re-minting re-points the row.

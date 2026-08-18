@@ -99,6 +99,13 @@ applications**. That drops the approval and every token issued under it; for
 credentials you issued here it deletes the client outright, so the command has
 to be re-issued before the assistant can connect again.
 
+<Aside type="caution" title="Clear the assistant's stored credentials too">
+An assistant caches the client id it was given. Pointed at a client that no
+longer exists, it fails with *invalid client* even after the command is
+re-issued — clear its stored authorization for this server (in Claude Code:
+`/mcp` → the server → **Clear authentication**) before connecting again.
+</Aside>
+
 ![Authorization screen](../../../assets/screenshots/60-managing-mcp-consent.png)
 
 The assistant stores the access it was granted and reconnects on its own next
