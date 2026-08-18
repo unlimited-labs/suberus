@@ -118,17 +118,15 @@ export function SubmissionsColumnHeader({
 	const hasFilters = activeCount > 0;
 
 	const toggle = (dimension: Dimension, value: string) => {
-		setSelection((prev) => {
-			const next = new Set(prev[dimension]);
-			if (next.has(value)) {
-				next.delete(value);
-			} else {
-				next.add(value);
-			}
-			const values = Array.from(next);
-			columns[dimension]?.setFilterValue(values.length ? values : undefined);
-			return { ...prev, [dimension]: values };
-		});
+		const next = new Set(selection[dimension]);
+		if (next.has(value)) {
+			next.delete(value);
+		} else {
+			next.add(value);
+		}
+		const values = Array.from(next);
+		columns[dimension]?.setFilterValue(values.length ? values : undefined);
+		setSelection({ ...selection, [dimension]: values });
 	};
 
 	const clearAll = () => {
