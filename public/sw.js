@@ -32,3 +32,67 @@ self.addEventListener("notificationclick", (event) => {
 			}),
 	);
 });
+
+const CACHE = "suberus-program-v1";
+const PROGRAM_DOC = "/program";
+
+self.addEventListener("install", () => self.skipWaiting());
+
+self.addEventListener("activate", (event) => {
+	event.waitUntil(
+		caches
+			.keys()
+			.then((keys) =>
+				Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))),
+			)
+			.then(() => self.clients.claim()),
+	);
+});
+
+// Offline-first for the public programme only. The SW is registered app-wide,
+// so every other request (admin app, /_serverFn, API) falls through untouched.
+// ponytail: no cache eviction — build assets from past deploys accumulate until
+// the browser reclaims the origin's quota. Add an LRU trim if that ever bites.
+self.addEventListener("fetch", (event) => {
+	const { request } = event;
+	if (request.method !== "GET") return;
+
+	const url = new URL(request.url);
+	if (url.origin !== self.location.origin) return;
+
+	if (url.pathname.startsWith("/assets/")) {
+		event.respondWith(cacheFirst(request));
+		return;
+	}
+
+	if (
+		request.mode === "navigate" &&
+		url.pathname.replace(/\/$/, "") === PROGRAM_DOC
+	) {
+		event.respondWith(networkFirst(request));
+	}
+});
+
+// Build assets are content-hashed, so a hit is never stale.
+async function cacheFirst(request) {
+	const cache = await caches.open(CACHE);
+	const hit = await cache.match(request);
+	if (hit) return hit;
+	const response = await fetch(request);
+	if (response.ok) await cache.put(request, response.clone());
+	return response;
+}
+
+// Stored under a fixed key so /program and /program/ share one entry.
+async function networkFirst(request) {
+	const cache = await caches.open(CACHE);
+	try {
+		const response = await fetch(request);
+		if (response.ok) await cache.put(PROGRAM_DOC, response.clone());
+		return response;
+	} catch (error) {
+		const hit = await cache.match(PROGRAM_DOC);
+		if (hit) return hit;
+		throw error;
+	}
+}

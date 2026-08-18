@@ -11,7 +11,7 @@ import type {
 	ProgramLayout,
 	ProgramThemeProps,
 } from "./themes/registry";
-import { ProgramAuthLink } from "./themes/shared";
+import { ProgramAuthLink, ProgramPwaStatus } from "./themes/shared";
 
 const RULE_STYLE: CSSProperties = {
 	borderColor: "var(--prog-rule)",
@@ -145,7 +145,8 @@ function MinimalHeader({
 	return (
 		<header className="border-b border-border">
 			<div className="mx-auto max-w-[var(--prog-max-width)] px-5 pt-10 pb-6 sm:px-8 sm:pt-14">
-				<div className="mb-4 flex justify-end">
+				<div className="mb-4 flex items-center justify-end gap-4">
+					<ProgramPwaStatus className="text-muted-foreground" />
 					<ProgramAuthLink
 						labelClassName="hidden sm:inline"
 						className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
@@ -186,7 +187,8 @@ function FramedHeader({
 	return (
 		<header style={HEADER_RULE_STYLE} className="border-b">
 			<div className="mx-auto max-w-[var(--prog-max-width)] px-5 pt-4 pb-3 sm:px-10 sm:pt-12 sm:pb-7">
-				<div className="flex items-center justify-end border-b border-border pb-2 text-muted-foreground">
+				<div className="flex items-center justify-end gap-4 border-b border-border pb-2 text-muted-foreground">
+					<ProgramPwaStatus />
 					<ProgramAuthLink
 						labelClassName="hidden sm:inline"
 						className="text-sm transition-colors hover:text-foreground"

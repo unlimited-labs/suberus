@@ -10,27 +10,26 @@ import { ProgramShell } from "@/features/planner/components/public-program/progr
 import { resolveProgramTheme } from "@/features/planner/components/public-program/themes/registry";
 import { ProgramEmptyState } from "@/features/planner/components/public-program/themes/shared";
 import { useProgramSchedule } from "@/features/planner/components/public-program/use-program-schedule";
-import { getAppBrandingFn } from "@/features/settings/api/settings";
 
 export const Route = createFileRoute("/program/")({
 	loader: async ({ context }) => {
-		await Promise.all([
+		const [, settings] = await Promise.all([
 			context.queryClient.ensureQueryData(publicProgramQueryOptions()),
 			context.queryClient.ensureQueryData(publicConferenceInfoQueryOptions()),
 		]);
+		return { conferenceName: settings.name };
 	},
-	head: async () => {
-		const branding = await getAppBrandingFn();
-		return {
-			meta: [
-				{
-					title: branding.conferenceName
-						? `Program — ${branding.conferenceName}`
-						: "Program",
-				},
-			],
-		};
-	},
+	// Title comes from the loader's cached settings, not its own server call:
+	// offline hydration must not depend on a fetch.
+	head: ({ loaderData }) => ({
+		meta: [
+			{
+				title: loaderData?.conferenceName
+					? `Program — ${loaderData.conferenceName}`
+					: "Program",
+			},
+		],
+	}),
 	component: ProgramPage,
 });
 

@@ -1,4 +1,5 @@
 import { QueryClient } from "@tanstack/react-query";
+import { setupOfflineProgram } from "./offline";
 
 export function getContext() {
 	const queryClient = new QueryClient({
@@ -9,6 +10,9 @@ export function getContext() {
 			},
 		},
 	});
+
+	if (typeof window !== "undefined") setupOfflineProgram(queryClient);
+
 	return {
 		queryClient,
 	};

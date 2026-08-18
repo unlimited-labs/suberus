@@ -115,7 +115,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 			},
 			{
 				rel: "manifest",
-				href: "/site.webmanifest",
+				href: "/api/manifest",
 			},
 		],
 	}),

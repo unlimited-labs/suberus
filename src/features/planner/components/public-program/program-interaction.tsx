@@ -1,10 +1,21 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createContext, type ReactNode, useContext, useState } from "react";
-import { toast } from "sonner";
+import {
+	type QueryClient,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
+import {
+	createContext,
+	type ReactNode,
+	useContext,
+	useEffect,
+	useState,
+} from "react";
 import {
 	favoriteSlotsQueryOptions,
-	toggleFavoriteFn,
+	presentationDetailQueryOptions,
 } from "@/features/planner/api/favorites";
+import { favoriteMutationKey } from "@/integrations/tanstack-query/offline";
 import { useSession } from "@/shared/hooks/use-session";
 import { PresentationPreviewDialog } from "./presentation-preview-dialog";
 
@@ -62,7 +73,6 @@ export function ProgramInteractionProvider({
 		authorOrderIndex: number | null;
 	} | null>(null);
 
-	const favoritesKey = favoriteSlotsQueryOptions().queryKey;
 	const favoritesQuery = useQuery({
 		...favoriteSlotsQueryOptions(),
 		enabled: isAuthenticated,
@@ -70,23 +80,12 @@ export function ProgramInteractionProvider({
 
 	const favorites = new Set(favoritesQuery.data ?? []);
 
-	const { mutate } = useMutation({
-		mutationFn: (slotId: string) => toggleFavoriteFn({ data: { slotId } }),
-		onMutate: async (slotId: string) => {
-			await queryClient.cancelQueries({ queryKey: favoritesKey });
-			const previous = queryClient.getQueryData<string[]>(favoritesKey) ?? [];
-			const next = previous.includes(slotId)
-				? previous.filter((id) => id !== slotId)
-				: [...previous, slotId];
-			queryClient.setQueryData(favoritesKey, next);
-			return { previous };
-		},
-		onError: (_e, _slotId, context) => {
-			if (context) queryClient.setQueryData(favoritesKey, context.previous);
-			toast.error("Could not update favorites");
-		},
-		onSettled: () => queryClient.invalidateQueries({ queryKey: favoritesKey }),
+	// Behaviour lives in setMutationDefaults: an offline toggle resumes at startup.
+	const { mutate } = useMutation<void, Error, string>({
+		mutationKey: favoriteMutationKey,
 	});
+
+	usePrefetchFavoriteDetails(favorites, queryClient);
 
 	const value: ProgramInteractionValue = {
 		canInteract: isAuthenticated,
@@ -116,4 +115,19 @@ export function ProgramInteractionProvider({
 			/>
 		</ProgramInteractionContext.Provider>
 	);
+}
+
+// Talk details load lazily on dialog open; warm the favourited ones so an
+// attendee's own agenda still opens offline.
+function usePrefetchFavoriteDetails(
+	favorites: Set<string>,
+	queryClient: QueryClient,
+) {
+	const slotIds = [...favorites].sort().join(",");
+	useEffect(() => {
+		if (!slotIds) return;
+		for (const slotId of slotIds.split(",")) {
+			void queryClient.prefetchQuery(presentationDetailQueryOptions(slotId));
+		}
+	}, [slotIds, queryClient]);
 }

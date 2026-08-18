@@ -15,6 +15,7 @@ import { lazy, Suspense, useState } from "react";
 import { toast } from "sonner";
 import { mcpConnectionQueryOptions } from "@/features/mcp/api/mcp-connection";
 import { McpMenuItem } from "@/features/mcp/components/mcp-menu-item";
+import { clearOfflineProgramCache } from "@/integrations/tanstack-query/offline";
 import { useTheme } from "@/shared/components/theme-provider";
 import { useSession } from "@/shared/hooks/use-session";
 import { signOut } from "@/shared/lib/auth-client";
@@ -62,6 +63,7 @@ export function UserMenu() {
 	});
 
 	const handleSignOut = async () => {
+		await clearOfflineProgramCache();
 		await signOut();
 		toast.success("Signed out successfully");
 		navigate({ to: "/login" });
