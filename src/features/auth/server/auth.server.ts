@@ -241,6 +241,7 @@ export const auth = betterAuth({
 		},
 	},
 	onAPIError: {
+		errorURL: `${env.APP_BASE_URL}/error`,
 		onError: (error, _ctx) => {
 			logger.error("[auth] API error:", error);
 		},
