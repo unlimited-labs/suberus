@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useSelector } from "@tanstack/react-store";
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { detectCountry } from "@/features/auth/detect-country";
 import { useMultiStep } from "@/features/auth/hooks/use-multi-step";
@@ -165,21 +165,17 @@ export function useRegisterForm({
 	const [accountType, setAccountType] = useState<"participant" | "exhibitor">(
 		"participant",
 	);
-	const detectedCountry = useMemo(() => {
+	const [detectedCountry] = useState(() => {
 		const name = detectCountry();
 		return name && COUNTRIES.includes(name) ? name : "";
-	}, []);
+	});
 	const [tosOpen, setTosOpen] = useState(false);
 
-	const visibleQuestions = useMemo(
-		() =>
-			surveyQuestions.filter(
-				(q) =>
-					q.audience === "ALL" ||
-					q.audience ===
-						(accountType === "exhibitor" ? "EXHIBITORS" : "PARTICIPANTS"),
-			),
-		[surveyQuestions, accountType],
+	const visibleQuestions = surveyQuestions.filter(
+		(q) =>
+			q.audience === "ALL" ||
+			q.audience ===
+				(accountType === "exhibitor" ? "EXHIBITORS" : "PARTICIPANTS"),
 	);
 
 	const defaultSurveyAnswers: Record<string, string> = {};
@@ -245,31 +241,28 @@ export function useRegisterForm({
 
 	// Run the current step's field-level validators (incl. async email check)
 	// and reveal any errors by marking the fields blurred.
-	const validateStep = useCallback(
-		async (step: number): Promise<boolean> => {
-			// Step 3 also gates on any required survey questions (dynamic fields).
-			const surveyFields =
-				step === 3
-					? visibleQuestions.flatMap((q) =>
-							q.isRequired
-								? [`surveyAnswers.${q.id}` as `surveyAnswers.${string}`]
-								: [],
-						)
-					: [];
-			const fields = [...(STEP_FIELDS[step] ?? []), ...surveyFields];
-			const results = await Promise.all(
-				fields.map((field) => form.validateField(field, "change")),
-			);
-			const ok = results.every((errors) => errors.length === 0);
-			if (!ok) {
-				for (const field of fields) {
-					form.setFieldMeta(field, (prev) => ({ ...prev, isBlurred: true }));
-				}
+	const validateStep = async (step: number): Promise<boolean> => {
+		// Step 3 also gates on any required survey questions (dynamic fields).
+		const surveyFields =
+			step === 3
+				? visibleQuestions.flatMap((q) =>
+						q.isRequired
+							? [`surveyAnswers.${q.id}` as `surveyAnswers.${string}`]
+							: [],
+					)
+				: [];
+		const fields = [...(STEP_FIELDS[step] ?? []), ...surveyFields];
+		const results = await Promise.all(
+			fields.map((field) => form.validateField(field, "change")),
+		);
+		const ok = results.every((errors) => errors.length === 0);
+		if (!ok) {
+			for (const field of fields) {
+				form.setFieldMeta(field, (prev) => ({ ...prev, isBlurred: true }));
 			}
-			return ok;
-		},
-		[form, visibleQuestions],
-	);
+		}
+		return ok;
+	};
 
 	const { currentStep, next, prev, isFirst, isLast } = useMultiStep({
 		totalSteps: 3,

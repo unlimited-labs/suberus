@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 interface UseMultiStepOptions {
 	totalSteps: number;
@@ -11,7 +11,7 @@ export function useMultiStep({
 }: UseMultiStepOptions) {
 	const [currentStep, setCurrentStep] = useState(1);
 
-	const next = useCallback(async () => {
+	const next = async () => {
 		if (validateStep) {
 			const isValid = await validateStep(currentStep);
 			if (!isValid) return false;
@@ -22,22 +22,19 @@ export function useMultiStep({
 			return true;
 		}
 		return false;
-	}, [currentStep, totalSteps, validateStep]);
+	};
 
-	const prev = useCallback(() => {
+	const prev = () => {
 		if (currentStep > 1) {
 			setCurrentStep((s) => s - 1);
 		}
-	}, [currentStep]);
+	};
 
-	const goTo = useCallback(
-		(step: number) => {
-			if (step >= 1 && step <= totalSteps) {
-				setCurrentStep(step);
-			}
-		},
-		[totalSteps],
-	);
+	const goTo = (step: number) => {
+		if (step >= 1 && step <= totalSteps) {
+			setCurrentStep(step);
+		}
+	};
 
 	return {
 		currentStep,

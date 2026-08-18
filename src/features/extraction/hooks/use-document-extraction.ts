@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
 	enqueueExtractionFn,
@@ -154,59 +154,56 @@ export function useDocumentExtraction({
 		};
 	}, []);
 
-	const handleFileChange = useCallback(
-		async (
-			file: File | null,
-			fieldHandleChange: (file: File | null) => void,
-		) => {
-			fieldHandleChange(file);
+	const handleFileChange = async (
+		file: File | null,
+		fieldHandleChange: (file: File | null) => void,
+	) => {
+		fieldHandleChange(file);
 
-			if (
-				!file ||
-				!enabled ||
-				skipExtraction ||
-				!SUPPORTED_FILE_EXTENSIONS_DOTTED.some((ext) =>
-					file.name.toLowerCase().endsWith(ext),
-				)
-			) {
-				return;
+		if (
+			!file ||
+			!enabled ||
+			skipExtraction ||
+			!SUPPORTED_FILE_EXTENSIONS_DOTTED.some((ext) =>
+				file.name.toLowerCase().endsWith(ext),
+			)
+		) {
+			return;
+		}
+
+		// Abort previous extraction if still running (prevents race condition)
+		abortRef.current?.abort();
+		const controller = new AbortController();
+		abortRef.current = controller;
+
+		setIsExtracting(true);
+		setElapsedSeconds(0);
+		setJobId(null);
+		handledJobRef.current = null;
+
+		try {
+			const formData = new FormData();
+			formData.append("file", file);
+
+			if (controller.signal.aborted) return;
+
+			const { jobId: newJobId } = await enqueueExtractionFn({
+				data: formData,
+			});
+
+			if (controller.signal.aborted) return;
+
+			setJobId(newJobId);
+		} catch (error) {
+			if (!controller.signal.aborted) {
+				console.error("[extraction] Client extraction failed:", error);
+				const message =
+					error instanceof Error ? error.message : "unknown error";
+				toast.error(`Extraction failed: ${message}`);
+				setIsExtracting(false);
 			}
-
-			// Abort previous extraction if still running (prevents race condition)
-			abortRef.current?.abort();
-			const controller = new AbortController();
-			abortRef.current = controller;
-
-			setIsExtracting(true);
-			setElapsedSeconds(0);
-			setJobId(null);
-			handledJobRef.current = null;
-
-			try {
-				const formData = new FormData();
-				formData.append("file", file);
-
-				if (controller.signal.aborted) return;
-
-				const { jobId: newJobId } = await enqueueExtractionFn({
-					data: formData,
-				});
-
-				if (controller.signal.aborted) return;
-
-				setJobId(newJobId);
-			} catch (error) {
-				if (!controller.signal.aborted) {
-					console.error("[extraction] Client extraction failed:", error);
-					const message =
-						error instanceof Error ? error.message : "unknown error";
-					toast.error(`Extraction failed: ${message}`);
-					setIsExtracting(false);
-				}
-			}
-		},
-		[enabled, skipExtraction],
-	);
+		}
+	};
 
 	return {
 		isExtracting,

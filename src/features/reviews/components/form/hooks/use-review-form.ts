@@ -1,5 +1,4 @@
 import { useSelector } from "@tanstack/react-store";
-import { useMemo } from "react";
 import {
 	buildReviewDefaults,
 	computeReviewProgress,
@@ -28,10 +27,10 @@ export function useReviewForm({
 	scoringCriteria,
 	enableConfidenceLevel,
 }: UseReviewFormArgs) {
-	const reviewSchema = useMemo(
-		() => createReviewSchema({ enableConfidenceLevel, scoringCriteria }),
-		[enableConfidenceLevel, scoringCriteria],
-	);
+	const reviewSchema = createReviewSchema({
+		enableConfidenceLevel,
+		scoringCriteria,
+	});
 
 	const form = useAppForm({
 		defaultValues: buildReviewDefaults(initialData, scoringCriteria),

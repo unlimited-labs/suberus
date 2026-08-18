@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import {
 	adminSubmissionsQueryOptions,
@@ -16,18 +16,15 @@ export function useSubmissionTransitions(submissionId: string) {
 	const queryClient = useQueryClient();
 	const [isTransitioning, setIsTransitioning] = useState(false);
 
-	const invalidateSubmission = useCallback(
-		() =>
-			Promise.all([
-				queryClient.invalidateQueries({
-					queryKey: editorSubmissionQueryOptions(submissionId).queryKey,
-				}),
-				queryClient.invalidateQueries({
-					queryKey: adminSubmissionsQueryOptions().queryKey,
-				}),
-			]),
-		[queryClient, submissionId],
-	);
+	const invalidateSubmission = () =>
+		Promise.all([
+			queryClient.invalidateQueries({
+				queryKey: editorSubmissionQueryOptions(submissionId).queryKey,
+			}),
+			queryClient.invalidateQueries({
+				queryKey: adminSubmissionsQueryOptions().queryKey,
+			}),
+		]);
 
 	async function runTransition(
 		fn: () => Promise<TransitionResult>,

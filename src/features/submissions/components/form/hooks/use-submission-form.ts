@@ -1,5 +1,5 @@
 import { useSelector } from "@tanstack/react-store";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { useDocumentExtraction } from "@/features/extraction/hooks/use-document-extraction";
 import type { AvailableTrack } from "@/features/submissions/types";
 import { useAppForm } from "@/shared/hooks/use-app-form";
@@ -63,18 +63,14 @@ export function useSubmissionForm({
 
 	const [selectedType, setSelectedType] = useState<SubmissionType>(initialType);
 
-	const submissionSchema = useMemo(
-		() => buildSubmissionFormSchema(validationSettings, hasExistingFile),
-		[validationSettings, hasExistingFile],
+	const submissionSchema = buildSubmissionFormSchema(
+		validationSettings,
+		hasExistingFile,
 	);
-	const contentSchema = useMemo(
-		() => buildContentSchema(validationSettings),
-		[validationSettings],
-	);
-	const renderedGuidelines = useMemo(() => {
-		if (!guidelines) return null;
-		return substituteGuidelines(guidelines, validationSettings);
-	}, [guidelines, validationSettings]);
+	const contentSchema = buildContentSchema(validationSettings);
+	const renderedGuidelines = guidelines
+		? substituteGuidelines(guidelines, validationSettings)
+		: null;
 
 	const form = useAppForm({
 		defaultValues: buildSubmissionDefaultValues(

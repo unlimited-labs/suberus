@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 
 interface Room {
 	id: string;
@@ -24,26 +24,20 @@ export function useRoomVisibility<R extends Room>(
 		() => new Set(),
 	);
 
-	const toggleRoom = useCallback((roomId: string) => {
+	const toggleRoom = (roomId: string) => {
 		setHiddenRoomIds((prev) => {
 			const next = new Set(prev);
 			if (next.has(roomId)) next.delete(roomId);
 			else next.add(roomId);
 			return next;
 		});
-	}, []);
+	};
 
-	const showAll = useCallback(() => setHiddenRoomIds(new Set()), []);
+	const showAll = () => setHiddenRoomIds(new Set());
 
-	const visibleRooms = useMemo(
-		() => rooms.filter((r) => !hiddenRoomIds.has(r.id)),
-		[rooms, hiddenRoomIds],
-	);
+	const visibleRooms = rooms.filter((r) => !hiddenRoomIds.has(r.id));
 
-	const hiddenRoomsKey = useMemo(
-		() => Array.from(hiddenRoomIds).sort().join(","),
-		[hiddenRoomIds],
-	);
+	const hiddenRoomsKey = Array.from(hiddenRoomIds).sort().join(",");
 
 	return { hiddenRoomIds, visibleRooms, hiddenRoomsKey, toggleRoom, showAll };
 }

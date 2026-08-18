@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { env } from "@/env";
 import {
@@ -50,7 +50,7 @@ export function useFavoriteNotifications(): FavoriteNotificationsState {
 			.catch(() => {});
 	}, [supported]);
 
-	const enable = useCallback(async () => {
+	const enable = async () => {
 		const key = env.VITE_VAPID_PUBLIC_KEY;
 		if (!key) return;
 		setEnabled(true);
@@ -87,9 +87,9 @@ export function useFavoriteNotifications(): FavoriteNotificationsState {
 			toast.error("Could not enable reminders", { position: "bottom-center" });
 		}
 		setBusy(false);
-	}, []);
+	};
 
-	const disable = useCallback(async () => {
+	const disable = async () => {
 		setEnabled(false);
 		setBusy(true);
 		try {
@@ -104,15 +104,12 @@ export function useFavoriteNotifications(): FavoriteNotificationsState {
 			toast.error("Could not disable reminders", { position: "bottom-center" });
 		}
 		setBusy(false);
-	}, []);
+	};
 
-	const toggle = useCallback(
-		(next: boolean) => {
-			if (busy) return;
-			void (next ? enable() : disable());
-		},
-		[busy, enable, disable],
-	);
+	const toggle = (next: boolean) => {
+		if (busy) return;
+		void (next ? enable() : disable());
+	};
 
 	return { supported, enabled, busy, toggle };
 }

@@ -1,5 +1,4 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
 import { allBreaksQueryOptions } from "@/features/planner/api/breaks";
 import {
 	scheduleCapacityQueryOptions,
@@ -14,7 +13,7 @@ import {
 export function useInvalidatePlannerQueries() {
 	const queryClient = useQueryClient();
 
-	return useCallback(() => {
+	return () => {
 		const keys = [
 			allSessionsQueryOptions().queryKey,
 			unscheduledSubmissionsQueryOptions().queryKey,
@@ -26,5 +25,5 @@ export function useInvalidatePlannerQueries() {
 		for (const queryKey of keys) {
 			queryClient.invalidateQueries({ queryKey });
 		}
-	}, [queryClient]);
+	};
 }

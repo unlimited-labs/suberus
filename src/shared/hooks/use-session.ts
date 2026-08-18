@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import type { UserRole } from "@/generated/prisma/enums";
 import { authClient } from "@/shared/lib/auth-client";
 
@@ -38,13 +37,9 @@ export function useSession() {
 	const rawUser = session.data?.user as BetterAuthUser | undefined;
 
 	// Map better-auth's "name" to our "lastName"
-	const user = useMemo<SessionUser | undefined>(() => {
-		if (!rawUser) return undefined;
-		return {
-			...rawUser,
-			lastName: rawUser.name,
-		};
-	}, [rawUser]);
+	const user: SessionUser | undefined = rawUser
+		? { ...rawUser, lastName: rawUser.name }
+		: undefined;
 
 	return {
 		user,
