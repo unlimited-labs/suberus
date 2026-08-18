@@ -30,13 +30,12 @@ export function selectSupersededIds<
 export function selectDanglingDiffIds<
 	T extends { id: string; oldVersionId: string; newVersionId: string },
 >(diffs: T[], existingVersionIds: Set<string>): string[] {
-	return diffs
-		.filter(
-			(d) =>
-				!existingVersionIds.has(d.oldVersionId) ||
-				!existingVersionIds.has(d.newVersionId),
-		)
-		.map((d) => d.id);
+	return diffs.flatMap((d) =>
+		!existingVersionIds.has(d.oldVersionId) ||
+		!existingVersionIds.has(d.newVersionId)
+			? [d.id]
+			: [],
+	);
 }
 
 /** The set of CAS keys still referenced by any remaining artifact/diff row. */

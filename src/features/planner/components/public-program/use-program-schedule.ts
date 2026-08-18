@@ -64,12 +64,12 @@ export function useProgramSchedule({
 
 	const itemsForDay = (day: Date): ProgramItem[] => {
 		if (!program) return [];
-		const sessions = program.sessions
-			.filter((s) => sameDayInTz(new Date(s.startAt), day, tz))
-			.filter(sessionMatches);
-		const breaks = program.breaks
-			.filter((b) => sameDayInTz(new Date(b.startAt), day, tz))
-			.filter(breakMatches);
+		const sessions = program.sessions.filter(
+			(s) => sameDayInTz(new Date(s.startAt), day, tz) && sessionMatches(s),
+		);
+		const breaks = program.breaks.filter(
+			(b) => sameDayInTz(new Date(b.startAt), day, tz) && breakMatches(b),
+		);
 		const all: ProgramItem[] = [
 			...sessions.map((s) => ({ kind: "session" as const, data: s })),
 			...breaks.map((b) => ({ kind: "break" as const, data: b })),

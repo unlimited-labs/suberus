@@ -250,9 +250,11 @@ export function useRegisterForm({
 			// Step 3 also gates on any required survey questions (dynamic fields).
 			const surveyFields =
 				step === 3
-					? visibleQuestions
-							.filter((q) => q.isRequired)
-							.map((q) => `surveyAnswers.${q.id}` as `surveyAnswers.${string}`)
+					? visibleQuestions.flatMap((q) =>
+							q.isRequired
+								? [`surveyAnswers.${q.id}` as `surveyAnswers.${string}`]
+								: [],
+						)
 					: [];
 			const fields = [...(STEP_FIELDS[step] ?? []), ...surveyFields];
 			const results = await Promise.all(

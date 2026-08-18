@@ -61,8 +61,7 @@ export async function extractFromDocx(
 			if (pdfApiMd) return cutAtAbstract(pdfApiMd);
 		}
 		return classified
-			.filter((c) => c.zone !== "BODY")
-			.map((c) => c.para.text.trim())
+			.flatMap((c) => (c.zone !== "BODY" ? [c.para.text.trim()] : []))
 			.join("\n");
 	}
 

@@ -265,13 +265,17 @@ type IssueSession = Awaited<
 type IssueBreak = Awaited<ReturnType<typeof loadIssueData>>["breaks"][number];
 
 function findSessionsWithoutChair(sessions: IssueSession[]): ScheduleIssue[] {
-	return sessions
-		.filter((s) => s.chairs.length === 0)
-		.map((s) => ({
-			kind: "SESSION_WITHOUT_CHAIR",
-			message: `Session "${s.title}" has no chair`,
-			sessionIds: [s.id],
-		}));
+	return sessions.flatMap((s) =>
+		s.chairs.length === 0
+			? [
+					{
+						kind: "SESSION_WITHOUT_CHAIR" as const,
+						message: `Session "${s.title}" has no chair`,
+						sessionIds: [s.id],
+					},
+				]
+			: [],
+	);
 }
 
 function findOverbookedSessions(sessions: IssueSession[]): ScheduleIssue[] {

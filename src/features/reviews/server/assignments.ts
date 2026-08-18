@@ -59,16 +59,16 @@ export async function getAvailableReviewers(
 	});
 
 	const authorEmails = submission.authors.map((a) => a.email.toLowerCase());
-	const authorUserIds = submission.authors
-		.map((a) => a.userId)
-		.filter((id): id is string => id !== null);
+	const authorUserIds = submission.authors.flatMap((a) =>
+		a.userId === null ? [] : [a.userId],
+	);
 
 	// Get already assigned reviewer IDs (current round only — allows reassignment in new rounds)
-	const assignedReviewerIds = submission.reviewAssignments
-		.filter(
-			(a) => a.round === submission.currentRound && a.status !== "CANCELLED",
-		)
-		.map((a) => a.reviewerId);
+	const assignedReviewerIds = submission.reviewAssignments.flatMap((a) =>
+		a.round === submission.currentRound && a.status !== "CANCELLED"
+			? [a.reviewerId]
+			: [],
+	);
 
 	const reviewers = await prisma.user.findMany({
 		where: {

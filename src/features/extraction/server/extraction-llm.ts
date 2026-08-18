@@ -93,44 +93,42 @@ export async function extractWithLlm(
 		const sepAffs = extractSepAffs(parsed.affiliations);
 
 		if (Array.isArray(parsed.authors)) {
-			result.authors = (parsed.authors as Record<string, unknown>[])
-				.filter((a) => {
-					// Accept both short (fn/ln) and long (firstName/lastName) field names
-					const fn = a.fn ?? a.firstName;
-					const ln = a.ln ?? a.lastName;
-					return typeof fn === "string" && typeof ln === "string";
-				})
-				.map((a, i) => {
-					const fn = ((a.fn ?? a.firstName) as string).trim();
-					const ln = ((a.ln ?? a.lastName) as string).trim();
-					const rawEmail =
-						(typeof (a.e ?? a.email) === "string"
-							? ((a.e ?? a.email) as string).trim()
-							: null) ||
-						sepEmails[i] ||
-						null;
-					const email = rawEmail
-						? rawEmail.match(/[\w.+-]+@[\w.-]+\.\w{2,}/)?.[0]?.toLowerCase()
-						: undefined;
-					const rawAff = a.af ?? a.affiliationName;
-					const affiliationName =
-						(typeof rawAff === "string" ? rawAff.trim() : null) ||
-						sepAffs[i] ||
-						undefined;
-					return {
-						firstName: fn,
-						lastName: ln,
-						email,
-						affiliationName,
-					};
+			const authors: NonNullable<typeof result.authors> = [];
+			for (const a of parsed.authors as Record<string, unknown>[]) {
+				// Accept both short (fn/ln) and long (firstName/lastName) field names
+				const fn = a.fn ?? a.firstName;
+				const ln = a.ln ?? a.lastName;
+				if (typeof fn !== "string" || typeof ln !== "string") continue;
+				// Separate email/affiliation lists are positional over kept authors.
+				const i = authors.length;
+				const rawEmail =
+					(typeof (a.e ?? a.email) === "string"
+						? ((a.e ?? a.email) as string).trim()
+						: null) ||
+					sepEmails[i] ||
+					null;
+				const email = rawEmail
+					? rawEmail.match(/[\w.+-]+@[\w.-]+\.\w{2,}/)?.[0]?.toLowerCase()
+					: undefined;
+				const rawAff = a.af ?? a.affiliationName;
+				const affiliationName =
+					(typeof rawAff === "string" ? rawAff.trim() : null) ||
+					sepAffs[i] ||
+					undefined;
+				authors.push({
+					firstName: fn.trim(),
+					lastName: ln.trim(),
+					email,
+					affiliationName,
 				});
+			}
+			result.authors = authors;
 		}
 
 		if (Array.isArray(parsed.keywords))
-			result.keywords = parsed.keywords
-				.filter((k): k is string => typeof k === "string")
-				.map((k) => k.trim())
-				.filter((k) => k.length > 0);
+			result.keywords = parsed.keywords.flatMap((k) =>
+				typeof k === "string" && k.trim() ? [k.trim()] : [],
+			);
 
 		return result;
 	} catch {
@@ -141,15 +139,18 @@ export async function extractWithLlm(
 function extractSepEmails(val: unknown): string[] {
 	if (!val) return [];
 	if (Array.isArray(val))
-		return val
-			.map((e) => (typeof e === "string" ? e.trim() : ""))
-			.filter((e) => e.includes("@"));
+		return val.flatMap((e) => {
+			const trimmed = typeof e === "string" ? e.trim() : "";
+			return trimmed.includes("@") ? [trimmed] : [];
+		});
 	if (typeof val === "object") {
 		const obj = val as Record<string, string>;
 		return Object.keys(obj)
 			.sort()
-			.map((k) => (typeof obj[k] === "string" ? obj[k].trim() : ""))
-			.filter((e) => e.includes("@"));
+			.flatMap((k) => {
+				const trimmed = typeof obj[k] === "string" ? obj[k].trim() : "";
+				return trimmed.includes("@") ? [trimmed] : [];
+			});
 	}
 	return [];
 }

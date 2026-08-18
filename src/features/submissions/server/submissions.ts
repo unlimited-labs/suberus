@@ -51,9 +51,7 @@ async function replaceSubmissionAuthors(
 ): Promise<void> {
 	const uniqueAffiliationNames = Array.from(
 		new Set(
-			authorsInput
-				.filter((a) => !a.affiliationId)
-				.map((a) => a.affiliationName),
+			authorsInput.flatMap((a) => (a.affiliationId ? [] : [a.affiliationName])),
 		),
 	);
 	const affiliationByName = new Map<string, string>();
@@ -206,9 +204,9 @@ export async function createNewSubmission(
 		// constraint when multiple co-authors share an affiliation.
 		const uniqueAffiliationNames = Array.from(
 			new Set(
-				data.authors
-					.filter((a) => !a.affiliationId)
-					.map((a) => a.affiliationName),
+				data.authors.flatMap((a) =>
+					a.affiliationId ? [] : [a.affiliationName],
+				),
 			),
 		);
 		const affiliationByName = new Map<string, string>();
