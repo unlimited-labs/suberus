@@ -39,6 +39,15 @@ export const PROGRAM_THEMES = {
 		chrome: "framed",
 		layout: "list",
 	},
+	crimson: {
+		id: "crimson",
+		name: "Crimson",
+		description:
+			"Crisp white layout with a fixed crimson palette and monospaced times.",
+		brandingAware: false,
+		chrome: "minimal",
+		layout: "list",
+	},
 	academic: {
 		id: "academic",
 		name: "Academic",

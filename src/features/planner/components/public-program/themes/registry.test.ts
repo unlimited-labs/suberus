@@ -12,9 +12,10 @@ describe("resolveProgramTheme", () => {
 		expect(resolveProgramTheme("")).toBe(PROGRAM_THEMES.default);
 	});
 
-	it("marks default as branding-aware and editorial/academic as independent", () => {
+	it("marks default as branding-aware and the fixed-palette themes as independent", () => {
 		expect(PROGRAM_THEMES.default.brandingAware).toBe(true);
 		expect(PROGRAM_THEMES.editorial.brandingAware).toBe(false);
+		expect(PROGRAM_THEMES.crimson.brandingAware).toBe(false);
 		expect(PROGRAM_THEMES.academic.brandingAware).toBe(false);
 	});
 
@@ -23,6 +24,8 @@ describe("resolveProgramTheme", () => {
 		expect(PROGRAM_THEMES.default.layout).toBe("list");
 		expect(PROGRAM_THEMES.editorial.chrome).toBe("framed");
 		expect(PROGRAM_THEMES.editorial.layout).toBe("list");
+		expect(PROGRAM_THEMES.crimson.chrome).toBe("minimal");
+		expect(PROGRAM_THEMES.crimson.layout).toBe("list");
 		expect(PROGRAM_THEMES.academic.chrome).toBe("framed");
 		expect(PROGRAM_THEMES.academic.layout).toBe("grid");
 	});

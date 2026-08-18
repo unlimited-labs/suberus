@@ -23,6 +23,7 @@ import {
 } from "@/shared/ui/dialog";
 import { Skeleton } from "@/shared/ui/skeleton";
 import type { PreviewTarget } from "./program-interaction";
+import { resolveProgramTheme } from "./themes/registry";
 
 const META =
 	"font-[var(--prog-font-meta)] text-xs uppercase tracking-[var(--prog-tracking)] text-muted-foreground";
@@ -54,7 +55,7 @@ export function PresentationPreviewDialog({
 	showAuthorInfo?: boolean;
 	initialAuthorOrderIndex?: number | null;
 }) {
-	const framed = themeId !== "default";
+	const framed = resolveProgramTheme(themeId).chrome === "framed";
 	return (
 		<Dialog open={!!target} onOpenChange={onOpenChange}>
 			<DialogContent

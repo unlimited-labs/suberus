@@ -107,6 +107,20 @@ test.describe.serial("Public /program", () => {
 			await expect(publicProgramPage.ribbon).toBeVisible();
 		});
 
+		test("crimson theme renders when selected", async ({
+			publicProgramPage,
+			page,
+			testRun,
+		}) => {
+			await setAppSetting("PROGRAM_THEME", "crimson");
+			await publishOneSession(testRun.testRunId, "Theme Crimson Talk");
+
+			await publicProgramPage.goto();
+			await expect(page.getByTestId("program-theme-crimson")).toBeVisible();
+			await expect(page.getByTestId("program-theme-default")).toBeHidden();
+			await expect(publicProgramPage.ribbon).toBeHidden();
+		});
+
 		test("academic theme renders when selected", async ({
 			publicProgramPage,
 			page,

@@ -177,7 +177,7 @@
 }
 
 /* Public program theme skins — see features/planner/components/public-program.
-   default = base tokens (branding-aware); editorial/academic pin their own palette. */
+   default = base tokens (branding-aware); the rest pin their own palette. */
 [data-program-theme="editorial"] {
 	--background: #f5f1e8;
 	--foreground: #1c1917;
@@ -271,6 +271,53 @@
 	--secondary-foreground: #f1f5f9;
 	--prog-mark: #334155;
 	--prog-faint: #475569;
+	--prog-rule: var(--border);
+}
+
+[data-program-theme="crimson"] {
+	--background: #ffffff;
+	--foreground: #0b1220;
+	--card: #ffffff;
+	--card-foreground: #0b1220;
+	--popover: #ffffff;
+	--popover-foreground: #0b1220;
+	--border: #e5e7eb;
+	--muted-foreground: #6a7282;
+	--primary: #dc2626;
+	--primary-foreground: #ffffff;
+	--accent: color-mix(in oklab, #dc2626 6%, #ffffff);
+	--accent-foreground: #b91c1c;
+	--secondary: #f3f4f6;
+	--secondary-foreground: #0b1220;
+	--radius: 0.75rem;
+	--prog-font-display: var(--font-sans);
+	--prog-font-body: var(--font-sans);
+	--prog-font-meta: var(--font-mono);
+	--prog-mark: color-mix(in oklab, #dc2626 10%, transparent);
+	--prog-faint: #99a1af;
+	--prog-rule: var(--border);
+	--prog-tracking: 0.08em;
+	--prog-card-radius: 0.75rem;
+	--prog-max-width: 64rem;
+}
+
+.dark [data-program-theme="crimson"] {
+	--background: #0b1220;
+	--foreground: #f1f5f9;
+	--card: #131b2c;
+	--card-foreground: #f1f5f9;
+	--popover: #131b2c;
+	--popover-foreground: #f1f5f9;
+	--border: #2a3446;
+	--muted-foreground: #99a1af;
+	--primary: #ef4444;
+	--primary-foreground: #0b1220;
+	--accent: color-mix(in oklab, #ef4444 10%, #0b1220);
+	--accent-foreground: #fca5a5;
+	--secondary: #1e2939;
+	--secondary-foreground: #f1f5f9;
+	--prog-mark: color-mix(in oklab, #ef4444 16%, transparent);
+	--prog-faint: #4a5565;
 	--prog-rule: var(--border);
 }
 
