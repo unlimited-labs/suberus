@@ -77,7 +77,6 @@ function makeAuth(allowedOrigins: string[]) {
 						allowedScopes: ["openid", "profile", "email", "offline_access"],
 					},
 				],
-				silenceWarnings: { oauthAuthServerConfig: true },
 			}),
 			cimd({
 				fetchClientMetadataResource: stubTransport,

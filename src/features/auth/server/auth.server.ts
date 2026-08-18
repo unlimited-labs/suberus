@@ -62,8 +62,6 @@ const mcpPlugins = env.MCP_ENABLED
 				// insertOnly (the default) freezes allowedScopes at first boot, so a new
 				// scope would never reach the resource that intersects against it.
 				resourceSeedMode: "merge",
-				// routes/[.]well-known.$.ts serves the issuer-suffixed discovery path.
-				silenceWarnings: { oauthAuthServerConfig: true },
 			}),
 			cimd({
 				fetchClientMetadataResource,
