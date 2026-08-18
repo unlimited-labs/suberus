@@ -9,9 +9,11 @@ import {
 	IconSun,
 	IconUser,
 } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { lazy, Suspense, useState } from "react";
 import { toast } from "sonner";
+import { mcpConnectionQueryOptions } from "@/features/mcp/api/mcp-connection";
 import { McpMenuItem } from "@/features/mcp/components/mcp-menu-item";
 import { useTheme } from "@/shared/components/theme-provider";
 import { useSession } from "@/shared/hooks/use-session";
@@ -49,6 +51,15 @@ export function UserMenu() {
 	const { theme, setTheme } = useTheme();
 	const { user } = useSession();
 	const [mcpOpen, setMcpOpen] = useState(false);
+
+	// Fetched here, not in the item: the item mounts only on menu open, so its own
+	// query would pop it in. Not useAdminAuth — that hook becomes its own Vite
+	// chunk, which e2e/bundle/admin-code-splitting.spec.ts forbids in this layout.
+	const { data: mcp } = useQuery({
+		...mcpConnectionQueryOptions(),
+		enabled: user?.role === "ADMIN" || user?.role === "EDITOR",
+		staleTime: 5 * 60 * 1000,
+	});
 
 	const handleSignOut = async () => {
 		await signOut();
@@ -93,7 +104,7 @@ export function UserMenu() {
 							Profile
 						</Link>
 					</DropdownMenuItem>
-					<McpMenuItem onOpen={() => setMcpOpen(true)} />
+					{mcp?.enabled && <McpMenuItem onOpen={() => setMcpOpen(true)} />}
 					{user.role === "ADMIN" && (
 						<DropdownMenuItem asChild>
 							<a

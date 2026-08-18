@@ -34,8 +34,7 @@ async function openMcpDialog(page: Page) {
 		}).toPass({ timeout: 15_000 });
 	}
 
-	// Wait for the entry separately: it renders only once the connection query
-	// answers, and re-clicking an open menu would toggle it shut.
+	// Wait for the menu separately: re-clicking an open one would toggle it shut.
 	const menu = page.getByTestId("user-menu-content");
 	await expect(async () => {
 		if (!(await menu.isVisible())) await userMenu.click();
