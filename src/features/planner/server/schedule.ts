@@ -67,6 +67,7 @@ export async function getCapacity(): Promise<CapacityInfo> {
 			select: {
 				startAt: true,
 				endAt: true,
+				untimedSlots: true,
 				presentations: { select: { durationMin: true } },
 			},
 		}),
@@ -79,6 +80,10 @@ export async function getCapacity(): Promise<CapacityInfo> {
 	let freeSlots = 0;
 
 	for (const s of sessionsWithSlots) {
+		if (s.untimedSlots) {
+			scheduled += s.presentations.length;
+			continue;
+		}
 		const usage = computeSessionUsage(s);
 		sessionMinutes += usage.sessionMin;
 		usedMinutes += usage.usedMin;
@@ -102,6 +107,7 @@ export interface PublicProgramSession {
 	title: string;
 	startAt: Date;
 	endAt: Date;
+	untimedSlots: boolean;
 	room: { id: string; name: string } | null;
 	track: { id: string; name: string; color: string | null } | null;
 	chairs: Array<{ firstName: string | null; lastName: string | null }>;
@@ -184,6 +190,7 @@ export async function getPublicProgram(
 			title: s.title,
 			startAt: s.startAt,
 			endAt: s.endAt,
+			untimedSlots: s.untimedSlots,
 			room: s.room,
 			track: s.track,
 			chairs: s.chairs.map((c) => ({
@@ -281,6 +288,7 @@ function findSessionsWithoutChair(sessions: IssueSession[]): ScheduleIssue[] {
 function findOverbookedSessions(sessions: IssueSession[]): ScheduleIssue[] {
 	const issues: ScheduleIssue[] = [];
 	for (const s of sessions) {
+		if (s.untimedSlots) continue;
 		const { sessionMin, usedMin } = computeSessionUsage(s);
 		if (usedMin > sessionMin) {
 			issues.push({

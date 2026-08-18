@@ -31,6 +31,8 @@ export function useCreateSessionForm({
 		roomId: rooms[0]?.id ?? null,
 		trackId: null,
 		slotMin: settings.defaultPresentationMin,
+		untimedSlots: false,
+		sessionMin: 120,
 	};
 
 	const form = useAppForm({
@@ -40,7 +42,9 @@ export function useCreateSessionForm({
 			onSubmit: sessionFormSchema,
 		},
 		onSubmit: async ({ value }) => {
-			const durationMin = submissionIds.length * value.slotMin;
+			const durationMin = value.untimedSlots
+				? value.sessionMin
+				: submissionIds.length * value.slotMin;
 			const endAt = addMinutes(defaultStartAt, durationMin);
 			try {
 				const { id } = await createSessionWithPresentationsFn({
@@ -52,6 +56,7 @@ export function useCreateSessionForm({
 						endAt: endAt.toISOString(),
 						slotDurationMin: value.slotMin,
 						submissionIds,
+						untimedSlots: value.untimedSlots,
 					},
 				});
 				onCreated(id);

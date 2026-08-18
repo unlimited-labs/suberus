@@ -1325,6 +1325,7 @@ export interface CreateProgramSessionOptions {
 	roomId?: string;
 	trackId?: string;
 	chairUserIds?: string[];
+	untimedSlots?: boolean;
 }
 
 export async function createProgramSession(
@@ -1338,6 +1339,7 @@ export async function createProgramSession(
 			endAt: opts.endAt,
 			roomId: opts.roomId ?? null,
 			trackId: opts.trackId ?? null,
+			untimedSlots: opts.untimedSlots ?? false,
 			chairs: opts.chairUserIds?.length
 				? {
 						create: opts.chairUserIds.map((userId) => ({ userId })),

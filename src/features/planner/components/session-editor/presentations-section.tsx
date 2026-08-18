@@ -12,11 +12,13 @@ import { useSessionEditor } from "./session-editor-context";
 
 export function PresentationsSection() {
 	const {
+		session,
 		sortedPresentations: presentations,
 		usedMin,
 		sessionDurationMin,
 		mutations,
 	} = useSessionEditor();
+	const untimed = session.untimedSlots;
 	const remainingMin = sessionDurationMin - usedMin;
 	const capacityFull = usedMin >= sessionDurationMin;
 
@@ -36,14 +38,18 @@ export function PresentationsSection() {
 						({presentations.length})
 					</span>
 				</Label>
-				<span
-					className={`text-xs tabular-nums ${capacityFull ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}
-				>
-					{usedMin}/{sessionDurationMin} min
-					{!capacityFull && remainingMin > 0 && (
-						<span className="opacity-60"> · {remainingMin} free</span>
-					)}
-				</span>
+				{untimed ? (
+					<span className="text-xs text-muted-foreground">Untimed</span>
+				) : (
+					<span
+						className={`text-xs tabular-nums ${capacityFull ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}
+					>
+						{usedMin}/{sessionDurationMin} min
+						{!capacityFull && remainingMin > 0 && (
+							<span className="opacity-60"> · {remainingMin} free</span>
+						)}
+					</span>
+				)}
 			</div>
 
 			{presentations.length === 0 ? (
@@ -93,24 +99,30 @@ export function PresentationsSection() {
 										: "No authors"}
 								</p>
 							</div>
-							<div className="flex items-center gap-1">
-								<Input
-									type="number"
-									min={1}
-									step={5}
-									defaultValue={p.durationMin}
-									key={`${p.id}:${p.durationMin}`}
-									onBlur={(e) => {
-										const v = Number(e.target.value);
-										if (v > 0 && v !== p.durationMin) {
-											mutations.updatePresentationDuration(p.id, v);
-										}
-									}}
-									aria-label={`Duration of ${p.submissionTitle}`}
-									className="h-7 w-14 px-1.5 text-center text-xs tabular-nums"
-								/>
-								<span className="text-[10px] text-muted-foreground">min</span>
-							</div>
+							{untimed ? (
+								<span className="w-14 text-center text-xs tabular-nums text-muted-foreground">
+									{String(i + 1).padStart(2, "0")}
+								</span>
+							) : (
+								<div className="flex items-center gap-1">
+									<Input
+										type="number"
+										min={1}
+										step={5}
+										defaultValue={p.durationMin}
+										key={`${p.id}:${p.durationMin}`}
+										onBlur={(e) => {
+											const v = Number(e.target.value);
+											if (v > 0 && v !== p.durationMin) {
+												mutations.updatePresentationDuration(p.id, v);
+											}
+										}}
+										aria-label={`Duration of ${p.submissionTitle}`}
+										className="h-7 w-14 px-1.5 text-center text-xs tabular-nums"
+									/>
+									<span className="text-[10px] text-muted-foreground">min</span>
+								</div>
+							)}
 							<Button
 								variant="ghost"
 								size="icon-sm"

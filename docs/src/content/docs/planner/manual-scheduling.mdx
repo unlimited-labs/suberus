@@ -124,7 +124,8 @@ unsaved changes asks you to confirm. Chairs, presentations, **Split**, and
 |---|---|---|
 | **Title** | The session name shown on the grid and public program. | Committed with **Save**. |
 | **Start** | When the session begins. | `datetime-local`, in the conference timezone. Committed with **Save**. |
-| **Slots** × **Min / slot** | Capacity and per-talk length. | Session duration = *Slots × Min / slot*. Committed with **Save**. |
+| **Slots** × **Min / slot** | Capacity and per-talk length. | Session duration = *Slots × Min / slot*. Hidden when **Untimed presentations** is on. Committed with **Save**. |
+| **Untimed presentations** | Turns the session into a poster / lightning block. | The presentations inside lose their individual times; you set the block's **End** directly. Committed with **Save**. |
 | **Room** | Which room column the session sits in. | Or *No room* (flagged as an issue). |
 | **Track** | The program track (colour tag). | Optional. |
 | **Chairs** | Who chairs the session. | Up to **3**; search by name or email. A session with **no chair** shows a warning marker and dashed border. |
@@ -142,6 +143,39 @@ position, struck-through, with a **Cancelled** tooltip, so attendees still see
 </Aside>
 
 ![Session editor with a cancelled, struck-through presentation](../../../assets/screenshots/58-planner-cancelled-presentation.png)
+
+## Untimed sessions (posters and lightning talks)
+
+A normal session is a chain of back-to-back slots: each talk gets its own clock
+time, derived from the session start and the durations before it. That does not
+fit a **poster session**, a **lightning-talk block**, or a demo hall, where every
+presentation runs for the whole window at once.
+
+Turn on **Untimed presentations** — either in the **+ Create session** dialog you
+get from a sidebar selection, or later in the **session editor** — and the session
+keeps its own start and end, but the presentations inside stop being time-boxed:
+
+- There is **no capacity limit**. Forty posters fit in a two-hour block; the
+  "session is full" guard does not apply.
+- Per-presentation **durations disappear** from the editor. Ordering still
+  matters — it becomes the poster numbering.
+- On the public program the block shows its own time range, and each presentation
+  is listed with an **ordinal number** (`01`, `02`, …) instead of a clock time.
+- The **autoplanner skips these sessions entirely**, so a hand-built poster block
+  is never overwritten.
+- **Split** is unavailable — there are no slot times to split on.
+
+In the **+ Create session** dialog the toggle replaces **Min / talk** with
+**Session length (minutes)**; in the session editor it replaces **Slots** ×
+**Min / slot** with an **End** field. The **+ New** dialog always creates a timed
+session — turn the toggle on in the editor afterwards.
+
+Everything else behaves as usual: the block sits in its room column on the grid,
+counts towards room and chair conflict detection, and publishes normally.
+
+🖼️ [Screenshot placeholder — session editor with **Untimed presentations** on]
+
+🖼️ [Screenshot placeholder — poster session on the public program, numbered rows]
 
 ## Breaks
 
@@ -174,7 +208,8 @@ Everything on the grid is editable in place:
 - **Drag** a session or break to a new time or room; **resize** it to change its
   duration.
 - **Drop** an unscheduled submission onto an existing session card to add it there.
-- Each session card shows a **capacity bar** (talks vs. minutes used); the
+- Each session card shows a **capacity bar** (talks vs. minutes used) — untimed
+  sessions show a presentation count instead; the
   **Capacity strip** above the grid sums it up — *X / Y placed · Z free (W slots)*.
 - The **Issues panel** lists problems — **room overlaps** and **sessions without a
   room**. Click an issue to jump straight to the offending session.

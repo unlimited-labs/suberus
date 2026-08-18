@@ -99,7 +99,13 @@ async function loadAutoplanInputs(jobId: string): Promise<{
 	await reportStage(jobId, "loading", 0);
 
 	const submissions = await prisma.submission.findMany({
-		where: { status: "ACCEPTED", type: "ABSTRACT" },
+		// Slots in untimed sessions survive applyAutoPlan's delete, so re-proposing
+		// those submissions would hit the unique submissionId on create.
+		where: {
+			status: "ACCEPTED",
+			type: "ABSTRACT",
+			NOT: { presentationSlot: { is: { session: { untimedSlots: true } } } },
+		},
 		select: {
 			id: true,
 			title: true,
@@ -114,6 +120,7 @@ async function loadAutoplanInputs(jobId: string): Promise<{
 	}
 
 	const sessions = await prisma.programSession.findMany({
+		where: { untimedSlots: false },
 		select: {
 			id: true,
 			title: true,

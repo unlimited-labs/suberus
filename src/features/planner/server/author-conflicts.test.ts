@@ -29,11 +29,13 @@ const sess = (
 	startISO: string,
 	endISO: string,
 	presentations: ConflictSession["presentations"],
+	untimedSlots = false,
 ): ConflictSession => ({
 	id,
 	title: id,
 	startAt: new Date(startISO),
 	endAt: new Date(endISO),
+	untimedSlots,
 	presentations,
 });
 
@@ -118,6 +120,21 @@ describe("detectAuthorTimeClashes", () => {
 			talk(0, 15, [au(s1), au(s2)]),
 		]);
 		expect(detectAuthorTimeClashes([a, b], 15)).toHaveLength(1);
+	});
+
+	it("treats untimed talks as spanning the whole session window", () => {
+		const x = { userId: "x", email: "x@e.com" };
+		const poster = sess(
+			"poster",
+			"2026-01-01T10:00:00Z",
+			"2026-01-01T12:00:00Z",
+			[talk(0, 15, [au(x)])],
+			true,
+		);
+		const late = sess("late", "2026-01-01T11:30:00Z", "2026-01-01T12:30:00Z", [
+			talk(0, 15, [au(x)]),
+		]);
+		expect(detectAuthorTimeClashes([poster, late], 0)).toHaveLength(1);
 	});
 });
 

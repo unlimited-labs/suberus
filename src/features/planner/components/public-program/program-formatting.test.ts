@@ -18,6 +18,7 @@ function session(
 			title: id,
 			startAt: new Date(startAt),
 			endAt: new Date(endAt),
+			untimedSlots: false,
 			room: null,
 			track: null,
 			chairs: [],

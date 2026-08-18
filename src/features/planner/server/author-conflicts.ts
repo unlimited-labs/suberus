@@ -17,6 +17,7 @@ export interface ConflictSession {
 	title: string;
 	startAt: Date;
 	endAt: Date;
+	untimedSlots: boolean;
 	presentations: {
 		order: number;
 		durationMin: number;
@@ -45,13 +46,18 @@ function buildTalks(sessions: ConflictSession[]): Talk[] {
 			durationMin: p.durationMin,
 		}));
 		for (const p of s.presentations) {
-			const start = slotStartAt(s.startAt, slots, p.order);
+			const start = s.untimedSlots
+				? s.startAt
+				: slotStartAt(s.startAt, slots, p.order);
+			const end = s.untimedSlots
+				? s.endAt
+				: new Date(start.getTime() + p.durationMin * 60_000);
 			talks.push({
 				key: p.submission.id,
 				sessionId: s.id,
 				title: p.submission.title,
 				start,
-				end: new Date(start.getTime() + p.durationMin * 60_000),
+				end,
 				authors: p.submission.authors,
 			});
 		}

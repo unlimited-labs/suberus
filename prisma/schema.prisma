@@ -19,53 +19,53 @@ model Affiliation {
 }
 
 model User {
-  id                   String                @id @default(uuid()) @db.Uuid
-  image                String?
-  email                String                @unique
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  title                String?
-  firstName            String?
-  lastName             String?
-  orcid                String?
-  address              String?
-  country              String?
-  needInvoice          Boolean               @default(false)
-  role                 UserRole              @default(AUTHOR)
-  emailVerified        Boolean               @default(false)
-  isActive             Boolean               @default(true)
-  allowLateSubmission  Boolean               @default(false)
-  lastLoginAt          DateTime?
-  tosAcceptedAt        DateTime?
-  affiliationId        String?               @db.Uuid
-  accounts             Account[]
-  editorDecisions      EditorDecision[]
-  fee                  Fee?
-  uploadedFiles        File[]
-  assignedReviews      ReviewAssignment[]    @relation("AssignedReviews")
-  reviewAssignments    ReviewAssignment[]
-  reviews              Review[]
-  submissionAuthors    SubmissionAuthor[]
-  activityTargets      ActivityLog[]         @relation("ActivityTarget")
-  activityActions      ActivityLog[]         @relation("ActivityPerformer")
-  submissions          Submission[]          @relation("SubmissionOwner")
-  sessions             Session[]
-  passkeys             Passkey[]
-  programSessionChairs ProgramSessionChair[]
+  id                    String                 @id @default(uuid()) @db.Uuid
+  image                 String?
+  email                 String                 @unique
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  title                 String?
+  firstName             String?
+  lastName              String?
+  orcid                 String?
+  address               String?
+  country               String?
+  needInvoice           Boolean                @default(false)
+  role                  UserRole               @default(AUTHOR)
+  emailVerified         Boolean                @default(false)
+  isActive              Boolean                @default(true)
+  allowLateSubmission   Boolean                @default(false)
+  lastLoginAt           DateTime?
+  tosAcceptedAt         DateTime?
+  affiliationId         String?                @db.Uuid
+  accounts              Account[]
+  editorDecisions       EditorDecision[]
+  fee                   Fee?
+  uploadedFiles         File[]
+  assignedReviews       ReviewAssignment[]     @relation("AssignedReviews")
+  reviewAssignments     ReviewAssignment[]
+  reviews               Review[]
+  submissionAuthors     SubmissionAuthor[]
+  activityTargets       ActivityLog[]          @relation("ActivityTarget")
+  activityActions       ActivityLog[]          @relation("ActivityPerformer")
+  submissions           Submission[]           @relation("SubmissionOwner")
+  sessions              Session[]
+  passkeys              Passkey[]
+  programSessionChairs  ProgramSessionChair[]
   presentationFavorites PresentationFavorite[]
-  pushSubscriptions    PushSubscription[]
-  supervisedTracks     ConferenceTrack[]     @relation("TrackSupervisor")
-  surveyAnswers        SurveyAnswer[]
-  createdInvitations   Invitation[]          @relation("InvitationCreator")
-  usedInvitation       Invitation?           @relation("InvitationUser")
-  exhibitor            Exhibitor?            @relation("ExhibitorUser")
-  decidedExhibitors    Exhibitor[]           @relation("ExhibitorDecider")
-  documents            GeneratedDocument[]   @relation("UserDocuments")
-  affiliation          Affiliation?          @relation(fields: [affiliationId], references: [id])
-  oauthClients         OauthClient[]
-  oauthRefreshTokens   OauthRefreshToken[]
-  oauthAccessTokens    OauthAccessToken[]
-  oauthConsents        OauthConsent[]
+  pushSubscriptions     PushSubscription[]
+  supervisedTracks      ConferenceTrack[]      @relation("TrackSupervisor")
+  surveyAnswers         SurveyAnswer[]
+  createdInvitations    Invitation[]           @relation("InvitationCreator")
+  usedInvitation        Invitation?            @relation("InvitationUser")
+  exhibitor             Exhibitor?             @relation("ExhibitorUser")
+  decidedExhibitors     Exhibitor[]            @relation("ExhibitorDecider")
+  documents             GeneratedDocument[]    @relation("UserDocuments")
+  affiliation           Affiliation?           @relation(fields: [affiliationId], references: [id])
+  oauthClients          OauthClient[]
+  oauthRefreshTokens    OauthRefreshToken[]
+  oauthAccessTokens     OauthAccessToken[]
+  oauthConsents         OauthConsent[]
 
   @@index([email])
   @@index([role])
@@ -187,18 +187,18 @@ model SubmissionEmbedding {
 }
 
 model SubmissionVersion {
-  id                   String      @id @default(uuid()) @db.Uuid
-  submissionId         String      @db.Uuid
-  version              Int         @default(1)
+  id                   String                     @id @default(uuid()) @db.Uuid
+  submissionId         String                     @db.Uuid
+  version              Int                        @default(1)
   title                String
   content              String
   comment              String?
-  createdAt            DateTime    @default(now())
-  fileId               String?     @db.Uuid
+  createdAt            DateTime                   @default(now())
+  fileId               String?                    @db.Uuid
   reviews              Review[]
-  file                 File?       @relation(fields: [fileId], references: [id])
-  submission           Submission  @relation("SubmissionVersions", fields: [submissionId], references: [id], onDelete: Cascade)
-  currentForSubmission Submission? @relation("CurrentVersion")
+  file                 File?                      @relation(fields: [fileId], references: [id])
+  submission           Submission                 @relation("SubmissionVersions", fields: [submissionId], references: [id], onDelete: Cascade)
+  currentForSubmission Submission?                @relation("CurrentVersion")
   authorsSnapshot      SubmissionVersionAuthor[]
   keywordsSnapshot     SubmissionVersionKeyword[]
 
@@ -735,14 +735,16 @@ model ProgramTrack {
 }
 
 model ProgramSession {
-  id        String   @id @default(uuid()) @db.Uuid
-  title     String
-  trackId   String?  @db.Uuid
-  roomId    String?  @db.Uuid
-  startAt   DateTime
-  endAt     DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(uuid()) @db.Uuid
+  title        String
+  trackId      String?  @db.Uuid
+  roomId       String?  @db.Uuid
+  startAt      DateTime
+  endAt        DateTime
+  /// Presentations share the session window instead of back-to-back slots (poster / lightning).
+  untimedSlots Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   track         ProgramTrack?         @relation(fields: [trackId], references: [id], onDelete: SetNull)
   room          Room?                 @relation(fields: [roomId], references: [id], onDelete: SetNull)
@@ -776,8 +778,8 @@ model PresentationSlot {
   cancelled    Boolean  @default(false)
   createdAt    DateTime @default(now())
 
-  session    ProgramSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  submission Submission     @relation(fields: [submissionId], references: [id], onDelete: Restrict)
+  session    ProgramSession         @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  submission Submission             @relation(fields: [submissionId], references: [id], onDelete: Restrict)
   favorites  PresentationFavorite[]
 
   @@unique([sessionId, order])

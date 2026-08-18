@@ -22,6 +22,7 @@ interface SessionHeaderFields {
 	endAt: string;
 	roomId: string | null;
 	trackId: string | null;
+	untimedSlots: boolean;
 }
 
 export function useSessionEditorMutations(sessionId: string) {

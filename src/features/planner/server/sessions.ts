@@ -15,6 +15,7 @@ export interface ProgramSessionDetail {
 	roomId: string | null;
 	startAt: Date;
 	endAt: Date;
+	untimedSlots: boolean;
 	track: { id: string; name: string; color: string | null } | null;
 	room: { id: string; name: string } | null;
 	chairs: Array<{
@@ -71,6 +72,7 @@ export async function listSessions(
 		roomId: s.roomId,
 		startAt: s.startAt,
 		endAt: s.endAt,
+		untimedSlots: s.untimedSlots,
 		track: s.track,
 		room: s.room,
 		chairs: s.chairs.map((c) => ({
@@ -101,6 +103,7 @@ export async function createSession(data: {
 	roomId?: string | null;
 	startAt: Date;
 	endAt: Date;
+	untimedSlots?: boolean;
 }): Promise<{ id: string }> {
 	assertOrderedTimes(data.startAt, data.endAt);
 	const title = data.title?.trim() || (await defaultSessionTitle());
@@ -111,6 +114,7 @@ export async function createSession(data: {
 			roomId: data.roomId ?? null,
 			startAt: data.startAt,
 			endAt: data.endAt,
+			untimedSlots: data.untimedSlots ?? false,
 		},
 		select: { id: true },
 	});
@@ -124,6 +128,7 @@ export async function updateSession(
 		roomId?: string | null;
 		startAt?: Date;
 		endAt?: Date;
+		untimedSlots?: boolean;
 	},
 ): Promise<void> {
 	assertOrderedTimes(data.startAt, data.endAt);
@@ -240,6 +245,7 @@ export async function continueSeries(
 				trackId: true,
 				startAt: true,
 				endAt: true,
+				untimedSlots: true,
 			},
 		});
 		if (!current) throw new Error("Session not found");
@@ -270,6 +276,7 @@ export async function continueSeries(
 				roomId: null,
 				startAt: newStart,
 				endAt: newEnd,
+				untimedSlots: current.untimedSlots,
 			},
 			select: { id: true },
 		});
@@ -290,6 +297,7 @@ export async function splitSession(
 				roomId: true,
 				startAt: true,
 				endAt: true,
+				untimedSlots: true,
 				presentations: {
 					orderBy: { order: "asc" },
 					select: { id: true, order: true, durationMin: true },
@@ -297,6 +305,10 @@ export async function splitSession(
 			},
 		});
 		if (!current) throw new Error("Session not found");
+		if (current.untimedSlots)
+			throw new Error(
+				"Cannot split a session with untimed presentations — its slots have no times to split on",
+			);
 
 		const moved = current.presentations.filter((p) => p.order > afterSlotOrder);
 		if (moved.length === 0)
@@ -347,6 +359,7 @@ export async function createSessionWithPresentations(data: {
 	endAt: Date;
 	slotDurationMin: number;
 	submissionIds: string[];
+	untimedSlots?: boolean;
 }): Promise<{ id: string }> {
 	assertOrderedTimes(data.startAt, data.endAt);
 	const [title, includedTypes] = await Promise.all([
@@ -378,6 +391,7 @@ export async function createSessionWithPresentations(data: {
 				roomId: data.roomId ?? null,
 				startAt: data.startAt,
 				endAt: data.endAt,
+				untimedSlots: data.untimedSlots ?? false,
 			},
 			select: { id: true },
 		});

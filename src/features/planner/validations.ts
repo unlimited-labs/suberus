@@ -15,6 +15,12 @@ export const sessionFormSchema = z.object({
 		.int()
 		.min(1, "Slot must be at least 1 minute")
 		.max(480, "Slot must be at most 480 minutes"),
+	untimedSlots: z.boolean(),
+	sessionMin: z
+		.number()
+		.int()
+		.min(5, "Session must be at least 5 minutes")
+		.max(720, "Session must be at most 720 minutes"),
 });
 
 export const eventFormSchema = z
@@ -49,21 +55,32 @@ export const eventFormSchema = z
 		{ message: "End must be after start", path: ["endInput"] },
 	);
 
-export const sessionEditSchema = z.object({
-	title: z
-		.string()
-		.min(1, "Title is required")
-		.max(300, "Title must be at most 300 characters"),
-	startLocal: z.string().min(1, "Start time is required"),
-	slotCount: z.number().int().min(1, "At least 1 presentation"),
-	slotMin: z
-		.number()
-		.int()
-		.min(1, "Slot must be at least 1 minute")
-		.max(480, "Slot must be at most 480 minutes"),
-	roomId: z.string().nullable(),
-	trackId: z.string().nullable(),
-});
+export const sessionEditSchema = z
+	.object({
+		title: z
+			.string()
+			.min(1, "Title is required")
+			.max(300, "Title must be at most 300 characters"),
+		startLocal: z.string().min(1, "Start time is required"),
+		endLocal: z.string(),
+		untimedSlots: z.boolean(),
+		slotCount: z.number().int().min(1, "At least 1 presentation"),
+		slotMin: z
+			.number()
+			.int()
+			.min(1, "Slot must be at least 1 minute")
+			.max(480, "Slot must be at most 480 minutes"),
+		roomId: z.string().nullable(),
+		trackId: z.string().nullable(),
+	})
+	.refine((v) => !v.untimedSlots || v.endLocal.length > 0, {
+		message: "End time is required",
+		path: ["endLocal"],
+	})
+	.refine((v) => !v.untimedSlots || !v.endLocal || v.endLocal > v.startLocal, {
+		message: "End must be after start",
+		path: ["endLocal"],
+	});
 
 export const breakEditSchema = z
 	.object({
@@ -174,6 +191,7 @@ export const sessionCreateInput = z.object({
 	roomId: z.uuid().nullable().optional(),
 	startAt: zDateString,
 	endAt: zDateString,
+	untimedSlots: z.boolean().optional(),
 });
 
 export const sessionUpdateInput = z.object({
@@ -183,6 +201,7 @@ export const sessionUpdateInput = z.object({
 	roomId: z.uuid().nullable().optional(),
 	startAt: zDateString.optional(),
 	endAt: zDateString.optional(),
+	untimedSlots: z.boolean().optional(),
 });
 
 export const sessionMoveInput = z.object({

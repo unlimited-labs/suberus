@@ -44,6 +44,7 @@ export async function sendFavouriteReminders(): Promise<number> {
 					session: {
 						select: {
 							startAt: true,
+							untimedSlots: true,
 							room: { select: { name: true } },
 							presentations: {
 								select: { order: true, durationMin: true },
@@ -56,11 +57,13 @@ export async function sendFavouriteReminders(): Promise<number> {
 	});
 
 	const due = favourites.filter((f) => {
-		const start = slotStartAt(
-			f.slot.session.startAt,
-			f.slot.session.presentations,
-			f.slot.order,
-		).getTime();
+		const start = f.slot.session.untimedSlots
+			? f.slot.session.startAt.getTime()
+			: slotStartAt(
+					f.slot.session.startAt,
+					f.slot.session.presentations,
+					f.slot.order,
+				).getTime();
 		return isReminderDue(start, now, leadMin);
 	});
 	if (due.length === 0) return 0;

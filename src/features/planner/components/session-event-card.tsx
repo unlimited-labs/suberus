@@ -10,6 +10,7 @@ export interface SessionEventData {
 	trackColor: string | null;
 	trackName: string | null;
 	sessionDurationMin: number;
+	untimedSlots: boolean;
 	chairs: Array<{ firstName: string | null; lastName: string | null }>;
 	presentations: Array<{
 		id: string;
@@ -95,11 +96,24 @@ export function SessionEventCard({
 						</div>
 						<ChairStack chairs={data.chairs} />
 					</div>
-					<CapacityBar
-						slotCount={data.presentations.length}
-						usedMin={usedMin}
-						totalMin={data.sessionDurationMin}
-					/>
+					{data.untimedSlots ? (
+						<p
+							data-testid="session-card-capacity"
+							className="mt-auto pt-1 text-[9px] text-muted-foreground/70"
+						>
+							{data.presentations.length}{" "}
+							{data.presentations.length === 1
+								? "presentation"
+								: "presentations"}{" "}
+							· untimed
+						</p>
+					) : (
+						<CapacityBar
+							slotCount={data.presentations.length}
+							usedMin={usedMin}
+							totalMin={data.sessionDurationMin}
+						/>
+					)}
 				</>
 			)}
 		</section>

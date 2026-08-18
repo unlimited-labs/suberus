@@ -181,7 +181,9 @@ export function PresentationList({
 				const offset = session.presentations
 					.slice(0, i)
 					.reduce((a, prev) => a + prev.durationMin, 0);
-				const presStart = addMinutes(new Date(session.startAt), offset);
+				const presStart = session.untimedSlots
+					? new Date(session.startAt)
+					: addMinutes(new Date(session.startAt), offset);
 				return (
 					<PresentationRow
 						key={p.id}
@@ -189,7 +191,7 @@ export function PresentationList({
 						presentation={p}
 						index={i}
 						presStart={presStart}
-						numbered={numbered}
+						numbered={numbered || session.untimedSlots}
 						query={query}
 						tz={tz}
 					/>
@@ -225,6 +227,9 @@ function PresentationRow({
 		track: session.track,
 		roomName: session.room?.name ?? null,
 		startAtISO: presStart.toISOString(),
+		untimedEndISO: session.untimedSlots
+			? new Date(session.endAt).toISOString()
+			: undefined,
 		tz,
 	};
 	const open = () => openPreview(target);
@@ -246,16 +251,18 @@ function PresentationRow({
 						{String(index + 1).padStart(2, "0")}
 					</span>
 				)}
-				<span
-					className={cn(
-						"block tabular-nums",
-						numbered
-							? "mt-1 font-[var(--prog-font-meta)] text-[10px] uppercase tracking-[var(--prog-tracking)] text-[var(--prog-faint)]"
-							: "text-sm font-medium text-muted-foreground",
-					)}
-				>
-					{formatClockTime(presStart, tz)}
-				</span>
+				{!session.untimedSlots && (
+					<span
+						className={cn(
+							"block tabular-nums",
+							numbered
+								? "mt-1 font-[var(--prog-font-meta)] text-[10px] uppercase tracking-[var(--prog-tracking)] text-[var(--prog-faint)]"
+								: "text-sm font-medium text-muted-foreground",
+						)}
+					>
+						{formatClockTime(presStart, tz)}
+					</span>
+				)}
 			</div>
 			<div className="min-w-0">
 				<p

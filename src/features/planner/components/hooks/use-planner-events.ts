@@ -31,6 +31,7 @@ export function usePlannerEvents(
 				new Date(s.startAt),
 				new Date(s.endAt),
 			),
+			untimedSlots: s.untimedSlots,
 			chairs: s.chairs.map((c) => ({
 				firstName: c.firstName,
 				lastName: c.lastName,

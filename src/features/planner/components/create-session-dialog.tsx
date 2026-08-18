@@ -15,6 +15,7 @@ import {
 import { Field, FieldError } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { Switch } from "@/shared/ui/switch";
 import { useCreateSessionForm } from "./hooks/use-create-session-form";
 import { RoomSelect } from "./shared/room-select";
 import { TimeRangeSummary } from "./shared/time-range-summary";
@@ -49,7 +50,11 @@ export function CreateSessionDialog({
 	});
 
 	const slotMin = useSelector(form.store, (s) => s.values.slotMin);
-	const durationMin = submissionIds.length * slotMin;
+	const untimedSlots = useSelector(form.store, (s) => s.values.untimedSlots);
+	const sessionMin = useSelector(form.store, (s) => s.values.sessionMin);
+	const durationMin = untimedSlots
+		? sessionMin
+		: submissionIds.length * slotMin;
 	const endAt = addMinutes(defaultStartAt, durationMin);
 
 	return (
@@ -138,20 +143,57 @@ export function CreateSessionDialog({
 						)}
 					</form.Field>
 
-					<form.Field name="slotMin">
-						{(field) => (
-							<div className="space-y-2">
-								<Label>Minutes per presentation</Label>
-								<Stepper
-									value={field.state.value}
-									min={5}
-									max={120}
-									step={5}
-									onChange={field.handleChange}
+					<div className="flex items-start justify-between gap-4">
+						<div className="space-y-0.5">
+							<Label htmlFor="cs-untimed">Untimed presentations</Label>
+							<p className="text-sm text-muted-foreground">
+								Poster or lightning block: presentations share the session
+								window instead of getting their own time slots.
+							</p>
+						</div>
+						<form.Field name="untimedSlots">
+							{(field) => (
+								<Switch
+									id="cs-untimed"
+									data-testid="create-session-untimed"
+									checked={field.state.value}
+									onCheckedChange={(v) => field.handleChange(v === true)}
 								/>
-							</div>
-						)}
-					</form.Field>
+							)}
+						</form.Field>
+					</div>
+
+					{untimedSlots ? (
+						<form.Field name="sessionMin">
+							{(field) => (
+								<div className="space-y-2">
+									<Label>Session length (minutes)</Label>
+									<Stepper
+										value={field.state.value}
+										min={15}
+										max={720}
+										step={15}
+										onChange={field.handleChange}
+									/>
+								</div>
+							)}
+						</form.Field>
+					) : (
+						<form.Field name="slotMin">
+							{(field) => (
+								<div className="space-y-2">
+									<Label>Minutes per presentation</Label>
+									<Stepper
+										value={field.state.value}
+										min={5}
+										max={120}
+										step={5}
+										onChange={field.handleChange}
+									/>
+								</div>
+							)}
+						</form.Field>
+					)}
 
 					<DialogFooter>
 						<Button type="button" variant="outline" onClick={handleClose}>

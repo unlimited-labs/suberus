@@ -173,6 +173,8 @@ function TalkHeader({
 				)}
 				<span className="tabular-nums">
 					{formatClockTime(new Date(target.startAtISO), target.tz)}
+					{target.untimedEndISO &&
+						`–${formatClockTime(new Date(target.untimedEndISO), target.tz)}`}
 				</span>
 				{target.roomName && <span>{target.roomName}</span>}
 			</div>

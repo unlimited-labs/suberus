@@ -15,6 +15,8 @@ export interface PreviewTarget {
 	track: { name: string; color: string | null } | null;
 	roomName: string | null;
 	startAtISO: string;
+	/** Set for untimed (poster / lightning) slots: show the block's window, not a per-talk time. */
+	untimedEndISO?: string;
 	tz?: string;
 }
 

@@ -26,16 +26,19 @@ export async function createPresentation(data: {
 			select: {
 				startAt: true,
 				endAt: true,
+				untimedSlots: true,
 				presentations: { select: { durationMin: true } },
 			},
 		});
 		if (!session) throw new Error("Session not found");
 
-		const { sessionMin, usedMin } = computeSessionUsage(session);
-		if (usedMin + data.durationMin > sessionMin) {
-			throw new Error(
-				`Session is full: ${usedMin}/${sessionMin} min used, cannot add ${data.durationMin} min`,
-			);
+		if (!session.untimedSlots) {
+			const { sessionMin, usedMin } = computeSessionUsage(session);
+			if (usedMin + data.durationMin > sessionMin) {
+				throw new Error(
+					`Session is full: ${usedMin}/${sessionMin} min used, cannot add ${data.durationMin} min`,
+				);
+			}
 		}
 
 		const last = await tx.presentationSlot.findFirst({
@@ -71,6 +74,7 @@ export async function updatePresentationDuration(
 					select: {
 						startAt: true,
 						endAt: true,
+						untimedSlots: true,
 						presentations: { select: { id: true, durationMin: true } },
 					},
 				},
@@ -78,14 +82,16 @@ export async function updatePresentationDuration(
 		});
 		if (!presentation) throw new Error("Presentation not found");
 
-		const { sessionMin, usedMin: usedOthers } = computeSessionUsage(
-			presentation.session,
-			{ excludePresentationId: id },
-		);
-		if (usedOthers + durationMin > sessionMin) {
-			throw new Error(
-				`Session is full: other presentations use ${usedOthers}/${sessionMin} min`,
+		if (!presentation.session.untimedSlots) {
+			const { sessionMin, usedMin: usedOthers } = computeSessionUsage(
+				presentation.session,
+				{ excludePresentationId: id },
 			);
+			if (usedOthers + durationMin > sessionMin) {
+				throw new Error(
+					`Session is full: other presentations use ${usedOthers}/${sessionMin} min`,
+				);
+			}
 		}
 		await tx.presentationSlot.update({
 			where: { id },

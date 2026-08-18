@@ -264,7 +264,7 @@ const trackImport = defineTool({
 const sessionCreate = defineTool({
 	name: "program_session_create",
 	title: "Create session",
-	description: `Create a programme session. Pass submissionIds together with slotDurationMin to fill it with presentations right away — every submission must be accepted, presentable and unscheduled. Omit the title to get an auto-numbered one. ${ISO_HINT}`,
+	description: `Create a programme session. Pass submissionIds together with slotDurationMin to fill it with presentations right away — every submission must be accepted, presentable and unscheduled. Omit the title to get an auto-numbered one. Set untimedSlots for a poster or lightning block: the session keeps its own start and end, its presentations get no individual times and no capacity limit, and autoplan leaves it alone (slotDurationMin then only seeds a placeholder value). ${ISO_HINT}`,
 	input: sessionCreateInput.extend({
 		slotDurationMin:
 			sessionWithPresentationsInput.shape.slotDurationMin.optional(),
@@ -293,7 +293,7 @@ const sessionCreate = defineTool({
 const sessionUpdate = defineTool({
 	name: "program_session_update",
 	title: "Update session",
-	description: `Change a session's title, track, room or times — this is also how a session is moved. ${ISO_HINT}`,
+	description: `Change a session's title, track, room or times — this is also how a session is moved. Toggle untimedSlots to switch between a timed session and a poster / lightning block. ${ISO_HINT}`,
 	input: sessionUpdateInput,
 	roles: ADMIN_AND_EDITOR,
 	scope: MCP_SCOPE_SCHEDULE_WRITE,

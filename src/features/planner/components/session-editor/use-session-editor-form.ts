@@ -20,6 +20,8 @@ function sessionFormDefaults(
 		return {
 			title: "",
 			startLocal: "",
+			endLocal: "",
+			untimedSlots: false,
 			slotCount: 1,
 			slotMin: defaultPresentationMin,
 			roomId: null as string | null,
@@ -36,6 +38,8 @@ function sessionFormDefaults(
 	return {
 		title: session.title,
 		startLocal: utcToTzLocalInput(new Date(session.startAt), tz),
+		endLocal: utcToTzLocalInput(new Date(session.endAt), tz),
+		untimedSlots: session.untimedSlots,
 		slotCount: Math.max(1, Math.round(durationMin / Math.max(1, slotMin))),
 		slotMin,
 		roomId: session.roomId,
@@ -54,16 +58,16 @@ export function useSessionEditorForm(
 		validators: { onChange: sessionEditSchema, onSubmit: sessionEditSchema },
 		onSubmit: async ({ value }) => {
 			const startAt = tzLocalInputToUtc(value.startLocal, tz);
-			const endAt = addMinutes(
-				startAt,
-				Math.max(1, value.slotCount * value.slotMin),
-			);
+			const endAt = value.untimedSlots
+				? tzLocalInputToUtc(value.endLocal, tz)
+				: addMinutes(startAt, Math.max(1, value.slotCount * value.slotMin));
 			const result = await mutations.updateHeader({
 				title: value.title,
 				startAt: startAt.toISOString(),
 				endAt: endAt.toISOString(),
 				roomId: value.roomId,
 				trackId: value.trackId,
+				untimedSlots: value.untimedSlots,
 			});
 			if (result !== null) form.reset(value);
 		},

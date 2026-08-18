@@ -13,6 +13,7 @@ import { useSessionEditor } from "./session-editor-context";
 
 export function SessionEditorFooter() {
 	const {
+		session,
 		sortedPresentations: presentations,
 		form,
 		deleting,
@@ -57,7 +58,7 @@ export function SessionEditorFooter() {
 						<Button
 							variant="outline"
 							size="sm"
-							disabled={presentations.length < 2}
+							disabled={presentations.length < 2 || session.untimedSlots}
 							data-testid="session-editor-split"
 							className="flex-1"
 						>
