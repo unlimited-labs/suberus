@@ -130,10 +130,8 @@ export function UnscheduledSidebar() {
 		openCreateFromSelection(Array.from(selection.selected));
 
 	const handleToggleSelectMode = () => {
-		setSelectMode((prev) => {
-			if (prev) selection.clear();
-			return !prev;
-		});
+		if (selectMode) selection.clear();
+		setSelectMode(!selectMode);
 	};
 
 	useHotkey("S", handleToggleSelectMode, { enabled: open });
@@ -163,15 +161,14 @@ export function UnscheduledSidebar() {
 	const isScheduled = listMode === "scheduled";
 
 	const handleToggleListMode = () => {
-		setListMode((prev) => {
-			const next: ListMode = prev === "scheduled" ? "unscheduled" : "scheduled";
-			if (next === "scheduled") {
-				selection.clear();
-				setSelectMode(false);
-			}
-			setSearch("");
-			return next;
-		});
+		const next: ListMode =
+			listMode === "scheduled" ? "unscheduled" : "scheduled";
+		if (next === "scheduled") {
+			selection.clear();
+			setSelectMode(false);
+		}
+		setSearch("");
+		setListMode(next);
 	};
 
 	if (!open) {

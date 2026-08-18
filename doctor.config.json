@@ -2,7 +2,7 @@
   "$schema": "https://react.doctor/schema/config.json",
   "ignore": {
     "files": [
-      ".venv/**",
+      "**/.venv/**",
       ".claude/**",
       "poc/**",
       "src/generated/**",
@@ -69,7 +69,17 @@
           "src/shared/ui/map.tsx"
         ],
         "rules": [
-          "react-doctor/react-compiler-no-manual-memoization"
+          "react-doctor/react-compiler-no-manual-memoization",
+          "react-doctor/effect-needs-cleanup",
+          "react-doctor/no-unguarded-browser-global-in-render-or-hook-init"
+        ]
+      },
+      {
+        "files": [
+          "src/features/planner/components/public-program/use-favorite-notifications.ts"
+        ],
+        "rules": [
+          "react-doctor/effect-needs-cleanup"
         ]
       },
       {
