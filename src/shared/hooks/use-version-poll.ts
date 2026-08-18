@@ -22,6 +22,7 @@ export function useVersionPoll() {
 		queryKey: ["build-version"],
 		queryFn: async (): Promise<VersionResponse> => {
 			const res = await fetch("/api/version");
+			if (!res.ok) throw new Error(`/api/version returned ${res.status}`);
 			return versionResponseSchema.parse(await res.json());
 		},
 		staleTime: 30 * 1000,

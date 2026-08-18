@@ -38,6 +38,7 @@ function BuildFooter() {
 		queryKey: ["build-version"],
 		queryFn: async (): Promise<{ commit: string; builtAt: string }> => {
 			const res = await fetch("/api/version");
+			if (!res.ok) throw new Error(`/api/version returned ${res.status}`);
 			return res.json();
 		},
 		staleTime: Infinity,
