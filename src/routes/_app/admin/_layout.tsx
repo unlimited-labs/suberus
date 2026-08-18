@@ -50,7 +50,7 @@ function BuildFooter() {
 
 	return (
 		<footer className="px-4 py-2 text-center text-xs text-muted-foreground">
-			build {data.commit} · {builtAt}
+			build {data.commit.slice(0, 7)} · {builtAt}
 		</footer>
 	);
 }
