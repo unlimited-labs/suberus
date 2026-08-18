@@ -16,6 +16,7 @@ import {
 import { connectCommand } from "@/features/mcp/labels";
 import type { McpAuthorizedClient } from "@/features/mcp/server/connection";
 import { DEFAULT_CALLBACK_PORT } from "@/features/mcp/validations";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
@@ -113,6 +114,7 @@ function ClientRow({
 	index: number;
 }) {
 	const queryClient = useQueryClient();
+	const { formatDate } = useDateFormat();
 	const label = client.name ?? client.clientId;
 
 	const revoke = useMutation({
@@ -138,7 +140,7 @@ function ClientRow({
 					<span className="truncate font-medium text-sm">{label}</span>
 					{client.authorizedAt && (
 						<span className="ml-auto shrink-0 text-[11px] text-muted-foreground tabular-nums">
-							{new Date(client.authorizedAt).toLocaleDateString()}
+							{formatDate(client.authorizedAt)}
 						</span>
 					)}
 				</div>
