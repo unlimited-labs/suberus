@@ -23,8 +23,6 @@ import {
 	tableFeatures,
 } from "@tanstack/react-table";
 
-// v9 stitches features, row models and the string-name fn registries in statically,
-// so DataTable's feature set is also what every ColumnDef in the app is typed against.
 export const features = tableFeatures({
 	columnFacetingFeature,
 	columnFilteringFeature,
