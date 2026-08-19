@@ -68,6 +68,7 @@ export function buildEventFormDefaults(
 		locationUrl: "",
 		roomId: resourceId ?? input.rooms[0]?.id ?? null,
 		trackId: null,
+		untimedSlots: false,
 		presentationCount: 4,
 		minutesPerPresentation: input.defaultPresentationMin,
 		breakDurationMin:

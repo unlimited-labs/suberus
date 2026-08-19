@@ -5,6 +5,7 @@ import {
 	createProgramSession,
 	createRoom,
 	createSubmission,
+	getPrisma,
 	setConferenceDates,
 	setSchedulePublished,
 } from "../../helpers/test-db";
@@ -55,5 +56,25 @@ test.describe.serial("Untimed (poster) sessions", () => {
 		await expect(rows).toHaveCount(8);
 		await expect(rows.first()).toContainText("01");
 		await expect(rows.first()).not.toContainText(/\d{1,2}:\d{2}/);
+	});
+	test("+ New dialog creates an untimed session", async ({
+		plannerPage,
+		testRun,
+	}) => {
+		const title = `${testRun.testRunId}_New dialog poster block`;
+		await plannerPage.goto();
+		await plannerPage.page.getByRole("button", { name: "New" }).click();
+		await expect(plannerPage.createEventDialog).toBeVisible();
+
+		await plannerPage.page.getByTestId("create-event-untimed").click();
+		await expect(plannerPage.page.getByTestId("create-event-end")).toBeVisible();
+		await plannerPage.page.getByTestId("create-event-title").fill(title);
+		await plannerPage.page.getByTestId("create-event-submit").click();
+		await expect(plannerPage.createEventDialog).toBeHidden();
+
+		const created = await getPrisma().programSession.findFirst({
+			where: { title },
+		});
+		expect(created?.untimedSlots).toBe(true);
 	});
 });

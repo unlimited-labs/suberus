@@ -72,9 +72,10 @@ The **+ New** button opens a create dialog. Toggle between **Session**,
 | Field | Applies to | What to enter / Notes |
 |---|---|---|
 | **Start** | All | The start date and time (`datetime-local`). |
-| **End** | Event | The end date and time (`datetime-local`). Events can run hours (a dinner, a full-day trip). |
-| **Presentations** | Session | Number of slots (the session's capacity). |
-| **Min / talk** | Session | Minutes per slot. Session length = *Presentations × Min / talk*. |
+| **End** | Event, untimed session | The end date and time (`datetime-local`). Events can run hours (a dinner, a full-day trip). |
+| **Untimed presentations** | Session | Makes it a poster / lightning block — replaces **Presentations** and **Min / talk** with an **End** field. See [Untimed sessions](#untimed-sessions-posters-and-lightning-talks). |
+| **Presentations** | Session | Number of slots (the session's capacity). Hidden when **Untimed presentations** is on. |
+| **Min / talk** | Session | Minutes per slot. Session length = *Presentations × Min / talk*. Hidden when **Untimed presentations** is on. |
 | **Duration** | Break | Length of the break in minutes. |
 | **Title** | All | Optional for sessions (auto-named later), **required** for breaks and events. |
 | **Description** | Event | Optional free text shown on the public program. |
@@ -151,8 +152,9 @@ time, derived from the session start and the durations before it. That does not
 fit a **poster session**, a **lightning-talk block**, or a demo hall, where every
 presentation runs for the whole window at once.
 
-Turn on **Untimed presentations** — either in the **+ Create session** dialog you
-get from a sidebar selection, or later in the **session editor** — and the session
+Turn on **Untimed presentations** — in the **+ New** dialog, in the **+ Create
+session** dialog you get from a sidebar selection, or later in the **session
+editor** — and the session
 keeps its own start and end, but the presentations inside stop being time-boxed:
 
 - There is **no capacity limit**. Forty posters fit in a two-hour block; the
@@ -166,9 +168,8 @@ keeps its own start and end, but the presentations inside stop being time-boxed:
 - **Split** is unavailable — there are no slot times to split on.
 
 In the **+ Create session** dialog the toggle replaces **Min / talk** with
-**Session length (minutes)**; in the session editor it replaces **Slots** ×
-**Min / slot** with an **End** field. The **+ New** dialog always creates a timed
-session — turn the toggle on in the editor afterwards.
+**Session length (minutes)**; in the **+ New** dialog and the session editor it
+replaces the slot fields with an **End** field.
 
 Everything else behaves as usual: the block sits in its room column on the grid,
 counts towards room and chair conflict detection, and publishes normally.

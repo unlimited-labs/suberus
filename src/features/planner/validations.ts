@@ -23,6 +23,13 @@ export const sessionFormSchema = z.object({
 		.max(720, "Session must be at most 720 minutes"),
 });
 
+export function eventFormNeedsEnd(v: {
+	type: "session" | "break" | "event";
+	untimedSlots: boolean;
+}) {
+	return v.type === "event" || (v.type === "session" && v.untimedSlots);
+}
+
 export const eventFormSchema = z
 	.object({
 		type: z.enum(["session", "break", "event"]),
@@ -41,17 +48,18 @@ export const eventFormSchema = z
 			.int()
 			.min(5, "Break must be at least 5 minutes")
 			.max(180, "Break must be at most 180 minutes"),
+		untimedSlots: z.boolean(),
 	})
 	.refine((v) => v.type === "session" || v.title.trim().length > 0, {
 		message: "Title is required",
 		path: ["title"],
 	})
-	.refine((v) => v.type !== "event" || v.endInput.length > 0, {
+	.refine((v) => !eventFormNeedsEnd(v) || v.endInput.length > 0, {
 		message: "End time is required",
 		path: ["endInput"],
 	})
 	.refine(
-		(v) => v.type !== "event" || !v.endInput || v.endInput > v.startInput,
+		(v) => !eventFormNeedsEnd(v) || !v.endInput || v.endInput > v.startInput,
 		{ message: "End must be after start", path: ["endInput"] },
 	);
 

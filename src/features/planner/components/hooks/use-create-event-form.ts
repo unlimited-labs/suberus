@@ -46,10 +46,12 @@ export function useCreateEventForm({
 			const trimmed = value.title.trim();
 			try {
 				if (value.type === "session") {
-					const endDate = addMinutes(
-						startDate,
-						value.presentationCount * value.minutesPerPresentation,
-					);
+					const endDate = value.untimedSlots
+						? tzLocalInputToUtc(value.endInput, timezone)
+						: addMinutes(
+								startDate,
+								value.presentationCount * value.minutesPerPresentation,
+							);
 					await createSessionFn({
 						data: {
 							title: trimmed || undefined,
@@ -57,6 +59,7 @@ export function useCreateEventForm({
 							trackId: value.trackId,
 							startAt: startDate.toISOString(),
 							endAt: endDate.toISOString(),
+							untimedSlots: value.untimedSlots,
 						},
 					});
 				} else if (value.type === "event") {

@@ -23,6 +23,7 @@ import {
 import { Field, FieldError } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { Switch } from "@/shared/ui/switch";
 import { Textarea } from "@/shared/ui/textarea";
 import { useCreateEventForm } from "./hooks/use-create-event-form";
 import { RoomSelect } from "./shared/room-select";
@@ -65,6 +66,8 @@ export function CreateEventDialog({
 		form.store,
 		(s) => s.values.breakDurationMin,
 	);
+	const untimedSlots = useSelector(form.store, (s) => s.values.untimedSlots);
+	const untimedSession = type === "session" && untimedSlots;
 
 	const startDate = tzLocalInputToUtc(startInput, timezone);
 	const sessionDurationMin = presentationCount * minutesPerPresentation;
@@ -72,16 +75,16 @@ export function CreateEventDialog({
 	const breakEndDate = addMinutes(startDate, breakDurationMin);
 	const eventEndDate = tzLocalInputToUtc(endInput, timezone);
 	const endDate =
-		type === "session"
-			? sessionEndDate
-			: type === "event"
-				? eventEndDate
+		untimedSession || type === "event"
+			? eventEndDate
+			: type === "session"
+				? sessionEndDate
 				: breakEndDate;
 	const totalMin =
-		type === "session"
-			? sessionDurationMin
-			: type === "event"
-				? Math.max(0, differenceInMinutes(eventEndDate, startDate))
+		untimedSession || type === "event"
+			? Math.max(0, differenceInMinutes(eventEndDate, startDate))
+			: type === "session"
+				? sessionDurationMin
 				: breakDurationMin;
 
 	return (
@@ -156,7 +159,29 @@ export function CreateEventDialog({
 						)}
 					</form.Field>
 
-					{type === "session" ? (
+					{type === "session" && (
+						<div className="flex items-start justify-between gap-4">
+							<div className="space-y-0.5">
+								<Label htmlFor="event-untimed">Untimed presentations</Label>
+								<p className="text-xs text-muted-foreground">
+									Poster or lightning block: presentations share the session
+									window instead of getting their own slots.
+								</p>
+							</div>
+							<form.Field name="untimedSlots">
+								{(field) => (
+									<Switch
+										id="event-untimed"
+										data-testid="create-event-untimed"
+										checked={field.state.value}
+										onCheckedChange={(v) => field.handleChange(v === true)}
+									/>
+								)}
+							</form.Field>
+						</div>
+					)}
+
+					{type === "session" && !untimedSlots ? (
 						<div className="grid grid-cols-2 gap-4">
 							<form.Field name="presentationCount">
 								{(field) => (
@@ -186,7 +211,7 @@ export function CreateEventDialog({
 								)}
 							</form.Field>
 						</div>
-					) : type === "event" ? (
+					) : untimedSession || type === "event" ? (
 						<form.Field name="endInput">
 							{(field) => {
 								const errors = field.state.meta.errors;
@@ -231,7 +256,7 @@ export function CreateEventDialog({
 						totalMin={totalMin}
 						timezone={timezone}
 						extra={
-							type === "session" ? (
+							type === "session" && !untimedSlots ? (
 								<span className="ml-1 opacity-60">
 									({presentationCount} × {minutesPerPresentation})
 								</span>
