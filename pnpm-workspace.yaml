@@ -38,3 +38,6 @@ minimumReleaseAge: 10080
 minimumReleaseAgeExclude:
   - better-auth
   - '@better-auth/*'
+  # 1.26.2 is the newest aged build, but it carries miscompilations fixed in 1.26.3+.
+  # Drop once 1.27.0 ages past the window.
+  - zod-compiler
