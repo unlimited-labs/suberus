@@ -1,7 +1,7 @@
 import { IconList, IconMap, IconWorld } from "@tabler/icons-react";
 import { countries } from "countries-list";
 import * as Flags from "country-flag-icons/react/3x2";
-import MapLibreGL from "maplibre-gl";
+import * as MapLibreGL from "maplibre-gl";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { COUNTRY_CENTROIDS } from "@/features/dashboard/country-centroids";
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";

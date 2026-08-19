@@ -41,3 +41,6 @@ minimumReleaseAgeExclude:
   # 1.26.2 is the newest aged build, but it carries miscompilations fixed in 1.26.3+.
   # Drop once 1.27.0 ages past the window.
   - zod-compiler
+  # 6.4.1 carries the DOM.sanitize fix (adjacent dangerous attributes survived).
+  # Drop once it ages past the window.
+  - maplibre-gl

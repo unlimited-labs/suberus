@@ -54,6 +54,8 @@ const nitroConfig: NitroPluginConfig = {
 
 const config = defineConfig({
 	resolve: { tsconfigPaths: true },
+	// maplibre-gl v6 is ESM-only; leaving it external breaks the SSR import.
+	ssr: { noExternal: ["maplibre-gl"] },
 	server: isE2E ? { hmr: { overlay: false } } : undefined,
 	optimizeDeps: {
 		include: ["@tabler/icons-react", "countries-list"],

@@ -1,4 +1,6 @@
-import MapLibreGL, { type PopupOptions, type MarkerOptions } from "maplibre-gl";
+import * as MapLibreGL from "maplibre-gl";
+import type { MarkerOptions, PopupOptions } from "maplibre-gl";
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
   createContext,
@@ -17,6 +19,10 @@ import { createPortal } from "react-dom";
 import { X, Minus, Plus, Locate, Maximize, Loader2 } from "lucide-react";
 
 import { cn } from "@/shared/lib/utils";
+
+// v6 is ESM-only and can't resolve its worker through a bundler's module graph.
+// `?worker&url` (not plain `?url`) keeps the shared chunk the worker imports.
+MapLibreGL.setWorkerUrl(workerUrl);
 
 // Check document class for theme (works with next-themes, etc.)
 function getDocumentTheme(): Theme | null {
@@ -151,8 +157,11 @@ type MapProps = {
 
 type MapRef = MapLibreGL.Map;
 
-const DefaultLoader = () => (
-  <div className="absolute inset-0 flex items-center justify-center">
+const DefaultLoader = (props: { "data-testid"?: string }) => (
+  <div
+    {...props}
+    className="absolute inset-0 flex items-center justify-center"
+  >
     <div className="flex gap-1">
       <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-pulse" />
       <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-pulse [animation-delay:150ms]" />
@@ -313,9 +322,10 @@ function MapComponent({
     <MapContext.Provider value={contextValue}>
       <div
         ref={containerRef}
+        data-testid="map"
         className={cn("relative w-full h-full", className)}
       >
-        {!isLoaded && <DefaultLoader />}
+        {!isLoaded && <DefaultLoader data-testid="map-loader" />}
         {/* SSR-safe: children render only when map is loaded on client */}
         {mapInstance && children}
       </div>
