@@ -2,7 +2,6 @@ import { randomUUID } from "node:crypto";
 import { cimd } from "@better-auth/cimd";
 import { mcp } from "@better-auth/mcp";
 import { passkey } from "@better-auth/passkey";
-import { PrismaPg } from "@prisma/adapter-pg";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { jwt } from "better-auth/plugins";
@@ -19,16 +18,13 @@ import {
 import { fetchClientMetadataResource } from "@/features/auth/server/cimd-transport";
 import { MCP_SCOPES } from "@/features/mcp/scopes";
 import { getSetting } from "@/features/settings/server/settings";
-import { PrismaClient, UserRole } from "@/generated/prisma/client";
+import { UserRole } from "@/generated/prisma/client";
 import { logger } from "@/logger.ts";
+import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
 import { linkCoAuthorsByEmail } from "@/shared/server/link-coauthors";
 
 import "dotenv/config";
-
-const connectionString = env.DATABASE_URL;
-const adapter = new PrismaPg({ connectionString });
-const prisma = new PrismaClient({ adapter });
 
 // mcp() wraps oauthProvider — never add a second one; cimd() replaces DCR.
 export const MCP_RESOURCE = `${env.APP_BASE_URL}/api/mcp`;

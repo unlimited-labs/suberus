@@ -15,11 +15,11 @@ declare global {
 	var __prisma: PrismaClient | undefined;
 }
 
-export const prisma = globalThis.__prisma || new PrismaClient({ adapter });
-
-if (env.NODE_ENV !== "production") {
-	globalThis.__prisma = prisma;
-}
+// Always cache on globalThis: the prod bundle can emit this module into two
+// chunks, and a second PrismaClient re-instantiates the query-compiler wasm over
+// the runtime's module-global state, corrupting the first client's memory view.
+globalThis.__prisma ??= new PrismaClient({ adapter });
+export const prisma = globalThis.__prisma;
 
 /** True for a Prisma unique-constraint violation (P2002) — for find-then-create races. */
 export function isUniqueViolation(e: unknown): boolean {
