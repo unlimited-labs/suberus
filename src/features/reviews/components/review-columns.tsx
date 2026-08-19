@@ -4,7 +4,6 @@ import {
 	IconClock,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import type { ColumnDef } from "@tanstack/react-table";
 import { compareAsc, differenceInCalendarDays } from "date-fns";
 import type { ReviewerAssignment } from "@/features/reviews/api/assignments";
 import {
@@ -18,6 +17,7 @@ import { typeFilterOptions, typeLabels } from "@/shared/lib/labels/submission";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { DataTableColumnHeader, facetedFilterFn } from "@/shared/ui/data-table";
+import type { AppColumnDef } from "@/shared/ui/data-table/table-features";
 
 function DeadlineCell({
 	deadline,
@@ -89,7 +89,7 @@ function DeadlineCell({
 	);
 }
 
-export const reviewColumns: ColumnDef<ReviewerAssignment>[] = [
+export const reviewColumns: AppColumnDef<ReviewerAssignment>[] = [
 	{
 		accessorKey: "submissionTitle",
 		header: ({ column }) => (
@@ -173,7 +173,7 @@ export const reviewColumns: ColumnDef<ReviewerAssignment>[] = [
 			const status = row.original.status;
 			return <DeadlineCell deadline={deadline} status={status} />;
 		},
-		sortingFn: (rowA, rowB) => {
+		sortFn: (rowA, rowB) => {
 			const a = rowA.original.deadline;
 			const b = rowB.original.deadline;
 			if (!a && !b) return 0;

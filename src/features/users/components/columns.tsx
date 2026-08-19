@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import type { Column, ColumnDef } from "@tanstack/react-table";
 import {
 	formatSurveyAnswerValue,
 	parseMultiSelect,
@@ -22,6 +21,10 @@ import {
 	type FilterOption,
 	facetedFilterFn,
 } from "@/shared/ui/data-table";
+import type {
+	AppColumn,
+	AppColumnDef,
+} from "@/shared/ui/data-table/table-features";
 import { SubmissionsColumnHeader } from "./submissions-column-header";
 
 export interface SurveyListColumn {
@@ -38,7 +41,7 @@ function DateCell({ date }: { date: Date | string }) {
 	);
 }
 
-const baseUserColumns: ColumnDef<AdminUser>[] = [
+const baseUserColumns: AppColumnDef<AdminUser>[] = [
 	createSelectColumn<AdminUser>(),
 	{
 		id: "name",
@@ -245,7 +248,7 @@ function rawAnswer(row: AdminUser, questionId: string): string {
 }
 
 /** Build a survey-answer column for the users list, with type-appropriate sort & filter. */
-function surveyColumn(col: SurveyListColumn): ColumnDef<AdminUser> {
+function surveyColumn(col: SurveyListColumn): AppColumnDef<AdminUser> {
 	const facetOptions: FilterOption[] = (col.options ?? []).map((o) => ({
 		label: o,
 		value: o,
@@ -254,7 +257,7 @@ function surveyColumn(col: SurveyListColumn): ColumnDef<AdminUser> {
 	/** Column header with either a faceted filter or a text-search filter. */
 	const header =
 		(filter: { filterOptions: FilterOption[] } | { textFilter: true }) =>
-		({ column }: { column: Column<AdminUser> }) => (
+		({ column }: { column: AppColumn<AdminUser> }) => (
 			<DataTableColumnHeader
 				column={column}
 				title={col.header}
@@ -269,9 +272,9 @@ function surveyColumn(col: SurveyListColumn): ColumnDef<AdminUser> {
 			formatSurveyAnswerValue(col.type, rawAnswer(row, col.id)),
 		header: header({ textFilter: true }),
 		filterFn: "includesString",
-	} satisfies Partial<ColumnDef<AdminUser>>;
+	} satisfies Partial<AppColumnDef<AdminUser>>;
 
-	const base: ColumnDef<AdminUser> = {
+	const base: AppColumnDef<AdminUser> = {
 		id: `survey-${col.id}`,
 		cell: ({ row }) => {
 			const answer = row.original.surveyAnswers.find(
@@ -319,7 +322,7 @@ function surveyColumn(col: SurveyListColumn): ColumnDef<AdminUser> {
 				...base,
 				accessorFn: (row) => parseMultiSelect(rawAnswer(row, col.id)),
 				getUniqueValues: (row) => parseMultiSelect(rawAnswer(row, col.id)),
-				sortingFn: (a, b) =>
+				sortFn: (a, b) =>
 					formatSurveyAnswerValue(
 						"MULTI_SELECT",
 						rawAnswer(a.original, col.id),
@@ -341,7 +344,7 @@ function surveyColumn(col: SurveyListColumn): ColumnDef<AdminUser> {
 /** Compose the users-list columns, inserting survey columns before the actions column. */
 export function buildUserColumns(
 	surveyColumns: SurveyListColumn[] = [],
-): ColumnDef<AdminUser>[] {
+): AppColumnDef<AdminUser>[] {
 	return [
 		...baseUserColumns,
 		...surveyColumns.map(surveyColumn),

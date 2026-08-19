@@ -1,13 +1,14 @@
 import { IconSearch, IconX } from "@tabler/icons-react";
-import type { Table } from "@tanstack/react-table";
+import type { RowData } from "@tanstack/react-table";
+import type { AppTable } from "./table-features";
 import { useState } from "react";
 
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { DataTableViewOptions } from "./data-table-view-options";
 
-interface DataTableToolbarProps<TData> {
-	table: Table<TData>;
+interface DataTableToolbarProps<TData extends RowData> {
+	table: AppTable<TData>;
 	searchKey?: string;
 	searchPlaceholder?: string;
 	filters?: React.ReactNode;
@@ -15,7 +16,7 @@ interface DataTableToolbarProps<TData> {
 	columnLabels?: Record<string, string>;
 }
 
-export function DataTableToolbar<TData>({
+export function DataTableToolbar<TData extends RowData>({
 	table,
 	searchKey,
 	searchPlaceholder = "Search...",
@@ -23,7 +24,7 @@ export function DataTableToolbar<TData>({
 	actions,
 	columnLabels,
 }: DataTableToolbarProps<TData>) {
-	const isFiltered = table.getState().columnFilters.length > 0;
+	const isFiltered = table.state.columnFilters.length > 0;
 	// Local source of truth for the search input. Reading the value from
 	// `table.getState()` during this child's render can tear (return a stale
 	// slice) when the parent re-renders mid-cycle, freezing the controlled

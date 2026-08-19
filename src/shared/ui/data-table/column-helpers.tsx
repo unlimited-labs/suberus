@@ -1,6 +1,7 @@
 import { IconDotsVertical, IconEdit, IconEye } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import type { ColumnDef, Row } from "@tanstack/react-table";
+import type { RowData } from "@tanstack/react-table";
+import type { AppColumnDef, AppRow } from "./table-features";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import {
@@ -10,7 +11,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 
-export function createSelectColumn<T>(): ColumnDef<T> {
+export function createSelectColumn<T extends RowData>(): AppColumnDef<T> {
 	return {
 		id: "select",
 		header: ({ table }) => (
@@ -43,9 +44,9 @@ interface ActionsColumnConfig<T> {
 	getEditLink?: (row: T) => ActionLink;
 }
 
-export function createActionsColumn<T>(
+export function createActionsColumn<T extends RowData>(
 	config: ActionsColumnConfig<T>,
-): ColumnDef<T> {
+): AppColumnDef<T> {
 	return {
 		id: "actions",
 		cell: ({ row }) => {
@@ -82,8 +83,8 @@ export function createActionsColumn<T>(
 	};
 }
 
-export const facetedFilterFn = <T,>(
-	row: Row<T>,
+export const facetedFilterFn = <T extends RowData,>(
+	row: AppRow<T>,
 	columnId: string,
 	filterValue: string[],
 ) => {

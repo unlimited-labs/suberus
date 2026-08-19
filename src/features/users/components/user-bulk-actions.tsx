@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import type { RowSelectionState, Table } from "@tanstack/react-table";
+import type { RowSelectionState } from "@tanstack/react-table";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -24,6 +24,7 @@ import type { AdminUser } from "@/features/users/server/users";
 import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { BulkActionDialog } from "@/shared/ui/data-table";
+import type { AppTable } from "@/shared/ui/data-table/table-features";
 import {
 	Select,
 	SelectContent,
@@ -33,7 +34,7 @@ import {
 } from "@/shared/ui/select";
 
 interface UserBulkActionsProps {
-	table: Table<AdminUser>;
+	table: AppTable<AdminUser>;
 	rowSelection: RowSelectionState;
 }
 

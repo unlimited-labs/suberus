@@ -69,7 +69,7 @@
     "@tanstack/react-router-ssr-query": "^1.167.1",
     "@tanstack/react-start": "^1.168.42",
     "@tanstack/react-store": "^0.11.1",
-    "@tanstack/react-table": "^8.21.3",
+    "@tanstack/react-table": "^9.1.2",
     "adm-zip": "^0.6.0",
     "archiver": "^8.0.0",
     "better-auth": "1.7.1",

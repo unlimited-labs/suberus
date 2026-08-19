@@ -1,16 +1,17 @@
 import { IconFilter, IconFilterFilled, IconX } from "@tabler/icons-react";
-import type { Column } from "@tanstack/react-table";
+import type { RowData } from "@tanstack/react-table";
+import type { AppColumn } from "./table-features";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 
-interface DataTableTextFilterProps<TData, TValue> {
-	column: Column<TData, TValue>;
+interface DataTableTextFilterProps<TData extends RowData, TValue> {
+	column: AppColumn<TData, TValue>;
 	placeholder?: string;
 }
 
-export function DataTableTextFilter<TData, TValue>({
+export function DataTableTextFilter<TData extends RowData, TValue>({
 	column,
 	placeholder = "Search...",
 }: DataTableTextFilterProps<TData, TValue>) {

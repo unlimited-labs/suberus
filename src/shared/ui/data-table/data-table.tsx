@@ -1,17 +1,11 @@
 import {
-	type ColumnDef,
 	type ColumnFiltersState,
+	type RowData,
 	flexRender,
-	getCoreRowModel,
-	getFacetedRowModel,
-	getFacetedUniqueValues,
-	getFilteredRowModel,
-	getPaginationRowModel,
-	getSortedRowModel,
 	type RowSelectionState,
 	type SortingState,
-	useReactTable,
-	type VisibilityState,
+	useTable,
+	type ColumnVisibilityState,
 } from "@tanstack/react-table";
 import { useState } from "react";
 import { z } from "zod";
@@ -26,17 +20,18 @@ import {
 	TableRow,
 } from "@/shared/ui/table";
 import { DataTablePagination } from "./data-table-pagination";
+import { type AppColumnDef, type AppTable, features } from "./table-features";
 
 const columnVisibilitySchema = z.record(
 	z.string(),
 	z.boolean(),
-) satisfies z.ZodType<VisibilityState>;
+) satisfies z.ZodType<ColumnVisibilityState>;
 
-interface DataTableProps<TData, TValue> {
-	columns: ColumnDef<TData, TValue>[];
+interface DataTableProps<TData extends RowData> {
+	columns: AppColumnDef<TData>[];
 	data: TData[];
 	toolbar?: (
-		table: ReturnType<typeof useReactTable<TData>>,
+		table: AppTable<TData>,
 		rowSelection: RowSelectionState,
 	) => React.ReactNode;
 	mobileCard?: (row: TData) => React.ReactNode;
@@ -48,12 +43,12 @@ interface DataTableProps<TData, TValue> {
 	 */
 	rowDataTestId?: string;
 	/** Initial column visibility, e.g. to hide filter-only helper columns */
-	initialColumnVisibility?: VisibilityState;
+	initialColumnVisibility?: ColumnVisibilityState;
 	/** When set, column visibility is persisted to localStorage under this key (per-table). */
 	storageKey?: string;
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends RowData>({
 	columns,
 	data,
 	toolbar,
@@ -62,11 +57,10 @@ export function DataTable<TData, TValue>({
 	rowDataTestId,
 	initialColumnVisibility,
 	storageKey,
-}: DataTableProps<TData, TValue>) {
-	"use no memo";
+}: DataTableProps<TData>) {
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 	const [columnVisibility, setColumnVisibility] =
-		usePersistedState<VisibilityState>(
+		usePersistedState<ColumnVisibilityState>(
 			storageKey ? `suberus.table.columns.${storageKey}` : undefined,
 			initialColumnVisibility ?? {},
 			{
@@ -79,7 +73,8 @@ export function DataTable<TData, TValue>({
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [pagination, setPagination] = useTablePagination(storageKey);
 
-	const table = useReactTable({
+	const table = useTable({
+		features,
 		data,
 		columns,
 		state: {
@@ -97,12 +92,6 @@ export function DataTable<TData, TValue>({
 		onColumnVisibilityChange: setColumnVisibility,
 		onPaginationChange: setPagination,
 		autoResetPageIndex: true,
-		getCoreRowModel: getCoreRowModel(),
-		getFilteredRowModel: getFilteredRowModel(),
-		getPaginationRowModel: getPaginationRowModel(),
-		getSortedRowModel: getSortedRowModel(),
-		getFacetedRowModel: getFacetedRowModel(),
-		getFacetedUniqueValues: getFacetedUniqueValues(),
 	});
 
 	return (

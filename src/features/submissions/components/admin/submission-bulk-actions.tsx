@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import type { Table } from "@tanstack/react-table";
 import { useState } from "react";
 import { toast } from "sonner";
 import { reviewerUsersQueryOptions } from "@/features/reviews/api/reviewers";
@@ -15,6 +14,7 @@ import type { SubmissionStatus } from "@/generated/prisma/enums";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
 import { BulkActionDialog } from "@/shared/ui/data-table";
+import type { AppTable } from "@/shared/ui/data-table/table-features";
 import {
 	Select,
 	SelectContent,
@@ -24,7 +24,7 @@ import {
 } from "@/shared/ui/select";
 
 interface SubmissionBulkActionsProps {
-	table: Table<AdminSubmission>;
+	table: AppTable<AdminSubmission>;
 	availableTracks: AvailableTrack[];
 	onSuccess?: () => void;
 }

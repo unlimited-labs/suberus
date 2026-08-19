@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import type { ColumnDef } from "@tanstack/react-table";
 import {
 	type SubmissionTodo,
 	statusFilterOptions,
@@ -24,6 +23,7 @@ import {
 	DataTableColumnHeader,
 	facetedFilterFn,
 } from "@/shared/ui/data-table";
+import type { AppColumnDef } from "@/shared/ui/data-table/table-features";
 import {
 	Tooltip,
 	TooltipContent,
@@ -62,7 +62,7 @@ function TodoCell({ todo }: { todo: SubmissionTodo }) {
 	);
 }
 
-export const submissionColumns: ColumnDef<AdminSubmission>[] = [
+export const submissionColumns: AppColumnDef<AdminSubmission>[] = [
 	createSelectColumn<AdminSubmission>(),
 	{
 		id: "search",
@@ -188,7 +188,7 @@ export const submissionColumns: ColumnDef<AdminSubmission>[] = [
 		),
 		cell: ({ row }) => <TodoCell todo={row.original.todo} />,
 		filterFn: facetedFilterFn,
-		sortingFn: (a, b) =>
+		sortFn: (a, b) =>
 			todoSortRank[a.getValue<TodoKind>("todo")] -
 			todoSortRank[b.getValue<TodoKind>("todo")],
 		size: 160,

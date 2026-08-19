@@ -1,5 +1,6 @@
 import { IconColumns3 } from "@tabler/icons-react";
-import type { Table } from "@tanstack/react-table";
+import type { RowData } from "@tanstack/react-table";
+import type { AppTable } from "./table-features";
 import { useState } from "react";
 
 import { Button } from "@/shared/ui/button";
@@ -12,12 +13,12 @@ import {
 	DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 
-interface DataTableViewOptionsProps<TData> {
-	table: Table<TData>;
+interface DataTableViewOptionsProps<TData extends RowData> {
+	table: AppTable<TData>;
 	columnLabels?: Record<string, string>;
 }
 
-export function DataTableViewOptions<TData>({
+export function DataTableViewOptions<TData extends RowData>({
 	table,
 	columnLabels = {},
 }: DataTableViewOptionsProps<TData>) {

@@ -6,7 +6,6 @@ import {
 	IconFilterFilled,
 	IconSelector,
 } from "@tabler/icons-react";
-import type { Column, Table } from "@tanstack/react-table";
 import { useState } from "react";
 import {
 	submissionDraftFilterOptions,
@@ -18,6 +17,10 @@ import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
+import type {
+	AppColumn,
+	AppCoreTable,
+} from "@/shared/ui/data-table/table-features";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -87,8 +90,8 @@ function FilterSection({
 }
 
 interface SubmissionsColumnHeaderProps {
-	column: Column<AdminUser, unknown>;
-	table: Table<AdminUser>;
+	column: AppColumn<AdminUser, unknown>;
+	table: AppCoreTable<AdminUser>;
 }
 
 type Dimension = "type" | "role" | "draft";
@@ -97,11 +100,12 @@ export function SubmissionsColumnHeader({
 	column,
 	table,
 }: SubmissionsColumnHeaderProps) {
-	const columns: Record<Dimension, Column<AdminUser, unknown> | undefined> = {
-		type: table.getColumn("submissionType"),
-		role: table.getColumn("submissionRole"),
-		draft: table.getColumn("submissionDraft"),
-	};
+	const columns: Record<Dimension, AppColumn<AdminUser, unknown> | undefined> =
+		{
+			type: table.getColumn("submissionType"),
+			role: table.getColumn("submissionRole"),
+			draft: table.getColumn("submissionDraft"),
+		};
 
 	const readSelection = (): Record<Dimension, string[]> => ({
 		type: (columns.type?.getFilterValue() as string[] | undefined) ?? [],

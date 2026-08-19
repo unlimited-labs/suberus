@@ -1,14 +1,14 @@
 import { IconDownload } from "@tabler/icons-react";
-import type { Table } from "@tanstack/react-table";
 import type { AdminSubmission } from "@/features/submissions/server/admin-submissions";
 import { Button } from "@/shared/ui/button";
+import type { AppTable } from "@/shared/ui/data-table/table-features";
 
 interface SubmissionExportButtonProps {
-	table: Table<AdminSubmission>;
+	table: AppTable<AdminSubmission>;
 }
 
 export function SubmissionExportButton({ table }: SubmissionExportButtonProps) {
-	const filters = table.getState().columnFilters;
+	const filters = table.state.columnFilters;
 	const params = new URLSearchParams();
 
 	for (const filter of filters) {

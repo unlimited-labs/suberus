@@ -1,5 +1,6 @@
 import { IconFilter, IconFilterFilled } from "@tabler/icons-react";
-import type { Column } from "@tanstack/react-table";
+import type { RowData } from "@tanstack/react-table";
+import type { AppColumn } from "./table-features";
 import { useState } from "react";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
@@ -13,12 +14,12 @@ export interface FilterOption {
 	value: string;
 }
 
-interface DataTableColumnFilterProps<TData, TValue> {
-	column: Column<TData, TValue>;
+interface DataTableColumnFilterProps<TData extends RowData, TValue> {
+	column: AppColumn<TData, TValue>;
 	options: FilterOption[];
 }
 
-export function DataTableColumnFilter<TData, TValue>({
+export function DataTableColumnFilter<TData extends RowData, TValue>({
 	column,
 	options,
 }: DataTableColumnFilterProps<TData, TValue>) {

@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import type { ColumnDef } from "@tanstack/react-table";
 import type { listExhibitorsFn } from "@/features/exhibitors/api/exhibitors";
 import { exhibitorStatusBadge } from "@/features/exhibitors/labels";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
@@ -13,6 +12,7 @@ import {
 	type FilterOption,
 	facetedFilterFn,
 } from "@/shared/ui/data-table";
+import type { AppColumnDef } from "@/shared/ui/data-table/table-features";
 import { ExhibitorMobileCard } from "./exhibitor-mobile-card";
 
 export type AdminExhibitorRow = Awaited<
@@ -39,7 +39,7 @@ function DateCell({ date }: { date: Date | string }) {
 	);
 }
 
-const columns: ColumnDef<AdminExhibitorRow>[] = [
+const columns: AppColumnDef<AdminExhibitorRow>[] = [
 	{
 		id: "company",
 		accessorFn: (row) => row.companyName ?? "",

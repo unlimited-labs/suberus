@@ -1,5 +1,4 @@
 import { IconMailForward, IconX } from "@tabler/icons-react";
-import type { ColumnDef } from "@tanstack/react-table";
 import {
 	invitationStatusConfig,
 	isInvitationActionable,
@@ -10,6 +9,7 @@ import { roleLabels } from "@/shared/lib/labels/user-role";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { DataTableColumnHeader } from "@/shared/ui/data-table";
+import type { AppColumnDef } from "@/shared/ui/data-table/table-features";
 
 interface InvitationColumnsOptions {
 	onResend: (id: string) => void;
@@ -25,7 +25,7 @@ function DateCell({ value }: { value: string }) {
 
 export function createInvitationColumns(
 	options: InvitationColumnsOptions,
-): ColumnDef<AdminInvitation>[] {
+): AppColumnDef<AdminInvitation>[] {
 	return [
 		{
 			accessorKey: "email",

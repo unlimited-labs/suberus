@@ -4,7 +4,9 @@ import {
 	IconChevronsLeft,
 	IconChevronsRight,
 } from "@tabler/icons-react";
-import type { PaginationState, Table } from "@tanstack/react-table";
+import type { PaginationState } from "@tanstack/react-table";
+import type { RowData } from "@tanstack/react-table";
+import type { AppTable } from "./table-features";
 
 import { Button } from "@/shared/ui/button";
 import {
@@ -14,8 +16,8 @@ import {
 	SelectTrigger,
 } from "@/shared/ui/select";
 
-interface DataTablePaginationProps<TData> {
-	table: Table<TData>;
+interface DataTablePaginationProps<TData extends RowData> {
+	table: AppTable<TData>;
 	/**
 	 * Authoritative pagination state owned by the parent. Display values are read
 	 * from here rather than `table.getState()` because the shared table instance's
@@ -25,7 +27,7 @@ interface DataTablePaginationProps<TData> {
 	pagination: PaginationState;
 }
 
-export function DataTablePagination<TData>({
+export function DataTablePagination<TData extends RowData>({
 	table,
 	pagination,
 }: DataTablePaginationProps<TData>) {
