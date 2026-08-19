@@ -38,7 +38,7 @@ updates:
       minor-and-patch:
         update-types: [minor, patch]
 
-  # Root Dockerfile excluded: node:22 is pinned to match production, not a stale base image.
+  # Root Dockerfile excluded: node:24 is pinned to match production, not a stale base image.
   - package-ecosystem: docker
     directories:
       - /services/docx-api

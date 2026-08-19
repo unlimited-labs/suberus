@@ -1,4 +1,4 @@
-FROM node:22-alpine AS build
+FROM node:24-alpine AS build
 
 WORKDIR /app
 
@@ -24,7 +24,7 @@ RUN mkdir /prisma-runtime && cd /prisma-runtime \
     && npm install prisma dotenv --save-exact \
     && npm cache clean --force
 
-FROM node:22-alpine AS migrate
+FROM node:24-alpine AS migrate
 
 WORKDIR /app
 
@@ -35,7 +35,7 @@ COPY --from=build /prisma-runtime/node_modules ./node_modules
 
 CMD ["npx", "prisma", "migrate", "deploy"]
 
-FROM node:22-alpine
+FROM node:24-alpine
 
 # Build metadata (passed via docker-bake args); exposed at runtime via /api/version
 ARG GIT_COMMIT=unknown
