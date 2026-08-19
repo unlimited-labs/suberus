@@ -121,7 +121,7 @@
     "@commitlint/config-conventional": "^21.2.0",
     "@commitlint/types": "^21.2.0",
     "@modelcontextprotocol/client": "2.0.0",
-    "@playwright/test": "1.60.0",
+    "@playwright/test": "^1.62.1",
     "@rolldown/plugin-babel": "^0.2.3",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/devtools-vite": "^0.8.3",
