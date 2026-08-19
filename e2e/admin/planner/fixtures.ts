@@ -54,6 +54,7 @@ export function isoDay(offsetDays: number, hour: number): Date {
 /** Default-theme program with a 31-day conference window — shared spec setup. */
 export async function resetPlannerProgramDefaults(): Promise<void> {
 	await setAppSetting("PROGRAM_THEME", "default");
+	await setAppSetting("PROGRAM_REMINDER_LEAD_MIN", 5);
 	await setConferenceDates(
 		isoDay(0, 0).toISOString(),
 		isoDay(30, 23).toISOString(),

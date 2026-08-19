@@ -24,6 +24,7 @@ export const conferenceSettingsSchema = z.object({
 	defaultPresentationMin: z.number().int().min(5).max(480),
 	autoplanEnabled: z.boolean(),
 	authorBufferMin: z.number().int().min(0).max(240),
+	reminderLeadMin: z.number().int().min(1).max(120),
 });
 
 export const conferenceSettingsPatch = conferenceSettingsSchema.partial();

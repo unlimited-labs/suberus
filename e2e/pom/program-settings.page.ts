@@ -16,6 +16,8 @@ export class ProgramSettingsPage {
 	readonly programTrackDialog: Locator;
 	readonly programTrackName: Locator;
 	readonly programTrackSubmit: Locator;
+	readonly reminderLeadInput: Locator;
+	readonly plannerSettingsSave: Locator;
 
 	constructor(page: Page) {
 		this.page = page;
@@ -34,6 +36,8 @@ export class ProgramSettingsPage {
 		this.programTrackDialog = page.getByTestId("program-track-dialog");
 		this.programTrackName = page.getByTestId("program-track-name");
 		this.programTrackSubmit = page.getByTestId("program-track-submit");
+		this.reminderLeadInput = page.getByTestId("reminder-lead-input");
+		this.plannerSettingsSave = page.getByTestId("planner-settings-save");
 	}
 
 	/** Navigate to the Program tab via URL (stable on mobile + desktop) */

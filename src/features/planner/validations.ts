@@ -151,6 +151,11 @@ export const plannerSettingsSchema = z.object({
 		.int()
 		.min(0, "At least 0 minutes")
 		.max(240, "At most 240 minutes"),
+	reminderLeadMin: z
+		.number()
+		.int()
+		.min(1, "At least 1 minute")
+		.max(120, "At most 120 minutes"),
 });
 
 export type SessionFormValues = z.infer<typeof sessionFormSchema>;
@@ -272,10 +277,6 @@ export const breakUpdateInput = breakCreateInput
 	.omit({ kind: true })
 	.partial()
 	.extend({ id: z.uuid() });
-
-export const reminderLeadInput = z.object({
-	leadMin: z.number().int().min(1).max(120),
-});
 
 export const jobIdInput = z.object({ jobId: z.uuid() });
 

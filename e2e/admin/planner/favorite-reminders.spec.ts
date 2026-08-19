@@ -47,18 +47,16 @@ test.describe.serial("Favorite reminders", () => {
 	});
 
 	test("admin reminder lead-time persists across reload", async ({
-		plannerPage,
+		programSettingsPage,
 		page,
 	}) => {
-		await plannerPage.goto();
+		await programSettingsPage.goto();
 
-		const input = page.getByTestId("reminder-lead-input");
-		await expect(input).toBeVisible();
-		await input.fill("12");
-		await input.blur();
-		await expect(page.getByText(/Reminder lead time saved/i)).toBeVisible();
+		await programSettingsPage.reminderLeadInput.fill("12");
+		await programSettingsPage.plannerSettingsSave.click();
+		await expect(page.getByText(/Planner settings saved/i)).toBeVisible();
 
-		await plannerPage.goto();
-		await expect(page.getByTestId("reminder-lead-input")).toHaveValue("12");
+		await programSettingsPage.goto();
+		await expect(programSettingsPage.reminderLeadInput).toHaveValue("12");
 	});
 });

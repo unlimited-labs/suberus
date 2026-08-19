@@ -176,6 +176,34 @@ function PlannerSettingsSection({
 							Set 0 to require only that their talks don't overlap.
 						</p>
 					</div>
+					<div className="space-y-2">
+						<Label htmlFor="reminderLeadMin">
+							Favourite reminder lead time
+						</Label>
+						<div className="flex items-center gap-2">
+							<form.Field name="reminderLeadMin">
+								{(field) => (
+									<Input
+										id="reminderLeadMin"
+										type="number"
+										min={1}
+										max={120}
+										value={field.state.value}
+										onChange={(e) =>
+											field.handleChange(Number(e.target.value) || 5)
+										}
+										className="w-24"
+										data-testid="reminder-lead-input"
+									/>
+								)}
+							</form.Field>
+							<span className="text-sm text-muted-foreground">minutes</span>
+						</div>
+						<p className="text-xs text-muted-foreground">
+							How long before a favourited talk starts attendees get the push
+							notification.
+						</p>
+					</div>
 				</div>
 				<div className="mt-6 space-y-2 border-t pt-6">
 					<div className="flex items-center justify-between gap-4">
@@ -218,7 +246,11 @@ function PlannerSettingsSection({
 				</div>
 				<div className="mt-6 flex justify-end">
 					<form.AppForm>
-						<form.SubmitButton label="Save" submittingLabel="Saving…" />
+						<form.SubmitButton
+							label="Save"
+							submittingLabel="Saving…"
+							testId="planner-settings-save"
+						/>
 					</form.AppForm>
 				</div>
 			</form>

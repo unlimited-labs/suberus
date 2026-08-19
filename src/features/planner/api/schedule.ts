@@ -16,12 +16,7 @@ import {
 	publishScheduleDraft,
 	unpublishSchedule,
 } from "@/features/planner/server/schedule";
-import { reminderLeadInput } from "@/features/planner/validations";
-import {
-	getSetting,
-	getSettings,
-	setSetting,
-} from "@/features/settings/server/settings";
+import { getSettings } from "@/features/settings/server/settings";
 
 export const scheduleStateQueryOptions = () =>
 	queryOptions({
@@ -76,21 +71,6 @@ export const unpublishScheduleFn = createServerFn({ method: "POST" })
 	.handler(async () => {
 		await unpublishSchedule();
 	});
-
-export const reminderLeadQueryOptions = () =>
-	queryOptions({
-		queryKey: ["schedule", "reminder-lead"],
-		queryFn: () => getReminderLeadFn(),
-	});
-
-export const getReminderLeadFn = createServerFn({ method: "GET" })
-	.middleware([adminMiddleware])
-	.handler(() => getSetting("PROGRAM_REMINDER_LEAD_MIN"));
-
-export const setReminderLeadFn = createServerFn({ method: "POST" })
-	.middleware([adminMiddleware])
-	.validator(reminderLeadInput)
-	.handler(({ data }) => setSetting("PROGRAM_REMINDER_LEAD_MIN", data.leadMin));
 
 export const publicProgramQueryOptions = () =>
 	queryOptions({

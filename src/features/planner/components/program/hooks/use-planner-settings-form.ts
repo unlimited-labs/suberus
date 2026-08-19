@@ -21,6 +21,7 @@ export function usePlannerSettingsForm(initial: ConferenceSettings) {
 			defaultPresentationMin: initial.defaultPresentationMin,
 			autoplanEnabled: initial.autoplanEnabled,
 			authorBufferMin: initial.authorBufferMin,
+			reminderLeadMin: initial.reminderLeadMin,
 		},
 		validators: {
 			onChange: plannerSettingsSchema,

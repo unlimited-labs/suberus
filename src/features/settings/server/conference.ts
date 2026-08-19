@@ -27,6 +27,7 @@ const CONFERENCE_KEYS = {
 	defaultPresentationMin: "CONFERENCE_DEFAULT_PRESENTATION_MIN",
 	autoplanEnabled: "PLANNER_AUTOPLAN_ENABLED",
 	authorBufferMin: "PLANNER_AUTHOR_BUFFER_MIN",
+	reminderLeadMin: "PROGRAM_REMINDER_LEAD_MIN",
 } as const satisfies Record<keyof ConferenceSettings, AppSettingKey>;
 
 export async function getConferenceSettings(): Promise<ConferenceSettings> {
@@ -54,6 +55,7 @@ export async function getConferenceSettings(): Promise<ConferenceSettings> {
 		defaultPresentationMin: settings.CONFERENCE_DEFAULT_PRESENTATION_MIN,
 		autoplanEnabled: settings.PLANNER_AUTOPLAN_ENABLED,
 		authorBufferMin: settings.PLANNER_AUTHOR_BUFFER_MIN,
+		reminderLeadMin: settings.PROGRAM_REMINDER_LEAD_MIN,
 	};
 }
 

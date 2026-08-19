@@ -35,7 +35,6 @@ import {
 } from "@/features/planner/components/planner-context";
 import { PlannerOverlays } from "@/features/planner/components/planner-overlays";
 import { PublishButton } from "@/features/planner/components/publish-button";
-import { ReminderLeadControl } from "@/features/planner/components/reminder-lead-control";
 import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
 import { adminUsersQueryOptions } from "@/features/users/api/users";
 import { PageHeader } from "@/shared/components/layout/page-header";
@@ -114,7 +113,6 @@ function ProgramPlannerContent() {
 		<>
 			<div className="flex h-full min-h-0 flex-col overflow-hidden">
 				<PageHeader icon={IconCalendar} title="Program Planner">
-					<ReminderLeadControl />
 					<PublishButton />
 				</PageHeader>
 				{isOutsideRange && (
