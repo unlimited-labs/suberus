@@ -81,7 +81,7 @@ export function dueStatus(
 	dueDate: string | null | undefined,
 	today: string,
 	paid: boolean,
-): { overdue: boolean; days: number | null } {
+) {
 	if (!dueDate) return { overdue: false, days: null };
 	const days = Math.round((Date.parse(dueDate) - Date.parse(today)) / DAY_MS);
 	return { overdue: dueDate < today && !paid, days };
@@ -100,15 +100,7 @@ export function matchesExpenseFilter(
 	return true;
 }
 
-interface StatBucket {
-	count: number;
-	sum: number;
-}
-
-export function expenseStats(
-	rows: FinanceRow[],
-	today: string,
-): Record<"all" | "unpaid" | "overdue" | "paid", StatBucket> {
+export function expenseStats(rows: FinanceRow[], today: string) {
 	const stats = {
 		all: { count: 0, sum: 0 },
 		unpaid: { count: 0, sum: 0 },

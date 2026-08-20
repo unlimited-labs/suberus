@@ -51,7 +51,7 @@ export interface CompareVersion {
 export function defaultComparePair(
 	versions: Array<{ version: number }>,
 	current: number,
-): { base: number; compare: number } {
+) {
 	const below = versions
 		.flatMap((v) => (v.version < current ? [v.version] : []))
 		.sort((a, b) => b - a);

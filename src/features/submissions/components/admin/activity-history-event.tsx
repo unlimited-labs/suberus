@@ -20,6 +20,7 @@ import {
 	statusVariants,
 } from "@/features/submissions/labels";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { lookup } from "@/shared/lib/lookup";
 import { Badge } from "@/shared/ui/badge";
 import {
 	TimelineContent,
@@ -36,13 +37,7 @@ export type ActivityHistoryEntry = {
 
 type TimelineColor = Parameters<typeof TimelineIndicator>[0]["color"];
 
-const activityConfig: Record<
-	string,
-	{
-		color: TimelineColor;
-		icon: typeof IconCheck;
-	}
-> = {
+const activityConfig = {
 	SUBMISSION_CREATED: { color: "blue", icon: IconEdit },
 	SUBMISSION_DRAFT_SUBMITTED: { color: "blue", icon: IconSend },
 	SUBMISSION_STATUS_CHANGED: { color: "blue", icon: IconRefresh },
@@ -58,7 +53,13 @@ const activityConfig: Record<
 	DECISION_DESK_REJECT: { color: "red", icon: IconGavel },
 	DECISION_DESK_ACCEPT: { color: "green", icon: IconCheck },
 	DECISION_OVERRIDE: { color: "yellow", icon: IconGavel },
-};
+} satisfies Record<
+	string,
+	{
+		color: TimelineColor;
+		icon: typeof IconCheck;
+	}
+>;
 
 const defaultConfig = { color: "default" as TimelineColor, icon: IconFileText };
 
@@ -71,10 +72,11 @@ export function ActivityHistoryEvent({
 	entry,
 	isLast = false,
 }: ActivityHistoryEventProps) {
-	const config = activityConfig[entry.activityType] ?? defaultConfig;
+	const config = lookup(activityConfig, entry.activityType) ?? defaultConfig;
 	const Icon = config.icon;
 	const { formatDateTime } = useDateFormat();
-	const label = activityLabels[entry.activityType] ?? entry.activityType;
+	const label =
+		lookup(activityLabels, entry.activityType) ?? entry.activityType;
 	const timestamp =
 		entry.createdAt instanceof Date
 			? entry.createdAt
@@ -118,7 +120,7 @@ function targetUserNameDetail(entry: ActivityHistoryEntry): ReactNode {
 	);
 }
 
-const detailRenderers: Record<string, DetailRenderer> = {
+const detailRenderers = {
 	SUBMISSION_STATUS_CHANGED: (entry) => {
 		const from = entry.detail.fromStatus as string | undefined;
 		const to = entry.detail.toStatus as string | undefined;
@@ -170,7 +172,8 @@ const detailRenderers: Record<string, DetailRenderer> = {
 				{decision && (
 					<Badge
 						className={
-							reviewDecisionColors[decision] ?? "bg-muted text-muted-foreground"
+							lookup(reviewDecisionColors, decision) ??
+							"bg-muted text-muted-foreground"
 						}
 					>
 						{decision.replace(/_/g, " ")}
@@ -209,8 +212,8 @@ const detailRenderers: Record<string, DetailRenderer> = {
 		if (!version) return null;
 		return <p className="text-sm text-muted-foreground">Version {version}</p>;
 	},
-};
+} satisfies Record<string, DetailRenderer>;
 
 function ActivityDetail({ entry }: { entry: ActivityHistoryEntry }) {
-	return detailRenderers[entry.activityType]?.(entry) ?? null;
+	return lookup(detailRenderers, entry.activityType)?.(entry) ?? null;
 }

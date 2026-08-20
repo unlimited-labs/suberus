@@ -3,7 +3,7 @@
  * Values are [longitude, latitude] tuples.
  * Source: Natural Earth / Google public dataset.
  */
-export const COUNTRY_CENTROIDS: Record<string, [lng: number, lat: number]> = {
+export const COUNTRY_CENTROIDS = {
 	AD: [1.6, 42.55],
 	AE: [53.85, 23.42],
 	AF: [67.71, 33.94],
@@ -222,4 +222,4 @@ export const COUNTRY_CENTROIDS: Record<string, [lng: number, lat: number]> = {
 	ZA: [22.94, -30.56],
 	ZM: [27.85, -13.13],
 	ZW: [29.15, -19.02],
-};
+} satisfies Record<string, [lng: number, lat: number]>;

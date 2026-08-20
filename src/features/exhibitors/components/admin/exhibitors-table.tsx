@@ -173,14 +173,14 @@ const columns: AppColumnDef<AdminExhibitorRow>[] = [
 	}),
 ];
 
-const columnLabels: Record<string, string> = {
+const columnLabels = {
 	company: "Company",
 	contact: "Contact",
 	status: "Status",
 	appliedAt: "Applied",
 	presentation: "Presentation",
 	fee: "Fee",
-};
+} satisfies Record<string, string>;
 
 export function ExhibitorsTable({
 	exhibitors,

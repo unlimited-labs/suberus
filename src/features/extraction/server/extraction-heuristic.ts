@@ -8,11 +8,7 @@ export interface AuthorSegment {
 	markers: string[];
 }
 
-export function extractFromZones(classified: ClassifiedPara[]): {
-	title?: string;
-	authors?: ExtractedAuthor[];
-	keywords?: string[];
-} {
+export function extractFromZones(classified: ClassifiedPara[]) {
 	const titleParas = classified.filter((c) => c.zone === "TITLE");
 	const authorParas = classified.filter((c) => c.zone === "AUTHORS");
 	const affParas = classified.filter((c) => c.zone === "AFFILIATIONS");

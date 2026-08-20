@@ -7,10 +7,7 @@ import { cn } from "@/shared/lib/utils";
 export type DiffLayout = "split" | "inline";
 
 /** Status label + row style for each diff status (text label, not colour-only, for WCAG 1.4.1). */
-export const STATUS_STYLE: Record<
-	ListDiffStatus,
-	{ label: string; row: string }
-> = {
+export const STATUS_STYLE = {
 	added: { label: "added", row: "text-emerald-700 dark:text-emerald-300" },
 	removed: {
 		label: "removed",
@@ -18,7 +15,7 @@ export const STATUS_STYLE: Record<
 	},
 	changed: { label: "changed", row: "text-amber-700 dark:text-amber-300" },
 	unchanged: { label: "", row: "text-muted-foreground" },
-};
+} satisfies Record<ListDiffStatus, { label: string; row: string }>;
 
 function KeywordPill({
 	status,

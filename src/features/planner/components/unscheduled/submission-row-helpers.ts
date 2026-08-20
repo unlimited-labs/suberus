@@ -1,15 +1,16 @@
 import type { UnscheduledSubmission } from "@/features/planner/server/sessions";
+import { lookup } from "@/shared/lib/lookup";
 import { cn } from "@/shared/lib/utils";
 
-const TYPE_LABELS: Record<string, string> = {
+const TYPE_LABELS = {
 	ABSTRACT: "Oral",
 	FULL_PAPER: "Paper",
 	POSTER: "Poster",
-};
+} satisfies Record<string, string>;
 
 /** Short presentation-type label, falling back to the raw type code. */
 export function typeLabel(type: string): string {
-	return TYPE_LABELS[type] ?? type;
+	return lookup(TYPE_LABELS, type) ?? type;
 }
 
 /** First three author names joined, with a "+N" suffix for the rest. */

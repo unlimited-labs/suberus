@@ -42,10 +42,10 @@ export function assignableRoleOptions(
 		: userRoleOptions.filter((opt) => opt.value !== "ADMIN");
 }
 
-export const submissionRoleLabels: Record<SubmissionInvolvementRole, string> = {
+export const submissionRoleLabels = {
 	author: "author",
 	coauthor: "coauthor",
-};
+} satisfies Record<SubmissionInvolvementRole, string>;
 
 export const submissionRoleFilterOptions = [
 	{ label: "Author", value: "author" },
@@ -58,12 +58,11 @@ export const submissionDraftFilterOptions = [
 	{ label: "Draft", value: "draft" },
 ] as const;
 
-const submissionStatusSuffix: Record<SubmissionRoleSummary["status"], string> =
-	{
-		draft: " (draft)",
-		accepted: " (accepted)",
-		submitted: "",
-	};
+const submissionStatusSuffix = {
+	draft: " (draft)",
+	accepted: " (accepted)",
+	submitted: "",
+} satisfies Record<SubmissionRoleSummary["status"], string>;
 
 /** Single badge label, e.g. "Poster · coauthor ×3 (draft)". */
 export function formatSubmissionRole(role: SubmissionRoleSummary): string {

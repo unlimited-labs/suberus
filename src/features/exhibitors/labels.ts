@@ -1,21 +1,21 @@
 import type { ExhibitorStatus } from "@/generated/prisma/enums";
 
-export const exhibitorStatusLabels: Record<ExhibitorStatus, string> = {
+export const exhibitorStatusLabels = {
 	PENDING: "Pending",
 	APPROVED: "Approved",
 	REJECTED: "Not accepted",
 	WITHDRAWN: "Withdrawn",
-};
+} satisfies Record<ExhibitorStatus, string>;
 
-export const exhibitorStatusVariants: Record<
-	ExhibitorStatus,
-	"default" | "secondary" | "destructive" | "outline"
-> = {
+export const exhibitorStatusVariants = {
 	PENDING: "secondary",
 	APPROVED: "default",
 	REJECTED: "destructive",
 	WITHDRAWN: "outline",
-};
+} satisfies Record<
+	ExhibitorStatus,
+	"default" | "secondary" | "destructive" | "outline"
+>;
 
 export type ExhibitorDisplayStatus =
 	| "NOT_SUBMITTED"
@@ -28,23 +28,19 @@ export type ExhibitorDisplayStatus =
 export function exhibitorStatusBadge(
 	status: ExhibitorStatus,
 	appliedAt: Date | string | null,
-): {
-	key: ExhibitorDisplayStatus;
-	label: string;
-	variant: "default" | "secondary" | "destructive" | "outline";
-} {
+) {
 	if (status === "PENDING") {
 		return appliedAt
-			? {
+			? ({
 					key: "AWAITING_DECISION",
 					label: "Awaiting decision",
 					variant: "secondary",
-				}
-			: {
+				} as const)
+			: ({
 					key: "NOT_SUBMITTED",
 					label: "Application not submitted",
 					variant: "outline",
-				};
+				} as const);
 	}
 	return {
 		key: status as Exclude<

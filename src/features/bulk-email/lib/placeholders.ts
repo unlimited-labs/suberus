@@ -38,7 +38,7 @@ export function recipientValues(r: {
 	firstName: string | null;
 	lastName: string | null;
 	titles: string;
-}): PlaceholderValues {
+}) {
 	return {
 		firstName: r.firstName ?? "",
 		lastName: r.lastName ?? "",
@@ -78,8 +78,8 @@ export function pickRandom<T>(
 }
 
 /** Fallback sample values for a "send to me" test when a campaign has no recipients. */
-export const SAMPLE_VALUES: PlaceholderValues = {
+export const SAMPLE_VALUES = {
 	firstName: "Ada",
 	lastName: "Lovelace",
 	title: "On the Analytical Engine",
-};
+} satisfies PlaceholderValues;

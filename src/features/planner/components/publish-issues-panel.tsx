@@ -1,7 +1,7 @@
 import { IconAlertTriangle, IconCheck, IconLoader2 } from "@tabler/icons-react";
 import type { ScheduleIssue } from "@/features/planner/server/schedule";
 
-const ISSUE_LABELS: Record<string, string> = {
+const ISSUE_LABELS = {
 	SESSION_WITHOUT_CHAIR: "Session without chair",
 	SLOT_DURATION_OVERFLOW: "Presentations exceed session duration",
 	ROOM_DOUBLE_BOOKED: "Room double-booked",
@@ -10,7 +10,7 @@ const ISSUE_LABELS: Record<string, string> = {
 	PRESENTER_PARALLEL_SESSION: "Presenter in parallel sessions",
 	NON_ACCEPTED_SUBMISSION: "Non-accepted submission in program",
 	SESSION_OUT_OF_BOUNDS: "Session outside conference dates",
-};
+} satisfies Record<string, string>;
 
 interface PublishIssuesPanelProps {
 	issues: ScheduleIssue[] | undefined;

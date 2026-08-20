@@ -12,10 +12,7 @@ interface SubmissionsTableProps {
 	submissions: UserSubmission[];
 }
 
-const statusColors: Record<
-	SubmissionStatus,
-	"default" | "secondary" | "destructive" | "outline"
-> = {
+const statusColors = {
 	DRAFT: "outline",
 	SUBMITTED: "default",
 	UNDER_REVIEW: "secondary",
@@ -27,9 +24,12 @@ const statusColors: Record<
 	CONDITIONALLY_ACCEPTED: "default",
 	REJECTED: "destructive",
 	WITHDRAWN: "outline",
-};
+} satisfies Record<
+	SubmissionStatus,
+	"default" | "secondary" | "destructive" | "outline"
+>;
 
-const statusLabels: Record<SubmissionStatus, string> = {
+const statusLabels = {
 	DRAFT: "Draft",
 	SUBMITTED: "Submitted",
 	UNDER_REVIEW: "Under Review",
@@ -41,14 +41,14 @@ const statusLabels: Record<SubmissionStatus, string> = {
 	CONDITIONALLY_ACCEPTED: "Conditionally Accepted",
 	REJECTED: "Rejected",
 	WITHDRAWN: "Withdrawn",
-};
+} satisfies Record<SubmissionStatus, string>;
 
-const typeLabels: Record<SubmissionType, string> = {
+const typeLabels = {
 	ABSTRACT: "Abstract",
 	FULL_PAPER: "Full Paper",
 	POSTER: "Poster",
 	EXHIBITOR: "Exhibitor",
-};
+} satisfies Record<SubmissionType, string>;
 
 function CoAuthorBadge({ role }: { role: UserSubmission["role"] }) {
 	if (role !== "coauthor") return null;

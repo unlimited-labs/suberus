@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { COUNTRY_CENTROIDS } from "@/features/dashboard/country-centroids";
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
 import { useTheme } from "@/shared/components/theme-provider";
+import { lookup } from "@/shared/lib/lookup";
 import { MapControls, Map as MapView, useMap } from "@/shared/ui/map";
 import { SectionCard } from "@/shared/ui/section-card";
 import { Skeleton } from "@/shared/ui/skeleton";
@@ -89,7 +90,7 @@ function buildGeoJson(
 
 	for (const row of aggregateByCountry(data)) {
 		if (!row.code) continue;
-		const coords = COUNTRY_CENTROIDS[row.code];
+		const coords = lookup(COUNTRY_CENTROIDS, row.code);
 		if (!coords || row.count <= 0) continue;
 
 		features.push({

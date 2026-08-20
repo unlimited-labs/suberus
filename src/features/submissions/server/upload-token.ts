@@ -25,7 +25,7 @@ export function createUploadToken(
 	submissionId: string,
 	secret: string,
 	ttlMs: number = UPLOAD_LINK_TTL_MS,
-): { token: string; expiresAt: Date } {
+) {
 	const expiresAt = new Date(Date.now() + ttlMs);
 	const payload = `${submissionId}.${expiresAt.getTime()}`;
 	const encoded = Buffer.from(payload).toString("base64url");

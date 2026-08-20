@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
+import { lookup } from "@/shared/lib/lookup";
 import { SectionCard } from "@/shared/ui/section-card";
 
 const SubmissionStatusPie = lazy(() =>
@@ -10,7 +11,7 @@ interface SubmissionChartProps {
 	data: AdminDashboardMetrics["submissions"] | undefined;
 }
 
-const STATUS_LABELS: Record<string, string> = {
+const STATUS_LABELS = {
 	ACCEPTED: "Accepted",
 	CONDITIONALLY_ACCEPTED: "Cond. Accepted",
 	REJECTED: "Rejected",
@@ -22,7 +23,7 @@ const STATUS_LABELS: Record<string, string> = {
 	RESUBMITTED: "Resubmitted",
 	DRAFT: "Draft",
 	WITHDRAWN: "Withdrawn",
-};
+} satisfies Record<string, string>;
 
 export function SubmissionChart({ data }: SubmissionChartProps) {
 	if (!data) {
@@ -38,7 +39,7 @@ export function SubmissionChart({ data }: SubmissionChartProps) {
 	const chartData = Object.entries(data.byStatus)
 		.filter(([_, value]) => value > 0)
 		.map(([status, value]) => ({
-			name: STATUS_LABELS[status] || status,
+			name: lookup(STATUS_LABELS, status) || status,
 			value,
 			status,
 		}));

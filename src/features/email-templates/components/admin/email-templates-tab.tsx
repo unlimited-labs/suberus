@@ -29,7 +29,7 @@ export interface EmailTemplateUI {
 }
 
 /** Human-readable labels for EmailEventType */
-const eventTypeLabels: Record<EmailEventType, string> = {
+const eventTypeLabels = {
 	SUBMISSION_RECEIVED: "Submission Received",
 	SUBMISSION_WITHDRAWN: "Submission Withdrawn",
 	REVIEWER_ASSIGNED: "Reviewer Assigned",
@@ -54,7 +54,7 @@ const eventTypeLabels: Record<EmailEventType, string> = {
 	EXHIBITOR_APPROVED: "Exhibitor Approved",
 	EXHIBITOR_REJECTED: "Exhibitor Rejected",
 	DOCUMENT_GENERATED: "Document Generated",
-};
+} satisfies Record<EmailEventType, string>;
 
 /** Map Prisma EmailTemplate to UI shape */
 export function toEmailTemplateUI(t: {

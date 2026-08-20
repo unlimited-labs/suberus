@@ -45,6 +45,7 @@ function buildSurveyColumns(
 			formatSurveyAnswerValue(q.type, answerByQuestion.get(q.id) ?? ""),
 		);
 	}
+	// oxlint-disable-next-line anti-slop/no-known-value-widening -- survey questions name these columns at runtime
 	return columns;
 }
 
@@ -53,7 +54,7 @@ export function buildUserExportRow(
 	user: ExportUser,
 	questions: ExportQuestion[],
 	fmtDate: FormatExportDate,
-): Record<string, string> {
+) {
 	return {
 		"First Name": neutralizeFormula(user.firstName ?? ""),
 		"Last Name": neutralizeFormula(user.lastName ?? ""),

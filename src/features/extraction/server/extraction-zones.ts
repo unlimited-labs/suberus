@@ -116,14 +116,14 @@ function stepFromBody({ text }: ZoneContext): ZoneStep {
 	return { assign: "BODY", next: "BODY" };
 }
 
-const ZONE_STEPS: Record<Zone, (ctx: ZoneContext) => ZoneStep> = {
+const ZONE_STEPS = {
 	TITLE: stepFromTitle,
 	AUTHORS: stepFromAuthors,
 	AFFILIATIONS: stepFromAffiliations,
 	EMAILS: stepFromEmails,
 	KEYWORDS: stepFromKeywords,
 	BODY: stepFromBody,
-};
+} satisfies Record<Zone, (ctx: ZoneContext) => ZoneStep>;
 
 export function classifyZones(paragraphs: DocParagraph[]): ClassifiedPara[] {
 	const result: ClassifiedPara[] = [];

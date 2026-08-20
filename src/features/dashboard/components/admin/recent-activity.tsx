@@ -14,6 +14,7 @@ import {
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { formatRelativeTime } from "@/shared/lib/format-date";
+import { lookup } from "@/shared/lib/lookup";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -73,7 +74,7 @@ function PerformerByline({ event }: { event: ActivityEvent }) {
 
 function ActivityEventRow({ event }: { event: ActivityEvent }) {
 	const colorClass = getEventColor(event.type);
-	const label = activityLabels[event.type] ?? event.type;
+	const label = lookup(activityLabels, event.type) ?? event.type;
 	const description = getEventDescription(event);
 	const subject = resolveActivitySubject(event);
 	const { formatDateTime } = useDateFormat();

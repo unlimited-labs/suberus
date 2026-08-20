@@ -9,7 +9,7 @@ import type {
  * users) need them without importing the submissions slice.
  */
 
-export const statusLabels: Record<SubmissionStatus, string> = {
+export const statusLabels = {
 	DRAFT: "Draft",
 	SUBMITTED: "Submitted",
 	UNDER_REVIEW: "Under Review",
@@ -21,12 +21,9 @@ export const statusLabels: Record<SubmissionStatus, string> = {
 	CONDITIONALLY_ACCEPTED: "Conditionally Accepted",
 	REJECTED: "Rejected",
 	WITHDRAWN: "Withdrawn",
-};
+} satisfies Record<SubmissionStatus, string>;
 
-export const statusVariants: Record<
-	SubmissionStatus,
-	"default" | "secondary" | "destructive" | "outline"
-> = {
+export const statusVariants = {
 	DRAFT: "outline",
 	SUBMITTED: "secondary",
 	UNDER_REVIEW: "secondary",
@@ -38,14 +35,17 @@ export const statusVariants: Record<
 	CONDITIONALLY_ACCEPTED: "outline",
 	REJECTED: "destructive",
 	WITHDRAWN: "outline",
-};
+} satisfies Record<
+	SubmissionStatus,
+	"default" | "secondary" | "destructive" | "outline"
+>;
 
-export const typeLabels: Record<SubmissionType, string> = {
+export const typeLabels = {
 	ABSTRACT: "Oral Presentation",
 	FULL_PAPER: "Full Paper",
 	POSTER: "Poster",
 	EXHIBITOR: "Exhibitor",
-};
+} satisfies Record<SubmissionType, string>;
 
 export const typeFilterOptions = [
 	{ label: "Oral Presentation", value: "ABSTRACT" },

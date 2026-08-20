@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { lookup } from "@/shared/lib/lookup";
 import {
 	buildUserExportRow,
 	type ExportQuestion,
@@ -89,9 +90,9 @@ describe("buildUserExportRow", () => {
 			questions,
 			fmtDate,
 		);
-		expect(row.diet).toBe("vegan");
+		expect(lookup(row, "diet")).toBe("vegan");
 		// Unanswered question falls back to an empty string under its label key.
-		expect(row.Notes).toBe("");
+		expect(lookup(row, "Notes")).toBe("");
 	});
 
 	it("neutralizes formula-injection in text fields and survey answers", () => {

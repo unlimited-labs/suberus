@@ -20,6 +20,7 @@ import type {
 	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
+import { lookup } from "@/shared/lib/lookup";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
 import { deleteFile } from "@/shared/server/storage";
@@ -170,13 +171,12 @@ export async function deleteSubmission(
 // === Admin actions layer ===
 
 /** Maps target status → email event type for decision notifications to authors */
-const bulkDecisionEmailMap: Partial<Record<SubmissionStatus, EmailEventType>> =
-	{
-		ACCEPTED: "DECISION_ACCEPTED",
-		CONDITIONALLY_ACCEPTED: "DECISION_CONDITIONALLY_ACCEPTED",
-		REVISE_REQUIRED: "DECISION_REVISE_REQUIRED",
-		REJECTED: "DECISION_REJECTED",
-	};
+const bulkDecisionEmailMap = {
+	ACCEPTED: "DECISION_ACCEPTED",
+	CONDITIONALLY_ACCEPTED: "DECISION_CONDITIONALLY_ACCEPTED",
+	REVISE_REQUIRED: "DECISION_REVISE_REQUIRED",
+	REJECTED: "DECISION_REJECTED",
+} satisfies Partial<Record<SubmissionStatus, EmailEventType>>;
 
 export async function validateActiveTrack(trackId: string) {
 	const track = await prisma.conferenceTrack.findUnique({
@@ -402,12 +402,12 @@ export async function getAdminSubmissions(
 		getSubmissionTypeConfigs(),
 	]);
 
-	const requiredByType: Record<SubmissionType, number> = {
+	const requiredByType = {
 		ABSTRACT: configs.ORAL_PRESENTATION.requiredReviewers,
 		POSTER: configs.POSTER.requiredReviewers,
 		FULL_PAPER: configs.FULL_PAPER.requiredReviewers,
 		EXHIBITOR: 0, // exhibitor entries are not peer-reviewed
-	};
+	} satisfies Record<SubmissionType, number>;
 	const now = new Date();
 
 	const result: AdminSubmission[] = submissions.map((s) => {
@@ -823,7 +823,7 @@ export async function bulkChangeStatus(
 		);
 	}
 
-	const emailEvent = bulkDecisionEmailMap[targetStatus];
+	const emailEvent = lookup(bulkDecisionEmailMap, targetStatus);
 
 	for (const id of submissionIds) {
 		if (exhibitorIds.has(id)) continue;

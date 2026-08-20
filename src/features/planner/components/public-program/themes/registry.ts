@@ -1,4 +1,5 @@
 import type { PublicConferenceInfo } from "@/features/planner/api/schedule";
+import { lookup } from "@/shared/lib/lookup";
 import type { useProgramSchedule } from "../use-program-schedule";
 
 export interface ProgramThemeProps {
@@ -63,8 +64,5 @@ export const PROGRAM_THEME_LIST: ProgramThemeMeta[] =
 	Object.values(PROGRAM_THEMES);
 
 export function resolveProgramTheme(id: string): ProgramThemeMeta {
-	return (
-		(PROGRAM_THEMES as Record<string, ProgramThemeMeta>)[id] ??
-		PROGRAM_THEMES.default
-	);
+	return lookup(PROGRAM_THEMES, id) ?? PROGRAM_THEMES.default;
 }

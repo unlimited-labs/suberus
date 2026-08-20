@@ -9,6 +9,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { reviewDecisionColors } from "@/features/submissions/labels";
 import { submitEditorDecisionFn } from "@/features/workflow/api/workflow";
+import { lookup } from "@/shared/lib/lookup";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -151,7 +152,10 @@ export function EditorDecisionDialog({
 											</span>
 											<Badge
 												variant="outline"
-												className={reviewDecisionColors[review.decision]}
+												className={lookup(
+													reviewDecisionColors,
+													review.decision,
+												)}
 											>
 												{review.decision.replace(/_/g, " ")}
 											</Badge>

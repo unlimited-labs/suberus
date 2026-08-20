@@ -34,7 +34,7 @@ export function tallyGroups<G extends { _count: number }, K extends string>(
 	base: Record<K, number>,
 	groups: G[],
 	keyOf: (group: G) => K,
-): Record<K, number> {
+) {
 	const result = { ...base };
 	for (const group of groups) {
 		result[keyOf(group)] = group._count;

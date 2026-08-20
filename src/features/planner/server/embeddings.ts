@@ -44,10 +44,9 @@ async function callEmbeddingApi(text: string): Promise<number[]> {
 	if (!env.LLM_EMBEDDING_MODEL)
 		throw new Error("LLM_EMBEDDING_MODEL not configured");
 
-	const headers: Record<string, string> = {
-		"Content-Type": "application/json",
-	};
-	if (env.LLM_API_KEY) headers.Authorization = `Bearer ${env.LLM_API_KEY}`;
+	const headers = new Headers({ "Content-Type": "application/json" });
+	if (env.LLM_API_KEY)
+		headers.set("Authorization", `Bearer ${env.LLM_API_KEY}`);
 
 	const res = await fetch(`${env.LLM_API_URL}/embeddings`, {
 		method: "POST",

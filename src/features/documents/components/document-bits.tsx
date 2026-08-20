@@ -63,7 +63,7 @@ interface StatusAccent {
 	pulse?: boolean;
 }
 
-export const STATUS_ACCENT: Record<DocumentStatus, StatusAccent> = {
+export const STATUS_ACCENT = {
 	PENDING: {
 		label: "Generating…",
 		tile: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
@@ -78,14 +78,16 @@ export const STATUS_ACCENT: Record<DocumentStatus, StatusAccent> = {
 		dot: "bg-emerald-500",
 		badge:
 			"border-transparent bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
+		pulse: false,
 	},
 	FAILED: {
 		label: "Failed",
 		tile: "bg-destructive/10 text-destructive",
 		dot: "bg-destructive",
 		badge: "border-transparent bg-destructive/10 text-destructive",
+		pulse: false,
 	},
-};
+} satisfies Record<DocumentStatus, StatusAccent>;
 
 export function DocumentStatusBadge({ status }: { status: DocumentStatus }) {
 	const accent = STATUS_ACCENT[status];

@@ -17,7 +17,7 @@ export type DateFormatValue = (typeof DATE_FORMAT_VALUES)[number];
 // Map the stored (moment-style) format values to date-fns patterns.
 // Note: date-fns tokens are case-sensitive (DD = day-of-year, YYYY = week-year),
 // so day-of-month is `dd` and calendar year is `yyyy`.
-const DATE_FORMAT_PATTERNS: Record<DateFormatValue, string> = {
+const DATE_FORMAT_PATTERNS = {
 	"DD.MM.YYYY": "dd.MM.yyyy",
 	"DD/MM/YYYY": "dd/MM/yyyy",
 	"MM/DD/YYYY": "MM/dd/yyyy",
@@ -27,7 +27,7 @@ const DATE_FORMAT_PATTERNS: Record<DateFormatValue, string> = {
 	"MMM D, YYYY": "MMM d, yyyy",
 	"D MMMM YYYY": "d MMMM yyyy",
 	"MMMM D, YYYY": "MMMM d, yyyy",
-};
+} satisfies Record<DateFormatValue, string>;
 
 export function getDateFormats(
 	now = new Date(),

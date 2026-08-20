@@ -1,11 +1,7 @@
 import { format, isAfter } from "date-fns";
 import type { ProgramItem, TimeGroup } from "./program-types";
 
-export function dayLabelParts(date: Date): {
-	weekday: string;
-	dayNum: string;
-	month: string;
-} {
+export function dayLabelParts(date: Date) {
 	return {
 		weekday: format(date, "EEEE"),
 		dayNum: format(date, "dd"),

@@ -1,4 +1,5 @@
 import type { SubmissionStatus } from "@/generated/prisma/enums";
+import { lookup } from "@/shared/lib/lookup";
 
 /** Map status transition to human-readable description */
 export function getTransitionDescription(
@@ -6,7 +7,7 @@ export function getTransitionDescription(
 	toStatus: SubmissionStatus,
 	event: string,
 ): string {
-	const descriptions: Record<string, string> = {
+	const descriptions = {
 		SUBMIT: "Submission submitted for review",
 		ASSIGN_REVIEWER: "Reviewer assigned, submission under review",
 		DESK_REJECT: "Submission rejected without review (desk rejection)",
@@ -30,9 +31,10 @@ export function getTransitionDescription(
 		CONFIRM_CONDITIONS_MET:
 			"Editor confirmed conditions met — promoted to accepted",
 		RESUBMIT: "Author resubmitted revised version",
-	};
+	} satisfies Record<string, string>;
 
 	return (
-		descriptions[event] || `Status changed from ${fromStatus} to ${toStatus}`
+		lookup(descriptions, event) ||
+		`Status changed from ${fromStatus} to ${toStatus}`
 	);
 }

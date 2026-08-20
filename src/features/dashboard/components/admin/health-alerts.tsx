@@ -19,21 +19,14 @@ interface HealthAlertsProps {
 	smtp: AdminDashboardMetrics["smtp"] | undefined;
 }
 
-const SEVERITY_STYLES: Record<
-	HealthAlert["severity"],
-	{
-		variant: "default" | "destructive";
-		icon: React.ComponentType<{ className?: string }>;
-		className?: string;
-		iconClass: string;
-		titleClass?: string;
-		descClass?: string;
-	}
-> = {
+const SEVERITY_STYLES = {
 	destructive: {
 		variant: "destructive",
 		icon: IconAlertCircle,
+		className: undefined,
 		iconClass: "h-4 w-4",
+		titleClass: undefined,
+		descClass: undefined,
 	},
 	warning: {
 		variant: "default",
@@ -51,7 +44,17 @@ const SEVERITY_STYLES: Record<
 		titleClass: "text-blue-800 dark:text-blue-200",
 		descClass: "text-blue-700 dark:text-blue-300",
 	},
-};
+} satisfies Record<
+	HealthAlert["severity"],
+	{
+		variant: "default" | "destructive";
+		icon: React.ComponentType<{ className?: string }>;
+		className?: string;
+		iconClass: string;
+		titleClass?: string;
+		descClass?: string;
+	}
+>;
 
 function HealthAlertCard({ alert }: { alert: HealthAlert }) {
 	const style = SEVERITY_STYLES[alert.severity];

@@ -323,13 +323,7 @@ export function AffiliationSelect({
 		if (inputValue.trim()) setOpen(true);
 	};
 
-	const applyKeyAction: Record<
-		AffiliationKeyAction["type"],
-		(
-			action: AffiliationKeyAction,
-			e: React.KeyboardEvent<HTMLInputElement>,
-		) => void
-	> = {
+	const applyKeyAction = {
 		none: () => {},
 		open: () => setOpen(true),
 		navigate: (action, e) => {
@@ -349,7 +343,13 @@ export function AffiliationSelect({
 			setHighlightedIndex(-1);
 			inputRef.current?.blur();
 		},
-	};
+	} satisfies Record<
+		AffiliationKeyAction["type"],
+		(
+			action: AffiliationKeyAction,
+			e: React.KeyboardEvent<HTMLInputElement>,
+		) => void
+	>;
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		const action = resolveAffiliationKeyAction(e.key, {

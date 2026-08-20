@@ -62,7 +62,7 @@ export const sendTestEmailFn = createServerFn({ method: "POST" })
 			[context.user.firstName, context.user.name].filter(Boolean).join(" ") ||
 			"Example User";
 
-		const placeholders: Record<string, string> = {
+		const placeholders = {
 			authorName: fullName,
 			submissionTitle: "Example Submission Title",
 			submissionUrl: `${baseUrl}/submissions/example`,
@@ -80,7 +80,7 @@ export const sendTestEmailFn = createServerFn({ method: "POST" })
 			roleName: "Reviewer",
 			registrationUrl: `${baseUrl}/register?token=example`,
 			expiresAt: "2026-04-01",
-		};
+		} satisfies Record<string, string>;
 
 		await sendTestEmail(
 			context.user.email,

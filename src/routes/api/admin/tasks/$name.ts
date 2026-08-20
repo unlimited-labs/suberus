@@ -6,8 +6,9 @@ import {
 	sendReviewerReminders,
 	sendRevisionReminders,
 } from "@/features/submissions/server/reminders";
+import { lookup } from "@/shared/lib/lookup";
 
-const TASK_RUNNERS: Record<string, () => Promise<Record<string, number>>> = {
+const TASK_RUNNERS = {
 	"assignments:overdue": async () => ({
 		overdue: await markOverdueAssignments(),
 	}),
@@ -17,14 +18,14 @@ const TASK_RUNNERS: Record<string, () => Promise<Record<string, number>>> = {
 		const deadlineReminders = await sendDeadlineReminders();
 		return { reviewerReminders, revisionReminders, deadlineReminders };
 	},
-};
+} satisfies Record<string, () => Promise<Record<string, number>>>;
 
 export const Route = createFileRoute("/api/admin/tasks/$name")({
 	server: {
 		middleware: [adminRequestMiddleware],
 		handlers: {
 			POST: async ({ params }) => {
-				const runner = TASK_RUNNERS[params.name];
+				const runner = lookup(TASK_RUNNERS, params.name);
 				if (!runner) {
 					return Response.json(
 						{ error: `Unknown task: ${params.name}` },

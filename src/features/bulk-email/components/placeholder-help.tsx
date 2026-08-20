@@ -3,11 +3,11 @@ import { Badge } from "@/shared/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import { PLACEHOLDER_KEYS } from "../lib/placeholders";
 
-const DESCRIPTIONS: Record<(typeof PLACEHOLDER_KEYS)[number], string> = {
+const DESCRIPTIONS = {
 	firstName: "Recipient's first name",
 	lastName: "Recipient's last name",
 	title: "Recipient's submission titles (comma-separated)",
-};
+} satisfies Record<(typeof PLACEHOLDER_KEYS)[number], string>;
 
 /** Clickable placeholder chips — click copies the `{{token}}` to the clipboard. */
 export function PlaceholderHelp() {

@@ -13,7 +13,7 @@ export function resolveCompare(
 	search: { base?: number; compare?: number; view?: CompareLayout },
 	versions: Array<{ version: number }>,
 	current: number,
-): { base: number; compare: number; layout: CompareLayout } {
+) {
 	const fallback = defaultComparePair(versions, current);
 	return {
 		base: search.base ?? fallback.base,

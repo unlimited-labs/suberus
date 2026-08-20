@@ -114,9 +114,7 @@ export function resolveAffiliationKeyAction(
 }
 
 /** Combobox aria props that reference the active option id. */
-export function affiliationAriaProps(highlightedIndex: number): {
-	"aria-activedescendant": string | undefined;
-} {
+export function affiliationAriaProps(highlightedIndex: number) {
 	return {
 		"aria-activedescendant":
 			highlightedIndex >= 0

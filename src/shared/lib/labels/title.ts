@@ -1,4 +1,4 @@
-export const titleLabels: Record<string, string> = {
+export const titleLabels = {
 	dr: "Dr",
 	prof: "Prof",
 	"prof-dr": "Prof. Dr",
@@ -6,7 +6,7 @@ export const titleLabels: Record<string, string> = {
 	mgr: "MSc",
 	inz: "Eng",
 	lic: "BSc",
-};
+} satisfies Record<string, string>;
 
 export const titleOptions = [
 	{ value: "dr", label: "Dr" },

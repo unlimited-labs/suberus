@@ -18,10 +18,7 @@ function signingKey(): Buffer {
 }
 
 /** Decode the stored P12 bytes and unseal its password. */
-function decodeP12(cfg: DocumentSigningSettings): {
-	p12: Buffer;
-	password: string;
-} {
+function decodeP12(cfg: DocumentSigningSettings) {
 	return {
 		p12: Buffer.from(cfg.p12Base64, "base64"),
 		password: open(signingKey(), cfg.passwordSealed),

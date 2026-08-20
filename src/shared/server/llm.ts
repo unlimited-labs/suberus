@@ -24,9 +24,9 @@ export async function checkLlmHealth(): Promise<LlmHealthResult> {
 	let result: LlmHealthResult;
 
 	try {
-		const headers: Record<string, string> = {};
+		const headers = new Headers();
 		if (env.LLM_API_KEY) {
-			headers.Authorization = `Bearer ${env.LLM_API_KEY}`;
+			headers.set("Authorization", `Bearer ${env.LLM_API_KEY}`);
 		}
 
 		const response = await fetch(`${env.LLM_API_URL}/models`, {
@@ -123,11 +123,9 @@ export async function generateWithLlm({
 		throw new Error("LLM_API_URL not configured");
 	}
 
-	const headers: Record<string, string> = {
-		"Content-Type": "application/json",
-	};
+	const headers = new Headers({ "Content-Type": "application/json" });
 	if (env.LLM_API_KEY) {
-		headers.Authorization = `Bearer ${env.LLM_API_KEY}`;
+		headers.set("Authorization", `Bearer ${env.LLM_API_KEY}`);
 	}
 
 	const url = `${env.LLM_API_URL}/chat/completions`;

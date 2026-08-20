@@ -32,11 +32,7 @@ export function normalizeSupervisorId(
 }
 
 /** Title, description and submit label for the dialog, by mode. */
-export function trackDialogLabels(isEdit: boolean): {
-	title: string;
-	description: string;
-	submitLabel: string;
-} {
+export function trackDialogLabels(isEdit: boolean) {
 	return {
 		title: isEdit ? "Edit Track" : "Create Track",
 		description: isEdit

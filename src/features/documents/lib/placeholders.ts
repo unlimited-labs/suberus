@@ -53,7 +53,7 @@ export interface PlaceholderInput {
 export function computePlaceholders(
 	input: PlaceholderInput,
 ): ResolvedPlaceholders {
-	const values: Record<PlaceholderKey, string> = {
+	const values = {
 		firstName: input.firstName?.trim() ?? "",
 		lastName: input.lastName?.trim() ?? "",
 		affiliation: input.affiliationName?.trim() ?? "",
@@ -62,7 +62,7 @@ export function computePlaceholders(
 			.join(", "),
 		email: input.email.trim(),
 		date: input.date,
-	};
+	} satisfies Record<PlaceholderKey, string>;
 
 	const missing = PLACEHOLDER_KEYS.filter((key) => !values[key]);
 	return { values, missing };

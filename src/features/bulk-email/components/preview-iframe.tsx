@@ -16,10 +16,10 @@ const VIEWPORTS = [
 
 type Viewport = (typeof VIEWPORTS)[number]["id"];
 
-const FRAME: Record<Viewport, string> = {
+const FRAME = {
 	desktop: "w-full",
 	mobile: "w-[390px] border border-border shadow-sm",
-};
+} satisfies Record<Viewport, string>;
 
 /**
  * Renders the email preview. HTML is shown inside a sandboxed iframe so

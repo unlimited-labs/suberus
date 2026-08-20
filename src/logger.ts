@@ -2,8 +2,9 @@ import chalk from "chalk";
 import { createConsola } from "consola";
 import { format } from "date-fns";
 import { env } from "./env";
+import { lookup } from "./shared/lib/lookup";
 
-const levelBadge: Record<string, (s: string) => string> = {
+const levelBadge = {
 	error: chalk.bgRed.white,
 	fatal: chalk.bgRed.white.bold,
 	warn: chalk.bgYellow.black,
@@ -14,7 +15,7 @@ const levelBadge: Record<string, (s: string) => string> = {
 };
 
 function colorPrint(level: string, msg: string) {
-	const badge = levelBadge[level] ?? chalk.bgWhite.black;
+	const badge = lookup(levelBadge, level) ?? chalk.bgWhite.black;
 	const levelTag = badge(` ${level.toUpperCase().padEnd(5)} `);
 	process.stdout.write(`${levelTag} ${msg}\n`);
 }

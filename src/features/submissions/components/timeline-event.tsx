@@ -22,22 +22,7 @@ interface TimelineEventProps {
 	isLast?: boolean;
 }
 
-const statusConfig: Record<
-	SubmissionStatus,
-	{
-		color:
-			| "blue"
-			| "orange"
-			| "purple"
-			| "green"
-			| "red"
-			| "yellow"
-			| "gray"
-			| "default";
-		icon: typeof IconCheck;
-		label: string;
-	}
-> = {
+const statusConfig = {
 	DRAFT: {
 		color: "blue",
 		icon: IconEdit,
@@ -93,7 +78,22 @@ const statusConfig: Record<
 		icon: IconX,
 		label: "Withdrawn",
 	},
-};
+} satisfies Record<
+	SubmissionStatus,
+	{
+		color:
+			| "blue"
+			| "orange"
+			| "purple"
+			| "green"
+			| "red"
+			| "yellow"
+			| "gray"
+			| "default";
+		icon: typeof IconCheck;
+		label: string;
+	}
+>;
 
 export function TimelineEvent({ event, isLast = false }: TimelineEventProps) {
 	const config = statusConfig[event.status];

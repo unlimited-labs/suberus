@@ -238,7 +238,7 @@ interface StageStyle {
 	strip: string;
 }
 
-const STAGE_STYLES: Record<StageStatus, StageStyle> = {
+const STAGE_STYLES = {
 	pending: {
 		container: "border-dashed opacity-60",
 		iconWrap: "bg-muted text-muted-foreground/70",
@@ -265,7 +265,7 @@ const STAGE_STYLES: Record<StageStatus, StageStyle> = {
 		label: "",
 		strip: "bg-primary/40",
 	},
-};
+} satisfies Record<StageStatus, StageStyle>;
 
 function StageIcon({
 	status,

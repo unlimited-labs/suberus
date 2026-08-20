@@ -37,15 +37,15 @@ export function reviewersDisagree(decisions: ReviewDecision[]): boolean {
 }
 
 /** Maps an auto-applied reviewer decision to the author-facing email event. */
-export const DECISION_EMAIL_EVENT: Record<ReviewDecision, EmailEventType> = {
+export const DECISION_EMAIL_EVENT = {
 	ACCEPT: "DECISION_ACCEPTED",
 	ACCEPT_WITH_MINOR_REVISIONS: "DECISION_CONDITIONALLY_ACCEPTED",
 	REVISE_AND_RESUBMIT: "DECISION_REVISE_REQUIRED",
 	REJECT: "DECISION_REJECTED",
-};
+} satisfies Record<ReviewDecision, EmailEventType>;
 
 /** Default letter text sent to the author when a decision is auto-applied. */
-export const DECISION_LETTER_TEXT: Record<ReviewDecision, string> = {
+export const DECISION_LETTER_TEXT = {
 	ACCEPT:
 		"Based on the reviewer's recommendation, your submission has been accepted.",
 	ACCEPT_WITH_MINOR_REVISIONS:
@@ -53,4 +53,4 @@ export const DECISION_LETTER_TEXT: Record<ReviewDecision, string> = {
 	REVISE_AND_RESUBMIT:
 		"Based on the reviewer's recommendation, your submission requires revisions. Please review the feedback and resubmit.",
 	REJECT: "After careful review, your submission has not been accepted.",
-};
+} satisfies Record<ReviewDecision, string>;

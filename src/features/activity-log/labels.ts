@@ -42,4 +42,4 @@ const labels = {
 	SETTINGS_CONFERENCE_UPDATED: "Conference settings updated",
 } satisfies Record<ActivityType, string>;
 
-export const activityLabels: Record<string, string> = labels;
+export const activityLabels = labels;

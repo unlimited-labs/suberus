@@ -11,6 +11,7 @@ import {
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
 import { statusLabels } from "@/shared/lib/labels/submission";
 import { roleLabels } from "@/shared/lib/labels/user-role";
+import { lookup } from "@/shared/lib/lookup";
 
 export type ActivityEvent = AdminDashboardMetrics["recentActivity"][number];
 type ActivityDetailValue =
@@ -138,7 +139,7 @@ const mcpClientOf: DescriptionRenderer = (e) => {
 	return redirects ? `${clientId} → ${redirects}` : clientId;
 };
 
-const descriptionRenderers: Record<string, DescriptionRenderer> = {
+const descriptionRenderers = {
 	MCP_CLIENT_REGISTERED: mcpClientOf,
 	MCP_CLIENT_UPDATED: (e) => {
 		const base = mcpClientOf(e);
@@ -184,9 +185,9 @@ const descriptionRenderers: Record<string, DescriptionRenderer> = {
 		e.detail?.amount != null
 			? `${String(e.detail.amount)} ${e.detail.currency ? String(e.detail.currency) : ""}`.trim()
 			: null,
-};
+} satisfies Record<string, DescriptionRenderer>;
 
 /** Short detail line for an event: transition, decision, reason, snapshot. */
 export function getEventDescription(event: ActivityEvent): string | null {
-	return descriptionRenderers[event.type]?.(event) ?? null;
+	return lookup(descriptionRenderers, event.type)?.(event) ?? null;
 }

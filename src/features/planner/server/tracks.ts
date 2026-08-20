@@ -11,10 +11,7 @@ export interface ProgramTrackWithStats {
 
 const SERIES_RE = /^(.+?)\s+(\d+)$/;
 
-export function parseSeries(name: string): {
-	series: string | null;
-	seriesOrder: number | null;
-} {
+export function parseSeries(name: string) {
 	const m = name.trim().match(SERIES_RE);
 	if (!m) return { series: null, seriesOrder: null };
 	return { series: m[1].trim(), seriesOrder: Number.parseInt(m[2], 10) };
@@ -60,18 +57,15 @@ export async function updateProgramTrack(
 	id: string,
 	data: { name?: string; color?: string | null },
 ): Promise<void> {
-	const patch: {
-		name?: string;
-		color?: string | null;
-		series?: string | null;
-		seriesOrder?: number | null;
-	} = { ...data };
-	if (data.name !== undefined) {
-		const parsed = parseSeries(data.name);
-		patch.series = parsed.series;
-		patch.seriesOrder = parsed.seriesOrder;
-	}
-	await prisma.programTrack.update({ where: { id }, data: patch });
+	const parsed = data.name === undefined ? null : parseSeries(data.name);
+	await prisma.programTrack.update({
+		where: { id },
+		data: {
+			...data,
+			series: parsed?.series,
+			seriesOrder: parsed?.seriesOrder,
+		},
+	});
 }
 
 export async function deleteProgramTrack(id: string): Promise<void> {

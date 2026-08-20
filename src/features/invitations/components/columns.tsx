@@ -6,6 +6,7 @@ import {
 import type { AdminInvitation } from "@/features/invitations/server/invitations";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { roleLabels } from "@/shared/lib/labels/user-role";
+import { lookup } from "@/shared/lib/lookup";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { DataTableColumnHeader } from "@/shared/ui/data-table";
@@ -59,7 +60,7 @@ export function createInvitationColumns(
 			),
 			cell: ({ row }) => {
 				const status = row.getValue("status") as string;
-				const config = invitationStatusConfig[status] ?? {
+				const config = lookup(invitationStatusConfig, status) ?? {
 					label: status,
 					variant: "outline" as const,
 				};

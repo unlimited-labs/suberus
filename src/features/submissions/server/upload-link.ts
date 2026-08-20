@@ -4,10 +4,7 @@ import {
 	verifyUploadToken,
 } from "@/features/submissions/server/upload-token";
 
-export function issueUploadLink(submissionId: string): {
-	url: string;
-	expiresAt: Date;
-} {
+export function issueUploadLink(submissionId: string) {
 	const { token, expiresAt } = createUploadToken(submissionId, env.AUTH_SECRET);
 	return {
 		url: `${env.APP_BASE_URL.replace(/\/$/, "")}/api/submissions/upload/${token}`,

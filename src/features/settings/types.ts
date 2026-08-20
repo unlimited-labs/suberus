@@ -207,13 +207,12 @@ export const SUBMISSION_TYPE_TO_KEY = {
 } as const;
 
 /** Map from AppSettingKey to display name */
-export const SUBMISSION_TYPE_DISPLAY_NAMES: Record<SubmissionTypeKey, string> =
-	{
-		SUBMISSION_TYPE_ORAL_PRESENTATION: "Oral Presentation",
-		SUBMISSION_TYPE_POSTER: "Poster",
-		SUBMISSION_TYPE_FULL_PAPER: "Full Paper",
-		SUBMISSION_TYPE_EXHIBITOR: "Exhibitor",
-	};
+export const SUBMISSION_TYPE_DISPLAY_NAMES = {
+	SUBMISSION_TYPE_ORAL_PRESENTATION: "Oral Presentation",
+	SUBMISSION_TYPE_POSTER: "Poster",
+	SUBMISSION_TYPE_FULL_PAPER: "Full Paper",
+	SUBMISSION_TYPE_EXHIBITOR: "Exhibitor",
+} satisfies Record<SubmissionTypeKey, string>;
 
 /** Type-safe key derived from AppSettingsMap (single source of truth) */
 export type AppSettingKey = keyof AppSettingsMap;

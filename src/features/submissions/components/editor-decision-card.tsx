@@ -10,22 +10,22 @@ interface EditorDecisionCardProps {
 	defaultCollapsed?: boolean;
 }
 
-const decisionColors: Record<
-	EditorDecisionType,
-	"default" | "secondary" | "destructive" | "outline"
-> = {
+const decisionColors = {
 	ACCEPT: "default",
 	CONDITIONALLY_ACCEPT: "default",
 	REVISE_AND_RESUBMIT: "outline",
 	REJECT: "destructive",
-};
+} satisfies Record<
+	EditorDecisionType,
+	"default" | "secondary" | "destructive" | "outline"
+>;
 
-const decisionLabels: Record<EditorDecisionType, string> = {
+const decisionLabels = {
 	ACCEPT: "Accepted",
 	CONDITIONALLY_ACCEPT: "Conditionally Accepted",
 	REVISE_AND_RESUBMIT: "Revisions Required",
 	REJECT: "Rejected",
-};
+} satisfies Record<EditorDecisionType, string>;
 
 function DecisionContent({ decision }: { decision: UserSubmissionDecision }) {
 	const { formatDateTime } = useDateFormat();

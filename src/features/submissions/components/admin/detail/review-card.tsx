@@ -1,5 +1,6 @@
 import { IconDownload } from "@tabler/icons-react";
 import { reviewDecisionColors } from "@/features/submissions/labels";
+import { lookup } from "@/shared/lib/lookup";
 import { formatFileSize } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { SectionCard } from "@/shared/ui/section-card";
@@ -29,7 +30,7 @@ export function ReviewCard({
 			action={
 				<Badge
 					variant="outline"
-					className={reviewDecisionColors[review.decision]}
+					className={lookup(reviewDecisionColors, review.decision)}
 				>
 					{review.decision.replace(/_/g, " ")}
 				</Badge>

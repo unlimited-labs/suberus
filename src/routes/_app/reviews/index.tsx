@@ -17,13 +17,13 @@ export const Route = createFileRoute("/_app/reviews/")({
 	component: ReviewsPage,
 });
 
-const columnLabels: Record<string, string> = {
+const columnLabels = {
 	submissionTitle: "Submission",
 	authorName: "Author",
 	status: "Status",
 	deadline: "Deadline",
 	submissionType: "Type",
-};
+} satisfies Record<string, string>;
 
 function ReviewsPage() {
 	const { data: result } = useSuspenseQuery(myAssignmentsQueryOptions());

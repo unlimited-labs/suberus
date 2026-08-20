@@ -33,7 +33,7 @@ export const reviewDecisionColors = {
 	ACCEPT_WITH_MINOR_REVISIONS: "bg-blue-100 text-blue-800",
 	REVISE_AND_RESUBMIT: "bg-amber-100 text-amber-800",
 	REJECT: "bg-red-100 text-red-800",
-} satisfies Record<ReviewDecision, string> as Record<string, string>;
+} satisfies Record<ReviewDecision, string>;
 
 /**
  * Admin "TODO" column — the next action an admin should take on a submission.
@@ -77,10 +77,7 @@ export function todoTone(kind: TodoKind): TodoTone {
 }
 
 /** Badge variant for action TODOs (muted ones don't use a badge). */
-export const todoBadgeVariant: Record<
-	TodoKind,
-	"default" | "secondary" | "destructive" | "outline"
-> = {
+export const todoBadgeVariant = {
 	ASSIGN_REVIEWER: "default",
 	REVIEWER_OVERDUE: "destructive",
 	MAKE_DECISION: "default",
@@ -90,7 +87,10 @@ export const todoBadgeVariant: Record<
 	AWAITING_REVIEWS: "outline",
 	AWAITING_REVISION: "outline",
 	NONE: "outline",
-};
+} satisfies Record<
+	TodoKind,
+	"default" | "secondary" | "destructive" | "outline"
+>;
 
 /** Full cell label, interpolating counts where the kind carries them. */
 export function todoLabel(todo: SubmissionTodo): string {
@@ -131,7 +131,7 @@ export function todoTooltip(todo: SubmissionTodo): string | null {
 }
 
 /** Short label (no counts) used by the column filter dropdown. */
-export const todoKindLabels: Record<TodoKind, string> = {
+export const todoKindLabels = {
 	ASSIGN_REVIEWER: "Assign reviewer",
 	REVIEWER_OVERDUE: "Review overdue",
 	MAKE_DECISION: "Make decision",
@@ -141,7 +141,7 @@ export const todoKindLabels: Record<TodoKind, string> = {
 	AWAITING_REVIEWS: "Awaiting reviews",
 	AWAITING_REVISION: "Awaiting revision",
 	NONE: "No action",
-};
+} satisfies Record<TodoKind, string>;
 
 export const todoFilterOptions = (
 	[
@@ -158,7 +158,7 @@ export const todoFilterOptions = (
 ).map((kind) => ({ label: todoKindLabels[kind], value: kind }));
 
 /** Priority for sorting: actions first, then waiting states, then none. */
-export const todoSortRank: Record<TodoKind, number> = {
+export const todoSortRank = {
 	REVIEWER_OVERDUE: 0,
 	ASSIGN_REVIEWER: 1,
 	MAKE_DECISION: 2,
@@ -168,7 +168,7 @@ export const todoSortRank: Record<TodoKind, number> = {
 	AWAITING_REVISION: 6,
 	AWAITING_SUBMISSION: 7,
 	NONE: 8,
-};
+} satisfies Record<TodoKind, number>;
 
 export const statusChangeOptions: {
 	value: SubmissionStatus;

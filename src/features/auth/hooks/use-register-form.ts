@@ -10,6 +10,7 @@ import type { SurveyAudience } from "@/generated/prisma/enums";
 import type { SurveyQuestionData } from "@/shared/components/survey-question-field";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { signUp } from "@/shared/lib/auth-client";
+import { lookup } from "@/shared/lib/lookup";
 import { COUNTRIES } from "@/shared/ui/country-combobox";
 
 export type RegisterSurveyQuestions = (SurveyQuestionData & {
@@ -49,7 +50,7 @@ type RegisterField =
 	| "country"
 	| "acceptTerms";
 
-const STEP_FIELDS: Record<number, RegisterField[]> = {
+const STEP_FIELDS = {
 	1: [
 		"email",
 		"password",
@@ -60,7 +61,7 @@ const STEP_FIELDS: Record<number, RegisterField[]> = {
 	],
 	2: ["address", "country"],
 	3: ["acceptTerms"],
-};
+} satisfies Record<number, RegisterField[]>;
 
 type RegisterNavigate = (opts: { to: "/" }) => void;
 
@@ -251,7 +252,7 @@ export function useRegisterForm({
 							: [],
 					)
 				: [];
-		const fields = [...(STEP_FIELDS[step] ?? []), ...surveyFields];
+		const fields = [...(lookup(STEP_FIELDS, step) ?? []), ...surveyFields];
 		const results = await Promise.all(
 			fields.map((field) => form.validateField(field, "change")),
 		);

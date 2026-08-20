@@ -1,7 +1,8 @@
 import type { McpScope } from "@/features/mcp/scopes";
+import { lookup } from "@/shared/lib/lookup";
 
 /** Plain-language descriptions for the OAuth scopes this server issues. */
-const SCOPE_LABELS: Record<string, string> = {
+const SCOPE_LABELS = {
 	openid: "Confirm who you are",
 	profile: "Read your name and account details",
 	email: "Read your email address",
@@ -19,10 +20,10 @@ const SCOPE_LABELS: Record<string, string> = {
 		"Build and publish the programme, including automatic planning",
 	"email:send":
 		"Compose and send emails to participants you select, and read past campaigns with their recipients",
-} satisfies Record<McpScope, string>;
+} satisfies Record<string, string> satisfies Record<McpScope, string>;
 
 export function scopeLabel(scope: string): string {
-	return SCOPE_LABELS[scope] ?? scope;
+	return lookup(SCOPE_LABELS, scope) ?? scope;
 }
 
 export function connectCommand({

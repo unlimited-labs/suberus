@@ -17,12 +17,12 @@ import {
 } from "@/shared/ui/dialog";
 import { Input } from "@/shared/ui/input";
 
-const SKIP_REASON_LABEL: Record<BulkSkip["reason"], string> = {
+const SKIP_REASON_LABEL = {
 	"no-number": "no leading number",
 	"not-found": "no matching submission",
 	"not-pdf": "not a PDF",
 	"too-large": "exceeds 25MB",
-};
+} satisfies Record<BulkSkip["reason"], string>;
 
 export function CameraReadyBulkUploadButton() {
 	const queryClient = useQueryClient();

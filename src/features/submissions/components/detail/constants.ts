@@ -3,7 +3,7 @@ import type {
 	SubmissionType,
 } from "@/generated/prisma/enums";
 
-export const STATUS_GRADIENTS: Record<SubmissionStatus, string> = {
+export const STATUS_GRADIENTS = {
 	DRAFT: "from-slate-400 to-slate-500",
 	SUBMITTED: "from-blue-400 to-blue-600",
 	UNDER_REVIEW: "from-orange-400 to-orange-600",
@@ -15,9 +15,9 @@ export const STATUS_GRADIENTS: Record<SubmissionStatus, string> = {
 	CONDITIONALLY_ACCEPTED: "from-emerald-400 to-emerald-600",
 	REJECTED: "from-red-400 to-red-600",
 	WITHDRAWN: "from-gray-400 to-gray-500",
-};
+} satisfies Record<SubmissionStatus, string>;
 
-export const STATUS_LABELS: Record<SubmissionStatus, string> = {
+export const STATUS_LABELS = {
 	DRAFT: "Draft",
 	SUBMITTED: "Submitted",
 	UNDER_REVIEW: "Under Review",
@@ -29,11 +29,11 @@ export const STATUS_LABELS: Record<SubmissionStatus, string> = {
 	CONDITIONALLY_ACCEPTED: "Conditionally Accepted",
 	REJECTED: "Rejected",
 	WITHDRAWN: "Withdrawn",
-};
+} satisfies Record<SubmissionStatus, string>;
 
-export const TYPE_LABELS: Record<SubmissionType, string> = {
+export const TYPE_LABELS = {
 	ABSTRACT: "Abstract",
 	FULL_PAPER: "Full Paper",
 	POSTER: "Poster",
 	EXHIBITOR: "Exhibitor",
-};
+} satisfies Record<SubmissionType, string>;

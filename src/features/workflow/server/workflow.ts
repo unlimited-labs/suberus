@@ -149,13 +149,11 @@ export async function executeSubmissionTransition(
 	const newState = String(nextSnapshot.value) as SubmissionStatus;
 
 	await prisma.$transaction(async (tx) => {
-		const updateData: { status: SubmissionStatus; currentRound?: number } = {
+		const updateData = {
 			status: newState,
+			currentRound:
+				event.type === "RESUBMIT" ? submission.currentRound + 1 : undefined,
 		};
-
-		if (event.type === "RESUBMIT") {
-			updateData.currentRound = submission.currentRound + 1;
-		}
 
 		await tx.submission.update({
 			where: { id: submissionId },
@@ -344,21 +342,14 @@ export async function executeAssignmentTransition(
 	const nextSnapshot = actor.getSnapshot();
 	const newState = String(nextSnapshot.value) as AssignmentStatus;
 
-	const updateData: {
-		status: AssignmentStatus;
-		completedAt?: Date;
-		cancelledAt?: Date;
-	} = { status: newState };
-
-	if (event.type === "COMPLETE") {
-		updateData.completedAt = new Date();
-	} else if (event.type === "CANCEL") {
-		updateData.cancelledAt = new Date();
-	}
-
+	const now = new Date();
 	await prisma.reviewAssignment.update({
 		where: { id: assignmentId },
-		data: updateData,
+		data: {
+			status: newState,
+			completedAt: event.type === "COMPLETE" ? now : undefined,
+			cancelledAt: event.type === "CANCEL" ? now : undefined,
+		},
 	});
 
 	actor.stop();

@@ -76,10 +76,7 @@ export function computeReviewSummary(
 }
 
 /** Whether any review carries scores, and the average across all of them. */
-export function computeReviewsAggregate(reviews: UserSubmissionReview[]): {
-	hasScores: boolean;
-	avgScore: number;
-} {
+export function computeReviewsAggregate(reviews: UserSubmissionReview[]) {
 	const allScores = reviews.flatMap((r) =>
 		r.scores ? Object.values(r.scores) : [],
 	);

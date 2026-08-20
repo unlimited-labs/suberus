@@ -17,10 +17,7 @@ import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { type DeadlineVariant, getDeadlineDisplay } from "./review-deadline";
 
-const DEADLINE_PRESENTATION: Record<
-	DeadlineVariant,
-	{ Icon: typeof IconClock; iconClassName: string; textClassName: string }
-> = {
+const DEADLINE_PRESENTATION = {
 	completed: {
 		Icon: IconCircleCheck,
 		iconClassName: "size-4 text-primary",
@@ -41,7 +38,10 @@ const DEADLINE_PRESENTATION: Record<
 		iconClassName: "size-4 text-muted-foreground",
 		textClassName: "text-sm text-muted-foreground",
 	},
-};
+} satisfies Record<
+	DeadlineVariant,
+	{ Icon: typeof IconClock; iconClassName: string; textClassName: string }
+>;
 
 function DeadlineRow({ deadline, status }: { deadline: Date; status: string }) {
 	const { formatDate } = useDateFormat();

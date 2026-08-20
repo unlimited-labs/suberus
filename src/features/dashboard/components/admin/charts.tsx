@@ -8,6 +8,7 @@ import {
 	ResponsiveContainer,
 	Tooltip,
 } from "recharts";
+import { lookup } from "@/shared/lib/lookup";
 
 interface SparklineChartProps {
 	data: number[];
@@ -92,7 +93,7 @@ export function ReviewCompletionPie({
 	);
 }
 
-const STATUS_COLORS: Record<string, string> = {
+const STATUS_COLORS = {
 	ACCEPTED: "#22c55e",
 	CONDITIONALLY_ACCEPTED: "#86efac",
 	REJECTED: "#ef4444",
@@ -104,7 +105,7 @@ const STATUS_COLORS: Record<string, string> = {
 	RESUBMITTED: "#06b6d4",
 	DRAFT: "#6b7280",
 	WITHDRAWN: "#9ca3af",
-};
+} satisfies Record<string, string>;
 
 interface SubmissionStatusDatum {
 	name: string;
@@ -136,7 +137,7 @@ export function SubmissionStatusPie({ data, total }: SubmissionStatusPieProps) {
 					{data.map((entry) => (
 						<Cell
 							key={entry.status}
-							fill={STATUS_COLORS[entry.status] || "#6b7280"}
+							fill={lookup(STATUS_COLORS, entry.status) || "#6b7280"}
 						/>
 					))}
 				</Pie>

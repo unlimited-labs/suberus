@@ -100,14 +100,13 @@ export function SubmissionsColumnHeader({
 	column,
 	table,
 }: SubmissionsColumnHeaderProps) {
-	const columns: Record<Dimension, AppColumn<AdminUser, unknown> | undefined> =
-		{
-			type: table.getColumn("submissionType"),
-			role: table.getColumn("submissionRole"),
-			draft: table.getColumn("submissionDraft"),
-		};
+	const columns = {
+		type: table.getColumn("submissionType"),
+		role: table.getColumn("submissionRole"),
+		draft: table.getColumn("submissionDraft"),
+	} satisfies Record<Dimension, AppColumn<AdminUser, unknown> | undefined>;
 
-	const readSelection = (): Record<Dimension, string[]> => ({
+	const readSelection = () => ({
 		type: (columns.type?.getFilterValue() as string[] | undefined) ?? [],
 		role: (columns.role?.getFilterValue() as string[] | undefined) ?? [],
 		draft: (columns.draft?.getFilterValue() as string[] | undefined) ?? [],

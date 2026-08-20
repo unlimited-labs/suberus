@@ -8,6 +8,7 @@ import {
 	updateEmailTemplateFn,
 } from "@/features/email-templates/api/email-templates";
 import { getErrorMessage } from "@/shared/lib/error-message";
+import { lookup } from "@/shared/lib/lookup";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import {
@@ -25,7 +26,7 @@ import { Textarea } from "@/shared/ui/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import type { EmailTemplateUI } from "./email-templates-tab";
 
-const PLACEHOLDER_DESCRIPTIONS: Record<string, string> = {
+const PLACEHOLDER_DESCRIPTIONS = {
 	authorName: "Author's full name",
 	submissionTitle: "Title of the submission",
 	submissionUrl: "Link to view the submission",
@@ -42,7 +43,7 @@ const PLACEHOLDER_DESCRIPTIONS: Record<string, string> = {
 	roleName: "Assigned role name",
 	registrationUrl: "Registration link",
 	expiresAt: "Invitation expiration date",
-};
+} satisfies Record<string, string>;
 
 interface EmailTemplateDialogProps {
 	template: EmailTemplateUI | null;
@@ -190,7 +191,7 @@ export function EmailTemplateDialog({
 						<div className="flex flex-wrap gap-1.5">
 							{data.placeholders.map((placeholder) => {
 								const description =
-									PLACEHOLDER_DESCRIPTIONS[placeholder] ?? placeholder;
+									lookup(PLACEHOLDER_DESCRIPTIONS, placeholder) ?? placeholder;
 								return (
 									<Tooltip key={placeholder}>
 										<TooltipTrigger asChild>

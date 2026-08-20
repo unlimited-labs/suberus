@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_app/admin/_layout/submissions/")({
 	component: AdminSubmissionsPage,
 });
 
-const columnLabels: Record<string, string> = {
+const columnLabels = {
 	sequentialNumber: "Sequential number",
 	title: "Title",
 	type: "Type",
@@ -33,7 +33,7 @@ const columnLabels: Record<string, string> = {
 	createdAt: "Submitted",
 	updatedAt: "Last updated",
 	actions: "Actions",
-};
+} satisfies Record<string, string>;
 
 function AdminSubmissionsPage() {
 	const queryClient = useQueryClient();

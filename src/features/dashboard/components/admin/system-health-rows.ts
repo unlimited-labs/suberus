@@ -21,10 +21,7 @@ export interface ServiceRow {
 	detail: string;
 }
 
-export const STATUS_STYLES: Record<
-	ServiceStatus,
-	{ dot: string; label: string }
-> = {
+export const STATUS_STYLES = {
 	healthy: { dot: "bg-green-500", label: "text-green-600 dark:text-green-400" },
 	unavailable: {
 		dot: "bg-blue-500",
@@ -35,7 +32,7 @@ export const STATUS_STYLES: Record<
 		label: "text-yellow-600 dark:text-yellow-500",
 	},
 	error: { dot: "bg-red-500", label: "text-red-600 dark:text-red-400" },
-};
+} satisfies Record<ServiceStatus, { dot: string; label: string }>;
 
 type S3Metrics = AdminDashboardMetrics["s3"] | undefined;
 type SmtpMetrics = AdminDashboardMetrics["smtp"] | undefined;

@@ -15,6 +15,7 @@ import { Link } from "@tanstack/react-router";
 import { roleLabels } from "@/features/users/labels";
 import type { AdminUserDetail } from "@/features/users/server/users";
 import { titleLabels } from "@/shared/lib/labels/title";
+import { lookup } from "@/shared/lib/lookup";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -74,7 +75,8 @@ export function UserDetailHeader({
 					</Avatar>
 					<div className="flex flex-col gap-1">
 						<CardTitle className="text-xl">
-							{user.title && `${titleLabels[user.title] ?? user.title} `}
+							{user.title &&
+								`${lookup(titleLabels, user.title) ?? user.title} `}
 							{user.firstName} {user.lastName}
 						</CardTitle>
 						<div className="flex items-center gap-2">

@@ -17,10 +17,7 @@ import { useTrackForm } from "./hooks/use-track-form";
 
 const SERIES_RE = /^(.+?)\s+(\d+)$/;
 
-function parseSeries(name: string): {
-	series: string | null;
-	seriesOrder: number | null;
-} {
+function parseSeries(name: string) {
 	const m = name.trim().match(SERIES_RE);
 	if (!m) return { series: null, seriesOrder: null };
 	return { series: m[1].trim(), seriesOrder: Number.parseInt(m[2], 10) };

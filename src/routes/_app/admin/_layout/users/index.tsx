@@ -31,7 +31,7 @@ export const Route = createFileRoute("/_app/admin/_layout/users/")({
 	component: UsersPage,
 });
 
-const columnLabels: Record<string, string> = {
+const columnLabels = {
 	name: "Name",
 	role: "Role",
 	affiliation: "Affiliation",
@@ -39,7 +39,7 @@ const columnLabels: Record<string, string> = {
 	submissions: "Submissions",
 	isActive: "Status",
 	createdAt: "Registration Date",
-};
+} satisfies Record<string, string>;
 
 function UsersPage() {
 	const [createOpen, setCreateOpen] = useState(false);

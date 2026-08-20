@@ -49,29 +49,22 @@ export interface SurveyQuestion {
 }
 
 /** Audience labels for the editor picker and list badges. */
-export const AUDIENCE_LABELS: Record<SurveyAudience, string> = {
+export const AUDIENCE_LABELS = {
 	ALL: "Everyone",
 	PARTICIPANTS: "Participants",
 	EXHIBITORS: "Exhibitors",
-};
+} satisfies Record<SurveyAudience, string>;
 
 /** Short labels for the list row badges (also asserted by E2E). */
-export const TYPE_LABELS: Record<SurveyQuestionType, string> = {
+export const TYPE_LABELS = {
 	CHECKBOX: "Checkbox",
 	TEXT: "Text",
 	SINGLE_SELECT: "Single",
 	MULTI_SELECT: "Multi",
-};
+} satisfies Record<SurveyQuestionType, string>;
 
 /** Icon + full label + one-line hint per type, for the visual picker and rows. */
-export const TYPE_META: Record<
-	SurveyQuestionType,
-	{
-		label: string;
-		description: string;
-		icon: ComponentType<{ className?: string }>;
-	}
-> = {
+export const TYPE_META = {
 	CHECKBOX: {
 		label: "Checkbox",
 		description: "A single yes/no opt-in",
@@ -92,7 +85,14 @@ export const TYPE_META: Record<
 		description: "Pick several options",
 		icon: IconListCheck,
 	},
-};
+} satisfies Record<
+	SurveyQuestionType,
+	{
+		label: string;
+		description: string;
+		icon: ComponentType<{ className?: string }>;
+	}
+>;
 
 const TYPE_ORDER: readonly SurveyQuestionType[] = [
 	"CHECKBOX",
