@@ -103,8 +103,12 @@ export function InviteUserDialog({
 									| "REVIEWER"
 									| "ADMIN"
 								)[];
+								// SAFETY: widening a const tuple only to test membership of an arbitrary string.
 								const isValid = (inviteRoles as readonly string[]).includes(v);
-								if (isValid) setRole(v as (typeof inviteRoles)[number]);
+								if (isValid) {
+									// SAFETY: guarded by the includes() check above.
+									setRole(v as (typeof inviteRoles)[number]);
+								}
 							}}
 						>
 							<SelectTrigger id="invite-role">

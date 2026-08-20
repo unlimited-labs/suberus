@@ -18,6 +18,7 @@ export const getVersionRedlineFn = createServerFn({ method: "GET" })
 		getVersionRedline(
 			data,
 			context.user.id,
+			// SAFETY: session role mirrors the DB enum column.
 			(context.user.role ?? "AUTHOR") as UserRole,
 		),
 	);

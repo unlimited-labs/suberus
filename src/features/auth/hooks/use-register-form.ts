@@ -207,6 +207,7 @@ export function useRegisterForm({
 		onSubmit: async ({ value }) => {
 			if (!(await ensureRegistrationOpen(token))) return;
 
+			// SAFETY: firstName/title/affiliationId are better-auth additionalFields.
 			const result = await signUp.email({
 				email: value.email,
 				password: value.password,
@@ -244,6 +245,7 @@ export function useRegisterForm({
 	// and reveal any errors by marking the fields blurred.
 	const validateStep = async (step: number): Promise<boolean> => {
 		// Step 3 also gates on any required survey questions (dynamic fields).
+		// SAFETY: the template literals already have that form; TS widens them to string.
 		const surveyFields =
 			step === 3
 				? visibleQuestions.flatMap((q) =>

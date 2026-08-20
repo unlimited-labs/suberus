@@ -49,6 +49,7 @@ export function formatDate(date: Date | string, dateFormat: string): string {
 	const d = toDate(date);
 	if (!isValid(d)) return "";
 	const pattern =
+		// SAFETY: an unknown pattern falls through to the ?? default below.
 		DATE_FORMAT_PATTERNS[dateFormat as DateFormatValue] ??
 		DATE_FORMAT_PATTERNS["DD.MM.YYYY"];
 	return format(d, pattern);

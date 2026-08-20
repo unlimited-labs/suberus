@@ -87,6 +87,7 @@ async function callClusterApi(
 		const body = await res.text();
 		throw new Error(`Planner API ${res.status}: ${body.slice(0, 200)}`);
 	}
+	// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
 	return (await res.json()) as ClusterApiResponse;
 }
 

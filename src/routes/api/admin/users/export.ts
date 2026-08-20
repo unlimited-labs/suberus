@@ -19,6 +19,7 @@ export const Route = createFileRoute("/api/admin/users/export")({
 				const roleParam = url.searchParams.get("role");
 				const feePaidParam = url.searchParams.get("feePaid");
 
+				// SAFETY: an unknown value matches no user; this filters a query, it is not stored.
 				const role = roleParam
 					? (roleParam.split(",") as UserRole[])
 					: undefined;

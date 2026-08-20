@@ -113,6 +113,7 @@ export async function previewResolution(
 		values: Object.fromEntries(
 			template.placeholders.map((p) => [
 				p,
+				// SAFETY: placeholder values are built as a string map by the caller.
 				(values as Record<string, string>)[p] ?? "",
 			]),
 		),

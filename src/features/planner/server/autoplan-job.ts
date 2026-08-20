@@ -35,6 +35,7 @@ export async function getAutoPlanJob(jobId: string) {
 		id: job.id,
 		status: job.status,
 		progress: { stage: job.stage, current: job.current, total: job.total },
+		// SAFETY: the autoplan worker writes this row.
 		proposal: (proposalRow?.data ?? null) as AutoPlanProposal | null,
 		error: job.error,
 		appliedAt: proposalRow?.appliedAt?.toISOString() ?? null,

@@ -61,6 +61,7 @@ export async function getConferenceSettings(): Promise<ConferenceSettings> {
 
 // setSetting's per-key generic cannot see that CONFERENCE_KEYS[field] and
 // data[field] describe the same setting; the map above is what pairs them.
+// SAFETY: CONFERENCE_KEYS pairs each field with its own setting key; the generic cannot see that.
 const writeSetting = setSetting as (
 	key: AppSettingKey,
 	value: AppSettingsMap[AppSettingKey],
@@ -73,9 +74,11 @@ export async function updateConferenceSettings(
 ): Promise<ConferenceSettings> {
 	const current = await getConferenceSettings();
 	const data = { ...current, ...patch };
-	const changedFields = (
-		Object.keys(CONFERENCE_KEYS) as Array<keyof ConferenceSettings>
-	).filter((field) => data[field] !== current[field]);
+	const changedFields =
+		// SAFETY: CONFERENCE_KEYS is declared with exactly the ConferenceSettings fields.
+		(Object.keys(CONFERENCE_KEYS) as Array<keyof ConferenceSettings>).filter(
+			(field) => data[field] !== current[field],
+		);
 	if (changedFields.length === 0) return current;
 
 	await Promise.all(

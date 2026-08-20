@@ -17,6 +17,7 @@ const reviewModeLabels = {
 	DOUBLE_BLIND: "Double-blind",
 } as const;
 
+// SAFETY: Object.keys over this const map returns exactly its declared keys.
 const REVIEW_MODES = Object.keys(
 	reviewModeLabels,
 ) as (keyof typeof reviewModeLabels)[];

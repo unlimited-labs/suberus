@@ -51,6 +51,7 @@ export function DocumentFilters({
 					{ value: "FAILED", label: "Failed" },
 				]}
 				value={status}
+				// SAFETY: the select renders only StatusFilter options.
 				onValueChange={(v) => onStatusChange(v as StatusFilter)}
 			>
 				<SelectTrigger className="w-full sm:w-40" aria-label="Filter by status">

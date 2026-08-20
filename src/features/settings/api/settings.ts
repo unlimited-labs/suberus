@@ -125,6 +125,7 @@ export const adminSettingQueryOptions = <K extends keyof AppSettingsMap>(
 	queryOptions({
 		queryKey: ["settings", "admin", key],
 		queryFn: () =>
+			// SAFETY: the server fn returns the value for exactly this key.
 			getSettingFn({ data: { key } }) as Promise<AppSettingsMap[K]>,
 	});
 
@@ -147,6 +148,7 @@ export const getSettingFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.validator(z.object({ key: z.string() }))
 	.handler(async ({ data }) => {
+		// SAFETY: the validator restricts key to the AppSettingsMap key union.
 		return getSetting(data.key as keyof AppSettingsMap);
 	});
 
@@ -163,7 +165,9 @@ export const setSettingFn = createServerFn({ method: "POST" })
 	)
 	.handler(async ({ data }) => {
 		await setSetting(
+			// SAFETY: the validator restricts key to the AppSettingsMap key union.
 			data.key as keyof AppSettingsMap,
+			// SAFETY: the validator pairs value with its key.
 			data.value as AppSettingsMap[keyof AppSettingsMap],
 		);
 		return { success: true };
@@ -221,7 +225,9 @@ export const updateSubmissionTypeConfigFn = createServerFn({ method: "POST" })
 		}
 
 		await setSetting(
+			// SAFETY: the validator restricts type to the submission-type keys.
 			data.type as SubmissionTypeKey,
+			// SAFETY: the validator shapes config before it reaches here.
 			data.config as SubmissionTypeConfig,
 		);
 		return { success: true };

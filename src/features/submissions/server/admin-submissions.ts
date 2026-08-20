@@ -720,6 +720,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 					decision: r.decision,
 					comments: r.comments,
 					privateNotes: r.privateNotes,
+					// SAFETY: scores is written only by the review form, which stores criterion -> number.
 					scores: (r.scores as Record<string, number>) ?? null,
 					confidenceLevel: r.confidenceLevel,
 					round: r.round,
@@ -745,6 +746,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 				? `${h.user.firstName ?? ""} ${h.user.lastName ?? ""}`.trim() || null
 				: null,
 			detail:
+				// SAFETY: activity detail is written through activityDetail(), which emits JSON scalars.
 				(h.detail as Record<string, string | number | boolean | null>) ?? {},
 		})),
 	};
@@ -806,6 +808,7 @@ export async function bulkChangeStatus(
 		return { updated: 0, errors: [`Invalid target status: ${targetStatus}`] };
 	}
 
+	// SAFETY: eventType comes from the bulk-action options, all of which are SubmissionEvent names.
 	const event = { type: option.eventType } as SubmissionEvent;
 	let updated = 0;
 	const errors: string[] = [];

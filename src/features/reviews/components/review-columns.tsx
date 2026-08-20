@@ -14,6 +14,7 @@ import {
 import type { AssignmentStatus } from "@/generated/prisma/enums";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { typeFilterOptions, typeLabels } from "@/shared/lib/labels/submission";
+import { lookup } from "@/shared/lib/lookup";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { DataTableColumnHeader, facetedFilterFn } from "@/shared/ui/data-table";
@@ -96,6 +97,7 @@ export const reviewColumns: AppColumnDef<ReviewerAssignment>[] = [
 			<DataTableColumnHeader column={column} title="Submission" />
 		),
 		cell: ({ row }) => {
+			// SAFETY: TanStack's getValue is untyped; this column holds that type in the row model.
 			const title = row.getValue("submissionTitle") as string;
 			const round = row.original.round;
 
@@ -147,17 +149,13 @@ export const reviewColumns: AppColumnDef<ReviewerAssignment>[] = [
 			/>
 		),
 		cell: ({ row }) => {
+			// SAFETY: TanStack's getValue is untyped; this column holds that type in the row model.
 			const status = row.getValue("status") as AssignmentStatus;
-			const variant =
-				assignmentStatusVariants[
-					status as keyof typeof assignmentStatusVariants
-				] ?? "secondary";
+			const variant = lookup(assignmentStatusVariants, status) ?? "secondary";
 
 			return (
 				<Badge variant={variant}>
-					{assignmentStatusLabels[
-						status as keyof typeof assignmentStatusLabels
-					] ?? status}
+					{lookup(assignmentStatusLabels, status) ?? status}
 				</Badge>
 			);
 		},
@@ -192,11 +190,10 @@ export const reviewColumns: AppColumnDef<ReviewerAssignment>[] = [
 			/>
 		),
 		cell: ({ row }) => {
+			// SAFETY: TanStack's getValue is untyped; this column holds that type in the row model.
 			const type = row.getValue("submissionType") as string;
 			return (
-				<Badge variant="outline">
-					{typeLabels[type as keyof typeof typeLabels] ?? type}
-				</Badge>
+				<Badge variant="outline">{lookup(typeLabels, type) ?? type}</Badge>
 			);
 		},
 		filterFn: facetedFilterFn,

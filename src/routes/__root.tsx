@@ -156,6 +156,7 @@ function buildBrandVars(primaryColor: string): CSSProperties | undefined {
 	) {
 		return undefined;
 	}
+	// SAFETY: the record holds only CSS custom properties.
 	return {
 		"--primary": primaryColor,
 		"--ring": primaryColor,

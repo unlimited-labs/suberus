@@ -311,6 +311,7 @@ export async function getAssignmentForReview(
 					decision: assignment.review.decision,
 					comments: assignment.review.comments,
 					privateNotes: assignment.review.privateNotes,
+					// SAFETY: scores is written only by the review form, which stores criterion -> number.
 					scores: (assignment.review.scores as Record<string, number>) ?? null,
 					confidenceLevel: assignment.review.confidenceLevel,
 				}

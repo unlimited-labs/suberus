@@ -56,6 +56,7 @@ export const getExtractionResultFn = createServerFn({ method: "GET" })
 			notFound: false as const,
 			status: job.status,
 			error: job.error,
+			// SAFETY: this job's worker writes an ExtractionResult.
 			result: (job.result as ExtractionResult | null) ?? null,
 		};
 	});

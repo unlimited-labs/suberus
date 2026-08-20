@@ -21,6 +21,7 @@ type TypedSurveyQuestion = Omit<SurveyQuestion, "options"> & {
 };
 
 function typeSurveyQuestion(q: SurveyQuestion): TypedSurveyQuestion {
+	// SAFETY: survey options are written as a string array by the question editor.
 	return { ...q, options: q.options as string[] | null };
 }
 

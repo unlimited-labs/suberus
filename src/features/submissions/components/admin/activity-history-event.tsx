@@ -61,6 +61,7 @@ const activityConfig = {
 	}
 >;
 
+// SAFETY: default is a TimelineColor member; the annotation keeps the field at the union type.
 const defaultConfig = { color: "default" as TimelineColor, icon: IconFileText };
 
 interface ActivityHistoryEventProps {
@@ -107,6 +108,7 @@ type DetailRenderer = (entry: ActivityHistoryEntry) => ReactNode;
 /** Plain paragraph from a single `detail` string field, or null when absent. */
 function noteDetail(field: string): DetailRenderer {
 	return (entry) => {
+		// SAFETY: the activity type reaching this renderer carries that detail field (see DetailShapes).
 		const value = entry.detail[field] as string | undefined;
 		if (!value) return null;
 		return <p className="text-sm text-muted-foreground">{value}</p>;
@@ -122,23 +124,22 @@ function targetUserNameDetail(entry: ActivityHistoryEntry): ReactNode {
 
 const detailRenderers = {
 	SUBMISSION_STATUS_CHANGED: (entry) => {
+		// SAFETY: the activity type reaching this renderer carries that detail field (see DetailShapes).
 		const from = entry.detail.fromStatus as string | undefined;
+		// SAFETY: the activity type reaching this renderer carries that detail field (see DetailShapes).
 		const to = entry.detail.toStatus as string | undefined;
+		// SAFETY: the activity type reaching this renderer carries that detail field (see DetailShapes).
 		const reason = entry.detail.reason as string | undefined;
 		return (
 			<div className="space-y-1">
 				{to && (
 					<div className="flex items-center gap-2 flex-wrap">
-						<Badge
-							variant={
-								statusVariants[to as keyof typeof statusVariants] ?? "secondary"
-							}
-						>
-							{statusLabels[to as keyof typeof statusLabels] ?? to}
+						<Badge variant={lookup(statusVariants, to) ?? "secondary"}>
+							{lookup(statusLabels, to) ?? to}
 						</Badge>
 						{from && (
 							<span className="text-xs text-muted-foreground">
-								from {statusLabels[from as keyof typeof statusLabels] ?? from}
+								from {lookup(statusLabels, from) ?? from}
 							</span>
 						)}
 					</div>
@@ -148,6 +149,7 @@ const detailRenderers = {
 		);
 	},
 	REVIEW_ASSIGNED: (entry) => {
+		// SAFETY: the activity type reaching this renderer carries that detail field (see DetailShapes).
 		const deadline = entry.detail.deadline as string | undefined;
 		return (
 			<div className="text-sm text-muted-foreground">
@@ -161,6 +163,7 @@ const detailRenderers = {
 		);
 	},
 	REVIEW_SUBMITTED: (entry) => {
+		// SAFETY: the activity type reaching this renderer carries that detail field (see DetailShapes).
 		const decision = entry.detail.decision as string | undefined;
 		return (
 			<div className="flex items-center gap-2 flex-wrap">
@@ -185,7 +188,9 @@ const detailRenderers = {
 	REVIEW_CANCELLED: targetUserNameDetail,
 	REVIEW_OVERDUE: targetUserNameDetail,
 	DECISION_SUBMITTED: (entry) => {
+		// SAFETY: the activity type reaching this renderer carries that detail field (see DetailShapes).
 		const decision = entry.detail.decision as string | undefined;
+		// SAFETY: the activity type reaching this renderer carries that detail field (see DetailShapes).
 		const reasoning = entry.detail.reasoning as string | undefined;
 		return (
 			<div className="space-y-1">
@@ -203,11 +208,13 @@ const detailRenderers = {
 	DECISION_OVERRIDE: noteDetail("reasoning"),
 	SUBMISSION_WITHDRAWN: noteDetail("reason"),
 	SUBMISSION_RESUBMITTED: (entry) => {
+		// SAFETY: the activity type reaching this renderer carries that detail field (see DetailShapes).
 		const round = entry.detail.round as number | undefined;
 		if (!round) return null;
 		return <p className="text-sm text-muted-foreground">Round {round}</p>;
 	},
 	SUBMISSION_REVISION_UPLOADED: (entry) => {
+		// SAFETY: the activity type reaching this renderer carries that detail field (see DetailShapes).
 		const version = entry.detail.version as number | undefined;
 		if (!version) return null;
 		return <p className="text-sm text-muted-foreground">Version {version}</p>;

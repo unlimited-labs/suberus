@@ -36,6 +36,7 @@ export function parseBundle(zip: Buffer): ParsedBundle {
 		throw new Error("docx-api bundle missing document.html or meta.json");
 	}
 	const html = htmlEntry.getData().toString("utf8");
+	// SAFETY: this bundle's meta.json is written by our own packer.
 	const meta = JSON.parse(metaEntry.getData().toString("utf8")) as BundleMeta;
 	// styles.css is optional (pre-v4 bundles / no custom styles): default to "".
 	const css = z.getEntry("styles.css")?.getData().toString("utf8") ?? "";

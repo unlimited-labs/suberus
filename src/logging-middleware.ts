@@ -6,6 +6,7 @@ function resolveLabel(method: string, pathname: string) {
 	if (!pathname.startsWith(prefix)) return `[${method}] ${pathname}`;
 	try {
 		const json = JSON.parse(atob(pathname.slice(prefix.length)));
+		// SAFETY: the manifest entries this middleware reads always name a string export.
 		const name = (json.export as string).replace(
 			/_createServerFn_handler$/,
 			"",

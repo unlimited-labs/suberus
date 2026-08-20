@@ -22,6 +22,7 @@ export const Route = createFileRoute("/api/files/$fileId")({
 				const { authorized, file } = await checkFileAccess(
 					fileId,
 					context.user.id,
+					// SAFETY: session role mirrors the DB enum column.
 					(context.user.role ?? "AUTHOR") as UserRole,
 				);
 

@@ -32,6 +32,7 @@ function vectorLiteral(v: number[]): string {
 }
 
 function parseVector(s: string): number[] {
+	// SAFETY: this payload is written by us in the matching serializer.
 	return JSON.parse(s) as number[];
 }
 
@@ -65,6 +66,7 @@ async function callEmbeddingApi(text: string): Promise<number[]> {
 		);
 	}
 
+	// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
 	const data = (await res.json()) as { data: { embedding: number[] }[] };
 	const v = data.data[0]?.embedding;
 	if (!v) throw new Error("Embedding API returned no data");

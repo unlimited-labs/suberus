@@ -7,9 +7,9 @@ import {
 	resolveCompare,
 } from "@/features/submissions/components/diff/compare-route";
 import { VersionCompare } from "@/features/submissions/components/diff/version-compare";
-import type { SubmissionType } from "@/generated/prisma/enums";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { typeLabels } from "@/shared/lib/labels/submission";
+import { lookup } from "@/shared/lib/lookup";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 
@@ -74,7 +74,7 @@ function ReviewerComparePage() {
 				<div className="space-y-6">
 					<div className="space-y-2">
 						<Badge variant="outline">
-							{typeLabels[submission.type as SubmissionType] ?? submission.type}
+							{lookup(typeLabels, submission.type) ?? submission.type}
 						</Badge>
 						<h1 className="text-xl font-semibold leading-snug text-foreground">
 							{submission.title}

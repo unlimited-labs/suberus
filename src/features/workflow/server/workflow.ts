@@ -146,6 +146,7 @@ export async function executeSubmissionTransition(
 
 	actor.send(event);
 	const nextSnapshot = actor.getSnapshot();
+	// SAFETY: the machine's state names are the SubmissionStatus members.
 	const newState = String(nextSnapshot.value) as SubmissionStatus;
 
 	await prisma.$transaction(async (tx) => {
@@ -340,6 +341,7 @@ export async function executeAssignmentTransition(
 
 	actor.send(event);
 	const nextSnapshot = actor.getSnapshot();
+	// SAFETY: the machine's state names are the AssignmentStatus members.
 	const newState = String(nextSnapshot.value) as AssignmentStatus;
 
 	const now = new Date();

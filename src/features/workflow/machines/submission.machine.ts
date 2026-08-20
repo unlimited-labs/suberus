@@ -16,7 +16,9 @@ import type { SubmissionContext, SubmissionEvent } from "../types";
  */
 export const submissionMachine = setup({
 	types: {
+		// SAFETY: xstate setup() types-only slot; the value is never read.
 		context: {} as SubmissionContext,
+		// SAFETY: xstate setup() types-only slot; the value is never read.
 		events: {} as SubmissionEvent,
 	},
 	guards: {

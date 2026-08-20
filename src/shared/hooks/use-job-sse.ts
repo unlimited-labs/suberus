@@ -40,6 +40,7 @@ export function useJobSSE(jobId: string | null): JobSSEState {
 
 		es.onmessage = (event: MessageEvent<string>) => {
 			try {
+				// SAFETY: this payload is written by us in the matching serializer.
 				const data = JSON.parse(event.data) as {
 					status: JobSSEState["status"];
 					stage: string;
@@ -68,6 +69,7 @@ export function useJobSSE(jobId: string | null): JobSSEState {
 
 		es.addEventListener("error", (event: MessageEvent<string>) => {
 			try {
+				// SAFETY: this payload is written by us in the matching serializer.
 				const data = JSON.parse(event.data) as { error: string };
 				setState((prev) => ({
 					...prev,

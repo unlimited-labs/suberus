@@ -36,6 +36,7 @@ export function isPrismaKnownError(cause: unknown): cause is { code: string } {
 		typeof cause === "object" &&
 		cause !== null &&
 		"code" in cause &&
+		// SAFETY: probing for a Prisma error code on a value that may not have one.
 		typeof (cause as { code: unknown }).code === "string"
 	);
 }

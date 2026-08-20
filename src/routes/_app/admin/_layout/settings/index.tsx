@@ -246,8 +246,8 @@ function AdminSettingsPage() {
 						<TabsContent value="submissions">
 							<SubmissionSettingsTab
 								initialData={submissionSettings}
-								initialSubmissionGuidelines={submissionGuidelines as string}
-								initialReviewGuidelines={reviewGuidelines as string}
+								initialSubmissionGuidelines={submissionGuidelines}
+								initialReviewGuidelines={reviewGuidelines}
 								initialExtraction={extractionSettings}
 								llmHealth={llmHealth}
 								pdfApiHealth={pdfApiHealth}
@@ -292,7 +292,7 @@ function AdminSettingsPage() {
 						<TabsContent value="emails">
 							<EmailTemplatesTab
 								initialData={emailTemplates}
-								initialFooter={emailFooter as string}
+								initialFooter={emailFooter}
 							/>
 						</TabsContent>
 
@@ -302,25 +302,17 @@ function AdminSettingsPage() {
 
 						<TabsContent value="fee">
 							<FeeTab
-								initialEnabled={feeEnabled as boolean}
+								initialEnabled={feeEnabled}
 								initialInstructions={feeInstructions}
-								initialFeeTypes={
-									feeTypes as Array<{
-										id: string;
-										name: string;
-										amount: number;
-									}>
-								}
-								currency={feeCurrency as string}
+								initialFeeTypes={feeTypes}
+								currency={feeCurrency}
 							/>
 						</TabsContent>
 
 						<TabsContent value="finances">
 							<FinancesSettingsTab
-								initialEnabled={financesEnabled as boolean}
-								initialVatRates={
-									financesVatRates as Array<{ id: string; rate: number }>
-								}
+								initialEnabled={financesEnabled}
+								initialVatRates={financesVatRates}
 							/>
 						</TabsContent>
 
@@ -340,12 +332,12 @@ function AdminSettingsPage() {
 						</TabsContent>
 
 						<TabsContent value="tos">
-							<TosContentTab initialContent={tosContent as string} />
+							<TosContentTab initialContent={tosContent} />
 						</TabsContent>
 
 						<TabsContent value="invitations">
 							<InvitationsSettingsTab
-								initialValidityHours={invitationValidityHours as number}
+								initialValidityHours={invitationValidityHours}
 							/>
 						</TabsContent>
 					</Tabs>

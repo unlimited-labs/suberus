@@ -43,6 +43,7 @@ export function PlaceholderChips({ placeholders }: { placeholders: string[] }) {
 }
 
 export function placeholderLabel(key: string): string {
+	// SAFETY: an unknown key falls through to the ?? default.
 	return PLACEHOLDER_LABELS[key as PlaceholderKey] ?? key;
 }
 

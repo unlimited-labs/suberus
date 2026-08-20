@@ -69,6 +69,7 @@ export async function listActivity(
 			performerName: item.performer ? fullName(item.performer) : null,
 			submissionTitle: item.submission?.title ?? null,
 			userName: item.user ? fullName(item.user) : null,
+			// SAFETY: activity detail is written through activityDetail(); the union mirrors DetailShapes.
 			detail: item.detail as ActivityEntry["detail"],
 			createdAt: item.createdAt,
 		})),

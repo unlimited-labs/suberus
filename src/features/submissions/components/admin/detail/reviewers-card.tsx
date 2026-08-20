@@ -80,11 +80,13 @@ export function ReviewersCard({
 									<Badge
 										variant={
 											assignmentStatusVariants[
+												// SAFETY: the table is keyed by this enum; the fallback covers an unrecognised key.
 												assignment.status as keyof typeof assignmentStatusVariants
 											] ?? "outline"
 										}
 									>
 										{assignmentStatusLabels[
+											// SAFETY: the table is keyed by this enum; the fallback covers an unrecognised key.
 											assignment.status as keyof typeof assignmentStatusLabels
 										] ?? assignment.status}
 									</Badge>

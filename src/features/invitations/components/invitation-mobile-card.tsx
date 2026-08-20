@@ -6,6 +6,7 @@ import {
 import type { AdminInvitation } from "@/features/invitations/server/invitations";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { roleLabels } from "@/shared/lib/labels/user-role";
+import { lookup } from "@/shared/lib/lookup";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
@@ -39,7 +40,7 @@ export function InvitationMobileCard({
 					</div>
 					<div className="flex flex-col items-end gap-1">
 						<Badge variant="secondary">
-							{roleLabels[invitation.role as keyof typeof roleLabels]}
+							{lookup(roleLabels, invitation.role)}
 						</Badge>
 						<Badge variant={status.variant}>{status.label}</Badge>
 					</div>

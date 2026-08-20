@@ -82,6 +82,7 @@ function buildCssVarOverrides(branding: AuthPageBranding): CSSProperties {
 		vars["--chart-2"] = branding.secondaryColor;
 	}
 
+	// SAFETY: the record holds only CSS custom properties.
 	return vars as CSSProperties;
 }
 

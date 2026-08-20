@@ -41,6 +41,7 @@ let _s3Client: S3Client | null = null;
 function getS3Client(): S3Client {
 	if (!_s3Client) {
 		validateEnv();
+		// SAFETY: validateEnv() above throws when either credential is missing.
 		_s3Client = new S3Client({
 			endpoint: S3_ENDPOINT,
 			region: env.S3_REGION,

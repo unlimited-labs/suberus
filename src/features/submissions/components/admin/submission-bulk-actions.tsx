@@ -195,6 +195,7 @@ export function SubmissionBulkActions({
 				<Select
 					items={statusChangeOptions}
 					value={selectedStatus}
+					// SAFETY: the select renders only SubmissionStatus options.
 					onValueChange={(v) => setSelectedStatus(v as SubmissionStatus)}
 				>
 					<SelectTrigger>

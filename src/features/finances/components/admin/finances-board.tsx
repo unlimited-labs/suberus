@@ -170,6 +170,7 @@ export function FinancesBoard() {
 							label: entry.label,
 							amountExpr: entry.amountExpr,
 							contractor: "",
+							// SAFETY: seeds the field so a later numeric edit is not rejected as a literal-null mismatch.
 							vatRate: null as number | null,
 							amountIsGross: true,
 							dueDate: "",
@@ -548,6 +549,7 @@ export function FinancesBoard() {
 						action={
 							<Tabs
 								value={mode}
+								// SAFETY: the select renders only Mode options.
 								onValueChange={(value) => setMode(value as Mode)}
 							>
 								<TabsList>

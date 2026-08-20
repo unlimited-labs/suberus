@@ -190,6 +190,7 @@ function BubbleLayer({
 			if (!m || !e.features?.length) return;
 
 			const feat = e.features[0];
+			// SAFETY: the bundled world GeoJSON always carries countryName.
 			const name = feat.properties?.countryName as string;
 
 			m.getCanvas().style.cursor = "pointer";
@@ -245,6 +246,7 @@ function BubbleLayer({
 	useEffect(() => {
 		if (!isLoaded || !map) return;
 
+		// SAFETY: this source id is registered by us as a GeoJSON source.
 		const source = map.getSource(SOURCE_ID) as MapLibreGL.GeoJSONSource;
 		if (source) {
 			source.setData(geojson);
@@ -256,6 +258,7 @@ function BubbleLayer({
 
 function CountryFlag({ code }: { code: string | null }) {
 	const upper = code?.toUpperCase();
+	// SAFETY: the table is keyed by this enum; the fallback covers an unrecognised key.
 	// biome-ignore lint/performance/noDynamicNamespaceImportAccess: flag is resolved at runtime from the country code; all flags are needed
 	const Flag = upper ? Flags[upper as keyof typeof Flags] : undefined;
 

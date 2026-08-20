@@ -17,6 +17,7 @@ function sessionFormDefaults(
 	defaultPresentationMin: number,
 ) {
 	if (!session) {
+		// SAFETY: seeds the field so a later string edit is not rejected as a literal-null mismatch.
 		return {
 			title: "",
 			startLocal: "",

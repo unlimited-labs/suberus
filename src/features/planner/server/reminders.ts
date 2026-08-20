@@ -107,6 +107,7 @@ export async function sendFavouriteReminders(): Promise<number> {
 				delivered = true;
 				sent++;
 			} catch (err) {
+				// SAFETY: probing for an HTTP status on a value that may not have one.
 				const statusCode = (err as { statusCode?: number }).statusCode;
 				if (statusCode === 404 || statusCode === 410) {
 					await prisma.pushSubscription

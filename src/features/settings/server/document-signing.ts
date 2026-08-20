@@ -84,6 +84,7 @@ async function persistCert(
 		...appearanceDefaults(prev),
 	};
 	await setSetting("DOCUMENT_SIGNING", cfg);
+	// SAFETY: sanitize strips the private-key fields, which is what makes it Safe.
 	return sanitize(cfg) as SafeSigningConfig;
 }
 
@@ -112,6 +113,7 @@ async function updateConfig(
 	if (!prev) throw new Error("No signing certificate has been configured yet.");
 	const next = { ...prev, ...patch };
 	await setSetting("DOCUMENT_SIGNING", next);
+	// SAFETY: sanitize strips the private-key fields, which is what makes it Safe.
 	return sanitize(next) as SafeSigningConfig;
 }
 

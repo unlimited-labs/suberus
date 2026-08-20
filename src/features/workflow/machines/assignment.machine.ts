@@ -12,7 +12,9 @@ import type { AssignmentContext, AssignmentEvent } from "../types";
  */
 export const assignmentMachine = setup({
 	types: {
+		// SAFETY: xstate setup() types-only slot; the value is never read.
 		context: {} as AssignmentContext,
+		// SAFETY: xstate setup() types-only slot; the value is never read.
 		events: {} as AssignmentEvent,
 	},
 }).createMachine({

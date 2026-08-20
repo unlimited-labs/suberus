@@ -40,6 +40,7 @@ export async function checkLlmHealth(): Promise<LlmHealthResult> {
 				message: `LLM API returned ${response.status}`,
 			};
 		} else {
+			// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
 			const data = (await response.json()) as {
 				models?: { name: string }[];
 				data?: { id: string }[];
@@ -94,6 +95,7 @@ async function detectGpu(): Promise<boolean | undefined> {
 		});
 		if (!res.ok) return undefined;
 
+		// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
 		const ps = (await res.json()) as {
 			models?: { size_vram?: number }[];
 		};
@@ -165,6 +167,7 @@ export async function generateWithLlm({
 		);
 	}
 
+	// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
 	const data = (await response.json()) as {
 		choices: { message: { content: string } }[];
 	};
@@ -176,6 +179,7 @@ function describeFetchError(cause: unknown, timeoutMs: number): string {
 		if (cause.name === "TimeoutError" || cause.name === "AbortError") {
 			return `timed out after ${timeoutMs}ms`;
 		}
+		// SAFETY: probing the optional ES2022 error cause.
 		const nested = (cause as { cause?: unknown }).cause;
 		const causeMsg =
 			nested instanceof Error

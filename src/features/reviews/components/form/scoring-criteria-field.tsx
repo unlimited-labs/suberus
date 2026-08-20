@@ -24,6 +24,7 @@ export function ScoringCriteriaField({
 				{scoringCriteria.map((criterion) => (
 					<form.Field key={criterion.name} name={`scores.${criterion.name}`}>
 						{(field) => {
+							// SAFETY: this field is registered with a numeric score value.
 							const currentScore = (field.state.value as number) ?? 0;
 							return (
 								<div
@@ -46,6 +47,7 @@ export function ScoringCriteriaField({
 												key={score}
 												type="button"
 												disabled={readOnly}
+												// SAFETY: TanStack Form's generic field value is unresolved here; the field holds a number.
 												onClick={() => field.handleChange(score as never)}
 												className={cn(
 													"size-9 rounded-md border text-sm font-medium transition-all",

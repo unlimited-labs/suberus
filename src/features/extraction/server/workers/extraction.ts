@@ -51,6 +51,7 @@ async function processExtractionJob(
 			? await extractFromDocx(buffer, config, fileName, reportStage)
 			: await extractFromPdf(buffer, fileName, config, reportStage);
 
+		// SAFETY: the extraction result is a plain JSON object.
 		await completeJob(jobId, result as object);
 		await deleteFile(storageKey).catch((err) => {
 			logger.error("[extraction-worker] failed to delete staged file:", err);

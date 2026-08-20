@@ -20,6 +20,7 @@ export async function sidecarHealth<T>(base: string, name: string): Promise<T> {
 		`${name} health`,
 		SIDECAR_TIMEOUT_MS.health,
 	);
+	// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
 	return (await res.json()) as T;
 }
 

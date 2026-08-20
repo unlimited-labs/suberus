@@ -60,6 +60,7 @@ export function setupOfflineProgram(queryClient: QueryClient) {
 			return { previous };
 		},
 		onError: (_error, _slotId, context) => {
+			// SAFETY: the matching onMutate returns this context.
 			const previous = (context as { previous?: string[] } | undefined)
 				?.previous;
 			if (previous) queryClient.setQueryData(favoritesKey, previous);

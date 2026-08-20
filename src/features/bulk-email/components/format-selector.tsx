@@ -33,6 +33,7 @@ export function FormatSelector({
 			<Select
 				items={OPTIONS}
 				value={value}
+				// SAFETY: the select renders only EmailCampaignFormat options.
 				onValueChange={(v) => onChange(v as EmailCampaignFormat)}
 				disabled={disabled}
 			>

@@ -12,6 +12,7 @@ import {
 import type { AdminUser } from "@/features/users/server/users";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { lookup } from "@/shared/lib/lookup";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import {
@@ -91,10 +92,11 @@ const baseUserColumns: AppColumnDef<AdminUser>[] = [
 			/>
 		),
 		cell: ({ row }) => {
+			// SAFETY: TanStack's getValue is untyped; this column holds that type in the row model.
 			const role = row.getValue("role") as string;
 			return (
 				<Badge variant={role === "ADMIN" ? "default" : "secondary"}>
-					{roleLabels[role as keyof typeof roleLabels] ?? role}
+					{lookup(roleLabels, role) ?? role}
 				</Badge>
 			);
 		},
@@ -212,6 +214,7 @@ const baseUserColumns: AppColumnDef<AdminUser>[] = [
 			<DataTableColumnHeader column={column} title="Status" />
 		),
 		cell: ({ row }) => {
+			// SAFETY: TanStack's getValue is untyped; this column holds that type in the row model.
 			const isActive = row.getValue("isActive") as boolean;
 			return isActive ? (
 				<Badge variant="outline">Active</Badge>

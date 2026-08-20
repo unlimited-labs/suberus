@@ -69,11 +69,13 @@ function CardBadges({ assignment }: { assignment: ReviewerAssignment }) {
 			<Badge
 				variant={
 					assignmentStatusVariants[
+						// SAFETY: the table is keyed by this enum; the fallback covers an unrecognised key.
 						assignment.status as keyof typeof assignmentStatusVariants
 					] ?? "secondary"
 				}
 			>
 				{assignmentStatusLabels[
+					// SAFETY: the table is keyed by this enum; the fallback covers an unrecognised key.
 					assignment.status as keyof typeof assignmentStatusLabels
 				] ?? assignment.status}
 			</Badge>

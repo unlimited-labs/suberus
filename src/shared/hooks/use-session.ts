@@ -34,6 +34,7 @@ interface BetterAuthUser {
 export function useSession() {
 	const session = authClient.useSession();
 
+	// SAFETY: our better-auth config declares these additionalFields on the session user.
 	const rawUser = session.data?.user as BetterAuthUser | undefined;
 
 	// Map better-auth's "name" to our "lastName"

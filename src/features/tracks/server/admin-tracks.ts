@@ -5,6 +5,7 @@ import { prisma } from "@/shared/server/db.server";
 function isDuplicateName(cause: unknown): boolean {
 	// name is this model's only unique constraint, so any P2002 is that one.
 	return (
+		// SAFETY: probing for a Prisma error code on a value that may not have one.
 		cause instanceof Error && (cause as { code?: unknown }).code === "P2002"
 	);
 }

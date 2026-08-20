@@ -79,5 +79,6 @@ export function activityDetail<T extends ActivityType>(
 	type: T,
 	...args: keyof DetailShapes[T] extends never ? [] : [DetailShapes[T]]
 ): Extract<ActivityDetail, { type: T }> {
+	// SAFETY: the parameter types already tie `type` to its detail members.
 	return { type, ...args[0] } as Extract<ActivityDetail, { type: T }>;
 }

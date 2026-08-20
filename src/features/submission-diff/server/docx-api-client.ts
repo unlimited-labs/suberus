@@ -38,6 +38,7 @@ export async function checkDocxApiHealth(): Promise<DocxApiHealthResult> {
 				message: `docx-api returned ${response.status}`,
 			};
 		} else {
+			// SAFETY: docx-api error bodies carry this shape; the catch supplies an empty object.
 			const data = (await response.json().catch(() => ({}))) as {
 				status?: string;
 			};
@@ -104,6 +105,7 @@ export async function diffHtmlPair(
 		"docx-api diff",
 		SIDECAR_TIMEOUT_MS.diff,
 	);
+	// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
 	const data = (await res.json()) as { redline: string };
 	return data.redline;
 }

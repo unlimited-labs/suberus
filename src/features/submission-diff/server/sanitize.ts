@@ -29,9 +29,9 @@ let purifier: Purifier | null = null;
 function getPurifier(): Purifier {
 	if (!purifier) {
 		const { window } = new JSDOM("");
-		// jsdom's window satisfies DOMPurify's WindowLike at runtime; the static
-		// types don't overlap, so narrow to the factory's own parameter type.
 		const p = createDOMPurify(
+			// SAFETY: jsdom's window satisfies DOMPurify's WindowLike at runtime; the
+			// static types don't overlap, so narrow to the factory's own parameter type.
 			// oxlint-disable-next-line anti-slop/no-chained-type-assertions
 			window as unknown as Parameters<typeof createDOMPurify>[0],
 		);

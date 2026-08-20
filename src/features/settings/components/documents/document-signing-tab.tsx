@@ -97,6 +97,7 @@ const resignAfterRotation = async () => {
 			);
 			return;
 		}
+		// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
 		const { count } = (await res.json()) as { count: number };
 		if (count > 0) {
 			toast.success(
@@ -494,6 +495,7 @@ function AppearanceSection({
 						}))}
 						value={corner}
 						onValueChange={(v) =>
+							// SAFETY: the select renders only the four corner values.
 							setCorner(v as DocumentSigningSettings["sealCorner"])
 						}
 					>

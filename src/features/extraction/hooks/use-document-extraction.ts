@@ -99,6 +99,7 @@ export function useDocumentExtraction({
 					return;
 				}
 
+				// SAFETY: the extraction job stores this shape.
 				const result = response.result as {
 					title?: string;
 					authors?: {

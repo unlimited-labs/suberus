@@ -16,6 +16,7 @@ function breakFormDefaults(
 	tz: string | undefined,
 ) {
 	if (!breakItem) {
+		// SAFETY: seeds the field so a later string edit is not rejected as a literal-null mismatch.
 		return {
 			kind: "BREAK" as const,
 			title: "",

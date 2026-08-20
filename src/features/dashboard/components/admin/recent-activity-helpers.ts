@@ -24,14 +24,12 @@ function str(value: ActivityDetailValue): string | undefined {
 
 function statusLabel(value: ActivityDetailValue): string | undefined {
 	const raw = str(value);
-	return raw
-		? (statusLabels[raw as keyof typeof statusLabels] ?? raw)
-		: undefined;
+	return raw ? (lookup(statusLabels, raw) ?? raw) : undefined;
 }
 
 function roleLabel(value: ActivityDetailValue): string | undefined {
 	const raw = str(value);
-	return raw ? (roleLabels[raw as keyof typeof roleLabels] ?? raw) : undefined;
+	return raw ? (lookup(roleLabels, raw) ?? raw) : undefined;
 }
 
 function humanize(value: ActivityDetailValue): string | undefined {

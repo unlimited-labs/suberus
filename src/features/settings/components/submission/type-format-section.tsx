@@ -69,6 +69,7 @@ export function TypeFormatSection({
 					<RadioGroup
 						value={config.allowedExtensions[0] ?? ""}
 						onValueChange={(value) =>
+							// SAFETY: the select renders only supported extensions.
 							onSelectExtension(value as SupportedFileExtension)
 						}
 						className="flex flex-wrap gap-3"

@@ -19,6 +19,7 @@ function toData(params: LogActivityParams) {
 		userId: params.userId,
 		submissionId: params.submissionId,
 		performedBy: params.performedBy,
+		// SAFETY: activityDetail() builds a plain JSON object.
 		detail: (params.detail ?? undefined) as Prisma.InputJsonValue | undefined,
 	};
 }

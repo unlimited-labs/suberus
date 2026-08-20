@@ -93,6 +93,7 @@ export async function getPdfApiMarkdown(
 			return null;
 		}
 
+		// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
 		const data = (await response.json()) as { markdown?: string };
 		return data.markdown ?? null;
 	} catch (error) {

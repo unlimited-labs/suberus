@@ -29,6 +29,7 @@ export function RegisterStep3({
 					{surveyQuestions.map((question) => (
 						<form.Field
 							key={question.id}
+							// SAFETY: the template literal already has that form; TS widens it to string.
 							name={`surveyAnswers.${question.id}` as `surveyAnswers.${string}`}
 							validators={{
 								onChange: ({ value }) =>

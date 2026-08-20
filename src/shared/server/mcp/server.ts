@@ -101,6 +101,7 @@ export function buildMcpServer(
 
 export function createSuberusMcpHandler(config: McpHandlerConfig) {
 	const handler = createMcpHandler((ctx) => {
+		// SAFETY: our MCP auth middleware is what populates `extra`.
 		const extra = ctx.authInfo?.extra as
 			| { actor?: McpActor; challenge?: ChallengeBox }
 			| undefined;

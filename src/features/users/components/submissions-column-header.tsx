@@ -107,8 +107,11 @@ export function SubmissionsColumnHeader({
 	} satisfies Record<Dimension, AppColumn<AdminUser, unknown> | undefined>;
 
 	const readSelection = () => ({
+		// SAFETY: this column's filter is set only with string arrays.
 		type: (columns.type?.getFilterValue() as string[] | undefined) ?? [],
+		// SAFETY: this column's filter is set only with string arrays.
 		role: (columns.role?.getFilterValue() as string[] | undefined) ?? [],
+		// SAFETY: this column's filter is set only with string arrays.
 		draft: (columns.draft?.getFilterValue() as string[] | undefined) ?? [],
 	});
 

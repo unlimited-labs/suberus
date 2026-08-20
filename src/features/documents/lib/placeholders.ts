@@ -18,14 +18,14 @@ export const PLACEHOLDER_KEYS: readonly PlaceholderKey[] =
 	DOCUMENT_PLACEHOLDERS.map((p) => p.key);
 
 export function isPlaceholderKey(tag: string): tag is PlaceholderKey {
+	// SAFETY: widening a const tuple only to test membership of an arbitrary string.
 	return (PLACEHOLDER_KEYS as readonly string[]).includes(tag);
 }
 
 /** Labels keyed by placeholder, for UI tables/chips. */
-export const PLACEHOLDER_LABELS: Record<PlaceholderKey, string> =
-	Object.fromEntries(
-		DOCUMENT_PLACEHOLDERS.map((p) => [p.key, p.label]),
-	) as Record<PlaceholderKey, string>;
+export const PLACEHOLDER_LABELS = Object.fromEntries(
+	DOCUMENT_PLACEHOLDERS.map((p) => [p.key, p.label]),
+) satisfies Record<string, string>;
 
 export interface ResolvedPlaceholders {
 	/** Substitution values for every registry key (empty string when unresolved). */

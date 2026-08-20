@@ -30,6 +30,7 @@ export async function checkPlannerHealth(): Promise<PlannerHealthResult> {
 				message: `Planner API returned ${response.status}`,
 			};
 		} else {
+			// SAFETY: docx-api error bodies carry this shape; the catch supplies an empty object.
 			const data = (await response.json().catch(() => ({}))) as {
 				status?: string;
 			};

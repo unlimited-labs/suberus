@@ -697,6 +697,8 @@ export async function getSubmissionById(
 
 		const reviews: UserSubmissionReview[] = visibleReviews.map((r, index) => {
 			const att = attachmentByReviewId.get(r.id);
+			// SAFETY: scores is written only by the review form, which stores criterion -> number.
+			const reviewScores = (r.scores as Record<string, number>) ?? null;
 			return {
 				id: r.id,
 				submissionId: r.submissionId,
@@ -705,9 +707,7 @@ export async function getSubmissionById(
 					? `${r.reviewer.firstName ?? ""} ${r.reviewer.lastName ?? ""}`.trim() ||
 						`Reviewer ${index + 1}`
 					: `Reviewer ${index + 1}`,
-				scores: config.enableScoring
-					? ((r.scores as Record<string, number>) ?? null)
-					: null,
+				scores: config.enableScoring ? reviewScores : null,
 				comments: r.comments,
 				attachment: att
 					? {

@@ -9,6 +9,7 @@ export interface ClientError extends Error {
 export function hasRequestId(cause: unknown): cause is ClientError {
 	return (
 		cause instanceof Error &&
+		// SAFETY: probing for our requestId marker on an arbitrary error.
 		typeof (cause as Partial<ClientError>).requestId === "string"
 	);
 }
@@ -28,6 +29,7 @@ function isInternalError(error: Error): boolean {
 	) {
 		return true;
 	}
+	// SAFETY: probing for infrastructure-error markers that may be absent.
 	const extras = error as { code?: unknown; $metadata?: unknown };
 	return (
 		z.string().safeParse(extras.code).success || extras.$metadata !== undefined
@@ -47,6 +49,7 @@ export function toClientError(cause: unknown, requestId: string): Error {
 	const safe = new Error(message);
 	safe.stack = "";
 	if (message === GENERIC_ERROR_MESSAGE) {
+		// SAFETY: this is the assignment that makes `safe` a ClientError.
 		(safe as ClientError).requestId = requestId;
 		return safe;
 	}

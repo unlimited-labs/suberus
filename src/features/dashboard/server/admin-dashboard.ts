@@ -312,6 +312,7 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 			performerName: formatPersonName(item.performer),
 			submissionTitle: item.submission?.title ?? null,
 			userName: formatPersonName(item.user),
+			// SAFETY: activity detail is written through activityDetail(); the union mirrors DetailShapes.
 			detail: item.detail as Record<
 				string,
 				string | number | boolean | string[] | null

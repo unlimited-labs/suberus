@@ -40,6 +40,7 @@ function ReviewsPage() {
 				) : (
 					<DataTable
 						columns={reviewColumns}
+						// SAFETY: the loader query returns exactly this row shape.
 						data={assignments as ReviewerAssignment[]}
 						getRowId={(row) => row.id}
 						rowDataTestId="assignment-row"

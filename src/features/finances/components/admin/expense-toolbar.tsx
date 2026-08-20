@@ -76,6 +76,7 @@ export function ExpenseToolbar({
 						{ value: "name", label: "Name" },
 					]}
 					value={sort}
+					// SAFETY: the select renders only ExpenseSort options.
 					onValueChange={(v) => onSort(v as ExpenseSort)}
 				>
 					<SelectTrigger className="w-32" data-testid="expense-sort">

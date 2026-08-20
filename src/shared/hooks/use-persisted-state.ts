@@ -59,6 +59,7 @@ export function usePersistedState<T>(
 				stored = result.data;
 			} else {
 				// No schema: the caller opts into trusting the stored shape.
+				// SAFETY: localStorage under this key is written only by this hook.
 				stored = parsed as T;
 			}
 			const merge = mergeRef.current;

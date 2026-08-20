@@ -3,6 +3,7 @@ import type { ReviewFormData } from "@/features/reviews/validations";
 import type { ContentFormat } from "@/features/settings/types";
 import type { SubmissionType } from "@/generated/prisma/enums";
 import { typeLabels } from "@/shared/lib/labels/submission";
+import { lookup } from "@/shared/lib/lookup";
 import { Badge } from "@/shared/ui/badge";
 import { SectionCard } from "@/shared/ui/section-card";
 import { AttachmentSection } from "./attachment-section";
@@ -95,7 +96,7 @@ export function ReviewForm({
 		<div className="mx-auto w-full max-w-6xl space-y-6">
 			<div className="space-y-2">
 				<Badge variant="outline">
-					{typeLabels[submission.type as SubmissionType] ?? submission.type}
+					{lookup(typeLabels, submission.type) ?? submission.type}
 				</Badge>
 				<h1 className="text-xl font-semibold leading-snug text-foreground">
 					{submission.title}

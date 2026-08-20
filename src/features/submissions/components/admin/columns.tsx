@@ -16,6 +16,7 @@ import {
 } from "@/features/submissions/labels";
 import type { AdminSubmission } from "@/features/submissions/server/admin-submissions";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { lookup } from "@/shared/lib/lookup";
 import { Badge } from "@/shared/ui/badge";
 import {
 	createActionsColumn,
@@ -77,6 +78,7 @@ export const submissionColumns: AppColumnDef<AdminSubmission>[] = [
 			<DataTableColumnHeader column={column} title="No." />
 		),
 		cell: ({ row }) => {
+			// SAFETY: TanStack's getValue is untyped; this column holds that type in the row model.
 			const num = row.getValue("sequentialNumber") as number;
 			return <span className="text-muted-foreground font-mono">{num}</span>;
 		},
@@ -88,6 +90,7 @@ export const submissionColumns: AppColumnDef<AdminSubmission>[] = [
 			<DataTableColumnHeader column={column} title="Title" />
 		),
 		cell: ({ row }) => {
+			// SAFETY: TanStack's getValue is untyped; this column holds that type in the row model.
 			const title = row.getValue("title") as string;
 			return (
 				<div className="max-w-[300px]">
@@ -112,11 +115,10 @@ export const submissionColumns: AppColumnDef<AdminSubmission>[] = [
 			/>
 		),
 		cell: ({ row }) => {
+			// SAFETY: TanStack's getValue is untyped; this column holds that type in the row model.
 			const type = row.getValue("type") as string;
 			return (
-				<Badge variant="outline">
-					{typeLabels[type as keyof typeof typeLabels] ?? type}
-				</Badge>
+				<Badge variant="outline">{lookup(typeLabels, type) ?? type}</Badge>
 			);
 		},
 		filterFn: facetedFilterFn,
@@ -131,14 +133,11 @@ export const submissionColumns: AppColumnDef<AdminSubmission>[] = [
 			/>
 		),
 		cell: ({ row }) => {
+			// SAFETY: TanStack's getValue is untyped; this column holds that type in the row model.
 			const status = row.getValue("status") as string;
 			return (
-				<Badge
-					variant={
-						statusVariants[status as keyof typeof statusVariants] ?? "secondary"
-					}
-				>
-					{statusLabels[status as keyof typeof statusLabels] ?? status}
+				<Badge variant={lookup(statusVariants, status) ?? "secondary"}>
+					{lookup(statusLabels, status) ?? status}
 				</Badge>
 			);
 		},
@@ -172,6 +171,7 @@ export const submissionColumns: AppColumnDef<AdminSubmission>[] = [
 			<DataTableColumnHeader column={column} title="Round" />
 		),
 		cell: ({ row }) => {
+			// SAFETY: TanStack's getValue is untyped; this column holds that type in the row model.
 			const round = row.getValue("currentRound") as number;
 			return <span className="text-muted-foreground">R{round}</span>;
 		},

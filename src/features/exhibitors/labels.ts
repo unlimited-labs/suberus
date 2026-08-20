@@ -43,6 +43,7 @@ export function exhibitorStatusBadge(
 				} as const);
 	}
 	return {
+		// SAFETY: the PENDING branch above already returned, leaving the mapped members.
 		key: status as Exclude<
 			ExhibitorDisplayStatus,
 			"NOT_SUBMITTED" | "AWAITING_DECISION"

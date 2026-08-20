@@ -16,12 +16,14 @@ import { ProgramAuthLink, ProgramPwaStatus } from "./themes/shared";
 const RULE_STYLE: CSSProperties = {
 	borderColor: "var(--prog-rule)",
 	borderTopWidth: "var(--prog-rule-width)",
+	// SAFETY: the record holds only CSS custom properties.
 	borderTopStyle: "var(--prog-rule-style)" as CSSProperties["borderTopStyle"],
 };
 const HEADER_RULE_STYLE: CSSProperties = {
 	borderColor: "var(--prog-rule)",
 	borderBottomWidth: "var(--prog-rule-width)",
 	borderBottomStyle:
+		// SAFETY: the record holds only CSS custom properties.
 		"var(--prog-rule-style)" as CSSProperties["borderBottomStyle"],
 };
 

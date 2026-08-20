@@ -82,6 +82,7 @@ export const patchAdminUser = createServerFn({ method: "POST" })
 	.handler(async ({ data, context }) => {
 		return patchUser(data, {
 			id: context.user.id,
+			// SAFETY: session role mirrors the DB enum column.
 			role: context.user.role as UserRole,
 		});
 	});
@@ -92,6 +93,7 @@ export const bulkAdminAction = createServerFn({ method: "POST" })
 	.handler(async ({ data, context }) => {
 		return executeBulkAction(data, {
 			id: context.user.id,
+			// SAFETY: session role mirrors the DB enum column.
 			role: context.user.role as UserRole,
 		});
 	});

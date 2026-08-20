@@ -157,6 +157,7 @@ export const auth = betterAuth({
 		requireEmailVerification: false, // Soft-block: users can login, but app restricts actions
 		minPasswordLength: 10,
 		sendResetPassword: async ({ user, url }) => {
+			// SAFETY: firstName is a better-auth additionalField, absent from the base user type.
 			const extUser = user as typeof user & { firstName?: string };
 			await sendEmail("PASSWORD_RESET", user.email, {
 				firstName: extUser.firstName ?? user.email,
@@ -171,6 +172,7 @@ export const auth = betterAuth({
 		callbackURL: "/?verified=true",
 		expiresIn: 24 * 60 * 60, // 24h
 		sendVerificationEmail: async ({ user, url }) => {
+			// SAFETY: firstName is a better-auth additionalField, absent from the base user type.
 			const extUser = user as typeof user & { firstName?: string };
 			await sendEmail("EMAIL_VERIFICATION", user.email, {
 				firstName: extUser.firstName ?? user.email,
@@ -227,6 +229,7 @@ export const auth = betterAuth({
 				returned: false,
 			},
 			role: {
+				// SAFETY: Object.keys over a generated enum returns exactly its member names.
 				type: Object.keys(UserRole) as (keyof typeof UserRole)[],
 				required: false,
 				defaultValue: UserRole.AUTHOR,
@@ -270,6 +273,7 @@ export const auth = betterAuth({
 						userId: user.id,
 						detail: activityDetail("USER_REGISTERED", { email: user.email }),
 					});
+					// SAFETY: these are better-auth additionalFields, absent from the base user type.
 					const extUser = user as typeof user & {
 						firstName?: string;
 						affiliationId?: string;

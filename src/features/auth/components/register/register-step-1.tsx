@@ -10,6 +10,7 @@ import { registerBase } from "@/features/auth/validations";
 import { AffiliationSelect } from "@/shared/components/affiliation-select";
 import { titleOptions } from "@/shared/lib/labels/title";
 import { roleLabels } from "@/shared/lib/labels/user-role";
+import { lookup } from "@/shared/lib/lookup";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
@@ -95,7 +96,7 @@ export function RegisterStep1({
 					<AlertDescription>
 						You&apos;ve been invited as{" "}
 						<span className="font-semibold">
-							{roleLabels[invitation.role as keyof typeof roleLabels]}
+							{lookup(roleLabels, invitation.role)}
 						</span>
 					</AlertDescription>
 				</Alert>

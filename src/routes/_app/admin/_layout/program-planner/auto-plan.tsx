@@ -182,6 +182,7 @@ function ProgressView({
 }: {
 	progress: { stage: string; current: number; total: number };
 }) {
+	// SAFETY: the autoplan worker reports only these stage names.
 	const currentStage = (progress.stage ?? "loading") as Stage;
 	const activeIdx = STAGES.findIndex((s) => s.key === currentStage);
 	const current = progress.current;

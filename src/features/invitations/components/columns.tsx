@@ -45,11 +45,10 @@ export function createInvitationColumns(
 				<DataTableColumnHeader column={column} title="Role" />
 			),
 			cell: ({ row }) => {
+				// SAFETY: TanStack's getValue is untyped; this column holds that type in the row model.
 				const role = row.getValue("role") as string;
 				return (
-					<Badge variant="secondary">
-						{roleLabels[role as keyof typeof roleLabels] ?? role}
-					</Badge>
+					<Badge variant="secondary">{lookup(roleLabels, role) ?? role}</Badge>
 				);
 			},
 		},
@@ -59,6 +58,7 @@ export function createInvitationColumns(
 				<DataTableColumnHeader column={column} title="Status" />
 			),
 			cell: ({ row }) => {
+				// SAFETY: TanStack's getValue is untyped; this column holds that type in the row model.
 				const status = row.getValue("status") as string;
 				const config = lookup(invitationStatusConfig, status) ?? {
 					label: status,
@@ -73,6 +73,7 @@ export function createInvitationColumns(
 				<DataTableColumnHeader column={column} title="Expires" />
 			),
 			cell: ({ row }) => (
+				// SAFETY: TanStack's getValue is untyped; this column holds that type in the row model.
 				<DateCell value={row.getValue("expiresAt") as string} />
 			),
 		},
@@ -82,6 +83,7 @@ export function createInvitationColumns(
 				<DataTableColumnHeader column={column} title="Created" />
 			),
 			cell: ({ row }) => (
+				// SAFETY: TanStack's getValue is untyped; this column holds that type in the row model.
 				<DateCell value={row.getValue("createdAt") as string} />
 			),
 		},

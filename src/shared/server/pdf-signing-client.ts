@@ -50,6 +50,7 @@ export async function generateCertificate(opts: {
 		new Blob([JSON.stringify(opts)], { type: "application/json" }),
 		GEN_TIMEOUT_MS,
 	);
+	// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
 	const data = (await res.json()) as {
 		p12Base64: string;
 		password: string;
@@ -72,6 +73,7 @@ export async function inspectCertificate(
 	form.append("p12", new Blob([new Uint8Array(p12)]), "cert.p12");
 	form.append("password", password);
 	const res = await post("/v1/inspect-cert", form, GEN_TIMEOUT_MS);
+	// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
 	return (await res.json()) as { metadata: CertMetadata; certPem: string };
 }
 
@@ -118,5 +120,6 @@ export async function verifyPdf(pdf: Buffer): Promise<VerifyResult> {
 	const form = new FormData();
 	form.append("file", new Blob([new Uint8Array(pdf)]), "document.pdf");
 	const res = await post("/v1/verify-pdf", form, SIGN_TIMEOUT_MS);
+	// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
 	return (await res.json()) as VerifyResult;
 }

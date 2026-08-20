@@ -45,6 +45,7 @@ function normalizeAllowedExtensions(
 	if (!Array.isArray(config.allowedExtensions)) return config;
 	const supported = config.allowedExtensions.filter(
 		(ext): ext is SupportedFileExtension =>
+			// SAFETY: widening a const tuple only to test membership of an arbitrary string.
 			(SUPPORTED_FILE_EXTENSIONS as readonly string[]).includes(ext),
 	);
 	// ponytail: single extension per type — collapse legacy multi-value configs
@@ -75,13 +76,16 @@ export async function getSetting<K extends keyof AppSettingsMap>(
 		return getDefaultSetting(key);
 	}
 
+	// SAFETY: appSetting rows are written only through setSetting, which types value by key.
 	const value = setting.value as AppSettingsMap[K];
 
 	// Normalize legacy string[] scoringCriteria for submission type configs
 	if (
+		// SAFETY: widening a const tuple only to test membership of an arbitrary string.
 		(SUBMISSION_TYPE_KEYS as readonly string[]).includes(key) &&
 		z.object({}).safeParse(value).success
 	) {
+		// SAFETY: guarded by the submission-type key check above.
 		return normalizeSubmissionTypeConfig(
 			value as SubmissionTypeConfig,
 		) as AppSettingsMap[K];
@@ -100,9 +104,11 @@ export async function setSetting<K extends keyof AppSettingsMap>(
 ): Promise<void> {
 	await prisma.appSetting.upsert({
 		where: { key },
+		// SAFETY: every AppSettingsMap value is a JSON literal by construction.
 		update: { value: value as object },
 		create: {
 			key,
+			// SAFETY: every AppSettingsMap value is a JSON literal by construction.
 			value: value as object,
 		},
 	});
@@ -124,11 +130,13 @@ export async function getSettings<K extends keyof AppSettingsMap>(
 		),
 	);
 
+	// SAFETY: filled key by key in the loop below before it is returned.
 	const result = {} as Pick<AppSettingsMap, K>;
 
 	for (let i = 0; i < keys.length; i++) {
 		const key = keys[i];
 		const found = settings[i];
+		// SAFETY: appSetting rows are written only through setSetting, which types value by key.
 		result[key] = found
 			? (found.value as AppSettingsMap[K])
 			: getDefaultSetting(key);

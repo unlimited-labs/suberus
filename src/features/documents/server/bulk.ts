@@ -106,6 +106,7 @@ export async function startBulk(opts: {
 		})),
 	});
 
+	// SAFETY: activityDetail() builds a plain JSON object.
 	await prisma.activityLog.createMany({
 		data: resolvableIds.map((userId) => ({
 			type: "DOCUMENT_GENERATED" as const,
