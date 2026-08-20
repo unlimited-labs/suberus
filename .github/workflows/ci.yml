@@ -30,6 +30,8 @@ jobs:
 
       - run: pnpm exec biome ci .
 
+      - run: pnpm exec oxlint
+
       # build is the typecheck: vite-plugin-checker gates types and generates
       # routeTree.gen.ts (a standalone tsc can't). Before test for route imports.
       - run: pnpm build
