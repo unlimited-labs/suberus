@@ -4,9 +4,9 @@ import type {
 	UserRole,
 } from "@/generated/prisma/enums";
 
-type AssertExhaustive<T extends Record<ActivityType, object>> = T;
-
 type NoDetail = Record<never, never>;
+
+type AssertExhaustive<T extends Record<ActivityType, NoDetail>> = T;
 
 type StatusChange = {
 	fromStatus: SubmissionStatus | null;

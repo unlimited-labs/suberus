@@ -7,7 +7,7 @@ import {
 	sendRevisionReminders,
 } from "@/features/submissions/server/reminders";
 
-const TASK_RUNNERS: Record<string, () => Promise<Record<string, unknown>>> = {
+const TASK_RUNNERS: Record<string, () => Promise<Record<string, number>>> = {
 	"assignments:overdue": async () => ({
 		overdue: await markOverdueAssignments(),
 	}),

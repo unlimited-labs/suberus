@@ -1,4 +1,5 @@
 import latinize from "latinize";
+import { z } from "zod";
 import { env } from "@/env";
 import {
 	logActivity,
@@ -16,9 +17,9 @@ import {
 import type { Prisma } from "@/generated/prisma/client";
 import type {
 	EditorDecisionType,
-	SubmissionStatus,
 	SubmissionType,
 } from "@/generated/prisma/enums";
+import { SubmissionStatus } from "@/generated/prisma/enums";
 import { logger } from "@/logger.ts";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
@@ -435,6 +436,14 @@ export interface UserSubmissionAuthor {
 	isPresenter: boolean;
 }
 
+/** The activity-log detail fields this view reads; everything else is ignored. */
+const activityDetailSchema = z.object({
+	isDraft: z.boolean().optional(),
+	toStatus: z.enum(SubmissionStatus).optional(),
+	reason: z.string().optional(),
+	comment: z.string().optional(),
+});
+
 export interface UserSubmissionStatusHistory {
 	id: string;
 	submissionId: string;
@@ -613,12 +622,12 @@ export async function getSubmissionById(
 
 		const statusHistory: UserSubmissionStatusHistory[] =
 			submission.activityLog.map((h) => {
-				const detail = h.detail as Record<string, unknown> | null;
+				const detail = activityDetailSchema.safeParse(h.detail).data ?? {};
 
 				let status: SubmissionStatus;
 				switch (h.type) {
 					case "SUBMISSION_CREATED":
-						status = detail?.isDraft ? "DRAFT" : "SUBMITTED";
+						status = detail.isDraft ? "DRAFT" : "SUBMITTED";
 						break;
 					case "SUBMISSION_DRAFT_SUBMITTED":
 						status = "SUBMITTED";
@@ -630,7 +639,7 @@ export async function getSubmissionById(
 						status = "WITHDRAWN";
 						break;
 					default:
-						status = (detail?.toStatus as SubmissionStatus) ?? "SUBMITTED";
+						status = detail.toStatus ?? "SUBMITTED";
 				}
 
 				return {
@@ -642,7 +651,7 @@ export async function getSubmissionById(
 						? `${h.performer.firstName ?? ""} ${h.performer.lastName ?? ""}`.trim() ||
 							"System"
 						: "System",
-					metadata: detail as { reason?: string; comment?: string } | undefined,
+					metadata: detail,
 				};
 			});
 

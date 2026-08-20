@@ -31,9 +31,7 @@ import {
 	validateUpload,
 } from "@/shared/server/validate-upload";
 
-export function isPrismaKnownError(
-	cause: unknown,
-): cause is { code: string; meta?: Record<string, unknown> } {
+export function isPrismaKnownError(cause: unknown): cause is { code: string } {
 	return (
 		typeof cause === "object" &&
 		cause !== null &&
