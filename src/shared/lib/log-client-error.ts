@@ -68,7 +68,7 @@ export async function logClientError(label: string, e: unknown): Promise<void> {
 			stack: e.stack,
 			// Only field whose content we did not build ourselves (a `fetch failed`
 			// cause carries the target URL), and this log never leaves the browser.
-			...(import.meta.env.DEV ? { cause: e.cause } : {}),
+			cause: import.meta.env.DEV ? e.cause : undefined,
 		});
 		return;
 	}

@@ -61,7 +61,7 @@ export async function updateRoom(
 		where: { id },
 		data: {
 			...data,
-			...(data.link !== undefined ? { link: data.link || null } : {}),
+			link: data.link !== undefined ? data.link || null : undefined,
 		},
 	});
 }

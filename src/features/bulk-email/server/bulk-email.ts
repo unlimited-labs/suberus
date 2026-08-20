@@ -245,8 +245,8 @@ export async function sendCampaignTest(
 		to: toEmail,
 		subject,
 		...(rendered.isHtml ? { html: body } : { text: body }),
-		...(campaign.replyTo ? { replyTo: campaign.replyTo } : {}),
-		...(attachments.length ? { attachments } : {}),
+		replyTo: campaign.replyTo || undefined,
+		attachments: attachments.length ? attachments : undefined,
 	});
 }
 

@@ -40,7 +40,7 @@ const nitroConfig: NitroPluginConfig = {
 	// Nitro 3 bundles deps by default; the `jsdom*` full-trace copies all package
 	// files (incl. the CSS asset) into .output/server/node_modules.
 	traceDeps: ["jsdom*"],
-	...(outputDir ? { output: { dir: outputDir } } : {}),
+	output: outputDir ? { dir: outputDir } : undefined,
 	experimental: { tasks: true, vite: {} },
 	scheduledTasks: {
 		"* * * * *": isE2E ? [] : ["program:reminders"],

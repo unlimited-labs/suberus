@@ -36,9 +36,7 @@ export function buildRecipientMail(
 		to: recipient.email,
 		subject,
 		...(content.isHtml ? { html: body } : { text: body }),
-		...(content.replyTo ? { replyTo: content.replyTo } : {}),
-		...(content.attachments?.length
-			? { attachments: content.attachments }
-			: {}),
+		replyTo: content.replyTo || undefined,
+		attachments: content.attachments?.length ? content.attachments : undefined,
 	};
 }

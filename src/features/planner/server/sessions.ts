@@ -149,7 +149,7 @@ export async function moveSession(
 		data: {
 			startAt: data.startAt,
 			endAt: data.endAt,
-			...(data.roomId !== undefined ? { roomId: data.roomId } : {}),
+			roomId: data.roomId !== undefined ? data.roomId : undefined,
 		},
 	});
 }

@@ -78,17 +78,15 @@ export async function adminListDocuments(filters?: {
 		where: {
 			status: filters?.status,
 			templateId: filters?.templateId,
-			...(search
-				? {
-						user: {
-							OR: [
-								{ firstName: { contains: search, mode: "insensitive" } },
-								{ lastName: { contains: search, mode: "insensitive" } },
-								{ email: { contains: search, mode: "insensitive" } },
-							],
-						},
-					}
-				: {}),
+			user: !search
+				? undefined
+				: {
+						OR: [
+							{ firstName: { contains: search, mode: "insensitive" } },
+							{ lastName: { contains: search, mode: "insensitive" } },
+							{ email: { contains: search, mode: "insensitive" } },
+						],
+					},
 		},
 		select: rowSelect,
 		orderBy: { createdAt: "desc" },

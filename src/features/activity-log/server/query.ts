@@ -37,8 +37,8 @@ export async function listActivity(
 	if (filters.performedBy) where.performedBy = filters.performedBy;
 	if (filters.since || filters.until) {
 		where.createdAt = {
-			...(filters.since ? { gte: new Date(filters.since) } : {}),
-			...(filters.until ? { lt: new Date(filters.until) } : {}),
+			gte: filters.since ? new Date(filters.since) : undefined,
+			lt: filters.until ? new Date(filters.until) : undefined,
 		};
 	}
 
@@ -47,7 +47,8 @@ export async function listActivity(
 	const rows = await prisma.activityLog.findMany({
 		where,
 		take: filters.take + 1,
-		...(filters.cursor ? { skip: 1, cursor: { id: filters.cursor } } : {}),
+		skip: filters.cursor ? 1 : undefined,
+		cursor: filters.cursor ? { id: filters.cursor } : undefined,
 		orderBy: { createdAt: "desc" },
 		include: {
 			submission: { select: { id: true, title: true } },

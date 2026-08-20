@@ -53,9 +53,10 @@ const transporter = nodemailer.createTransport({
 	connectionTimeout: 10_000,
 	greetingTimeout: 10_000,
 	socketTimeout: 15_000,
-	...(env.SMTP_USER && env.SMTP_PASSWORD
-		? { auth: { user: env.SMTP_USER, pass: env.SMTP_PASSWORD } }
-		: {}),
+	auth:
+		env.SMTP_USER && env.SMTP_PASSWORD
+			? { user: env.SMTP_USER, pass: env.SMTP_PASSWORD }
+			: undefined,
 });
 
 function textAlternative(html: string): string {
@@ -113,11 +114,11 @@ export async function sendRawEmail(mail: RawEmail): Promise<void> {
 		to: mail.to,
 		cc: mail.cc?.length ? mail.cc : undefined,
 		bcc: mail.bcc?.length ? mail.bcc : undefined,
-		...(replyTo ? { replyTo } : {}),
+		replyTo: replyTo || undefined,
 		subject: mail.subject,
-		...(mail.html !== undefined ? { html: mail.html } : {}),
-		...(text !== undefined ? { text } : {}),
-		...(mail.attachments?.length ? { attachments: mail.attachments } : {}),
+		html: mail.html,
+		text,
+		attachments: mail.attachments?.length ? mail.attachments : undefined,
 		headers,
 	});
 }
@@ -167,7 +168,7 @@ export async function sendEmail(
 				to,
 				cc: template.ccEmails.length > 0 ? template.ccEmails : undefined,
 				bcc: template.bccEmails.length > 0 ? template.bccEmails : undefined,
-				...(replyTo ? { replyTo } : {}),
+				replyTo: replyTo || undefined,
 				subject,
 				...(template.isHtml
 					? { html: body, text: textAlternative(body) }
@@ -253,7 +254,7 @@ export async function sendTestEmail(
 	const mailOptions = {
 		from: env.SMTP_FROM_EMAIL,
 		to,
-		...(replyTo ? { replyTo } : {}),
+		replyTo: replyTo || undefined,
 		subject: resolvedSubject,
 		...(isHtml
 			? { html: resolvedBody, text: textAlternative(resolvedBody) }
@@ -270,9 +271,10 @@ export async function sendTestEmail(
 			connectionTimeout: 10_000,
 			greetingTimeout: 10_000,
 			socketTimeout: 15_000,
-			...(env.SMTP_USER && env.SMTP_PASSWORD
-				? { auth: { user: env.SMTP_USER, pass: env.SMTP_PASSWORD } }
-				: {}),
+			auth:
+				env.SMTP_USER && env.SMTP_PASSWORD
+					? { user: env.SMTP_USER, pass: env.SMTP_PASSWORD }
+					: undefined,
 		});
 		try {
 			await direct.sendMail(mailOptions);

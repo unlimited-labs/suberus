@@ -46,7 +46,7 @@ const roleProject = (
 ) => ({
 	name,
 	testMatch,
-	...(opts.testIgnore ? { testIgnore: opts.testIgnore } : {}),
+	testIgnore: opts.testIgnore || undefined,
 	dependencies: ["auth-setup"],
 	use: {
 		...devices[opts.device === "mobile" ? "Pixel 5" : "Desktop Chrome"],

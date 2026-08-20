@@ -2,6 +2,8 @@ import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 import { logLevel } from "./log-level";
 
+const processEnv = "process" in globalThis ? process.env : {};
+
 export const env = createEnv({
 	shared: {
 		NODE_ENV: z.string().default("development"),
@@ -113,10 +115,7 @@ export const env = createEnv({
 	 * In production SSR builds, Vite statically replaces `import.meta.env`
 	 * so we merge with `process.env` to ensure runtime vars are available.
 	 */
-	runtimeEnv: {
-		...import.meta.env,
-		...("process" in globalThis ? process.env : {}),
-	},
+	runtimeEnv: { ...import.meta.env, ...processEnv },
 
 	/**
 	 * By default, this library will feed the environment variables directly to

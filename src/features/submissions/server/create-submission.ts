@@ -310,7 +310,7 @@ export async function attachFileToVersion(params: {
 	const enforceOwnership = params.enforceOwnership ?? true;
 
 	const submission = await prisma.submission.findFirst({
-		where: { id: submissionId, ...(enforceOwnership ? { userId } : {}) },
+		where: { id: submissionId, userId: enforceOwnership ? userId : undefined },
 		include: {
 			currentVersion: true,
 			authors: {
