@@ -32,13 +32,13 @@ import {
 } from "@/shared/server/validate-upload";
 
 export function isPrismaKnownError(
-	err: unknown,
-): err is { code: string; meta?: Record<string, unknown> } {
+	cause: unknown,
+): cause is { code: string; meta?: Record<string, unknown> } {
 	return (
-		typeof err === "object" &&
-		err !== null &&
-		"code" in err &&
-		typeof (err as { code: unknown }).code === "string"
+		typeof cause === "object" &&
+		cause !== null &&
+		"code" in cause &&
+		typeof (cause as { code: unknown }).code === "string"
 	);
 }
 
@@ -53,10 +53,10 @@ export type SubmissionResult =
 	| SubmissionFailure;
 
 export function toSubmissionError(
-	err: unknown,
+	cause: unknown,
 	verb: string,
 ): SubmissionFailure {
-	if (isPrismaKnownError(err) && err.code === "P2002") {
+	if (isPrismaKnownError(cause) && cause.code === "P2002") {
 		return {
 			success: false,
 			error:

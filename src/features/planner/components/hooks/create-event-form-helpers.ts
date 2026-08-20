@@ -9,8 +9,17 @@ const dateBearerSchema = z.object({
 });
 const primitiveDateSchema = z.union([z.string(), z.number()]);
 
+/** Anything ilamy hands us as a date: a Date, a dayjs-like wrapper, or a primitive. */
+export type IlamyDateInput =
+	| Date
+	| { toDate?: unknown }
+	| string
+	| number
+	| null
+	| undefined;
+
 /** Best-effort coercion of an ilamy date-ish value (Date, dayjs, string) to a Date. */
-export function toDate(raw: unknown): Date | null {
+export function toDate(raw: IlamyDateInput): Date | null {
 	if (raw == null) return null;
 	if (raw instanceof Date) return raw;
 	const bearer = dateBearerSchema.safeParse(raw);
@@ -25,7 +34,9 @@ export function toDate(raw: unknown): Date | null {
 }
 
 /** Normalizes an ilamy resource id (string | number) to a string id. */
-function resolveResourceId(rawResourceId: unknown): string | undefined {
+function resolveResourceId(
+	rawResourceId: string | number | null | undefined,
+): string | undefined {
 	const id = primitiveDateSchema.safeParse(rawResourceId);
 	return id.success ? String(id.data) : undefined;
 }

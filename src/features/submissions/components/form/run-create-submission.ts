@@ -6,11 +6,13 @@ import {
 } from "@/shared/lib/log-client-error";
 import type { SubmissionFormData } from "./submission-form-types";
 
-function getCreateSubmissionErrorMessage(e: unknown): string {
-	if (e instanceof Error && e.message === "Request timed out") {
+function getCreateSubmissionErrorMessage(cause: unknown): string {
+	if (cause instanceof Error && cause.message === "Request timed out") {
 		return "Submission took too long. Check your submissions list before retrying — it may have gone through.";
 	}
-	return extractZodIssueMessage(e) ?? "Something went wrong. Please try again.";
+	return (
+		extractZodIssueMessage(cause) ?? "Something went wrong. Please try again."
+	);
 }
 
 function submissionResultErrorMessage(result: {

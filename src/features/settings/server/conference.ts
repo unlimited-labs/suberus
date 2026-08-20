@@ -1,7 +1,7 @@
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
 import { getSettings, setSetting } from "@/features/settings/server/settings";
-import type { AppSettingKey } from "@/features/settings/types";
+import type { AppSettingKey, AppSettingsMap } from "@/features/settings/types";
 import type { ConferenceSettings } from "@/features/settings/validations";
 
 const CONFERENCE_KEYS = {
@@ -63,7 +63,7 @@ export async function getConferenceSettings(): Promise<ConferenceSettings> {
 // data[field] describe the same setting; the map above is what pairs them.
 const writeSetting = setSetting as (
 	key: AppSettingKey,
-	value: unknown,
+	value: AppSettingsMap[AppSettingKey],
 ) => Promise<void>;
 
 /** A patch, so the form (all fields) and the MCP tool (some) share one path. */

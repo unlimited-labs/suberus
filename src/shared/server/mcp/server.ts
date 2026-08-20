@@ -5,6 +5,7 @@ import {
 	originValidationResponse,
 } from "@modelcontextprotocol/server";
 import { createInsufficientScopeError } from "better-auth/oauth2";
+import type { z } from "zod";
 import type { McpActor, McpTool } from "@/shared/server/mcp/define-tool";
 
 /**
@@ -28,9 +29,9 @@ export interface McpHandlerConfig extends McpServerConfig {
 	allowedHostnames: string[];
 }
 
-export async function runTool(
-	tool: McpTool,
-	input: unknown,
+export async function runTool<Input extends z.ZodType>(
+	tool: McpTool<Input>,
+	input: z.output<Input>,
 	actor: McpActor,
 ): Promise<{ content: [{ type: "text"; text: string }]; isError?: true }> {
 	try {

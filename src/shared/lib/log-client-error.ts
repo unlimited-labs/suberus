@@ -15,8 +15,9 @@ const issueArraySchema = z
  * surface on the client as `Error` with a JSON-encoded message). Returns the
  * first issue formatted as `"<path>: <message>"` or `null` if not recognised.
  */
-export function extractZodIssueMessage(e: unknown): string | null {
-	const raw = e instanceof Error ? e.message : z.string().safeParse(e).data;
+export function extractZodIssueMessage(cause: unknown): string | null {
+	const raw =
+		cause instanceof Error ? cause.message : z.string().safeParse(cause).data;
 	if (!raw) return null;
 	const trimmed = raw.trim();
 	if (!trimmed.startsWith("[") && !trimmed.startsWith("{")) return null;
@@ -34,35 +35,38 @@ export function extractZodIssueMessage(e: unknown): string | null {
 }
 
 /** Stringifies an unknown thrown value with useful structure for browser devtools. */
-export async function logClientError(label: string, e: unknown): Promise<void> {
-	if (e instanceof Response) {
+export async function logClientError(
+	label: string,
+	cause: unknown,
+): Promise<void> {
+	if (cause instanceof Response) {
 		let body = "";
 		try {
-			body = await e.clone().text();
+			body = await cause.clone().text();
 		} catch {
 			body = "<unreadable body>";
 		}
 		console.error(label, {
 			kind: "Response",
-			status: e.status,
-			statusText: e.statusText,
-			url: e.url,
+			status: cause.status,
+			statusText: cause.statusText,
+			url: cause.url,
 			body: body.slice(0, 2000),
 		});
 		return;
 	}
-	if (e instanceof Error) {
+	if (cause instanceof Error) {
 		console.error(label, {
 			kind: "Error",
-			name: e.name,
-			message: e.message,
-			stack: e.stack,
+			name: cause.name,
+			message: cause.message,
+			stack: cause.stack,
 			// Only field whose content we did not build ourselves (a `fetch failed`
 			// cause carries the target URL), and this log never leaves the browser.
-			cause: import.meta.env.DEV ? e.cause : undefined,
+			cause: import.meta.env.DEV ? cause.cause : undefined,
 		});
 		return;
 	}
 	// oxlint-disable-next-line anti-slop/no-runtime-typeof -- devtools label, not narrowing
-	console.error(label, { kind: typeof e, value: e });
+	console.error(label, { kind: typeof cause, value: cause });
 }

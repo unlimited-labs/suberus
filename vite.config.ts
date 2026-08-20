@@ -18,7 +18,7 @@ const outputDir = process.env.BUILD_OUTPUT_DIR;
 const rollupConfig = {
 	onwarn(
 		warning: { code?: string; message: string },
-		log: (warning: unknown) => void,
+		log: (warning: { code?: string; message: string }) => void,
 	) {
 		if (
 			warning.code === "MODULE_LEVEL_DIRECTIVE" || // "use client" directives

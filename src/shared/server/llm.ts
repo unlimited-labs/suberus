@@ -173,21 +173,21 @@ export async function generateWithLlm({
 	return data.choices[0]?.message.content || "";
 }
 
-function describeFetchError(e: unknown, timeoutMs: number): string {
-	if (e instanceof Error) {
-		if (e.name === "TimeoutError" || e.name === "AbortError") {
+function describeFetchError(cause: unknown, timeoutMs: number): string {
+	if (cause instanceof Error) {
+		if (cause.name === "TimeoutError" || cause.name === "AbortError") {
 			return `timed out after ${timeoutMs}ms`;
 		}
-		const cause = (e as { cause?: unknown }).cause;
+		const nested = (cause as { cause?: unknown }).cause;
 		const causeMsg =
-			cause instanceof Error
-				? `${cause.name}: ${cause.message}${
-						"code" in cause && cause.code ? ` (${cause.code})` : ""
+			nested instanceof Error
+				? `${nested.name}: ${nested.message}${
+						"code" in nested && nested.code ? ` (${nested.code})` : ""
 					}`
-				: cause
-					? String(cause)
+				: nested
+					? String(nested)
 					: "";
-		return causeMsg ? `${e.message} — ${causeMsg}` : e.message;
+		return causeMsg ? `${cause.message} — ${causeMsg}` : cause.message;
 	}
-	return String(e);
+	return String(cause);
 }

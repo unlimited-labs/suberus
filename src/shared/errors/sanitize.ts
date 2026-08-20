@@ -6,10 +6,10 @@ export interface ClientError extends Error {
 	requestId: string;
 }
 
-export function hasRequestId(error: unknown): error is ClientError {
+export function hasRequestId(cause: unknown): cause is ClientError {
 	return (
-		error instanceof Error &&
-		typeof (error as Partial<ClientError>).requestId === "string"
+		cause instanceof Error &&
+		typeof (cause as Partial<ClientError>).requestId === "string"
 	);
 }
 
@@ -34,16 +34,16 @@ function isInternalError(error: Error): boolean {
 	);
 }
 
-export function clientSafeMessage(error: unknown): string {
-	if (!(error instanceof Error)) return GENERIC_ERROR_MESSAGE;
-	if (isInternalError(error)) return GENERIC_ERROR_MESSAGE;
-	return error.message.trim() || GENERIC_ERROR_MESSAGE;
+export function clientSafeMessage(cause: unknown): string {
+	if (!(cause instanceof Error)) return GENERIC_ERROR_MESSAGE;
+	if (isInternalError(cause)) return GENERIC_ERROR_MESSAGE;
+	return cause.message.trim() || GENERIC_ERROR_MESSAGE;
 }
 
 // TanStack Start serializes the whole thrown error — stack and every own
 // property — into the server-fn response body, with no production guard.
-export function toClientError(error: unknown, requestId: string): Error {
-	const message = clientSafeMessage(error);
+export function toClientError(cause: unknown, requestId: string): Error {
+	const message = clientSafeMessage(cause);
 	const safe = new Error(message);
 	safe.stack = "";
 	if (message === GENERIC_ERROR_MESSAGE) {
@@ -51,7 +51,7 @@ export function toClientError(error: unknown, requestId: string): Error {
 		return safe;
 	}
 	// Carry the discriminator of a message we already judged client-safe. `cause`
-	// stays behind: it usually wraps the infrastructure error this strips.
-	if (error instanceof Error) safe.name = error.name;
+	// stays behind: it usually wraps the infrastructure cause this strips.
+	if (cause instanceof Error) safe.name = cause.name;
 	return safe;
 }

@@ -37,11 +37,11 @@ function formatIssues(issues: ZodIssueLike[]): string {
  * instead of dumping raw JSON into a toast.
  */
 export function getErrorMessage(
-	error: unknown,
+	cause: unknown,
 	fallback = "Something went wrong",
 ): string {
-	if (error instanceof Error) {
-		const trimmed = error.message.trim();
+	if (cause instanceof Error) {
+		const trimmed = cause.message.trim();
 		if (trimmed.startsWith("[") || trimmed.startsWith("{")) {
 			try {
 				const parsed: unknown = JSON.parse(trimmed);
@@ -54,11 +54,11 @@ export function getErrorMessage(
 			}
 		}
 		const message = trimmed || fallback;
-		return hasRequestId(error)
-			? `${message} (Reference: ${error.requestId})`
+		return hasRequestId(cause)
+			? `${message} (Reference: ${cause.requestId})`
 			: message;
 	}
-	const asString = z.string().safeParse(error);
+	const asString = z.string().safeParse(cause);
 	if (asString.success && asString.data.trim()) return asString.data;
 	return fallback;
 }

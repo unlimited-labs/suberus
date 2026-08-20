@@ -13,24 +13,27 @@ import { statusLabels } from "@/shared/lib/labels/submission";
 import { roleLabels } from "@/shared/lib/labels/user-role";
 
 export type ActivityEvent = AdminDashboardMetrics["recentActivity"][number];
+type ActivityDetailValue =
+	| NonNullable<ActivityEvent["detail"]>[string]
+	| undefined;
 
-function str(value: unknown): string | undefined {
+function str(value: ActivityDetailValue): string | undefined {
 	return value == null ? undefined : String(value);
 }
 
-function statusLabel(value: unknown): string | undefined {
+function statusLabel(value: ActivityDetailValue): string | undefined {
 	const raw = str(value);
 	return raw
 		? (statusLabels[raw as keyof typeof statusLabels] ?? raw)
 		: undefined;
 }
 
-function roleLabel(value: unknown): string | undefined {
+function roleLabel(value: ActivityDetailValue): string | undefined {
 	const raw = str(value);
 	return raw ? (roleLabels[raw as keyof typeof roleLabels] ?? raw) : undefined;
 }
 
-function humanize(value: unknown): string | undefined {
+function humanize(value: ActivityDetailValue): string | undefined {
 	const raw = str(value);
 	return raw?.replace(/_/g, " ");
 }
@@ -123,7 +126,7 @@ const emailOf: DescriptionRenderer = (e) => str(e.detail?.email) ?? null;
 const documentOf: DescriptionRenderer = (e) =>
 	str(e.detail?.documentName) ?? null;
 
-const list = (value: unknown): string | undefined =>
+const list = (value: ActivityDetailValue): string | undefined =>
 	Array.isArray(value) && value.length > 0
 		? value.map(String).join(", ")
 		: undefined;

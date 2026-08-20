@@ -128,11 +128,11 @@ const CHUNK_ERROR_RE =
  * skew too (this is the crash observed on prod when clicking into a section).
  */
 function installChunkErrorWatch() {
-	const isChunkError = (value: unknown) => {
+	const isChunkError = (cause: unknown) => {
 		const message =
-			value instanceof Error
-				? value.message
-				: (z.string().safeParse(value).data ?? "");
+			cause instanceof Error
+				? cause.message
+				: (z.string().safeParse(cause).data ?? "");
 		return CHUNK_ERROR_RE.test(message);
 	};
 

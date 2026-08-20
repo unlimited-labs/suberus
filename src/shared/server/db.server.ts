@@ -23,6 +23,6 @@ globalThis.__prisma ??= new PrismaClient({ adapter });
 export const prisma = globalThis.__prisma;
 
 /** True for a Prisma unique-constraint violation (P2002) — for find-then-create races. */
-export function isUniqueViolation(e: unknown): boolean {
-	return z.object({ code: z.literal("P2002") }).safeParse(e).success;
+export function isUniqueViolation(cause: unknown): boolean {
+	return z.object({ code: z.literal("P2002") }).safeParse(cause).success;
 }

@@ -2,10 +2,10 @@ import { prisma } from "@/shared/server/db.server";
 
 // A duplicate name is a user error, but Prisma reports it as P2002 — which the
 // server-fn sanitizer replaces with the generic message, hiding the cause.
-function isDuplicateName(error: unknown): boolean {
+function isDuplicateName(cause: unknown): boolean {
 	// name is this model's only unique constraint, so any P2002 is that one.
 	return (
-		error instanceof Error && (error as { code?: unknown }).code === "P2002"
+		cause instanceof Error && (cause as { code?: unknown }).code === "P2002"
 	);
 }
 
