@@ -42,7 +42,7 @@ export function getDateFormats(
 }
 
 function toDate(date: Date | string): Date {
-	return typeof date === "string" ? new Date(date) : date;
+	return date instanceof Date ? date : new Date(date);
 }
 
 export function formatDate(date: Date | string, dateFormat: string): string {

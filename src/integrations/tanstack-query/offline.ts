@@ -26,7 +26,7 @@ let activeQueryClient: QueryClient | null = null;
  * and the cached document — which for an admin embeds the unpublished draft.
  */
 export async function clearOfflineProgramCache() {
-	if (typeof window === "undefined") return;
+	if (!("window" in globalThis)) return;
 	for (const prefix of PERSISTED_PREFIXES) {
 		activeQueryClient?.removeQueries({ queryKey: [prefix] });
 	}

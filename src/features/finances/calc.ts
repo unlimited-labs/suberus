@@ -1,4 +1,5 @@
 import { Parser } from "expr-eval-fork";
+import { z } from "zod";
 
 export interface FinanceRow {
 	label: string;
@@ -16,9 +17,7 @@ export function evalAmount(expr: string): number {
 	if (trimmed === "") return 0;
 	try {
 		const value = Parser.evaluate(trimmed);
-		return typeof value === "number" && Number.isFinite(value) && value >= 0
-			? value
-			: 0;
+		return z.number().finite().min(0).safeParse(value).data ?? 0;
 	} catch {
 		return 0;
 	}

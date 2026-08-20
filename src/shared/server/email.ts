@@ -1,5 +1,6 @@
 import { convert } from "html-to-text";
 import nodemailer, { type SentMessageInfo } from "nodemailer";
+import { z } from "zod";
 import { env } from "@/env.ts";
 import type { EmailEventType } from "@/generated/prisma/enums";
 import { logger } from "@/logger.ts";
@@ -12,7 +13,7 @@ import { prisma } from "@/shared/server/db.server";
  * (which is what actually sends most mail). */
 async function emailSetting(key: string): Promise<string | null> {
 	const row = await prisma.appSetting.findUnique({ where: { key } });
-	return typeof row?.value === "string" ? row.value : null;
+	return z.string().safeParse(row?.value).data ?? null;
 }
 
 /** `from` is a no-reply relay, so replies need steering to a real mailbox. */

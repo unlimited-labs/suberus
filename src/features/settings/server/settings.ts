@@ -80,8 +80,7 @@ export async function getSetting<K extends keyof AppSettingsMap>(
 	// Normalize legacy string[] scoringCriteria for submission type configs
 	if (
 		(SUBMISSION_TYPE_KEYS as readonly string[]).includes(key) &&
-		value &&
-		typeof value === "object"
+		z.object({}).safeParse(value).success
 	) {
 		return normalizeSubmissionTypeConfig(
 			value as SubmissionTypeConfig,

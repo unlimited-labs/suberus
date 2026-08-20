@@ -43,6 +43,11 @@ import { getUploadedFile } from "@/shared/server/form-upload";
 
 export type { SubmissionResult };
 
+/** A FormData text field; multipart entries are either a File or a string. */
+function formText(value: FormDataEntryValue | null): string | null {
+	return value instanceof File ? null : value;
+}
+
 /** Parse the create-submission multipart payload (JSON fields + optional file). */
 function parseCreateSubmissionFormData(data: FormData) {
 	const authorsRaw = data.get("authors");
@@ -53,10 +58,10 @@ function parseCreateSubmissionFormData(data: FormData) {
 		type: data.get("type"),
 		title: data.get("title"),
 		content: data.get("content"),
-		authors: JSON.parse(typeof authorsRaw === "string" ? authorsRaw : "[]"),
-		keywords: JSON.parse(typeof keywordsRaw === "string" ? keywordsRaw : "[]"),
+		authors: JSON.parse(formText(authorsRaw) ?? "[]"),
+		keywords: JSON.parse(formText(keywordsRaw) ?? "[]"),
 		contentFormat: data.get("contentFormat"),
-		trackId: typeof trackId === "string" && trackId.length > 0 ? trackId : null,
+		trackId: formText(trackId) || null,
 		isDraft: data.get("isDraft") === "true",
 		file: file instanceof File ? file : null,
 	});
@@ -258,10 +263,9 @@ function parseRevisionFormData(data: FormData) {
 		submissionId: data.get("submissionId"),
 		title: data.get("title"),
 		content: data.get("content"),
-		comment:
-			typeof comment === "string" && comment.length > 0 ? comment : undefined,
-		authors: JSON.parse(typeof authorsRaw === "string" ? authorsRaw : "[]"),
-		keywords: JSON.parse(typeof keywordsRaw === "string" ? keywordsRaw : "[]"),
+		comment: formText(comment) || undefined,
+		authors: JSON.parse(formText(authorsRaw) ?? "[]"),
+		keywords: JSON.parse(formText(keywordsRaw) ?? "[]"),
 		file: file instanceof File ? file : null,
 	});
 }

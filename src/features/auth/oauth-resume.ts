@@ -3,7 +3,7 @@ const AUTHORIZE_PATH = "/api/auth/oauth2/authorize";
 // The provider parks an unauthenticated /oauth2/authorize on the login page with
 // its signed query; returns that query to re-enter authorize, null if absent.
 export function oauthResumeSearch(
-	search = typeof window === "undefined" ? "" : window.location.search,
+	search = "window" in globalThis ? window.location.search : "",
 ): string | null {
 	const params = new URLSearchParams(search);
 	if (!params.has("sig") || !params.has("client_id")) return null;

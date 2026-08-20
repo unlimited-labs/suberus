@@ -1,32 +1,33 @@
 import type { EventFormProps } from "@ilamy/calendar";
 import { addMinutes, differenceInMinutes, isAfter, isValid } from "date-fns";
+import { z } from "zod";
 import { utcToTzLocalInput } from "@/features/planner/tz-datetime";
 import type { EventFormValues } from "@/features/planner/validations";
+
+const dateBearerSchema = z.object({
+	toDate: z.custom<() => Date>((fn) => fn instanceof Function),
+});
+const primitiveDateSchema = z.union([z.string(), z.number()]);
 
 /** Best-effort coercion of an ilamy date-ish value (Date, dayjs, string) to a Date. */
 export function toDate(raw: unknown): Date | null {
 	if (raw == null) return null;
 	if (raw instanceof Date) return raw;
-	if (
-		typeof raw === "object" &&
-		"toDate" in raw &&
-		typeof (raw as { toDate: unknown }).toDate === "function"
-	) {
-		const d = (raw as { toDate: () => Date }).toDate();
+	const bearer = dateBearerSchema.safeParse(raw);
+	if (bearer.success) {
+		const d = bearer.data.toDate();
 		return isValid(d) ? d : null;
 	}
-	if (typeof raw === "string" || typeof raw === "number") {
-		const d = new Date(raw);
-		return isValid(d) ? d : null;
-	}
-	return null;
+	const primitive = primitiveDateSchema.safeParse(raw);
+	if (!primitive.success) return null;
+	const d = new Date(primitive.data);
+	return isValid(d) ? d : null;
 }
 
 /** Normalizes an ilamy resource id (string | number) to a string id. */
 function resolveResourceId(rawResourceId: unknown): string | undefined {
-	if (typeof rawResourceId === "string") return rawResourceId;
-	if (typeof rawResourceId === "number") return String(rawResourceId);
-	return undefined;
+	const id = primitiveDateSchema.safeParse(rawResourceId);
+	return id.success ? String(id.data) : undefined;
 }
 
 interface EventFormDefaultsInput {

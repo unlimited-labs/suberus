@@ -68,6 +68,7 @@ export const fetchClientMetadataResource: ClientMetadataResourceFetch = async (
 						: undefined,
 				signal: init?.signal ?? webRequest.signal,
 				lookup: (_hostname, options, callback) => {
+					// oxlint-disable-next-line anti-slop/no-runtime-typeof -- Node's lookup options are `number | LookupOptions`
 					if (typeof options === "object" && options?.all) {
 						callback(null, [
 							{ address: pinned.address, family: pinned.family },

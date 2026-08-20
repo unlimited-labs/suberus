@@ -76,9 +76,9 @@ export function ActivityHistoryEvent({
 	const { formatDateTime } = useDateFormat();
 	const label = activityLabels[entry.activityType] ?? entry.activityType;
 	const timestamp =
-		typeof entry.createdAt === "string"
-			? new Date(entry.createdAt)
-			: entry.createdAt;
+		entry.createdAt instanceof Date
+			? entry.createdAt
+			: new Date(entry.createdAt);
 
 	return (
 		<TimelineItem isLast={isLast}>

@@ -63,9 +63,9 @@ export function computeReviewSummary(
 			? scoreEntries.reduce((sum, [, v]) => sum + v, 0) / scoreEntries.length
 			: 0;
 	const createdAt =
-		typeof review.createdAt === "string"
-			? new Date(review.createdAt)
-			: review.createdAt;
+		review.createdAt instanceof Date
+			? review.createdAt
+			: new Date(review.createdAt);
 	return {
 		scoreEntries,
 		reviewAvg,

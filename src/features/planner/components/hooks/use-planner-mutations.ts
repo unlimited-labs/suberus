@@ -1,4 +1,5 @@
 import type { CalendarEvent } from "@ilamy/calendar";
+import { z } from "zod";
 import { updateBreakFn } from "@/features/planner/api/breaks";
 import { createPresentationFn } from "@/features/planner/api/presentations";
 import { moveSessionFn } from "@/features/planner/api/sessions";
@@ -25,8 +26,7 @@ export function usePlannerMutations(defaultPresentationMin: number) {
 
 	const handleEventUpdate = (event: CalendarEvent) => {
 		const data = parseCalendarEventData(event);
-		const roomId =
-			typeof event.resourceId === "string" ? event.resourceId : null;
+		const roomId = z.string().safeParse(event.resourceId).data ?? null;
 		const startAt = event.start.toDate().toISOString();
 		const endAt = event.end.toDate().toISOString();
 

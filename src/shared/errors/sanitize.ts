@@ -1,5 +1,7 @@
 export const GENERIC_ERROR_MESSAGE = "Something went wrong. Please try again.";
 
+import { z } from "zod";
+
 export interface ClientError extends Error {
 	requestId: string;
 }
@@ -27,7 +29,9 @@ function isInternalError(error: Error): boolean {
 		return true;
 	}
 	const extras = error as { code?: unknown; $metadata?: unknown };
-	return typeof extras.code === "string" || extras.$metadata !== undefined;
+	return (
+		z.string().safeParse(extras.code).success || extras.$metadata !== undefined
+	);
 }
 
 export function clientSafeMessage(error: unknown): string {

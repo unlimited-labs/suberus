@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { generateWithLlm } from "@/shared/server/llm";
 import type { ExtractionResult } from "./extraction";
 import {
@@ -16,6 +17,77 @@ Rules:
 3. Clean emails only (user@domain.com).
 4. "k" = ONLY from explicit "Keywords:" section. If no Keywords section exists, return empty "k":[].
 5. ALL authors. Raw JSON, no markdown.`;
+
+const optionalText = z.string().optional().catch(undefined);
+
+const llmAuthorSchema = z.object({
+	fn: optionalText,
+	firstName: optionalText,
+	ln: optionalText,
+	lastName: optionalText,
+	e: optionalText,
+	email: optionalText,
+	af: optionalText,
+	affiliationName: optionalText,
+});
+
+/** Separate email list: either positional array or a keyed map, sorted by key. */
+const sepEmailsSchema = z
+	.union([
+		z.array(z.string().catch("")),
+		z.record(z.string(), z.string().catch("")),
+	])
+	.catch([])
+	.transform((value) =>
+		Array.isArray(value)
+			? value
+			: Object.keys(value)
+					.sort()
+					.map((key) => value[key] ?? ""),
+	)
+	.transform((list) =>
+		list.flatMap((entry) => {
+			const trimmed = entry.trim();
+			return trimmed.includes("@") ? [trimmed] : [];
+		}),
+	);
+
+/** Separate affiliation list; object entries collapse to one display line. */
+const sepAffsSchema = z
+	.array(
+		z
+			.union([
+				z.string(),
+				z
+					.object({
+						institution: optionalText,
+						name: optionalText,
+						address: optionalText,
+						country: optionalText,
+					})
+					.transform((o) =>
+						[o.institution || o.name || "", o.address || "", o.country || ""]
+							.map((part) => part.trim())
+							.filter(Boolean)
+							.join(", "),
+					),
+			])
+			.catch(""),
+	)
+	.catch([])
+	.transform((list) => list.map((entry) => entry.trim()));
+
+/** The model answers with short or long field names; accept both, drop the rest. */
+const llmResponseSchema = z.object({
+	t: optionalText,
+	title: optionalText,
+	a: z.array(llmAuthorSchema).optional().catch(undefined),
+	authors: z.array(llmAuthorSchema).optional().catch(undefined),
+	k: z.array(z.string().catch("")).optional().catch(undefined),
+	keywords: z.array(z.string().catch("")).optional().catch(undefined),
+	emails: sepEmailsSchema,
+	affiliations: sepAffsSchema,
+});
 
 /** Estimate max_tokens based on header content */
 export function estimateMaxTokens(headerText: string): number {
@@ -73,48 +145,33 @@ export async function extractWithLlm(
 		.replace(/,\s*]/g, "]");
 
 	try {
-		const raw = JSON.parse(cleaned) as Record<string, unknown>;
-
-		// Normalize short/long field names
-		const parsed = {
-			title: raw.t ?? raw.title,
-			authors: raw.a ?? raw.authors,
-			keywords: raw.k ?? raw.keywords,
-			emails: raw.emails,
-			affiliations: raw.affiliations,
-		};
+		const parsed = llmResponseSchema.safeParse(JSON.parse(cleaned));
+		if (!parsed.success) return {};
+		const raw = parsed.data;
 
 		const result: ExtractionResult = {};
 
-		if (typeof parsed.title === "string" && parsed.title.length > 0)
-			result.title = parsed.title.trim();
+		const title = (raw.t ?? raw.title)?.trim();
+		if (title) result.title = title;
 
-		const sepEmails = extractSepEmails(parsed.emails);
-		const sepAffs = extractSepAffs(parsed.affiliations);
+		const sepEmails = raw.emails;
+		const sepAffs = raw.affiliations;
 
-		if (Array.isArray(parsed.authors)) {
+		const authorList = raw.a ?? raw.authors;
+		if (authorList) {
 			const authors: NonNullable<typeof result.authors> = [];
-			for (const a of parsed.authors as Record<string, unknown>[]) {
-				// Accept both short (fn/ln) and long (firstName/lastName) field names
+			for (const a of authorList) {
 				const fn = a.fn ?? a.firstName;
 				const ln = a.ln ?? a.lastName;
-				if (typeof fn !== "string" || typeof ln !== "string") continue;
+				if (!fn || !ln) continue;
 				// Separate email/affiliation lists are positional over kept authors.
 				const i = authors.length;
-				const rawEmail =
-					(typeof (a.e ?? a.email) === "string"
-						? ((a.e ?? a.email) as string).trim()
-						: null) ||
-					sepEmails[i] ||
-					null;
+				const rawEmail = (a.e ?? a.email)?.trim() || sepEmails[i] || null;
 				const email = rawEmail
 					? rawEmail.match(/[\w.+-]+@[\w.-]+\.\w{2,}/)?.[0]?.toLowerCase()
 					: undefined;
-				const rawAff = a.af ?? a.affiliationName;
 				const affiliationName =
-					(typeof rawAff === "string" ? rawAff.trim() : null) ||
-					sepAffs[i] ||
-					undefined;
+					(a.af ?? a.affiliationName)?.trim() || sepAffs[i] || undefined;
 				authors.push({
 					firstName: fn.trim(),
 					lastName: ln.trim(),
@@ -125,47 +182,14 @@ export async function extractWithLlm(
 			result.authors = authors;
 		}
 
-		if (Array.isArray(parsed.keywords))
-			result.keywords = parsed.keywords.flatMap((k) =>
-				typeof k === "string" && k.trim() ? [k.trim()] : [],
+		const keywordList = raw.k ?? raw.keywords;
+		if (keywordList)
+			result.keywords = keywordList.flatMap((k) =>
+				k.trim() ? [k.trim()] : [],
 			);
 
 		return result;
 	} catch {
 		return {};
 	}
-}
-
-function extractSepEmails(val: unknown): string[] {
-	if (!val) return [];
-	if (Array.isArray(val))
-		return val.flatMap((e) => {
-			const trimmed = typeof e === "string" ? e.trim() : "";
-			return trimmed.includes("@") ? [trimmed] : [];
-		});
-	if (typeof val === "object") {
-		const obj = val as Record<string, string>;
-		return Object.keys(obj)
-			.sort()
-			.flatMap((k) => {
-				const trimmed = typeof obj[k] === "string" ? obj[k].trim() : "";
-				return trimmed.includes("@") ? [trimmed] : [];
-			});
-	}
-	return [];
-}
-
-function extractSepAffs(val: unknown): string[] {
-	if (!val || !Array.isArray(val)) return [];
-	return val.map((a) => {
-		if (typeof a === "string") return a.trim();
-		if (typeof a === "object" && a !== null) {
-			const o = a as Record<string, string>;
-			return [o.institution || o.name || "", o.address || "", o.country || ""]
-				.map((p) => p.trim())
-				.filter(Boolean)
-				.join(", ");
-		}
-		return "";
-	});
 }

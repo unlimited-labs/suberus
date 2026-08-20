@@ -11,7 +11,7 @@ export function getContext() {
 		},
 	});
 
-	if (typeof window !== "undefined") setupOfflineProgram(queryClient);
+	if ("window" in globalThis) setupOfflineProgram(queryClient);
 
 	return {
 		queryClient,

@@ -54,7 +54,7 @@ function ConsentPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [busy, setBusy] = useState<"approve" | "deny" | null>(null);
 
-	const search = typeof window === "undefined" ? "" : window.location.search;
+	const search = "window" in globalThis ? window.location.search : "";
 	const params = new URLSearchParams(search);
 	const clientId = params.get("client_id") ?? "";
 	const scopes = (params.get("scope") ?? "").split(" ").filter(Boolean);

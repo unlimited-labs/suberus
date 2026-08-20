@@ -41,7 +41,7 @@ function LoginPage() {
 
 	// Conditional UI: offer passkeys in the e-mail field's autofill dropdown.
 	useEffect(() => {
-		if (typeof PublicKeyCredential === "undefined") return;
+		if (!("PublicKeyCredential" in globalThis)) return;
 		void PublicKeyCredential.isConditionalMediationAvailable?.().then(
 			async (ok) => {
 				if (ok && (await signInWithPasskey({ autoFill: true }))) afterSignIn();

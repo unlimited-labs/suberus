@@ -73,7 +73,7 @@ const VERSION_ENDPOINT = "/api/version";
  * header-less server-fn error triggers an out-of-band version re-check.
  */
 export function installFetchVersionWatch() {
-	if (typeof window === "undefined") return;
+	if (!("window" in globalThis)) return;
 	const original = window.fetch;
 	if ("__versionWatch" in original) return;
 
@@ -132,9 +132,7 @@ function installChunkErrorWatch() {
 		const message =
 			value instanceof Error
 				? value.message
-				: typeof value === "string"
-					? value
-					: "";
+				: (z.string().safeParse(value).data ?? "");
 		return CHUNK_ERROR_RE.test(message);
 	};
 

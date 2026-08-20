@@ -1,5 +1,6 @@
 import { requireMcpAuth } from "@better-auth/mcp";
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 import { env } from "@/env";
 import { activityLogMcpTools } from "@/features/activity-log/mcp/tools";
 import { auth, MCP_RESOURCE } from "@/features/auth/server/auth.server";
@@ -56,10 +57,9 @@ async function serve(request: Request): Promise<Response> {
 			}
 
 			// Space-delimited grant (RFC 9068).
-			const scopes =
-				typeof claims.scope === "string"
-					? claims.scope.split(" ").filter(Boolean)
-					: [];
+			const scopes = (z.string().safeParse(claims.scope).data ?? "")
+				.split(" ")
+				.filter(Boolean);
 			return handler(req, {
 				id: user.id,
 				role: user.role,

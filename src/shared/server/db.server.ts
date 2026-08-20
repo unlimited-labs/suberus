@@ -1,4 +1,5 @@
 import { PrismaPg } from "@prisma/adapter-pg";
+import { z } from "zod";
 import { env } from "@/env.ts";
 import { PrismaClient } from "@/generated/prisma/client.js";
 
@@ -23,10 +24,5 @@ export const prisma = globalThis.__prisma;
 
 /** True for a Prisma unique-constraint violation (P2002) — for find-then-create races. */
 export function isUniqueViolation(e: unknown): boolean {
-	return (
-		typeof e === "object" &&
-		e !== null &&
-		"code" in e &&
-		(e as { code?: unknown }).code === "P2002"
-	);
+	return z.object({ code: z.literal("P2002") }).safeParse(e).success;
 }

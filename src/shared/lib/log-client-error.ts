@@ -1,23 +1,13 @@
-interface ZodIssueLike {
-	path: Array<string | number>;
-	message: string;
-}
+import { z } from "zod";
 
-function isZodIssueArray(v: unknown): v is ZodIssueLike[] {
-	return (
-		Array.isArray(v) &&
-		v.length > 0 &&
-		v.every(
-			(i) =>
-				typeof i === "object" &&
-				i !== null &&
-				"message" in i &&
-				typeof (i as { message: unknown }).message === "string" &&
-				"path" in i &&
-				Array.isArray((i as { path: unknown }).path),
-		)
-	);
-}
+const issueArraySchema = z
+	.array(
+		z.object({
+			path: z.array(z.union([z.string(), z.number()])),
+			message: z.string(),
+		}),
+	)
+	.min(1);
 
 /**
  * Attempts to extract a human-readable message from a thrown value when it
@@ -26,7 +16,7 @@ function isZodIssueArray(v: unknown): v is ZodIssueLike[] {
  * first issue formatted as `"<path>: <message>"` or `null` if not recognised.
  */
 export function extractZodIssueMessage(e: unknown): string | null {
-	const raw = e instanceof Error ? e.message : typeof e === "string" ? e : null;
+	const raw = e instanceof Error ? e.message : z.string().safeParse(e).data;
 	if (!raw) return null;
 	const trimmed = raw.trim();
 	if (!trimmed.startsWith("[") && !trimmed.startsWith("{")) return null;
@@ -36,8 +26,9 @@ export function extractZodIssueMessage(e: unknown): string | null {
 	} catch {
 		return null;
 	}
-	if (!isZodIssueArray(parsed)) return null;
-	const first = parsed[0];
+	const issues = issueArraySchema.safeParse(parsed);
+	if (!issues.success) return null;
+	const first = issues.data[0];
 	const path = first.path.join(".");
 	return path ? `${path}: ${first.message}` : first.message;
 }
@@ -72,5 +63,6 @@ export async function logClientError(label: string, e: unknown): Promise<void> {
 		});
 		return;
 	}
+	// oxlint-disable-next-line anti-slop/no-runtime-typeof -- devtools label, not narrowing
 	console.error(label, { kind: typeof e, value: e });
 }

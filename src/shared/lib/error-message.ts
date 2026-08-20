@@ -1,25 +1,19 @@
+import { z } from "zod";
 import { hasRequestId } from "@/shared/errors/sanitize";
 
-interface ZodIssueLike {
-	message: string;
-	path?: Array<string | number>;
-}
-
-function isZodIssueArray(value: unknown): value is ZodIssueLike[] {
-	return (
-		Array.isArray(value) &&
-		value.length > 0 &&
-		value.every(
-			(item) =>
-				typeof item === "object" &&
-				item !== null &&
-				typeof (item as ZodIssueLike).message === "string",
-		)
-	);
-}
+const issueArraySchema = z
+	.array(
+		z.object({
+			message: z.string(),
+			path: z.array(z.union([z.string(), z.number()])).optional(),
+		}),
+	)
+	.min(1);
+type ZodIssueLike = z.infer<typeof issueArraySchema>[number];
+const issueEnvelopeSchema = z.object({ issues: issueArraySchema });
 
 function humanizeField(path: Array<string | number> | undefined): string {
-	const key = path?.filter((p) => typeof p === "string").at(-1);
+	const key = path?.filter((p): p is string => typeof p === "string").at(-1);
 	if (!key) return "";
 	return key
 		.replace(/([a-z])([A-Z])/g, "$1 $2")
@@ -50,11 +44,11 @@ export function getErrorMessage(
 		const trimmed = error.message.trim();
 		if (trimmed.startsWith("[") || trimmed.startsWith("{")) {
 			try {
-				const parsed = JSON.parse(trimmed);
-				if (isZodIssueArray(parsed)) return formatIssues(parsed);
-				if (isZodIssueArray((parsed as { issues?: unknown }).issues)) {
-					return formatIssues((parsed as { issues: ZodIssueLike[] }).issues);
-				}
+				const parsed: unknown = JSON.parse(trimmed);
+				const issues = issueArraySchema.safeParse(parsed);
+				if (issues.success) return formatIssues(issues.data);
+				const envelope = issueEnvelopeSchema.safeParse(parsed);
+				if (envelope.success) return formatIssues(envelope.data.issues);
 			} catch {
 				// not JSON — fall through to raw message
 			}
@@ -64,6 +58,7 @@ export function getErrorMessage(
 			? `${message} (Reference: ${error.requestId})`
 			: message;
 	}
-	if (typeof error === "string" && error.trim()) return error;
+	const asString = z.string().safeParse(error);
+	if (asString.success && asString.data.trim()) return asString.data;
 	return fallback;
 }

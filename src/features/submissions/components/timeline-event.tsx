@@ -100,9 +100,9 @@ export function TimelineEvent({ event, isLast = false }: TimelineEventProps) {
 	const Icon = config.icon;
 	const { formatDateTime } = useDateFormat();
 	const timestamp =
-		typeof event.timestamp === "string"
-			? new Date(event.timestamp)
-			: event.timestamp;
+		event.timestamp instanceof Date
+			? event.timestamp
+			: new Date(event.timestamp);
 
 	return (
 		<TimelineItem isLast={isLast}>

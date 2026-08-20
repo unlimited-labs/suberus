@@ -1,4 +1,5 @@
 import { IconDownload } from "@tabler/icons-react";
+import { z } from "zod";
 import type { AdminSubmission } from "@/features/submissions/server/admin-submissions";
 import { Button } from "@/shared/ui/button";
 import type { AppTable } from "@/shared/ui/data-table/table-features";
@@ -12,8 +13,9 @@ export function SubmissionExportButton({ table }: SubmissionExportButtonProps) {
 	const params = new URLSearchParams();
 
 	for (const filter of filters) {
-		if (filter.id === "title" && typeof filter.value === "string") {
-			params.set("search", filter.value);
+		const titleFilter = z.string().safeParse(filter.value);
+		if (filter.id === "title" && titleFilter.success) {
+			params.set("search", titleFilter.data);
 		}
 		if (
 			filter.id === "type" &&
