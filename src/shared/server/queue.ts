@@ -58,9 +58,9 @@ export interface QueueSendOptions {
 	expireInSeconds?: number;
 }
 
-export async function ensureQueueAndSend(
+export async function ensureQueueAndSend<Data extends object>(
 	name: string,
-	data: object,
+	data: Data,
 	options?: QueueSendOptions,
 ): Promise<string | null> {
 	logger.info(`[pg-boss] ensureQueueAndSend: ${name}`);
