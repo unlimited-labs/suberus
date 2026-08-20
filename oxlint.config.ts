@@ -6,6 +6,7 @@ export default defineConfig({
 	categories: { correctness: "off" },
 	ignorePatterns: [
 		"src/routeTree.gen.ts",
+		"src/generated/**",
 		"src/shared/ui/**",
 		"tools/oxlint/anti-slop/**",
 		"scripts/**",
