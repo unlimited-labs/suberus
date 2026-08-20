@@ -455,11 +455,11 @@ export const submissionDetailQueryOptions = (submissionId: string) =>
 	});
 
 /** Invalidates the caches a submission mutation affects (its detail + my list). */
-export function invalidateSubmissionCaches(
+export async function invalidateSubmissionCaches(
 	queryClient: QueryClient,
 	submissionId: string,
-): Promise<unknown> {
-	return Promise.all([
+): Promise<void> {
+	await Promise.all([
 		queryClient.invalidateQueries({
 			queryKey: submissionDetailQueryOptions(submissionId).queryKey,
 		}),

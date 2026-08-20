@@ -10,6 +10,9 @@ export interface McpActor {
 	scopes: string[];
 }
 
+/** Whatever a tool answers with; `runTool` serializes it to JSON for the agent. */
+export type McpToolResult = object | string | number | boolean | null;
+
 export interface McpTool<Input extends z.ZodType = z.ZodType> {
 	name: string;
 	title: string;
@@ -22,7 +25,7 @@ export interface McpTool<Input extends z.ZodType = z.ZodType> {
 	destructive?: boolean;
 	// Method shorthand, not an arrow: bivariance is what lets a concrete tool
 	// sit in an McpTool<z.ZodType> registry without a cast.
-	handler(input: z.infer<Input>, actor: McpActor): Promise<unknown>;
+	handler(input: z.infer<Input>, actor: McpActor): Promise<McpToolResult>;
 }
 
 export function defineTool<Input extends z.ZodType>(

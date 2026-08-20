@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { defineTool, type McpActor } from "@/shared/server/mcp/define-tool";
+import {
+	defineTool,
+	type McpActor,
+	type McpToolResult,
+} from "@/shared/server/mcp/define-tool";
 import { runTool } from "@/shared/server/mcp/server";
 
 const actor: McpActor = {
@@ -10,7 +14,7 @@ const actor: McpActor = {
 	scopes: ["probe:all"],
 };
 
-const tool = (impl: () => Promise<unknown>) =>
+const tool = (impl: () => Promise<McpToolResult>) =>
 	defineTool({
 		name: "probe",
 		title: "Probe",

@@ -25,9 +25,9 @@ export interface RegisterEffects {
 	consumeInvitation: (token: string) => Promise<{ success: boolean }>;
 	saveSurveyAnswers: (
 		answers: { questionId: string; value: string }[],
-	) => Promise<unknown>;
-	acceptTos: () => Promise<unknown>;
-	becomeExhibitor: () => Promise<unknown>;
+	) => Promise<void>;
+	acceptTos: () => Promise<void>;
+	becomeExhibitor: () => Promise<void>;
 }
 
 interface UseRegisterFormArgs {
@@ -110,7 +110,7 @@ async function persistSurveyAndTos(
 				value,
 			}),
 		);
-		const promises: Promise<unknown>[] = [effects.saveSurveyAnswers(answers)];
+		const promises: Promise<void>[] = [effects.saveSurveyAnswers(answers)];
 		if (tosContent) promises.push(effects.acceptTos());
 		await Promise.all(promises);
 	} catch {

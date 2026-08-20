@@ -33,7 +33,7 @@ function isValidImageFile(file: File | undefined): file is File {
 }
 
 type UploadFn = (opts: { data: FormData }) => Promise<{ url: string }>;
-type DeleteFn = () => Promise<unknown>;
+type DeleteFn = () => Promise<{ success: boolean }>;
 
 /** Upload/remove handling for a single branding image (logo, favicon, auth bg). */
 function useImageUpload(

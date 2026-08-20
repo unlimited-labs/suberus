@@ -135,9 +135,12 @@ function RegisterForm() {
 		token,
 		effects: {
 			consumeInvitation: (t) => consumeInvitationFn({ data: { token: t } }),
-			saveSurveyAnswers: (answers) =>
-				saveUserSurveyAnswersFn({ data: { answers } }),
-			acceptTos: () => acceptTosFn(),
+			saveSurveyAnswers: async (answers) => {
+				await saveUserSurveyAnswersFn({ data: { answers } });
+			},
+			acceptTos: async () => {
+				await acceptTosFn();
+			},
 			becomeExhibitor: () => becomeExhibitorFn(),
 		},
 	});
