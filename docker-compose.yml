@@ -20,9 +20,7 @@ services:
       - "-c"
       - "max_connections=300"
     volumes:
-      # Named, not a bind mount: pg18 rejects PGDATA unless it is 0700/0750, and
-      # a Windows bind mount always presents 0777.
-      - postgres_data:/var/lib/postgresql
+      - ./dev-volumes/postgres_data:/var/lib/postgresql
     networks:
       - suberus-network
     healthcheck:
@@ -30,39 +28,26 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      
-  # Garage S3-compatible storage
-  garage:
-    image: dxflrs/garage:v2.3.0
-    container_name: suberus-garage
+  minio:
+    image: docker.io/pgsty/silo:latest
+    container_name: suberus-minio
+    command: server /data --console-address ":9090"
     restart: unless-stopped
-    ports:
-      - "3900:3900"  # Admin API
-      - "3901:3901"  # K2V API
-      - "3902:3902"  # S3 API
-      - "3903:3903"  # Web interface
     environment:
-      RUST_LOG: garage=info
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     volumes:
-      - ./dev-volumes/garage_meta:/var/lib/garage/meta
-      - ./dev-volumes/garage_data:/var/lib/garage/data
-      - ./garage/garage.toml:/etc/garage.toml:ro
-    networks:
-      - suberus-network
-  # garage ui - build from local source codes
-  garage-webadmin:
-    image: garage-webadmin
-    container_name: suberus-garage-webadmin
+     - ./dev-volumes/minio_data:/data
     ports:
-      - "3980:80"
-    environment:
-      - API_HOST=http://garage:3900
-    depends_on:
-      - garage
-    restart: unless-stopped
+    - 7090:9090
+    - 7000:9000
     networks:
       - suberus-network
-  # Mailpit for email testing
   mailpit:
     image: axllent/mailpit:latest
     container_name: suberus-mailpit
@@ -77,8 +62,6 @@ services:
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
     networks:
       - suberus-network
-
-  # pdf-api: PDF/DOCX document parser (docling-powered; enhances AI extraction + PDF version-diff)
   pdf-api:
     build: ./services/pdf-api
     container_name: suberus-pdf-api
@@ -93,11 +76,6 @@ services:
       retries: 3
     networks:
       - suberus-network
-
-  # docx-api: DOCX -> normalized-HTML + rasterized-figure bundle (version-diff)
-  # + PDF signing (pyHanko). Holds the org signing key/password at request time,
-  # so it is bound to loopback (not 0.0.0.0) and gated by DOCX_API_TOKEN. Set the
-  # token in any shared/prod env; the Node app sends it as a bearer token.
   docx-api:
     build:
       context: ./services/docx-api
@@ -108,8 +86,6 @@ services:
       - "127.0.0.1:8101:8101"
     environment:
       DOCX_API_TOKEN: ${DOCX_API_TOKEN:-}
-    # Hard ceiling so a decompression bomb that slips past reject_zip_bomb can OOM
-    # this container instead of the host.
     mem_limit: 2g
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8101/')"]
@@ -119,8 +95,6 @@ services:
       retries: 3
     networks:
       - suberus-network
-
-  # Planner API: constrained clustering for auto session planning
   planner:
     build: ./services/planner-api
     container_name: suberus-planner
@@ -139,6 +113,3 @@ services:
 networks:
   suberus-network:
     driver: bridge
-
-volumes:
-  postgres_data:
