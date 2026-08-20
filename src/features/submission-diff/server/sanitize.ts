@@ -32,6 +32,7 @@ function getPurifier(): Purifier {
 		// jsdom's window satisfies DOMPurify's WindowLike at runtime; the static
 		// types don't overlap, so narrow to the factory's own parameter type.
 		const p = createDOMPurify(
+			// oxlint-disable-next-line anti-slop/no-chained-type-assertions
 			window as unknown as Parameters<typeof createDOMPurify>[0],
 		);
 		// Fail loud, not silent: an unbound/incompatible DOMPurify returns input

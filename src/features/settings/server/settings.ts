@@ -1,3 +1,4 @@
+import { z } from "zod";
 import {
 	DEFAULT_EXHIBITOR_CONFIG,
 	DEFAULT_FULL_PAPER_CONFIG,
@@ -17,6 +18,8 @@ import {
 } from "@/features/settings/types";
 import { prisma } from "@/shared/server/db.server";
 
+const legacyScoringCriteria = z.array(z.string()).min(1);
+
 /**
  * Normalize legacy scoringCriteria format.
  * Old format: string[] → New format: { name: string; description: string }[]
@@ -24,19 +27,12 @@ import { prisma } from "@/shared/server/db.server";
 function normalizeScoringCriteria(
 	config: SubmissionTypeConfig,
 ): SubmissionTypeConfig {
-	if (
-		Array.isArray(config.scoringCriteria) &&
-		config.scoringCriteria.length > 0 &&
-		typeof config.scoringCriteria[0] === "string"
-	) {
-		return {
-			...config,
-			scoringCriteria: (config.scoringCriteria as unknown as string[]).map(
-				(s) => ({ name: s, description: "" }),
-			),
-		};
-	}
-	return config;
+	const legacy = legacyScoringCriteria.safeParse(config.scoringCriteria);
+	if (!legacy.success) return config;
+	return {
+		...config,
+		scoringCriteria: legacy.data.map((s) => ({ name: s, description: "" })),
+	};
 }
 
 /**
@@ -88,7 +84,7 @@ export async function getSetting<K extends keyof AppSettingsMap>(
 		typeof value === "object"
 	) {
 		return normalizeSubmissionTypeConfig(
-			value as unknown as SubmissionTypeConfig,
+			value as SubmissionTypeConfig,
 		) as AppSettingsMap[K];
 	}
 

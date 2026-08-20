@@ -1,8 +1,15 @@
 import { auth } from "@/features/auth/server/auth.server";
 import type { InstallFormData } from "@/features/install/validations";
 import { APP_SETTINGS_DEFAULTS } from "@/features/settings/defaults";
+import type { AppSettingsMap } from "@/features/settings/types";
+import type { InputJsonValue } from "@/generated/prisma/internal/prismaNamespace.ts";
 import { prisma } from "@/shared/server/db.server";
 import { DEFAULT_EMAIL_TEMPLATES } from "../../../../prisma/default-email-templates";
+
+function defaultSettingValue(key: keyof AppSettingsMap): InputJsonValue {
+	// SAFETY: every AppSettingsMap value is a JSON literal by construction.
+	return APP_SETTINGS_DEFAULTS[key] as InputJsonValue;
+}
 
 let cachedInstalled = false;
 
@@ -83,7 +90,7 @@ export async function performInstall(data: InstallFormData): Promise<void> {
 	] as const;
 
 	for (const key of submissionTypeKeys) {
-		const value = APP_SETTINGS_DEFAULTS[key] as unknown as object;
+		const value = defaultSettingValue(key);
 		await prisma.appSetting.upsert({
 			where: { key },
 			update: { value },
@@ -104,7 +111,7 @@ export async function performInstall(data: InstallFormData): Promise<void> {
 	] as const;
 
 	for (const key of validationKeys) {
-		const value = APP_SETTINGS_DEFAULTS[key] as unknown as object;
+		const value = defaultSettingValue(key);
 		await prisma.appSetting.upsert({
 			where: { key },
 			update: { value },
@@ -120,7 +127,7 @@ export async function performInstall(data: InstallFormData): Promise<void> {
 	] as const;
 
 	for (const key of reminderKeys) {
-		const value = APP_SETTINGS_DEFAULTS[key] as unknown as object;
+		const value = defaultSettingValue(key);
 		await prisma.appSetting.upsert({
 			where: { key },
 			update: { value },
@@ -134,8 +141,7 @@ export async function performInstall(data: InstallFormData): Promise<void> {
 		update: {},
 		create: {
 			key: "INVITATION_VALIDITY_HOURS",
-			value:
-				APP_SETTINGS_DEFAULTS.INVITATION_VALIDITY_HOURS as unknown as object,
+			value: defaultSettingValue("INVITATION_VALIDITY_HOURS"),
 		},
 	});
 

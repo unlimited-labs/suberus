@@ -19,7 +19,8 @@ async function handleAutoplanJob(jobs: Job<AutoplanJobData>[]): Promise<void> {
 			await prisma.autoplanProposal.create({
 				data: {
 					jobId,
-					data: proposal as unknown as InputJsonValue,
+					// SAFETY: runAutoPlan returns a plain JSON-serialisable proposal.
+					data: proposal as InputJsonValue,
 				},
 			});
 
