@@ -10,7 +10,6 @@ import {
 import { loginSchema } from "@/features/auth/validations";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { authClient, signIn } from "@/shared/lib/auth-client";
-import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 
 export const Route = createFileRoute("/_auth/login")({
@@ -60,11 +59,11 @@ function LoginPage() {
 			setPromotePasskey(true);
 			return;
 		}
-		void PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable?.().then(
-			(ok) => {
+		void PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable?.()
+			.then((ok) => {
 				if (ok) setPromotePasskey(true);
-			},
-		);
+			})
+			.catch(() => {});
 	}, []);
 
 	const form = useAppForm({
@@ -93,6 +92,32 @@ function LoginPage() {
 			afterSignIn();
 		},
 	});
+
+	const submitButton = (
+		<form.AppForm>
+			<form.SubmitButton
+				className="h-9 w-full"
+				label="Sign in"
+				submittingLabel="Signing in..."
+				variant={promotePasskey ? "outline" : undefined}
+			/>
+		</form.AppForm>
+	);
+
+	const passkeyButton = (
+		<Button
+			className="h-9 w-full"
+			data-testid="passkey-signin"
+			onClick={async () => {
+				if (await signInWithPasskey()) afterSignIn();
+			}}
+			type="button"
+			variant={promotePasskey ? "default" : "outline"}
+		>
+			<IconFingerprint className="size-4" />
+			Sign in with passkey
+		</Button>
+	);
 
 	return (
 		<AuthCard subtitle="Access your account" title="Sign in">
@@ -134,33 +159,9 @@ function LoginPage() {
 					</div>
 				</div>
 
-				<div
-					className={cn(
-						"mt-4 flex gap-3",
-						promotePasskey ? "flex-col-reverse" : "flex-col",
-					)}
-				>
-					<form.AppForm>
-						<form.SubmitButton
-							className="h-9 w-full"
-							label="Sign in"
-							submittingLabel="Signing in..."
-							variant={promotePasskey ? "outline" : undefined}
-						/>
-					</form.AppForm>
-
-					<Button
-						className="h-9 w-full"
-						data-testid="passkey-signin"
-						onClick={async () => {
-							if (await signInWithPasskey()) afterSignIn();
-						}}
-						type="button"
-						variant={promotePasskey ? "default" : "outline"}
-					>
-						<IconFingerprint className="size-4" />
-						Sign in with passkey
-					</Button>
+				<div className="mt-4 flex flex-col gap-3">
+					{promotePasskey ? passkeyButton : submitButton}
+					{promotePasskey ? submitButton : passkeyButton}
 				</div>
 			</form>
 

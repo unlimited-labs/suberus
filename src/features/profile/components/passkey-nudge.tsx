@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import {
 	passkeysQueryKey,
@@ -11,15 +11,15 @@ import { authClient } from "@/shared/lib/auth-client";
 
 const DISMISSED_KEY = "passkey-nudge-dismissed";
 
-function dismiss() {
+function markOffered() {
 	try {
 		window.localStorage.setItem(DISMISSED_KEY, "1");
 	} catch {
-		// localStorage unavailable (private mode) — the nudge just returns later
+		// localStorage unavailable (private mode) — the offer just returns later
 	}
 }
 
-function isDismissed() {
+function wasOffered() {
 	try {
 		return window.localStorage.getItem(DISMISSED_KEY) !== null;
 	} catch {
@@ -35,12 +35,9 @@ function isDismissed() {
 export function PasskeyNudge() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
-	const checked = useRef(false);
-
 	useEffect(() => {
-		if (checked.current || isDismissed()) return;
+		if (wasOffered()) return;
 		if (!("PublicKeyCredential" in globalThis)) return;
-		checked.current = true;
 
 		const enable = async () => {
 			const res = await authClient.passkey.addPasskey();
@@ -57,23 +54,28 @@ export function PasskeyNudge() {
 				toast.error(res.error.message ?? "Failed to add passkey");
 				return;
 			}
-			dismiss();
 			toast.success("Passkey added");
 			await queryClient.invalidateQueries({ queryKey: passkeysQueryKey });
 		};
 
 		void (async () => {
 			const available =
-				await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable?.();
+				await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable?.().catch(
+					() => false,
+				);
 			if (!available) return;
 			const passkeys = await queryClient
 				.fetchQuery(passkeysQueryOptions())
 				.catch(() => null);
 			if (!passkeys || passkeys.length > 0) return;
 
+			// Persist before showing: the offer is made once per browser, whether or
+			// not the toast is answered. The component remounts on every session
+			// refetch, so an in-memory guard would re-nag within one session.
+			markOffered();
 			toast("Sign in faster next time", {
 				action: { label: "Enable", onClick: () => void enable() },
-				cancel: { label: "Not now", onClick: dismiss },
+				cancel: { label: "Not now", onClick: () => {} },
 				description:
 					"Use your fingerprint, Face ID or device PIN instead of a password.",
 				duration: 15_000,
