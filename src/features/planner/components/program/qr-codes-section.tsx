@@ -1,6 +1,5 @@
 import { IconExternalLink, IconQrcode } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
-import { qrDefaultTargetsQueryOptions } from "@/features/planner/api/qr-codes";
 import { adminSettingQueryOptions } from "@/features/settings/api/settings";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import type { ProgramQrSettings } from "@/features/settings/types";
@@ -23,7 +22,6 @@ const FORMAT_OPTIONS = [
 
 function QrCodesForm({ settings }: { settings: ProgramQrSettings }) {
 	const { form, submitFor } = useQrSettingsForm(settings);
-	const { data: targets } = useQuery(qrDefaultTargetsQueryOptions());
 
 	return (
 		<form
@@ -106,37 +104,22 @@ function QrCodesForm({ settings }: { settings: ProgramQrSettings }) {
 			<div className="mt-6 space-y-2">
 				<form.AppField name="baseUrl">
 					{(field) => (
-						<field.InputField
-							label="Substitute domain"
-							placeholder="https://example.com/conf"
-							testId="qr-base-url"
-						/>
+						<field.InputField label="Substitute domain" testId="qr-base-url" />
 					)}
 				</form.AppField>
 				<div className="text-muted-foreground space-y-1 text-xs">
-					<p>Leave empty to use this site address. Example:</p>
-					{targets ? (
-						<ul className="list-disc pl-4">
-							<li>
-								<code>https://example.com/conf</code> must forward to{" "}
-								<code>{targets?.program}</code> - the online plan
-							</li>
-							<li>
-								<code>https://example.com/conf/42</code> must forward to{" "}
-								<code>{targets?.talk}</code> - camera-ready abstract of
-								submission 42
-							</li>
-						</ul>
-					) : null}
-					<a
-						className="text-primary inline-flex items-center gap-1 underline underline-offset-4"
-						href="https://docs.suberus.app/planner/publishing/#forwarding-a-substitute-domain"
-						rel="noopener noreferrer"
-						target="_blank"
-					>
-						Read docs how to configure your web server
-						<IconExternalLink className="size-3" />
-					</a>
+					<p>
+						Leave empty to use this site address.{" "}
+						<a
+							className="text-primary inline-flex items-center gap-1 underline underline-offset-4"
+							href="https://docs.suberus.app/planner/publishing/#forwarding-a-substitute-domain"
+							rel="noopener noreferrer"
+							target="_blank"
+						>
+							Read docs how to configure your web server
+							<IconExternalLink className="size-3" />
+						</a>
+					</p>
 				</div>
 			</div>
 
