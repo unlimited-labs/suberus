@@ -14,6 +14,7 @@ import {
 } from "@/features/settings/api/settings";
 import {
 	adminEditSubmissionFn,
+	adminSubmitDraftFn,
 	editorSubmissionQueryOptions,
 } from "@/features/submissions/api/admin-submissions";
 import { adminUploadSubmissionFile } from "@/features/submissions/api/submissions";
@@ -117,7 +118,9 @@ function AdminEditSubmissionPage() {
 		trackId: submission.trackId,
 	};
 
-	const handleSubmit = async (formData: SubmissionFormData) => {
+	const isDraft = submission.status === "DRAFT";
+
+	const save = async (formData: SubmissionFormData) => {
 		let result: Awaited<ReturnType<typeof adminEditSubmissionFn>>;
 		try {
 			result = await adminEditSubmissionFn({
@@ -134,12 +137,12 @@ function AdminEditSubmissionPage() {
 			});
 		} catch {
 			toast.error("Something went wrong. Please try again.");
-			return;
+			return false;
 		}
 
 		if (!result.success) {
 			toast.error(result.error);
-			return;
+			return false;
 		}
 
 		if (formData.contentFormat === "FILE" && formData.file) {
@@ -162,9 +165,27 @@ function AdminEditSubmissionPage() {
 			}
 		}
 
-		toast.success("Submission updated");
+		return true;
+	};
+
+	const finish = async (message: string) => {
+		toast.success(message);
 		await queryClient.invalidateQueries({ queryKey: ["submissions"] });
 		navigate({ to: "/admin/submissions/$id", params: { id } });
+	};
+
+	const handleSubmit = async (formData: SubmissionFormData) => {
+		if (!(await save(formData))) return;
+
+		if (isDraft) {
+			const result = await adminSubmitDraftFn({ data: { submissionId: id } });
+			if (!result.success) {
+				toast.error(result.error ?? "Submit failed");
+				return;
+			}
+		}
+
+		await finish(isDraft ? "Submission submitted" : "Submission updated");
 	};
 
 	return (
@@ -184,6 +205,13 @@ function AdminEditSubmissionPage() {
 					guidelines={submissionGuidelines}
 					hasExistingFile={!!submission.file}
 					initialData={initialData}
+					onSaveDraft={
+						isDraft
+							? async (formData: SubmissionFormData) => {
+									if (await save(formData)) await finish("Draft saved");
+								}
+							: undefined
+					}
 					onSubmit={handleSubmit}
 					typeConfigs={typeConfigs}
 					validationSettings={validationSettings}

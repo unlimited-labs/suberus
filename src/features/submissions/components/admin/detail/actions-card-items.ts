@@ -1,4 +1,10 @@
-import { IconCheck, IconGavel, IconUsers, IconX } from "@tabler/icons-react";
+import {
+	IconCheck,
+	IconGavel,
+	IconSend,
+	IconUsers,
+	IconX,
+} from "@tabler/icons-react";
 import type { ActionAvailability, PrimaryAction } from "./availability";
 import type { SubmissionDialogKind } from "./detail-dialogs";
 
@@ -25,6 +31,14 @@ export function buildSecondaryActions(
 ): SecondaryAction[] {
 	const items: SecondaryAction[] = [];
 
+	if (availability.canSubmitDraft) {
+		items.push({
+			id: "submitDraft",
+			label: "Submit Draft",
+			icon: IconSend,
+			select: { type: "dialog", kind: "submitDraft" },
+		});
+	}
 	if (availability.canAssignReviewers) {
 		items.push({
 			id: "assign",

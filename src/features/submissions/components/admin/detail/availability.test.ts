@@ -46,6 +46,22 @@ describe("getActionAvailability", () => {
 		expect(a.canMakeDecision).toBe(false);
 	});
 
+	it("offers submit-draft only on a plain DRAFT", () => {
+		expect(
+			getActionAvailability({ type: "ABSTRACT", status: "DRAFT" }, config)
+				.canSubmitDraft,
+		).toBe(true);
+		for (const submission of [
+			{ type: "ABSTRACT", status: "SUBMITTED" },
+			{ type: "EXHIBITOR", status: "DRAFT" },
+			{ type: "INVITED", status: "DRAFT" },
+		] as const) {
+			expect(getActionAvailability(submission, config).canSubmitDraft).toBe(
+				false,
+			);
+		}
+	});
+
 	it("excludes EXHIBITOR from assign, desk, and override", () => {
 		const a = getActionAvailability(
 			{ type: "EXHIBITOR", status: "SUBMITTED" },
@@ -159,6 +175,7 @@ describe("getActionAvailability", () => {
 
 describe("getPrimaryAction", () => {
 	const base = {
+		canSubmitDraft: false,
 		canAssignReviewers: false,
 		canDeskAccept: false,
 		canDeskReject: false,

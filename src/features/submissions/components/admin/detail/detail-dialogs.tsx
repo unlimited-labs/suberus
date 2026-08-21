@@ -6,10 +6,12 @@ import { DeskRejectDialog } from "@/features/submissions/components/admin/desk-r
 import { EditorDecisionDialog } from "@/features/submissions/components/admin/editor-decision-dialog";
 import { OverrideDecisionDialog } from "@/features/submissions/components/admin/override-decision-dialog";
 import { SubmissionDeleteDialog } from "@/features/submissions/components/admin/submission-delete-dialog";
+import { SubmitDraftDialog } from "@/features/submissions/components/admin/submit-draft-dialog";
 import type { EditorReview, EditorSubmission } from "./availability";
 
 export type SubmissionDialogKind =
 	| "assign"
+	| "submitDraft"
 	| "decision"
 	| "deskAccept"
 	| "deskReject"
@@ -101,6 +103,14 @@ export function DetailDialogs({
 				onOpenChange={onOpenChange}
 				open={activeDialog === "confirmConditions"}
 				revisionUploaded={revisionUploaded}
+			/>
+
+			<SubmitDraftDialog
+				onOpenChange={onOpenChange}
+				onSubmitted={onInvalidate}
+				open={activeDialog === "submitDraft"}
+				submissionId={submission.id}
+				submissionTitle={submission.title}
 			/>
 
 			<SubmissionDeleteDialog

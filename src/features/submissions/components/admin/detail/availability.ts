@@ -26,6 +26,7 @@ export function isOverdue(
 }
 
 export interface ActionAvailability {
+	canSubmitDraft: boolean;
 	canAssignReviewers: boolean;
 	canDeskAccept: boolean;
 	canDeskReject: boolean;
@@ -48,6 +49,10 @@ export function getActionAvailability(
 	const canDeskDecide =
 		!isExhibitor && ["SUBMITTED", "RESUBMITTED"].includes(submission.status);
 	return {
+		canSubmitDraft:
+			submission.status === "DRAFT" &&
+			!isExhibitor &&
+			submission.type !== "INVITED",
 		canAssignReviewers:
 			!isExhibitor &&
 			["SUBMITTED", "UNDER_REVIEW", "RESUBMITTED"].includes(submission.status),

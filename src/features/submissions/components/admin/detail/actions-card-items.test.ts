@@ -3,6 +3,7 @@ import { buildSecondaryActions } from "./actions-card-items";
 import type { ActionAvailability } from "./availability";
 
 const none: ActionAvailability = {
+	canSubmitDraft: false,
 	canAssignReviewers: false,
 	canDeskAccept: false,
 	canDeskReject: false,
@@ -21,6 +22,7 @@ describe("buildSecondaryActions", () => {
 
 	it("includes every available action in menu order", () => {
 		const all: ActionAvailability = {
+			canSubmitDraft: true,
 			canAssignReviewers: true,
 			canDeskAccept: true,
 			canDeskReject: true,
@@ -30,6 +32,7 @@ describe("buildSecondaryActions", () => {
 			canOverrideDecision: true,
 		};
 		expect(ids(buildSecondaryActions(all, null))).toEqual([
+			"submitDraft",
 			"assign",
 			"deskAccept",
 			"deskReject",

@@ -119,20 +119,27 @@ export async function createSubmissionForUser(
 	};
 }
 
-export async function submitDraftForUser(
+export async function submitDraftOnBehalf(
 	submissionId: string,
 	performedById: string,
-): Promise<{ id: string; status: "SUBMITTED" }> {
+): Promise<{ success: boolean; error?: string }> {
 	const submission = await prisma.submission.findUnique({
 		where: { id: submissionId },
 		select: { userId: true },
 	});
-	if (!submission) throw new Response("Submission not found", { status: 404 });
+	if (!submission) return { success: false, error: "Submission not found" };
 
-	const result = await submitDraft(submissionId, submission.userId, {
+	return submitDraft(submissionId, submission.userId, {
 		enforceLimit: false,
 		performedById,
 	});
+}
+
+export async function submitDraftForUser(
+	submissionId: string,
+	performedById: string,
+): Promise<{ id: string; status: "SUBMITTED" }> {
+	const result = await submitDraftOnBehalf(submissionId, performedById);
 	if (!result.success) {
 		throw new Response(result.error ?? "Could not submit the draft", {
 			status: 400,

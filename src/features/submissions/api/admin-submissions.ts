@@ -16,6 +16,7 @@ import {
 	getSubmissionForEditor,
 	updateSubmissionTrack,
 } from "@/features/submissions/server/admin-submissions";
+import { submitDraftOnBehalf } from "@/features/submissions/server/create-for-user";
 import { adminEditSubmission } from "@/features/submissions/server/submissions";
 import {
 	adminSubmissionsListInput,
@@ -62,6 +63,14 @@ export const adminEditSubmissionFn = createServerFn({ method: "POST" })
 	.handler(async ({ data, context }) => {
 		return adminEditSubmission(data.submissionId, context.user.id, data);
 	});
+
+/** Send an author's draft into review on their behalf */
+export const adminSubmitDraftFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(submissionIdInput)
+	.handler(({ data, context }) =>
+		submitDraftOnBehalf(data.submissionId, context.user.id),
+	);
 
 /** Update submission track assignment */
 export const updateSubmissionTrackFn = createServerFn({ method: "POST" })
