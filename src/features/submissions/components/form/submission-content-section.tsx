@@ -1,5 +1,6 @@
 import { IconWriting } from "@tabler/icons-react";
 import type { z } from "zod";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
 import { SectionCard } from "@/shared/ui/section-card";
 import { FileUploadSection } from "./file-upload-section";
@@ -56,9 +57,10 @@ export function SubmissionContentSection({
 				>
 					{(field) => {
 						if (isFileFormat) return null;
-						const hasError =
-							(field.state.meta.isBlurred || submissionAttempts > 0) &&
-							field.state.meta.errors.length > 0;
+						const hasError = isFieldErrorVisible(
+							field.state.meta,
+							submissionAttempts,
+						);
 						return (
 							<Field data-invalid={hasError}>
 								<FieldLabel htmlFor="content">Abstract</FieldLabel>

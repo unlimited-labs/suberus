@@ -8,6 +8,7 @@ import {
 import { ExtractionOverlay } from "@/features/extraction/components/extraction-overlay";
 import type { AvailableTrack } from "@/features/submissions/types";
 import { AuthorsInput } from "@/shared/components/authors-input";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { Button } from "@/shared/ui/button";
 import { Field, FieldError } from "@/shared/ui/field";
 import {
@@ -152,9 +153,10 @@ export function SubmissionForm(props: SubmissionFormProps) {
 								</div>
 								<form.Field name="authors">
 									{(field) => {
-										const hasError =
-											(field.state.meta.isBlurred || submissionAttempts > 0) &&
-											field.state.meta.errors.length > 0;
+										const hasError = isFieldErrorVisible(
+											field.state.meta,
+											submissionAttempts,
+										);
 										return (
 											<Field data-invalid={hasError}>
 												<AuthorsInput
@@ -186,10 +188,10 @@ export function SubmissionForm(props: SubmissionFormProps) {
 
 										<form.Field name="keywords">
 											{(field) => {
-												const hasError =
-													(field.state.meta.isBlurred ||
-														submissionAttempts > 0) &&
-													field.state.meta.errors.length > 0;
+												const hasError = isFieldErrorVisible(
+													field.state.meta,
+													submissionAttempts,
+												);
 												return (
 													<Field data-invalid={hasError}>
 														<div className="bg-muted/30 rounded-lg border p-3">

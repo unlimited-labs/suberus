@@ -1,5 +1,6 @@
 import { IconPresentation } from "@tabler/icons-react";
 import { AuthorsInput } from "@/shared/components/authors-input";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { Field, FieldError } from "@/shared/ui/field";
 import type { ExhibitorApplicationFormApi } from "./use-exhibitor-application-form";
 
@@ -53,9 +54,10 @@ export function ExhibitorPresentationSection({
 
 					<form.Field name="authors">
 						{(field) => {
-							const hasError =
-								(field.state.meta.isBlurred || submissionAttempts > 0) &&
-								field.state.meta.errors.length > 0;
+							const hasError = isFieldErrorVisible(
+								field.state.meta,
+								submissionAttempts,
+							);
 							return (
 								<Field data-invalid={hasError}>
 									<AuthorsInput

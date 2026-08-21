@@ -1,6 +1,8 @@
+import { useSelector } from "@tanstack/react-store";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
 import { SurveyQuestionField } from "@/shared/components/survey-question-field";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { surveyAnswerRequiredError } from "@/shared/lib/validations/survey";
 import { Field, FieldError } from "@/shared/ui/field";
 
@@ -50,6 +52,11 @@ export function SurveyAnswersForm({
 		},
 	});
 
+	const submissionAttempts = useSelector(
+		form.store,
+		(s) => s.submissionAttempts,
+	);
+
 	if (questions.length === 0) {
 		return null;
 	}
@@ -60,13 +67,6 @@ export function SurveyAnswersForm({
 			onSubmit={(e) => {
 				e.preventDefault();
 				e.stopPropagation();
-				// Reveal required-field errors on submit (errors gate on isBlurred).
-				for (const question of questions) {
-					form.setFieldMeta(question.id, (prev) => ({
-						...prev,
-						isBlurred: true,
-					}));
-				}
 				void form.handleSubmit();
 			}}
 		>
@@ -83,10 +83,10 @@ export function SurveyAnswersForm({
 						}}
 					>
 						{(field) => {
-							const hasError =
-								(field.state.meta.isBlurred ||
-									field.form.state.submissionAttempts > 0) &&
-								field.state.meta.errors.length > 0;
+							const hasError = isFieldErrorVisible(
+								field.state.meta,
+								submissionAttempts,
+							);
 							return (
 								<Field data-invalid={hasError}>
 									<SurveyQuestionField
