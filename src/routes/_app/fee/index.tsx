@@ -76,7 +76,7 @@ function FeePage() {
 												<IconCheck className="size-7" strokeWidth={2.5} />
 											</div>
 											<div>
-												<div className="mb-1 text-sm font-medium uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+												<div className="mb-1 text-sm font-medium tracking-wider text-emerald-700 uppercase dark:text-emerald-300">
 													Payment Status
 												</div>
 												<div className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">
@@ -96,27 +96,27 @@ function FeePage() {
 								</div>
 
 								<div className="grid gap-4 sm:grid-cols-2">
-									<div className="group relative overflow-hidden rounded-lg border border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-[border-color,box-shadow] duration-300 hover:border-border hover:shadow-md">
-										<div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-primary to-primary/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-										<div className="mb-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+									<div className="group border-border/50 bg-card/50 hover:border-border relative overflow-hidden rounded-lg border p-5 backdrop-blur-sm transition-[border-color,box-shadow] duration-300 hover:shadow-md">
+										<div className="from-primary to-primary/50 absolute top-0 left-0 h-full w-1 bg-gradient-to-b opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+										<div className="text-muted-foreground mb-1.5 text-xs font-medium tracking-wider uppercase">
 											Fee Type
 										</div>
-										<div className="text-lg font-semibold text-foreground">
+										<div className="text-foreground text-lg font-semibold">
 											{fee.type}
 										</div>
 									</div>
 
 									{fee.amount !== null && fee.currency && (
-										<div className="group relative overflow-hidden rounded-lg border border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-[border-color,box-shadow] duration-300 hover:border-border hover:shadow-md">
-											<div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-primary to-primary/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-											<div className="mb-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+										<div className="group border-border/50 bg-card/50 hover:border-border relative overflow-hidden rounded-lg border p-5 backdrop-blur-sm transition-[border-color,box-shadow] duration-300 hover:shadow-md">
+											<div className="from-primary to-primary/50 absolute top-0 left-0 h-full w-1 bg-gradient-to-b opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+											<div className="text-muted-foreground mb-1.5 text-xs font-medium tracking-wider uppercase">
 												Amount
 											</div>
 											<div className="flex items-baseline gap-1.5">
-												<span className="text-lg font-semibold text-foreground">
+												<span className="text-foreground text-lg font-semibold">
 													{fee.amount.toFixed(2)}
 												</span>
-												<span className="text-sm font-medium text-muted-foreground">
+												<span className="text-muted-foreground text-sm font-medium">
 													{fee.currency}
 												</span>
 											</div>
@@ -124,12 +124,12 @@ function FeePage() {
 									)}
 
 									{fee.paidAt && (
-										<div className="group relative overflow-hidden rounded-lg border border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-[border-color,box-shadow] duration-300 hover:border-border hover:shadow-md sm:col-span-2">
-											<div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-emerald-500 to-emerald-500/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-											<div className="mb-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+										<div className="group border-border/50 bg-card/50 hover:border-border relative overflow-hidden rounded-lg border p-5 backdrop-blur-sm transition-[border-color,box-shadow] duration-300 hover:shadow-md sm:col-span-2">
+											<div className="absolute top-0 left-0 h-full w-1 bg-gradient-to-b from-emerald-500 to-emerald-500/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+											<div className="text-muted-foreground mb-1.5 text-xs font-medium tracking-wider uppercase">
 												Payment Date
 											</div>
-											<div className="text-lg font-semibold text-foreground">
+											<div className="text-foreground text-lg font-semibold">
 												{formatDate(new Date(fee.paidAt))}
 											</div>
 										</div>

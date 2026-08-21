@@ -34,7 +34,7 @@ export function FormCheckboxField({
 			<FieldLabel
 				className={
 					labelClassName ??
-					"cursor-pointer text-sm font-normal text-muted-foreground"
+					"text-muted-foreground cursor-pointer text-sm font-normal"
 				}
 				htmlFor={field.name}
 			>

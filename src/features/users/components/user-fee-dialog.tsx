@@ -76,7 +76,7 @@ export function UserFeeDialog({
 						</SelectContent>
 					</Select>
 					{selectedFeeType && (
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							Amount: {selectedFeeType.amount.toFixed(2)} {currency}
 						</p>
 					)}

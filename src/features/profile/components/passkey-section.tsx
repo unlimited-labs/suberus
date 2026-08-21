@@ -79,15 +79,15 @@ export function PasskeySection() {
 		<div className="space-y-4 border-t pt-4">
 			<div>
 				<h3 className="text-sm font-medium">Passkeys</h3>
-				<p className="text-sm text-muted-foreground">
+				<p className="text-muted-foreground text-sm">
 					Sign in with your fingerprint, Face ID, or device PIN.
 				</p>
 			</div>
 
 			{isLoading ? (
-				<p className="text-sm text-muted-foreground">Loading…</p>
+				<p className="text-muted-foreground text-sm">Loading…</p>
 			) : passkeys.length === 0 ? (
-				<p className="text-sm text-muted-foreground">No passkeys yet.</p>
+				<p className="text-muted-foreground text-sm">No passkeys yet.</p>
 			) : (
 				<ul className="space-y-2" data-testid="passkey-list">
 					{passkeys.map((pk) => (
@@ -96,7 +96,7 @@ export function PasskeySection() {
 							key={pk.id}
 						>
 							<div className="flex items-center gap-2">
-								<IconFingerprint className="size-4 text-muted-foreground" />
+								<IconFingerprint className="text-muted-foreground size-4" />
 								<span className="text-sm">{pk.name || "Passkey"}</span>
 							</div>
 							<Button
@@ -107,7 +107,7 @@ export function PasskeySection() {
 								type="button"
 								variant="ghost"
 							>
-								<IconTrash className="size-4 text-destructive" />
+								<IconTrash className="text-destructive size-4" />
 							</Button>
 						</li>
 					))}

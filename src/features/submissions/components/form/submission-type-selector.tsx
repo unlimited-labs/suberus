@@ -29,8 +29,8 @@ export function SubmissionTypeSelector({
 	return (
 		<div className="space-y-4">
 			<div className="flex items-center gap-3">
-				<IconCategory className="size-5 text-muted-foreground" />
-				<h2 className="text-lg font-semibold text-foreground">
+				<IconCategory className="text-muted-foreground size-5" />
+				<h2 className="text-foreground text-lg font-semibold">
 					Submission Type
 				</h2>
 			</div>

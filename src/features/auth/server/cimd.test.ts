@@ -87,9 +87,8 @@ function makeAuth(allowedOrigins: string[]) {
 				// Lazy: this pulls in src/env.ts, which rejects the partial environment
 				// a run without .env leaves behind.
 				onClientCreated: async ({ client, clientMetadataDocument }) => {
-					const { recordMcpClientActivity } = await import(
-						"@/features/auth/server/cimd-audit"
-					);
+					const { recordMcpClientActivity } =
+						await import("@/features/auth/server/cimd-audit");
 					await recordMcpClientActivity({
 						type: "MCP_CLIENT_REGISTERED",
 						detail: mcpClientRegisteredDetail(client, clientMetadataDocument),

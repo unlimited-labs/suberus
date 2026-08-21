@@ -28,14 +28,14 @@ export function TemplateCard({
 
 	return (
 		<div
-			className="flex flex-col gap-3 rounded-xl border bg-card p-3 transition-colors hover:border-foreground/20 hover:bg-accent/40 sm:flex-row sm:items-center sm:p-4"
+			className="bg-card hover:border-foreground/20 hover:bg-accent/40 flex flex-col gap-3 rounded-xl border p-3 transition-colors sm:flex-row sm:items-center sm:p-4"
 			data-testid="template-row"
 		>
 			<DocumentIconTile />
 			<div className="min-w-0 flex-1">
 				<p className="truncate text-sm font-medium">{name}</p>
 				{description && (
-					<p className="truncate text-xs text-muted-foreground">
+					<p className="text-muted-foreground truncate text-xs">
 						{description}
 					</p>
 				)}
@@ -43,7 +43,7 @@ export function TemplateCard({
 					<PlaceholderChips placeholders={placeholders} />
 				</div>
 			</div>
-			<span className="shrink-0 text-xs text-muted-foreground">
+			<span className="text-muted-foreground shrink-0 text-xs">
 				{formatDate(createdAt)}
 			</span>
 			<div className="flex shrink-0 items-center gap-1">

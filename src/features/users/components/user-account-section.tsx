@@ -23,11 +23,11 @@ export function UserAccountSection({
 	return (
 		<div className="grid gap-3 sm:grid-cols-2">
 			<div className="flex items-center gap-2">
-				<IconCalendar className="size-4 text-muted-foreground" />
+				<IconCalendar className="text-muted-foreground size-4" />
 				<span>Created: {fmtDate(user.createdAt)}</span>
 			</div>
 			<div className="flex items-center gap-2">
-				<IconClock className="size-4 text-muted-foreground" />
+				<IconClock className="text-muted-foreground size-4" />
 				<span>Last login: {fmtDate(user.lastLoginAt)}</span>
 			</div>
 			<div className="flex items-center gap-2">

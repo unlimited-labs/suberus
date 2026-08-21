@@ -29,7 +29,7 @@ export function SplitColumns({
 			data-testid="side-by-side-diff"
 		>
 			<div className="space-y-2" data-testid="diff-side-old">
-				<div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+				<div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
 					{oldLabel}
 				</div>
 				{oldChildren}
@@ -38,7 +38,7 @@ export function SplitColumns({
 				className="space-y-2 md:border-l md:pl-4"
 				data-testid="diff-side-new"
 			>
-				<div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+				<div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
 					{newLabel}
 				</div>
 				{newChildren}

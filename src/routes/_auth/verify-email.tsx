@@ -22,22 +22,22 @@ function VerifyEmailPage() {
 	return (
 		<AuthCard title="Check your email">
 			<div className="flex flex-1 flex-col items-center justify-center space-y-6 text-center">
-				<div className="rounded-full bg-primary/10 p-4">
+				<div className="bg-primary/10 rounded-full p-4">
 					<IconMail
-						className="size-12 text-primary"
+						className="text-primary size-12"
 						data-testid="verify-email-icon"
 					/>
 				</div>
 
 				<div className="space-y-2">
 					<h2 className="text-lg font-semibold lg:hidden">Check your email</h2>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						We've sent a verification link to
 					</p>
-					{email && <p className="font-medium text-foreground">{email}</p>}
+					{email && <p className="text-foreground font-medium">{email}</p>}
 				</div>
 
-				<div className="space-y-2 text-sm text-muted-foreground">
+				<div className="text-muted-foreground space-y-2 text-sm">
 					<p>Click the link in your email to verify your account.</p>
 					<p>The link expires in 24 hours.</p>
 				</div>
@@ -61,8 +61,8 @@ function VerifyEmailPage() {
 				)}
 			</div>
 
-			<p className="mt-4 text-center text-sm text-muted-foreground">
-				<Link className="font-medium text-primary hover:underline" to="/login">
+			<p className="text-muted-foreground mt-4 text-center text-sm">
+				<Link className="text-primary font-medium hover:underline" to="/login">
 					Back to login
 				</Link>
 			</p>

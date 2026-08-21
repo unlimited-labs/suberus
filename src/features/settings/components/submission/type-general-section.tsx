@@ -23,7 +23,7 @@ export function TypeGeneralSection({
 			<div className="flex items-center justify-between">
 				<div className="space-y-0.5">
 					<Label>Active</Label>
-					<p className="text-xs italic text-muted-foreground/70">
+					<p className="text-muted-foreground/70 text-xs italic">
 						Type available for selection when submitting
 					</p>
 				</div>
@@ -36,7 +36,7 @@ export function TypeGeneralSection({
 			<div className="flex items-center justify-between">
 				<div className="space-y-0.5">
 					<Label>Include in program planner</Label>
-					<p className="text-xs italic text-muted-foreground/70">
+					<p className="text-muted-foreground/70 text-xs italic">
 						Accepted submissions of this type appear in the program planner
 					</p>
 				</div>
@@ -63,7 +63,7 @@ export function TypeGeneralSection({
 						type="number"
 						value={config.maxSubmissionsPerUser}
 					/>
-					<p className="text-xs italic text-muted-foreground/70">
+					<p className="text-muted-foreground/70 text-xs italic">
 						0 = unlimited. Counts only submissions a user owns (co-authorship
 						doesn't count); drafts, withdrawn and rejected don't count.
 					</p>

@@ -85,7 +85,7 @@ export function AttachmentDropzone({
 				<ul className="space-y-1.5" data-testid="attachment-list">
 					{attachments.map((file) => (
 						<li
-							className="flex items-center gap-2 rounded-md border bg-muted/30 px-3 py-2 text-sm"
+							className="bg-muted/30 flex items-center gap-2 rounded-md border px-3 py-2 text-sm"
 							key={file.id}
 						>
 							<IconPaperclip className="size-4 shrink-0 opacity-60" />
@@ -95,7 +95,7 @@ export function AttachmentDropzone({
 							>
 								{file.originalName}
 							</span>
-							<span className="shrink-0 text-xs text-muted-foreground">
+							<span className="text-muted-foreground shrink-0 text-xs">
 								{formatFileSize(file.size)}
 							</span>
 							<Button
@@ -114,7 +114,7 @@ export function AttachmentDropzone({
 							{!disabled && (
 								<Button
 									aria-label={`Remove ${file.originalName}`}
-									className="size-7 shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+									className="text-destructive hover:bg-destructive/10 hover:text-destructive size-7 shrink-0"
 									data-testid="attachment-remove-btn"
 									disabled={removingId === file.id}
 									onClick={() => remove(file.id)}
@@ -129,7 +129,7 @@ export function AttachmentDropzone({
 				</ul>
 			) : (
 				disabled && (
-					<p className="text-sm text-muted-foreground">No attachments.</p>
+					<p className="text-muted-foreground text-sm">No attachments.</p>
 				)
 			)}
 		</div>

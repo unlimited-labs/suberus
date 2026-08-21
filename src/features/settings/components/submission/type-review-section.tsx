@@ -91,7 +91,7 @@ export function TypeReviewSection({
 				<div className="flex items-center justify-between">
 					<div className="space-y-0.5">
 						<Label>Requires editor decision</Label>
-						<p className="text-xs italic text-muted-foreground/70">
+						<p className="text-muted-foreground/70 text-xs italic">
 							Editor makes the final accept/reject decision. When off, the
 							reviewer's recommendation is applied automatically.
 						</p>

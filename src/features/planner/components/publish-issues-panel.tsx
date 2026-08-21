@@ -28,13 +28,13 @@ export function PublishIssuesPanel({
 	return (
 		<div className="flex min-h-0 flex-1 flex-col gap-3 py-2">
 			{issuesLoading ? (
-				<div className="flex items-center gap-2 text-sm text-muted-foreground">
+				<div className="text-muted-foreground flex items-center gap-2 text-sm">
 					<IconLoader2 className="animate-spin" size={14} />
 					Checking for issues…
 				</div>
 			) : issues && issues.length > 0 ? (
 				<>
-					<p className="shrink-0 text-sm text-muted-foreground">
+					<p className="text-muted-foreground shrink-0 text-sm">
 						{issues.length} issue{issues.length !== 1 ? "s" : ""} found. You can
 						still publish.
 					</p>

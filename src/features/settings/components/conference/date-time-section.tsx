@@ -87,7 +87,7 @@ export function DateTimeSection({
 						onChange={(v) => onChange("timezone", v)}
 						value={data.timezone}
 					/>
-					<p className="text-xs text-muted-foreground">
+					<p className="text-muted-foreground text-xs">
 						All session start/end times are stored in UTC and displayed in this
 						zone.
 					</p>

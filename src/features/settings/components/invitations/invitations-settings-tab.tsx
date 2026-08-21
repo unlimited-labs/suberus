@@ -62,7 +62,7 @@ export function InvitationsSettingsTab({
 						type="number"
 						value={validityHours}
 					/>
-					<p className="text-xs text-muted-foreground">
+					<p className="text-muted-foreground text-xs">
 						How long invitation links remain valid after being sent.
 					</p>
 				</div>

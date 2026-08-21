@@ -69,7 +69,7 @@ export function CameraReadyCard({ submissionId }: { submissionId: string }) {
 			{data ? (
 				<div className="space-y-3">
 					<a
-						className="flex items-center gap-2 text-sm text-primary hover:underline"
+						className="text-primary flex items-center gap-2 text-sm hover:underline"
 						href={`/api/files/${data.id}`}
 						rel="noreferrer"
 						target="_blank"
@@ -100,7 +100,7 @@ export function CameraReadyCard({ submissionId }: { submissionId: string }) {
 				</div>
 			) : (
 				<div className="space-y-3">
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						No camera-ready file. Upload a branded PDF to make it the public
 						download on the program.
 					</p>

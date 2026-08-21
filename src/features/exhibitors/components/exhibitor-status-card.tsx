@@ -28,7 +28,7 @@ export function ExhibitorStatusCard({
 				title="Application status"
 			>
 				{(appliedAt || decidedAt) && (
-					<div className="flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:gap-6">
+					<div className="text-muted-foreground flex flex-col gap-1 text-sm sm:flex-row sm:gap-6">
 						{appliedAt && (
 							<span>
 								Submitted:{" "}
@@ -49,7 +49,7 @@ export function ExhibitorStatusCard({
 				)}
 				{packageName && (
 					<p
-						className="text-sm text-muted-foreground"
+						className="text-muted-foreground text-sm"
 						data-testid="exhibitor-package-display"
 					>
 						Package: <span className="text-foreground">{packageName}</span>

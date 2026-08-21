@@ -494,7 +494,7 @@ export function FinancesBoard() {
 						action={
 							<div className="flex items-center gap-2">
 								<Label
-									className="text-xs text-muted-foreground"
+									className="text-muted-foreground text-xs"
 									htmlFor="expense-basis-total"
 								>
 									Total: {expenseBasis === "net" ? "Net" : "Gross"}
@@ -568,7 +568,7 @@ export function FinancesBoard() {
 					>
 						<div className="space-y-4">
 							{mode === "actual" ? (
-								<div className="flex items-center justify-between rounded-md border border-border/60 bg-muted/20 px-3 py-2">
+								<div className="border-border/60 bg-muted/20 flex items-center justify-between rounded-md border px-3 py-2">
 									<span className="text-sm">Registration fees</span>
 									<span
 										className="text-sm font-medium tabular-nums"
@@ -617,8 +617,8 @@ export function FinancesBoard() {
 							<div className="space-y-4">
 								<div className="flex flex-wrap items-stretch justify-between gap-4">
 									<div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3">
-										<div className="rounded-lg border bg-muted/30 p-3">
-											<div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+										<div className="bg-muted/30 rounded-lg border p-3">
+											<div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium tracking-wide uppercase">
 												<IconTrendingDown className="size-3.5" />
 												Expenses ({expenseBasis})
 											</div>
@@ -626,8 +626,8 @@ export function FinancesBoard() {
 												{formatCurrency(totalExpenses, currency)}
 											</div>
 										</div>
-										<div className="rounded-lg border bg-muted/30 p-3">
-											<div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+										<div className="bg-muted/30 rounded-lg border p-3">
+											<div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium tracking-wide uppercase">
 												<IconTrendingUp className="size-3.5" />
 												Income
 											</div>
@@ -644,7 +644,7 @@ export function FinancesBoard() {
 											)}
 										>
 											<div className="flex items-center justify-between">
-												<div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+												<div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium tracking-wide uppercase">
 													<IconScale className="size-3.5" />
 													Net
 												</div>
@@ -687,8 +687,8 @@ export function FinancesBoard() {
 								</div>
 
 								{mode === "sim" && feeSummary.types.length > 0 && (
-									<div className="rounded-lg border bg-muted/20 p-3">
-										<div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+									<div className="bg-muted/20 rounded-lg border p-3">
+										<div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
 											Break-even
 										</div>
 										<div className="flex flex-wrap gap-2">
@@ -709,7 +709,7 @@ export function FinancesBoard() {
 												);
 												return (
 													<div
-														className="flex items-center gap-1.5 rounded-md border bg-background px-2.5 py-1 text-sm"
+														className="bg-background flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-sm"
 														data-testid={`finances-breakeven-${index}`}
 														key={type.id}
 													>

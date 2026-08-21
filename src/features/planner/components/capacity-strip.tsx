@@ -17,9 +17,9 @@ export function CapacityStrip() {
 		>
 			<IconGauge className="text-muted-foreground" size={12} />
 			<span className="text-muted-foreground">
-				<span className="font-medium text-foreground">{cap.scheduled}</span>
+				<span className="text-foreground font-medium">{cap.scheduled}</span>
 				<span className="text-muted-foreground/70"> / </span>
-				<span className="font-medium text-foreground">{cap.talks}</span> placed
+				<span className="text-foreground font-medium">{cap.talks}</span> placed
 			</span>
 			<span className="text-muted-foreground/50">·</span>
 			<span
@@ -34,7 +34,7 @@ export function CapacityStrip() {
 					{formatDurationShort(cap.freeMinutes)}
 				</span>{" "}
 				<span className="text-muted-foreground/70">
-					(<span className="font-medium text-foreground">{cap.freeSlots}</span>{" "}
+					(<span className="text-foreground font-medium">{cap.freeSlots}</span>{" "}
 					slot{cap.freeSlots === 1 ? "" : "s"})
 				</span>{" "}
 				free{fullUtilization ? " (sessions full)" : ""}

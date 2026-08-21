@@ -33,7 +33,7 @@ export function DocumentFilters({
 	return (
 		<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
 			<div className="relative flex-1">
-				<IconSearch className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+				<IconSearch className="text-muted-foreground absolute top-2.5 left-2.5 size-4" />
 				<Input
 					aria-label="Search documents by participant"
 					className="pl-8"

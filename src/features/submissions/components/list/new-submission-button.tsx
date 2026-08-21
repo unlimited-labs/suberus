@@ -36,7 +36,7 @@ export function NewSubmissionButton({
 						className="inline-block cursor-not-allowed"
 						data-testid="new-submission-disabled"
 					>
-						<Button className="gap-2 pointer-events-none" disabled>
+						<Button className="pointer-events-none gap-2" disabled>
 							<IconPlus className="size-4" />
 							New Submission
 						</Button>

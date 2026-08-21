@@ -90,7 +90,7 @@ function ActivityEventRow({ event }: { event: ActivityEvent }) {
 						{label}
 					</Badge>
 					<span
-						className="text-xs text-muted-foreground"
+						className="text-muted-foreground text-xs"
 						title={formatDateTime(event.createdAt)}
 					>
 						{formatRelativeTime(event.createdAt)}
@@ -100,10 +100,10 @@ function ActivityEventRow({ event }: { event: ActivityEvent }) {
 				<ActivityEventSubject subject={subject} />
 
 				{description && (
-					<p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
+					<p className="text-muted-foreground mt-0.5 text-xs">{description}</p>
 				)}
 
-				<span className="text-xs text-muted-foreground">
+				<span className="text-muted-foreground text-xs">
 					<PerformerByline event={event} />
 				</span>
 			</div>

@@ -1,7 +1,4 @@
-export {
-	requestOrThrow,
-	sidecarBase,
-} from "@/shared/server/sidecar-http";
+export { requestOrThrow, sidecarBase } from "@/shared/server/sidecar-http";
 
 import { requestOrThrow } from "@/shared/server/sidecar-http";
 

@@ -15,7 +15,7 @@ export function MobileSessionRow({ item, timezone, onClick }: Props) {
 	const dur = formatDurationMin(item.startAt, item.endAt);
 	return (
 		<button
-			className="flex w-full items-stretch gap-3 px-3 py-3 text-left hover:bg-muted/40"
+			className="hover:bg-muted/40 flex w-full items-stretch gap-3 px-3 py-3 text-left"
 			data-testid={`mobile-session-${item.id}`}
 			onClick={() => onClick(item.id)}
 			type="button"
@@ -24,16 +24,16 @@ export function MobileSessionRow({ item, timezone, onClick }: Props) {
 				<div className="text-xs font-medium tabular-nums">
 					{formatClockTime(item.startAt, timezone)}
 				</div>
-				<div className="text-[10px] text-muted-foreground">{dur}m</div>
+				<div className="text-muted-foreground text-[10px]">{dur}m</div>
 			</div>
 			<div
 				aria-hidden
 				className="w-1 shrink-0 rounded-full"
 				style={{ backgroundColor: item.trackColor ?? "var(--border)" }}
 			/>
-			<div className="flex-1 min-w-0">
+			<div className="min-w-0 flex-1">
 				<div className="line-clamp-2 text-sm font-medium">{item.title}</div>
-				<div className="mt-0.5 flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+				<div className="text-muted-foreground mt-0.5 flex flex-wrap items-center gap-1 text-xs">
 					{item.roomName && <span>{item.roomName}</span>}
 					{item.trackName && (
 						<>
@@ -48,7 +48,7 @@ export function MobileSessionRow({ item, timezone, onClick }: Props) {
 					</span>
 				</div>
 				{item.chairs.length > 0 && (
-					<div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+					<div className="text-muted-foreground mt-1 flex items-center gap-1 text-[11px]">
 						<IconUsers size={10} />
 						{item.chairs
 							.map((c) => `${c.firstName} ${c.lastName}`.trim())

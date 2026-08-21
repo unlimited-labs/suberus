@@ -21,9 +21,9 @@ function ProgressRow({ done, label }: ProgressRowProps) {
 			data-testid={`progress-row-${label.toLowerCase().replace(/\s+/g, "-")}`}
 		>
 			{done ? (
-				<IconCircleCheck className="size-5 text-primary" />
+				<IconCircleCheck className="text-primary size-5" />
 			) : (
-				<IconCircle className="size-5 text-muted-foreground" />
+				<IconCircle className="text-muted-foreground size-5" />
 			)}
 			<span
 				className={cn(
@@ -73,11 +73,11 @@ export function SubmissionProgressSidebar({
 				>
 					{renderedGuidelines ? (
 						<Markdown
-							className="text-sm text-muted-foreground"
+							className="text-muted-foreground text-sm"
 							content={renderedGuidelines}
 						/>
 					) : (
-						<div className="space-y-3 text-sm text-muted-foreground">
+						<div className="text-muted-foreground space-y-3 text-sm">
 							<p>Title should be concise and descriptive</p>
 							{isFileFormat ? (
 								<p>

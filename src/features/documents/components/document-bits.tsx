@@ -11,10 +11,10 @@ import { Badge } from "@/shared/ui/badge";
 /** Shown in generate dialogs when the conference has no templates yet. */
 export function NoTemplatesHint() {
 	return (
-		<p className="text-xs text-muted-foreground">
+		<p className="text-muted-foreground text-xs">
 			No templates yet.{" "}
 			<Link
-				className="font-medium text-primary hover:underline"
+				className="text-primary font-medium hover:underline"
 				search={{ tab: "templates" }}
 				to="/admin/documents"
 			>
@@ -28,7 +28,7 @@ export function NoTemplatesHint() {
 export function PlaceholderChips({ placeholders }: { placeholders: string[] }) {
 	if (placeholders.length === 0) {
 		return (
-			<span className="text-xs text-muted-foreground">No placeholders</span>
+			<span className="text-muted-foreground text-xs">No placeholders</span>
 		);
 	}
 	return (

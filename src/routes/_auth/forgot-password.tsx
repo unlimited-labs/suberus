@@ -43,21 +43,21 @@ function ForgotPasswordPage() {
 		return (
 			<AuthCard centered>
 				<div className="w-full max-w-sm space-y-4 text-center">
-					<div className="mx-auto flex size-14 items-center justify-center rounded-full bg-primary/10">
-						<IconMailCheck className="size-7 text-primary" />
+					<div className="bg-primary/10 mx-auto flex size-14 items-center justify-center rounded-full">
+						<IconMailCheck className="text-primary size-7" />
 					</div>
 					<div>
 						<h1 className="text-xl font-semibold tracking-tight">
 							Check your email
 						</h1>
-						<p className="mt-1 text-sm text-muted-foreground">
+						<p className="text-muted-foreground mt-1 text-sm">
 							We've sent a password reset link to{" "}
-							<span className="font-medium text-foreground">
+							<span className="text-foreground font-medium">
 								{submittedEmail}
 							</span>
 						</p>
 					</div>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						Didn't receive the email? Check your spam folder or{" "}
 						<button
 							className="text-primary hover:underline"
@@ -68,7 +68,7 @@ function ForgotPasswordPage() {
 						</button>
 					</p>
 					<Link
-						className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+						className="text-muted-foreground hover:text-foreground inline-flex items-center gap-2 text-sm"
 						to="/login"
 					>
 						<IconArrowLeft className="size-4" />
@@ -117,7 +117,7 @@ function ForgotPasswordPage() {
 
 			<p className="mt-3 text-center">
 				<Link
-					className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+					className="text-muted-foreground hover:text-foreground inline-flex items-center gap-2 text-sm"
 					to="/login"
 				>
 					<IconArrowLeft className="size-4" />

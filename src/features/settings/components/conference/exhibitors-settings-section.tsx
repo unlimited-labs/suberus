@@ -65,10 +65,10 @@ export function ExhibitorsSettingsSection({
 		>
 			<div className="space-y-4">
 				{/* Master guard: gates exhibitor signup, the admin menu entry and the options below */}
-				<div className="flex items-center justify-between rounded-lg border border-border/50 p-3">
+				<div className="border-border/50 flex items-center justify-between rounded-lg border p-3">
 					<div>
 						<Label htmlFor="exhibitorsEnabled">Enable exhibitors</Label>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							Companies can register exhibitor accounts; enables the Exhibitors
 							admin panel
 						</p>
@@ -82,12 +82,12 @@ export function ExhibitorsSettingsSection({
 				</div>
 				{config.isActive && (
 					<>
-						<div className="flex items-center justify-between rounded-lg border border-border/50 p-3">
+						<div className="border-border/50 flex items-center justify-between rounded-lg border p-3">
 							<div>
 								<Label htmlFor="exhibitorsIncludeInPlanner">
 									Include in program planner
 								</Label>
-								<p className="text-xs text-muted-foreground">
+								<p className="text-muted-foreground text-xs">
 									Approved exhibitor presentations appear in the planner pool
 								</p>
 							</div>
@@ -100,12 +100,12 @@ export function ExhibitorsSettingsSection({
 								}
 							/>
 						</div>
-						<div className="flex items-center justify-between rounded-lg border border-border/50 p-3">
+						<div className="border-border/50 flex items-center justify-between rounded-lg border p-3">
 							<div>
 								<Label htmlFor="exhibitorsAllowPresentation">
 									Allow presentation
 								</Label>
-								<p className="text-xs text-muted-foreground">
+								<p className="text-muted-foreground text-xs">
 									Exhibitors can optionally submit a company presentation
 								</p>
 							</div>

@@ -266,7 +266,7 @@ function CountryFlag({ code }: { code: string | null }) {
 		return (
 			<IconWorld
 				aria-hidden
-				className="size-4 shrink-0 text-muted-foreground"
+				className="text-muted-foreground size-4 shrink-0"
 			/>
 		);
 	}
@@ -292,7 +292,7 @@ function CountryList({
 						<CountryFlag code={row.code} />
 						<span className="truncate text-sm">{row.country}</span>
 					</div>
-					<span className="shrink-0 text-sm font-medium tabular-nums text-muted-foreground">
+					<span className="text-muted-foreground shrink-0 text-sm font-medium tabular-nums">
 						{row.count}
 					</span>
 				</div>

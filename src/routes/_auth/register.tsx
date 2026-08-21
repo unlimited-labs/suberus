@@ -77,14 +77,14 @@ function RegistrationClosedPage() {
 	return (
 		<AuthCard title="Registration Closed">
 			<div className="space-y-4 py-4 text-center">
-				<IconLock className="mx-auto size-12 text-muted-foreground/50" />
+				<IconLock className="text-muted-foreground/50 mx-auto size-12" />
 				<p className="text-muted-foreground">
 					Registration is currently closed.
 				</p>
-				<p className="text-sm text-muted-foreground">
+				<p className="text-muted-foreground text-sm">
 					If you already have an account, you can{" "}
 					<Link
-						className="font-medium text-primary hover:underline"
+						className="text-primary font-medium hover:underline"
 						to="/login"
 					>
 						sign in
@@ -149,7 +149,7 @@ function RegisterForm() {
 		<AuthCard
 			currentStep={currentStep}
 			mobileHeaderExtra={
-				<p className="text-sm text-muted-foreground">
+				<p className="text-muted-foreground text-sm">
 					Step {currentStep} of 3: {STEPS[currentStep - 1].title}
 				</p>
 			}
@@ -236,9 +236,9 @@ function RegisterForm() {
 				</div>
 			</form>
 
-			<p className="mt-3 text-center text-sm text-muted-foreground">
+			<p className="text-muted-foreground mt-3 text-center text-sm">
 				Already have an account?{" "}
-				<Link className="font-medium text-primary hover:underline" to="/login">
+				<Link className="text-primary font-medium hover:underline" to="/login">
 					Sign in
 				</Link>
 			</p>

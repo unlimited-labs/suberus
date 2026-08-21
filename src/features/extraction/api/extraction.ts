@@ -99,9 +99,8 @@ export const updateExtractionSettingsFn = createServerFn({ method: "POST" })
 
 export const getLlmHealthFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.handler(
-		async (): Promise<AppSettingsMap["SERVICE_HEALTH_LLM"]> =>
-			getSetting("SERVICE_HEALTH_LLM"),
+	.handler(async (): Promise<AppSettingsMap["SERVICE_HEALTH_LLM"]> =>
+		getSetting("SERVICE_HEALTH_LLM"),
 	);
 
 export const llmHealthQueryOptions = () =>
@@ -113,9 +112,8 @@ export const llmHealthQueryOptions = () =>
 
 export const getPdfApiHealthFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.handler(
-		async (): Promise<AppSettingsMap["SERVICE_HEALTH_PDF_API"]> =>
-			getSetting("SERVICE_HEALTH_PDF_API"),
+	.handler(async (): Promise<AppSettingsMap["SERVICE_HEALTH_PDF_API"]> =>
+		getSetting("SERVICE_HEALTH_PDF_API"),
 	);
 
 export const pdfApiHealthQueryOptions = () =>

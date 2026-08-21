@@ -16,11 +16,11 @@ export function VersionSkewBanner() {
 
 	return (
 		<div
-			className="fixed inset-x-0 bottom-0 z-[9998] flex flex-col items-center justify-center gap-2 border-t bg-background/95 px-4 py-3 text-center shadow-lg backdrop-blur sm:flex-row sm:gap-4"
+			className="bg-background/95 fixed inset-x-0 bottom-0 z-[9998] flex flex-col items-center justify-center gap-2 border-t px-4 py-3 text-center shadow-lg backdrop-blur sm:flex-row sm:gap-4"
 			data-testid="version-skew-banner"
 			role="alert"
 		>
-			<p className="text-sm text-foreground">
+			<p className="text-foreground text-sm">
 				A new version of the app is available. Refresh to avoid errors.
 			</p>
 			<Button

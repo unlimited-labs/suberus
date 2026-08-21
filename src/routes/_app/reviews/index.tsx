@@ -34,7 +34,7 @@ function ReviewsPage() {
 			<PageHeader icon={IconClipboardCheck} title="Reviews" />
 			<div className="flex-1 overflow-auto p-6">
 				{assignments.length === 0 ? (
-					<div className="rounded-lg border border-border p-8 text-center text-muted-foreground">
+					<div className="border-border text-muted-foreground rounded-lg border p-8 text-center">
 						No reviews assigned
 					</div>
 				) : (

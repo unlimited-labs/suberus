@@ -16,7 +16,7 @@ export function MobileBreakRow({ item, timezone, onClick }: Props) {
 	const isEvent = item.itemKind === "event";
 	return (
 		<button
-			className="flex w-full items-center gap-3 bg-muted/30 px-3 py-3 text-left hover:bg-muted/50"
+			className="bg-muted/30 hover:bg-muted/50 flex w-full items-center gap-3 px-3 py-3 text-left"
 			data-testid={`mobile-break-${item.id}`}
 			onClick={() => onClick(item.id)}
 			type="button"
@@ -25,26 +25,26 @@ export function MobileBreakRow({ item, timezone, onClick }: Props) {
 				<div className="text-xs font-medium tabular-nums">
 					{formatClockTime(item.startAt, timezone)}
 				</div>
-				<div className="text-[10px] text-muted-foreground">{dur}m</div>
+				<div className="text-muted-foreground text-[10px]">{dur}m</div>
 			</div>
-			<div className="flex-1 min-w-0">
+			<div className="min-w-0 flex-1">
 				<div className="flex items-center gap-1.5 text-sm font-medium">
 					{isEvent && <IconCalendarEvent className="size-3.5 shrink-0" />}
 					{item.title}
 				</div>
 				{isEvent && item.description && (
-					<div className="truncate text-xs text-muted-foreground">
+					<div className="text-muted-foreground truncate text-xs">
 						{item.description}
 					</div>
 				)}
 				{isEvent
 					? item.location && (
-							<div className="text-xs text-muted-foreground">
+							<div className="text-muted-foreground text-xs">
 								{item.location}
 							</div>
 						)
 					: item.roomName && (
-							<div className="text-xs text-muted-foreground">
+							<div className="text-muted-foreground text-xs">
 								{item.roomName}
 							</div>
 						)}

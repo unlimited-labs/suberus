@@ -28,23 +28,23 @@ export function EventDetails({
 }) {
 	return (
 		<>
-			<p className="flex items-center gap-2 font-[var(--prog-font-meta)] text-xs uppercase tracking-wide text-[var(--primary)]">
+			<p className="flex items-center gap-2 text-xs font-[var(--prog-font-meta)] tracking-wide text-[var(--primary)] uppercase">
 				<IconCalendarEvent className="size-3.5 shrink-0" />
 				{formatClockTime(new Date(item.startAt), tz)} –{" "}
 				{formatClockTime(new Date(item.endAt), tz)}
 			</p>
 			<p className={cn("mt-1 text-foreground", titleClass)}>{item.title}</p>
 			{item.description && (
-				<p className="mt-2 whitespace-pre-line text-sm text-muted-foreground">
+				<p className="text-muted-foreground mt-2 text-sm whitespace-pre-line">
 					{item.description}
 				</p>
 			)}
 			{item.location && (
-				<p className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
+				<p className="text-muted-foreground mt-2 flex items-center gap-1.5 text-sm">
 					<IconMapPin className="size-3.5 shrink-0" />
 					{item.locationUrl ? (
 						<a
-							className="underline underline-offset-2 hover:text-foreground"
+							className="hover:text-foreground underline underline-offset-2"
 							href={item.locationUrl}
 							rel="noopener noreferrer"
 							target="_blank"
@@ -144,8 +144,8 @@ function ChairLine({
 
 	if (asLabel) {
 		return (
-			<p className="mt-1 text-sm text-muted-foreground">
-				<span className="font-[var(--prog-font-meta)] text-[9px] uppercase tracking-[var(--prog-tracking)] text-[var(--prog-faint)]">
+			<p className="text-muted-foreground mt-1 text-sm">
+				<span className="text-[9px] font-[var(--prog-font-meta)] tracking-[var(--prog-tracking)] text-[var(--prog-faint)] uppercase">
 					{label}
 				</span>{" "}
 				{names}
@@ -153,7 +153,7 @@ function ChairLine({
 		);
 	}
 	return (
-		<p className="mt-1 text-sm text-muted-foreground">
+		<p className="text-muted-foreground mt-1 text-sm">
 			<span className="font-medium">{label}: </span>
 			{names}
 		</p>
@@ -247,7 +247,7 @@ function PresentationRow({
 		>
 			<div>
 				{numbered && (
-					<span className="block font-[var(--prog-font-display)] text-xl leading-none tabular-nums text-[var(--prog-faint)]">
+					<span className="block text-xl leading-none font-[var(--prog-font-display)] text-[var(--prog-faint)] tabular-nums">
 						{String(index + 1).padStart(2, "0")}
 					</span>
 				)}
@@ -325,7 +325,7 @@ function RowAuthors({
 	const { showAuthorInfo } = useProgramInteraction();
 	if (authors.length === 0) return null;
 	return (
-		<p className="mt-0.5 text-[13px] leading-snug text-muted-foreground font-[var(--prog-font-body)]">
+		<p className="text-muted-foreground mt-0.5 text-[13px] leading-snug font-[var(--prog-font-body)]">
 			{showAuthorInfo ? (
 				authors.map((a, i) => (
 					<span key={a.orderIndex}>

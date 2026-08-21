@@ -20,7 +20,7 @@ export function PlaceholderHelp() {
 						<Tooltip key={key}>
 							<TooltipTrigger asChild>
 								<Badge
-									className="cursor-pointer font-mono text-xs hover:bg-muted"
+									className="hover:bg-muted cursor-pointer font-mono text-xs"
 									data-testid={`placeholder-${key}`}
 									onClick={() => {
 										navigator.clipboard.writeText(token);
@@ -36,7 +36,7 @@ export function PlaceholderHelp() {
 					);
 				})}
 			</div>
-			<p className="text-xs text-muted-foreground">
+			<p className="text-muted-foreground text-xs">
 				Click to copy · hover for description
 			</p>
 		</div>

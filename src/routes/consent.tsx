@@ -104,7 +104,7 @@ function ConsentPage() {
 				{client?.origin && (
 					<p className="text-muted-foreground text-sm">
 						Identity verified at{" "}
-						<span className="font-medium text-foreground">{client.origin}</span>
+						<span className="text-foreground font-medium">{client.origin}</span>
 					</p>
 				)}
 			</CardHeader>
@@ -121,11 +121,11 @@ function ConsentPage() {
 
 				{scopes.length > 0 && (
 					<div className="space-y-2">
-						<div className="font-medium text-sm">It will be able to</div>
+						<div className="text-sm font-medium">It will be able to</div>
 						<ul className="space-y-1.5">
 							{scopes.map((scope) => (
 								<li className="flex items-start gap-2 text-sm" key={scope}>
-									<IconCheck className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+									<IconCheck className="text-muted-foreground mt-0.5 size-4 shrink-0" />
 									<span>{scopeLabel(scope)}</span>
 								</li>
 							))}

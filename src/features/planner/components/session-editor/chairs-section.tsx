@@ -57,7 +57,7 @@ export function ChairsSection() {
 			<div className="flex items-center justify-between">
 				<Label className="text-sm font-medium">
 					Chairs{" "}
-					<span className="font-normal text-muted-foreground">
+					<span className="text-muted-foreground font-normal">
 						({chairs.length}/3)
 					</span>
 				</Label>
@@ -93,7 +93,7 @@ export function ChairsSection() {
 												<IconUser className="mr-2 shrink-0" size={13} />
 												<div className="min-w-0">
 													<div className="truncate text-sm">{userName(u)}</div>
-													<div className="truncate text-xs text-muted-foreground">
+													<div className="text-muted-foreground truncate text-xs">
 														{u.email}
 													</div>
 												</div>
@@ -108,7 +108,7 @@ export function ChairsSection() {
 			</div>
 
 			{chairs.length === 0 ? (
-				<p className="text-xs text-muted-foreground">No chairs assigned</p>
+				<p className="text-muted-foreground text-xs">No chairs assigned</p>
 			) : (
 				<div className="space-y-1">
 					{chairs.map((c) => (

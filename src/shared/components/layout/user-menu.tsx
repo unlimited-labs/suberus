@@ -78,7 +78,7 @@ export function UserMenu() {
 		<>
 			<DropdownMenu>
 				<DropdownMenuTrigger
-					className="flex w-full items-center gap-3 rounded-lg p-2 hover:bg-sidebar-accent/50 focus:outline-none"
+					className="hover:bg-sidebar-accent/50 flex w-full items-center gap-3 rounded-lg p-2 focus:outline-none"
 					data-testid="user-menu-trigger"
 				>
 					<Avatar size="sm">
@@ -88,11 +88,11 @@ export function UserMenu() {
 						</AvatarFallback>
 					</Avatar>
 					<div className="flex-1 text-left">
-						<p className="text-sm font-medium text-sidebar-foreground">
+						<p className="text-sidebar-foreground text-sm font-medium">
 							{displayName}
 						</p>
 					</div>
-					<IconDotsVertical className="size-4 text-muted-foreground" />
+					<IconDotsVertical className="text-muted-foreground size-4" />
 				</DropdownMenuTrigger>
 				<DropdownMenuContent
 					align="end"

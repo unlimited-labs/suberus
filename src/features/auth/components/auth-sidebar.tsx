@@ -38,12 +38,12 @@ export function AuthSidebar({
 					backgroundImage: "url('auth_bg.jpg')",
 				}}
 			/>
-			<div className="absolute inset-0 bg-linear-to-br from-primary/90 via-primary/70 to-primary/90" />
+			<div className="from-primary/90 via-primary/70 to-primary/90 absolute inset-0 bg-linear-to-br" />
 
 			<div className="relative z-10 space-y-3">
 				<h2 className="text-2xl font-bold tracking-tight">{conferenceName}</h2>
 				{(conferenceDate || conferenceLocation) && (
-					<div className="space-y-1 text-sm text-primary-foreground/80">
+					<div className="text-primary-foreground/80 space-y-1 text-sm">
 						{conferenceDate && <p>{conferenceDate}</p>}
 						{conferenceLocation && <p>{conferenceLocation}</p>}
 					</div>
@@ -83,7 +83,7 @@ export function AuthSidebar({
 				</div>
 			) : (
 				conferenceSubtitle && (
-					<p className="relative z-10  text-sm font-medium text-primary-foreground/90 wrap-break-words">
+					<p className="text-primary-foreground/90 wrap-break-words relative z-10 text-sm font-medium">
 						{conferenceSubtitle}
 					</p>
 				)

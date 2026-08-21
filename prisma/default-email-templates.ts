@@ -65,7 +65,12 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 		isHtml: false,
 		ccEmails: [],
 		bccEmails: [],
-		availablePlaceholders: ["reviewerName", "submissionTitle", "deadline", "reviewUrl"],
+		availablePlaceholders: [
+			"reviewerName",
+			"submissionTitle",
+			"deadline",
+			"reviewUrl",
+		],
 		description: "Sent when a reviewer is assigned to a submission",
 	},
 	{
@@ -76,7 +81,13 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 		isHtml: false,
 		ccEmails: [],
 		bccEmails: [],
-		availablePlaceholders: ["reviewerName", "submissionTitle", "deadline", "reviewUrl", "daysRemaining"],
+		availablePlaceholders: [
+			"reviewerName",
+			"submissionTitle",
+			"deadline",
+			"reviewUrl",
+			"daysRemaining",
+		],
 		description: "Sent as a reminder to reviewers about upcoming deadlines",
 	},
 	{
@@ -99,7 +110,8 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 		ccEmails: [],
 		bccEmails: [],
 		availablePlaceholders: ["submissionTitle", "submissionUrl", "note"],
-		description: "Sent to editors when all reviews for a submission are complete. {{note}} contains a warning when reviewers disagree.",
+		description:
+			"Sent to editors when all reviews for a submission are complete. {{note}} contains a warning when reviewers disagree.",
 	},
 	{
 		eventType: "DECISION_ACCEPTED",
@@ -109,7 +121,12 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 		isHtml: false,
 		ccEmails: [],
 		bccEmails: [],
-		availablePlaceholders: ["authorName", "submissionTitle", "letterToAuthor", "submissionUrl"],
+		availablePlaceholders: [
+			"authorName",
+			"submissionTitle",
+			"letterToAuthor",
+			"submissionUrl",
+		],
 		description: "Sent when a submission is accepted",
 	},
 	{
@@ -120,7 +137,12 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 		isHtml: false,
 		ccEmails: [],
 		bccEmails: [],
-		availablePlaceholders: ["authorName", "submissionTitle", "letterToAuthor", "submissionUrl"],
+		availablePlaceholders: [
+			"authorName",
+			"submissionTitle",
+			"letterToAuthor",
+			"submissionUrl",
+		],
 		description: "Sent when a submission is conditionally accepted",
 	},
 	{
@@ -131,7 +153,12 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 		isHtml: false,
 		ccEmails: [],
 		bccEmails: [],
-		availablePlaceholders: ["authorName", "submissionTitle", "letterToAuthor", "submissionUrl"],
+		availablePlaceholders: [
+			"authorName",
+			"submissionTitle",
+			"letterToAuthor",
+			"submissionUrl",
+		],
 		description: "Sent when a submission requires revisions",
 	},
 	{
@@ -142,7 +169,12 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 		isHtml: false,
 		ccEmails: [],
 		bccEmails: [],
-		availablePlaceholders: ["authorName", "submissionTitle", "letterToAuthor", "submissionUrl"],
+		availablePlaceholders: [
+			"authorName",
+			"submissionTitle",
+			"letterToAuthor",
+			"submissionUrl",
+		],
 		description: "Sent when a submission is rejected",
 	},
 	{
@@ -153,7 +185,12 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 		isHtml: false,
 		ccEmails: [],
 		bccEmails: [],
-		availablePlaceholders: ["authorName", "submissionTitle", "previousDecision", "submissionUrl"],
+		availablePlaceholders: [
+			"authorName",
+			"submissionTitle",
+			"previousDecision",
+			"submissionUrl",
+		],
 		description: "Sent when an editor overrides a previous decision",
 	},
 	{
@@ -164,8 +201,14 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 		isHtml: false,
 		ccEmails: [],
 		bccEmails: [],
-		availablePlaceholders: ["submissionTitle", "authorName", "versionNumber", "submissionUrl"],
-		description: "Sent to editors when an author resubmits a revised submission",
+		availablePlaceholders: [
+			"submissionTitle",
+			"authorName",
+			"versionNumber",
+			"submissionUrl",
+		],
+		description:
+			"Sent to editors when an author resubmits a revised submission",
 	},
 	{
 		eventType: "REVISION_REMINDER",
@@ -186,7 +229,13 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 		isHtml: false,
 		ccEmails: [],
 		bccEmails: [],
-		availablePlaceholders: ["recipientName", "submissionTitle", "deadline", "submissionUrl", "daysRemaining"],
+		availablePlaceholders: [
+			"recipientName",
+			"submissionTitle",
+			"deadline",
+			"submissionUrl",
+			"daysRemaining",
+		],
 		description: "Sent when a deadline is approaching",
 	},
 	{
@@ -257,14 +306,21 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 	},
 	{
 		eventType: "EXHIBITOR_APPROVED",
-		subject: "Your exhibitor application has been approved — {{conferenceName}}",
+		subject:
+			"Your exhibitor application has been approved — {{conferenceName}}",
 		body: "Dear {{firstName}},\n\nYour exhibitor application for {{companyName}} has been approved.\n\n{{reason}}\n\nWe look forward to welcoming you at {{conferenceName}}.",
 		isEnabled: true,
 		isHtml: false,
 		ccEmails: [],
 		bccEmails: [],
-		availablePlaceholders: ["firstName", "companyName", "reason", "conferenceName"],
-		description: "Sent to the exhibitor when the organizer approves the application",
+		availablePlaceholders: [
+			"firstName",
+			"companyName",
+			"reason",
+			"conferenceName",
+		],
+		description:
+			"Sent to the exhibitor when the organizer approves the application",
 	},
 	{
 		eventType: "EXHIBITOR_REJECTED",
@@ -274,8 +330,14 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 		isHtml: false,
 		ccEmails: [],
 		bccEmails: [],
-		availablePlaceholders: ["firstName", "companyName", "reason", "conferenceName"],
-		description: "Sent to the exhibitor when the organizer rejects the application",
+		availablePlaceholders: [
+			"firstName",
+			"companyName",
+			"reason",
+			"conferenceName",
+		],
+		description:
+			"Sent to the exhibitor when the organizer rejects the application",
 	},
 	{
 		eventType: "DOCUMENT_GENERATED",
@@ -285,7 +347,13 @@ export const DEFAULT_EMAIL_TEMPLATES: DefaultEmailTemplate[] = [
 		isHtml: false,
 		ccEmails: [],
 		bccEmails: [],
-		availablePlaceholders: ["firstName", "documentName", "documentsUrl", "conferenceName"],
-		description: "Sent to a participant when an organizer generates a document for them",
+		availablePlaceholders: [
+			"firstName",
+			"documentName",
+			"documentsUrl",
+			"conferenceName",
+		],
+		description:
+			"Sent to a participant when an organizer generates a document for them",
 	},
 ];

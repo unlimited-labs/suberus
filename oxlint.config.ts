@@ -21,7 +21,9 @@ export default defineConfig({
 		".cursor/**",
 		".gemini/**",
 	],
-	jsPlugins: [{ name: "anti-slop", specifier: "./tools/oxlint/anti-slop/index.ts" }],
+	jsPlugins: [
+		{ name: "anti-slop", specifier: "./tools/oxlint/anti-slop/index.ts" },
+	],
 	rules: {
 		"typescript/no-deprecated": "error",
 		"anti-slop/no-chained-type-assertions": "error",

@@ -5,8 +5,8 @@ import type { BulkPreview } from "@/features/documents/server/bulk";
 export function ReviewStep({ preview }: { preview: BulkPreview }) {
 	return (
 		<div className="space-y-3 py-1">
-			<div className="flex items-center gap-2 rounded-md border bg-muted/40 p-3">
-				<IconUsers className="size-5 text-primary" />
+			<div className="bg-muted/40 flex items-center gap-2 rounded-md border p-3">
+				<IconUsers className="text-primary size-5" />
 				<p className="text-sm">
 					<span className="font-semibold">{preview.resolvableIds.length}</span>{" "}
 					will be generated
@@ -34,7 +34,7 @@ export function ReviewStep({ preview }: { preview: BulkPreview }) {
 							key={s.userId}
 						>
 							<span className="truncate">{s.name}</span>
-							<span className="shrink-0 text-muted-foreground">
+							<span className="text-muted-foreground shrink-0">
 								{s.missing.map(placeholderLabel).join(", ")}
 							</span>
 						</div>

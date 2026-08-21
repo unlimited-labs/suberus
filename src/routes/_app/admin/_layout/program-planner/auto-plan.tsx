@@ -148,17 +148,17 @@ function IntroView({
 	return (
 		<div className="flex flex-col items-center gap-8 pt-8 text-center">
 			<div className="relative">
-				<div className="absolute inset-0 animate-pulse rounded-full bg-primary/20 blur-2xl" />
-				<div className="relative flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-lg shadow-primary/25">
+				<div className="bg-primary/20 absolute inset-0 animate-pulse rounded-full blur-2xl" />
+				<div className="from-primary to-primary/70 text-primary-foreground shadow-primary/25 relative flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br shadow-lg">
 					<IconWand className="h-12 w-12" />
-					<IconSparkles className="absolute right-3 top-3 h-5 w-5 text-white/90" />
+					<IconSparkles className="absolute top-3 right-3 h-5 w-5 text-white/90" />
 				</div>
 			</div>
 			<div className="max-w-lg space-y-3">
-				<h2 className="text-xl font-semibold text-foreground">
+				<h2 className="text-foreground text-xl font-semibold">
 					Generate a session preview from accepted abstracts
 				</h2>
-				<p className="text-sm text-muted-foreground">
+				<p className="text-muted-foreground text-sm">
 					Each session will get a proposed title and a set of thematically
 					related presentations. Nothing changes in the schedule until you
 					apply.
@@ -202,7 +202,7 @@ function ProgressView({
 			<div className="space-y-3">
 				<div className="flex items-center justify-between text-sm">
 					<span className="font-medium">Generating proposal</span>
-					<span className="font-mono tabular-nums text-muted-foreground">
+					<span className="text-muted-foreground font-mono tabular-nums">
 						{overallPct}%
 					</span>
 				</div>
@@ -307,7 +307,7 @@ function StageCard({
 			<div className="flex items-start justify-between">
 				<div className="relative">
 					{status === "running" && (
-						<span className="absolute -inset-1.5 animate-ping rounded-2xl bg-primary/30" />
+						<span className="bg-primary/30 absolute -inset-1.5 animate-ping rounded-2xl" />
 					)}
 					<span
 						className={cn(
@@ -335,7 +335,7 @@ function StageCard({
 				<div className={cn("text-sm font-semibold leading-tight", st.label)}>
 					{spec.label}
 				</div>
-				<div className="text-xs text-muted-foreground">
+				<div className="text-muted-foreground text-xs">
 					{status === "running" && total > 0
 						? `${current} of ${total}`
 						: spec.description}
@@ -347,11 +347,11 @@ function StageCard({
 				{status === "running" &&
 					(total > 0 ? (
 						<div
-							className="h-full bg-gradient-to-r from-primary/60 to-primary transition-[width] duration-500"
+							className="from-primary/60 to-primary h-full bg-gradient-to-r transition-[width] duration-500"
 							style={{ width: `${pct}%` }}
 						/>
 					) : (
-						<div className="h-full animate-pulse bg-primary" />
+						<div className="bg-primary h-full animate-pulse" />
 					))}
 			</div>
 		</div>
@@ -402,7 +402,7 @@ function ResultsView({
 			<div className="space-y-4">
 				<div className="space-y-1">
 					<h2 className="text-xl font-semibold">Proposal ready</h2>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						Review below. Applying will overwrite current session titles and
 						slot assignments — other planner data stays untouched.
 					</p>
@@ -419,7 +419,7 @@ function ResultsView({
 						{proposal.stats.sizeMax})
 					</Badge>
 					{changedCount > 0 && (
-						<Badge className="h-6 gap-1 bg-primary/15 text-primary hover:bg-primary/15">
+						<Badge className="bg-primary/15 text-primary hover:bg-primary/15 h-6 gap-1">
 							<IconSparkles className="h-3 w-3" />
 							{changedCount} renamed
 						</Badge>
@@ -435,9 +435,9 @@ function ResultsView({
 				))}
 			</div>
 
-			<div className="fixed inset-x-0 bottom-0 border-t bg-background/80 px-8 py-4 backdrop-blur">
+			<div className="bg-background/80 fixed inset-x-0 bottom-0 border-t px-8 py-4 backdrop-blur">
 				<div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
-					<span className="text-xs text-muted-foreground">
+					<span className="text-muted-foreground text-xs">
 						Nothing is saved yet.
 					</span>
 					<div className="flex gap-2">
@@ -475,28 +475,28 @@ function SessionCard({
 }) {
 	const titleChanged = s.originalTitle !== s.proposedTitle;
 	return (
-		<div className="flex flex-col gap-3 rounded-lg border bg-card p-5 transition-colors hover:border-primary/40">
+		<div className="bg-card hover:border-primary/40 flex flex-col gap-3 rounded-lg border p-5 transition-colors">
 			<div className="flex items-start gap-3">
-				<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-semibold tabular-nums text-muted-foreground">
+				<div className="bg-muted text-muted-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-xs font-semibold tabular-nums">
 					{index}
 				</div>
 				<div className="min-w-0 flex-1 space-y-1">
 					<div className="flex items-center gap-1.5 text-sm font-semibold">
 						{titleChanged && (
-							<IconSparkles className="h-3.5 w-3.5 shrink-0 text-primary" />
+							<IconSparkles className="text-primary h-3.5 w-3.5 shrink-0" />
 						)}
 						<span className="truncate">
 							{s.proposedTitle || (
-								<span className="italic text-muted-foreground">(no title)</span>
+								<span className="text-muted-foreground italic">(no title)</span>
 							)}
 						</span>
 					</div>
 					{titleChanged && (
-						<div className="truncate text-xs text-muted-foreground line-through">
+						<div className="text-muted-foreground truncate text-xs line-through">
 							{s.originalTitle}
 						</div>
 					)}
-					<div className="flex flex-wrap gap-x-3 gap-y-1 pt-1 text-xs text-muted-foreground">
+					<div className="text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 pt-1 text-xs">
 						<span className="flex items-center gap-1.5">
 							<IconClock className="h-3 w-3" />
 							{formatDateRange(s.startAt, s.endAt)}
@@ -504,13 +504,13 @@ function SessionCard({
 						<span className="flex items-center gap-1.5">
 							<IconDoorEnter className="h-3 w-3" />
 							{s.roomName ?? (
-								<span className="italic text-muted-foreground/70">no room</span>
+								<span className="text-muted-foreground/70 italic">no room</span>
 							)}
 						</span>
 					</div>
 				</div>
 			</div>
-			<ul className="space-y-1 border-t pt-3 text-xs text-muted-foreground">
+			<ul className="text-muted-foreground space-y-1 border-t pt-3 text-xs">
 				{s.presentations.map((p, i) => (
 					<li className="flex gap-2.5" key={p.submissionId}>
 						<span className="w-5 shrink-0 text-right tabular-nums opacity-50">

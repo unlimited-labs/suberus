@@ -65,7 +65,7 @@ export function SurveyQuestionDialog({
 
 function SectionLabel({ children }: { children: string }) {
 	return (
-		<p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+		<p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
 			{children}
 		</p>
 	);
@@ -210,7 +210,7 @@ function SurveyQuestionDialogForm({
 
 			<div className="space-y-2 md:sticky md:top-0 md:self-start">
 				<SectionLabel>Preview</SectionLabel>
-				<div className="rounded-lg border bg-muted/20 p-4">
+				<div className="bg-muted/20 rounded-lg border p-4">
 					<form.Subscribe
 						selector={(s) => ({
 							label: s.values.label,

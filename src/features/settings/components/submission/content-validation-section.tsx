@@ -18,7 +18,7 @@ function TitleFields({ data, onChange }: ValidationFieldsProps) {
 			<div className="grid gap-4 sm:grid-cols-2">
 				<div className="space-y-2">
 					<Label
-						className="text-xs text-muted-foreground"
+						className="text-muted-foreground text-xs"
 						htmlFor="minTitleLength"
 					>
 						Min length (characters)
@@ -36,7 +36,7 @@ function TitleFields({ data, onChange }: ValidationFieldsProps) {
 				</div>
 				<div className="space-y-2">
 					<Label
-						className="text-xs text-muted-foreground"
+						className="text-muted-foreground text-xs"
 						htmlFor="maxTitleLength"
 					>
 						Max length (characters)
@@ -54,7 +54,7 @@ function TitleFields({ data, onChange }: ValidationFieldsProps) {
 				</div>
 			</div>
 			{data.minTitleLength > data.maxTitleLength && (
-				<p className="text-xs text-destructive">
+				<p className="text-destructive text-xs">
 					Min length cannot exceed max length
 				</p>
 			)}
@@ -66,13 +66,13 @@ function AbstractFields({ data, onChange }: ValidationFieldsProps) {
 	return (
 		<div className="space-y-3">
 			<Label className="text-sm font-medium">Abstract</Label>
-			<p className="text-xs text-muted-foreground -mt-2">
+			<p className="text-muted-foreground -mt-2 text-xs">
 				For TEXT format submissions
 			</p>
 			<div className="grid gap-4 sm:grid-cols-2">
 				<div className="space-y-2">
 					<Label
-						className="text-xs text-muted-foreground"
+						className="text-muted-foreground text-xs"
 						htmlFor="minAbstractLength"
 					>
 						Min length (characters)
@@ -90,7 +90,7 @@ function AbstractFields({ data, onChange }: ValidationFieldsProps) {
 				</div>
 				<div className="space-y-2">
 					<Label
-						className="text-xs text-muted-foreground"
+						className="text-muted-foreground text-xs"
 						htmlFor="maxAbstractLength"
 					>
 						Max length (characters)
@@ -111,7 +111,7 @@ function AbstractFields({ data, onChange }: ValidationFieldsProps) {
 				</div>
 			</div>
 			{data.minAbstractLength > data.maxAbstractLength && (
-				<p className="text-xs text-destructive">
+				<p className="text-destructive text-xs">
 					Min length cannot exceed max length
 				</p>
 			)}
@@ -125,7 +125,7 @@ function KeywordsFields({ data, onChange }: ValidationFieldsProps) {
 			<div className="flex items-center justify-between">
 				<div className="space-y-0.5">
 					<Label htmlFor="enableKeywords">Enable keywords</Label>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						Authors can add keywords to submissions
 					</p>
 				</div>
@@ -166,7 +166,7 @@ function KeywordsFields({ data, onChange }: ValidationFieldsProps) {
 				</div>
 			)}
 			{data.enableKeywords && data.minKeywords > data.maxKeywords && (
-				<p className="text-xs text-destructive">
+				<p className="text-destructive text-xs">
 					Min keywords cannot exceed max keywords
 				</p>
 			)}

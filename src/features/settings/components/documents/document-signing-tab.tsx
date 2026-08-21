@@ -220,12 +220,12 @@ function CertificateSection({
 			<div className="space-y-5" data-testid="document-signing-section">
 				{cfg ? (
 					<div
-						className="rounded-xl border border-border/60 bg-muted/20 p-4"
+						className="border-border/60 bg-muted/20 rounded-xl border p-4"
 						data-testid="signing-cert-status"
 					>
 						<div className="mb-3 flex items-center justify-between gap-3">
 							<div className="flex items-center gap-2">
-								<IconCertificate className="size-5 text-primary" />
+								<IconCertificate className="text-primary size-5" />
 								<span className="font-medium">Certificate installed</span>
 							</div>
 							<Badge variant="secondary">
@@ -246,7 +246,7 @@ function CertificateSection({
 							<div className="sm:col-span-2">
 								<dt className="text-muted-foreground">SHA-256 fingerprint</dt>
 								<dd
-									className="break-all font-mono text-xs"
+									className="font-mono text-xs break-all"
 									data-testid="signing-cert-fingerprint"
 								>
 									{cfg.fingerprintSha256}
@@ -284,7 +284,7 @@ function CertificateSection({
 								</Label>
 							</div>
 						</div>
-						<p className="mt-3 text-xs text-muted-foreground">
+						<p className="text-muted-foreground mt-3 text-xs">
 							Self-signed signatures prove the document was issued here and was
 							not altered. In a PDF reader the signer shows as "not trusted"
 							until the verifier imports this certificate — or anyone can
@@ -292,7 +292,7 @@ function CertificateSection({
 						</p>
 					</div>
 				) : (
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						No signing certificate yet. Generate a self-signed one (or upload
 						your organization's .p12) to start signing documents.
 					</p>
@@ -347,7 +347,7 @@ function CertificateSection({
 
 					<div className="space-y-3">
 						<h3 className="text-sm font-semibold">Upload your own .p12</h3>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							Bring an organizational or qualified certificate for full trust.
 						</p>
 						<div className="space-y-2">
@@ -587,7 +587,7 @@ function TimestampSection({
 						onChange={(e) => setUrl(e.target.value)}
 						value={url}
 					/>
-					<p className="text-xs text-muted-foreground">
+					<p className="text-muted-foreground text-xs">
 						Free options: {DEFAULT_TSA_URL}, http://timestamp.digicert.com
 					</p>
 				</div>

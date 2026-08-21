@@ -14,10 +14,10 @@ export function SubmissionsDeadlineBanner({
 }: SubmissionsDeadlineBannerProps) {
 	return (
 		<div
-			className="flex items-center gap-2 border-b border-border px-6 py-2 text-sm"
+			className="border-border flex items-center gap-2 border-b px-6 py-2 text-sm"
 			data-testid="submission-deadline"
 		>
-			<IconCalendar className="size-4 text-muted-foreground" />
+			<IconCalendar className="text-muted-foreground size-4" />
 			<span className="text-muted-foreground">Submission deadline:</span>
 			<span
 				className={cn(

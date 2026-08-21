@@ -65,13 +65,13 @@ export function GridBody({
 				<div className="overflow-x-auto">
 					<div style={{ minWidth }}>
 						<div
-							className="grid border-b border-primary"
+							className="border-primary grid border-b"
 							style={{ gridTemplateColumns }}
 						>
 							<div className={STICKY_COL} />
 							{cols.map((c) => (
 								<div
-									className="px-3 pb-2 font-[var(--prog-font-meta)] text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+									className="text-muted-foreground px-3 pb-2 text-[11px] font-[var(--prog-font-meta)] tracking-[0.2em] uppercase"
 									key={c.id}
 								>
 									{c.name}
@@ -114,7 +114,7 @@ function GridRow({
 	const hasSessions = group.sessions.length > 0;
 
 	return (
-		<div className="border-b border-border">
+		<div className="border-border border-b">
 			{hasSessions && (
 				<div className="grid" style={{ gridTemplateColumns }}>
 					<div
@@ -123,7 +123,7 @@ function GridRow({
 							STICKY_COL,
 						)}
 					>
-						<span className="block text-primary">{start}</span>
+						<span className="text-primary block">{start}</span>
 						<span className="block text-[var(--prog-faint)]">{end}</span>
 					</div>
 					{cols.map((c) => {
@@ -131,7 +131,7 @@ function GridRow({
 							(s) => (s.room?.id ?? NO_ROOM) === c.id,
 						);
 						return (
-							<div className="border-l border-border px-3 py-4" key={c.id}>
+							<div className="border-border border-l px-3 py-4" key={c.id}>
 								{sessions.map((s) => (
 									<SessionCell key={s.id} query={query} session={s} tz={tz} />
 								))}
@@ -165,13 +165,13 @@ function BreakBand({
 		>
 			{plainBreaks.length > 0 && (
 				<div className="flex items-center gap-3 sm:gap-5">
-					<span className="font-[var(--prog-font-meta)] text-[10px] uppercase tracking-[0.2em] tabular-nums text-[var(--prog-faint)]">
+					<span className="text-[10px] font-[var(--prog-font-meta)] tracking-[0.2em] text-[var(--prog-faint)] uppercase tabular-nums">
 						{start} – {end}
 					</span>
-					<span className="text-base text-muted-foreground">
+					<span className="text-muted-foreground text-base">
 						{plainBreaks.map((b) => b.title).join(" · ")}
 					</span>
-					<span className="h-px flex-1 bg-border" />
+					<span className="bg-border h-px flex-1" />
 				</div>
 			)}
 			{events.map((ev) => (
@@ -214,7 +214,7 @@ function MobileSwipe({
 					)}
 				>
 					<IconHandFinger className="animate-prog-swipe-hint" size={16} />
-					<span className="font-[var(--prog-font-meta)] text-[10px] uppercase tracking-[0.2em]">
+					<span className="text-[10px] font-[var(--prog-font-meta)] tracking-[0.2em] uppercase">
 						Swipe
 					</span>
 				</div>
@@ -226,12 +226,12 @@ function MobileSwipe({
 			>
 				{cols.map((col, ci) => (
 					<section className="w-full shrink-0 snap-center px-5" key={col.id}>
-						<div className="mb-4 flex items-baseline gap-2 border-b border-primary pb-2">
-							<span className="font-[var(--prog-font-meta)] text-sm uppercase tracking-[0.2em] text-primary">
+						<div className="border-primary mb-4 flex items-baseline gap-2 border-b pb-2">
+							<span className="text-primary text-sm font-[var(--prog-font-meta)] tracking-[0.2em] uppercase">
 								{col.name}
 							</span>
 							{cols.length > 1 && (
-								<span className="ml-auto font-[var(--prog-font-meta)] text-[10px] tabular-nums text-[var(--prog-faint)]">
+								<span className="ml-auto text-[10px] font-[var(--prog-font-meta)] text-[var(--prog-faint)] tabular-nums">
 									{ci + 1} / {cols.length}
 								</span>
 							)}
@@ -273,7 +273,7 @@ function MobileRoomTimeline({
 					<div key={`${group.startAt}-${gi}`}>
 						{sessions.length > 0 && (
 							<>
-								<div className="mb-2 font-[var(--prog-font-meta)] text-[11px] uppercase tracking-[0.15em] tabular-nums text-[var(--prog-faint)]">
+								<div className="mb-2 text-[11px] font-[var(--prog-font-meta)] tracking-[0.15em] text-[var(--prog-faint)] uppercase tabular-nums">
 									{start} – {end}
 								</div>
 								{sessions.map((s) => (

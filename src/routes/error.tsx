@@ -18,13 +18,13 @@ function AuthErrorPage() {
 
 	return (
 		<div className="flex min-h-screen flex-col items-center justify-center gap-4 p-4 text-center">
-			<IconAlertTriangle className="size-24 text-muted-foreground" />
+			<IconAlertTriangle className="text-muted-foreground size-24" />
 			<h1 className="text-3xl font-bold">Something went wrong</h1>
-			<p className="max-w-md text-muted-foreground">
+			<p className="text-muted-foreground max-w-md">
 				{error_description ?? "The request could not be completed."}
 			</p>
 			{error ? (
-				<code className="rounded bg-muted px-2 py-1 text-muted-foreground text-sm">
+				<code className="bg-muted text-muted-foreground rounded px-2 py-1 text-sm">
 					{error}
 				</code>
 			) : null}

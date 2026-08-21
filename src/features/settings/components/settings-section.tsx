@@ -21,8 +21,8 @@ export function SettingsSection({
 			className="group animate-fade-in-up animate-duration-700"
 			style={{ animationDelay: `${delay}ms` }}
 		>
-			<div className="settings-card relative overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm backdrop-blur-[8px] transition-shadow duration-300 hover:shadow-lg focus-within:outline-2 focus-within:outline-ring focus-within:outline-offset-2 before:absolute before:left-0 before:right-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-primary before:to-transparent before:opacity-0 before:transition-opacity before:duration-400 hover:before:opacity-30">
-				<div className="absolute right-0 top-0 h-24 w-24 opacity-5">
+			<div className="settings-card border-border/50 bg-card focus-within:outline-ring before:via-primary relative overflow-hidden rounded-2xl border shadow-sm backdrop-blur-[8px] transition-shadow duration-300 before:absolute before:top-0 before:right-0 before:left-0 before:h-px before:bg-gradient-to-r before:from-transparent before:to-transparent before:opacity-0 before:transition-opacity before:duration-400 focus-within:outline-2 focus-within:outline-offset-2 hover:shadow-lg hover:before:opacity-30">
+				<div className="absolute top-0 right-0 h-24 w-24 opacity-5">
 					<svg
 						aria-hidden="true"
 						className="text-primary"
@@ -36,16 +36,16 @@ export function SettingsSection({
 					</svg>
 				</div>
 
-				<div className="relative border-b border-border/30 bg-muted/20 px-6 py-5 sm:px-8 sm:py-6">
+				<div className="border-border/30 bg-muted/20 relative border-b px-6 py-5 sm:px-8 sm:py-6">
 					<div className="flex items-start gap-4">
-						<div className="settings-icon-wrapper flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-transform duration-300 group-hover:scale-110">
-							<IconComponent className="size-6 text-primary transition-transform duration-300 group-hover:rotate-12" />
+						<div className="settings-icon-wrapper bg-primary/10 flex size-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110">
+							<IconComponent className="text-primary size-6 transition-transform duration-300 group-hover:rotate-12" />
 						</div>
 						<div className="flex-1">
-							<h2 className="mb-1 text-xl font-bold tracking-tight text-foreground">
+							<h2 className="text-foreground mb-1 text-xl font-bold tracking-tight">
 								{title}
 							</h2>
-							<p className="text-sm text-muted-foreground">{description}</p>
+							<p className="text-muted-foreground text-sm">{description}</p>
 						</div>
 					</div>
 				</div>

@@ -41,7 +41,7 @@ export function ImportantDatesSection({
 						type="date"
 						value={data.conferenceStartDate}
 					/>
-					<p className="text-xs text-muted-foreground">
+					<p className="text-muted-foreground text-xs">
 						First day of the conference
 					</p>
 				</div>
@@ -53,7 +53,7 @@ export function ImportantDatesSection({
 						type="date"
 						value={data.conferenceEndDate}
 					/>
-					<p className="text-xs text-muted-foreground">
+					<p className="text-muted-foreground text-xs">
 						Last day of the conference
 					</p>
 				</div>
@@ -65,7 +65,7 @@ export function ImportantDatesSection({
 						type="date"
 						value={data.submissionDeadline}
 					/>
-					<p className="text-xs text-muted-foreground">
+					<p className="text-muted-foreground text-xs">
 						After this date the system automatically stops accepting new
 						submissions. Leave empty for no limit.
 					</p>
@@ -78,15 +78,15 @@ export function ImportantDatesSection({
 						type="date"
 						value={data.registrationDeadline}
 					/>
-					<p className="text-xs text-muted-foreground">
+					<p className="text-muted-foreground text-xs">
 						After this date public registration is blocked. Invitation-based
 						registration still works. Leave empty for no limit.
 					</p>
 				</div>
-				<div className="flex items-center justify-between sm:col-span-2 rounded-lg border border-border/50 p-3">
+				<div className="border-border/50 flex items-center justify-between rounded-lg border p-3 sm:col-span-2">
 					<div>
 						<Label htmlFor="submissionsLocked">Close submissions</Label>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							Immediately block all new submissions, regardless of the deadline
 						</p>
 					</div>
@@ -98,10 +98,10 @@ export function ImportantDatesSection({
 						}
 					/>
 				</div>
-				<div className="flex items-center justify-between sm:col-span-2 rounded-lg border border-border/50 p-3">
+				<div className="border-border/50 flex items-center justify-between rounded-lg border p-3 sm:col-span-2">
 					<div>
 						<Label htmlFor="registrationLocked">Close registration</Label>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							Immediately block public registration, regardless of the deadline.
 							Invited users can still register.
 						</p>
@@ -122,7 +122,7 @@ export function ImportantDatesSection({
 						type="date"
 						value={data.reviewDeadline}
 					/>
-					<p className="text-xs text-muted-foreground">
+					<p className="text-muted-foreground text-xs">
 						Deadline for reviewers to submit their reviews
 					</p>
 				</div>
@@ -134,7 +134,7 @@ export function ImportantDatesSection({
 						type="date"
 						value={data.notificationDate}
 					/>
-					<p className="text-xs text-muted-foreground">
+					<p className="text-muted-foreground text-xs">
 						Date when authors are notified of the decision
 					</p>
 				</div>

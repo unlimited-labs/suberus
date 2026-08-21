@@ -38,7 +38,7 @@ export function AuthBackgroundSection({
 			<div className="space-y-4">
 				{hasImage && (
 					<div
-						className="overflow-hidden rounded-lg border border-border/50"
+						className="border-border/50 overflow-hidden rounded-lg border"
 						data-testid="auth-background-preview"
 					>
 						<img
@@ -68,13 +68,13 @@ export function AuthBackgroundSection({
 							step={5}
 							value={[data.authBgOverlay]}
 						/>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							Controls how dark the overlay is on the auth background image
 						</p>
 					</div>
 				)}
 
-				<p className="text-xs text-muted-foreground">
+				<p className="text-muted-foreground text-xs">
 					Accepted formats: JPG, PNG, WebP. Max size: {MAX_BG_SIZE_MB}MB.
 				</p>
 			</div>

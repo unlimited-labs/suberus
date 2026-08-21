@@ -37,7 +37,7 @@ export function ExhibitorPresentationCard({
 										<span>
 											{author.firstName} {author.lastName}
 										</span>
-										<span className="text-xs text-muted-foreground">
+										<span className="text-muted-foreground text-xs">
 											{author.email}
 										</span>
 										{author.isPresenter && (
@@ -50,7 +50,7 @@ export function ExhibitorPresentationCard({
 						{submission.content && (
 							<div className="space-y-1">
 								<p className="text-muted-foreground">Abstract</p>
-								<div className="max-h-96 overflow-auto whitespace-pre-wrap rounded-lg border bg-muted/30 p-4 leading-relaxed">
+								<div className="bg-muted/30 max-h-96 overflow-auto rounded-lg border p-4 leading-relaxed whitespace-pre-wrap">
 									{submission.content}
 								</div>
 							</div>

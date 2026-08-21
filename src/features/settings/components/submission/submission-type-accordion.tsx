@@ -41,7 +41,7 @@ export function SubmissionTypeAccordion({
 
 	return (
 		<AccordionItem
-			className="rounded-lg border border-border/50 bg-card px-4"
+			className="border-border/50 bg-card rounded-lg border px-4"
 			value={typeKey}
 		>
 			<AccordionTrigger className="py-4 hover:no-underline">

@@ -55,7 +55,7 @@ function SigningBanner() {
 				<IconShieldCheck className="size-5" />
 				Generated documents are digitally signed
 			</div>
-			<p className="mt-1 text-muted-foreground">
+			<p className="text-muted-foreground mt-1">
 				Any PDF reader (Adobe, Foxit…) verifies the signature automatically. A
 				self-signed certificate shows as “valid — identity not trusted” until
 				the recipient imports the public certificate; or anyone can confirm
@@ -73,7 +73,7 @@ function SigningBanner() {
 					{verifyUrl}
 				</a>
 				<a
-					className="inline-flex items-center gap-1.5 text-muted-foreground hover:underline"
+					className="text-muted-foreground inline-flex items-center gap-1.5 hover:underline"
 					href="/api/documents/signing-cert"
 				>
 					<IconDownload className="size-4" />

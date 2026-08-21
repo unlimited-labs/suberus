@@ -13,7 +13,8 @@ export const portFor = (i: number) => E2E_BASE_PORT + i;
 // intermittently resolves to IPv6 ::1, which the IPv4-only app server refuses
 // (ECONNREFUSED ::1) — flaking page.goto navigations and page.request API calls.
 export const baseUrlFor = (i: number) => `http://127.0.0.1:${portFor(i)}`;
-export const PG_BASE = "postgresql://suberus:suberus_dev_password@localhost:5432";
+export const PG_BASE =
+	"postgresql://suberus:suberus_dev_password@localhost:5432";
 export const dbNameFor = (i: number) => `suberus_e2e_${i}`;
 export const dbUrlFor = (i: number) => `${PG_BASE}/${dbNameFor(i)}`;
 export const fromAddrFor = (i: number) => `noreply-w${i}@suberus.local`;
@@ -62,9 +63,9 @@ export default defineConfig<TestOptions>({
 	retries: 2,
 	workers: E2E_WORKERS,
 	reporter: [
-	  ['line'],
-	  ['json', { outputFile: 'test-results/results.json' }], 
-	  ['html', { open: 'never' }]
+		["line"],
+		["json", { outputFile: "test-results/results.json" }],
+		["html", { open: "never" }],
 	],
 	globalSetup: "./e2e/setup/global-setup.ts",
 	globalTeardown: "./e2e/setup/global-teardown.ts",
@@ -86,56 +87,193 @@ export default defineConfig<TestOptions>({
 		{ name: "auth-setup", testMatch: /auth\.setup\.ts/ },
 
 		// Unauthenticated auth tests (login, register, forgot-password)
-		{ name: "chromium", testMatch: /e2e\/auth\/(?!registration-locks).*\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
-		{ name: "mobile", testMatch: /e2e\/auth\/(?!registration-locks).*\.spec\.ts/, use: { ...devices["Pixel 5"] } },
+		{
+			name: "chromium",
+			testMatch: /e2e\/auth\/(?!registration-locks).*\.spec\.ts/,
+			use: { ...devices["Desktop Chrome"] },
+		},
+		{
+			name: "mobile",
+			testMatch: /e2e\/auth\/(?!registration-locks).*\.spec\.ts/,
+			use: { ...devices["Pixel 5"] },
+		},
 
 		// Admin settings - mutate shared settings (in-file save/restore)
-		roleProject("admin-conference-settings", /e2e\/admin\/conference-settings\.spec\.ts/, { role: "admin" }),
-		roleProject("admin-date-format-settings", /e2e\/admin\/date-format-settings\.spec\.ts/, { role: "admin" }),
-		roleProject("admin-fee-settings", /e2e\/admin\/fee-settings\.spec\.ts/, { role: "admin" }),
-		roleProject("admin-fee-enabled", /e2e\/admin\/fee-enabled\.spec\.ts/, { role: "admin" }),
-		roleProject("admin-finances-enabled", /e2e\/admin\/finances-enabled\.spec\.ts/, { role: "admin" }),
+		roleProject(
+			"admin-conference-settings",
+			/e2e\/admin\/conference-settings\.spec\.ts/,
+			{ role: "admin" },
+		),
+		roleProject(
+			"admin-date-format-settings",
+			/e2e\/admin\/date-format-settings\.spec\.ts/,
+			{ role: "admin" },
+		),
+		roleProject("admin-fee-settings", /e2e\/admin\/fee-settings\.spec\.ts/, {
+			role: "admin",
+		}),
+		roleProject("admin-fee-enabled", /e2e\/admin\/fee-enabled\.spec\.ts/, {
+			role: "admin",
+		}),
+		roleProject(
+			"admin-finances-enabled",
+			/e2e\/admin\/finances-enabled\.spec\.ts/,
+			{ role: "admin" },
+		),
 
 		// Admin (excludes settings + planner + task-mails, which have own projects)
-		roleProject("chromium-admin", /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|fee-enabled|finances-enabled|task-mails-reminder|planner\/).*\.spec\.ts/, { role: "admin" }),
-		roleProject("mobile-admin", /e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|fee-enabled|finances-enabled|task-mails-reminder|planner\/).*\.spec\.ts/, { role: "admin", device: "mobile" }),
+		roleProject(
+			"chromium-admin",
+			/e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|fee-enabled|finances-enabled|task-mails-reminder|planner\/).*\.spec\.ts/,
+			{ role: "admin" },
+		),
+		roleProject(
+			"mobile-admin",
+			/e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|fee-enabled|finances-enabled|task-mails-reminder|planner\/).*\.spec\.ts/,
+			{ role: "admin", device: "mobile" },
+		),
 
-		roleProject("chromium-planner", /e2e\/admin\/planner\/.*\.spec\.ts/, { role: "admin", testIgnore: /mobile-planner\.spec\.ts/ }),
+		roleProject("chromium-planner", /e2e\/admin\/planner\/.*\.spec\.ts/, {
+			role: "admin",
+			testIgnore: /mobile-planner\.spec\.ts/,
+		}),
 
 		// Docs screenshot capture - no-op unless DOCS_SHOTS=1 (see e2e/screenshots/)
-		roleProject("screenshots", /e2e\/screenshots\/.*\.spec\.ts/, { role: "admin" }),
+		roleProject("screenshots", /e2e\/screenshots\/.*\.spec\.ts/, {
+			role: "admin",
+		}),
 
 		// Submissions - user auth
-		roleProject("chromium-user", /e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access|no-active-types|deadline-locks).*\.spec\.ts/, { role: "user" }),
-		roleProject("mobile-user", /e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access|no-active-types|deadline-locks).*\.spec\.ts/, { role: "user", device: "mobile" }),
-		roleProject("chromium-extraction", /e2e\/extraction\/.*\.spec\.ts/, { role: "user" }),
-		roleProject("chromium-no-active-types", /no-active-types\.spec\.ts/, { role: "user" }),
-		roleProject("chromium-unverified", /e2e\/email-verification\/.*\.spec\.ts/, { role: "unverified" }),
-		roleProject("chromium-routing", /e2e\/routing\/.*\.spec\.ts/, { role: "user" }),
-		roleProject("chromium-profile", /e2e\/profile\/.*\.spec\.ts/, { role: "user" }),
-		roleProject("mobile-profile", /e2e\/profile\/.*\.spec\.ts/, { role: "user", device: "mobile" }),
-		roleProject("chromium-settings", /e2e\/settings\/.*\.spec\.ts/, { role: "user" }),
-		roleProject("chromium-reviews-admin", /e2e\/reviews\/admin-submissions\.spec\.ts/, { role: "admin" }),
-		roleProject("chromium-reviews-diff", /e2e\/reviews\/version-diff\.spec\.ts/, { role: "admin" }),
-		roleProject("chromium-reviews-author-links", /e2e\/reviews\/author-profile-links\.spec\.ts/, { role: "admin" }),
-		roleProject("chromium-reviewer", /e2e\/reviews\/reviewer\.spec\.ts/, { role: "reviewer" }),
-		roleProject("chromium-reminder-settings", /e2e\/reminders\/reminder-settings\.spec\.ts/, { role: "admin" }),
-		roleProject("task-mails-reminder", /e2e\/admin\/task-mails-reminder\.spec\.ts/, { role: "admin", device: "mobile" }),
+		roleProject(
+			"chromium-user",
+			/e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access|no-active-types|deadline-locks).*\.spec\.ts/,
+			{ role: "user" },
+		),
+		roleProject(
+			"mobile-user",
+			/e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access|no-active-types|deadline-locks).*\.spec\.ts/,
+			{ role: "user", device: "mobile" },
+		),
+		roleProject("chromium-extraction", /e2e\/extraction\/.*\.spec\.ts/, {
+			role: "user",
+		}),
+		roleProject("chromium-no-active-types", /no-active-types\.spec\.ts/, {
+			role: "user",
+		}),
+		roleProject(
+			"chromium-unverified",
+			/e2e\/email-verification\/.*\.spec\.ts/,
+			{ role: "unverified" },
+		),
+		roleProject("chromium-routing", /e2e\/routing\/.*\.spec\.ts/, {
+			role: "user",
+		}),
+		roleProject("chromium-profile", /e2e\/profile\/.*\.spec\.ts/, {
+			role: "user",
+		}),
+		roleProject("mobile-profile", /e2e\/profile\/.*\.spec\.ts/, {
+			role: "user",
+			device: "mobile",
+		}),
+		roleProject("chromium-settings", /e2e\/settings\/.*\.spec\.ts/, {
+			role: "user",
+		}),
+		roleProject(
+			"chromium-reviews-admin",
+			/e2e\/reviews\/admin-submissions\.spec\.ts/,
+			{ role: "admin" },
+		),
+		roleProject(
+			"chromium-reviews-diff",
+			/e2e\/reviews\/version-diff\.spec\.ts/,
+			{ role: "admin" },
+		),
+		roleProject(
+			"chromium-reviews-author-links",
+			/e2e\/reviews\/author-profile-links\.spec\.ts/,
+			{ role: "admin" },
+		),
+		roleProject("chromium-reviewer", /e2e\/reviews\/reviewer\.spec\.ts/, {
+			role: "reviewer",
+		}),
+		roleProject(
+			"chromium-reminder-settings",
+			/e2e\/reminders\/reminder-settings\.spec\.ts/,
+			{ role: "admin" },
+		),
+		roleProject(
+			"task-mails-reminder",
+			/e2e\/admin\/task-mails-reminder\.spec\.ts/,
+			{ role: "admin", device: "mobile" },
+		),
 
 		// Cross-role / global-mutating - auth handled internally, no role/deps
-		{ name: "chromium-registration-locks", testMatch: /registration-locks\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
-		{ name: "chromium-deadline-locks", testMatch: /deadline-locks\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
-		{ name: "chromium-integration", testMatch: /settings-integration\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
-		{ name: "chromium-reviews-workflow", testMatch: /e2e\/reviews\/workflow\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
-		{ name: "chromium-workflows", testMatch: /e2e\/workflows\/.*\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
-		{ name: "chromium-exhibitors", testMatch: /e2e\/exhibitors\/.*\.spec\.ts/, dependencies: ["auth-setup"], use: { ...devices["Desktop Chrome"] } },
-		{ name: "api", testMatch: /e2e\/api\/.*\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
-		{ name: "chromium-navigation", testMatch: /e2e\/navigation\/.*\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
-		{ name: "chromium-fee", testMatch: /e2e\/fee\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
-		{ name: "chromium-coauthor", testMatch: /coauthor-visibility\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
-		{ name: "chromium-file-access", testMatch: /file-access\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
-		{ name: "reminder-emails", testMatch: /e2e\/reminders\/reminder-emails\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
-		{ name: "chromium-bundle", testMatch: /e2e\/bundle\/.*\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
+		{
+			name: "chromium-registration-locks",
+			testMatch: /registration-locks\.spec\.ts/,
+			use: { ...devices["Desktop Chrome"] },
+		},
+		{
+			name: "chromium-deadline-locks",
+			testMatch: /deadline-locks\.spec\.ts/,
+			use: { ...devices["Desktop Chrome"] },
+		},
+		{
+			name: "chromium-integration",
+			testMatch: /settings-integration\.spec\.ts/,
+			use: { ...devices["Desktop Chrome"] },
+		},
+		{
+			name: "chromium-reviews-workflow",
+			testMatch: /e2e\/reviews\/workflow\.spec\.ts/,
+			use: { ...devices["Desktop Chrome"] },
+		},
+		{
+			name: "chromium-workflows",
+			testMatch: /e2e\/workflows\/.*\.spec\.ts/,
+			use: { ...devices["Desktop Chrome"] },
+		},
+		{
+			name: "chromium-exhibitors",
+			testMatch: /e2e\/exhibitors\/.*\.spec\.ts/,
+			dependencies: ["auth-setup"],
+			use: { ...devices["Desktop Chrome"] },
+		},
+		{
+			name: "api",
+			testMatch: /e2e\/api\/.*\.spec\.ts/,
+			use: { ...devices["Desktop Chrome"] },
+		},
+		{
+			name: "chromium-navigation",
+			testMatch: /e2e\/navigation\/.*\.spec\.ts/,
+			use: { ...devices["Desktop Chrome"] },
+		},
+		{
+			name: "chromium-fee",
+			testMatch: /e2e\/fee\.spec\.ts/,
+			use: { ...devices["Desktop Chrome"] },
+		},
+		{
+			name: "chromium-coauthor",
+			testMatch: /coauthor-visibility\.spec\.ts/,
+			use: { ...devices["Desktop Chrome"] },
+		},
+		{
+			name: "chromium-file-access",
+			testMatch: /file-access\.spec\.ts/,
+			use: { ...devices["Desktop Chrome"] },
+		},
+		{
+			name: "reminder-emails",
+			testMatch: /e2e\/reminders\/reminder-emails\.spec\.ts/,
+			use: { ...devices["Desktop Chrome"] },
+		},
+		{
+			name: "chromium-bundle",
+			testMatch: /e2e\/bundle\/.*\.spec\.ts/,
+			use: { ...devices["Desktop Chrome"] },
+		},
 	],
 	// No `webServer`: global-setup owns the server lifecycle (servers must not boot
 	// before their per-worker DB is seeded). See e2e/setup/global-setup.ts.

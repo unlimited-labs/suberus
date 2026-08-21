@@ -14,9 +14,8 @@ vi.mock("@/features/submissions/server/upload-link", () => ({
 }));
 
 const { getSetting } = await import("@/features/settings/server/settings");
-const { DEFAULT_FULL_PAPER_CONFIG } = await import(
-	"@/features/settings/defaults"
-);
+const { DEFAULT_FULL_PAPER_CONFIG } =
+	await import("@/features/settings/defaults");
 const { assertAcceptsFile } = await import("./upload-target");
 
 const draft = {

@@ -102,12 +102,12 @@ export function FinancesSettingsTab({
 				>
 					<div className="space-y-4">
 						<div className="rounded-md border">
-							<div className="grid grid-cols-[1fr_auto] gap-2 border-b bg-muted/50 px-4 py-2 text-xs font-medium text-muted-foreground">
+							<div className="bg-muted/50 text-muted-foreground grid grid-cols-[1fr_auto] gap-2 border-b px-4 py-2 text-xs font-medium">
 								<span>Rate</span>
 								<span className="w-8" />
 							</div>
 							{vatRates.length === 0 ? (
-								<p className="px-4 py-3 text-sm text-muted-foreground">
+								<p className="text-muted-foreground px-4 py-3 text-sm">
 									No VAT rates yet.
 								</p>
 							) : (

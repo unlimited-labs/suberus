@@ -74,7 +74,7 @@ export function ReviewsTab({
 
 			{displayedReviews.length === 0 ? (
 				<Card>
-					<CardContent className="flex flex-col items-center gap-2 py-10 text-center text-muted-foreground">
+					<CardContent className="text-muted-foreground flex flex-col items-center gap-2 py-10 text-center">
 						<IconGavel className="size-8 opacity-40" />
 						<p className="text-sm">No reviews submitted yet</p>
 					</CardContent>

@@ -33,7 +33,7 @@ const statusFilterOptions: FilterOption[] = [
 function DateCell({ date }: { date: Date | string }) {
 	const { formatDate } = useDateFormat();
 	return (
-		<span className="text-sm text-muted-foreground">
+		<span className="text-muted-foreground text-sm">
 			{formatDate(new Date(date))}
 		</span>
 	);
@@ -87,7 +87,7 @@ const columns: AppColumnDef<AdminExhibitorRow>[] = [
 				>
 					<span className="text-foreground">{name || email}</span>
 					{name && (
-						<span className="text-xs text-muted-foreground">{email}</span>
+						<span className="text-muted-foreground text-xs">{email}</span>
 					)}
 				</div>
 			);
@@ -124,7 +124,7 @@ const columns: AppColumnDef<AdminExhibitorRow>[] = [
 			row.original.appliedAt ? (
 				<DateCell date={row.original.appliedAt} />
 			) : (
-				<span className="text-sm text-muted-foreground">Not applied yet</span>
+				<span className="text-muted-foreground text-sm">Not applied yet</span>
 			),
 	},
 	{
@@ -194,7 +194,7 @@ export function ExhibitorsTable({
 				data-testid="exhibitors-table"
 			>
 				<p className="font-medium">No exhibitors yet</p>
-				<p className="mt-1 text-sm text-muted-foreground">
+				<p className="text-muted-foreground mt-1 text-sm">
 					Exhibitor applications will appear here.
 				</p>
 			</div>

@@ -32,32 +32,32 @@ function DecisionContent({ decision }: { decision: UserSubmissionDecision }) {
 	return (
 		<div className="space-y-4">
 			<div>
-				<p className="text-sm font-medium text-muted-foreground mb-2">
+				<p className="text-muted-foreground mb-2 text-sm font-medium">
 					Reasoning:
 				</p>
-				<p className="text-sm text-foreground leading-relaxed">
+				<p className="text-foreground text-sm leading-relaxed">
 					{decision.reasoning}
 				</p>
 			</div>
 
-			<div className="pt-3 border-t">
-				<p className="text-sm font-medium text-muted-foreground mb-2">
+			<div className="border-t pt-3">
+				<p className="text-muted-foreground mb-2 text-sm font-medium">
 					Letter to Author:
 				</p>
-				<div className="text-sm text-foreground whitespace-pre-line bg-background/50 p-4 rounded-lg border leading-relaxed max-h-64 overflow-y-auto">
+				<div className="text-foreground bg-background/50 max-h-64 overflow-y-auto rounded-lg border p-4 text-sm leading-relaxed whitespace-pre-line">
 					{decision.letterToAuthor}
 				</div>
 			</div>
 
 			{decision.revisionsRequired && decision.revisionsRequired.length > 0 && (
-				<div className="pt-2 border-t">
-					<p className="text-sm font-medium text-muted-foreground mb-3">
+				<div className="border-t pt-2">
+					<p className="text-muted-foreground mb-3 text-sm font-medium">
 						Required Revisions:
 					</p>
 					<ul className="space-y-2">
 						{decision.revisionsRequired.map((revision, index) => (
 							<li
-								className="text-sm flex items-start gap-2 bg-muted/50 p-3 rounded-lg"
+								className="bg-muted/50 flex items-start gap-2 rounded-lg p-3 text-sm"
 								key={index}
 							>
 								<span className="text-muted-foreground font-medium">
@@ -71,14 +71,14 @@ function DecisionContent({ decision }: { decision: UserSubmissionDecision }) {
 			)}
 
 			{decision.conditions && decision.conditions.length > 0 && (
-				<div className="pt-2 border-t">
-					<p className="text-sm font-medium text-muted-foreground mb-3">
+				<div className="border-t pt-2">
+					<p className="text-muted-foreground mb-3 text-sm font-medium">
 						Acceptance Conditions:
 					</p>
 					<ul className="space-y-2">
 						{decision.conditions.map((condition, index) => (
 							<li
-								className="text-sm flex items-start gap-2 bg-muted/50 p-3 rounded-lg"
+								className="bg-muted/50 flex items-start gap-2 rounded-lg p-3 text-sm"
 								key={index}
 							>
 								<span className="text-muted-foreground font-medium">
@@ -91,7 +91,7 @@ function DecisionContent({ decision }: { decision: UserSubmissionDecision }) {
 				</div>
 			)}
 
-			<div className="text-xs text-muted-foreground pt-2 border-t">
+			<div className="text-muted-foreground border-t pt-2 text-xs">
 				Decision date: {formatDateTime(decision.createdAt)}
 			</div>
 		</div>

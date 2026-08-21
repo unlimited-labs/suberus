@@ -140,14 +140,14 @@ export function EditorDecisionDialog({
 					{reviews.length > 0 && (
 						<div className="space-y-3">
 							<Label className="text-base">Reviewer Recommendations</Label>
-							<div className="space-y-2 max-h-48 overflow-y-auto">
+							<div className="max-h-48 space-y-2 overflow-y-auto">
 								{reviews.map((review) => (
 									<div
-										className="rounded-lg border p-3 space-y-2"
+										className="space-y-2 rounded-lg border p-3"
 										key={review.reviewerName}
 									>
 										<div className="flex items-center justify-between">
-											<span className="font-medium text-sm">
+											<span className="text-sm font-medium">
 												{review.reviewerName}
 											</span>
 											<Badge
@@ -161,7 +161,7 @@ export function EditorDecisionDialog({
 											</Badge>
 										</div>
 										{review.comments && (
-											<p className="text-sm text-muted-foreground line-clamp-2">
+											<p className="text-muted-foreground line-clamp-2 text-sm">
 												{review.comments}
 											</p>
 										)}
@@ -173,7 +173,7 @@ export function EditorDecisionDialog({
 
 					<div className="space-y-3">
 						<Label className="text-base">Your Decision</Label>
-						<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+						<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 							{decisionOptions.map((option) => {
 								const Icon = option.icon;
 								const isSelected = selectedDecision === option.value;
@@ -193,7 +193,7 @@ export function EditorDecisionDialog({
 											<Icon className="size-5" />
 											<span className="font-medium">{option.label}</span>
 										</div>
-										<p className="text-xs text-muted-foreground">
+										<p className="text-muted-foreground text-xs">
 											{option.description}
 										</p>
 									</button>

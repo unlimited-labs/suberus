@@ -50,7 +50,7 @@ export function LogoGraphicsSection({
 					/>
 					{logoPreview && (
 						<div
-							className="mt-2 rounded-lg border border-border/50 bg-muted/30 p-4"
+							className="border-border/50 bg-muted/30 mt-2 rounded-lg border p-4"
 							data-testid="logo-preview"
 						>
 							<img
@@ -80,7 +80,7 @@ export function LogoGraphicsSection({
 					/>
 					{faviconPreview && (
 						<div
-							className="mt-2 rounded-lg border border-border/50 bg-muted/30 p-4"
+							className="border-border/50 bg-muted/30 mt-2 rounded-lg border p-4"
 							data-testid="favicon-preview"
 						>
 							<img
@@ -100,7 +100,7 @@ export function LogoGraphicsSection({
 						upload={favicon}
 					/>
 				</div>
-				<p className="text-xs text-muted-foreground">
+				<p className="text-muted-foreground text-xs">
 					Upload accepted formats: JPG, PNG, WebP. Max size: {MAX_BG_SIZE_MB}MB.
 					An uploaded file takes precedence over the URL.
 				</p>

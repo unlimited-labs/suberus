@@ -179,7 +179,7 @@ export function AssignReviewerDialog({
 						</div>
 
 						{activeAssignments.length === 0 ? (
-							<p className="text-sm text-muted-foreground">
+							<p className="text-muted-foreground text-sm">
 								No reviewers assigned yet
 							</p>
 						) : (
@@ -192,7 +192,7 @@ export function AssignReviewerDialog({
 									>
 										<div className="min-w-0 flex-1">
 											<div className="flex items-center gap-2">
-												<span className="font-medium truncate">
+												<span className="truncate font-medium">
 													{assignment.reviewerName}
 												</span>
 												<Badge
@@ -204,11 +204,11 @@ export function AssignReviewerDialog({
 													{assignment.status}
 												</Badge>
 											</div>
-											<p className="text-sm text-muted-foreground truncate">
+											<p className="text-muted-foreground truncate text-sm">
 												{assignment.reviewerEmail}
 											</p>
 											{assignment.deadline && (
-												<p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+												<p className="text-muted-foreground mt-1 flex items-center gap-1 text-xs">
 													<IconCalendar className="size-3" />
 													Due: {formatDate(new Date(assignment.deadline))}
 												</p>
@@ -247,7 +247,7 @@ export function AssignReviewerDialog({
 						<Label className="text-base">Available Reviewers</Label>
 
 						<div className="relative">
-							<IconSearch className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+							<IconSearch className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
 							<Input
 								className="pl-10"
 								onChange={(e) => setSearch(e.target.value)}
@@ -258,38 +258,38 @@ export function AssignReviewerDialog({
 
 						{isLoading ? (
 							<div className="flex items-center justify-center py-8">
-								<IconLoader2 className="size-6 animate-spin text-muted-foreground" />
+								<IconLoader2 className="text-muted-foreground size-6 animate-spin" />
 							</div>
 						) : filteredReviewers.length === 0 ? (
-							<p className="text-sm text-muted-foreground py-4 text-center">
+							<p className="text-muted-foreground py-4 text-center text-sm">
 								{search
 									? "No reviewers found matching search"
 									: "No available reviewers"}
 							</p>
 						) : (
-							<div className="max-h-64 overflow-y-auto space-y-2">
+							<div className="max-h-64 space-y-2 overflow-y-auto">
 								{filteredReviewers.map((reviewer) => (
 									<div
-										className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50"
+										className="hover:bg-muted/50 flex items-center justify-between rounded-lg border p-3"
 										data-testid="reviewer-option"
 										key={reviewer.id}
 									>
 										<div className="min-w-0 flex-1">
 											<div className="flex items-center gap-2">
-												<IconUser className="size-4 text-muted-foreground shrink-0" />
-												<span className="font-medium truncate">
+												<IconUser className="text-muted-foreground size-4 shrink-0" />
+												<span className="truncate font-medium">
 													{reviewer.firstName} {reviewer.lastName}
 												</span>
 											</div>
-											<p className="text-sm text-muted-foreground truncate pl-6">
+											<p className="text-muted-foreground truncate pl-6 text-sm">
 												{reviewer.email}
 											</p>
 											{reviewer.affiliationName && (
-												<p className="text-xs text-muted-foreground truncate pl-6">
+												<p className="text-muted-foreground truncate pl-6 text-xs">
 													{reviewer.affiliationName}
 												</p>
 											)}
-											<div className="flex gap-2 mt-1 pl-6">
+											<div className="mt-1 flex gap-2 pl-6">
 												<Badge className="text-xs" variant="outline">
 													{reviewer.activeAssignmentsCount} active
 												</Badge>

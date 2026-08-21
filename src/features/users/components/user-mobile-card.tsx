@@ -8,18 +8,18 @@ import { Card, CardContent } from "@/shared/ui/card";
 export function UserMobileCard({ user }: { user: AdminUser }) {
 	return (
 		<Link className="block" params={{ id: user.id }} to="/admin/users/$id">
-			<Card className="transition-colors active:bg-accent">
+			<Card className="active:bg-accent transition-colors">
 				<CardContent className="flex flex-col gap-3 p-4">
 					<div className="flex items-start justify-between gap-3">
 						<div className="min-w-0 flex-1">
-							<p className="truncate font-semibold leading-tight">
+							<p className="truncate leading-tight font-semibold">
 								{user.firstName} {user.lastName}
 							</p>
-							<p className="truncate text-xs text-muted-foreground">
+							<p className="text-muted-foreground truncate text-xs">
 								{user.email}
 							</p>
 							{user.affiliation && (
-								<p className="truncate text-xs text-muted-foreground">
+								<p className="text-muted-foreground truncate text-xs">
 									{user.affiliation}
 								</p>
 							)}

@@ -46,7 +46,7 @@ export function ExtractionModeSettings({
 						<Label htmlFor="extractionEnabled">
 							Enable automatic extraction
 						</Label>
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							Pre-fill submission form fields from uploaded documents
 						</p>
 					</div>
@@ -98,7 +98,7 @@ export function ExtractionModeSettings({
 						/>
 
 						{!heuristic && !ai ? (
-							<p className="text-xs text-destructive">
+							<p className="text-destructive text-xs">
 								At least one extraction engine must be enabled.
 							</p>
 						) : null}
@@ -125,7 +125,7 @@ function StatusBadge({
 	return (
 		<div className="flex items-center gap-1.5">
 			<div className={cn("size-1.5 rounded-full", dot)} />
-			<span className="text-[11px] text-muted-foreground">{label}</span>
+			<span className="text-muted-foreground text-[11px]">{label}</span>
 		</div>
 	);
 }

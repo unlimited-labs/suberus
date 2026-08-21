@@ -163,7 +163,7 @@ export function CreateEventDialog({
 						<div className="flex items-start justify-between gap-4">
 							<div className="space-y-0.5">
 								<Label htmlFor="event-untimed">Untimed presentations</Label>
-								<p className="text-xs text-muted-foreground">
+								<p className="text-muted-foreground text-xs">
 									Poster or lightning block: presentations share the session
 									window instead of getting their own slots.
 								</p>

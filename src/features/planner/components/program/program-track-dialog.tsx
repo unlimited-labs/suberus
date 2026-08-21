@@ -85,14 +85,14 @@ export function ProgramTrackDialog({
 										testId="program-track-name"
 									/>
 									{series.series ? (
-										<div className="flex items-center gap-2 text-xs text-muted-foreground">
+										<div className="text-muted-foreground flex items-center gap-2 text-xs">
 											<span>Detected series:</span>
 											<Badge className="font-mono" variant="outline">
 												{series.series} · #{series.seriesOrder}
 											</Badge>
 										</div>
 									) : (
-										<p className="text-xs text-muted-foreground">
+										<p className="text-muted-foreground text-xs">
 											Suffix with a number to link sessions into a series (e.g.
 											"ML 2").
 										</p>

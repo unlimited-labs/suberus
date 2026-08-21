@@ -35,7 +35,7 @@ function KeywordPill({
 		>
 			{children}
 			{s.label && (
-				<span className="ml-1 text-[10px] uppercase tracking-wide opacity-70">
+				<span className="ml-1 text-[10px] tracking-wide uppercase opacity-70">
 					{s.label}
 				</span>
 			)}
@@ -73,7 +73,7 @@ export function KeywordsDiff({
 	newLabel: string;
 }) {
 	if (base.length === 0 && compare.length === 0) {
-		return <p className="text-sm text-muted-foreground">{emptyLabel}</p>;
+		return <p className="text-muted-foreground text-sm">{emptyLabel}</p>;
 	}
 
 	if (layout === "split") {

@@ -15,7 +15,7 @@ export function CalendarViewSwitcher({ current, onChange }: Props) {
 	return (
 		<div
 			aria-label="Calendar view"
-			className="flex items-center gap-0.5 rounded-md bg-muted p-1"
+			className="bg-muted flex items-center gap-0.5 rounded-md p-1"
 			role="tablist"
 		>
 			{VIEWS.map((v) => {

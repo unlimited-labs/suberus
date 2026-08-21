@@ -79,7 +79,7 @@ export function RecipientSummary({
 							</Avatar>
 							<div className="min-w-0 flex-1 leading-tight">
 								<p className="truncate text-sm">{displayName(r)}</p>
-								<p className="truncate text-xs text-muted-foreground">
+								<p className="text-muted-foreground truncate text-xs">
 									{r.email}
 								</p>
 							</div>
@@ -92,7 +92,7 @@ export function RecipientSummary({
 					);
 				})}
 				{hiddenCount > 0 ? (
-					<li className="px-1 pt-1.5 text-xs text-muted-foreground">
+					<li className="text-muted-foreground px-1 pt-1.5 text-xs">
 						+ {hiddenCount} more not shown
 					</li>
 				) : null}

@@ -107,7 +107,7 @@ function FileRow({
 	testId: string;
 }) {
 	return (
-		<div className="flex items-center gap-2 text-muted-foreground">
+		<div className="text-muted-foreground flex items-center gap-2">
 			<IconFile className="size-4 shrink-0" />
 			<span className="truncate">
 				{label}: {name}
@@ -156,7 +156,7 @@ function FileRows({
 				testId="compare-download-compare"
 			/>
 			{isFileChanged && (
-				<p className="text-xs text-muted-foreground/80">
+				<p className="text-muted-foreground/80 text-xs">
 					See the inline redline of the file contents below.
 				</p>
 			)}
@@ -186,7 +186,7 @@ function FieldDiff({
 }) {
 	const hasText = segments.some((s) => s.value.length > 0);
 	if (!hasText) {
-		return <p className="text-sm text-muted-foreground">{emptyLabel}</p>;
+		return <p className="text-muted-foreground text-sm">{emptyLabel}</p>;
 	}
 	if (layout === "split") {
 		return (
@@ -282,13 +282,13 @@ function VersionCompareBody({
 				</CardHeader>
 				<CardContent className="space-y-2">
 					{samePair && (
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							Select two different versions to see a diff.
 						</p>
 					)}
 					{identical && (
 						<div
-							className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground"
+							className="border-border bg-muted/40 text-muted-foreground rounded-md border px-3 py-2 text-sm"
 							data-testid="diff-identical"
 						>
 							These two versions are identical — nothing changed between{" "}
@@ -348,7 +348,7 @@ function VersionCompareBody({
 
 			{compareV.comment && (
 				<SectionCard title={`Author's note for v${compare}`}>
-					<p className="whitespace-pre-wrap break-words text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm break-words whitespace-pre-wrap">
 						{compareV.comment}
 					</p>
 				</SectionCard>
@@ -422,7 +422,7 @@ export function VersionCompare(props: VersionCompareProps) {
 	if (sorted.length < 2 || !baseV || !compareV) {
 		return (
 			<Card>
-				<CardContent className="py-8 text-center text-sm text-muted-foreground">
+				<CardContent className="text-muted-foreground py-8 text-center text-sm">
 					This submission has only one version — nothing to compare yet.
 				</CardContent>
 			</Card>

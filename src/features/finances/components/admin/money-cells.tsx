@@ -92,7 +92,7 @@ export function MoneyCells({
 				/>
 				{vat ? (
 					<span
-						className="self-end text-[10px] text-muted-foreground"
+						className="text-muted-foreground self-end text-[10px]"
 						data-testid={`${testIdPrefix}-vatamt-${index}`}
 					>
 						incl. {fmt(vatAmount)} VAT

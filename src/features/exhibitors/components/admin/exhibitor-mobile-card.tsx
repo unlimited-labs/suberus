@@ -23,9 +23,9 @@ export function ExhibitorMobileCard({
 					<div className="flex items-start justify-between gap-2">
 						<div>
 							<p className="font-medium">{exhibitor.companyName || "—"}</p>
-							<p className="text-sm text-muted-foreground">{name || email}</p>
-							{name && <p className="text-xs text-muted-foreground">{email}</p>}
-							<p className="mt-1 text-xs text-muted-foreground">
+							<p className="text-muted-foreground text-sm">{name || email}</p>
+							{name && <p className="text-muted-foreground text-xs">{email}</p>}
+							<p className="text-muted-foreground mt-1 text-xs">
 								{exhibitor.appliedAt
 									? `Applied ${formatDate(new Date(exhibitor.appliedAt))}`
 									: "Not applied yet"}
@@ -36,11 +36,11 @@ export function ExhibitorMobileCard({
 							{fee?.paid ? (
 								<p className="text-xs text-green-600">Fee paid</p>
 							) : (
-								<p className="text-xs text-muted-foreground">Fee unpaid</p>
+								<p className="text-muted-foreground text-xs">Fee unpaid</p>
 							)}
 						</div>
 					</div>
-					<p className="mt-3 text-sm text-muted-foreground">
+					<p className="text-muted-foreground mt-3 text-sm">
 						{exhibitor.submission
 							? exhibitor.submission.title
 							: "No presentation"}

@@ -42,7 +42,7 @@ export function DetailsCard({
 	return (
 		<SectionCard contentClassName="space-y-3 text-sm" title="Details">
 			<div className="flex items-center justify-between gap-2">
-				<span className="flex items-center gap-1.5 text-muted-foreground">
+				<span className="text-muted-foreground flex items-center gap-1.5">
 					<IconCircleDot className="size-4" />
 					Status
 				</span>
@@ -55,26 +55,26 @@ export function DetailsCard({
 				</Badge>
 			</div>
 			<div className="flex items-center justify-between gap-2">
-				<span className="flex items-center gap-1.5 text-muted-foreground">
+				<span className="text-muted-foreground flex items-center gap-1.5">
 					<IconRepeat className="size-4" />
 					Round
 				</span>
 				<span className="font-medium">{submission.currentRound}</span>
 			</div>
 			<div className="flex items-center justify-between gap-2">
-				<span className="flex items-center gap-1.5 text-muted-foreground">
+				<span className="text-muted-foreground flex items-center gap-1.5">
 					<IconCalendar className="size-4" />
 					Submitted
 				</span>
 				<span className="font-medium">{formatDate(submission.createdAt)}</span>
 			</div>
 			<div className="flex items-center justify-between gap-2">
-				<span className="flex items-center gap-1.5 text-muted-foreground">
+				<span className="text-muted-foreground flex items-center gap-1.5">
 					<IconUserCircle className="size-4" />
 					Submitter
 				</span>
 				<Link
-					className="flex items-center gap-1 font-medium hover:text-primary hover:underline"
+					className="hover:text-primary flex items-center gap-1 font-medium hover:underline"
 					data-testid="submission-submitter-link"
 					params={{ id: submitter.id }}
 					to="/admin/users/$id"
@@ -86,7 +86,7 @@ export function DetailsCard({
 
 			{submission.type === "ABSTRACT" && (
 				<div className="border-t pt-3">
-					<p className="mb-1.5 flex items-center gap-1.5 text-muted-foreground">
+					<p className="text-muted-foreground mb-1.5 flex items-center gap-1.5">
 						<IconRoute className="size-4" />
 						Track
 					</p>

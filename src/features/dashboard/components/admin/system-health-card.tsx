@@ -18,8 +18,8 @@ interface SystemHealthCardProps {
 function ServiceRow({ service }: { service: ServiceRowData }) {
 	const styles = STATUS_STYLES[service.status];
 	return (
-		<div className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
-			<service.icon className="size-5 shrink-0 text-muted-foreground" />
+		<div className="border-border bg-card flex items-center gap-3 rounded-lg border p-3">
+			<service.icon className="text-muted-foreground size-5 shrink-0" />
 			<div className="min-w-0 flex-1">
 				<div className="flex items-center gap-2">
 					<span className={cn("size-2 shrink-0 rounded-full", styles.dot)} />
@@ -28,7 +28,7 @@ function ServiceRow({ service }: { service: ServiceRowData }) {
 						{service.status}
 					</span>
 				</div>
-				<p className="mt-1 truncate text-xs text-muted-foreground">
+				<p className="text-muted-foreground mt-1 truncate text-xs">
 					{service.detail}
 				</p>
 			</div>

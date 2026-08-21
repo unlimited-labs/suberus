@@ -44,10 +44,10 @@ export function CampaignProgressCard({
 		>
 			<div className="space-y-2" data-testid="campaign-progress">
 				<Progress value={progressValue(job)} />
-				<p className="text-sm text-muted-foreground">
+				<p className="text-muted-foreground text-sm">
 					{processed} / {total} processed
 					{job.error ? (
-						<span className="ml-2 text-destructive">{job.error}</span>
+						<span className="text-destructive ml-2">{job.error}</span>
 					) : null}
 				</p>
 			</div>

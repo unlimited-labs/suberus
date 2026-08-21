@@ -51,7 +51,7 @@ export function VersionCompareSelector({
 	return (
 		<div className="flex items-end gap-2">
 			<div className="flex-1 space-y-1">
-				<span className="text-xs text-muted-foreground">Base (older)</span>
+				<span className="text-muted-foreground text-xs">Base (older)</span>
 				<Select
 					items={versionItems}
 					onValueChange={(value) => onBaseChange(Number(value))}
@@ -67,9 +67,9 @@ export function VersionCompareSelector({
 					<VersionOptions currentVersion={currentVersion} versions={versions} />
 				</Select>
 			</div>
-			<IconArrowRight className="mb-2 size-4 shrink-0 text-muted-foreground" />
+			<IconArrowRight className="text-muted-foreground mb-2 size-4 shrink-0" />
 			<div className="flex-1 space-y-1">
-				<span className="text-xs text-muted-foreground">Compare (newer)</span>
+				<span className="text-muted-foreground text-xs">Compare (newer)</span>
 				<Select
 					items={versionItems}
 					onValueChange={(value) => onCompareChange(Number(value))}

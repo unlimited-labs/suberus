@@ -11,8 +11,8 @@ export function ExhibitorCompanySection({
 	return (
 		<div className="space-y-4">
 			<div className="flex items-center gap-3">
-				<IconBuildingStore className="size-5 text-muted-foreground" />
-				<h2 className="text-lg font-semibold text-foreground">
+				<IconBuildingStore className="text-muted-foreground size-5" />
+				<h2 className="text-foreground text-lg font-semibold">
 					Company details
 				</h2>
 			</div>

@@ -36,7 +36,7 @@ export function UnscheduledGroup({
 	return (
 		<div className="border-b last:border-b-0">
 			<button
-				className="flex w-full items-center gap-1.5 bg-muted/20 px-2.5 py-1.5 text-left hover:bg-muted/40"
+				className="bg-muted/20 hover:bg-muted/40 flex w-full items-center gap-1.5 px-2.5 py-1.5 text-left"
 				data-testid={`unscheduled-group-${group.key}`}
 				onClick={onToggle}
 				type="button"
@@ -47,10 +47,10 @@ export function UnscheduledGroup({
 					}`}
 					size={11}
 				/>
-				<span className="text-[11px] font-semibold uppercase tracking-wide text-foreground">
+				<span className="text-foreground text-[11px] font-semibold tracking-wide uppercase">
 					{group.label}
 				</span>
-				<span className="ml-auto text-[10px] text-muted-foreground">
+				<span className="text-muted-foreground ml-auto text-[10px]">
 					{group.submissions.length}
 				</span>
 			</button>

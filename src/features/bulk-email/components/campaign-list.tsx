@@ -38,7 +38,7 @@ export function CampaignList() {
 							<CardContent className="divide-y p-0" data-testid="campaign-list">
 								{campaigns.map((c) => (
 									<Link
-										className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-muted/40"
+										className="hover:bg-muted/40 flex items-center justify-between gap-4 px-4 py-3"
 										key={c.id}
 										params={{ id: c.id }}
 										to="/admin/bulk-email/$id"
@@ -47,7 +47,7 @@ export function CampaignList() {
 											<p className="truncate font-medium">
 												{c.subject || "(no subject)"}
 											</p>
-											<p className="text-xs text-muted-foreground">
+											<p className="text-muted-foreground text-xs">
 												{formatDateTime(c.createdAt)} · {c.format}
 											</p>
 										</div>

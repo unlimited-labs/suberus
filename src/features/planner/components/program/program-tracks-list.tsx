@@ -34,7 +34,7 @@ export function ProgramTracksList({
 	if (tracks.length === 0) {
 		return (
 			<div className="flex min-h-[160px] items-center justify-center rounded-md border border-dashed">
-				<p className="text-sm text-muted-foreground">
+				<p className="text-muted-foreground text-sm">
 					No program tracks yet. Create one to color-code the planner.
 				</p>
 			</div>
@@ -83,7 +83,7 @@ export function ProgramTracksList({
 											{track.series} · #{track.seriesOrder}
 										</Badge>
 									) : (
-										<span className="text-xs text-muted-foreground">—</span>
+										<span className="text-muted-foreground text-xs">—</span>
 									)}
 								</TableCell>
 								<TableCell className="text-center">

@@ -73,13 +73,13 @@ function SidebarContent({
 				<Link className="block" to="/">
 					<BrandLogo
 						alt="Suberus"
-						className="h-22 w-auto mx-auto"
+						className="mx-auto h-22 w-auto"
 						logoDarkInvert={logoDarkInvert}
 						logoUrl={logoUrl}
 					/>
 				</Link>
-				<div className="mt-3 border-l-4 border-primary pl-3">
-					<p className="text-sm font-semibold uppercase tracking-widest text-sidebar-foreground">
+				<div className="border-primary mt-3 border-l-4 pl-3">
+					<p className="text-sidebar-foreground text-sm font-semibold tracking-widest uppercase">
 						{conferenceName}
 					</p>
 				</div>
@@ -89,7 +89,7 @@ function SidebarContent({
 				{sections.map((section, sectionIndex) => (
 					<div className={cn(sectionIndex > 0 && "mt-4")} key={sectionIndex}>
 						{section.title && (
-							<p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/60">
+							<p className="text-sidebar-foreground/60 mb-2 px-3 text-xs font-semibold tracking-wider uppercase">
 								{section.title}
 							</p>
 						)}
@@ -116,7 +116,7 @@ function SidebarContent({
 
 export function Sidebar(props: SidebarProps) {
 	return (
-		<aside className="hidden w-56 shrink-0 bg-sidebar md:flex md:flex-col">
+		<aside className="bg-sidebar hidden w-56 shrink-0 md:flex md:flex-col">
 			<SidebarContent {...props} />
 		</aside>
 	);

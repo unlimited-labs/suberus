@@ -64,7 +64,7 @@ export function RevisionDiffPanel({
 			title="Changes since previous version"
 		>
 			<div className="space-y-1">
-				<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+				<p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
 					Title
 				</p>
 				<TextDiffView emptyLabel="Title unchanged." segments={titleDiff} />
@@ -74,10 +74,10 @@ export function RevisionDiffPanel({
 				<FileChangeNotice changed={fileChanged(previous.file?.id, file?.id)} />
 			) : (
 				<div className="space-y-1">
-					<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+					<p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
 						Content
 					</p>
-					<div className="max-h-96 overflow-auto rounded-lg border border-border bg-muted/30 p-4">
+					<div className="border-border bg-muted/30 max-h-96 overflow-auto rounded-lg border p-4">
 						<TextDiffView
 							emptyLabel="Content unchanged."
 							segments={diffText(previous.content, content)}
@@ -87,7 +87,7 @@ export function RevisionDiffPanel({
 			)}
 
 			<div className="space-y-1">
-				<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+				<p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
 					Keywords
 				</p>
 				<KeywordsDiff
@@ -106,11 +106,11 @@ export function RevisionDiffPanel({
 function FileChangeNotice({ changed }: { changed: boolean }) {
 	return (
 		<div className="space-y-1">
-			<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+			<p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
 				File
 			</p>
 			<div
-				className="flex items-start gap-2 rounded-lg border border-border bg-muted/30 p-3 text-sm text-muted-foreground"
+				className="border-border bg-muted/30 text-muted-foreground flex items-start gap-2 rounded-lg border p-3 text-sm"
 				data-changed={changed}
 				data-testid="reviewer-file-change-notice"
 			>

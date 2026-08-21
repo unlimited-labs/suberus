@@ -58,7 +58,7 @@ function SubmissionDetailPage() {
 				<PageHeader icon={IconFileText} title="Submission Not Found" />
 				<div className="flex flex-1 items-center justify-center p-6">
 					<div className="text-center">
-						<p className="mb-4 text-muted-foreground">Submission not found</p>
+						<p className="text-muted-foreground mb-4">Submission not found</p>
 						<Link to="/admin/submissions">
 							<Button className="gap-2" variant="outline">
 								<IconArrowLeft className="size-4" />
@@ -100,7 +100,7 @@ function SubmissionDetailPage() {
 				<div className="mx-auto max-w-6xl space-y-6">
 					<div className="space-y-2">
 						<Badge variant="outline">{typeLabels[submission.type]}</Badge>
-						<h1 className="text-xl font-semibold leading-snug text-foreground">
+						<h1 className="text-foreground text-xl leading-snug font-semibold">
 							{submission.title}
 						</h1>
 					</div>

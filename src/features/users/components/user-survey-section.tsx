@@ -45,7 +45,7 @@ export function UserSurveySection({
 			title="Survey Responses"
 		>
 			{answered.length === 0 ? (
-				<p className="text-sm text-muted-foreground">No responses yet</p>
+				<p className="text-muted-foreground text-sm">No responses yet</p>
 			) : (
 				<div
 					className="grid gap-3 sm:grid-cols-2"
@@ -53,7 +53,7 @@ export function UserSurveySection({
 				>
 					{answered.map(({ question, answer }) => (
 						<div className="flex flex-col gap-0.5" key={question.id}>
-							<span className="text-xs text-muted-foreground">
+							<span className="text-muted-foreground text-xs">
 								{question.label}
 							</span>
 							<span className="text-sm">

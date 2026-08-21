@@ -89,21 +89,21 @@ function MetricCard({
 }: MetricCardProps) {
 	return (
 		<div
-			className="relative overflow-hidden rounded-lg border border-border bg-card p-4"
+			className="border-border bg-card relative overflow-hidden rounded-lg border p-4"
 			data-testid="metric-card"
 		>
 			{trend && trend.length > 0 && (
 				<MetricSparkline color={trendColor} data={trend} />
 			)}
 			<div className="relative">
-				<div className="flex items-center gap-2 mb-2">
-					<Icon className="size-4 text-muted-foreground" />
-					<p className="text-sm text-muted-foreground">{title}</p>
+				<div className="mb-2 flex items-center gap-2">
+					<Icon className="text-muted-foreground size-4" />
+					<p className="text-muted-foreground text-sm">{title}</p>
 				</div>
 				<p className="text-2xl font-semibold" data-testid="metric-value">
 					{value}
 				</p>
-				<p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
+				<p className="text-muted-foreground mt-1 text-xs">{subtitle}</p>
 			</div>
 		</div>
 	);
@@ -111,12 +111,12 @@ function MetricCard({
 
 function MetricCardSkeleton() {
 	return (
-		<div className="rounded-lg border border-border bg-card p-4">
-			<div className="flex items-center gap-2 mb-2">
+		<div className="border-border bg-card rounded-lg border p-4">
+			<div className="mb-2 flex items-center gap-2">
 				<Skeleton className="size-4" />
 				<Skeleton className="h-4 w-24" />
 			</div>
-			<Skeleton className="h-8 w-16 mb-1" />
+			<Skeleton className="mb-1 h-8 w-16" />
 			<Skeleton className="h-3 w-32" />
 		</div>
 	);

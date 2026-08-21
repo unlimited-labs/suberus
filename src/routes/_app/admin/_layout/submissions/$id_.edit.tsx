@@ -73,7 +73,7 @@ function AdminEditSubmissionPage() {
 				<PageHeader icon={IconFileText} title="Cannot Edit" />
 				<div className="flex flex-1 items-center justify-center p-6">
 					<div className="text-center">
-						<p className="mb-4 text-muted-foreground">
+						<p className="text-muted-foreground mb-4">
 							{!submission
 								? "Submission not found"
 								: !isOnlyAdmin

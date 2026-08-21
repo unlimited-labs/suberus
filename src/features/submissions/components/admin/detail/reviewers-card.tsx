@@ -27,7 +27,7 @@ export function ReviewersCard({
 	return (
 		<SectionCard
 			action={
-				<span className="text-sm font-normal text-muted-foreground">
+				<span className="text-muted-foreground text-sm font-normal">
 					Required: {requiredReviewers}
 				</span>
 			}
@@ -35,14 +35,14 @@ export function ReviewersCard({
 			title={`Reviewers (${completedCount}/${currentRoundAssignments.length})`}
 		>
 			{currentRoundAssignments.length === 0 ? (
-				<p className="text-sm text-muted-foreground">
+				<p className="text-muted-foreground text-sm">
 					No reviewers assigned yet
 				</p>
 			) : (
 				<>
-					<div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+					<div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
 						<div
-							className="h-full rounded-full bg-primary transition-[width]"
+							className="bg-primary h-full rounded-full transition-[width]"
 							style={{ width: `${reviewProgress}%` }}
 						/>
 					</div>
@@ -58,7 +58,7 @@ export function ReviewersCard({
 										<div className="truncate text-sm font-medium">
 											{assignment.reviewerName}
 										</div>
-										<div className="truncate text-xs text-muted-foreground">
+										<div className="text-muted-foreground truncate text-xs">
 											{assignment.reviewerEmail}
 										</div>
 										{assignment.deadline &&

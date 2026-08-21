@@ -21,14 +21,14 @@ export function ProgressStep({
 				<span className="text-muted-foreground">of {progress.total}</span>
 			</div>
 			{progress.failures.length > 0 && (
-				<div className="max-h-48 overflow-auto rounded-md border border-destructive/30 p-2">
+				<div className="border-destructive/30 max-h-48 overflow-auto rounded-md border p-2">
 					{progress.failures.map((f) => (
 						<div
 							className="flex items-center justify-between gap-2 px-1 py-1 text-xs"
 							key={f.id}
 						>
 							<span className="truncate">{f.participant}</span>
-							<span className="shrink-0 text-destructive">
+							<span className="text-destructive shrink-0">
 								{f.error ?? "Failed"}
 							</span>
 						</div>

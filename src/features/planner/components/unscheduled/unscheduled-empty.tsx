@@ -6,13 +6,13 @@ export function UnscheduledEmpty({ hasSearch }: Props) {
 	return (
 		<div className="flex flex-col items-center justify-center gap-1 p-6 text-center">
 			{hasSearch ? (
-				<p className="text-xs text-muted-foreground">No results</p>
+				<p className="text-muted-foreground text-xs">No results</p>
 			) : (
 				<>
-					<p className="text-xs font-medium text-muted-foreground">
+					<p className="text-muted-foreground text-xs font-medium">
 						All scheduled
 					</p>
-					<p className="text-[11px] text-muted-foreground/70">
+					<p className="text-muted-foreground/70 text-[11px]">
 						Every accepted submission has been assigned to a session.
 					</p>
 				</>

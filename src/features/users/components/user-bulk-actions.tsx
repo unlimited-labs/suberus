@@ -146,7 +146,7 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 	return (
 		<>
 			<div className="flex items-center gap-2">
-				<span className="text-sm text-muted-foreground">
+				<span className="text-muted-foreground text-sm">
 					{selectedCount} selected
 				</span>
 				<Select items={actions} onValueChange={handleSelectAction} value="">

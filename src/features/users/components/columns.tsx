@@ -38,7 +38,7 @@ export interface SurveyListColumn {
 function DateCell({ date }: { date: Date | string }) {
 	const { formatDate } = useDateFormat();
 	return (
-		<span className="text-sm text-muted-foreground">{formatDate(date)}</span>
+		<span className="text-muted-foreground text-sm">{formatDate(date)}</span>
 	);
 }
 
@@ -69,11 +69,11 @@ const baseUserColumns: AppColumnDef<AdminUser>[] = [
 					params={{ id: row.original.id }}
 					to="/admin/users/$id"
 				>
-					<span className="font-medium text-foreground">
+					<span className="text-foreground font-medium">
 						{name ?? row.original.email}
 					</span>
 					{name && (
-						<span className="text-xs text-muted-foreground">
+						<span className="text-muted-foreground text-xs">
 							{row.original.email}
 						</span>
 					)}
@@ -134,7 +134,7 @@ const baseUserColumns: AppColumnDef<AdminUser>[] = [
 				return <Badge variant="destructive">Unpaid</Badge>;
 			}
 			return (
-				<Badge className="text-green-600 border-green-600" variant="outline">
+				<Badge className="border-green-600 text-green-600" variant="outline">
 					{fee.type}
 				</Badge>
 			);

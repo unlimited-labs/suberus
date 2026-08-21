@@ -19,7 +19,7 @@ export function DecisionField({ form, readOnly }: DecisionFieldProps) {
 						field.state.meta.isBlurred && field.state.meta.errors.length > 0;
 					return (
 						<Field data-invalid={hasError}>
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+							<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 								{decisionOptions.map((option) => {
 									const Icon = option.icon;
 									const isSelected = field.state.value === option.value;
@@ -66,7 +66,7 @@ export function DecisionField({ form, readOnly }: DecisionFieldProps) {
 													{option.label}
 												</span>
 											</div>
-											<p className="text-xs text-muted-foreground pl-8">
+											<p className="text-muted-foreground pl-8 text-xs">
 												{option.description}
 											</p>
 										</button>

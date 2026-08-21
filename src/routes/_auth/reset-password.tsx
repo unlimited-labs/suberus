@@ -64,21 +64,21 @@ function ResetPasswordPage() {
 		return (
 			<AuthCard centered>
 				<div className="w-full max-w-sm space-y-4 text-center">
-					<div className="mx-auto flex size-14 items-center justify-center rounded-full bg-destructive/10">
-						<IconExclamationCircle className="size-7 text-destructive" />
+					<div className="bg-destructive/10 mx-auto flex size-14 items-center justify-center rounded-full">
+						<IconExclamationCircle className="text-destructive size-7" />
 					</div>
 					<div>
 						<h1 className="text-xl font-semibold tracking-tight">
 							{tokenError ? "Link expired" : "Invalid reset link"}
 						</h1>
-						<p className="mt-1 text-sm text-muted-foreground">
+						<p className="text-muted-foreground mt-1 text-sm">
 							{tokenError
 								? "This password reset link has expired or is invalid. Please request a new one."
 								: "The password reset link is missing or invalid. Please request a new one."}
 						</p>
 					</div>
 					<Link
-						className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+						className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium"
 						to="/forgot-password"
 					>
 						Request new link
@@ -92,20 +92,20 @@ function ResetPasswordPage() {
 		return (
 			<AuthCard centered>
 				<div className="w-full max-w-sm space-y-4 text-center">
-					<div className="mx-auto flex size-14 items-center justify-center rounded-full bg-primary/10">
-						<IconCheck className="size-7 text-primary" />
+					<div className="bg-primary/10 mx-auto flex size-14 items-center justify-center rounded-full">
+						<IconCheck className="text-primary size-7" />
 					</div>
 					<div>
 						<h1 className="text-xl font-semibold tracking-tight">
 							Password reset successful
 						</h1>
-						<p className="mt-1 text-sm text-muted-foreground">
+						<p className="text-muted-foreground mt-1 text-sm">
 							Your password has been changed. You can now sign in with your new
 							password.
 						</p>
 					</div>
 					<Link
-						className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+						className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium"
 						to="/login"
 					>
 						Sign in
@@ -148,7 +148,7 @@ function ResetPasswordPage() {
 
 			<p className="mt-3 text-center">
 				<Link
-					className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+					className="text-muted-foreground hover:text-foreground inline-flex items-center gap-2 text-sm"
 					to="/login"
 				>
 					<IconArrowLeft className="size-4" />

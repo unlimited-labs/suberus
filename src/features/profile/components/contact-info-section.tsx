@@ -107,7 +107,7 @@ export function ContactInfoSection({
 								Email not verified
 							</span>
 							<button
-								className="ml-2 inline-flex items-center gap-1 text-sm font-medium text-primary underline underline-offset-2 hover:no-underline disabled:opacity-50"
+								className="text-primary ml-2 inline-flex items-center gap-1 text-sm font-medium underline underline-offset-2 hover:no-underline disabled:opacity-50"
 								disabled={disabled}
 								onClick={resend}
 								type="button"

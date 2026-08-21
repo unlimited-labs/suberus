@@ -166,8 +166,8 @@ export async function verifyDocument(pdf: Buffer): Promise<VerifyResult> {
 	const cfg = await getSigningConfig();
 	const matchesConfiguredCert = Boolean(
 		cfg &&
-			result.signerFingerprintSha256 &&
-			cfg.fingerprintSha256 === result.signerFingerprintSha256,
+		result.signerFingerprintSha256 &&
+		cfg.fingerprintSha256 === result.signerFingerprintSha256,
 	);
 	return { ...result, matchesConfiguredCert };
 }

@@ -7,7 +7,7 @@ export function NoRoomsPlaceholder() {
 			<PageHeader icon={IconCalendar} title="Program Planner" />
 			<div className="flex flex-1 items-center justify-center p-8">
 				<div className="max-w-md rounded-md border border-dashed p-8 text-center">
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						No rooms configured. Add rooms in Settings → Program before using
 						the planner.
 					</p>

@@ -127,9 +127,9 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 function NotFoundPage() {
 	return (
 		<div className="flex min-h-screen flex-col items-center justify-center gap-4 p-4 text-center">
-			<IconError404 className="size-24 text-muted-foreground" />
+			<IconError404 className="text-muted-foreground size-24" />
 			<h1 className="text-3xl font-bold">Page not found</h1>
-			<p className="max-w-md text-muted-foreground">
+			<p className="text-muted-foreground max-w-md">
 				The page you are looking for does not exist or has been moved.
 			</p>
 			<Button asChild>

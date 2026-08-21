@@ -24,7 +24,7 @@ export function EngineToggle({
 	footer,
 }: EngineToggleProps) {
 	return (
-		<div className="rounded-lg border border-border/50 p-3 space-y-2">
+		<div className="border-border/50 space-y-2 rounded-lg border p-3">
 			<div className="flex items-center justify-between">
 				<Label
 					className={cn(
@@ -42,8 +42,8 @@ export function EngineToggle({
 					onCheckedChange={onCheckedChange}
 				/>
 			</div>
-			<p className="text-xs text-muted-foreground">{description}</p>
-			{warning ? <p className="text-xs text-destructive">{warning}</p> : null}
+			<p className="text-muted-foreground text-xs">{description}</p>
+			{warning ? <p className="text-destructive text-xs">{warning}</p> : null}
 			{footer}
 		</div>
 	);

@@ -106,7 +106,7 @@ function CannotReviseScreen({
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconFileText} title="Cannot Revise" />
-			<div className="flex-1 p-6 flex items-center justify-center">
+			<div className="flex flex-1 items-center justify-center p-6">
 				<div className="text-center">
 					<p className="text-muted-foreground mb-4">
 						{kind === "not-found"
@@ -218,7 +218,7 @@ function RevisionForm({
 						<div className="space-y-2">
 							<Label htmlFor="title">Title</Label>
 							<input
-								className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+								className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
 								id="title"
 								onChange={(e) => setTitle(e.target.value)}
 								type="text"
@@ -234,13 +234,13 @@ function RevisionForm({
 								/>
 								<Label>Document *</Label>
 								{currentFile && !file && (
-									<div className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-muted/30">
-										<IconFile className="size-5 text-primary" />
-										<div className="flex-1 min-w-0">
-											<p className="text-sm font-medium truncate">
+									<div className="border-border/50 bg-muted/30 flex items-center gap-3 rounded-lg border p-3">
+										<IconFile className="text-primary size-5" />
+										<div className="min-w-0 flex-1">
+											<p className="truncate text-sm font-medium">
 												{currentFile.originalName}
 											</p>
-											<p className="text-xs text-muted-foreground">
+											<p className="text-muted-foreground text-xs">
 												Current file
 											</p>
 										</div>
@@ -266,7 +266,7 @@ function RevisionForm({
 									onChange={(f) => handleFileChange(f, setFile)}
 									value={file}
 								/>
-								<p className="text-xs text-muted-foreground">
+								<p className="text-muted-foreground text-xs">
 									{`A revised document is required. Accepted formats: ${acceptString.replace(/\./g, "").toUpperCase()}`}
 								</p>
 							</div>
@@ -285,8 +285,8 @@ function RevisionForm({
 
 						<div className="space-y-4">
 							<div className="flex items-center gap-3">
-								<IconUsers className="size-5 text-muted-foreground" />
-								<h2 className="text-lg font-semibold text-foreground">
+								<IconUsers className="text-muted-foreground size-5" />
+								<h2 className="text-foreground text-lg font-semibold">
 									Authors
 								</h2>
 							</div>
@@ -296,12 +296,12 @@ function RevisionForm({
 						{enableKeywords && (
 							<div className="space-y-4">
 								<div className="flex items-center gap-3">
-									<IconTags className="size-5 text-muted-foreground" />
-									<h2 className="text-lg font-semibold text-foreground">
+									<IconTags className="text-muted-foreground size-5" />
+									<h2 className="text-foreground text-lg font-semibold">
 										Keywords
 									</h2>
 								</div>
-								<div className="rounded-lg border bg-muted/30 p-3">
+								<div className="bg-muted/30 rounded-lg border p-3">
 									<KeywordsInput
 										maxKeywords={maxKeywords}
 										onChange={setKeywords}

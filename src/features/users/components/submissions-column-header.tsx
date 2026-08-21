@@ -49,7 +49,7 @@ function FilterSection({
 	const selectedSet = new Set(selected);
 	return (
 		<div className="p-2">
-			<span className="text-xs font-medium text-muted-foreground">{title}</span>
+			<span className="text-muted-foreground text-xs font-medium">{title}</span>
 			<div className="mt-1 space-y-1">
 				{options.map((option) => {
 					const isSelected = selectedSet.has(option.value);
@@ -58,7 +58,7 @@ function FilterSection({
 						// biome-ignore lint/a11y/useSemanticElements: the visible control is a Radix Checkbox (a <button>); nesting it in a native <input> isn't possible and a nested <button> caused double-toggle. This row carries role/aria-checked + keyboard handling instead.
 						<div
 							aria-checked={isSelected}
-							className="flex w-full cursor-pointer items-center gap-2 rounded px-1 py-0.5 hover:bg-muted/50"
+							className="hover:bg-muted/50 flex w-full cursor-pointer items-center gap-2 rounded px-1 py-0.5"
 							data-testid={`submission-filter-${option.value}`}
 							key={option.value}
 							onClick={() => onToggle(option.value)}
@@ -78,7 +78,7 @@ function FilterSection({
 								tabIndex={-1}
 							/>
 							<span className="flex-1 text-left text-sm">{option.label}</span>
-							<span className="text-xs text-muted-foreground tabular-nums">
+							<span className="text-muted-foreground text-xs tabular-nums">
 								{count}
 							</span>
 						</div>
@@ -147,7 +147,7 @@ export function SubmissionsColumnHeader({
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button
-						className="-ml-3 h-8 data-open:bg-accent"
+						className="data-open:bg-accent -ml-3 h-8"
 						size="sm"
 						variant="ghost"
 					>
@@ -163,18 +163,18 @@ export function SubmissionsColumnHeader({
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="start">
 					<DropdownMenuItem onClick={() => column.toggleSorting(false)}>
-						<IconArrowUp className="mr-2 size-3.5 text-muted-foreground/70" />
+						<IconArrowUp className="text-muted-foreground/70 mr-2 size-3.5" />
 						Ascending
 					</DropdownMenuItem>
 					<DropdownMenuItem onClick={() => column.toggleSorting(true)}>
-						<IconArrowDown className="mr-2 size-3.5 text-muted-foreground/70" />
+						<IconArrowDown className="text-muted-foreground/70 mr-2 size-3.5" />
 						Descending
 					</DropdownMenuItem>
 					{column.getCanHide() && (
 						<>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem onClick={() => column.toggleVisibility(false)}>
-								<IconEyeOff className="mr-2 size-3.5 text-muted-foreground/70" />
+								<IconEyeOff className="text-muted-foreground/70 mr-2 size-3.5" />
 								Hide
 							</DropdownMenuItem>
 						</>

@@ -14,7 +14,7 @@ export function CapacityBar({ slotCount, usedMin, totalMin }: Props) {
 
 	return (
 		<div className="mt-auto pt-1" data-testid="session-card-capacity">
-			<div className="flex items-center justify-between text-[9px] text-muted-foreground/70">
+			<div className="text-muted-foreground/70 flex items-center justify-between text-[9px]">
 				<span>
 					{slotCount} {slotCount === 1 ? "talk" : "talks"} ·{" "}
 					<span className="tabular-nums">
@@ -28,7 +28,7 @@ export function CapacityBar({ slotCount, usedMin, totalMin }: Props) {
 					/>
 				)}
 			</div>
-			<div className="mt-0.5 h-[3px] w-full overflow-hidden rounded-full bg-muted">
+			<div className="bg-muted mt-0.5 h-[3px] w-full overflow-hidden rounded-full">
 				<div
 					className={cn(
 						"h-full rounded-full transition-all",

@@ -60,30 +60,30 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 
 	return (
 		<>
-			<div className="hidden md:block rounded-md border border-border/50">
+			<div className="border-border/50 hidden rounded-md border md:block">
 				<div className="relative w-full overflow-auto">
 					<table className="w-full caption-bottom text-sm">
 						<thead className="[&_tr]:border-b">
 							<tr className="border-b">
-								<th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
+								<th className="text-muted-foreground h-10 px-2 text-left align-middle font-medium">
 									Title
 								</th>
-								<th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
+								<th className="text-muted-foreground h-10 px-2 text-left align-middle font-medium">
 									Type
 								</th>
-								<th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
+								<th className="text-muted-foreground h-10 px-2 text-left align-middle font-medium">
 									Status
 								</th>
-								<th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
+								<th className="text-muted-foreground h-10 px-2 text-left align-middle font-medium">
 									Round
 								</th>
-								<th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
+								<th className="text-muted-foreground h-10 px-2 text-left align-middle font-medium">
 									Version
 								</th>
-								<th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
+								<th className="text-muted-foreground h-10 px-2 text-left align-middle font-medium">
 									Submitted
 								</th>
-								<th className="h-10 px-2 text-left align-middle font-medium text-muted-foreground">
+								<th className="text-muted-foreground h-10 px-2 text-left align-middle font-medium">
 									Last Modified
 								</th>
 							</tr>
@@ -91,13 +91,13 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 						<tbody className="[&_tr:last-child]:border-0">
 							{submissions.map((submission) => (
 								<tr
-									className="border-b transition-colors hover:bg-muted/50"
+									className="hover:bg-muted/50 border-b transition-colors"
 									key={submission.id}
 								>
 									<td className="p-2 align-middle">
 										<div className="flex items-center gap-2">
 											<Link
-												className="font-medium text-foreground hover:text-primary line-clamp-2"
+												className="text-foreground hover:text-primary line-clamp-2 font-medium"
 												params={{ id: submission.id }}
 												to="/submissions/$id"
 											>
@@ -116,12 +116,12 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 											{statusLabels[submission.status]}
 										</Badge>
 									</td>
-									<td className="p-2 align-middle whitespace-nowrap text-center">
+									<td className="p-2 text-center align-middle whitespace-nowrap">
 										<span className="text-muted-foreground">
 											{submission.currentRound}
 										</span>
 									</td>
-									<td className="p-2 align-middle whitespace-nowrap text-center">
+									<td className="p-2 text-center align-middle whitespace-nowrap">
 										<span className="text-muted-foreground">
 											{submission.currentVersion}
 										</span>
@@ -144,7 +144,7 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 			</div>
 
 			<div
-				className="md:hidden space-y-3"
+				className="space-y-3 md:hidden"
 				data-testid="mobile-submissions-cards"
 			>
 				{submissions.map((submission) => (
@@ -157,8 +157,8 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 						<Card>
 							<CardContent className="p-4">
 								<div className="space-y-2">
-									<p className="font-medium line-clamp-2">{submission.title}</p>
-									<div className="flex items-center gap-2 flex-wrap">
+									<p className="line-clamp-2 font-medium">{submission.title}</p>
+									<div className="flex flex-wrap items-center gap-2">
 										<Badge variant={statusColors[submission.status]}>
 											{statusLabels[submission.status]}
 										</Badge>
@@ -166,11 +166,11 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 											{typeLabels[submission.type]}
 										</Badge>
 										<CoAuthorBadge role={submission.role} />
-										<span className="text-xs text-muted-foreground">
+										<span className="text-muted-foreground text-xs">
 											R{submission.currentRound} · v{submission.currentVersion}
 										</span>
 									</div>
-									<p className="text-sm text-muted-foreground">
+									<p className="text-muted-foreground text-sm">
 										{formatDate(submission.updatedAt)}
 									</p>
 								</div>

@@ -49,10 +49,10 @@ export function MobilePlanner({
 
 	return (
 		<div className="flex flex-col" data-testid="mobile-planner">
-			<div className="sticky top-0 z-10 flex items-center gap-2 border-b bg-background px-3 py-2">
+			<div className="bg-background sticky top-0 z-10 flex items-center gap-2 border-b px-3 py-2">
 				<button
 					aria-label="Previous day"
-					className="rounded p-1 text-muted-foreground hover:bg-muted disabled:opacity-30"
+					className="text-muted-foreground hover:bg-muted rounded p-1 disabled:opacity-30"
 					disabled={!canPrev}
 					onClick={() => shiftDay(-1)}
 					type="button"
@@ -64,7 +64,7 @@ export function MobilePlanner({
 				</div>
 				<button
 					aria-label="Next day"
-					className="rounded p-1 text-muted-foreground hover:bg-muted disabled:opacity-30"
+					className="text-muted-foreground hover:bg-muted rounded p-1 disabled:opacity-30"
 					disabled={!canNext}
 					onClick={() => shiftDay(1)}
 					type="button"
@@ -86,8 +86,8 @@ export function MobilePlanner({
 				{dayItems.length === 0 ? (
 					<div className="flex flex-col items-center gap-2 p-8 text-center">
 						<IconBook className="text-muted-foreground/40" size={20} />
-						<p className="text-sm text-muted-foreground">Nothing scheduled</p>
-						<p className="text-xs text-muted-foreground/70">
+						<p className="text-muted-foreground text-sm">Nothing scheduled</p>
+						<p className="text-muted-foreground/70 text-xs">
 							Use the desktop planner to drag submissions into sessions.
 						</p>
 					</div>

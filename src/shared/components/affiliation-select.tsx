@@ -88,7 +88,7 @@ function AffiliationDropdown({
 }) {
 	return (
 		<div
-			className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+			className="bg-popover text-popover-foreground absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border p-1 shadow-md"
 			id="affiliation-listbox"
 			role="listbox"
 		>
@@ -146,7 +146,7 @@ function AffiliationInput({
 }) {
 	return (
 		<div className="relative">
-			<IconBuilding className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+			<IconBuilding className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
 			<input
 				aria-autocomplete="list"
 				aria-controls="affiliation-listbox"
@@ -173,7 +173,7 @@ function AffiliationInput({
 				value={value}
 			/>
 			{isLoading && (
-				<IconLoader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+				<IconLoader2 className="text-muted-foreground absolute top-1/2 right-3 size-4 -translate-y-1/2 animate-spin" />
 			)}
 		</div>
 	);

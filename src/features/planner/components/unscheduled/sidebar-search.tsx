@@ -11,7 +11,7 @@ export function SidebarSearch({ value, onChange }: Props) {
 		<div className="border-b px-2 py-2">
 			<div className="relative">
 				<IconSearch
-					className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+					className="text-muted-foreground absolute top-1/2 left-2.5 -translate-y-1/2"
 					size={12}
 				/>
 				<Input
@@ -24,7 +24,7 @@ export function SidebarSearch({ value, onChange }: Props) {
 				{value && (
 					<button
 						aria-label="Clear search"
-						className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+						className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2"
 						onClick={() => onChange("")}
 						type="button"
 					>

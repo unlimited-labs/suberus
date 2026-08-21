@@ -28,7 +28,7 @@ export function MyDocumentCard({
 
 	return (
 		<div
-			className="group flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card transition hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-md"
+			className="group border-border/70 bg-card hover:border-foreground/20 flex flex-col overflow-hidden rounded-2xl border transition hover:-translate-y-0.5 hover:shadow-md"
 			data-testid="my-document-row"
 		>
 			<div className="relative flex h-28 items-center justify-center bg-gradient-to-br from-emerald-50 to-emerald-100/40 dark:from-emerald-500/10 dark:to-emerald-500/5">
@@ -37,7 +37,7 @@ export function MyDocumentCard({
 				</div>
 				{signed && (
 					<span
-						className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-emerald-600/90 px-2 py-0.5 text-xs font-medium text-white"
+						className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-emerald-600/90 px-2 py-0.5 text-xs font-medium text-white"
 						data-testid="document-signed-badge"
 						title="Digitally signed"
 					>
@@ -51,7 +51,7 @@ export function MyDocumentCard({
 					<p className="line-clamp-2 text-sm font-medium" title={name}>
 						{name}
 					</p>
-					<p className="mt-1 text-xs text-muted-foreground">
+					<p className="text-muted-foreground mt-1 text-xs">
 						{formatDateTime(createdAt)}
 					</p>
 				</div>

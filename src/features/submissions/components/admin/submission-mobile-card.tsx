@@ -18,28 +18,28 @@ export function SubmissionMobileCard(submission: AdminSubmission) {
 			<CardContent className="p-4">
 				<div className="space-y-2">
 					<div className="flex items-start gap-2">
-						<span className="text-xs font-mono text-muted-foreground shrink-0 mt-0.5">
+						<span className="text-muted-foreground mt-0.5 shrink-0 font-mono text-xs">
 							#{submission.sequentialNumber}
 						</span>
 						<Link
-							className="font-medium line-clamp-2 hover:underline"
+							className="line-clamp-2 font-medium hover:underline"
 							params={{ id: submission.id }}
 							to="/admin/submissions/$id"
 						>
 							{submission.title}
 						</Link>
 					</div>
-					<div className="flex items-center gap-2 flex-wrap">
+					<div className="flex flex-wrap items-center gap-2">
 						<Badge variant="outline">{typeLabels[submission.type]}</Badge>
 						<Badge variant="secondary">{statusLabels[submission.status]}</Badge>
-						<span className="text-xs text-muted-foreground">
+						<span className="text-muted-foreground text-xs">
 							R{submission.currentRound}
 						</span>
 					</div>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						{submission.ownerName}
 					</p>
-					<p className="text-xs text-muted-foreground">
+					<p className="text-muted-foreground text-xs">
 						Submitted {formatDate(submission.createdAt)}
 					</p>
 					{todoTone(submission.todo.kind) === "action" && (

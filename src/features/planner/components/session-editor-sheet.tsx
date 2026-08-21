@@ -41,7 +41,7 @@ export function SessionEditorSheet({
 						dirtyRef={dirtyRef}
 						fallback={
 							<div className="flex flex-1 items-center justify-center p-8">
-								<p className="text-sm text-muted-foreground">
+								<p className="text-muted-foreground text-sm">
 									Session not found
 								</p>
 							</div>

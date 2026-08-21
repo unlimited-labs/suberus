@@ -22,9 +22,9 @@ function FailureReason({ error }: { error: string }) {
 	const [open, setOpen] = useState(false);
 	return (
 		<button
-			className={`mt-0.5 block text-left text-xs text-destructive ${
+			className={`text-destructive mt-0.5 block text-left text-xs ${
 				open
-					? "max-w-md whitespace-pre-wrap break-words"
+					? "max-w-md break-words whitespace-pre-wrap"
 					: "max-w-48 cursor-pointer truncate"
 			}`}
 			data-testid="doc-error"
@@ -75,7 +75,7 @@ export function GeneratedDocumentsList({ documents, onDelete }: ListProps) {
 			<div className="space-y-2 md:hidden">
 				{documents.map((d) => (
 					<div
-						className="flex items-start gap-3 rounded-xl border bg-card p-3"
+						className="bg-card flex items-start gap-3 rounded-xl border p-3"
 						data-testid="generated-doc-row"
 						key={d.id}
 					>
@@ -84,12 +84,12 @@ export function GeneratedDocumentsList({ documents, onDelete }: ListProps) {
 							<p className="truncate text-sm font-medium">
 								{d.participant.name}
 							</p>
-							<p className="truncate text-xs text-muted-foreground">
+							<p className="text-muted-foreground truncate text-xs">
 								{d.name} · {formatBytes(d.size)}
 							</p>
 							<div className="mt-1.5 flex items-center gap-2">
 								<DocumentStatusBadge status={d.status} />
-								<span className="text-xs text-muted-foreground">
+								<span className="text-muted-foreground text-xs">
 									{formatDateTime(d.createdAt)}
 								</span>
 							</div>
@@ -123,17 +123,17 @@ export function GeneratedDocumentsList({ documents, onDelete }: ListProps) {
 							<TableRow data-testid="generated-doc-row" key={d.id}>
 								<TableCell>
 									<p className="text-sm font-medium">{d.participant.name}</p>
-									<p className="text-xs text-muted-foreground">
+									<p className="text-muted-foreground text-xs">
 										{d.participant.email}
 									</p>
 								</TableCell>
 								<TableCell>
 									<p className="text-sm">{d.name}</p>
-									<p className="text-xs text-muted-foreground">
+									<p className="text-muted-foreground text-xs">
 										{formatBytes(d.size)}
 									</p>
 								</TableCell>
-								<TableCell className="text-sm text-muted-foreground">
+								<TableCell className="text-muted-foreground text-sm">
 									{d.templateName ?? "—"}
 								</TableCell>
 								<TableCell>
@@ -142,7 +142,7 @@ export function GeneratedDocumentsList({ documents, onDelete }: ListProps) {
 										<FailureReason error={d.error} />
 									)}
 								</TableCell>
-								<TableCell className="text-sm text-muted-foreground">
+								<TableCell className="text-muted-foreground text-sm">
 									{formatDateTime(d.createdAt)}
 								</TableCell>
 								<TableCell className="text-right">

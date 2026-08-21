@@ -18,7 +18,7 @@ export function SessionEditorHeader() {
 
 	return (
 		<SheetHeader className="gap-3 border-b p-4">
-			<SheetTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+			<SheetTitle className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
 				Session editor
 			</SheetTitle>
 			<form.Field name="title">
@@ -40,7 +40,7 @@ export function SessionEditorHeader() {
 				{(field) => (
 					<div className="space-y-1">
 						<Label
-							className="text-xs text-muted-foreground"
+							className="text-muted-foreground text-xs"
 							htmlFor="session-start"
 						>
 							Start
@@ -58,7 +58,7 @@ export function SessionEditorHeader() {
 			</form.Field>
 			<div className="flex items-center justify-between gap-3">
 				<Label
-					className="text-xs text-muted-foreground"
+					className="text-muted-foreground text-xs"
 					htmlFor="session-untimed"
 				>
 					Untimed presentations (poster / lightning)
@@ -79,7 +79,7 @@ export function SessionEditorHeader() {
 					{(field) => (
 						<Field data-invalid={field.state.meta.errors.length > 0}>
 							<Label
-								className="text-xs text-muted-foreground"
+								className="text-muted-foreground text-xs"
 								htmlFor="session-end"
 							>
 								End
@@ -102,7 +102,7 @@ export function SessionEditorHeader() {
 						{(field) => (
 							<div className="space-y-1">
 								<Label
-									className="text-xs text-muted-foreground"
+									className="text-muted-foreground text-xs"
 									htmlFor="session-slot-count"
 								>
 									Slots
@@ -126,7 +126,7 @@ export function SessionEditorHeader() {
 						{(field) => (
 							<div className="space-y-1">
 								<Label
-									className="text-xs text-muted-foreground"
+									className="text-muted-foreground text-xs"
 									htmlFor="session-slot-min"
 								>
 									Min / slot
@@ -149,9 +149,9 @@ export function SessionEditorHeader() {
 				</div>
 			)}
 			{!untimedSlots && (
-				<p className="text-[11px] text-muted-foreground">
+				<p className="text-muted-foreground text-[11px]">
 					Session duration:{" "}
-					<span className="font-medium text-foreground">
+					<span className="text-foreground font-medium">
 						{formatDurationShort(computedDuration)}
 					</span>{" "}
 					({slotCount} × {slotMin} min)
@@ -161,7 +161,7 @@ export function SessionEditorHeader() {
 				<form.Field name="roomId">
 					{(field) => (
 						<div className="space-y-1">
-							<Label className="text-xs text-muted-foreground">Room</Label>
+							<Label className="text-muted-foreground text-xs">Room</Label>
 							<RoomSelect
 								onValueChange={(v) => field.handleChange(v)}
 								rooms={rooms}
@@ -175,7 +175,7 @@ export function SessionEditorHeader() {
 				<form.Field name="trackId">
 					{(field) => (
 						<div className="space-y-1">
-							<Label className="text-xs text-muted-foreground">Track</Label>
+							<Label className="text-muted-foreground text-xs">Track</Label>
 							<TrackSelect
 								onValueChange={(v) => field.handleChange(v)}
 								testId="session-editor-track"

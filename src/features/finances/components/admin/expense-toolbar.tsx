@@ -66,7 +66,7 @@ export function ExpenseToolbar({
 						: ""}
 				</button>
 			))}
-			<div className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
+			<div className="text-muted-foreground ml-auto flex items-center gap-1.5 text-xs">
 				Sort
 				<Select
 					items={[

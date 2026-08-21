@@ -6,7 +6,6 @@
   <img src="public/logo.svg" alt="Suberus" width="160" />
 </picture>
 
-
 ### **Abstract & peer-review management for scientific conferences**
 
 [![TanStack Start](https://img.shields.io/badge/TanStack-Start-EF4444?logo=react&logoColor=white)](https://tanstack.com/start)
@@ -59,25 +58,25 @@ pnpm dev
 
 The app is served at **http://localhost:3001**.
 
-
 ## Trusted by
 
 Conferences and institutions running on Suberus:
 
 <div align="center">
 
-| |                                                                                                      |
-|:---:|:----------------------------------------------------------------------------------------------------:|
+|                                                                                                                                            |                                                                                                             |
+| :----------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------: |
 | <img src=".github/assets/institutions/pjmicro2026.svg" alt="15th Polish-Japanese Joint Seminar on Micro and Nano Analysis" height="120" /> | <img src=".github/assets/institutions/autometform2026.png" alt="AutoMetForm & ConFair 2026" height="120" /> |
-| <a href="https://pjmicro.agh.edu.pl/">**15th Polish–Japanese Joint Seminar on Micro and Nano Analysis**</a> |            <a href="https://www.autometform.pwr.edu.pl/">**AutoMetForm & ConFair 2026**</a>             |
-| <img src=".github/assets/institutions/kpt2027.svg" alt="KomPlasTech & NeuroMet 2027" height="120" /> | |
-| <a href="https://komplastech.agh.edu.pl/">**KomPlasTech & NeuroMet 2027**</a>     |
+|                <a href="https://pjmicro.agh.edu.pl/">**15th Polish–Japanese Joint Seminar on Micro and Nano Analysis**</a>                 |              <a href="https://www.autometform.pwr.edu.pl/">**AutoMetForm & ConFair 2026**</a>               |
+|                    <img src=".github/assets/institutions/kpt2027.svg" alt="KomPlasTech & NeuroMet 2027" height="120" />                    |                                                                                                             |
+|                               <a href="https://komplastech.agh.edu.pl/">**KomPlasTech & NeuroMet 2027**</a>                                |
 
 </div>
 
 > _Using Suberus for your conference? Open a PR adding your logo to `.github/assets/institutions/`._
 
 ## Documentation
+
 - **Admin manual** — Starlight site available at [docs.suberus.app](https://docs.suberus.app) or in `docs/`
 
 ## Security

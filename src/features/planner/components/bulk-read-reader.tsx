@@ -49,25 +49,25 @@ export function BulkReadReader({
 		>
 			<DialogContent
 				aria-label="Read submissions"
-				className="fixed inset-0 flex max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none bg-background p-0 ring-0 sm:max-w-none"
+				className="bg-background fixed inset-0 flex max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none p-0 ring-0 sm:max-w-none"
 				data-testid="bulk-reader"
 				initialFocus={closeRef}
 				showCloseButton={false}
 				style={{ animation: "none" }}
 			>
 				<div className="flex items-center gap-3 border-b px-4 py-2">
-					<span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+					<span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
 						Reading mode
 					</span>
-					<span className="rounded-full bg-muted px-2 py-0.5 text-xs tabular-nums">
+					<span className="bg-muted rounded-full px-2 py-0.5 text-xs tabular-nums">
 						{safe + 1} / {submissions.length}
 					</span>
-					<span className="ml-auto text-[11px] text-muted-foreground">
+					<span className="text-muted-foreground ml-auto text-[11px]">
 						← → navigate · Esc to close
 					</span>
 					<button
 						aria-label="Close reading mode"
-						className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+						className="text-muted-foreground hover:bg-muted hover:text-foreground focus:ring-ring rounded p-1 focus:ring-2 focus:ring-offset-2 focus:outline-none"
 						data-testid="bulk-reader-close"
 						onClick={onClose}
 						ref={closeRef}
@@ -80,7 +80,7 @@ export function BulkReadReader({
 				<div className="flex flex-1 overflow-hidden">
 					<button
 						aria-label="Previous"
-						className="flex w-12 shrink-0 items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-20 disabled:hover:bg-transparent"
+						className="text-muted-foreground hover:bg-muted hover:text-foreground flex w-12 shrink-0 items-center justify-center disabled:opacity-20 disabled:hover:bg-transparent"
 						data-testid="bulk-reader-prev"
 						disabled={safe === 0}
 						onClick={() => setIdx((i) => Math.max(0, i - 1))}
@@ -90,12 +90,12 @@ export function BulkReadReader({
 					</button>
 
 					<article className="mx-auto flex max-w-3xl flex-1 flex-col gap-4 overflow-y-auto px-6 py-8">
-						<div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-							<span className="rounded bg-muted px-1.5 py-0.5 font-medium uppercase tracking-wide">
+						<div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
+							<span className="bg-muted rounded px-1.5 py-0.5 font-medium tracking-wide uppercase">
 								{s.type}
 							</span>
 							{s.trackName && (
-								<span className="rounded bg-muted px-1.5 py-0.5">
+								<span className="bg-muted rounded px-1.5 py-0.5">
 									{s.trackName}
 								</span>
 							)}
@@ -105,13 +105,13 @@ export function BulkReadReader({
 								</span>
 							))}
 						</div>
-						<h1 className="text-2xl font-semibold leading-tight">{s.title}</h1>
+						<h1 className="text-2xl leading-tight font-semibold">{s.title}</h1>
 						{authorLine && (
-							<p className="text-sm text-muted-foreground">{authorLine}</p>
+							<p className="text-muted-foreground text-sm">{authorLine}</p>
 						)}
 						{s.file && (
 							<a
-								className="inline-flex w-fit items-center gap-1.5 rounded border px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+								className="text-muted-foreground hover:bg-muted hover:text-foreground inline-flex w-fit items-center gap-1.5 rounded border px-2 py-1 text-xs"
 								data-testid={`bulk-reader-download-${s.id}`}
 								download={s.file.originalName}
 								href={`/api/files/${s.file.id}`}
@@ -123,11 +123,11 @@ export function BulkReadReader({
 							</a>
 						)}
 						{s.abstract ? (
-							<div className="whitespace-pre-wrap text-[15px] leading-relaxed">
+							<div className="text-[15px] leading-relaxed whitespace-pre-wrap">
 								{s.abstract}
 							</div>
 						) : (
-							<p className="text-sm italic text-muted-foreground">
+							<p className="text-muted-foreground text-sm italic">
 								No abstract available
 							</p>
 						)}
@@ -135,7 +135,7 @@ export function BulkReadReader({
 
 					<button
 						aria-label="Next"
-						className="flex w-12 shrink-0 items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-20 disabled:hover:bg-transparent"
+						className="text-muted-foreground hover:bg-muted hover:text-foreground flex w-12 shrink-0 items-center justify-center disabled:opacity-20 disabled:hover:bg-transparent"
 						data-testid="bulk-reader-next"
 						disabled={safe === submissions.length - 1}
 						onClick={() =>

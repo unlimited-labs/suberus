@@ -46,8 +46,8 @@ function ReviewerComparePage() {
 				<PageHeader icon={IconGitCompare} title="Compare versions">
 					{backLink}
 				</PageHeader>
-				<div className="flex-1 p-6 flex items-center justify-center">
-					<p className="text-sm text-muted-foreground">
+				<div className="flex flex-1 items-center justify-center p-6">
+					<p className="text-muted-foreground text-sm">
 						This submission has only one version — nothing to compare yet.
 					</p>
 				</div>
@@ -76,7 +76,7 @@ function ReviewerComparePage() {
 						<Badge variant="outline">
 							{lookup(typeLabels, submission.type) ?? submission.type}
 						</Badge>
-						<h1 className="text-xl font-semibold leading-snug text-foreground">
+						<h1 className="text-foreground text-xl leading-snug font-semibold">
 							{submission.title}
 						</h1>
 					</div>

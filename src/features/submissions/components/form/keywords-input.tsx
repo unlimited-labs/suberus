@@ -92,13 +92,13 @@ export function KeywordsInput({
 			>
 				{value.map((keyword) => (
 					<span
-						className="inline-flex items-center gap-1 px-2 py-0.5 text-sm bg-secondary text-secondary-foreground rounded"
+						className="bg-secondary text-secondary-foreground inline-flex items-center gap-1 rounded px-2 py-0.5 text-sm"
 						key={keyword}
 					>
 						{keyword}
 						<button
 							aria-label={`Remove ${keyword}`}
-							className="rounded hover:bg-foreground/20 p-0.5 transition-colors"
+							className="hover:bg-foreground/20 rounded p-0.5 transition-colors"
 							onClick={(e) => {
 								e.stopPropagation();
 								removeKeyword(keyword);
@@ -110,7 +110,7 @@ export function KeywordsInput({
 					</span>
 				))}
 				<input
-					className="flex-1 min-w-[120px] bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed"
+					className="text-foreground placeholder:text-muted-foreground min-w-[120px] flex-1 bg-transparent text-sm outline-none disabled:cursor-not-allowed"
 					disabled={value.length >= maxKeywords}
 					onBlur={handleBlur}
 					onChange={handleInputChange}
@@ -123,7 +123,7 @@ export function KeywordsInput({
 			</label>
 
 			{error && (
-				<p className="text-xs text-destructive" role="alert">
+				<p className="text-destructive text-xs" role="alert">
 					{error}
 				</p>
 			)}

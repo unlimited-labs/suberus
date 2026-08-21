@@ -91,9 +91,9 @@ export function ActivityHistoryEvent({
 			/>
 			<TimelineContent>
 				<div className="space-y-1">
-					<h3 className="font-medium text-foreground">{label}</h3>
+					<h3 className="text-foreground font-medium">{label}</h3>
 					<ActivityDetail entry={entry} />
-					<div className="text-xs text-muted-foreground">
+					<div className="text-muted-foreground text-xs">
 						{formatDateTime(timestamp)}
 						{entry.performerName && ` — ${entry.performerName}`}
 					</div>
@@ -111,14 +111,14 @@ function noteDetail(field: string): DetailRenderer {
 		// SAFETY: the activity type reaching this renderer carries that detail field (see DetailShapes).
 		const value = entry.detail[field] as string | undefined;
 		if (!value) return null;
-		return <p className="text-sm text-muted-foreground">{value}</p>;
+		return <p className="text-muted-foreground text-sm">{value}</p>;
 	};
 }
 
 function targetUserNameDetail(entry: ActivityHistoryEntry): ReactNode {
 	if (!entry.targetUserName) return null;
 	return (
-		<p className="text-sm text-muted-foreground">{entry.targetUserName}</p>
+		<p className="text-muted-foreground text-sm">{entry.targetUserName}</p>
 	);
 }
 
@@ -133,18 +133,18 @@ const detailRenderers = {
 		return (
 			<div className="space-y-1">
 				{to && (
-					<div className="flex items-center gap-2 flex-wrap">
+					<div className="flex flex-wrap items-center gap-2">
 						<Badge variant={lookup(statusVariants, to) ?? "secondary"}>
 							{lookup(statusLabels, to) ?? to}
 						</Badge>
 						{from && (
-							<span className="text-xs text-muted-foreground">
+							<span className="text-muted-foreground text-xs">
 								from {lookup(statusLabels, from) ?? from}
 							</span>
 						)}
 					</div>
 				)}
-				{reason && <p className="text-sm text-muted-foreground">{reason}</p>}
+				{reason && <p className="text-muted-foreground text-sm">{reason}</p>}
 			</div>
 		);
 	},
@@ -152,7 +152,7 @@ const detailRenderers = {
 		// SAFETY: the activity type reaching this renderer carries that detail field (see DetailShapes).
 		const deadline = entry.detail.deadline as string | undefined;
 		return (
-			<div className="text-sm text-muted-foreground">
+			<div className="text-muted-foreground text-sm">
 				{entry.targetUserName && <span>{entry.targetUserName}</span>}
 				{deadline && (
 					<span>
@@ -166,9 +166,9 @@ const detailRenderers = {
 		// SAFETY: the activity type reaching this renderer carries that detail field (see DetailShapes).
 		const decision = entry.detail.decision as string | undefined;
 		return (
-			<div className="flex items-center gap-2 flex-wrap">
+			<div className="flex flex-wrap items-center gap-2">
 				{entry.targetUserName && (
-					<span className="text-sm text-muted-foreground">
+					<span className="text-muted-foreground text-sm">
 						{entry.targetUserName}
 					</span>
 				)}
@@ -198,7 +198,7 @@ const detailRenderers = {
 					<Badge variant="secondary">{decision.replace(/_/g, " ")}</Badge>
 				)}
 				{reasoning && (
-					<p className="text-sm text-muted-foreground">{reasoning}</p>
+					<p className="text-muted-foreground text-sm">{reasoning}</p>
 				)}
 			</div>
 		);
@@ -211,13 +211,13 @@ const detailRenderers = {
 		// SAFETY: the activity type reaching this renderer carries that detail field (see DetailShapes).
 		const round = entry.detail.round as number | undefined;
 		if (!round) return null;
-		return <p className="text-sm text-muted-foreground">Round {round}</p>;
+		return <p className="text-muted-foreground text-sm">Round {round}</p>;
 	},
 	SUBMISSION_REVISION_UPLOADED: (entry) => {
 		// SAFETY: the activity type reaching this renderer carries that detail field (see DetailShapes).
 		const version = entry.detail.version as number | undefined;
 		if (!version) return null;
-		return <p className="text-sm text-muted-foreground">Version {version}</p>;
+		return <p className="text-muted-foreground text-sm">Version {version}</p>;
 	},
 } satisfies Record<string, DetailRenderer>;
 

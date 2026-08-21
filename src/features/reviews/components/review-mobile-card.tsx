@@ -53,7 +53,7 @@ function DeadlineRow({ deadline, status }: { deadline: Date; status: string }) {
 	);
 	const { Icon, iconClassName, textClassName } = DEADLINE_PRESENTATION[variant];
 	return (
-		<div className="flex items-center gap-2 pt-2 border-t border-border">
+		<div className="border-border flex items-center gap-2 border-t pt-2">
 			<Icon className={iconClassName} />
 			<span className={textClassName}>{label}</span>
 		</div>
@@ -62,7 +62,7 @@ function DeadlineRow({ deadline, status }: { deadline: Date; status: string }) {
 
 function CardBadges({ assignment }: { assignment: ReviewerAssignment }) {
 	return (
-		<div className="flex items-center gap-2 flex-wrap">
+		<div className="flex flex-wrap items-center gap-2">
 			<Badge className="text-xs" variant="outline">
 				{typeLabels[assignment.submissionType]}
 			</Badge>
@@ -80,7 +80,7 @@ function CardBadges({ assignment }: { assignment: ReviewerAssignment }) {
 				] ?? assignment.status}
 			</Badge>
 			{assignment.round > 1 && (
-				<span className="text-xs text-muted-foreground">
+				<span className="text-muted-foreground text-xs">
 					R{assignment.round}
 				</span>
 			)}
@@ -91,15 +91,15 @@ function CardBadges({ assignment }: { assignment: ReviewerAssignment }) {
 function CardAuthor({ assignment }: { assignment: ReviewerAssignment }) {
 	if (assignment.authorName === "Anonymous Author") {
 		return (
-			<p className="text-sm italic text-muted-foreground">
+			<p className="text-muted-foreground text-sm italic">
 				Double-blind review
 			</p>
 		);
 	}
 	return (
 		<div className="text-sm">
-			<p className="font-medium text-foreground">{assignment.authorName}</p>
-			<p className="text-xs text-muted-foreground">
+			<p className="text-foreground font-medium">{assignment.authorName}</p>
+			<p className="text-muted-foreground text-xs">
 				{assignment.authorAffiliation}
 			</p>
 		</div>
@@ -128,7 +128,7 @@ export function ReviewMobileCard(assignment: ReviewerAssignment) {
 		<Card className="overflow-hidden">
 			<CardContent className="p-4">
 				<div className="space-y-3">
-					<p className="font-medium line-clamp-2">
+					<p className="line-clamp-2 font-medium">
 						{assignment.submissionTitle}
 					</p>
 					<CardBadges assignment={assignment} />

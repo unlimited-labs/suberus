@@ -99,7 +99,7 @@ export function DeskAcceptDialog({
 							rows={4}
 							value={reason}
 						/>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							This reason will be recorded in the audit trail and may be shared
 							with the author.
 						</p>

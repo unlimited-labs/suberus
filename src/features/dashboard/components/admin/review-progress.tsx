@@ -34,9 +34,9 @@ export function ReviewProgress({ data }: ReviewProgressProps) {
 						total={totalAssignments}
 					/>
 				</Suspense>
-				<div className="text-center ml-4">
+				<div className="ml-4 text-center">
 					<p className="text-3xl font-bold">{completionRate.toFixed(0)}%</p>
-					<p className="text-sm text-muted-foreground">Completion Rate</p>
+					<p className="text-muted-foreground text-sm">Completion Rate</p>
 				</div>
 			</div>
 
@@ -45,11 +45,11 @@ export function ReviewProgress({ data }: ReviewProgressProps) {
 			<div className="grid grid-cols-2 gap-4 pt-2">
 				<div className="text-center">
 					<p className="text-2xl font-semibold">{byStatus.PENDING}</p>
-					<p className="text-xs text-muted-foreground">Pending</p>
+					<p className="text-muted-foreground text-xs">Pending</p>
 				</div>
 				<div className="text-center">
 					<p className="text-2xl font-semibold">{byStatus.COMPLETED}</p>
-					<p className="text-xs text-muted-foreground">Completed</p>
+					<p className="text-muted-foreground text-xs">Completed</p>
 				</div>
 			</div>
 

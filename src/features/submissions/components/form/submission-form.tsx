@@ -75,8 +75,8 @@ export function SubmissionForm(props: SubmissionFormProps) {
 
 	return (
 		<div className="mx-auto w-full max-w-7xl">
-			<div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-				<div className="relative overflow-hidden rounded-2xl bg-card shadow-2xl">
+			<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+				<div className="bg-card relative overflow-hidden rounded-2xl shadow-2xl">
 					<ExtractionOverlay
 						elapsedSeconds={elapsedSeconds}
 						isExtracting={isExtracting}
@@ -86,7 +86,7 @@ export function SubmissionForm(props: SubmissionFormProps) {
 							<h1 className="text-2xl font-semibold tracking-tight">
 								{initialData ? "Edit Submission" : "New Submission"}
 							</h1>
-							<p className="text-sm text-muted-foreground mt-1">
+							<p className="text-muted-foreground mt-1 text-sm">
 								{initialData
 									? "Update your submission details"
 									: "Submit your work for the conference"}
@@ -145,8 +145,8 @@ export function SubmissionForm(props: SubmissionFormProps) {
 
 							<div className="space-y-4">
 								<div className="flex items-center gap-3">
-									<IconUsers className="size-5 text-muted-foreground" />
-									<h2 className="text-lg font-semibold text-foreground">
+									<IconUsers className="text-muted-foreground size-5" />
+									<h2 className="text-foreground text-lg font-semibold">
 										Authors
 									</h2>
 								</div>
@@ -178,8 +178,8 @@ export function SubmissionForm(props: SubmissionFormProps) {
 
 									<div className="space-y-4">
 										<div className="flex items-center gap-3">
-											<IconTags className="size-5 text-muted-foreground" />
-											<h2 className="text-lg font-semibold text-foreground">
+											<IconTags className="text-muted-foreground size-5" />
+											<h2 className="text-foreground text-lg font-semibold">
 												Keywords
 											</h2>
 										</div>
@@ -192,7 +192,7 @@ export function SubmissionForm(props: SubmissionFormProps) {
 													field.state.meta.errors.length > 0;
 												return (
 													<Field data-invalid={hasError}>
-														<div className="rounded-lg border bg-muted/30 p-3">
+														<div className="bg-muted/30 rounded-lg border p-3">
 															<KeywordsInput
 																maxKeywords={validationSettings.maxKeywords}
 																onChange={field.handleChange}
@@ -220,8 +220,8 @@ export function SubmissionForm(props: SubmissionFormProps) {
 
 										<div className="space-y-4">
 											<div className="flex items-center gap-3">
-												<IconPresentation className="size-5 text-muted-foreground" />
-												<h2 className="text-lg font-semibold text-foreground">
+												<IconPresentation className="text-muted-foreground size-5" />
+												<h2 className="text-foreground text-lg font-semibold">
 													Preferred Track
 												</h2>
 											</div>
@@ -259,13 +259,13 @@ export function SubmissionForm(props: SubmissionFormProps) {
 									</>
 								)}
 
-							<div className="flex items-center justify-between pt-4 border-t gap-3">
-								<p className="text-xs text-muted-foreground hidden sm:block">
+							<div className="flex items-center justify-between gap-3 border-t pt-4">
+								<p className="text-muted-foreground hidden text-xs sm:block">
 									By submitting, you agree to the conference guidelines
 								</p>
 								<form.Subscribe selector={(s) => s.isSubmitting}>
 									{(isSubmitting) => (
-										<div className="flex gap-2 ml-auto">
+										<div className="ml-auto flex gap-2">
 											{onSaveDraft && (
 												<Button
 													className="gap-2"
@@ -276,7 +276,7 @@ export function SubmissionForm(props: SubmissionFormProps) {
 												>
 													{isSavingDraft ? (
 														<>
-															<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+															<div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
 															Saving...
 														</>
 													) : (
@@ -294,7 +294,7 @@ export function SubmissionForm(props: SubmissionFormProps) {
 											>
 												{isSubmitting ? (
 													<>
-														<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+														<div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
 														Submitting...
 													</>
 												) : (

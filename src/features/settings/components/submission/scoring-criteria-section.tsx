@@ -55,7 +55,7 @@ export function ScoringCriteriaSection({
 							/>
 						</div>
 						<Button
-							className="shrink-0 text-destructive hover:bg-destructive/10"
+							className="text-destructive hover:bg-destructive/10 shrink-0"
 							onClick={() => handleRemove(index)}
 							size="icon"
 							type="button"

@@ -25,7 +25,7 @@ export function RegisterStep3({
 	return (
 		<div className="animate-in fade-in slide-in-from-right-4 space-y-3 duration-300">
 			{surveyQuestions.length > 0 && (
-				<div className="space-y-3 rounded-lg border border-border/50 bg-muted/30 p-3">
+				<div className="border-border/50 bg-muted/30 space-y-3 rounded-lg border p-3">
 					{surveyQuestions.map((question) => (
 						<form.Field
 							key={question.id}
@@ -68,7 +68,7 @@ export function RegisterStep3({
 							field.state.meta.isBlurred && field.state.meta.errors.length > 0;
 						return (
 							<Field
-								className="rounded-lg border border-primary/20 bg-primary/5 p-3"
+								className="border-primary/20 bg-primary/5 rounded-lg border p-3"
 								data-invalid={hasError}
 							>
 								<div className="flex items-start gap-2">
@@ -81,7 +81,7 @@ export function RegisterStep3({
 										}
 									/>
 									<FieldLabel
-										className="cursor-pointer text-sm font-normal leading-snug"
+										className="cursor-pointer text-sm leading-snug font-normal"
 										htmlFor={field.name}
 									>
 										I agree to the{" "}

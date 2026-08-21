@@ -68,13 +68,13 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 			<div className="flex-1 overflow-auto p-6">
 				<div className="mx-auto w-full max-w-7xl">
 					<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-						<div className="rounded-2xl bg-card overflow-hidden shadow-2xl">
+						<div className="bg-card overflow-hidden rounded-2xl shadow-2xl">
 							<div className="space-y-6 p-6 sm:p-8">
 								<div>
 									<h1 className="text-2xl font-semibold tracking-tight">
 										Compose
 									</h1>
-									<p className="mt-1 text-sm text-muted-foreground">
+									<p className="text-muted-foreground mt-1 text-sm">
 										Write your message and preview it before sending.
 									</p>
 								</div>
@@ -222,7 +222,7 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 											</div>
 											<Separator />
 											<Button
-												className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+												className="text-destructive hover:bg-destructive/10 hover:text-destructive w-full"
 												data-testid="delete-campaign-btn"
 												disabled={compose.isRemoving}
 												onClick={() => compose.remove()}

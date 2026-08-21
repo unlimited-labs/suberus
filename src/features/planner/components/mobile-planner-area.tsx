@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { MobilePlanner } from "@/features/planner/components/mobile-planner";
 
-interface MobilePlannerAreaProps
-	extends Omit<React.ComponentProps<typeof MobilePlanner>, "initialDate"> {
+interface MobilePlannerAreaProps extends Omit<
+	React.ComponentProps<typeof MobilePlanner>,
+	"initialDate"
+> {
 	currentDate: Date | null;
 }
 

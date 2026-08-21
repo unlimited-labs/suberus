@@ -10,11 +10,11 @@ export function SubmissionsEmptyState({
 	canSubmit,
 }: SubmissionsEmptyStateProps) {
 	return (
-		<div className="rounded-lg border border-border/50 p-8 text-center">
+		<div className="border-border/50 rounded-lg border p-8 text-center">
 			{canSubmit ? (
 				<>
-					<IconFileText className="mx-auto size-12 text-muted-foreground/50" />
-					<p className="mt-4 text-muted-foreground">
+					<IconFileText className="text-muted-foreground/50 mx-auto size-12" />
+					<p className="text-muted-foreground mt-4">
 						You don't have any submissions yet
 					</p>
 					<Link to="/submissions/new">
@@ -26,8 +26,8 @@ export function SubmissionsEmptyState({
 				</>
 			) : (
 				<>
-					<IconLock className="mx-auto size-12 text-muted-foreground/50" />
-					<p className="mt-4 text-muted-foreground">Submissions are closed</p>
+					<IconLock className="text-muted-foreground/50 mx-auto size-12" />
+					<p className="text-muted-foreground mt-4">Submissions are closed</p>
 				</>
 			)}
 		</div>

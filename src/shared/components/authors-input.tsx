@@ -79,10 +79,10 @@ function AuthorCardHeader({
 	removeAuthor: (index: number) => void;
 }) {
 	return (
-		<div className="flex items-center gap-3 px-4 py-2.5 border-b border-border/30">
+		<div className="border-border/30 flex items-center gap-3 border-b px-4 py-2.5">
 			{/* Drag Handle */}
 			<button
-				className="cursor-grab active:cursor-grabbing touch-none text-muted-foreground hover:text-foreground transition-colors"
+				className="text-muted-foreground hover:text-foreground cursor-grab touch-none transition-colors active:cursor-grabbing"
 				type="button"
 				{...(isDragOverlay ? {} : handle.attributes)}
 				{...(isDragOverlay ? {} : handle.listeners)}
@@ -90,7 +90,7 @@ function AuthorCardHeader({
 				<IconGripVertical className="size-4" />
 			</button>
 
-			<div className="flex items-center gap-2 flex-1">
+			<div className="flex flex-1 items-center gap-2">
 				<div className={presenterBadgeClassName(isPresenter)}>{index + 1}</div>
 				<button
 					aria-label={presenterAriaLabel(isPresenter)}
@@ -110,7 +110,7 @@ function AuthorCardHeader({
 			</div>
 			<Button
 				aria-label="Remove author"
-				className="opacity-0 group-hover:opacity-100 transition-opacity"
+				className="opacity-0 transition-opacity group-hover:opacity-100"
 				disabled={!canRemove}
 				onClick={() => !isDragOverlay && removeAuthor(index)}
 				size="icon-xs"
@@ -135,17 +135,17 @@ function AuthorFields({
 	updateAuthor: (index: number, updates: Partial<Author>) => void;
 }) {
 	return (
-		<div className="p-4 space-y-3">
-			<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+		<div className="space-y-3 p-4">
+			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 				<div className="space-y-1.5">
 					<Label
-						className="text-xs text-muted-foreground"
+						className="text-muted-foreground text-xs"
 						htmlFor={`author-${index}-firstName`}
 					>
 						First name
 					</Label>
 					<Input
-						className="h-9 text-sm text-foreground"
+						className="text-foreground h-9 text-sm"
 						disabled={isDragOverlay}
 						id={`author-${index}-firstName`}
 						onChange={(e) => updateAuthor(index, { firstName: e.target.value })}
@@ -157,13 +157,13 @@ function AuthorFields({
 
 				<div className="space-y-1.5">
 					<Label
-						className="text-xs text-muted-foreground"
+						className="text-muted-foreground text-xs"
 						htmlFor={`author-${index}-lastName`}
 					>
 						Last name
 					</Label>
 					<Input
-						className="h-9 text-sm text-foreground"
+						className="text-foreground h-9 text-sm"
 						disabled={isDragOverlay}
 						id={`author-${index}-lastName`}
 						onChange={(e) => updateAuthor(index, { lastName: e.target.value })}
@@ -174,16 +174,16 @@ function AuthorFields({
 				</div>
 			</div>
 
-			<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 				<div className="space-y-1.5">
 					<Label
-						className="text-xs text-muted-foreground"
+						className="text-muted-foreground text-xs"
 						htmlFor={`author-${index}-email`}
 					>
 						Email
 					</Label>
 					<Input
-						className="h-9 text-sm text-foreground"
+						className="text-foreground h-9 text-sm"
 						disabled={isDragOverlay}
 						id={`author-${index}-email`}
 						onChange={(e) => updateAuthor(index, { email: e.target.value })}
@@ -194,9 +194,9 @@ function AuthorFields({
 				</div>
 
 				<div className="space-y-1.5">
-					<Label className="text-xs text-muted-foreground">Affiliation</Label>
+					<Label className="text-muted-foreground text-xs">Affiliation</Label>
 					{isDragOverlay ? (
-						<div className="h-9 flex items-center px-3 rounded-md border bg-background text-sm text-foreground">
+						<div className="bg-background text-foreground flex h-9 items-center rounded-md border px-3 text-sm">
 							{affiliationDisplay(author.affiliationName)}
 						</div>
 					) : (

@@ -73,7 +73,7 @@ export function TracksList({ tracks, onEdit, onUpdate }: TracksListProps) {
 	if (tracks.length === 0) {
 		return (
 			<div className="flex min-h-[200px] items-center justify-center rounded-md border border-dashed">
-				<p className="text-sm text-muted-foreground">
+				<p className="text-muted-foreground text-sm">
 					No tracks yet. Create your first track.
 				</p>
 			</div>

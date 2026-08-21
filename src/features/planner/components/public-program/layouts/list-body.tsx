@@ -106,15 +106,15 @@ function SlotHeading({
 }) {
 	if (framed) {
 		return (
-			<div className="mb-6 border-b border-border pb-3">
-				<span className="font-[var(--prog-font-meta)] text-sm uppercase tracking-[0.2em] tabular-nums text-muted-foreground">
+			<div className="border-border mb-6 border-b pb-3">
+				<span className="text-muted-foreground text-sm font-[var(--prog-font-meta)] tracking-[0.2em] uppercase tabular-nums">
 					{start} {dash} {end}
 				</span>
 			</div>
 		);
 	}
 	return (
-		<h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary tabular-nums">
+		<h2 className="text-primary mb-4 text-sm font-semibold tracking-wide uppercase tabular-nums">
 			{start} {dash} {end}
 		</h2>
 	);
@@ -137,7 +137,7 @@ function BreakOnlyRow({
 		<div
 			className={cn("flex items-center", framed ? "gap-3 sm:gap-6" : "gap-4")}
 		>
-			<span className="h-px flex-1 bg-border" />
+			<span className="bg-border h-px flex-1" />
 			<div className="shrink-0 text-center">
 				<p
 					className={cn(
@@ -160,7 +160,7 @@ function BreakOnlyRow({
 					{group.breaks.map((b) => b.title).join(" · ")}
 				</p>
 			</div>
-			<span className="h-px flex-1 bg-border" />
+			<span className="bg-border h-px flex-1" />
 		</div>
 	);
 }
@@ -257,7 +257,7 @@ function MinimalCard({
 }) {
 	const trackColor = session.track?.color ?? undefined;
 	return (
-		<article className="overflow-hidden rounded-[var(--prog-card-radius)] border border-border bg-card">
+		<article className="border-border bg-card overflow-hidden rounded-[var(--prog-card-radius)] border">
 			<div
 				aria-hidden
 				className="h-1 w-full"

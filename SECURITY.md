@@ -20,13 +20,13 @@ Use either channel:
 
 ## What happens next
 
-| Stage | Target |
-| --- | --- |
-| Acknowledgement of your report | 3 working days |
-| Initial assessment and severity rating | 10 working days |
-| Fix for critical / high severity | 14 days from assessment |
-| Fix for medium / low severity | Next regular release cycle |
-| Public disclosure | Coordinated with you, at most 90 days after the report |
+| Stage                                  | Target                                                 |
+| -------------------------------------- | ------------------------------------------------------ |
+| Acknowledgement of your report         | 3 working days                                         |
+| Initial assessment and severity rating | 10 working days                                        |
+| Fix for critical / high severity       | 14 days from assessment                                |
+| Fix for medium / low severity          | Next regular release cycle                             |
+| Public disclosure                      | Coordinated with you, at most 90 days after the report |
 
 We publish a GitHub Security Advisory when a fix ships and credit you by name or handle unless you ask to stay anonymous. If we conclude a report is not a vulnerability, we say so and explain why.
 

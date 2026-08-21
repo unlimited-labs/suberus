@@ -159,7 +159,7 @@ export function SubmissionBulkActions({
 	return (
 		<>
 			<div className="flex items-center gap-2">
-				<span className="text-sm text-muted-foreground">
+				<span className="text-muted-foreground text-sm">
 					{selectedCount} selected
 				</span>
 				<Select
@@ -239,7 +239,7 @@ export function SubmissionBulkActions({
 							<SelectItem key={reviewer.id} value={reviewer.id}>
 								<div className="flex flex-col">
 									<span>{reviewer.name}</span>
-									<span className="text-xs text-muted-foreground">
+									<span className="text-muted-foreground text-xs">
 										{reviewer.email}
 									</span>
 								</div>

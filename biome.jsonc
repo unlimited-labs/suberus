@@ -1,77 +1,69 @@
 {
-	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-	"vcs": {
-		"enabled": true,
-		"clientKind": "git",
-		"useIgnoreFile": true
-	},
-	"files": {
-		"ignoreUnknown": false,
-		"includes": [
-			"**/src/**/*",
-			"**/.vscode/**/*",
-			"**/index.html",
-			"**/vite.config.ts",
-			"!**/src/routeTree.gen.ts",
-			"!**/src/shared/ui/**/*",
-			"!**/*.svg"
-		]
-	},
-	"formatter": {
-		"enabled": true,
-		"indentStyle": "tab"
-	},
-	"assist": {
-		"actions": {
-			"source": {
-				"useSortedAttributes": "on",
-				"organizeImports": {
-					"level": "on",
-					"options": {
-						"sortBareImports": true,
-						"groups": [
-							{
-								"kind": "!bare"
-							},
-							":BLANK_LINE:",
-							{
-								"kind": "bare"
-							}
-						]
-					}
-				}
-			}
-		}
-	},
-	"css": {
-		"parser": {
-			"tailwindDirectives": true
-		}
-	},
-	"linter": {
-		"enabled": true,
-		"rules": {
-			"preset": "recommended",
-			"suspicious": {
-				"noArrayIndexKey": "off"
-			}
-		}
-	},
-	"javascript": {
-		"formatter": {
-			"quoteStyle": "double"
-		}
-	},
-	"overrides": [
-		{
-			"includes": ["**/*.test.ts", "**/*.test.tsx"],
-			"linter": {
-				"rules": {
-					"style": {
-						"noNonNullAssertion": "off"
-					}
-				}
-			}
-		}
-	]
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true,
+  },
+  "files": {
+    "ignoreUnknown": false,
+    "includes": [
+      "**/src/**/*",
+      "**/.vscode/**/*",
+      "**/index.html",
+      "**/vite.config.ts",
+      "!**/src/routeTree.gen.ts",
+      "!**/src/shared/ui/**/*",
+      "!**/*.svg",
+    ],
+  },
+  "formatter": { "enabled": false },
+  "assist": {
+    "actions": {
+      "source": {
+        "useSortedAttributes": "on",
+        "organizeImports": {
+          "level": "on",
+          "options": {
+            "sortBareImports": true,
+            "groups": [
+              {
+                "kind": "!bare",
+              },
+              ":BLANK_LINE:",
+              {
+                "kind": "bare",
+              },
+            ],
+          },
+        },
+      },
+    },
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true,
+    },
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "suspicious": {
+        "noArrayIndexKey": "off",
+      },
+    },
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.test.ts", "**/*.test.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noNonNullAssertion": "off",
+          },
+        },
+      },
+    },
+  ],
 }

@@ -28,7 +28,7 @@ export function AppLayout({
 	hasDocuments,
 }: AppLayoutProps) {
 	return (
-		<div className="flex h-screen bg-sidebar">
+		<div className="bg-sidebar flex h-screen">
 			<Sidebar
 				conferenceName={conferenceName}
 				exhibitorsEnabled={exhibitorsEnabled}
@@ -52,13 +52,13 @@ export function AppLayout({
 						scheduleStatus={scheduleStatus}
 					/>
 				</div>
-				<main className="flex flex-1 flex-col overflow-auto bg-background shadow-lg md:m-2 md:rounded-2xl">
+				<main className="bg-background flex flex-1 flex-col overflow-auto shadow-lg md:m-2 md:rounded-2xl">
 					<EmailVerificationBanner />
-					<div className="flex flex-1 flex-col overflow-auto min-h-0">
+					<div className="flex min-h-0 flex-1 flex-col overflow-auto">
 						{children}
 					</div>
 					{footerText && (
-						<footer className="border-t px-4 py-3 text-center text-xs text-muted-foreground">
+						<footer className="text-muted-foreground border-t px-4 py-3 text-center text-xs">
 							{footerText}
 						</footer>
 					)}

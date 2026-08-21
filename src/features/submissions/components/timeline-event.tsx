@@ -112,13 +112,13 @@ export function TimelineEvent({ event, isLast = false }: TimelineEventProps) {
 			/>
 			<TimelineContent>
 				<div className="space-y-1">
-					<h3 className="font-medium text-foreground">{config.label}</h3>
-					<p className="text-sm text-muted-foreground">
+					<h3 className="text-foreground font-medium">{config.label}</h3>
+					<p className="text-muted-foreground text-sm">
 						{formatDateTime(timestamp)}
 					</p>
-					<p className="text-xs text-muted-foreground">{event.triggeredBy}</p>
+					<p className="text-muted-foreground text-xs">{event.triggeredBy}</p>
 					{event.metadata?.comment && (
-						<p className="text-xs text-muted-foreground/80 mt-1 italic">
+						<p className="text-muted-foreground/80 mt-1 text-xs italic">
 							{event.metadata.comment}
 						</p>
 					)}

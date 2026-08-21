@@ -67,7 +67,7 @@ export function UserDeleteDialog({
 					<DialogHeader>
 						<DialogTitle>Delete User Account</DialogTitle>
 					</DialogHeader>
-					<p className="py-4 text-sm text-muted-foreground">Checking...</p>
+					<p className="text-muted-foreground py-4 text-sm">Checking...</p>
 				</DialogContent>
 			</Dialog>
 		);
@@ -86,7 +86,7 @@ export function UserDeleteDialog({
 							<li key={reason}>{reason}</li>
 						))}
 					</ul>
-					<p className="text-sm text-muted-foreground">Remove these first.</p>
+					<p className="text-muted-foreground text-sm">Remove these first.</p>
 					<DialogFooter>
 						<Button onClick={() => onOpenChange(false)} variant="outline">
 							Close
@@ -102,7 +102,7 @@ export function UserDeleteDialog({
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2">
-						<IconAlertTriangle className="size-5 text-destructive" />
+						<IconAlertTriangle className="text-destructive size-5" />
 						Delete User Account
 					</DialogTitle>
 					<DialogDescription>Permanently delete account of:</DialogDescription>
@@ -112,7 +112,7 @@ export function UserDeleteDialog({
 						{displayName}{" "}
 						<span className="text-muted-foreground">({user.email})</span>
 					</p>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						This action cannot be undone. All account data will be removed.
 					</p>
 				</div>

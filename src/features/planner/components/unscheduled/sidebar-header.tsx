@@ -34,7 +34,7 @@ export function SidebarHeader({
 		<div className="flex items-center justify-between border-b px-3 py-2">
 			<button
 				aria-pressed={isScheduled}
-				className="flex items-center gap-1.5 rounded px-1 py-0.5 text-xs font-medium text-foreground hover:bg-muted"
+				className="text-foreground hover:bg-muted flex items-center gap-1.5 rounded px-1 py-0.5 text-xs font-medium"
 				data-testid="sidebar-toggle-mode"
 				onClick={onToggleMode}
 				title={`Switch to ${otherLabel}`}
@@ -48,7 +48,7 @@ export function SidebarHeader({
 					<>
 						<button
 							aria-pressed={selectMode}
-							className={`flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium hover:bg-muted ${
+							className={`hover:bg-muted flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium ${
 								selectMode
 									? "bg-primary/10 text-primary hover:bg-primary/15"
 									: "text-muted-foreground hover:text-foreground"
@@ -66,7 +66,7 @@ export function SidebarHeader({
 							Select
 						</button>
 						<button
-							className="flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+							className="text-muted-foreground hover:bg-muted hover:text-foreground flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium"
 							data-testid="sidebar-bulk-read"
 							onClick={onOpenReader}
 							title="Open reading mode"
@@ -79,7 +79,7 @@ export function SidebarHeader({
 				)}
 				<button
 					aria-label="Collapse sidebar"
-					className="rounded p-1 text-muted-foreground hover:bg-muted"
+					className="text-muted-foreground hover:bg-muted rounded p-1"
 					onClick={onCollapse}
 					type="button"
 				>

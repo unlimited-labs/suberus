@@ -24,9 +24,8 @@ export function AttachmentSection({
 	existingAttachment,
 }: AttachmentSectionProps) {
 	const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
-	const [keepExistingAttachment, setKeepExistingAttachment] = useState(
-		!!existingAttachment,
-	);
+	const [keepExistingAttachment, setKeepExistingAttachment] =
+		useState(!!existingAttachment);
 
 	return (
 		<SectionCard
@@ -43,43 +42,43 @@ export function AttachmentSection({
 		>
 			{readOnly ? (
 				existingAttachment ? (
-					<div className="flex items-center gap-3 p-4 rounded-lg border border-border bg-muted/30">
-						<div className="flex-shrink-0 p-2 rounded bg-primary/10">
-							<IconFile className="size-5 text-primary" />
+					<div className="border-border bg-muted/30 flex items-center gap-3 rounded-lg border p-4">
+						<div className="bg-primary/10 flex-shrink-0 rounded p-2">
+							<IconFile className="text-primary size-5" />
 						</div>
-						<div className="flex-1 min-w-0">
+						<div className="min-w-0 flex-1">
 							<a
-								className="text-sm font-medium text-foreground hover:underline truncate block"
+								className="text-foreground block truncate text-sm font-medium hover:underline"
 								href={`/api/files/${existingAttachment.id}`}
 							>
 								{existingAttachment.originalName}
 							</a>
-							<p className="text-xs text-muted-foreground">
+							<p className="text-muted-foreground text-xs">
 								{formatFileSize(existingAttachment.size)}
 							</p>
 						</div>
 					</div>
 				) : (
-					<p className="text-sm text-muted-foreground italic">No attachment</p>
+					<p className="text-muted-foreground text-sm italic">No attachment</p>
 				)
 			) : (
 				<>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						Upload a PDF or DOCX file with detailed review notes
 					</p>
 					{existingAttachment && keepExistingAttachment ? (
-						<div className="flex items-center gap-3 p-4 rounded-lg border border-border bg-muted/30">
-							<div className="flex-shrink-0 p-2 rounded bg-primary/10">
-								<IconFile className="size-5 text-primary" />
+						<div className="border-border bg-muted/30 flex items-center gap-3 rounded-lg border p-4">
+							<div className="bg-primary/10 flex-shrink-0 rounded p-2">
+								<IconFile className="text-primary size-5" />
 							</div>
-							<div className="flex-1 min-w-0">
+							<div className="min-w-0 flex-1">
 								<a
-									className="text-sm font-medium text-foreground hover:underline truncate block"
+									className="text-foreground block truncate text-sm font-medium hover:underline"
 									href={`/api/files/${existingAttachment.id}`}
 								>
 									{existingAttachment.originalName}
 								</a>
-								<p className="text-xs text-muted-foreground">
+								<p className="text-muted-foreground text-xs">
 									{formatFileSize(existingAttachment.size)}
 								</p>
 							</div>

@@ -211,7 +211,7 @@ export function EmailTemplateDialog({
 								);
 							})}
 						</div>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							Click to copy &middot; hover for description
 						</p>
 					</div>

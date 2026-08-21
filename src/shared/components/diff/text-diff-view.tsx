@@ -26,7 +26,7 @@ export function TextDiffView({
 
 	if (!changed && emptyLabel) {
 		return (
-			<p className="text-sm text-muted-foreground" data-testid="diff-unchanged">
+			<p className="text-muted-foreground text-sm" data-testid="diff-unchanged">
 				{emptyLabel}
 			</p>
 		);

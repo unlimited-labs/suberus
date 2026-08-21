@@ -15,7 +15,7 @@ export function QuickActions() {
 			<div className="grid grid-cols-2 gap-3">
 				<Button
 					asChild
-					className="h-auto py-4 flex flex-col gap-2"
+					className="flex h-auto flex-col gap-2 py-4"
 					variant="outline"
 				>
 					<Link target="_blank" to="/api/admin/users/export">
@@ -25,7 +25,7 @@ export function QuickActions() {
 				</Button>
 				<Button
 					asChild
-					className="h-auto py-4 flex flex-col gap-2"
+					className="flex h-auto flex-col gap-2 py-4"
 					variant="outline"
 				>
 					<Link to="/admin/users">
@@ -35,7 +35,7 @@ export function QuickActions() {
 				</Button>
 				<Button
 					asChild
-					className="h-auto py-4 flex flex-col gap-2"
+					className="flex h-auto flex-col gap-2 py-4"
 					variant="outline"
 				>
 					<Link to="/admin/submissions">
@@ -45,7 +45,7 @@ export function QuickActions() {
 				</Button>
 				<Button
 					asChild
-					className="h-auto py-4 flex flex-col gap-2"
+					className="flex h-auto flex-col gap-2 py-4"
 					variant="outline"
 				>
 					<Link to="/admin/settings">
@@ -55,7 +55,7 @@ export function QuickActions() {
 				</Button>
 				<Button
 					asChild
-					className="h-auto py-4 flex flex-col gap-2"
+					className="flex h-auto flex-col gap-2 py-4"
 					variant="outline"
 				>
 					<Link to="/admin/program-planner">

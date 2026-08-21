@@ -102,7 +102,7 @@ export function RemindersSettingsTab({
 							}
 						/>
 					</div>
-					<p className="text-xs text-muted-foreground">
+					<p className="text-muted-foreground text-xs">
 						Sent to reviewers who still have a review pending, counting down to
 						their review deadline.
 					</p>
@@ -115,7 +115,7 @@ export function RemindersSettingsTab({
 							placeholder="e.g. 7, 3, 1"
 							value={reviewerDaysText}
 						/>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							Comma-separated numbers. A reminder is sent for each value.
 						</p>
 					</div>
@@ -139,7 +139,7 @@ export function RemindersSettingsTab({
 							}
 						/>
 					</div>
-					<p className="text-xs text-muted-foreground">
+					<p className="text-muted-foreground text-xs">
 						Sent to authors asked to revise &amp; resubmit, repeated every few
 						days until they upload a revision or the limit is reached.
 					</p>
@@ -203,7 +203,7 @@ export function RemindersSettingsTab({
 							}
 						/>
 					</div>
-					<p className="text-xs text-muted-foreground">
+					<p className="text-muted-foreground text-xs">
 						Sent to authors with an unsubmitted draft or an outstanding
 						revision, counting down to the submission deadline.
 					</p>
@@ -216,7 +216,7 @@ export function RemindersSettingsTab({
 							placeholder="e.g. 7, 3, 1"
 							value={deadlineDaysText}
 						/>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							Comma-separated numbers. A reminder is sent for each value.
 						</p>
 					</div>

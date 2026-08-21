@@ -38,7 +38,7 @@ export function RoomFilterPopover({
 					<IconFilter size={13} />
 					Rooms
 					{active && (
-						<span className="rounded-full bg-primary/20 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-primary">
+						<span className="bg-primary/20 text-primary rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
 							{rooms.length - hiddenCount}/{rooms.length}
 						</span>
 					)}
@@ -48,7 +48,7 @@ export function RoomFilterPopover({
 				<div className="flex items-center justify-between px-1 pb-2">
 					<span className="text-xs font-medium">Visible rooms</span>
 					<button
-						className="text-[11px] text-muted-foreground hover:text-foreground disabled:opacity-40"
+						className="text-muted-foreground hover:text-foreground text-[11px] disabled:opacity-40"
 						disabled={!active}
 						onClick={onShowAll}
 						type="button"
@@ -62,7 +62,7 @@ export function RoomFilterPopover({
 						return (
 							<li key={r.id}>
 								<label
-									className="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 text-xs hover:bg-muted"
+									className="hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 text-xs"
 									htmlFor={`room-filter-${r.id}`}
 								>
 									<Checkbox

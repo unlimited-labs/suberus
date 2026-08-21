@@ -72,7 +72,7 @@ export function AuthCard({
 					<div className="mb-4 hidden lg:block">
 						<h1 className="text-xl font-semibold tracking-tight">{title}</h1>
 						{subtitle && (
-							<p className="text-sm text-muted-foreground">{subtitle}</p>
+							<p className="text-muted-foreground text-sm">{subtitle}</p>
 						)}
 					</div>
 				)}

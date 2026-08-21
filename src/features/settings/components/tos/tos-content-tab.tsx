@@ -67,7 +67,7 @@ export function TosContentTab({ initialContent }: TosContentTabProps) {
 									{content.trim() ? (
 										<Markdown content={content} />
 									) : (
-										<p className="text-sm text-muted-foreground">
+										<p className="text-muted-foreground text-sm">
 											Nothing to preview yet
 										</p>
 									)}

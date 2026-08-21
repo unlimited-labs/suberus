@@ -98,7 +98,7 @@ export function ReviewForm({
 				<Badge variant="outline">
 					{lookup(typeLabels, submission.type) ?? submission.type}
 				</Badge>
-				<h1 className="text-xl font-semibold leading-snug text-foreground">
+				<h1 className="text-foreground text-xl leading-snug font-semibold">
 					{submission.title}
 				</h1>
 			</div>
@@ -182,7 +182,7 @@ export function ReviewForm({
 									/>
 								</form.AppForm>
 								{!allComplete && (
-									<p className="mt-2 text-center text-xs text-muted-foreground">
+									<p className="text-muted-foreground mt-2 text-center text-xs">
 										Complete all required sections to submit
 									</p>
 								)}

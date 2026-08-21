@@ -141,9 +141,9 @@ export function EmailTemplatesTab({
 							rows={4}
 							value={footer}
 						/>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							Leave empty to disable. Appended to all outgoing emails. Use{" "}
-							<code className="rounded bg-muted px-1">
+							<code className="bg-muted rounded px-1">
 								{"{{conferenceName}}"}
 							</code>{" "}
 							to insert the conference name.

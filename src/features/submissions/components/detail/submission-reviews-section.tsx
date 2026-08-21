@@ -37,17 +37,17 @@ export function SubmissionReviewsSection({
 
 	return (
 		<div className="space-y-4">
-			<div className="flex items-center justify-between flex-wrap gap-4">
+			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div className="flex items-center gap-3">
-					<IconMessageCircle className="size-5 text-muted-foreground" />
+					<IconMessageCircle className="text-muted-foreground size-5" />
 					<h2 className="text-lg font-semibold">Reviews</h2>
-					<span className="text-sm text-muted-foreground">
+					<span className="text-muted-foreground text-sm">
 						({reviews.length})
 					</span>
 				</div>
 				{rounds.length > 1 && (
 					<div className="flex items-center gap-2">
-						<IconFilter className="size-4 text-muted-foreground" />
+						<IconFilter className="text-muted-foreground size-4" />
 						<Select
 							items={[
 								{ value: "all", label: "All rounds" },
@@ -86,7 +86,7 @@ export function SubmissionReviewsSection({
 								title={`Author's revision notes – Version ${round}`}
 								variant="elevated"
 							>
-								<div className="text-sm text-foreground leading-relaxed bg-muted/50 p-3 rounded-lg border">
+								<div className="text-foreground bg-muted/50 rounded-lg border p-3 text-sm leading-relaxed">
 									{versionComment.comment}
 								</div>
 							</SectionCard>

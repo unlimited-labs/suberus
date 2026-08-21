@@ -60,7 +60,7 @@ export function SurveyQuestionField({
 						}
 					/>
 					<Label
-						className="cursor-pointer text-sm font-normal leading-snug"
+						className="cursor-pointer text-sm leading-snug font-normal"
 						htmlFor={`survey-${question.id}`}
 					>
 						{question.label}

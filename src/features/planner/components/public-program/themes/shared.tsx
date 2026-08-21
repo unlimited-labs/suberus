@@ -143,12 +143,12 @@ export function Highlight({
 
 export function ProgramEmptyState() {
 	return (
-		<div className="flex h-screen flex-col items-center justify-center gap-3 bg-background p-8 text-center">
-			<IconCalendar className="size-12 text-muted-foreground" />
-			<p className="text-2xl font-semibold text-foreground">
+		<div className="bg-background flex h-screen flex-col items-center justify-center gap-3 p-8 text-center">
+			<IconCalendar className="text-muted-foreground size-12" />
+			<p className="text-foreground text-2xl font-semibold">
 				Programme not published yet
 			</p>
-			<p className="text-sm uppercase tracking-[0.25em] text-muted-foreground">
+			<p className="text-muted-foreground text-sm tracking-[0.25em] uppercase">
 				— check back soon —
 			</p>
 		</div>
@@ -166,7 +166,7 @@ export function ProgramPwaStatus({ className }: { className?: string }) {
 		<div className={cn("inline-flex items-center gap-3", className)}>
 			{offline && (
 				<span
-					className="inline-flex items-center gap-1.5 text-sm text-muted-foreground"
+					className="text-muted-foreground inline-flex items-center gap-1.5 text-sm"
 					data-testid="program-offline-badge"
 				>
 					<IconCloudOff className="size-4" />
@@ -175,7 +175,7 @@ export function ProgramPwaStatus({ className }: { className?: string }) {
 			)}
 			{canInstall && (
 				<button
-					className="inline-flex items-center gap-1.5 text-sm transition-colors hover:text-primary"
+					className="hover:text-primary inline-flex items-center gap-1.5 text-sm transition-colors"
 					data-testid="program-install-button"
 					onClick={install}
 					type="button"

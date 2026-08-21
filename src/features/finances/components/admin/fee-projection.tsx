@@ -21,12 +21,12 @@ export function FeeProjection({
 	};
 
 	return (
-		<div className="space-y-2 rounded-md border border-border/60 bg-muted/20 p-3">
-			<div className="text-xs font-medium text-muted-foreground">
+		<div className="border-border/60 bg-muted/20 space-y-2 rounded-md border p-3">
+			<div className="text-muted-foreground text-xs font-medium">
 				Registration fee projection
 			</div>
 			{types.length === 0 ? (
-				<p className="text-sm text-muted-foreground">No fee types defined.</p>
+				<p className="text-muted-foreground text-sm">No fee types defined.</p>
 			) : (
 				types.map((type, index) => {
 					const row = rows[index] ?? { price: type.amount, qty: 0 };
@@ -48,7 +48,7 @@ export function FeeProjection({
 								type="number"
 								value={Number.isFinite(row.price) ? row.price : ""}
 							/>
-							<span className="text-xs text-muted-foreground">×</span>
+							<span className="text-muted-foreground text-xs">×</span>
 							<Input
 								className="w-20 text-right tabular-nums"
 								data-testid={`sim-qty-${index}`}

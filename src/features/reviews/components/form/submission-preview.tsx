@@ -66,7 +66,7 @@ export function SubmissionPreview({
 			{isDoubleBlind ? (
 				<Card>
 					<CardContent className="py-4">
-						<p className="text-sm italic text-muted-foreground">
+						<p className="text-muted-foreground text-sm italic">
 							Double-blind review — author information hidden
 						</p>
 					</CardContent>
@@ -139,17 +139,17 @@ function AuthorRow({
 			</div>
 			<div className="min-w-0 flex-1">
 				<div className="flex flex-wrap items-center gap-2">
-					<span className="font-medium text-foreground">
+					<span className="text-foreground font-medium">
 						{author.firstName} {author.lastName}
 					</span>
 					{author.isPresenter && (
-						<span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+						<span className="text-primary inline-flex items-center gap-1 text-xs font-medium">
 							<IconStarFilled className="size-3" />
 							Presenter
 						</span>
 					)}
 				</div>
-				<p className="mt-0.5 truncate text-sm text-muted-foreground">
+				<p className="text-muted-foreground mt-0.5 truncate text-sm">
 					{affiliationDisplay(author.affiliationName)}
 				</p>
 			</div>
@@ -177,20 +177,20 @@ function ContentCard({
 			title="Submission Content"
 		>
 			{file && (
-				<div className="flex items-center gap-4 rounded-lg border border-border bg-muted/30 p-3">
-					<div className="shrink-0 rounded-md bg-primary/10 p-2">
-						<IconFile className="size-5 text-primary" />
+				<div className="border-border bg-muted/30 flex items-center gap-4 rounded-lg border p-3">
+					<div className="bg-primary/10 shrink-0 rounded-md p-2">
+						<IconFile className="text-primary size-5" />
 					</div>
 					<div className="min-w-0 flex-1">
-						<p className="truncate text-sm font-medium text-foreground">
+						<p className="text-foreground truncate text-sm font-medium">
 							{file.originalName}
 						</p>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							{formatFileSize(file.size)}
 						</p>
 					</div>
 					<a
-						className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+						className="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm font-medium"
 						data-testid="file-download-button"
 						href={`/api/files/${file.id}`}
 					>
@@ -200,7 +200,7 @@ function ContentCard({
 				</div>
 			)}
 			{content && (
-				<div className="max-h-96 overflow-auto whitespace-pre-line break-words rounded-lg border border-border bg-muted/30 p-4 text-sm leading-relaxed text-foreground">
+				<div className="border-border bg-muted/30 text-foreground max-h-96 overflow-auto rounded-lg border p-4 text-sm leading-relaxed break-words whitespace-pre-line">
 					{content}
 				</div>
 			)}

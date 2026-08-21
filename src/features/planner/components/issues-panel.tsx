@@ -107,7 +107,7 @@ export function IssuesPanel({ sessions }: IssuesPanelProps) {
 								return (
 									<li data-testid={`issue-item-${i}`} key={key}>
 										<button
-											className="flex w-full items-start gap-2 rounded px-1.5 py-1 text-left hover:bg-muted"
+											className="hover:bg-muted flex w-full items-start gap-2 rounded px-1.5 py-1 text-left"
 											onClick={() => selectSession(targetId)}
 											type="button"
 										>
@@ -116,7 +116,7 @@ export function IssuesPanel({ sessions }: IssuesPanelProps) {
 												{issue.message}
 											</span>
 											{issue.sessionIds.length > 1 && (
-												<span className="shrink-0 text-[10px] text-muted-foreground">
+												<span className="text-muted-foreground shrink-0 text-[10px]">
 													+{issue.sessionIds.length - 1}
 												</span>
 											)}

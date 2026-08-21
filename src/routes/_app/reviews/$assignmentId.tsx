@@ -117,7 +117,7 @@ function ReviewFormPage() {
 				</Link>
 			</PageHeader>
 
-			<div className="flex-1 p-6 overflow-auto">
+			<div className="flex-1 overflow-auto p-6">
 				<ReviewForm
 					assignmentId={assignment.id}
 					contentFormat={config.contentFormat}
@@ -162,7 +162,7 @@ function NotFoundState({ assignmentId }: { assignmentId: string }) {
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconClipboardCheck} title="Review Not Found" />
-			<div className="flex-1 p-6 flex items-center justify-center">
+			<div className="flex flex-1 items-center justify-center p-6">
 				<div className="text-center">
 					<p className="text-muted-foreground mb-4">
 						Assignment not found: {assignmentId}

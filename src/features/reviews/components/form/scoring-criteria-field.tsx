@@ -20,7 +20,7 @@ export function ScoringCriteriaField({
 			icon={IconStar}
 			title="Evaluation Criteria"
 		>
-			<div className="rounded-lg border border-border divide-y divide-border">
+			<div className="border-border divide-border divide-y rounded-lg border">
 				{scoringCriteria.map((criterion) => (
 					<form.Field key={criterion.name} name={`scores.${criterion.name}`}>
 						{(field) => {
@@ -28,20 +28,20 @@ export function ScoringCriteriaField({
 							const currentScore = (field.state.value as number) ?? 0;
 							return (
 								<div
-									className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-4 py-3"
+									className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:gap-4"
 									data-testid="scoring-criterion"
 								>
-									<div className="flex-1 min-w-0">
-										<p className="text-sm font-medium text-foreground">
+									<div className="min-w-0 flex-1">
+										<p className="text-foreground text-sm font-medium">
 											{criterion.name}
 										</p>
 										{criterion.description && (
-											<p className="text-xs text-muted-foreground">
+											<p className="text-muted-foreground text-xs">
 												{criterion.description}
 											</p>
 										)}
 									</div>
-									<div className="flex items-center gap-1 shrink-0">
+									<div className="flex shrink-0 items-center gap-1">
 										{[1, 2, 3, 4, 5].map((score) => (
 											<button
 												className={cn(
@@ -68,7 +68,7 @@ export function ScoringCriteriaField({
 					</form.Field>
 				))}
 			</div>
-			<p className="text-xs text-muted-foreground px-1">
+			<p className="text-muted-foreground px-1 text-xs">
 				1 = Poor &middot; 2 = Below Average &middot; 3 = Average &middot; 4 =
 				Good &middot; 5 = Excellent
 			</p>

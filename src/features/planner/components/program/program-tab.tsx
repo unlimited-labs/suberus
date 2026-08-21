@@ -119,7 +119,7 @@ function PlannerSettingsSection({
 								)}
 							</form.Field>
 						</div>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							Visible window in the planner grid.
 						</p>
 					</div>
@@ -144,9 +144,9 @@ function PlannerSettingsSection({
 									/>
 								)}
 							</form.Field>
-							<span className="text-sm text-muted-foreground">minutes</span>
+							<span className="text-muted-foreground text-sm">minutes</span>
 						</div>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							Pre-filled when creating sessions and dropping submissions.
 						</p>
 					</div>
@@ -169,9 +169,9 @@ function PlannerSettingsSection({
 									/>
 								)}
 							</form.Field>
-							<span className="text-sm text-muted-foreground">minutes</span>
+							<span className="text-muted-foreground text-sm">minutes</span>
 						</div>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							Flags a co-author scheduled in two talks less than this far apart.
 							Set 0 to require only that their talks don't overlap.
 						</p>
@@ -197,9 +197,9 @@ function PlannerSettingsSection({
 									/>
 								)}
 							</form.Field>
-							<span className="text-sm text-muted-foreground">minutes</span>
+							<span className="text-muted-foreground text-sm">minutes</span>
 						</div>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							How long before a favourited talk starts attendees get the push
 							notification.
 						</p>
@@ -211,7 +211,7 @@ function PlannerSettingsSection({
 							<Label htmlFor="autoplanEnabled">
 								Enable autoplanner (requires LLM access)
 							</Label>
-							<p className="text-sm text-muted-foreground">
+							<p className="text-muted-foreground text-sm">
 								Lets admins cluster accepted abstracts into sessions and
 								generate session titles via the LLM service.
 							</p>
@@ -234,7 +234,7 @@ function PlannerSettingsSection({
 								llmStatusDotClass(llmHealth.status),
 							)}
 						/>
-						<span className="text-[11px] text-muted-foreground">
+						<span className="text-muted-foreground text-[11px]">
 							{formatLlmStatus(llmHealth)}
 						</span>
 					</div>

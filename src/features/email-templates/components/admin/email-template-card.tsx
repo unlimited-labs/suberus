@@ -14,7 +14,7 @@ export function EmailTemplateCard({
 }: EmailTemplateCardProps) {
 	return (
 		<div
-			className="flex items-center justify-between rounded-lg border border-border/50 bg-card p-4 transition-colors hover:bg-muted/30"
+			className="border-border/50 bg-card hover:bg-muted/30 flex items-center justify-between rounded-lg border p-4 transition-colors"
 			data-testid="email-template-card"
 		>
 			<div className="flex items-center gap-3">
@@ -24,9 +24,9 @@ export function EmailTemplateCard({
 					}`}
 				>
 					{template.isEnabled ? (
-						<IconMail className="size-5 text-primary" />
+						<IconMail className="text-primary size-5" />
 					) : (
-						<IconMailOff className="size-5 text-muted-foreground" />
+						<IconMailOff className="text-muted-foreground size-5" />
 					)}
 				</div>
 				<div>
@@ -36,7 +36,7 @@ export function EmailTemplateCard({
 							{template.isEnabled ? "Active" : "Disabled"}
 						</Badge>
 					</div>
-					<p className="text-sm text-muted-foreground">{template.subject}</p>
+					<p className="text-muted-foreground text-sm">{template.subject}</p>
 				</div>
 			</div>
 			<Button onClick={onEdit} size="icon" variant="ghost">

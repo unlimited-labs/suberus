@@ -38,7 +38,7 @@ export function TypeFormatSection({
 		<div className="space-y-3">
 			<div className="space-y-0.5">
 				<Label>Content Format</Label>
-				<p className="text-xs italic text-muted-foreground/70">
+				<p className="text-muted-foreground/70 text-xs italic">
 					How authors provide their submission content
 				</p>
 			</div>
@@ -64,7 +64,7 @@ export function TypeFormatSection({
 
 			{/* File extensions (only for FILE format) */}
 			{config.contentFormat === "FILE" && (
-				<div className="space-y-2 pl-0 sm:pl-4 pt-2">
+				<div className="space-y-2 pt-2 pl-0 sm:pl-4">
 					<Label className="text-sm">Allowed file extension</Label>
 					<RadioGroup
 						className="flex flex-wrap gap-3"
@@ -78,7 +78,7 @@ export function TypeFormatSection({
 							<div className="flex items-center gap-2" key={ext}>
 								<RadioGroupItem id={`ext-${ext}`} value={ext} />
 								<Label
-									className="text-sm uppercase cursor-pointer"
+									className="cursor-pointer text-sm uppercase"
 									htmlFor={`ext-${ext}`}
 								>
 									{ext}
@@ -87,7 +87,7 @@ export function TypeFormatSection({
 						))}
 					</RadioGroup>
 					{config.allowedExtensions.length === 0 && (
-						<p className="text-xs text-destructive">
+						<p className="text-destructive text-xs">
 							Select an allowed file extension
 						</p>
 					)}

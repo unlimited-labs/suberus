@@ -47,7 +47,7 @@ export function RegisterStep1({
 						value={accountType}
 					>
 						<FieldLabel
-							className="group flex cursor-pointer items-start gap-3 rounded-lg border border-input p-3 font-normal transition-colors hover:bg-muted/50 has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5"
+							className="group border-input hover:bg-muted/50 has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5 flex cursor-pointer items-start gap-3 rounded-lg border p-3 font-normal transition-colors"
 							htmlFor="account-type-participant"
 						>
 							<RadioGroupItem
@@ -57,17 +57,17 @@ export function RegisterStep1({
 								value="participant"
 							/>
 							<span className="flex items-start gap-2.5">
-								<IconUser className="mt-0.5 size-5 shrink-0 text-muted-foreground group-has-data-[state=checked]:text-primary" />
+								<IconUser className="text-muted-foreground group-has-data-[state=checked]:text-primary mt-0.5 size-5 shrink-0" />
 								<span className="flex flex-col gap-0.5">
 									<span className="font-medium">Participant / Author</span>
-									<span className="text-xs text-muted-foreground">
+									<span className="text-muted-foreground text-xs">
 										Submit abstracts and attend the conference
 									</span>
 								</span>
 							</span>
 						</FieldLabel>
 						<FieldLabel
-							className="group flex cursor-pointer items-start gap-3 rounded-lg border border-input p-3 font-normal transition-colors hover:bg-muted/50 has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5"
+							className="group border-input hover:bg-muted/50 has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5 flex cursor-pointer items-start gap-3 rounded-lg border p-3 font-normal transition-colors"
 							htmlFor="account-type-exhibitor"
 						>
 							<RadioGroupItem
@@ -77,10 +77,10 @@ export function RegisterStep1({
 								value="exhibitor"
 							/>
 							<span className="flex items-start gap-2.5">
-								<IconBuildingStore className="mt-0.5 size-5 shrink-0 text-muted-foreground group-has-data-[state=checked]:text-primary" />
+								<IconBuildingStore className="text-muted-foreground group-has-data-[state=checked]:text-primary mt-0.5 size-5 shrink-0" />
 								<span className="flex flex-col gap-0.5">
 									<span className="font-medium">Exhibitor</span>
-									<span className="text-xs text-muted-foreground">
+									<span className="text-muted-foreground text-xs">
 										Represent your company at the conference
 									</span>
 								</span>
@@ -92,7 +92,7 @@ export function RegisterStep1({
 
 			{invitation && (
 				<Alert className="border-primary/30 bg-primary/5">
-					<IconInfoCircle className="size-4 text-primary" />
+					<IconInfoCircle className="text-primary size-4" />
 					<AlertDescription>
 						You&apos;ve been invited as{" "}
 						<span className="font-semibold">
@@ -106,7 +106,7 @@ export function RegisterStep1({
 				<Field>
 					<FieldLabel htmlFor="invited-email">E-mail *</FieldLabel>
 					<div className="relative">
-						<IconMail className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
+						<IconMail className="text-muted-foreground pointer-events-none absolute top-2.5 left-3 size-4" />
 						<Input
 							className="bg-muted pl-9"
 							id="invited-email"

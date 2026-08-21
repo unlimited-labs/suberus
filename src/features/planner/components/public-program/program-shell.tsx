@@ -56,7 +56,7 @@ export function ProgramShell({
 	return (
 		<TooltipProvider>
 			<div
-				className="h-screen overflow-y-auto bg-background text-foreground font-[var(--prog-font-body)] selection:bg-primary selection:text-primary-foreground"
+				className="bg-background text-foreground selection:bg-primary selection:text-primary-foreground h-screen overflow-y-auto font-[var(--prog-font-body)]"
 				data-program-theme={themeId}
 				data-testid={`program-theme-${themeId}`}
 			>
@@ -145,25 +145,25 @@ function MinimalHeader({
 	settings: ProgramThemeProps["settings"];
 }) {
 	return (
-		<header className="border-b border-border">
+		<header className="border-border border-b">
 			<div className="mx-auto max-w-[var(--prog-max-width)] px-5 pt-10 pb-6 sm:px-8 sm:pt-14">
 				<div className="mb-4 flex items-center justify-end gap-4">
 					<ProgramPwaStatus className="text-muted-foreground" />
 					<ProgramAuthLink
-						className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+						className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
 						labelClassName="hidden sm:inline"
 					/>
 				</div>
 				{settings.startDate && (
-					<p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">
+					<p className="text-primary text-xs font-medium tracking-[0.2em] uppercase">
 						{formatLongDate(settings.startDate)}
 					</p>
 				)}
-				<h1 className="mt-3 font-[var(--prog-font-display)] text-3xl font-bold tracking-tight text-foreground sm:text-5xl">
+				<h1 className="text-foreground mt-3 text-3xl font-[var(--prog-font-display)] font-bold tracking-tight sm:text-5xl">
 					{settings.name || "Conference"}
 				</h1>
 				{settings.subtitle && (
-					<p className="mt-2 max-w-2xl text-base text-muted-foreground sm:text-lg">
+					<p className="text-muted-foreground mt-2 max-w-2xl text-base sm:text-lg">
 						{settings.subtitle}
 					</p>
 				)}
@@ -189,23 +189,23 @@ function FramedHeader({
 	return (
 		<header className="border-b" style={HEADER_RULE_STYLE}>
 			<div className="mx-auto max-w-[var(--prog-max-width)] px-5 pt-4 pb-3 sm:px-10 sm:pt-12 sm:pb-7">
-				<div className="flex items-center justify-end gap-4 border-b border-border pb-2 text-muted-foreground">
+				<div className="border-border text-muted-foreground flex items-center justify-end gap-4 border-b pb-2">
 					<ProgramPwaStatus />
 					<ProgramAuthLink
-						className="text-sm transition-colors hover:text-foreground"
+						className="hover:text-foreground text-sm transition-colors"
 						labelClassName="hidden sm:inline"
 					/>
 				</div>
-				<h1 className="mt-4 font-[var(--prog-font-display)] text-3xl font-extrabold leading-[1.02] tracking-tight break-words text-foreground sm:mt-5 sm:text-5xl md:text-6xl">
+				<h1 className="text-foreground mt-4 text-3xl leading-[1.02] font-[var(--prog-font-display)] font-extrabold tracking-tight break-words sm:mt-5 sm:text-5xl md:text-6xl">
 					{settings.name || "Conference"}
 				</h1>
 				{settings.subtitle && (
-					<p className="mt-2 max-w-3xl text-base leading-snug text-muted-foreground sm:text-xl">
+					<p className="text-muted-foreground mt-2 max-w-3xl text-base leading-snug sm:text-xl">
 						{settings.subtitle}
 					</p>
 				)}
 				<div className="mt-4 flex items-center gap-4 sm:mt-5">
-					<span className="h-px flex-1 bg-border" />
+					<span className="bg-border h-px flex-1" />
 					<span
 						className={cn(
 							"font-[var(--prog-font-meta)] uppercase",
@@ -214,7 +214,7 @@ function FramedHeader({
 					>
 						{dividerLabel}
 					</span>
-					<span className="h-px flex-1 bg-border" />
+					<span className="bg-border h-px flex-1" />
 				</div>
 			</div>
 		</header>
@@ -236,7 +236,7 @@ function FramedFooter({
 			)}
 			style={RULE_STYLE}
 		>
-			<div className="font-[var(--prog-font-meta)] text-[10px] uppercase tracking-[0.3em] text-[var(--prog-faint)]">
+			<div className="text-[10px] font-[var(--prog-font-meta)] tracking-[0.3em] text-[var(--prog-faint)] uppercase">
 				{themeId === "academic" ? settings.name || "Conference" : "— Fin —"}
 			</div>
 		</footer>
@@ -276,7 +276,7 @@ function MinimalNav({
 						<span className="text-base font-semibold tabular-nums">
 							{label.dayNum}
 						</span>
-						<span className="text-xs uppercase tracking-wide">
+						<span className="text-xs tracking-wide uppercase">
 							{label.weekday.slice(0, 3)} {label.month.slice(0, 3)}
 						</span>
 					</button>
@@ -316,19 +316,19 @@ function FramedNav({
 						onClick={() => setActiveDay(i)}
 						type="button"
 					>
-						<span className="font-[var(--prog-font-display)] text-2xl leading-none font-extrabold tabular-nums sm:text-3xl">
+						<span className="text-2xl leading-none font-[var(--prog-font-display)] font-extrabold tabular-nums sm:text-3xl">
 							{label.dayNum}
 						</span>
-						<span className="flex flex-col font-[var(--prog-font-meta)] leading-tight">
-							<span className="text-[10px] uppercase tracking-[0.2em]">
+						<span className="flex flex-col leading-tight font-[var(--prog-font-meta)]">
+							<span className="text-[10px] tracking-[0.2em] uppercase">
 								{label.weekday.slice(0, 3)}
 							</span>
-							<span className="text-[10px] uppercase tracking-[0.15em] text-[var(--prog-faint)]">
+							<span className="text-[10px] tracking-[0.15em] text-[var(--prog-faint)] uppercase">
 								{label.month.slice(0, 3)}
 							</span>
 						</span>
 						{isActive && (
-							<span className="absolute -bottom-[13px] left-0 h-[2px] w-full bg-primary sm:-bottom-[10px]" />
+							<span className="bg-primary absolute -bottom-[13px] left-0 h-[2px] w-full sm:-bottom-[10px]" />
 						)}
 					</button>
 				);

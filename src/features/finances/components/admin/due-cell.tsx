@@ -42,7 +42,7 @@ export function DueCell({
 				/>
 				{days === null ? null : overdue ? (
 					<span
-						className="rounded bg-destructive px-1.5 py-0.5 font-medium text-white"
+						className="bg-destructive rounded px-1.5 py-0.5 font-medium text-white"
 						data-testid={`${testIdPrefix}-overdue-${index}`}
 					>
 						{Math.abs(days)}d overdue

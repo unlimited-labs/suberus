@@ -43,8 +43,8 @@ function DeadlineCell({
 	if (status === "COMPLETED") {
 		return (
 			<div className="flex items-center gap-2">
-				<IconCircleCheck className="size-4 text-primary shrink-0" />
-				<span className="text-sm text-muted-foreground">{dateStr}</span>
+				<IconCircleCheck className="text-primary size-4 shrink-0" />
+				<span className="text-muted-foreground text-sm">{dateStr}</span>
 			</div>
 		);
 	}
@@ -52,12 +52,12 @@ function DeadlineCell({
 	if (isPast || status === "OVERDUE") {
 		return (
 			<div className="flex items-center gap-2">
-				<IconAlertTriangle className="size-4 text-destructive shrink-0" />
+				<IconAlertTriangle className="text-destructive size-4 shrink-0" />
 				<div className="flex flex-col">
-					<span className="text-sm font-semibold text-destructive">
+					<span className="text-destructive text-sm font-semibold">
 						{Math.abs(daysRemaining)}d overdue
 					</span>
-					<span className="text-xs text-muted-foreground">{dateStr}</span>
+					<span className="text-muted-foreground text-xs">{dateStr}</span>
 				</div>
 			</div>
 		);
@@ -66,12 +66,12 @@ function DeadlineCell({
 	if (isUrgent) {
 		return (
 			<div className="flex items-center gap-2">
-				<IconClock className="size-4 text-destructive shrink-0 animate-pulse" />
+				<IconClock className="text-destructive size-4 shrink-0 animate-pulse" />
 				<div className="flex flex-col">
-					<span className="text-sm font-semibold text-destructive">
+					<span className="text-destructive text-sm font-semibold">
 						{daysRemaining}d left
 					</span>
-					<span className="text-xs text-muted-foreground">{dateStr}</span>
+					<span className="text-muted-foreground text-xs">{dateStr}</span>
 				</div>
 			</div>
 		);
@@ -79,12 +79,12 @@ function DeadlineCell({
 
 	return (
 		<div className="flex items-center gap-2">
-			<IconClock className="size-4 text-muted-foreground shrink-0" />
+			<IconClock className="text-muted-foreground size-4 shrink-0" />
 			<div className="flex flex-col">
-				<span className="text-sm font-medium text-foreground">
+				<span className="text-foreground text-sm font-medium">
 					{daysRemaining}d left
 				</span>
-				<span className="text-xs text-muted-foreground">{dateStr}</span>
+				<span className="text-muted-foreground text-xs">{dateStr}</span>
 			</div>
 		</div>
 	);
@@ -102,12 +102,12 @@ export const reviewColumns: AppColumnDef<ReviewerAssignment>[] = [
 			const round = row.original.round;
 
 			return (
-				<div className="flex flex-col gap-1 max-w-[400px]">
-					<span className="line-clamp-2 font-medium text-foreground">
+				<div className="flex max-w-[400px] flex-col gap-1">
+					<span className="text-foreground line-clamp-2 font-medium">
 						{title}
 					</span>
 					{round > 1 && (
-						<span className="text-xs text-muted-foreground">R{round}</span>
+						<span className="text-muted-foreground text-xs">R{round}</span>
 					)}
 				</div>
 			);
@@ -125,7 +125,7 @@ export const reviewColumns: AppColumnDef<ReviewerAssignment>[] = [
 
 			if (isAnonymous) {
 				return (
-					<span className="text-sm italic text-muted-foreground">
+					<span className="text-muted-foreground text-sm italic">
 						Double-blind review
 					</span>
 				);
@@ -134,7 +134,7 @@ export const reviewColumns: AppColumnDef<ReviewerAssignment>[] = [
 			return (
 				<div className="flex flex-col">
 					<span className="text-foreground font-medium">{name}</span>
-					<span className="text-xs text-muted-foreground">{affiliation}</span>
+					<span className="text-muted-foreground text-xs">{affiliation}</span>
 				</div>
 			);
 		},

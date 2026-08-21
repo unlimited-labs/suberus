@@ -20,7 +20,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-		"noImplicitAny": true,
+    "noImplicitAny": true,
 
     "paths": {
       "@/*": ["./src/*"]

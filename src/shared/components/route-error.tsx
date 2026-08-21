@@ -6,9 +6,9 @@ export function RouteError() {
 	const router = useRouter();
 
 	return (
-		<div className="flex h-full flex-col items-center justify-center gap-4 text-muted-foreground">
-			<IconAlertTriangle className="size-12 text-destructive" />
-			<p className="text-lg font-medium text-foreground">
+		<div className="text-muted-foreground flex h-full flex-col items-center justify-center gap-4">
+			<IconAlertTriangle className="text-destructive size-12" />
+			<p className="text-foreground text-lg font-medium">
 				Something went wrong
 			</p>
 			<p className="text-sm">An error occurred while loading this page.</p>

@@ -69,7 +69,7 @@ export function SubmissionDeleteDialog({
 					<DialogHeader>
 						<DialogTitle>Delete Submission</DialogTitle>
 					</DialogHeader>
-					<p className="py-4 text-sm text-muted-foreground">Checking...</p>
+					<p className="text-muted-foreground py-4 text-sm">Checking...</p>
 				</DialogContent>
 			</Dialog>
 		);
@@ -82,7 +82,7 @@ export function SubmissionDeleteDialog({
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2">
-						<IconAlertTriangle className="size-5 text-destructive" />
+						<IconAlertTriangle className="text-destructive size-5" />
 						Delete Submission
 					</DialogTitle>
 					<DialogDescription>Permanently delete submission:</DialogDescription>
@@ -90,16 +90,16 @@ export function SubmissionDeleteDialog({
 				<div className="space-y-3 py-2">
 					<p className="font-medium">{submissionTitle}</p>
 					{hasWarnings && (
-						<div className="rounded-md border border-destructive/50 bg-destructive/5 p-3 space-y-1">
-							<p className="text-sm font-medium text-destructive">Warnings:</p>
-							<ul className="list-disc space-y-1 pl-5 text-sm text-destructive">
+						<div className="border-destructive/50 bg-destructive/5 space-y-1 rounded-md border p-3">
+							<p className="text-destructive text-sm font-medium">Warnings:</p>
+							<ul className="text-destructive list-disc space-y-1 pl-5 text-sm">
 								{check.warnings.map((warning) => (
 									<li key={warning}>{warning}</li>
 								))}
 							</ul>
 						</div>
 					)}
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						This action cannot be undone. All submission data, including
 						versions, reviews, and author links will be permanently removed.
 					</p>

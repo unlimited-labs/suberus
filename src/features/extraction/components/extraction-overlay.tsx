@@ -14,22 +14,22 @@ export function ExtractionOverlay({
 	return (
 		<div
 			aria-label="Extracting metadata from document"
-			className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/80 backdrop-blur-sm"
+			className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center rounded-lg backdrop-blur-sm"
 			data-testid="extraction-overlay"
 			role="status"
 		>
 			<div className="flex flex-col items-center gap-3">
-				<IconLoader2 className="size-8 animate-spin text-primary" />
+				<IconLoader2 className="text-primary size-8 animate-spin" />
 				<div className="text-center">
 					<p className="text-sm font-medium">Extracting metadata...</p>
 					<p
-						className="text-xs text-muted-foreground"
+						className="text-muted-foreground text-xs"
 						data-testid="extraction-elapsed"
 					>
 						{elapsedSeconds}s
 					</p>
 					{elapsedSeconds >= 10 ? (
-						<p className="mt-1 text-xs text-muted-foreground">
+						<p className="text-muted-foreground mt-1 text-xs">
 							Extraction is taking longer than usual...
 						</p>
 					) : null}

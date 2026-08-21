@@ -57,7 +57,7 @@ export function RoomsList({ rooms, onEdit, onUpdate }: RoomsListProps) {
 	if (rooms.length === 0) {
 		return (
 			<div className="flex min-h-[160px] items-center justify-center rounded-md border border-dashed">
-				<p className="text-sm text-muted-foreground">
+				<p className="text-muted-foreground text-sm">
 					No rooms yet. Create your first room.
 				</p>
 			</div>
@@ -127,7 +127,7 @@ export function RoomsList({ rooms, onEdit, onUpdate }: RoomsListProps) {
 										)}
 									</div>
 								</TableCell>
-								<TableCell className="max-w-xs truncate text-xs text-muted-foreground">
+								<TableCell className="text-muted-foreground max-w-xs truncate text-xs">
 									{room.description ?? "—"}
 								</TableCell>
 								<TableCell className="text-center">

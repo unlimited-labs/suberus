@@ -22,7 +22,7 @@ export function TypeFeatureTogglesSection({
 			<div className="flex items-center justify-between">
 				<div className="space-y-0.5">
 					<Label htmlFor="enableConfidenceLevel">Enable confidence level</Label>
-					<p className="text-xs italic text-muted-foreground/70">
+					<p className="text-muted-foreground/70 text-xs italic">
 						Reviewers rate their confidence (1-5) when submitting a review
 					</p>
 				</div>
@@ -40,7 +40,7 @@ export function TypeFeatureTogglesSection({
 					<Label htmlFor="enableReviewAttachment">
 						Enable review attachment
 					</Label>
-					<p className="text-xs italic text-muted-foreground/70">
+					<p className="text-muted-foreground/70 text-xs italic">
 						Reviewers can upload a PDF/DOCX file with their review
 					</p>
 				</div>
@@ -58,7 +58,7 @@ export function TypeFeatureTogglesSection({
 				<div className="flex items-center justify-between">
 					<div className="space-y-0.5">
 						<Label>Enable track selection</Label>
-						<p className="text-xs italic text-muted-foreground/70">
+						<p className="text-muted-foreground/70 text-xs italic">
 							Authors can select preferred track when submitting
 						</p>
 					</div>

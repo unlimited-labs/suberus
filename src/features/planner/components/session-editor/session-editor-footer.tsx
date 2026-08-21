@@ -73,12 +73,12 @@ export function SessionEditorFooter() {
 						<div className="max-h-64 overflow-y-auto p-1">
 							{presentations.slice(0, -1).map((p) => (
 								<button
-									className="block w-full rounded px-2 py-1.5 text-left text-xs hover:bg-muted"
+									className="hover:bg-muted block w-full rounded px-2 py-1.5 text-left text-xs"
 									key={p.id}
 									onClick={() => handleSplit(p.order)}
 									type="button"
 								>
-									<span className="mr-2 font-mono text-muted-foreground">
+									<span className="text-muted-foreground mr-2 font-mono">
 										{p.order + 1}.
 									</span>
 									<span className="line-clamp-1">{p.submissionTitle}</span>

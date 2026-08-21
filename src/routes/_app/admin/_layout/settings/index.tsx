@@ -222,10 +222,10 @@ function AdminSettingsPage() {
 						}
 						value={activeTab}
 					>
-						<TabsList className="mb-6 h-auto flex-wrap gap-1 rounded-lg border border-border bg-muted p-1">
+						<TabsList className="border-border bg-muted mb-6 h-auto flex-wrap gap-1 rounded-lg border p-1">
 							{tabs.map((tab) => (
 								<TabsTrigger
-									className="gap-1.5 px-3 py-2 text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+									className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground gap-1.5 px-3 py-2 data-[state=active]:shadow-sm"
 									data-testid={`settings-tab-${tab.id}`}
 									key={tab.id}
 									value={tab.id}

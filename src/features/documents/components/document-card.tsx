@@ -52,7 +52,7 @@ export function DocumentCard({
 
 	return (
 		<div
-			className="flex items-center gap-3 rounded-xl border bg-card p-3 transition-colors hover:border-foreground/20 hover:bg-accent/40 sm:p-4"
+			className="bg-card hover:border-foreground/20 hover:bg-accent/40 flex items-center gap-3 rounded-xl border p-3 transition-colors sm:p-4"
 			data-testid={testId}
 		>
 			<DocumentIconTile status={status} />
@@ -67,11 +67,11 @@ export function DocumentCard({
 						/>
 					)}
 				</p>
-				<p className="text-xs text-muted-foreground">
+				<p className="text-muted-foreground text-xs">
 					{formatDateTime(createdAt)} · {formatBytes(size)}
 				</p>
 				{status === "FAILED" && error && (
-					<p className="mt-0.5 truncate text-xs text-destructive">{error}</p>
+					<p className="text-destructive mt-0.5 truncate text-xs">{error}</p>
 				)}
 			</div>
 			{showStatus && <DocumentStatusBadge status={status} />}

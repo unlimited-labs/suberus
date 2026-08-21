@@ -18,7 +18,7 @@ export function UserSubmissionsSection({
 	const { formatDate } = useDateFormat();
 
 	return submissions.length === 0 ? (
-		<p className="text-sm text-muted-foreground">No submissions</p>
+		<p className="text-muted-foreground text-sm">No submissions</p>
 	) : (
 		<ul className="space-y-2">
 			{submissions.map((s) => (
@@ -37,18 +37,18 @@ export function UserSubmissionsSection({
 						</Badge>
 					</div>
 					<div className="flex min-w-0 items-start gap-2">
-						<span className="font-mono text-sm text-muted-foreground">
+						<span className="text-muted-foreground font-mono text-sm">
 							{s.sequentialNumber}
 						</span>
 						<Link
-							className="line-clamp-2 font-medium text-foreground hover:underline"
+							className="text-foreground line-clamp-2 font-medium hover:underline"
 							params={{ id: s.id }}
 							to="/admin/submissions/$id"
 						>
 							{s.title}
 						</Link>
 					</div>
-					<span className="self-end text-xs text-muted-foreground">
+					<span className="text-muted-foreground self-end text-xs">
 						{formatDate(s.updatedAt)}
 					</span>
 				</li>

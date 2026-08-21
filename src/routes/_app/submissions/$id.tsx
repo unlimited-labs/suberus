@@ -65,9 +65,9 @@ function SubmissionDetailPage() {
 				</div>
 			</PageHeader>
 
-			<div className="flex-1 p-6 overflow-auto">
+			<div className="flex-1 overflow-auto p-6">
 				<div className="mx-auto w-full max-w-7xl">
-					<div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+					<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
 						<div className="space-y-6">
 							<ContentTabs
 								authors={displayData.authors}
@@ -127,7 +127,7 @@ function NotFoundState({ id }: { id: string }) {
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconFileText} title="Submission Not Found" />
-			<div className="flex-1 p-6 flex items-center justify-center">
+			<div className="flex flex-1 items-center justify-center p-6">
 				<div className="text-center">
 					<p className="text-muted-foreground mb-4">
 						Submission with ID: {id} not found

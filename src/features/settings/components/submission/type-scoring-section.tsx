@@ -28,7 +28,7 @@ export function TypeScoringSection({
 			<div className="flex items-center justify-between">
 				<div className="space-y-0.5">
 					<Label>Enable scoring</Label>
-					<p className="text-xs italic text-muted-foreground/70">
+					<p className="text-muted-foreground/70 text-xs italic">
 						Reviewers score based on criteria
 					</p>
 				</div>

@@ -146,7 +146,7 @@ export function CreateSessionDialog({
 					<div className="flex items-start justify-between gap-4">
 						<div className="space-y-0.5">
 							<Label htmlFor="cs-untimed">Untimed presentations</Label>
-							<p className="text-sm text-muted-foreground">
+							<p className="text-muted-foreground text-sm">
 								Poster or lightning block: presentations share the session
 								window instead of getting their own time slots.
 							</p>

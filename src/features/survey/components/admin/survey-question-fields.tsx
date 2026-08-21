@@ -142,7 +142,7 @@ export function TypePicker({
 								selected ? "text-primary" : "text-muted-foreground",
 							)}
 						/>
-						<span className="text-xs font-medium leading-tight">
+						<span className="text-xs leading-tight font-medium">
 							{meta.label}
 						</span>
 					</button>
@@ -168,7 +168,7 @@ export function AudiencePicker({
 }) {
 	return (
 		<div
-			className="flex gap-1 rounded-lg border border-border bg-card p-1"
+			className="border-border bg-card flex gap-1 rounded-lg border p-1"
 			data-testid="audience-picker"
 		>
 			{AUDIENCE_ORDER.map((audience) => {
@@ -218,7 +218,7 @@ function SortableOption({
 		>
 			<button
 				aria-label="Reorder option"
-				className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
+				className="text-muted-foreground hover:text-foreground cursor-grab touch-none active:cursor-grabbing"
 				type="button"
 				{...attributes}
 				{...listeners}
@@ -282,8 +282,8 @@ export function OptionsEditor({
 	};
 
 	return (
-		<div className="space-y-1.5 rounded-md border border-border/50 bg-background p-3">
-			<Label className="text-xs font-medium text-muted-foreground">
+		<div className="border-border/50 bg-background space-y-1.5 rounded-md border p-3">
+			<Label className="text-muted-foreground text-xs font-medium">
 				Options
 			</Label>
 			<DndContext

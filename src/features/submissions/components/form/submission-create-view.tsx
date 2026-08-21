@@ -100,8 +100,8 @@ export function SubmissionCreateView(props: SubmissionCreateViewProps) {
 				<PageHeader icon={IconFileText} title={title} />
 				<div className="flex flex-1 items-center justify-center p-6">
 					<div className="text-center">
-						<IconLock className="mx-auto size-12 text-muted-foreground/50" />
-						<p className="mt-4 text-muted-foreground">
+						<IconLock className="text-muted-foreground/50 mx-auto size-12" />
+						<p className="text-muted-foreground mt-4">
 							No submission types are currently available
 						</p>
 					</div>

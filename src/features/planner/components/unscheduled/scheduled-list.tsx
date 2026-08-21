@@ -39,7 +39,7 @@ export function ScheduledList({
 	if (filteredSessions.length === 0) {
 		return (
 			<div
-				className="p-6 text-center text-xs text-muted-foreground"
+				className="text-muted-foreground p-6 text-center text-xs"
 				data-testid="scheduled-empty"
 			>
 				{q
@@ -63,12 +63,12 @@ export function ScheduledList({
 						key={s.id}
 					>
 						<button
-							className="mb-1 block w-full text-left hover:text-primary"
+							className="hover:text-primary mb-1 block w-full text-left"
 							onClick={() => onOpenSession(s.id)}
 							type="button"
 						>
 							<p className="truncate text-xs font-semibold">{s.title}</p>
-							<div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground">
+							<div className="text-muted-foreground mt-0.5 flex items-center gap-2 text-[10px]">
 								<span>{day}</span>
 								<span>·</span>
 								<span>
@@ -91,12 +91,12 @@ export function ScheduledList({
 									p.authors.length > 2 ? ` +${p.authors.length - 2}` : "";
 								return (
 									<li
-										className="border-l-2 border-muted pl-2"
+										className="border-muted border-l-2 pl-2"
 										data-testid={`scheduled-row-${p.submissionId}`}
 										key={p.id}
 									>
 										<button
-											className="block w-full text-left hover:text-primary"
+											className="hover:text-primary block w-full text-left"
 											onClick={() => onOpenSession(s.id)}
 											type="button"
 										>
@@ -104,7 +104,7 @@ export function ScheduledList({
 												{p.submissionTitle}
 											</p>
 											{authors && (
-												<p className="mt-0.5 truncate text-[10px] text-muted-foreground">
+												<p className="text-muted-foreground mt-0.5 truncate text-[10px]">
 													{authors}
 													{more}
 												</p>

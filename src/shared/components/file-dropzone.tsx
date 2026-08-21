@@ -108,11 +108,11 @@ export function FileDropzone({
 					<input
 						accept={accept}
 						aria-label="Upload file"
-						className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+						className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
 						onChange={handleFileSelect}
 						type="file"
 					/>
-					<div className="flex flex-col items-center justify-center p-8 text-center pointer-events-none">
+					<div className="pointer-events-none flex flex-col items-center justify-center p-8 text-center">
 						<div
 							className={cn(
 								"mb-4 rounded-full p-4 transition-colors",
@@ -126,24 +126,24 @@ export function FileDropzone({
 								)}
 							/>
 						</div>
-						<p className="text-sm font-medium text-foreground mb-1">
+						<p className="text-foreground mb-1 text-sm font-medium">
 							{isDragging ? "Drop file here" : "Drop file or click to upload"}
 						</p>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							{accept.replace(/\./g, "").toUpperCase()} up to {maxSize}MB
 						</p>
 					</div>
 				</label>
 			) : (
-				<div className="flex items-center gap-3 p-4 rounded-lg border border-border bg-muted/30">
-					<div className="flex-shrink-0 p-2 rounded bg-primary/10">
-						<IconFile className="size-5 text-primary" />
+				<div className="border-border bg-muted/30 flex items-center gap-3 rounded-lg border p-4">
+					<div className="bg-primary/10 flex-shrink-0 rounded p-2">
+						<IconFile className="text-primary size-5" />
 					</div>
-					<div className="flex-1 min-w-0">
-						<p className="text-sm font-medium text-foreground truncate">
+					<div className="min-w-0 flex-1">
+						<p className="text-foreground truncate text-sm font-medium">
 							{value.name}
 						</p>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							{(value.size / 1024 / 1024).toFixed(2)} MB
 						</p>
 					</div>
@@ -173,7 +173,7 @@ export function FileDropzone({
 			)}
 
 			{error && (
-				<p className="text-xs text-destructive" role="alert">
+				<p className="text-destructive text-xs" role="alert">
 					{error}
 				</p>
 			)}

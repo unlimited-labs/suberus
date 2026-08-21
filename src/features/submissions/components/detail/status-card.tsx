@@ -30,9 +30,9 @@ export function StatusCard({ status, variant = "desktop" }: StatusCardProps) {
 					STATUS_GRADIENTS[status],
 				)}
 			/>
-			<div className="relative rounded-[14px] bg-card p-6">
-				<div className="text-center space-y-3">
-					<p className="text-sm text-muted-foreground">Status</p>
+			<div className="bg-card relative rounded-[14px] p-6">
+				<div className="space-y-3 text-center">
+					<p className="text-muted-foreground text-sm">Status</p>
 					<div
 						className={cn(
 							"inline-flex items-center gap-2 px-4 py-2 rounded-full text-white font-semibold bg-gradient-to-r",

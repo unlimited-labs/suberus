@@ -20,7 +20,7 @@ interface InvitationColumnsOptions {
 function DateCell({ value }: { value: string }) {
 	const { formatDate } = useDateFormat();
 	return (
-		<span className="text-sm text-muted-foreground">{formatDate(value)}</span>
+		<span className="text-muted-foreground text-sm">{formatDate(value)}</span>
 	);
 }
 

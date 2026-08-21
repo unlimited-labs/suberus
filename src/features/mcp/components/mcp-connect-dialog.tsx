@@ -47,10 +47,10 @@ function Step({
 	return (
 		<div className="min-w-0 space-y-1.5">
 			<div className="flex items-center gap-2">
-				<span className="flex size-5 items-center justify-center rounded-full bg-primary/10 font-medium text-[11px] text-primary tabular-nums">
+				<span className="bg-primary/10 text-primary flex size-5 items-center justify-center rounded-full text-[11px] font-medium tabular-nums">
 					{number}
 				</span>
-				<span className="font-medium text-sm">{label}</span>
+				<span className="text-sm font-medium">{label}</span>
 			</div>
 			{children && <div className="min-w-0 pl-7">{children}</div>}
 		</div>
@@ -87,7 +87,7 @@ function CopyBlock({
 	return (
 		<button
 			aria-label={`Copy ${label}`}
-			className="group flex w-full min-w-0 items-center gap-2 rounded-md border bg-muted/50 py-2 pr-2 pl-3 text-left transition-colors hover:border-primary/40 hover:bg-muted"
+			className="group bg-muted/50 hover:border-primary/40 hover:bg-muted flex w-full min-w-0 items-center gap-2 rounded-md border py-2 pr-2 pl-3 text-left transition-colors"
 			data-testid={testId}
 			onClick={copy}
 			type="button"
@@ -95,7 +95,7 @@ function CopyBlock({
 			<code className="min-w-0 flex-1 overflow-x-auto font-mono text-xs whitespace-nowrap">
 				{value}
 			</code>
-			<span className="flex size-7 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors group-hover:bg-background group-hover:text-foreground">
+			<span className="text-muted-foreground group-hover:bg-background group-hover:text-foreground flex size-7 shrink-0 items-center justify-center rounded transition-colors">
 				{copied ? (
 					<IconCheck className="size-4 text-emerald-600 dark:text-emerald-500" />
 				) : (
@@ -129,17 +129,17 @@ function ClientRow({
 	});
 	return (
 		<li
-			className="flex min-w-0 animate-in items-start gap-3 py-2.5 fade-in slide-in-from-bottom-1 duration-300"
+			className="animate-in fade-in slide-in-from-bottom-1 flex min-w-0 items-start gap-3 py-2.5 duration-300"
 			style={{ animationDelay: `${index * 60}ms`, animationFillMode: "both" }}
 		>
-			<span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 font-semibold text-primary text-xs uppercase">
+			<span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-md text-xs font-semibold uppercase">
 				{label.replace(/^https?:\/\//, "").charAt(0)}
 			</span>
 			<div className="min-w-0 flex-1">
 				<div className="flex items-baseline gap-2">
-					<span className="truncate font-medium text-sm">{label}</span>
+					<span className="truncate text-sm font-medium">{label}</span>
 					{client.authorizedAt && (
-						<span className="ml-auto shrink-0 text-[11px] text-muted-foreground tabular-nums">
+						<span className="text-muted-foreground ml-auto shrink-0 text-[11px] tabular-nums">
 							{formatDate(client.authorizedAt)}
 						</span>
 					)}
@@ -148,7 +148,7 @@ function ClientRow({
 					<ul className="mt-1 flex flex-wrap gap-1">
 						{client.scopes.map((scope) => (
 							<li
-								className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
+								className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 font-mono text-[10px]"
 								key={scope}
 							>
 								{scope}
@@ -159,7 +159,7 @@ function ClientRow({
 			</div>
 			<Button
 				aria-label={`Remove ${label}`}
-				className="size-7 shrink-0 text-muted-foreground hover:text-destructive"
+				className="text-muted-foreground hover:text-destructive size-7 shrink-0"
 				data-testid="mcp-remove-client"
 				disabled={revoke.isPending}
 				onClick={() => revoke.mutate()}
@@ -242,7 +242,7 @@ function CredentialControls({
 			</Button>
 			{clientId && (
 				<span
-					className="w-full truncate font-mono text-[11px] text-muted-foreground"
+					className="text-muted-foreground w-full truncate font-mono text-[11px]"
 					data-testid="mcp-client-id"
 				>
 					{clientId}
@@ -271,7 +271,7 @@ export function McpConnectDialog({
 				data-testid="mcp-connect-dialog"
 			>
 				<DialogHeader className="min-w-0 flex-row items-start gap-3 space-y-0 text-left">
-					<span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+					<span className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
 						<IconPlugConnected className="size-5" />
 					</span>
 					<div className="min-w-0 flex-1">
@@ -345,7 +345,7 @@ export function McpConnectDialog({
 						</Tabs>
 
 						<div className="min-w-0 border-t pt-4">
-							<div className="mb-1 font-medium text-sm">
+							<div className="mb-1 text-sm font-medium">
 								Authorized applications
 							</div>
 							{data.clients.length === 0 ? (

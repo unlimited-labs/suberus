@@ -53,16 +53,16 @@ function InstallPage() {
 
 	return (
 		<AuthLayout logoDarkInvert logoUrl="">
-			<div className="mx-auto flex w-full max-w-lg overflow-hidden rounded-2xl bg-card shadow-2xl">
-				<div className="flex flex-1 flex-col bg-card p-5 text-foreground sm:p-6 lg:p-8">
+			<div className="bg-card mx-auto flex w-full max-w-lg overflow-hidden rounded-2xl shadow-2xl">
+				<div className="bg-card text-foreground flex flex-1 flex-col p-5 sm:p-6 lg:p-8">
 					<div className="mb-5">
 						<div className="mb-1 flex items-center gap-2">
-							<IconSettings className="size-5 text-primary" />
+							<IconSettings className="text-primary size-5" />
 							<h1 className="text-xl font-semibold tracking-tight">
 								Setup Suberus
 							</h1>
 						</div>
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							Configure your conference management system
 						</p>
 					</div>
@@ -90,7 +90,7 @@ function InstallPage() {
 									<span className="w-full border-t" />
 								</div>
 								<div className="relative flex justify-center text-xs uppercase">
-									<span className="bg-card px-2 text-muted-foreground">
+									<span className="bg-card text-muted-foreground px-2">
 										Admin Account
 									</span>
 								</div>

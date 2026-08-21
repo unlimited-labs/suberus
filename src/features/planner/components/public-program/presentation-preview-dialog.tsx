@@ -187,7 +187,7 @@ function TalkHeader({
 			>
 				{target.submissionTitle}
 			</DialogTitle>
-			<p className="text-sm text-muted-foreground">{target.sessionTitle}</p>
+			<p className="text-muted-foreground text-sm">{target.sessionTitle}</p>
 		</DialogHeader>
 	);
 }
@@ -273,7 +273,7 @@ function PreviewContent({
 				<section className="flex flex-wrap gap-2">
 					{keywords.map((k) => (
 						<span
-							className="rounded-[var(--radius)] bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
+							className="bg-secondary text-secondary-foreground rounded-[var(--radius)] px-2 py-0.5 text-xs font-medium"
 							key={k}
 						>
 							{k}
@@ -318,17 +318,17 @@ function Authors({
 							</div>
 							<div className="min-w-0 flex-1">
 								<div className="flex flex-wrap items-center gap-2">
-									<span className="font-medium text-foreground">
+									<span className="text-foreground font-medium">
 										{author.firstName} {author.lastName}
 									</span>
 									{author.isPresenter && (
-										<span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+										<span className="text-primary inline-flex items-center gap-1 text-xs font-medium">
 											<IconStarFilled className="size-3" />
 											Presenter
 										</span>
 									)}
 								</div>
-								<p className="mt-0.5 truncate text-sm text-muted-foreground">
+								<p className="text-muted-foreground mt-0.5 truncate text-sm">
 									{affiliationDisplay(author.affiliationName)}
 								</p>
 							</div>
@@ -354,7 +354,7 @@ function Authors({
 							type="button"
 						>
 							{inner}
-							<IconChevronRight className="size-4 shrink-0 self-center text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+							<IconChevronRight className="text-muted-foreground size-4 shrink-0 self-center transition-transform group-hover:translate-x-0.5" />
 						</button>
 					);
 				})}
@@ -415,7 +415,7 @@ function AuthorDetails({ author }: { author: PresentationDetailAuthor }) {
 	return (
 		<div className="space-y-4">
 			{author.isPresenter && (
-				<span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+				<span className="text-primary inline-flex items-center gap-1 text-xs font-medium">
 					<IconStarFilled className="size-3" />
 					Presenter
 				</span>
@@ -428,7 +428,7 @@ function AuthorDetails({ author }: { author: PresentationDetailAuthor }) {
 				<section className="space-y-1">
 					<h3 className={HEADING}>Email</h3>
 					<a
-						className="break-all text-sm text-foreground underline-offset-4 hover:underline"
+						className="text-foreground text-sm break-all underline-offset-4 hover:underline"
 						data-testid="author-email"
 						href={`mailto:${author.email}`}
 					>
@@ -440,7 +440,7 @@ function AuthorDetails({ author }: { author: PresentationDetailAuthor }) {
 				<section className="space-y-1">
 					<h3 className={HEADING}>ORCID</h3>
 					<a
-						className="inline-flex items-center gap-2 text-sm text-foreground underline-offset-4 hover:underline"
+						className="text-foreground inline-flex items-center gap-2 text-sm underline-offset-4 hover:underline"
 						data-testid="author-orcid"
 						href={`https://orcid.org/${author.orcid}`}
 						rel="noopener noreferrer"

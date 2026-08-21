@@ -101,7 +101,7 @@ function AuthLayoutRoute() {
 	if (isPending) {
 		return (
 			<div
-				className="flex h-screen items-center justify-center text-primary"
+				className="text-primary flex h-screen items-center justify-center"
 				style={cssVars}
 			>
 				<SpinnerSvg size={48} />

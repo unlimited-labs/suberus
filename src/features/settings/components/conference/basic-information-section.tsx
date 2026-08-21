@@ -63,7 +63,7 @@ export function BasicInformationSection({
 				<div className="space-y-2">
 					<Label htmlFor="website">Website</Label>
 					<div className="relative">
-						<IconWorld className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+						<IconWorld className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
 						<Input
 							className="pl-8"
 							id="website"
@@ -77,7 +77,7 @@ export function BasicInformationSection({
 				<div className="space-y-2 sm:col-span-2">
 					<Label htmlFor="contactEmail">Contact Email</Label>
 					<div className="relative">
-						<IconMail className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+						<IconMail className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
 						<Input
 							className="pl-8"
 							id="contactEmail"

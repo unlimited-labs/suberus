@@ -50,7 +50,7 @@ export function BreakEditorSheet({ breakId, onClose }: BreakEditorSheetProps) {
 						dirtyRef={dirtyRef}
 						fallback={
 							<div className="flex flex-1 items-center justify-center p-8">
-								<p className="text-sm text-muted-foreground">Item not found</p>
+								<p className="text-muted-foreground text-sm">Item not found</p>
 							</div>
 						}
 						key={breakId}
@@ -80,7 +80,7 @@ function BreakEditorBody() {
 			}}
 		>
 			<SheetHeader className="gap-3 border-b p-4">
-				<SheetTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+				<SheetTitle className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
 					{isEvent ? "Event editor" : "Break editor"}
 				</SheetTitle>
 				<form.Field name="title">
@@ -100,7 +100,7 @@ function BreakEditorBody() {
 					{(field) => (
 						<div className="space-y-1">
 							<Label
-								className="text-xs text-muted-foreground"
+								className="text-muted-foreground text-xs"
 								htmlFor="break-start"
 							>
 								Start
@@ -122,7 +122,7 @@ function BreakEditorBody() {
 						{(field) => (
 							<div className="space-y-1">
 								<Label
-									className="text-xs text-muted-foreground"
+									className="text-muted-foreground text-xs"
 									htmlFor="break-end"
 								>
 									End
@@ -144,7 +144,7 @@ function BreakEditorBody() {
 						{(field) => (
 							<div className="space-y-1">
 								<Label
-									className="text-xs text-muted-foreground"
+									className="text-muted-foreground text-xs"
 									htmlFor="break-duration"
 								>
 									Duration (min)
@@ -171,7 +171,7 @@ function BreakEditorBody() {
 							{(field) => (
 								<div className="space-y-1">
 									<Label
-										className="text-xs text-muted-foreground"
+										className="text-muted-foreground text-xs"
 										htmlFor="break-description"
 									>
 										Description (optional)
@@ -191,7 +191,7 @@ function BreakEditorBody() {
 							{(field) => (
 								<div className="space-y-1">
 									<Label
-										className="text-xs text-muted-foreground"
+										className="text-muted-foreground text-xs"
 										htmlFor="break-location"
 									>
 										Location (optional)
@@ -210,7 +210,7 @@ function BreakEditorBody() {
 							{(field) => (
 								<div className="space-y-1">
 									<Label
-										className="text-xs text-muted-foreground"
+										className="text-muted-foreground text-xs"
 										htmlFor="break-location-url"
 									>
 										Link (optional)
@@ -232,7 +232,7 @@ function BreakEditorBody() {
 					<form.Field name="roomId">
 						{(field) => (
 							<div className="space-y-1">
-								<Label className="text-xs text-muted-foreground">
+								<Label className="text-muted-foreground text-xs">
 									Room (optional)
 								</Label>
 								<RoomSelect

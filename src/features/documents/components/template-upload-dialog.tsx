@@ -103,8 +103,8 @@ export function TemplateUploadDialog({
 						/>
 					</div>
 
-					<div className="rounded-xl border bg-muted/40 p-3">
-						<p className="mb-2 text-xs font-medium text-muted-foreground">
+					<div className="bg-muted/40 rounded-xl border p-3">
+						<p className="text-muted-foreground mb-2 text-xs font-medium">
 							Supported placeholders — copy any into your .docx
 						</p>
 						<div className="flex flex-wrap gap-1">

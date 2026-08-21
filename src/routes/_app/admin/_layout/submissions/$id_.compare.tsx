@@ -56,7 +56,7 @@ function CompareVersionsPage() {
 				<div className="space-y-6">
 					<div className="space-y-2">
 						<Badge variant="outline">{typeLabels[submission.type]}</Badge>
-						<h1 className="text-xl font-semibold leading-snug text-foreground">
+						<h1 className="text-foreground text-xl leading-snug font-semibold">
 							{submission.title}
 						</h1>
 					</div>

@@ -34,7 +34,7 @@ export function InvitationMobileCard({
 				<div className="flex items-start justify-between">
 					<div>
 						<p className="font-medium">{invitation.email}</p>
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							Expires: {formatDate(invitation.expiresAt)}
 						</p>
 					</div>

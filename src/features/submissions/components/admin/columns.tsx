@@ -35,7 +35,7 @@ import {
 function DateCell({ date }: { date: Date | string }) {
 	const { formatDate } = useDateFormat();
 	return (
-		<span className="text-sm text-muted-foreground">{formatDate(date)}</span>
+		<span className="text-muted-foreground text-sm">{formatDate(date)}</span>
 	);
 }
 
@@ -46,7 +46,7 @@ function TodoCell({ todo }: { todo: SubmissionTodo }) {
 		todoTone(todo.kind) === "action" ? (
 			<Badge variant={todoBadgeVariant[todo.kind]}>{label}</Badge>
 		) : (
-			<span className="text-xs text-muted-foreground">{label}</span>
+			<span className="text-muted-foreground text-xs">{label}</span>
 		);
 
 	if (!tooltip) return body;
@@ -95,7 +95,7 @@ export const submissionColumns: AppColumnDef<AdminSubmission>[] = [
 			return (
 				<div className="max-w-[300px]">
 					<Link
-						className="line-clamp-2 font-medium text-foreground hover:underline"
+						className="text-foreground line-clamp-2 font-medium hover:underline"
 						params={{ id: row.original.id }}
 						to="/admin/submissions/$id"
 					>
@@ -159,7 +159,7 @@ export const submissionColumns: AppColumnDef<AdminSubmission>[] = [
 			return (
 				<div className="flex flex-col">
 					<span className="text-foreground">{name}</span>
-					<span className="text-xs text-muted-foreground">{email}</span>
+					<span className="text-muted-foreground text-xs">{email}</span>
 				</div>
 			);
 		},

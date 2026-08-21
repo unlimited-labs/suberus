@@ -34,7 +34,7 @@ export function SubmissionGuidelinesSection({
 				<div className="flex flex-wrap gap-1.5">
 					{submissionGuidelinesPlaceholders.map((p) => (
 						<Badge
-							className="font-mono text-xs cursor-pointer"
+							className="cursor-pointer font-mono text-xs"
 							key={p}
 							onClick={() => onChange((prev) => `${prev}{{${p}}}`)}
 							variant="secondary"

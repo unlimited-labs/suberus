@@ -17,8 +17,8 @@ export function ExhibitorPresentationSection({
 	return (
 		<div className="space-y-4">
 			<div className="flex items-center gap-3">
-				<IconPresentation className="size-5 text-muted-foreground" />
-				<h2 className="text-lg font-semibold text-foreground">Presentation</h2>
+				<IconPresentation className="text-muted-foreground size-5" />
+				<h2 className="text-foreground text-lg font-semibold">Presentation</h2>
 			</div>
 
 			<form.AppField name="addPresentation">

@@ -11,7 +11,7 @@ const BTN =
 
 export function CalendarNavGroup({ onPrev, onNext, onToday }: Props) {
 	return (
-		<div className="flex items-center gap-0.5 rounded-md bg-muted p-1">
+		<div className="bg-muted flex items-center gap-0.5 rounded-md p-1">
 			<button
 				aria-label="Previous period"
 				className={`flex size-7 items-center justify-center ${BTN}`}

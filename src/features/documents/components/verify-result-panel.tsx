@@ -44,7 +44,7 @@ function AuthenticDetails({ result }: { result: VerifyResult }) {
 function ForeignWarning({ result }: { result: VerifyResult }) {
 	return (
 		<div
-			className="mt-2 space-y-1 text-sm text-muted-foreground"
+			className="text-muted-foreground mt-2 space-y-1 text-sm"
 			data-testid="verify-foreign"
 		>
 			<p>
@@ -92,7 +92,7 @@ export function VerifyResultPanel({ result }: { result: VerifyResult }) {
 			{authentic && <AuthenticDetails result={result} />}
 			{intactButForeign && <ForeignWarning result={result} />}
 			{!authentic && !intactButForeign && (
-				<p className="mt-2 text-sm text-muted-foreground">{result.reason}</p>
+				<p className="text-muted-foreground mt-2 text-sm">{result.reason}</p>
 			)}
 		</div>
 	);

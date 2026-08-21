@@ -50,7 +50,7 @@ export function BulkGenerateDialog({
 							? `Choose a template for the ${userIds.length} selected participant${userIds.length === 1 ? "" : "s"}.`
 							: DESCRIPTIONS[b.step]}
 					</DialogDescription>
-					<p className="text-xs font-medium text-muted-foreground">
+					<p className="text-muted-foreground text-xs font-medium">
 						Step {b.stepIndex} of 3
 					</p>
 				</DialogHeader>

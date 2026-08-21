@@ -34,12 +34,12 @@ export function PresentationsSection() {
 			<div className="flex items-center justify-between">
 				<Label className="text-sm font-medium">
 					Presentations{" "}
-					<span className="font-normal text-muted-foreground">
+					<span className="text-muted-foreground font-normal">
 						({presentations.length})
 					</span>
 				</Label>
 				{untimed ? (
-					<span className="text-xs text-muted-foreground">Untimed</span>
+					<span className="text-muted-foreground text-xs">Untimed</span>
 				) : (
 					<span
 						className={`text-xs tabular-nums ${capacityFull ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}
@@ -53,7 +53,7 @@ export function PresentationsSection() {
 			</div>
 
 			{presentations.length === 0 ? (
-				<p className="text-xs text-muted-foreground">
+				<p className="text-muted-foreground text-xs">
 					No presentations assigned
 				</p>
 			) : (
@@ -91,7 +91,7 @@ export function PresentationsSection() {
 								>
 									{p.submissionTitle}
 								</p>
-								<p className="mt-0.5 truncate text-xs text-muted-foreground">
+								<p className="text-muted-foreground mt-0.5 truncate text-xs">
 									{p.authors.length > 0
 										? p.authors
 												.map((a) => `${a.firstName} ${a.lastName}`)
@@ -100,7 +100,7 @@ export function PresentationsSection() {
 								</p>
 							</div>
 							{untimed ? (
-								<span className="w-14 text-center text-xs tabular-nums text-muted-foreground">
+								<span className="text-muted-foreground w-14 text-center text-xs tabular-nums">
 									{String(i + 1).padStart(2, "0")}
 								</span>
 							) : (
@@ -120,7 +120,7 @@ export function PresentationsSection() {
 										step={5}
 										type="number"
 									/>
-									<span className="text-[10px] text-muted-foreground">min</span>
+									<span className="text-muted-foreground text-[10px]">min</span>
 								</div>
 							)}
 							<Button

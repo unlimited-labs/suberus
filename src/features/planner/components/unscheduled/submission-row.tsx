@@ -47,7 +47,7 @@ function SubmissionRowHeader({
 		>
 			<div className="flex items-start gap-1.5">
 				{showTypeBadge && (
-					<span className="mt-0.5 shrink-0 rounded bg-muted px-1 py-0.5 text-[9px] font-medium uppercase tracking-wide text-muted-foreground">
+					<span className="bg-muted text-muted-foreground mt-0.5 shrink-0 rounded px-1 py-0.5 text-[9px] font-medium tracking-wide uppercase">
 						{typeLabel(type)}
 					</span>
 				)}
@@ -61,7 +61,7 @@ function SubmissionRowHeader({
 				</p>
 			</div>
 			{hasAuthors && (
-				<p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+				<p className="text-muted-foreground mt-0.5 truncate text-[11px]">
 					{authorsSummary}
 				</p>
 			)}
@@ -79,7 +79,7 @@ function SubmissionKeywords({
 		<div className="flex flex-wrap gap-1">
 			{keywords.map((k) => (
 				<span
-					className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
+					className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-[10px]"
 					key={k.id}
 				>
 					{k.name}
@@ -93,13 +93,13 @@ function SubmissionRowDetails({ s }: { s: UnscheduledSubmission }) {
 	return (
 		<div className="mt-2 space-y-1.5">
 			{s.abstract && (
-				<p className="line-clamp-6 text-[11px] leading-relaxed text-muted-foreground">
+				<p className="text-muted-foreground line-clamp-6 text-[11px] leading-relaxed">
 					{s.abstract}
 				</p>
 			)}
 			{s.file && (
 				<a
-					className="inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] text-muted-foreground hover:bg-muted hover:text-foreground"
+					className="text-muted-foreground hover:bg-muted hover:text-foreground inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px]"
 					data-testid={`unscheduled-download-${s.id}`}
 					download={s.file.originalName}
 					href={`/api/files/${s.file.id}`}
@@ -111,7 +111,7 @@ function SubmissionRowDetails({ s }: { s: UnscheduledSubmission }) {
 			)}
 			<SubmissionKeywords keywords={s.keywords} />
 			{s.trackName && (
-				<p className="text-[10px] text-muted-foreground">
+				<p className="text-muted-foreground text-[10px]">
 					Intake: {s.trackName}
 				</p>
 			)}
@@ -154,7 +154,7 @@ export function SubmissionRow({
 				<input
 					aria-label={`Select ${s.title}`}
 					checked={selected}
-					className="mt-1 shrink-0 accent-primary"
+					className="accent-primary mt-1 shrink-0"
 					onChange={() => onToggleSelect(false)}
 					onClick={(e) => {
 						e.stopPropagation();
@@ -167,7 +167,7 @@ export function SubmissionRow({
 				/>
 			)}
 			<IconGripVertical
-				className="mt-1 shrink-0 text-muted-foreground/40 group-hover:text-muted-foreground"
+				className="text-muted-foreground/40 group-hover:text-muted-foreground mt-1 shrink-0"
 				size={12}
 			/>
 			<div className="min-w-0 flex-1">

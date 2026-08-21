@@ -33,7 +33,7 @@ function Row({
 		<li className={cn("text-sm", s.row)} data-diff-status={status}>
 			<span className="break-words">{children}</span>
 			{s.label && (
-				<span className="ml-2 text-xs font-medium uppercase tracking-wide opacity-70">
+				<span className="ml-2 text-xs font-medium tracking-wide uppercase opacity-70">
 					{s.label}
 				</span>
 			)}
@@ -67,7 +67,7 @@ export function AuthorsDiff({
 	newLabel: string;
 }) {
 	if (base.length === 0 && compare.length === 0) {
-		return <p className="text-sm text-muted-foreground">{emptyLabel}</p>;
+		return <p className="text-muted-foreground text-sm">{emptyLabel}</p>;
 	}
 
 	if (layout === "split") {
@@ -112,7 +112,7 @@ export function AuthorsDiff({
 				<Row key={`${e.status}:${e.item.email}`} status={e.status}>
 					{authorLine(e.item)}
 					{e.status === "changed" && e.previous && (
-						<span className="ml-1 text-xs text-muted-foreground line-through">
+						<span className="text-muted-foreground ml-1 text-xs line-through">
 							{authorLine(e.previous)}
 						</span>
 					)}

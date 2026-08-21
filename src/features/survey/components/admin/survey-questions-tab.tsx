@@ -104,7 +104,7 @@ function SurveyQuestionRow({
 		>
 			<button
 				aria-label="Reorder question"
-				className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
+				className="text-muted-foreground hover:text-foreground cursor-grab touch-none active:cursor-grabbing"
 				type="button"
 				{...attributes}
 				{...listeners}
@@ -112,7 +112,7 @@ function SurveyQuestionRow({
 				<IconGripVertical className="size-4" />
 			</button>
 
-			<div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+			<div className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-md">
 				<TypeIcon className="size-5" />
 			</div>
 
@@ -155,7 +155,7 @@ function SurveyQuestionRow({
 			</Button>
 			<div className="flex items-center gap-1.5">
 				<Label
-					className="hidden text-xs text-muted-foreground sm:inline"
+					className="text-muted-foreground hidden text-xs sm:inline"
 					htmlFor={`active-${question.id}`}
 				>
 					Active
@@ -373,7 +373,7 @@ export function SurveyQuestionsTab({
 			>
 				<div className="space-y-4">
 					{questions.length === 0 ? (
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							No survey questions configured.
 						</p>
 					) : (

@@ -76,22 +76,22 @@ export function ContentTab({
 								<div className="flex flex-wrap items-center gap-2">
 									{author.userId ? (
 										<Link
-											className="flex items-center gap-1 font-medium text-foreground hover:text-primary hover:underline"
+											className="text-foreground hover:text-primary flex items-center gap-1 font-medium hover:underline"
 											data-testid={`author-profile-link-${index}`}
 											params={{ id: author.userId }}
 											to="/admin/users/$id"
 										>
 											{author.firstName} {author.lastName}
-											<IconUserCircle className="size-4 text-muted-foreground" />
+											<IconUserCircle className="text-muted-foreground size-4" />
 										</Link>
 									) : (
-										<span className="font-medium text-foreground">
+										<span className="text-foreground font-medium">
 											{author.firstName} {author.lastName}
 										</span>
 									)}
 									{author.isPresenter && (
 										<Badge
-											className="gap-1 border-primary/20 bg-primary/10 text-xs text-primary"
+											className="border-primary/20 bg-primary/10 text-primary gap-1 text-xs"
 											variant="secondary"
 										>
 											<IconStarFilled className="size-3" />
@@ -99,12 +99,12 @@ export function ContentTab({
 										</Badge>
 									)}
 								</div>
-								<p className="mt-0.5 truncate text-sm text-muted-foreground">
+								<p className="text-muted-foreground mt-0.5 truncate text-sm">
 									{author.affiliationName ?? (
 										<span className="italic opacity-70">No affiliation</span>
 									)}
 								</p>
-								<p className="truncate text-xs text-muted-foreground/70">
+								<p className="text-muted-foreground/70 truncate text-xs">
 									{author.email}
 								</p>
 							</div>
@@ -140,20 +140,20 @@ export function ContentTab({
 				title="Content"
 			>
 				{displayedFile ? (
-					<div className="flex items-center gap-4 rounded-lg border bg-muted/30 p-4">
-						<div className="shrink-0 rounded-md bg-primary/10 p-2">
-							<IconFile className="size-6 text-primary" />
+					<div className="bg-muted/30 flex items-center gap-4 rounded-lg border p-4">
+						<div className="bg-primary/10 shrink-0 rounded-md p-2">
+							<IconFile className="text-primary size-6" />
 						</div>
 						<div className="min-w-0 flex-1">
-							<p className="truncate text-sm font-medium text-foreground">
+							<p className="text-foreground truncate text-sm font-medium">
 								{displayedFile.originalName}
 							</p>
-							<p className="text-xs text-muted-foreground">
+							<p className="text-muted-foreground text-xs">
 								{formatFileSize(displayedFile.size)}
 							</p>
 						</div>
 						<a
-							className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+							className="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm font-medium"
 							data-testid="file-download-button"
 							href={`/api/files/${displayedFile.id}`}
 						>
@@ -162,9 +162,9 @@ export function ContentTab({
 						</a>
 					</div>
 				) : (
-					<div className="prose prose-sm max-w-none dark:prose-invert">
+					<div className="prose prose-sm dark:prose-invert max-w-none">
 						{displayedContent.split(/\n{2,}/).map((para, i) => (
-							<p className="whitespace-pre-wrap break-words" key={i}>
+							<p className="break-words whitespace-pre-wrap" key={i}>
 								{para}
 							</p>
 						))}

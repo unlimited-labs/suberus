@@ -183,7 +183,7 @@ export function FeeTab({
 			>
 				<div className="space-y-4">
 					<div className="rounded-md border">
-						<div className="grid grid-cols-[1fr_auto_auto] gap-2 border-b bg-muted/50 px-4 py-2 text-xs font-medium text-muted-foreground">
+						<div className="bg-muted/50 text-muted-foreground grid grid-cols-[1fr_auto_auto] gap-2 border-b px-4 py-2 text-xs font-medium">
 							<span>Name</span>
 							<span className="w-28 text-right">Amount ({currency})</span>
 							<span className="w-20" />
@@ -248,7 +248,7 @@ export function FeeTab({
 											</Button>
 											<Button
 												aria-label={`Delete ${ft.name}`}
-												className="size-7 text-destructive hover:text-destructive"
+												className="text-destructive hover:text-destructive size-7"
 												disabled={isSavingTypes}
 												onClick={() => handleDelete(ft.id)}
 												size="icon"
@@ -339,7 +339,7 @@ export function FeeTab({
 									{content.trim() ? (
 										<Markdown content={content} />
 									) : (
-										<p className="text-sm text-muted-foreground">
+										<p className="text-muted-foreground text-sm">
 											Nothing to preview yet
 										</p>
 									)}

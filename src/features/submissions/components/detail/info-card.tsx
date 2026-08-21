@@ -20,9 +20,9 @@ function InfoItem({ icon, label, value, mono }: InfoItemProps) {
 		<div className="flex items-center gap-3">
 			{icon ?? <div className="size-4" />}
 			<div>
-				<p className="text-xs text-muted-foreground">{label}</p>
+				<p className="text-muted-foreground text-xs">{label}</p>
 				<p
-					className={`text-sm font-medium text-foreground ${mono ? "font-mono" : ""}`}
+					className={`text-foreground text-sm font-medium ${mono ? "font-mono" : ""}`}
 				>
 					{value}
 				</p>
@@ -50,18 +50,18 @@ export function InfoCard({
 		<SectionCard title="Information" variant="outlined">
 			<div className="space-y-4">
 				<InfoItem
-					icon={<IconCategory className="size-4 text-muted-foreground" />}
+					icon={<IconCategory className="text-muted-foreground size-4" />}
 					label="Type"
 					value={TYPE_LABELS[submission.type]}
 				/>
 				<InfoItem
-					icon={<IconRefresh className="size-4 text-muted-foreground" />}
+					icon={<IconRefresh className="text-muted-foreground size-4" />}
 					label="Review Round"
 					value={submission.currentRound}
 				/>
 
 				{versions.length > 1 ? (
-					<div className="pt-2 border-t border-border/50">
+					<div className="border-border/50 border-t pt-2">
 						<VersionSelector
 							currentVersion={submission.currentVersion}
 							onVersionChange={onVersionChange}
@@ -73,15 +73,15 @@ export function InfoCard({
 					<InfoItem label="Version" value={submission.currentVersion} />
 				)}
 
-				<div className="border-t border-border/50 pt-4">
+				<div className="border-border/50 border-t pt-4">
 					<InfoItem
-						icon={<IconCalendar className="size-4 text-muted-foreground" />}
+						icon={<IconCalendar className="text-muted-foreground size-4" />}
 						label="Submitted"
 						value={formatDate(submission.createdAt)}
 					/>
 				</div>
 				<InfoItem
-					icon={<IconCalendar className="size-4 text-muted-foreground" />}
+					icon={<IconCalendar className="text-muted-foreground size-4" />}
 					label="Last Modified"
 					value={formatDate(submission.updatedAt)}
 				/>

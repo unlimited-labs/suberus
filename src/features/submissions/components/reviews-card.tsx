@@ -41,13 +41,13 @@ function ScoreBar({ label, score, maxScore = 5 }: ScoreBarProps) {
 
 	return (
 		<div>
-			<div className="flex justify-between items-center mb-1.5">
-				<span className="text-sm text-muted-foreground">{label}</span>
+			<div className="mb-1.5 flex items-center justify-between">
+				<span className="text-muted-foreground text-sm">{label}</span>
 				<span className={cn("text-sm font-semibold", colorConfig.text)}>
 					{score}/{maxScore}
 				</span>
 			</div>
-			<div className="h-2 bg-muted rounded-full overflow-hidden">
+			<div className="bg-muted h-2 overflow-hidden rounded-full">
 				<div
 					className={cn(
 						"h-full transition-all duration-500 ease-out rounded-full",
@@ -76,18 +76,18 @@ function ReviewTriggerHeader({
 	hasAttachment: boolean;
 }) {
 	return (
-		<div className="flex items-center gap-3 flex-wrap">
-			<span className="font-medium text-foreground">{reviewerName}</span>
+		<div className="flex flex-wrap items-center gap-3">
+			<span className="text-foreground font-medium">{reviewerName}</span>
 			{hasScores && (
 				<Badge className={cn("font-semibold", scoreText)} variant="outline">
 					{reviewAvg.toFixed(1)}/5
 				</Badge>
 			)}
 			{hasComments && (
-				<IconMessageCircle className="size-3.5 text-muted-foreground" />
+				<IconMessageCircle className="text-muted-foreground size-3.5" />
 			)}
 			{hasAttachment && (
-				<IconPaperclip className="size-3.5 text-muted-foreground" />
+				<IconPaperclip className="text-muted-foreground size-3.5" />
 			)}
 		</div>
 	);
@@ -119,10 +119,10 @@ function ReviewComments({
 	if (comments) {
 		return (
 			<div className={cn(hasScores && "pt-3 border-t")}>
-				<p className="text-sm font-medium text-muted-foreground mb-2">
+				<p className="text-muted-foreground mb-2 text-sm font-medium">
 					Comments
 				</p>
-				<div className="text-sm text-foreground leading-relaxed bg-background/50 p-3 rounded-lg border">
+				<div className="text-foreground bg-background/50 rounded-lg border p-3 text-sm leading-relaxed">
 					{comments}
 				</div>
 			</div>
@@ -130,7 +130,7 @@ function ReviewComments({
 	}
 	if (!hasScores) {
 		return (
-			<p className="text-sm text-muted-foreground italic">
+			<p className="text-muted-foreground text-sm italic">
 				No detailed feedback provided.
 			</p>
 		);
@@ -145,18 +145,18 @@ function ReviewAttachment({
 }) {
 	if (!attachment) return null;
 	return (
-		<div className="pt-3 border-t">
-			<p className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
+		<div className="border-t pt-3">
+			<p className="text-muted-foreground mb-2 flex items-center gap-1.5 text-sm font-medium">
 				<IconPaperclip className="size-3.5" />
 				Attachment
 			</p>
 			<a
-				className="inline-flex items-center gap-2 text-sm text-primary hover:underline bg-background/50 p-2 rounded-lg border"
+				className="text-primary bg-background/50 inline-flex items-center gap-2 rounded-lg border p-2 text-sm hover:underline"
 				href={`/api/files/${attachment.id}`}
 			>
 				<IconDownload className="size-4" />
 				{attachment.originalName}
-				<span className="text-xs text-muted-foreground">
+				<span className="text-muted-foreground text-xs">
 					({formatFileSize(attachment.size)})
 				</span>
 			</a>
@@ -178,7 +178,7 @@ function ReviewItem({
 
 	return (
 		<AccordionItem
-			className="border border-border rounded-xl bg-muted hover:bg-muted/80 transition-colors shadow-sm"
+			className="border-border bg-muted hover:bg-muted/80 rounded-xl border shadow-sm transition-colors"
 			value={review.id}
 		>
 			<AccordionTrigger className="px-4 py-3 hover:no-underline">
@@ -191,12 +191,12 @@ function ReviewItem({
 					scoreText={scoreConfig.text}
 				/>
 			</AccordionTrigger>
-			<AccordionContent className="px-4 pb-4 pt-1">
+			<AccordionContent className="px-4 pt-1 pb-4">
 				<div className="space-y-4">
 					<ReviewScores scoreEntries={scoreEntries} />
 					<ReviewComments comments={review.comments} hasScores={hasScores} />
 					<ReviewAttachment attachment={review.attachment} />
-					<div className="text-xs text-muted-foreground pt-2">
+					<div className="text-muted-foreground pt-2 text-xs">
 						{formatDateTime(createdAt)}
 					</div>
 				</div>
@@ -218,7 +218,7 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 		<div id="reviews-section">
 			<SectionCard
 				action={
-					<span className="text-sm text-muted-foreground">
+					<span className="text-muted-foreground text-sm">
 						{reviews.length} {reviews.length === 1 ? "review" : "reviews"}
 					</span>
 				}
@@ -235,8 +235,8 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 							)}
 						>
 							<div className="flex items-center gap-2">
-								<IconStarFilled className="size-4 text-muted-foreground" />
-								<span className="text-sm text-muted-foreground">
+								<IconStarFilled className="text-muted-foreground size-4" />
+								<span className="text-muted-foreground text-sm">
 									Average score
 								</span>
 							</div>

@@ -67,13 +67,13 @@ export function SessionEventCard({
 			}}
 		>
 			<span
-				className="absolute left-0 top-0 h-full w-[3px]"
+				className="absolute top-0 left-0 h-full w-[3px]"
 				style={{ backgroundColor: band }}
 			/>
 
 			{compact ? (
 				<p
-					className="whitespace-normal break-words font-semibold leading-tight text-foreground"
+					className="text-foreground leading-tight font-semibold break-words whitespace-normal"
 					data-testid="session-card-title"
 				>
 					{title}
@@ -83,13 +83,13 @@ export function SessionEventCard({
 					<div className="flex items-start justify-between gap-1">
 						<div className="min-w-0 flex-1">
 							<p
-								className="truncate font-semibold leading-tight text-foreground"
+								className="text-foreground truncate leading-tight font-semibold"
 								data-testid="session-card-title"
 							>
 								{title}
 							</p>
 							{data.trackName && (
-								<p className="truncate text-[10px] text-muted-foreground">
+								<p className="text-muted-foreground truncate text-[10px]">
 									{data.trackName}
 								</p>
 							)}
@@ -98,7 +98,7 @@ export function SessionEventCard({
 					</div>
 					{data.untimedSlots ? (
 						<p
-							className="mt-auto pt-1 text-[9px] text-muted-foreground/70"
+							className="text-muted-foreground/70 mt-auto pt-1 text-[9px]"
 							data-testid="session-card-capacity"
 						>
 							{data.presentations.length}{" "}

@@ -21,13 +21,13 @@ export function TimeRangeSummary({
 }: Props) {
 	if (compact) {
 		return (
-			<div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+			<div className="text-muted-foreground flex items-center gap-1.5 text-xs">
 				<IconClock className="shrink-0" size={12} />
-				<span className="font-medium tabular-nums text-foreground">
+				<span className="text-foreground font-medium tabular-nums">
 					{formatClockTime(start, timezone)}
 				</span>
 				<span>—</span>
-				<span className="font-medium tabular-nums text-foreground">
+				<span className="text-foreground font-medium tabular-nums">
 					{formatClockTime(end, timezone)}
 				</span>
 				<span className="ml-auto">
@@ -37,8 +37,8 @@ export function TimeRangeSummary({
 		);
 	}
 	return (
-		<div className="flex items-center gap-2 rounded-md bg-muted/60 px-3 py-2">
-			<IconClock className="shrink-0 text-muted-foreground" size={14} />
+		<div className="bg-muted/60 flex items-center gap-2 rounded-md px-3 py-2">
+			<IconClock className="text-muted-foreground shrink-0" size={14} />
 			<span className="text-sm font-medium tabular-nums">
 				{formatClockTime(start, timezone)}
 			</span>
@@ -46,7 +46,7 @@ export function TimeRangeSummary({
 			<span className="text-sm font-medium tabular-nums">
 				{formatClockTime(end, timezone)}
 			</span>
-			<span className="ml-auto text-xs text-muted-foreground">
+			<span className="text-muted-foreground ml-auto text-xs">
 				{totalMin} min{extra}
 			</span>
 		</div>

@@ -123,7 +123,7 @@ function DocFrame({
 }) {
 	return (
 		<iframe
-			className="h-[60vh] w-full rounded-lg border border-border bg-white"
+			className="border-border h-[60vh] w-full rounded-lg border bg-white"
 			onLoad={onLoad}
 			ref={ref}
 			sandbox="allow-same-origin"
@@ -192,17 +192,17 @@ function useSyncedScroll() {
 }
 
 const LOADING = (
-	<p className="text-sm text-muted-foreground">Loading file redline…</p>
+	<p className="text-muted-foreground text-sm">Loading file redline…</p>
 );
 const UNAVAILABLE = (
-	<p className="text-sm text-muted-foreground">
+	<p className="text-muted-foreground text-sm">
 		No file-level redline — these versions have no supported file (DOCX/PDF), or
 		it hasn't been processed yet.
 	</p>
 );
 const FORMAT_CHANGED = (
 	<p
-		className="text-sm text-muted-foreground"
+		className="text-muted-foreground text-sm"
 		data-testid="file-redline-format-changed"
 	>
 		The file format changed between these versions (e.g. DOCX → PDF), so a
@@ -298,7 +298,7 @@ function SplitDocuments({
 				data-testid="file-redline-split"
 			>
 				<div className="space-y-2">
-					<div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+					<div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
 						{oldLabel} · deletions marked
 					</div>
 					<DocFrame
@@ -310,7 +310,7 @@ function SplitDocuments({
 					/>
 				</div>
 				<div className="space-y-2">
-					<div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+					<div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
 						{newLabel} · insertions marked
 					</div>
 					<DocFrame

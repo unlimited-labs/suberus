@@ -53,17 +53,17 @@ function VerifyDocumentPage() {
 		<div className="mx-auto flex min-h-screen max-w-xl flex-col justify-center gap-6 px-4 py-10">
 			<div className="text-center">
 				<h1 className="text-2xl font-bold tracking-tight">Verify a document</h1>
-				<p className="mt-2 text-sm text-muted-foreground">
+				<p className="text-muted-foreground mt-2 text-sm">
 					Upload a PDF issued by us to confirm it is authentic and has not been
 					altered. The file is checked in memory and never stored.
 				</p>
 			</div>
 
-			<div className="space-y-4 rounded-2xl border border-border/60 bg-card p-6">
+			<div className="border-border/60 bg-card space-y-4 rounded-2xl border p-6">
 				<input
 					accept="application/pdf,.pdf"
 					aria-label="PDF document to verify"
-					className="block w-full text-sm file:mr-3 file:rounded-md file:border file:border-border file:bg-muted file:px-3 file:py-1.5 file:text-sm"
+					className="file:border-border file:bg-muted block w-full text-sm file:mr-3 file:rounded-md file:border file:px-3 file:py-1.5 file:text-sm"
 					data-testid="verify-file-input"
 					ref={fileRef}
 					type="file"
@@ -82,7 +82,7 @@ function VerifyDocumentPage() {
 					Verify
 				</Button>
 
-				{error && <p className="text-sm text-destructive">{error}</p>}
+				{error && <p className="text-destructive text-sm">{error}</p>}
 
 				{result && <VerifyResultPanel result={result} />}
 			</div>

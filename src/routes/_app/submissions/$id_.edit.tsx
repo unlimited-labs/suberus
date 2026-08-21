@@ -73,7 +73,7 @@ function EditSubmissionPage() {
 		return (
 			<div className="flex h-full flex-col">
 				<PageHeader icon={IconFileText} title="Cannot Edit" />
-				<div className="flex-1 p-6 flex items-center justify-center">
+				<div className="flex flex-1 items-center justify-center p-6">
 					<div className="text-center">
 						<p className="text-muted-foreground mb-4">
 							{!submission

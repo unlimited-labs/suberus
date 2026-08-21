@@ -23,15 +23,15 @@ export function MobileSidebar({
 	isReadOnly,
 }: MobileSidebarProps) {
 	return (
-		<div className="lg:hidden space-y-6" data-testid="submission-sidebar">
-			<div className="rounded-2xl bg-card shadow-xl border border-border/50 p-6">
-				<div className="flex items-center justify-between flex-wrap gap-3">
+		<div className="space-y-6 lg:hidden" data-testid="submission-sidebar">
+			<div className="bg-card border-border/50 rounded-2xl border p-6 shadow-xl">
+				<div className="flex flex-wrap items-center justify-between gap-3">
 					<div>
-						<p className="text-sm text-muted-foreground mb-1">Status</p>
+						<p className="text-muted-foreground mb-1 text-sm">Status</p>
 						<StatusCard status={submission.status} variant="mobile" />
 					</div>
 					<div className="text-right">
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							{TYPE_LABELS[submission.type]} • Round {submission.currentRound}
 						</p>
 					</div>
@@ -39,7 +39,7 @@ export function MobileSidebar({
 			</div>
 
 			{versions.length > 1 && (
-				<div className="rounded-2xl bg-card shadow-xl border border-border/50 p-6">
+				<div className="bg-card border-border/50 rounded-2xl border p-6 shadow-xl">
 					<VersionSelector
 						currentVersion={submission.currentVersion}
 						onVersionChange={onVersionChange}

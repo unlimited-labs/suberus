@@ -74,8 +74,8 @@ function DashboardPage() {
 
 function StatCard({ title, value }: { title: string; value: number }) {
 	return (
-		<div className="rounded-lg border border-border bg-card p-4">
-			<p className="text-sm text-muted-foreground">{title}</p>
+		<div className="border-border bg-card rounded-lg border p-4">
+			<p className="text-muted-foreground text-sm">{title}</p>
 			<p className="text-2xl font-semibold">{value ?? 0}</p>
 		</div>
 	);

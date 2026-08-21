@@ -40,12 +40,12 @@ export function ConfidenceField({ form, readOnly }: ConfidenceFieldProps) {
 										</button>
 									))}
 								</div>
-								<div className="flex justify-between text-xs text-muted-foreground px-1">
+								<div className="text-muted-foreground flex justify-between px-1 text-xs">
 									<span>Very Low</span>
 									<span>Very High</span>
 								</div>
 								{field.state.value > 0 && (
-									<p className="text-sm text-foreground mt-2">
+									<p className="text-foreground mt-2 text-sm">
 										{confidenceLevels[field.state.value - 1].label}:{" "}
 										<span className="text-muted-foreground">
 											{confidenceLevels[field.state.value - 1].description}

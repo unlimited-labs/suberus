@@ -68,7 +68,7 @@ export function ActionsCard({
 				return (
 					<>
 						<Button
-							className="gap-2 w-full"
+							className="w-full gap-2"
 							disabled={isLoading}
 							onClick={handleEdit}
 							variant="outline"
@@ -77,7 +77,7 @@ export function ActionsCard({
 							Continue Editing
 						</Button>
 						<Button
-							className="gap-2 w-full"
+							className="w-full gap-2"
 							disabled={isLoading}
 							onClick={handleSubmit}
 						>
@@ -85,7 +85,7 @@ export function ActionsCard({
 							Submit
 						</Button>
 						<Button
-							className="gap-2 w-full"
+							className="w-full gap-2"
 							disabled={isLoading}
 							onClick={() => setWithdrawOpen(true)}
 							variant="destructive"
@@ -98,12 +98,12 @@ export function ActionsCard({
 			case "REVISE_REQUIRED":
 				return (
 					<>
-						<Button className="gap-2 w-full" onClick={handleRevise}>
+						<Button className="w-full gap-2" onClick={handleRevise}>
 							<IconEdit className="size-4" />
 							Make Revisions
 						</Button>
 						<Button
-							className="gap-2 w-full"
+							className="w-full gap-2"
 							disabled={isLoading}
 							onClick={() => setWithdrawOpen(true)}
 							variant="destructive"
@@ -115,7 +115,7 @@ export function ActionsCard({
 				);
 			case "CONDITIONALLY_ACCEPTED":
 				return (
-					<Button className="gap-2 w-full" onClick={handleRevise}>
+					<Button className="w-full gap-2" onClick={handleRevise}>
 						<IconEdit className="size-4" />
 						Upload Revised Version
 					</Button>
@@ -127,7 +127,7 @@ export function ActionsCard({
 			case "RESUBMITTED":
 				return (
 					<Button
-						className="gap-2 w-full"
+						className="w-full gap-2"
 						disabled={isLoading}
 						onClick={() => setWithdrawOpen(true)}
 						variant="destructive"
@@ -151,7 +151,7 @@ export function ActionsCard({
 					<div className="space-y-2">{actions}</div>
 				</SectionCard>
 			) : (
-				<div className="rounded-2xl bg-card shadow-xl p-6 border border-border/50">
+				<div className="bg-card border-border/50 rounded-2xl border p-6 shadow-xl">
 					<div className="space-y-2">{actions}</div>
 				</div>
 			)}

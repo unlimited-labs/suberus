@@ -13,10 +13,10 @@ export function ResolutionPreviewCard({
 	return (
 		<>
 			<div className="overflow-hidden rounded-xl border">
-				<div className="flex items-center justify-between border-b bg-muted/40 px-3 py-2 text-xs font-medium text-muted-foreground">
+				<div className="bg-muted/40 text-muted-foreground flex items-center justify-between border-b px-3 py-2 text-xs font-medium">
 					<span>Resolved data</span>
 					{missing.length > 0 && (
-						<span className="flex items-center gap-1 text-destructive">
+						<span className="text-destructive flex items-center gap-1">
 							<IconAlertTriangle className="size-3.5" />
 							{missing.length} missing
 						</span>
@@ -24,7 +24,7 @@ export function ResolutionPreviewCard({
 				</div>
 				<div className="divide-y">
 					{preview.placeholders.length === 0 && (
-						<p className="px-3 py-2 text-sm text-muted-foreground">
+						<p className="text-muted-foreground px-3 py-2 text-sm">
 							This template has no placeholders.
 						</p>
 					)}
@@ -37,11 +37,11 @@ export function ResolutionPreviewCard({
 								data-testid="resolution-row"
 								key={p}
 							>
-								<span className="text-xs font-medium text-muted-foreground">
+								<span className="text-muted-foreground text-xs font-medium">
 									{placeholderLabel(p)}
 								</span>
 								{isMissing ? (
-									<span className="flex items-center gap-1 text-xs font-medium text-destructive">
+									<span className="text-destructive flex items-center gap-1 text-xs font-medium">
 										<IconAlertTriangle className="size-3.5" />
 										Missing
 									</span>
@@ -59,7 +59,7 @@ export function ResolutionPreviewCard({
 
 			{missing.length > 0 && (
 				<p
-					className="flex items-center gap-1.5 text-xs text-destructive"
+					className="text-destructive flex items-center gap-1.5 text-xs"
 					role="alert"
 				>
 					<IconAlertTriangle className="size-3.5" />

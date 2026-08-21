@@ -71,13 +71,13 @@ function TemplateCard({
 			onClick={onClick}
 			type="button"
 		>
-			<div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+			<div className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-md">
 				<Icon className="size-5" />
 			</div>
 			<div className="min-w-0 flex-1">
 				<p className="text-sm font-medium">{template.name}</p>
-				<p className="text-xs text-muted-foreground">{template.description}</p>
-				<p className="mt-1 truncate text-xs text-muted-foreground">
+				<p className="text-muted-foreground text-xs">{template.description}</p>
+				<p className="text-muted-foreground mt-1 truncate text-xs">
 					{template.questions.map((q) => q.label).join(" · ")}
 				</p>
 			</div>

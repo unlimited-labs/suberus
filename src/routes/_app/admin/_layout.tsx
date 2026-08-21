@@ -16,7 +16,7 @@ function AdminLayout() {
 
 	if (!isAdmin) {
 		return (
-			<div className="flex h-full flex-col items-center justify-center gap-4 text-muted-foreground">
+			<div className="text-muted-foreground flex h-full flex-col items-center justify-center gap-4">
 				<IconShieldOff className="size-16" />
 				<p>You don't have permission to access this section</p>
 			</div>
@@ -50,7 +50,7 @@ function BuildFooter() {
 		data.builtAt === "unknown" ? "unknown" : data.builtAt.slice(0, 10);
 
 	return (
-		<footer className="px-4 py-2 text-center text-xs text-muted-foreground">
+		<footer className="text-muted-foreground px-4 py-2 text-center text-xs">
 			build {data.commit.slice(0, 7)} · {builtAt}
 		</footer>
 	);

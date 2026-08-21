@@ -45,10 +45,10 @@ export function ReviewCard({
 						<div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
 							{Object.entries(review.scores).map(([name, score]) => (
 								<div
-									className="flex justify-between rounded bg-muted/50 px-2 py-1 text-sm"
+									className="bg-muted/50 flex justify-between rounded px-2 py-1 text-sm"
 									key={name}
 								>
-									<span className="mr-2 truncate text-muted-foreground">
+									<span className="text-muted-foreground mr-2 truncate">
 										{name}
 									</span>
 									<span className="font-medium">{score}/5</span>
@@ -68,11 +68,11 @@ export function ReviewCard({
 			<div>
 				<p className="mb-1 text-sm font-medium">Comments</p>
 				{review.comments ? (
-					<p className="whitespace-pre-wrap break-words text-sm">
+					<p className="text-sm break-words whitespace-pre-wrap">
 						{review.comments}
 					</p>
 				) : (
-					<p className="text-sm italic text-muted-foreground">
+					<p className="text-muted-foreground text-sm italic">
 						No comments provided
 					</p>
 				)}
@@ -82,12 +82,12 @@ export function ReviewCard({
 				<div className="border-t pt-3">
 					<p className="mb-1 text-sm font-medium">Attachment</p>
 					<a
-						className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+						className="text-primary inline-flex items-center gap-2 text-sm hover:underline"
 						href={`/api/files/${review.attachment.id}`}
 					>
 						<IconDownload className="size-4" />
 						{review.attachment.originalName}
-						<span className="text-xs text-muted-foreground">
+						<span className="text-muted-foreground text-xs">
 							({formatFileSize(review.attachment.size)})
 						</span>
 					</a>
@@ -99,7 +99,7 @@ export function ReviewCard({
 					<p className="mb-1 text-sm font-medium text-amber-600 dark:text-amber-400">
 						Private Notes (editor only)
 					</p>
-					<p className="whitespace-pre-wrap break-words rounded bg-amber-50 p-2 text-sm dark:bg-amber-950/20">
+					<p className="rounded bg-amber-50 p-2 text-sm break-words whitespace-pre-wrap dark:bg-amber-950/20">
 						{review.privateNotes}
 					</p>
 				</div>

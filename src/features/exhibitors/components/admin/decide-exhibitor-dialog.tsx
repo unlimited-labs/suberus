@@ -122,7 +122,7 @@ export function DecideExhibitorDialog({
 							rows={4}
 							value={reason}
 						/>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							This reason will be recorded in the audit trail and included in
 							the email to the exhibitor.
 						</p>
