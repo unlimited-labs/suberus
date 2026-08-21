@@ -6,6 +6,7 @@ import {
 import { prisma } from "@/shared/server/db.server";
 import {
 	deleteFile,
+	getFileContent,
 	sanitizeFileName,
 	uploadFile,
 } from "@/shared/server/storage";
@@ -153,4 +154,21 @@ export async function uploadCameraReadyBulkZip(
 	}
 
 	return { uploaded, skipped };
+}
+
+export async function cameraReadyFileResponse(
+	file: { storageKey: string; originalName: string } | null | undefined,
+): Promise<Response> {
+	if (!file) return new Response("Not found", { status: 404 });
+
+	const result = await getFileContent(file.storageKey);
+	return new Response(result.body, {
+		headers: {
+			"Content-Type": "application/pdf",
+			"Content-Disposition": `inline; filename="${sanitizeFileName(file.originalName)}"`,
+			...(result.contentLength && {
+				"Content-Length": String(result.contentLength),
+			}),
+		},
+	});
 }

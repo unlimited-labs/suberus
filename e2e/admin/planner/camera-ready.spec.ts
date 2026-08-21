@@ -157,6 +157,44 @@ test.describe.serial("Camera-ready", () => {
 		expect((await page.request.get(crUrl(slotId))).status()).toBe(404);
 	});
 
+	test("short link serves the PDF by submission number", async ({
+		page,
+		testRun,
+	}) => {
+		const { submission, slotId } = await seedPresentation(testRun.testRunId);
+		const { sequentialNumber } = await getPrisma().submission.findUniqueOrThrow({
+			where: { id: submission.id },
+			select: { sequentialNumber: true },
+		});
+
+		await page.goto(`/admin/submissions/${submission.id}`);
+		await page.getByTestId("camera-ready-input").setInputFiles({
+			name: "document.pdf",
+			mimeType: "application/pdf",
+			buffer: PDF,
+		});
+		await expect(page.getByText("document.pdf")).toBeVisible({ timeout: 15000 });
+
+		for (const n of [
+			String(sequentialNumber),
+			String(sequentialNumber).padStart(5, "0"),
+			`${String(sequentialNumber).padStart(3, "0")}.pdf`,
+		]) {
+			const response = await page.request.get(`/s/${n}`);
+			expect(response.status()).toBe(200);
+			expect(response.headers()["content-type"]).toContain("application/pdf");
+		}
+
+		expect((await page.request.get("/s/999999")).status()).toBe(404);
+		expect((await page.request.get("/s/abc")).status()).toBe(404);
+
+		await setSchedulePublished(false);
+		expect(
+			(await page.request.get(`/s/${sequentialNumber}`)).status(),
+		).toBe(404);
+		expect((await page.request.get(crUrl(slotId))).status()).toBe(404);
+	});
+
 	test("bulk ZIP uploads matched PDFs and reports skips", async ({
 		page,
 		testRun,

@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { isScheduleVisible } from "@/features/planner/server/schedule";
+import { cameraReadyFileResponse } from "@/features/submissions/server/camera-ready";
 import { isUuid } from "@/shared/lib/uuid";
 import { prisma } from "@/shared/server/db.server";
-import { getFileContent, sanitizeFileName } from "@/shared/server/storage";
 
 export const Route = createFileRoute("/api/program/camera-ready/$slotId")({
 	server: {
@@ -28,21 +28,8 @@ export const Route = createFileRoute("/api/program/camera-ready/$slotId")({
 						},
 					},
 				});
-				const file = slot?.submission.cameraReadyFile;
-				if (!file) {
-					return new Response("Not found", { status: 404 });
-				}
 
-				const result = await getFileContent(file.storageKey);
-				return new Response(result.body, {
-					headers: {
-						"Content-Type": "application/pdf",
-						"Content-Disposition": `inline; filename="${sanitizeFileName(file.originalName)}"`,
-						...(result.contentLength && {
-							"Content-Length": String(result.contentLength),
-						}),
-					},
-				});
+				return cameraReadyFileResponse(slot?.submission.cameraReadyFile);
 			},
 		},
 	},

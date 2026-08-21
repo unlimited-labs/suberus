@@ -113,6 +113,26 @@ stars or favourites.
 
 ![Presentation preview dialog with favourite toggle](../../../assets/screenshots/50-program-presentation-preview.png)
 
+### Short links & QR codes
+
+Every camera-ready PDF also has a **permanent short link** built from the
+submission number shown in the submissions list:
+
+```
+https://<your-conference>.suberus.app/s/<number>
+```
+
+Leading zeros and a trailing `.pdf` are both accepted, so the number printed in
+the abstract book (`042`), the plain number (`42`) and `042.pdf` all work. Point a QR code at this URL and it keeps
+working even if the talk is later moved to another session or day — the link is
+keyed to the submission, not to its slot in the program.
+
+| Behaviour | Detail |
+|---|---|
+| **When it works** | Only once the program is **published** and the talk is **scheduled** and has a camera-ready PDF. |
+| **Before that** | The link returns **404** — the same response as a number that does not exist, so nothing about unpublished submissions leaks. |
+| **Who can use it** | Anyone. No sign-in, opens the PDF directly. |
+
 ### Favourite reminders (push notifications)
 
 Signed-in attendees can get a **browser push notification** shortly before a
