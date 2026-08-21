@@ -50,20 +50,15 @@ function LoginPage() {
 		);
 	}, [afterSignIn]);
 
-	// Promote passkey to the primary CTA when the device can do biometrics (phones,
-	// Touch ID, Windows Hello) or the user last signed in that way. Resolved in an
-	// effect, not during render: the cookie read has no SSR equivalent.
+	// Promote passkey to the primary CTA on touch devices or for users who last
+	// signed in that way. Resolved in an effect, not during render: neither the
+	// cookie read nor matchMedia has an SSR equivalent.
 	useEffect(() => {
 		if (!("PublicKeyCredential" in globalThis)) return;
-		if (authClient.isLastUsedLoginMethod("passkey")) {
-			setPromotePasskey(true);
-			return;
-		}
-		void PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable?.()
-			.then((ok) => {
-				if (ok) setPromotePasskey(true);
-			})
-			.catch(() => {});
+		setPromotePasskey(
+			authClient.isLastUsedLoginMethod("passkey") ||
+				globalThis.matchMedia("(pointer: coarse)").matches,
+		);
 	}, []);
 
 	const form = useAppForm({

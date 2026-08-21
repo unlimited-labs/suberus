@@ -11,6 +11,10 @@ import { authClient } from "@/shared/lib/auth-client";
 
 const DISMISSED_KEY = "passkey-nudge-dismissed";
 
+// Module scope, set synchronously: the component remounts while the session
+// settles, and localStorage is only written after two awaits.
+let offerStarted = false;
+
 function markOffered() {
 	try {
 		window.localStorage.setItem(DISMISSED_KEY, "1");
@@ -36,8 +40,9 @@ export function PasskeyNudge() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	useEffect(() => {
-		if (wasOffered()) return;
+		if (offerStarted || wasOffered()) return;
 		if (!("PublicKeyCredential" in globalThis)) return;
+		offerStarted = true;
 
 		const enable = async () => {
 			const res = await authClient.passkey.addPasskey();
@@ -70,8 +75,7 @@ export function PasskeyNudge() {
 			if (!passkeys || passkeys.length > 0) return;
 
 			// Persist before showing: the offer is made once per browser, whether or
-			// not the toast is answered. The component remounts on every session
-			// refetch, so an in-memory guard would re-nag within one session.
+			// not the toast is answered.
 			markOffered();
 			toast("Sign in faster next time", {
 				action: { label: "Enable", onClick: () => void enable() },

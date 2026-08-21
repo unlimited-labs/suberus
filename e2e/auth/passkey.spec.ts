@@ -21,15 +21,13 @@ test.describe("Passkey", () => {
 		await expect(page.getByTestId("passkey-signin")).toBeVisible()
 	})
 
-	test("passkey CTA leads when the device has a platform authenticator", async ({
-		page,
-	}) => {
+	test("passkey CTA leads only on touch devices", async ({ page }) => {
 		await page.goto("/login")
 		const passkey = page.getByTestId("passkey-signin")
 		await expect(passkey).toBeVisible()
 
-		const promoted = await page.evaluate(() =>
-			PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(),
+		const promoted = await page.evaluate(
+			() => matchMedia("(pointer: coarse)").matches,
 		)
 		const submit = page.getByRole("button", { name: "Sign in", exact: true })
 
