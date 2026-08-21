@@ -159,9 +159,11 @@ function AdminEditSubmissionPage() {
 				});
 				if (!uploadResult.success) {
 					toast.error(`Saved but file upload failed: ${uploadResult.error}`);
+					return false;
 				}
 			} catch {
 				toast.error("File upload failed");
+				return false;
 			}
 		}
 
@@ -178,9 +180,14 @@ function AdminEditSubmissionPage() {
 		if (!(await save(formData))) return;
 
 		if (isDraft) {
-			const result = await adminSubmitDraftFn({ data: { submissionId: id } });
-			if (!result.success) {
-				toast.error(result.error ?? "Submit failed");
+			try {
+				const result = await adminSubmitDraftFn({ data: { submissionId: id } });
+				if (!result.success) {
+					toast.error(result.error ?? "Submit failed");
+					return;
+				}
+			} catch {
+				toast.error("Something went wrong. Please try again.");
 				return;
 			}
 		}

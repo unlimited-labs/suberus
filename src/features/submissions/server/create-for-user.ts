@@ -11,6 +11,7 @@ import {
 import { issueUploadLink } from "@/features/submissions/server/upload-link";
 import { assertAcceptsFile } from "@/features/submissions/server/upload-target";
 import type { SubmissionCreateInput } from "@/features/submissions/validations";
+import type { SubmissionType } from "@/generated/prisma/enums";
 import { prisma } from "@/shared/server/db.server";
 
 /** Multipart POST target, field name `file`; the token is the whole authority. */
@@ -119,15 +120,26 @@ export async function createSubmissionForUser(
 	};
 }
 
+/** EXHIBITOR and INVITED never enter peer review, so they have no draft to send. */
+const NON_SUBMITTABLE_TYPES: SubmissionType[] = ["EXHIBITOR", "INVITED"];
+
 export async function submitDraftOnBehalf(
 	submissionId: string,
 	performedById: string,
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; notFound?: true }> {
 	const submission = await prisma.submission.findUnique({
 		where: { id: submissionId },
-		select: { userId: true },
+		select: { userId: true, type: true },
 	});
-	if (!submission) return { success: false, error: "Submission not found" };
+	if (!submission) {
+		return { success: false, error: "Submission not found", notFound: true };
+	}
+	if (NON_SUBMITTABLE_TYPES.includes(submission.type)) {
+		return {
+			success: false,
+			error: `${submission.type} entries are not submitted for review.`,
+		};
+	}
 
 	return submitDraft(submissionId, submission.userId, {
 		enforceLimit: false,
@@ -142,7 +154,7 @@ export async function submitDraftForUser(
 	const result = await submitDraftOnBehalf(submissionId, performedById);
 	if (!result.success) {
 		throw new Response(result.error ?? "Could not submit the draft", {
-			status: 400,
+			status: result.notFound ? 404 : 400,
 		});
 	}
 	return { id: submissionId, status: "SUBMITTED" };
