@@ -1,8 +1,9 @@
 import { defineConfig } from "oxlint";
 
-// oxlint carries the anti-slop plugin only; Biome remains the general linter.
+// Biome remains the general linter; oxlint carries anti-slop plus no-deprecated.
+// The latter is type-aware, so only `pnpm report-deprecated` (--type-aware) runs it.
 export default defineConfig({
-	plugins: [],
+	plugins: ["typescript"],
 	categories: { correctness: "off" },
 	ignorePatterns: [
 		"src/routeTree.gen.ts",
@@ -22,6 +23,7 @@ export default defineConfig({
 	],
 	jsPlugins: [{ name: "anti-slop", specifier: "./tools/oxlint/anti-slop/index.ts" }],
 	rules: {
+		"typescript/no-deprecated": "error",
 		"anti-slop/no-chained-type-assertions": "error",
 		"anti-slop/no-conditional-empty-object-spread": "error",
 		"anti-slop/no-known-value-widening": "error",
