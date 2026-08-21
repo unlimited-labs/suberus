@@ -39,7 +39,10 @@ import type {
 	SubmissionTypeConfig,
 	SubmissionTypeKey,
 } from "@/features/settings/types";
-import { conferenceSettingsSchema } from "@/features/settings/validations";
+import {
+	conferenceSettingsSchema,
+	reminderSettingsSchema,
+} from "@/features/settings/validations";
 import { isDeadlinePassed } from "@/shared/lib/deadline";
 import { prisma } from "@/shared/server/db.server";
 import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
@@ -815,27 +818,6 @@ export const getReminderSettingsFn = createServerFn({ method: "GET" })
 			deadline: settings.REMINDER_DEADLINE_SETTINGS,
 		};
 	});
-
-const daysBeforeSchema = z
-	.array(z.number().int().min(1).max(365))
-	.min(1)
-	.max(10);
-
-const reminderSettingsSchema = z.object({
-	reviewer: z.object({
-		enabled: z.boolean(),
-		daysBefore: daysBeforeSchema,
-	}),
-	revision: z.object({
-		enabled: z.boolean(),
-		intervalDays: z.number().int().min(1).max(365),
-		maxCount: z.number().int().min(1).max(50),
-	}),
-	deadline: z.object({
-		enabled: z.boolean(),
-		daysBefore: daysBeforeSchema,
-	}),
-});
 
 /**
  * Update reminder settings (admin only)

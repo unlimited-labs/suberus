@@ -30,3 +30,60 @@ export const conferenceSettingsSchema = z.object({
 export const conferenceSettingsPatch = conferenceSettingsSchema.partial();
 
 export type ConferenceSettings = z.infer<typeof conferenceSettingsSchema>;
+
+const reminderDaysBefore = z
+	.array(
+		z
+			.number()
+			.int()
+			.min(1, "Days must be 1-365")
+			.max(365, "Days must be 1-365"),
+	)
+	.min(1, "Enter at least one value")
+	.max(10, "At most 10 values");
+
+export const reminderSettingsSchema = z.object({
+	reviewer: z.object({ enabled: z.boolean(), daysBefore: reminderDaysBefore }),
+	revision: z.object({
+		enabled: z.boolean(),
+		intervalDays: z.number().int().min(1).max(365),
+		maxCount: z.number().int().min(1).max(50),
+	}),
+	deadline: z.object({ enabled: z.boolean(), daysBefore: reminderDaysBefore }),
+});
+
+const wholeNumber = (bounds: z.ZodNumber) =>
+	z
+		.string()
+		.trim()
+		.refine((s) => /^\d+$/.test(s), "Enter a whole number")
+		.transform(Number)
+		.pipe(bounds);
+
+const daysBeforeCsv = z
+	.string()
+	.transform((s) =>
+		s
+			.split(",")
+			.map((t) => t.trim())
+			.filter(Boolean),
+	)
+	.refine(
+		(tokens) => tokens.every((t) => /^\d+$/.test(t)),
+		"Use whole numbers separated by commas",
+	)
+	.transform((tokens) => tokens.map(Number))
+	.pipe(reminderDaysBefore);
+
+/** Field ids double as form keys so the admin e2e selectors keep working. */
+export const reminderFormSchema = z.object({
+	"reviewer-enabled": z.boolean(),
+	"reviewer-days": daysBeforeCsv,
+	"revision-enabled": z.boolean(),
+	"revision-interval": wholeNumber(z.number().int().min(1).max(365)),
+	"revision-max": wholeNumber(z.number().int().min(1).max(50)),
+	"deadline-enabled": z.boolean(),
+	"deadline-days": daysBeforeCsv,
+});
+
+export type ReminderFormValues = z.input<typeof reminderFormSchema>;
