@@ -305,7 +305,7 @@ function Authors({
 			>
 				{authors.map((author, index) => {
 					const cardClass = cn(
-						"flex items-start gap-3 rounded-[var(--radius)] border border-border bg-card p-3",
+						"flex h-full items-start gap-3 rounded-[var(--radius)] border border-border bg-card p-3",
 						author.isPresenter && "border-primary/40 bg-primary/5",
 					);
 					const inner = (
@@ -330,7 +330,7 @@ function Authors({
 										</span>
 									)}
 								</div>
-								<p className="text-muted-foreground mt-0.5 truncate text-sm">
+								<p className="text-muted-foreground mt-0.5 text-xs leading-snug break-words">
 									{affiliationDisplay(author.affiliationName)}
 								</p>
 							</div>
