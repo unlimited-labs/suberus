@@ -1,7 +1,7 @@
 import { defineConfig } from "oxlint";
 
 // Biome remains the general linter; oxlint carries anti-slop plus no-deprecated.
-// The latter is type-aware, so only `pnpm report-deprecated` (--type-aware) runs it.
+// The latter is type-aware: `pnpm exec oxlint --type-aware` opts in, pre-commit skips it.
 export default defineConfig({
 	plugins: ["typescript"],
 	categories: { correctness: "off" },

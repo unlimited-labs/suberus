@@ -16,7 +16,6 @@
     "format": "biome format",
     "lint": "biome lint --fix",
     "lint:slop": "oxlint",
-    "report-deprecated": "oxlint --type-aware",
     "prepare": "lefthook install || true",
     "db:generate": "dotenv -e .env -- prisma generate",
     "db:push": "dotenv -e .env -- prisma db push",
