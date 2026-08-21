@@ -1,6 +1,5 @@
-import { useSelector } from "@tanstack/react-store";
 import type * as React from "react";
-import { useFieldContext } from "@/shared/hooks/form-context";
+import { useFieldError } from "@/shared/hooks/use-field-error";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
 import { Switch } from "@/shared/ui/switch";
 
@@ -17,14 +16,7 @@ export function FormSwitchField({
 	className,
 	testId,
 }: FormSwitchFieldProps) {
-	const field = useFieldContext<boolean>();
-	const submissionAttempts = useSelector(
-		field.form.store,
-		(s) => s.submissionAttempts,
-	);
-	const hasError =
-		(field.state.meta.isBlurred || submissionAttempts > 0) &&
-		field.state.meta.errors.length > 0;
+	const { field, errors, hasError } = useFieldError<boolean>();
 
 	return (
 		<Field className={className} orientation="horizontal">
@@ -40,7 +32,7 @@ export function FormSwitchField({
 			>
 				{label}
 			</FieldLabel>
-			<FieldError errors={hasError ? field.state.meta.errors : undefined} />
+			<FieldError errors={hasError ? errors : undefined} />
 		</Field>
 	);
 }
