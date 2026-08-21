@@ -300,7 +300,7 @@ export function computeSubmissionTodo(args: {
 		case "RESUBMITTED":
 			// EXHIBITOR submissions are never peer-reviewed; decisions happen via
 			// the exhibitor approve/reject flow, so there is no review TODO here.
-			if (type === "EXHIBITOR") return { kind: "NONE" };
+			if (type === "EXHIBITOR" || type === "INVITED") return { kind: "NONE" };
 			return hasMinReviewers(assigned, required)
 				? { kind: "AWAITING_REVIEWS", completed, required }
 				: { kind: "ASSIGN_REVIEWER", assigned, required };
@@ -342,6 +342,9 @@ export function buildSubmissionWhereClause(
 
 	if (filters.type && filters.type.length > 0) {
 		where.type = { in: filters.type };
+	} else {
+		// INVITED placeholders live only in the programme, never among submissions.
+		where.type = { not: "INVITED" };
 	}
 
 	if (filters.status && filters.status.length > 0) {
@@ -407,6 +410,7 @@ export async function getAdminSubmissions(
 		POSTER: configs.POSTER.requiredReviewers,
 		FULL_PAPER: configs.FULL_PAPER.requiredReviewers,
 		EXHIBITOR: 0, // exhibitor entries are not peer-reviewed
+		INVITED: 0, // planner placeholders are never reviewed
 	} satisfies Record<SubmissionType, number>;
 	const now = new Date();
 
@@ -814,22 +818,28 @@ export async function bulkChangeStatus(
 	const errors: string[] = [];
 
 	// EXHIBITOR decisions must go through the exhibitor approve/reject flow,
-	// which also updates Exhibitor.status and sends exhibitor emails.
-	const exhibitorSubmissions = await prisma.submission.findMany({
-		where: { id: { in: submissionIds }, type: "EXHIBITOR" },
-		select: { id: true, title: true },
+	// which also updates Exhibitor.status and sends exhibitor emails. INVITED
+	// placeholders have no decision to make at all.
+	const undecidable = await prisma.submission.findMany({
+		where: {
+			id: { in: submissionIds },
+			type: { in: ["EXHIBITOR", "INVITED"] },
+		},
+		select: { id: true, title: true, type: true },
 	});
-	const exhibitorIds = new Set(exhibitorSubmissions.map((s) => s.id));
-	for (const s of exhibitorSubmissions) {
+	const undecidableIds = new Set(undecidable.map((s) => s.id));
+	for (const s of undecidable) {
 		errors.push(
-			`"${s.title}" is an exhibitor presentation — decide it via the exhibitor approve/reject flow`,
+			s.type === "EXHIBITOR"
+				? `"${s.title}" is an exhibitor presentation — decide it via the exhibitor approve/reject flow`
+				: `"${s.title}" is an invited talk — it is managed in the programme planner`,
 		);
 	}
 
 	const emailEvent = lookup(bulkDecisionEmailMap, targetStatus);
 
 	for (const id of submissionIds) {
-		if (exhibitorIds.has(id)) continue;
+		if (undecidableIds.has(id)) continue;
 		const result = await executeSubmissionTransition(
 			id,
 			event,

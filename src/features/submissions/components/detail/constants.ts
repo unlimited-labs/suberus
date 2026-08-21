@@ -36,4 +36,5 @@ export const TYPE_LABELS = {
 	FULL_PAPER: "Full Paper",
 	POSTER: "Poster",
 	EXHIBITOR: "Exhibitor",
+	INVITED: "Invited Talk",
 } satisfies Record<SubmissionType, string>;

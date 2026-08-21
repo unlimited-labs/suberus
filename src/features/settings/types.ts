@@ -204,6 +204,9 @@ export const SUBMISSION_TYPE_TO_KEY = {
 	POSTER: "SUBMISSION_TYPE_POSTER",
 	FULL_PAPER: "SUBMISSION_TYPE_FULL_PAPER",
 	EXHIBITOR: "SUBMISSION_TYPE_EXHIBITOR",
+	// INVITED placeholders have no type config; every path reading this map is
+	// gated off before they reach it. Mapped so the lookup stays total.
+	INVITED: "SUBMISSION_TYPE_ORAL_PRESENTATION",
 } as const;
 
 /** Map from AppSettingKey to display name */

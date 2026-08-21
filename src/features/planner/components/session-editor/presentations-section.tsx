@@ -2,12 +2,16 @@ import {
 	IconBan,
 	IconChevronDown,
 	IconChevronUp,
+	IconPencil,
+	IconPlus,
 	IconX,
 } from "@tabler/icons-react";
+import { useState } from "react";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { InvitedTalkDialog } from "./invited-talk-dialog";
 import { useSessionEditor } from "./session-editor-context";
 
 export function PresentationsSection() {
@@ -21,6 +25,10 @@ export function PresentationsSection() {
 	const untimed = session.untimedSlots;
 	const remainingMin = sessionDurationMin - usedMin;
 	const capacityFull = usedMin >= sessionDurationMin;
+	// undefined = closed, null = adding, string = editing that slot
+	const [invitedSlotId, setInvitedSlotId] = useState<string | null | undefined>(
+		undefined,
+	);
 
 	const handleMove = (index: number, dir: "up" | "down") => {
 		const reordered = [...presentations];
@@ -38,18 +46,30 @@ export function PresentationsSection() {
 						({presentations.length})
 					</span>
 				</Label>
-				{untimed ? (
-					<span className="text-muted-foreground text-xs">Untimed</span>
-				) : (
-					<span
-						className={`text-xs tabular-nums ${capacityFull ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}
+				<div className="flex items-center gap-2">
+					{untimed ? (
+						<span className="text-muted-foreground text-xs">Untimed</span>
+					) : (
+						<span
+							className={`text-xs tabular-nums ${capacityFull ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}
+						>
+							{usedMin}/{sessionDurationMin} min
+							{!capacityFull && remainingMin > 0 && (
+								<span className="opacity-60"> · {remainingMin} free</span>
+							)}
+						</span>
+					)}
+					<Button
+						data-testid="add-invited-talk"
+						disabled={!untimed && capacityFull}
+						onClick={() => setInvitedSlotId(null)}
+						size="xs"
+						variant="outline"
 					>
-						{usedMin}/{sessionDurationMin} min
-						{!capacityFull && remainingMin > 0 && (
-							<span className="opacity-60"> · {remainingMin} free</span>
-						)}
-					</span>
-				)}
+						<IconPlus size={12} />
+						Invited talk
+					</Button>
+				</div>
 			</div>
 
 			{presentations.length === 0 ? (
@@ -138,7 +158,20 @@ export function PresentationsSection() {
 							>
 								<IconBan size={12} />
 							</Button>
+							{p.invited && (
+								<Button
+									aria-label={`Edit ${p.submissionTitle}`}
+									data-testid={`invited-talk-edit-${p.id}`}
+									onClick={() => setInvitedSlotId(p.id)}
+									size="icon-sm"
+									variant="ghost"
+								>
+									<IconPencil size={12} />
+								</Button>
+							)}
 							<Button
+								aria-label={`Remove ${p.submissionTitle}`}
+								data-testid={`presentation-remove-${p.id}`}
 								onClick={() => mutations.removePresentation(p.id)}
 								size="icon-sm"
 								variant="ghost"
@@ -148,6 +181,16 @@ export function PresentationsSection() {
 						</div>
 					))}
 				</div>
+			)}
+
+			{invitedSlotId !== undefined && (
+				<InvitedTalkDialog
+					onOpenChange={(o) => !o && setInvitedSlotId(undefined)}
+					open
+					sessionId={session.id}
+					slotId={invitedSlotId ?? undefined}
+					untimed={untimed}
+				/>
 			)}
 		</div>
 	);

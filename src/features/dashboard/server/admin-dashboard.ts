@@ -90,6 +90,9 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		getSetting("FEE_CURRENCY"),
 	]);
 
+	// INVITED placeholders back programme slots; they are not submitted work.
+	const realSubmissions = { type: { not: "INVITED" } } as const;
+
 	const dbMetrics = Promise.all([
 		prisma.user.groupBy({
 			by: ["role"],
@@ -102,15 +105,17 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		}),
 		prisma.submission.groupBy({
 			by: ["status"],
+			where: realSubmissions,
 			_count: true,
 		}),
 		prisma.submission.groupBy({
 			by: ["type"],
+			where: realSubmissions,
 			_count: true,
 		}),
-		prisma.submission.count(),
+		prisma.submission.count({ where: realSubmissions }),
 		prisma.submission.count({
-			where: { createdAt: { gte: sevenDaysAgo } },
+			where: { ...realSubmissions, createdAt: { gte: sevenDaysAgo } },
 		}),
 		prisma.reviewAssignment.groupBy({
 			by: ["status"],
@@ -231,7 +236,7 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		(typeof submissionsGroupedByType)[number],
 		SubmissionType
 	>(
-		{ ABSTRACT: 0, FULL_PAPER: 0, POSTER: 0, EXHIBITOR: 0 },
+		{ ABSTRACT: 0, FULL_PAPER: 0, POSTER: 0, EXHIBITOR: 0, INVITED: 0 },
 		submissionsGroupedByType,
 		(g) => g.type,
 	);

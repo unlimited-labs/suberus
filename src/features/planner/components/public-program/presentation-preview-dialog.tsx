@@ -263,12 +263,14 @@ function PreviewContent({
 			{authors.length > 0 && (
 				<Authors authors={authors} onSelect={onSelectAuthor} />
 			)}
-			<section className="space-y-2">
-				<h3 className={HEADING}>Abstract</h3>
-				<div className={cn("whitespace-pre-line break-words", ABSTRACT)}>
-					{content}
-				</div>
-			</section>
+			{content && (
+				<section className="space-y-2">
+					<h3 className={HEADING}>Abstract</h3>
+					<div className={cn("whitespace-pre-line break-words", ABSTRACT)}>
+						{content}
+					</div>
+				</section>
+			)}
 			{keywords.length > 0 && (
 				<section className="flex flex-wrap gap-2">
 					{keywords.map((k) => (

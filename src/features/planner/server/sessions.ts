@@ -30,6 +30,7 @@ export interface ProgramSessionDetail {
 		durationMin: number;
 		cancelled: boolean;
 		submissionTitle: string;
+		invited: boolean;
 		authors: Array<{ firstName: string; lastName: string; orderIndex: number }>;
 	}>;
 }
@@ -53,6 +54,7 @@ export async function listSessions(
 					submission: {
 						select: {
 							title: true,
+							type: true,
 							authors: {
 								select: { firstName: true, lastName: true, orderIndex: true },
 								orderBy: { orderIndex: "asc" },
@@ -87,6 +89,7 @@ export async function listSessions(
 			durationMin: p.durationMin,
 			cancelled: p.cancelled,
 			submissionTitle: p.submission.title,
+			invited: p.submission.type === "INVITED",
 			authors: p.submission.authors,
 		})),
 	}));
@@ -136,7 +139,19 @@ export async function updateSession(
 }
 
 export async function deleteSession(id: string): Promise<void> {
-	await prisma.programSession.delete({ where: { id } });
+	await prisma.$transaction(async (tx) => {
+		// Slots cascade with the session; their INVITED placeholders would not.
+		const invited = await tx.presentationSlot.findMany({
+			where: { sessionId: id, submission: { type: "INVITED" } },
+			select: { submissionId: true },
+		});
+		await tx.programSession.delete({ where: { id } });
+		if (invited.length > 0) {
+			await tx.submission.deleteMany({
+				where: { id: { in: invited.map((p) => p.submissionId) } },
+			});
+		}
+	});
 }
 
 export async function moveSession(

@@ -56,23 +56,30 @@ export interface CapacityInfo {
 
 export async function getCapacity(): Promise<CapacityInfo> {
 	const includedTypes = await getPlannerIncludedTypes();
-	const [talks, sessionsWithSlots, defaultPresentationMin] = await Promise.all([
-		prisma.submission.count({
-			where: {
-				status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] },
-				type: { in: includedTypes },
-			},
-		}),
-		prisma.programSession.findMany({
-			select: {
-				startAt: true,
-				endAt: true,
-				untimedSlots: true,
-				presentations: { select: { durationMin: true } },
-			},
-		}),
-		getSetting("CONFERENCE_DEFAULT_PRESENTATION_MIN"),
-	]);
+	const [poolTalks, invitedTalks, sessionsWithSlots, defaultPresentationMin] =
+		await Promise.all([
+			prisma.submission.count({
+				where: {
+					status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] },
+					type: { in: includedTypes },
+				},
+			}),
+			// Invited talks never sit in the pool but do occupy a slot; count them on
+			// both sides so "placed / total" cannot exceed 100%.
+			prisma.presentationSlot.count({
+				where: { submission: { type: "INVITED" } },
+			}),
+			prisma.programSession.findMany({
+				select: {
+					startAt: true,
+					endAt: true,
+					untimedSlots: true,
+					presentations: { select: { durationMin: true } },
+				},
+			}),
+			getSetting("CONFERENCE_DEFAULT_PRESENTATION_MIN"),
+		]);
+	const talks = poolTalks + invitedTalks;
 
 	let sessionMinutes = 0;
 	let usedMinutes = 0;

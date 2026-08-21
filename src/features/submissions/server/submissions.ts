@@ -513,9 +513,13 @@ export interface SubmissionDetail {
 	versions: UserSubmissionVersion[];
 }
 
-/** Where clause for submissions accessible by a user (owned or co-authored) */
+/** Where clause for submissions accessible by a user (owned or co-authored).
+ * INVITED placeholders belong to the programme, never to their owning admin. */
 function userAccessFilter(userId: string) {
-	return { OR: [{ userId }, { authors: { some: { userId } } }] };
+	return {
+		type: { not: "INVITED" as const },
+		OR: [{ userId }, { authors: { some: { userId } } }],
+	};
 }
 
 /** Get user's submissions list (owned + co-authored) */

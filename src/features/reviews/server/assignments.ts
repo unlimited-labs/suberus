@@ -160,15 +160,15 @@ export async function assignReviewer(
 	};
 
 	// EXHIBITOR submissions are never peer-reviewed (desk decisions via the
-	// exhibitor approve/reject flow only)
-	if (submission.type === "EXHIBITOR") {
+	// exhibitor approve/reject flow only); INVITED talks are programme
+	// placeholders with nothing to review.
+	if (submission.type === "EXHIBITOR" || submission.type === "INVITED") {
 		logger.warn(
-			`[assignment] cannot assign reviewer to ${submissionId}: exhibitor submissions are not peer-reviewed`,
+			`[assignment] cannot assign reviewer to ${submissionId}: ${submission.type} submissions are not peer-reviewed`,
 		);
 		return {
 			success: false,
-			error:
-				"Cannot assign reviewer: exhibitor submissions are not peer-reviewed",
+			error: `Cannot assign reviewer: ${submission.type === "EXHIBITOR" ? "exhibitor submissions" : "invited talks"} are not peer-reviewed`,
 		};
 	}
 

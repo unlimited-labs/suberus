@@ -97,10 +97,15 @@ export interface GetUsersResponse {
 	total: number;
 }
 
+// INVITED rows are programme placeholders owned by whichever admin created them;
+// they must never surface as that admin's submissions.
+const notInvited = { type: { not: "INVITED" } } as const;
+
 /** Prisma include fragment that loads everything needed to derive submission roles. */
 const submissionRolesInclude = {
-	submissions: { select: { type: true, status: true } },
+	submissions: { where: notInvited, select: { type: true, status: true } },
 	submissionAuthors: {
+		where: { submission: notInvited },
 		select: {
 			submission: { select: { type: true, status: true, userId: true } },
 		},
@@ -166,8 +171,9 @@ const userDetailInclude = {
 	fee: true,
 	affiliation: true,
 	surveyAnswers: { select: { questionId: true, value: true } },
-	submissions: { select: submissionDetailSelect },
+	submissions: { where: notInvited, select: submissionDetailSelect },
 	submissionAuthors: {
+		where: { submission: notInvited },
 		select: {
 			submission: { select: { ...submissionDetailSelect, userId: true } },
 		},

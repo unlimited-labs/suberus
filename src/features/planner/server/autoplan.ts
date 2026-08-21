@@ -121,7 +121,12 @@ async function loadAutoplanInputs(jobId: string): Promise<{
 	}
 
 	const sessions = await prisma.programSession.findMany({
-		where: { untimedSlots: false },
+		// applyAutoPlan wipes and retitles every target session, so sessions holding
+		// a hand-placed invited talk are left out entirely.
+		where: {
+			untimedSlots: false,
+			presentations: { none: { submission: { type: "INVITED" } } },
+		},
 		select: {
 			id: true,
 			title: true,

@@ -1,5 +1,11 @@
+import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { adminMiddleware } from "@/features/auth/server/middleware";
+import {
+	createInvitedTalk,
+	getInvitedTalk,
+	updateInvitedTalk,
+} from "@/features/planner/server/invited";
 import {
 	createPresentation,
 	deletePresentation,
@@ -9,6 +15,8 @@ import {
 } from "@/features/planner/server/presentations";
 import {
 	idInput,
+	invitedTalkCreateInput,
+	invitedTalkUpdateInput,
 	presentationCancelInput,
 	presentationCreateInput,
 	presentationDurationInput,
@@ -48,4 +56,32 @@ export const reorderPresentationsFn = createServerFn({ method: "POST" })
 	.validator(presentationReorderInput)
 	.handler(async ({ data }) => {
 		await reorderPresentations(data.sessionId, data.orderedIds);
+	});
+
+export const createInvitedTalkFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(invitedTalkCreateInput)
+	.handler(async ({ data, context }) => {
+		return createInvitedTalk(data, context.user.id);
+	});
+
+export const updateInvitedTalkFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(invitedTalkUpdateInput)
+	.handler(async ({ data }) => {
+		const { id, ...fields } = data;
+		await updateInvitedTalk(id, fields);
+	});
+
+export const getInvitedTalkFn = createServerFn({ method: "GET" })
+	.middleware([adminMiddleware])
+	.validator(idInput)
+	.handler(async ({ data }) => {
+		return getInvitedTalk(data.id);
+	});
+
+export const invitedTalkQueryOptions = (slotId: string) =>
+	queryOptions({
+		queryKey: ["invitedTalk", slotId],
+		queryFn: () => getInvitedTalkFn({ data: { id: slotId } }),
 	});

@@ -67,8 +67,10 @@ function EditSubmissionPage() {
 		!submission ||
 		submission.role === "coauthor" ||
 		submission.status !== "DRAFT" ||
-		// Exhibitor entries are managed via the exhibitor flow, not this form
-		submission.type === "EXHIBITOR"
+		// Exhibitor entries are managed via the exhibitor flow, invited talks via
+		// the planner — neither belongs in this form
+		submission.type === "EXHIBITOR" ||
+		submission.type === "INVITED"
 	) {
 		return (
 			<div className="flex h-full flex-col">

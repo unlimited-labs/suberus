@@ -67,7 +67,12 @@ function AdminEditSubmissionPage() {
 	const subType = submission?.type;
 
 	// Admin-only; Exhibitor entries have their own management flow.
-	if (!submission || subType === "EXHIBITOR" || !isOnlyAdmin) {
+	if (
+		!submission ||
+		subType === "EXHIBITOR" ||
+		subType === "INVITED" ||
+		!isOnlyAdmin
+	) {
 		return (
 			<div className="flex h-full flex-col">
 				<PageHeader icon={IconFileText} title="Cannot Edit" />

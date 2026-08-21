@@ -1,6 +1,44 @@
+import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/shared/server/db.server";
 import { getPlannerIncludedTypes } from "./included-types";
 import { computeSessionUsage } from "./session-usage";
+
+/**
+ * Assert the session can still fit `durationMin` and return the next free
+ * `order`. Shared by submission-backed slots and invited talks.
+ */
+export async function reserveSlotOrder(
+	tx: Prisma.TransactionClient,
+	sessionId: string,
+	durationMin: number,
+): Promise<number> {
+	const session = await tx.programSession.findUnique({
+		where: { id: sessionId },
+		select: {
+			startAt: true,
+			endAt: true,
+			untimedSlots: true,
+			presentations: { select: { durationMin: true } },
+		},
+	});
+	if (!session) throw new Error("Session not found");
+
+	if (!session.untimedSlots) {
+		const { sessionMin, usedMin } = computeSessionUsage(session);
+		if (usedMin + durationMin > sessionMin) {
+			throw new Error(
+				`Session is full: ${usedMin}/${sessionMin} min used, cannot add ${durationMin} min`,
+			);
+		}
+	}
+
+	const last = await tx.presentationSlot.findFirst({
+		where: { sessionId },
+		orderBy: { order: "desc" },
+		select: { order: true },
+	});
+	return (last?.order ?? -1) + 1;
+}
 
 export async function createPresentation(data: {
 	sessionId: string;
@@ -21,32 +59,11 @@ export async function createPresentation(data: {
 			throw new Error("Submission is not accepted or not presentable");
 		}
 
-		const session = await tx.programSession.findUnique({
-			where: { id: data.sessionId },
-			select: {
-				startAt: true,
-				endAt: true,
-				untimedSlots: true,
-				presentations: { select: { durationMin: true } },
-			},
-		});
-		if (!session) throw new Error("Session not found");
-
-		if (!session.untimedSlots) {
-			const { sessionMin, usedMin } = computeSessionUsage(session);
-			if (usedMin + data.durationMin > sessionMin) {
-				throw new Error(
-					`Session is full: ${usedMin}/${sessionMin} min used, cannot add ${data.durationMin} min`,
-				);
-			}
-		}
-
-		const last = await tx.presentationSlot.findFirst({
-			where: { sessionId: data.sessionId },
-			orderBy: { order: "desc" },
-			select: { order: true },
-		});
-		const nextOrder = (last?.order ?? -1) + 1;
+		const nextOrder = await reserveSlotOrder(
+			tx,
+			data.sessionId,
+			data.durationMin,
+		);
 		const presentation = await tx.presentationSlot.create({
 			data: {
 				sessionId: data.sessionId,
@@ -107,10 +124,16 @@ export async function setPresentationCancelled(
 	await prisma.presentationSlot.update({ where: { id }, data: { cancelled } });
 }
 
+/** An INVITED placeholder exists only to back its slot, so it dies with it. */
 export async function deletePresentation(id: string): Promise<void> {
 	const presentation = await prisma.presentationSlot.findUnique({
 		where: { id },
-		select: { sessionId: true, order: true },
+		select: {
+			sessionId: true,
+			order: true,
+			submissionId: true,
+			submission: { select: { type: true } },
+		},
 	});
 	if (!presentation) return;
 
@@ -122,6 +145,9 @@ export async function deletePresentation(id: string): Promise<void> {
 			SET "order" = "order" - 1
 			WHERE "sessionId" = ${presentation.sessionId}::uuid AND "order" > ${presentation.order}
 		`;
+		if (presentation.submission.type === "INVITED") {
+			await tx.submission.delete({ where: { id: presentation.submissionId } });
+		}
 	});
 }
 

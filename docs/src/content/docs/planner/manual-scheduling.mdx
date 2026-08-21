@@ -131,10 +131,11 @@ unsaved changes asks you to confirm. Chairs, presentations, **Split**, and
 | **Track** | The program track (colour tag). | Optional. |
 | **Chairs** | Who chairs the session. | Up to **3**; search by name or email. A session with **no chair** shows a warning marker and dashed border. |
 | **Presentations** | The talks in this session. | Reorder with up/down, edit each one's **duration**, **cancel** it (⊘), or remove it. |
+| **Invited talk** | Adds a talk that never went through submission. | See [Invited talks](#invited-talks) below. |
 | **Cancel presentation** (⊘) | Marks a talk as cancelled without removing it. | The slot keeps its time and position; its title shows struck-through here and on the public program. Click again to restore. |
 | **Continue series** | Create a follow-on session with the same track and duration. | For multi-part series. |
 | **Split** | Split the session after a chosen presentation into a new session. | Choose the split point from *Split after presentation:*. |
-| **Delete session** | Permanently removes the session. | Its presentations return to the unscheduled list. |
+| **Delete session** | Permanently removes the session. | Its presentations return to the unscheduled list; any invited talks inside are deleted with it. |
 
 <Aside type="tip" title="Cancelled talks">
 Use **Cancel** (⊘) instead of **Remove** when a talk drops out after publishing —
@@ -201,6 +202,46 @@ dividers.
 ![New event in the create dialog](../../../assets/screenshots/52-planner-create-event-dialog.png)
 
 ![Event as a featured card on the public program](../../../assets/screenshots/53-program-event-featured-card.png)
+
+## Invited talks
+
+Opening speeches, keynotes, invited lectures and sponsor addresses never pass
+through the submission system, but they still belong **inside a session**. Add
+them straight from the session editor.
+
+### How to add one
+
+1. Click the session on the grid to open the **session editor**.
+2. In the **Presentations** section press **+ Invited talk**.
+3. Fill in what you know — only the **title** is required — and press **Add**.
+
+The talk appears in the presentation list like any other, and on the public
+program it renders as an ordinary row: title, speaker, and a preview dialog with
+the abstract. Attendees can add it to their favourites and get reminders for it.
+
+To change it later, press the ✎ button on its row. Remove it with ✕ — an invited
+talk has no submission to return to the unscheduled list, so it is deleted
+outright.
+
+### Reference
+
+| Field | Required | Notes |
+|---|---|---|
+| **Title** | Yes | Shown on the grid and the public program. |
+| **Speaker first name** | No | Fill both name fields or neither. |
+| **Speaker last name** | No | Fill both name fields or neither. |
+| **Affiliation** | No | University, company, institute — reuses the existing affiliation list. |
+| **Abstract** | No | Shown in the talk preview on the public program. Left out entirely when blank. |
+| **Duration (min)** | Yes | Counts against the session's capacity. Hidden for untimed sessions. |
+
+🖼️ [Screenshot placeholder — *Add invited talk* dialog in the session editor]
+
+<Aside type="note" title="Invited talks stay in the program">
+An invited talk is not a submission: it never shows up in **Submissions**,
+statistics or exports, it is never sent for review, and the speaker needs no
+account. It also keeps the **autoplanner out** — a session containing an invited
+talk is skipped by autoplan, because autoplan rewrites the sessions it plans.
+</Aside>
 
 ## Making corrections
 

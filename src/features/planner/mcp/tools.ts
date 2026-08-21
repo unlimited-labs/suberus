@@ -15,6 +15,10 @@ import {
 	updateBreak,
 } from "@/features/planner/server/breaks";
 import {
+	createInvitedTalk,
+	updateInvitedTalk,
+} from "@/features/planner/server/invited";
+import {
 	createPresentation,
 	deletePresentation,
 	reorderPresentations,
@@ -60,6 +64,8 @@ import {
 	breakCreateInput,
 	breakUpdateInput,
 	idInput,
+	invitedTalkCreateInput,
+	invitedTalkUpdateInput,
 	jobIdInput,
 	presentationCreateInput,
 	presentationReorderInput,
@@ -414,11 +420,39 @@ const presentationUpdate = defineTool({
 	},
 });
 
+const invitedCreate = defineTool({
+	name: "program_invited_create",
+	title: "Add an invited talk",
+	description:
+		"Add a talk that never went through submission (keynote, invited lecture, sponsor talk) as the next slot in a session. Speaker, affiliation and abstract are all optional; the item exists only inside the programme and never appears among submissions.",
+	input: invitedTalkCreateInput,
+	roles: ADMIN_AND_EDITOR,
+	scope: MCP_SCOPE_SCHEDULE_WRITE,
+	async handler(input, actor) {
+		return createInvitedTalk(input, actor.id);
+	},
+});
+
+const invitedUpdate = defineTool({
+	name: "program_invited_update",
+	title: "Edit an invited talk",
+	description:
+		"Change the title, speaker, affiliation or abstract of an invited talk. Duration and cancellation go through program_presentation_update; deletion through program_presentation_delete.",
+	input: invitedTalkUpdateInput,
+	roles: ADMIN_AND_EDITOR,
+	scope: MCP_SCOPE_SCHEDULE_WRITE,
+	destructive: true,
+	async handler({ id, ...fields }) {
+		await updateInvitedTalk(id, fields);
+		return { id };
+	},
+});
+
 const presentationDelete = defineTool({
 	name: "program_presentation_delete",
 	title: "Unschedule a presentation",
 	description:
-		"Remove a presentation slot; the submission returns to the unscheduled pool and the remaining slots close the gap.",
+		"Remove a presentation slot; the submission returns to the unscheduled pool and the remaining slots close the gap. An invited talk has no submission to return, so it is deleted outright.",
 	input: idInput,
 	roles: ADMIN_AND_EDITOR,
 	scope: MCP_SCOPE_SCHEDULE_WRITE,
@@ -570,6 +604,8 @@ export const plannerMcpTools: readonly McpTool[] = [
 	presentationUpdate,
 	presentationDelete,
 	presentationReorder,
+	invitedCreate,
+	invitedUpdate,
 	breakCreate,
 	breakUpdate,
 	breakDelete,

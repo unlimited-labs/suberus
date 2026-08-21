@@ -1352,8 +1352,14 @@ export async function createProgramSession(
 
 export async function deleteProgramSession(sessionId: string): Promise<void> {
 	const db = getPrisma();
-	await db.programSession
-		.delete({ where: { id: sessionId } })
+	// Slots cascade with the session; their INVITED placeholders would not.
+	const invited = await db.presentationSlot.findMany({
+		where: { sessionId, submission: { type: "INVITED" } },
+		select: { submissionId: true },
+	});
+	await db.programSession.delete({ where: { id: sessionId } }).catch(() => {});
+	await db.submission
+		.deleteMany({ where: { id: { in: invited.map((p) => p.submissionId) } } })
 		.catch(() => {});
 }
 

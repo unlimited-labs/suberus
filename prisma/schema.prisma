@@ -870,6 +870,9 @@ enum SubmissionType {
   FULL_PAPER
   POSTER
   EXHIBITOR
+  /// Placeholder backing a program slot for a talk that never went through
+  /// submission (keynote, invited lecture, sponsor talk). Planner-only.
+  INVITED
 }
 
 enum SubmissionStatus {
