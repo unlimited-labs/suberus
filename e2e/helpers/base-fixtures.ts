@@ -2,7 +2,7 @@ import { test as base, expect } from "@playwright/test";
 import { randomUUID } from "crypto";
 import { baseUrlFor } from "../../playwright.config";
 import { deleteSubmission, getPrisma } from "./test-db";
-import { dismissViteOverlay } from "./page-setup";
+import { dismissViteOverlay, suppressPasskeyNudge } from "./page-setup";
 
 export interface TestRunContext {
 	testRunId: string;
@@ -37,6 +37,7 @@ export const test = base.extend<
 
 	page: async ({ page }, use) => {
 		await dismissViteOverlay(page);
+		await suppressPasskeyNudge(page);
 		await use(page);
 	},
 

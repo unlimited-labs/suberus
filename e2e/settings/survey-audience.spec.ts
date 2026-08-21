@@ -8,6 +8,7 @@ import {
 	setExhibitorConfig,
 } from "../exhibitors/fixtures";
 import { test, expect } from "../helpers/base-fixtures";
+import { suppressPasskeyNudge } from "../helpers/page-setup";
 import {
 	ensureSeededSurveyQuestions,
 	getPrisma,
@@ -95,6 +96,7 @@ test.describe.serial("Profile survey - audience filtering", () => {
 			storageState: { cookies: [], origins: [] },
 		});
 		const page = await context.newPage();
+		await suppressPasskeyNudge(page);
 		try {
 			await loginAsExhibitor(page, exhibitorEmail);
 

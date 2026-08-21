@@ -4,7 +4,7 @@ import { mcp } from "@better-auth/mcp";
 import { passkey } from "@better-auth/passkey";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { jwt } from "better-auth/plugins";
+import { jwt, lastLoginMethod } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { env } from "@/env";
 import { logActivity } from "@/features/activity-log/server/activity-log";
@@ -132,6 +132,9 @@ export const auth = betterAuth({
 				userVerification: "required",
 			},
 		}),
+		// Cookie-only (no storeInDatabase) so the login page can promote the passkey
+		// button for returning users without a schema change.
+		lastLoginMethod(),
 		...mcpPlugins,
 		// Must stay last: cookies set by plugins registered after it are dropped.
 		tanstackStartCookies(),

@@ -65,3 +65,12 @@ export async function dismissViteOverlay(page: Page) {
 })();
 	`);
 }
+
+/**
+ * Suppresses the post-login passkey nudge. The harness box may expose a platform
+ * authenticator (Windows Hello), and seeded users own no passkeys, so without
+ * this the toast would overlay unrelated specs.
+ */
+export async function suppressPasskeyNudge(page: Page) {
+	await page.addInitScript(`try { localStorage.setItem('passkey-nudge-dismissed', '1') } catch (e) {}`);
+}

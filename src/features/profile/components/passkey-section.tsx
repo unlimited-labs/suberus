@@ -2,13 +2,15 @@ import { IconFingerprint, IconTrash } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import {
+	passkeysQueryKey,
+	passkeysQueryOptions,
+} from "@/features/profile/api/passkeys";
 import { PasskeyReauthDialog } from "@/features/profile/components/passkey-reauth-dialog";
 import { isStaleSessionError } from "@/features/profile/lib/is-stale-session-error";
 import { authClient } from "@/shared/lib/auth-client";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
-
-const passkeysQueryKey = ["passkeys"] as const;
 
 export function PasskeySection() {
 	const queryClient = useQueryClient();
@@ -16,16 +18,7 @@ export function PasskeySection() {
 	const [reauthOpen, setReauthOpen] = useState(false);
 	const pendingNameRef = useRef("");
 
-	const { data: passkeys = [], isLoading } = useQuery({
-		queryKey: passkeysQueryKey,
-		queryFn: async () => {
-			const res = await authClient.passkey.listUserPasskeys();
-			if (res.error) {
-				throw new Error(res.error.message ?? "Failed to load passkeys");
-			}
-			return res.data ?? [];
-		},
-	});
+	const { data: passkeys = [], isLoading } = useQuery(passkeysQueryOptions());
 
 	const invalidate = () =>
 		queryClient.invalidateQueries({ queryKey: passkeysQueryKey });

@@ -1,6 +1,6 @@
 import { IconFingerprint, IconMail } from "@tabler/icons-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AuthCard } from "@/features/auth/components/auth-card";
 import {
@@ -10,6 +10,7 @@ import {
 import { loginSchema } from "@/features/auth/validations";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { authClient, signIn } from "@/shared/lib/auth-client";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 
 export const Route = createFileRoute("/_auth/login")({
@@ -32,6 +33,7 @@ async function signInWithPasskey(opts?: { autoFill?: boolean }) {
 
 function LoginPage() {
 	const navigate = useNavigate();
+	const [promotePasskey, setPromotePasskey] = useState(false);
 
 	const afterSignIn = useCallback(() => {
 		const resume = oauthResumeSearch();
@@ -48,6 +50,22 @@ function LoginPage() {
 			},
 		);
 	}, [afterSignIn]);
+
+	// Promote passkey to the primary CTA when the device can do biometrics (phones,
+	// Touch ID, Windows Hello) or the user last signed in that way. Resolved in an
+	// effect, not during render: the cookie read has no SSR equivalent.
+	useEffect(() => {
+		if (!("PublicKeyCredential" in globalThis)) return;
+		if (authClient.isLastUsedLoginMethod("passkey")) {
+			setPromotePasskey(true);
+			return;
+		}
+		void PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable?.().then(
+			(ok) => {
+				if (ok) setPromotePasskey(true);
+			},
+		);
+	}, []);
 
 	const form = useAppForm({
 		defaultValues: {
@@ -116,12 +134,18 @@ function LoginPage() {
 					</div>
 				</div>
 
-				<div className="mt-4 space-y-3">
+				<div
+					className={cn(
+						"mt-4 flex gap-3",
+						promotePasskey ? "flex-col-reverse" : "flex-col",
+					)}
+				>
 					<form.AppForm>
 						<form.SubmitButton
 							className="h-9 w-full"
 							label="Sign in"
 							submittingLabel="Signing in..."
+							variant={promotePasskey ? "outline" : undefined}
 						/>
 					</form.AppForm>
 
@@ -132,7 +156,7 @@ function LoginPage() {
 							if (await signInWithPasskey()) afterSignIn();
 						}}
 						type="button"
-						variant="outline"
+						variant={promotePasskey ? "default" : "outline"}
 					>
 						<IconFingerprint className="size-4" />
 						Sign in with passkey

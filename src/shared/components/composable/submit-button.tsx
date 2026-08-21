@@ -1,3 +1,4 @@
+import type { ComponentProps } from "react";
 import { useFormContext } from "@/shared/hooks/form-context";
 import { Button } from "@/shared/ui/button";
 
@@ -9,6 +10,7 @@ interface FormSubmitButtonProps {
 	disabled?: boolean;
 	className?: string;
 	testId?: string;
+	variant?: ComponentProps<typeof Button>["variant"];
 }
 
 /**
@@ -29,6 +31,7 @@ export function FormSubmitButton({
 	disabled,
 	className,
 	testId,
+	variant,
 }: FormSubmitButtonProps) {
 	const form = useFormContext();
 	return (
@@ -39,6 +42,7 @@ export function FormSubmitButton({
 					data-testid={testId}
 					disabled={isSubmitting || disabled}
 					type="submit"
+					variant={variant}
 				>
 					{isSubmitting ? (submittingLabel ?? label) : label}
 				</Button>

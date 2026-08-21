@@ -21,6 +21,29 @@ test.describe("Passkey", () => {
 		await expect(page.getByTestId("passkey-signin")).toBeVisible()
 	})
 
+	test("passkey CTA leads when the device has a platform authenticator", async ({
+		page,
+	}) => {
+		await page.goto("/login")
+		const passkey = page.getByTestId("passkey-signin")
+		await expect(passkey).toBeVisible()
+
+		const promoted = await page.evaluate(() =>
+			PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(),
+		)
+		const submit = page.getByRole("button", { name: "Sign in", exact: true })
+
+		// Promotion is applied after hydration, so poll instead of reading once.
+		await expect
+			.poll(async () => {
+				const passkeyBox = await passkey.boundingBox()
+				const submitBox = await submit.boundingBox()
+				if (!passkeyBox || !submitBox) return null
+				return passkeyBox.y < submitBox.y
+			})
+			.toBe(promoted)
+	})
+
 	test("profile security shows passkey management", async ({ page }) => {
 		await loginAs(page, TEST_USER)
 		await page.goto("/profile")

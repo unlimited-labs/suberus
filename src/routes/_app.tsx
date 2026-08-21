@@ -6,6 +6,7 @@ import { authRouteMiddleware } from "@/features/auth/server/middleware";
 import { myDocumentsCountQueryOptions } from "@/features/documents/api/documents";
 import { exhibitorSignupAvailableQueryOptions } from "@/features/exhibitors/api/exhibitors";
 import { scheduleStateQueryOptions } from "@/features/planner/api/schedule";
+import { PasskeyNudge } from "@/features/profile/components/passkey-nudge";
 import type { AppBranding } from "@/features/settings/api/settings";
 import {
 	feeEnabledQueryOptions,
@@ -132,6 +133,7 @@ function AppLayoutRoute() {
 				</AppLayout>
 			</DateFormatProvider>
 			<VersionSkewBanner />
+			<PasskeyNudge />
 		</div>
 	);
 }

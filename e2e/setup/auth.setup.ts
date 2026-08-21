@@ -30,6 +30,11 @@ setup("authenticate all roles on all workers", async ({ browser }) => {
 				// Verify we're logged in
 				await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible({ timeout: 10000 })
 
+				// Bake the passkey-nudge dismissal into the stored origins: the harness
+				// box exposes a platform authenticator, so otherwise the enrollment
+				// toast fires in every logged-in spec.
+				await page.evaluate(() => localStorage.setItem("passkey-nudge-dismissed", "1"))
+
 				// Save signed-in state for this (role, worker)
 				await context.storageState({ path: `e2e/.auth/${name}-${i}.json` })
 			} finally {
