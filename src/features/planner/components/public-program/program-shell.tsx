@@ -1,4 +1,4 @@
-import { IconSearch, IconX } from "@tabler/icons-react";
+import { IconEye, IconSearch, IconX } from "@tabler/icons-react";
 import type { CSSProperties } from "react";
 import { cn } from "@/shared/lib/utils";
 import { Input } from "@/shared/ui/input";
@@ -60,6 +60,8 @@ export function ProgramShell({
 				data-program-theme={themeId}
 				data-testid={`program-theme-${themeId}`}
 			>
+				{settings.isDraftPreview && <ProgramDraftNotice />}
+
 				{framed ? (
 					<FramedHeader settings={settings} themeId={themeId} />
 				) : (
@@ -88,6 +90,22 @@ export function ProgramShell({
 				{framed && <FramedFooter settings={settings} themeId={themeId} />}
 			</div>
 		</TooltipProvider>
+	);
+}
+
+function ProgramDraftNotice() {
+	return (
+		<div
+			className="flex items-start gap-2.5 border-b border-amber-300 bg-amber-50 px-5 py-2.5 text-amber-800 sm:px-8 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300"
+			data-testid="program-draft-notice"
+			role="status"
+		>
+			<IconEye className="mt-0.5 shrink-0" size={16} />
+			<p className="text-sm leading-snug">
+				<span className="font-semibold">Draft preview</span> - this programme
+				has not been published yet. Only conference staff can see this page.
+			</p>
+		</div>
 	);
 }
 

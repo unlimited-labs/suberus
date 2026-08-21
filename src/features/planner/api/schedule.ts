@@ -97,6 +97,7 @@ export interface PublicConferenceInfo {
 	theme: string;
 	showAuthorInfo: boolean;
 	viewerIsParticipant: boolean;
+	isDraftPreview: boolean;
 }
 
 export const publicConferenceInfoQueryOptions = () =>
@@ -110,6 +111,7 @@ export const getPublicConferenceInfoFn = createServerFn({
 }).handler(async (): Promise<PublicConferenceInfo> => {
 	const session = await auth.api.getSession({ headers: getRequestHeaders() });
 	const role = session?.user?.role;
+	const canPreviewDraft = role === "ADMIN" || role === "EDITOR";
 	const s = await getSettings([
 		"CONFERENCE_NAME",
 		"CONFERENCE_SUBTITLE",
@@ -128,9 +130,10 @@ export const getPublicConferenceInfoFn = createServerFn({
 		theme: s.PROGRAM_THEME,
 		showAuthorInfo: s.PROGRAM_SHOW_AUTHOR_INFO,
 		viewerIsParticipant: session?.user
-			? role === "ADMIN" ||
-				role === "EDITOR" ||
-				(await isParticipant(session.user.id))
+			? canPreviewDraft || (await isParticipant(session.user.id))
 			: false,
+		isDraftPreview:
+			canPreviewDraft &&
+			(await getScheduleState()).status === "DRAFT_PUBLISHED",
 	};
 });
