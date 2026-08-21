@@ -7,8 +7,9 @@ import {
 	IconLogin2,
 	IconLogout,
 	IconUserCircle,
+	IconUsers,
 } from "@tabler/icons-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import type { CSSProperties } from "react";
 import { clearOfflineProgramCache } from "@/integrations/tanstack-query/offline";
 import { useSession } from "@/shared/hooks/use-session";
@@ -114,6 +115,35 @@ export function ProgramAuthLink({
 		>
 			<IconLogin2 className="size-[1.2em]" />
 			<span className={labelClassName}>Sign in</span>
+		</Link>
+	);
+}
+
+export function ProgramParticipantsLink({
+	className,
+	labelClassName,
+}: {
+	className?: string;
+	labelClassName?: string;
+}) {
+	const onList = useLocation({
+		select: (l) => l.pathname.replace(/\/$/, "") === "/program/participants",
+	});
+	const label = onList ? "Programme" : "Participants";
+	return (
+		<Link
+			aria-label={label}
+			className={cn("inline-flex items-center gap-1.5", className)}
+			data-testid={onList ? "program-back-link" : "program-participants-link"}
+			title={label}
+			to={onList ? "/program" : "/program/participants"}
+		>
+			{onList ? (
+				<IconCalendar className="size-[1.2em]" />
+			) : (
+				<IconUsers className="size-[1.2em]" />
+			)}
+			<span className={labelClassName}>{label}</span>
 		</Link>
 	);
 }

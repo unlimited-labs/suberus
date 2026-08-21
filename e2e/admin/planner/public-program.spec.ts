@@ -492,4 +492,129 @@ test.describe.serial("Public /program", () => {
 			await expect(page.getByTestId("author-card-button")).toHaveCount(0);
 		});
 	});
+	test.describe("participant list", () => {
+		test.afterEach(async () => {
+			await setAppSetting("PROGRAM_SHOW_AUTHOR_INFO", false);
+		});
+
+		test("lists paid participants, gates contact details on consent, filters by search", async ({
+			publicProgramPage,
+			page,
+			testRun,
+		}) => {
+			await setAppSetting("PROGRAM_SHOW_AUTHOR_INFO", true);
+			await setSchedulePublished(true);
+			const consentName = `Consented${testRun.testRunId}`;
+			const silentName = `Silent${testRun.testRunId}`;
+			const consented = await createTestUser({
+				email: `list-consented-${testRun.testRunId}@e2e.local`,
+				firstName: "Ada",
+				lastName: consentName,
+				contactConsent: true,
+			});
+			await createFee({ userId: consented.id });
+			const silent = await createTestUser({
+				email: `list-silent-${testRun.testRunId}@e2e.local`,
+				firstName: "Grace",
+				lastName: silentName,
+				contactConsent: false,
+			});
+			await createFee({ userId: silent.id });
+
+			try {
+				await publicProgramPage.goto();
+				await page.getByTestId("program-participants-link").click();
+				await expect(page).toHaveURL(/\/program\/participants$/);
+
+				const consentedCard = page
+					.getByTestId("participant-card-button")
+					.filter({ hasText: consentName });
+				await expect(consentedCard).toBeVisible();
+				await expect(
+					page.getByTestId("participant-card").filter({ hasText: silentName }),
+				).toBeVisible();
+				await expect(
+					page
+						.getByTestId("participant-card-button")
+						.filter({ hasText: silentName }),
+				).toHaveCount(0);
+				await expect(page.getByText(silent.email)).toHaveCount(0);
+
+				await consentedCard.click();
+				await expect(page.getByTestId("participant-details")).toBeVisible();
+				await expect(page.getByTestId("author-email")).toContainText(
+					consented.email,
+				);
+				await page.keyboard.press("Escape");
+
+				await page.getByPlaceholder(/Search participants/i).fill(consentName);
+				await expect(consentedCard).toBeVisible();
+				await expect(
+					page.getByTestId("participant-card").filter({ hasText: silentName }),
+				).toHaveCount(0);
+			} finally {
+				await deleteTestUser(consented.id).catch(() => {});
+				await deleteTestUser(silent.id).catch(() => {});
+			}
+		});
+
+		test("anonymous visitors get no link and are sent to sign-in", async ({
+			browser,
+		}, testInfo) => {
+			await setAppSetting("PROGRAM_SHOW_AUTHOR_INFO", true);
+			await setSchedulePublished(true);
+
+			const context = await browser.newContext({
+				baseURL: baseUrlFor(testInfo.parallelIndex),
+				storageState: { cookies: [], origins: [] },
+			});
+			const anonPage = await context.newPage();
+			try {
+				await new PublicProgramPage(anonPage).goto();
+				await expect(
+					anonPage.getByTestId("program-participants-link"),
+				).toHaveCount(0);
+
+				await anonPage.goto("/program/participants");
+				await expect(anonPage).toHaveURL(/\/login/);
+			} finally {
+				await context.close();
+			}
+		});
+
+		test("signed-in visitor without a paid fee is sent back to the programme", async ({
+			browser,
+			testRun,
+		}, testInfo) => {
+			await setAppSetting("PROGRAM_SHOW_AUTHOR_INFO", true);
+			await setSchedulePublished(true);
+			const viewer = await createTestUser({
+				email: `list-unpaid-${testRun.testRunId}@e2e.local`,
+				firstName: "Viewer",
+				lastName: `Unpaid${testRun.testRunId}`,
+			});
+
+			const context = await browser.newContext({
+				baseURL: baseUrlFor(testInfo.parallelIndex),
+				storageState: { cookies: [], origins: [] },
+			});
+			const viewerPage = await context.newPage();
+			try {
+				await loginAs(viewerPage, {
+					email: viewer.email,
+					password: DEFAULT_PASSWORD,
+				});
+				await new PublicProgramPage(viewerPage).goto();
+				await expect(
+					viewerPage.getByTestId("program-participants-link"),
+				).toHaveCount(0);
+
+				await viewerPage.goto("/program/participants");
+				await expect(viewerPage).toHaveURL(/\/program$/);
+			} finally {
+				await context.close();
+				await deleteTestUser(viewer.id).catch(() => {});
+			}
+		});
+	});
 });

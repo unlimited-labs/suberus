@@ -96,6 +96,7 @@ export interface PublicConferenceInfo {
 	timezone: string;
 	theme: string;
 	showAuthorInfo: boolean;
+	viewerIsAuthenticated: boolean;
 	viewerIsParticipant: boolean;
 	isDraftPreview: boolean;
 }
@@ -129,6 +130,7 @@ export const getPublicConferenceInfoFn = createServerFn({
 		timezone: s.CONFERENCE_TIMEZONE,
 		theme: s.PROGRAM_THEME,
 		showAuthorInfo: s.PROGRAM_SHOW_AUTHOR_INFO,
+		viewerIsAuthenticated: !!session?.user,
 		viewerIsParticipant: session?.user
 			? canPreviewDraft || (await isParticipant(session.user.id))
 			: false,

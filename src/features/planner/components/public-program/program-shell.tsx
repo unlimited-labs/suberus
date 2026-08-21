@@ -1,5 +1,5 @@
 import { IconEye, IconSearch, IconX } from "@tabler/icons-react";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/shared/lib/utils";
 import { Input } from "@/shared/ui/input";
 import { TooltipProvider } from "@/shared/ui/tooltip";
@@ -11,7 +11,11 @@ import type {
 	ProgramLayout,
 	ProgramThemeProps,
 } from "./themes/registry";
-import { ProgramAuthLink, ProgramPwaStatus } from "./themes/shared";
+import {
+	ProgramAuthLink,
+	ProgramParticipantsLink,
+	ProgramPwaStatus,
+} from "./themes/shared";
 
 const RULE_STYLE: CSSProperties = {
 	borderColor: "var(--prog-rule)",
@@ -27,32 +31,35 @@ const HEADER_RULE_STYLE: CSSProperties = {
 		"var(--prog-rule-style)" as CSSProperties["borderBottomStyle"],
 };
 
-export interface ProgramShellProps extends ProgramThemeProps {
+export interface ProgramFrameProps {
 	themeId: string;
 	chrome: ProgramChrome;
-	layout: ProgramLayout;
+	settings: ProgramThemeProps["settings"];
+	search: string;
+	setSearch: (value: string) => void;
+	searchPlaceholder?: string;
+	days?: Date[];
+	activeDay?: number;
+	setActiveDay?: (index: number) => void;
+	mainClassName?: string;
+	children: ReactNode;
 }
 
-export function ProgramShell({
+/** Header, day/search bar and footer shared by every public programme page. */
+export function ProgramFrame({
 	themeId,
 	chrome,
-	layout,
 	settings,
 	search,
 	setSearch,
-	activeDay,
+	searchPlaceholder,
+	days = [],
+	activeDay = 0,
 	setActiveDay,
-	schedule,
-}: ProgramShellProps) {
+	mainClassName,
+	children,
+}: ProgramFrameProps) {
 	const framed = chrome === "framed";
-	const { days, activeItems, q } = schedule;
-	const mainClass =
-		layout === "grid"
-			? "w-full py-8 sm:py-12"
-			: framed
-				? "mx-auto max-w-[var(--prog-max-width)] px-5 py-8 sm:px-10 sm:py-12"
-				: "mx-auto max-w-[var(--prog-max-width)] px-5 py-8 sm:px-8";
-
 	return (
 		<TooltipProvider>
 			<div
@@ -73,23 +80,68 @@ export function ProgramShell({
 					days={days}
 					framed={framed}
 					search={search}
+					searchPlaceholder={searchPlaceholder}
 					setActiveDay={setActiveDay}
 					setSearch={setSearch}
 				/>
 
-				<main className={mainClass}>
-					{activeItems.length === 0 ? (
-						<EmptyState framed={framed} searching={!!q} />
-					) : layout === "grid" ? (
-						<GridBody schedule={schedule} />
-					) : (
-						<ListBody framed={framed} schedule={schedule} />
-					)}
+				<main
+					className={
+						mainClassName ??
+						(framed
+							? "mx-auto max-w-[var(--prog-max-width)] px-5 py-8 sm:px-10 sm:py-12"
+							: "mx-auto max-w-[var(--prog-max-width)] px-5 py-8 sm:px-8")
+					}
+				>
+					{children}
 				</main>
 
 				{framed && <FramedFooter settings={settings} themeId={themeId} />}
 			</div>
 		</TooltipProvider>
+	);
+}
+
+export interface ProgramShellProps extends ProgramThemeProps {
+	themeId: string;
+	chrome: ProgramChrome;
+	layout: ProgramLayout;
+}
+
+export function ProgramShell({
+	themeId,
+	chrome,
+	layout,
+	settings,
+	search,
+	setSearch,
+	activeDay,
+	setActiveDay,
+	schedule,
+}: ProgramShellProps) {
+	const framed = chrome === "framed";
+	const { days, activeItems, q } = schedule;
+
+	return (
+		<ProgramFrame
+			activeDay={activeDay}
+			chrome={chrome}
+			days={days}
+			mainClassName={layout === "grid" ? "w-full py-8 sm:py-12" : undefined}
+			search={search}
+			setActiveDay={setActiveDay}
+			setSearch={setSearch}
+			settings={settings}
+			themeId={themeId}
+		>
+			{activeItems.length === 0 ? (
+				<EmptyState framed={framed} searching={!!q} />
+			) : layout === "grid" ? (
+				<GridBody schedule={schedule} />
+			) : (
+				<ListBody framed={framed} schedule={schedule} />
+			)}
+		</ProgramFrame>
 	);
 }
 
@@ -115,13 +167,15 @@ function ProgramStickyBar({
 	activeDay,
 	setActiveDay,
 	search,
+	searchPlaceholder,
 	setSearch,
 }: {
 	framed: boolean;
 	days: Date[];
 	activeDay: number;
-	setActiveDay: (i: number) => void;
+	setActiveDay?: (i: number) => void;
 	search: string;
+	searchPlaceholder?: string;
 	setSearch: (value: string) => void;
 }) {
 	return (
@@ -138,6 +192,7 @@ function ProgramStickyBar({
 				)}
 			>
 				{days.length > 0 &&
+					setActiveDay &&
 					(framed ? (
 						<FramedNav
 							activeDay={activeDay}
@@ -151,7 +206,12 @@ function ProgramStickyBar({
 							setActiveDay={setActiveDay}
 						/>
 					))}
-				<SearchBox framed={framed} search={search} setSearch={setSearch} />
+				<SearchBox
+					framed={framed}
+					placeholder={searchPlaceholder}
+					search={search}
+					setSearch={setSearch}
+				/>
 			</div>
 		</div>
 	);
@@ -167,6 +227,12 @@ function MinimalHeader({
 			<div className="mx-auto max-w-[var(--prog-max-width)] px-5 pt-10 pb-6 sm:px-8 sm:pt-14">
 				<div className="mb-4 flex items-center justify-end gap-4">
 					<ProgramPwaStatus className="text-muted-foreground" />
+					{settings.showAuthorInfo && settings.viewerIsParticipant && (
+						<ProgramParticipantsLink
+							className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
+							labelClassName="hidden sm:inline"
+						/>
+					)}
 					<ProgramAuthLink
 						className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
 						labelClassName="hidden sm:inline"
@@ -209,6 +275,12 @@ function FramedHeader({
 			<div className="mx-auto max-w-[var(--prog-max-width)] px-5 pt-4 pb-3 sm:px-10 sm:pt-12 sm:pb-7">
 				<div className="border-border text-muted-foreground flex items-center justify-end gap-4 border-b pb-2">
 					<ProgramPwaStatus />
+					{settings.showAuthorInfo && settings.viewerIsParticipant && (
+						<ProgramParticipantsLink
+							className="hover:text-foreground text-sm transition-colors"
+							labelClassName="hidden sm:inline"
+						/>
+					)}
 					<ProgramAuthLink
 						className="hover:text-foreground text-sm transition-colors"
 						labelClassName="hidden sm:inline"
@@ -359,10 +431,12 @@ function SearchBox({
 	framed,
 	search,
 	setSearch,
+	placeholder,
 }: {
 	framed: boolean;
 	search: string;
 	setSearch: (value: string) => void;
+	placeholder?: string;
 }) {
 	return (
 		<div className="relative w-full sm:w-72 sm:shrink-0">
@@ -380,7 +454,7 @@ function SearchBox({
 						: "pr-9 pl-9",
 				)}
 				onChange={(e) => setSearch(e.target.value)}
-				placeholder="Search talks, authors, tracks…"
+				placeholder={placeholder ?? "Search talks, authors, tracks…"}
 				value={search}
 			/>
 			{search && (

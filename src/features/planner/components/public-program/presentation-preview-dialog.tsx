@@ -22,14 +22,12 @@ import {
 	DialogTitle,
 } from "@/shared/ui/dialog";
 import { Skeleton } from "@/shared/ui/skeleton";
+import { ABSTRACT, ContactDetails, HEADING } from "./contact-details";
 import type { PreviewTarget } from "./program-interaction";
 import { resolveProgramTheme } from "./themes/registry";
 
 const META =
 	"font-[var(--prog-font-meta)] text-xs uppercase tracking-[var(--prog-tracking)] text-muted-foreground";
-const HEADING =
-	"font-[var(--prog-font-meta)] text-xs font-semibold uppercase tracking-[var(--prog-tracking)] text-muted-foreground";
-const ABSTRACT = "text-sm leading-relaxed text-foreground";
 const BTN =
 	"inline-flex items-center justify-center gap-2 rounded-[var(--radius)] border px-3 py-1.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0";
 const BTN_IDLE = "border-border bg-background text-foreground hover:bg-muted";
@@ -407,56 +405,12 @@ function AuthorBody({
 			) : !author ? (
 				<p className={ABSTRACT}>Author info is unavailable.</p>
 			) : (
-				<AuthorDetails author={author} />
-			)}
-		</div>
-	);
-}
-
-function AuthorDetails({ author }: { author: PresentationDetailAuthor }) {
-	return (
-		<div className="space-y-4">
-			{author.isPresenter && (
-				<span className="text-primary inline-flex items-center gap-1 text-xs font-medium">
-					<IconStarFilled className="size-3" />
-					Presenter
-				</span>
-			)}
-			<section className="space-y-1">
-				<h3 className={HEADING}>Affiliation</h3>
-				<p className={ABSTRACT}>{affiliationDisplay(author.affiliationName)}</p>
-			</section>
-			{author.email && (
-				<section className="space-y-1">
-					<h3 className={HEADING}>Email</h3>
-					<a
-						className="text-foreground text-sm break-all underline-offset-4 hover:underline"
-						data-testid="author-email"
-						href={`mailto:${author.email}`}
-					>
-						{author.email}
-					</a>
-				</section>
-			)}
-			{author.orcid && (
-				<section className="space-y-1">
-					<h3 className={HEADING}>ORCID</h3>
-					<a
-						className="text-foreground inline-flex items-center gap-2 text-sm underline-offset-4 hover:underline"
-						data-testid="author-orcid"
-						href={`https://orcid.org/${author.orcid}`}
-						rel="noopener noreferrer"
-						target="_blank"
-					>
-						<span
-							aria-hidden
-							className="flex size-4 items-center justify-center rounded-full bg-[#A6CE39] text-[8px] font-bold text-white"
-						>
-							iD
-						</span>
-						{author.orcid}
-					</a>
-				</section>
+				<ContactDetails
+					affiliationName={author.affiliationName}
+					email={author.email}
+					isPresenter={author.isPresenter}
+					orcid={author.orcid}
+				/>
 			)}
 		</div>
 	);
