@@ -54,11 +54,11 @@ export function AuthSidebar({
 				<div className="relative z-10 space-y-2">
 					{steps.map((step) => (
 						<div
-							key={step.id}
 							className={cn(
 								"flex items-center gap-2 transition-opacity duration-300",
 								step.id === currentStep ? "opacity-100" : "opacity-50",
 							)}
+							key={step.id}
 						>
 							<div
 								className={cn(

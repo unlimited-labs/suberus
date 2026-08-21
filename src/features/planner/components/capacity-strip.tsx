@@ -11,11 +11,11 @@ export function CapacityStrip() {
 
 	return (
 		<div
-			data-testid="capacity-strip"
 			className="flex flex-wrap items-center gap-2 border-b px-3 py-1 text-[11px] tabular-nums"
+			data-testid="capacity-strip"
 			title={`${cap.sessions} session${cap.sessions === 1 ? "" : "s"} · ${formatDurationShort(cap.sessionMinutes)} total · ${formatDurationShort(cap.usedMinutes)} used`}
 		>
-			<IconGauge size={12} className="text-muted-foreground" />
+			<IconGauge className="text-muted-foreground" size={12} />
 			<span className="text-muted-foreground">
 				<span className="font-medium text-foreground">{cap.scheduled}</span>
 				<span className="text-muted-foreground/70"> / </span>

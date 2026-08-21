@@ -33,44 +33,44 @@ export function SidebarHeader({
 	return (
 		<div className="flex items-center justify-between border-b px-3 py-2">
 			<button
-				type="button"
-				onClick={onToggleMode}
-				data-testid="sidebar-toggle-mode"
 				aria-pressed={isScheduled}
-				title={`Switch to ${otherLabel}`}
 				className="flex items-center gap-1.5 rounded px-1 py-0.5 text-xs font-medium text-foreground hover:bg-muted"
+				data-testid="sidebar-toggle-mode"
+				onClick={onToggleMode}
+				title={`Switch to ${otherLabel}`}
+				type="button"
 			>
-				<Icon size={14} className="text-muted-foreground" />
+				<Icon className="text-muted-foreground" size={14} />
 				<span>{isScheduled ? "Scheduled" : "Unscheduled"}</span>
 			</button>
 			<div className="flex items-center gap-1">
 				{!isScheduled && hasItems && (
 					<>
 						<button
-							type="button"
-							onClick={onToggleSelectMode}
-							data-testid="sidebar-toggle-select-mode"
 							aria-pressed={selectMode}
 							className={`flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium hover:bg-muted ${
 								selectMode
 									? "bg-primary/10 text-primary hover:bg-primary/15"
 									: "text-muted-foreground hover:text-foreground"
 							}`}
+							data-testid="sidebar-toggle-select-mode"
+							onClick={onToggleSelectMode}
 							title={
 								selectMode
 									? "Exit selection mode (Esc or S)"
 									: "Select submissions (S)"
 							}
+							type="button"
 						>
 							<IconSquareCheck size={12} />
 							Select
 						</button>
 						<button
-							type="button"
-							onClick={onOpenReader}
-							data-testid="sidebar-bulk-read"
 							className="flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+							data-testid="sidebar-bulk-read"
+							onClick={onOpenReader}
 							title="Open reading mode"
+							type="button"
 						>
 							<IconBook size={12} />
 							Read
@@ -78,10 +78,10 @@ export function SidebarHeader({
 					</>
 				)}
 				<button
-					type="button"
-					onClick={onCollapse}
-					className="rounded p-1 text-muted-foreground hover:bg-muted"
 					aria-label="Collapse sidebar"
+					className="rounded p-1 text-muted-foreground hover:bg-muted"
+					onClick={onCollapse}
+					type="button"
 				>
 					<IconChevronLeft size={14} />
 				</button>

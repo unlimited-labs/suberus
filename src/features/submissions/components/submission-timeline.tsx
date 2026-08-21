@@ -22,9 +22,9 @@ export function SubmissionTimeline({
 			<Timeline>
 				{sortedHistory.map((event, index) => (
 					<TimelineEvent
-						key={event.id}
 						event={event}
 						isLast={index === sortedHistory.length - 1}
+						key={event.id}
 					/>
 				))}
 			</Timeline>
@@ -32,13 +32,13 @@ export function SubmissionTimeline({
 	}
 
 	return (
-		<SectionCard variant="elevated" title="Submission History">
+		<SectionCard title="Submission History" variant="elevated">
 			<Timeline>
 				{sortedHistory.map((event, index) => (
 					<TimelineEvent
-						key={event.id}
 						event={event}
 						isLast={index === sortedHistory.length - 1}
+						key={event.id}
 					/>
 				))}
 			</Timeline>

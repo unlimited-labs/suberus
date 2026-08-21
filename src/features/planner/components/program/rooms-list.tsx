@@ -86,26 +86,26 @@ export function RoomsList({ rooms, onEdit, onUpdate }: RoomsListProps) {
 						const next = idx < sorted.length - 1 ? sorted[idx + 1] : null;
 						const isBusy = pendingId === room.id;
 						return (
-							<TableRow key={room.id} data-testid={`room-row-${room.id}`}>
+							<TableRow data-testid={`room-row-${room.id}`} key={room.id}>
 								<TableCell>
 									<div className="flex items-center gap-1">
 										<Button
-											variant="ghost"
-											size="icon"
+											aria-label="Move up"
 											className="size-7"
 											disabled={!prev || isBusy}
 											onClick={() => prev && swapOrder(room, prev)}
-											aria-label="Move up"
+											size="icon"
+											variant="ghost"
 										>
 											<IconArrowUp className="size-4" />
 										</Button>
 										<Button
-											variant="ghost"
-											size="icon"
+											aria-label="Move down"
 											className="size-7"
 											disabled={!next || isBusy}
 											onClick={() => next && swapOrder(room, next)}
-											aria-label="Move down"
+											size="icon"
+											variant="ghost"
 										>
 											<IconArrowDown className="size-4" />
 										</Button>
@@ -116,11 +116,11 @@ export function RoomsList({ rooms, onEdit, onUpdate }: RoomsListProps) {
 										<span>{room.name}</span>
 										{room.link && (
 											<a
-												href={room.link}
-												target="_blank"
-												rel="noopener noreferrer"
-												className="text-muted-foreground hover:text-foreground"
 												aria-label={`Open ${room.name} link`}
+												className="text-muted-foreground hover:text-foreground"
+												href={room.link}
+												rel="noopener noreferrer"
+												target="_blank"
 											>
 												<IconExternalLink className="size-3.5" />
 											</a>
@@ -135,13 +135,13 @@ export function RoomsList({ rooms, onEdit, onUpdate }: RoomsListProps) {
 								</TableCell>
 								<TableCell className="text-right">
 									<RowActions
+										deleteDisabled={room.sessionCount > 0}
 										isBusy={isBusy}
 										isConfirming={confirmId === room.id}
-										deleteDisabled={room.sessionCount > 0}
-										onEdit={() => onEdit(room)}
 										onAskDelete={() => askDelete(room.id)}
-										onConfirmDelete={() => remove(room.id)}
 										onCancelDelete={cancelDelete}
+										onConfirmDelete={() => remove(room.id)}
+										onEdit={() => onEdit(room)}
 										testIdPrefix="room"
 									/>
 								</TableCell>

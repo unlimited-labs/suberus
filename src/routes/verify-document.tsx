@@ -61,18 +61,18 @@ function VerifyDocumentPage() {
 
 			<div className="space-y-4 rounded-2xl border border-border/60 bg-card p-6">
 				<input
-					type="file"
 					accept="application/pdf,.pdf"
-					ref={fileRef}
 					aria-label="PDF document to verify"
-					data-testid="verify-file-input"
 					className="block w-full text-sm file:mr-3 file:rounded-md file:border file:border-border file:bg-muted file:px-3 file:py-1.5 file:text-sm"
+					data-testid="verify-file-input"
+					ref={fileRef}
+					type="file"
 				/>
 				<Button
-					onClick={verify}
-					disabled={busy}
 					className="w-full"
 					data-testid="verify-submit"
+					disabled={busy}
+					onClick={verify}
 				>
 					{busy ? (
 						<IconLoader2 className="mr-2 size-4 animate-spin" />

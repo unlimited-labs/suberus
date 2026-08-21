@@ -33,8 +33,8 @@ export function createInvitationColumns(
 			header: ({ column }) => (
 				<DataTableColumnHeader
 					column={column}
-					title="Email"
 					textFilter={{ placeholder: "Search..." }}
+					title="Email"
 				/>
 			),
 			filterFn: "includesString",
@@ -96,18 +96,18 @@ export function createInvitationColumns(
 				return (
 					<div className="flex gap-1">
 						<Button
-							variant="ghost"
-							size="icon-sm"
 							onClick={() => options.onResend(invitation.id)}
+							size="icon-sm"
 							title="Resend"
+							variant="ghost"
 						>
 							<IconMailForward className="size-4" />
 						</Button>
 						<Button
-							variant="ghost"
-							size="icon-sm"
 							onClick={() => options.onCancel(invitation.id)}
+							size="icon-sm"
 							title="Cancel"
+							variant="ghost"
 						>
 							<IconX className="size-4" />
 						</Button>

@@ -78,11 +78,11 @@ export function UserMenu() {
 		<>
 			<DropdownMenu>
 				<DropdownMenuTrigger
-					data-testid="user-menu-trigger"
 					className="flex w-full items-center gap-3 rounded-lg p-2 hover:bg-sidebar-accent/50 focus:outline-none"
+					data-testid="user-menu-trigger"
 				>
 					<Avatar size="sm">
-						{user.image && <AvatarImage src={user.image} alt={displayName} />}
+						{user.image && <AvatarImage alt={displayName} src={user.image} />}
 						<AvatarFallback>
 							{getInitials(user.firstName, user.lastName)}
 						</AvatarFallback>
@@ -96,9 +96,9 @@ export function UserMenu() {
 				</DropdownMenuTrigger>
 				<DropdownMenuContent
 					align="end"
-					side="top"
 					className="w-56"
 					data-testid="user-menu-content"
+					side="top"
 				>
 					<DropdownMenuItem asChild>
 						<Link to="/profile">
@@ -111,8 +111,8 @@ export function UserMenu() {
 						<DropdownMenuItem asChild>
 							<a
 								href="https://docs.suberus.app/"
-								target="_blank"
 								rel="noopener noreferrer"
+								target="_blank"
 							>
 								<IconBook className="mr-2" />
 								Documentation
@@ -148,7 +148,7 @@ export function UserMenu() {
 						</DropdownMenuSubContent>
 					</DropdownMenuSub>
 					<DropdownMenuSeparator />
-					<DropdownMenuItem variant="destructive" onClick={handleSignOut}>
+					<DropdownMenuItem onClick={handleSignOut} variant="destructive">
 						<IconLogout className="mr-2" />
 						Sign out
 					</DropdownMenuItem>
@@ -156,7 +156,7 @@ export function UserMenu() {
 			</DropdownMenu>
 			{mcpOpen && (
 				<Suspense fallback={null}>
-					<McpConnectDialog open onOpenChange={setMcpOpen} />
+					<McpConnectDialog onOpenChange={setMcpOpen} open />
 				</Suspense>
 			)}
 		</>

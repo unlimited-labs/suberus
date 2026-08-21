@@ -78,17 +78,17 @@ export function FinancesSettingsTab({
 	return (
 		<div className="space-y-6">
 			<SettingsSection
+				description="Show the Finances screen in the admin menu"
 				icon={IconCash}
 				title="Finances"
-				description="Show the Finances screen in the admin menu"
 			>
 				<div className="flex items-center justify-between">
-					<Label htmlFor="finances-enabled" className="font-medium">
+					<Label className="font-medium" htmlFor="finances-enabled">
 						Finances enabled
 					</Label>
 					<Switch
-						id="finances-enabled"
 						checked={enabled}
+						id="finances-enabled"
 						onCheckedChange={handleToggleEnabled}
 					/>
 				</div>
@@ -96,9 +96,9 @@ export function FinancesSettingsTab({
 
 			{enabled && (
 				<SettingsSection
+					description="Rates offered when entering a cost as net or gross"
 					icon={IconPercentage}
 					title="VAT rates"
-					description="Rates offered when entering a cost as net or gross"
 				>
 					<div className="space-y-4">
 						<div className="rounded-md border">
@@ -113,19 +113,19 @@ export function FinancesSettingsTab({
 							) : (
 								vatRates.map((vat) => (
 									<div
-										key={vat.id}
 										className="grid grid-cols-[1fr_auto] items-center gap-2 border-b px-4 py-2 last:border-b-0"
 										data-testid={`vat-row-${vat.rate}`}
+										key={vat.id}
 									>
 										<span className="tabular-nums">{vat.rate}%</span>
 										<Button
-											type="button"
-											variant="ghost"
-											size="icon"
 											aria-label={`Remove ${vat.rate}% VAT`}
 											onClick={() =>
 												saveVatRates(vatRates.filter((r) => r.id !== vat.id))
 											}
+											size="icon"
+											type="button"
+											variant="ghost"
 										>
 											<IconX className="size-4" />
 										</Button>
@@ -135,26 +135,26 @@ export function FinancesSettingsTab({
 						</div>
 						<div className="flex items-end gap-2">
 							<div className="space-y-1">
-								<Label htmlFor="new-vat-rate" className="text-xs">
+								<Label className="text-xs" htmlFor="new-vat-rate">
 									New rate (%)
 								</Label>
 								<Input
-									id="new-vat-rate"
-									type="number"
-									min={0}
-									max={100}
-									step="1"
-									value={newRate}
-									onChange={(e) => setNewRate(e.target.value)}
 									className="w-32"
 									data-testid="vat-new-rate"
+									id="new-vat-rate"
+									max={100}
+									min={0}
+									onChange={(e) => setNewRate(e.target.value)}
+									step="1"
+									type="number"
+									value={newRate}
 								/>
 							</div>
 							<Button
+								data-testid="vat-add"
+								onClick={handleAddRate}
 								type="button"
 								variant="outline"
-								onClick={handleAddRate}
-								data-testid="vat-add"
 							>
 								<IconPlus className="mr-1 size-4" />
 								Add

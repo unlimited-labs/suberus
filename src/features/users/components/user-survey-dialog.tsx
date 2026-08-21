@@ -56,7 +56,7 @@ export function UserSurveyDialog({
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Edit survey answers</DialogTitle>
@@ -65,9 +65,9 @@ export function UserSurveyDialog({
 					</DialogDescription>
 				</DialogHeader>
 				<SurveyAnswersForm
-					questions={questions}
 					initialAnswers={initialAnswers}
 					onSave={handleSave}
+					questions={questions}
 					submitLabel="Save answers"
 				/>
 			</DialogContent>

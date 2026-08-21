@@ -27,11 +27,11 @@ function KeywordPill({
 	const s = STATUS_STYLE[status];
 	return (
 		<li
-			data-diff-status={status}
 			className={cn(
 				"rounded-md border border-border px-2 py-0.5 text-sm",
 				s.row,
 			)}
+			data-diff-status={status}
 		>
 			{children}
 			{s.label && (
@@ -81,7 +81,15 @@ export function KeywordsDiff({
 		const compareSet = new Set(compare);
 		return (
 			<SplitColumns
-				oldLabel={oldLabel}
+				newChildren={
+					<ul className="flex flex-wrap gap-2" data-testid="keywords-diff">
+						{compare.map((k) => (
+							<KeywordPill key={k} status={keywordStatus(k, baseSet, "added")}>
+								{k}
+							</KeywordPill>
+						))}
+					</ul>
+				}
 				newLabel={newLabel}
 				oldChildren={
 					<ul className="flex flex-wrap gap-2" data-testid="keywords-diff">
@@ -95,15 +103,7 @@ export function KeywordsDiff({
 						))}
 					</ul>
 				}
-				newChildren={
-					<ul className="flex flex-wrap gap-2" data-testid="keywords-diff">
-						{compare.map((k) => (
-							<KeywordPill key={k} status={keywordStatus(k, baseSet, "added")}>
-								{k}
-							</KeywordPill>
-						))}
-					</ul>
-				}
+				oldLabel={oldLabel}
 			/>
 		);
 	}

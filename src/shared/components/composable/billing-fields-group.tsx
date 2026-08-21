@@ -51,10 +51,10 @@ export const BillingFieldsGroup = withFieldGroup({
 					<group.AppField name="address">
 						{(field) => (
 							<field.TextareaField
-								label={addressLabel}
-								rows={3}
-								placeholder={addressPlaceholder}
 								disabled={disabled}
+								label={addressLabel}
+								placeholder={addressPlaceholder}
+								rows={3}
 							/>
 						)}
 					</group.AppField>
@@ -63,8 +63,8 @@ export const BillingFieldsGroup = withFieldGroup({
 				<group.AppField name="country">
 					{(field) => (
 						<field.CountryComboboxField
-							label={countryLabel}
 							disabled={disabled}
+							label={countryLabel}
 						/>
 					)}
 				</group.AppField>

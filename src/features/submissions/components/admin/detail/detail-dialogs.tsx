@@ -53,61 +53,61 @@ export function DetailDialogs({
 	return (
 		<>
 			<AssignReviewerDialog
-				submissionId={submission.id}
-				submissionTitle={submission.title}
+				onAssigned={onInvalidate}
+				onOpenChange={onOpenChange}
+				open={activeDialog === "assign"}
 				requiredReviewers={requiredReviewers}
 				reviewDeadlineDays={reviewDeadlineDays}
-				open={activeDialog === "assign"}
-				onOpenChange={onOpenChange}
-				onAssigned={onInvalidate}
+				submissionId={submission.id}
+				submissionTitle={submission.title}
 			/>
 
 			<EditorDecisionDialog
+				onDecisionMade={onInvalidate}
+				onOpenChange={onOpenChange}
+				open={activeDialog === "decision"}
+				reviews={currentRoundReviews}
 				submissionId={submission.id}
 				submissionTitle={submission.title}
-				reviews={currentRoundReviews}
-				open={activeDialog === "decision"}
-				onOpenChange={onOpenChange}
-				onDecisionMade={onInvalidate}
 			/>
 
 			<DeskAcceptDialog
+				onAccepted={onInvalidate}
+				onOpenChange={onOpenChange}
+				open={activeDialog === "deskAccept"}
 				submissionId={submission.id}
 				submissionTitle={submission.title}
-				open={activeDialog === "deskAccept"}
-				onOpenChange={onOpenChange}
-				onAccepted={onInvalidate}
 			/>
 
 			<DeskRejectDialog
-				submissionId={submission.id}
-				submissionTitle={submission.title}
-				open={activeDialog === "deskReject"}
 				onOpenChange={onOpenChange}
 				onRejected={onInvalidate}
+				open={activeDialog === "deskReject"}
+				submissionId={submission.id}
+				submissionTitle={submission.title}
 			/>
 
 			<OverrideDecisionDialog
-				open={activeDialog === "override"}
+				isTransitioning={isTransitioning}
 				onOpenChange={onOpenChange}
 				onOverride={onEditorOverride}
-				isTransitioning={isTransitioning}
+				open={activeDialog === "override"}
 			/>
 
 			<ConfirmConditionsDialog
-				open={activeDialog === "confirmConditions"}
-				onOpenChange={onOpenChange}
-				onConfirm={onConfirmConditionsMet}
 				isTransitioning={isTransitioning}
-				revisionUploaded={revisionUploaded}
 				latestVersion={submission.currentVersionNumber}
+				onConfirm={onConfirmConditionsMet}
+				onOpenChange={onOpenChange}
+				open={activeDialog === "confirmConditions"}
+				revisionUploaded={revisionUploaded}
 			/>
 
 			<SubmissionDeleteDialog
+				onOpenChange={onOpenChange}
+				open={activeDialog === "delete"}
 				submissionId={submission.id}
 				submissionTitle={submission.title}
-				open={activeDialog === "delete"}
-				onOpenChange={onOpenChange}
 			/>
 		</>
 	);

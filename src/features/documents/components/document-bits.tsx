@@ -14,9 +14,9 @@ export function NoTemplatesHint() {
 		<p className="text-xs text-muted-foreground">
 			No templates yet.{" "}
 			<Link
-				to="/admin/documents"
-				search={{ tab: "templates" }}
 				className="font-medium text-primary hover:underline"
+				search={{ tab: "templates" }}
+				to="/admin/documents"
 			>
 				Upload one in Documents → Templates
 			</Link>{" "}
@@ -34,7 +34,7 @@ export function PlaceholderChips({ placeholders }: { placeholders: string[] }) {
 	return (
 		<div className="flex flex-wrap gap-1">
 			{placeholders.map((p) => (
-				<Badge key={p} variant="outline" className="font-mono text-[10px]">
+				<Badge className="font-mono text-[10px]" key={p} variant="outline">
 					{`{${p}}`}
 				</Badge>
 			))}

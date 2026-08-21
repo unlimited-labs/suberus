@@ -8,16 +8,16 @@ export function PlannerEventRenderer({ event }: { event: CalendarEvent }) {
 	const { onSubmissionDrop } = usePlannerTools();
 	const data = parseCalendarEventData(event);
 	if (data?.kind === "break") {
-		return <BreakEventCard title={event.title} data={data} />;
+		return <BreakEventCard data={data} title={event.title} />;
 	}
 	if (data?.kind === "session") {
 		return (
 			<SessionEventCard
-				title={event.title}
 				data={data}
 				onSubmissionDrop={(submissionId) =>
 					onSubmissionDrop(data.sessionId, submissionId)
 				}
+				title={event.title}
 			/>
 		);
 	}

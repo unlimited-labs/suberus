@@ -70,28 +70,28 @@ function ReviseSubmissionPage() {
 		isConditional: view.isConditional,
 	});
 
-	if (!data) return <CannotReviseScreen kind="not-found" id={id} />;
+	if (!data) return <CannotReviseScreen id={id} kind="not-found" />;
 	if (!isRevisableSubmission(data.submission)) {
-		return <CannotReviseScreen kind="not-revisable" id={id} />;
+		return <CannotReviseScreen id={id} kind="not-revisable" />;
 	}
 
 	return (
 		<RevisionForm
-			submissionId={id}
-			title={view.title}
+			acceptString={view.acceptString}
 			content={view.content}
+			currentFile={view.currentFile}
+			enableKeywords={view.enableKeywords}
+			extractionEnabled={view.extractionEnabled}
 			initialAuthors={view.authors}
 			initialKeywords={view.keywords}
-			currentFile={view.currentFile}
-			isFileFormat={view.isFileFormat}
-			acceptString={view.acceptString}
-			maxFileSize={view.maxFileSize}
-			enableKeywords={view.enableKeywords}
-			maxKeywords={view.maxKeywords}
-			extractionEnabled={view.extractionEnabled}
-			isSubmitting={isSubmitting}
 			isConditional={view.isConditional}
+			isFileFormat={view.isFileFormat}
+			isSubmitting={isSubmitting}
+			maxFileSize={view.maxFileSize}
+			maxKeywords={view.maxKeywords}
 			onSubmit={submitRevision}
+			submissionId={id}
+			title={view.title}
 		/>
 	);
 }
@@ -113,8 +113,8 @@ function CannotReviseScreen({
 							? "Submission not found"
 							: "Submission is not in a revisable state"}
 					</p>
-					<Link to="/submissions/$id" params={{ id }}>
-						<Button variant="outline" className="gap-2">
+					<Link params={{ id }} to="/submissions/$id">
+						<Button className="gap-2" variant="outline">
 							<IconArrowLeft className="size-4" />
 							Back to Submission
 						</Button>
@@ -204,8 +204,8 @@ function RevisionForm({
 				icon={IconFileText}
 				title={isConditional ? "Upload Revised Version" : "Revise Submission"}
 			>
-				<Link to="/submissions/$id" params={{ id: submissionId }}>
-					<Button variant="outline" className="gap-2">
+				<Link params={{ id: submissionId }} to="/submissions/$id">
+					<Button className="gap-2" variant="outline">
 						<IconArrowLeft className="size-4" />
 						Back to Submission
 					</Button>
@@ -214,23 +214,23 @@ function RevisionForm({
 
 			<div className="flex-1 overflow-auto p-6">
 				<div className="mx-auto max-w-3xl">
-					<form onSubmit={handleSubmit} className="space-y-6">
+					<form className="space-y-6" onSubmit={handleSubmit}>
 						<div className="space-y-2">
 							<Label htmlFor="title">Title</Label>
 							<input
+								className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 								id="title"
+								onChange={(e) => setTitle(e.target.value)}
 								type="text"
 								value={title}
-								onChange={(e) => setTitle(e.target.value)}
-								className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 							/>
 						</div>
 
 						{isFileFormat ? (
 							<div className="relative space-y-3">
 								<ExtractionOverlay
-									isExtracting={isExtracting}
 									elapsedSeconds={elapsedSeconds}
+									isExtracting={isExtracting}
 								/>
 								<Label>Document *</Label>
 								{currentFile && !file && (
@@ -245,14 +245,14 @@ function RevisionForm({
 											</p>
 										</div>
 										<Button
-											variant="outline"
-											size="sm"
-											className="gap-2"
 											asChild
+											className="gap-2"
+											size="sm"
+											variant="outline"
 										>
 											<a
-												href={`/api/files/${currentFile.id}`}
 												data-testid="file-download-button"
+												href={`/api/files/${currentFile.id}`}
 											>
 												<IconDownload className="size-4" />
 												Download
@@ -261,10 +261,10 @@ function RevisionForm({
 									</div>
 								)}
 								<FileDropzone
-									value={file}
-									onChange={(f) => handleFileChange(f, setFile)}
 									accept={acceptString}
 									maxSize={maxFileSize}
+									onChange={(f) => handleFileChange(f, setFile)}
+									value={file}
 								/>
 								<p className="text-xs text-muted-foreground">
 									{`A revised document is required. Accepted formats: ${acceptString.replace(/\./g, "").toUpperCase()}`}
@@ -274,11 +274,11 @@ function RevisionForm({
 							<div className="space-y-2">
 								<Label htmlFor="content">Abstract</Label>
 								<Textarea
+									className="resize-none"
 									id="content"
-									value={content}
 									onChange={(e) => setContent(e.target.value)}
 									rows={12}
-									className="resize-none"
+									value={content}
 								/>
 							</div>
 						)}
@@ -290,7 +290,7 @@ function RevisionForm({
 									Authors
 								</h2>
 							</div>
-							<AuthorsInput value={authors} onChange={setAuthors} />
+							<AuthorsInput onChange={setAuthors} value={authors} />
 						</div>
 
 						{enableKeywords && (
@@ -303,9 +303,9 @@ function RevisionForm({
 								</div>
 								<div className="rounded-lg border bg-muted/30 p-3">
 									<KeywordsInput
-										value={keywords}
-										onChange={setKeywords}
 										maxKeywords={maxKeywords}
+										onChange={setKeywords}
+										value={keywords}
 									/>
 								</div>
 							</div>
@@ -319,24 +319,24 @@ function RevisionForm({
 								</span>
 							</Label>
 							<Textarea
-								id="comment"
-								value={comment}
-								onChange={(e) => setComment(e.target.value)}
-								rows={4}
-								placeholder="Describe the changes you made in this revision..."
 								className="resize-none"
+								id="comment"
+								onChange={(e) => setComment(e.target.value)}
+								placeholder="Describe the changes you made in this revision..."
+								rows={4}
+								value={comment}
 							/>
 						</div>
 
 						<Button
-							type="submit"
+							className="w-full gap-2"
 							disabled={
 								isSubmitting ||
 								isExtracting ||
 								!revisionReady(title, authors) ||
 								(isFileFormat && !file)
 							}
-							className="w-full gap-2"
+							type="submit"
 						>
 							<IconSend className="size-4" />
 							{isSubmitting

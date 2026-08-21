@@ -57,43 +57,43 @@ export function UserDocumentsSection({
 
 	return (
 		<SectionCard
-			icon={IconFileCertificate}
-			title="Documents"
 			action={
 				<Button
-					variant="outline"
-					size="sm"
-					onClick={() => onAddOpenChange(true)}
 					data-testid="add-document-button"
+					onClick={() => onAddOpenChange(true)}
+					size="sm"
+					variant="outline"
 				>
 					<IconFilePlus className="mr-2 size-4" />
 					Add document
 				</Button>
 			}
+			icon={IconFileCertificate}
+			title="Documents"
 		>
 			{documents.length === 0 ? (
 				<EmptyState
+					description="Generate a document for this participant from one of your templates."
 					icon={IconFileCertificate}
 					title="No documents yet"
-					description="Generate a document for this participant from one of your templates."
 				/>
 			) : (
 				<div className="space-y-2">
 					{documents.map((d) => (
 						<DocumentCard
-							key={d.id}
-							name={d.name}
 							createdAt={d.createdAt}
-							size={d.size}
-							status={d.status}
-							error={d.error}
-							signed={d.signed}
 							downloadHref={
 								d.status === "READY" && d.hasFile
 									? `/api/documents/${d.id}`
 									: undefined
 							}
+							error={d.error}
+							key={d.id}
+							name={d.name}
 							onDelete={() => setDeletingId(d.id)}
+							signed={d.signed}
+							size={d.size}
+							status={d.status}
 							testId="user-document-row"
 						/>
 					))}
@@ -101,21 +101,21 @@ export function UserDocumentsSection({
 			)}
 
 			<UserDocumentDialog
-				open={addOpen}
 				onOpenChange={onAddOpenChange}
+				open={addOpen}
 				userId={userId}
 				userName={userName}
 			/>
 
 			<ConfirmDeleteDialog
-				open={deletingId !== null}
+				busy={busy}
+				description="This removes the generated file. The participant will no longer see it."
+				onConfirm={handleDelete}
 				onOpenChange={(o) => {
 					if (!o) setDeletingId(null);
 				}}
-				busy={busy}
+				open={deletingId !== null}
 				title="Delete document?"
-				description="This removes the generated file. The participant will no longer see it."
-				onConfirm={handleDelete}
 			/>
 		</SectionCard>
 	);

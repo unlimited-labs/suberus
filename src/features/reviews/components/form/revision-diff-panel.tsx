@@ -47,27 +47,27 @@ export function RevisionDiffPanel({
 
 	return (
 		<SectionCard
-			title="Changes since previous version"
-			icon={IconGitCompare}
-			contentClassName="space-y-4"
 			action={
-				<Button asChild variant="outline" size="sm" className="gap-2">
+				<Button asChild className="gap-2" size="sm" variant="outline">
 					<Link
-						to="/reviews/$assignmentId/compare"
-						params={{ assignmentId }}
 						data-testid="reviewer-compare-link"
+						params={{ assignmentId }}
+						to="/reviews/$assignmentId/compare"
 					>
 						<IconGitCompare className="size-4" />
 						Compare versions
 					</Link>
 				</Button>
 			}
+			contentClassName="space-y-4"
+			icon={IconGitCompare}
+			title="Changes since previous version"
 		>
 			<div className="space-y-1">
 				<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
 					Title
 				</p>
-				<TextDiffView segments={titleDiff} emptyLabel="Title unchanged." />
+				<TextDiffView emptyLabel="Title unchanged." segments={titleDiff} />
 			</div>
 
 			{isFileSubmission ? (
@@ -79,8 +79,8 @@ export function RevisionDiffPanel({
 					</p>
 					<div className="max-h-96 overflow-auto rounded-lg border border-border bg-muted/30 p-4">
 						<TextDiffView
-							segments={diffText(previous.content, content)}
 							emptyLabel="Content unchanged."
+							segments={diffText(previous.content, content)}
 						/>
 					</div>
 				</div>
@@ -95,8 +95,8 @@ export function RevisionDiffPanel({
 					compare={keywords}
 					emptyLabel="Keywords unchanged."
 					layout="inline"
-					oldLabel="Previous"
 					newLabel="Current"
+					oldLabel="Previous"
 				/>
 			</div>
 		</SectionCard>
@@ -110,9 +110,9 @@ function FileChangeNotice({ changed }: { changed: boolean }) {
 				File
 			</p>
 			<div
-				data-testid="reviewer-file-change-notice"
-				data-changed={changed}
 				className="flex items-start gap-2 rounded-lg border border-border bg-muted/30 p-3 text-sm text-muted-foreground"
+				data-changed={changed}
+				data-testid="reviewer-file-change-notice"
 			>
 				<IconFile className="mt-0.5 size-4 shrink-0" />
 				<span>

@@ -65,67 +65,67 @@ export function TemplatesTab() {
 
 	return (
 		<SectionCard
-			icon={IconFileCertificate}
-			title="Templates"
+			action={
+				<Button
+					data-testid="upload-template-button"
+					onClick={() => setUploadOpen(true)}
+				>
+					<IconPlus className="mr-2 size-4" />
+					Upload template
+				</Button>
+			}
 			description={
 				<>
 					Upload .docx templates with <code>{"{placeholder}"}</code> tokens the
 					system fills with participant data.
 				</>
 			}
-			action={
-				<Button
-					onClick={() => setUploadOpen(true)}
-					data-testid="upload-template-button"
-				>
-					<IconPlus className="mr-2 size-4" />
-					Upload template
-				</Button>
-			}
+			icon={IconFileCertificate}
+			title="Templates"
 		>
 			{templates.length === 0 ? (
 				<EmptyState
-					icon={IconFileCertificate}
-					title="No templates yet"
-					description="Upload a .docx with {placeholder} tokens to start issuing documents to participants."
 					action={
 						<Button onClick={() => setUploadOpen(true)}>
 							<IconPlus className="mr-2 size-4" />
 							Upload template
 						</Button>
 					}
+					description="Upload a .docx with {placeholder} tokens to start issuing documents to participants."
+					icon={IconFileCertificate}
+					title="No templates yet"
 				/>
 			) : (
 				<div className="space-y-2">
 					{templates.map((t) => (
 						<TemplateCard
+							createdAt={t.createdAt}
+							description={t.description}
+							downloadHref={`/api/documents/templates/${t.id}`}
 							key={t.id}
 							name={t.name}
-							description={t.description}
-							placeholders={t.placeholders}
-							createdAt={t.createdAt}
-							downloadHref={`/api/documents/templates/${t.id}`}
 							onDelete={() => setDeleting(t)}
+							placeholders={t.placeholders}
 						/>
 					))}
 				</div>
 			)}
 
 			<TemplateUploadDialog
-				open={uploadOpen}
 				onOpenChange={setUploadOpen}
 				onUpload={handleUpload}
+				open={uploadOpen}
 			/>
 
 			<ConfirmDeleteDialog
-				open={deleting !== null}
+				busy={busy}
+				description={`“${deleting?.name}” will be removed. Already-generated documents are kept.`}
+				onConfirm={handleDelete}
 				onOpenChange={(o) => {
 					if (!o) setDeleting(null);
 				}}
-				busy={busy}
+				open={deleting !== null}
 				title="Delete template?"
-				description={`“${deleting?.name}” will be removed. Already-generated documents are kept.`}
-				onConfirm={handleDelete}
 			/>
 		</SectionCard>
 	);

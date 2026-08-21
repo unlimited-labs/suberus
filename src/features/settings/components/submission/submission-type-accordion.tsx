@@ -41,8 +41,8 @@ export function SubmissionTypeAccordion({
 
 	return (
 		<AccordionItem
-			value={typeKey}
 			className="rounded-lg border border-border/50 bg-card px-4"
+			value={typeKey}
 		>
 			<AccordionTrigger className="py-4 hover:no-underline">
 				<div className="flex items-center gap-3">
@@ -50,7 +50,7 @@ export function SubmissionTypeAccordion({
 					<Badge variant={config.isActive ? "default" : "secondary"}>
 						{config.isActive ? "Active" : "Inactive"}
 					</Badge>
-					<Badge variant="outline" className="text-xs">
+					<Badge className="text-xs" variant="outline">
 						{config.contentFormat}
 					</Badge>
 				</div>
@@ -58,9 +58,9 @@ export function SubmissionTypeAccordion({
 			<AccordionContent className="pb-4">
 				<div className="space-y-6">
 					<TypeGeneralSection
-						typeKey={typeKey}
 						config={config}
 						onChange={handleChange}
+						typeKey={typeKey}
 					/>
 
 					<TypeFormatSection
@@ -73,21 +73,21 @@ export function SubmissionTypeAccordion({
 
 					<TypeScoringSection
 						config={config}
-						onChange={handleChange}
-						onUpdateCriterion={updateCriterion}
-						onRemoveCriterion={removeCriterion}
 						onAddCriterion={addCriterion}
+						onChange={handleChange}
+						onRemoveCriterion={removeCriterion}
+						onUpdateCriterion={updateCriterion}
 					/>
 
 					<TypeFeatureTogglesSection
-						typeKey={typeKey}
 						config={config}
 						onChange={handleChange}
+						typeKey={typeKey}
 					/>
 
 					{/* Save button */}
 					<div className="flex justify-end border-t pt-4">
-						<Button onClick={handleSave} disabled={isSaving}>
+						<Button disabled={isSaving} onClick={handleSave}>
 							{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 							Save
 						</Button>

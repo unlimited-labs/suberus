@@ -38,23 +38,23 @@ export function RegisterStep1({
 				<Field>
 					<FieldLabel>Account type</FieldLabel>
 					<RadioGroup
-						value={accountType}
+						className="grid gap-2 sm:grid-cols-2"
 						onValueChange={(value) =>
 							onAccountTypeChange(
 								value === "exhibitor" ? "exhibitor" : "participant",
 							)
 						}
-						className="grid gap-2 sm:grid-cols-2"
+						value={accountType}
 					>
 						<FieldLabel
-							htmlFor="account-type-participant"
 							className="group flex cursor-pointer items-start gap-3 rounded-lg border border-input p-3 font-normal transition-colors hover:bg-muted/50 has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5"
+							htmlFor="account-type-participant"
 						>
 							<RadioGroupItem
-								value="participant"
-								id="account-type-participant"
-								data-testid="register-account-type-participant"
 								className="mt-1"
+								data-testid="register-account-type-participant"
+								id="account-type-participant"
+								value="participant"
 							/>
 							<span className="flex items-start gap-2.5">
 								<IconUser className="mt-0.5 size-5 shrink-0 text-muted-foreground group-has-data-[state=checked]:text-primary" />
@@ -67,14 +67,14 @@ export function RegisterStep1({
 							</span>
 						</FieldLabel>
 						<FieldLabel
-							htmlFor="account-type-exhibitor"
 							className="group flex cursor-pointer items-start gap-3 rounded-lg border border-input p-3 font-normal transition-colors hover:bg-muted/50 has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5"
+							htmlFor="account-type-exhibitor"
 						>
 							<RadioGroupItem
-								value="exhibitor"
-								id="account-type-exhibitor"
-								data-testid="register-account-type-exhibitor"
 								className="mt-1"
+								data-testid="register-account-type-exhibitor"
+								id="account-type-exhibitor"
+								value="exhibitor"
 							/>
 							<span className="flex items-start gap-2.5">
 								<IconBuildingStore className="mt-0.5 size-5 shrink-0 text-muted-foreground group-has-data-[state=checked]:text-primary" />
@@ -108,11 +108,11 @@ export function RegisterStep1({
 					<div className="relative">
 						<IconMail className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
 						<Input
+							className="bg-muted pl-9"
 							id="invited-email"
+							readOnly
 							type="email"
 							value={invitation.email}
-							readOnly
-							className="bg-muted pl-9"
 						/>
 					</div>
 				</Field>
@@ -132,9 +132,9 @@ export function RegisterStep1({
 				>
 					{(field) => (
 						<field.IconInputField
+							icon={<IconMail className="size-4" />}
 							label="E-mail *"
 							type="email"
-							icon={<IconMail className="size-4" />}
 						/>
 					)}
 				</form.AppField>
@@ -147,9 +147,9 @@ export function RegisterStep1({
 				>
 					{(field) => (
 						<field.PasswordField
+							description="Min. 10 characters"
 							label="Password *"
 							placeholder="Min. 10 characters"
-							description="Min. 10 characters"
 						/>
 					)}
 				</form.AppField>
@@ -202,13 +202,13 @@ export function RegisterStep1({
 							<Field data-invalid={hasError}>
 								<FieldLabel>Affiliation *</FieldLabel>
 								<AffiliationSelect
-									value={field.state.value || null}
 									displayValue={form.state.values.affiliationName}
+									hasError={hasError}
 									onChange={(id, name) => {
 										field.handleChange(id ?? "");
 										form.setFieldValue("affiliationName", name);
 									}}
-									hasError={hasError}
+									value={field.state.value || null}
 								/>
 								<FieldError
 									errors={hasError ? field.state.meta.errors : undefined}

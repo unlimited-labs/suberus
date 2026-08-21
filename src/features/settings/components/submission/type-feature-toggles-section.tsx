@@ -27,8 +27,8 @@ export function TypeFeatureTogglesSection({
 					</p>
 				</div>
 				<Switch
-					id="enableConfidenceLevel"
 					checked={config.enableConfidenceLevel}
+					id="enableConfidenceLevel"
 					onCheckedChange={(checked) =>
 						onChange("enableConfidenceLevel", checked)
 					}
@@ -45,8 +45,8 @@ export function TypeFeatureTogglesSection({
 					</p>
 				</div>
 				<Switch
-					id="enableReviewAttachment"
 					checked={config.enableReviewAttachment}
+					id="enableReviewAttachment"
 					onCheckedChange={(checked) =>
 						onChange("enableReviewAttachment", checked)
 					}

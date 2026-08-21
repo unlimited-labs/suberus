@@ -51,13 +51,13 @@ function SubmissionDetailPage() {
 			<PageHeader icon={IconFileText} title="Submission Details">
 				<div className="flex items-center gap-2">
 					{isReadOnly && (
-						<Badge variant="secondary" className="gap-1">
+						<Badge className="gap-1" variant="secondary">
 							<IconEye className="size-3" />
 							Co-author (read-only)
 						</Badge>
 					)}
 					<Link to="/submissions">
-						<Button variant="outline" className="gap-2">
+						<Button className="gap-2" variant="outline">
 							<IconArrowLeft className="size-4" />
 							Back to List
 						</Button>
@@ -70,12 +70,12 @@ function SubmissionDetailPage() {
 					<div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
 						<div className="space-y-6">
 							<ContentTabs
-								title={displayData.title}
-								content={displayData.content}
-								keywords={displayData.keywords}
 								authors={displayData.authors}
-								statusHistory={statusHistory}
+								content={displayData.content}
 								file={displayData.file}
+								keywords={displayData.keywords}
+								statusHistory={statusHistory}
+								title={displayData.title}
 							/>
 
 							{reviews.length > 0 && (
@@ -86,7 +86,7 @@ function SubmissionDetailPage() {
 							)}
 
 							{decision && (
-								<EditorDecisionCard decision={decision} collapsible />
+								<EditorDecisionCard collapsible decision={decision} />
 							)}
 						</div>
 
@@ -94,27 +94,27 @@ function SubmissionDetailPage() {
 							<div className="sticky top-0 space-y-4">
 								<StatusCard status={submission.status} />
 								<InfoCard
+									onVersionChange={setSelectedVersion}
+									selectedVersion={selectedVersion}
 									submission={submission}
 									versions={versions}
-									selectedVersion={selectedVersion}
-									onVersionChange={setSelectedVersion}
 								/>
 								{!isReadOnly && (
 									<ActionsCard
+										status={submission.status}
 										submissionId={submission.id}
 										submissionTitle={submission.title}
-										status={submission.status}
 									/>
 								)}
 							</div>
 						</div>
 
 						<MobileSidebar
+							isReadOnly={isReadOnly}
+							onVersionChange={setSelectedVersion}
+							selectedVersion={selectedVersion}
 							submission={submission}
 							versions={versions}
-							selectedVersion={selectedVersion}
-							onVersionChange={setSelectedVersion}
-							isReadOnly={isReadOnly}
 						/>
 					</div>
 				</div>
@@ -133,7 +133,7 @@ function NotFoundState({ id }: { id: string }) {
 						Submission with ID: {id} not found
 					</p>
 					<Link to="/submissions">
-						<Button variant="outline" className="gap-2">
+						<Button className="gap-2" variant="outline">
 							<IconArrowLeft className="size-4" />
 							Back to List
 						</Button>

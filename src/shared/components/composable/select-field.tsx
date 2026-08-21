@@ -32,17 +32,17 @@ export function FormSelectField({
 
 	return (
 		<FormField
-			label={label}
-			htmlFor={field.name}
-			hasError={hasError}
-			errors={errors}
 			description={description}
+			errors={errors}
+			hasError={hasError}
+			htmlFor={field.name}
+			label={label}
 		>
 			<Select
-				items={options}
-				value={field.state.value || ""}
-				onValueChange={(value) => field.handleChange(value)}
 				disabled={disabled}
+				items={options}
+				onValueChange={(value) => field.handleChange(value)}
+				value={field.state.value || ""}
 			>
 				<SelectTrigger className="h-9">
 					<SelectValue placeholder={placeholder} />

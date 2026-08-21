@@ -58,10 +58,10 @@ export function ExhibitorsSettingsSection({
 
 	return (
 		<SettingsSection
+			delay={delay}
+			description="Exhibitor registration and presentation options"
 			icon={IconBuildingStore}
 			title="Exhibitors"
-			description="Exhibitor registration and presentation options"
-			delay={delay}
 		>
 			<div className="space-y-4">
 				{/* Master guard: gates exhibitor signup, the admin menu entry and the options below */}
@@ -74,9 +74,9 @@ export function ExhibitorsSettingsSection({
 						</p>
 					</div>
 					<Switch
-						id="exhibitorsEnabled"
-						data-testid="settings-exhibitors-enabled"
 						checked={config.isActive}
+						data-testid="settings-exhibitors-enabled"
+						id="exhibitorsEnabled"
 						onCheckedChange={(checked) => handleToggle("isActive", checked)}
 					/>
 				</div>
@@ -92,9 +92,9 @@ export function ExhibitorsSettingsSection({
 								</p>
 							</div>
 							<Switch
-								id="exhibitorsIncludeInPlanner"
-								data-testid="settings-exhibitors-include-in-planner"
 								checked={config.includeInPlanner}
+								data-testid="settings-exhibitors-include-in-planner"
+								id="exhibitorsIncludeInPlanner"
 								onCheckedChange={(checked) =>
 									handleToggle("includeInPlanner", checked)
 								}
@@ -110,9 +110,9 @@ export function ExhibitorsSettingsSection({
 								</p>
 							</div>
 							<Switch
-								id="exhibitorsAllowPresentation"
-								data-testid="settings-exhibitors-allow-presentation"
 								checked={config.allowExhibitorPresentation}
+								data-testid="settings-exhibitors-allow-presentation"
+								id="exhibitorsAllowPresentation"
 								onCheckedChange={(checked) =>
 									handleToggle("allowExhibitorPresentation", checked)
 								}
@@ -122,7 +122,7 @@ export function ExhibitorsSettingsSection({
 				)}
 			</div>
 			<div className="mt-6 flex justify-end">
-				<Button onClick={handleSave} disabled={isSaving}>
+				<Button disabled={isSaving} onClick={handleSave}>
 					{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 					Save
 				</Button>

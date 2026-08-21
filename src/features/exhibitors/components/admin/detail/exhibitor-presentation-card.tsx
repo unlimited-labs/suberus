@@ -13,8 +13,6 @@ export function ExhibitorPresentationCard({
 	return (
 		<div data-testid="exhibitor-presentation">
 			<SectionCard
-				title="Presentation"
-				contentClassName="space-y-4 text-sm"
 				action={
 					submission && (
 						<Badge variant={statusVariants[submission.status]}>
@@ -22,6 +20,8 @@ export function ExhibitorPresentationCard({
 						</Badge>
 					)
 				}
+				contentClassName="space-y-4 text-sm"
+				title="Presentation"
 			>
 				{submission ? (
 					<>
@@ -31,8 +31,8 @@ export function ExhibitorPresentationCard({
 							<ul className="space-y-1">
 								{submission.authors.map((author) => (
 									<li
-										key={author.id}
 										className="flex flex-wrap items-center gap-2"
+										key={author.id}
 									>
 										<span>
 											{author.firstName} {author.lastName}

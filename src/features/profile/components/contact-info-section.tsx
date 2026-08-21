@@ -75,20 +75,20 @@ export function ContactInfoSection({
 
 	return (
 		<form
+			className="space-y-4"
 			onSubmit={(e) => {
 				e.preventDefault();
 				e.stopPropagation();
 				void form.handleSubmit();
 			}}
-			className="space-y-4"
 		>
 			<form.AppField name="email">
 				{(field) => (
 					<field.IconInputField
+						disabled={isLoading || !emailVerified}
+						icon={<IconMail className="size-4" />}
 						label="Email *"
 						type="email"
-						icon={<IconMail className="size-4" />}
-						disabled={isLoading || !emailVerified}
 					/>
 				)}
 			</form.AppField>
@@ -107,10 +107,10 @@ export function ContactInfoSection({
 								Email not verified
 							</span>
 							<button
-								type="button"
-								onClick={resend}
-								disabled={disabled}
 								className="ml-2 inline-flex items-center gap-1 text-sm font-medium text-primary underline underline-offset-2 hover:no-underline disabled:opacity-50"
+								disabled={disabled}
+								onClick={resend}
+								type="button"
 							>
 								<IconRefresh
 									className={`size-3 ${isResending ? "animate-spin" : ""}`}
@@ -149,33 +149,33 @@ export function ContactInfoSection({
 			)}
 
 			<BillingFieldsGroup
-				form={form}
+				disabled={isLoading}
 				fields={{
 					needInvoice: "needInvoice",
 					address: "address",
 					country: "country",
 				}}
-				disabled={isLoading}
+				form={form}
 			/>
 
 			<div className="flex justify-end pt-2">
 				<form.AppForm>
 					<form.SubmitButton
+						className="h-9"
+						disabled={isLoading}
 						label="Save changes"
 						submittingLabel="Saving..."
-						disabled={isLoading}
-						className="h-9"
 					/>
 				</form.AppForm>
 			</div>
 
 			<EmailChangeConfirmDialog
-				open={pendingSave !== null}
+				isSubmitting={isConfirming}
+				onConfirm={confirmEmailChange}
 				onOpenChange={(next) => {
 					if (!next) setPendingSave(null);
 				}}
-				onConfirm={confirmEmailChange}
-				isSubmitting={isConfirming}
+				open={pendingSave !== null}
 			/>
 		</form>
 	);

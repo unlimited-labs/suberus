@@ -56,8 +56,8 @@ export function SubmissionReviewsSection({
 									label: `Round ${round}`,
 								})),
 							]}
-							value={selectedRound}
 							onValueChange={setSelectedRound}
+							value={selectedRound}
 						>
 							<SelectTrigger className="w-[140px]">
 								<SelectValue />
@@ -79,12 +79,12 @@ export function SubmissionReviewsSection({
 					(v) => v.version === round && v.comment,
 				);
 				return (
-					<div key={round} className="space-y-4">
+					<div className="space-y-4" key={round}>
 						{versionComment && (
 							<SectionCard
-								variant="elevated"
 								icon={IconEdit}
 								title={`Author's revision notes – Version ${round}`}
+								variant="elevated"
 							>
 								<div className="text-sm text-foreground leading-relaxed bg-muted/50 p-3 rounded-lg border">
 									{versionComment.comment}

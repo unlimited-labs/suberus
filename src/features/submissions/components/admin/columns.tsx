@@ -95,9 +95,9 @@ export const submissionColumns: AppColumnDef<AdminSubmission>[] = [
 			return (
 				<div className="max-w-[300px]">
 					<Link
-						to="/admin/submissions/$id"
-						params={{ id: row.original.id }}
 						className="line-clamp-2 font-medium text-foreground hover:underline"
+						params={{ id: row.original.id }}
+						to="/admin/submissions/$id"
 					>
 						{title}
 					</Link>
@@ -110,8 +110,8 @@ export const submissionColumns: AppColumnDef<AdminSubmission>[] = [
 		header: ({ column }) => (
 			<DataTableColumnHeader
 				column={column}
-				title="Type"
 				filterOptions={[...typeFilterOptions]}
+				title="Type"
 			/>
 		),
 		cell: ({ row }) => {
@@ -128,8 +128,8 @@ export const submissionColumns: AppColumnDef<AdminSubmission>[] = [
 		header: ({ column }) => (
 			<DataTableColumnHeader
 				column={column}
-				title="Status"
 				filterOptions={[...statusFilterOptions]}
+				title="Status"
 			/>
 		),
 		cell: ({ row }) => {
@@ -149,8 +149,8 @@ export const submissionColumns: AppColumnDef<AdminSubmission>[] = [
 		header: ({ column }) => (
 			<DataTableColumnHeader
 				column={column}
-				title="Author"
 				textFilter={{ placeholder: "Search..." }}
+				title="Author"
 			/>
 		),
 		cell: ({ row }) => {
@@ -182,8 +182,8 @@ export const submissionColumns: AppColumnDef<AdminSubmission>[] = [
 		header: ({ column }) => (
 			<DataTableColumnHeader
 				column={column}
-				title="TODO"
 				filterOptions={[...todoFilterOptions]}
+				title="TODO"
 			/>
 		),
 		cell: ({ row }) => <TodoCell todo={row.original.todo} />,

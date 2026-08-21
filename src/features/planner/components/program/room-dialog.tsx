@@ -30,7 +30,7 @@ export function RoomDialog({
 	});
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent data-testid="room-dialog">
 				<DialogHeader>
 					<DialogTitle>{isEdit ? "Edit Room" : "Create Room"}</DialogTitle>
@@ -40,13 +40,13 @@ export function RoomDialog({
 				</DialogHeader>
 
 				<form
+					className="space-y-4"
 					noValidate
 					onSubmit={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
 						void form.handleSubmit();
 					}}
-					className="space-y-4"
 				>
 					<form.AppField name="name">
 						{(field) => (
@@ -72,20 +72,20 @@ export function RoomDialog({
 					<form.AppField name="link">
 						{(field) => (
 							<field.InputField
-								label="Link"
-								type="url"
-								placeholder="https://maps.google.com/…"
 								description="Optional — e.g. Google Maps link, building website."
+								label="Link"
+								placeholder="https://maps.google.com/…"
 								testId="room-link"
+								type="url"
 							/>
 						)}
 					</form.AppField>
 
 					<DialogFooter>
 						<Button
+							onClick={() => onOpenChange(false)}
 							type="button"
 							variant="outline"
-							onClick={() => onOpenChange(false)}
 						>
 							Cancel
 						</Button>

@@ -95,22 +95,22 @@ export function FileDropzone({
 		<div className={cn("space-y-3", className)}>
 			{!value ? (
 				<label
-					onDrop={handleDrop}
-					onDragOver={handleDragOver}
-					onDragLeave={handleDragLeave}
 					className={cn(
 						"relative block border-2 border-dashed rounded-lg transition-all duration-200 cursor-pointer",
 						isDragging
 							? "border-primary bg-primary/5 scale-[1.02]"
 							: "border-border bg-muted/30 hover:border-primary/50 hover:bg-muted/50",
 					)}
+					onDragLeave={handleDragLeave}
+					onDragOver={handleDragOver}
+					onDrop={handleDrop}
 				>
 					<input
-						type="file"
 						accept={accept}
-						onChange={handleFileSelect}
-						className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
 						aria-label="Upload file"
+						className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+						onChange={handleFileSelect}
+						type="file"
 					/>
 					<div className="flex flex-col items-center justify-center p-8 text-center pointer-events-none">
 						<div
@@ -148,24 +148,24 @@ export function FileDropzone({
 						</p>
 					</div>
 					<Button
-						type="button"
-						size="icon-sm"
-						variant="ghost"
-						onClick={handleDownload}
 						aria-label="Download file"
-						data-testid="download-file-button"
 						className="cursor-pointer"
+						data-testid="download-file-button"
+						onClick={handleDownload}
+						size="icon-sm"
+						type="button"
+						variant="ghost"
 					>
 						<IconDownload className="size-4" />
 					</Button>
 					<Button
-						type="button"
-						size="icon-sm"
-						variant="ghost"
-						onClick={handleRemove}
 						aria-label="Remove file"
-						data-testid="remove-file-button"
 						className="cursor-pointer"
+						data-testid="remove-file-button"
+						onClick={handleRemove}
+						size="icon-sm"
+						type="button"
+						variant="ghost"
 					>
 						<IconX className="size-4" />
 					</Button>

@@ -47,11 +47,11 @@ export function TypeFormatSection({
 					{ value: "TEXT", label: "Text (Abstract)" },
 					{ value: "FILE", label: "File Upload" },
 				]}
-				value={config.contentFormat}
 				onValueChange={(value) => {
 					const found = CONTENT_FORMATS.find((f) => f === value);
 					if (found) onChange("contentFormat", found);
 				}}
+				value={config.contentFormat}
 			>
 				<SelectTrigger className="max-w-64">
 					<SelectValue />
@@ -67,19 +67,19 @@ export function TypeFormatSection({
 				<div className="space-y-2 pl-0 sm:pl-4 pt-2">
 					<Label className="text-sm">Allowed file extension</Label>
 					<RadioGroup
-						value={config.allowedExtensions[0] ?? ""}
+						className="flex flex-wrap gap-3"
 						onValueChange={(value) =>
 							// SAFETY: the select renders only supported extensions.
 							onSelectExtension(value as SupportedFileExtension)
 						}
-						className="flex flex-wrap gap-3"
+						value={config.allowedExtensions[0] ?? ""}
 					>
 						{SUPPORTED_FILE_EXTENSIONS.map((ext) => (
-							<div key={ext} className="flex items-center gap-2">
+							<div className="flex items-center gap-2" key={ext}>
 								<RadioGroupItem id={`ext-${ext}`} value={ext} />
 								<Label
-									htmlFor={`ext-${ext}`}
 									className="text-sm uppercase cursor-pointer"
+									htmlFor={`ext-${ext}`}
 								>
 									{ext}
 								</Label>
@@ -94,21 +94,21 @@ export function TypeFormatSection({
 
 					<div className="space-y-2 pt-2">
 						<Label
-							htmlFor={`max-file-size-${config.contentFormat}`}
 							className="text-sm"
+							htmlFor={`max-file-size-${config.contentFormat}`}
 						>
 							Max file size (MB)
 						</Label>
 						<Input
+							className="max-w-32"
 							id={`max-file-size-${config.contentFormat}`}
-							type="number"
-							min={1}
 							max={100}
-							value={config.maxFileSizeMb}
+							min={1}
 							onChange={(e) =>
 								onChange("maxFileSizeMb", parseInt(e.target.value, 10) || 10)
 							}
-							className="max-w-32"
+							type="number"
+							value={config.maxFileSizeMb}
 						/>
 					</div>
 				</div>

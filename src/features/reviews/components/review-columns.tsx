@@ -144,8 +144,8 @@ export const reviewColumns: AppColumnDef<ReviewerAssignment>[] = [
 		header: ({ column }) => (
 			<DataTableColumnHeader
 				column={column}
-				title="Status"
 				filterOptions={[...assignmentStatusFilterOptions]}
+				title="Status"
 			/>
 		),
 		cell: ({ row }) => {
@@ -185,8 +185,8 @@ export const reviewColumns: AppColumnDef<ReviewerAssignment>[] = [
 		header: ({ column }) => (
 			<DataTableColumnHeader
 				column={column}
-				title="Type"
 				filterOptions={[...typeFilterOptions]}
+				title="Type"
 			/>
 		),
 		cell: ({ row }) => {
@@ -212,20 +212,20 @@ export const reviewColumns: AppColumnDef<ReviewerAssignment>[] = [
 				<div className="flex justify-end">
 					<Button
 						asChild
-						variant={isCompleted ? "outline" : "default"}
 						size="sm"
+						variant={isCompleted ? "outline" : "default"}
 					>
 						{isCompleted ? (
 							<Link
-								to="/reviews/$assignmentId"
 								params={{ assignmentId: assignment.id }}
+								to="/reviews/$assignmentId"
 							>
 								View Review
 							</Link>
 						) : (
 							<Link
-								to="/reviews/$assignmentId"
 								params={{ assignmentId: assignment.id }}
+								to="/reviews/$assignmentId"
 							>
 								Submit Review
 							</Link>

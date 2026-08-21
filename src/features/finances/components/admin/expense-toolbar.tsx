@@ -48,16 +48,16 @@ export function ExpenseToolbar({
 		<div className="flex flex-wrap items-center gap-2">
 			{CHIPS.map(({ key, label, activeClass }) => (
 				<button
-					key={key}
-					type="button"
-					onClick={() => onFilter(key)}
-					data-testid={`expense-filter-${key}`}
 					className={cn(
 						"rounded-md border px-2.5 py-1 text-xs transition-colors",
 						filter === key
 							? `border-transparent ${activeClass}`
 							: "border-border text-muted-foreground hover:bg-muted",
 					)}
+					data-testid={`expense-filter-${key}`}
+					key={key}
+					onClick={() => onFilter(key)}
+					type="button"
 				>
 					{label}{" "}
 					<span className="font-medium tabular-nums">{stats[key].count}</span>
@@ -75,9 +75,9 @@ export function ExpenseToolbar({
 						{ value: "amount", label: "Amount" },
 						{ value: "name", label: "Name" },
 					]}
-					value={sort}
 					// SAFETY: the select renders only ExpenseSort options.
 					onValueChange={(v) => onSort(v as ExpenseSort)}
+					value={sort}
 				>
 					<SelectTrigger className="w-32" data-testid="expense-sort">
 						<SelectValue />

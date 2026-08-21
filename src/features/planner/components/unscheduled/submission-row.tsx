@@ -41,9 +41,9 @@ function SubmissionRowHeader({
 }) {
 	return (
 		<button
-			type="button"
-			onClick={onToggleExpand}
 			className="block w-full text-left"
+			onClick={onToggleExpand}
+			type="button"
 		>
 			<div className="flex items-start gap-1.5">
 				{showTypeBadge && (
@@ -79,8 +79,8 @@ function SubmissionKeywords({
 		<div className="flex flex-wrap gap-1">
 			{keywords.map((k) => (
 				<span
-					key={k.id}
 					className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
+					key={k.id}
 				>
 					{k.name}
 				</span>
@@ -99,11 +99,11 @@ function SubmissionRowDetails({ s }: { s: UnscheduledSubmission }) {
 			)}
 			{s.file && (
 				<a
-					href={`/api/files/${s.file.id}`}
-					download={s.file.originalName}
-					onClick={(e) => e.stopPropagation()}
-					data-testid={`unscheduled-download-${s.id}`}
 					className="inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] text-muted-foreground hover:bg-muted hover:text-foreground"
+					data-testid={`unscheduled-download-${s.id}`}
+					download={s.file.originalName}
+					href={`/api/files/${s.file.id}`}
+					onClick={(e) => e.stopPropagation()}
 				>
 					<IconDownload size={10} />
 					<span className="max-w-[180px] truncate">{s.file.originalName}</span>
@@ -136,25 +136,25 @@ export function SubmissionRow({
 
 	return (
 		<li
+			className={submissionRowClassName({ dragging, selected, leaving })}
 			data-testid={`unscheduled-row-${s.id}`}
 			draggable
 			onDoubleClick={onOpenReader}
+			onDragEnd={(e) => {
+				if (e.dataTransfer.dropEffect !== "none") setLeaving(true);
+				onDragEnd();
+			}}
 			onDragStart={(e) => {
 				e.dataTransfer.setData("submissionid", s.id);
 				e.dataTransfer.effectAllowed = "copy";
 				onDragStart();
 			}}
-			onDragEnd={(e) => {
-				if (e.dataTransfer.dropEffect !== "none") setLeaving(true);
-				onDragEnd();
-			}}
-			className={submissionRowClassName({ dragging, selected, leaving })}
 		>
 			{selectMode && (
 				<input
-					type="checkbox"
 					aria-label={`Select ${s.title}`}
 					checked={selected}
+					className="mt-1 shrink-0 accent-primary"
 					onChange={() => onToggleSelect(false)}
 					onClick={(e) => {
 						e.stopPropagation();
@@ -163,22 +163,22 @@ export function SubmissionRow({
 							onToggleSelect(true);
 						}
 					}}
-					className="mt-1 shrink-0 accent-primary"
+					type="checkbox"
 				/>
 			)}
 			<IconGripVertical
-				size={12}
 				className="mt-1 shrink-0 text-muted-foreground/40 group-hover:text-muted-foreground"
+				size={12}
 			/>
 			<div className="min-w-0 flex-1">
 				<SubmissionRowHeader
-					title={s.title}
-					type={s.type}
-					showTypeBadge={showTypeBadge}
-					expanded={expanded}
 					authorsSummary={formatAuthorsSummary(s.authors)}
+					expanded={expanded}
 					hasAuthors={s.authors.length > 0}
 					onToggleExpand={onToggleExpand}
+					showTypeBadge={showTypeBadge}
+					title={s.title}
+					type={s.type}
 				/>
 				{expanded && <SubmissionRowDetails s={s} />}
 			</div>

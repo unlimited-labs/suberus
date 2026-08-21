@@ -21,21 +21,21 @@ export function ReviewCard({
 }: ReviewCardProps) {
 	return (
 		<SectionCard
-			title={review.reviewerName}
-			description={
-				showRound ? (
-					<span className="text-xs">Round {review.round}</span>
-				) : undefined
-			}
 			action={
 				<Badge
-					variant="outline"
 					className={lookup(reviewDecisionColors, review.decision)}
+					variant="outline"
 				>
 					{review.decision.replace(/_/g, " ")}
 				</Badge>
 			}
 			contentClassName="space-y-4"
+			description={
+				showRound ? (
+					<span className="text-xs">Round {review.round}</span>
+				) : undefined
+			}
+			title={review.reviewerName}
 		>
 			{enableScoring &&
 				review.scores &&
@@ -45,8 +45,8 @@ export function ReviewCard({
 						<div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
 							{Object.entries(review.scores).map(([name, score]) => (
 								<div
-									key={name}
 									className="flex justify-between rounded bg-muted/50 px-2 py-1 text-sm"
+									key={name}
 								>
 									<span className="mr-2 truncate text-muted-foreground">
 										{name}
@@ -82,8 +82,8 @@ export function ReviewCard({
 				<div className="border-t pt-3">
 					<p className="mb-1 text-sm font-medium">Attachment</p>
 					<a
-						href={`/api/files/${review.attachment.id}`}
 						className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+						href={`/api/files/${review.attachment.id}`}
 					>
 						<IconDownload className="size-4" />
 						{review.attachment.originalName}

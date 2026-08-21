@@ -37,8 +37,8 @@ export function SubmissionExportButton({ table }: SubmissionExportButtonProps) {
 	const href = `/api/admin/submissions/export${query ? `?${query}` : ""}`;
 
 	return (
-		<Button variant="outline" size="sm" asChild>
-			<a href={href} target="_blank" rel="noreferrer">
+		<Button asChild size="sm" variant="outline">
+			<a href={href} rel="noreferrer" target="_blank">
 				<IconDownload className="mr-2 size-4" />
 				Export ZIP
 			</a>

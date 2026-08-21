@@ -84,8 +84,8 @@ function RegistrationClosedPage() {
 				<p className="text-sm text-muted-foreground">
 					If you already have an account, you can{" "}
 					<Link
-						to="/login"
 						className="font-medium text-primary hover:underline"
+						to="/login"
 					>
 						sign in
 					</Link>
@@ -147,42 +147,42 @@ function RegisterForm() {
 
 	return (
 		<AuthCard
-			wide
-			title="Registration"
-			steps={STEPS}
 			currentStep={currentStep}
 			mobileHeaderExtra={
 				<p className="text-sm text-muted-foreground">
 					Step {currentStep} of 3: {STEPS[currentStep - 1].title}
 				</p>
 			}
+			steps={STEPS}
+			title="Registration"
+			wide
 		>
 			<div className="mb-4 flex gap-2 lg:hidden">
 				{STEPS.map((step) => (
 					<div
-						key={step.id}
 						className={cn(
 							"h-1.5 flex-1 rounded-full transition-colors",
 							step.id <= currentStep ? "bg-primary" : "bg-muted",
 						)}
+						key={step.id}
 					/>
 				))}
 			</div>
 
 			<form
+				className="flex flex-1 flex-col"
 				onSubmit={(e) => {
 					e.preventDefault();
 					e.stopPropagation();
 				}}
-				className="flex flex-1 flex-col"
 			>
 				<div className="flex-1 space-y-3">
 					{currentStep === 1 && (
 						<RegisterStep1
+							accountType={accountType}
+							exhibitorSignupAvailable={exhibitorSignupAvailable}
 							form={form}
 							invitation={invitation}
-							exhibitorSignupAvailable={exhibitorSignupAvailable}
-							accountType={accountType}
 							onAccountTypeChange={setAccountType}
 						/>
 					)}
@@ -194,9 +194,9 @@ function RegisterForm() {
 					{currentStep === 3 && (
 						<RegisterStep3
 							form={form}
+							onOpenTos={() => setTosOpen(true)}
 							surveyQuestions={visibleQuestions}
 							tosContent={tosContent}
-							onOpenTos={() => setTosOpen(true)}
 						/>
 					)}
 				</div>
@@ -204,10 +204,10 @@ function RegisterForm() {
 				<div className="mt-4 flex gap-2">
 					{!isFirst && (
 						<Button
+							className="h-9 flex-1"
+							onClick={prev}
 							type="button"
 							variant="outline"
-							onClick={prev}
-							className="h-9 flex-1"
 						>
 							<IconArrowLeft className="mr-2 size-4" />
 							Back
@@ -215,7 +215,7 @@ function RegisterForm() {
 					)}
 
 					{!isLast ? (
-						<Button type="button" onClick={next} className="h-9 flex-1">
+						<Button className="h-9 flex-1" onClick={next} type="button">
 							Continue
 							<IconArrowRight className="ml-2 size-4" />
 						</Button>
@@ -223,10 +223,10 @@ function RegisterForm() {
 						<form.Subscribe selector={(s) => s.isSubmitting}>
 							{(isSubmitting) => (
 								<Button
-									type="button"
-									onClick={handleSubmit}
-									disabled={isSubmitting}
 									className="h-9 flex-1"
+									disabled={isSubmitting}
+									onClick={handleSubmit}
+									type="button"
 								>
 									{isSubmitting ? "Creating account..." : "Create account"}
 								</Button>
@@ -238,16 +238,16 @@ function RegisterForm() {
 
 			<p className="mt-3 text-center text-sm text-muted-foreground">
 				Already have an account?{" "}
-				<Link to="/login" className="font-medium text-primary hover:underline">
+				<Link className="font-medium text-primary hover:underline" to="/login">
 					Sign in
 				</Link>
 			</p>
 
 			{tosContent && (
 				<TosModal
-					open={tosOpen}
 					content={tosContent}
 					onOpenChange={setTosOpen}
+					open={tosOpen}
 				/>
 			)}
 		</AuthCard>

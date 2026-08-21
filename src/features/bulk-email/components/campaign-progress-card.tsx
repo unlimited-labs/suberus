@@ -38,9 +38,9 @@ export function CampaignProgressCard({
 
 	return (
 		<SectionCard
-			variant="elevated"
-			title="Sending progress"
 			icon={IconProgressCheck}
+			title="Sending progress"
+			variant="elevated"
 		>
 			<div className="space-y-2" data-testid="campaign-progress">
 				<Progress value={progressValue(job)} />

@@ -40,16 +40,16 @@ export function DetailsCard({
 	const { formatDate } = useDateFormat();
 
 	return (
-		<SectionCard title="Details" contentClassName="space-y-3 text-sm">
+		<SectionCard contentClassName="space-y-3 text-sm" title="Details">
 			<div className="flex items-center justify-between gap-2">
 				<span className="flex items-center gap-1.5 text-muted-foreground">
 					<IconCircleDot className="size-4" />
 					Status
 				</span>
 				<Badge
+					className="-mr-2"
 					data-testid="submission-status"
 					variant={statusVariants[submission.status] ?? "secondary"}
-					className="-mr-2"
 				>
 					{statusLabels[submission.status] ?? submission.status}
 				</Badge>
@@ -74,10 +74,10 @@ export function DetailsCard({
 					Submitter
 				</span>
 				<Link
-					to="/admin/users/$id"
-					params={{ id: submitter.id }}
-					data-testid="submission-submitter-link"
 					className="flex items-center gap-1 font-medium hover:text-primary hover:underline"
+					data-testid="submission-submitter-link"
+					params={{ id: submitter.id }}
+					to="/admin/users/$id"
 				>
 					{`${submitter.firstName ?? ""} ${submitter.lastName ?? ""}`.trim() ||
 						"—"}
@@ -95,7 +95,6 @@ export function DetailsCard({
 							{ value: "none", label: "None" },
 							...availableTracks.map((s) => ({ value: s.id, label: s.name })),
 						]}
-						value={submission.trackId || "none"}
 						onValueChange={async (value) => {
 							try {
 								await updateSubmissionTrackFn({
@@ -110,6 +109,7 @@ export function DetailsCard({
 								toast.error("Failed to update track");
 							}
 						}}
+						value={submission.trackId || "none"}
 					>
 						<SelectTrigger className="w-full">
 							<SelectValue placeholder="No track" />

@@ -92,7 +92,7 @@ function AutoPlanPage() {
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconWand} title="Auto-plan sessions">
-				<Button variant="ghost" size="sm" onClick={goBack} className="gap-1.5">
+				<Button className="gap-1.5" onClick={goBack} size="sm" variant="ghost">
 					<IconArrowLeft className="h-4 w-4" />
 					Back to planner
 				</Button>
@@ -102,8 +102,8 @@ function AutoPlanPage() {
 				<div className="mx-auto max-w-5xl px-8 py-10">
 					{!jobId && !startPending && !errorMsg && (
 						<IntroView
-							onGenerate={generate}
 							onCancel={goBack}
+							onGenerate={generate}
 							pending={startPending}
 						/>
 					)}
@@ -124,10 +124,10 @@ function AutoPlanPage() {
 
 					{proposal && (
 						<ResultsView
-							proposal={proposal}
-							onDiscard={goBack}
-							onApply={applyPlan}
 							applying={applying}
+							onApply={applyPlan}
+							onDiscard={goBack}
+							proposal={proposal}
 						/>
 					)}
 				</div>
@@ -165,10 +165,10 @@ function IntroView({
 				</p>
 			</div>
 			<div className="flex gap-3">
-				<Button variant="ghost" onClick={onCancel} disabled={pending}>
+				<Button disabled={pending} onClick={onCancel} variant="ghost">
 					Cancel
 				</Button>
-				<Button onClick={onGenerate} disabled={pending} className="gap-1.5">
+				<Button className="gap-1.5" disabled={pending} onClick={onGenerate}>
 					<IconSparkles className="h-4 w-4" />
 					Generate proposal
 				</Button>
@@ -206,7 +206,7 @@ function ProgressView({
 						{overallPct}%
 					</span>
 				</div>
-				<Progress value={overallPct} className="h-2" />
+				<Progress className="h-2" value={overallPct} />
 			</div>
 
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -215,10 +215,10 @@ function ProgressView({
 						i < activeIdx ? "done" : i === activeIdx ? "running" : "pending";
 					return (
 						<StageCard
+							current={status === "running" ? current : 0}
 							key={spec.key}
 							spec={spec}
 							status={status}
-							current={status === "running" ? current : 0}
 							total={status === "running" ? total : 0}
 						/>
 					);
@@ -315,7 +315,7 @@ function StageCard({
 							st.iconWrap,
 						)}
 					>
-						<StageIcon status={status} icon={spec.icon} />
+						<StageIcon icon={spec.icon} status={status} />
 					</span>
 				</div>
 
@@ -372,7 +372,7 @@ function ErrorView({
 				<AlertTitle>Auto-plan failed</AlertTitle>
 				<AlertDescription>{message}</AlertDescription>
 			</Alert>
-			<Button variant="outline" onClick={onBack} className="gap-1.5">
+			<Button className="gap-1.5" onClick={onBack} variant="outline">
 				<IconArrowLeft className="h-4 w-4" />
 				Back to planner
 			</Button>
@@ -408,13 +408,13 @@ function ResultsView({
 					</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
-					<Badge variant="secondary" className="h-6">
+					<Badge className="h-6" variant="secondary">
 						{proposal.stats.submissionCount} presentations
 					</Badge>
-					<Badge variant="secondary" className="h-6">
+					<Badge className="h-6" variant="secondary">
 						{proposal.stats.sessionCount} sessions
 					</Badge>
-					<Badge variant="outline" className="h-6">
+					<Badge className="h-6" variant="outline">
 						target: {proposal.stats.targetPerSession} ({proposal.stats.sizeMin}–
 						{proposal.stats.sizeMax})
 					</Badge>
@@ -431,7 +431,7 @@ function ResultsView({
 
 			<div className="grid grid-cols-1 gap-3 md:grid-cols-2">
 				{proposal.sessions.map((s, idx) => (
-					<SessionCard key={s.sessionId} session={s} index={idx + 1} />
+					<SessionCard index={idx + 1} key={s.sessionId} session={s} />
 				))}
 			</div>
 
@@ -441,10 +441,10 @@ function ResultsView({
 						Nothing is saved yet.
 					</span>
 					<div className="flex gap-2">
-						<Button variant="ghost" onClick={onDiscard} disabled={applying}>
+						<Button disabled={applying} onClick={onDiscard} variant="ghost">
 							Discard
 						</Button>
-						<Button onClick={onApply} disabled={applying} className="gap-1.5">
+						<Button className="gap-1.5" disabled={applying} onClick={onApply}>
 							{applying ? (
 								<>
 									<IconLoader2 className="h-4 w-4 animate-spin" />
@@ -512,7 +512,7 @@ function SessionCard({
 			</div>
 			<ul className="space-y-1 border-t pt-3 text-xs text-muted-foreground">
 				{s.presentations.map((p, i) => (
-					<li key={p.submissionId} className="flex gap-2.5">
+					<li className="flex gap-2.5" key={p.submissionId}>
 						<span className="w-5 shrink-0 text-right tabular-nums opacity-50">
 							{i + 1}.
 						</span>

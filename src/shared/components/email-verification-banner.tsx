@@ -42,10 +42,10 @@ export function EmailVerificationBanner() {
 			<AlertDescription className="text-yellow-700 dark:text-yellow-400">
 				Your email is not verified. Some features may be limited.{" "}
 				<button
-					type="button"
-					onClick={resend}
-					disabled={disabled}
 					className="inline-flex items-center gap-1 font-medium underline underline-offset-2 hover:no-underline disabled:opacity-50"
+					disabled={disabled}
+					onClick={resend}
+					type="button"
 				>
 					<IconRefresh
 						className={`size-3 ${isResending ? "animate-spin" : ""}`}
@@ -59,10 +59,10 @@ export function EmailVerificationBanner() {
 			</AlertDescription>
 			<AlertAction>
 				<Button
-					variant="ghost"
-					size="icon"
 					className="size-6 text-yellow-700 hover:bg-yellow-500/20 hover:text-yellow-800 dark:text-yellow-400"
 					onClick={handleDismiss}
+					size="icon"
+					variant="ghost"
 				>
 					<IconX className="size-4" />
 					<span className="sr-only">Dismiss</span>

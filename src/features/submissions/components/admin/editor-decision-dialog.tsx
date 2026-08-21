@@ -127,7 +127,7 @@ export function EditorDecisionDialog({
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={handleOpenChange}>
+		<Dialog onOpenChange={handleOpenChange} open={open}>
 			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
 				<DialogHeader>
 					<DialogTitle>Editor Decision</DialogTitle>
@@ -143,19 +143,19 @@ export function EditorDecisionDialog({
 							<div className="space-y-2 max-h-48 overflow-y-auto">
 								{reviews.map((review) => (
 									<div
-										key={review.reviewerName}
 										className="rounded-lg border p-3 space-y-2"
+										key={review.reviewerName}
 									>
 										<div className="flex items-center justify-between">
 											<span className="font-medium text-sm">
 												{review.reviewerName}
 											</span>
 											<Badge
-												variant="outline"
 												className={lookup(
 													reviewDecisionColors,
 													review.decision,
 												)}
+												variant="outline"
 											>
 												{review.decision.replace(/_/g, " ")}
 											</Badge>
@@ -179,15 +179,15 @@ export function EditorDecisionDialog({
 								const isSelected = selectedDecision === option.value;
 								return (
 									<button
-										key={option.value}
-										type="button"
-										onClick={() => setSelectedDecision(option.value)}
 										className={cn(
 											"flex flex-col gap-2 p-4 rounded-lg border-2 transition-all text-left",
 											isSelected
 												? option.colorClass
 												: "border-border hover:border-primary/50",
 										)}
+										key={option.value}
+										onClick={() => setSelectedDecision(option.value)}
+										type="button"
 									>
 										<div className="flex items-center gap-2">
 											<Icon className="size-5" />
@@ -211,10 +211,10 @@ export function EditorDecisionDialog({
 						</Label>
 						<Textarea
 							id="reasoning"
-							value={reasoning}
 							onChange={(e) => setReasoning(e.target.value)}
 							placeholder="Explain your decision rationale..."
 							rows={3}
+							value={reasoning}
 						/>
 					</div>
 
@@ -227,25 +227,25 @@ export function EditorDecisionDialog({
 						</Label>
 						<Textarea
 							id="letter"
-							value={letterToAuthor}
 							onChange={(e) => setLetterToAuthor(e.target.value)}
 							placeholder="Compose a message to the author(s)..."
 							rows={4}
+							value={letterToAuthor}
 						/>
 					</div>
 				</div>
 
 				<DialogFooter>
 					<Button
-						variant="outline"
-						onClick={() => onOpenChange(false)}
 						disabled={isSubmitting}
+						onClick={() => onOpenChange(false)}
+						variant="outline"
 					>
 						Cancel
 					</Button>
 					<Button
-						onClick={handleSubmit}
 						disabled={!selectedDecision || isSubmitting}
+						onClick={handleSubmit}
 					>
 						{isSubmitting && (
 							<IconLoader2 className="mr-2 size-4 animate-spin" />

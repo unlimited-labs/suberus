@@ -72,21 +72,21 @@ function LayoutToggle({
 	return (
 		<div className="hidden gap-1 md:flex">
 			<Button
-				type="button"
-				size="sm"
-				variant={layout === "split" ? "default" : "outline"}
-				onClick={() => onLayoutChange("split")}
 				data-testid="diff-layout-split"
+				onClick={() => onLayoutChange("split")}
+				size="sm"
+				type="button"
+				variant={layout === "split" ? "default" : "outline"}
 			>
 				<IconColumns className="size-4" />
 				Side-by-side
 			</Button>
 			<Button
-				type="button"
-				size="sm"
-				variant={layout === "inline" ? "default" : "outline"}
-				onClick={() => onLayoutChange("inline")}
 				data-testid="diff-layout-inline"
+				onClick={() => onLayoutChange("inline")}
+				size="sm"
+				type="button"
+				variant={layout === "inline" ? "default" : "outline"}
 			>
 				<IconLayoutRows className="size-4" />
 				Inline
@@ -113,8 +113,8 @@ function FileRow({
 				{label}: {name}
 			</span>
 			{fileId && (
-				<Button variant="outline" size="sm" className="ml-auto gap-2" asChild>
-					<a href={`/api/files/${fileId}`} data-testid={testId}>
+				<Button asChild className="ml-auto gap-2" size="sm" variant="outline">
+					<a data-testid={testId} href={`/api/files/${fileId}`}>
 						<IconDownload className="size-4" />
 						Download
 					</a>
@@ -144,15 +144,15 @@ function FileRows({
 	return (
 		<div className="space-y-2 text-sm">
 			<FileRow
+				fileId={baseFileId}
 				label={baseLabel}
 				name={baseName}
-				fileId={baseFileId}
 				testId="compare-download-base"
 			/>
 			<FileRow
+				fileId={compareFileId}
 				label={compareLabel}
 				name={compareName}
-				fileId={compareFileId}
 				testId="compare-download-compare"
 			/>
 			{isFileChanged && (
@@ -191,9 +191,9 @@ function FieldDiff({
 	if (layout === "split") {
 		return (
 			<SideBySideDiffView
-				segments={segments}
-				oldLabel={baseLabel}
 				newLabel={compareLabel}
+				oldLabel={baseLabel}
+				segments={segments}
 			/>
 		);
 	}
@@ -270,12 +270,12 @@ function VersionCompareBody({
 				<CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
 					<div className="sm:max-w-md sm:flex-1">
 						<VersionCompareSelector
-							versions={sorted}
-							currentVersion={currentVersionNumber}
 							base={base}
 							compare={compare}
+							currentVersion={currentVersionNumber}
 							onBaseChange={onBaseChange}
 							onCompareChange={onCompareChange}
+							versions={sorted}
 						/>
 					</div>
 					<LayoutToggle layout={layout} onLayoutChange={onLayoutChange} />
@@ -300,11 +300,11 @@ function VersionCompareBody({
 
 			<SectionCard title="Title">
 				<FieldDiff
-					layout={layout}
-					segments={titleSegments}
 					baseLabel={baseLabel}
 					compareLabel={compareLabel}
 					emptyLabel="No title."
+					layout={layout}
+					segments={titleSegments}
 				/>
 			</SectionCard>
 
@@ -315,8 +315,8 @@ function VersionCompareBody({
 						compare={compareV.authors ?? []}
 						emptyLabel="No authors."
 						layout={layout}
-						oldLabel={baseLabel}
 						newLabel={compareLabel}
+						oldLabel={baseLabel}
 					/>
 				</SectionCard>
 			)}
@@ -328,20 +328,20 @@ function VersionCompareBody({
 						compare={compareV.keywords ?? []}
 						emptyLabel="No keywords."
 						layout={layout}
-						oldLabel={baseLabel}
 						newLabel={compareLabel}
+						oldLabel={baseLabel}
 					/>
 				</SectionCard>
 			)}
 
 			<SectionCard title="Attached file">
 				<FileRows
-					baseLabel={baseLabel}
-					compareLabel={compareLabel}
-					baseName={fileNameOf(baseV)}
-					compareName={fileNameOf(compareV)}
 					baseFileId={baseV.file?.id}
+					baseLabel={baseLabel}
+					baseName={fileNameOf(baseV)}
 					compareFileId={compareV.file?.id}
+					compareLabel={compareLabel}
+					compareName={fileNameOf(compareV)}
 					isFileChanged={isFileChanged}
 				/>
 			</SectionCard>
@@ -357,23 +357,23 @@ function VersionCompareBody({
 			{(baseV.content || compareV.content) && (
 				<SectionCard title="Content">
 					<FieldDiff
-						layout={layout}
-						segments={contentSegments}
 						baseLabel={baseLabel}
 						compareLabel={compareLabel}
 						emptyLabel="No content."
+						layout={layout}
+						segments={contentSegments}
 					/>
 				</SectionCard>
 			)}
 
 			<FileChangesPanel
+				baseLabel={baseLabel}
 				baseV={baseV}
+				compareLabel={compareLabel}
 				compareV={compareV}
-				samePair={samePair}
 				isFileChanged={isFileChanged}
 				layout={layout}
-				baseLabel={baseLabel}
-				compareLabel={compareLabel}
+				samePair={samePair}
 			/>
 		</div>
 	);
@@ -403,11 +403,11 @@ function FileChangesPanel({
 			title={layout === "split" ? "File contents" : "File changes (redline)"}
 		>
 			<FileRedlineView
-				oldVersionId={baseV.id}
-				newVersionId={compareV.id}
 				layout={layout}
-				oldLabel={baseLabel}
 				newLabel={compareLabel}
+				newVersionId={compareV.id}
+				oldLabel={baseLabel}
+				oldVersionId={baseV.id}
 			/>
 		</SectionCard>
 	);
@@ -432,9 +432,9 @@ export function VersionCompare(props: VersionCompareProps) {
 	return (
 		<VersionCompareBody
 			{...props}
-			sorted={sorted}
 			baseV={baseV}
 			compareV={compareV}
+			sorted={sorted}
 		/>
 	);
 }

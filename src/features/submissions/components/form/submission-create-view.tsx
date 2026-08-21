@@ -119,14 +119,14 @@ export function SubmissionCreateView(props: SubmissionCreateViewProps) {
 			<PageHeader icon={IconFileText} title={title} />
 			<div className="flex-1 overflow-auto p-6">
 				<SubmissionForm
-					onSubmit={(data) => createAndUploadFile(data, false)}
-					onSaveDraft={(data) => createAndUploadFile(data, true)}
+					availableTracks={availableTracks}
+					extractionEnabled={extractionSettings.enabled}
+					guidelines={submissionGuidelines}
 					initialData={initialData}
+					onSaveDraft={(data) => createAndUploadFile(data, true)}
+					onSubmit={(data) => createAndUploadFile(data, false)}
 					typeConfigs={typeConfigs}
 					validationSettings={validationSettings}
-					guidelines={submissionGuidelines}
-					extractionEnabled={extractionSettings.enabled}
-					availableTracks={availableTracks}
 				/>
 			</div>
 		</div>

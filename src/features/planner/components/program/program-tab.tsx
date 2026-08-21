@@ -79,9 +79,9 @@ function PlannerSettingsSection({
 
 	return (
 		<SettingsSection
+			description="Settings used by the program planner to organize presentations into sessions across rooms and days"
 			icon={IconClock}
 			title="Planner"
-			description="Settings used by the program planner to organize presentations into sessions across rooms and days"
 		>
 			<form
 				noValidate
@@ -98,11 +98,11 @@ function PlannerSettingsSection({
 							<form.Field name="dayStart">
 								{(field) => (
 									<Input
+										className="w-32"
 										id="dayStart"
+										onChange={(e) => field.handleChange(e.target.value)}
 										type="time"
 										value={field.state.value}
-										onChange={(e) => field.handleChange(e.target.value)}
-										className="w-32"
 									/>
 								)}
 							</form.Field>
@@ -110,11 +110,11 @@ function PlannerSettingsSection({
 							<form.Field name="dayEnd">
 								{(field) => (
 									<Input
+										className="w-32"
 										id="dayEnd"
+										onChange={(e) => field.handleChange(e.target.value)}
 										type="time"
 										value={field.state.value}
-										onChange={(e) => field.handleChange(e.target.value)}
-										className="w-32"
 									/>
 								)}
 							</form.Field>
@@ -131,16 +131,16 @@ function PlannerSettingsSection({
 							<form.Field name="defaultPresentationMin">
 								{(field) => (
 									<Input
+										className="w-24"
 										id="defaultPresentationMin"
-										type="number"
-										min={5}
 										max={480}
-										step={5}
-										value={field.state.value}
+										min={5}
 										onChange={(e) =>
 											field.handleChange(Number(e.target.value) || 15)
 										}
-										className="w-24"
+										step={5}
+										type="number"
+										value={field.state.value}
 									/>
 								)}
 							</form.Field>
@@ -156,16 +156,16 @@ function PlannerSettingsSection({
 							<form.Field name="authorBufferMin">
 								{(field) => (
 									<Input
+										className="w-24"
 										id="authorBufferMin"
-										type="number"
-										min={0}
 										max={240}
-										step={5}
-										value={field.state.value}
+										min={0}
 										onChange={(e) =>
 											field.handleChange(Number(e.target.value) || 0)
 										}
-										className="w-24"
+										step={5}
+										type="number"
+										value={field.state.value}
 									/>
 								)}
 							</form.Field>
@@ -184,16 +184,16 @@ function PlannerSettingsSection({
 							<form.Field name="reminderLeadMin">
 								{(field) => (
 									<Input
+										className="w-24"
+										data-testid="reminder-lead-input"
 										id="reminderLeadMin"
-										type="number"
-										min={1}
 										max={120}
-										value={field.state.value}
+										min={1}
 										onChange={(e) =>
 											field.handleChange(Number(e.target.value) || 5)
 										}
-										className="w-24"
-										data-testid="reminder-lead-input"
+										type="number"
+										value={field.state.value}
 									/>
 								)}
 							</form.Field>
@@ -219,9 +219,9 @@ function PlannerSettingsSection({
 						<form.Field name="autoplanEnabled">
 							{(field) => (
 								<Switch
-									id="autoplanEnabled"
 									checked={field.state.value}
 									disabled={!llmAvailable}
+									id="autoplanEnabled"
 									onCheckedChange={(v) => field.handleChange(v === true)}
 								/>
 							)}
@@ -239,9 +239,9 @@ function PlannerSettingsSection({
 						</span>
 					</div>
 					<LlmAutoplanNote
-						status={llmHealth.status}
-						message={llmHealth.message}
 						llmAvailable={llmAvailable}
+						message={llmHealth.message}
+						status={llmHealth.status}
 					/>
 				</div>
 				<div className="mt-6 flex justify-end">
@@ -294,26 +294,26 @@ function ProgramTracksSection({
 
 	return (
 		<SettingsSection
+			description="Optional color tags for grouping related sessions (e.g. a multi-part series). Sessions can exist without a track."
 			icon={IconColorSwatch}
 			title="Program Tracks"
-			description="Optional color tags for grouping related sessions (e.g. a multi-part series). Sessions can exist without a track."
 		>
 			<div className="mb-4 flex justify-end gap-2">
 				<Button
-					variant="outline"
-					onClick={handleImport}
-					disabled={importing}
 					data-testid="import-program-tracks-from-intake"
+					disabled={importing}
+					onClick={handleImport}
+					variant="outline"
 				>
 					<IconDownload className="mr-2 size-4" />
 					Import from intake
 				</Button>
-				<Button onClick={onCreate} data-testid="create-program-track">
+				<Button data-testid="create-program-track" onClick={onCreate}>
 					<IconPlus className="mr-2 size-4" />
 					Create Program Track
 				</Button>
 			</div>
-			<ProgramTracksList tracks={tracks} onEdit={onEdit} onUpdate={onUpdate} />
+			<ProgramTracksList onEdit={onEdit} onUpdate={onUpdate} tracks={tracks} />
 		</SettingsSection>
 	);
 }
@@ -332,10 +332,10 @@ function RoomDialogSlot({
 	return (
 		<RoomDialog
 			key={editingRoom?.id ?? "new-room"}
-			open={open}
 			onOpenChange={onClose}
-			room={editingRoom}
 			onSuccess={onSuccess}
+			open={open}
+			room={editingRoom}
 		/>
 	);
 }
@@ -354,10 +354,10 @@ function TrackDialogSlot({
 	return (
 		<ProgramTrackDialog
 			key={editingTrack?.id ?? "new-track"}
-			open={open}
 			onOpenChange={onClose}
-			track={editingTrack}
 			onSuccess={onSuccess}
+			open={open}
+			track={editingTrack}
 		/>
 	);
 }
@@ -405,44 +405,44 @@ export function ProgramTab({
 			<ProgramThemeSection />
 
 			<SettingsSection
+				description="Physical locations where sessions take place. Order controls column placement in the planner."
 				icon={IconBuildingCommunity}
 				title="Rooms"
-				description="Physical locations where sessions take place. Order controls column placement in the planner."
 			>
 				<div className="mb-4 flex justify-end">
 					<Button
-						onClick={() => setRoomDialogOpen(true)}
 						data-testid="create-room"
+						onClick={() => setRoomDialogOpen(true)}
 					>
 						<IconPlus className="mr-2 size-4" />
 						Create Room
 					</Button>
 				</div>
 				<RoomsList
-					rooms={initialRooms}
 					onEdit={openRoomEdit}
 					onUpdate={onRoomsUpdate}
+					rooms={initialRooms}
 				/>
 			</SettingsSection>
 
 			<ProgramTracksSection
-				tracks={initialProgramTracks}
-				onUpdate={onProgramTracksUpdate}
-				onEdit={openTrackEdit}
 				onCreate={() => setTrackDialogOpen(true)}
+				onEdit={openTrackEdit}
+				onUpdate={onProgramTracksUpdate}
+				tracks={initialProgramTracks}
 			/>
 
 			<RoomDialogSlot
 				editingRoom={editingRoom}
-				open={roomDialogOpen}
 				onClose={closeRoomDialog}
 				onSuccess={onRoomsUpdate}
+				open={roomDialogOpen}
 			/>
 			<TrackDialogSlot
 				editingTrack={editingTrack}
-				open={trackDialogOpen}
 				onClose={closeTrackDialog}
 				onSuccess={onProgramTracksUpdate}
+				open={trackDialogOpen}
 			/>
 		</div>
 	);

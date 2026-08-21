@@ -57,21 +57,21 @@ export function PresentationPreviewDialog({
 }) {
 	const framed = resolveProgramTheme(themeId).chrome === "framed";
 	return (
-		<Dialog open={!!target} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={!!target}>
 			<DialogContent
+				className="bg-background text-foreground font-[var(--prog-font-body)] sm:max-w-2xl"
 				data-program-theme={themeId}
 				data-testid="presentation-preview"
-				className="bg-background text-foreground font-[var(--prog-font-body)] sm:max-w-2xl"
 			>
 				{target && (
 					<PreviewBody
-						target={target}
-						framed={framed}
 						canInteract={canInteract}
+						framed={framed}
+						initialAuthorOrderIndex={initialAuthorOrderIndex}
 						isFavorite={isFavorite}
 						onToggleFavorite={onToggleFavorite}
 						showAuthorInfo={showAuthorInfo}
-						initialAuthorOrderIndex={initialAuthorOrderIndex}
+						target={target}
 					/>
 				)}
 			</DialogContent>
@@ -108,18 +108,18 @@ function PreviewBody({
 	if (view.authorIndex !== null) {
 		return (
 			<div
-				key={`author-${view.authorIndex}`}
 				className={cn(
 					PANEL,
 					view.slide === "author" &&
 						"animate-in fade-in-0 slide-in-from-right-8",
 				)}
+				key={`author-${view.authorIndex}`}
 			>
 				<AuthorBody
-					slotId={target.slotId}
-					orderIndex={view.authorIndex}
 					framed={framed}
 					onBack={() => setView({ authorIndex: null, slide: "talk" })}
+					orderIndex={view.authorIndex}
+					slotId={target.slotId}
 				/>
 			</div>
 		);
@@ -127,24 +127,24 @@ function PreviewBody({
 
 	return (
 		<div
-			key="talk"
 			className={cn(
 				PANEL,
 				view.slide === "talk" && "animate-in fade-in-0 slide-in-from-left-8",
 			)}
+			key="talk"
 		>
-			<TalkHeader target={target} framed={framed} />
+			<TalkHeader framed={framed} target={target} />
 
 			<PreviewContent
-				slotId={target.slotId}
 				onSelectAuthor={showAuthorInfo ? openAuthor : undefined}
+				slotId={target.slotId}
 			/>
 
 			<PreviewFooter
-				slotId={target.slotId}
 				canInteract={canInteract}
 				isFavorite={isFavorite}
 				onToggleFavorite={onToggleFavorite}
+				slotId={target.slotId}
 			/>
 		</div>
 	);
@@ -163,11 +163,11 @@ function TalkHeader({
 				{target.track && (
 					<span className="inline-flex items-center gap-1.5">
 						<span
+							aria-hidden
 							className="size-2 rounded-full"
 							style={{
 								backgroundColor: target.track.color ?? "var(--primary)",
 							}}
-							aria-hidden
 						/>
 						{target.track.name}
 					</span>
@@ -209,10 +209,10 @@ function PreviewFooter({
 		<DialogFooter className="sm:justify-between">
 			{canInteract && (
 				<button
-					type="button"
+					className={cn(BTN, isFavorite ? BTN_ACTIVE : BTN_IDLE)}
 					data-testid="favorite-toggle"
 					onClick={onToggleFavorite}
-					className={cn(BTN, isFavorite ? BTN_ACTIVE : BTN_IDLE)}
+					type="button"
 				>
 					{isFavorite ? (
 						<IconStarFilled className="text-amber-500" />
@@ -224,10 +224,10 @@ function PreviewFooter({
 			)}
 			{cameraReadyUrl && (
 				<a
-					href={cameraReadyUrl}
-					download
-					data-testid="camera-ready-download"
 					className={cn(BTN, BTN_IDLE, "sm:ml-auto")}
+					data-testid="camera-ready-download"
+					download
+					href={cameraReadyUrl}
 				>
 					<IconDownload />
 					Download camera-ready
@@ -273,8 +273,8 @@ function PreviewContent({
 				<section className="flex flex-wrap gap-2">
 					{keywords.map((k) => (
 						<span
-							key={k}
 							className="rounded-[var(--radius)] bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
+							key={k}
 						>
 							{k}
 						</span>
@@ -336,22 +336,22 @@ function Authors({
 					);
 					if (!onSelect) {
 						return (
-							<div key={author.orderIndex} className={cardClass}>
+							<div className={cardClass} key={author.orderIndex}>
 								{inner}
 							</div>
 						);
 					}
 					return (
 						<button
-							key={author.orderIndex}
-							type="button"
-							data-testid="author-card-button"
 							aria-label={`Author info: ${author.firstName} ${author.lastName}`}
-							onClick={() => onSelect(author.orderIndex)}
 							className={cn(
 								cardClass,
 								"group cursor-pointer text-left transition-colors hover:border-primary/60 hover:bg-accent",
 							)}
+							data-testid="author-card-button"
+							key={author.orderIndex}
+							onClick={() => onSelect(author.orderIndex)}
+							type="button"
 						>
 							{inner}
 							<IconChevronRight className="size-4 shrink-0 self-center text-muted-foreground transition-transform group-hover:translate-x-0.5" />
@@ -379,13 +379,13 @@ function AuthorBody({
 		detail.data?.authors.find((a) => a.orderIndex === orderIndex) ?? null;
 
 	return (
-		<div data-testid="author-info" className="grid gap-4">
+		<div className="grid gap-4" data-testid="author-info">
 			<DialogHeader className="pr-8 text-left">
 				<button
-					type="button"
+					className={cn(BTN, BTN_IDLE, "self-start")}
 					data-testid="author-back"
 					onClick={onBack}
-					className={cn(BTN, BTN_IDLE, "self-start")}
+					type="button"
 				>
 					<IconArrowLeft />
 					Back to talk
@@ -428,9 +428,9 @@ function AuthorDetails({ author }: { author: PresentationDetailAuthor }) {
 				<section className="space-y-1">
 					<h3 className={HEADING}>Email</h3>
 					<a
+						className="break-all text-sm text-foreground underline-offset-4 hover:underline"
 						data-testid="author-email"
 						href={`mailto:${author.email}`}
-						className="break-all text-sm text-foreground underline-offset-4 hover:underline"
 					>
 						{author.email}
 					</a>
@@ -440,11 +440,11 @@ function AuthorDetails({ author }: { author: PresentationDetailAuthor }) {
 				<section className="space-y-1">
 					<h3 className={HEADING}>ORCID</h3>
 					<a
+						className="inline-flex items-center gap-2 text-sm text-foreground underline-offset-4 hover:underline"
 						data-testid="author-orcid"
 						href={`https://orcid.org/${author.orcid}`}
-						target="_blank"
 						rel="noopener noreferrer"
-						className="inline-flex items-center gap-2 text-sm text-foreground underline-offset-4 hover:underline"
+						target="_blank"
 					>
 						<span
 							aria-hidden

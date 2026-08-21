@@ -34,11 +34,11 @@ export function TextDiffView({
 
 	return (
 		<div
-			data-testid="text-diff"
 			className={cn(
 				"whitespace-pre-wrap break-words text-sm leading-relaxed",
 				className,
 			)}
+			data-testid="text-diff"
 		>
 			{segments.map((seg, i) => {
 				if (seg.type === "equal") {

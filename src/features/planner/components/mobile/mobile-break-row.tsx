@@ -16,10 +16,10 @@ export function MobileBreakRow({ item, timezone, onClick }: Props) {
 	const isEvent = item.itemKind === "event";
 	return (
 		<button
-			type="button"
-			onClick={() => onClick(item.id)}
-			data-testid={`mobile-break-${item.id}`}
 			className="flex w-full items-center gap-3 bg-muted/30 px-3 py-3 text-left hover:bg-muted/50"
+			data-testid={`mobile-break-${item.id}`}
+			onClick={() => onClick(item.id)}
+			type="button"
 		>
 			<div className="w-14 shrink-0 text-center">
 				<div className="text-xs font-medium tabular-nums">

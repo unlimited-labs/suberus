@@ -68,27 +68,27 @@ export function ActionsCard({
 				return (
 					<>
 						<Button
-							variant="outline"
 							className="gap-2 w-full"
-							onClick={handleEdit}
 							disabled={isLoading}
+							onClick={handleEdit}
+							variant="outline"
 						>
 							<IconEdit className="size-4" />
 							Continue Editing
 						</Button>
 						<Button
 							className="gap-2 w-full"
-							onClick={handleSubmit}
 							disabled={isLoading}
+							onClick={handleSubmit}
 						>
 							<IconSend className="size-4" />
 							Submit
 						</Button>
 						<Button
-							variant="destructive"
 							className="gap-2 w-full"
-							onClick={() => setWithdrawOpen(true)}
 							disabled={isLoading}
+							onClick={() => setWithdrawOpen(true)}
+							variant="destructive"
 						>
 							<IconX className="size-4" />
 							Withdraw Submission
@@ -103,10 +103,10 @@ export function ActionsCard({
 							Make Revisions
 						</Button>
 						<Button
-							variant="destructive"
 							className="gap-2 w-full"
-							onClick={() => setWithdrawOpen(true)}
 							disabled={isLoading}
+							onClick={() => setWithdrawOpen(true)}
+							variant="destructive"
 						>
 							<IconX className="size-4" />
 							Withdraw Submission
@@ -127,10 +127,10 @@ export function ActionsCard({
 			case "RESUBMITTED":
 				return (
 					<Button
-						variant="destructive"
 						className="gap-2 w-full"
-						onClick={() => setWithdrawOpen(true)}
 						disabled={isLoading}
+						onClick={() => setWithdrawOpen(true)}
+						variant="destructive"
 					>
 						<IconX className="size-4" />
 						Withdraw Submission
@@ -147,7 +147,7 @@ export function ActionsCard({
 	return (
 		<>
 			{showTitle ? (
-				<SectionCard variant="outlined" title="Actions">
+				<SectionCard title="Actions" variant="outlined">
 					<div className="space-y-2">{actions}</div>
 				</SectionCard>
 			) : (
@@ -156,10 +156,10 @@ export function ActionsCard({
 				</div>
 			)}
 			<WithdrawDialog
+				onOpenChange={setWithdrawOpen}
+				open={withdrawOpen}
 				submissionId={submissionId}
 				submissionTitle={submissionTitle}
-				open={withdrawOpen}
-				onOpenChange={setWithdrawOpen}
 			/>
 		</>
 	);

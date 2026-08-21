@@ -54,8 +54,8 @@ export function PasskeyReauthDialog({
 
 	return (
 		<Dialog
-			open={open}
 			onOpenChange={(next) => (next ? onOpenChange(true) : close())}
+			open={open}
 		>
 			<DialogContent data-testid="passkey-reauth-dialog">
 				<DialogHeader>
@@ -65,9 +65,8 @@ export function PasskeyReauthDialog({
 					</DialogDescription>
 				</DialogHeader>
 				<Input
-					type="password"
 					autoFocus
-					value={password}
+					data-testid="passkey-reauth-password"
 					onChange={(e) => setPassword(e.target.value)}
 					onKeyDown={(e) => {
 						if (e.key === "Enter" && password) {
@@ -75,17 +74,18 @@ export function PasskeyReauthDialog({
 						}
 					}}
 					placeholder="Password"
-					data-testid="passkey-reauth-password"
+					type="password"
+					value={password}
 				/>
 				<DialogFooter>
-					<Button type="button" variant="outline" onClick={close}>
+					<Button onClick={close} type="button" variant="outline">
 						Cancel
 					</Button>
 					<Button
-						type="button"
 						data-testid="passkey-reauth-confirm"
 						disabled={!password || reauthMutation.isPending}
 						onClick={() => reauthMutation.mutate()}
+						type="button"
 					>
 						Confirm
 					</Button>

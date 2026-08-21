@@ -28,8 +28,8 @@ export function TemplateCard({
 
 	return (
 		<div
-			data-testid="template-row"
 			className="flex flex-col gap-3 rounded-xl border bg-card p-3 transition-colors hover:border-foreground/20 hover:bg-accent/40 sm:flex-row sm:items-center sm:p-4"
+			data-testid="template-row"
 		>
 			<DocumentIconTile />
 			<div className="min-w-0 flex-1">
@@ -47,17 +47,17 @@ export function TemplateCard({
 				{formatDate(createdAt)}
 			</span>
 			<div className="flex shrink-0 items-center gap-1">
-				<Button asChild variant="ghost" size="icon-sm">
-					<a href={downloadHref} aria-label="Download original">
+				<Button asChild size="icon-sm" variant="ghost">
+					<a aria-label="Download original" href={downloadHref}>
 						<IconDownload className="size-4" />
 					</a>
 				</Button>
 				<Button
-					variant="ghost"
-					size="icon-sm"
-					onClick={onDelete}
-					className="text-destructive hover:text-destructive"
 					aria-label="Delete template"
+					className="text-destructive hover:text-destructive"
+					onClick={onDelete}
+					size="icon-sm"
+					variant="ghost"
 				>
 					<IconTrash className="size-4" />
 				</Button>

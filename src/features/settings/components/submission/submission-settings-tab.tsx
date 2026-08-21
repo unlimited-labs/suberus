@@ -53,28 +53,28 @@ export function SubmissionSettingsTab({
 			<ContentValidationSection data={data} onChange={handleChange} />
 
 			<SubmissionGuidelinesSection
-				value={submissionGuidelines}
 				onChange={setSubmissionGuidelines}
+				value={submissionGuidelines}
 			/>
 
 			<ReviewGuidelinesSection
-				value={reviewGuidelines}
 				onChange={setReviewGuidelines}
+				value={reviewGuidelines}
 			/>
 
 			<ExtractionModeSettings
-				enabled={extractionEnabled}
-				onEnabledChange={setExtractionEnabled}
-				heuristic={extractionHeuristic}
-				onHeuristicChange={setExtractionHeuristic}
 				ai={extractionAi}
-				onAiChange={setExtractionAi}
+				enabled={extractionEnabled}
+				heuristic={extractionHeuristic}
 				llmHealth={llmHealth}
+				onAiChange={setExtractionAi}
+				onEnabledChange={setExtractionEnabled}
+				onHeuristicChange={setExtractionHeuristic}
 				pdfApiHealth={pdfApiHealth}
 			/>
 
 			<div className="flex justify-end border-t pt-6">
-				<Button onClick={handleSave} disabled={isSaving}>
+				<Button disabled={isSaving} onClick={handleSave}>
 					{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 					Save All Settings
 				</Button>

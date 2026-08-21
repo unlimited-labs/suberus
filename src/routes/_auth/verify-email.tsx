@@ -44,10 +44,10 @@ function VerifyEmailPage() {
 
 				{email && (
 					<Button
-						variant="outline"
-						onClick={resend}
-						disabled={disabled}
 						className="gap-2"
+						disabled={disabled}
+						onClick={resend}
+						variant="outline"
 					>
 						<IconRefresh
 							className={`size-4 ${isResending ? "animate-spin" : ""}`}
@@ -62,7 +62,7 @@ function VerifyEmailPage() {
 			</div>
 
 			<p className="mt-4 text-center text-sm text-muted-foreground">
-				<Link to="/login" className="font-medium text-primary hover:underline">
+				<Link className="font-medium text-primary hover:underline" to="/login">
 					Back to login
 				</Link>
 			</p>

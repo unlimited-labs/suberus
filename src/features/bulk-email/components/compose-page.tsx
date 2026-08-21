@@ -58,8 +58,8 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconMailForward} title="Email campaigns">
 				<Badge
-					variant={statusVariant(campaign.status)}
 					data-testid="campaign-status"
+					variant={statusVariant(campaign.status)}
 				>
 					{campaign.status}
 				</Badge>
@@ -84,9 +84,9 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 								<compose.form.AppField name="subject">
 									{(field) => (
 										<field.InputField
+											disabled={!compose.isDraft}
 											label="Subject"
 											testId="campaign-subject"
-											disabled={!compose.isDraft}
 										/>
 									)}
 								</compose.form.AppField>
@@ -94,11 +94,11 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 								<compose.form.AppField name="replyTo">
 									{(field) => (
 										<field.InputField
+											disabled={!compose.isDraft}
 											label="Reply-To (optional)"
-											type="email"
 											placeholder="replies@example.com"
 											testId="campaign-reply-to"
-											disabled={!compose.isDraft}
+											type="email"
 										/>
 									)}
 								</compose.form.AppField>
@@ -108,9 +108,9 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 										<compose.form.Field name="format">
 											{(field) => (
 												<FormatSelector
-													value={field.state.value}
-													onChange={field.handleChange}
 													disabled={!compose.isDraft}
+													onChange={field.handleChange}
+													value={field.state.value}
 												/>
 											)}
 										</compose.form.Field>
@@ -120,23 +120,23 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 										</TabsList>
 									</div>
 
-									<TabsContent value="body" className="mt-0">
+									<TabsContent className="mt-0" value="body">
 										<compose.form.AppField name="bodySource">
 											{(field) => (
 												<Textarea
-													id="campaign-body"
-													data-testid="campaign-body"
-													value={field.state.value}
-													onChange={(e) => field.handleChange(e.target.value)}
-													onBlur={field.handleBlur}
-													disabled={!compose.isDraft}
 													className="h-[28rem] resize-none font-mono text-sm leading-relaxed"
+													data-testid="campaign-body"
+													disabled={!compose.isDraft}
+													id="campaign-body"
+													onBlur={field.handleBlur}
+													onChange={(e) => field.handleChange(e.target.value)}
+													value={field.state.value}
 												/>
 											)}
 										</compose.form.AppField>
 									</TabsContent>
 
-									<TabsContent value="preview" className="mt-0">
+									<TabsContent className="mt-0" value="preview">
 										<PreviewIframe
 											body={compose.preview.body}
 											isHtml={compose.preview.isHtml}
@@ -149,72 +149,72 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 
 						<aside className="space-y-4 lg:sticky lg:top-0 lg:self-start">
 							<SectionCard
-								variant="outlined"
-								title="Recipients"
 								icon={IconUsers}
+								title="Recipients"
+								variant="outlined"
 							>
 								<RecipientSummary
-									recipients={campaign.recipients}
-									totalRecipients={campaign.totalRecipients}
-									sentCount={campaign.sentCount}
 									failedCount={campaign.failedCount}
+									recipients={campaign.recipients}
+									sentCount={campaign.sentCount}
+									totalRecipients={campaign.totalRecipients}
 								/>
 							</SectionCard>
 
 							<CampaignProgressCard
 								campaign={campaign}
-								jobId={compose.jobId}
 								job={compose.job}
+								jobId={compose.jobId}
 							/>
 
 							<SectionCard
-								variant="outlined"
-								title="Attachments"
 								icon={IconPaperclip}
+								title="Attachments"
+								variant="outlined"
 							>
 								<AttachmentDropzone
-									campaignId={campaign.id}
 									attachments={campaign.attachments}
+									campaignId={campaign.id}
 									disabled={!compose.isDraft}
 								/>
 							</SectionCard>
 
 							<SectionCard
-								variant="outlined"
-								title="Placeholders"
 								icon={IconBraces}
+								title="Placeholders"
+								variant="outlined"
 							>
 								<PlaceholderHelp />
 							</SectionCard>
 
-							<SectionCard variant="outlined" title="Actions" icon={IconSend}>
+							<SectionCard icon={IconSend} title="Actions" variant="outlined">
 								<div className="space-y-3 text-sm">
 									{compose.isDraft ? (
 										<>
 											<Button
 												className="w-full"
 												data-testid="send-campaign-btn"
-												onClick={() => setConfirmOpen(true)}
 												disabled={compose.isSending || !compose.canSend}
+												onClick={() => setConfirmOpen(true)}
 											>
 												<IconSend className="mr-2 size-4" />
 												Send campaign
 											</Button>
 											<div className="grid grid-cols-2 gap-2">
 												<Button
-													variant="outline"
 													data-testid="save-draft-btn"
-													onClick={() => compose.save()}
 													disabled={compose.isSaving}
+													onClick={() => compose.save()}
+													variant="outline"
 												>
 													<IconDeviceFloppy className="mr-2 size-4" />
 													Save draft
 												</Button>
 												<Button
-													variant="secondary"
 													data-testid="test-send-btn"
-													onClick={() => compose.sendTest()}
 													disabled={compose.isTesting || !compose.canSend}
+													onClick={() => compose.sendTest()}
+													variant="secondary"
 												>
 													<IconFlask className="mr-2 size-4" />
 													Send test
@@ -222,11 +222,11 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 											</div>
 											<Separator />
 											<Button
-												variant="ghost"
 												className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
 												data-testid="delete-campaign-btn"
-												onClick={() => compose.remove()}
 												disabled={compose.isRemoving}
+												onClick={() => compose.remove()}
+												variant="ghost"
 											>
 												<IconTrash className="mr-2 size-4" />
 												Delete draft
@@ -237,18 +237,18 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 											<Button
 												className="w-full"
 												data-testid="copy-campaign-btn"
-												onClick={() => compose.copy()}
 												disabled={compose.isCopying}
+												onClick={() => compose.copy()}
 											>
 												<IconCopy className="mr-2 size-4" />
 												Copy to new draft
 											</Button>
 											<Button
-												variant="secondary"
 												className="w-full"
 												data-testid="test-send-btn"
-												onClick={() => compose.sendTest()}
 												disabled={compose.isTesting}
+												onClick={() => compose.sendTest()}
+												variant="secondary"
 											>
 												<IconFlask className="mr-2 size-4" />
 												Send test
@@ -262,7 +262,7 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 				</div>
 			</div>
 
-			<Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+			<Dialog onOpenChange={setConfirmOpen} open={confirmOpen}>
 				<DialogContent data-testid="confirm-send-campaign-dialog">
 					<DialogHeader>
 						<DialogTitle>Send campaign?</DialogTitle>
@@ -275,20 +275,20 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 					</DialogHeader>
 					<DialogFooter>
 						<Button
+							onClick={() => setConfirmOpen(false)}
 							type="button"
 							variant="outline"
-							onClick={() => setConfirmOpen(false)}
 						>
 							Cancel
 						</Button>
 						<Button
-							type="button"
 							data-testid="confirm-send-campaign-btn"
 							disabled={compose.isSending}
 							onClick={() => {
 								setConfirmOpen(false);
 								compose.send();
 							}}
+							type="button"
 						>
 							<IconSend className="mr-2 size-4" />
 							Send campaign

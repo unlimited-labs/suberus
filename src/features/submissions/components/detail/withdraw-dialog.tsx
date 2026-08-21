@@ -72,7 +72,7 @@ export function WithdrawDialog({
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
 					<DialogTitle>Withdraw Submission</DialogTitle>
@@ -95,10 +95,10 @@ export function WithdrawDialog({
 						<Label htmlFor="withdraw-reason">Reason (optional)</Label>
 						<Textarea
 							id="withdraw-reason"
-							value={reason}
 							onChange={(e) => setReason(e.target.value)}
 							placeholder="e.g., Submitting to a different venue, major revision needed..."
 							rows={3}
+							value={reason}
 						/>
 						<p className="text-xs text-muted-foreground">
 							This reason will be recorded in the activity log.
@@ -108,16 +108,16 @@ export function WithdrawDialog({
 
 				<DialogFooter>
 					<Button
-						variant="outline"
-						onClick={() => onOpenChange(false)}
 						disabled={isSubmitting}
+						onClick={() => onOpenChange(false)}
+						variant="outline"
 					>
 						Cancel
 					</Button>
 					<Button
-						variant="destructive"
-						onClick={handleWithdraw}
 						disabled={isSubmitting}
+						onClick={handleWithdraw}
+						variant="destructive"
 					>
 						{isSubmitting && (
 							<IconLoader2 className="mr-2 size-4 animate-spin" />

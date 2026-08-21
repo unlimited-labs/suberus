@@ -106,19 +106,19 @@ export function ReviewForm({
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
 				<div className="space-y-6 lg:col-span-2">
 					<SubmissionPreview
-						submission={submission}
+						assignmentId={assignmentId}
 						contentFormat={contentFormat}
 						reviewMode={reviewMode}
-						assignmentId={assignmentId}
+						submission={submission}
 					/>
 
 					<form
+						className="space-y-6"
 						onSubmit={(e) => {
 							e.preventDefault();
 							e.stopPropagation();
 							void form.handleSubmit();
 						}}
-						className="space-y-6"
 					>
 						<DecisionField form={form} readOnly={readOnly} />
 
@@ -134,16 +134,16 @@ export function ReviewForm({
 							<ConfidenceField form={form} readOnly={readOnly} />
 						)}
 
-						<SectionCard title="Comments to Authors" icon={IconMessageCircle}>
+						<SectionCard icon={IconMessageCircle} title="Comments to Authors">
 							<form.AppField name="comments">
 								{(field) => (
 									<field.TextareaField
-										label="Review Comments"
-										rows={10}
-										placeholder="Provide detailed feedback on the submission's strengths, weaknesses, and suggestions for improvement..."
 										className="text-foreground"
 										description="These comments will be visible to the authors"
 										disabled={readOnly}
+										label="Review Comments"
+										placeholder="Provide detailed feedback on the submission's strengths, weaknesses, and suggestions for improvement..."
+										rows={10}
 									/>
 								)}
 							</form.AppField>
@@ -151,21 +151,21 @@ export function ReviewForm({
 
 						{enableReviewAttachment && (
 							<AttachmentSection
-								readOnly={readOnly}
-								onAttachmentChange={onAttachmentChange}
 								existingAttachment={existingAttachment}
+								onAttachmentChange={onAttachmentChange}
+								readOnly={readOnly}
 							/>
 						)}
 
-						<SectionCard title="Private Notes" icon={IconLock}>
+						<SectionCard icon={IconLock} title="Private Notes">
 							<form.AppField name="privateNotes">
 								{(field) => (
 									<field.TextareaField
-										label="Confidential Notes (Optional)"
-										rows={4}
-										placeholder="Internal notes visible only to editors and admins..."
 										className="text-foreground"
 										disabled={readOnly}
+										label="Confidential Notes (Optional)"
+										placeholder="Internal notes visible only to editors and admins..."
+										rows={4}
 									/>
 								)}
 							</form.AppField>
@@ -175,10 +175,10 @@ export function ReviewForm({
 							<div className="pt-2">
 								<form.AppForm>
 									<form.SubmitButton
+										className="h-12 w-full text-base font-semibold"
+										disabled={!allComplete}
 										label="Submit Review"
 										submittingLabel="Submitting Review..."
-										disabled={!allComplete}
-										className="h-12 w-full text-base font-semibold"
 									/>
 								</form.AppForm>
 								{!allComplete && (
@@ -193,9 +193,9 @@ export function ReviewForm({
 
 				<div className="space-y-6">
 					<ReviewSidebar
-						progress={progress}
 						enableConfidenceLevel={enableConfidenceLevel}
 						guidelines={guidelines}
+						progress={progress}
 					/>
 				</div>
 			</div>

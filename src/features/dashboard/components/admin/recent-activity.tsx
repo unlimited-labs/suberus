@@ -30,9 +30,9 @@ function ActivityEventSubject({ subject }: { subject: ActivitySubject }) {
 	if (subject.kind === "submission") {
 		return (
 			<Link
-				to="/admin/submissions/$id"
-				params={{ id: subject.id }}
 				className="mt-1 block truncate text-sm hover:underline"
+				params={{ id: subject.id }}
+				to="/admin/submissions/$id"
 			>
 				{subject.title}
 			</Link>
@@ -41,9 +41,9 @@ function ActivityEventSubject({ subject }: { subject: ActivitySubject }) {
 	if (subject.kind === "user") {
 		return (
 			<Link
-				to="/admin/users/$id"
-				params={{ id: subject.id }}
 				className="mt-1 block truncate text-sm hover:underline"
+				params={{ id: subject.id }}
+				to="/admin/users/$id"
 			>
 				{subject.name}
 			</Link>
@@ -62,9 +62,9 @@ function PerformerByline({ event }: { event: ActivityEvent }) {
 		<>
 			by{" "}
 			<Link
-				to="/admin/users/$id"
-				params={{ id: event.performerId }}
 				className="hover:underline"
+				params={{ id: event.performerId }}
+				to="/admin/users/$id"
 			>
 				{event.performerName}
 			</Link>
@@ -86,7 +86,7 @@ function ActivityEventRow({ event }: { event: ActivityEvent }) {
 			</div>
 			<div className="min-w-0 flex-1">
 				<div className="flex items-center gap-2">
-					<Badge variant="outline" className="shrink-0 text-xs">
+					<Badge className="shrink-0 text-xs" variant="outline">
 						{label}
 					</Badge>
 					<span
@@ -149,17 +149,17 @@ export function RecentActivity({ events }: RecentActivityProps) {
 		<SectionCard title="Recent Activity">
 			<div className="max-h-[400px] space-y-3 overflow-y-auto">
 				{allEvents.map((event) => (
-					<ActivityEventRow key={event.id} event={event} />
+					<ActivityEventRow event={event} key={event.id} />
 				))}
 			</div>
 
 			{cursor && (
 				<Button
-					variant="outline"
-					size="sm"
 					className="mt-3 w-full"
-					onClick={handleShowMore}
 					disabled={loading}
+					onClick={handleShowMore}
+					size="sm"
+					variant="outline"
 				>
 					{loading && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 					Show more

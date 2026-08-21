@@ -53,22 +53,22 @@ export function ProgramThemeSection() {
 
 	return (
 		<SettingsSection
+			description="Visual theme applied to the public program page."
 			icon={IconPalette}
 			title="Appearance"
-			description="Visual theme applied to the public program page."
 		>
 			<div className="max-w-sm space-y-2">
 				<Label htmlFor="program-theme">Theme</Label>
 				<Select
+					disabled={mutation.isPending}
 					items={PROGRAM_THEME_LIST.map((t) => ({
 						value: t.id,
 						label: t.name,
 					}))}
-					value={current}
 					onValueChange={(value) => mutation.mutate(value)}
-					disabled={mutation.isPending}
+					value={current}
 				>
-					<SelectTrigger id="program-theme" data-testid="program-theme-select">
+					<SelectTrigger data-testid="program-theme-select" id="program-theme">
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
@@ -92,10 +92,10 @@ export function ProgramThemeSection() {
 					</p>
 				</div>
 				<Switch
-					id="show-author-info"
-					data-testid="show-author-info-toggle"
 					checked={showAuthorInfo ?? false}
+					data-testid="show-author-info-toggle"
 					disabled={authorInfoMutation.isPending}
+					id="show-author-info"
 					onCheckedChange={(v) => authorInfoMutation.mutate(v === true)}
 				/>
 			</div>

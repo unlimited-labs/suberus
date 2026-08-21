@@ -57,8 +57,8 @@ function DecisionContent({ decision }: { decision: UserSubmissionDecision }) {
 					<ul className="space-y-2">
 						{decision.revisionsRequired.map((revision, index) => (
 							<li
-								key={index}
 								className="text-sm flex items-start gap-2 bg-muted/50 p-3 rounded-lg"
+								key={index}
 							>
 								<span className="text-muted-foreground font-medium">
 									{index + 1}.
@@ -78,8 +78,8 @@ function DecisionContent({ decision }: { decision: UserSubmissionDecision }) {
 					<ul className="space-y-2">
 						{decision.conditions.map((condition, index) => (
 							<li
-								key={index}
 								className="text-sm flex items-start gap-2 bg-muted/50 p-3 rounded-lg"
+								key={index}
 							>
 								<span className="text-muted-foreground font-medium">
 									{index + 1}.
@@ -113,11 +113,11 @@ export function EditorDecisionCard({
 		return (
 			<div id="decision-section">
 				<SectionCard
-					variant="elevated"
+					action={decisionBadge}
 					collapsible
 					defaultOpen={!defaultCollapsed}
 					title="Editorial Decision"
-					action={decisionBadge}
+					variant="elevated"
 				>
 					<DecisionContent decision={decision} />
 				</SectionCard>
@@ -128,9 +128,9 @@ export function EditorDecisionCard({
 	return (
 		<div id="decision-section">
 			<SectionCard
-				variant="elevated"
-				title="Editorial Decision"
 				action={decisionBadge}
+				title="Editorial Decision"
+				variant="elevated"
 			>
 				<DecisionContent decision={decision} />
 			</SectionCard>

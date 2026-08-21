@@ -31,8 +31,8 @@ export function ChairStack({ chairs }: { chairs: Chair[] }) {
 				seen.set(name, dup + 1);
 				return (
 					<span
-						key={dup ? `${name}-${dup}` : name}
 						className="inline-flex size-5 items-center justify-center rounded-full border border-background bg-muted text-[9px] font-semibold text-muted-foreground"
+						key={dup ? `${name}-${dup}` : name}
 						title={`${c.firstName ?? ""} ${c.lastName ?? ""}`.trim()}
 					>
 						{initials(c.firstName, c.lastName)}

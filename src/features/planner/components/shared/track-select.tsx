@@ -35,10 +35,10 @@ export function TrackSelect({
 				{ value: NONE, label: "No track" },
 				...tracks.map((t) => ({ value: t.id, label: t.name })),
 			]}
-			value={value ?? NONE}
 			onValueChange={(v) => onValueChange(v === NONE ? null : v)}
+			value={value ?? NONE}
 		>
-			<SelectTrigger data-testid={testId} className={triggerClassName}>
+			<SelectTrigger className={triggerClassName} data-testid={testId}>
 				<SelectValue placeholder="No track" />
 			</SelectTrigger>
 			<SelectContent>

@@ -125,8 +125,8 @@ export function UserCreateDialog({
 
 	return (
 		<Dialog
-			open={open}
 			onOpenChange={(next) => (next ? onOpenChange(true) : close())}
+			open={open}
 		>
 			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
 				<DialogHeader>
@@ -137,13 +137,13 @@ export function UserCreateDialog({
 					</DialogDescription>
 				</DialogHeader>
 				<form
+					className="space-y-4"
+					data-testid="user-create-form"
 					onSubmit={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
 						void form.handleSubmit();
 					}}
-					className="space-y-4"
-					data-testid="user-create-form"
 				>
 					<div className="grid gap-4 sm:grid-cols-2">
 						<form.AppField name="firstName">
@@ -167,8 +167,8 @@ export function UserCreateDialog({
 						<form.AppField name="affiliation">
 							{(field) => (
 								<field.IconInputField
-									label="Affiliation"
 									icon={<IconBuilding className="size-4" />}
+									label="Affiliation"
 								/>
 							)}
 						</form.AppField>
@@ -177,20 +177,20 @@ export function UserCreateDialog({
 					<form.AppField name="email">
 						{(field) => (
 							<field.IconInputField
+								icon={<IconMail className="size-4" />}
 								label="Email *"
 								type="email"
-								icon={<IconMail className="size-4" />}
 							/>
 						)}
 					</form.AppField>
 
 					<BillingFieldsGroup
-						form={form}
 						fields={{
 							needInvoice: "needInvoice",
 							address: "address",
 							country: "country",
 						}}
+						form={form}
 						needInvoiceLabel="Needs invoice for organization"
 					/>
 
@@ -214,9 +214,9 @@ export function UserCreateDialog({
 										return (
 											<Field data-invalid={hasError}>
 												<SurveyQuestionField
+													onChange={field.handleChange}
 													question={question}
 													value={field.state.value}
-													onChange={field.handleChange}
 												/>
 												<FieldError
 													errors={
@@ -232,14 +232,14 @@ export function UserCreateDialog({
 					)}
 
 					<DialogFooter>
-						<Button type="button" variant="outline" onClick={close}>
+						<Button onClick={close} type="button" variant="outline">
 							Cancel
 						</Button>
 						<form.AppForm>
 							<form.SubmitButton
+								disabled={mutation.isPending}
 								label="Create user"
 								submittingLabel="Creating..."
-								disabled={mutation.isPending}
 							/>
 						</form.AppForm>
 					</DialogFooter>

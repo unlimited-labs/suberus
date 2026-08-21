@@ -26,15 +26,15 @@ export function PublishButton() {
 	if (isPublished) {
 		return (
 			<Button
-				size="sm"
-				variant="outline"
-				data-testid="unpublish-button"
 				className="gap-1.5 text-green-700 border-green-300 hover:bg-green-50 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-950"
+				data-testid="unpublish-button"
 				disabled={busy !== null}
 				onClick={unpublish}
+				size="sm"
+				variant="outline"
 			>
 				{busy === "unpublish" ? (
-					<IconLoader2 size={14} className="animate-spin" />
+					<IconLoader2 className="animate-spin" size={14} />
 				) : (
 					<IconWorldOff size={14} />
 				)}
@@ -53,33 +53,33 @@ export function PublishButton() {
 	return (
 		<>
 			<Button
-				size="sm"
-				data-testid="publish-button"
-				variant={isDraftPublished ? "outline" : "default"}
 				className={`gap-1.5 ${
 					isDraftPublished
 						? "text-amber-700 border-amber-300 hover:bg-amber-50 dark:text-amber-400 dark:border-amber-800 dark:hover:bg-amber-950"
 						: ""
 				}`}
+				data-testid="publish-button"
 				onClick={() => setDialogOpen(true)}
+				size="sm"
+				variant={isDraftPublished ? "outline" : "default"}
 			>
 				{topButtonIcon}
 				{topButtonLabel}
 			</Button>
 
 			<PublishDialog
-				open={dialogOpen}
-				onOpenChange={setDialogOpen}
-				isDraftPublished={isDraftPublished}
 				busy={busy}
+				isDraftPublished={isDraftPublished}
 				issues={issues}
 				issuesLoading={issuesLoading}
+				onOpenChange={setDialogOpen}
 				onPublish={publish}
-				onUnpublish={unpublish}
 				onSelectIssue={(sessionId) => {
 					selectSession(sessionId);
 					setDialogOpen(false);
 				}}
+				onUnpublish={unpublish}
+				open={dialogOpen}
 			/>
 		</>
 	);

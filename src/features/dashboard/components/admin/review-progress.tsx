@@ -26,7 +26,7 @@ export function ReviewProgress({ data }: ReviewProgressProps) {
 	const { byStatus, completionRate, totalAssignments } = data;
 
 	return (
-		<SectionCard title="Review Progress" contentClassName="space-y-4">
+		<SectionCard contentClassName="space-y-4" title="Review Progress">
 			<div className="flex items-center justify-center">
 				<Suspense fallback={<div className="h-[150px] w-1/2" />}>
 					<ReviewCompletionPie
@@ -40,7 +40,7 @@ export function ReviewProgress({ data }: ReviewProgressProps) {
 				</div>
 			</div>
 
-			<Progress value={completionRate} className="h-2" />
+			<Progress className="h-2" value={completionRate} />
 
 			<div className="grid grid-cols-2 gap-4 pt-2">
 				<div className="text-center">

@@ -58,10 +58,10 @@ export function CreateSessionDialog({
 	const endAt = addMinutes(defaultStartAt, durationMin);
 
 	return (
-		<Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
+		<Dialog onOpenChange={(v) => !v && handleClose()} open={open}>
 			<DialogContent
-				data-testid="create-session-dialog"
 				className="sm:max-w-sm"
+				data-testid="create-session-dialog"
 			>
 				<DialogHeader>
 					<DialogTitle>
@@ -74,18 +74,18 @@ export function CreateSessionDialog({
 				</DialogHeader>
 
 				<form
+					className="space-y-4"
 					onSubmit={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
 						void form.handleSubmit();
 					}}
-					className="space-y-4"
 				>
 					<TimeRangeSummary
-						start={defaultStartAt}
 						end={endAt}
-						totalMin={durationMin}
+						start={defaultStartAt}
 						timezone={timezone}
+						totalMin={durationMin}
 					/>
 
 					<form.Field
@@ -99,16 +99,16 @@ export function CreateSessionDialog({
 							const errors = field.state.meta.errors;
 							const hasError = errors.length > 0;
 							return (
-								<Field data-invalid={hasError} className="space-y-2">
+								<Field className="space-y-2" data-invalid={hasError}>
 									<Label htmlFor="cs-title">Title</Label>
 									<Input
-										id="cs-title"
-										value={field.state.value}
-										onChange={(e) => field.handleChange(e.target.value)}
 										aria-invalid={hasError}
-										placeholder="Session title"
-										data-testid="create-session-name"
 										autoFocus
+										data-testid="create-session-name"
+										id="cs-title"
+										onChange={(e) => field.handleChange(e.target.value)}
+										placeholder="Session title"
+										value={field.state.value}
 									/>
 									<FieldError errors={hasError ? errors : undefined} />
 								</Field>
@@ -121,10 +121,10 @@ export function CreateSessionDialog({
 							<div className="space-y-2">
 								<Label>Room</Label>
 								<RoomSelect
-									value={field.state.value}
 									onValueChange={field.handleChange}
 									rooms={rooms}
 									testId="create-session-room"
+									value={field.state.value}
 								/>
 							</div>
 						)}
@@ -135,9 +135,9 @@ export function CreateSessionDialog({
 							<div className="space-y-2">
 								<Label>Track</Label>
 								<TrackSelect
-									value={field.state.value}
 									onValueChange={field.handleChange}
 									tracks={tracks}
+									value={field.state.value}
 								/>
 							</div>
 						)}
@@ -154,9 +154,9 @@ export function CreateSessionDialog({
 						<form.Field name="untimedSlots">
 							{(field) => (
 								<Switch
-									id="cs-untimed"
-									data-testid="create-session-untimed"
 									checked={field.state.value}
+									data-testid="create-session-untimed"
+									id="cs-untimed"
 									onCheckedChange={(v) => field.handleChange(v === true)}
 								/>
 							)}
@@ -169,11 +169,11 @@ export function CreateSessionDialog({
 								<div className="space-y-2">
 									<Label>Session length (minutes)</Label>
 									<Stepper
-										value={field.state.value}
-										min={15}
 										max={720}
-										step={15}
+										min={15}
 										onChange={field.handleChange}
+										step={15}
+										value={field.state.value}
 									/>
 								</div>
 							)}
@@ -184,11 +184,11 @@ export function CreateSessionDialog({
 								<div className="space-y-2">
 									<Label>Minutes per presentation</Label>
 									<Stepper
-										value={field.state.value}
-										min={5}
 										max={120}
-										step={5}
+										min={5}
 										onChange={field.handleChange}
+										step={5}
+										value={field.state.value}
 									/>
 								</div>
 							)}
@@ -196,7 +196,7 @@ export function CreateSessionDialog({
 					)}
 
 					<DialogFooter>
-						<Button type="button" variant="outline" onClick={handleClose}>
+						<Button onClick={handleClose} type="button" variant="outline">
 							Cancel
 						</Button>
 						<form.AppForm>

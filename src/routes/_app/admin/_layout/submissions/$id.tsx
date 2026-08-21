@@ -60,7 +60,7 @@ function SubmissionDetailPage() {
 					<div className="text-center">
 						<p className="mb-4 text-muted-foreground">Submission not found</p>
 						<Link to="/admin/submissions">
-							<Button variant="outline" className="gap-2">
+							<Button className="gap-2" variant="outline">
 								<IconArrowLeft className="size-4" />
 								Back to Submissions
 							</Button>
@@ -89,7 +89,7 @@ function SubmissionDetailPage() {
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconFileText} title="Submission Details">
 				<Link to="/admin/submissions">
-					<Button variant="outline" className="gap-2">
+					<Button className="gap-2" variant="outline">
 						<IconArrowLeft className="size-4" />
 						Back
 					</Button>
@@ -107,37 +107,37 @@ function SubmissionDetailPage() {
 
 					<div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
 						<div className="space-y-4 lg:col-span-2">
-							<Tabs defaultValue="content" className="space-y-4">
-								<TabsList variant="line" className="w-full justify-start">
-									<TabsTrigger value="content" className="flex-none gap-2">
+							<Tabs className="space-y-4" defaultValue="content">
+								<TabsList className="w-full justify-start" variant="line">
+									<TabsTrigger className="flex-none gap-2" value="content">
 										<IconFileText className="size-4" />
 										Content
 									</TabsTrigger>
-									<TabsTrigger value="reviews" className="flex-none gap-2">
+									<TabsTrigger className="flex-none gap-2" value="reviews">
 										<IconMessages className="size-4" />
 										Reviews ({currentRoundReviews.length})
 									</TabsTrigger>
-									<TabsTrigger value="history" className="flex-none gap-2">
+									<TabsTrigger className="flex-none gap-2" value="history">
 										<IconHistory className="size-4" />
 										History
 									</TabsTrigger>
 								</TabsList>
 
-								<TabsContent value="content" className="space-y-4">
+								<TabsContent className="space-y-4" value="content">
 									<ContentTab
-										submissionId={submission.id}
 										authors={authors}
-										versions={versions}
 										submission={submission}
+										submissionId={submission.id}
+										versions={versions}
 									/>
 								</TabsContent>
 
-								<TabsContent value="reviews" className="space-y-4">
+								<TabsContent className="space-y-4" value="reviews">
 									<ReviewsTab
-										reviews={reviews}
 										currentRound={submission.currentRound}
-										enableScoring={config.enableScoring}
 										enableConfidenceLevel={config.enableConfidenceLevel}
+										enableScoring={config.enableScoring}
+										reviews={reviews}
 									/>
 								</TabsContent>
 
@@ -149,22 +149,22 @@ function SubmissionDetailPage() {
 
 						<div className="space-y-4">
 							<ActionsCard
-								submissionId={submission.id}
 								availability={availability}
-								primaryAction={primaryAction}
 								isTransitioning={isTransitioning}
-								onTransition={handleTransitionToAwaitingDecision}
 								onOpenDialog={setActiveDialog}
+								onTransition={handleTransitionToAwaitingDecision}
+								primaryAction={primaryAction}
+								submissionId={submission.id}
 							/>
 							<DetailsCard
-								submission={submission}
-								submitter={submitter}
 								availableTracks={availableTracks}
 								onTrackUpdated={invalidateSubmission}
+								submission={submission}
+								submitter={submitter}
 							/>
 							<ReviewersCard
-								currentRoundAssignments={currentRoundAssignments}
 								completedCount={completedAssignments.length}
+								currentRoundAssignments={currentRoundAssignments}
 								requiredReviewers={config.requiredReviewers}
 								reviewProgress={reviewProgress}
 							/>
@@ -176,16 +176,16 @@ function SubmissionDetailPage() {
 
 			<DetailDialogs
 				activeDialog={activeDialog}
+				currentRoundReviews={currentRoundReviews}
+				isTransitioning={isTransitioning}
 				onClose={() => setActiveDialog(null)}
-				submission={submission}
+				onConfirmConditionsMet={handleConfirmConditionsMet}
+				onEditorOverride={handleEditorOverride}
+				onInvalidate={invalidateSubmission}
 				requiredReviewers={config.requiredReviewers}
 				reviewDeadlineDays={config.reviewDeadlineDays}
-				currentRoundReviews={currentRoundReviews}
 				revisionUploaded={revisionUploaded}
-				isTransitioning={isTransitioning}
-				onInvalidate={invalidateSubmission}
-				onEditorOverride={handleEditorOverride}
-				onConfirmConditionsMet={handleConfirmConditionsMet}
+				submission={submission}
 			/>
 		</div>
 	);

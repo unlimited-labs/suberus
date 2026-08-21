@@ -60,7 +60,7 @@ function HealthAlertCard({ alert }: { alert: HealthAlert }) {
 	const style = SEVERITY_STYLES[alert.severity];
 	const Icon = style.icon;
 	return (
-		<Alert variant={style.variant} className={style.className}>
+		<Alert className={style.className} variant={style.variant}>
 			<Icon className={style.iconClass} />
 			<AlertTitle className={style.titleClass}>{alert.title}</AlertTitle>
 			<AlertDescription
@@ -71,7 +71,7 @@ function HealthAlertCard({ alert }: { alert: HealthAlert }) {
 			>
 				<span>{alert.message}</span>
 				{alert.link && (
-					<Button variant="outline" size="sm" asChild>
+					<Button asChild size="sm" variant="outline">
 						<Link to={alert.link.to}>{alert.link.label}</Link>
 					</Button>
 				)}
@@ -85,7 +85,7 @@ export function HealthAlerts({ data, s3, smtp }: HealthAlertsProps) {
 	return (
 		<>
 			{alerts.map((alert) => (
-				<HealthAlertCard key={alert.key} alert={alert} />
+				<HealthAlertCard alert={alert} key={alert.key} />
 			))}
 		</>
 	);

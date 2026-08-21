@@ -133,7 +133,7 @@ function NotFoundPage() {
 				The page you are looking for does not exist or has been moved.
 			</p>
 			<Button asChild>
-				<Link to="/" preload="intent">
+				<Link preload="intent" to="/">
 					Go to Dashboard
 				</Link>
 			</Button>
@@ -171,8 +171,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 
 	return (
 		<html
-			lang="en"
 			className={theme === "dark" ? "dark" : ""}
+			lang="en"
 			style={buildBrandVars(primaryColor)}
 			suppressHydrationWarning
 		>

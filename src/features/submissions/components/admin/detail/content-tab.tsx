@@ -53,14 +53,14 @@ export function ContentTab({
 				>
 					{authors.map((author, index) => (
 						<div
-							key={author.email}
-							data-testid={`submission-author-${index}`}
 							className={cn(
 								"flex items-start gap-3 rounded-lg border p-3 transition-colors",
 								author.isPresenter
 									? "border-primary/30 bg-primary/5"
 									: "border-border/50 bg-muted/30",
 							)}
+							data-testid={`submission-author-${index}`}
+							key={author.email}
 						>
 							<div
 								className={cn(
@@ -76,10 +76,10 @@ export function ContentTab({
 								<div className="flex flex-wrap items-center gap-2">
 									{author.userId ? (
 										<Link
-											to="/admin/users/$id"
-											params={{ id: author.userId }}
-											data-testid={`author-profile-link-${index}`}
 											className="flex items-center gap-1 font-medium text-foreground hover:text-primary hover:underline"
+											data-testid={`author-profile-link-${index}`}
+											params={{ id: author.userId }}
+											to="/admin/users/$id"
 										>
 											{author.firstName} {author.lastName}
 											<IconUserCircle className="size-4 text-muted-foreground" />
@@ -91,8 +91,8 @@ export function ContentTab({
 									)}
 									{author.isPresenter && (
 										<Badge
-											variant="secondary"
 											className="gap-1 border-primary/20 bg-primary/10 text-xs text-primary"
+											variant="secondary"
 										>
 											<IconStarFilled className="size-3" />
 											Presenter
@@ -114,14 +114,13 @@ export function ContentTab({
 			</SectionCard>
 
 			<SectionCard
-				title="Content"
 				action={
 					versions.length > 1 ? (
 						<div className="flex items-end gap-2">
-							<Button asChild variant="outline" size="sm" className="gap-2">
+							<Button asChild className="gap-2" size="sm" variant="outline">
 								<Link
-									to="/admin/submissions/$id/compare"
 									params={{ id: submissionId }}
+									to="/admin/submissions/$id/compare"
 								>
 									<IconGitCompare className="size-4" />
 									Compare versions
@@ -129,15 +128,16 @@ export function ContentTab({
 							</Button>
 							<div className="w-44">
 								<VersionSelector
-									versions={versions}
 									currentVersion={submission.currentVersionNumber}
-									selectedVersion={effectiveVersion}
 									onVersionChange={setSelectedVersion}
+									selectedVersion={effectiveVersion}
+									versions={versions}
 								/>
 							</div>
 						</div>
 					) : undefined
 				}
+				title="Content"
 			>
 				{displayedFile ? (
 					<div className="flex items-center gap-4 rounded-lg border bg-muted/30 p-4">
@@ -153,9 +153,9 @@ export function ContentTab({
 							</p>
 						</div>
 						<a
-							href={`/api/files/${displayedFile.id}`}
-							data-testid="file-download-button"
 							className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+							data-testid="file-download-button"
+							href={`/api/files/${displayedFile.id}`}
 						>
 							<IconDownload className="size-4" />
 							Download
@@ -164,7 +164,7 @@ export function ContentTab({
 				) : (
 					<div className="prose prose-sm max-w-none dark:prose-invert">
 						{displayedContent.split(/\n{2,}/).map((para, i) => (
-							<p key={i} className="whitespace-pre-wrap break-words">
+							<p className="whitespace-pre-wrap break-words" key={i}>
 								{para}
 							</p>
 						))}

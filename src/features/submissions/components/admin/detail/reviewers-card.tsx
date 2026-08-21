@@ -26,13 +26,13 @@ export function ReviewersCard({
 
 	return (
 		<SectionCard
-			title={`Reviewers (${completedCount}/${currentRoundAssignments.length})`}
 			action={
 				<span className="text-sm font-normal text-muted-foreground">
 					Required: {requiredReviewers}
 				</span>
 			}
 			contentClassName="space-y-3"
+			title={`Reviewers (${completedCount}/${currentRoundAssignments.length})`}
 		>
 			{currentRoundAssignments.length === 0 ? (
 				<p className="text-sm text-muted-foreground">
@@ -51,8 +51,8 @@ export function ReviewersCard({
 							const overdue = isOverdue(assignment.deadline, assignment.status);
 							return (
 								<div
-									key={assignment.id}
 									className="flex items-start justify-between gap-2 rounded-lg border p-3"
+									key={assignment.id}
 								>
 									<div className="min-w-0">
 										<div className="truncate text-sm font-medium">

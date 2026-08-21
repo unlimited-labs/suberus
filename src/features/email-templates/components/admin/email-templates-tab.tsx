@@ -126,20 +126,20 @@ export function EmailTemplatesTab({
 	return (
 		<>
 			<SettingsSection
+				description="This text is appended to all outgoing emails"
 				icon={IconSignature}
 				title="Email Signature / Footer"
-				description="This text is appended to all outgoing emails"
 			>
 				<div className="space-y-3">
 					<div className="space-y-2">
 						<Label htmlFor="emailFooter">Footer text</Label>
 						<Textarea
-							id="emailFooter"
-							value={footer}
-							onChange={(e) => setFooter(e.target.value)}
-							rows={4}
-							placeholder="Best regards,&#10;Conference Committee"
 							className="text-sm"
+							id="emailFooter"
+							onChange={(e) => setFooter(e.target.value)}
+							placeholder="Best regards,&#10;Conference Committee"
+							rows={4}
+							value={footer}
 						/>
 						<p className="text-xs text-muted-foreground">
 							Leave empty to disable. Appended to all outgoing emails. Use{" "}
@@ -151,8 +151,8 @@ export function EmailTemplatesTab({
 					</div>
 					<div className="flex justify-end">
 						<Button
-							onClick={handleSaveFooter}
 							disabled={isSavingFooter}
+							onClick={handleSaveFooter}
 							size="sm"
 						>
 							{isSavingFooter && (
@@ -167,16 +167,16 @@ export function EmailTemplatesTab({
 			<div className="mt-6" />
 
 			<SettingsSection
+				description="Manage email notification templates"
 				icon={IconMail}
 				title="Email Templates"
-				description="Manage email notification templates"
 			>
 				<div className="space-y-3">
 					{templates.map((template) => (
 						<EmailTemplateCard
 							key={template.eventType}
-							template={template}
 							onEdit={() => handleEdit(template)}
+							template={template}
 						/>
 					))}
 				</div>
@@ -184,10 +184,10 @@ export function EmailTemplatesTab({
 
 			<EmailTemplateDialog
 				key={editingTemplate?.eventType ?? "none"}
-				template={editingTemplate}
-				open={dialogOpen}
 				onOpenChange={setDialogOpen}
 				onSave={handleSave}
+				open={dialogOpen}
+				template={editingTemplate}
 			/>
 		</>
 	);

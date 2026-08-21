@@ -47,7 +47,7 @@ function AdminCreateSubmissionPage() {
 			<div className="flex h-full flex-col">
 				<PageHeader icon={IconUsers} title="User">
 					<Link to="/admin/users">
-						<Button variant="outline" size="sm">
+						<Button size="sm" variant="outline">
 							<IconArrowLeft className="mr-2 size-4" />
 							Back
 						</Button>
@@ -62,9 +62,8 @@ function AdminCreateSubmissionPage() {
 
 	return (
 		<SubmissionCreateView
-			mode="on-behalf"
 			availableTracks={availableTracks}
-			onCreated={onCreated}
+			mode="on-behalf"
 			onBehalfUser={{
 				id: user.id,
 				firstName: user.firstName,
@@ -73,6 +72,7 @@ function AdminCreateSubmissionPage() {
 				affiliationId: user.affiliationId,
 				affiliationName: user.affiliation,
 			}}
+			onCreated={onCreated}
 		/>
 	);
 }

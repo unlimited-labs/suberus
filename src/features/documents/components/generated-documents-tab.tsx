@@ -69,25 +69,25 @@ export function GeneratedDocumentsTab() {
 
 	return (
 		<SectionCard
+			contentClassName="space-y-4"
+			description="Every document issued to participants, across the conference."
 			icon={IconFiles}
 			title="Generated documents"
-			description="Every document issued to participants, across the conference."
-			contentClassName="space-y-4"
 		>
 			<DocumentFilters
-				search={search}
 				onSearchChange={setSearch}
-				status={status}
 				onStatusChange={setStatus}
-				templateId={templateId}
 				onTemplateChange={setTemplateId}
+				search={search}
+				status={status}
+				templateId={templateId}
 				templates={templates}
 			/>
 
 			{isLoading ? (
 				<div className="space-y-2">
 					{[0, 1, 2, 3].map((i) => (
-						<Skeleton key={i} className="h-16 w-full rounded-xl" />
+						<Skeleton className="h-16 w-full rounded-xl" key={i} />
 					))}
 				</div>
 			) : documents.length === 0 ? (
@@ -100,14 +100,14 @@ export function GeneratedDocumentsTab() {
 			)}
 
 			<ConfirmDeleteDialog
-				open={deletingId !== null}
+				busy={busy}
+				description="This removes the generated file. The participant will no longer see it."
+				onConfirm={handleDelete}
 				onOpenChange={(o) => {
 					if (!o) setDeletingId(null);
 				}}
-				busy={busy}
+				open={deletingId !== null}
 				title="Delete document?"
-				description="This removes the generated file. The participant will no longer see it."
-				onConfirm={handleDelete}
 			/>
 		</SectionCard>
 	);

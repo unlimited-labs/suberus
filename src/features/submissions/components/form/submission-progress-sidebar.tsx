@@ -67,14 +67,14 @@ export function SubmissionProgressSidebar({
 				</SectionCard>
 
 				<SectionCard
-					title="Guidelines"
 					icon={IconInfoCircle}
+					title="Guidelines"
 					variant="outlined"
 				>
 					{renderedGuidelines ? (
 						<Markdown
-							content={renderedGuidelines}
 							className="text-sm text-muted-foreground"
+							content={renderedGuidelines}
 						/>
 					) : (
 						<div className="space-y-3 text-sm text-muted-foreground">

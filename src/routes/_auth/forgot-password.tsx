@@ -60,16 +60,16 @@ function ForgotPasswordPage() {
 					<p className="text-sm text-muted-foreground">
 						Didn't receive the email? Check your spam folder or{" "}
 						<button
-							type="button"
-							onClick={() => setIsSubmitted(false)}
 							className="text-primary hover:underline"
+							onClick={() => setIsSubmitted(false)}
+							type="button"
 						>
 							try again
 						</button>
 					</p>
 					<Link
-						to="/login"
 						className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+						to="/login"
 					>
 						<IconArrowLeft className="size-4" />
 						Back to login
@@ -81,24 +81,24 @@ function ForgotPasswordPage() {
 
 	return (
 		<AuthCard
-			title="Forgot password?"
 			subtitle="Enter your email and we'll send you a reset link"
+			title="Forgot password?"
 		>
 			<form
+				className="flex flex-1 flex-col"
 				onSubmit={(e) => {
 					e.preventDefault();
 					e.stopPropagation();
 					void form.handleSubmit();
 				}}
-				className="flex flex-1 flex-col"
 			>
 				<div className="flex-1 space-y-3">
 					<form.AppField name="email">
 						{(field) => (
 							<field.IconInputField
+								icon={<IconMail className="size-4" />}
 								label="E-mail"
 								type="email"
-								icon={<IconMail className="size-4" />}
 							/>
 						)}
 					</form.AppField>
@@ -107,9 +107,9 @@ function ForgotPasswordPage() {
 				<div className="mt-4">
 					<form.AppForm>
 						<form.SubmitButton
+							className="h-9 w-full"
 							label="Send reset link"
 							submittingLabel="Sending..."
-							className="h-9 w-full"
 						/>
 					</form.AppForm>
 				</div>
@@ -117,8 +117,8 @@ function ForgotPasswordPage() {
 
 			<p className="mt-3 text-center">
 				<Link
-					to="/login"
 					className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+					to="/login"
 				>
 					<IconArrowLeft className="size-4" />
 					Back to login

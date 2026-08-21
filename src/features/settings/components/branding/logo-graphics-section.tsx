@@ -35,18 +35,18 @@ export function LogoGraphicsSection({
 
 	return (
 		<SettingsSection
+			description="Conference logo and favicon"
 			icon={IconPhoto}
 			title="Logo & Graphics"
-			description="Conference logo and favicon"
 		>
 			<div className="space-y-4">
 				<div className="space-y-2">
 					<Label htmlFor="logoUrl">Logo URL</Label>
 					<Input
 						id="logoUrl"
-						value={data.logoUrl}
 						onChange={(e) => onChange("logoUrl", e.target.value)}
 						placeholder="https://"
+						value={data.logoUrl}
 					/>
 					{logoPreview && (
 						<div
@@ -54,29 +54,29 @@ export function LogoGraphicsSection({
 							data-testid="logo-preview"
 						>
 							<img
-								src={logoPreview}
 								alt="Logo preview"
 								className="max-h-16 object-contain"
 								onError={(e) => {
 									e.currentTarget.style.display = "none";
 								}}
+								src={logoPreview}
 							/>
 						</div>
 					)}
 					<ImageUploadControl
-						upload={logo}
+						ariaLabel="Upload logo"
 						hasImage={Boolean(data.logoUploadUrl)}
 						testIdPrefix="logo"
-						ariaLabel="Upload logo"
+						upload={logo}
 					/>
 				</div>
 				<div className="space-y-2">
 					<Label htmlFor="faviconUrl">Favicon URL</Label>
 					<Input
 						id="faviconUrl"
-						value={data.faviconUrl}
 						onChange={(e) => onChange("faviconUrl", e.target.value)}
 						placeholder="https://"
+						value={data.faviconUrl}
 					/>
 					{faviconPreview && (
 						<div
@@ -84,20 +84,20 @@ export function LogoGraphicsSection({
 							data-testid="favicon-preview"
 						>
 							<img
-								src={faviconPreview}
 								alt="Favicon preview"
 								className="max-h-12 object-contain"
 								onError={(e) => {
 									e.currentTarget.style.display = "none";
 								}}
+								src={faviconPreview}
 							/>
 						</div>
 					)}
 					<ImageUploadControl
-						upload={favicon}
+						ariaLabel="Upload favicon"
 						hasImage={Boolean(data.faviconUploadUrl)}
 						testIdPrefix="favicon"
-						ariaLabel="Upload favicon"
+						upload={favicon}
 					/>
 				</div>
 				<p className="text-xs text-muted-foreground">
@@ -106,18 +106,18 @@ export function LogoGraphicsSection({
 				</p>
 				<div className="flex items-center gap-2">
 					<Checkbox
-						id="logoDarkInvert"
 						checked={data.logoDarkInvert}
+						id="logoDarkInvert"
 						onCheckedChange={(checked) =>
 							onChange("logoDarkInvert", checked === true)
 						}
 					/>
-					<Label htmlFor="logoDarkInvert" className="cursor-pointer">
+					<Label className="cursor-pointer" htmlFor="logoDarkInvert">
 						Invert logo in dark mode
 					</Label>
 				</div>
 			</div>
-			<SettingsSaveButton onSave={onSave} isSaving={isSaving} />
+			<SettingsSaveButton isSaving={isSaving} onSave={onSave} />
 		</SettingsSection>
 	);
 }

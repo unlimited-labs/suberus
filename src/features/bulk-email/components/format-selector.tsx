@@ -27,20 +27,20 @@ export function FormatSelector({
 }: FormatSelectorProps) {
 	return (
 		<div className="flex items-center gap-2">
-			<Label htmlFor="format-select" className="text-muted-foreground">
+			<Label className="text-muted-foreground" htmlFor="format-select">
 				Format
 			</Label>
 			<Select
+				disabled={disabled}
 				items={OPTIONS}
-				value={value}
 				// SAFETY: the select renders only EmailCampaignFormat options.
 				onValueChange={(v) => onChange(v as EmailCampaignFormat)}
-				disabled={disabled}
+				value={value}
 			>
 				<SelectTrigger
-					id="format-select"
-					data-testid="format-select"
 					className="h-8 w-[150px]"
+					data-testid="format-select"
+					id="format-select"
 				>
 					<SelectValue />
 				</SelectTrigger>

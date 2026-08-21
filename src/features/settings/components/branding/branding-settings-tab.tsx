@@ -17,33 +17,33 @@ export function BrandingSettingsTab({ initialData }: BrandingSettingsTabProps) {
 		<div className="space-y-6">
 			<LogoGraphicsSection
 				data={data}
-				onChange={handleChange}
-				onSave={handleSave}
+				favicon={favicon}
 				isSaving={isSaving}
 				logo={logo}
-				favicon={favicon}
+				onChange={handleChange}
+				onSave={handleSave}
 			/>
 
 			<AuthBackgroundSection
 				data={data}
+				isSaving={isSaving}
 				onChange={handleChange}
 				onSave={handleSave}
-				isSaving={isSaving}
 				upload={bg}
 			/>
 
 			<ThemeColorsSection
 				data={data}
+				isSaving={isSaving}
 				onChange={handleChange}
 				onSave={handleSave}
-				isSaving={isSaving}
 			/>
 
 			<FooterSection
 				data={data}
+				isSaving={isSaving}
 				onChange={handleChange}
 				onSave={handleSave}
-				isSaving={isSaving}
 			/>
 		</div>
 	);

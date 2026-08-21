@@ -12,7 +12,7 @@ export function RouteError() {
 				Something went wrong
 			</p>
 			<p className="text-sm">An error occurred while loading this page.</p>
-			<Button variant="outline" onClick={() => router.invalidate()}>
+			<Button onClick={() => router.invalidate()} variant="outline">
 				Try again
 			</Button>
 		</div>

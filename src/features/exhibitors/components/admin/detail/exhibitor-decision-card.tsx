@@ -25,7 +25,7 @@ export function ExhibitorDecisionCard({
 
 	return (
 		<div data-testid="exhibitor-decision">
-			<SectionCard title="Decision" contentClassName="space-y-3 text-sm">
+			<SectionCard contentClassName="space-y-3 text-sm" title="Decision">
 				{canDecide ? (
 					<div className="flex flex-col gap-2 sm:flex-row">
 						<Button data-testid="exhibitor-approve" onClick={onApprove}>
@@ -33,8 +33,8 @@ export function ExhibitorDecisionCard({
 						</Button>
 						<Button
 							data-testid="exhibitor-reject"
-							variant="destructive"
 							onClick={onReject}
+							variant="destructive"
 						>
 							Reject
 						</Button>

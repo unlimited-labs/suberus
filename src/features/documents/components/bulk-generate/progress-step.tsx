@@ -10,7 +10,7 @@ export function ProgressStep({
 	pct: number;
 }) {
 	return (
-		<div className="space-y-3 py-1" aria-live="polite">
+		<div aria-live="polite" className="space-y-3 py-1">
 			<Progress value={pct} />
 			<div className="flex flex-wrap items-center gap-2 text-sm">
 				<Badge variant="default">{progress.ready} ready</Badge>
@@ -24,8 +24,8 @@ export function ProgressStep({
 				<div className="max-h-48 overflow-auto rounded-md border border-destructive/30 p-2">
 					{progress.failures.map((f) => (
 						<div
-							key={f.id}
 							className="flex items-center justify-between gap-2 px-1 py-1 text-xs"
+							key={f.id}
 						>
 							<span className="truncate">{f.participant}</span>
 							<span className="shrink-0 text-destructive">

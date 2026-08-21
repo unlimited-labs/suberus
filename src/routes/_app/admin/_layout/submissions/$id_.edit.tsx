@@ -80,8 +80,8 @@ function AdminEditSubmissionPage() {
 									? "Only administrators can edit submissions"
 									: "Exhibitor entries are managed via the exhibitor flow"}
 						</p>
-						<Link to="/admin/submissions/$id" params={{ id }}>
-							<Button variant="outline" className="gap-2">
+						<Link params={{ id }} to="/admin/submissions/$id">
+							<Button className="gap-2" variant="outline">
 								<IconArrowLeft className="size-4" />
 								Back to Submission
 							</Button>
@@ -165,8 +165,8 @@ function AdminEditSubmissionPage() {
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconFileText} title="Edit Submission">
-				<Link to="/admin/submissions/$id" params={{ id }}>
-					<Button variant="outline" className="gap-2">
+				<Link params={{ id }} to="/admin/submissions/$id">
+					<Button className="gap-2" variant="outline">
 						<IconArrowLeft className="size-4" />
 						Back
 					</Button>
@@ -174,14 +174,14 @@ function AdminEditSubmissionPage() {
 			</PageHeader>
 			<div className="flex-1 overflow-auto p-6">
 				<SubmissionForm
-					onSubmit={handleSubmit}
+					availableTracks={availableTracks}
+					extractionEnabled={extractionSettings.enabled}
+					guidelines={submissionGuidelines}
+					hasExistingFile={!!submission.file}
 					initialData={initialData}
+					onSubmit={handleSubmit}
 					typeConfigs={typeConfigs}
 					validationSettings={validationSettings}
-					guidelines={submissionGuidelines}
-					extractionEnabled={extractionSettings.enabled}
-					availableTracks={availableTracks}
-					hasExistingFile={!!submission.file}
 				/>
 			</div>
 		</div>

@@ -10,13 +10,13 @@ interface HistoryTabProps {
 
 export function HistoryTab({ activityHistory }: HistoryTabProps) {
 	return (
-		<SectionCard title="Activity History" icon={IconHistory}>
+		<SectionCard icon={IconHistory} title="Activity History">
 			<Timeline>
 				{activityHistory.map((entry, index) => (
 					<ActivityHistoryEvent
-						key={`${entry.activityType}-${index}`}
 						entry={entry}
 						isLast={index === activityHistory.length - 1}
+						key={`${entry.activityType}-${index}`}
 					/>
 				))}
 			</Timeline>

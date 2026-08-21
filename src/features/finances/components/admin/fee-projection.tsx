@@ -34,30 +34,30 @@ export function FeeProjection({
 						(Number.isFinite(row.price) ? row.price : 0) *
 						(Number.isFinite(row.qty) ? row.qty : 0);
 					return (
-						<div key={type.id} className="flex items-center gap-2">
+						<div className="flex items-center gap-2" key={type.id}>
 							<span className="flex-1 truncate text-sm">{type.name}</span>
 							<Input
-								type="number"
+								className="w-24 text-right tabular-nums"
+								data-testid={`sim-price-${index}`}
 								inputMode="decimal"
 								min={0}
-								step="0.01"
-								value={Number.isFinite(row.price) ? row.price : ""}
 								onChange={(e) =>
 									update(index, { price: parse(e.target.value) })
 								}
-								data-testid={`sim-price-${index}`}
-								className="w-24 text-right tabular-nums"
+								step="0.01"
+								type="number"
+								value={Number.isFinite(row.price) ? row.price : ""}
 							/>
 							<span className="text-xs text-muted-foreground">×</span>
 							<Input
-								type="number"
+								className="w-20 text-right tabular-nums"
+								data-testid={`sim-qty-${index}`}
 								inputMode="numeric"
 								min={0}
-								step="1"
-								value={Number.isFinite(row.qty) ? row.qty : ""}
 								onChange={(e) => update(index, { qty: parse(e.target.value) })}
-								data-testid={`sim-qty-${index}`}
-								className="w-20 text-right tabular-nums"
+								step="1"
+								type="number"
+								value={Number.isFinite(row.qty) ? row.qty : ""}
 							/>
 							<span className="w-28 text-right text-sm tabular-nums">
 								{formatCurrency(line, currency)}

@@ -25,30 +25,30 @@ export function SubmissionGuidelinesSection({
 }: SubmissionGuidelinesSectionProps) {
 	return (
 		<SettingsSection
+			delay={150}
+			description="Markdown text shown to authors in the submission form sidebar. Use {{placeholder}} for dynamic values."
 			icon={IconBook}
 			title="Submission Guidelines"
-			description="Markdown text shown to authors in the submission form sidebar. Use {{placeholder}} for dynamic values."
-			delay={150}
 		>
 			<div className="space-y-3">
 				<div className="flex flex-wrap gap-1.5">
 					{submissionGuidelinesPlaceholders.map((p) => (
 						<Badge
-							key={p}
-							variant="secondary"
 							className="font-mono text-xs cursor-pointer"
+							key={p}
 							onClick={() => onChange((prev) => `${prev}{{${p}}}`)}
+							variant="secondary"
 						>
 							{`{{${p}}}`}
 						</Badge>
 					))}
 				</div>
 				<Textarea
-					value={value}
-					onChange={(e) => onChange(e.target.value)}
-					rows={6}
 					className="font-mono text-sm"
+					onChange={(e) => onChange(e.target.value)}
 					placeholder="- Title should be concise..."
+					rows={6}
+					value={value}
 				/>
 				<MarkdownHint />
 			</div>

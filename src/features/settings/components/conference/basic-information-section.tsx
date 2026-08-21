@@ -28,36 +28,36 @@ export function BasicInformationSection({
 }: BasicInformationSectionProps) {
 	return (
 		<SettingsSection
+			description="Conference name, location and contact details"
 			icon={IconBuilding}
 			title="Basic Information"
-			description="Conference name, location and contact details"
 		>
 			<div className="grid gap-4 sm:grid-cols-2">
 				<div className="space-y-2 sm:col-span-2">
 					<Label htmlFor="name">Conference Name</Label>
 					<Input
 						id="name"
-						value={data.name}
 						onChange={(e) => onChange("name", e.target.value)}
 						placeholder="e.g. ICSE 2026"
+						value={data.name}
 					/>
 				</div>
 				<div className="space-y-2 sm:col-span-2">
 					<Label htmlFor="subtitle">Conference Subtitle (optional)</Label>
 					<Input
 						id="subtitle"
-						value={data.subtitle}
 						onChange={(e) => onChange("subtitle", e.target.value)}
 						placeholder="e.g. International Conference on Computer Methods in Materials Technology"
+						value={data.subtitle}
 					/>
 				</div>
 				<div className="space-y-2">
 					<Label htmlFor="location">Location</Label>
 					<Input
 						id="location"
-						value={data.location}
 						onChange={(e) => onChange("location", e.target.value)}
 						placeholder="e.g. Krakow, Poland"
+						value={data.location}
 					/>
 				</div>
 				<div className="space-y-2">
@@ -65,12 +65,12 @@ export function BasicInformationSection({
 					<div className="relative">
 						<IconWorld className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 						<Input
+							className="pl-8"
 							id="website"
-							type="url"
-							value={data.website}
 							onChange={(e) => onChange("website", e.target.value)}
 							placeholder="https://..."
-							className="pl-8"
+							type="url"
+							value={data.website}
 						/>
 					</div>
 				</div>
@@ -79,20 +79,20 @@ export function BasicInformationSection({
 					<div className="relative">
 						<IconMail className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 						<Input
+							className="pl-8"
 							id="contactEmail"
-							type="email"
-							value={data.contactEmail}
 							onChange={(e) => onChange("contactEmail", e.target.value)}
 							placeholder="contact@conference.com"
-							className="pl-8"
+							type="email"
+							value={data.contactEmail}
 						/>
 					</div>
 				</div>
 				<div className="space-y-2">
 					<Label htmlFor="currency">Currency</Label>
 					<Select
-						value={data.currency}
 						onValueChange={(value) => onChange("currency", value)}
+						value={data.currency}
 					>
 						<SelectTrigger id="currency">
 							<SelectValue />
@@ -105,7 +105,7 @@ export function BasicInformationSection({
 					</Select>
 				</div>
 			</div>
-			<SettingsSaveButton onSave={onSave} isSaving={isSaving} />
+			<SettingsSaveButton isSaving={isSaving} onSave={onSave} />
 		</SettingsSection>
 	);
 }

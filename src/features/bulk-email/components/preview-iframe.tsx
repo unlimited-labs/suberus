@@ -47,18 +47,18 @@ export function PreviewIframe({ body, isHtml, isLoading }: PreviewIframeProps) {
 						<div className="flex rounded-md border border-border bg-background p-0.5">
 							{VIEWPORTS.map((v) => (
 								<button
-									key={v.id}
-									type="button"
-									data-testid={`preview-${v.id}`}
 									aria-pressed={viewport === v.id}
-									title={v.label}
-									onClick={() => setViewport(v.id)}
 									className={cn(
 										"flex items-center gap-1 rounded px-2 py-1 text-xs transition-colors",
 										viewport === v.id
 											? "bg-muted text-foreground"
 											: "text-muted-foreground hover:text-foreground",
 									)}
+									data-testid={`preview-${v.id}`}
+									key={v.id}
+									onClick={() => setViewport(v.id)}
+									title={v.label}
+									type="button"
 								>
 									<v.icon className="size-3.5" />
 									<span className="hidden sm:inline">{v.label}</span>
@@ -71,10 +71,10 @@ export function PreviewIframe({ body, isHtml, isLoading }: PreviewIframeProps) {
 			{isHtml ? (
 				<div className="flex justify-center overflow-auto bg-muted/30 p-3">
 					<iframe
-						title="Email preview"
+						className={cn("h-96 shrink-0 rounded-sm bg-white", FRAME[viewport])}
 						sandbox=""
 						srcDoc={body}
-						className={cn("h-96 shrink-0 rounded-sm bg-white", FRAME[viewport])}
+						title="Email preview"
 					/>
 				</div>
 			) : (

@@ -47,27 +47,27 @@ export function InvitationsSettingsTab({
 
 	return (
 		<SettingsSection
+			description="Configure invitation expiration"
 			icon={IconClock}
 			title="Invitation Settings"
-			description="Configure invitation expiration"
 		>
 			<div className="space-y-3">
 				<div className="space-y-2">
 					<Label htmlFor="validityHours">Invitation validity (hours)</Label>
 					<Input
-						id="validityHours"
-						type="number"
-						min={1}
-						value={validityHours}
-						onChange={(e) => setValidityHours(Number(e.target.value))}
 						className="max-w-[200px]"
+						id="validityHours"
+						min={1}
+						onChange={(e) => setValidityHours(Number(e.target.value))}
+						type="number"
+						value={validityHours}
 					/>
 					<p className="text-xs text-muted-foreground">
 						How long invitation links remain valid after being sent.
 					</p>
 				</div>
 				<div className="flex justify-end">
-					<Button onClick={handleSave} disabled={isSaving} size="sm">
+					<Button disabled={isSaving} onClick={handleSave} size="sm">
 						{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 						Save
 					</Button>

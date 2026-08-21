@@ -56,6 +56,7 @@ export function SurveyAnswersForm({
 
 	return (
 		<form
+			className="space-y-4"
 			onSubmit={(e) => {
 				e.preventDefault();
 				e.stopPropagation();
@@ -68,7 +69,6 @@ export function SurveyAnswersForm({
 				}
 				void form.handleSubmit();
 			}}
-			className="space-y-4"
 		>
 			<div className="space-y-3">
 				{questions.map((question) => (
@@ -90,9 +90,9 @@ export function SurveyAnswersForm({
 							return (
 								<Field data-invalid={hasError}>
 									<SurveyQuestionField
+										onChange={field.handleChange}
 										question={question}
 										value={field.state.value}
-										onChange={field.handleChange}
 									/>
 									<FieldError
 										errors={hasError ? field.state.meta.errors : undefined}

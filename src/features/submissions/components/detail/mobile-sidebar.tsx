@@ -23,7 +23,7 @@ export function MobileSidebar({
 	isReadOnly,
 }: MobileSidebarProps) {
 	return (
-		<div data-testid="submission-sidebar" className="lg:hidden space-y-6">
+		<div className="lg:hidden space-y-6" data-testid="submission-sidebar">
 			<div className="rounded-2xl bg-card shadow-xl border border-border/50 p-6">
 				<div className="flex items-center justify-between flex-wrap gap-3">
 					<div>
@@ -41,19 +41,19 @@ export function MobileSidebar({
 			{versions.length > 1 && (
 				<div className="rounded-2xl bg-card shadow-xl border border-border/50 p-6">
 					<VersionSelector
-						versions={versions}
 						currentVersion={submission.currentVersion}
-						selectedVersion={selectedVersion}
 						onVersionChange={onVersionChange}
+						selectedVersion={selectedVersion}
+						versions={versions}
 					/>
 				</div>
 			)}
 
 			{!isReadOnly && (
 				<ActionsCard
+					status={submission.status}
 					submissionId={submission.id}
 					submissionTitle={submission.title}
-					status={submission.status}
 				/>
 			)}
 		</div>

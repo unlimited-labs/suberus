@@ -31,14 +31,14 @@ export function DueCell({
 				)}
 			>
 				<Input
-					type="date"
-					value={value}
-					onChange={(e) => onChange(e.target.value)}
-					data-testid={`${testIdPrefix}-due-${index}`}
 					className={cn(
 						"w-40",
 						overdue && "border-destructive text-destructive",
 					)}
+					data-testid={`${testIdPrefix}-due-${index}`}
+					onChange={(e) => onChange(e.target.value)}
+					type="date"
+					value={value}
 				/>
 				{days === null ? null : overdue ? (
 					<span

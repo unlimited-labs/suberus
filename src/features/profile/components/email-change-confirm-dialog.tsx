@@ -36,8 +36,8 @@ export function EmailChangeConfirmDialog({
 
 	return (
 		<Dialog
-			open={open}
 			onOpenChange={(next) => (next ? onOpenChange(true) : close())}
+			open={open}
 		>
 			<DialogContent data-testid="email-change-confirm-dialog">
 				<DialogHeader>
@@ -48,25 +48,25 @@ export function EmailChangeConfirmDialog({
 					</DialogDescription>
 				</DialogHeader>
 				<Input
-					type="password"
 					autoFocus
-					value={password}
+					data-testid="email-change-confirm-password"
 					onChange={(e) => setPassword(e.target.value)}
 					onKeyDown={(e) => {
 						if (e.key === "Enter") confirm();
 					}}
 					placeholder="Password"
-					data-testid="email-change-confirm-password"
+					type="password"
+					value={password}
 				/>
 				<DialogFooter>
-					<Button type="button" variant="outline" onClick={close}>
+					<Button onClick={close} type="button" variant="outline">
 						Cancel
 					</Button>
 					<Button
-						type="button"
 						data-testid="email-change-confirm-submit"
 						disabled={!password || isSubmitting}
 						onClick={confirm}
+						type="button"
 					>
 						Confirm
 					</Button>

@@ -116,10 +116,10 @@ function AuthLayoutRoute() {
 	return (
 		<div style={cssVars}>
 			<AuthLayout
-				logoUrl={branding.logoUrl}
 				backgroundImageUrl={branding.authBackgroundUrl || undefined}
-				overlayOpacity={branding.authBgOverlay}
 				logoDarkInvert={branding.logoDarkInvert}
+				logoUrl={branding.logoUrl}
+				overlayOpacity={branding.authBgOverlay}
 			>
 				<Outlet />
 			</AuthLayout>

@@ -52,16 +52,16 @@ export function SurveyQuestionField({
 					data-testid="survey-question-field"
 				>
 					<Checkbox
-						id={`survey-${question.id}`}
 						checked={value === "true"}
+						className="mt-0.5"
+						id={`survey-${question.id}`}
 						onCheckedChange={(checked) =>
 							onChange(checked === true ? "true" : "false")
 						}
-						className="mt-0.5"
 					/>
 					<Label
-						htmlFor={`survey-${question.id}`}
 						className="cursor-pointer text-sm font-normal leading-snug"
+						htmlFor={`survey-${question.id}`}
 					>
 						{question.label}
 						{requiredMark}
@@ -72,16 +72,16 @@ export function SurveyQuestionField({
 		case "TEXT":
 			return (
 				<div className="space-y-1.5" data-testid="survey-question-field">
-					<Label htmlFor={`survey-${question.id}`} className="text-sm">
+					<Label className="text-sm" htmlFor={`survey-${question.id}`}>
 						{question.label}
 						{requiredMark}
 					</Label>
 					<Input
 						id={`survey-${question.id}`}
-						value={value}
-						onChange={(e) => onChange(e.target.value)}
 						maxLength={500}
+						onChange={(e) => onChange(e.target.value)}
 						placeholder="Type your answer..."
+						value={value}
 					/>
 				</div>
 			);
@@ -91,7 +91,7 @@ export function SurveyQuestionField({
 			const other = isOtherValue(value);
 			return (
 				<div className="space-y-1.5" data-testid="survey-question-field">
-					<Label htmlFor={`survey-${question.id}`} className="text-sm">
+					<Label className="text-sm" htmlFor={`survey-${question.id}`}>
 						{question.label}
 						{requiredMark}
 					</Label>
@@ -102,12 +102,12 @@ export function SurveyQuestionField({
 								? [{ value: OTHER_SENTINEL, label: "Other" }]
 								: []),
 						]}
-						value={other ? OTHER_SENTINEL : value}
 						onValueChange={(v) =>
 							onChange(v === OTHER_SENTINEL ? makeOther("") : v)
 						}
+						value={other ? OTHER_SENTINEL : value}
 					>
-						<SelectTrigger id={`survey-${question.id}`} className="h-9">
+						<SelectTrigger className="h-9" id={`survey-${question.id}`}>
 							<SelectValue placeholder="Select an option..." />
 						</SelectTrigger>
 						<SelectContent>
@@ -123,10 +123,10 @@ export function SurveyQuestionField({
 					</Select>
 					{other && (
 						<Input
-							value={otherText(value)}
-							onChange={(e) => onChange(makeOther(e.target.value))}
 							maxLength={OTHER_INPUT_MAX}
+							onChange={(e) => onChange(makeOther(e.target.value))}
 							placeholder="Please specify..."
+							value={otherText(value)}
 						/>
 					)}
 				</div>
@@ -146,10 +146,10 @@ export function SurveyQuestionField({
 					</Label>
 					<div className="space-y-2">
 						{(question.options ?? []).map((option) => (
-							<div key={option} className="flex items-center gap-2">
+							<div className="flex items-center gap-2" key={option}>
 								<Checkbox
-									id={`survey-${question.id}-${option}`}
 									checked={selectedSet.has(option)}
+									id={`survey-${question.id}-${option}`}
 									onCheckedChange={(checked) => {
 										setSelected(
 											checked
@@ -159,8 +159,8 @@ export function SurveyQuestionField({
 									}}
 								/>
 								<Label
-									htmlFor={`survey-${question.id}-${option}`}
 									className="cursor-pointer text-sm font-normal"
+									htmlFor={`survey-${question.id}-${option}`}
 								>
 									{option}
 								</Label>
@@ -170,8 +170,8 @@ export function SurveyQuestionField({
 							<div className="space-y-1.5">
 								<div className="flex items-center gap-2">
 									<Checkbox
-										id={`survey-${question.id}-other`}
 										checked={otherEntry !== undefined}
+										id={`survey-${question.id}-other`}
 										onCheckedChange={(checked) => {
 											setSelected(
 												checked
@@ -181,15 +181,15 @@ export function SurveyQuestionField({
 										}}
 									/>
 									<Label
-										htmlFor={`survey-${question.id}-other`}
 										className="cursor-pointer text-sm font-normal"
+										htmlFor={`survey-${question.id}-other`}
 									>
 										Other
 									</Label>
 								</div>
 								{otherEntry !== undefined && (
 									<Input
-										value={otherText(otherEntry)}
+										maxLength={OTHER_INPUT_MAX}
 										onChange={(e) =>
 											setSelected(
 												selected.map((s) =>
@@ -197,8 +197,8 @@ export function SurveyQuestionField({
 												),
 											)
 										}
-										maxLength={OTHER_INPUT_MAX}
 										placeholder="Please specify..."
+										value={otherText(otherEntry)}
 									/>
 								)}
 							</div>

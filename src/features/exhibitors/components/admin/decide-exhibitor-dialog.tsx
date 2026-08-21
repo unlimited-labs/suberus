@@ -90,7 +90,7 @@ export function DecideExhibitorDialog({
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={handleOpenChange}>
+		<Dialog onOpenChange={handleOpenChange} open={open}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
 					<DialogTitle>{text.title}</DialogTitle>
@@ -114,13 +114,13 @@ export function DecideExhibitorDialog({
 							{text.reasonLabel} <span className="text-destructive">*</span>
 						</Label>
 						<Textarea
-							id="decide-reason"
 							data-testid="decide-exhibitor-reason"
-							value={reason}
+							id="decide-reason"
 							onChange={(e) => setReason(e.target.value)}
 							placeholder="Reason for the decision (included in the email to the exhibitor)"
-							rows={4}
 							required
+							rows={4}
+							value={reason}
 						/>
 						<p className="text-xs text-muted-foreground">
 							This reason will be recorded in the audit trail and included in
@@ -131,17 +131,17 @@ export function DecideExhibitorDialog({
 
 				<DialogFooter>
 					<Button
-						variant="outline"
-						onClick={() => handleOpenChange(false)}
 						disabled={isSubmitting}
+						onClick={() => handleOpenChange(false)}
+						variant="outline"
 					>
 						Cancel
 					</Button>
 					<Button
 						data-testid="decide-exhibitor-confirm"
-						variant={decision === "REJECTED" ? "destructive" : "default"}
-						onClick={handleSubmit}
 						disabled={reason.trim().length < 3 || isSubmitting}
+						onClick={handleSubmit}
+						variant={decision === "REJECTED" ? "destructive" : "default"}
 					>
 						{isSubmitting && (
 							<IconLoader2 className="mr-2 size-4 animate-spin" />

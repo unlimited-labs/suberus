@@ -32,8 +32,8 @@ function ReviewerComparePage() {
 	);
 
 	const backLink = (
-		<Link to="/reviews/$assignmentId" params={{ assignmentId }}>
-			<Button variant="outline" className="gap-2">
+		<Link params={{ assignmentId }} to="/reviews/$assignmentId">
+			<Button className="gap-2" variant="outline">
 				<IconArrowLeft className="size-4" />
 				Back to review
 			</Button>
@@ -82,14 +82,14 @@ function ReviewerComparePage() {
 					</div>
 
 					<VersionCompare
-						versions={submission.versions}
-						currentVersionNumber={submission.currentVersionNumber}
 						base={base}
 						compare={compare}
+						currentVersionNumber={submission.currentVersionNumber}
 						layout={layout}
 						onBaseChange={(n) => setParam({ base: n })}
 						onCompareChange={(n) => setParam({ compare: n })}
 						onLayoutChange={(l) => setParam({ view: l })}
+						versions={submission.versions}
 					/>
 				</div>
 			</div>

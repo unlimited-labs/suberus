@@ -94,18 +94,18 @@ function SurveyQuestionRow({
 
 	return (
 		<div
-			ref={setNodeRef}
-			style={{ transform: CSS.Transform.toString(transform), transition }}
-			data-testid="question-row"
 			className={cn(
 				"flex items-center gap-3 rounded-lg border bg-card p-3",
 				isDragging && "relative z-10 opacity-80 shadow-lg",
 			)}
+			data-testid="question-row"
+			ref={setNodeRef}
+			style={{ transform: CSS.Transform.toString(transform), transition }}
 		>
 			<button
-				type="button"
-				className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
 				aria-label="Reorder question"
+				className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
+				type="button"
 				{...attributes}
 				{...listeners}
 			>
@@ -117,27 +117,27 @@ function SurveyQuestionRow({
 			</div>
 
 			<button
-				type="button"
-				onClick={onEdit}
 				className="min-w-0 flex-1 text-left"
+				onClick={onEdit}
+				type="button"
 			>
 				<p className="truncate text-sm font-medium">{question.label}</p>
 				<div className="mt-0.5 flex flex-wrap items-center gap-1.5">
-					<Badge variant="outline" className="text-[10px]">
+					<Badge className="text-[10px]" variant="outline">
 						{TYPE_LABELS[question.type]}
 					</Badge>
 					{question.isRequired && (
-						<Badge variant="secondary" className="text-[10px]">
+						<Badge className="text-[10px]" variant="secondary">
 							Required
 						</Badge>
 					)}
 					{question.showInUsersList && (
-						<Badge variant="secondary" className="text-[10px]">
+						<Badge className="text-[10px]" variant="secondary">
 							In list: {question.fieldName ?? question.label}
 						</Badge>
 					)}
 					{exhibitorsEnabled && question.audience !== "ALL" && (
-						<Badge variant="outline" className="text-[10px]">
+						<Badge className="text-[10px]" variant="outline">
 							{AUDIENCE_LABELS[question.audience]}
 						</Badge>
 					)}
@@ -145,35 +145,35 @@ function SurveyQuestionRow({
 			</button>
 
 			<Button
-				variant="ghost"
-				size="icon-sm"
-				onClick={onEdit}
-				disabled={isBusy}
 				aria-label="Edit question"
+				disabled={isBusy}
+				onClick={onEdit}
+				size="icon-sm"
+				variant="ghost"
 			>
 				<IconPencil className="size-4" />
 			</Button>
 			<div className="flex items-center gap-1.5">
 				<Label
-					htmlFor={`active-${question.id}`}
 					className="hidden text-xs text-muted-foreground sm:inline"
+					htmlFor={`active-${question.id}`}
 				>
 					Active
 				</Label>
 				<Switch
-					id={`active-${question.id}`}
 					checked={question.isActive}
-					onCheckedChange={onToggleActive}
 					disabled={isBusy}
+					id={`active-${question.id}`}
+					onCheckedChange={onToggleActive}
 				/>
 			</div>
 			<Button
-				variant="ghost"
-				size="icon-sm"
-				onClick={onDelete}
-				disabled={isBusy}
-				className="text-destructive hover:text-destructive"
 				aria-label="Delete question"
+				className="text-destructive hover:text-destructive"
+				disabled={isBusy}
+				onClick={onDelete}
+				size="icon-sm"
+				variant="ghost"
 			>
 				<IconTrash className="size-4" />
 			</Button>
@@ -367,9 +367,9 @@ export function SurveyQuestionsTab({
 	return (
 		<div className="space-y-6">
 			<SettingsSection
+				description="Configure questions shown to users during registration and in their settings"
 				icon={IconClipboardList}
 				title="Survey Questions"
-				description="Configure questions shown to users during registration and in their settings"
 			>
 				<div className="space-y-4">
 					{questions.length === 0 ? (
@@ -378,9 +378,9 @@ export function SurveyQuestionsTab({
 						</p>
 					) : (
 						<DndContext
-							sensors={sensors}
 							collisionDetection={closestCenter}
 							onDragEnd={handleDragEnd}
+							sensors={sensors}
 						>
 							<SortableContext
 								items={questions.map((q) => q.id)}
@@ -389,15 +389,15 @@ export function SurveyQuestionsTab({
 								<div className="space-y-2">
 									{questions.map((question) => (
 										<SurveyQuestionRow
-											key={question.id}
-											question={question}
-											isBusy={busyId === question.id}
 											exhibitorsEnabled={exhibitorsEnabled}
+											isBusy={busyId === question.id}
+											key={question.id}
+											onDelete={() => setDeleting(question)}
 											onEdit={() => setDialog({ question })}
 											onToggleActive={(active) =>
 												handleToggleActive(question.id, active)
 											}
-											onDelete={() => setDeleting(question)}
+											question={question}
 										/>
 									))}
 								</div>
@@ -407,27 +407,27 @@ export function SurveyQuestionsTab({
 
 					<div className="flex flex-col gap-2 sm:flex-row">
 						<button
-							type="button"
-							data-testid="add-question-button"
-							onClick={() => setDialog({ question: null })}
 							className={cn(
 								"flex flex-1 items-center justify-center gap-2 rounded-lg py-3",
 								"border border-dashed border-border/60 text-sm font-medium text-muted-foreground",
 								"transition-all hover:border-primary hover:bg-primary/5 hover:text-primary",
 							)}
+							data-testid="add-question-button"
+							onClick={() => setDialog({ question: null })}
+							type="button"
 						>
 							<IconPlus className="size-4" />
 							Add question
 						</button>
 						<button
-							type="button"
-							data-testid="import-template-button"
-							onClick={() => setTemplateOpen(true)}
 							className={cn(
 								"flex flex-1 items-center justify-center gap-2 rounded-lg py-3",
 								"border border-dashed border-border/60 text-sm font-medium text-muted-foreground",
 								"transition-all hover:border-primary hover:bg-primary/5 hover:text-primary",
 							)}
+							data-testid="import-template-button"
+							onClick={() => setTemplateOpen(true)}
+							type="button"
 						>
 							<IconTemplate className="size-4" />
 							Import template
@@ -437,8 +437,6 @@ export function SurveyQuestionsTab({
 			</SettingsSection>
 
 			<SurveyQuestionDialog
-				question={dialog?.question ?? null}
-				open={dialog !== null}
 				exhibitorsEnabled={exhibitorsEnabled}
 				onOpenChange={(open) => {
 					if (!open) setDialog(null);
@@ -448,25 +446,27 @@ export function SurveyQuestionsTab({
 						? handleEditSave(dialog.question, values)
 						: handleCreate(values)
 				}
+				open={dialog !== null}
+				question={dialog?.question ?? null}
 			/>
 
 			<SurveyTemplateDialog
-				open={templateOpen}
+				isBusy={importing}
+				onImport={handleImport}
 				onOpenChange={(open) => {
 					if (!importing) setTemplateOpen(open);
 				}}
-				onImport={handleImport}
-				isBusy={importing}
+				open={templateOpen}
 			/>
 
 			<SurveyQuestionDeleteDialog
-				question={deleting}
-				open={deleting !== null}
+				isBusy={busyId === deleting?.id}
+				onConfirm={handleConfirmDelete}
 				onOpenChange={(open) => {
 					if (!open) setDeleting(null);
 				}}
-				onConfirm={handleConfirmDelete}
-				isBusy={busyId === deleting?.id}
+				open={deleting !== null}
+				question={deleting}
 			/>
 		</div>
 	);

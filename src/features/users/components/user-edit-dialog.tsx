@@ -91,7 +91,7 @@ export function UserEditDialog({
 	});
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent className="sm:max-w-lg">
 				<DialogHeader>
 					<DialogTitle>Edit User Profile</DialogTitle>
@@ -100,12 +100,12 @@ export function UserEditDialog({
 					</DialogDescription>
 				</DialogHeader>
 				<form
+					className="space-y-4"
 					onSubmit={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
 						void form.handleSubmit();
 					}}
-					className="space-y-4"
 				>
 					<div className="grid gap-4 sm:grid-cols-2">
 						<form.AppField name="firstName">
@@ -129,8 +129,8 @@ export function UserEditDialog({
 						<form.AppField name="affiliation">
 							{(field) => (
 								<field.IconInputField
-									label="Affiliation"
 									icon={<IconBuilding className="size-4" />}
+									label="Affiliation"
 								/>
 							)}
 						</form.AppField>
@@ -148,36 +148,36 @@ export function UserEditDialog({
 					<form.AppField name="email">
 						{(field) => (
 							<field.IconInputField
+								icon={<IconMail className="size-4" />}
 								label="Email *"
 								type="email"
-								icon={<IconMail className="size-4" />}
 							/>
 						)}
 					</form.AppField>
 
 					<BillingFieldsGroup
-						form={form}
 						fields={{
 							needInvoice: "needInvoice",
 							address: "address",
 							country: "country",
 						}}
+						form={form}
 						needInvoiceLabel="Needs invoice for organization"
 					/>
 
 					<DialogFooter>
 						<Button
+							onClick={() => onOpenChange(false)}
 							type="button"
 							variant="outline"
-							onClick={() => onOpenChange(false)}
 						>
 							Cancel
 						</Button>
 						<form.AppForm>
 							<form.SubmitButton
+								disabled={mutation.isPending}
 								label="Save"
 								submittingLabel="Saving..."
-								disabled={mutation.isPending}
 							/>
 						</form.AppForm>
 					</DialogFooter>

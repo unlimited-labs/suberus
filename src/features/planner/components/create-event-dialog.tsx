@@ -88,8 +88,8 @@ export function CreateEventDialog({
 				: breakDurationMin;
 
 	return (
-		<Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-			<DialogContent data-testid="create-event-dialog" className="sm:max-w-sm">
+		<Dialog onOpenChange={(isOpen) => !isOpen && handleClose()} open={open}>
+			<DialogContent className="sm:max-w-sm" data-testid="create-event-dialog">
 				<DialogHeader>
 					<DialogTitle>
 						{type === "session"
@@ -104,27 +104,27 @@ export function CreateEventDialog({
 				</DialogHeader>
 
 				<form
+					className="space-y-4"
 					onSubmit={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
 						void form.handleSubmit();
 					}}
-					className="space-y-4"
 				>
 					<form.Field name="type">
 						{(field) => (
 							<div className="grid grid-cols-3 gap-2">
 								{(["session", "break", "event"] as const).map((t) => (
 									<button
-										key={t}
-										type="button"
-										onClick={() => field.handleChange(t)}
-										data-testid={`create-event-type-${t}`}
 										className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
 											field.state.value === t
 												? "border-primary bg-primary text-primary-foreground"
 												: "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
 										}`}
+										data-testid={`create-event-type-${t}`}
+										key={t}
+										onClick={() => field.handleChange(t)}
+										type="button"
 									>
 										{t === "session" ? (
 											<IconLayoutGrid size={14} />
@@ -149,11 +149,11 @@ export function CreateEventDialog({
 							<div className="space-y-2">
 								<Label htmlFor="event-start">Start</Label>
 								<Input
+									data-testid="create-event-start"
 									id="event-start"
+									onChange={(e) => field.handleChange(e.target.value)}
 									type="datetime-local"
 									value={field.state.value}
-									onChange={(e) => field.handleChange(e.target.value)}
-									data-testid="create-event-start"
 								/>
 							</div>
 						)}
@@ -171,9 +171,9 @@ export function CreateEventDialog({
 							<form.Field name="untimedSlots">
 								{(field) => (
 									<Switch
-										id="event-untimed"
-										data-testid="create-event-untimed"
 										checked={field.state.value}
+										data-testid="create-event-untimed"
+										id="event-untimed"
 										onCheckedChange={(v) => field.handleChange(v === true)}
 									/>
 								)}
@@ -188,10 +188,10 @@ export function CreateEventDialog({
 									<div className="space-y-2">
 										<Label>Presentations</Label>
 										<Stepper
-											value={field.state.value}
-											min={1}
 											max={20}
+											min={1}
 											onChange={field.handleChange}
+											value={field.state.value}
 										/>
 									</div>
 								)}
@@ -201,11 +201,11 @@ export function CreateEventDialog({
 									<div className="space-y-2">
 										<Label>Min / talk</Label>
 										<Stepper
-											value={field.state.value}
-											min={5}
 											max={120}
-											step={5}
+											min={5}
 											onChange={field.handleChange}
+											step={5}
+											value={field.state.value}
 										/>
 									</div>
 								)}
@@ -217,15 +217,15 @@ export function CreateEventDialog({
 								const errors = field.state.meta.errors;
 								const hasError = errors.length > 0;
 								return (
-									<Field data-invalid={hasError} className="space-y-2">
+									<Field className="space-y-2" data-invalid={hasError}>
 										<Label htmlFor="event-end">End</Label>
 										<Input
-											id="event-end"
-											type="datetime-local"
-											value={field.state.value}
-											onChange={(e) => field.handleChange(e.target.value)}
 											aria-invalid={hasError}
 											data-testid="create-event-end"
+											id="event-end"
+											onChange={(e) => field.handleChange(e.target.value)}
+											type="datetime-local"
+											value={field.state.value}
 										/>
 										<FieldError errors={hasError ? errors : undefined} />
 									</Field>
@@ -238,11 +238,11 @@ export function CreateEventDialog({
 								<div className="space-y-2">
 									<Label>Duration</Label>
 									<Stepper
-										value={field.state.value}
-										min={5}
 										max={180}
-										step={5}
+										min={5}
 										onChange={field.handleChange}
+										step={5}
+										value={field.state.value}
 									/>
 								</div>
 							)}
@@ -251,10 +251,7 @@ export function CreateEventDialog({
 
 					<TimeRangeSummary
 						compact
-						start={startDate}
 						end={endDate}
-						totalMin={totalMin}
-						timezone={timezone}
 						extra={
 							type === "session" && !untimedSlots ? (
 								<span className="ml-1 opacity-60">
@@ -262,6 +259,9 @@ export function CreateEventDialog({
 								</span>
 							) : null
 						}
+						start={startDate}
+						timezone={timezone}
+						totalMin={totalMin}
 					/>
 
 					<form.Field
@@ -277,22 +277,22 @@ export function CreateEventDialog({
 							const errors = field.state.meta.errors;
 							const hasError = errors.length > 0;
 							return (
-								<Field data-invalid={hasError} className="space-y-2">
+								<Field className="space-y-2" data-invalid={hasError}>
 									<Label htmlFor="event-title">
 										{type === "session" ? "Title (optional)" : "Title"}
 									</Label>
 									<Input
-										id="event-title"
-										value={field.state.value}
-										onChange={(e) => field.handleChange(e.target.value)}
 										aria-invalid={hasError}
+										autoFocus
+										data-testid="create-event-title"
+										id="event-title"
+										onChange={(e) => field.handleChange(e.target.value)}
 										placeholder={
 											type === "session"
 												? `Session ${sessions.length + 1}`
 												: undefined
 										}
-										data-testid="create-event-title"
-										autoFocus
+										value={field.state.value}
 									/>
 									<FieldError errors={hasError ? errors : undefined} />
 								</Field>
@@ -309,11 +309,11 @@ export function CreateEventDialog({
 											Description (optional)
 										</Label>
 										<Textarea
-											id="event-description"
-											value={field.state.value}
-											onChange={(e) => field.handleChange(e.target.value)}
 											data-testid="create-event-description"
+											id="event-description"
+											onChange={(e) => field.handleChange(e.target.value)}
 											rows={3}
+											value={field.state.value}
 										/>
 									</div>
 								)}
@@ -323,10 +323,10 @@ export function CreateEventDialog({
 									<div className="space-y-2">
 										<Label htmlFor="event-location">Location (optional)</Label>
 										<Input
-											id="event-location"
-											value={field.state.value}
-											onChange={(e) => field.handleChange(e.target.value)}
 											data-testid="create-event-location"
+											id="event-location"
+											onChange={(e) => field.handleChange(e.target.value)}
+											value={field.state.value}
 										/>
 									</div>
 								)}
@@ -336,11 +336,11 @@ export function CreateEventDialog({
 									<div className="space-y-2">
 										<Label htmlFor="event-location-url">Link (optional)</Label>
 										<Input
+											data-testid="create-event-location-url"
 											id="event-location-url"
+											onChange={(e) => field.handleChange(e.target.value)}
 											type="url"
 											value={field.state.value}
-											onChange={(e) => field.handleChange(e.target.value)}
-											data-testid="create-event-location-url"
 										/>
 									</div>
 								)}
@@ -354,9 +354,9 @@ export function CreateEventDialog({
 								<div className="space-y-2">
 									<Label>Room</Label>
 									<RoomSelect
-										value={field.state.value}
 										onValueChange={field.handleChange}
 										rooms={rooms}
+										value={field.state.value}
 									/>
 								</div>
 							)}
@@ -369,9 +369,9 @@ export function CreateEventDialog({
 								<div className="space-y-2">
 									<Label>Track</Label>
 									<TrackSelect
-										value={field.state.value}
 										onValueChange={field.handleChange}
 										tracks={tracks}
+										value={field.state.value}
 									/>
 								</div>
 							)}
@@ -379,7 +379,7 @@ export function CreateEventDialog({
 					)}
 
 					<DialogFooter>
-						<Button type="button" variant="outline" onClick={handleClose}>
+						<Button onClick={handleClose} type="button" variant="outline">
 							Cancel
 						</Button>
 						<form.AppForm>

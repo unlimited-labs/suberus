@@ -38,7 +38,7 @@ export function UserRoleDialog({
 	roleOptions,
 }: UserRoleDialogProps) {
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Change User Role</DialogTitle>
@@ -49,11 +49,11 @@ export function UserRoleDialog({
 				<div className="py-4">
 					<Select
 						items={roleOptions}
-						value={selectedRole}
 						onValueChange={(v) => {
 							const found = roleOptions.find((opt) => opt.value === v);
 							if (found) onRoleChange(found.value);
 						}}
+						value={selectedRole}
 					>
 						<SelectTrigger>
 							<SelectValue placeholder="Select role" />
@@ -68,10 +68,10 @@ export function UserRoleDialog({
 					</Select>
 				</div>
 				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
+					<Button onClick={() => onOpenChange(false)} variant="outline">
 						Cancel
 					</Button>
-					<Button onClick={onConfirm} disabled={isPending}>
+					<Button disabled={isPending} onClick={onConfirm}>
 						{isPending ? "Saving..." : "Save"}
 					</Button>
 				</DialogFooter>

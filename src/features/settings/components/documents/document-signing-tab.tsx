@@ -213,9 +213,9 @@ function CertificateSection({
 
 	return (
 		<SettingsSection
+			description="Cryptographically sign generated PDF documents with the conference's identity"
 			icon={IconShieldCheck}
 			title="Digital signature"
-			description="Cryptographically sign generated PDF documents with the conference's identity"
 		>
 			<div className="space-y-5" data-testid="document-signing-section">
 				{cfg ? (
@@ -265,7 +265,7 @@ function CertificateSection({
 							</p>
 						)}
 						<div className="mt-4 flex flex-wrap items-center gap-3">
-							<Button asChild variant="outline" size="sm">
+							<Button asChild size="sm" variant="outline">
 								<a href="/api/documents/signing-cert">
 									<IconDownload className="mr-2 size-4" />
 									Download public certificate
@@ -273,13 +273,13 @@ function CertificateSection({
 							</Button>
 							<div className="flex items-center gap-2 text-sm">
 								<Switch
-									id="signing-enabled"
 									checked={cfg.enabled}
-									disabled={busy}
-									onCheckedChange={toggleEnabled}
 									data-testid="signing-enabled-switch"
+									disabled={busy}
+									id="signing-enabled"
+									onCheckedChange={toggleEnabled}
 								/>
-								<Label htmlFor="signing-enabled" className="font-normal">
+								<Label className="font-normal" htmlFor="signing-enabled">
 									Sign new documents
 								</Label>
 							</div>
@@ -308,37 +308,37 @@ function CertificateSection({
 						<div className="space-y-2">
 							<Label htmlFor="cn">Common name</Label>
 							<Input
-								id="cn"
-								value={commonName}
-								onChange={(e) => setCommonName(e.target.value)}
 								data-testid="signing-common-name"
+								id="cn"
+								onChange={(e) => setCommonName(e.target.value)}
+								value={commonName}
 							/>
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="org">Organization</Label>
 							<Input
 								id="org"
-								value={org}
 								onChange={(e) => setOrg(e.target.value)}
+								value={org}
 							/>
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="validity">Validity (years)</Label>
 							<Input
-								id="validity"
-								type="number"
-								min={1}
-								max={10}
-								value={validYears}
-								onChange={(e) => setValidYears(Number(e.target.value))}
 								className="max-w-[140px]"
+								id="validity"
+								max={10}
+								min={1}
+								onChange={(e) => setValidYears(Number(e.target.value))}
+								type="number"
+								value={validYears}
 							/>
 						</div>
 						<Button
-							onClick={generate}
-							disabled={busy}
-							size="sm"
 							data-testid="generate-cert-button"
+							disabled={busy}
+							onClick={generate}
+							size="sm"
 						>
 							{busy && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 							{cfg ? "Regenerate" : "Generate"}
@@ -353,28 +353,28 @@ function CertificateSection({
 						<div className="space-y-2">
 							<Label htmlFor="p12">Certificate file (.p12 / .pfx)</Label>
 							<Input
-								id="p12"
-								type="file"
 								accept=".p12,.pfx"
-								ref={fileRef}
 								data-testid="signing-p12-file"
+								id="p12"
+								ref={fileRef}
+								type="file"
 							/>
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="p12pw">Password</Label>
 							<Input
 								id="p12pw"
+								onChange={(e) => setP12Password(e.target.value)}
 								type="password"
 								value={p12Password}
-								onChange={(e) => setP12Password(e.target.value)}
 							/>
 						</div>
 						<Button
-							onClick={upload}
+							data-testid="upload-cert-button"
 							disabled={busy}
+							onClick={upload}
 							size="sm"
 							variant="outline"
-							data-testid="upload-cert-button"
 						>
 							<IconUpload className="mr-2 size-4" />
 							Upload
@@ -384,10 +384,10 @@ function CertificateSection({
 			</div>
 
 			<Dialog
-				open={confirm !== null}
 				onOpenChange={(o) => {
 					if (!busy && !o) setConfirm(null);
 				}}
+				open={confirm !== null}
 			>
 				<DialogContent data-testid="rotate-cert-dialog">
 					<DialogHeader>
@@ -415,18 +415,18 @@ function CertificateSection({
 					</DialogHeader>
 					<DialogFooter>
 						<Button
-							variant="outline"
-							onClick={() => setConfirm(null)}
 							disabled={busy}
+							onClick={() => setConfirm(null)}
+							variant="outline"
 						>
 							Cancel
 						</Button>
 						<Button
+							data-testid="rotate-cert-confirm"
+							disabled={busy}
 							onClick={() =>
 								confirm === "generate" ? doGenerate() : doUpload()
 							}
-							disabled={busy}
-							data-testid="rotate-cert-confirm"
 						>
 							{busy && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 							Replace &amp; re-sign
@@ -472,18 +472,18 @@ function AppearanceSection({
 
 	return (
 		<SettingsSection
+			description="How the visible signature stamp looks on the page"
 			icon={IconCertificate}
 			title="Seal appearance"
-			description="How the visible signature stamp looks on the page"
 		>
 			<div className="space-y-4">
 				<div className="space-y-2">
 					<Label htmlFor="reason">Reason / issuer text</Label>
 					<Input
 						id="reason"
-						value={reason}
-						placeholder="e.g. Issued by the conference"
 						onChange={(e) => setReason(e.target.value)}
+						placeholder="e.g. Issued by the conference"
+						value={reason}
 					/>
 				</div>
 				<div className="space-y-2">
@@ -493,13 +493,13 @@ function AppearanceSection({
 							value: c,
 							label: c.replace("-", " "),
 						}))}
-						value={corner}
 						onValueChange={(v) =>
 							// SAFETY: the select renders only the four corner values.
 							setCorner(v as DocumentSigningSettings["sealCorner"])
 						}
+						value={corner}
 					>
-						<SelectTrigger id="corner" className="max-w-[220px]">
+						<SelectTrigger className="max-w-[220px]" id="corner">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
@@ -512,23 +512,23 @@ function AppearanceSection({
 					</Select>
 				</div>
 				<div className="flex items-center gap-3 text-sm">
-					<Switch id="seal-qr" checked={qr} onCheckedChange={setQr} />
-					<Label htmlFor="seal-qr" className="font-normal">
+					<Switch checked={qr} id="seal-qr" onCheckedChange={setQr} />
+					<Label className="font-normal" htmlFor="seal-qr">
 						Embed a QR code linking to the verification page
 					</Label>
 				</div>
 				<div className="flex items-center gap-3 text-sm">
 					<Switch
-						id="seal-certify"
 						checked={certifying}
+						id="seal-certify"
 						onCheckedChange={setCertifying}
 					/>
-					<Label htmlFor="seal-certify" className="font-normal">
+					<Label className="font-normal" htmlFor="seal-certify">
 						Certifying signature (locks the PDF against further edits)
 					</Label>
 				</div>
 				<div className="flex justify-end">
-					<Button onClick={save} disabled={busy} size="sm">
+					<Button disabled={busy} onClick={save} size="sm">
 						{busy && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 						Save
 					</Button>
@@ -563,36 +563,36 @@ function TimestampSection({
 
 	return (
 		<SettingsSection
+			description="Optional. Proves when the document was signed and keeps the signature verifiable after the certificate expires"
 			icon={IconShieldCheck}
 			title="Trusted timestamp (RFC 3161)"
-			description="Optional. Proves when the document was signed and keeps the signature verifiable after the certificate expires"
 		>
 			<div className="space-y-4">
 				<div className="flex items-center gap-3 text-sm">
 					<Switch
-						id="ts-enabled"
 						checked={enabled}
-						onCheckedChange={setEnabled}
 						data-testid="timestamp-switch"
+						id="ts-enabled"
+						onCheckedChange={setEnabled}
 					/>
-					<Label htmlFor="ts-enabled" className="font-normal">
+					<Label className="font-normal" htmlFor="ts-enabled">
 						Add a timestamp from a public time-stamping authority
 					</Label>
 				</div>
 				<div className="space-y-2">
 					<Label htmlFor="tsa">TSA URL</Label>
 					<Input
-						id="tsa"
-						value={url}
 						disabled={!enabled}
+						id="tsa"
 						onChange={(e) => setUrl(e.target.value)}
+						value={url}
 					/>
 					<p className="text-xs text-muted-foreground">
 						Free options: {DEFAULT_TSA_URL}, http://timestamp.digicert.com
 					</p>
 				</div>
 				<div className="flex justify-end">
-					<Button onClick={save} disabled={busy} size="sm">
+					<Button disabled={busy} onClick={save} size="sm">
 						{busy && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 						Save
 					</Button>

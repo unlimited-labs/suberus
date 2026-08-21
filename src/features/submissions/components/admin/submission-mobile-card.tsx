@@ -22,9 +22,9 @@ export function SubmissionMobileCard(submission: AdminSubmission) {
 							#{submission.sequentialNumber}
 						</span>
 						<Link
-							to="/admin/submissions/$id"
-							params={{ id: submission.id }}
 							className="font-medium line-clamp-2 hover:underline"
+							params={{ id: submission.id }}
+							to="/admin/submissions/$id"
 						>
 							{submission.title}
 						</Link>

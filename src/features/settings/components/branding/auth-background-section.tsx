@@ -30,10 +30,10 @@ export function AuthBackgroundSection({
 
 	return (
 		<SettingsSection
+			delay={50}
+			description="Background image for login and registration pages"
 			icon={IconPhotoUp}
 			title="Auth Background Image"
-			description="Background image for login and registration pages"
-			delay={50}
 		>
 			<div className="space-y-4">
 				{hasImage && (
@@ -42,31 +42,31 @@ export function AuthBackgroundSection({
 						data-testid="auth-background-preview"
 					>
 						<img
-							src={data.authBackgroundUrl}
 							alt="Auth background preview"
 							className="h-40 w-full object-cover"
+							src={data.authBackgroundUrl}
 						/>
 					</div>
 				)}
 
 				<ImageUploadControl
-					upload={upload}
+					ariaLabel="Upload auth background"
 					hasImage={hasImage}
 					testIdPrefix="auth-background"
-					ariaLabel="Upload auth background"
+					upload={upload}
 				/>
 
 				{hasImage && (
 					<div className="space-y-2">
 						<Label>Overlay darkness: {data.authBgOverlay}%</Label>
 						<Slider
-							value={[data.authBgOverlay]}
+							max={100}
+							min={0}
 							onValueChange={(v) =>
 								onChange("authBgOverlay", Array.isArray(v) ? v[0] : v)
 							}
-							min={0}
-							max={100}
 							step={5}
+							value={[data.authBgOverlay]}
 						/>
 						<p className="text-xs text-muted-foreground">
 							Controls how dark the overlay is on the auth background image
@@ -78,7 +78,7 @@ export function AuthBackgroundSection({
 					Accepted formats: JPG, PNG, WebP. Max size: {MAX_BG_SIZE_MB}MB.
 				</p>
 			</div>
-			{hasImage && <SettingsSaveButton onSave={onSave} isSaving={isSaving} />}
+			{hasImage && <SettingsSaveButton isSaving={isSaving} onSave={onSave} />}
 		</SettingsSection>
 	);
 }

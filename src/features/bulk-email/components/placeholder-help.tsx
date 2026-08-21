@@ -20,13 +20,13 @@ export function PlaceholderHelp() {
 						<Tooltip key={key}>
 							<TooltipTrigger asChild>
 								<Badge
-									variant="outline"
 									className="cursor-pointer font-mono text-xs hover:bg-muted"
 									data-testid={`placeholder-${key}`}
 									onClick={() => {
 										navigator.clipboard.writeText(token);
 										toast.success("Copied to clipboard");
 									}}
+									variant="outline"
 								>
 									{token}
 								</Badge>

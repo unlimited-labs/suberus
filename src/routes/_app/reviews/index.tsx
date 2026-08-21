@@ -43,14 +43,14 @@ function ReviewsPage() {
 						// SAFETY: the loader query returns exactly this row shape.
 						data={assignments as ReviewerAssignment[]}
 						getRowId={(row) => row.id}
-						rowDataTestId="assignment-row"
 						mobileCard={ReviewMobileCard}
+						rowDataTestId="assignment-row"
 						toolbar={(table) => (
 							<DataTableToolbar
-								table={table}
+								columnLabels={columnLabels}
 								searchKey="submissionTitle"
 								searchPlaceholder="Search submissions..."
-								columnLabels={columnLabels}
+								table={table}
 							/>
 						)}
 					/>

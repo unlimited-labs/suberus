@@ -41,25 +41,25 @@ export function ScoringCriteriaSection({
 			<Label>Scoring criteria</Label>
 			<div className="space-y-2">
 				{criteria.map((criterion, index) => (
-					<div key={rowIds[index]} className="flex items-start gap-2">
+					<div className="flex items-start gap-2" key={rowIds[index]}>
 						<div className="grid flex-1 gap-2 sm:grid-cols-2">
 							<Input
+								onChange={(e) => onUpdate(index, "name", e.target.value)}
 								placeholder="Criterion name"
 								value={criterion.name}
-								onChange={(e) => onUpdate(index, "name", e.target.value)}
 							/>
 							<Input
+								onChange={(e) => onUpdate(index, "description", e.target.value)}
 								placeholder="Description (optional)"
 								value={criterion.description}
-								onChange={(e) => onUpdate(index, "description", e.target.value)}
 							/>
 						</div>
 						<Button
-							type="button"
-							variant="ghost"
-							size="icon"
 							className="shrink-0 text-destructive hover:bg-destructive/10"
 							onClick={() => handleRemove(index)}
+							size="icon"
+							type="button"
+							variant="ghost"
 						>
 							<IconTrash className="size-4" />
 						</Button>
@@ -67,11 +67,11 @@ export function ScoringCriteriaSection({
 				))}
 			</div>
 			<Button
+				className="gap-1"
+				onClick={handleAdd}
+				size="sm"
 				type="button"
 				variant="outline"
-				size="sm"
-				onClick={handleAdd}
-				className="gap-1"
 			>
 				<IconPlus className="size-4" />
 				Add criterion

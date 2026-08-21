@@ -15,18 +15,18 @@ export function ReviewGuidelinesSection({
 }: ReviewGuidelinesSectionProps) {
 	return (
 		<SettingsSection
+			delay={200}
+			description="Markdown text shown to reviewers in the review form sidebar"
 			icon={IconBook}
 			title="Review Guidelines"
-			description="Markdown text shown to reviewers in the review form sidebar"
-			delay={200}
 		>
 			<div className="space-y-3">
 				<Textarea
-					value={value}
-					onChange={(e) => onChange(e.target.value)}
-					rows={6}
 					className="font-mono text-sm"
+					onChange={(e) => onChange(e.target.value)}
 					placeholder="- Provide constructive feedback..."
+					rows={6}
+					value={value}
 				/>
 				<MarkdownHint />
 			</div>

@@ -71,8 +71,8 @@ export function GridBody({
 							<div className={STICKY_COL} />
 							{cols.map((c) => (
 								<div
-									key={c.id}
 									className="px-3 pb-2 font-[var(--prog-font-meta)] text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+									key={c.id}
 								>
 									{c.name}
 								</div>
@@ -80,19 +80,19 @@ export function GridBody({
 						</div>
 						{groups.map((group, gi) => (
 							<GridRow
-								key={`${group.startAt}-${gi}`}
-								group={group}
 								cols={cols}
 								gridTemplateColumns={gridTemplateColumns}
-								tz={tz}
+								group={group}
+								key={`${group.startAt}-${gi}`}
 								query={q}
+								tz={tz}
 							/>
 						))}
 					</div>
 				</div>
 			</div>
 
-			<MobileSwipe groups={groups} cols={cols} tz={tz} query={q} />
+			<MobileSwipe cols={cols} groups={groups} query={q} tz={tz} />
 		</div>
 	);
 }
@@ -131,9 +131,9 @@ function GridRow({
 							(s) => (s.room?.id ?? NO_ROOM) === c.id,
 						);
 						return (
-							<div key={c.id} className="border-l border-border px-3 py-4">
+							<div className="border-l border-border px-3 py-4" key={c.id}>
 								{sessions.map((s) => (
-									<SessionCell key={s.id} session={s} tz={tz} query={query} />
+									<SessionCell key={s.id} query={query} session={s} tz={tz} />
 								))}
 							</div>
 						);
@@ -141,7 +141,7 @@ function GridRow({
 				</div>
 			)}
 			{group.breaks.length > 0 && (
-				<BreakBand group={group} tz={tz} inset={hasSessions} />
+				<BreakBand group={group} inset={hasSessions} tz={tz} />
 			)}
 		</div>
 	);
@@ -176,14 +176,14 @@ function BreakBand({
 			)}
 			{events.map((ev) => (
 				<div
-					key={ev.id}
-					data-testid={`program-event-${ev.id}`}
 					className="mt-2 border-l-2 border-[var(--primary)] bg-[var(--prog-mark,var(--muted))]/40 px-4 py-3 first:mt-0"
+					data-testid={`program-event-${ev.id}`}
+					key={ev.id}
 				>
 					<EventDetails
 						item={ev}
-						tz={tz}
 						titleClass="text-base font-semibold"
+						tz={tz}
 					/>
 				</div>
 			))}
@@ -213,19 +213,19 @@ function MobileSwipe({
 						swiped && "opacity-0",
 					)}
 				>
-					<IconHandFinger size={16} className="animate-prog-swipe-hint" />
+					<IconHandFinger className="animate-prog-swipe-hint" size={16} />
 					<span className="font-[var(--prog-font-meta)] text-[10px] uppercase tracking-[0.2em]">
 						Swipe
 					</span>
 				</div>
 			)}
 			<div
-				onScroll={() => setSwiped(true)}
 				className="-mx-5 flex snap-x snap-mandatory overflow-x-auto"
+				onScroll={() => setSwiped(true)}
 				style={{ scrollbarWidth: "none" }}
 			>
 				{cols.map((col, ci) => (
-					<section key={col.id} className="w-full shrink-0 snap-center px-5">
+					<section className="w-full shrink-0 snap-center px-5" key={col.id}>
 						<div className="mb-4 flex items-baseline gap-2 border-b border-primary pb-2">
 							<span className="font-[var(--prog-font-meta)] text-sm uppercase tracking-[0.2em] text-primary">
 								{col.name}
@@ -238,9 +238,9 @@ function MobileSwipe({
 						</div>
 						<MobileRoomTimeline
 							groups={groups}
+							query={query}
 							roomId={col.id}
 							tz={tz}
-							query={query}
 						/>
 					</section>
 				))}
@@ -277,12 +277,12 @@ function MobileRoomTimeline({
 									{start} – {end}
 								</div>
 								{sessions.map((s) => (
-									<SessionCell key={s.id} session={s} tz={tz} query={query} />
+									<SessionCell key={s.id} query={query} session={s} tz={tz} />
 								))}
 							</>
 						)}
 						{hasBreak && (
-							<BreakBand group={group} tz={tz} inset={sessions.length > 0} />
+							<BreakBand group={group} inset={sessions.length > 0} tz={tz} />
 						)}
 					</div>
 				);
@@ -305,16 +305,16 @@ function SessionCell({
 	return (
 		<article className="not-first:mt-6">
 			<SessionHeader
-				session={session}
-				query={query}
-				showDot
-				showRoom={showRoom}
 				chairAsLabel
 				className="mb-3"
-				titleClassName="mt-1.5 text-lg font-bold"
 				metaClassName="text-[10px] tracking-[0.18em]"
+				query={query}
+				session={session}
+				showDot
+				showRoom={showRoom}
+				titleClassName="mt-1.5 text-lg font-bold"
 			/>
-			<PresentationList session={session} tz={tz} query={query} numbered />
+			<PresentationList numbered query={query} session={session} tz={tz} />
 		</article>
 	);
 }

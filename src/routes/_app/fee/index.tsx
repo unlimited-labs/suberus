@@ -37,35 +37,35 @@ function FeePage() {
 				<div className="mx-auto max-w-5xl space-y-8">
 					{fee ? (
 						<SettingsSection
+							delay={0}
+							description="Your conference fee has been received"
 							icon={IconCash}
 							title="Payment Confirmed"
-							description="Your conference fee has been received"
-							delay={0}
 						>
 							<div className="space-y-6">
 								<div className="relative overflow-hidden rounded-xl border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-50 to-green-50 p-6 transition-colors duration-500 dark:from-emerald-950/20 dark:to-green-950/20">
 									<div className="absolute inset-0 opacity-[0.03]">
 										<svg
+											aria-hidden="true"
 											className="h-full w-full"
 											xmlns="http://www.w3.org/2000/svg"
-											aria-hidden="true"
 										>
 											<defs>
 												<pattern
+													height="40"
 													id="fee-pattern"
+													patternUnits="userSpaceOnUse"
+													width="40"
 													x="0"
 													y="0"
-													width="40"
-													height="40"
-													patternUnits="userSpaceOnUse"
 												>
-													<circle cx="20" cy="20" r="1.5" fill="currentColor" />
+													<circle cx="20" cy="20" fill="currentColor" r="1.5" />
 												</pattern>
 											</defs>
 											<rect
-												width="100%"
-												height="100%"
 												fill="url(#fee-pattern)"
+												height="100%"
+												width="100%"
 											/>
 										</svg>
 									</div>
@@ -86,8 +86,8 @@ function FeePage() {
 										</div>
 
 										<Badge
-											variant="default"
 											className="shrink-0 bg-emerald-500 text-white transition-colors hover:bg-emerald-600 dark:bg-emerald-600"
+											variant="default"
 										>
 											<IconCheck className="size-3" />
 											Paid
@@ -151,10 +151,10 @@ function FeePage() {
 					)}
 
 					<SettingsSection
+						delay={100}
+						description="Important information about conference fee payment"
 						icon={IconInfoCircle}
 						title="Payment Instructions"
-						description="Important information about conference fee payment"
-						delay={100}
 					>
 						<Markdown content={instructions} />
 					</SettingsSection>

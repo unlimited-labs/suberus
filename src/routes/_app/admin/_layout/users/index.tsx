@@ -74,15 +74,15 @@ function UsersPage() {
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconUsers} title="Users">
 				<Button
-					size="sm"
-					onClick={() => setCreateOpen(true)}
 					data-testid="add-user-button"
+					onClick={() => setCreateOpen(true)}
+					size="sm"
 				>
 					<IconUserPlus className="mr-2 size-4" />
 					Add User
 				</Button>
-				<Button variant="outline" size="sm" asChild>
-					<Link to="/api/admin/users/export" target="_blank">
+				<Button asChild size="sm" variant="outline">
+					<Link target="_blank" to="/api/admin/users/export">
 						<IconDownload className="mr-2 size-4" />
 						Export XLSX
 					</Link>
@@ -93,28 +93,28 @@ function UsersPage() {
 					columns={columns}
 					data={users}
 					getRowId={(row) => row.id}
-					rowDataTestId="user-row"
-					storageKey="admin-users"
-					mobileCard={(u) => <UserMobileCard user={u} />}
 					initialColumnVisibility={{
 						submissionType: false,
 						submissionRole: false,
 						submissionDraft: false,
 					}}
+					mobileCard={(u) => <UserMobileCard user={u} />}
+					rowDataTestId="user-row"
+					storageKey="admin-users"
 					toolbar={(table, rowSelection) => (
 						<DataTableToolbar
-							table={table}
+							actions={
+								<UserBulkActions rowSelection={rowSelection} table={table} />
+							}
+							columnLabels={dynamicColumnLabels}
 							searchKey="name"
 							searchPlaceholder="Search users..."
-							columnLabels={dynamicColumnLabels}
-							actions={
-								<UserBulkActions table={table} rowSelection={rowSelection} />
-							}
+							table={table}
 						/>
 					)}
 				/>
 			</div>
-			<UserCreateDialog open={createOpen} onOpenChange={setCreateOpen} />
+			<UserCreateDialog onOpenChange={setCreateOpen} open={createOpen} />
 		</div>
 	);
 }

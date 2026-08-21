@@ -110,7 +110,7 @@ function ReviewFormPage() {
 				title={isReadOnly ? "View Review" : "Submit Review"}
 			>
 				<Link to="/reviews">
-					<Button variant="outline" className="gap-2">
+					<Button className="gap-2" variant="outline">
 						<IconArrowLeft className="size-4" />
 						Back to Reviews
 					</Button>
@@ -119,28 +119,12 @@ function ReviewFormPage() {
 
 			<div className="flex-1 p-6 overflow-auto">
 				<ReviewForm
-					readOnly={isReadOnly}
 					assignmentId={assignment.id}
-					onSubmit={handleSubmit}
-					submission={{
-						title: submission.title,
-						type: submission.type,
-						authors: submission.authors,
-						content: submission.content,
-						file: submission.file,
-						keywords: submission.keywords,
-						previousVersion: submission.previousVersion,
-					}}
 					contentFormat={config.contentFormat}
-					reviewMode={config.reviewMode}
-					guidelines={reviewGuidelines}
-					scoringCriteria={config.enableScoring ? config.scoringCriteria : []}
 					enableConfidenceLevel={config.enableConfidenceLevel}
 					enableReviewAttachment={config.enableReviewAttachment}
-					onAttachmentChange={(file) => {
-						attachmentFileRef.current = file;
-					}}
 					existingAttachment={existingAttachment}
+					guidelines={reviewGuidelines}
 					initialData={
 						existingReview
 							? {
@@ -152,6 +136,22 @@ function ReviewFormPage() {
 								}
 							: undefined
 					}
+					onAttachmentChange={(file) => {
+						attachmentFileRef.current = file;
+					}}
+					onSubmit={handleSubmit}
+					readOnly={isReadOnly}
+					reviewMode={config.reviewMode}
+					scoringCriteria={config.enableScoring ? config.scoringCriteria : []}
+					submission={{
+						title: submission.title,
+						type: submission.type,
+						authors: submission.authors,
+						content: submission.content,
+						file: submission.file,
+						keywords: submission.keywords,
+						previousVersion: submission.previousVersion,
+					}}
 				/>
 			</div>
 		</div>
@@ -168,7 +168,7 @@ function NotFoundState({ assignmentId }: { assignmentId: string }) {
 						Assignment not found: {assignmentId}
 					</p>
 					<Link to="/reviews">
-						<Button variant="outline" className="gap-2">
+						<Button className="gap-2" variant="outline">
 							<IconArrowLeft className="size-4" />
 							Back to Reviews
 						</Button>

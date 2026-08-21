@@ -12,7 +12,7 @@ interface DecisionFieldProps {
 
 export function DecisionField({ form, readOnly }: DecisionFieldProps) {
 	return (
-		<SectionCard title="Decision" icon={IconScale}>
+		<SectionCard icon={IconScale} title="Decision">
 			<form.Field name="decision">
 				{(field) => {
 					const hasError =
@@ -25,10 +25,6 @@ export function DecisionField({ form, readOnly }: DecisionFieldProps) {
 									const isSelected = field.state.value === option.value;
 									return (
 										<button
-											key={option.value}
-											type="button"
-											disabled={readOnly}
-											onClick={() => field.handleChange(option.value)}
 											className={cn(
 												"flex flex-col gap-2 p-4 rounded-lg border-2 transition-all text-left",
 												readOnly && "cursor-default",
@@ -38,6 +34,10 @@ export function DecisionField({ form, readOnly }: DecisionFieldProps) {
 														? "border-border opacity-60"
 														: "border-border hover:border-primary/50",
 											)}
+											disabled={readOnly}
+											key={option.value}
+											onClick={() => field.handleChange(option.value)}
+											type="button"
 										>
 											<div className="flex items-center gap-2">
 												<div

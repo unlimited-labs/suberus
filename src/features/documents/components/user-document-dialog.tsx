@@ -74,12 +74,12 @@ export function UserDocumentDialog({
 
 	return (
 		<Dialog
-			open={open}
 			onOpenChange={(o) => {
 				if (busy) return;
 				if (!o) setTemplateId(null);
 				onOpenChange(o);
 			}}
+			open={open}
 		>
 			<DialogContent className="sm:max-w-xl">
 				<DialogHeader>
@@ -94,8 +94,8 @@ export function UserDocumentDialog({
 						<Label>Template</Label>
 						<Select
 							items={templates.map((t) => ({ value: t.id, label: t.name }))}
-							value={templateId ?? ""}
 							onValueChange={setTemplateId}
+							value={templateId ?? ""}
 						>
 							<SelectTrigger data-testid="document-template-select">
 								<SelectValue placeholder="Select a template…" />
@@ -116,16 +116,16 @@ export function UserDocumentDialog({
 
 				<DialogFooter>
 					<Button
-						variant="outline"
-						onClick={() => onOpenChange(false)}
 						disabled={busy}
+						onClick={() => onOpenChange(false)}
+						variant="outline"
 					>
 						Cancel
 					</Button>
 					<Button
-						onClick={handleGenerate}
-						disabled={!canGenerate || busy}
 						data-testid="generate-document-button"
+						disabled={!canGenerate || busy}
+						onClick={handleGenerate}
 					>
 						{canGenerate ? (
 							<IconCheck className="mr-2 size-4" />

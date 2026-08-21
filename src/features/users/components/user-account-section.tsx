@@ -41,11 +41,11 @@ export function UserAccountSection({
 						<IconMailX className="size-4 text-yellow-600" />
 						<span className="text-yellow-600">Email not verified</span>
 						<Button
-							variant="outline"
-							size="sm"
 							className="ml-2 h-7"
-							onClick={onVerifyEmail}
 							disabled={isPending}
+							onClick={onVerifyEmail}
+							size="sm"
+							variant="outline"
 						>
 							Verify
 						</Button>

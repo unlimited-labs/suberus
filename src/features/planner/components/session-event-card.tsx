@@ -38,24 +38,24 @@ export function SessionEventCard({
 	return (
 		<section
 			aria-label={title}
-			data-testid={`session-card-${data.sessionId}`}
 			className={cn(
 				"relative flex h-full flex-col gap-1 overflow-hidden rounded-md border bg-background p-1.5 pl-2.5 text-[11px] shadow-sm transition-colors",
 				!hasChairs && "border-dashed",
 				isDragOver && "border-primary bg-accent ring-2 ring-primary",
 			)}
-			onDragOver={(e) => {
-				if (!e.dataTransfer.types.includes("submissionid")) return;
-				e.preventDefault();
-				e.stopPropagation();
-				setIsDragOver(true);
-			}}
+			data-testid={`session-card-${data.sessionId}`}
 			onDragEnter={(e) => {
 				if (!e.dataTransfer.types.includes("submissionid")) return;
 				e.preventDefault();
 				setIsDragOver(true);
 			}}
 			onDragLeave={() => setIsDragOver(false)}
+			onDragOver={(e) => {
+				if (!e.dataTransfer.types.includes("submissionid")) return;
+				e.preventDefault();
+				e.stopPropagation();
+				setIsDragOver(true);
+			}}
 			onDrop={(e) => {
 				e.preventDefault();
 				e.stopPropagation();
@@ -73,8 +73,8 @@ export function SessionEventCard({
 
 			{compact ? (
 				<p
-					data-testid="session-card-title"
 					className="whitespace-normal break-words font-semibold leading-tight text-foreground"
+					data-testid="session-card-title"
 				>
 					{title}
 				</p>
@@ -83,8 +83,8 @@ export function SessionEventCard({
 					<div className="flex items-start justify-between gap-1">
 						<div className="min-w-0 flex-1">
 							<p
-								data-testid="session-card-title"
 								className="truncate font-semibold leading-tight text-foreground"
+								data-testid="session-card-title"
 							>
 								{title}
 							</p>
@@ -98,8 +98,8 @@ export function SessionEventCard({
 					</div>
 					{data.untimedSlots ? (
 						<p
-							data-testid="session-card-capacity"
 							className="mt-auto pt-1 text-[9px] text-muted-foreground/70"
+							data-testid="session-card-capacity"
 						>
 							{data.presentations.length}{" "}
 							{data.presentations.length === 1
@@ -110,8 +110,8 @@ export function SessionEventCard({
 					) : (
 						<CapacityBar
 							slotCount={data.presentations.length}
-							usedMin={usedMin}
 							totalMin={data.sessionDurationMin}
+							usedMin={usedMin}
 						/>
 					)}
 				</>

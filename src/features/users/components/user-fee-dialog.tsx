@@ -47,7 +47,7 @@ export function UserFeeDialog({
 	isPending,
 }: UserFeeDialogProps) {
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Mark Fee as Paid</DialogTitle>
@@ -61,8 +61,8 @@ export function UserFeeDialog({
 							value: type.id,
 							label: `${type.name} — ${type.amount.toFixed(2)} ${currency}`,
 						}))}
-						value={selectedFeeTypeId}
 						onValueChange={onFeeTypeChange}
+						value={selectedFeeTypeId}
 					>
 						<SelectTrigger>
 							<SelectValue placeholder="Select fee type" />
@@ -82,10 +82,10 @@ export function UserFeeDialog({
 					)}
 				</div>
 				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
+					<Button onClick={() => onOpenChange(false)} variant="outline">
 						Cancel
 					</Button>
-					<Button onClick={onConfirm} disabled={isPending}>
+					<Button disabled={isPending} onClick={onConfirm}>
 						{isPending ? "Saving..." : "Save"}
 					</Button>
 				</DialogFooter>

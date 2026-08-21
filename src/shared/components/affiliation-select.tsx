@@ -47,20 +47,20 @@ function AffiliationOption({
 }) {
 	return (
 		<div
-			id={`affiliation-option-${index}`}
-			role="option"
-			tabIndex={-1}
 			aria-selected={isHighlighted}
 			className={cn(
 				"relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
 				isHighlighted && "bg-accent text-accent-foreground",
 				isSelected && "font-medium",
 			)}
-			onMouseEnter={onHighlight}
+			id={`affiliation-option-${index}`}
 			onMouseDown={(e) => {
 				e.preventDefault(); // Prevent blur
 				onSelect();
 			}}
+			onMouseEnter={onHighlight}
+			role="option"
+			tabIndex={-1}
 		>
 			{label}
 		</div>
@@ -88,17 +88,17 @@ function AffiliationDropdown({
 }) {
 	return (
 		<div
+			className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
 			id="affiliation-listbox"
 			role="listbox"
-			className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
 		>
 			{affiliations.map((affiliation, index) => (
 				<AffiliationOption
-					key={affiliation.id}
 					index={index}
-					label={affiliation.name}
 					isHighlighted={highlightedIndex === index}
 					isSelected={selectedId === affiliation.id}
+					key={affiliation.id}
+					label={affiliation.name}
 					onHighlight={() => onHighlight(index)}
 					onSelect={() => onSelect(affiliation)}
 				/>
@@ -106,9 +106,9 @@ function AffiliationDropdown({
 			{showCreate && (
 				<AffiliationOption
 					index={affiliations.length}
-					label={createLabel}
 					isHighlighted={highlightedIndex === affiliations.length}
 					isSelected={false}
+					label={createLabel}
 					onHighlight={() => onHighlight(affiliations.length)}
 					onSelect={onCreate}
 				/>
@@ -148,15 +148,14 @@ function AffiliationInput({
 		<div className="relative">
 			<IconBuilding className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 			<input
-				ref={inputRef}
-				type="text"
-				role="combobox"
-				aria-label="Affiliation"
-				aria-expanded={open}
 				aria-autocomplete="list"
 				aria-controls="affiliation-listbox"
+				aria-expanded={open}
+				aria-label="Affiliation"
+				ref={inputRef}
+				role="combobox"
+				type="text"
 				{...affiliationAriaProps(highlightedIndex)}
-				data-affiliation-id={affiliationId || undefined}
 				className={cn(
 					"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 pl-9 text-sm shadow-sm transition-colors",
 					"file:border-0 file:bg-transparent file:text-sm file:font-medium",
@@ -165,12 +164,13 @@ function AffiliationInput({
 					"disabled:cursor-not-allowed disabled:opacity-50",
 					hasError && "border-destructive",
 				)}
-				placeholder={placeholder}
-				value={value}
+				data-affiliation-id={affiliationId || undefined}
+				onBlur={onBlur}
 				onChange={(e) => onValueChange(e.target.value)}
 				onFocus={onFocus}
-				onBlur={onBlur}
 				onKeyDown={onKeyDown}
+				placeholder={placeholder}
+				value={value}
 			/>
 			{isLoading && (
 				<IconLoader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
@@ -366,29 +366,29 @@ export function AffiliationSelect({
 	return (
 		<div className={cn("relative", className)}>
 			<AffiliationInput
-				inputRef={inputRef}
-				value={inputValue}
-				open={open}
-				highlightedIndex={highlightedIndex}
 				affiliationId={value}
 				hasError={hasError}
+				highlightedIndex={highlightedIndex}
+				inputRef={inputRef}
 				isLoading={isLoading}
-				placeholder={placeholder}
-				onValueChange={handleValueChange}
-				onFocus={handleFocus}
 				onBlur={handleBlur}
+				onFocus={handleFocus}
 				onKeyDown={handleKeyDown}
+				onValueChange={handleValueChange}
+				open={open}
+				placeholder={placeholder}
+				value={inputValue}
 			/>
 			{showDropdown && (
 				<AffiliationDropdown
 					affiliations={affiliations}
-					showCreate={showCreate}
-					highlightedIndex={highlightedIndex}
-					selectedId={value}
 					createLabel={`Create "${inputValue.trim()}"`}
+					highlightedIndex={highlightedIndex}
+					onCreate={() => handleCreate(inputValue.trim())}
 					onHighlight={setHighlightedIndex}
 					onSelect={handleSelect}
-					onCreate={() => handleCreate(inputValue.trim())}
+					selectedId={value}
+					showCreate={showCreate}
 				/>
 			)}
 		</div>

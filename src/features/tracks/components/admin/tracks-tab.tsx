@@ -34,29 +34,29 @@ export function TracksTab({
 	return (
 		<div className="space-y-6">
 			<SectionCard
-				title="Conference Tracks"
-				description="Thematic paths that group presentations by subject area"
 				action={
 					<Button onClick={() => setDialogOpen(true)}>
 						<IconPlus className="mr-2 size-4" />
 						Create Track
 					</Button>
 				}
+				description="Thematic paths that group presentations by subject area"
+				title="Conference Tracks"
 			>
 				<TracksList
-					tracks={initialTracks}
 					onEdit={handleEdit}
 					onUpdate={onUpdate}
+					tracks={initialTracks}
 				/>
 			</SectionCard>
 
 			<TrackDialog
 				key={editingTrack?.id ?? "new"}
-				open={dialogOpen}
 				onOpenChange={handleCloseDialog}
-				track={editingTrack || undefined}
-				reviewers={reviewers}
 				onSuccess={onUpdate}
+				open={dialogOpen}
+				reviewers={reviewers}
+				track={editingTrack || undefined}
 			/>
 		</div>
 	);

@@ -23,9 +23,9 @@ export function UserSubmissionsSection({
 		<ul className="space-y-2">
 			{submissions.map((s) => (
 				<li
-					key={s.id}
-					data-testid="user-submission-row"
 					className="flex flex-col gap-2 rounded-lg border p-3"
+					data-testid="user-submission-row"
+					key={s.id}
 				>
 					<div className="flex flex-wrap items-center gap-2">
 						<Badge variant="outline">{typeLabels[s.type]}</Badge>
@@ -41,9 +41,9 @@ export function UserSubmissionsSection({
 							{s.sequentialNumber}
 						</span>
 						<Link
-							to="/admin/submissions/$id"
-							params={{ id: s.id }}
 							className="line-clamp-2 font-medium text-foreground hover:underline"
+							params={{ id: s.id }}
+							to="/admin/submissions/$id"
 						>
 							{s.title}
 						</Link>

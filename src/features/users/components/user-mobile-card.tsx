@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/shared/ui/card";
 
 export function UserMobileCard({ user }: { user: AdminUser }) {
 	return (
-		<Link to="/admin/users/$id" params={{ id: user.id }} className="block">
+		<Link className="block" params={{ id: user.id }} to="/admin/users/$id">
 			<Card className="transition-colors active:bg-accent">
 				<CardContent className="flex flex-col gap-3 p-4">
 					<div className="flex items-start justify-between gap-3">
@@ -24,30 +24,30 @@ export function UserMobileCard({ user }: { user: AdminUser }) {
 								</p>
 							)}
 						</div>
-						<Badge variant="secondary" className="shrink-0">
+						<Badge className="shrink-0" variant="secondary">
 							{roleLabels[user.role]}
 						</Badge>
 					</div>
 
 					<div className="flex flex-wrap items-center gap-1.5">
 						<Badge
-							variant="outline"
 							className={cn(
 								user.fee?.paid
 									? "border-green-600 text-green-600"
 									: "border-red-600 text-red-600",
 							)}
+							variant="outline"
 						>
 							{user.fee?.paid ? "Paid" : "Unpaid"}
 						</Badge>
 						{user.submissionRoles.map((r) => (
 							<Badge
-								key={`${r.type}-${r.role}-${r.status}`}
-								variant="outline"
 								className={cn(
 									r.status === "draft" && "border-dashed text-muted-foreground",
 									r.status === "accepted" && "border-green-600 text-green-600",
 								)}
+								key={`${r.type}-${r.role}-${r.status}`}
+								variant="outline"
 							>
 								{formatSubmissionRole(r)}
 							</Badge>

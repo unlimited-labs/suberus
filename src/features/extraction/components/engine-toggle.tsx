@@ -27,19 +27,19 @@ export function EngineToggle({
 		<div className="rounded-lg border border-border/50 p-3 space-y-2">
 			<div className="flex items-center justify-between">
 				<Label
-					htmlFor={id}
 					className={cn(
 						"text-sm cursor-pointer",
 						disabled && "text-muted-foreground",
 					)}
+					htmlFor={id}
 				>
 					{label}
 				</Label>
 				<Switch
-					id={id}
 					checked={checked}
-					onCheckedChange={onCheckedChange}
 					disabled={disabled}
+					id={id}
+					onCheckedChange={onCheckedChange}
 				/>
 			</div>
 			<p className="text-xs text-muted-foreground">{description}</p>

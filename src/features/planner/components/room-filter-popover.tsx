@@ -27,13 +27,13 @@ export function RoomFilterPopover({
 		<Popover>
 			<PopoverTrigger asChild>
 				<button
-					type="button"
-					data-testid="room-filter-toggle"
 					className={`flex h-9 items-center gap-1.5 rounded-md px-3 text-xs font-medium transition-colors ${
 						active
 							? "bg-primary/10 text-primary hover:bg-primary/15"
 							: "text-muted-foreground hover:bg-muted hover:text-foreground"
 					}`}
+					data-testid="room-filter-toggle"
+					type="button"
 				>
 					<IconFilter size={13} />
 					Rooms
@@ -44,14 +44,14 @@ export function RoomFilterPopover({
 					)}
 				</button>
 			</PopoverTrigger>
-			<PopoverContent className="w-56 p-2" align="start">
+			<PopoverContent align="start" className="w-56 p-2">
 				<div className="flex items-center justify-between px-1 pb-2">
 					<span className="text-xs font-medium">Visible rooms</span>
 					<button
-						type="button"
-						onClick={onShowAll}
-						disabled={!active}
 						className="text-[11px] text-muted-foreground hover:text-foreground disabled:opacity-40"
+						disabled={!active}
+						onClick={onShowAll}
+						type="button"
 					>
 						Show all
 					</button>
@@ -62,12 +62,12 @@ export function RoomFilterPopover({
 						return (
 							<li key={r.id}>
 								<label
-									htmlFor={`room-filter-${r.id}`}
 									className="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 text-xs hover:bg-muted"
+									htmlFor={`room-filter-${r.id}`}
 								>
 									<Checkbox
-										id={`room-filter-${r.id}`}
 										checked={visible}
+										id={`room-filter-${r.id}`}
 										onCheckedChange={() => onToggle(r.id)}
 									/>
 									<span className="truncate">{r.name}</span>

@@ -119,14 +119,14 @@ function AppLayoutRoute() {
 			>
 				<AppLayout
 					conferenceName={branding.conferenceName}
-					logoUrl={branding.logoUrl}
-					footerText={branding.footerText}
-					logoDarkInvert={branding.logoDarkInvert}
-					scheduleStatus={scheduleState?.status}
 					exhibitorsEnabled={exhibitorsEnabled === true}
 					feeEnabled={feeEnabled !== false}
 					financesEnabled={financesEnabled === true}
+					footerText={branding.footerText}
 					hasDocuments={(documentsCount ?? 0) > 0}
+					logoDarkInvert={branding.logoDarkInvert}
+					logoUrl={branding.logoUrl}
+					scheduleStatus={scheduleState?.status}
 				>
 					<Outlet />
 				</AppLayout>

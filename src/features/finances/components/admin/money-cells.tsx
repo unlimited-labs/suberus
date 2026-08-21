@@ -41,15 +41,15 @@ export function MoneyCells({
 			<div className="flex flex-col gap-1">
 				<span className={LABEL_CLS}>Netto</span>
 				<FormulaInput
-					value={netValue}
-					onValueChange={onNetChange}
+					data-testid={`${testIdPrefix}-net-${index}`}
 					evaluate={evalAmount}
 					format={fmt}
-					showResult={showNetResult}
-					placeholder="0.00"
-					data-testid={`${testIdPrefix}-net-${index}`}
-					resultTestId={`${testIdPrefix}-net-eval-${index}`}
 					inputClassName={cn(!showNetResult && "text-muted-foreground")}
+					onValueChange={onNetChange}
+					placeholder="0.00"
+					resultTestId={`${testIdPrefix}-net-eval-${index}`}
+					showResult={showNetResult}
+					value={netValue}
 				/>
 			</div>
 			<div className="flex flex-col gap-1">
@@ -57,17 +57,17 @@ export function MoneyCells({
 				<div className="inline-flex h-8 items-center gap-0.5 rounded-md border p-0.5">
 					{[null, ...vatRates.map((r) => r.rate)].map((rate) => (
 						<button
-							key={rate ?? "none"}
-							type="button"
 							aria-pressed={vat === rate}
-							onClick={() => onVatChange(rate)}
-							data-testid={`${testIdPrefix}-vat-${rate ?? "none"}-${index}`}
 							className={cn(
 								"rounded px-2 py-0.5 text-xs tabular-nums transition-colors",
 								vat === rate
 									? "bg-foreground text-background"
 									: "text-muted-foreground hover:bg-muted",
 							)}
+							data-testid={`${testIdPrefix}-vat-${rate ?? "none"}-${index}`}
+							key={rate ?? "none"}
+							onClick={() => onVatChange(rate)}
+							type="button"
 						>
 							{rate === null ? "—" : `${rate}%`}
 						</button>
@@ -77,18 +77,18 @@ export function MoneyCells({
 			<div className="flex flex-col gap-0.5">
 				<span className={LABEL_CLS}>Gross</span>
 				<FormulaInput
-					value={grossValue}
-					onValueChange={onGrossChange}
+					data-testid={`${testIdPrefix}-gross-${index}`}
 					evaluate={evalAmount}
 					format={fmt}
-					showResult={showGrossResult}
-					placeholder="0.00"
-					data-testid={`${testIdPrefix}-gross-${index}`}
-					resultTestId={`${testIdPrefix}-gross-eval-${index}`}
 					inputClassName={cn(
 						"font-semibold",
 						!showGrossResult && "text-muted-foreground",
 					)}
+					onValueChange={onGrossChange}
+					placeholder="0.00"
+					resultTestId={`${testIdPrefix}-gross-eval-${index}`}
+					showResult={showGrossResult}
+					value={grossValue}
 				/>
 				{vat ? (
 					<span

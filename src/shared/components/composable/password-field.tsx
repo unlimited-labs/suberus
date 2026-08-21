@@ -19,20 +19,20 @@ export function FormPasswordField({
 
 	return (
 		<FormField
-			label={label}
-			htmlFor={field.name}
-			hasError={hasError}
-			errors={errors}
 			description={description}
+			errors={errors}
+			hasError={hasError}
+			htmlFor={field.name}
+			label={label}
 		>
 			<PasswordInput
-				id={field.name}
 				aria-invalid={hasError}
-				value={field.state.value}
+				disabled={disabled}
+				id={field.name}
 				onBlur={field.handleBlur}
 				onChange={field.handleChange}
 				placeholder={placeholder}
-				disabled={disabled}
+				value={field.state.value}
 			/>
 		</FormField>
 	);

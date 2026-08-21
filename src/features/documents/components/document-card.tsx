@@ -52,8 +52,8 @@ export function DocumentCard({
 
 	return (
 		<div
-			data-testid={testId}
 			className="flex items-center gap-3 rounded-xl border bg-card p-3 transition-colors hover:border-foreground/20 hover:bg-accent/40 sm:p-4"
+			data-testid={testId}
 		>
 			<DocumentIconTile status={status} />
 			<div className="min-w-0 flex-1">
@@ -61,9 +61,9 @@ export function DocumentCard({
 					{name}
 					{signed && (
 						<IconShieldCheck
+							aria-label="Digitally signed"
 							className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400"
 							data-testid="document-signed-badge"
-							aria-label="Digitally signed"
 						/>
 					)}
 				</p>
@@ -79,9 +79,9 @@ export function DocumentCard({
 				(prominentDownload ? (
 					<Button
 						asChild
-						variant="outline"
-						size="sm"
 						data-testid={downloadTestId}
+						size="sm"
+						variant="outline"
 					>
 						<a href={downloadHref}>
 							<IconDownload className="mr-2 size-4" />
@@ -91,22 +91,22 @@ export function DocumentCard({
 				) : (
 					<Button
 						asChild
-						variant="ghost"
-						size="icon-sm"
 						data-testid={downloadTestId}
+						size="icon-sm"
+						variant="ghost"
 					>
-						<a href={downloadHref} aria-label="Download">
+						<a aria-label="Download" href={downloadHref}>
 							<IconDownload className="size-4" />
 						</a>
 					</Button>
 				))}
 			{onDelete && (
 				<Button
-					variant="ghost"
-					size="icon-sm"
-					onClick={onDelete}
-					className="text-destructive hover:text-destructive"
 					aria-label={deleteLabel}
+					className="text-destructive hover:text-destructive"
+					onClick={onDelete}
+					size="icon-sm"
+					variant="ghost"
 				>
 					<IconTrash className="size-4" />
 				</Button>

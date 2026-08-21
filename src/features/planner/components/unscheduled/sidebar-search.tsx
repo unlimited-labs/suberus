@@ -11,22 +11,22 @@ export function SidebarSearch({ value, onChange }: Props) {
 		<div className="border-b px-2 py-2">
 			<div className="relative">
 				<IconSearch
-					size={12}
 					className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+					size={12}
 				/>
 				<Input
-					value={value}
+					className="h-7 pl-7 text-xs"
+					data-testid="sidebar-search"
 					onChange={(e) => onChange(e.target.value)}
 					placeholder="Search title, author, keyword…"
-					data-testid="sidebar-search"
-					className="h-7 pl-7 text-xs"
+					value={value}
 				/>
 				{value && (
 					<button
-						type="button"
-						onClick={() => onChange("")}
-						className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
 						aria-label="Clear search"
+						className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+						onClick={() => onChange("")}
+						type="button"
 					>
 						<IconX size={11} />
 					</button>

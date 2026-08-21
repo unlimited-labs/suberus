@@ -54,12 +54,12 @@ export function TemplateUploadDialog({
 
 	return (
 		<Dialog
-			open={open}
 			onOpenChange={(o) => {
 				if (busy) return;
 				if (!o) reset();
 				onOpenChange(o);
 			}}
+			open={open}
 		>
 			<DialogContent>
 				<DialogHeader>
@@ -74,11 +74,11 @@ export function TemplateUploadDialog({
 					<div className="space-y-1.5">
 						<Label htmlFor="tpl-name">Name</Label>
 						<Input
+							data-testid="template-name-input"
 							id="tpl-name"
-							value={name}
 							onChange={(e) => setName(e.target.value)}
 							placeholder="e.g. Visa invitation letter"
-							data-testid="template-name-input"
+							value={name}
 						/>
 					</div>
 
@@ -86,20 +86,20 @@ export function TemplateUploadDialog({
 						<Label htmlFor="tpl-desc">Description (optional)</Label>
 						<Textarea
 							id="tpl-desc"
-							value={description}
 							onChange={(e) => setDescription(e.target.value)}
 							rows={2}
+							value={description}
 						/>
 					</div>
 
 					<div className="space-y-1.5">
 						<Label htmlFor="tpl-file">Template file (.docx)</Label>
 						<Input
-							id="tpl-file"
-							type="file"
 							accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-							onChange={(e) => setFile(e.target.files?.[0] ?? null)}
 							data-testid="template-file-input"
+							id="tpl-file"
+							onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+							type="file"
 						/>
 					</div>
 
@@ -110,10 +110,10 @@ export function TemplateUploadDialog({
 						<div className="flex flex-wrap gap-1">
 							{DOCUMENT_PLACEHOLDERS.map((p) => (
 								<Badge
-									key={p.key}
-									variant="outline"
 									className="font-mono text-[10px]"
+									key={p.key}
 									title={p.label}
+									variant="outline"
 								>
 									{`{${p.key}}`}
 								</Badge>
@@ -124,16 +124,16 @@ export function TemplateUploadDialog({
 
 				<DialogFooter>
 					<Button
-						variant="outline"
-						onClick={() => onOpenChange(false)}
 						disabled={busy}
+						onClick={() => onOpenChange(false)}
+						variant="outline"
 					>
 						Cancel
 					</Button>
 					<Button
-						onClick={handleSubmit}
-						disabled={busy || !file || !name.trim()}
 						data-testid="template-upload-submit"
+						disabled={busy || !file || !name.trim()}
+						onClick={handleSubmit}
 					>
 						<IconUpload className="mr-2 size-4" />
 						{busy ? "Uploading…" : "Upload"}

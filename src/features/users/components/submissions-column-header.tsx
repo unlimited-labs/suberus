@@ -57,12 +57,10 @@ function FilterSection({
 					return (
 						// biome-ignore lint/a11y/useSemanticElements: the visible control is a Radix Checkbox (a <button>); nesting it in a native <input> isn't possible and a nested <button> caused double-toggle. This row carries role/aria-checked + keyboard handling instead.
 						<div
-							key={option.value}
-							role="checkbox"
 							aria-checked={isSelected}
-							tabIndex={0}
-							data-testid={`submission-filter-${option.value}`}
 							className="flex w-full cursor-pointer items-center gap-2 rounded px-1 py-0.5 hover:bg-muted/50"
+							data-testid={`submission-filter-${option.value}`}
+							key={option.value}
 							onClick={() => onToggle(option.value)}
 							onKeyDown={(e) => {
 								if (e.key === "Enter" || e.key === " ") {
@@ -70,12 +68,14 @@ function FilterSection({
 									onToggle(option.value);
 								}
 							}}
+							role="checkbox"
+							tabIndex={0}
 						>
 							<Checkbox
-								checked={isSelected}
-								tabIndex={-1}
 								aria-hidden
+								checked={isSelected}
 								className="pointer-events-none"
+								tabIndex={-1}
 							/>
 							<span className="flex-1 text-left text-sm">{option.label}</span>
 							<span className="text-xs text-muted-foreground tabular-nums">
@@ -147,9 +147,9 @@ export function SubmissionsColumnHeader({
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button
-						variant="ghost"
-						size="sm"
 						className="-ml-3 h-8 data-open:bg-accent"
+						size="sm"
+						variant="ghost"
 					>
 						<span>Submissions</span>
 						{column.getIsSorted() === "desc" ? (
@@ -190,10 +190,10 @@ export function SubmissionsColumnHeader({
 			>
 				<PopoverTrigger asChild>
 					<Button
-						variant="ghost"
-						size="icon-sm"
-						data-testid="submissions-filter-trigger"
 						className={cn("size-6 shrink-0", hasFilters && "text-primary")}
+						data-testid="submissions-filter-trigger"
+						size="icon-sm"
+						variant="ghost"
 					>
 						{hasFilters ? (
 							<IconFilterFilled className="size-3.5" />
@@ -203,11 +203,11 @@ export function SubmissionsColumnHeader({
 						<span className="sr-only">Filter submissions</span>
 					</Button>
 				</PopoverTrigger>
-				<PopoverContent className="w-56 p-0" align="start">
+				<PopoverContent align="start" className="w-56 p-0">
 					<div className="flex items-center justify-between p-2">
 						<span className="text-sm font-medium">Filter</span>
 						{hasFilters && (
-							<Badge variant="secondary" className="text-xs">
+							<Badge className="text-xs" variant="secondary">
 								{activeCount}
 							</Badge>
 						)}
@@ -215,37 +215,37 @@ export function SubmissionsColumnHeader({
 					<Separator />
 					<div className="max-h-80 overflow-auto">
 						<FilterSection
-							title="Type"
-							options={typeFilterOptions}
 							facets={columns.type?.getFacetedUniqueValues()}
-							selected={selection.type}
 							onToggle={(v) => toggle("type", v)}
+							options={typeFilterOptions}
+							selected={selection.type}
+							title="Type"
 						/>
 						<Separator />
 						<FilterSection
-							title="Role"
-							options={submissionRoleFilterOptions}
 							facets={columns.role?.getFacetedUniqueValues()}
-							selected={selection.role}
 							onToggle={(v) => toggle("role", v)}
+							options={submissionRoleFilterOptions}
+							selected={selection.role}
+							title="Role"
 						/>
 						<Separator />
 						<FilterSection
-							title="Status"
-							options={submissionDraftFilterOptions}
 							facets={columns.draft?.getFacetedUniqueValues()}
-							selected={selection.draft}
 							onToggle={(v) => toggle("draft", v)}
+							options={submissionDraftFilterOptions}
+							selected={selection.draft}
+							title="Status"
 						/>
 					</div>
 					<Separator />
 					<div className="flex justify-end p-2">
 						<Button
-							variant="ghost"
-							size="sm"
-							onClick={clearAll}
-							disabled={!hasFilters}
 							className="h-7 text-xs"
+							disabled={!hasFilters}
+							onClick={clearAll}
+							size="sm"
+							variant="ghost"
 						>
 							Clear
 						</Button>

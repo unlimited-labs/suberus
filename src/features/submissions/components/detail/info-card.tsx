@@ -47,7 +47,7 @@ export function InfoCard({
 	const { formatDate } = useDateFormat();
 
 	return (
-		<SectionCard variant="outlined" title="Information">
+		<SectionCard title="Information" variant="outlined">
 			<div className="space-y-4">
 				<InfoItem
 					icon={<IconCategory className="size-4 text-muted-foreground" />}
@@ -63,10 +63,10 @@ export function InfoCard({
 				{versions.length > 1 ? (
 					<div className="pt-2 border-t border-border/50">
 						<VersionSelector
-							versions={versions}
 							currentVersion={submission.currentVersion}
-							selectedVersion={selectedVersion}
 							onVersionChange={onVersionChange}
+							selectedVersion={selectedVersion}
+							versions={versions}
 						/>
 					</div>
 				) : (

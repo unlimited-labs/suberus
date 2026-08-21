@@ -32,51 +32,51 @@ export function SessionEditorFooter() {
 	return (
 		<SheetFooter className="flex flex-col gap-2 border-t p-4">
 			<Button
-				type="button"
-				size="sm"
+				className="w-full"
+				data-testid="session-editor-save"
 				disabled={!isDirty || isSubmitting}
 				onClick={() => form.handleSubmit()}
-				data-testid="session-editor-save"
-				className="w-full"
+				size="sm"
+				type="button"
 			>
 				<IconDeviceFloppy size={14} />
 				{isSubmitting ? "Saving…" : "Save"}
 			</Button>
 			<div className="flex gap-2">
 				<Button
-					variant="outline"
-					size="sm"
-					onClick={mutations.continueSeries}
-					data-testid="session-editor-continue-series"
 					className="flex-1"
+					data-testid="session-editor-continue-series"
+					onClick={mutations.continueSeries}
+					size="sm"
+					variant="outline"
 				>
 					<IconRepeat size={13} />
 					Continue series
 				</Button>
-				<Popover open={splitOpen} onOpenChange={setSplitOpen}>
+				<Popover onOpenChange={setSplitOpen} open={splitOpen}>
 					<PopoverTrigger asChild>
 						<Button
-							variant="outline"
-							size="sm"
-							disabled={presentations.length < 2 || session.untimedSlots}
-							data-testid="session-editor-split"
 							className="flex-1"
+							data-testid="session-editor-split"
+							disabled={presentations.length < 2 || session.untimedSlots}
+							size="sm"
+							variant="outline"
 						>
 							<IconCut size={13} />
 							Split
 						</Button>
 					</PopoverTrigger>
-					<PopoverContent className="w-72 p-0" align="end">
+					<PopoverContent align="end" className="w-72 p-0">
 						<div className="border-b p-2 text-xs font-medium">
 							Split after presentation:
 						</div>
 						<div className="max-h-64 overflow-y-auto p-1">
 							{presentations.slice(0, -1).map((p) => (
 								<button
-									key={p.id}
-									type="button"
-									onClick={() => handleSplit(p.order)}
 									className="block w-full rounded px-2 py-1.5 text-left text-xs hover:bg-muted"
+									key={p.id}
+									onClick={() => handleSplit(p.order)}
+									type="button"
 								>
 									<span className="mr-2 font-mono text-muted-foreground">
 										{p.order + 1}.
@@ -89,12 +89,12 @@ export function SessionEditorFooter() {
 				</Popover>
 			</div>
 			<Button
-				variant="destructive"
-				size="sm"
+				className="w-full"
+				data-testid="session-editor-delete"
 				disabled={deleting}
 				onClick={onDelete}
-				data-testid="session-editor-delete"
-				className="w-full"
+				size="sm"
+				variant="destructive"
 			>
 				<IconTrash size={14} />
 				Delete session

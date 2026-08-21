@@ -35,12 +35,12 @@ export function DocumentFilters({
 			<div className="relative flex-1">
 				<IconSearch className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
 				<Input
-					value={search}
+					aria-label="Search documents by participant"
+					className="pl-8"
+					data-testid="documents-search"
 					onChange={(e) => onSearchChange(e.target.value)}
 					placeholder="Search by participant…"
-					className="pl-8"
-					aria-label="Search documents by participant"
-					data-testid="documents-search"
+					value={search}
 				/>
 			</div>
 			<Select
@@ -50,11 +50,11 @@ export function DocumentFilters({
 					{ value: "PENDING", label: "Generating" },
 					{ value: "FAILED", label: "Failed" },
 				]}
-				value={status}
 				// SAFETY: the select renders only StatusFilter options.
 				onValueChange={(v) => onStatusChange(v as StatusFilter)}
+				value={status}
 			>
-				<SelectTrigger className="w-full sm:w-40" aria-label="Filter by status">
+				<SelectTrigger aria-label="Filter by status" className="w-full sm:w-40">
 					<SelectValue />
 				</SelectTrigger>
 				<SelectContent>
@@ -69,12 +69,12 @@ export function DocumentFilters({
 					{ value: "ALL", label: "All templates" },
 					...templates.map((t) => ({ value: t.id, label: t.name })),
 				]}
-				value={templateId}
 				onValueChange={onTemplateChange}
+				value={templateId}
 			>
 				<SelectTrigger
-					className="w-full sm:w-48"
 					aria-label="Filter by template"
+					className="w-full sm:w-48"
 				>
 					<SelectValue />
 				</SelectTrigger>

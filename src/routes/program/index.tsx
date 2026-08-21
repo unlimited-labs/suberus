@@ -48,19 +48,19 @@ function ProgramPage() {
 
 	return (
 		<ProgramInteractionProvider
-			themeId={theme.id}
 			showAuthorInfo={settings.showAuthorInfo}
+			themeId={theme.id}
 		>
 			<ProgramShell
-				themeId={theme.id}
+				activeDay={activeDay}
 				chrome={theme.chrome}
 				layout={theme.layout}
-				settings={settings}
-				search={search}
-				setSearch={setSearch}
-				activeDay={activeDay}
-				setActiveDay={setActiveDay}
 				schedule={schedule}
+				search={search}
+				setActiveDay={setActiveDay}
+				setSearch={setSearch}
+				settings={settings}
+				themeId={theme.id}
 			/>
 		</ProgramInteractionProvider>
 	);

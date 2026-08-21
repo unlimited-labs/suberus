@@ -33,8 +33,8 @@ export function NewSubmissionButton({
 			<Tooltip>
 				<TooltipTrigger asChild>
 					<span
-						data-testid="new-submission-disabled"
 						className="inline-block cursor-not-allowed"
+						data-testid="new-submission-disabled"
 					>
 						<Button className="gap-2 pointer-events-none" disabled>
 							<IconPlus className="size-4" />

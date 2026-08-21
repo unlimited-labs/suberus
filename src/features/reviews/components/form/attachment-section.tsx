@@ -30,16 +30,16 @@ export function AttachmentSection({
 
 	return (
 		<SectionCard
-			title="Attachment"
-			icon={IconPaperclip}
-			contentClassName="space-y-4"
 			action={
 				!readOnly && (
-					<Badge variant="outline" className="text-xs">
+					<Badge className="text-xs" variant="outline">
 						Optional
 					</Badge>
 				)
 			}
+			contentClassName="space-y-4"
+			icon={IconPaperclip}
+			title="Attachment"
 		>
 			{readOnly ? (
 				existingAttachment ? (
@@ -49,8 +49,8 @@ export function AttachmentSection({
 						</div>
 						<div className="flex-1 min-w-0">
 							<a
-								href={`/api/files/${existingAttachment.id}`}
 								className="text-sm font-medium text-foreground hover:underline truncate block"
+								href={`/api/files/${existingAttachment.id}`}
 							>
 								{existingAttachment.originalName}
 							</a>
@@ -74,8 +74,8 @@ export function AttachmentSection({
 							</div>
 							<div className="flex-1 min-w-0">
 								<a
-									href={`/api/files/${existingAttachment.id}`}
 									className="text-sm font-medium text-foreground hover:underline truncate block"
+									href={`/api/files/${existingAttachment.id}`}
 								>
 									{existingAttachment.originalName}
 								</a>
@@ -84,27 +84,27 @@ export function AttachmentSection({
 								</p>
 							</div>
 							<Button
-								type="button"
-								size="icon-sm"
-								variant="ghost"
+								aria-label="Remove file"
 								onClick={() => {
 									setKeepExistingAttachment(false);
 									onAttachmentChange?.(null);
 								}}
-								aria-label="Remove file"
+								size="icon-sm"
+								type="button"
+								variant="ghost"
 							>
 								<IconX className="size-4" />
 							</Button>
 						</div>
 					) : (
 						<FileDropzone
-							value={attachmentFile}
+							accept={FILE_ACCEPT_ATTRIBUTE}
+							maxSize={10}
 							onChange={(file) => {
 								setAttachmentFile(file);
 								onAttachmentChange?.(file);
 							}}
-							accept={FILE_ACCEPT_ATTRIBUTE}
-							maxSize={10}
+							value={attachmentFile}
 						/>
 					)}
 				</>

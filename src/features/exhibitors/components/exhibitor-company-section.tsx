@@ -30,9 +30,9 @@ export function ExhibitorCompanySection({
 				<form.AppField name="description">
 					{(field) => (
 						<field.TextareaField
+							description="Shown in conference materials"
 							label="Description"
 							rows={5}
-							description="Shown in conference materials"
 							testId="exhibitor-description"
 						/>
 					)}

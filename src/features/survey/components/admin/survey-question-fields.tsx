@@ -123,18 +123,18 @@ export function TypePicker({
 				const selected = value === type;
 				return (
 					<button
-						key={type}
-						type="button"
-						data-testid={`type-option-${type}`}
 						aria-pressed={selected}
-						title={meta.description}
-						onClick={() => onChange(type)}
 						className={cn(
 							"flex flex-col items-center gap-1 rounded-lg border p-2 text-center transition-colors",
 							selected
 								? "border-primary bg-primary/5 ring-1 ring-primary"
 								: "border-border bg-card hover:border-primary/40 hover:bg-muted/40",
 						)}
+						data-testid={`type-option-${type}`}
+						key={type}
+						onClick={() => onChange(type)}
+						title={meta.description}
+						type="button"
 					>
 						<Icon
 							className={cn(
@@ -175,17 +175,17 @@ export function AudiencePicker({
 				const selected = value === audience;
 				return (
 					<button
-						key={audience}
-						type="button"
-						data-testid={`audience-option-${audience}`}
 						aria-pressed={selected}
-						onClick={() => onChange(audience)}
 						className={cn(
 							"flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
 							selected
 								? "bg-primary text-primary-foreground"
 								: "text-muted-foreground hover:bg-muted/60",
 						)}
+						data-testid={`audience-option-${audience}`}
+						key={audience}
+						onClick={() => onChange(audience)}
+						type="button"
 					>
 						{AUDIENCE_LABELS[audience]}
 					</button>
@@ -212,31 +212,31 @@ function SortableOption({
 		useSortable({ id, animateLayoutChanges: () => false });
 	return (
 		<div
+			className="flex items-center gap-1.5"
 			ref={setNodeRef}
 			style={{ transform: CSS.Transform.toString(transform), transition }}
-			className="flex items-center gap-1.5"
 		>
 			<button
-				type="button"
-				className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
 				aria-label="Reorder option"
+				className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
+				type="button"
 				{...attributes}
 				{...listeners}
 			>
 				<IconGripVertical className="size-4" />
 			</button>
 			<Input
-				value={value}
+				className="h-8 text-sm"
 				onChange={(e) => onChange(e.target.value)}
 				placeholder={`Option ${index + 1}`}
-				className="h-8 text-sm"
+				value={value}
 			/>
 			<Button
+				aria-label="Remove option"
+				onClick={onRemove}
+				size="icon-sm"
 				type="button"
 				variant="ghost"
-				size="icon-sm"
-				onClick={onRemove}
-				aria-label="Remove option"
 			>
 				<IconX className="size-3.5" />
 			</Button>
@@ -287,19 +287,18 @@ export function OptionsEditor({
 				Options
 			</Label>
 			<DndContext
-				sensors={sensors}
 				collisionDetection={closestCenter}
 				onDragEnd={handleDragEnd}
+				sensors={sensors}
 			>
 				<SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
 					{/* Cap height so long option lists scroll instead of growing the dialog. */}
 					<div className="max-h-44 space-y-1.5 overflow-y-auto">
 						{options.map((opt, i) => (
 							<SortableOption
-								key={itemIds[i]}
 								id={itemIds[i]}
 								index={i}
-								value={opt}
+								key={itemIds[i]}
 								onChange={(v) => {
 									const next = [...options];
 									next[i] = v;
@@ -309,16 +308,17 @@ export function OptionsEditor({
 									setIds(itemIds.filter((_, j) => j !== i));
 									onChange(options.filter((_, j) => j !== i));
 								}}
+								value={opt}
 							/>
 						))}
 					</div>
 				</SortableContext>
 			</DndContext>
 			<Button
+				onClick={() => onChange([...options, ""])}
+				size="sm"
 				type="button"
 				variant="outline"
-				size="sm"
-				onClick={() => onChange([...options, ""])}
 			>
 				<IconPlus className="mr-1 size-3" />
 				Add option

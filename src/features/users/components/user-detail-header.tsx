@@ -93,7 +93,7 @@ export function UserDetailHeader({
 				<div>
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
-							<Button variant="outline" size="icon-sm">
+							<Button size="icon-sm" variant="outline">
 								<IconDotsVertical className="size-4" />
 								<span className="sr-only">Actions menu</span>
 							</Button>
@@ -111,7 +111,7 @@ export function UserDetailHeader({
 									Change Role
 								</DropdownMenuItem>
 							)}
-							<DropdownMenuItem onClick={onToggleActive} disabled={isPending}>
+							<DropdownMenuItem disabled={isPending} onClick={onToggleActive}>
 								{user.isActive ? (
 									<>
 										<IconUserX className="mr-2 size-4" />
@@ -125,9 +125,9 @@ export function UserDetailHeader({
 								)}
 							</DropdownMenuItem>
 							<DropdownMenuItem
-								onClick={onToggleLateSubmission}
-								disabled={isPending}
 								data-testid="toggle-late-submission"
+								disabled={isPending}
+								onClick={onToggleLateSubmission}
 							>
 								{user.allowLateSubmission ? (
 									<>
@@ -143,25 +143,25 @@ export function UserDetailHeader({
 							</DropdownMenuItem>
 							<DropdownMenuItem asChild>
 								<Link
-									to="/admin/users/$id/submissions/new"
-									params={{ id: user.id }}
 									data-testid="add-submission-action"
+									params={{ id: user.id }}
+									to="/admin/users/$id/submissions/new"
 								>
 									<IconPlus className="mr-2 size-4" />
 									Add submission
 								</Link>
 							</DropdownMenuItem>
 							<DropdownMenuItem
-								onClick={onResendSetPassword}
-								disabled={isResendPending}
 								data-testid="resend-set-password"
+								disabled={isResendPending}
+								onClick={onResendSetPassword}
 							>
 								<IconMailForward className="mr-2 size-4" />
 								Resend set-password link
 							</DropdownMenuItem>
 							<DropdownMenuItem
-								onClick={onGenerateDocument}
 								data-testid="generate-document-action"
+								onClick={onGenerateDocument}
 							>
 								<IconFilePlus className="mr-2 size-4" />
 								Generate document
@@ -169,7 +169,7 @@ export function UserDetailHeader({
 							{canDeleteUsers && (
 								<>
 									<DropdownMenuSeparator />
-									<DropdownMenuItem variant="destructive" onClick={onDelete}>
+									<DropdownMenuItem onClick={onDelete} variant="destructive">
 										<IconTrash className="mr-2 size-4" />
 										Delete User
 									</DropdownMenuItem>

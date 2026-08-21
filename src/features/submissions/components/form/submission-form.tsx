@@ -78,8 +78,8 @@ export function SubmissionForm(props: SubmissionFormProps) {
 			<div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
 				<div className="relative overflow-hidden rounded-2xl bg-card shadow-2xl">
 					<ExtractionOverlay
-						isExtracting={isExtracting}
 						elapsedSeconds={elapsedSeconds}
+						isExtracting={isExtracting}
 					/>
 					<div className="p-8">
 						<div className="mb-8">
@@ -94,17 +94,17 @@ export function SubmissionForm(props: SubmissionFormProps) {
 						</div>
 
 						<form
+							className="space-y-6"
 							onSubmit={(e) => {
 								e.preventDefault();
 								e.stopPropagation();
 								void form.handleSubmit();
 							}}
-							className="space-y-6"
 						>
 							<SubmissionTypeSelector
-								typeConfigs={typeConfigs}
-								selectedType={selectedType}
 								onSelect={selectType}
+								selectedType={selectedType}
+								typeConfigs={typeConfigs}
 							/>
 
 							{/* File upload */}
@@ -114,13 +114,13 @@ export function SubmissionForm(props: SubmissionFormProps) {
 									<form.Field name="file">
 										{(field) => (
 											<FileUploadSection
-												value={field.state.value}
+												accept={acceptString}
+												allowedExtensions={allowedExtensions}
+												maxSize={maxFileSizeMb}
 												onChange={(file) =>
 													handleFileWithExtraction(file, field.handleChange)
 												}
-												accept={acceptString}
-												maxSize={maxFileSizeMb}
-												allowedExtensions={allowedExtensions}
+												value={field.state.value}
 											/>
 										)}
 									</form.Field>
@@ -130,15 +130,15 @@ export function SubmissionForm(props: SubmissionFormProps) {
 							<div className="border-t" />
 
 							<SubmissionContentSection
-								form={form}
-								isFileFormat={isFileFormat}
-								extractionEnabled={extractionEnabled}
-								validationSettings={validationSettings}
-								contentSchema={contentSchema}
-								submissionAttempts={submissionAttempts}
 								acceptString={acceptString}
 								allowedExtensions={allowedExtensions}
+								contentSchema={contentSchema}
+								extractionEnabled={extractionEnabled}
+								form={form}
+								isFileFormat={isFileFormat}
 								maxFileSizeMb={maxFileSizeMb}
+								submissionAttempts={submissionAttempts}
+								validationSettings={validationSettings}
 							/>
 
 							<div className="border-t" />
@@ -158,8 +158,8 @@ export function SubmissionForm(props: SubmissionFormProps) {
 										return (
 											<Field data-invalid={hasError}>
 												<AuthorsInput
-													value={field.state.value}
 													onChange={field.handleChange}
+													value={field.state.value}
 												/>
 												<FieldError
 													errors={
@@ -194,9 +194,9 @@ export function SubmissionForm(props: SubmissionFormProps) {
 													<Field data-invalid={hasError}>
 														<div className="rounded-lg border bg-muted/30 p-3">
 															<KeywordsInput
-																value={field.state.value}
-																onChange={field.handleChange}
 																maxKeywords={validationSettings.maxKeywords}
+																onChange={field.handleChange}
+																value={field.state.value}
 															/>
 														</div>
 														<FieldError
@@ -236,10 +236,10 @@ export function SubmissionForm(props: SubmissionFormProps) {
 																label: s.name,
 															})),
 														]}
-														value={field.state.value || "none"}
 														onValueChange={(v) =>
 															field.handleChange(v === "none" ? null : v)
 														}
+														value={field.state.value || "none"}
 													>
 														<SelectTrigger>
 															<SelectValue placeholder="Select track (optional)" />
@@ -268,11 +268,11 @@ export function SubmissionForm(props: SubmissionFormProps) {
 										<div className="flex gap-2 ml-auto">
 											{onSaveDraft && (
 												<Button
+													className="gap-2"
+													disabled={isSavingDraft || isSubmitting}
+													onClick={saveDraft}
 													type="button"
 													variant="outline"
-													disabled={isSavingDraft || isSubmitting}
-													className="gap-2"
-													onClick={saveDraft}
 												>
 													{isSavingDraft ? (
 														<>
@@ -288,9 +288,9 @@ export function SubmissionForm(props: SubmissionFormProps) {
 												</Button>
 											)}
 											<Button
-												type="submit"
-												disabled={isSubmitting || isSavingDraft}
 												className="gap-2 px-6"
+												disabled={isSubmitting || isSavingDraft}
+												type="submit"
 											>
 												{isSubmitting ? (
 													<>
@@ -313,11 +313,11 @@ export function SubmissionForm(props: SubmissionFormProps) {
 				</div>
 
 				<SubmissionProgressSidebar
-					progress={progress}
-					validationSettings={validationSettings}
-					isFileFormat={isFileFormat}
 					allowedExtensions={allowedExtensions}
+					isFileFormat={isFileFormat}
+					progress={progress}
 					renderedGuidelines={renderedGuidelines}
+					validationSettings={validationSettings}
 				/>
 			</div>
 		</div>

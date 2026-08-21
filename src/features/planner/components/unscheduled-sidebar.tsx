@@ -78,9 +78,9 @@ function UnscheduledBody({
 						);
 						return (
 							<UnscheduledGroup
-								key={group.key}
 								group={group}
 								isCollapsed={isCollapsed}
+								key={group.key}
 								onToggle={() => collapsed.toggle(toggleKey)}
 								{...groupProps}
 							/>
@@ -91,8 +91,8 @@ function UnscheduledBody({
 			{selectionSize > 0 && (
 				<SelectionBar
 					count={selectionSize}
-					onCreateSession={onCreateSession}
 					onClear={onClear}
+					onCreateSession={onCreateSession}
 				/>
 			)}
 		</>
@@ -196,46 +196,46 @@ export function UnscheduledSidebar() {
 	return (
 		<>
 			<div
-				data-testid="unscheduled-sidebar"
 				className="flex min-h-0 w-72 shrink-0 flex-col border-r"
+				data-testid="unscheduled-sidebar"
 			>
 				<SidebarHeader
-					mode={listMode}
 					hasItems={hasItems}
-					selectMode={selectMode}
+					mode={listMode}
+					onCollapse={() => setOpen(false)}
+					onOpenReader={() => setReaderStart(0)}
 					onToggleMode={handleToggleListMode}
 					onToggleSelectMode={handleToggleSelectMode}
-					onOpenReader={() => setReaderStart(0)}
-					onCollapse={() => setOpen(false)}
+					selectMode={selectMode}
 				/>
-				<SidebarSearch value={search} onChange={setSearch} />
+				<SidebarSearch onChange={setSearch} value={search} />
 
 				{isScheduled ? (
 					<ScheduledBody
-						sessions={sessions}
-						search={search}
-						timezone={settings.timezone || undefined}
 						onOpenSession={selectSession}
+						search={search}
+						sessions={sessions}
+						timezone={settings.timezone || undefined}
 					/>
 				) : (
 					<UnscheduledBody
-						groups={groups}
 						collapsed={collapsed}
 						groupProps={groupProps}
-						search={search}
+						groups={groups}
 						mode={mode}
-						onModeChange={setMode}
-						selectionSize={selection.selected.size}
-						onCreateSession={handleCreateSession}
 						onClear={selection.clear}
+						onCreateSession={handleCreateSession}
+						onModeChange={setMode}
+						search={search}
+						selectionSize={selection.selected.size}
 					/>
 				)}
 			</div>
 			{readerStart !== null && (
 				<BulkReadReader
-					submissions={submissions}
 					initialIndex={readerStart}
 					onClose={() => setReaderStart(null)}
+					submissions={submissions}
 				/>
 			)}
 		</>

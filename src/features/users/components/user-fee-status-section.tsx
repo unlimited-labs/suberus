@@ -25,11 +25,11 @@ export function UserFeeStatusSection({
 					</span>
 				</div>
 				<Button
-					variant="ghost"
-					size="sm"
 					className="h-7 text-muted-foreground hover:text-destructive"
-					onClick={onUnmark}
 					disabled={isPending}
+					onClick={onUnmark}
+					size="sm"
+					variant="ghost"
 				>
 					<IconX className="mr-1 size-3.5" />
 					Unmark

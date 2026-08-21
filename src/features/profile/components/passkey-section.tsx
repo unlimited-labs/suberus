@@ -92,20 +92,20 @@ export function PasskeySection() {
 				<ul className="space-y-2" data-testid="passkey-list">
 					{passkeys.map((pk) => (
 						<li
-							key={pk.id}
 							className="flex items-center justify-between rounded-lg border p-3"
+							key={pk.id}
 						>
 							<div className="flex items-center gap-2">
 								<IconFingerprint className="size-4 text-muted-foreground" />
 								<span className="text-sm">{pk.name || "Passkey"}</span>
 							</div>
 							<Button
-								type="button"
-								variant="ghost"
-								size="icon-sm"
 								aria-label="Remove passkey"
 								disabled={deleteMutation.isPending}
 								onClick={() => deleteMutation.mutate(pk.id)}
+								size="icon-sm"
+								type="button"
+								variant="ghost"
 							>
 								<IconTrash className="size-4 text-destructive" />
 							</Button>
@@ -116,19 +116,19 @@ export function PasskeySection() {
 
 			<div className="flex items-end gap-2">
 				<Input
-					value={name}
-					onChange={(e) => setName(e.target.value)}
-					placeholder="Device name (e.g. My iPhone)"
 					className="h-9"
 					data-testid="passkey-name"
+					onChange={(e) => setName(e.target.value)}
+					placeholder="Device name (e.g. My iPhone)"
+					value={name}
 				/>
 				<Button
-					type="button"
-					variant="outline"
 					className="h-9 shrink-0"
 					data-testid="passkey-add"
 					disabled={addMutation.isPending}
 					onClick={() => addMutation.mutate(name)}
+					type="button"
+					variant="outline"
 				>
 					<IconFingerprint className="size-4" />
 					Add passkey
@@ -136,12 +136,12 @@ export function PasskeySection() {
 			</div>
 
 			<PasskeyReauthDialog
-				open={reauthOpen}
 				onOpenChange={setReauthOpen}
 				onReauthenticated={() => {
 					setReauthOpen(false);
 					addMutation.mutate(pendingNameRef.current);
 				}}
+				open={reauthOpen}
 			/>
 		</div>
 	);

@@ -18,38 +18,38 @@ function TitleFields({ data, onChange }: ValidationFieldsProps) {
 			<div className="grid gap-4 sm:grid-cols-2">
 				<div className="space-y-2">
 					<Label
-						htmlFor="minTitleLength"
 						className="text-xs text-muted-foreground"
+						htmlFor="minTitleLength"
 					>
 						Min length (characters)
 					</Label>
 					<Input
 						id="minTitleLength"
-						type="number"
-						min={1}
 						max={500}
-						value={data.minTitleLength}
+						min={1}
 						onChange={(e) =>
 							onChange("minTitleLength", parseInt(e.target.value, 10) || 1)
 						}
+						type="number"
+						value={data.minTitleLength}
 					/>
 				</div>
 				<div className="space-y-2">
 					<Label
-						htmlFor="maxTitleLength"
 						className="text-xs text-muted-foreground"
+						htmlFor="maxTitleLength"
 					>
 						Max length (characters)
 					</Label>
 					<Input
 						id="maxTitleLength"
-						type="number"
-						min={10}
 						max={1000}
-						value={data.maxTitleLength}
+						min={10}
 						onChange={(e) =>
 							onChange("maxTitleLength", parseInt(e.target.value, 10) || 200)
 						}
+						type="number"
+						value={data.maxTitleLength}
 					/>
 				</div>
 			</div>
@@ -72,41 +72,41 @@ function AbstractFields({ data, onChange }: ValidationFieldsProps) {
 			<div className="grid gap-4 sm:grid-cols-2">
 				<div className="space-y-2">
 					<Label
-						htmlFor="minAbstractLength"
 						className="text-xs text-muted-foreground"
+						htmlFor="minAbstractLength"
 					>
 						Min length (characters)
 					</Label>
 					<Input
 						id="minAbstractLength"
-						type="number"
-						min={0}
 						max={10000}
-						value={data.minAbstractLength}
+						min={0}
 						onChange={(e) =>
 							onChange("minAbstractLength", parseInt(e.target.value, 10) || 0)
 						}
+						type="number"
+						value={data.minAbstractLength}
 					/>
 				</div>
 				<div className="space-y-2">
 					<Label
-						htmlFor="maxAbstractLength"
 						className="text-xs text-muted-foreground"
+						htmlFor="maxAbstractLength"
 					>
 						Max length (characters)
 					</Label>
 					<Input
 						id="maxAbstractLength"
-						type="number"
-						min={100}
 						max={50000}
-						value={data.maxAbstractLength}
+						min={100}
 						onChange={(e) =>
 							onChange(
 								"maxAbstractLength",
 								parseInt(e.target.value, 10) || 2000,
 							)
 						}
+						type="number"
+						value={data.maxAbstractLength}
 					/>
 				</div>
 			</div>
@@ -130,8 +130,8 @@ function KeywordsFields({ data, onChange }: ValidationFieldsProps) {
 					</p>
 				</div>
 				<Switch
-					id="enableKeywords"
 					checked={data.enableKeywords}
+					id="enableKeywords"
 					onCheckedChange={(checked) => onChange("enableKeywords", checked)}
 				/>
 			</div>
@@ -141,26 +141,26 @@ function KeywordsFields({ data, onChange }: ValidationFieldsProps) {
 						<Label htmlFor="minKeywords">Min keywords</Label>
 						<Input
 							id="minKeywords"
-							type="number"
-							min={0}
 							max={20}
-							value={data.minKeywords}
+							min={0}
 							onChange={(e) =>
 								onChange("minKeywords", parseInt(e.target.value, 10) || 0)
 							}
+							type="number"
+							value={data.minKeywords}
 						/>
 					</div>
 					<div className="space-y-2">
 						<Label htmlFor="maxKeywords">Max keywords</Label>
 						<Input
 							id="maxKeywords"
-							type="number"
-							min={1}
 							max={20}
-							value={data.maxKeywords}
+							min={1}
 							onChange={(e) =>
 								onChange("maxKeywords", parseInt(e.target.value, 10) || 5)
 							}
+							type="number"
+							value={data.maxKeywords}
 						/>
 					</div>
 				</div>
@@ -185,9 +185,9 @@ export function ContentValidationSection({
 }: ContentValidationSectionProps) {
 	return (
 		<SettingsSection
+			description="Title, abstract and keyword restrictions"
 			icon={IconFileText}
 			title="Content Validation"
-			description="Title, abstract and keyword restrictions"
 		>
 			<div className="space-y-6">
 				<TitleFields data={data} onChange={onChange} />

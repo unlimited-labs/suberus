@@ -58,14 +58,14 @@ export function ScheduledList({
 				const room = s.room?.name ?? "No room";
 				return (
 					<li
-						key={s.id}
-						data-testid={`scheduled-session-${s.id}`}
 						className="px-3 py-2"
+						data-testid={`scheduled-session-${s.id}`}
+						key={s.id}
 					>
 						<button
-							type="button"
-							onClick={() => onOpenSession(s.id)}
 							className="mb-1 block w-full text-left hover:text-primary"
+							onClick={() => onOpenSession(s.id)}
+							type="button"
 						>
 							<p className="truncate text-xs font-semibold">{s.title}</p>
 							<div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground">
@@ -91,14 +91,14 @@ export function ScheduledList({
 									p.authors.length > 2 ? ` +${p.authors.length - 2}` : "";
 								return (
 									<li
-										key={p.id}
-										data-testid={`scheduled-row-${p.submissionId}`}
 										className="border-l-2 border-muted pl-2"
+										data-testid={`scheduled-row-${p.submissionId}`}
+										key={p.id}
 									>
 										<button
-											type="button"
-											onClick={() => onOpenSession(s.id)}
 											className="block w-full text-left hover:text-primary"
+											onClick={() => onOpenSession(s.id)}
+											type="button"
 										>
 											<p className="line-clamp-2 text-[11px] leading-snug">
 												{p.submissionTitle}

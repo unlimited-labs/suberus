@@ -31,25 +31,25 @@ export function AppLayout({
 		<div className="flex h-screen bg-sidebar">
 			<Sidebar
 				conferenceName={conferenceName}
-				logoUrl={logoUrl}
-				logoDarkInvert={logoDarkInvert}
-				scheduleStatus={scheduleStatus}
 				exhibitorsEnabled={exhibitorsEnabled}
 				feeEnabled={feeEnabled}
 				financesEnabled={financesEnabled}
 				hasDocuments={hasDocuments}
+				logoDarkInvert={logoDarkInvert}
+				logoUrl={logoUrl}
+				scheduleStatus={scheduleStatus}
 			/>
 			<div className="flex flex-1 flex-col overflow-hidden">
 				<div className="flex h-14 items-center px-3 md:hidden">
 					<MobileSidebar
 						conferenceName={conferenceName}
-						logoUrl={logoUrl}
-						logoDarkInvert={logoDarkInvert}
-						scheduleStatus={scheduleStatus}
 						exhibitorsEnabled={exhibitorsEnabled}
 						feeEnabled={feeEnabled}
 						financesEnabled={financesEnabled}
 						hasDocuments={hasDocuments}
+						logoDarkInvert={logoDarkInvert}
+						logoUrl={logoUrl}
+						scheduleStatus={scheduleStatus}
 					/>
 				</div>
 				<main className="flex flex-1 flex-col overflow-auto bg-background shadow-lg md:m-2 md:rounded-2xl">

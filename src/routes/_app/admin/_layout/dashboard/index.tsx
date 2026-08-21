@@ -32,7 +32,7 @@ function AdminDashboard() {
 			<PageHeader icon={IconDashboard} title="Admin Dashboard" />
 			<div className="flex-1 overflow-auto p-6 space-y-6">
 				<HealthAlerts data={data.health} s3={data.s3} smtp={data.smtp} />
-				<MetricsGrid metrics={data} isLoading={false} />
+				<MetricsGrid isLoading={false} metrics={data} />
 				<div className="grid gap-6 lg:grid-cols-2">
 					<SubmissionChart data={data.submissions} />
 					<ReviewProgress data={data.reviews} />
@@ -44,11 +44,11 @@ function AdminDashboard() {
 				</div>
 				{isOnlyAdmin && (
 					<SystemHealthCard
-						s3={data.s3}
-						smtp={data.smtp}
+						docxApi={data.docxApi}
 						llm={data.llm}
 						pdfApi={data.pdfApi}
-						docxApi={data.docxApi}
+						s3={data.s3}
+						smtp={data.smtp}
 					/>
 				)}
 			</div>

@@ -69,7 +69,7 @@ export function DeskAcceptDialog({
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={handleOpenChange}>
+		<Dialog onOpenChange={handleOpenChange} open={open}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
 					<DialogTitle>Desk Acceptance</DialogTitle>
@@ -93,11 +93,11 @@ export function DeskAcceptDialog({
 						</Label>
 						<Textarea
 							id="reason"
-							value={reason}
 							onChange={(e) => setReason(e.target.value)}
 							placeholder="e.g., Invited speaker, editorial decision..."
-							rows={4}
 							required
+							rows={4}
+							value={reason}
 						/>
 						<p className="text-xs text-muted-foreground">
 							This reason will be recorded in the audit trail and may be shared
@@ -108,15 +108,15 @@ export function DeskAcceptDialog({
 
 				<DialogFooter>
 					<Button
-						variant="outline"
-						onClick={() => handleOpenChange(false)}
 						disabled={isSubmitting}
+						onClick={() => handleOpenChange(false)}
+						variant="outline"
 					>
 						Cancel
 					</Button>
 					<Button
-						onClick={handleSubmit}
 						disabled={!reason.trim() || isSubmitting}
+						onClick={handleSubmit}
 					>
 						{isSubmitting && (
 							<IconLoader2 className="mr-2 size-4 animate-spin" />

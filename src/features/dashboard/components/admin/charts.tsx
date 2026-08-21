@@ -20,25 +20,25 @@ export function SparklineChart({ data, color }: SparklineChartProps) {
 	const chartData = data.map((value, i) => ({ i, value }));
 
 	return (
-		<ResponsiveContainer width="100%" height={48}>
+		<ResponsiveContainer height={48} width="100%">
 			<AreaChart
 				data={chartData}
 				margin={{ top: 2, right: 0, bottom: 0, left: 0 }}
 			>
 				<defs>
-					<linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+					<linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
 						<stop offset="0%" stopColor={color} stopOpacity={0.2} />
 						<stop offset="100%" stopColor={color} stopOpacity={0} />
 					</linearGradient>
 				</defs>
 				<Area
-					type="monotone"
 					dataKey="value"
+					dot={false}
+					fill={`url(#${gradientId})`}
+					isAnimationActive={false}
 					stroke={color}
 					strokeWidth={1.5}
-					fill={`url(#${gradientId})`}
-					dot={false}
-					isAnimationActive={false}
+					type="monotone"
 				/>
 			</AreaChart>
 		</ResponsiveContainer>
@@ -73,19 +73,19 @@ export function ReviewCompletionPie({
 	];
 
 	return (
-		<ResponsiveContainer width="50%" height={150}>
+		<ResponsiveContainer height={150} width="50%">
 			<PieChart>
 				<Pie
-					data={chartData}
 					cx="50%"
 					cy="50%"
+					data={chartData}
+					dataKey="value"
 					innerRadius={40}
 					outerRadius={60}
-					dataKey="value"
 					strokeWidth={0}
 				>
 					{chartData.map((entry) => (
-						<Cell key={entry.name} fill={entry.fill} />
+						<Cell fill={entry.fill} key={entry.name} />
 					))}
 				</Pie>
 			</PieChart>
@@ -120,24 +120,24 @@ interface SubmissionStatusPieProps {
 
 export function SubmissionStatusPie({ data, total }: SubmissionStatusPieProps) {
 	return (
-		<ResponsiveContainer width="100%" height={300}>
+		<ResponsiveContainer height={300} width="100%">
 			<PieChart>
 				<Pie
-					data={data}
 					cx="50%"
 					cy="50%"
-					labelLine={false}
+					data={data}
+					dataKey="value"
+					fill="#8884d8"
 					label={({ name, percent }) =>
 						`${name}: ${((percent ?? 0) * 100).toFixed(0)}%`
 					}
+					labelLine={false}
 					outerRadius={80}
-					fill="#8884d8"
-					dataKey="value"
 				>
 					{data.map((entry) => (
 						<Cell
-							key={entry.status}
 							fill={lookup(STATUS_COLORS, entry.status) || "#6b7280"}
+							key={entry.status}
 						/>
 					))}
 				</Pie>

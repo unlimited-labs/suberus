@@ -82,8 +82,8 @@ function EditSubmissionPage() {
 									? "Exhibitor entries cannot be edited here"
 									: "Submission can only be edited in Draft status"}
 						</p>
-						<Link to="/submissions/$id" params={{ id }}>
-							<Button variant="outline" className="gap-2">
+						<Link params={{ id }} to="/submissions/$id">
+							<Button className="gap-2" variant="outline">
 								<IconArrowLeft className="size-4" />
 								Back to Submission
 							</Button>
@@ -193,8 +193,8 @@ function EditSubmissionPage() {
 				icon={IconFileText}
 				title={isDraft ? "Edit Draft" : "Edit Submission"}
 			>
-				<Link to="/submissions/$id" params={{ id }}>
-					<Button variant="outline" className="gap-2">
+				<Link params={{ id }} to="/submissions/$id">
+					<Button className="gap-2" variant="outline">
 						<IconArrowLeft className="size-4" />
 						Back
 					</Button>
@@ -202,7 +202,11 @@ function EditSubmissionPage() {
 			</PageHeader>
 			<div className="flex-1 overflow-auto p-6">
 				<SubmissionForm
-					onSubmit={handleSubmit}
+					availableTracks={availableTracks}
+					extractionEnabled={extractionSettings.enabled}
+					guidelines={submissionGuidelines}
+					hasExistingFile={hasExistingFile}
+					initialData={initialData}
 					onSaveDraft={
 						isDraft
 							? async (formData: SubmissionFormData) => {
@@ -214,13 +218,9 @@ function EditSubmissionPage() {
 								}
 							: undefined
 					}
-					initialData={initialData}
+					onSubmit={handleSubmit}
 					typeConfigs={typeConfigs}
 					validationSettings={validationSettings}
-					guidelines={submissionGuidelines}
-					extractionEnabled={extractionSettings.enabled}
-					availableTracks={availableTracks}
-					hasExistingFile={hasExistingFile}
 				/>
 			</div>
 		</div>

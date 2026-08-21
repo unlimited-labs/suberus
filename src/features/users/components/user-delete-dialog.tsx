@@ -62,7 +62,7 @@ export function UserDeleteDialog({
 
 	if (isLoading) {
 		return (
-			<Dialog open={open} onOpenChange={onOpenChange}>
+			<Dialog onOpenChange={onOpenChange} open={open}>
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>Delete User Account</DialogTitle>
@@ -75,7 +75,7 @@ export function UserDeleteDialog({
 
 	if (check && !check.deletable) {
 		return (
-			<Dialog open={open} onOpenChange={onOpenChange}>
+			<Dialog onOpenChange={onOpenChange} open={open}>
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>Cannot Delete User</DialogTitle>
@@ -88,7 +88,7 @@ export function UserDeleteDialog({
 					</ul>
 					<p className="text-sm text-muted-foreground">Remove these first.</p>
 					<DialogFooter>
-						<Button variant="outline" onClick={() => onOpenChange(false)}>
+						<Button onClick={() => onOpenChange(false)} variant="outline">
 							Close
 						</Button>
 					</DialogFooter>
@@ -98,7 +98,7 @@ export function UserDeleteDialog({
 	}
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2">
@@ -117,13 +117,13 @@ export function UserDeleteDialog({
 					</p>
 				</div>
 				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
+					<Button onClick={() => onOpenChange(false)} variant="outline">
 						Cancel
 					</Button>
 					<Button
-						variant="destructive"
-						onClick={() => mutation.mutate()}
 						disabled={mutation.isPending}
+						onClick={() => mutation.mutate()}
+						variant="destructive"
 					>
 						{mutation.isPending ? "Deleting..." : "Delete User"}
 					</Button>

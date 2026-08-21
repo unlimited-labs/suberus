@@ -123,44 +123,44 @@ function ProgramPlannerContent() {
 				<CapacityStrip />
 				<IssuesPanel sessions={sessions} />
 				<MobilePlannerArea
-					sessions={sessions}
 					breaks={breaks}
-					conferenceStart={confStart}
 					conferenceEnd={confEnd}
-					timezone={tz}
+					conferenceStart={confStart}
 					currentDate={currentDate}
+					sessions={sessions}
+					timezone={tz}
 				/>
 				{mobileQueueOpen && <MobileQueueOverlay onClose={closeMobileQueue} />}
 				<DesktopPlannerArea
-					rooms={rooms}
-					room={roomVisibility}
-					defaultStartAt={defaultStartAt}
-					onCreated={invalidate}
-					onSubmissionDrop={handleSubmissionDrop}
-					currentDate={currentDate}
-					confStart={confStart}
-					returnToConference={returnToConference}
 					calendarKey={`${calendarKey}:${roomVisibility.hiddenRoomsKey}`}
-					resources={resources}
-					events={events}
-					initialView={currentView}
-					timezone={tz}
-					timeFormat={settings.timeFormat}
-					dayStart={settings.dayStart}
+					confStart={confStart}
+					currentDate={currentDate}
 					dayEnd={settings.dayEnd}
+					dayStart={settings.dayStart}
+					defaultStartAt={defaultStartAt}
+					events={events}
 					hiddenDays={hiddenWeekdays}
+					initialView={currentView}
+					onCreated={invalidate}
 					onDateChange={setCurrentDate}
-					onViewChange={setCurrentView}
-					onEventUpdate={handleEventUpdate}
 					onEventClick={handleEventClick}
+					onEventUpdate={handleEventUpdate}
+					onSubmissionDrop={handleSubmissionDrop}
+					onViewChange={setCurrentView}
+					resources={resources}
+					returnToConference={returnToConference}
+					room={roomVisibility}
+					rooms={rooms}
+					timeFormat={settings.timeFormat}
+					timezone={tz}
 				/>
 			</div>
 
 			<PlannerOverlays
-				users={chairCandidates ?? []}
 				defaultStartAt={defaultStartAt}
-				timezone={tz}
 				onSessionCreated={handleSessionCreated}
+				timezone={tz}
+				users={chairCandidates ?? []}
 			/>
 		</>
 	);

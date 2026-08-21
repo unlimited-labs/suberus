@@ -71,12 +71,12 @@ export function VerifyResultPanel({ result }: { result: VerifyResult }) {
 
 	return (
 		<div
-			data-testid="verify-result"
 			className={
 				authentic
 					? "rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-4"
 					: "rounded-xl border border-amber-500/40 bg-amber-500/5 p-4"
 			}
+			data-testid="verify-result"
 		>
 			<div className="flex items-center gap-2">
 				{authentic ? (

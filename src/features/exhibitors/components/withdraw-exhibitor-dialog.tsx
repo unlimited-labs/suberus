@@ -47,7 +47,7 @@ export function WithdrawExhibitorDialog({
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
 					<DialogTitle>Withdraw Application</DialogTitle>
@@ -69,17 +69,17 @@ export function WithdrawExhibitorDialog({
 
 				<DialogFooter>
 					<Button
-						variant="outline"
-						onClick={() => onOpenChange(false)}
 						disabled={isSubmitting}
+						onClick={() => onOpenChange(false)}
+						variant="outline"
 					>
 						Cancel
 					</Button>
 					<Button
-						variant="destructive"
 						data-testid="exhibitor-withdraw-confirm"
-						onClick={handleWithdraw}
 						disabled={isSubmitting}
+						onClick={handleWithdraw}
+						variant="destructive"
 					>
 						{isSubmitting && (
 							<IconLoader2 className="mr-2 size-4 animate-spin" />

@@ -47,8 +47,8 @@ function PrimaryActionButton({
 		return (
 			<Button
 				className="w-full"
-				onClick={onTransition}
 				disabled={isTransitioning}
+				onClick={onTransition}
 			>
 				{isTransitioning ? (
 					<IconLoader2 className="mr-2 size-4 animate-spin" />
@@ -90,22 +90,22 @@ export function ActionsCard({
 	const { isOnlyAdmin } = useAdminAuth();
 
 	return (
-		<SectionCard title="Actions" contentClassName="space-y-2">
+		<SectionCard contentClassName="space-y-2" title="Actions">
 			{primaryAction && (
 				<PrimaryActionButton
-					primaryAction={primaryAction}
 					isTransitioning={isTransitioning}
-					onTransition={onTransition}
 					onOpenDialog={onOpenDialog}
+					onTransition={onTransition}
+					primaryAction={primaryAction}
 				/>
 			)}
 
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button
-						variant="outline"
 						className="w-full justify-between"
 						data-testid="submission-actions-trigger"
+						variant="outline"
 					>
 						{primaryAction ? "More actions" : "Actions"}
 						<IconChevronDown className="size-4" />
@@ -114,14 +114,14 @@ export function ActionsCard({
 				<DropdownMenuContent align="start">
 					{secondaryActions.map(({ id, label, icon: Icon, select }) => (
 						<DropdownMenuItem
+							disabled={
+								select.type === "transition" ? isTransitioning : undefined
+							}
 							key={id}
 							onClick={
 								select.type === "transition"
 									? onTransition
 									: () => onOpenDialog(select.kind)
-							}
-							disabled={
-								select.type === "transition" ? isTransitioning : undefined
 							}
 						>
 							<Icon className="mr-2 size-4" />
@@ -132,9 +132,9 @@ export function ActionsCard({
 					{isOnlyAdmin && (
 						<DropdownMenuItem asChild>
 							<Link
-								to="/admin/submissions/$id/edit"
-								params={{ id: submissionId }}
 								data-testid="submission-edit-action"
+								params={{ id: submissionId }}
+								to="/admin/submissions/$id/edit"
 							>
 								<IconPencil className="mr-2 size-4" />
 								Edit submission
@@ -142,8 +142,8 @@ export function ActionsCard({
 						</DropdownMenuItem>
 					)}
 					<DropdownMenuItem
-						variant="destructive"
 						onClick={() => onOpenDialog("delete")}
+						variant="destructive"
 					>
 						<IconTrash className="mr-2 size-4" />
 						Delete

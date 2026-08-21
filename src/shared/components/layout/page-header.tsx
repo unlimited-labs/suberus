@@ -14,7 +14,7 @@ export function PageHeader({ icon: Icon, title, children }: PageHeaderProps) {
 				{Icon && (
 					<>
 						<Icon className="size-5 text-muted-foreground" />
-						<Separator orientation="vertical" className="h-5" />
+						<Separator className="h-5" orientation="vertical" />
 					</>
 				)}
 				<h1 className="text-lg font-medium text-foreground">{title}</h1>

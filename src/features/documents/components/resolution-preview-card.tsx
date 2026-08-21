@@ -33,9 +33,9 @@ export function ResolutionPreviewCard({
 						const isMissing = missingSet.has(p);
 						return (
 							<div
-								key={p}
 								className="flex items-start justify-between gap-3 px-3 py-2"
 								data-testid="resolution-row"
+								key={p}
 							>
 								<span className="text-xs font-medium text-muted-foreground">
 									{placeholderLabel(p)}

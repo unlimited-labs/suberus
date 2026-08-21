@@ -121,10 +121,10 @@ function TrackFormFields({
 				<Label htmlFor="name">Name *</Label>
 				<Input
 					id="name"
-					value={name}
+					maxLength={200}
 					onChange={(e) => onNameChange(e.target.value)}
 					placeholder="Track name"
-					maxLength={200}
+					value={name}
 				/>
 			</div>
 
@@ -138,10 +138,10 @@ function TrackFormFields({
 							label: `${reviewer.name} (${reviewer.email})`,
 						})),
 					]}
-					value={supervisorId || "none"}
 					onValueChange={(v) =>
 						onSupervisorChange(v === "none" ? undefined : v)
 					}
+					value={supervisorId || "none"}
 				>
 					<SelectTrigger id="supervisor">
 						<SelectValue placeholder="No supervisor" />
@@ -161,8 +161,8 @@ function TrackFormFields({
 				<div className="flex items-center justify-between">
 					<Label htmlFor="active">Active</Label>
 					<Switch
-						id="active"
 						checked={isActive}
+						id="active"
 						onCheckedChange={onActiveChange}
 					/>
 				</div>
@@ -185,7 +185,7 @@ export function TrackDialog({
 	const labels = trackDialogLabels(form.isEdit);
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>{labels.title}</DialogTitle>
@@ -193,21 +193,21 @@ export function TrackDialog({
 				</DialogHeader>
 
 				<TrackFormFields
+					isActive={form.isActive}
 					isEdit={form.isEdit}
 					name={form.name}
-					onNameChange={form.setName}
-					supervisorId={form.supervisorId}
-					onSupervisorChange={form.setSupervisorId}
-					isActive={form.isActive}
 					onActiveChange={form.setIsActive}
+					onNameChange={form.setName}
+					onSupervisorChange={form.setSupervisorId}
 					reviewers={reviewers}
+					supervisorId={form.supervisorId}
 				/>
 
 				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
+					<Button onClick={() => onOpenChange(false)} variant="outline">
 						Cancel
 					</Button>
-					<Button onClick={form.handleSave} disabled={form.isSaving}>
+					<Button disabled={form.isSaving} onClick={form.handleSave}>
 						{form.isSaving && (
 							<IconLoader2 className="mr-2 size-4 animate-spin" />
 						)}

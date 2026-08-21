@@ -56,22 +56,22 @@ export function ProgramShell({
 	return (
 		<TooltipProvider>
 			<div
+				className="h-screen overflow-y-auto bg-background text-foreground font-[var(--prog-font-body)] selection:bg-primary selection:text-primary-foreground"
 				data-program-theme={themeId}
 				data-testid={`program-theme-${themeId}`}
-				className="h-screen overflow-y-auto bg-background text-foreground font-[var(--prog-font-body)] selection:bg-primary selection:text-primary-foreground"
 			>
 				{framed ? (
-					<FramedHeader themeId={themeId} settings={settings} />
+					<FramedHeader settings={settings} themeId={themeId} />
 				) : (
 					<MinimalHeader settings={settings} />
 				)}
 
 				<ProgramStickyBar
-					framed={framed}
-					days={days}
 					activeDay={activeDay}
-					setActiveDay={setActiveDay}
+					days={days}
+					framed={framed}
 					search={search}
+					setActiveDay={setActiveDay}
 					setSearch={setSearch}
 				/>
 
@@ -81,11 +81,11 @@ export function ProgramShell({
 					) : layout === "grid" ? (
 						<GridBody schedule={schedule} />
 					) : (
-						<ListBody schedule={schedule} framed={framed} />
+						<ListBody framed={framed} schedule={schedule} />
 					)}
 				</main>
 
-				{framed && <FramedFooter themeId={themeId} settings={settings} />}
+				{framed && <FramedFooter settings={settings} themeId={themeId} />}
 			</div>
 		</TooltipProvider>
 	);
@@ -122,14 +122,14 @@ function ProgramStickyBar({
 				{days.length > 0 &&
 					(framed ? (
 						<FramedNav
-							days={days}
 							activeDay={activeDay}
+							days={days}
 							setActiveDay={setActiveDay}
 						/>
 					) : (
 						<MinimalNav
-							days={days}
 							activeDay={activeDay}
+							days={days}
 							setActiveDay={setActiveDay}
 						/>
 					))}
@@ -150,8 +150,8 @@ function MinimalHeader({
 				<div className="mb-4 flex items-center justify-end gap-4">
 					<ProgramPwaStatus className="text-muted-foreground" />
 					<ProgramAuthLink
-						labelClassName="hidden sm:inline"
 						className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+						labelClassName="hidden sm:inline"
 					/>
 				</div>
 				{settings.startDate && (
@@ -187,13 +187,13 @@ function FramedHeader({
 			: "text-[var(--prog-faint)] text-[10px] sm:text-[11px] tracking-[0.3em] sm:tracking-[0.4em]";
 
 	return (
-		<header style={HEADER_RULE_STYLE} className="border-b">
+		<header className="border-b" style={HEADER_RULE_STYLE}>
 			<div className="mx-auto max-w-[var(--prog-max-width)] px-5 pt-4 pb-3 sm:px-10 sm:pt-12 sm:pb-7">
 				<div className="flex items-center justify-end gap-4 border-b border-border pb-2 text-muted-foreground">
 					<ProgramPwaStatus />
 					<ProgramAuthLink
-						labelClassName="hidden sm:inline"
 						className="text-sm transition-colors hover:text-foreground"
+						labelClassName="hidden sm:inline"
 					/>
 				</div>
 				<h1 className="mt-4 font-[var(--prog-font-display)] text-3xl font-extrabold leading-[1.02] tracking-tight break-words text-foreground sm:mt-5 sm:text-5xl md:text-6xl">
@@ -230,11 +230,11 @@ function FramedFooter({
 }) {
 	return (
 		<footer
-			style={RULE_STYLE}
 			className={cn(
 				"border-t text-center",
 				themeId === "academic" ? "py-4" : "py-8",
 			)}
+			style={RULE_STYLE}
 		>
 			<div className="font-[var(--prog-font-meta)] text-[10px] uppercase tracking-[0.3em] text-[var(--prog-faint)]">
 				{themeId === "academic" ? settings.name || "Conference" : "— Fin —"}
@@ -254,8 +254,8 @@ function MinimalNav({
 }) {
 	return (
 		<nav
-			className="-mx-5 flex gap-2 overflow-x-auto px-5 sm:mx-0 sm:px-0"
 			aria-label="Select day"
+			className="-mx-5 flex gap-2 overflow-x-auto px-5 sm:mx-0 sm:px-0"
 			style={{ scrollbarWidth: "none" }}
 		>
 			{days.map((day, i) => {
@@ -263,15 +263,15 @@ function MinimalNav({
 				const isActive = activeDay === i;
 				return (
 					<button
-						key={day.toISOString()}
-						type="button"
-						onClick={() => setActiveDay(i)}
 						className={cn(
 							"flex shrink-0 items-center gap-2 rounded-full border px-4 py-1.5 text-sm transition-colors",
 							isActive
 								? "border-primary bg-primary text-primary-foreground"
 								: "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",
 						)}
+						key={day.toISOString()}
+						onClick={() => setActiveDay(i)}
+						type="button"
 					>
 						<span className="text-base font-semibold tabular-nums">
 							{label.dayNum}
@@ -297,8 +297,8 @@ function FramedNav({
 }) {
 	return (
 		<nav
-			className="-mx-5 flex items-stretch gap-0 overflow-x-auto px-5 sm:mx-0 sm:overflow-visible sm:px-0"
 			aria-label="Select day"
+			className="-mx-5 flex items-stretch gap-0 overflow-x-auto px-5 sm:mx-0 sm:overflow-visible sm:px-0"
 			style={{ scrollbarWidth: "none" }}
 		>
 			{days.map((day, i) => {
@@ -306,15 +306,15 @@ function FramedNav({
 				const isActive = activeDay === i;
 				return (
 					<button
-						key={day.toISOString()}
-						type="button"
-						onClick={() => setActiveDay(i)}
 						className={cn(
 							"group relative flex shrink-0 items-baseline gap-2 px-3 py-1.5 text-left whitespace-nowrap transition-colors first:pl-0 sm:py-2",
 							isActive
 								? "text-primary"
 								: "text-[var(--prog-faint)] hover:text-foreground",
 						)}
+						key={day.toISOString()}
+						onClick={() => setActiveDay(i)}
+						type="button"
 					>
 						<span className="font-[var(--prog-font-display)] text-2xl leading-none font-extrabold tabular-nums sm:text-3xl">
 							{label.dayNum}
@@ -349,31 +349,31 @@ function SearchBox({
 	return (
 		<div className="relative w-full sm:w-72 sm:shrink-0">
 			<IconSearch
-				size={framed ? 13 : 15}
 				className={cn(
 					"absolute top-1/2 -translate-y-1/2 text-muted-foreground",
 					framed ? "left-0" : "left-3",
 				)}
+				size={framed ? 13 : 15}
 			/>
 			<Input
-				value={search}
-				onChange={(e) => setSearch(e.target.value)}
-				placeholder="Search talks, authors, tracks…"
 				className={cn(
 					framed
 						? "rounded-none border-0 border-b border-border bg-transparent pr-8 pl-6 text-base shadow-none focus-visible:border-primary focus-visible:ring-0 sm:text-sm"
 						: "pr-9 pl-9",
 				)}
+				onChange={(e) => setSearch(e.target.value)}
+				placeholder="Search talks, authors, tracks…"
+				value={search}
 			/>
 			{search && (
 				<button
-					type="button"
-					onClick={() => setSearch("")}
+					aria-label="Clear search"
 					className={cn(
 						"absolute top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground",
 						framed ? "right-1" : "right-2",
 					)}
-					aria-label="Clear search"
+					onClick={() => setSearch("")}
+					type="button"
 				>
 					<IconX size={framed ? 14 : 15} />
 				</button>

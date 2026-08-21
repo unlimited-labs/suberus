@@ -9,7 +9,7 @@ import { DropdownMenuItem } from "@/shared/ui/dropdown-menu";
  */
 export function McpMenuItem({ onOpen }: { onOpen: () => void }) {
 	return (
-		<DropdownMenuItem onClick={onOpen} data-testid="user-menu-mcp">
+		<DropdownMenuItem data-testid="user-menu-mcp" onClick={onOpen}>
 			<IconPlug className="mr-2" />
 			Connect AI assistant
 		</DropdownMenuItem>

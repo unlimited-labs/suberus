@@ -25,7 +25,7 @@ export function SurveyQuestionDeleteDialog({
 	isBusy,
 }: SurveyQuestionDeleteDialogProps) {
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
 					<DialogTitle>Delete question</DialogTitle>
@@ -36,10 +36,10 @@ export function SurveyQuestionDeleteDialog({
 					</DialogDescription>
 				</DialogHeader>
 				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
+					<Button onClick={() => onOpenChange(false)} variant="outline">
 						Cancel
 					</Button>
-					<Button variant="destructive" onClick={onConfirm} disabled={isBusy}>
+					<Button disabled={isBusy} onClick={onConfirm} variant="destructive">
 						{isBusy ? "Deleting..." : "Delete"}
 					</Button>
 				</DialogFooter>

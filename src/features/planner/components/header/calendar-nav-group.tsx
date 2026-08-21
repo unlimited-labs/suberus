@@ -13,25 +13,25 @@ export function CalendarNavGroup({ onPrev, onNext, onToday }: Props) {
 	return (
 		<div className="flex items-center gap-0.5 rounded-md bg-muted p-1">
 			<button
-				type="button"
-				onClick={onPrev}
 				aria-label="Previous period"
 				className={`flex size-7 items-center justify-center ${BTN}`}
+				onClick={onPrev}
+				type="button"
 			>
 				<IconChevronLeft className="h-4 w-4" />
 			</button>
 			<button
-				type="button"
-				onClick={onToday}
 				className={`h-7 px-2.5 text-xs font-medium ${BTN}`}
+				onClick={onToday}
+				type="button"
 			>
 				Today
 			</button>
 			<button
-				type="button"
-				onClick={onNext}
 				aria-label="Next period"
 				className={`flex size-7 items-center justify-center ${BTN}`}
+				onClick={onNext}
+				type="button"
 			>
 				<IconChevronRight className="h-4 w-4" />
 			</button>

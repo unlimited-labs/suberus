@@ -127,7 +127,7 @@ export function EmailTemplateDialog({
 	const busy = isSaving || isSendingTest;
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
 				<DialogHeader>
 					<DialogTitle>Edit template: {data.name}</DialogTitle>
@@ -140,8 +140,8 @@ export function EmailTemplateDialog({
 					<div className="flex items-center justify-between">
 						<Label htmlFor="enabled">Active</Label>
 						<Switch
-							id="enabled"
 							checked={data.isEnabled}
+							id="enabled"
 							onCheckedChange={(checked) => handleChange("isEnabled", checked)}
 						/>
 					</div>
@@ -150,18 +150,18 @@ export function EmailTemplateDialog({
 						<Label htmlFor="subject">Subject</Label>
 						<Input
 							id="subject"
-							value={data.subject}
 							onChange={(e) => handleChange("subject", e.target.value)}
+							value={data.subject}
 						/>
 					</div>
 
 					<div className="space-y-2">
 						<Label htmlFor="body">Body</Label>
 						<Textarea
-							id="body"
-							value={data.body}
-							onChange={(e) => handleChange("body", e.target.value)}
 							className="min-h-48"
+							id="body"
+							onChange={(e) => handleChange("body", e.target.value)}
+							value={data.body}
 						/>
 					</div>
 
@@ -170,18 +170,18 @@ export function EmailTemplateDialog({
 							<Label htmlFor="cc">CC</Label>
 							<Input
 								id="cc"
-								value={data.cc}
 								onChange={(e) => handleChange("cc", e.target.value)}
 								placeholder="email@example.com"
+								value={data.cc}
 							/>
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="bcc">BCC</Label>
 							<Input
 								id="bcc"
-								value={data.bcc}
 								onChange={(e) => handleChange("bcc", e.target.value)}
 								placeholder="email@example.com"
+								value={data.bcc}
 							/>
 						</div>
 					</div>
@@ -196,12 +196,12 @@ export function EmailTemplateDialog({
 									<Tooltip key={placeholder}>
 										<TooltipTrigger asChild>
 											<Badge
-												variant="outline"
 												className="cursor-pointer font-mono text-xs"
 												onClick={() => {
 													navigator.clipboard.writeText(placeholder);
 													toast.success("Copied to clipboard");
 												}}
+												variant="outline"
 											>
 												{placeholder}
 											</Badge>
@@ -218,7 +218,7 @@ export function EmailTemplateDialog({
 				</div>
 
 				<DialogFooter className="flex-row justify-between gap-2 sm:justify-between">
-					<Button variant="secondary" onClick={handleSendTest} disabled={busy}>
+					<Button disabled={busy} onClick={handleSendTest} variant="secondary">
 						{isSendingTest ? (
 							<IconLoader2 className="mr-2 size-4 animate-spin" />
 						) : (
@@ -228,13 +228,13 @@ export function EmailTemplateDialog({
 					</Button>
 					<div className="flex gap-2">
 						<Button
-							variant="outline"
-							onClick={() => onOpenChange(false)}
 							disabled={busy}
+							onClick={() => onOpenChange(false)}
+							variant="outline"
 						>
 							Cancel
 						</Button>
-						<Button onClick={handleSave} disabled={busy}>
+						<Button disabled={busy} onClick={handleSave}>
 							{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 							Save
 						</Button>

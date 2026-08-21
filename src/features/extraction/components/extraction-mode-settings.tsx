@@ -35,10 +35,10 @@ export function ExtractionModeSettings({
 
 	return (
 		<SettingsSection
+			delay={250}
+			description="Automatically extract metadata (title, authors, keywords) from uploaded DOCX files"
 			icon={IconFileSearch}
 			title="Document Extraction"
-			description="Automatically extract metadata (title, authors, keywords) from uploaded DOCX files"
-			delay={250}
 		>
 			<div className="space-y-4">
 				<div className="flex items-center justify-between">
@@ -51,8 +51,8 @@ export function ExtractionModeSettings({
 						</p>
 					</div>
 					<Switch
-						id="extractionEnabled"
 						checked={enabled}
+						id="extractionEnabled"
 						onCheckedChange={onEnabledChange}
 					/>
 				</div>
@@ -62,38 +62,38 @@ export function ExtractionModeSettings({
 						<Label className="text-sm font-medium">Extraction engines</Label>
 
 						<EngineToggle
-							id="extraction-heuristic"
-							label="Structure-based extraction"
-							description="Extracts metadata based on document structure and formatting conventions. Processes instantly, no additional infrastructure required."
 							checked={heuristic}
-							onCheckedChange={onHeuristicChange}
+							description="Extracts metadata based on document structure and formatting conventions. Processes instantly, no additional infrastructure required."
 							footer={
 								<StatusBadge
-									status={pdfApiHealth.status}
 									label={formatPdfApiStatus(pdfApiHealth)}
+									status={pdfApiHealth.status}
 								/>
 							}
+							id="extraction-heuristic"
+							label="Structure-based extraction"
+							onCheckedChange={onHeuristicChange}
 						/>
 
 						<EngineToggle
+							checked={ai}
+							description="Uses an AI model for enhanced extraction accuracy. When combined with structure-based, acts as a fallback for low-confidence results. Longer processing times."
+							disabled={!llmAvailable}
+							footer={
+								<StatusBadge
+									label={formatLlmStatus(llmHealth)}
+									status={llmHealth.status}
+								/>
+							}
 							id="extraction-ai"
 							label="AI-assisted extraction"
-							description="Uses an AI model for enhanced extraction accuracy. When combined with structure-based, acts as a fallback for low-confidence results. Longer processing times."
-							checked={ai}
 							onCheckedChange={onAiChange}
-							disabled={!llmAvailable}
 							warning={
 								llmHealth.status === "misconfigured"
 									? `LLM service is reachable but the configured model is invalid. ${llmHealth.message} AI extraction stays disabled until the model name is corrected.`
 									: !llmAvailable
 										? "LLM API is not available. Configure LLM_API_URL environment variable and ensure the service is running."
 										: undefined
-							}
-							footer={
-								<StatusBadge
-									status={llmHealth.status}
-									label={formatLlmStatus(llmHealth)}
-								/>
 							}
 						/>
 

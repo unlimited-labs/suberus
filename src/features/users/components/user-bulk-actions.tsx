@@ -149,7 +149,7 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 				<span className="text-sm text-muted-foreground">
 					{selectedCount} selected
 				</span>
-				<Select items={actions} value="" onValueChange={handleSelectAction}>
+				<Select items={actions} onValueChange={handleSelectAction} value="">
 					<SelectTrigger className="h-8 w-[180px]">
 						<SelectValue placeholder="Bulk actions" />
 					</SelectTrigger>
@@ -164,20 +164,20 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 			</div>
 
 			<BulkActionDialog
-				open={feeDialogOpen}
-				onOpenChange={setFeeDialogOpen}
-				title="Mark fee as paid"
 				description={`Select fee type for ${selectedCount} selected users.`}
-				onConfirm={handleMarkFeesPaid}
 				isLoading={mutation.isPending}
+				onConfirm={handleMarkFeesPaid}
+				onOpenChange={setFeeDialogOpen}
+				open={feeDialogOpen}
+				title="Mark fee as paid"
 			>
 				<Select
 					items={feeTypes.map((type) => ({
 						value: type.id,
 						label: `${type.name} — ${type.amount.toFixed(2)} ${currency}`,
 					}))}
-					value={selectedFeeTypeId}
 					onValueChange={setSelectedFeeTypeId}
+					value={selectedFeeTypeId}
 				>
 					<SelectTrigger>
 						<SelectValue placeholder="Select fee type" />
@@ -193,20 +193,20 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 			</BulkActionDialog>
 
 			<BulkActionDialog
-				open={roleDialogOpen}
-				onOpenChange={setRoleDialogOpen}
-				title="Change user role"
 				description={`Select new role for ${selectedCount} selected users.`}
-				onConfirm={handleChangeRole}
 				isLoading={mutation.isPending}
+				onConfirm={handleChangeRole}
+				onOpenChange={setRoleDialogOpen}
+				open={roleDialogOpen}
+				title="Change user role"
 			>
 				<Select
 					items={roleOptions}
-					value={selectedRole}
 					onValueChange={(v) => {
 						const found = roleOptions.find((opt) => opt.value === v);
 						if (found) setSelectedRole(found.value);
 					}}
+					value={selectedRole}
 				>
 					<SelectTrigger>
 						<SelectValue placeholder="Select role" />
@@ -222,10 +222,10 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 			</BulkActionDialog>
 
 			<BulkGenerateDialog
-				open={generateDocsOpen}
-				onOpenChange={setGenerateDocsOpen}
-				userIds={selectedRows.map((row) => row.original.id)}
 				onDone={() => table.resetRowSelection()}
+				onOpenChange={setGenerateDocsOpen}
+				open={generateDocsOpen}
+				userIds={selectedRows.map((row) => row.original.id)}
 			/>
 		</>
 	);

@@ -29,7 +29,7 @@ function AuthErrorPage() {
 				</code>
 			) : null}
 			<Button asChild>
-				<Link to="/" preload="intent">
+				<Link preload="intent" to="/">
 					Go to Dashboard
 				</Link>
 			</Button>

@@ -16,9 +16,9 @@ export function ScoringCriteriaField({
 }: ScoringCriteriaFieldProps) {
 	return (
 		<SectionCard
-			title="Evaluation Criteria"
-			icon={IconStar}
 			contentClassName="space-y-4"
+			icon={IconStar}
+			title="Evaluation Criteria"
 		>
 			<div className="rounded-lg border border-border divide-y divide-border">
 				{scoringCriteria.map((criterion) => (
@@ -44,11 +44,6 @@ export function ScoringCriteriaField({
 									<div className="flex items-center gap-1 shrink-0">
 										{[1, 2, 3, 4, 5].map((score) => (
 											<button
-												key={score}
-												type="button"
-												disabled={readOnly}
-												// SAFETY: TanStack Form's generic field value is unresolved here; the field holds a number.
-												onClick={() => field.handleChange(score as never)}
 												className={cn(
 													"size-9 rounded-md border text-sm font-medium transition-all",
 													currentScore === score
@@ -57,6 +52,11 @@ export function ScoringCriteriaField({
 															? "border-border text-muted-foreground opacity-60"
 															: "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground",
 												)}
+												disabled={readOnly}
+												key={score}
+												// SAFETY: TanStack Form's generic field value is unresolved here; the field holds a number.
+												onClick={() => field.handleChange(score as never)}
+												type="button"
 											>
 												{score}
 											</button>

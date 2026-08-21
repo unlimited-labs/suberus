@@ -91,19 +91,19 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 		<>
 			<div className="space-y-6">
 				<UserDetailHeader
-					user={user}
-					canEditProfiles={canEditProfiles}
 					canChangeThisRole={canChangeThisRole}
 					canDeleteUsers={canDeleteUsers}
+					canEditProfiles={canEditProfiles}
 					isPending={isPending}
 					isResendPending={isResendPending}
-					onResendSetPassword={handleResendSetPassword}
-					onEdit={() => setEditDialogOpen(true)}
 					onChangeRole={() => setRoleDialogOpen(true)}
+					onDelete={() => setDeleteDialogOpen(true)}
+					onEdit={() => setEditDialogOpen(true)}
+					onGenerateDocument={() => setDocumentDialogOpen(true)}
+					onResendSetPassword={handleResendSetPassword}
 					onToggleActive={handleToggleActive}
 					onToggleLateSubmission={handleToggleLateSubmission}
-					onGenerateDocument={() => setDocumentDialogOpen(true)}
-					onDelete={() => setDeleteDialogOpen(true)}
+					user={user}
 				/>
 
 				<SectionCard icon={IconMail} title="Contact Information">
@@ -112,59 +112,59 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 
 				<SectionCard icon={IconUserCircle} title="Account Information">
 					<UserAccountSection
-						user={user}
 						fmtDate={fmtDate}
 						isPending={isPending}
 						onVerifyEmail={handleVerifyEmail}
+						user={user}
 					/>
 				</SectionCard>
 
 				<SectionCard
-					icon={IconFileText}
-					title="Submissions"
 					action={
-						<Button variant="outline" size="sm" asChild>
+						<Button asChild size="sm" variant="outline">
 							<Link
-								to="/admin/users/$id/submissions/new"
-								params={{ id: user.id }}
 								data-testid="add-submission-on-behalf"
+								params={{ id: user.id }}
+								to="/admin/users/$id/submissions/new"
 							>
 								<IconPlus className="mr-2 size-4" />
 								Add submission
 							</Link>
 						</Button>
 					}
+					icon={IconFileText}
+					title="Submissions"
 				>
 					<UserSubmissionsSection submissions={user.submissions} />
 				</SectionCard>
 
 				<UserSurveySection
-					surveyAnswers={user.surveyAnswers}
 					onEdit={() => setSurveyDialogOpen(true)}
+					surveyAnswers={user.surveyAnswers}
 				/>
 
 				<UserDocumentsSection
-					userId={user.id}
-					userName={userName}
 					addOpen={documentDialogOpen}
 					onAddOpenChange={setDocumentDialogOpen}
+					userId={user.id}
+					userName={userName}
 				/>
 
 				<SectionCard
-					icon={IconCash}
-					title="Fee Status"
 					action={
 						!user.fee?.paid && (
 							<Button
-								variant="outline"
-								size="sm"
 								onClick={() => setFeeDialogOpen(true)}
+								size="sm"
+								variant="outline"
 							>
 								<IconCash className="mr-2 size-4" />
 								Mark as Paid
 							</Button>
 						)
 					}
+					icon={IconCash}
+					title="Fee Status"
 				>
 					<UserFeeStatusSection
 						fee={user.fee}
@@ -177,49 +177,49 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 
 			{canEditProfiles && (
 				<UserEditDialog
-					user={user}
-					open={editDialogOpen}
 					onOpenChange={setEditDialogOpen}
+					open={editDialogOpen}
+					user={user}
 				/>
 			)}
 
 			{canDeleteUsers && (
 				<UserDeleteDialog
-					user={user}
-					open={deleteDialogOpen}
 					onOpenChange={setDeleteDialogOpen}
+					open={deleteDialogOpen}
+					user={user}
 				/>
 			)}
 
 			<UserFeeDialog
-				open={feeDialogOpen}
-				onOpenChange={setFeeDialogOpen}
-				userName={userName}
-				feeTypes={feeTypes}
 				currency={currency}
-				selectedFeeTypeId={selectedFeeTypeId}
-				selectedFeeType={selectedFeeType}
-				onFeeTypeChange={setSelectedFeeTypeId}
-				onConfirm={handleMarkFeePaid}
+				feeTypes={feeTypes}
 				isPending={isPending}
+				onConfirm={handleMarkFeePaid}
+				onFeeTypeChange={setSelectedFeeTypeId}
+				onOpenChange={setFeeDialogOpen}
+				open={feeDialogOpen}
+				selectedFeeType={selectedFeeType}
+				selectedFeeTypeId={selectedFeeTypeId}
+				userName={userName}
 			/>
 			<UserRoleDialog
-				open={roleDialogOpen}
-				onOpenChange={setRoleDialogOpen}
-				userName={userName}
-				selectedRole={selectedRole}
-				onRoleChange={setSelectedRole}
-				onConfirm={handleChangeRole}
 				isPending={isPending}
+				onConfirm={handleChangeRole}
+				onOpenChange={setRoleDialogOpen}
+				onRoleChange={setSelectedRole}
+				open={roleDialogOpen}
 				roleOptions={assignableRoleOptions(canAssignAdminRole)}
+				selectedRole={selectedRole}
+				userName={userName}
 			/>
 			<UserSurveyDialog
-				open={surveyDialogOpen}
+				initialAnswers={user.surveyAnswers}
 				onOpenChange={setSurveyDialogOpen}
+				open={surveyDialogOpen}
+				questions={activeSurveyQuestions}
 				userId={user.id}
 				userName={userName}
-				questions={activeSurveyQuestions}
-				initialAnswers={user.surveyAnswers}
 			/>
 		</>
 	);

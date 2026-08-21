@@ -24,8 +24,8 @@ export function TemplateStep({
 			<Label>Template</Label>
 			<Select
 				items={templates.map((t) => ({ value: t.id, label: t.name }))}
-				value={templateId ?? ""}
 				onValueChange={onSelect}
+				value={templateId ?? ""}
 			>
 				<SelectTrigger data-testid="bulk-template-select">
 					<SelectValue placeholder="Select a template…" />

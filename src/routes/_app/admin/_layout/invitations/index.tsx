@@ -77,7 +77,7 @@ function InvitationsPage() {
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconMailPlus} title="Invitations">
-				<Button size="sm" onClick={() => setDialogOpen(true)}>
+				<Button onClick={() => setDialogOpen(true)} size="sm">
 					<IconMailPlus className="mr-2 size-4" />
 					Invite User
 				</Button>
@@ -87,28 +87,28 @@ function InvitationsPage() {
 					columns={columns}
 					data={invitations}
 					getRowId={(row) => row.id}
-					rowDataTestId="invitation-item"
 					mobileCard={(invitation) => (
 						<InvitationMobileCard
 							invitation={invitation}
-							onResend={handleResend}
 							onCancel={handleCancel}
+							onResend={handleResend}
 						/>
 					)}
+					rowDataTestId="invitation-item"
 					toolbar={(table) => (
 						<DataTableToolbar
-							table={table}
 							searchKey="email"
 							searchPlaceholder="Search invitations..."
+							table={table}
 						/>
 					)}
 				/>
 			</div>
 
 			<InviteUserDialog
-				open={dialogOpen}
 				onOpenChange={setDialogOpen}
 				onSuccess={invalidate}
+				open={dialogOpen}
 			/>
 		</div>
 	);

@@ -50,31 +50,31 @@ function AdminSubmissionsPage() {
 					columns={submissionColumns}
 					data={submissions}
 					getRowId={(row) => row.id}
-					rowDataTestId="submission-row"
-					storageKey="admin-submissions"
 					initialColumnVisibility={{ updatedAt: false, search: false }}
 					mobileCard={SubmissionMobileCard}
+					rowDataTestId="submission-row"
+					storageKey="admin-submissions"
 					toolbar={(table) => (
 						<DataTableToolbar
-							table={table}
-							searchKey="search"
-							searchPlaceholder="Search submissions..."
-							columnLabels={columnLabels}
 							actions={
 								<>
 									<SubmissionExportButton table={table} />
 									<CameraReadyBulkUploadButton />
 									<SubmissionBulkActions
-										table={table}
 										availableTracks={availableTracks}
 										onSuccess={() =>
 											queryClient.invalidateQueries({
 												queryKey: adminSubmissionsQueryOptions().queryKey,
 											})
 										}
+										table={table}
 									/>
 								</>
 							}
+							columnLabels={columnLabels}
+							searchKey="search"
+							searchPlaceholder="Search submissions..."
+							table={table}
 						/>
 					)}
 				/>

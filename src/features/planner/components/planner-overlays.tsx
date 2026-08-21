@@ -34,19 +34,19 @@ export function PlannerOverlays({
 	return (
 		<>
 			<SessionEditorSheet
-				sessionId={selectedSessionId}
 				onClose={clearSelection}
+				sessionId={selectedSessionId}
 				users={users}
 			/>
 			<BreakEditorSheet breakId={selectedBreakId} onClose={clearSelection} />
 			{creationSubmissionIds && (
 				<CreateSessionDialog
-					open={true}
-					submissionIds={creationSubmissionIds}
 					defaultStartAt={defaultStartAt}
-					timezone={timezone}
 					onClose={closeCreateFromSelection}
 					onCreated={onSessionCreated}
+					open={true}
+					submissionIds={creationSubmissionIds}
+					timezone={timezone}
 				/>
 			)}
 		</>

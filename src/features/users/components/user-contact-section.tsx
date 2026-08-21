@@ -17,8 +17,8 @@ export function UserContactSection({ user }: UserContactSectionProps) {
 			<div className="flex items-center gap-2">
 				<IconMail className="size-4 text-muted-foreground" />
 				<a
-					href={`mailto:${user.email}`}
 					className="text-primary hover:underline"
+					href={`mailto:${user.email}`}
 				>
 					{user.email}
 				</a>

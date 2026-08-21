@@ -27,27 +27,27 @@ export function ThemeColorsSection({
 
 	return (
 		<SettingsSection
+			delay={100}
+			description="Customize interface colors"
 			icon={IconPalette}
 			title="Theme Colors"
-			description="Customize interface colors"
-			delay={100}
 		>
 			<div className="grid gap-4 sm:grid-cols-2">
 				<div className="space-y-2">
 					<Label htmlFor="primaryColor">Primary color</Label>
 					<div className="flex gap-2">
 						<Input
+							className="h-8 w-12 cursor-pointer p-0.5"
 							id="primaryColor"
+							onChange={(e) => onChange("primaryColor", e.target.value)}
 							type="color"
 							value={data.primaryColor}
-							onChange={(e) => onChange("primaryColor", e.target.value)}
-							className="h-8 w-12 cursor-pointer p-0.5"
 						/>
 						<Input
-							value={data.primaryColor}
+							className="flex-1 font-mono uppercase"
 							onChange={(e) => onChange("primaryColor", e.target.value)}
 							placeholder="#3b82f6"
-							className="flex-1 font-mono uppercase"
+							value={data.primaryColor}
 						/>
 					</div>
 				</div>
@@ -55,33 +55,33 @@ export function ThemeColorsSection({
 					<Label htmlFor="secondaryColor">Secondary color</Label>
 					<div className="flex gap-2">
 						<Input
+							className="h-8 w-12 cursor-pointer p-0.5"
 							id="secondaryColor"
+							onChange={(e) => onChange("secondaryColor", e.target.value)}
 							type="color"
 							value={data.secondaryColor}
-							onChange={(e) => onChange("secondaryColor", e.target.value)}
-							className="h-8 w-12 cursor-pointer p-0.5"
 						/>
 						<Input
-							value={data.secondaryColor}
+							className="flex-1 font-mono uppercase"
 							onChange={(e) => onChange("secondaryColor", e.target.value)}
 							placeholder="#8b5cf6"
-							className="flex-1 font-mono uppercase"
+							value={data.secondaryColor}
 						/>
 					</div>
 				</div>
 			</div>
 			<div className="mt-6 flex items-center justify-between">
 				<Button
+					disabled={isSaving}
+					onClick={handleReset}
+					size="sm"
 					type="button"
 					variant="ghost"
-					size="sm"
-					onClick={handleReset}
-					disabled={isSaving}
 				>
 					<IconRestore className="mr-2 size-4" />
 					Reset to defaults
 				</Button>
-				<Button onClick={onSave} disabled={isSaving}>
+				<Button disabled={isSaving} onClick={onSave}>
 					{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 					Save
 				</Button>

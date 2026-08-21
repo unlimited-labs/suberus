@@ -14,7 +14,7 @@ export function SettingsSaveButton({
 }: SettingsSaveButtonProps) {
 	return (
 		<div className="mt-6 flex justify-end">
-			<Button onClick={onSave} disabled={isSaving}>
+			<Button disabled={isSaving} onClick={onSave}>
 				{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 				{label}
 			</Button>

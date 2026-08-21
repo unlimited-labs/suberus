@@ -171,10 +171,10 @@ function SettingsPage() {
 			<div className="settings-page-container flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-5xl space-y-8">
 					<SettingsSection
+						delay={0}
+						description="Update your name, title, and professional details"
 						icon={IconUser}
 						title="Personal Information"
-						description="Update your name, title, and professional details"
-						delay={0}
 					>
 						<PersonalInfoSection
 							initialData={personalInfo}
@@ -183,12 +183,14 @@ function SettingsPage() {
 					</SettingsSection>
 
 					<SettingsSection
+						delay={100}
+						description="Update your email and billing address"
 						icon={IconMail}
 						title="Contact & Invoice Information"
-						description="Update your email and billing address"
-						delay={100}
 					>
 						<ContactInfoSection
+							currentEmail={user.email}
+							emailVerified={user.emailVerified}
 							initialData={{
 								email: user.email,
 								needInvoice: contactInfo.needInvoice,
@@ -196,17 +198,15 @@ function SettingsPage() {
 								country: contactInfo.country,
 							}}
 							onSave={handleContactInfoSave}
-							currentEmail={user.email}
-							emailVerified={user.emailVerified}
 							pendingEmail={pendingEmail}
 						/>
 					</SettingsSection>
 
 					<SettingsSection
+						delay={200}
+						description="Change your password and manage passkeys"
 						icon={IconLock}
 						title="Security"
-						description="Change your password and manage passkeys"
-						delay={200}
 					>
 						<PasswordChangeSection onSave={handlePasswordChange} />
 						<PasskeySection />
@@ -214,15 +214,15 @@ function SettingsPage() {
 
 					{surveyQuestions.length > 0 && (
 						<SettingsSection
+							delay={300}
+							description="Update your conference survey preferences"
 							icon={IconClipboardList}
 							title="Survey"
-							description="Update your conference survey preferences"
-							delay={300}
 						>
 							<SurveyAnswersForm
-								questions={surveyQuestions}
 								initialAnswers={surveyAnswers}
 								onSave={handleSaveSurvey}
+								questions={surveyQuestions}
 							/>
 						</SettingsSection>
 					)}

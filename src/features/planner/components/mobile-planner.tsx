@@ -51,11 +51,11 @@ export function MobilePlanner({
 		<div className="flex flex-col" data-testid="mobile-planner">
 			<div className="sticky top-0 z-10 flex items-center gap-2 border-b bg-background px-3 py-2">
 				<button
-					type="button"
-					onClick={() => shiftDay(-1)}
-					disabled={!canPrev}
-					className="rounded p-1 text-muted-foreground hover:bg-muted disabled:opacity-30"
 					aria-label="Previous day"
+					className="rounded p-1 text-muted-foreground hover:bg-muted disabled:opacity-30"
+					disabled={!canPrev}
+					onClick={() => shiftDay(-1)}
+					type="button"
 				>
 					<IconChevronLeft size={18} />
 				</button>
@@ -63,19 +63,19 @@ export function MobilePlanner({
 					{formatDayLabel(cursor, timezone)}
 				</div>
 				<button
-					type="button"
-					onClick={() => shiftDay(1)}
-					disabled={!canNext}
-					className="rounded p-1 text-muted-foreground hover:bg-muted disabled:opacity-30"
 					aria-label="Next day"
+					className="rounded p-1 text-muted-foreground hover:bg-muted disabled:opacity-30"
+					disabled={!canNext}
+					onClick={() => shiftDay(1)}
+					type="button"
 				>
 					<IconChevronRight size={18} />
 				</button>
 				<button
-					type="button"
-					onClick={() => setMobileQueueOpen(true)}
-					className="ml-1 flex items-center gap-1 rounded border px-2 py-1 text-xs"
 					aria-label="Open submissions"
+					className="ml-1 flex items-center gap-1 rounded border px-2 py-1 text-xs"
+					onClick={() => setMobileQueueOpen(true)}
+					type="button"
 				>
 					<IconLayoutList size={12} />
 					Queue
@@ -85,7 +85,7 @@ export function MobilePlanner({
 			<div className="divide-y">
 				{dayItems.length === 0 ? (
 					<div className="flex flex-col items-center gap-2 p-8 text-center">
-						<IconBook size={20} className="text-muted-foreground/40" />
+						<IconBook className="text-muted-foreground/40" size={20} />
 						<p className="text-sm text-muted-foreground">Nothing scheduled</p>
 						<p className="text-xs text-muted-foreground/70">
 							Use the desktop planner to drag submissions into sessions.
@@ -95,17 +95,17 @@ export function MobilePlanner({
 					dayItems.map((item) =>
 						item.kind === "break" ? (
 							<MobileBreakRow
-								key={`break:${item.id}`}
 								item={item}
-								timezone={timezone}
+								key={`break:${item.id}`}
 								onClick={selectBreak}
+								timezone={timezone}
 							/>
 						) : (
 							<MobileSessionRow
-								key={`session:${item.id}`}
 								item={item}
-								timezone={timezone}
+								key={`session:${item.id}`}
 								onClick={selectSession}
+								timezone={timezone}
 							/>
 						),
 					)

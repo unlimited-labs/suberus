@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_app/admin/_layout/exhibitors/$id")({
 function BackButton() {
 	return (
 		<Link to="/admin/exhibitors">
-			<Button variant="outline" size="sm">
+			<Button size="sm" variant="outline">
 				<IconArrowLeft className="mr-2 size-4" />
 				Back
 			</Button>
@@ -86,18 +86,18 @@ function ExhibitorDetailPage() {
 			</div>
 			{decision && (
 				<DecideExhibitorDialog
-					exhibitorId={exhibitor.id}
 					companyName={exhibitor.companyName}
 					decision={decision}
-					open
-					onOpenChange={(open) => {
-						if (!open) setDecision(null);
-					}}
+					exhibitorId={exhibitor.id}
 					onDecided={() => {
 						void queryClient.invalidateQueries({
 							queryKey: listExhibitorsQueryOptions().queryKey,
 						});
 					}}
+					onOpenChange={(open) => {
+						if (!open) setDecision(null);
+					}}
+					open
 				/>
 			)}
 		</div>

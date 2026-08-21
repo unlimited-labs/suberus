@@ -49,12 +49,12 @@ export function AuthCard({
 			)}
 		>
 			<AuthSidebar
-				conferenceName={conferenceName}
 				conferenceDate={conferenceDate}
 				conferenceLocation={conferenceLocation}
+				conferenceName={conferenceName}
 				conferenceSubtitle={conferenceSubtitle}
-				steps={steps}
 				currentStep={currentStep}
+				steps={steps}
 				width={wide ? "wide" : "narrow"}
 			/>
 			<div

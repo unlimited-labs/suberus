@@ -40,9 +40,9 @@ export function TosContentTab({ initialContent }: TosContentTabProps) {
 	return (
 		<div className="space-y-6">
 			<SettingsSection
+				description="Configure Terms of Service content shown during registration (Markdown supported)"
 				icon={IconFileText}
 				title="Terms of Service"
-				description="Configure Terms of Service content shown during registration (Markdown supported)"
 			>
 				<div className="space-y-4">
 					<div className="space-y-2">
@@ -54,12 +54,12 @@ export function TosContentTab({ initialContent }: TosContentTabProps) {
 							</TabsList>
 							<TabsContent value="edit">
 								<Textarea
-									id="tos-content"
-									value={content}
-									onChange={(e) => setContent(e.target.value)}
-									rows={15}
-									placeholder="# Terms of Service&#10;&#10;Enter terms of service here..."
 									className="font-mono text-sm"
+									id="tos-content"
+									onChange={(e) => setContent(e.target.value)}
+									placeholder="# Terms of Service&#10;&#10;Enter terms of service here..."
+									rows={15}
+									value={content}
 								/>
 							</TabsContent>
 							<TabsContent value="preview">
@@ -78,7 +78,7 @@ export function TosContentTab({ initialContent }: TosContentTabProps) {
 					</div>
 
 					<div className="flex justify-end">
-						<Button onClick={handleSave} disabled={isSaving}>
+						<Button disabled={isSaving} onClick={handleSave}>
 							{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 							Save Terms of Service
 						</Button>

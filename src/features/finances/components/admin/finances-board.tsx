@@ -87,17 +87,17 @@ function StatusChip({
 		<Tooltip>
 			<TooltipTrigger asChild>
 				<button
-					type="button"
-					onClick={onClick}
-					aria-pressed={active}
 					aria-label={label}
-					data-testid={testId}
+					aria-pressed={active}
 					className={cn(
 						"flex size-8 items-center justify-center rounded-full border transition-colors",
 						active
 							? activeClass
 							: "border-border text-muted-foreground hover:bg-muted",
 					)}
+					data-testid={testId}
+					onClick={onClick}
+					type="button"
 				>
 					<Icon className="size-4" />
 				</button>
@@ -228,7 +228,7 @@ export function FinancesBoard() {
 		labelPlaceholder: string,
 		withVat: boolean,
 	) => (
-		<form.Field name={name} mode="array">
+		<form.Field mode="array" name={name}>
 			{(field) => (
 				<div className="space-y-2">
 					{field.state.value.map((_row, index) =>
@@ -270,28 +270,28 @@ export function FinancesBoard() {
 												<form.Field name={`${name}[${index}].label`}>
 													{(sub) => (
 														<Input
-															value={sub.state.value}
-															placeholder={labelPlaceholder}
-															onChange={(e) => sub.handleChange(e.target.value)}
-															data-testid={`${testIdPrefix}-label-${index}`}
 															className="min-w-40 flex-1"
+															data-testid={`${testIdPrefix}-label-${index}`}
+															onChange={(e) => sub.handleChange(e.target.value)}
+															placeholder={labelPlaceholder}
+															value={sub.state.value}
 														/>
 													)}
 												</form.Field>
 												<form.Field name={`${name}[${index}].contractor`}>
 													{(sub) => (
 														<Input
-															type="text"
+															className="w-40"
+															data-testid={`${testIdPrefix}-contractor-${index}`}
 															list={contractorListId}
-															value={sub.state.value ?? ""}
-															placeholder="Contractor"
-															onChange={(e) => sub.handleChange(e.target.value)}
 															onBlur={() => {
 																sub.handleBlur();
 																void rememberContractor(sub.state.value ?? "");
 															}}
-															data-testid={`${testIdPrefix}-contractor-${index}`}
-															className="w-40"
+															onChange={(e) => sub.handleChange(e.target.value)}
+															placeholder="Contractor"
+															type="text"
+															value={sub.state.value ?? ""}
 														/>
 													)}
 												</form.Field>
@@ -299,9 +299,9 @@ export function FinancesBoard() {
 													{(sub) => (
 														<StatusChip
 															active={sub.state.value}
-															label="Ordered"
-															icon={IconShoppingCart}
 															activeClass="border-transparent bg-amber-500 text-white"
+															icon={IconShoppingCart}
+															label="Ordered"
 															onClick={() => sub.handleChange(!sub.state.value)}
 															testId={`${testIdPrefix}-ordered-${index}`}
 														/>
@@ -311,26 +311,26 @@ export function FinancesBoard() {
 													{(sub) => (
 														<StatusChip
 															active={sub.state.value}
-															label="Paid"
-															icon={IconCash}
 															activeClass="border-transparent bg-emerald-600 text-white"
+															icon={IconCash}
+															label="Paid"
 															onClick={() => sub.handleChange(!sub.state.value)}
 															testId={`${testIdPrefix}-paid-${index}`}
 														/>
 													)}
 												</form.Field>
 												<Button
-													type="button"
-													variant="ghost"
-													size="icon"
+													aria-label="Remove row"
+													className="ml-auto"
+													data-testid={`${testIdPrefix}-remove-${index}`}
 													onClick={() =>
 														setConfirmRemove(
 															() => () => field.removeValue(index),
 														)
 													}
-													aria-label="Remove row"
-													data-testid={`${testIdPrefix}-remove-${index}`}
-													className="ml-auto"
+													size="icon"
+													type="button"
+													variant="ghost"
 												>
 													<IconX className="size-4" />
 												</Button>
@@ -358,32 +358,32 @@ export function FinancesBoard() {
 														};
 														return (
 															<MoneyCells
-																netValue={
-																	isGross
-																		? fmtEditable(netVal)
-																		: (current?.amountExpr ?? "")
-																}
+																currency={currency}
 																grossValue={
 																	isGross
 																		? (current?.amountExpr ?? "")
 																		: fmtEditable(grossVal)
 																}
-																showNetResult={!isGross}
-																showGrossResult={isGross}
-																vat={vat}
-																vatRates={vatRates}
-																vatAmount={grossVal - netVal}
-																currency={currency}
-																testIdPrefix={testIdPrefix}
 																index={index}
-																onNetChange={(v) => setSource(v, false)}
+																netValue={
+																	isGross
+																		? fmtEditable(netVal)
+																		: (current?.amountExpr ?? "")
+																}
 																onGrossChange={(v) => setSource(v, true)}
+																onNetChange={(v) => setSource(v, false)}
 																onVatChange={(rate) =>
 																	form.setFieldValue(
 																		`${name}[${index}].vatRate`,
 																		rate,
 																	)
 																}
+																showGrossResult={isGross}
+																showNetResult={!isGross}
+																testIdPrefix={testIdPrefix}
+																vat={vat}
+																vatAmount={grossVal - netVal}
+																vatRates={vatRates}
 															/>
 														);
 													}}
@@ -391,13 +391,13 @@ export function FinancesBoard() {
 												<form.Field name={`${name}[${index}].dueDate`}>
 													{(sub) => (
 														<DueCell
-															value={sub.state.value ?? ""}
+															days={days}
+															index={index}
 															onChange={sub.handleChange}
 															overdue={overdue}
-															days={days}
 															paid={paid}
 															testIdPrefix={testIdPrefix}
-															index={index}
+															value={sub.state.value ?? ""}
 														/>
 													)}
 												</form.Field>
@@ -407,40 +407,40 @@ export function FinancesBoard() {
 								}}
 							</form.Subscribe>
 						) : (
-							<div key={index} className="flex flex-wrap items-center gap-2">
+							<div className="flex flex-wrap items-center gap-2" key={index}>
 								<form.Field name={`${name}[${index}].label`}>
 									{(sub) => (
 										<Input
-											value={sub.state.value}
-											placeholder={labelPlaceholder}
-											onChange={(e) => sub.handleChange(e.target.value)}
-											data-testid={`${testIdPrefix}-label-${index}`}
 											className="min-w-40 flex-1"
+											data-testid={`${testIdPrefix}-label-${index}`}
+											onChange={(e) => sub.handleChange(e.target.value)}
+											placeholder={labelPlaceholder}
+											value={sub.state.value}
 										/>
 									)}
 								</form.Field>
 								<form.Field name={`${name}[${index}].amountExpr`}>
 									{(sub) => (
 										<FormulaInput
-											value={sub.state.value}
-											onValueChange={sub.handleChange}
+											data-testid={`${testIdPrefix}-amount-${index}`}
 											evaluate={evalAmount}
 											format={(n) => formatCurrency(n, currency)}
+											onValueChange={sub.handleChange}
 											placeholder="formula (2*250) or value"
-											data-testid={`${testIdPrefix}-amount-${index}`}
 											resultTestId={`${testIdPrefix}-amount-eval-${index}`}
+											value={sub.state.value}
 										/>
 									)}
 								</form.Field>
 								<Button
-									type="button"
-									variant="ghost"
-									size="icon"
+									aria-label="Remove row"
+									data-testid={`${testIdPrefix}-remove-${index}`}
 									onClick={() =>
 										setConfirmRemove(() => () => field.removeValue(index))
 									}
-									aria-label="Remove row"
-									data-testid={`${testIdPrefix}-remove-${index}`}
+									size="icon"
+									type="button"
+									variant="ghost"
 								>
 									<IconX className="size-4" />
 								</Button>
@@ -448,9 +448,7 @@ export function FinancesBoard() {
 						),
 					)}
 					<Button
-						type="button"
-						variant="outline"
-						size="sm"
+						data-testid={`${testIdPrefix}-add`}
 						onClick={() =>
 							field.pushValue({
 								label: "",
@@ -463,7 +461,9 @@ export function FinancesBoard() {
 								ordered: false,
 							})
 						}
-						data-testid={`${testIdPrefix}-add`}
+						size="sm"
+						type="button"
+						variant="outline"
 					>
 						<IconPlus className="mr-1 size-3" />
 						{addLabel}
@@ -476,12 +476,12 @@ export function FinancesBoard() {
 	return (
 		<TooltipProvider>
 			<form
+				className="space-y-6"
 				noValidate
 				onSubmit={(e) => {
 					e.preventDefault();
 					void form.handleSubmit();
 				}}
-				className="space-y-6"
 			>
 				<datalist id={contractorListId}>
 					{contractorOptions.map((name) => (
@@ -491,35 +491,34 @@ export function FinancesBoard() {
 
 				<div className="space-y-6">
 					<SectionCard
-						icon={IconTrendingDown}
-						title="Expenses"
 						action={
 							<div className="flex items-center gap-2">
 								<Label
-									htmlFor="expense-basis-total"
 									className="text-xs text-muted-foreground"
+									htmlFor="expense-basis-total"
 								>
 									Total: {expenseBasis === "net" ? "Net" : "Gross"}
 								</Label>
 								<Switch
-									id="expense-basis-total"
 									checked={expenseBasis === "gross"}
+									data-testid="expense-basis-total"
+									id="expense-basis-total"
 									onCheckedChange={(checked) =>
 										setExpenseBasis(checked ? "gross" : "net")
 									}
-									data-testid="expense-basis-total"
 								/>
 							</div>
 						}
+						icon={IconTrendingDown}
+						title="Expenses"
 					>
 						<div className="space-y-3">
 							<form.Subscribe selector={(s) => s.values.expenses}>
 								{(rows) => (
 									<ExpenseToolbar
-										stats={expenseStats(rows, todayISO)}
+										currency={currency}
 										filter={expenseFilter}
 										onFilter={setExpenseFilter}
-										sort={expenseSort}
 										onSort={(sort) => {
 											setExpenseSort(sort);
 											if (sort !== "manual") {
@@ -529,7 +528,8 @@ export function FinancesBoard() {
 												);
 											}
 										}}
-										currency={currency}
+										sort={expenseSort}
+										stats={expenseStats(rows, todayISO)}
 									/>
 								)}
 							</form.Subscribe>
@@ -544,27 +544,27 @@ export function FinancesBoard() {
 					</SectionCard>
 
 					<SectionCard
-						icon={IconTrendingUp}
-						title="Income"
 						action={
 							<Tabs
-								value={mode}
 								// SAFETY: the select renders only Mode options.
 								onValueChange={(value) => setMode(value as Mode)}
+								value={mode}
 							>
 								<TabsList>
 									<TabsTrigger
-										value="actual"
 										data-testid="finances-mode-actual"
+										value="actual"
 									>
 										Actual
 									</TabsTrigger>
-									<TabsTrigger value="sim" data-testid="finances-mode-sim">
+									<TabsTrigger data-testid="finances-mode-sim" value="sim">
 										Simulation
 									</TabsTrigger>
 								</TabsList>
 							</Tabs>
 						}
+						icon={IconTrendingUp}
+						title="Income"
 					>
 						<div className="space-y-4">
 							{mode === "actual" ? (
@@ -579,10 +579,10 @@ export function FinancesBoard() {
 								</div>
 							) : (
 								<FeeProjection
-									types={feeSummary.types}
-									rows={projection}
 									currency={currency}
 									onChange={setProjection}
+									rows={projection}
+									types={feeSummary.types}
 								/>
 							)}
 							{renderLedger(
@@ -649,11 +649,11 @@ export function FinancesBoard() {
 													Net
 												</div>
 												<Badge
-													variant={profit ? "secondary" : "destructive"}
 													className={cn(
 														profit &&
 															"border-transparent bg-emerald-600 text-white",
 													)}
+													variant={profit ? "secondary" : "destructive"}
 												>
 													{profit ? "Profit" : "Loss"}
 												</Badge>
@@ -672,13 +672,13 @@ export function FinancesBoard() {
 									<div className="flex w-40 flex-col gap-2">
 										<form.AppForm>
 											<form.SubmitButton
+												className="w-full"
 												label="Save"
 												submittingLabel="Saving..."
-												className="w-full"
 											/>
 										</form.AppForm>
-										<Button variant="outline" className="w-full" asChild>
-											<Link to="/api/admin/finances/export" target="_blank">
+										<Button asChild className="w-full" variant="outline">
+											<Link target="_blank" to="/api/admin/finances/export">
 												<IconDownload className="mr-2 size-4" />
 												Export XLSX
 											</Link>
@@ -709,9 +709,9 @@ export function FinancesBoard() {
 												);
 												return (
 													<div
-														key={type.id}
-														data-testid={`finances-breakeven-${index}`}
 														className="flex items-center gap-1.5 rounded-md border bg-background px-2.5 py-1 text-sm"
+														data-testid={`finances-breakeven-${index}`}
+														key={type.id}
 													>
 														<span className="font-medium">{type.name}</span>
 														<span className="text-muted-foreground">
@@ -732,8 +732,8 @@ export function FinancesBoard() {
 			</form>
 
 			<Dialog
-				open={confirmRemove !== null}
 				onOpenChange={(open) => !open && setConfirmRemove(null)}
+				open={confirmRemove !== null}
 			>
 				<DialogContent>
 					<DialogHeader>
@@ -744,16 +744,16 @@ export function FinancesBoard() {
 						</DialogDescription>
 					</DialogHeader>
 					<DialogFooter>
-						<Button variant="outline" onClick={() => setConfirmRemove(null)}>
+						<Button onClick={() => setConfirmRemove(null)} variant="outline">
 							Cancel
 						</Button>
 						<Button
-							variant="destructive"
 							data-testid="finances-remove-confirm"
 							onClick={() => {
 								confirmRemove?.();
 								setConfirmRemove(null);
 							}}
+							variant="destructive"
 						>
 							Remove
 						</Button>

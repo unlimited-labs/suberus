@@ -28,20 +28,20 @@ export function PersonalInfoSection({
 
 	return (
 		<form
+			className="space-y-4"
 			onSubmit={(e) => {
 				e.preventDefault();
 				e.stopPropagation();
 				void form.handleSubmit();
 			}}
-			className="space-y-4"
 		>
 			<div className="grid gap-3 sm:grid-cols-2">
 				<form.AppField name="firstName">
 					{(field) => (
 						<field.InputField
+							disabled={isLoading}
 							label="First name *"
 							type="text"
-							disabled={isLoading}
 						/>
 					)}
 				</form.AppField>
@@ -49,9 +49,9 @@ export function PersonalInfoSection({
 				<form.AppField name="lastName">
 					{(field) => (
 						<field.InputField
+							disabled={isLoading}
 							label="Last name *"
 							type="text"
-							disabled={isLoading}
 						/>
 					)}
 				</form.AppField>
@@ -61,9 +61,9 @@ export function PersonalInfoSection({
 				<form.AppField name="title">
 					{(field) => (
 						<field.SelectField
+							disabled={isLoading}
 							label="Title"
 							options={titleOptions}
-							disabled={isLoading}
 						/>
 					)}
 				</form.AppField>
@@ -71,10 +71,10 @@ export function PersonalInfoSection({
 				<form.AppField name="affiliation">
 					{(field) => (
 						<field.IconInputField
+							disabled={isLoading}
+							icon={<IconBuilding className="size-4" />}
 							label="Affiliation"
 							type="text"
-							icon={<IconBuilding className="size-4" />}
-							disabled={isLoading}
 						/>
 					)}
 				</form.AppField>
@@ -83,10 +83,10 @@ export function PersonalInfoSection({
 			<form.AppField name="orcid">
 				{(field) => (
 					<field.IconInputField
+						disabled={isLoading}
+						icon={<IconId className="size-4" />}
 						label="ORCID"
 						type="text"
-						icon={<IconId className="size-4" />}
-						disabled={isLoading}
 					/>
 				)}
 			</form.AppField>
@@ -94,10 +94,10 @@ export function PersonalInfoSection({
 			<div className="flex justify-end pt-2">
 				<form.AppForm>
 					<form.SubmitButton
+						className="h-9"
+						disabled={isLoading}
 						label="Save changes"
 						submittingLabel="Saving..."
-						disabled={isLoading}
-						className="h-9"
 					/>
 				</form.AppForm>
 			</div>

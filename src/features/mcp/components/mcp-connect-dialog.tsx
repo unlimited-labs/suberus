@@ -86,11 +86,11 @@ function CopyBlock({
 
 	return (
 		<button
-			type="button"
-			onClick={copy}
 			aria-label={`Copy ${label}`}
-			data-testid={testId}
 			className="group flex w-full min-w-0 items-center gap-2 rounded-md border bg-muted/50 py-2 pr-2 pl-3 text-left transition-colors hover:border-primary/40 hover:bg-muted"
+			data-testid={testId}
+			onClick={copy}
+			type="button"
 		>
 			<code className="min-w-0 flex-1 overflow-x-auto font-mono text-xs whitespace-nowrap">
 				{value}
@@ -148,8 +148,8 @@ function ClientRow({
 					<ul className="mt-1 flex flex-wrap gap-1">
 						{client.scopes.map((scope) => (
 							<li
-								key={scope}
 								className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
+								key={scope}
 							>
 								{scope}
 							</li>
@@ -158,14 +158,14 @@ function ClientRow({
 				)}
 			</div>
 			<Button
-				type="button"
-				size="icon"
-				variant="ghost"
 				aria-label={`Remove ${label}`}
+				className="size-7 shrink-0 text-muted-foreground hover:text-destructive"
 				data-testid="mcp-remove-client"
 				disabled={revoke.isPending}
-				className="size-7 shrink-0 text-muted-foreground hover:text-destructive"
 				onClick={() => revoke.mutate()}
+				size="icon"
+				type="button"
+				variant="ghost"
 			>
 				<IconTrash className="size-4" />
 			</Button>
@@ -215,20 +215,17 @@ function CredentialControls({
 				Callback port
 			</Label>
 			<Input
-				id="mcp-callback-port"
-				data-testid="mcp-callback-port"
-				type="number"
-				inputMode="numeric"
-				min={1024}
-				max={65535}
-				value={port}
-				onChange={(e) => setPort(e.target.value)}
 				className="h-7 w-[5.5rem] text-xs"
+				data-testid="mcp-callback-port"
+				id="mcp-callback-port"
+				inputMode="numeric"
+				max={65535}
+				min={1024}
+				onChange={(e) => setPort(e.target.value)}
+				type="number"
+				value={port}
 			/>
 			<Button
-				type="button"
-				size="sm"
-				variant="ghost"
 				className="h-7 px-2 text-xs"
 				data-testid="mcp-mint-client"
 				disabled={mint.isPending}
@@ -236,6 +233,9 @@ function CredentialControls({
 					minted.current = true;
 					mint.mutate(Number(port));
 				}}
+				size="sm"
+				type="button"
+				variant="ghost"
 			>
 				<IconRefresh className="mr-1 size-3.5" />
 				Re-issue
@@ -262,7 +262,7 @@ export function McpConnectDialog({
 	});
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			{/* DialogContent is a grid whose auto track sizes to max-content, so the
 			    nowrap command below stretched it past the dialog. Pinning the track
 			    to minmax(0,1fr) contains any child, not just today's. */}
@@ -292,50 +292,50 @@ export function McpConnectDialog({
 
 				{data?.enabled && (
 					<div className="min-w-0 space-y-6">
-						<Tabs defaultValue="web" className="min-w-0 gap-4">
+						<Tabs className="min-w-0 gap-4" defaultValue="web">
 							<TabsList className="w-full">
-								<TabsTrigger value="web" data-testid="mcp-tab-web">
+								<TabsTrigger data-testid="mcp-tab-web" value="web">
 									Web
 								</TabsTrigger>
-								<TabsTrigger value="cli" data-testid="mcp-tab-cli">
+								<TabsTrigger data-testid="mcp-tab-cli" value="cli">
 									CLI / Desktop
 								</TabsTrigger>
 							</TabsList>
 
-							<TabsContent value="web" className="min-w-0 space-y-4">
-								<Step number={1} label="Add this URL as a custom connector">
+							<TabsContent className="min-w-0 space-y-4" value="web">
+								<Step label="Add this URL as a custom connector" number={1}>
 									<CopyBlock
-										value={data.url}
 										label="server URL"
 										testId="mcp-copy-url"
+										value={data.url}
 									/>
 								</Step>
-								<Step number={2} label="Sign in and approve" />
+								<Step label="Sign in and approve" number={2} />
 								<p className="text-muted-foreground text-sm">
 									Claude on the web identifies itself, so it needs nothing else
 									from this dialog.
 								</p>
 							</TabsContent>
 
-							<TabsContent value="cli" className="min-w-0 space-y-4">
-								<Step number={1} label="Run this in your terminal">
+							<TabsContent className="min-w-0 space-y-4" value="cli">
+								<Step label="Run this in your terminal" number={1}>
 									<div className="space-y-1.5">
 										<CopyBlock
+											label="register command"
+											testId="mcp-copy-command"
 											value={connectCommand({
 												url: data.url,
 												clientId: data.desktopClient?.clientId,
 												callbackPort: data.desktopClient?.callbackPort,
 											})}
-											label="register command"
-											testId="mcp-copy-command"
 										/>
 										<CredentialControls
-											clientId={data.desktopClient?.clientId}
 											callbackPort={data.desktopClient?.callbackPort}
+											clientId={data.desktopClient?.clientId}
 										/>
 									</div>
 								</Step>
-								<Step number={2} label="Sign in and approve" />
+								<Step label="Sign in and approve" number={2} />
 								<p className="text-muted-foreground text-sm">
 									Claude Code cannot publish its callback port, so these
 									credentials are tied to the one above. Start it on another
@@ -359,9 +359,9 @@ export function McpConnectDialog({
 								<ul className="min-w-0 divide-y" data-testid="mcp-client-list">
 									{data.clients.map((client, i) => (
 										<ClientRow
-											key={client.clientId}
 											client={client}
 											index={i}
+											key={client.clientId}
 										/>
 									))}
 								</ul>

@@ -25,7 +25,7 @@ export function SurveyTemplateDialog({
 	isBusy,
 }: SurveyTemplateDialogProps) {
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
 				<DialogHeader>
 					<DialogTitle>Import template</DialogTitle>
@@ -37,10 +37,10 @@ export function SurveyTemplateDialog({
 				<div className="space-y-2">
 					{SURVEY_TEMPLATES.map((template) => (
 						<TemplateCard
-							key={template.id}
-							template={template}
 							disabled={isBusy}
+							key={template.id}
 							onClick={() => onImport(template.id)}
+							template={template}
 						/>
 					))}
 				</div>
@@ -61,15 +61,15 @@ function TemplateCard({
 	const Icon = template.icon;
 	return (
 		<button
-			type="button"
-			onClick={onClick}
-			disabled={disabled}
-			data-testid="template-card"
 			className={cn(
 				"flex w-full items-start gap-3 rounded-lg border bg-card p-3 text-left",
 				"transition-all hover:border-primary hover:bg-primary/5",
 				"disabled:pointer-events-none disabled:opacity-50",
 			)}
+			data-testid="template-card"
+			disabled={disabled}
+			onClick={onClick}
+			type="button"
 		>
 			<div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
 				<Icon className="size-5" />

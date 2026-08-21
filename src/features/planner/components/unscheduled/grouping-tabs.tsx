@@ -13,24 +13,24 @@ interface Props {
 export function GroupingTabs({ mode, onChange }: Props) {
 	return (
 		<div
-			className="flex gap-1 border-b px-2 py-1.5"
-			role="tablist"
 			aria-label="Group submissions by"
+			className="flex gap-1 border-b px-2 py-1.5"
 			data-testid="sidebar-grouping-select"
+			role="tablist"
 		>
 			{MODES.map((m) => (
 				<button
-					key={m.key}
-					type="button"
-					role="tab"
 					aria-selected={mode === m.key}
-					onClick={() => onChange(m.key)}
-					data-testid={`sidebar-grouping-${m.key}`}
 					className={`flex-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${
 						mode === m.key
 							? "bg-muted text-foreground"
 							: "text-muted-foreground hover:bg-muted/50"
 					}`}
+					data-testid={`sidebar-grouping-${m.key}`}
+					key={m.key}
+					onClick={() => onChange(m.key)}
+					role="tab"
+					type="button"
 				>
 					{m.label}
 				</button>

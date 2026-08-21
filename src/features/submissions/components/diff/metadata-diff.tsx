@@ -75,7 +75,18 @@ export function AuthorsDiff({
 		const compareByEmail = new Map(compare.map((a) => [a.email, a]));
 		return (
 			<SplitColumns
-				oldLabel={oldLabel}
+				newChildren={
+					<ul className="space-y-1.5" data-testid="authors-diff">
+						{compare.map((a) => (
+							<Row
+								key={a.email}
+								status={authorStatus(a, baseByEmail.get(a.email), "added")}
+							>
+								{authorLine(a)}
+							</Row>
+						))}
+					</ul>
+				}
 				newLabel={newLabel}
 				oldChildren={
 					<ul className="space-y-1.5" data-testid="authors-diff">
@@ -89,18 +100,7 @@ export function AuthorsDiff({
 						))}
 					</ul>
 				}
-				newChildren={
-					<ul className="space-y-1.5" data-testid="authors-diff">
-						{compare.map((a) => (
-							<Row
-								key={a.email}
-								status={authorStatus(a, baseByEmail.get(a.email), "added")}
-							>
-								{authorLine(a)}
-							</Row>
-						))}
-					</ul>
-				}
+				oldLabel={oldLabel}
 			/>
 		);
 	}

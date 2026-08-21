@@ -39,7 +39,7 @@ export function EmailTemplateCard({
 					<p className="text-sm text-muted-foreground">{template.subject}</p>
 				</div>
 			</div>
-			<Button variant="ghost" size="icon" onClick={onEdit}>
+			<Button onClick={onEdit} size="icon" variant="ghost">
 				<IconEdit className="size-4" />
 			</Button>
 		</div>

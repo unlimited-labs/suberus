@@ -44,8 +44,8 @@ function CompareVersionsPage() {
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconGitCompare} title="Compare versions">
-				<Link to="/admin/submissions/$id" params={{ id }}>
-					<Button variant="outline" className="gap-2">
+				<Link params={{ id }} to="/admin/submissions/$id">
+					<Button className="gap-2" variant="outline">
 						<IconArrowLeft className="size-4" />
 						Back to submission
 					</Button>
@@ -62,15 +62,15 @@ function CompareVersionsPage() {
 					</div>
 
 					<VersionCompare
-						versions={versions}
-						currentVersionNumber={submission.currentVersionNumber}
 						base={base}
 						compare={compare}
+						currentVersionNumber={submission.currentVersionNumber}
 						layout={layout}
-						showMetadata
 						onBaseChange={(n) => setParam({ base: n })}
 						onCompareChange={(n) => setParam({ compare: n })}
 						onLayoutChange={(l) => setParam({ view: l })}
+						showMetadata
+						versions={versions}
 					/>
 				</div>
 			</div>

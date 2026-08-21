@@ -27,16 +27,16 @@ export function FormSwitchField({
 		field.state.meta.errors.length > 0;
 
 	return (
-		<Field orientation="horizontal" className={className}>
+		<Field className={className} orientation="horizontal">
 			<Switch
-				id={field.name}
 				checked={field.state.value}
-				onCheckedChange={(checked) => field.handleChange(checked === true)}
 				data-testid={testId}
+				id={field.name}
+				onCheckedChange={(checked) => field.handleChange(checked === true)}
 			/>
 			<FieldLabel
-				htmlFor={field.name}
 				className={labelClassName ?? "cursor-pointer text-sm font-normal"}
+				htmlFor={field.name}
 			>
 				{label}
 			</FieldLabel>

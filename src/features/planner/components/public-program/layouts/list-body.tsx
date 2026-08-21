@@ -24,11 +24,11 @@ export function ListBody({
 		<div className={framed ? "space-y-16" : "space-y-10"}>
 			{groups.map((group, gi) => (
 				<TimeSlot
-					key={`${group.startAt}-${gi}`}
-					group={group}
-					tz={tz}
-					query={q}
 					framed={framed}
+					group={group}
+					key={`${group.startAt}-${gi}`}
+					query={q}
+					tz={tz}
 				/>
 			))}
 		</div>
@@ -54,11 +54,11 @@ function TimeSlot({
 	if (group.sessions.length === 0 && group.breaks.length > 0 && !hasEvent) {
 		return (
 			<BreakOnlyRow
+				dash={dash}
+				end={end}
+				framed={framed}
 				group={group}
 				start={start}
-				end={end}
-				dash={dash}
-				framed={framed}
 			/>
 		);
 	}
@@ -67,7 +67,7 @@ function TimeSlot({
 
 	return (
 		<section>
-			<SlotHeading start={start} end={end} dash={dash} framed={framed} />
+			<SlotHeading dash={dash} end={end} framed={framed} start={start} />
 			<div
 				className={cn(
 					"grid",
@@ -80,13 +80,13 @@ function TimeSlot({
 			>
 				{group.sessions.map((s) =>
 					framed ? (
-						<FramedCard key={s.id} session={s} tz={tz} query={query} />
+						<FramedCard key={s.id} query={query} session={s} tz={tz} />
 					) : (
-						<MinimalCard key={s.id} session={s} tz={tz} query={query} />
+						<MinimalCard key={s.id} query={query} session={s} tz={tz} />
 					),
 				)}
 				{group.breaks.map((b) => (
-					<BreakCard key={b.id} item={b} tz={tz} dash={dash} framed={framed} />
+					<BreakCard dash={dash} framed={framed} item={b} key={b.id} tz={tz} />
 				))}
 			</div>
 		</section>
@@ -177,7 +177,7 @@ function BreakCard({
 	framed: boolean;
 }) {
 	if (item.kind === "EVENT") {
-		return <EventCard item={item} tz={tz} framed={framed} />;
+		return <EventCard framed={framed} item={item} tz={tz} />;
 	}
 	return (
 		<div
@@ -227,20 +227,20 @@ function EventCard({
 }) {
 	return (
 		<div
-			data-testid={`program-event-${item.id}`}
 			className={cn(
 				"border-l-2 border-[var(--primary)] bg-[var(--prog-mark,var(--muted))]/40 px-5 py-5",
 				framed ? "" : "rounded-[var(--prog-card-radius)]",
 			)}
+			data-testid={`program-event-${item.id}`}
 		>
 			<EventDetails
 				item={item}
-				tz={tz}
 				titleClass={
 					framed
 						? "font-[var(--prog-font-display)] text-xl sm:text-2xl"
 						: "text-lg font-semibold"
 				}
+				tz={tz}
 			/>
 		</div>
 	);
@@ -259,22 +259,22 @@ function MinimalCard({
 	return (
 		<article className="overflow-hidden rounded-[var(--prog-card-radius)] border border-border bg-card">
 			<div
+				aria-hidden
 				className="h-1 w-full"
 				style={{ backgroundColor: trackColor ?? "var(--primary)" }}
-				aria-hidden
 			/>
 			<div className="p-5">
 				<SessionHeader
-					session={session}
-					query={query}
-					titleClassName="mt-2 text-lg font-semibold sm:text-xl"
 					metaClassName="gap-x-3 text-xs"
+					query={query}
+					session={session}
+					titleClassName="mt-2 text-lg font-semibold sm:text-xl"
 				/>
 				<PresentationList
+					className="mt-4"
+					query={query}
 					session={session}
 					tz={tz}
-					query={query}
-					className="mt-4"
 				/>
 			</div>
 		</article>
@@ -293,15 +293,15 @@ function FramedCard({
 	return (
 		<article className="relative">
 			<SessionHeader
-				session={session}
-				query={query}
-				showDot
 				chairAsLabel
 				className="mb-4"
-				titleClassName="mt-2 text-xl font-bold sm:text-3xl"
 				metaClassName="text-[10px]"
+				query={query}
+				session={session}
+				showDot
+				titleClassName="mt-2 text-xl font-bold sm:text-3xl"
 			/>
-			<PresentationList session={session} tz={tz} query={query} numbered />
+			<PresentationList numbered query={query} session={session} tz={tz} />
 		</article>
 	);
 }

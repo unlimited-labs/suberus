@@ -16,7 +16,7 @@ interface TosModalProps {
 
 export function TosModal({ open, content, onOpenChange }: TosModalProps) {
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
 				<DialogHeader>
 					<DialogTitle>Terms of Service</DialogTitle>

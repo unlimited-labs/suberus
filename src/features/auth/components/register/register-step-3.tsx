@@ -43,9 +43,9 @@ export function RegisterStep3({
 								return (
 									<Field data-invalid={hasError}>
 										<SurveyQuestionField
+											onChange={field.handleChange}
 											question={question}
 											value={field.state.value}
-											onChange={field.handleChange}
 										/>
 										<FieldError
 											errors={hasError ? field.state.meta.errors : undefined}
@@ -68,30 +68,30 @@ export function RegisterStep3({
 							field.state.meta.isBlurred && field.state.meta.errors.length > 0;
 						return (
 							<Field
-								data-invalid={hasError}
 								className="rounded-lg border border-primary/20 bg-primary/5 p-3"
+								data-invalid={hasError}
 							>
 								<div className="flex items-start gap-2">
 									<Checkbox
-										id={field.name}
 										checked={field.state.value}
+										className="mt-0.5"
+										id={field.name}
 										onCheckedChange={(checked) =>
 											field.handleChange(checked === true)
 										}
-										className="mt-0.5"
 									/>
 									<FieldLabel
-										htmlFor={field.name}
 										className="cursor-pointer text-sm font-normal leading-snug"
+										htmlFor={field.name}
 									>
 										I agree to the{" "}
 										<button
-											type="button"
 											className="text-primary hover:underline"
 											onClick={(e) => {
 												e.preventDefault();
 												onOpenTos();
 											}}
+											type="button"
 										>
 											Terms of Service
 										</button>{" "}

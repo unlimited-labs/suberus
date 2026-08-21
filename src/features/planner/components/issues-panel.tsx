@@ -71,11 +71,11 @@ export function IssuesPanel({ sessions }: IssuesPanelProps) {
 			<Popover>
 				<PopoverTrigger asChild>
 					<button
-						type="button"
-						data-testid="issues-popover-trigger"
 						className="inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800 transition-colors hover:bg-amber-100 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300 dark:hover:bg-amber-950/60"
+						data-testid="issues-popover-trigger"
+						type="button"
 					>
-						<IconAlertTriangle size={13} className="shrink-0" />
+						<IconAlertTriangle className="shrink-0" size={13} />
 						<span>
 							{issues.length} {issues.length === 1 ? "issue" : "issues"}
 						</span>
@@ -84,8 +84,8 @@ export function IssuesPanel({ sessions }: IssuesPanelProps) {
 				</PopoverTrigger>
 				<PopoverContent
 					align="start"
-					data-testid="issues-popover"
 					className="w-96 max-w-[calc(100vw-2rem)] p-0"
+					data-testid="issues-popover"
 				>
 					<div className="border-b px-3 py-2 text-xs font-medium">
 						Issues ({issues.length})
@@ -105,11 +105,11 @@ export function IssuesPanel({ sessions }: IssuesPanelProps) {
 							const key = `${issue.type}:${issue.sessionIds.join(":")}`;
 							if (targetId) {
 								return (
-									<li key={key} data-testid={`issue-item-${i}`}>
+									<li data-testid={`issue-item-${i}`} key={key}>
 										<button
-											type="button"
-											onClick={() => selectSession(targetId)}
 											className="flex w-full items-start gap-2 rounded px-1.5 py-1 text-left hover:bg-muted"
+											onClick={() => selectSession(targetId)}
+											type="button"
 										>
 											{dot}
 											<span className="flex-1 text-xs leading-relaxed">
@@ -126,9 +126,9 @@ export function IssuesPanel({ sessions }: IssuesPanelProps) {
 							}
 							return (
 								<li
-									key={key}
-									data-testid={`issue-item-${i}`}
 									className="flex items-start gap-2 rounded px-1.5 py-1"
+									data-testid={`issue-item-${i}`}
+									key={key}
 								>
 									{dot}
 									<span className="text-xs leading-relaxed">

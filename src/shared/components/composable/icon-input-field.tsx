@@ -26,23 +26,23 @@ export function FormIconInputField({
 
 	return (
 		<FormField
-			label={label}
-			htmlFor={field.name}
-			hasError={hasError}
-			errors={errors}
 			description={description}
+			errors={errors}
+			hasError={hasError}
+			htmlFor={field.name}
+			label={label}
 		>
 			<IconInput
-				id={field.name}
-				type={type}
-				icon={icon}
 				aria-invalid={hasError}
-				value={field.state.value}
+				autoComplete={autoComplete}
+				disabled={disabled}
+				icon={icon}
+				id={field.name}
 				onBlur={field.handleBlur}
 				onChange={(e) => field.handleChange(e.target.value)}
 				placeholder={placeholder}
-				disabled={disabled}
-				autoComplete={autoComplete}
+				type={type}
+				value={field.state.value}
 			/>
 		</FormField>
 	);

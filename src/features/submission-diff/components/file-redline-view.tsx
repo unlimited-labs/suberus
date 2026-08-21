@@ -123,12 +123,12 @@ function DocFrame({
 }) {
 	return (
 		<iframe
-			ref={ref}
+			className="h-[60vh] w-full rounded-lg border border-border bg-white"
 			onLoad={onLoad}
-			title={title}
+			ref={ref}
 			sandbox="allow-same-origin"
 			srcDoc={wrapDoc(html, css)}
-			className="h-[60vh] w-full rounded-lg border border-border bg-white"
+			title={title}
 		/>
 	);
 }
@@ -237,15 +237,15 @@ export function FileRedlineView({
 	if (layout === "split") {
 		return (
 			<SplitDocuments
-				oldVersionId={oldVersionId}
+				newLabel={newLabel}
 				newVersionId={newVersionId}
 				oldLabel={oldLabel}
-				newLabel={newLabel}
+				oldVersionId={oldVersionId}
 			/>
 		);
 	}
 	return (
-		<InlineRedline oldVersionId={oldVersionId} newVersionId={newVersionId} />
+		<InlineRedline newVersionId={newVersionId} oldVersionId={oldVersionId} />
 	);
 }
 
@@ -266,7 +266,7 @@ function InlineRedline({
 
 	return (
 		<div className="space-y-2" data-testid="file-redline">
-			<DocFrame title="File redline" html={data.html} css={data.css} />
+			<DocFrame css={data.css} html={data.html} title="File redline" />
 		</div>
 	);
 }
@@ -302,11 +302,11 @@ function SplitDocuments({
 						{oldLabel} · deletions marked
 					</div>
 					<DocFrame
-						ref={oldRef}
-						onLoad={onOldLoad}
-						title={`File ${oldLabel}`}
-						html={stripInsertions(data.html)}
 						css={data.css}
+						html={stripInsertions(data.html)}
+						onLoad={onOldLoad}
+						ref={oldRef}
+						title={`File ${oldLabel}`}
 					/>
 				</div>
 				<div className="space-y-2">
@@ -314,11 +314,11 @@ function SplitDocuments({
 						{newLabel} · insertions marked
 					</div>
 					<DocFrame
-						ref={newRef}
-						onLoad={onNewLoad}
-						title={`File ${newLabel}`}
-						html={stripDeletions(data.html)}
 						css={data.css}
+						html={stripDeletions(data.html)}
+						onLoad={onNewLoad}
+						ref={newRef}
+						title={`File ${newLabel}`}
 					/>
 				</div>
 			</div>

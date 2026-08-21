@@ -12,22 +12,22 @@ export function DocumentsEmptyState({
 	if (!hasFilters) {
 		return (
 			<EmptyState
+				description="Documents generated for participants will appear here."
 				icon={IconFiles}
 				title="No documents yet"
-				description="Documents generated for participants will appear here."
 			/>
 		);
 	}
 	return (
 		<EmptyState
-			icon={IconFiles}
-			title="No matching documents"
-			description="No documents match the current filters. Try clearing them."
 			action={
-				<Button variant="outline" size="sm" onClick={onClear}>
+				<Button onClick={onClear} size="sm" variant="outline">
 					Clear filters
 				</Button>
 			}
+			description="No documents match the current filters. Try clearing them."
+			icon={IconFiles}
+			title="No matching documents"
 		/>
 	);
 }

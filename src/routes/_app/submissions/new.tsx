@@ -34,8 +34,8 @@ function NewSubmissionPage() {
 
 	return (
 		<SubmissionCreateView
-			mode="self"
 			availableTracks={availableTracks}
+			mode="self"
 			onCreated={onCreated}
 		/>
 	);

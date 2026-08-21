@@ -78,8 +78,8 @@ function ResetPasswordPage() {
 						</p>
 					</div>
 					<Link
-						to="/forgot-password"
 						className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+						to="/forgot-password"
 					>
 						Request new link
 					</Link>
@@ -105,8 +105,8 @@ function ResetPasswordPage() {
 						</p>
 					</div>
 					<Link
-						to="/login"
 						className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+						to="/login"
 					>
 						Sign in
 					</Link>
@@ -116,31 +116,31 @@ function ResetPasswordPage() {
 	}
 
 	return (
-		<AuthCard title="Reset password" subtitle="Enter your new password below">
+		<AuthCard subtitle="Enter your new password below" title="Reset password">
 			<form
+				className="flex flex-1 flex-col"
 				onSubmit={(e) => {
 					e.preventDefault();
 					e.stopPropagation();
 					void form.handleSubmit();
 				}}
-				className="flex flex-1 flex-col"
 			>
 				<div className="flex-1 space-y-3">
 					<PasswordFieldsGroup
-						form={form}
-						fields={{ password: "newPassword", confirm: "confirmPassword" }}
-						passwordLabel="New Password"
-						passwordDescription="Min. 10 characters"
 						confirmLabel="Confirm Password"
+						fields={{ password: "newPassword", confirm: "confirmPassword" }}
+						form={form}
+						passwordDescription="Min. 10 characters"
+						passwordLabel="New Password"
 					/>
 				</div>
 
 				<div className="mt-4">
 					<form.AppForm>
 						<form.SubmitButton
+							className="h-9 w-full"
 							label="Reset password"
 							submittingLabel="Resetting..."
-							className="h-9 w-full"
 						/>
 					</form.AppForm>
 				</div>
@@ -148,8 +148,8 @@ function ResetPasswordPage() {
 
 			<p className="mt-3 text-center">
 				<Link
-					to="/login"
 					className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+					to="/login"
 				>
 					<IconArrowLeft className="size-4" />
 					Back to login

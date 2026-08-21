@@ -93,25 +93,25 @@ export function PlannerCalendar({
 	return (
 		<div className="size-full">
 			<IlamyCalendar
-				key={calendarKey}
-				resources={resources}
-				events={events}
-				orientation="vertical"
-				initialView={initialView}
-				initialDate={initialDate}
-				timezone={timezone}
-				timeFormat={timeFormat === "12h" ? "12-hour" : "24-hour"}
 				businessHours={businessHours}
-				hideNonBusinessHours
-				hiddenDays={hiddenDays}
-				onDateChange={handleDateChange}
-				onViewChange={handleViewChange}
-				onEventUpdate={onEventUpdate}
-				onEventClick={onEventClick}
-				renderCurrentTimeIndicator={hideCurrentTimeIndicator}
-				renderEventForm={renderEventForm}
-				renderEvent={renderEvent}
+				events={events}
 				headerComponent={headerComponent}
+				hiddenDays={hiddenDays}
+				hideNonBusinessHours
+				initialDate={initialDate}
+				initialView={initialView}
+				key={calendarKey}
+				onDateChange={handleDateChange}
+				onEventClick={onEventClick}
+				onEventUpdate={onEventUpdate}
+				onViewChange={handleViewChange}
+				orientation="vertical"
+				renderCurrentTimeIndicator={hideCurrentTimeIndicator}
+				renderEvent={renderEvent}
+				renderEventForm={renderEventForm}
+				resources={resources}
+				timeFormat={timeFormat === "12h" ? "12-hour" : "24-hour"}
+				timezone={timezone}
 			/>
 		</div>
 	);

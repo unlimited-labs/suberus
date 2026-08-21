@@ -23,8 +23,8 @@ export function CapacityBar({ slotCount, usedMin, totalMin }: Props) {
 				</span>
 				{full && (
 					<IconCircleCheckFilled
-						className="size-3.5 text-emerald-600 dark:text-emerald-400"
 						aria-label="Full"
+						className="size-3.5 text-emerald-600 dark:text-emerald-400"
 					/>
 				)}
 			</div>

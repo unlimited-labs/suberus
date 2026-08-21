@@ -52,14 +52,14 @@ function ExhibitorPage() {
 					{exhibitor ? (
 						<>
 							<ExhibitorStatusCard
-								status={exhibitor.status}
 								appliedAt={exhibitor.appliedAt}
 								decidedAt={exhibitor.decidedAt}
 								packageName={exhibitor.package}
+								status={exhibitor.status}
 							/>
 							<ExhibitorApplicationForm
-								exhibitor={exhibitor}
 								allowPresentation={config.allowPresentation}
+								exhibitor={exhibitor}
 							/>
 						</>
 					) : (

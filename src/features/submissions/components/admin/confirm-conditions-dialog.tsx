@@ -41,7 +41,7 @@ export function ConfirmConditionsDialog({
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Confirm Conditions Met</DialogTitle>
@@ -69,26 +69,26 @@ export function ConfirmConditionsDialog({
 				)}
 				<div className="space-y-2 py-4">
 					<label
-						htmlFor="confirm-conditions-reason"
 						className="text-sm font-medium"
+						htmlFor="confirm-conditions-reason"
 					>
 						Reasoning *
 					</label>
 					<Textarea
 						id="confirm-conditions-reason"
-						placeholder="Describe how conditions were met..."
-						value={reasoning}
 						onChange={(e) => setReasoning(e.target.value)}
+						placeholder="Describe how conditions were met..."
 						rows={3}
+						value={reasoning}
 					/>
 				</div>
 				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
+					<Button onClick={() => onOpenChange(false)} variant="outline">
 						Cancel
 					</Button>
 					<Button
-						onClick={handleConfirm}
 						disabled={isTransitioning || !reasoning.trim()}
+						onClick={handleConfirm}
 					>
 						{isTransitioning ? "Confirming..." : "Confirm Accepted"}
 					</Button>

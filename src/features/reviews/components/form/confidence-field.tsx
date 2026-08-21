@@ -12,7 +12,7 @@ interface ConfidenceFieldProps {
 
 export function ConfidenceField({ form, readOnly }: ConfidenceFieldProps) {
 	return (
-		<SectionCard title="Confidence Level" icon={IconCircle}>
+		<SectionCard icon={IconCircle} title="Confidence Level">
 			<form.Field name="confidenceLevel">
 				{(field) => {
 					const hasError =
@@ -23,10 +23,6 @@ export function ConfidenceField({ form, readOnly }: ConfidenceFieldProps) {
 								<div className="flex items-center gap-2">
 									{confidenceLevels.map((level) => (
 										<button
-											key={level.value}
-											type="button"
-											disabled={readOnly}
-											onClick={() => field.handleChange(level.value)}
 											className={cn(
 												"flex-1 h-12 rounded-lg border-2 transition-all font-medium text-sm",
 												field.state.value === level.value
@@ -35,6 +31,10 @@ export function ConfidenceField({ form, readOnly }: ConfidenceFieldProps) {
 														? "border-border text-muted-foreground opacity-60"
 														: "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground",
 											)}
+											disabled={readOnly}
+											key={level.value}
+											onClick={() => field.handleChange(level.value)}
+											type="button"
 										>
 											{level.value}
 										</button>

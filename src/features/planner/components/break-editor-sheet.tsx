@@ -33,28 +33,28 @@ export function BreakEditorSheet({ breakId, onClose }: BreakEditorSheetProps) {
 	};
 	return (
 		<Sheet
-			open={breakId !== null}
 			onOpenChange={(open) => !open && requestClose()}
+			open={breakId !== null}
 		>
 			<SheetContent
-				side="right"
-				data-testid="break-editor"
 				className="flex flex-col gap-0 p-0 sm:max-w-md"
+				data-testid="break-editor"
+				side="right"
 			>
 				<SheetDescription className="sr-only">
 					Edit the schedule item's details.
 				</SheetDescription>
 				{breakId !== null && (
 					<BreakEditorProvider
-						key={breakId}
 						breakId={breakId}
-						onClose={onClose}
 						dirtyRef={dirtyRef}
 						fallback={
 							<div className="flex flex-1 items-center justify-center p-8">
 								<p className="text-sm text-muted-foreground">Item not found</p>
 							</div>
 						}
+						key={breakId}
+						onClose={onClose}
 					>
 						<BreakEditorBody />
 					</BreakEditorProvider>
@@ -71,13 +71,13 @@ function BreakEditorBody() {
 
 	return (
 		<form
+			className="flex flex-1 flex-col"
 			noValidate
 			onSubmit={(e) => {
 				e.preventDefault();
 				e.stopPropagation();
 				void form.handleSubmit();
 			}}
-			className="flex flex-1 flex-col"
 		>
 			<SheetHeader className="gap-3 border-b p-4">
 				<SheetTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -87,10 +87,10 @@ function BreakEditorBody() {
 					{(field) => (
 						<Field data-invalid={field.state.meta.errors.length > 0}>
 							<Input
-								value={field.state.value}
-								onChange={(e) => field.handleChange(e.target.value)}
-								data-testid="break-editor-title"
 								className="text-base font-medium"
+								data-testid="break-editor-title"
+								onChange={(e) => field.handleChange(e.target.value)}
+								value={field.state.value}
 							/>
 							<FieldError errors={field.state.meta.errors} />
 						</Field>
@@ -100,18 +100,18 @@ function BreakEditorBody() {
 					{(field) => (
 						<div className="space-y-1">
 							<Label
-								htmlFor="break-start"
 								className="text-xs text-muted-foreground"
+								htmlFor="break-start"
 							>
 								Start
 							</Label>
 							<Input
+								className="h-8 text-sm"
+								data-testid="break-editor-start"
 								id="break-start"
+								onChange={(e) => field.handleChange(e.target.value)}
 								type="datetime-local"
 								value={field.state.value}
-								onChange={(e) => field.handleChange(e.target.value)}
-								data-testid="break-editor-start"
-								className="h-8 text-sm"
 							/>
 							<FieldError errors={field.state.meta.errors} />
 						</div>
@@ -122,18 +122,18 @@ function BreakEditorBody() {
 						{(field) => (
 							<div className="space-y-1">
 								<Label
-									htmlFor="break-end"
 									className="text-xs text-muted-foreground"
+									htmlFor="break-end"
 								>
 									End
 								</Label>
 								<Input
+									className="h-8 text-sm"
+									data-testid="break-editor-end"
 									id="break-end"
+									onChange={(e) => field.handleChange(e.target.value)}
 									type="datetime-local"
 									value={field.state.value}
-									onChange={(e) => field.handleChange(e.target.value)}
-									data-testid="break-editor-end"
-									className="h-8 text-sm"
 								/>
 								<FieldError errors={field.state.meta.errors} />
 							</div>
@@ -144,22 +144,22 @@ function BreakEditorBody() {
 						{(field) => (
 							<div className="space-y-1">
 								<Label
-									htmlFor="break-duration"
 									className="text-xs text-muted-foreground"
+									htmlFor="break-duration"
 								>
 									Duration (min)
 								</Label>
 								<Input
+									className="h-8 text-sm"
+									data-testid="break-editor-duration"
 									id="break-duration"
-									type="number"
 									min={1}
-									step={5}
-									value={field.state.value}
 									onChange={(e) =>
 										field.handleChange(Math.max(1, Number(e.target.value)))
 									}
-									data-testid="break-editor-duration"
-									className="h-8 text-sm"
+									step={5}
+									type="number"
+									value={field.state.value}
 								/>
 							</div>
 						)}
@@ -171,18 +171,18 @@ function BreakEditorBody() {
 							{(field) => (
 								<div className="space-y-1">
 									<Label
-										htmlFor="break-description"
 										className="text-xs text-muted-foreground"
+										htmlFor="break-description"
 									>
 										Description (optional)
 									</Label>
 									<Textarea
-										id="break-description"
-										value={field.state.value}
-										onChange={(e) => field.handleChange(e.target.value)}
-										data-testid="break-editor-description"
-										rows={3}
 										className="text-sm"
+										data-testid="break-editor-description"
+										id="break-description"
+										onChange={(e) => field.handleChange(e.target.value)}
+										rows={3}
+										value={field.state.value}
 									/>
 								</div>
 							)}
@@ -191,17 +191,17 @@ function BreakEditorBody() {
 							{(field) => (
 								<div className="space-y-1">
 									<Label
-										htmlFor="break-location"
 										className="text-xs text-muted-foreground"
+										htmlFor="break-location"
 									>
 										Location (optional)
 									</Label>
 									<Input
-										id="break-location"
-										value={field.state.value}
-										onChange={(e) => field.handleChange(e.target.value)}
-										data-testid="break-editor-location"
 										className="h-8 text-sm"
+										data-testid="break-editor-location"
+										id="break-location"
+										onChange={(e) => field.handleChange(e.target.value)}
+										value={field.state.value}
 									/>
 								</div>
 							)}
@@ -210,18 +210,18 @@ function BreakEditorBody() {
 							{(field) => (
 								<div className="space-y-1">
 									<Label
-										htmlFor="break-location-url"
 										className="text-xs text-muted-foreground"
+										htmlFor="break-location-url"
 									>
 										Link (optional)
 									</Label>
 									<Input
+										className="h-8 text-sm"
+										data-testid="break-editor-location-url"
 										id="break-location-url"
+										onChange={(e) => field.handleChange(e.target.value)}
 										type="url"
 										value={field.state.value}
-										onChange={(e) => field.handleChange(e.target.value)}
-										data-testid="break-editor-location-url"
-										className="h-8 text-sm"
 									/>
 									<FieldError errors={field.state.meta.errors} />
 								</div>
@@ -236,10 +236,10 @@ function BreakEditorBody() {
 									Room (optional)
 								</Label>
 								<RoomSelect
-									value={field.state.value}
 									onValueChange={(v) => field.handleChange(v)}
 									rooms={rooms}
 									triggerClassName="h-8 text-sm"
+									value={field.state.value}
 								/>
 							</div>
 						)}
@@ -250,21 +250,21 @@ function BreakEditorBody() {
 			<SheetFooter className="mt-auto flex flex-col gap-2 border-t p-4">
 				<form.AppForm>
 					<form.SubmitButton
+						className="w-full"
+						disabled={!isDirty}
 						label="Save"
 						submittingLabel="Saving…"
-						disabled={!isDirty}
-						className="w-full"
 						testId="break-editor-save"
 					/>
 				</form.AppForm>
 				<Button
-					type="button"
-					variant="destructive"
-					size="sm"
+					className="w-full"
+					data-testid="break-editor-delete"
 					disabled={deleting}
 					onClick={onDelete}
-					data-testid="break-editor-delete"
-					className="w-full"
+					size="sm"
+					type="button"
+					variant="destructive"
 				>
 					<IconTrash size={14} />
 					{isEvent ? "Delete event" : "Delete break"}

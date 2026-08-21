@@ -107,10 +107,10 @@ export function TracksList({ tracks, onEdit, onUpdate }: TracksListProps) {
 							<TableCell className="text-center">
 								<Switch
 									checked={track.isActive}
+									disabled={togglingId === track.id}
 									onCheckedChange={() =>
 										handleToggleActive(track.id, track.isActive)
 									}
-									disabled={togglingId === track.id}
 								/>
 							</TableCell>
 							<TableCell className="text-right">
@@ -118,10 +118,10 @@ export function TracksList({ tracks, onEdit, onUpdate }: TracksListProps) {
 									{confirmDeleteId === track.id ? (
 										<>
 											<Button
-												variant="destructive"
-												size="sm"
-												onClick={handleDeleteConfirm}
 												disabled={deletingId === track.id}
+												onClick={handleDeleteConfirm}
+												size="sm"
+												variant="destructive"
 											>
 												{deletingId === track.id ? (
 													<IconLoader2 className="mr-1 size-4 animate-spin" />
@@ -129,9 +129,9 @@ export function TracksList({ tracks, onEdit, onUpdate }: TracksListProps) {
 												Confirm
 											</Button>
 											<Button
-												variant="outline"
-												size="sm"
 												onClick={() => setConfirmDeleteId(null)}
+												size="sm"
+												variant="outline"
 											>
 												Cancel
 											</Button>
@@ -139,23 +139,23 @@ export function TracksList({ tracks, onEdit, onUpdate }: TracksListProps) {
 									) : (
 										<>
 											<Button
-												variant="ghost"
-												size="icon"
-												onClick={() => onEdit(track)}
 												aria-label="Edit"
+												onClick={() => onEdit(track)}
+												size="icon"
+												variant="ghost"
 											>
 												<IconEdit className="size-4" />
 											</Button>
 											<Button
-												variant="ghost"
-												size="icon"
-												onClick={() =>
-													handleDeleteClick(track.id, track.submissionCount)
-												}
+												aria-label="Delete"
 												disabled={
 													track.submissionCount > 0 || deletingId === track.id
 												}
-												aria-label="Delete"
+												onClick={() =>
+													handleDeleteClick(track.id, track.submissionCount)
+												}
+												size="icon"
+												variant="ghost"
 											>
 												<IconTrash className="size-4" />
 											</Button>

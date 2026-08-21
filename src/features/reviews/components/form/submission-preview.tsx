@@ -78,20 +78,20 @@ export function SubmissionPreview({
 			)}
 
 			<ContentCard
-				file={submission.file}
 				content={submission.content}
+				file={submission.file}
 				isFileSubmission={isFileSubmission}
 			/>
 
 			{previous && (
 				<RevisionDiffPanel
-					previous={previous}
-					title={submission.title}
+					assignmentId={assignmentId}
 					content={submission.content ?? ""}
 					file={submission.file}
-					keywords={submission.keywords ?? []}
 					isFileSubmission={isFileSubmission}
-					assignmentId={assignmentId}
+					keywords={submission.keywords ?? []}
+					previous={previous}
+					title={submission.title}
 				/>
 			)}
 		</>
@@ -108,7 +108,7 @@ function AuthorsCard({ authors }: { authors: SubmissionAuthor[] }) {
 				)}
 			>
 				{authors.map((author, index) => (
-					<AuthorRow key={index} author={author} index={index} />
+					<AuthorRow author={author} index={index} key={index} />
 				))}
 			</div>
 		</SectionCard>
@@ -124,7 +124,6 @@ function AuthorRow({
 }) {
 	return (
 		<div
-			data-testid={`submission-author-${index}`}
 			className={cn(
 				authorCardClassName({
 					isPresenter: author.isPresenter,
@@ -133,6 +132,7 @@ function AuthorRow({
 				}),
 				"flex items-start gap-3 p-3",
 			)}
+			data-testid={`submission-author-${index}`}
 		>
 			<div className={presenterBadgeClassName(author.isPresenter)}>
 				{index + 1}
@@ -168,13 +168,13 @@ function ContentCard({
 }) {
 	return (
 		<SectionCard
-			title="Submission Content"
-			contentClassName="space-y-3"
 			action={
-				<Badge variant="secondary" data-testid="submission-content-format">
+				<Badge data-testid="submission-content-format" variant="secondary">
 					{isFileSubmission ? "File submission" : "Text submission"}
 				</Badge>
 			}
+			contentClassName="space-y-3"
+			title="Submission Content"
 		>
 			{file && (
 				<div className="flex items-center gap-4 rounded-lg border border-border bg-muted/30 p-3">
@@ -190,9 +190,9 @@ function ContentCard({
 						</p>
 					</div>
 					<a
-						href={`/api/files/${file.id}`}
-						data-testid="file-download-button"
 						className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+						data-testid="file-download-button"
+						href={`/api/files/${file.id}`}
 					>
 						<IconDownload className="size-4" />
 						Download

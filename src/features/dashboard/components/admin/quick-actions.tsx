@@ -14,19 +14,19 @@ export function QuickActions() {
 		<SectionCard title="Quick Actions">
 			<div className="grid grid-cols-2 gap-3">
 				<Button
-					variant="outline"
-					className="h-auto py-4 flex flex-col gap-2"
 					asChild
+					className="h-auto py-4 flex flex-col gap-2"
+					variant="outline"
 				>
-					<Link to="/api/admin/users/export" target="_blank">
+					<Link target="_blank" to="/api/admin/users/export">
 						<IconDownload className="size-5" />
 						<span className="text-sm">Export Users</span>
 					</Link>
 				</Button>
 				<Button
-					variant="outline"
-					className="h-auto py-4 flex flex-col gap-2"
 					asChild
+					className="h-auto py-4 flex flex-col gap-2"
+					variant="outline"
 				>
 					<Link to="/admin/users">
 						<IconUsers className="size-5" />
@@ -34,9 +34,9 @@ export function QuickActions() {
 					</Link>
 				</Button>
 				<Button
-					variant="outline"
-					className="h-auto py-4 flex flex-col gap-2"
 					asChild
+					className="h-auto py-4 flex flex-col gap-2"
+					variant="outline"
 				>
 					<Link to="/admin/submissions">
 						<IconFileStack className="size-5" />
@@ -44,9 +44,9 @@ export function QuickActions() {
 					</Link>
 				</Button>
 				<Button
-					variant="outline"
-					className="h-auto py-4 flex flex-col gap-2"
 					asChild
+					className="h-auto py-4 flex flex-col gap-2"
+					variant="outline"
 				>
 					<Link to="/admin/settings">
 						<IconAdjustments className="size-5" />
@@ -54,9 +54,9 @@ export function QuickActions() {
 					</Link>
 				</Button>
 				<Button
-					variant="outline"
-					className="h-auto py-4 flex flex-col gap-2"
 					asChild
+					className="h-auto py-4 flex flex-col gap-2"
+					variant="outline"
 				>
 					<Link to="/admin/program-planner">
 						<IconCalendar className="size-5" />

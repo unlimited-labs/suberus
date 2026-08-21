@@ -35,10 +35,10 @@ export function FormSubmitButton({
 		<form.Subscribe selector={(s) => s.isSubmitting}>
 			{(isSubmitting) => (
 				<Button
-					type="submit"
 					className={className}
-					disabled={isSubmitting || disabled}
 					data-testid={testId}
+					disabled={isSubmitting || disabled}
+					type="submit"
 				>
 					{isSubmitting ? (submittingLabel ?? label) : label}
 				</Button>

@@ -55,9 +55,9 @@ export function CameraReadyBulkUploadButton() {
 	});
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
+		<Dialog onOpenChange={setOpen} open={open}>
 			<DialogTrigger asChild>
-				<Button variant="outline" size="sm">
+				<Button size="sm" variant="outline">
 					<IconUpload className="mr-2 size-4" />
 					Upload camera-ready
 				</Button>
@@ -72,15 +72,15 @@ export function CameraReadyBulkUploadButton() {
 					</DialogDescription>
 				</DialogHeader>
 				<Input
-					type="file"
 					accept=".zip,application/zip"
 					data-testid="camera-ready-bulk-input"
 					onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+					type="file"
 				/>
 				<DialogFooter>
 					<Button
-						onClick={() => file && mutation.mutate(file)}
 						disabled={!file || mutation.isPending}
+						onClick={() => file && mutation.mutate(file)}
 					>
 						{mutation.isPending ? "Uploading…" : "Upload"}
 					</Button>

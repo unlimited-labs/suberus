@@ -22,11 +22,11 @@ export function NavLink({
 	if (item.external) {
 		return (
 			<a
-				href={item.href}
-				target="_blank"
-				rel="noopener noreferrer"
 				className={className}
+				href={item.href}
 				onClick={onNavigate}
+				rel="noopener noreferrer"
+				target="_blank"
 			>
 				<item.icon className="size-5" />
 				<span className="flex-1">{item.name}</span>
@@ -35,7 +35,7 @@ export function NavLink({
 		);
 	}
 	return (
-		<Link to={item.href} className={className} onClick={onNavigate}>
+		<Link className={className} onClick={onNavigate} to={item.href}>
 			<item.icon className="size-5" />
 			{item.name}
 		</Link>

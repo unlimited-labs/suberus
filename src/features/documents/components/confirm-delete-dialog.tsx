@@ -31,10 +31,10 @@ export function ConfirmDeleteDialog({
 }: ConfirmDeleteDialogProps) {
 	return (
 		<Dialog
-			open={open}
 			onOpenChange={(o) => {
 				if (!busy) onOpenChange(o);
 			}}
+			open={open}
 		>
 			<DialogContent>
 				<DialogHeader>
@@ -43,13 +43,13 @@ export function ConfirmDeleteDialog({
 				</DialogHeader>
 				<DialogFooter>
 					<Button
-						variant="outline"
-						onClick={() => onOpenChange(false)}
 						disabled={busy}
+						onClick={() => onOpenChange(false)}
+						variant="outline"
 					>
 						Cancel
 					</Button>
-					<Button variant="destructive" onClick={onConfirm} disabled={busy}>
+					<Button disabled={busy} onClick={onConfirm} variant="destructive">
 						{confirmLabel}
 					</Button>
 				</DialogFooter>

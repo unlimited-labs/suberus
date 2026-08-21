@@ -64,7 +64,7 @@ export function SubmissionDeleteDialog({
 
 	if (isLoading) {
 		return (
-			<Dialog open={open} onOpenChange={onOpenChange}>
+			<Dialog onOpenChange={onOpenChange} open={open}>
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>Delete Submission</DialogTitle>
@@ -78,7 +78,7 @@ export function SubmissionDeleteDialog({
 	const hasWarnings = check && check.warnings.length > 0;
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2">
@@ -105,13 +105,13 @@ export function SubmissionDeleteDialog({
 					</p>
 				</div>
 				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
+					<Button onClick={() => onOpenChange(false)} variant="outline">
 						Cancel
 					</Button>
 					<Button
-						variant="destructive"
-						onClick={() => mutation.mutate()}
 						disabled={mutation.isPending}
+						onClick={() => mutation.mutate()}
+						variant="destructive"
 					>
 						{mutation.isPending ? "Deleting..." : "Delete Submission"}
 					</Button>

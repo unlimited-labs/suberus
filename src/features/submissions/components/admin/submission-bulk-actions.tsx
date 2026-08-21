@@ -164,8 +164,8 @@ export function SubmissionBulkActions({
 				</span>
 				<Select
 					items={actions}
-					value={selectedAction}
 					onValueChange={setSelectedAction}
+					value={selectedAction}
 				>
 					<SelectTrigger className="h-8 w-[180px]">
 						<SelectValue placeholder="Bulk actions" />
@@ -178,25 +178,25 @@ export function SubmissionBulkActions({
 						))}
 					</SelectContent>
 				</Select>
-				<Button size="sm" onClick={handleApply} disabled={!selectedAction}>
+				<Button disabled={!selectedAction} onClick={handleApply} size="sm">
 					Apply
 				</Button>
 			</div>
 
 			<BulkActionDialog
-				open={statusDialogOpen}
-				onOpenChange={setStatusDialogOpen}
-				title="Change submission status"
 				description={`Select new status for ${selectedCount} selected submissions. Some status changes may not be allowed depending on the current submission state.`}
-				onConfirm={handleChangeStatus}
-				isLoading={isLoading}
 				errors={errors}
+				isLoading={isLoading}
+				onConfirm={handleChangeStatus}
+				onOpenChange={setStatusDialogOpen}
+				open={statusDialogOpen}
+				title="Change submission status"
 			>
 				<Select
 					items={statusChangeOptions}
-					value={selectedStatus}
 					// SAFETY: the select renders only SubmissionStatus options.
 					onValueChange={(v) => setSelectedStatus(v as SubmissionStatus)}
+					value={selectedStatus}
 				>
 					<SelectTrigger>
 						<SelectValue placeholder="Select status" />
@@ -212,24 +212,24 @@ export function SubmissionBulkActions({
 			</BulkActionDialog>
 
 			<BulkActionDialog
-				open={reviewerDialogOpen}
-				onOpenChange={setReviewerDialogOpen}
-				title="Assign reviewer"
-				description={`Select reviewer to assign to ${selectedCount} selected submissions.`}
-				onConfirm={handleAssignReviewer}
-				isLoading={isLoading}
-				errors={errors}
-				confirmLabel="Assign"
-				loadingLabel="Assigning..."
 				confirmDisabled={!selectedReviewer}
+				confirmLabel="Assign"
+				description={`Select reviewer to assign to ${selectedCount} selected submissions.`}
+				errors={errors}
+				isLoading={isLoading}
+				loadingLabel="Assigning..."
+				onConfirm={handleAssignReviewer}
+				onOpenChange={setReviewerDialogOpen}
+				open={reviewerDialogOpen}
+				title="Assign reviewer"
 			>
 				<Select
 					items={reviewers.map((reviewer) => ({
 						value: reviewer.id,
 						label: reviewer.name,
 					}))}
-					value={selectedReviewer}
 					onValueChange={setSelectedReviewer}
+					value={selectedReviewer}
 				>
 					<SelectTrigger>
 						<SelectValue placeholder="Select reviewer" />
@@ -250,15 +250,15 @@ export function SubmissionBulkActions({
 			</BulkActionDialog>
 
 			<BulkActionDialog
-				open={trackDialogOpen}
-				onOpenChange={setTrackDialogOpen}
-				title="Assign to track"
-				description={`Assign ${selectedCount} selected submission(s) to a conference track. Only ABSTRACT submissions can be assigned.`}
-				onConfirm={handleAssignTrack}
-				isLoading={isLoading}
-				errors={errors}
 				confirmLabel="Assign"
+				description={`Assign ${selectedCount} selected submission(s) to a conference track. Only ABSTRACT submissions can be assigned.`}
+				errors={errors}
+				isLoading={isLoading}
 				loadingLabel="Assigning..."
+				onConfirm={handleAssignTrack}
+				onOpenChange={setTrackDialogOpen}
+				open={trackDialogOpen}
+				title="Assign to track"
 			>
 				<Select
 					items={[
@@ -268,8 +268,8 @@ export function SubmissionBulkActions({
 							label: track.name,
 						})),
 					]}
-					value={selectedTrack}
 					onValueChange={setSelectedTrack}
+					value={selectedTrack}
 				>
 					<SelectTrigger>
 						<SelectValue placeholder="Select track" />

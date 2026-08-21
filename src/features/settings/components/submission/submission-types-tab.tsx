@@ -35,19 +35,19 @@ export function SubmissionTypesTab({ initialData }: SubmissionTypesTabProps) {
 
 	return (
 		<SettingsSection
+			description="Configure individual submission types"
 			icon={IconFileStack}
 			title="Submission Types"
-			description="Configure individual submission types"
 		>
 			<Accordion className="space-y-3">
 				{SUBMISSION_TYPE_KEYS.filter(
 					(key) => key !== "SUBMISSION_TYPE_EXHIBITOR",
 				).map((key) => (
 					<SubmissionTypeAccordion
-						key={key}
-						typeKey={key}
 						config={configs[key]}
+						key={key}
 						onChange={(updated) => handleConfigChange(key, updated)}
+						typeKey={key}
 					/>
 				))}
 			</Accordion>

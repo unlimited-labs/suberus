@@ -82,8 +82,8 @@ function AuthorCardHeader({
 		<div className="flex items-center gap-3 px-4 py-2.5 border-b border-border/30">
 			{/* Drag Handle */}
 			<button
-				type="button"
 				className="cursor-grab active:cursor-grabbing touch-none text-muted-foreground hover:text-foreground transition-colors"
+				type="button"
 				{...(isDragOverlay ? {} : handle.attributes)}
 				{...(isDragOverlay ? {} : handle.listeners)}
 			>
@@ -93,10 +93,10 @@ function AuthorCardHeader({
 			<div className="flex items-center gap-2 flex-1">
 				<div className={presenterBadgeClassName(isPresenter)}>{index + 1}</div>
 				<button
-					type="button"
-					onClick={() => !isDragOverlay && setPresenter(index)}
-					className={presenterButtonClassName(isPresenter)}
 					aria-label={presenterAriaLabel(isPresenter)}
+					className={presenterButtonClassName(isPresenter)}
+					onClick={() => !isDragOverlay && setPresenter(index)}
+					type="button"
 				>
 					{isPresenter ? (
 						<IconStarFilled className="size-3" />
@@ -109,13 +109,13 @@ function AuthorCardHeader({
 				</button>
 			</div>
 			<Button
-				type="button"
-				size="icon-xs"
-				variant="ghost"
-				onClick={() => !isDragOverlay && removeAuthor(index)}
-				disabled={!canRemove}
-				className="opacity-0 group-hover:opacity-100 transition-opacity"
 				aria-label="Remove author"
+				className="opacity-0 group-hover:opacity-100 transition-opacity"
+				disabled={!canRemove}
+				onClick={() => !isDragOverlay && removeAuthor(index)}
+				size="icon-xs"
+				type="button"
+				variant="ghost"
 			>
 				<IconTrash className="size-3.5" />
 			</Button>
@@ -139,37 +139,37 @@ function AuthorFields({
 			<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 				<div className="space-y-1.5">
 					<Label
-						htmlFor={`author-${index}-firstName`}
 						className="text-xs text-muted-foreground"
+						htmlFor={`author-${index}-firstName`}
 					>
 						First name
 					</Label>
 					<Input
-						id={`author-${index}-firstName`}
-						type="text"
-						value={author.firstName}
-						onChange={(e) => updateAuthor(index, { firstName: e.target.value })}
-						required
 						className="h-9 text-sm text-foreground"
 						disabled={isDragOverlay}
+						id={`author-${index}-firstName`}
+						onChange={(e) => updateAuthor(index, { firstName: e.target.value })}
+						required
+						type="text"
+						value={author.firstName}
 					/>
 				</div>
 
 				<div className="space-y-1.5">
 					<Label
-						htmlFor={`author-${index}-lastName`}
 						className="text-xs text-muted-foreground"
+						htmlFor={`author-${index}-lastName`}
 					>
 						Last name
 					</Label>
 					<Input
-						id={`author-${index}-lastName`}
-						type="text"
-						value={author.lastName}
-						onChange={(e) => updateAuthor(index, { lastName: e.target.value })}
-						required
 						className="h-9 text-sm text-foreground"
 						disabled={isDragOverlay}
+						id={`author-${index}-lastName`}
+						onChange={(e) => updateAuthor(index, { lastName: e.target.value })}
+						required
+						type="text"
+						value={author.lastName}
 					/>
 				</div>
 			</div>
@@ -177,19 +177,19 @@ function AuthorFields({
 			<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 				<div className="space-y-1.5">
 					<Label
-						htmlFor={`author-${index}-email`}
 						className="text-xs text-muted-foreground"
+						htmlFor={`author-${index}-email`}
 					>
 						Email
 					</Label>
 					<Input
-						id={`author-${index}-email`}
-						type="email"
-						value={author.email}
-						onChange={(e) => updateAuthor(index, { email: e.target.value })}
-						required
 						className="h-9 text-sm text-foreground"
 						disabled={isDragOverlay}
+						id={`author-${index}-email`}
+						onChange={(e) => updateAuthor(index, { email: e.target.value })}
+						required
+						type="email"
+						value={author.email}
 					/>
 				</div>
 
@@ -201,7 +201,6 @@ function AuthorFields({
 						</div>
 					) : (
 						<AffiliationSelect
-							value={author.affiliationId}
 							displayValue={author.affiliationName}
 							initValueId={author.affiliationId}
 							onChange={(id, name) =>
@@ -210,6 +209,7 @@ function AuthorFields({
 									affiliationName: name,
 								})
 							}
+							value={author.affiliationId}
 						/>
 					)}
 				</div>
@@ -248,23 +248,23 @@ function SortableAuthorItem({
 
 	return (
 		<div
-			ref={isDragOverlay ? undefined : setNodeRef}
-			style={style}
-			data-testid={`author-card-${index}`}
 			className={authorCardClassName({
 				isPresenter: author.isPresenter,
 				isDragging,
 				isDragOverlay,
 			})}
+			data-testid={`author-card-${index}`}
+			ref={isDragOverlay ? undefined : setNodeRef}
+			style={style}
 		>
 			<AuthorCardHeader
-				index={index}
-				isPresenter={author.isPresenter}
-				isDragOverlay={isDragOverlay}
 				canRemove={canRemove}
 				handle={{ attributes, listeners }}
-				setPresenter={setPresenter}
+				index={index}
+				isDragOverlay={isDragOverlay}
+				isPresenter={author.isPresenter}
 				removeAuthor={removeAuthor}
+				setPresenter={setPresenter}
 			/>
 			<AuthorFields
 				author={author}
@@ -370,11 +370,11 @@ export function AuthorsInput({
 	return (
 		<div className={cn("space-y-3", className)}>
 			<DndContext
-				sensors={sensors}
 				collisionDetection={closestCenter}
-				onDragStart={handleDragStart}
-				onDragEnd={handleDragEnd}
 				onDragCancel={handleDragCancel}
+				onDragEnd={handleDragEnd}
+				onDragStart={handleDragStart}
+				sensors={sensors}
 			>
 				<SortableContext
 					items={value.map((_, index) => index.toString())}
@@ -382,13 +382,13 @@ export function AuthorsInput({
 				>
 					{value.map((author, index) => (
 						<SortableAuthorItem
-							key={ids[index]}
 							author={author}
+							canRemove={value.length > 1}
 							index={index}
-							updateAuthor={updateAuthor}
+							key={ids[index]}
 							removeAuthor={removeAuthor}
 							setPresenter={setPresenter}
-							canRemove={value.length > 1}
+							updateAuthor={updateAuthor}
 						/>
 					))}
 				</SortableContext>
@@ -396,20 +396,18 @@ export function AuthorsInput({
 					{activeAuthor && (
 						<SortableAuthorItem
 							author={activeAuthor}
+							canRemove={value.length > 1}
 							index={activeIndex}
-							updateAuthor={updateAuthor}
+							isDragOverlay
 							removeAuthor={removeAuthor}
 							setPresenter={setPresenter}
-							canRemove={value.length > 1}
-							isDragOverlay
+							updateAuthor={updateAuthor}
 						/>
 					)}
 				</DragOverlay>
 			</DndContext>
 
 			<button
-				type="button"
-				onClick={addAuthor}
 				className={cn(
 					"w-full flex items-center justify-center gap-2 py-3 rounded-lg",
 					"border border-dashed border-border/50",
@@ -417,6 +415,8 @@ export function AuthorsInput({
 					"hover:border-primary hover:text-primary hover:bg-primary/5",
 					"transition-all",
 				)}
+				onClick={addAuthor}
+				type="button"
 			>
 				<IconPlus className="size-3.5" />
 				Add Author

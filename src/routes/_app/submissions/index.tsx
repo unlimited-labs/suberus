@@ -69,9 +69,9 @@ function SubmissionsPage() {
 			</PageHeader>
 			{deadline && (
 				<SubmissionsDeadlineBanner
+					critical={deadlineCritical}
 					formattedDeadline={formatDate(deadline)}
 					urgent={deadlineUrgent}
-					critical={deadlineCritical}
 				/>
 			)}
 			<div className="flex-1 p-6 overflow-auto">

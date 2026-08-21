@@ -36,35 +36,35 @@ export function MetricsGrid({ metrics, isLoading }: MetricsGridProps) {
 		>
 			<MetricCard
 				icon={IconUsers}
-				title="Total Users"
-				value={users.total}
 				subtitle={`${users.verified} verified, ${users.recentSignups} recent`}
+				title="Total Users"
 				trend={trends.users}
 				trendColor="#3b82f6"
+				value={users.total}
 			/>
 			<MetricCard
 				icon={IconFileStack}
-				title="Total Submissions"
-				value={submissions.total}
 				subtitle={`${submissions.recentCount} in last 7 days`}
+				title="Total Submissions"
 				trend={trends.submissions}
 				trendColor="#8b5cf6"
+				value={submissions.total}
 			/>
 			<MetricCard
 				icon={IconMessageCircle}
-				title="Pending Reviews"
-				value={reviews.byStatus.PENDING}
 				subtitle={`${reviews.completionRate.toFixed(0)}% completion rate`}
+				title="Pending Reviews"
 				trend={trends.reviewsCompleted}
 				trendColor="#f59e0b"
+				value={reviews.byStatus.PENDING}
 			/>
 			<MetricCard
 				icon={IconCoins}
-				title="Fees Collected"
-				value={`${fees.totalCollected.toFixed(0)} ${fees.currency}`}
 				subtitle={`${fees.paidCount} / ${fees.paidCount + fees.unpaidCount} paid`}
+				title="Fees Collected"
 				trend={trends.feesCollected}
 				trendColor="#22c55e"
+				value={`${fees.totalCollected.toFixed(0)} ${fees.currency}`}
 			/>
 		</div>
 	);
@@ -93,7 +93,7 @@ function MetricCard({
 			data-testid="metric-card"
 		>
 			{trend && trend.length > 0 && (
-				<MetricSparkline data={trend} color={trendColor} />
+				<MetricSparkline color={trendColor} data={trend} />
 			)}
 			<div className="relative">
 				<div className="flex items-center gap-2 mb-2">

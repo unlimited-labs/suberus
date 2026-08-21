@@ -213,7 +213,6 @@ function AdminSettingsPage() {
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-5xl">
 					<Tabs
-						value={activeTab}
 						onValueChange={(value) =>
 							navigate({
 								search: { tab: value },
@@ -221,14 +220,15 @@ function AdminSettingsPage() {
 								resetScroll: false,
 							})
 						}
+						value={activeTab}
 					>
 						<TabsList className="mb-6 h-auto flex-wrap gap-1 rounded-lg border border-border bg-muted p-1">
 							{tabs.map((tab) => (
 								<TabsTrigger
+									className="gap-1.5 px-3 py-2 text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+									data-testid={`settings-tab-${tab.id}`}
 									key={tab.id}
 									value={tab.id}
-									data-testid={`settings-tab-${tab.id}`}
-									className="gap-1.5 px-3 py-2 text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
 								>
 									<tab.icon className="size-4" />
 									<span className="hidden sm:inline">{tab.label}</span>
@@ -246,9 +246,9 @@ function AdminSettingsPage() {
 						<TabsContent value="submissions">
 							<SubmissionSettingsTab
 								initialData={submissionSettings}
-								initialSubmissionGuidelines={submissionGuidelines}
-								initialReviewGuidelines={reviewGuidelines}
 								initialExtraction={extractionSettings}
+								initialReviewGuidelines={reviewGuidelines}
+								initialSubmissionGuidelines={submissionGuidelines}
 								llmHealth={llmHealth}
 								pdfApiHealth={pdfApiHealth}
 							/>
@@ -261,29 +261,29 @@ function AdminSettingsPage() {
 						<TabsContent value="tracks">
 							<TracksTab
 								initialTracks={tracks}
-								reviewers={reviewers}
 								onUpdate={() =>
 									queryClient.invalidateQueries({
 										queryKey: allTracksQueryOptions().queryKey,
 									})
 								}
+								reviewers={reviewers}
 							/>
 						</TabsContent>
 
 						<TabsContent value="program">
 							<ProgramTab
-								initialRooms={rooms}
-								initialProgramTracks={programTracks}
 								initialConferenceSettings={conferenceSettings}
+								initialProgramTracks={programTracks}
+								initialRooms={rooms}
 								llmHealth={llmHealth}
-								onRoomsUpdate={() =>
-									queryClient.invalidateQueries({
-										queryKey: allRoomsQueryOptions().queryKey,
-									})
-								}
 								onProgramTracksUpdate={() =>
 									queryClient.invalidateQueries({
 										queryKey: allProgramTracksQueryOptions().queryKey,
+									})
+								}
+								onRoomsUpdate={() =>
+									queryClient.invalidateQueries({
+										queryKey: allRoomsQueryOptions().queryKey,
 									})
 								}
 							/>
@@ -302,10 +302,10 @@ function AdminSettingsPage() {
 
 						<TabsContent value="fee">
 							<FeeTab
-								initialEnabled={feeEnabled}
-								initialInstructions={feeInstructions}
-								initialFeeTypes={feeTypes}
 								currency={feeCurrency}
+								initialEnabled={feeEnabled}
+								initialFeeTypes={feeTypes}
+								initialInstructions={feeInstructions}
 							/>
 						</TabsContent>
 
@@ -322,8 +322,8 @@ function AdminSettingsPage() {
 
 						<TabsContent value="survey">
 							<SurveyQuestionsTab
-								initialQuestions={surveyQuestions}
 								exhibitorsEnabled={submissionTypes.EXHIBITOR.isActive}
+								initialQuestions={surveyQuestions}
 							/>
 						</TabsContent>
 

@@ -285,8 +285,8 @@ function CountryList({
 		<div className="max-h-[300px] space-y-1 overflow-y-auto md:max-h-[400px]">
 			{rows.map((row) => (
 				<div
-					key={row.code ?? row.country}
 					className="flex items-center justify-between gap-3 border-b py-2 last:border-b-0"
+					key={row.code ?? row.country}
 				>
 					<div className="flex min-w-0 items-center gap-2">
 						<CountryFlag code={row.code} />
@@ -325,11 +325,10 @@ export function UsersByCountryCard({ data }: UsersByCountryCardProps) {
 
 	return (
 		<Tabs
-			value={view}
 			onValueChange={(v) => setView(v === "list" ? "list" : "map")}
+			value={view}
 		>
 			<SectionCard
-				title="Users by Country"
 				action={
 					<TabsList>
 						<TabsTrigger value="map">
@@ -342,11 +341,12 @@ export function UsersByCountryCard({ data }: UsersByCountryCardProps) {
 						</TabsTrigger>
 					</TabsList>
 				}
+				title="Users by Country"
 			>
 				<TabsContent value="map">
 					<div className="h-[300px] md:h-[400px]">
-						<MapView center={MAP_CENTER} zoom={1.5} theme={resolvedTheme}>
-							<MapControls showZoom showFullscreen position="bottom-right" />
+						<MapView center={MAP_CENTER} theme={resolvedTheme} zoom={1.5}>
+							<MapControls position="bottom-right" showFullscreen showZoom />
 							<BubbleLayer data={data} />
 						</MapView>
 					</div>

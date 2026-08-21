@@ -29,19 +29,19 @@ export function CampaignList() {
 				<div className="mx-auto max-w-5xl">
 					{campaigns.length === 0 ? (
 						<EmptyState
+							description="Select users in the Users table and choose “Send email” to start a campaign."
 							icon={IconMail}
 							title="No campaigns yet"
-							description="Select users in the Users table and choose “Send email” to start a campaign."
 						/>
 					) : (
 						<Card>
 							<CardContent className="divide-y p-0" data-testid="campaign-list">
 								{campaigns.map((c) => (
 									<Link
-										key={c.id}
-										to="/admin/bulk-email/$id"
-										params={{ id: c.id }}
 										className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-muted/40"
+										key={c.id}
+										params={{ id: c.id }}
+										to="/admin/bulk-email/$id"
 									>
 										<div className="min-w-0">
 											<p className="truncate font-medium">

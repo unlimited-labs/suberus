@@ -39,7 +39,7 @@ export function SurveyQuestionDialog({
 }: SurveyQuestionDialogProps) {
 	const isEdit = question !== null;
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
 				<DialogHeader>
 					<DialogTitle>{isEdit ? "Edit question" : "Add question"}</DialogTitle>
@@ -50,12 +50,12 @@ export function SurveyQuestionDialog({
 				{/* Remount per question / mode (key) so defaults re-seed without effects. */}
 				{open && (
 					<SurveyQuestionDialogForm
-						key={question?.id ?? "new"}
-						question={question}
-						isEdit={isEdit}
 						exhibitorsEnabled={exhibitorsEnabled}
-						onSave={onSave}
+						isEdit={isEdit}
+						key={question?.id ?? "new"}
 						onCancel={() => onOpenChange(false)}
+						onSave={onSave}
+						question={question}
 					/>
 				)}
 			</DialogContent>
@@ -90,12 +90,12 @@ function SurveyQuestionDialogForm({
 
 	return (
 		<form
+			className="grid gap-6 md:grid-cols-[1fr_minmax(260px,320px)]"
 			onSubmit={(e) => {
 				e.preventDefault();
 				e.stopPropagation();
 				void form.handleSubmit();
 			}}
-			className="grid gap-6 md:grid-cols-[1fr_minmax(260px,320px)]"
 		>
 			<div className="space-y-4">
 				<div className="space-y-2">
@@ -115,8 +115,8 @@ function SurveyQuestionDialogForm({
 					<form.Field name="type">
 						{(field) => (
 							<TypePicker
-								value={field.state.value}
 								onChange={field.handleChange}
+								value={field.state.value}
 							/>
 						)}
 					</form.Field>
@@ -131,8 +131,8 @@ function SurveyQuestionDialogForm({
 									{(field) => (
 										<div className="space-y-1">
 											<OptionsEditor
-												options={field.state.value}
 												onChange={field.handleChange}
+												options={field.state.value}
 											/>
 											<form.Subscribe selector={(s) => s.submissionAttempts}>
 												{(attempts) => (
@@ -162,8 +162,8 @@ function SurveyQuestionDialogForm({
 						<form.Field name="audience">
 							{(field) => (
 								<AudiencePicker
-									value={field.state.value}
 									onChange={field.handleChange}
+									value={field.state.value}
 								/>
 							)}
 						</form.Field>
@@ -184,9 +184,9 @@ function SurveyQuestionDialogForm({
 								<form.AppField name="fieldName">
 									{(field) => (
 										<field.InputField
+											description="Name shown as a column in the Users list and as the XLSX export header."
 											label="Field name"
 											placeholder="Field name..."
-											description="Name shown as a column in the Users list and as the XLSX export header."
 										/>
 									)}
 								</form.AppField>
@@ -196,7 +196,7 @@ function SurveyQuestionDialogForm({
 				</div>
 
 				<DialogFooter className="md:col-span-2">
-					<Button type="button" variant="outline" onClick={onCancel}>
+					<Button onClick={onCancel} type="button" variant="outline">
 						Cancel
 					</Button>
 					<form.AppForm>
@@ -241,6 +241,7 @@ function QuestionPreview({ values }: { values: PreviewValues }) {
 
 	return (
 		<SurveyQuestionField
+			onChange={setAnswer}
 			question={{
 				id: "preview",
 				label: values.label.trim() || "Survey question",
@@ -252,7 +253,6 @@ function QuestionPreview({ values }: { values: PreviewValues }) {
 				isRequired: values.isRequired,
 			}}
 			value={answer}
-			onChange={setAnswer}
 		/>
 	);
 }

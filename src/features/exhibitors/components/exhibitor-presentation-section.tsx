@@ -59,8 +59,8 @@ export function ExhibitorPresentationSection({
 							return (
 								<Field data-invalid={hasError}>
 									<AuthorsInput
-										value={field.state.value}
 										onChange={field.handleChange}
+										value={field.state.value}
 									/>
 									<FieldError
 										errors={hasError ? field.state.meta.errors : undefined}

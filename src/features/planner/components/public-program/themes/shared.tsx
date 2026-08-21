@@ -44,10 +44,10 @@ export function ProgramAuthLink({
 		return (
 			<DropdownMenu>
 				<DropdownMenuTrigger
-					className={linkClass}
-					style={style}
-					data-testid="program-auth-link"
 					aria-label={name}
+					className={linkClass}
+					data-testid="program-auth-link"
+					style={style}
 					title={name}
 				>
 					<IconUserCircle className="size-[1.2em]" />
@@ -60,28 +60,28 @@ export function ProgramAuthLink({
 				>
 					{notifications.supported && (
 						<DropdownMenuItem
+							className="justify-between gap-3"
 							closeOnClick={false}
+							data-testid="program-notifications-item"
 							onClick={() => {
 								notifications.toggle(!notifications.enabled);
 							}}
-							className="justify-between gap-3"
-							data-testid="program-notifications-item"
 						>
 							<span className="inline-flex items-center gap-2">
 								<IconBell className="size-4" />
 								Notifications
 							</span>
 							<Switch
-								checked={notifications.enabled}
 								aria-hidden
-								tabIndex={-1}
+								checked={notifications.enabled}
 								className="pointer-events-none"
 								data-testid="program-notifications-switch"
+								tabIndex={-1}
 							/>
 						</DropdownMenuItem>
 					)}
 					<DropdownMenuItem asChild data-testid="program-visit-system-item">
-						<Link to="/" className="gap-2">
+						<Link className="gap-2" to="/">
 							<IconExternalLink className="size-4" />
 							Conference system
 						</Link>
@@ -105,12 +105,12 @@ export function ProgramAuthLink({
 	}
 	return (
 		<Link
-			to="/login"
-			className={linkClass}
-			style={style}
-			data-testid="program-auth-link"
 			aria-label="Sign in"
+			className={linkClass}
+			data-testid="program-auth-link"
+			style={style}
 			title="Sign in"
+			to="/login"
 		>
 			<IconLogin2 className="size-[1.2em]" />
 			<span className={labelClassName}>Sign in</span>
@@ -166,8 +166,8 @@ export function ProgramPwaStatus({ className }: { className?: string }) {
 		<div className={cn("inline-flex items-center gap-3", className)}>
 			{offline && (
 				<span
-					data-testid="program-offline-badge"
 					className="inline-flex items-center gap-1.5 text-sm text-muted-foreground"
+					data-testid="program-offline-badge"
 				>
 					<IconCloudOff className="size-4" />
 					<span className="hidden sm:inline">Offline</span>
@@ -175,10 +175,10 @@ export function ProgramPwaStatus({ className }: { className?: string }) {
 			)}
 			{canInstall && (
 				<button
-					type="button"
-					onClick={install}
-					data-testid="program-install-button"
 					className="inline-flex items-center gap-1.5 text-sm transition-colors hover:text-primary"
+					data-testid="program-install-button"
+					onClick={install}
+					type="button"
 				>
 					<IconDownload className="size-4" />
 					<span className="hidden sm:inline">Install</span>

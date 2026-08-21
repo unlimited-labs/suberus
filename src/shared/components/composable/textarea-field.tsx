@@ -29,11 +29,11 @@ export function FormTextareaField({
 
 	return (
 		<FormField
-			label={label}
-			htmlFor={field.name}
-			hasError={hasError}
-			errors={errors}
 			description={description}
+			errors={errors}
+			hasError={hasError}
+			htmlFor={field.name}
+			label={label}
 			labelAddon={
 				charCount && (
 					<span
@@ -53,16 +53,16 @@ export function FormTextareaField({
 			}
 		>
 			<Textarea
-				id={field.name}
-				value={field.state.value}
-				onChange={(e) => field.handleChange(e.target.value)}
-				onBlur={field.handleBlur}
-				rows={rows}
-				placeholder={placeholder}
-				disabled={disabled}
 				aria-invalid={hasError}
 				className={cn("resize-none", className)}
 				data-testid={testId}
+				disabled={disabled}
+				id={field.name}
+				onBlur={field.handleBlur}
+				onChange={(e) => field.handleChange(e.target.value)}
+				placeholder={placeholder}
+				rows={rows}
+				value={field.state.value}
 			/>
 		</FormField>
 	);

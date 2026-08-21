@@ -23,23 +23,23 @@ export function FormInputField({
 
 	return (
 		<FormField
-			label={label}
-			htmlFor={field.name}
-			hasError={hasError}
-			errors={errors}
 			description={description}
+			errors={errors}
+			hasError={hasError}
+			htmlFor={field.name}
+			label={label}
 		>
 			<Input
-				id={field.name}
-				type={type}
-				className="h-9"
 				aria-invalid={hasError}
-				value={field.state.value}
+				className="h-9"
+				data-testid={testId}
+				disabled={disabled}
+				id={field.name}
 				onBlur={field.handleBlur}
 				onChange={(e) => field.handleChange(e.target.value)}
 				placeholder={placeholder}
-				disabled={disabled}
-				data-testid={testId}
+				type={type}
+				value={field.state.value}
 			/>
 		</FormField>
 	);

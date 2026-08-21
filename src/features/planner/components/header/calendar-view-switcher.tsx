@@ -14,25 +14,25 @@ const VIEWS: Array<{ key: CalendarView; label: string }> = [
 export function CalendarViewSwitcher({ current, onChange }: Props) {
 	return (
 		<div
-			role="tablist"
 			aria-label="Calendar view"
 			className="flex items-center gap-0.5 rounded-md bg-muted p-1"
+			role="tablist"
 		>
 			{VIEWS.map((v) => {
 				const active = current === v.key;
 				return (
 					<button
-						key={v.key}
-						type="button"
-						role="tab"
 						aria-selected={active}
-						onClick={() => onChange(v.key)}
 						className={cn(
 							"h-7 rounded px-3 text-xs font-medium transition-all",
 							active
 								? "bg-background text-foreground shadow-sm"
 								: "text-muted-foreground hover:text-foreground",
 						)}
+						key={v.key}
+						onClick={() => onChange(v.key)}
+						role="tab"
+						type="button"
 					>
 						{v.label}
 					</button>

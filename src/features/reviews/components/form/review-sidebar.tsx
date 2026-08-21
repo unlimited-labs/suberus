@@ -33,34 +33,34 @@ export function ReviewSidebar({
 		<>
 			<div className="hidden lg:block">
 				<div className="sticky top-0 space-y-4">
-					<SectionCard title="Review Progress" contentClassName="space-y-4">
+					<SectionCard contentClassName="space-y-4" title="Review Progress">
 						<ProgressItem
-							label="Decision"
 							completed={hasDecision}
 							icon={IconScale}
+							label="Decision"
 						/>
 						<ProgressItem
-							label="Evaluation Scores"
 							completed={hasScores}
 							icon={IconStar}
+							label="Evaluation Scores"
 						/>
 						{enableConfidenceLevel && (
 							<ProgressItem
-								label="Confidence Level"
 								completed={hasConfidence}
 								icon={IconCircle}
+								label="Confidence Level"
 							/>
 						)}
 						<ProgressItem
-							label="Comments"
 							completed={hasComments}
 							icon={IconMessageCircle}
+							label="Comments"
 						/>
 					</SectionCard>
 
 					<SectionCard
-						title="Review Guidelines"
 						contentClassName="text-sm text-muted-foreground"
+						title="Review Guidelines"
 					>
 						{guidelines ? (
 							<Markdown content={guidelines} />
@@ -79,35 +79,35 @@ export function ReviewSidebar({
 
 			<div className="lg:hidden">
 				<SectionCard
+					contentClassName="grid grid-cols-2 gap-3"
 					size="sm"
 					title={<span className="text-sm">Review Progress</span>}
-					contentClassName="grid grid-cols-2 gap-3"
 				>
 					<ProgressItem
-						label="Decision"
+						compact
 						completed={hasDecision}
 						icon={IconScale}
-						compact
+						label="Decision"
 					/>
 					<ProgressItem
-						label="Scores"
+						compact
 						completed={hasScores}
 						icon={IconStar}
-						compact
+						label="Scores"
 					/>
 					{enableConfidenceLevel && (
 						<ProgressItem
-							label="Confidence"
+							compact
 							completed={hasConfidence}
 							icon={IconCircle}
-							compact
+							label="Confidence"
 						/>
 					)}
 					<ProgressItem
-						label="Comments"
+						compact
 						completed={hasComments}
 						icon={IconMessageCircle}
-						compact
+						label="Comments"
 					/>
 				</SectionCard>
 			</div>

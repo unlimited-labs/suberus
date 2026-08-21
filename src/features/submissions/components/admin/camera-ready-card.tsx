@@ -57,41 +57,41 @@ export function CameraReadyCard({ submissionId }: { submissionId: string }) {
 	};
 
 	return (
-		<SectionCard title="Camera-ready" icon={IconFileText}>
+		<SectionCard icon={IconFileText} title="Camera-ready">
 			<input
-				ref={inputRef}
-				type="file"
 				accept=".pdf,application/pdf"
 				className="hidden"
 				data-testid="camera-ready-input"
 				onChange={pickFile}
+				ref={inputRef}
+				type="file"
 			/>
 			{data ? (
 				<div className="space-y-3">
 					<a
-						href={`/api/files/${data.id}`}
-						target="_blank"
-						rel="noreferrer"
 						className="flex items-center gap-2 text-sm text-primary hover:underline"
+						href={`/api/files/${data.id}`}
+						rel="noreferrer"
+						target="_blank"
 					>
 						<IconDownload className="size-4 shrink-0" />
 						<span className="truncate">{data.originalName}</span>
 					</a>
 					<div className="flex gap-2">
 						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => inputRef.current?.click()}
 							disabled={upload.isPending}
+							onClick={() => inputRef.current?.click()}
+							size="sm"
+							variant="outline"
 						>
 							<IconUpload className="mr-2 size-4" />
 							Replace
 						</Button>
 						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => remove.mutate()}
 							disabled={remove.isPending}
+							onClick={() => remove.mutate()}
+							size="sm"
+							variant="outline"
 						>
 							<IconTrash className="mr-2 size-4" />
 							Remove
@@ -105,10 +105,10 @@ export function CameraReadyCard({ submissionId }: { submissionId: string }) {
 						download on the program.
 					</p>
 					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => inputRef.current?.click()}
 						disabled={upload.isPending}
+						onClick={() => inputRef.current?.click()}
+						size="sm"
+						variant="outline"
 					>
 						<IconUpload className="mr-2 size-4" />
 						{upload.isPending ? "Uploading…" : "Upload"}

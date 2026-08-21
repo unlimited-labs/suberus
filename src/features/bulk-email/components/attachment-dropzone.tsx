@@ -37,46 +37,46 @@ export function AttachmentDropzone({
 			{!disabled && (
 				// biome-ignore lint/a11y/noStaticElementInteractions: drag target; the button inside provides the keyboard path.
 				<div
-					data-testid="attachment-dropzone"
-					onDragOver={(e) => {
-						e.preventDefault();
-						setDragging(true);
-					}}
-					onDragLeave={() => setDragging(false)}
-					onDrop={(e) => {
-						e.preventDefault();
-						setDragging(false);
-						handleFiles(e.dataTransfer.files);
-					}}
 					className={cn(
 						"flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground transition-colors",
 						dragging
 							? "border-primary bg-primary/5"
 							: "border-muted-foreground/25",
 					)}
+					data-testid="attachment-dropzone"
+					onDragLeave={() => setDragging(false)}
+					onDragOver={(e) => {
+						e.preventDefault();
+						setDragging(true);
+					}}
+					onDrop={(e) => {
+						e.preventDefault();
+						setDragging(false);
+						handleFiles(e.dataTransfer.files);
+					}}
 				>
 					<IconUpload className="size-6 opacity-60" />
 					<p>Drag files here, or</p>
 					<Button
-						type="button"
-						variant="outline"
-						size="sm"
+						data-testid="attachment-browse-btn"
 						disabled={isUploading}
 						onClick={() => inputRef.current?.click()}
-						data-testid="attachment-browse-btn"
+						size="sm"
+						type="button"
+						variant="outline"
 					>
 						{isUploading ? "Uploading…" : "Browse"}
 					</Button>
 					<input
-						ref={inputRef}
-						type="file"
-						multiple
 						accept={EMAIL_ATTACHMENT_ACCEPT_ATTRIBUTE}
 						className="hidden"
+						multiple
 						onChange={(e) => {
 							handleFiles(e.target.files);
 							e.target.value = "";
 						}}
+						ref={inputRef}
+						type="file"
 					/>
 				</div>
 			)}
@@ -85,8 +85,8 @@ export function AttachmentDropzone({
 				<ul className="space-y-1.5" data-testid="attachment-list">
 					{attachments.map((file) => (
 						<li
-							key={file.id}
 							className="flex items-center gap-2 rounded-md border bg-muted/30 px-3 py-2 text-sm"
+							key={file.id}
 						>
 							<IconPaperclip className="size-4 shrink-0 opacity-60" />
 							<span
@@ -100,26 +100,26 @@ export function AttachmentDropzone({
 							</span>
 							<Button
 								asChild
-								variant="ghost"
-								size="icon"
 								className="size-7 shrink-0"
+								size="icon"
+								variant="ghost"
 							>
 								<a
-									href={`/api/files/${file.id}`}
 									aria-label={`Download ${file.originalName}`}
+									href={`/api/files/${file.id}`}
 								>
 									<IconDownload className="size-4" />
 								</a>
 							</Button>
 							{!disabled && (
 								<Button
-									variant="ghost"
-									size="icon"
+									aria-label={`Remove ${file.originalName}`}
 									className="size-7 shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+									data-testid="attachment-remove-btn"
 									disabled={removingId === file.id}
 									onClick={() => remove(file.id)}
-									aria-label={`Remove ${file.originalName}`}
-									data-testid="attachment-remove-btn"
+									size="icon"
+									variant="ghost"
 								>
 									<IconTrash className="size-4" />
 								</Button>

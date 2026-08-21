@@ -22,10 +22,10 @@ export function FileUploadSection({
 				Document <span className="text-destructive text-xs font-normal">*</span>
 			</FieldLabel>
 			<FileDropzone
-				value={value}
-				onChange={onChange}
 				accept={accept}
 				maxSize={maxSize}
+				onChange={onChange}
+				value={value}
 			/>
 			{!value && (
 				<FieldDescription>

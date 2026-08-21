@@ -19,12 +19,12 @@ export function BrandLogo({
 	if (logoUrl) {
 		return (
 			<img
-				src={logoUrl}
 				alt={alt}
 				className={cn(
 					className,
 					logoDarkInvert && "dark:invert dark:grayscale",
 				)}
+				src={logoUrl}
 			/>
 		);
 	}
@@ -32,11 +32,11 @@ export function BrandLogo({
 	const dark = horizontal ? "/logo_horizontal_dark.svg" : "/logo_dark.svg";
 	return (
 		<>
-			<img src={light} alt={alt} className={cn(className, "dark:hidden")} />
+			<img alt={alt} className={cn(className, "dark:hidden")} src={light} />
 			<img
-				src={dark}
 				alt={alt}
 				className={cn(className, "hidden dark:block")}
+				src={dark}
 			/>
 		</>
 	);

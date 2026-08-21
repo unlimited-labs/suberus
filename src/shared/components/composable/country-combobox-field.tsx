@@ -17,16 +17,16 @@ export function FormCountryComboboxField({
 
 	return (
 		<FormField
-			label={label}
-			htmlFor={field.name}
-			hasError={hasError}
-			errors={errors}
 			description={description}
+			errors={errors}
+			hasError={hasError}
+			htmlFor={field.name}
+			label={label}
 		>
 			<CountryCombobox
-				value={field.state.value || ""}
-				onChange={field.handleChange}
 				disabled={disabled}
+				onChange={field.handleChange}
+				value={field.state.value || ""}
 			/>
 		</FormField>
 	);

@@ -15,10 +15,10 @@ export function MobileSessionRow({ item, timezone, onClick }: Props) {
 	const dur = formatDurationMin(item.startAt, item.endAt);
 	return (
 		<button
-			type="button"
-			onClick={() => onClick(item.id)}
-			data-testid={`mobile-session-${item.id}`}
 			className="flex w-full items-stretch gap-3 px-3 py-3 text-left hover:bg-muted/40"
+			data-testid={`mobile-session-${item.id}`}
+			onClick={() => onClick(item.id)}
+			type="button"
 		>
 			<div className="w-14 shrink-0 text-center">
 				<div className="text-xs font-medium tabular-nums">
@@ -27,9 +27,9 @@ export function MobileSessionRow({ item, timezone, onClick }: Props) {
 				<div className="text-[10px] text-muted-foreground">{dur}m</div>
 			</div>
 			<div
+				aria-hidden
 				className="w-1 shrink-0 rounded-full"
 				style={{ backgroundColor: item.trackColor ?? "var(--border)" }}
-				aria-hidden
 			/>
 			<div className="flex-1 min-w-0">
 				<div className="line-clamp-2 text-sm font-medium">{item.title}</div>

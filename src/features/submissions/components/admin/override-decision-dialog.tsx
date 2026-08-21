@@ -34,7 +34,7 @@ export function OverrideDecisionDialog({
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Override Decision</DialogTitle>
@@ -44,24 +44,24 @@ export function OverrideDecisionDialog({
 					</DialogDescription>
 				</DialogHeader>
 				<div className="space-y-2 py-4">
-					<label htmlFor="override-reason" className="text-sm font-medium">
+					<label className="text-sm font-medium" htmlFor="override-reason">
 						Reasoning *
 					</label>
 					<Textarea
 						id="override-reason"
-						placeholder="Why are you overriding this decision?"
-						value={reasoning}
 						onChange={(e) => setReasoning(e.target.value)}
+						placeholder="Why are you overriding this decision?"
 						rows={3}
+						value={reasoning}
 					/>
 				</div>
 				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
+					<Button onClick={() => onOpenChange(false)} variant="outline">
 						Cancel
 					</Button>
 					<Button
-						onClick={handleOverride}
 						disabled={isTransitioning || !reasoning.trim()}
+						onClick={handleOverride}
 					>
 						{isTransitioning ? "Overriding..." : "Override"}
 					</Button>

@@ -54,7 +54,7 @@ export function ProgramTrackDialog({
 	});
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent data-testid="program-track-dialog">
 				<DialogHeader>
 					<DialogTitle>
@@ -66,13 +66,13 @@ export function ProgramTrackDialog({
 				</DialogHeader>
 
 				<form
+					className="space-y-4"
 					noValidate
 					onSubmit={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
 						void form.handleSubmit();
 					}}
-					className="space-y-4"
 				>
 					<form.AppField name="name">
 						{(field) => {
@@ -87,7 +87,7 @@ export function ProgramTrackDialog({
 									{series.series ? (
 										<div className="flex items-center gap-2 text-xs text-muted-foreground">
 											<span>Detected series:</span>
-											<Badge variant="outline" className="font-mono">
+											<Badge className="font-mono" variant="outline">
 												{series.series} · #{series.seriesOrder}
 											</Badge>
 										</div>
@@ -112,9 +112,6 @@ export function ProgramTrackDialog({
 											field.state.value.toLowerCase() === c.toLowerCase();
 										return (
 											<button
-												key={c}
-												type="button"
-												onClick={() => field.handleChange(c)}
 												aria-label={`Pick ${c}`}
 												aria-pressed={active}
 												className={cn(
@@ -123,7 +120,10 @@ export function ProgramTrackDialog({
 														? "border-foreground shadow-sm"
 														: "border-transparent",
 												)}
+												key={c}
+												onClick={() => field.handleChange(c)}
 												style={{ backgroundColor: c }}
+												type="button"
 											>
 												{active && (
 													<IconCheck className="absolute inset-0 m-auto size-4 text-white mix-blend-difference" />
@@ -132,8 +132,6 @@ export function ProgramTrackDialog({
 										);
 									})}
 									<button
-										type="button"
-										onClick={() => field.handleChange("")}
 										aria-label="Clear color"
 										aria-pressed={field.state.value === ""}
 										className={cn(
@@ -142,24 +140,26 @@ export function ProgramTrackDialog({
 												? "border-foreground bg-muted"
 												: "border-dashed border-muted-foreground/40",
 										)}
+										onClick={() => field.handleChange("")}
+										type="button"
 									>
 										—
 									</button>
 								</div>
 								<div className="flex gap-2">
 									<Input
+										aria-label="Custom color"
+										className="h-8 w-12 cursor-pointer p-0.5"
+										onChange={(e) => field.handleChange(e.target.value)}
 										type="color"
 										value={field.state.value || "#64748b"}
-										onChange={(e) => field.handleChange(e.target.value)}
-										className="h-8 w-12 cursor-pointer p-0.5"
-										aria-label="Custom color"
 									/>
 									<Input
-										value={field.state.value}
-										onChange={(e) => field.handleChange(e.target.value)}
-										placeholder="#RRGGBB (optional)"
 										className="flex-1 font-mono uppercase"
 										maxLength={7}
+										onChange={(e) => field.handleChange(e.target.value)}
+										placeholder="#RRGGBB (optional)"
+										value={field.state.value}
 									/>
 								</div>
 							</div>
@@ -168,9 +168,9 @@ export function ProgramTrackDialog({
 
 					<DialogFooter>
 						<Button
+							onClick={() => onOpenChange(false)}
 							type="button"
 							variant="outline"
-							onClick={() => onOpenChange(false)}
 						>
 							Cancel
 						</Button>

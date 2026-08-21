@@ -52,7 +52,7 @@ function InstallPage() {
 	});
 
 	return (
-		<AuthLayout logoUrl="" logoDarkInvert>
+		<AuthLayout logoDarkInvert logoUrl="">
 			<div className="mx-auto flex w-full max-w-lg overflow-hidden rounded-2xl bg-card shadow-2xl">
 				<div className="flex flex-1 flex-col bg-card p-5 text-foreground sm:p-6 lg:p-8">
 					<div className="mb-5">
@@ -68,19 +68,19 @@ function InstallPage() {
 					</div>
 
 					<form
+						className="flex flex-1 flex-col"
 						onSubmit={(e) => {
 							e.preventDefault();
 							e.stopPropagation();
 							void form.handleSubmit();
 						}}
-						className="flex flex-1 flex-col"
 					>
 						<div className="flex-1 space-y-3">
 							<form.AppField name="conferenceName">
 								{(field) => (
 									<field.IconInputField
-										label="Conference Name"
 										icon={<IconBuilding className="size-4" />}
+										label="Conference Name"
 									/>
 								)}
 							</form.AppField>
@@ -99,9 +99,9 @@ function InstallPage() {
 							<form.AppField name="email">
 								{(field) => (
 									<field.IconInputField
+										icon={<IconMail className="size-4" />}
 										label="E-mail"
 										type="email"
-										icon={<IconMail className="size-4" />}
 									/>
 								)}
 							</form.AppField>
@@ -117,8 +117,8 @@ function InstallPage() {
 							<form.AppField name="firstName">
 								{(field) => (
 									<field.IconInputField
-										label="First Name"
 										icon={<IconUser className="size-4" />}
+										label="First Name"
 									/>
 								)}
 							</form.AppField>
@@ -126,8 +126,8 @@ function InstallPage() {
 							<form.AppField name="lastName">
 								{(field) => (
 									<field.IconInputField
-										label="Last Name"
 										icon={<IconUser className="size-4" />}
+										label="Last Name"
 									/>
 								)}
 							</form.AppField>
@@ -135,8 +135,8 @@ function InstallPage() {
 							<form.AppField name="affiliation">
 								{(field) => (
 									<field.IconInputField
-										label="Affiliation"
 										icon={<IconBuilding className="size-4" />}
+										label="Affiliation"
 									/>
 								)}
 							</form.AppField>
@@ -145,9 +145,9 @@ function InstallPage() {
 						<div className="mt-5">
 							<form.AppForm>
 								<form.SubmitButton
+									className="h-9 w-full"
 									label="Complete Setup"
 									submittingLabel="Setting up..."
-									className="h-9 w-full"
 								/>
 							</form.AppForm>
 						</div>

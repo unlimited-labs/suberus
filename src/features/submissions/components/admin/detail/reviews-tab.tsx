@@ -51,8 +51,8 @@ export function ReviewsTab({
 								label: `Round ${round}`,
 							})),
 						]}
-						value={selectedReviewRound}
 						onValueChange={setSelectedReviewRound}
+						value={selectedReviewRound}
 					>
 						<SelectTrigger className="w-[180px]">
 							<SelectValue />
@@ -82,11 +82,11 @@ export function ReviewsTab({
 			) : (
 				displayedReviews.map((review) => (
 					<ReviewCard
+						enableConfidenceLevel={enableConfidenceLevel}
+						enableScoring={enableScoring}
 						key={review.id}
 						review={review}
 						showRound={allReviewRounds.length > 1}
-						enableScoring={enableScoring}
-						enableConfidenceLevel={enableConfidenceLevel}
 					/>
 				))
 			)}

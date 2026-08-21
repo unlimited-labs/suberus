@@ -30,29 +30,29 @@ export function UserSurveySection({
 
 	return (
 		<SectionCard
-			icon={IconClipboardList}
-			title="Survey Responses"
 			action={
 				<Button
-					variant="outline"
-					size="sm"
-					onClick={onEdit}
 					data-testid="edit-survey-answers"
+					onClick={onEdit}
+					size="sm"
+					variant="outline"
 				>
 					<IconEdit className="mr-2 size-4" />
 					Edit
 				</Button>
 			}
+			icon={IconClipboardList}
+			title="Survey Responses"
 		>
 			{answered.length === 0 ? (
 				<p className="text-sm text-muted-foreground">No responses yet</p>
 			) : (
 				<div
-					data-testid="user-survey-section"
 					className="grid gap-3 sm:grid-cols-2"
+					data-testid="user-survey-section"
 				>
 					{answered.map(({ question, answer }) => (
-						<div key={question.id} className="flex flex-col gap-0.5">
+						<div className="flex flex-col gap-0.5" key={question.id}>
 							<span className="text-xs text-muted-foreground">
 								{question.label}
 							</span>

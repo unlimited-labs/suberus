@@ -30,18 +30,18 @@ export function DateTimeSection({
 }: DateTimeSectionProps) {
 	return (
 		<SettingsSection
+			delay={200}
+			description="Date and time display format across the application"
 			icon={IconClock}
 			title="Date & Time"
-			description="Date and time display format across the application"
-			delay={200}
 		>
 			<div className="grid gap-6 sm:grid-cols-2">
 				<div className="space-y-2">
 					<Label htmlFor="dateFormat">Date Format</Label>
 					<Select
 						items={getDateFormats()}
-						value={data.dateFormat}
 						onValueChange={(value) => onChange("dateFormat", value)}
+						value={data.dateFormat}
 					>
 						<SelectTrigger id="dateFormat">
 							<SelectValue />
@@ -49,9 +49,9 @@ export function DateTimeSection({
 						<SelectContent>
 							{getDateFormats().map((fmt) => (
 								<SelectItem
+									data-testid={`date-format-option-${fmt.value}`}
 									key={fmt.value}
 									value={fmt.value}
-									data-testid={`date-format-option-${fmt.value}`}
 								>
 									{fmt.label}
 								</SelectItem>
@@ -62,19 +62,19 @@ export function DateTimeSection({
 				<div className="space-y-3">
 					<Label>Time Format</Label>
 					<RadioGroup
-						value={data.timeFormat}
-						onValueChange={(value) => onChange("timeFormat", value)}
 						className="flex gap-6"
+						onValueChange={(value) => onChange("timeFormat", value)}
+						value={data.timeFormat}
 					>
 						<div className="flex items-center gap-2">
-							<RadioGroupItem value="24h" id="time-24h" />
-							<Label htmlFor="time-24h" className="cursor-pointer">
+							<RadioGroupItem id="time-24h" value="24h" />
+							<Label className="cursor-pointer" htmlFor="time-24h">
 								24h (14:30)
 							</Label>
 						</div>
 						<div className="flex items-center gap-2">
-							<RadioGroupItem value="12h" id="time-12h" />
-							<Label htmlFor="time-12h" className="cursor-pointer">
+							<RadioGroupItem id="time-12h" value="12h" />
+							<Label className="cursor-pointer" htmlFor="time-12h">
 								12h (2:30 PM)
 							</Label>
 						</div>
@@ -84,8 +84,8 @@ export function DateTimeSection({
 					<Label htmlFor="timezone">Conference Timezone</Label>
 					<TimezoneCombobox
 						id="timezone"
-						value={data.timezone}
 						onChange={(v) => onChange("timezone", v)}
+						value={data.timezone}
 					/>
 					<p className="text-xs text-muted-foreground">
 						All session start/end times are stored in UTC and displayed in this
@@ -93,7 +93,7 @@ export function DateTimeSection({
 					</p>
 				</div>
 			</div>
-			<SettingsSaveButton onSave={onSave} isSaving={isSaving} />
+			<SettingsSaveButton isSaving={isSaving} onSave={onSave} />
 		</SettingsSection>
 	);
 }

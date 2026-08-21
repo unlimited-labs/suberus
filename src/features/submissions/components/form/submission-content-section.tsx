@@ -30,7 +30,7 @@ export function SubmissionContentSection({
 	maxFileSizeMb,
 }: SubmissionContentSectionProps) {
 	return (
-		<SectionCard title="Content" icon={IconWriting}>
+		<SectionCard icon={IconWriting} title="Content">
 			<div className="space-y-4">
 				<form.AppField name="title">
 					{(field) => (
@@ -63,14 +63,14 @@ export function SubmissionContentSection({
 							<Field data-invalid={hasError}>
 								<FieldLabel htmlFor="content">Abstract</FieldLabel>
 								<textarea
-									id="content"
-									value={field.state.value}
-									onChange={(e) => field.handleChange(e.target.value)}
-									onBlur={field.handleBlur}
-									rows={8}
 									aria-invalid={hasError}
-									placeholder={`Minimum ${validationSettings.minAbstractLength} characters`}
 									className="flex min-h-16 w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 aria-invalid:ring-[3px]"
+									id="content"
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									placeholder={`Minimum ${validationSettings.minAbstractLength} characters`}
+									rows={8}
+									value={field.state.value}
 								/>
 								<FieldError
 									errors={hasError ? field.state.meta.errors : undefined}
@@ -85,11 +85,11 @@ export function SubmissionContentSection({
 					<form.Field name="file">
 						{(field) => (
 							<FileUploadSection
-								value={field.state.value}
-								onChange={field.handleChange}
 								accept={acceptString}
-								maxSize={maxFileSizeMb}
 								allowedExtensions={allowedExtensions}
+								maxSize={maxFileSizeMb}
+								onChange={field.handleChange}
+								value={field.state.value}
 							/>
 						)}
 					</form.Field>

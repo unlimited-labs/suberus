@@ -16,7 +16,7 @@ export function MetricSparkline({ data, color }: MetricSparklineProps) {
 			className="pointer-events-none absolute inset-x-0 bottom-0 h-12 opacity-70"
 		>
 			<Suspense fallback={<div className="h-12" />}>
-				<SparklineChart data={data} color={color} />
+				<SparklineChart color={color} data={data} />
 			</Suspense>
 		</div>
 	);

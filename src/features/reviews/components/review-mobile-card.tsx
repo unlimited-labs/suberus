@@ -63,7 +63,7 @@ function DeadlineRow({ deadline, status }: { deadline: Date; status: string }) {
 function CardBadges({ assignment }: { assignment: ReviewerAssignment }) {
 	return (
 		<div className="flex items-center gap-2 flex-wrap">
-			<Badge variant="outline" className="text-xs">
+			<Badge className="text-xs" variant="outline">
 				{typeLabels[assignment.submissionType]}
 			</Badge>
 			<Badge
@@ -112,11 +112,11 @@ function CardAction({ id, status }: { id: string; status: string }) {
 	return (
 		<Button
 			asChild
-			variant={isCompleted ? "outline" : "default"}
 			className="w-full"
 			size="sm"
+			variant={isCompleted ? "outline" : "default"}
 		>
-			<Link to="/reviews/$assignmentId" params={{ assignmentId: id }}>
+			<Link params={{ assignmentId: id }} to="/reviews/$assignmentId">
 				{isCompleted ? "View Review" : "Submit Review"}
 			</Link>
 		</Button>

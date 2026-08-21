@@ -57,9 +57,9 @@ describe("RevisionDiffPanel", () => {
 			render(
 				<RevisionDiffPanel
 					{...base}
-					previous={{ ...base.previous, file: { id: "f1" } }}
 					file={{ id: "f2" }}
 					isFileSubmission
+					previous={{ ...base.previous, file: { id: "f1" } }}
 				/>,
 			);
 			expect(screen.queryByText("Content unchanged.")).toBeNull();
@@ -72,9 +72,9 @@ describe("RevisionDiffPanel", () => {
 			render(
 				<RevisionDiffPanel
 					{...base}
-					previous={{ ...base.previous, file: { id: "f1" } }}
 					file={{ id: "f1" }}
 					isFileSubmission
+					previous={{ ...base.previous, file: { id: "f1" } }}
 				/>,
 			);
 			const notice = screen.getByTestId("reviewer-file-change-notice");
@@ -88,8 +88,8 @@ describe("RevisionDiffPanel", () => {
 			render(
 				<RevisionDiffPanel
 					{...base}
-					keywords={["alpha", "beta"]}
 					isFileSubmission={false}
+					keywords={["alpha", "beta"]}
 				/>,
 			);
 			const diff = screen.getByTestId("keywords-diff");
@@ -101,9 +101,9 @@ describe("RevisionDiffPanel", () => {
 			render(
 				<RevisionDiffPanel
 					{...base}
-					previous={{ ...base.previous, keywords: [] }}
-					keywords={[]}
 					isFileSubmission={false}
+					keywords={[]}
+					previous={{ ...base.previous, keywords: [] }}
 				/>,
 			);
 			expect(screen.getByText("Keywords unchanged.")).toBeTruthy();

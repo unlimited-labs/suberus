@@ -21,22 +21,22 @@ export function FooterSection({
 }: FooterSectionProps) {
 	return (
 		<SettingsSection
+			delay={200}
+			description="Text displayed in the page footer"
 			icon={IconPalette}
 			title="Footer"
-			description="Text displayed in the page footer"
-			delay={200}
 		>
 			<div className="space-y-2">
 				<Label htmlFor="footerText">Footer text</Label>
 				<Textarea
+					className="min-h-20"
 					id="footerText"
-					value={data.footerText}
 					onChange={(e) => onChange("footerText", e.target.value)}
 					placeholder="© 2026 Conference Name"
-					className="min-h-20"
+					value={data.footerText}
 				/>
 			</div>
-			<SettingsSaveButton onSave={onSave} isSaving={isSaving} />
+			<SettingsSaveButton isSaving={isSaving} onSave={onSave} />
 		</SettingsSection>
 	);
 }

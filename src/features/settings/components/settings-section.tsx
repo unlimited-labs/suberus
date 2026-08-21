@@ -24,14 +24,14 @@ export function SettingsSection({
 			<div className="settings-card relative overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm backdrop-blur-[8px] transition-shadow duration-300 hover:shadow-lg focus-within:outline-2 focus-within:outline-ring focus-within:outline-offset-2 before:absolute before:left-0 before:right-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-primary before:to-transparent before:opacity-0 before:transition-opacity before:duration-400 hover:before:opacity-30">
 				<div className="absolute right-0 top-0 h-24 w-24 opacity-5">
 					<svg
-						viewBox="0 0 100 100"
-						className="text-primary"
 						aria-hidden="true"
+						className="text-primary"
+						viewBox="0 0 100 100"
 					>
 						<path
+							className="transition-opacity duration-500 group-hover:opacity-100"
 							d="M0,0 L100,0 L100,100 Z"
 							fill="currentColor"
-							className="transition-opacity duration-500 group-hover:opacity-100"
 						/>
 					</svg>
 				</div>

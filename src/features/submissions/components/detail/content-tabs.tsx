@@ -40,19 +40,19 @@ export function ContentTabs({
 			className="rounded-2xl bg-card shadow-2xl border border-border/50 p-8"
 			data-testid="submission-content-card"
 		>
-			<Tabs defaultValue="overview" className="w-full">
-				<TabsList variant="line" className="mb-6">
-					<TabsTrigger value="overview" className="gap-2">
+			<Tabs className="w-full" defaultValue="overview">
+				<TabsList className="mb-6" variant="line">
+					<TabsTrigger className="gap-2" value="overview">
 						<IconWriting className="size-4" />
 						<span className="hidden sm:inline">Overview</span>
 					</TabsTrigger>
-					<TabsTrigger value="history" className="gap-2">
+					<TabsTrigger className="gap-2" value="history">
 						<IconHistory className="size-4" />
 						<span className="hidden sm:inline">History</span>
 					</TabsTrigger>
 				</TabsList>
 
-				<TabsContent value="overview" className="space-y-6">
+				<TabsContent className="space-y-6" value="overview">
 					<h1 className="text-xl font-semibold tracking-tight text-foreground leading-tight">
 						{title}
 					</h1>
@@ -74,10 +74,10 @@ export function ContentTabs({
 										{formatFileSize(file.size)}
 									</p>
 								</div>
-								<Button variant="outline" size="sm" className="gap-2" asChild>
+								<Button asChild className="gap-2" size="sm" variant="outline">
 									<a
-										href={`/api/files/${file.id}`}
 										data-testid="file-download-button"
+										href={`/api/files/${file.id}`}
 									>
 										<IconDownload className="size-4" />
 										Download
@@ -115,9 +115,9 @@ export function ContentTabs({
 						<div className="flex flex-wrap gap-2">
 							{keywords.map((keyword) => (
 								<Badge
+									className="text-sm px-3 py-1"
 									key={keyword}
 									variant="secondary"
-									className="text-sm px-3 py-1"
 								>
 									{keyword}
 								</Badge>
@@ -135,9 +135,9 @@ export function ContentTabs({
 						<div className="space-y-1">
 							{authors.map((author) => (
 								<div
-									key={author.email}
 									className="text-sm flex items-center gap-2 flex-wrap"
 									data-testid="author-row"
+									key={author.email}
 								>
 									<span className="font-medium">
 										{author.firstName} {author.lastName}
@@ -155,7 +155,7 @@ export function ContentTabs({
 				</TabsContent>
 
 				<TabsContent value="history">
-					<SubmissionTimeline statusHistory={statusHistory} compact />
+					<SubmissionTimeline compact statusHistory={statusHistory} />
 				</TabsContent>
 			</Tabs>
 		</div>

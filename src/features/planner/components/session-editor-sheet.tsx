@@ -25,23 +25,19 @@ export function SessionEditorSheet({
 	};
 	return (
 		<Sheet
-			open={sessionId !== null}
 			onOpenChange={(open) => !open && requestClose()}
+			open={sessionId !== null}
 		>
 			<SheetContent
-				side="right"
-				data-testid="session-editor"
 				className="flex flex-col gap-0 p-0 sm:max-w-md"
+				data-testid="session-editor"
+				side="right"
 			>
 				<SheetDescription className="sr-only">
 					Edit the session's details, chairs and presentations.
 				</SheetDescription>
 				{sessionId !== null && (
 					<SessionEditorProvider
-						key={sessionId}
-						sessionId={sessionId}
-						onClose={onClose}
-						users={users}
 						dirtyRef={dirtyRef}
 						fallback={
 							<div className="flex flex-1 items-center justify-center p-8">
@@ -50,6 +46,10 @@ export function SessionEditorSheet({
 								</p>
 							</div>
 						}
+						key={sessionId}
+						onClose={onClose}
+						sessionId={sessionId}
+						users={users}
 					>
 						<SessionEditorHeader />
 						<div className="flex-1 divide-y overflow-y-auto">

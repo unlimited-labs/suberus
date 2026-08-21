@@ -28,16 +28,16 @@ export function RowActions({
 		return (
 			<div className="flex justify-end gap-2">
 				<Button
-					variant="destructive"
-					size="sm"
-					onClick={onConfirmDelete}
-					disabled={isBusy}
 					data-testid={`${testIdPrefix}-confirm-delete`}
+					disabled={isBusy}
+					onClick={onConfirmDelete}
+					size="sm"
+					variant="destructive"
 				>
 					{isBusy && <IconLoader2 className="mr-1 size-4 animate-spin" />}
 					Confirm
 				</Button>
-				<Button variant="outline" size="sm" onClick={onCancelDelete}>
+				<Button onClick={onCancelDelete} size="sm" variant="outline">
 					Cancel
 				</Button>
 			</div>
@@ -47,21 +47,21 @@ export function RowActions({
 	return (
 		<div className="flex justify-end gap-2">
 			<Button
-				variant="ghost"
-				size="icon"
-				onClick={onEdit}
 				aria-label="Edit"
 				data-testid={`${testIdPrefix}-edit`}
+				onClick={onEdit}
+				size="icon"
+				variant="ghost"
 			>
 				<IconEdit className="size-4" />
 			</Button>
 			<Button
-				variant="ghost"
-				size="icon"
-				onClick={onAskDelete}
-				disabled={isBusy || deleteDisabled}
 				aria-label="Delete"
 				data-testid={`${testIdPrefix}-delete`}
+				disabled={isBusy || deleteDisabled}
+				onClick={onAskDelete}
+				size="icon"
+				variant="ghost"
 			>
 				<IconTrash className="size-4" />
 			</Button>

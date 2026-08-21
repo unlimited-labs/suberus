@@ -11,8 +11,8 @@ import type { ReactNode } from "react";
 export function DiffIns({ children }: { children: ReactNode }) {
 	return (
 		<ins
-			data-testid="diff-ins"
 			className="rounded-sm bg-emerald-500/15 text-emerald-700 underline decoration-emerald-600/70 decoration-2 dark:text-emerald-300"
+			data-testid="diff-ins"
 		>
 			<span className="sr-only"> inserted: </span>
 			{children}
@@ -24,8 +24,8 @@ export function DiffIns({ children }: { children: ReactNode }) {
 export function DiffDel({ children }: { children: ReactNode }) {
 	return (
 		<del
-			data-testid="diff-del"
 			className="rounded-sm bg-red-500/15 text-red-700 line-through dark:text-red-300"
+			data-testid="diff-del"
 		>
 			<span className="sr-only"> deleted: </span>
 			{children}

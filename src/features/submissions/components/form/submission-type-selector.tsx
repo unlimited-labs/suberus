@@ -46,15 +46,15 @@ export function SubmissionTypeSelector({
 					const isSelected = selectedType === option.type;
 					return (
 						<button
-							key={option.type}
-							type="button"
-							onClick={() => onSelect(option.type)}
 							className={cn(
 								"flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
 								isSelected
 									? "border-primary bg-primary/5"
 									: "border-border hover:border-primary/50",
 							)}
+							key={option.type}
+							onClick={() => onSelect(option.type)}
+							type="button"
 						>
 							<div
 								className={cn(

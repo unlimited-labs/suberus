@@ -33,9 +33,9 @@ export function ExhibitorApplicationForm({
 	return (
 		<>
 			<SectionCard
-				title="Exhibitor Application"
-				description="Represent your company at the conference"
 				contentClassName="space-y-6"
+				description="Represent your company at the conference"
+				title="Exhibitor Application"
 			>
 				{isLocked && (
 					<Alert>
@@ -49,22 +49,22 @@ export function ExhibitorApplicationForm({
 				)}
 
 				<form
+					className="space-y-6"
 					onSubmit={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
 						void form.handleSubmit();
 					}}
-					className="space-y-6"
 				>
-					<fieldset disabled={isLocked} className="min-w-0 space-y-6">
+					<fieldset className="min-w-0 space-y-6" disabled={isLocked}>
 						<ExhibitorCompanySection form={form} />
 
 						{allowPresentation && (
 							<>
 								<div className="border-t" />
 								<ExhibitorPresentationSection
-									form={form}
 									addPresentation={addPresentation}
+									form={form}
 									submissionAttempts={submissionAttempts}
 								/>
 							</>
@@ -75,11 +75,11 @@ export function ExhibitorApplicationForm({
 						<div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
 							{canWithdraw ? (
 								<Button
-									type="button"
-									variant="outline"
 									className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
 									data-testid="exhibitor-withdraw"
 									onClick={() => setWithdrawOpen(true)}
+									type="button"
+									variant="outline"
 								>
 									Withdraw application
 								</Button>
@@ -89,10 +89,10 @@ export function ExhibitorApplicationForm({
 							<form.Subscribe selector={(s) => s.isSubmitting}>
 								{(isSubmitting) => (
 									<Button
-										type="submit"
 										className="gap-2 px-6"
-										disabled={isSubmitting}
 										data-testid="exhibitor-submit"
+										disabled={isSubmitting}
+										type="submit"
 									>
 										{isSubmitting ? (
 											<>
@@ -116,9 +116,9 @@ export function ExhibitorApplicationForm({
 			</SectionCard>
 
 			<WithdrawExhibitorDialog
-				open={withdrawOpen}
-				onOpenChange={setWithdrawOpen}
 				hasPresentation={Boolean(submission)}
+				onOpenChange={setWithdrawOpen}
+				open={withdrawOpen}
 			/>
 		</>
 	);

@@ -25,7 +25,7 @@ describe("DueCell", () => {
 	});
 
 	it("shows an overdue badge when overdue", () => {
-		const { getByTestId } = render(<DueCell {...base} overdue days={-5} />);
+		const { getByTestId } = render(<DueCell {...base} days={-5} overdue />);
 		expect(getByTestId("expense-overdue-0").textContent).toContain(
 			"5d overdue",
 		);

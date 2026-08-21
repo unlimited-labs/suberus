@@ -79,7 +79,7 @@ function ReviewTriggerHeader({
 		<div className="flex items-center gap-3 flex-wrap">
 			<span className="font-medium text-foreground">{reviewerName}</span>
 			{hasScores && (
-				<Badge variant="outline" className={cn("font-semibold", scoreText)}>
+				<Badge className={cn("font-semibold", scoreText)} variant="outline">
 					{reviewAvg.toFixed(1)}/5
 				</Badge>
 			)}
@@ -151,8 +151,8 @@ function ReviewAttachment({
 				Attachment
 			</p>
 			<a
-				href={`/api/files/${attachment.id}`}
 				className="inline-flex items-center gap-2 text-sm text-primary hover:underline bg-background/50 p-2 rounded-lg border"
+				href={`/api/files/${attachment.id}`}
 			>
 				<IconDownload className="size-4" />
 				{attachment.originalName}
@@ -178,17 +178,17 @@ function ReviewItem({
 
 	return (
 		<AccordionItem
-			value={review.id}
 			className="border border-border rounded-xl bg-muted hover:bg-muted/80 transition-colors shadow-sm"
+			value={review.id}
 		>
 			<AccordionTrigger className="px-4 py-3 hover:no-underline">
 				<ReviewTriggerHeader
-					reviewerName={review.reviewerName}
+					hasAttachment={hasAttachment}
+					hasComments={hasComments}
 					hasScores={hasScores}
 					reviewAvg={reviewAvg}
+					reviewerName={review.reviewerName}
 					scoreText={scoreConfig.text}
-					hasComments={hasComments}
-					hasAttachment={hasAttachment}
 				/>
 			</AccordionTrigger>
 			<AccordionContent className="px-4 pb-4 pt-1">
@@ -217,14 +217,14 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 	return (
 		<div id="reviews-section">
 			<SectionCard
-				variant="elevated"
-				icon={IconMessageCircle}
-				title={`Reviews – Round ${round}`}
 				action={
 					<span className="text-sm text-muted-foreground">
 						{reviews.length} {reviews.length === 1 ? "review" : "reviews"}
 					</span>
 				}
+				icon={IconMessageCircle}
+				title={`Reviews – Round ${round}`}
+				variant="elevated"
 			>
 				<div className="space-y-4">
 					{hasScores && (
@@ -249,9 +249,9 @@ export function ReviewsCard({ reviews, round = 1 }: ReviewsCardProps) {
 					<Accordion className="space-y-3">
 						{reviews.map((review) => (
 							<ReviewItem
+								formatDateTime={formatDateTime}
 								key={review.id}
 								review={review}
-								formatDateTime={formatDateTime}
 							/>
 						))}
 					</Accordion>

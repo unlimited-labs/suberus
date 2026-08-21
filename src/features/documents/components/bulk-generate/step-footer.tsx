@@ -26,9 +26,9 @@ export function StepFooter({
 	if (step === "template") {
 		return (
 			<Button
-				onClick={onReview}
-				disabled={busy || !templateId}
 				data-testid="bulk-review-button"
+				disabled={busy || !templateId}
+				onClick={onReview}
 			>
 				Review
 			</Button>
@@ -37,13 +37,13 @@ export function StepFooter({
 	if (step === "review") {
 		return (
 			<>
-				<Button variant="outline" onClick={onBack} disabled={busy}>
+				<Button disabled={busy} onClick={onBack} variant="outline">
 					Back
 				</Button>
 				<Button
-					onClick={onStart}
-					disabled={busy || !preview || preview.resolvableIds.length === 0}
 					data-testid="bulk-generate-button"
+					disabled={busy || !preview || preview.resolvableIds.length === 0}
+					onClick={onStart}
 				>
 					Generate {preview?.resolvableIds.length ?? 0}
 				</Button>

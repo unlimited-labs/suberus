@@ -29,7 +29,7 @@ export function PublishIssuesPanel({
 		<div className="flex min-h-0 flex-1 flex-col gap-3 py-2">
 			{issuesLoading ? (
 				<div className="flex items-center gap-2 text-sm text-muted-foreground">
-					<IconLoader2 size={14} className="animate-spin" />
+					<IconLoader2 className="animate-spin" size={14} />
 					Checking for issues…
 				</div>
 			) : issues && issues.length > 0 ? (
@@ -39,8 +39,8 @@ export function PublishIssuesPanel({
 						still publish.
 					</p>
 					<ul
-						data-testid="publish-issues-list"
 						className="min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1"
+						data-testid="publish-issues-list"
 					>
 						{issues.map((issue, i) => {
 							const targetId = issue.sessionIds[0];
@@ -48,8 +48,8 @@ export function PublishIssuesPanel({
 							const body = (
 								<>
 									<IconAlertTriangle
-										size={14}
 										className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400"
+										size={14}
 									/>
 									<div className="flex-1">
 										<p className="font-medium text-amber-900 dark:text-amber-200">
@@ -63,11 +63,11 @@ export function PublishIssuesPanel({
 							);
 							if (targetId) {
 								return (
-									<li key={key} data-testid={`publish-issue-${i}`}>
+									<li data-testid={`publish-issue-${i}`} key={key}>
 										<button
-											type="button"
-											onClick={() => onSelectIssue(targetId)}
 											className="flex w-full items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-left text-sm transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950 dark:hover:bg-amber-900"
+											onClick={() => onSelectIssue(targetId)}
+											type="button"
 										>
 											{body}
 										</button>
@@ -76,9 +76,9 @@ export function PublishIssuesPanel({
 							}
 							return (
 								<li
-									key={key}
-									data-testid={`publish-issue-${i}`}
 									className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm dark:border-amber-800 dark:bg-amber-950"
+									data-testid={`publish-issue-${i}`}
+									key={key}
 								>
 									{body}
 								</li>
@@ -88,7 +88,7 @@ export function PublishIssuesPanel({
 				</>
 			) : (
 				<div className="flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
-					<IconCheck size={14} className="shrink-0" />
+					<IconCheck className="shrink-0" size={14} />
 					No issues found. Ready to publish.
 				</div>
 			)}

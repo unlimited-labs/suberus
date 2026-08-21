@@ -36,16 +36,16 @@ export function UnscheduledGroup({
 	return (
 		<div className="border-b last:border-b-0">
 			<button
-				type="button"
-				onClick={onToggle}
-				data-testid={`unscheduled-group-${group.key}`}
 				className="flex w-full items-center gap-1.5 bg-muted/20 px-2.5 py-1.5 text-left hover:bg-muted/40"
+				data-testid={`unscheduled-group-${group.key}`}
+				onClick={onToggle}
+				type="button"
 			>
 				<IconChevronDown
-					size={11}
 					className={`text-muted-foreground transition-transform ${
 						isCollapsed ? "-rotate-90" : ""
 					}`}
+					size={11}
 				/>
 				<span className="text-[11px] font-semibold uppercase tracking-wide text-foreground">
 					{group.label}
@@ -58,18 +58,18 @@ export function UnscheduledGroup({
 				<ul className="divide-y">
 					{group.submissions.map((s) => (
 						<SubmissionRow
+							dragging={draggingId === s.id}
+							expanded={expandedIds.has(s.id)}
 							key={s.id}
-							submission={s}
+							onDragEnd={onDragEnd}
+							onDragStart={() => onDragStart(s.id)}
+							onOpenReader={() => onOpenReader(s.id)}
+							onToggleExpand={() => onToggleExpand(s.id)}
+							onToggleSelect={(shift) => onToggleSelect(s.id, shift)}
+							selected={selectedIds.has(s.id)}
 							selectMode={selectMode}
 							showTypeBadge={showTypeBadge}
-							selected={selectedIds.has(s.id)}
-							expanded={expandedIds.has(s.id)}
-							dragging={draggingId === s.id}
-							onToggleSelect={(shift) => onToggleSelect(s.id, shift)}
-							onToggleExpand={() => onToggleExpand(s.id)}
-							onOpenReader={() => onOpenReader(s.id)}
-							onDragStart={() => onDragStart(s.id)}
-							onDragEnd={onDragEnd}
+							submission={s}
 						/>
 					))}
 				</ul>

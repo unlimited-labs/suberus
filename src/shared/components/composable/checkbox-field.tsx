@@ -25,18 +25,18 @@ export function FormCheckboxField({
 		field.state.meta.errors.length > 0;
 
 	return (
-		<Field orientation="horizontal" className={className}>
+		<Field className={className} orientation="horizontal">
 			<Checkbox
-				id={field.name}
 				checked={field.state.value}
+				id={field.name}
 				onCheckedChange={(checked) => field.handleChange(checked === true)}
 			/>
 			<FieldLabel
-				htmlFor={field.name}
 				className={
 					labelClassName ??
 					"cursor-pointer text-sm font-normal text-muted-foreground"
 				}
+				htmlFor={field.name}
 			>
 				{label}
 			</FieldLabel>

@@ -22,7 +22,7 @@ export function TimeRangeSummary({
 	if (compact) {
 		return (
 			<div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-				<IconClock size={12} className="shrink-0" />
+				<IconClock className="shrink-0" size={12} />
 				<span className="font-medium tabular-nums text-foreground">
 					{formatClockTime(start, timezone)}
 				</span>
@@ -38,7 +38,7 @@ export function TimeRangeSummary({
 	}
 	return (
 		<div className="flex items-center gap-2 rounded-md bg-muted/60 px-3 py-2">
-			<IconClock size={14} className="shrink-0 text-muted-foreground" />
+			<IconClock className="shrink-0 text-muted-foreground" size={14} />
 			<span className="text-sm font-medium tabular-nums">
 				{formatClockTime(start, timezone)}
 			</span>

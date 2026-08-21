@@ -17,7 +17,7 @@ export function ExhibitorMobileCard({
 	const badge = exhibitorStatusBadge(exhibitor.status, exhibitor.appliedAt);
 
 	return (
-		<Link to="/admin/exhibitors/$id" params={{ id: exhibitor.id }}>
+		<Link params={{ id: exhibitor.id }} to="/admin/exhibitors/$id">
 			<Card className={cn(!exhibitor.appliedAt && "opacity-70")}>
 				<CardContent className="p-4">
 					<div className="flex items-start justify-between gap-2">

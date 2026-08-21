@@ -25,10 +25,10 @@ export function SubmissionEmailGate({ title }: { title: string }) {
 							You need to verify your email address before creating submissions.
 						</p>
 						<Button
-							variant="outline"
-							onClick={resend}
-							disabled={disabled}
 							className="gap-2 border-yellow-500 text-yellow-700 hover:bg-yellow-500/20"
+							disabled={disabled}
+							onClick={resend}
+							variant="outline"
 						>
 							<IconRefresh
 								className={`size-4 ${isResending ? "animate-spin" : ""}`}

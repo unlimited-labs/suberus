@@ -77,23 +77,23 @@ function LoginPage() {
 	});
 
 	return (
-		<AuthCard title="Sign in" subtitle="Access your account">
+		<AuthCard subtitle="Access your account" title="Sign in">
 			<form
+				className="flex flex-1 flex-col"
 				onSubmit={(e) => {
 					e.preventDefault();
 					e.stopPropagation();
 					void form.handleSubmit();
 				}}
-				className="flex flex-1 flex-col"
 			>
 				<div className="flex-1 space-y-3">
 					<form.AppField name="email">
 						{(field) => (
 							<field.IconInputField
+								autoComplete="username webauthn"
+								icon={<IconMail className="size-4" />}
 								label="E-mail"
 								type="email"
-								icon={<IconMail className="size-4" />}
-								autoComplete="username webauthn"
 							/>
 						)}
 					</form.AppField>
@@ -108,8 +108,8 @@ function LoginPage() {
 						</form.AppField>
 
 						<Link
-							to="/forgot-password"
 							className="whitespace-nowrap text-sm text-primary hover:underline"
+							to="/forgot-password"
 						>
 							Forgot password?
 						</Link>
@@ -119,20 +119,20 @@ function LoginPage() {
 				<div className="mt-4 space-y-3">
 					<form.AppForm>
 						<form.SubmitButton
+							className="h-9 w-full"
 							label="Sign in"
 							submittingLabel="Signing in..."
-							className="h-9 w-full"
 						/>
 					</form.AppForm>
 
 					<Button
-						type="button"
-						variant="outline"
 						className="h-9 w-full"
 						data-testid="passkey-signin"
 						onClick={async () => {
 							if (await signInWithPasskey()) afterSignIn();
 						}}
+						type="button"
+						variant="outline"
 					>
 						<IconFingerprint className="size-4" />
 						Sign in with passkey
@@ -143,8 +143,8 @@ function LoginPage() {
 			<p className="mt-3 text-center text-sm text-muted-foreground">
 				Don't have an account?{" "}
 				<Link
-					to="/register"
 					className="font-medium text-primary hover:underline"
+					to="/register"
 				>
 					Create one
 				</Link>

@@ -63,18 +63,18 @@ function SigningBanner() {
 			</p>
 			<div className="mt-3 flex flex-wrap items-center gap-3">
 				<a
-					href={verifyUrl}
-					target="_blank"
-					rel="noreferrer"
 					className="inline-flex items-center gap-1.5 font-medium text-emerald-700 hover:underline dark:text-emerald-400"
 					data-testid="verify-page-link"
+					href={verifyUrl}
+					rel="noreferrer"
+					target="_blank"
 				>
 					<IconExternalLink className="size-4" />
 					{verifyUrl}
 				</a>
 				<a
-					href="/api/documents/signing-cert"
 					className="inline-flex items-center gap-1.5 text-muted-foreground hover:underline"
+					href="/api/documents/signing-cert"
 				>
 					<IconDownload className="size-4" />
 					Download public certificate
@@ -101,7 +101,6 @@ function AdminDocumentsPage() {
 				<div className="mx-auto max-w-5xl">
 					<SigningBanner />
 					<Tabs
-						value={activeTab}
 						onValueChange={(value) =>
 							navigate({
 								search: { tab: value },
@@ -109,13 +108,14 @@ function AdminDocumentsPage() {
 								resetScroll: false,
 							})
 						}
+						value={activeTab}
 					>
-						<TabsList variant="line" className="mb-6 w-full justify-start">
+						<TabsList className="mb-6 w-full justify-start" variant="line">
 							{tabs.map((t) => (
 								<TabsTrigger
+									className="gap-1.5 px-3 py-2"
 									key={t.id}
 									value={t.id}
-									className="gap-1.5 px-3 py-2"
 								>
 									<t.icon className="size-4" />
 									<span>{t.label}</span>

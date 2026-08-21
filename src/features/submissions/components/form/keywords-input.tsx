@@ -80,7 +80,7 @@ export function KeywordsInput({
 	};
 
 	return (
-		<div data-testid="keywords-section" className={cn("space-y-2", className)}>
+		<div className={cn("space-y-2", className)} data-testid="keywords-section">
 			<label
 				className={cn(
 					"flex flex-wrap items-center gap-1.5 min-h-10 px-3 py-2 rounded-md border bg-background transition-colors cursor-text",
@@ -92,33 +92,33 @@ export function KeywordsInput({
 			>
 				{value.map((keyword) => (
 					<span
-						key={keyword}
 						className="inline-flex items-center gap-1 px-2 py-0.5 text-sm bg-secondary text-secondary-foreground rounded"
+						key={keyword}
 					>
 						{keyword}
 						<button
-							type="button"
+							aria-label={`Remove ${keyword}`}
+							className="rounded hover:bg-foreground/20 p-0.5 transition-colors"
 							onClick={(e) => {
 								e.stopPropagation();
 								removeKeyword(keyword);
 							}}
-							className="rounded hover:bg-foreground/20 p-0.5 transition-colors"
-							aria-label={`Remove ${keyword}`}
+							type="button"
 						>
 							<IconX className="size-3" />
 						</button>
 					</span>
 				))}
 				<input
+					className="flex-1 min-w-[120px] bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed"
+					disabled={value.length >= maxKeywords}
+					onBlur={handleBlur}
+					onChange={handleInputChange}
+					onFocus={() => setIsFocused(true)}
+					onKeyDown={handleKeyDown}
+					placeholder={value.length === 0 ? placeholder : ""}
 					type="text"
 					value={inputValue}
-					onChange={handleInputChange}
-					onKeyDown={handleKeyDown}
-					onFocus={() => setIsFocused(true)}
-					onBlur={handleBlur}
-					placeholder={value.length === 0 ? placeholder : ""}
-					disabled={value.length >= maxKeywords}
-					className="flex-1 min-w-[120px] bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed"
 				/>
 			</label>
 

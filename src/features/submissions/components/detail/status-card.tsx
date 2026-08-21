@@ -11,11 +11,11 @@ export function StatusCard({ status, variant = "desktop" }: StatusCardProps) {
 	if (variant === "mobile") {
 		return (
 			<div
-				data-testid="submission-status"
 				className={cn(
 					"inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-white text-sm font-semibold bg-gradient-to-r",
 					STATUS_GRADIENTS[status],
 				)}
+				data-testid="submission-status"
 			>
 				{STATUS_LABELS[status]}
 			</div>
@@ -34,11 +34,11 @@ export function StatusCard({ status, variant = "desktop" }: StatusCardProps) {
 				<div className="text-center space-y-3">
 					<p className="text-sm text-muted-foreground">Status</p>
 					<div
-						data-testid="submission-status"
 						className={cn(
 							"inline-flex items-center gap-2 px-4 py-2 rounded-full text-white font-semibold bg-gradient-to-r",
 							STATUS_GRADIENTS[status],
 						)}
+						data-testid="submission-status"
 					>
 						{STATUS_LABELS[status]}
 					</div>

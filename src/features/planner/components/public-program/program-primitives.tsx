@@ -44,10 +44,10 @@ export function EventDetails({
 					<IconMapPin className="size-3.5 shrink-0" />
 					{item.locationUrl ? (
 						<a
-							href={item.locationUrl}
-							target="_blank"
-							rel="noopener noreferrer"
 							className="underline underline-offset-2 hover:text-foreground"
+							href={item.locationUrl}
+							rel="noopener noreferrer"
+							target="_blank"
 						>
 							{item.location}
 						</a>
@@ -105,9 +105,9 @@ export function SessionHeader({
 			>
 				{showDot && trackColor && (
 					<span
+						aria-hidden
 						className="inline-block size-2.5 shrink-0 rounded-full"
 						style={{ backgroundColor: trackColor }}
-						aria-hidden
 					/>
 				)}
 				{session.track && <span>{session.track.name}</span>}
@@ -121,10 +121,10 @@ export function SessionHeader({
 					titleClassName,
 				)}
 			>
-				<Highlight text={session.title} query={query} markClassName={MARK} />
+				<Highlight markClassName={MARK} query={query} text={session.title} />
 			</h3>
 			{session.chairs.length > 0 && (
-				<ChairLine chairs={session.chairs} asLabel={chairAsLabel} />
+				<ChairLine asLabel={chairAsLabel} chairs={session.chairs} />
 			)}
 		</header>
 	);
@@ -186,13 +186,13 @@ export function PresentationList({
 					: addMinutes(new Date(session.startAt), offset);
 				return (
 					<PresentationRow
-						key={p.id}
-						session={session}
-						presentation={p}
 						index={i}
-						presStart={presStart}
+						key={p.id}
 						numbered={numbered || session.untimedSlots}
+						presentation={p}
+						presStart={presStart}
 						query={query}
+						session={session}
 						tz={tz}
 					/>
 				);
@@ -236,13 +236,13 @@ function PresentationRow({
 
 	return (
 		<li
-			data-testid="presentation-row"
 			className={cn(
 				"grid gap-x-3 border-b border-border py-3 last:border-0",
 				numbered ? "grid-cols-[2.5rem_1fr]" : "grid-cols-[3.5rem_1fr]",
 				"cursor-pointer transition-colors hover:bg-accent",
 				!numbered && "-mx-2 rounded-md px-2",
 			)}
+			data-testid="presentation-row"
 			{...rowActivation(open)}
 		>
 			<div>
@@ -273,9 +273,9 @@ function PresentationRow({
 				>
 					{favorite && (
 						<IconStarFilled
-							data-testid="favorited-star"
-							className="mt-0.5 size-3.5 shrink-0 text-amber-500"
 							aria-label="Favorited"
+							className="mt-0.5 size-3.5 shrink-0 text-amber-500"
+							data-testid="favorited-star"
 						/>
 					)}
 					{p.cancelled ? (
@@ -283,9 +283,9 @@ function PresentationRow({
 							<TooltipTrigger asChild>
 								<span className="text-[var(--prog-faint)] line-through decoration-2">
 									<Highlight
-										text={p.submissionTitle}
-										query={query}
 										markClassName={MARK}
+										query={query}
+										text={p.submissionTitle}
 									/>
 								</span>
 							</TooltipTrigger>
@@ -294,19 +294,19 @@ function PresentationRow({
 					) : (
 						<span>
 							<Highlight
-								text={p.submissionTitle}
-								query={query}
 								markClassName={MARK}
+								query={query}
+								text={p.submissionTitle}
 							/>
 						</span>
 					)}
 				</p>
 				<RowAuthors
 					authors={p.authors}
-					query={query}
 					onSelect={(orderIndex) =>
 						openPreview(target, { authorOrderIndex: orderIndex })
 					}
+					query={query}
 				/>
 			</div>
 		</li>
@@ -331,10 +331,9 @@ function RowAuthors({
 					<span key={a.orderIndex}>
 						{i > 0 && ", "}
 						<button
-							type="button"
-							data-testid="author-name"
 							aria-label={`Author info: ${a.firstName} ${a.lastName}`}
 							className="cursor-pointer underline-offset-2 hover:underline focus-visible:underline"
+							data-testid="author-name"
 							onClick={(e) => {
 								e.stopPropagation();
 								onSelect(a.orderIndex);
@@ -342,20 +341,21 @@ function RowAuthors({
 							onKeyDown={(e) => {
 								if (e.key === "Enter" || e.key === " ") e.stopPropagation();
 							}}
+							type="button"
 						>
 							<Highlight
-								text={`${a.firstName} ${a.lastName}`}
-								query={query}
 								markClassName={MARK}
+								query={query}
+								text={`${a.firstName} ${a.lastName}`}
 							/>
 						</button>
 					</span>
 				))
 			) : (
 				<Highlight
-					text={authors.map((a) => `${a.firstName} ${a.lastName}`).join(", ")}
-					query={query}
 					markClassName={MARK}
+					query={query}
+					text={authors.map((a) => `${a.firstName} ${a.lastName}`).join(", ")}
 				/>
 			)}
 		</p>

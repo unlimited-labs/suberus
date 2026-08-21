@@ -35,12 +35,12 @@ export function BulkGenerateDialog({
 
 	return (
 		<Dialog
-			open={open}
 			onOpenChange={(o) => {
 				if (b.busy) return;
 				if (!o) b.reset();
 				onOpenChange(o);
 			}}
+			open={open}
 		>
 			<DialogContent className="sm:max-w-xl">
 				<DialogHeader>
@@ -57,26 +57,26 @@ export function BulkGenerateDialog({
 
 				{b.step === "template" && (
 					<TemplateStep
-						templates={b.templates}
-						templateId={b.templateId}
 						onSelect={b.setTemplateId}
+						templateId={b.templateId}
+						templates={b.templates}
 					/>
 				)}
 				{b.step === "review" && b.preview && <ReviewStep preview={b.preview} />}
 				{b.step === "progress" && b.progress && (
-					<ProgressStep progress={b.progress} pct={b.pct} />
+					<ProgressStep pct={b.pct} progress={b.progress} />
 				)}
 
 				<DialogFooter>
 					<StepFooter
-						step={b.step}
 						busy={b.busy}
-						templateId={b.templateId}
-						preview={b.preview}
-						onReview={b.review}
 						onBack={() => b.setStep("template")}
-						onStart={b.start}
 						onClose={() => onOpenChange(false)}
+						onReview={b.review}
+						onStart={b.start}
+						preview={b.preview}
+						step={b.step}
+						templateId={b.templateId}
 					/>
 				</DialogFooter>
 			</DialogContent>

@@ -30,8 +30,8 @@ export function RegisterStep2({ form, needInvoice }: RegisterStep2Props) {
 					{(field) => (
 						<field.TextareaField
 							label="Billing details (organization) *"
-							rows={3}
 							placeholder="Company/organization name, billing address, VAT/Tax ID (if applicable)"
+							rows={3}
 						/>
 					)}
 				</form.AppField>

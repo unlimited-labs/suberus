@@ -42,17 +42,17 @@ function PackageEditor({
 	return (
 		<span className="flex w-full max-w-sm items-center gap-2">
 			<Input
-				value={value}
-				onChange={(e) => setValue(e.target.value)}
-				maxLength={200}
 				data-testid="exhibitor-package-input"
+				maxLength={200}
+				onChange={(e) => setValue(e.target.value)}
+				value={value}
 			/>
 			<Button
+				data-testid="exhibitor-package-save"
+				disabled={isUnchanged || isSaving}
+				onClick={handleSave}
 				size="sm"
 				variant="outline"
-				onClick={handleSave}
-				disabled={isUnchanged || isSaving}
-				data-testid="exhibitor-package-save"
 			>
 				{isSaving ? "Saving..." : "Save"}
 			</Button>
@@ -75,18 +75,18 @@ export function ExhibitorCompanyCard({
 	return (
 		<div data-testid="exhibitor-company">
 			<SectionCard
-				title="Company"
 				action={<Badge variant={badge.variant}>{badge.label}</Badge>}
 				contentClassName="space-y-3 text-sm"
+				title="Company"
 			>
 				<InfoRow label="Name">{exhibitor.companyName || notProvided}</InfoRow>
 				<InfoRow label="Website">
 					{exhibitor.website ? (
 						<a
-							href={exhibitor.website}
-							target="_blank"
-							rel="noopener noreferrer"
 							className="text-primary underline-offset-4 hover:underline"
+							href={exhibitor.website}
+							rel="noopener noreferrer"
+							target="_blank"
 						>
 							{exhibitor.website}
 						</a>
@@ -96,8 +96,8 @@ export function ExhibitorCompanyCard({
 				</InfoRow>
 				<InfoRow label="Package">
 					<PackageEditor
-						exhibitorId={exhibitor.id}
 						currentPackage={exhibitor.package}
+						exhibitorId={exhibitor.id}
 						onSaved={onPackageSaved}
 					/>
 				</InfoRow>

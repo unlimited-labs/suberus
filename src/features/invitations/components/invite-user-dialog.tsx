@@ -64,7 +64,7 @@ export function InviteUserDialog({
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Invite User</DialogTitle>
@@ -72,16 +72,16 @@ export function InviteUserDialog({
 						Send an invitation email with a registration link.
 					</DialogDescription>
 				</DialogHeader>
-				<form onSubmit={handleSubmit} className="space-y-4">
+				<form className="space-y-4" onSubmit={handleSubmit}>
 					<div className="space-y-2">
 						<Label htmlFor="invite-email">Email</Label>
 						<Input
 							id="invite-email"
-							type="email"
-							value={email}
 							onChange={(e) => setEmail(e.target.value)}
 							placeholder="user@example.com"
 							required
+							type="email"
+							value={email}
 						/>
 					</div>
 					<div className="space-y-2">
@@ -92,7 +92,6 @@ export function InviteUserDialog({
 								{ value: "EDITOR", label: "Editor" },
 								{ value: "ADMIN", label: "Administrator" },
 							]}
-							value={role}
 							onValueChange={(v) => {
 								const inviteRoles = [
 									"REVIEWER",
@@ -110,6 +109,7 @@ export function InviteUserDialog({
 									setRole(v as (typeof inviteRoles)[number]);
 								}
 							}}
+							value={role}
 						>
 							<SelectTrigger id="invite-role">
 								<SelectValue />
@@ -122,7 +122,7 @@ export function InviteUserDialog({
 						</Select>
 					</div>
 					<DialogFooter>
-						<Button type="submit" disabled={isSubmitting}>
+						<Button disabled={isSubmitting} type="submit">
 							{isSubmitting && (
 								<IconLoader2 className="mr-2 size-4 animate-spin" />
 							)}

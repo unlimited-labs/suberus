@@ -70,12 +70,12 @@ function SidebarContent({
 	return (
 		<div className="flex h-full flex-col">
 			<div className="px-4 py-4">
-				<Link to="/" className="block">
+				<Link className="block" to="/">
 					<BrandLogo
-						logoUrl={logoUrl}
-						logoDarkInvert={logoDarkInvert}
 						alt="Suberus"
 						className="h-22 w-auto mx-auto"
+						logoDarkInvert={logoDarkInvert}
+						logoUrl={logoUrl}
 					/>
 				</Link>
 				<div className="mt-3 border-l-4 border-primary pl-3">
@@ -87,7 +87,7 @@ function SidebarContent({
 
 			<nav className="flex-1 overflow-auto p-3">
 				{sections.map((section, sectionIndex) => (
-					<div key={sectionIndex} className={cn(sectionIndex > 0 && "mt-4")}>
+					<div className={cn(sectionIndex > 0 && "mt-4")} key={sectionIndex}>
 						{section.title && (
 							<p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/60">
 								{section.title}
@@ -96,9 +96,9 @@ function SidebarContent({
 						<div className="flex flex-col gap-1">
 							{section.items.map((item) => (
 								<NavLink
-									key={item.href}
-									item={item}
 									active={isNavItemActive(item, location.pathname)}
+									item={item}
+									key={item.href}
 									onNavigate={onNavigate}
 								/>
 							))}
@@ -125,14 +125,14 @@ export function Sidebar(props: SidebarProps) {
 export function MobileSidebar(props: SidebarProps) {
 	const [open, setOpen] = useState(false);
 	return (
-		<Sheet open={open} onOpenChange={setOpen}>
+		<Sheet onOpenChange={setOpen} open={open}>
 			<SheetTrigger asChild>
-				<Button variant="ghost" size="icon" className="md:hidden">
+				<Button className="md:hidden" size="icon" variant="ghost">
 					<IconMenu2 />
 					<span className="sr-only">Menu</span>
 				</Button>
 			</SheetTrigger>
-			<SheetContent side="left" className="w-64 p-0" showCloseButton={false}>
+			<SheetContent className="w-64 p-0" showCloseButton={false} side="left">
 				<SheetTitle className="sr-only">Navigation menu</SheetTitle>
 				<SheetDescription className="sr-only">
 					Main application navigation.

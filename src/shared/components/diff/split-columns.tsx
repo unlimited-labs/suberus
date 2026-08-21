@@ -25,18 +25,18 @@ export function SplitColumns({
 }: SplitColumnsProps) {
 	return (
 		<div
-			data-testid="side-by-side-diff"
 			className={cn("grid gap-4 md:grid-cols-2", className)}
+			data-testid="side-by-side-diff"
 		>
-			<div data-testid="diff-side-old" className="space-y-2">
+			<div className="space-y-2" data-testid="diff-side-old">
 				<div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
 					{oldLabel}
 				</div>
 				{oldChildren}
 			</div>
 			<div
-				data-testid="diff-side-new"
 				className="space-y-2 md:border-l md:pl-4"
+				data-testid="diff-side-new"
 			>
 				<div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
 					{newLabel}

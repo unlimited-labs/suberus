@@ -41,8 +41,8 @@ export function TypeGeneralSection({
 					</p>
 				</div>
 				<Switch
-					data-testid="settings-include-in-planner"
 					checked={config.includeInPlanner}
+					data-testid="settings-include-in-planner"
 					onCheckedChange={(checked) => onChange("includeInPlanner", checked)}
 				/>
 			</div>
@@ -52,16 +52,16 @@ export function TypeGeneralSection({
 					<Label>Max submissions per user</Label>
 					<Input
 						data-testid="settings-max-submissions-per-user"
-						type="number"
-						min={0}
 						max={1000}
-						value={config.maxSubmissionsPerUser}
+						min={0}
 						onChange={(e) =>
 							onChange(
 								"maxSubmissionsPerUser",
 								parseInt(e.target.value, 10) || 0,
 							)
 						}
+						type="number"
+						value={config.maxSubmissionsPerUser}
 					/>
 					<p className="text-xs italic text-muted-foreground/70">
 						0 = unlimited. Counts only submissions a user owns (co-authorship

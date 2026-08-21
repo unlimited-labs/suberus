@@ -60,24 +60,24 @@ export function PresentationsSection() {
 				<div className="space-y-1">
 					{presentations.map((p, i) => (
 						<div
-							key={p.id}
-							data-testid={`session-editor-slot-${p.id}`}
 							className="flex items-center gap-2 rounded-md border px-2 py-1.5"
+							data-testid={`session-editor-slot-${p.id}`}
+							key={p.id}
 						>
 							<div className="flex flex-col">
 								<Button
-									variant="ghost"
-									size="icon-xs"
 									disabled={i === 0}
 									onClick={() => handleMove(i, "up")}
+									size="icon-xs"
+									variant="ghost"
 								>
 									<IconChevronUp size={11} />
 								</Button>
 								<Button
-									variant="ghost"
-									size="icon-xs"
 									disabled={i === presentations.length - 1}
 									onClick={() => handleMove(i, "down")}
+									size="icon-xs"
+									variant="ghost"
 								>
 									<IconChevronDown size={11} />
 								</Button>
@@ -106,42 +106,42 @@ export function PresentationsSection() {
 							) : (
 								<div className="flex items-center gap-1">
 									<Input
-										type="number"
-										min={1}
-										step={5}
+										aria-label={`Duration of ${p.submissionTitle}`}
+										className="h-7 w-14 px-1.5 text-center text-xs tabular-nums"
 										defaultValue={p.durationMin}
 										key={`${p.id}:${p.durationMin}`}
+										min={1}
 										onBlur={(e) => {
 											const v = Number(e.target.value);
 											if (v > 0 && v !== p.durationMin) {
 												mutations.updatePresentationDuration(p.id, v);
 											}
 										}}
-										aria-label={`Duration of ${p.submissionTitle}`}
-										className="h-7 w-14 px-1.5 text-center text-xs tabular-nums"
+										step={5}
+										type="number"
 									/>
 									<span className="text-[10px] text-muted-foreground">min</span>
 								</div>
 							)}
 							<Button
-								variant="ghost"
-								size="icon-sm"
-								data-testid={`presentation-cancel-${p.id}`}
-								aria-pressed={p.cancelled}
 								aria-label={
 									p.cancelled
 										? `Restore ${p.submissionTitle}`
 										: `Cancel ${p.submissionTitle}`
 								}
+								aria-pressed={p.cancelled}
 								className={cn(p.cancelled && "text-destructive")}
+								data-testid={`presentation-cancel-${p.id}`}
 								onClick={() => mutations.setCancelled(p.id, !p.cancelled)}
+								size="icon-sm"
+								variant="ghost"
 							>
 								<IconBan size={12} />
 							</Button>
 							<Button
-								variant="ghost"
-								size="icon-sm"
 								onClick={() => mutations.removePresentation(p.id)}
+								size="icon-sm"
+								variant="ghost"
 							>
 								<IconX size={12} />
 							</Button>

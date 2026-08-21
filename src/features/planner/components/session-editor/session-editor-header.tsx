@@ -25,12 +25,12 @@ export function SessionEditorHeader() {
 				{(field) => (
 					<Field data-invalid={field.state.meta.errors.length > 0}>
 						<Input
-							value={field.state.value}
+							className="text-base font-medium"
+							data-testid="session-editor-title"
 							onChange={(e) => field.handleChange(e.target.value)}
 							onKeyDown={(e) => e.key === "Enter" && form.handleSubmit()}
-							data-testid="session-editor-title"
-							className="text-base font-medium"
 							placeholder="Session title"
+							value={field.state.value}
 						/>
 						<FieldError errors={field.state.meta.errors} />
 					</Field>
@@ -40,35 +40,35 @@ export function SessionEditorHeader() {
 				{(field) => (
 					<div className="space-y-1">
 						<Label
-							htmlFor="session-start"
 							className="text-xs text-muted-foreground"
+							htmlFor="session-start"
 						>
 							Start
 						</Label>
 						<Input
+							className="h-8 text-sm"
+							data-testid="session-editor-start"
 							id="session-start"
+							onChange={(e) => field.handleChange(e.target.value)}
 							type="datetime-local"
 							value={field.state.value}
-							onChange={(e) => field.handleChange(e.target.value)}
-							data-testid="session-editor-start"
-							className="h-8 text-sm"
 						/>
 					</div>
 				)}
 			</form.Field>
 			<div className="flex items-center justify-between gap-3">
 				<Label
-					htmlFor="session-untimed"
 					className="text-xs text-muted-foreground"
+					htmlFor="session-untimed"
 				>
 					Untimed presentations (poster / lightning)
 				</Label>
 				<form.Field name="untimedSlots">
 					{(field) => (
 						<Switch
-							id="session-untimed"
-							data-testid="session-editor-untimed"
 							checked={field.state.value}
+							data-testid="session-editor-untimed"
+							id="session-untimed"
 							onCheckedChange={(v) => field.handleChange(v === true)}
 						/>
 					)}
@@ -79,18 +79,18 @@ export function SessionEditorHeader() {
 					{(field) => (
 						<Field data-invalid={field.state.meta.errors.length > 0}>
 							<Label
-								htmlFor="session-end"
 								className="text-xs text-muted-foreground"
+								htmlFor="session-end"
 							>
 								End
 							</Label>
 							<Input
+								className="h-8 text-sm"
+								data-testid="session-editor-end"
 								id="session-end"
+								onChange={(e) => field.handleChange(e.target.value)}
 								type="datetime-local"
 								value={field.state.value}
-								onChange={(e) => field.handleChange(e.target.value)}
-								data-testid="session-editor-end"
-								className="h-8 text-sm"
 							/>
 							<FieldError errors={field.state.meta.errors} />
 						</Field>
@@ -102,22 +102,22 @@ export function SessionEditorHeader() {
 						{(field) => (
 							<div className="space-y-1">
 								<Label
-									htmlFor="session-slot-count"
 									className="text-xs text-muted-foreground"
+									htmlFor="session-slot-count"
 								>
 									Slots
 								</Label>
 								<Input
-									id="session-slot-count"
-									type="number"
-									min={1}
-									step={1}
-									value={field.state.value}
+									className="h-8 text-sm"
 									data-testid="session-editor-slots-count"
+									id="session-slot-count"
+									min={1}
 									onChange={(e) =>
 										field.handleChange(Math.max(1, Number(e.target.value)))
 									}
-									className="h-8 text-sm"
+									step={1}
+									type="number"
+									value={field.state.value}
 								/>
 							</div>
 						)}
@@ -126,22 +126,22 @@ export function SessionEditorHeader() {
 						{(field) => (
 							<div className="space-y-1">
 								<Label
-									htmlFor="session-slot-min"
 									className="text-xs text-muted-foreground"
+									htmlFor="session-slot-min"
 								>
 									Min / slot
 								</Label>
 								<Input
-									id="session-slot-min"
-									type="number"
-									min={1}
-									step={5}
-									value={field.state.value}
+									className="h-8 text-sm"
 									data-testid="session-editor-slots-min"
+									id="session-slot-min"
+									min={1}
 									onChange={(e) =>
 										field.handleChange(Math.max(1, Number(e.target.value)))
 									}
-									className="h-8 text-sm"
+									step={5}
+									type="number"
+									value={field.state.value}
 								/>
 							</div>
 						)}
@@ -163,11 +163,11 @@ export function SessionEditorHeader() {
 						<div className="space-y-1">
 							<Label className="text-xs text-muted-foreground">Room</Label>
 							<RoomSelect
-								value={field.state.value}
 								onValueChange={(v) => field.handleChange(v)}
 								rooms={rooms}
 								testId="session-editor-room"
 								triggerClassName="h-8 text-sm"
+								value={field.state.value}
 							/>
 						</div>
 					)}
@@ -177,11 +177,11 @@ export function SessionEditorHeader() {
 						<div className="space-y-1">
 							<Label className="text-xs text-muted-foreground">Track</Label>
 							<TrackSelect
-								value={field.state.value}
 								onValueChange={(v) => field.handleChange(v)}
-								tracks={tracks}
 								testId="session-editor-track"
+								tracks={tracks}
 								triggerClassName="h-8 text-sm"
+								value={field.state.value}
 							/>
 						</div>
 					)}

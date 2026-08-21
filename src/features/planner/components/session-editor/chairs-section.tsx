@@ -62,24 +62,24 @@ export function ChairsSection() {
 					</span>
 				</Label>
 				{chairs.length < 3 && (
-					<Popover open={open} onOpenChange={setOpen}>
+					<Popover onOpenChange={setOpen} open={open}>
 						<PopoverTrigger asChild>
 							<Button
+								className="gap-1"
+								data-testid="session-editor-add-chair"
 								size="xs"
 								variant="outline"
-								data-testid="session-editor-add-chair"
-								className="gap-1"
 							>
 								<IconPlus size={11} />
 								Add chair
 							</Button>
 						</PopoverTrigger>
-						<PopoverContent className="w-64 p-0" align="end">
+						<PopoverContent align="end" className="w-64 p-0">
 							<Command>
 								<CommandInput
+									onValueChange={setSearch}
 									placeholder="Search by name or email..."
 									value={search}
-									onValueChange={setSearch}
 								/>
 								<CommandList>
 									<CommandEmpty>No users found</CommandEmpty>
@@ -87,10 +87,10 @@ export function ChairsSection() {
 										{filteredUsers.slice(0, 20).map((u) => (
 											<CommandItem
 												key={u.id}
-												value={userName(u)}
 												onSelect={() => handleSelect(u.id)}
+												value={userName(u)}
 											>
-												<IconUser size={13} className="mr-2 shrink-0" />
+												<IconUser className="mr-2 shrink-0" size={13} />
 												<div className="min-w-0">
 													<div className="truncate text-sm">{userName(u)}</div>
 													<div className="truncate text-xs text-muted-foreground">
@@ -113,14 +113,14 @@ export function ChairsSection() {
 				<div className="space-y-1">
 					{chairs.map((c) => (
 						<div
-							key={c.userId}
 							className="flex items-center justify-between rounded-md border px-3 py-1.5"
+							key={c.userId}
 						>
 							<span className="text-sm">{chairName(c)}</span>
 							<Button
-								variant="ghost"
-								size="icon-sm"
 								onClick={() => mutations.removeChair(c.userId)}
+								size="icon-sm"
+								variant="ghost"
 							>
 								<IconX size={12} />
 							</Button>

@@ -30,8 +30,8 @@ export function ReviewStep({ preview }: { preview: BulkPreview }) {
 					</div>
 					{preview.skipped.map((s) => (
 						<div
-							key={s.userId}
 							className="flex items-center justify-between gap-2 px-1 py-1 text-xs"
+							key={s.userId}
 						>
 							<span className="truncate">{s.name}</span>
 							<span className="shrink-0 text-muted-foreground">

@@ -40,10 +40,10 @@ function MyDocumentsPage() {
 				)}
 				<Button
 					asChild
-					variant="ghost"
-					size="sm"
 					className="ml-auto"
 					data-testid="verify-document-link"
+					size="sm"
+					variant="ghost"
 				>
 					<Link to="/verify-document">
 						<IconShieldCheck className="mr-2 size-4" />
@@ -54,32 +54,32 @@ function MyDocumentsPage() {
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-5xl">
 					<SectionCard
+						description="Documents issued by the organisers."
 						icon={IconFileCertificate}
 						title="Your documents"
-						description="Documents issued by the organisers."
 					>
 						{isLoading ? (
 							<DocumentListSkeleton />
 						) : isError ? (
 							<EmptyState
+								description="Something went wrong. Refresh the page to try again."
 								icon={IconAlertTriangle}
 								title="Couldn't load your documents"
-								description="Something went wrong. Refresh the page to try again."
 							/>
 						) : documents.length === 0 ? (
 							<EmptyState
+								description="Documents issued to you by the organisers — certificates, invitation letters and the like — will appear here, ready to download."
 								icon={IconFileCertificate}
 								title="No documents yet"
-								description="Documents issued to you by the organisers — certificates, invitation letters and the like — will appear here, ready to download."
 							/>
 						) : (
 							<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 								{documents.map((d) => (
 									<MyDocumentCard
-										key={d.id}
-										name={d.name}
 										createdAt={d.createdAt}
 										downloadHref={`/api/documents/${d.id}`}
+										key={d.id}
+										name={d.name}
 										signed={d.signed}
 									/>
 								))}
@@ -96,7 +96,7 @@ function DocumentListSkeleton() {
 	return (
 		<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			{[0, 1, 2].map((i) => (
-				<div key={i} className="overflow-hidden rounded-2xl border bg-card">
+				<div className="overflow-hidden rounded-2xl border bg-card" key={i}>
 					<Skeleton className="h-28 w-full rounded-none" />
 					<div className="space-y-3 p-4">
 						<Skeleton className="h-4 w-3/4" />

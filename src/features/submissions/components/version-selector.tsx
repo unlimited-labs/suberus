@@ -37,8 +37,8 @@ export function VersionSelector({
 					value: v.version.toString(),
 					label: `Version ${v.version}${v.version === currentVersion ? " (current)" : ""}`,
 				}))}
-				value={selectedVersion.toString()}
 				onValueChange={(value) => onVersionChange(Number(value))}
+				value={selectedVersion.toString()}
 			>
 				<SelectTrigger className="w-full">
 					<SelectValue />

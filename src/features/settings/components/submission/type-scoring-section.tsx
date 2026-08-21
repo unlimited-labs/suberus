@@ -40,9 +40,9 @@ export function TypeScoringSection({
 			{config.enableScoring && (
 				<ScoringCriteriaSection
 					criteria={config.scoringCriteria}
-					onUpdate={onUpdateCriterion}
-					onRemove={onRemoveCriterion}
 					onAdd={onAddCriterion}
+					onRemove={onRemoveCriterion}
+					onUpdate={onUpdateCriterion}
 				/>
 			)}
 		</div>

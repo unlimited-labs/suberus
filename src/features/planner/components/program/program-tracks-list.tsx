@@ -61,8 +61,8 @@ export function ProgramTracksList({
 						const isBusy = pendingId === track.id;
 						return (
 							<TableRow
-								key={track.id}
 								data-testid={`program-track-row-${track.id}`}
+								key={track.id}
 							>
 								<TableCell>
 									<span
@@ -79,7 +79,7 @@ export function ProgramTracksList({
 								<TableCell className="font-medium">{track.name}</TableCell>
 								<TableCell>
 									{track.series ? (
-										<Badge variant="outline" className="font-mono">
+										<Badge className="font-mono" variant="outline">
 											{track.series} · #{track.seriesOrder}
 										</Badge>
 									) : (
@@ -91,13 +91,13 @@ export function ProgramTracksList({
 								</TableCell>
 								<TableCell className="text-right">
 									<RowActions
+										deleteDisabled={track.sessionCount > 0}
 										isBusy={isBusy}
 										isConfirming={confirmId === track.id}
-										deleteDisabled={track.sessionCount > 0}
-										onEdit={() => onEdit(track)}
 										onAskDelete={() => askDelete(track.id)}
-										onConfirmDelete={() => remove(track.id)}
 										onCancelDelete={cancelDelete}
+										onConfirmDelete={() => remove(track.id)}
+										onEdit={() => onEdit(track)}
 										testIdPrefix="program-track"
 									/>
 								</TableCell>

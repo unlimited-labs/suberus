@@ -69,8 +69,8 @@ export function RecipientSummary({
 					const variant = statusVariant(r.status);
 					return (
 						<li
-							key={r.id}
 							className="flex items-center gap-2.5 rounded-md py-1"
+							key={r.id}
 						>
 							<Avatar size="sm">
 								<AvatarFallback className="text-[10px] font-medium">
@@ -84,7 +84,7 @@ export function RecipientSummary({
 								</p>
 							</div>
 							{variant ? (
-								<Badge variant={variant} className="shrink-0 text-[10px]">
+								<Badge className="shrink-0 text-[10px]" variant={variant}>
 									{r.status}
 								</Badge>
 							) : null}

@@ -27,19 +27,19 @@ export function ImportantDatesSection({
 }: ImportantDatesSectionProps) {
 	return (
 		<SettingsSection
+			delay={100}
+			description="Conference, submission and review deadlines"
 			icon={IconCalendar}
 			title="Important Dates"
-			description="Conference, submission and review deadlines"
-			delay={100}
 		>
 			<div className="grid gap-4 sm:grid-cols-2">
 				<div className="space-y-2">
 					<Label htmlFor="conferenceStartDate">Conference Start</Label>
 					<Input
 						id="conferenceStartDate"
+						onChange={(e) => onChange("conferenceStartDate", e.target.value)}
 						type="date"
 						value={data.conferenceStartDate}
-						onChange={(e) => onChange("conferenceStartDate", e.target.value)}
 					/>
 					<p className="text-xs text-muted-foreground">
 						First day of the conference
@@ -49,9 +49,9 @@ export function ImportantDatesSection({
 					<Label htmlFor="conferenceEndDate">Conference End</Label>
 					<Input
 						id="conferenceEndDate"
+						onChange={(e) => onChange("conferenceEndDate", e.target.value)}
 						type="date"
 						value={data.conferenceEndDate}
-						onChange={(e) => onChange("conferenceEndDate", e.target.value)}
 					/>
 					<p className="text-xs text-muted-foreground">
 						Last day of the conference
@@ -61,9 +61,9 @@ export function ImportantDatesSection({
 					<Label htmlFor="submissionDeadline">Submission Deadline</Label>
 					<Input
 						id="submissionDeadline"
+						onChange={(e) => onChange("submissionDeadline", e.target.value)}
 						type="date"
 						value={data.submissionDeadline}
-						onChange={(e) => onChange("submissionDeadline", e.target.value)}
 					/>
 					<p className="text-xs text-muted-foreground">
 						After this date the system automatically stops accepting new
@@ -74,9 +74,9 @@ export function ImportantDatesSection({
 					<Label htmlFor="registrationDeadline">Registration Deadline</Label>
 					<Input
 						id="registrationDeadline"
+						onChange={(e) => onChange("registrationDeadline", e.target.value)}
 						type="date"
 						value={data.registrationDeadline}
-						onChange={(e) => onChange("registrationDeadline", e.target.value)}
 					/>
 					<p className="text-xs text-muted-foreground">
 						After this date public registration is blocked. Invitation-based
@@ -91,8 +91,8 @@ export function ImportantDatesSection({
 						</p>
 					</div>
 					<Switch
-						id="submissionsLocked"
 						checked={data.submissionsLocked}
+						id="submissionsLocked"
 						onCheckedChange={(checked) =>
 							onToggle("submissionsLocked", checked)
 						}
@@ -107,8 +107,8 @@ export function ImportantDatesSection({
 						</p>
 					</div>
 					<Switch
-						id="registrationLocked"
 						checked={data.registrationLocked}
+						id="registrationLocked"
 						onCheckedChange={(checked) =>
 							onToggle("registrationLocked", checked)
 						}
@@ -118,9 +118,9 @@ export function ImportantDatesSection({
 					<Label htmlFor="reviewDeadline">Review Deadline</Label>
 					<Input
 						id="reviewDeadline"
+						onChange={(e) => onChange("reviewDeadline", e.target.value)}
 						type="date"
 						value={data.reviewDeadline}
-						onChange={(e) => onChange("reviewDeadline", e.target.value)}
 					/>
 					<p className="text-xs text-muted-foreground">
 						Deadline for reviewers to submit their reviews
@@ -130,16 +130,16 @@ export function ImportantDatesSection({
 					<Label htmlFor="notificationDate">Notification Date</Label>
 					<Input
 						id="notificationDate"
+						onChange={(e) => onChange("notificationDate", e.target.value)}
 						type="date"
 						value={data.notificationDate}
-						onChange={(e) => onChange("notificationDate", e.target.value)}
 					/>
 					<p className="text-xs text-muted-foreground">
 						Date when authors are notified of the decision
 					</p>
 				</div>
 			</div>
-			<SettingsSaveButton onSave={onSave} isSaving={isSaving} />
+			<SettingsSaveButton isSaving={isSaving} onSave={onSave} />
 		</SettingsSection>
 	);
 }

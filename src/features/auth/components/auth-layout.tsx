@@ -22,8 +22,8 @@ export function AuthLayout({
 			{backgroundImageUrl ? (
 				<>
 					<div
-						data-testid="auth-background-image"
 						className="pointer-events-none fixed inset-0 bg-cover bg-center bg-no-repeat"
+						data-testid="auth-background-image"
 						style={{ backgroundImage: `url(${backgroundImageUrl})` }}
 					/>
 					<div
@@ -67,13 +67,13 @@ export function AuthLayout({
 			)}
 
 			<header className="fixed inset-x-0 top-0 z-20 flex justify-center p-6 sm:inset-x-auto sm:left-0 sm:justify-start sm:p-6 lg:p-8">
-				<Link to="/" className="group block">
+				<Link className="group block" to="/">
 					<div className="flex items-center gap-3">
 						<BrandLogo
-							logoUrl={logoUrl}
-							logoDarkInvert={logoDarkInvert}
 							alt="Conference Logo"
 							className="h-24 w-auto transition-transform duration-300 group-hover:scale-105 sm:h-10 lg:h-28"
+							logoDarkInvert={logoDarkInvert}
+							logoUrl={logoUrl}
 						/>
 					</div>
 				</Link>

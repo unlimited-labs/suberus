@@ -37,13 +37,13 @@ export function TypeReviewSection({
 				<Label htmlFor="required-reviewers">Required reviewers</Label>
 				<Input
 					id="required-reviewers"
-					type="number"
-					min={1}
 					max={10}
-					value={config.requiredReviewers}
+					min={1}
 					onChange={(e) =>
 						onChange("requiredReviewers", parseInt(e.target.value, 10) || 1)
 					}
+					type="number"
+					value={config.requiredReviewers}
 				/>
 			</div>
 
@@ -55,11 +55,11 @@ export function TypeReviewSection({
 							value,
 							label,
 						}))}
-						value={config.reviewMode}
 						onValueChange={(value) => {
 							const found = REVIEW_MODES.find((m) => m === value);
 							if (found) onChange("reviewMode", found);
 						}}
+						value={config.reviewMode}
 					>
 						<SelectTrigger>
 							<SelectValue />
@@ -76,13 +76,13 @@ export function TypeReviewSection({
 				<div className="space-y-2">
 					<Label>Review deadline (days)</Label>
 					<Input
-						type="number"
-						min={1}
 						max={90}
-						value={config.reviewDeadlineDays}
+						min={1}
 						onChange={(e) =>
 							onChange("reviewDeadlineDays", parseInt(e.target.value, 10) || 7)
 						}
+						type="number"
+						value={config.reviewDeadlineDays}
 					/>
 				</div>
 			</div>

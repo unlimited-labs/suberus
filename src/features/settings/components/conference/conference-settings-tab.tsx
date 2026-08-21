@@ -22,29 +22,29 @@ export function ConferenceSettingsTab({
 		<div className="space-y-6">
 			<BasicInformationSection
 				data={data}
+				isSaving={isSaving}
 				onChange={handleChange}
 				onSave={handleSave}
-				isSaving={isSaving}
 			/>
 
 			<ImportantDatesSection
 				data={data}
-				onChange={handleChange}
-				onToggle={handleToggle}
-				onSave={handleSave}
 				isSaving={isSaving}
+				onChange={handleChange}
+				onSave={handleSave}
+				onToggle={handleToggle}
 			/>
 
 			<DateTimeSection
 				data={data}
+				isSaving={isSaving}
 				onChange={handleChange}
 				onSave={handleSave}
-				isSaving={isSaving}
 			/>
 
 			<ExhibitorsSettingsSection
-				initialConfig={initialExhibitorConfig}
 				delay={300}
+				initialConfig={initialExhibitorConfig}
 			/>
 		</div>
 	);

@@ -46,18 +46,18 @@ const columns: AppColumnDef<AdminExhibitorRow>[] = [
 		header: ({ column }) => (
 			<DataTableColumnHeader
 				column={column}
-				title="Company"
 				textFilter={{ placeholder: "Search..." }}
+				title="Company"
 			/>
 		),
 		cell: ({ row }) => (
 			<Link
-				to="/admin/exhibitors/$id"
-				params={{ id: row.original.id }}
 				className={cn(
 					"font-medium hover:underline",
 					!row.original.appliedAt && "text-muted-foreground",
 				)}
+				params={{ id: row.original.id }}
+				to="/admin/exhibitors/$id"
 			>
 				{row.original.companyName || "—"}
 			</Link>
@@ -71,8 +71,8 @@ const columns: AppColumnDef<AdminExhibitorRow>[] = [
 		header: ({ column }) => (
 			<DataTableColumnHeader
 				column={column}
-				title="Contact"
 				textFilter={{ placeholder: "Search..." }}
+				title="Contact"
 			/>
 		),
 		cell: ({ row }) => {
@@ -100,8 +100,8 @@ const columns: AppColumnDef<AdminExhibitorRow>[] = [
 		header: ({ column }) => (
 			<DataTableColumnHeader
 				column={column}
-				title="Status"
 				filterOptions={statusFilterOptions}
+				title="Status"
 			/>
 		),
 		cell: ({ row }) => {
@@ -133,8 +133,8 @@ const columns: AppColumnDef<AdminExhibitorRow>[] = [
 		header: ({ column }) => (
 			<DataTableColumnHeader
 				column={column}
-				title="Presentation"
 				textFilter={{ placeholder: "Search..." }}
+				title="Presentation"
 			/>
 		),
 		cell: ({ row }) =>
@@ -159,7 +159,7 @@ const columns: AppColumnDef<AdminExhibitorRow>[] = [
 				return <span className="text-muted-foreground">—</span>;
 			}
 			return (
-				<Badge variant="outline" className="border-green-600 text-green-600">
+				<Badge className="border-green-600 text-green-600" variant="outline">
 					{fee.type ?? "Paid"}
 				</Badge>
 			);
@@ -190,8 +190,8 @@ export function ExhibitorsTable({
 	if (exhibitors.length === 0) {
 		return (
 			<div
-				data-testid="exhibitors-table"
 				className="flex flex-col items-center justify-center rounded-md border border-dashed py-16 text-center"
+				data-testid="exhibitors-table"
 			>
 				<p className="font-medium">No exhibitors yet</p>
 				<p className="mt-1 text-sm text-muted-foreground">
@@ -207,17 +207,17 @@ export function ExhibitorsTable({
 				columns={columns}
 				data={exhibitors}
 				getRowId={(row) => row.id}
-				rowDataTestId="exhibitor-row"
-				storageKey="admin-exhibitors"
 				mobileCard={(exhibitor) => (
 					<ExhibitorMobileCard exhibitor={exhibitor} />
 				)}
+				rowDataTestId="exhibitor-row"
+				storageKey="admin-exhibitors"
 				toolbar={(table) => (
 					<DataTableToolbar
-						table={table}
+						columnLabels={columnLabels}
 						searchKey="company"
 						searchPlaceholder="Search exhibitors..."
-						columnLabels={columnLabels}
+						table={table}
 					/>
 				)}
 			/>

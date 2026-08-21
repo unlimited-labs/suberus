@@ -23,9 +23,9 @@ export function ExhibitorStatusCard({
 	return (
 		<div data-testid="exhibitor-status">
 			<SectionCard
-				title="Application status"
 				action={<Badge variant={badge.variant}>{badge.label}</Badge>}
 				contentClassName="space-y-3"
+				title="Application status"
 			>
 				{(appliedAt || decidedAt) && (
 					<div className="flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:gap-6">

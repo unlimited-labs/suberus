@@ -124,7 +124,7 @@ function ConsentPage() {
 						<div className="font-medium text-sm">It will be able to</div>
 						<ul className="space-y-1.5">
 							{scopes.map((scope) => (
-								<li key={scope} className="flex items-start gap-2 text-sm">
+								<li className="flex items-start gap-2 text-sm" key={scope}>
 									<IconCheck className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
 									<span>{scopeLabel(scope)}</span>
 								</li>
@@ -143,18 +143,18 @@ function ConsentPage() {
 			<CardFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
 				<Button
 					className="w-full sm:w-auto"
-					variant="outline"
+					data-testid="consent-deny"
 					disabled={busy !== null}
 					onClick={() => decide(false)}
-					data-testid="consent-deny"
+					variant="outline"
 				>
 					{busy === "deny" ? "Cancelling..." : "Deny"}
 				</Button>
 				<Button
 					className="w-full sm:w-auto"
+					data-testid="consent-approve"
 					disabled={busy !== null}
 					onClick={() => decide(true)}
-					data-testid="consent-approve"
 				>
 					{busy === "approve" ? "Authorizing..." : "Approve"}
 				</Button>
@@ -164,10 +164,10 @@ function ConsentPage() {
 
 	return (
 		<AuthLayout
-			logoUrl={branding.logoUrl}
 			backgroundImageUrl={branding.authBackgroundUrl || undefined}
-			overlayOpacity={branding.authBgOverlay}
 			logoDarkInvert={branding.logoDarkInvert}
+			logoUrl={branding.logoUrl}
+			overlayOpacity={branding.authBgOverlay}
 		>
 			{card}
 		</AuthLayout>

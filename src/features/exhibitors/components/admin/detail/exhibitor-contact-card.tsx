@@ -12,14 +12,14 @@ export function ExhibitorContactCard({ user }: ExhibitorContactCardProps) {
 
 	return (
 		<div data-testid="exhibitor-contact">
-			<SectionCard title="Contact" contentClassName="space-y-3 text-sm">
+			<SectionCard contentClassName="space-y-3 text-sm" title="Contact">
 				<InfoRow label="Name">{contactName || "—"}</InfoRow>
 				<InfoRow label="Email">{user.email}</InfoRow>
 				<InfoRow label="Fee">
 					{user.fee?.paid ? (
 						<Badge
-							variant="outline"
 							className="border-green-600 text-green-600"
+							variant="outline"
 						>
 							{user.fee.type ?? "Paid"}
 						</Badge>

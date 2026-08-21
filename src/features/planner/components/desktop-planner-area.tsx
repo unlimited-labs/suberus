@@ -38,12 +38,12 @@ export function DesktopPlannerArea({
 			<UnscheduledSidebar />
 			<div className="flex-1 overflow-auto p-4">
 				<PlannerToolsProvider
-					rooms={rooms}
-					room={room}
 					defaultStartAt={defaultStartAt}
 					onCreated={onCreated}
-					onSubmissionDrop={onSubmissionDrop}
 					onJumpToConferenceStart={confStart ? returnToConference : null}
+					onSubmissionDrop={onSubmissionDrop}
+					room={room}
+					rooms={rooms}
 				>
 					<PlannerCalendar
 						{...calendarProps}

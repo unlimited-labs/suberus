@@ -45,20 +45,20 @@ export function PlannerCalendarHeader() {
 			>
 				<div className="flex min-w-0 items-center gap-3">
 					<CalendarNavGroup
-						onPrev={prevPeriod}
 						onNext={nextPeriod}
+						onPrev={prevPeriod}
 						onToday={today}
 					/>
 					<Tooltip>
 						<TooltipTrigger asChild>
 							<span>
 								<Button
+									className="h-9 gap-1.5"
+									data-testid="planner-jump-conference-start"
+									disabled={!canJumpToConference}
+									onClick={() => onJumpToConferenceStart?.()}
 									size="sm"
 									variant="outline"
-									className="h-9 gap-1.5"
-									onClick={() => onJumpToConferenceStart?.()}
-									disabled={!canJumpToConference}
-									data-testid="planner-jump-conference-start"
 								>
 									<IconCalendarStar className="h-4 w-4" />
 									<span>Conference start</span>
@@ -78,23 +78,23 @@ export function PlannerCalendarHeader() {
 
 				<div className="flex flex-wrap items-center gap-3">
 					<RoomFilterPopover
-						rooms={rooms}
 						hiddenIds={room.hiddenRoomIds}
-						onToggle={room.toggleRoom}
 						onShowAll={room.showAll}
+						onToggle={room.toggleRoom}
+						rooms={rooms}
 					/>
 					<CalendarViewSwitcher current={view} onChange={setView} />
 					<Tooltip>
 						<TooltipTrigger asChild>
 							<span>
 								<Button
-									size="sm"
-									variant="outline"
 									className="h-9 gap-1.5"
 									disabled={!autoplanEnabled}
 									onClick={() =>
 										navigate({ to: "/admin/program-planner/auto-plan" })
 									}
+									size="sm"
+									variant="outline"
 								>
 									<IconWand className="h-4 w-4" />
 									<span>Auto-plan</span>
@@ -108,10 +108,10 @@ export function PlannerCalendarHeader() {
 						</TooltipContent>
 					</Tooltip>
 					<Button
-						size="sm"
-						variant="default"
 						className="h-9 gap-1.5"
 						onClick={() => openEventForm()}
+						size="sm"
+						variant="default"
 					>
 						<IconPlus className="h-4 w-4" />
 						<span>New</span>

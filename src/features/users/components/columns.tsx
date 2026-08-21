@@ -51,8 +51,8 @@ const baseUserColumns: AppColumnDef<AdminUser>[] = [
 		header: ({ column }) => (
 			<DataTableColumnHeader
 				column={column}
-				title="Name"
 				textFilter={{ placeholder: "Search..." }}
+				title="Name"
 			/>
 		),
 		cell: ({ row }) => {
@@ -65,9 +65,9 @@ const baseUserColumns: AppColumnDef<AdminUser>[] = [
 
 			return (
 				<Link
-					to="/admin/users/$id"
-					params={{ id: row.original.id }}
 					className="flex flex-col hover:underline"
+					params={{ id: row.original.id }}
+					to="/admin/users/$id"
 				>
 					<span className="font-medium text-foreground">
 						{name ?? row.original.email}
@@ -87,8 +87,8 @@ const baseUserColumns: AppColumnDef<AdminUser>[] = [
 		header: ({ column }) => (
 			<DataTableColumnHeader
 				column={column}
-				title="Role"
 				filterOptions={[...roleFilterOptions]}
+				title="Role"
 			/>
 		),
 		cell: ({ row }) => {
@@ -107,8 +107,8 @@ const baseUserColumns: AppColumnDef<AdminUser>[] = [
 		header: ({ column }) => (
 			<DataTableColumnHeader
 				column={column}
-				title="Affiliation"
 				textFilter={{ placeholder: "Search..." }}
+				title="Affiliation"
 			/>
 		),
 		cell: ({ row }) => (
@@ -124,8 +124,8 @@ const baseUserColumns: AppColumnDef<AdminUser>[] = [
 		header: ({ column }) => (
 			<DataTableColumnHeader
 				column={column}
-				title="Fee"
 				filterOptions={[...feeFilterOptions]}
+				title="Fee"
 			/>
 		),
 		cell: ({ row }) => {
@@ -134,7 +134,7 @@ const baseUserColumns: AppColumnDef<AdminUser>[] = [
 				return <Badge variant="destructive">Unpaid</Badge>;
 			}
 			return (
-				<Badge variant="outline" className="text-green-600 border-green-600">
+				<Badge className="text-green-600 border-green-600" variant="outline">
 					{fee.type}
 				</Badge>
 			);
@@ -153,23 +153,23 @@ const baseUserColumns: AppColumnDef<AdminUser>[] = [
 			if (roles.length === 0) {
 				return (
 					<span
-						data-testid="user-submissions"
 						className="text-muted-foreground"
+						data-testid="user-submissions"
 					>
 						—
 					</span>
 				);
 			}
 			return (
-				<div data-testid="user-submissions" className="flex flex-wrap gap-1">
+				<div className="flex flex-wrap gap-1" data-testid="user-submissions">
 					{roles.map((r) => (
 						<Badge
-							key={`${r.type}-${r.role}-${r.status}`}
-							variant="outline"
 							className={cn(
 								r.status === "draft" && "border-dashed text-muted-foreground",
 								r.status === "accepted" && "border-green-600 text-green-600",
 							)}
+							key={`${r.type}-${r.role}-${r.status}`}
+							variant="outline"
 						>
 							{formatSubmissionRole(r)}
 						</Badge>

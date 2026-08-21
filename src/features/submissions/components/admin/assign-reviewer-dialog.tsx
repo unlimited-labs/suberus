@@ -150,7 +150,7 @@ export function AssignReviewerDialog({
 	}
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
 				<DialogHeader className="min-w-0">
 					<DialogTitle>Assign Reviewers</DialogTitle>
@@ -186,9 +186,9 @@ export function AssignReviewerDialog({
 							<div className="space-y-2">
 								{activeAssignments.map((assignment) => (
 									<div
-										key={assignment.id}
 										className="flex items-center justify-between rounded-lg border p-3"
 										data-testid="current-reviewer-row"
+										key={assignment.id}
 									>
 										<div className="min-w-0 flex-1">
 											<div className="flex items-center gap-2">
@@ -216,10 +216,10 @@ export function AssignReviewerDialog({
 										</div>
 										{assignment.status !== "COMPLETED" && (
 											<Button
-												variant="ghost"
-												size="icon"
 												className="shrink-0"
 												onClick={() => handleCancel(assignment.id)}
+												size="icon"
+												variant="ghost"
 											>
 												<IconX className="size-4" />
 												<span className="sr-only">Cancel</span>
@@ -235,11 +235,11 @@ export function AssignReviewerDialog({
 						<Label htmlFor="deadline">Review deadline</Label>
 						<Input
 							id="deadline"
+							min={format(new Date(), "yyyy-MM-dd")}
+							onChange={(e) => setCustomDeadline(e.target.value)}
+							suppressHydrationWarning
 							type="date"
 							value={customDeadline}
-							onChange={(e) => setCustomDeadline(e.target.value)}
-							min={format(new Date(), "yyyy-MM-dd")}
-							suppressHydrationWarning
 						/>
 					</div>
 
@@ -249,10 +249,10 @@ export function AssignReviewerDialog({
 						<div className="relative">
 							<IconSearch className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 							<Input
+								className="pl-10"
+								onChange={(e) => setSearch(e.target.value)}
 								placeholder="Search by name, email, or affiliation..."
 								value={search}
-								onChange={(e) => setSearch(e.target.value)}
-								className="pl-10"
 							/>
 						</div>
 
@@ -270,9 +270,9 @@ export function AssignReviewerDialog({
 							<div className="max-h-64 overflow-y-auto space-y-2">
 								{filteredReviewers.map((reviewer) => (
 									<div
-										key={reviewer.id}
-										data-testid="reviewer-option"
 										className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50"
+										data-testid="reviewer-option"
+										key={reviewer.id}
 									>
 										<div className="min-w-0 flex-1">
 											<div className="flex items-center gap-2">
@@ -290,18 +290,18 @@ export function AssignReviewerDialog({
 												</p>
 											)}
 											<div className="flex gap-2 mt-1 pl-6">
-												<Badge variant="outline" className="text-xs">
+												<Badge className="text-xs" variant="outline">
 													{reviewer.activeAssignmentsCount} active
 												</Badge>
-												<Badge variant="outline" className="text-xs">
+												<Badge className="text-xs" variant="outline">
 													{reviewer.completedReviewsCount} completed
 												</Badge>
 											</div>
 										</div>
 										<Button
-											size="sm"
-											onClick={() => handleAssign(reviewer.id)}
 											disabled={assigningReviewerId !== null}
+											onClick={() => handleAssign(reviewer.id)}
+											size="sm"
 										>
 											{assigningReviewerId === reviewer.id ? (
 												<IconLoader2 className="size-4 animate-spin" />
@@ -317,7 +317,7 @@ export function AssignReviewerDialog({
 				</div>
 
 				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
+					<Button onClick={() => onOpenChange(false)} variant="outline">
 						Close
 					</Button>
 				</DialogFooter>

@@ -91,15 +91,15 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 						<tbody className="[&_tr:last-child]:border-0">
 							{submissions.map((submission) => (
 								<tr
-									key={submission.id}
 									className="border-b transition-colors hover:bg-muted/50"
+									key={submission.id}
 								>
 									<td className="p-2 align-middle">
 										<div className="flex items-center gap-2">
 											<Link
-												to="/submissions/$id"
-												params={{ id: submission.id }}
 												className="font-medium text-foreground hover:text-primary line-clamp-2"
+												params={{ id: submission.id }}
+												to="/submissions/$id"
 											>
 												{submission.title}
 											</Link>
@@ -149,10 +149,10 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 			>
 				{submissions.map((submission) => (
 					<Link
-						key={submission.id}
-						to="/submissions/$id"
-						params={{ id: submission.id }}
 						className="block"
+						key={submission.id}
+						params={{ id: submission.id }}
+						to="/submissions/$id"
 					>
 						<Card>
 							<CardContent className="p-4">

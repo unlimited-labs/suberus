@@ -13,10 +13,10 @@ export function ExtractionOverlay({
 
 	return (
 		<div
-			className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/80 backdrop-blur-sm"
-			role="status"
 			aria-label="Extracting metadata from document"
+			className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/80 backdrop-blur-sm"
 			data-testid="extraction-overlay"
+			role="status"
 		>
 			<div className="flex flex-col items-center gap-3">
 				<IconLoader2 className="size-8 animate-spin text-primary" />

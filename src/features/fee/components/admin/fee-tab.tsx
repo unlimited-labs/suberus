@@ -160,26 +160,26 @@ export function FeeTab({
 	return (
 		<div className="space-y-6">
 			<SettingsSection
+				description="Show the Fee page to participants"
 				icon={IconCash}
 				title="Fee"
-				description="Show the Fee page to participants"
 			>
 				<div className="flex items-center justify-between">
-					<Label htmlFor="fee-enabled" className="font-medium">
+					<Label className="font-medium" htmlFor="fee-enabled">
 						Fee enabled
 					</Label>
 					<Switch
-						id="fee-enabled"
 						checked={enabled}
+						id="fee-enabled"
 						onCheckedChange={handleToggleEnabled}
 					/>
 				</div>
 			</SettingsSection>
 
 			<SettingsSection
+				description="Manage fee types and their amounts"
 				icon={IconCash}
 				title="Fee Types"
-				description="Manage fee types and their amounts"
 			>
 				<div className="space-y-4">
 					<div className="rounded-md border">
@@ -190,41 +190,41 @@ export function FeeTab({
 						</div>
 						{feeTypes.map((ft) => (
 							<div
-								key={ft.id}
 								className="grid grid-cols-[1fr_auto_auto] items-center gap-2 border-b px-4 py-2 last:border-b-0"
+								key={ft.id}
 							>
 								{editingId === ft.id ? (
 									<>
 										<Input
-											value={editName}
-											onChange={(e) => setEditName(e.target.value)}
-											className="h-8"
 											aria-label="Fee type name"
+											className="h-8"
+											onChange={(e) => setEditName(e.target.value)}
+											value={editName}
 										/>
 										<Input
-											type="number"
-											value={editAmount}
-											onChange={(e) => setEditAmount(e.target.value)}
+											aria-label="Fee type amount"
 											className="h-8 w-28 text-right"
 											min={0}
+											onChange={(e) => setEditAmount(e.target.value)}
 											step="0.01"
-											aria-label="Fee type amount"
+											type="number"
+											value={editAmount}
 										/>
 										<div className="flex w-20 justify-end gap-1">
 											<Button
+												className="h-7 px-2"
+												disabled={isSavingTypes}
+												onClick={handleSaveEdit}
 												size="sm"
 												variant="ghost"
-												className="h-7 px-2"
-												onClick={handleSaveEdit}
-												disabled={isSavingTypes}
 											>
 												Save
 											</Button>
 											<Button
-												size="sm"
-												variant="ghost"
 												className="h-7 px-2"
 												onClick={() => setEditingId(null)}
+												size="sm"
+												variant="ghost"
 											>
 												Cancel
 											</Button>
@@ -238,21 +238,21 @@ export function FeeTab({
 										</span>
 										<div className="flex w-20 justify-end gap-1">
 											<Button
-												size="icon"
-												variant="ghost"
+												aria-label={`Edit ${ft.name}`}
 												className="size-7"
 												onClick={() => handleStartEdit(ft)}
-												aria-label={`Edit ${ft.name}`}
+												size="icon"
+												variant="ghost"
 											>
 												<IconPencil className="size-3.5" />
 											</Button>
 											<Button
+												aria-label={`Delete ${ft.name}`}
+												className="size-7 text-destructive hover:text-destructive"
+												disabled={isSavingTypes}
+												onClick={() => handleDelete(ft.id)}
 												size="icon"
 												variant="ghost"
-												className="size-7 text-destructive hover:text-destructive"
-												onClick={() => handleDelete(ft.id)}
-												disabled={isSavingTypes}
-												aria-label={`Delete ${ft.name}`}
 											>
 												<IconTrash className="size-3.5" />
 											</Button>
@@ -269,39 +269,39 @@ export function FeeTab({
 								<Label htmlFor="new-fee-name">Name</Label>
 								<Input
 									id="new-fee-name"
-									value={newName}
 									onChange={(e) => setNewName(e.target.value)}
 									placeholder="e.g. Invited Speaker Fee"
+									value={newName}
 								/>
 							</div>
 							<div className="w-32 space-y-1">
 								<Label htmlFor="new-fee-amount">Amount</Label>
 								<Input
 									id="new-fee-amount"
-									type="number"
-									value={newAmount}
+									min={0}
 									onChange={(e) => setNewAmount(e.target.value)}
 									placeholder="0.00"
-									min={0}
 									step="0.01"
+									type="number"
+									value={newAmount}
 								/>
 							</div>
-							<Button size="sm" onClick={handleAdd} disabled={isSavingTypes}>
+							<Button disabled={isSavingTypes} onClick={handleAdd} size="sm">
 								Add
 							</Button>
 							<Button
+								onClick={() => setShowAddForm(false)}
 								size="sm"
 								variant="ghost"
-								onClick={() => setShowAddForm(false)}
 							>
 								Cancel
 							</Button>
 						</div>
 					) : (
 						<Button
-							variant="outline"
-							size="sm"
 							onClick={() => setShowAddForm(true)}
+							size="sm"
+							variant="outline"
 						>
 							<IconPlus className="mr-2 size-4" />
 							Add Fee Type
@@ -311,10 +311,10 @@ export function FeeTab({
 			</SettingsSection>
 
 			<SettingsSection
+				delay={100}
+				description="Configure payment information displayed to users (Markdown supported)"
 				icon={IconCash}
 				title="Payment Instructions"
-				description="Configure payment information displayed to users (Markdown supported)"
-				delay={100}
 			>
 				<div className="space-y-4">
 					<div className="space-y-2">
@@ -326,12 +326,12 @@ export function FeeTab({
 							</TabsList>
 							<TabsContent value="edit">
 								<Textarea
-									id="instructions"
-									value={content}
-									onChange={(e) => setContent(e.target.value)}
-									rows={15}
-									placeholder="# Payment Instructions&#10;&#10;Enter payment details here..."
 									className="font-mono text-sm"
+									id="instructions"
+									onChange={(e) => setContent(e.target.value)}
+									placeholder="# Payment Instructions&#10;&#10;Enter payment details here..."
+									rows={15}
+									value={content}
 								/>
 							</TabsContent>
 							<TabsContent value="preview">
@@ -351,8 +351,8 @@ export function FeeTab({
 
 					<div className="flex justify-end">
 						<Button
-							onClick={handleSaveInstructions}
 							disabled={isSavingInstructions}
+							onClick={handleSaveInstructions}
 						>
 							{isSavingInstructions && (
 								<IconLoader2 className="mr-2 size-4 animate-spin" />

@@ -24,19 +24,19 @@ export function ImageUploadControl({
 	return (
 		<div className="flex flex-wrap gap-2">
 			<input
+				accept={ACCEPTED_IMAGE_TYPES.join(",")}
+				aria-label={ariaLabel}
+				className="hidden"
+				onChange={onUpload}
 				ref={inputRef}
 				type="file"
-				accept={ACCEPTED_IMAGE_TYPES.join(",")}
-				onChange={onUpload}
-				className="hidden"
-				aria-label={ariaLabel}
 			/>
 			<Button
-				variant="outline"
-				size="sm"
-				onClick={() => inputRef.current?.click()}
-				disabled={uploading || removing}
 				data-testid={`${testIdPrefix}-upload`}
+				disabled={uploading || removing}
+				onClick={() => inputRef.current?.click()}
+				size="sm"
+				variant="outline"
 			>
 				{uploading ? (
 					<IconLoader2 className="mr-2 size-4 animate-spin" />
@@ -47,11 +47,11 @@ export function ImageUploadControl({
 			</Button>
 			{hasImage && (
 				<Button
-					variant="ghost"
-					size="sm"
-					onClick={onRemove}
-					disabled={uploading || removing}
 					data-testid={`${testIdPrefix}-remove`}
+					disabled={uploading || removing}
+					onClick={onRemove}
+					size="sm"
+					variant="ghost"
 				>
 					{removing ? (
 						<IconLoader2 className="mr-2 size-4 animate-spin" />

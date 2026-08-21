@@ -81,19 +81,19 @@ export function RemindersSettingsTab({
 
 	return (
 		<SettingsSection
+			description="Configure automatic email reminders"
 			icon={IconBell}
 			title="Reminders"
-			description="Configure automatic email reminders"
 		>
 			<div className="space-y-6">
 				<div className="space-y-4">
 					<div className="flex items-center justify-between">
-						<Label htmlFor="reviewer-enabled" className="font-medium">
+						<Label className="font-medium" htmlFor="reviewer-enabled">
 							Reviewer reminders
 						</Label>
 						<Switch
-							id="reviewer-enabled"
 							checked={data.reviewer.enabled}
+							id="reviewer-enabled"
 							onCheckedChange={(checked) =>
 								setData((prev) => ({
 									...prev,
@@ -109,11 +109,11 @@ export function RemindersSettingsTab({
 					<div className="space-y-2">
 						<Label htmlFor="reviewer-days">Days before deadline</Label>
 						<Input
+							disabled={!data.reviewer.enabled}
 							id="reviewer-days"
-							value={reviewerDaysText}
 							onChange={(e) => setReviewerDaysText(e.target.value)}
 							placeholder="e.g. 7, 3, 1"
-							disabled={!data.reviewer.enabled}
+							value={reviewerDaysText}
 						/>
 						<p className="text-xs text-muted-foreground">
 							Comma-separated numbers. A reminder is sent for each value.
@@ -125,12 +125,12 @@ export function RemindersSettingsTab({
 
 				<div className="space-y-4">
 					<div className="flex items-center justify-between">
-						<Label htmlFor="revision-enabled" className="font-medium">
+						<Label className="font-medium" htmlFor="revision-enabled">
 							Revision reminders
 						</Label>
 						<Switch
-							id="revision-enabled"
 							checked={data.revision.enabled}
+							id="revision-enabled"
 							onCheckedChange={(checked) =>
 								setData((prev) => ({
 									...prev,
@@ -147,10 +147,9 @@ export function RemindersSettingsTab({
 						<div className="space-y-2">
 							<Label htmlFor="revision-interval">Interval (days)</Label>
 							<Input
+								disabled={!data.revision.enabled}
 								id="revision-interval"
-								type="number"
 								min={1}
-								value={data.revision.intervalDays}
 								onChange={(e) =>
 									setData((prev) => ({
 										...prev,
@@ -160,16 +159,16 @@ export function RemindersSettingsTab({
 										},
 									}))
 								}
-								disabled={!data.revision.enabled}
+								type="number"
+								value={data.revision.intervalDays}
 							/>
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="revision-max">Max reminders</Label>
 							<Input
+								disabled={!data.revision.enabled}
 								id="revision-max"
-								type="number"
 								min={1}
-								value={data.revision.maxCount}
 								onChange={(e) =>
 									setData((prev) => ({
 										...prev,
@@ -179,7 +178,8 @@ export function RemindersSettingsTab({
 										},
 									}))
 								}
-								disabled={!data.revision.enabled}
+								type="number"
+								value={data.revision.maxCount}
 							/>
 						</div>
 					</div>
@@ -189,12 +189,12 @@ export function RemindersSettingsTab({
 
 				<div className="space-y-4">
 					<div className="flex items-center justify-between">
-						<Label htmlFor="deadline-enabled" className="font-medium">
+						<Label className="font-medium" htmlFor="deadline-enabled">
 							Deadline reminders
 						</Label>
 						<Switch
-							id="deadline-enabled"
 							checked={data.deadline.enabled}
+							id="deadline-enabled"
 							onCheckedChange={(checked) =>
 								setData((prev) => ({
 									...prev,
@@ -210,11 +210,11 @@ export function RemindersSettingsTab({
 					<div className="space-y-2">
 						<Label htmlFor="deadline-days">Days before deadline</Label>
 						<Input
+							disabled={!data.deadline.enabled}
 							id="deadline-days"
-							value={deadlineDaysText}
 							onChange={(e) => setDeadlineDaysText(e.target.value)}
 							placeholder="e.g. 7, 3, 1"
-							disabled={!data.deadline.enabled}
+							value={deadlineDaysText}
 						/>
 						<p className="text-xs text-muted-foreground">
 							Comma-separated numbers. A reminder is sent for each value.
@@ -224,7 +224,7 @@ export function RemindersSettingsTab({
 			</div>
 
 			<div className="mt-6 flex justify-end">
-				<Button onClick={handleSave} disabled={isSaving}>
+				<Button disabled={isSaving} onClick={handleSave}>
 					{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 					Save
 				</Button>

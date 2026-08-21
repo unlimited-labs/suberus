@@ -54,17 +54,17 @@ export function VersionCompareSelector({
 				<span className="text-xs text-muted-foreground">Base (older)</span>
 				<Select
 					items={versionItems}
-					value={base.toString()}
 					onValueChange={(value) => onBaseChange(Number(value))}
+					value={base.toString()}
 				>
 					<SelectTrigger
+						aria-label="Base version (older)"
 						className="w-full"
 						data-testid="diff-base-select"
-						aria-label="Base version (older)"
 					>
 						<SelectValue />
 					</SelectTrigger>
-					<VersionOptions versions={versions} currentVersion={currentVersion} />
+					<VersionOptions currentVersion={currentVersion} versions={versions} />
 				</Select>
 			</div>
 			<IconArrowRight className="mb-2 size-4 shrink-0 text-muted-foreground" />
@@ -72,17 +72,17 @@ export function VersionCompareSelector({
 				<span className="text-xs text-muted-foreground">Compare (newer)</span>
 				<Select
 					items={versionItems}
-					value={compare.toString()}
 					onValueChange={(value) => onCompareChange(Number(value))}
+					value={compare.toString()}
 				>
 					<SelectTrigger
+						aria-label="Compare version (newer)"
 						className="w-full"
 						data-testid="diff-compare-select"
-						aria-label="Compare version (newer)"
 					>
 						<SelectValue />
 					</SelectTrigger>
-					<VersionOptions versions={versions} currentVersion={currentVersion} />
+					<VersionOptions currentVersion={currentVersion} versions={versions} />
 				</Select>
 			</div>
 		</div>

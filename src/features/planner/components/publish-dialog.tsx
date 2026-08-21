@@ -48,10 +48,10 @@ export function PublishDialog({
 }: PublishDialogProps) {
 	return (
 		<TooltipProvider>
-			<Dialog open={open} onOpenChange={onOpenChange}>
+			<Dialog onOpenChange={onOpenChange} open={open}>
 				<DialogContent
-					data-testid="publish-dialog"
 					className="flex max-h-[85vh] flex-col sm:max-w-md"
+					data-testid="publish-dialog"
 				>
 					<DialogHeader>
 						<DialogTitle>Publish program</DialogTitle>
@@ -61,17 +61,17 @@ export function PublishDialog({
 					</DialogHeader>
 
 					<PublishIssuesPanel
+						isDraftPublished={isDraftPublished}
 						issues={issues}
 						issuesLoading={issuesLoading}
-						isDraftPublished={isDraftPublished}
 						onSelectIssue={onSelectIssue}
 					/>
 
 					<DialogFooter className="gap-2 sm:flex-row sm:justify-between">
 						<Button
-							variant="ghost"
-							size="sm"
 							onClick={() => onOpenChange(false)}
+							size="sm"
+							variant="ghost"
 						>
 							Cancel
 						</Button>
@@ -80,15 +80,15 @@ export function PublishDialog({
 								<Tooltip>
 									<TooltipTrigger asChild>
 										<Button
-											variant="outline"
-											size="sm"
+											className="gap-1.5"
+											data-testid="publish-unpublish"
 											disabled={busy !== null}
 											onClick={onUnpublish}
-											data-testid="publish-unpublish"
-											className="gap-1.5"
+											size="sm"
+											variant="outline"
 										>
 											{busy === "unpublish" ? (
-												<IconLoader2 size={14} className="animate-spin" />
+												<IconLoader2 className="animate-spin" size={14} />
 											) : (
 												<IconWorldOff size={14} />
 											)}
@@ -103,15 +103,15 @@ export function PublishDialog({
 								<Tooltip>
 									<TooltipTrigger asChild>
 										<Button
-											variant="outline"
-											size="sm"
+											className="gap-1.5"
+											data-testid="publish-draft-confirm"
 											disabled={busy !== null || issuesLoading}
 											onClick={() => onPublish("draft")}
-											data-testid="publish-draft-confirm"
-											className="gap-1.5"
+											size="sm"
+											variant="outline"
 										>
 											{busy === "draft" ? (
-												<IconLoader2 size={14} className="animate-spin" />
+												<IconLoader2 className="animate-spin" size={14} />
 											) : (
 												<IconEye size={14} />
 											)}
@@ -126,14 +126,14 @@ export function PublishDialog({
 							<Tooltip>
 								<TooltipTrigger asChild>
 									<Button
-										size="sm"
+										className="gap-1.5"
+										data-testid="publish-confirm"
 										disabled={busy !== null || issuesLoading}
 										onClick={() => onPublish("public")}
-										data-testid="publish-confirm"
-										className="gap-1.5"
+										size="sm"
 									>
 										{busy === "public" ? (
-											<IconLoader2 size={14} className="animate-spin" />
+											<IconLoader2 className="animate-spin" size={14} />
 										) : (
 											<IconWorld size={14} />
 										)}

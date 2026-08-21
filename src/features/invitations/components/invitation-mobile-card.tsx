@@ -48,17 +48,17 @@ export function InvitationMobileCard({
 				{isInvitationActionable(invitation.status) && (
 					<div className="mt-2 flex gap-2">
 						<Button
-							variant="outline"
-							size="sm"
 							onClick={() => onResend(invitation.id)}
+							size="sm"
+							variant="outline"
 						>
 							<IconMailForward className="mr-1 size-3.5" />
 							Resend
 						</Button>
 						<Button
-							variant="outline"
-							size="sm"
 							onClick={() => onCancel(invitation.id)}
+							size="sm"
+							variant="outline"
 						>
 							<IconX className="mr-1 size-3.5" />
 							Cancel

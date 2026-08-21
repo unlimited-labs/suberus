@@ -100,18 +100,18 @@ export function ProgramInteractionProvider({
 		<ProgramInteractionContext.Provider value={value}>
 			{children}
 			<PresentationPreviewDialog
-				target={selected?.target ?? null}
-				themeId={themeId}
 				canInteract={isAuthenticated}
-				showAuthorInfo={authorInfoEnabled}
 				initialAuthorOrderIndex={selected?.authorOrderIndex ?? null}
+				isFavorite={selected ? favorites.has(selected.target.slotId) : false}
 				onOpenChange={(open) => {
 					if (!open) setSelected(null);
 				}}
-				isFavorite={selected ? favorites.has(selected.target.slotId) : false}
 				onToggleFavorite={() => {
 					if (selected) mutate(selected.target.slotId);
 				}}
+				showAuthorInfo={authorInfoEnabled}
+				target={selected?.target ?? null}
+				themeId={themeId}
 			/>
 		</ProgramInteractionContext.Provider>
 	);

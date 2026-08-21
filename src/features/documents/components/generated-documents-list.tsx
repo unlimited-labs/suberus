@@ -22,15 +22,15 @@ function FailureReason({ error }: { error: string }) {
 	const [open, setOpen] = useState(false);
 	return (
 		<button
-			type="button"
-			onClick={() => setOpen((o) => !o)}
-			title={open ? "Click to collapse" : "Click to see the full error"}
-			data-testid="doc-error"
 			className={`mt-0.5 block text-left text-xs text-destructive ${
 				open
 					? "max-w-md whitespace-pre-wrap break-words"
 					: "max-w-48 cursor-pointer truncate"
 			}`}
+			data-testid="doc-error"
+			onClick={() => setOpen((o) => !o)}
+			title={open ? "Click to collapse" : "Click to see the full error"}
+			type="button"
 		>
 			{error}
 		</button>
@@ -40,8 +40,8 @@ function FailureReason({ error }: { error: string }) {
 function DownloadButton({ d }: { d: DocumentRow }) {
 	if (d.status !== "READY" || !d.hasFile) return null;
 	return (
-		<Button asChild variant="ghost" size="icon-sm">
-			<a href={`/api/documents/${d.id}`} aria-label="Download">
+		<Button asChild size="icon-sm" variant="ghost">
+			<a aria-label="Download" href={`/api/documents/${d.id}`}>
 				<IconDownload className="size-4" />
 			</a>
 		</Button>
@@ -51,11 +51,11 @@ function DownloadButton({ d }: { d: DocumentRow }) {
 function DeleteButton({ onClick }: { onClick: () => void }) {
 	return (
 		<Button
-			variant="ghost"
-			size="icon-sm"
-			onClick={onClick}
-			className="text-destructive hover:text-destructive"
 			aria-label="Delete"
+			className="text-destructive hover:text-destructive"
+			onClick={onClick}
+			size="icon-sm"
+			variant="ghost"
 		>
 			<IconTrash className="size-4" />
 		</Button>
@@ -75,9 +75,9 @@ export function GeneratedDocumentsList({ documents, onDelete }: ListProps) {
 			<div className="space-y-2 md:hidden">
 				{documents.map((d) => (
 					<div
-						key={d.id}
-						data-testid="generated-doc-row"
 						className="flex items-start gap-3 rounded-xl border bg-card p-3"
+						data-testid="generated-doc-row"
+						key={d.id}
 					>
 						<DocumentIconTile status={d.status} />
 						<div className="min-w-0 flex-1">
@@ -120,7 +120,7 @@ export function GeneratedDocumentsList({ documents, onDelete }: ListProps) {
 					</TableHeader>
 					<TableBody>
 						{documents.map((d) => (
-							<TableRow key={d.id} data-testid="generated-doc-row">
+							<TableRow data-testid="generated-doc-row" key={d.id}>
 								<TableCell>
 									<p className="text-sm font-medium">{d.participant.name}</p>
 									<p className="text-xs text-muted-foreground">
