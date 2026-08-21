@@ -357,6 +357,17 @@ export class AdminSettingsPage {
 		await expect(this.page.getByRole("heading", { name: "Terms of Service" })).toBeVisible()
 	}
 
+	// --- Invitations tab ---
+
+	async switchToInvitationsTab(_testInfo?: { project: { name: string } }) {
+		await this.page.getByTestId("settings-tab-invitations").click()
+		await expect(this.page.getByRole("heading", { name: "Invitation Settings" })).toBeVisible()
+	}
+
+	getInvitationValidityInput(): Locator {
+		return this.page.getByLabel("Invitation validity (hours)")
+	}
+
 	// --- Branding tab ---
 
 	async switchToBrandingTab(_testInfo?: { project: { name: string } }) {

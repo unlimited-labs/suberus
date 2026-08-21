@@ -8,7 +8,6 @@ import {
 	authMiddleware,
 } from "@/features/auth/server/middleware";
 import { getDefaultSetting } from "@/features/settings/defaults";
-import { SUPPORTED_FILE_EXTENSIONS } from "@/features/settings/file-types";
 import {
 	deleteAuthBackground,
 	deleteBrandingFavicon,
@@ -42,31 +41,13 @@ import type {
 import {
 	conferenceSettingsSchema,
 	reminderSettingsSchema,
+	setSettingSchema,
+	submissionTypeUpdateSchema,
+	submissionValidationSettingsSchema,
 } from "@/features/settings/validations";
 import { isDeadlinePassed } from "@/shared/lib/deadline";
 import { prisma } from "@/shared/server/db.server";
 import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
-
-const submissionTypeConfigSchema = z.object({
-	isActive: z.boolean(),
-	includeInPlanner: z.boolean(),
-	allowExhibitorPresentation: z.boolean(),
-	contentFormat: z.enum(["TEXT", "FILE"]),
-	allowedExtensions: z.array(z.enum(SUPPORTED_FILE_EXTENSIONS)).max(1),
-	maxFileSizeMb: z.number().int().min(1).max(100),
-	maxSubmissionsPerUser: z.number().int().min(0).max(1000),
-	requiredReviewers: z.number().int().min(0).max(10),
-	reviewMode: z.enum(["OPEN", "SINGLE_BLIND", "DOUBLE_BLIND"]),
-	reviewDeadlineDays: z.number().int().min(1).max(90),
-	requiresEditorDecision: z.boolean(),
-	enableScoring: z.boolean(),
-	scoringCriteria: z.array(
-		z.object({ name: z.string(), description: z.string() }),
-	),
-	enableConfidenceLevel: z.boolean(),
-	enableReviewAttachment: z.boolean(),
-	enableTrackSelection: z.boolean(),
-});
 
 export const activeSubmissionTypesQueryOptions = () =>
 	queryOptions({
@@ -160,17 +141,13 @@ export const getSettingFn = createServerFn({ method: "GET" })
  */
 export const setSettingFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
-	.validator(
-		z.object({
-			key: z.string(),
-			value: z.unknown(),
-		}),
-	)
+	.validator(setSettingSchema)
 	.handler(async ({ data }) => {
+		// SAFETY: setSettingSchema is a discriminated union pairing each allowed
+		// key with its own value schema, but TS cannot correlate the two across
+		// the union without narrowing every branch by hand.
 		await setSetting(
-			// SAFETY: the validator restricts key to the AppSettingsMap key union.
 			data.key as keyof AppSettingsMap,
-			// SAFETY: the validator pairs value with its key.
 			data.value as AppSettingsMap[keyof AppSettingsMap],
 		);
 		return { success: true };
@@ -190,43 +167,8 @@ export const getSubmissionTypeConfigsFn = createServerFn({ method: "GET" })
  */
 export const updateSubmissionTypeConfigFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
-	.validator(
-		z.object({
-			type: z.enum([
-				"SUBMISSION_TYPE_ORAL_PRESENTATION",
-				"SUBMISSION_TYPE_POSTER",
-				"SUBMISSION_TYPE_FULL_PAPER",
-				"SUBMISSION_TYPE_EXHIBITOR",
-			]),
-			config: submissionTypeConfigSchema,
-		}),
-	)
+	.validator(submissionTypeUpdateSchema)
 	.handler(async ({ data }) => {
-		// Validate FILE format has at least one extension
-		if (
-			data.config.contentFormat === "FILE" &&
-			data.config.allowedExtensions.length === 0
-		) {
-			throw new Response(
-				"FILE format requires at least one allowed extension",
-				{ status: 400 },
-			);
-		}
-
-		if (data.config.enableScoring && data.config.scoringCriteria.length === 0) {
-			throw new Response("Scoring requires at least one criterion", {
-				status: 400,
-			});
-		}
-
-		// Only EXHIBITOR (never reviewed) may have zero required reviewers
-		if (
-			data.type !== "SUBMISSION_TYPE_EXHIBITOR" &&
-			data.config.requiredReviewers < 1
-		) {
-			throw new Response("At least one reviewer is required", { status: 400 });
-		}
-
 		await setSetting(
 			// SAFETY: the validator restricts type to the submission-type keys.
 			data.type as SubmissionTypeKey,
@@ -371,37 +313,8 @@ export const updateSubmissionValidationSettingsFn = createServerFn({
 	method: "POST",
 })
 	.middleware([adminOnlyMiddleware])
-	.validator(
-		z.object({
-			minTitleLength: z.number().int().min(1).max(500),
-			maxTitleLength: z.number().int().min(10).max(1000),
-			minAbstractLength: z.number().int().min(0).max(10000),
-			maxAbstractLength: z.number().int().min(100).max(50000),
-			minKeywords: z.number().int().min(0).max(20),
-			maxKeywords: z.number().int().min(1).max(20),
-			enableKeywords: z.boolean(),
-		}),
-	)
+	.validator(submissionValidationSettingsSchema)
 	.handler(async ({ data }) => {
-		if (data.minTitleLength > data.maxTitleLength) {
-			throw new Response("Min title length cannot exceed max title length", {
-				status: 400,
-			});
-		}
-		if (data.minAbstractLength > data.maxAbstractLength) {
-			throw new Response(
-				"Min abstract length cannot exceed max abstract length",
-				{
-					status: 400,
-				},
-			);
-		}
-		if (data.minKeywords > data.maxKeywords) {
-			throw new Response("Min keywords cannot exceed max keywords", {
-				status: 400,
-			});
-		}
-
 		await setSetting("MIN_TITLE_LENGTH", data.minTitleLength);
 		await setSetting("MAX_TITLE_LENGTH", data.maxTitleLength);
 		await setSetting("MIN_ABSTRACT_LENGTH", data.minAbstractLength);

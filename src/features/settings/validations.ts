@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SUPPORTED_FILE_EXTENSIONS } from "@/features/settings/file-types";
 import { zIanaTz } from "@/shared/lib/validations/zod-helpers";
 
 export const conferenceSettingsSchema = z.object({
@@ -87,3 +88,124 @@ export const reminderFormSchema = z.object({
 });
 
 export type ReminderFormValues = z.input<typeof reminderFormSchema>;
+
+export const submissionValidationSettingsSchema = z
+	.object({
+		minTitleLength: z.number().int().min(1).max(500),
+		maxTitleLength: z.number().int().min(10).max(1000),
+		minAbstractLength: z.number().int().min(0).max(10000),
+		maxAbstractLength: z.number().int().min(100).max(50000),
+		minKeywords: z.number().int().min(0).max(20),
+		maxKeywords: z.number().int().min(1).max(20),
+		enableKeywords: z.boolean(),
+	})
+	.superRefine((v, ctx) => {
+		if (v.minTitleLength > v.maxTitleLength) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Min title length cannot exceed max title length",
+			});
+		}
+		if (v.minAbstractLength > v.maxAbstractLength) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Min abstract length cannot exceed max abstract length",
+			});
+		}
+		if (v.minKeywords > v.maxKeywords) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Min keywords cannot exceed max keywords",
+			});
+		}
+	});
+
+export const submissionTypeConfigSchema = z
+	.object({
+		isActive: z.boolean(),
+		includeInPlanner: z.boolean(),
+		allowExhibitorPresentation: z.boolean(),
+		contentFormat: z.enum(["TEXT", "FILE"]),
+		allowedExtensions: z.array(z.enum(SUPPORTED_FILE_EXTENSIONS)).max(1),
+		maxFileSizeMb: z.number().int().min(1).max(100),
+		maxSubmissionsPerUser: z.number().int().min(0).max(1000),
+		requiredReviewers: z.number().int().min(0).max(10),
+		reviewMode: z.enum(["OPEN", "SINGLE_BLIND", "DOUBLE_BLIND"]),
+		reviewDeadlineDays: z.number().int().min(1).max(90),
+		requiresEditorDecision: z.boolean(),
+		enableScoring: z.boolean(),
+		scoringCriteria: z.array(
+			z.object({ name: z.string(), description: z.string() }),
+		),
+		enableConfidenceLevel: z.boolean(),
+		enableReviewAttachment: z.boolean(),
+		enableTrackSelection: z.boolean(),
+	})
+	.superRefine((v, ctx) => {
+		if (v.contentFormat === "FILE" && v.allowedExtensions.length === 0) {
+			ctx.addIssue({
+				code: "custom",
+				message: "FILE format requires at least one allowed extension",
+			});
+		}
+		if (v.enableScoring && v.scoringCriteria.length === 0) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Scoring requires at least one criterion",
+			});
+		}
+	});
+
+export const submissionTypeKeys = [
+	"SUBMISSION_TYPE_ORAL_PRESENTATION",
+	"SUBMISSION_TYPE_POSTER",
+	"SUBMISSION_TYPE_FULL_PAPER",
+	"SUBMISSION_TYPE_EXHIBITOR",
+] as const;
+
+/** EXHIBITOR is never reviewed, so it alone may keep zero required reviewers. */
+export const submissionTypeUpdateSchema = z
+	.object({
+		type: z.enum(submissionTypeKeys),
+		config: submissionTypeConfigSchema,
+	})
+	.superRefine((v, ctx) => {
+		if (
+			v.type !== "SUBMISSION_TYPE_EXHIBITOR" &&
+			v.config.requiredReviewers < 1
+		) {
+			ctx.addIssue({
+				code: "custom",
+				message: "At least one reviewer is required",
+			});
+		}
+	});
+
+/**
+ * Allowlist for the generic single-setting endpoint: every reachable key is
+ * paired with its value schema, so an unlisted key is rejected outright.
+ */
+export const setSettingSchema = z.discriminatedUnion("key", [
+	z.object({ key: z.literal("FEE_ENABLED"), value: z.boolean() }),
+	z.object({ key: z.literal("FINANCES_ENABLED"), value: z.boolean() }),
+	z.object({ key: z.literal("PROGRAM_THEME"), value: z.string().max(100) }),
+	z.object({ key: z.literal("PROGRAM_SHOW_AUTHOR_INFO"), value: z.boolean() }),
+	z.object({
+		key: z.literal("INVITATION_VALIDITY_HOURS"),
+		value: z.number().int().min(1).max(8760),
+	}),
+]);
+
+export const invitationSettingsFormSchema = z.object({
+	validityHours: wholeNumber(
+		z
+			.number()
+			.int()
+			.min(1, "Must be at least 1 hour")
+			.max(8760, "At most 8760 hours (one year)"),
+	),
+});
+
+export type InvitationSettingsFormValues = z.input<
+	typeof invitationSettingsFormSchema
+>;
