@@ -1,6 +1,7 @@
 import {
 	IconCalendar,
 	IconCircleDot,
+	IconHash,
 	IconRepeat,
 	IconRoute,
 	IconUserCircle,
@@ -24,7 +25,13 @@ import type { EditorSubmission, EditorSubmissionData } from "./availability";
 interface DetailsCardProps {
 	submission: Pick<
 		EditorSubmission,
-		"id" | "status" | "currentRound" | "createdAt" | "type" | "trackId"
+		| "id"
+		| "sequentialNumber"
+		| "status"
+		| "currentRound"
+		| "createdAt"
+		| "type"
+		| "trackId"
 	>;
 	submitter: EditorSubmissionData["submitter"];
 	availableTracks: { id: string; name: string }[];
@@ -41,6 +48,15 @@ export function DetailsCard({
 
 	return (
 		<SectionCard contentClassName="space-y-3 text-sm" title="Details">
+			<div className="flex items-center justify-between gap-2">
+				<span className="text-muted-foreground flex items-center gap-1.5">
+					<IconHash className="size-4" />
+					Number
+				</span>
+				<span className="font-mono font-medium" data-testid="submission-number">
+					{submission.sequentialNumber}
+				</span>
+			</div>
 			<div className="flex items-center justify-between gap-2">
 				<span className="text-muted-foreground flex items-center gap-1.5">
 					<IconCircleDot className="size-4" />

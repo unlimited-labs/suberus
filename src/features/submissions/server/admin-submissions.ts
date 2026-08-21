@@ -468,6 +468,7 @@ export async function getAdminSubmissions(
 export async function getSubmissionForEditor(submissionId: string): Promise<{
 	submission: {
 		id: string;
+		sequentialNumber: number;
 		title: string;
 		content: string;
 		type: SubmissionType;
@@ -642,6 +643,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 	return {
 		submission: {
 			id: submission.id,
+			sequentialNumber: submission.sequentialNumber,
 			title: submission.title,
 			content: submission.currentVersion?.content ?? submission.content,
 			type: submission.type,
