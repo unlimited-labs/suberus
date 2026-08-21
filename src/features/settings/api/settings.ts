@@ -464,15 +464,23 @@ export const getSubmissionDeadlineFn = createServerFn({ method: "GET" })
 export const getRegistrationStatusFn = createServerFn({
 	method: "GET",
 }).handler(async () => {
-	const [deadline, locked, timezone] = await Promise.all([
-		getSetting("REGISTRATION_DEADLINE"),
-		getSetting("REGISTRATION_LOCKED"),
-		getSetting("CONFERENCE_TIMEZONE"),
-	]);
+	const [deadline, locked, timezone, contactConsentEnabled] = await Promise.all(
+		[
+			getSetting("REGISTRATION_DEADLINE"),
+			getSetting("REGISTRATION_LOCKED"),
+			getSetting("CONFERENCE_TIMEZONE"),
+			getSetting("PROGRAM_SHOW_AUTHOR_INFO"),
+		],
+	);
 	const deadlinePassed = deadline
 		? isDeadlinePassed(deadline, timezone, new Date())
 		: false;
-	return { closed: locked || deadlinePassed, locked, deadlinePassed };
+	return {
+		closed: locked || deadlinePassed,
+		locked,
+		deadlinePassed,
+		contactConsentEnabled,
+	};
 });
 
 /** Branding settings shape */

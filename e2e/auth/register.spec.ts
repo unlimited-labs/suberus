@@ -1,4 +1,5 @@
 import { test, expect, clearMailpit, waitForEmail } from "./fixtures"
+import { getPrisma, setAppSetting } from "../helpers/test-db"
 
 test.describe("Register Page - Step 1: Author Info", () => {
 	test("displays form correctly", async ({ registerPage }) => {
@@ -299,6 +300,43 @@ test.describe("Register Page - Registration Flow", () => {
 		await expect(
 			registerPage.page.getByText(/email.*not verified/i),
 		).toBeVisible({ timeout: 5000 })
+	})
+
+	test("stores the contact-details consent when the participant opts in", async ({
+		registerPage,
+		testRun,
+	}) => {
+		await setAppSetting("PROGRAM_SHOW_AUTHOR_INFO", true)
+		const uniqueEmail = `consent-${testRun.testRunId}@e2e.local`
+		try {
+			await registerPage.goto()
+			await registerPage.fillStep1({
+				email: uniqueEmail,
+				password: "ValidPassword123!",
+				confirmPassword: "ValidPassword123!",
+				firstName: "Test",
+				lastName: "User",
+				affiliation: "Test University",
+			})
+			await registerPage.clickContinue()
+			await registerPage.fillStep2({
+				country: "Poland",
+				address: "Test Org\n123 Test St",
+			})
+			await registerPage.clickContinue()
+			await registerPage.fillStep3({ acceptTerms: true, contactConsent: true })
+
+			await registerPage.clickCreateAccount()
+
+			await expect(registerPage.page).toHaveURL("/", { timeout: 10000 })
+			const user = await getPrisma().user.findUnique({
+				where: { email: uniqueEmail },
+				select: { contactConsent: true },
+			})
+			expect(user?.contactConsent).toBe(true)
+		} finally {
+			await setAppSetting("PROGRAM_SHOW_AUTHOR_INFO", false)
+		}
 	})
 
 	test("sends verification email on registration", async ({ registerPage, testRun }) => {

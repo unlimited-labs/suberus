@@ -25,6 +25,7 @@ import type {
 	PasswordChangeFormData,
 	PersonalInfoFormData,
 } from "@/features/profile/validations";
+import { getRegistrationStatusFn } from "@/features/settings/api/settings";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import {
 	activeSurveyQuestionsQueryOptions,
@@ -38,12 +39,14 @@ import { createAffiliation } from "@/shared/server/affiliations-fn";
 
 export const Route = createFileRoute("/_app/profile")({
 	loader: async ({ context }) => {
-		await Promise.all([
+		const [, , , , registrationStatus] = await Promise.all([
 			context.queryClient.ensureQueryData(personalInfoQueryOptions()),
 			context.queryClient.ensureQueryData(contactInfoQueryOptions()),
 			context.queryClient.ensureQueryData(activeSurveyQuestionsQueryOptions()),
 			context.queryClient.ensureQueryData(userSurveyAnswersQueryOptions()),
+			getRegistrationStatusFn(),
 		]);
+		return { contactConsentEnabled: registrationStatus.contactConsentEnabled };
 	},
 	component: SettingsPage,
 });
@@ -93,6 +96,7 @@ function SettingsPage() {
 		value: a.value,
 	}));
 	const [pendingEmail, setPendingEmail] = useState<string>();
+	const { contactConsentEnabled } = Route.useLoaderData();
 
 	if (!user) return null;
 
@@ -146,6 +150,7 @@ function SettingsPage() {
 					needInvoice: data.needInvoice,
 					address: data.address,
 					country: data.country,
+					contactConsent: data.contactConsent,
 				},
 			});
 			await Promise.all([
@@ -189,6 +194,7 @@ function SettingsPage() {
 						title="Contact & Invoice Information"
 					>
 						<ContactInfoSection
+							contactConsentEnabled={contactConsentEnabled}
 							currentEmail={user.email}
 							emailVerified={user.emailVerified}
 							initialData={{
@@ -196,6 +202,7 @@ function SettingsPage() {
 								needInvoice: contactInfo.needInvoice,
 								address: contactInfo.address,
 								country: contactInfo.country,
+								contactConsent: contactInfo.contactConsent,
 							}}
 							onSave={handleContactInfoSave}
 							pendingEmail={pendingEmail}

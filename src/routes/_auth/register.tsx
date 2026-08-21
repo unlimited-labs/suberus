@@ -62,6 +62,7 @@ export const Route = createFileRoute("/_auth/register")({
 			token: deps.token,
 			registrationClosed,
 			exhibitorSignupAvailable,
+			contactConsentEnabled: registrationStatus.contactConsentEnabled,
 		};
 	},
 	component: RegisterPage,
@@ -113,6 +114,7 @@ function RegisterForm() {
 		invitation,
 		token,
 		exhibitorSignupAvailable,
+		contactConsentEnabled,
 	} = Route.useLoaderData();
 	const {
 		form,
@@ -193,6 +195,7 @@ function RegisterForm() {
 
 					{currentStep === 3 && (
 						<RegisterStep3
+							contactConsentEnabled={contactConsentEnabled}
 							form={form}
 							onOpenTos={() => setTosOpen(true)}
 							surveyQuestions={visibleQuestions}

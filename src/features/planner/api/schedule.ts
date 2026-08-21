@@ -6,6 +6,7 @@ import {
 	adminMiddleware,
 	authMiddleware,
 } from "@/features/auth/server/middleware";
+import { isParticipant } from "@/features/planner/server/favorites";
 import type { PublicProgram } from "@/features/planner/server/schedule";
 import {
 	getCapacity,
@@ -95,6 +96,7 @@ export interface PublicConferenceInfo {
 	timezone: string;
 	theme: string;
 	showAuthorInfo: boolean;
+	viewerIsParticipant: boolean;
 }
 
 export const publicConferenceInfoQueryOptions = () =>
@@ -106,6 +108,8 @@ export const publicConferenceInfoQueryOptions = () =>
 export const getPublicConferenceInfoFn = createServerFn({
 	method: "GET",
 }).handler(async (): Promise<PublicConferenceInfo> => {
+	const session = await auth.api.getSession({ headers: getRequestHeaders() });
+	const role = session?.user?.role;
 	const s = await getSettings([
 		"CONFERENCE_NAME",
 		"CONFERENCE_SUBTITLE",
@@ -123,5 +127,10 @@ export const getPublicConferenceInfoFn = createServerFn({
 		timezone: s.CONFERENCE_TIMEZONE,
 		theme: s.PROGRAM_THEME,
 		showAuthorInfo: s.PROGRAM_SHOW_AUTHOR_INFO,
+		viewerIsParticipant: session?.user
+			? role === "ADMIN" ||
+				role === "EDITOR" ||
+				(await isParticipant(session.user.id))
+			: false,
 	};
 });

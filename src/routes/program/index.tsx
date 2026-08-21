@@ -48,7 +48,7 @@ function ProgramPage() {
 
 	return (
 		<ProgramInteractionProvider
-			showAuthorInfo={settings.showAuthorInfo}
+			showAuthorInfo={settings.showAuthorInfo && settings.viewerIsParticipant}
 			themeId={theme.id}
 		>
 			<ProgramShell

@@ -14,6 +14,8 @@ import { BillingFieldsGroup } from "@/shared/components/composable/billing-field
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { useResendVerification } from "@/shared/hooks/use-resend-verification";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
+import { Label } from "@/shared/ui/label";
+import { Switch } from "@/shared/ui/switch";
 
 interface ContactInfoSectionProps {
 	initialData: ContactInfoFormData;
@@ -22,6 +24,7 @@ interface ContactInfoSectionProps {
 		currentPassword?: string,
 	) => Promise<void>;
 	isLoading?: boolean;
+	contactConsentEnabled: boolean;
 	currentEmail: string;
 	emailVerified: boolean;
 	pendingEmail?: string;
@@ -31,6 +34,7 @@ export function ContactInfoSection({
 	initialData,
 	onSave,
 	isLoading,
+	contactConsentEnabled,
 	currentEmail,
 	emailVerified,
 	pendingEmail,
@@ -157,6 +161,32 @@ export function ContactInfoSection({
 				}}
 				form={form}
 			/>
+
+			{(contactConsentEnabled || initialData.contactConsent) && (
+				<form.Field name="contactConsent">
+					{(field) => (
+						<div className="border-border/50 flex items-start justify-between gap-4 rounded-lg border p-3">
+							<Label
+								className="text-sm leading-snug font-normal"
+								htmlFor="contactConsent"
+							>
+								I consent to my name, affiliation and e-mail address being
+								included in the participant list made available to the other
+								participants of the event, for networking purposes.
+							</Label>
+							<Switch
+								checked={field.state.value === true}
+								data-testid="contact-consent-switch"
+								disabled={isLoading}
+								id="contactConsent"
+								onCheckedChange={(checked) =>
+									field.handleChange(checked === true)
+								}
+							/>
+						</div>
+					)}
+				</form.Field>
+			)}
 
 			<div className="flex justify-end pt-2">
 				<form.AppForm>

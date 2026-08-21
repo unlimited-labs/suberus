@@ -44,10 +44,18 @@ export async function toggleFavorite(
 	return true;
 }
 
+export async function isParticipant(userId: string): Promise<boolean> {
+	const fee = await prisma.fee.findUnique({
+		where: { userId },
+		select: { paid: true },
+	});
+	return fee?.paid === true;
+}
+
 export async function getPresentationDetail(
 	slotId: string,
 	viewerCanPreviewDraft = false,
-	viewerIsAuthenticated = false,
+	viewerIsParticipant = false,
 ): Promise<PresentationDetail | null> {
 	if (!(await isScheduleVisible(viewerCanPreviewDraft))) return null;
 
@@ -69,7 +77,7 @@ export async function getPresentationDetail(
 								isPresenter: true,
 								orderIndex: true,
 								affiliation: { select: { name: true } },
-								user: { select: { orcid: true } },
+								user: { select: { orcid: true, contactConsent: true } },
 							},
 						},
 						keywords: {
@@ -82,7 +90,7 @@ export async function getPresentationDetail(
 	]);
 	if (!slot) return null;
 
-	const includeAuthorInfo = showAuthorInfo && viewerIsAuthenticated;
+	const includeAuthorInfo = showAuthorInfo && viewerIsParticipant;
 	const { submission } = slot;
 	return {
 		content: submission.content,
@@ -90,14 +98,17 @@ export async function getPresentationDetail(
 			? `/api/program/camera-ready/${slotId}`
 			: null,
 		keywords: submission.keywords.map((k) => k.keyword.name),
-		authors: submission.authors.map((a) => ({
-			firstName: a.firstName,
-			lastName: a.lastName,
-			affiliationName: a.affiliation?.name ?? null,
-			isPresenter: a.isPresenter,
-			orderIndex: a.orderIndex,
-			orcid: includeAuthorInfo ? (a.user?.orcid ?? null) : null,
-			email: includeAuthorInfo ? a.email : null,
-		})),
+		authors: submission.authors.map((a) => {
+			const consented = includeAuthorInfo && a.user?.contactConsent === true;
+			return {
+				firstName: a.firstName,
+				lastName: a.lastName,
+				affiliationName: a.affiliation?.name ?? null,
+				isPresenter: a.isPresenter,
+				orderIndex: a.orderIndex,
+				orcid: consented ? (a.user?.orcid ?? null) : null,
+				email: consented ? a.email : null,
+			};
+		}),
 	};
 }

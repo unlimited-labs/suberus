@@ -13,6 +13,7 @@ interface RegisterStep3Props {
 	form: RegisterFormApi;
 	surveyQuestions: RegisterSurveyQuestions;
 	tosContent: RegisterTosContent;
+	contactConsentEnabled: boolean;
 	onOpenTos: () => void;
 }
 
@@ -20,6 +21,7 @@ export function RegisterStep3({
 	form,
 	surveyQuestions,
 	tosContent,
+	contactConsentEnabled,
 	onOpenTos,
 }: RegisterStep3Props) {
 	return (
@@ -56,6 +58,34 @@ export function RegisterStep3({
 						</form.Field>
 					))}
 				</div>
+			)}
+
+			{contactConsentEnabled && (
+				<form.Field name="contactConsent">
+					{(field) => (
+						<Field className="border-border/50 rounded-lg border p-3">
+							<div className="flex items-start gap-2">
+								<Checkbox
+									checked={field.state.value}
+									className="mt-0.5"
+									data-testid="contact-consent-checkbox"
+									id={field.name}
+									onCheckedChange={(checked) =>
+										field.handleChange(checked === true)
+									}
+								/>
+								<FieldLabel
+									className="cursor-pointer text-sm leading-snug font-normal"
+									htmlFor={field.name}
+								>
+									I consent to my name, affiliation and e-mail address being
+									included in the participant list made available to the other
+									participants of the event, for networking purposes.
+								</FieldLabel>
+							</div>
+						</Field>
+					)}
+				</form.Field>
 			)}
 
 			{tosContent && (

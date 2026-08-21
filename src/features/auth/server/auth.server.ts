@@ -231,6 +231,12 @@ export const auth = betterAuth({
 				input: true,
 				returned: false,
 			},
+			contactConsent: {
+				type: "boolean",
+				required: false,
+				input: true,
+				returned: false,
+			},
 			role: {
 				// SAFETY: Object.keys over a generated enum returns exactly its member names.
 				type: Object.keys(UserRole) as (keyof typeof UserRole)[],

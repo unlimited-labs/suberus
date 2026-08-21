@@ -848,6 +848,7 @@ export interface CreateTestUserOptions {
 	affiliationName?: string;
 	emailVerified?: boolean;
 	role?: UserRole;
+	contactConsent?: boolean;
 }
 
 export async function createTestUser(
@@ -886,6 +887,7 @@ export async function createTestUser(
 			isActive: true,
 			role: options.role || UserRole.AUTHOR,
 			affiliationId: affiliation.id,
+			contactConsent: options.contactConsent ?? false,
 		},
 	});
 

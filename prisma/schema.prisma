@@ -35,6 +35,7 @@ model User {
   emailVerified         Boolean                @default(false)
   isActive              Boolean                @default(true)
   allowLateSubmission   Boolean                @default(false)
+  contactConsent        Boolean                @default(false)
   lastLoginAt           DateTime?
   tosAcceptedAt         DateTime?
   affiliationId         String?                @db.Uuid

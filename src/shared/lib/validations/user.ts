@@ -40,6 +40,7 @@ export const contactInfoSchema = z.object({
 		.string()
 		.max(500, "Billing details must be at most 500 characters"),
 	country: z.string(),
+	contactConsent: z.boolean().optional(),
 });
 
 export type PersonalInfoFormData = z.infer<typeof personalInfoSchema>;

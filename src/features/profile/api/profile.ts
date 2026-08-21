@@ -65,6 +65,7 @@ export const updateContactInfoFn = createServerFn({ method: "POST" })
 			needInvoice: z.boolean().optional(),
 			address: z.string().max(500).optional(),
 			country: z.string().optional(),
+			contactConsent: z.boolean().optional(),
 		}),
 	)
 	.handler(async ({ data, context }) => {

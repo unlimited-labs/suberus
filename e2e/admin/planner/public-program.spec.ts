@@ -1,11 +1,14 @@
 import { test, expect, isoDay } from "./fixtures";
 import { baseUrlFor } from "../../../playwright.config";
 import { PublicProgramPage } from "../../pom/public-program.page";
+import { loginAs } from "../../helpers/auth";
+import { DEFAULT_PASSWORD } from "../../helpers/test-users";
 import { SubmissionStatus } from "../../../src/generated/prisma/enums";
 import {
 	addPresentationToSession,
 	createProgramSession,
 	createRoom,
+	createFee,
 	createSubmission,
 	createTestUser,
 	deleteTestUser,
@@ -165,6 +168,33 @@ test.describe.serial("Public /program", () => {
 			await setSchedulePublished(true);
 		}
 
+		async function publishTalkWithLinkedAuthor(
+			testRunId: string,
+			author: {
+				firstName: string;
+				lastName: string;
+				affiliationName: string;
+				userId: string;
+			},
+		) {
+			const roomId = await createRoom(testRunId, "Linked Author Room");
+			const sessionId = await createProgramSession({
+				testRunId,
+				title: "Author Info Session",
+				startAt: isoDay(0, 14),
+				endAt: isoDay(0, 15),
+				roomId,
+			});
+			const submission = await createSubmission({
+				testRunId,
+				title: "Author Info Talk",
+				status: SubmissionStatus.ACCEPTED,
+				extraAuthors: [author],
+			});
+			await addPresentationToSession(sessionId, submission.id);
+			await setSchedulePublished(true);
+		}
+
 		test("author click opens author view, back returns to talk", async ({
 			publicProgramPage,
 			page,
@@ -172,36 +202,50 @@ test.describe.serial("Public /program", () => {
 		}) => {
 			await setAppSetting("PROGRAM_SHOW_AUTHOR_INFO", true);
 			const lastName = `Curie${testRun.testRunId}`;
-			await publishTalkWithAuthor(testRun.testRunId, {
+			const author = await createTestUser({
+				email: `curie-author-${testRun.testRunId}@e2e.local`,
 				firstName: "Maria",
 				lastName,
-				affiliationName: "Radium Institute",
+				contactConsent: true,
 			});
 
-			await publicProgramPage.goto();
-			await page
-				.getByTestId("author-name")
-				.filter({ hasText: lastName })
-				.click();
+			try {
+				await publishTalkWithLinkedAuthor(testRun.testRunId, {
+					firstName: "Maria",
+					lastName,
+					affiliationName: "Radium Institute",
+					userId: author.id,
+				});
 
-			const authorInfo = page.getByTestId("author-info");
-			await expect(authorInfo).toBeVisible();
-			await expect(authorInfo).toContainText(`Maria ${lastName}`);
-			await expect(authorInfo).toContainText("Radium Institute");
-			await expect(page.getByTestId("author-email")).toContainText("@test.com");
-			await expect(page.getByTestId("author-orcid")).toBeHidden();
+				await publicProgramPage.goto();
+				await page
+					.getByTestId("author-name")
+					.filter({ hasText: lastName })
+					.click();
 
-			await page.getByTestId("author-back").click();
-			await expect(authorInfo).toBeHidden();
-			await expect(publicProgramPage.preview).toContainText(
-				`${testRun.testRunId}_Author Info Talk`,
-			);
+				const authorInfo = page.getByTestId("author-info");
+				await expect(authorInfo).toBeVisible();
+				await expect(authorInfo).toContainText(`Maria ${lastName}`);
+				await expect(authorInfo).toContainText("Radium Institute");
+				await expect(page.getByTestId("author-email")).toContainText(
+					"@test.com",
+				);
+				await expect(page.getByTestId("author-orcid")).toBeHidden();
 
-			await page
-				.getByTestId("author-card-button")
-				.filter({ hasText: lastName })
-				.click();
-			await expect(authorInfo).toBeVisible();
+				await page.getByTestId("author-back").click();
+				await expect(authorInfo).toBeHidden();
+				await expect(publicProgramPage.preview).toContainText(
+					`${testRun.testRunId}_Author Info Talk`,
+				);
+
+				await page
+					.getByTestId("author-card-button")
+					.filter({ hasText: lastName })
+					.click();
+				await expect(authorInfo).toBeVisible();
+			} finally {
+				await deleteTestUser(author.id).catch(() => {});
+			}
 		});
 
 		test("shows ORCID link for an author with a linked account", async ({
@@ -216,6 +260,7 @@ test.describe.serial("Public /program", () => {
 				email: `orcid-author-${testRun.testRunId}@e2e.local`,
 				firstName: "Linus",
 				lastName,
+				contactConsent: true,
 			});
 			await getPrisma().user.update({
 				where: { id: linkedUser.id },
@@ -262,6 +307,128 @@ test.describe.serial("Public /program", () => {
 				);
 			} finally {
 				await deleteTestUser(linkedUser.id).catch(() => {});
+			}
+		});
+
+		test("hides contact details for an author who did not consent", async ({
+			publicProgramPage,
+			page,
+			testRun,
+		}) => {
+			await setAppSetting("PROGRAM_SHOW_AUTHOR_INFO", true);
+			const lastName = `NoConsent${testRun.testRunId}`;
+			const author = await createTestUser({
+				email: `noconsent-${testRun.testRunId}@e2e.local`,
+				firstName: "Rosalind",
+				lastName,
+				contactConsent: false,
+			});
+			await createFee({ userId: author.id });
+
+			try {
+				await publishTalkWithLinkedAuthor(testRun.testRunId, {
+					firstName: "Rosalind",
+					lastName,
+					affiliationName: "Birkbeck College",
+					userId: author.id,
+				});
+
+				await publicProgramPage.goto();
+				await page
+					.getByTestId("author-name")
+					.filter({ hasText: lastName })
+					.click();
+
+				const authorInfo = page.getByTestId("author-info");
+				await expect(authorInfo).toBeVisible();
+				await expect(authorInfo).toContainText("Birkbeck College");
+				await expect(page.getByTestId("author-email")).toBeHidden();
+			} finally {
+				await deleteTestUser(author.id).catch(() => {});
+			}
+		});
+
+		test("shows contact details for a consenting author who has not paid", async ({
+			publicProgramPage,
+			page,
+			testRun,
+		}) => {
+			await setAppSetting("PROGRAM_SHOW_AUTHOR_INFO", true);
+			const lastName = `NoFee${testRun.testRunId}`;
+			const author = await createTestUser({
+				email: `nofee-${testRun.testRunId}@e2e.local`,
+				firstName: "Rosalind",
+				lastName,
+				contactConsent: true,
+			});
+
+			try {
+				await publishTalkWithLinkedAuthor(testRun.testRunId, {
+					firstName: "Rosalind",
+					lastName,
+					affiliationName: "Birkbeck College",
+					userId: author.id,
+				});
+
+				await publicProgramPage.goto();
+				await page
+					.getByTestId("author-name")
+					.filter({ hasText: lastName })
+					.click();
+
+				await expect(page.getByTestId("author-email")).toContainText(
+					"@test.com",
+				);
+			} finally {
+				await deleteTestUser(author.id).catch(() => {});
+			}
+		});
+
+		test("authors are plain text for a signed-in visitor without a paid fee", async ({
+			browser,
+			testRun,
+		}, testInfo) => {
+			await setAppSetting("PROGRAM_SHOW_AUTHOR_INFO", true);
+			const lastName = `Unpaid${testRun.testRunId}`;
+			const author = await createTestUser({
+				email: `unpaid-author-${testRun.testRunId}@e2e.local`,
+				firstName: "Emmy",
+				lastName,
+				contactConsent: true,
+			});
+			const viewer = await createTestUser({
+				email: `unpaid-viewer-${testRun.testRunId}@e2e.local`,
+				firstName: "Viewer",
+				lastName: `Unpaid${testRun.testRunId}`,
+			});
+
+			const context = await browser.newContext({
+				baseURL: baseUrlFor(testInfo.parallelIndex),
+				storageState: { cookies: [], origins: [] },
+			});
+			const viewerPage = await context.newPage();
+			try {
+				await publishTalkWithLinkedAuthor(testRun.testRunId, {
+					firstName: "Emmy",
+					lastName,
+					affiliationName: "Gottingen Institute",
+					userId: author.id,
+				});
+
+				await loginAs(viewerPage, {
+					email: viewer.email,
+					password: DEFAULT_PASSWORD,
+				});
+				const viewerProgram = new PublicProgramPage(viewerPage);
+				await viewerProgram.goto();
+				await expect(
+					viewerPage.getByText(`Emmy ${lastName}`).first(),
+				).toBeVisible();
+				await expect(viewerPage.getByTestId("author-name")).toHaveCount(0);
+			} finally {
+				await context.close();
+				await deleteTestUser(viewer.id).catch(() => {});
+				await deleteTestUser(author.id).catch(() => {});
 			}
 		});
 

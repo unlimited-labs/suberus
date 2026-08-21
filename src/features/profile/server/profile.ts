@@ -62,12 +62,14 @@ export async function getContactInfo(userId: string) {
 			needInvoice: true,
 			address: true,
 			country: true,
+			contactConsent: true,
 		},
 	});
 	return {
 		needInvoice: user.needInvoice,
 		address: user.address ?? "",
 		country: user.country ?? "",
+		contactConsent: user.contactConsent,
 	};
 }
 
@@ -77,6 +79,7 @@ export async function updateContactInfo(
 		needInvoice?: boolean;
 		address?: string;
 		country?: string;
+		contactConsent?: boolean;
 	},
 ) {
 	const result = await prisma.user.update({
@@ -85,6 +88,7 @@ export async function updateContactInfo(
 			needInvoice: data.needInvoice,
 			address: data.address || null,
 			country: data.country || null,
+			contactConsent: data.contactConsent,
 		},
 	});
 

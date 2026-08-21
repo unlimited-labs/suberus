@@ -7,6 +7,7 @@ import { authMiddleware } from "@/features/auth/server/middleware";
 import {
 	getFavoriteSlotIds,
 	getPresentationDetail,
+	isParticipant,
 	type PresentationDetail,
 	toggleFavorite,
 } from "@/features/planner/server/favorites";
@@ -36,7 +37,14 @@ export const getPresentationDetailFn = createServerFn({ method: "GET" })
 		const session = await auth.api.getSession({ headers: getRequestHeaders() });
 		const role = session?.user?.role;
 		const canPreviewDraft = role === "ADMIN" || role === "EDITOR";
-		return getPresentationDetail(data.slotId, canPreviewDraft, !!session?.user);
+		const viewerIsParticipant = session?.user
+			? canPreviewDraft || (await isParticipant(session.user.id))
+			: false;
+		return getPresentationDetail(
+			data.slotId,
+			canPreviewDraft,
+			viewerIsParticipant,
+		);
 	});
 
 export const presentationDetailQueryOptions = (slotId: string) =>

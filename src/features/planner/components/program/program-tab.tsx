@@ -211,7 +211,7 @@ function PlannerSettingsSection({
 							<Label htmlFor="autoplanEnabled">
 								Enable autoplanner (requires LLM access)
 							</Label>
-							<p className="text-muted-foreground text-sm">
+							<p className="text-muted-foreground text-xs">
 								Lets admins cluster accepted abstracts into sessions and
 								generate session titles via the LLM service.
 							</p>

@@ -338,6 +338,9 @@ async function loadApplicableProposal(
 export async function applyAutoPlan(jobId: string): Promise<ApplyResult> {
 	const proposal = await loadApplicableProposal(jobId);
 	const sessionIds = proposal.sessions.map((s) => s.sessionId);
+	const submissionIds = proposal.sessions.flatMap((s) =>
+		s.presentations.map((p) => p.submissionId),
+	);
 
 	const result = await prisma.$transaction(async (tx) => {
 		// The proposal froze its targets; an invited talk added since would be
@@ -354,8 +357,15 @@ export async function applyAutoPlan(jobId: string): Promise<ApplyResult> {
 			);
 		}
 
+		// Also by submissionId: a proposed talk moved out of a target session since
+		// the proposal would otherwise survive and break the unique submissionId.
 		const del = await tx.presentationSlot.deleteMany({
-			where: { sessionId: { in: sessionIds } },
+			where: {
+				OR: [
+					{ sessionId: { in: sessionIds } },
+					{ submissionId: { in: submissionIds } },
+				],
+			},
 		});
 
 		let slotsCreated = 0;

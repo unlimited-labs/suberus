@@ -149,7 +149,11 @@ export class RegisterPage {
 	}
 
 	// Step 3: Survey
-	async fillStep3(data: { acceptTerms: boolean; checkSurveyQuestions?: string[] }) {
+	async fillStep3(data: {
+		acceptTerms: boolean
+		checkSurveyQuestions?: string[]
+		contactConsent?: boolean
+	}) {
 		// Wait for step 3 to be visible; retry Continue click if async validation race
 		const termsCheckbox = this.page.getByRole("checkbox", { name: /I agree to the/ })
 		try {
@@ -174,6 +178,10 @@ export class RegisterPage {
 		if (await formatTrigger.isVisible().catch(() => false)) {
 			await formatTrigger.click()
 			await this.page.getByRole("option", { name: "Oral" }).click()
+		}
+
+		if (data.contactConsent) {
+			await this.page.getByTestId("contact-consent-checkbox").check()
 		}
 
 		if (data.acceptTerms) {

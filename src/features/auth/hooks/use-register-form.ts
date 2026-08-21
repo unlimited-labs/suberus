@@ -198,6 +198,7 @@ export function useRegisterForm({
 			address: "",
 			country: detectedCountry,
 			surveyAnswers: defaultSurveyAnswers,
+			contactConsent: false,
 			acceptTerms: !tosContent,
 		},
 		// Full-form safety net; live + per-step checks are field-level validators.
@@ -216,6 +217,7 @@ export function useRegisterForm({
 				title: value.title || undefined,
 				affiliationId: value.affiliationId || undefined,
 				needInvoice: value.needInvoice,
+				contactConsent: value.contactConsent,
 				address: value.address || undefined,
 				country: value.country || undefined,
 			} as Parameters<typeof signUp.email>[0]);

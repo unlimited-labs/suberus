@@ -23,6 +23,7 @@ export const registerBase = z.object({
 	address: z.string(),
 	country: z.string().min(1, "Country is required"),
 	surveyAnswers: z.record(z.string(), z.string()),
+	contactConsent: z.boolean(),
 	acceptTerms: z
 		.boolean()
 		.refine((val) => val === true, "You must accept the Terms of Service"),

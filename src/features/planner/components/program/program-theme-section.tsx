@@ -79,16 +79,18 @@ export function ProgramThemeSection() {
 						))}
 					</SelectContent>
 				</Select>
-				<p className="text-muted-foreground text-sm">
+				<p className="text-muted-foreground text-xs">
 					{PROGRAM_THEME_LIST.find((t) => t.id === current)?.description}
 				</p>
 			</div>
 			<div className="mt-6 flex items-center justify-between gap-4 border-t pt-6">
 				<div className="space-y-0.5">
-					<Label htmlFor="show-author-info">Show author info</Label>
-					<p className="text-muted-foreground text-sm">
-						Makes author names on the public program clickable, showing
-						affiliation and ORCID in the talk preview.
+					<Label htmlFor="show-author-info">
+						Publish participant contact details
+					</Label>
+					<p className="text-muted-foreground text-xs">
+						Adds an optional consent checkbox to registration and allow other
+						participants to see contact details.
 					</p>
 				</div>
 				<Switch
