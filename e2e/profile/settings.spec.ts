@@ -14,6 +14,8 @@ test.describe("User Settings", () => {
 		await expect(settingsPage.firstNameInput).toBeVisible()
 		await expect(settingsPage.lastNameInput).toBeVisible()
 		await expect(settingsPage.orcidInput).toBeVisible()
+		await expect(settingsPage.websiteInput).toBeVisible()
+		await expect(settingsPage.linkedinInput).toBeVisible()
 		await expect(settingsPage.savePersonalBtn).toBeVisible()
 		await expect(settingsPage.needInvoiceCheckbox).toBeVisible()
 		await expect(settingsPage.needInvoiceCheckbox).toBeChecked()
@@ -57,6 +59,35 @@ test.describe("User Settings", () => {
 
 		// Assert
 		await expect(settingsPage.page.getByText(/invalid orcid format/i)).toBeVisible()
+	})
+
+	test("validates website and LinkedIn URLs", async ({ settingsPage }) => {
+		// Arrange
+		await settingsPage.goto()
+
+		// Act
+		await settingsPage.fillPersonalInfo({ website: "notaurl", linkedin: "notaurl" })
+		await settingsPage.savePersonalInfo()
+
+		// Assert
+		await expect(settingsPage.page.getByText(/invalid url/i).first()).toBeVisible()
+	})
+
+	test("persists website and LinkedIn after reload", async ({ settingsPage }) => {
+		// Arrange
+		const website = "https://example.com/me"
+		const linkedin = "https://www.linkedin.com/in/example"
+		await settingsPage.goto()
+
+		// Act
+		await settingsPage.fillPersonalInfo({ website, linkedin })
+		await settingsPage.savePersonalInfo()
+		await settingsPage.expectToastSuccess(/personal information updated/i)
+		await settingsPage.page.reload()
+
+		// Assert
+		await expect(settingsPage.websiteInput).toHaveValue(website)
+		await expect(settingsPage.linkedinInput).toHaveValue(linkedin)
 	})
 
 	test("updates personal info successfully", async ({ settingsPage }) => {

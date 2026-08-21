@@ -10,11 +10,15 @@ export function ContactDetails({
 	affiliationName,
 	email,
 	orcid,
+	website,
+	linkedin,
 	isPresenter = false,
 }: {
 	affiliationName: string | null;
 	email: string | null;
 	orcid: string | null;
+	website: string | null;
+	linkedin: string | null;
 	isPresenter?: boolean;
 }) {
 	return (
@@ -58,6 +62,34 @@ export function ContactDetails({
 							iD
 						</span>
 						{orcid}
+					</a>
+				</section>
+			)}
+			{website && (
+				<section className="space-y-1">
+					<h3 className={HEADING}>Website</h3>
+					<a
+						className="text-foreground text-sm break-all underline-offset-4 hover:underline"
+						data-testid="author-website"
+						href={website}
+						rel="noopener noreferrer"
+						target="_blank"
+					>
+						{website}
+					</a>
+				</section>
+			)}
+			{linkedin && (
+				<section className="space-y-1">
+					<h3 className={HEADING}>LinkedIn</h3>
+					<a
+						className="text-foreground text-sm break-all underline-offset-4 hover:underline"
+						data-testid="author-linkedin"
+						href={linkedin}
+						rel="noopener noreferrer"
+						target="_blank"
+					>
+						{linkedin}
 					</a>
 				</section>
 			)}

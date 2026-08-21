@@ -255,6 +255,8 @@ test.describe.serial("Public /program", () => {
 		}) => {
 			await setAppSetting("PROGRAM_SHOW_AUTHOR_INFO", true);
 			const orcid = "0000-0002-1825-0097";
+			const website = "https://example.com/linus";
+			const linkedin = "https://www.linkedin.com/in/linus";
 			const lastName = `Orcid${testRun.testRunId}`;
 			const linkedUser = await createTestUser({
 				email: `orcid-author-${testRun.testRunId}@e2e.local`,
@@ -264,7 +266,7 @@ test.describe.serial("Public /program", () => {
 			});
 			await getPrisma().user.update({
 				where: { id: linkedUser.id },
-				data: { orcid },
+				data: { orcid, website, linkedin },
 			});
 
 			try {
@@ -305,6 +307,14 @@ test.describe.serial("Public /program", () => {
 					"href",
 					`https://orcid.org/${orcid}`,
 				);
+				await expect(page.getByTestId("author-website")).toHaveAttribute(
+					"href",
+					website,
+				);
+				await expect(page.getByTestId("author-linkedin")).toHaveAttribute(
+					"href",
+					linkedin,
+				);
 			} finally {
 				await deleteTestUser(linkedUser.id).catch(() => {});
 			}
@@ -343,6 +353,8 @@ test.describe.serial("Public /program", () => {
 				await expect(authorInfo).toBeVisible();
 				await expect(authorInfo).toContainText("Birkbeck College");
 				await expect(page.getByTestId("author-email")).toBeHidden();
+				await expect(page.getByTestId("author-website")).toBeHidden();
+				await expect(page.getByTestId("author-linkedin")).toBeHidden();
 			} finally {
 				await deleteTestUser(author.id).catch(() => {});
 			}
@@ -513,6 +525,11 @@ test.describe.serial("Public /program", () => {
 				contactConsent: true,
 			});
 			await createFee({ userId: consented.id });
+			const consentedWebsite = "https://example.com/ada";
+			await getPrisma().user.update({
+				where: { id: consented.id },
+				data: { website: consentedWebsite },
+			});
 			const silent = await createTestUser({
 				email: `list-silent-${testRun.testRunId}@e2e.local`,
 				firstName: "Grace",
@@ -544,6 +561,10 @@ test.describe.serial("Public /program", () => {
 				await expect(page.getByTestId("participant-details")).toBeVisible();
 				await expect(page.getByTestId("author-email")).toContainText(
 					consented.email,
+				);
+				await expect(page.getByTestId("author-website")).toHaveAttribute(
+					"href",
+					consentedWebsite,
 				);
 				await page.keyboard.press("Escape");
 

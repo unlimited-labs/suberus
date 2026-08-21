@@ -117,6 +117,8 @@ function SettingsPage() {
 					title: data.title,
 					affiliationId: affiliationId ?? "",
 					orcid: data.orcid,
+					website: data.website,
+					linkedin: data.linkedin,
 				},
 			});
 			await Promise.all([

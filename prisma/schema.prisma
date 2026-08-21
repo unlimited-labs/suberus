@@ -28,6 +28,8 @@ model User {
   firstName             String?
   lastName              String?
   orcid                 String?
+  website               String?
+  linkedin              String?
   address               String?
   country               String?
   needInvoice           Boolean                @default(false)

@@ -409,7 +409,9 @@ function AuthorBody({
 					affiliationName={author.affiliationName}
 					email={author.email}
 					isPresenter={author.isPresenter}
+					linkedin={author.linkedin}
 					orcid={author.orcid}
+					website={author.website}
 				/>
 			)}
 		</div>

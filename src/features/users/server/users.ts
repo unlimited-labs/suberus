@@ -735,11 +735,15 @@ export async function updateUserProfile(
 		throw new Response("User not found", { status: 404 });
 	}
 
+	// website/linkedin are absent from the admin form; undefined leaves the
+	// user's own value alone instead of wiping it.
 	const updateData: Prisma.UserUpdateInput = {
 		firstName: data.firstName,
 		lastName: data.lastName,
 		title: data.title || null,
 		orcid: data.orcid || null,
+		website: data.website === undefined ? undefined : data.website || null,
+		linkedin: data.linkedin === undefined ? undefined : data.linkedin || null,
 		needInvoice: data.needInvoice,
 		address: data.address || null,
 		country: data.country || null,

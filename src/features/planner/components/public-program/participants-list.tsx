@@ -45,7 +45,7 @@ export function ParticipantsList({
 			>
 				{participants.map((p) => {
 					const inner = <ParticipantCardBody participant={p} query={query} />;
-					if (!p.email && !p.orcid) {
+					if (!p.email && !p.orcid && !p.website && !p.linkedin) {
 						return (
 							<div className={CARD} data-testid="participant-card" key={p.id}>
 								{inner}
@@ -92,7 +92,9 @@ export function ParticipantsList({
 							<ContactDetails
 								affiliationName={selected.affiliationName}
 								email={selected.email}
+								linkedin={selected.linkedin}
 								orcid={selected.orcid}
+								website={selected.website}
 							/>
 						</>
 					)}

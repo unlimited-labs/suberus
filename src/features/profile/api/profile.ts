@@ -34,6 +34,8 @@ export const updatePersonalInfoFn = createServerFn({ method: "POST" })
 			title: z.string().optional(),
 			affiliationId: z.uuid().optional().or(z.literal("")),
 			orcid: z.string().regex(orcidRegex).optional().or(z.literal("")),
+			website: z.httpUrl().optional().or(z.literal("")),
+			linkedin: z.httpUrl().optional().or(z.literal("")),
 		}),
 	)
 	.handler(async ({ data, context }) => {
@@ -43,6 +45,8 @@ export const updatePersonalInfoFn = createServerFn({ method: "POST" })
 			title: data.title,
 			affiliationId: data.affiliationId || undefined,
 			orcid: data.orcid || undefined,
+			website: data.website || undefined,
+			linkedin: data.linkedin || undefined,
 		});
 		return { success: true };
 	});

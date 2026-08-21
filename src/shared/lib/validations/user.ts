@@ -29,6 +29,8 @@ export const personalInfoSchema = z.object({
 		.regex(orcidRegex, "Invalid ORCID format (e.g., 0000-0002-1825-0097)")
 		.optional()
 		.or(z.literal("")),
+	website: z.httpUrl("Invalid URL").optional().or(z.literal("")),
+	linkedin: z.httpUrl("Invalid URL").optional().or(z.literal("")),
 });
 
 // needInvoice/address/country are always present in the form (defaulted), so

@@ -1,4 +1,9 @@
-import { IconBuilding, IconId } from "@tabler/icons-react";
+import {
+	IconBrandLinkedin,
+	IconBuilding,
+	IconId,
+	IconWorld,
+} from "@tabler/icons-react";
 import type { PersonalInfoFormData } from "@/features/profile/validations";
 import { personalInfoSchema } from "@/features/profile/validations";
 import { useAppForm } from "@/shared/hooks/use-app-form";
@@ -86,6 +91,28 @@ export function PersonalInfoSection({
 						disabled={isLoading}
 						icon={<IconId className="size-4" />}
 						label="ORCID"
+						type="text"
+					/>
+				)}
+			</form.AppField>
+
+			<form.AppField name="website">
+				{(field) => (
+					<field.IconInputField
+						disabled={isLoading}
+						icon={<IconWorld className="size-4" />}
+						label="Website"
+						type="text"
+					/>
+				)}
+			</form.AppField>
+
+			<form.AppField name="linkedin">
+				{(field) => (
+					<field.IconInputField
+						disabled={isLoading}
+						icon={<IconBrandLinkedin className="size-4" />}
+						label="LinkedIn"
 						type="text"
 					/>
 				)}

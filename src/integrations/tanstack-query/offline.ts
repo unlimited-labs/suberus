@@ -9,7 +9,7 @@ import {
 
 const PERSIST_KEY = "suberus-program-cache";
 /** Bump when a persisted payload's shape changes, to drop incompatible caches. */
-const PERSIST_VERSION = "3";
+const PERSIST_VERSION = "4";
 const PERSIST_MAX_AGE = 24 * 60 * 60 * 1000;
 const PERSISTED_PREFIXES = ["program", "conference"];
 

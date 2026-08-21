@@ -10,6 +10,8 @@ export interface PresentationDetailAuthor {
 	orderIndex: number;
 	orcid: string | null;
 	email: string | null;
+	website: string | null;
+	linkedin: string | null;
 }
 
 export interface PresentationDetail {
@@ -77,7 +79,14 @@ export async function getPresentationDetail(
 								isPresenter: true,
 								orderIndex: true,
 								affiliation: { select: { name: true } },
-								user: { select: { orcid: true, contactConsent: true } },
+								user: {
+									select: {
+										orcid: true,
+										contactConsent: true,
+										website: true,
+										linkedin: true,
+									},
+								},
 							},
 						},
 						keywords: {
@@ -108,6 +117,8 @@ export async function getPresentationDetail(
 				orderIndex: a.orderIndex,
 				orcid: consented ? (a.user?.orcid ?? null) : null,
 				email: consented ? a.email : null,
+				website: consented ? (a.user?.website ?? null) : null,
+				linkedin: consented ? (a.user?.linkedin ?? null) : null,
 			};
 		}),
 	};

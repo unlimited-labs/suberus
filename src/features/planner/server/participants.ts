@@ -9,6 +9,8 @@ export interface PublicParticipant {
 	affiliationName: string | null;
 	orcid: string | null;
 	email: string | null;
+	website: string | null;
+	linkedin: string | null;
 }
 
 // ponytail: whole list in one payload, filtered client-side; paginate past a few thousand attendees.
@@ -28,6 +30,8 @@ export async function getPublicParticipants(
 			lastName: true,
 			orcid: true,
 			email: true,
+			website: true,
+			linkedin: true,
 			contactConsent: true,
 			affiliation: { select: { name: true } },
 		},
@@ -41,5 +45,7 @@ export async function getPublicParticipants(
 		affiliationName: u.affiliation?.name ?? null,
 		orcid: u.contactConsent ? u.orcid : null,
 		email: u.contactConsent ? u.email : null,
+		website: u.contactConsent ? u.website : null,
+		linkedin: u.contactConsent ? u.linkedin : null,
 	}));
 }

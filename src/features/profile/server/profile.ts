@@ -10,6 +10,8 @@ export async function getPersonalInfo(userId: string) {
 			lastName: true,
 			title: true,
 			orcid: true,
+			website: true,
+			linkedin: true,
 			affiliation: { select: { name: true } },
 		},
 	});
@@ -18,6 +20,8 @@ export async function getPersonalInfo(userId: string) {
 		lastName: user.lastName ?? "",
 		title: user.title ?? "",
 		orcid: user.orcid ?? "",
+		website: user.website ?? "",
+		linkedin: user.linkedin ?? "",
 		affiliation: user.affiliation?.name ?? "",
 	};
 }
@@ -30,6 +34,8 @@ export async function updatePersonalInfo(
 		title?: string;
 		affiliationId?: string;
 		orcid?: string;
+		website?: string;
+		linkedin?: string;
 	},
 ) {
 	const result = await prisma.user.update({
@@ -40,6 +46,8 @@ export async function updatePersonalInfo(
 			title: data.title || null,
 			affiliationId: data.affiliationId || null,
 			orcid: data.orcid || null,
+			website: data.website || null,
+			linkedin: data.linkedin || null,
 		},
 	});
 

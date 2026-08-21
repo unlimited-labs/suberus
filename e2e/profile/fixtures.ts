@@ -16,6 +16,8 @@ export class SettingsPage {
 	readonly titleSelect: Locator
 	readonly affiliationInput: Locator
 	readonly orcidInput: Locator
+	readonly websiteInput: Locator
+	readonly linkedinInput: Locator
 	readonly savePersonalBtn: Locator
 	// Contact info
 	readonly emailInput: Locator
@@ -51,6 +53,8 @@ export class SettingsPage {
 		this.titleSelect = personalSection.getByRole("combobox")
 		this.affiliationInput = page.getByLabel("Affiliation")
 		this.orcidInput = page.getByLabel("ORCID")
+		this.websiteInput = page.getByLabel("Website")
+		this.linkedinInput = page.getByLabel("LinkedIn")
 		// Use section element with heading to find the correct Save button
 		this.savePersonalBtn = page
 			.locator("section")
@@ -98,6 +102,8 @@ export class SettingsPage {
 		title?: string
 		affiliation?: string
 		orcid?: string
+		website?: string
+		linkedin?: string
 	}) {
 		if (data.firstName !== undefined) {
 			await this.firstNameInput.clear()
@@ -118,6 +124,14 @@ export class SettingsPage {
 		if (data.orcid !== undefined) {
 			await this.orcidInput.clear()
 			await this.orcidInput.fill(data.orcid)
+		}
+		if (data.website !== undefined) {
+			await this.websiteInput.clear()
+			await this.websiteInput.fill(data.website)
+		}
+		if (data.linkedin !== undefined) {
+			await this.linkedinInput.clear()
+			await this.linkedinInput.fill(data.linkedin)
 		}
 	}
 
