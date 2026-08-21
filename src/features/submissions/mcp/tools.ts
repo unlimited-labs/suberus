@@ -21,6 +21,11 @@ import {
 	submissionIdInput,
 } from "@/features/submissions/validations";
 import {
+	deskAcceptSubmission,
+	exhibitorGuard,
+} from "@/features/workflow/server/workflow";
+import { deskDecisionInput } from "@/features/workflow/validations";
+import {
 	ADMIN_AND_EDITOR,
 	defineTool,
 	type McpTool,
@@ -147,6 +152,25 @@ const submitDraftTool = defineTool({
 	},
 });
 
+const deskAccept = defineTool({
+	name: "submissions_desk_accept",
+	title: "Desk accept a submission",
+	description:
+		"Accept a submission without review. Records an ACCEPT decision with `reason` as the letter to the author and e-mails the presenting author immediately — there is no undo. Exhibitor entries are refused; they go through the exhibitor approval flow.",
+	input: deskDecisionInput,
+	roles: ADMIN_AND_EDITOR,
+	scope: MCP_SCOPE_SUBMISSIONS_WRITE,
+	destructive: true,
+	async handler(input, actor) {
+		if (!(await getSubmissionForEditor(input.submissionId))) {
+			throw new Response("Submission not found", { status: 404 });
+		}
+		const blocked = await exhibitorGuard(input.submissionId);
+		if (blocked) return blocked;
+		return deskAcceptSubmission(input.submissionId, actor.id, input.reason);
+	},
+});
+
 export const submissionsMcpTools: readonly McpTool[] = [
 	listSubmissions,
 	getSubmission,
@@ -155,4 +179,5 @@ export const submissionsMcpTools: readonly McpTool[] = [
 	createForUser,
 	uploadLink,
 	submitDraftTool,
+	deskAccept,
 ];

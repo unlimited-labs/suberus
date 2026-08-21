@@ -639,6 +639,28 @@ export async function withdrawSubmission(
 	return result;
 }
 
+// Exhibitor entries are decided via the exhibitor approval flow, which also
+// updates Exhibitor.status and notifies the exhibitor — block direct desk
+// decisions and overrides at the API and MCP surfaces (the exhibitor flow calls
+// the lib functions directly, so it is unaffected by this guard).
+export async function exhibitorGuard(
+	submissionId: string,
+): Promise<TransitionResult | null> {
+	const submission = await prisma.submission.findUnique({
+		where: { id: submissionId },
+		select: { type: true, status: true },
+	});
+	if (submission?.type !== "EXHIBITOR") return null;
+	return {
+		success: false,
+		fromState: submission.status,
+		toState: submission.status,
+		event: "BLOCKED",
+		error:
+			"Exhibitor entries are decided via the exhibitor approval flow, not desk decisions",
+	};
+}
+
 /**
  * Desk accept a submission (editor action)
  */

@@ -10,33 +10,13 @@ import {
 	deskAcceptSubmission,
 	deskRejectSubmission,
 	executeSubmissionTransition,
+	exhibitorGuard,
 	overrideDecision,
 	submitEditorDecision,
 	withdrawSubmission,
 } from "@/features/workflow/server/workflow";
+import { deskDecisionInput } from "@/features/workflow/validations";
 import { prisma } from "@/shared/server/db.server";
-
-// Exhibitor entries are decided via the exhibitor approval flow, which also
-// updates Exhibitor.status and notifies the exhibitor — block direct desk
-// decisions and overrides here (the exhibitor flow calls the lib functions
-// directly, so it is unaffected by this guard).
-async function exhibitorGuard(
-	submissionId: string,
-): Promise<TransitionResult | null> {
-	const submission = await prisma.submission.findUnique({
-		where: { id: submissionId },
-		select: { type: true, status: true },
-	});
-	if (submission?.type !== "EXHIBITOR") return null;
-	return {
-		success: false,
-		fromState: submission.status,
-		toState: submission.status,
-		event: "BLOCKED",
-		error:
-			"Exhibitor entries are decided via the exhibitor approval flow, not desk decisions",
-	};
-}
 
 /** Withdraw submission (author) */
 export const withdrawSubmissionFn = createServerFn({ method: "POST" })
@@ -67,12 +47,7 @@ export const withdrawSubmissionFn = createServerFn({ method: "POST" })
 /** Desk accept submission (editor) */
 export const deskAcceptFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(
-		z.object({
-			submissionId: z.uuid(),
-			reason: z.string().min(1, "Reason is required"),
-		}),
-	)
+	.validator(deskDecisionInput)
 	.handler(async ({ data, context }): Promise<TransitionResult> => {
 		const blocked = await exhibitorGuard(data.submissionId);
 		if (blocked) return blocked;
@@ -86,12 +61,7 @@ export const deskAcceptFn = createServerFn({ method: "POST" })
 /** Desk reject submission (editor) */
 export const deskRejectFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(
-		z.object({
-			submissionId: z.uuid(),
-			reason: z.string().min(1, "Reason is required"),
-		}),
-	)
+	.validator(deskDecisionInput)
 	.handler(async ({ data, context }): Promise<TransitionResult> => {
 		const blocked = await exhibitorGuard(data.submissionId);
 		if (blocked) return blocked;
