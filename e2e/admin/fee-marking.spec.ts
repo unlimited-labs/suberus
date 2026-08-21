@@ -1,4 +1,4 @@
-import { test, expect, UserDetailPage } from "./fixtures";
+import { test, expect, AdminUsersPage, UserDetailPage } from "./fixtures";
 import {
 	createTestUser,
 	deleteTestUser,
@@ -100,6 +100,49 @@ test.describe("Fee Marking", () => {
 		});
 
 		// Cleanup
+		await deleteTestUser(testUser.id);
+	});
+
+	test("admin marks and unmarks fee from the users list badge", async ({
+		page,
+	}) => {
+		const lastName = `ListFee${Date.now()}`;
+		const testUser = await createTestUser({
+			email: `fee-list-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
+			password: DEFAULT_PASSWORD,
+			lastName,
+		});
+
+		const usersPage = new AdminUsersPage(page);
+		await usersPage.goto();
+		await usersPage.waitForLoad();
+		const row = await usersPage.getRowByEmail({
+			email: testUser.email,
+			firstName: "Test",
+			lastName,
+		});
+		await expect(row).toBeVisible({ timeout: 10000 });
+
+		// Act — mark paid straight from the badge
+		await row.getByTestId("fee-badge-trigger").click();
+		const dialog = page.getByRole("dialog");
+		await dialog.getByRole("combobox").click();
+		await page.getByRole("option", { name: /Full Conference Fee/ }).click();
+		await dialog.getByRole("button", { name: "Save" }).click();
+
+		// desktop badge shows the fee type, the mobile card shows just "Paid"
+		await expect(row.getByTestId("fee-badge-trigger")).toHaveText(
+			/^(Full Conference Fee|Paid)$/,
+			{ timeout: 10000 },
+		);
+
+		// Act — unmark from the same badge
+		await row.getByTestId("fee-badge-trigger").click();
+		await page.getByTestId("unmark-fee-paid").click();
+		await expect(row.getByTestId("fee-badge-trigger")).toContainText("Unpaid", {
+			timeout: 10000,
+		});
+
 		await deleteTestUser(testUser.id);
 	});
 

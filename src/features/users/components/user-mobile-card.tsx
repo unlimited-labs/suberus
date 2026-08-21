@@ -4,12 +4,17 @@ import type { AdminUser } from "@/features/users/server/users";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Card, CardContent } from "@/shared/ui/card";
+import { UserFeeBadgeCell } from "./user-fee-badge-cell";
 
 export function UserMobileCard({ user }: { user: AdminUser }) {
 	return (
-		<Link className="block" params={{ id: user.id }} to="/admin/users/$id">
-			<Card className="active:bg-accent transition-colors">
-				<CardContent className="flex flex-col gap-3 p-4">
+		<Card className="transition-colors">
+			<CardContent className="flex flex-col gap-3 p-4">
+				<Link
+					className="block active:opacity-70"
+					params={{ id: user.id }}
+					to="/admin/users/$id"
+				>
 					<div className="flex items-start justify-between gap-3">
 						<div className="min-w-0 flex-1">
 							<p className="truncate leading-tight font-semibold">
@@ -28,33 +33,24 @@ export function UserMobileCard({ user }: { user: AdminUser }) {
 							{roleLabels[user.role]}
 						</Badge>
 					</div>
+				</Link>
 
-					<div className="flex flex-wrap items-center gap-1.5">
+				<div className="flex flex-wrap items-center gap-1.5">
+					<UserFeeBadgeCell mobile user={user} />
+					{user.submissionRoles.map((r) => (
 						<Badge
 							className={cn(
-								user.fee?.paid
-									? "border-green-600 text-green-600"
-									: "border-red-600 text-red-600",
+								r.status === "draft" && "border-dashed text-muted-foreground",
+								r.status === "accepted" && "border-green-600 text-green-600",
 							)}
+							key={`${r.type}-${r.role}-${r.status}`}
 							variant="outline"
 						>
-							{user.fee?.paid ? "Paid" : "Unpaid"}
+							{formatSubmissionRole(r)}
 						</Badge>
-						{user.submissionRoles.map((r) => (
-							<Badge
-								className={cn(
-									r.status === "draft" && "border-dashed text-muted-foreground",
-									r.status === "accepted" && "border-green-600 text-green-600",
-								)}
-								key={`${r.type}-${r.role}-${r.status}`}
-								variant="outline"
-							>
-								{formatSubmissionRole(r)}
-							</Badge>
-						))}
-					</div>
-				</CardContent>
-			</Card>
-		</Link>
+					))}
+				</div>
+			</CardContent>
+		</Card>
 	);
 }

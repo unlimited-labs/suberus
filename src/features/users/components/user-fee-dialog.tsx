@@ -31,6 +31,9 @@ interface UserFeeDialogProps {
 	selectedFeeType: FeeType | undefined;
 	onFeeTypeChange: (id: string) => void;
 	onConfirm: () => void;
+	onUnmark?: () => void;
+	/** Fee type already recorded as paid — re-saving the same one is blocked so paidAt is not silently re-stamped. */
+	currentFeeType?: string;
 	isPending: boolean;
 }
 
@@ -44,13 +47,17 @@ export function UserFeeDialog({
 	selectedFeeType,
 	onFeeTypeChange,
 	onConfirm,
+	onUnmark,
+	currentFeeType,
 	isPending,
 }: UserFeeDialogProps) {
+	const canSave =
+		selectedFeeType !== undefined && selectedFeeType.name !== currentFeeType;
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>Mark Fee as Paid</DialogTitle>
+					<DialogTitle>{onUnmark ? "Fee" : "Mark Fee as Paid"}</DialogTitle>
 					<DialogDescription>
 						Select fee type for user {userName}.
 					</DialogDescription>
@@ -82,10 +89,21 @@ export function UserFeeDialog({
 					)}
 				</div>
 				<DialogFooter>
+					{onUnmark && (
+						<Button
+							className="mr-auto"
+							data-testid="unmark-fee-paid"
+							disabled={isPending}
+							onClick={onUnmark}
+							variant="destructive"
+						>
+							Unmark as Paid
+						</Button>
+					)}
 					<Button onClick={() => onOpenChange(false)} variant="outline">
 						Cancel
 					</Button>
-					<Button disabled={isPending} onClick={onConfirm}>
+					<Button disabled={isPending || !canSave} onClick={onConfirm}>
 						{isPending ? "Saving..." : "Save"}
 					</Button>
 				</DialogFooter>

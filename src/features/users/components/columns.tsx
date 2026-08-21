@@ -27,6 +27,7 @@ import type {
 	AppColumnDef,
 } from "@/shared/ui/data-table/table-features";
 import { SubmissionsColumnHeader } from "./submissions-column-header";
+import { UserFeeBadgeCell } from "./user-fee-badge-cell";
 
 export interface SurveyListColumn {
 	id: string;
@@ -128,17 +129,7 @@ const baseUserColumns: AppColumnDef<AdminUser>[] = [
 				title="Fee"
 			/>
 		),
-		cell: ({ row }) => {
-			const fee = row.original.fee;
-			if (!fee?.paid) {
-				return <Badge variant="destructive">Unpaid</Badge>;
-			}
-			return (
-				<Badge className="border-green-600 text-green-600" variant="outline">
-					{fee.type}
-				</Badge>
-			);
-		},
+		cell: ({ row }) => <UserFeeBadgeCell user={row.original} />,
 		filterFn: facetedFilterFn,
 	},
 	{
