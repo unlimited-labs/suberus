@@ -129,7 +129,7 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 		}),
 		prisma.user.count({
 			where: {
-				submissions: { some: {} },
+				submissions: { some: realSubmissions },
 				OR: [{ fee: null }, { fee: { paid: false } }],
 			},
 		}),

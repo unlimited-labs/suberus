@@ -83,6 +83,7 @@ function indexTalksByAuthor(talks: Talk[]): AuthorIndex {
 	for (const t of talks) {
 		for (const au of t.authors) {
 			const k = authorKey(au);
+			if (k === null) continue;
 			if (!person.has(k)) person.set(k, au);
 			const arr = byAuthor.get(k);
 			if (arr) arr.push(t);
@@ -167,7 +168,7 @@ function indexSessionsByPresenter(
 			const presenter = p.submission.authors.find((a) => a.isPresenter);
 			if (!presenter) continue;
 			const k = authorKey(presenter);
-			if (seen.has(k)) continue;
+			if (k === null || seen.has(k)) continue;
 			seen.add(k);
 			const arr = byPresenter.get(k);
 			if (arr) arr.push({ session: s, presenter });

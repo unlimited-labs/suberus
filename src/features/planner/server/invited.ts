@@ -1,6 +1,7 @@
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/shared/server/db.server";
 import { reserveSlotOrder } from "./presentations";
+import { computeSessionUsage } from "./session-usage";
 
 export interface InvitedTalkFields {
 	title: string;
@@ -97,19 +98,53 @@ export async function createInvitedTalk(
 	});
 }
 
+/** Title, speaker and duration move together so a rejected duration cannot
+ * leave the other fields half-saved. */
 export async function updateInvitedTalk(
 	slotId: string,
-	fields: InvitedTalkFields,
+	fields: InvitedTalkFields & { durationMin?: number },
 ): Promise<void> {
 	await prisma.$transaction(async (tx) => {
 		const slot = await tx.presentationSlot.findUnique({
 			where: { id: slotId },
-			select: { submissionId: true, submission: { select: { type: true } } },
+			select: {
+				submissionId: true,
+				durationMin: true,
+				submission: { select: { type: true } },
+				session: {
+					select: {
+						startAt: true,
+						endAt: true,
+						untimedSlots: true,
+						presentations: { select: { id: true, durationMin: true } },
+					},
+				},
+			},
 		});
 		if (!slot) throw new Error("Presentation not found");
 		if (slot.submission.type !== "INVITED") {
 			throw new Error("Only invited talks can be edited here");
 		}
+
+		const { durationMin } = fields;
+		if (durationMin !== undefined && durationMin !== slot.durationMin) {
+			if (!slot.session.untimedSlots) {
+				const { sessionMin, usedMin: usedOthers } = computeSessionUsage(
+					slot.session,
+					{ excludePresentationId: slotId },
+				);
+				if (usedOthers + durationMin > sessionMin) {
+					throw new Error(
+						`Session is full: other presentations use ${usedOthers}/${sessionMin} min`,
+					);
+				}
+			}
+			await tx.presentationSlot.update({
+				where: { id: slotId },
+				data: { durationMin },
+			});
+		}
+
 		await tx.submission.update({
 			where: { id: slot.submissionId },
 			data: {

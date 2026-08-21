@@ -99,27 +99,6 @@ async function loadAutoplanInputs(jobId: string): Promise<{
 }> {
 	await reportStage(jobId, "loading", 0);
 
-	const submissions = await prisma.submission.findMany({
-		// Slots in untimed sessions survive applyAutoPlan's delete, so re-proposing
-		// those submissions would hit the unique submissionId on create.
-		where: {
-			status: "ACCEPTED",
-			type: "ABSTRACT",
-			NOT: { presentationSlot: { is: { session: { untimedSlots: true } } } },
-		},
-		select: {
-			id: true,
-			title: true,
-			content: true,
-			authors: { select: { userId: true, email: true } },
-		},
-		orderBy: { createdAt: "asc" },
-	});
-
-	if (submissions.length === 0) {
-		throw new Error("No accepted ABSTRACT submissions to plan");
-	}
-
 	const sessions = await prisma.programSession.findMany({
 		// applyAutoPlan wipes and retitles every target session, so sessions holding
 		// a hand-placed invited talk are left out entirely.
@@ -141,6 +120,32 @@ async function loadAutoplanInputs(jobId: string): Promise<{
 		throw new Error(
 			"No program sessions exist — create session scaffold first",
 		);
+	}
+
+	const sessionIds = sessions.map((s) => s.id);
+	const submissions = await prisma.submission.findMany({
+		// Only slots inside a target session are wiped by applyAutoPlan; a
+		// submission parked anywhere else keeps its slot, so re-proposing it would
+		// hit the unique submissionId on create.
+		where: {
+			status: "ACCEPTED",
+			type: "ABSTRACT",
+			OR: [
+				{ presentationSlot: { is: null } },
+				{ presentationSlot: { is: { sessionId: { in: sessionIds } } } },
+			],
+		},
+		select: {
+			id: true,
+			title: true,
+			content: true,
+			authors: { select: { userId: true, email: true } },
+		},
+		orderBy: { createdAt: "asc" },
+	});
+
+	if (submissions.length === 0) {
+		throw new Error("No accepted ABSTRACT submissions to plan");
 	}
 
 	if (sessions.length > submissions.length) {
@@ -196,7 +201,10 @@ function clusterAuthorKeys(
 		for (const id of c.member_ids) {
 			const sub = submissionMap.get(id);
 			if (!sub) continue;
-			for (const au of sub.authors) keys.add(authorKey(au));
+			for (const au of sub.authors) {
+				const k = authorKey(au);
+				if (k !== null) keys.add(k);
+			}
 		}
 		return keys;
 	});
@@ -332,6 +340,20 @@ export async function applyAutoPlan(jobId: string): Promise<ApplyResult> {
 	const sessionIds = proposal.sessions.map((s) => s.sessionId);
 
 	const result = await prisma.$transaction(async (tx) => {
+		// The proposal froze its targets; an invited talk added since would be
+		// wiped by the delete below. Refuse rather than destroy it.
+		const invited = await tx.presentationSlot.count({
+			where: {
+				sessionId: { in: sessionIds },
+				submission: { type: "INVITED" },
+			},
+		});
+		if (invited > 0) {
+			throw new Error(
+				"A session in this proposal now holds an invited talk — re-run the autoplanner",
+			);
+		}
+
 		const del = await tx.presentationSlot.deleteMany({
 			where: { sessionId: { in: sessionIds } },
 		});

@@ -36,7 +36,10 @@ export function InvitedTalkDialog({
 		...invitedTalkQueryOptions(slotId ?? ""),
 		enabled: open && slotId !== undefined,
 	});
-	const ready = slotId === undefined || detail.data !== undefined;
+	// data === null means the slot vanished (or is not invited) — falling through
+	// would silently render the Add form and duplicate the talk on save.
+	const gone = slotId !== undefined && detail.data === null;
+	const ready = slotId === undefined || detail.data != null;
 
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
@@ -58,7 +61,13 @@ export function InvitedTalkDialog({
 						untimed={untimed}
 					/>
 				) : (
-					<p className="text-muted-foreground py-6 text-sm">Loading…</p>
+					<p className="text-muted-foreground py-6 text-sm">
+						{gone
+							? "This invited talk is no longer in the session — close and reload the planner."
+							: detail.isError
+								? "Could not load this invited talk."
+								: "Loading…"}
+					</p>
 				)}
 			</DialogContent>
 		</Dialog>

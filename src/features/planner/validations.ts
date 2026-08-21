@@ -283,7 +283,10 @@ export const invitedTalkCreateInput = invitedTalkFields
 	.refine(hasCompleteSpeakerName, speakerNameComplete);
 
 export const invitedTalkUpdateInput = invitedTalkFields
-	.extend({ id: z.uuid() })
+	.extend({
+		id: z.uuid(),
+		durationMin: z.number().int().positive().max(600).optional(),
+	})
 	.refine(hasCompleteSpeakerName, speakerNameComplete);
 
 export const invitedTalkFormSchema = z

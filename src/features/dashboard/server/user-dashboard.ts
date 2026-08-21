@@ -1,5 +1,9 @@
 import { prisma } from "@/shared/server/db.server";
 
+// Invited talks are programme placeholders owned by whichever admin created
+// them; they are not that person's submissions.
+const notInvited = { type: { not: "INVITED" } } as const;
+
 export interface UserDashboardMetrics {
 	mySubmissions: number;
 	underReview: number;
@@ -13,7 +17,7 @@ export async function getUserDashboardMetrics(
 	const [mySubmissions, underReview, accepted, pendingReviews] =
 		await Promise.all([
 			prisma.submission.count({
-				where: { userId },
+				where: { userId, ...notInvited },
 			}),
 			prisma.submission.count({
 				where: { userId, status: "UNDER_REVIEW" },
@@ -21,6 +25,7 @@ export async function getUserDashboardMetrics(
 			prisma.submission.count({
 				where: {
 					userId,
+					...notInvited,
 					status: { in: ["ACCEPTED", "CONDITIONALLY_ACCEPTED"] },
 				},
 			}),

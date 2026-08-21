@@ -44,7 +44,9 @@ Before the autoplanner can run you need:
 - **At least one session** already created (the scaffold it fills). Create empty
   sessions first on the **[planner grid](/planner/manual-scheduling/)**.
 - **Untimed (poster / lightning) sessions are skipped** — they never count as
-  scaffold and their contents are never overwritten.
+  scaffold and their contents are never overwritten. **Sessions holding an
+  [invited talk](/planner/manual-scheduling/#invited-talks) are skipped** too, since the
+  autoplanner rewrites the sessions it fills.
 - **No more sessions than submissions** — it can't fill more sessions than there are
   talks.
 
@@ -110,6 +112,7 @@ afterwards on the **[planner grid](/planner/manual-scheduling/)**.
 | Red status dot on the toggle | LLM service down | System administrator to check `LLM_API_URL` and the service. |
 | A stage errors out | A backing service (LLM or clustering) failed mid-run | Re-run; if it persists, report the stage and message to your system administrator. |
 | "More sessions than submissions" | Scaffold too large | Remove extra empty sessions, or accept more submissions. |
+| "A session in this proposal now holds an invited talk" | An [invited talk](/planner/manual-scheduling/#invited-talks) was added after the proposal was generated | Re-run the autoplanner. Sessions holding an invited talk are left out of the plan, so it will skip that one. |
 
 ## Related
 

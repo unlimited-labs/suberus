@@ -801,14 +801,20 @@ export interface DeletableCheck {
 export async function checkUserDeletable(
 	userId: string,
 ): Promise<DeletableCheck> {
-	const [submissions, reviews, editorDecisions] = await Promise.all([
-		prisma.submission.count({ where: { userId } }),
-		prisma.review.count({ where: { reviewerId: userId } }),
-		prisma.editorDecision.count({ where: { editorId: userId } }),
-	]);
+	const [submissions, invitedTalks, reviews, editorDecisions] =
+		await Promise.all([
+			prisma.submission.count({ where: { userId, ...notInvited } }),
+			prisma.submission.count({ where: { userId, type: "INVITED" } }),
+			prisma.review.count({ where: { reviewerId: userId } }),
+			prisma.editorDecision.count({ where: { editorId: userId } }),
+		]);
 
 	const reasons: string[] = [];
 	if (submissions > 0) reasons.push(`${submissions} submission(s) as owner`);
+	if (invitedTalks > 0)
+		reasons.push(
+			`${invitedTalks} invited talk(s) created in the programme — remove them from their sessions first`,
+		);
 	if (reviews > 0) reasons.push(`${reviews} review(s) as reviewer`);
 	if (editorDecisions > 0)
 		reasons.push(`${editorDecisions} editor decision(s)`);

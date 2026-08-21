@@ -4,7 +4,6 @@ import {
 	createInvitedTalkFn,
 	invitedTalkQueryOptions,
 	updateInvitedTalkFn,
-	updatePresentationDurationFn,
 } from "@/features/planner/api/presentations";
 import type { InvitedTalkDetail } from "@/features/planner/server/invited";
 import { invitedTalkFormSchema } from "@/features/planner/validations";
@@ -45,12 +44,9 @@ export function useInvitedTalkForm({
 			const { durationMin, ...fields } = value;
 			try {
 				if (talk) {
-					await updateInvitedTalkFn({ data: { id: talk.slotId, ...fields } });
-					if (durationMin !== talk.durationMin) {
-						await updatePresentationDurationFn({
-							data: { id: talk.slotId, durationMin },
-						});
-					}
+					await updateInvitedTalkFn({
+						data: { id: talk.slotId, durationMin, ...fields },
+					});
 					queryClient.invalidateQueries({
 						queryKey: invitedTalkQueryOptions(talk.slotId).queryKey,
 					});

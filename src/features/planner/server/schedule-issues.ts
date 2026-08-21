@@ -64,11 +64,14 @@ function buildChairSet(s: OverlapSession): ChairSet {
 	return new Set(s.chairs.map((c) => c.userId));
 }
 
+/** null when the author carries no identity at all — invited speakers may have
+ * neither an account nor an address, and must not collapse into one person. */
 export function authorKey(au: {
 	userId: string | null;
 	email: string;
-}): string {
-	return au.userId ?? `email:${au.email}`;
+}): string | null {
+	if (au.userId) return au.userId;
+	return au.email ? `email:${au.email}` : null;
 }
 
 export function detectChairOverlap(

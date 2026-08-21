@@ -45,7 +45,11 @@ export async function createDraftCampaign(
 			email: true,
 			firstName: true,
 			lastName: true,
-			submissions: { select: { title: true } },
+			// INVITED rows are programme placeholders, not the recipient's work.
+			submissions: {
+				where: { type: { not: "INVITED" } },
+				select: { title: true },
+			},
 		},
 	});
 
