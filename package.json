@@ -147,7 +147,7 @@
     "fallow": "^3.14.0",
     "lefthook": "^2.1.10",
     "mailpit-api": "^2.1.0",
-    "oxfmt": "0.63.0",
+    "oxfmt": "0.64.0",
     "oxlint": "1.78.0",
     "oxlint-tsgolint": "7.0.2001",
     "pdfkit": "^0.19.1",

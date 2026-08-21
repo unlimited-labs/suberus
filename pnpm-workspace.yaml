@@ -32,7 +32,7 @@ allowBuilds:
   prisma: true
 onlyBuiltDependencies: lefthook
 
-minimumReleaseAge: 10080
+minimumReleaseAge: 2880
 # Pinned to exact versions; the age guard adds nothing over an exact pin, and 1.7.1 GA
 # is younger than the window. Drop once 1.7.x has aged past it.
 minimumReleaseAgeExclude:
