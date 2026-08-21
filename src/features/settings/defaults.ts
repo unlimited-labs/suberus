@@ -201,6 +201,14 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 
 	PROGRAM_THEME: "default",
 	PROGRAM_SHOW_AUTHOR_INFO: false,
+	PROGRAM_QR: {
+		errorCorrectionLevel: "M",
+		width: 512,
+		margin: 4,
+		format: "svg",
+		baseUrl: "",
+		includeWithoutCameraReady: true,
+	},
 
 	DOCUMENT_SIGNING: null,
 };

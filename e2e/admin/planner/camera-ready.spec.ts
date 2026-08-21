@@ -1,3 +1,4 @@
+import type { Readable } from "node:stream";
 import AdmZip from "adm-zip";
 import {
 	addPresentationToSession,
@@ -15,6 +16,12 @@ const PDF_ALT = Buffer.from(
 	"%PDF-1.7\n% replacement camera-ready with extra padding bytes\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n",
 );
 const NOT_PDF = Buffer.from("This is not a PDF at all\n");
+
+async function streamToBuffer(stream: Readable): Promise<Buffer> {
+	const chunks: Buffer[] = [];
+	for await (const chunk of stream) chunks.push(Buffer.from(chunk));
+	return Buffer.concat(chunks);
+}
 
 const crUrl = (slotId: string) => `/api/program/camera-ready/${slotId}`;
 
@@ -193,6 +200,42 @@ test.describe.serial("Camera-ready", () => {
 			(await page.request.get(`/s/${sequentialNumber}`)).status(),
 		).toBe(404);
 		expect((await page.request.get(crUrl(slotId))).status()).toBe(404);
+	});
+
+	test("QR panel saves settings and generates a ZIP of short links", async ({
+		page,
+		programSettingsPage,
+		testRun,
+	}) => {
+		const { submission } = await seedPresentation(testRun.testRunId);
+		const { sequentialNumber } = await getPrisma().submission.findUniqueOrThrow({
+			where: { id: submission.id },
+			select: { sequentialNumber: true },
+		});
+
+		await programSettingsPage.goto();
+		await page.getByTestId("qr-base-url").fill("https://short.example/s");
+
+		const zipDownload = page.waitForEvent("download");
+		await page.getByTestId("qr-generate-zip").click();
+		const entries = new AdmZip(
+			await (await zipDownload).createReadStream().then(streamToBuffer),
+		).getEntries();
+
+		const entry = entries.find(
+			(e) => e.entryName === `${sequentialNumber}.svg`,
+		);
+		expect(entry).toBeDefined();
+		expect(entry?.getData().toString("utf8")).toContain("<svg");
+
+		const programDownload = page.waitForEvent("download");
+		await page.getByTestId("qr-generate-program").click();
+		expect((await programDownload).suggestedFilename()).toBe("program-qr.svg");
+
+		await programSettingsPage.goto();
+		await expect(page.getByTestId("qr-base-url")).toHaveValue(
+			"https://short.example/s",
+		);
 	});
 
 	test("bulk ZIP uploads matched PDFs and reports skips", async ({

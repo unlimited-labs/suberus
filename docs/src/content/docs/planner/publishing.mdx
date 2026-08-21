@@ -92,6 +92,8 @@ Once **Published**, attendees see the program at `/program`:
 Every presentation is **clickable** — for anyone, signed in or not:
 
 - Clicking a talk opens a **preview dialog** with its abstract, authors, and keywords.
+- Each author gets a card with their **full affiliation** — long institution names wrap
+  onto several lines instead of being cut off.
 - If **Publish participant contact details** is enabled (**Settings › Program ›
   Appearance**, off by default), **author names are clickable for participants** —
   in the presentation rows and on the author cards inside the preview. A
@@ -136,6 +138,91 @@ keyed to the submission, not to its slot in the program.
 | **When it works** | Only once the program is **published** and the talk is **scheduled** and has a camera-ready PDF. |
 | **Before that** | The link returns **404** — the same response as a number that does not exist, so nothing about unpublished submissions leaks. |
 | **Who can use it** | Anyone. No sign-in, opens the PDF directly. |
+
+### Generating QR codes
+
+**Configuration › Program › QR Codes** turns those short links into printable QR
+codes — one per scheduled talk, plus one for the public program page.
+
+<Steps>
+
+1. Choose the settings (see the table below).
+
+2. Click **Generate ZIP**. The settings are saved and a ZIP downloads containing one
+   QR file per scheduled talk, named after its submission number (`42.svg`).
+
+3. Click **Program page QR** for a single QR pointing at the public program page.
+
+</Steps>
+
+🖼️ [Screenshot placeholder: Configuration › Program › QR Codes panel]
+
+| Field | Detail |
+|---|---|
+| **File format** | **SVG** (default) scales losslessly for print; **PNG** for tools that need a bitmap. |
+| **Error correction** | **L** (7%), **M** (15%, default), **Q** (25%), **H** (30%). Higher levels survive scuffs and overprinting but pack the pattern denser. |
+| **Size** | Output width in pixels, 128–2048 (default 512). For SVG this only sets the `width`/`height` attributes — the graphic stays vector. |
+| **Quiet zone** | Blank margin around the code, in modules, 0–16 (default 4). Below 4 some scanners struggle. |
+| **Substitute domain** | Leave empty to encode this site's own address. Enter e.g. `https://example.com/conf` and talk QRs encode `https://example.com/conf/42`, while the program QR encodes `https://example.com/conf` itself. That domain must forward both — see [Forwarding a substitute domain](#forwarding-a-substitute-domain) — otherwise the printed codes lead nowhere. |
+| **Include talks without a camera-ready PDF** | On by default, so you can print before every file is in. Those QRs return 404 until the PDF is uploaded — then they start working with no reprint. |
+
+Only talks **scheduled into a session** are included; a submission with no slot has no
+short link. **Invited talks** are skipped as well — they are placeholders with no
+camera-ready file to point at. Note that `/s/<number>` also requires the program to be **published** —
+codes printed ahead of publication stay 404 until you publish.
+
+### Forwarding a substitute domain
+
+A substitute domain is useful when the printed URL has to be short, memorable, or
+independent of where Suberus is hosted. It is a plain HTTP redirect on **your**
+server — Suberus never sees the substitute domain, so nothing needs configuring on
+this side beyond the field above.
+
+Two rules are needed, both redirecting to the address shown under the field:
+
+| Printed URL | Redirects to |
+|---|---|
+| `https://example.com/conf` | `https://conference.suberus.app/program` |
+| `https://example.com/conf/42` | `https://conference.suberus.app/s/42` |
+
+Allow a leading-zero form (`/conf/042`) and an optional `.pdf` suffix if your abstract
+book prints them — Suberus accepts both on `/s/<number>`, and the examples below
+normalise them anyway.
+
+**nginx**
+
+```nginx
+location ~ ^/(conf|c26)/0*([0-9]+)(?:\.pdf)?/?$ {
+    return 301 https://conference.suberus.app/s/$2;
+}
+location ~ ^/(conf|c26)/?$ {
+    return 301 https://conference.suberus.app/program;
+}
+```
+
+**Caddy**
+
+```caddy
+@talk path_regexp talk ^/(conf|c26)/0*([0-9]+)(?:\.pdf)?/?$
+redir @talk https://conference.suberus.app/s/{re.talk.2} 301
+
+@program path_regexp ^/(conf|c26)/?$
+redir @program https://conference.suberus.app/program 301
+```
+
+**Apache** (`mod_rewrite` enabled)
+
+```apacheconf
+RewriteEngine On
+RewriteRule ^/?(conf|c26)/0*([0-9]+)(\.pdf)?/?$ https://conference.suberus.app/s/$2 [R=301,L]
+RewriteRule ^/?(conf|c26)/?$ https://conference.suberus.app/program [R=301,L]
+```
+
+<Aside type="caution" title="Test before you print">
+Open both printed URLs in a browser once the rules are live. A QR code cannot be
+corrected after printing, and a typo in the prefix makes every code in the batch
+useless.
+</Aside>
 
 ### Favourite reminders (push notifications)
 

@@ -28,6 +28,17 @@ export interface SubmissionTypeConfig {
 	enableTrackSelection: boolean;
 }
 
+/** QR code generation settings for the program tab */
+export interface ProgramQrSettings {
+	errorCorrectionLevel: "L" | "M" | "Q" | "H";
+	width: number;
+	margin: number;
+	format: "svg" | "png";
+	/** Substitute short-link base, e.g. "https://short.dom/s". Empty = APP_BASE_URL + "/s". */
+	baseUrl: string;
+	includeWithoutCameraReady: boolean;
+}
+
 /** Reminder settings for reviewer deadline reminders */
 export interface ReviewerReminderSettings {
 	enabled: boolean;
@@ -184,6 +195,7 @@ export type AppSettingsMap = {
 
 	PROGRAM_THEME: string;
 	PROGRAM_SHOW_AUTHOR_INFO: boolean;
+	PROGRAM_QR: ProgramQrSettings;
 
 	DOCUMENT_SIGNING: DocumentSigningSettings | null;
 };

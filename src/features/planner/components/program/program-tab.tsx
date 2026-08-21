@@ -25,6 +25,7 @@ import { usePlannerSettingsForm } from "./hooks/use-planner-settings-form";
 import { ProgramThemeSection } from "./program-theme-section";
 import { ProgramTrackDialog } from "./program-track-dialog";
 import { ProgramTracksList } from "./program-tracks-list";
+import { QrCodesSection } from "./qr-codes-section";
 import { RoomDialog } from "./room-dialog";
 import { RoomsList } from "./rooms-list";
 
@@ -403,6 +404,7 @@ export function ProgramTab({
 			/>
 
 			<ProgramThemeSection />
+			<QrCodesSection />
 
 			<SettingsSection
 				description="Physical locations where sessions take place. Order controls column placement in the planner."
