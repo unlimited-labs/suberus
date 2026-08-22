@@ -14,7 +14,6 @@ export type EditorReview = EditorSubmissionData["reviews"][number];
 export type EditorVersion = EditorSubmissionData["versions"][number];
 export type EditorActivity = EditorSubmissionData["activityHistory"][number];
 
-/** Whether a pending assignment's deadline has passed. */
 export function isOverdue(
 	deadline: Date | string | null,
 	status: string,
@@ -74,7 +73,6 @@ export function getActionAvailability(
 
 export type PrimaryAction = "transition" | "decision" | "conditions";
 
-/** The single contextual primary action; everything else goes to the menu. */
 export function getPrimaryAction(
 	availability: ActionAvailability,
 ): PrimaryAction | null {
@@ -84,7 +82,6 @@ export function getPrimaryAction(
 	return null;
 }
 
-/** Distinct review rounds, newest first. */
 export function getReviewRounds(
 	reviews: readonly { round: number }[],
 ): number[] {
@@ -110,7 +107,6 @@ export interface ReviewProgress<T> {
 	progress: number;
 }
 
-/** Current-round assignment counts and completion percentage. */
 export function computeReviewProgress<
 	T extends { round: number; status: string },
 >(assignments: T[], currentRound: number): ReviewProgress<T> {
@@ -133,7 +129,6 @@ export interface DisplayedVersion {
 	file: EditorSubmission["file"];
 }
 
-/** Content/file to show: the selected older version, else the current submission. */
 export function resolveDisplayedVersion(
 	versions: Pick<EditorVersion, "version" | "content" | "file">[],
 	selectedVersion: number | null,
@@ -151,7 +146,6 @@ export function resolveDisplayedVersion(
 	};
 }
 
-/** Whether the author uploaded a revised version (e.g. after conditional accept). */
 export function hasRevisionUpload(
 	activityHistory: readonly { activityType: string }[],
 ): boolean {

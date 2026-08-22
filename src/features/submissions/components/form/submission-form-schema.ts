@@ -85,7 +85,6 @@ export function buildContentSchema(settings: ValidationSettings) {
 	});
 }
 
-/** Substitute {{placeholder}} values in guidelines text. */
 export function substituteGuidelines(
 	text: string,
 	settings: ValidationSettings,

@@ -104,7 +104,6 @@ export function EditorDecisionDialog({
 				toast.success("Decision submitted successfully");
 				onOpenChange(false);
 				onDecisionMade?.();
-				// Reset form
 				setSelectedDecision(null);
 				setReasoning("");
 				setLetterToAuthor("");

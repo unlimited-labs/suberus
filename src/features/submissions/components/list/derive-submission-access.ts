@@ -17,7 +17,6 @@ export interface SubmissionAccess {
 	disabledReason: string;
 }
 
-/** Why submissions are disabled, in priority order; "" when open. */
 function resolveDisabledReason(flags: {
 	canBypass: boolean;
 	locked: boolean;
@@ -36,11 +35,6 @@ function resolveDisabledReason(flags: {
 	return "";
 }
 
-/**
- * Derives the submission window from deadline + lock + active-type settings:
- * urgency flags, whether the author can submit, and the disabled reason. Pure
- * (takes `now`), so the access matrix is unit-testable.
- */
 export function deriveSubmissionAccess(
 	input: SubmissionAccessInput,
 ): SubmissionAccess {

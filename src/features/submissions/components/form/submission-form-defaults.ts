@@ -3,7 +3,6 @@ import type {
 	SubmissionFormData,
 } from "./submission-form-types";
 
-/** Build the form's initial values, preferring `initialData` over type defaults. */
 export function buildSubmissionDefaultValues(
 	initialData: Partial<SubmissionFormData> | undefined,
 	defaultType: SubmissionFormData["type"],

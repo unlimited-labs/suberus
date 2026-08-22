@@ -107,7 +107,6 @@ export async function deleteSubmission(
 		throw new Response("Submission not found", { status: 404 });
 	}
 
-	// Collect file storage keys for cleanup after transaction
 	const versionFileKeys = submission.versions
 		.map((v) => v.file)
 		.filter((f): f is { id: string; storageKey: string } => f !== null);
@@ -162,15 +161,11 @@ export async function deleteSubmission(
 		await tx.submission.delete({ where: { id: submissionId } });
 	});
 
-	// Clean up storage blobs (best-effort, after transaction success)
 	await Promise.allSettled(fileKeys.map((f) => deleteFile(f.storageKey)));
 
 	return { success: true };
 }
 
-// === Admin actions layer ===
-
-/** Maps target status → email event type for decision notifications to authors */
 const bulkDecisionEmailMap = {
 	ACCEPTED: "DECISION_ACCEPTED",
 	CONDITIONALLY_ACCEPTED: "DECISION_CONDITIONALLY_ACCEPTED",
@@ -334,7 +329,6 @@ export type SubmissionWhereClause = NonNullable<
 	Parameters<typeof prisma.submission.findMany>[0]
 >["where"];
 
-/** Build Prisma where clause from admin submission filters */
 export function buildSubmissionWhereClause(
 	filters: GetSubmissionsFilters,
 ): SubmissionWhereClause {
@@ -371,7 +365,6 @@ export function buildSubmissionWhereClause(
 	return where;
 }
 
-/** Get all submissions for admin view */
 export async function getAdminSubmissions(
 	filters: GetSubmissionsFilters,
 ): Promise<GetSubmissionsResponse> {
@@ -421,7 +414,6 @@ export async function getAdminSubmissions(
 
 		const presenterEmail = s.presenterAuthor?.email ?? s.user.email;
 
-		// Count active and completed assignments for current round only
 		const currentRoundAssignments = s.reviewAssignments.filter(
 			(a) => a.round === s.currentRound,
 		);
@@ -464,7 +456,6 @@ export async function getAdminSubmissions(
 	return { submissions: result, total };
 }
 
-/** Get submission details for editor view */
 export async function getSubmissionForEditor(submissionId: string): Promise<{
 	submission: {
 		id: string;
@@ -758,7 +749,6 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 	};
 }
 
-/** Record the editor-decision audit trail + notify the presenter for a bulk decision. */
 async function recordBulkDecision(
 	submissionId: string,
 	targetStatus: SubmissionStatus,
@@ -803,7 +793,6 @@ async function recordBulkDecision(
 	}
 }
 
-/** Bulk change status via workflow transitions */
 export async function bulkChangeStatus(
 	submissionIds: string[],
 	targetStatus: SubmissionStatus,
@@ -862,7 +851,6 @@ export async function bulkChangeStatus(
 		}
 
 		updated++;
-		// Decision-type transitions get an EditorDecision audit record + email
 		if (emailEvent) {
 			await recordBulkDecision(id, targetStatus, emailEvent, triggeredBy);
 		}
@@ -871,7 +859,6 @@ export async function bulkChangeStatus(
 	return { updated, errors };
 }
 
-/** Bulk assign reviewer to submissions */
 export async function bulkAssignReviewer(
 	submissionIds: string[],
 	reviewerId: string,

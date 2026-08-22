@@ -47,7 +47,6 @@ export interface CompareVersion {
 	keywords?: string[];
 }
 
-/** Default pair: previous → current (falls back to oldest → current). */
 export function defaultComparePair(
 	versions: Array<{ version: number }>,
 	current: number,
@@ -257,9 +256,6 @@ function VersionCompareBody({
 		[titleSegments, contentSegments].some((segs) =>
 			segs.some((s) => s.type !== "equal"),
 		) || metadataChanged;
-	// Two distinct versions whose every compared field — and the attached file —
-	// is unchanged: surface that explicitly instead of letting the reader hunt for
-	// a diff that isn't there.
 	const identical = !samePair && !hasFieldChange && !isFileChanged;
 	const baseLabel = `v${base} (${formatDate(baseV.createdAt)})`;
 	const compareLabel = `v${compare} (${formatDate(compareV.createdAt)})`;
@@ -379,7 +375,6 @@ function VersionCompareBody({
 	);
 }
 
-/** File-level diff panel — shown only when the attached file actually changed. */
 function FileChangesPanel({
 	baseV,
 	compareV,

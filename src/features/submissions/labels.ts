@@ -35,10 +35,6 @@ export const reviewDecisionColors = {
 	REJECT: "bg-red-100 text-red-800",
 } satisfies Record<ReviewDecision, string>;
 
-/**
- * Admin "TODO" column — the next action an admin should take on a submission.
- * Discriminated union; `kind`s with counts carry the numbers for label/tooltip.
- */
 export type TodoKind =
 	| "ASSIGN_REVIEWER"
 	| "REVIEWER_OVERDUE"
@@ -76,7 +72,6 @@ export function todoTone(kind: TodoKind): TodoTone {
 	return TODO_ACTION_KINDS.has(kind) ? "action" : "muted";
 }
 
-/** Badge variant for action TODOs (muted ones don't use a badge). */
 export const todoBadgeVariant = {
 	ASSIGN_REVIEWER: "default",
 	REVIEWER_OVERDUE: "destructive",
@@ -92,7 +87,6 @@ export const todoBadgeVariant = {
 	"default" | "secondary" | "destructive" | "outline"
 >;
 
-/** Full cell label, interpolating counts where the kind carries them. */
 export function todoLabel(todo: SubmissionTodo): string {
 	switch (todo.kind) {
 		case "ASSIGN_REVIEWER":
@@ -118,7 +112,6 @@ export function todoLabel(todo: SubmissionTodo): string {
 	}
 }
 
-/** Explanatory tooltip for count-bearing TODOs; null when no extra context. */
 export function todoTooltip(todo: SubmissionTodo): string | null {
 	switch (todo.kind) {
 		case "ASSIGN_REVIEWER":
@@ -130,7 +123,6 @@ export function todoTooltip(todo: SubmissionTodo): string | null {
 	}
 }
 
-/** Short label (no counts) used by the column filter dropdown. */
 export const todoKindLabels = {
 	ASSIGN_REVIEWER: "Assign reviewer",
 	REVIEWER_OVERDUE: "Review overdue",
@@ -157,7 +149,6 @@ export const todoFilterOptions = (
 	] satisfies TodoKind[]
 ).map((kind) => ({ label: todoKindLabels[kind], value: kind }));
 
-/** Priority for sorting: actions first, then waiting states, then none. */
 export const todoSortRank = {
 	REVIEWER_OVERDUE: 0,
 	ASSIGN_REVIEWER: 1,

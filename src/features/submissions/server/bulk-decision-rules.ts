@@ -6,7 +6,6 @@ export type BulkDecisionType =
 	| "REVISE_AND_RESUBMIT"
 	| "REJECT";
 
-/** Editor-decision type recorded for a bulk status change. */
 export function decisionTypeFor(
 	targetStatus: SubmissionStatus,
 ): BulkDecisionType {

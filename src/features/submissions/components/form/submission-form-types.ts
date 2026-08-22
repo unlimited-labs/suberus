@@ -1,14 +1,12 @@
 import type { SubmissionTypeConfig } from "@/features/settings/types";
 import type { Author } from "@/shared/types/author";
 
-/** Active submission type from settings */
 export interface ActiveSubmissionType {
 	type: "ABSTRACT" | "POSTER" | "FULL_PAPER";
 	label: string;
 	config: SubmissionTypeConfig;
 }
 
-/** Validation settings from admin panel */
 export interface ValidationSettings {
 	minTitleLength: number;
 	maxTitleLength: number;

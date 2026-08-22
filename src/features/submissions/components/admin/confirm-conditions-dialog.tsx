@@ -16,9 +16,7 @@ interface ConfirmConditionsDialogProps {
 	onOpenChange: (open: boolean) => void;
 	onConfirm: (reasoning: string, onSuccess?: () => void) => void;
 	isTransitioning: boolean;
-	/** Whether the author uploaded a revised version since the conditional decision */
 	revisionUploaded: boolean;
-	/** Latest version number (shown when a revision was uploaded) */
 	latestVersion: number;
 }
 

@@ -68,7 +68,6 @@ export function toSubmissionError(
 	};
 }
 
-/** Fetches validation limits from database settings */
 export async function getValidationLimits(): Promise<ValidationLimits> {
 	try {
 		const settings = await getSettings([
@@ -144,7 +143,6 @@ export async function checkEmailVerified(
 	return "You need to verify your email address before working on submissions";
 }
 
-/** Validate a non-draft payload against the dynamic schema; failure result or null. */
 export async function validateSubmissionInput(
 	data: SubmissionCreateInput,
 ): Promise<SubmissionFailure | null> {
@@ -213,7 +211,6 @@ export async function createFileSubmission(
 	return { success: true, id: submission.id };
 }
 
-/** The FILE/TEXT fork every create path shares; the gates around it differ. */
 export async function createSubmissionOfFormat(
 	data: SubmissionCreateInput,
 	ownerId: string,
@@ -290,12 +287,6 @@ export async function validateUploadFile(
 	}
 }
 
-/**
- * Validates an uploaded buffer (by magic number) and attaches it to the
- * submission's current version: uploads to S3, creates the File record, swaps
- * out any previous file, and kicks off diff normalization. Shared by the
- * create, revise, and re-upload server fns so the file path lives in one place.
- */
 // fallow-ignore-next-line complexity -- single owner of the upload pipeline; extracted from uploadSubmissionFile
 export async function attachFileToVersion(params: {
 	submissionId: string;
@@ -365,10 +356,8 @@ export async function attachFileToVersion(params: {
 		fileName,
 	);
 
-	// Upload to S3 with the detected (trustworthy) mime type
 	await uploadFile(buffer, storageKey, detected.mime);
 
-	// Create file record
 	const fileRecord = await prisma.file.create({
 		data: {
 			entityType: "SUBMISSION_VERSION",
@@ -383,9 +372,7 @@ export async function attachFileToVersion(params: {
 		},
 	});
 
-	// Update submission version with file reference
 	if (submission.currentVersion) {
-		// Delete old file if re-uploading
 		if (submission.currentVersion.fileId) {
 			const oldFile = await prisma.file.findUnique({
 				where: { id: submission.currentVersion.fileId },

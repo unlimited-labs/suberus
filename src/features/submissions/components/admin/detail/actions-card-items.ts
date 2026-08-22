@@ -8,7 +8,6 @@ import {
 import type { ActionAvailability, PrimaryAction } from "./availability";
 import type { SubmissionDialogKind } from "./detail-dialogs";
 
-/** How selecting a secondary action behaves: open a dialog or run the transition. */
 export type SecondaryActionSelect =
 	| { type: "dialog"; kind: SubmissionDialogKind }
 	| { type: "transition" };

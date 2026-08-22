@@ -8,7 +8,6 @@ import { formatDate } from "@/shared/lib/format-date";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
 
-/** Check if a reminder was already sent */
 async function wasReminderSent(
 	userId: string,
 	reminderType: EmailEventType,
@@ -28,7 +27,6 @@ async function wasReminderSent(
 	return !!existing;
 }
 
-/** Record a sent reminder */
 async function recordReminder(
 	userId: string,
 	reminderType: EmailEventType,
@@ -40,7 +38,6 @@ async function recordReminder(
 	});
 }
 
-/** Send reviewer deadline reminders (REVIEWER_REMINDER) */
 export async function sendReviewerReminders(): Promise<number> {
 	const settings = await getSetting("REMINDER_REVIEWER_SETTINGS");
 	if (!settings.enabled || settings.daysBefore.length === 0) {
@@ -107,7 +104,6 @@ export async function sendReviewerReminders(): Promise<number> {
 	return sentCount;
 }
 
-/** Send revision nudge reminders (REVISION_REMINDER) */
 export async function sendRevisionReminders(): Promise<number> {
 	const settings = await getSetting("REMINDER_REVISION_SETTINGS");
 	if (!settings.enabled) {
@@ -149,7 +145,6 @@ export async function sendRevisionReminders(): Promise<number> {
 
 		if (alreadySentCount >= settings.maxCount) continue;
 
-		// Determine the reference date: last sent reminder or status change date
 		const lastReminder = await prisma.sentReminder.findFirst({
 			where: reminderKey,
 			orderBy: { sentAt: "desc" },
@@ -185,7 +180,6 @@ export async function sendRevisionReminders(): Promise<number> {
 	return sentCount;
 }
 
-/** Send submission deadline approaching reminders (DEADLINE_APPROACHING) */
 export async function sendDeadlineReminders(): Promise<number> {
 	const settings = await getSetting("REMINDER_DEADLINE_SETTINGS");
 	if (!settings.enabled || settings.daysBefore.length === 0) {

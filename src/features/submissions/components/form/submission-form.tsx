@@ -108,7 +108,6 @@ export function SubmissionForm(props: SubmissionFormProps) {
 								typeConfigs={typeConfigs}
 							/>
 
-							{/* File upload */}
 							{isFileFormat && extractionEnabled && (
 								<>
 									<div className="border-t" />

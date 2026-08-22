@@ -114,7 +114,6 @@ export async function createSubmissionsZipStream(
 ): Promise<Readable> {
 	const archive = new ZipArchive({ store: true });
 
-	// Fetch all file contents in parallel, then append sequentially
 	const fileEntries = await Promise.all(
 		submissions.map(async (s) => {
 			const file = s.currentVersion?.file;

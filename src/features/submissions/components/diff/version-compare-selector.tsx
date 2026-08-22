@@ -35,7 +35,6 @@ function VersionOptions({
 	);
 }
 
-/** Two version pickers — base (older) → compare (newer) — for the diff view. */
 export function VersionCompareSelector({
 	versions,
 	currentVersion,

@@ -18,7 +18,6 @@ function notifyResubmitError(error?: string) {
 	toast.error(error ?? "Resubmission failed");
 }
 
-/** Builds the revision multipart payload (JSON fields + the new file). */
 function buildRevisionFormData(
 	id: string,
 	formData: RevisionFormData,
@@ -35,7 +34,6 @@ function buildRevisionFormData(
 	return fd;
 }
 
-/** Owns the resubmit / conditional-revision flow: submit (file travels with it), cache invalidation, navigation. */
 export function useReviseSubmission({
 	id,
 	isConditional,

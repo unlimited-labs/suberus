@@ -6,7 +6,6 @@ export interface ScoreColor {
 	bg: string;
 }
 
-/** Tailwind color config for a 0–5 score, banded green/blue/amber/red. */
 export function getScoreColor(score: number): ScoreColor {
 	if (score >= 4.5) {
 		return {
@@ -36,7 +35,6 @@ export function getScoreColor(score: number): ScoreColor {
 	};
 }
 
-/** Responsive grid columns for the per-criterion score bars. */
 export function scoreGridClassName(count: number): string {
 	if (count >= 4) return "md:grid-cols-4";
 	if (count >= 2) return "md:grid-cols-2";
@@ -51,7 +49,6 @@ export interface ReviewSummary {
 	hasAttachment: boolean;
 }
 
-/** Per-review derived data: score entries, average, normalized date, flags. */
 export function computeReviewSummary(
 	review: UserSubmissionReview,
 ): ReviewSummary {
@@ -75,7 +72,6 @@ export function computeReviewSummary(
 	};
 }
 
-/** Whether any review carries scores, and the average across all of them. */
 export function computeReviewsAggregate(reviews: UserSubmissionReview[]) {
 	const allScores = reviews.flatMap((r) =>
 		r.scores ? Object.values(r.scores) : [],

@@ -105,7 +105,6 @@ export function ActivityHistoryEvent({
 
 type DetailRenderer = (entry: ActivityHistoryEntry) => ReactNode;
 
-/** Plain paragraph from a single `detail` string field, or null when absent. */
 function noteDetail(field: string): DetailRenderer {
 	return (entry) => {
 		// SAFETY: the activity type reaching this renderer carries that detail field (see DetailShapes).

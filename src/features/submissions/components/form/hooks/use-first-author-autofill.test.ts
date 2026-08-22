@@ -38,7 +38,6 @@ const emptyAuthor: Author = {
 	isPresenter: true,
 };
 
-/** Wires the hook to a mutable `authors` store, returning the live setter spy. */
 function setup(args: {
 	user: SessionUser | undefined;
 	hasInitialAuthors: boolean;

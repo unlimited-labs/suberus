@@ -26,7 +26,6 @@ import {
 	submissionTypeFilterSchema,
 } from "@/features/submissions/validations";
 
-/** Get all submissions for admin view */
 export const getAdminSubmissionsFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.validator(adminSubmissionsListInput.optional())
@@ -34,7 +33,6 @@ export const getAdminSubmissionsFn = createServerFn({ method: "GET" })
 		return getAdminSubmissions(data ?? {});
 	});
 
-/** Get submission details for editor */
 export const getSubmissionForEditorFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.validator(submissionIdInput)
@@ -64,7 +62,6 @@ export const adminEditSubmissionFn = createServerFn({ method: "POST" })
 		return adminEditSubmission(data.submissionId, context.user.id, data);
 	});
 
-/** Send an author's draft into review on their behalf */
 export const adminSubmitDraftFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(submissionIdInput)
@@ -72,7 +69,6 @@ export const adminSubmitDraftFn = createServerFn({ method: "POST" })
 		submitDraftOnBehalf(data.submissionId, context.user.id),
 	);
 
-/** Update submission track assignment */
 export const updateSubmissionTrackFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(
@@ -89,7 +85,6 @@ export const updateSubmissionTrackFn = createServerFn({ method: "POST" })
 		);
 	});
 
-/** Bulk update track assignment for multiple submissions */
 export const bulkUpdateSubmissionTrackFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(
@@ -102,7 +97,6 @@ export const bulkUpdateSubmissionTrackFn = createServerFn({ method: "POST" })
 		return bulkUpdateSubmissionTrack(data.submissionIds, data.trackId);
 	});
 
-/** Bulk change submission status via workflow transitions */
 export const bulkChangeStatusFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(
@@ -127,7 +121,6 @@ export const editorSubmissionQueryOptions = (submissionId: string) =>
 		queryFn: () => getSubmissionForEditorFn({ data: { submissionId } }),
 	});
 
-/** Bulk assign reviewer to submissions */
 export const bulkAssignReviewerFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(
@@ -144,7 +137,6 @@ export const bulkAssignReviewerFn = createServerFn({ method: "POST" })
 		);
 	});
 
-/** Check warnings before deleting a submission */
 export const checkSubmissionDeletableFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.validator(submissionIdInput)
@@ -152,7 +144,6 @@ export const checkSubmissionDeletableFn = createServerFn({ method: "GET" })
 		return checkSubmissionDeleteWarnings(data.submissionId);
 	});
 
-/** Delete a submission */
 export const deleteSubmissionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(submissionIdInput)

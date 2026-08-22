@@ -5,10 +5,6 @@ import {
 } from "@/features/settings/api/settings";
 import { deriveSubmissionAccess } from "./derive-submission-access";
 
-/**
- * Derives submission-window access from the deadline and active-type settings:
- * whether the author can submit, the reason when they can't, and deadline urgency.
- */
 export function useSubmissionAccess() {
 	const {
 		data: { deadline, locked, canBypass, timezone },

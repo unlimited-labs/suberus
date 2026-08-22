@@ -41,7 +41,6 @@ function Row({
 	);
 }
 
-/** Status of a single author within one version, relative to its counterpart. */
 function authorStatus(
 	author: CompareAuthor,
 	counterpart: CompareAuthor | undefined,

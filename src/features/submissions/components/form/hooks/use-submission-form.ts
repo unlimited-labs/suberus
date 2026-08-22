@@ -27,7 +27,6 @@ interface UseSubmissionFormArgs {
 	validationSettings: ValidationSettings;
 	guidelines?: string;
 	extractionEnabled?: boolean;
-	/** Active tracks loaded by the route; rendered only when track selection applies. */
 	availableTracks: AvailableTrack[];
 	/** A file is already attached server-side (editing a FILE draft) — relaxes the file requirement. */
 	hasExistingFile?: boolean;
@@ -35,11 +34,6 @@ interface UseSubmissionFormArgs {
 
 type SubmissionType = "ABSTRACT" | "POSTER" | "FULL_PAPER";
 
-/**
- * Owns all SubmissionForm behaviour: form instance, validation schemas,
- * first-author auto-fill, type-switch field cleanup, track loading, document
- * extraction and draft saving. Leaves the component as pure presentation.
- */
 export function useSubmissionForm({
 	onSubmit,
 	onSaveDraft,
@@ -135,14 +129,12 @@ export function useSubmissionForm({
 		},
 	});
 
-	/** Select a submission type: set the field, local state, and clean up format-specific fields. */
 	const selectType = (value: SubmissionType) => {
 		form.setFieldValue("type", value);
 		setSelectedType(value);
 		const newConfig = typeConfigs.find((t) => t.type === value);
 		if (!newConfig) return;
 		form.setFieldValue("contentFormat", newConfig.config.contentFormat);
-		// Clear file if switching to TEXT format
 		if (newConfig.config.contentFormat === "TEXT") {
 			form.setFieldValue("file", null);
 		}
@@ -193,5 +185,4 @@ export function useSubmissionForm({
 	};
 }
 
-/** The TanStack Form instance type, for sub-components that render its fields. */
 export type SubmissionFormApi = ReturnType<typeof useSubmissionForm>["form"];

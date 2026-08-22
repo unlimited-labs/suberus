@@ -37,11 +37,6 @@ export type AdminSubmissionDetail =
 	| { status: "not-found" }
 	| AdminSubmissionDetailReady;
 
-/**
- * Loads an admin submission detail (submission + its type config + tracks) and
- * derives the workflow state the page renders from. Returns a discriminated
- * result so callers narrow to `ready` without null checks.
- */
 export function useAdminSubmissionDetail(
 	id: string,
 	availableTracks: AvailableTrack[],

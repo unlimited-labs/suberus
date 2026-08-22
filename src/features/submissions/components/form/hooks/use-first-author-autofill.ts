@@ -3,7 +3,6 @@ import type { SessionUser } from "@/shared/hooks/use-session";
 import { getAffiliationById } from "@/shared/server/affiliations-fn";
 import type { Author } from "@/shared/types/author";
 
-/** Build a first-author entry from the logged-in user's profile. */
 export function buildAuthorFromUser(
 	user: SessionUser,
 	affiliationName: string,
@@ -18,12 +17,10 @@ export function buildAuthorFromUser(
 	};
 }
 
-/** A first author still untouched by the user (no name and no email). */
 function isFirstAuthorEmpty(author: Author | undefined): boolean {
 	return !author?.firstName && !author?.lastName && !author?.email;
 }
 
-/** The first author was filled earlier but still lacks the (now-resolvable) affiliation name. */
 function needsAffiliationBackfill(
 	firstAuthor: Author | undefined,
 	hasAutoFilled: boolean,
@@ -37,7 +34,6 @@ function needsAffiliationBackfill(
 	);
 }
 
-/** Populate the empty first author from the user, resolving the affiliation name when present. */
 async function fillFirstAuthorFromUser(
 	user: SessionUser,
 	authors: Author[],
@@ -58,7 +54,6 @@ async function fillFirstAuthorFromUser(
 	}
 }
 
-/** Backfill the first author's affiliation name once the user's affiliation resolves later. */
 async function backfillFirstAuthorAffiliation(
 	affiliationId: string,
 	getAuthors: () => Author[],
@@ -83,7 +78,6 @@ async function backfillFirstAuthorAffiliation(
 
 interface UseFirstAuthorAutofillArgs {
 	user: SessionUser | undefined;
-	/** Skip auto-fill entirely when the form was seeded with existing authors. */
 	hasInitialAuthors: boolean;
 	/** Reads the live `authors` field value (not a render-time snapshot). */
 	getAuthors: () => Author[];
@@ -120,14 +114,12 @@ export function useFirstAuthorAutofill({
 		const authors = getAuthors();
 		const firstAuthor = authors[0];
 
-		// Case 1: first auto-fill — the first author is still empty.
 		if (!hasAutoFilledRef.current && isFirstAuthorEmpty(firstAuthor)) {
 			hasAutoFilledRef.current = true;
 			runFetch(() => fillFirstAuthorFromUser(user, authors, setAuthors));
 			return;
 		}
 
-		// Case 2: user was filled earlier but the affiliation resolved only now.
 		const needsBackfill = needsAffiliationBackfill(
 			firstAuthor,
 			hasAutoFilledRef.current,
@@ -142,7 +134,6 @@ export function useFirstAuthorAutofill({
 	}, [user, hasInitialAuthors, getAuthors, setAuthors]);
 
 	return {
-		/** Suppress auto-fill (e.g. after authors are populated by extraction). */
 		markAutoFilled: () => {
 			hasAutoFilledRef.current = true;
 		},

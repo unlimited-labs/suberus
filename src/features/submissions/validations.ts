@@ -71,7 +71,6 @@ export const adminSubmissionsListInput = z.object({
 	skip: z.number().int().min(0).optional(),
 });
 
-/** Validation settings for dynamic schema creation */
 export interface ValidationLimits {
 	minTitleLength: number;
 	maxTitleLength: number;
@@ -82,7 +81,6 @@ export interface ValidationLimits {
 	enableKeywords: boolean;
 }
 
-/** Default validation limits (used as fallback) */
 export const DEFAULT_VALIDATION_LIMITS: ValidationLimits = {
 	minTitleLength: 10,
 	maxTitleLength: 200,
@@ -93,7 +91,6 @@ export const DEFAULT_VALIDATION_LIMITS: ValidationLimits = {
 	enableKeywords: true,
 };
 
-/** Creates a dynamic submission schema based on validation settings */
 export function createDynamicSubmissionSchema(limits: ValidationLimits) {
 	const keywordSchema = z
 		.string()

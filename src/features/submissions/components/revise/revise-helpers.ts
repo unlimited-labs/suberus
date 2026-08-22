@@ -23,7 +23,6 @@ export interface RevisionRequest {
 	keywords: string[];
 }
 
-/** Map the read-model author shape to the editable form author shape. */
 function toFormAuthors(authors: UserSubmissionAuthor[]): Author[] {
 	return authors.map((a) => ({
 		firstName: a.firstName,
@@ -68,21 +67,18 @@ export function revisionReady(title: string, authors: Author[]): boolean {
 	);
 }
 
-/** Whether a submission type stores its content as an uploaded file. */
 export function resolveIsFileFormat(
 	typeConfig: { config: { contentFormat: string } } | undefined,
 ): boolean {
 	return (typeConfig?.config.contentFormat ?? "TEXT") === "FILE";
 }
 
-/** The file-input `accept` attribute for a type's allowed extensions. */
 export function buildAcceptString(allowedExtensions: string[]): string {
 	return allowedExtensions.length > 0
 		? allowedExtensions.map((ext) => `.${ext}`).join(",")
 		: FILE_ACCEPT_ATTRIBUTE;
 }
 
-/** Normalizes form fields into the resubmit/conditional-revision request body. */
 export function buildRevisionRequest(
 	submissionId: string,
 	formData: RevisionFormData,
@@ -106,7 +102,6 @@ interface RevisionTypeConfig {
 	};
 }
 
-/** The subset of the submission-detail payload the revision view reads. */
 interface RevisionViewData {
 	submission: {
 		type: string;
@@ -127,7 +122,6 @@ interface RevisionViewData {
 	}[];
 }
 
-/** Keyword/extraction settings the revision form needs, mirrored from the new-submission form. */
 export interface RevisionViewSettings {
 	enableKeywords: boolean;
 	maxKeywords: number;
@@ -149,8 +143,6 @@ export interface RevisionView {
 	extractionEnabled: boolean;
 }
 
-/** Title/content/file/authors/keywords to seed, taken from the current version's
- *  frozen snapshot and falling back to the submission-level set. */
 // fallow-ignore-next-line complexity -- nullish-fallback chains read clearly; CRAP inflated by estimated 0 coverage (covered by revise-helpers.test.ts)
 function resolveRevisionSeed(
 	currentVersion: RevisionViewData["versions"][number] | undefined,

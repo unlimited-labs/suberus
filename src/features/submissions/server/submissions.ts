@@ -30,7 +30,6 @@ interface CreateSubmissionResult {
 	success: boolean;
 }
 
-/** Latinized, lowercased "first last" key for name-based author matching */
 function normalizeName(firstName: string, lastName: string): string {
 	return `${latinize(firstName)} ${latinize(lastName)}`
 		.trim()
@@ -105,7 +104,6 @@ async function replaceSubmissionAuthors(
 		});
 	}
 
-	// Link co-authors to existing verified users
 	const coAuthorEmails = authorsInput.map((a) => a.email);
 	const matchedUsers = await tx.user.findMany({
 		where: {
@@ -198,7 +196,6 @@ export async function createNewSubmission(
 	isDraft = false,
 	performedById: string = userId,
 ): Promise<CreateSubmissionResult> {
-	// Create submission in transaction
 	const submission = await prisma.$transaction(async (tx) => {
 		// Upsert affiliations for authors without affiliationId — dedupe by name
 		// and run sequentially to avoid intra-transaction race on the unique
@@ -242,7 +239,6 @@ export async function createNewSubmission(
 			keywordRecords.push({ id: keyword.id, name: keyword.name });
 		}
 
-		// Create submission
 		const initialStatus = isDraft ? "DRAFT" : "SUBMITTED";
 		const submission = await tx.submission.create({
 			data: {
@@ -255,7 +251,6 @@ export async function createNewSubmission(
 			},
 		});
 
-		// Create submission version
 		const version = await tx.submissionVersion.create({
 			data: {
 				submissionId: submission.id,
@@ -265,13 +260,11 @@ export async function createNewSubmission(
 			},
 		});
 
-		// Update submission with current version
 		await tx.submission.update({
 			where: { id: submission.id },
 			data: { currentVersionId: version.id },
 		});
 
-		// Create submission authors
 		const authors = await Promise.all(
 			data.authors.map(async (author, index) => {
 				return tx.submissionAuthor.create({
@@ -288,7 +281,6 @@ export async function createNewSubmission(
 			}),
 		);
 
-		// Update presenter reference
 		const presenter = authors.find((a) => a.isPresenter);
 		if (presenter) {
 			await tx.submission.update({
@@ -297,7 +289,6 @@ export async function createNewSubmission(
 			});
 		}
 
-		// Link co-author records to existing verified users
 		const coAuthorEmails = data.authors.map((a) => a.email);
 		const matchedUsers = await tx.user.findMany({
 			where: {
@@ -349,7 +340,6 @@ export async function createNewSubmission(
 			}
 		}
 
-		// Create submission keywords
 		await Promise.all(
 			keywordRecords.map(async (keyword) => {
 				return tx.submissionKeyword.create({
@@ -361,7 +351,6 @@ export async function createNewSubmission(
 			}),
 		);
 
-		// Freeze version-1 author/keyword snapshot for future history/diff
 		await writeVersionSnapshot(
 			tx,
 			version.id,
@@ -369,7 +358,6 @@ export async function createNewSubmission(
 			keywordRecords.map((k) => k.name),
 		);
 
-		// Create activity log entry
 		await logActivityTx(tx, {
 			type: "SUBMISSION_CREATED",
 			submissionId: submission.id,
@@ -384,7 +372,6 @@ export async function createNewSubmission(
 		return submission;
 	});
 
-	// Send confirmation email only for submitted (not draft)
 	if (!isDraft) {
 		const presenter = data.authors.find((a) => a.isPresenter);
 		if (presenter) {
@@ -394,7 +381,6 @@ export async function createNewSubmission(
 				submissionUrl: `${env.APP_BASE_URL}/submissions/${submission.id}`,
 			});
 		}
-		// Notify admin about new submission
 		const contactEmail = await getSetting("CONTACT_EMAIL");
 		if (contactEmail) {
 			const allAuthors = data.authors
@@ -415,7 +401,6 @@ export async function createNewSubmission(
 	return { id: submission.id, success: true };
 }
 
-// Types for user submission views
 export interface UserSubmission {
 	id: string;
 	title: string;
@@ -522,7 +507,6 @@ function userAccessFilter(userId: string) {
 	};
 }
 
-/** Get user's submissions list (owned + co-authored) */
 export async function getSubmissionsForUser(
 	userId: string,
 ): Promise<UserSubmission[]> {
@@ -547,7 +531,6 @@ export async function getSubmissionsForUser(
 	}));
 }
 
-/** Get single submission with all details for owner or co-author */
 export async function getSubmissionById(
 	submissionId: string,
 	userId: string,
@@ -676,7 +659,6 @@ export async function getSubmissionById(
 			(r) => !hideCurrentRound || r.round < submission.currentRound,
 		);
 
-		// Load attachments for visible reviews
 		const visibleReviewIds = visibleReviews.map((r) => r.id);
 		const reviewAttachments =
 			visibleReviewIds.length > 0
@@ -824,7 +806,6 @@ export async function resubmitSubmission(
 	const nextVersion = (submission.currentVersion?.version ?? 0) + 1;
 	const nextRound = submission.currentRound + 1;
 
-	// Atomic: lock row, verify status, create version, update status
 	const version = await prisma.$transaction(async (tx) => {
 		// Row lock prevents concurrent resubmissions (TOCTOU)
 		const [locked] = await tx.$queryRawUnsafe<Array<{ status: string }>>(
@@ -856,7 +837,6 @@ export async function resubmitSubmission(
 			},
 		});
 
-		// Update canonical author/keyword composition + freeze this version's snapshot
 		await replaceSubmissionAuthors(tx, submissionId, data.authors);
 		const keywordNames = await replaceSubmissionKeywords(
 			tx,
@@ -889,7 +869,6 @@ export async function resubmitSubmission(
 		};
 	}
 
-	// Auto-reassign reviewers from previous round
 	const previousAssignments = await prisma.reviewAssignment.findMany({
 		where: {
 			submissionId,
@@ -904,7 +883,6 @@ export async function resubmitSubmission(
 		await assignReviewer(submissionId, prev.reviewerId, prev.assignedBy);
 	}
 
-	// Notify caretaker editor about the revision
 	const caretaker = await getCaretakerEditor(submissionId);
 	if (caretaker) {
 		const presenter = await prisma.submissionAuthor.findFirst({
@@ -947,7 +925,6 @@ export async function submitConditionalRevision(
 
 	const nextVersion = (submission.currentVersion?.version ?? 0) + 1;
 
-	// Atomic: lock row, verify status, create version, update content (status unchanged)
 	const version = await prisma.$transaction(async (tx) => {
 		const [locked] = await tx.$queryRawUnsafe<Array<{ status: string }>>(
 			'SELECT "status" FROM "submissions" WHERE "id" = $1 FOR UPDATE',
@@ -976,7 +953,6 @@ export async function submitConditionalRevision(
 			},
 		});
 
-		// Update canonical author/keyword composition + freeze this version's snapshot
 		await replaceSubmissionAuthors(tx, submissionId, data.authors);
 		const keywordNames = await replaceSubmissionKeywords(
 			tx,
@@ -1005,7 +981,6 @@ export async function submitConditionalRevision(
 		};
 	}
 
-	// Notify caretaker editor about the revised version
 	const caretaker = await getCaretakerEditor(submissionId);
 	if (caretaker) {
 		const presenter = await prisma.submissionAuthor.findFirst({
@@ -1163,7 +1138,7 @@ export async function checkSubmissionLimit(
 	const { maxSubmissionsPerUser: max } = await getSetting(
 		SUBMISSION_TYPE_TO_KEY[type],
 	);
-	if (!max || max <= 0) return null; // unlimited
+	if (!max || max <= 0) return null;
 	const current = await prisma.submission.count({
 		where: { userId, type, status: { notIn: LIMIT_EXEMPT_STATUSES } },
 	});
@@ -1172,7 +1147,6 @@ export async function checkSubmissionLimit(
 		: null;
 }
 
-/** Submit a draft (transition DRAFT → SUBMITTED) */
 export async function submitDraft(
 	submissionId: string,
 	userId: string,
@@ -1224,7 +1198,6 @@ export async function submitDraft(
 
 	logger.info(`[submission] submitted draft ${submissionId}`);
 
-	// Send confirmation email
 	const presenter = await prisma.submissionAuthor.findFirst({
 		where: { submissionId, isPresenter: true },
 	});
@@ -1236,7 +1209,6 @@ export async function submitDraft(
 		});
 	}
 
-	// Notify admin about new submission
 	const contactEmail = await getSetting("CONTACT_EMAIL");
 	if (contactEmail) {
 		const allAuthors = await prisma.submissionAuthor.findMany({

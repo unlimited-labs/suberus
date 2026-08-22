@@ -43,12 +43,10 @@ import { getUploadedFile } from "@/shared/server/form-upload";
 
 export type { SubmissionResult };
 
-/** A FormData text field; multipart entries are either a File or a string. */
 function formText(value: FormDataEntryValue | null): string | null {
 	return value instanceof File ? null : value;
 }
 
-/** Parse the create-submission multipart payload (JSON fields + optional file). */
 function parseCreateSubmissionFormData(data: FormData) {
 	const authorsRaw = data.get("authors");
 	const keywordsRaw = data.get("keywords");
@@ -157,7 +155,6 @@ export const adminCreateSubmission = createServerFn({ method: "POST" })
 		}
 	});
 
-/** File upload endpoint for FILE-based submissions (re-upload on an existing draft). */
 export const uploadSubmissionFile = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.validator((data: FormData) =>
@@ -227,14 +224,12 @@ export const adminUploadSubmissionFile = createServerFn({ method: "POST" })
 		});
 	});
 
-/** Get current user's submissions */
 export const getMySubmissionsFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.handler(async ({ context }): Promise<UserSubmission[]> => {
 		return getSubmissionsForUser(context.user.id);
 	});
 
-/** Get single submission by ID (must belong to current user) */
 export const getSubmissionByIdFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.validator(submissionIdInput)
@@ -253,7 +248,6 @@ const revisionInputSchema = z.object({
 	file: z.instanceof(File).nullish(),
 });
 
-/** Parse the revision multipart payload (JSON fields + new file). */
 function parseRevisionFormData(data: FormData) {
 	const authorsRaw = data.get("authors");
 	const keywordsRaw = data.get("keywords");
@@ -328,7 +322,6 @@ async function reviseWithFile(
 	return result;
 }
 
-/** Resubmit a submission with revisions */
 export const resubmitSubmissionFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.validator(parseRevisionFormData)
@@ -368,7 +361,6 @@ export const submitConditionalRevisionFn = createServerFn({ method: "POST" })
 		);
 	});
 
-/** Update a draft/submitted submission */
 export const updateDraftSubmissionFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.validator(
@@ -418,7 +410,6 @@ export const updateDraftSubmissionFn = createServerFn({ method: "POST" })
 		}
 	});
 
-/** Submit a draft (DRAFT → SUBMITTED) */
 export const submitDraftFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.validator(submissionIdInput)
@@ -458,7 +449,6 @@ export const submissionDetailQueryOptions = (submissionId: string) =>
 		queryFn: () => getSubmissionByIdFn({ data: { submissionId } }),
 	});
 
-/** Invalidates the caches a submission mutation affects (its detail + my list). */
 export async function invalidateSubmissionCaches(
 	queryClient: QueryClient,
 	submissionId: string,
@@ -473,7 +463,6 @@ export async function invalidateSubmissionCaches(
 	]);
 }
 
-// Re-export types for use in components
 export type {
 	UserSubmission,
 	UserSubmissionAuthor,

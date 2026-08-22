@@ -269,7 +269,6 @@ describe("prepareRevisionView", () => {
 		expect(view.isFileFormat).toBe(false);
 		expect(view.acceptString).toBe(FILE_ACCEPT_ATTRIBUTE);
 		expect(view.maxFileSize).toBe(10);
-		// seeds from submission-level authors/keywords
 		expect(view.authors).toEqual([
 			{
 				firstName: "Ann",

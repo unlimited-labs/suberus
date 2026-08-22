@@ -10,7 +10,6 @@ export interface SubmissionProgress {
 	hasKeywords: boolean;
 }
 
-/** Per-section completion flags for the progress sidebar. */
 export function computeSubmissionProgress(
 	values: SubmissionFormData,
 	settings: ValidationSettings,

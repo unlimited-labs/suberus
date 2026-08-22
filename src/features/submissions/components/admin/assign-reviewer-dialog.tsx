@@ -85,7 +85,6 @@ export function AssignReviewerDialog({
 		enabled: open,
 	});
 
-	// Filter reviewers by search
 	const filteredReviewers = availableReviewers.filter((r) => {
 		const searchLower = search.toLowerCase();
 		const name = `${r.firstName ?? ""} ${r.lastName ?? ""}`.toLowerCase();
@@ -96,7 +95,6 @@ export function AssignReviewerDialog({
 		);
 	});
 
-	// Active (non-cancelled) assignments
 	const activeAssignments = currentAssignments.filter(
 		(a) => a.status !== "CANCELLED",
 	);
