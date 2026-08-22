@@ -28,8 +28,7 @@ export default defineConfig({
 		"anti-slop/no-chained-type-assertions": "error",
 		"anti-slop/no-conditional-empty-object-spread": "error",
 		"anti-slop/no-known-value-widening": "error",
-		// Off: every hit is a test-file `vi.mock`, and those are out of scope above.
-		"anti-slop/no-module-mocking": "off",
+		"anti-slop/no-module-mocking": "error",
 		"anti-slop/no-object-parameters": "error",
 		"anti-slop/no-reflect-apply": "error",
 		"anti-slop/no-reflect-get": "error",
