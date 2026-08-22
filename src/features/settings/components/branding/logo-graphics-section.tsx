@@ -1,37 +1,79 @@
 import { IconPhoto } from "@tabler/icons-react";
-import type { BrandingSettings } from "@/features/settings/api/settings";
+import { useSelector } from "@tanstack/react-store";
 import { SettingsSaveButton } from "@/features/settings/components/settings-save-button";
 import { SettingsSection } from "@/features/settings/components/settings-section";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { Checkbox } from "@/shared/ui/checkbox";
+import { FieldError } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { ImageUploadControl } from "./image-upload-control";
 import {
-	type BrandingSettingsHandleChange,
+	type BrandingFormApi,
+	type BrandingImages,
 	type ImageUpload,
 	MAX_BG_SIZE_MB,
 } from "./use-branding-settings";
 
 interface LogoGraphicsSectionProps {
-	data: BrandingSettings;
-	onChange: BrandingSettingsHandleChange;
-	onSave: () => void;
-	isSaving: boolean;
+	form: BrandingFormApi;
+	images: BrandingImages;
 	logo: ImageUpload;
 	favicon: ImageUpload;
 }
 
+interface UrlFieldProps {
+	form: BrandingFormApi;
+	name: "logoUrl" | "faviconUrl";
+	label: string;
+	submissionAttempts: number;
+}
+
+function UrlField({ form, name, label, submissionAttempts }: UrlFieldProps) {
+	return (
+		<form.Field name={name}>
+			{(field) => {
+				const hasError = isFieldErrorVisible(
+					field.state.meta,
+					submissionAttempts,
+				);
+				return (
+					<>
+						<Label htmlFor={name}>{label}</Label>
+						<Input
+							aria-invalid={hasError}
+							id={name}
+							onBlur={field.handleBlur}
+							onChange={(e) => field.handleChange(e.target.value)}
+							placeholder="https://"
+							value={field.state.value}
+						/>
+						<FieldError
+							errors={hasError ? field.state.meta.errors : undefined}
+						/>
+					</>
+				);
+			}}
+		</form.Field>
+	);
+}
+
 export function LogoGraphicsSection({
-	data,
-	onChange,
-	onSave,
-	isSaving,
+	form,
+	images,
 	logo,
 	favicon,
 }: LogoGraphicsSectionProps) {
+	const submissionAttempts = useSelector(
+		form.store,
+		(s) => s.submissionAttempts,
+	);
+	const isSubmitting = useSelector(form.store, (s) => s.isSubmitting);
+	const values = useSelector(form.store, (s) => s.values);
+
 	// Uploaded file takes precedence over the typed URL.
-	const logoPreview = data.logoUploadUrl || data.logoUrl;
-	const faviconPreview = data.faviconUploadUrl || data.faviconUrl;
+	const logoPreview = images.logoUploadUrl || values.logoUrl;
+	const faviconPreview = images.faviconUploadUrl || values.faviconUrl;
 
 	return (
 		<SettingsSection
@@ -41,12 +83,11 @@ export function LogoGraphicsSection({
 		>
 			<div className="space-y-4">
 				<div className="space-y-2">
-					<Label htmlFor="logoUrl">Logo URL</Label>
-					<Input
-						id="logoUrl"
-						onChange={(e) => onChange("logoUrl", e.target.value)}
-						placeholder="https://"
-						value={data.logoUrl}
+					<UrlField
+						form={form}
+						label="Logo URL"
+						name="logoUrl"
+						submissionAttempts={submissionAttempts}
 					/>
 					{logoPreview && (
 						<div
@@ -65,18 +106,17 @@ export function LogoGraphicsSection({
 					)}
 					<ImageUploadControl
 						ariaLabel="Upload logo"
-						hasImage={Boolean(data.logoUploadUrl)}
+						hasImage={Boolean(images.logoUploadUrl)}
 						testIdPrefix="logo"
 						upload={logo}
 					/>
 				</div>
 				<div className="space-y-2">
-					<Label htmlFor="faviconUrl">Favicon URL</Label>
-					<Input
-						id="faviconUrl"
-						onChange={(e) => onChange("faviconUrl", e.target.value)}
-						placeholder="https://"
-						value={data.faviconUrl}
+					<UrlField
+						form={form}
+						label="Favicon URL"
+						name="faviconUrl"
+						submissionAttempts={submissionAttempts}
 					/>
 					{faviconPreview && (
 						<div
@@ -95,7 +135,7 @@ export function LogoGraphicsSection({
 					)}
 					<ImageUploadControl
 						ariaLabel="Upload favicon"
-						hasImage={Boolean(data.faviconUploadUrl)}
+						hasImage={Boolean(images.faviconUploadUrl)}
 						testIdPrefix="favicon"
 						upload={favicon}
 					/>
@@ -105,19 +145,26 @@ export function LogoGraphicsSection({
 					An uploaded file takes precedence over the URL.
 				</p>
 				<div className="flex items-center gap-2">
-					<Checkbox
-						checked={data.logoDarkInvert}
-						id="logoDarkInvert"
-						onCheckedChange={(checked) =>
-							onChange("logoDarkInvert", checked === true)
-						}
-					/>
+					<form.Field name="logoDarkInvert">
+						{(field) => (
+							<Checkbox
+								checked={field.state.value}
+								id="logoDarkInvert"
+								onCheckedChange={(checked) =>
+									field.handleChange(checked === true)
+								}
+							/>
+						)}
+					</form.Field>
 					<Label className="cursor-pointer" htmlFor="logoDarkInvert">
 						Invert logo in dark mode
 					</Label>
 				</div>
 			</div>
-			<SettingsSaveButton isSaving={isSaving} onSave={onSave} />
+			<SettingsSaveButton
+				isSaving={isSubmitting}
+				onSave={() => void form.handleSubmit()}
+			/>
 		</SettingsSection>
 	);
 }

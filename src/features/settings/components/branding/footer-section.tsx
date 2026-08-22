@@ -1,24 +1,24 @@
 import { IconPalette } from "@tabler/icons-react";
-import type { BrandingSettings } from "@/features/settings/api/settings";
+import { useSelector } from "@tanstack/react-store";
 import { SettingsSaveButton } from "@/features/settings/components/settings-save-button";
 import { SettingsSection } from "@/features/settings/components/settings-section";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
+import { FieldError } from "@/shared/ui/field";
 import { Label } from "@/shared/ui/label";
 import { Textarea } from "@/shared/ui/textarea";
-import type { BrandingSettingsHandleChange } from "./use-branding-settings";
+import type { BrandingFormApi } from "./use-branding-settings";
 
 interface FooterSectionProps {
-	data: BrandingSettings;
-	onChange: BrandingSettingsHandleChange;
-	onSave: () => void;
-	isSaving: boolean;
+	form: BrandingFormApi;
 }
 
-export function FooterSection({
-	data,
-	onChange,
-	onSave,
-	isSaving,
-}: FooterSectionProps) {
+export function FooterSection({ form }: FooterSectionProps) {
+	const submissionAttempts = useSelector(
+		form.store,
+		(s) => s.submissionAttempts,
+	);
+	const isSubmitting = useSelector(form.store, (s) => s.isSubmitting);
+
 	return (
 		<SettingsSection
 			delay={200}
@@ -26,17 +26,35 @@ export function FooterSection({
 			icon={IconPalette}
 			title="Footer"
 		>
-			<div className="space-y-2">
-				<Label htmlFor="footerText">Footer text</Label>
-				<Textarea
-					className="min-h-20"
-					id="footerText"
-					onChange={(e) => onChange("footerText", e.target.value)}
-					placeholder="© 2026 Conference Name"
-					value={data.footerText}
-				/>
-			</div>
-			<SettingsSaveButton isSaving={isSaving} onSave={onSave} />
+			<form.Field name="footerText">
+				{(field) => {
+					const hasError = isFieldErrorVisible(
+						field.state.meta,
+						submissionAttempts,
+					);
+					return (
+						<div className="space-y-2">
+							<Label htmlFor="footerText">Footer text</Label>
+							<Textarea
+								aria-invalid={hasError}
+								className="min-h-20"
+								id="footerText"
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								placeholder="© 2026 Conference Name"
+								value={field.state.value}
+							/>
+							<FieldError
+								errors={hasError ? field.state.meta.errors : undefined}
+							/>
+						</div>
+					);
+				}}
+			</form.Field>
+			<SettingsSaveButton
+				isSaving={isSubmitting}
+				onSave={() => void form.handleSubmit()}
+			/>
 		</SettingsSection>
 	);
 }

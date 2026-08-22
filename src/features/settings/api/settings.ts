@@ -39,6 +39,7 @@ import type {
 	SubmissionTypeKey,
 } from "@/features/settings/types";
 import {
+	brandingSchema,
 	conferenceSettingsSchema,
 	reminderSettingsSchema,
 	setSettingSchema,
@@ -421,18 +422,6 @@ export interface AppBranding extends BrandingSettings {
 	dateFormat: string;
 	timeFormat: "24h" | "12h";
 }
-
-const hexColorRegex = /^#[0-9a-fA-F]{6}$/;
-
-const brandingSchema = z.object({
-	logoUrl: z.string().max(500),
-	faviconUrl: z.string().max(500),
-	primaryColor: z.string().regex(hexColorRegex, "Invalid hex color"),
-	secondaryColor: z.string().regex(hexColorRegex, "Invalid hex color"),
-	footerText: z.string().max(500),
-	authBgOverlay: z.number().int().min(0).max(100),
-	logoDarkInvert: z.boolean(),
-});
 
 /**
  * Get app branding + conference name (public, no auth).

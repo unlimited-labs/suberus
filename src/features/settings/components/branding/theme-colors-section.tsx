@@ -1,28 +1,85 @@
 import { IconLoader2, IconPalette, IconRestore } from "@tabler/icons-react";
-import type { BrandingSettings } from "@/features/settings/api/settings";
+import { useSelector } from "@tanstack/react-store";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import { APP_SETTINGS_DEFAULTS } from "@/features/settings/defaults";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { Button } from "@/shared/ui/button";
+import { FieldError } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
-import type { BrandingSettingsHandleChange } from "./use-branding-settings";
+import type { BrandingFormApi } from "./use-branding-settings";
 
 interface ThemeColorsSectionProps {
-	data: BrandingSettings;
-	onChange: BrandingSettingsHandleChange;
-	onSave: () => void;
-	isSaving: boolean;
+	form: BrandingFormApi;
 }
 
-export function ThemeColorsSection({
-	data,
-	onChange,
-	onSave,
-	isSaving,
-}: ThemeColorsSectionProps) {
+interface ColorFieldProps {
+	form: BrandingFormApi;
+	name: "primaryColor" | "secondaryColor";
+	label: string;
+	placeholder: string;
+	submissionAttempts: number;
+}
+
+function ColorField({
+	form,
+	name,
+	label,
+	placeholder,
+	submissionAttempts,
+}: ColorFieldProps) {
+	return (
+		<form.Field name={name}>
+			{(field) => {
+				const hasError = isFieldErrorVisible(
+					field.state.meta,
+					submissionAttempts,
+				);
+				return (
+					<div className="space-y-2">
+						<Label htmlFor={name}>{label}</Label>
+						<div className="flex gap-2">
+							<Input
+								className="h-8 w-12 cursor-pointer p-0.5"
+								id={name}
+								onChange={(e) => field.handleChange(e.target.value)}
+								type="color"
+								value={field.state.value}
+							/>
+							<Input
+								aria-invalid={hasError}
+								className="flex-1 font-mono uppercase"
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								placeholder={placeholder}
+								value={field.state.value}
+							/>
+						</div>
+						<FieldError
+							errors={hasError ? field.state.meta.errors : undefined}
+						/>
+					</div>
+				);
+			}}
+		</form.Field>
+	);
+}
+
+export function ThemeColorsSection({ form }: ThemeColorsSectionProps) {
+	const submissionAttempts = useSelector(
+		form.store,
+		(s) => s.submissionAttempts,
+	);
+
 	const handleReset = () => {
-		onChange("primaryColor", APP_SETTINGS_DEFAULTS.BRANDING_PRIMARY_COLOR);
-		onChange("secondaryColor", APP_SETTINGS_DEFAULTS.BRANDING_SECONDARY_COLOR);
+		form.setFieldValue(
+			"primaryColor",
+			APP_SETTINGS_DEFAULTS.BRANDING_PRIMARY_COLOR,
+		);
+		form.setFieldValue(
+			"secondaryColor",
+			APP_SETTINGS_DEFAULTS.BRANDING_SECONDARY_COLOR,
+		);
 	};
 
 	return (
@@ -33,59 +90,46 @@ export function ThemeColorsSection({
 			title="Theme Colors"
 		>
 			<div className="grid gap-4 sm:grid-cols-2">
-				<div className="space-y-2">
-					<Label htmlFor="primaryColor">Primary color</Label>
-					<div className="flex gap-2">
-						<Input
-							className="h-8 w-12 cursor-pointer p-0.5"
-							id="primaryColor"
-							onChange={(e) => onChange("primaryColor", e.target.value)}
-							type="color"
-							value={data.primaryColor}
-						/>
-						<Input
-							className="flex-1 font-mono uppercase"
-							onChange={(e) => onChange("primaryColor", e.target.value)}
-							placeholder="#3b82f6"
-							value={data.primaryColor}
-						/>
-					</div>
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="secondaryColor">Secondary color</Label>
-					<div className="flex gap-2">
-						<Input
-							className="h-8 w-12 cursor-pointer p-0.5"
-							id="secondaryColor"
-							onChange={(e) => onChange("secondaryColor", e.target.value)}
-							type="color"
-							value={data.secondaryColor}
-						/>
-						<Input
-							className="flex-1 font-mono uppercase"
-							onChange={(e) => onChange("secondaryColor", e.target.value)}
-							placeholder="#8b5cf6"
-							value={data.secondaryColor}
-						/>
-					</div>
-				</div>
+				<ColorField
+					form={form}
+					label="Primary color"
+					name="primaryColor"
+					placeholder="#3b82f6"
+					submissionAttempts={submissionAttempts}
+				/>
+				<ColorField
+					form={form}
+					label="Secondary color"
+					name="secondaryColor"
+					placeholder="#8b5cf6"
+					submissionAttempts={submissionAttempts}
+				/>
 			</div>
-			<div className="mt-6 flex items-center justify-between">
-				<Button
-					disabled={isSaving}
-					onClick={handleReset}
-					size="sm"
-					type="button"
-					variant="ghost"
-				>
-					<IconRestore className="mr-2 size-4" />
-					Reset to defaults
-				</Button>
-				<Button disabled={isSaving} onClick={onSave}>
-					{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
-					Save
-				</Button>
-			</div>
+			<form.Subscribe selector={(s) => s.isSubmitting}>
+				{(isSubmitting) => (
+					<div className="mt-6 flex items-center justify-between">
+						<Button
+							disabled={isSubmitting}
+							onClick={handleReset}
+							size="sm"
+							type="button"
+							variant="ghost"
+						>
+							<IconRestore className="mr-2 size-4" />
+							Reset to defaults
+						</Button>
+						<Button
+							disabled={isSubmitting}
+							onClick={() => void form.handleSubmit()}
+						>
+							{isSubmitting && (
+								<IconLoader2 className="mr-2 size-4 animate-spin" />
+							)}
+							Save
+						</Button>
+					</div>
+				)}
+			</form.Subscribe>
 		</SettingsSection>
 	);
 }

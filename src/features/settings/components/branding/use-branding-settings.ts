@@ -13,6 +13,11 @@ import {
 	uploadBrandingFaviconFn,
 	uploadBrandingLogoFn,
 } from "@/features/settings/api/settings";
+import {
+	type BrandingFormValues,
+	brandingSchema,
+} from "@/features/settings/validations";
+import { useAppForm } from "@/shared/hooks/use-app-form";
 import { getErrorMessage } from "@/shared/lib/error-message";
 
 export const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -86,18 +91,11 @@ function useImageUpload(
 export function useBrandingSettings(initialData: BrandingSettings) {
 	const queryClient = useQueryClient();
 	const router = useRouter();
-	const [data, setData] = useState(initialData);
-	const [isSaving, setIsSaving] = useState(false);
-
-	const handleChange = <K extends keyof BrandingSettings>(
-		field: K,
-		value: BrandingSettings[K],
-	) => {
-		setData((prev) => ({ ...prev, [field]: value }));
-	};
-
-	const setField = (field: keyof BrandingSettings) => (url: string) =>
-		setData((prev) => ({ ...prev, [field]: url }));
+	const [images, setImages] = useState({
+		logoUploadUrl: initialData.logoUploadUrl,
+		faviconUploadUrl: initialData.faviconUploadUrl,
+		authBackgroundUrl: initialData.authBackgroundUrl,
+	});
 
 	// Re-run loaders + branding query so the app-wide logo/favicon reflects changes.
 	const refresh = async () => {
@@ -107,46 +105,58 @@ export function useBrandingSettings(initialData: BrandingSettings) {
 		await router.invalidate();
 	};
 
-	const handleSave = async () => {
-		setIsSaving(true);
-		try {
-			await updateBrandingSettingsFn({ data });
-			await refresh();
-			toast.success("Branding settings saved");
-		} catch (error) {
-			toast.error(getErrorMessage(error, "Failed to save branding settings"));
-		}
-		setIsSaving(false);
-	};
+	const form = useAppForm({
+		defaultValues: {
+			logoUrl: initialData.logoUrl,
+			faviconUrl: initialData.faviconUrl,
+			primaryColor: initialData.primaryColor,
+			secondaryColor: initialData.secondaryColor,
+			footerText: initialData.footerText,
+			authBgOverlay: initialData.authBgOverlay,
+			logoDarkInvert: initialData.logoDarkInvert,
+		} satisfies BrandingFormValues,
+		validators: { onChange: brandingSchema, onSubmit: brandingSchema },
+		onSubmit: async ({ value }) => {
+			try {
+				await updateBrandingSettingsFn({ data: value });
+				await refresh();
+				toast.success("Branding settings saved");
+			} catch (error) {
+				toast.error(getErrorMessage(error, "Failed to save branding settings"));
+			}
+		},
+	});
+
+	const setImage = (field: keyof typeof images) => (url: string) =>
+		setImages((prev) => ({ ...prev, [field]: url }));
 
 	const bg = useImageUpload(
 		"Background image",
 		uploadAuthBackgroundFn,
 		deleteAuthBackgroundFn,
-		setField("authBackgroundUrl"),
+		setImage("authBackgroundUrl"),
 		refresh,
 	);
 	const logo = useImageUpload(
 		"Logo",
 		uploadBrandingLogoFn,
 		deleteBrandingLogoFn,
-		setField("logoUploadUrl"),
+		setImage("logoUploadUrl"),
 		refresh,
 	);
 	const favicon = useImageUpload(
 		"Favicon",
 		uploadBrandingFaviconFn,
 		deleteBrandingFaviconFn,
-		setField("faviconUploadUrl"),
+		setImage("faviconUploadUrl"),
 		refresh,
 	);
 
-	return { data, isSaving, handleChange, handleSave, bg, logo, favicon };
+	return { form, images, bg, logo, favicon };
 }
 
-export type BrandingSettingsHandleChange = <K extends keyof BrandingSettings>(
-	field: K,
-	value: BrandingSettings[K],
-) => void;
+export type BrandingFormApi = ReturnType<typeof useBrandingSettings>["form"];
+
+export type BrandingImages = ReturnType<typeof useBrandingSettings>["images"];
 
 export type ImageUpload = ReturnType<typeof useImageUpload>;

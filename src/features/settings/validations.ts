@@ -228,3 +228,15 @@ export const submissionValidationFormSchema = z
 export type SubmissionValidationFormValues = z.input<
 	typeof submissionValidationFormSchema
 >;
+
+export const brandingSchema = z.object({
+	logoUrl: z.string().max(500),
+	faviconUrl: z.string().max(500),
+	primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Invalid hex color"),
+	secondaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Invalid hex color"),
+	footerText: z.string().max(500),
+	authBgOverlay: z.number().int().min(0).max(100),
+	logoDarkInvert: z.boolean(),
+});
+
+export type BrandingFormValues = z.infer<typeof brandingSchema>;

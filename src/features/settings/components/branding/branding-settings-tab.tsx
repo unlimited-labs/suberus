@@ -10,41 +10,22 @@ interface BrandingSettingsTabProps {
 }
 
 export function BrandingSettingsTab({ initialData }: BrandingSettingsTabProps) {
-	const { data, isSaving, handleChange, handleSave, bg, logo, favicon } =
-		useBrandingSettings(initialData);
+	const { form, images, bg, logo, favicon } = useBrandingSettings(initialData);
 
 	return (
 		<div className="space-y-6">
 			<LogoGraphicsSection
-				data={data}
 				favicon={favicon}
-				isSaving={isSaving}
+				form={form}
+				images={images}
 				logo={logo}
-				onChange={handleChange}
-				onSave={handleSave}
 			/>
 
-			<AuthBackgroundSection
-				data={data}
-				isSaving={isSaving}
-				onChange={handleChange}
-				onSave={handleSave}
-				upload={bg}
-			/>
+			<AuthBackgroundSection form={form} images={images} upload={bg} />
 
-			<ThemeColorsSection
-				data={data}
-				isSaving={isSaving}
-				onChange={handleChange}
-				onSave={handleSave}
-			/>
+			<ThemeColorsSection form={form} />
 
-			<FooterSection
-				data={data}
-				isSaving={isSaving}
-				onChange={handleChange}
-				onSave={handleSave}
-			/>
+			<FooterSection form={form} />
 		</div>
 	);
 }
