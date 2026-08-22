@@ -38,7 +38,6 @@ test.describe("Admin edits a user's survey answers", () => {
 		})
 		createdUserIds.push(participant.id)
 
-		// Seed the required SINGLE_SELECT so the form validates; leave TEXT blank to fill in the edit.
 		const formatQ = await db.surveyQuestion.findFirstOrThrow({
 			where: { label: FORMAT },
 		})

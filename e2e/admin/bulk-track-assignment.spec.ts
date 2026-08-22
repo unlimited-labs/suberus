@@ -20,7 +20,6 @@ test.describe.serial("Admin - Bulk Track Assignment", () => {
 		testRun,
 		adminSubmissionsPage,
 	}) => {
-		// Arrange
 		const trackId = await createTrack(testRun.testRunId, "AI Track");
 		const { id: sub1Id } = await createSubmission({
 			testRunId: testRun.testRunId,
@@ -35,7 +34,6 @@ test.describe.serial("Admin - Bulk Track Assignment", () => {
 			content: "Content 2",
 		});
 
-		// Act
 		await adminSubmissionsPage.gotoAndSearch(testRun.testRunId, "Paper 1");
 		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Paper 1`);
 		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Paper 2`);
@@ -43,19 +41,15 @@ test.describe.serial("Admin - Bulk Track Assignment", () => {
 
 		const dialog = await adminSubmissionsPage.openBulkAction(/Assign to track/i);
 
-		// Select track in dialog
 		await dialog.getByRole("combobox").click();
 		await page
 			.getByRole("option", { name: `${testRun.testRunId}_AI Track` })
 			.click();
 
-		// Confirm
 		await dialog.getByRole("button", { name: "Assign" }).click();
 
-		// Assert - success toast
 		await expect(page.getByText(/updated 2 submission/i)).toBeVisible();
 
-		// Cleanup
 		await deleteSubmission(sub1Id);
 		await deleteSubmission(sub2Id);
 		await deleteTrack(trackId);
@@ -66,7 +60,6 @@ test.describe.serial("Admin - Bulk Track Assignment", () => {
 		testRun,
 		adminSubmissionsPage,
 	}) => {
-		// Arrange
 		const trackId = await createTrack(testRun.testRunId, "Mixed Track");
 		const { id: abstractId } = await createSubmission({
 			testRunId: testRun.testRunId,
@@ -81,28 +74,23 @@ test.describe.serial("Admin - Bulk Track Assignment", () => {
 			content: "Content",
 		});
 
-		// Act
 		await adminSubmissionsPage.gotoAndSearch(testRun.testRunId, "Abstract Paper");
 		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Abstract Paper`);
 		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Poster Paper`);
 
 		const dialog = await adminSubmissionsPage.openBulkAction(/Assign to track/i);
 
-		// Select track
 		await dialog.getByRole("combobox").click();
 		await page
 			.getByRole("option", { name: `${testRun.testRunId}_Mixed Track` })
 			.click();
 
-		// Confirm
 		await dialog.getByRole("button", { name: "Assign" }).click();
 
-		// Assert - should show validation error
 		await expect(
 			dialog.getByText(/not ABSTRACT type/i),
 		).toBeVisible();
 
-		// Cleanup
 		await deleteSubmission(abstractId);
 		await deleteSubmission(posterId);
 		await deleteTrack(trackId);
@@ -113,7 +101,6 @@ test.describe.serial("Admin - Bulk Track Assignment", () => {
 		testRun,
 		adminSubmissionsPage,
 	}) => {
-		// Arrange
 		const trackId = await createTrack(
 			testRun.testRunId,
 			"Initial Track",
@@ -133,24 +120,19 @@ test.describe.serial("Admin - Bulk Track Assignment", () => {
 			trackId,
 		});
 
-		// Act
 		await adminSubmissionsPage.gotoAndSearch(testRun.testRunId, "Clear A");
 		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Clear A`);
 		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Clear B`);
 
 		const dialog = await adminSubmissionsPage.openBulkAction(/Assign to track/i);
 
-		// Select "None" to clear tracks
 		await dialog.getByRole("combobox").click();
 		await page.getByRole("option", { name: "None" }).click();
 
-		// Confirm
 		await dialog.getByRole("button", { name: "Assign" }).click();
 
-		// Assert - success toast
 		await expect(page.getByText(/updated 2 submission/i)).toBeVisible();
 
-		// Verify in database
 		const { getPrisma } = await import("../helpers/test-db");
 		const db = getPrisma();
 		const subs = await db.submission.findMany({
@@ -158,7 +140,6 @@ test.describe.serial("Admin - Bulk Track Assignment", () => {
 		});
 		expect(subs.every((s) => s.trackId === null)).toBe(true);
 
-		// Cleanup
 		await deleteSubmission(sub1Id);
 		await deleteSubmission(sub2Id);
 		await deleteTrack(trackId);

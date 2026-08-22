@@ -4,71 +4,55 @@ import { SubmissionStatus } from "../../src/generated/prisma/enums"
 import { randomUUID } from "crypto"
 
 // Desktop tests - skip on mobile since mobile shows cards instead of table
-// Note: Authentication is handled via storageState in playwright.config.ts
 test.describe("Admin Users Management", () => {
 	test.beforeEach(async ({}, testInfo) => {
-		// Setup: Skip table-based tests on mobile viewport
 		test.skip(testInfo.project.name === "mobile-admin", "Table tests not applicable on mobile")
 	})
 
 	test.describe("Users List", () => {
 		test("displays users list correctly", async ({ adminUsersPage }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			// Assert
 			await expect(adminUsersPage.heading).toBeVisible()
 			await expect(adminUsersPage.exportButton).toBeVisible()
 			await expect(adminUsersPage.table).toBeVisible()
 		})
 
 		test("shows admin user in the list", async ({ adminUsersPage }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			// Act
 			const adminRow = await adminUsersPage.getRowByEmail(ADMIN_USER)
 
-			// Assert
 			await expect(adminRow).toBeVisible()
 		})
 
 		test("search filters users correctly", async ({ adminUsersPage }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			// Act
 			await adminUsersPage.search("Admin")
 
-			// Assert
 			const adminRow = await adminUsersPage.getRowByEmail(ADMIN_USER)
 			await expect(adminRow).toBeVisible()
 		})
 
 		test("can select users for bulk actions", async ({ adminUsersPage }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			// Act
 			await adminUsersPage.selectUser(TEST_USER)
 
-			// Assert
 			await expect(adminUsersPage.getSelectedCount()).toBeVisible()
 		})
 
 		test("export XLSX downloads a valid file", async ({ adminUsersPage }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			// Act
 			const response = await adminUsersPage.page.request.get("/api/admin/users/export")
 
-			// Assert
 			expect(response.status()).toBe(200)
 			expect(response.headers()["content-type"]).toContain("spreadsheetml.sheet")
 			expect(response.headers()["content-disposition"]).toContain("attachment")
@@ -79,7 +63,6 @@ test.describe("Admin Users Management", () => {
 
 	test.describe("Column Visibility", () => {
 		test("hides a column and shows it again from the Columns menu", async ({ adminUsersPage, page }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
@@ -90,36 +73,30 @@ test.describe("Admin Users Management", () => {
 
 			const columnsButton = page.getByRole("button", { name: "Columns" })
 
-			// Act — hide the column
 			await columnsButton.click()
 			const item = page.getByRole("menuitemcheckbox", { name: "Affiliation" })
 			await expect(item).toHaveAttribute("aria-checked", "true")
 			await item.click()
 			await page.keyboard.press("Escape")
 
-			// Assert — column is hidden
 			await expect(affiliationHeader).toBeHidden()
 
-			// Act — reopen: the menu item must reflect the hidden state, then re-show
 			await columnsButton.click()
 			const itemAgain = page.getByRole("menuitemcheckbox", { name: "Affiliation" })
 			await expect(itemAgain).toHaveAttribute("aria-checked", "false")
 			await itemAgain.click()
 			await page.keyboard.press("Escape")
 
-			// Assert — column is visible again (regression: hide-but-cannot-show)
 			await expect(affiliationHeader).toBeVisible()
 		})
 
 		test("keeps the Columns menu open and flips the checkbox in place", async ({ adminUsersPage, page }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
 			await page.getByRole("button", { name: "Columns" }).click()
 			const item = page.getByRole("menuitemcheckbox", { name: "Affiliation" })
 
-			// Act & Assert — toggling does not close the menu; checkbox updates live
 			await expect(item).toHaveAttribute("aria-checked", "true")
 			await item.click()
 			await expect(item).toHaveAttribute("aria-checked", "false")
@@ -128,7 +105,6 @@ test.describe("Admin Users Management", () => {
 		})
 
 		test("persists hidden column across reload (localStorage)", async ({ adminUsersPage, page }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
@@ -137,13 +113,11 @@ test.describe("Admin Users Management", () => {
 				.filter({ hasText: "Affiliation" })
 			await expect(affiliationHeader).toBeVisible()
 
-			// Act — hide the column
 			await page.getByRole("button", { name: "Columns" }).click()
 			await page.getByRole("menuitemcheckbox", { name: "Affiliation" }).click()
 			await page.keyboard.press("Escape")
 			await expect(affiliationHeader).toBeHidden()
 
-			// Assert — choice is written to localStorage (await to avoid the write race)
 			await expect(async () => {
 				const raw = await page.evaluate(() =>
 					localStorage.getItem("suberus.table.columns.admin-users"),
@@ -151,11 +125,9 @@ test.describe("Admin Users Management", () => {
 				expect(raw).toContain('"affiliation":false')
 			}).toPass()
 
-			// Act — reload
 			await page.reload()
 			await adminUsersPage.waitForLoad()
 
-			// Assert — column stays hidden and the menu reflects it
 			await expect(affiliationHeader).toBeHidden()
 			await page.getByRole("button", { name: "Columns" }).click()
 			await expect(
@@ -176,32 +148,26 @@ test.describe("Admin Users Management", () => {
 			adminUsersPage,
 			page,
 		}) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			const visibleRows = page.getByTestId("user-row").filter({ visible: true })
 			const before = await visibleRows.count()
 			expect(before).toBeGreaterThan(1)
 
-			// Open the Role faceted filter
 			await openRoleFilter(page)
 			const popover = page.locator("[data-slot='popover-content']")
 			const adminOption = popover.getByRole("checkbox", { name: "Administrator" })
 
-			// Act — check "Administrator"
 			await expect(adminOption).toHaveAttribute("aria-checked", "false")
 			await adminOption.click()
 
-			// Assert — checkbox flips in place (regression: was stuck false) and list narrows
 			await expect(adminOption).toHaveAttribute("aria-checked", "true")
 			const filtered = await visibleRows.count()
 			expect(filtered).toBeGreaterThan(0)
 			expect(filtered).toBeLessThan(before)
 
-			// Act — uncheck (regression: frozen closure blocked deselect)
 			await adminOption.click()
 
-			// Assert — clears and list is restored
 			await expect(adminOption).toHaveAttribute("aria-checked", "false")
 			await expect(visibleRows).toHaveCount(before)
 		})
@@ -210,7 +176,6 @@ test.describe("Admin Users Management", () => {
 			adminUsersPage,
 			page,
 		}) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
@@ -221,12 +186,10 @@ test.describe("Admin Users Management", () => {
 				popover.getByRole("checkbox", { name: "Administrator" }),
 			).toHaveAttribute("aria-checked", "true")
 
-			// Act — close and reopen
 			await page.keyboard.press("Escape")
 			await expect(popover).toBeHidden()
 			await openRoleFilter(page)
 
-			// Assert — onOpenChange re-sync keeps the selection checked
 			await expect(
 				page
 					.locator("[data-slot='popover-content']")
@@ -237,34 +200,28 @@ test.describe("Admin Users Management", () => {
 
 	test.describe("User Detail Page", () => {
 		test("displays user details correctly", async ({ adminUsersPage, userDetailPage }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.openUserDetail(TEST_USER)
 
-			// Assert
 			await expect(userDetailPage.backButton).toBeVisible()
 			await expect(userDetailPage.getUserEmail()).toContainText(TEST_USER.email)
 		})
 
 		test("shows change role button for admin", async ({ adminUsersPage, userDetailPage }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.openUserDetail(TEST_USER)
 
-			// Assert
 			await userDetailPage.openActions()
 			await expect(userDetailPage.changeRoleButton).toBeVisible()
 		})
 
 		test("shows deactivate/activate button", async ({ adminUsersPage, userDetailPage }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.openUserDetail(TEST_USER)
 
-			// Assert
 			await userDetailPage.openActions()
 			await expect(
 				userDetailPage.deactivateButton.or(userDetailPage.activateButton)
@@ -272,32 +229,26 @@ test.describe("Admin Users Management", () => {
 		})
 
 		test("can navigate back to users list", async ({ adminUsersPage, userDetailPage }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.openUserDetail(TEST_USER)
 
-			// Act
 			await userDetailPage.backButton.click()
 
-			// Assert
 			await expect(adminUsersPage.page).toHaveURL(/\/admin\/users$/)
 		})
 
 		test("email is a clickable mailto link", async ({ adminUsersPage, userDetailPage }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.openUserDetail(TEST_USER)
 
-			// Assert
 			const mailtoLink = userDetailPage.page.getByRole("link", { name: TEST_USER.email })
 			await expect(mailtoLink).toBeVisible()
 			await expect(mailtoLink).toHaveAttribute("href", `mailto:${TEST_USER.email}`)
 		})
 
 		test("displays academic title label in header", async ({ adminUsersPage, userDetailPage }) => {
-			// Arrange — set title on test user via Prisma
 			const { getPrisma } = await import("../helpers/test-db")
 			const db = getPrisma()
 			await db.user.updateMany({ where: { email: TEST_USER.email }, data: { title: "dr" } })
@@ -306,20 +257,16 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.openUserDetail(TEST_USER)
 
-			// Assert — CardTitle renders as div[data-slot="card-title"], not a heading
 			await expect(userDetailPage.page.locator("[data-slot='card-title']").filter({ hasText: /^Dr\s/ })).toBeVisible()
 
-			// Cleanup
 			await db.user.updateMany({ where: { email: TEST_USER.email }, data: { title: null } })
 		})
 
 		test("shows fee status section", async ({ adminUsersPage, userDetailPage }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.openUserDetail(TEST_USER)
 
-			// Assert
 			await expect(
 				userDetailPage.feeStatusPaid.or(userDetailPage.feeStatusUnpaid)
 			).toBeVisible()
@@ -329,7 +276,6 @@ test.describe("Admin Users Management", () => {
 	test.describe("User Submissions Panel", () => {
 		test("shows owned submission with Author badge and clickable title", async ({ page, userDetailPage }) => {
 			test.slow()
-			// Arrange
 			const { createTestUser, createSubmission, deleteSubmission, deleteTestUser } = await import("../helpers/test-db")
 			const owner = await createTestUser({
 				email: `subpanel-owner-${Date.now()}@e2e.local`,
@@ -343,16 +289,13 @@ test.describe("Admin Users Management", () => {
 			})
 
 			try {
-				// Act
 				await userDetailPage.goto(owner.id)
 				const row = userDetailPage.submissionRows.filter({ hasText: submission.title })
 				await expect(row).toBeVisible({ timeout: 10000 })
 
-				// Assert — role badge + status
 				await expect(row.getByText("Author", { exact: true })).toBeVisible()
 				await expect(row.getByText("Submitted", { exact: true })).toBeVisible()
 
-				// Act — title links to submission detail
 				await row.getByRole("link", { name: submission.title }).click()
 				await expect(page).toHaveURL(new RegExp(`/admin/submissions/${submission.id}`))
 			} finally {
@@ -363,7 +306,6 @@ test.describe("Admin Users Management", () => {
 
 		test("shows co-authored submission with Co-author badge", async ({ userDetailPage }) => {
 			test.slow()
-			// Arrange — owner's submission lists tempUser as a co-author (linked by userId)
 			const { createTestUser, createSubmission, deleteSubmission, deleteTestUser } = await import("../helpers/test-db")
 			const coAuthor = await createTestUser({
 				email: `subpanel-coauthor-${Date.now()}@e2e.local`,
@@ -390,12 +332,10 @@ test.describe("Admin Users Management", () => {
 			})
 
 			try {
-				// Act
 				await userDetailPage.goto(coAuthor.id)
 				const row = userDetailPage.submissionRows.filter({ hasText: submission.title })
 				await expect(row).toBeVisible({ timeout: 10000 })
 
-				// Assert
 				await expect(row.getByText("Co-author", { exact: true })).toBeVisible()
 			} finally {
 				await deleteSubmission(submission.id)
@@ -406,7 +346,6 @@ test.describe("Admin Users Management", () => {
 
 		test("shows draft submissions", async ({ userDetailPage }) => {
 			test.slow()
-			// Arrange
 			const { createTestUser, createSubmission, deleteSubmission, deleteTestUser } = await import("../helpers/test-db")
 			const owner = await createTestUser({
 				email: `subpanel-draft-${Date.now()}@e2e.local`,
@@ -420,11 +359,9 @@ test.describe("Admin Users Management", () => {
 			})
 
 			try {
-				// Act
 				await userDetailPage.goto(owner.id)
 				const row = userDetailPage.submissionRows.filter({ hasText: submission.title })
 
-				// Assert
 				await expect(row).toBeVisible({ timeout: 10000 })
 				await expect(row.getByText("Draft", { exact: true })).toBeVisible()
 			} finally {
@@ -435,7 +372,6 @@ test.describe("Admin Users Management", () => {
 
 		test("user who owns AND co-authors the same submission appears once as Author", async ({ userDetailPage }) => {
 			test.slow()
-			// Arrange — owner is also listed as a co-author on their own submission
 			const { createTestUser, createSubmission, deleteSubmission, deleteTestUser } = await import("../helpers/test-db")
 			const owner = await createTestUser({
 				email: `subpanel-dual-${Date.now()}@e2e.local`,
@@ -457,11 +393,9 @@ test.describe("Admin Users Management", () => {
 			})
 
 			try {
-				// Act
 				await userDetailPage.goto(owner.id)
 				const rows = userDetailPage.submissionRows.filter({ hasText: submission.title })
 
-				// Assert — deduped to a single row, tagged Author (not Co-author)
 				await expect(rows).toHaveCount(1)
 				await expect(rows.getByText("Author", { exact: true })).toBeVisible()
 				await expect(rows.getByText("Co-author", { exact: true })).toHaveCount(0)
@@ -473,7 +407,6 @@ test.describe("Admin Users Management", () => {
 
 		test("unlinked co-author (no userId) does not appear on their detail page", async ({ userDetailPage }) => {
 			test.slow()
-			// Arrange — a co-author listed by email only (userId null, e.g. not yet verified)
 			const { createTestUser, createSubmission, deleteSubmission, deleteTestUser } = await import("../helpers/test-db")
 			const unlinked = await createTestUser({
 				email: `subpanel-unlinked-${Date.now()}@e2e.local`,
@@ -493,17 +426,15 @@ test.describe("Admin Users Management", () => {
 					{
 						firstName: "SubPanel",
 						lastName: "Unlinked",
-						email: unlinked.email, // listed by email, but userId left null
+						email: unlinked.email,
 					},
 				],
 			})
 
 			try {
-				// Act
 				await userDetailPage.goto(unlinked.id)
 				await expect(userDetailPage.getUserEmail()).toBeVisible({ timeout: 10000 })
 
-				// Assert — email-only authorship is not surfaced (only userId-linked rows count)
 				await expect(userDetailPage.page.getByText("No submissions")).toBeVisible()
 				await expect(userDetailPage.submissionRows).toHaveCount(0)
 			} finally {
@@ -515,7 +446,6 @@ test.describe("Admin Users Management", () => {
 
 		test("submissions are ordered by last updated, newest first", async ({ userDetailPage }) => {
 			test.slow()
-			// Arrange — two owned submissions; bump the first so it becomes most-recently updated
 			const { createTestUser, createSubmission, deleteSubmission, deleteTestUser, getPrisma } = await import("../helpers/test-db")
 			const owner = await createTestUser({
 				email: `subpanel-order-${Date.now()}@e2e.local`,
@@ -532,16 +462,13 @@ test.describe("Admin Users Management", () => {
 				userId: owner.id,
 				status: SubmissionStatus.SUBMITTED,
 			})
-			// Touch `older` so its updatedAt (auto-managed) overtakes `newer`
 			const db = getPrisma()
 			await db.submission.update({ where: { id: older.id }, data: { title: older.title } })
 
 			try {
-				// Act
 				await userDetailPage.goto(owner.id)
 				await expect(userDetailPage.submissionRows).toHaveCount(2)
 
-				// Assert — the just-touched submission is first
 				await expect(userDetailPage.submissionRows.nth(0)).toContainText(older.title)
 				await expect(userDetailPage.submissionRows.nth(1)).toContainText(newer.title)
 			} finally {
@@ -552,7 +479,6 @@ test.describe("Admin Users Management", () => {
 		})
 
 		test("shows empty state for user without submissions", async ({ userDetailPage }) => {
-			// Arrange
 			const { createTestUser, deleteTestUser } = await import("../helpers/test-db")
 			const lonely = await createTestUser({
 				email: `subpanel-empty-${Date.now()}@e2e.local`,
@@ -561,11 +487,9 @@ test.describe("Admin Users Management", () => {
 			})
 
 			try {
-				// Act
 				await userDetailPage.goto(lonely.id)
 				await expect(userDetailPage.getUserEmail()).toBeVisible({ timeout: 10000 })
 
-				// Assert
 				await expect(userDetailPage.page.getByText("No submissions")).toBeVisible()
 				await expect(userDetailPage.submissionRows).toHaveCount(0)
 			} finally {
@@ -576,41 +500,32 @@ test.describe("Admin Users Management", () => {
 
 	test.describe("Bulk Actions", () => {
 		test("bulk actions dropdown appears when users selected", async ({ adminUsersPage }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			// Act
 			await adminUsersPage.selectUser(TEST_USER)
 
-			// Assert
 			await expect(adminUsersPage.page.getByText("Bulk actions")).toBeVisible()
 		})
 
 		test("can open mark fee paid dialog", async ({ adminUsersPage }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			// Act
 			await adminUsersPage.selectUser(TEST_USER)
 			await adminUsersPage.selectBulkAction("Mark fee paid")
 
-			// Assert
 			await expect(adminUsersPage.page.getByRole("dialog")).toBeVisible()
 			await expect(adminUsersPage.page.getByText("Mark fee as paid")).toBeVisible()
 		})
 
 		test("can open change role dialog", async ({ adminUsersPage }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 
-			// Act
 			await adminUsersPage.selectUser(TEST_USER)
 			await adminUsersPage.selectBulkAction("Change role")
 
-			// Assert
 			await expect(adminUsersPage.page.getByRole("dialog")).toBeVisible()
 			await expect(adminUsersPage.page.getByText("Change user role")).toBeVisible()
 		})
@@ -618,44 +533,36 @@ test.describe("Admin Users Management", () => {
 
 	test.describe("Role Change", () => {
 		test("change role dialog opens from detail page", async ({ adminUsersPage, userDetailPage }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.openUserDetail(TEST_USER)
 
-			// Act
 			await userDetailPage.openActions()
 			await userDetailPage.changeRoleButton.click()
 
-			// Assert
 			await expect(adminUsersPage.page.getByRole("dialog")).toBeVisible()
 			await expect(adminUsersPage.page.getByText("Change User Role")).toBeVisible()
 		})
 
 		test("can cancel role change", async ({ adminUsersPage, userDetailPage }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.openUserDetail(TEST_USER)
 
-			// Act
 			await userDetailPage.openActions()
 			await userDetailPage.changeRoleButton.click()
 			await userDetailPage.cancelDialog()
 
-			// Assert
 			await expect(adminUsersPage.page.getByRole("dialog")).not.toBeVisible()
 		})
 	})
 
 	test.describe("Fee Management", () => {
 		test("mark fee paid button visible for unpaid users", async ({ adminUsersPage, userDetailPage }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.openUserDetail(TEST_USER)
 
-			// Assert (conditional - depends on user's fee status)
 			const unpaidVisible = await userDetailPage.feeStatusUnpaid.isVisible()
 			if (unpaidVisible) {
 				await expect(userDetailPage.markAsPaidButton).toBeVisible()
@@ -663,12 +570,10 @@ test.describe("Admin Users Management", () => {
 		})
 
 		test("mark fee paid dialog opens correctly", async ({ adminUsersPage, userDetailPage }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.openUserDetail(TEST_USER)
 
-			// Act & Assert (conditional - depends on user's fee status)
 			const unpaidVisible = await userDetailPage.feeStatusUnpaid.isVisible()
 			if (unpaidVisible) {
 				await userDetailPage.markAsPaidButton.click()
@@ -681,12 +586,10 @@ test.describe("Admin Users Management", () => {
 	test.describe("User Status Toggle", () => {
 		test("can toggle user active status", async ({ adminUsersPage, userDetailPage }) => {
 			test.slow(); // Toggle + restore requires multiple mutations and query invalidations
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.openUserDetail(TEST_USER)
 
-			// Act & Assert (toggle + cleanup - direction depends on current state).
 			// Each menu item selection closes the dropdown, so reopen between steps.
 			await userDetailPage.openActions()
 			const deactivateVisible = await userDetailPage.deactivateButton.isVisible()
@@ -694,7 +597,6 @@ test.describe("Admin Users Management", () => {
 				await userDetailPage.deactivateButton.click()
 				await userDetailPage.openActions()
 				await expect(userDetailPage.activateButton).toBeVisible({ timeout: 5000 })
-				// Cleanup: restore original state
 				await userDetailPage.activateButton.click()
 				await userDetailPage.openActions()
 				await expect(userDetailPage.deactivateButton).toBeVisible({ timeout: 5000 })
@@ -702,13 +604,11 @@ test.describe("Admin Users Management", () => {
 				await userDetailPage.activateButton.click()
 				await userDetailPage.openActions()
 				await expect(userDetailPage.deactivateButton).toBeVisible({ timeout: 5000 })
-				// Cleanup: restore original state
 				await userDetailPage.deactivateButton.click()
 				await userDetailPage.openActions()
 				await expect(userDetailPage.activateButton).toBeVisible({ timeout: 5000 })
 			}
 
-			// Assert: no error toast appeared
 			const errorToast = adminUsersPage.page.locator("[data-sonner-toast][data-type='error']")
 			await expect(errorToast).not.toBeVisible({ timeout: 1000 })
 		})
@@ -716,12 +616,10 @@ test.describe("Admin Users Management", () => {
 
 	test.describe("Email Verification", () => {
 		test("shows verified status for verified user", async ({ adminUsersPage, userDetailPage }) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.openUserDetail(TEST_USER)
 
-			// Assert
 			await expect(userDetailPage.emailVerified).toBeVisible()
 			await expect(userDetailPage.verifyEmailButton).not.toBeVisible()
 		})
@@ -730,18 +628,15 @@ test.describe("Admin Users Management", () => {
 			adminUsersPage,
 			userDetailPage,
 		}) => {
-			// Arrange
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.openUserDetail(UNVERIFIED_USER)
 
-			// Assert
 			await expect(userDetailPage.emailNotVerified).toBeVisible()
 			await expect(userDetailPage.verifyEmailButton).toBeVisible()
 		})
 
 		test("can manually verify user email", async ({ adminUsersPage, userDetailPage }) => {
-			// Arrange — ensure email is unverified (destructive test may have run before)
 			const { getPrisma } = await import("../helpers/test-db")
 			const db = getPrisma()
 			await db.user.updateMany({
@@ -754,10 +649,8 @@ test.describe("Admin Users Management", () => {
 			await adminUsersPage.openUserDetail(ADMIN_VERIFY_TEST_USER)
 			await expect(userDetailPage.emailNotVerified).toBeVisible()
 
-			// Act
 			await userDetailPage.verifyEmailButton.click()
 
-			// Assert
 			await expect(userDetailPage.emailVerified).toBeVisible({ timeout: 5000 })
 			await expect(userDetailPage.verifyEmailButton).not.toBeVisible()
 		})
@@ -766,7 +659,6 @@ test.describe("Admin Users Management", () => {
 			adminUsersPage,
 			userDetailPage,
 		}) => {
-			// Arrange — a submission listing the user by email, not yet linked
 			const { createSubmission, deleteSubmission, getPrisma } = await import(
 				"../helpers/test-db"
 			)
@@ -792,11 +684,9 @@ test.describe("Admin Users Management", () => {
 				await adminUsersPage.waitForLoad()
 				await adminUsersPage.openUserDetail(ADMIN_VERIFY_TEST_USER)
 
-				// Act
 				await userDetailPage.verifyEmailButton.click()
 				await expect(userDetailPage.emailVerified).toBeVisible({ timeout: 5000 })
 
-				// Assert — the co-author row now points at the account
 				await expect
 					.poll(
 						async () =>
@@ -820,28 +710,23 @@ test.describe("Admin Users Management", () => {
 
 	test.describe("Edit Profile", () => {
 		test("Edit Profile button visible for admin", async ({ userDetailPage }) => {
-			// Arrange
 			const { getTestUserIds } = await import("../helpers/test-db")
 			const { testUserId } = await getTestUserIds()
 			await userDetailPage.goto(testUserId)
 
-			// Assert
 			await userDetailPage.openActions()
 			await expect(userDetailPage.editProfileButton).toBeVisible({ timeout: 10000 })
 		})
 
 		test("Edit Profile dialog opens with user data", async ({ page, userDetailPage }) => {
-			// Arrange
 			const { getTestUserIds } = await import("../helpers/test-db")
 			const { testUserId } = await getTestUserIds()
 			await userDetailPage.goto(testUserId)
 			await userDetailPage.openActions()
 			await expect(userDetailPage.editProfileButton).toBeVisible({ timeout: 10000 })
 
-			// Act
 			await userDetailPage.editProfileButton.click()
 
-			// Assert
 			const dialog = page.getByRole("dialog")
 			await dialog.waitFor({ state: "visible" })
 			await expect(dialog.getByText("Edit User Profile")).toBeVisible()
@@ -852,7 +737,6 @@ test.describe("Admin Users Management", () => {
 
 		test("can edit user profile", async ({ page, userDetailPage }) => {
 			test.slow()
-			// Arrange
 			const { createTestUser, deleteTestUser } = await import("../helpers/test-db")
 			const tempUser = await createTestUser({
 				email: `edit-profile-${Date.now()}@e2e.local`,
@@ -865,7 +749,6 @@ test.describe("Admin Users Management", () => {
 				await userDetailPage.openActions()
 			await expect(userDetailPage.editProfileButton).toBeVisible({ timeout: 10000 })
 
-				// Act
 				await userDetailPage.editProfileButton.click()
 				const dialog = page.getByRole("dialog")
 				await dialog.waitFor({ state: "visible" })
@@ -876,7 +759,6 @@ test.describe("Admin Users Management", () => {
 				await dialog.getByLabel("Last name *").fill("ProfileAfter")
 				await dialog.getByRole("button", { name: "Save" }).click()
 
-				// Assert
 				await expect(page.getByText("Profile updated")).toBeVisible({ timeout: 5000 })
 				await expect(page.locator("[data-slot='card-title']").first()).toContainText("EditAfter")
 				await expect(page.locator("[data-slot='card-title']").first()).toContainText("ProfileAfter")
@@ -886,14 +768,12 @@ test.describe("Admin Users Management", () => {
 		})
 
 		test("can cancel edit without saving", async ({ page, userDetailPage }) => {
-			// Arrange
 			const { getTestUserIds } = await import("../helpers/test-db")
 			const { testUserId } = await getTestUserIds()
 			await userDetailPage.goto(testUserId)
 			await userDetailPage.openActions()
 			await expect(userDetailPage.editProfileButton).toBeVisible({ timeout: 10000 })
 
-			// Act
 			await userDetailPage.editProfileButton.click()
 			const dialog = page.getByRole("dialog")
 			await dialog.waitFor({ state: "visible" })
@@ -901,14 +781,12 @@ test.describe("Admin Users Management", () => {
 			await dialog.getByLabel("First name *").fill("ChangedName")
 			await dialog.getByRole("button", { name: "Cancel" }).click()
 
-			// Assert
 			await expect(dialog).not.toBeVisible()
 			await expect(page.locator("[data-slot='card-title']").first()).toContainText(TEST_USER.firstName)
 		})
 
 		test("duplicate email shows inline field error, not just a toast", async ({ page, userDetailPage }) => {
 			test.slow()
-			// Arrange — temp user we can safely mutate
 			const { createTestUser, deleteTestUser } = await import("../helpers/test-db")
 			const tempUser = await createTestUser({
 				email: `dup-email-${Date.now()}@e2e.local`,
@@ -924,7 +802,6 @@ test.describe("Admin Users Management", () => {
 				const dialog = page.getByRole("dialog")
 				await dialog.waitFor({ state: "visible" })
 
-				// Act — set email to an already-registered address (admin), then save.
 				// Blur + value assertion ensure the change is committed to form state
 				// before submit (otherwise an unchanged email submits successfully).
 				const emailField = dialog.getByLabel("Email *")
@@ -934,11 +811,8 @@ test.describe("Admin Users Management", () => {
 				await expect(emailField).toHaveValue(ADMIN_USER.email)
 				await dialog.getByRole("button", { name: "Save" }).click()
 
-				// Assert — inline error appears inside the dialog (server 409 → field error)
 				await expect(dialog.getByText("Email already in use")).toBeVisible({ timeout: 5000 })
-				// Dialog stays open (submit failed)
 				await expect(dialog).toBeVisible()
-				// 409 no longer raises a toast (field error replaces it)
 				await expect(page.getByText("Profile updated")).not.toBeVisible()
 			} finally {
 				await deleteTestUser(tempUser.id)
@@ -948,19 +822,16 @@ test.describe("Admin Users Management", () => {
 
 	test.describe("Delete User", () => {
 		test("Delete User button visible for admin", async ({ userDetailPage }) => {
-			// Arrange
 			const { getTestUserIds } = await import("../helpers/test-db")
 			const { testUserId } = await getTestUserIds()
 			await userDetailPage.goto(testUserId)
 
-			// Assert
 			await userDetailPage.openActions()
 			await expect(userDetailPage.deleteUserButton).toBeVisible({ timeout: 10000 })
 		})
 
 		test("shows blocking reasons for user with submissions", async ({ page, userDetailPage }) => {
 			test.slow()
-			// Arrange
 			const { createTestUser, createSubmission, deleteSubmission, deleteTestUser } = await import("../helpers/test-db")
 			const tempUser = await createTestUser({
 				email: `delete-blocked-${Date.now()}@e2e.local`,
@@ -977,10 +848,8 @@ test.describe("Admin Users Management", () => {
 				await userDetailPage.openActions()
 				await expect(userDetailPage.deleteUserButton).toBeVisible({ timeout: 10000 })
 
-				// Act
 				await userDetailPage.deleteUserButton.click()
 
-				// Assert
 				const dialog = page.getByRole("dialog")
 				await dialog.waitFor({ state: "visible" })
 				await expect(dialog.getByText("Cannot Delete User")).toBeVisible({ timeout: 5000 })
@@ -992,7 +861,6 @@ test.describe("Admin Users Management", () => {
 
 		test("can delete user without submissions", async ({ page, userDetailPage }) => {
 			test.slow()
-			// Arrange
 			const { createTestUser } = await import("../helpers/test-db")
 			const tempUser = await createTestUser({
 				email: `delete-ok-${Date.now()}@e2e.local`,
@@ -1004,13 +872,11 @@ test.describe("Admin Users Management", () => {
 			await userDetailPage.openActions()
 			await expect(userDetailPage.deleteUserButton).toBeVisible({ timeout: 10000 })
 
-			// Act
 			await userDetailPage.deleteUserButton.click()
 			const dialog = page.getByRole("dialog")
 			await dialog.waitFor({ state: "visible" })
 			await dialog.getByRole("button", { name: "Delete User" }).click()
 
-			// Assert
 			await expect(page).toHaveURL(/\/admin\/users$/, { timeout: 10000 })
 			await expect(page.getByText("User deleted")).toBeVisible({ timeout: 5000 })
 		})
@@ -1018,7 +884,6 @@ test.describe("Admin Users Management", () => {
 
 	test.describe("Editor Visibility", () => {
 		test("Edit and Delete buttons not visible for editor", async ({ page, userDetailPage }) => {
-			// Arrange — re-auth as editor
 			await loginAs(page, EDITOR_USER, { clearCookies: true })
 
 			const { getTestUserIds } = await import("../helpers/test-db")
@@ -1026,14 +891,12 @@ test.describe("Admin Users Management", () => {
 			await userDetailPage.goto(testUserId)
 			await expect(userDetailPage.getUserEmail()).toBeVisible({ timeout: 10000 })
 
-			// Assert — profile edit / delete stay admin-only (absent from the actions menu)
 			await userDetailPage.openActions()
 			await expect(userDetailPage.editProfileButton).not.toBeVisible()
 			await expect(userDetailPage.deleteUserButton).not.toBeVisible()
 		})
 
 		test("editor can change roles but the Administrator option is hidden", async ({ page, userDetailPage }) => {
-			// Arrange — editor viewing a non-admin (author) user
 			await loginAs(page, EDITOR_USER, { clearCookies: true })
 
 			const { getTestUserIds } = await import("../helpers/test-db")
@@ -1041,19 +904,16 @@ test.describe("Admin Users Management", () => {
 			await userDetailPage.goto(testUserId)
 			await expect(userDetailPage.getUserEmail()).toBeVisible({ timeout: 10000 })
 
-			// Act — open the change-role dialog (editors may change non-admin roles)
 			await userDetailPage.openActions()
 			await expect(userDetailPage.changeRoleButton).toBeVisible()
 			await userDetailPage.changeRoleButton.click()
 			await page.getByRole("combobox").click()
 
-			// Assert — ADMIN is not an assignable option for an editor
 			await expect(page.getByRole("option", { name: "Editor" })).toBeVisible()
 			await expect(page.getByRole("option", { name: "Administrator" })).toHaveCount(0)
 		})
 
 		test("editor cannot change an admin's role", async ({ page, userDetailPage }) => {
-			// Arrange — editor viewing an ADMIN user
 			await loginAs(page, EDITOR_USER, { clearCookies: true })
 
 			const { getPrisma } = await import("../helpers/test-db")
@@ -1061,7 +921,6 @@ test.describe("Admin Users Management", () => {
 			await userDetailPage.goto(admin.id)
 			await expect(userDetailPage.getUserEmail()).toBeVisible({ timeout: 10000 })
 
-			// Assert — no role-change control is offered for an admin target
 			await userDetailPage.openActions()
 			await expect(userDetailPage.changeRoleButton).not.toBeVisible()
 		})
@@ -1071,23 +930,17 @@ test.describe("Admin Users Management", () => {
 test.describe("Admin Users - Mobile", () => {
 	test.use({ viewport: { width: 375, height: 667 } })
 
-	// Note: Authentication is handled via storageState in playwright.config.ts
-
 	test("displays mobile cards on small screens", async ({ adminUsersPage }) => {
-		// Arrange
 		await adminUsersPage.goto()
 		await adminUsersPage.waitForLoad()
 
-		// Assert
 		await expect(adminUsersPage.heading).toBeVisible()
 	})
 
 	test("export button visible on mobile", async ({ adminUsersPage }) => {
-		// Arrange
 		await adminUsersPage.goto()
 		await adminUsersPage.waitForLoad()
 
-		// Assert
 		await expect(adminUsersPage.exportButton).toBeVisible()
 	})
 })

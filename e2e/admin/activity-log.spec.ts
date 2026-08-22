@@ -7,7 +7,6 @@ import {
 } from "../helpers/test-db";
 
 test.describe("Activity Log - Recent Activity", () => {
-	// Track manually created activity log IDs for cleanup
 	const manualActivityIds: string[] = [];
 
 	test.afterEach(async () => {
@@ -25,7 +24,6 @@ test.describe("Activity Log - Recent Activity", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const db = getPrisma();
 		const { testUserId } = await getTestUserIds();
 		const sub = await createSubmission({
@@ -43,13 +41,11 @@ test.describe("Activity Log - Recent Activity", () => {
 		});
 		manualActivityIds.push(activity.id);
 
-		// Act
 		await page.goto("/admin/dashboard");
 		await page
 			.getByRole("heading", { name: "Admin Dashboard" })
 			.waitFor({ timeout: 10000 });
 
-		// Assert
 		const main = page.getByRole("main");
 		await expect(
 			main.getByText("Submission created").first(),
@@ -62,7 +58,6 @@ test.describe("Activity Log - Recent Activity", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const db = getPrisma();
 		const { testUserId, adminUserId, reviewerUserId } =
 			await getTestUserIds();
@@ -91,13 +86,11 @@ test.describe("Activity Log - Recent Activity", () => {
 		});
 		manualActivityIds.push(assignedActivity.id);
 
-		// Act
 		await page.goto("/admin/dashboard");
 		await page
 			.getByRole("heading", { name: "Admin Dashboard" })
 			.waitFor({ timeout: 10000 });
 
-		// Assert
 		const main = page.getByRole("main");
 		await expect(
 			main.getByText("Submission created").first(),
@@ -112,7 +105,6 @@ test.describe("Activity Log - Recent Activity", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const db = getPrisma();
 		const { testUserId } = await getTestUserIds();
 		const sub = await createSubmission({
@@ -130,13 +122,11 @@ test.describe("Activity Log - Recent Activity", () => {
 		});
 		manualActivityIds.push(activity.id);
 
-		// Act
 		await page.goto("/admin/dashboard");
 		await page
 			.getByRole("heading", { name: "Admin Dashboard" })
 			.waitFor({ timeout: 10000 });
 
-		// Assert - find the link with submission title and verify href
 		const main = page.getByRole("main");
 		const link = main.getByRole("link", { name: sub.title });
 		await expect(link).toBeVisible({ timeout: 15000 });
@@ -147,7 +137,6 @@ test.describe("Activity Log - Recent Activity", () => {
 	});
 
 	test("user event appears with correct link", async ({ page }) => {
-		// Arrange
 		const db = getPrisma();
 		const { testUserId } = await getTestUserIds();
 
@@ -159,19 +148,16 @@ test.describe("Activity Log - Recent Activity", () => {
 		});
 		manualActivityIds.push(activity.id);
 
-		// Act
 		await page.goto("/admin/dashboard");
 		await page
 			.getByRole("heading", { name: "Admin Dashboard" })
 			.waitFor({ timeout: 10000 });
 
-		// Assert
 		const main = page.getByRole("main");
 		await expect(
 			main.getByText("User registered").first(),
 		).toBeVisible({ timeout: 5000 });
 
-		// The user name link should point to /admin/users/$id
 		const userLink = main.getByRole("link", { name: "Test User" }).first();
 		await expect(userLink).toBeVisible();
 		await expect(userLink).toHaveAttribute(
@@ -185,8 +171,6 @@ test.describe("Activity Log - Recent Activity", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange - insert 25 activity log entries
-		// Dashboard loads 20 initially so "Show more" appears
 		const db = getPrisma();
 		const { testUserId } = await getTestUserIds();
 
@@ -196,7 +180,6 @@ test.describe("Activity Log - Recent Activity", () => {
 		});
 		cleanup.track(sub.id);
 
-		// Insert 25 entries with recent timestamps to ensure they appear in first page
 		const entries = [];
 		for (let i = 0; i < 25; i++) {
 			entries.push(
@@ -223,28 +206,23 @@ test.describe("Activity Log - Recent Activity", () => {
 			manualActivityIds.push(entry.id);
 		}
 
-		// Act
 		await page.goto("/admin/dashboard");
 		await page
 			.getByRole("heading", { name: "Admin Dashboard" })
 			.waitFor({ timeout: 10000 });
 
-		// Assert - "Show more" button should be visible (25 entries created, page size = 20)
 		const showMoreButton = page.getByRole("button", {
 			name: "Show more",
 		});
 		await expect(showMoreButton).toBeVisible({ timeout: 5000 });
 
-		// Count test-specific entries visible before clicking (max 20 from first page)
 		const testEntryLink = page.getByRole("link", {
 			name: new RegExp(`${testRun.testRunId}_ShowMore`),
 		});
 		const countBefore = await testEntryLink.count();
 
-		// Click "Show more" to load additional entries
 		await showMoreButton.click();
 
-		// After loading, more test entries should be visible than before
 		await expect.poll(
 			() => testEntryLink.count(),
 			{ timeout: 10000 },

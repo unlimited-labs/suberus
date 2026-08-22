@@ -56,21 +56,17 @@ test.describe("Admin creates a user", () => {
 	test("creates an active account, mails the set-password link, and the user can log in", async ({
 		page,
 	}) => {
-		// Arrange
 		const email = `created-${randomUUID().slice(0, 8)}@e2e-test.local`
 
-		// Act
 		const dialog = await openCreateDialog(page)
 		await fillRequiredFields(dialog, page, email)
 		await dialog.getByRole("button", { name: /Create user/i }).click()
 
-		// Assert - toast + dialog closed
 		await expect(
 			page.locator("[data-sonner-toast]").getByText(/user created/i),
 		).toBeVisible({ timeout: 15000 })
 		await dialog.waitFor({ state: "hidden", timeout: 10000 })
 
-		// Assert - account is active and verified, survey answer stored
 		const db = getPrisma()
 		const user = await db.user.findUniqueOrThrow({
 			where: { email },
@@ -82,7 +78,6 @@ test.describe("Admin creates a user", () => {
 		expect(user.isActive).toBe(true)
 		expect(user.surveyAnswers.map((a) => a.value)).toContain("Poster")
 
-		// Assert - exactly one email, and it is not the verification one
 		const created = await waitForEmail(email, "account has been created")
 		expect(created).not.toBeNull()
 		const { messages } = await mailpit.searchMessages({
@@ -90,7 +85,6 @@ test.describe("Admin creates a user", () => {
 		})
 		expect(messages).toHaveLength(1)
 
-		// Act - follow the set-password link and log in with the new password
 		const body = await mailpit.getMessageSummary(created!.ID)
 		const link = body.Text.match(/https?:\/\/\S*reset-password\?token=\S+/)?.[0]
 		expect(link).toBeTruthy()
@@ -111,7 +105,6 @@ test.describe("Admin creates a user", () => {
 		page,
 		userDetailPage,
 	}) => {
-		// Arrange - a freshly created account has had exactly one such email
 		const email = `resend-${randomUUID().slice(0, 8)}@e2e-test.local`
 		const dialog = await openCreateDialog(page)
 		await fillRequiredFields(dialog, page, email)
@@ -123,12 +116,10 @@ test.describe("Admin creates a user", () => {
 		createdUserIds.push(user.id)
 		expect(await waitForEmail(email, "account has been created")).not.toBeNull()
 
-		// Act
 		await userDetailPage.goto(user.id)
 		await userDetailPage.openActions()
 		await userDetailPage.resendSetPasswordButton.click()
 
-		// Assert - honest toast plus a second, working set-password link
 		await expect(
 			page.locator("[data-sonner-toast]").getByText(/set-password link sent/i),
 		).toBeVisible({ timeout: 15000 })
@@ -163,16 +154,13 @@ test.describe("Admin creates a user", () => {
 	})
 
 	test("rejects an email that already exists", async ({ page }) => {
-		// Arrange
 		const db = getPrisma()
 		const existing = await db.user.findFirstOrThrow({ where: { role: "ADMIN" } })
 
-		// Act - mixed case, since the server lowercases before its own check
 		const dialog = await openCreateDialog(page)
 		await fillRequiredFields(dialog, page, existing.email.toUpperCase())
 		await dialog.getByRole("button", { name: /Create user/i }).click()
 
-		// Assert
 		await expect(dialog.getByText(/already in use/i)).toBeVisible({
 			timeout: 15000,
 		})

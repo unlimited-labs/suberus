@@ -19,7 +19,6 @@ test.describe.serial("Admin - Bulk Assign Reviewer", () => {
 		testRun,
 		adminSubmissionsPage,
 	}) => {
-		// Arrange
 		const { id: sub1Id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			type: "ABSTRACT",
@@ -33,7 +32,6 @@ test.describe.serial("Admin - Bulk Assign Reviewer", () => {
 			content: "Content",
 		});
 
-		// Act
 		await adminSubmissionsPage.gotoAndSearch(testRun.testRunId, "Assign Rev A");
 		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Assign Rev A`);
 		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Assign Rev B`);
@@ -41,24 +39,19 @@ test.describe.serial("Admin - Bulk Assign Reviewer", () => {
 
 		const dialog = await adminSubmissionsPage.openBulkAction(/Assign reviewer/i);
 
-		// Select the seeded reviewer (Reviewer User)
 		await dialog.getByRole("combobox").click();
 		await page.getByRole("option", { name: /Reviewer/i }).first().click();
 
-		// Confirm
 		await dialog.getByRole("button", { name: "Assign" }).click();
 
-		// Assert
 		await expect(page.getByText(/assigned reviewer to 2 submission/i)).toBeVisible();
 
-		// Verify DB - assignments created
 		const db = getPrisma();
 		const assignments = await db.reviewAssignment.findMany({
 			where: { submissionId: { in: [sub1Id, sub2Id] } },
 		});
 		expect(assignments.length).toBe(2);
 
-		// Cleanup
 		await deleteSubmission(sub1Id);
 		await deleteSubmission(sub2Id);
 	});
@@ -68,7 +61,6 @@ test.describe.serial("Admin - Bulk Assign Reviewer", () => {
 		testRun,
 		adminSubmissionsPage,
 	}) => {
-		// Arrange - create submission and pre-assign the reviewer
 		const { id: subId } = await createSubmission({
 			testRunId: testRun.testRunId,
 			type: "ABSTRACT",
@@ -81,7 +73,6 @@ test.describe.serial("Admin - Bulk Assign Reviewer", () => {
 			where: { email: "reviewer@e2e.local" },
 		});
 
-		// Pre-assign the reviewer
 		await db.reviewAssignment.create({
 			data: {
 				submissionId: subId,
@@ -94,22 +85,18 @@ test.describe.serial("Admin - Bulk Assign Reviewer", () => {
 			},
 		});
 
-		// Act
 		await adminSubmissionsPage.gotoAndSearch(testRun.testRunId, "Already Assigned");
 		await adminSubmissionsPage.selectRow(`${testRun.testRunId}_Already Assigned`);
 
 		const dialog = await adminSubmissionsPage.openBulkAction(/Assign reviewer/i);
 
-		// Select the same reviewer
 		await dialog.getByRole("combobox").click();
 		await page.getByRole("option", { name: /Reviewer/i }).first().click();
 
 		await dialog.getByRole("button", { name: "Assign" }).click();
 
-		// Assert - error about already assigned
 		await expect(dialog.getByText(/already assigned/i)).toBeVisible();
 
-		// Cleanup
 		await deleteSubmission(subId);
 	});
 });

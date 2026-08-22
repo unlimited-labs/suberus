@@ -65,7 +65,6 @@ test.describe.serial("Planner — Session editor", () => {
 		await plannerPage.goto();
 		await plannerPage.openSessionEditor(sessionId);
 
-		// 120 min = 6 slots × 20 min (default)
 		const slotCountInput = plannerPage.page.getByTestId(
 			"session-editor-slots-count",
 		);

@@ -88,11 +88,9 @@ test.describe.serial("Deadline & lock settings in admin panel", () => {
 
 		await saveDatesSection(page)
 
-		// Reload and verify persisted
 		await adminSettingsPage.goto()
 		await expect(page.getByRole("switch", { name: "Close submissions" })).toBeChecked()
 
-		// Clean up via DB
 		await setAppSetting("SUBMISSIONS_LOCKED", false)
 	})
 
@@ -108,13 +106,11 @@ test.describe.serial("Deadline & lock settings in admin panel", () => {
 		await input.fill("2030-12-31")
 		await saveDatesSection(page)
 
-		// Reload and verify persisted
 		await adminSettingsPage.goto()
 		await expect(page.getByLabel("Registration Deadline")).toHaveValue(
 			"2030-12-31",
 		)
 
-		// Clean up via DB
 		await setAppSetting("REGISTRATION_DEADLINE", "")
 	})
 })

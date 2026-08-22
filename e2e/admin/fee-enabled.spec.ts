@@ -1,9 +1,6 @@
 import { test, expect, AdminSettingsPage } from "./fixtures"
 
 /**
- * E2E tests for the "Fee enabled" toggle (admin Fee settings tab).
- * Verifies the switch gates the user-facing Fee sidebar link, and that the
- * link appears/disappears live (no page reload) via shared-QueryClient invalidation.
  * Serial — mutates the shared FEE_ENABLED setting; restores it at the end.
  */
 test.describe("Fee enabled toggle", () => {
@@ -33,14 +30,11 @@ test.describe("Fee enabled toggle", () => {
 		await settingsPage.switchToFeeTab(testInfo)
 		await expect(feeLink(page)).toBeVisible()
 
-		// Act — disable fee
 		await feeSwitch(page).click()
 		await expect(page.getByText("Fee disabled")).toBeVisible({ timeout: 10000 })
 
-		// Assert — link gone, NO reload in between
 		await expect(feeLink(page)).not.toBeVisible()
 
-		// Re-enable — link reappears, still no reload
 		await feeSwitch(page).click()
 		await expect(page.getByText("Fee enabled")).toBeVisible({ timeout: 10000 })
 		await expect(feeLink(page)).toBeVisible()
@@ -53,7 +47,6 @@ test.describe("Fee enabled toggle", () => {
 		await settingsPage.goto()
 		await settingsPage.switchToFeeTab(testInfo)
 
-		// Disable + reload
 		await feeSwitch(page).click()
 		await expect(page.getByText("Fee disabled")).toBeVisible({ timeout: 10000 })
 		await page.reload()
@@ -61,7 +54,6 @@ test.describe("Fee enabled toggle", () => {
 		await expect(feeSwitch(page)).not.toBeChecked()
 		await expect(feeLink(page)).not.toBeVisible()
 
-		// Cleanup — restore enabled for other suites
 		await feeSwitch(page).click()
 		await expect(page.getByText("Fee enabled")).toBeVisible({ timeout: 10000 })
 		await expect(feeLink(page)).toBeVisible()

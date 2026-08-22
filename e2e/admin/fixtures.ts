@@ -10,9 +10,6 @@ export async function loginAsAdmin(page: Page) {
 	await loginAs(page, ADMIN_USER)
 }
 
-// Page Objects
-
-/** Admin Submissions list — bulk-action helpers (desktop table layout). */
 export class AdminSubmissionsPage {
 	readonly page: Page
 	readonly searchInput: Locator
@@ -26,19 +23,16 @@ export class AdminSubmissionsPage {
 		await this.page.goto("/admin/submissions")
 	}
 
-	/** Navigate, filter by the test-run id, and wait until the given submission cell appears. */
 	async gotoAndSearch(testRunId: string, expectTitle: string) {
 		await this.goto()
 		await this.searchInput.fill(testRunId)
 		await expect(this.page.getByRole("cell", { name: `${testRunId}_${expectTitle}` })).toBeVisible()
 	}
 
-	/** Tick the row checkbox for a submission identified by its full (prefixed) title. */
 	async selectRow(fullTitle: string) {
 		await this.page.getByTestId("submission-row").filter({ visible: true, hasText: fullTitle }).getByLabel("Select row").check()
 	}
 
-	/** Open a bulk action from the toolbar and return the opened dialog. */
 	async openBulkAction(optionName: string | RegExp): Promise<Locator> {
 		await this.page.getByRole("combobox").filter({ hasText: /Bulk actions/ }).click()
 		await this.page.getByRole("option", { name: optionName }).click()
@@ -71,7 +65,6 @@ export class AdminUsersPage {
 	}
 
 	async waitForLoad() {
-		// Wait for heading (works on both desktop table and mobile cards)
 		await expect(this.heading).toBeVisible({ timeout: 10000 })
 		// Wait for the table component to mount (pager renders a non-zero page count).
 		// toBeAttached, not toBeVisible: the pager is hidden on mobile (cards instead),
@@ -80,13 +73,11 @@ export class AdminUsersPage {
 	}
 
 	async search(query: string) {
-		// Clear previous search first
 		await this.searchInput.clear()
 		await this.searchInput.fill(query)
 	}
 
 	async selectUser(user: { email: string; firstName: string; lastName: string }) {
-		// Find the row by email — the email is unique, no need to search first
 		const row = this.page.getByTestId("user-row").filter({ visible: true, has: this.page.locator(`text="${user.email}"`) })
 		await expect(row).toBeVisible({ timeout: 10000 })
 		const checkbox = row.getByRole("checkbox")
@@ -107,7 +98,6 @@ export class AdminUsersPage {
 		await this.page.getByRole("option", { name: action }).click()
 	}
 
-	/** Run the "Send email" bulk action and wait for the composer; returns the new campaign id. */
 	async openBulkEmailComposer(): Promise<string> {
 		await this.selectBulkAction("Send email")
 		await this.page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
@@ -117,7 +107,6 @@ export class AdminUsersPage {
 	async openUserDetail(user: { email: string; firstName: string; lastName: string }) {
 		// Search by full name for precise match (firstName "Test" alone matches too many e2e users)
 		await this.search(`${user.firstName} ${user.lastName}`)
-		// Find the row by the exact email text
 		const row = this.page.getByTestId("user-row").filter({ visible: true, has: this.page.locator(`text="${user.email}"`) })
 		await expect(row).toBeVisible({ timeout: 10000 })
 		await row.getByRole("button", { name: "Actions menu" }).click()
@@ -127,9 +116,7 @@ export class AdminUsersPage {
 	}
 
 	async getRowByEmail(user: { email: string; firstName: string; lastName: string }) {
-		// Search by full name for precise match
 		await this.search(`${user.firstName} ${user.lastName}`)
-		// Find the row by the exact email text
 		return this.page.getByTestId("user-row").filter({ visible: true, has: this.page.locator(`text="${user.email}"`) })
 	}
 
@@ -160,8 +147,6 @@ export class UserDetailPage {
 	constructor(page: Page) {
 		this.page = page
 		this.backButton = page.getByRole("link", { name: "Back" })
-		// Header actions now live behind the "Actions menu" dropdown — open it
-		// with openActions() before clicking/asserting any of these menu items.
 		this.actionsMenuButton = page.getByRole("button", { name: "Actions menu" })
 		this.changeRoleButton = page.getByRole("menuitem", { name: "Change Role" })
 		this.deactivateButton = page.getByRole("menuitem", { name: "Deactivate" })
@@ -183,7 +168,6 @@ export class UserDetailPage {
 		await this.page.goto(`/admin/users/${userId}`)
 	}
 
-	/** Open the header "Actions menu" dropdown that holds edit/role/activate/late/delete. */
 	async openActions() {
 		await this.actionsMenuButton.click()
 	}
@@ -250,7 +234,6 @@ export class AdminSettingsPage {
 		await this.page.goto("/admin/settings")
 	}
 
-	/** Get tab by name (uses role-based selector) */
 	getTab(name: string): Locator {
 		return this.page.getByRole("tab", { name: new RegExp(name, "i") })
 	}
@@ -343,21 +326,15 @@ export class AdminSettingsPage {
 		await this.page.getByRole("button", { name: "Save" }).first().click()
 	}
 
-	// --- Survey tab ---
-
 	async switchToSurveyTab(_testInfo?: { project: { name: string } }) {
 		await this.page.getByTestId("settings-tab-survey").click()
 		await expect(this.page.getByRole("heading", { name: "Survey Questions" })).toBeVisible()
 	}
 
-	// --- Terms of Service tab ---
-
 	async switchToTosTab(_testInfo?: { project: { name: string } }) {
 		await this.page.getByTestId("settings-tab-tos").click()
 		await expect(this.page.getByRole("heading", { name: "Terms of Service" })).toBeVisible()
 	}
-
-	// --- Invitations tab ---
 
 	async switchToInvitationsTab(_testInfo?: { project: { name: string } }) {
 		await this.page.getByTestId("settings-tab-invitations").click()
@@ -368,21 +345,15 @@ export class AdminSettingsPage {
 		return this.page.getByLabel("Invitation validity (hours)")
 	}
 
-	// --- Branding tab ---
-
 	async switchToBrandingTab(_testInfo?: { project: { name: string } }) {
 		await this.page.getByTestId("settings-tab-branding").click()
 		await expect(this.page.getByRole("heading", { name: "Logo & Graphics" })).toBeVisible()
 	}
 
-	// --- Fee tab ---
-
 	async switchToFeeTab(_testInfo?: { project: { name: string } }) {
 		await this.page.getByTestId("settings-tab-fee").click()
 		await expect(this.page.getByRole("heading", { name: "Fee Types" })).toBeVisible()
 	}
-
-	// --- Display Format (Conference tab) ---
 
 	getDateFormatSelect() {
 		return this.page.locator("#dateFormat")
@@ -391,8 +362,6 @@ export class AdminSettingsPage {
 	getTimeFormatRadio(value: "24h" | "12h") {
 		return this.page.getByRole("radio", { name: value })
 	}
-
-	// --- Confidence Level (Submission Types tab) ---
 
 	getEnableConfidenceLevelSwitch() {
 		return this.page.getByRole("switch", { name: "Enable confidence level" })
@@ -423,8 +392,6 @@ export class AdminSettingsPage {
 		await section.getByRole("button", { name: "Save" }).last().click()
 	}
 
-	// --- Auth Background Image ---
-
 	getAuthBackgroundUploadButton() {
 		return this.page.getByTestId("auth-background-upload")
 	}
@@ -440,8 +407,6 @@ export class AdminSettingsPage {
 	getAuthBackgroundFileInput() {
 		return this.page.locator("input[aria-label='Upload auth background']")
 	}
-
-	// --- Logo & Favicon upload ---
 
 	getLogoFileInput() {
 		return this.page.locator("input[aria-label='Upload logo']")
@@ -469,7 +434,6 @@ export class AdminSettingsPage {
 	}
 }
 
-// Extended test with fixtures
 interface AdminFixtures {
 	testRun: TestRunContext
 	cleanup: CleanupContext

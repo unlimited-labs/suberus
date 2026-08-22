@@ -61,14 +61,11 @@ test.describe.serial("Public /program — preview & favorites", () => {
 		await publicProgramPage.favoriteToggle.click();
 		await expect(publicProgramPage.favoriteToggle).toHaveText(/Favorited/i);
 
-		// star marks the talk on the plan (behind the dialog)
 		await expect(publicProgramPage.favoritedStars).toHaveCount(1);
 
-		// survives a full reload (server-persisted)
 		await publicProgramPage.goto();
 		await expect(publicProgramPage.favoritedStars).toHaveCount(1);
 
-		// un-favorite removes it
 		await publicProgramPage.openFirstPresentation();
 		await expect(publicProgramPage.favoriteToggle).toHaveText(/Favorited/i);
 		await publicProgramPage.favoriteToggle.click();

@@ -14,13 +14,11 @@ interface PlannerFixtures {
 	plannerPage: ProgramPlannerPage;
 	programSettingsPage: ProgramSettingsPage;
 	publicProgramPage: PublicProgramPage;
-	/** Ensure at least one room exists so the planner grid renders (not the "no rooms" placeholder). */
 	sanityRoomId: string;
 }
 
 export const test = baseAdminTest.extend<PlannerFixtures>({
 	plannerPage: async ({ page, sanityRoomId }, use) => {
-		// depend on sanityRoomId so the planner always has at least one room
 		void sanityRoomId;
 		await use(new ProgramPlannerPage(page));
 	},
@@ -36,7 +34,6 @@ export const test = baseAdminTest.extend<PlannerFixtures>({
 	},
 	testRun: async ({ testRun }, use) => {
 		await use(testRun);
-		// Planner-specific cleanup after each test
 		await cleanupPlannerForRun(testRun.testRunId).catch(() => {});
 	},
 });
@@ -44,7 +41,6 @@ export const test = baseAdminTest.extend<PlannerFixtures>({
 export { expect } from "@playwright/test";
 export { loginAsAdmin } from "../fixtures";
 
-/** UTC date `offsetDays` from today, snapped to `hour:00:00`. */
 export function isoDay(offsetDays: number, hour: number): Date {
 	const d = new Date();
 	d.setUTCDate(d.getUTCDate() + offsetDays);
@@ -52,7 +48,6 @@ export function isoDay(offsetDays: number, hour: number): Date {
 	return d;
 }
 
-/** Default-theme program with a 31-day conference window — shared spec setup. */
 export async function resetPlannerProgramDefaults(): Promise<void> {
 	await setAppSetting("PROGRAM_THEME", "default");
 	await setAppSetting("PROGRAM_REMINDER_LEAD_MIN", 5);

@@ -10,7 +10,6 @@ import {
 } from "../../helpers/test-db";
 import { expect, isoDay, resetPlannerProgramDefaults, test } from "./fixtures";
 
-// ALT differs in byte length so the replace test proves fresh bytes are served.
 const PDF = Buffer.from("%PDF-1.4\n% camera-ready\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n");
 const PDF_ALT = Buffer.from(
 	"%PDF-1.7\n% replacement camera-ready with extra padding bytes\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n",

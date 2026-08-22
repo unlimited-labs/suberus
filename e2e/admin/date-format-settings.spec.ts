@@ -23,13 +23,11 @@ test.describe.serial("Admin - Date/Time Format", () => {
 	});
 
 	test("date format select visible in conference settings", async ({ page }) => {
-		// Assert
 		await expect(page.getByRole("heading", { name: "Date & Time" })).toBeVisible();
 		await expect(page.getByLabel("Date Format")).toBeVisible();
 	});
 
 	test("can change date format", async ({ page }) => {
-		// Arrange
 		const select = adminSettingsPage.getDateFormatSelect();
 
 		// Act - select by stable testid: the MM/DD/YYYY and DD/MM/YYYY previews
@@ -38,16 +36,13 @@ test.describe.serial("Admin - Date/Time Format", () => {
 		await page.getByTestId("date-format-option-MM/DD/YYYY").click();
 		await adminSettingsPage.saveConferenceSettings();
 
-		// Assert
 		await expect(page.getByText("Conference settings saved")).toBeVisible({ timeout: 10000 });
 	});
 
 	test("date format persists after reload", async ({ page }, testInfo) => {
-		// Act
 		await page.reload();
 		await adminSettingsPage.switchToConferenceTab(testInfo);
 
-		// Assert - the select should show the previously saved MM/DD/YYYY format label.
 		// The page renders the preview in UTC (Playwright timezoneId), so build the
 		// expected date in UTC too — otherwise the local vs UTC date boundary flips
 		// the day near midnight UTC and the comparison is off by one.
@@ -59,27 +54,22 @@ test.describe.serial("Admin - Date/Time Format", () => {
 	});
 
 	test("time format radio buttons visible", async ({ page }) => {
-		// Assert
 		await expect(page.getByText("Time Format")).toBeVisible();
 		await expect(page.getByText("24h (14:30)")).toBeVisible();
 		await expect(page.getByText("12h (2:30 PM)")).toBeVisible();
 	});
 
 	test("can switch time format to 12h", async ({ page }) => {
-		// Act
 		await adminSettingsPage.getTimeFormatRadio("12h").click();
 		await adminSettingsPage.saveConferenceSettings();
 
-		// Assert
 		await expect(page.getByText("Conference settings saved")).toBeVisible({ timeout: 10000 });
 	});
 
 	test("time format persists after reload", async ({ page }, testInfo) => {
-		// Act
 		await page.reload();
 		await adminSettingsPage.switchToConferenceTab(testInfo);
 
-		// Assert
 		await expect(adminSettingsPage.getTimeFormatRadio("12h")).toBeChecked();
 	});
 });

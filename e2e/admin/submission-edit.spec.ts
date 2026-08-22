@@ -17,10 +17,8 @@ import {
 	expectActionUnavailable,
 } from "../helpers/submission-actions"
 
-// Seed >= min keywords so the prefilled edit form is valid client-side.
 const KW = ["machine-learning", "e2e-testing", "validation"]
 
-// Abstract long enough to satisfy the 500-char minimum.
 const LONG_CONTENT =
 	"Admin edited abstract content for the in-place edit suite. ".repeat(12) +
 	"Padding text to comfortably exceed the configured minimum abstract length."
@@ -88,7 +86,6 @@ test.describe("Admin Submission Edit (in-place, admin-only)", () => {
 			where: { id: sub.id },
 			include: { versions: true, currentVersion: true },
 		})
-		// In-place: still exactly one version, status untouched.
 		expect(after.versions).toHaveLength(1)
 		expect(after.title).toBe(newTitle)
 		expect(after.status).toBe(SubmissionStatus.UNDER_REVIEW)
@@ -202,7 +199,6 @@ test.describe("Admin Submission Edit (in-place, admin-only)", () => {
 		})
 		expect(after.versions).toHaveLength(1)
 		expect(after.title).toBe(newTitle)
-		// File untouched — no re-upload happened.
 		expect(after.currentVersion?.fileId).toBe(sub.fileId)
 	})
 

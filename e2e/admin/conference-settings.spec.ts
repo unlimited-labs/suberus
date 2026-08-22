@@ -31,62 +31,49 @@ test.describe.serial("Admin Conference Settings", () => {
 	});
 
 	test("can change and save conference name", async ({ page }, testInfo) => {
-		// Arrange
 		const testRunId = `${testInfo.testId.slice(0, 8)}`;
 		const newName = `E2E Conference ${testRunId}`;
 		const input = adminSettingsPage.getConferenceNameInput();
 
-		// Act
 		await input.fill(newName);
 		await adminSettingsPage.saveConferenceSettings();
 
-		// Assert
 		await expect(page.getByText("Conference settings saved")).toBeVisible({ timeout: 10000 });
 	});
 
 	test("validates conference name is required", async ({ page }) => {
-		// Arrange
 		const input = adminSettingsPage.getConferenceNameInput();
 
-		// Act
 		await input.fill("");
 		await adminSettingsPage.saveConferenceSettings();
 
-		// Assert - Zod validation error or toast
 		await expect(page.getByText(/name required|failed/i)).toBeVisible({ timeout: 10000 });
 	});
 
 	test("conference name persists across page reloads", async ({ page }, testInfo) => {
-		// Arrange
 		const testRunId = `${testInfo.testId.slice(0, 8)}`;
 		const newName = `Persist Test ${testRunId}`;
 		const input = adminSettingsPage.getConferenceNameInput();
 
-		// Act
 		await input.fill(newName);
 		await adminSettingsPage.saveConferenceSettings();
 		await expect(page.getByText("Conference settings saved")).toBeVisible({ timeout: 10000 });
 		await page.reload();
 		await adminSettingsPage.switchToConferenceTab(testInfo);
 
-		// Assert
 		await expect(input).toHaveValue(newName);
 	});
 
 	test("can change and save conference subtitle", async ({ page }) => {
-		// Arrange
 		const subtitleInput = page.getByLabel("Conference Subtitle (optional)");
 
-		// Act
 		await subtitleInput.fill("International Conference on Test Methods");
 		await adminSettingsPage.saveConferenceSettings();
 
-		// Assert
 		await expect(page.getByText("Conference settings saved")).toBeVisible({ timeout: 5000 });
 	});
 
 	test("subtitle persists across page reloads", async ({ page }, testInfo) => {
-		// Arrange
 		const testSubtitle = "E2E Test Subtitle Persistence";
 		const subtitleInput = page.getByLabel("Conference Subtitle (optional)");
 
@@ -94,33 +81,24 @@ test.describe.serial("Admin Conference Settings", () => {
 		await adminSettingsPage.saveConferenceSettings();
 		await expect(page.getByText("Conference settings saved")).toBeVisible({ timeout: 5000 });
 
-		// Act - reload page
 		await page.reload();
 		await adminSettingsPage.switchToConferenceTab(testInfo);
 
-		// Assert
 		await expect(subtitleInput).toHaveValue(testSubtitle);
 	});
 
 	test("subtitle is optional (can be empty)", async ({ page }) => {
-		// Arrange
 		const subtitleInput = page.getByLabel("Conference Subtitle (optional)");
 
-		// Act
 		await subtitleInput.clear();
 		await adminSettingsPage.saveConferenceSettings();
 
-		// Assert
 		await expect(page.getByText("Conference settings saved")).toBeVisible({ timeout: 5000 });
 	});
 
 	test("timezone is editable on Conference tab and persists after save", async ({
 		page,
 	}, testInfo) => {
-		// Timezone combobox lives on the Conference tab (Date & Time section) and is the
-		// single source of truth — seeded at install, edited here (no browser re-detection).
-
-		// Arrange — seed a known persisted value, then reload so the UI reflects it
 		const db = getPrisma();
 		await db.appSetting.upsert({
 			where: { key: "CONFERENCE_TIMEZONE" },
@@ -132,11 +110,9 @@ test.describe.serial("Admin Conference Settings", () => {
 
 		const combobox = adminSettingsPage.getTimezoneCombobox();
 
-		// Assert — combobox reflects the persisted value (SSOT), not the placeholder
 		await expect(combobox).toBeVisible({ timeout: 10000 });
 		await expect(combobox).toHaveText(/America\/New_York/);
 
-		// Act — change to a different known zone and save
 		await combobox.click();
 		await page.getByPlaceholder("Search timezone...").fill("Europe/Warsaw");
 		await page.getByRole("option", { name: "Europe/Warsaw" }).click();
@@ -145,7 +121,6 @@ test.describe.serial("Admin Conference Settings", () => {
 			timeout: 10000,
 		});
 
-		// Assert — persisted after reload
 		await adminSettingsPage.goto();
 		await adminSettingsPage.switchToConferenceTab(testInfo);
 		await expect(adminSettingsPage.getTimezoneCombobox()).toHaveText(

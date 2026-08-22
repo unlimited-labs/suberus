@@ -172,7 +172,6 @@ test.describe("Admin - Submission Activity History", () => {
 		});
 		cleanup.track(submissionId);
 
-		// Create events with ascending timestamps
 		const baseTime = new Date("2025-01-01T10:00:00Z");
 
 		await createActivityLog({
@@ -199,11 +198,9 @@ test.describe("Admin - Submission Activity History", () => {
 			.waitFor({ state: "visible", timeout: 10000 });
 		await page.getByRole("tab", { name: /History/i }).click();
 
-		// Verify both events are visible
 		await expect(page.getByRole("heading", { name: "Reviewer assigned" })).toBeVisible();
 		await expect(page.getByText("Review submitted")).toBeVisible();
 
-		// Verify chronological order: "Reviewer assigned" appears before "Review submitted"
 		const historyContent = await page.getByRole("list").first().textContent();
 		const assignIdx = historyContent?.indexOf("Reviewer assigned") ?? -1;
 		const submitIdx = historyContent?.indexOf("Review submitted") ?? -1;

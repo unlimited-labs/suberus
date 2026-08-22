@@ -20,18 +20,14 @@ test.describe.serial("Planner — Unscheduled sidebar UX", () => {
 		const row = plannerPage.unscheduledRow(s.id);
 		await expect(row).toBeVisible();
 
-		// Default: no checkbox
 		await expect(row.getByRole("checkbox")).toBeHidden();
 
-		// Enable via toggle button
 		await plannerPage.selectModeToggle.click();
 		await expect(row.getByRole("checkbox")).toBeVisible();
 
-		// Disable via Escape hotkey
 		await plannerPage.page.keyboard.press("Escape");
 		await expect(row.getByRole("checkbox")).toBeHidden();
 
-		// Enable via S hotkey
 		await plannerPage.page.keyboard.press("s");
 		await expect(row.getByRole("checkbox")).toBeVisible();
 	});

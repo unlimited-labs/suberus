@@ -29,62 +29,49 @@ test.describe.serial("Admin Branding Settings", () => {
 	});
 
 	test("can save logo and favicon URLs", async ({ page }) => {
-		// Arrange
 		const logoInput = adminSettingsPage.getLogoUrlInput();
 		const faviconInput = adminSettingsPage.getFaviconUrlInput();
 
-		// Act
 		await logoInput.fill("/logo.png");
 		await faviconInput.fill("/favicon.ico");
 		await adminSettingsPage.saveBrandingSection("Logo & Graphics");
 
-		// Assert
 		await expect(page.getByText("Branding settings saved")).toBeVisible({ timeout: 10000 });
 	});
 
 	test("can save theme colors", async ({ page }) => {
-		// Arrange
 		const primaryInput = adminSettingsPage.getPrimaryColorInput();
 		const secondaryInput = adminSettingsPage.getSecondaryColorInput();
 
-		// Act
 		await primaryInput.fill("#ff0000");
 		await secondaryInput.fill("#00ff00");
 		await adminSettingsPage.saveBrandingSection("Theme Colors");
 
-		// Assert
 		await expect(page.getByText("Branding settings saved")).toBeVisible({ timeout: 10000 });
 	});
 
 	test("can save footer text", async ({ page }) => {
-		// Arrange
 		const footerInput = adminSettingsPage.getFooterTextInput();
 
-		// Act
 		await footerInput.fill("© 2026 Test Conference");
 		await adminSettingsPage.saveBrandingSection("Footer");
 
-		// Assert
 		await expect(page.getByText("Branding settings saved")).toBeVisible({ timeout: 10000 });
 	});
 
 	test("branding settings persist across reloads", async ({ page }, testInfo) => {
-		// Arrange
 		const primaryInput = adminSettingsPage.getPrimaryColorInput();
 
-		// Act
 		await primaryInput.fill("#e11d48");
 		await adminSettingsPage.saveBrandingSection("Theme Colors");
 		await expect(page.getByText("Branding settings saved")).toBeVisible({ timeout: 10000 });
 		await page.reload();
 		await adminSettingsPage.switchToBrandingTab(testInfo);
 
-		// Assert
 		await expect(adminSettingsPage.getPrimaryColorInput()).toHaveValue("#e11d48");
 	});
 
 	test("custom primary color applies CSS variable", async ({ page }) => {
-		// Arrange — set via DB to avoid UI dependency
 		const db = getPrisma();
 		await db.appSetting.upsert({
 			where: { key: "BRANDING_PRIMARY_COLOR" },
@@ -92,10 +79,8 @@ test.describe.serial("Admin Branding Settings", () => {
 			create: { key: "BRANDING_PRIMARY_COLOR", value: "#e11d48" },
 		});
 
-		// Act
 		await page.goto("/");
 
-		// Assert
 		const wrapper = page.locator("[style*=\"--primary\"]");
 		await expect(wrapper).toBeAttached();
 		const style = await wrapper.getAttribute("style");
@@ -103,7 +88,6 @@ test.describe.serial("Admin Branding Settings", () => {
 	});
 
 	test("footer text appears on the page", async ({ page }) => {
-		// Arrange — set via DB
 		const db = getPrisma();
 		await db.appSetting.upsert({
 			where: { key: "BRANDING_FOOTER_TEXT" },
@@ -111,15 +95,12 @@ test.describe.serial("Admin Branding Settings", () => {
 			create: { key: "BRANDING_FOOTER_TEXT", value: "E2E Footer Test" },
 		});
 
-		// Act
 		await page.goto("/");
 
-		// Assert
 		await expect(page.locator("footer")).toHaveText("E2E Footer Test");
 	});
 
 	test("sidebar shows custom logo", async ({ page }, testInfo) => {
-		// Arrange — set via DB
 		const db = getPrisma();
 		await db.appSetting.upsert({
 			where: { key: "BRANDING_LOGO_URL" },
@@ -127,7 +108,6 @@ test.describe.serial("Admin Branding Settings", () => {
 			create: { key: "BRANDING_LOGO_URL", value: "/logo.png" },
 		});
 
-		// Act
 		await page.goto("/");
 
 		// Assert — desktop shows the logo in the sidebar <aside>; on mobile the sidebar
@@ -142,17 +122,14 @@ test.describe.serial("Admin Branding Settings", () => {
 	});
 
 	test("page title includes conference name", async ({ page }) => {
-		// Arrange
 		const db = getPrisma();
 		const setting = await db.appSetting.findUnique({
 			where: { key: "CONFERENCE_NAME" },
 		});
 		const conferenceName = (setting?.value as string) || "Conference Name";
 
-		// Act
 		await page.goto("/");
 
-		// Assert
 		await expect(page).toHaveTitle(new RegExp(`${conferenceName}.*Suberus`, "i"));
 	});
 });
@@ -192,70 +169,53 @@ test.describe.serial("Auth Background Image", () => {
 	});
 
 	test("can upload background image", async ({ page }) => {
-		// Arrange
 		const fileInput = adminSettingsPage.getAuthBackgroundFileInput();
 
-		// Act
 		await fileInput.setInputFiles(BG_FIXTURE_1);
 
-		// Assert
 		await expect(page.getByText("Background image uploaded")).toBeVisible({ timeout: 15000 });
 		await expect(adminSettingsPage.getAuthBackgroundPreview()).toBeVisible();
 	});
 
 	test("background image visible on login page", async ({ page }) => {
-		// Arrange — save admin cookies, then clear so /login renders auth layout
 		const savedState = await page.context().storageState();
 		await page.context().clearCookies();
 
-		// Act
 		await page.goto("/login");
 		await expect(page.getByLabel("E-mail")).toBeVisible({ timeout: 15000 });
 
-		// Assert
 		await expect(page.getByTestId("auth-background-image")).toBeVisible();
 
-		// Restore admin session for subsequent serial tests
 		await page.context().addCookies(savedState.cookies);
 	});
 
 	test("can replace background image", async ({ page }) => {
-		// Arrange
 		const fileInput = adminSettingsPage.getAuthBackgroundFileInput();
 
-		// Act
 		await fileInput.setInputFiles(BG_FIXTURE_2);
 
-		// Assert
 		await expect(page.getByText("Background image uploaded")).toBeVisible({ timeout: 15000 });
 		await expect(adminSettingsPage.getAuthBackgroundPreview()).toBeVisible();
 	});
 
 	test("can remove background image", async ({ page }) => {
-		// Arrange
 		const removeButton = adminSettingsPage.getAuthBackgroundRemoveButton();
 
-		// Act
 		await removeButton.click();
 
-		// Assert
 		await expect(page.getByText("Background image removed")).toBeVisible({ timeout: 15000 });
 		await expect(adminSettingsPage.getAuthBackgroundPreview()).not.toBeVisible();
 	});
 
 	test("login page reverts to default after removal", async ({ page }) => {
-		// Arrange — save admin cookies, then clear
 		const savedState = await page.context().storageState();
 		await page.context().clearCookies();
 
-		// Act
 		await page.goto("/login");
 		await expect(page.getByLabel("E-mail")).toBeVisible({ timeout: 15000 });
 
-		// Assert
 		await expect(page.getByTestId("auth-background-image")).not.toBeVisible();
 
-		// Restore admin session
 		await page.context().addCookies(savedState.cookies);
 	});
 });
@@ -282,32 +242,25 @@ test.describe.serial("Logo & Favicon upload", () => {
 	});
 
 	test("can upload and remove a logo", async ({ page }) => {
-		// Act — upload
 		await adminSettingsPage.getLogoFileInput().setInputFiles(BG_FIXTURE_1);
 
-		// Assert — uploaded preview shows, served through the app
 		await expect(page.getByText("Logo uploaded")).toBeVisible({ timeout: 15000 });
 		const logoImg = adminSettingsPage.getLogoPreview().locator("img");
 		await expect(logoImg).toHaveAttribute("src", /\/api\/branding\/logo/);
-		// The /api/branding/* route must actually stream the image (not 404).
 		await expect
 			.poll(() => logoImg.evaluate((el: HTMLImageElement) => el.naturalWidth), {
 				timeout: 15000,
 			})
 			.toBeGreaterThan(0);
 
-		// Act — remove
 		await adminSettingsPage.getLogoRemoveButton().click();
 
-		// Assert
 		await expect(page.getByText("Logo removed")).toBeVisible({ timeout: 15000 });
 	});
 
 	test("can upload and remove a favicon", async ({ page }) => {
-		// Act — upload
 		await adminSettingsPage.getFaviconFileInput().setInputFiles(BG_FIXTURE_1);
 
-		// Assert — preview streams through the app route (not 404)
 		await expect(page.getByText("Favicon uploaded")).toBeVisible({ timeout: 15000 });
 		const faviconImg = page.getByTestId("favicon-preview").locator("img");
 		await expect(faviconImg).toHaveAttribute("src", /\/api\/branding\/favicon/);
@@ -318,10 +271,8 @@ test.describe.serial("Logo & Favicon upload", () => {
 			)
 			.toBeGreaterThan(0);
 
-		// Act — remove
 		await adminSettingsPage.getFaviconRemoveButton().click();
 
-		// Assert
 		await expect(page.getByText("Favicon removed")).toBeVisible({ timeout: 15000 });
 	});
 });

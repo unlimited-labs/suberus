@@ -72,7 +72,6 @@ test.describe.serial("Planner — Bulk create session from selection", () => {
 		const nameInput = plannerPage.page.getByTestId("create-session-name");
 		await expect(nameInput).toBeFocused();
 
-		// Submit with empty title → inline FieldError, dialog stays open
 		await plannerPage.page.getByTestId("create-session-submit").click();
 		await expect(plannerPage.createSessionDialog).toBeVisible();
 		await expect(nameInput).toHaveAttribute("aria-invalid", "true");
@@ -80,7 +79,6 @@ test.describe.serial("Planner — Bulk create session from selection", () => {
 			plannerPage.createSessionDialog.getByText("Title is required"),
 		).toBeVisible();
 
-		// Providing a title clears the error and allows submit
 		const name = `${testRun.testRunId}_RecoveredSession`;
 		await nameInput.fill(name);
 		await plannerPage.page.getByTestId("create-session-submit").click();

@@ -15,7 +15,6 @@ const test = base.extend<{ testEmail: string }>({
 		const email = `invite-${randomUUID().slice(0, 8)}@e2e-test.local`
 		await use(email)
 
-		// Cleanup - delete invitation by email
 		const db = getPrisma()
 		await db.invitation.deleteMany({ where: { email } })
 	},
@@ -25,7 +24,6 @@ function invitationItem(page: Page, email: string) {
 	return page.locator('[data-testid="invitation-item"]:visible').filter({ hasText: email })
 }
 
-/** Open the invitations page, launch the Invite User dialog, and return it. */
 async function openInviteDialog(page: Page) {
 	await page.goto("/admin/invitations")
 	await expect(page.getByRole("heading", { name: "Invitations" })).toBeVisible({ timeout: 10000 })
@@ -35,7 +33,6 @@ async function openInviteDialog(page: Page) {
 	return dialog
 }
 
-/** Send an invitation for the given email and wait for the confirmation toast. */
 async function sendInvitation(page: Page, email: string) {
 	const dialog = await openInviteDialog(page)
 	await dialog.getByLabel("Email").fill(email)
@@ -51,20 +48,17 @@ test.describe("Admin Invitations", () => {
 		page,
 		testEmail,
 	}) => {
-		// Act
 		const dialog = await openInviteDialog(page)
 		await dialog.getByLabel("Email").fill(testEmail)
 		await dialog.getByRole("combobox").click()
 		await page.getByRole("option", { name: "Administrator" }).click()
 		await dialog.getByRole("button", { name: /Send Invitation/i }).click()
 
-		// Assert
 		await expect(
 			page.locator("[data-sonner-toast]").getByText(/invitation sent/i),
 		).toBeVisible({ timeout: 10000 })
 		await dialog.waitFor({ state: "hidden", timeout: 5000 })
 
-		// Verify invitation appears
 		const item = invitationItem(page, testEmail)
 		await expect(item).toBeVisible({ timeout: 5000 })
 		await expect(item.getByText("Pending")).toBeVisible()
@@ -74,12 +68,10 @@ test.describe("Admin Invitations", () => {
 		page,
 		testEmail,
 	}) => {
-		// Act - Reviewer is the default role
 		const dialog = await openInviteDialog(page)
 		await dialog.getByLabel("Email").fill(testEmail)
 		await dialog.getByRole("button", { name: /Send Invitation/i }).click()
 
-		// Assert
 		await expect(
 			page.locator("[data-sonner-toast]").getByText(/invitation sent/i),
 		).toBeVisible({ timeout: 10000 })
@@ -91,12 +83,10 @@ test.describe("Admin Invitations", () => {
 	test("invitation shows error for already registered email", async ({
 		page,
 	}) => {
-		// Act - try to invite existing user
 		const dialog = await openInviteDialog(page)
 		await dialog.getByLabel("Email").fill(TEST_USER.email)
 		await dialog.getByRole("button", { name: /Send Invitation/i }).click()
 
-		// Assert
 		await expect(
 			page.locator("[data-sonner-toast]").getByText(/already exists/i),
 		).toBeVisible({ timeout: 10000 })
@@ -106,15 +96,12 @@ test.describe("Admin Invitations", () => {
 		page,
 		testEmail,
 	}) => {
-		// Arrange - create invitation first
 		await sendInvitation(page, testEmail)
 
-		// Act - cancel the invitation
 		const item = invitationItem(page, testEmail)
 		await expect(item).toBeVisible({ timeout: 5000 })
 		await item.getByRole("button", { name: "Cancel" }).click()
 
-		// Assert
 		await expect(
 			page.locator("[data-sonner-toast]").getByText(/invitation cancelled/i),
 		).toBeVisible({ timeout: 10000 })
@@ -125,15 +112,12 @@ test.describe("Admin Invitations", () => {
 		page,
 		testEmail,
 	}) => {
-		// Arrange - create invitation first
 		await sendInvitation(page, testEmail)
 
-		// Act - resend the invitation
 		const item = invitationItem(page, testEmail)
 		await expect(item).toBeVisible({ timeout: 5000 })
 		await item.getByRole("button", { name: "Resend" }).click()
 
-		// Assert
 		await expect(
 			page.locator("[data-sonner-toast]").getByText(/invitation resent/i),
 		).toBeVisible({ timeout: 10000 })
@@ -145,20 +129,17 @@ test.describe("Admin Invitations", () => {
 		testEmail,
 	}) => {
 		test.slow()
-		// Arrange
 		await sendInvitation(page, testEmail)
 		const db = getPrisma()
 		const before = await db.invitation.findFirst({ where: { email: testEmail } })
 		expect(before).not.toBeNull()
 
-		// Act
 		const item = invitationItem(page, testEmail)
 		await item.getByRole("button", { name: "Resend" }).click()
 		await expect(
 			page.locator("[data-sonner-toast]").getByText(/invitation resent/i),
 		).toBeVisible({ timeout: 10000 })
 
-		// Assert - same row, rotated token, still redeemable
 		const after = await db.invitation.findFirst({ where: { email: testEmail } })
 		expect(after?.id).toBe(before?.id)
 		expect(after?.token).not.toBe(before?.token)
@@ -194,7 +175,6 @@ test.describe("Admin Invitations", () => {
 		testEmail,
 	}) => {
 		test.slow()
-		// Arrange
 		await sendInvitation(page, testEmail)
 		const db = getPrisma()
 		const seeded = await db.invitation.findFirst({ where: { email: testEmail } })
@@ -203,7 +183,6 @@ test.describe("Admin Invitations", () => {
 			data: { expiresAt: new Date(Date.now() - 1000) },
 		})
 
-		// Act — the list load lazily sweeps PENDING -> EXPIRED
 		await page.goto("/admin/invitations")
 		const item = invitationItem(page, testEmail)
 		await expect(item.getByText("Expired")).toBeVisible({ timeout: 10000 })
@@ -212,7 +191,6 @@ test.describe("Admin Invitations", () => {
 			page.locator("[data-sonner-toast]").getByText(/invitation resent/i),
 		).toBeVisible({ timeout: 10000 })
 
-		// Assert — revived, not just re-mailed with a dead token
 		const after = await db.invitation.findFirst({ where: { email: testEmail } })
 		expect(after?.status).toBe("PENDING")
 		expect(after?.expiresAt.getTime()).toBeGreaterThan(Date.now())
@@ -234,7 +212,6 @@ test.describe("Admin Invitations", () => {
 	})
 
 	test("used invitation offers no actions", async ({ page, testEmail }) => {
-		// Arrange
 		await sendInvitation(page, testEmail)
 		const db = getPrisma()
 		const seeded = await db.invitation.findFirst({ where: { email: testEmail } })
@@ -243,11 +220,9 @@ test.describe("Admin Invitations", () => {
 			data: { status: "USED", usedAt: new Date() },
 		})
 
-		// Act
 		await page.goto("/admin/invitations")
 		const item = invitationItem(page, testEmail)
 
-		// Assert — terminal state, nothing to resend or cancel
 		await expect(item.getByText("Used")).toBeVisible({ timeout: 10000 })
 		await expect(item.getByRole("button", { name: "Resend" })).not.toBeVisible()
 		await expect(item.getByRole("button", { name: "Cancel" })).not.toBeVisible()

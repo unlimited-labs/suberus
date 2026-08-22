@@ -2,8 +2,6 @@ import * as XLSX from "xlsx";
 import { createTestUser, deleteTestUser, getPrisma } from "../helpers/test-db";
 import { expect, test } from "./fixtures";
 
-// Verifies the survey feature surfaces in the admin Users area:
-// always in the detail panel + XLSX export, and (when toggled) as a list column.
 test.describe("Survey answers in Users area", () => {
 	let stamp: string;
 	let questionId: string;
@@ -58,7 +56,6 @@ test.describe("Survey answers in Users area", () => {
 			data: { userId: user.id, questionId, value: answerValue },
 		});
 
-		// Control user with a different answer — used to prove the column filter narrows.
 		const otherCreated = await createTestUser({
 			email: `survey-user-other-${stamp}@e2e.local`,
 			firstName: "Survey",
@@ -74,7 +71,6 @@ test.describe("Survey answers in Users area", () => {
 			data: { userId: otherUser.id, questionId, value: otherAnswerValue },
 		});
 
-		// SINGLE_SELECT question with options → faceted (checkbox) filter in list.
 		selectFieldName = `DietChoice ${stamp}`;
 		const selectQuestion = await db.surveyQuestion.create({
 			data: {
@@ -121,11 +117,9 @@ test.describe("Survey answers in Users area", () => {
 			"list column is desktop table only",
 		);
 
-		// Arrange
 		await adminUsersPage.goto();
 		await adminUsersPage.waitForLoad();
 
-		// Assert — header + the user's row value
 		await expect(
 			page.getByRole("columnheader").filter({ hasText: listFieldName }),
 		).toBeVisible();
@@ -149,15 +143,12 @@ test.describe("Survey answers in Users area", () => {
 				.getByTestId("user-row")
 				.filter({ visible: true, has: page.locator(`text="${email}"`) });
 
-		// Arrange — scope the list to both test users via the shared stamp (matches
-		// both names), then confirm both rows are present.
 		await adminUsersPage.goto();
 		await adminUsersPage.waitForLoad();
 		await adminUsersPage.search(stamp);
 		await expect(rowByEmail(user.email)).toBeVisible();
 		await expect(rowByEmail(otherUser.email)).toBeVisible();
 
-		// Act — filter the survey column by this user's answer only
 		await page
 			.getByRole("columnheader")
 			.filter({ hasText: listFieldName })
@@ -168,7 +159,6 @@ test.describe("Survey answers in Users area", () => {
 			.getByPlaceholder("Search...")
 			.fill(answerValue);
 
-		// Assert — the column filter (not a name search) leaves only the match
 		await expect(rowByEmail(user.email)).toBeVisible();
 		await expect(rowByEmail(otherUser.email)).toHaveCount(0);
 	});
@@ -187,14 +177,12 @@ test.describe("Survey answers in Users area", () => {
 				.getByTestId("user-row")
 				.filter({ visible: true, has: page.locator(`text="${email}"`) });
 
-		// Arrange — both users in scope
 		await adminUsersPage.goto();
 		await adminUsersPage.waitForLoad();
 		await adminUsersPage.search(stamp);
 		await expect(rowByEmail(user.email)).toBeVisible();
 		await expect(rowByEmail(otherUser.email)).toBeVisible();
 
-		// Open the faceted filter popover on the SINGLE_SELECT column
 		await page
 			.getByRole("columnheader")
 			.filter({ hasText: selectFieldName })
@@ -203,19 +191,15 @@ test.describe("Survey answers in Users area", () => {
 		const popover = page.locator("[data-slot='popover-content']");
 		const veganOption = popover.getByRole("checkbox", { name: "Vegan" });
 
-		// Act — check "Vegan"
 		await expect(veganOption).toHaveAttribute("aria-checked", "false");
 		await veganOption.click();
 
-		// Assert — option reflects checked state AND list narrows to the Vegan user
 		await expect(veganOption).toHaveAttribute("aria-checked", "true");
 		await expect(rowByEmail(user.email)).toBeVisible();
 		await expect(rowByEmail(otherUser.email)).toHaveCount(0);
 
-		// Act — uncheck "Vegan"
 		await veganOption.click();
 
-		// Assert — option clears and both users are visible again
 		await expect(veganOption).toHaveAttribute("aria-checked", "false");
 		await expect(rowByEmail(user.email)).toBeVisible();
 		await expect(rowByEmail(otherUser.email)).toBeVisible();
@@ -224,10 +208,8 @@ test.describe("Survey answers in Users area", () => {
 	test("user detail always shows the Survey Responses section", async ({
 		page,
 	}) => {
-		// Act
 		await page.goto(`/admin/users/${user.id}`);
 
-		// Assert
 		const section = page.getByTestId("user-survey-section");
 		await expect(section).toBeVisible();
 		await expect(section).toContainText(questionLabel);
@@ -237,10 +219,8 @@ test.describe("Survey answers in Users area", () => {
 	test("XLSX export includes survey, Need Invoice and Invoice details columns", async ({
 		page,
 	}) => {
-		// Act
 		const response = await page.request.get("/api/admin/users/export");
 
-		// Assert
 		expect(response.status()).toBe(200);
 		const wb = XLSX.read(await response.body(), { type: "buffer" });
 		const sheet = wb.Sheets[wb.SheetNames[0]];

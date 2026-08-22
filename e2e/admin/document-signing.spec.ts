@@ -31,13 +31,10 @@ async function uploadTemplate(page: Page, name: string, file: string) {
 test.describe("Admin - Document signing", () => {
 	test.describe.configure({ mode: "serial" });
 
-	// Captured in the first test (signed with the generated cert) and re-verified
-	// after a cert rotation in a later test — must then read as not-this-conference.
 	let signedPdf: Buffer | null = null;
 
 	test.beforeAll(async ({}, testInfo) => {
 		test.skip(!(await docxApiHealthy()), "docx-api sidecar (pyHanko) unavailable");
-		// Start clean so the cert-status assertions reflect this run.
 		const db = getPrisma(testInfo.parallelIndex);
 		await db.appSetting
 			.deleteMany({ where: { key: "DOCUMENT_SIGNING" } })
@@ -46,7 +43,6 @@ test.describe("Admin - Document signing", () => {
 
 	test.afterAll(async ({}, testInfo) => {
 		const db = getPrisma(testInfo.parallelIndex);
-		// Disable signing so it doesn't bleed into other document specs on this worker.
 		await db.appSetting
 			.deleteMany({ where: { key: "DOCUMENT_SIGNING" } })
 			.catch(() => {});
@@ -67,7 +63,6 @@ test.describe("Admin - Document signing", () => {
 			timeout: 15000,
 		});
 
-		// Generate a self-signed certificate.
 		await page.getByTestId("generate-cert-button").click();
 		await expect(page.getByTestId("signing-cert-status")).toBeVisible({
 			timeout: 30000,
@@ -77,12 +72,10 @@ test.describe("Admin - Document signing", () => {
 			/^[0-9a-f]{64}$/,
 		);
 
-		// Enable signing and confirm it persists across a reload.
 		await page.getByTestId("signing-enabled-switch").click();
 		await page.reload();
 		await expect(page.getByTestId("signing-enabled-switch")).toHaveAttribute("aria-checked", "true");
 
-		// Generate a document for the test participant.
 		const docName = testRun.prefix("Signed");
 		await page.goto("/admin/documents");
 		await uploadTemplate(page, docName, "confirmation-template.docx");
@@ -102,7 +95,6 @@ test.describe("Admin - Document signing", () => {
 		});
 		await expect(row.getByTestId("document-signed-badge")).toBeVisible();
 
-		// The stored PDF carries a real PAdES signature.
 		const db = getPrisma(testInfo.parallelIndex);
 		const doc = await db.generatedDocument.findFirst({
 			where: { name: docName },
@@ -117,7 +109,6 @@ test.describe("Admin - Document signing", () => {
 		expect(ascii).toContain("/ByteRange");
 		expect(ascii).toContain("ETSI.CAdES.detached");
 
-		// The public verification page confirms authenticity.
 		await page.goto("/verify-document");
 		await page.getByTestId("verify-file-input").setInputFiles({
 			name: "signed.pdf",
@@ -128,7 +119,6 @@ test.describe("Admin - Document signing", () => {
 		await expect(page.getByTestId("verify-verdict")).toHaveText("Authentic", {
 			timeout: 30000,
 		});
-		// The signer cert matches the conference's configured certificate.
 		await expect(page.getByTestId("verify-matches-cert")).toBeVisible();
 	});
 
@@ -141,7 +131,6 @@ test.describe("Admin - Document signing", () => {
 			.setInputFiles(path.join(FIXTURES, "e2e-signing.p12"));
 		await page.getByLabel("Password", { exact: true }).fill("e2epass");
 		await page.getByTestId("upload-cert-button").click();
-		// A cert already exists (previous test), so uploading is a rotation: confirm.
 		await page.getByTestId("rotate-cert-confirm").click();
 
 		const status = page.getByTestId("signing-cert-status");
@@ -155,9 +144,6 @@ test.describe("Admin - Document signing", () => {
 	test("a document signed with the old cert is not trusted after rotation", async ({
 		page,
 	}) => {
-		// The cert was rotated in the previous test. The PDF captured earlier carries
-		// the OLD signature, so the public verifier must NOT call it authentic — its
-		// signer fingerprint no longer matches the conference's current certificate.
 		expect(signedPdf).not.toBeNull();
 		await page.goto("/verify-document");
 		await page.getByTestId("verify-file-input").setInputFiles({

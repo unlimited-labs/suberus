@@ -1,6 +1,4 @@
 /**
- * E2E tests for the autoplan queue feature.
- *
  * Requires:
  *  - LLM API (embeddings + completion) to be available
  *  - Planner API service to be running
@@ -14,7 +12,6 @@ import { SubmissionStatus, SubmissionType } from "../../../src/generated/prisma/
 
 const TEST_PREFIX = "autoplan_e2e";
 
-// Shared state across serial tests
 let sharedRoomId: string;
 let sharedSubmissionIds: string[] = [];
 
@@ -25,13 +22,10 @@ test.describe.serial("Autoplan — queue happy path", () => {
 	test.describe.configure({ timeout: 240_000 });
 
 	test.beforeAll(async () => {
-		// Enable autoplanner (default is false)
 		await setAppSetting("PLANNER_AUTOPLAN_ENABLED", true);
 
-		// Create room
 		sharedRoomId = await createRoom(TEST_PREFIX, "MainRoom");
 
-		// Create accepted abstracts with meaningful content for clustering
 		const abstracts = [
 			{
 				title: "Neural Network Optimization for Image Classification",
@@ -78,7 +72,6 @@ test.describe.serial("Autoplan — queue happy path", () => {
 			sharedSubmissionIds.push(sub.id);
 		}
 
-		// Create 2 program sessions to act as target slots
 		const baseDate = new Date("2026-07-01T09:00:00Z");
 		for (let i = 0; i < 2; i++) {
 			const startAt = new Date(baseDate.getTime() + i * 2 * 60 * 60 * 1000);
@@ -96,7 +89,6 @@ test.describe.serial("Autoplan — queue happy path", () => {
 	test.afterAll(async () => {
 		const db = getPrisma();
 
-		// Restore default
 		await setAppSetting("PLANNER_AUTOPLAN_ENABLED", false).catch(() => {});
 
 		// applyAutoPlan rewrites session titles, so prefix-based cleanup misses
@@ -112,16 +104,13 @@ test.describe.serial("Autoplan — queue happy path", () => {
 			}
 		}
 
-		// Clean up planner state created with TEST_PREFIX (room, breaks, tracks)
 		await cleanupPlannerForRun(TEST_PREFIX).catch(() => {});
 
-		// Clean up submissions
 		const { deleteSubmission } = await import("../../helpers/test-db");
 		for (const id of sharedSubmissionIds) {
 			await deleteSubmission(id).catch(() => {});
 		}
 
-		// Also catch orphaned submissions by prefix
 		const orphaned = await db.submission.findMany({
 			where: { title: { startsWith: `${TEST_PREFIX}_` } },
 			select: { id: true },
@@ -146,12 +135,10 @@ test.describe.serial("Autoplan — queue happy path", () => {
 		await expect(generateBtn).toBeVisible({ timeout: 15000 });
 		await generateBtn.click();
 
-		// At least one stage label should appear shortly after clicking
 		await expect(
 			page.getByText("Loading data"),
 		).toBeVisible({ timeout: 30000 });
 
-		// Wait for proposal to complete — LLM calls can be slow
 		await expect(
 			page.getByText("Proposal ready"),
 		).toBeVisible({ timeout: 180000 });
@@ -164,20 +151,16 @@ test.describe.serial("Autoplan — queue happy path", () => {
 		await expect(generateBtn).toBeVisible({ timeout: 15000 });
 		await generateBtn.click();
 
-		// Wait for proposal to be ready
 		await expect(
 			page.getByText("Proposal ready"),
 		).toBeVisible({ timeout: 180000 });
 
-		// Apply to schedule
 		const applyBtn = page.getByRole("button", { name: /Apply to schedule/i });
 		await expect(applyBtn).toBeVisible({ timeout: 10000 });
 		await applyBtn.click();
 
-		// Should navigate back to the planner
 		await expect(page).toHaveURL(/\/admin\/program-planner$/, { timeout: 30000 });
 
-		// Toast confirmation (optional — may not always render in time)
 		await page.getByText("Auto-plan applied").waitFor({ state: "visible", timeout: 10000 }).catch(() => {});
 	});
 });

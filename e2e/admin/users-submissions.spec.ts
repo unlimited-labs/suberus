@@ -28,14 +28,12 @@ test.describe("Admin Users - Submissions column", () => {
 			lastName: "SubCol",
 		})
 
-		// member is AUTHOR (owner) of a submitted abstract
 		await createSubmission({
 			userId: member.id,
 			type: SubmissionType.ABSTRACT,
 			status: SubmissionStatus.SUBMITTED,
 			title: `subcol-abstract-${ts}`,
 		})
-		// member is COAUTHOR of a poster owned by `owner`
 		await createSubmission({
 			userId: owner.id,
 			type: SubmissionType.POSTER,
@@ -43,14 +41,12 @@ test.describe("Admin Users - Submissions column", () => {
 			title: `subcol-poster-${ts}`,
 			extraAuthors: [{ firstName: "Member", lastName: "SubCol", userId: member.id }],
 		})
-		// member has a DRAFT abstract (owner)
 		await createSubmission({
 			userId: member.id,
 			type: SubmissionType.ABSTRACT,
 			status: SubmissionStatus.DRAFT,
 			title: `subcol-draft-${ts}`,
 		})
-		// member has an ACCEPTED poster (owner)
 		await createSubmission({
 			userId: member.id,
 			type: SubmissionType.POSTER,
@@ -107,7 +103,6 @@ test.describe("Admin Users - Submissions column", () => {
 
 		await authorOption.click()
 
-		// The crux: after clicking, the option must show as checked.
 		await expect(authorOption).toHaveAttribute("aria-checked", "true")
 	})
 
@@ -125,7 +120,6 @@ test.describe("Admin Users - Submissions column", () => {
 		await acceptedOption.click()
 		await expect(acceptedOption).toHaveAttribute("aria-checked", "true")
 
-		// member owns an accepted poster → stays visible; owner/empty have none → filtered out.
 		const memberRow = page
 			.getByTestId("user-row")
 			.filter({ visible: true, has: page.locator(`text="${member.email}"`) })
@@ -142,7 +136,6 @@ test.describe("Admin Users - Submissions column", () => {
 
 		await page.getByTestId("submissions-filter-trigger").click()
 		await page.getByTestId("submission-filter-coauthor").click()
-		// member is coauthor of a poster → should remain visible
 		const memberRow = page
 			.getByTestId("user-row")
 			.filter({ visible: true, has: page.locator(`text="${member.email}"`) })

@@ -32,7 +32,6 @@ async function uploadTemplate(page: Page, name: string, file: string) {
 	await expect(page.getByTestId("template-name-input")).toBeHidden();
 }
 
-/** Pick a template in the per-user "Add document" dialog. */
 async function selectUserDocTemplate(page: Page, name: string) {
 	await page.getByTestId("document-template-select").click();
 	await page.getByRole("option", { name }).click();
@@ -68,8 +67,6 @@ test.describe("Admin - Document generator", () => {
 		await expect(row.getByText("{firstName}")).toBeVisible();
 		await expect(row.getByText("{date}")).toBeVisible();
 
-		// A template with an unsupported placeholder ({salary}) is rejected: the
-		// dialog stays open, an error is shown, and no row is created.
 		const badName = testRun.prefix("Bad");
 		await page.getByTestId("upload-template-button").click();
 		await page.getByTestId("template-name-input").fill(badName);
@@ -78,7 +75,6 @@ test.describe("Admin - Document generator", () => {
 			.setInputFiles(path.join(FIXTURES, "invalid-template.docx"));
 		await page.getByTestId("template-upload-submit").click();
 
-		// Rejected → the dialog stays open (server refused the unknown placeholder).
 		await expect(page.getByTestId("template-name-input")).toBeVisible();
 		await page.keyboard.press("Escape");
 		await expect(
@@ -101,14 +97,12 @@ test.describe("Admin - Document generator", () => {
 		await page.goto(`/admin/users/${testUserId}`);
 		await page.getByTestId("add-document-button").click();
 
-		// Visa template uses {abstractTitle} (no accepted submission) → blocked.
 		await selectUserDocTemplate(page, visaName);
 		await expect(
 			page.getByTestId("resolution-row").filter({ hasText: "abstract" }),
 		).toContainText("Missing");
 		await expect(page.getByTestId("generate-document-button")).toBeDisabled();
 
-		// Confirmation template resolves fully → can generate.
 		await selectUserDocTemplate(page, confirmName);
 		await expect(page.getByTestId("generate-document-button")).toBeEnabled();
 		await page.getByTestId("generate-document-button").click();
@@ -185,7 +179,6 @@ test.describe("Admin - Document generator", () => {
 		await usersPage.selectUser(TEST_USER);
 		await usersPage.selectBulkAction("Generate document");
 
-		// Dialog: pick template → review → generate → progress.
 		await page.getByTestId("bulk-template-select").click();
 		await page.getByRole("option", { name }).click();
 		await page.getByTestId("bulk-review-button").click();

@@ -20,13 +20,11 @@ test.beforeEach(({}, testInfo) => {
 	test.skip(testInfo.project.name.includes("mobile"), "Desktop only")
 })
 
-/** Send campaign is behind a confirmation dialog (irreversible send). */
 async function sendCampaign(page: Page) {
 	await page.getByTestId("send-campaign-btn").click()
 	await page.getByTestId("confirm-send-campaign-btn").click()
 }
 
-/** Creates an isolated recipient whose email is tagged for mailpit cleanup. */
 async function makeRecipient(
 	testRunId: string,
 	tag: string,
@@ -40,7 +38,6 @@ async function makeRecipient(
 	})
 }
 
-/** Waits for an email to `to` (subject contains `runId`) and returns its HTML. */
 async function expectEmailHtml(to: string, runId: string): Promise<string> {
 	const msg = await waitForEmail(to, runId, 15000)
 	expect(msg, `no email delivered to ${to}`).toBeTruthy()
@@ -57,7 +54,6 @@ test.describe("Admin - Bulk Email", () => {
 		adminUsersPage,
 	}) => {
 		const runId = testRun.testRunId
-		// One recipient WITH a submission (so {{title}} resolves), one WITHOUT.
 		const withTitle = await makeRecipient(runId, "alice", "Alice")
 		const noTitle = await makeRecipient(runId, "bob", "Bob")
 		await createSubmission({
@@ -67,10 +63,8 @@ test.describe("Admin - Bulk Email", () => {
 		})
 
 		try {
-			// Admin auth comes from the chromium-admin project storageState.
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
-			// Freshly-created users sort newest-first onto page 1; select by email.
 			await adminUsersPage.selectUser({ ...withTitle, firstName: "Alice", lastName: "Recipient" })
 			await adminUsersPage.selectUser({ ...noTitle, firstName: "Bob", lastName: "Recipient" })
 
@@ -83,7 +77,6 @@ test.describe("Admin - Bulk Email", () => {
 
 			await sendCampaign(page)
 
-			// Campaign reaches SENT with both recipients delivered.
 			const db = getPrisma()
 			await expect
 				.poll(
@@ -98,8 +91,6 @@ test.describe("Admin - Bulk Email", () => {
 				)
 				.toBe("SENT:2")
 
-			// The composer reflects completion live (SSE → query refetch): the
-			// header badge flips to SENT and the progress bar finishes.
 			await expect(page.getByTestId("campaign-status")).toHaveText("SENT", {
 				timeout: 15000,
 			})
@@ -108,19 +99,15 @@ test.describe("Admin - Bulk Email", () => {
 				{ timeout: 15000 },
 			)
 
-			// Alice's email: firstName + title substituted.
 			const aliceHtml = await expectEmailHtml(withTitle.email, runId)
 			expect(aliceHtml).toContain("Alice")
 			expect(aliceHtml).toContain("Quantum Posters")
 			expect(aliceHtml).not.toContain("{{firstName}}")
 
-			// Bob has no submission: {{title}} renders empty, no leftover token.
 			const bobHtml = await expectEmailHtml(noTitle.email, runId)
 			expect(bobHtml).toContain("Bob")
 			expect(bobHtml).not.toContain("{{title}}")
 
-			// "Copy to new draft" clones the sent campaign into a fresh, editable
-			// DRAFT prefilled with the same content and recipients.
 			await page.getByTestId("copy-campaign-btn").click()
 			await page.waitForURL(
 				(url) =>
@@ -135,7 +122,6 @@ test.describe("Admin - Bulk Email", () => {
 			)
 			await expect(page.getByTestId("recipient-count")).toHaveText("2")
 
-			// History list shows the campaign.
 			await page.goto("/admin/bulk-email")
 			await expect(page.getByTestId("campaign-list")).toContainText(runId)
 		} finally {
@@ -164,7 +150,6 @@ test.describe("Admin - Bulk Email", () => {
 			await page.getByTestId("campaign-body").fill("Hi {{firstName}}")
 			await page.getByTestId("test-send-btn").click()
 
-			// Goes to the logged-in admin with a [TEST] subject.
 			const msg = await waitForEmail("admin@e2e.local", runId, 15000)
 			expect(msg).toBeTruthy()
 			expect(msg?.Subject).toContain("[TEST]")
@@ -237,7 +222,6 @@ test.describe("Admin - Bulk Email", () => {
 
 			await page.getByTestId("campaign-subject").fill(`Reply-To fallback ${runId}`)
 			await page.getByTestId("campaign-body").fill("Hi {{firstName}}")
-			// Reply-To deliberately left blank.
 
 			await sendCampaign(page)
 
@@ -311,16 +295,13 @@ test.describe("Admin - Bulk Email", () => {
 			await adminUsersPage.selectUser({ ...rcpt, firstName: "Gwen", lastName: "Recipient" })
 			await adminUsersPage.openBulkEmailComposer()
 
-			// Empty subject + body → both dispatch actions blocked.
 			await expect(page.getByTestId("send-campaign-btn")).toBeDisabled()
 			await expect(page.getByTestId("test-send-btn")).toBeDisabled()
 
-			// Subject alone is not enough.
 			await page.getByTestId("campaign-subject").fill(`Hello ${runId}`)
 			await expect(page.getByTestId("send-campaign-btn")).toBeDisabled()
 			await expect(page.getByTestId("test-send-btn")).toBeDisabled()
 
-			// Both filled → enabled.
 			await page.getByTestId("campaign-body").fill("Hi there")
 			await expect(page.getByTestId("send-campaign-btn")).toBeEnabled()
 			await expect(page.getByTestId("test-send-btn")).toBeEnabled()
@@ -370,13 +351,11 @@ test.describe("Admin - Bulk Email", () => {
 
 			await page.getByTestId("campaign-subject").fill(`Draft ${runId}`)
 			await page.getByTestId("campaign-body").fill(body)
-			// Change the format too, to prove it is part of the saved draft.
 			await page.getByTestId("format-select").click()
 			await page.getByRole("option", { name: "MJML" }).click()
 			await page.getByTestId("save-draft-btn").click()
 			await expect(page.getByText("Draft saved")).toBeVisible()
 
-			// The save is persisted as a DRAFT.
 			const db = getPrisma()
 			await expect
 				.poll(async () => {
@@ -388,7 +367,6 @@ test.describe("Admin - Bulk Email", () => {
 				})
 				.toBe(`DRAFT|MJML|Draft ${runId}`)
 
-			// Reload rehydrates the composer from the saved draft.
 			await page.reload()
 			await expect(page.getByTestId("campaign-subject")).toHaveValue(
 				`Draft ${runId}`,
@@ -431,18 +409,15 @@ test.describe("Admin - Bulk Email", () => {
 		try {
 			await page.goto(`/admin/bulk-email/${campaign.id}`)
 
-			// Read-only: SENT badge, disabled editor, no draft-only actions.
 			await expect(page.getByTestId("campaign-status")).toHaveText("SENT")
 			await expect(page.getByTestId("campaign-subject")).toBeDisabled()
 			await expect(page.getByTestId("campaign-body")).toBeDisabled()
 			await expect(page.getByTestId("send-campaign-btn")).toHaveCount(0)
 			await expect(page.getByTestId("save-draft-btn")).toHaveCount(0)
 			await expect(page.getByTestId("delete-campaign-btn")).toHaveCount(0)
-			// Per-recipient delivery is reflected.
 			await expect(page.getByTestId("recipient-summary")).toContainText("2 sent")
 			await expect(page.getByTestId("recipient-summary")).toContainText("SENT")
 
-			// Copy clones content, format and recipients into a fresh DRAFT.
 			await page.getByTestId("copy-campaign-btn").click()
 			await page.waitForURL(
 				(url) =>
@@ -457,7 +432,6 @@ test.describe("Admin - Bulk Email", () => {
 			await expect(page.getByTestId("campaign-body")).toHaveValue(body)
 			await expect(page.getByTestId("format-select")).toContainText("MJML")
 			await expect(page.getByTestId("recipient-count")).toHaveText("2")
-			// The clone is editable again.
 			await expect(page.getByTestId("campaign-subject")).toBeEnabled()
 			await expect(page.getByTestId("send-campaign-btn")).toBeVisible()
 
@@ -483,7 +457,6 @@ test.describe("Admin - Bulk Email", () => {
 			await adminUsersPage.selectBulkAction("Send email")
 			await page.waitForURL(/\/admin\/bulk-email\/[0-9a-f-]+$/, { timeout: 15000 })
 
-			// Markdown (default): bold renders as <strong> inside the preview frame.
 			await page.getByTestId("campaign-body").fill("Hello **bold world**")
 			await page.getByRole("tab", { name: "Preview" }).click()
 			const frame = page.frameLocator('[data-testid="email-preview"] iframe')
@@ -491,7 +464,6 @@ test.describe("Admin - Bulk Email", () => {
 				timeout: 15000,
 			})
 
-			// Plain: preview shows the source verbatim (no markdown rendering).
 			await page.getByRole("tab", { name: "Body" }).click()
 			await page.getByTestId("format-select").click()
 			await page.getByRole("option", { name: "Plain text" }).click()
@@ -539,8 +511,6 @@ test.describe("Admin - Bulk Email", () => {
 	}) => {
 		const runId = testRun.testRunId
 		const db = getPrisma()
-		// Empty recipient addresses make the SMTP send throw, so every delivery
-		// fails deterministically (no Mailpit dependency) → status FAILED.
 		const campaign = await db.emailCampaign.create({
 			data: {
 				subject: `Fail ${runId}`,
@@ -574,8 +544,6 @@ test.describe("Admin - Bulk Email", () => {
 				)
 				.toBe("FAILED:2")
 
-			// Header badge → FAILED; the Recipients panel shows the failed count
-			// and per-recipient FAILED marks.
 			await expect(page.getByTestId("campaign-status")).toHaveText("FAILED", {
 				timeout: 15000,
 			})
@@ -589,8 +557,6 @@ test.describe("Admin - Bulk Email", () => {
 		}
 	})
 
-	// Minimal valid PDF: file-type detects it by the leading "%PDF" signature,
-	// so the server-side magic-number check accepts it.
 	const MINIMAL_PDF = Buffer.from("%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n")
 
 	test("attaches a file to a draft and delivers it with the email", async ({
@@ -640,7 +606,6 @@ test.describe("Admin - Bulk Email", () => {
 				)
 				.toBe("SENT:1")
 
-			// The delivered email carries the attachment.
 			const msg = await waitForEmail(rcpt.email, runId, 15000)
 			expect(msg, "no email delivered").toBeTruthy()
 			const full = (await getMailpitMessage((msg as { ID: string }).ID)) as {
@@ -692,10 +657,8 @@ test.describe("Admin - Bulk Email", () => {
 	})
 
 	test("non-admin cannot reach the bulk-email page", async ({ page }) => {
-		// Drop the admin storageState session, then sign in as a plain author.
 		await loginAs(page, TEST_USER, { clearCookies: true })
 		await page.goto("/admin/bulk-email")
-		// adminRouteMiddleware redirects non-admins to the dashboard.
 		await expect(page).toHaveURL("/")
 	})
 })

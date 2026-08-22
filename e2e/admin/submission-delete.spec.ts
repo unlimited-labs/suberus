@@ -26,10 +26,8 @@ test.describe("Admin Submission Delete", () => {
 			.getByRole("heading", { name: sub.title })
 			.waitFor({ timeout: 10000 })
 
-		// Click delete
 		await runSubmissionAction(page, "Delete")
 
-		// Confirm dialog appears
 		await expect(
 			page.getByRole("heading", { name: "Delete Submission" }),
 		).toBeVisible()
@@ -37,17 +35,13 @@ test.describe("Admin Submission Delete", () => {
 			page.getByLabel("Delete Submission").getByText(sub.title),
 		).toBeVisible()
 
-		// No warnings for simple submission
 		await expect(page.getByText("Warnings:")).not.toBeVisible()
 
-		// Confirm deletion
 		await page.getByRole("button", { name: "Delete Submission" }).click()
 
-		// Should redirect to submissions list
 		await expect(page).toHaveURL("/admin/submissions", { timeout: 10000 })
 		await expect(page.getByText("Submission deleted")).toBeVisible()
 
-		// Verify deleted from DB
 		const db = getPrisma()
 		const deleted = await db.submission.findUnique({
 			where: { id: sub.id },
@@ -73,7 +67,6 @@ test.describe("Admin Submission Delete", () => {
 
 		await runSubmissionAction(page, "Delete")
 
-		// Should show warnings
 		await expect(page.getByText("Warnings:")).toBeVisible({ timeout: 5000 })
 		await expect(
 			page.getByText("Submission is in an active review process"),
@@ -82,12 +75,10 @@ test.describe("Admin Submission Delete", () => {
 			page.getByText(/reviewer assignment\(s\) will be deleted/),
 		).toBeVisible()
 
-		// Delete button should still be available (non-blocking warnings)
 		await expect(
 			page.getByRole("button", { name: "Delete Submission" }),
 		).toBeEnabled()
 
-		// Confirm deletion despite warnings
 		await page.getByRole("button", { name: "Delete Submission" }).click()
 
 		await expect(page).toHaveURL("/admin/submissions", { timeout: 10000 })
@@ -123,7 +114,6 @@ test.describe("Admin Submission Delete", () => {
 			page.getByText(/review\(s\) will be permanently lost/),
 		).toBeVisible()
 
-		// Can still delete
 		await expect(
 			page.getByRole("button", { name: "Delete Submission" }),
 		).toBeEnabled()
@@ -151,18 +141,14 @@ test.describe("Admin Submission Delete", () => {
 			page.getByRole("heading", { name: "Delete Submission" }),
 		).toBeVisible()
 
-		// Cancel
 		await page.getByRole("button", { name: "Cancel" }).click()
 
-		// Dialog should close
 		await expect(
 			page.getByRole("heading", { name: "Delete Submission" }),
 		).not.toBeVisible()
 
-		// Should still be on detail page
 		await expect(page).toHaveURL(`/admin/submissions/${sub.id}`)
 
-		// Submission should still exist
 		const db = getPrisma()
 		const existing = await db.submission.findUnique({
 			where: { id: sub.id },
@@ -192,7 +178,6 @@ test.describe("Admin Submission Delete", () => {
 
 		await expect(page).toHaveURL("/admin/submissions", { timeout: 10000 })
 
-		// Verify activity log entry
 		const db = getPrisma()
 		const activity = await db.activityLog.findFirst({
 			where: {

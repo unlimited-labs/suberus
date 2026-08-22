@@ -50,7 +50,6 @@ test.describe("Upload link endpoint", () => {
 		await restore();
 	});
 
-	// The whole point of the token: a POST with no session attaches the file.
 	test("an unauthenticated POST attaches the file", async ({
 		request,
 		testRun,
@@ -94,7 +93,6 @@ test.describe("Upload link endpoint", () => {
 		expect(response.status()).toBe(403);
 	});
 
-	// Content, not extension: renaming a text file to .pdf must not get through.
 	test("a file that is not what it claims is refused", async ({
 		request,
 		testRun,
@@ -113,7 +111,6 @@ test.describe("Upload link endpoint", () => {
 		expect(response.status()).toBe(400);
 	});
 
-	// The field name is the one thing a caller cannot infer from the URL.
 	test("a wrong field name is answered with the right one", async ({
 		request,
 		testRun,
@@ -142,8 +139,6 @@ test.describe("Upload link endpoint", () => {
 		expect(await response.text()).toContain("'file'");
 	});
 
-	// A text type has nowhere to show a file; the link must not become a way to
-	// smuggle one in.
 	test("a text-format submission is refused", async ({ request, testRun }) => {
 		const db = getPrisma();
 		const existing = await db.appSetting.findUnique({

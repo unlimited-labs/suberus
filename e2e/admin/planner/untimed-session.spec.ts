@@ -33,7 +33,6 @@ test.describe.serial("Untimed (poster) sessions", () => {
 			untimedSlots: true,
 		});
 
-		// 8 x 15 min = 120 min in a 60 min window — impossible for a timed session.
 		for (let i = 0; i < 8; i++) {
 			const { id } = await createSubmission({
 				testRunId: testRun.testRunId,

@@ -50,14 +50,11 @@ test.describe.serial("Planner — Presentation assignment", () => {
 
 		await plannerPage.goto();
 
-		// Unscheduled row visible
 		await expect(plannerPage.unscheduledRow(unscheduled.id)).toBeVisible({
 			timeout: 10000,
 		});
-		// Assigned one is NOT in unscheduled sidebar
 		await expect(plannerPage.unscheduledRow(accepted.id)).toBeHidden();
 
-		// Open session editor, verify slot row is present
 		await plannerPage.openSessionEditor(sessionId);
 		await expect(
 			plannerPage.page.locator('[data-testid^="session-editor-slot-"]'),

@@ -1,37 +1,30 @@
 import { test, expect, AdminSettingsPage } from "./fixtures";
 
 /**
- * E2E tests for Fee Settings (admin panel)
- * Tests currency configuration and fee types CRUD
  * Serial — modifies shared settings
  */
 test.describe("Fee Settings", () => {
 	test.describe.configure({ mode: "serial" });
 
 	test("admin configures currency", async ({ page }, testInfo) => {
-		// Arrange
 		const settingsPage = new AdminSettingsPage(page);
 		await settingsPage.goto();
 		await settingsPage.switchToConferenceTab(testInfo);
 
-		// Act — change currency to USD
 		await page.locator("#currency").click();
 		await page.getByRole("option", { name: "USD" }).click();
 		await settingsPage.saveConferenceSettings();
 
-		// Assert
 		await expect(page.getByText("Conference settings saved")).toBeVisible({
 			timeout: 10000,
 		});
 
-		// Verify persisted — reload
 		await page.reload();
 		await expect(
 			page.getByRole("heading", { name: "Basic Information" }),
 		).toBeVisible({ timeout: 10000 });
 		await expect(page.locator("#currency")).toHaveText("USD");
 
-		// Cleanup — restore EUR
 		await page.locator("#currency").click();
 		await page.getByRole("option", { name: "EUR" }).click();
 		await settingsPage.saveConferenceSettings();
@@ -41,18 +34,15 @@ test.describe("Fee Settings", () => {
 	});
 
 	test("admin creates fee type", async ({ page }, testInfo) => {
-		// Arrange
 		const settingsPage = new AdminSettingsPage(page);
 		await settingsPage.goto();
 		await settingsPage.switchToFeeTab(testInfo);
 
-		// Act — add new fee type
 		await page.getByRole("button", { name: "Add Fee Type" }).click();
 		await page.getByLabel("Name").fill("VIP Pass");
 		await page.getByLabel("Amount").fill("500");
 		await page.getByRole("button", { name: "Add" }).click();
 
-		// Assert
 		await expect(page.getByText("Fee types saved")).toBeVisible({
 			timeout: 10000,
 		});
@@ -61,12 +51,10 @@ test.describe("Fee Settings", () => {
 	});
 
 	test("admin edits fee type", async ({ page }, testInfo) => {
-		// Arrange
 		const settingsPage = new AdminSettingsPage(page);
 		await settingsPage.goto();
 		await settingsPage.switchToFeeTab(testInfo);
 
-		// Act — edit the VIP Pass fee type
 		await expect(page.getByText("VIP Pass")).toBeVisible({ timeout: 10000 });
 		await page.getByRole("button", { name: "Edit VIP Pass" }).click();
 		const nameInput = page.getByRole("textbox", { name: "Fee type name" });
@@ -79,7 +67,6 @@ test.describe("Fee Settings", () => {
 		await amountInput.fill("600");
 		await page.getByRole("button", { name: "Save", exact: true }).click();
 
-		// Assert
 		await expect(page.getByText("Fee types saved")).toBeVisible({
 			timeout: 10000,
 		});
@@ -88,16 +75,13 @@ test.describe("Fee Settings", () => {
 	});
 
 	test("admin deletes fee type", async ({ page }, testInfo) => {
-		// Arrange
 		const settingsPage = new AdminSettingsPage(page);
 		await settingsPage.goto();
 		await settingsPage.switchToFeeTab(testInfo);
 		await expect(page.getByText("Premium Pass")).toBeVisible();
 
-		// Act — delete the Premium Pass
 		await page.getByRole("button", { name: "Delete Premium Pass" }).click();
 
-		// Assert
 		await expect(page.getByText("Fee types saved")).toBeVisible({
 			timeout: 10000,
 		});
@@ -107,24 +91,20 @@ test.describe("Fee Settings", () => {
 	test("admin creates free fee type with blank amount", async ({
 		page,
 	}, testInfo) => {
-		// Arrange
 		const settingsPage = new AdminSettingsPage(page);
 		await settingsPage.goto();
 		await settingsPage.switchToFeeTab(testInfo);
 
-		// Act — add fee type without an amount
 		await page.getByRole("button", { name: "Add Fee Type" }).click();
 		await page.getByLabel("Name").fill("Free Pass");
 		await page.getByRole("button", { name: "Add" }).click();
 
-		// Assert — blank amount saved as 0
 		await expect(page.getByText("Fee types saved")).toBeVisible({
 			timeout: 10000,
 		});
 		await expect(page.getByText("Free Pass")).toBeVisible();
 		await expect(page.getByText("0.00", { exact: true })).toBeVisible();
 
-		// Cleanup
 		await page.getByRole("button", { name: "Delete Free Pass" }).click();
 		await expect(page.getByText("Free Pass")).not.toBeVisible();
 	});

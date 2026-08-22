@@ -16,7 +16,6 @@ test.describe("Admin Submissions - Column Visibility", () => {
 		page,
 		testRun,
 	}) => {
-		// Arrange — ensure the table has a row so headers render
 		await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Column Vis",
@@ -29,13 +28,11 @@ test.describe("Admin Submissions - Column Visibility", () => {
 			.filter({ hasText: "Author" });
 		await expect(authorHeader).toBeVisible();
 
-		// Act — hide the Author column
 		await page.getByRole("button", { name: "Columns" }).click();
 		await page.getByRole("menuitemcheckbox", { name: "Author" }).click();
 		await page.keyboard.press("Escape");
 		await expect(authorHeader).toBeHidden();
 
-		// Assert — choice is written to localStorage
 		await expect(async () => {
 			const raw = await page.evaluate(
 				(key) => localStorage.getItem(key),
@@ -44,11 +41,9 @@ test.describe("Admin Submissions - Column Visibility", () => {
 			expect(raw).toContain('"ownerName":false');
 		}).toPass();
 
-		// Act — reload
 		await page.reload();
 		await expect(authorHeader).toBeHidden();
 
-		// Assert — menu reflects the persisted state
 		await page.getByRole("button", { name: "Columns" }).click();
 		await expect(
 			page.getByRole("menuitemcheckbox", { name: "Author" }),

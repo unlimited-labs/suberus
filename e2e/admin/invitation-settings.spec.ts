@@ -22,11 +22,9 @@ test.describe("Admin Settings - Invitations", () => {
 		adminSettingsPage,
 		page,
 	}) => {
-		// Act
 		await adminSettingsPage.getInvitationValidityInput().fill("120")
 		await page.getByRole("button", { name: "Save" }).click()
 
-		// Assert
 		await expect(page.getByText("Invitation settings saved")).toBeVisible()
 
 		await page.reload()
@@ -40,11 +38,9 @@ test.describe("Admin Settings - Invitations", () => {
 		adminSettingsPage,
 		page,
 	}) => {
-		// Act
 		await adminSettingsPage.getInvitationValidityInput().fill("0")
 		await page.getByRole("button", { name: "Save" }).click()
 
-		// Assert — blocked on the client, nothing saved
 		await expect(page.getByText("Must be at least 1 hour")).toBeVisible()
 		await expect(page.getByText("Invitation settings saved")).toBeHidden()
 	})

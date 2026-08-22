@@ -15,7 +15,6 @@ async function runOverdueTask(page: import("@playwright/test").Page) {
 
 test.describe.serial("Task: assignments:overdue", () => {
 	test("marks overdue PENDING assignment", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		const { assignmentId, submissionId } = await createAssignmentWithDeadline({
 			testRunId: testRun.testRunId,
 			title: "Overdue PENDING",
@@ -24,16 +23,13 @@ test.describe.serial("Task: assignments:overdue", () => {
 		})
 		cleanup.track(submissionId)
 
-		// Act
 		const { result } = await runOverdueTask(page)
 
-		// Assert
 		expect(result.overdue).toBeGreaterThanOrEqual(1)
 		expect(await getAssignmentStatus(assignmentId)).toBe("OVERDUE")
 	})
 
 	test("skips assignment with future deadline", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		const { assignmentId, submissionId } = await createAssignmentWithDeadline({
 			testRunId: testRun.testRunId,
 			title: "Future deadline",
@@ -42,15 +38,12 @@ test.describe.serial("Task: assignments:overdue", () => {
 		})
 		cleanup.track(submissionId)
 
-		// Act
 		await runOverdueTask(page)
 
-		// Assert
 		expect(await getAssignmentStatus(assignmentId)).toBe("PENDING")
 	})
 
 	test("skips COMPLETED assignment with past deadline", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		const { assignmentId, submissionId } = await createAssignmentWithDeadline({
 			testRunId: testRun.testRunId,
 			title: "Completed past deadline",
@@ -59,15 +52,12 @@ test.describe.serial("Task: assignments:overdue", () => {
 		})
 		cleanup.track(submissionId)
 
-		// Act
 		await runOverdueTask(page)
 
-		// Assert
 		expect(await getAssignmentStatus(assignmentId)).toBe("COMPLETED")
 	})
 
 	test("skips CANCELLED assignment with past deadline", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		const { assignmentId, submissionId } = await createAssignmentWithDeadline({
 			testRunId: testRun.testRunId,
 			title: "Cancelled past deadline",
@@ -76,15 +66,12 @@ test.describe.serial("Task: assignments:overdue", () => {
 		})
 		cleanup.track(submissionId)
 
-		// Act
 		await runOverdueTask(page)
 
-		// Assert
 		expect(await getAssignmentStatus(assignmentId)).toBe("CANCELLED")
 	})
 
 	test("idempotent — already-marked assignment stays OVERDUE", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		const { assignmentId, submissionId } = await createAssignmentWithDeadline({
 			testRunId: testRun.testRunId,
 			title: "Idempotent test",
@@ -93,14 +80,11 @@ test.describe.serial("Task: assignments:overdue", () => {
 		})
 		cleanup.track(submissionId)
 
-		// Act — first run
 		await runOverdueTask(page)
 		expect(await getAssignmentStatus(assignmentId)).toBe("OVERDUE")
 
-		// Act — second run
 		await runOverdueTask(page)
 
-		// Assert — already marked, status unchanged
 		expect(await getAssignmentStatus(assignmentId)).toBe("OVERDUE")
 	})
 })

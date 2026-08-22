@@ -94,7 +94,6 @@ test.describe("MCP — connect dialog", () => {
 			"--scope project",
 		);
 
-		// Usable only with the loopback DNS callback Claude Code sends.
 		const client = await db.oauthClient.findUnique({ where: { clientId } });
 		expect(client?.redirectUris).toEqual([
 			`http://localhost:${DEFAULT_PORT}/callback`,
@@ -167,8 +166,6 @@ test.describe("MCP — connect dialog", () => {
 	test("keeps its content inside the dialog", async ({ page }) => {
 		await openMcpDialog(page);
 
-		// The nowrap register command used to widen the grid track and push every
-		// child past the right edge.
 		const overflow = await page
 			.getByTestId("mcp-connect-dialog")
 			.evaluate((el) => el.scrollWidth - el.clientWidth);
@@ -180,8 +177,6 @@ test.describe("MCP — authorize", () => {
 	test.beforeEach(clearDesktopClients);
 	test.afterEach(clearDesktopClients);
 
-	// A minted client freezes its scopes, so a scope added later would break every
-	// existing CLI install with invalid_scope until an admin reopened the dialog.
 	test("refreshes a stale desktop client's scopes", async ({ page }) => {
 		const db = getPrisma();
 		const clientId = `${DESKTOP_PREFIX}stale-${randomUUID().slice(0, 8)}`;
