@@ -30,6 +30,17 @@ import "dotenv/config";
 export const MCP_RESOURCE = `${env.APP_BASE_URL}/api/mcp`;
 export const MCP_RESOURCE_NAME = "Suberus MCP";
 
+/** better-auth types hook payloads as the base user; the additionalFields declared
+ * below are present at runtime but absent from that type. */
+type AuthUserExtras = { firstName?: string; affiliationId?: string };
+
+function authUserExtras<T extends { email: string }>(
+	user: T,
+): T & AuthUserExtras {
+	// SAFETY: both keys are declared in `user.additionalFields` on the config below.
+	return user as T & AuthUserExtras;
+}
+
 const mcpPlugins = env.MCP_ENABLED
 	? [
 			jwt(),
@@ -160,8 +171,7 @@ export const auth = betterAuth({
 		requireEmailVerification: false, // Soft-block: users can login, but app restricts actions
 		minPasswordLength: 10,
 		sendResetPassword: async ({ user, url }) => {
-			// SAFETY: firstName is a better-auth additionalField, absent from the base user type.
-			const extUser = user as typeof user & { firstName?: string };
+			const extUser = authUserExtras(user);
 			await sendEmail("PASSWORD_RESET", user.email, {
 				firstName: extUser.firstName ?? user.email,
 				resetUrl: url,
@@ -175,8 +185,7 @@ export const auth = betterAuth({
 		callbackURL: "/?verified=true",
 		expiresIn: 24 * 60 * 60,
 		sendVerificationEmail: async ({ user, url }) => {
-			// SAFETY: firstName is a better-auth additionalField, absent from the base user type.
-			const extUser = user as typeof user & { firstName?: string };
+			const extUser = authUserExtras(user);
 			await sendEmail("EMAIL_VERIFICATION", user.email, {
 				firstName: extUser.firstName ?? user.email,
 				verificationUrl: url,
@@ -282,11 +291,7 @@ export const auth = betterAuth({
 						userId: user.id,
 						detail: activityDetail("USER_REGISTERED", { email: user.email }),
 					});
-					// SAFETY: these are better-auth additionalFields, absent from the base user type.
-					const extUser = user as typeof user & {
-						firstName?: string;
-						affiliationId?: string;
-					};
+					const extUser = authUserExtras(user);
 					void sendEmail("ACCOUNT_CREATED", user.email, {
 						firstName: extUser.firstName ?? user.email,
 						conferenceName: await getSetting("CONFERENCE_NAME"),
