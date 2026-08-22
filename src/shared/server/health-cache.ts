@@ -1,7 +1,3 @@
-/**
- * Generic health check cache with TTL.
- * Caches result for `ttlMs` milliseconds, then re-checks on next call.
- */
 export function createHealthCache<T>(ttlMs: number) {
 	let cached: T | null = null;
 	let checkedAt = 0;

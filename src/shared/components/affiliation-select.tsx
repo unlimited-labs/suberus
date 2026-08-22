@@ -55,7 +55,7 @@ function AffiliationOption({
 			)}
 			id={`affiliation-option-${index}`}
 			onMouseDown={(e) => {
-				e.preventDefault(); // Prevent blur
+				e.preventDefault();
 				onSelect();
 			}}
 			onMouseEnter={onHighlight}

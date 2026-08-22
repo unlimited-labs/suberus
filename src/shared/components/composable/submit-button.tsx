@@ -4,9 +4,7 @@ import { Button } from "@/shared/ui/button";
 
 interface FormSubmitButtonProps {
 	label: string;
-	/** Label while submitting; defaults to `label` (button text unchanged). */
 	submittingLabel?: string;
-	/** Extra disabled condition, OR-ed with `isSubmitting`. */
 	disabled?: boolean;
 	className?: string;
 	testId?: string;

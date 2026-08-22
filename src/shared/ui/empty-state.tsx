@@ -4,20 +4,13 @@ import type { ReactNode } from "react"
 import { cn } from "@/shared/lib/utils"
 
 interface EmptyStateProps {
-  /** Leading icon, shown in a muted rounded tile. */
   icon?: Icon
   title: ReactNode
   description?: ReactNode
-  /** Optional call-to-action (e.g. an upload button). */
   action?: ReactNode
   className?: string
 }
 
-/**
- * Centered empty-state placeholder: dashed surface, optional icon tile,
- * title, muted description and an optional action. Replaces the ad-hoc
- * `border-dashed` boxes scattered across screens.
- */
 export function EmptyState({
   icon: EmptyIcon,
   title,

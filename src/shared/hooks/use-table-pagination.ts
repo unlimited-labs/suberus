@@ -21,7 +21,6 @@ export function useTablePagination(storageKey?: string) {
 		{ pageIndex: 0, pageSize: DEFAULT_PAGE_SIZE },
 		{
 			schema: paginationSchema,
-			// Restore only the page size; page position always resets on entry.
 			merge: (stored) => ({ pageIndex: 0, pageSize: stored.pageSize }),
 		},
 	);

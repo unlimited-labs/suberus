@@ -62,9 +62,7 @@ export function useJobSSE(jobId: string | null): JobSSEState {
 					es.close();
 					setState((prev) => ({ ...prev, connected: false }));
 				}
-			} catch {
-				// ignore malformed messages
-			}
+			} catch {}
 		};
 
 		es.addEventListener("error", (event: MessageEvent<string>) => {

@@ -3,7 +3,6 @@ import { SplitColumns } from "@/shared/components/diff/split-columns";
 import { diffList, type ListDiffStatus } from "@/shared/lib/list-diff";
 import { cn } from "@/shared/lib/utils";
 
-/** Side-by-side (`split`) vs unified (`inline`) diff rendering. */
 export type DiffLayout = "split" | "inline";
 
 /** Status label + row style for each diff status (text label, not colour-only, for WCAG 1.4.1). */
@@ -43,7 +42,6 @@ function KeywordPill({
 	);
 }
 
-/** Status of a single keyword within one version, relative to its counterpart. */
 function keywordStatus(
 	keyword: string,
 	counterpart: Set<string>,
@@ -52,11 +50,6 @@ function keywordStatus(
 	return counterpart.has(keyword) ? "unchanged" : missingStatus;
 }
 
-/**
- * Structural diff of two keyword (string) lists, keyed by value, rendered as
- * added / removed / changed pills. `inline` shows the unified list; `split`
- * reconstructs each version in its own column with per-column status styling.
- */
 export function KeywordsDiff({
 	base,
 	compare,

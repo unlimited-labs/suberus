@@ -151,7 +151,6 @@ export async function sendEmail(
 			body = body.replace(regex, () => bodyValue);
 		}
 
-		// Append global email footer if configured
 		const footer = await resolveEmailFooter();
 		if (footer) {
 			if (template.isHtml) {

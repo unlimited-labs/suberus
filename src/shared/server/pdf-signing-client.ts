@@ -5,10 +5,6 @@ import { env } from "@/env";
 import { docxApiAuthHeaders } from "@/shared/server/docx-api-auth";
 import { requestOrThrow, sidecarBase } from "@/shared/server/sidecar-http";
 
-// HTTP client for the docx-api sidecar's signing endpoints (pyHanko). The app
-// owns the cert lifecycle; the sidecar is stateless and receives the P12 +
-// password on every sign request. Mirrors docx-pdf-client.ts.
-
 const GEN_TIMEOUT_MS = 30_000;
 const SIGN_TIMEOUT_MS = 60_000;
 

@@ -65,7 +65,6 @@ export function DataTableColumnFilter<TData extends RowData, TValue>({
 	return (
 		<Popover
 			onOpenChange={(open) => {
-				// Re-sync with current filter state on open
 				if (open) setSelectedValues(readSelection());
 			}}
 		>

@@ -3,12 +3,6 @@ import type {
 	SubmissionType,
 } from "@/generated/prisma/enums";
 
-/**
- * Submission status/type display maps. Pure presentation keyed off generated
- * enums — kept in shared because features that render submissions (reviews,
- * users) need them without importing the submissions slice.
- */
-
 export const statusLabels = {
 	DRAFT: "Draft",
 	SUBMITTED: "Submitted",

@@ -31,7 +31,6 @@ interface SidebarProps {
 	exhibitorsEnabled: boolean;
 	feeEnabled: boolean;
 	financesEnabled: boolean;
-	/** Whether the signed-in user has ≥1 generated document (gates "My Documents"). */
 	hasDocuments: boolean;
 }
 

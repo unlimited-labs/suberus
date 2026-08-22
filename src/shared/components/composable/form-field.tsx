@@ -12,12 +12,10 @@ interface FormFieldProps {
 	hasError: boolean;
 	errors: ComponentProps<typeof FieldError>["errors"];
 	description?: string;
-	/** Extra content rendered to the right of the label (e.g. a character counter). */
 	labelAddon?: ReactNode;
 	children: ReactNode;
 }
 
-/** Shared shell for composable form fields: label, input slot, description and error. */
 export function FormField({
 	label,
 	htmlFor,

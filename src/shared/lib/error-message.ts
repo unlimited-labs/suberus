@@ -49,9 +49,7 @@ export function getErrorMessage(
 				if (issues.success) return formatIssues(issues.data);
 				const envelope = issueEnvelopeSchema.safeParse(parsed);
 				if (envelope.success) return formatIssues(envelope.data.issues);
-			} catch {
-				// not JSON — fall through to raw message
-			}
+			} catch {}
 		}
 		const message = trimmed || fallback;
 		return hasRequestId(cause)

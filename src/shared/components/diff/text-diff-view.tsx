@@ -4,7 +4,6 @@ import { DiffDel, DiffIns } from "./diff-marks";
 
 interface TextDiffViewProps {
 	segments: DiffSegment[];
-	/** Rendered when there are no changes at all. */
 	emptyLabel?: string;
 	className?: string;
 }

@@ -9,12 +9,6 @@ const issueArraySchema = z
 	)
 	.min(1);
 
-/**
- * Attempts to extract a human-readable message from a thrown value when it
- * carries serialized Zod issues (e.g. TanStack `inputValidator` failures that
- * surface on the client as `Error` with a JSON-encoded message). Returns the
- * first issue formatted as `"<path>: <message>"` or `null` if not recognised.
- */
 export function extractZodIssueMessage(cause: unknown): string | null {
 	const raw =
 		cause instanceof Error ? cause.message : z.string().safeParse(cause).data;
@@ -34,7 +28,6 @@ export function extractZodIssueMessage(cause: unknown): string | null {
 	return path ? `${path}: ${first.message}` : first.message;
 }
 
-/** Stringifies an unknown thrown value with useful structure for browser devtools. */
 export async function logClientError(
 	label: string,
 	cause: unknown,

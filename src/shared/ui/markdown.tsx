@@ -7,9 +7,6 @@ interface MarkdownProps {
 	className?: string;
 }
 
-/**
- * Renders Markdown content as HTML with Tailwind prose styling
- */
 export function Markdown({ content, className = "" }: MarkdownProps) {
 	return (
 		<div
@@ -20,9 +17,6 @@ export function Markdown({ content, className = "" }: MarkdownProps) {
 	);
 }
 
-/**
- * Inline hint pointing to the Markdown basic-syntax guide, for editor fields
- */
 export function MarkdownHint({ className = "" }: { className?: string }) {
 	return (
 		<p

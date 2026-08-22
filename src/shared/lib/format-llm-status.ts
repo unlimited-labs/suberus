@@ -12,8 +12,6 @@ interface PdfApiHealthInfo {
 }
 
 export function formatLlmStatus(health: LlmHealth): string {
-	// Not healthy: surface the reason — connection error (unavailable) or the
-	// available-models list (misconfigured), both carried in `message`.
 	if (health.status !== "healthy") return health.message ?? "LLM unavailable";
 
 	const parts = ["LLM connected"];

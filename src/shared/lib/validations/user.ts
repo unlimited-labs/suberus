@@ -3,11 +3,6 @@ import { z } from "zod";
 // ORCID format: 0000-0000-0000-000X (where X can be 0-9 or X)
 export const orcidRegex = /^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/;
 
-/**
- * User personal/contact data schemas. Shared because the same fields are edited
- * both self-service (profile) and by admins (users), so neither slice owns them.
- * Admin-facing schemas are composed from these in `features/users/validations.ts`.
- */
 export const personalInfoSchema = z.object({
 	title: z.string().optional(),
 	firstName: z

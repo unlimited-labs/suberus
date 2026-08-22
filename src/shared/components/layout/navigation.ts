@@ -22,12 +22,12 @@ export interface NavItem {
 	href: string;
 	icon: ComponentType<{ className?: string }>;
 	roles?: UserRole[]; // undefined = visible to all
-	external?: boolean; // open in new tab
-	requiresPublishedSchedule?: boolean; // only show when program is published
-	requiresExhibitorsEnabled?: boolean; // only show when the exhibitors feature is on
-	requiresFeeEnabled?: boolean; // only show when the fee feature is on
-	requiresFinancesEnabled?: boolean; // only show when the finances feature is on
-	requiresDocuments?: boolean; // only show when the user has ≥1 generated document
+	external?: boolean;
+	requiresPublishedSchedule?: boolean;
+	requiresExhibitorsEnabled?: boolean;
+	requiresFeeEnabled?: boolean;
+	requiresFinancesEnabled?: boolean;
+	requiresDocuments?: boolean;
 }
 
 export interface NavSection {
@@ -132,7 +132,6 @@ export const navigationSections: NavSection[] = [
 	},
 ];
 
-// Helper to filter sections and items by user role
 export function getNavigationForRole(role: UserRole): NavSection[] {
 	return navigationSections
 		.filter((section) => !section.roles || section.roles.includes(role))

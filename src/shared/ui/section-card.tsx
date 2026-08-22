@@ -26,11 +26,8 @@ const VARIANT_CLASS: Record<SectionCardVariant, string> = {
 }
 
 interface BaseSectionCardProps {
-  /** Header label. Accepts a node so callers can inline a badge next to the text. */
   title: ReactNode
-  /** Leading header icon (rendered `size-5 text-muted-foreground`). */
   icon?: Icon
-  /** Optional subtitle under the title. */
   description?: ReactNode
   /** Right-aligned header slot (buttons, links). Never toggles collapse. */
   action?: ReactNode
@@ -43,9 +40,7 @@ interface BaseSectionCardProps {
 }
 
 interface SectionCardProps extends BaseSectionCardProps {
-  /** Opt-in show/hide of the content with a chevron toggle. */
   collapsible?: boolean
-  /** Initial open state when `collapsible` (default `true`). */
   defaultOpen?: boolean
 }
 
@@ -129,12 +124,6 @@ function CollapsibleSectionCard({
   )
 }
 
-/**
- * Unified "panel" surface: a {@link Card} with the repeated icon + title header
- * (and optional right-aligned action) baked in, plus an opt-in collapsible body.
- * Renders the same markup as a hand-written `Card`/`CardHeader`/`CardTitle`, so
- * it is a drop-in for the icon+title pattern used across form/detail screens.
- */
 export function SectionCard({
   collapsible = false,
   defaultOpen = true,

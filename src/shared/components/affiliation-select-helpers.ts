@@ -5,11 +5,6 @@ export interface AffiliationDropdownState {
 	showDropdown: boolean;
 }
 
-/**
- * Derives the combobox's open/create state from the current query and results:
- * whether an exact match exists, whether to offer "create", the navigable item
- * count, and whether the dropdown should render. Pure, so the matrix is testable.
- */
 export function computeAffiliationDropdownState({
 	affiliations,
 	inputValue,
@@ -40,7 +35,6 @@ export type AffiliationKeyAction =
 	| { type: "create" }
 	| { type: "close" };
 
-/** Next highlighted option index for arrow navigation, wrapping at both ends. */
 export function nextHighlightedIndex(
 	prev: number,
 	totalItems: number,
@@ -73,11 +67,6 @@ export interface AffiliationKeyContext {
 	showCreate: boolean;
 }
 
-/**
- * Maps a keydown to a combobox action: open when closed, arrow navigation,
- * Enter selection/creation, or Escape close. Pure, so the keyboard contract is
- * unit-testable and the component handler is a branch-free dispatcher.
- */
 export function resolveAffiliationKeyAction(
 	key: string,
 	ctx: AffiliationKeyContext,
@@ -113,7 +102,6 @@ export function resolveAffiliationKeyAction(
 	}
 }
 
-/** Combobox aria props that reference the active option id. */
 export function affiliationAriaProps(highlightedIndex: number) {
 	return {
 		"aria-activedescendant":

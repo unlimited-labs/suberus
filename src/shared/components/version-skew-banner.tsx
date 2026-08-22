@@ -3,11 +3,6 @@ import { useVersionPoll } from "@/shared/hooks/use-version-poll";
 import { useVersionSkew } from "@/shared/lib/version-skew";
 import { Button } from "@/shared/ui/button";
 
-/**
- * Fixed bottom banner shown when the backend has been redeployed under an open
- * tab (detected via polling or a server-fn response). Prompts a manual refresh
- * so unsaved form data isn't lost. Mount inside the authenticated layout.
- */
 export function VersionSkewBanner() {
 	useVersionPoll();
 	const skewed = useVersionSkew();

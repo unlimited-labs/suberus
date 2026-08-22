@@ -1,7 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { z } from "zod";
 
-/** Shape of the `/api/version` response (and the polled build metadata). */
 export const versionResponseSchema = z.object({
 	commit: z.string(),
 	builtAt: z.string(),
@@ -26,14 +25,12 @@ function emit() {
 	for (const listener of listeners) listener();
 }
 
-/** Flip the skew flag on (idempotent). */
 export function markSkewed() {
 	if (skewed) return;
 	skewed = true;
 	emit();
 }
 
-/** A usable build id (not missing and not the "unknown" build-time default). */
 function isRealVersion(version: string | null | undefined): version is string {
 	return !!version && version !== "unknown";
 }
@@ -60,18 +57,12 @@ function getSnapshot() {
 	return skewed;
 }
 
-/** Reactively read whether the backend has been redeployed under this tab. */
 export function useVersionSkew() {
 	return useSyncExternalStore(subscribe, getSnapshot, () => false);
 }
 
 const VERSION_ENDPOINT = "/api/version";
 
-/**
- * Wrap `window.fetch` (client only) to watch server-fn responses for a backend
- * redeploy: a response carrying our version header is compared directly; a
- * header-less server-fn error triggers an out-of-band version re-check.
- */
 export function installFetchVersionWatch() {
 	if (!("window" in globalThis)) return;
 	const original = window.fetch;
@@ -88,18 +79,13 @@ export function installFetchVersionWatch() {
 			if (!res.ok) return;
 			const parsed = versionResponseSchema.safeParse(await res.json());
 			if (parsed.success) reportVersion(parsed.data.commit);
-		} catch {
-			// best-effort
-		}
+		} catch {}
 	};
 
 	// Response.url is the resolved (same-origin) server-fn URL in the browser.
 	const inspect = (res: Response) => {
 		if (!res.url.includes(SERVER_FN_PREFIX)) return;
 		const version = res.headers.get(VERSION_HEADER);
-		// A successful/handled response carries the header → compare it. An error
-		// WITHOUT the header (the stamped header doesn't survive a thrown server
-		// error) is ambiguous → re-check the version rather than assume skew.
 		if (version) reportVersion(version);
 		else if (!res.ok) void recheckVersion();
 	};

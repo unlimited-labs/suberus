@@ -5,7 +5,6 @@ interface BrandLogoProps {
 	logoDarkInvert: boolean;
 	alt: string;
 	className?: string;
-	/** Use the horizontal logo lockup (wordmark beside mark) for the fallback. */
 	horizontal?: boolean;
 }
 

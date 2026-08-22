@@ -31,7 +31,6 @@ describe("diffText", () => {
 		const segs = diffText(oldText, newText);
 		expect(join(segs, "delete").length).toBeGreaterThan(0);
 		expect(join(segs, "insert").length).toBeGreaterThan(0);
-		// Unchanged surrounding context is preserved verbatim.
 		expect(join(segs, "equal")).toContain("The model ");
 		expect(join(segs, "equal")).toContain(" an approach.");
 		expect(reconstructOld(segs)).toBe(oldText);

@@ -42,9 +42,7 @@ interface DataTableProps<TData extends RowData> {
 	 * `.filter({ visible: true })`.
 	 */
 	rowDataTestId?: string;
-	/** Initial column visibility, e.g. to hide filter-only helper columns */
 	initialColumnVisibility?: ColumnVisibilityState;
-	/** When set, column visibility is persisted to localStorage under this key (per-table). */
 	storageKey?: string;
 }
 
@@ -167,7 +165,6 @@ export function DataTable<TData extends RowData>({
 				</div>
 			)}
 
-			{/* Pagination drives the desktop table only; mobile cards show everything. */}
 			<div className="hidden md:block">
 				<DataTablePagination table={table} pagination={pagination} />
 			</div>

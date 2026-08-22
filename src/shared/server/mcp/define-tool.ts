@@ -10,7 +10,6 @@ export interface McpActor {
 	scopes: string[];
 }
 
-/** Whatever a tool answers with; `runTool` serializes it to JSON for the agent. */
 export type McpToolResult = object | string | number | boolean | null;
 
 export interface McpTool<Input extends z.ZodType = z.ZodType> {

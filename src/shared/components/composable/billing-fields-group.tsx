@@ -1,8 +1,6 @@
 import { useSelector } from "@tanstack/react-store";
 import { withFieldGroup } from "@/shared/hooks/use-app-form";
 
-// Reusable invoice/billing block (needInvoice toggle + conditional address +
-// country). Shared by register, profile contact info, and admin user edit.
 type BillingFields = {
 	needInvoice: boolean;
 	address: string;

@@ -19,7 +19,6 @@ const S3_SECRET_ACCESS_KEY =
 	env.S3_SECRET_ACCESS_KEY ?? env.GARAGE_SECRET_ACCESS_KEY;
 const S3_BUCKET = env.S3_BUCKET ?? env.GARAGE_BUCKET;
 
-// Validate required environment variables
 function validateEnv(): void {
 	if (!S3_ENDPOINT) {
 		throw new Error("S3_ENDPOINT environment variable is required");
@@ -35,7 +34,6 @@ function validateEnv(): void {
 	}
 }
 
-// Lazy initialization of S3 client
 let _s3Client: S3Client | null = null;
 
 function getS3Client(): S3Client {
@@ -55,13 +53,6 @@ function getS3Client(): S3Client {
 	return _s3Client;
 }
 
-/**
- * Upload a file to S3-compatible storage
- * @param buffer - File content as Buffer
- * @param key - Storage key (path in bucket)
- * @param mimeType - File MIME type
- * @returns Storage key for reference
- */
 export async function uploadFile(
 	buffer: Buffer,
 	key: string,
@@ -81,12 +72,6 @@ export async function uploadFile(
 	return key;
 }
 
-/**
- * Get a pre-signed download URL for a file
- * @param key - Storage key
- * @param expiresIn - URL expiration in seconds (default: 1 hour)
- * @returns Pre-signed download URL
- */
 export async function getFileDownloadUrl(
 	key: string,
 	expiresIn = 3600,
@@ -101,9 +86,6 @@ export async function getFileDownloadUrl(
 	return getSignedUrl(client, command, { expiresIn });
 }
 
-/**
- * Get file content from S3 as a Web ReadableStream (for HTTP responses).
- */
 export async function getFileContent(key: string): Promise<{
 	body: ReadableStream;
 	contentType: string;
@@ -126,10 +108,6 @@ export async function getFileContent(key: string): Promise<{
 	};
 }
 
-/**
- * Get file content as a Buffer (for server-side processing).
- * Uses AWS SDK's transformToByteArray which handles both Node and Web streams.
- */
 export async function getFileBuffer(key: string): Promise<Buffer> {
 	const client = getS3Client();
 
@@ -144,10 +122,6 @@ export async function getFileBuffer(key: string): Promise<Buffer> {
 	return Buffer.from(bytes);
 }
 
-/**
- * Delete a file from S3-compatible storage
- * @param key - Storage key
- */
 export async function deleteFile(key: string): Promise<void> {
 	const client = getS3Client();
 
@@ -160,11 +134,6 @@ export async function deleteFile(key: string): Promise<void> {
 	logger.info(`[s3] deleted ${key}`);
 }
 
-/**
- * Check if a file exists in S3-compatible storage
- * @param key - Storage key
- * @returns true if the file exists
- */
 export async function fileExists(key: string): Promise<boolean> {
 	const client = getS3Client();
 
@@ -180,10 +149,6 @@ export async function fileExists(key: string): Promise<boolean> {
 	}
 }
 
-/**
- * Sanitize a filename for use as an S3 storage key segment.
- * Latinizes diacritics (ą→a, ö→o) then strips unsafe characters.
- */
 export function sanitizeFileName(originalName: string): string {
 	return filenamify(latinize(originalName), { replacement: "_" });
 }

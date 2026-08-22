@@ -1,4 +1,3 @@
-/** Author entry shared by submission/exhibitor forms and document extraction. */
 export interface Author {
 	firstName: string;
 	lastName: string;

@@ -10,11 +10,6 @@ export function isFieldErrorVisible(
 	return (meta.isBlurred || submissionAttempts > 0) && meta.errors.length > 0;
 }
 
-/**
- * Shared field-error state for composable form fields: resolves the current
- * field's validation errors and whether they should be shown (after blur or a
- * submit attempt).
- */
 export function useFieldError<T = string>() {
 	const field = useFieldContext<T>();
 	const errors = useSelector(field.store, (s) => s.meta.errors);

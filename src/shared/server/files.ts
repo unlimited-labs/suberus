@@ -5,7 +5,6 @@ import {
 	isSubmissionFileAuthorized,
 } from "@/shared/server/file-access-rules";
 
-/** Check if a user has access to download a file */
 export async function checkFileAccess(
 	fileId: string,
 	userId: string,
@@ -21,7 +20,6 @@ export async function checkFileAccess(
 		size: number;
 	} | null;
 }> {
-	// Editors and admins can access any file
 	if (userRole === "EDITOR" || userRole === "ADMIN") {
 		const file = await prisma.file.findUnique({
 			where: { id: fileId },
@@ -37,7 +35,6 @@ export async function checkFileAccess(
 		return { authorized: !!file, file };
 	}
 
-	// Find file and its linked submission version
 	const file = await prisma.file.findUnique({
 		where: { id: fileId },
 		select: {
@@ -67,14 +64,12 @@ export async function checkFileAccess(
 
 	if (!file) return { authorized: false, file: null };
 
-	// Check access through any linked submission version
 	for (const version of file.submissionVersions) {
 		if (isSubmissionFileAuthorized(version.submission, userId)) {
 			return { authorized: true, file };
 		}
 	}
 
-	// Check access for review attachment files (entityType=REVIEW)
 	if (file.submissionVersions.length === 0) {
 		const fileWithEntity = await prisma.file.findUnique({
 			where: { id: fileId },

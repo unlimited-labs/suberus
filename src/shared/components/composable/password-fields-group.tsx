@@ -1,8 +1,5 @@
 import { withFieldGroup } from "@/shared/hooks/use-app-form";
 
-// Reusable password + confirmation pair. The "passwords match" rule lives here
-// once (field-level validator) instead of being duplicated across every auth
-// schema. Field names are mapped per form (e.g. newPassword/confirmPassword).
 type PasswordPairFields = {
 	password: string;
 	confirm: string;

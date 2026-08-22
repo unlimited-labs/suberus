@@ -78,7 +78,6 @@ export function formatRelativeTime(date: Date | string): string {
 	return formatDistanceToNow(d, { addSuffix: true });
 }
 
-/** Compact duration label from a minute count, e.g. "0 min", "45 min", "2h", "2h 30m". */
 export function formatDurationShort(min: number): string {
 	if (min <= 0) return "0 min";
 	const h = Math.floor(min / 60);

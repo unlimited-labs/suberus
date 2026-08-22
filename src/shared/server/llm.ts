@@ -7,7 +7,6 @@ export interface LlmHealthResult {
 	/** true = GPU detected, false = CPU only, undefined = unknown */
 	gpu?: boolean;
 	models?: string[];
-	/** the configured chat model actually in use (when healthy) */
 	model?: string;
 }
 

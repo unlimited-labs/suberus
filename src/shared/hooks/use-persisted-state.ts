@@ -55,18 +55,15 @@ export function usePersistedState<T>(
 			let stored: T;
 			if (schema) {
 				const result = schema.safeParse(parsed);
-				if (!result.success) return; // malformed/old shape — keep default
+				if (!result.success) return;
 				stored = result.data;
 			} else {
-				// No schema: the caller opts into trusting the stored shape.
 				// SAFETY: localStorage under this key is written only by this hook.
 				stored = parsed as T;
 			}
 			const merge = mergeRef.current;
 			setValue(merge ? merge(stored, defaultRef.current) : stored);
-		} catch {
-			// localStorage unavailable (private mode) or malformed JSON — keep default
-		}
+		} catch {}
 	}, [key]);
 
 	useEffect(() => {
@@ -79,9 +76,7 @@ export function usePersistedState<T>(
 		}
 		try {
 			window.localStorage.setItem(key, JSON.stringify(value));
-		} catch {
-			// localStorage unavailable — ignore
-		}
+		} catch {}
 	}, [key, value]);
 
 	return [value, setValue];

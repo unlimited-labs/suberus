@@ -1,12 +1,3 @@
-/**
- * Structural diff of two ordered lists keyed by identity — added / removed /
- * changed / unchanged — instead of diffing a flattened text blob. Used for
- * version-compare metadata (authors keyed by email, keywords by value) so a
- * reviewer sees "author X added, keyword Y removed" rather than a wall of
- * word-level changes. Pure reordering is not signalled (it doesn't matter to a
- * reviewer).
- */
-
 export type ListDiffStatus = "added" | "removed" | "changed" | "unchanged";
 
 export interface ListDiffEntry<T> {
@@ -49,7 +40,6 @@ export function diffList<T>(
 	return entries;
 }
 
-/** Whether a diff has any non-`unchanged` entry. */
 export function listChanged<T>(entries: ListDiffEntry<T>[]): boolean {
 	return entries.some((e) => e.status !== "unchanged");
 }

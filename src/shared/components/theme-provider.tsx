@@ -27,7 +27,6 @@ export function ThemeProvider({
 }) {
 	const router = useRouter();
 
-	// Resolve "system" on the client and listen for OS changes
 	useEffect(() => {
 		resolveAndApply(theme);
 

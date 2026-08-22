@@ -9,13 +9,6 @@ interface SplitColumnsProps {
 	className?: string;
 }
 
-/**
- * Two-column split-diff shell: base on the left, compare on the right, each
- * carrying the `diff-side-old` / `diff-side-new` testids inside the shared
- * `side-by-side-diff` container so the layout-toggle e2e assertions stay valid
- * across every field. Stacks to one column below `md`. Shared by the text
- * (SideBySideDiffView) and metadata (AuthorsDiff/KeywordsDiff) renderers.
- */
 export function SplitColumns({
 	oldLabel,
 	newLabel,

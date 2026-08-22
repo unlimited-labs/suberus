@@ -6,8 +6,6 @@ import { Button } from "@/shared/ui/button";
 interface FileDropzoneProps {
 	value?: File | null;
 	onChange: (file: File | null) => void;
-	/** Comma-separated `accept` attribute, e.g. ".pdf,.docx". Owner-supplied so
-	 * this dropzone stays domain-agnostic. */
 	accept: string;
 	maxSize?: number; // in MB
 	className?: string;

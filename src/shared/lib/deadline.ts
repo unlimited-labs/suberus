@@ -15,7 +15,6 @@ export function deadlineCutoff(deadline: string, timezone: string): Date {
 	return endOfDay(new TZDate(year, month - 1, day, tz));
 }
 
-/** True when `now` is past the end of the deadline day in `timezone`. */
 export function isDeadlinePassed(
 	deadline: string,
 	timezone: string,

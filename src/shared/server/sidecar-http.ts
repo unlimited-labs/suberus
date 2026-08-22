@@ -31,7 +31,6 @@ export async function requestOrThrow(
 	return res;
 }
 
-/** Resolve a sidecar base URL from its configured value, stripping trailing slashes. */
 export function sidecarBase(url: string | undefined, envName: string): string {
 	if (!url) throw new Error(`${envName} is not configured`);
 	return url.replace(/\/+$/, "");
