@@ -1,5 +1,3 @@
-/** Pure schedule-conflict detection (no DB/IO — unit-testable). */
-
 export type IssueKind =
 	| "CHAIR_OVERLAP"
 	| "AUTHOR_TIME_CLASH"
@@ -16,7 +14,6 @@ export interface ScheduleIssue {
 	sessionIds: string[];
 }
 
-/** Half-open time-interval overlap. */
 export function overlaps(
 	a: { startAt: Date; endAt: Date },
 	b: { startAt: Date; endAt: Date },
@@ -38,7 +35,6 @@ export function personName(p: NamedPerson | null | undefined): string {
 	return full || p.email || "Unknown";
 }
 
-/** Minimal session shape needed for overlap detection. */
 export interface OverlapSession {
 	id: string;
 	title: string;
@@ -107,7 +103,6 @@ export function detectRoomDoubleBooking(
 	};
 }
 
-/** Chair / room conflicts across overlapping session pairs (author clashes: author-conflicts.ts). */
 export function findPairwiseOverlapIssues(
 	sessions: OverlapSession[],
 ): ScheduleIssue[] {

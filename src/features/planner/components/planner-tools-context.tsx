@@ -21,11 +21,6 @@ interface ProviderProps extends PlannerToolsValue {
 	children: ReactNode;
 }
 
-/**
- * Groups the pass-through pieces consumed by ilamy-embedded components
- * (calendar header, event renderer, event form) so `PlannerCalendar`
- * doesn't drill 7+ props into indirect consumers.
- */
 export function PlannerToolsProvider({
 	rooms,
 	room,

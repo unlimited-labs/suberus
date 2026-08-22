@@ -41,7 +41,6 @@ interface ProviderProps {
 	onClose: () => void;
 	children: ReactNode;
 	fallback: ReactNode;
-	/** Chair candidates, fetched by the route (planner stays off the users slice). */
 	users: ChairCandidate[];
 	dirtyRef?: RefObject<boolean>;
 }

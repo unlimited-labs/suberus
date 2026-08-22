@@ -1,11 +1,6 @@
 import { z } from "zod";
 import { zDateString } from "@/shared/lib/validations/zod-helpers";
 
-// Client-side schemas mirroring the server validators in
-// server-fns/planner/sessions.ts and server-fns/planner/breaks.ts.
-// roomId/trackId are kept as plain nullable strings (always sourced from
-// loaded room/track lists) — uuid checks live on the server.
-
 export const sessionFormSchema = z.object({
 	title: z.string().max(300, "Title must be at most 300 characters"),
 	roomId: z.string().nullable(),
@@ -173,8 +168,6 @@ export const programQrSettingsSchema = z.object({
 
 export type SessionFormValues = z.infer<typeof sessionFormSchema>;
 export type EventFormValues = z.infer<typeof eventFormSchema>;
-
-// Server input schemas below: shared by the server fns in api/ and the MCP tools.
 
 export const idInput = z.object({ id: z.uuid() });
 

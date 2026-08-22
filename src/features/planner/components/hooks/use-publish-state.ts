@@ -13,11 +13,6 @@ import { useInvalidatePlannerQueries } from "./use-invalidate-planner-queries";
 
 export type PublishMode = "draft" | "public";
 
-/**
- * Owns publish-flow state: dialog open state, the in-flight action, the
- * lazily-loaded schedule issues and the publish/unpublish handlers. Leaves the
- * button and dialog as presentation.
- */
 export function usePublishState() {
 	const invalidate = useInvalidatePlannerQueries();
 	const { data: state } = useSuspenseQuery(scheduleStateQueryOptions());

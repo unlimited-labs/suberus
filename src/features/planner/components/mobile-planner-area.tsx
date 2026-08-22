@@ -8,10 +8,6 @@ interface MobilePlannerAreaProps extends Omit<
 	currentDate: Date | null;
 }
 
-/**
- * Mobile planner column. Owns the initial-date fallback (viewed date →
- * conference start → today) so the route shell stays free of it.
- */
 export function MobilePlannerArea({
 	currentDate,
 	...props

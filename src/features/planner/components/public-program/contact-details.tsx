@@ -5,7 +5,6 @@ export const HEADING =
 	"font-[var(--prog-font-meta)] text-xs font-semibold uppercase tracking-[var(--prog-tracking)] text-muted-foreground";
 export const ABSTRACT = "text-sm leading-relaxed text-foreground";
 
-/** Affiliation + consented contact data, shared by the talk preview and the participant list. */
 export function ContactDetails({
 	affiliationName,
 	email,

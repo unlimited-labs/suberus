@@ -26,7 +26,6 @@ function conflictCount(
 	return count;
 }
 
-// mutates `assign` in place, returns residual cost
 function hillClimb(
 	assign: number[],
 	clusterKeys: Set<string>[],

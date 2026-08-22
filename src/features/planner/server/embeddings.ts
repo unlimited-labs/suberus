@@ -117,7 +117,6 @@ export async function embedSubmissions(
 	let done = 0;
 	const report = () => options.onProgress?.(++done);
 
-	// Cached hits count as immediate progress.
 	for (let i = 0; i < inputs.length - toCompute.length; i++) report();
 
 	const fresh = new Map<string, number[]>();

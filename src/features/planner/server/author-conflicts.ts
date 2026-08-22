@@ -127,7 +127,6 @@ function collectClashesFrom(
 	}
 }
 
-/** Rule A: a shared author cannot have two talks in different sessions within `bufferMin` of each other. */
 export function detectAuthorTimeClashes(
 	sessions: ConflictSession[],
 	bufferMin: number,
@@ -178,7 +177,6 @@ function indexSessionsByPresenter(
 	return byPresenter;
 }
 
-/** Rule B: a presenter must not present in two time-overlapping (parallel) sessions. */
 export function detectPresenterParallelSessions(
 	sessions: ConflictSession[],
 ): ScheduleIssue[] {

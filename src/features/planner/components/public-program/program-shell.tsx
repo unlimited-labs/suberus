@@ -45,7 +45,6 @@ export interface ProgramFrameProps {
 	children: ReactNode;
 }
 
-/** Header, day/search bar and footer shared by every public programme page. */
 export function ProgramFrame({
 	themeId,
 	chrome,

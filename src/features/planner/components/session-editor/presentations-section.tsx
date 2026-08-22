@@ -25,7 +25,6 @@ export function PresentationsSection() {
 	const untimed = session.untimedSlots;
 	const remainingMin = sessionDurationMin - usedMin;
 	const capacityFull = usedMin >= sessionDurationMin;
-	// undefined = closed, null = adding, string = editing that slot
 	const [invitedSlotId, setInvitedSlotId] = useState<string | null | undefined>(
 		undefined,
 	);

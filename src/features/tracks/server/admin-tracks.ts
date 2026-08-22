@@ -21,9 +21,6 @@ export interface TrackWithStats {
 	submissionCount: number;
 }
 
-/**
- * Get all tracks with submission counts and supervisor info
- */
 export async function getAllTracks(): Promise<TrackWithStats[]> {
 	const tracks = await prisma.conferenceTrack.findMany({
 		include: {
@@ -49,9 +46,6 @@ export async function getAllTracks(): Promise<TrackWithStats[]> {
 	}));
 }
 
-/**
- * Create a new track
- */
 export async function createTrack(
 	name: string,
 	supervisorId?: string,
@@ -71,9 +65,6 @@ export async function createTrack(
 	}
 }
 
-/**
- * Update a track
- */
 export async function updateTrack(
 	id: string,
 	data: {
@@ -93,11 +84,7 @@ export async function updateTrack(
 	}
 }
 
-/**
- * Delete a track (only if no submissions)
- */
 export async function deleteTrack(id: string): Promise<void> {
-	// Check submission count
 	const track = await prisma.conferenceTrack.findUnique({
 		where: { id },
 		include: {

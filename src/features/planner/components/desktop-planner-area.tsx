@@ -17,11 +17,6 @@ interface DesktopPlannerAreaProps extends ToolsProps, CalendarProps {
 	returnToConference: () => void;
 }
 
-/**
- * Desktop planner column: unscheduled sidebar + the ilamy calendar wrapped in
- * its tools provider. Owns the calendar date / jump-to-start fallbacks so the
- * route shell doesn't carry them.
- */
 export function DesktopPlannerArea({
 	currentDate,
 	confStart,

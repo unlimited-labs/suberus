@@ -9,9 +9,6 @@ export const activeTracksQueryOptions = () =>
 		queryFn: () => getActiveTracksFn(),
 	});
 
-/**
- * Get active tracks (authenticated users)
- */
 export const getActiveTracksFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.handler(async () => {

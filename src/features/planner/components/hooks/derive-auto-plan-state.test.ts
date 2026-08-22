@@ -39,7 +39,6 @@ describe("deriveAutoPlanState", () => {
 			}).proposal,
 		).toBe(proposal);
 
-		// Already applied → no proposal to act on.
 		expect(
 			deriveAutoPlanState({
 				...base,
@@ -48,7 +47,6 @@ describe("deriveAutoPlanState", () => {
 			}).proposal,
 		).toBeNull();
 
-		// Not done yet.
 		expect(
 			deriveAutoPlanState({
 				...base,

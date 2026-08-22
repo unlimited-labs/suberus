@@ -6,11 +6,6 @@ export interface ConferenceRange {
 	tz: string | undefined;
 }
 
-/**
- * Derives the planner's conference bounds and timezone from settings. Empty
- * date strings become null; a blank timezone becomes undefined (so the calendar
- * falls back to its own default).
- */
 export function computeConferenceRange(
 	settings: Pick<
 		ConferenceSettings,
@@ -28,7 +23,6 @@ export function computeConferenceRange(
 	};
 }
 
-/** True when the viewed date sits outside the conference bounds. */
 export function isOutsideConferenceRange(
 	currentDate: Date | null,
 	confStart: Date | null,

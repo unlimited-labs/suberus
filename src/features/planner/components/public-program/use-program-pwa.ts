@@ -5,7 +5,6 @@ interface BeforeInstallPromptEvent extends Event {
 	prompt: () => Promise<void>;
 }
 
-/** Offline state, read from Query's own online manager (no second source of truth). */
 export function useIsOffline() {
 	return useSyncExternalStore(
 		(onChange) => onlineManager.subscribe(onChange),

@@ -15,9 +15,7 @@ describe("resolveGroupCollapse", () => {
 	});
 
 	it("inverts the default when the toggle key is present", () => {
-		// First group toggled → collapsed.
 		expect(resolveGroupCollapse(0, "a", new Set(["a"])).isCollapsed).toBe(true);
-		// Later group toggled (open: prefix present) → expanded.
 		expect(resolveGroupCollapse(2, "b", new Set(["open:b"])).isCollapsed).toBe(
 			false,
 		);

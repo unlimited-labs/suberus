@@ -19,7 +19,6 @@ function sharesStartTime(group: TimeGroup, item: ProgramItem): boolean {
 	);
 }
 
-/** Add an item to an existing time group, extending the group's end if it runs later. */
 function appendToGroup(group: TimeGroup, item: ProgramItem): void {
 	if (item.kind === "session") group.sessions.push(item.data);
 	else group.breaks.push(item.data);
@@ -38,7 +37,6 @@ function startNewGroup(item: ProgramItem): TimeGroup {
 	};
 }
 
-/** Group items by start time — parallel sessions share a time header. */
 export function buildTimeGroups(items: ProgramItem[]): TimeGroup[] {
 	const groups: TimeGroup[] = [];
 	for (const it of items) {

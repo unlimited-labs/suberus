@@ -26,7 +26,6 @@ export function programQrUrl(baseUrl: string): string {
 	return normalizeBase(baseUrl) || `${appBase()}/program`;
 }
 
-/** Where the QRs point when no substitute domain is set - shown as the forwarding target in the admin panel. */
 export function defaultQrTargets() {
 	return { program: programQrUrl(""), talk: submissionQrUrl("", 42) };
 }

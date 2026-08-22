@@ -3,10 +3,6 @@ import { prisma } from "@/shared/server/db.server";
 import { getPlannerIncludedTypes } from "./included-types";
 import { computeSessionUsage } from "./session-usage";
 
-/**
- * Assert the session can still fit `durationMin` and return the next free
- * `order`. Shared by submission-backed slots and invited talks.
- */
 export async function reserveSlotOrder(
 	tx: Prisma.TransactionClient,
 	sessionId: string,
@@ -139,7 +135,6 @@ export async function deletePresentation(id: string): Promise<void> {
 
 	await prisma.$transaction(async (tx) => {
 		await tx.presentationSlot.delete({ where: { id } });
-		// Close gap: shift higher orders down by 1.
 		await tx.$executeRaw`
 			UPDATE presentation_slots
 			SET "order" = "order" - 1
@@ -151,10 +146,6 @@ export async function deletePresentation(id: string): Promise<void> {
 	});
 }
 
-/**
- * Reorder presentations within a single session. `orderedIds` must contain
- * every presentation in the session exactly once; new `order` = index in array.
- */
 export async function reorderPresentations(
 	sessionId: string,
 	orderedIds: string[],

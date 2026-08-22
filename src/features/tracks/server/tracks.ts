@@ -5,9 +5,6 @@ export interface TrackSimple {
 	name: string;
 }
 
-/**
- * Get active tracks for user selection
- */
 export async function getActiveTracks(): Promise<TrackSimple[]> {
 	const tracks = await prisma.conferenceTrack.findMany({
 		where: { isActive: true },

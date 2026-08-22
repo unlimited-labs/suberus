@@ -15,11 +15,6 @@ interface UseProgramScheduleArgs {
 	activeDay: number;
 }
 
-/**
- * Derives the public program view for the active day: conference days, the
- * normalized search query, the day's matching session/break items and their
- * time-grouped layout. Returns empty collections when no program is published.
- */
 export function useProgramSchedule({
 	program,
 	settings,

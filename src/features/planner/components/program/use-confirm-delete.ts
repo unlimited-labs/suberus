@@ -9,13 +9,6 @@ interface UseConfirmDeleteOptions {
 	onMutated: () => void;
 }
 
-/**
- * Two-step row deletion with an inline confirm/cancel affordance.
- *
- * Owns the "which row is busy" (`pendingId`) and "which row is awaiting
- * confirmation" (`confirmId`) state. `setPendingId` is exposed so a list with
- * other per-row async actions (e.g. reorder) can share the same busy flag.
- */
 export function useConfirmDelete({
 	onDelete,
 	successMessage,

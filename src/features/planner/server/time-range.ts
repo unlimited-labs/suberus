@@ -15,7 +15,6 @@ export function nextDay(day: string): string {
 	return d.toISOString().slice(0, 10);
 }
 
-/** Matches anything overlapping the range, so items straddling a day boundary stay in. */
 export function overlapWhere(range: TimeRange) {
 	return {
 		startAt: range.to ? { lt: range.to } : undefined,

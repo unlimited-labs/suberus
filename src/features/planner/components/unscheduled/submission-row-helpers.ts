@@ -8,12 +8,10 @@ const TYPE_LABELS = {
 	POSTER: "Poster",
 } satisfies Record<string, string>;
 
-/** Short presentation-type label, falling back to the raw type code. */
 export function typeLabel(type: string): string {
 	return lookup(TYPE_LABELS, type) ?? type;
 }
 
-/** First three author names joined, with a "+N" suffix for the rest. */
 export function formatAuthorsSummary(
 	authors: UnscheduledSubmission["authors"],
 ): string {
@@ -25,7 +23,6 @@ export function formatAuthorsSummary(
 	return names + more;
 }
 
-/** Row container classes for drag / selected / leaving (collapse-out) states. */
 export function submissionRowClassName({
 	dragging,
 	selected,

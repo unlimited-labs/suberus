@@ -13,7 +13,6 @@ describe("computeHiddenWeekdays", () => {
 	});
 
 	it("hides weekdays outside a Wed–Fri conference", () => {
-		// 2026-04-22 = Wed, 2026-04-24 = Fri
 		const hidden = computeHiddenWeekdays(
 			new Date("2026-04-22T00:00:00Z"),
 			new Date("2026-04-24T23:00:00Z"),
@@ -24,7 +23,6 @@ describe("computeHiddenWeekdays", () => {
 	});
 
 	it("handles Sun–Wed range (crossing Sunday)", () => {
-		// 2026-04-19 = Sun, 2026-04-22 = Wed
 		const hidden = computeHiddenWeekdays(
 			new Date("2026-04-19T00:00:00Z"),
 			new Date("2026-04-22T23:00:00Z"),
@@ -48,9 +46,6 @@ describe("computeHiddenWeekdays", () => {
 	});
 
 	it("keeps UTC end-of-day from spilling into the next weekday", () => {
-		// Regression: end 23:00Z read with local getters would land on the next
-		// weekday in UTC+X zones, leaking that weekday into the "present" set.
-		// Conference is Wed–Fri; Saturday (Apr 25) must stay hidden.
 		const hidden = computeHiddenWeekdays(
 			new Date("2026-04-22T00:00:00Z"),
 			new Date("2026-04-24T23:00:00Z"),

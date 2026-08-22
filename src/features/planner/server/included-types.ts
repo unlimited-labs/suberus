@@ -1,7 +1,6 @@
 import { getSubmissionTypeConfigs } from "@/features/settings/server/settings";
 import type { SubmissionType } from "@/generated/prisma/enums";
 
-/** Submission types admitted to the planner (pool, create-session validation, capacity). */
 export async function getPlannerIncludedTypes(): Promise<SubmissionType[]> {
 	const configs = await getSubmissionTypeConfigs();
 	const types: SubmissionType[] = [];

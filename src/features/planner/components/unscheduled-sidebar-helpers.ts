@@ -1,8 +1,3 @@
-/**
- * Default + toggle state for an unscheduled group's collapse. The first group
- * defaults to expanded and the rest to collapsed; a toggle inverts the default,
- * encoded by an `open:` key prefix for the non-first groups.
- */
 export function resolveGroupCollapse(
 	index: number,
 	groupKey: string,

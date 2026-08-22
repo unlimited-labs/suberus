@@ -9,11 +9,9 @@ interface RowActionsProps {
 	onAskDelete: () => void;
 	onConfirmDelete: () => void;
 	onCancelDelete: () => void;
-	/** testid prefix, e.g. "room" → "room-edit" / "room-delete" / "room-confirm-delete" */
 	testIdPrefix: string;
 }
 
-/** Inline edit + two-step delete actions for a table row. */
 export function RowActions({
 	isBusy,
 	isConfirming,

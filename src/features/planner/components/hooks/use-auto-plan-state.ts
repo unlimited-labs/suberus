@@ -10,11 +10,6 @@ import {
 import { deriveAutoPlanState } from "@/features/planner/components/hooks/derive-auto-plan-state";
 import { useJobSSE } from "@/shared/hooks/use-job-sse";
 
-/**
- * Owns the auto-plan workflow: start mutation, job SSE progress, deferred result
- * query and apply mutation, plus the derived running/error/proposal state. Leaves
- * AutoPlanPage as pure view selection.
- */
 export function useAutoPlanState() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
@@ -27,7 +22,6 @@ export function useAutoPlanState() {
 
 	const sse = useJobSSE(jobId);
 
-	// Only fetch full proposal data when job completes
 	const jobResult = useQuery({
 		queryKey: ["autoplan-job", jobId],
 		queryFn: () =>

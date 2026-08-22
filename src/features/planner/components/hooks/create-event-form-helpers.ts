@@ -9,7 +9,6 @@ const dateBearerSchema = z.object({
 });
 const primitiveDateSchema = z.union([z.string(), z.number()]);
 
-/** Anything ilamy hands us as a date: a Date, a dayjs-like wrapper, or a primitive. */
 export type IlamyDateInput =
 	| Date
 	| { toDate?: unknown }
@@ -18,7 +17,6 @@ export type IlamyDateInput =
 	| null
 	| undefined;
 
-/** Best-effort coercion of an ilamy date-ish value (Date, dayjs, string) to a Date. */
 export function toDate(raw: IlamyDateInput): Date | null {
 	if (raw == null) return null;
 	if (raw instanceof Date) return raw;
@@ -33,7 +31,6 @@ export function toDate(raw: IlamyDateInput): Date | null {
 	return isValid(d) ? d : null;
 }
 
-/** Normalizes an ilamy resource id (string | number) to a string id. */
 function resolveResourceId(
 	rawResourceId: string | number | null | undefined,
 ): string | undefined {
@@ -49,11 +46,6 @@ interface EventFormDefaultsInput {
 	defaultPresentationMin: number;
 }
 
-/**
- * Seeds the create-event form from a calendar click: the clicked slot's room and
- * start, a break duration derived from the dragged span (clamped 5–180min), and
- * sensible session defaults. Pure, so the seeding rules are unit-testable.
- */
 export function buildEventFormDefaults(
 	input: EventFormDefaultsInput,
 ): EventFormValues {

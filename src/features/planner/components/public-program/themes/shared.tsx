@@ -185,7 +185,6 @@ export function ProgramEmptyState() {
 	);
 }
 
-/** Offline indicator + install prompt, shown next to the auth link in both headers. */
 export function ProgramPwaStatus({ className }: { className?: string }) {
 	const offline = useIsOffline();
 	const { canInstall, install } = useInstallPrompt();

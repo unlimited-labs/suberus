@@ -91,8 +91,6 @@ async function callClusterApi(
 	return (await res.json()) as ClusterApiResponse;
 }
 
-// --- Phase: load inputs ---
-
 async function loadAutoplanInputs(jobId: string): Promise<{
 	submissions: AutoplanSubmission[];
 	sessions: AutoplanSession[];
@@ -157,8 +155,6 @@ async function loadAutoplanInputs(jobId: string): Promise<{
 	return { submissions, sessions };
 }
 
-// --- Phase: cluster ---
-
 async function clusterSubmissions(
 	jobId: string,
 	submissions: AutoplanSubmission[],
@@ -172,8 +168,6 @@ async function clusterSubmissions(
 	await reportStage(jobId, "clustering", 0);
 	return callClusterApi(embeddings, sessionCount);
 }
-
-// --- Phase: label ---
 
 async function labelCluster(
 	presentations: { title: string; content: string }[],
@@ -260,8 +254,6 @@ async function labelClusters(
 	return results;
 }
 
-// --- Orchestrator ---
-
 export async function runAutoPlan(jobId: string): Promise<AutoPlanProposal> {
 	const { submissions, sessions } = await loadAutoplanInputs(jobId);
 	const cluster = await clusterSubmissions(jobId, submissions, sessions.length);
@@ -298,8 +290,6 @@ export async function runAutoPlan(jobId: string): Promise<AutoPlanProposal> {
 	);
 	return proposal;
 }
-
-// --- Apply proposal ---
 
 export interface ApplyResult {
 	sessionsUpdated: number;

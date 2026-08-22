@@ -19,9 +19,7 @@ interface InvitedTalkDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	sessionId: string;
-	/** Slot being edited; omitted when adding a new invited talk. */
 	slotId?: string;
-	/** Duration is meaningless in an untimed session — hide the field. */
 	untimed: boolean;
 }
 

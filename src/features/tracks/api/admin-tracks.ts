@@ -15,18 +15,12 @@ export const allTracksQueryOptions = () =>
 		queryFn: () => getAllTracksFn(),
 	});
 
-/**
- * Get all tracks with stats (admin only)
- */
 export const getAllTracksFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(async () => {
 		return getAllTracks();
 	});
 
-/**
- * Create a new track (admin only)
- */
 export const createTrackFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(
@@ -39,9 +33,6 @@ export const createTrackFn = createServerFn({ method: "POST" })
 		return createTrack(data.name, data.supervisorId);
 	});
 
-/**
- * Update a track (admin only)
- */
 export const updateTrackFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(
@@ -57,9 +48,6 @@ export const updateTrackFn = createServerFn({ method: "POST" })
 		await updateTrack(id, updateData);
 	});
 
-/**
- * Delete a track (admin only)
- */
 export const deleteTrackFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(

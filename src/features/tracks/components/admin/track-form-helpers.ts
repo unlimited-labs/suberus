@@ -4,7 +4,6 @@ export interface TrackFormState {
 	isActive: boolean;
 }
 
-/** Initial form state for the track dialog: edit seeds from the track, add is blank. */
 export function initialTrackForm(track?: {
 	name: string;
 	supervisorId: string | null;
@@ -17,21 +16,18 @@ export function initialTrackForm(track?: {
 	};
 }
 
-/** Validation message for a track name, or null when valid. */
 export function validateTrackName(name: string): string | null {
 	if (!name.trim()) return "Track name is required";
 	if (name.length > 200) return "Track name must be at most 200 characters";
 	return null;
 }
 
-/** Maps the supervisor select value ("none" / undefined / id) to a nullable id. */
 export function normalizeSupervisorId(
 	supervisorId: string | undefined,
 ): string | null {
 	return supervisorId === "none" ? null : (supervisorId ?? null);
 }
 
-/** Title, description and submit label for the dialog, by mode. */
 export function trackDialogLabels(isEdit: boolean) {
 	return {
 		title: isEdit ? "Edit Track" : "Create Track",

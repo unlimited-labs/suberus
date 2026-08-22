@@ -12,11 +12,6 @@ interface PlannerOverlaysProps {
 	onSessionCreated: () => void;
 }
 
-/**
- * The planner's transient editors: session + break sheets and the
- * create-session dialog. Reads its open/selection state from planner context so
- * the route shell stays free of selection plumbing.
- */
 export function PlannerOverlays({
 	users,
 	defaultStartAt,
