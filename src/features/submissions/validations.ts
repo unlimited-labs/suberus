@@ -162,33 +162,6 @@ export function createDynamicSubmissionSchema(limits: ValidationLimits) {
 		);
 }
 
-// Legacy static schemas (kept for backwards compatibility)
-const createSubmissionSchema = z.object({
-	type: z.enum(["ABSTRACT", "POSTER", "FULL_PAPER"]),
-	title: z
-		.string()
-		.min(5, "Title must be at least 5 characters")
-		.max(300, "Title must be at most 300 characters"),
-	content: z.string().max(10000, "Content must be at most 10000 characters"),
-	authors: z
-		.array(authorSchema)
-		.min(1, "At least one author is required")
-		.max(10, "Maximum 10 authors allowed")
-		.refine(
-			(authors) => authors.filter((a) => a.isPresenter).length === 1,
-			"Exactly one presenter is required",
-		),
-	keywords: z
-		.array(
-			z
-				.string()
-				.min(1, "Keyword cannot be empty")
-				.max(50, "Keyword must be at most 50 characters"),
-		)
-		.min(1, "At least one keyword is required")
-		.max(5, "Maximum 5 keywords allowed"),
-	contentFormat: z.enum(["TEXT", "FILE"]),
-	trackId: z.uuid().nullable().optional(),
-});
-
-export type CreateSubmissionInput = z.infer<typeof createSubmissionSchema>;
+export type CreateSubmissionInput = z.infer<
+	ReturnType<typeof createDynamicSubmissionSchema>
+>;
