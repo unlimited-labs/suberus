@@ -1,5 +1,5 @@
 import { IconClock } from "@tabler/icons-react";
-import type { ConferenceSettings } from "@/features/settings/api/settings";
+import { useSelector } from "@tanstack/react-store";
 import { SettingsSaveButton } from "@/features/settings/components/settings-save-button";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import { getDateFormats } from "@/shared/lib/format-date";
@@ -13,21 +13,14 @@ import {
 	SelectValue,
 } from "@/shared/ui/select";
 import { TimezoneCombobox } from "@/shared/ui/timezone-combobox";
-import type { ConferenceSettingsHandleChange } from "./use-conference-settings";
+import type { ConferenceFormApi } from "./use-conference-settings";
 
 interface DateTimeSectionProps {
-	data: ConferenceSettings;
-	onChange: ConferenceSettingsHandleChange;
-	onSave: () => void;
-	isSaving: boolean;
+	form: ConferenceFormApi;
 }
 
-export function DateTimeSection({
-	data,
-	onChange,
-	onSave,
-	isSaving,
-}: DateTimeSectionProps) {
+export function DateTimeSection({ form }: DateTimeSectionProps) {
+	const isSubmitting = useSelector(form.store, (s) => s.isSubmitting);
 	return (
 		<SettingsSection
 			delay={200}
@@ -38,62 +31,80 @@ export function DateTimeSection({
 			<div className="grid gap-6 sm:grid-cols-2">
 				<div className="space-y-2">
 					<Label htmlFor="dateFormat">Date Format</Label>
-					<Select
-						items={getDateFormats()}
-						onValueChange={(value) => onChange("dateFormat", value)}
-						value={data.dateFormat}
-					>
-						<SelectTrigger id="dateFormat">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{getDateFormats().map((fmt) => (
-								<SelectItem
-									data-testid={`date-format-option-${fmt.value}`}
-									key={fmt.value}
-									value={fmt.value}
-								>
-									{fmt.label}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+					<form.Field name="dateFormat">
+						{(field) => (
+							<Select
+								items={getDateFormats()}
+								onValueChange={(value) => field.handleChange(value ?? "")}
+								value={field.state.value}
+							>
+								<SelectTrigger id="dateFormat">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{getDateFormats().map((fmt) => (
+										<SelectItem
+											data-testid={`date-format-option-${fmt.value}`}
+											key={fmt.value}
+											value={fmt.value}
+										>
+											{fmt.label}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						)}
+					</form.Field>
 				</div>
 				<div className="space-y-3">
 					<Label>Time Format</Label>
-					<RadioGroup
-						className="flex gap-6"
-						onValueChange={(value) => onChange("timeFormat", value)}
-						value={data.timeFormat}
-					>
-						<div className="flex items-center gap-2">
-							<RadioGroupItem id="time-24h" value="24h" />
-							<Label className="cursor-pointer" htmlFor="time-24h">
-								24h (14:30)
-							</Label>
-						</div>
-						<div className="flex items-center gap-2">
-							<RadioGroupItem id="time-12h" value="12h" />
-							<Label className="cursor-pointer" htmlFor="time-12h">
-								12h (2:30 PM)
-							</Label>
-						</div>
-					</RadioGroup>
+					<form.Field name="timeFormat">
+						{(field) => (
+							<RadioGroup
+								className="flex gap-6"
+								onValueChange={(value) =>
+									// SAFETY: the group renders only the two time-format values.
+									field.handleChange(value as "24h" | "12h")
+								}
+								value={field.state.value}
+							>
+								<div className="flex items-center gap-2">
+									<RadioGroupItem id="time-24h" value="24h" />
+									<Label className="cursor-pointer" htmlFor="time-24h">
+										24h (14:30)
+									</Label>
+								</div>
+								<div className="flex items-center gap-2">
+									<RadioGroupItem id="time-12h" value="12h" />
+									<Label className="cursor-pointer" htmlFor="time-12h">
+										12h (2:30 PM)
+									</Label>
+								</div>
+							</RadioGroup>
+						)}
+					</form.Field>
 				</div>
 				<div className="space-y-2 sm:col-span-2">
 					<Label htmlFor="timezone">Conference Timezone</Label>
-					<TimezoneCombobox
-						id="timezone"
-						onChange={(v) => onChange("timezone", v)}
-						value={data.timezone}
-					/>
+					<form.Field name="timezone">
+						{(field) => (
+							<TimezoneCombobox
+								id="timezone"
+								onChange={(v) => field.handleChange(v)}
+								value={field.state.value}
+							/>
+						)}
+					</form.Field>
 					<p className="text-muted-foreground text-xs">
 						All session start/end times are stored in UTC and displayed in this
 						zone.
 					</p>
 				</div>
 			</div>
-			<SettingsSaveButton isSaving={isSaving} onSave={onSave} />
+			<SettingsSaveButton
+				isSaving={isSubmitting}
+				onSave={() => void form.handleSubmit()}
+			/>
 		</SettingsSection>
 	);
 }

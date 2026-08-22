@@ -15,32 +15,15 @@ export function ConferenceSettingsTab({
 	initialData,
 	initialExhibitorConfig,
 }: ConferenceSettingsTabProps) {
-	const { data, isSaving, handleChange, handleToggle, handleSave } =
-		useConferenceSettings(initialData);
+	const { form } = useConferenceSettings(initialData);
 
 	return (
 		<div className="space-y-6">
-			<BasicInformationSection
-				data={data}
-				isSaving={isSaving}
-				onChange={handleChange}
-				onSave={handleSave}
-			/>
+			<BasicInformationSection form={form} />
 
-			<ImportantDatesSection
-				data={data}
-				isSaving={isSaving}
-				onChange={handleChange}
-				onSave={handleSave}
-				onToggle={handleToggle}
-			/>
+			<ImportantDatesSection form={form} />
 
-			<DateTimeSection
-				data={data}
-				isSaving={isSaving}
-				onChange={handleChange}
-				onSave={handleSave}
-			/>
+			<DateTimeSection form={form} />
 
 			<ExhibitorsSettingsSection
 				delay={300}

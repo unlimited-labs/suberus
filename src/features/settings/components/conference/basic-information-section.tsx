@@ -1,8 +1,7 @@
 import { IconBuilding, IconMail, IconWorld } from "@tabler/icons-react";
-import type { ConferenceSettings } from "@/features/settings/api/settings";
+import { useSelector } from "@tanstack/react-store";
 import { SettingsSaveButton } from "@/features/settings/components/settings-save-button";
 import { SettingsSection } from "@/features/settings/components/settings-section";
-import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import {
 	Select,
@@ -11,21 +10,25 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/shared/ui/select";
-import type { ConferenceSettingsHandleChange } from "./use-conference-settings";
+import { ConferenceTextField } from "./conference-text-field";
+import type { ConferenceFormApi } from "./use-conference-settings";
 
 interface BasicInformationSectionProps {
-	data: ConferenceSettings;
-	onChange: ConferenceSettingsHandleChange;
-	onSave: () => void;
-	isSaving: boolean;
+	form: ConferenceFormApi;
 }
 
+const iconClass =
+	"text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2";
+
 export function BasicInformationSection({
-	data,
-	onChange,
-	onSave,
-	isSaving,
+	form,
 }: BasicInformationSectionProps) {
+	const submissionAttempts = useSelector(
+		form.store,
+		(s) => s.submissionAttempts,
+	);
+	const isSubmitting = useSelector(form.store, (s) => s.isSubmitting);
+
 	return (
 		<SettingsSection
 			description="Conference name, location and contact details"
@@ -33,79 +36,80 @@ export function BasicInformationSection({
 			title="Basic Information"
 		>
 			<div className="grid gap-4 sm:grid-cols-2">
-				<div className="space-y-2 sm:col-span-2">
-					<Label htmlFor="name">Conference Name</Label>
-					<Input
-						id="name"
-						onChange={(e) => onChange("name", e.target.value)}
-						placeholder="e.g. ICSE 2026"
-						value={data.name}
-					/>
-				</div>
-				<div className="space-y-2 sm:col-span-2">
-					<Label htmlFor="subtitle">Conference Subtitle (optional)</Label>
-					<Input
-						id="subtitle"
-						onChange={(e) => onChange("subtitle", e.target.value)}
-						placeholder="e.g. International Conference on Computer Methods in Materials Technology"
-						value={data.subtitle}
-					/>
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="location">Location</Label>
-					<Input
-						id="location"
-						onChange={(e) => onChange("location", e.target.value)}
-						placeholder="e.g. Krakow, Poland"
-						value={data.location}
-					/>
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="website">Website</Label>
-					<div className="relative">
-						<IconWorld className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
-						<Input
-							className="pl-8"
-							id="website"
-							onChange={(e) => onChange("website", e.target.value)}
-							placeholder="https://..."
-							type="url"
-							value={data.website}
-						/>
-					</div>
-				</div>
-				<div className="space-y-2 sm:col-span-2">
-					<Label htmlFor="contactEmail">Contact Email</Label>
-					<div className="relative">
-						<IconMail className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
-						<Input
-							className="pl-8"
-							id="contactEmail"
-							onChange={(e) => onChange("contactEmail", e.target.value)}
-							placeholder="contact@conference.com"
-							type="email"
-							value={data.contactEmail}
-						/>
-					</div>
-				</div>
+				<ConferenceTextField
+					containerClassName="space-y-2 sm:col-span-2"
+					form={form}
+					label="Conference Name"
+					name="name"
+					placeholder="e.g. ICSE 2026"
+					submissionAttempts={submissionAttempts}
+				/>
+				<ConferenceTextField
+					containerClassName="space-y-2 sm:col-span-2"
+					form={form}
+					label="Conference Subtitle (optional)"
+					name="subtitle"
+					placeholder="e.g. International Conference on Computer Methods in Materials Technology"
+					submissionAttempts={submissionAttempts}
+				/>
+				<ConferenceTextField
+					form={form}
+					label="Location"
+					name="location"
+					placeholder="e.g. Krakow, Poland"
+					submissionAttempts={submissionAttempts}
+				/>
+				<ConferenceTextField
+					adornment={<IconWorld className={iconClass} />}
+					className="pl-8"
+					form={form}
+					label="Website"
+					name="website"
+					placeholder="https://..."
+					submissionAttempts={submissionAttempts}
+					type="url"
+				/>
+				<ConferenceTextField
+					adornment={<IconMail className={iconClass} />}
+					className="pl-8"
+					containerClassName="space-y-2 sm:col-span-2"
+					form={form}
+					label="Contact Email"
+					name="contactEmail"
+					placeholder="contact@conference.com"
+					submissionAttempts={submissionAttempts}
+					type="email"
+				/>
 				<div className="space-y-2">
 					<Label htmlFor="currency">Currency</Label>
-					<Select
-						onValueChange={(value) => onChange("currency", value)}
-						value={data.currency}
-					>
-						<SelectTrigger id="currency">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="EUR">EUR</SelectItem>
-							<SelectItem value="USD">USD</SelectItem>
-							<SelectItem value="PLN">PLN</SelectItem>
-						</SelectContent>
-					</Select>
+					<form.Field name="currency">
+						{(field) => (
+							<Select
+								onValueChange={(value) => {
+									// SAFETY: the select renders only the three currency codes.
+									field.handleChange(
+										value as ConferenceFormApi["state"]["values"]["currency"],
+									);
+								}}
+								value={field.state.value}
+							>
+								<SelectTrigger id="currency">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="EUR">EUR</SelectItem>
+									<SelectItem value="USD">USD</SelectItem>
+									<SelectItem value="PLN">PLN</SelectItem>
+								</SelectContent>
+							</Select>
+						)}
+					</form.Field>
 				</div>
 			</div>
-			<SettingsSaveButton isSaving={isSaving} onSave={onSave} />
+			<SettingsSaveButton
+				isSaving={isSubmitting}
+				onSave={() => void form.handleSubmit()}
+			/>
 		</SettingsSection>
 	);
 }

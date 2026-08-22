@@ -1,30 +1,54 @@
 import { IconCalendar } from "@tabler/icons-react";
-import type { ConferenceSettings } from "@/features/settings/api/settings";
+import { useSelector } from "@tanstack/react-store";
 import { SettingsSaveButton } from "@/features/settings/components/settings-save-button";
 import { SettingsSection } from "@/features/settings/components/settings-section";
-import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Switch } from "@/shared/ui/switch";
-import type {
-	ConferenceSettingsHandleChange,
-	ConferenceSettingsHandleToggle,
-} from "./use-conference-settings";
+import { ConferenceTextField } from "./conference-text-field";
+import type { ConferenceFormApi } from "./use-conference-settings";
 
 interface ImportantDatesSectionProps {
-	data: ConferenceSettings;
-	onChange: ConferenceSettingsHandleChange;
-	onToggle: ConferenceSettingsHandleToggle;
-	onSave: () => void;
-	isSaving: boolean;
+	form: ConferenceFormApi;
 }
 
-export function ImportantDatesSection({
-	data,
-	onChange,
-	onToggle,
-	onSave,
-	isSaving,
-}: ImportantDatesSectionProps) {
+function Hint({ children }: { children: React.ReactNode }) {
+	return <p className="text-muted-foreground text-xs">{children}</p>;
+}
+
+interface LockSwitchProps {
+	form: ConferenceFormApi;
+	name: "submissionsLocked" | "registrationLocked";
+	label: string;
+	hint: string;
+}
+
+function LockSwitch({ form, name, label, hint }: LockSwitchProps) {
+	return (
+		<div className="border-border/50 flex items-center justify-between rounded-lg border p-3 sm:col-span-2">
+			<div>
+				<Label htmlFor={name}>{label}</Label>
+				<Hint>{hint}</Hint>
+			</div>
+			<form.Field name={name}>
+				{(field) => (
+					<Switch
+						checked={field.state.value}
+						id={name}
+						onCheckedChange={(checked) => field.handleChange(checked === true)}
+					/>
+				)}
+			</form.Field>
+		</div>
+	);
+}
+
+export function ImportantDatesSection({ form }: ImportantDatesSectionProps) {
+	const submissionAttempts = useSelector(
+		form.store,
+		(s) => s.submissionAttempts,
+	);
+	const isSubmitting = useSelector(form.store, (s) => s.isSubmitting);
+
 	return (
 		<SettingsSection
 			delay={100}
@@ -33,113 +57,85 @@ export function ImportantDatesSection({
 			title="Important Dates"
 		>
 			<div className="grid gap-4 sm:grid-cols-2">
-				<div className="space-y-2">
-					<Label htmlFor="conferenceStartDate">Conference Start</Label>
-					<Input
-						id="conferenceStartDate"
-						onChange={(e) => onChange("conferenceStartDate", e.target.value)}
-						type="date"
-						value={data.conferenceStartDate}
-					/>
-					<p className="text-muted-foreground text-xs">
-						First day of the conference
-					</p>
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="conferenceEndDate">Conference End</Label>
-					<Input
-						id="conferenceEndDate"
-						onChange={(e) => onChange("conferenceEndDate", e.target.value)}
-						type="date"
-						value={data.conferenceEndDate}
-					/>
-					<p className="text-muted-foreground text-xs">
-						Last day of the conference
-					</p>
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="submissionDeadline">Submission Deadline</Label>
-					<Input
-						id="submissionDeadline"
-						onChange={(e) => onChange("submissionDeadline", e.target.value)}
-						type="date"
-						value={data.submissionDeadline}
-					/>
-					<p className="text-muted-foreground text-xs">
-						After this date the system automatically stops accepting new
-						submissions. Leave empty for no limit.
-					</p>
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="registrationDeadline">Registration Deadline</Label>
-					<Input
-						id="registrationDeadline"
-						onChange={(e) => onChange("registrationDeadline", e.target.value)}
-						type="date"
-						value={data.registrationDeadline}
-					/>
-					<p className="text-muted-foreground text-xs">
-						After this date public registration is blocked. Invitation-based
-						registration still works. Leave empty for no limit.
-					</p>
-				</div>
-				<div className="border-border/50 flex items-center justify-between rounded-lg border p-3 sm:col-span-2">
-					<div>
-						<Label htmlFor="submissionsLocked">Close submissions</Label>
-						<p className="text-muted-foreground text-xs">
-							Immediately block all new submissions, regardless of the deadline
-						</p>
-					</div>
-					<Switch
-						checked={data.submissionsLocked}
-						id="submissionsLocked"
-						onCheckedChange={(checked) =>
-							onToggle("submissionsLocked", checked)
-						}
-					/>
-				</div>
-				<div className="border-border/50 flex items-center justify-between rounded-lg border p-3 sm:col-span-2">
-					<div>
-						<Label htmlFor="registrationLocked">Close registration</Label>
-						<p className="text-muted-foreground text-xs">
-							Immediately block public registration, regardless of the deadline.
-							Invited users can still register.
-						</p>
-					</div>
-					<Switch
-						checked={data.registrationLocked}
-						id="registrationLocked"
-						onCheckedChange={(checked) =>
-							onToggle("registrationLocked", checked)
-						}
-					/>
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="reviewDeadline">Review Deadline</Label>
-					<Input
-						id="reviewDeadline"
-						onChange={(e) => onChange("reviewDeadline", e.target.value)}
-						type="date"
-						value={data.reviewDeadline}
-					/>
-					<p className="text-muted-foreground text-xs">
-						Deadline for reviewers to submit their reviews
-					</p>
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="notificationDate">Notification Date</Label>
-					<Input
-						id="notificationDate"
-						onChange={(e) => onChange("notificationDate", e.target.value)}
-						type="date"
-						value={data.notificationDate}
-					/>
-					<p className="text-muted-foreground text-xs">
-						Date when authors are notified of the decision
-					</p>
-				</div>
+				<ConferenceTextField
+					description={<Hint>First day of the conference</Hint>}
+					form={form}
+					label="Conference Start"
+					name="conferenceStartDate"
+					submissionAttempts={submissionAttempts}
+					type="date"
+				/>
+				<ConferenceTextField
+					description={<Hint>Last day of the conference</Hint>}
+					form={form}
+					label="Conference End"
+					name="conferenceEndDate"
+					submissionAttempts={submissionAttempts}
+					type="date"
+				/>
+				<ConferenceTextField
+					description={
+						<Hint>
+							After this date the system automatically stops accepting new
+							submissions. Leave empty for no limit.
+						</Hint>
+					}
+					form={form}
+					label="Submission Deadline"
+					name="submissionDeadline"
+					submissionAttempts={submissionAttempts}
+					type="date"
+				/>
+				<ConferenceTextField
+					description={
+						<Hint>
+							After this date public registration is blocked. Invitation-based
+							registration still works. Leave empty for no limit.
+						</Hint>
+					}
+					form={form}
+					label="Registration Deadline"
+					name="registrationDeadline"
+					submissionAttempts={submissionAttempts}
+					type="date"
+				/>
+				<LockSwitch
+					form={form}
+					hint="Immediately block all new submissions, regardless of the deadline"
+					label="Close submissions"
+					name="submissionsLocked"
+				/>
+				<LockSwitch
+					form={form}
+					hint="Immediately block public registration, regardless of the deadline. Invited users can still register."
+					label="Close registration"
+					name="registrationLocked"
+				/>
+				<ConferenceTextField
+					description={
+						<Hint>Deadline for reviewers to submit their reviews</Hint>
+					}
+					form={form}
+					label="Review Deadline"
+					name="reviewDeadline"
+					submissionAttempts={submissionAttempts}
+					type="date"
+				/>
+				<ConferenceTextField
+					description={
+						<Hint>Date when authors are notified of the decision</Hint>
+					}
+					form={form}
+					label="Notification Date"
+					name="notificationDate"
+					submissionAttempts={submissionAttempts}
+					type="date"
+				/>
 			</div>
-			<SettingsSaveButton isSaving={isSaving} onSave={onSave} />
+			<SettingsSaveButton
+				isSaving={isSubmitting}
+				onSave={() => void form.handleSubmit()}
+			/>
 		</SettingsSection>
 	);
 }
