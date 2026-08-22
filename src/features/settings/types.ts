@@ -79,6 +79,12 @@ export interface DocumentSigningSettings {
 	certifying: boolean;
 }
 
+/** Client-facing view: the private-key fields are replaced by a stored/not-stored flag. */
+export type SafeSigningConfig = Omit<
+	DocumentSigningSettings,
+	"passwordSealed" | "p12Base64"
+> & { hasP12: boolean };
+
 export type AppSettingsMap = {
 	CONFERENCE_NAME: string;
 	CONFERENCE_SUBTITLE: string;

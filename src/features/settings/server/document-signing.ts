@@ -11,7 +11,7 @@ import {
 	verifyPdf,
 } from "@/shared/server/pdf-signing-client";
 import { open, seal } from "@/shared/server/secret-box";
-import type { DocumentSigningSettings } from "../types";
+import type { DocumentSigningSettings, SafeSigningConfig } from "../types";
 
 function signingKey(): Buffer {
 	return createHash("sha256").update(env.AUTH_SECRET).digest();
@@ -28,18 +28,14 @@ export async function getSigningConfig(): Promise<DocumentSigningSettings | null
 	return getSetting("DOCUMENT_SIGNING");
 }
 
-/** Client-facing view: never expose the sealed P12 password or the P12 itself. */
-export type SafeSigningConfig = Omit<
-	DocumentSigningSettings,
-	"passwordSealed" | "p12Base64"
->;
+export type { SafeSigningConfig };
 
 export function sanitize(
 	cfg: DocumentSigningSettings | null,
 ): SafeSigningConfig | null {
 	if (!cfg) return null;
-	const { passwordSealed: _pw, p12Base64: _p12, ...safe } = cfg;
-	return safe;
+	const { passwordSealed: _pw, p12Base64, ...safe } = cfg;
+	return { ...safe, hasP12: Boolean(p12Base64) };
 }
 
 function appearanceDefaults(
@@ -142,13 +138,17 @@ export async function getPublicCertPem(): Promise<string | null> {
 	return certPem;
 }
 
+export const MISSING_MATERIAL_MESSAGE =
+	"Document signing is enabled but no certificate is stored. Upload or regenerate the certificate in Settings > Documents.";
+
 export async function loadSigningMaterial(): Promise<{
 	cfg: DocumentSigningSettings;
 	p12: Buffer;
 	password: string;
 } | null> {
 	const cfg = await getSigningConfig();
-	if (!cfg?.enabled || !cfg.p12Base64) return null;
+	if (!cfg?.enabled) return null;
+	if (!cfg.p12Base64) throw new Error(MISSING_MATERIAL_MESSAGE);
 	return { cfg, ...decodeP12(cfg) };
 }
 

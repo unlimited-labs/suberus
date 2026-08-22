@@ -76,6 +76,14 @@ Watch the **expiry warning** on the certificate card — when a certificate is
 close to expiring, regenerate it so document generation doesn't start failing.
 </Aside>
 
+<Aside type="danger" title="Signing on, but no certificate stored">
+If the certificate card shows **“Signing is on but no certificate is stored”**,
+document generation fails until you upload or regenerate one. Older conferences
+kept the certificate outside the settings; those installations land in this state
+until the certificate is re-uploaded. Generation stops rather than quietly handing
+out unsigned documents, so fix it before participants request theirs.
+</Aside>
+
 <Aside type="caution" title="Replacing a certificate re-signs documents">
 Because verification is bound to your **current** certificate, replacing it
 (regenerate or upload a new `.p12`) makes every document signed with the old one

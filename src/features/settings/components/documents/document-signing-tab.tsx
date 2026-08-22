@@ -19,7 +19,10 @@ import {
 	uploadSigningCertFn,
 } from "@/features/settings/api/document-signing";
 import { SettingsSection } from "@/features/settings/components/settings-section";
-import type { DocumentSigningSettings } from "@/features/settings/types";
+import type {
+	DocumentSigningSettings,
+	SafeSigningConfig,
+} from "@/features/settings/types";
 import {
 	type SigningCertFormValues,
 	signingAppearanceSchema,
@@ -128,7 +131,7 @@ function CertificateSection({
 	formatDate,
 	onChanged,
 }: {
-	cfg: Omit<DocumentSigningSettings, "passwordSealed" | "p12Base64"> | null;
+	cfg: SafeSigningConfig | null;
 	conferenceName: string;
 	formatDate: (d: Date) => string;
 	onChanged: () => Promise<void>;
@@ -270,6 +273,16 @@ function CertificateSection({
 								</dd>
 							</div>
 						</dl>
+						{cfg.enabled && !cfg.hasP12 && (
+							<p
+								className="mt-3 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"
+								data-testid="signing-missing-material-warning"
+							>
+								<IconAlertTriangle className="size-4 shrink-0" />
+								Signing is on but no certificate is stored — document generation
+								will fail until you upload or regenerate one.
+							</p>
+						)}
 						{expiresInDays !== null && expiresInDays < 30 && (
 							<p
 								className="mt-3 flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400"
@@ -538,7 +551,7 @@ function AppearanceSection({
 	cfg,
 	onChanged,
 }: {
-	cfg: Omit<DocumentSigningSettings, "passwordSealed" | "p12Base64">;
+	cfg: SafeSigningConfig;
 	onChanged: () => Promise<void>;
 }) {
 	const form = useAppForm({
@@ -680,7 +693,7 @@ function TimestampSection({
 	cfg,
 	onChanged,
 }: {
-	cfg: Omit<DocumentSigningSettings, "passwordSealed" | "p12Base64">;
+	cfg: SafeSigningConfig;
 	onChanged: () => Promise<void>;
 }) {
 	const form = useAppForm({
