@@ -44,7 +44,6 @@ export function ExhibitorsSettingsSection({
 				queryClient.invalidateQueries({
 					queryKey: submissionTypesConfigQueryOptions().queryKey,
 				}),
-				// Sidebar gates the Exhibitors menu entry on this query
 				queryClient.invalidateQueries({
 					queryKey: exhibitorSignupAvailableQueryOptions().queryKey,
 				}),
@@ -64,7 +63,6 @@ export function ExhibitorsSettingsSection({
 			title="Exhibitors"
 		>
 			<div className="space-y-4">
-				{/* Master guard: gates exhibitor signup, the admin menu entry and the options below */}
 				<div className="border-border/50 flex items-center justify-between rounded-lg border p-3">
 					<div>
 						<Label htmlFor="exhibitorsEnabled">Enable exhibitors</Label>

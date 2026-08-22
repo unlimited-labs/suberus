@@ -6,9 +6,6 @@ export interface ReviewerUser {
 	email: string;
 }
 
-/**
- * Get users eligible as session supervisors (REVIEWER, EDITOR, ADMIN)
- */
 export async function getReviewerUsers(): Promise<ReviewerUser[]> {
 	const users = await prisma.user.findMany({
 		where: {

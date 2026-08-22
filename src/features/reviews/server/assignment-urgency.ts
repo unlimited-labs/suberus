@@ -1,7 +1,6 @@
 import { compareAsc } from "date-fns";
 import type { AssignmentStatus } from "@/generated/prisma/enums";
 
-/** Subset of assignment fields needed to rank by review urgency. */
 interface AssignmentUrgency {
 	status: AssignmentStatus;
 	deadline: Date | null;
@@ -11,10 +10,6 @@ function isOverdue(a: AssignmentUrgency, now: Date): boolean {
 	return a.status === "OVERDUE" || (a.deadline != null && a.deadline < now);
 }
 
-/**
- * Sort comparator ranking assignments by review urgency: completed last, then
- * overdue first, then by earliest deadline (assignments without a deadline last).
- */
 export function compareAssignmentUrgency(
 	a: AssignmentUrgency,
 	b: AssignmentUrgency,

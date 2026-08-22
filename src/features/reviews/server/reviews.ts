@@ -24,7 +24,6 @@ import {
 	validateUpload,
 } from "@/shared/server/validate-upload";
 
-/** Review submission data */
 export interface ReviewSubmitData {
 	decision: ReviewDecision;
 	comments: string;
@@ -33,8 +32,6 @@ export interface ReviewSubmitData {
 	confidenceLevel?: number;
 }
 
-/** Get assignment details for review form */
-/** The version immediately preceding the current one, for a round-over-round diff. */
 function resolvePreviousVersion(
 	versions: Array<{
 		version: number;
@@ -51,7 +48,6 @@ function resolvePreviousVersion(
 	keywords: string[];
 } | null {
 	if (currentVersionNumber === undefined) return null;
-	// `versions` is ordered version-desc, so the first one below current is the previous.
 	const previous = versions.find((v) => v.version < currentVersionNumber);
 	return previous
 		? {
@@ -83,7 +79,6 @@ function blindFile(
 ): ReviewFile {
 	if (!file || !blind) return file;
 	const dot = file.originalName.lastIndexOf(".");
-	// Keep the extension (with its dot), drop the author-derived stem.
 	const ext = dot > 0 ? file.originalName.slice(dot) : "";
 	const name = `v${version}${ext}`;
 	return { ...file, fileName: name, originalName: name };
@@ -118,9 +113,7 @@ export async function getAssignmentForReview(
 			mimeType: string;
 			size: number;
 		} | null;
-		/** Current version's keywords (snapshot, falling back to live keywords). */
 		keywords: string[];
-		/** Immediately-preceding version (round-over-round diff), if any. */
 		previousVersion: {
 			title: string;
 			content: string;
@@ -229,18 +222,14 @@ export async function getAssignmentForReview(
 
 	if (!assignment) return null;
 
-	// Verify reviewer ownership
 	if (assignment.reviewerId !== reviewerId) return null;
 
-	// Get config for submission type
 	const configKey = SUBMISSION_TYPE_TO_KEY[assignment.submission.type];
 	const config = await getSetting(configKey);
 	const isBlind = config.reviewMode === "DOUBLE_BLIND";
 	const currentVersionNumber =
 		assignment.submission.currentVersion?.version ?? 1;
 
-	// Legacy versions predate per-version keyword snapshots; fall back to the
-	// submission's live keywords (mirrors the submissions server detail query).
 	const liveKeywords = assignment.submission.keywords.map(
 		(k) => k.keyword.name,
 	);
@@ -347,7 +336,6 @@ function findInvalidScoreError(
 	return null;
 }
 
-/** Validate scores against criteria and return the normalized score map. */
 function validateScores(
 	criteriaNames: string[],
 	scores: Record<string, number> | undefined,
@@ -371,7 +359,6 @@ function validateConfidence(level: number | undefined): string | null {
 	return null;
 }
 
-/** Validate the scores field against config; returns the normalized value or an error. */
 function validateScoresField(
 	config: { enableScoring: boolean; scoringCriteria: { name: string }[] },
 	scores: Record<string, number> | undefined,
@@ -383,7 +370,6 @@ function validateScoresField(
 	return { value: result.scores };
 }
 
-/** Validate the confidence field against config; returns the value or an error. */
 function validateConfidenceField(
 	config: { enableConfidenceLevel: boolean },
 	level: number | undefined,
@@ -405,7 +391,6 @@ function formatReviewerName(reviewer: {
 	);
 }
 
-/** Notify the assigning editor that a review was submitted. */
 async function notifyEditorReviewSubmitted(
 	assignment: {
 		assignedBy: string | null;
@@ -434,7 +419,6 @@ async function notifyEditorReviewSubmitted(
 	});
 }
 
-/** Load the assignment and authorize the reviewer + workflow transition. */
 async function loadAssignmentForSubmit(
 	assignmentId: string,
 	reviewerId: string,
@@ -453,7 +437,6 @@ async function loadAssignmentForSubmit(
 		return { error: "Not assigned to this reviewer" };
 	}
 
-	// Validate transition through xstate (single source of truth)
 	const validation = await validateAssignmentTransition(assignmentId, {
 		type: "COMPLETE",
 		decision,
@@ -463,7 +446,6 @@ async function loadAssignmentForSubmit(
 	return { assignment };
 }
 
-/** Submit a review */
 export async function submitReview(
 	assignmentId: string,
 	reviewerId: string,
@@ -477,7 +459,6 @@ export async function submitReview(
 	if ("error" in loaded) return { success: false, error: loaded.error };
 	const { assignment } = loaded;
 
-	// Load config for server-side validation of scores/confidence
 	const configKey = SUBMISSION_TYPE_TO_KEY[assignment.submission.type];
 	const config = await getSetting(configKey);
 
@@ -502,7 +483,6 @@ export async function submitReview(
 		confidenceLevel: confidenceResult.value,
 	};
 
-	// Atomic: review create/update + assignment completion in one transaction
 	const now = new Date();
 
 	const reviewId = await prisma.$transaction(async (tx) => {
@@ -538,10 +518,8 @@ export async function submitReview(
 		return id;
 	});
 
-	// After transaction: trigger auto-transition if all reviews complete
 	await checkAndTriggerReviewCompletion(assignment.submissionId, reviewerId);
 
-	// Notify editor(s) that a review was submitted
 	await notifyEditorReviewSubmitted(assignment, reviewerId);
 
 	await logActivity({
@@ -555,13 +533,11 @@ export async function submitReview(
 	return { success: true, reviewId };
 }
 
-/** Upload a file attachment for a review */
 export async function uploadReviewAttachment(
 	reviewId: string,
 	userId: string,
 	upload: File,
 ): Promise<{ success: boolean; fileId?: string; error?: string }> {
-	// Verify reviewer owns this review
 	const review = await prisma.review.findUnique({
 		where: { id: reviewId },
 		select: { id: true, reviewerId: true },
@@ -577,7 +553,6 @@ export async function uploadReviewAttachment(
 	const fileName = upload.name;
 	const buffer = await fileToBuffer(upload);
 
-	// Validate by magic number — reviewers may attach a PDF or DOCX only.
 	const maxBytes = env.MAX_UPLOAD_SIZE_MB * 1024 * 1024;
 	let detected: { ext: string; mime: string };
 	try {
@@ -594,10 +569,8 @@ export async function uploadReviewAttachment(
 
 	const storageKey = generateReviewFileKey(reviewId, fileName);
 
-	// Upload to S3 with the detected (trustworthy) mime type
 	await uploadFile(buffer, storageKey, detected.mime);
 
-	// Delete existing attachment if any (1 file per review)
 	const existingFile = await prisma.file.findFirst({
 		where: {
 			entityType: "REVIEW",
@@ -616,7 +589,6 @@ export async function uploadReviewAttachment(
 		await prisma.file.delete({ where: { id: existingFile.id } });
 	}
 
-	// Create file record
 	const file = await prisma.file.create({
 		data: {
 			entityType: "REVIEW",

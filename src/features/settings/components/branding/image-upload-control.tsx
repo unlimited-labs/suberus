@@ -13,7 +13,6 @@ interface ImageUploadControlProps {
 	ariaLabel: string;
 }
 
-/** Upload/replace + remove buttons for a branding image. Preview is rendered by the caller. */
 export function ImageUploadControl({
 	upload,
 	hasImage,

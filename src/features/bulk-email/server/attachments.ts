@@ -53,11 +53,6 @@ export function listCampaignAttachments(
 	});
 }
 
-/**
- * Validates (magic number), enforces the per-campaign total cap, uploads to S3,
- * and records a `File` row. Throws {@link UploadValidationError} with a
- * user-facing message for any rejection (non-draft, bad type, oversized).
- */
 export async function addCampaignAttachment(
 	campaignId: string,
 	buffer: Buffer,
@@ -96,7 +91,6 @@ export async function addCampaignAttachment(
 	});
 }
 
-/** Removes one attachment (S3 + row). Only while its campaign is a draft. */
 export async function removeCampaignAttachment(fileId: string): Promise<void> {
 	const file = await prisma.file.findUnique({
 		where: { id: fileId },
@@ -116,7 +110,6 @@ export async function removeCampaignAttachment(fileId: string): Promise<void> {
 	await prisma.file.delete({ where: { id: file.id } });
 }
 
-/** Deletes every attachment of a campaign from S3 and the DB (no FK cascade). */
 export async function deleteCampaignAttachments(
 	campaignId: string,
 ): Promise<void> {
@@ -139,7 +132,6 @@ export async function deleteCampaignAttachments(
 	});
 }
 
-/** Copies a campaign's attachments to another campaign (for duplication). */
 export async function copyCampaignAttachments(
 	srcId: string,
 	dstId: string,
@@ -149,8 +141,6 @@ export async function copyCampaignAttachments(
 		where: { entityType: "EMAIL_CAMPAIGN", entityId: srcId },
 		select: { originalName: true, mimeType: true, storageKey: true },
 	});
-	// Bounded by MAX_CAMPAIGN_ATTACHMENTS_BYTES (25MB) per campaign, so copying
-	// every attachment concurrently cannot blow up memory.
 	await Promise.all(
 		files.map(async (file) => {
 			const buffer = await getFileBuffer(file.storageKey);
@@ -181,7 +171,6 @@ export interface MailAttachment {
 	content: Buffer;
 }
 
-/** Loads every attachment's bytes once for a send (worker / test). */
 export async function loadAttachmentBuffers(
 	campaignId: string,
 ): Promise<MailAttachment[]> {

@@ -16,11 +16,6 @@ interface UseReviewFormArgs {
 	enableConfidenceLevel: boolean;
 }
 
-/**
- * Owns ReviewForm behaviour: form instance, dynamic validation schema, initial
- * per-criterion scores and section-completion flags. Leaves the component as
- * pure presentation.
- */
 export function useReviewForm({
 	onSubmit,
 	initialData,

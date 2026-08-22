@@ -26,7 +26,6 @@ interface ConferenceTextFieldProps {
 	type?: string;
 	placeholder?: string;
 	className?: string;
-	/** Wraps the input, e.g. to position a leading icon. */
 	adornment?: ReactNode;
 	description?: ReactNode;
 	containerClassName?: string;

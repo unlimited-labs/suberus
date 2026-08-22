@@ -1,10 +1,8 @@
 import type { ReviewMode } from "@/generated/prisma/enums";
 import type { SupportedFileExtension } from "./file-types";
 
-/** Content format for submission types */
 export type ContentFormat = "TEXT" | "FILE";
 
-/** Configuration for a submission type stored as JSON in AppSetting */
 export interface SubmissionTypeConfig {
 	isActive: boolean;
 	/** Accepted submissions of this type appear in the program planner (pool, create-session, capacity). */
@@ -28,7 +26,6 @@ export interface SubmissionTypeConfig {
 	enableTrackSelection: boolean;
 }
 
-/** QR code generation settings for the program tab */
 export interface ProgramQrSettings {
 	errorCorrectionLevel: "L" | "M" | "Q" | "H";
 	width: number;
@@ -39,23 +36,20 @@ export interface ProgramQrSettings {
 	includeWithoutCameraReady: boolean;
 }
 
-/** Reminder settings for reviewer deadline reminders */
 export interface ReviewerReminderSettings {
 	enabled: boolean;
-	daysBefore: number[]; // e.g. [3, 1] → send 3 days and 1 day before deadline
+	daysBefore: number[];
 }
 
-/** Reminder settings for revision nudges */
 export interface RevisionReminderSettings {
 	enabled: boolean;
-	intervalDays: number; // e.g. 7 → remind every 7 days
-	maxCount: number; // max reminders per submission
+	intervalDays: number;
+	maxCount: number;
 }
 
-/** Reminder settings for submission deadline approaching */
 export interface DeadlineReminderSettings {
 	enabled: boolean;
-	daysBefore: number[]; // e.g. [7, 3, 1] → send 7, 3, 1 day before deadline
+	daysBefore: number[];
 }
 
 /** Digital signature config for generated documents (stored as JSON in AppSetting).
@@ -78,7 +72,6 @@ export interface DocumentSigningSettings {
 	p12Base64: string;
 	timestampEnabled: boolean;
 	timestampUrl: string;
-	// Visible seal appearance
 	sealReason: string;
 	sealCorner: "bottom-right" | "bottom-left" | "top-right" | "top-left";
 	sealQrEnabled: boolean;
@@ -86,7 +79,6 @@ export interface DocumentSigningSettings {
 	certifying: boolean;
 }
 
-/** Type map: AppSettingKey → value type */
 export type AppSettingsMap = {
 	CONFERENCE_NAME: string;
 	CONFERENCE_SUBTITLE: string;
@@ -200,7 +192,6 @@ export type AppSettingsMap = {
 	DOCUMENT_SIGNING: DocumentSigningSettings | null;
 };
 
-/** Keys for submission type configs */
 export const SUBMISSION_TYPE_KEYS = [
 	"SUBMISSION_TYPE_ORAL_PRESENTATION",
 	"SUBMISSION_TYPE_POSTER",
@@ -210,7 +201,6 @@ export const SUBMISSION_TYPE_KEYS = [
 
 export type SubmissionTypeKey = (typeof SUBMISSION_TYPE_KEYS)[number];
 
-/** Map from SubmissionType enum to AppSettingKey */
 export const SUBMISSION_TYPE_TO_KEY = {
 	ABSTRACT: "SUBMISSION_TYPE_ORAL_PRESENTATION",
 	POSTER: "SUBMISSION_TYPE_POSTER",
@@ -221,7 +211,6 @@ export const SUBMISSION_TYPE_TO_KEY = {
 	INVITED: "SUBMISSION_TYPE_ORAL_PRESENTATION",
 } as const;
 
-/** Map from AppSettingKey to display name */
 export const SUBMISSION_TYPE_DISPLAY_NAMES = {
 	SUBMISSION_TYPE_ORAL_PRESENTATION: "Oral Presentation",
 	SUBMISSION_TYPE_POSTER: "Poster",
@@ -229,5 +218,4 @@ export const SUBMISSION_TYPE_DISPLAY_NAMES = {
 	SUBMISSION_TYPE_EXHIBITOR: "Exhibitor",
 } satisfies Record<SubmissionTypeKey, string>;
 
-/** Type-safe key derived from AppSettingsMap (single source of truth) */
 export type AppSettingKey = keyof AppSettingsMap;

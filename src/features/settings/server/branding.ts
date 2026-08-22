@@ -7,10 +7,8 @@ import {
 } from "@/shared/server/storage";
 import { validateUpload } from "@/shared/server/validate-upload";
 
-/** Branding/avatar images are capped at 5MB (matches the upload UI). */
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
-/** Branding images, each backed by a setting holding its S3 object key. */
 const BRANDING_IMAGES = {
 	logo: { settingKey: "BRANDING_LOGO_KEY", pathPrefix: "branding/logo" },
 	favicon: {
@@ -29,10 +27,6 @@ export function isBrandingImageName(name: string): name is BrandingImageName {
 	return name in BRANDING_IMAGES;
 }
 
-/**
- * Upload a branding image to S3.
- * Deletes the old image (if any) and saves the new S3 key to its setting.
- */
 async function uploadBrandingImage(
 	buffer: Buffer,
 	name: BrandingImageName,
@@ -53,7 +47,6 @@ async function uploadBrandingImage(
 	await setSetting(settingKey, key);
 }
 
-/** Delete a branding image from S3 and clear its setting. */
 async function deleteBrandingImage(name: BrandingImageName): Promise<void> {
 	const { settingKey } = BRANDING_IMAGES[name];
 	const key = await getSetting(settingKey);
@@ -63,11 +56,6 @@ async function deleteBrandingImage(name: BrandingImageName): Promise<void> {
 	await setSetting(settingKey, "");
 }
 
-/**
- * App URL that streams the image through {@link Route} `/api/branding/$image`.
- * Empty string if none is set. The S3 key is used as a cache-busting version so
- * a stable path can be cached hard yet refresh whenever the image is replaced.
- */
 async function getBrandingImageUrl(name: BrandingImageName): Promise<string> {
 	const key = await getSetting(BRANDING_IMAGES[name].settingKey);
 	if (!key) return "";
@@ -77,7 +65,6 @@ async function getBrandingImageUrl(name: BrandingImageName): Promise<string> {
 	return `/api/branding/${name}?rev=${version}`;
 }
 
-/** Stream a branding image's content, or null if none is set. */
 export async function getBrandingImageContent(name: BrandingImageName) {
 	const key = await getSetting(BRANDING_IMAGES[name].settingKey);
 	if (!key) return null;

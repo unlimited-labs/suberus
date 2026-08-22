@@ -17,7 +17,6 @@ function signingKey(): Buffer {
 	return createHash("sha256").update(env.AUTH_SECRET).digest();
 }
 
-/** Decode the stored P12 bytes and unseal its password. */
 function decodeP12(cfg: DocumentSigningSettings) {
 	return {
 		p12: Buffer.from(cfg.p12Base64, "base64"),
@@ -43,7 +42,6 @@ export function sanitize(
 	return safe;
 }
 
-/** Appearance/timestamp defaults preserved across cert regeneration. */
 function appearanceDefaults(
 	prev: DocumentSigningSettings | null,
 ): Pick<
@@ -102,7 +100,6 @@ export async function uploadAndStoreCert(
 	password: string,
 ): Promise<SafeSigningConfig> {
 	const { metadata } = await inspectCertificate(p12, password);
-	// Re-seal the user-supplied password (inspect already proved it opens the P12).
 	return persistCert(p12, password, metadata, "uploaded");
 }
 
@@ -137,7 +134,6 @@ export async function setAppearance(patch: {
 	return updateConfig(patch);
 }
 
-/** Public certificate PEM for the "download .cer" button (no private key). */
 export async function getPublicCertPem(): Promise<string | null> {
 	const cfg = await getSigningConfig();
 	if (!cfg?.p12Base64) return null;
@@ -146,15 +142,12 @@ export async function getPublicCertPem(): Promise<string | null> {
 	return certPem;
 }
 
-/** Worker side: everything needed to sign one PDF, or null when off/unconfigured. */
 export async function loadSigningMaterial(): Promise<{
 	cfg: DocumentSigningSettings;
 	p12: Buffer;
 	password: string;
 } | null> {
 	const cfg = await getSigningConfig();
-	// Legacy rows (P12 in S3, pre-DB-storage) have no p12Base64 → treat as
-	// unconfigured; regenerating the cert repopulates it.
 	if (!cfg?.enabled || !cfg.p12Base64) return null;
 	return { cfg, ...decodeP12(cfg) };
 }

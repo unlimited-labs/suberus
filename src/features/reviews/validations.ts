@@ -5,7 +5,6 @@ export interface ReviewSchemaOptions {
 	scoringCriteria: { name: string }[];
 }
 
-/** Creates a dynamic review schema based on conference settings */
 export function createReviewSchema(options: ReviewSchemaOptions) {
 	const scoresShape: Record<string, z.ZodNumber> = {};
 	for (const c of options.scoringCriteria) {

@@ -14,8 +14,6 @@ export function useConferenceSettings(initialData: ConferenceSettings) {
 	const queryClient = useQueryClient();
 	const router = useRouter();
 
-	// Carries the six Program-tab fields untouched: the server validates the
-	// whole settings object, so a partial payload would be rejected.
 	const form = useAppForm({
 		defaultValues: initialData,
 		validators: {

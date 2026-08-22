@@ -14,7 +14,6 @@ function extensionOf(name: string): string {
 	return name.split(".").pop()?.toLowerCase() ?? "";
 }
 
-/** Cheap client-side pre-check (UX only); the server re-validates by magic number. */
 function preCheck(file: File): boolean {
 	const ext = extensionOf(file.name);
 	if (!EMAIL_ATTACHMENT_EXTENSIONS.some((e) => e === ext)) {

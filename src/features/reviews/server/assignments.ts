@@ -21,7 +21,6 @@ import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
 import { compareAssignmentUrgency } from "./assignment-urgency";
 
-/** Reviewer data for assignment UI */
 export interface AvailableReviewer {
 	id: string;
 	firstName: string | null;
@@ -32,7 +31,6 @@ export interface AvailableReviewer {
 	completedReviewsCount: number;
 }
 
-/** Assignment data with reviewer info */
 export interface AssignmentWithReviewer {
 	id: string;
 	reviewerId: string;
@@ -46,7 +44,6 @@ export interface AssignmentWithReviewer {
 	completedAt: Date | null;
 }
 
-/** Get available reviewers for a submission (excluding already assigned) */
 export async function getAvailableReviewers(
 	submissionId: string,
 ): Promise<AvailableReviewer[]> {
@@ -63,7 +60,6 @@ export async function getAvailableReviewers(
 		a.userId === null ? [] : [a.userId],
 	);
 
-	// Get already assigned reviewer IDs (current round only — allows reassignment in new rounds)
 	const assignedReviewerIds = submission.reviewAssignments.flatMap((a) =>
 		a.round === submission.currentRound && a.status !== "CANCELLED"
 			? [a.reviewerId]
@@ -97,7 +93,6 @@ export async function getAvailableReviewers(
 	}));
 }
 
-/** Get current assignments for a submission */
 export async function getSubmissionAssignments(
 	submissionId: string,
 	round?: number,
@@ -135,14 +130,12 @@ export async function getSubmissionAssignments(
 	}));
 }
 
-/** Assign a reviewer to a submission */
 export async function assignReviewer(
 	submissionId: string,
 	reviewerId: string,
 	assignedBy: string,
 	customDeadline?: Date,
 ): Promise<{ success: boolean; assignmentId?: string; error?: string }> {
-	// Fetch submission with all assignments and filter by currentRound in memory
 	const submissionWithRelations = await prisma.submission.findUniqueOrThrow({
 		where: { id: submissionId },
 		include: {
@@ -159,9 +152,6 @@ export async function assignReviewer(
 		),
 	};
 
-	// EXHIBITOR submissions are never peer-reviewed (desk decisions via the
-	// exhibitor approve/reject flow only); INVITED talks are programme
-	// placeholders with nothing to review.
 	if (submission.type === "EXHIBITOR" || submission.type === "INVITED") {
 		logger.warn(
 			`[assignment] cannot assign reviewer to ${submissionId}: ${submission.type} submissions are not peer-reviewed`,
@@ -262,7 +252,6 @@ export async function assignReviewer(
 	return { success: true, assignmentId: assignment.id };
 }
 
-/** Cancel an assignment */
 export async function cancelAssignment(
 	assignmentId: string,
 	cancelledBy: string,
@@ -301,8 +290,6 @@ export async function cancelAssignment(
 			detail: activityDetail("REVIEW_CANCELLED", { assignmentId }),
 		});
 
-		// Re-check if remaining reviews now satisfy completion criteria
-		// (e.g., requiredReviewers was reduced and cancelled assignment was excess)
 		await checkAndTriggerReviewCompletion(assignment.submissionId, cancelledBy);
 		await revertToPreReviewIfNoReviewers(assignment.submissionId, cancelledBy);
 	}
@@ -310,9 +297,7 @@ export async function cancelAssignment(
 	return { success: result.success, error: result.error };
 }
 
-/** Mark overdue assignments (called by cron job) */
 export async function markOverdueAssignments(): Promise<number> {
-	// Grace period: mark overdue 1 day after deadline
 	const oneDayAgo = subDays(new Date(), 1);
 
 	const overdueAssignments = await prisma.reviewAssignment.findMany({
@@ -346,7 +331,6 @@ export async function markOverdueAssignments(): Promise<number> {
 	return count;
 }
 
-/** Reviewer assignment with author info for display */
 export interface ReviewerAssignment {
 	id: string;
 	submissionId: string;
@@ -363,7 +347,6 @@ export interface ReviewerAssignment {
 	reviewMode: "OPEN" | "SINGLE_BLIND" | "DOUBLE_BLIND";
 }
 
-/** Get reviewer's assignments */
 export async function getReviewerAssignments(
 	reviewerId: string,
 	filters?: {
@@ -423,7 +406,6 @@ export async function getReviewerAssignments(
 		const reviewMode = configs[configKey]?.reviewMode ?? "SINGLE_BLIND";
 		const presenter = a.submission.authors[0];
 
-		// In DOUBLE_BLIND mode, hide author info from reviewer
 		const authorName =
 			reviewMode === "DOUBLE_BLIND"
 				? "Anonymous Author"
@@ -452,7 +434,6 @@ export async function getReviewerAssignments(
 		};
 	});
 
-	// Apply search filter (don't search author in DOUBLE_BLIND)
 	if (filters?.search) {
 		const search = filters.search.toLowerCase();
 		result = result.filter(

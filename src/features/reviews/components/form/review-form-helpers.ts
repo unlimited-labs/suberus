@@ -1,9 +1,5 @@
 import type { ReviewFormData } from "@/features/reviews/validations";
 
-/**
- * Builds the ReviewForm default values: per-criterion scores (default 3) plus
- * the scalar field fallbacks. Mirrors the prior inline defaults exactly.
- */
 export function buildReviewDefaults(
 	initialData: Partial<ReviewFormData> | undefined,
 	scoringCriteria: { name: string }[],
@@ -30,7 +26,6 @@ export interface ReviewProgress {
 	allComplete: boolean;
 }
 
-/** Derives the section-completion flags shown by the form progress indicator. */
 export function computeReviewProgress(
 	values: ReviewFormData,
 	scoringCriteria: { name: string }[],

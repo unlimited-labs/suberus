@@ -137,18 +137,12 @@ export function useComposeCampaign(campaign: Campaign) {
 		onError: (e) => toast.error(getErrorMessage(e, "Failed to copy campaign")),
 	});
 
-	// Live send progress. The worker advances campaign.status (SENDING → final)
-	// and the per-recipient counts server-side; refetch the campaign on every
-	// progress tick (status change OR a new processed count) so the header badge,
-	// the sent/failed totals and each recipient's SENT/FAILED mark update live
-	// alongside the progress bar instead of freezing at the send-time snapshot.
 	const job = useJobSSE(jobId);
 	const lastSyncedCurrent = useRef(-1);
 	useEffect(() => {
 		if (!jobId) return;
 		const terminal = job.status === "done" || job.status === "error";
 		if (job.status !== "running" && !terminal) return;
-		// Sync once per processed-count tick (and always on the terminal event).
 		if (job.current === lastSyncedCurrent.current && !terminal) return;
 		lastSyncedCurrent.current = job.current;
 		void queryClient.invalidateQueries({

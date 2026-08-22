@@ -42,7 +42,6 @@ interface SubmissionPreviewProps {
 			keywords?: string[];
 		} | null;
 	};
-	/** Whether this submission type carries its content as text or an uploaded file. */
 	contentFormat?: ContentFormat;
 	reviewMode: "OPEN" | "SINGLE_BLIND" | "DOUBLE_BLIND";
 	assignmentId: string;
@@ -56,7 +55,6 @@ export function SubmissionPreview({
 }: SubmissionPreviewProps) {
 	const previous = submission.previousVersion;
 	const isDoubleBlind = reviewMode === "DOUBLE_BLIND";
-	// Authoritative type comes from config; fall back to file presence when absent.
 	const isFileSubmission = contentFormat
 		? contentFormat === "FILE"
 		: !!submission.file;

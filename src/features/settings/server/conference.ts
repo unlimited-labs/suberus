@@ -59,15 +59,12 @@ export async function getConferenceSettings(): Promise<ConferenceSettings> {
 	};
 }
 
-// setSetting's per-key generic cannot see that CONFERENCE_KEYS[field] and
-// data[field] describe the same setting; the map above is what pairs them.
 // SAFETY: CONFERENCE_KEYS pairs each field with its own setting key; the generic cannot see that.
 const writeSetting = setSetting as (
 	key: AppSettingKey,
 	value: AppSettingsMap[AppSettingKey],
 ) => Promise<void>;
 
-/** A patch, so the form (all fields) and the MCP tool (some) share one path. */
 export async function updateConferenceSettings(
 	patch: Partial<ConferenceSettings>,
 	performedBy: string,

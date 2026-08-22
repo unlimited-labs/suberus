@@ -32,7 +32,6 @@ export const assignmentForReviewQueryOptions = (assignmentId: string) =>
 		queryFn: () => getAssignmentForReviewFn({ data: { assignmentId } }),
 	});
 
-/** Get assignment details for review form (reviewer) */
 export const getAssignmentForReviewFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.validator(z.object({ assignmentId: z.uuid() }))
@@ -40,7 +39,6 @@ export const getAssignmentForReviewFn = createServerFn({ method: "GET" })
 		return getAssignmentForReview(data.assignmentId, context.user.id);
 	});
 
-/** Submit a review (reviewer) */
 export const submitReviewFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.validator(submitReviewSchema)
@@ -61,7 +59,6 @@ export const submitReviewFn = createServerFn({ method: "POST" })
 		},
 	);
 
-/** Upload a file attachment for a review */
 export const uploadReviewAttachmentFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.validator((data: FormData) =>

@@ -3,7 +3,6 @@ import { useState } from "react";
 import { cn } from "@/shared/lib/utils";
 
 interface PreviewIframeProps {
-	/** Rendered body. HTML when `isHtml`, otherwise plain text. */
 	body: string;
 	isHtml: boolean;
 	isLoading?: boolean;
@@ -21,12 +20,6 @@ const FRAME = {
 	mobile: "w-[390px] border border-border shadow-sm",
 } satisfies Record<Viewport, string>;
 
-/**
- * Renders the email preview. HTML is shown inside a sandboxed iframe so
- * admin-authored markup/scripts can't touch the admin session; a viewport
- * toggle constrains the iframe to a phone width for the mobile check. Plain
- * text is shown verbatim.
- */
 export function PreviewIframe({ body, isHtml, isLoading }: PreviewIframeProps) {
 	const [viewport, setViewport] = useState<Viewport>("desktop");
 

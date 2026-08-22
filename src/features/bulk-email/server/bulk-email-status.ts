@@ -11,7 +11,6 @@ export function isResumableCampaignStatus(
 	return status === "QUEUED" || status === "SENDING";
 }
 
-/** A campaign is FAILED only when every attempt failed; otherwise SENT. */
 export function finalCampaignStatus(
 	sentCount: number,
 	failedCount: number,
@@ -29,6 +28,6 @@ export function campaignExpireSeconds(
 	totalRecipients: number,
 	delaySeconds: number,
 ): number {
-	const perRecipient = delaySeconds + 30; // delay + SMTP headroom
+	const perRecipient = delaySeconds + 30;
 	return Math.max(900, totalRecipients * perRecipient + 60);
 }

@@ -5,10 +5,6 @@ export interface DeadlineDisplay {
 	label: string;
 }
 
-/**
- * Resolve how a review assignment's deadline should be presented, given the
- * assignment status and calendar days remaining (negative = past, null = none).
- */
 export function getDeadlineDisplay(
 	status: string,
 	daysRemaining: number | null,

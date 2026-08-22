@@ -4,7 +4,6 @@ import { renderMarkdown } from "@/shared/lib/markdown";
 export interface RenderedEmail {
 	/** Body with `{{placeholders}}` still intact (substituted per recipient). */
 	body: string;
-	/** When false the body is plain text (sent as `text`, not `html`). */
 	isHtml: boolean;
 }
 
@@ -20,10 +19,6 @@ export async function renderMjml(source: string): Promise<string> {
 	return html;
 }
 
-/**
- * Renders a campaign body to its sendable form. Placeholders pass through
- * markdown/MJML as literal text and are substituted later, per recipient.
- */
 export async function renderEmailContent(
 	format: EmailCampaignFormat,
 	source: string,

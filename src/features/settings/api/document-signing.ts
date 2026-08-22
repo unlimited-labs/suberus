@@ -25,8 +25,6 @@ import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
 
 const MAX_VERIFY_BYTES = 25 * 1024 * 1024;
 
-// Read = admin or editor (they see signing status on the documents page); all
-// mutations below stay admin-only.
 export const getDocumentSigningFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(async () => sanitize(await getSigningConfig()));

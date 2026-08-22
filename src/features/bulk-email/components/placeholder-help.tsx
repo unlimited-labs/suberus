@@ -9,7 +9,6 @@ const DESCRIPTIONS = {
 	title: "Recipient's submission titles (comma-separated)",
 } satisfies Record<(typeof PLACEHOLDER_KEYS)[number], string>;
 
-/** Clickable placeholder chips — click copies the `{{token}}` to the clipboard. */
 export function PlaceholderHelp() {
 	return (
 		<div className="space-y-2" data-testid="placeholder-help">

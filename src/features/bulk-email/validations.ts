@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-/** Shared by the server fns in api/ and the MCP tools in mcp/. */
 export const campaignFormatSchema = z.enum(["PLAIN", "MARKDOWN", "MJML"]);
 
 export const campaignIdInput = z.object({ id: z.uuid() });

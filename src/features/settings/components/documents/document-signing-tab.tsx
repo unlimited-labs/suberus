@@ -193,8 +193,6 @@ function CertificateSection({
 
 	const [busy, setBusy] = useState(false);
 	const fileRef = useRef<HTMLInputElement>(null);
-	// When a cert already exists, replacing it is a rotation: confirm first, then
-	// re-sign previously-signed documents with the new cert.
 	const [confirm, setConfirm] = useState<null | "generate" | "upload">(null);
 
 	const certAttempts = useSelector(certForm.store, (s) => s.submissionAttempts);
@@ -208,7 +206,6 @@ function CertificateSection({
 
 	const expiresInDays = cfg ? daysUntil(cfg.validUntil) : null;
 
-	/** Reveal errors, or ask before replacing an existing certificate. */
 	const submitOrConfirm = async (
 		form: typeof certForm | typeof uploadForm,
 		kind: "generate" | "upload",

@@ -127,9 +127,6 @@ export const emailFooterQueryOptions = () =>
 		queryFn: () => getEmailFooterFn(),
 	});
 
-/**
- * Get a single setting (admin only)
- */
 export const getSettingFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.validator(z.object({ key: z.string() }))
@@ -138,9 +135,6 @@ export const getSettingFn = createServerFn({ method: "GET" })
 		return getSetting(data.key as keyof AppSettingsMap);
 	});
 
-/**
- * Set a single setting (admin only)
- */
 export const setSettingFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.validator(setSettingSchema)
@@ -155,18 +149,12 @@ export const setSettingFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
-/**
- * Get all submission type configs (admin only)
- */
 export const getSubmissionTypeConfigsFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(async () => {
 		return getSubmissionTypeConfigs();
 	});
 
-/**
- * Update a submission type config (admin only)
- */
 export const updateSubmissionTypeConfigFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.validator(submissionTypeUpdateSchema)
@@ -180,9 +168,6 @@ export const updateSubmissionTypeConfigFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
-/**
- * Get active submission types for form (public - requires auth)
- */
 export const getActiveSubmissionTypesFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.handler(async () => {
@@ -191,36 +176,24 @@ export const getActiveSubmissionTypesFn = createServerFn({ method: "GET" })
 
 export type { ConferenceSettings } from "@/features/settings/validations";
 
-/**
- * Get submission guidelines (public - requires auth)
- */
 export const getSubmissionGuidelinesFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.handler(async () => {
 		return getSetting("SUBMISSION_GUIDELINES");
 	});
 
-/**
- * Get review guidelines (public - requires auth)
- */
 export const getReviewGuidelinesFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.handler(async () => {
 		return getSetting("REVIEW_GUIDELINES");
 	});
 
-/**
- * Get email footer text (admin only)
- */
 export const getEmailFooterFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(async () => {
 		return getSetting("EMAIL_FOOTER_TEXT");
 	});
 
-/**
- * Update email footer text (admin only)
- */
 export const updateEmailFooterFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.validator(z.object({ value: z.string() }))
@@ -229,9 +202,6 @@ export const updateEmailFooterFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
-/**
- * Update submission guidelines (admin only)
- */
 export const updateSubmissionGuidelinesFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.validator(z.object({ value: z.string() }))
@@ -240,9 +210,6 @@ export const updateSubmissionGuidelinesFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
-/**
- * Update review guidelines (admin only)
- */
 export const updateReviewGuidelinesFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.validator(z.object({ value: z.string() }))
@@ -251,7 +218,6 @@ export const updateReviewGuidelinesFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
-/** Submission validation settings shape */
 export interface SubmissionValidationSettings {
 	minTitleLength: number;
 	maxTitleLength: number;
@@ -262,9 +228,6 @@ export interface SubmissionValidationSettings {
 	enableKeywords: boolean;
 }
 
-/**
- * Get submission validation settings (admin only)
- */
 export const getSubmissionValidationSettingsFn = createServerFn({
 	method: "GET",
 })
@@ -290,16 +253,10 @@ export const getSubmissionValidationSettingsFn = createServerFn({
 		};
 	});
 
-/**
- * Get conference settings (admin only)
- */
 export const getConferenceSettingsFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(async () => getConferenceSettings());
 
-/**
- * Update conference settings (admin only)
- */
 export const updateConferenceSettingsFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.validator(conferenceSettingsSchema)
@@ -308,9 +265,6 @@ export const updateConferenceSettingsFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
-/**
- * Update submission validation settings (admin only)
- */
 export const updateSubmissionValidationSettingsFn = createServerFn({
 	method: "POST",
 })
@@ -328,9 +282,6 @@ export const updateSubmissionValidationSettingsFn = createServerFn({
 		return { success: true };
 	});
 
-/**
- * Get submission validation settings for form (public - requires auth)
- */
 export const getSubmissionValidationForFormFn = createServerFn({
 	method: "GET",
 })
@@ -356,9 +307,6 @@ export const getSubmissionValidationForFormFn = createServerFn({
 		};
 	});
 
-/**
- * Get submission deadline + lock status (public - requires auth)
- */
 export const getSubmissionDeadlineFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.handler(async ({ context }) => {
@@ -376,9 +324,6 @@ export const getSubmissionDeadlineFn = createServerFn({ method: "GET" })
 		return { deadline, locked, canBypass, timezone };
 	});
 
-/**
- * Get registration status (public, no auth — needed on register page)
- */
 export const getRegistrationStatusFn = createServerFn({
 	method: "GET",
 }).handler(async () => {
@@ -401,7 +346,6 @@ export const getRegistrationStatusFn = createServerFn({
 	};
 });
 
-/** Branding settings shape */
 export interface BrandingSettings {
 	logoUrl: string;
 	faviconUrl: string;
@@ -417,17 +361,12 @@ export interface BrandingSettings {
 	logoDarkInvert: boolean;
 }
 
-/** App branding + conference name (for _app loader) */
 export interface AppBranding extends BrandingSettings {
 	conferenceName: string;
 	dateFormat: string;
 	timeFormat: "24h" | "12h";
 }
 
-/**
- * Get app branding + conference name (public, no auth).
- * Used by _app loader for SSR — no FOUC.
- */
 export const getAppBrandingFn = createServerFn({ method: "GET" }).handler(
 	async (): Promise<AppBranding> => {
 		const [settings, logoUploadUrl, faviconUploadUrl] = await Promise.all([
@@ -463,9 +402,6 @@ export const getAppBrandingFn = createServerFn({ method: "GET" }).handler(
 	},
 );
 
-/**
- * Get branding settings (admin only) — for admin settings page.
- */
 export const getBrandingSettingsFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(async (): Promise<BrandingSettings> => {
@@ -498,9 +434,6 @@ export const getBrandingSettingsFn = createServerFn({ method: "GET" })
 		};
 	});
 
-/**
- * Update branding settings (admin only)
- */
 export const updateBrandingSettingsFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.validator(brandingSchema)
@@ -515,9 +448,6 @@ export const updateBrandingSettingsFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
-/**
- * Upload auth background image (admin only)
- */
 export const uploadAuthBackgroundFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.validator((data: FormData) => ({ file: getUploadedFile(data) }))
@@ -528,9 +458,6 @@ export const uploadAuthBackgroundFn = createServerFn({ method: "POST" })
 		return { url };
 	});
 
-/**
- * Delete auth background image (admin only)
- */
 export const deleteAuthBackgroundFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.handler(async () => {
@@ -538,9 +465,6 @@ export const deleteAuthBackgroundFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
-/**
- * Upload branding logo (admin only)
- */
 export const uploadBrandingLogoFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.validator((data: FormData) => ({ file: getUploadedFile(data) }))
@@ -549,9 +473,6 @@ export const uploadBrandingLogoFn = createServerFn({ method: "POST" })
 		return { url: await getBrandingLogoUrl() };
 	});
 
-/**
- * Delete branding logo (admin only)
- */
 export const deleteBrandingLogoFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.handler(async () => {
@@ -559,9 +480,6 @@ export const deleteBrandingLogoFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
-/**
- * Upload branding favicon (admin only)
- */
 export const uploadBrandingFaviconFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.validator((data: FormData) => ({ file: getUploadedFile(data) }))
@@ -570,9 +488,6 @@ export const uploadBrandingFaviconFn = createServerFn({ method: "POST" })
 		return { url: await getBrandingFaviconUrl() };
 	});
 
-/**
- * Delete branding favicon (admin only)
- */
 export const deleteBrandingFaviconFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.handler(async () => {
@@ -580,7 +495,6 @@ export const deleteBrandingFaviconFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
-/** Auth page branding (public, no auth) */
 export interface AuthPageBranding {
 	conferenceName: string;
 	logoUrl: string;
@@ -596,27 +510,18 @@ export interface AuthPageBranding {
 	dateFormat: string;
 }
 
-/**
- * Get primary color (public, no auth).
- * Used by root route for pre-hydration loader.
- */
 export const getPrimaryColorFn = createServerFn({ method: "GET" }).handler(
 	async () => {
 		return await getSetting("BRANDING_PRIMARY_COLOR");
 	},
 );
 
-/** OpenGraph metadata (public, no auth) */
 export interface OgMetadata {
 	title: string;
 	description: string;
 	imageUrl: string;
 }
 
-/**
- * Get OpenGraph metadata (public, no auth).
- * Used by root route head() for social sharing tags.
- */
 export const getOgMetadataFn = createServerFn({ method: "GET" }).handler(
 	async (): Promise<OgMetadata> => {
 		const s = await getSettings(["CONFERENCE_NAME", "CONFERENCE_SUBTITLE"]);
@@ -635,10 +540,6 @@ export const getOgMetadataFn = createServerFn({ method: "GET" }).handler(
 	},
 );
 
-/**
- * Get auth page branding (public, no auth).
- * Used by _auth layout for SSR — login/register pages.
- */
 export const getAuthPageBrandingFn = createServerFn({ method: "GET" }).handler(
 	async (): Promise<AuthPageBranding> => {
 		const [s, authBackgroundUrl, logoUploadUrl] = await Promise.all([
@@ -675,9 +576,6 @@ export const getAuthPageBrandingFn = createServerFn({ method: "GET" }).handler(
 	},
 );
 
-/**
- * Update fee payment instructions (admin only)
- */
 export const updateFeeInstructionsFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.validator(z.object({ content: z.string().min(1) }))
@@ -686,9 +584,6 @@ export const updateFeeInstructionsFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
-/**
- * Update Terms of Service content (admin only)
- */
 export const updateTosContentFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.validator(tosContentSchema)
@@ -697,16 +592,12 @@ export const updateTosContentFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
-/** Reminder settings shape */
 export interface ReminderSettings {
 	reviewer: ReviewerReminderSettings;
 	revision: RevisionReminderSettings;
 	deadline: DeadlineReminderSettings;
 }
 
-/**
- * Get reminder settings (admin only)
- */
 export const getReminderSettingsFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(async (): Promise<ReminderSettings> => {
@@ -722,9 +613,6 @@ export const getReminderSettingsFn = createServerFn({ method: "GET" })
 		};
 	});
 
-/**
- * Update reminder settings (admin only)
- */
 export const updateReminderSettingsFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.validator(reminderSettingsSchema)
@@ -735,17 +623,12 @@ export const updateReminderSettingsFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
-// Fee types & currency
-
 export const feeEnabledQueryOptions = () =>
 	queryOptions({
 		queryKey: ["settings", "fee-enabled"],
 		queryFn: () => getFeeEnabledFn(),
 	});
 
-/**
- * Get whether the fee feature is enabled (requires auth — gates the user Fee nav item)
- */
 export const getFeeEnabledFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.handler(async () => {
@@ -776,18 +659,12 @@ export const feeCurrencyQueryOptions = () =>
 		queryFn: () => getFeeCurrencyFn(),
 	});
 
-/**
- * Get fee types (requires auth — used by admin + user fee page)
- */
 export const getFeeTypesFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.handler(async () => {
 		return getSetting("FEE_TYPES");
 	});
 
-/**
- * Get fee currency (requires auth)
- */
 export const getFeeCurrencyFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.handler(async () => {
@@ -800,9 +677,6 @@ const feeTypeItemSchema = z.object({
 	amount: z.number().min(0),
 });
 
-/**
- * Update fee types (admin only)
- */
 export const updateFeeTypesFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.validator(z.object({ feeTypes: z.array(feeTypeItemSchema).min(1) }))

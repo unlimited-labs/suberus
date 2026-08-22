@@ -19,8 +19,6 @@ interface RecipientSummaryProps {
 	failedCount: number;
 }
 
-// Only SENT/FAILED get a badge — PENDING (the pre-send state of every
-// recipient) would just be confusing noise on a draft.
 function statusVariant(status: string): "default" | "destructive" | null {
 	if (status === "SENT") return "default";
 	if (status === "FAILED") return "destructive";

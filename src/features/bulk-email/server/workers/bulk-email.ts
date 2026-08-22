@@ -33,7 +33,6 @@ async function handleBulkEmail(jobs: Job<BulkEmailJobData>[]): Promise<void> {
 	}
 }
 
-/** Records one recipient's outcome and bumps the matching campaign counter. */
 async function recordResult(
 	campaignId: string,
 	recipientId: string,
@@ -56,7 +55,6 @@ async function recordResult(
 	]);
 }
 
-/** Sends to one recipient and records SENT/FAILED. Never throws. */
 async function sendToRecipient(
 	campaignId: string,
 	content: CampaignContent,
@@ -75,7 +73,6 @@ async function sendToRecipient(
 	}
 }
 
-/** Mirrors current sent+failed count onto the JobProgress row (for SSE). */
 async function reportProgress(
 	jobProgressId: string | null,
 	campaignId: string,
@@ -128,7 +125,6 @@ async function finishCampaign(
 	);
 }
 
-/** True when the campaign is ready to send; logs + marks FAILED otherwise. */
 async function canSend(campaign: Campaign): Promise<boolean> {
 	if (!isResumableCampaignStatus(campaign.status)) {
 		logger.info(
@@ -169,8 +165,6 @@ async function processCampaign(campaignId: string): Promise<void> {
 
 	await beginSending(campaign);
 
-	// Same order as the composer's Recipients panel (getCampaign) so the
-	// SENT/FAILED marks light up top-to-bottom as the send progresses.
 	// ponytail: attachment bytes held in memory once for the whole run (capped at
 	// MAX_CAMPAIGN_ATTACHMENTS_BYTES=25MB); stream from S3 per-recipient if that grows.
 	const [pending, attachments] = await Promise.all([

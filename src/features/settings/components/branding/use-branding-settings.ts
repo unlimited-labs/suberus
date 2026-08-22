@@ -40,13 +40,11 @@ function isValidImageFile(file: File | undefined): file is File {
 type UploadFn = (opts: { data: FormData }) => Promise<{ url: string }>;
 type DeleteFn = () => Promise<{ success: boolean }>;
 
-/** Upload/remove handling for a single branding image (logo, favicon, auth bg). */
 function useImageUpload(
 	label: string,
 	uploadFn: UploadFn,
 	deleteFn: DeleteFn,
 	onUrl: (url: string) => void,
-	/** Called after a successful upload/remove so the app-wide logo/favicon refreshes. */
 	onChanged: () => Promise<void>,
 ) {
 	const [uploading, setUploading] = useState(false);
@@ -97,7 +95,6 @@ export function useBrandingSettings(initialData: BrandingSettings) {
 		authBackgroundUrl: initialData.authBackgroundUrl,
 	});
 
-	// Re-run loaders + branding query so the app-wide logo/favicon reflects changes.
 	const refresh = async () => {
 		await queryClient.invalidateQueries({
 			queryKey: brandingSettingsQueryOptions().queryKey,

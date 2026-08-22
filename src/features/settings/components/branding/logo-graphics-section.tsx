@@ -71,7 +71,6 @@ export function LogoGraphicsSection({
 	const isSubmitting = useSelector(form.store, (s) => s.isSubmitting);
 	const values = useSelector(form.store, (s) => s.values);
 
-	// Uploaded file takes precedence over the typed URL.
 	const logoPreview = images.logoUploadUrl || values.logoUrl;
 	const faviconPreview = images.faviconUploadUrl || values.faviconUrl;
 

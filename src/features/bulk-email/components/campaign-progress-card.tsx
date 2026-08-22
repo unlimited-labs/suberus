@@ -19,7 +19,6 @@ function progressValue(job: JobSSEState): number {
 	return job.total > 0 ? Math.round((job.current / job.total) * 100) : 0;
 }
 
-/** Live send progress (SSE). Renders nothing until the campaign leaves DRAFT. */
 export function CampaignProgressCard({
 	campaign,
 	jobId,
@@ -27,9 +26,6 @@ export function CampaignProgressCard({
 }: CampaignProgressCardProps) {
 	if (!jobId || campaign.status === "DRAFT") return null;
 
-	// While running, the SSE counters track per-recipient progress live. On
-	// completion the shared job row is normalised to 1/1, so fall back to the
-	// persisted campaign counts (refreshed by the done-triggered refetch).
 	const useLive = job.status === "running" && job.total > 0;
 	const processed = useLive
 		? job.current

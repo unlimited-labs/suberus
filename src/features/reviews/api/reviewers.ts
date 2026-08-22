@@ -9,9 +9,6 @@ export const reviewerUsersQueryOptions = () =>
 		queryFn: () => getReviewerUsersFn(),
 	});
 
-/**
- * Get reviewer users (admin only)
- */
 export const getReviewerUsersFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(async () => {

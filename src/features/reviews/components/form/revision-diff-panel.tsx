@@ -21,19 +21,10 @@ interface RevisionDiffPanelProps {
 	content: string;
 	file?: DiffFile | null;
 	keywords: string[];
-	/** FILE-format submissions diff the uploaded file, not the text body. */
 	isFileSubmission: boolean;
 	assignmentId: string;
 }
 
-/**
- * "Changes since previous version" — an always-visible round-over-round diff
- * against the previous version, plus a link to the full compare page. The body
- * is type-aware: TEXT submissions show a title/content redline; FILE submissions
- * show a file-changed notice instead (the inline file redline lives on the
- * compare page). Keywords diff in both cases. Renders whenever a previous version
- * exists. Blind-safe: title/content/keywords only, no authors.
- */
 export function RevisionDiffPanel({
 	previous,
 	title,

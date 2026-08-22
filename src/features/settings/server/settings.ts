@@ -20,10 +20,6 @@ import { prisma } from "@/shared/server/db.server";
 
 const legacyScoringCriteria = z.array(z.string()).min(1);
 
-/**
- * Normalize legacy scoringCriteria format.
- * Old format: string[] → New format: { name: string; description: string }[]
- */
 function normalizeScoringCriteria(
 	config: SubmissionTypeConfig,
 ): SubmissionTypeConfig {
@@ -35,10 +31,6 @@ function normalizeScoringCriteria(
 	};
 }
 
-/**
- * Drop file extensions no longer supported (e.g. legacy doc/txt/rtf stored
- * before they were removed). Self-heals on the next save.
- */
 function normalizeAllowedExtensions(
 	config: SubmissionTypeConfig,
 ): SubmissionTypeConfig {
@@ -61,10 +53,6 @@ function normalizeSubmissionTypeConfig(
 	return normalizeAllowedExtensions(normalizeScoringCriteria(config));
 }
 
-/**
- * Get a single setting value by key.
- * Returns default if not found in DB.
- */
 export async function getSetting<K extends keyof AppSettingsMap>(
 	key: K,
 ): Promise<AppSettingsMap[K]> {
@@ -79,7 +67,6 @@ export async function getSetting<K extends keyof AppSettingsMap>(
 	// SAFETY: appSetting rows are written only through setSetting, which types value by key.
 	const value = setting.value as AppSettingsMap[K];
 
-	// Normalize legacy string[] scoringCriteria for submission type configs
 	if (
 		// SAFETY: widening a const tuple only to test membership of an arbitrary string.
 		(SUBMISSION_TYPE_KEYS as readonly string[]).includes(key) &&
@@ -94,10 +81,6 @@ export async function getSetting<K extends keyof AppSettingsMap>(
 	return value;
 }
 
-/**
- * Set a single setting value by key.
- * Creates or updates the setting.
- */
 export async function setSetting<K extends keyof AppSettingsMap>(
 	key: K,
 	value: AppSettingsMap[K],
@@ -114,10 +97,6 @@ export async function setSetting<K extends keyof AppSettingsMap>(
 	});
 }
 
-/**
- * Get multiple settings at once.
- * Returns defaults for any not found.
- */
 export async function getSettings<K extends keyof AppSettingsMap>(
 	keys: K[],
 ): Promise<Pick<AppSettingsMap, K>> {
@@ -145,9 +124,6 @@ export async function getSettings<K extends keyof AppSettingsMap>(
 	return result;
 }
 
-/**
- * Get all submission type configs.
- */
 export async function getSubmissionTypeConfigs(): Promise<{
 	ORAL_PRESENTATION: SubmissionTypeConfig;
 	POSTER: SubmissionTypeConfig;
@@ -163,8 +139,6 @@ export async function getSubmissionTypeConfigs(): Promise<{
 
 	const settings = await getSettings(keys);
 
-	// Merge with defaults so newly-added fields always have a value
-	// Normalize legacy string[] scoringCriteria to { name, description }[]
 	return {
 		ORAL_PRESENTATION: normalizeSubmissionTypeConfig({
 			...DEFAULT_ORAL_PRESENTATION_CONFIG,
@@ -185,10 +159,6 @@ export async function getSubmissionTypeConfigs(): Promise<{
 	};
 }
 
-/**
- * Get active submission types for form display.
- * Returns only isActive=true configs with their submission type mapping.
- */
 export async function getActiveSubmissionTypes(): Promise<
 	Array<{
 		type: "ABSTRACT" | "POSTER" | "FULL_PAPER";

@@ -53,7 +53,6 @@ interface ReviewFormProps {
 			keywords?: string[];
 		} | null;
 	};
-	/** Whether this submission type carries its content as text or an uploaded file. */
 	contentFormat?: ContentFormat;
 	reviewMode: "OPEN" | "SINGLE_BLIND" | "DOUBLE_BLIND";
 	guidelines?: string;

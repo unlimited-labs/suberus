@@ -165,7 +165,6 @@ export const submissionTypeKeys = [
 	"SUBMISSION_TYPE_EXHIBITOR",
 ] as const;
 
-/** EXHIBITOR is never reviewed, so it alone may keep zero required reviewers. */
 export function requiredReviewersIssue(
 	type: (typeof submissionTypeKeys)[number],
 	requiredReviewers: number,
@@ -187,10 +186,6 @@ export const submissionTypeUpdateSchema = z
 		}
 	});
 
-/**
- * Allowlist for the generic single-setting endpoint: every reachable key is
- * paired with its value schema, so an unlisted key is rejected outright.
- */
 export const setSettingSchema = z.discriminatedUnion("key", [
 	z.object({ key: z.literal("FEE_ENABLED"), value: z.boolean() }),
 	z.object({ key: z.literal("FINANCES_ENABLED"), value: z.boolean() }),
@@ -218,7 +213,6 @@ export type InvitationSettingsFormValues = z.input<
 
 const intField = wholeNumber(z.number().int());
 
-/** Inputs hold strings; bounds and cross-field rules stay in the server schema. */
 export const submissionValidationFormSchema = z
 	.object({
 		minTitleLength: intField,
@@ -299,7 +293,6 @@ export const signingCertFormSchema = z.object({
 
 export type SigningCertFormValues = z.input<typeof signingCertFormSchema>;
 
-/** Mirrors signingCertUploadSchema but tolerates the empty initial value. */
 export const signingCertUploadFormSchema = z.object({
 	file: z
 		.custom<File | null>((f) => f === null || f instanceof File)

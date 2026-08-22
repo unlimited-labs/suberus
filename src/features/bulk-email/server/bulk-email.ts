@@ -27,12 +27,6 @@ export interface SaveDraftInput {
 	replyTo?: string | null;
 }
 
-/**
- * Creates a DRAFT campaign for the given users, snapshotting each recipient's
- * name and submission titles now (so later profile/submission edits don't
- * change a queued send). Ids that resolve to no user are dropped, so the
- * returned count can be lower than the ids passed in.
- */
 export async function createDraftCampaign(
 	userIds: string[],
 	createdById: string,
@@ -45,7 +39,6 @@ export async function createDraftCampaign(
 			email: true,
 			firstName: true,
 			lastName: true,
-			// INVITED rows are programme placeholders, not the recipient's work.
 			submissions: {
 				where: { type: { not: "INVITED" } },
 				select: { title: true },
@@ -77,12 +70,6 @@ export async function createDraftCampaign(
 	return { campaignId: campaign.id, totalRecipients: snapshots.length };
 }
 
-/**
- * Clones a campaign into a fresh DRAFT: same subject/format/body and the exact
- * recipient snapshot (names/titles as they were), reset to PENDING. Lets an
- * admin re-send or tweak a finished campaign without rebuilding it. Returns the
- * new campaign id.
- */
 export async function duplicateCampaign(
 	id: string,
 	createdById: string,
@@ -148,7 +135,6 @@ export async function getCampaign(id: string) {
 	return { ...campaign, attachments };
 }
 
-/** Deletes a campaign, its S3 attachments, and (via cascade) its recipient rows. */
 export async function deleteCampaign(id: string): Promise<void> {
 	const campaign = await prisma.emailCampaign.findUnique({
 		where: { id },
@@ -177,7 +163,6 @@ export async function listCampaigns() {
 	});
 }
 
-/** Updates draft content. Only permitted while the campaign is still a DRAFT. */
 export async function saveDraft(
 	id: string,
 	data: SaveDraftInput,
@@ -213,10 +198,6 @@ export function previewContent(
 	return renderEmailContent(format, bodySource);
 }
 
-/**
- * Sends a one-off preview of the campaign to `toEmail` with placeholders filled
- * from a random recipient (or sample data when the campaign has none).
- */
 export async function sendCampaignTest(
 	id: string,
 	toEmail: string,
@@ -254,10 +235,6 @@ export async function sendCampaignTest(
 	});
 }
 
-/**
- * Renders + snapshots the body, marks the campaign QUEUED, and enqueues the
- * worker. Job expiry is sized so a long throttled run can't expire mid-send.
- */
 export async function finalizeAndEnqueue(
 	id: string,
 	createdById: string,

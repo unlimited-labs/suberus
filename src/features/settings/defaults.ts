@@ -1,6 +1,5 @@
 import type { AppSettingsMap, SubmissionTypeConfig } from "./types";
 
-/** Default config for Oral Presentation (TEXT-based) */
 export const DEFAULT_ORAL_PRESENTATION_CONFIG: SubmissionTypeConfig = {
 	isActive: false,
 	includeInPlanner: true,
@@ -21,7 +20,6 @@ export const DEFAULT_ORAL_PRESENTATION_CONFIG: SubmissionTypeConfig = {
 	enableTrackSelection: false,
 };
 
-/** Default config for Poster (TEXT-based) */
 export const DEFAULT_POSTER_CONFIG: SubmissionTypeConfig = {
 	isActive: false,
 	includeInPlanner: true,
@@ -42,7 +40,6 @@ export const DEFAULT_POSTER_CONFIG: SubmissionTypeConfig = {
 	enableTrackSelection: false,
 };
 
-/** Default config for Full Paper (FILE-based) */
 export const DEFAULT_FULL_PAPER_CONFIG: SubmissionTypeConfig = {
 	isActive: false,
 	includeInPlanner: false,
@@ -69,7 +66,6 @@ export const DEFAULT_FULL_PAPER_CONFIG: SubmissionTypeConfig = {
 	enableTrackSelection: false,
 };
 
-/** Default config for Exhibitor (presentation content optional; review fields are ignored defaults — EXHIBITOR never enters review) */
 export const DEFAULT_EXHIBITOR_CONFIG: SubmissionTypeConfig = {
 	isActive: false,
 	includeInPlanner: true,
@@ -89,7 +85,6 @@ export const DEFAULT_EXHIBITOR_CONFIG: SubmissionTypeConfig = {
 	enableTrackSelection: false,
 };
 
-/** Default values for all app settings */
 export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	CONFERENCE_NAME: "Conference Name",
 	CONFERENCE_SUBTITLE: "",
@@ -213,7 +208,6 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	DOCUMENT_SIGNING: null,
 };
 
-/** Get default value for a setting key */
 export function getDefaultSetting<K extends keyof AppSettingsMap>(
 	key: K,
 ): AppSettingsMap[K] {
