@@ -79,5 +79,7 @@ export function setupOfflineProgram(queryClient: QueryClient) {
 		},
 	});
 
-	void restored.then(() => queryClient.resumePausedMutations());
+	// A rejected restore (corrupt or unreadable cache) already discarded it, so the
+	// app runs fine cold — swallowing it here keeps that off the unhandled path.
+	void restored.then(() => queryClient.resumePausedMutations()).catch(() => {});
 }
