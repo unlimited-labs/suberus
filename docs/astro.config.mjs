@@ -5,15 +5,11 @@ import starlight from '@astrojs/starlight';
 import starlightImageZoom from 'starlight-image-zoom';
 import remarkGfm from 'remark-gfm';
 
-// https://astro.build/config
 export default defineConfig({
-	// Public URL where these docs are hosted (used for sitemap & canonical URLs).
 	site: 'https://docs.suberus.app',
-	// The Program pages moved into the dedicated "Program Planner" section.
 	redirects: {
 		'/configuration/program/': '/planner/setup/',
 		'/managing/program/': '/planner/overview/',
-		// Configuration section renamed to Settings (slug parity with /admin/settings).
 		'/configuration/quick-start/': '/settings/quick-start/',
 		'/configuration/first-time-install/': '/settings/first-time-install/',
 		'/configuration/roles-and-permissions/': '/settings/roles-and-permissions/',
@@ -49,10 +45,8 @@ export default defineConfig({
 				replacesTitle: true,
 			},
 			customCss: ['./src/styles/custom.css'],
-			// Click any screenshot to open it full-screen (zoom/lightbox).
 			plugins: [starlightImageZoom()],
 			tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 3 },
-			// Show "Last updated" (from Git history) and prev/next pagination on every page.
 			lastUpdated: true,
 			pagination: true,
 			sidebar: [

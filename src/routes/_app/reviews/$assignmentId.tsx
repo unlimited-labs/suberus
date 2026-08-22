@@ -67,7 +67,6 @@ function ReviewFormPage() {
 			return;
 		}
 
-		// Upload attachment if present
 		const file = attachmentFileRef.current;
 		if (file && result.reviewId) {
 			try {

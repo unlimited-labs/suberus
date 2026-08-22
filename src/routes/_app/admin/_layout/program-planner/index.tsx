@@ -68,8 +68,6 @@ function ProgramPlannerContent() {
 	const { data: sessions } = useSuspenseQuery(allSessionsQueryOptions());
 	const { data: breaks } = useSuspenseQuery(allBreaksQueryOptions());
 	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
-	// Chair candidates for the session editor (fetched here so planner stays off
-	// the users slice).
 	const { data: chairCandidates } = useQuery(adminUsersQueryOptions());
 
 	const { mobileQueueOpen, setMobileQueueOpen } = usePlannerSelection();

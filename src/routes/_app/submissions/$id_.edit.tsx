@@ -67,8 +67,6 @@ function EditSubmissionPage() {
 		!submission ||
 		submission.role === "coauthor" ||
 		submission.status !== "DRAFT" ||
-		// Exhibitor entries are managed via the exhibitor flow, invited talks via
-		// the planner — neither belongs in this form
 		submission.type === "EXHIBITOR" ||
 		submission.type === "INVITED"
 	) {
@@ -98,8 +96,6 @@ function EditSubmissionPage() {
 
 	const isDraft = submission.status === "DRAFT";
 
-	// A FILE draft may already have a file attached (uploaded on an earlier save);
-	// relax the form's file requirement so a metadata-only edit isn't blocked.
 	const hasExistingFile = data.versions.some(
 		(v) => v.version === submission.currentVersion && v.file !== null,
 	);
@@ -148,7 +144,6 @@ function EditSubmissionPage() {
 			return false;
 		}
 
-		// Upload file if needed
 		if (formData.contentFormat === "FILE" && formData.file) {
 			try {
 				const uploadData = new FormData();
@@ -173,7 +168,6 @@ function EditSubmissionPage() {
 		const saved = await saveSubmission(formData, false);
 		if (!saved) return;
 
-		// If it was a draft, also transition to SUBMITTED
 		if (isDraft) {
 			const submitResult = await submitDraftFn({
 				data: { submissionId: id },

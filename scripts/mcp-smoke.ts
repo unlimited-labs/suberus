@@ -6,7 +6,6 @@ import { prisma } from "@/shared/server/db.server";
 const BASE = process.env.APP_BASE_URL ?? "http://localhost:3001";
 const RESOURCE = `${BASE}/api/mcp`;
 const REDIRECT_URI = "http://127.0.0.1:9999/callback";
-// Derived: stable across runs, unguessable without this AUTH_SECRET.
 const ADMIN = {
 	email: "mcp-smoke@e2e.local",
 	password: createHash("sha256")
@@ -112,7 +111,6 @@ async function main() {
 		headers: { cookie },
 		redirect: "manual",
 	});
-	// Non-navigation callers get a JSON envelope, not a Location header.
 	const body = await authorizeRes.text();
 	const location =
 		authorizeRes.headers.get("location") ??

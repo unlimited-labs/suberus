@@ -37,7 +37,6 @@ interface VersionSpec {
 	title: string;
 	content: string;
 	comment?: string;
-	/** demo file in mf2024-demo/ to attach, with a friendly name + mime */
 	file?: { demo: string; name: string; mime: string };
 }
 
@@ -300,7 +299,6 @@ async function seedOne(
 
 	await createVersion(submission.id, 1, spec.v1, authorId);
 
-	// Fake completed round-1 review.
 	const a1 = await prisma.reviewAssignment.create({
 		data: {
 			submissionId: submission.id,
@@ -334,7 +332,6 @@ async function seedOne(
 		data: { currentVersionId: v2.id },
 	});
 
-	// Pending round-2 assignment so the reviewer can review the revision (diff panel).
 	await prisma.reviewAssignment.create({
 		data: {
 			submissionId: submission.id,

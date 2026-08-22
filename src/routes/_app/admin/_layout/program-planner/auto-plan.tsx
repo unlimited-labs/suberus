@@ -188,7 +188,6 @@ function ProgressView({
 	const current = progress.current;
 	const total = progress.total;
 
-	// Global progress: each stage is 1/n of the whole; add sub-progress within current stage.
 	const stageCount = STAGES.length;
 	const baseProgress = Math.max(0, activeIdx) / stageCount;
 	const subProgress = total > 0 ? current / total / stageCount : 0;
@@ -303,7 +302,6 @@ function StageCard({
 				st.container,
 			)}
 		>
-			{/* Top: icon + status dot */}
 			<div className="flex items-start justify-between">
 				<div className="relative">
 					{status === "running" && (
@@ -330,7 +328,6 @@ function StageCard({
 				</span>
 			</div>
 
-			{/* Middle: label + description */}
 			<div className="mt-4 flex-1 space-y-1">
 				<div className={cn("text-sm font-semibold leading-tight", st.label)}>
 					{spec.label}
@@ -342,7 +339,6 @@ function StageCard({
 				</div>
 			</div>
 
-			{/* Bottom: progress strip */}
 			<div className={cn("-mx-5 -mb-5 mt-3 h-1 overflow-hidden", st.strip)}>
 				{status === "running" &&
 					(total > 0 ? (

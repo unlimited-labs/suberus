@@ -5,7 +5,6 @@ import { registerExtractionWorker } from "@/features/extraction/server/workers/e
 import { registerAutoplanWorker } from "@/features/planner/server/workers/autoplan";
 import { registerSubmissionDiffWorker } from "@/features/submission-diff/server/workers/normalize";
 
-// App-shell composition module: wires feature pg-boss workers to the shared queue.
 export async function registerAllWorkers(boss: PgBoss): Promise<void> {
 	await registerExtractionWorker(boss);
 	await registerAutoplanWorker(boss);

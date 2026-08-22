@@ -81,8 +81,6 @@ function AppLayoutRoute() {
 	const { user, isPending } = useSession();
 	const branding = Route.useLoaderData();
 	const cssVars = buildCssVarOverrides(branding);
-	// Sidebar navigation gates (lifted here so the shared layout stays decoupled
-	// from the planner/exhibitors slices).
 	const { data: scheduleState } = useQuery(scheduleStateQueryOptions());
 	const { data: exhibitorsEnabled } = useQuery(
 		exhibitorSignupAvailableQueryOptions(),

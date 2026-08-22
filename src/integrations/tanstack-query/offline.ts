@@ -8,7 +8,6 @@ import {
 } from "@/features/planner/api/favorites";
 
 const PERSIST_KEY = "suberus-program-cache";
-/** Bump when a persisted payload's shape changes, to drop incompatible caches. */
 const PERSIST_VERSION = "4";
 const PERSIST_MAX_AGE = 24 * 60 * 60 * 1000;
 const PERSISTED_PREFIXES = ["program", "conference"];
@@ -34,11 +33,6 @@ export async function clearOfflineProgramCache() {
 	await caches?.delete(SW_CACHE).catch(() => false);
 }
 
-/**
- * Offline-first support for the public programme: persists its queries to
- * localStorage and registers the favourite-toggle mutation centrally, so a
- * toggle made offline can be resumed at startup from any route.
- */
 export function setupOfflineProgram(queryClient: QueryClient) {
 	activeQueryClient = queryClient;
 

@@ -67,7 +67,6 @@ function AdminEditSubmissionPage() {
 	const submission = data?.submission;
 	const subType = submission?.type;
 
-	// Admin-only; Exhibitor entries have their own management flow.
 	if (
 		!submission ||
 		subType === "EXHIBITOR" ||

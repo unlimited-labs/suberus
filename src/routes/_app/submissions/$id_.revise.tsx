@@ -180,8 +180,6 @@ function RevisionForm({
 	const [authors, setAuthors] = useState<Author[]>(initialAuthors);
 	const [keywords, setKeywords] = useState<string[]>(initialKeywords);
 
-	// A newly uploaded document re-extracts and overwrites the metadata fields so
-	// a changed title / author composition / keywords are picked up on revision.
 	const { isExtracting, elapsedSeconds, handleFileChange } =
 		useDocumentExtraction({
 			enabled: extractionEnabled,

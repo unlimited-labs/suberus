@@ -75,7 +75,6 @@ function parseArgs(argv: string[]): CliArgs {
 			discoveryTarget = argv[++i];
 		} else if (arg === "--schema") {
 			discoveryCommand = "schema";
-			// optional target — peek next arg
 			if (i + 1 < argv.length && !argv[i + 1].startsWith("--")) {
 				discoveryTarget = argv[++i];
 			}
@@ -394,7 +393,6 @@ async function runExec(core: Core, expressions: string[], preloadModules: string
 		}
 	}
 
-	// Single expression: unwrap from array
 	const output = expressions.length === 1 ? results[0] : results;
 
 	if (raw) {
@@ -526,7 +524,6 @@ async function main() {
 		process.exit(0);
 	}
 
-	// --modules doesn't need DB connection
 	if (args.mode === "discovery" && args.command === "modules") {
 		outputJson({ modules: MODULE_REGISTRY });
 		process.exit(0);

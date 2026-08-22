@@ -47,10 +47,6 @@ function parseJson(stdout: string): unknown {
 	return JSON.parse(trimmed);
 }
 
-// ---------------------------------------------------------------------------
-// Offline tests (no DB required)
-// ---------------------------------------------------------------------------
-
 describe("repl (offline)", () => {
 	it("--help prints usage and exits 0", async () => {
 		const { stderr, code } = await repl(["--help"]);
@@ -84,10 +80,6 @@ describe("repl (offline)", () => {
 		expect(stderr).toContain("Unknown argument");
 	});
 });
-
-// ---------------------------------------------------------------------------
-// Online tests (DB required)
-// ---------------------------------------------------------------------------
 
 describe.skipIf(!dotenvVars.DATABASE_URL)("repl (online)", () => {
 	it("--tables returns model names", async () => {

@@ -1,11 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 import type { TestOptions } from "./e2e/helpers/base-fixtures";
 
-// Per-worker E2E isolation: each worker runs its own app server (port 3031+i)
-// against its own database suberus_e2e_${i}. Dev DB/Mailpit/S3 are never touched.
 export const E2E_WORKERS = Number(process.env.E2E_WORKERS ?? 2);
-// Isolated build-output dir for E2E: keeps the production build the E2E servers
-// serve from out of `.output`, so a concurrent dev `pnpm build` can't clobber it.
 export const E2E_OUTPUT_DIR = ".output-e2e";
 export const E2E_BASE_PORT = 3031;
 export const portFor = (i: number) => E2E_BASE_PORT + i;
@@ -18,10 +14,6 @@ export const PG_BASE =
 export const dbNameFor = (i: number) => `suberus_e2e_${i}`;
 export const dbUrlFor = (i: number) => `${PG_BASE}/${dbNameFor(i)}`;
 export const fromAddrFor = (i: number) => `noreply-w${i}@suberus.local`;
-// Fixed build id so the running E2E server reports a concrete version via
-// /api/version and stamps `x-app-version` on server-fn responses (read from
-// process.env at runtime — no rebuild needed), letting the version-skew tests
-// exercise the real header path instead of the dormant "unknown" default.
 export const E2E_GIT_COMMIT = "e2ecommit";
 export const envFor = (i: number) => ({
 	PORT: String(portFor(i)),
@@ -30,16 +22,11 @@ export const envFor = (i: number) => ({
 	APP_BASE_URL: baseUrlFor(i),
 	SMTP_FROM_EMAIL: fromAddrFor(i),
 	GIT_COMMIT: E2E_GIT_COMMIT,
-	// Poll fast so the version-skew poll path is testable without long waits.
 	VERSION_POLL_INTERVAL_MS: "500",
-	// No inter-email pause so bulk-email campaigns finish quickly in tests.
 	BULK_EMAIL_DELAY_SECONDS: "0",
-	// Exercise the admin MCP server and its OAuth provider.
 	MCP_ENABLED: "true",
 });
 
-// Role-authenticated project: storageState comes from the `role` option (resolved
-// per worker by base-fixtures), so these all depend on auth-setup.
 const roleProject = (
 	name: string,
 	testMatch: RegExp,
@@ -83,10 +70,8 @@ export default defineConfig<TestOptions>({
 		launchOptions: { args: ["--disable-gpu"] },
 	},
 	projects: [
-		// Auth setup - logs in every role on every worker, saves per-worker state
 		{ name: "auth-setup", testMatch: /auth\.setup\.ts/ },
 
-		// Unauthenticated auth tests (login, register, forgot-password)
 		{
 			name: "chromium",
 			testMatch: /e2e\/auth\/(?!registration-locks).*\.spec\.ts/,
@@ -98,7 +83,6 @@ export default defineConfig<TestOptions>({
 			use: { ...devices["Pixel 5"] },
 		},
 
-		// Admin settings - mutate shared settings (in-file save/restore)
 		roleProject(
 			"admin-conference-settings",
 			/e2e\/admin\/conference-settings\.spec\.ts/,
@@ -121,7 +105,6 @@ export default defineConfig<TestOptions>({
 			{ role: "admin" },
 		),
 
-		// Admin (excludes settings + planner + task-mails, which have own projects)
 		roleProject(
 			"chromium-admin",
 			/e2e\/admin\/(?!conference-settings|date-format-settings|fee-settings|fee-enabled|finances-enabled|task-mails-reminder|planner\/).*\.spec\.ts/,
@@ -138,12 +121,10 @@ export default defineConfig<TestOptions>({
 			testIgnore: /mobile-planner\.spec\.ts/,
 		}),
 
-		// Docs screenshot capture - no-op unless DOCS_SHOTS=1 (see e2e/screenshots/)
 		roleProject("screenshots", /e2e\/screenshots\/.*\.spec\.ts/, {
 			role: "admin",
 		}),
 
-		// Submissions - user auth
 		roleProject(
 			"chromium-user",
 			/e2e\/submissions\/(?!settings-integration|coauthor-visibility|file-access|no-active-types|deadline-locks).*\.spec\.ts/,
@@ -207,7 +188,6 @@ export default defineConfig<TestOptions>({
 			{ role: "admin", device: "mobile" },
 		),
 
-		// Cross-role / global-mutating - auth handled internally, no role/deps
 		{
 			name: "chromium-registration-locks",
 			testMatch: /registration-locks\.spec\.ts/,

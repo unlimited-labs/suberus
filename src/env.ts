@@ -42,15 +42,10 @@ export const env = createEnv({
 		SMTP_PASSWORD: z.string().optional(),
 		SMTP_FROM_EMAIL: z.email(),
 
-		// Pause between each email when sending a bulk campaign (seconds).
 		BULK_EMAIL_DELAY_SECONDS: z.coerce.number().nonnegative().default(5),
 
-		// Hard upload-size cap (MB) for files not bound to a submission type:
-		// review attachments and extraction-for-autofill. Per-type submission
-		// limits live in each submission type's config.
 		MAX_UPLOAD_SIZE_MB: z.coerce.number().int().positive().default(10),
 
-		// LLM API (optional, for AI-assisted document extraction)
 		// OpenAI-compatible endpoint (Ollama /v1, llama.cpp, vLLM, etc.)
 		LLM_API_URL: z.url().optional(),
 		LLM_API_KEY: z.string().optional(),
@@ -100,7 +95,6 @@ export const env = createEnv({
 		GIT_COMMIT: z.string().default("unknown"),
 		BUILD_DATE: z.string().default("unknown"),
 
-		// How often the client polls /api/version for a backend redeploy (ms).
 		VERSION_POLL_INTERVAL_MS: z.coerce
 			.number()
 			.int()
@@ -109,26 +103,9 @@ export const env = createEnv({
 	},
 
 	/**
-	 * What object holds the environment variables at runtime. This is usually
-	 * `process.env` or `import.meta.env`.
-	 *
 	 * In production SSR builds, Vite statically replaces `import.meta.env`
 	 * so we merge with `process.env` to ensure runtime vars are available.
 	 */
 	runtimeEnv: { ...import.meta.env, ...processEnv },
-
-	/**
-	 * By default, this library will feed the environment variables directly to
-	 * the Zod validator.
-	 *
-	 * This means that if you have an empty string for a value that is supposed
-	 * to be a number (e.g. `PORT=` in a ".env" file), Zod will incorrectly flag
-	 * it as a type mismatch violation. Additionally, if you have an empty string
-	 * for a value that is supposed to be a string with a default value (e.g.
-	 * `DOMAIN=` in an ".env" file), the default value will never be applied.
-	 *
-	 * In order to solve these issues, we recommend that all new projects
-	 * explicitly specify this option as true.
-	 */
 	emptyStringAsUndefined: true,
 });

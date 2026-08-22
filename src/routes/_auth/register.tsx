@@ -52,7 +52,6 @@ export const Route = createFileRoute("/_auth/register")({
 			});
 		}
 
-		// Block public registration if closed, but allow invitation-based
 		const registrationClosed = registrationStatus.closed && !invitation;
 
 		return {
