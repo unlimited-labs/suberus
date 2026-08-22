@@ -465,22 +465,6 @@ export class ReviewFormPage {
 			.filter({ hasText: "Confidence Level" });
 		return heading.isVisible().catch(() => false);
 	}
-
-	/**
-	 * Check if the page shows "Review Not Found" error.
-	 * This happens when mock data has invalid UUIDs.
-	 */
-	async isErrorPage(): Promise<boolean> {
-		try {
-			await this.page.waitForLoadState("domcontentloaded");
-			await this.page
-				.getByRole("heading", { name: "Review Not Found" })
-				.waitFor({ state: "visible", timeout: 3000 });
-			return true;
-		} catch {
-			return false;
-		}
-	}
 }
 
 export async function openAdminSubmissionDetail(page: Page, title: string) {
