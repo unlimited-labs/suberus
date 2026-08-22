@@ -14,7 +14,6 @@ import {
 
 const orcidRegex = /^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/;
 
-// Personal info
 export const personalInfoQueryOptions = () =>
 	queryOptions({
 		queryKey: ["profile", "personal-info"],
@@ -51,7 +50,6 @@ export const updatePersonalInfoFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
-// Contact info
 export const contactInfoQueryOptions = () =>
 	queryOptions({
 		queryKey: ["profile", "contact-info"],
@@ -77,7 +75,6 @@ export const updateContactInfoFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
-// Email change (better-auth)
 export const changeEmailFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.validator(
@@ -110,7 +107,6 @@ export const changeEmailFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
-// Password change (better-auth)
 export const changePasswordFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.validator(

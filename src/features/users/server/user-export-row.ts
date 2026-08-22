@@ -31,7 +31,6 @@ export interface ExportQuestion {
 
 export type FormatExportDate = (date: Date | null | undefined) => string;
 
-/** Survey answers keyed by question column, formatted and formula-neutralized. */
 function buildSurveyColumns(
 	surveyAnswers: ExportUser["surveyAnswers"],
 	questions: ExportQuestion[],
@@ -49,7 +48,6 @@ function buildSurveyColumns(
 	return columns;
 }
 
-/** One spreadsheet row for a user: fixed columns plus dynamic survey columns. */
 export function buildUserExportRow(
 	user: ExportUser,
 	questions: ExportQuestion[],

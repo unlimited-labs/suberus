@@ -32,8 +32,6 @@ const BASE_URL = "http://localhost:3001";
 const RESOURCE = `${BASE_URL}/api/mcp`;
 const CLIENT_ID = "https://client.example/mcp-client.json";
 
-// No host is contacted: isPublicRoutableHost is syntactic and the transport is
-// an injected seam — which is what makes CIMD testable offline.
 const metadataDocument = {
 	client_id: CLIENT_ID,
 	client_name: "Offline CIMD client",

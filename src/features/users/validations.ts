@@ -62,8 +62,6 @@ export const userBulkActionInput = z.object({
 	role: userRoleSchema.optional(),
 });
 
-// Derived from the wire schemas: a renamed field fails to compile instead of
-// silently dropping at the boundary.
 export const adminUserCreateSchema = userCreateInput
 	.omit({ answers: true, sendSetPasswordEmail: true })
 	.extend({ surveyAnswers: z.record(z.string(), z.string()) });

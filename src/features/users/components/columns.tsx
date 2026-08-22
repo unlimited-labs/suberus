@@ -234,21 +234,18 @@ const actionsColumn = createActionsColumn<AdminUser>({
 	}),
 });
 
-/** Raw stored answer value for a survey question, or "" when unanswered. */
 function rawAnswer(row: AdminUser, questionId: string): string {
 	return (
 		row.surveyAnswers.find((a) => a.questionId === questionId)?.value ?? ""
 	);
 }
 
-/** Build a survey-answer column for the users list, with type-appropriate sort & filter. */
 function surveyColumn(col: SurveyListColumn): AppColumnDef<AdminUser> {
 	const facetOptions: FilterOption[] = (col.options ?? []).map((o) => ({
 		label: o,
 		value: o,
 	}));
 
-	/** Column header with either a faceted filter or a text-search filter. */
 	const header =
 		(filter: { filterOptions: FilterOption[] } | { textFilter: true }) =>
 		({ column }: { column: AppColumn<AdminUser> }) => (

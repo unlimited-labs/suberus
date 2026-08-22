@@ -184,7 +184,6 @@ export function SubmissionsColumnHeader({
 
 			<Popover
 				onOpenChange={(open) => {
-					// Re-sync with current filter state on open
 					if (open) setSelection(readSelection());
 				}}
 			>

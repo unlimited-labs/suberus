@@ -91,7 +91,6 @@ describe("buildUserExportRow", () => {
 			fmtDate,
 		);
 		expect(lookup(row, "diet")).toBe("vegan");
-		// Unanswered question falls back to an empty string under its label key.
 		expect(lookup(row, "Notes")).toBe("");
 	});
 

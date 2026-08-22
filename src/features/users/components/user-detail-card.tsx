@@ -40,8 +40,6 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 		canEditProfiles,
 		canDeleteUsers,
 	} = useAdminAuth();
-	// Editors cannot modify a user who is already an admin.
-	// Exhibitor role is managed by the exhibitor lifecycle, not manual change.
 	const canChangeThisRole =
 		canChangeRoles &&
 		(canAssignAdminRole || user.role !== "ADMIN") &&

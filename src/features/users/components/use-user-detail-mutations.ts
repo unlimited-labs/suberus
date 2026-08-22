@@ -30,11 +30,6 @@ interface PatchPayload {
 	verifyEmail?: boolean;
 }
 
-/**
- * Owns all UserDetailCard behaviour: fee/role/edit/delete dialog state, fee-type
- * and role selection, the patch mutation and its action handlers. Leaves the
- * card as pure presentation.
- */
 export function useUserDetailMutations(user: AdminUserDetail) {
 	const queryClient = useQueryClient();
 	const [feeDialogOpen, setFeeDialogOpen] = useState(false);
@@ -49,7 +44,6 @@ export function useUserDetailMutations(user: AdminUserDetail) {
 	const [selectedFeeTypeId, setSelectedFeeTypeId] = useState<string>(
 		feeTypes[0]?.id ?? "",
 	);
-	// EXHIBITOR cannot be granted here (exhibitor signup only), so default to AUTHOR
 	const [selectedRole, setSelectedRole] = useState<AssignableUserRole>(
 		user.role === "EXHIBITOR" ? "AUTHOR" : user.role,
 	);

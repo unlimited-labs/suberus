@@ -42,8 +42,6 @@ export async function listActivity(
 		};
 	}
 
-	// One past the page: cheaper than a second count, and the caller only needs
-	// to know whether to ask again.
 	const rows = await prisma.activityLog.findMany({
 		where,
 		take: filters.take + 1,

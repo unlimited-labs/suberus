@@ -54,7 +54,6 @@ function render(
 	return { ...view, effects: eff };
 }
 
-/** Fill the form with values that satisfy registerSchema. */
 function fillValid(
 	form: ReturnType<typeof render>["result"]["current"]["form"],
 ) {

@@ -6,7 +6,6 @@ export const loginSchema = z.object({
 	rememberMe: z.boolean(),
 });
 
-// Exported so register.tsx can derive per-field validators (registerBase.shape.*)
 export const registerBase = z.object({
 	email: z.email("Invalid email address"),
 	password: z
@@ -29,8 +28,6 @@ export const registerBase = z.object({
 		.refine((val) => val === true, "You must accept the Terms of Service"),
 });
 
-// Full-form safety net (form onSubmit). Per-step + match + async-email checks
-// run as field-level validators in register.tsx.
 export const registerSchema = registerBase.refine(
 	(data) => data.password === data.confirmPassword,
 	{
@@ -43,7 +40,6 @@ export const forgotPasswordSchema = z.object({
 	email: z.email("Invalid email address"),
 });
 
-// Password match is enforced by PasswordFieldsGroup (field-level validator).
 export const resetPasswordSchema = z.object({
 	newPassword: z
 		.string()

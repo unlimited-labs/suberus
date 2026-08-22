@@ -22,7 +22,6 @@ export interface AdminInvitation {
 }
 
 export async function getInvitations(): Promise<AdminInvitation[]> {
-	// Lazy-expire: bulk update PENDING → EXPIRED where expiresAt < now
 	await prisma.invitation.updateMany({
 		where: { status: "PENDING", expiresAt: { lt: new Date() } },
 		data: { status: "EXPIRED" },

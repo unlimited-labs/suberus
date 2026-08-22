@@ -173,7 +173,7 @@ export const auth = betterAuth({
 		sendOnSignUp: true,
 		autoSignInAfterVerification: true,
 		callbackURL: "/?verified=true",
-		expiresIn: 24 * 60 * 60, // 24h
+		expiresIn: 24 * 60 * 60,
 		sendVerificationEmail: async ({ user, url }) => {
 			// SAFETY: firstName is a better-auth additionalField, absent from the base user type.
 			const extUser = user as typeof user & { firstName?: string };
@@ -254,8 +254,8 @@ export const auth = betterAuth({
 	},
 	session: {
 		modelName: "session",
-		expiresIn: 60 * 60 * 24 * 7, // 7 days
-		updateAge: 60 * 60 * 24, // 1 day
+		expiresIn: 60 * 60 * 24 * 7,
+		updateAge: 60 * 60 * 24,
 	},
 	account: {
 		modelName: "account",
@@ -313,7 +313,6 @@ export const auth = betterAuth({
 				after: async (user) => {
 					if (!user.emailVerified) return;
 					await linkCoAuthorsByEmail(user.email, user.id);
-					// Log self-service email verification (idempotent — checks if already logged)
 					const alreadyLogged = await prisma.activityLog.findFirst({
 						where: { userId: user.id, type: "USER_EMAIL_VERIFIED" },
 					});

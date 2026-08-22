@@ -24,12 +24,10 @@ function toData(params: LogActivityParams) {
 	};
 }
 
-/** Log an activity event */
 export async function logActivity(params: LogActivityParams): Promise<void> {
 	await prisma.activityLog.create({ data: toData(params) });
 }
 
-/** Log activity inside a Prisma transaction */
 export async function logActivityTx(
 	tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
 	params: LogActivityParams,

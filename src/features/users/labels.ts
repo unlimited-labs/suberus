@@ -30,10 +30,6 @@ export const userRoleOptions: { value: AssignableUserRole; label: string }[] = [
 	{ value: "ADMIN", label: "Administrator" },
 ];
 
-/**
- * Role choices a performer may assign. Non-admins (editors) cannot grant the
- * ADMIN role, so it is omitted from their picker (server-enforced regardless).
- */
 export function assignableRoleOptions(
 	canAssignAdminRole: boolean,
 ): { value: AssignableUserRole; label: string }[] {
@@ -64,14 +60,12 @@ const submissionStatusSuffix = {
 	submitted: "",
 } satisfies Record<SubmissionRoleSummary["status"], string>;
 
-/** Single badge label, e.g. "Poster · coauthor ×3 (draft)". */
 export function formatSubmissionRole(role: SubmissionRoleSummary): string {
 	const count = role.count > 1 ? ` ×${role.count}` : "";
 	const suffix = submissionStatusSuffix[role.status];
 	return `${typeLabels[role.type]} · ${submissionRoleLabels[role.role]}${count}${suffix}`;
 }
 
-/** Comma-joined summary of all involvements (used in XLSX export). */
 export function formatSubmissionRoles(roles: SubmissionRoleSummary[]): string {
 	return roles.map(formatSubmissionRole).join(", ");
 }

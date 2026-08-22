@@ -22,7 +22,6 @@ type McpClientAudit = {
 	redirectUris: string[];
 };
 
-// AssertExhaustive forces a shape for every ActivityType (missing key = compile error).
 type DetailShapes = AssertExhaustive<{
 	USER_REGISTERED: { email: string };
 	USER_EMAIL_VERIFIED: NoDetail;
@@ -69,12 +68,10 @@ type DetailShapes = AssertExhaustive<{
 	SETTINGS_CONFERENCE_UPDATED: { changedFields: string[] };
 }>;
 
-// Discriminated union for the detail field per ActivityType.
 export type ActivityDetail = {
 	[K in ActivityType]: { type: K } & DetailShapes[K];
 }[ActivityType];
 
-/** Helper to create a typed activity detail object. */
 export function activityDetail<T extends ActivityType>(
 	type: T,
 	...args: keyof DetailShapes[T] extends never ? [] : [DetailShapes[T]]

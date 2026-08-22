@@ -44,7 +44,6 @@ interface UserDetailHeaderProps {
 	onDelete: () => void;
 }
 
-/** First+last initials for the avatar fallback, falling back to the email. */
 function userInitials(user: AdminUserDetail): string {
 	const initials =
 		`${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.trim();

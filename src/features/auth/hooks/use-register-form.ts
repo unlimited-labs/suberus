@@ -18,10 +18,6 @@ export type RegisterSurveyQuestions = (SurveyQuestionData & {
 })[];
 export type RegisterTosContent = string;
 
-/**
- * Post-signup side effects, injected by the register route (composition tier)
- * so the auth feature does not import survey / exhibitors / invitations APIs.
- */
 export interface RegisterEffects {
 	consumeInvitation: (token: string) => Promise<{ success: boolean }>;
 	saveSurveyAnswers: (
@@ -98,7 +94,6 @@ async function redeemInvitation(
 	return applied;
 }
 
-/** Non-blocking: the account already exists, so survey/ToS can be retried in settings. */
 async function persistSurveyAndTos(
 	surveyAnswers: Record<string, string>,
 	tosContent: RegisterTosContent,
@@ -114,9 +109,7 @@ async function persistSurveyAndTos(
 		const promises: Promise<void>[] = [effects.saveSurveyAnswers(answers)];
 		if (tosContent) promises.push(effects.acceptTos());
 		await Promise.all(promises);
-	} catch {
-		// Account created successfully — survey/ToS can be updated in settings.
-	}
+	} catch {}
 }
 
 async function finishRegistration(
@@ -150,11 +143,6 @@ async function finishRegistration(
 	navigate({ to: "/" });
 }
 
-/**
- * Owns the multi-step registration form: form instance, account-type and ToS
- * dialog state, per-step validation (incl. async email + dynamic survey fields),
- * step navigation and the sign-up / invitation / survey / exhibitor submit flow.
- */
 export function useRegisterForm({
 	surveyQuestions,
 	tosContent,
@@ -201,7 +189,6 @@ export function useRegisterForm({
 			contactConsent: false,
 			acceptTerms: !tosContent,
 		},
-		// Full-form safety net; live + per-step checks are field-level validators.
 		validators: {
 			onSubmit: registerSchema,
 		},
@@ -243,10 +230,7 @@ export function useRegisterForm({
 
 	const needInvoice = useSelector(form.store, (s) => s.values.needInvoice);
 
-	// Run the current step's field-level validators (incl. async email check)
-	// and reveal any errors by marking the fields blurred.
 	const validateStep = async (step: number): Promise<boolean> => {
-		// Step 3 also gates on any required survey questions (dynamic fields).
 		// SAFETY: the template literals already have that form; TS widens them to string.
 		const surveyFields =
 			step === 3

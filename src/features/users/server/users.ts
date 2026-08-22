@@ -34,7 +34,6 @@ export type { PatchUserData } from "./patch-user-helpers";
 
 export type SubmissionInvolvementRole = "author" | "coauthor";
 
-/** Coarse status bucket for a submission involvement (drives the Status filter). */
 export type SubmissionRoleStatus = "draft" | "submitted" | "accepted";
 
 export interface SubmissionRoleSummary {
@@ -85,7 +84,6 @@ export interface AdminUser {
 	surveyAnswers: { questionId: string; value: string }[];
 }
 
-/** User detail payload — adds the full submission list (owned + co-authored). */
 export interface AdminUserDetail extends AdminUser {
 	submissions: AdminUserSubmission[];
 }
@@ -101,7 +99,6 @@ export interface GetUsersResponse {
 // they must never surface as that admin's submissions.
 const notInvited = { type: { not: "INVITED" } } as const;
 
-/** Prisma include fragment that loads everything needed to derive submission roles. */
 const submissionRolesInclude = {
 	submissions: { where: notInvited, select: { type: true, status: true } },
 	submissionAuthors: {
@@ -117,10 +114,6 @@ type UserWithSubmissionRoles = Prisma.UserGetPayload<{
 	include: typeof submissionRolesInclude;
 }>;
 
-/**
- * Aggregate a user's submission involvements into (type, role, draft) buckets.
- * Author = owns the submission; coauthor = listed as author on someone else's.
- */
 function roleStatus(status: SubmissionStatus): SubmissionRoleStatus {
 	if (status === "DRAFT") return "draft";
 	if (status === "ACCEPTED") return "accepted";
@@ -150,7 +143,7 @@ function buildSubmissionRoles(
 		add(s.type, "author", roleStatus(s.status));
 	}
 	for (const sa of user.submissionAuthors) {
-		if (sa.submission.userId === user.id) continue; // own submission → already counted as author
+		if (sa.submission.userId === user.id) continue;
 		add(sa.submission.type, "coauthor", roleStatus(sa.submission.status));
 	}
 
@@ -166,7 +159,6 @@ const submissionDetailSelect = {
 	updatedAt: true,
 } satisfies Prisma.SubmissionSelect;
 
-/** Detail-page include: full submission rows for owned + co-authored work. */
 const userDetailInclude = {
 	fee: true,
 	affiliation: true,
@@ -184,14 +176,7 @@ type UserWithDetail = Prisma.UserGetPayload<{
 	include: typeof userDetailInclude;
 }>;
 
-/**
- * Build the user's submission list (owned as author, others' as coauthor),
- * deduped so a user who both owns and co-authors a submission shows once as author.
- */
 function buildUserSubmissions(user: UserWithDetail): AdminUserSubmission[] {
-	// Map keyed by submission id → at most one row per submission. Owned rows are
-	// added first (role "author") and win over any co-author row for the same
-	// submission, even if the user is listed multiple times as co-author.
 	const byId = new Map<string, AdminUserSubmission>();
 
 	for (const s of user.submissions) {
@@ -208,7 +193,7 @@ function buildUserSubmissions(user: UserWithDetail): AdminUserSubmission[] {
 
 	for (const sa of user.submissionAuthors) {
 		const s = sa.submission;
-		if (byId.has(s.id)) continue; // already counted (as author, or a duplicate co-author row)
+		if (byId.has(s.id)) continue;
 		byId.set(s.id, {
 			id: s.id,
 			sequentialNumber: s.sequentialNumber,
@@ -246,7 +231,6 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 			where.fee = { paid: true };
 		} else {
 			where.OR = [...(where.OR ?? []), { fee: null }, { fee: { paid: false } }];
-			// If we already have search OR, we need to use AND
 			if (data.search) {
 				where.AND = [
 					{
@@ -472,20 +456,11 @@ export async function bulkChangeRole(
 	return { success: true, updated: result.count };
 }
 
-/** Who is performing a role change — used for privilege checks + audit. */
 export interface RoleChangePerformer {
 	id: string;
 	role: UserRole;
 }
 
-/**
- * Authorize a role change. Enforced centrally so the single-user and bulk
- * paths share identical rules:
- *  - nobody may change their own role (prevents self-escalation/lockout);
- *  - only an ADMIN may grant the ADMIN role;
- *  - a non-ADMIN (EDITOR) may not modify a user who is currently ADMIN.
- * Throws a 403 Response when the change is not permitted.
- */
 async function assertRoleChangeAllowed(
 	performer: RoleChangePerformer,
 	targetUserIds: string[],
@@ -527,14 +502,12 @@ export async function changeUserRole(
 		select: { role: true },
 	});
 
-	// Exhibitor role is managed by the exhibitor lifecycle only.
 	if (oldUser.role === "EXHIBITOR") {
 		throw new Response("Cannot manually change an exhibitor's role", {
 			status: 403,
 		});
 	}
 
-	// Prevent demoting the last remaining admin (single-user path).
 	if (oldUser.role === "ADMIN" && data.role !== "ADMIN") {
 		const adminCount = await prisma.user.count({ where: { role: "ADMIN" } });
 		if (adminCount <= 1) {
@@ -834,7 +807,6 @@ export async function deleteUser(
 		throw new Response("Cannot delete your own account", { status: 400 });
 	}
 
-	// Prevent deleting last admin
 	const [adminCount, targetUser] = await Promise.all([
 		prisma.user.count({ where: { role: "ADMIN" } }),
 		prisma.user.findUnique({
@@ -899,7 +871,6 @@ export async function deleteUser(
 		await tx.user.delete({ where: { id: userId } });
 	});
 
-	// Best-effort purge of the orphaned PDFs (rows already cascade-deleted).
 	await Promise.all(
 		documentKeys.flatMap(({ storageKey }) =>
 			storageKey ? [deleteFile(storageKey).catch(() => {})] : [],
@@ -908,8 +879,6 @@ export async function deleteUser(
 
 	return { success: true };
 }
-
-// === Admin orchestration layer ===
 
 export async function patchUser(
 	data: PatchUserData,

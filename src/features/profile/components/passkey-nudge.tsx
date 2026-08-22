@@ -31,11 +31,6 @@ function wasOffered() {
 	}
 }
 
-/**
- * Offers biometric sign-in once to logged-in users whose device has a platform
- * authenticator and who have no passkey yet. Rendered inside the app layout so
- * it covers every sign-in path (password, passkey, OAuth).
- */
 export function PasskeyNudge() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();

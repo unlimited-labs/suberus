@@ -11,13 +11,10 @@ interface Step {
 interface AuthCardProps {
 	title?: string;
 	subtitle?: string;
-	/** Center content vertically (for success/error states) */
 	centered?: boolean;
-	/** Use wider max-width (max-w-4xl instead of max-w-3xl) */
 	wide?: boolean;
 	steps?: readonly Step[];
 	currentStep?: number;
-	/** Extra content in the mobile header (below conferenceName) */
 	mobileHeaderExtra?: ReactNode;
 	children: ReactNode;
 }

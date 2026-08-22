@@ -9,11 +9,6 @@ export interface FeePayment {
 	currency: string;
 }
 
-/**
- * Returns the fee payment payload only when a mark-fee-paid request carries all
- * required fields; otherwise null. Keeps the four-field guard out of the patch
- * orchestrator and makes it unit-testable.
- */
 export function extractFeePayment(data: PatchUserData): FeePayment | null {
 	if (
 		data.markFeePaid &&
@@ -58,7 +53,6 @@ export function selectFeeType(
 		: { error: `Unknown fee type "${name}". Configured: ${names}` };
 }
 
-/** Human-readable summary of which fields a patch touched, for the audit log. */
 export function summarizeUserChanges(data: PatchUserData): string {
 	return [
 		data.role !== undefined && `role=${data.role}`,
