@@ -264,3 +264,47 @@ export const signingTimestampSchema = z.object({
 			message: "Timestamp URL must be an http(s) URL.",
 		}),
 });
+
+export const P12_MAX_BYTES = 1024 * 1024;
+
+export const signingCertGenerateSchema = z.object({
+	commonName: z.string().trim().min(1, "Common name is required").max(120),
+	org: z.string().trim().max(120).default(""),
+	validDays: z.number().int().min(30).max(3650).default(1825),
+});
+
+/** Password stays optional: an unencrypted P12 opens with an empty one. */
+export const signingCertUploadSchema = z.object({
+	file: z
+		.custom<File>((f) => f instanceof File, "Choose a .p12 file")
+		.refine((f) => /\.(p12|pfx)$/i.test(f.name), "Use a .p12 or .pfx file")
+		.refine(
+			(f) => f.size > 0 && f.size <= P12_MAX_BYTES,
+			"The certificate file must be under 1 MB",
+		),
+	password: z.string().max(200),
+});
+
+export const signingCertFormSchema = z.object({
+	commonName: z.string().trim().min(1, "Common name is required").max(120),
+	org: z.string().trim().max(120),
+	validYears: wholeNumber(z.number().int().min(1).max(10)),
+});
+
+export type SigningCertFormValues = z.input<typeof signingCertFormSchema>;
+
+/** Mirrors signingCertUploadSchema but tolerates the empty initial value. */
+export const signingCertUploadFormSchema = z.object({
+	file: z
+		.custom<File | null>((f) => f === null || f instanceof File)
+		.refine((f) => f !== null, "Choose a .p12 file")
+		.refine(
+			(f) => !f || /\.(p12|pfx)$/i.test(f.name),
+			"Use a .p12 or .pfx file",
+		)
+		.refine(
+			(f) => !f || (f.size > 0 && f.size <= P12_MAX_BYTES),
+			"The certificate file must be under 1 MB",
+		),
+	password: z.string().max(200),
+});

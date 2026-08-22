@@ -17,6 +17,8 @@ import {
 } from "@/features/settings/server/document-signing";
 import {
 	signingAppearanceSchema,
+	signingCertGenerateSchema,
+	signingCertUploadSchema,
 	signingTimestampSchema,
 } from "@/features/settings/validations";
 import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
@@ -37,21 +39,17 @@ export const documentSigningQueryOptions = () =>
 
 export const generateSigningCertFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
-	.validator(
-		z.object({
-			commonName: z.string().trim().min(1).max(120),
-			org: z.string().trim().max(120).default(""),
-			validDays: z.number().int().min(30).max(3650).default(1825),
-		}),
-	)
+	.validator(signingCertGenerateSchema)
 	.handler(({ data }) => generateAndStoreCert(data));
 
 export const uploadSigningCertFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
-	.validator((data: FormData) => ({
-		file: getUploadedFile(data, "p12"),
-		password: String(data.get("password") ?? ""),
-	}))
+	.validator((data: FormData) =>
+		signingCertUploadSchema.parse({
+			file: getUploadedFile(data, "p12"),
+			password: String(data.get("password") ?? ""),
+		}),
+	)
 	.handler(async ({ data }) => {
 		const buffer = await fileToBuffer(data.file);
 		return uploadAndStoreCert(buffer, data.password);

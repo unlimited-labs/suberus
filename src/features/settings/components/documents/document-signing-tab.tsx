@@ -21,7 +21,10 @@ import {
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import type { DocumentSigningSettings } from "@/features/settings/types";
 import {
+	type SigningCertFormValues,
 	signingAppearanceSchema,
+	signingCertFormSchema,
+	signingCertUploadFormSchema,
 	signingTimestampSchema,
 } from "@/features/settings/validations";
 import { useAppForm } from "@/shared/hooks/use-app-form";
@@ -130,82 +133,92 @@ function CertificateSection({
 	formatDate: (d: Date) => string;
 	onChanged: () => Promise<void>;
 }) {
-	const [commonName, setCommonName] = useState(conferenceName);
-	const [org, setOrg] = useState(conferenceName);
-	const [validYears, setValidYears] = useState(5);
+	const certForm = useAppForm({
+		defaultValues: {
+			commonName: conferenceName,
+			org: conferenceName,
+			validYears: "5",
+		} satisfies SigningCertFormValues,
+		validators: {
+			onChange: signingCertFormSchema,
+			onSubmit: signingCertFormSchema,
+		},
+		onSubmit: async ({ value }) => {
+			const parsed = signingCertFormSchema.parse(value);
+			const wasRotation = Boolean(cfg);
+			try {
+				await generateSigningCertFn({
+					data: {
+						commonName: parsed.commonName,
+						org: parsed.org,
+						validDays: parsed.validYears * 365,
+					},
+				});
+				await onChanged();
+				toast.success("Certificate generated");
+				if (wasRotation) await resignAfterRotation();
+			} catch (e) {
+				toast.error(getErrorMessage(e, "Failed to generate certificate"));
+			}
+			setConfirm(null);
+		},
+	});
+
+	const uploadForm = useAppForm({
+		// SAFETY: widening the empty initial value, so picking a file typechecks.
+		defaultValues: { file: null as File | null, password: "" },
+		validators: {
+			onChange: signingCertUploadFormSchema,
+			onSubmit: signingCertUploadFormSchema,
+		},
+		onSubmit: async ({ value }) => {
+			if (!value.file) return;
+			const wasRotation = Boolean(cfg);
+			try {
+				const body = new FormData();
+				body.append("p12", value.file);
+				body.append("password", value.password);
+				await uploadSigningCertFn({ data: body });
+				await onChanged();
+				toast.success("Certificate uploaded");
+				uploadForm.reset();
+				if (fileRef.current) fileRef.current.value = "";
+				if (wasRotation) await resignAfterRotation();
+			} catch (e) {
+				toast.error(getErrorMessage(e, "Failed to upload certificate"));
+			}
+			setConfirm(null);
+		},
+	});
+
 	const [busy, setBusy] = useState(false);
 	const fileRef = useRef<HTMLInputElement>(null);
-	const [p12Password, setP12Password] = useState("");
 	// When a cert already exists, replacing it is a rotation: confirm first, then
 	// re-sign previously-signed documents with the new cert.
 	const [confirm, setConfirm] = useState<null | "generate" | "upload">(null);
 
+	const certAttempts = useSelector(certForm.store, (s) => s.submissionAttempts);
+	const uploadAttempts = useSelector(
+		uploadForm.store,
+		(s) => s.submissionAttempts,
+	);
+	const certSubmitting = useSelector(certForm.store, (s) => s.isSubmitting);
+	const uploadSubmitting = useSelector(uploadForm.store, (s) => s.isSubmitting);
+	const working = busy || certSubmitting || uploadSubmitting;
+
 	const expiresInDays = cfg ? daysUntil(cfg.validUntil) : null;
 
-	const doGenerate = async () => {
-		const wasRotation = Boolean(cfg);
-		setBusy(true);
-		try {
-			await generateSigningCertFn({
-				data: { commonName, org, validDays: validYears * 365 },
-			});
-			await onChanged();
-			toast.success("Certificate generated");
-			if (wasRotation) await resignAfterRotation();
-		} catch (e) {
-			toast.error(getErrorMessage(e, "Failed to generate certificate"));
-		}
-		setBusy(false);
-		setConfirm(null);
-	};
-
-	const doUpload = async () => {
-		const file = fileRef.current?.files?.[0];
-		if (!file) {
-			toast.error("Choose a .p12 file");
+	/** Reveal errors, or ask before replacing an existing certificate. */
+	const submitOrConfirm = async (
+		form: typeof certForm | typeof uploadForm,
+		kind: "generate" | "upload",
+	) => {
+		const errors = await form.validateAllFields("submit");
+		if (errors.flat().length > 0 || !cfg) {
+			void form.handleSubmit();
 			return;
 		}
-		const wasRotation = Boolean(cfg);
-		setBusy(true);
-		try {
-			const form = new FormData();
-			form.append("p12", file);
-			form.append("password", p12Password);
-			await uploadSigningCertFn({ data: form });
-			await onChanged();
-			toast.success("Certificate uploaded");
-			if (fileRef.current) fileRef.current.value = "";
-			setP12Password("");
-			if (wasRotation) await resignAfterRotation();
-		} catch (e) {
-			toast.error(getErrorMessage(e, "Failed to upload certificate"));
-		}
-		setBusy(false);
-		setConfirm(null);
-	};
-
-	const generate = () => {
-		if (!commonName.trim()) {
-			toast.error("Common name is required");
-			return;
-		}
-		if (cfg) {
-			setConfirm("generate");
-			return;
-		}
-		void doGenerate();
-	};
-
-	const upload = () => {
-		if (!fileRef.current?.files?.[0]) {
-			toast.error("Choose a .p12 file");
-			return;
-		}
-		if (cfg) {
-			setConfirm("upload");
-			return;
-		}
-		void doUpload();
+		setConfirm(kind);
 	};
 
 	const toggleEnabled = async (enabled: boolean) => {
@@ -218,7 +231,6 @@ function CertificateSection({
 		}
 		setBusy(false);
 	};
-
 	return (
 		<SettingsSection
 			description="Cryptographically sign generated PDF documents with the conference's identity"
@@ -283,7 +295,7 @@ function CertificateSection({
 								<Switch
 									checked={cfg.enabled}
 									data-testid="signing-enabled-switch"
-									disabled={busy}
+									disabled={working}
 									id="signing-enabled"
 									onCheckedChange={toggleEnabled}
 								/>
@@ -313,42 +325,87 @@ function CertificateSection({
 								? "Regenerate self-signed certificate"
 								: "Generate certificate"}
 						</h3>
-						<div className="space-y-2">
-							<Label htmlFor="cn">Common name</Label>
-							<Input
-								data-testid="signing-common-name"
-								id="cn"
-								onChange={(e) => setCommonName(e.target.value)}
-								value={commonName}
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label htmlFor="org">Organization</Label>
-							<Input
-								id="org"
-								onChange={(e) => setOrg(e.target.value)}
-								value={org}
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label htmlFor="validity">Validity (years)</Label>
-							<Input
-								className="max-w-[140px]"
-								id="validity"
-								max={10}
-								min={1}
-								onChange={(e) => setValidYears(Number(e.target.value))}
-								type="number"
-								value={validYears}
-							/>
-						</div>
+						<certForm.Field name="commonName">
+							{(field) => {
+								const hasError = isFieldErrorVisible(
+									field.state.meta,
+									certAttempts,
+								);
+								return (
+									<div className="space-y-2">
+										<Label htmlFor="commonName">Common name</Label>
+										<Input
+											aria-invalid={hasError}
+											data-testid="signing-common-name"
+											id="commonName"
+											onBlur={field.handleBlur}
+											onChange={(e) => field.handleChange(e.target.value)}
+											value={field.state.value}
+										/>
+										<FieldError
+											errors={hasError ? field.state.meta.errors : undefined}
+										/>
+									</div>
+								);
+							}}
+						</certForm.Field>
+						<certForm.Field name="org">
+							{(field) => {
+								const hasError = isFieldErrorVisible(
+									field.state.meta,
+									certAttempts,
+								);
+								return (
+									<div className="space-y-2">
+										<Label htmlFor="org">Organization</Label>
+										<Input
+											aria-invalid={hasError}
+											id="org"
+											onBlur={field.handleBlur}
+											onChange={(e) => field.handleChange(e.target.value)}
+											value={field.state.value}
+										/>
+										<FieldError
+											errors={hasError ? field.state.meta.errors : undefined}
+										/>
+									</div>
+								);
+							}}
+						</certForm.Field>
+						<certForm.Field name="validYears">
+							{(field) => {
+								const hasError = isFieldErrorVisible(
+									field.state.meta,
+									certAttempts,
+								);
+								return (
+									<div className="space-y-2">
+										<Label htmlFor="validYears">Validity (years)</Label>
+										<Input
+											aria-invalid={hasError}
+											className="max-w-[140px]"
+											id="validYears"
+											max={10}
+											min={1}
+											onBlur={field.handleBlur}
+											onChange={(e) => field.handleChange(e.target.value)}
+											type="number"
+											value={field.state.value}
+										/>
+										<FieldError
+											errors={hasError ? field.state.meta.errors : undefined}
+										/>
+									</div>
+								);
+							}}
+						</certForm.Field>
 						<Button
 							data-testid="generate-cert-button"
-							disabled={busy}
-							onClick={generate}
+							disabled={working}
+							onClick={() => void submitOrConfirm(certForm, "generate")}
 							size="sm"
 						>
-							{busy && <IconLoader2 className="mr-2 size-4 animate-spin" />}
+							{working && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 							{cfg ? "Regenerate" : "Generate"}
 						</Button>
 					</div>
@@ -358,29 +415,61 @@ function CertificateSection({
 						<p className="text-muted-foreground text-xs">
 							Bring an organizational or qualified certificate for full trust.
 						</p>
-						<div className="space-y-2">
-							<Label htmlFor="p12">Certificate file (.p12 / .pfx)</Label>
-							<Input
-								accept=".p12,.pfx"
-								data-testid="signing-p12-file"
-								id="p12"
-								ref={fileRef}
-								type="file"
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label htmlFor="p12pw">Password</Label>
-							<Input
-								id="p12pw"
-								onChange={(e) => setP12Password(e.target.value)}
-								type="password"
-								value={p12Password}
-							/>
-						</div>
+						<uploadForm.Field name="file">
+							{(field) => {
+								const hasError = isFieldErrorVisible(
+									field.state.meta,
+									uploadAttempts,
+								);
+								return (
+									<div className="space-y-2">
+										<Label htmlFor="p12">Certificate file (.p12 / .pfx)</Label>
+										<Input
+											accept=".p12,.pfx"
+											aria-invalid={hasError}
+											data-testid="signing-p12-file"
+											id="p12"
+											onChange={(e) =>
+												field.handleChange(e.target.files?.[0] ?? null)
+											}
+											ref={fileRef}
+											type="file"
+										/>
+										<FieldError
+											errors={hasError ? field.state.meta.errors : undefined}
+										/>
+									</div>
+								);
+							}}
+						</uploadForm.Field>
+						<uploadForm.Field name="password">
+							{(field) => {
+								const hasError = isFieldErrorVisible(
+									field.state.meta,
+									uploadAttempts,
+								);
+								return (
+									<div className="space-y-2">
+										<Label htmlFor="p12pw">Password</Label>
+										<Input
+											aria-invalid={hasError}
+											id="p12pw"
+											onBlur={field.handleBlur}
+											onChange={(e) => field.handleChange(e.target.value)}
+											type="password"
+											value={field.state.value}
+										/>
+										<FieldError
+											errors={hasError ? field.state.meta.errors : undefined}
+										/>
+									</div>
+								);
+							}}
+						</uploadForm.Field>
 						<Button
 							data-testid="upload-cert-button"
-							disabled={busy}
-							onClick={upload}
+							disabled={working}
+							onClick={() => void submitOrConfirm(uploadForm, "upload")}
 							size="sm"
 							variant="outline"
 						>
@@ -393,7 +482,7 @@ function CertificateSection({
 
 			<Dialog
 				onOpenChange={(o) => {
-					if (!busy && !o) setConfirm(null);
+					if (!working && !o) setConfirm(null);
 				}}
 				open={confirm !== null}
 			>
@@ -423,7 +512,7 @@ function CertificateSection({
 					</DialogHeader>
 					<DialogFooter>
 						<Button
-							disabled={busy}
+							disabled={working}
 							onClick={() => setConfirm(null)}
 							variant="outline"
 						>
@@ -431,12 +520,14 @@ function CertificateSection({
 						</Button>
 						<Button
 							data-testid="rotate-cert-confirm"
-							disabled={busy}
+							disabled={working}
 							onClick={() =>
-								confirm === "generate" ? doGenerate() : doUpload()
+								void (confirm === "generate"
+									? certForm.handleSubmit()
+									: uploadForm.handleSubmit())
 							}
 						>
-							{busy && <IconLoader2 className="mr-2 size-4 animate-spin" />}
+							{working && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 							Replace &amp; re-sign
 						</Button>
 					</DialogFooter>
