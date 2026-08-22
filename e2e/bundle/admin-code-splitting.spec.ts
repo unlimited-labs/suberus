@@ -13,7 +13,6 @@ function isProductionJs(url: string): boolean {
 
 test.describe("Admin code splitting", () => {
 	test("author does not download admin chunks", async ({ page }) => {
-		// Arrange — capture JS responses
 		const prodJsRequests: string[] = []
 		page.on("response", (response) => {
 			const url = response.url()
@@ -22,7 +21,6 @@ test.describe("Admin code splitting", () => {
 			}
 		})
 
-		// Act
 		await loginAsTestUser(page)
 		await page.goto("/submissions")
 		await expect(page.getByRole("heading", { level: 1 })).toBeVisible()
@@ -32,21 +30,18 @@ test.describe("Admin code splitting", () => {
 		const isProduction = prodJsRequests.length > 0
 
 		if (isProduction) {
-			// Production mode — verify no admin chunks loaded
 			const adminChunks = prodJsRequests.filter(isAdminChunk)
 			expect(adminChunks, "Author should not load admin chunks").toHaveLength(0)
 		}
 		// Dev mode: Vite serves all route modules eagerly (TanStack Router prefetching),
 		// so module-level code splitting can only be verified in production builds.
 
-		// Both modes — admin heading should not be visible
 		await expect(
 			page.getByRole("heading", { name: "Administration" }),
 		).not.toBeVisible()
 	})
 
 	test("admin loads admin chunks on admin navigation", async ({ page }) => {
-		// Arrange
 		const prodJsRequests: string[] = []
 		page.on("response", (response) => {
 			const url = response.url()
@@ -55,7 +50,6 @@ test.describe("Admin code splitting", () => {
 			}
 		})
 
-		// Act
 		await loginAsAdmin(page)
 		await page.goto("/admin/dashboard")
 		await expect(page.getByRole("heading", { name: "Admin Dashboard" })).toBeVisible()
@@ -63,7 +57,6 @@ test.describe("Admin code splitting", () => {
 		const isProduction = prodJsRequests.length > 0
 
 		if (isProduction) {
-			// Production mode — admin chunks should be loaded
 			await expect.poll(
 				() => prodJsRequests.filter(isAdminChunk).length,
 				{ message: "Admin should load admin layout chunk", timeout: 10000 },

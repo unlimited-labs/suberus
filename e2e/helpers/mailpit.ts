@@ -21,11 +21,9 @@ export async function clearMailpit(testRunId: string) {
 					await mailpit.deleteMessages({ IDs: [message.ID] })
 				}
 			} catch {
-				// Skip if message already deleted or error fetching
 			}
 		}
 	} catch {
-		// Mailpit might not be running
 	}
 }
 
@@ -33,7 +31,6 @@ export async function clearMailpitForAddress(address: string) {
 	try {
 		await mailpit.deleteMessagesBySearch({ query: `from:${workerFrom()} to:${address}` })
 	} catch {
-		// Mailpit might not be running
 	}
 }
 
@@ -62,7 +59,6 @@ export async function waitForEmail(toEmail: string, subjectContains: string, tim
 			})
 			if (messages.length > 0) return messages[0]
 		} catch {
-			// Mailpit might not be running, fall through to retry
 		}
 		await new Promise((r) => setTimeout(r, 500))
 	}

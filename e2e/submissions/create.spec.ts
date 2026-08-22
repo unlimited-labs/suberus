@@ -11,10 +11,8 @@ import { skipOnMobile } from "../helpers/skip-on-mobile";
 test.describe("Submission Form", () => {
 
 	test("displays submission form", async ({ submissionPage }) => {
-		// Arrange
 		await submissionPage.goto();
 
-		// Assert
 		await expect(
 			submissionPage.page
 				.getByRole("heading", { name: "New Submission" })
@@ -28,7 +26,6 @@ test.describe("Submission Form", () => {
 	test("auto-fills first author with logged-in user data", async ({
 		submissionPage,
 	}) => {
-		// Arrange
 		await submissionPage.goto();
 		const authorsHeading = submissionPage.page.getByRole("heading", { name: "Authors" });
 		await authorsHeading.scrollIntoViewIfNeeded();
@@ -38,7 +35,6 @@ test.describe("Submission Form", () => {
 		const emailInput = submissionPage.page.locator("#author-0-email");
 		await expect(firstNameInput).toBeVisible({ timeout: 10000 });
 
-		// Assert - verify user data is auto-filled from session
 		await expect(firstNameInput).toHaveValue(TEST_USER.firstName, {
 			timeout: 15000,
 		});
@@ -50,15 +46,12 @@ test.describe("Submission Form", () => {
 	});
 
 	test("can select submission type", async ({ submissionPage }) => {
-		// Arrange
 		await submissionPage.goto();
 		const oralButton = submissionPage.getSubmissionTypeButton("Oral Presentation");
 		await expect(oralButton).toHaveClass(/border-primary/);
 
-		// Act
 		await submissionPage.selectType("POSTER");
 
-		// Assert
 		const posterButton = submissionPage.getSubmissionTypeButton("Poster");
 		await expect(posterButton).toHaveClass(/border-primary/);
 	});
@@ -66,10 +59,8 @@ test.describe("Submission Form", () => {
 	test("shows Full Paper option with file upload badge", async ({
 		submissionPage,
 	}) => {
-		// Arrange
 		await submissionPage.goto();
 
-		// Assert - Full Paper type button visible; selecting it reveals file dropzone
 		const fullPaperButton = submissionPage.getSubmissionTypeButton("Full Paper");
 		await expect(fullPaperButton).toBeVisible();
 		await fullPaperButton.click();
@@ -79,14 +70,11 @@ test.describe("Submission Form", () => {
 	});
 
 	test("can fill title and content", async ({ submissionPage }) => {
-		// Arrange
 		await submissionPage.goto();
 
-		// Act
 		await submissionPage.fillTitle("Test Title");
 		await submissionPage.fillContent("Test content that is long enough");
 
-		// Assert
 		await expect(submissionPage.titleInput).toHaveValue("Test Title");
 		await expect(submissionPage.contentInput).toHaveValue(
 			"Test content that is long enough",
@@ -94,14 +82,11 @@ test.describe("Submission Form", () => {
 	});
 
 	test("can add keywords", async ({ submissionPage }) => {
-		// Arrange
 		await submissionPage.goto();
 
-		// Act
 		await submissionPage.addKeyword("keyword1");
 		await submissionPage.addKeyword("keyword2");
 
-		// Assert
 		await expect(submissionPage.page.locator("text=keyword1")).toBeVisible();
 		await expect(submissionPage.page.locator("text=keyword2")).toBeVisible();
 	});
@@ -109,53 +94,42 @@ test.describe("Submission Form", () => {
 	test("can add keywords with comma tokenization", async ({
 		submissionPage,
 	}) => {
-		// Arrange
 		await submissionPage.goto();
 		const keywordInput = submissionPage.getKeywordsSection().getByRole("textbox");
 
-		// Act
 		await keywordInput.fill("first, second,");
 
-		// Assert
 		await expect(submissionPage.page.locator("text=first")).toBeVisible();
 		await expect(submissionPage.page.locator("text=second")).toBeVisible();
 
-		// Act
 		await keywordInput.fill("third");
 		await keywordInput.press("Enter");
 
-		// Assert
 		await expect(submissionPage.page.locator("text=third")).toBeVisible();
 	});
 
 	test("adds keyword on blur (without comma or Enter)", async ({
 		submissionPage,
 	}) => {
-		// Arrange
 		await submissionPage.goto();
 		const keywordInput = submissionPage.getKeywordsSection().getByRole("textbox");
 
-		// Act
 		await keywordInput.fill("singlekeyword");
 		await submissionPage.titleInput.click();
 
-		// Assert
 		await expect(
 			submissionPage.page.locator("text=singlekeyword"),
 		).toBeVisible();
 	});
 
 	test("can add additional author", async ({ submissionPage }) => {
-		// Arrange
 		await submissionPage.goto();
 		await expect(
 			submissionPage.page.locator("#author-0-firstName"),
 		).toBeVisible();
 
-		// Act
 		await submissionPage.addAuthor();
 
-		// Assert
 		await expect(
 			submissionPage.page.locator("#author-1-firstName"),
 		).toBeVisible();
@@ -171,21 +145,17 @@ test.describe("Submission Form", () => {
 			return;
 		}
 
-		// Arrange
 		await submissionPage.goto();
 
-		// Assert
 		const progressSection = submissionPage.page.getByText("Progress");
 		await expect(progressSection).toBeVisible();
 	});
 
 	test("submits form successfully and redirects", async ({ submissionPage, uniqueSubmission }) => {
 		test.slow(); // Full form fill + submit + redirect under load
-		// Arrange
 		await submissionPage.goto();
 		await submissionPage.fillCompleteForm(uniqueSubmission);
 
-		// Act
 		await submissionPage.submit();
 
 		// Assert - wait for success toast (doesn't depend on load event)
@@ -199,7 +169,6 @@ test.describe("Submission Form", () => {
 		// Skip on mobile - toast positioning may differ
 		skipOnMobile(testInfo);
 
-		// Arrange
 		await submissionPage.goto();
 		await submissionPage.selectType("ABSTRACT");
 		await submissionPage.fillTitle("Valid title here");
@@ -209,23 +178,18 @@ test.describe("Submission Form", () => {
 		await submissionPage.addKeyword("keyword2");
 		await submissionPage.addKeyword("keyword3");
 
-		// Act
 		await submissionPage.submit();
 
-		// Assert
 		await expect(
 			submissionPage.page.getByText(/at least 500 characters/i),
 		).toBeVisible({ timeout: 15000 });
 	});
 
 	test("does not show character count for content", async ({ submissionPage }) => {
-		// Arrange
 		await submissionPage.goto();
 
-		// Act
 		await submissionPage.fillContent("Hello World");
 
-		// Assert
 		await expect(
 			submissionPage.page.getByText(/11 \/ \d+-\d+ characters/),
 		).not.toBeVisible();
@@ -234,13 +198,10 @@ test.describe("Submission Form", () => {
 	test("shows file dropzone for FILE format type", async ({
 		submissionPage,
 	}) => {
-		// Arrange
 		await submissionPage.goto();
 
-		// Act
 		await submissionPage.selectType("FULL_PAPER");
 
-		// Assert
 		await expect(submissionPage.contentInput).not.toBeVisible({ timeout: 5000 });
 		await expect(
 			submissionPage.page.getByText("Drop file or click to upload"),
@@ -252,10 +213,8 @@ test.describe("Submission Form", () => {
 	});
 
 	test("hides file dropzone for TEXT format", async ({ submissionPage }) => {
-		// Arrange
 		await submissionPage.goto();
 
-		// Assert
 		await expect(submissionPage.contentInput).toBeVisible();
 		await expect(
 			submissionPage.page.getByText("Drop file or click to upload"),
@@ -266,23 +225,18 @@ test.describe("Submission Form", () => {
 	test("switches content fields when changing type", async ({
 		submissionPage,
 	}) => {
-		// Arrange
 		await submissionPage.goto();
 		await expect(submissionPage.contentInput).toBeVisible();
 
-		// Act
 		await submissionPage.selectType("FULL_PAPER");
 
-		// Assert
 		await expect(submissionPage.contentInput).not.toBeVisible({ timeout: 5000 });
 		await expect(
 			submissionPage.page.getByText("Drop file or click to upload"),
 		).toBeVisible();
 
-		// Act
 		await submissionPage.selectType("POSTER");
 
-		// Assert
 		await expect(submissionPage.contentInput).toBeVisible({ timeout: 5000 });
 	});
 });

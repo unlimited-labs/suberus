@@ -9,19 +9,15 @@ test.describe("Draft Creation", () => {
 		uniqueSubmission,
 	}) => {
 		test.slow();
-		// Arrange
 		await submissionPage.goto();
 
-		// Act
 		await submissionPage.fillCompleteForm(uniqueSubmission);
 		await submissionPage.saveDraftButton.click();
 
-		// Assert - redirect to detail page with Draft badge
 		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText("Draft", { timeout: 60000 });
 	});
 
 	test("draft is visible in submissions list", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		const { id, title } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Draft List Test",
@@ -29,10 +25,8 @@ test.describe("Draft Creation", () => {
 		});
 		cleanup.track(id);
 
-		// Act
 		await page.goto("/submissions");
 
-		// Assert
 		await expect(page.locator("main")).toContainText(title, { timeout: 10000 });
 	});
 
@@ -42,10 +36,8 @@ test.describe("Draft Creation", () => {
 		uniqueSubmission,
 	}) => {
 		test.slow();
-		// Arrange
 		await submissionPage.goto();
 
-		// Act - fill content + keywords, rely on auto-filled first author from session
 		await submissionPage.selectType(uniqueSubmission.type);
 		await submissionPage.fillTitle(uniqueSubmission.title);
 		await submissionPage.fillContent(uniqueSubmission.content);
@@ -55,7 +47,6 @@ test.describe("Draft Creation", () => {
 		}
 		await submissionPage.saveDraftButton.click();
 
-		// Assert
 		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText("Draft", { timeout: 60000 });
 	});
 });
@@ -67,16 +58,13 @@ test.describe("Draft - Skips Validation", () => {
 		testRun,
 	}) => {
 		test.slow();
-		// Arrange
 		await submissionPage.goto();
 
-		// Act - fill only type and short title, skip content and keywords
 		await submissionPage.selectType("ABSTRACT");
 		await submissionPage.fillTitle(`${testRun.testRunId}_Incomplete Draft`);
 		await submissionPage.fillAffiliation(0, "Test University");
 		await submissionPage.saveDraftButton.click();
 
-		// Assert - should save successfully despite missing content/keywords
 		await expect(
 			page.locator('[data-testid="submission-status"]').first(),
 		).toContainText("Draft", { timeout: 60000 });
@@ -88,7 +76,6 @@ test.describe("Draft - Skips Validation", () => {
 		cleanup,
 	}) => {
 		test.slow();
-		// Arrange - create a valid draft
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Draft Validation Bypass",
@@ -99,14 +86,12 @@ test.describe("Draft - Skips Validation", () => {
 		await page.goto(`/submissions/${id}/edit`);
 		await expect(page.getByLabel("Title")).toBeVisible({ timeout: 10000 });
 
-		// Act - clear content (making it too short) and save draft
 		await page.getByLabel("Abstract").fill("Short");
 
 		// Use JavaScript click to guarantee the event fires
 		const saveDraftBtn = page.getByRole("button", { name: "Save Draft" });
 		await saveDraftBtn.evaluate((btn: HTMLButtonElement) => btn.click());
 
-		// Assert - should save despite invalid content length
 		await expect(page.locator("[data-sonner-toast]")).toContainText("Draft saved", { timeout: 15000 });
 		await expect(page).toHaveURL(/\/submissions\/[a-f0-9-]+$/, { timeout: 30000 });
 	});
@@ -117,16 +102,13 @@ test.describe("Draft - Skips Validation", () => {
 		testRun,
 	}) => {
 		test.slow();
-		// Arrange
 		await submissionPage.goto();
 
-		// Act - fill only type and short title, then submit
 		await submissionPage.selectType("ABSTRACT");
 		await submissionPage.fillTitle(`${testRun.testRunId}_Incomplete Submit`);
 		await submissionPage.fillAffiliation(0, "Test University");
 		await submissionPage.submitButton.click();
 
-		// Assert - should show field validation error, NOT redirect
 		await expect(
 			page.getByText(/at least 500 characters/i).or(page.locator("[data-sonner-toast]")),
 		).toBeVisible({ timeout: 30000 });
@@ -140,7 +122,6 @@ test.describe("Draft Detail View - Actions Card", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Draft Actions Test",
@@ -149,7 +130,6 @@ test.describe("Draft Detail View - Actions Card", () => {
 		cleanup.track(id);
 		await page.goto(`/submissions/${id}`);
 
-		// Assert
 		await expect(
 			page.getByRole("button", { name: "Continue Editing" })
 		).toBeVisible();
@@ -161,7 +141,6 @@ test.describe("Draft Detail View - Actions Card", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Draft Submit Test",
@@ -170,10 +149,8 @@ test.describe("Draft Detail View - Actions Card", () => {
 		cleanup.track(id);
 		await page.goto(`/submissions/${id}`);
 
-		// Act
 		await page.getByRole("button", { name: "Submit" }).click();
 
-		// Assert
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText(
 			"Submitted",
@@ -186,7 +163,6 @@ test.describe("Draft Detail View - Actions Card", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Draft Continue Edit Test",
@@ -195,10 +171,8 @@ test.describe("Draft Detail View - Actions Card", () => {
 		cleanup.track(id);
 		await page.goto(`/submissions/${id}`);
 
-		// Act
 		await page.getByRole("button", { name: "Continue Editing" }).click();
 
-		// Assert
 		await page.waitForURL(/\/submissions\/[a-f0-9-]+\/edit/, { timeout: 10000 });
 	});
 });
@@ -209,7 +183,6 @@ test.describe("Edit Page", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const { id, title } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Prefill Test",
@@ -217,10 +190,8 @@ test.describe("Edit Page", () => {
 		});
 		cleanup.track(id);
 
-		// Act
 		await page.goto(`/submissions/${id}/edit`);
 
-		// Assert
 		await expect(page.getByLabel("Title")).toHaveValue(title, { timeout: 10000 });
 		await expect(page.getByLabel("Abstract")).not.toBeEmpty();
 	});
@@ -231,7 +202,6 @@ test.describe("Edit Page", () => {
 		cleanup,
 	}) => {
 		test.slow();
-		// Arrange
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Edit Save Test",
@@ -242,12 +212,10 @@ test.describe("Edit Page", () => {
 		await page.goto(`/submissions/${id}/edit`);
 		await expect(page.getByLabel("Title")).toBeVisible({ timeout: 10000 });
 
-		// Act - modify title and save
 		const newTitle = `${testRun.testRunId}_Updated Draft Title`;
 		await page.getByLabel("Title").fill(newTitle);
 		await page.getByRole("button", { name: "Save Draft" }).click();
 
-		// Assert - wait for redirect to detail page (not edit page)
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 15000 });
 		await expect(page).toHaveURL(/\/submissions\/[a-f0-9-]+$/, { timeout: 30000 });
 		await expect(page.getByText(newTitle).first()).toBeVisible({ timeout: 10000 });
@@ -258,7 +226,6 @@ test.describe("Edit Page", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Submitted Edit Test",
@@ -266,7 +233,6 @@ test.describe("Edit Page", () => {
 		});
 		cleanup.track(id);
 
-		// Act
 		await page.goto(`/submissions/${id}/edit`);
 
 		// Assert — editing SUBMITTED is now blocked (only DRAFT allowed)
@@ -279,7 +245,6 @@ test.describe("Edit Page", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Non Editable Test",
@@ -287,10 +252,8 @@ test.describe("Edit Page", () => {
 		});
 		cleanup.track(id);
 
-		// Act
 		await page.goto(`/submissions/${id}/edit`);
 
-		// Assert
 		await expect(page.getByText("Cannot Edit")).toBeVisible({ timeout: 10000 });
 	});
 });

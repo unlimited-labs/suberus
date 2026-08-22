@@ -5,7 +5,6 @@ import { dismissViteOverlay } from "../helpers/page-setup"
 export { UNVERIFIED_USER, TEST_USER } from "../helpers/test-users"
 export { clearMailpit, clearMailpitForAddress, getMailpitMessages, getMailpitMessage, waitForEmail } from "../helpers/mailpit"
 
-// Page Objects
 export class VerifyEmailPage {
 	readonly page: Page
 	readonly heading: Locator
@@ -139,7 +138,6 @@ export class SettingsEmailSection {
 	}
 }
 
-// Extended test with fixtures
 interface EmailVerificationFixtures {
 	verifyEmailPage: VerifyEmailPage
 	emailBanner: EmailVerificationBanner

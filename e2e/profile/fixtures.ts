@@ -6,11 +6,9 @@ export { TEST_USER } from "../helpers/test-users"
 
 export const VALID_ORCID = "0000-0002-1825-0097"
 
-// Page Object
 export class SettingsPage {
 	readonly page: Page
 	readonly heading: Locator
-	// Personal info
 	readonly firstNameInput: Locator
 	readonly lastNameInput: Locator
 	readonly titleSelect: Locator
@@ -19,22 +17,18 @@ export class SettingsPage {
 	readonly websiteInput: Locator
 	readonly linkedinInput: Locator
 	readonly savePersonalBtn: Locator
-	// Contact info
 	readonly emailInput: Locator
 	readonly needInvoiceCheckbox: Locator
 	readonly addressInput: Locator
 	readonly countryButton: Locator
 	readonly saveContactBtn: Locator
-	// Email verification status
 	readonly emailVerifiedBadge: Locator
 	readonly emailNotVerifiedBadge: Locator
 	readonly emailResendButton: Locator
-	// Password
 	readonly currentPasswordInput: Locator
 	readonly newPasswordInput: Locator
 	readonly confirmPasswordInput: Locator
 	readonly changePasswordBtn: Locator
-	// Email-change confirm dialog
 	readonly emailChangeDialog: Locator
 	readonly emailChangeDialogPassword: Locator
 	readonly emailChangeDialogConfirm: Locator
@@ -43,7 +37,6 @@ export class SettingsPage {
 		this.page = page
 		this.heading = page.getByRole("heading", { name: "Profile" })
 
-		// Personal info section
 		const personalSection = page
 			.locator("section")
 			.filter({ has: page.getByRole("heading", { name: "Personal Information" }) })
@@ -66,14 +59,12 @@ export class SettingsPage {
 		this.emailInput = page.getByLabel("Email *")
 		this.needInvoiceCheckbox = page.getByRole("checkbox", { name: "I need an invoice for my organization" })
 		this.addressInput = page.getByLabel("Billing details (organization)")
-		// Country combobox within contact section
 		this.countryButton = contactSection.getByRole("combobox")
 		this.saveContactBtn = page
 			.locator("section")
 			.filter({ has: page.getByRole("heading", { name: "Contact & Invoice Information" }) })
 			.getByRole("button", { name: "Save changes" })
 
-		// Email verification status (in contact section)
 		this.emailVerifiedBadge = contactSection.getByText("Email verified")
 		this.emailNotVerifiedBadge = contactSection.getByText("Email not verified")
 		this.emailResendButton = contactSection.getByRole("button", { name: /resend/i })
@@ -85,7 +76,6 @@ export class SettingsPage {
 		// Button text changes during submit, so match either state
 		this.changePasswordBtn = page.getByRole("button", { name: /change password/i })
 
-		// Email-change confirm dialog
 		this.emailChangeDialog = page.getByTestId("email-change-confirm-dialog")
 		this.emailChangeDialogPassword = page.getByTestId("email-change-confirm-password")
 		this.emailChangeDialogConfirm = page.getByTestId("email-change-confirm-submit")
@@ -195,7 +185,6 @@ export class SettingsPage {
 	}
 }
 
-// Extended test with fixtures
 interface SettingsFixtures {
 	settingsPage: SettingsPage
 }

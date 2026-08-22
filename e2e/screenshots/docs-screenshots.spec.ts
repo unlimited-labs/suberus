@@ -110,7 +110,6 @@ async function shot(page: Page, name: string, opts?: { full?: boolean; height?: 
 	await page.screenshot({ path: path.join(SHOTS_DIR, name), fullPage: opts?.full ?? false });
 }
 
-// Shared ids filled by beforeAll
 const ctx = {
 	multiVersionId: "",
 	submittedId: "",
@@ -429,7 +428,6 @@ test.describe("docs screenshots", () => {
 			return;
 		}
 
-		// --- conference identity & dates ---------------------------------------
 		await setAppSetting("CONFERENCE_NAME", "ICCMS 2026");
 		await setAppSetting("CONFERENCE_SUBTITLE", "International Conference on Computational Materials Science");
 		await setAppSetting("CONFERENCE_LOCATION", "Krakow, Poland");
@@ -472,7 +470,6 @@ test.describe("docs screenshots", () => {
 		const authorUser = (i: number) =>
 			[userIds[2], userIds[3], userIds[5], userIds[6], userIds[7]][i % 5];
 
-		// --- survey: surface answers as users-list columns ----------------------
 		const formatQ = await db.surveyQuestion.findFirst({ where: { label: "Preferred session format" } });
 		if (formatQ) {
 			await db.surveyQuestion.update({
@@ -500,12 +497,10 @@ test.describe("docs screenshots", () => {
 			}
 		}
 
-		// --- fees ----------------------------------------------------------------
 		for (const uid of [userIds[0], userIds[2], userIds[3], testUserId]) {
 			await createFee({ userId: uid, type: "Regular", amount: 150, currency: "EUR" });
 		}
 
-		// --- intake tracks ---------------------------------------------------------
 		const mlTrack = await db.conferenceTrack.create({
 			data: { name: "Machine Learning in Materials", supervisorId: reviewerUserId, isActive: true },
 		});
@@ -516,7 +511,6 @@ test.describe("docs screenshots", () => {
 			data: { name: "Multiscale Modelling", supervisorId: editorUserId, isActive: true },
 		});
 
-		// --- submissions across the workflow --------------------------------------
 		const authorPool = [
 			{ firstName: "Sofia", lastName: "Rossi", affiliationName: "Politecnico di Milano", email: "sofia.rossi@example.org" },
 			{ firstName: "Lukas", lastName: "Weber", affiliationName: "ETH Zurich", email: "lukas.weber@example.org" },
@@ -663,7 +657,6 @@ test.describe("docs screenshots", () => {
 		});
 		await db.submission.update({ where: { id: mv.id }, data: { currentVersionId: v2.id } });
 
-		// DOCX upload (extraction context)
 		await createSubmissionWithFile({
 			title: "Microstructure-Informed Fatigue Life Prediction",
 			type: SubmissionType.FULL_PAPER,
@@ -674,7 +667,6 @@ test.describe("docs screenshots", () => {
 			fileName: "manuscript.docx",
 			mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 		});
-		// --- program planner --------------------------------------------------------
 		const aula = await db.room.create({
 			data: { name: "Aula Magna", description: "Main lecture hall", order: 0 },
 		});
@@ -738,7 +730,6 @@ test.describe("docs screenshots", () => {
 		await mkSession("Uncertainty Quantification", day(15, "14:00"), day(15, "15:30"), aula.id, tData.id, [clashA.id]);
 		await mkSession("Stochastic Microstructure Models", day(15, "14:00"), day(15, "15:30"), r101.id, tModel.id, [clashB.id]);
 
-		// --- invitations --------------------------------------------------------------
 		const hours = (h: number) => new Date(Date.now() + h * 3600 * 1000);
 		await db.invitation.create({
 			data: {
@@ -823,8 +814,6 @@ test.describe("docs screenshots", () => {
 		await resolveCtx();
 	});
 
-	// ---- Part 1: Configuration --------------------------------------------------
-
 	test("01 login screen", async ({ browser, baseURL }) => {
 		// Force a guest session — the project storageState would otherwise leave us
 		// logged in as admin, and /login redirects authenticated users to the app.
@@ -879,8 +868,6 @@ test.describe("docs screenshots", () => {
 		await page.getByRole("tab", { name: /preview/i }).or(page.getByRole("button", { name: /preview/i })).first().click();
 		await shot(page, "14-configuration-terms-of-service.png", { height: 1300 });
 	});
-
-	// ---- Part 2: Managing ---------------------------------------------------------
 
 	test("16+17 dashboard", async ({ page }) => {
 		await page.goto("/admin/dashboard");
@@ -989,8 +976,6 @@ test.describe("docs screenshots", () => {
 		});
 	});
 
-	// ---- Part 3: Program Planner --------------------------------------------------
-
 	test("28 session editor", async ({ page }) => {
 		await page.goto("/admin/program-planner");
 		await page.waitForTimeout(1500); // calendar layout settles
@@ -1085,8 +1070,6 @@ test.describe("docs screenshots", () => {
 		}
 	});
 
-	// ---- Part 4: Exhibitors, reviewer compare, survey templates -------------------
-
 	test("35 exhibitors list", async ({ page }) => {
 		await page.goto("/admin/exhibitors");
 		await shot(page, "35-managing-exhibitors-list.png", { height: 1600 });
@@ -1167,8 +1150,6 @@ test.describe("docs screenshots", () => {
 		await context.close();
 	});
 
-	// ---- Part 5: Documents --------------------------------------------------------
-
 	test("43 documents templates", async ({ page }) => {
 		await page.goto("/admin/documents");
 		await shot(page, "43-managing-documents-templates.png", { height: 1100 });
@@ -1223,8 +1204,6 @@ test.describe("docs screenshots", () => {
 		await shot(page, "47-managing-documents-my.png", { height: 1000 });
 		await context.close();
 	});
-
-	// ---- Part 6: Camera-ready, planner events, attachments, survey -----------------
 
 	test("48 bulk-email attachments", async ({ page }) => {
 		const db = getPrisma();

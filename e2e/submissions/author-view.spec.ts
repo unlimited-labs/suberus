@@ -5,38 +5,30 @@ import { SubmissionStatus } from "../../src/generated/prisma/enums";
 
 test.describe("Author - My Submissions List", () => {
 	test("displays submissions page with New Submission button", async ({ page }) => {
-		// Arrange
 		await page.goto("/submissions");
 
-		// Assert
 		await expect(page.getByRole("heading", { name: "Submissions" })).toBeVisible();
 		await expect(page.getByRole("link", { name: "New Submission", exact: true })).toBeVisible();
 	});
 
 	test("shows empty state or submissions list after loading", async ({ page }) => {
-		// Arrange
 		await page.goto("/submissions");
 
-		// Assert - page heading should be visible (wait for page load)
 		await expect(page.getByRole("heading", { name: "Submissions" })).toBeVisible({ timeout: 10000 });
 	});
 
 	test("clicking New Submission navigates to form", async ({ page }) => {
-		// Arrange
 		await page.goto("/submissions");
 
-		// Act
 		await page.getByRole("link", { name: "New Submission", exact: true }).click();
 		await page.waitForURL("/submissions/new", { timeout: 15000 });
 
-		// Assert
 		await expect(page.getByLabel("Title")).toBeVisible({ timeout: 10000 });
 	});
 });
 
 test.describe("Author - Submission Detail View", () => {
 	test("can view submission detail", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		const { id, title } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Author View Detail Test",
@@ -44,10 +36,8 @@ test.describe("Author - Submission Detail View", () => {
 		});
 		cleanup.track(id);
 
-		// Act
 		await page.goto(`/submissions/${id}`);
 
-		// Assert
 		await expect(page.getByText(title)).toBeVisible();
 	});
 
@@ -55,7 +45,6 @@ test.describe("Author - Submission Detail View", () => {
 		// Skip on mobile - tabs may be displayed differently
 		skipOnMobile(testInfo);
 
-		// Arrange
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Author View Tabs Test",
@@ -63,16 +52,13 @@ test.describe("Author - Submission Detail View", () => {
 		});
 		cleanup.track(id);
 
-		// Act
 		await page.goto(`/submissions/${id}`);
 
-		// Assert
 		await expect(page.getByRole("tab", { name: /Overview/i })).toBeVisible();
 		await expect(page.getByRole("tab", { name: /History/i })).toBeVisible();
 	});
 
 	test("submission detail shows status", async ({ page, testRun, cleanup }, testInfo) => {
-		// Arrange
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Author View Status Test",
@@ -80,10 +66,8 @@ test.describe("Author - Submission Detail View", () => {
 		});
 		cleanup.track(id);
 
-		// Act
 		await page.goto(`/submissions/${id}`);
 
-		// Assert
 		if (testInfo.project.name.includes("mobile")) {
 			const mobileSidebar = page.locator('[data-testid="submission-sidebar"]');
 			await expect(mobileSidebar.getByTestId("submission-status")).toBeVisible();
@@ -96,7 +80,6 @@ test.describe("Author - Submission Detail View", () => {
 		// Skip on mobile - tabs may be displayed differently
 		skipOnMobile(testInfo);
 
-		// Arrange
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Author View Authors Test",
@@ -105,10 +88,8 @@ test.describe("Author - Submission Detail View", () => {
 		});
 		cleanup.track(id);
 
-		// Act
 		await page.goto(`/submissions/${id}`);
 
-		// Assert - author name should be visible
 		await expect(page.getByText("Test Author")).toBeVisible();
 	});
 
@@ -116,7 +97,6 @@ test.describe("Author - Submission Detail View", () => {
 		// Skip on mobile - tabs may be displayed differently
 		skipOnMobile(testInfo);
 
-		// Arrange
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Author View History Test",
@@ -124,16 +104,13 @@ test.describe("Author - Submission Detail View", () => {
 		});
 		cleanup.track(id);
 
-		// Act
 		await page.goto(`/submissions/${id}`);
 		await page.getByRole("tab", { name: /History/i }).click();
 
-		// Assert
 		await expect(page.getByText(/Submitted/i).first()).toBeVisible();
 	});
 
 	test("back button navigates to submissions list", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Author View Back Test",
@@ -141,17 +118,14 @@ test.describe("Author - Submission Detail View", () => {
 		});
 		cleanup.track(id);
 
-		// Act
 		await page.goto(`/submissions/${id}`);
 		await page.getByRole("link", { name: /Back/i }).click();
 		await page.waitForURL("/submissions");
 
-		// Assert
 		await expect(page.getByRole("heading", { name: "Submissions" })).toBeVisible();
 	});
 
 	test("submission appears in list", async ({ page, testRun, cleanup }, testInfo) => {
-		// Arrange
 		const { id, title } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Author View List Test",
@@ -159,10 +133,8 @@ test.describe("Author - Submission Detail View", () => {
 		});
 		cleanup.track(id);
 
-		// Act
 		await page.goto("/submissions");
 
-		// Assert
 		if (testInfo.project.name.includes("mobile")) {
 			const mobileCards = page.getByTestId("mobile-submissions-cards");
 			await expect(mobileCards.getByText(title)).toBeVisible({ timeout: 15000 });

@@ -50,14 +50,12 @@ test.describe.serial("Registration deadline & lock", () => {
 		await expect(
 			page.getByRole("heading", { name: "Registration" }),
 		).toBeVisible()
-		// Form should be shown
 		await expect(page.getByLabel("E-mail *")).toBeVisible()
 	})
 
 	test("invitation bypasses registration lock", async ({ page }) => {
 		await setAppSetting("REGISTRATION_LOCKED", true)
 
-		// Create an invitation token
 		const db = getPrisma()
 		const { ADMIN_USER } = await import("../helpers/test-users")
 		const admin = await db.user.findUnique({
@@ -76,13 +74,11 @@ test.describe.serial("Registration deadline & lock", () => {
 
 		await page.goto(`/register?token=${invitation.token}`)
 
-		// Should show the registration form, NOT the closed page
 		await expect(
 			page.getByRole("heading", { name: "Registration" }),
 		).toBeVisible()
 		await expect(page.getByText("You've been invited as")).toBeVisible()
 
-		// Clean up invitation
 		await db.invitation.delete({ where: { id: invitation.id } })
 		await setAppSetting("REGISTRATION_LOCKED", false)
 	})

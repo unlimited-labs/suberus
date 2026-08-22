@@ -78,7 +78,6 @@ test.describe("Extraction Queue", () => {
 		const txtFile = path.join(EXTRACTION_FIXTURES_DIR, "document.txt");
 		await extractionPage.uploadFile(txtFile);
 
-		// Wait briefly then confirm overlay never appeared
 		await extractionPage.page.waitForTimeout(2000);
 		await expect(extractionPage.extractionOverlay).not.toBeVisible();
 	});
@@ -91,7 +90,6 @@ test.describe("Extraction Queue", () => {
 
 		await extractionPage.waitForExtractionComplete();
 
-		// Can still manually edit title
 		await extractionPage.submissionPage.fillTitle("Manual Override Title");
 		const title = await extractionPage.getExtractedTitle();
 		expect(title).toBe("Manual Override Title");

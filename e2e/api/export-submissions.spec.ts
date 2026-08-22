@@ -19,7 +19,6 @@ test.describe("Export Submissions as ZIP", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const trackId = await createTrack(testRun.testRunId, "TestSession");
 		const sub = await createSubmission({
 			testRunId: testRun.testRunId,
@@ -33,12 +32,10 @@ test.describe("Export Submissions as ZIP", () => {
 		});
 		cleanup.track(sub.id);
 
-		// Act
 		const response = await page.request.get(
 			`/api/admin/submissions/export?search=${testRun.testRunId}`,
 		);
 
-		// Assert
 		expect(response.status()).toBe(200);
 		expect(response.headers()["content-type"]).toBe("application/zip");
 		expect(response.headers()["content-disposition"]).toContain("attachment");
@@ -47,18 +44,15 @@ test.describe("Export Submissions as ZIP", () => {
 		const zip = new AdmZip(buffer);
 		const entries = zip.getEntries().map((e) => e.entryName);
 
-		// Should contain text file and CSV
 		expect(entries).toContain("submissions.csv");
 		const txtEntry = entries.find(
 			(e) => e.endsWith(".txt") && e !== "submissions.csv",
 		);
 		expect(txtEntry).toBeDefined();
 
-		// Verify text content
 		const txtContent = zip.readAsText(txtEntry!);
 		expect(txtContent).toBe("My abstract content for export");
 
-		// Verify CSV
 		const csv = zip.readAsText("submissions.csv");
 		const lines = csv.split("\n");
 		expect(lines[0]).toBe(
@@ -72,7 +66,6 @@ test.describe("Export Submissions as ZIP", () => {
 		expect(dataRow).toContain("keyword2");
 		expect(dataRow).toContain("TestSession");
 
-		// Cleanup
 		await deleteTrack(trackId).catch(() => {});
 	});
 
@@ -81,7 +74,6 @@ test.describe("Export Submissions as ZIP", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const sub = await createSubmissionWithFile({
 			testRunId: testRun.testRunId,
 			title: "Export File Test",
@@ -89,28 +81,23 @@ test.describe("Export Submissions as ZIP", () => {
 		});
 		cleanup.track(sub.id);
 
-		// Act
 		const response = await page.request.get(
 			`/api/admin/submissions/export?search=${testRun.testRunId}`,
 		);
 
-		// Assert
 		expect(response.status()).toBe(200);
 		const buffer = await response.body();
 		const zip = new AdmZip(buffer);
 		const entries = zip.getEntries().map((e) => e.entryName);
 
-		// Should contain PDF file
 		const pdfEntry = entries.find((e) => e.endsWith(".pdf"));
 		expect(pdfEntry).toBeDefined();
 
-		// PDF should have non-trivial size
 		const pdfContent = zip.getEntry(pdfEntry!)!.getData();
 		expect(pdfContent.length).toBeGreaterThan(100);
 	});
 
 	test("respects type filter", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		const abstract = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Filter Abstract",
@@ -126,12 +113,10 @@ test.describe("Export Submissions as ZIP", () => {
 		cleanup.track(abstract.id);
 		cleanup.track(fullPaper.id);
 
-		// Act — export only ABSTRACTs
 		const response = await page.request.get(
 			`/api/admin/submissions/export?search=${testRun.testRunId}&type=ABSTRACT`,
 		);
 
-		// Assert
 		expect(response.status()).toBe(200);
 		const buffer = await response.body();
 		const zip = new AdmZip(buffer);
@@ -146,7 +131,6 @@ test.describe("Export Submissions as ZIP", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const sub = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "CSV Format Test",
@@ -154,23 +138,19 @@ test.describe("Export Submissions as ZIP", () => {
 		});
 		cleanup.track(sub.id);
 
-		// Act
 		const response = await page.request.get(
 			`/api/admin/submissions/export?search=${testRun.testRunId}`,
 		);
 
-		// Assert
 		const buffer = await response.body();
 		const zip = new AdmZip(buffer);
 		const csv = zip.readAsText("submissions.csv");
 		const lines = csv.split("\n");
 
-		// Header
 		expect(lines[0]).toBe(
 			"sequentialNumber,title,mainAuthor,coAuthors,keywords,track",
 		);
 
-		// Data row — same number of commas as header
 		const headerCommas = (lines[0].match(/,/g) || []).length;
 		const dataLine = lines.find((l) => l.includes("CSV Format Test"));
 		expect(dataLine).toBeDefined();

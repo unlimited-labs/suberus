@@ -138,7 +138,6 @@ test.describe("Reviewer count change — cancel triggers completion", () => {
 			requiredReviewers: 2,
 		});
 
-		// Create submission with 2 assigned, 1 completed (ACCEPT)
 		const { submissionId, pendingIds } = await createUnderReviewSubmission({
 			testRunId: testRun.testRunId,
 			title: "Cancel Triggers Accept",
@@ -149,7 +148,6 @@ test.describe("Reviewer count change — cancel triggers completion", () => {
 		});
 		cleanup.track(submissionId);
 
-		// Admin reduces requiredReviewers to 1
 		await setAppSetting("SUBMISSION_TYPE_POSTER", {
 			...ORIGINAL_POSTER_CONFIG,
 			requiredReviewers: 1,
@@ -162,7 +160,6 @@ test.describe("Reviewer count change — cancel triggers completion", () => {
 		const result = await cancelAssignment(pendingIds[0], adminUserId);
 		expect(result.success).toBe(true);
 
-		// Submission should auto-transition to ACCEPTED
 		const submission = await db.submission.findUnique({
 			where: { id: submissionId },
 			select: { status: true },
@@ -178,7 +175,6 @@ test.describe("Reviewer count change — cancel triggers completion", () => {
 		const { adminUserId } = await getTestUserIds();
 
 		// ORAL_PRESENTATION already has requiredReviewers=2, requiresEditorDecision=true
-		// Create submission with 2 assigned, 1 completed
 		const { submissionId, pendingIds } = await createUnderReviewSubmission({
 			testRunId: testRun.testRunId,
 			title: "Cancel Triggers Awaiting Decision",
@@ -189,13 +185,11 @@ test.describe("Reviewer count change — cancel triggers completion", () => {
 		});
 		cleanup.track(submissionId);
 
-		// Reduce requiredReviewers to 1
 		await setAppSetting("SUBMISSION_TYPE_ORAL_PRESENTATION", {
 			...ORIGINAL_ORAL_CONFIG,
 			requiredReviewers: 1,
 		});
 
-		// Cancel the pending reviewer
 		const { cancelAssignment } = await import(
 			"../../src/features/reviews/server/assignments"
 		);

@@ -11,7 +11,6 @@ test.describe("Confirm Conditions Met", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const { submissionId } = await createSubmissionWithDecision({
 			testRunId: testRun.testRunId,
 			title: "Confirm Conditions Test",
@@ -22,7 +21,6 @@ test.describe("Confirm Conditions Met", () => {
 		await page.goto(`/admin/submissions/${submissionId}`);
 		await expect(page.getByText("Conditionally Accepted").first()).toBeVisible({ timeout: 10000 });
 
-		// Act
 		await page.getByRole("button", { name: "Confirm Conditions Met" }).click();
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 		// No revision uploaded yet → warning banner
@@ -32,7 +30,6 @@ test.describe("Confirm Conditions Met", () => {
 		await page.locator("#confirm-conditions-reason").fill("Author addressed all minor conditions");
 		await page.getByRole("button", { name: "Confirm Accepted" }).click();
 
-		// Assert
 		await waitForDialogToClose(page);
 		await page.reload();
 		await expect(page.locator('[data-testid="submission-status"]')).toHaveText(/Accepted/i, { timeout: 10000 });
@@ -43,7 +40,6 @@ test.describe("Confirm Conditions Met", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const { submissionId } = await createSubmissionWithDecision({
 			testRunId: testRun.testRunId,
 			title: "Confirm Dialog Test",
@@ -53,11 +49,9 @@ test.describe("Confirm Conditions Met", () => {
 		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${submissionId}`);
 
-		// Act
 		await page.getByRole("button", { name: "Confirm Conditions Met" }).click();
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 
-		// Assert
 		await expect(page.locator("#confirm-conditions-reason")).toBeVisible();
 		await expect(
 			page.getByText("This will promote the submission from Conditionally Accepted to Accepted"),
@@ -69,7 +63,6 @@ test.describe("Confirm Conditions Met", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange — conditionally accepted abstract owned by the test author
 		const { submissionId } = await createSubmissionWithDecision({
 			testRunId: testRun.testRunId,
 			title: "Conditional Revision Upload Test",
@@ -79,7 +72,6 @@ test.describe("Confirm Conditions Met", () => {
 		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${submissionId}`);
 
-		// Act — open the revise flow from the conditional-accept action
 		await page
 			.getByRole("button", { name: "Upload Revised Version" })
 			.click();
@@ -99,7 +91,6 @@ test.describe("Confirm Conditions Met", () => {
 		await keywordInput.press("Enter");
 		await page.getByRole("button", { name: "Upload Revised Version" }).click();
 
-		// Assert — back on detail, status unchanged (action still offered)
 		await expect(page).toHaveURL(new RegExp(`/submissions/${submissionId}$`), {
 			timeout: 15000,
 		});
@@ -155,7 +146,6 @@ test.describe("Confirm Conditions Met", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const { submissionId } = await createSubmissionWithDecision({
 			testRunId: testRun.testRunId,
 			title: "No Confirm On Accepted Test",
@@ -166,7 +156,6 @@ test.describe("Confirm Conditions Met", () => {
 		await page.goto(`/admin/submissions/${submissionId}`);
 		await expect(page.getByText("Accepted").first()).toBeVisible({ timeout: 10000 });
 
-		// Assert
 		await expect(
 			page.getByRole("button", { name: "Confirm Conditions Met" }),
 		).not.toBeVisible();
@@ -177,7 +166,6 @@ test.describe("Confirm Conditions Met", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const { submissionId } = await createSubmissionWithDecision({
 			testRunId: testRun.testRunId,
 			title: "No Confirm On Rejected Test",
@@ -188,7 +176,6 @@ test.describe("Confirm Conditions Met", () => {
 		await page.goto(`/admin/submissions/${submissionId}`);
 		await expect(page.getByText("Rejected").first()).toBeVisible({ timeout: 10000 });
 
-		// Assert
 		await expect(
 			page.getByRole("button", { name: "Confirm Conditions Met" }),
 		).not.toBeVisible();

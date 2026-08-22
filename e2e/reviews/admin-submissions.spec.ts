@@ -5,16 +5,13 @@ import { SubmissionStatus, ReviewDecision, AssignmentStatus } from "../../src/ge
 
 test.describe("Admin Submission Detail Page", () => {
 	test("displays submissions list with status badges", async ({ adminSubmissionsPage }) => {
-		// Act
 		await adminSubmissionsPage.goto();
 
-		// Assert
 		await expect(adminSubmissionsPage.heading).toBeVisible();
 		await expect(adminSubmissionsPage.table).toBeVisible();
 	});
 
 	test("can search submissions by title", async ({ adminSubmissionsPage, testRun, cleanup }) => {
-		// Arrange
 		const { id, title } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Search Test Submission",
@@ -24,15 +21,12 @@ test.describe("Admin Submission Detail Page", () => {
 
 		await adminSubmissionsPage.goto();
 
-		// Act
 		await adminSubmissionsPage.search(title);
 
-		// Assert
 		await expect(adminSubmissionsPage.getRowByTitle(title)).toBeVisible({ timeout: 10000 });
 	});
 
 	test("can open submission detail page", async ({ adminSubmissionsPage, page, testRun, cleanup }) => {
-		// Arrange
 		const { id, title } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Detail Page Test Submission",
@@ -43,10 +37,8 @@ test.describe("Admin Submission Detail Page", () => {
 		await adminSubmissionsPage.goto();
 		await adminSubmissionsPage.search(title);
 
-		// Act
 		await adminSubmissionsPage.openSubmissionDetail(title);
 
-		// Assert
 		await page.waitForURL(/\/admin\/submissions\/[a-f0-9-]+/);
 		await expect(page.getByText("Submission Details")).toBeVisible();
 	});
@@ -59,7 +51,6 @@ test.describe("Admin Submissions - Clickable Title", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const { id, title } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Clickable Title Test",
@@ -71,10 +62,8 @@ test.describe("Admin Submissions - Clickable Title", () => {
 		await adminSubmissionsPage.search(title);
 		await expect(adminSubmissionsPage.getRowByTitle(title)).toBeVisible({ timeout: 10000 });
 
-		// Act
 		await page.getByRole("link", { name: title }).click();
 
-		// Assert
 		await page.waitForURL(/\/admin\/submissions\/[a-f0-9-]+/);
 		await expect(page.getByText("Submission Details")).toBeVisible();
 	});
@@ -89,7 +78,6 @@ test.describe("Submission Detail - Desk Rejection", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const { id, title } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Desk Reject Action Test",
@@ -102,15 +90,12 @@ test.describe("Submission Detail - Desk Rejection", () => {
 		await adminSubmissionsPage.openSubmissionDetail(title);
 		await adminSubmissionDetailPage.waitForLoad();
 
-		// Assert precondition
 		await adminSubmissionDetailPage.expectActionAvailable("Desk Reject");
 
-		// Act
 		await adminSubmissionDetailPage.openDeskRejectDialog();
 		await deskRejectDialog.fillReason("This submission is out of scope for the conference.");
 		await deskRejectDialog.confirm();
 
-		// Assert
 		await expect(page.getByText(/desk rejected/i)).toBeVisible({ timeout: 5000 });
 		await expect(adminSubmissionDetailPage.getStatusBadge()).toContainText("Rejected", { timeout: 10000 });
 	});
@@ -122,7 +107,6 @@ test.describe("Submission Detail - Desk Rejection", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const { id, title } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Desk Reject Validation Test",
@@ -135,10 +119,8 @@ test.describe("Submission Detail - Desk Rejection", () => {
 		await adminSubmissionsPage.openSubmissionDetail(title);
 		await adminSubmissionDetailPage.waitForLoad();
 
-		// Act
 		await adminSubmissionDetailPage.openDeskRejectDialog();
 
-		// Assert - button should be disabled when reason is empty
 		await expect(deskRejectDialog.confirmButton).toBeDisabled();
 	});
 });
@@ -150,7 +132,6 @@ test.describe("Submission Detail - Assign Reviewers", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const { id, title } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Assign Button Visibility Test",
@@ -163,7 +144,6 @@ test.describe("Submission Detail - Assign Reviewers", () => {
 		await adminSubmissionsPage.openSubmissionDetail(title);
 		await adminSubmissionDetailPage.waitForLoad();
 
-		// Assert
 		await adminSubmissionDetailPage.expectActionAvailable("Assign Reviewer");
 	});
 
@@ -175,7 +155,6 @@ test.describe("Submission Detail - Assign Reviewers", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const { id, title } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Assign Dialog Test",
@@ -188,10 +167,8 @@ test.describe("Submission Detail - Assign Reviewers", () => {
 		await adminSubmissionsPage.openSubmissionDetail(title);
 		await adminSubmissionDetailPage.waitForLoad();
 
-		// Act
 		await adminSubmissionDetailPage.openAssignReviewerDialog();
 
-		// Assert
 		await expect(page.getByRole("dialog")).toBeVisible();
 		await expect(assignReviewerDialog.searchInput).toBeVisible();
 	});
@@ -203,7 +180,6 @@ test.describe("Submission Detail - Assign Reviewers", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const { id, title } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Available Reviewers Test",
@@ -216,10 +192,8 @@ test.describe("Submission Detail - Assign Reviewers", () => {
 		await adminSubmissionsPage.openSubmissionDetail(title);
 		await adminSubmissionDetailPage.waitForLoad();
 
-		// Act
 		await adminSubmissionDetailPage.openAssignReviewerDialog();
 
-		// Assert
 		await expect(page.getByText("Available Reviewers", { exact: true })).toBeVisible();
 		await expect(page.getByText(/Current Reviewers \(/)).toBeVisible();
 	});
@@ -232,7 +206,6 @@ test.describe("Submission Detail - Assign Reviewers", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const { id, title } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Search Reviewers Test",
@@ -245,11 +218,9 @@ test.describe("Submission Detail - Assign Reviewers", () => {
 		await adminSubmissionsPage.openSubmissionDetail(title);
 		await adminSubmissionDetailPage.waitForLoad();
 
-		// Act
 		await adminSubmissionDetailPage.openAssignReviewerDialog();
 		await assignReviewerDialog.searchReviewer("reviewer");
 
-		// Assert - search completes without error
 		await expect(page.getByText("reviewer@e2e.local")).toBeVisible({ timeout: 5000 });
 	});
 
@@ -261,7 +232,6 @@ test.describe("Submission Detail - Assign Reviewers", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		const { id, title } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Close Dialog Test",
@@ -274,12 +244,10 @@ test.describe("Submission Detail - Assign Reviewers", () => {
 		await adminSubmissionsPage.openSubmissionDetail(title);
 		await adminSubmissionDetailPage.waitForLoad();
 
-		// Act
 		await adminSubmissionDetailPage.openAssignReviewerDialog();
 		await expect(page.getByRole("dialog")).toBeVisible();
 		await assignReviewerDialog.close();
 
-		// Assert
 		await expect(page.getByRole("dialog")).not.toBeVisible();
 	});
 });
@@ -292,7 +260,6 @@ test.describe("Submission Detail - Status History", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange - create submission with review (has status history)
 		const { submissionId, title } = await createSubmissionWithReview({
 			testRunId: testRun.testRunId,
 			title: "Status History Test",
@@ -304,10 +271,8 @@ test.describe("Submission Detail - Status History", () => {
 		await adminSubmissionsPage.openSubmissionDetail(title);
 		await adminSubmissionDetailPage.waitForLoad();
 
-		// Act
 		await adminSubmissionDetailPage.switchToHistoryTab();
 
-		// Assert
 		await expect(page.getByText("Activity History", { exact: true })).toBeVisible();
 	});
 });
@@ -320,7 +285,6 @@ test.describe("Submission Detail - Reviews Tab", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange - create submission with completed review
 		const { submissionId, title } = await createSubmissionWithReview({
 			testRunId: testRun.testRunId,
 			title: "Reviews Tab Test",
@@ -332,13 +296,10 @@ test.describe("Submission Detail - Reviews Tab", () => {
 		await adminSubmissionsPage.openSubmissionDetail(title);
 		await adminSubmissionDetailPage.waitForLoad();
 
-		// Assert precondition
 		await expect(page.getByRole("tab", { name: /Reviews/i })).toBeVisible();
 
-		// Act
 		await adminSubmissionDetailPage.switchToReviewsTab();
 
-		// Assert - should show the completed review
 		await expect(page.getByText(/Accept/i).first()).toBeVisible({ timeout: 10000 });
 	});
 
@@ -362,7 +323,6 @@ test.describe("Submission Detail - Reviews Tab", () => {
 		await expect(page.getByText("Originality").first()).toBeVisible();
 		await expect(page.getByText("4/5").first()).toBeVisible();
 
-		// Assert — confidence visible
 		await expect(page.getByText("Confidence:").first()).toBeVisible();
 	});
 
@@ -381,7 +341,6 @@ test.describe("Submission Detail - Reviews Tab", () => {
 		await adminSubmissionDetailPage.goto(submissionId);
 		await adminSubmissionDetailPage.switchToReviewsTab();
 
-		// Assert — private notes visible with label
 		await expect(
 			page.getByText("Private Notes (editor only)")
 		).toBeVisible({ timeout: 10000 });
@@ -401,7 +360,6 @@ test.describe("Submission Detail - Reviews Tab", () => {
 		});
 		cleanup.track(submissionId);
 
-		// Add a round 2 review
 		const { reviewerUserId, adminUserId } = await import("../helpers/test-db").then(m => m.getTestUserIds());
 		const assignment2 = await db.reviewAssignment.create({
 			data: {
@@ -433,10 +391,8 @@ test.describe("Submission Detail - Reviews Tab", () => {
 		await adminSubmissionDetailPage.goto(submissionId);
 		await adminSubmissionDetailPage.switchToReviewsTab();
 
-		// Assert — round selector visible (default shows current round)
 		await expect(page.getByText(/Current round/)).toBeVisible({ timeout: 10000 });
 
-		// Open selector and verify "All rounds" option
 		await page.getByText(/Current round/).click();
 		await expect(page.getByText("All rounds")).toBeVisible();
 	});

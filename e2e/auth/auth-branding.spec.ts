@@ -39,25 +39,20 @@ test.describe("Auth Page Branding", { tag: "@serial" }, () => {
 	let restoreSettings: () => Promise<void>
 
 	test.beforeAll(async () => {
-		// Arrange — store original values for cleanup
 		;({ restore: restoreSettings } = await snapshotAppSettings(BRANDING_KEYS))
 	})
 
 	test.beforeEach(async () => {
-		// Arrange — idempotent seed before every test (parallel-safe)
 		await seedBrandingData()
 	})
 
 	test.afterAll(async () => {
-		// Restore original values (best-effort per-worker)
 		await restoreSettings()
 	})
 
 	test("login page shows conference name in mobile header", async ({ page }) => {
-		// Act
 		await page.goto("/login")
 
-		// Assert
 		await expect(page.getByRole("heading", { name: "E2E Test Conference 2026" })).toBeVisible()
 	})
 
@@ -65,10 +60,8 @@ test.describe("Auth Page Branding", { tag: "@serial" }, () => {
 		// Arrange — sidebar is desktop only
 		test.skip(testInfo.project.name === "mobile", "Sidebar hidden on mobile")
 
-		// Act
 		await page.goto("/login")
 
-		// Assert
 		await expect(page.getByText("E2E Test Conference 2026").first()).toBeVisible()
 		await expect(page.getByText("Warsaw, Poland")).toBeVisible()
 	})
@@ -77,52 +70,40 @@ test.describe("Auth Page Branding", { tag: "@serial" }, () => {
 		// Arrange — sidebar is desktop only
 		test.skip(testInfo.project.name === "mobile", "Sidebar hidden on mobile")
 
-		// Act
 		await page.goto("/login")
 
-		// Assert — formatted using default DD.MM.YYYY format
 		await expect(page.getByText(/15\.06\.2026/)).toBeVisible()
 	})
 
 	test("register page shows conference name in mobile header", async ({ page }) => {
-		// Act
 		await page.goto("/register")
 
-		// Assert
 		await expect(page.getByRole("heading", { name: "E2E Test Conference 2026" })).toBeVisible()
 	})
 
 	test("forgot-password page shows conference name in mobile header", async ({ page }) => {
-		// Act
 		await page.goto("/forgot-password")
 
-		// Assert
 		await expect(page.getByRole("heading", { name: "E2E Test Conference 2026" })).toBeVisible()
 	})
 
 	test("verify-email page shows conference name in mobile header", async ({ page }) => {
-		// Act
 		await page.goto("/verify-email")
 
-		// Assert
 		await expect(page.getByRole("heading", { name: "E2E Test Conference 2026" })).toBeVisible()
 	})
 
 	test("auth layout header shows custom logo", async ({ page }) => {
-		// Act
 		await page.goto("/login")
 
-		// Assert
 		const logo = page.locator("header img[alt='Conference Logo']")
 		await expect(logo).toBeVisible()
 		await expect(logo).toHaveAttribute("src", "/logo.png")
 	})
 
 	test("custom primary color applies CSS variable on auth pages", async ({ page }) => {
-		// Act
 		await page.goto("/login")
 
-		// Assert
 		const wrapper = page.locator("[style*='--primary']")
 		await expect(wrapper).toBeAttached()
 		const style = await wrapper.getAttribute("style")
@@ -133,10 +114,8 @@ test.describe("Auth Page Branding", { tag: "@serial" }, () => {
 		// Arrange — sidebar is desktop only
 		test.skip(testInfo.project.name === "mobile", "Sidebar hidden on mobile")
 
-		// Act
 		await page.goto("/register")
 
-		// Assert — sidebar shows conference name + step indicators
 		await expect(page.getByText("E2E Test Conference 2026").first()).toBeVisible()
 		await expect(page.getByText("Author Information", { exact: true })).toBeVisible()
 	})

@@ -18,14 +18,11 @@ async function gotoApp(page: import("@playwright/test").Page) {
 }
 
 async function waitForBaseline(page: import("@playwright/test").Page) {
-	// The baseline commit is captured from the first real /api/version poll.
 	await page.waitForResponse(
 		(r) => r.url().includes("/api/version") && r.status() === 200,
 	)
 }
 
-// Open the app, confirm no banner yet, and capture the baseline commit from the
-// first real poll before a test simulates a redeploy. Returns the banner locator.
 async function startSkewTest(page: import("@playwright/test").Page) {
 	await gotoApp(page)
 	const banner = page.getByTestId("version-skew-banner")
@@ -120,7 +117,6 @@ test.describe("Version skew banner", () => {
 			STALE_HASH,
 		)
 
-		// Allow several poll cycles + the re-check to run, then confirm no banner.
 		await page.waitForTimeout(2000)
 		await expect(banner).toBeHidden()
 	})

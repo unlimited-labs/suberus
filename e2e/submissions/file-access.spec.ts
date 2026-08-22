@@ -17,13 +17,10 @@ import { loginAs } from "../helpers/auth";
 
 test.describe("S3 Configuration", () => {
 	test("S3 is reachable and bucket exists", async () => {
-		// Arrange
 		const { checkS3Health } = await import("../../src/shared/server/storage");
 
-		// Act
 		const result = await checkS3Health();
 
-		// Assert
 		expect(result.status).toBe("healthy");
 	});
 });
@@ -46,56 +43,44 @@ test.describe.serial("File Access Control", () => {
 	});
 
 	test("author can see and download file", async ({ page }) => {
-		// Arrange
 		await loginAs(page, TEST_USER);
 
-		// Act
 		await page.goto(`/submissions/${submissionData.id}`);
 
-		// Assert
 		await expect(page.getByText("document.pdf")).toBeVisible();
 		await expect(page.getByTestId("file-download-button")).toBeVisible();
 	});
 
 	test("editor can download any file", async ({ page }) => {
-		// Arrange
 		await loginAs(page, EDITOR_USER);
 
-		// Act - access via API
 		const response = await page.request.get(
 			`/api/files/${submissionData.fileId}`,
 		);
 
-		// Assert - file content proxied from S3
 		expect(response.status()).toBe(200);
 	});
 
 	test("admin can download any file", async ({ page }) => {
-		// Arrange
 		await loginAs(page, ADMIN_USER);
 
-		// Act
 		const response = await page.request.get(
 			`/api/files/${submissionData.fileId}`,
 		);
 
-		// Assert
 		expect(response.status()).toBe(200);
 	});
 
 	test("unauthenticated user gets 401", async ({ page }) => {
-		// Act - make request without auth
 		const response = await page.request.get(
 			`/api/files/${submissionData.fileId}`,
 			{ maxRedirects: 0 },
 		);
 
-		// Assert
 		expect(response.status()).toBe(401);
 	});
 
 	test("other user cannot download via direct link", async ({ page }) => {
-		// Arrange - create ephemeral user
 		const otherEmail = `other-${testRunId}@e2e.local`;
 		const otherUser = await createTestUser({
 			email: otherEmail,
@@ -108,13 +93,11 @@ test.describe.serial("File Access Control", () => {
 		try {
 			await loginAs(page, { email: otherEmail, password: DEFAULT_PASSWORD });
 
-			// Act
 			const response = await page.request.get(
 				`/api/files/${submissionData.fileId}`,
 				{ maxRedirects: 0 },
 			);
 
-			// Assert
 			expect(response.status()).toBe(403);
 		} finally {
 			await deleteTestUser(otherUser.id).catch(() => {});
@@ -131,7 +114,6 @@ test.describe.serial("File Access - Reviewer", () => {
 		const { reviewerUserId, adminUserId } = await getTestUserIds();
 		const db = getPrisma();
 
-		// Create submission with file
 		submissionData = await createSubmissionWithFile({
 			testRunId,
 			title: "Reviewer File Access Test",
@@ -139,7 +121,6 @@ test.describe.serial("File Access - Reviewer", () => {
 			status: SubmissionStatus.UNDER_REVIEW,
 		});
 
-		// Create assignment for reviewer
 		await db.reviewAssignment.create({
 			data: {
 				submissionId: submissionData.id,
@@ -158,15 +139,12 @@ test.describe.serial("File Access - Reviewer", () => {
 	});
 
 	test("assigned reviewer can access file", async ({ page }) => {
-		// Arrange
 		await loginAs(page, REVIEWER_USER);
 
-		// Act
 		const response = await page.request.get(
 			`/api/files/${submissionData.fileId}`,
 		);
 
-		// Assert
 		expect(response.status()).toBe(200);
 	});
 });
@@ -190,16 +168,13 @@ test.describe.serial("File Access - Unassigned Reviewer", () => {
 	});
 
 	test("unassigned reviewer cannot access file", async ({ page }) => {
-		// Arrange
 		await loginAs(page, REVIEWER_USER);
 
-		// Act
 		const response = await page.request.get(
 			`/api/files/${submissionData.fileId}`,
 			{ maxRedirects: 0 },
 		);
 
-		// Assert
 		expect(response.status()).toBe(403);
 	});
 });
@@ -232,22 +207,18 @@ test.describe.serial("File Access - Co-author", () => {
 	});
 
 	test("co-author can download file", async ({ page }) => {
-		// Arrange
 		await loginAs(page, EDITOR_USER);
 
-		// Act
 		const response = await page.request.get(
 			`/api/files/${submissionData.fileId}`,
 		);
 
-		// Assert
 		expect(response.status()).toBe(200);
 	});
 });
 
 test.describe("File Access - Isolation & Cleanup", () => {
 	test("text submission shows no file section", async ({ page }) => {
-		// Arrange
 		const testRunId = `e2e_${randomUUID().slice(0, 8)}`;
 		const submission = await createSubmission({
 			testRunId,
@@ -259,7 +230,6 @@ test.describe("File Access - Isolation & Cleanup", () => {
 			await loginAs(page, TEST_USER);
 			await page.goto(`/submissions/${submission.id}`);
 
-			// Assert - no download button
 			await expect(page.getByTestId("file-download-button")).not.toBeVisible();
 		} finally {
 			await deleteSubmission(submission.id).catch(() => {});
@@ -267,7 +237,6 @@ test.describe("File Access - Isolation & Cleanup", () => {
 	});
 
 	test("file cleanup on submission deletion", async () => {
-		// Arrange
 		const testRunId = `e2e_${randomUUID().slice(0, 8)}`;
 		const db = getPrisma();
 
@@ -277,16 +246,13 @@ test.describe("File Access - Isolation & Cleanup", () => {
 			type: SubmissionType.FULL_PAPER,
 		});
 
-		// Verify file exists
 		const fileBefore = await db.file.findUnique({
 			where: { id: submissionData.fileId },
 		});
 		expect(fileBefore).not.toBeNull();
 
-		// Act
 		await deleteSubmission(submissionData.id);
 
-		// Assert - file record gone
 		const fileAfter = await db.file.findUnique({
 			where: { id: submissionData.fileId },
 		});
@@ -294,7 +260,6 @@ test.describe("File Access - Isolation & Cleanup", () => {
 	});
 
 	test("files from different authors are isolated", async ({ page }) => {
-		// Arrange
 		const testRunId = `e2e_${randomUUID().slice(0, 8)}`;
 		const { testUserId, adminUserId } = await getTestUserIds();
 
@@ -316,7 +281,6 @@ test.describe("File Access - Isolation & Cleanup", () => {
 			// Login as admin (can access all files)
 			await loginAs(page, ADMIN_USER);
 
-			// Act & Assert - both files accessible independently
 			const response1 = await page.request.get(`/api/files/${file1.fileId}`);
 			const response2 = await page.request.get(`/api/files/${file2.fileId}`);
 
@@ -332,7 +296,6 @@ test.describe("File Access - Isolation & Cleanup", () => {
 test.describe("File Revision", () => {
 	test("revision allows file update", async ({ page }) => {
 		test.slow();
-		// Arrange - create submission with file in REVISE_REQUIRED status
 		const testRunId = `e2e_${randomUUID().slice(0, 8)}`;
 		const submissionData = await createSubmissionWithFile({
 			testRunId,
@@ -344,24 +307,19 @@ test.describe("File Revision", () => {
 		try {
 			await loginAs(page, TEST_USER);
 
-			// Act - navigate to revision page
 			await page.goto(`/submissions/${submissionData.id}/revise`);
 
-			// Assert - current file info shown
 			await expect(page.getByText("document.pdf")).toBeVisible();
 			await expect(page.getByText("Current file")).toBeVisible();
 
-			// Upload new file
 			const fileInput = page.locator('input[type="file"]');
 			await fileInput.setInputFiles(
 				path.resolve("e2e/submissions/fixtures/document.docx"),
 			);
 			await expect(page.getByText("document.docx")).toBeVisible();
 
-			// Submit revision
 			await page.getByRole("button", { name: "Submit Revision" }).click();
 
-			// Assert - redirect to detail page
 			await page.waitForURL(
 				new RegExp(`/submissions/${submissionData.id}$`),
 				{ timeout: 60000 },
@@ -388,7 +346,6 @@ test.describe.serial("File Revision Round Isolation", () => {
 		const db = getPrisma();
 		const { testUserId } = await getTestUserIds();
 
-		// Create submission with v1 file (PDF)
 		const v1Data = await createSubmissionWithFile({
 			testRunId,
 			title: "Revision Round Isolation",
@@ -398,7 +355,6 @@ test.describe.serial("File Revision Round Isolation", () => {
 		v1FileId = v1Data.fileId;
 		v1StorageKey = v1Data.storageKey;
 
-		// Create v2 with different file (DOCX)
 		const { uploadFile, generateSubmissionFileKey } = await import(
 			"../../src/shared/server/storage"
 		);
@@ -437,7 +393,6 @@ test.describe.serial("File Revision Round Isolation", () => {
 			},
 		});
 
-		// Update submission to v2 as current
 		await db.submission.update({
 			where: { id: submissionId },
 			data: {
@@ -452,26 +407,21 @@ test.describe.serial("File Revision Round Isolation", () => {
 	});
 
 	test("v1 and v2 have separate storage keys", () => {
-		// Assert
 		expect(v1StorageKey).not.toBe(v2StorageKey);
 		expect(v1StorageKey).toContain("/v1/");
 		expect(v2StorageKey).toContain("/v2/");
 	});
 
 	test("both files exist in S3", async () => {
-		// Arrange
 		const { fileExists } = await import("../../src/shared/server/storage");
 
-		// Assert
 		expect(await fileExists(v1StorageKey)).toBe(true);
 		expect(await fileExists(v2StorageKey)).toBe(true);
 	});
 
 	test("both version files accessible via API", async ({ page }) => {
-		// Arrange
 		await loginAs(page, TEST_USER);
 
-		// Act & Assert
 		const r1 = await page.request.get(`/api/files/${v1FileId}`);
 		const r2 = await page.request.get(`/api/files/${v2FileId}`);
 		expect(r1.status()).toBe(200);
@@ -481,31 +431,25 @@ test.describe.serial("File Revision Round Isolation", () => {
 	test("version switching shows correct file per version", async ({
 		page,
 	}) => {
-		// Arrange
 		await loginAs(page, TEST_USER);
 		await page.goto(`/submissions/${submissionId}`);
 
-		// Assert - v2 (current) shown by default
 		await expect(page.getByText("document.docx")).toBeVisible();
 
-		// Act - switch to v1
 		const versionTrigger = page
 			.getByRole("combobox")
 			.filter({ hasText: /Version/ });
 		await versionTrigger.click();
 		await page.getByRole("option", { name: /Version 1/ }).click();
 
-		// Assert - v1 file shown
 		await expect(page.getByText("document.pdf")).toBeVisible();
 	});
 
 	test("download returns file content with correct size", async ({
 		page,
 	}) => {
-		// Arrange
 		await loginAs(page, TEST_USER);
 
-		// Act - download v1 (PDF)
 		const r1 = await page.request.get(`/api/files/${v1FileId}`);
 		const body1 = await r1.body();
 
@@ -513,7 +457,6 @@ test.describe.serial("File Revision Round Isolation", () => {
 		expect(r1.status()).toBe(200);
 		expect(body1.length).toBeGreaterThan(0);
 
-		// Act - download v2 (DOCX)
 		const r2 = await page.request.get(`/api/files/${v2FileId}`);
 		const body2 = await r2.body();
 
@@ -526,7 +469,6 @@ test.describe.serial("File Revision Round Isolation", () => {
 
 test.describe("File S3 Cleanup", () => {
 	test("deleteFile removes object from S3", async () => {
-		// Arrange
 		const testRunId = `e2e_${randomUUID().slice(0, 8)}`;
 		const submissionData = await createSubmissionWithFile({
 			testRunId,
@@ -538,16 +480,12 @@ test.describe("File S3 Cleanup", () => {
 			"../../src/shared/server/storage"
 		);
 
-		// Pre-condition: file exists in S3
 		expect(await fileExists(submissionData.storageKey)).toBe(true);
 
-		// Act - delete from S3
 		await deleteFile(submissionData.storageKey);
 
-		// Assert - file gone from S3
 		expect(await fileExists(submissionData.storageKey)).toBe(false);
 
-		// Cleanup DB
 		await deleteSubmission(submissionData.id).catch(() => {});
 	});
 });

@@ -4,7 +4,6 @@ test.describe("Affiliations", () => {
 	test("can select existing affiliation from autocomplete", async ({
 		submissionPage,
 	}) => {
-		// Arrange
 		await submissionPage.goto();
 		const input = submissionPage.getAuthorCard(0).getByLabel("Affiliation");
 		const option = submissionPage.page.getByRole("option", { name: "Test University", exact: true });
@@ -23,7 +22,6 @@ test.describe("Affiliations", () => {
 		submissionPage,
 		testRun,
 	}) => {
-		// Arrange
 		await submissionPage.goto();
 		const input = submissionPage.getAuthorCard(0).getByLabel("Affiliation");
 		const uniqueAffiliation = `New Affiliation ${testRun.testRunId}`;
@@ -42,7 +40,6 @@ test.describe("Affiliations", () => {
 		submissionPage,
 	}) => {
 		test.slow(); // Filling 2 authors with affiliations under load
-		// Arrange
 		await submissionPage.goto();
 
 		// Act — add author and fill text fields first, then affiliations last
@@ -55,7 +52,6 @@ test.describe("Affiliations", () => {
 		await submissionPage.fillAffiliation(0, "First University");
 		await submissionPage.fillAffiliation(1, "Second University");
 
-		// Assert
 		const firstInput = submissionPage.getAuthorCard(0).getByLabel("Affiliation");
 		await expect(firstInput).toHaveValue("First University");
 		const secondInput = submissionPage.getAuthorCard(1).getByLabel("Affiliation");
@@ -67,11 +63,9 @@ test.describe("Affiliations - edge cases", () => {
 	test("case-insensitive match hides Create option", async ({
 		submissionPage,
 	}) => {
-		// Arrange
 		await submissionPage.goto();
 		const input = submissionPage.getAuthorCard(0).getByLabel("Affiliation");
 
-		// Act - type existing name in different case
 		await input.fill("test university");
 		await expect(
 			submissionPage.page.getByRole("option", { name: "Test University", exact: true }),
@@ -86,11 +80,9 @@ test.describe("Affiliations - edge cases", () => {
 	test("keyboard ArrowDown + Enter selects affiliation", async ({
 		submissionPage,
 	}) => {
-		// Arrange
 		await submissionPage.goto();
 		const input = submissionPage.getAuthorCard(0).getByLabel("Affiliation");
 
-		// Act
 		await input.fill("Test Univ");
 		await expect(
 			submissionPage.page.getByRole("option", { name: "Test University", exact: true }),
@@ -98,25 +90,21 @@ test.describe("Affiliations - edge cases", () => {
 		await input.press("ArrowDown");
 		await input.press("Enter");
 
-		// Assert
 		await expect(input).toHaveValue("Test University");
 	});
 
 	test("Escape closes dropdown without selecting", async ({
 		submissionPage,
 	}) => {
-		// Arrange
 		await submissionPage.goto();
 		const input = submissionPage.getAuthorCard(0).getByLabel("Affiliation");
 
-		// Act
 		await input.fill("Test Univ");
 		await expect(
 			submissionPage.page.getByRole("option", { name: "Test University", exact: true }),
 		).toBeVisible({ timeout: 5000 });
 		await input.press("Escape");
 
-		// Assert - dropdown closed, input keeps typed text, no selection made
 		await expect(
 			submissionPage.page.getByRole("option"),
 		).toBeHidden();
@@ -127,19 +115,16 @@ test.describe("Affiliations - edge cases", () => {
 		submissionPage,
 		testRun,
 	}) => {
-		// Arrange
 		await submissionPage.goto();
 		const input = submissionPage.getAuthorCard(0).getByLabel("Affiliation");
 		const uniqueName = `Blur Create ${testRun.testRunId}`;
 
-		// Act - type unique name, then blur by pressing Tab
 		await input.fill(uniqueName);
 		await expect(
 			submissionPage.page.getByRole("option").filter({ hasText: `Create "${uniqueName}"` }),
 		).toBeVisible({ timeout: 5000 });
 		await input.press("Tab");
 
-		// Assert - affiliation was auto-created on blur
 		await expect(input).toHaveValue(uniqueName, { timeout: 5000 });
 		// Verify the data attribute is set (server returned an ID)
 		await expect(input).toHaveAttribute("data-affiliation-id", /.+/, { timeout: 5000 });
@@ -148,16 +133,13 @@ test.describe("Affiliations - edge cases", () => {
 	test("clearing input resets affiliation value", async ({
 		submissionPage,
 	}) => {
-		// Arrange
 		await submissionPage.goto();
 		const input = submissionPage.getAuthorCard(0).getByLabel("Affiliation");
 
-		// First select an affiliation
 		await submissionPage.fillAffiliation(0, "Test University");
 		await expect(input).toHaveValue("Test University");
 		await expect(input).toHaveAttribute("data-affiliation-id", /.+/);
 
-		// Act - clear the input and wait for React state propagation
 		await expect(async () => {
 			await input.clear();
 			await expect(input).toHaveValue("");

@@ -20,14 +20,12 @@ setup("authenticate all roles on all workers", async ({ browser }) => {
 			const page = await context.newPage()
 			try {
 				await page.goto("/login")
-				// SSR hydration + form render
 				await page.getByLabel("E-mail").waitFor({ state: "visible", timeout: 15000 })
 				await page.getByLabel("E-mail").fill(user.email)
 				await page.getByLabel("Password", { exact: true }).fill(user.password)
 				await page.getByRole("button", { name: "Sign in", exact: true }).click()
 				await page.waitForURL("/", { timeout: 30000 })
 
-				// Verify we're logged in
 				await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible({ timeout: 10000 })
 
 				// Bake the passkey-nudge dismissal into the stored origins: the harness
@@ -35,7 +33,6 @@ setup("authenticate all roles on all workers", async ({ browser }) => {
 				// toast fires in every logged-in spec.
 				await page.evaluate(() => localStorage.setItem("passkey-nudge-dismissed", "1"))
 
-				// Save signed-in state for this (role, worker)
 				await context.storageState({ path: `e2e/.auth/${name}-${i}.json` })
 			} finally {
 				await context.close()

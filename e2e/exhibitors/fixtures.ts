@@ -23,7 +23,6 @@ export async function setExhibitorConfig(
 	});
 }
 
-/** Restore the EXHIBITOR config to app defaults (feature disabled). */
 export async function resetExhibitorConfig() {
 	await setExhibitorConfig();
 }

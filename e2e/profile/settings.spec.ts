@@ -6,10 +6,8 @@ test.describe("User Settings", () => {
 	// storageState is already set in playwright.config.ts for profile tests
 
 	test("displays settings page with all sections", async ({ settingsPage }) => {
-		// Arrange
 		await settingsPage.goto()
 
-		// Assert
 		await expect(settingsPage.heading).toBeVisible()
 		await expect(settingsPage.firstNameInput).toBeVisible()
 		await expect(settingsPage.lastNameInput).toBeVisible()
@@ -28,113 +26,88 @@ test.describe("User Settings", () => {
 	})
 
 	test("shows initial user data in personal info form", async ({ settingsPage }) => {
-		// Arrange
 		await settingsPage.goto()
 
-		// Assert
 		await expect(settingsPage.firstNameInput).toHaveValue(TEST_USER.firstName)
 		await expect(settingsPage.lastNameInput).toHaveValue(TEST_USER.lastName)
 	})
 
 	test("validates required fields in personal info", async ({ settingsPage }) => {
-		// Arrange
 		await settingsPage.goto()
 
-		// Act
 		await settingsPage.fillPersonalInfo({ firstName: "", lastName: "" })
 		await settingsPage.savePersonalInfo()
 
-		// Assert
 		await expect(settingsPage.page.getByText(/first name.*required/i)).toBeVisible()
 		await expect(settingsPage.page.getByText(/last name.*required/i)).toBeVisible()
 	})
 
 	test("validates ORCID format", async ({ settingsPage }) => {
-		// Arrange
 		await settingsPage.goto()
 
-		// Act
 		await settingsPage.fillPersonalInfo({ orcid: "invalid-orcid" })
 		await settingsPage.savePersonalInfo()
 
-		// Assert
 		await expect(settingsPage.page.getByText(/invalid orcid format/i)).toBeVisible()
 	})
 
 	test("validates website and LinkedIn URLs", async ({ settingsPage }) => {
-		// Arrange
 		await settingsPage.goto()
 
-		// Act
 		await settingsPage.fillPersonalInfo({ website: "notaurl", linkedin: "notaurl" })
 		await settingsPage.savePersonalInfo()
 
-		// Assert
 		await expect(settingsPage.page.getByText(/invalid url/i).first()).toBeVisible()
 	})
 
 	test("persists website and LinkedIn after reload", async ({ settingsPage }) => {
-		// Arrange
 		const website = "https://example.com/me"
 		const linkedin = "https://www.linkedin.com/in/example"
 		await settingsPage.goto()
 
-		// Act
 		await settingsPage.fillPersonalInfo({ website, linkedin })
 		await settingsPage.savePersonalInfo()
 		await settingsPage.expectToastSuccess(/personal information updated/i)
 		await settingsPage.page.reload()
 
-		// Assert
 		await expect(settingsPage.websiteInput).toHaveValue(website)
 		await expect(settingsPage.linkedinInput).toHaveValue(linkedin)
 	})
 
 	test("updates personal info successfully", async ({ settingsPage }) => {
-		// Arrange
 		await settingsPage.goto()
 
-		// Act
 		await settingsPage.fillPersonalInfo({
 			orcid: VALID_ORCID,
 		})
 		await settingsPage.savePersonalInfo()
 
-		// Assert
 		await settingsPage.expectToastSuccess(/personal information updated/i)
 	})
 
 	test("updates contact info successfully", async ({ settingsPage }) => {
-		// Arrange
 		await settingsPage.goto()
 
-		// Act
 		await settingsPage.fillContactInfo({
 			address: "123 Test Street\nTest City",
 			country: "Poland",
 		})
 		await settingsPage.saveContactInfo()
 
-		// Assert
 		await settingsPage.expectToastSuccess(/contact information updated/i)
 	})
 
 	test("validates empty password fields", async ({ settingsPage }) => {
-		// Arrange
 		await settingsPage.goto()
 
-		// Act
 		await settingsPage.submitPasswordChange()
 
-		// Assert
 		await expect(settingsPage.page.getByText(/current password is required/i)).toBeVisible()
 	})
 
 	test("validates short password", async ({ settingsPage }) => {
-		// Arrange
 		await settingsPage.goto()
 
-		// Act
 		await settingsPage.fillPasswordChange({
 			currentPassword: "current",
 			newPassword: "short",
@@ -142,15 +115,12 @@ test.describe("User Settings", () => {
 		})
 		await settingsPage.submitPasswordChange()
 
-		// Assert
 		await expect(settingsPage.page.getByText(/at least 10 characters/i)).toBeVisible()
 	})
 
 	test("validates password confirmation match", async ({ settingsPage }) => {
-		// Arrange
 		await settingsPage.goto()
 
-		// Act
 		await settingsPage.fillPasswordChange({
 			currentPassword: "currentpass",
 			newPassword: "newpassword123",
@@ -158,33 +128,26 @@ test.describe("User Settings", () => {
 		})
 		await settingsPage.submitPasswordChange()
 
-		// Assert
 		await expect(settingsPage.page.getByText(/passwords do not match/i)).toBeVisible()
 	})
 
 	test("shows email verified status for verified user", async ({ settingsPage }) => {
-		// Arrange
 		await settingsPage.goto()
 
-		// Assert
 		await expect(settingsPage.emailVerifiedBadge).toBeVisible()
 		await expect(settingsPage.emailResendButton).not.toBeVisible()
 	})
 
 	test("sidebar user menu does not show email address", async ({ settingsPage }) => {
-		// Arrange
 		await settingsPage.goto()
 
-		// Assert
 		const trigger = settingsPage.page.locator("[class*='sidebar']").getByText(TEST_EMAIL)
 		await expect(trigger).not.toBeVisible()
 	})
 
 	test("shows already-verified toast for reused verification link", async ({ settingsPage }) => {
-		// Arrange & Act
 		await settingsPage.page.goto("/?verified=true&error=INVALID_TOKEN")
 
-		// Assert
 		await expect(
 			settingsPage.page.locator("[data-sonner-toast]").getByText("Email is already verified")
 		).toBeVisible({ timeout: 5000 })
@@ -209,83 +172,67 @@ test.describe("Personal info persistence (DB round-trip)", () => {
 	})
 
 	test("persists ORCID after reload", async ({ settingsPage }) => {
-		// Arrange
 		await settingsPage.goto()
 
-		// Act
 		await settingsPage.fillPersonalInfo({ orcid: VALID_ORCID })
 		await settingsPage.savePersonalInfo()
 		await settingsPage.expectToastSuccess(/personal information updated/i)
 		await settingsPage.goto()
 
-		// Assert
 		await expect(settingsPage.orcidInput).toHaveValue(VALID_ORCID)
 	})
 
 	test("persists ORCID with X checksum after reload", async ({ settingsPage }) => {
-		// Arrange
 		const orcidWithX = "0000-0002-1825-009X"
 		await settingsPage.goto()
 
-		// Act
 		await settingsPage.fillPersonalInfo({ orcid: orcidWithX })
 		await settingsPage.savePersonalInfo()
 		await settingsPage.expectToastSuccess(/personal information updated/i)
 		await settingsPage.goto()
 
-		// Assert
 		await expect(settingsPage.orcidInput).toHaveValue(orcidWithX)
 	})
 
 	test("clears ORCID when emptied", async ({ settingsPage }) => {
-		// Arrange — first set an ORCID, then clear it
 		await settingsPage.goto()
 		await settingsPage.fillPersonalInfo({ orcid: VALID_ORCID })
 		await settingsPage.savePersonalInfo()
 		await settingsPage.expectToastSuccess(/personal information updated/i)
 
-		// Act
 		await settingsPage.goto()
 		await settingsPage.fillPersonalInfo({ orcid: "" })
 		await settingsPage.savePersonalInfo()
 		await settingsPage.expectToastSuccess(/personal information updated/i)
 		await settingsPage.goto()
 
-		// Assert
 		await expect(settingsPage.orcidInput).toHaveValue("")
 	})
 
 	test("persists title selection after reload", async ({ settingsPage }) => {
-		// Arrange
 		await settingsPage.goto()
 
-		// Act
 		await settingsPage.fillPersonalInfo({ title: "MSc" })
 		await settingsPage.savePersonalInfo()
 		await settingsPage.expectToastSuccess(/personal information updated/i)
 		await settingsPage.goto()
 
-		// Assert
 		await expect(settingsPage.titleSelect).toContainText("MSc")
 	})
 
 	test("persists affiliation after reload", async ({ settingsPage }) => {
-		// Arrange
 		const newAffiliation = "Round-Trip Institute"
 		await settingsPage.goto()
 
-		// Act
 		await settingsPage.fillPersonalInfo({ affiliation: newAffiliation })
 		await settingsPage.savePersonalInfo()
 		await settingsPage.expectToastSuccess(/personal information updated/i)
 		await settingsPage.goto()
 
-		// Assert
 		await expect(settingsPage.affiliationInput).toHaveValue(newAffiliation)
 	})
 
 	test("persists all personal fields together after reload", async ({ settingsPage }) => {
-		// Arrange
 		const data = {
 			firstName: "Updated",
 			lastName: "Person",
@@ -295,13 +242,11 @@ test.describe("Personal info persistence (DB round-trip)", () => {
 		}
 		await settingsPage.goto()
 
-		// Act
 		await settingsPage.fillPersonalInfo(data)
 		await settingsPage.savePersonalInfo()
 		await settingsPage.expectToastSuccess(/personal information updated/i)
 		await settingsPage.goto()
 
-		// Assert
 		await expect(settingsPage.firstNameInput).toHaveValue(data.firstName)
 		await expect(settingsPage.lastNameInput).toHaveValue(data.lastName)
 		await expect(settingsPage.titleSelect).toContainText(data.title)

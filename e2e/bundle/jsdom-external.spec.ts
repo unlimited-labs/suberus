@@ -21,12 +21,11 @@ const UA_STYLESHEET = join(
 	"node_modules/jsdom/lib/jsdom/browser/default-stylesheet.css",
 );
 
-/** All bundled server chunks (excludes the externalized node_modules tree). */
 function bundledChunks(dir: string): string[] {
 	if (!existsSync(dir)) return [];
 	const out: string[] = [];
 	for (const entry of readdirSync(dir, { withFileTypes: true })) {
-		if (entry.name === "node_modules") continue; // externalized deps, not bundled
+		if (entry.name === "node_modules") continue;
 		const full = join(dir, entry.name);
 		if (entry.isDirectory()) out.push(...bundledChunks(full));
 		else if (/\.(mjs|js)$/.test(entry.name)) out.push(full);

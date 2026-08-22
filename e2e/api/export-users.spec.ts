@@ -7,12 +7,10 @@ type ExportRow = Record<string, string>;
 
 test.describe("Export Users as XLSX", () => {
 	test("Last Login column is populated after login", async ({ page }) => {
-		// Act — a fresh login creates a session, which sets lastLoginAt
 		await loginAs(page, ADMIN_USER);
 
 		const response = await page.request.get("/api/admin/users/export");
 
-		// Assert
 		expect(response.status()).toBe(200);
 		expect(response.headers()["content-type"]).toContain("spreadsheetml");
 
@@ -30,7 +28,6 @@ test.describe("Export Users as XLSX", () => {
 	test("neutralizes spreadsheet formula injection in user-controlled fields", async ({
 		page,
 	}) => {
-		// Arrange — a registrant whose name starts with a formula trigger
 		const { createTestUser, deleteTestUser } = await import("../helpers/test-db");
 		const evil = await createTestUser({
 			email: `formula-${Date.now()}@e2e.local`,

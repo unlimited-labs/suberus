@@ -2,15 +2,12 @@ import { test, expect } from "./fixtures";
 
 test.describe("Author Management", () => {
 	test("can add second author with empty fields", async ({ submissionPage }) => {
-		// Arrange
 		await submissionPage.goto();
 		await expect(submissionPage.page.locator("#author-0-firstName")).toBeVisible();
 		await expect(submissionPage.page.locator("#author-1-firstName")).not.toBeVisible();
 
-		// Act
 		await submissionPage.addAuthor();
 
-		// Assert
 		const secondFirstName = submissionPage.page.locator("#author-1-firstName");
 		const secondLastName = submissionPage.page.locator("#author-1-lastName");
 		const secondEmail = submissionPage.page.locator("#author-1-email");
@@ -24,7 +21,6 @@ test.describe("Author Management", () => {
 	});
 
 	test("can remove any author when multiple exist", async ({ submissionPage }) => {
-		// Arrange
 		await submissionPage.goto();
 		await submissionPage.addAuthor();
 		await expect(submissionPage.page.locator("#author-1-firstName")).toBeVisible();
@@ -37,20 +33,16 @@ test.describe("Author Management", () => {
 		await expect(firstRemoveButton).toBeEnabled();
 		await expect(secondRemoveButton).toBeEnabled();
 
-		// Act
 		await secondRemoveButton.click();
 
-		// Assert
 		await expect(submissionPage.page.locator("#author-1-firstName")).not.toBeVisible();
 		await expect(submissionPage.page.locator("#author-0-firstName")).toBeVisible();
 		await expect(firstRemoveButton).toBeDisabled();
 	});
 
 	test("cannot remove last remaining author", async ({ submissionPage }) => {
-		// Arrange
 		await submissionPage.goto();
 
-		// Assert
 		await expect(submissionPage.page.locator("#author-0-firstName")).toBeVisible();
 		await expect(submissionPage.page.locator("#author-1-firstName")).not.toBeVisible();
 
@@ -60,10 +52,8 @@ test.describe("Author Management", () => {
 	});
 
 	test("first author is presenter by default", async ({ submissionPage }) => {
-		// Arrange
 		await submissionPage.goto();
 
-		// Assert
 		const firstAuthorCard = submissionPage.getAuthorCard(0);
 		await expect(
 			firstAuthorCard.getByRole("button", { name: "Presenting author" }),
@@ -71,7 +61,6 @@ test.describe("Author Management", () => {
 	});
 
 	test("can change presenter to different author", async ({ submissionPage }) => {
-		// Arrange
 		await submissionPage.goto();
 		await submissionPage.addAuthor();
 
@@ -81,16 +70,13 @@ test.describe("Author Management", () => {
 		await expect(firstAuthorCard.getByRole("button", { name: "Presenting author" })).toBeVisible();
 		await expect(secondAuthorCard.getByRole("button", { name: "Set as presenter" })).toBeVisible();
 
-		// Act
 		await secondAuthorCard.getByRole("button", { name: "Set as presenter" }).click();
 
-		// Assert
 		await expect(secondAuthorCard.getByRole("button", { name: "Presenting author" })).toBeVisible();
 		await expect(firstAuthorCard.getByRole("button", { name: "Set as presenter" })).toBeVisible();
 	});
 
 	test("presenter badge moves when removing presenter author", async ({ submissionPage }) => {
-		// Arrange
 		await submissionPage.goto();
 		await submissionPage.addAuthor();
 
@@ -101,21 +87,17 @@ test.describe("Author Management", () => {
 		await secondAuthorCard.getByRole("button", { name: "Set as presenter" }).click();
 		await expect(secondAuthorCard.getByRole("button", { name: "Presenting author" })).toBeVisible();
 
-		// Act
 		await secondAuthorCard.getByRole("button", { name: "Remove author" }).click();
 
-		// Assert
 		await expect(submissionPage.page.locator("#author-1-firstName")).not.toBeVisible();
 		const firstAuthorCard = submissionPage.getAuthorCard(0);
 		await expect(firstAuthorCard.getByRole("button", { name: "Presenting author" })).toBeVisible();
 	});
 
 	test("can fill second author details", async ({ submissionPage }) => {
-		// Arrange
 		await submissionPage.goto();
 		await submissionPage.addAuthor();
 
-		// Act
 		await submissionPage.fillAuthor(1, {
 			firstName: "Jane",
 			lastName: "Smith",
@@ -123,7 +105,6 @@ test.describe("Author Management", () => {
 			affiliationName: "Another University",
 		});
 
-		// Assert
 		await expect(submissionPage.page.locator("#author-1-firstName")).toHaveValue("Jane");
 		await expect(submissionPage.page.locator("#author-1-lastName")).toHaveValue("Smith");
 		await expect(submissionPage.page.locator("#author-1-email")).toHaveValue("jane.smith@test.com");
@@ -131,7 +112,6 @@ test.describe("Author Management", () => {
 
 	test("can submit with multiple authors", async ({ submissionPage, uniqueSubmission }) => {
 		test.setTimeout(180000); // Heavy test: 2 authors with affiliations + submit under load
-		// Arrange
 		await submissionPage.goto();
 		await submissionPage.fillTitle(uniqueSubmission.title);
 		await submissionPage.fillContent(uniqueSubmission.content);

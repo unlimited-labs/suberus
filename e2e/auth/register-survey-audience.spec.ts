@@ -52,7 +52,6 @@ test.describe.serial("Registration survey - audience filtering", () => {
 		await resetExhibitorConfig();
 	});
 
-	// Fill steps 1-2 as the given account type and land on step 3 (survey).
 	async function gotoSurveyStep(
 		registerPage: RegisterPage,
 		accountType: "participant" | "exhibitor",

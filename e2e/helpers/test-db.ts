@@ -1,8 +1,3 @@
-/**
- * Test database helpers for E2E tests
- * Use these in the Arrange phase of tests to seed data
- */
-
 import { PrismaClient } from "../../src/generated/prisma/client";
 import {
 	AssignmentStatus,
@@ -53,7 +48,6 @@ export const prisma = {
 	},
 };
 
-// Test user IDs (set by global-setup, retrieved here)
 let cachedUserIds: { testUserId: string; adminUserId: string; reviewerUserId: string; editorUserId: string } | null = null;
 
 export async function getTestUserIds() {
@@ -81,7 +75,6 @@ export async function getTestUserIds() {
 	return cachedUserIds;
 }
 
-// Submission creation helper
 export interface CreateSubmissionOptions {
 	testRunId?: string; // prefix for title to enable cleanup
 	title: string;
@@ -97,7 +90,6 @@ export interface CreateSubmissionOptions {
 		email?: string;
 		affiliationName?: string;
 	};
-	/** Additional authors to create */
 	extraAuthors?: Array<{
 		firstName: string;
 		lastName: string;
@@ -106,9 +98,7 @@ export interface CreateSubmissionOptions {
 		isPresenter?: boolean;
 		userId?: string;
 	}>;
-	/** Keywords to attach to the submission */
 	keywords?: string[];
-	/** Track ID to assign to the submission */
 	trackId?: string;
 }
 
@@ -197,7 +187,6 @@ async function seedSubmissionAuthors(
 	return snapshot;
 }
 
-/** Attach canonical SubmissionKeyword rows to a submission. */
 async function seedSubmissionKeywords(
 	submissionId: string,
 	keywords: string[] | undefined,
@@ -255,7 +244,6 @@ export async function createSubmission(options: CreateSubmissionOptions): Promis
 	const db = getPrisma();
 	const { testUserId } = await getTestUserIds();
 
-	// Prefix title with testRunId for cleanup isolation
 	const prefixedTitle = options.testRunId ? `${options.testRunId}_${options.title}` : options.title;
 
 	const submission = await db.submission.create({
@@ -283,7 +271,6 @@ export async function createSubmission(options: CreateSubmissionOptions): Promis
 		options.keywords,
 	);
 
-	// Add activity log entry
 	if (options.status && options.status !== SubmissionStatus.DRAFT) {
 		await db.activityLog.create({
 			data: {
@@ -333,7 +320,6 @@ export async function addSubmissionVersions(
 ): Promise<string[]> {
 	const db = getPrisma();
 	const { testUserId } = await getTestUserIds();
-	// Drop the FK + any auto-seeded versions (cascades to snapshots) before rebuild
 	await db.submission.update({
 		where: { id: submissionId },
 		data: { currentVersionId: null },
@@ -467,7 +453,6 @@ export async function seedNormalizedPdfVersions(
 	return ids;
 }
 
-// Create submission with reviewer assignment
 export interface CreateSubmissionWithAssignmentOptions extends CreateSubmissionOptions {
 	reviewerId?: string; // defaults to reviewer user
 	assignmentStatus?: AssignmentStatus;
@@ -483,13 +468,11 @@ export async function createSubmissionWithAssignment(
 	const db = getPrisma();
 	const { adminUserId, reviewerUserId } = await getTestUserIds();
 
-	// Create submission in UNDER_REVIEW status
 	const submission = await createSubmission({
 		...options,
 		status: SubmissionStatus.UNDER_REVIEW,
 	});
 
-	// Create assignment
 	const assignment = await db.reviewAssignment.create({
 		data: {
 			submissionId: submission.id,
@@ -502,7 +485,6 @@ export async function createSubmissionWithAssignment(
 		},
 	});
 
-	// Add activity log for UNDER_REVIEW
 	await db.activityLog.create({
 		data: {
 			type: "SUBMISSION_STATUS_CHANGED",
@@ -525,7 +507,6 @@ export async function createSubmissionWithAssignment(
 	};
 }
 
-// Create submission with completed review (AWAITING_DECISION)
 export interface CreateSubmissionWithReviewOptions extends CreateSubmissionOptions {
 	reviewerId?: string;
 	reviewDecision?: ReviewDecision;
@@ -542,7 +523,6 @@ export async function createSubmissionWithReview(
 	const db = getPrisma();
 	const { adminUserId, reviewerUserId } = await getTestUserIds();
 
-	// Create submission in AWAITING_DECISION status
 	const submission = await createSubmission({
 		...options,
 		status: SubmissionStatus.AWAITING_DECISION,
@@ -550,7 +530,6 @@ export async function createSubmissionWithReview(
 
 	const reviewerId = options.reviewerId ?? reviewerUserId;
 
-	// Create completed assignment
 	const assignment = await db.reviewAssignment.create({
 		data: {
 			submissionId: submission.id,
@@ -565,7 +544,6 @@ export async function createSubmissionWithReview(
 		},
 	});
 
-	// Create review
 	const review = await db.review.create({
 		data: {
 			assignmentId: assignment.id,
@@ -580,7 +558,6 @@ export async function createSubmissionWithReview(
 		},
 	});
 
-	// Add activity log
 	await db.activityLog.create({
 		data: {
 			type: "SUBMISSION_STATUS_CHANGED",
@@ -604,7 +581,6 @@ export async function createSubmissionWithReview(
 	};
 }
 
-// Create submission with editor decision (terminal state)
 export interface CreateSubmissionWithDecisionOptions extends CreateSubmissionOptions {
 	reviewerId?: string;
 	editorDecision?: EditorDecisionType;
@@ -629,12 +605,10 @@ export async function createSubmissionWithDecision(
 	const decision = options.editorDecision ?? EditorDecisionType.ACCEPT;
 	const targetStatus = decisionToStatus[decision];
 
-	// Create submission with review (AWAITING_DECISION)
 	const { submissionId, title } = await createSubmissionWithReview({
 		...options,
 	});
 
-	// Add editor decision
 	await db.editorDecision.create({
 		data: {
 			submissionId,
@@ -646,13 +620,11 @@ export async function createSubmissionWithDecision(
 		},
 	});
 
-	// Update submission status
 	await db.submission.update({
 		where: { id: submissionId },
 		data: { status: targetStatus },
 	});
 
-	// Add activity log
 	await db.activityLog.create({
 		data: {
 			type: "SUBMISSION_STATUS_CHANGED",
@@ -671,11 +643,9 @@ export async function createSubmissionWithDecision(
 	return { submissionId, title };
 }
 
-// Cleanup helper - delete submission and related data
 export async function deleteSubmission(submissionId: string): Promise<void> {
 	const db = getPrisma();
 
-	// Clean up sent reminders for assignments and submission
 	const assignments = await db.reviewAssignment.findMany({
 		where: { submissionId },
 		select: { id: true },
@@ -685,7 +655,6 @@ export async function deleteSubmission(submissionId: string): Promise<void> {
 	}
 	await db.sentReminder.deleteMany({ where: { entityId: submissionId } });
 
-	// Delete review attachment files (entityType=REVIEW, entityId=reviewId)
 	const reviews = await db.review.findMany({
 		where: { submissionId },
 		select: { id: true },
@@ -717,7 +686,6 @@ export async function deleteSubmission(submissionId: string): Promise<void> {
 	});
 	await db.submissionAuthor.deleteMany({ where: { submissionId } });
 
-	// Clean up ALL files for this submission (S3 + DB)
 	// Query by entityId directly — catches orphaned files not linked to any version
 	const allFiles = await db.file.findMany({
 		where: { entityId: submissionId },
@@ -728,7 +696,6 @@ export async function deleteSubmission(submissionId: string): Promise<void> {
 		for (const f of allFiles) {
 			await deleteFile(f.storageKey).catch(() => {});
 		}
-		// Unlink files from versions before deleting file records
 		await db.submissionVersion.updateMany({
 			where: { submissionId },
 			data: { fileId: null },
@@ -740,7 +707,6 @@ export async function deleteSubmission(submissionId: string): Promise<void> {
 	await db.submission.delete({ where: { id: submissionId } });
 }
 
-// Cleanup all test submissions (for use in afterAll if needed)
 export async function cleanupTestSubmissions(): Promise<void> {
 	const db = getPrisma();
 	const { testUserId } = await getTestUserIds();
@@ -755,7 +721,6 @@ export async function cleanupTestSubmissions(): Promise<void> {
 	}
 }
 
-// Create assignment with custom deadline (for overdue testing)
 export interface CreateOverdueAssignmentOptions extends CreateSubmissionOptions {
 	reviewerId?: string;
 	assignmentStatus?: AssignmentStatus;
@@ -796,7 +761,6 @@ export async function createAssignmentWithDeadline(
 	};
 }
 
-// Get assignment status
 export async function getAssignmentStatus(assignmentId: string): Promise<AssignmentStatus | null> {
 	const db = getPrisma();
 	const assignment = await db.reviewAssignment.findUnique({
@@ -806,7 +770,6 @@ export async function getAssignmentStatus(assignmentId: string): Promise<Assignm
 	return assignment?.status ?? null;
 }
 
-// Fee creation helper
 // NOTE: Creating a fee = payment received (admin assigns fee after payment)
 export interface CreateFeeOptions {
 	userId: string;
@@ -833,13 +796,11 @@ export async function createFee(options: CreateFeeOptions): Promise<{ id: string
 	return { id: fee.id };
 }
 
-// Delete fee helper
 export async function deleteFee(userId: string): Promise<void> {
 	const db = getPrisma();
 	await db.fee.deleteMany({ where: { userId } });
 }
 
-// Test user creation helper for per-test isolation
 export interface CreateTestUserOptions {
 	email: string;
 	password?: string;
@@ -879,7 +840,6 @@ export async function createTestUser(
 		throw new Error(`Failed to create test user: ${options.email}`);
 	}
 
-	// Update user with test-specific settings
 	await db.user.update({
 		where: { id: result.user.id },
 		data: {
@@ -894,7 +854,6 @@ export async function createTestUser(
 	return { id: result.user.id, email: options.email, affiliationId: affiliation.id };
 }
 
-// Delete test user and all related data
 export async function deleteTestUser(userId: string): Promise<void> {
 	const db = getPrisma();
 
@@ -909,7 +868,6 @@ export async function deleteTestUser(userId: string): Promise<void> {
 	await db.session.deleteMany({ where: { userId } });
 	await db.account.deleteMany({ where: { userId } });
 
-	// Delete submissions and related data
 	const submissions = await db.submission.findMany({
 		where: { userId },
 		select: { id: true },
@@ -919,17 +877,12 @@ export async function deleteTestUser(userId: string): Promise<void> {
 		await deleteSubmission(sub.id);
 	}
 
-	// Delete user
 	await db.user.delete({ where: { id: userId } });
 }
 
-// Create submission with file attachment
 export interface CreateSubmissionWithFileOptions extends CreateSubmissionOptions {
-	/** Path to a fixture file to upload (relative to project root) */
 	fixturePath?: string;
-	/** File name for the uploaded file */
 	fileName?: string;
-	/** MIME type */
 	mimeType?: string;
 }
 
@@ -947,25 +900,21 @@ export async function createSubmissionWithFile(
 	const db = getPrisma();
 	const { testUserId } = await getTestUserIds();
 
-	// Create submission (FULL_PAPER by default for file submissions)
 	const submission = await createSubmission({
 		...options,
 		type: options.type ?? SubmissionType.FULL_PAPER,
 	});
 
-	// Read fixture file
 	const fixturePath = options.fixturePath ?? "e2e/submissions/fixtures/document.pdf";
 	const absolutePath = path.resolve(fixturePath);
 	const fileBuffer = fs.readFileSync(absolutePath);
 	const fileName = options.fileName ?? path.basename(absolutePath);
 	const mimeType = options.mimeType ?? "application/pdf";
 
-	// Upload to S3
 	const { uploadFile, generateSubmissionFileKey } = await import("../../src/shared/server/storage");
 	const storageKey = generateSubmissionFileKey(submission.id, 1, fileName);
 	await uploadFile(Buffer.from(fileBuffer), storageKey, mimeType);
 
-	// Create File record
 	const file = await db.file.create({
 		data: {
 			entityType: "SUBMISSION_VERSION",
@@ -999,9 +948,6 @@ export async function createSubmissionWithFile(
 	};
 }
 
-/**
- * Create a conference track
- */
 export async function createTrack(
 	testRunId: string,
 	name: string,
@@ -1019,15 +965,11 @@ export async function createTrack(
 	return track.id;
 }
 
-/**
- * Delete a track
- */
 export async function deleteTrack(trackId: string): Promise<void> {
 	const db = getPrisma();
 	await db.conferenceTrack.delete({ where: { id: trackId } });
 }
 
-/** Set a user's allowLateSubmission flag directly (for test arrangement) */
 export async function setUserLateSubmission(
 	userId: string,
 	allow: boolean,
@@ -1039,7 +981,6 @@ export async function setUserLateSubmission(
 	});
 }
 
-/** Set an app setting directly (for test arrangement) */
 export async function setAppSetting(key: AppSettingKey, value: unknown): Promise<void> {
 	const db = getPrisma();
 	await db.appSetting.upsert({
@@ -1102,7 +1043,6 @@ export async function setFullPaperAllowedExtensions(
 	return snap;
 }
 
-/** Clean up sent reminders for a specific entity */
 export async function cleanupSentReminders(entityId: string): Promise<void> {
 	const db = getPrisma();
 	await db.sentReminder.deleteMany({ where: { entityId } });
@@ -1119,7 +1059,6 @@ export async function countSentReminders(
 	});
 }
 
-/** Create a sent reminder record (for test arrangement) */
 export async function createSentReminder(opts: {
 	userId: string;
 	reminderType: EmailEventType;
@@ -1137,7 +1076,6 @@ export async function createSentReminder(opts: {
 	});
 }
 
-/** Create a survey question */
 export async function createSurveyQuestion(
 	label: string,
 	orderIndex: number,
@@ -1158,14 +1096,12 @@ export async function createSurveyQuestion(
 	});
 }
 
-/** Delete a survey question and its answers */
 export async function deleteSurveyQuestion(questionId: string): Promise<void> {
 	const db = getPrisma();
 	await db.surveyAnswer.deleteMany({ where: { questionId } });
 	await db.surveyQuestion.delete({ where: { id: questionId } }).catch(() => {});
 }
 
-/** Get user's survey answers */
 export async function getUserSurveyAnswers(userId: string) {
 	const db = getPrisma();
 	return db.surveyAnswer.findMany({
@@ -1174,7 +1110,6 @@ export async function getUserSurveyAnswers(userId: string) {
 	});
 }
 
-/** Delete all survey answers for a user */
 export async function deleteUserSurveyAnswers(userId: string): Promise<void> {
 	const db = getPrisma();
 	await db.surveyAnswer.deleteMany({ where: { userId } });
@@ -1268,10 +1203,6 @@ export async function ensureSeededSurveyQuestions(
 	}
 }
 
-// ============================================================================
-// Program planner helpers
-// ============================================================================
-
 /** Create a Room (prefixed by testRunId for isolation) */
 export async function createRoom(
 	testRunId: string,
@@ -1318,7 +1249,6 @@ export async function deleteProgramTrack(trackId: string): Promise<void> {
 	await db.programTrack.delete({ where: { id: trackId } }).catch(() => {});
 }
 
-/** Create a ProgramSession */
 export interface CreateProgramSessionOptions {
 	testRunId: string;
 	title: string;
@@ -1365,7 +1295,6 @@ export async function deleteProgramSession(sessionId: string): Promise<void> {
 		.catch(() => {});
 }
 
-/** Attach a submission to a session as a presentation slot */
 export async function addPresentationToSession(
 	sessionId: string,
 	submissionId: string,
@@ -1386,7 +1315,6 @@ export async function addPresentationToSession(
 	return slot.id;
 }
 
-/** Create a schedule break */
 export async function createScheduleBreak(
 	testRunId: string,
 	opts: {
@@ -1421,7 +1349,6 @@ export async function deleteScheduleBreak(breakId: string): Promise<void> {
 	await db.scheduleBreak.delete({ where: { id: breakId } }).catch(() => {});
 }
 
-/** Set conference timezone */
 export async function setConferenceTimezone(tz: string): Promise<void> {
 	await setAppSetting("CONFERENCE_TIMEZONE", tz);
 }
@@ -1435,7 +1362,6 @@ export async function setConferenceDates(
 	await setAppSetting("CONFERENCE_DATE_END", endIso);
 }
 
-/** Set conference daily visible hours */
 export async function setDailyBusinessHours(
 	dayStart: string,
 	dayEnd: string,
@@ -1480,7 +1406,6 @@ export async function cleanupPlannerForRun(testRunId: string): Promise<void> {
 	await db.room.deleteMany({ where: { name: { startsWith: prefix } } });
 }
 
-/** Create an activity log entry (for seeding history in tests) */
 export async function createActivityLog(opts: {
 	type: string;
 	submissionId: string;

@@ -31,7 +31,6 @@ test.describe("Unverified email — submission gate", () => {
 		page,
 	}) => {
 		test.slow();
-		// Arrange
 		const author = await unverifiedAuthor();
 		const draft = await createSubmission({
 			title: `Unverified draft ${randomUUID().slice(0, 6)}`,
@@ -51,7 +50,6 @@ test.describe("Unverified email — submission gate", () => {
 			// Act — no UI gate on this screen, so the button is genuinely reachable
 			await page.getByRole("button", { name: "Submit", exact: true }).click();
 
-			// Assert
 			await expect(
 				page
 					.locator("[data-sonner-toast]")
@@ -72,7 +70,6 @@ test.describe("Unverified email — submission gate", () => {
 		page,
 	}) => {
 		test.slow();
-		// Arrange
 		const author = await unverifiedAuthor();
 		const draft = await createSubmission({
 			title: `Unverified edit ${randomUUID().slice(0, 6)}`,
@@ -94,10 +91,8 @@ test.describe("Unverified email — submission gate", () => {
 			const edited = `${draft.title} EDITED`;
 			await titleInput.fill(edited);
 
-			// Act
 			await page.getByRole("button", { name: /Save draft/i }).click();
 
-			// Assert
 			await expect(
 				page
 					.locator("[data-sonner-toast]")

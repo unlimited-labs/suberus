@@ -17,8 +17,6 @@ import PDFDocument from "pdfkit";
 
 const FIXTURES_DIR = path.resolve("e2e/submissions/fixtures");
 
-// --- Anonymized content based on real conference papers ---
-
 const PAPER = {
 	title:
 		"Microstructure and Mechanical Properties of Novel Fe-Mn-Ni-Co Alloys for High-Temperature Applications",
@@ -157,21 +155,18 @@ function createPdf(): Promise<void> {
 		const stream = fs.createWriteStream(outPath);
 		doc.pipe(stream);
 
-		// Title
 		doc
 			.font("Helvetica-Bold")
 			.fontSize(14)
 			.text(PAPER.title, { align: "center" });
 		doc.moveDown(0.5);
 
-		// Authors
 		const authorLine = PAPER.authors
 			.map((a, i) => `${a.name} ${i + 1}`)
 			.join(", ");
 		doc.font("Helvetica").fontSize(11).text(authorLine, { align: "center" });
 		doc.moveDown(0.3);
 
-		// Affiliations
 		for (let i = 0; i < PAPER.authors.length; i++) {
 			const a = PAPER.authors[i];
 			doc
@@ -182,7 +177,6 @@ function createPdf(): Promise<void> {
 		}
 		doc.moveDown(0.3);
 
-		// Emails
 		const emailLine = PAPER.authors.map((a) => a.email).join(", ");
 		doc
 			.font("Helvetica-Oblique")
@@ -190,14 +184,12 @@ function createPdf(): Promise<void> {
 			.text(emailLine, { align: "center" });
 		doc.moveDown(0.3);
 
-		// Keywords
 		doc
 			.font("Helvetica-Oblique")
 			.fontSize(10)
 			.text(`Keywords: ${PAPER.keywords.join(", ")}`, { align: "left" });
 		doc.moveDown(0.8);
 
-		// Abstract
 		doc.font("Helvetica-Bold").fontSize(11).text("Abstract");
 		doc.moveDown(0.3);
 		doc.font("Helvetica").fontSize(10);
@@ -206,7 +198,6 @@ function createPdf(): Promise<void> {
 			doc.moveDown(0.4);
 		}
 
-		// Introduction
 		doc.moveDown(0.3);
 		doc.font("Helvetica-Bold").fontSize(11).text("1. Introduction");
 		doc.moveDown(0.3);

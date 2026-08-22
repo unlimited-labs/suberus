@@ -22,15 +22,6 @@ import { waitForDialogToClose } from "../helpers/dialog";
 import { openReviewFromAssignmentList } from "../helpers/reviews";
 
 /**
- * E2E tests for auto-transition after reviews and editor decision from REVIEWS_COMPLETE.
- *
- * Scenarios:
- * 1. Reviewer completes review on POSTER (requiresEditorDecision=false) → auto-transitions to terminal state
- * 2. Editor sees Make Decision from REVIEWS_COMPLETE (requiresEditorDecision=true)
- * 3. Editor makes decision directly from REVIEWS_COMPLETE
- */
-
-/**
  * Seed submission at REVIEWS_COMPLETE with 2 completed reviews.
  * Uses ABSTRACT type → ORAL_PRESENTATION config (requiredReviewers=2, requiresEditorDecision=true).
  */
@@ -94,10 +85,6 @@ async function createSubmissionAtReviewsComplete(
 	return { id, title: prefixedTitle };
 }
 
-/**
- * Seed a submission at REVIEWS_COMPLETE, sign in as admin, open its detail page
- * and wait for the status badge. Returns the submission id.
- */
 async function seedAndOpenAtReviewsComplete(
 	page: Page,
 	testRunId: string,
@@ -130,18 +117,15 @@ test.describe("Auto-transition After Reviews", () => {
 		});
 		cleanup.track(submissionId);
 
-		// Act - Reviewer submits Accept review
 		await loginAs(page, REVIEWER_USER, { clearCookies: true });
 		await page.goto("/reviews");
 
 		await openReviewFromAssignmentList(page, title);
 
-		// Wait for form to fully load
 		await expect(
 			page.locator('[data-slot="card-title"]').filter({ hasText: "Decision" }),
 		).toBeVisible({ timeout: 10000 });
 
-		// Select Accept decision
 		await page
 			.getByRole("button", { name: /Accept Recommends accepting/i })
 			.click();
@@ -178,7 +162,6 @@ test.describe("Auto-transition After Reviews", () => {
 		});
 		expect(submission?.status).toBe(SubmissionStatus.ACCEPTED);
 
-		// Also verify via admin UI
 		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${submissionId}`);
 		await expect(
@@ -212,7 +195,6 @@ test.describe("Editor Decision from REVIEWS_COMPLETE", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		await seedAndOpenAtReviewsComplete(
 			page,
 			testRun.testRunId,
@@ -220,7 +202,6 @@ test.describe("Editor Decision from REVIEWS_COMPLETE", () => {
 			cleanup,
 		);
 
-		// Act - Make decision directly (skip AWAITING_DECISION step)
 		await runSubmissionAction(page, "Make Decision");
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 
@@ -237,7 +218,6 @@ test.describe("Editor Decision from REVIEWS_COMPLETE", () => {
 
 		await waitForDialogToClose(page);
 
-		// Assert
 		await page.reload();
 		await expect(
 			page.locator('[data-testid="submission-status"]'),
@@ -249,7 +229,6 @@ test.describe("Editor Decision from REVIEWS_COMPLETE", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange
 		await seedAndOpenAtReviewsComplete(
 			page,
 			testRun.testRunId,
@@ -257,7 +236,6 @@ test.describe("Editor Decision from REVIEWS_COMPLETE", () => {
 			cleanup,
 		);
 
-		// Act - Reject directly from REVIEWS_COMPLETE
 		await runSubmissionAction(page, "Make Decision");
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 
@@ -274,7 +252,6 @@ test.describe("Editor Decision from REVIEWS_COMPLETE", () => {
 
 		await waitForDialogToClose(page);
 
-		// Assert
 		await page.reload();
 		await expect(
 			page.locator('[data-testid="submission-status"]'),

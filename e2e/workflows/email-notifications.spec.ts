@@ -29,14 +29,12 @@ test.describe("Submission Emails", () => {
 		testRun,
 	}) => {
 		test.slow();
-		// Arrange
 		await clearMailpitForAddress(TEST_USER.email);
 		const submissionTitle = `${testRun.testRunId}_Email Confirm Test`;
 		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto("/submissions/new");
 		await page.getByLabel("Title").waitFor({ state: "visible", timeout: 30000 });
 
-		// Act
 		await page.getByRole("button", { name: "Oral Presentation" }).click();
 
 		// Wait for session auto-fill to populate author data
@@ -69,7 +67,6 @@ test.describe("Submission Emails", () => {
 		// Wait for success toast (appears before page redirect completes)
 		await expect(page.getByText("Submission created successfully")).toBeVisible({ timeout: 60000 });
 
-		// Assert
 		const email = await waitForEmail(TEST_USER.email, "Submission Received", 45000);
 		expect(email).not.toBeNull();
 
@@ -85,14 +82,12 @@ test.describe("Submission Emails", () => {
 		testRun,
 	}) => {
 		test.slow();
-		// Arrange
 		await clearMailpitForAddress(TEST_USER.email);
 		const submissionTitle = `${testRun.testRunId}_Draft No Email Test`;
 		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto("/submissions/new");
 		await page.getByLabel("Title").waitFor({ state: "visible", timeout: 30000 });
 
-		// Act - save as draft
 		await page.getByRole("button", { name: "Oral Presentation" }).click();
 
 		// Wait for session auto-fill to populate author data
@@ -122,7 +117,6 @@ test.describe("Submission Emails", () => {
 		await addKeyword(page, "e2e-draft");
 
 		await page.getByRole("button", { name: "Save Draft" }).click();
-		// Wait for draft detail page content (doesn't depend on load event)
 		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText("Draft", { timeout: 60000 });
 
 		// Assert - wait briefly then verify no email with this draft's title
@@ -147,7 +141,6 @@ test.describe("Workflow Emails", () => {
 		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${id}`);
 
-		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
 		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
@@ -159,7 +152,6 @@ test.describe("Workflow Emails", () => {
 	});
 
 	test("reviewer assignment email sent", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		await clearMailpitForAddress(REVIEWER_USER.email);
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
@@ -171,7 +163,6 @@ test.describe("Workflow Emails", () => {
 		await page.goto(`/admin/submissions/${id}`);
 		await expect(page.getByText("Submitted").first()).toBeVisible({ timeout: 10000 });
 
-		// Act - assign reviewer
 		await runSubmissionAction(page, "Assign Reviewer");
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 		await page.getByPlaceholder("Search by name, email, or affiliation...").fill(REVIEWER_USER.email);
@@ -179,7 +170,6 @@ test.describe("Workflow Emails", () => {
 		await reviewerRow.getByRole("button", { name: "Assign" }).click();
 		await expect(page.getByText(/Current Reviewers/i)).toBeVisible({ timeout: 10000 });
 
-		// Assert
 		const email = await waitForEmail(REVIEWER_USER.email, "New Review Assignment", 30000);
 		expect(email).not.toBeNull();
 
@@ -190,7 +180,6 @@ test.describe("Workflow Emails", () => {
 
 	test("decision email sent on accept", async ({ page, testRun, cleanup }) => {
 		test.slow();
-		// Arrange
 		await clearMailpitForAddress(TEST_USER.email);
 		const { submissionId } = await createSubmissionWithReview({
 			testRunId: testRun.testRunId,
@@ -202,7 +191,6 @@ test.describe("Workflow Emails", () => {
 		await page.goto(`/admin/submissions/${submissionId}`);
 		await expect(page.getByText(/Awaiting Decision/i).first()).toBeVisible({ timeout: 10000 });
 
-		// Act
 		await page.getByRole("button", { name: /Make Decision/i }).click();
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 		await page.getByRole("button", { name: /Accept.*publication/i }).click();
@@ -210,7 +198,6 @@ test.describe("Workflow Emails", () => {
 		await page.getByLabel(/Letter to Author/i).fill("Congratulations, accepted.");
 		await page.getByRole("button", { name: /Submit Decision/i }).click();
 
-		// Assert
 		const email = await waitForEmail(TEST_USER.email, "Submission Accepted", 30000);
 		expect(email).not.toBeNull();
 
@@ -220,7 +207,6 @@ test.describe("Workflow Emails", () => {
 	});
 
 	test("decision email sent on desk reject", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		await clearMailpitForAddress(TEST_USER.email);
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
@@ -233,14 +219,12 @@ test.describe("Workflow Emails", () => {
 		await page.goto(`/admin/submissions/${id}`);
 		await expect(page.getByText("Submitted").first()).toBeVisible({ timeout: 10000 });
 
-		// Act
 		await runSubmissionAction(page, "Desk Reject");
 		await page.getByRole("dialog").waitFor({ state: "visible" });
 		await page.getByLabel(/Reason/i).fill("Out of scope - E2E email test");
 		await page.getByRole("button", { name: /Reject Submission/i }).click();
 		await waitForDialogToClose(page);
 
-		// Assert
 		const email = await waitForEmail(TEST_USER.email, "Submission Decision", 30000);
 		expect(email).not.toBeNull();
 	});
@@ -249,14 +233,12 @@ test.describe("Workflow Emails", () => {
 test.describe("Admin Notification Emails", () => {
 	test("admin notified on new submission", async ({ page, testRun }) => {
 		test.slow();
-		// Arrange
 		await clearMailpitForAddress(CONTACT_EMAIL);
 		const submissionTitle = `${testRun.testRunId}_Admin Notify Test`;
 		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto("/submissions/new");
 		await page.getByLabel("Title").waitFor({ state: "visible", timeout: 30000 });
 
-		// Act
 		await page.getByRole("button", { name: "Oral Presentation" }).click();
 		const authorCard = page.locator('[data-testid="author-card-0"]');
 		await expect(authorCard.getByLabel("First name")).not.toBeEmpty({ timeout: 15000 });
@@ -286,7 +268,6 @@ test.describe("Admin Notification Emails", () => {
 		await page.getByRole("button", { name: "Submit" }).click();
 		await expect(page.getByText("Submission created successfully")).toBeVisible({ timeout: 60000 });
 
-		// Assert — admin (contact email) receives notification
 		const email = await waitForEmail(CONTACT_EMAIL, "New Submission", 45000);
 		expect(email).not.toBeNull();
 
@@ -303,14 +284,12 @@ test.describe("Admin Notification Emails", () => {
 
 	test("admin NOT notified on draft save", async ({ page, testRun }) => {
 		test.slow();
-		// Arrange
 		await clearMailpitForAddress(CONTACT_EMAIL);
 		const submissionTitle = `${testRun.testRunId}_Admin Draft No Notify`;
 		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto("/submissions/new");
 		await page.getByLabel("Title").waitFor({ state: "visible", timeout: 30000 });
 
-		// Act — save as draft
 		await page.getByRole("button", { name: "Oral Presentation" }).click();
 		const authorCard = page.locator('[data-testid="author-card-0"]');
 		await expect(authorCard.getByLabel("First name")).not.toBeEmpty({ timeout: 15000 });
@@ -348,11 +327,9 @@ test.describe("Admin Notification Emails", () => {
 
 	test("admin notified on new registration", async ({ page, testRun }) => {
 		test.slow();
-		// Arrange
 		await clearMailpitForAddress(CONTACT_EMAIL);
 		const uniqueEmail = `admin-notify-${testRun.testRunId}@e2e.local`;
 
-		// Act — register a new user
 		await page.goto("/register");
 		await page.getByLabel("E-mail *").fill(uniqueEmail);
 		await page.getByLabel("Password *", { exact: true }).fill("ValidPassword123!");
@@ -371,7 +348,6 @@ test.describe("Admin Notification Emails", () => {
 
 		await page.getByRole("button", { name: "Continue" }).click();
 
-		// Step 2 — country
 		await page.getByText("Country *").waitFor({ state: "visible", timeout: 10000 });
 		const countryField = page.locator('[data-slot="field"]').filter({ has: page.getByText("Country *", { exact: true }) });
 		const combobox = countryField.getByRole("combobox");
@@ -388,7 +364,6 @@ test.describe("Admin Notification Emails", () => {
 		await page.getByLabel("Billing details (organization)").fill("Test Org");
 		await page.getByRole("button", { name: "Continue" }).click();
 
-		// Step 3 — terms
 		const termsCheckbox = page.getByRole("checkbox", { name: /I agree to the/ });
 		try {
 			await termsCheckbox.waitFor({ state: "visible", timeout: 5000 });
@@ -410,7 +385,6 @@ test.describe("Admin Notification Emails", () => {
 		await page.getByRole("button", { name: "Create account" }).click();
 		await expect(page).toHaveURL("/", { timeout: 15000 });
 
-		// Assert — admin receives registration notification
 		const email = await waitForEmail(CONTACT_EMAIL, "New Registration", 30000);
 		expect(email).not.toBeNull();
 

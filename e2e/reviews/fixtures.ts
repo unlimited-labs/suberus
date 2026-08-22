@@ -16,7 +16,6 @@ import {
 
 export { ADMIN_USER, REVIEWER_USER, TEST_USER };
 
-// Re-export test-db helpers for Prisma seeding in tests
 export {
 	addSubmissionVersions,
 	createSubmission,
@@ -28,10 +27,8 @@ export {
 	seedNormalizedPdfVersions,
 } from "../helpers/test-db";
 
-// Re-export base fixtures types
 export type { TestRunContext, CleanupContext } from "../helpers/base-fixtures";
 
-// Generate unique submission data
 export function createTestSubmission(suffix?: string) {
 	const id = suffix ?? randomUUID().slice(0, 8);
 	return {
@@ -42,7 +39,6 @@ export function createTestSubmission(suffix?: string) {
 	};
 }
 
-// Login helpers
 export async function loginAsAdmin(page: Page) {
 	await loginAs(page, ADMIN_USER);
 }
@@ -55,7 +51,6 @@ export async function loginAsTestUser(page: Page) {
 	await loginAs(page, TEST_USER);
 }
 
-/** Log in as the admin user through the login form (no stored session). */
 export async function loginAsAdminViaForm(page: Page) {
 	await page.goto("/login");
 	await page.getByLabel("E-mail").fill(ADMIN_USER.email);
@@ -64,9 +59,6 @@ export async function loginAsAdminViaForm(page: Page) {
 	await page.waitForURL("/");
 }
 
-// Page Objects
-
-/** Admin Submissions List Page */
 export class AdminSubmissionsPage {
 	readonly page: Page;
 	readonly heading: Locator;
@@ -100,7 +92,6 @@ export class AdminSubmissionsPage {
 		return this.page.getByTestId("submission-row").filter({ visible: true, hasText: title });
 	}
 
-	/** Get status badge for a submission row */
 	getStatusBadge(title: string): Locator {
 		return this.getRowByTitle(title).locator('[data-testid="submission-status"]').first();
 	}
@@ -116,7 +107,6 @@ export class AdminSubmissionsPage {
 	}
 }
 
-/** Admin Submission Detail Page */
 export class AdminSubmissionDetailPage {
 	readonly page: Page;
 	readonly backButton: Locator;
@@ -126,12 +116,10 @@ export class AdminSubmissionDetailPage {
 		this.backButton = page.getByRole("link", { name: "Back" });
 	}
 
-	/** Assert an action is available (primary button or Actions menu item). */
 	expectActionAvailable(name: string) {
 		return expectActionAvailable(this.page, name);
 	}
 
-	/** Assert an action is NOT available. */
 	expectActionUnavailable(name: string) {
 		return expectActionUnavailable(this.page, name);
 	}
@@ -145,17 +133,14 @@ export class AdminSubmissionDetailPage {
 		await baseExpect(this.getStatusBadge()).toBeVisible({ timeout: 10000 });
 	}
 
-	/** Get submission status badge */
 	getStatusBadge(): Locator {
 		return this.page.locator('[data-testid="submission-status"]');
 	}
 
-	/** Get an author card by order index (0-based) */
 	getAuthor(index: number): Locator {
 		return this.page.getByTestId(`submission-author-${index}`);
 	}
 
-	/** Get the profile link for a registered-user author by order index */
 	getAuthorProfileLink(index: number): Locator {
 		return this.page.getByTestId(`author-profile-link-${index}`);
 	}
@@ -211,7 +196,6 @@ export class AdminSubmissionDetailPage {
 	}
 }
 
-/** Assign Reviewer Dialog */
 export class AssignReviewerDialog {
 	readonly page: Page;
 	readonly searchInput: Locator;
@@ -234,13 +218,11 @@ export class AssignReviewerDialog {
 	}
 
 	async assignReviewerByEmail(email: string) {
-		// Find reviewer row by email and click Assign
 		const reviewerRow = this.page
 			.getByTestId("reviewer-option")
 			.filter({ hasText: email })
 			.first();
 		await reviewerRow.getByRole("button", { name: "Assign" }).click();
-		// Wait for assignment to be reflected
 		await baseExpect(this.page.getByText(/Current Reviewers/)).toBeVisible();
 	}
 
@@ -267,7 +249,6 @@ export class AssignReviewerDialog {
 	}
 }
 
-/** Desk Reject Dialog */
 export class DeskRejectDialog {
 	readonly page: Page;
 	readonly reasonInput: Locator;
@@ -286,14 +267,12 @@ export class DeskRejectDialog {
 	}
 
 	async confirm() {
-		// Ensure button is enabled and visible before clicking
 		await baseExpect(this.confirmButton).toBeEnabled({ timeout: 5000 });
 		await baseExpect(this.confirmButton).toBeVisible({ timeout: 5000 });
 
 		// Click with force to ensure it registers even if there's an overlay
 		await this.confirmButton.click({ force: true });
 
-		// Dialog animation + API response
 		await Promise.race([
 			this.page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15000 }),
 			this.page.locator("[data-sonner-toast]").waitFor({ state: "visible", timeout: 15000 }),
@@ -301,7 +280,6 @@ export class DeskRejectDialog {
 	}
 }
 
-/** Editor Decision Dialog */
 export class EditorDecisionDialog {
 	readonly page: Page;
 	readonly reasoningInput: Locator;
@@ -320,7 +298,6 @@ export class EditorDecisionDialog {
 	async selectDecision(
 		decision: "Accept" | "Reject" | "Revise & Resubmit" | "Conditionally Accept"
 	) {
-		// Click the decision button by its label
 		await this.page
 			.locator("button")
 			.filter({ hasText: new RegExp(`^${decision}$`, "i") })
@@ -337,7 +314,6 @@ export class EditorDecisionDialog {
 
 	async submit() {
 		await this.submitButton.click();
-		// Wait for dialog to close or toast to appear
 		await Promise.race([
 			this.page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15000 }),
 			this.page.locator("[data-sonner-toast]").waitFor({ state: "visible", timeout: 15000 }),
@@ -345,7 +321,6 @@ export class EditorDecisionDialog {
 	}
 }
 
-/** Override Decision Dialog */
 export class OverrideDecisionDialog {
 	readonly page: Page;
 	readonly reasoningInput: Locator;
@@ -373,7 +348,6 @@ export class OverrideDecisionDialog {
 	}
 }
 
-/** Reviewer Assignments Page (My Reviews) */
 export class ReviewerAssignmentsPage {
 	readonly page: Page;
 	readonly heading: Locator;
@@ -390,7 +364,6 @@ export class ReviewerAssignmentsPage {
 		await baseExpect(this.heading).toBeVisible({ timeout: 10000 });
 	}
 
-	/** Navigate to the assignments list, open a submission's review form, and wait for it to load. */
 	async openReviewForm(submissionTitle: string) {
 		await this.goto();
 		const row = this.page.getByTestId("assignment-row").filter({ visible: true, hasText: submissionTitle });
@@ -400,11 +373,9 @@ export class ReviewerAssignmentsPage {
 	}
 
 	async openReview(submissionTitle: string) {
-		// Find the card/row with submission title and click to start review
 		const row = this.page.locator("tr, [class*='card'], div").filter({
 			hasText: submissionTitle,
 		});
-		// Click the row or the "Start Review" / "Continue" link
 		const reviewLink = row.getByRole("link").first();
 		await reviewLink.click();
 	}
@@ -424,7 +395,6 @@ export class ReviewerAssignmentsPage {
 	}
 }
 
-/** Review Form Page */
 export class ReviewFormPage {
 	readonly page: Page;
 	readonly backButton: Locator;
@@ -482,7 +452,6 @@ export class ReviewFormPage {
 
 	async submit() {
 		await this.submitButton.click();
-		// Wait for submission to complete (redirect or toast)
 		await this.page.waitForURL("/reviews", { timeout: 15000 });
 	}
 
@@ -504,7 +473,6 @@ export class ReviewFormPage {
 	async isErrorPage(): Promise<boolean> {
 		try {
 			await this.page.waitForLoadState("domcontentloaded");
-			// Wait for error heading with explicit waitFor
 			await this.page
 				.getByRole("heading", { name: "Review Not Found" })
 				.waitFor({ state: "visible", timeout: 3000 });
@@ -515,7 +483,6 @@ export class ReviewFormPage {
 	}
 }
 
-/** Open a submission's admin detail page by title and return the detail POM. */
 export async function openAdminSubmissionDetail(page: Page, title: string) {
 	const submissionsPage = new AdminSubmissionsPage(page);
 	await submissionsPage.goto();
@@ -526,7 +493,6 @@ export async function openAdminSubmissionDetail(page: Page, title: string) {
 	return detailPage;
 }
 
-// Extended test with fixtures
 interface ReviewFixtures {
 	testRun: TestRunContext;
 	cleanup: CleanupContext;

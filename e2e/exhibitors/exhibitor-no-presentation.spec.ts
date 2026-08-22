@@ -40,7 +40,6 @@ test.describe.serial("Exhibitor without presentation", () => {
 		const companyName = testRun.prefix("NoTalk GmbH");
 		await createExhibitorUser(email);
 
-		// --- Exhibitor: presentation section hidden when Allow presentation is off ---
 		await loginAsExhibitor(page, email);
 		await expect(page.getByTestId("exhibitor-company-name")).toBeVisible();
 		await expect(
@@ -48,7 +47,6 @@ test.describe.serial("Exhibitor without presentation", () => {
 		).not.toBeVisible();
 		await submitExhibitorApplication(page, companyName);
 
-		// --- Admin: detail shows no presentation; approve ---
 		await adminPage.goto("/admin/exhibitors");
 		const row = adminPage
 			.getByTestId("exhibitor-row")
@@ -64,7 +62,6 @@ test.describe.serial("Exhibitor without presentation", () => {
 			"Approved",
 		);
 
-		// --- No submission exists anywhere for this exhibitor ---
 		const db = getPrisma();
 		const user = await db.user.findUniqueOrThrow({
 			where: { email },
@@ -78,14 +75,12 @@ test.describe.serial("Exhibitor without presentation", () => {
 		expect(exhibitor.status).toBe("APPROVED");
 		expect(exhibitor.submissionId).toBeNull();
 
-		// Admin submissions list is unaffected (nothing for this company)
 		await adminPage.goto("/admin/submissions");
 		await expect(
 			adminPage.getByRole("heading", { name: "Submissions" }),
 		).toBeVisible();
 		await expect(adminPage.getByText(companyName)).not.toBeVisible();
 
-		// --- Exhibitor panel shows Approved and the form is locked ---
 		await page.reload();
 		await expect(page.getByTestId("exhibitor-status")).toContainText(
 			"Approved",
@@ -104,11 +99,9 @@ test.describe.serial("Exhibitor without presentation", () => {
 		const companyName = testRun.prefix("RejectCo Ltd");
 		await createExhibitorUser(email);
 
-		// --- Exhibitor: apply (no presentation section in this config) ---
 		await loginAsExhibitor(page, email);
 		await submitExhibitorApplication(page, companyName);
 
-		// --- Admin: reject with a reason from the detail page ---
 		await adminPage.goto("/admin/exhibitors");
 		const row = adminPage
 			.getByTestId("exhibitor-row")
@@ -120,12 +113,10 @@ test.describe.serial("Exhibitor without presentation", () => {
 			"Not accepted",
 		);
 
-		// --- Exhibitor receives the rejection email ---
 		const rejectionEmail = await waitForEmail(email, "not accepted", 20000);
 		expect(rejectionEmail).not.toBeNull();
 		expect(rejectionEmail?.Subject).toContain("not accepted");
 
-		// --- Exhibitor panel: rejected + locked form ---
 		await page.reload();
 		await expect(page.getByTestId("exhibitor-status")).toContainText(
 			"Not accepted",

@@ -298,7 +298,6 @@ async function sendReminderEmail(
 
 test.describe("Reminder Emails - Reviewer", () => {
 	test("sends reviewer reminder when deadline is approaching", async ({ testRun, cleanup }) => {
-		// Arrange
 		await setAppSetting("REMINDER_REVIEWER_SETTINGS", { enabled: true, daysBefore: [3] })
 		const deadline = new Date(Date.now() + 2 * MS_PER_DAY) // 2 days from now (within 3-day window)
 		const { submissionId, assignmentId } = await createAssignmentWithDeadline({
@@ -309,20 +308,16 @@ test.describe("Reminder Emails - Reviewer", () => {
 		cleanup.track(submissionId)
 		await clearMailpitForAddress("reviewer@e2e.local")
 
-		// Act
 		const count = await triggerReviewerReminderForAssignment(assignmentId)
 
-		// Assert
 		expect(count).toBe(1)
 		const email = await waitForEmail("reviewer@e2e.local", "Review Reminder", 10000)
 		expect(email).not.toBeNull()
 
-		// Cleanup
 		await cleanupSentReminders(assignmentId)
 	})
 
 	test("does not send reviewer reminder when disabled", async ({ testRun, cleanup }) => {
-		// Arrange
 		await setAppSetting("REMINDER_REVIEWER_SETTINGS", { enabled: false, daysBefore: [3] })
 		const deadline = new Date(Date.now() + 2 * MS_PER_DAY)
 		const title = "Disabled Reminder Test"
@@ -333,7 +328,6 @@ test.describe("Reminder Emails - Reviewer", () => {
 		})
 		cleanup.track(submissionId)
 
-		// Act
 		const count = await triggerReviewerReminderForAssignment(assignmentId)
 
 		// Assert — count must be 0, and no email with THIS test's title
@@ -350,7 +344,6 @@ test.describe("Reminder Emails - Reviewer", () => {
 	})
 
 	test("deduplication — does not send same reminder twice", async ({ testRun, cleanup }) => {
-		// Arrange
 		await setAppSetting("REMINDER_REVIEWER_SETTINGS", { enabled: true, daysBefore: [3] })
 		const deadline = new Date(Date.now() + 2 * MS_PER_DAY)
 		const { submissionId, assignmentId } = await createAssignmentWithDeadline({
@@ -360,7 +353,6 @@ test.describe("Reminder Emails - Reviewer", () => {
 		})
 		cleanup.track(submissionId)
 
-		// Act - send twice
 		const count1 = await triggerReviewerReminderForAssignment(assignmentId)
 		const count2 = await triggerReviewerReminderForAssignment(assignmentId)
 
@@ -368,7 +360,6 @@ test.describe("Reminder Emails - Reviewer", () => {
 		expect(count1).toBe(1)
 		expect(count2).toBe(0) // dedup: already sent
 
-		// Verify only 1 email for THIS specific test run
 		await new Promise((r) => setTimeout(r, 2000))
 		const { messages } = await getMailpitMessages()
 		const reminderEmails = messages.filter(
@@ -378,14 +369,12 @@ test.describe("Reminder Emails - Reviewer", () => {
 		)
 		expect(reminderEmails).toHaveLength(1)
 
-		// Cleanup
 		await cleanupSentReminders(assignmentId)
 	})
 })
 
 test.describe("Reminder Emails - Revision", () => {
 	test("sends revision reminder after interval days", async ({ testRun, cleanup }) => {
-		// Arrange
 		await setAppSetting("REMINDER_REVISION_SETTINGS", { enabled: true, intervalDays: 1, maxCount: 3 })
 		const { submissionId } = await createSubmissionWithDecision({
 			testRunId: testRun.testRunId,
@@ -408,20 +397,16 @@ test.describe("Reminder Emails - Revision", () => {
 		await clearMailpitForAddress("test@e2e.local")
 		await cleanupSentReminders(submissionId)
 
-		// Act
 		const count = await triggerRevisionReminderForSubmission(submissionId)
 
-		// Assert
 		expect(count).toBe(1)
 		const email = await waitForEmail("test@e2e.local", "Revision Reminder", 10000)
 		expect(email).not.toBeNull()
 
-		// Cleanup
 		await cleanupSentReminders(submissionId)
 	})
 
 	test("respects revision reminder maxCount", async ({ testRun, cleanup }) => {
-		// Arrange
 		await setAppSetting("REMINDER_REVISION_SETTINGS", { enabled: true, intervalDays: 1, maxCount: 1 })
 		const { testUserId } = await getTestUserIds()
 		const { submissionId } = await createSubmissionWithDecision({
@@ -431,7 +416,6 @@ test.describe("Reminder Emails - Revision", () => {
 		})
 		cleanup.track(submissionId)
 
-		// Backdate activity log
 		const db = getPrisma()
 		await db.activityLog.updateMany({
 			where: {
@@ -450,7 +434,6 @@ test.describe("Reminder Emails - Revision", () => {
 			reminderIndex: 0,
 		})
 
-		// Act
 		const count = await triggerRevisionReminderForSubmission(submissionId)
 
 		// Assert — count must be 0, and no email with THIS test's title
@@ -464,14 +447,12 @@ test.describe("Reminder Emails - Revision", () => {
 		)
 		expect(matching).toHaveLength(0)
 
-		// Cleanup
 		await cleanupSentReminders(submissionId)
 	})
 })
 
 test.describe("Reminder Emails - Deadline", () => {
 	test("sends deadline approaching reminder", async ({ testRun, cleanup }) => {
-		// Arrange
 		const futureDeadline = new Date(Date.now() + 2 * MS_PER_DAY)
 		await setAppSetting("SUBMISSION_DEADLINE", futureDeadline.toISOString())
 		await setAppSetting("REMINDER_DEADLINE_SETTINGS", { enabled: true, daysBefore: [3] })
@@ -485,22 +466,18 @@ test.describe("Reminder Emails - Deadline", () => {
 		cleanup.track(submissionId)
 		await clearMailpitForAddress("test@e2e.local")
 
-		// Act
 		const count = await triggerDeadlineReminderForSubmission(submissionId)
 
-		// Assert
 		expect(count).toBe(1)
 		const email = await waitForEmail("test@e2e.local", "Deadline Approaching", 10000)
 		expect(email).not.toBeNull()
 
-		// Cleanup
 		await cleanupSentReminders(submissionId)
 		await setAppSetting("SUBMISSION_DEADLINE", "")
 	})
 })
 
 test.afterAll(async () => {
-	// Reset reminder settings to defaults
 	await setAppSetting("REMINDER_REVIEWER_SETTINGS", { enabled: false, daysBefore: [3, 1] })
 	await setAppSetting("REMINDER_REVISION_SETTINGS", { enabled: false, intervalDays: 7, maxCount: 3 })
 	await setAppSetting("REMINDER_DEADLINE_SETTINGS", { enabled: false, daysBefore: [7, 3, 1] })

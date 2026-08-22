@@ -10,7 +10,6 @@ import { loginAs } from "../helpers/auth";
 
 test.describe("Author Withdrawal", () => {
 	test("author withdraws SUBMITTED submission", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Withdraw Submitted Test",
@@ -20,17 +19,14 @@ test.describe("Author Withdrawal", () => {
 		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${id}`);
 
-		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
 		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 
-		// Assert
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText("Withdrawn", { timeout: 10000 });
 	});
 
 	test("author withdraws UNDER_REVIEW submission", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Withdraw Under Review Test",
@@ -39,17 +35,14 @@ test.describe("Author Withdrawal", () => {
 		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${submissionId}`);
 
-		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
 		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 
-		// Assert
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText("Withdrawn", { timeout: 10000 });
 	});
 
 	test("withdrawn submission hides action buttons", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Withdraw Actions Hidden Test",
@@ -59,18 +52,15 @@ test.describe("Author Withdrawal", () => {
 		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${id}`);
 
-		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
 		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 
-		// Assert - no action buttons after withdrawal
 		await expect(page.getByRole("button", { name: "Edit Submission" })).not.toBeVisible();
 		await expect(page.getByRole("button", { name: "Withdraw Submission" })).not.toBeVisible();
 	});
 
 	test("withdrawal cancels active reviewer assignments", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId, assignmentId } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Withdraw Cancels Assignments Test",
@@ -79,12 +69,10 @@ test.describe("Author Withdrawal", () => {
 		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${submissionId}`);
 
-		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
 		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 
-		// Assert - assignment status should be CANCELLED
 		const status = await getAssignmentStatus(assignmentId);
 		expect(status).toBe(AssignmentStatus.CANCELLED);
 	});
@@ -96,7 +84,6 @@ test.describe("Withdrawal + Admin View", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange - author withdraws
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Admin Sees Withdrawn Test",
@@ -109,11 +96,9 @@ test.describe("Withdrawal + Admin View", () => {
 		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 
-		// Act - admin views in admin panel
 		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${id}`);
 
-		// Assert
 		await expect(page.getByText("Withdrawn").first()).toBeVisible({ timeout: 10000 });
 	});
 });

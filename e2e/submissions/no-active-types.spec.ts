@@ -18,7 +18,6 @@ test.describe.serial("Submissions - No Active Types", () => {
 	const originalConfigs: Record<string, SettingValue> = {};
 
 	test.beforeAll(async () => {
-		// Arrange — save original configs and disable all types
 		const db = getPrisma();
 		for (const key of SETTING_KEYS) {
 			const setting = await db.appSetting.findUnique({ where: { key } });
@@ -40,7 +39,6 @@ test.describe.serial("Submissions - No Active Types", () => {
 	});
 
 	test.afterAll(async () => {
-		// Cleanup — restore original configs
 		const defaults: Record<string, object> = {
 			SUBMISSION_TYPE_ORAL_PRESENTATION: DEFAULT_ORAL_PRESENTATION_CONFIG,
 			SUBMISSION_TYPE_POSTER: DEFAULT_POSTER_CONFIG,
@@ -52,10 +50,8 @@ test.describe.serial("Submissions - No Active Types", () => {
 	});
 
 	test("New Submission button is disabled on submissions list", async ({ page }) => {
-		// Act
 		await page.goto("/submissions");
 
-		// Assert
 		await expect(page.getByRole("heading", { name: "Submissions" })).toBeVisible();
 		const button = page.getByRole("button", { name: "New Submission", exact: true });
 		await expect(button).toBeVisible();
@@ -63,10 +59,8 @@ test.describe.serial("Submissions - No Active Types", () => {
 	});
 
 	test("new submission page shows unavailable message", async ({ page }) => {
-		// Act
 		await page.goto("/submissions/new");
 
-		// Assert
 		await expect(
 			page.getByText("No submission types are currently available"),
 		).toBeVisible({ timeout: 15000 });

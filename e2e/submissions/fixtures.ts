@@ -24,7 +24,6 @@ export const VALID_SUBMISSION = {
 	keywords: ["testing", "e2e", "validation"],
 }
 
-// Generate unique submission data to avoid test conflicts
 export function createUniqueSubmission(suffix?: string) {
 	const id = suffix ?? randomUUID().slice(0, 8)
 	return {
@@ -45,13 +44,11 @@ export function createUniqueSubmission(suffix?: string) {
 	}
 }
 
-// Login helper
 export async function loginAsTestUser(page: Page) {
 	const { TEST_USER } = await import("../helpers/test-users")
 	await loginAs(page, TEST_USER)
 }
 
-// Page Object
 export class SubmissionPage {
 	readonly page: Page
 	readonly submitButton: Locator
@@ -76,7 +73,6 @@ export class SubmissionPage {
 	}
 
 	async selectType(type: "ABSTRACT" | "POSTER" | "FULL_PAPER") {
-		// Map type to display label
 		const labels = {
 			ABSTRACT: "Oral Presentation",
 			POSTER: "Poster",
@@ -93,7 +89,6 @@ export class SubmissionPage {
 		await this.contentInput.fill(content)
 	}
 
-	/** Get author card by index (0-based) */
 	getAuthorCard(index: number): Locator {
 		return this.page.locator(`[data-testid="author-card-${index}"]`)
 	}
@@ -117,7 +112,6 @@ export class SubmissionPage {
 		await lastNameInput.fill(author.lastName)
 		await emailInput.fill(author.email)
 
-		// Fill affiliation using the combobox in the same author card
 		await this.fillAffiliation(index, author.affiliationName)
 	}
 
@@ -137,11 +131,9 @@ export class SubmissionPage {
 	async addAuthor() {
 		const currentCount = await this.page.locator('[data-testid^="author-card-"]').count()
 		await this.page.getByRole("button", { name: "Add Author" }).click()
-		// Wait for the new author card to appear in DOM
 		await baseExpect(this.page.locator(`[data-testid="author-card-${currentCount}"]`)).toBeVisible({ timeout: 10000 })
 	}
 
-	/** Get keywords section container */
 	getKeywordsSection(): Locator {
 		return this.page.locator('[data-testid="keywords-section"]')
 	}
@@ -169,17 +161,14 @@ export class SubmissionPage {
 		await this.fillTitle(data.title)
 		await this.fillContent(data.content)
 
-		// Fill first author (already exists)
 		await this.fillAuthor(0, data.authors[0])
 
-		// Add keywords
 		for (const keyword of data.keywords) {
 			await this.addKeyword(keyword)
 		}
 	}
 }
 
-// Extended test with fixtures
 interface SubmissionFixtures {
 	testRun: TestRunContext
 	cleanup: CleanupContext

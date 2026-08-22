@@ -33,7 +33,6 @@ test.describe("Resubmission Auto-Reassign Reviewers", () => {
 	}) => {
 		test.slow()
 
-		// Arrange - create submission with REVISE_AND_RESUBMIT decision
 		const { submissionId, title } = await createSubmissionWithDecision({
 			testRunId: testRun.testRunId,
 			title: "Resubmit Reassign Test",
@@ -43,7 +42,6 @@ test.describe("Resubmission Auto-Reassign Reviewers", () => {
 
 		const db = getPrisma()
 
-		// Verify initial state
 		const submission = await db.submission.findUnique({
 			where: { id: submissionId },
 			select: { status: true, currentRound: true },
@@ -51,14 +49,12 @@ test.describe("Resubmission Auto-Reassign Reviewers", () => {
 		expect(submission?.status).toBe(SubmissionStatus.REVISE_REQUIRED)
 		expect(submission?.currentRound).toBe(1)
 
-		// Verify round 1 assignment exists
 		const round1Assignments = await db.reviewAssignment.findMany({
 			where: { submissionId, round: 1 },
 			select: { reviewerId: true, status: true },
 		})
 		expect(round1Assignments.length).toBeGreaterThan(0)
 
-		// Act - author resubmits
 		await loginAs(page, TEST_USER, { clearCookies: true })
 		await page.goto(`/submissions/${submissionId}/revise`)
 		await page.getByLabel("Title").waitFor({ state: "visible", timeout: 15000 })
@@ -82,10 +78,8 @@ test.describe("Resubmission Auto-Reassign Reviewers", () => {
 
 		await page.getByRole("button", { name: /Submit Revision/i }).click()
 
-		// Wait for redirect to submission detail
 		await page.waitForURL(/\/submissions\/[a-f0-9-]+$/, { timeout: 30000 })
 
-		// Assert - verify in DB that round was incremented and reviewers reassigned
 		const updatedSubmission = await db.submission.findUnique({
 			where: { id: submissionId },
 			select: { status: true, currentRound: true },
@@ -116,7 +110,6 @@ test.describe("Resubmission Auto-Reassign Reviewers", () => {
 			revisedKeyword,
 		)
 
-		// Verify round 2 assignments were auto-created
 		const round2Assignments = await db.reviewAssignment.findMany({
 			where: { submissionId, round: 2 },
 			select: { reviewerId: true, status: true },
@@ -128,7 +121,6 @@ test.describe("Resubmission Auto-Reassign Reviewers", () => {
 		const round2ReviewerIds = round2Assignments.map((a) => a.reviewerId).sort()
 		expect(round2ReviewerIds).toEqual(round1ReviewerIds)
 
-		// Assert via admin UI - verify reviewer appears in current reviewers
 		await loginAs(page, ADMIN_USER, { clearCookies: true })
 		await findSubmissionInAdmin(page, revisedTitle)
 
@@ -148,7 +140,6 @@ test.describe("Resubmission Auto-Reassign Reviewers", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange - create submission with REVISE_AND_RESUBMIT decision
 		const { submissionId } = await createSubmissionWithDecision({
 			testRunId: testRun.testRunId,
 			title: "Resubmit No Reassign Cancelled",
@@ -158,13 +149,11 @@ test.describe("Resubmission Auto-Reassign Reviewers", () => {
 
 		const db = getPrisma()
 
-		// Cancel the round 1 assignment
 		await db.reviewAssignment.updateMany({
 			where: { submissionId, round: 1 },
 			data: { status: "CANCELLED" },
 		})
 
-		// Act - author resubmits
 		await loginAs(page, TEST_USER, { clearCookies: true })
 		await page.goto(`/submissions/${submissionId}/revise`)
 		await page.getByLabel("Title").waitFor({ state: "visible", timeout: 15000 })
@@ -179,7 +168,6 @@ test.describe("Resubmission Auto-Reassign Reviewers", () => {
 		await page.getByRole("button", { name: /Submit Revision/i }).click()
 		await page.waitForURL(/\/submissions\/[a-f0-9-]+$/, { timeout: 30000 })
 
-		// Assert - verify no round 2 assignments exist
 		const round2Assignments = await db.reviewAssignment.findMany({
 			where: { submissionId, round: 2 },
 		})

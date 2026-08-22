@@ -20,54 +20,44 @@ async function sidecarsHealthy(): Promise<boolean> {
 
 test.describe("Reviewer - My Assignments Page", () => {
 	test("displays reviews heading", async ({ reviewerAssignmentsPage, page }) => {
-		// Arrange & Act
 		await reviewerAssignmentsPage.goto();
 
-		// Assert
 		await expect(page.getByRole("heading", { name: /Reviews/i })).toBeVisible();
 	});
 
 	test("shows assigned submission in list", async ({ reviewerAssignmentsPage, page, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Reviewer List Test Submission",
 		});
 		cleanup.track(submissionId);
 
-		// Act
 		await reviewerAssignmentsPage.goto();
 
-		// Assert
 		await expect(page.getByText(title).first()).toBeVisible({ timeout: 10000 });
 	});
 });
 
 test.describe("Reviewer - Review Form", () => {
 	test("review form displays submission title", async ({ page, reviewerAssignmentsPage, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Review Form Title Test",
 		});
 		cleanup.track(submissionId);
 
-		// Act
 		await reviewerAssignmentsPage.openReviewForm(title);
 
-		// Assert
 		await expect(page.getByText(title).first()).toBeVisible();
 	});
 
 	test("review form shows all required sections", async ({ page, reviewerAssignmentsPage, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Review Form Sections Test",
 		});
 		cleanup.track(submissionId);
 
-		// Act
 		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Assert — section titles are now shadcn CardTitle (data-slot), not headings.
@@ -86,17 +76,14 @@ test.describe("Reviewer - Review Form", () => {
 			return;
 		}
 
-		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Review Progress Test",
 		});
 		cleanup.track(submissionId);
 
-		// Act
 		await reviewerAssignmentsPage.openReviewForm(title);
 
-		// Assert
 		await expect(
 			page
 				.locator('[data-slot="card-title"]')
@@ -112,14 +99,12 @@ test.describe("Reviewer - Review Form", () => {
 			return;
 		}
 
-		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Review Guidelines Test",
 		});
 		cleanup.track(submissionId);
 
-		// Act
 		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Assert - look for the sidebar card title, not the submission title
@@ -131,7 +116,6 @@ test.describe("Reviewer - Review Form", () => {
 	});
 
 	test("can select different decision options", async ({ page, reviewerAssignmentsPage, reviewFormPage, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Decision Options Test",
@@ -143,14 +127,12 @@ test.describe("Reviewer - Review Form", () => {
 			page.locator('[data-slot="card-title"]').filter({ hasText: "Decision" }),
 		).toBeVisible({ timeout: 10000 });
 
-		// Act & Assert - select each decision
 		await reviewFormPage.selectDecision("Accept");
 		await reviewFormPage.selectDecision("Reject");
 		await reviewFormPage.selectDecision("Revise and Resubmit");
 	});
 
 	test("submit button always visible on review form", async ({ reviewerAssignmentsPage, reviewFormPage, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Submit Button Visible Test",
@@ -159,12 +141,10 @@ test.describe("Reviewer - Review Form", () => {
 
 		await reviewerAssignmentsPage.openReviewForm(title);
 
-		// Assert - submit button is visible (comments are optional)
 		await expect(reviewFormPage.submitButton).toBeVisible();
 	});
 
 	test("can fill private notes", async ({ reviewerAssignmentsPage, reviewFormPage, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Private Notes Test",
@@ -173,15 +153,12 @@ test.describe("Reviewer - Review Form", () => {
 
 		await reviewerAssignmentsPage.openReviewForm(title);
 
-		// Act
 		await reviewFormPage.fillPrivateNotes("Confidential notes for editors only.");
 
-		// Assert
 		await expect(reviewFormPage.privateNotesInput).toHaveValue("Confidential notes for editors only.");
 	});
 
 	test("back button navigates to reviews list", async ({ page, reviewerAssignmentsPage, reviewFormPage, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Back Button Test",
@@ -190,10 +167,8 @@ test.describe("Reviewer - Review Form", () => {
 
 		await reviewerAssignmentsPage.openReviewForm(title);
 
-		// Act
 		await reviewFormPage.backButton.click();
 
-		// Assert
 		await page.waitForURL("/reviews");
 	});
 });
@@ -202,16 +177,13 @@ test.describe("Reviewer - Scoring", () => {
 	// ABSTRACT type uses ORAL_PRESENTATION config which has enableScoring: true
 
 	test("shows scoring criteria for ABSTRACT submission type", async ({ page, reviewerAssignmentsPage, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Scoring Criteria Test",
 		});
 		cleanup.track(submissionId);
-		// Act
 		await reviewerAssignmentsPage.openReviewForm(title);
 
-		// Assert
 		await expect(page.getByText("Evaluation Criteria")).toBeVisible();
 		await expect(page.getByText("Originality")).toBeVisible();
 		await expect(page.getByText("Clarity")).toBeVisible();
@@ -225,7 +197,6 @@ test.describe("Reviewer - Scoring", () => {
 	});
 
 	test("can set scores using buttons", async ({ page, reviewerAssignmentsPage, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Score Buttons Test",
@@ -234,11 +205,9 @@ test.describe("Reviewer - Scoring", () => {
 		await reviewerAssignmentsPage.openReviewForm(title);
 		await expect(page.getByText("Evaluation Criteria")).toBeVisible();
 
-		// Act
 		const scoreButton = page.getByRole("button", { name: "4", exact: true }).first();
 		await scoreButton.click();
 
-		// Assert
 		await expect(scoreButton).toHaveClass(/bg-primary/);
 	});
 });
@@ -247,16 +216,13 @@ test.describe("Reviewer - Double-blind Mode", () => {
 	// ABSTRACT type uses ORAL_PRESENTATION config which has reviewMode: DOUBLE_BLIND
 
 	test("hides author information in double-blind mode", async ({ page, reviewerAssignmentsPage, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Double Blind Test",
 		});
 		cleanup.track(submissionId);
-		// Act
 		await reviewerAssignmentsPage.openReviewForm(title);
 
-		// Assert
 		await expect(page.getByText(/Double-blind review.*author information hidden/i)).toBeVisible();
 		await expect(page.locator('[data-slot="card-title"]').filter({ hasText: /^Authors$/ })).not.toBeVisible();
 	});
@@ -275,7 +241,6 @@ test.describe("Reviewer - Double-blind Mode", () => {
 			{ fixturePath: "e2e/reviews/fixtures/redline-v2.pdf", fileName: "Kowalski_Jan.pdf", title, content: "Mean grain size increased by fifteen percent." },
 		]);
 
-		// Act — open the reviewer compare page.
 		await reviewerAssignmentsPage.openReviewForm(title);
 		await page.getByTestId("reviewer-compare-link").click();
 		await page.waitForURL(/\/compare/);
@@ -291,17 +256,14 @@ test.describe("Reviewer - Attachment", () => {
 	const FIXTURES_DIR = path.resolve("e2e/submissions/fixtures");
 
 	test("shows attachment section on review form", async ({ page, reviewerAssignmentsPage, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Attachment Section Test",
 		});
 		cleanup.track(submissionId);
 
-		// Act
 		await reviewerAssignmentsPage.openReviewForm(title);
 
-		// Assert
 		await expect(
 			page.locator('[data-slot="card-title"]').filter({ hasText: "Attachment" }),
 		).toBeVisible();
@@ -309,7 +271,6 @@ test.describe("Reviewer - Attachment", () => {
 	});
 
 	test("can upload a PDF attachment", async ({ page, reviewerAssignmentsPage, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Upload PDF Attachment Test",
@@ -318,16 +279,13 @@ test.describe("Reviewer - Attachment", () => {
 
 		await reviewerAssignmentsPage.openReviewForm(title);
 
-		// Act - upload file
 		const fileInput = page.locator('input[type="file"]');
 		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.pdf"));
 
-		// Assert - file name displayed
 		await expect(page.getByText("document.pdf")).toBeVisible();
 	});
 
 	test("can upload a DOCX attachment", async ({ page, reviewerAssignmentsPage, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Upload DOCX Attachment Test",
@@ -336,16 +294,13 @@ test.describe("Reviewer - Attachment", () => {
 
 		await reviewerAssignmentsPage.openReviewForm(title);
 
-		// Act - upload file
 		const fileInput = page.locator('input[type="file"]');
 		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.docx"));
 
-		// Assert - file name displayed
 		await expect(page.getByText("document.docx")).toBeVisible();
 	});
 
 	test("can remove uploaded attachment", async ({ page, reviewerAssignmentsPage, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Remove Attachment Test",
@@ -354,19 +309,16 @@ test.describe("Reviewer - Attachment", () => {
 
 		await reviewerAssignmentsPage.openReviewForm(title);
 
-		// Act - upload then remove
 		const fileInput = page.locator('input[type="file"]');
 		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.pdf"));
 		await expect(page.getByText("document.pdf")).toBeVisible();
 
 		await page.getByRole("button", { name: "Remove file" }).click();
 
-		// Assert - dropzone visible again
 		await expect(page.getByText("Drop file or click to upload")).toBeVisible();
 	});
 
 	test("rejects invalid file type", async ({ page, reviewerAssignmentsPage, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Invalid File Type Test",
@@ -375,16 +327,13 @@ test.describe("Reviewer - Attachment", () => {
 
 		await reviewerAssignmentsPage.openReviewForm(title);
 
-		// Act - upload invalid file type
 		const fileInput = page.locator('input[type="file"]');
 		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.txt"));
 
-		// Assert - error message shown
 		await expect(page.getByText(/not accepted/i)).toBeVisible();
 	});
 
 	test("can submit review without attachment", async ({ page, reviewerAssignmentsPage, reviewFormPage, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Submit Without Attachment Test",
@@ -393,16 +342,13 @@ test.describe("Reviewer - Attachment", () => {
 
 		await reviewerAssignmentsPage.openReviewForm(title);
 
-		// Act - submit without attachment (attachment is optional)
 		await reviewFormPage.selectDecision("Accept");
 
-		// Assert - submit should work
 		await reviewFormPage.submit();
 		await page.waitForURL("/reviews");
 	});
 
 	test("can submit review with attachment", async ({ page, reviewerAssignmentsPage, reviewFormPage, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Submit With Attachment Test",
@@ -411,7 +357,6 @@ test.describe("Reviewer - Attachment", () => {
 
 		await reviewerAssignmentsPage.openReviewForm(title);
 
-		// Act - upload attachment and submit
 		const fileInput = page.locator('input[type="file"]');
 		await fileInput.setInputFiles(path.join(FIXTURES_DIR, "document.pdf"));
 		await expect(page.getByText("document.pdf")).toBeVisible();
@@ -419,7 +364,6 @@ test.describe("Reviewer - Attachment", () => {
 		await reviewFormPage.selectDecision("Accept");
 		await reviewFormPage.submit();
 
-		// Assert - redirected to reviews list
 		await page.waitForURL("/reviews");
 	});
 });
@@ -431,7 +375,6 @@ test.describe("Reviewer - Revision diff", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange — an assigned submission that has an earlier version to diff against.
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Reviewer Revision Diff Test",
@@ -450,11 +393,8 @@ test.describe("Reviewer - Revision diff", () => {
 			},
 		]);
 
-		// Act
 		await reviewerAssignmentsPage.openReviewForm(title);
 
-		// Assert — the redline is always visible (no collapsible), with at least
-		// one insertion and deletion.
 		await expect(
 			page
 				.locator('[data-slot="card-title"]')
@@ -526,7 +466,6 @@ test.describe("Reviewer - Revision diff", () => {
 			},
 		]);
 
-		// Act
 		await reviewerAssignmentsPage.openReviewForm(title);
 
 		// Assert — the misleading text-content verdict must never appear for files.
@@ -535,11 +474,9 @@ test.describe("Reviewer - Revision diff", () => {
 		await expect(page.getByTestId("submission-content-format")).toHaveText(
 			"File submission",
 		);
-		// A file-change notice replaces the text diff.
 		const notice = page.getByTestId("reviewer-file-change-notice");
 		await expect(notice).toBeVisible();
 		await expect(notice).toHaveAttribute("data-changed", "true");
-		// Keyword changes surface in the main review window.
 		await expect(
 			page
 				.getByTestId("keywords-diff")
@@ -594,7 +531,6 @@ test.describe("Reviewer - Compare page", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange — assigned submission with two versions to compare.
 		const { submissionId, title } = await createSubmissionWithAssignment({
 			testRunId: testRun.testRunId,
 			title: "Reviewer Compare Page Test",
@@ -602,12 +538,10 @@ test.describe("Reviewer - Compare page", () => {
 		cleanup.track(submissionId);
 		await addSubmissionVersions(submissionId, twoVersions(title));
 
-		// Act — open the review form, follow the "Compare versions" link.
 		await reviewerAssignmentsPage.openReviewForm(title);
 		await page.getByTestId("reviewer-compare-link").click();
 		await page.waitForURL(/\/reviews\/[a-f0-9-]+\/compare/);
 
-		// Assert — side-by-side panels: deletions on the left, insertions on the right.
 		await expect(page.getByTestId("diff-base-select")).toContainText("Version 1");
 		await expect(page.getByTestId("diff-compare-select")).toContainText(
 			"Version 2",
@@ -666,10 +600,8 @@ test.describe("Reviewer - Compare page", () => {
 		await page.getByTestId("reviewer-compare-link").click();
 		await page.waitForURL(/\/compare/);
 
-		// Default pair is previous -> current (v2 -> v3).
 		await expect(page.getByTestId("diff-base-select")).toContainText("Version 2");
 
-		// Switch the base picker to v1; the base picker updates to v1.
 		await page.getByTestId("diff-base-select").click();
 		await page.getByRole("option", { name: /Version 1/ }).click();
 		await expect(page.getByTestId("diff-base-select")).toContainText("Version 1");

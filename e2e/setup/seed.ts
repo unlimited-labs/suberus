@@ -102,9 +102,6 @@ async function seed() {
 	}
 
 	try {
-		// ============================================================
-		// CREATE TEST USERS
-		// ============================================================
 
 		const testUser = await seedUser(TEST_USER, { emailVerified: true, needInvoice: true });
 		await seedUser(ADMIN_USER, { role: UserRole.ADMIN });
@@ -114,11 +111,6 @@ async function seed() {
 		await seedUser(ADMIN_VERIFY_TEST_USER, { emailVerified: false });
 		await seedUser(RESET_PASSWORD_USER, { emailVerified: true });
 
-		// ============================================================
-		// SEED APP SETTINGS
-		// ============================================================
-
-		// Email templates
 		for (const template of DEFAULT_EMAIL_TEMPLATES) {
 			await prisma.emailTemplate.upsert({
 				where: { eventType: template.eventType },
@@ -129,7 +121,6 @@ async function seed() {
 
 		console.log("✅ Email templates seeded");
 
-		// Submission type configs
 		await prisma.appSetting.upsert({
 			where: { key: "SUBMISSION_TYPE_ORAL_PRESENTATION" },
 			update: { value: SUBMISSION_TYPE_CONFIGS.ORAL_PRESENTATION },
@@ -182,7 +173,6 @@ async function seed() {
 
 		console.log("✅ Validation settings seeded");
 
-		// Survey questions
 		await prisma.surveyQuestion.create({
 			data: {
 				label: "Please send me an Invitation Letter for a Visa Application.",
@@ -246,7 +236,6 @@ async function seed() {
 
 		console.log("✅ Survey questions seeded");
 
-		// Terms of Service content
 		const tosKey = "TOS_CONTENT";
 		const tosValue = "# Terms of Service\n\nBy using this system, you agree to the following terms and conditions.\n\n## Usage\n\nThis system is provided for academic conference management purposes only."
 		await prisma.appSetting.upsert({
@@ -275,7 +264,6 @@ async function seed() {
 
 		console.log("✅ Fee types and currency seeded");
 
-		// Contact email for admin notifications
 		await prisma.appSetting.upsert({
 			where: { key: "CONTACT_EMAIL" },
 			update: { value: "contact@e2e.local" },

@@ -22,7 +22,6 @@ test.describe.serial("AuthSidebar Conference Subtitle", () => {
 	});
 
 	test("displays subtitle below conference name when set", async ({ page }) => {
-		// Arrange
 		const db = getPrisma();
 		await db.appSetting.upsert({
 			where: { key: "CONFERENCE_SUBTITLE" },
@@ -30,16 +29,13 @@ test.describe.serial("AuthSidebar Conference Subtitle", () => {
 			create: { key: "CONFERENCE_SUBTITLE", value: "International Conference on E2E Testing" },
 		});
 
-		// Act
 		await page.setViewportSize({ width: 1280, height: 720 });
 		await page.goto("/login");
 
-		// Assert
 		await expect(page.getByText("International Conference on E2E Testing")).toBeVisible();
 	});
 
 	test("hides subtitle when empty", async ({ page }) => {
-		// Arrange
 		const db = getPrisma();
 		await db.appSetting.upsert({
 			where: { key: "CONFERENCE_SUBTITLE" },
@@ -47,16 +43,13 @@ test.describe.serial("AuthSidebar Conference Subtitle", () => {
 			create: { key: "CONFERENCE_SUBTITLE", value: "" },
 		});
 
-		// Act
 		await page.setViewportSize({ width: 1280, height: 720 });
 		await page.goto("/login");
 
-		// Assert — no subtitle paragraph rendered when value is empty
 		await expect(page.getByText("International Conference on E2E Testing")).not.toBeVisible();
 	});
 
 	test("subtitle updates dynamically", async ({ page }) => {
-		// Arrange
 		const db = getPrisma();
 		await db.appSetting.upsert({
 			where: { key: "CONFERENCE_SUBTITLE" },
@@ -68,12 +61,10 @@ test.describe.serial("AuthSidebar Conference Subtitle", () => {
 		await page.setViewportSize({ width: 1280, height: 720 });
 		await page.goto("/login");
 
-		// Assert
 		await expect(page.getByText("Dynamic Subtitle Update")).toBeVisible();
 	});
 
 	test("long subtitle wraps properly", async ({ page }) => {
-		// Arrange
 		const db = getPrisma();
 		const longSubtitle = "Very Long International Conference Title on Advanced Computer Methods in Materials Technology and Engineering Applications";
 		await db.appSetting.upsert({
@@ -82,11 +73,9 @@ test.describe.serial("AuthSidebar Conference Subtitle", () => {
 			create: { key: "CONFERENCE_SUBTITLE", value: longSubtitle },
 		});
 
-		// Act
 		await page.setViewportSize({ width: 1024, height: 768 });
 		await page.goto("/login");
 
-		// Assert — should be visible (wrapping, not clipped)
 		await expect(page.getByText(longSubtitle)).toBeVisible();
 	});
 });

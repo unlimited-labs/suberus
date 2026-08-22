@@ -35,7 +35,6 @@ test.describe("Version compare page", () => {
 		testRun,
 		cleanup,
 	}) => {
-		// Arrange — a submission with two versions differing in title and content.
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Compare Page Test",
@@ -55,12 +54,10 @@ test.describe("Version compare page", () => {
 			},
 		]);
 
-		// Act — open detail, click the Compare button next to the version switcher.
 		await adminSubmissionDetailPage.goto(id);
 		await page.getByRole("link", { name: /Compare versions/i }).click();
 		await page.waitForURL(/\/admin\/submissions\/[a-f0-9-]+\/compare/);
 
-		// Assert — side-by-side panels with insertions on the right, deletions on the left.
 		await expect(page.getByTestId("diff-base-select")).toContainText("Version 1");
 		await expect(page.getByTestId("diff-compare-select")).toContainText(
 			"Version 2",
@@ -98,10 +95,8 @@ test.describe("Version compare page", () => {
 		await page.getByRole("link", { name: /Compare versions/i }).click();
 		await page.waitForURL(/\/compare/);
 
-		// Default is side-by-side.
 		await expect(page.getByTestId("side-by-side-diff").first()).toBeVisible();
 
-		// Switch to inline → unified redline, no split panels.
 		await page.getByTestId("diff-layout-inline").click();
 		await expect(page.getByTestId("text-diff").first()).toBeVisible();
 		await expect(page.getByTestId("side-by-side-diff")).toHaveCount(0);
@@ -172,12 +167,10 @@ test.describe("Version compare page", () => {
 		await expect(page.getByTestId("authors-diff")).toHaveCount(2);
 		await expect(page.getByTestId("keywords-diff")).toHaveCount(2);
 
-		// Inline: the toggle now collapses metadata to the unified single list too.
 		await page.getByTestId("diff-layout-inline").click();
 		await expect(page.getByTestId("authors-diff")).toHaveCount(1);
 		await expect(page.getByTestId("keywords-diff")).toHaveCount(1);
 
-		// Back to split restores the two-column metadata.
 		await page.getByTestId("diff-layout-split").click();
 		await expect(page.getByTestId("authors-diff")).toHaveCount(2);
 		await expect(page.getByTestId("keywords-diff")).toHaveCount(2);
@@ -205,10 +198,8 @@ test.describe("Version compare page", () => {
 		await page.getByRole("link", { name: /Compare versions/i }).click();
 		await page.waitForURL(/\/compare/);
 
-		// Default pair is previous -> current (v2 -> v3).
 		await expect(page.getByTestId("diff-base-select")).toContainText("Version 2");
 
-		// Switch the base picker to v1; the base picker updates to v1.
 		await page.getByTestId("diff-base-select").click();
 		await page.getByRole("option", { name: /Version 1/ }).click();
 		await expect(page.getByTestId("diff-base-select")).toContainText("Version 1");
@@ -274,7 +265,6 @@ test.describe("Version compare page", () => {
 		await page.getByRole("link", { name: /Compare versions/i }).click();
 		await page.waitForURL(/\/compare/);
 
-		// Inline layout → one unified file-redline frame.
 		await page.getByTestId("diff-layout-inline").click();
 		await expect(page.getByTestId("file-redline")).toBeVisible();
 

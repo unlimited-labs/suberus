@@ -17,7 +17,6 @@ import { loginAs } from "../helpers/auth";
 
 test.describe("Withdrawal from Extended States", () => {
 	test("author withdraws DRAFT submission", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Withdraw Draft Test",
@@ -27,17 +26,14 @@ test.describe("Withdrawal from Extended States", () => {
 		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${id}`);
 
-		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
 		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 
-		// Assert
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText("Withdrawn", { timeout: 10000 });
 	});
 
 	test("author withdraws REVIEWS_COMPLETE submission", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Withdraw Reviews Complete Test",
@@ -47,17 +43,14 @@ test.describe("Withdrawal from Extended States", () => {
 		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${id}`);
 
-		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
 		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 
-		// Assert
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText("Withdrawn", { timeout: 10000 });
 	});
 
 	test("author withdraws AWAITING_DECISION submission", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId } = await createSubmissionWithReview({
 			testRunId: testRun.testRunId,
 			title: "Withdraw Awaiting Decision Test",
@@ -66,17 +59,14 @@ test.describe("Withdrawal from Extended States", () => {
 		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${submissionId}`);
 
-		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
 		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 
-		// Assert
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText("Withdrawn", { timeout: 10000 });
 	});
 
 	test("author withdraws RESUBMITTED submission", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		const { id } = await createSubmission({
 			testRunId: testRun.testRunId,
 			title: "Withdraw Resubmitted Test",
@@ -86,17 +76,14 @@ test.describe("Withdrawal from Extended States", () => {
 		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${id}`);
 
-		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
 		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 
-		// Assert
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText("Withdrawn", { timeout: 10000 });
 	});
 
 	test("author withdraws REVISE_REQUIRED submission", async ({ page, testRun, cleanup }) => {
-		// Arrange
 		const { submissionId } = await createSubmissionWithDecision({
 			testRunId: testRun.testRunId,
 			title: "Withdraw Revise Required Test",
@@ -106,11 +93,9 @@ test.describe("Withdrawal from Extended States", () => {
 		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${submissionId}`);
 
-		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
 		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 
-		// Assert
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText("Withdrawn", { timeout: 10000 });
 	});
@@ -138,12 +123,10 @@ test.describe("Withdrawal from Extended States", () => {
 		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${submissionId}`);
 
-		// Act
 		await page.getByRole("button", { name: "Withdraw Submission" }).click();
 		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 
-		// Assert - assignment should be cancelled
 		const status = await getAssignmentStatus(assignmentId);
 		expect(status).toBe(AssignmentStatus.CANCELLED);
 	});

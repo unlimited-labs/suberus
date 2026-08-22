@@ -19,7 +19,6 @@ test.describe("Extraction Progress", () => {
 	test("elapsed timer visible during PDF extraction", async ({
 		extractionPage,
 	}) => {
-		// PDF extraction takes ~3s, long enough to observe the timer
 		// Full Paper is DOCX-only by default; switch it to PDF for this test
 		// (single allowed extension per type — can't accept both at once).
 		const { restore } = await setFullPaperAllowedExtensions(["pdf"]);

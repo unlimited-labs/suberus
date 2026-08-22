@@ -32,7 +32,6 @@ test.describe("Revision metadata (authors / keywords / extraction)", () => {
 		// createSubmission seeds version 1 (single original author), so the resubmit
 		// produces version 2 and we can assert per-version snapshot divergence.
 
-		// --- Author edits the composition on revision ---
 		await loginAs(page, TEST_USER, { clearCookies: true });
 		await page.goto(`/submissions/${submissionId}/revise`);
 		const form = new SubmissionPage(page);
@@ -61,7 +60,6 @@ test.describe("Revision metadata (authors / keywords / extraction)", () => {
 		await submitBtn.click();
 		await page.waitForURL(/\/submissions\/[a-f0-9-]+$/, { timeout: 30000 });
 
-		// --- Per-version snapshot integrity ---
 		const versions = await db.submissionVersion.findMany({
 			where: { submissionId },
 			orderBy: { version: "asc" },
@@ -84,7 +82,6 @@ test.describe("Revision metadata (authors / keywords / extraction)", () => {
 		expect(vTwo.authorsSnapshot.length).not.toBe(vOne.authorsSnapshot.length);
 		expect(vTwo.keywordsSnapshot.map((k) => k.name)).toContain("new-kw");
 
-		// --- Canonical authors updated + presenter FK repointed ---
 		const canonical = await db.submissionAuthor.findMany({
 			where: { submissionId },
 		});
@@ -97,7 +94,6 @@ test.describe("Revision metadata (authors / keywords / extraction)", () => {
 			"Presenter2",
 		);
 
-		// --- Editor compare: Authors + Keywords diff are shown ---
 		await loginAs(page, ADMIN_USER, { clearCookies: true });
 		await page.goto(`/admin/submissions/${submissionId}/compare`);
 		await expect(page.getByTestId("diff-base-select")).toBeVisible({
@@ -108,7 +104,6 @@ test.describe("Revision metadata (authors / keywords / extraction)", () => {
 		await expect(page.getByText("Presenter2").first()).toBeVisible();
 		await expect(page.getByText("new-kw").first()).toBeVisible();
 
-		// --- Reviewer compare: blind — no author identities leak ---
 		const assignment = await db.reviewAssignment.findFirstOrThrow({
 			where: { submissionId },
 			orderBy: { round: "desc" },

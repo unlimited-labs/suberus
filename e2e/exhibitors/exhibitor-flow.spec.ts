@@ -44,7 +44,6 @@ test.describe.serial("Exhibitor happy path", () => {
 		const companyName = testRun.prefix("Acme Robotics");
 		const talkTitle = testRun.prefix("Robots in action");
 
-		// --- Register an exhibitor account via the public form ---
 		const registerPage = new RegisterPage(page);
 		await registerPage.goto();
 		await expect(
@@ -68,13 +67,11 @@ test.describe.serial("Exhibitor happy path", () => {
 		await registerPage.fillStep3({ acceptTerms: true });
 		await registerPage.clickCreateAccount();
 
-		// Full page load lands on the exhibitor panel with the EXHIBITOR role
 		await page.waitForURL(/\/exhibitor/, { timeout: 30000 });
 		await expect(page.getByTestId("exhibitor-status")).toContainText(
 			"Application not submitted",
 		);
 
-		// --- Fill the application incl. a company presentation ---
 		await page.getByTestId("exhibitor-company-name").fill(companyName);
 		await page
 			.getByTestId("exhibitor-description")
@@ -116,7 +113,6 @@ test.describe.serial("Exhibitor happy path", () => {
 			"Save changes",
 		);
 
-		// --- Admin: list shows the application; approve from the detail page ---
 		await adminPage.goto("/admin/exhibitors");
 		await expect(adminPage.getByTestId("exhibitors-table")).toBeVisible();
 		const row = adminPage
@@ -129,7 +125,6 @@ test.describe.serial("Exhibitor happy path", () => {
 			adminPage.getByTestId("exhibitor-presentation"),
 		).toContainText(talkTitle);
 
-		// --- Admin declares the agreed package on the detail page ---
 		await adminPage.getByTestId("exhibitor-package-input").fill("Gold");
 		await adminPage.getByTestId("exhibitor-package-save").click();
 		await expect(adminPage.getByText("Package saved")).toBeVisible();
@@ -142,12 +137,10 @@ test.describe.serial("Exhibitor happy path", () => {
 			"Approved",
 		);
 
-		// --- Exhibitor receives the approval email ---
 		const approvalEmail = await waitForEmail(email, "approved", 20000);
 		expect(approvalEmail).not.toBeNull();
 		expect(approvalEmail?.Subject).toContain("approved");
 
-		// --- Exhibitor panel: approved + locked form ---
 		await page.reload();
 		await expect(page.getByTestId("exhibitor-status")).toContainText(
 			"Approved",
@@ -159,7 +152,6 @@ test.describe.serial("Exhibitor happy path", () => {
 		await expect(page.getByTestId("exhibitor-withdraw")).not.toBeVisible();
 		await expect(page.getByTestId("exhibitor-company-name")).toBeDisabled();
 
-		// --- Linked submission is ACCEPTED and lands in the planner pool ---
 		const db = getPrisma();
 		const exhibitor = await db.exhibitor.findFirstOrThrow({
 			where: { user: { email } },

@@ -12,13 +12,11 @@ const dateInDays = (days: number) =>
 // These tests modify global settings — run serially and restore after
 test.describe.serial("Submission deadline & lock", () => {
 	test.afterAll(async () => {
-		// Restore defaults
 		await setAppSetting("SUBMISSIONS_LOCKED", false)
 		await setAppSetting("SUBMISSION_DEADLINE", "")
 	})
 
 	test("shows tooltip when submission deadline has passed", async ({ page }) => {
-		// Set deadline to yesterday
 		const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
 			.toISOString()
 			.split("T")[0]
@@ -30,7 +28,6 @@ test.describe.serial("Submission deadline & lock", () => {
 		const wrapper = page.getByTestId("new-submission-disabled")
 		await expect(wrapper).toBeVisible()
 
-		// Hover wrapper to trigger tooltip
 		await wrapper.hover()
 		await expect(
 			page.getByText("The submission deadline has passed"),
@@ -77,7 +74,6 @@ test.describe.serial("Submission deadline & lock", () => {
 	})
 
 	test("lock overrides open deadline", async ({ page }) => {
-		// Deadline in the future but locked
 		const future = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
 			.toISOString()
 			.split("T")[0]
@@ -94,7 +90,6 @@ test.describe.serial("Submission deadline & lock", () => {
 
 	test("unlocking re-enables submissions", async ({ page }) => {
 		await setAppSetting("SUBMISSIONS_LOCKED", false)
-		// Deadline still in the future from previous test
 
 		await loginAs(page, TEST_USER)
 		await page.goto("/submissions")
@@ -103,7 +98,6 @@ test.describe.serial("Submission deadline & lock", () => {
 			page.getByRole("button", { name: "New Submission" }),
 		).toBeEnabled()
 
-		// Clean up
 		await setAppSetting("SUBMISSION_DEADLINE", "")
 	})
 
@@ -130,7 +124,6 @@ test.describe.serial("Submission deadline & lock", () => {
 		const date = page.getByTestId("submission-deadline-date")
 		// Renders a formatted date (every format includes a 4-digit year)
 		await expect(date).toHaveText(/\d{4}/)
-		// Far from the deadline → no urgency styling
 		await expect(date).not.toHaveClass(/text-red-700/)
 		await expect(date).not.toHaveClass(/font-bold/)
 	})
@@ -160,7 +153,6 @@ test.describe.serial("Submission deadline & lock", () => {
 		await expect(date).toHaveClass(/text-red-700/)
 		await expect(date).toHaveClass(/font-bold/)
 
-		// Clean up
 		await setAppSetting("SUBMISSION_DEADLINE", "")
 	})
 })

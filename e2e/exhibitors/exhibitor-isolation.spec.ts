@@ -28,7 +28,6 @@ test.describe.serial("Exhibitor feature isolation", () => {
 	}) => {
 		await resetExhibitorConfig(); // feature off
 
-		// Register page shows the plain form without account-type radio cards
 		await page.goto("/register");
 		await expect(page.getByLabel("E-mail *")).toBeVisible();
 		await expect(
@@ -38,7 +37,6 @@ test.describe.serial("Exhibitor feature isolation", () => {
 			page.getByTestId("register-account-type-participant"),
 		).not.toBeVisible();
 
-		// Admin nav has no Exhibitors entry
 		await adminPage.goto("/admin/dashboard");
 		const adminNav = adminPage.getByRole("navigation");
 		await expect(
@@ -66,7 +64,6 @@ test.describe.serial("Exhibitor feature isolation", () => {
 			adminPage.getByTestId("settings-exhibitors-allow-presentation"),
 		).not.toBeVisible();
 
-		// Master ON reveals the dependent switches
 		await masterSwitch.click();
 		await expect(
 			adminPage.getByTestId("settings-exhibitors-include-in-planner"),
@@ -75,7 +72,6 @@ test.describe.serial("Exhibitor feature isolation", () => {
 			adminPage.getByTestId("settings-exhibitors-allow-presentation"),
 		).toBeVisible();
 
-		// Save via the section's own Save button
 		const section = adminPage
 			.locator("section")
 			.filter({ has: adminPage.getByRole("heading", { name: "Exhibitors" }) });
@@ -84,14 +80,12 @@ test.describe.serial("Exhibitor feature isolation", () => {
 			timeout: 10000,
 		});
 
-		// Persisted to the DB
 		const db = getPrisma();
 		const setting = await db.appSetting.findUniqueOrThrow({
 			where: { key: "SUBMISSION_TYPE_EXHIBITOR" },
 		});
 		expect(setting.value).toMatchObject({ isActive: true });
 
-		// Admin nav now shows the Exhibitors entry
 		await adminPage.reload();
 		await expect(
 			adminPage
@@ -111,7 +105,6 @@ test.describe.serial("Exhibitor feature isolation", () => {
 
 		await loginAsExhibitor(page, email);
 
-		// Nav: Exhibitor/Fee/Profile/Dashboard, but no Submissions/Reviews
 		const nav = page.getByRole("navigation");
 		await expect(
 			nav.getByRole("link", { name: "Exhibitor", exact: true }),
@@ -130,12 +123,10 @@ test.describe.serial("Exhibitor feature isolation", () => {
 			nav.getByRole("link", { name: "Reviews", exact: true }),
 		).not.toBeVisible();
 
-		// /submissions redirects to the exhibitor panel
 		await page.goto("/submissions");
 		await page.waitForURL(/\/exhibitor/, { timeout: 15000 });
 		await expect(page.getByTestId("exhibitor-status")).toBeVisible();
 
-		// / redirects to the exhibitor panel
 		await page.goto("/");
 		await page.waitForURL(/\/exhibitor/, { timeout: 15000 });
 		await expect(page.getByTestId("exhibitor-status")).toBeVisible();

@@ -66,17 +66,14 @@ test.describe.serial("Profile survey - audience filtering", () => {
 	test("participant sees ALL + PARTICIPANTS questions, not EXHIBITORS", async ({
 		page,
 	}) => {
-		// Arrange — keep the seeded required question answered so the form loads clean
 		const { testUserId } = await getTestUserIds();
 		await ensureSeededSurveyQuestions(testUserId);
 
-		// Act
 		await page.goto("/profile");
 		await expect(
 			page.getByRole("heading", { name: "Profile" }),
 		).toBeVisible({ timeout: 15000 });
 
-		// Assert
 		await expect(page.getByText(labels.all)).toBeVisible();
 		await expect(page.getByText(labels.participants)).toBeVisible();
 		await expect(page.getByText(labels.exhibitors)).not.toBeVisible();
@@ -85,7 +82,6 @@ test.describe.serial("Profile survey - audience filtering", () => {
 	test("exhibitor sees ALL + EXHIBITORS questions, not PARTICIPANTS", async ({
 		browser,
 	}, testInfo) => {
-		// Arrange — enable the feature and create an exhibitor account
 		await setExhibitorConfig({ isActive: true });
 		await createExhibitorUser(exhibitorEmail);
 
@@ -100,13 +96,11 @@ test.describe.serial("Profile survey - audience filtering", () => {
 		try {
 			await loginAsExhibitor(page, exhibitorEmail);
 
-			// Act
 			await page.goto("/profile");
 			await expect(
 				page.getByRole("heading", { name: "Profile" }),
 			).toBeVisible({ timeout: 15000 });
 
-			// Assert
 			await expect(page.getByText(labels.all)).toBeVisible();
 			await expect(page.getByText(labels.exhibitors)).toBeVisible();
 			await expect(page.getByText(labels.participants)).not.toBeVisible();

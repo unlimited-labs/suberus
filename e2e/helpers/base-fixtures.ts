@@ -61,7 +61,6 @@ export const test = base.extend<
 			await deleteSubmission(id).catch(() => {});
 		}
 
-		// Cleanup orphaned data by testRunId prefix
 		const orphaned = await db.submission.findMany({
 			where: { title: { startsWith: testRun.testRunId } },
 			select: { id: true },

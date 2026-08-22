@@ -16,17 +16,6 @@ test.beforeEach(async ({ page }) => {
 	await dismissViteOverlay(page);
 });
 
-/**
- * E2E tests for Fee functionality
- * Tests user fee page and admin fee instructions editor
- * Uses per-test user isolation - each test creates its own user
- *
- * Business logic: Fee is assigned by admin AFTER payment is received
- * - Fee exists = payment confirmed (paid)
- * - No fee = payment not received (unpaid)
- */
-
-// Page Object: Fee Page
 class FeePage {
 	readonly page: Page;
 	readonly heading: Locator;
@@ -60,7 +49,6 @@ class FeePage {
 	}
 }
 
-// Page Object: Admin Settings Page
 class AdminSettingsPage {
 	readonly page: Page;
 	readonly feeInstructionsTab: Locator;
@@ -100,7 +88,6 @@ class AdminSettingsPage {
 	}
 }
 
-/** Create a uniquely-named fee test user. */
 async function createFeeTestUser() {
 	return createTestUser({
 		email: `fee-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@e2e.local`,
@@ -108,7 +95,6 @@ async function createFeeTestUser() {
 	});
 }
 
-/** Log in as the given user and open the fee page. */
 async function loginAndOpenFeePage(page: Page, testUser: { email: string }) {
 	await loginAs(page, { email: testUser.email, password: DEFAULT_PASSWORD });
 	const feePage = new FeePage(page);
@@ -120,7 +106,6 @@ test.describe("Fee - User View", () => {
 	test("user with assigned fee sees payment confirmation and details", async ({
 		page,
 	}) => {
-		// Arrange - Create unique test user
 		const testUser = await createFeeTestUser();
 
 		const paidAt = new Date("2026-01-15");
@@ -132,10 +117,8 @@ test.describe("Fee - User View", () => {
 			paidAt,
 		});
 
-		// Act
 		const feePage = await loginAndOpenFeePage(page, testUser);
 
-		// Assert
 		await expect(feePage.heading).toBeVisible();
 		await expect(feePage.paidBadge).toBeVisible();
 		await expect(page.getByText("Payment Received")).toBeVisible();
@@ -146,18 +129,14 @@ test.describe("Fee - User View", () => {
 		await expect(page.getByText(/15[.\-\/]01[.\-\/]2026|01[.\-\/]15[.\-\/]2026|2026[.\-\/]01[.\-\/]15|Jan\w*\s+15|15\s+Jan\w*/)).toBeVisible();
 		await expect(feePage.paymentInstructions).toBeVisible();
 
-		// Cleanup
 		await deleteTestUser(testUser.id);
 	});
 
 	test("user without fee sees payment not received alert", async ({ page }) => {
-		// Arrange - Create unique test user (no fee)
 		const testUser = await createFeeTestUser();
 
-		// Act
 		const feePage = await loginAndOpenFeePage(page, testUser);
 
-		// Assert
 		await expect(feePage.heading).toBeVisible();
 		await expect(feePage.noFeeAlert).toBeVisible();
 		await expect(page.getByText("Payment Not Received")).toBeVisible();
@@ -167,15 +146,12 @@ test.describe("Fee - User View", () => {
 			)
 		).toBeVisible();
 
-		// Payment instructions should still be visible
 		await expect(feePage.paymentInstructions).toBeVisible();
 
-		// Cleanup
 		await deleteTestUser(testUser.id);
 	});
 
 	test("user with invited speaker fee sees correct fee type", async ({ page }) => {
-		// Arrange - Create unique test user
 		const testUser = await createFeeTestUser();
 
 		await createFee({
@@ -186,10 +162,8 @@ test.describe("Fee - User View", () => {
 			paidAt: new Date("2026-01-10"),
 		});
 
-		// Act
 		const feePage = await loginAndOpenFeePage(page, testUser);
 
-		// Assert
 		await expect(feePage.heading).toBeVisible();
 		await expect(feePage.paidBadge).toBeVisible();
 		await expect(page.getByText("Payment Received")).toBeVisible();
@@ -197,7 +171,6 @@ test.describe("Fee - User View", () => {
 		await expect(page.getByText("75.00")).toBeVisible();
 		await expect(page.getByText("GBP")).toBeVisible();
 
-		// Cleanup
 		await deleteTestUser(testUser.id);
 	});
 });
@@ -207,12 +180,10 @@ test.describe("Fee - Admin Instructions Editor", () => {
 	test.describe.configure({ mode: 'serial' });
 
 	test("admin can edit and save fee payment instructions", async ({ page }) => {
-		// Arrange
 		await loginAs(page, ADMIN_USER);
 		const settingsPage = new AdminSettingsPage(page);
 		await settingsPage.goto();
 
-		// Act
 		await settingsPage.openFeeInstructionsTab();
 
 		const testInstructions = `# Test Payment Instructions
@@ -226,12 +197,10 @@ Please transfer the fee to:
 
 		await settingsPage.updateInstructions(testInstructions);
 
-		// Assert
 		await expect(settingsPage.successToast).toBeVisible({ timeout: 10000 });
 	});
 
 	test("admin updated instructions are visible to users", async ({ page }) => {
-		// Arrange - Admin updates instructions
 		await loginAs(page, ADMIN_USER);
 		const settingsPage = new AdminSettingsPage(page);
 		await settingsPage.goto();
@@ -242,7 +211,6 @@ Please transfer the fee to:
 		await settingsPage.updateInstructions(instructions);
 		await expect(settingsPage.successToast).toBeVisible({ timeout: 10000 });
 
-		// Act - Logout and login as unique test user
 		await page.context().clearCookies();
 		await page.goto("/login");
 		await page.waitForURL("/login");
@@ -251,23 +219,19 @@ Please transfer the fee to:
 
 		await loginAndOpenFeePage(page, testUser);
 
-		// Assert - Instructions contain the unique text
 		await expect(page.getByText(uniqueText)).toBeVisible({ timeout: 10000 });
 
-		// Cleanup
 		await deleteTestUser(testUser.id);
 	});
 
 	test("admin can use markdown formatting in instructions", async ({
 		page,
 	}) => {
-		// Arrange
 		await loginAs(page, ADMIN_USER);
 		const settingsPage = new AdminSettingsPage(page);
 		await settingsPage.goto();
 		await settingsPage.openFeeInstructionsTab();
 
-		// Act
 		const markdownInstructions = `# Payment Instructions
 
 ## Bank Transfer
@@ -288,10 +252,8 @@ Please use the following details:
 
 		await settingsPage.updateInstructions(markdownInstructions);
 
-		// Assert
 		await expect(settingsPage.successToast).toBeVisible({ timeout: 10000 });
 
-		// Verify markdown is saved (logout and check as user)
 		await page.context().clearCookies();
 		await page.goto("/login");
 		await page.waitForURL("/login");
@@ -300,12 +262,10 @@ Please use the following details:
 
 		await loginAndOpenFeePage(page, testUser);
 
-		// Markdown should be rendered (not raw)
 		await expect(page.getByRole("heading", { name: "Bank Transfer" })).toBeVisible({ timeout: 10000 });
 		await expect(page.getByText("Account Number")).toBeVisible();
 		await expect(page.getByRole("link", { name: "finance@conference.org" })).toBeVisible();
 
-		// Cleanup
 		await deleteTestUser(testUser.id);
 	});
 });
@@ -314,25 +274,20 @@ test.describe("Fee - Navigation", () => {
 	test("fee link is visible in navigation for authenticated users", async ({
 		page,
 	}) => {
-		// Arrange - Use shared test user (read-only test)
 		const { testUserId } = await getTestUserIds();
 		const testUser = await getPrisma().user.findUnique({ where: { id: testUserId } });
 		await loginAs(page, { email: testUser!.email, password: DEFAULT_PASSWORD });
 
-		// Act & Assert
 		await expect(page.getByRole("link", { name: "Fee" })).toBeVisible();
 	});
 
 	test("clicking fee link navigates to fee page", async ({ page }) => {
-		// Arrange - Use shared test user (read-only test)
 		const { testUserId } = await getTestUserIds();
 		const testUser = await getPrisma().user.findUnique({ where: { id: testUserId } });
 		await loginAs(page, { email: testUser!.email, password: DEFAULT_PASSWORD });
 
-		// Act
 		await page.getByRole("link", { name: "Fee" }).click();
 
-		// Assert
 		await expect(page).toHaveURL("/fee");
 		await expect(
 			page.getByRole("heading", { name: "Conference Fee" })
@@ -344,11 +299,9 @@ test.describe("Fee - Edge Cases", () => {
 	test("fee with null amount displays without amount field", async ({
 		page,
 	}) => {
-		// Arrange - Create unique test user
 		const testUser = await createFeeTestUser();
 		const db = getPrisma();
 
-		// Create fee with null amount (admin confirmed payment but didn't enter amount)
 		await db.fee.create({
 			data: {
 				userId: testUser.id,
@@ -360,10 +313,8 @@ test.describe("Fee - Edge Cases", () => {
 			},
 		});
 
-		// Act
 		const feePage = await loginAndOpenFeePage(page, testUser);
 
-		// Assert
 		await expect(feePage.heading).toBeVisible();
 		await expect(feePage.paidBadge).toBeVisible();
 		await expect(page.getByText("Payment Received")).toBeVisible();
@@ -372,14 +323,12 @@ test.describe("Fee - Edge Cases", () => {
 		// Amount field should not be visible (exact match to avoid matching payment instructions text)
 		await expect(page.getByText("Amount", { exact: true })).not.toBeVisible();
 
-		// Cleanup
 		await deleteTestUser(testUser.id);
 	});
 
 	test("fee page loads correctly after multiple navigation", async ({
 		page,
 	}) => {
-		// Arrange - Create unique test user
 		const testUser = await createFeeTestUser();
 
 		await createFee({
@@ -392,7 +341,6 @@ test.describe("Fee - Edge Cases", () => {
 
 		await loginAs(page, { email: testUser.email, password: DEFAULT_PASSWORD });
 
-		// Act - Navigate back and forth
 		await page.goto("/fee");
 		await expect(page.getByText("Payment Received")).toBeVisible();
 
@@ -400,11 +348,9 @@ test.describe("Fee - Edge Cases", () => {
 		await page.goto("/submissions");
 		await page.goto("/fee");
 
-		// Assert
 		await expect(page.getByText("Payment Received")).toBeVisible();
 		await expect(page.getByText("Full Conference Fee")).toBeVisible();
 
-		// Cleanup
 		await deleteTestUser(testUser.id);
 	});
 });

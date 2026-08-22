@@ -1,8 +1,5 @@
 import { type Page, type Locator, expect } from "@playwright/test";
 
-/**
- * Page Object Model for Admin Dashboard
- */
 export class AdminDashboardPage {
 	readonly page: Page;
 	readonly heading: Locator;

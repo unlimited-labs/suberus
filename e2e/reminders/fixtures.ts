@@ -17,7 +17,6 @@ export class RemindersSettingsHelper {
 		await expect(this.page.getByRole("switch", { name: "Reviewer reminders" })).toBeVisible()
 	}
 
-	// --- Reviewer ---
 	getReviewerEnabledSwitch(): Locator {
 		return this.page.getByRole("switch", { name: "Reviewer reminders" })
 	}
@@ -26,7 +25,6 @@ export class RemindersSettingsHelper {
 		return this.page.locator("#reviewer-days")
 	}
 
-	// --- Revision ---
 	getRevisionEnabledSwitch(): Locator {
 		return this.page.getByRole("switch", { name: "Revision reminders" })
 	}
@@ -39,7 +37,6 @@ export class RemindersSettingsHelper {
 		return this.page.locator("#revision-max")
 	}
 
-	// --- Deadline ---
 	getDeadlineEnabledSwitch(): Locator {
 		return this.page.getByRole("switch", { name: "Deadline reminders" })
 	}

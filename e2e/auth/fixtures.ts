@@ -9,7 +9,6 @@ export const INVALID_USER = {
 	password: "wrongpassword",
 }
 
-// Page Objects
 export class LoginPage {
 	readonly page: Page
 	readonly emailInput: Locator
@@ -42,7 +41,6 @@ export class LoginPage {
 	}
 
 	async submit() {
-		// Ensure button is visible and enabled before clicking
 		await expect(this.submitButton).toBeVisible()
 		await expect(this.submitButton).toBeEnabled()
 		await this.submitButton.scrollIntoViewIfNeeded()
@@ -112,9 +110,7 @@ export class RegisterPage {
 		}
 	}
 
-	// Step 2: Invoice Information
 	async fillStep2(data: { country: string; address?: string }) {
-		// Wait for step 2 to be visible, retrying the Continue click if needed
 		await this.waitForStep2()
 		// Scope combobox to the Country field to avoid strict mode violations during step transitions
 		const countryField = this.page.locator('[data-slot="field"]').filter({ has: this.page.getByText("Country *", { exact: true }) })
@@ -137,7 +133,6 @@ export class RegisterPage {
 		await this.page.getByRole("option", { name: data.country }).click()
 	}
 
-	/** Wait for step 2 to be visible after navigating from step 1 */
 	async waitForStep2() {
 		const countryLabel = this.page.getByText("Country *")
 		try {
@@ -148,7 +143,6 @@ export class RegisterPage {
 		}
 	}
 
-	// Step 3: Survey
 	async fillStep3(data: {
 		acceptTerms: boolean
 		checkSurveyQuestions?: string[]
@@ -190,7 +184,6 @@ export class RegisterPage {
 	}
 
 	async clickContinue() {
-		// Dismiss any open dropdown (e.g. Title select) that may block the button
 		await this.page.keyboard.press("Escape")
 		await expect(this.continueButton).toBeVisible()
 		await expect(this.continueButton).toBeEnabled()
@@ -200,7 +193,6 @@ export class RegisterPage {
 
 	async clickBack() {
 		await this.backButton.click()
-		// Wait for step 1 form to be visible after navigation
 		await this.page.getByLabel("E-mail *").waitFor({ state: "visible", timeout: 10000 })
 	}
 
@@ -298,7 +290,6 @@ export class ResetPasswordPage {
 	}
 }
 
-// Extended test with fixtures
 interface AuthFixtures {
 	testRun: TestRunContext
 	loginPage: LoginPage

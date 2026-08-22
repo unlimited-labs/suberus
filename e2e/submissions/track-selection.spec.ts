@@ -6,7 +6,6 @@ import {
 	getPrisma,
 } from "../helpers/test-db";
 
-/** Toggle enableTrackSelection in oral presentation config */
 async function setTrackSelectionEnabled(enabled: boolean) {
 	const db = getPrisma();
 	const current = await db.appSetting.findUnique({
@@ -30,7 +29,6 @@ test.describe.serial("Submission - Track Selection", () => {
 		page,
 		testRun,
 	}) => {
-		// Arrange
 		const trackId = await createTrack(
 			testRun.testRunId,
 			"Neural Networks",
@@ -46,10 +44,8 @@ test.describe.serial("Submission - Track Selection", () => {
 			.getByRole("button", { name: /oral presentation/i })
 			.click();
 
-		// Assert - track selector should appear
 		await expect(page.getByText("Preferred Track")).toBeVisible();
 
-		// Should contain the active track in dropdown
 		await page.getByRole("combobox").filter({ hasText: "None" }).click();
 		await expect(
 			page.getByRole("option", {
@@ -57,13 +53,11 @@ test.describe.serial("Submission - Track Selection", () => {
 			}),
 		).toBeVisible();
 
-		// Cleanup
 		await deleteTrack(trackId);
 		await setTrackSelectionEnabled(false);
 	});
 
 	test("should hide track selector when disabled", async ({ page }) => {
-		// Arrange - ensure setting is off (default)
 		await setTrackSelectionEnabled(false);
 
 		// Act - navigate fresh (bypass TanStack Router cache)
@@ -73,46 +67,37 @@ test.describe.serial("Submission - Track Selection", () => {
 			.getByRole("button", { name: /oral presentation/i })
 			.click();
 
-		// Wait for form to render (title input visible)
 		await expect(page.getByLabel("Title")).toBeVisible();
 
-		// Assert - track selector should NOT appear
 		await expect(page.getByText("Preferred Track")).not.toBeVisible();
 	});
 
 	test("should hide track selector for non-ABSTRACT types", async ({
 		page,
 	}) => {
-		// Arrange - enable track selection so we can verify it's type-specific
 		await setTrackSelectionEnabled(true);
 
 		// Act - navigate fresh (bypass TanStack Router cache)
 		await page.goto("/submissions");
 		await page.goto("/submissions/new");
 
-		// Select POSTER
 		await page
 			.getByRole("button", { name: /poster/i })
 			.click();
 		await expect(page.getByLabel("Title")).toBeVisible();
 
-		// Assert - no track selector for POSTER
 		await expect(page.getByText("Preferred Track")).not.toBeVisible();
 
-		// Select FULL PAPER
 		await page
 			.getByRole("button", { name: /full paper/i })
 			.click();
 
-		// Assert - no track selector for FULL_PAPER
 		await expect(page.getByText("Preferred Track")).not.toBeVisible();
 
-		// Cleanup
 		await setTrackSelectionEnabled(false);
 	});
 
 	test("should load only active tracks", async ({ page, testRun }) => {
-		// Arrange
 		const activeTrackId = await createTrack(
 			testRun.testRunId,
 			"Active Track",
@@ -136,7 +121,6 @@ test.describe.serial("Submission - Track Selection", () => {
 		await expect(page.getByText("Preferred Track")).toBeVisible({ timeout: 10000 });
 		await page.getByRole("combobox").filter({ hasText: "None" }).click();
 
-		// Assert
 		await expect(
 			page.getByRole("option", {
 				name: `${testRun.testRunId}_Active Track`,
@@ -158,7 +142,6 @@ test.describe.serial("Submission - Track Selection", () => {
 				.filter({ hasText: `${testRun.testRunId}_Active Track` }),
 		).toBeVisible();
 
-		// Cleanup
 		await deleteTrack(activeTrackId);
 		await deleteTrack(inactiveTrackId);
 		await setTrackSelectionEnabled(false);

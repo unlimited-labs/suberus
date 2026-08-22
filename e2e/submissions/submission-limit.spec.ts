@@ -156,7 +156,6 @@ test.describe.serial("Submission limit per user per type", () => {
 			timeout: 15000,
 		});
 		expect(await ownedActiveAbstracts(testUserId)).toBe(1);
-		// Track the freshly created submission for cleanup.
 		const created = await getPrisma().submission.findFirst({
 			where: { userId: testUserId, status: SubmissionStatus.SUBMITTED },
 			orderBy: { createdAt: "desc" },
