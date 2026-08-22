@@ -14,6 +14,8 @@ import { Label } from "@/shared/ui/label";
 import { InvitedTalkDialog } from "./invited-talk-dialog";
 import { useSessionEditor } from "./session-editor-context";
 
+type InvitedTalkTarget = { mode: "add" } | { mode: "edit"; id: string } | null;
+
 export function PresentationsSection() {
 	const {
 		session,
@@ -25,9 +27,7 @@ export function PresentationsSection() {
 	const untimed = session.untimedSlots;
 	const remainingMin = sessionDurationMin - usedMin;
 	const capacityFull = usedMin >= sessionDurationMin;
-	const [invitedSlotId, setInvitedSlotId] = useState<string | null | undefined>(
-		undefined,
-	);
+	const [invitedTalk, setInvitedTalk] = useState<InvitedTalkTarget>(null);
 
 	const handleMove = (index: number, dir: "up" | "down") => {
 		const reordered = [...presentations];
@@ -61,7 +61,7 @@ export function PresentationsSection() {
 					<Button
 						data-testid="add-invited-talk"
 						disabled={!untimed && capacityFull}
-						onClick={() => setInvitedSlotId(null)}
+						onClick={() => setInvitedTalk({ mode: "add" })}
 						size="xs"
 						variant="outline"
 					>
@@ -161,7 +161,7 @@ export function PresentationsSection() {
 								<Button
 									aria-label={`Edit ${p.submissionTitle}`}
 									data-testid={`invited-talk-edit-${p.id}`}
-									onClick={() => setInvitedSlotId(p.id)}
+									onClick={() => setInvitedTalk({ mode: "edit", id: p.id })}
 									size="icon-sm"
 									variant="ghost"
 								>
@@ -182,12 +182,12 @@ export function PresentationsSection() {
 				</div>
 			)}
 
-			{invitedSlotId !== undefined && (
+			{invitedTalk && (
 				<InvitedTalkDialog
-					onOpenChange={(o) => !o && setInvitedSlotId(undefined)}
+					onOpenChange={(o) => !o && setInvitedTalk(null)}
 					open
 					sessionId={session.id}
-					slotId={invitedSlotId ?? undefined}
+					slotId={invitedTalk.mode === "edit" ? invitedTalk.id : undefined}
 					untimed={untimed}
 				/>
 			)}
