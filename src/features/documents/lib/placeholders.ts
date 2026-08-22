@@ -22,15 +22,12 @@ export function isPlaceholderKey(tag: string): tag is PlaceholderKey {
 	return (PLACEHOLDER_KEYS as readonly string[]).includes(tag);
 }
 
-/** Labels keyed by placeholder, for UI tables/chips. */
 export const PLACEHOLDER_LABELS = Object.fromEntries(
 	DOCUMENT_PLACEHOLDERS.map((p) => [p.key, p.label]),
 ) satisfies Record<string, string>;
 
 export interface ResolvedPlaceholders {
-	/** Substitution values for every registry key (empty string when unresolved). */
 	values: Record<PlaceholderKey, string>;
-	/** Keys whose value could not be resolved (empty) — block generation on these. */
 	missing: PlaceholderKey[];
 }
 
@@ -39,17 +36,10 @@ export interface PlaceholderInput {
 	lastName: string | null;
 	email: string;
 	affiliationName: string | null;
-	/** Titles of the user's ACCEPTED submissions (any order). */
 	acceptedTitles: string[];
-	/** Already-formatted "today" string. */
 	date: string;
 }
 
-/**
- * Pure mapping from resolved participant data to placeholder values + missing set.
- * A key is "missing" when its value is empty; `abstractTitle` joins accepted titles
- * with ", ". No server imports → unit-testable and UI-safe.
- */
 export function computePlaceholders(
 	input: PlaceholderInput,
 ): ResolvedPlaceholders {

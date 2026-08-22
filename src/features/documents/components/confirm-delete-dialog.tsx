@@ -19,7 +19,6 @@ interface ConfirmDeleteDialogProps {
 	onConfirm: () => void;
 }
 
-/** Shared destructive confirmation used by the document/template deletes. */
 export function ConfirmDeleteDialog({
 	open,
 	onOpenChange,

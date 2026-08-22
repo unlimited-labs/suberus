@@ -3,13 +3,6 @@ import { type Ref, type RefObject, useRef } from "react";
 import { versionRedlineQueryOptions } from "@/features/submission-diff/api";
 
 /**
- * Wrap a sanitized HTML fragment in a self-contained "document page". A serif,
- * justified base approximates an academic paper; `styleCss` (the per-document CSS
- * the sidecar derives from the DOCX's own styles.xml) layers the document's real
- * formatting — centered title/authors/abstract, heading sizes, fonts — on top.
- * Boxed changed equations (`.matheq`) and framed changed figures port the POC
- * substrate. CSS-only — the iframe is script-less.
- *
  * `styleCss` is trusted-by-construction (generated server-side from validated
  * styles.xml values, class-keyed), so it is injected directly into <style> and
  * NOT run through the HTML sanitizer (which sanitizes HTML, not CSS).
@@ -106,7 +99,6 @@ const stripInsertions = (redline: string): string =>
 const stripDeletions = (redline: string): string =>
 	redline.replace(/<del\b[^>]*>[\s\S]*?<\/del>/g, "");
 
-/** Sandboxed frame for already-sanitized author HTML. */
 function DocFrame({
 	title,
 	html,
@@ -116,7 +108,6 @@ function DocFrame({
 }: {
 	title: string;
 	html: string;
-	/** Per-document styles.xml CSS (Word-faithful rendering); "" when none. */
 	css?: string;
 	ref?: Ref<HTMLIFrameElement>;
 	onLoad?: () => void;
@@ -133,7 +124,6 @@ function DocFrame({
 	);
 }
 
-/** Proportionally mirror one scroller's position onto another (handles differing lengths). */
 function mirrorScroll(from: Element, to: Element): void {
 	const max = from.scrollHeight - from.clientHeight;
 	const ratio = max > 0 ? from.scrollTop / max : 0;
@@ -167,7 +157,6 @@ function useSyncedScroll() {
 		self.addEventListener(
 			"scroll",
 			() => {
-				// Ignore the echo: the mirrored scroll on the side we just drove.
 				if (driver.current === echoSide) return;
 				const from = self.document.scrollingElement;
 				const to = otherRef.current?.contentWindow?.document.scrollingElement;
@@ -214,7 +203,6 @@ const FORMAT_CHANGED = (
 interface FileRedlineViewProps {
 	oldVersionId: string;
 	newVersionId: string;
-	/** "inline" = one unified redline; "split" = old vs new documents side by side. */
 	layout: "inline" | "split";
 	oldLabel: string;
 	newLabel: string;

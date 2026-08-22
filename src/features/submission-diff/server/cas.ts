@@ -2,31 +2,24 @@ import { prisma } from "@/shared/server/db.server";
 import { fileExists, uploadFile } from "@/shared/server/storage";
 import { sha256 } from "./normalize";
 
-// Top-level bucket prefix for all version-diff artifacts, so content-addressed
-// figures/HTML never mix with `submissions/`, `reviews/`, `extraction-staging/`.
 const PREFIX = "version-diff";
 
-/** CAS key for a rasterized figure (content-addressed by its sha). */
 export function figureKey(sha: string): string {
 	return `${PREFIX}/figures/${sha}.png`;
 }
 
-/** CAS key for a normalized HTML blob (content-addressed by its sha). */
 export function htmlKey(sha: string): string {
 	return `${PREFIX}/html/${sha}.html`;
 }
 
-/** CAS key for a redline (diff) HTML blob (content-addressed by its sha). */
 export function redlineKey(sha: string): string {
 	return `${PREFIX}/redline/${sha}.html`;
 }
 
-/** CAS key for a per-style CSS blob (content-addressed by its sha). */
 export function cssKey(sha: string): string {
 	return `${PREFIX}/css/${sha}.css`;
 }
 
-/** Upload bytes to `key` only if absent — content-addressed, so writes are idempotent. */
 async function putIfAbsent(
 	key: string,
 	bytes: Buffer,
@@ -51,13 +44,11 @@ async function trackCasObject(key: string, size: number): Promise<void> {
 	});
 }
 
-/** Store a rasterized figure in CAS and inventory it for the reaper. */
 export async function linkFigure(sha: string, bytes: Buffer): Promise<void> {
 	const key = await putIfAbsent(figureKey(sha), bytes, "image/png");
 	await trackCasObject(key, bytes.length);
 }
 
-/** Persist normalized HTML to CAS (content-addressed by its own sha). Returns the key. */
 export async function persistHtml(html: string): Promise<string> {
 	const buf = Buffer.from(html, "utf8");
 	const key = await putIfAbsent(
@@ -69,10 +60,6 @@ export async function persistHtml(html: string): Promise<string> {
 	return key;
 }
 
-/**
- * Persist per-style CSS to CAS (content-addressed). Returns the key, or null for
- * empty CSS (a document with no custom styles) so the artifact stores no key.
- */
 export async function persistCss(css: string): Promise<string | null> {
 	if (!css.trim()) return null;
 	const buf = Buffer.from(css, "utf8");
@@ -85,7 +72,6 @@ export async function persistCss(css: string): Promise<string | null> {
 	return key;
 }
 
-/** Persist redline HTML to CAS (content-addressed by its own sha). Returns the key. */
 export async function persistRedline(html: string): Promise<string> {
 	const buf = Buffer.from(html, "utf8");
 	const key = await putIfAbsent(

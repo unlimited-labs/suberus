@@ -2,7 +2,6 @@ import { IconAlertTriangle, IconCircleCheck } from "@tabler/icons-react";
 import { placeholderLabel } from "@/features/documents/components/document-bits";
 import type { ResolutionPreview } from "@/features/documents/server/generate";
 
-/** Resolved-data table + missing-placeholder alert for the add-document dialog. */
 export function ResolutionPreviewCard({
 	preview,
 }: {

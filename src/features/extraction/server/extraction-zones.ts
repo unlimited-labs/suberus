@@ -29,8 +29,6 @@ export interface ClassifiedPara {
 	para: DocParagraph;
 }
 
-// --- Zone classification ---
-
 interface ZoneContext {
 	text: string;
 	para: DocParagraph;
@@ -38,7 +36,6 @@ interface ZoneContext {
 	maxSize: number;
 }
 
-/** A classification step: the zone this paragraph belongs to, and the next state. */
 interface ZoneStep {
 	assign: Zone;
 	next: Zone;
@@ -48,7 +45,6 @@ const isBodyStart = (text: string) =>
 	BODY_START_RE.test(text) || SECTION_RE.test(text);
 
 function stepFromTitle(): ZoneStep {
-	// First non-empty paragraph is the title, then expect authors.
 	return { assign: "TITLE", next: "AUTHORS" };
 }
 
@@ -73,7 +69,6 @@ function stepFromAuthors({
 	) {
 		return { assign: "AUTHORS", next: "AUTHORS" };
 	}
-	// Ambiguous — treat as affiliation (safer than body)
 	return { assign: "AFFILIATIONS", next: "AFFILIATIONS" };
 }
 
@@ -89,7 +84,6 @@ function stepFromAffiliations({ text, para }: ZoneContext): ZoneStep {
 	if (
 		looksLikeAffiliation(text, para) ||
 		INSTITUTION_RE.test(text) ||
-		// Continuation of affiliation: address-like or short non-body text
 		(text.length < MAX_AFFILIATION_CONTINUATION_LENGTH &&
 			!looksLikeAuthorLine(para))
 	) {
@@ -107,7 +101,6 @@ function stepFromEmails({ text }: ZoneContext): ZoneStep {
 
 function stepFromKeywords({ text }: ZoneContext): ZoneStep {
 	if (isBodyStart(text)) return { assign: "BODY", next: "BODY" };
-	// Single keywords line, then body.
 	return { assign: "KEYWORDS", next: "BODY" };
 }
 
@@ -129,7 +122,6 @@ export function classifyZones(paragraphs: DocParagraph[]): ClassifiedPara[] {
 	const result: ClassifiedPara[] = [];
 	let zone: Zone = "TITLE";
 
-	// Find max font size in first ~6 paragraphs for title detection
 	const maxSize = getMaxFontSize(paragraphs.slice(0, HEADER_SCAN_PARAGRAPHS));
 
 	for (const para of paragraphs) {
@@ -148,8 +140,6 @@ export function classifyZones(paragraphs: DocParagraph[]): ClassifiedPara[] {
 
 	return result;
 }
-
-// --- Feature helpers ---
 
 export function getParaFontSize(para: DocParagraph): number {
 	for (const run of para.runs) {
@@ -201,16 +191,13 @@ export function looksLikeAffiliation(
 	para: DocParagraph,
 ): boolean {
 	if (AFF_MARKER_RE.test(text)) return true;
-	// Small font first run with marker
 	const firstRun = para.runs[0];
 	if (firstRun?.sizeHp && firstRun.sizeHp <= SMALL_FONT_SIZE_HP) return true;
 	// Line starting with space + institution keyword (KomPlasTech template)
 	if (/^\s/.test(para.runs[0]?.text ?? "") && INSTITUTION_RE.test(text))
 		return true;
-	// Just institution keyword on its own line
 	if (INSTITUTION_RE.test(text) && text.length < MAX_AFFILIATION_LINE_LENGTH)
 		return true;
-	// Address-like line (postal code patterns)
 	if (/\d{2}-\d{3}\s/.test(text) && text.length < MAX_AFFILIATION_LINE_LENGTH)
 		return true;
 	return false;

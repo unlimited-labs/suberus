@@ -17,7 +17,6 @@ import {
 	TableRow,
 } from "@/shared/ui/table";
 
-/** FAILED reason: truncated by default, click to reveal the full stored error. */
 function FailureReason({ error }: { error: string }) {
 	const [open, setOpen] = useState(false);
 	return (
@@ -71,7 +70,6 @@ export function GeneratedDocumentsList({ documents, onDelete }: ListProps) {
 	const { formatDateTime } = useDateFormat();
 	return (
 		<>
-			{/* Mobile: cards (avoid horizontal table scroll) */}
 			<div className="space-y-2 md:hidden">
 				{documents.map((d) => (
 					<div
@@ -105,7 +103,6 @@ export function GeneratedDocumentsList({ documents, onDelete }: ListProps) {
 				))}
 			</div>
 
-			{/* Desktop: table */}
 			<div className="hidden overflow-hidden rounded-xl border md:block">
 				<Table>
 					<TableHeader>

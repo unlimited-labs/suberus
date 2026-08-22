@@ -131,19 +131,6 @@ async function tryLlmExtraction(
 	}
 }
 
-// --- Confidence check ---
-//
-// Determines whether LLM fallback should trigger.
-// LOW confidence → LLM is called with pdf-api markdown (or XML header text).
-//
-// Rules (ANY triggers LOW):
-//   1. No title found                          — fundamental extraction failure
-//   2. Title > 300 chars                        — probably grabbed a paragraph, not title
-//   3. No authors found                         — fundamental extraction failure
-//   4. Suspicious chars in names (){}[]<>@#$... — XML/formatting artifact in parsed name
-//   5. No affiliations for ALL authors          — template structure likely not parsed
-//   6. Missing/invalid email for ANY author     — incomplete extraction
-//
 // Note: rules check FOUND authors only. If heuristic finds 2/5 authors
 // with complete data, confidence is HIGH. We can't detect missing authors
 // without knowing expected count, which is not available from heuristics.
@@ -179,14 +166,10 @@ export function mergeResults(
 	heuristic: ExtractionResult,
 	ai: ExtractionResult,
 ): ExtractionResult {
-	// Title: prefer heuristic, fallback to AI
 	const title = heuristic.title || ai.title;
 
-	// Keywords: trust heuristic only — LLM tends to generate from abstract text
 	const keywords = heuristic.keywords;
 
-	// Authors: trust heuristic count (LLM hallucinates extra authors)
-	// but enrich heuristic authors with AI data (emails, affiliations)
 	let authors = heuristic.authors;
 
 	if (authors && authors.length > 0 && ai.authors && ai.authors.length > 0) {
@@ -208,7 +191,6 @@ export function mergeResults(
 			};
 		});
 	} else if (!authors || authors.length === 0) {
-		// Heuristic found nothing — use AI authors entirely
 		authors = ai.authors;
 	}
 

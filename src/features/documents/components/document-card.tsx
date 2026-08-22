@@ -14,13 +14,9 @@ interface DocumentCardProps {
 	size: number | null;
 	status: DocumentStatus;
 	error?: string | null;
-	/** Digitally signed — shows a "signed" marker next to the name. */
 	signed?: boolean;
-	/** Download endpoint; when absent the download action is hidden. */
 	downloadHref?: string;
-	/** Render the download as a labelled button (user-facing primary action). */
 	prominentDownload?: boolean;
-	/** Show the coloured status badge. Off for single-status lists. */
 	showStatus?: boolean;
 	onDelete?: () => void;
 	deleteLabel?: string;
@@ -28,11 +24,6 @@ interface DocumentCardProps {
 	downloadTestId?: string;
 }
 
-/**
- * Shared document row: status-coloured icon tile, name + meta, optional
- * status badge, download and delete actions. Used by the participant list,
- * the admin per-user section and the admin table's mobile layout.
- */
 export function DocumentCard({
 	name,
 	createdAt,

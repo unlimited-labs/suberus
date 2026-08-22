@@ -8,7 +8,6 @@ import type { DocumentStatus } from "@/generated/prisma/enums";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 
-/** Shown in generate dialogs when the conference has no templates yet. */
 export function NoTemplatesHint() {
 	return (
 		<p className="text-muted-foreground text-xs">
@@ -47,20 +46,11 @@ export function placeholderLabel(key: string): string {
 	return PLACEHOLDER_LABELS[key as PlaceholderKey] ?? key;
 }
 
-/**
- * Single source of truth for per-status colour: the icon tile, the inline
- * dot, and the soft badge. Status is never conveyed by colour alone — the
- * label and dot always accompany it (a11y).
- */
 interface StatusAccent {
 	label: string;
-	/** Icon-tile background + foreground. */
 	tile: string;
-	/** Inline status dot colour. */
 	dot: string;
-	/** Soft badge background + text. */
 	badge: string;
-	/** Subtle pulse while work is in flight. */
 	pulse?: boolean;
 }
 
@@ -106,10 +96,6 @@ export function DocumentStatusBadge({ status }: { status: DocumentStatus }) {
 	);
 }
 
-/**
- * Rounded icon tile fronting a document/template card. Colour follows the
- * document status; omit `status` for the neutral (template) treatment.
- */
 export function DocumentIconTile({
 	status,
 	className,

@@ -9,7 +9,6 @@ import { sanitizeDiffHtml } from "./sanitize";
 
 const HTML_SHA_RE = /([0-9a-f]{64})\.html$/;
 
-/** The normalized-HTML sha embedded in a CAS html key. */
 function shaFromHtmlKey(key: string): string {
 	const match = HTML_SHA_RE.exec(key);
 	if (!match) throw new Error(`unexpected normalized-html key: ${key}`);
@@ -125,7 +124,6 @@ export async function diffVersionArtifacts(
 
 export interface ResolvedHtml {
 	htmlKey: string;
-	/** CAS key of this version's per-style CSS (null when it has no custom styles). */
 	cssKey: string | null;
 	/** Source kind (DOCX/PDF) — a kind mismatch between sides = format change. */
 	kind: ArtifactKind;
@@ -134,8 +132,6 @@ export interface ResolvedHtml {
 }
 
 /**
- * Resolve a version's normalized-HTML artifact (newest toolchain wins).
- *
  * Read-decoupled from the sidecar: the artifact row already carries its own
  * toolchain, so a read NEVER calls `docxApiHealth()`. A down docx-api must not
  * break viewing an already-computed redline (the artifact is immutable). On a

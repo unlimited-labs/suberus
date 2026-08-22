@@ -12,7 +12,6 @@ import { getErrorMessage } from "@/shared/lib/error-message";
 
 export type Step = "template" | "review" | "progress";
 
-/** State + actions for the 3-step bulk-generate wizard. */
 export function useBulkGenerate(userIds: string[], onDone?: () => void) {
 	const [step, setStep] = useState<Step>("template");
 	const [templateId, setTemplateId] = useState<string | null>(null);

@@ -20,7 +20,6 @@ interface DocumentFiltersProps {
 	templates: { id: string; name: string }[];
 }
 
-/** Search + status + template filter row for the generated-documents table. */
 export function DocumentFilters({
 	search,
 	onSearchChange,

@@ -4,8 +4,6 @@ export interface DiffStats {
 }
 
 /**
- * Count redline insertion/deletion runs (block-level <ins>/<del> wrappers).
- *
  * The redline itself is produced by the docx-api sidecar (xmldiff structural
  * tree diff) and DOMPurify-sanitized in the worker; this only tallies the marks
  * for the "+N −M changed blocks" summary.

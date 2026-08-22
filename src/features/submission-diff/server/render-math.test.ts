@@ -38,9 +38,9 @@ describe("renderMathInHtml", () => {
 		const out = renderMathInHtml(
 			`<p><span class="math inline">&nbsp;&lt;em&gt;ε̇&lt;/em&gt;</span> rate</p>`,
 		);
-		expect(out).not.toContain("katex-error"); // no red error box
-		expect(out).not.toContain('class="math inline"'); // span consumed
-		expect(out).not.toContain("&lt;em&gt;"); // tags stripped, not shown literally
-		expect(out).toContain("ε̇"); // the bare symbol survives
+		expect(out).not.toContain("katex-error");
+		expect(out).not.toContain('class="math inline"');
+		expect(out).not.toContain("&lt;em&gt;");
+		expect(out).toContain("ε̇");
 	});
 });

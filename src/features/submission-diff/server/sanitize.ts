@@ -2,8 +2,6 @@ import createDOMPurify from "dompurify";
 import { JSDOM } from "jsdom";
 
 /**
- * Server-side HTML sanitizer for the version-diff render substrate.
- *
  * DOMPurify must be bound to a DOM. On the server there is no `window`, and an
  * unbound DOMPurify is `isSupported: false` and returns its input UNSANITISED
  * (gotcha C1, proven in the Phase 0 spike). We therefore bind it to a jsdom
@@ -125,7 +123,6 @@ const CONFIG = {
 	FORBID_ATTR: ["srcset"],
 };
 
-/** Sanitize untrusted normalized/redline HTML to the strict diff allowlist. */
 export function sanitizeDiffHtml(html: string): string {
 	return getPurifier().sanitize(html, CONFIG);
 }

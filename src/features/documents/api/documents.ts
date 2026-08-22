@@ -30,8 +30,6 @@ import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
 
 const documentStatus = z.enum(["PENDING", "READY", "FAILED"]);
 
-// ── Templates (admin) ──
-
 export const listTemplatesFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(() => listTemplates());
@@ -70,8 +68,6 @@ export const deleteTemplateFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
-// ── Single generation (admin) ──
-
 export const previewResolutionFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.validator(z.object({ userId: z.uuid(), templateId: z.uuid() }))
@@ -105,8 +101,6 @@ export const generateDocumentFn = createServerFn({ method: "POST" })
 			generatedById: context.user.id,
 		}),
 	);
-
-// ── Bulk generation (admin) ──
 
 export const previewBulkFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
@@ -144,8 +138,6 @@ export const batchProgressQueryOptions = (batchId: string | null) =>
 		queryFn: () => batchProgressFn({ data: { batchId: batchId ?? "" } }),
 		enabled: Boolean(batchId),
 	});
-
-// ── Generated documents (admin) ──
 
 export const adminListDocumentsFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
@@ -186,8 +178,6 @@ export const deleteDocumentFn = createServerFn({ method: "POST" })
 		await deleteDocument(data.id, context.user.id);
 		return { success: true };
 	});
-
-// ── Participant-facing ──
 
 export const myDocumentsFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])

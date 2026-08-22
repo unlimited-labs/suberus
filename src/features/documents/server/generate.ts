@@ -24,7 +24,6 @@ export const ENQUEUE_OPTS = {
 	expireInSeconds: 600,
 };
 
-/** Template placeholders that the participant can't fill — block list. */
 async function unresolvableFor(
 	userId: string,
 	placeholders: string[],
@@ -34,11 +33,6 @@ async function unresolvableFor(
 	return placeholders.filter((p) => missingSet.has(p));
 }
 
-/**
- * Request side: validate (block on any missing data), create a PENDING row and
- * enqueue the render job. Synchronous validation gives the operator immediate
- * feedback; the heavy render happens in the worker.
- */
 export async function createGeneratedDocument(opts: {
 	userId: string;
 	templateId: string;
@@ -87,15 +81,11 @@ export async function createGeneratedDocument(opts: {
 }
 
 export interface ResolutionPreview {
-	/** Placeholders the template uses (registry keys). */
 	placeholders: string[];
-	/** Value for each used placeholder (empty string when unresolved). */
 	values: Record<string, string>;
-	/** Used placeholders with no value — generation is blocked while non-empty. */
 	missing: string[];
 }
 
-/** Preview, for one participant + template, which placeholders resolve. */
 export async function previewResolution(
 	userId: string,
 	templateId: string,
@@ -121,11 +111,6 @@ export async function previewResolution(
 	};
 }
 
-/**
- * Worker side: render the PDF for one PENDING row and mark it READY, then email
- * the participant. Throws on failure so the worker can record FAILED and pg-boss
- * can retry transient errors (sidecar blip).
- */
 export async function processDocumentGeneration(
 	documentId: string,
 ): Promise<void> {
@@ -152,7 +137,6 @@ export async function processDocumentGeneration(
 		throw new Error(`Missing data for ${blocked.join(", ")}`);
 	}
 
-	// Signing material is independent of the render — load it alongside the template.
 	const [templateBuffer, signing] = await Promise.all([
 		getFileBuffer(doc.template.storageKey),
 		loadSigningMaterial(),
@@ -166,8 +150,6 @@ export async function processDocumentGeneration(
 		`${sanitizeFileName(doc.name) || "document"}.docx`,
 	);
 
-	// Sign when enabled. A signing failure fails the job (retry/FAILED) — we never
-	// silently deliver an unsigned doc when signing is on.
 	let signed = false;
 	if (signing) {
 		const { cfg } = signing;

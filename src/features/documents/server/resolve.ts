@@ -16,10 +16,6 @@ export function displayName(u: {
 	return [u.firstName, u.lastName].filter(Boolean).join(" ") || u.email;
 }
 
-/**
- * Resolve every document placeholder for one participant. The caller blocks
- * generation when any *used* placeholder is in `missing`.
- */
 export async function resolvePlaceholders(
 	userId: string,
 ): Promise<ResolvedPlaceholders> {

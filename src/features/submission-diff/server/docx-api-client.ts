@@ -18,7 +18,6 @@ export interface DocxApiHealthResult {
 
 const healthCache = createHealthCache<DocxApiHealthResult>(60_000);
 
-/** Liveness probe for the scheduled health task (GET root, parses `status`). */
 export async function checkDocxApiHealth(): Promise<DocxApiHealthResult> {
 	if (!env.DOCX_API_URL) {
 		return { status: "unavailable", message: "DOCX_API_URL not configured" };
@@ -66,12 +65,10 @@ export interface DocxApiHealth {
 	schemaVersion: number;
 }
 
-/** Toolchain versions for the artifact cache key (cheap, no conversion). */
 export function docxApiHealth(): Promise<DocxApiHealth> {
 	return sidecarHealth<DocxApiHealth>(base(), "docx-api");
 }
 
-/** POST a DOCX to docx-api and return the zip bundle bytes. */
 export function normalizeDocx(
 	bytes: Buffer,
 	fileName: string,

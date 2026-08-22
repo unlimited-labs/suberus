@@ -15,7 +15,6 @@ import { useBulkGenerate } from "./bulk-generate/use-bulk-generate";
 interface BulkGenerateDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	/** Participants selected in the Users list. */
 	userIds: string[];
 	onDone?: () => void;
 }

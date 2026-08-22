@@ -67,7 +67,6 @@ function toRow(d: {
 	};
 }
 
-/** Central admin view: every generated document across all participants. */
 export async function adminListDocuments(filters?: {
 	search?: string;
 	status?: DocumentStatus;
@@ -95,7 +94,6 @@ export async function adminListDocuments(filters?: {
 	return rows.map(toRow);
 }
 
-/** Documents generated for one participant (user-detail panel). */
 export async function adminListUserDocuments(
 	userId: string,
 ): Promise<DocumentRow[]> {
@@ -115,7 +113,6 @@ export interface MyDocument {
 	signed: boolean;
 }
 
-/** Participant-facing: only READY documents are downloadable/visible. */
 export async function listMyDocuments(userId: string): Promise<MyDocument[]> {
 	return prisma.generatedDocument.findMany({
 		where: { userId, status: "READY" },
@@ -130,10 +127,6 @@ export function countMyReadyDocuments(userId: string): Promise<number> {
 	});
 }
 
-/**
- * Admin/Editor: delete a generated document (row + stored PDF). Silent to the
- * participant, but recorded in the activity log.
- */
 export async function deleteDocument(
 	id: string,
 	performedById?: string,

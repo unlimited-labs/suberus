@@ -8,7 +8,6 @@ import { artifactKey, parseBundle, sha256 } from "./normalize";
 import { normalizePdf, pdfApiHealth } from "./pdf-api-client";
 import { sanitizeDiffHtml } from "./sanitize";
 
-/** Cache-key fields a sidecar health reports (common subset of both sidecars). */
 interface SidecarHealth {
 	pandocVersion: string | null;
 	normalizerConfigHash: string;
@@ -20,7 +19,6 @@ interface Sidecar {
 	normalize(bytes: Buffer, fileName: string): Promise<Buffer>;
 }
 
-/** Route a source kind to its normalize sidecar (DOCX -> docx-api, PDF -> pdf-api). */
 function pickSidecar(kind: ArtifactKind): Sidecar {
 	if (kind === "PDF") {
 		return { health: pdfApiHealth, normalize: normalizePdf };
@@ -29,7 +27,6 @@ function pickSidecar(kind: ArtifactKind): Sidecar {
 }
 
 export interface NormalizeInput {
-	/** S3-compatible storage key of the source file (DOCX or PDF). */
 	storageKey: string;
 	fileName: string;
 	/** File row id, for lazy sha256 backfill (optional). */
@@ -38,7 +35,6 @@ export interface NormalizeInput {
 
 export interface NormalizeResult {
 	artifactId: string;
-	/** true when an existing artifact for this (source + toolchain) was reused. */
 	cached: boolean;
 	sourceSha256: string;
 	htmlKey: string;
@@ -46,14 +42,6 @@ export interface NormalizeResult {
 }
 
 /**
- * ETAP1: normalize one submission version's file into an immutable, sanitized
- * HTML artifact with content-addressed figures. DOCX goes through docx-api
- * (pandoc), PDF through pdf-api (extraction + md->HTML); the kind is derived
- * from the file name and downstream (parse/sanitize/CAS/persist) is shared.
- *
- *   getFileBuffer -> sidecar normalize -> parse bundle -> CAS figures (+CasObject)
- *   -> DOMPurify-on-jsdom -> persist HTML -> SubmissionVersionArtifact
- *
  * Cache: keyed by the full toolchain fingerprint (source sha + kind + pandoc/
  * normalizer/schema). A hit returns the existing artifact without re-normalizing.
  * Immutable-forever: a toolchain bump yields a new key, never a mutated artifact.
@@ -77,7 +65,6 @@ export async function normalizeSubmissionFile(
 			});
 	}
 
-	// Cheap cache pre-check using the sidecar's reported toolchain.
 	const health = await sidecar.health();
 	if (!health.pandocVersion) {
 		throw new Error("sidecar health is missing pandocVersion");

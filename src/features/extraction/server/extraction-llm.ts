@@ -9,7 +9,6 @@ import {
 } from "./extraction-patterns";
 
 // Short field names: ~30% fewer output tokens
-// t=title, a=authors, fn=firstName, ln=lastName, e=email, af=affiliationName, k=keywords
 const LLM_SYSTEM_PROMPT = `Extract academic paper metadata as JSON. Schema: {"t":"title","a":[{"fn":"firstName","ln":"lastName","e":"email","af":"affiliation"}],"k":["keyword"]}
 Rules:
 1. Each PERSON appears ONCE in "a". If "Smith 1,2" it means Smith has 2 affiliations — join them with "; " in "af", do NOT duplicate the person.
@@ -31,7 +30,6 @@ const llmAuthorSchema = z.object({
 	affiliationName: optionalText,
 });
 
-/** Separate email list: either positional array or a keyed map, sorted by key. */
 const sepEmailsSchema = z
 	.union([
 		z.array(z.string().catch("")),
@@ -52,7 +50,6 @@ const sepEmailsSchema = z
 		}),
 	);
 
-/** Separate affiliation list; object entries collapse to one display line. */
 const sepAffsSchema = z
 	.array(
 		z
@@ -89,18 +86,15 @@ const llmResponseSchema = z.object({
 	affiliations: sepAffsSchema,
 });
 
-/** Estimate max_tokens based on header content */
 export function estimateMaxTokens(headerText: string): number {
 	const lines = headerText.split("\n");
 
-	// Skip first line (title), find author line: comma-separated capitalized names, no emails
 	let authorCount = 0;
 	for (let i = 1; i < lines.length; i++) {
 		const l = lines[i];
 		if (/@/.test(l) || /keyword/i.test(l)) continue;
 		if (!l.includes(",")) continue;
 
-		// Check if segments look like names (2-4 words each, capitalized)
 		const segments = l
 			.split(",")
 			.map((s) => s.trim())
@@ -120,7 +114,6 @@ export function estimateMaxTokens(headerText: string): number {
 
 	if (authorCount === 0) return MAX_TOKEN_ESTIMATE;
 
-	// ~70 tokens per author (short field names) + overhead
 	const estimated = authorCount * TOKENS_PER_AUTHOR + TOKEN_OVERHEAD;
 	return Math.min(MAX_TOKEN_ESTIMATE, Math.max(MIN_TOKEN_ESTIMATE, estimated));
 }

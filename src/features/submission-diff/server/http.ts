@@ -9,7 +9,6 @@ export const SIDECAR_TIMEOUT_MS = {
 	health: 5_000,
 } as const;
 
-/** GET the sidecar's `/` health doc (cheap, no conversion). */
 export async function sidecarHealth<T>(base: string, name: string): Promise<T> {
 	const res = await requestOrThrow(
 		`${base}/`,
@@ -21,7 +20,6 @@ export async function sidecarHealth<T>(base: string, name: string): Promise<T> {
 	return (await res.json()) as T;
 }
 
-/** POST a file to a sidecar endpoint and return the response body bytes. */
 export async function sidecarNormalize(
 	base: string,
 	endpoint: string,

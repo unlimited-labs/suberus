@@ -31,7 +31,6 @@ export function extractFromZones(classified: ClassifiedPara[]) {
 	};
 }
 
-/** Trim trailing punctuation and drop a trailing "e-mail: ..." suffix. */
 function stripEmailSuffix(raw: string): string {
 	const text = raw.replace(/[;,]\s*$/, "").trim();
 	const emailIdx = text.search(/e-?mail\s*:/i);
@@ -54,9 +53,7 @@ export function parseAffiliations(
 		const text = para.text.trim();
 		if (text.length === 0 || /^\*?correspondence/i.test(text)) continue;
 
-		// Skip address-only lines (postal code without institution)
 		if (/^\d{2}-\d{3}\s/.test(text) && !INSTITUTION_RE.test(text)) {
-			// Append to previous affiliation if exists
 			const lastKey = [...map.keys()].pop();
 			if (lastKey) {
 				map.set(lastKey, `${map.get(lastKey)}, ${text}`);
@@ -68,7 +65,6 @@ export function parseAffiliations(
 		if (match) {
 			map.set(match[1], stripEmailSuffix(match[2]));
 		} else if (INSTITUTION_RE.test(text)) {
-			// Unmarked affiliation — assign sequential number
 			map.set(`_unmarked_${unmarkedIndex++}`, stripEmailSuffix(text));
 		}
 	}
@@ -93,7 +89,6 @@ export function extractEmails(paras: ClassifiedPara[]): string[] {
 	return [...new Set(matches.map((e) => e.toLowerCase()))];
 }
 
-/** Link a segment to its affiliation via markers, falling back to a shared one. */
 function resolveAffiliation(
 	seg: AuthorSegment,
 	affiliations: Map<string, string>,
@@ -114,7 +109,6 @@ export function extractAuthors(
 	emails: string[],
 ): ExtractedAuthor[] {
 	const authors: ExtractedAuthor[] = [];
-	// If only one affiliation (marked or unmarked), share it across all authors
 	const affValues = [...affiliations.values()];
 	const sharedAff = affValues.length === 1 ? affValues[0] : undefined;
 
@@ -135,7 +129,6 @@ export function extractAuthors(
 	return authors;
 }
 
-/** Merge consecutive superscript runs into markers: "1,2" → ["1","2"]. */
 function parseMarkers(runText: string): string[] {
 	return runText
 		.replace(/[)*,\s]/g, " ")
@@ -187,7 +180,6 @@ export function extractAuthorSegments(para: DocParagraph): AuthorSegment[] {
 		}
 
 		const text = run.text;
-		// Skip whitespace-only runs but keep prevWasSuperscript state
 		if (text.trim().length === 0) {
 			currentName += text;
 			continue;
@@ -197,7 +189,6 @@ export function extractAuthorSegments(para: DocParagraph): AuthorSegment[] {
 			flush();
 		}
 
-		// Split on commas within the run
 		const parts = text.split(",");
 		for (let i = 0; i < parts.length; i++) {
 			if (i > 0) flush();

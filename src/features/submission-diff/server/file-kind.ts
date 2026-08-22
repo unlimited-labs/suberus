@@ -1,7 +1,6 @@
 import { ArtifactKind } from "@/generated/prisma/enums";
 
 /**
- * The diff artifact kind for a file name, or null if it isn't a diffable format.
  * Single source of truth for the format -> kind mapping, shared by the normalize
  * worker (which sidecar to call), the read path (which artifact to resolve), and
  * the upload trigger (whether to enqueue at all).

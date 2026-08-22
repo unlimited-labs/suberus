@@ -15,7 +15,6 @@ interface TemplateCardProps {
 	onDelete: () => void;
 }
 
-/** Template row: neutral icon tile, name + description, placeholder chips. */
 export function TemplateCard({
 	name,
 	description,

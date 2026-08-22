@@ -90,7 +90,7 @@ describe("getPdfApiMarkdown", () => {
 		);
 		const { getPdfApiMarkdown } = await load();
 		expect(await getPdfApiMarkdown(buffer, "paper.pdf")).toBeNull();
-		expect(fetchMock).toHaveBeenCalledTimes(1); // health probe only
+		expect(fetchMock).toHaveBeenCalledTimes(1);
 	});
 
 	it("posts the file and returns the markdown on success", async () => {

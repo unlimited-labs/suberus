@@ -63,7 +63,6 @@ function plainFallback(body: string): string {
 	return out;
 }
 
-/** Render every math span in a (sanitized) HTML fragment to static KaTeX markup. */
 export function renderMathInHtml(html: string): string {
 	return html.replace(MATH_SPAN_RE, (_whole, kind, body) => {
 		const tex = stripDelimiters(decodeEntities(body));

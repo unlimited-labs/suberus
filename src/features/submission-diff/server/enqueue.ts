@@ -6,7 +6,6 @@ import type { NormalizeInput } from "./normalize-version";
 // so a worker that also imported the queue would form an init cycle.
 const SUBMISSION_DIFF_QUEUE = "submission-diff";
 
-/** Enqueue an ETAP1 normalize job for one submission version's DOCX file. */
 export async function enqueueVersionNormalize(
 	input: NormalizeInput,
 ): Promise<string | null> {

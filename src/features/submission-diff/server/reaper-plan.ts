@@ -26,7 +26,6 @@ export function selectSupersededIds<
 	return ids;
 }
 
-/** Diff ids whose old or new version no longer exists. */
 export function selectDanglingDiffIds<
 	T extends { id: string; oldVersionId: string; newVersionId: string },
 >(diffs: T[], existingVersionIds: Set<string>): string[] {
@@ -38,7 +37,6 @@ export function selectDanglingDiffIds<
 	);
 }
 
-/** The set of CAS keys still referenced by any remaining artifact/diff row. */
 export function computeLiveKeys(
 	artifacts: { htmlKey: string; figureShas: string[] }[],
 	diffs: { redlineKey: string }[],

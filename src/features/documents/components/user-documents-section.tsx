@@ -17,8 +17,6 @@ import { SectionCard } from "@/shared/ui/section-card";
 interface UserDocumentsSectionProps {
 	userId: string;
 	userName: string;
-	/** Add-document dialog open state, controlled by the parent so the header
-	 *  action menu can open it too. */
 	addOpen: boolean;
 	onAddOpenChange: (open: boolean) => void;
 }

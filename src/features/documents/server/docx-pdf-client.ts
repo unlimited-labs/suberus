@@ -9,7 +9,6 @@ import { requestOrThrow, sidecarBase } from "@/shared/server/sidecar-http";
  * (the sidecar's own SOFFICE_TIMEOUT_S is 90s; give the HTTP call some headroom). */
 const RENDER_PDF_TIMEOUT_MS = 120_000;
 
-/** POST a filled DOCX to the docx-api sidecar; returns the rendered PDF bytes. */
 export async function renderDocxToPdf(
 	docx: Buffer,
 	fileName: string,

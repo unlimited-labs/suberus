@@ -24,11 +24,6 @@ export interface BulkPreview {
 	skipped: BulkSkip[];
 }
 
-/**
- * For each selected participant, decide if every placeholder the template uses
- * can be resolved. Lets the operator see who would be skipped (missing data)
- * before committing. O(n) per-user resolves — fine for manual selection scale.
- */
 export async function previewBulk(
 	templateId: string,
 	userIds: string[],
@@ -63,10 +58,6 @@ export async function previewBulk(
 	return { templateName: template.name, resolvableIds, skipped };
 }
 
-/**
- * Create a batch of PENDING rows (resolvable users only) and enqueue one render
- * job each. Progress is derived from the rows' statuses ({@link batchProgress}).
- */
 export async function startBulk(opts: {
 	templateId: string;
 	userIds: string[];

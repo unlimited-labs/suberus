@@ -1,4 +1,3 @@
-// Patterns used across extraction modules
 export const EMAIL_RE = /[\w.+\-À-žĄ-ż]+@[\w.\-À-žĄ-ż]+\.\w{2,}/;
 export const EMAIL_RE_STRICT = /^[\w.+\-À-žĄ-ż]+@[\w.\-À-žĄ-ż]+\.\w{2,}$/;
 export const EMAILS_PREFIX_RE =
@@ -14,7 +13,6 @@ export const INSTITUTION_RE =
 export const SUSPICIOUS_NAME_CHARS = /[(){}[\]<>@#$%^&*=+\\|/~`"]/;
 export const CAPITALIZED_START = /^[A-ZÀ-ŽĄ-Ż]/;
 
-// Magic numbers
 export const MAX_TITLE_LENGTH = 300;
 export const MAX_NAME_LENGTH = 20;
 export const MAX_PERSON_NAME_LENGTH = 50;

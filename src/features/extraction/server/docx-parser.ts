@@ -1,7 +1,3 @@
-/**
- * Lightweight DOCX parser that extracts paragraphs with per-run formatting.
- * Parses document.xml directly using regex to preserve child element order.
- */
 import AdmZip from "adm-zip";
 
 export interface DocRun {
@@ -26,14 +22,12 @@ export function parseDocx(buffer: Buffer): DocParagraph[] {
 
 	const xml = docEntry.getData().toString("utf8");
 
-	// Extract body content
 	const bodyMatch = xml.match(/<w:body>([\s\S]*)<\/w:body>/);
 	if (!bodyMatch) return [];
 	const bodyXml = bodyMatch[1];
 
 	const paragraphs: DocParagraph[] = [];
 
-	// Match each <w:p>...</w:p> block
 	const paraRegex = /<w:p[\s>][\s\S]*?<\/w:p>/g;
 	let paraMatch: RegExpExecArray | null;
 
@@ -60,7 +54,6 @@ function parseParagraph(paraXml: string): DocParagraph {
 		const chunk = match[0];
 
 		if (chunk.startsWith("<w:hyperlink")) {
-			// Extract runs inside hyperlink
 			for (const hlRun of chunk.matchAll(/<w:r[\s>][\s\S]*?<\/w:r>/g)) {
 				const run = parseRun(hlRun[0]);
 				if (run) runs.push(run);
@@ -76,14 +69,12 @@ function parseParagraph(paraXml: string): DocParagraph {
 }
 
 function parseRun(runXml: string): DocRun | null {
-	// Extract text from <w:t> elements
 	let text = "";
 	for (const tMatch of runXml.matchAll(/<w:t[^>]*>([\s\S]*?)<\/w:t>/g)) {
 		text += tMatch[1];
 	}
 	if (text.length === 0) return null;
 
-	// Extract run properties from <w:rPr>
 	const rPrMatch = runXml.match(/<w:rPr>([\s\S]*?)<\/w:rPr>/);
 	const rPr = rPrMatch?.[1] ?? "";
 
@@ -95,7 +86,6 @@ function parseRun(runXml: string): DocRun | null {
 	const szMatch = rPr.match(/<w:sz\s+w:val="(\d+)"/);
 	if (szMatch) sizeHp = Number.parseInt(szMatch[1], 10);
 
-	// Superscript/subscript: <w:vertAlign w:val="superscript"/>
 	const vertMatch = rPr.match(/<w:vertAlign\s+w:val="(\w+)"/);
 	const superscript = vertMatch?.[1] === "superscript";
 	const subscript = vertMatch?.[1] === "subscript";

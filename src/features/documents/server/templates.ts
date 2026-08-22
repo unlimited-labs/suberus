@@ -12,7 +12,7 @@ import {
 
 const DOCX_MIME =
 	"application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-const MAX_TEMPLATE_BYTES = 10 * 1024 * 1024; // 10MB — templates are small
+const MAX_TEMPLATE_BYTES = 10 * 1024 * 1024;
 
 export function listTemplates() {
 	return prisma.documentTemplate.findMany({ orderBy: { createdAt: "desc" } });
@@ -80,7 +80,7 @@ export async function createTemplate(opts: {
 		data: {
 			name,
 			description: opts.description?.trim() || null,
-			storageKey: "", // set after upload (key embeds the row id)
+			storageKey: "",
 			originalName: opts.file.name,
 			size: opts.buffer.length,
 			placeholders,

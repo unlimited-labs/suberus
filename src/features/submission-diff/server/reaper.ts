@@ -31,7 +31,6 @@ export interface ReapResult {
 export async function reapCasObjects(now = Date.now()): Promise<ReapResult> {
 	const cutoff = new Date(now - GRACE_MS);
 
-	// 1a. Superseded artifacts: keep the newest per (sourceSha256, kind), drop older.
 	const artifacts = await prisma.submissionVersionArtifact.findMany({
 		select: { id: true, sourceSha256: true, kind: true, createdAt: true },
 		orderBy: { createdAt: "desc" },
@@ -42,7 +41,6 @@ export async function reapCasObjects(now = Date.now()): Promise<ReapResult> {
 		where: { id: { in: supersededIds } },
 	});
 
-	// 1b. Dangling diffs: redline rows whose versions no longer exist.
 	const diffs = await prisma.versionDiffArtifact.findMany({
 		where: { createdAt: { lt: cutoff } },
 		select: { id: true, oldVersionId: true, newVersionId: true },
@@ -63,7 +61,6 @@ export async function reapCasObjects(now = Date.now()): Promise<ReapResult> {
 		where: { id: { in: danglingIds } },
 	});
 
-	// 2. Sweep: any CAS object not referenced by a remaining artifact/diff row.
 	const [liveArtifacts, liveDiffs] = await Promise.all([
 		prisma.submissionVersionArtifact.findMany({
 			select: { htmlKey: true, figureShas: true },
@@ -85,7 +82,6 @@ export async function reapCasObjects(now = Date.now()): Promise<ReapResult> {
 	};
 }
 
-/** Delete CAS objects whose key isn't in the live set; returns the count swept. */
 async function sweepOrphans(
 	objects: { key: string }[],
 	live: Set<string>,

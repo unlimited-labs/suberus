@@ -58,7 +58,6 @@ export function useDocumentExtraction({
 	const abortRef = useRef<AbortController | null>(null);
 	const handledJobRef = useRef<string | null>(null);
 
-	// Stable ref for callback — updated via effect, not during render
 	const onExtractedRef = useRef(onExtracted);
 	useEffect(() => {
 		onExtractedRef.current = onExtracted;
@@ -66,7 +65,6 @@ export function useDocumentExtraction({
 
 	const sseState = useJobSSE(jobId);
 
-	// Elapsed timer
 	useEffect(() => {
 		if (!isExtracting) return;
 		const interval = setInterval(() => {
@@ -75,7 +73,6 @@ export function useDocumentExtraction({
 		return () => clearInterval(interval);
 	}, [isExtracting]);
 
-	// Handle SSE completion
 	useEffect(() => {
 		if (!jobId || sseState.status !== "done") return;
 		if (handledJobRef.current === jobId) return;
@@ -136,7 +133,6 @@ export function useDocumentExtraction({
 		};
 	}, [jobId, sseState.status]);
 
-	// Handle SSE error
 	useEffect(() => {
 		if (!jobId || sseState.status !== "error") return;
 		if (handledJobRef.current === jobId) return;
@@ -148,7 +144,6 @@ export function useDocumentExtraction({
 		setJobId(null);
 	}, [jobId, sseState.status, sseState.error]);
 
-	// Cleanup on unmount — abort any in-flight extraction
 	useEffect(() => {
 		return () => {
 			abortRef.current?.abort();
@@ -172,7 +167,6 @@ export function useDocumentExtraction({
 			return;
 		}
 
-		// Abort previous extraction if still running (prevents race condition)
 		abortRef.current?.abort();
 		const controller = new AbortController();
 		abortRef.current = controller;

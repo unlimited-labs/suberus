@@ -12,7 +12,6 @@ import { renderMathInHtml } from "./render-math";
 
 const PRIVILEGED_ROLES: UserRole[] = [UserRole.ADMIN, UserRole.EDITOR];
 
-/** Admin/editor, the author, or an assigned reviewer may see a submission's redline. */
 async function canSeeSubmission(
 	submissionId: string,
 	userId: string,
@@ -31,7 +30,6 @@ async function canSeeSubmission(
 	return assignment !== null;
 }
 
-/** Id of the version immediately preceding `before` in a submission, if any. */
 async function previousVersionId(
 	submissionId: string,
 	before: number,
@@ -66,7 +64,6 @@ type ResolvedPair =
 	| { status: "format-changed" }
 	| { status: "unavailable" };
 
-/** Whether `versionId` belongs to `submissionId`. */
 async function versionInSubmission(
 	versionId: string,
 	submissionId: string,
@@ -109,7 +106,6 @@ async function resolvePair(
 	};
 }
 
-/** Authorize the caller for the new version, then resolve the normalized pair. */
 async function authorizeAndResolvePair(
 	input: { newVersionId: string; oldVersionId?: string },
 	userId: string,
@@ -132,8 +128,6 @@ async function authorizeAndResolvePair(
 }
 
 /**
- * Inline figures + render math so an HTML fragment is a self-contained document.
- *
  * Security note (gotcha C2/#8): the input `html` is already the authoritative-gate
  * output (sanitized at diff time). We do NOT re-sanitize after this step — both
  * additions are trusted-by-construction: `inlineFigures` injects only our own
@@ -147,15 +141,6 @@ async function selfContain(html: string): Promise<string> {
 	return renderMathInHtml(await inlineFigures(html));
 }
 
-/**
- * The Compare surface's redline outcome:
- *  - `ready`: a structural redline is available.
- *  - `format-changed`: both versions are normalized but in different formats
- *    (DOCX -> PDF) — no structural redline across extractors; the UI shows a
- *    notice and the text diff still reflects content changes.
- *  - `unavailable`: access denied, no previous version, or a side isn't
- *    normalized yet (transient — normalization is async).
- */
 export type VersionRedlineResult =
 	| {
 			status: "ready";
@@ -169,12 +154,6 @@ export type VersionRedlineResult =
 	| { status: "format-changed" }
 	| { status: "unavailable" };
 
-/**
- * Redline HTML for a version pair (defaults to the previous version), for the
- * Compare surface. Figures are inlined as `data:` URIs so the redline iframe is
- * fully self-contained. A format change between versions is reported explicitly
- * (not as `unavailable`) so the UI can distinguish it from "not processed yet".
- */
 export async function getVersionRedline(
 	input: { newVersionId: string; oldVersionId?: string },
 	userId: string,

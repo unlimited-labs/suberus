@@ -7,8 +7,6 @@ import { generateExtractionFileKey, uploadFile } from "@/shared/server/storage";
 import { validateUpload } from "@/shared/server/validate-upload";
 
 /**
- * Stage a file in object storage and enqueue an extraction job.
- *
  * Settings are snapshotted at enqueue time so settings changes mid-extraction
  * don't affect in-flight jobs. Throws if the file exceeds the configured max
  * size.

@@ -11,7 +11,6 @@ export interface PdfApiHealth {
 	schemaVersion: number;
 }
 
-/** Toolchain versions for the artifact cache key (cheap, no conversion). */
 export function pdfApiHealth(): Promise<PdfApiHealth> {
 	return sidecarHealth<PdfApiHealth>(base(), "pdf-api");
 }

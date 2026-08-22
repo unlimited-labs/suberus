@@ -2,7 +2,6 @@ import { createHash } from "node:crypto";
 import AdmZip from "adm-zip";
 import type { ArtifactKind } from "@/generated/prisma/enums";
 
-/** Hex sha256 of bytes — content-addressing for source files and figures. */
 export function sha256(buf: Buffer): string {
 	return createHash("sha256").update(buf).digest("hex");
 }
@@ -27,7 +26,6 @@ export interface ParsedBundle {
 
 const FIGURE_RE = /^figures\/([0-9a-f]{64})\.png$/;
 
-/** Parse a docx-api zip bundle into HTML + content-addressed figures + meta. */
 export function parseBundle(zip: Buffer): ParsedBundle {
 	const z = new AdmZip(zip);
 	const htmlEntry = z.getEntry("document.html");

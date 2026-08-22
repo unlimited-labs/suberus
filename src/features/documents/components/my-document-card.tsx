@@ -13,11 +13,6 @@ interface MyDocumentCardProps {
 	signed?: boolean;
 }
 
-/**
- * Participant-facing certificate card: a decorative "paper + seal" header
- * (purely CSS — no PDF thumbnail), the document name, meta and a full-width
- * download action. Used only by the participant `/documents` gallery.
- */
 export function MyDocumentCard({
 	name,
 	createdAt,

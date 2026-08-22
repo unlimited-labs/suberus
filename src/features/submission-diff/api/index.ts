@@ -5,7 +5,6 @@ import { authMiddleware } from "@/features/auth/server/middleware";
 import { getVersionRedline } from "@/features/submission-diff/server/redline";
 import type { UserRole } from "@/generated/prisma/enums";
 
-/** File-redline HTML for a version pair (defaults to the previous version). */
 export const getVersionRedlineFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.validator(

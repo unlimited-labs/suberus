@@ -12,8 +12,6 @@ import type { AppSettingsMap } from "@/features/settings/types";
 import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
 import { getJobProgress } from "@/shared/server/job-progress";
 
-// --- Public (auth-required) ---
-
 export interface ExtractionSettings {
 	enabled: boolean;
 	heuristic: boolean;
@@ -60,8 +58,6 @@ export const getExtractionResultFn = createServerFn({ method: "GET" })
 			result: (job.result as ExtractionResult | null) ?? null,
 		};
 	});
-
-// --- Admin ---
 
 export const getExtractionAdminSettingsFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
