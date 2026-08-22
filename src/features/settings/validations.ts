@@ -146,12 +146,14 @@ export const submissionTypeConfigSchema = z
 			ctx.addIssue({
 				code: "custom",
 				message: "FILE format requires at least one allowed extension",
+				path: ["allowedExtensions"],
 			});
 		}
 		if (v.enableScoring && v.scoringCriteria.length === 0) {
 			ctx.addIssue({
 				code: "custom",
 				message: "Scoring requires at least one criterion",
+				path: ["scoringCriteria"],
 			});
 		}
 	});
@@ -164,20 +166,24 @@ export const submissionTypeKeys = [
 ] as const;
 
 /** EXHIBITOR is never reviewed, so it alone may keep zero required reviewers. */
+export function requiredReviewersIssue(
+	type: (typeof submissionTypeKeys)[number],
+	requiredReviewers: number,
+): string | null {
+	return type !== "SUBMISSION_TYPE_EXHIBITOR" && requiredReviewers < 1
+		? "At least one reviewer is required"
+		: null;
+}
+
 export const submissionTypeUpdateSchema = z
 	.object({
 		type: z.enum(submissionTypeKeys),
 		config: submissionTypeConfigSchema,
 	})
 	.superRefine((v, ctx) => {
-		if (
-			v.type !== "SUBMISSION_TYPE_EXHIBITOR" &&
-			v.config.requiredReviewers < 1
-		) {
-			ctx.addIssue({
-				code: "custom",
-				message: "At least one reviewer is required",
-			});
+		const issue = requiredReviewersIssue(v.type, v.config.requiredReviewers);
+		if (issue) {
+			ctx.addIssue({ code: "custom", message: issue });
 		}
 	});
 
@@ -308,3 +314,44 @@ export const signingCertUploadFormSchema = z.object({
 		),
 	password: z.string().max(200),
 });
+
+export function submissionTypeFormSchema(
+	type: (typeof submissionTypeKeys)[number],
+) {
+	return z
+		.object({
+			isActive: z.boolean(),
+			includeInPlanner: z.boolean(),
+			allowExhibitorPresentation: z.boolean(),
+			contentFormat: z.enum(["TEXT", "FILE"]),
+			allowedExtensions: z.array(z.enum(SUPPORTED_FILE_EXTENSIONS)).max(1),
+			maxFileSizeMb: intField,
+			maxSubmissionsPerUser: intField,
+			requiredReviewers: intField,
+			reviewMode: z.enum(["OPEN", "SINGLE_BLIND", "DOUBLE_BLIND"]),
+			reviewDeadlineDays: intField,
+			requiresEditorDecision: z.boolean(),
+			enableScoring: z.boolean(),
+			scoringCriteria: z.array(
+				z.object({ name: z.string(), description: z.string() }),
+			),
+			enableConfidenceLevel: z.boolean(),
+			enableReviewAttachment: z.boolean(),
+			enableTrackSelection: z.boolean(),
+		})
+		.pipe(submissionTypeConfigSchema)
+		.superRefine((v, ctx) => {
+			const issue = requiredReviewersIssue(type, v.requiredReviewers);
+			if (issue) {
+				ctx.addIssue({
+					code: "custom",
+					message: issue,
+					path: ["requiredReviewers"],
+				});
+			}
+		});
+}
+
+export type SubmissionTypeFormValues = z.input<
+	ReturnType<typeof submissionTypeFormSchema>
+>;

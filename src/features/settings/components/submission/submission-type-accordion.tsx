@@ -1,4 +1,5 @@
 import { IconLoader2 } from "@tabler/icons-react";
+import { useSelector } from "@tanstack/react-store";
 import type {
 	SubmissionTypeConfig,
 	SubmissionTypeKey,
@@ -10,6 +11,7 @@ import {
 } from "@/shared/ui/accordion";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { FieldError } from "@/shared/ui/field";
 import { TypeFeatureTogglesSection } from "./type-feature-toggles-section";
 import { TypeFormatSection } from "./type-format-section";
 import { TypeGeneralSection } from "./type-general-section";
@@ -20,25 +22,21 @@ import { useSubmissionTypeConfig } from "./use-submission-type-config";
 interface SubmissionTypeAccordionProps {
 	typeKey: SubmissionTypeKey;
 	config: SubmissionTypeConfig;
-	onChange: (updated: SubmissionTypeConfig) => void;
 }
 
 export function SubmissionTypeAccordion({
 	typeKey,
 	config,
-	onChange,
 }: SubmissionTypeAccordionProps) {
-	const {
-		isSaving,
-		errors,
-		displayName,
-		handleChange,
-		selectExtension,
-		addCriterion,
-		removeCriterion,
-		updateCriterion,
-		handleSave,
-	} = useSubmissionTypeConfig({ typeKey, config, onChange });
+	const { form, displayName } = useSubmissionTypeConfig({ typeKey, config });
+	const submissionAttempts = useSelector(
+		form.store,
+		(s) => s.submissionAttempts,
+	);
+	const isSaving = useSelector(form.store, (s) => s.isSubmitting);
+	const isActive = useSelector(form.store, (s) => s.values.isActive);
+	const contentFormat = useSelector(form.store, (s) => s.values.contentFormat);
+	const formErrors = useSelector(form.store, (s) => s.errors);
 
 	return (
 		<AccordionItem
@@ -48,53 +46,44 @@ export function SubmissionTypeAccordion({
 			<AccordionTrigger className="py-4 hover:no-underline">
 				<div className="flex items-center gap-3">
 					<span className="font-medium">{displayName}</span>
-					<Badge variant={config.isActive ? "default" : "secondary"}>
-						{config.isActive ? "Active" : "Inactive"}
+					<Badge variant={isActive ? "default" : "secondary"}>
+						{isActive ? "Active" : "Inactive"}
 					</Badge>
 					<Badge className="text-xs" variant="outline">
-						{config.contentFormat}
+						{contentFormat}
 					</Badge>
 				</div>
 			</AccordionTrigger>
 			<AccordionContent className="pb-4">
 				<div className="space-y-6">
 					<TypeGeneralSection
-						config={config}
-						onChange={handleChange}
+						form={form}
+						submissionAttempts={submissionAttempts}
 						typeKey={typeKey}
 					/>
 
 					<TypeFormatSection
-						config={config}
-						onChange={handleChange}
-						onSelectExtension={selectExtension}
+						form={form}
+						submissionAttempts={submissionAttempts}
 					/>
 
-					<TypeReviewSection config={config} onChange={handleChange} />
-
-					<TypeScoringSection
-						config={config}
-						onAddCriterion={addCriterion}
-						onChange={handleChange}
-						onRemoveCriterion={removeCriterion}
-						onUpdateCriterion={updateCriterion}
+					<TypeReviewSection
+						form={form}
+						submissionAttempts={submissionAttempts}
 					/>
 
-					<TypeFeatureTogglesSection
-						config={config}
-						onChange={handleChange}
-						typeKey={typeKey}
-					/>
+					<TypeScoringSection form={form} />
+
+					<TypeFeatureTogglesSection form={form} typeKey={typeKey} />
 
 					<div className="flex items-center justify-end gap-4 border-t pt-4">
-						{errors.length > 0 && (
-							<div className="text-destructive space-y-1 text-xs" role="alert">
-								{errors.map((error) => (
-									<p key={error}>{error}</p>
-								))}
-							</div>
-						)}
-						<Button disabled={isSaving} onClick={handleSave}>
+						<FieldError
+							errors={submissionAttempts > 0 ? formErrors : undefined}
+						/>
+						<Button
+							disabled={isSaving}
+							onClick={() => void form.handleSubmit()}
+						>
 							{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 							Save
 						</Button>

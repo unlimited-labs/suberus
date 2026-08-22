@@ -1,21 +1,16 @@
-import type {
-	SubmissionTypeConfig,
-	SubmissionTypeKey,
-} from "@/features/settings/types";
+import type { SubmissionTypeKey } from "@/features/settings/types";
 import { Label } from "@/shared/ui/label";
 import { Switch } from "@/shared/ui/switch";
-import type { SubmissionTypeConfigHandleChange } from "./use-submission-type-config";
+import type { SubmissionTypeFormApi } from "./use-submission-type-config";
 
 interface TypeFeatureTogglesSectionProps {
 	typeKey: SubmissionTypeKey;
-	config: SubmissionTypeConfig;
-	onChange: SubmissionTypeConfigHandleChange;
+	form: SubmissionTypeFormApi;
 }
 
 export function TypeFeatureTogglesSection({
 	typeKey,
-	config,
-	onChange,
+	form,
 }: TypeFeatureTogglesSectionProps) {
 	return (
 		<>
@@ -26,13 +21,17 @@ export function TypeFeatureTogglesSection({
 						Reviewers rate their confidence (1-5) when submitting a review
 					</p>
 				</div>
-				<Switch
-					checked={config.enableConfidenceLevel}
-					id="enableConfidenceLevel"
-					onCheckedChange={(checked) =>
-						onChange("enableConfidenceLevel", checked)
-					}
-				/>
+				<form.Field name="enableConfidenceLevel">
+					{(field) => (
+						<Switch
+							checked={field.state.value}
+							id="enableConfidenceLevel"
+							onCheckedChange={(checked) =>
+								field.handleChange(checked === true)
+							}
+						/>
+					)}
+				</form.Field>
 			</div>
 
 			<div className="flex items-center justify-between">
@@ -44,13 +43,17 @@ export function TypeFeatureTogglesSection({
 						Reviewers can upload a PDF/DOCX file with their review
 					</p>
 				</div>
-				<Switch
-					checked={config.enableReviewAttachment}
-					id="enableReviewAttachment"
-					onCheckedChange={(checked) =>
-						onChange("enableReviewAttachment", checked)
-					}
-				/>
+				<form.Field name="enableReviewAttachment">
+					{(field) => (
+						<Switch
+							checked={field.state.value}
+							id="enableReviewAttachment"
+							onCheckedChange={(checked) =>
+								field.handleChange(checked === true)
+							}
+						/>
+					)}
+				</form.Field>
 			</div>
 
 			{/* Track selection */}
@@ -62,12 +65,17 @@ export function TypeFeatureTogglesSection({
 							Authors can select preferred track when submitting
 						</p>
 					</div>
-					<Switch
-						checked={config.enableTrackSelection}
-						onCheckedChange={(checked) =>
-							onChange("enableTrackSelection", checked)
-						}
-					/>
+					<form.Field name="enableTrackSelection">
+						{(field) => (
+							<Switch
+								checked={field.state.value}
+								id="enableTrackSelection"
+								onCheckedChange={(checked) =>
+									field.handleChange(checked === true)
+								}
+							/>
+						)}
+					</form.Field>
 				</div>
 			)}
 		</>

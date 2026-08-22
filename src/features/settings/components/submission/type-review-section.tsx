@@ -1,4 +1,5 @@
-import type { SubmissionTypeConfig } from "@/features/settings/types";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
+import { FieldError } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import {
@@ -9,7 +10,7 @@ import {
 	SelectValue,
 } from "@/shared/ui/select";
 import { Switch } from "@/shared/ui/switch";
-import type { SubmissionTypeConfigHandleChange } from "./use-submission-type-config";
+import type { SubmissionTypeFormApi } from "./use-submission-type-config";
 
 const reviewModeLabels = {
 	OPEN: "Open",
@@ -23,68 +24,100 @@ const REVIEW_MODES = Object.keys(
 ) as (keyof typeof reviewModeLabels)[];
 
 interface TypeReviewSectionProps {
-	config: SubmissionTypeConfig;
-	onChange: SubmissionTypeConfigHandleChange;
+	form: SubmissionTypeFormApi;
+	submissionAttempts: number;
 }
 
 export function TypeReviewSection({
-	config,
-	onChange,
+	form,
+	submissionAttempts,
 }: TypeReviewSectionProps) {
 	return (
 		<>
-			<div className="space-y-2">
-				<Label htmlFor="required-reviewers">Required reviewers</Label>
-				<Input
-					id="required-reviewers"
-					max={10}
-					min={1}
-					onChange={(e) =>
-						onChange("requiredReviewers", parseInt(e.target.value, 10) || 1)
-					}
-					type="number"
-					value={config.requiredReviewers}
-				/>
-			</div>
+			<form.Field name="requiredReviewers">
+				{(field) => {
+					const hasError = isFieldErrorVisible(
+						field.state.meta,
+						submissionAttempts,
+					);
+					return (
+						<div className="space-y-2">
+							<Label htmlFor="required-reviewers">Required reviewers</Label>
+							<Input
+								aria-invalid={hasError}
+								id="required-reviewers"
+								max={10}
+								min={1}
+								onBlur={field.handleBlur}
+								onChange={(e) => field.handleChange(e.target.value)}
+								type="number"
+								value={field.state.value}
+							/>
+							<FieldError
+								errors={hasError ? field.state.meta.errors : undefined}
+							/>
+						</div>
+					);
+				}}
+			</form.Field>
 
 			<div className="grid gap-4 sm:grid-cols-2">
 				<div className="space-y-2">
 					<Label>Review mode</Label>
-					<Select
-						items={Object.entries(reviewModeLabels).map(([value, label]) => ({
-							value,
-							label,
-						}))}
-						onValueChange={(value) => {
-							const found = REVIEW_MODES.find((m) => m === value);
-							if (found) onChange("reviewMode", found);
-						}}
-						value={config.reviewMode}
-					>
-						<SelectTrigger>
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{Object.entries(reviewModeLabels).map(([value, label]) => (
-								<SelectItem key={value} value={value}>
-									{label}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+					<form.Field name="reviewMode">
+						{(field) => (
+							<Select
+								items={Object.entries(reviewModeLabels).map(
+									([value, label]) => ({
+										value,
+										label,
+									}),
+								)}
+								onValueChange={(value) => {
+									const found = REVIEW_MODES.find((m) => m === value);
+									if (found) field.handleChange(found);
+								}}
+								value={field.state.value}
+							>
+								<SelectTrigger>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{Object.entries(reviewModeLabels).map(([value, label]) => (
+										<SelectItem key={value} value={value}>
+											{label}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						)}
+					</form.Field>
 				</div>
-				<div className="space-y-2">
-					<Label>Review deadline (days)</Label>
-					<Input
-						max={90}
-						min={1}
-						onChange={(e) =>
-							onChange("reviewDeadlineDays", parseInt(e.target.value, 10) || 7)
-						}
-						type="number"
-						value={config.reviewDeadlineDays}
-					/>
-				</div>
+				<form.Field name="reviewDeadlineDays">
+					{(field) => {
+						const hasError = isFieldErrorVisible(
+							field.state.meta,
+							submissionAttempts,
+						);
+						return (
+							<div className="space-y-2">
+								<Label>Review deadline (days)</Label>
+								<Input
+									aria-invalid={hasError}
+									max={90}
+									min={1}
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									type="number"
+									value={field.state.value}
+								/>
+								<FieldError
+									errors={hasError ? field.state.meta.errors : undefined}
+								/>
+							</div>
+						);
+					}}
+				</form.Field>
 			</div>
 
 			<div className="space-y-4">
@@ -96,12 +129,16 @@ export function TypeReviewSection({
 							reviewer's recommendation is applied automatically.
 						</p>
 					</div>
-					<Switch
-						checked={config.requiresEditorDecision}
-						onCheckedChange={(checked) =>
-							onChange("requiresEditorDecision", checked)
-						}
-					/>
+					<form.Field name="requiresEditorDecision">
+						{(field) => (
+							<Switch
+								checked={field.state.value}
+								onCheckedChange={(checked) =>
+									field.handleChange(checked === true)
+								}
+							/>
+						)}
+					</form.Field>
 				</div>
 			</div>
 		</>

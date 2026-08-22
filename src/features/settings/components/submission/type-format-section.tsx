@@ -2,10 +2,9 @@ import {
 	SUPPORTED_FILE_EXTENSIONS,
 	type SupportedFileExtension,
 } from "@/features/settings/file-types";
-import type {
-	ContentFormat,
-	SubmissionTypeConfig,
-} from "@/features/settings/types";
+import type { ContentFormat } from "@/features/settings/types";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
+import { FieldError } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
@@ -16,7 +15,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/shared/ui/select";
-import type { SubmissionTypeConfigHandleChange } from "./use-submission-type-config";
+import type { SubmissionTypeFormApi } from "./use-submission-type-config";
 
 const CONTENT_FORMATS = [
 	"TEXT",
@@ -24,15 +23,13 @@ const CONTENT_FORMATS = [
 ] as const satisfies readonly ContentFormat[];
 
 interface TypeFormatSectionProps {
-	config: SubmissionTypeConfig;
-	onChange: SubmissionTypeConfigHandleChange;
-	onSelectExtension: (ext: SupportedFileExtension) => void;
+	form: SubmissionTypeFormApi;
+	submissionAttempts: number;
 }
 
 export function TypeFormatSection({
-	config,
-	onChange,
-	onSelectExtension,
+	form,
+	submissionAttempts,
 }: TypeFormatSectionProps) {
 	return (
 		<div className="space-y-3">
@@ -42,77 +39,114 @@ export function TypeFormatSection({
 					How authors provide their submission content
 				</p>
 			</div>
-			<Select
-				items={[
-					{ value: "TEXT", label: "Text (Abstract)" },
-					{ value: "FILE", label: "File Upload" },
-				]}
-				onValueChange={(value) => {
-					const found = CONTENT_FORMATS.find((f) => f === value);
-					if (found) onChange("contentFormat", found);
-				}}
-				value={config.contentFormat}
-			>
-				<SelectTrigger className="max-w-64">
-					<SelectValue />
-				</SelectTrigger>
-				<SelectContent>
-					<SelectItem value="TEXT">Text (Abstract)</SelectItem>
-					<SelectItem value="FILE">File Upload</SelectItem>
-				</SelectContent>
-			</Select>
-
-			{/* File extensions (only for FILE format) */}
-			{config.contentFormat === "FILE" && (
-				<div className="space-y-2 pt-2 pl-0 sm:pl-4">
-					<Label className="text-sm">Allowed file extension</Label>
-					<RadioGroup
-						className="flex flex-wrap gap-3"
-						onValueChange={(value) =>
-							// SAFETY: the select renders only supported extensions.
-							onSelectExtension(value as SupportedFileExtension)
-						}
-						value={config.allowedExtensions[0] ?? ""}
+			<form.Field name="contentFormat">
+				{(field) => (
+					<Select
+						items={[
+							{ value: "TEXT", label: "Text (Abstract)" },
+							{ value: "FILE", label: "File Upload" },
+						]}
+						onValueChange={(value) => {
+							const found = CONTENT_FORMATS.find((f) => f === value);
+							if (found) field.handleChange(found);
+						}}
+						value={field.state.value}
 					>
-						{SUPPORTED_FILE_EXTENSIONS.map((ext) => (
-							<div className="flex items-center gap-2" key={ext}>
-								<RadioGroupItem id={`ext-${ext}`} value={ext} />
-								<Label
-									className="cursor-pointer text-sm uppercase"
-									htmlFor={`ext-${ext}`}
-								>
-									{ext}
-								</Label>
-							</div>
-						))}
-					</RadioGroup>
-					{config.allowedExtensions.length === 0 && (
-						<p className="text-destructive text-xs">
-							Select an allowed file extension
-						</p>
-					)}
+						<SelectTrigger className="max-w-64">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="TEXT">Text (Abstract)</SelectItem>
+							<SelectItem value="FILE">File Upload</SelectItem>
+						</SelectContent>
+					</Select>
+				)}
+			</form.Field>
 
-					<div className="space-y-2 pt-2">
-						<Label
-							className="text-sm"
-							htmlFor={`max-file-size-${config.contentFormat}`}
-						>
-							Max file size (MB)
-						</Label>
-						<Input
-							className="max-w-32"
-							id={`max-file-size-${config.contentFormat}`}
-							max={100}
-							min={1}
-							onChange={(e) =>
-								onChange("maxFileSizeMb", parseInt(e.target.value, 10) || 10)
-							}
-							type="number"
-							value={config.maxFileSizeMb}
-						/>
-					</div>
-				</div>
-			)}
+			<form.Subscribe selector={(s) => s.values.contentFormat}>
+				{(contentFormat) =>
+					contentFormat === "FILE" ? (
+						<div className="space-y-2 pt-2 pl-0 sm:pl-4">
+							<Label className="text-sm">Allowed file extension</Label>
+							<form.Field name="allowedExtensions">
+								{(field) => (
+									<>
+										<RadioGroup
+											className="flex flex-wrap gap-3"
+											onValueChange={(value) =>
+												// SAFETY: the group renders only supported extensions.
+												field.handleChange([value as SupportedFileExtension])
+											}
+											value={field.state.value[0] ?? ""}
+										>
+											{SUPPORTED_FILE_EXTENSIONS.map((ext) => (
+												<div className="flex items-center gap-2" key={ext}>
+													<RadioGroupItem id={`ext-${ext}`} value={ext} />
+													<Label
+														className="cursor-pointer text-sm uppercase"
+														htmlFor={`ext-${ext}`}
+													>
+														{ext}
+													</Label>
+												</div>
+											))}
+										</RadioGroup>
+										{field.state.value.length === 0 && (
+											<p className="text-destructive text-xs">
+												Select an allowed file extension
+											</p>
+										)}
+										<FieldError
+											errors={
+												isFieldErrorVisible(
+													field.state.meta,
+													submissionAttempts,
+												)
+													? field.state.meta.errors
+													: undefined
+											}
+										/>
+									</>
+								)}
+							</form.Field>
+
+							<div className="space-y-2 pt-2">
+								<form.Field name="maxFileSizeMb">
+									{(field) => {
+										const hasError = isFieldErrorVisible(
+											field.state.meta,
+											submissionAttempts,
+										);
+										return (
+											<>
+												<Label className="text-sm" htmlFor="max-file-size-FILE">
+													Max file size (MB)
+												</Label>
+												<Input
+													aria-invalid={hasError}
+													className="max-w-32"
+													id="max-file-size-FILE"
+													max={100}
+													min={1}
+													onBlur={field.handleBlur}
+													onChange={(e) => field.handleChange(e.target.value)}
+													type="number"
+													value={field.state.value}
+												/>
+												<FieldError
+													errors={
+														hasError ? field.state.meta.errors : undefined
+													}
+												/>
+											</>
+										);
+									}}
+								</form.Field>
+							</div>
+						</div>
+					) : null
+				}
+			</form.Subscribe>
 		</div>
 	);
 }

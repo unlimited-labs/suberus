@@ -1,28 +1,13 @@
-import type { SubmissionTypeConfig } from "@/features/settings/types";
 import { Label } from "@/shared/ui/label";
 import { Switch } from "@/shared/ui/switch";
 import { ScoringCriteriaSection } from "./scoring-criteria-section";
-import type { SubmissionTypeConfigHandleChange } from "./use-submission-type-config";
+import type { SubmissionTypeFormApi } from "./use-submission-type-config";
 
 interface TypeScoringSectionProps {
-	config: SubmissionTypeConfig;
-	onChange: SubmissionTypeConfigHandleChange;
-	onUpdateCriterion: (
-		index: number,
-		field: "name" | "description",
-		value: string,
-	) => void;
-	onRemoveCriterion: (index: number) => void;
-	onAddCriterion: () => void;
+	form: SubmissionTypeFormApi;
 }
 
-export function TypeScoringSection({
-	config,
-	onChange,
-	onUpdateCriterion,
-	onRemoveCriterion,
-	onAddCriterion,
-}: TypeScoringSectionProps) {
+export function TypeScoringSection({ form }: TypeScoringSectionProps) {
 	return (
 		<div className="space-y-4">
 			<div className="flex items-center justify-between">
@@ -32,19 +17,20 @@ export function TypeScoringSection({
 						Reviewers score based on criteria
 					</p>
 				</div>
-				<Switch
-					checked={config.enableScoring}
-					onCheckedChange={(checked) => onChange("enableScoring", checked)}
-				/>
+				<form.Field name="enableScoring">
+					{(field) => (
+						<Switch
+							checked={field.state.value}
+							onCheckedChange={(checked) =>
+								field.handleChange(checked === true)
+							}
+						/>
+					)}
+				</form.Field>
 			</div>
-			{config.enableScoring && (
-				<ScoringCriteriaSection
-					criteria={config.scoringCriteria}
-					onAdd={onAddCriterion}
-					onRemove={onRemoveCriterion}
-					onUpdate={onUpdateCriterion}
-				/>
-			)}
+			<form.Subscribe selector={(s) => s.values.enableScoring}>
+				{(enabled) => (enabled ? <ScoringCriteriaSection form={form} /> : null)}
+			</form.Subscribe>
 		</div>
 	);
 }
