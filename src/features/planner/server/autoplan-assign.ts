@@ -26,7 +26,8 @@ function conflictCount(
 	return count;
 }
 
-function hillClimb(
+/** Reorders `assign` in place and returns the conflict count it settled at. */
+function hillClimbInPlace(
 	assign: number[],
 	clusterKeys: Set<string>[],
 	sessions: AssignSession[],
@@ -86,12 +87,12 @@ export function assignClustersToSessions(
 	sessions: AssignSession[],
 ): number[] {
 	let best = clusterKeys.map((_, i) => i);
-	let bestCost = hillClimb(best, clusterKeys, sessions);
+	let bestCost = hillClimbInPlace(best, clusterKeys, sessions);
 
 	const rng = mulberry32(0x5eed);
 	for (let r = 0; r < RESTARTS && bestCost > 0; r++) {
 		const cand = shuffledIndices(clusterKeys.length, rng);
-		const cost = hillClimb(cand, clusterKeys, sessions);
+		const cost = hillClimbInPlace(cand, clusterKeys, sessions);
 		if (cost < bestCost) {
 			bestCost = cost;
 			best = cand;

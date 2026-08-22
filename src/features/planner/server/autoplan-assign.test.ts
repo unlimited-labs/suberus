@@ -94,6 +94,35 @@ describe("assignClustersToSessions", () => {
 		expect([...assign].sort()).toEqual([0, 1, 2, 3, 4, 5]);
 	});
 
+	// The climb reorders its working array in place; that must not reach the
+	// caller's clusters or sessions.
+	it("leaves the caller's inputs untouched", () => {
+		const sessions = [
+			sess("2026-01-01T09:00Z", "2026-01-01T10:00Z"),
+			sess("2026-01-01T09:00Z", "2026-01-01T10:00Z"),
+			sess("2026-01-01T11:00Z", "2026-01-01T12:00Z"),
+			sess("2026-01-01T11:00Z", "2026-01-01T12:00Z"),
+		];
+		const keys = [
+			new Set(["x"]),
+			new Set(["x"]),
+			new Set(["y"]),
+			new Set(["z"]),
+		];
+		const sessionsBefore = sessions.map((s) => [
+			s.startAt.toISOString(),
+			s.endAt.toISOString(),
+		]);
+		const keysBefore = keys.map((k) => [...k]);
+
+		assignClustersToSessions(keys, sessions);
+
+		expect(
+			sessions.map((s) => [s.startAt.toISOString(), s.endAt.toISOString()]),
+		).toEqual(sessionsBefore);
+		expect(keys.map((k) => [...k])).toEqual(keysBefore);
+	});
+
 	it("returns a bijection and terminates when the conflict is infeasible", () => {
 		const sessions = [
 			sess("2026-01-01T09:00Z", "2026-01-01T10:00Z"),
