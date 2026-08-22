@@ -141,29 +141,26 @@ export async function copyCampaignAttachments(
 		where: { entityType: "EMAIL_CAMPAIGN", entityId: srcId },
 		select: { originalName: true, mimeType: true, storageKey: true },
 	});
-	await Promise.all(
-		files.map(async (file) => {
-			const buffer = await getFileBuffer(file.storageKey);
-			const storageKey = generateCampaignAttachmentKey(
-				dstId,
-				file.originalName,
-			);
-			await uploadFile(buffer, storageKey, file.mimeType);
-			await prisma.file.create({
-				data: {
-					entityType: "EMAIL_CAMPAIGN",
-					entityId: dstId,
-					type: "EMAIL_ATTACHMENT",
-					storageKey,
-					fileName: file.originalName,
-					originalName: file.originalName,
-					mimeType: file.mimeType,
-					size: buffer.length,
-					uploadedById,
-				},
-			});
-		}),
-	);
+	// Sequential: nothing caps the file count, so a fan-out here scales with it
+	// and competes for the connection pool for no gain at realistic sizes.
+	for (const file of files) {
+		const buffer = await getFileBuffer(file.storageKey);
+		const storageKey = generateCampaignAttachmentKey(dstId, file.originalName);
+		await uploadFile(buffer, storageKey, file.mimeType);
+		await prisma.file.create({
+			data: {
+				entityType: "EMAIL_CAMPAIGN",
+				entityId: dstId,
+				type: "EMAIL_ATTACHMENT",
+				storageKey,
+				fileName: file.originalName,
+				originalName: file.originalName,
+				mimeType: file.mimeType,
+				size: buffer.length,
+				uploadedById,
+			},
+		});
+	}
 }
 
 export interface MailAttachment {
