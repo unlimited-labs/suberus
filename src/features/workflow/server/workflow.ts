@@ -56,9 +56,6 @@ export async function getCaretakerEditor(
 	});
 }
 
-/**
- * Get submission type config for a submission
- */
 async function getSubmissionConfig(
 	submissionType: SubmissionType,
 ): Promise<SubmissionTypeConfig> {
@@ -66,9 +63,6 @@ async function getSubmissionConfig(
 	return getSetting(key);
 }
 
-/**
- * Build xstate context from submission data
- */
 async function buildSubmissionContext(
 	submissionId: string,
 ): Promise<SubmissionContext> {
@@ -105,9 +99,6 @@ async function buildSubmissionContext(
 	};
 }
 
-/**
- * Validate and execute a submission workflow transition
- */
 export async function executeSubmissionTransition(
 	submissionId: string,
 	event: SubmissionEvent,
@@ -296,9 +287,6 @@ export async function validateAssignmentTransition(
 			};
 }
 
-/**
- * Execute assignment status transition
- */
 export async function executeAssignmentTransition(
 	assignmentId: string,
 	event: AssignmentEvent,
@@ -368,7 +356,6 @@ export async function executeAssignmentTransition(
 	};
 }
 
-/** Notify the caretaker editor that the current review round is complete. */
 async function notifyCaretakerReviewsComplete(
 	submissionId: string,
 	submissionTitle: string,
@@ -386,7 +373,6 @@ async function notifyCaretakerReviewsComplete(
 	});
 }
 
-/** For types requiring an editor decision, auto-advance to AWAITING_DECISION. */
 async function advanceToAwaitingDecision(
 	submissionId: string,
 	triggeredBy?: string,
@@ -399,7 +385,6 @@ async function advanceToAwaitingDecision(
 	);
 }
 
-/** Auto-apply a unanimous reviewer decision and notify the author. */
 async function applyUnanimousDecision(
 	submissionId: string,
 	decision: ReviewDecision,
@@ -431,9 +416,6 @@ async function applyUnanimousDecision(
 	return autoResult;
 }
 
-/**
- * Check if all reviews are complete and trigger auto-transition if configured
- */
 export async function checkAndTriggerReviewCompletion(
 	submissionId: string,
 	triggeredBy?: string,
@@ -485,7 +467,6 @@ export async function checkAndTriggerReviewCompletion(
 
 	if (!isReviewRoundComplete(counts, config.requiredReviewers)) return null;
 
-	// Auto-transition: always advance when all reviews complete
 	logger.info(
 		`[workflow] all reviews complete for submission ${submissionId}, auto-transitioning`,
 	);
@@ -499,7 +480,6 @@ export async function checkAndTriggerReviewCompletion(
 	if (!result.success) return result;
 
 	const decisions = submission.reviews.map((r) => r.decision);
-	// Disagreement is only relevant when no editor decision is required.
 	const disagree =
 		!config.requiresEditorDecision && reviewersDisagree(decisions);
 
@@ -509,13 +489,11 @@ export async function checkAndTriggerReviewCompletion(
 		disagree,
 	);
 
-	// Types with an editor decision auto-advance to AWAITING_DECISION.
 	if (config.requiresEditorDecision) {
 		await advanceToAwaitingDecision(submissionId, triggeredBy);
 		return result;
 	}
 
-	// Types without an editor decision auto-apply only a unanimous reviewer decision.
 	if (decisions.length > 0 && !disagree) {
 		return applyUnanimousDecision(
 			submissionId,
@@ -534,7 +512,6 @@ export async function checkAndTriggerReviewCompletion(
 	return result;
 }
 
-/** Cancel every active (PENDING/OVERDUE) reviewer assignment for a submission. */
 async function cancelActiveReviewAssignments(
 	submissionId: string,
 	userId: string,
@@ -555,7 +532,6 @@ async function cancelActiveReviewAssignments(
 	}
 }
 
-/** Notify the caretaker editor that a (previously handled) submission was withdrawn. */
 async function notifyCaretakerOfWithdrawal(
 	submissionId: string,
 ): Promise<void> {
@@ -579,9 +555,6 @@ async function notifyCaretakerOfWithdrawal(
 	});
 }
 
-/**
- * Withdraw a submission (author or admin/editor action)
- */
 export async function withdrawSubmission(
 	submissionId: string,
 	userId: string,
@@ -628,7 +601,6 @@ export async function withdrawSubmission(
 
 		await cancelActiveReviewAssignments(submissionId, userId);
 
-		// Only notify caretaker editor when submission was handled (beyond DRAFT/SUBMITTED)
 		const wasHandled =
 			result.fromState !== "DRAFT" && result.fromState !== "SUBMITTED";
 		if (wasHandled) {
@@ -661,9 +633,6 @@ export async function exhibitorGuard(
 	};
 }
 
-/**
- * Desk accept a submission (editor action)
- */
 export async function deskAcceptSubmission(
 	submissionId: string,
 	editorId: string,
@@ -717,9 +686,6 @@ export async function deskAcceptSubmission(
 	return result;
 }
 
-/**
- * Desk reject a submission (editor action)
- */
 export async function deskRejectSubmission(
 	submissionId: string,
 	editorId: string,
@@ -773,9 +739,6 @@ export async function deskRejectSubmission(
 	return result;
 }
 
-/**
- * Submit editor decision
- */
 export async function submitEditorDecision(
 	submissionId: string,
 	editorId: string,
@@ -818,7 +781,6 @@ export async function submitEditorDecision(
 	);
 
 	if (result.success) {
-		// Create editor decision record only after successful transition
 		await prisma.editorDecision.create({
 			data: {
 				submissionId,
@@ -866,9 +828,6 @@ export async function submitEditorDecision(
 	return result;
 }
 
-/**
- * Override editor decision (reopen from terminal state)
- */
 export async function overrideDecision(
 	submissionId: string,
 	editorId: string,
@@ -910,9 +869,6 @@ export async function overrideDecision(
 	return result;
 }
 
-/**
- * Confirm conditions met — promote CONDITIONALLY_ACCEPTED to ACCEPTED
- */
 export async function confirmConditionsMet(
 	submissionId: string,
 	editorId: string,

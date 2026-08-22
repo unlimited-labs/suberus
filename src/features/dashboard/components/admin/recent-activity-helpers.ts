@@ -37,7 +37,6 @@ function humanize(value: ActivityDetailValue): string | undefined {
 	return raw?.replace(/_/g, " ");
 }
 
-/** Icon for an activity event, by exact type then entity-prefix family. */
 export function getEventIcon(type: string) {
 	if (type === "USER_DELETED") return IconUserMinus;
 	if (type.startsWith("USER_")) return IconUser;
@@ -50,7 +49,6 @@ export function getEventIcon(type: string) {
 	return IconFileText;
 }
 
-/** Text color for an event: per-type overrides, then entity-prefix defaults. */
 export function getEventColor(type: string): string {
 	if (type === "USER_DELETED") return "text-red-600";
 	if (type === "SUBMISSION_WITHDRAWN") return "text-gray-600";
@@ -77,11 +75,6 @@ export type ActivitySubject =
 	| { kind: "name"; name: string }
 	| { kind: "none" };
 
-/**
- * The single linkable subject of an activity row: the submission, the affected
- * user (for USER_ events), a bare performer name, or nothing. Pure, so the
- * mutually-exclusive precedence is unit-testable.
- */
 export function resolveActivitySubject(event: ActivityEvent): ActivitySubject {
 	if (event.type === "SUBMISSION_DELETED" && event.detail?.title) {
 		const seq = event.detail.sequentialNumber;
@@ -185,7 +178,6 @@ const descriptionRenderers = {
 			: null,
 } satisfies Record<string, DescriptionRenderer>;
 
-/** Short detail line for an event: transition, decision, reason, snapshot. */
 export function getEventDescription(event: ActivityEvent): string | null {
 	return lookup(descriptionRenderers, event.type)?.(event) ?? null;
 }

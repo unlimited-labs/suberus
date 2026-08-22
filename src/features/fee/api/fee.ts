@@ -16,18 +16,12 @@ export const paymentInstructionsQueryOptions = () =>
 		queryFn: () => getPaymentInstructionsFn(),
 	});
 
-/**
- * Get current user's fee
- */
 export const getUserFeeFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.handler(async ({ context }) => {
 		return getUserFee(context.user.id);
 	});
 
-/**
- * Get payment instructions
- */
 export const getPaymentInstructionsFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.handler(async () => {

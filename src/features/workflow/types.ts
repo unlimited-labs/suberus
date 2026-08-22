@@ -1,6 +1,5 @@
 import type { ReviewDecision, SubmissionType } from "@/generated/prisma/enums";
 
-/** Events for submission state machine */
 export type SubmissionEvent =
 	| { type: "SUBMIT" }
 	| { type: "ASSIGN_REVIEWER" }
@@ -23,7 +22,6 @@ export type SubmissionEvent =
 	| { type: "CONFIRM_CONDITIONS_MET" }
 	| { type: "RESUBMIT" };
 
-/** Context for submission state machine */
 export interface SubmissionContext {
 	submissionId: string;
 	submissionType: SubmissionType;
@@ -34,13 +32,11 @@ export interface SubmissionContext {
 	completedReviewsCount: number;
 }
 
-/** Events for assignment state machine */
 export type AssignmentEvent =
 	| { type: "COMPLETE"; decision: ReviewDecision }
 	| { type: "CANCEL" }
 	| { type: "MARK_OVERDUE" };
 
-/** Context for assignment state machine */
 export interface AssignmentContext {
 	assignmentId: string;
 	submissionId: string;
@@ -49,7 +45,6 @@ export interface AssignmentContext {
 	deadline?: Date;
 }
 
-/** Result of workflow transition */
 export interface TransitionResult {
 	success: boolean;
 	fromState: string;

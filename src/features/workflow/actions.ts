@@ -1,7 +1,6 @@
 import type { SubmissionStatus } from "@/generated/prisma/enums";
 import { lookup } from "@/shared/lib/lookup";
 
-/** Map status transition to human-readable description */
 export function getTransitionDescription(
 	fromStatus: SubmissionStatus | null,
 	toStatus: SubmissionStatus,

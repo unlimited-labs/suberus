@@ -9,7 +9,6 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(async ({ context }) => {
 		const metrics = await getAdminDashboardMetrics();
-		// System health (infra status + alerts) is admin-only; strip for editors.
 		if (context.user.role !== "ADMIN") {
 			return {
 				...metrics,

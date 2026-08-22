@@ -6,14 +6,6 @@ import {
 } from "../guards";
 import type { SubmissionContext, SubmissionEvent } from "../types";
 
-/**
- * Submission workflow state machine
- *
- * Handles all submission status transitions
- * - DRAFT → SUBMITTED → UNDER_REVIEW → REVIEWS_COMPLETE → terminal states
- * - Supports both auto-transition (abstracts) and manual transition (papers)
- * - Editor decision required for papers, reviewer decision for abstracts
- */
 export const submissionMachine = setup({
 	types: {
 		// SAFETY: xstate setup() types-only slot; the value is never read.
@@ -110,7 +102,6 @@ export const submissionMachine = setup({
 					target: "AWAITING_DECISION",
 					guard: "requiresEditorDecision",
 				},
-				// Auto-transitions based on reviewer decision (for abstracts)
 				AUTO_ACCEPT: {
 					target: "ACCEPTED",
 				},
@@ -168,7 +159,6 @@ export const submissionMachine = setup({
 				WITHDRAW: "WITHDRAWN",
 			},
 		},
-		// Terminal states (ACCEPTED/CONDITIONALLY_ACCEPTED/REJECTED allow editor override)
 		ACCEPTED: {
 			on: {
 				EDITOR_OVERRIDE: "AWAITING_DECISION",

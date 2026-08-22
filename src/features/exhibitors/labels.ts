@@ -24,7 +24,6 @@ export type ExhibitorDisplayStatus =
 	| "REJECTED"
 	| "WITHDRAWN";
 
-/** Display badge for an exhibitor; PENDING splits by application completeness */
 export function exhibitorStatusBadge(
 	status: ExhibitorStatus,
 	appliedAt: Date | string | null,

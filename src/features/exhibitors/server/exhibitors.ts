@@ -33,7 +33,6 @@ export async function isExhibitorSignupAvailable(): Promise<boolean> {
 	return configs.EXHIBITOR.isActive;
 }
 
-/** Self-service signup: AUTHOR with no exhibitor row and no submissions becomes EXHIBITOR */
 export async function becomeExhibitor(userId: string): Promise<void> {
 	if (!(await isExhibitorSignupAvailable())) {
 		throw new Error("Exhibitor signup is not available");
@@ -81,7 +80,6 @@ export async function getOwnExhibitor(userId: string) {
 	});
 }
 
-/** Create SubmissionAuthor rows (with affiliation upsert) and set presenter reference */
 async function createSubmissionAuthors(
 	tx: Tx,
 	submissionId: string,
@@ -184,7 +182,6 @@ async function updatePresentationSubmission(
 	await createSubmissionAuthors(tx, submissionId, presentation.authors);
 }
 
-/** Save (or complete) the exhibitor application; editable only while PENDING and undecided */
 export async function saveExhibitorApplication(
 	userId: string,
 	data: ExhibitorApplicationInput,
@@ -204,7 +201,6 @@ export async function saveExhibitorApplication(
 
 	const isFirstApply = !exhibitor.appliedAt;
 
-	// Validate WITHDRAW transition before entering the transaction (pre-decision removal path)
 	let removedSubmissionRound: number | null = null;
 	if (!presentation && exhibitor.submissionId) {
 		const withdrawValidation = await validateSubmissionTransition(
@@ -239,7 +235,6 @@ export async function saveExhibitorApplication(
 				created = submissionId;
 			}
 		} else if (submissionId) {
-			// Presentation removed in a pre-decision edit: withdraw the orphaned submission
 			await tx.submission.update({
 				where: { id: submissionId },
 				data: { status: "WITHDRAWN" },
@@ -286,7 +281,6 @@ export async function saveExhibitorApplication(
 		return created;
 	});
 
-	// Notify admin about the new presentation submission (create path only)
 	if (createdSubmissionId && presentation) {
 		const contactEmail = await getSetting("CONTACT_EMAIL");
 		if (contactEmail) {
@@ -302,7 +296,6 @@ export async function saveExhibitorApplication(
 	}
 }
 
-/** Withdraw own application (PENDING only); withdraws the linked presentation via workflow */
 export async function withdrawOwnExhibitor(userId: string): Promise<void> {
 	const exhibitor = await prisma.exhibitor.findUniqueOrThrow({
 		where: { userId },
@@ -380,7 +373,6 @@ export async function getExhibitorDetail(id: string) {
 	});
 }
 
-/** Admin-declared package (agreed with the exhibitor); editable regardless of status */
 export async function setExhibitorPackage(
 	id: string,
 	value: string | null,
@@ -392,7 +384,6 @@ export async function setExhibitorPackage(
 	});
 }
 
-/** Desk-accept or desk-reject the exhibitor's linked presentation through the workflow. */
 async function applyExhibitorDeskDecision(
 	submissionId: string,
 	decision: ExhibitorDecision,
@@ -425,7 +416,6 @@ async function sendExhibitorDecisionEmail(
 	});
 }
 
-/** Admin decision; desk-accepts/rejects the linked presentation through the workflow */
 export async function decideExhibitor(
 	id: string,
 	decision: ExhibitorDecision,

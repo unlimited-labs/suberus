@@ -25,9 +25,6 @@ function typeSurveyQuestion(q: SurveyQuestion): TypedSurveyQuestion {
 	return { ...q, options: q.options as string[] | null };
 }
 
-/**
- * Get survey questions, optionally filtered by active status.
- */
 export async function getSurveyQuestions(
 	activeOnly = false,
 	audiences?: SurveyAudience[],
@@ -42,9 +39,6 @@ export async function getSurveyQuestions(
 	return questions.map(typeSurveyQuestion);
 }
 
-/**
- * Create a new survey question.
- */
 export async function createSurveyQuestion(
 	label: string,
 	orderIndex: number,
@@ -72,9 +66,6 @@ export async function createSurveyQuestion(
 	return typeSurveyQuestion(created);
 }
 
-/**
- * Update a survey question (partial).
- */
 export async function updateSurveyQuestion(
 	id: string,
 	data: {
@@ -103,9 +94,6 @@ export async function updateSurveyQuestion(
 	});
 }
 
-/**
- * Delete a survey question and its answers.
- */
 export async function deleteSurveyQuestion(id: string) {
 	return prisma.$transaction([
 		prisma.surveyAnswer.deleteMany({ where: { questionId: id } }),
@@ -113,9 +101,6 @@ export async function deleteSurveyQuestion(id: string) {
 	]);
 }
 
-/**
- * Import a predefined template: create its questions appended after existing ones.
- */
 export async function importSurveyTemplate(templateId: string) {
 	const template = getSurveyTemplate(templateId);
 	if (!template) throw new Error(`Unknown template: ${templateId}`);
@@ -138,9 +123,6 @@ export async function importSurveyTemplate(templateId: string) {
 	return created.map(typeSurveyQuestion);
 }
 
-/**
- * Reorder survey questions by setting orderIndex based on array position.
- */
 export async function reorderSurveyQuestions(orderedIds: string[]) {
 	return prisma.$transaction(
 		orderedIds.map((id, index) =>
@@ -152,9 +134,6 @@ export async function reorderSurveyQuestions(orderedIds: string[]) {
 	);
 }
 
-/**
- * Get a user's survey answers with question data.
- */
 export async function getUserSurveyAnswers(userId: string) {
 	return prisma.surveyAnswer.findMany({
 		where: { userId },
@@ -162,9 +141,6 @@ export async function getUserSurveyAnswers(userId: string) {
 	});
 }
 
-/**
- * Upsert survey answers for a user.
- */
 export async function upsertSurveyAnswers(
 	userId: string,
 	answers: Array<{ questionId: string; value: string }>,
@@ -182,9 +158,6 @@ export async function upsertSurveyAnswers(
 	);
 }
 
-/**
- * Record ToS acceptance timestamp for a user.
- */
 export async function acceptTos(userId: string) {
 	return prisma.user.update({
 		where: { id: userId },

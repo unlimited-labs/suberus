@@ -37,8 +37,6 @@ export const adminSurveyQuestionsQueryOptions = () =>
 		queryFn: () => getSurveyQuestionsFn(),
 	});
 
-// ── Admin functions ──
-
 export const getSurveyQuestionsFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(async () => {
@@ -121,8 +119,6 @@ export const reorderSurveyQuestionsFn = createServerFn({ method: "POST" })
 		return { success: true };
 	});
 
-// ── Authenticated user functions ──
-
 export const getActiveSurveyQuestionsFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.handler(async ({ context }) => {
@@ -170,8 +166,6 @@ export const acceptTosFn = createServerFn({ method: "POST" })
 		await acceptTos(context.user.id);
 		return { success: true };
 	});
-
-// ── Public functions (no auth, for registration) ──
 
 export const getSurveyQuestionsForRegistrationFn = createServerFn({
 	method: "GET",

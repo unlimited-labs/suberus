@@ -48,7 +48,6 @@ export interface SurveyQuestion {
 	audience: SurveyAudience;
 }
 
-/** Audience labels for the editor picker and list badges. */
 export const AUDIENCE_LABELS = {
 	ALL: "Everyone",
 	PARTICIPANTS: "Participants",
@@ -63,7 +62,6 @@ export const TYPE_LABELS = {
 	MULTI_SELECT: "Multi",
 } satisfies Record<SurveyQuestionType, string>;
 
-/** Icon + full label + one-line hint per type, for the visual picker and rows. */
 export const TYPE_META = {
 	CHECKBOX: {
 		label: "Checkbox",
@@ -104,7 +102,6 @@ const TYPE_ORDER: readonly SurveyQuestionType[] = [
 export const isSelectType = (type: SurveyQuestionType) =>
 	type === "SINGLE_SELECT" || type === "MULTI_SELECT";
 
-/** Visual type picker: compact single row of icon cards (icon + label). */
 export function TypePicker({
 	value,
 	onChange,
@@ -158,7 +155,6 @@ const AUDIENCE_ORDER: readonly SurveyAudience[] = [
 	"EXHIBITORS",
 ];
 
-/** Compact segmented control choosing who a question is shown to. */
 export function AudiencePicker({
 	value,
 	onChange,
@@ -244,7 +240,6 @@ function SortableOption({
 	);
 }
 
-/** Controlled editor for select-question options, with drag-to-reorder. */
 export function OptionsEditor({
 	options,
 	onChange,
@@ -292,7 +287,6 @@ export function OptionsEditor({
 				sensors={sensors}
 			>
 				<SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
-					{/* Cap height so long option lists scroll instead of growing the dialog. */}
 					<div className="max-h-44 space-y-1.5 overflow-y-auto">
 						{options.map((opt, i) => (
 							<SortableOption

@@ -27,14 +27,12 @@ export async function performInstall(data: InstallFormData): Promise<void> {
 		throw new Response("System is already installed", { status: 409 });
 	}
 
-	// 1. Upsert affiliation
 	const affiliation = await prisma.affiliation.upsert({
 		where: { name: data.affiliation },
 		update: {},
 		create: { name: data.affiliation },
 	});
 
-	// 2. Create admin user via Better Auth
 	const result = await auth.api.signUpEmail({
 		body: {
 			email: data.email,
@@ -49,7 +47,6 @@ export async function performInstall(data: InstallFormData): Promise<void> {
 		throw new Response("Failed to create admin user", { status: 500 });
 	}
 
-	// 3. Promote to admin, verify email, activate
 	await prisma.user.update({
 		where: { id: result.user.id },
 		data: {
@@ -60,7 +57,6 @@ export async function performInstall(data: InstallFormData): Promise<void> {
 		},
 	});
 
-	// 4. Conference name + timezone (seeded from the browser at install)
 	await prisma.appSetting.upsert({
 		where: { key: "CONFERENCE_NAME" },
 		update: { value: data.conferenceName },
@@ -72,7 +68,6 @@ export async function performInstall(data: InstallFormData): Promise<void> {
 		create: { key: "CONFERENCE_TIMEZONE", value: data.timezone },
 	});
 
-	// 5. Email templates
 	for (const template of DEFAULT_EMAIL_TEMPLATES) {
 		await prisma.emailTemplate.upsert({
 			where: { eventType: template.eventType },
@@ -81,7 +76,6 @@ export async function performInstall(data: InstallFormData): Promise<void> {
 		});
 	}
 
-	// 6. Submission type configs
 	const submissionTypeKeys = [
 		"SUBMISSION_TYPE_ORAL_PRESENTATION",
 		"SUBMISSION_TYPE_POSTER",
@@ -98,7 +92,6 @@ export async function performInstall(data: InstallFormData): Promise<void> {
 		});
 	}
 
-	// 7. Validation settings
 	const validationKeys = [
 		"MIN_TITLE_LENGTH",
 		"MAX_TITLE_LENGTH",
@@ -119,7 +112,6 @@ export async function performInstall(data: InstallFormData): Promise<void> {
 		});
 	}
 
-	// 8. Reminder settings
 	const reminderKeys = [
 		"REMINDER_REVIEWER_SETTINGS",
 		"REMINDER_REVISION_SETTINGS",
@@ -135,7 +127,6 @@ export async function performInstall(data: InstallFormData): Promise<void> {
 		});
 	}
 
-	// 9. Invitation settings
 	await prisma.appSetting.upsert({
 		where: { key: "INVITATION_VALIDITY_HOURS" },
 		update: {},

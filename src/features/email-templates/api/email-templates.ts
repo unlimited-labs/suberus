@@ -19,14 +19,12 @@ export const emailTemplatesQueryOptions = () =>
 		queryFn: () => getEmailTemplatesFn(),
 	});
 
-/** Get all email templates (admin only) */
 export const getEmailTemplatesFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(async () => {
 		return getEmailTemplates();
 	});
 
-/** Update an email template (admin only) */
 export const updateEmailTemplateFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(
@@ -44,7 +42,6 @@ export const updateEmailTemplateFn = createServerFn({ method: "POST" })
 		return updateEmailTemplate(eventType, updateData);
 	});
 
-/** Send a test email to the current admin (admin only) */
 export const sendTestEmailFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(

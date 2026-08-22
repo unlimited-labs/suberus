@@ -14,11 +14,6 @@ export interface HealthAlert {
 	link?: HealthAlertLink;
 }
 
-/**
- * The dashboard health alerts that currently apply: service outages (SMTP, S3)
- * and operational thresholds (overdue reviews, pending decisions, unverified
- * users). Pure, so the alert conditions and copy are unit-testable.
- */
 export function buildHealthAlerts(
 	data: AdminDashboardMetrics["health"] | undefined,
 	s3: AdminDashboardMetrics["s3"] | undefined,

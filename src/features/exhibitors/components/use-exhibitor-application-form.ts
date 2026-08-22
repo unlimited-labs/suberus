@@ -51,7 +51,6 @@ const formSchema = z
 	})
 	.superRefine((values, ctx) => {
 		if (!values.addPresentation) return;
-		// Reuse the server-side presentation schema so messages stay in sync
 		const result = exhibitorPresentationSchema.safeParse({
 			title: values.presentationTitle,
 			content: values.presentationContent,
@@ -74,11 +73,6 @@ interface UseExhibitorApplicationFormArgs {
 	allowPresentation: boolean;
 }
 
-/**
- * Owns the exhibitor application form: the form instance with company +
- * (optional) presentation validation, the save flow, the lock/withdraw guards
- * and the withdraw dialog state. Leaves the card as presentation.
- */
 export function useExhibitorApplicationForm({
 	exhibitor,
 	allowPresentation,

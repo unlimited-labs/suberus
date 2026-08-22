@@ -51,9 +51,6 @@ interface CountryRow {
 	count: number;
 }
 
-// Aggregate registrations by country, merging duplicate names under the same
-// ISO code. Sorted by count desc — the list renders top-down, and the map draws
-// larger bubbles first so smaller ones land on top.
 function aggregateByCountry(
 	data: AdminDashboardMetrics["usersByCountry"],
 ): CountryRow[] {
@@ -237,9 +234,7 @@ function BubbleLayer({
 				if (map.getLayer(LABEL_LAYER_ID)) map.removeLayer(LABEL_LAYER_ID);
 				if (map.getLayer(CIRCLE_LAYER_ID)) map.removeLayer(CIRCLE_LAYER_ID);
 				if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
-			} catch {
-				// ignore cleanup errors during unmount
-			}
+			} catch {}
 		};
 	}, [isLoaded, map]);
 

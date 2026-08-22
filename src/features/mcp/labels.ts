@@ -1,7 +1,6 @@
 import type { McpScope } from "@/features/mcp/scopes";
 import { lookup } from "@/shared/lib/lookup";
 
-/** Plain-language descriptions for the OAuth scopes this server issues. */
 const SCOPE_LABELS = {
 	openid: "Confirm who you are",
 	profile: "Read your name and account details",

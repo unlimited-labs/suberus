@@ -4,14 +4,8 @@ import type {
 	ReviewDecision,
 } from "@/generated/prisma/enums";
 
-/**
- * Pure decision logic for review-round completion, extracted from
- * `checkAndTriggerReviewCompletion` so it can be unit-tested in isolation.
- */
-
 export type ReviewCounts = { assigned: number; completed: number };
 
-/** Count current-round assignments and how many are COMPLETED. */
 export function countCompletedReviews(
 	assignments: ReadonlyArray<{ status: AssignmentStatus }>,
 ): ReviewCounts {
@@ -21,7 +15,6 @@ export function countCompletedReviews(
 	};
 }
 
-/** Round is complete once every assignment is COMPLETED and the required quorum is met. */
 export function isReviewRoundComplete(
 	counts: ReviewCounts,
 	requiredReviewers: number,
@@ -31,12 +24,10 @@ export function isReviewRoundComplete(
 	);
 }
 
-/** Reviewers disagree when there is more than one decision and they are not all equal. */
 export function reviewersDisagree(decisions: ReviewDecision[]): boolean {
 	return decisions.length > 1 && !decisions.every((d) => d === decisions[0]);
 }
 
-/** Maps an auto-applied reviewer decision to the author-facing email event. */
 export const DECISION_EMAIL_EVENT = {
 	ACCEPT: "DECISION_ACCEPTED",
 	ACCEPT_WITH_MINOR_REVISIONS: "DECISION_CONDITIONALLY_ACCEPTED",
@@ -44,7 +35,6 @@ export const DECISION_EMAIL_EVENT = {
 	REJECT: "DECISION_REJECTED",
 } satisfies Record<ReviewDecision, EmailEventType>;
 
-/** Default letter text sent to the author when a decision is auto-applied. */
 export const DECISION_LETTER_TEXT = {
 	ACCEPT:
 		"Based on the reviewer's recommendation, your submission has been accepted.",

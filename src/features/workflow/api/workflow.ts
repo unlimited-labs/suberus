@@ -18,7 +18,6 @@ import {
 import { deskDecisionInput } from "@/features/workflow/validations";
 import { prisma } from "@/shared/server/db.server";
 
-/** Withdraw submission (author) */
 export const withdrawSubmissionFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.validator(
@@ -44,7 +43,6 @@ export const withdrawSubmissionFn = createServerFn({ method: "POST" })
 		return result;
 	});
 
-/** Desk accept submission (editor) */
 export const deskAcceptFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(deskDecisionInput)
@@ -58,7 +56,6 @@ export const deskAcceptFn = createServerFn({ method: "POST" })
 		);
 	});
 
-/** Desk reject submission (editor) */
 export const deskRejectFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(deskDecisionInput)
@@ -72,7 +69,6 @@ export const deskRejectFn = createServerFn({ method: "POST" })
 		);
 	});
 
-/** Submit editor decision (editor) */
 export const submitEditorDecisionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(
@@ -98,7 +94,6 @@ export const submitEditorDecisionFn = createServerFn({ method: "POST" })
 		);
 	});
 
-/** Manual transition to AWAITING_DECISION (editor) */
 export const transitionToAwaitingDecisionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(z.object({ submissionId: z.uuid() }))
@@ -111,7 +106,6 @@ export const transitionToAwaitingDecisionFn = createServerFn({ method: "POST" })
 		);
 	});
 
-/** Editor override — reopen decision from terminal state (editor) */
 export const editorOverrideFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(
@@ -126,7 +120,6 @@ export const editorOverrideFn = createServerFn({ method: "POST" })
 		return overrideDecision(data.submissionId, context.user.id, data.reasoning);
 	});
 
-/** Confirm conditions met — promote CONDITIONALLY_ACCEPTED to ACCEPTED (editor) */
 export const confirmConditionsMetFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(

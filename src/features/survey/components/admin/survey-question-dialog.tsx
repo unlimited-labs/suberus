@@ -26,7 +26,6 @@ interface SurveyQuestionDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	onSave: (values: SurveyQuestionFormValues) => Promise<void>;
-	/** Show the audience picker only when the exhibitors feature is enabled. */
 	exhibitorsEnabled: boolean;
 }
 
@@ -235,7 +234,6 @@ type PreviewValues = Pick<
 	"label" | "type" | "options" | "allowOther" | "isRequired"
 >;
 
-/** Renders the real attendee-facing field with a throwaway local answer. */
 function QuestionPreview({ values }: { values: PreviewValues }) {
 	const [answer, setAnswer] = useState("");
 

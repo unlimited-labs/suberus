@@ -15,7 +15,6 @@ import { Textarea } from "@/shared/ui/textarea";
 import { EmailTemplateCard } from "./email-template-card";
 import { EmailTemplateDialog } from "./email-template-dialog";
 
-/** UI shape for email templates (maps Prisma arrays to comma-separated strings) */
 export interface EmailTemplateUI {
 	id: string;
 	eventType: EmailEventType;
@@ -28,7 +27,6 @@ export interface EmailTemplateUI {
 	placeholders: string[];
 }
 
-/** Human-readable labels for EmailEventType */
 const eventTypeLabels = {
 	SUBMISSION_RECEIVED: "Submission Received",
 	SUBMISSION_WITHDRAWN: "Submission Withdrawn",
@@ -56,7 +54,6 @@ const eventTypeLabels = {
 	DOCUMENT_GENERATED: "Document Generated",
 } satisfies Record<EmailEventType, string>;
 
-/** Map Prisma EmailTemplate to UI shape */
 export function toEmailTemplateUI(t: {
 	id: string;
 	eventType: EmailEventType;

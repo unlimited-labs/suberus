@@ -1,11 +1,6 @@
 import type { Fee } from "@/generated/prisma/client";
 import { prisma } from "@/shared/server/db.server";
 
-/**
- * Get fee for a specific user
- * @param userId - User ID to fetch fee for
- * @returns Fee record or null if not found, with amount converted to number for serialization
- */
 export async function getUserFee(
 	userId: string,
 ): Promise<(Omit<Fee, "amount"> & { amount: number | null }) | null> {

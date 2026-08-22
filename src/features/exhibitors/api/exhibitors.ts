@@ -42,7 +42,6 @@ export const withdrawMyExhibitorFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.handler(({ context }) => withdrawOwnExhibitor(context.user.id));
 
-/** Exhibitor-facing slice of admin settings needed by the exhibitor panel */
 export const exhibitorPanelConfigFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.handler(async () => {
