@@ -5,6 +5,7 @@ import type {
 } from "@/features/auth/hooks/use-register-form";
 import { registerBase } from "@/features/auth/validations";
 import { SurveyQuestionField } from "@/shared/components/survey-question-field";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { surveyAnswerRequiredError } from "@/shared/lib/validations/survey";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
@@ -39,9 +40,7 @@ export function RegisterStep3({
 							}}
 						>
 							{(field) => {
-								const hasError =
-									field.state.meta.isBlurred &&
-									field.state.meta.errors.length > 0;
+								const hasError = isFieldErrorVisible(field.state.meta);
 								return (
 									<Field data-invalid={hasError}>
 										<SurveyQuestionField
@@ -94,8 +93,7 @@ export function RegisterStep3({
 					validators={{ onChange: registerBase.shape.acceptTerms }}
 				>
 					{(field) => {
-						const hasError =
-							field.state.meta.isBlurred && field.state.meta.errors.length > 0;
+						const hasError = isFieldErrorVisible(field.state.meta);
 						return (
 							<Field
 								className="border-primary/20 bg-primary/5 rounded-lg border p-3"

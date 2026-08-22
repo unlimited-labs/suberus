@@ -1,4 +1,5 @@
 import { IconScale } from "@tabler/icons-react";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { cn } from "@/shared/lib/utils";
 import { Field, FieldError } from "@/shared/ui/field";
 import { SectionCard } from "@/shared/ui/section-card";
@@ -15,8 +16,7 @@ export function DecisionField({ form, readOnly }: DecisionFieldProps) {
 		<SectionCard icon={IconScale} title="Decision">
 			<form.Field name="decision">
 				{(field) => {
-					const hasError =
-						field.state.meta.isBlurred && field.state.meta.errors.length > 0;
+					const hasError = isFieldErrorVisible(field.state.meta);
 					return (
 						<Field data-invalid={hasError}>
 							<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

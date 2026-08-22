@@ -4,7 +4,8 @@ import { useFieldContext } from "@/shared/hooks/form-context";
 /** For raw `form.Field` render-props, which lack the field context useFieldError needs. */
 export function isFieldErrorVisible(
 	meta: { isBlurred: boolean; errors: readonly unknown[] },
-	submissionAttempts: number,
+	/** Omit where blur is marked by hand, e.g. the register wizard's step gate. */
+	submissionAttempts = 0,
 ): boolean {
 	return (meta.isBlurred || submissionAttempts > 0) && meta.errors.length > 0;
 }

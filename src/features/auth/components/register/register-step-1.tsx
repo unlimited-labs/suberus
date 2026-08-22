@@ -8,6 +8,7 @@ import { checkEmailAvailableFn } from "@/features/auth/api/auth";
 import type { RegisterFormApi } from "@/features/auth/hooks/use-register-form";
 import { registerBase } from "@/features/auth/validations";
 import { AffiliationSelect } from "@/shared/components/affiliation-select";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { titleOptions } from "@/shared/lib/labels/title";
 import { roleLabels } from "@/shared/lib/labels/user-role";
 import { lookup } from "@/shared/lib/lookup";
@@ -196,8 +197,7 @@ export function RegisterStep1({
 					validators={{ onChange: registerBase.shape.affiliationId }}
 				>
 					{(field) => {
-						const hasError =
-							field.state.meta.isBlurred && field.state.meta.errors.length > 0;
+						const hasError = isFieldErrorVisible(field.state.meta);
 						return (
 							<Field data-invalid={hasError}>
 								<FieldLabel>Affiliation *</FieldLabel>
