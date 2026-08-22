@@ -62,7 +62,7 @@ own certificate from a trusted authority for out-of-the-box “trusted”.
 | Field | What it does | What to enter / Notes |
 |---|---|---|
 | **Generate certificate** | Creates a self-signed signing certificate on the server. | Common name (e.g. conference name), organization, validity in years (1–10). |
-| **Upload your own .p12** | Use an organizational or qualified certificate for full trust. | A `.p12`/`.pfx` file under 1 MB, plus the password that opens it. Any other file type is refused before upload. |
+| **Upload your own .p12** | Use an organizational or qualified certificate for full trust. | A `.p12`/`.pfx` file under 1 MB. Leave **Password** empty if the file is not password-protected. Any other file type is refused before upload. |
 | **Download public certificate** | Downloads the `.cer` (public key only) recipients import to trust your signatures. | — |
 | **Sign new documents** | Master switch — when on, every newly generated document is signed. | Requires a certificate to be present. |
 | **Reason / issuer text** | Text shown in the visible seal. | Defaults to “Issued by *conference*”. |
