@@ -22,6 +22,7 @@ import {
 	SubmissionForm,
 	type SubmissionFormData,
 } from "@/features/submissions/components/form/submission-form";
+import { isNonSubmittable } from "@/features/submissions/submittable";
 import { activeTracksQueryOptions } from "@/features/tracks/api/tracks";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
@@ -67,12 +68,7 @@ function AdminEditSubmissionPage() {
 	const submission = data?.submission;
 	const subType = submission?.type;
 
-	if (
-		!submission ||
-		subType === "EXHIBITOR" ||
-		subType === "INVITED" ||
-		!isOnlyAdmin
-	) {
+	if (!submission || (subType && isNonSubmittable(subType)) || !isOnlyAdmin) {
 		return (
 			<div className="flex h-full flex-col">
 				<PageHeader icon={IconFileText} title="Cannot Edit" />

@@ -10,8 +10,8 @@ import {
 } from "@/features/submissions/server/submissions";
 import { issueUploadLink } from "@/features/submissions/server/upload-link";
 import { assertAcceptsFile } from "@/features/submissions/server/upload-target";
+import { isNonSubmittable } from "@/features/submissions/submittable";
 import type { SubmissionCreateInput } from "@/features/submissions/validations";
-import type { SubmissionType } from "@/generated/prisma/enums";
 import { prisma } from "@/shared/server/db.server";
 
 /** Multipart POST target, field name `file`; the token is the whole authority. */
@@ -120,9 +120,6 @@ export async function createSubmissionForUser(
 	};
 }
 
-/** EXHIBITOR and INVITED never enter peer review, so they have no draft to send. */
-const NON_SUBMITTABLE_TYPES: SubmissionType[] = ["EXHIBITOR", "INVITED"];
-
 export async function submitDraftOnBehalf(
 	submissionId: string,
 	performedById: string,
@@ -134,7 +131,7 @@ export async function submitDraftOnBehalf(
 	if (!submission) {
 		return { success: false, error: "Submission not found", notFound: true };
 	}
-	if (NON_SUBMITTABLE_TYPES.includes(submission.type)) {
+	if (isNonSubmittable(submission.type)) {
 		return {
 			success: false,
 			error: `${submission.type} entries are not submitted for review.`,

@@ -6,4 +6,5 @@
 export * from "./api/admin-submissions";
 export * from "./api/submissions";
 export * from "./labels";
+export * from "./submittable";
 export * from "./validations";

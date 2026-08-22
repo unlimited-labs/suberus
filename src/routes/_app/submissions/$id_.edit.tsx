@@ -23,6 +23,7 @@ import {
 	SubmissionForm,
 	type SubmissionFormData,
 } from "@/features/submissions/components/form/submission-form";
+import { isNonSubmittable } from "@/features/submissions/submittable";
 import { activeTracksQueryOptions } from "@/features/tracks/api/tracks";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/ui/button";
@@ -67,8 +68,7 @@ function EditSubmissionPage() {
 		!submission ||
 		submission.role === "coauthor" ||
 		submission.status !== "DRAFT" ||
-		submission.type === "EXHIBITOR" ||
-		submission.type === "INVITED"
+		isNonSubmittable(submission.type)
 	) {
 		return (
 			<div className="flex h-full flex-col">

@@ -4,6 +4,7 @@ import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
 import { getSetting } from "@/features/settings/server/settings";
 import { SUBMISSION_TYPE_TO_KEY } from "@/features/settings/types";
+import { isNonSubmittable } from "@/features/submissions/submittable";
 import { canAssignReviewer } from "@/features/workflow";
 import {
 	checkAndTriggerReviewCompletion,
@@ -152,7 +153,7 @@ export async function assignReviewer(
 		),
 	};
 
-	if (submission.type === "EXHIBITOR" || submission.type === "INVITED") {
+	if (isNonSubmittable(submission.type)) {
 		logger.warn(
 			`[assignment] cannot assign reviewer to ${submissionId}: ${submission.type} submissions are not peer-reviewed`,
 		);

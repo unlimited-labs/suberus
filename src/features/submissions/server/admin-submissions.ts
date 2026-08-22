@@ -11,6 +11,10 @@ import {
 	type SubmissionTodo,
 	statusChangeOptions,
 } from "@/features/submissions/labels";
+import {
+	isNonSubmittable,
+	NON_SUBMITTABLE_TYPES,
+} from "@/features/submissions/submittable";
 import type { adminSubmissionsListInput } from "@/features/submissions/validations";
 import type { SubmissionEvent } from "@/features/workflow";
 import { hasMinReviewers } from "@/features/workflow/guards";
@@ -295,7 +299,7 @@ export function computeSubmissionTodo(args: {
 		case "RESUBMITTED":
 			// EXHIBITOR submissions are never peer-reviewed; decisions happen via
 			// the exhibitor approve/reject flow, so there is no review TODO here.
-			if (type === "EXHIBITOR" || type === "INVITED") return { kind: "NONE" };
+			if (isNonSubmittable(type)) return { kind: "NONE" };
 			return hasMinReviewers(assigned, required)
 				? { kind: "AWAITING_REVIEWS", completed, required }
 				: { kind: "ASSIGN_REVIEWER", assigned, required };
@@ -814,7 +818,7 @@ export async function bulkChangeStatus(
 	const undecidable = await prisma.submission.findMany({
 		where: {
 			id: { in: submissionIds },
-			type: { in: ["EXHIBITOR", "INVITED"] },
+			type: { in: NON_SUBMITTABLE_TYPES },
 		},
 		select: { id: true, title: true, type: true },
 	});
