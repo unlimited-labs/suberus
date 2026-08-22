@@ -11,6 +11,7 @@ import type {
 	SubmissionTypeKey,
 } from "@/features/settings/types";
 import { SUBMISSION_TYPE_DISPLAY_NAMES } from "@/features/settings/types";
+import { submissionTypeUpdateSchema } from "@/features/settings/validations";
 import { getErrorMessage } from "@/shared/lib/error-message";
 
 interface UseSubmissionTypeConfigArgs {
@@ -26,6 +27,7 @@ export function useSubmissionTypeConfig({
 }: UseSubmissionTypeConfigArgs) {
 	const queryClient = useQueryClient();
 	const [isSaving, setIsSaving] = useState(false);
+	const [attempted, setAttempted] = useState(false);
 
 	const displayName = SUBMISSION_TYPE_DISPLAY_NAMES[typeKey];
 
@@ -64,13 +66,18 @@ export function useSubmissionTypeConfig({
 		handleChange("scoringCriteria", updated);
 	};
 
+	const parsed = submissionTypeUpdateSchema.safeParse({
+		type: typeKey,
+		config,
+	});
+	const errors =
+		attempted && !parsed.success
+			? parsed.error.issues.map((issue) => issue.message)
+			: [];
+
 	const handleSave = async () => {
-		// Validate FILE format has extensions
-		if (
-			config.contentFormat === "FILE" &&
-			config.allowedExtensions.length === 0
-		) {
-			toast.error("FILE format requires at least one allowed extension");
+		setAttempted(true);
+		if (!parsed.success) {
 			return;
 		}
 
@@ -91,6 +98,7 @@ export function useSubmissionTypeConfig({
 
 	return {
 		isSaving,
+		errors,
 		displayName,
 		handleChange,
 		selectExtension,

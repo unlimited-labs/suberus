@@ -30,6 +30,7 @@ export function SubmissionTypeAccordion({
 }: SubmissionTypeAccordionProps) {
 	const {
 		isSaving,
+		errors,
 		displayName,
 		handleChange,
 		selectExtension,
@@ -85,8 +86,14 @@ export function SubmissionTypeAccordion({
 						typeKey={typeKey}
 					/>
 
-					{/* Save button */}
-					<div className="flex justify-end border-t pt-4">
+					<div className="flex items-center justify-end gap-4 border-t pt-4">
+						{errors.length > 0 && (
+							<div className="text-destructive space-y-1 text-xs" role="alert">
+								{errors.map((error) => (
+									<p key={error}>{error}</p>
+								))}
+							</div>
+						)}
 						<Button disabled={isSaving} onClick={handleSave}>
 							{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 							Save
