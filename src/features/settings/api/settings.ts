@@ -45,6 +45,7 @@ import {
 	setSettingSchema,
 	submissionTypeUpdateSchema,
 	submissionValidationSettingsSchema,
+	tosContentSchema,
 } from "@/features/settings/validations";
 import { isDeadlinePassed } from "@/shared/lib/deadline";
 import { prisma } from "@/shared/server/db.server";
@@ -690,7 +691,7 @@ export const updateFeeInstructionsFn = createServerFn({ method: "POST" })
  */
 export const updateTosContentFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
-	.validator(z.object({ content: z.string().min(1) }))
+	.validator(tosContentSchema)
 	.handler(async ({ data }) => {
 		await setSetting("TOS_CONTENT", data.content);
 		return { success: true };

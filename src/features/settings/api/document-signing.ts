@@ -15,6 +15,10 @@ import {
 	uploadAndStoreCert,
 	verifyDocument,
 } from "@/features/settings/server/document-signing";
+import {
+	signingAppearanceSchema,
+	signingTimestampSchema,
+} from "@/features/settings/validations";
 import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
 
 const MAX_VERIFY_BYTES = 25 * 1024 * 1024;
@@ -60,37 +64,12 @@ export const setSigningEnabledFn = createServerFn({ method: "POST" })
 
 export const setSigningTimestampFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
-	.validator(
-		z.object({
-			enabled: z.boolean(),
-			// Flows to the sidecar's HTTPTimeStamper → outbound request. Restrict to
-			// http(s) so it can't be pointed at file:// or other schemes (SSRF).
-			url: z
-				.string()
-				.trim()
-				.max(300)
-				.refine((u) => u === "" || /^https?:\/\//i.test(u), {
-					message: "Timestamp URL must be an http(s) URL.",
-				}),
-		}),
-	)
+	.validator(signingTimestampSchema)
 	.handler(({ data }) => setTimestamp(data.enabled, data.url));
 
 export const setSigningAppearanceFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
-	.validator(
-		z.object({
-			sealReason: z.string().trim().max(120),
-			sealCorner: z.enum([
-				"bottom-right",
-				"bottom-left",
-				"top-right",
-				"top-left",
-			]),
-			sealQrEnabled: z.boolean(),
-			certifying: z.boolean(),
-		}),
-	)
+	.validator(signingAppearanceSchema)
 	.handler(({ data }) => setAppearance(data));
 
 /** Public: anyone can verify a document's authenticity (the trust anchor). */

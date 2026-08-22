@@ -1,14 +1,17 @@
-import { IconFileText, IconLoader2 } from "@tabler/icons-react";
+import { IconFileText } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useSelector } from "@tanstack/react-store";
 import { toast } from "sonner";
 import {
 	adminSettingQueryOptions,
 	updateTosContentFn,
 } from "@/features/settings/api/settings";
 import { SettingsSection } from "@/features/settings/components/settings-section";
+import { tosContentSchema } from "@/features/settings/validations";
+import { useAppForm } from "@/shared/hooks/use-app-form";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { getErrorMessage } from "@/shared/lib/error-message";
-import { Button } from "@/shared/ui/button";
+import { FieldError } from "@/shared/ui/field";
 import { Label } from "@/shared/ui/label";
 import { Markdown, MarkdownHint } from "@/shared/ui/markdown";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
@@ -20,22 +23,27 @@ interface TosContentTabProps {
 
 export function TosContentTab({ initialContent }: TosContentTabProps) {
 	const queryClient = useQueryClient();
-	const [content, setContent] = useState(initialContent);
-	const [isSaving, setIsSaving] = useState(false);
 
-	const handleSave = async () => {
-		setIsSaving(true);
-		try {
-			await updateTosContentFn({ data: { content } });
-			await queryClient.invalidateQueries({
-				queryKey: adminSettingQueryOptions("TOS_CONTENT").queryKey,
-			});
-			toast.success("Terms of Service saved");
-		} catch (error) {
-			toast.error(getErrorMessage(error, "Failed to save Terms of Service"));
-		}
-		setIsSaving(false);
-	};
+	const form = useAppForm({
+		defaultValues: { content: initialContent },
+		validators: { onChange: tosContentSchema, onSubmit: tosContentSchema },
+		onSubmit: async ({ value }) => {
+			try {
+				await updateTosContentFn({ data: value });
+				await queryClient.invalidateQueries({
+					queryKey: adminSettingQueryOptions("TOS_CONTENT").queryKey,
+				});
+				toast.success("Terms of Service saved");
+			} catch (error) {
+				toast.error(getErrorMessage(error, "Failed to save Terms of Service"));
+			}
+		},
+	});
+
+	const submissionAttempts = useSelector(
+		form.store,
+		(s) => s.submissionAttempts,
+	);
 
 	return (
 		<div className="space-y-6">
@@ -44,46 +52,67 @@ export function TosContentTab({ initialContent }: TosContentTabProps) {
 				icon={IconFileText}
 				title="Terms of Service"
 			>
-				<div className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor="tos-content">Content</Label>
-						<Tabs defaultValue="edit">
-							<TabsList>
-								<TabsTrigger value="edit">Edit</TabsTrigger>
-								<TabsTrigger value="preview">Preview</TabsTrigger>
-							</TabsList>
-							<TabsContent value="edit">
-								<Textarea
-									className="font-mono text-sm"
-									id="tos-content"
-									onChange={(e) => setContent(e.target.value)}
-									placeholder="# Terms of Service&#10;&#10;Enter terms of service here..."
-									rows={15}
-									value={content}
-								/>
-							</TabsContent>
-							<TabsContent value="preview">
-								<div className="min-h-[22rem] rounded-md border p-4">
-									{content.trim() ? (
-										<Markdown content={content} />
-									) : (
-										<p className="text-muted-foreground text-sm">
-											Nothing to preview yet
-										</p>
-									)}
+				<form
+					className="space-y-4"
+					onSubmit={(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+						void form.handleSubmit();
+					}}
+				>
+					<form.Field name="content">
+						{(field) => {
+							const hasError = isFieldErrorVisible(
+								field.state.meta,
+								submissionAttempts,
+							);
+							return (
+								<div className="space-y-2">
+									<Label htmlFor="tos-content">Content</Label>
+									<Tabs defaultValue="edit">
+										<TabsList>
+											<TabsTrigger value="edit">Edit</TabsTrigger>
+											<TabsTrigger value="preview">Preview</TabsTrigger>
+										</TabsList>
+										<TabsContent value="edit">
+											<Textarea
+												aria-invalid={hasError}
+												className="font-mono text-sm"
+												id="tos-content"
+												onBlur={field.handleBlur}
+												onChange={(e) => field.handleChange(e.target.value)}
+												placeholder="# Terms of Service&#10;&#10;Enter terms of service here..."
+												rows={15}
+												value={field.state.value}
+											/>
+										</TabsContent>
+										<TabsContent value="preview">
+											<div className="min-h-[22rem] rounded-md border p-4">
+												{field.state.value.trim() ? (
+													<Markdown content={field.state.value} />
+												) : (
+													<p className="text-muted-foreground text-sm">
+														Nothing to preview yet
+													</p>
+												)}
+											</div>
+										</TabsContent>
+									</Tabs>
+									<FieldError
+										errors={hasError ? field.state.meta.errors : undefined}
+									/>
+									<MarkdownHint />
 								</div>
-							</TabsContent>
-						</Tabs>
-						<MarkdownHint />
-					</div>
+							);
+						}}
+					</form.Field>
 
 					<div className="flex justify-end">
-						<Button disabled={isSaving} onClick={handleSave}>
-							{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
-							Save Terms of Service
-						</Button>
+						<form.AppForm>
+							<form.SubmitButton label="Save Terms of Service" />
+						</form.AppForm>
 					</div>
-				</div>
+				</form>
 			</SettingsSection>
 		</div>
 	);

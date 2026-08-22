@@ -240,3 +240,27 @@ export const brandingSchema = z.object({
 });
 
 export type BrandingFormValues = z.infer<typeof brandingSchema>;
+
+export const tosContentSchema = z.object({
+	content: z.string().min(1, "Terms of Service cannot be empty"),
+});
+
+export const signingAppearanceSchema = z.object({
+	sealReason: z.string().trim().max(120),
+	sealCorner: z.enum(["bottom-right", "bottom-left", "top-right", "top-left"]),
+	sealQrEnabled: z.boolean(),
+	certifying: z.boolean(),
+});
+
+export const signingTimestampSchema = z.object({
+	enabled: z.boolean(),
+	// Flows to the sidecar's HTTPTimeStamper → outbound request. Restrict to
+	// http(s) so it can't be pointed at file:// or other schemes (SSRF).
+	url: z
+		.string()
+		.trim()
+		.max(300)
+		.refine((u) => u === "" || /^https?:\/\//i.test(u), {
+			message: "Timestamp URL must be an http(s) URL.",
+		}),
+});

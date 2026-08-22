@@ -7,6 +7,7 @@ import {
 	IconUpload,
 } from "@tabler/icons-react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useSelector } from "@tanstack/react-store";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -19,7 +20,13 @@ import {
 } from "@/features/settings/api/document-signing";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import type { DocumentSigningSettings } from "@/features/settings/types";
+import {
+	signingAppearanceSchema,
+	signingTimestampSchema,
+} from "@/features/settings/validations";
+import { useAppForm } from "@/shared/hooks/use-app-form";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -31,6 +38,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/shared/ui/dialog";
+import { FieldError } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import {
@@ -445,30 +453,31 @@ function AppearanceSection({
 	cfg: Omit<DocumentSigningSettings, "passwordSealed" | "p12Base64">;
 	onChanged: () => Promise<void>;
 }) {
-	const [reason, setReason] = useState(cfg.sealReason);
-	const [corner, setCorner] = useState(cfg.sealCorner);
-	const [qr, setQr] = useState(cfg.sealQrEnabled);
-	const [certifying, setCertifying] = useState(cfg.certifying);
-	const [busy, setBusy] = useState(false);
-
-	const save = async () => {
-		setBusy(true);
-		try {
-			await setSigningAppearanceFn({
-				data: {
-					sealReason: reason,
-					sealCorner: corner,
-					sealQrEnabled: qr,
-					certifying,
-				},
-			});
-			await onChanged();
-			toast.success("Appearance saved");
-		} catch (e) {
-			toast.error(getErrorMessage(e, "Failed to save"));
-		}
-		setBusy(false);
-	};
+	const form = useAppForm({
+		defaultValues: {
+			sealReason: cfg.sealReason,
+			sealCorner: cfg.sealCorner,
+			sealQrEnabled: cfg.sealQrEnabled,
+			certifying: cfg.certifying,
+		},
+		validators: {
+			onChange: signingAppearanceSchema,
+			onSubmit: signingAppearanceSchema,
+		},
+		onSubmit: async ({ value }) => {
+			try {
+				await setSigningAppearanceFn({ data: value });
+				await onChanged();
+				toast.success("Appearance saved");
+			} catch (e) {
+				toast.error(getErrorMessage(e, "Failed to save"));
+			}
+		},
+	});
+	const submissionAttempts = useSelector(
+		form.store,
+		(s) => s.submissionAttempts,
+	);
 
 	return (
 		<SettingsSection
@@ -477,61 +486,102 @@ function AppearanceSection({
 			title="Seal appearance"
 		>
 			<div className="space-y-4">
-				<div className="space-y-2">
-					<Label htmlFor="reason">Reason / issuer text</Label>
-					<Input
-						id="reason"
-						onChange={(e) => setReason(e.target.value)}
-						placeholder="e.g. Issued by the conference"
-						value={reason}
-					/>
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="corner">Stamp position</Label>
-					<Select
-						items={CORNERS.map((c) => ({
-							value: c,
-							label: c.replace("-", " "),
-						}))}
-						onValueChange={(v) =>
-							// SAFETY: the select renders only the four corner values.
-							setCorner(v as DocumentSigningSettings["sealCorner"])
-						}
-						value={corner}
-					>
-						<SelectTrigger className="max-w-[220px]" id="corner">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{CORNERS.map((c) => (
-								<SelectItem key={c} value={c}>
-									{c.replace("-", " ")}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</div>
+				<form.Field name="sealReason">
+					{(field) => {
+						const hasError = isFieldErrorVisible(
+							field.state.meta,
+							submissionAttempts,
+						);
+						return (
+							<div className="space-y-2">
+								<Label htmlFor="reason">Reason / issuer text</Label>
+								<Input
+									aria-invalid={hasError}
+									id="reason"
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									placeholder="e.g. Issued by the conference"
+									value={field.state.value}
+								/>
+								<FieldError
+									errors={hasError ? field.state.meta.errors : undefined}
+								/>
+							</div>
+						);
+					}}
+				</form.Field>
+				<form.Field name="sealCorner">
+					{(field) => (
+						<div className="space-y-2">
+							<Label htmlFor="corner">Stamp position</Label>
+							<Select
+								items={CORNERS.map((c) => ({
+									value: c,
+									label: c.replace("-", " "),
+								}))}
+								onValueChange={(v) =>
+									// SAFETY: the select renders only the four corner values.
+									field.handleChange(v as DocumentSigningSettings["sealCorner"])
+								}
+								value={field.state.value}
+							>
+								<SelectTrigger className="max-w-[220px]" id="corner">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{CORNERS.map((c) => (
+										<SelectItem key={c} value={c}>
+											{c.replace("-", " ")}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					)}
+				</form.Field>
 				<div className="flex items-center gap-3 text-sm">
-					<Switch checked={qr} id="seal-qr" onCheckedChange={setQr} />
+					<form.Field name="sealQrEnabled">
+						{(field) => (
+							<Switch
+								checked={field.state.value}
+								id="seal-qr"
+								onCheckedChange={(v) => field.handleChange(v === true)}
+							/>
+						)}
+					</form.Field>
 					<Label className="font-normal" htmlFor="seal-qr">
 						Embed a QR code linking to the verification page
 					</Label>
 				</div>
 				<div className="flex items-center gap-3 text-sm">
-					<Switch
-						checked={certifying}
-						id="seal-certify"
-						onCheckedChange={setCertifying}
-					/>
+					<form.Field name="certifying">
+						{(field) => (
+							<Switch
+								checked={field.state.value}
+								id="seal-certify"
+								onCheckedChange={(v) => field.handleChange(v === true)}
+							/>
+						)}
+					</form.Field>
 					<Label className="font-normal" htmlFor="seal-certify">
 						Certifying signature (locks the PDF against further edits)
 					</Label>
 				</div>
 				<div className="flex justify-end">
-					<Button disabled={busy} onClick={save} size="sm">
-						{busy && <IconLoader2 className="mr-2 size-4 animate-spin" />}
-						Save
-					</Button>
+					<form.Subscribe selector={(st) => st.isSubmitting}>
+						{(isSubmitting) => (
+							<Button
+								disabled={isSubmitting}
+								onClick={() => void form.handleSubmit()}
+								size="sm"
+							>
+								{isSubmitting && (
+									<IconLoader2 className="mr-2 size-4 animate-spin" />
+								)}
+								Save
+							</Button>
+						)}
+					</form.Subscribe>
 				</div>
 			</div>
 		</SettingsSection>
@@ -545,21 +595,29 @@ function TimestampSection({
 	cfg: Omit<DocumentSigningSettings, "passwordSealed" | "p12Base64">;
 	onChanged: () => Promise<void>;
 }) {
-	const [enabled, setEnabled] = useState(cfg.timestampEnabled);
-	const [url, setUrl] = useState(cfg.timestampUrl || DEFAULT_TSA_URL);
-	const [busy, setBusy] = useState(false);
-
-	const save = async () => {
-		setBusy(true);
-		try {
-			await setSigningTimestampFn({ data: { enabled, url } });
-			await onChanged();
-			toast.success("Timestamp settings saved");
-		} catch (e) {
-			toast.error(getErrorMessage(e, "Failed to save"));
-		}
-		setBusy(false);
-	};
+	const form = useAppForm({
+		defaultValues: {
+			enabled: cfg.timestampEnabled,
+			url: cfg.timestampUrl || DEFAULT_TSA_URL,
+		},
+		validators: {
+			onChange: signingTimestampSchema,
+			onSubmit: signingTimestampSchema,
+		},
+		onSubmit: async ({ value }) => {
+			try {
+				await setSigningTimestampFn({ data: value });
+				await onChanged();
+				toast.success("Timestamp settings saved");
+			} catch (e) {
+				toast.error(getErrorMessage(e, "Failed to save"));
+			}
+		},
+	});
+	const submissionAttempts = useSelector(
+		form.store,
+		(s) => s.submissionAttempts,
+	);
 
 	return (
 		<SettingsSection
@@ -569,33 +627,67 @@ function TimestampSection({
 		>
 			<div className="space-y-4">
 				<div className="flex items-center gap-3 text-sm">
-					<Switch
-						checked={enabled}
-						data-testid="timestamp-switch"
-						id="ts-enabled"
-						onCheckedChange={setEnabled}
-					/>
+					<form.Field name="enabled">
+						{(field) => (
+							<Switch
+								checked={field.state.value}
+								data-testid="timestamp-switch"
+								id="ts-enabled"
+								onCheckedChange={(v) => field.handleChange(v === true)}
+							/>
+						)}
+					</form.Field>
 					<Label className="font-normal" htmlFor="ts-enabled">
 						Add a timestamp from a public time-stamping authority
 					</Label>
 				</div>
-				<div className="space-y-2">
-					<Label htmlFor="tsa">TSA URL</Label>
-					<Input
-						disabled={!enabled}
-						id="tsa"
-						onChange={(e) => setUrl(e.target.value)}
-						value={url}
-					/>
-					<p className="text-muted-foreground text-xs">
-						Free options: {DEFAULT_TSA_URL}, http://timestamp.digicert.com
-					</p>
-				</div>
+				<form.Subscribe selector={(st) => st.values.enabled}>
+					{(enabled) => (
+						<form.Field name="url">
+							{(field) => {
+								const hasError = isFieldErrorVisible(
+									field.state.meta,
+									submissionAttempts,
+								);
+								return (
+									<div className="space-y-2">
+										<Label htmlFor="tsa">TSA URL</Label>
+										<Input
+											aria-invalid={hasError}
+											disabled={!enabled}
+											id="tsa"
+											onBlur={field.handleBlur}
+											onChange={(e) => field.handleChange(e.target.value)}
+											value={field.state.value}
+										/>
+										<FieldError
+											errors={hasError ? field.state.meta.errors : undefined}
+										/>
+										<p className="text-muted-foreground text-xs">
+											Free options: {DEFAULT_TSA_URL},
+											http://timestamp.digicert.com
+										</p>
+									</div>
+								);
+							}}
+						</form.Field>
+					)}
+				</form.Subscribe>
 				<div className="flex justify-end">
-					<Button disabled={busy} onClick={save} size="sm">
-						{busy && <IconLoader2 className="mr-2 size-4 animate-spin" />}
-						Save
-					</Button>
+					<form.Subscribe selector={(st) => st.isSubmitting}>
+						{(isSubmitting) => (
+							<Button
+								disabled={isSubmitting}
+								onClick={() => void form.handleSubmit()}
+								size="sm"
+							>
+								{isSubmitting && (
+									<IconLoader2 className="mr-2 size-4 animate-spin" />
+								)}
+								Save
+							</Button>
+						)}
+					</form.Subscribe>
 				</div>
 			</div>
 		</SettingsSection>
