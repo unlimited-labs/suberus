@@ -1,68 +1,119 @@
 import { IconFileText } from "@tabler/icons-react";
-import type { SubmissionValidationSettings } from "@/features/settings/api/settings";
+import { useSelector } from "@tanstack/react-store";
 import { SettingsSection } from "@/features/settings/components/settings-section";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
+import { FieldError } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Switch } from "@/shared/ui/switch";
-import type { SubmissionSettingsHandleChange } from "./use-submission-settings";
+import type { SubmissionSettingsFormApi } from "./use-submission-settings";
 
 interface ValidationFieldsProps {
-	data: SubmissionValidationSettings;
-	onChange: SubmissionSettingsHandleChange;
+	form: SubmissionSettingsFormApi;
+	submissionAttempts: number;
 }
 
-function TitleFields({ data, onChange }: ValidationFieldsProps) {
+type NumericField =
+	| "minTitleLength"
+	| "maxTitleLength"
+	| "minAbstractLength"
+	| "maxAbstractLength"
+	| "minKeywords"
+	| "maxKeywords";
+
+interface NumberFieldProps extends ValidationFieldsProps {
+	name: NumericField;
+	label: string;
+	labelClassName?: string;
+	min: number;
+	max: number;
+}
+
+function NumberField({
+	form,
+	submissionAttempts,
+	name,
+	label,
+	labelClassName,
+	min,
+	max,
+}: NumberFieldProps) {
+	return (
+		<form.Field name={name}>
+			{(field) => {
+				const hasError = isFieldErrorVisible(
+					field.state.meta,
+					submissionAttempts,
+				);
+				return (
+					<div className="space-y-2">
+						<Label className={labelClassName} htmlFor={name}>
+							{label}
+						</Label>
+						<Input
+							aria-invalid={hasError}
+							id={name}
+							max={max}
+							min={min}
+							onBlur={field.handleBlur}
+							onChange={(e) => field.handleChange(e.target.value)}
+							type="number"
+							value={field.state.value}
+						/>
+						<FieldError
+							errors={hasError ? field.state.meta.errors : undefined}
+						/>
+					</div>
+				);
+			}}
+		</form.Field>
+	);
+}
+
+const subLabel = "text-muted-foreground text-xs";
+
+function TitleFields({ form, submissionAttempts }: ValidationFieldsProps) {
 	return (
 		<div className="space-y-3">
 			<Label className="text-sm font-medium">Title</Label>
 			<div className="grid gap-4 sm:grid-cols-2">
-				<div className="space-y-2">
-					<Label
-						className="text-muted-foreground text-xs"
-						htmlFor="minTitleLength"
-					>
-						Min length (characters)
-					</Label>
-					<Input
-						id="minTitleLength"
-						max={500}
-						min={1}
-						onChange={(e) =>
-							onChange("minTitleLength", parseInt(e.target.value, 10) || 1)
-						}
-						type="number"
-						value={data.minTitleLength}
-					/>
-				</div>
-				<div className="space-y-2">
-					<Label
-						className="text-muted-foreground text-xs"
-						htmlFor="maxTitleLength"
-					>
-						Max length (characters)
-					</Label>
-					<Input
-						id="maxTitleLength"
-						max={1000}
-						min={10}
-						onChange={(e) =>
-							onChange("maxTitleLength", parseInt(e.target.value, 10) || 200)
-						}
-						type="number"
-						value={data.maxTitleLength}
-					/>
-				</div>
+				<NumberField
+					form={form}
+					label="Min length (characters)"
+					labelClassName={subLabel}
+					max={500}
+					min={1}
+					name="minTitleLength"
+					submissionAttempts={submissionAttempts}
+				/>
+				<NumberField
+					form={form}
+					label="Max length (characters)"
+					labelClassName={subLabel}
+					max={1000}
+					min={10}
+					name="maxTitleLength"
+					submissionAttempts={submissionAttempts}
+				/>
 			</div>
-			{data.minTitleLength > data.maxTitleLength && (
-				<p className="text-destructive text-xs">
-					Min length cannot exceed max length
-				</p>
-			)}
+			<form.Subscribe
+				selector={(s) =>
+					Number(s.values.minTitleLength) > Number(s.values.maxTitleLength)
+				}
+			>
+				{(exceeds) =>
+					exceeds ? (
+						<p className="text-destructive text-xs">
+							Min length cannot exceed max length
+						</p>
+					) : null
+				}
+			</form.Subscribe>
 		</div>
 	);
 }
 
-function AbstractFields({ data, onChange }: ValidationFieldsProps) {
+function AbstractFields({ form, submissionAttempts }: ValidationFieldsProps) {
 	return (
 		<div className="space-y-3">
 			<Label className="text-sm font-medium">Abstract</Label>
@@ -70,56 +121,44 @@ function AbstractFields({ data, onChange }: ValidationFieldsProps) {
 				For TEXT format submissions
 			</p>
 			<div className="grid gap-4 sm:grid-cols-2">
-				<div className="space-y-2">
-					<Label
-						className="text-muted-foreground text-xs"
-						htmlFor="minAbstractLength"
-					>
-						Min length (characters)
-					</Label>
-					<Input
-						id="minAbstractLength"
-						max={10000}
-						min={0}
-						onChange={(e) =>
-							onChange("minAbstractLength", parseInt(e.target.value, 10) || 0)
-						}
-						type="number"
-						value={data.minAbstractLength}
-					/>
-				</div>
-				<div className="space-y-2">
-					<Label
-						className="text-muted-foreground text-xs"
-						htmlFor="maxAbstractLength"
-					>
-						Max length (characters)
-					</Label>
-					<Input
-						id="maxAbstractLength"
-						max={50000}
-						min={100}
-						onChange={(e) =>
-							onChange(
-								"maxAbstractLength",
-								parseInt(e.target.value, 10) || 2000,
-							)
-						}
-						type="number"
-						value={data.maxAbstractLength}
-					/>
-				</div>
+				<NumberField
+					form={form}
+					label="Min length (characters)"
+					labelClassName={subLabel}
+					max={10000}
+					min={0}
+					name="minAbstractLength"
+					submissionAttempts={submissionAttempts}
+				/>
+				<NumberField
+					form={form}
+					label="Max length (characters)"
+					labelClassName={subLabel}
+					max={50000}
+					min={100}
+					name="maxAbstractLength"
+					submissionAttempts={submissionAttempts}
+				/>
 			</div>
-			{data.minAbstractLength > data.maxAbstractLength && (
-				<p className="text-destructive text-xs">
-					Min length cannot exceed max length
-				</p>
-			)}
+			<form.Subscribe
+				selector={(s) =>
+					Number(s.values.minAbstractLength) >
+					Number(s.values.maxAbstractLength)
+				}
+			>
+				{(exceeds) =>
+					exceeds ? (
+						<p className="text-destructive text-xs">
+							Min length cannot exceed max length
+						</p>
+					) : null
+				}
+			</form.Subscribe>
 		</div>
 	);
 }
 
-function KeywordsFields({ data, onChange }: ValidationFieldsProps) {
+function KeywordsFields({ form, submissionAttempts }: ValidationFieldsProps) {
 	return (
 		<div className="space-y-4">
 			<div className="flex items-center justify-between">
@@ -129,60 +168,72 @@ function KeywordsFields({ data, onChange }: ValidationFieldsProps) {
 						Authors can add keywords to submissions
 					</p>
 				</div>
-				<Switch
-					checked={data.enableKeywords}
-					id="enableKeywords"
-					onCheckedChange={(checked) => onChange("enableKeywords", checked)}
-				/>
+				<form.Field name="enableKeywords">
+					{(field) => (
+						<Switch
+							checked={field.state.value}
+							id="enableKeywords"
+							onCheckedChange={(checked) =>
+								field.handleChange(checked === true)
+							}
+						/>
+					)}
+				</form.Field>
 			</div>
-			{data.enableKeywords && (
-				<div className="grid gap-4 sm:grid-cols-2">
-					<div className="space-y-2">
-						<Label htmlFor="minKeywords">Min keywords</Label>
-						<Input
-							id="minKeywords"
-							max={20}
-							min={0}
-							onChange={(e) =>
-								onChange("minKeywords", parseInt(e.target.value, 10) || 0)
-							}
-							type="number"
-							value={data.minKeywords}
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="maxKeywords">Max keywords</Label>
-						<Input
-							id="maxKeywords"
-							max={20}
-							min={1}
-							onChange={(e) =>
-								onChange("maxKeywords", parseInt(e.target.value, 10) || 5)
-							}
-							type="number"
-							value={data.maxKeywords}
-						/>
-					</div>
-				</div>
-			)}
-			{data.enableKeywords && data.minKeywords > data.maxKeywords && (
-				<p className="text-destructive text-xs">
-					Min keywords cannot exceed max keywords
-				</p>
-			)}
+			<form.Subscribe selector={(s) => s.values.enableKeywords}>
+				{(enabled) =>
+					enabled ? (
+						<div className="grid gap-4 sm:grid-cols-2">
+							<NumberField
+								form={form}
+								label="Min keywords"
+								max={20}
+								min={0}
+								name="minKeywords"
+								submissionAttempts={submissionAttempts}
+							/>
+							<NumberField
+								form={form}
+								label="Max keywords"
+								max={20}
+								min={1}
+								name="maxKeywords"
+								submissionAttempts={submissionAttempts}
+							/>
+						</div>
+					) : null
+				}
+			</form.Subscribe>
+			<form.Subscribe
+				selector={(s) =>
+					s.values.enableKeywords &&
+					Number(s.values.minKeywords) > Number(s.values.maxKeywords)
+				}
+			>
+				{(exceeds) =>
+					exceeds ? (
+						<p className="text-destructive text-xs">
+							Min keywords cannot exceed max keywords
+						</p>
+					) : null
+				}
+			</form.Subscribe>
 		</div>
 	);
 }
 
 interface ContentValidationSectionProps {
-	data: SubmissionValidationSettings;
-	onChange: SubmissionSettingsHandleChange;
+	form: SubmissionSettingsFormApi;
 }
 
 export function ContentValidationSection({
-	data,
-	onChange,
+	form,
 }: ContentValidationSectionProps) {
+	const submissionAttempts = useSelector(
+		form.store,
+		(s) => s.submissionAttempts,
+	);
+
 	return (
 		<SettingsSection
 			description="Title, abstract and keyword restrictions"
@@ -190,11 +241,11 @@ export function ContentValidationSection({
 			title="Content Validation"
 		>
 			<div className="space-y-6">
-				<TitleFields data={data} onChange={onChange} />
+				<TitleFields form={form} submissionAttempts={submissionAttempts} />
 				<hr className="border-border/50" />
-				<AbstractFields data={data} onChange={onChange} />
+				<AbstractFields form={form} submissionAttempts={submissionAttempts} />
 				<hr className="border-border/50" />
-				<KeywordsFields data={data} onChange={onChange} />
+				<KeywordsFields form={form} submissionAttempts={submissionAttempts} />
 			</div>
 		</SettingsSection>
 	);

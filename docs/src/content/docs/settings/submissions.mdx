@@ -51,6 +51,13 @@ shared across all types.
 | **Min keywords** | Fewest keywords required. | 0–20 (when keywords enabled). Must be ≤ max. |
 | **Max keywords** | Most keywords allowed. | 1–20 (when keywords enabled). |
 
+<Aside type="caution" title="Out-of-range values block the save">
+If a value falls outside its range, or a **Min** exceeds its **Max**, the
+message appears under the field and **Save All Settings** does nothing until
+you correct it — the guidelines and extraction options on this tab are not
+saved either, since the whole tab saves as one.
+</Aside>
+
 <Aside type="tip">
 **File uploads** — the accepted file formats and the **max file size** are set
 **per submission type** (File Upload format) on

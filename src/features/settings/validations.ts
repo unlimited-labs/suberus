@@ -209,3 +209,22 @@ export const invitationSettingsFormSchema = z.object({
 export type InvitationSettingsFormValues = z.input<
 	typeof invitationSettingsFormSchema
 >;
+
+const intField = wholeNumber(z.number().int());
+
+/** Inputs hold strings; bounds and cross-field rules stay in the server schema. */
+export const submissionValidationFormSchema = z
+	.object({
+		minTitleLength: intField,
+		maxTitleLength: intField,
+		minAbstractLength: intField,
+		maxAbstractLength: intField,
+		minKeywords: intField,
+		maxKeywords: intField,
+		enableKeywords: z.boolean(),
+	})
+	.pipe(submissionValidationSettingsSchema);
+
+export type SubmissionValidationFormValues = z.input<
+	typeof submissionValidationFormSchema
+>;

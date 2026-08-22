@@ -15,6 +15,11 @@ import {
 	updateSubmissionGuidelinesFn,
 	updateSubmissionValidationSettingsFn,
 } from "@/features/settings/api/settings";
+import {
+	type SubmissionValidationFormValues,
+	submissionValidationFormSchema,
+} from "@/features/settings/validations";
+import { useAppForm } from "@/shared/hooks/use-app-form";
 import { getErrorMessage } from "@/shared/lib/error-message";
 
 interface UseSubmissionSettingsArgs {
@@ -24,6 +29,20 @@ interface UseSubmissionSettingsArgs {
 	initialExtraction: ExtractionSettings;
 }
 
+function toFormValues(
+	data: SubmissionValidationSettings,
+): SubmissionValidationFormValues {
+	return {
+		minTitleLength: String(data.minTitleLength),
+		maxTitleLength: String(data.maxTitleLength),
+		minAbstractLength: String(data.minAbstractLength),
+		maxAbstractLength: String(data.maxAbstractLength),
+		minKeywords: String(data.minKeywords),
+		maxKeywords: String(data.maxKeywords),
+		enableKeywords: data.enableKeywords,
+	};
+}
+
 export function useSubmissionSettings({
 	initialData,
 	initialSubmissionGuidelines,
@@ -31,8 +50,6 @@ export function useSubmissionSettings({
 	initialExtraction,
 }: UseSubmissionSettingsArgs) {
 	const queryClient = useQueryClient();
-	const [data, setData] = useState(initialData);
-	const [isSaving, setIsSaving] = useState(false);
 	const [submissionGuidelines, setSubmissionGuidelines] = useState(
 		initialSubmissionGuidelines,
 	);
@@ -47,56 +64,54 @@ export function useSubmissionSettings({
 	);
 	const [extractionAi, setExtractionAi] = useState(initialExtraction.ai);
 
-	const handleChange = <K extends keyof SubmissionValidationSettings>(
-		field: K,
-		value: SubmissionValidationSettings[K],
-	) => {
-		setData((prev) => ({ ...prev, [field]: value }));
-	};
-
-	const handleSave = async () => {
-		setIsSaving(true);
-		try {
-			await Promise.all([
-				updateSubmissionValidationSettingsFn({ data }),
-				updateSubmissionGuidelinesFn({
-					data: { value: submissionGuidelines },
-				}),
-				updateReviewGuidelinesFn({
-					data: { value: reviewGuidelines },
-				}),
-				updateExtractionSettingsFn({
-					data: {
-						enabled: extractionEnabled,
-						heuristic: extractionHeuristic,
-						ai: extractionAi,
-					},
-				}),
-			]);
-			await Promise.all([
-				queryClient.invalidateQueries({
-					queryKey: submissionValidationQueryOptions().queryKey,
-				}),
-				queryClient.invalidateQueries({
-					queryKey: submissionGuidelinesQueryOptions().queryKey,
-				}),
-				queryClient.invalidateQueries({
-					queryKey: reviewGuidelinesQueryOptions().queryKey,
-				}),
-				queryClient.invalidateQueries({
-					queryKey: extractionAdminSettingsQueryOptions().queryKey,
-				}),
-			]);
-			toast.success("Submission settings saved");
-		} catch (error) {
-			toast.error(getErrorMessage(error, "Failed to save settings"));
-		}
-		setIsSaving(false);
-	};
+	const form = useAppForm({
+		defaultValues: toFormValues(initialData),
+		validators: {
+			onChange: submissionValidationFormSchema,
+			onSubmit: submissionValidationFormSchema,
+		},
+		onSubmit: async ({ value }) => {
+			const validation = submissionValidationFormSchema.parse(value);
+			try {
+				await Promise.all([
+					updateSubmissionValidationSettingsFn({ data: validation }),
+					updateSubmissionGuidelinesFn({
+						data: { value: submissionGuidelines },
+					}),
+					updateReviewGuidelinesFn({
+						data: { value: reviewGuidelines },
+					}),
+					updateExtractionSettingsFn({
+						data: {
+							enabled: extractionEnabled,
+							heuristic: extractionHeuristic,
+							ai: extractionAi,
+						},
+					}),
+				]);
+				await Promise.all([
+					queryClient.invalidateQueries({
+						queryKey: submissionValidationQueryOptions().queryKey,
+					}),
+					queryClient.invalidateQueries({
+						queryKey: submissionGuidelinesQueryOptions().queryKey,
+					}),
+					queryClient.invalidateQueries({
+						queryKey: reviewGuidelinesQueryOptions().queryKey,
+					}),
+					queryClient.invalidateQueries({
+						queryKey: extractionAdminSettingsQueryOptions().queryKey,
+					}),
+				]);
+				toast.success("Submission settings saved");
+			} catch (error) {
+				toast.error(getErrorMessage(error, "Failed to save settings"));
+			}
+		},
+	});
 
 	return {
-		data,
-		isSaving,
+		form,
 		submissionGuidelines,
 		setSubmissionGuidelines,
 		reviewGuidelines,
@@ -107,14 +122,9 @@ export function useSubmissionSettings({
 		setExtractionHeuristic,
 		extractionAi,
 		setExtractionAi,
-		handleChange,
-		handleSave,
 	};
 }
 
-export type SubmissionSettingsHandleChange = <
-	K extends keyof SubmissionValidationSettings,
->(
-	field: K,
-	value: SubmissionValidationSettings[K],
-) => void;
+export type SubmissionSettingsFormApi = ReturnType<
+	typeof useSubmissionSettings
+>["form"];

@@ -27,8 +27,7 @@ export function SubmissionSettingsTab({
 	pdfApiHealth,
 }: SubmissionSettingsTabProps) {
 	const {
-		data,
-		isSaving,
+		form,
 		submissionGuidelines,
 		setSubmissionGuidelines,
 		reviewGuidelines,
@@ -39,8 +38,6 @@ export function SubmissionSettingsTab({
 		setExtractionHeuristic,
 		extractionAi,
 		setExtractionAi,
-		handleChange,
-		handleSave,
 	} = useSubmissionSettings({
 		initialData,
 		initialSubmissionGuidelines,
@@ -50,7 +47,7 @@ export function SubmissionSettingsTab({
 
 	return (
 		<div className="space-y-6">
-			<ContentValidationSection data={data} onChange={handleChange} />
+			<ContentValidationSection form={form} />
 
 			<SubmissionGuidelinesSection
 				onChange={setSubmissionGuidelines}
@@ -74,10 +71,19 @@ export function SubmissionSettingsTab({
 			/>
 
 			<div className="flex justify-end border-t pt-6">
-				<Button disabled={isSaving} onClick={handleSave}>
-					{isSaving && <IconLoader2 className="mr-2 size-4 animate-spin" />}
-					Save All Settings
-				</Button>
+				<form.Subscribe selector={(s) => s.isSubmitting}>
+					{(isSubmitting) => (
+						<Button
+							disabled={isSubmitting}
+							onClick={() => void form.handleSubmit()}
+						>
+							{isSubmitting && (
+								<IconLoader2 className="mr-2 size-4 animate-spin" />
+							)}
+							Save All Settings
+						</Button>
+					)}
+				</form.Subscribe>
 			</div>
 		</div>
 	);
