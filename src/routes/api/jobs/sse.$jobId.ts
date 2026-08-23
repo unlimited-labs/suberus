@@ -26,6 +26,7 @@ export const Route = createFileRoute("/api/jobs/sse/$jobId")({
 
 				const stream = new ReadableStream({
 					start(controller) {
+						// oxlint-disable-next-line prefer-const -- cleanup() closes over it before setInterval assigns it
 						let intervalId: ReturnType<typeof setInterval>;
 
 						const cleanup = () => {

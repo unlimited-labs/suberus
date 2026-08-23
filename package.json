@@ -14,8 +14,7 @@
     "test:e2e:live": "unbuffer pnpm test:e2e --reporter=line 2>&1 | tee /tmp/e2e-live.log",
     "test:e2e:ui": "playwright test --ui",
     "format": "oxfmt",
-    "lint": "biome lint --fix",
-    "lint:slop": "oxlint",
+    "lint": "oxlint --fix",
     "prepare": "lefthook install || true",
     "db:generate": "dotenv -e .env -- prisma generate",
     "db:push": "dotenv -e .env -- prisma db push",
@@ -116,7 +115,6 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.8",
     "@commitlint/cli": "^21.2.1",
     "@commitlint/config-conventional": "^21.2.0",
     "@commitlint/types": "^21.2.0",

@@ -51,14 +51,16 @@ export async function validateUpload(
 	const detected = await fileTypeFromBuffer(buffer);
 	if (!detected) {
 		throw new UploadValidationError(
-			"Unrecognized file format. Allowed: " +
-				allowedExtensions.map((e) => e.toUpperCase()).join(", "),
+			`Unrecognized file format. Allowed: ${allowedExtensions
+				.map((e) => e.toUpperCase())
+				.join(", ")}`,
 		);
 	}
 	if (!allowedExtensions.includes(detected.ext)) {
 		throw new UploadValidationError(
-			`File type .${detected.ext} is not allowed. Allowed: ` +
-				allowedExtensions.map((e) => e.toUpperCase()).join(", "),
+			`File type .${detected.ext} is not allowed. Allowed: ${allowedExtensions
+				.map((e) => e.toUpperCase())
+				.join(", ")}`,
 		);
 	}
 

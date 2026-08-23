@@ -81,6 +81,7 @@ export function ProgramInteractionProvider({
 	const favorites = new Set(favoritesQuery.data ?? []);
 
 	// Behaviour lives in setMutationDefaults: an offline toggle resumes at startup.
+	// oxlint-disable-next-line typescript/no-invalid-void-type -- void is TData; the rule ignores allowInGenericTypeArguments here
 	const { mutate } = useMutation<void, Error, string>({
 		mutationKey: favoriteMutationKey,
 	});

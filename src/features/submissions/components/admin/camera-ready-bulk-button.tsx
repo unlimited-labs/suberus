@@ -37,8 +37,9 @@ export function CameraReadyBulkUploadButton() {
 		},
 		onSuccess: (result) => {
 			toast.success(
-				`${result.uploaded} camera-ready file(s) uploaded` +
-					(result.skipped.length ? `, ${result.skipped.length} skipped` : ""),
+				`${result.uploaded} camera-ready file(s) uploaded${
+					result.skipped.length ? `, ${result.skipped.length} skipped` : ""
+				}`,
 			);
 			for (const skip of result.skipped) {
 				toast.warning(

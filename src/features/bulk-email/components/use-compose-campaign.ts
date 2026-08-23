@@ -139,16 +139,17 @@ export function useComposeCampaign(campaign: Campaign) {
 
 	const job = useJobSSE(jobId);
 	const lastSyncedCurrent = useRef(-1);
+	const { status: jobStatus, current: jobCurrent } = job;
 	useEffect(() => {
 		if (!jobId) return;
-		const terminal = job.status === "done" || job.status === "error";
-		if (job.status !== "running" && !terminal) return;
-		if (job.current === lastSyncedCurrent.current && !terminal) return;
-		lastSyncedCurrent.current = job.current;
+		const terminal = jobStatus === "done" || jobStatus === "error";
+		if (jobStatus !== "running" && !terminal) return;
+		if (jobCurrent === lastSyncedCurrent.current && !terminal) return;
+		lastSyncedCurrent.current = jobCurrent;
 		void queryClient.invalidateQueries({
 			queryKey: bulkEmailCampaignQueryOptions(campaign.id).queryKey,
 		});
-	}, [job.status, job.current, jobId, campaign.id, queryClient]);
+	}, [jobStatus, jobCurrent, jobId, campaign.id, queryClient]);
 
 	const canSend = useStore(
 		form.store,

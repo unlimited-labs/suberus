@@ -30,8 +30,6 @@ jobs:
 
       - run: pnpm exec oxfmt --check
 
-      - run: pnpm exec biome ci .
-
       - run: pnpm exec oxlint
 
       # build is the typecheck: vite-plugin-checker gates types and generates

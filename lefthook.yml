@@ -9,8 +9,7 @@ pre-commit:
       run: >
         pnpm exec oxfmt --no-error-on-unmatched-pattern {staged_files} &&
         pnpm exec oxlint --fix --no-error-on-unmatched-pattern {staged_files} &&
-        pnpm exec oxlint --fix --no-error-on-unmatched-pattern {staged_files} &&
-        pnpm biome check --write --staged --no-errors-on-unmatched
+        pnpm exec oxlint --fix --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
     types:
       run: pnpm tsc --noEmit

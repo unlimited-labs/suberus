@@ -18,8 +18,9 @@ function preCheck(file: File): boolean {
 	const ext = extensionOf(file.name);
 	if (!EMAIL_ATTACHMENT_EXTENSIONS.some((e) => e === ext)) {
 		toast.error(
-			`${file.name}: unsupported type. Allowed: ` +
-				EMAIL_ATTACHMENT_EXTENSIONS.map((e) => e.toUpperCase()).join(", "),
+			`${file.name}: unsupported type. Allowed: ${EMAIL_ATTACHMENT_EXTENSIONS.map(
+				(e) => e.toUpperCase(),
+			).join(", ")}`,
 		);
 		return false;
 	}
