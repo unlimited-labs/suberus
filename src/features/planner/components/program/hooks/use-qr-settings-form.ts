@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { toast } from "sonner";
 import { saveProgramQrSettingsFn } from "@/features/planner/api/qr-codes";
 import { programQrSettingsSchema } from "@/features/planner/validations";
+import { adminSettingQueryOptions } from "@/features/settings/api/settings";
 import type { ProgramQrSettings } from "@/features/settings/types";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { getErrorMessage } from "@/shared/lib/error-message";
@@ -28,7 +29,7 @@ export function useQrSettingsForm(initial: ProgramQrSettings) {
 			try {
 				await saveProgramQrSettingsFn({ data: value });
 				await queryClient.invalidateQueries({
-					queryKey: ["settings", "admin", "PROGRAM_QR"],
+					queryKey: adminSettingQueryOptions("PROGRAM_QR").queryKey,
 				});
 				window.location.assign(DOWNLOAD_URL[target.current]);
 			} catch (error) {

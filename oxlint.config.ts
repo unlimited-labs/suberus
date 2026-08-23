@@ -38,12 +38,27 @@ export default defineConfig({
 	jsPlugins: [
 		{ name: "anti-slop", specifier: "./tools/oxlint/anti-slop/index.ts" },
 		{ name: "sort-props", specifier: "./tools/oxlint/sort-props/index.ts" },
+		{ name: "tanstack-query", specifier: "./tools/oxlint/tanstack/query.ts" },
+		{ name: "tanstack-router", specifier: "./tools/oxlint/tanstack/router.ts" },
 		"oxlint-tailwindcss",
 	],
 	settings: { tailwindcss: { entryPoint: "src/styles.css" } },
 	rules: {
 		// Replaces Biome useSortedAttributes; ignoreCase matches its ordering.
 		"sort-props/jsx-sort-props": ["error", { ignoreCase: true }],
+		"tanstack-query/exhaustive-deps": "error",
+		"tanstack-query/infinite-query-property-order": "error",
+		"tanstack-query/mutation-property-order": "error",
+		"tanstack-query/no-rest-destructuring": "error",
+		"tanstack-query/no-unstable-deps": "error",
+		"tanstack-query/no-void-query-fn": "error",
+		// Off: opt-in, and it has no notion of prefix invalidation. Most hits were
+		// invalidateQueries({ queryKey: ["documents"] }) covering seven queries at
+		// once, which is the point, not a hand-typed key that can drift.
+		"tanstack-query/prefer-query-options": "off",
+		"tanstack-query/stable-query-client": "error",
+		"tanstack-router/create-route-property-order": "error",
+		"tanstack-router/route-param-names": "error",
 		"typescript/no-deprecated": "error",
 		"tailwindcss/consistent-variant-order": "error",
 		"tailwindcss/enforce-canonical": "error",

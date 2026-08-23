@@ -30,7 +30,7 @@ export function ProgramThemeSection() {
 			setSettingFn({ data: { key: "PROGRAM_THEME", value } }),
 		onSuccess: async () => {
 			await queryClient.invalidateQueries({
-				queryKey: ["settings", "admin", "PROGRAM_THEME"],
+				queryKey: adminSettingQueryOptions("PROGRAM_THEME").queryKey,
 			});
 			toast.success("Program theme updated");
 		},
@@ -42,7 +42,7 @@ export function ProgramThemeSection() {
 			setSettingFn({ data: { key: "PROGRAM_SHOW_AUTHOR_INFO", value } }),
 		onSuccess: async () => {
 			await queryClient.invalidateQueries({
-				queryKey: ["settings", "admin", "PROGRAM_SHOW_AUTHOR_INFO"],
+				queryKey: adminSettingQueryOptions("PROGRAM_SHOW_AUTHOR_INFO").queryKey,
 			});
 			toast.success("Author info setting updated");
 		},

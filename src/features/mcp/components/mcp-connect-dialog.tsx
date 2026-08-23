@@ -197,14 +197,15 @@ function CredentialControls({
 		onSuccess: refresh,
 		onError: () => toast.error("Could not issue credentials"),
 	});
+	const { mutate: mintMutate, isPending: mintIsPending } = mint;
 
 	// Issued on open so the command is complete when read. Minting is idempotent;
 	// the ref stops a re-render firing a second write before the query catches up.
 	useEffect(() => {
-		if (clientId || minted.current || mint.isPending) return;
+		if (clientId || minted.current || mintIsPending) return;
 		minted.current = true;
-		mint.mutate(callbackPort ?? DEFAULT_CALLBACK_PORT);
-	}, [clientId, callbackPort, mint]);
+		mintMutate(callbackPort ?? DEFAULT_CALLBACK_PORT);
+	}, [clientId, callbackPort, mintMutate, mintIsPending]);
 
 	return (
 		<div className="flex flex-wrap items-center gap-1.5 pt-0.5">
@@ -228,10 +229,10 @@ function CredentialControls({
 			<Button
 				className="h-7 px-2 text-xs"
 				data-testid="mcp-mint-client"
-				disabled={mint.isPending}
+				disabled={mintIsPending}
 				onClick={() => {
 					minted.current = true;
-					mint.mutate(Number(port));
+					mintMutate(Number(port));
 				}}
 				size="sm"
 				type="button"
