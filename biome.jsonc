@@ -22,21 +22,6 @@
     "actions": {
       "source": {
         "useSortedAttributes": "on",
-        "organizeImports": {
-          "level": "on",
-          "options": {
-            "sortBareImports": true,
-            "groups": [
-              {
-                "kind": "!bare",
-              },
-              ":BLANK_LINE:",
-              {
-                "kind": "bare",
-              },
-            ],
-          },
-        },
       },
     },
   },

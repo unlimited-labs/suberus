@@ -12,6 +12,25 @@
   "bracketSameLine": false,
   "bracketSpacing": true,
   "sortTailwindcss": true,
+  "sortImports": {
+    "newlinesBetween": false,
+    "sortSideEffects": true,
+    "groups": [
+      "builtin",
+      "external",
+      "internal",
+      "subpath",
+      "parent",
+      "sibling",
+      "index",
+      "style",
+      "unknown",
+      {
+        "newlinesBetween": true
+      },
+      "side_effect"
+    ]
+  },
   "ignorePatterns": [
     "src/routeTree.gen.ts",
     "src/shared/ui/**",
