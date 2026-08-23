@@ -37,6 +37,9 @@ async function addQuestion(page: Page, opts: AddOptions) {
 
 	await dialog.getByRole("button", { name: "Add", exact: true }).click();
 	await expect(page.getByText("Question added")).toBeVisible();
+	// The dialog's exit is still running here; until it leaves the DOM a
+	// pointerdown on the list below is swallowed (drag never starts).
+	await expect(dialog).toHaveCount(0);
 }
 
 test.describe("Admin Settings - Survey Questions", () => {
@@ -172,21 +175,31 @@ test.describe("Admin Settings - Survey Questions", () => {
 			const yOf = async (row: Locator) => (await row.boundingBox())!.y;
 			expect(await yOf(rowB)).toBeGreaterThan(await yOf(rowA));
 
-			// dnd-kit pointer sensor: press B's handle, nudge to activate, then walk
-			// the cursor well above A's top in small steps so closestCenter swaps them.
+			// dnd-kit pointer sensor: press B's handle, then walk the cursor up into
+			// A's row in small steps so closestCenter swaps them.
 			const a = (await rowA.boundingBox())!;
-			const handle = await rowB.getByLabel("Reorder question").boundingBox();
-			if (!handle) throw new Error("missing handle box");
+			const handle = (await rowB.getByLabel("Reorder question").boundingBox())!;
 			await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
 			await page.mouse.down();
-			await page.mouse.move(handle.x + handle.width / 2, handle.y + 6, { steps: 4 });
-			await page.mouse.move(a.x + a.width / 2, a.y - 6, { steps: 24 });
+			await page.mouse.move(handle.x + handle.width / 2, handle.y - 20, { steps: 5 });
+			await page.mouse.move(a.x + a.width / 2, a.y + 4, { steps: 10 });
 			await page.mouse.up();
 
 			await expect(page.getByText("Failed to reorder").first()).not.toBeVisible();
 			await expect(async () => {
 				expect(await yOf(rowB)).toBeLessThan(await yOf(rowA));
 			}).toPass({ timeout: 5000 });
+
+			await expect
+				.poll(async () => {
+					const rows = await db.surveyQuestion.findMany({
+						where: { label: { in: [labelA, labelB] } },
+						orderBy: { orderIndex: "asc" },
+						select: { label: true },
+					});
+					return rows.map((r) => r.label);
+				})
+				.toEqual([labelB, labelA]);
 		} finally {
 			await db.surveyQuestion.deleteMany({ where: { label: { in: [labelA, labelB] } } });
 		}

@@ -96,7 +96,11 @@ test.describe("Submission Detail - Desk Rejection", () => {
 		await deskRejectDialog.fillReason("This submission is out of scope for the conference.");
 		await deskRejectDialog.confirm();
 
-		await expect(page.getByText(/desk rejected/i)).toBeVisible({ timeout: 5000 });
+		// Scoped to the toast: the closing Actions menu still holds a "Desk Reject"
+		// item, so a page-wide getByText trips strict mode.
+		await expect(
+			page.locator("[data-sonner-toast]").filter({ hasText: /desk rejected/i }),
+		).toBeVisible({ timeout: 5000 });
 		await expect(adminSubmissionDetailPage.getStatusBadge()).toContainText("Rejected", { timeout: 10000 });
 	});
 

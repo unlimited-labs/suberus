@@ -584,30 +584,30 @@ test.describe("Admin Users Management", () => {
 	})
 
 	test.describe("User Status Toggle", () => {
-		test("can toggle user active status", async ({ adminUsersPage, userDetailPage }) => {
+		test("can toggle user active status", async ({ adminUsersPage, userDetailPage, page }) => {
 			test.slow(); // Toggle + restore requires multiple mutations and query invalidations
+			// Start from a known state: the menu item shown depends on it, and a
+			// sibling test may have left the seeded user deactivated.
+			const { getPrisma } = await import("../helpers/test-db")
+			await getPrisma().user.update({
+				where: { email: TEST_USER.email },
+				data: { isActive: true },
+			})
+
 			await adminUsersPage.goto()
 			await adminUsersPage.waitForLoad()
 			await adminUsersPage.openUserDetail(TEST_USER)
 
 			// Each menu item selection closes the dropdown, so reopen between steps.
 			await userDetailPage.openActions()
-			const deactivateVisible = await userDetailPage.deactivateButton.isVisible()
-			if (deactivateVisible) {
-				await userDetailPage.deactivateButton.click()
-				await userDetailPage.openActions()
-				await expect(userDetailPage.activateButton).toBeVisible({ timeout: 5000 })
-				await userDetailPage.activateButton.click()
-				await userDetailPage.openActions()
-				await expect(userDetailPage.deactivateButton).toBeVisible({ timeout: 5000 })
-			} else {
-				await userDetailPage.activateButton.click()
-				await userDetailPage.openActions()
-				await expect(userDetailPage.deactivateButton).toBeVisible({ timeout: 5000 })
-				await userDetailPage.deactivateButton.click()
-				await userDetailPage.openActions()
-				await expect(userDetailPage.activateButton).toBeVisible({ timeout: 5000 })
-			}
+			await expect(userDetailPage.deactivateButton).toBeVisible({ timeout: 5000 })
+			await userDetailPage.deactivateButton.click()
+			await userDetailPage.openActions()
+			await expect(userDetailPage.activateButton).toBeVisible({ timeout: 5000 })
+			await userDetailPage.activateButton.click()
+			await userDetailPage.openActions()
+			await expect(userDetailPage.deactivateButton).toBeVisible({ timeout: 5000 })
+			await page.keyboard.press("Escape")
 
 			const errorToast = adminUsersPage.page.locator("[data-sonner-toast][data-type='error']")
 			await expect(errorToast).not.toBeVisible({ timeout: 1000 })

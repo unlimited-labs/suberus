@@ -35,7 +35,10 @@ export function UserFeeStatusSection({
 					Unmark
 				</Button>
 			</div>
-			<p className="mt-1 text-sm text-green-600 dark:text-green-500">
+			<p
+				className="mt-1 text-sm text-green-600 dark:text-green-500"
+				data-testid="fee-summary"
+			>
 				Type: {fee.type}
 				{fee.amount !== null && fee.currency && (
 					<>

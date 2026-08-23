@@ -76,9 +76,14 @@ test.describe("Admin Settings - Submission Types", () => {
 			}
 
 			const saveButton = page.getByRole("button", { name: "Save" })
-			await saveButton.scrollIntoViewIfNeeded()
 			await expect(saveButton).toBeVisible()
-			await expect(saveButton).toBeInViewport()
+			// The panel keeps growing while it opens, so one scroll can leave the
+			// button below the fold. Re-scroll on each attempt: the inner timeout
+			// stays short so the loop actually retries within its budget.
+			await expect(async () => {
+				await saveButton.scrollIntoViewIfNeeded()
+				await expect(saveButton).toBeInViewport({ timeout: 500 })
+			}).toPass({ timeout: 5000 })
 		})
 	}
 

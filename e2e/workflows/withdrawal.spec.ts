@@ -56,8 +56,11 @@ test.describe("Author Withdrawal", () => {
 		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
 		await expect(page.locator("[data-sonner-toast]")).toBeVisible({ timeout: 10000 });
 
-		await expect(page.getByRole("button", { name: "Edit Submission" })).not.toBeVisible();
-		await expect(page.getByRole("button", { name: "Withdraw Submission" })).not.toBeVisible();
+		// Scoped to the page body: the just-closed confirm dialog keeps its own
+		// "Withdraw Submission" button in the DOM, which trips strict mode.
+		const actions = page.getByRole("main");
+		await expect(actions.getByRole("button", { name: "Edit Submission" })).not.toBeVisible();
+		await expect(actions.getByRole("button", { name: "Withdraw Submission" })).not.toBeVisible();
 	});
 
 	test("withdrawal cancels active reviewer assignments", async ({ page, testRun, cleanup }) => {

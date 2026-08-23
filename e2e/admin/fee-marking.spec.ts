@@ -31,9 +31,10 @@ test.describe("Fee Marking", () => {
 		await detailPage.confirmDialog();
 
 		await expect(detailPage.feeStatusPaid).toBeVisible({ timeout: 10000 });
-		await expect(page.getByText("Full Conference Fee")).toBeVisible();
-		await expect(page.getByText("250.00")).toBeVisible();
-		await expect(page.getByText("EUR")).toBeVisible();
+		// Scoped to the Fee Status summary: the just-closed dialog leaves its
+		// select popup in the DOM, so a page-wide getByText matches three nodes.
+		await expect(detailPage.feeSummary).toContainText("Type: Full Conference Fee");
+		await expect(detailPage.feeSummary).toContainText("Amount: 250.00 EUR");
 
 		await loginAs(page, {
 			email: testUser.email,

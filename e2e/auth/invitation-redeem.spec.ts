@@ -57,7 +57,12 @@ async function completeRegistration(
 	await registerPage.fillStep2({ country: "Poland", address: "Org\n1 St" })
 	await registerPage.clickContinue()
 	await registerPage.fillStep3({ acceptTerms: true })
+	// An invited role is written server-side, so the app finishes with a full
+	// page load to refresh the session. Wait for it: a goto issued before that
+	// load lands is interrupted by it (net::ERR_ABORTED).
+	const reloaded = registerPage.page.waitForEvent("load")
 	await registerPage.clickCreateAccount()
+	await reloaded
 }
 
 test.describe("Invitation redemption", () => {

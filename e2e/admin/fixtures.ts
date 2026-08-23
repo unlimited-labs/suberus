@@ -134,6 +134,7 @@ export class UserDetailPage {
 	readonly activateButton: Locator
 	readonly markAsPaidButton: Locator
 	readonly feeStatusPaid: Locator
+	readonly feeSummary: Locator
 	readonly feeStatusUnpaid: Locator
 	readonly emailVerified: Locator
 	readonly emailNotVerified: Locator
@@ -153,6 +154,7 @@ export class UserDetailPage {
 		this.activateButton = page.getByRole("menuitem", { name: "Activate" })
 		this.markAsPaidButton = page.getByRole("button", { name: "Mark as Paid" })
 		this.feeStatusPaid = page.getByText("Fee Paid")
+		this.feeSummary = page.getByTestId("fee-summary")
 		this.feeStatusUnpaid = page.getByText("Fee Unpaid")
 		this.emailVerified = page.getByText("Email verified")
 		this.emailNotVerified = page.getByText("Email not verified")
