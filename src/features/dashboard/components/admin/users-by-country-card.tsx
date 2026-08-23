@@ -254,7 +254,7 @@ function BubbleLayer({
 function CountryFlag({ code }: { code: string | null }) {
 	const upper = code?.toUpperCase();
 	// SAFETY: the table is keyed by this enum; the fallback covers an unrecognised key.
-	// biome-ignore lint/performance/noDynamicNamespaceImportAccess: flag is resolved at runtime from the country code; all flags are needed
+	// The flag is resolved at runtime from the country code, so all of them are needed.
 	const Flag = upper ? Flags[upper as keyof typeof Flags] : undefined;
 
 	if (!Flag) {

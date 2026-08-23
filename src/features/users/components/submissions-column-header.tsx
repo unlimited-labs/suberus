@@ -55,7 +55,9 @@ function FilterSection({
 					const isSelected = selectedSet.has(option.value);
 					const count = facets?.get(option.value) ?? 0;
 					return (
-						// biome-ignore lint/a11y/useSemanticElements: the visible control is a Radix Checkbox (a <button>); nesting it in a native <input> isn't possible and a nested <button> caused double-toggle. This row carries role/aria-checked + keyboard handling instead.
+						// The visible control is a Radix Checkbox (a <button>): it cannot nest in a native
+						// <input>, and a nested <button> double-toggled. The row carries role/aria-checked
+						// and keyboard handling instead.
 						<div
 							aria-checked={isSelected}
 							className="hover:bg-muted/50 flex w-full cursor-pointer items-center gap-2 rounded px-1 py-0.5"

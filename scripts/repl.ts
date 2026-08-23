@@ -338,7 +338,7 @@ async function runDiscovery(core: Core, command: string, target?: string) {
 	}
 }
 
-// biome-ignore lint/complexity/noBannedTypes: AsyncFunction constructor requires Function type
+// The AsyncFunction constructor requires the Function type.
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor as new (...args: string[]) => Function;
 
 async function evalWithTimeout(fn: () => Promise<unknown>, timeoutMs: number): Promise<unknown> {

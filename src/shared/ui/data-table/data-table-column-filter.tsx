@@ -101,7 +101,9 @@ export function DataTableColumnFilter<TData extends RowData, TValue>({
 							const count = facets?.get(option.value) ?? 0;
 
 							return (
-								// biome-ignore lint/a11y/useSemanticElements: the visible control is a Radix Checkbox (a <button>); a nested <button> breaks hydration and double-toggles. This row carries role/aria-checked + keyboard handling instead.
+								// The visible control is a Radix Checkbox (a <button>): a nested <button> breaks
+								// hydration and double-toggles. The row carries role/aria-checked and keyboard
+								// handling instead.
 								<div
 									key={option.value}
 									role="checkbox"

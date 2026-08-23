@@ -35,7 +35,7 @@ export function AttachmentDropzone({
 	return (
 		<div className="space-y-3">
 			{!disabled && (
-				// biome-ignore lint/a11y/noStaticElementInteractions: drag target; the button inside provides the keyboard path.
+				// Drag target; the button inside provides the keyboard path.
 				<div
 					className={cn(
 						"flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground transition-colors",
