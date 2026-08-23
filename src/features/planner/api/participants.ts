@@ -22,8 +22,6 @@ export const getPublicParticipantsFn = createServerFn({
 	return getPublicParticipants(canPreviewDraft, viewerIsParticipant);
 });
 
-// Deliberately outside the persisted "program" prefix: the roster carries consented
-// e-mail addresses and must not sit in localStorage after the tab closes.
 export const publicParticipantsQueryOptions = () =>
 	queryOptions({
 		queryKey: ["participants", "public"],
