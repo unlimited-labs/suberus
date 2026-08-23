@@ -22,8 +22,11 @@ export default defineConfig({
 	],
 	jsPlugins: [
 		{ name: "anti-slop", specifier: "./tools/oxlint/anti-slop/index.ts" },
+		{ name: "sort-props", specifier: "./tools/oxlint/sort-props/index.ts" },
 	],
 	rules: {
+		// ignoreCase matches Biome's useSortedAttributes, which this replaces.
+		"sort-props/jsx-sort-props": ["error", { ignoreCase: true }],
 		"typescript/no-deprecated": "error",
 		"anti-slop/no-chained-type-assertions": "error",
 		"anti-slop/no-conditional-empty-object-spread": "error",

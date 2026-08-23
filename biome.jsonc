@@ -18,13 +18,6 @@
     ],
   },
   "formatter": { "enabled": false },
-  "assist": {
-    "actions": {
-      "source": {
-        "useSortedAttributes": "on",
-      },
-    },
-  },
   "css": {
     "parser": {
       "tailwindDirectives": true,

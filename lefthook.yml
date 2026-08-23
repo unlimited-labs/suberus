@@ -1,14 +1,17 @@
 pre-commit:
   parallel: true
   commands:
-    format:
+    lint:
       glob: "*.{js,jsx,ts,tsx,json,jsonc,css,md,yml,yaml,html}"
-      # Sequential on purpose: both write the same files.
-      run: pnpm exec oxfmt --no-error-on-unmatched-pattern {staged_files} && pnpm biome check --write --staged --no-errors-on-unmatched
+      # One chain: every step writes files the next one reads. oxlint runs twice
+      # because jsx-sort-props reaches nested elements only on a second pass; the
+      # second run doubles as the gate.
+      run: >
+        pnpm exec oxfmt --no-error-on-unmatched-pattern {staged_files} &&
+        pnpm exec oxlint --fix --no-error-on-unmatched-pattern {staged_files} &&
+        pnpm exec oxlint --fix --no-error-on-unmatched-pattern {staged_files} &&
+        pnpm biome check --write --staged --no-errors-on-unmatched
       stage_fixed: true
-    slop:
-      glob: "*.{js,jsx,ts,tsx}"
-      run: pnpm exec oxlint --no-error-on-unmatched-pattern {staged_files}
     types:
       run: pnpm tsc --noEmit
 
