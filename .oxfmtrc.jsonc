@@ -26,10 +26,10 @@
       "style",
       "unknown",
       {
-        "newlinesBetween": true
+        "newlinesBetween": true,
       },
-      "side_effect"
-    ]
+      "side_effect",
+    ],
   },
   "ignorePatterns": [
     "src/routeTree.gen.ts",
@@ -41,15 +41,17 @@
     "public/**",
     "e2e/**",
     "scripts/**",
-    "tools/**"
+    "tools/**",
   ],
   "overrides": [
     {
+      // useTabs applies to every language, and pnpm rewrites package.json with
+      // spaces - without this, every install churns the whole file.
       "files": ["**/*.json", "**/*.jsonc"],
       "options": {
         "useTabs": false,
-        "tabWidth": 2
-      }
-    }
-  ]
+        "tabWidth": 2,
+      },
+    },
+  ],
 }
