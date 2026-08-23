@@ -9,7 +9,7 @@ import {
 	deleteBulkEmailCampaign,
 	duplicateBulkEmailCampaign,
 	type getBulkEmailCampaign,
-	previewBulkEmail,
+	bulkEmailPreviewQueryOptions,
 	saveBulkEmailDraft,
 	sendBulkEmailCampaign,
 	sendBulkEmailTest,
@@ -56,11 +56,8 @@ export function useComposeCampaign(campaign: Campaign) {
 	const debouncedBody = useDebounced(bodySource, 400);
 
 	const previewQuery = useQuery({
-		queryKey: ["bulk-email", "preview", format, debouncedBody],
-		queryFn: () =>
-			previewBulkEmail({ data: { format, bodySource: debouncedBody } }),
+		...bulkEmailPreviewQueryOptions(format, debouncedBody),
 		enabled: format !== "PLAIN",
-		staleTime: Number.POSITIVE_INFINITY,
 	});
 
 	const preview =

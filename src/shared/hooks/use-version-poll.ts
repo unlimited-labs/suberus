@@ -1,9 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import {
+	buildVersionQueryOptions,
 	reportVersion,
-	type VersionResponse,
-	versionResponseSchema,
 } from "@/shared/lib/version-skew";
 
 const DEFAULT_POLL_MS = 60 * 1000;
@@ -19,12 +18,7 @@ const DEFAULT_POLL_MS = 60 * 1000;
  */
 export function useVersionPoll() {
 	const { data } = useQuery({
-		queryKey: ["build-version"],
-		queryFn: async (): Promise<VersionResponse> => {
-			const res = await fetch("/api/version");
-			if (!res.ok) throw new Error(`/api/version returned ${res.status}`);
-			return versionResponseSchema.parse(await res.json());
-		},
+		...buildVersionQueryOptions(),
 		staleTime: 30 * 1000,
 		refetchInterval: (query) => query.state.data?.pollMs ?? DEFAULT_POLL_MS,
 		refetchOnWindowFocus: true,

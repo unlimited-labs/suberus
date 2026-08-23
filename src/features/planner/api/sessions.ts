@@ -28,9 +28,14 @@ import {
 	sessionWithPresentationsInput,
 } from "@/features/planner/validations";
 
+export const programSessionKeys = {
+	all: ["programSessions"] as const,
+	list: () => [...programSessionKeys.all, "all"] as const,
+};
+
 export const allSessionsQueryOptions = () =>
 	queryOptions({
-		queryKey: ["programSessions", "all"],
+		queryKey: programSessionKeys.list(),
 		queryFn: () => listSessionsFn(),
 	});
 
@@ -84,9 +89,13 @@ export const removeChairFn = createServerFn({ method: "POST" })
 		await removeChair(data.sessionId, data.userId);
 	});
 
+export const unscheduledSubmissionKeys = {
+	all: ["unscheduledSubmissions"] as const,
+};
+
 export const unscheduledSubmissionsQueryOptions = () =>
 	queryOptions({
-		queryKey: ["unscheduledSubmissions"],
+		queryKey: unscheduledSubmissionKeys.all,
 		queryFn: () => listUnscheduledSubmissionsFn(),
 	});
 

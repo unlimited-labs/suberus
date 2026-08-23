@@ -13,6 +13,7 @@ import {
 	submissionValidationQueryOptions,
 } from "@/features/settings/api/settings";
 import {
+	submissionKeys,
 	adminEditSubmissionFn,
 	adminSubmitDraftFn,
 	editorSubmissionQueryOptions,
@@ -167,7 +168,7 @@ function AdminEditSubmissionPage() {
 
 	const finish = async (message: string) => {
 		toast.success(message);
-		await queryClient.invalidateQueries({ queryKey: ["submissions"] });
+		await queryClient.invalidateQueries({ queryKey: submissionKeys.all });
 		navigate({ to: "/admin/submissions/$id", params: { id } });
 	};
 

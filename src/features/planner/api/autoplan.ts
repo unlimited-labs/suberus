@@ -1,3 +1,4 @@
+import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { adminMiddleware } from "@/features/auth/server/middleware";
 import { applyAutoPlan } from "@/features/planner/server/autoplan";
@@ -18,6 +19,13 @@ export const getAutoPlanJobFn = createServerFn({ method: "GET" })
 	.validator(jobIdInput)
 	.handler(async ({ data }) => {
 		return getAutoPlanJob(data.jobId);
+	});
+
+export const autoPlanJobQueryOptions = (jobId: string | null) =>
+	queryOptions({
+		queryKey: ["autoplan-job", jobId] as const,
+		queryFn: () =>
+			jobId ? getAutoPlanJobFn({ data: { jobId } }) : Promise.resolve(null),
 	});
 
 export const applyAutoPlanFn = createServerFn({ method: "POST" })

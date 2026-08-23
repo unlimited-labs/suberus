@@ -4,7 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
 	adminUsersQueryOptions,
-	checkAdminUserDeletable,
+	adminUserDeletableQueryOptions,
 	deleteAdminUser,
 } from "@/features/users/api/users";
 import type { AdminUser } from "@/features/users/server/users";
@@ -33,8 +33,7 @@ export function UserDeleteDialog({
 	const navigate = useNavigate();
 
 	const { data: check, isLoading } = useQuery({
-		queryKey: ["admin", "users", user.id, "deletable"],
-		queryFn: () => checkAdminUserDeletable({ data: { id: user.id } }),
+		...adminUserDeletableQueryOptions(user.id),
 		enabled: open,
 	});
 

@@ -109,15 +109,20 @@ export const bulkChangeStatusFn = createServerFn({ method: "POST" })
 		return bulkChangeStatus(data.submissionIds, data.status, context.user.id);
 	});
 
+export const submissionKeys = {
+	all: ["submissions"] as const,
+	one: (id: string) => [...submissionKeys.all, id] as const,
+};
+
 export const adminSubmissionsQueryOptions = () =>
 	queryOptions({
-		queryKey: ["submissions", "admin"],
+		queryKey: [...submissionKeys.all, "admin"],
 		queryFn: () => getAdminSubmissionsFn(),
 	});
 
 export const editorSubmissionQueryOptions = (submissionId: string) =>
 	queryOptions({
-		queryKey: ["submissions", "editor", submissionId],
+		queryKey: [...submissionKeys.all, "editor", submissionId],
 		queryFn: () => getSubmissionForEditorFn({ data: { submissionId } }),
 	});
 
@@ -149,4 +154,10 @@ export const deleteSubmissionFn = createServerFn({ method: "POST" })
 	.validator(submissionIdInput)
 	.handler(async ({ data, context }) => {
 		return deleteSubmission(data.submissionId, context.user.id);
+	});
+
+export const submissionDeletableQueryOptions = (submissionId: string) =>
+	queryOptions({
+		queryKey: [...submissionKeys.all, "admin", submissionId, "deletable"],
+		queryFn: () => checkSubmissionDeletableFn({ data: { submissionId } }),
 	});

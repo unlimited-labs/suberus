@@ -11,6 +11,7 @@ import {
 	getSetting,
 } from "@/features/settings/server/settings";
 import { SUBMISSION_TYPE_TO_KEY } from "@/features/settings/types";
+import { submissionKeys } from "@/features/submissions/api/admin-submissions";
 import {
 	attachFileToVersion,
 	checkEmailVerified,
@@ -439,13 +440,13 @@ export const submitDraftFn = createServerFn({ method: "POST" })
 
 export const mySubmissionsQueryOptions = () =>
 	queryOptions({
-		queryKey: ["submissions", "mine"],
+		queryKey: [...submissionKeys.all, "mine"],
 		queryFn: () => getMySubmissionsFn(),
 	});
 
 export const submissionDetailQueryOptions = (submissionId: string) =>
 	queryOptions({
-		queryKey: ["submissions", "detail", submissionId],
+		queryKey: [...submissionKeys.all, "detail", submissionId],
 		queryFn: () => getSubmissionByIdFn({ data: { submissionId } }),
 	});
 

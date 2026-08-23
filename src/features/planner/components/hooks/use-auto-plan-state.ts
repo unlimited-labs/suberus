@@ -4,9 +4,13 @@ import { useState } from "react";
 import { toast } from "sonner";
 import {
 	applyAutoPlanFn,
-	getAutoPlanJobFn,
+	autoPlanJobQueryOptions,
 	startAutoPlanFn,
 } from "@/features/planner/api/autoplan";
+import {
+	programSessionKeys,
+	unscheduledSubmissionKeys,
+} from "@/features/planner/api/sessions";
 import { deriveAutoPlanState } from "@/features/planner/components/hooks/derive-auto-plan-state";
 import { useJobSSE } from "@/shared/hooks/use-job-sse";
 
@@ -23,17 +27,17 @@ export function useAutoPlanState() {
 	const sse = useJobSSE(jobId);
 
 	const jobResult = useQuery({
-		queryKey: ["autoplan-job", jobId],
-		queryFn: () =>
-			jobId ? getAutoPlanJobFn({ data: { jobId } }) : Promise.resolve(null),
+		...autoPlanJobQueryOptions(jobId),
 		enabled: jobId !== null && sse.status === "done",
 	});
 
 	const apply = useMutation({
 		mutationFn: (id: string) => applyAutoPlanFn({ data: { jobId: id } }),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["programSessions"] });
-			queryClient.invalidateQueries({ queryKey: ["unscheduledSubmissions"] });
+			queryClient.invalidateQueries({ queryKey: programSessionKeys.all });
+			queryClient.invalidateQueries({
+				queryKey: unscheduledSubmissionKeys.all,
+			});
 			toast.success("Auto-plan applied");
 			navigate({ to: "/admin/program-planner" });
 		},

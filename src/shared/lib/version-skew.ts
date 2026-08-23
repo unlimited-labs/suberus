@@ -1,3 +1,4 @@
+import { queryOptions } from "@tanstack/react-query";
 import { useSyncExternalStore } from "react";
 import { z } from "zod";
 
@@ -129,3 +130,13 @@ function installChunkErrorWatch() {
 		if (isChunkError(event.error ?? event.message)) markSkewed();
 	});
 }
+
+export const buildVersionQueryOptions = () =>
+	queryOptions({
+		queryKey: ["build-version"] as const,
+		queryFn: async (): Promise<VersionResponse> => {
+			const res = await fetch("/api/version");
+			if (!res.ok) throw new Error(`/api/version returned ${res.status}`);
+			return versionResponseSchema.parse(await res.json());
+		},
+	});

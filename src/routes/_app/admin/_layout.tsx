@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { adminRouteMiddleware } from "@/features/auth/server/middleware";
 import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
+import { buildVersionQueryOptions } from "@/shared/lib/version-skew";
 
 export const Route = createFileRoute("/_app/admin/_layout")({
 	server: {
@@ -35,13 +36,8 @@ function AdminLayout() {
 
 function BuildFooter() {
 	const { data } = useQuery({
-		queryKey: ["build-version"],
-		queryFn: async (): Promise<{ commit: string; builtAt: string }> => {
-			const res = await fetch("/api/version");
-			if (!res.ok) throw new Error(`/api/version returned ${res.status}`);
-			return res.json();
-		},
-		staleTime: Infinity,
+		...buildVersionQueryOptions(),
+		staleTime: Number.POSITIVE_INFINITY,
 	});
 
 	if (!data) return null;

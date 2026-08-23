@@ -4,7 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
 	adminSubmissionsQueryOptions,
-	checkSubmissionDeletableFn,
+	submissionDeletableQueryOptions,
 	deleteSubmissionFn,
 	editorSubmissionQueryOptions,
 } from "@/features/submissions/api/admin-submissions";
@@ -35,8 +35,7 @@ export function SubmissionDeleteDialog({
 	const navigate = useNavigate();
 
 	const { data: check, isLoading } = useQuery({
-		queryKey: ["submissions", "admin", submissionId, "deletable"],
-		queryFn: () => checkSubmissionDeletableFn({ data: { submissionId } }),
+		...submissionDeletableQueryOptions(submissionId),
 		enabled: open,
 	});
 

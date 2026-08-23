@@ -34,9 +34,11 @@ export const listTemplatesFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.handler(() => listTemplates());
 
+export const documentKeys = { all: ["documents"] as const };
+
 export const documentTemplatesQueryOptions = () =>
 	queryOptions({
-		queryKey: ["documents", "templates"],
+		queryKey: [...documentKeys.all, "templates"],
 		queryFn: () => listTemplatesFn(),
 	});
 
@@ -78,7 +80,7 @@ export const previewResolutionQueryOptions = (
 	templateId: string | null,
 ) =>
 	queryOptions({
-		queryKey: ["documents", "preview", userId, templateId],
+		queryKey: [...documentKeys.all, "preview", userId, templateId],
 		queryFn: () =>
 			previewResolutionFn({ data: { userId, templateId: templateId ?? "" } }),
 		enabled: Boolean(templateId),
@@ -134,7 +136,7 @@ export const batchProgressFn = createServerFn({ method: "GET" })
 
 export const batchProgressQueryOptions = (batchId: string | null) =>
 	queryOptions({
-		queryKey: ["documents", "batch", batchId],
+		queryKey: [...documentKeys.all, "batch", batchId],
 		queryFn: () => batchProgressFn({ data: { batchId: batchId ?? "" } }),
 		enabled: Boolean(batchId),
 	});
@@ -156,7 +158,7 @@ export const adminDocumentsQueryOptions = (filters?: {
 	templateId?: string;
 }) =>
 	queryOptions({
-		queryKey: ["documents", "all", filters ?? {}],
+		queryKey: [...documentKeys.all, "all", filters ?? {}],
 		queryFn: () => adminListDocumentsFn({ data: filters ?? {} }),
 	});
 
@@ -167,7 +169,7 @@ export const adminUserDocumentsFn = createServerFn({ method: "GET" })
 
 export const adminUserDocumentsQueryOptions = (userId: string) =>
 	queryOptions({
-		queryKey: ["documents", "user", userId],
+		queryKey: [...documentKeys.all, "user", userId],
 		queryFn: () => adminUserDocumentsFn({ data: { userId } }),
 	});
 
@@ -185,7 +187,7 @@ export const myDocumentsFn = createServerFn({ method: "GET" })
 
 export const myDocumentsQueryOptions = () =>
 	queryOptions({
-		queryKey: ["documents", "mine"],
+		queryKey: [...documentKeys.all, "mine"],
 		queryFn: () => myDocumentsFn(),
 	});
 
@@ -195,6 +197,6 @@ export const myDocumentsCountFn = createServerFn({ method: "GET" })
 
 export const myDocumentsCountQueryOptions = () =>
 	queryOptions({
-		queryKey: ["documents", "mine", "count"],
+		queryKey: [...documentKeys.all, "mine", "count"],
 		queryFn: () => myDocumentsCountFn(),
 	});

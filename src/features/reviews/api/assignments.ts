@@ -15,6 +15,7 @@ import {
 	getSubmissionAssignments,
 	type ReviewerAssignment,
 } from "@/features/reviews/server/assignments";
+import { submissionKeys } from "@/features/submissions/api/admin-submissions";
 import { prisma } from "@/shared/server/db.server";
 
 export type { AssignmentWithReviewer, AvailableReviewer, ReviewerAssignment };
@@ -30,6 +31,13 @@ export const getAvailableReviewersFn = createServerFn({ method: "GET" })
 	.validator(z.object({ submissionId: z.uuid() }))
 	.handler(async ({ data }): Promise<AvailableReviewer[]> => {
 		return getAvailableReviewers(data.submissionId);
+	});
+
+export const availableReviewersQueryOptions = (submissionId: string) =>
+	queryOptions({
+		queryKey: [...submissionKeys.one(submissionId), "available-reviewers"],
+		queryFn: (): Promise<AvailableReviewer[]> =>
+			getAvailableReviewersFn({ data: { submissionId } }),
 	});
 
 export const getSubmissionAssignmentsFn = createServerFn({ method: "GET" })
@@ -119,4 +127,11 @@ export const getMyAssignmentsFn = createServerFn({ method: "GET" })
 		}
 
 		return getReviewerAssignments(context.user.id, data);
+	});
+
+export const submissionAssignmentsQueryOptions = (submissionId: string) =>
+	queryOptions({
+		queryKey: [...submissionKeys.one(submissionId), "assignments"],
+		queryFn: (): Promise<AssignmentWithReviewer[]> =>
+			getSubmissionAssignmentsFn({ data: { submissionId } }),
 	});

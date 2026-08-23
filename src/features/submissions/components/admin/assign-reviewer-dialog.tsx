@@ -10,14 +10,13 @@ import { addDays, format } from "date-fns";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
-	type AssignmentWithReviewer,
-	type AvailableReviewer,
 	assignReviewerFn,
+	availableReviewersQueryOptions,
 	cancelAssignmentFn,
-	getAvailableReviewersFn,
-	getSubmissionAssignmentsFn,
+	submissionAssignmentsQueryOptions,
 } from "@/features/reviews/api/assignments";
 import { assignmentStatusVariants } from "@/features/reviews/labels";
+import { submissionKeys } from "@/features/submissions/api/admin-submissions";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -71,17 +70,13 @@ export function AssignReviewerDialog({
 		if (open) setCustomDeadline(computeDefaultDeadline(reviewDeadlineDays));
 	}
 
-	const { data: availableReviewers = [], isLoading } = useQuery<
-		AvailableReviewer[]
-	>({
-		queryKey: ["submissions", submissionId, "available-reviewers"],
-		queryFn: () => getAvailableReviewersFn({ data: { submissionId } }),
+	const { data: availableReviewers = [], isLoading } = useQuery({
+		...availableReviewersQueryOptions(submissionId),
 		enabled: open,
 	});
 
-	const { data: currentAssignments = [] } = useQuery<AssignmentWithReviewer[]>({
-		queryKey: ["submissions", submissionId, "assignments"],
-		queryFn: () => getSubmissionAssignmentsFn({ data: { submissionId } }),
+	const { data: currentAssignments = [] } = useQuery({
+		...submissionAssignmentsQueryOptions(submissionId),
 		enabled: open,
 	});
 
@@ -115,7 +110,7 @@ export function AssignReviewerDialog({
 			if (result.success) {
 				toast.success("Reviewer assigned");
 				await queryClient.invalidateQueries({
-					queryKey: ["submissions", submissionId],
+					queryKey: submissionKeys.one(submissionId),
 				});
 				onAssigned?.();
 			} else {
@@ -136,7 +131,7 @@ export function AssignReviewerDialog({
 			if (result.success) {
 				toast.success("Assignment cancelled");
 				await queryClient.invalidateQueries({
-					queryKey: ["submissions", submissionId],
+					queryKey: submissionKeys.one(submissionId),
 				});
 				onAssigned?.();
 			} else {

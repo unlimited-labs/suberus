@@ -119,3 +119,9 @@ export const deleteAdminUser = createServerFn({ method: "POST" })
 	.handler(async ({ data, context }) => {
 		return adminDeleteUser(data.id, context.user.id);
 	});
+
+export const adminUserDeletableQueryOptions = (userId: string) =>
+	queryOptions({
+		queryKey: ["admin", "users", userId, "deletable"],
+		queryFn: () => checkAdminUserDeletable({ data: { id: userId } }),
+	});

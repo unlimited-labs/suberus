@@ -21,6 +21,7 @@ import {
 import {
 	campaignCreateInput,
 	campaignDraftInput,
+	type campaignFormatSchema,
 	campaignIdInput,
 	campaignPreviewInput,
 } from "@/features/bulk-email/validations";
@@ -150,4 +151,14 @@ export const bulkEmailCampaignsQueryOptions = () =>
 	queryOptions({
 		queryKey: ["admin", "bulk-email", "list"],
 		queryFn: () => listBulkEmailCampaigns(),
+	});
+
+export const bulkEmailPreviewQueryOptions = (
+	format: z.infer<typeof campaignFormatSchema>,
+	bodySource: string,
+) =>
+	queryOptions({
+		queryKey: ["bulk-email", "preview", format, bodySource] as const,
+		queryFn: () => previewBulkEmail({ data: { format, bodySource } }),
+		staleTime: Number.POSITIVE_INFINITY,
 	});

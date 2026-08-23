@@ -52,10 +52,9 @@ export default defineConfig({
 		"tanstack-query/no-rest-destructuring": "error",
 		"tanstack-query/no-unstable-deps": "error",
 		"tanstack-query/no-void-query-fn": "error",
-		// Off: opt-in, and it has no notion of prefix invalidation. Most hits were
-		// invalidateQueries({ queryKey: ["documents"] }) covering seven queries at
-		// once, which is the point, not a hand-typed key that can drift.
-		"tanstack-query/prefer-query-options": "off",
+		// Not in the official recommended set. It accepts a shared key constant, so
+		// what it actually bans is the inline literal that can drift from the source.
+		"tanstack-query/prefer-query-options": "error",
 		"tanstack-query/stable-query-client": "error",
 		"tanstack-router/create-route-property-order": "error",
 		"tanstack-router/route-param-names": "error",

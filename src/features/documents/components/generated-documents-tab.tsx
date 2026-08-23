@@ -7,6 +7,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import {
+	documentKeys,
 	adminDocumentsQueryOptions,
 	deleteDocumentFn,
 	documentTemplatesQueryOptions,
@@ -58,7 +59,7 @@ export function GeneratedDocumentsTab() {
 		setBusy(true);
 		try {
 			await deleteDocumentFn({ data: { id: deletingId } });
-			await queryClient.invalidateQueries({ queryKey: ["documents"] });
+			await queryClient.invalidateQueries({ queryKey: documentKeys.all });
 			setDeletingId(null);
 			toast.success("Document deleted");
 		} catch (error) {
