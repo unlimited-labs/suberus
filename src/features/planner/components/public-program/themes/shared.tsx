@@ -1,25 +1,34 @@
 import {
 	IconBell,
 	IconCalendar,
+	IconCheck,
 	IconCloudOff,
+	IconDeviceDesktop,
 	IconDownload,
 	IconExternalLink,
 	IconLogin2,
 	IconLogout,
+	IconMoon,
+	IconSun,
 	IconUserCircle,
 	IconUsers,
 } from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import type { CSSProperties } from "react";
 import { clearOfflineProgramCache } from "@/integrations/tanstack-query/offline";
+import { useTheme } from "@/shared/components/theme-provider";
 import { useSession } from "@/shared/hooks/use-session";
 import { authClient } from "@/shared/lib/auth-client";
+import type { Theme } from "@/shared/lib/theme";
 import { cn } from "@/shared/lib/utils";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuSeparator,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { Switch } from "@/shared/ui/switch";
@@ -37,6 +46,7 @@ export function ProgramAuthLink({
 }) {
 	const { user, isPending, isAuthenticated } = useSession();
 	const notifications = useFavoriteNotifications();
+	const { theme, setTheme } = useTheme();
 	if (isPending) return null;
 	const linkClass = cn("inline-flex items-center gap-1.5", className);
 	if (isAuthenticated && user) {
@@ -87,6 +97,44 @@ export function ProgramAuthLink({
 							Conference system
 						</Link>
 					</DropdownMenuItem>
+					<DropdownMenuSub>
+						<DropdownMenuSubTrigger
+							className="gap-2"
+							data-testid="program-theme-item"
+						>
+							<ThemeIcon className="size-4" theme={theme} />
+							Theme
+						</DropdownMenuSubTrigger>
+						<DropdownMenuSubContent>
+							<DropdownMenuItem
+								className="gap-2"
+								data-testid="program-theme-system"
+								onClick={() => setTheme("system")}
+							>
+								<ThemeIcon className="size-4" theme="system" />
+								System
+								{theme === "system" && <IconCheck className="ml-auto size-4" />}
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								className="gap-2"
+								data-testid="program-theme-light"
+								onClick={() => setTheme("light")}
+							>
+								<IconSun className="size-4" />
+								Light
+								{theme === "light" && <IconCheck className="ml-auto size-4" />}
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								className="gap-2"
+								data-testid="program-theme-dark"
+								onClick={() => setTheme("dark")}
+							>
+								<IconMoon className="size-4" />
+								Dark
+								{theme === "dark" && <IconCheck className="ml-auto size-4" />}
+							</DropdownMenuItem>
+						</DropdownMenuSubContent>
+					</DropdownMenuSub>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem
 						className="gap-2"
@@ -117,6 +165,16 @@ export function ProgramAuthLink({
 			<span className={labelClassName}>Sign in</span>
 		</Link>
 	);
+}
+
+function ThemeIcon({ theme, className }: { theme: Theme; className?: string }) {
+	const Icon =
+		theme === "dark"
+			? IconMoon
+			: theme === "light"
+				? IconSun
+				: IconDeviceDesktop;
+	return <Icon className={className} />;
 }
 
 export function ProgramParticipantsLink({

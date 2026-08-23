@@ -1,5 +1,6 @@
 import { useRouter } from "@tanstack/react-router";
 import { createContext, type ReactNode, useContext, useEffect } from "react";
+import { toast } from "sonner";
 import type { Theme } from "@/shared/lib/theme";
 import { setThemeFn } from "@/shared/lib/theme";
 
@@ -40,7 +41,11 @@ export function ThemeProvider({
 
 	const setTheme = (newTheme: Theme) => {
 		resolveAndApply(newTheme);
-		setThemeFn({ data: newTheme }).then(() => router.invalidate());
+		setThemeFn({ data: newTheme })
+			.then(() => router.invalidate())
+			.catch(() => {
+				toast.error("Could not save your theme preference");
+			});
 	};
 
 	return <ThemeContext value={{ theme, setTheme }}>{children}</ThemeContext>;
