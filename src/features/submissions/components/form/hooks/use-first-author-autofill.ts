@@ -99,6 +99,7 @@ export function useFirstAuthorAutofill({
 	setAuthors,
 }: UseFirstAuthorAutofillArgs) {
 	const hasAutoFilledRef = useRef(false);
+	const hasBackfilledRef = useRef(false);
 	const isFetchingAffiliationRef = useRef(false);
 
 	useEffect(() => {
@@ -125,7 +126,10 @@ export function useFirstAuthorAutofill({
 			hasAutoFilledRef.current,
 			isFetchingAffiliationRef.current,
 		);
-		if (needsBackfill && user.affiliationId) {
+		// Once only: the backfill covers an affiliation that resolves after the
+		// auto-fill, not an author row the user deliberately cleared.
+		if (needsBackfill && user.affiliationId && !hasBackfilledRef.current) {
+			hasBackfilledRef.current = true;
 			const affiliationId = user.affiliationId;
 			runFetch(() =>
 				backfillFirstAuthorAffiliation(affiliationId, getAuthors, setAuthors),
