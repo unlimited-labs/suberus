@@ -63,10 +63,14 @@ export function UserMenu() {
 	});
 
 	const handleSignOut = async () => {
-		await clearOfflineProgramCache();
-		await signOut();
-		toast.success("Signed out successfully");
-		navigate({ to: "/login" });
+		try {
+			await clearOfflineProgramCache();
+			await signOut();
+			toast.success("Signed out successfully");
+			navigate({ to: "/login" });
+		} catch {
+			toast.error("Failed to sign out");
+		}
 	};
 
 	if (!user) return null;

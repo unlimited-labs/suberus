@@ -259,7 +259,11 @@ export default defineConfig({
 		"typescript/prefer-literal-enum-member": "error",
 		"typescript/prefer-namespace-keyword": "error",
 		"typescript/prefer-optional-chain": "error",
-		"typescript/strict-void-return": "error",
+		// Off: added here by mistake as a stand-in for Biome's noVoidTypeReturn, which
+		// is a different and far narrower check (a value returned from a function
+		// annotated `: void`). This one reports any Promise-returning function used in
+		// a void slot - 127 hits, of which one was a real unguarded handler.
+		"typescript/strict-void-return": "off",
 		"unicorn/new-for-builtins": "error",
 		"unicorn/no-document-cookie": "error",
 		"unicorn/no-instanceof-array": "error",
