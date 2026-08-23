@@ -198,6 +198,9 @@ export default defineConfig({
 		radix: "error",
 		"react/button-has-type": "error",
 		"react/exhaustive-deps": "error",
+		// React Compiler is on (vite.config.ts). Denylist of APIs that break under
+		// memoization; 0 hits today because Table v9's useTable is not on it.
+		"react/incompatible-library": "error",
 		"react/jsx-key": "error",
 		"react/jsx-no-comment-textnodes": "error",
 		"react/jsx-no-duplicate-props": "error",
