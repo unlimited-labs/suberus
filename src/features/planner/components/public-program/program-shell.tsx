@@ -62,7 +62,7 @@ export function ProgramFrame({
 	return (
 		<TooltipProvider>
 			<div
-				className="bg-background text-foreground selection:bg-primary selection:text-primary-foreground h-screen overflow-y-auto font-[var(--prog-font-body)]"
+				className="bg-background text-foreground selection:bg-primary selection:text-primary-foreground h-screen overflow-y-auto font-(family-name:--prog-font-body)"
 				data-program-theme={themeId}
 				data-testid={`program-theme-${themeId}`}
 			>
@@ -242,7 +242,7 @@ function MinimalHeader({
 						{formatLongDate(settings.startDate)}
 					</p>
 				)}
-				<h1 className="text-foreground mt-3 text-3xl font-[var(--prog-font-display)] font-bold tracking-tight sm:text-5xl">
+				<h1 className="text-foreground mt-3 font-(family-name:--prog-font-display) text-3xl font-bold tracking-tight sm:text-5xl">
 					{settings.name || "Conference"}
 				</h1>
 				{settings.subtitle && (
@@ -285,7 +285,7 @@ function FramedHeader({
 						labelClassName="hidden sm:inline"
 					/>
 				</div>
-				<h1 className="text-foreground mt-4 text-3xl leading-[1.02] font-[var(--prog-font-display)] font-extrabold tracking-tight break-words sm:mt-5 sm:text-5xl md:text-6xl">
+				<h1 className="text-foreground mt-4 font-(family-name:--prog-font-display) text-3xl leading-[1.02] font-extrabold tracking-tight wrap-break-word sm:mt-5 sm:text-5xl md:text-6xl">
 					{settings.name || "Conference"}
 				</h1>
 				{settings.subtitle && (
@@ -297,7 +297,7 @@ function FramedHeader({
 					<span className="bg-border h-px flex-1" />
 					<span
 						className={cn(
-							"font-[var(--prog-font-meta)] uppercase",
+							"font-(family-name:--prog-font-meta) uppercase",
 							dividerClass,
 						)}
 					>
@@ -325,7 +325,7 @@ function FramedFooter({
 			)}
 			style={RULE_STYLE}
 		>
-			<div className="text-[10px] font-[var(--prog-font-meta)] tracking-[0.3em] text-[var(--prog-faint)] uppercase">
+			<div className="font-(family-name:--prog-font-meta) text-[10px] tracking-[0.3em] text-[var(--prog-faint)] uppercase">
 				{themeId === "academic" ? settings.name || "Conference" : "— Fin —"}
 			</div>
 		</footer>
@@ -405,10 +405,10 @@ function FramedNav({
 						onClick={() => setActiveDay(i)}
 						type="button"
 					>
-						<span className="text-2xl leading-none font-[var(--prog-font-display)] font-extrabold tabular-nums sm:text-3xl">
+						<span className="font-(family-name:--prog-font-display) text-2xl leading-none font-extrabold tabular-nums sm:text-3xl">
 							{label.dayNum}
 						</span>
-						<span className="flex flex-col leading-tight font-[var(--prog-font-meta)]">
+						<span className="flex flex-col font-(family-name:--prog-font-meta) leading-tight">
 							<span className="text-[10px] tracking-[0.2em] uppercase">
 								{label.weekday.slice(0, 3)}
 							</span>

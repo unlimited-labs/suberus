@@ -73,7 +73,7 @@ export function SessionEventCard({
 
 			{compact ? (
 				<p
-					className="text-foreground leading-tight font-semibold break-words whitespace-normal"
+					className="text-foreground leading-tight font-semibold wrap-break-word whitespace-normal"
 					data-testid="session-card-title"
 				>
 					{title}

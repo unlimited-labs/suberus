@@ -107,7 +107,7 @@ function SlotHeading({
 	if (framed) {
 		return (
 			<div className="border-border mb-6 border-b pb-3">
-				<span className="text-muted-foreground text-sm font-[var(--prog-font-meta)] tracking-[0.2em] uppercase tabular-nums">
+				<span className="text-muted-foreground font-(family-name:--prog-font-meta) text-sm tracking-[0.2em] uppercase tabular-nums">
 					{start} {dash} {end}
 				</span>
 			</div>
@@ -141,7 +141,7 @@ function BreakOnlyRow({
 			<div className="shrink-0 text-center">
 				<p
 					className={cn(
-						"font-[var(--prog-font-meta)] uppercase tabular-nums text-muted-foreground",
+						"font-(family-name:--prog-font-meta) uppercase tabular-nums text-muted-foreground",
 						framed
 							? "text-[10px] tracking-[0.25em] sm:text-[11px] sm:tracking-[0.3em]"
 							: "text-xs tracking-wide",
@@ -153,7 +153,7 @@ function BreakOnlyRow({
 					className={cn(
 						"mt-1 text-foreground",
 						framed
-							? "font-[var(--prog-font-display)] text-xl sm:text-2xl"
+							? "font-(family-name:--prog-font-display) text-xl sm:text-2xl"
 							: "text-base font-medium",
 					)}
 				>
@@ -191,7 +191,7 @@ function BreakCard({
 			<div>
 				<p
 					className={cn(
-						"font-[var(--prog-font-meta)] uppercase text-muted-foreground",
+						"font-(family-name:--prog-font-meta) uppercase text-muted-foreground",
 						framed
 							? "text-[10px] tracking-[0.25em] sm:tracking-[0.3em]"
 							: "text-xs tracking-wide",
@@ -205,7 +205,7 @@ function BreakCard({
 					className={cn(
 						"mt-1 text-foreground",
 						framed
-							? "font-[var(--prog-font-display)] text-xl sm:text-2xl"
+							? "font-(family-name:--prog-font-display) text-xl sm:text-2xl"
 							: "text-base font-medium",
 					)}
 				>
@@ -237,7 +237,7 @@ function EventCard({
 				item={item}
 				titleClass={
 					framed
-						? "font-[var(--prog-font-display)] text-xl sm:text-2xl"
+						? "font-(family-name:--prog-font-display) text-xl sm:text-2xl"
 						: "text-lg font-semibold"
 				}
 				tz={tz}

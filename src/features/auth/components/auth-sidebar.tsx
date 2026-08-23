@@ -83,7 +83,7 @@ export function AuthSidebar({
 				</div>
 			) : (
 				conferenceSubtitle && (
-					<p className="text-primary-foreground/90 wrap-break-words relative z-10 text-sm font-medium">
+					<p className="text-primary-foreground/90 relative z-10 text-sm font-medium wrap-break-word">
 						{conferenceSubtitle}
 					</p>
 				)

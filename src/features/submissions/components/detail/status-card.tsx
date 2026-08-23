@@ -12,7 +12,7 @@ export function StatusCard({ status, variant = "desktop" }: StatusCardProps) {
 		return (
 			<div
 				className={cn(
-					"inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-white text-sm font-semibold bg-gradient-to-r",
+					"inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-white text-sm font-semibold bg-linear-to-r",
 					STATUS_GRADIENTS[status],
 				)}
 				data-testid="submission-status"
@@ -26,7 +26,7 @@ export function StatusCard({ status, variant = "desktop" }: StatusCardProps) {
 		<div className="relative rounded-2xl p-[2px] shadow-xl">
 			<div
 				className={cn(
-					"absolute inset-0 rounded-2xl bg-gradient-to-br opacity-100",
+					"absolute inset-0 rounded-2xl bg-linear-to-br opacity-100",
 					STATUS_GRADIENTS[status],
 				)}
 			/>
@@ -35,7 +35,7 @@ export function StatusCard({ status, variant = "desktop" }: StatusCardProps) {
 					<p className="text-muted-foreground text-sm">Status</p>
 					<div
 						className={cn(
-							"inline-flex items-center gap-2 px-4 py-2 rounded-full text-white font-semibold bg-gradient-to-r",
+							"inline-flex items-center gap-2 px-4 py-2 rounded-full text-white font-semibold bg-linear-to-r",
 							STATUS_GRADIENTS[status],
 						)}
 						data-testid="submission-status"

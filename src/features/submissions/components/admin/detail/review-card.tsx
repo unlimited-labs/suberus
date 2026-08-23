@@ -68,7 +68,7 @@ export function ReviewCard({
 			<div>
 				<p className="mb-1 text-sm font-medium">Comments</p>
 				{review.comments ? (
-					<p className="text-sm break-words whitespace-pre-wrap">
+					<p className="text-sm wrap-break-word whitespace-pre-wrap">
 						{review.comments}
 					</p>
 				) : (
@@ -99,7 +99,7 @@ export function ReviewCard({
 					<p className="mb-1 text-sm font-medium text-amber-600 dark:text-amber-400">
 						Private Notes (editor only)
 					</p>
-					<p className="rounded bg-amber-50 p-2 text-sm break-words whitespace-pre-wrap dark:bg-amber-950/20">
+					<p className="rounded bg-amber-50 p-2 text-sm wrap-break-word whitespace-pre-wrap dark:bg-amber-950/20">
 						{review.privateNotes}
 					</p>
 				</div>

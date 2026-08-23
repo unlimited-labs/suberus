@@ -8,7 +8,7 @@ export function InfoRow({
 	return (
 		<div className="flex flex-col gap-0.5 sm:flex-row sm:gap-2">
 			<span className="text-muted-foreground w-32 shrink-0">{label}</span>
-			<span className="min-w-0 break-words">{children}</span>
+			<span className="min-w-0 wrap-break-word">{children}</span>
 		</div>
 	);
 }

@@ -42,7 +42,7 @@ export function DecisionField({ form, readOnly }: DecisionFieldProps) {
 											<div className="flex items-center gap-2">
 												<div
 													className={cn(
-														"flex-shrink-0 p-1.5 rounded-md",
+														"shrink-0 p-1.5 rounded-md",
 														isSelected ? "bg-primary/10" : "bg-muted",
 													)}
 												>

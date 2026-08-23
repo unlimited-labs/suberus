@@ -54,7 +54,7 @@ export function VersionSelector({
 			</Select>
 			{isViewingOlderVersion && (
 				<div className="flex items-center gap-2 rounded-md border border-amber-500/20 bg-amber-500/10 p-2 text-amber-600 dark:text-amber-400">
-					<IconAlertCircle className="size-4 flex-shrink-0" />
+					<IconAlertCircle className="size-4 shrink-0" />
 					<span className="text-xs">Viewing older version</span>
 				</div>
 			)}

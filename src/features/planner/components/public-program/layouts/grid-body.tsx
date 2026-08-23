@@ -71,7 +71,7 @@ export function GridBody({
 							<div className={STICKY_COL} />
 							{cols.map((c) => (
 								<div
-									className="text-muted-foreground px-3 pb-2 text-[11px] font-[var(--prog-font-meta)] tracking-[0.2em] uppercase"
+									className="text-muted-foreground px-3 pb-2 font-(family-name:--prog-font-meta) text-[11px] tracking-[0.2em] uppercase"
 									key={c.id}
 								>
 									{c.name}
@@ -119,7 +119,7 @@ function GridRow({
 				<div className="grid" style={{ gridTemplateColumns }}>
 					<div
 						className={cn(
-							"py-4 pr-2 font-[var(--prog-font-meta)] text-[11px] leading-tight tabular-nums",
+							"py-4 pr-2 font-(family-name:--prog-font-meta) text-[11px] leading-tight tabular-nums",
 							STICKY_COL,
 						)}
 					>
@@ -165,7 +165,7 @@ function BreakBand({
 		>
 			{plainBreaks.length > 0 && (
 				<div className="flex items-center gap-3 sm:gap-5">
-					<span className="text-[10px] font-[var(--prog-font-meta)] tracking-[0.2em] text-[var(--prog-faint)] uppercase tabular-nums">
+					<span className="font-(family-name:--prog-font-meta) text-[10px] tracking-[0.2em] text-[var(--prog-faint)] uppercase tabular-nums">
 						{start} – {end}
 					</span>
 					<span className="text-muted-foreground text-base">
@@ -214,7 +214,7 @@ function MobileSwipe({
 					)}
 				>
 					<IconHandFinger className="animate-prog-swipe-hint" size={16} />
-					<span className="text-[10px] font-[var(--prog-font-meta)] tracking-[0.2em] uppercase">
+					<span className="font-(family-name:--prog-font-meta) text-[10px] tracking-[0.2em] uppercase">
 						Swipe
 					</span>
 				</div>
@@ -227,11 +227,11 @@ function MobileSwipe({
 				{cols.map((col, ci) => (
 					<section className="w-full shrink-0 snap-center px-5" key={col.id}>
 						<div className="border-primary mb-4 flex items-baseline gap-2 border-b pb-2">
-							<span className="text-primary text-sm font-[var(--prog-font-meta)] tracking-[0.2em] uppercase">
+							<span className="text-primary font-(family-name:--prog-font-meta) text-sm tracking-[0.2em] uppercase">
 								{col.name}
 							</span>
 							{cols.length > 1 && (
-								<span className="ml-auto text-[10px] font-[var(--prog-font-meta)] text-[var(--prog-faint)] tabular-nums">
+								<span className="ml-auto font-(family-name:--prog-font-meta) text-[10px] text-[var(--prog-faint)] tabular-nums">
 									{ci + 1} / {cols.length}
 								</span>
 							)}
@@ -273,7 +273,7 @@ function MobileRoomTimeline({
 					<div key={`${group.startAt}-${gi}`}>
 						{sessions.length > 0 && (
 							<>
-								<div className="mb-2 text-[11px] font-[var(--prog-font-meta)] tracking-[0.15em] text-[var(--prog-faint)] uppercase tabular-nums">
+								<div className="mb-2 font-(family-name:--prog-font-meta) text-[11px] tracking-[0.15em] text-[var(--prog-faint)] uppercase tabular-nums">
 									{start} – {end}
 								</div>
 								{sessions.map((s) => (

@@ -63,7 +63,7 @@ export function ContentTabs({
 								Document
 							</p>
 							<div className="border-border/50 bg-muted/30 flex items-center gap-4 rounded-lg border p-4">
-								<div className="bg-primary/10 flex-shrink-0 rounded-md p-2">
+								<div className="bg-primary/10 shrink-0 rounded-md p-2">
 									<IconFile className="text-primary size-6" />
 								</div>
 								<div className="min-w-0 flex-1">
@@ -90,7 +90,7 @@ export function ContentTabs({
 							<p className="text-muted-foreground text-sm font-medium">
 								Abstract
 							</p>
-							<div className="text-foreground bg-muted/30 border-border/50 rounded-lg border p-4 text-sm leading-relaxed break-words whitespace-pre-line">
+							<div className="text-foreground bg-muted/30 border-border/50 rounded-lg border p-4 text-sm leading-relaxed wrap-break-word whitespace-pre-line">
 								{content}
 							</div>
 						</div>

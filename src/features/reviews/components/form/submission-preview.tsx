@@ -198,7 +198,7 @@ function ContentCard({
 				</div>
 			)}
 			{content && (
-				<div className="border-border bg-muted/30 text-foreground max-h-96 overflow-auto rounded-lg border p-4 text-sm leading-relaxed break-words whitespace-pre-line">
+				<div className="border-border bg-muted/30 text-foreground max-h-96 overflow-auto rounded-lg border p-4 text-sm leading-relaxed wrap-break-word whitespace-pre-line">
 					{content}
 				</div>
 			)}

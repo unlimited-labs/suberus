@@ -28,7 +28,7 @@ export function EventDetails({
 }) {
 	return (
 		<>
-			<p className="flex items-center gap-2 text-xs font-[var(--prog-font-meta)] tracking-wide text-[var(--primary)] uppercase">
+			<p className="flex items-center gap-2 font-(family-name:--prog-font-meta) text-xs tracking-wide text-[var(--primary)] uppercase">
 				<IconCalendarEvent className="size-3.5 shrink-0" />
 				{formatClockTime(new Date(item.startAt), tz)} –{" "}
 				{formatClockTime(new Date(item.endAt), tz)}
@@ -99,7 +99,7 @@ export function SessionHeader({
 		<header className={className}>
 			<div
 				className={cn(
-					"flex flex-wrap items-center gap-x-2 gap-y-1 uppercase text-muted-foreground font-[var(--prog-font-meta)] tracking-[var(--prog-tracking)]",
+					"flex flex-wrap items-center gap-x-2 gap-y-1 uppercase text-muted-foreground font-(family-name:--prog-font-meta) tracking-[var(--prog-tracking)]",
 					metaClassName,
 				)}
 			>
@@ -117,7 +117,7 @@ export function SessionHeader({
 			</div>
 			<h3
 				className={cn(
-					"font-[var(--prog-font-display)] leading-tight text-foreground",
+					"font-(family-name:--prog-font-display) leading-tight text-foreground",
 					titleClassName,
 				)}
 			>
@@ -145,7 +145,7 @@ function ChairLine({
 	if (asLabel) {
 		return (
 			<p className="text-muted-foreground mt-1 text-sm">
-				<span className="text-[9px] font-[var(--prog-font-meta)] tracking-[var(--prog-tracking)] text-[var(--prog-faint)] uppercase">
+				<span className="font-(family-name:--prog-font-meta) text-[9px] tracking-[var(--prog-tracking)] text-[var(--prog-faint)] uppercase">
 					{label}
 				</span>{" "}
 				{names}
@@ -247,7 +247,7 @@ function PresentationRow({
 		>
 			<div>
 				{numbered && (
-					<span className="block text-xl leading-none font-[var(--prog-font-display)] text-[var(--prog-faint)] tabular-nums">
+					<span className="block font-(family-name:--prog-font-display) text-xl leading-none text-[var(--prog-faint)] tabular-nums">
 						{String(index + 1).padStart(2, "0")}
 					</span>
 				)}
@@ -256,7 +256,7 @@ function PresentationRow({
 						className={cn(
 							"block tabular-nums",
 							numbered
-								? "mt-1 font-[var(--prog-font-meta)] text-[10px] uppercase tracking-[var(--prog-tracking)] text-[var(--prog-faint)]"
+								? "mt-1 font-(family-name:--prog-font-meta) text-[10px] uppercase tracking-[var(--prog-tracking)] text-[var(--prog-faint)]"
 								: "text-sm font-medium text-muted-foreground",
 						)}
 					>
@@ -267,7 +267,7 @@ function PresentationRow({
 			<div className="min-w-0">
 				<p
 					className={cn(
-						"flex items-start gap-1.5 leading-snug text-foreground font-[var(--prog-font-body)]",
+						"flex items-start gap-1.5 leading-snug text-foreground font-(family-name:--prog-font-body)",
 						numbered ? "text-sm font-semibold" : "text-sm font-medium",
 					)}
 				>
@@ -325,7 +325,7 @@ function RowAuthors({
 	const { showAuthorInfo } = useProgramInteraction();
 	if (authors.length === 0) return null;
 	return (
-		<p className="text-muted-foreground mt-0.5 text-[13px] leading-snug font-[var(--prog-font-body)]">
+		<p className="text-muted-foreground mt-0.5 font-(family-name:--prog-font-body) text-[13px] leading-snug">
 			{showAuthorInfo ? (
 				authors.map((a, i) => (
 					<span key={a.orderIndex}>

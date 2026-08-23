@@ -149,7 +149,7 @@ function IntroView({
 		<div className="flex flex-col items-center gap-8 pt-8 text-center">
 			<div className="relative">
 				<div className="bg-primary/20 absolute inset-0 animate-pulse rounded-full blur-2xl" />
-				<div className="from-primary to-primary/70 text-primary-foreground shadow-primary/25 relative flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br shadow-lg">
+				<div className="from-primary to-primary/70 text-primary-foreground shadow-primary/25 relative flex h-28 w-28 items-center justify-center rounded-full bg-linear-to-br shadow-lg">
 					<IconWand className="h-12 w-12" />
 					<IconSparkles className="absolute top-3 right-3 h-5 w-5 text-white/90" />
 				</div>
@@ -343,7 +343,7 @@ function StageCard({
 				{status === "running" &&
 					(total > 0 ? (
 						<div
-							className="from-primary/60 to-primary h-full bg-gradient-to-r transition-[width] duration-500"
+							className="from-primary/60 to-primary h-full bg-linear-to-r transition-[width] duration-500"
 							style={{ width: `${pct}%` }}
 						/>
 					) : (

@@ -43,7 +43,7 @@ function FeePage() {
 							title="Payment Confirmed"
 						>
 							<div className="space-y-6">
-								<div className="relative overflow-hidden rounded-xl border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-50 to-green-50 p-6 transition-colors duration-500 dark:from-emerald-950/20 dark:to-green-950/20">
+								<div className="relative overflow-hidden rounded-xl border-2 border-emerald-500/30 bg-linear-to-br from-emerald-50 to-green-50 p-6 transition-colors duration-500 dark:from-emerald-950/20 dark:to-green-950/20">
 									<div className="absolute inset-0 opacity-[0.03]">
 										<svg
 											aria-hidden="true"
@@ -97,7 +97,7 @@ function FeePage() {
 
 								<div className="grid gap-4 sm:grid-cols-2">
 									<div className="group border-border/50 bg-card/50 hover:border-border relative overflow-hidden rounded-lg border p-5 backdrop-blur-sm transition-[border-color,box-shadow] duration-300 hover:shadow-md">
-										<div className="from-primary to-primary/50 absolute top-0 left-0 h-full w-1 bg-gradient-to-b opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+										<div className="from-primary to-primary/50 absolute top-0 left-0 h-full w-1 bg-linear-to-b opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 										<div className="text-muted-foreground mb-1.5 text-xs font-medium tracking-wider uppercase">
 											Fee Type
 										</div>
@@ -108,7 +108,7 @@ function FeePage() {
 
 									{fee.amount !== null && fee.currency && (
 										<div className="group border-border/50 bg-card/50 hover:border-border relative overflow-hidden rounded-lg border p-5 backdrop-blur-sm transition-[border-color,box-shadow] duration-300 hover:shadow-md">
-											<div className="from-primary to-primary/50 absolute top-0 left-0 h-full w-1 bg-gradient-to-b opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+											<div className="from-primary to-primary/50 absolute top-0 left-0 h-full w-1 bg-linear-to-b opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 											<div className="text-muted-foreground mb-1.5 text-xs font-medium tracking-wider uppercase">
 												Amount
 											</div>
@@ -125,7 +125,7 @@ function FeePage() {
 
 									{fee.paidAt && (
 										<div className="group border-border/50 bg-card/50 hover:border-border relative overflow-hidden rounded-lg border p-5 backdrop-blur-sm transition-[border-color,box-shadow] duration-300 hover:shadow-md sm:col-span-2">
-											<div className="absolute top-0 left-0 h-full w-1 bg-gradient-to-b from-emerald-500 to-emerald-500/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+											<div className="absolute top-0 left-0 h-full w-1 bg-linear-to-b from-emerald-500 to-emerald-500/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 											<div className="text-muted-foreground mb-1.5 text-xs font-medium tracking-wider uppercase">
 												Payment Date
 											</div>
@@ -138,7 +138,7 @@ function FeePage() {
 							</div>
 						</SettingsSection>
 					) : (
-						<Alert className="animate-fade-in-up border-amber-500/30 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20">
+						<Alert className="border-amber-500/30 bg-linear-to-br from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20">
 							<IconInfoCircle className="text-amber-600 dark:text-amber-400" />
 							<AlertTitle className="text-amber-900 dark:text-amber-100">
 								Payment Not Received

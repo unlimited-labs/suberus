@@ -344,7 +344,7 @@ function VersionCompareBody({
 
 			{compareV.comment && (
 				<SectionCard title={`Author's note for v${compare}`}>
-					<p className="text-muted-foreground text-sm break-words whitespace-pre-wrap">
+					<p className="text-muted-foreground text-sm wrap-break-word whitespace-pre-wrap">
 						{compareV.comment}
 					</p>
 				</SectionCard>

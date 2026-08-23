@@ -36,7 +36,7 @@ export function ParticipantsList({
 
 	return (
 		<>
-			<p className="text-muted-foreground mb-4 text-xs font-[var(--prog-font-meta)] tracking-[var(--prog-tracking)] uppercase">
+			<p className="text-muted-foreground mb-4 font-(family-name:--prog-font-meta) text-xs tracking-[var(--prog-tracking)] uppercase">
 				{participants.length} participants
 			</p>
 			<div
@@ -78,14 +78,14 @@ export function ParticipantsList({
 				open={!!selected}
 			>
 				<DialogContent
-					className="bg-background text-foreground font-[var(--prog-font-body)] sm:max-w-md"
+					className="bg-background text-foreground font-(family-name:--prog-font-body) sm:max-w-md"
 					data-program-theme={themeId}
 					data-testid="participant-details"
 				>
 					{selected && (
 						<>
 							<DialogHeader className="pr-8 text-left">
-								<DialogTitle className="text-lg leading-snug font-[var(--prog-font-display)] font-semibold">
+								<DialogTitle className="font-(family-name:--prog-font-display) text-lg leading-snug font-semibold">
 									{selected.firstName} {selected.lastName}
 								</DialogTitle>
 							</DialogHeader>
@@ -117,7 +117,7 @@ function ParticipantCardBody({
 			<span className="text-foreground font-medium">
 				<Highlight query={query} text={name} />
 			</span>
-			<p className="text-muted-foreground mt-0.5 text-xs leading-snug break-words">
+			<p className="text-muted-foreground mt-0.5 text-xs leading-snug wrap-break-word">
 				<Highlight
 					query={query}
 					text={affiliationDisplay(participant.affiliationName)}

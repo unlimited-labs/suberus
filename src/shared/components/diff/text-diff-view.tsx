@@ -34,7 +34,7 @@ export function TextDiffView({
 	return (
 		<div
 			className={cn(
-				"whitespace-pre-wrap break-words text-sm leading-relaxed",
+				"whitespace-pre-wrap wrap-break-word text-sm leading-relaxed",
 				className,
 			)}
 			data-testid="text-diff"

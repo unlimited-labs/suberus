@@ -29,7 +29,7 @@ export function SideBySideDiffView({
 		<SplitColumns
 			className={className}
 			newChildren={
-				<div className="text-sm leading-relaxed break-words whitespace-pre-wrap">
+				<div className="text-sm leading-relaxed wrap-break-word whitespace-pre-wrap">
 					{newSegments.map((seg, i) =>
 						seg.type === "insert" ? (
 							<DiffIns key={i}>{seg.value}</DiffIns>
@@ -41,7 +41,7 @@ export function SideBySideDiffView({
 			}
 			newLabel={newLabel}
 			oldChildren={
-				<div className="text-sm leading-relaxed break-words whitespace-pre-wrap">
+				<div className="text-sm leading-relaxed wrap-break-word whitespace-pre-wrap">
 					{oldSegments.map((seg, i) =>
 						seg.type === "delete" ? (
 							<DiffDel key={i}>{seg.value}</DiffDel>

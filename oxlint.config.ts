@@ -38,11 +38,18 @@ export default defineConfig({
 	jsPlugins: [
 		{ name: "anti-slop", specifier: "./tools/oxlint/anti-slop/index.ts" },
 		{ name: "sort-props", specifier: "./tools/oxlint/sort-props/index.ts" },
+		"oxlint-tailwindcss",
 	],
+	settings: { tailwindcss: { entryPoint: "src/styles.css" } },
 	rules: {
 		// Replaces Biome useSortedAttributes; ignoreCase matches its ordering.
 		"sort-props/jsx-sort-props": ["error", { ignoreCase: true }],
 		"typescript/no-deprecated": "error",
+		"tailwindcss/no-conflicting-classes": "error",
+		"tailwindcss/no-deprecated-classes": "error",
+		"tailwindcss/no-duplicate-classes": "error",
+		"tailwindcss/no-unknown-classes": "error",
+		"tailwindcss/no-unnecessary-whitespace": "error",
 		"array-callback-return": "error",
 		"constructor-super": "error",
 		"default-case-last": "error",

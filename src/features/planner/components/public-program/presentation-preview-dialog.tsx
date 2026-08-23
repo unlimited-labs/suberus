@@ -27,7 +27,7 @@ import type { PreviewTarget } from "./program-interaction";
 import { resolveProgramTheme } from "./themes/registry";
 
 const META =
-	"font-[var(--prog-font-meta)] text-xs uppercase tracking-[var(--prog-tracking)] text-muted-foreground";
+	"font-(family-name:--prog-font-meta) text-xs uppercase tracking-[var(--prog-tracking)] text-muted-foreground";
 const BTN =
 	"inline-flex items-center justify-center gap-2 rounded-[var(--radius)] border px-3 py-1.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0";
 const BTN_IDLE = "border-border bg-background text-foreground hover:bg-muted";
@@ -57,7 +57,7 @@ export function PresentationPreviewDialog({
 	return (
 		<Dialog onOpenChange={onOpenChange} open={!!target}>
 			<DialogContent
-				className="bg-background text-foreground font-[var(--prog-font-body)] sm:max-w-2xl"
+				className="bg-background text-foreground font-(family-name:--prog-font-body) sm:max-w-2xl"
 				data-program-theme={themeId}
 				data-testid="presentation-preview"
 			>
@@ -179,7 +179,7 @@ function TalkHeader({
 			</div>
 			<DialogTitle
 				className={cn(
-					"font-[var(--prog-font-display)] leading-snug",
+					"font-(family-name:--prog-font-display) leading-snug",
 					framed ? "text-2xl font-bold" : "text-lg font-semibold",
 				)}
 			>
@@ -264,7 +264,7 @@ function PreviewContent({
 			{content && (
 				<section className="space-y-2">
 					<h3 className={HEADING}>Abstract</h3>
-					<div className={cn("whitespace-pre-line break-words", ABSTRACT)}>
+					<div className={cn("whitespace-pre-line wrap-break-word", ABSTRACT)}>
 						{content}
 					</div>
 				</section>
@@ -328,7 +328,7 @@ function Authors({
 										</span>
 									)}
 								</div>
-								<p className="text-muted-foreground mt-0.5 text-xs leading-snug break-words">
+								<p className="text-muted-foreground mt-0.5 text-xs leading-snug wrap-break-word">
 									{affiliationDisplay(author.affiliationName)}
 								</p>
 							</div>
@@ -393,7 +393,7 @@ function AuthorBody({
 				<span className={META}>Author</span>
 				<DialogTitle
 					className={cn(
-						"font-[var(--prog-font-display)] leading-snug",
+						"font-(family-name:--prog-font-display) leading-snug",
 						framed ? "text-2xl font-bold" : "text-lg font-semibold",
 					)}
 				>

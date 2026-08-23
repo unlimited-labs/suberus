@@ -31,7 +31,7 @@ function Row({
 	const s = STATUS_STYLE[status];
 	return (
 		<li className={cn("text-sm", s.row)} data-diff-status={status}>
-			<span className="break-words">{children}</span>
+			<span className="wrap-break-word">{children}</span>
 			{s.label && (
 				<span className="ml-2 text-xs font-medium tracking-wide uppercase opacity-70">
 					{s.label}

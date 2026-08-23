@@ -2,7 +2,7 @@ import { IconStarFilled } from "@tabler/icons-react";
 import { affiliationDisplay } from "@/shared/components/author-card-styles";
 
 export const HEADING =
-	"font-[var(--prog-font-meta)] text-xs font-semibold uppercase tracking-[var(--prog-tracking)] text-muted-foreground";
+	"font-(family-name:--prog-font-meta) text-xs font-semibold uppercase tracking-[var(--prog-tracking)] text-muted-foreground";
 export const ABSTRACT = "text-sm leading-relaxed text-foreground";
 
 export function ContactDetails({

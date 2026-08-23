@@ -164,7 +164,7 @@ export function ContentTab({
 				) : (
 					<div className="prose prose-sm dark:prose-invert max-w-none">
 						{displayedContent.split(/\n{2,}/).map((para, i) => (
-							<p className="break-words whitespace-pre-wrap" key={i}>
+							<p className="wrap-break-word whitespace-pre-wrap" key={i}>
 								{para}
 							</p>
 						))}

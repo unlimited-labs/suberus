@@ -152,7 +152,7 @@ function ProgressItem({
 		<div className="flex items-center gap-3">
 			<div
 				className={cn(
-					"flex-shrink-0 p-2 rounded-md",
+					"shrink-0 p-2 rounded-md",
 					completed ? "bg-primary/10" : "bg-muted",
 				)}
 			>

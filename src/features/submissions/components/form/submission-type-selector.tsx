@@ -58,7 +58,7 @@ export function SubmissionTypeSelector({
 						>
 							<div
 								className={cn(
-									"flex-shrink-0 p-2 rounded-md",
+									"shrink-0 p-2 rounded-md",
 									isSelected ? "bg-primary/10" : "bg-muted",
 								)}
 							>
