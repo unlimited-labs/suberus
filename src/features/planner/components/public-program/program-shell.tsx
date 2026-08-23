@@ -88,8 +88,8 @@ export function ProgramFrame({
 					className={
 						mainClassName ??
 						(framed
-							? "mx-auto max-w-[var(--prog-max-width)] px-5 py-8 sm:px-10 sm:py-12"
-							: "mx-auto max-w-[var(--prog-max-width)] px-5 py-8 sm:px-8")
+							? "mx-auto max-w-(--prog-max-width) px-5 py-8 sm:px-10 sm:py-12"
+							: "mx-auto max-w-(--prog-max-width) px-5 py-8 sm:px-8")
 					}
 				>
 					{children}
@@ -186,7 +186,7 @@ function ProgramStickyBar({
 		>
 			<div
 				className={cn(
-					"mx-auto flex max-w-[var(--prog-max-width)] flex-col gap-3 px-5 sm:flex-row sm:items-center sm:justify-between",
+					"mx-auto flex max-w-(--prog-max-width) flex-col gap-3 px-5 sm:flex-row sm:items-center sm:justify-between",
 					framed ? "py-2 sm:gap-4 sm:px-10 sm:py-2.5" : "py-3 sm:px-8",
 				)}
 			>
@@ -223,7 +223,7 @@ function MinimalHeader({
 }) {
 	return (
 		<header className="border-border border-b">
-			<div className="mx-auto max-w-[var(--prog-max-width)] px-5 pt-10 pb-6 sm:px-8 sm:pt-14">
+			<div className="mx-auto max-w-(--prog-max-width) px-5 pt-10 pb-6 sm:px-8 sm:pt-14">
 				<div className="mb-4 flex items-center justify-end gap-4">
 					<ProgramPwaStatus className="text-muted-foreground" />
 					{settings.showAuthorInfo && settings.viewerIsParticipant && (
@@ -271,7 +271,7 @@ function FramedHeader({
 
 	return (
 		<header className="border-b" style={HEADER_RULE_STYLE}>
-			<div className="mx-auto max-w-[var(--prog-max-width)] px-5 pt-4 pb-3 sm:px-10 sm:pt-12 sm:pb-7">
+			<div className="mx-auto max-w-(--prog-max-width) px-5 pt-4 pb-3 sm:px-10 sm:pt-12 sm:pb-7">
 				<div className="border-border text-muted-foreground flex items-center justify-end gap-4 border-b pb-2">
 					<ProgramPwaStatus />
 					{settings.showAuthorInfo && settings.viewerIsParticipant && (
@@ -325,7 +325,7 @@ function FramedFooter({
 			)}
 			style={RULE_STYLE}
 		>
-			<div className="font-(family-name:--prog-font-meta) text-[10px] tracking-[0.3em] text-[var(--prog-faint)] uppercase">
+			<div className="font-(family-name:--prog-font-meta) text-[10px] tracking-[0.3em] text-(--prog-faint) uppercase">
 				{themeId === "academic" ? settings.name || "Conference" : "— Fin —"}
 			</div>
 		</footer>
@@ -399,7 +399,7 @@ function FramedNav({
 							"group relative flex shrink-0 items-baseline gap-2 px-3 py-1.5 text-left whitespace-nowrap transition-colors first:pl-0 sm:py-2",
 							isActive
 								? "text-primary"
-								: "text-[var(--prog-faint)] hover:text-foreground",
+								: "text-(--prog-faint) hover:text-foreground",
 						)}
 						key={day.toISOString()}
 						onClick={() => setActiveDay(i)}
@@ -412,12 +412,12 @@ function FramedNav({
 							<span className="text-[10px] tracking-[0.2em] uppercase">
 								{label.weekday.slice(0, 3)}
 							</span>
-							<span className="text-[10px] tracking-[0.15em] text-[var(--prog-faint)] uppercase">
+							<span className="text-[10px] tracking-[0.15em] text-(--prog-faint) uppercase">
 								{label.month.slice(0, 3)}
 							</span>
 						</span>
 						{isActive && (
-							<span className="bg-primary absolute -bottom-[13px] left-0 h-[2px] w-full sm:-bottom-[10px]" />
+							<span className="bg-primary absolute bottom-[-13px] left-0 h-[2px] w-full sm:bottom-[-10px]" />
 						)}
 					</button>
 				);
@@ -450,7 +450,7 @@ function SearchBox({
 				className={cn(
 					framed
 						? "rounded-none border-0 border-b border-border bg-transparent pr-8 pl-6 text-base shadow-none focus-visible:border-primary focus-visible:ring-0 sm:text-sm"
-						: "pr-9 pl-9",
+						: "px-9",
 				)}
 				onChange={(e) => setSearch(e.target.value)}
 				placeholder={placeholder ?? "Search talks, authors, tracks…"}

@@ -47,7 +47,7 @@ function FeePage() {
 									<div className="absolute inset-0 opacity-[0.03]">
 										<svg
 											aria-hidden="true"
-											className="h-full w-full"
+											className="size-full"
 											xmlns="http://www.w3.org/2000/svg"
 										>
 											<defs>

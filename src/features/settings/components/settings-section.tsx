@@ -18,8 +18,8 @@ export function SettingsSection({
 }: SettingsSectionProps) {
 	return (
 		<section className="group" style={{ animationDelay: `${delay}ms` }}>
-			<div className="border-border/50 bg-card focus-within:outline-ring before:via-primary relative overflow-hidden rounded-2xl border shadow-sm backdrop-blur-[8px] transition-shadow duration-300 before:absolute before:top-0 before:right-0 before:left-0 before:h-px before:bg-linear-to-r before:from-transparent before:to-transparent before:opacity-0 before:transition-opacity before:duration-400 focus-within:outline-2 focus-within:outline-offset-2 hover:shadow-lg hover:before:opacity-30">
-				<div className="absolute top-0 right-0 h-24 w-24 opacity-5">
+			<div className="border-border/50 bg-card focus-within:outline-ring before:via-primary relative overflow-hidden rounded-2xl border shadow-sm backdrop-blur-[8px] transition-shadow duration-300 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:to-transparent before:opacity-0 before:transition-opacity before:duration-400 focus-within:outline-2 focus-within:outline-offset-2 hover:shadow-lg hover:before:opacity-30">
+				<div className="absolute top-0 right-0 size-24 opacity-5">
 					<svg
 						aria-hidden="true"
 						className="text-primary"

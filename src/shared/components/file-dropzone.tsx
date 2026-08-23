@@ -106,7 +106,7 @@ export function FileDropzone({
 					<input
 						accept={accept}
 						aria-label="Upload file"
-						className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+						className="absolute inset-0 size-full cursor-pointer opacity-0"
 						onChange={handleFileSelect}
 						type="file"
 					/>

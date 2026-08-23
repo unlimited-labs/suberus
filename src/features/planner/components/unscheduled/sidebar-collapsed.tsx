@@ -10,7 +10,7 @@ export function SidebarCollapsed({ count, onExpand }: Props) {
 		<div className="bg-muted/30 flex flex-col items-center border-r pt-3">
 			<button
 				aria-label={`Open unscheduled submissions panel (${count})`}
-				className="text-muted-foreground hover:bg-muted hover:text-foreground flex flex-col items-center gap-1 rounded px-2 py-2"
+				className="text-muted-foreground hover:bg-muted hover:text-foreground flex flex-col items-center gap-1 rounded p-2"
 				onClick={onExpand}
 				title="Unscheduled submissions"
 				type="button"

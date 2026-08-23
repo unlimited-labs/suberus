@@ -28,7 +28,7 @@ export function EventDetails({
 }) {
 	return (
 		<>
-			<p className="flex items-center gap-2 font-(family-name:--prog-font-meta) text-xs tracking-wide text-[var(--primary)] uppercase">
+			<p className="flex items-center gap-2 font-(family-name:--prog-font-meta) text-xs tracking-wide text-(--primary) uppercase">
 				<IconCalendarEvent className="size-3.5 shrink-0" />
 				{formatClockTime(new Date(item.startAt), tz)} –{" "}
 				{formatClockTime(new Date(item.endAt), tz)}
@@ -99,7 +99,7 @@ export function SessionHeader({
 		<header className={className}>
 			<div
 				className={cn(
-					"flex flex-wrap items-center gap-x-2 gap-y-1 uppercase text-muted-foreground font-(family-name:--prog-font-meta) tracking-[var(--prog-tracking)]",
+					"flex flex-wrap items-center gap-x-2 gap-y-1 uppercase text-muted-foreground font-(family-name:--prog-font-meta) tracking-(--prog-tracking)",
 					metaClassName,
 				)}
 			>
@@ -145,7 +145,7 @@ function ChairLine({
 	if (asLabel) {
 		return (
 			<p className="text-muted-foreground mt-1 text-sm">
-				<span className="font-(family-name:--prog-font-meta) text-[9px] tracking-[var(--prog-tracking)] text-[var(--prog-faint)] uppercase">
+				<span className="font-(family-name:--prog-font-meta) text-[9px] tracking-(--prog-tracking) text-(--prog-faint) uppercase">
 					{label}
 				</span>{" "}
 				{names}
@@ -247,7 +247,7 @@ function PresentationRow({
 		>
 			<div>
 				{numbered && (
-					<span className="block font-(family-name:--prog-font-display) text-xl leading-none text-[var(--prog-faint)] tabular-nums">
+					<span className="block font-(family-name:--prog-font-display) text-xl leading-none text-(--prog-faint) tabular-nums">
 						{String(index + 1).padStart(2, "0")}
 					</span>
 				)}
@@ -256,7 +256,7 @@ function PresentationRow({
 						className={cn(
 							"block tabular-nums",
 							numbered
-								? "mt-1 font-(family-name:--prog-font-meta) text-[10px] uppercase tracking-[var(--prog-tracking)] text-[var(--prog-faint)]"
+								? "mt-1 font-(family-name:--prog-font-meta) text-[10px] uppercase tracking-(--prog-tracking) text-(--prog-faint)"
 								: "text-sm font-medium text-muted-foreground",
 						)}
 					>
@@ -281,7 +281,7 @@ function PresentationRow({
 					{p.cancelled ? (
 						<Tooltip>
 							<TooltipTrigger asChild>
-								<span className="text-[var(--prog-faint)] line-through decoration-2">
+								<span className="text-(--prog-faint) line-through decoration-2">
 									<Highlight
 										markClassName={MARK}
 										query={query}

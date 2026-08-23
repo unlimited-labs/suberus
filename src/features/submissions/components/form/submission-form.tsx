@@ -277,7 +277,7 @@ export function SubmissionForm(props: SubmissionFormProps) {
 												>
 													{isSavingDraft ? (
 														<>
-															<div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+															<div className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
 															Saving...
 														</>
 													) : (
@@ -295,7 +295,7 @@ export function SubmissionForm(props: SubmissionFormProps) {
 											>
 												{isSubmitting ? (
 													<>
-														<div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+														<div className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
 														Submitting...
 													</>
 												) : (

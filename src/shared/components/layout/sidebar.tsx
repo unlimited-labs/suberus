@@ -68,7 +68,7 @@ function SidebarContent({
 
 	return (
 		<div className="flex h-full flex-col">
-			<div className="px-4 py-4">
+			<div className="p-4">
 				<Link className="block" to="/">
 					<BrandLogo
 						alt="Suberus"

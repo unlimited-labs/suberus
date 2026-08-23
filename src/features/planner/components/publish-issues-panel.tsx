@@ -65,7 +65,7 @@ export function PublishIssuesPanel({
 								return (
 									<li data-testid={`publish-issue-${i}`} key={key}>
 										<button
-											className="flex w-full items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-left text-sm transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950 dark:hover:bg-amber-900"
+											className="flex w-full items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-left text-sm transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950 hover:dark:bg-amber-900"
 											onClick={() => onSelectIssue(targetId)}
 											type="button"
 										>

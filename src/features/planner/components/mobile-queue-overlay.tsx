@@ -13,7 +13,7 @@ export function MobileQueueOverlay({ onClose }: Props) {
 				onClick={onClose}
 				type="button"
 			/>
-			<div className="bg-background relative ml-auto flex h-full w-full max-w-sm shadow-xl">
+			<div className="bg-background relative ml-auto flex size-full max-w-sm shadow-xl">
 				<UnscheduledSidebar />
 			</div>
 		</div>

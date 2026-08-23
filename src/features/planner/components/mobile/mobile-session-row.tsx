@@ -15,7 +15,7 @@ export function MobileSessionRow({ item, timezone, onClick }: Props) {
 	const dur = formatDurationMin(item.startAt, item.endAt);
 	return (
 		<button
-			className="hover:bg-muted/40 flex w-full items-stretch gap-3 px-3 py-3 text-left"
+			className="hover:bg-muted/40 flex w-full items-stretch gap-3 p-3 text-left"
 			data-testid={`mobile-session-${item.id}`}
 			onClick={() => onClick(item.id)}
 			type="button"

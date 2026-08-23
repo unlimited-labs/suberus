@@ -19,7 +19,7 @@ export function authorCardClassName({
 
 export function presenterBadgeClassName(isPresenter: boolean): string {
 	return cn(
-		"w-6 h-6 rounded-md flex items-center justify-center text-xs font-semibold",
+		"rounded-md flex items-center justify-center text-xs font-semibold size-6",
 		isPresenter
 			? "bg-primary/10 text-primary"
 			: "bg-muted/50 text-muted-foreground",

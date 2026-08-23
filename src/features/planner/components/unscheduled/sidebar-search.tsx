@@ -8,7 +8,7 @@ interface Props {
 
 export function SidebarSearch({ value, onChange }: Props) {
 	return (
-		<div className="border-b px-2 py-2">
+		<div className="border-b p-2">
 			<div className="relative">
 				<IconSearch
 					className="text-muted-foreground absolute top-1/2 left-2.5 -translate-y-1/2"

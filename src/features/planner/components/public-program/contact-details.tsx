@@ -56,7 +56,7 @@ export function ContactDetails({
 					>
 						<span
 							aria-hidden
-							className="flex size-4 items-center justify-center rounded-full bg-[#A6CE39] text-[8px] font-bold text-white"
+							className="bg-orcid flex size-4 items-center justify-center rounded-full text-[8px] font-bold text-white"
 						>
 							iD
 						</span>

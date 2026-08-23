@@ -24,7 +24,7 @@ export function ProgressStep({
 				<div className="border-destructive/30 max-h-48 overflow-auto rounded-md border p-2">
 					{progress.failures.map((f) => (
 						<div
-							className="flex items-center justify-between gap-2 px-1 py-1 text-xs"
+							className="flex items-center justify-between gap-2 p-1 text-xs"
 							key={f.id}
 						>
 							<span className="truncate">{f.participant}</span>

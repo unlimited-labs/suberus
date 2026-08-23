@@ -60,7 +60,7 @@ export function PlannerCalendarHeader() {
 									size="sm"
 									variant="outline"
 								>
-									<IconCalendarStar className="h-4 w-4" />
+									<IconCalendarStar className="size-4" />
 									<span>Conference start</span>
 								</Button>
 							</span>
@@ -96,7 +96,7 @@ export function PlannerCalendarHeader() {
 									size="sm"
 									variant="outline"
 								>
-									<IconWand className="h-4 w-4" />
+									<IconWand className="size-4" />
 									<span>Auto-plan</span>
 								</Button>
 							</span>
@@ -113,7 +113,7 @@ export function PlannerCalendarHeader() {
 						size="sm"
 						variant="default"
 					>
-						<IconPlus className="h-4 w-4" />
+						<IconPlus className="size-4" />
 						<span>New</span>
 					</Button>
 				</div>

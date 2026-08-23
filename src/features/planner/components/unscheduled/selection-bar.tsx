@@ -7,7 +7,7 @@ interface Props {
 export function SelectionBar({ count, onCreateSession, onClear }: Props) {
 	return (
 		<div
-			className="bg-muted/40 flex items-center gap-2 border-t px-2 py-2"
+			className="bg-muted/40 flex items-center gap-2 border-t p-2"
 			data-testid="sidebar-selection-bar"
 		>
 			<span className="bg-background rounded-full px-2 py-0.5 text-[11px] font-medium">

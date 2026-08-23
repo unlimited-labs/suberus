@@ -71,7 +71,7 @@ export function IssuesPanel({ sessions }: IssuesPanelProps) {
 			<Popover>
 				<PopoverTrigger asChild>
 					<button
-						className="inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800 transition-colors hover:bg-amber-100 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300 dark:hover:bg-amber-950/60"
+						className="inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800 transition-colors hover:bg-amber-100 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300 hover:dark:bg-amber-950/60"
 						data-testid="issues-popover-trigger"
 						type="button"
 					>

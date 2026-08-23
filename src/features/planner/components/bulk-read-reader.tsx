@@ -49,7 +49,7 @@ export function BulkReadReader({
 		>
 			<DialogContent
 				aria-label="Read submissions"
-				className="bg-background fixed inset-0 flex max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none p-0 ring-0 sm:max-w-none"
+				className="bg-background fixed inset-0 flex max-w-none translate-0 flex-col gap-0 rounded-none p-0 ring-0 sm:max-w-none"
 				data-testid="bulk-reader"
 				initialFocus={closeRef}
 				showCloseButton={false}
@@ -80,7 +80,7 @@ export function BulkReadReader({
 				<div className="flex flex-1 overflow-hidden">
 					<button
 						aria-label="Previous"
-						className="text-muted-foreground hover:bg-muted hover:text-foreground flex w-12 shrink-0 items-center justify-center disabled:opacity-20 disabled:hover:bg-transparent"
+						className="text-muted-foreground hover:bg-muted hover:text-foreground flex w-12 shrink-0 items-center justify-center disabled:opacity-20 hover:disabled:bg-transparent"
 						data-testid="bulk-reader-prev"
 						disabled={safe === 0}
 						onClick={() => setIdx((i) => Math.max(0, i - 1))}
@@ -135,7 +135,7 @@ export function BulkReadReader({
 
 					<button
 						aria-label="Next"
-						className="text-muted-foreground hover:bg-muted hover:text-foreground flex w-12 shrink-0 items-center justify-center disabled:opacity-20 disabled:hover:bg-transparent"
+						className="text-muted-foreground hover:bg-muted hover:text-foreground flex w-12 shrink-0 items-center justify-center disabled:opacity-20 hover:disabled:bg-transparent"
 						data-testid="bulk-reader-next"
 						disabled={safe === submissions.length - 1}
 						onClick={() =>

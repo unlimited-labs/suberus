@@ -16,7 +16,7 @@ export function MobileBreakRow({ item, timezone, onClick }: Props) {
 	const isEvent = item.itemKind === "event";
 	return (
 		<button
-			className="bg-muted/30 hover:bg-muted/50 flex w-full items-center gap-3 px-3 py-3 text-left"
+			className="bg-muted/30 hover:bg-muted/50 flex w-full items-center gap-3 p-3 text-left"
 			data-testid={`mobile-break-${item.id}`}
 			onClick={() => onClick(item.id)}
 			type="button"

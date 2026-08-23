@@ -26,7 +26,7 @@ export function PublishButton() {
 	if (isPublished) {
 		return (
 			<Button
-				className="gap-1.5 border-green-300 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950"
+				className="gap-1.5 border-green-300 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400 hover:dark:bg-green-950"
 				data-testid="unpublish-button"
 				disabled={busy !== null}
 				onClick={unpublish}

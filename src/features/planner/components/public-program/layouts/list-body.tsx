@@ -71,7 +71,7 @@ function TimeSlot({
 			<div
 				className={cn(
 					"grid",
-					framed ? "gap-y-12 sm:gap-x-10 sm:gap-y-10" : "gap-4",
+					framed ? "gap-y-12 sm:gap-10" : "gap-4",
 					parallel &&
 						(framed
 							? "md:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(320px,1fr))]"
@@ -185,7 +185,7 @@ function BreakCard({
 				"flex items-center justify-center border border-dashed border-border text-center",
 				framed
 					? "px-4 py-6 sm:py-10"
-					: "rounded-[var(--prog-card-radius)] px-4 py-8",
+					: "rounded-(--prog-card-radius) px-4 py-8",
 			)}
 		>
 			<div>
@@ -228,8 +228,8 @@ function EventCard({
 	return (
 		<div
 			className={cn(
-				"border-l-2 border-[var(--primary)] bg-[var(--prog-mark,var(--muted))]/40 px-5 py-5",
-				framed ? "" : "rounded-[var(--prog-card-radius)]",
+				"border-l-2 border-(--primary) bg-(--prog-mark,var(--muted))/40 p-5",
+				framed ? "" : "rounded-(--prog-card-radius)",
 			)}
 			data-testid={`program-event-${item.id}`}
 		>
@@ -257,7 +257,7 @@ function MinimalCard({
 }) {
 	const trackColor = session.track?.color ?? undefined;
 	return (
-		<article className="border-border bg-card overflow-hidden rounded-[var(--prog-card-radius)] border">
+		<article className="border-border bg-card overflow-hidden rounded-(--prog-card-radius) border">
 			<div
 				aria-hidden
 				className="h-1 w-full"

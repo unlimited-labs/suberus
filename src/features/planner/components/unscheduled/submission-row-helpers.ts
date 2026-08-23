@@ -33,7 +33,7 @@ export function submissionRowClassName({
 	leaving: boolean;
 }): string {
 	return cn(
-		"group flex cursor-grab items-start gap-1.5 px-2 py-2 transition-all duration-200 ease-out hover:bg-muted/40 active:cursor-grabbing",
+		"group flex cursor-grab items-start gap-1.5 transition-all duration-200 ease-out hover:bg-muted/40 active:cursor-grabbing p-2",
 		dragging && "opacity-40",
 		selected && "bg-primary/5",
 		leaving

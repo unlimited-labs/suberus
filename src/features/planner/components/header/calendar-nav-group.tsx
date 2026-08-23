@@ -18,7 +18,7 @@ export function CalendarNavGroup({ onPrev, onNext, onToday }: Props) {
 				onClick={onPrev}
 				type="button"
 			>
-				<IconChevronLeft className="h-4 w-4" />
+				<IconChevronLeft className="size-4" />
 			</button>
 			<button
 				className={`h-7 px-2.5 text-xs font-medium ${BTN}`}
@@ -33,7 +33,7 @@ export function CalendarNavGroup({ onPrev, onNext, onToday }: Props) {
 				onClick={onNext}
 				type="button"
 			>
-				<IconChevronRight className="h-4 w-4" />
+				<IconChevronRight className="size-4" />
 			</button>
 		</div>
 	);

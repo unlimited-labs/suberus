@@ -273,7 +273,7 @@ function PreviewContent({
 				<section className="flex flex-wrap gap-2">
 					{keywords.map((k) => (
 						<span
-							className="bg-secondary text-secondary-foreground rounded-[var(--radius)] px-2 py-0.5 text-xs font-medium"
+							className="bg-secondary text-secondary-foreground rounded-(--radius) px-2 py-0.5 text-xs font-medium"
 							key={k}
 						>
 							{k}
@@ -303,14 +303,14 @@ function Authors({
 			>
 				{authors.map((author, index) => {
 					const cardClass = cn(
-						"flex h-full items-start gap-3 rounded-[var(--radius)] border border-border bg-card p-3",
+						"flex h-full items-start gap-3 rounded-(--radius) border border-border bg-card p-3",
 						author.isPresenter && "border-primary/40 bg-primary/5",
 					);
 					const inner = (
 						<>
 							<div
 								className={cn(
-									"flex size-6 shrink-0 items-center justify-center rounded-[var(--radius)] bg-muted text-xs font-semibold text-muted-foreground",
+									"flex size-6 shrink-0 items-center justify-center rounded-(--radius) bg-muted text-xs font-semibold text-muted-foreground",
 									author.isPresenter && "bg-primary/10 text-primary",
 								)}
 							>

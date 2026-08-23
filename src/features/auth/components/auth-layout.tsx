@@ -66,7 +66,7 @@ export function AuthLayout({
 				</>
 			)}
 
-			<header className="fixed inset-x-0 top-0 z-20 flex justify-center p-6 sm:inset-x-auto sm:left-0 sm:justify-start sm:p-6 lg:p-8">
+			<header className="fixed inset-x-0 top-0 z-20 flex justify-center p-6 sm:inset-x-auto sm:left-0 sm:justify-start lg:p-8">
 				<Link className="group block" to="/">
 					<div className="flex items-center gap-3">
 						<BrandLogo
@@ -79,8 +79,8 @@ export function AuthLayout({
 				</Link>
 			</header>
 
-			<div className="bg-primary/5 pointer-events-none fixed -top-32 -right-32 h-96 w-96 rounded-full blur-3xl" />
-			<div className="bg-accent/10 pointer-events-none fixed -bottom-32 -left-32 h-80 w-80 rounded-full blur-3xl" />
+			<div className="bg-primary/5 pointer-events-none fixed -top-32 -right-32 size-96 rounded-full blur-3xl" />
+			<div className="bg-accent/10 pointer-events-none fixed -bottom-32 -left-32 size-80 rounded-full blur-3xl" />
 
 			<main className="relative z-10 w-full px-4 py-32 sm:px-6 sm:py-20 lg:px-8">
 				<div className="animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">

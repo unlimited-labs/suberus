@@ -93,7 +93,7 @@ function AutoPlanPage() {
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconWand} title="Auto-plan sessions">
 				<Button className="gap-1.5" onClick={goBack} size="sm" variant="ghost">
-					<IconArrowLeft className="h-4 w-4" />
+					<IconArrowLeft className="size-4" />
 					Back to planner
 				</Button>
 			</PageHeader>
@@ -149,9 +149,9 @@ function IntroView({
 		<div className="flex flex-col items-center gap-8 pt-8 text-center">
 			<div className="relative">
 				<div className="bg-primary/20 absolute inset-0 animate-pulse rounded-full blur-2xl" />
-				<div className="from-primary to-primary/70 text-primary-foreground shadow-primary/25 relative flex h-28 w-28 items-center justify-center rounded-full bg-linear-to-br shadow-lg">
-					<IconWand className="h-12 w-12" />
-					<IconSparkles className="absolute top-3 right-3 h-5 w-5 text-white/90" />
+				<div className="from-primary to-primary/70 text-primary-foreground shadow-primary/25 relative flex size-28 items-center justify-center rounded-full bg-linear-to-br shadow-lg">
+					<IconWand className="size-12" />
+					<IconSparkles className="absolute top-3 right-3 size-5 text-white/90" />
 				</div>
 			</div>
 			<div className="max-w-lg space-y-3">
@@ -169,7 +169,7 @@ function IntroView({
 					Cancel
 				</Button>
 				<Button className="gap-1.5" disabled={pending} onClick={onGenerate}>
-					<IconSparkles className="h-4 w-4" />
+					<IconSparkles className="size-4" />
 					Generate proposal
 				</Button>
 			</div>
@@ -275,10 +275,10 @@ function StageIcon({
 	icon: ComponentType<{ className?: string }>;
 }) {
 	if (status === "running")
-		return <IconLoader2 className="h-5 w-5 animate-spin" />;
+		return <IconLoader2 className="size-5 animate-spin" />;
 	if (status === "done")
-		return <IconCheck className="h-5 w-5" strokeWidth={3} />;
-	return <Icon className="h-5 w-5" />;
+		return <IconCheck className="size-5" strokeWidth={3} />;
+	return <Icon className="size-5" />;
 }
 
 function StageCard({
@@ -309,7 +309,7 @@ function StageCard({
 					)}
 					<span
 						className={cn(
-							"relative flex h-12 w-12 items-center justify-center rounded-xl transition-colors",
+							"relative flex items-center justify-center rounded-xl transition-colors size-12",
 							st.iconWrap,
 						)}
 					>
@@ -323,7 +323,7 @@ function StageCard({
 						st.statusText,
 					)}
 				>
-					<span className={cn("h-1.5 w-1.5 rounded-full", st.statusDot)} />
+					<span className={cn("rounded-full size-1.5", st.statusDot)} />
 					{status}
 				</span>
 			</div>
@@ -364,12 +364,12 @@ function ErrorView({
 	return (
 		<div className="space-y-6">
 			<Alert variant="destructive">
-				<IconAlertTriangle className="h-4 w-4" />
+				<IconAlertTriangle className="size-4" />
 				<AlertTitle>Auto-plan failed</AlertTitle>
 				<AlertDescription>{message}</AlertDescription>
 			</Alert>
 			<Button className="gap-1.5" onClick={onBack} variant="outline">
-				<IconArrowLeft className="h-4 w-4" />
+				<IconArrowLeft className="size-4" />
 				Back to planner
 			</Button>
 		</div>
@@ -416,7 +416,7 @@ function ResultsView({
 					</Badge>
 					{changedCount > 0 && (
 						<Badge className="bg-primary/15 text-primary hover:bg-primary/15 h-6 gap-1">
-							<IconSparkles className="h-3 w-3" />
+							<IconSparkles className="size-3" />
 							{changedCount} renamed
 						</Badge>
 					)}
@@ -443,12 +443,12 @@ function ResultsView({
 						<Button className="gap-1.5" disabled={applying} onClick={onApply}>
 							{applying ? (
 								<>
-									<IconLoader2 className="h-4 w-4 animate-spin" />
+									<IconLoader2 className="size-4 animate-spin" />
 									Applying…
 								</>
 							) : (
 								<>
-									<IconCheck className="h-4 w-4" />
+									<IconCheck className="size-4" />
 									Apply to schedule
 								</>
 							)}
@@ -473,13 +473,13 @@ function SessionCard({
 	return (
 		<div className="bg-card hover:border-primary/40 flex flex-col gap-3 rounded-lg border p-5 transition-colors">
 			<div className="flex items-start gap-3">
-				<div className="bg-muted text-muted-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-xs font-semibold tabular-nums">
+				<div className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-md text-xs font-semibold tabular-nums">
 					{index}
 				</div>
 				<div className="min-w-0 flex-1 space-y-1">
 					<div className="flex items-center gap-1.5 text-sm font-semibold">
 						{titleChanged && (
-							<IconSparkles className="text-primary h-3.5 w-3.5 shrink-0" />
+							<IconSparkles className="text-primary size-3.5 shrink-0" />
 						)}
 						<span className="truncate">
 							{s.proposedTitle || (
@@ -494,11 +494,11 @@ function SessionCard({
 					)}
 					<div className="text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 pt-1 text-xs">
 						<span className="flex items-center gap-1.5">
-							<IconClock className="h-3 w-3" />
+							<IconClock className="size-3" />
 							{formatDateRange(s.startAt, s.endAt)}
 						</span>
 						<span className="flex items-center gap-1.5">
-							<IconDoorEnter className="h-3 w-3" />
+							<IconDoorEnter className="size-3" />
 							{s.roomName ?? (
 								<span className="text-muted-foreground/70 italic">no room</span>
 							)}

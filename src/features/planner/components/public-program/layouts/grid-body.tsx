@@ -124,7 +124,7 @@ function GridRow({
 						)}
 					>
 						<span className="text-primary block">{start}</span>
-						<span className="block text-[var(--prog-faint)]">{end}</span>
+						<span className="block text-(--prog-faint)">{end}</span>
 					</div>
 					{cols.map((c) => {
 						const sessions = group.sessions.filter(
@@ -165,7 +165,7 @@ function BreakBand({
 		>
 			{plainBreaks.length > 0 && (
 				<div className="flex items-center gap-3 sm:gap-5">
-					<span className="font-(family-name:--prog-font-meta) text-[10px] tracking-[0.2em] text-[var(--prog-faint)] uppercase tabular-nums">
+					<span className="font-(family-name:--prog-font-meta) text-[10px] tracking-[0.2em] text-(--prog-faint) uppercase tabular-nums">
 						{start} – {end}
 					</span>
 					<span className="text-muted-foreground text-base">
@@ -176,7 +176,7 @@ function BreakBand({
 			)}
 			{events.map((ev) => (
 				<div
-					className="mt-2 border-l-2 border-[var(--primary)] bg-[var(--prog-mark,var(--muted))]/40 px-4 py-3 first:mt-0"
+					className="mt-2 border-l-2 border-(--primary) bg-(--prog-mark,var(--muted))/40 px-4 py-3 first:mt-0"
 					data-testid={`program-event-${ev.id}`}
 					key={ev.id}
 				>
@@ -231,7 +231,7 @@ function MobileSwipe({
 								{col.name}
 							</span>
 							{cols.length > 1 && (
-								<span className="ml-auto font-(family-name:--prog-font-meta) text-[10px] text-[var(--prog-faint)] tabular-nums">
+								<span className="ml-auto font-(family-name:--prog-font-meta) text-[10px] text-(--prog-faint) tabular-nums">
 									{ci + 1} / {cols.length}
 								</span>
 							)}
@@ -273,7 +273,7 @@ function MobileRoomTimeline({
 					<div key={`${group.startAt}-${gi}`}>
 						{sessions.length > 0 && (
 							<>
-								<div className="mb-2 font-(family-name:--prog-font-meta) text-[11px] tracking-[0.15em] text-[var(--prog-faint)] uppercase tabular-nums">
+								<div className="mb-2 font-(family-name:--prog-font-meta) text-[11px] tracking-[0.15em] text-(--prog-faint) uppercase tabular-nums">
 									{start} – {end}
 								</div>
 								{sessions.map((s) => (

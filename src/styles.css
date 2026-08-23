@@ -323,6 +323,8 @@
 }
 
 @theme inline {
+	/* ORCID brand green, fixed by them. */
+	--color-orcid: #a6ce39;
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
 	--color-card: var(--card);

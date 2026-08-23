@@ -36,7 +36,7 @@ export function ParticipantsList({
 
 	return (
 		<>
-			<p className="text-muted-foreground mb-4 font-(family-name:--prog-font-meta) text-xs tracking-[var(--prog-tracking)] uppercase">
+			<p className="text-muted-foreground mb-4 font-(family-name:--prog-font-meta) text-xs tracking-(--prog-tracking) uppercase">
 				{participants.length} participants
 			</p>
 			<div
