@@ -5,7 +5,7 @@ import {
 	IconWorld,
 	IconWorldOff,
 } from "@tabler/icons-react";
-import { useId, useState } from "react";
+import { useState } from "react";
 import type { ScheduleIssue } from "@/features/planner/server/schedule";
 import { Button } from "@/shared/ui/button";
 import {
@@ -16,8 +16,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/shared/ui/dialog";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
 import {
 	Tooltip,
 	TooltipContent,
@@ -26,6 +24,10 @@ import {
 } from "@/shared/ui/tooltip";
 import type { PublishMode } from "./hooks/use-publish-state";
 import { PublishIssuesPanel } from "./publish-issues-panel";
+import {
+	ConfirmPhraseField,
+	isConfirmPhrase,
+} from "./shared/confirm-phrase-field";
 
 interface PublishDialogProps {
 	open: boolean;
@@ -142,8 +144,6 @@ export function PublishDialog({
 	);
 }
 
-const CONFIRM_PHRASE = "UNDERSTOOD";
-
 interface PublicPublishGateProps {
 	busy: PublishMode | "unpublish" | null;
 	disabled: boolean;
@@ -157,9 +157,7 @@ function PublicPublishGate({
 	hasIssues,
 	onPublish,
 }: PublicPublishGateProps) {
-	const inputId = useId();
 	const [phrase, setPhrase] = useState("");
-	const confirmed = phrase.trim() === CONFIRM_PHRASE;
 
 	return (
 		<div className="border-destructive/40 bg-destructive/5 space-y-3 rounded-md border p-3">
@@ -175,21 +173,15 @@ function PublicPublishGate({
 					Unpublish.
 				</p>
 			</div>
-			<div className="space-y-1.5">
-				<Label htmlFor={inputId}>Type {CONFIRM_PHRASE} to confirm</Label>
-				<Input
-					autoComplete="off"
-					data-testid="publish-understood-input"
-					id={inputId}
-					onChange={(e) => setPhrase(e.target.value)}
-					placeholder={CONFIRM_PHRASE}
-					value={phrase}
-				/>
-			</div>
+			<ConfirmPhraseField
+				onChange={setPhrase}
+				testId="publish-understood-input"
+				value={phrase}
+			/>
 			<Button
 				className="w-full gap-1.5"
 				data-testid="publish-confirm"
-				disabled={disabled || !confirmed}
+				disabled={disabled || !isConfirmPhrase(phrase)}
 				onClick={() => onPublish("public")}
 				size="sm"
 			>

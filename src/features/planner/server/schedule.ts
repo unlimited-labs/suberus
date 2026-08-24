@@ -44,6 +44,27 @@ export async function unpublishSchedule(): Promise<void> {
 	await setSetting("SCHEDULE_STATE", { status: "DRAFT" });
 }
 
+export async function clearPlan(): Promise<void> {
+	const state = await getScheduleState();
+	if (state.status === "PUBLISHED") {
+		throw new Error("Unpublish the program before clearing the plan");
+	}
+	await prisma.$transaction(async (tx) => {
+		// Slots cascade with their session; their INVITED placeholders would not.
+		const invited = await tx.presentationSlot.findMany({
+			where: { submission: { type: "INVITED" } },
+			select: { submissionId: true },
+		});
+		await tx.programSession.deleteMany({});
+		await tx.scheduleBreak.deleteMany({});
+		if (invited.length > 0) {
+			await tx.submission.deleteMany({
+				where: { id: { in: invited.map((p) => p.submissionId) } },
+			});
+		}
+	});
+}
+
 export interface CapacityInfo {
 	talks: number;
 	scheduled: number;

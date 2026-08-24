@@ -9,6 +9,7 @@ import {
 import { isParticipant } from "@/features/planner/server/favorites";
 import type { PublicProgram } from "@/features/planner/server/schedule";
 import {
+	clearPlan,
 	getCapacity,
 	getPublicProgram,
 	getScheduleIssues,
@@ -71,6 +72,12 @@ export const unpublishScheduleFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.handler(async () => {
 		await unpublishSchedule();
+	});
+
+export const clearPlanFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.handler(async () => {
+		await clearPlan();
 	});
 
 export const publicProgramQueryOptions = () =>

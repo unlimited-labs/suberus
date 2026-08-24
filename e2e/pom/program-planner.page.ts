@@ -17,6 +17,10 @@ export class ProgramPlannerPage {
 	readonly publishDialog: Locator;
 	readonly publishConfirm: Locator;
 	readonly publishIssuesList: Locator;
+	readonly clearPlanButton: Locator;
+	readonly clearPlanDialog: Locator;
+	readonly clearPlanInput: Locator;
+	readonly clearPlanConfirm: Locator;
 	readonly createSessionDialog: Locator;
 	readonly createEventDialog: Locator;
 	readonly sessionEditor: Locator;
@@ -39,6 +43,10 @@ export class ProgramPlannerPage {
 		this.publishDialog = page.getByTestId("publish-dialog");
 		this.publishConfirm = page.getByTestId("publish-confirm");
 		this.publishIssuesList = page.getByTestId("publish-issues-list");
+		this.clearPlanButton = page.getByTestId("clear-plan-button");
+		this.clearPlanDialog = page.getByTestId("clear-plan-dialog");
+		this.clearPlanInput = page.getByTestId("clear-plan-confirm-input");
+		this.clearPlanConfirm = page.getByTestId("clear-plan-confirm");
 		this.createSessionDialog = page.getByTestId("create-session-dialog");
 		this.createEventDialog = page.getByTestId("create-event-dialog");
 		this.sessionEditor = page.getByTestId("session-editor");
@@ -112,6 +120,17 @@ export class ProgramPlannerPage {
 	async openPublishDialog() {
 		await this.publishButton.click();
 		await expect(this.publishDialog).toBeVisible();
+	}
+
+	async openClearPlanDialog() {
+		await this.clearPlanButton.click();
+		await expect(this.clearPlanDialog).toBeVisible();
+	}
+
+	async confirmClearPlan() {
+		await this.clearPlanInput.fill("UNDERSTOOD");
+		await this.clearPlanConfirm.click();
+		await expect(this.clearPlanDialog).toBeHidden();
 	}
 
 	async confirmPublish() {

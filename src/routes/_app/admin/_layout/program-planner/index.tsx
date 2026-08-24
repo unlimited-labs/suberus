@@ -13,6 +13,7 @@ import {
 } from "@/features/planner/api/sessions";
 import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
 import { CapacityStrip } from "@/features/planner/components/capacity-strip";
+import { ClearPlanButton } from "@/features/planner/components/clear-plan-button";
 import {
 	computeConferenceRange,
 	isOutsideConferenceRange,
@@ -111,6 +112,7 @@ function ProgramPlannerContent() {
 		<>
 			<div className="flex h-full min-h-0 flex-col overflow-hidden">
 				<PageHeader icon={IconCalendar} title="Program Planner">
+					<ClearPlanButton />
 					<PublishButton />
 				</PageHeader>
 				{isOutsideRange && (
