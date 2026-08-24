@@ -30,6 +30,7 @@ import {
 	signingCertUploadFormSchema,
 	signingTimestampSchema,
 } from "@/features/settings/validations";
+import { Form } from "@/shared/components/composable/form";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
@@ -329,7 +330,10 @@ function CertificateSection({
 				)}
 
 				<div className="grid gap-6 sm:grid-cols-2">
-					<div className="space-y-3">
+					<Form
+						className="space-y-3"
+						onSubmit={() => void submitOrConfirm(certForm, "generate")}
+					>
 						<h3 className="text-sm font-semibold">
 							{cfg
 								? "Regenerate self-signed certificate"
@@ -412,15 +416,18 @@ function CertificateSection({
 						<Button
 							data-testid="generate-cert-button"
 							disabled={working}
-							onClick={() => void submitOrConfirm(certForm, "generate")}
 							size="sm"
+							type="submit"
 						>
 							{working && <IconLoader2 className="mr-2 size-4 animate-spin" />}
 							{cfg ? "Regenerate" : "Generate"}
 						</Button>
-					</div>
+					</Form>
 
-					<div className="space-y-3">
+					<Form
+						className="space-y-3"
+						onSubmit={() => void submitOrConfirm(uploadForm, "upload")}
+					>
 						<h3 className="text-sm font-semibold">Upload your own .p12</h3>
 						<p className="text-muted-foreground text-xs">
 							Bring an organizational or qualified certificate for full trust.
@@ -479,14 +486,14 @@ function CertificateSection({
 						<Button
 							data-testid="upload-cert-button"
 							disabled={working}
-							onClick={() => void submitOrConfirm(uploadForm, "upload")}
 							size="sm"
+							type="submit"
 							variant="outline"
 						>
 							<IconUpload className="mr-2 size-4" />
 							Upload
 						</Button>
-					</div>
+					</Form>
 				</div>
 			</div>
 
@@ -586,7 +593,7 @@ function AppearanceSection({
 			icon={IconCertificate}
 			title="Seal appearance"
 		>
-			<div className="space-y-4">
+			<Form className="space-y-4" onSubmit={() => void form.handleSubmit()}>
 				<form.Field name="sealReason">
 					{(field) => {
 						const hasError = isFieldErrorVisible(
@@ -671,11 +678,7 @@ function AppearanceSection({
 				<div className="flex justify-end">
 					<form.Subscribe selector={(st) => st.isSubmitting}>
 						{(isSubmitting) => (
-							<Button
-								disabled={isSubmitting}
-								onClick={() => void form.handleSubmit()}
-								size="sm"
-							>
+							<Button disabled={isSubmitting} size="sm" type="submit">
 								{isSubmitting && (
 									<IconLoader2 className="mr-2 size-4 animate-spin" />
 								)}
@@ -684,7 +687,7 @@ function AppearanceSection({
 						)}
 					</form.Subscribe>
 				</div>
-			</div>
+			</Form>
 		</SettingsSection>
 	);
 }
@@ -726,7 +729,7 @@ function TimestampSection({
 			icon={IconShieldCheck}
 			title="Trusted timestamp (RFC 3161)"
 		>
-			<div className="space-y-4">
+			<Form className="space-y-4" onSubmit={() => void form.handleSubmit()}>
 				<div className="flex items-center gap-3 text-sm">
 					<form.Field name="enabled">
 						{(field) => (
@@ -777,11 +780,7 @@ function TimestampSection({
 				<div className="flex justify-end">
 					<form.Subscribe selector={(st) => st.isSubmitting}>
 						{(isSubmitting) => (
-							<Button
-								disabled={isSubmitting}
-								onClick={() => void form.handleSubmit()}
-								size="sm"
-							>
+							<Button disabled={isSubmitting} size="sm" type="submit">
 								{isSubmitting && (
 									<IconLoader2 className="mr-2 size-4 animate-spin" />
 								)}
@@ -790,7 +789,7 @@ function TimestampSection({
 						)}
 					</form.Subscribe>
 				</div>
-			</div>
+			</Form>
 		</SettingsSection>
 	);
 }
