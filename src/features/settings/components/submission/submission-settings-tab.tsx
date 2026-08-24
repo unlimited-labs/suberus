@@ -3,6 +3,7 @@ import type { ExtractionSettings } from "@/features/extraction/api/extraction";
 import { ExtractionModeSettings } from "@/features/extraction/components/extraction-mode-settings";
 import type { SubmissionValidationSettings } from "@/features/settings/api/settings";
 import type { AppSettingsMap } from "@/features/settings/types";
+import { Form } from "@/shared/components/composable/form";
 import { Button } from "@/shared/ui/button";
 import { ContentValidationSection } from "./content-validation-section";
 import { ReviewGuidelinesSection } from "./review-guidelines-section";
@@ -46,7 +47,7 @@ export function SubmissionSettingsTab({
 	});
 
 	return (
-		<div className="space-y-6">
+		<Form className="space-y-6" onSubmit={() => void form.handleSubmit()}>
 			<ContentValidationSection form={form} />
 
 			<SubmissionGuidelinesSection
@@ -74,8 +75,9 @@ export function SubmissionSettingsTab({
 				<form.Subscribe selector={(s) => s.isSubmitting}>
 					{(isSubmitting) => (
 						<Button
+							data-testid="save-submission-settings"
 							disabled={isSubmitting}
-							onClick={() => void form.handleSubmit()}
+							type="submit"
 						>
 							{isSubmitting && (
 								<IconLoader2 className="mr-2 size-4 animate-spin" />
@@ -85,6 +87,6 @@ export function SubmissionSettingsTab({
 					)}
 				</form.Subscribe>
 			</div>
-		</div>
+		</Form>
 	);
 }

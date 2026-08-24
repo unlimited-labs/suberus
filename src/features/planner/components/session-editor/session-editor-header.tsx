@@ -1,4 +1,5 @@
 import { useStore } from "@tanstack/react-store";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { formatDurationShort } from "@/shared/lib/format-date";
 import { Field, FieldError } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
@@ -11,6 +12,7 @@ import { useSessionEditor } from "./session-editor-context";
 
 export function SessionEditorHeader() {
 	const { rooms, tracks, form } = useSessionEditor();
+	const submissionAttempts = useStore(form.store, (s) => s.submissionAttempts);
 	const slotCount = useStore(form.store, (s) => s.values.slotCount);
 	const slotMin = useStore(form.store, (s) => s.values.slotMin);
 	const untimedSlots = useStore(form.store, (s) => s.values.untimedSlots);
@@ -23,16 +25,28 @@ export function SessionEditorHeader() {
 			</SheetTitle>
 			<form.Field name="title">
 				{(field) => (
-					<Field data-invalid={field.state.meta.errors.length > 0}>
+					<Field
+						data-invalid={isFieldErrorVisible(
+							field.state.meta,
+							submissionAttempts,
+						)}
+					>
 						<Input
 							className="text-base font-medium"
 							data-testid="session-editor-title"
+							onBlur={field.handleBlur}
 							onChange={(e) => field.handleChange(e.target.value)}
 							onKeyDown={(e) => e.key === "Enter" && form.handleSubmit()}
 							placeholder="Session title"
 							value={field.state.value}
 						/>
-						<FieldError errors={field.state.meta.errors} />
+						<FieldError
+							errors={
+								isFieldErrorVisible(field.state.meta, submissionAttempts)
+									? field.state.meta.errors
+									: undefined
+							}
+						/>
 					</Field>
 				)}
 			</form.Field>
@@ -49,6 +63,7 @@ export function SessionEditorHeader() {
 							className="h-8 text-sm"
 							data-testid="session-editor-start"
 							id="session-start"
+							onBlur={field.handleBlur}
 							onChange={(e) => field.handleChange(e.target.value)}
 							type="datetime-local"
 							value={field.state.value}
@@ -77,7 +92,12 @@ export function SessionEditorHeader() {
 			{untimedSlots ? (
 				<form.Field name="endLocal">
 					{(field) => (
-						<Field data-invalid={field.state.meta.errors.length > 0}>
+						<Field
+							data-invalid={isFieldErrorVisible(
+								field.state.meta,
+								submissionAttempts,
+							)}
+						>
 							<Label
 								className="text-muted-foreground text-xs"
 								htmlFor="session-end"
@@ -88,11 +108,18 @@ export function SessionEditorHeader() {
 								className="h-8 text-sm"
 								data-testid="session-editor-end"
 								id="session-end"
+								onBlur={field.handleBlur}
 								onChange={(e) => field.handleChange(e.target.value)}
 								type="datetime-local"
 								value={field.state.value}
 							/>
-							<FieldError errors={field.state.meta.errors} />
+							<FieldError
+								errors={
+									isFieldErrorVisible(field.state.meta, submissionAttempts)
+										? field.state.meta.errors
+										: undefined
+								}
+							/>
 						</Field>
 					)}
 				</form.Field>

@@ -324,8 +324,15 @@ export class AdminSettingsPage {
 		return this.page.getByRole("combobox", { name: /timezone/i })
 	}
 
-	async saveConferenceSettings() {
-		await this.page.getByRole("button", { name: "Save" }).first().click()
+	async saveConferenceSettings(
+		section: "Basic Information" | "Important Dates" | "Date & Time" = "Basic Information",
+	) {
+		const testIds = {
+			"Basic Information": "save-basic-information",
+			"Important Dates": "save-important-dates",
+			"Date & Time": "save-date-time",
+		} as const
+		await this.page.getByTestId(testIds[section]).click()
 	}
 
 	async switchToSurveyTab(_testInfo?: { project: { name: string } }) {
@@ -390,8 +397,12 @@ export class AdminSettingsPage {
 	}
 
 	async saveBrandingSection(sectionName: "Logo & Graphics" | "Theme Colors" | "Footer") {
-		const section = this.page.locator("section, div").filter({ hasText: sectionName })
-		await section.getByRole("button", { name: "Save" }).last().click()
+		const testIds = {
+			"Logo & Graphics": "save-logo-graphics",
+			"Theme Colors": "save-theme-colors",
+			Footer: "save-branding-footer",
+		} as const
+		await this.page.getByTestId(testIds[sectionName]).click()
 	}
 
 	getAuthBackgroundUploadButton() {

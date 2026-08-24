@@ -4,7 +4,7 @@ import {
 	IconWorld,
 } from "@tabler/icons-react";
 import { countries } from "countries-list";
-import { useState } from "react";
+import { type ComponentProps, useState } from "react";
 import { Button } from "@/shared/ui/button";
 import {
 	Command,
@@ -25,7 +25,11 @@ const COUNTRIES = Object.values(countries)
 	.map((c) => c.name)
 	.toSorted((a, b) => a.localeCompare(b));
 
-interface CountryComboboxProps {
+interface CountryComboboxProps
+	extends Pick<
+		ComponentProps<"button">,
+		"id" | "onBlur" | "aria-invalid" | "aria-describedby"
+	> {
 	value: string;
 	onChange: (value: string) => void;
 	disabled?: boolean;
@@ -35,6 +39,7 @@ export function CountryCombobox({
 	value,
 	onChange,
 	disabled,
+	...triggerProps
 }: CountryComboboxProps) {
 	const [open, setOpen] = useState(false);
 
@@ -50,6 +55,7 @@ export function CountryCombobox({
 						!value && "text-muted-foreground",
 					)}
 					disabled={disabled}
+					{...triggerProps}
 				>
 					<span className="flex items-center gap-2">
 						<IconWorld className="size-4 text-muted-foreground" />

@@ -35,6 +35,7 @@ export function ImageUploadControl({
 				disabled={uploading || removing}
 				onClick={() => inputRef.current?.click()}
 				size="sm"
+				type="button"
 				variant="outline"
 			>
 				{uploading ? (
@@ -50,6 +51,7 @@ export function ImageUploadControl({
 					disabled={uploading || removing}
 					onClick={onRemove}
 					size="sm"
+					type="button"
 					variant="ghost"
 				>
 					{removing ? (

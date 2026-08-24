@@ -63,7 +63,7 @@ function ReviewFormPage() {
 		});
 
 		if (!result.success) {
-			console.error("Failed to submit review:", result.error);
+			toast.error(result.error ?? "Failed to submit review");
 			return;
 		}
 

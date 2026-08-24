@@ -22,6 +22,7 @@ import {
 	getTosContentForRegistrationFn,
 	saveUserSurveyAnswersFn,
 } from "@/features/survey/api/survey";
+import { Form } from "@/shared/components/composable/form";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 
@@ -170,13 +171,7 @@ function RegisterForm() {
 				))}
 			</div>
 
-			<form
-				className="flex flex-1 flex-col"
-				onSubmit={(e) => {
-					e.preventDefault();
-					e.stopPropagation();
-				}}
-			>
+			<Form className="flex flex-1 flex-col" onSubmit={() => {}}>
 				<div className="flex-1 space-y-3">
 					{currentStep === 1 && (
 						<RegisterStep1
@@ -236,7 +231,7 @@ function RegisterForm() {
 						</form.Subscribe>
 					)}
 				</div>
-			</form>
+			</Form>
 
 			<p className="text-muted-foreground mt-3 text-center text-sm">
 				Already have an account?{" "}

@@ -9,6 +9,7 @@ import {
 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useSelector } from "@tanstack/react-store";
 import { useState } from "react";
 import { extractionSettingsQueryOptions } from "@/features/extraction/api/extraction";
 import { ExtractionOverlay } from "@/features/extraction/components/extraction-overlay";
@@ -22,16 +23,20 @@ import { KeywordsInput } from "@/features/submissions/components/form/keywords-i
 import {
 	isRevisableSubmission,
 	prepareRevisionView,
+	revisionFormSchema,
 	revisionReady,
 } from "@/features/submissions/components/revise/revise-helpers";
 import { useReviseSubmission } from "@/features/submissions/components/revise/use-revise-submission";
 import { AuthorsInput } from "@/shared/components/authors-input";
+import { Form } from "@/shared/components/composable/form";
 import { FileDropzone } from "@/shared/components/file-dropzone";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { useAppForm } from "@/shared/hooks/use-app-form";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import type { Author } from "@/shared/types/author";
 import { Button } from "@/shared/ui/button";
+import { Field, FieldError } from "@/shared/ui/field";
 import { Label } from "@/shared/ui/label";
-import { Textarea } from "@/shared/ui/textarea";
 
 export const Route = createFileRoute("/_app/submissions/$id_/revise")({
 	loader: async ({ params, context }) => {
@@ -173,28 +178,38 @@ function RevisionForm({
 	isConditional,
 	onSubmit,
 }: RevisionFormProps) {
-	const [title, setTitle] = useState(initialTitle);
-	const [content, setContent] = useState(initialContent);
-	const [comment, setComment] = useState("");
 	const [file, setFile] = useState<File | null>(null);
-	const [authors, setAuthors] = useState<Author[]>(initialAuthors);
-	const [keywords, setKeywords] = useState<string[]>(initialKeywords);
+
+	const form = useAppForm({
+		defaultValues: {
+			title: initialTitle,
+			content: initialContent,
+			comment: "",
+			authors: initialAuthors,
+			keywords: initialKeywords,
+		},
+		validators: { onChange: revisionFormSchema, onSubmit: revisionFormSchema },
+		onSubmit: ({ value }) => onSubmit({ ...value, file }),
+	});
+
+	const authors = useSelector(form.store, (s) => s.values.authors);
+	const keywords = useSelector(form.store, (s) => s.values.keywords);
+	const title = useSelector(form.store, (s) => s.values.title);
+	const submissionAttempts = useSelector(
+		form.store,
+		(s) => s.submissionAttempts,
+	);
 
 	const { isExtracting, elapsedSeconds, handleFileChange } =
 		useDocumentExtraction({
 			enabled: extractionEnabled,
 			skipExtraction: false,
 			onExtracted: ({ title: t, authors: a, keywords: k }) => {
-				if (t) setTitle(t);
-				if (a) setAuthors(a);
-				if (k) setKeywords(k);
+				if (t) form.setFieldValue("title", t);
+				if (a) form.setFieldValue("authors", a);
+				if (k) form.setFieldValue("keywords", k);
 			},
 		});
-
-	const handleSubmit = async (e: React.SyntheticEvent) => {
-		e.preventDefault();
-		await onSubmit({ title, content, comment, file, authors, keywords });
-	};
 
 	return (
 		<div className="flex h-full flex-col">
@@ -212,17 +227,10 @@ function RevisionForm({
 
 			<div className="flex-1 overflow-auto p-6">
 				<div className="mx-auto max-w-3xl">
-					<form className="space-y-6" onSubmit={handleSubmit}>
-						<div className="space-y-2">
-							<Label htmlFor="title">Title</Label>
-							<input
-								className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-								id="title"
-								onChange={(e) => setTitle(e.target.value)}
-								type="text"
-								value={title}
-							/>
-						</div>
+					<Form className="space-y-6" onSubmit={() => void form.handleSubmit()}>
+						<form.AppField name="title">
+							{(field) => <field.InputField label="Title" />}
+						</form.AppField>
 
 						{isFileFormat ? (
 							<div className="relative space-y-3">
@@ -269,16 +277,15 @@ function RevisionForm({
 								</p>
 							</div>
 						) : (
-							<div className="space-y-2">
-								<Label htmlFor="content">Abstract</Label>
-								<Textarea
-									className="resize-none"
-									id="content"
-									onChange={(e) => setContent(e.target.value)}
-									rows={12}
-									value={content}
-								/>
-							</div>
+							<form.AppField name="content">
+								{(field) => (
+									<field.TextareaField
+										className="resize-none"
+										label="Abstract"
+										rows={12}
+									/>
+								)}
+							</form.AppField>
 						)}
 
 						<div className="space-y-4">
@@ -288,7 +295,25 @@ function RevisionForm({
 									Authors
 								</h2>
 							</div>
-							<AuthorsInput onChange={setAuthors} value={authors} />
+							<form.Field name="authors">
+								{(field) => {
+									const hasError = isFieldErrorVisible(
+										field.state.meta,
+										submissionAttempts,
+									);
+									return (
+										<Field data-invalid={hasError}>
+											<AuthorsInput
+												onChange={field.handleChange}
+												value={field.state.value}
+											/>
+											<FieldError
+												errors={hasError ? field.state.meta.errors : undefined}
+											/>
+										</Field>
+									);
+								}}
+							</form.Field>
 						</div>
 
 						{enableKeywords && (
@@ -302,29 +327,23 @@ function RevisionForm({
 								<div className="bg-muted/30 rounded-lg border p-3">
 									<KeywordsInput
 										maxKeywords={maxKeywords}
-										onChange={setKeywords}
+										onChange={(next) => form.setFieldValue("keywords", next)}
 										value={keywords}
 									/>
 								</div>
 							</div>
 						)}
 
-						<div className="space-y-2">
-							<Label htmlFor="comment">
-								Revision Notes{" "}
-								<span className="text-muted-foreground text-xs font-normal">
-									(Optional)
-								</span>
-							</Label>
-							<Textarea
-								className="resize-none"
-								id="comment"
-								onChange={(e) => setComment(e.target.value)}
-								placeholder="Describe the changes you made in this revision..."
-								rows={4}
-								value={comment}
-							/>
-						</div>
+						<form.AppField name="comment">
+							{(field) => (
+								<field.TextareaField
+									className="resize-none"
+									label="Revision Notes (Optional)"
+									placeholder="Describe the changes you made in this revision..."
+									rows={4}
+								/>
+							)}
+						</form.AppField>
 
 						<Button
 							className="w-full gap-2"
@@ -345,7 +364,7 @@ function RevisionForm({
 									? "Upload Revised Version"
 									: "Submit Revision"}
 						</Button>
-					</form>
+					</Form>
 				</div>
 			</div>
 		</div>

@@ -1,6 +1,8 @@
 import { IconTrash } from "@tabler/icons-react";
 import { useStore } from "@tanstack/react-store";
 import { useRef } from "react";
+import { Form } from "@/shared/components/composable/form";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { Button } from "@/shared/ui/button";
 import { Field, FieldError } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
@@ -68,14 +70,12 @@ function BreakEditorBody() {
 	const { breakItem, rooms, form, deleting, onDelete } = useBreakEditor();
 	const isEvent = breakItem.kind === "EVENT";
 	const isDirty = useStore(form.store, (s) => s.isDirty);
+	const submissionAttempts = useStore(form.store, (s) => s.submissionAttempts);
 
 	return (
-		<form
+		<Form
 			className="flex flex-1 flex-col"
-			noValidate
-			onSubmit={(e) => {
-				e.preventDefault();
-				e.stopPropagation();
+			onSubmit={() => {
 				void form.handleSubmit();
 			}}
 		>
@@ -85,14 +85,26 @@ function BreakEditorBody() {
 				</SheetTitle>
 				<form.Field name="title">
 					{(field) => (
-						<Field data-invalid={field.state.meta.errors.length > 0}>
+						<Field
+							data-invalid={isFieldErrorVisible(
+								field.state.meta,
+								submissionAttempts,
+							)}
+						>
 							<Input
 								className="text-base font-medium"
 								data-testid="break-editor-title"
+								onBlur={field.handleBlur}
 								onChange={(e) => field.handleChange(e.target.value)}
 								value={field.state.value}
 							/>
-							<FieldError errors={field.state.meta.errors} />
+							<FieldError
+								errors={
+									isFieldErrorVisible(field.state.meta, submissionAttempts)
+										? field.state.meta.errors
+										: undefined
+								}
+							/>
 						</Field>
 					)}
 				</form.Field>
@@ -109,11 +121,18 @@ function BreakEditorBody() {
 								className="h-8 text-sm"
 								data-testid="break-editor-start"
 								id="break-start"
+								onBlur={field.handleBlur}
 								onChange={(e) => field.handleChange(e.target.value)}
 								type="datetime-local"
 								value={field.state.value}
 							/>
-							<FieldError errors={field.state.meta.errors} />
+							<FieldError
+								errors={
+									isFieldErrorVisible(field.state.meta, submissionAttempts)
+										? field.state.meta.errors
+										: undefined
+								}
+							/>
 						</div>
 					)}
 				</form.Field>
@@ -131,11 +150,18 @@ function BreakEditorBody() {
 									className="h-8 text-sm"
 									data-testid="break-editor-end"
 									id="break-end"
+									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
 									type="datetime-local"
 									value={field.state.value}
 								/>
-								<FieldError errors={field.state.meta.errors} />
+								<FieldError
+									errors={
+										isFieldErrorVisible(field.state.meta, submissionAttempts)
+											? field.state.meta.errors
+											: undefined
+									}
+								/>
 							</div>
 						)}
 					</form.Field>
@@ -180,6 +206,7 @@ function BreakEditorBody() {
 										className="text-sm"
 										data-testid="break-editor-description"
 										id="break-description"
+										onBlur={field.handleBlur}
 										onChange={(e) => field.handleChange(e.target.value)}
 										rows={3}
 										value={field.state.value}
@@ -200,6 +227,7 @@ function BreakEditorBody() {
 										className="h-8 text-sm"
 										data-testid="break-editor-location"
 										id="break-location"
+										onBlur={field.handleBlur}
 										onChange={(e) => field.handleChange(e.target.value)}
 										value={field.state.value}
 									/>
@@ -219,11 +247,18 @@ function BreakEditorBody() {
 										className="h-8 text-sm"
 										data-testid="break-editor-location-url"
 										id="break-location-url"
+										onBlur={field.handleBlur}
 										onChange={(e) => field.handleChange(e.target.value)}
 										type="url"
 										value={field.state.value}
 									/>
-									<FieldError errors={field.state.meta.errors} />
+									<FieldError
+										errors={
+											isFieldErrorVisible(field.state.meta, submissionAttempts)
+												? field.state.meta.errors
+												: undefined
+										}
+									/>
 								</div>
 							)}
 						</form.Field>
@@ -270,6 +305,6 @@ function BreakEditorBody() {
 					{isEvent ? "Delete event" : "Delete break"}
 				</Button>
 			</SheetFooter>
-		</form>
+		</Form>
 	);
 }

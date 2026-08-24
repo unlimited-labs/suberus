@@ -39,8 +39,8 @@ import type {
 	SubmissionTypeKey,
 } from "@/features/settings/types";
 import {
-	brandingSchema,
-	conferenceSettingsSchema,
+	brandingPatch,
+	conferenceSettingsPatch,
 	reminderSettingsSchema,
 	setSettingSchema,
 	submissionTypeUpdateSchema,
@@ -48,6 +48,7 @@ import {
 	tosContentSchema,
 } from "@/features/settings/validations";
 import { isDeadlinePassed } from "@/shared/lib/deadline";
+import { lookup } from "@/shared/lib/lookup";
 import { prisma } from "@/shared/server/db.server";
 import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
 
@@ -259,7 +260,7 @@ export const getConferenceSettingsFn = createServerFn({ method: "GET" })
 
 export const updateConferenceSettingsFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
-	.validator(conferenceSettingsSchema)
+	.validator(conferenceSettingsPatch)
 	.handler(async ({ data, context }) => {
 		await updateConferenceSettings(data, context.user.id);
 		return { success: true };
@@ -434,17 +435,24 @@ export const getBrandingSettingsFn = createServerFn({ method: "GET" })
 		};
 	});
 
+const BRANDING_KEYS = {
+	logoUrl: "BRANDING_LOGO_URL",
+	faviconUrl: "BRANDING_FAVICON_URL",
+	primaryColor: "BRANDING_PRIMARY_COLOR",
+	secondaryColor: "BRANDING_SECONDARY_COLOR",
+	footerText: "BRANDING_FOOTER_TEXT",
+	authBgOverlay: "BRANDING_AUTH_BG_OVERLAY",
+	logoDarkInvert: "BRANDING_LOGO_DARK_INVERT",
+} as const;
+
 export const updateBrandingSettingsFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
-	.validator(brandingSchema)
+	.validator(brandingPatch)
 	.handler(async ({ data }) => {
-		await setSetting("BRANDING_LOGO_URL", data.logoUrl);
-		await setSetting("BRANDING_FAVICON_URL", data.faviconUrl);
-		await setSetting("BRANDING_PRIMARY_COLOR", data.primaryColor);
-		await setSetting("BRANDING_SECONDARY_COLOR", data.secondaryColor);
-		await setSetting("BRANDING_FOOTER_TEXT", data.footerText);
-		await setSetting("BRANDING_AUTH_BG_OVERLAY", data.authBgOverlay);
-		await setSetting("BRANDING_LOGO_DARK_INVERT", data.logoDarkInvert);
+		for (const [field, key] of Object.entries(BRANDING_KEYS)) {
+			const value = lookup(data, field);
+			if (value !== undefined) await setSetting(key, value);
+		}
 		return { success: true };
 	});
 

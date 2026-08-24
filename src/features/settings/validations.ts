@@ -30,6 +30,32 @@ export const conferenceSettingsSchema = z.object({
 
 export const conferenceSettingsPatch = conferenceSettingsSchema.partial();
 
+export const conferenceBasicSchema = conferenceSettingsSchema.pick({
+	name: true,
+	subtitle: true,
+	location: true,
+	website: true,
+	contactEmail: true,
+	currency: true,
+});
+
+export const conferenceDatesSchema = conferenceSettingsSchema.pick({
+	conferenceStartDate: true,
+	conferenceEndDate: true,
+	submissionDeadline: true,
+	submissionsLocked: true,
+	reviewDeadline: true,
+	notificationDate: true,
+	registrationDeadline: true,
+	registrationLocked: true,
+});
+
+export const conferenceFormatSchema = conferenceSettingsSchema.pick({
+	dateFormat: true,
+	timeFormat: true,
+	timezone: true,
+});
+
 export type ConferenceSettings = z.infer<typeof conferenceSettingsSchema>;
 
 const reminderDaysBefore = z
@@ -237,6 +263,25 @@ export const brandingSchema = z.object({
 	footerText: z.string().max(500),
 	authBgOverlay: z.number().int().min(0).max(100),
 	logoDarkInvert: z.boolean(),
+});
+
+export const brandingPatch = brandingSchema.partial();
+
+export const brandingFooterSchema = brandingSchema.pick({ footerText: true });
+
+export const brandingColorsSchema = brandingSchema.pick({
+	primaryColor: true,
+	secondaryColor: true,
+});
+
+export const brandingOverlaySchema = brandingSchema.pick({
+	authBgOverlay: true,
+});
+
+export const brandingLogoSchema = brandingSchema.pick({
+	logoUrl: true,
+	faviconUrl: true,
+	logoDarkInvert: true,
 });
 
 export type BrandingFormValues = z.infer<typeof brandingSchema>;

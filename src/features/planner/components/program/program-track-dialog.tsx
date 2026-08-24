@@ -1,5 +1,6 @@
 import { IconCheck } from "@tabler/icons-react";
 import type { ProgramTrackWithStats } from "@/features/planner/server/tracks";
+import { Form } from "@/shared/components/composable/form";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -65,12 +66,9 @@ export function ProgramTrackDialog({
 					</DialogDescription>
 				</DialogHeader>
 
-				<form
+				<Form
 					className="space-y-4"
-					noValidate
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
+					onSubmit={() => {
 						void form.handleSubmit();
 					}}
 				>
@@ -181,7 +179,7 @@ export function ProgramTrackDialog({
 							/>
 						</form.AppForm>
 					</DialogFooter>
-				</form>
+				</Form>
 			</DialogContent>
 		</Dialog>
 	);

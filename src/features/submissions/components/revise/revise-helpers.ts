@@ -1,8 +1,10 @@
+import { z } from "zod";
 import { FILE_ACCEPT_ATTRIBUTE } from "@/features/settings/file-types";
 import type {
 	UserSubmissionAuthor,
 	UserSubmissionFile,
 } from "@/features/submissions/server/submissions";
+import { authorSchema } from "@/features/submissions/validations";
 import type { Author } from "@/shared/types/author";
 
 export interface RevisionFormData {
@@ -193,3 +195,17 @@ export function prepareRevisionView(
 		extractionEnabled: settings.extractionEnabled,
 	};
 }
+
+export const revisionFormSchema = z.object({
+	title: z.string().trim().min(1, "Title is required"),
+	content: z.string(),
+	comment: z.string(),
+	authors: z
+		.array(authorSchema)
+		.min(1, "At least one author is required")
+		.refine(
+			(authors) => authors.filter((a) => a.isPresenter).length === 1,
+			"Exactly one author must be marked as the presenter",
+		),
+	keywords: z.array(z.string()),
+});

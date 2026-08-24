@@ -116,7 +116,7 @@ test.describe.serial("Admin Conference Settings", () => {
 		await combobox.click();
 		await page.getByPlaceholder("Search timezone...").fill("Europe/Warsaw");
 		await page.getByRole("option", { name: "Europe/Warsaw" }).click();
-		await adminSettingsPage.saveConferenceSettings();
+		await adminSettingsPage.saveConferenceSettings("Date & Time");
 		await expect(page.getByText("Conference settings saved")).toBeVisible({
 			timeout: 10000,
 		});

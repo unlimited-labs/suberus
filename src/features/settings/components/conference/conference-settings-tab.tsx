@@ -4,7 +4,6 @@ import { BasicInformationSection } from "./basic-information-section";
 import { DateTimeSection } from "./date-time-section";
 import { ExhibitorsSettingsSection } from "./exhibitors-settings-section";
 import { ImportantDatesSection } from "./important-dates-section";
-import { useConferenceSettings } from "./use-conference-settings";
 
 interface ConferenceSettingsTabProps {
 	initialData: ConferenceSettings;
@@ -15,15 +14,13 @@ export function ConferenceSettingsTab({
 	initialData,
 	initialExhibitorConfig,
 }: ConferenceSettingsTabProps) {
-	const { form } = useConferenceSettings(initialData);
-
 	return (
 		<div className="space-y-6">
-			<BasicInformationSection form={form} />
+			<BasicInformationSection initialData={initialData} />
 
-			<ImportantDatesSection form={form} />
+			<ImportantDatesSection initialData={initialData} />
 
-			<DateTimeSection form={form} />
+			<DateTimeSection initialData={initialData} />
 
 			<ExhibitorsSettingsSection
 				delay={300}

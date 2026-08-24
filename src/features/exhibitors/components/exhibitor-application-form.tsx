@@ -1,4 +1,5 @@
 import { IconInfoCircle, IconLoader2, IconSend } from "@tabler/icons-react";
+import { Form } from "@/shared/components/composable/form";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { SectionCard } from "@/shared/ui/section-card";
@@ -48,11 +49,9 @@ export function ExhibitorApplicationForm({
 					</Alert>
 				)}
 
-				<form
+				<Form
 					className="space-y-6"
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
+					onSubmit={() => {
 						void form.handleSubmit();
 					}}
 				>
@@ -112,7 +111,7 @@ export function ExhibitorApplicationForm({
 							</form.Subscribe>
 						</div>
 					)}
-				</form>
+				</Form>
 			</SectionCard>
 
 			<WithdrawExhibitorDialog

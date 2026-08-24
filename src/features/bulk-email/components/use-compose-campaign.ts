@@ -1,4 +1,4 @@
-import { useStore } from "@tanstack/react-form";
+import { useSelector } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
@@ -51,8 +51,8 @@ export function useComposeCampaign(campaign: Campaign) {
 
 	const [jobId, setJobId] = useState<string | null>(campaign.jobProgressId);
 
-	const format = useStore(form.store, (s) => s.values.format);
-	const bodySource = useStore(form.store, (s) => s.values.bodySource);
+	const format = useSelector(form.store, (s) => s.values.format);
+	const bodySource = useSelector(form.store, (s) => s.values.bodySource);
 	const debouncedBody = useDebounced(bodySource, 400);
 
 	const previewQuery = useQuery({
@@ -148,7 +148,7 @@ export function useComposeCampaign(campaign: Campaign) {
 		});
 	}, [jobStatus, jobCurrent, jobId, campaign.id, queryClient]);
 
-	const canSend = useStore(
+	const canSend = useSelector(
 		form.store,
 		(s) =>
 			s.values.subject.trim() !== "" &&

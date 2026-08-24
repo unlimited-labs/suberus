@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { AuthCard } from "@/features/auth/components/auth-card";
 import { resetPasswordSchema } from "@/features/auth/validations";
+import { Form } from "@/shared/components/composable/form";
 import { PasswordFieldsGroup } from "@/shared/components/composable/password-fields-group";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { resetPassword } from "@/shared/lib/auth-client";
@@ -117,11 +118,9 @@ function ResetPasswordPage() {
 
 	return (
 		<AuthCard subtitle="Enter your new password below" title="Reset password">
-			<form
+			<Form
 				className="flex flex-1 flex-col"
-				onSubmit={(e) => {
-					e.preventDefault();
-					e.stopPropagation();
+				onSubmit={() => {
 					void form.handleSubmit();
 				}}
 			>
@@ -144,7 +143,7 @@ function ResetPasswordPage() {
 						/>
 					</form.AppForm>
 				</div>
-			</form>
+			</Form>
 
 			<p className="mt-3 text-center">
 				<Link

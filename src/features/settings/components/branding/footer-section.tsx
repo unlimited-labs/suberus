@@ -1,22 +1,17 @@
 import { IconPalette } from "@tabler/icons-react";
 import { useSelector } from "@tanstack/react-store";
+import type { BrandingSettings } from "@/features/settings/api/settings";
 import { SettingsSaveButton } from "@/features/settings/components/settings-save-button";
 import { SettingsSection } from "@/features/settings/components/settings-section";
-import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
-import { FieldError } from "@/shared/ui/field";
-import { Label } from "@/shared/ui/label";
-import { Textarea } from "@/shared/ui/textarea";
-import type { BrandingFormApi } from "./use-branding-settings";
+import { Form } from "@/shared/components/composable/form";
+import { useBrandingFooterForm } from "./use-branding-settings";
 
 interface FooterSectionProps {
-	form: BrandingFormApi;
+	initialData: BrandingSettings;
 }
 
-export function FooterSection({ form }: FooterSectionProps) {
-	const submissionAttempts = useSelector(
-		form.store,
-		(s) => s.submissionAttempts,
-	);
+export function FooterSection({ initialData }: FooterSectionProps) {
+	const form = useBrandingFooterForm(initialData);
 	const isSubmitting = useSelector(form.store, (s) => s.isSubmitting);
 
 	return (
@@ -26,35 +21,21 @@ export function FooterSection({ form }: FooterSectionProps) {
 			icon={IconPalette}
 			title="Footer"
 		>
-			<form.Field name="footerText">
-				{(field) => {
-					const hasError = isFieldErrorVisible(
-						field.state.meta,
-						submissionAttempts,
-					);
-					return (
-						<div className="space-y-2">
-							<Label htmlFor="footerText">Footer text</Label>
-							<Textarea
-								aria-invalid={hasError}
-								className="min-h-20"
-								id="footerText"
-								onBlur={field.handleBlur}
-								onChange={(e) => field.handleChange(e.target.value)}
-								placeholder="© 2026 Conference Name"
-								value={field.state.value}
-							/>
-							<FieldError
-								errors={hasError ? field.state.meta.errors : undefined}
-							/>
-						</div>
-					);
-				}}
-			</form.Field>
-			<SettingsSaveButton
-				isSaving={isSubmitting}
-				onSave={() => void form.handleSubmit()}
-			/>
+			<Form onSubmit={() => void form.handleSubmit()}>
+				<form.AppField name="footerText">
+					{(field) => (
+						<field.TextareaField
+							className="min-h-20"
+							label="Footer text"
+							placeholder="© 2026 Conference Name"
+						/>
+					)}
+				</form.AppField>
+				<SettingsSaveButton
+					isSaving={isSubmitting}
+					testId="save-branding-footer"
+				/>
+			</Form>
 		</SettingsSection>
 	);
 }

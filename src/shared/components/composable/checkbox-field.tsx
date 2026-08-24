@@ -1,5 +1,9 @@
 import type * as React from "react";
-import { useFieldError } from "@/shared/hooks/use-field-error";
+import {
+	describedByIds,
+	fieldAria,
+	useFieldError,
+} from "@/shared/hooks/use-field-error";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
 
@@ -21,7 +25,9 @@ export function FormCheckboxField({
 			<Checkbox
 				checked={field.state.value}
 				id={field.name}
+				onBlur={field.handleBlur}
 				onCheckedChange={(checked) => field.handleChange(checked === true)}
+				{...fieldAria(field.name, hasError, false)}
 			/>
 			<FieldLabel
 				className={
@@ -32,7 +38,10 @@ export function FormCheckboxField({
 			>
 				{label}
 			</FieldLabel>
-			<FieldError errors={hasError ? errors : undefined} />
+			<FieldError
+				errors={hasError ? errors : undefined}
+				id={describedByIds(field.name).error}
+			/>
 		</Field>
 	);
 }

@@ -3,7 +3,6 @@ import {
 	initialTrackForm,
 	normalizeSupervisorId,
 	trackDialogLabels,
-	validateTrackName,
 } from "./track-form-helpers";
 
 describe("initialTrackForm", () => {
@@ -26,23 +25,6 @@ describe("initialTrackForm", () => {
 			initialTrackForm({ name: "AI", supervisorId: null, isActive: true })
 				.supervisorId,
 		).toBeUndefined();
-	});
-});
-
-describe("validateTrackName", () => {
-	it("requires a non-blank name", () => {
-		expect(validateTrackName("")).toBe("Track name is required");
-		expect(validateTrackName("   ")).toBe("Track name is required");
-	});
-
-	it("caps the length at 200", () => {
-		expect(validateTrackName("x".repeat(201))).toBe(
-			"Track name must be at most 200 characters",
-		);
-	});
-
-	it("accepts a valid name", () => {
-		expect(validateTrackName("Machine Learning")).toBeNull();
 	});
 });
 

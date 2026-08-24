@@ -8,6 +8,7 @@ import {
 	deleteSubmissionFn,
 	editorSubmissionQueryOptions,
 } from "@/features/submissions/api/admin-submissions";
+import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
@@ -53,11 +54,7 @@ export function SubmissionDeleteDialog({
 			navigate({ to: "/admin/submissions" });
 		},
 		onError: (error) => {
-			if (error instanceof Response) {
-				error.text().then((msg) => toast.error(msg));
-			} else {
-				toast.error("Failed to delete submission");
-			}
+			toast.error(getErrorMessage(error, "Failed to delete submission"));
 		},
 	});
 

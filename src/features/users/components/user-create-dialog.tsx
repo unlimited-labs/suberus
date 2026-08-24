@@ -14,6 +14,7 @@ import {
 import type { AdminUserCreateFormData } from "@/features/users/validations";
 import { adminUserCreateSchema } from "@/features/users/validations";
 import { BillingFieldsGroup } from "@/shared/components/composable/billing-fields-group";
+import { Form } from "@/shared/components/composable/form";
 import { SurveyQuestionField } from "@/shared/components/survey-question-field";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { getErrorMessage } from "@/shared/lib/error-message";
@@ -136,12 +137,10 @@ export function UserCreateDialog({
 						password.
 					</DialogDescription>
 				</DialogHeader>
-				<form
+				<Form
 					className="space-y-4"
 					data-testid="user-create-form"
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
+					onSubmit={() => {
 						void form.handleSubmit();
 					}}
 				>
@@ -243,7 +242,7 @@ export function UserCreateDialog({
 							/>
 						</form.AppForm>
 					</DialogFooter>
-				</form>
+				</Form>
 			</DialogContent>
 		</Dialog>
 	);
