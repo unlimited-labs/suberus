@@ -32,8 +32,10 @@ import { Form } from "@/shared/components/composable/form";
 import { FileDropzone } from "@/shared/components/file-dropzone";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import type { Author } from "@/shared/types/author";
 import { Button } from "@/shared/ui/button";
+import { Field, FieldError } from "@/shared/ui/field";
 import { Label } from "@/shared/ui/label";
 
 export const Route = createFileRoute("/_app/submissions/$id_/revise")({
@@ -193,6 +195,10 @@ function RevisionForm({
 	const authors = useSelector(form.store, (s) => s.values.authors);
 	const keywords = useSelector(form.store, (s) => s.values.keywords);
 	const title = useSelector(form.store, (s) => s.values.title);
+	const submissionAttempts = useSelector(
+		form.store,
+		(s) => s.submissionAttempts,
+	);
 
 	const { isExtracting, elapsedSeconds, handleFileChange } =
 		useDocumentExtraction({
@@ -289,10 +295,25 @@ function RevisionForm({
 									Authors
 								</h2>
 							</div>
-							<AuthorsInput
-								onChange={(next) => form.setFieldValue("authors", next)}
-								value={authors}
-							/>
+							<form.Field name="authors">
+								{(field) => {
+									const hasError = isFieldErrorVisible(
+										field.state.meta,
+										submissionAttempts,
+									);
+									return (
+										<Field data-invalid={hasError}>
+											<AuthorsInput
+												onChange={field.handleChange}
+												value={field.state.value}
+											/>
+											<FieldError
+												errors={hasError ? field.state.meta.errors : undefined}
+											/>
+										</Field>
+									);
+								}}
+							</form.Field>
 						</div>
 
 						{enableKeywords && (

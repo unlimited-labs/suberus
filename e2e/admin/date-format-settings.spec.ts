@@ -34,7 +34,7 @@ test.describe.serial("Admin - Date/Time Format", () => {
 		// are identical whenever day === month (e.g. 06/06), so option text is ambiguous.
 		await select.click();
 		await page.getByTestId("date-format-option-MM/DD/YYYY").click();
-		await adminSettingsPage.saveConferenceSettings();
+		await adminSettingsPage.saveConferenceSettings("Date & Time");
 
 		await expect(page.getByText("Conference settings saved")).toBeVisible({ timeout: 10000 });
 	});
@@ -61,7 +61,7 @@ test.describe.serial("Admin - Date/Time Format", () => {
 
 	test("can switch time format to 12h", async ({ page }) => {
 		await adminSettingsPage.getTimeFormatRadio("12h").click();
-		await adminSettingsPage.saveConferenceSettings();
+		await adminSettingsPage.saveConferenceSettings("Date & Time");
 
 		await expect(page.getByText("Conference settings saved")).toBeVisible({ timeout: 10000 });
 	});
