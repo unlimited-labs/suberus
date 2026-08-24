@@ -6,6 +6,7 @@ import {
 } from "@tabler/icons-react";
 import type { PersonalInfoFormData } from "@/features/profile/validations";
 import { personalInfoSchema } from "@/features/profile/validations";
+import { Form } from "@/shared/components/composable/form";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { titleOptions } from "@/shared/lib/labels/title";
 
@@ -32,11 +33,9 @@ export function PersonalInfoSection({
 	});
 
 	return (
-		<form
+		<Form
 			className="space-y-4"
-			onSubmit={(e) => {
-				e.preventDefault();
-				e.stopPropagation();
+			onSubmit={() => {
 				void form.handleSubmit();
 			}}
 		>
@@ -128,6 +127,6 @@ export function PersonalInfoSection({
 					/>
 				</form.AppForm>
 			</div>
-		</form>
+		</Form>
 	);
 }

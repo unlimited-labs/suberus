@@ -8,6 +8,7 @@ import {
 import { ExtractionOverlay } from "@/features/extraction/components/extraction-overlay";
 import type { AvailableTrack } from "@/features/submissions/types";
 import { AuthorsInput } from "@/shared/components/authors-input";
+import { Form } from "@/shared/components/composable/form";
 import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { Button } from "@/shared/ui/button";
 import { Field, FieldError } from "@/shared/ui/field";
@@ -94,11 +95,9 @@ export function SubmissionForm(props: SubmissionFormProps) {
 							</p>
 						</div>
 
-						<form
+						<Form
 							className="space-y-6"
-							onSubmit={(e) => {
-								e.preventDefault();
-								e.stopPropagation();
+							onSubmit={() => {
 								void form.handleSubmit();
 							}}
 						>
@@ -309,7 +308,7 @@ export function SubmissionForm(props: SubmissionFormProps) {
 									)}
 								</form.Subscribe>
 							</div>
-						</form>
+						</Form>
 					</div>
 				</div>
 

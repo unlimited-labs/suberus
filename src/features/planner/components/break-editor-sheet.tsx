@@ -1,6 +1,7 @@
 import { IconTrash } from "@tabler/icons-react";
 import { useStore } from "@tanstack/react-store";
 import { useRef } from "react";
+import { Form } from "@/shared/components/composable/form";
 import { Button } from "@/shared/ui/button";
 import { Field, FieldError } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
@@ -70,12 +71,9 @@ function BreakEditorBody() {
 	const isDirty = useStore(form.store, (s) => s.isDirty);
 
 	return (
-		<form
+		<Form
 			className="flex flex-1 flex-col"
-			noValidate
-			onSubmit={(e) => {
-				e.preventDefault();
-				e.stopPropagation();
+			onSubmit={() => {
 				void form.handleSubmit();
 			}}
 		>
@@ -270,6 +268,6 @@ function BreakEditorBody() {
 					{isEvent ? "Delete event" : "Delete break"}
 				</Button>
 			</SheetFooter>
-		</form>
+		</Form>
 	);
 }

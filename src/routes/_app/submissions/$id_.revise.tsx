@@ -212,7 +212,7 @@ function RevisionForm({
 
 			<div className="flex-1 overflow-auto p-6">
 				<div className="mx-auto max-w-3xl">
-					<form className="space-y-6" onSubmit={handleSubmit}>
+					<form className="space-y-6" noValidate onSubmit={handleSubmit}>
 						<div className="space-y-2">
 							<Label htmlFor="title">Title</Label>
 							<input

@@ -11,6 +11,7 @@ import type { AdminUser } from "@/features/users/server/users";
 import type { AdminUserEditFormData } from "@/features/users/validations";
 import { adminUserEditSchema } from "@/features/users/validations";
 import { BillingFieldsGroup } from "@/shared/components/composable/billing-fields-group";
+import { Form } from "@/shared/components/composable/form";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { titleOptions } from "@/shared/lib/labels/title";
 import { Button } from "@/shared/ui/button";
@@ -99,11 +100,9 @@ export function UserEditDialog({
 						Edit the user's contact and billing details.
 					</DialogDescription>
 				</DialogHeader>
-				<form
+				<Form
 					className="space-y-4"
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
+					onSubmit={() => {
 						void form.handleSubmit();
 					}}
 				>
@@ -181,7 +180,7 @@ export function UserEditDialog({
 							/>
 						</form.AppForm>
 					</DialogFooter>
-				</form>
+				</Form>
 			</DialogContent>
 		</Dialog>
 	);

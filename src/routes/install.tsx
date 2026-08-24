@@ -12,6 +12,7 @@ import {
 	performInstallFn,
 } from "@/features/install/api/install";
 import { installSchema } from "@/features/install/validations";
+import { Form } from "@/shared/components/composable/form";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { getErrorMessage } from "@/shared/lib/error-message";
 
@@ -72,11 +73,9 @@ function InstallPage() {
 						</p>
 					</div>
 
-					<form
+					<Form
 						className="flex flex-1 flex-col"
-						onSubmit={(e) => {
-							e.preventDefault();
-							e.stopPropagation();
+						onSubmit={() => {
 							void form.handleSubmit();
 						}}
 					>
@@ -156,7 +155,7 @@ function InstallPage() {
 								/>
 							</form.AppForm>
 						</div>
-					</form>
+					</Form>
 				</div>
 			</div>
 		</AuthLayout>

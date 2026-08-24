@@ -72,7 +72,7 @@ export function InviteUserDialog({
 						Send an invitation email with a registration link.
 					</DialogDescription>
 				</DialogHeader>
-				<form className="space-y-4" onSubmit={handleSubmit}>
+				<form className="space-y-4" noValidate onSubmit={handleSubmit}>
 					<div className="space-y-2">
 						<Label htmlFor="invite-email">Email</Label>
 						<Input

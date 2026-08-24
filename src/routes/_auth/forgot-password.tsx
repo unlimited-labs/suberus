@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { AuthCard } from "@/features/auth/components/auth-card";
 import { forgotPasswordSchema } from "@/features/auth/validations";
+import { Form } from "@/shared/components/composable/form";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { forgetPassword } from "@/shared/lib/auth-client";
 
@@ -84,11 +85,9 @@ function ForgotPasswordPage() {
 			subtitle="Enter your email and we'll send you a reset link"
 			title="Forgot password?"
 		>
-			<form
+			<Form
 				className="flex flex-1 flex-col"
-				onSubmit={(e) => {
-					e.preventDefault();
-					e.stopPropagation();
+				onSubmit={() => {
 					void form.handleSubmit();
 				}}
 			>
@@ -113,7 +112,7 @@ function ForgotPasswordPage() {
 						/>
 					</form.AppForm>
 				</div>
-			</form>
+			</Form>
 
 			<p className="mt-3 text-center">
 				<Link

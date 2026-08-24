@@ -11,6 +11,7 @@ import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
 import { allSessionsQueryOptions } from "@/features/planner/api/sessions";
 import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
 import { tzLocalInputToUtc } from "@/features/planner/tz-datetime";
+import { Form } from "@/shared/components/composable/form";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
@@ -103,11 +104,9 @@ export function CreateEventDialog({
 					</DialogDescription>
 				</DialogHeader>
 
-				<form
+				<Form
 					className="space-y-4"
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
+					onSubmit={() => {
 						void form.handleSubmit();
 					}}
 				>
@@ -386,7 +385,7 @@ export function CreateEventDialog({
 							<form.SubmitButton label="Create" testId="create-event-submit" />
 						</form.AppForm>
 					</DialogFooter>
-				</form>
+				</Form>
 			</DialogContent>
 		</Dialog>
 	);

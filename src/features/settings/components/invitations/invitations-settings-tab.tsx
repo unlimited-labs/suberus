@@ -10,6 +10,7 @@ import {
 	type InvitationSettingsFormValues,
 	invitationSettingsFormSchema,
 } from "@/features/settings/validations";
+import { Form } from "@/shared/components/composable/form";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { getErrorMessage } from "@/shared/lib/error-message";
 
@@ -58,11 +59,9 @@ export function InvitationsSettingsTab({
 			icon={IconClock}
 			title="Invitation Settings"
 		>
-			<form
+			<Form
 				className="space-y-3"
-				onSubmit={(e) => {
-					e.preventDefault();
-					e.stopPropagation();
+				onSubmit={() => {
 					void form.handleSubmit();
 				}}
 			>
@@ -82,7 +81,7 @@ export function InvitationsSettingsTab({
 						<form.SubmitButton label="Save" />
 					</form.AppForm>
 				</div>
-			</form>
+			</Form>
 		</SettingsSection>
 	);
 }

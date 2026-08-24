@@ -1,4 +1,5 @@
 import type { RoomWithStats } from "@/features/planner/server/rooms";
+import { Form } from "@/shared/components/composable/form";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
@@ -39,12 +40,9 @@ export function RoomDialog({
 					</DialogDescription>
 				</DialogHeader>
 
-				<form
+				<Form
 					className="space-y-4"
-					noValidate
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
+					onSubmit={() => {
 						void form.handleSubmit();
 					}}
 				>
@@ -96,7 +94,7 @@ export function RoomDialog({
 							/>
 						</form.AppForm>
 					</DialogFooter>
-				</form>
+				</Form>
 			</DialogContent>
 		</Dialog>
 	);

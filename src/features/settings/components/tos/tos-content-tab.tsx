@@ -8,6 +8,7 @@ import {
 } from "@/features/settings/api/settings";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import { tosContentSchema } from "@/features/settings/validations";
+import { Form } from "@/shared/components/composable/form";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { getErrorMessage } from "@/shared/lib/error-message";
@@ -52,11 +53,9 @@ export function TosContentTab({ initialContent }: TosContentTabProps) {
 				icon={IconFileText}
 				title="Terms of Service"
 			>
-				<form
+				<Form
 					className="space-y-4"
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
+					onSubmit={() => {
 						void form.handleSubmit();
 					}}
 				>
@@ -112,7 +111,7 @@ export function TosContentTab({ initialContent }: TosContentTabProps) {
 							<form.SubmitButton label="Save Terms of Service" />
 						</form.AppForm>
 					</div>
-				</form>
+				</Form>
 			</SettingsSection>
 		</div>
 	);

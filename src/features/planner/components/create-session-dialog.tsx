@@ -3,6 +3,7 @@ import { useSelector } from "@tanstack/react-store";
 import { addMinutes } from "date-fns";
 import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
 import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
+import { Form } from "@/shared/components/composable/form";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
@@ -73,11 +74,9 @@ export function CreateSessionDialog({
 					</DialogDescription>
 				</DialogHeader>
 
-				<form
+				<Form
 					className="space-y-4"
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
+					onSubmit={() => {
 						void form.handleSubmit();
 					}}
 				>
@@ -206,7 +205,7 @@ export function CreateSessionDialog({
 							/>
 						</form.AppForm>
 					</DialogFooter>
-				</form>
+				</Form>
 			</DialogContent>
 		</Dialog>
 	);

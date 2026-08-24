@@ -11,6 +11,7 @@ import {
 	type ReminderFormValues,
 	reminderFormSchema,
 } from "@/features/settings/validations";
+import { Form } from "@/shared/components/composable/form";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Label } from "@/shared/ui/label";
@@ -78,10 +79,8 @@ export function RemindersSettingsTab({
 			icon={IconBell}
 			title="Reminders"
 		>
-			<form
-				onSubmit={(e) => {
-					e.preventDefault();
-					e.stopPropagation();
+			<Form
+				onSubmit={() => {
 					void form.handleSubmit();
 				}}
 			>
@@ -217,7 +216,7 @@ export function RemindersSettingsTab({
 						<form.SubmitButton label="Save" />
 					</form.AppForm>
 				</div>
-			</form>
+			</Form>
 		</SettingsSection>
 	);
 }

@@ -38,6 +38,7 @@ import { DueCell } from "@/features/finances/components/admin/due-cell";
 import { ExpenseToolbar } from "@/features/finances/components/admin/expense-toolbar";
 import { FeeProjection } from "@/features/finances/components/admin/fee-projection";
 import { MoneyCells } from "@/features/finances/components/admin/money-cells";
+import { Form } from "@/shared/components/composable/form";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { formatCurrency } from "@/shared/lib/format-currency";
@@ -481,11 +482,9 @@ export function FinancesBoard() {
 
 	return (
 		<TooltipProvider>
-			<form
+			<Form
 				className="space-y-6"
-				noValidate
-				onSubmit={(e) => {
-					e.preventDefault();
+				onSubmit={() => {
 					void form.handleSubmit();
 				}}
 			>
@@ -735,7 +734,7 @@ export function FinancesBoard() {
 						);
 					}}
 				</form.Subscribe>
-			</form>
+			</Form>
 
 			<Dialog
 				onOpenChange={(open) => !open && setConfirmRemove(null)}

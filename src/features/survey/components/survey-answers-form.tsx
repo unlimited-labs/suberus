@@ -1,5 +1,6 @@
 import { useSelector } from "@tanstack/react-store";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
+import { Form } from "@/shared/components/composable/form";
 import { SurveyQuestionField } from "@/shared/components/survey-question-field";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
@@ -62,11 +63,9 @@ export function SurveyAnswersForm({
 	}
 
 	return (
-		<form
+		<Form
 			className="space-y-4"
-			onSubmit={(e) => {
-				e.preventDefault();
-				e.stopPropagation();
+			onSubmit={() => {
 				void form.handleSubmit();
 			}}
 		>
@@ -109,7 +108,7 @@ export function SurveyAnswersForm({
 					<form.SubmitButton label={submitLabel} submittingLabel="Saving..." />
 				</form.AppForm>
 			</div>
-		</form>
+		</Form>
 	);
 }
 

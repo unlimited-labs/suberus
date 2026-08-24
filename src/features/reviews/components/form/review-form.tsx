@@ -2,6 +2,7 @@ import { IconLock, IconMessageCircle } from "@tabler/icons-react";
 import type { ReviewFormData } from "@/features/reviews/validations";
 import type { ContentFormat } from "@/features/settings/types";
 import type { SubmissionType } from "@/generated/prisma/enums";
+import { Form } from "@/shared/components/composable/form";
 import { typeLabels } from "@/shared/lib/labels/submission";
 import { lookup } from "@/shared/lib/lookup";
 import { Badge } from "@/shared/ui/badge";
@@ -111,11 +112,9 @@ export function ReviewForm({
 						submission={submission}
 					/>
 
-					<form
+					<Form
 						className="space-y-6"
-						onSubmit={(e) => {
-							e.preventDefault();
-							e.stopPropagation();
+						onSubmit={() => {
 							void form.handleSubmit();
 						}}
 					>
@@ -187,7 +186,7 @@ export function ReviewForm({
 								)}
 							</div>
 						)}
-					</form>
+					</Form>
 				</div>
 
 				<div className="space-y-6">

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { adminSettingQueryOptions } from "@/features/settings/api/settings";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import type { ProgramQrSettings } from "@/features/settings/types";
+import { Form } from "@/shared/components/composable/form";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
@@ -24,11 +25,8 @@ function QrCodesForm({ settings }: { settings: ProgramQrSettings }) {
 	const { form, submitFor } = useQrSettingsForm(settings);
 
 	return (
-		<form
-			noValidate
-			onSubmit={(e) => {
-				e.preventDefault();
-				e.stopPropagation();
+		<Form
+			onSubmit={() => {
 				submitFor("zip");
 			}}
 		>
@@ -151,7 +149,7 @@ function QrCodesForm({ settings }: { settings: ProgramQrSettings }) {
 					/>
 				</form.AppForm>
 			</div>
-		</form>
+		</Form>
 	);
 }
 

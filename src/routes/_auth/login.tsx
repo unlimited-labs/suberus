@@ -8,6 +8,7 @@ import {
 	resumeOAuthAuthorize,
 } from "@/features/auth/oauth-resume";
 import { loginSchema } from "@/features/auth/validations";
+import { Form } from "@/shared/components/composable/form";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { authClient, signIn } from "@/shared/lib/auth-client";
 import { Button } from "@/shared/ui/button";
@@ -116,11 +117,9 @@ function LoginPage() {
 
 	return (
 		<AuthCard subtitle="Access your account" title="Sign in">
-			<form
+			<Form
 				className="flex flex-1 flex-col"
-				onSubmit={(e) => {
-					e.preventDefault();
-					e.stopPropagation();
+				onSubmit={() => {
 					void form.handleSubmit();
 				}}
 			>
@@ -158,7 +157,7 @@ function LoginPage() {
 					{promotePasskey ? passkeyButton : submitButton}
 					{promotePasskey ? submitButton : passkeyButton}
 				</div>
-			</form>
+			</Form>
 
 			<p className="text-muted-foreground mt-3 text-center text-sm">
 				Don't have an account?{" "}

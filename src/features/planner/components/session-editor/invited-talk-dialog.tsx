@@ -2,6 +2,7 @@ import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { invitedTalkQueryOptions } from "@/features/planner/api/presentations";
 import type { InvitedTalkDetail } from "@/features/planner/server/invited";
 import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
+import { Form } from "@/shared/components/composable/form";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
@@ -92,12 +93,9 @@ function InvitedTalkForm({
 	});
 
 	return (
-		<form
+		<Form
 			className="space-y-4"
-			noValidate
-			onSubmit={(e) => {
-				e.preventDefault();
-				e.stopPropagation();
+			onSubmit={() => {
 				void form.handleSubmit();
 			}}
 		>
@@ -181,6 +179,6 @@ function InvitedTalkForm({
 					/>
 				</form.AppForm>
 			</DialogFooter>
-		</form>
+		</Form>
 	);
 }

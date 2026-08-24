@@ -11,6 +11,7 @@ import { EmailChangeConfirmDialog } from "@/features/profile/components/email-ch
 import type { ContactInfoFormData } from "@/features/profile/validations";
 import { contactInfoSchema } from "@/features/profile/validations";
 import { BillingFieldsGroup } from "@/shared/components/composable/billing-fields-group";
+import { Form } from "@/shared/components/composable/form";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { useResendVerification } from "@/shared/hooks/use-resend-verification";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
@@ -76,11 +77,9 @@ export function ContactInfoSection({
 	};
 
 	return (
-		<form
+		<Form
 			className="space-y-4"
-			onSubmit={(e) => {
-				e.preventDefault();
-				e.stopPropagation();
+			onSubmit={() => {
 				void form.handleSubmit();
 			}}
 		>
@@ -205,6 +204,6 @@ export function ContactInfoSection({
 				}}
 				open={pendingSave !== null}
 			/>
-		</form>
+		</Form>
 	);
 }

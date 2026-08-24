@@ -1,5 +1,6 @@
 import type { PasswordChangeFormData } from "@/features/profile/validations";
 import { passwordChangeSchema } from "@/features/profile/validations";
+import { Form } from "@/shared/components/composable/form";
 import { PasswordFieldsGroup } from "@/shared/components/composable/password-fields-group";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 
@@ -29,11 +30,9 @@ export function PasswordChangeSection({
 	});
 
 	return (
-		<form
+		<Form
 			className="space-y-4"
-			onSubmit={(e) => {
-				e.preventDefault();
-				e.stopPropagation();
+			onSubmit={() => {
 				void form.handleSubmit();
 			}}
 		>
@@ -66,6 +65,6 @@ export function PasswordChangeSection({
 					/>
 				</form.AppForm>
 			</div>
-		</form>
+		</Form>
 	);
 }

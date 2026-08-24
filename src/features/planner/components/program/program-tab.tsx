@@ -14,6 +14,7 @@ import type { ProgramTrackWithStats } from "@/features/planner/server/tracks";
 import type { ConferenceSettings } from "@/features/settings/api/settings";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import type { AppSettingsMap } from "@/features/settings/types";
+import { Form } from "@/shared/components/composable/form";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { formatLlmStatus } from "@/shared/lib/format-llm-status";
 import { cn } from "@/shared/lib/utils";
@@ -84,11 +85,8 @@ function PlannerSettingsSection({
 			icon={IconClock}
 			title="Planner"
 		>
-			<form
-				noValidate
-				onSubmit={(e) => {
-					e.preventDefault();
-					e.stopPropagation();
+			<Form
+				onSubmit={() => {
 					void form.handleSubmit();
 				}}
 			>
@@ -254,7 +252,7 @@ function PlannerSettingsSection({
 						/>
 					</form.AppForm>
 				</div>
-			</form>
+			</Form>
 		</SettingsSection>
 	);
 }

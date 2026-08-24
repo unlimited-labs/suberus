@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { SurveyQuestionFormValues } from "@/features/survey/validations";
+import { Form } from "@/shared/components/composable/form";
 import { SurveyQuestionField } from "@/shared/components/survey-question-field";
 import { Button } from "@/shared/ui/button";
 import {
@@ -88,11 +89,9 @@ function SurveyQuestionDialogForm({
 	});
 
 	return (
-		<form
+		<Form
 			className="grid gap-6 md:grid-cols-[1fr_minmax(260px,320px)]"
-			onSubmit={(e) => {
-				e.preventDefault();
-				e.stopPropagation();
+			onSubmit={() => {
 				void form.handleSubmit();
 			}}
 		>
@@ -225,7 +224,7 @@ function SurveyQuestionDialogForm({
 					</form.Subscribe>
 				</div>
 			</div>
-		</form>
+		</Form>
 	);
 }
 
