@@ -12,6 +12,7 @@ import { allSessionsQueryOptions } from "@/features/planner/api/sessions";
 import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
 import { tzLocalInputToUtc } from "@/features/planner/tz-datetime";
 import { Form } from "@/shared/components/composable/form";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
@@ -52,6 +53,10 @@ export function CreateEventDialog({
 		onClose,
 	});
 
+	const submissionAttempts = useSelector(
+		form.store,
+		(s) => s.submissionAttempts,
+	);
 	const type = useSelector(form.store, (s) => s.values.type);
 	const startInput = useSelector(form.store, (s) => s.values.startInput);
 	const endInput = useSelector(form.store, (s) => s.values.endInput);
@@ -150,6 +155,7 @@ export function CreateEventDialog({
 								<Input
 									data-testid="create-event-start"
 									id="event-start"
+									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
 									type="datetime-local"
 									value={field.state.value}
@@ -213,7 +219,12 @@ export function CreateEventDialog({
 					) : untimedSession || type === "event" ? (
 						<form.Field name="endInput">
 							{(field) => {
-								const errors = field.state.meta.errors;
+								const errors = isFieldErrorVisible(
+									field.state.meta,
+									submissionAttempts,
+								)
+									? field.state.meta.errors
+									: [];
 								const hasError = errors.length > 0;
 								return (
 									<Field className="space-y-2" data-invalid={hasError}>
@@ -222,6 +233,7 @@ export function CreateEventDialog({
 											aria-invalid={hasError}
 											data-testid="create-event-end"
 											id="event-end"
+											onBlur={field.handleBlur}
 											onChange={(e) => field.handleChange(e.target.value)}
 											type="datetime-local"
 											value={field.state.value}
@@ -273,7 +285,12 @@ export function CreateEventDialog({
 						}}
 					>
 						{(field) => {
-							const errors = field.state.meta.errors;
+							const errors = isFieldErrorVisible(
+								field.state.meta,
+								submissionAttempts,
+							)
+								? field.state.meta.errors
+								: [];
 							const hasError = errors.length > 0;
 							return (
 								<Field className="space-y-2" data-invalid={hasError}>
@@ -285,6 +302,7 @@ export function CreateEventDialog({
 										autoFocus
 										data-testid="create-event-title"
 										id="event-title"
+										onBlur={field.handleBlur}
 										onChange={(e) => field.handleChange(e.target.value)}
 										placeholder={
 											type === "session"
@@ -310,6 +328,7 @@ export function CreateEventDialog({
 										<Textarea
 											data-testid="create-event-description"
 											id="event-description"
+											onBlur={field.handleBlur}
 											onChange={(e) => field.handleChange(e.target.value)}
 											rows={3}
 											value={field.state.value}
@@ -324,6 +343,7 @@ export function CreateEventDialog({
 										<Input
 											data-testid="create-event-location"
 											id="event-location"
+											onBlur={field.handleBlur}
 											onChange={(e) => field.handleChange(e.target.value)}
 											value={field.state.value}
 										/>
@@ -337,6 +357,7 @@ export function CreateEventDialog({
 										<Input
 											data-testid="create-event-location-url"
 											id="event-location-url"
+											onBlur={field.handleBlur}
 											onChange={(e) => field.handleChange(e.target.value)}
 											type="url"
 											value={field.state.value}

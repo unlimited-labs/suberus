@@ -4,6 +4,7 @@ import { addMinutes } from "date-fns";
 import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
 import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
 import { Form } from "@/shared/components/composable/form";
+import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
@@ -50,6 +51,10 @@ export function CreateSessionDialog({
 		onCreated,
 	});
 
+	const submissionAttempts = useSelector(
+		form.store,
+		(s) => s.submissionAttempts,
+	);
 	const slotMin = useSelector(form.store, (s) => s.values.slotMin);
 	const untimedSlots = useSelector(form.store, (s) => s.values.untimedSlots);
 	const sessionMin = useSelector(form.store, (s) => s.values.sessionMin);
@@ -95,7 +100,12 @@ export function CreateSessionDialog({
 						}}
 					>
 						{(field) => {
-							const errors = field.state.meta.errors;
+							const errors = isFieldErrorVisible(
+								field.state.meta,
+								submissionAttempts,
+							)
+								? field.state.meta.errors
+								: [];
 							const hasError = errors.length > 0;
 							return (
 								<Field className="space-y-2" data-invalid={hasError}>
@@ -105,6 +115,7 @@ export function CreateSessionDialog({
 										autoFocus
 										data-testid="create-session-name"
 										id="cs-title"
+										onBlur={field.handleBlur}
 										onChange={(e) => field.handleChange(e.target.value)}
 										placeholder="Session title"
 										value={field.state.value}
