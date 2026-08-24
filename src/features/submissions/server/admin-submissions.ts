@@ -6,16 +6,24 @@ import {
 } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
 import { assignReviewer } from "@/features/reviews/server/assignments";
-import { getSubmissionTypeConfigs } from "@/features/settings/server/settings";
+import {
+	getSetting,
+	getSubmissionTypeConfigs,
+} from "@/features/settings/server/settings";
+import { SUBMISSION_TYPE_TO_KEY } from "@/features/settings/types";
 import {
 	type SubmissionTodo,
 	statusChangeOptions,
 } from "@/features/submissions/labels";
+import { adminEditSubmission } from "@/features/submissions/server/submissions";
 import {
 	isNonSubmittable,
 	NON_SUBMITTABLE_TYPES,
 } from "@/features/submissions/submittable";
-import type { adminSubmissionsListInput } from "@/features/submissions/validations";
+import type {
+	adminSubmissionsListInput,
+	submissionUpdateInput,
+} from "@/features/submissions/validations";
 import type { SubmissionEvent } from "@/features/workflow";
 import { hasMinReviewers } from "@/features/workflow/guards";
 import { executeSubmissionTransition } from "@/features/workflow/server/workflow";
@@ -888,4 +896,86 @@ export async function bulkAssignReviewer(
 	}
 
 	return { assigned, errors };
+}
+
+/**
+ * Patch semantics for the MCP edit tool: an omitted field keeps its current
+ * value, so fixing one title cannot silently drop the author list that
+ * adminEditSubmission would otherwise overwrite wholesale.
+ */
+export async function updateSubmissionForAdmin(
+	submissionId: string,
+	actorId: string,
+	patch: Omit<z.infer<typeof submissionUpdateInput>, "submissionId">,
+): Promise<{ success: boolean; error?: string; changed?: string[] }> {
+	const current = await prisma.submission.findUnique({
+		where: { id: submissionId },
+		select: {
+			type: true,
+			title: true,
+			content: true,
+			trackId: true,
+			currentVersion: { select: { content: true } },
+			authors: {
+				orderBy: { orderIndex: "asc" },
+				select: {
+					firstName: true,
+					lastName: true,
+					email: true,
+					isPresenter: true,
+					affiliationId: true,
+					affiliation: { select: { name: true } },
+				},
+			},
+			keywords: {
+				orderBy: { createdAt: "asc" },
+				select: { keyword: { select: { name: true } } },
+			},
+		},
+	});
+	if (!current) return { success: false, error: "Submission not found" };
+
+	if (isNonSubmittable(current.type)) {
+		return {
+			success: false,
+			error: `${current.type} placeholders are not author submissions — an exhibitor entry is decided through the exhibitor flow and an invited talk is edited on the programme`,
+		};
+	}
+	const type = current.type;
+
+	const orphan = current.authors.find(
+		(a) => !a.affiliationId && !a.affiliation?.name,
+	);
+	if (orphan && !patch.authors) {
+		return {
+			success: false,
+			error: `${orphan.firstName} ${orphan.lastName} has no affiliation on record, so the author list cannot be preserved — send "authors" explicitly`,
+		};
+	}
+
+	const config = await getSetting(SUBMISSION_TYPE_TO_KEY[type]);
+	const merged = {
+		type,
+		title: patch.title ?? current.title,
+		content:
+			patch.content ?? current.currentVersion?.content ?? current.content,
+		authors:
+			patch.authors ??
+			current.authors.map((a) => ({
+				firstName: a.firstName,
+				lastName: a.lastName,
+				email: a.email,
+				isPresenter: a.isPresenter,
+				affiliationId: a.affiliationId,
+				affiliationName: a.affiliation?.name ?? "",
+			})),
+		keywords: patch.keywords ?? current.keywords.map((k) => k.keyword.name),
+		contentFormat: config.contentFormat,
+		trackId: patch.trackId === undefined ? current.trackId : patch.trackId,
+	};
+
+	const result = await adminEditSubmission(submissionId, actorId, merged);
+	if (!result.success) return result;
+
+	return { success: true, changed: Object.keys(patch) };
 }

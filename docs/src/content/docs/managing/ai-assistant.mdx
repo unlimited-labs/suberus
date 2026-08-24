@@ -155,6 +155,8 @@ granted; nothing is stored.
 | Register a submission on a participant's behalf | Submissions, write | Admin, Editor |
 | Issue a fresh upload address, or send a finished draft into review | Submissions, write | Admin, Editor |
 | Desk accept a submission without review — this e-mails the author straight away | Submissions, write | Admin, Editor |
+| Get a short-lived address to download a submission's uploaded file | Submissions, read | Admin, Editor |
+| Correct a submission in place — title, abstract, authors, keywords or track | Submissions, write | Admin only |
 
 **Activity log:**
 
@@ -221,8 +223,13 @@ Approving an assistant for reading only is a good way to let it answer
 questions about your conference without ever being able to change it.
 </Aside>
 
-The assistant can register a submission for a participant, but it cannot change
-a status, assign a reviewer or make a decision.
+The assistant can register a submission for a participant and correct one that
+is already in, but it cannot change a status, assign a reviewer or make a
+decision, and it cannot change a submission's **type**. A correction it makes is
+the same **Edit submission** action you have under **Actions** — it rewrites the
+current version rather than adding one, and leaves the status alone. Fields it
+does not name keep their current value, so a title fix does not need the author
+list resent.
 
 <Aside type="note" title="How the file gets there">
 When a submission type expects a **file**, the assistant creates the submission
@@ -238,6 +245,18 @@ The address lasts **24 hours**, works only for that one submission, needs no
 sign-in, and stops working the moment the submission leaves draft. Uploading
 again replaces the file, so a wrong upload is fixable. If it expires, ask for a
 new one.
+</Aside>
+
+<Aside type="note" title="Reading the file back">
+Going the other way, the assistant can ask for a **download address** for the
+file on a submission's current version — how it checks that what is recorded
+matches what the author actually wrote, for instance when a title was pulled out
+of a document automatically.
+
+The address lasts **15 minutes**, works only for that one file and needs no
+sign-in. It is a separate kind of link from the upload one: an upload address
+can never be used to read a file, nor a download address to replace one. Text
+submission types have no file — their abstract is read directly.
 </Aside>
 
 

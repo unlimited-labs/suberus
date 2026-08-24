@@ -7,6 +7,7 @@ import { getActiveSubmissionTypes } from "@/features/settings/server/settings";
 import {
 	getAdminSubmissions,
 	getSubmissionForEditor,
+	updateSubmissionForAdmin,
 } from "@/features/submissions/server/admin-submissions";
 import { getConferenceTodo } from "@/features/submissions/server/conference-todo";
 import {
@@ -15,10 +16,12 @@ import {
 	submitDraftForUser,
 } from "@/features/submissions/server/create-for-user";
 import { getValidationLimits } from "@/features/submissions/server/create-submission";
+import { issueDownloadLink } from "@/features/submissions/server/download-link";
 import {
 	adminSubmissionsListInput,
 	submissionCreateForUserInput,
 	submissionIdInput,
+	submissionUpdateInput,
 } from "@/features/submissions/validations";
 import {
 	deskAcceptSubmission,
@@ -171,6 +174,34 @@ const deskAccept = defineTool({
 	},
 });
 
+const updateSubmission = defineTool({
+	name: "submissions_update",
+	title: "Correct a submission",
+	description:
+		"Fix a submission in place — title, abstract, authors, keywords or track. Only the fields you send change; everything else is left as it is. Edits the current version rather than adding one, and the status is untouched. Use submissions_download_link first when the point is to check what the uploaded document actually says.",
+	input: submissionUpdateInput,
+	roles: ["ADMIN"],
+	scope: MCP_SCOPE_SUBMISSIONS_WRITE,
+	destructive: true,
+	async handler({ submissionId, ...patch }, actor) {
+		return updateSubmissionForAdmin(submissionId, actor.id, patch);
+	},
+});
+
+const downloadLink = defineTool({
+	name: "submissions_download_link",
+	title: "Download link",
+	description:
+		"Issue a short-lived address for the file on a submission's current version. The address needs no sign-in, works only for that one file and expires in 15 minutes; ask again for a fresh one. Text submissions have no file — read their abstract with submissions_get.",
+	input: submissionIdInput,
+	roles: ADMIN_AND_EDITOR,
+	scope: MCP_SCOPE_SUBMISSIONS_READ,
+	readOnly: true,
+	async handler(input) {
+		return issueDownloadLink(input.submissionId);
+	},
+});
+
 export const submissionsMcpTools: readonly McpTool[] = [
 	listSubmissions,
 	getSubmission,
@@ -180,4 +211,6 @@ export const submissionsMcpTools: readonly McpTool[] = [
 	uploadLink,
 	submitDraftTool,
 	deskAccept,
+	updateSubmission,
+	downloadLink,
 ];

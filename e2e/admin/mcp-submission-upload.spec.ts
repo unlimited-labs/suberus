@@ -1,7 +1,10 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { createUploadToken } from "@/features/submissions/server/upload-token";
+import {
+	createCapabilityToken,
+	UPLOAD_LINK_TTL_MS,
+} from "@/features/submissions/server/capability-token";
 import { expect, test } from "../helpers/base-fixtures";
 import {
 	createSubmission,
@@ -18,7 +21,8 @@ const FIXTURE = path.join(
 function tokenFor(submissionId: string) {
 	const secret = process.env.AUTH_SECRET;
 	if (!secret) throw new Error("AUTH_SECRET is required to mint an upload token");
-	return createUploadToken(submissionId, secret).token;
+	return createCapabilityToken("up", submissionId, secret, UPLOAD_LINK_TTL_MS)
+		.token;
 }
 
 function multipart(name: string, bytes: Buffer) {

@@ -19,11 +19,10 @@ import {
 import { submitDraftOnBehalf } from "@/features/submissions/server/create-for-user";
 import { adminEditSubmission } from "@/features/submissions/server/submissions";
 import {
+	adminSubmissionEditInput,
 	adminSubmissionsListInput,
-	authorSchema,
 	submissionIdInput,
 	submissionStatusFilterSchema,
-	submissionTypeFilterSchema,
 } from "@/features/submissions/validations";
 
 export const getAdminSubmissionsFn = createServerFn({ method: "GET" })
@@ -40,24 +39,9 @@ export const getSubmissionForEditorFn = createServerFn({ method: "GET" })
 		return getSubmissionForEditor(data.submissionId);
 	});
 
-/**
- * Admin-only in-place edit of a submission at any stage. No dynamic length
- * re-validation: admins are trusted and may need to override author limits.
- */
 export const adminEditSubmissionFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
-	.validator(
-		z.object({
-			submissionId: z.uuid(),
-			type: submissionTypeFilterSchema,
-			title: z.string(),
-			content: z.string(),
-			authors: z.array(authorSchema),
-			keywords: z.array(z.string()),
-			contentFormat: z.enum(["TEXT", "FILE"]),
-			trackId: z.uuid().nullish(),
-		}),
-	)
+	.validator(adminSubmissionEditInput)
 	.handler(async ({ data, context }) => {
 		return adminEditSubmission(data.submissionId, context.user.id, data);
 	});

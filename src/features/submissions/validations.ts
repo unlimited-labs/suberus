@@ -15,6 +15,19 @@ export const authorSchema = z.object({
 	isPresenter: z.boolean(),
 });
 
+/**
+ * replaceSubmissionAuthors deletes and recreates the whole list, so an empty
+ * array wipes the authors and a presenter count other than one leaves
+ * presenterId dangling. Enforced wherever a caller can set authors directly.
+ */
+export const submissionAuthorsSchema = z
+	.array(authorSchema)
+	.min(1, "At least one author is required")
+	.refine(
+		(authors) => authors.filter((a) => a.isPresenter).length === 1,
+		"Exactly one presenter is required",
+	);
+
 export const submissionIdInput = z.object({ submissionId: z.uuid() });
 
 // EXHIBITOR absent: decided through the exhibitor flow, never listed here.
@@ -48,6 +61,27 @@ export const submissionCreateForUserInput = submissionCreateInput
 		userId: z.uuid(),
 		submit: z.boolean().default(false),
 	});
+
+// Admins are trusted here, so no dynamic length limits: an author's own edit
+// runs through the length-aware form schema, this one deliberately does not.
+export const adminSubmissionEditInput = z.object({
+	submissionId: z.uuid(),
+	type: submissionTypeFilterSchema,
+	title: z.string().min(1, "Title is required"),
+	content: z.string(),
+	authors: submissionAuthorsSchema,
+	keywords: z.array(z.string()),
+	contentFormat: z.enum(["TEXT", "FILE"]),
+	trackId: z.uuid().nullish(),
+});
+
+// Same fields, all optional: an agent fixing one title must not have to resend
+// the author list, where an omission would silently wipe it. `type` is omitted
+// deliberately — retyping a submission stays a UI operation.
+export const submissionUpdateInput = adminSubmissionEditInput
+	.omit({ submissionId: true, contentFormat: true, type: true })
+	.partial()
+	.extend({ submissionId: z.uuid() });
 
 export const submissionStatusFilterSchema = z.enum([
 	"DRAFT",
@@ -123,13 +157,7 @@ export function createDynamicSubmissionSchema(limits: ValidationLimits) {
 				`Title must be at most ${limits.maxTitleLength} characters`,
 			),
 		content: z.string(),
-		authors: z
-			.array(authorSchema)
-			.min(1, "At least one author is required")
-			.refine(
-				(authors) => authors.filter((a) => a.isPresenter).length === 1,
-				"Exactly one presenter is required",
-			),
+		authors: submissionAuthorsSchema,
 		keywords: keywordsArraySchema,
 		contentFormat: z.enum(["TEXT", "FILE"]),
 		trackId: z.uuid().nullish(),

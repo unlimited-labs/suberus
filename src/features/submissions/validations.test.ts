@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	createDynamicSubmissionSchema,
 	DEFAULT_VALIDATION_LIMITS,
+	submissionUpdateInput,
 } from "./validations";
 
 const submission = (patch: Record<string, unknown> = {}) => ({
@@ -56,5 +57,82 @@ describe("createDynamicSubmissionSchema", () => {
 		const limits = { ...DEFAULT_VALIDATION_LIMITS, enableKeywords: false };
 		const schema = createDynamicSubmissionSchema(limits);
 		expect(schema.safeParse(submission({ keywords: [] })).success).toBe(true);
+	});
+});
+
+describe("submissionUpdateInput", () => {
+	const id = "11111111-2222-4333-8444-555555555555";
+
+	// A title-only patch is the whole reason the schema is partial: requiring
+	// authors here would make an omission wipe them.
+	it("accepts a patch carrying nothing but a title", () => {
+		expect(
+			submissionUpdateInput.safeParse({ submissionId: id, title: "Fixed" })
+				.success,
+		).toBe(true);
+	});
+
+	it("still requires a submission id", () => {
+		expect(submissionUpdateInput.safeParse({ title: "Fixed" }).success).toBe(
+			false,
+		);
+		expect(
+			submissionUpdateInput.safeParse({ submissionId: "42", title: "Fixed" })
+				.success,
+		).toBe(false);
+	});
+
+	// replaceSubmissionAuthors rebuilds the whole list, so these two are the
+	// difference between a patch and a wiped author record.
+	it("refuses an author list that is empty or has no single presenter", () => {
+		const authors = [
+			{
+				firstName: "Ada",
+				lastName: "Lovelace",
+				email: "ada@example.com",
+				affiliationId: null,
+				affiliationName: "Somewhere",
+				isPresenter: true,
+			},
+		];
+		expect(
+			submissionUpdateInput.safeParse({ submissionId: id, authors: [] })
+				.success,
+		).toBe(false);
+		expect(
+			submissionUpdateInput.safeParse({
+				submissionId: id,
+				authors: [authors[0], { ...authors[0], email: "b@example.com" }],
+			}).success,
+		).toBe(false);
+		expect(
+			submissionUpdateInput.safeParse({ submissionId: id, authors }).success,
+		).toBe(true);
+	});
+
+	it("refuses a blank title rather than erasing the current one", () => {
+		expect(
+			submissionUpdateInput.safeParse({ submissionId: id, title: "" }).success,
+		).toBe(false);
+	});
+
+	// Retyping a submission stays a UI operation: allowing it here would let an
+	// EXHIBITOR placeholder be laundered into an ordinary submission.
+	it("takes no type", () => {
+		const parsed = submissionUpdateInput.parse({
+			submissionId: id,
+			title: "Fixed",
+			type: "ABSTRACT",
+		});
+		expect(parsed).not.toHaveProperty("type");
+	});
+
+	it("takes no contentFormat — it follows from the type's configuration", () => {
+		const parsed = submissionUpdateInput.parse({
+			submissionId: id,
+			title: "Fixed",
+			contentFormat: "TEXT",
+		});
+		expect(parsed).not.toHaveProperty("contentFormat");
 	});
 });
