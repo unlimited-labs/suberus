@@ -1,5 +1,5 @@
 import { FormField } from "@/shared/components/composable/form-field";
-import { useFieldError } from "@/shared/hooks/use-field-error";
+import { fieldAria, useFieldError } from "@/shared/hooks/use-field-error";
 import {
 	Select,
 	SelectContent,
@@ -44,7 +44,12 @@ export function FormSelectField({
 				onValueChange={(value) => field.handleChange(value)}
 				value={field.state.value || ""}
 			>
-				<SelectTrigger className="h-9">
+				<SelectTrigger
+					className="h-9"
+					id={field.name}
+					onBlur={field.handleBlur}
+					{...fieldAria(field.name, hasError, !!description)}
+				>
 					<SelectValue placeholder={placeholder} />
 				</SelectTrigger>
 				<SelectContent>

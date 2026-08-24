@@ -1,6 +1,6 @@
 import type * as React from "react";
 import { FormField } from "@/shared/components/composable/form-field";
-import { useFieldError } from "@/shared/hooks/use-field-error";
+import { fieldAria, useFieldError } from "@/shared/hooks/use-field-error";
 import { IconInput } from "@/shared/ui/icon-input";
 
 interface FormIconInputFieldProps {
@@ -33,7 +33,7 @@ export function FormIconInputField({
 			label={label}
 		>
 			<IconInput
-				aria-invalid={hasError}
+				{...fieldAria(field.name, hasError, !!description)}
 				autoComplete={autoComplete}
 				disabled={disabled}
 				icon={icon}

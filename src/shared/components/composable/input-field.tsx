@@ -1,5 +1,5 @@
 import { FormField } from "@/shared/components/composable/form-field";
-import { useFieldError } from "@/shared/hooks/use-field-error";
+import { fieldAria, useFieldError } from "@/shared/hooks/use-field-error";
 import { Input } from "@/shared/ui/input";
 
 interface FormInputFieldProps {
@@ -30,7 +30,7 @@ export function FormInputField({
 			label={label}
 		>
 			<Input
-				aria-invalid={hasError}
+				{...fieldAria(field.name, hasError, !!description)}
 				className="h-9"
 				data-testid={testId}
 				disabled={disabled}

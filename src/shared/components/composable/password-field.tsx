@@ -1,5 +1,5 @@
 import { FormField } from "@/shared/components/composable/form-field";
-import { useFieldError } from "@/shared/hooks/use-field-error";
+import { fieldAria, useFieldError } from "@/shared/hooks/use-field-error";
 import { PasswordInput } from "@/shared/ui/password-input";
 
 interface FormPasswordFieldProps {
@@ -26,7 +26,7 @@ export function FormPasswordField({
 			label={label}
 		>
 			<PasswordInput
-				aria-invalid={hasError}
+				{...fieldAria(field.name, hasError, !!description)}
 				disabled={disabled}
 				id={field.name}
 				onBlur={field.handleBlur}

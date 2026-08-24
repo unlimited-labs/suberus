@@ -1,4 +1,5 @@
 import type { ComponentProps, ReactNode } from "react";
+import { describedByIds } from "@/shared/hooks/use-field-error";
 import {
 	Field,
 	FieldDescription,
@@ -36,8 +37,15 @@ export function FormField({
 				<FieldLabel htmlFor={htmlFor}>{label}</FieldLabel>
 			)}
 			{children}
-			{description && <FieldDescription>{description}</FieldDescription>}
-			<FieldError errors={hasError ? errors : undefined} />
+			{description && (
+				<FieldDescription id={describedByIds(htmlFor).description}>
+					{description}
+				</FieldDescription>
+			)}
+			<FieldError
+				errors={hasError ? errors : undefined}
+				id={describedByIds(htmlFor).error}
+			/>
 		</Field>
 	);
 }

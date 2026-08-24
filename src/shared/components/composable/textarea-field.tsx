@@ -1,5 +1,5 @@
 import { FormField } from "@/shared/components/composable/form-field";
-import { useFieldError } from "@/shared/hooks/use-field-error";
+import { fieldAria, useFieldError } from "@/shared/hooks/use-field-error";
 import { cn } from "@/shared/lib/utils";
 import { Textarea } from "@/shared/ui/textarea";
 
@@ -53,7 +53,7 @@ export function FormTextareaField({
 			}
 		>
 			<Textarea
-				aria-invalid={hasError}
+				{...fieldAria(field.name, hasError, !!description)}
 				className={cn("resize-none", className)}
 				data-testid={testId}
 				disabled={disabled}

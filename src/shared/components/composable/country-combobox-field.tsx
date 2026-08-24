@@ -1,5 +1,5 @@
 import { FormField } from "@/shared/components/composable/form-field";
-import { useFieldError } from "@/shared/hooks/use-field-error";
+import { fieldAria, useFieldError } from "@/shared/hooks/use-field-error";
 import { CountryCombobox } from "@/shared/ui/country-combobox";
 
 interface FormCountryComboboxFieldProps {
@@ -25,8 +25,11 @@ export function FormCountryComboboxField({
 		>
 			<CountryCombobox
 				disabled={disabled}
+				id={field.name}
+				onBlur={field.handleBlur}
 				onChange={field.handleChange}
 				value={field.state.value || ""}
+				{...fieldAria(field.name, hasError, !!description)}
 			/>
 		</FormField>
 	);
